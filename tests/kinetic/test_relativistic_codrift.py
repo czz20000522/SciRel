@@ -13,9 +13,11 @@ def test_valid_shape_and_finite():
     result = solve_relativistic_codrift_spectrum(case)
     assert len(result["spectra"]) == len(case["k"])
     assert all(np.asarray(row["real_order"]).shape == (14, 2) for row in result["spectra"])
-    assert all(np.isfinite(np.asarray(row["real_order"])).all() and
-               np.isfinite(np.asarray(row["imag_order"])).all()
-               for row in result["spectra"])
+    assert all(
+        np.isfinite(np.asarray(row["real_order"])).all()
+        and np.isfinite(np.asarray(row["imag_order"])).all()
+        for row in result["spectra"]
+    )
 
 
 def test_source_reference_first_row_close():
@@ -36,4 +38,3 @@ def test_rejects_superluminal():
         assert "less than c" in str(exc)
     else:
         raise AssertionError("superluminal input was accepted")
-

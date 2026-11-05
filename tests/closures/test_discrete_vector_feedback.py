@@ -15,11 +15,19 @@ EVIDENCE = ROOT / "evidence"
 class NeutralFeedbackTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.inputs = json.loads((EVIDENCE / "fixtures" / "feedback-input.json").read_text(encoding="utf-8"))
+        cls.inputs = json.loads(
+            (EVIDENCE / "fixtures" / "feedback-input.json").read_text(encoding="utf-8")
+        )
         cls.controller = json.loads((EVIDENCE / "source-defaults.json").read_text(encoding="utf-8"))
-        cls.source = json.loads((EVIDENCE / "runs" / "source-001" / "result.json").read_text(encoding="utf-8"))
-        cls.source_trace = json.loads((EVIDENCE / "runs" / "source-001" / "state-trace.json").read_text(encoding="utf-8"))
-        cls.replay = json.loads((EVIDENCE / "runs" / "replay-001" / "result.json").read_text(encoding="utf-8"))
+        cls.source = json.loads(
+            (EVIDENCE / "runs" / "source-001" / "result.json").read_text(encoding="utf-8")
+        )
+        cls.source_trace = json.loads(
+            (EVIDENCE / "runs" / "source-001" / "state-trace.json").read_text(encoding="utf-8")
+        )
+        cls.replay = json.loads(
+            (EVIDENCE / "runs" / "replay-001" / "result.json").read_text(encoding="utf-8")
+        )
 
     def test_fixture_shapes_and_source_replay_agree(self):
         self.assertEqual(self.source, self.replay)
@@ -41,7 +49,12 @@ class NeutralFeedbackTests(unittest.TestCase):
                 atol=2e-9,
             )
         for key in self.source_trace:
-            if key in {"execution_kind", "native_simulink_execution", "scientific_acceptance", "runtime_octave_version"}:
+            if key in {
+                "execution_kind",
+                "native_simulink_execution",
+                "scientific_acceptance",
+                "runtime_octave_version",
+            }:
                 continue
             if key == "reset_at_sample":
                 self.assertEqual(result["state_trace"][key], self.source_trace[key])
@@ -58,8 +71,12 @@ class NeutralFeedbackTests(unittest.TestCase):
         values = result["values"]
         trace = result["state_trace"]
         self.assertEqual(trace["reset_at_sample"], [i in (0, 55, 105) for i in range(121)])
-        self.assertEqual(values["total_current_A"][40], self.inputs["signals"]["feedforward_current_A"][40])
-        self.assertEqual(values["total_current_A"][54], self.inputs["signals"]["feedforward_current_A"][54])
+        self.assertEqual(
+            values["total_current_A"][40], self.inputs["signals"]["feedforward_current_A"][40]
+        )
+        self.assertEqual(
+            values["total_current_A"][54], self.inputs["signals"]["feedforward_current_A"][54]
+        )
         self.assertEqual(values["feedback_current_A"][40], values["feedback_current_A"][39])
         self.assertEqual(trace["pre_filter_state"][55], [0.0] * 10)
         self.assertEqual(trace["pre_integrator_state"][105], [0.0] * 10)
