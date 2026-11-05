@@ -152,10 +152,144 @@ def _complex_scalar(value, name):
 
 
 def evaluate_kinetic_dielectric_tensor(B0, qs, ms, ns0, Ts0, f, kz, kx, lmx=_LMX_DEFAULT):
-    """bonk/fDtensor.m:11-90 的逐行移植：返回 K、D、det(D) 与中间标度。
+    r"""Evaluate all nine dielectric and dispersion tensor components using the source's default 15 harmonics.
 
-    The default is 15 harmonics and the determinant uses the source's
-    six-term expansion. This diagnostic permits complex ``kx``.
+    Parameters
+    ----------
+    B0 : real numeric
+        Background magnetic-field strength; scalar; unit T (tesla); must be a finite nonzero real number
+        (`B0=0` degenerates `wcs` and `rhocs` and raises directly). [T] Shape: scalar. Must be a finite
+        nonzero real number (`B0=0` degenerates `wcs` and `rhocs` and raises directly).
+    qs : real numeric
+        Charge of each species; scalar or one-dimensional array of length `S`; unit C (coulomb); must be
+        finite and nonzero (zero charge gives `wps2=0` and `wcs=0`); the sign sets the gyration direction.
+        [C] Shape: scalar or (S,) species array. Finite and nonzero (zero charge gives `wps2=0` and
+        `wcs=0`); the sign sets the gyration direction.
+    ms : real numeric
+        Mass of each species; scalar or one-dimensional array of length `S`; unit kg; must be strictly
+        positive and finite. [kg] Shape: scalar or (S,) species array. Strictly positive and finite.
+    ns0 : real numeric
+        Number density of each species; scalar or one-dimensional array of length `S`; unit m^-3; must be
+        strictly positive and finite. [m^-3] Shape: scalar or (S,) species array. Strictly positive and
+        finite.
+    Ts0 : real numeric
+        Temperature of each species; scalar or one-dimensional array of length `S`; unit K (kelvin, **not**
+        eV); must be strictly positive and finite; the caller converts eV by multiplying by `1.6022e-19/kB`
+        (the frozen source comment states this convention). [K] Shape: scalar or (S,) species array.
+        Strictly positive and finite; the caller converts eV by multiplying by `1.6022e-19/kB` (the frozen
+        source comment states this convention).
+    f : real numeric
+        Electromagnetic wave frequency; scalar; unit Hz; must be a finite nonzero real number (`w=2*pi*f=0`
+        divides by zero); internally uses `w=2*pi*f` (frozen source). [Hz] Shape: scalar. Finite nonzero
+        real number (`w=2*pi*f=0` divides by zero); internally uses `w=2*pi*f` (frozen source).
+    kz : real numeric
+        Parallel wavenumber; scalar; unit rad/m; must be a finite nonzero real number (`z0` and `zn` are
+        both divided by `kz`, frozen source). [rad/m] Shape: scalar. Finite nonzero real number (`z0` and
+        `zn` are both divided by `kz`, frozen source).
+    kx : complex128
+        Perpendicular wavenumber; scalar; unit rad/m; must be finite and may be real or complex (the source
+        `fsolve` scan uses complex `kx`); at `kx=0`, `as=0` and `Xsn_xz/Xsn_zz` become `NaN` (the source
+        implementation behaves the same way; this operator does not mask it). [rad/m] Shape: scalar. Finite
+        and may be real or complex (the source `fsolve` scan uses complex `kx`); at `kx=0`, `as=0` and
+        `Xsn_xz/Xsn_zz` become `NaN` (the source implementation behaves the same way; this operator does not
+        mask it).
+    lmx : integer
+        Bessel harmonic-sum truncation limit; integer scalar; dimensionless; must be a nonnegative integer,
+        default `15` (frozen source); increase it to check convergence. [dimensionless] Shape: scalar.
+        Default: 15. Nonnegative integer, default `15` (frozen source); increase it to check convergence.
+
+    Returns
+    -------
+    K : complex128 array
+        Kinetic dielectric tensor `K_ij`; `(3,3)` complex `numpy.ndarray` (axis 0 is row i, axis 1 is column
+        j); dimensionless; initialized to `diag(1,1,1)`; when `kx=0` or `kz` is near zero some components
+        may be `NaN`/`inf`, matching the source implementation without replacement. [dimensionless] Shape:
+        (3,3). Kinetic dielectric tensor `K_ij`; `(3,3)` complex `numpy.ndarray` (axis 0 is row i, axis 1 is
+        column j); dimensionless; initialized to `diag(1,1,1)`; when `kx=0` or `kz` is near zero some
+        components may be `NaN`/`inf`, matching the source implementation without replacement.
+    D : complex128 array
+        Dispersion tensor `D_ij`; `(3,3)` complex `numpy.ndarray`; dimensionless; obtained from `K` by
+        adding `nx^2`, `nz^2` and `nx*nz`; when `K` is `NaN` the corresponding components are also `NaN`.
+        [dimensionless] Shape: (3,3). Dispersion tensor `D_ij`; `(3,3)` complex `numpy.ndarray`;
+        dimensionless; obtained from `K` by adding `nx^2`, `nz^2` and `nx*nz`; when `K` is `NaN` the
+        corresponding components are also `NaN`.
+    det_D : complex128
+        Dispersion determinant `det(D)`; complex scalar; dimensionless; evaluated from the six-term
+        expansion and agrees with `numpy.linalg.det(D)` within floating-point error (a relative deviation of
+        about 1e-9 is allowed when the real and imaginary magnitudes differ greatly). [dimensionless] Shape:
+        scalar. Dispersion determinant `det(D)`; complex scalar; dimensionless; evaluated from the six-term
+        expansion and agrees with `numpy.linalg.det(D)` within floating-point error (a relative deviation of
+        about 1e-9 is allowed when the real and imaginary magnitudes differ greatly).
+    w : real numeric
+        Angular frequency; real scalar; unit rad/s; equal to `2*pi*f` and defined only when `f` is nonzero.
+        [rad/s] Shape: scalar. Angular frequency; real scalar; unit rad/s; equal to `2*pi*f` and defined
+        only when `f` is nonzero.
+    vts : float64 array
+        Thermal speed `sqrt(2*kB*Ts0/ms)` of each species; real array of shape `(S,)`; unit m/s; must be
+        strictly positive. [m/s] Shape: (S,) species array. Strictly positive.
+    wcs : float64 array
+        Cyclotron frequency `qs*B0/ms` of each species; real array of shape `(S,)`; unit rad/s; carries the
+        charge sign and is nonzero when `B0` is nonzero. [rad/s] Shape: (S,) species array. Cyclotron
+        frequency `qs*B0/ms` of each species; real array of shape `(S,)`; unit rad/s; carries the charge
+        sign and is nonzero when `B0` is nonzero.
+    wps2 : float64 array
+        Plasma-frequency squared `ns0*qs^2/ms/epsilon0` of each species; real array of shape `(S,)`; unit
+        s^-2; nonnegative. [s^-2] Shape: (S,) species array. Plasma-frequency squared `ns0*qs^2/ms/epsilon0`
+        of each species; real array of shape `(S,)`; unit s^-2; nonnegative.
+    rhocs : float64 array
+        Gyroradius `sqrt(kB*Ts0/ms)/wcs` of each species; real array of shape `(S,)`; unit m; signed and
+        defined when `wcs` is nonzero. [m] Shape: (S,) species array. Gyroradius `sqrt(kB*Ts0/ms)/wcs` of
+        each species; real array of shape `(S,)`; unit m; signed and defined when `wcs` is nonzero.
+    nx : complex128
+        Perpendicular refractive index `sqrt(c2)*kx/w`; complex scalar; dimensionless; defined when `w` is
+        nonzero and complex whenever `kx` is complex. [dimensionless] Shape: scalar. Perpendicular
+        refractive index `sqrt(c2)*kx/w`; complex scalar; dimensionless; defined when `w` is nonzero and
+        complex whenever `kx` is complex.
+    nz : complex128
+        Parallel refractive index `sqrt(c2)*kz/w`; complex scalar; dimensionless; a real scalar when `w` is
+        nonzero. [dimensionless] Shape: scalar. Parallel refractive index `sqrt(c2)*kz/w`; complex scalar;
+        dimensionless; a real scalar when `w` is nonzero.
+    as : complex128 array
+        `kx*rhocs` of each species; complex array of shape `(S,)`; dimensionless; reduces to real when `kx`
+        is real. [dimensionless] Shape: (S,) species array. `kx*rhocs` of each species; complex array of
+        shape `(S,)`; dimensionless; reduces to real when `kx` is real.
+    bs : complex128 array
+        `as.^2` of each species; complex array of shape `(S,)`; dimensionless; at `bs=0` (that is, `kx=0`)
+        `Gamman(l,b)/b` becomes `NaN`, matching the source implementation. [dimensionless] Shape: (S,)
+        species array. `as.^2` of each species; complex array of shape `(S,)`; dimensionless; at `bs=0`
+        (that is, `kx=0`) `Gamman(l,b)/b` becomes `NaN`, matching the source implementation.
+    z0s : complex128 array
+        `z0=w/(kz*vts)` of each species; complex array of shape `(S,)`; dimensionless; diagnostic only and
+        not accumulated downstream. [dimensionless] Shape: (S,) species array. `z0=w/(kz*vts)` of each
+        species; complex array of shape `(S,)`; dimensionless; diagnostic only and not accumulated
+        downstream.
+    lmx : integer
+        Harmonic truncation limit actually used; integer scalar; dimensionless; equals the supplied `lmx` so
+        the summation range can be reproduced. [dimensionless] Shape: scalar. Harmonic truncation limit
+        actually used; integer scalar; dimensionless; equals the supplied `lmx` so the summation range can
+        be reproduced.
+
+    Raises
+    ------
+    ValueError
+        Raises ValueError for declared invalid inputs; numeric conversion errors may propagate for
+        unsupported Python objects.
+
+    See Also
+    --------
+    scirel.kinetic : Public kinetic-domain operators.
+
+    Notes
+    -----
+    Sum l=-lmx..lmx Maxwellian harmonic contributions, form D from K with Maxwell curl terms, and
+    evaluate its explicit six-term determinant. homogeneous magnetized Maxwellian multi-species plasma
+    Assumptions: Input units and normalization follow the declared ports; no physical parameters are
+    inferred.
+
+    Examples
+    --------
+    >>> from scirel.kinetic import evaluate_kinetic_dielectric_tensor
+    >>> r=evaluate_kinetic_dielectric_tensor(B0=1.0, qs=[-1.60217662e-19], ms=[9.1094e-31], ns0=[6.075e19], Ts0=[11604941.036704937],f=1e10,kz=1,kx=1e4); assert r['K'].shape==(3,3)
     """
     try:
         lmx = _operator.index(lmx)

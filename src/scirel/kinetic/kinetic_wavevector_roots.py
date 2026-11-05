@@ -139,14 +139,131 @@ def solve_kinetic_wavevector_roots(
     max_iterations=400,
     max_function_evals=100,
 ):
-    """Return the complex perpendicular-wavenumber root at each angular frequency.
+    r"""Solve the Ronnmark determinant for complex kx at each supplied angular frequency from one fixed seed.
 
-    All inputs are SI: ``B0`` [T], ``qs`` [C], ``ms`` [kg], ``ns0`` [m^-3], ``Ts0`` [K],
-    ``kz`` [1/m], ``omegas`` [rad/s], ``kx_start`` [1/m]. ``kx_start`` is the fixed seed of
-    every frequency, which is what ``bonk/main_tst.m:97`` sets to ``(0.6+0i)*kn``. ``kz`` may
-    be zero: the source's second test case uses ``kz=0.0``. ``tol_fun``/``tol_x`` mirror
-    ``TolFun``/``Tolx`` and default to the source's ``1e-16``; ``max_function_evals`` mirrors
-    ``MaxFunEvals`` and defaults to the reference solver's ``100*numel(x0)=100`` for a scalar unknown.
+    Parameters
+    ----------
+    B0 : real numeric
+        Background magnetic-field strength, entering the cyclotron frequency through the dispersion
+        determinant [T] Shape: scalar. Finite and nonzero.
+    qs : real numeric
+        Species charges, setting the sign of the cyclotron frequency [C] Shape: `(S,)` one-dimensional
+        species axis. Finite; element count matches the other species arrays.
+    ms : real numeric
+        Species masses, entering the thermal speed and the cyclotron frequency [kg] Shape: `(S,)` one-
+        dimensional species axis. Finite and strictly positive.
+    ns0 : real numeric
+        Species absolute number densities, entering the plasma frequency [m^-3] Shape: `(S,)` one-
+        dimensional species axis. Finite and strictly positive.
+    Ts0 : real numeric
+        Species temperatures, already converted to kelvin under the declared convention [K] Shape: `(S,)`
+        one-dimensional species axis. Finite and strictly positive.
+    omegas : real numeric
+        Angular-frequency sequence whose roots are sought; each frequency point is solved independently with
+        the same `kx_start` initial value, with no continuation between frequencies [rad/s] Shape: `(F,)`
+        one-dimensional frequency axis. Non-empty finite array with nonzero elements, because the frequency
+        appears in the resonance denominator.
+    kz : real numeric
+        Wavevector component parallel to the magnetic field, held fixed and entering the parallel resonance
+        argument [1/m] Shape: scalar. Finite; zero is allowed (case 2 uses `kz=0.0`), in which case the
+        parallel resonance argument reduces to $\omega/\omega_{cs}$.
+    kx_start : complex128
+        Starting complex initial value for continuation root finding, `x01=(0.6+0.0i)*kn` [1/m] Shape:
+        scalar complex. Finite; it only affects which root is converged to, not the existence of the root
+        itself.
+    tol_fun : real numeric
+        Relative residual convergence tolerance corresponding to the reference runtime `TolFun`
+        [dimensionless] Shape: scalar. Default: 1e-16. Finite and strictly positive; defaults to `1e-16`
+        (the reference solver default).
+    tol_x : real numeric
+        Relative variable-step convergence tolerance corresponding to the reference runtime `Tolx`
+        [dimensionless] Shape: scalar. Default: 1e-16. Finite and strictly positive; defaults to `1e-16`
+        (the reference solver default).
+    max_iterations : integer
+        Maximum iterations per frequency point, corresponding to the reference runtime `MaxIter`
+        [dimensionless] Shape: scalar integer. Default: 400. At least 1; defaults to 400 (the reference
+        runtime default).
+    max_function_evals : integer
+        Maximum objective-function evaluations per frequency point, corresponding to the reference runtime
+        `MaxFunEvals` [dimensionless] Shape: scalar integer. Default: 100. At least 1; defaults to 100 (the
+        reference runtime uses `100*numel(x0)` for a scalar unknown).
+
+    Returns
+    -------
+    roots : complex128
+        Complex perpendicular-wavenumber root obtained at each frequency point [1/m] Shape: `(F,)` one-
+        dimensional frequency-axis complex array. Finite complex.
+    residuals : complex128
+        Dispersion-determinant residual $\mathcal{D}$ at each root [dimensionless] Shape: `(F,)` one-
+        dimensional frequency-axis complex array. Finite complex; the quality of the root must be judged
+        from this residual together with `last_updates`.
+    determinant_scale : real numeric
+        Maximum modulus of the dielectric-tensor elements at each root, used as the cancellation scale of
+        the determinant residual at that frequency point [dimensionless] Shape: `(F,)` one-dimensional
+        frequency-axis floating-point array. Nonnegative finite; `abs(residuals)/determinant_scale` is the
+        relative zero quality of that root.
+    exit_flags : integer
+        The reference runtime `fsolve` exit flag at each frequency point (`1` residual met, `2` step met,
+        `3` residual decrease met, `-2` Jacobian degenerate, `-3` trust region shrank to meaninglessness,
+        `0` iteration or evaluation limit reached) [not applicable] Shape: `(F,)` one-dimensional frequency-
+        axis integer array. Restricted to `{1,2,3,0,-2,-3}`.
+    iterations : integer
+        Iteration count actually used at each frequency point [dimensionless] Shape: `(F,)` one-dimensional
+        frequency-axis integer array. Does not exceed `max_iterations`.
+    function_evals : integer
+        Objective-evaluation count actually used at each frequency point [dimensionless] Shape: `(F,)` one-
+        dimensional frequency-axis integer array. Does not exceed `max_function_evals`.
+    converged : bool
+        Whether the exit flag is positive at each frequency point (that is, the reference runtime judged
+        convergence) [not applicable] Shape: `(F,)` one-dimensional frequency-axis boolean array. When
+        false, the root is still a numerical stationary point or an unconverged point of the determinant;
+        the caller must decide acceptance from `residuals` and `determinant_scale`.
+    omegas : real numeric
+        Angular-frequency sequence actually used in this call, echoing the input [rad/s] Shape: `(F,)` one-
+        dimensional frequency axis. Same length as `roots`.
+    kz : real numeric
+        Parallel wavenumber used in this root finding, echoing the input [1/m] Shape: scalar. Matches the
+        input.
+    kx_start : complex128
+        Starting initial value used in this root finding, echoing the input [1/m] Shape: scalar complex.
+        Matches the input.
+    tol_fun : real numeric
+        Residual threshold used in this call, echoing the input [dimensionless] Shape: scalar. Matches the
+        input.
+    tol_x : real numeric
+        Variable threshold used in this call, echoing the input [dimensionless] Shape: scalar. Matches the
+        input.
+    max_iterations : integer
+        Iteration limit used in this call, echoing the input [dimensionless] Shape: scalar integer. Matches
+        the input.
+    max_function_evals : integer
+        Evaluation limit used in this call, echoing the input [dimensionless] Shape: scalar integer. Matches
+        the input.
+    solver : string
+        Text label for the root-finding algorithm, so the caller can check the numerical path used [not
+        applicable] Shape: string. Fixed at `reference_fsolve_dogleg_on_fDR`.
+
+    Raises
+    ------
+    ValueError
+        Raises ValueError for declared invalid inputs; numeric conversion errors may propagate for
+        unsupported Python objects.
+
+    See Also
+    --------
+    scirel.kinetic.kinetic_dispersion_ronnmark.evaluate_kinetic_dispersion_ronnmark : Related contract dependency.
+
+    Notes
+    -----
+    Each frequency independently starts from kx_start and solves det(D)=0 with source-compatible complex
+    trust-region dogleg arithmetic and bounded iteration/evaluation counts. homogeneous magnetized
+    Maxwellian multi-species plasma Assumptions: Input units and normalization follow the declared
+    ports; no physical parameters are inferred.
+
+    Examples
+    --------
+    >>> from scirel.kinetic import solve_kinetic_wavevector_roots
+    >>> r=solve_kinetic_wavevector_roots(B0=1.0, qs=[-1.60217662e-19], ms=[9.1094e-31], ns0=[6.075e19], Ts0=[11604941.036704937],omegas=[1e11],kz=0,kx_start=8000); assert len(r['roots'])==1
     """
 
     B0 = float(B0)

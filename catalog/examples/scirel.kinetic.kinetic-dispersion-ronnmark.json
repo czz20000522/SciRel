@@ -94,16 +94,6 @@
    "default": null
   },
   {
-   "name": "omega",
-   "description": "Directly supplied angular frequency that can replace `f` in the resonance argument (preserving the source runtime's original angular-frequency token and avoiding the round trip through `2*pi*f`)",
-   "units": "rad/s",
-   "shape": "scalar",
-   "dtype": "real numeric",
-   "required": false,
-   "constraints": "Optional keyword argument, default `None`; exactly one of `omega` and `f` must be supplied; when `omega` is given its value is used directly as $\\omega$; `f` is mutually exclusive and is not accepted.",
-   "default": null
-  },
-  {
    "name": "kz",
    "description": "Wavevector component parallel to the magnetic field, entering the resonance argument and multiplying the thermal speed",
    "units": "1/m",
@@ -120,6 +110,16 @@
    "dtype": "complex128",
    "required": true,
    "constraints": "Finite; complex values correspond to the source fsolve solving in the complex kx plane, where $b$ has an imaginary part."
+  },
+  {
+   "name": "omega",
+   "description": "Directly supplied angular frequency that can replace `f` in the resonance argument (preserving the source runtime's original angular-frequency token and avoiding the round trip through `2*pi*f`)",
+   "units": "rad/s",
+   "shape": "scalar",
+   "dtype": "real numeric",
+   "required": false,
+   "constraints": "Optional keyword argument, default `None`; exactly one of `omega` and `f` must be supplied; when `omega` is given its value is used directly as $\\omega$; `f` is mutually exclusive and is not accepted.",
+   "default": null
   }
  ],
  "outputs": [

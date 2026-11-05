@@ -40,30 +40,83 @@ def evaluate_cauchy_transform(
     limit=200,
     integration_mesh=None,
 ):
-    """Return ``G(z)=integral density(v)/(v-z) dv`` and panel error estimates.
+    r"""Evaluate a Cauchy transform with kernel-aware near-axis quadrature and caller-resolved density features.
 
-    ``density`` is a real scalar callback. ``bounds`` must be finite and
-    ordered; if omitted, ``integration_mesh`` is required, and both infinite
-    tails outside its endpoints are integrated. The caller must partition all
-    material features into panels resolved by adaptive quadrature; there must
-    be no unresolved features in the infinite tails. Finite bounds alone assert
-    their interval is already resolved. Narrow features require explicit mesh
-    panels containing their location and scale. This is an input condition,
-    not a property that finitely many callback evaluations can certify.
+    Parameters
+    ----------
+    z : complex numeric
+        Complex phase points off the real axis. [dimensionless] Shape: scalar or nonempty array. Finite and
+        representable.
+    density : callable
+        Real density callback of one real velocity. [dimensionless] Shape: callable. Callable returning
+        finite real numeric scalars at all sampled velocities; caller declares feature resolution.
+    bounds : real sequence
+        Ordered real integration bounds. [dimensionless] Shape: 2-sequence. Default: None. None selects
+        whole-line mode with required mesh; otherwise finite ordered real pair; booleans and complex
+        coordinates rejected.
+    analytic_density : callable
+        Optional analytic extension for lower-plane continuation. [dimensionless] Shape: callable or None.
+        Default: None. None or callable returning finite numeric scalars, representing the analytic
+        extension of the same density. Finite-bound continuation only for strict a < Re(z) < b.
+    epsabs : positive real
+        Absolute quadrature tolerance. [dimensionless] Shape: scalar. Default: 1e-10. Finite and
+        representable.
+    epsrel : positive real
+        Relative quadrature tolerance. [dimensionless] Shape: scalar. Default: 1e-10. Finite and
+        representable.
+    limit : positive integer
+        QUADPACK subdivision bound. [count] Shape: scalar. Default: 200. Finite and representable.
+    integration_mesh : finite real array
+        Finite strictly increasing real mesh partitioning material support/features; required when bounds is
+        null. [dimensionless] Shape: one-dimensional array with at least two points. Default: None. Strictly
+        increasing finite points; with bounds, mesh must lie inside bounds. When bounds is null, mesh
+        endpoints delimit a resolved feature region and infinite tails are also integrated.
 
-    The known Cauchy kernel peak is resolved independently of the density mesh
-    using v=Re(z)+abs(Im(z))*sinh(t) on near-projection finite panels. Both
-    transformed components have bounded kernel factors, tanh(t) and sech(t);
-    bounded t panels resolve their tails over widely separated scales. Smooth
-    far panels and the two infinite tails use real-coordinate quadrature.
+    Returns
+    -------
+    G : complex array
+        Cauchy transform. [dimensionless] Shape: same as z. Finite and representable.
+    quadrature_error : real array
+        Summed real/imaginary quadrature indicators with floating accumulation allowances, including
+        continuation; not bounds on callback or analytic-extension errors. [dimensionless] Shape: z shape +
+        [2]. Finite and representable.
 
-    Summed QUADPACK estimates plus floating accumulation allowances are
-    conditional local error indicators, not global
-    accuracy bounds, and exclude finite-domain truncation and callback error.
-    Failure of any panel rejects the complete call. Im(z)<0 returns the real
-    contour, or adds 2*pi*i*analytic_density(z) when that analytic extension is
-    explicitly supplied. The extension must represent the same density, and
-    for finite bounds continuation applies only across its interior support.
+    Raises
+    ------
+    RuntimeError
+        Raises RuntimeError if any QUADPACK panel reports nonconvergence; no partial result is returned.
+    ValueError
+        Raises ValueError for invalid, nonfinite, singular or incompatible inputs, including
+        epsabs/epsrel=None or non-scalar values and callback-only whole-line integration without
+        integration_mesh. Callback exceptions propagate; invalid callback output or unrepresentable
+        result raises ValueError.
+
+    See Also
+    --------
+    scirel.kinetic : Public kinetic-domain operators.
+
+    Notes
+    -----
+    For z=x+i*y, near-projection finite panels use v=x+abs(y)*sinh(t), giving
+    density(v)*(tanh(t)+i*sign(y)*sech(t)) dt. Bounded transformed panels resolve the known kernel peak
+    and long tails; smooth far panels and infinite tails use real-coordinate quadrature. Explicit
+    analytic continuation is added only under the stated support policy. One-dimensional generalized
+    plasma response Assumptions: The callback is finite on every integrated panel. For bounds=null,
+    integration_mesh explicitly partitions material support/features and the two tails are integrable. A
+    generic callback cannot certify unseen density support from adaptive samples; the known Cauchy
+    kernel scale is handled internally. Error estimates remain conditional.
+
+    References
+    ----------
+    Hua-Sheng Xie, Generalized plasma dispersion function, Phys. Plasmas. 20 (2013), 092125 (scientific context)
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from scirel.kinetic import evaluate_cauchy_transform
+    >>> mesh=np.linspace(-10,10,81)
+    >>> r=evaluate_cauchy_transform(0.4+0.7j,lambda v: np.exp(-v*v)/np.sqrt(np.pi),integration_mesh=mesh)
+    >>> assert np.isfinite(r["G"])
     """
     raw = np.asarray(z)
     if raw.dtype.kind not in "iufc" or raw.size == 0:

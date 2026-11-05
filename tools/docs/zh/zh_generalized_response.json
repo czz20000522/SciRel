@@ -1025,7 +1025,7 @@
   },
   {
    "asset_id": "scirel.kinetic.gpdf-cauchy-transform",
-   "source_sha256": "8c90bbcfc1fec5615876c283079f326a06d723d2299e16f373b741972b455c80",
+   "source_sha256": "f4596e0d15d9f67c22baf5fccf79f28d6b3e4e74601aa6fccb796fbfe07b0d6f",
    "summary": "对调用者给定的密度特征求 Cauchy 变换，并针对近实轴核峰使用专门求积。",
    "definition": "G(z)=∫ density(v)/(v-z) dv。对 z=x+i·y，邻近投影的有限面板采用 v=x+abs(y)·sinh(t)，使被积核为 density(v)·(tanh(t)+i·sign(y)·sech(t))。变换后的有界面板可分辨已知核峰与长尾；平滑远面板和无穷尾部使用实坐标求积。仅按声明的支撑约定增加显式解析延拓。",
    "model": "一维广义等离子体响应。",
@@ -1055,12 +1055,6 @@
      "constraints": "None 表示须提供网格的全实轴模式；否则为有限有序实数对；拒绝布尔值和复数坐标。"
     },
     {
-     "name": "integration_mesh",
-     "description": "划分密度支撑与特征的有限递增实网格。",
-     "dtype": "有限实数组",
-     "constraints": "严格递增；有 bounds 时网格须位于 bounds 内。bounds=None 时网格端点界定已分辨的特征区域，并继续积分无穷尾部。"
-    },
-    {
      "name": "analytic_density",
      "description": "下半平面延拓的可选解析密度。",
      "dtype": "可调用对象",
@@ -1083,6 +1077,12 @@
      "description": "QUADPACK 子划分上限。",
      "dtype": "正整数",
      "constraints": "有限且可表示。"
+    },
+    {
+     "name": "integration_mesh",
+     "description": "划分密度支撑与特征的有限递增实网格。",
+     "dtype": "有限实数组",
+     "constraints": "严格递增；有 bounds 时网格须位于 bounds 内。bounds=None 时网格端点界定已分辨的特征区域，并继续积分无穷尾部。"
     }
    ],
    "outputs": [

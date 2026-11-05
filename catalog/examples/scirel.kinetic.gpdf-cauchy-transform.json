@@ -84,16 +84,6 @@
    "units": "dimensionless"
   },
   {
-   "constraints": "Strictly increasing finite points; with bounds, mesh must lie inside bounds. When bounds is null, mesh endpoints delimit a resolved feature region and infinite tails are also integrated.",
-   "default": null,
-   "description": "Finite strictly increasing real mesh partitioning material support/features; required when bounds is null.",
-   "dtype": "finite real array",
-   "name": "integration_mesh",
-   "required": false,
-   "shape": "one-dimensional array with at least two points",
-   "units": "dimensionless"
-  },
-  {
    "constraints": "None or callable returning finite numeric scalars, representing the analytic extension of the same density. Finite-bound continuation only for strict a < Re(z) < b.",
    "default": null,
    "description": "Optional analytic extension for lower-plane continuation.",
@@ -132,6 +122,16 @@
    "required": false,
    "shape": "scalar",
    "units": "count"
+  },
+  {
+   "constraints": "Strictly increasing finite points; with bounds, mesh must lie inside bounds. When bounds is null, mesh endpoints delimit a resolved feature region and infinite tails are also integrated.",
+   "default": null,
+   "description": "Finite strictly increasing real mesh partitioning material support/features; required when bounds is null.",
+   "dtype": "finite real array",
+   "name": "integration_mesh",
+   "required": false,
+   "shape": "one-dimensional array with at least two points",
+   "units": "dimensionless"
   }
  ],
  "outputs": [

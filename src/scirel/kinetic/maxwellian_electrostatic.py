@@ -70,13 +70,62 @@ def _susceptibility(omega, k, z):
 
 
 def evaluate_maxwellian_electrostatic(omega, k):
-    """Return epsilon, D=k²*epsilon, z and epsilon_error estimate.
+    r"""Evaluate normalized Maxwellian dielectric with cancellation-free large-phase response.
 
-    omega is normalized by plasma frequency, k by inverse Debye length with
-    thermal standard deviation one. Any nonempty real/complex omega shape and
-    finite positive real scalar k are accepted when all outputs are representable.
-    epsilon_error estimates arithmetic/truncation error; it is not a rigorous
-    enclosure. No k cutoff or real/lower-plane restriction is imposed.
+    Parameters
+    ----------
+    omega : complex numeric
+        Complex normalized frequency, scalar or array. [normalized frequency] Shape: scalar or array. Finite
+        and representable.
+    k : positive real
+        Positive normalized wave number. [inverse normalized length] Shape: scalar. Finite strictly positive
+        real scalar; booleans, complex values and arrays rejected.
+
+    Returns
+    -------
+    epsilon : complex array
+        Longitudinal dielectric. [dimensionless] Shape: same as omega. Finite and representable.
+    D : complex array
+        Scaled residual k² epsilon. [dimensionless] Shape: same as omega. Finite and representable.
+    z : complex array
+        Dimensionless phase argument omega/(sqrt(2)k). [dimensionless] Shape: same as omega. Finite and
+        representable.
+    epsilon_error : real array
+        Estimated arithmetic/asymptotic error of epsilon; not a rigorous enclosure. [dimensionless] Shape:
+        same as omega. Finite estimate for accepted input.
+
+    Raises
+    ------
+    RuntimeError
+        Solver and quadrature limits are explicit; failed residual checks raise RuntimeError.
+        Unrepresentable evaluation raises ValueError; solver unrepresentable trial response raises
+        RuntimeError. Unexpected SciPy execution errors propagate.
+    ValueError
+        Raises ValueError for invalid, nonfinite, singular or incompatible inputs. Unrepresentable
+        evaluation raises ValueError; solver unrepresentable trial response raises RuntimeError.
+        Unexpected SciPy execution errors propagate.
+
+    See Also
+    --------
+    scirel.kinetic.plasma_dispersion.evaluate_plasma_dispersion : Related contract dependency.
+
+    Notes
+    -----
+    epsilon=1+chi with chi=(1+z Z(z))/k²; for large |z| the equivalent Gaussian moment expansion is used
+    to avoid cancellation, and D=k²epsilon remains a diagnostic. One-dimensional homogeneous Maxwellian
+    with normalized unit plasma response Assumptions: A mode is identified only by an explicit seed and
+    final residual test. f0(v)=exp(-v²/2)/sqrt(2π), unit plasma frequency, thermal standard deviation
+    one, perturbation convention exp(-i omega t).
+
+    References
+    ----------
+    Hua-Sheng Xie, Generalized plasma dispersion function, Physics of Plasmas 20 (2013), 092125.
+
+    Examples
+    --------
+    >>> from scirel.kinetic import evaluate_maxwellian_electrostatic
+    >>> r=evaluate_maxwellian_electrostatic(1.2+0.3j,0.4)
+    >>> assert abs(r["D"])>0
     """
     k = float(_numeric(k, "k", scalar=True, positive=True))
     values = np.asarray(_numeric(omega, "omega"), dtype=complex)
