@@ -1,15 +1,18 @@
 import numpy as np
 import pytest
 
+from scirel._result import Result
 from scirel.closures.quasineutral_reference_density import (
     compute_reference_electron_density,
     compute_reference_electron_density as scientific_function,
 )
 
 
-def test_reference_density_product_broadcasts_and_preserves_units():
+def test_reference_density_product_broadcasts_and_returns_named_result():
     result = scientific_function([1.0e18, 2.0e18], 2.0)
-    np.testing.assert_allclose(result["electron_density_ref_m3"], [2.0e18, 4.0e18])
+    assert isinstance(result, Result)
+    assert result.electron_density_ref_m3 is result["electron_density_ref_m3"]
+    np.testing.assert_allclose(result.electron_density_ref_m3, [2.0e18, 4.0e18])
 
 
 def test_zero_ion_density_is_valid():

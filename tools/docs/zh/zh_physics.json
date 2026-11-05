@@ -4411,9 +4411,9 @@
   },
   {
    "asset_id": "scirel.closures.quasineutral-reference-density",
-   "source_sha256": "0049bcc402416bd96b9045b662ed3afb3dbe5a08de19d4e739bdb60751201c88",
+   "source_sha256": "e45da6431c85e4c9965386b1b0fd60244a06a26df5f32a2d2b6b60367db38381",
    "summary": "将正离子参考数密度乘以荷态因子，得到参考电子数密度。",
-   "definition": "输入转为 float64 并广播，计算 electron_density_ref_m3=ion_charge_state×density_ref_m3；拒绝非有限乘积。",
+   "definition": "输入转为 float64 并广播，计算 electron_density_ref_m3=ion_charge_state×density_ref_m3；返回带该命名字段的 Result 映射，并拒绝非有限乘积。",
    "model": "单种正离子的准中性参考关系，不含动力学矩或电势求解。",
    "assumptions": [
     "输入描述同一相容正离子参考态。",
@@ -4437,9 +4437,9 @@
    "outputs": [
     {
      "name": "electron_density_ref_m3",
-     "description": "荷态加权的参考电子数密度。",
-     "constraints": "返回时有限非负；非有限乘法抛 FloatingPointError。",
-     "dtype": "NumPy float64 标量或数组"
+     "description": "Result 命名映射中的荷态加权参考电子数密度。",
+     "constraints": "返回时有限非负；字段 electron_density_ref_m3 可按键或属性读取；非有限乘法抛 FloatingPointError。",
+     "dtype": "scirel._result.Result 映射；字段为 NumPy float64 标量或数组"
     }
    ],
    "applicability": {
@@ -4457,7 +4457,7 @@
     "invalid_input": "非有限或负密度、非有限或非正荷态、不可广播形状抛 ValueError；非数值转换可抛 TypeError/ValueError。",
     "runtime_failure": "有限输入乘法非有限（如 float64 溢出）时抛 FloatingPointError。",
     "nonconvergence": "不适用；无迭代。",
-    "partial_results": "异常后不返回映射。"
+    "partial_results": "异常后不返回结果映射。"
    },
    "example": {
     "description": "对两个荷态因子的广播参考态求值。",
