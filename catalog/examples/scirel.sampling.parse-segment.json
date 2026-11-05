@@ -2,10 +2,10 @@
  "schema": "scirel.asset-document",
  "asset_id": "scirel.sampling.parse-segment",
  "title": {
-  "en": "Contour segment orientation and endpoints",
-  "zh": "等值线段方向与端点"
+  "en": "Contour segment orientation, closure, and endpoints",
+  "zh": "等值线段方向、闭合与端点"
  },
- "summary": "Roll to nearest start, orient by signed polygon test, and retain selected terminal vertex",
+ "summary": "Roll to nearest start, orient by signed polygon test, normalize an exact closure marker, and retain selected terminal vertex",
  "taxonomy": [
   "analysis",
   "sampling"
@@ -15,28 +15,29 @@
  ],
  "discovery": {
   "capability": [
-   "Contour segment orientation and endpoints",
-   "Roll a contour segment to the nearest start, orient it by a signed polygon test, and retain the selected terminal vertex."
+   "Contour segment orientation, endpoint parsing, and closure normalization",
+   "Roll a contour segment to the nearest start, orient it by a signed polygon test, remove and restore an exact repeated-start closure marker, and retain the selected terminal vertex."
   ],
   "operation": [
    "contour segment orientation and endpoint parsing",
    "ordered planar vertices plus optional start/end and clockwise choice -> oriented selected vertices"
   ],
-  "model": "Discrete contour parsing with a signed polygon orientation test and a corrected inclusive endpoint; no contour reconstruction.",
+  "model": "Discrete contour parsing with a signed polygon orientation test, exact closure normalization, and a corrected inclusive endpoint; no contour reconstruction.",
   "geometry": "Planar contour vertices in caller length units; orientation is inferred from the polygon rather than from a field.",
-  "boundary": "Default retains all vertices and the explicit nearest end is inclusive; open-curve closure, repeated endpoints and general topology policies are excluded.",
+  "boundary": "Default retains all vertices after normalizing an exact first/last closure marker; the explicit nearest end is inclusive and suppresses automatic re-closing; non-exact repeated endpoints and general topology policies are excluded.",
   "device_scope": "generic"
  },
  "identity": {
-  "relation": "Contour segment orientation and endpoints",
-  "direction": "Declared inputs to Ordered selected vertices",
-  "definition": "Roll to nearest start, orient by signed polygon test, and retain selected terminal vertex",
-  "model": "Source contour parsing with corrected inclusive endpoint",
+  "relation": "Contour segment orientation, closure, and endpoints",
+  "direction": "Declared inputs to ordered selected vertices with exact closure normalization",
+  "definition": "Roll to nearest start, orient by signed polygon test, normalize an exact closure marker, and retain selected terminal vertex",
+  "model": "Source contour parsing with exact closure normalization and inclusive endpoint",
   "geometry": "planar contour vertices",
   "coordinates": "Planar coordinates in length units",
-  "boundary": "Default retains all vertices; explicit nearest end inclusive",
+  "boundary": "Default restores one exact closure edge; explicit nearest end is inclusive without automatic re-closing",
   "assumptions": [
-   "Finite planar segment with meaningful polygon orientation"
+   "Finite planar segment with meaningful polygon orientation",
+   "An exact first/last duplicate denotes a closure marker"
   ]
  },
  "inputs": [
@@ -47,7 +48,7 @@
    "shape": "(N,2)",
    "dtype": "float64",
    "required": true,
-   "constraints": "Finite supplied ordering"
+   "constraints": "Finite supplied ordering; exact first/last duplicate denotes closure"
   },
   {
    "name": "start_coord",
@@ -66,7 +67,7 @@
    "shape": "(2,) or None",
    "dtype": "float64",
    "required": false,
-   "constraints": "Terminal vertex retained; no interpolated crossing",
+   "constraints": "Terminal vertex retained; no interpolated crossing; presence suppresses automatic re-closing",
    "default": null
   },
   {
@@ -88,18 +89,20 @@
    "shape": "(M,2)",
    "dtype": "float64",
    "required": true,
-   "constraints": "No synthetic or omitted default endpoint"
+   "constraints": "No synthetic or omitted default endpoint; an exact input closure marker remains exactly once as the terminal vertex when end_coord is None"
   }
  ],
  "applicability": {
   "preconditions": [
-   "Finite planar segment with meaningful polygon orientation"
+   "Finite planar segment with meaningful polygon orientation",
+   "Any repeated closure endpoint matches the first vertex exactly"
   ],
   "supported": [
-   "Finite inputs satisfying the callable-specific shape, support, and boundary conditions"
+   "Closed contours with an exact repeated start are re-closed without zero-length steps",
+   "Open untrimmed paths and nearest-end trimming remain supported"
   ],
   "excluded": [
-   "Open-curve closure, repeated endpoints and topology policies are not generalized"
+   "Non-exact repeated endpoints and general topology policies are not generalized"
   ]
  },
  "failure_semantics": {
@@ -134,11 +137,12 @@
   ],
   "tests": [
    "tests/equilibrium/test_analysis_families.py",
-   "tests/equilibrium/test_analysis_corrections.py"
+   "tests/equilibrium/test_analysis_corrections.py",
+   "tests/geometry/test_parse_segment_closure.py"
   ],
   "evidence_ceiling": "Direct examples and named regression fixtures establish the documented relation on those inputs; they do not establish arbitrary-input correctness, experimental validation, or release approval.",
   "known_limitations": [
-   "Open-curve closure, repeated endpoints and topology policies are not generalized"
+   "Open-curve closure, non-exact repeated endpoints, and topology policies are not generalized"
   ]
  }
 }
