@@ -40,7 +40,7 @@ def _charge_state(charge_c):
     return value
 
 
-def run_composition(inputs, *, asset_loader):
+def _run_composition(inputs, *, asset_loader):
     """Solve local quasineutrality by repeated calls to the emitted moment leaf."""
     if not isinstance(inputs, dict):
         raise ValueError("inputs must be a mapping")
@@ -231,7 +231,7 @@ def solve_mirror_quasineutral_closure(inputs=None, **kwargs):
     from scirel.kinetic.mirror_total_pressure import assemble_mirror_total_pressure as _dependency_4
 
     return compose(
-        run_composition,
+        _run_composition,
         inputs,
         kwargs,
         {

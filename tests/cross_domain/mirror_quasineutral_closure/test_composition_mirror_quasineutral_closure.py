@@ -40,7 +40,7 @@ def test_public_callable_documents_the_catalog_contract():
 
 
 def test_no_plug_limit_matches_analytic_potential_and_neutrality():
-    result = composition.run_composition(_inputs(), asset_loader=_loader)
+    result = composition._run_composition(_inputs(), asset_loader=_loader)
     b = np.array([1.0, 1.4, 2.0])
     t_perp = b / ((b - 1.0) / (1200 * E) + 1.0 / (2400 * E))
     expected = np.log(t_perp / (2400 * E)) / (E / (1200 * E) + E / (600 * E))
@@ -49,7 +49,7 @@ def test_no_plug_limit_matches_analytic_potential_and_neutrality():
 
 
 def test_loss_cone_closure_remains_neutral():
-    result = composition.run_composition(
+    result = composition._run_composition(
         _inputs(
             b_plug_left_t=4.0,
             b_plug_right_t=5.0,
@@ -65,7 +65,7 @@ def test_loss_cone_closure_remains_neutral():
 
 
 def test_zero_density_returns_reference_potential():
-    result = composition.run_composition(
+    result = composition._run_composition(
         _inputs(density_ref_m3=0.0, phi_ref_v=15.0), asset_loader=_loader
     )
     np.testing.assert_allclose(result["electrostatic_potential"], 15.0)
@@ -95,7 +95,7 @@ def test_final_moments_and_electrons_are_reevaluated_after_potential_solve():
 
         return evaluate
 
-    result = composition.run_composition(_inputs(), asset_loader=tracing_loader)
+    result = composition._run_composition(_inputs(), asset_loader=tracing_loader)
 
     assert result["converged"] is True
     assert events[-4:] == [
@@ -127,7 +127,7 @@ def test_solver_failure_propagates_without_terminal_pressure_assembly():
         return _loader(asset_ref)
 
     with pytest.raises(RuntimeError) as caught:
-        composition.run_composition(_inputs(), asset_loader=failing_loader)
+        composition._run_composition(_inputs(), asset_loader=failing_loader)
     assert caught.value is failure
 
 
@@ -141,7 +141,7 @@ def test_supplied_electron_reference_density_skips_default_calculation():
             return unexpected
         return _loader(asset_ref)
 
-    result = composition.run_composition(
+    result = composition._run_composition(
         _inputs(electron_density_ref_m3=2e18),
         asset_loader=loader,
     )
@@ -151,10 +151,10 @@ def test_supplied_electron_reference_density_skips_default_calculation():
 def test_profile_ports_receive_current_psi_values():
     psi = np.array([0.0, 0.2, 0.4])
     density = lambda value: 2e18 * (1.0 + 0.1 * value)
-    callable_result = composition.run_composition(
+    callable_result = composition._run_composition(
         _inputs(psi=psi, density_ref_m3=density), asset_loader=_loader
     )
-    array_result = composition.run_composition(
+    array_result = composition._run_composition(
         _inputs(psi=psi, density_ref_m3=density(psi)), asset_loader=_loader
     )
     np.testing.assert_allclose(callable_result["ion_density"], array_result["ion_density"])
@@ -165,7 +165,7 @@ def test_review_gate_propagates_invalid_quasineutral_iteration_budget():
     import pytest
 
     with pytest.raises(ValueError, match="at least 2"):
-        composition.run_composition(
+        composition._run_composition(
             _inputs(
                 max_iterations=1, potential_tolerance_v=1.0e-30, quasineutral_tolerance=1.0e-30
             ),
@@ -177,4 +177,4 @@ def test_review_gate_rejects_fractional_max_iterations_without_truncation():
     import pytest
 
     with pytest.raises(ValueError, match="max_iterations must be an integer"):
-        composition.run_composition(_inputs(max_iterations=3.5), asset_loader=_loader)
+        composition._run_composition(_inputs(max_iterations=3.5), asset_loader=_loader)

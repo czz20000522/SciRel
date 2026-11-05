@@ -72,7 +72,7 @@ def test_public_solver_docstring_declares_contract():
 
 def test_hall_disabled_recovers_static_pressure_current_and_vacuum_flux():
     inputs = _inputs()
-    result = composition.run_composition(inputs, asset_loader=_loader)
+    result = composition._run_composition(inputs, asset_loader=_loader)
     assert result["converged"] and result["iterations"] == 1
     np.testing.assert_allclose(result["psi"], inputs["psi_vac"])
     np.testing.assert_allclose(result["J_phi"][:, 1:], 1500.0 * inputs["r_grid"][:, 1:], rtol=1e-12)
@@ -82,7 +82,7 @@ def test_hall_disabled_recovers_static_pressure_current_and_vacuum_flux():
 def test_nonzero_green_uses_previous_actual_state_feedback():
     inputs = _inputs(maxiter=2, tol=1e-30)
     inputs["g_psi"] = np.eye(inputs["r_grid"].size) * 1e-9
-    result = composition.run_composition(inputs, asset_loader=_loader)
+    result = composition._run_composition(inputs, asset_loader=_loader)
     assert result["iterations"] == 2
     assert not result["converged"]
     assert not np.array_equal(result["psi"], inputs["psi_vac"])
@@ -116,7 +116,7 @@ def test_per_radian_filament_and_mirror_green_feed_hall_disabled_graph():
             "electrostatic_potential": np.zeros_like(psi),
         }
 
-    result = composition.run_composition(
+    result = composition._run_composition(
         {
             "r_grid": r_grid,
             "z_grid": z_grid,
@@ -152,7 +152,7 @@ def test_per_radian_filament_and_mirror_green_feed_hall_disabled_graph():
 
 
 def test_scalar_pressure_broadcast_preserves_pa_value():
-    result = composition.run_composition(
+    result = composition._run_composition(
         _inputs(pressure_closure=_scalar_pressure_closure, maxiter=1, strict_compatibility=False),
         asset_loader=_loader,
     )
@@ -173,7 +173,7 @@ def test_non_grid_pressure_shape_fails_closed():
         }
 
     with pytest.raises(ValueError, match="pressure fields"):
-        composition.run_composition(
+        composition._run_composition(
             _inputs(pressure_closure=bad_closure, maxiter=1), asset_loader=_loader
         )
 
@@ -189,13 +189,13 @@ def test_yaml_declares_three_leaves_and_explicit_closure_port():
 
 def test_review_gate_rejects_nonfinite_and_coerced_hall_controls():
     with pytest.raises(ValueError, match="tol must be a finite scalar"):
-        composition.run_composition(_inputs(tol=np.nan), asset_loader=_loader)
+        composition._run_composition(_inputs(tol=np.nan), asset_loader=_loader)
     with pytest.raises(ValueError, match="maxiter must be an integer"):
-        composition.run_composition(_inputs(maxiter=1.2), asset_loader=_loader)
+        composition._run_composition(_inputs(maxiter=1.2), asset_loader=_loader)
     with pytest.raises(ValueError, match="strict_compatibility must be a boolean"):
-        composition.run_composition(_inputs(strict_compatibility=0), asset_loader=_loader)
+        composition._run_composition(_inputs(strict_compatibility=0), asset_loader=_loader)
     with pytest.raises(ValueError, match="inertia_tolerance must be a finite scalar"):
-        composition.run_composition(_inputs(inertia_tolerance=np.nan), asset_loader=_loader)
+        composition._run_composition(_inputs(inertia_tolerance=np.nan), asset_loader=_loader)
 
 
 def test_review_gate_allows_negative_firehose_threshold_to_disable_that_check():
@@ -211,7 +211,7 @@ def test_review_gate_allows_negative_firehose_threshold_to_disable_that_check():
 
         return drift
 
-    result = composition.run_composition(
+    result = composition._run_composition(
         _inputs(minimum_firehose_margin=-1.0, strict_compatibility=False),
         asset_loader=loader,
     )
@@ -223,7 +223,7 @@ def test_review_gate_rejects_nonfinite_hall_grid_state():
     values["psi_vac"] = np.array(values["psi_vac"], copy=True)
     values["psi_vac"][0, 0] = np.nan
     with pytest.raises(ValueError, match="must be finite"):
-        composition.run_composition(values, asset_loader=_loader)
+        composition._run_composition(values, asset_loader=_loader)
 
 
 def test_reduced_hall_terminal_floor_precedes_terminal_closure():
@@ -251,7 +251,7 @@ def test_reduced_hall_terminal_floor_precedes_terminal_closure():
         return field
 
     with pytest.raises(FloatingPointError, match="terminal magnetic field vanished"):
-        composition.run_composition(
+        composition._run_composition(
             _inputs(pressure_closure=instrumented_closure, minimum_field=1.0, maxiter=1),
             asset_loader=loader,
         )
@@ -261,7 +261,7 @@ def test_reduced_hall_terminal_floor_precedes_terminal_closure():
 
 def test_reduced_hall_rejects_nonboolean_fixed_and_callable_masks():
     with pytest.raises(ValueError, match="boolean array"):
-        composition.run_composition(
+        composition._run_composition(
             _inputs(plasma_mask=np.ones((7, 7), dtype=int)), asset_loader=_loader
         )
 
@@ -269,14 +269,14 @@ def test_reduced_hall_rejects_nonboolean_fixed_and_callable_masks():
         return np.ones_like(psi, dtype=int)
 
     with pytest.raises(ValueError, match="callable plasma_mask.*boolean"):
-        composition.run_composition(
+        composition._run_composition(
             _inputs(plasma_mask=nonboolean_callable, maxiter=1), asset_loader=_loader
         )
 
     def boolean_callable(_b, psi):
         return np.ones_like(psi, dtype=bool)
 
-    result = composition.run_composition(
+    result = composition._run_composition(
         _inputs(plasma_mask=boolean_callable, maxiter=1), asset_loader=_loader
     )
     assert result["J_phi"].shape == (7, 7)

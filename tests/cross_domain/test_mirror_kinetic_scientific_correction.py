@@ -252,7 +252,7 @@ def test_total_pressure_broadcasts_valid_observational_potential():
 
 @pytest.mark.parametrize("poison", ["nonconverged", "wrong_final_state"])
 def test_quasineutral_composition_checks_actual_terminal_state(poison):
-    from scirel.closures.mirror_quasineutral_closure import run_composition
+    from scirel.closures.mirror_quasineutral_closure import _run_composition
     from scirel.closures.boltzmann_quasineutrality import compute_boltzmann_electron_state
     from scirel.closures.quasineutral_reference_density import compute_reference_electron_density
 
@@ -281,7 +281,7 @@ def test_quasineutral_composition_checks_actual_terminal_state(poison):
         electron_temperature_j=E,
     )
     with pytest.raises(RuntimeError, match="terminal"):
-        run_composition(inputs, asset_loader=deps.__getitem__)
+        _run_composition(inputs, asset_loader=deps.__getitem__)
 
 
 def test_boltzmann_pressure_is_retained_when_density_underflows():
@@ -326,7 +326,7 @@ def test_general_moment_refinement_and_refill(refill):
 
 
 def test_grid_rejects_endpoint_evaluation_in_place_of_requested_balance():
-    from scirel.kinetic.grid_mirror_kinetic_closure import run_composition
+    from scirel.kinetic.grid_mirror_kinetic_closure import _run_composition
     from scirel.geometry.flux_surface_profile import evaluate_flux_surface_profile
 
     R, Z = np.meshgrid([0.0, 1.0], [-1.0, 0.0, 1.0])
@@ -360,7 +360,7 @@ def test_grid_rejects_endpoint_evaluation_in_place_of_requested_balance():
         loss_cone_refill=0.1,
     )
     with pytest.raises(RuntimeError, match="endpoint"):
-        run_composition(inputs, asset_loader=deps.__getitem__, composition_loader=nested)
+        _run_composition(inputs, asset_loader=deps.__getitem__, composition_loader=nested)
 
 
 def test_trapped_pressure_scales_before_rounding_intermediate_product():

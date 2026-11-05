@@ -66,7 +66,7 @@ def _require_state(closure, magnetic, psi):
     return result
 
 
-def run_composition(inputs, *, asset_loader):
+def _run_composition(inputs, *, asset_loader):
     """Run current-declared-order field -> closure -> div(P) -> flux feedback."""
     if not isinstance(inputs, Mapping):
         raise ValueError("inputs must be a mapping")
@@ -293,7 +293,7 @@ def solve_axisymmetric_anisotropic_picard(inputs=None, **kwargs):
     from scirel.field.poloidal_field_from_flux import poloidal_field_from_flux as _dependency_2
 
     return compose(
-        run_composition,
+        _run_composition,
         inputs,
         kwargs,
         {

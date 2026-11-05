@@ -70,11 +70,11 @@
     }
    ],
    "modules": {
-    "scirel.geometry.axisymmetric_equilibrium_grid_support": "94608701971b063f15a417dccbea5d59bc53ea6459730c75dbdbf0f841a02bee",
+    "scirel.geometry.axisymmetric_equilibrium_grid_support": "f1ceda0e90a186ac28415d4dcbfa82d1305960a49e65720531d784e411339c0b",
     "scirel.geometry.axisymmetric_grid_mapping": "88bedcfaecf1f12b02c306d12d3c7ed1de1ab3cbb74658eaee14204ffb4bf830",
     "scirel.geometry.material_support": "41ee842b806d69a236ba39cb5f62d96d78553cf27631069901efcdb20cea0888"
    },
-   "review_basis": "Wrapper removes only the two injectable implementation callables then passes inputs to run_composition. run_composition requires exactly the seven documented scientific inputs via _REQUIRED_INPUTS, maps the caller equilibrium and solver axes, derives cylindrical geometry with read-only broadcast views, and applies caller separatrix/PML/PEC metadata. It does not solve equilibrium or reconstruct material physics. Runtime missing ports are rejected; extra scientific input mapping entries are ignored as documented by the unchanged implementation."
+   "review_basis": "Wrapper removes only the two injectable implementation callables then passes inputs to _run_composition. _run_composition requires exactly the seven documented scientific inputs via _REQUIRED_INPUTS, maps the caller equilibrium and solver axes, derives cylindrical geometry with read-only broadcast views, and applies caller separatrix/PML/PEC metadata. It does not solve equilibrium or reconstruct material physics. Runtime missing ports are rejected; extra scientific input mapping entries are ignored as documented by the unchanged implementation."
   },
   {
    "asset_id": "scirel.closures.mirror-quasineutral-closure",
@@ -186,13 +186,13 @@
     "scirel._composition": "ce7f22d7d0978065cb3c56384d49fccf73bf41635cd51b3a8755cca5453e1ca7",
     "scirel._validation": "975d881f3b0115509aa13b5b50e9879762727f5a1d02d94043870a7ed1b63de8",
     "scirel.closures.boltzmann_quasineutrality": "ada785556d7bdbfaa311e40c5c676e7e6575636d95c85f5ddd0f605d6aa3d771",
-    "scirel.closures.mirror_quasineutral_closure": "247eb3aaf6b406328b5124cab8d82eea441a864a7d6ff59f14dfbf5a57156012",
+    "scirel.closures.mirror_quasineutral_closure": "0a34eeb3a8206aeab365a39032ae9fb68e40a0284bedb8d9cd9440485bf7feac",
     "scirel.closures.quasineutral_potential": "625a1a04e306fe7e0fb121a0f42edc35e9d3d83b25e1bcdd8983d8b34ba92948",
     "scirel.closures.quasineutral_reference_density": "b2f60f3a28a8f453cb72d40f52624bfb0376bce0cafdad75ec31f84daea1410b",
     "scirel.kinetic.mirror_constrained_moments": "261df525d59134a82bee15dab66e6034d98a0c39c64fa28dfce51ffb8dda4550",
     "scirel.kinetic.mirror_total_pressure": "2f4886029f6161181344b44c72f380cc67dafd9171765b20a5f75372a42a357f"
    },
-   "review_basis": "compose merges mapping and keyword values; run_composition checks nine required values, forwards moment optional ports, derives electron reference density when omitted, and controls potential residual/tolerance/iterations explicitly. Optional mirror moment defaults come from the bound moment function; electron_phi_ref_v absence follows ion reference potential."
+   "review_basis": "compose merges mapping and keyword values; _run_composition checks nine required values, forwards moment optional ports, derives electron reference density when omitted, and controls potential residual/tolerance/iterations explicitly. Optional mirror moment defaults come from the bound moment function; electron_phi_ref_v absence follows ion reference potential."
   },
   {
    "asset_id": "scirel.equilibrium.axisymmetric-anisotropic-picard",
@@ -268,11 +268,11 @@
     "scirel._composition": "ce7f22d7d0978065cb3c56384d49fccf73bf41635cd51b3a8755cca5453e1ca7",
     "scirel._validation": "975d881f3b0115509aa13b5b50e9879762727f5a1d02d94043870a7ed1b63de8",
     "scirel.equilibrium.anisotropic_force_balance": "7786d2f14b215180567973af30eb7c6e980dd27d82bd7ffbce51e2b150a210a7",
-    "scirel.equilibrium.axisymmetric_anisotropic_picard": "eb857bdd4ee5ec303f7a04d3d885e9b8e2672d1dbf41e719a01056610a538761",
+    "scirel.equilibrium.axisymmetric_anisotropic_picard": "51842f698710084d521ff887b01f84141a238616cf8440c1e88fdcd49fbfb5bb",
     "scirel.equilibrium.axisymmetric_picard_update": "713b287e9595cb89059597fb3112d436d747e4ec6a9175b8068e53bbc1d675e6",
     "scirel.field.poloidal_field_from_flux": "5ca7e5c20297961a63046520d6c9dcbeec8a4f6c1481699e6a4ae350f84c01e1"
    },
-   "review_basis": "run_composition requires R,Z,vacuum psi,Green and pressure callable; explicit scalar parsers define tolerance1e-8,maxiter200,relax0.5,minimumB1e-8,firehose0,compatibility0.05,strictTrue. Optional mask and cell_edges pass to the field/current feedback; terminal convergence uses the accepted fixed point residual."
+   "review_basis": "_run_composition requires R,Z,vacuum psi,Green and pressure callable; explicit scalar parsers define tolerance1e-8,maxiter200,relax0.5,minimumB1e-8,firehose0,compatibility0.05,strictTrue. Optional mask and cell_edges pass to the field/current feedback; terminal convergence uses the accepted fixed point residual."
   },
   {
    "asset_id": "scirel.equilibrium.free-boundary-anisotropic-picard",
@@ -374,11 +374,11 @@
     "scirel.diagnostics.picard_flux_residual": "194b2c5b822d02f2c3880586dc10c5d652c6481ced374e73f1eed478d472f2f2",
     "scirel.equilibrium.anisotropic_picard_feedback": "36439767648044c8711bb880eda0d442c3495addb5a857c7088b3746097e269f",
     "scirel.equilibrium.anisotropic_toroidal_current": "a71f3169d7c6a7c3fe1ff8040538a7d80a10fd17b54e390b8b77791101d995cf",
-    "scirel.equilibrium.free_boundary_anisotropic_picard": "718427915929ca65f858d7af634867012ac2160a731bb7f62fd199aa09f21f83",
+    "scirel.equilibrium.free_boundary_anisotropic_picard": "5fd6123e3ba5c36c6fc1dcf571a8f30be466ab4725980144d3ed6f4e43f20f4d",
     "scirel.field.ideal_conductor_boundary": "ba1659642acf26a3c77faa800a08a61bbece11d0324b722c5e162520ce1dba32",
     "scirel.field.poloidal_field_magnitude": "49d726f03e80f85d751b4e044efcd18fcb89303fbb2f1036ca6c660b87ae3189"
    },
-   "review_basis": "run_composition requires grid,vacuum psi/Br/Bz,Green psi,params,pressure callable and tol/maxiter/relax. g_br/g_bz may be omitted; wall/current/full-state feedback uses existing accepted behavior. b0 can derive from initial field; mask/wall/cell_edges absent are None; compatibility/minimumB/strict defaults are explicit scalar parsers."
+   "review_basis": "_run_composition requires grid,vacuum psi/Br/Bz,Green psi,params,pressure callable and tol/maxiter/relax. g_br/g_bz may be omitted; wall/current/full-state feedback uses existing accepted behavior. b0 can derive from initial field; mask/wall/cell_edges absent are None; compatibility/minimumB/strict defaults are explicit scalar parsers."
   },
   {
    "asset_id": "scirel.equilibrium.kinetic-mirror-hall-equilibrium",
@@ -505,11 +505,11 @@
    ],
    "modules": {
     "scirel._composition": "ce7f22d7d0978065cb3c56384d49fccf73bf41635cd51b3a8755cca5453e1ca7",
-    "scirel.equilibrium.kinetic_mirror_hall_equilibrium": "e9257608e55a026f294c0dfb45010a11525ec128af12da87b8c99970e1963f55",
-    "scirel.equilibrium.reduced_hall_anisotropic_picard": "fa31443d97aec39f5c12556a34419e6107a46c39e54fb16e860abff535a7f373",
-    "scirel.kinetic.grid_mirror_kinetic_closure": "327573370f378c402d7d4a52974a4ba9d7fed859a7560f8588276b1bddf0a53b"
+    "scirel.equilibrium.kinetic_mirror_hall_equilibrium": "044d69d8665ac10bb43e721d41b11413df8c62a5369717a301dfa3ddda4dba3d",
+    "scirel.equilibrium.reduced_hall_anisotropic_picard": "87e7e23600534cb1ef6e6f3f7478493aea51720c4514787e24db1f067f41ce7d",
+    "scirel.kinetic.grid_mirror_kinetic_closure": "581dfd6fced657315ce146d721c14f5c67018a109a8021a81ba52a9dee198c35"
    },
-   "review_basis": "Wrapper exposes kinetic_composition/hall_composition dependency overrides explicitly. run_composition requires kinetic_config plus six grid/species fields, closes pressure via grid_mirror and forwards remaining Hall controls to reduced_hall. Bound nested graph modules establish inherited Hall defaults; no numerical implementation is introduced in the wrapper."
+   "review_basis": "Wrapper exposes kinetic_composition/hall_composition dependency overrides explicitly. _run_composition requires kinetic_config plus six grid/species fields, closes pressure via grid_mirror and forwards remaining Hall controls to reduced_hall. Bound nested graph modules establish inherited Hall defaults; no numerical implementation is introduced in the wrapper."
   },
   {
    "asset_id": "scirel.equilibrium.reduced-hall-anisotropic-picard",
@@ -634,10 +634,10 @@
     "scirel._validation": "975d881f3b0115509aa13b5b50e9879762727f5a1d02d94043870a7ed1b63de8",
     "scirel.closures.reduced_hall_drift": "6731e7571dea6a45d69d432ba01e9a22dbe7e4c59bc8a966813dddd4e5baa7b7",
     "scirel.equilibrium.axisymmetric_picard_update": "713b287e9595cb89059597fb3112d436d747e4ec6a9175b8068e53bbc1d675e6",
-    "scirel.equilibrium.reduced_hall_anisotropic_picard": "fa31443d97aec39f5c12556a34419e6107a46c39e54fb16e860abff535a7f373",
+    "scirel.equilibrium.reduced_hall_anisotropic_picard": "87e7e23600534cb1ef6e6f3f7478493aea51720c4514787e24db1f067f41ce7d",
     "scirel.field.poloidal_field_from_flux": "5ca7e5c20297961a63046520d6c9dcbeec8a4f6c1481699e6a4ae350f84c01e1"
    },
-   "review_basis": "run_composition requires R,Z,vacuum psi,Green psi,pressure callable,ion mass/charge. Scalar parsers establish the documented outer/Hall/inertial defaults, mask/cell_edges default None, terminal fixed point/current/Ohm evidence reused. compose merges supplied mappings and kwargs before graph evaluation."
+   "review_basis": "_run_composition requires R,Z,vacuum psi,Green psi,pressure callable,ion mass/charge. Scalar parsers establish the documented outer/Hall/inertial defaults, mask/cell_edges default None, terminal fixed point/current/Ohm evidence reused. compose merges supplied mappings and kwargs before graph evaluation."
   },
   {
    "asset_id": "scirel.field.multi-coil-vacuum-field",
@@ -660,10 +660,10 @@
     "scirel._composition": "ce7f22d7d0978065cb3c56384d49fccf73bf41635cd51b3a8755cca5453e1ca7",
     "scirel.field.circular_filament_green": "ca46d03aa389ffd50cd6e26b634e538dd3eaca83c43db88e12c6d2218173cef9",
     "scirel.field.current_green_superposition": "d0c820fd1b5a0337e1711d9fe2b5434c696cc74afd015ad9be95cc857856dbf9",
-    "scirel.field.multi_coil_vacuum_field": "9431c6499673b6ef89611b7f959fecb41adf4a53f3f378255e199fd17b50950f",
+    "scirel.field.multi_coil_vacuum_field": "ebc43969088ec8871e690578b0675368a6e232f51ceee907bea13b8e775d3efd",
     "scirel.field.rectangular_coil_filaments": "ee6206ae5432e6fae2e9cdc03da323249ddf1f8ec04b2c62c378ae204b35c34a"
    },
-   "review_basis": "run_composition requires r_grid,z_grid,rectangular_coils. Each coil requires center,counts,widths,current; angle defaults0 and weights defaultones inside nested coil configuration, not undocumented top-level ports. Bound discretizer,analytic Green and signed superposition implement the existing graph."
+   "review_basis": "_run_composition requires r_grid,z_grid,rectangular_coils. Each coil requires center,counts,widths,current; angle defaults0 and weights defaultones inside nested coil configuration, not undocumented top-level ports. Bound discretizer,analytic Green and signed superposition implement the existing graph."
   },
   {
    "asset_id": "scirel.kinetic.frank-egedal-pressure-closure",
@@ -685,13 +685,13 @@
    "modules": {
     "scirel._composition": "ce7f22d7d0978065cb3c56384d49fccf73bf41635cd51b3a8755cca5453e1ca7",
     "scirel.kinetic.frank_egedal_hot_ion_moments": "45fa1cdd2137d72b629c6a74387cd0ff180b35a74d1dc22ff064082d395362b9",
-    "scirel.kinetic.frank_egedal_pressure_closure": "5d3144aceb9c4857af6b46727f5341b6849c3ba0ec28ad51c78dd6152481aad6",
+    "scirel.kinetic.frank_egedal_pressure_closure": "553171c7025bb43a9293ad07d3ce8d3f031e45ea28f1476ef7b3d8fc5615da52",
     "scirel.kinetic.frank_egedal_pressure_state": "682022f9ec48e961b9ce3534b87e00b6ba51a98b3e5e2c351b609622ffdf9fee",
     "scirel.kinetic.frank_egedal_radial_envelope": "a5f52f349c98d1272b9ceb29f03acd4e253777453da6141e07407dab77a90da1",
     "scirel.kinetic.frank_egedal_source_projection": "7aa1b57ce733b70577a72655bed41ec1f759c4aae665f3128c07e5c63e0d50f6",
     "scirel.kinetic.loss_cone_spectrum": "6d338422656b2fd6d5425b923033f38833a94523b31a6d55273748148ca38ed0"
    },
-   "review_basis": "run_composition consumes psi,B,params and calls radial envelope,source projection with spectral solver,hot-ion moments,then pressure assembly. The document has exactly these three scientific ports; all deeper closure defaults remain inside params and bound dependencies."
+   "review_basis": "_run_composition consumes psi,B,params and calls radial envelope,source projection with spectral solver,hot-ion moments,then pressure assembly. The document has exactly these three scientific ports; all deeper closure defaults remain inside params and bound dependencies."
   },
   {
    "asset_id": "scirel.kinetic.grid-mirror-kinetic-closure",
@@ -823,11 +823,11 @@
    "modules": {
     "scirel._composition": "ce7f22d7d0978065cb3c56384d49fccf73bf41635cd51b3a8755cca5453e1ca7",
     "scirel.closures.mirror_ambipolar_potential": "da9882fdcb29ea5c2ce7db03248a60d0a9d8429723276de3ac96ca9de9505080",
-    "scirel.closures.mirror_quasineutral_closure": "247eb3aaf6b406328b5124cab8d82eea441a864a7d6ff59f14dfbf5a57156012",
+    "scirel.closures.mirror_quasineutral_closure": "0a34eeb3a8206aeab365a39032ae9fb68e40a0284bedb8d9cd9440485bf7feac",
     "scirel.geometry.flux_surface_profile": "89241ec9ae0e6c60645fc6a7b1486d8f7b8bcf9a64de11d9a99bd12a573cfb7c",
-    "scirel.kinetic.grid_mirror_kinetic_closure": "327573370f378c402d7d4a52974a4ba9d7fed859a7560f8588276b1bddf0a53b"
+    "scirel.kinetic.grid_mirror_kinetic_closure": "581dfd6fced657315ce146d721c14f5c67018a109a8021a81ba52a9dee198c35"
    },
-   "review_basis": "run_composition requires thirteen grid/species/reference/plug fields. It maps reference and plug surfaces; input defaults and delegated ambipolar controls are bound to the current functions. ion_loss_refill defaults to loss_cone_refill or0, mode prescribed,confineTrue. The displayed conditional default is metadata, not a Python literal signature default."
+   "review_basis": "_run_composition requires thirteen grid/species/reference/plug fields. It maps reference and plug surfaces; input defaults and delegated ambipolar controls are bound to the current functions. ion_loss_refill defaults to loss_cone_refill or0, mode prescribed,confineTrue. The displayed conditional default is metadata, not a Python literal signature default."
   },
   {
    "asset_id": "scirel.diagnostics.equilibrium-synthesis-diagnostics",
@@ -852,11 +852,11 @@
    ],
    "modules": {
     "scirel._composition": "ce7f22d7d0978065cb3c56384d49fccf73bf41635cd51b3a8755cca5453e1ca7",
-    "scirel.diagnostics.equilibrium_synthesis_diagnostics": "2683b473fc747e6cf945c5970fd982f56e125c6d0436837db3d3eae4c7c3eda7",
+    "scirel.diagnostics.equilibrium_synthesis_diagnostics": "30b85a96c95d5c5f941aefc4884b54fa42ca2679f6424b3291c10c206e85af03",
     "scirel.geometry.bilinear_grid_sampling": "289d2a4d6f84bfb0ccf248f64949f9358f760610e28506a6e3294bca3cb3dd6b",
     "scirel.diagnostics.observation_residuals": "e806fbe6aef4b8b8373280df42ede57f23b1e6bc655dc555621aa30c23e48db2"
    },
-   "review_basis": "Port identity only; root scientific acceptance is separate. Current run_composition validates nonempty explicit observation requests, source/profile units and psi-to-Wb convention before sampling. Shared channel vocabulary is source-bound; requested missing channels reject."
+   "review_basis": "Port identity only; root scientific acceptance is separate. Current _run_composition validates nonempty explicit observation requests, source/profile units and psi-to-Wb convention before sampling. Shared channel vocabulary is source-bound; requested missing channels reject."
   },
   {
    "asset_id": "scirel.inference.direct-anisotropic-inversion",
@@ -970,7 +970,7 @@
    ],
    "modules": {
     "scirel._validation": "975d881f3b0115509aa13b5b50e9879762727f5a1d02d94043870a7ed1b63de8",
-    "scirel.equilibrium.isotropic_pressure_flux": "afb4f761853fbea9e47ebbfd40546e6797bde75f78ebb2ec6b0b360843a51400",
+    "scirel.equilibrium.isotropic_pressure_flux": "75e49928da651d58b999fd7a7b2d060b0019f47dae2b046bfc58da939fca6962",
     "scirel.equilibrium.pressure_flux_state": "47f0f67bc26188d40f8d89e7bc9730e53af100a538aabbf9760a966cdc3e3b26",
     "scirel.equilibrium.equilibrium_state": "1811e82578faf078f300b32cedb46606814383bf66fba4e89f818e8f9347d596",
     "scirel.equilibrium._pressure_current": "b5941226e25b0e8e6b781a04e83a19f208dafce9604822465896746262e41b67"
