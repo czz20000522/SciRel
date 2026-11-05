@@ -129,7 +129,7 @@
  },
  "failure_semantics": {
   "invalid_input": "ValueError for non-numeric or non-broadcastable z, selector outside 0..6, a nonpositive selector-grid endpoint, or an unsupported expression/integration mesh.",
-  "runtime_failure": "FloatingPointError for a non-finite Z/Zp and RuntimeError when the real-axis or exterior quadrature does not converge; no fallback branch is selected.",
+  "runtime_failure": "ValueError for a non-finite or otherwise unrepresentable Z/Zp and RuntimeError when the real-axis or exterior quadrature does not converge; no fallback branch is selected.",
   "nonconvergence": "RuntimeError when the real-axis or exterior quadrature fails to converge; no unconverged value is returned.",
   "partial_results": "No partial Z/Zp pair is returned after a failed call."
  },

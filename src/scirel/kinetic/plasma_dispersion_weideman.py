@@ -31,22 +31,26 @@ def _polyval(a, z):
 
 
 def evaluate_plasma_dispersion_weideman(z):
-    """Evaluate Z(z) for complex scalar or array input.
+    """Evaluate the fixed-order Weideman plasma dispersion response.
 
     Parameters
     ----------
-    z : scalar or array_like of real/complex
-        Argument of the plasma dispersion function. Shape is preserved.
+    z : real or complex numeric, shape scalar or nonempty array
+        Argument of the plasma dispersion function [dimensionless]. The input
+        is converted to complex128 and its shape is preserved.
 
     Returns
     -------
-    dict with keys
-        ``Z``      : ndarray, shape == shape(z); Z(z) = i*sqrt(pi)*w(z).
-        ``w``      : ndarray, same shape; Faddeeva w(z).
-        ``method`` : ndarray of str, same shape; ``'erfc'`` for entries with
-                     real(z) == 0, ``'rational'`` otherwise.
-        ``all_purely_imaginary`` : bool; True when every entry has
-                     real(z) == 0 (the source early return, zfun.m:14-17).
+    Z : ndarray of complex128, shape same as z
+        Plasma dispersion value ``i sqrt(pi) w(z)`` [dimensionless]. A scalar
+        input produces a zero-dimensional array.
+    w : ndarray of complex128, shape same as z
+        Faddeeva response [dimensionless].
+    method : ndarray of str, shape same as z
+        Per-entry algorithm label [dimensionless], either ``'erfc'`` for
+        exactly imaginary input or ``'rational'`` otherwise.
+    all_purely_imaginary : bool
+        ``True`` when every entry has exactly zero real part [dimensionless].
 
     Raises
     ------
@@ -61,6 +65,20 @@ def evaluate_plasma_dispersion_weideman(z):
     directly. It is finite for magnitudes of about ``26.6`` or less. A larger
     pure-imaginary magnitude raises ``ValueError`` even when the asymptotic
     limit itself would still be representable.
+
+    See Also
+    --------
+    scirel.kinetic.evaluate_plasma_dispersion : Direct Faddeeva evaluation.
+    scirel.kinetic.evaluate_faddeeva_dr : Fixed-order Faddeeva variant.
+
+    References
+    ----------
+    H. S. Xie, Phys. Plasmas 32, 082110 (2025).
+
+    Examples
+    --------
+    >>> from scirel.kinetic import evaluate_plasma_dispersion_weideman
+    >>> r=evaluate_plasma_dispersion_weideman(0j); assert abs(r['Z']-1j*__import__('math').sqrt(__import__('math').pi))<1e-12
     """
     zeta = _np.asarray(z, dtype=_np.complex128)
     if zeta.size == 0 or not _np.all(_np.isfinite(zeta)):

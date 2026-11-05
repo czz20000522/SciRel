@@ -70,25 +70,174 @@ def _evaluate(z, n):
 
 
 def evaluate_faddeeva_gpdf(z, *, order=None):
-    """Evaluate w(z)=exp(-z²)erfc(-iz), default order 32; None selects default.
+    """Evaluate the 32-term Faddeeva GPDF response.
 
-    Input and output are dimensionless and preserve scalar/array shape.
-    Truncation is an algorithm choice, not an error bound. Lower-plane
-    reflection can overflow physically; this raises FloatingPointError.
+    Parameters
+    ----------
+    z : complex numeric, shape scalar or nonempty array
+        Normalized phase points [dimensionless]. Finite after complex128
+        conversion; booleans, strings and empty inputs are rejected.
+    order : positive integer or None, optional
+        Rational truncation order [count]. ``None`` selects the default order
+        32. Positive integer only; booleans and nonpositive values are rejected.
+
+    Returns
+    -------
+    w : ndarray of complex128, shape same as z
+        Faddeeva response [dimensionless]. Scalar input produces a
+        zero-dimensional array.
+    order : int
+        Effective truncation order [count].
+
+    Raises
+    ------
+    ValueError
+        If ``z`` is empty, nonnumeric, boolean or nonfinite, or if ``order`` is
+        not a positive integer or is outside the supported range.
+    FloatingPointError
+        If reflection or the rational evaluation is not representable as a
+        finite float64 value.
+
+    See Also
+    --------
+    scirel.kinetic.evaluate_faddeeva_dr : The retained DR variant.
+    scirel.kinetic.evaluate_maxwellian_fft : FFT approximation with separate
+        scaled-Z failure checking.
+
+    Notes
+    -----
+    The approximation uses a rational expansion of
+    ``w(z)=exp(-z**2) erfc(-iz)``. The truncation order is an algorithm choice,
+    not a certified global error bound. Lower-half-plane reflection can
+    overflow; that case raises :class:`FloatingPointError` rather than silently
+    clamping.
+
+    References
+    ----------
+    Weideman (1994), Computation of the Complex Error Function,
+    doi:10.1137/0731077.
+    Xie (2013), Generalized Plasma Dispersion Function, arXiv:1305.6476.
+
+    Examples
+    --------
+    >>> from scirel.kinetic import evaluate_faddeeva_gpdf
+    >>> import numpy as np
+    >>> r=evaluate_faddeeva_gpdf(0.2+0.7j)
+    >>> assert np.isfinite(r["w"])
     """
     return _evaluate(z, 32 if order is None else _order(order))
 
 
 def evaluate_faddeeva_dr(z, *, order=None):
-    """Evaluate the retained DR variant of w, default order 16 (None also 16)."""
+    """Evaluate the retained DR Faddeeva response.
+
+    Parameters
+    ----------
+    z : complex numeric, shape scalar or nonempty array
+        Normalized phase points [dimensionless]. Finite after complex128
+        conversion; booleans, strings and empty inputs are rejected.
+    order : positive integer or None, optional
+        Rational truncation order [count]. ``None`` selects the retained default
+        order 16. Positive integer only; booleans and nonpositive values are
+        rejected.
+
+    Returns
+    -------
+    w : ndarray of complex128, shape same as z
+        Faddeeva response [dimensionless]. Scalar input produces a
+        zero-dimensional array.
+    order : int
+        Effective truncation order [count].
+
+    Raises
+    ------
+    ValueError
+        If ``z`` is empty, nonnumeric, boolean or nonfinite, or if ``order`` is
+        not a positive integer or is outside the supported range.
+    FloatingPointError
+        If reflection or the rational evaluation is not representable as a
+        finite float64 value.
+
+    See Also
+    --------
+    scirel.kinetic.evaluate_faddeeva_gpdf : The default GPDF variant.
+    scirel.kinetic.evaluate_plasma_dispersion : Direct SciPy Faddeeva path.
+
+    Notes
+    -----
+    This is the retained DR approximation, with default order 16. It shares the
+    same analytic continuation and finite-representability check as the GPDF
+    variant; it does not claim a global truncation-error bound.
+
+    References
+    ----------
+    Weideman (1994), Computation of the Complex Error Function,
+    doi:10.1137/0731077.
+    Xie (2013), Generalized Plasma Dispersion Function, arXiv:1305.6476.
+
+    Examples
+    --------
+    >>> from scirel.kinetic import evaluate_faddeeva_dr
+    >>> import numpy as np
+    >>> r=evaluate_faddeeva_dr(0.2+0.7j)
+    >>> assert np.isfinite(r["w"])
+    """
     return _evaluate(z, 16 if order is None else _order(order))
 
 
 def evaluate_maxwellian_fft(z, *, order=32):
-    """Evaluate dimensionless Z=i√πw by FFT rational expansion, default 32.
+    """Evaluate the FFT rational Maxwellian dispersion response.
 
-    Unlike the two Faddeeva variants, explicit None is invalid for order.
-    The final scaled Z is checked separately: finite w can overflow on scaling.
+    Parameters
+    ----------
+    z : complex numeric, shape scalar or nonempty array
+        Normalized phase points [dimensionless]. Finite after complex128
+        conversion; booleans, strings and empty inputs are rejected.
+    order : positive integer, default=32
+        Rational truncation order [count]. Explicit ``None`` is invalid for
+        this function. Positive integer only; booleans are rejected.
+
+    Returns
+    -------
+    Z : ndarray of complex128, shape same as z
+        Maxwellian response ``i sqrt(pi) w(z)`` [dimensionless]. Scalar input
+        produces a zero-dimensional array.
+    order : int
+        Effective truncation order [count].
+
+    Raises
+    ------
+    ValueError
+        If ``z`` is empty, nonnumeric, boolean or nonfinite, or if ``order`` is
+        invalid or unsupported.
+    FloatingPointError
+        If the intermediate ``w`` or the final scaled ``Z`` is not representable
+        as finite float64. A finite ``w`` alone does not establish a finite
+        ``Z``.
+
+    See Also
+    --------
+    scirel.kinetic.evaluate_plasma_dispersion : Direct Faddeeva Z function.
+    scirel.kinetic.evaluate_maxwellian_jpole : Fixed J-pole approximation.
+
+    Notes
+    -----
+    The FFT rational expansion is evaluated first and the final
+    ``Z=i sqrt(pi) w`` scaling is checked separately. This is a bounded
+    approximation; no global error certificate is implied.
+
+    References
+    ----------
+    Weideman (1994), Computation of the Complex Error Function,
+    doi:10.1137/0731077.
+    Xie (2013), Generalized Plasma Dispersion Function, arXiv:1305.6476.
+
+    Examples
+    --------
+    >>> from scirel.kinetic import evaluate_maxwellian_fft
+    >>> import numpy as np
+    >>> r=evaluate_maxwellian_fft(0.2+0.7j)
+    >>> assert np.isfinite(r["Z"])
     """
     result = _evaluate(z, _order(order))
     with np.errstate(over="ignore", invalid="ignore"):
@@ -101,12 +250,57 @@ def evaluate_maxwellian_fft(z, *, order=32):
 
 
 def evaluate_maxwellian_jpole(z, *, order=8):
-    """Evaluate fixed 8/12/16/24-pole Maxwellian Z approximation.
+    """Evaluate the fixed J-pole Maxwellian dispersion approximation.
 
-    Every matrix entry is evaluated (repair of source length(z) loop).
-    Upper-plane poles are avoided by construction; lower values follow
-    Z(z)=conj(Z(conj(z)))+2i√π exp(-z²). The tabulated rational function
-    has finite truncation error; no arbitrary lower-plane accuracy is implied.
+    Parameters
+    ----------
+    z : complex numeric, shape scalar or nonempty array
+        Normalized phase points [dimensionless]. Finite after complex128
+        conversion; booleans, strings and empty inputs are rejected.
+    order : {8, 12, 16, 24}, default=8
+        Number of fixed poles [count]. Booleans and other orders are rejected.
+
+    Returns
+    -------
+    Z : ndarray of complex128, shape same as z
+        Maxwellian response [dimensionless]. Scalar input produces a
+        zero-dimensional array.
+    order : int
+        Effective pole count [count].
+
+    Raises
+    ------
+    ValueError
+        If ``z`` is empty, nonnumeric, boolean or nonfinite, or if ``order`` is
+        not one of 8, 12, 16 or 24.
+    FloatingPointError
+        If the continuation or pole sum is not representable as finite
+        float64.
+
+    See Also
+    --------
+    scirel.kinetic.evaluate_maxwellian_fft : FFT rational approximation.
+    scirel.kinetic.evaluate_plasma_dispersion : Direct Faddeeva Z function.
+
+    Notes
+    -----
+    The upper half-plane uses the tabulated partial fraction. Lower-plane
+    values use ``Z(z)=conj(Z(conj(z)))+2 i sqrt(pi) exp(-z**2)``. The finite
+    pole sum has truncation error; no arbitrary lower-plane accuracy or global
+    error bound is implied.
+
+    References
+    ----------
+    Weideman (1994), Computation of the Complex Error Function,
+    doi:10.1137/0731077.
+    Xie (2013), Generalized Plasma Dispersion Function, arXiv:1305.6476.
+
+    Examples
+    --------
+    >>> from scirel.kinetic import evaluate_maxwellian_jpole
+    >>> import numpy as np
+    >>> r=evaluate_maxwellian_jpole(0.2+0.7j)
+    >>> assert np.isfinite(r["Z"])
     """
     n = _order(order)
     if n not in POLES:

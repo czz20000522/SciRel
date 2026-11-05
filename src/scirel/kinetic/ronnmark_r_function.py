@@ -305,25 +305,56 @@ def evaluate_ronnmark_r(x, lambda_):
     Parameters
     ----------
     x : complex scalar
-        Ronnmark argument Y, typically (omega - kz*vt*czj)/wcs. Real or
-        complex; finite (no NaN/inf).
+        Ronnmark argument Y, typically (omega - kz*vt*czj)/wcs
+        [dimensionless]. Real or complex; finite (no NaN/inf).
     lambda_ : real or complex scalar
-        AL = lambda = (k_perp*rho_c)^2, finite. It is real for real ``k_perp``
-        and complex when the caller works in the complex ``k_perp`` plane, which
-        is what the declared formulation's ``fsolve`` scan does.
+        AL = lambda = (k_perp*rho_c)^2 [dimensionless], finite. It is real for
+        real ``k_perp`` and complex when the caller works in the complex
+        ``k_perp`` plane, which is what the declared formulation's ``fsolve``
+        scan does.
 
     Returns
     -------
-    dict with keys
-        ``R``          : complex scalar; R(x, lambda) = RC(1,1).
-        ``dR_dlambda`` : complex scalar; RC(1,2), the column read as ``dRsj``
-                         by bonk/fDR.m:70. It equals d(lambda*R)/dlambda,
-                         i.e. R + lambda*dR/dlambda.
-        ``branch``     : str; selector arm taken, one of
-                         ``'RTAY(AL<4)'``, ``'RTAY(|Y|^2>75*AL)'``,
-                         ``'RTAY(|Y|>40+AL/3)'``, ``'RASY'``, ``'RINT'``.
-        ``RC``         : (2, 2) complex ndarray; full RYLA matrix, indexed as
-                         in the the reference solver source (RC[0, 0] is RC(1,1)).
+    R : complex
+        Value ``R(x, lambda) = RC(0, 0)`` [dimensionless].
+    dR_dlambda : complex
+        Value ``RC(0, 1)``, equal to ``d(lambda*R)/dlambda`` [dimensionless].
+    branch : str
+        Selected algorithm branch [dimensionless]: ``'RTAY(AL<4)'``,
+        ``'RTAY(|Y|^2>75*AL)'``, ``'RTAY(|Y|>40+AL/3)'``, ``'RASY'`` or
+        ``'RINT'``.
+    RC : ndarray of complex128, shape (2,2)
+        Full RYLA response matrix [dimensionless], indexed as in the source
+        implementation.
+
+    Raises
+    ------
+    ValueError
+        If ``x`` or ``lambda_`` is not a finite numeric scalar. Source-
+        compatible arithmetic can return a nonfinite value at a singular
+        wavepoint; that case is not converted to an alternate branch.
+
+    See Also
+    --------
+    scirel.kinetic.evaluate_kinetic_dispersion_ronnmark : Ronnmark
+        dispersion-tensor assembly.
+    scirel.kinetic.evaluate_plasma_dispersion : Maxwellian Z function.
+
+    Notes
+    -----
+    The selector uses Taylor, asymptotic, and quadrature expansions according
+    to the arguments. For complex ``lambda_``, the source solver compares
+    non-real operands by magnitude. The returned derivative includes the
+    response's ``lambda`` factor, so it is not the derivative of ``R`` alone.
+
+    References
+    ----------
+    H. S. Xie, Phys. Plasmas 32, 082110 (2025).
+
+    Examples
+    --------
+    >>> from scirel.kinetic import evaluate_ronnmark_r
+    >>> r=evaluate_ronnmark_r(0.5,0.25); assert r['branch']=='RTAY(AL<4)'
     """
     # The declared formulation is the reference solver, whose arithmetic follows the dtype of Y:
     # real input stays real double, complex input uses complex double. That

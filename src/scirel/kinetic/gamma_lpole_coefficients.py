@@ -458,10 +458,50 @@ def lpole_orders() -> dict[int, int]:
 
 
 def get_gamma_lpole_coefficients(*, max_harmonic: int) -> dict:
-    """Return the L-pole residue/pole tables needed up to ``max_harmonic``.
+    """Return the frozen L-pole tables for harmonics through a requested order.
 
-    ``max_harmonic`` is the largest Bessel order N the caller will assemble; the
-    returned tables therefore cover orders |n| = 0..N, i.e. coefficient keys 1..N+1.
+    Parameters
+    ----------
+    max_harmonic : integer
+        Largest Bessel order ``N`` the caller will assemble [dimensionless].
+        A nonnegative integer; the frozen table supports ``N+1 <= 8``.
+
+    Returns
+    -------
+    orders : list of int
+        Coefficient keys ``1`` through ``max_harmonic+1`` [dimensionless].
+    order_lengths : mapping of int to int
+        Number of poles for each returned order [dimensionless].
+    residues : mapping of int to ndarray of complex128
+        Pole residues indexed by the same order keys [dimensionless].
+    poles : mapping of int to ndarray of complex128
+        Pole positions indexed by the same order keys [dimensionless].
+    total_poles : int
+        Total number of returned poles [dimensionless].
+
+    Raises
+    ------
+    ValueError
+        If ``max_harmonic`` is not a nonnegative integer or requests a table
+        beyond the frozen order range. Unsupported conversion errors may
+        propagate.
+
+    See Also
+    --------
+    scirel.kinetic.get_z_pole_coefficients : Maxwellian Z-function pole table.
+    scirel.kinetic.evaluate_bessel_gamma : Direct Bessel-Gamma evaluation.
+
+    Notes
+    -----
+    The residue and pole arrays are frozen data transcribed from the declared
+    L-pole approximation. The key is ``|n|+1`` and the tables cover orders
+    ``|n|=0`` through ``7``. Selecting a harmonic range does not establish a
+    physical truncation error or a unique mode.
+
+    Examples
+    --------
+    >>> from scirel.kinetic import get_gamma_lpole_coefficients
+    >>> r=get_gamma_lpole_coefficients(max_harmonic=0); assert r['order_lengths'][1]==12
     """
     if isinstance(max_harmonic, (bool, np.bool_)):
         raise ValueError("max_harmonic must be a non-negative integer")

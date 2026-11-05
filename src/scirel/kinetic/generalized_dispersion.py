@@ -389,7 +389,7 @@ def evaluate_generalized_dispersion(
     ----------
     z : real or complex numeric, shape scalar or nonempty array
         Complex phase point z in the same velocity variable v as the selected
-        density: Z(z)=integral f(v)/(v-z) dv. For the default Maxwellian
+        density [dimensionless]: Z(z)=integral f(v)/(v-z) dv. For the default Maxwellian
         exp(-v^2)/sqrt(pi), v is in units of sqrt(2) v_t, so z=omega/(sqrt(2) k
         v_t); for a custom expression z is omega/k in the units of v used in
         that expression. Finite and representable.
@@ -404,45 +404,52 @@ def evaluate_generalized_dispersion(
         slowing-down 3sqrt(3)/(4pi)/(1+|v|^3) on |v|<=4. Integer 0 through 6;
         booleans rejected.
     expression : str, default 'exp(-v.^2)/sqrt(pi)'
-        Analytic density in v using finite real constants, pi, + - * / and
+        Analytic density in v [dimensionless] using finite real constants, pi, + - * / and
         powers, and exp/log/sqrt/sin/cos/sinh/cosh/tanh. Powers may be written
         ** or ^, and MATLAB element-wise .^ .* ./ are accepted as the same
         operators. Real integrable density with decaying derivative; no
         arbitrary code, comparisons, attributes or indexing.
     integration_mesh : real vector, shape one-dimensional at least two points, default None
-        Feature-resolving finite increasing velocity mesh; infinite tails are
+        Feature-resolving finite increasing velocity mesh [dimensionless]; infinite tails are
         also integrated. All material features resolved; no unresolved tail
         features.
 
     Returns
     -------
     Z : complex array, shape same as z
-        Integral f(v)/(v-z) dv with the declared continuation. Finite and
+        Integral f(v)/(v-z) dv with the declared continuation [dimensionless]. Finite and
         representable.
     Zp : complex array, shape same as z
-        Derivative dZ/dz including distributional jumps. Finite and
+        Derivative dZ/dz including distributional jumps [dimensionless]. Finite and
         representable.
 
     Raises
     ------
-    FloatingPointError
-        FloatingPointError for a non-finite Z/Zp and RuntimeError when the
-        real-axis or exterior quadrature does not converge; no fallback branch
-        is selected.
     RuntimeError
-        FloatingPointError for a non-finite Z/Zp and RuntimeError when the
-        real-axis or exterior quadrature does not converge; no fallback branch
-        is selected. RuntimeError when the real-axis or exterior quadrature
-        fails to converge; no unconverged value is returned.
+        When the real-axis or exterior quadrature fails to converge; no
+        unconverged value is returned.
     ValueError
-        ValueError for non-numeric or non-broadcastable z, selector outside
-        0..6, a nonpositive selector-grid endpoint, or an unsupported
-        expression/integration mesh.
+        For non-numeric or non-broadcastable z, selector outside 0..6, a
+        nonpositive selector-grid endpoint, an unsupported expression or
+        integration mesh, or a non-finite Z/Zp result that is not representable.
 
     See Also
     --------
     evaluate_plasma_dispersion : Maxwellian plasma dispersion function.
     vp_init : Time-domain check with the same equilibrium.
+
+    Notes
+    -----
+    For selector 0 the default Maxwellian expression is evaluated with the
+    analytic plasma-dispersion kernel; a custom expression requires a finite
+    feature-resolution integration mesh. The returned derivative includes
+    distributional jumps for the piecewise density selectors. No root search or
+    mode identification is performed by this function.
+
+    References
+    ----------
+    Hua-Sheng Xie, Generalized plasma dispersion function, Phys. Plasmas 20
+    (2013), 092125.
 
     Examples
     --------

@@ -333,7 +333,7 @@
   },
   {
    "asset_id": "scirel.kinetic.generalized-dispersion",
-   "source_sha256": "5e909ae1d72b9ee5f61bc6811109bdc1989e22d7bfa5d371904a332389988afe",
+   "source_sha256": "d32a613abfc19c0644ab52ad4924bc085d7094d143ab0803d909eef40a28b55d",
    "summary": "求值七类原始广义分布选择器中的任意一类。",
    "definition": "选择器对应的密度为：delta(v)；在 [-0.5,0.5] 上恒为 1 的顶帽；max(0,1-|v|)；sqrt(2)/pi/(1+v²/2)²；H(v-0.1)exp(-v²)/sqrt(pi)；以及在 |v|≤4 上的 3sqrt(3)/(4pi)/(1+|v|³)。位于 a 的跳跃 J 对 Zp 贡献 J/(a-z)。已修正不一致的顶帽密度符号及不完整 Maxwellian 的截断跳跃。大相位处的 Gaussian 导数采用避免相消的原始极化率或矩展开，不减去已舍入的单位项。远场顶帽值使用收敛的逆幂级数；导数先分别计算分母的实部与虚部，再取倒数，以保留可表示的微小轮廓分量。中心附近的实响应使用实数 log1p，边缘附近使用 log-hypot 之差，轮廓相位使用单个 atan2；不使用复数 log1p。",
    "model": "一维、无磁场、无碰撞的静电等离子体。",
@@ -414,7 +414,7 @@
    },
    "failure_semantics": {
     "invalid_input": "z 非数值或不可广播、selector 超出 0..6、selector 网格端点非正，或 expression/integration_mesh 不受支持时抛出 ValueError。",
-    "runtime_failure": "Z/Zp 非有限时抛出 FloatingPointError；实轴或外部求积不收敛时抛出 RuntimeError；不选择回退分支。",
+    "runtime_failure": "Z/Zp 非有限或不可表示时抛出 ValueError；实轴或外部求积不收敛时抛出 RuntimeError；不选择回退分支。",
     "nonconvergence": "实轴或外部求积不收敛时抛出 RuntimeError；不返回未收敛值。",
     "partial_results": "调用失败后不返回部分 Z/Zp 对。"
    },
