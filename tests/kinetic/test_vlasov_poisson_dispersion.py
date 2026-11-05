@@ -53,6 +53,12 @@ def test_distribution_symmetry_and_finite(selector):
     assert_allclose(g, -g[::-1], atol=1e-15)
 
 
+def test_triangle_distribution_derivative_is_piecewise_and_zero_outside_support():
+    v = np.array([-2.0, -1.0, -0.5, 0.0, 0.5, 1.0, 2.0])
+    g, _, _ = vp_distribution(v, 3)
+    assert_allclose(g, np.array([0.0, 0.0, 1.0, 0.0, -1.0, 0.0, 0.0]), atol=0, rtol=0)
+
+
 def test_kappa_derivative_independent_central_difference():
     from scipy.special import gamma
 

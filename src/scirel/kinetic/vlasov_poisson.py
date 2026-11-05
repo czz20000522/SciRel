@@ -51,7 +51,9 @@ def vp_distribution(vv, Fn=2, *, k=0.15, kappa=1.0, cutoff_mode="weak"):
       the grid yourself and pass it to ``vp_init(Fn=None, df0dv=...)``.
       ``kappa=1`` is the Lorentzian, for which the exact root
       ``omega = 1 - i*sqrt(2)*k`` is returned as ``(wr, wi)``.
-    * ``Fn=3``: triangle ``max(0, 1 - |v|)``.
+    * ``Fn=3``: triangle ``f0 = max(0, 1 - |v|)``. Its returned derivative is
+      ``+1`` for ``-1 < v < 0``, ``-1`` for ``0 < v < 1``, and ``0`` for
+      ``v <= -1``, ``v = 0``, or ``v >= 1``.
     * ``Fn=4``: cutoff slowing-down distribution (see the contract).
 
     Returns ``(f0_prime, wr, wi)``; ``wr, wi`` are None except for the Lorentzian.
@@ -65,8 +67,9 @@ def vp_distribution(vv, Fn=2, *, k=0.15, kappa=1.0, cutoff_mode="weak"):
         Built-in equilibrium, unit density: 1 Maxwellian exp(-v^2/2)/sqrt(2pi)
         (unit variance); 2 kappa Gamma(kappa)/(Gamma(kappa-1/2) sqrt(2 pi
         kappa)) (1+v^2/(2 kappa))^-kappa, i.e. theta^2=2 with variance
-        2kappa/(2kappa-3), NOT unit temperature; 3 triangle max(0,1-|v|); 4
-        cutoff slowing-down. One of 1,2,3,4.
+        2kappa/(2kappa-3), NOT unit temperature; 3 triangle max(0,1-|v|), with
+        zero derivative outside its support; 4 cutoff slowing-down. One of
+        1,2,3,4.
     k : real scalar, default 0.15
         Spatial Fourier wavenumber in inverse Debye length. Positive finite.
     kappa : real scalar, default 1.0
@@ -96,6 +99,13 @@ def vp_distribution(vv, Fn=2, *, k=0.15, kappa=1.0, cutoff_mode="weak"):
     See Also
     --------
     vp_init : Build an initial state from this family.
+
+    Notes
+    -----
+    For ``Fn=3``, the result contains point values of the classical piecewise
+    derivative of the triangle. It is not a finite-difference derivative. The
+    non-differentiable nodes ``v=-1``, ``v=0``, and ``v=1`` are assigned the
+    value ``0`` by the open-interval rule above.
 
     Examples
     --------
