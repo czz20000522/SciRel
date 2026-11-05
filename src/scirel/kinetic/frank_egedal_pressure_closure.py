@@ -12,7 +12,13 @@ def _run_composition(inputs, *, asset_loader):
     if not isinstance(inputs["params"], dict):
         raise ValueError("params must be a mapping")
     params = dict(inputs["params"])
-    radial = asset_loader("scirel.kinetic.frank_egedal_radial_envelope")(inputs.get("psi"), params)
+    alpha = params["alpha"] if "alpha" in params else 1.0
+    radial = asset_loader("scirel.kinetic.frank_egedal_radial_envelope")(
+        inputs.get("psi"),
+        psi_axis=params.get("psi_axis"),
+        psi_edge=params.get("psi_edge"),
+        alpha=alpha,
+    )
     source = asset_loader("scirel.kinetic.frank_egedal_source_projection")(
         params, spectrum_operator=asset_loader("scirel.kinetic.loss_cone_spectrum")
     )

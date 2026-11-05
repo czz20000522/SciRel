@@ -233,7 +233,7 @@ nodes:
   kind: scientific_function
   callable: scirel.kinetic.frank_egedal_radial_envelope::evaluate_frank_egedal_radial_envelope
   asset_ref: scirel.kinetic.frank_egedal_radial_envelope
-  inputs: [psi, params]
+  inputs: [psi, psi_axis, psi_edge, alpha]
   outputs: [radial_shape]
 - id: loss_cone_spectrum_port
   name: 损失锥谱求解器依赖

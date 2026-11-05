@@ -3667,9 +3667,9 @@
   },
   {
    "asset_id": "scirel.kinetic.frank-egedal-radial-envelope",
-   "source_sha256": "fdd3db7cc27ce0b739cef5a89b1493598bd48accb25b99036de6bbd450d1e09f",
-   "summary": "在二维磁通网格上计算截断的幂律径向包络，由参数映射给出参考磁通与指数。",
-   "definition": "令 u=clip((psi-psi_axis)/(psi_edge-psi_axis),0,1)，逐点返回 clip(1-u,0,infinity)^alpha。默认 psi_axis=min(psi)、psi_edge=max(psi)、alpha=1。允许有限非零磁通区间的两种方向。按 NumPy 零次幂约定，alpha=0 时整个网格均为 1，包括外侧端点。",
+   "source_sha256": "56d67a5e35ce774e8d4941091f2834fab07a4fe69180edadb8fcc88a49fce97e",
+   "summary": "在二维磁通网格上计算截断的幂律径向包络，参考磁通与指数由显式参数给出。",
+   "definition": "令 u=clip((psi-psi_axis)/(psi_edge-psi_axis),0,1)，逐点返回 clip(1-u,0,infinity)^alpha。psi_axis 默认 min(psi)，psi_edge 默认 max(psi)，alpha 默认 1。允许有限非零磁通区间的两种方向。按 NumPy 零次幂约定，alpha=0 时整个网格均为 1，包括外侧端点。",
    "model": "Frank-Egedal 压强构造中由给定条件定义的径向乘子，不计算压强或平衡。",
    "assumptions": [
     "两个参考磁通须为不同磁通水平，且与 psi 使用相同单位与归一化。",
@@ -3684,10 +3684,22 @@
      "dtype": "可转 float64 的数组"
     },
     {
-     "name": "params",
-     "description": "可选 psi_axis、psi_edge 与 alpha 参数。",
-     "constraints": "必须为 dict；默认网格最小值、最大值和 1。识别值为有限标量，alpha>=0，abs(psi_edge-psi_axis)>=1e-30；忽略未知键。",
-     "dtype": "dict 映射"
+     "name": "psi_axis",
+     "description": "径向包络的轴磁通；None 取网格最小值。",
+     "constraints": "可转有限浮点数；默认 None，即取网格最小值。",
+     "dtype": "float 或 None"
+    },
+    {
+     "name": "psi_edge",
+     "description": "径向包络的边磁通；None 取网格最大值。",
+     "constraints": "可转有限浮点数且与 psi_axis 至少相差 1e-30；默认 None，即取网格最大值。",
+     "dtype": "float 或 None"
+    },
+    {
+     "name": "alpha",
+     "description": "截断包络的幂指数。",
+     "constraints": "可转有限浮点数且非负；默认 1.0。",
+     "dtype": "float"
     }
    ],
    "outputs": [
@@ -3700,7 +3712,7 @@
    ],
    "applicability": {
     "preconditions": [
-     "psi 为有限非空二维网格，params 为 dict，识别参数可转换为有限标量。",
+     "psi 为有限非空二维网格，显式参考磁通和指数可转换为有限标量。",
      "轴与边缘参考值定义有限非零区间，其绝对宽度至少 1e-30。"
     ],
     "supported": [
@@ -3713,7 +3725,7 @@
     ]
    },
    "failure_semantics": {
-    "invalid_input": "非有限、空或非二维 psi、非字典参数、非有限参考值/指数、负指数、过小区间抛 ValueError；数值转换也可抛 ValueError/TypeError。",
+    "invalid_input": "非有限、空或非二维 psi、非有限参考值/指数、负指数、过小区间抛 ValueError；数值转换也可抛 ValueError/TypeError。",
     "runtime_failure": "分配或运算异常传播；幂运算后无通用有限性检查，极端有限值可能引发浮点警告或非有限中间量。",
     "nonconvergence": "不适用；逐点直接计算，无迭代。",
     "partial_results": "异常时不返回部分数组；成功时只返回包络数组。"
