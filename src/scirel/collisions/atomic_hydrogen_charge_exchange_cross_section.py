@@ -1,39 +1,16 @@
 """Atomic-hydrogen charge-exchange cross-section fits.
 
-One leaf recovered from the saved the neutral-transport formulation ``sigma_cx_h0`` slice, integrated as
-:func:`evaluate_atomic_hydrogen_charge_exchange_cross_section`:
+The default relation is continuous over its declared domain: the Janev
+nine-coefficient logarithmic polynomial below ``1.267317514018116e4 eV`` and
+the Lindsay--Stebbings 2005 Table 1 fit above it through ``2.5e5 eV``.  The
+Freeman--Jones analytic branch remains available as an independent comparison
+through ``1e5 eV``.
 
-the H + H+ charge-exchange cross section in ``m^2`` as a function of the
-collision energy in eV.  The default branch is Janev's nine-coefficient
-logarithmic polynomial, ``exp(polyval(log(E), a)) * 1e-4``; ``freeman=True``
-selects the Freeman--Jones analytic fit
-``1e-4 * 0.6937e-14 * (1 - 0.155 log10(E))^2 / (1 + 0.1112e-14 E^3.3)``.
-
-**The fit domain is source-clipped, and the clipping is declared.**  The Janev
-branch clips energies to ``[0.1, 2.01e4] eV`` and the Freeman--Jones branch to
-``[0.1, 1e5] eV`` before evaluation, so endpoint values are repeated outside
-each fit's range.  This is the saved source's declared behavior, exercised by
-its package tests, and is kept unchanged.
-
-**Input-contract repairs relative to the saved implementation.**  The
-saved document declares the energy nonnegative, but its implementation
-silently clipped negative energies to the lower endpoint; this module rejects
-them.  The saved document declares the ``freeman`` branch selector a scalar,
-but its implementation reduced arbitrary arrays with ``np.any``; this module
-requires a scalar and rejects arrays.  Non-real energies, including numeric
-strings and boolean cells, are also rejected before float conversion.  Both
-branches' arithmetic is preserved on finite nonnegative real inputs.
-
-Evidence ceiling: this module establishes the two clipped fits against an
-independent evaluation of the same formulas, the endpoint clipping, the input
-and failure contracts, these repairs, and -- in the environment-gated replay
-test -- exact agreement with the saved the neutral-transport formulation implementation on the declared
-domain.  The saved bundle's strict D1 qualification has been withdrawn; that
-replay is historical development evidence, not qualified-L1 provenance.  No
-test establishes the fits against an external physical cross-section
-reference: the saved package records that residual as ``validation_oracle_gap``.
-This module evaluates no velocity mesh, no rate coefficient and no transport
-source; those are separate relations.
+Lindsay and Stebbings, JGR 110, A12213 (2005), Table 1 and section 4.1, define
+the high-energy formula, its 5 eV--250 keV table range, and its stated
+reliability.  The tests bind the formulas, their continuous crossing, the
+source-range sampled values, endpoint warnings and the input contract.  They do
+not claim a new experimental fit beyond that published parameterization.
 """
 
 from __future__ import annotations
@@ -60,6 +37,26 @@ _JANE_COEFFICIENTS = np.array(
         7.422296363524e-7,
     ]
 )
+_COMPOSITE_JOIN_EV = 1.267317514018116e4
+_COMPOSITE_UPPER_EV = 2.5e5
+_FREEMAN_UPPER_EV = 1.0e5
+
+
+def _janev_cross_section(energy_ev):
+    return np.exp(log_polynomial(np.log(energy_ev), _JANE_COEFFICIENTS)) * 1.0e-4
+
+
+def _lindsay_stebbings_cross_section(energy_ev):
+    energy_kev = np.asarray(energy_ev, dtype=float) / 1000.0
+    log_energy = np.log(energy_kev)
+    return (4.15 - 0.531 * log_energy) ** 2 * (1.0 - np.exp(-67.3 / energy_kev)) ** 4.5 * 1.0e-20
+
+
+def _composite_cross_section(energy_ev):
+    energy = np.asarray(energy_ev, dtype=float)
+    janev = _janev_cross_section(energy)
+    lindsay_stebbings = _lindsay_stebbings_cross_section(energy)
+    return np.where(energy <= _COMPOSITE_JOIN_EV, janev, lindsay_stebbings)
 
 
 def evaluate_atomic_hydrogen_charge_exchange_cross_section(energy_ev, freeman=False):
@@ -70,13 +67,12 @@ def evaluate_atomic_hydrogen_charge_exchange_cross_section(energy_ev, freeman=Fa
     energy_ev
         Collision energies in eV, as a scalar or array of any shape.  Values
         must be finite and nonnegative; energies outside a branch's fit range
-        are clipped to that range's endpoints, the saved source's declared
-        behavior.
+        are clipped to that range's endpoints.
     freeman
         Scalar branch selector.  ``True`` selects the Freeman--Jones analytic
-        fit with the ``[0.1, 1e5] eV`` clip; the default selects the Janev
-        logarithmic polynomial with the ``[0.1, 2.01e4] eV`` clip.  Any scalar
-        is interpreted as its truth value; arrays are rejected.
+        fit with the ``[0.1, 1e5] eV`` clip.  The default selects the continuous
+        Janev/Lindsay--Stebbings composite with the ``[0.1, 2.5e5] eV`` clip.
+        Any scalar is interpreted as its truth value; arrays are rejected.
 
     Returns
     -------
@@ -90,11 +86,27 @@ def evaluate_atomic_hydrogen_charge_exchange_cross_section(energy_ev, freeman=Fa
     ValueError
         If ``energy_ev`` contains a non-real, non-finite or negative value, or if
         ``freeman`` is not a scalar.
+
+    Notes
+    -----
+    The default uses the Janev polynomial through
+    ``12673.17514018116 eV`` and the Lindsay--Stebbings fit
+
+    ``(4.15 - 0.531 ln E_keV)^2 * (1 - exp(-67.3 / E_keV))^4.5 * 1e-20 m^2``
+
+    above that crossing.  The fits agree at the join.  The Lindsay--Stebbings
+    table spans ``0.005-250 keV`` and states about 11% reliability above 6 keV.
+
+    References
+    ----------
+    Lindsay, B. G., and R. F. Stebbings (2005), Charge transfer cross sections
+    for energetic neutral atom data analysis, JGR 110, A12213,
+    doi:10.1029/2005JA011298, Table 1 and section 4.1.
     """
     selector = np.asarray(freeman)
     if selector.ndim != 0:
         raise ValueError("freeman must be a scalar branch selector, not an array")
-    upper = 1.0e5 if bool(selector) else 2.01e4
+    upper = _FREEMAN_UPPER_EV if bool(selector) else _COMPOSITE_UPPER_EV
     energy = clipped_energy(energy_ev, 0.1, upper)
     warn_above_fit(energy_ev, upper, "evaluate_atomic_hydrogen_charge_exchange_cross_section")
     if bool(selector):
@@ -104,4 +116,4 @@ def evaluate_atomic_hydrogen_charge_exchange_cross_section(energy_ev, freeman=Fa
             * (1.0 - 0.155 * np.log10(energy)) ** 2
             / (1.0 + 0.1112e-14 * energy**3.3)
         )
-    return np.exp(log_polynomial(np.log(energy), _JANE_COEFFICIENTS)) * 1.0e-4
+    return _composite_cross_section(energy)

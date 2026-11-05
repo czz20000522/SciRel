@@ -27,12 +27,19 @@ def finite_nonnegative_energy(value):
     return energy
 
 
-def warn_above_fit(value, upper, name, quantity="energy"):
+def warn_above_fit(
+    value,
+    upper,
+    name,
+    quantity="energy",
+    *,
+    effect="overstates a cross section that keeps falling",
+):
     """Warn when a fit is asked for a value above the range it is held constant beyond."""
     if np.any(np.asarray(value) > upper):
         warnings.warn(
             f"{name}: {quantity} above the fit's upper limit of {upper:g} eV returns the value at "
-            "that limit, which overstates a cross section that keeps falling",
+            f"that limit, which {effect}",
             RuntimeWarning,
             stacklevel=3,
         )

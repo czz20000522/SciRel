@@ -17,6 +17,7 @@ can be established inside this repository without inventing experimental truth:
 None of these is an experimental validation.  They are mathematical or
 cross-asset consistency evidence and are labelled as such in the report.
 """
+
 from __future__ import annotations
 
 import numpy as np
@@ -53,7 +54,9 @@ def _codata_saha_population(density, temperature, level):
     prefactor = (constants.h**2 / (2.0 * np.pi * constants.m_e * constants.e)) ** 1.5
     level_squared = float(level * level)
     return (
-        density**2 * prefactor * level_squared
+        density**2
+        * prefactor
+        * level_squared
         * np.exp(13.605693 / (level_squared * temperature))
         / temperature**1.5
     )
@@ -106,31 +109,53 @@ def test_janev_peak_and_high_temperature_slope():
 
 
 RATE_CASES = (
-    ("recombination", lambda value: evaluate_atomic_hydrogen_1s_radiative_recombination_rate(
-        np.asarray([value]))),
-    ("atomic-cx", lambda value: evaluate_atomic_hydrogen_charge_exchange_rate(
-        np.asarray([value]), np.asarray([1.0]))),
-    ("molecular-cx", lambda value: evaluate_hydrogen2_charge_exchange_rate(
-        np.asarray([value]), np.asarray([1.0]))),
-    ("janev", lambda value: evaluate_janev_electron_impact_ionization_rate(
-        np.asarray([value]), "H")),
+    (
+        "recombination",
+        lambda value: evaluate_atomic_hydrogen_1s_radiative_recombination_rate(np.asarray([value])),
+        0.1,
+        2.01e4,
+    ),
+    (
+        "atomic-cx",
+        lambda value: evaluate_atomic_hydrogen_charge_exchange_rate(
+            np.asarray([value]), np.asarray([1.0])
+        ),
+        0.1,
+        2.5e5,
+    ),
+    (
+        "molecular-cx",
+        lambda value: evaluate_hydrogen2_charge_exchange_rate(
+            np.asarray([value]), np.asarray([1.0])
+        ),
+        0.1,
+        2.01e4,
+    ),
+    (
+        "janev",
+        lambda value: evaluate_janev_electron_impact_ionization_rate(np.asarray([value]), "H"),
+        0.1,
+        2.01e4,
+    ),
 )
 
 
-@pytest.mark.parametrize("label,call", RATE_CASES)
-def test_rate_family_positive_out_of_range_inputs_clip_to_endpoints(label, call):
-    """Positive out-of-range values repeat endpoints; this is declared, not extrapolation."""
-    clipped = call(0.01)
-    lower = call(0.1)
-    upper_clipped = call(5.0e4)
-    upper = call(2.01e4)
+@pytest.mark.parametrize("label,call,lower_limit,upper_limit", RATE_CASES)
+def test_rate_family_positive_out_of_range_inputs_clip_to_endpoints(
+    label, call, lower_limit, upper_limit
+):
+    """Positive out-of-range values repeat declared endpoints, with warnings above."""
+    clipped = call(lower_limit * 0.1)
+    lower = call(lower_limit)
+    upper_clipped = call(upper_limit * 2.0)
+    upper = call(upper_limit)
     assert clipped == lower
     assert upper_clipped == upper
 
 
-@pytest.mark.parametrize("label,call", RATE_CASES)
+@pytest.mark.parametrize("label,call,lower_limit,upper_limit", RATE_CASES)
 @pytest.mark.parametrize("bad", [np.nan, np.inf, -1.0, 0.0, True, "1.0"])
-def test_rate_family_invalid_inputs_fail_closed(label, call, bad):
+def test_rate_family_invalid_inputs_fail_closed(label, call, lower_limit, upper_limit, bad):
     with pytest.raises(ValueError):
         call(bad)
 
@@ -143,7 +168,8 @@ def test_rate_family_invalid_inputs_fail_closed(label, call, bad):
     ),
 )
 def test_cx_cross_section_average_is_consistent_with_rate_fit(
-    cross_section, molecular,
+    cross_section,
+    molecular,
 ):
     """Maxwellian-averaged cross section agrees with the separately fitted rate.
 
@@ -155,8 +181,10 @@ def test_cx_cross_section_average_is_consistent_with_rate_fit(
     vx = np.linspace(-4.0, 4.0, 60)
     volume = make_cylindrical_velocity_quadrature(vr=vr, vx=vx)["volume"]
     mass_amu = 2.0 if molecular else 1.0
-    rate_fit = evaluate_hydrogen2_charge_exchange_rate if molecular else (
-        evaluate_atomic_hydrogen_charge_exchange_rate
+    rate_fit = (
+        evaluate_hydrogen2_charge_exchange_rate
+        if molecular
+        else (evaluate_atomic_hydrogen_charge_exchange_rate)
     )
     energies = np.array([1.0, 5.0, 20.0, 100.0, 500.0])
     for temperature in (1.0, 5.0, 20.0):
@@ -174,12 +202,20 @@ def test_cx_cross_section_average_is_consistent_with_rate_fit(
         fitted = rate_fit(np.full(energies.shape, temperature), energies)
         ratio = np.asarray(averaged) / np.asarray(fitted)
         assert np.all((ratio > 0.95) & (ratio < 1.05)), (
-            "temperature", temperature, "ratio", ratio,
+            "temperature",
+            temperature,
+            "ratio",
+            ratio,
         )
 
 
 CROSS_SECTION_CASES = (
-    ("atomic-cx-janev", evaluate_atomic_hydrogen_charge_exchange_cross_section, 0.1, 2.01e4),
+    (
+        "atomic-cx-composite",
+        evaluate_atomic_hydrogen_charge_exchange_cross_section,
+        0.1,
+        2.5e5,
+    ),
     ("atomic-h-elastic", evaluate_atomic_hydrogen_elastic_cross_section, 0.03, 1.01e4),
     ("h-h2-elastic", evaluate_hydrogen_h2_elastic_cross_section, 0.03, 1.01e4),
     ("h2-h2-elastic", evaluate_hydrogen2_hydrogen2_elastic_cross_section, 0.03, 1.01e4),
@@ -191,12 +227,7 @@ CROSS_SECTION_CASES = (
 
 @pytest.mark.parametrize("label,call,lower,upper", CROSS_SECTION_CASES)
 def test_cross_section_positive_out_of_range_clips_to_endpoints(label, call, lower, upper):
-    """Positive out-of-range energies repeat endpoints; negative energies raise.
-
-    This makes the silent-clipping convention explicit for every cross-section
-    fit family: it is a declared behavior, not extrapolation, and it must not be
-    confused with the fail-closed rejection of invalid energies.
-    """
+    """Positive out-of-range energies repeat endpoints and warn above the upper edge."""
     below = call(lower * 0.5)
     at_lower = call(lower)
     above = call(upper * 2.0)

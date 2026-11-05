@@ -5,7 +5,7 @@
   "en": "Atomic-hydrogen charge-exchange cross section",
   "zh": "原子氢电荷交换截面"
  },
- "summary": "H + H+ charge-exchange cross section in m^2 as a function of collision energy in eV: a Janev nine-coefficient logarithmic polynomial by default, with an alternative Freeman-Jones analytic fit under freeman=True. Both branches are evaluated on their clipped energy ranges, so endpoint values repeat outside each fit's domain. Negative energies and non-scalar branch selectors are rejected.",
+ "summary": "H + H+ charge-exchange cross section in m^2 as a function of collision energy in eV. The default is a continuous composite of the Janev polynomial below 12.673175 keV and the Lindsay-Stebbings 2005 Table 1 fit above it, tabulated through 250 keV. freeman=True retains the independent Freeman-Jones analytic branch through 100 keV. Upper-range values clip with a RuntimeWarning; negative energies and non-scalar selectors are rejected.",
  "taxonomy": [
   "collisions",
   "cross-section",
@@ -17,34 +17,36 @@
   "sigma_cx_h0",
   "H-H+ charge-exchange cross section",
   "Janev charge-exchange fit",
-  "Freeman-Jones charge-exchange fit"
+  "Freeman-Jones charge-exchange fit",
+  "Lindsay-Stebbings charge-exchange fit"
  ],
  "discovery": {
   "capability": [
    "Atomic-hydrogen charge-exchange cross section",
-   "H + H+ charge-exchange cross section in m^2 from collision energy in eV, using Janev or Freeman-Jones fits."
+   "H + H+ charge-exchange cross section in m^2 from collision energy in eV using a published continuous composite or the Freeman-Jones comparison fit."
   ],
   "operation": [
    "Evaluate the H + H+ charge-exchange cross section",
    "collision energies and branch selector -> cross section per energy"
   ],
-  "model": "Two independent declared cross-section fits (Janev nine-coefficient logarithmic polynomial by default; Freeman-Jones analytic form under freeman=True); no external-data interpolation and no rate integration.",
+  "model": "Continuous Janev/Lindsay-Stebbings 2005 composite by default; independent Freeman-Jones analytic branch under freeman=True; no runtime interpolation of tabulated data and no rate integration.",
   "geometry": "None; scalar material function of collision energy with no spatial axis (coordinate: collision energy in eV; output in m^2).",
-  "boundary": "Energies must be finite and nonnegative; values outside a branch's fit range clip to the range endpoints; the branch selector must be scalar; both fits are strictly positive and finite on their clipped domains.",
+  "boundary": "Energies finite and nonnegative. The default composite covers [0.1, 2.5e5] eV; Freeman-Jones covers [0.1, 1e5] eV. Values above the selected upper limit clip with RuntimeWarning; low values clip to 0.1 eV. freeman must be scalar.",
   "device_scope": "generic"
  },
  "identity": {
-  "relation": "the H + H+ charge-exchange cross section as a function of collision energy, given by the Janev logarithmic polynomial exp(polyval(log(E), a)) * 1e-4 with the Freeman-Jones analytic form 1e-4 * 0.6937e-14 * (1 - 0.155 log10(E))^2 / (1 + 0.1112e-14 E^3.3) as the alternative branch",
+  "relation": "H + H+ charge-exchange cross section: a continuous default composite with Janev below the 12.673175 keV crossing and Lindsay-Stebbings 2005 Table 1 above it, plus an independent Freeman-Jones analytic comparison branch.",
   "direction": "collision energies and branch selector -> cross section per energy",
-  "definition": "The default branch clips energies to [0.1, 2.01e4] eV and returns exp(polyval(log(E_clipped), a)) * 1e-4 m^2 with the nine Janev coefficients a. The freeman=True branch clips to [0.1, 1e5] eV and returns 1e-4 * 0.6937e-14 * (1 - 0.155 log10(E_clipped))^2 / (1 + 0.1112e-14 E_clipped^3.3) m^2. Endpoint values repeat outside each clipped range.",
-  "model": "two independent declared cross-section fits; no interpolation of external data and no rate integration",
+  "definition": "Clip energy to [0.1, 2.5e5] eV for the default or [0.1, 1e5] eV for freeman=True. For the default, return exp(polyval(log(E), a))*1e-4 m^2 with the nine Janev coefficients for E <= 1.267317514018116e4 eV; above that value return (4.15-0.531*ln(E_keV))^2*(1-exp(-67.3/E_keV))^4.5*1e-20 m^2. For freeman=True return 1e-4*0.6937e-14*(1-0.155*log10(E))^2/(1+0.1112e-14*E^3.3) m^2. Above the selected upper limit emit RuntimeWarning and return the endpoint value.",
+  "model": "continuous two-source default composite with an independent Freeman-Jones comparison branch",
   "geometry": "none; a scalar material function of collision energy",
   "coordinates": "collision energy in eV; output cross section in m^2",
-  "boundary": "energies must be finite and nonnegative; in-domain values outside a branch's fit range clip to the range endpoints; the branch selector must be a scalar; both fits are strictly positive and finite on their clipped domains",
+  "boundary": "Finite nonnegative real energies; scalar freeman selector; default domain [0.1, 2.5e5] eV, Freeman-Jones domain [0.1, 1e5] eV; upper clipping emits RuntimeWarning and lower clipping is silent.",
   "assumptions": [
-   "The Janev coefficients and the Freeman-Jones constants are the declared fit values, evaluated with the declared expressions; they are not re-derived from any external reference.",
-   "The two branches are independent fits, not equivalent parameterizations of one relation; selecting one is a caller decision, and no test establishes either fit against an external physical cross-section reference.",
-   "Endpoint clipping is the declared behavior: a caller evaluating far outside the fit range silently obtains the endpoint value."
+   "The Janev coefficients and Freeman-Jones constants retain their declared arithmetic.",
+   "Lindsay and Stebbings (2005), Table 1 and section 4.1, define the high-energy fit and its stated reliability; this repository does not relabel that published fit as an independent experimental validation.",
+   "The two fits agree at 12.67317514018116 eV to numerical precision, so the default branches there without an interpolation gap.",
+   "The Lindsay-Stebbings Table 1 range is 0.005-250 keV; claims outside that range are not supported by this fit."
   ]
  },
  "inputs": [
@@ -55,17 +57,17 @@
    "shape": "any (scalar or array)",
    "dtype": "real array-like",
    "required": true,
-   "constraints": "Finite and nonnegative. Values above or below a branch's fit range are clipped to that range's endpoints."
+   "constraints": "Finite and nonnegative real values. Low values clip to 0.1 eV. The default high limit is 2.5e5 eV; the Freeman-Jones high limit is 1e5 eV. Values above the selected limit clip and emit RuntimeWarning."
   },
   {
    "name": "freeman",
-   "description": "Branch selector: the Freeman-Jones analytic fit when truthy, otherwise the Janev logarithmic polynomial.",
+   "description": "Branch selector: Freeman-Jones when truthy; the continuous Janev/Lindsay-Stebbings composite otherwise.",
    "units": "dimensionless",
    "shape": "scalar",
    "dtype": "scalar selector",
    "required": false,
    "default": false,
-   "constraints": "A scalar interpreted as its truth value; arrays are rejected. The default selects the Janev branch."
+   "constraints": "Scalar interpreted as truth value; arrays are rejected. Default false selects the composite."
   }
  ],
  "outputs": [
@@ -76,29 +78,28 @@
    "shape": "same as energy_ev",
    "dtype": "float64 array",
    "required": true,
-   "constraints": "Finite and strictly positive for every accepted input, because both fits are evaluated only on their clipped positive domains."
+   "constraints": "Finite and strictly positive on both clipped branches."
   }
  ],
  "applicability": {
   "preconditions": [
-   "The caller accepts the clipping convention: energies outside a branch's fit range silently return the endpoint value rather than an error or an extrapolation.",
-   "The caller chooses the branch; the two fits disagree in magnitude and are not interchangeable."
+   "The caller accepts that values below 0.1 eV use the lower endpoint and values above the selected upper limit use the upper endpoint with RuntimeWarning.",
+   "The caller uses freeman=True only when the Freeman-Jones comparison model is intended."
   ],
   "supported": [
-   "H + H+ charge-exchange cross sections on either fit within (or clamped to) its declared energy range.",
-   "Scalar and array evaluation of any shape, including zero-dimensional inputs.",
-   "Rejecting negative energies and non-scalar branch selectors."
+   "The default H + H+ cross section from 0.1 eV through 250 keV, with the two published fits joined at 12.673175 keV.",
+   "The independent Freeman-Jones analytic branch through 100 keV.",
+   "Scalar and arbitrary-shape array evaluation with scalar branch selection."
   ],
   "excluded": [
-   "Maxwellian averaging of this cross section: use scirel.collisions.maxwellian-relative-speed-rate-average, which accepts this callable as its cross_section_m2 port.",
-   "Charge-exchange involving molecular hydrogen or other species: different relations not provided by this asset.",
-   "Rate coefficients or collision frequencies: downstream caller-owned quantities.",
-   "A cross-section model validated against an external atomic-physics reference; none is bound."
+   "No Maxwellian rate integral is performed here; the separate rate entry owns that operation.",
+   "Molecular hydrogen and other species are different relations.",
+   "No experimental validation beyond the cited published parameterization and its stated reliability is established."
   ]
  },
  "failure_semantics": {
   "invalid_input": "Raises ValueError naming energy_ev for non-real, non-finite or negative energy inputs, or naming freeman when that selector is an array rather than a scalar. There is no other failure mode.",
-  "runtime_failure": "Not reachable on the declared domain: both fits are evaluated only on their clipped positive ranges, so the result is finite and strictly positive for every accepted input. No iteration, no branch state and no partial results. Emits RuntimeWarning for energies above the selected fit limit.",
+  "runtime_failure": "Valid inputs return finite positive values. Energy above the selected upper limit emits RuntimeWarning and returns the endpoint value.",
   "nonconvergence": "Not applicable; the relation has no iteration or feedback.",
   "partial_results": "Never returned; a rejected call produces no cross section."
  },
@@ -116,31 +117,29 @@
   "dependencies": []
  },
  "example": {
-  "description": "Evaluate both branches on a small energy grid, confirm the endpoint clipping and confirm that a negative energy and an array branch selector are rejected.",
-  "code": "import numpy as np\nfrom scirel.collisions import evaluate_atomic_hydrogen_charge_exchange_cross_section\n\nenergy = np.array([0.1, 1.0, 10.0, 100.0, 1.0e3, 1.0e4, 2.01e4])\njanev = evaluate_atomic_hydrogen_charge_exchange_cross_section(energy)\nassert janev.shape == energy.shape\nassert np.all(np.isfinite(janev)) and np.all(janev > 0.0)\nfreeman = evaluate_atomic_hydrogen_charge_exchange_cross_section(energy, freeman=True)\nassert np.all(np.isfinite(freeman)) and np.all(freeman > 0.0)\nassert not np.allclose(janev, freeman, rtol=1e-12, atol=0.0)\nclipped = evaluate_atomic_hydrogen_charge_exchange_cross_section(np.array([0.01, 0.1, 3.0e4, 2.01e4]))\nassert clipped[0] == clipped[1] and clipped[-1] == clipped[-2]\ntry:\n    evaluate_atomic_hydrogen_charge_exchange_cross_section(np.array([1.0, -0.5]))\nexcept ValueError as error:\n    assert 'nonnegative' in str(error)\nelse:\n    raise AssertionError('a negative energy must be rejected')\ntry:\n    evaluate_atomic_hydrogen_charge_exchange_cross_section(energy, freeman=np.ones((2, 2)))\nexcept ValueError as error:\n    assert 'freeman' in str(error)\nelse:\n    raise AssertionError('an array branch selector must be rejected')",
-  "expected": "Finite strictly positive cross sections in m^2 on both branches, with the two branches disagreeing; endpoint repetition outside each clipped range; ValueError for a negative energy naming nonnegativity and ValueError for an array freeman selector naming freeman."
+  "description": "Evaluate the default composite and Freeman-Jones comparison branch, verify source-range high-energy values, endpoint warnings and invalid inputs.",
+  "code": "import warnings\nimport numpy as np\nfrom scirel.collisions import evaluate_atomic_hydrogen_charge_exchange_cross_section\n\nenergy = np.array([0.1, 1.0, 10.0, 1.0e4, 1.267317514018116e4, 3.0e4, 1.0e5])\ncomposite = evaluate_atomic_hydrogen_charge_exchange_cross_section(energy)\nassert composite.shape == energy.shape\nassert np.all(np.isfinite(composite)) and np.all(composite > 0.0)\nfreeman = evaluate_atomic_hydrogen_charge_exchange_cross_section(energy, freeman=True)\nassert np.all(np.isfinite(freeman)) and np.all(freeman > 0.0)\nwith warnings.catch_warnings(record=True) as caught:\n    warnings.simplefilter('always')\n    clipped = evaluate_atomic_hydrogen_charge_exchange_cross_section(np.array([0.01, 0.1, 3.0e5, 2.5e5]))\nassert len(caught) == 1 and issubclass(caught[0].category, RuntimeWarning)\nassert clipped[0] == clipped[1] and clipped[-1] == clipped[-2]\ntry:\n    evaluate_atomic_hydrogen_charge_exchange_cross_section(np.array([1.0, -0.5]))\nexcept ValueError as error:\n    assert 'nonnegative' in str(error)\nelse:\n    raise AssertionError('a negative energy must be rejected')\ntry:\n    evaluate_atomic_hydrogen_charge_exchange_cross_section(energy, freeman=np.ones((2, 2)))\nexcept ValueError as error:\n    assert 'freeman' in str(error)\nelse:\n    raise AssertionError('an array branch selector must be rejected')",
+  "expected": "Finite positive default and Freeman-Jones values; a continuous default join; one warning and exact endpoint repetition above 250 keV; ValueError for negative energy and an array selector."
  },
  "verification": {
   "scope": [
-   "That the Janev branch equals an independent evaluation of exp(polyval(log(E), a)) * 1e-4 on the clipped domain to a relative tolerance of 1e-15, and the Freeman-Jones branch equals an independent evaluation of its analytic form likewise.",
-   "That the two branches disagree, so the selector materially selects a different relation.",
-   "The endpoint clipping: values below and above each fit range repeat the endpoint values exactly.",
-   "The input contract: non-finite and negative energies are rejected with messages naming the quantity; arrays passed as freeman are rejected. A negative energy raises rather than being silently clipped, and an array selector is rejected rather than reduced with np.any.",
-   "No external implementation comparison is maintained or replayed by this repository; the maintained tests validate the declared relation against an in-repository independent formulation and cover the stated rejection and clipping behaviour only on their tested grids.",
-   "The composition contract: this callable serves directly as the cross_section_m2 port of scirel.collisions.maxwellian-relative-speed-rate-average and yields finite positive rate coefficients."
+   "The default composite matches independent evaluations of the Janev and Lindsay-Stebbings formulas on both sides of the join and is continuous there.",
+   "At 30, 50, 80 and 100 keV the default is compared with Lindsay-Stebbings values using the paper-stated 11% reliability above 6 keV; the old clipped endpoint fails this check.",
+   "The Freeman-Jones branch matches its independent analytic expression and differs from the default composite.",
+   "Upper endpoint clipping and RuntimeWarning are covered for both the default and Freeman-Jones branches; the lower endpoint clips without a warning.",
+   "Input tests reject nonfinite, negative, boolean, complex and numeric-string energies and array-valued branch selectors.",
+   "The default callable remains a valid cross_section_m2 port for maxwellian-relative-speed-rate-average."
   ],
   "tests": [
    "tests/collisions/test_atomic_hydrogen_charge_exchange_cross_section.py",
    "tests/collisions/test_collision_cross_section_input_types.py"
   ],
-  "evidence_ceiling": "An independent evaluation of the fit expressions covers every branch, clipping boundary and SI conversion; a NumPy-only installation passed scalar independent evaluation across 56 energies per branch, and all 62 fit/input tests passed with their original assertions and tolerances. This qualifies the stated empirical expression, not new experimental accuracy. No external experimental cross-section validation is bound, and redistribution permission remains separate.",
+  "evidence_ceiling": "The tests establish formula evaluation, source-range agreement at the sampled high energies, the continuous join, clipping/warning semantics and input failures. Lindsay and Stebbings (2005) is read as the published parameterization and reliability statement; no independent experimental re-fit or rights decision is established.",
   "known_limitations": [
-   "The integrated input check rejects complex, boolean and numeric-string energies before float conversion; no coercion is performed. Valid real-input fit arithmetic is unchanged.",
-   "Neither branch is validated against an external atomic-physics reference; no external validation gap is closed here.",
-   "Above the upper fit limit the endpoint value is returned and a RuntimeWarning is emitted, because the true cross section keeps falling: at 100 keV the Janev branch reads about 50 times the Freeman-Jones branch. Below the lower limit the endpoint is returned without a warning. Use freeman=True for 20 to 100 keV.",
-   "The two branches are different fits, not equivalent forms; selecting the wrong one for an application is a scientific error no runtime check can detect.",
-   "The negative-energy and scalar-selector rejections are explicit preconditions of this contract: a negative energy or an array selector raises ValueError rather than returning the clipped endpoint or an array-reduced branch selection.",
-   "No environment-gated external-implementation comparison exists in this repository; any earlier external comparison is not replayed by the maintained tests.",
+   "The default uses the Janev fit below 5 eV, while the Lindsay-Stebbings Table 1 begins at 5 eV; the composite is not validated below 5 eV by the published table.",
+   "The Lindsay-Stebbings Table 1 ends at 250 keV; values above 250 keV warn and repeat the endpoint rather than extrapolate.",
+   "The paper states about 11% reliability above 6 keV, with a separate almost 30% theory-versus-measurement discrepancy at 100 keV. The fit difference and that discrepancy are not a newly derived uncertainty budget.",
+   "The Freeman-Jones branch is an independent comparison fit, not the default and not a correction to the composite.",
    "Public distribution licensing remains pending a human decision."
   ]
  }
