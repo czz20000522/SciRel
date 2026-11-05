@@ -1,7 +1,9 @@
-"""Named exact-document ports preserve original positional numerical paths.
+"""Explicit sampling ports preserve positional field numerical paths.
 
-The pre-adapter source failures are retained in keyword-ports-before.stdout.
+The removed mapping alias is rejected rather than retained as compatibility.
 """
+
+import inspect
 
 import numpy as np
 import pytest
@@ -10,16 +12,42 @@ from scipy.spatial import QhullError
 from scirel.geometry import sampling
 
 
-def test_regular_grid_named_values_match_legacy_positional_fields():
+def test_regular_grid_explicit_signature_and_removed_values_mapping():
+    signature = inspect.signature(sampling.regular_grid)
+    assert str(signature) == (
+        "(xx, yy, *fields, nx=200, ny=200, xi=None, yi=None, method='linear')"
+    )
+    assert signature.parameters["fields"].kind is inspect.Parameter.VAR_POSITIONAL
+    for name in ("nx", "ny", "xi", "yi", "method"):
+        assert signature.parameters[name].kind is inspect.Parameter.KEYWORD_ONLY
+
     x, y = np.meshgrid(np.linspace(0, 1, 4), np.linspace(0, 1, 4))
     q = x + 2 * y
-    old = sampling.regular_grid(x, y, q, nx=5, ny=6)
-    named = sampling.regular_grid(x, y, values=[q], nx=5, ny=6)
-    assert len(named) == len(old) == 3
-    for a, b in zip(named, old):
-        np.testing.assert_array_equal(a, b)
-    with pytest.raises(ValueError):
-        sampling.regular_grid(x, y, q, values=[q])
+    explicit = sampling.regular_grid(x, y, q, nx=5, ny=6)
+    assert len(explicit) == 3
+    assert explicit[0].shape == explicit[1].shape == explicit[2].shape == (5, 6)
+    with pytest.raises(TypeError, match="values"):
+        sampling.regular_grid(x, y, values=[q], nx=5, ny=6)
+
+
+def test_regular_grid_regenerates_both_axes_when_one_query_axis_is_missing():
+    x, y = np.meshgrid(np.linspace(-1, 1, 4), np.linspace(-0.5, 0.5, 4))
+    q = x + 2 * y
+    actual_x, actual_y, _ = sampling.regular_grid(
+        x,
+        y,
+        q,
+        nx=5,
+        ny=6,
+        xi=np.linspace(-10.0, 10.0, 4),
+    )
+    expected_x, expected_y = np.meshgrid(
+        np.linspace(x.min(), x.max(), 5),
+        np.linspace(y.min(), y.max(), 6),
+        indexing="ij",
+    )
+    np.testing.assert_array_equal(actual_x, expected_x)
+    np.testing.assert_array_equal(actual_y, expected_y)
 
 
 def test_reflection_named_quantities_match_legacy_positional_fields():
@@ -67,7 +95,10 @@ def test_regular_grid_empty_fields_and_failure_paths_remain_unchanged():
 
     with pytest.raises(ValueError, match="different number of values and points"):
         sampling.regular_grid(x, y, np.ones(3), xi=xi, yi=yi, method="linear")
-    with pytest.raises(ValueError, match="Unknown interpolation method"):
+    with pytest.raises(
+        ValueError,
+        match="Unknown interpolation method 'bogus' for 2 dimensional data",
+    ):
         sampling.regular_grid(x, y, x + y, xi=xi, yi=yi, method="bogus")
     with pytest.raises(TypeError, match="metod"):
         sampling.regular_grid(x, y, x + y, xi=xi, yi=yi, metod="cubic")

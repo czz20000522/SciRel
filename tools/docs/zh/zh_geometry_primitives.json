@@ -1793,14 +1793,15 @@
   },
   {
    "asset_id": "scirel.sampling.regular-grid",
-   "source_sha256": "c296f0a485c179c1f541656604ef6503cd88f566164f38b5dc930efa4b697f2b",
+   "source_sha256": "39bed0221f8bd5f2d4d757acd596b1d51d0f40856976aff60be59e10850ed79e",
    "summary": "将标量场插值到提供的网格或生成的 ij 索引网格。",
    "definition": "将标量场插值到提供的网格或生成的 ij 索引网格。",
-   "model": "使用 SciPy 的线性插值，默认生成 200×200 网格；输出轴按 ij 次序生成。",
-   "boundary": "显式 xi、yi 共同覆盖生成网格。",
+   "model": "使用 SciPy 散点插值；method 默认为 linear，生成网格时默认 nx=ny=200。",
+   "boundary": "xi、yi 同时提供时使用；任一缺失时，两个坐标都会改为生成网格。",
    "assumptions": [
-    "平面采样数组和场有限且匹配。",
-    "请求的网格/查询点位于凸包/插值支持范围内。"
+    "平面采样数组和位置字段数组有限且匹配。",
+    "请求的网格/查询点位于凸包/插值支持范围内。",
+    "字段通过独立的位置参数传入；不接受 values 映射别名。"
    ],
    "inputs": [
     {
@@ -1816,10 +1817,34 @@
      "dtype": "float64"
     },
     {
-     "name": "values",
-     "description": "具名标量场数组；可替代位置字段参数。",
-     "constraints": "不得与位置字段参数同时使用。",
-     "dtype": "列表或 None"
+     "name": "nx",
+     "description": "生成的 x 网格点数。",
+     "constraints": "传给 numpy.linspace 的整数；xi 或 yi 缺失时使用。",
+     "dtype": "int"
+    },
+    {
+     "name": "ny",
+     "description": "生成的 y 网格点数。",
+     "constraints": "传给 numpy.linspace 的整数；xi 或 yi 缺失时使用。",
+     "dtype": "int"
+    },
+    {
+     "name": "xi",
+     "description": "查询 x 坐标。",
+     "constraints": "仅当 xi、yi 均提供时使用；任一为 None 时两者都重新生成。",
+     "dtype": "浮点数组或 None"
+    },
+    {
+     "name": "yi",
+     "description": "查询 y 坐标。",
+     "constraints": "仅当 xi、yi 均提供时使用；任一为 None 时两者都重新生成。",
+     "dtype": "浮点数组或 None"
+    },
+    {
+     "name": "method",
+     "description": "SciPy 散点插值方法。",
+     "constraints": "只能是 'linear'、'nearest' 或 'cubic'。",
+     "dtype": "str"
     }
    ],
    "outputs": [
@@ -1832,8 +1857,9 @@
    ],
    "applicability": {
     "preconditions": [
-     "平面采样数组和场有限且匹配。",
-     "请求的网格/查询点位于凸包/插值支持范围内。"
+     "平面采样数组和位置字段数组有限且匹配。",
+     "请求的网格/查询点位于凸包/插值支持范围内。",
+     "字段通过独立的位置参数传入；不接受 values 映射别名。"
     ],
     "supported": [
      "满足可调用对象专用形状、支持域和边界条件的有限输入。"
@@ -1843,20 +1869,20 @@
     ]
    },
    "failure_semantics": {
-    "invalid_input": "对非有限、不匹配、未排序、域外或格式错误的输入抛出 ValueError 或底层 NumPy/SciPy 异常；不推断输入修复。",
+    "invalid_input": "缺少必填参数、使用已移除的 values 映射关键字或传入未知关键字时抛出 TypeError；method 超出文档集合，或采样、字段、查询坐标违反 SciPy 插值合同时抛出 ValueError；不推断输入修复。",
     "runtime_failure": "数值、插值或可选依赖异常从直接计算向上传播。",
     "nonconvergence": "不适用；该关系使用直接有限差分、插值、选择或求积操作。",
     "partial_results": "输入校验或底层数值操作失败时不承诺部分结果。"
    },
    "example": {
-    "description": "将一个散点标量场插值到显式 4×5 规则网格。",
+    "description": "将一个位置散点标量场插值到生成的 4×5 规则网格。",
     "expected": "返回元组有三个元素，插值场形状为 (4, 5)。"
    },
    "verification": {
     "scope": [
      "公共可调用签名及文档化的有限输入行为。",
-     "verification.tests 列出的直接回归样例。",
-     "本合同所载可执行示例。"
+     "显式 nx、ny、xi、yi 和 method 参数，并移除 values 映射别名。",
+     "verification.tests 列出的直接回归样例和合同所载可执行示例。"
     ],
     "evidence_ceiling": "直接示例和具名回归样例只在这些输入上建立文档所述关系；不代表任意输入正确性、实验验证或发行批准。",
     "known_limitations": [
