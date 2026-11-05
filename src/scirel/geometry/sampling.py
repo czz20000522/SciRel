@@ -246,6 +246,11 @@ def get_fieldlines(
 def parse_segment(flpoints, start_coord=None, end_coord=None, clockwise=True):
     """Orient and optionally trim an ordered planar contour segment.
 
+    A terminal vertex exactly equal to the first is treated as a closure
+    marker. It is removed before orientation and reattached once when the
+    result is not explicitly trimmed, so reversed closed contours do not gain
+    a zero-length step.
+
     Parameters
     ----------
     flpoints : array_like, shape (N, 2)
@@ -258,7 +263,8 @@ def parse_segment(flpoints, start_coord=None, end_coord=None, clockwise=True):
     Returns
     -------
     ndarray
-        The oriented and optionally trimmed segment.
+        The oriented and optionally trimmed segment. An untrimmed exact
+        closure marker remains the final vertex.
 
     Raises
     ------
@@ -266,6 +272,9 @@ def parse_segment(flpoints, start_coord=None, end_coord=None, clockwise=True):
         Errors raised by NumPy for unsupported shapes or values.
     """
     points = np.asarray(flpoints)
+    closed = points.ndim == 2 and points.shape[0] > 1 and np.array_equal(points[0], points[-1])
+    if closed:
+        points = points[:-1]
     if start_coord is not None:
         start = np.asarray(start_coord)
         index = np.argmin(np.sum((points - start) ** 2, axis=1))
@@ -278,7 +287,10 @@ def parse_segment(flpoints, start_coord=None, end_coord=None, clockwise=True):
     if end_coord is not None:
         target = np.asarray(end_coord)
         end = np.argmin(np.sum((points - target) ** 2, axis=1)) + 1
-    return points[:end, :]
+    segment = points[:end, :]
+    if closed and end_coord is None:
+        segment = np.vstack((segment, segment[:1]))
+    return segment
 
 
 def get_fieldline_distance(flpoints):
