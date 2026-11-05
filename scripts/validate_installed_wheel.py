@@ -67,9 +67,7 @@ def _normalise_distribution(value: str) -> str:
 
 def _normalise_os(value: str) -> str:
     token = value.strip().lower()
-    return {"darwin": "macos", "mac": "macos", "win32": "windows"}.get(
-        token, token
-    )
+    return {"darwin": "macos", "mac": "macos", "win32": "windows"}.get(token, token)
 
 
 def _normalise_arch(value: str) -> str:
@@ -97,8 +95,7 @@ def _parse_platform_id(value: str) -> dict[str, str]:
     parts = value.strip().lower().split("-")
     if len(parts) < 3 or any(not part for part in parts):
         raise ValueError(
-            "expected platform id '<os>-<architecture>-<python>', "
-            "for example linux-x86_64-cp314"
+            "expected platform id '<os>-<architecture>-<python>', for example linux-x86_64-cp314"
         )
     python_tag = parts[-1]
     match = re.fullmatch(r"cp(?P<digits>\d{2,3})(?P<free_threaded>t)?", python_tag)
@@ -121,7 +118,9 @@ def _parse_platform_id(value: str) -> dict[str, str]:
     }
 
 
-def _runtime_identity(expected_platform: str | None, expected_python: str) -> tuple[dict[str, Any], list[str]]:
+def _runtime_identity(
+    expected_platform: str | None, expected_python: str
+) -> tuple[dict[str, Any], list[str]]:
     implementation = platform.python_implementation()
     version_line = f"{sys.version_info.major}.{sys.version_info.minor}"
     prefix = Path(sys.prefix).resolve()
@@ -169,7 +168,11 @@ def _runtime_identity(expected_platform: str | None, expected_python: str) -> tu
     if expected_platform:
         expected = _parse_platform_id(expected_platform)
         actual["expected_platform"] = expected_platform
-        for key, label in (("os", "OS"), ("architecture", "architecture"), ("python_line", "Python line")):
+        for key, label in (
+            ("os", "OS"),
+            ("architecture", "architecture"),
+            ("python_line", "Python line"),
+        ):
             actual_key = "version_line" if key == "python_line" else key
             if actual[actual_key] != expected[key]:
                 errors.append(
@@ -247,10 +250,14 @@ def _check_dependencies(requirements: list[dict[str, str]] | None = None) -> lis
     rows = requirements if requirements is not None else _declared_runtime_requirements()
     for row in rows:
         name = row["name"]
-        item: dict[str, Any] = {**row, "status": "FAIL", "import_candidates": _dependency_import_candidates(name)}
+        item: dict[str, Any] = {
+            **row,
+            "status": "FAIL",
+            "import_candidates": _dependency_import_candidates(name),
+        }
         try:
             item["installed_version"] = metadata.version(name)
-        except metadata.PackageNotFoundError as exc:
+        except metadata.PackageNotFoundError:
             item["error"] = f"distribution is not installed: {name}"
             checks.append(item)
             continue
@@ -374,9 +381,11 @@ def _check_distribution() -> tuple[dict[str, Any], list[str], Any | None]:
     try:
         dist = metadata.distribution("scirel")
     except metadata.PackageNotFoundError:
-        return {"status": "FAIL", "error": "scirel distribution is not installed"}, [
-            "scirel distribution is not installed"
-        ], None
+        return (
+            {"status": "FAIL", "error": "scirel distribution is not installed"},
+            ["scirel distribution is not installed"],
+            None,
+        )
     details.update(
         {
             "version": dist.version,
@@ -479,8 +488,12 @@ def _wheel_payload(path: Path) -> tuple[dict[str, Any], list[str]]:
                 if "\\" in name:
                     errors.append(f"wheel member uses a backslash path: {name!r}")
                     continue
-                if (name.startswith("/") or ":" in name or "\x00" in name or
-                        any(part in {"", ".", ".."} for part in name.split("/"))):
+                if (
+                    name.startswith("/")
+                    or ":" in name
+                    or "\x00" in name
+                    or any(part in {"", ".", ".."} for part in name.split("/"))
+                ):
                     errors.append(f"wheel member escapes its archive root: {name!r}")
                     continue
                 relative = PurePosixPath(name)
@@ -494,7 +507,11 @@ def _wheel_payload(path: Path) -> tuple[dict[str, Any], list[str]]:
                 else:
                     details["forbidden_files"].append(name)
                     errors.append(f"wheel contains a non-package top-level member: {name}")
-                if name.endswith(".pyc") or name.endswith(".pyo") or "__pycache__" in relative.parts:
+                if (
+                    name.endswith(".pyc")
+                    or name.endswith(".pyo")
+                    or "__pycache__" in relative.parts
+                ):
                     details["forbidden_files"].append(name)
                     errors.append(f"wheel contains an interpreter cache: {name}")
                 if relative.parts[-1].lower() in {"tests", "provenance", "scripts"}:
@@ -601,8 +618,7 @@ def _catalog_wheel_closure(
             member_bytes = {
                 name: archive.read(name)
                 for name in members
-                if name.startswith("scirel/") and name.endswith(".py")
-                or name.endswith("/METADATA")
+                if name.startswith("scirel/") and name.endswith(".py") or name.endswith("/METADATA")
             }
     except (BadZipFile, OSError) as exc:
         return details, [f"catalog wheel closure could not read wheel: {exc}"]
@@ -619,7 +635,14 @@ def _catalog_wheel_closure(
             version = document.get("version", {}).get("implementation_version")
             if isinstance(version, str) and version:
                 document_versions.add(version)
-        except (OSError, UnicodeError, json.JSONDecodeError, KeyError, TypeError, ValueError) as exc:
+        except (
+            OSError,
+            UnicodeError,
+            json.JSONDecodeError,
+            KeyError,
+            TypeError,
+            ValueError,
+        ) as exc:
             errors.append(f"catalog binding could not be resolved for {path.name}: {exc}")
 
     member_by_implementation: dict[str, str] = {}
@@ -627,7 +650,9 @@ def _catalog_wheel_closure(
         try:
             _, member = _wheel_member_for_source_module(root, implementation)
         except (OSError, ValueError) as exc:
-            errors.append(f"catalog implementation source could not be resolved for {implementation}: {exc}")
+            errors.append(
+                f"catalog implementation source could not be resolved for {implementation}: {exc}"
+            )
             continue
         member_by_implementation[implementation] = member
     missing = sorted(
@@ -678,7 +703,9 @@ def _catalog_wheel_closure(
             source_bytes = source_path.read_bytes()
             wheel_bytes = member_bytes[member]
         except (KeyError, OSError, ValueError) as exc:
-            errors.append(f"catalog implementation binding could not be read for {implementation}: {exc}")
+            errors.append(
+                f"catalog implementation binding could not be read for {implementation}: {exc}"
+            )
             continue
         source_digest = hashlib.sha256(source_bytes).hexdigest()
         wheel_digest = hashlib.sha256(wheel_bytes).hexdigest()
@@ -696,7 +723,9 @@ def _catalog_wheel_closure(
         try:
             available_symbols = _module_symbols(wheel_bytes, filename=member)
         except (UnicodeDecodeError, SyntaxError) as exc:
-            errors.append(f"wheel implementation module is not parseable for {implementation}: {exc}")
+            errors.append(
+                f"wheel implementation module is not parseable for {implementation}: {exc}"
+            )
             continue
         for symbol in sorted(symbols):
             if symbol not in available_symbols:
@@ -724,7 +753,9 @@ def _catalog_wheel_closure(
     if expected_source_revision is not None:
         if actual_source_revision is None:
             details["source_revision_status"] = "unavailable"
-            errors.append("expected source revision cannot be checked because the catalog root is not a Git checkout")
+            errors.append(
+                "expected source revision cannot be checked because the catalog root is not a Git checkout"
+            )
         elif actual_source_revision != expected_source_revision:
             details["source_revision_status"] = "mismatch"
             errors.append(
@@ -994,7 +1025,9 @@ def _run_public_surface() -> tuple[dict[str, Any], list[str]]:
                 )
                 continue
             if not isinstance(child, ModuleType):
-                failures.append(f"nested package export {package_name}.{export_name} is not a module")
+                failures.append(
+                    f"nested package export {package_name}.{export_name} is not a module"
+                )
                 continue
             expected_name = f"{package_name}.{export_name}"
             if child.__name__ != expected_name:
@@ -1079,7 +1112,9 @@ def validate_installed_wheel(
     try:
         receipt["dependencies"] = _check_dependencies()
     except Exception as exc:
-        receipt["errors"].append(f"declared dependency inspection failed: {type(exc).__name__}: {exc}")
+        receipt["errors"].append(
+            f"declared dependency inspection failed: {type(exc).__name__}: {exc}"
+        )
     for item in receipt["dependencies"]:
         if item.get("status") != "PASS":
             receipt["errors"].append(

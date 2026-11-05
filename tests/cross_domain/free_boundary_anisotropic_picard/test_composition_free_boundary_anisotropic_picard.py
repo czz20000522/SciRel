@@ -1,12 +1,11 @@
-from scirel.equilibrium.free_boundary_anisotropic_picard import solve_free_boundary_anisotropic_picard
-import scirel
-from cross_domain._review_bindings import load_asset as _load_asset, load_composition as _load_composition, load_callable as _load_callable
+from scirel.equilibrium.free_boundary_anisotropic_picard import (
+    solve_free_boundary_anisotropic_picard,
+)
 from pathlib import Path
 import inspect
 
 import numpy as np
 import pytest
-
 
 
 def _run(values):
@@ -113,31 +112,32 @@ def test_rejects_non_square_or_wrong_size_green_matrix():
 
 # 验证：第 2 步消费第 1 步的真实 psi/current 输出；若没有反馈，psi 不会偏离真空状态。
 def test_nonzero_green_requires_sequential_state_feedback():
-    r, z = _inputs()["r_grid"], _inputs()["z_grid"]
-    green = .5 * r.ravel()[:, None] * r.ravel()[:, None] * np.ones((1, r.size))
+    r = _inputs()["r_grid"]
+    green = 0.5 * r.ravel()[:, None] * r.ravel()[:, None] * np.ones((1, r.size))
+
     def closure(state):
         p = 3.0 + r**2
-        return {"p_parallel": p, "p_perp": p.copy(), "density": None,
-                "electron_temperature": None}
-    values = _inputs(psi_vac=.5*r**2, pressure_closure=closure,
-        g_psi=green, maxiter=2, tol=1.0e-30)
+        return {"p_parallel": p, "p_perp": p.copy(), "density": None, "electron_temperature": None}
+
+    values = _inputs(
+        psi_vac=0.5 * r**2, pressure_closure=closure, g_psi=green, maxiter=2, tol=1.0e-30
+    )
     result = _run(values)
     assert result["iterations"] == 2
     assert result["residual_history"].shape == (2,)
     # I0=integral(2R)dR dZ=K; BZ1=1+I0; I1=K/(1+K).
     # Differentiating the same psi increment is necessary for this transition.
-    k = (.6**2-.2**2)*.2
-    second = k/(1.0+k)
-    np.testing.assert_allclose(result["psi"], .5*r**2*(1.0+second))
-    np.testing.assert_allclose(result["BZ"], 1.0+second)
+    k = (0.6**2 - 0.2**2) * 0.2
+    second = k / (1.0 + k)
+    np.testing.assert_allclose(result["psi"], 0.5 * r**2 * (1.0 + second))
+    np.testing.assert_allclose(result["BZ"], 1.0 + second)
     assert not result["converged"]
     assert result["failure_reason"] == "maxiter_reached"
     final = _run({**values, "maxiter": 50, "tol": 1e-12})
-    fixed = 2*k/(1.0+np.sqrt(1.0+4*k))
+    fixed = 2 * k / (1.0 + np.sqrt(1.0 + 4 * k))
     assert final["converged"]
-    np.testing.assert_allclose(final["BZ"], 1.0+fixed, rtol=2e-12, atol=2e-12)
-    np.testing.assert_allclose(np.sum(final["plasma_currents"]), fixed,
-        rtol=2e-12, atol=2e-12)
+    np.testing.assert_allclose(final["BZ"], 1.0 + fixed, rtol=2e-12, atol=2e-12)
+    np.testing.assert_allclose(np.sum(final["plasma_currents"]), fixed, rtol=2e-12, atol=2e-12)
 
 
 # 验证：自洽 BR/BZ Green 响应是成对合同，单独提供一个会改变 B 的物理含义，必须拒绝。
@@ -160,25 +160,39 @@ def test_boundary_branch_corrects_flux_only_and_keeps_vacuum_poloidal_field():
     # Historical node ID: a wall flux correction must change its magnetic
     # derivatives. A rank-one wall constraint preserves a nonzero physical B.
     r, z = _inputs()["r_grid"], _inputs()["z_grid"]
-    sample = np.zeros((1, r.size)); sample[0, 0] = 1.0
+    sample = np.zeros((1, r.size))
+    sample[0, 0] = 1.0
     response = (r**2).ravel()[:, None]
-    values = _inputs(psi_vac=r**2*(.5+.1*z), br_vac=-.1*r,
-        bz_vac=1+.2*z, pressure_closure=_isotropic_limit_closure,
-        boundary_correction={"boundary_sample_matrix": sample,
+    values = _inputs(
+        psi_vac=r**2 * (0.5 + 0.1 * z),
+        br_vac=-0.1 * r,
+        bz_vac=1 + 0.2 * z,
+        pressure_closure=_isotropic_limit_closure,
+        boundary_correction={
+            "boundary_sample_matrix": sample,
             "green_boundary_to_boundary": sample @ response,
-            "green_boundary_to_field": response})
+            "green_boundary_to_field": response,
+        },
+    )
     result = _run(values)
-    np.testing.assert_allclose(result["psi"], .1*r**2*(z+.1), atol=1e-15)
-    np.testing.assert_allclose(result["BR"], -.1*r)
-    np.testing.assert_allclose(result["BZ"], .2*(z+.1), atol=2e-15)
+    np.testing.assert_allclose(result["psi"], 0.1 * r**2 * (z + 0.1), atol=1e-15)
+    np.testing.assert_allclose(result["BR"], -0.1 * r)
+    np.testing.assert_allclose(result["BZ"], 0.2 * (z + 0.1), atol=2e-15)
     assert result["boundary_currents"].shape == (1,)
     # A complete identity wall removes all psi AND B, hitting the declared
     # nonzero-field domain instead of returning a fictitious vacuum field.
     with pytest.raises(FloatingPointError, match="minimum_field"):
-        _run(_inputs(psi_vac=.5*r**2, pressure_closure=_isotropic_limit_closure,
-            boundary_correction={"boundary_sample_matrix": np.eye(r.size),
-                "green_boundary_to_boundary": np.eye(r.size),
-                "green_boundary_to_field": np.eye(r.size)}))
+        _run(
+            _inputs(
+                psi_vac=0.5 * r**2,
+                pressure_closure=_isotropic_limit_closure,
+                boundary_correction={
+                    "boundary_sample_matrix": np.eye(r.size),
+                    "green_boundary_to_boundary": np.eye(r.size),
+                    "green_boundary_to_field": np.eye(r.size),
+                },
+            )
+        )
 
 
 def test_requires_explicit_n4_pressure_closure_port():
@@ -237,7 +251,7 @@ def test_review_gate_rejects_invalid_closure_fields_and_mask_shape():
 def test_review_gate_terminal_outputs_share_the_returned_state():
     values = _inputs()
     result = _run(values)
-    weights = np.outer([.05, .1, .05], [.1, .2, .1])
+    weights = np.outer([0.05, 0.1, 0.05], [0.1, 0.2, 0.1])
     np.testing.assert_allclose(result["plasma_currents"], result["j_phi"] * weights)
     np.testing.assert_allclose(result["profiles"]["p_parallel"], 2.0 + result["psi"])
 
@@ -247,9 +261,9 @@ def test_review_gate_rejects_nonuniform_rz_axes_before_iteration():
     # Historical node ID: monotone nonuniform coordinates are now supported
     # with explicit per-node weights, rather than rejected or first-spaced.
     result = _run(_inputs(r_grid=r_grid, z_grid=z_grid))
-    weights = np.outer([.05, .1, .05], [.1, .25, .15])
+    weights = np.outer([0.05, 0.1, 0.05], [0.1, 0.25, 0.15])
     np.testing.assert_allclose(result["plasma_currents"], result["j_phi"] * weights)
-    np.testing.assert_allclose(np.sum(weights), .5 * .2)
+    np.testing.assert_allclose(np.sum(weights), 0.5 * 0.2)
 
 
 def test_review_gate_rejects_fractional_picard_iteration_count():
@@ -258,13 +272,21 @@ def test_review_gate_rejects_fractional_picard_iteration_count():
 
 
 def test_small_relaxed_step_does_not_terminate_unconverged_feedback_early():
-    r, z = _inputs()["r_grid"], _inputs()["z_grid"]
-    p = 3.0+r**2
-    values = _inputs(psi_vac=.5*r**2,
-        pressure_closure=lambda state: {"p_parallel":p, "p_perp":p.copy(),
-            "density":None,"electron_temperature":None},
-        g_psi=.5*(r**2).ravel()[:,None]*np.ones((1,r.size)),
-        maxiter=3,tol=1e-9,relax=1-1e-12)
+    r = _inputs()["r_grid"]
+    p = 3.0 + r**2
+    values = _inputs(
+        psi_vac=0.5 * r**2,
+        pressure_closure=lambda state: {
+            "p_parallel": p,
+            "p_perp": p.copy(),
+            "density": None,
+            "electron_temperature": None,
+        },
+        g_psi=0.5 * (r**2).ravel()[:, None] * np.ones((1, r.size)),
+        maxiter=3,
+        tol=1e-9,
+        relax=1 - 1e-12,
+    )
     result = _run(values)
     assert result["iterations"] == 3
     assert len(result["residual_history"]) == 3
@@ -274,31 +296,47 @@ def test_small_relaxed_step_does_not_terminate_unconverged_feedback_early():
 
 
 def test_unchanged_flux_does_not_hide_changing_field_and_current_feedback():
-    r, z = _inputs()["r_grid"], _inputs()["z_grid"]
-    p = 3.0+r**2
-    values = _inputs(psi_vac=.5*r**2,
-        pressure_closure=lambda state: {"p_parallel":p,"p_perp":p.copy(),
-            "density":None,"electron_temperature":None},
-        g_br=np.zeros((r.size,r.size)), g_bz=.5*np.ones((r.size,r.size)),
-        maxiter=1,tol=1e-12)
+    r = _inputs()["r_grid"]
+    p = 3.0 + r**2
+    values = _inputs(
+        psi_vac=0.5 * r**2,
+        pressure_closure=lambda state: {
+            "p_parallel": p,
+            "p_perp": p.copy(),
+            "density": None,
+            "electron_temperature": None,
+        },
+        g_br=np.zeros((r.size, r.size)),
+        g_bz=0.5 * np.ones((r.size, r.size)),
+        maxiter=1,
+        tol=1e-12,
+    )
     result = _run(values)
-    np.testing.assert_array_equal(result["psi"],values["psi_vac"])
+    np.testing.assert_array_equal(result["psi"], values["psi_vac"])
     assert not result["converged"]
     assert result["field_fixed_point_residual"] > values["tol"]
     assert result["current_fixed_point_residual"] > values["tol"]
-    final = _run({**values,"maxiter":50})
-    k = (.6**2-.2**2)*.2
-    expected = (1.0+np.sqrt(1.0+2*k))/2.0
+    final = _run({**values, "maxiter": 50})
+    k = (0.6**2 - 0.2**2) * 0.2
+    expected = (1.0 + np.sqrt(1.0 + 2 * k)) / 2.0
     assert final["converged"]
-    np.testing.assert_allclose(final["BZ"],expected,rtol=2e-12,atol=2e-12)
+    np.testing.assert_allclose(final["BZ"], expected, rtol=2e-12, atol=2e-12)
 
 
 def test_null_intermediate_field_fails_before_pressure_current_evaluation():
     calls = []
+
     def closure(state):
         calls.append(state)
         return _isotropic_limit_closure(state)
+
     with pytest.raises(FloatingPointError, match="minimum_field"):
-        _run(_inputs(br_vac=np.zeros((3,3)),bz_vac=np.zeros((3,3)),
-            params={"B0":1.0},pressure_closure=closure))
+        _run(
+            _inputs(
+                br_vac=np.zeros((3, 3)),
+                bz_vac=np.zeros((3, 3)),
+                params={"B0": 1.0},
+                pressure_closure=closure,
+            )
+        )
     assert not calls
