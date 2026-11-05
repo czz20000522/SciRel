@@ -5,9 +5,10 @@ sampled state path: error subtraction, per-channel PID terms with a first-order
 filtered derivative, an 11-by-10 feedback map, feed-forward addition, and
 sample-and-hold enable behavior.
 """
+
 from __future__ import annotations
 
-from collections.abc import Mapping, Sequence
+from collections.abc import Mapping
 from typing import Any
 
 import numpy as np
@@ -33,9 +34,7 @@ def _vector(controller: Mapping[str, Any], name: str) -> np.ndarray:
     return _array(controller[name], name=name, shape=(_CHANNELS,))
 
 
-def simulate_feedback(
-    inputs: Mapping[str, Any], controller: Mapping[str, Any]
-) -> dict[str, Any]:
+def simulate_feedback(inputs: Mapping[str, Any], controller: Mapping[str, Any]) -> dict[str, Any]:
     """Evaluate the declared discrete feedback state primitive.
 
     ``inputs`` is the typed fixture shape with ``input_time_s``,
@@ -51,7 +50,9 @@ def simulate_feedback(
         raise ValueError("inputs['signals'] is required")
     required = ("reference_T", "measured_T", "feedforward_current_A", "enable")
     if any(name not in signals for name in required):
-        raise ValueError("signals must contain reference_T, measured_T, feedforward_current_A and enable")
+        raise ValueError(
+            "signals must contain reference_T, measured_T, feedforward_current_A and enable"
+        )
 
     input_time = _array(inputs.get("input_time_s"), name="input_time_s")
     observation_time = _array(inputs.get("observation_time_s"), name="observation_time_s")
@@ -62,7 +63,9 @@ def simulate_feedback(
         raise ValueError("at least one sample is required")
     reference = _array(signals["reference_T"], name="reference_T", shape=(n, _CHANNELS))
     measured = _array(signals["measured_T"], name="measured_T", shape=(n, _CHANNELS))
-    feedforward = _array(signals["feedforward_current_A"], name="feedforward_current_A", shape=(n, _OUTPUTS))
+    feedforward = _array(
+        signals["feedforward_current_A"], name="feedforward_current_A", shape=(n, _OUTPUTS)
+    )
     enable_raw = np.asarray(signals["enable"])
     if enable_raw.shape != (n,) or np.any((enable_raw != 0) & (enable_raw != 1)):
         raise ValueError("enable must be a binary vector with one value per sample")
@@ -82,15 +85,25 @@ def simulate_feedback(
     filter_rate = _vector(controller, "N_per_s")
     if np.any(filter_rate < 0):
         raise ValueError("N_per_s must be nonnegative")
-    coefficient = _array(controller["coefficient_matrix_unscaled"], name="coefficient_matrix_unscaled", shape=(_OUTPUTS, _CHANNELS))
+    coefficient = _array(
+        controller["coefficient_matrix_unscaled"],
+        name="coefficient_matrix_unscaled",
+        shape=(_OUTPUTS, _CHANNELS),
+    )
     scale = float(controller["coefficient_scale"])
     if not np.isfinite(scale):
         raise ValueError("coefficient_scale must be finite")
     feedback_map = coefficient * scale
-    integrator = _array(controller["integrator_initial_state"], name="integrator_initial_state", shape=(_CHANNELS,)).copy()
-    filt = _array(controller["filter_initial_state"], name="filter_initial_state", shape=(_CHANNELS,)).copy()
+    integrator = _array(
+        controller["integrator_initial_state"], name="integrator_initial_state", shape=(_CHANNELS,)
+    ).copy()
+    filt = _array(
+        controller["filter_initial_state"], name="filter_initial_state", shape=(_CHANNELS,)
+    ).copy()
     integration_enable = np.asarray(controller["internal_integration_enable"], dtype=float)
-    if integration_enable.shape != (_CHANNELS,) or np.any((integration_enable != 0) & (integration_enable != 1)):
+    if integration_enable.shape != (_CHANNELS,) or np.any(
+        (integration_enable != 0) & (integration_enable != 1)
+    ):
         raise ValueError("internal_integration_enable must be binary with ten entries")
     if float(controller.get("internal_reset", 0)) != 0:
         raise ValueError("nonzero internal_reset is outside this declared path")
