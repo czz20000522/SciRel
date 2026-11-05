@@ -5,7 +5,7 @@
   "en": "One anisotropic inversion trial",
   "zh": "单次各向异性反演试探"
  },
- "summary": "Evaluate one forward equilibrium trial with a predetermined residual size, distinguishing valid, numerical-failure and nonconverged outcomes; contract errors are reported directly.",
+ "summary": "Evaluate one forward equilibrium trial with a predetermined residual size, distinguishing valid, numerical-failure and nonconverged outcomes; contract errors are reported directly, and every outcome is returned in a scirel._result.Result mapping.",
  "taxonomy": [
   "inference",
   "anisotropic-equilibrium",
@@ -31,7 +31,7 @@
  "identity": {
   "relation": "parameters and compatible physical ports to a fixed-size validity record",
   "direction": "params, observations, solver_config, three ports -> residuals, chi2, equilibrium, valid/status",
-  "definition": "Before any scientific call, obtain N from the standard observation layout or from an explicitly supplied residual_size on a custom port. Deep-copy the call inputs and execute one equilibrium_solver; if it is not converged, immediately return an N-vector positive penalty without running diagnostics. When converged, run the diagnostic and reducer, and check residual shape/finiteness and chi2=r·r. ArithmeticError/RuntimeError is recorded as a numerical failure; contract errors such as ValueError/TypeError/KeyError propagate.",
+  "definition": "Before any scientific call, obtain N from the standard observation layout or from an explicitly supplied residual_size on a custom port. Deep-copy the call inputs and execute one equilibrium_solver; if it is not converged, immediately return an N-vector positive penalty without running diagnostics. When converged, run the diagnostic and reducer, and check residual shape/finiteness and chi2=r·r. ArithmeticError/RuntimeError is recorded as a numerical failure; contract errors such as ValueError/TypeError/KeyError propagate. Every outcome record is a scirel._result.Result mapping; mapping and attribute access expose the same values.",
   "model": "validated composition of caller forward, diagnostic and residual ports with no built-in pressure closure",
   "geometry": "defined by solver_config and the scientific ports",
   "coordinates": "r_grid/z_grid are deep-copied unchanged as diagnostic R/Z; no unit conversion is performed",
@@ -121,7 +121,7 @@
  "outputs": [
   {
    "name": "params",
-   "description": "Deep copy of the submitted parameters.",
+   "description": "Field of the returned scirel._result.Result mapping: Deep copy of the submitted parameters.",
    "units": "per parameter contract",
    "shape": "mapping",
    "dtype": "dict",
@@ -130,7 +130,7 @@
   },
   {
    "name": "chi2",
-   "description": "Recomputed inner product of the successful vector; N*penalty^2 on failure.",
+   "description": "Field of the returned scirel._result.Result mapping: Recomputed inner product of the successful vector; N*penalty^2 on failure.",
    "units": "dimensionless",
    "shape": "scalar",
    "dtype": "float",
@@ -139,7 +139,7 @@
   },
   {
    "name": "residuals",
-   "description": "Successful residuals or a same-size penalty vector.",
+   "description": "Field of the returned scirel._result.Result mapping: Successful residuals or a same-size penalty vector.",
    "units": "dimensionless",
    "shape": "[N]",
    "dtype": "float64 array",
@@ -148,7 +148,7 @@
   },
   {
    "name": "equilibrium",
-   "description": "Forward state obtained so far; None if none was obtained before a numerical exception.",
+   "description": "Field of the returned scirel._result.Result mapping: Forward state obtained so far; None if none was obtained before a numerical exception.",
    "units": "mixed",
    "shape": "mapping or None",
    "dtype": "mapping or None",
@@ -157,7 +157,7 @@
   },
   {
    "name": "failure_reason",
-   "description": "Explicit reason for forward nonconvergence or a numerical exception; None when valid.",
+   "description": "Field of the returned scirel._result.Result mapping: Explicit reason for forward nonconvergence or a numerical exception; None when valid.",
    "units": "identifier",
    "shape": "string or None",
    "dtype": "string or None",
@@ -166,7 +166,7 @@
   },
   {
    "name": "valid",
-   "description": "Forward and residual contracts are both satisfied.",
+   "description": "Field of the returned scirel._result.Result mapping: Forward and residual contracts are both satisfied.",
    "units": "boolean",
    "shape": "scalar",
    "dtype": "bool",
@@ -175,7 +175,7 @@
   },
   {
    "name": "status",
-   "description": "Trial category.",
+   "description": "Field of the returned scirel._result.Result mapping: Trial category.",
    "units": "identifier",
    "shape": "scalar",
    "dtype": "str",
@@ -184,7 +184,7 @@
   },
   {
    "name": "failed_port",
-   "description": "Port where the failure occurred.",
+   "description": "Field of the returned scirel._result.Result mapping: Port where the failure occurred.",
    "units": "identifier",
    "shape": "string or None",
    "dtype": "string or None",
@@ -193,7 +193,7 @@
   },
   {
    "name": "exception_type",
-   "description": "Actual class name of the numerical exception.",
+   "description": "Field of the returned scirel._result.Result mapping: Actual class name of the numerical exception.",
    "units": "identifier",
    "shape": "string or None",
    "dtype": "string or None",
@@ -218,7 +218,7 @@
   "invalid_input": "Raises ValueError for structurally invalid static inputs, ports or dimensions, or when a supplied value's conversion raises ValueError; TypeError when a conversion or nested port raises TypeError. Nested ValueError/TypeError/KeyError propagate.",
   "runtime_failure": "A nested ArithmeticError (including FloatingPointError) or RuntimeError returns numerical_failure with the same N, preserving the failed port and exception class. Process-level exceptions are not caught.",
   "nonconvergence": "A forward False returns forward_nonconvergence directly; diagnostics for that state are never executed.",
-  "partial_results": "Retains any actually obtained forward state for investigation with valid=False; the dimension is not lost and it does not participate in valid-best ranking."
+  "partial_results": "Returns a scirel._result.Result mapping retaining any actually obtained forward state for investigation with valid=False; the dimension is not lost and the state does not participate in valid-best ranking."
  },
  "public_api": {
   "python": {
@@ -239,20 +239,22 @@
  },
  "example": {
   "description": "When a two-observation forward solve does not converge, diagnostics are not called and two penalties are returned.",
-  "code": "import numpy as np\nfrom scirel.inference import evaluate_anisotropic_trial\nfrom scirel.diagnostics import reduce_observation_residuals\ncalls=[]\nr=evaluate_anisotropic_trial(params={'p':1.}, observations={'flux_loops':{'values':[1.,2.]}}, solver_config={'r_grid':[0.],'z_grid':[0.]}, equilibrium_solver=lambda _: {'converged':False,'failure_reason':'iteration limit'}, diagnostic_evaluator=lambda _:calls.append('unexpected'), residual_reducer=reduce_observation_residuals)\nassert not calls and not r['valid']\nnp.testing.assert_array_equal(r['residuals'],[1e12,1e12])\nassert r['chi2']==2e24 and r['status']=='forward_nonconvergence'",
-  "expected": "N stays 2, chi2=2e24, and the state is explicitly nonconverged; no diagnostic is called."
+  "code": "import numpy as np\nfrom scirel._result import Result\nfrom scirel.inference import evaluate_anisotropic_trial\nfrom scirel.diagnostics import reduce_observation_residuals\ncalls=[]\nr=evaluate_anisotropic_trial(params={'p':1.}, observations={'flux_loops':{'values':[1.,2.]}}, solver_config={'r_grid':[0.],'z_grid':[0.]}, equilibrium_solver=lambda _: {'converged':False,'failure_reason':'iteration limit'}, diagnostic_evaluator=lambda _:calls.append('unexpected'), residual_reducer=reduce_observation_residuals)\nassert isinstance(r, Result)\nassert r.valid is r['valid'] and r.residuals is r['residuals']\nassert not calls and not r['valid']\nnp.testing.assert_array_equal(r['residuals'],[1e12,1e12])\nassert r['chi2']==2e24 and r['status']=='forward_nonconvergence'",
+  "expected": "The call returns a scirel._result.Result mapping whose key and attribute access expose the same fields: N stays 2, chi2=2e24, and the state is explicitly nonconverged; no diagnostic is called."
  },
  "verification": {
   "scope": [
    "Fixed dimension and port records across success/numerical failure/success.",
    "Nonconvergence short-circuit, rejection of wrong residual shape/NaN/chi2, and deep non-modification of the caller.",
-   "Independent analytic and curved-field forward inversion consumer."
+   "Independent analytic and curved-field forward inversion consumer.",
+   "The converted public function returns scirel._result.Result with the same keys, order, values, shapes, dtypes and mapping compatibility, and attribute access resolves to the same fields."
   ],
   "tests": [
    "tests/cross_domain/test_inference_physical_closure.py",
-   "tests/cross_domain/test_anisotropic_inference_independent.py"
+   "tests/cross_domain/test_anisotropic_inference_independent.py",
+   "tests/inference/test_inference_named_result.py"
   ],
-  "evidence_ceiling": "Bounded to one forward equilibrium trial with explicit valid, numerical-failure and nonconverged outcomes. Evidence: `test_inference_physical_closure.py` contains 20 test functions, none of which references `evaluate_anisotropic_trial`, and is shared by 4 assets; `test_anisotropic_inference_independent.py` contains 1 test function, none of which references `evaluate_anisotropic_trial`, and is shared by 4 assets; only shared-file coverage is bound, so a pass is file-level rather than asset-isolated; the bounded example was executed by this audit. Oracle: independent analytic and discrete-reference comparisons in the bound inference files. It does not establish hiding contract/programming exceptions as physical infeasibility, or using a penalty to prove model validity.",
+  "evidence_ceiling": "Bounded to one forward equilibrium trial with explicit valid, numerical-failure and nonconverged outcomes. Evidence: `test_inference_physical_closure.py` contains 20 test functions, none of which references `evaluate_anisotropic_trial`, and is shared by 4 assets; `test_anisotropic_inference_independent.py` contains 1 test function, none of which references `evaluate_anisotropic_trial`, and is shared by 4 assets; only shared-file coverage is bound, so a pass is file-level rather than asset-isolated; the bounded example was executed by this audit. Oracle: independent analytic and discrete-reference comparisons in the bound inference files. It does not establish hiding contract/programming exceptions as physical infeasibility, or using a penalty to prove model validity. The direct named-result test also checks the legacy values, key order and attribute access.",
   "known_limitations": [
    "The scientific meaning of RuntimeError belongs to the caller's port; the failure record does not replace investigation of the original exception.",
    "A single trial does not judge parameter identifiability or optimality."

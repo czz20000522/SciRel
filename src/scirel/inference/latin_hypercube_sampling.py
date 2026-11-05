@@ -4,9 +4,11 @@ from __future__ import annotations
 
 import numpy as np
 
+from scirel._result import Result
+
 
 def sample_latin_hypercube(*, bounds, n_samples, seed=None, fit_keys=None):
-    """Generate a seeded Latin-hypercube design over bounded parameters.
+    """Generate a seeded Latin-hypercube design as a named result.
 
     Parameters
     ----------
@@ -28,6 +30,7 @@ def sample_latin_hypercube(*, bounds, n_samples, seed=None, fit_keys=None):
     Returns
     -------
     initial_samples : list of dict
+        Field of the returned ``scirel._result.Result`` mapping containing
         ``n_samples`` dictionaries in draw order. Each contains only the
         selected keys and one independently jittered value in every stratum
         [per-parameter caller units].
@@ -60,13 +63,18 @@ def sample_latin_hypercube(*, bounds, n_samples, seed=None, fit_keys=None):
     This is an initial design only: it does not encode correlations, priors,
     posterior uncertainty, physical admissibility, or optimizer convergence.
     The selected key order, installed NumPy generator, and seed define the
-    realized design.
+    realized design. The field is returned in one ``scirel._result.Result``
+    mapping; mapping and attribute access expose the same value.
 
     Examples
     --------
+    >>> from scirel._result import Result
     >>> from scirel.inference import sample_latin_hypercube
     >>> bounds = {'a': (0.0, 1.0), 'b': (10.0, 20.0)}
-    >>> a = sample_latin_hypercube(bounds=bounds, n_samples=5, seed=4)['initial_samples']
+    >>> result = sample_latin_hypercube(bounds=bounds, n_samples=5, seed=4)
+    >>> assert isinstance(result, Result)
+    >>> assert result.initial_samples is result['initial_samples']
+    >>> a = result['initial_samples']
     >>> b = sample_latin_hypercube(bounds=bounds, n_samples=5, seed=4)['initial_samples']
     >>> assert a == b
     >>> assert sorted(int(row['a'] * 5) for row in a) == list(range(5))
@@ -101,7 +109,7 @@ def sample_latin_hypercube(*, bounds, n_samples, seed=None, fit_keys=None):
         }
         for row in unit
     ]
-    return {"initial_samples": samples}
+    return Result({"initial_samples": samples})
 
 
 run = sample_latin_hypercube
