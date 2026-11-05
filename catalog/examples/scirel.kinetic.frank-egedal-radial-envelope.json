@@ -5,7 +5,7 @@
   "en": "Frank-Egedal radial envelope",
   "zh": "Frank-Egedal 径向包络"
  },
- "summary": "Evaluate a clipped power-law envelope on a normalized two-dimensional flux grid, with reference fluxes and exponent supplied in a parameter mapping.",
+ "summary": "Evaluate a clipped power-law envelope on a normalized two-dimensional flux grid, with optional explicit reference fluxes and exponent.",
  "taxonomy": [
   "kinetic",
   "mirror-plasma",
@@ -18,11 +18,11 @@
  "discovery": {
   "capability": [
    "Frank-Egedal radial envelope",
-   "Evaluate a clipped power-law envelope on a normalized two-dimensional flux grid, with reference fluxes and exponent supplied in a parameter mapping."
+   "Evaluate a clipped power-law envelope on a normalized two-dimensional flux grid, with optional explicit reference fluxes and exponent."
   ],
   "operation": [
    "evaluate the clipped Frank-Egedal radial envelope",
-   "(psi, params) -> radial envelope array with the shape of psi"
+   "(psi, psi_axis=None, psi_edge=None, alpha=1.0) -> radial envelope array with the shape of psi"
   ],
   "model": "Source-defined radial multiplier for a Frank-Egedal pressure construction; it does not compute a pressure or equilibrium",
   "geometry": "Caller-supplied two-dimensional axisymmetric flux samples; no radial coordinate or magnetic geometry is reconstructed",
@@ -31,7 +31,7 @@
  },
  "identity": {
   "relation": "Flux grid and radial profile controls to a dimensionless pressure-source envelope",
-  "direction": "(psi, params) -> radial envelope array with the shape of psi",
+  "direction": "(psi, psi_axis=None, psi_edge=None, alpha=1.0) -> radial envelope array with the shape of psi",
   "definition": "Let u=clip((psi-psi_axis)/(psi_edge-psi_axis),0,1). Return [clip(1-u,0,infinity)]^alpha elementwise. psi_axis defaults to min(psi), psi_edge to max(psi), and alpha to 1.0. Both signs of the finite nonzero flux interval are accepted; alpha=0 makes the entire clipped grid equal one, including the outer endpoint, by NumPy's zero-power convention.",
   "model": "Source-defined radial multiplier for a Frank-Egedal pressure construction; it does not compute a pressure or equilibrium",
   "geometry": "Caller-supplied two-dimensional axisymmetric flux samples; no radial coordinate or magnetic geometry is reconstructed",
@@ -46,20 +46,41 @@
   {
    "name": "psi",
    "description": "Axisymmetric flux grid whose elements are normalized between two reference levels.",
-   "units": "same flux unit as params.psi_axis and params.psi_edge; historical source label Wb",
+   "units": "same flux unit as psi_axis and psi_edge; historical source label Wb",
    "shape": "nonempty [N_Z,N_R]",
    "dtype": "float64-convertible array-like",
    "required": true,
    "constraints": "np.asarray(..., dtype=float) must produce a finite two-dimensional nonempty array."
   },
   {
-   "name": "params",
-   "description": "Mapping of optional psi_axis, psi_edge and alpha controls.",
-   "units": "psi_axis and psi_edge: same as psi; alpha: dimensionless",
-   "shape": "dict; each recognized value scalar float-convertible",
-   "dtype": "dict",
-   "required": true,
-   "constraints": "Must be a dict. Missing psi_axis defaults to min(psi), missing psi_edge to max(psi), and missing alpha to 1.0. References and alpha must be finite; alpha >= 0 and abs(psi_edge-psi_axis) >= 1e-30. Unknown keys are ignored."
+   "name": "psi_axis",
+   "description": "Flux at the profile axis; None selects the grid minimum.",
+   "units": "same as psi",
+   "shape": "scalar or null",
+   "dtype": "float or None",
+   "required": false,
+   "constraints": "Finite after float conversion when supplied.",
+   "default": null
+  },
+  {
+   "name": "psi_edge",
+   "description": "Flux at the profile edge; None selects the grid maximum.",
+   "units": "same as psi",
+   "shape": "scalar or null",
+   "dtype": "float or None",
+   "required": false,
+   "constraints": "Finite after float conversion when supplied; distinct from psi_axis by at least 1e-30 in absolute value.",
+   "default": null
+  },
+  {
+   "name": "alpha",
+   "description": "Power-law exponent for the clipped envelope.",
+   "units": "dimensionless",
+   "shape": "scalar",
+   "dtype": "float",
+   "required": false,
+   "constraints": "Finite and nonnegative after float conversion.",
+   "default": 1.0
   }
  ],
  "outputs": [
@@ -75,7 +96,7 @@
  ],
  "applicability": {
   "preconditions": [
-   "psi is a finite nonempty 2-D grid, and params is a dict with finite scalar-convertible recognized values.",
+   "psi is a finite nonempty 2-D grid, and explicit reference/exponent values are finite scalar-convertible values.",
    "The selected axis and edge fluxes define a finite nonzero interval at least 1e-30 in absolute size."
   ],
   "supported": [
@@ -88,7 +109,7 @@
   ]
  },
  "failure_semantics": {
-  "invalid_input": "Raises ValueError for a nonfinite, empty or non-2-D psi grid; non-dict params; nonfinite reference/exponent values; negative exponent; or a reference interval with abs(psi_edge-psi_axis)<1e-30. Float-conversion errors may propagate as ValueError or TypeError.",
+  "invalid_input": "Raises ValueError for a nonfinite, empty or non-2-D psi grid; nonfinite reference/exponent values; negative exponent; or a reference interval with abs(psi_edge-psi_axis)<1e-30. Float-conversion errors may propagate as ValueError or TypeError.",
   "runtime_failure": "Array allocation or arithmetic errors can propagate. No general finite-output check follows the power evaluation, and extreme finite values may encounter floating-point warnings or nonfinite intermediate arithmetic.",
   "nonconvergence": "Not applicable; evaluation is elementwise without iteration.",
   "partial_results": "No partial array is returned on a raised exception. A successful call returns only the envelope array."
@@ -97,7 +118,7 @@
   "python": {
    "module": "scirel.kinetic.frank_egedal_radial_envelope",
    "symbol": "evaluate_frank_egedal_radial_envelope",
-   "signature": "evaluate_frank_egedal_radial_envelope(psi, params)",
+   "signature": "evaluate_frank_egedal_radial_envelope(psi, *, psi_axis=None, psi_edge=None, alpha=1.0)",
    "canonical_module": "scirel.kinetic",
    "canonical_symbol": "evaluate_frank_egedal_radial_envelope"
   }
@@ -108,7 +129,7 @@
  },
  "example": {
   "description": "Apply a quadratic envelope on a grid with values both inside and outside the chosen flux interval.",
-  "code": "import numpy as np\nfrom scirel.kinetic import evaluate_frank_egedal_radial_envelope\npsi = np.array([[-1.0, 0.0, 0.5], [1.0, 1.5, 2.0]])\nr = evaluate_frank_egedal_radial_envelope(psi, {'psi_axis': 0.0, 'psi_edge': 1.0, 'alpha': 2.0})\nnp.testing.assert_allclose(r, [[1.0, 1.0, 0.25], [0.0, 0.0, 0.0]])\nassert r.shape == psi.shape\n",
+  "code": "import numpy as np\nfrom scirel.kinetic import evaluate_frank_egedal_radial_envelope\npsi = np.array([[-1.0, 0.0, 0.5], [1.0, 1.5, 2.0]])\nr = evaluate_frank_egedal_radial_envelope(\n    psi, psi_axis=0.0, psi_edge=1.0, alpha=2.0\n)\nnp.testing.assert_allclose(r, [[1.0, 1.0, 0.25], [0.0, 0.0, 0.0]])\nassert r.shape == psi.shape\n",
   "expected": "Observed PASS: The clipped quadratic envelope is [[1, 1, 0.25], [0, 0, 0]] and retains the input grid shape."
  },
  "verification": {

@@ -52,6 +52,7 @@ def test_yaml_declares_the_non_interchangeable_closure_pipeline():
     assert "id: loss_cone_spectrum" in contract
     assert "id: hot_ion_moments" in contract
     assert "from: hot_ion_moments" in contract
+    assert "inputs: [psi, psi_axis, psi_edge, alpha]" in contract
 
 
 # 验证：显式 degree 分支仍须产生有限、同 shape 的两个压力场和可审查闭合状态。
