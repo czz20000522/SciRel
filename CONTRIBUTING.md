@@ -10,9 +10,9 @@ SciRel 是一个自包含的科学计算库。贡献的核心单位是一个**�
 
 ## 环境
 
-可复现环境使用项目内的 Python 3.14.7 容器，包声明支持 `>=3.12`。本地容器跟随 Docker engine 架构；
-Apple Silicon 应使用原生 arm64 engine 快速开发，GitHub CI 固定跑 Linux/amd64。宿主机只需要 Git、
-Python 3 launcher 和 Docker-compatible engine：
+可复现环境使用项目内的 Python 3.14.7 容器，包声明支持 `>=3.12`。本地容器跟随 Docker engine 架构并承担
+完整验收；Apple Silicon 使用原生 arm64 engine 快速开发。GitHub Actions 只保留为手动 Linux/amd64 抽查。
+宿主机只需要 Git、Python 3 launcher 和 Docker-compatible engine：
 
 ```bash
 python3 scripts/dev_container.py prepare   # Windows: py -3
@@ -60,7 +60,7 @@ python -B scripts/test_scope.py --changed src/scirel/<domain>/<module>.py
 python3 scripts/dev_container.py check
 ```
 
-`check` 必须在最终提交上通过并打印 `ALL GREEN`。GitHub Actions 使用同一个容器定义再次运行它。
+`check` 必须在最终提交上通过并打印 `ALL GREEN`；这个本地结果是合并门禁。GitHub Actions 不自动运行，只在需要跨设备抽查时手动触发。
 文档检查使用本次任务独占且不存在的输出目录；核对页面与实际输出后按
 [`catalog/RECORDS.md`](catalog/RECORDS.md) 清理。不能覆盖仍在使用的快照。
 
@@ -87,4 +87,4 @@ python3 scripts/dev_container.py check
 
 ## Issue 和 PR
 
-任务用 `.github/ISSUE_TEMPLATE/agent-task.md` 写明方法、写入范围和验收标准，PR 用 `.github/pull_request_template.md`。评审按[评审清单](skills/development/scirel-code-style/references/review-checklist.md)判断。GitHub Actions 会运行完整容器检查；本地仍须在最终提交上贴出 `ALL GREEN` 的最后几行。
+任务用 `.github/ISSUE_TEMPLATE/agent-task.md` 写明方法、写入范围和验收标准，PR 用 `.github/pull_request_template.md`。评审按[评审清单](skills/development/scirel-code-style/references/review-checklist.md)判断。PR 必须贴出最终提交上的本地 `ALL GREEN` 最后几行；GitHub Actions 是可选的手动跨设备抽查。

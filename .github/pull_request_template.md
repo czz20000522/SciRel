@@ -19,7 +19,7 @@ Paste the final lines of this command, run in the foreground on the final commit
 python3 scripts/dev_container.py check
 ```
 
-Windows uses `py -3 scripts/dev_container.py check`. GitHub Actions runs the same container check.
+Windows uses `py -3 scripts/dev_container.py check`. Local acceptance is the merge gate. GitHub Actions does not run automatically; maintainers may dispatch the optional Linux/amd64 cross-device check manually.
 
 ```text
 

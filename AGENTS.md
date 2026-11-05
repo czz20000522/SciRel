@@ -43,9 +43,9 @@ licenses/          许可和署名
 
 ## 环境和验收
 
-可复现开发环境由项目内的 Python 3.14.7 容器定义。本地容器跟随 Docker engine 架构，GitHub CI 固定
-Linux/amd64。宿主机只需要 Git、Python 3 启动器和 Docker-compatible engine；依赖、缓存和虚拟环境都留在
-项目自己的容器卷里。
+可复现开发环境由项目内的 Python 3.14.7 容器定义。本地容器跟随 Docker engine 架构，并承担日常和合并前的
+完整检查。GitHub Actions 只保留为手动触发的 Linux/amd64 跨设备抽查，不进入每个 PR 的等待链。宿主机只需要
+Git、Python 3 启动器和 Docker-compatible engine；依赖、缓存和虚拟环境都留在项目自己的容器卷里。
 
 ```sh
 python3 scripts/dev_container.py prepare   # Windows 可用 py -3
@@ -71,7 +71,7 @@ python3 scripts/dev_container.py pytest tests/<domain>/test_<asset>.py
 - 一个 issue 对应一个临时分支和至少一个独立 worktree。分支名用 `agent/<issue>-<short-topic>`。
 - 每个 agent 从最新的 `origin/main` 开始；不要多人共用一个可变 worktree。
 - 功能或整理完成前先在独立 worktree 内做局部验证；PR 前 rebase 到最新 `origin/main`，再在最终提交上跑完整容器检查。
-- `main` 只接收通过 PR 和 CI 的合并。涉及多个候选时，由集成者另开干净的 integration worktree 重新验证组合结果。
+- `main` 只接收通过 PR 和本地完整检查的合并。涉及多个候选时，由集成者另开干净的 integration worktree 重新验证组合结果。
 - 合并后删除临时分支和 worktree。只有确实会丢失历史指针时才保留 `refs/archive/*` 存档引用。
 
 ## 设备独立性
@@ -79,7 +79,7 @@ python3 scripts/dev_container.py pytest tests/<domain>/test_<asset>.py
 - 代码、脚本和文档只使用仓库相对路径；禁止盘符、WSL 内部路径、固定用户名和机器专属目录。
 - Python 路径处理使用 `pathlib`；Git hook 只使用 POSIX `sh` 和 Python launcher，Windows 走 Git Bash。
 - 本地容器跟随当前 Docker engine 的 CPU 架构，Apple Silicon 默认使用原生 arm64，避免模拟器拖慢开发。
-- GitHub CI 固定使用 Linux/amd64；PR 合并前以该 CI 结果作为跨设备最终验收。
+- GitHub Actions 固定使用 Linux/amd64，但只作为手动跨设备抽查；PR 合并前以本地容器检查为最终门禁。
 - 新增脚本必须能在容器中运行；如果必须依赖某个宿主系统能力，先说明原因、替代方案和删除条件。
 ## 必须遵守
 

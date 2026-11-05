@@ -62,6 +62,9 @@ def test_local_container_uses_the_selected_engine_architecture():
     workflow = (ROOT / ".github" / "workflows" / "check.yml").read_text(encoding="utf-8")
     assert "platform: linux/" not in compose
     assert "DOCKER_DEFAULT_PLATFORM: linux/amd64" in workflow
+    assert "workflow_dispatch:" in workflow
+    assert "pull_request:" not in workflow
+    assert "  push:" not in workflow
     assert "target: /workspace" in compose
     assert "target: /opt/scirel-venv" in compose
     assert "target: /root/.cache/uv" in compose

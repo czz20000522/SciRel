@@ -58,7 +58,7 @@ licenses/              # 许可与来源署名
 [`CONTRIBUTING.md`](CONTRIBUTING.md)。
 
 可复现环境使用项目内的 Python 3.14.7 容器；本地使用宿主 Docker engine 的 CPU 架构，
-GitHub CI 固定跑 Linux/amd64：
+GitHub Actions 只保留为手动 Linux/amd64 跨设备抽查：
 
 ```bash
 python3 scripts/dev_container.py prepare   # Windows: py -3
