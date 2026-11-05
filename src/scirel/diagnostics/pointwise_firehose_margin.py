@@ -6,6 +6,8 @@ The combined diagnostic consumes the same validated arithmetic kernel.
 
 import numpy as np
 
+from scirel._result import Result
+
 MU0 = 4e-07 * np.pi
 
 
@@ -86,7 +88,76 @@ def _mirror_kernel(magnetic_field, derivative, mu0):
 
 
 def compute_pointwise_firehose_margin(p_parallel, p_perp, magnetic_field, mu0=MU0):
-    """Return the pointwise firehose margin B^2/mu0 + p_perp - p_parallel in Pa."""
+    """Compute the pointwise firehose pressure margin.
+
+    Parameters
+    ----------
+    p_parallel : array_like, shape (...)
+        Parallel pressure samples in ``[Pa]``.  Values must be finite and have
+        exactly the same shape as ``p_perp`` and ``magnetic_field``.
+    p_perp : array_like, shape (...)
+        Perpendicular pressure samples in ``[Pa]``.  Values must be finite and
+        have exactly the same shape as the other sample arrays.
+    magnetic_field : array_like, shape (...)
+        Magnetic-field samples in ``[T]`` used by the ``B**2 / mu0`` magnetic
+        tension term.  Values must be finite and have exactly the same shape
+        as the pressure arrays.
+    mu0 : real scalar, optional
+        Positive finite magnetic permeability in ``[H/m]``.  The default is
+        ``4e-7 * pi``.  Non-scalar values are rejected rather than broadcast.
+
+    Returns
+    -------
+    firehose_margin : ndarray of float64, same shape as inputs
+        Field of the returned ``scirel._result.Result`` mapping containing
+        ``B**2 / mu0 + p_perp - p_parallel`` in ``[Pa]``.  Scalar inputs
+        produce a zero-dimensional float64 array.  The sign is not interpreted,
+        clamped, or converted into a stability flag.
+
+    Raises
+    ------
+    ValueError
+        If the sample shapes differ, the sample set is empty, an input is
+        nonfinite, ``mu0`` is not a positive finite scalar, or the final
+        mathematical margin cannot be represented as finite float64.
+    TypeError
+        If an input or ``mu0`` has an element type that cannot be converted to
+        float64.
+
+    See Also
+    --------
+    scirel.diagnostics.compute_firehose_mirror_margins
+        Combined diagnostic that adds a separately supplied fixed-flux mirror
+        derivative and local stability flags.
+
+    Notes
+    -----
+    The local relation is evaluated independently at every sample.  No sorting,
+    derivative, minimum reduction, or aggregate stability decision is applied.
+    The single ``firehose_margin`` field is returned in a
+    ``scirel._result.Result`` mapping, which retains dictionary access and also
+    exposes the field as an attribute.  Normal non-cancelling values retain
+    their ordinary float64 operation order; dangerous cancellation or
+    intermediate range loss evaluates the same binary-rational relation once
+    before the final float64 rounding.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from scirel._result import Result
+    >>> from scirel.diagnostics import compute_pointwise_firehose_margin
+    >>> mu0 = 4.0e-7 * np.pi
+    >>> single = compute_pointwise_firehose_margin(810000.0, 740000.0, 0.93)
+    >>> assert isinstance(single, Result)
+    >>> assert single.firehose_margin is single['firehose_margin']
+    >>> assert float(single['firehose_margin']) == 0.93 ** 2 / mu0 + 740000.0 - 810000.0
+    >>> B = np.array([2.0, 1.0, 3.0, 1.5])
+    >>> p_perp = 5.0 + 3.0 * B
+    >>> result = compute_pointwise_firehose_margin(p_perp - 2.0, p_perp, B)
+    >>> np.testing.assert_allclose(result.firehose_margin, B * B / mu0 + 2.0)
+    >>> assert set(result.keys()) == {'firehose_margin'}
+    >>> assert float(compute_pointwise_firehose_margin(1e100, 1e100, 1., mu0=1.).firehose_margin) == 1.
+    """
     p_parallel = np.asarray(p_parallel, dtype=float)
     p_perp = np.asarray(p_perp, dtype=float)
     magnetic_field = np.asarray(magnetic_field, dtype=float)
@@ -104,7 +175,7 @@ def compute_pointwise_firehose_margin(p_parallel, p_perp, magnetic_field, mu0=MU
         firehose_margin = _firehose_kernel(p_parallel, p_perp, magnetic_field, float(mu0))
     except FloatingPointError as exc:
         raise ValueError(str(exc)) from exc
-    return {"firehose_margin": firehose_margin}
+    return Result(firehose_margin=firehose_margin)
 
 
 __all__ = ["compute_pointwise_firehose_margin", "MU0"]

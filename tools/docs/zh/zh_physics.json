@@ -2650,9 +2650,9 @@
   },
   {
    "asset_id": "scirel.diagnostics.pointwise-firehose-margin",
-   "source_sha256": "2fc5092b2e4de8104b8f6cc8751a160dda703c200e1b7bf7d48d15cad9ca6080",
-   "summary": "逐点计算 B²/mu0+p_perp-p_parallel（Pa），不求导、不进入镜模分支，也不生成稳定性标志。",
-   "definition": "firehose_margin=B²/mu0+p_perp-p_parallel，各样本独立求值。不排序、不求导、不取全局最小值，也不作汇总判定。单样本或所有 B 相同与其他同形输入同样有效。 与组合诊断共享同一算术内核；独立入口保留单点、重复及无序磁场，不构造任何压力导数。 普通非严重相消数值保留原 float64 运算顺序。异号贡献抵消后，若结果幅度不大于最大项的一半，或中间乘积/商丢失量级，则对完整关系使用精确二进制有理数求值，最后一次舍入到 float64。此算术分支不是物理容差，不把结果钳制为零，也不只特判相等压强；最终确实不可表示时仍失败。",
+   "source_sha256": "ab1bd53e59fbec391b2b438f85cbd6832f60786c8488a474fe58ee7c1dad1614",
+   "summary": "逐点计算 B²/mu0+p_perp-p_parallel（Pa），以 scirel._result.Result 映射返回唯一命名字段；不求导、不进入镜模分支，也不生成稳定性标志。",
+   "definition": "firehose_margin=B²/mu0+p_perp-p_parallel，各样本独立求值。不排序、不求导、不取全局最小值，也不作汇总判定。单样本或所有 B 相同与其他同形输入同样有效。 与组合诊断共享同一算术内核；独立入口保留单点、重复及无序磁场，不构造任何压力导数。 普通非严重相消数值保留原 float64 运算顺序。异号贡献抵消后，若结果幅度不大于最大项的一半，或中间乘积/商丢失量级，则对完整关系使用精确二进制有理数求值，最后一次舍入到 float64。此算术分支不是物理容差，不把结果钳制为零，也不只特判相等压强；最终确实不可表示时仍失败。 唯一 firehose_margin 字段作为 scirel._result.Result 映射返回；按键和属性读取同一个值。",
    "model": "以压强单位表示的局部流体 CGL 序 firehose 判别量。正值只是算术观察；梯度、动力学、有限回旋半径修正及完整稳定性判定不在此关系内。",
    "assumptions": [
     "两个压强用 Pa，与 T 单位 B 在同一批样本一致取值。",
@@ -2688,7 +2688,7 @@
    "outputs": [
     {
      "name": "firehose_margin",
-     "description": "逐点 B²/mu0+p_perp-p_parallel，单位 Pa。",
+     "description": "Result 字段：逐点 B²/mu0+p_perp-p_parallel，单位 Pa。",
      "constraints": "成功时有限；不解释、不截断其正负，也不生成标志。",
      "dtype": "float64 数组"
     }
@@ -2712,11 +2712,11 @@
     "invalid_input": "错形、空集、非有限压强/磁场、非标量或非正/非有限 mu0 抛 ValueError。",
     "runtime_failure": "ValueError 表示最终数学裕度不可表示为有限 float64；不因可恢复的 B 平方中间溢出拒绝可表示结果，其他转换或回调错误继续抛出。",
     "nonconvergence": "不适用，无迭代。",
-    "partial_results": "无部分结果；成功才返回唯一裕度字段。"
+    "partial_results": "无部分结果；成功时唯一 firehose_margin 字段以 scirel._result.Result 映射返回。"
    },
    "example": {
-    "description": "对单样本和无序数组计算逐点裕度，全程不求导或产生标志。",
-    "expected": "单样本直接给出代数裕度；无序数组精确复现组合诊断的 firehose_margin，结果不含 mirror、minimum 或 stable 字段。两个 1e100 Pa 压强精确抵消后仍保留 1 Pa 磁张力。"
+    "description": "对单样本和无序数组计算逐点裕度，核对命名字段映射和属性读取，全程不求导或产生标志。",
+    "expected": "单样本直接给出代数裕度，并返回按键和属性一致读取的 scirel._result.Result 映射；无序数组精确复现组合诊断的 firehose_margin，结果不含 mirror、minimum 或 stable 字段。两个 1e100 Pa 压强精确抵消后仍保留 1 Pa 磁张力。"
    },
    "verification": {
     "scope": [
@@ -2724,7 +2724,8 @@
      "单样本/全相等 B 有效性，错形/空集/非有限/非标量或无效 mu0 拒绝及溢出门槛。",
      "共享内核保留独立单点、重复和无序样本，不臆造镜模导数。",
      "以独立高精度 Decimal 验证有限输入的中间平方上下溢及相消；最终不可表示的结果仍拒绝。",
-     "在已安装 wheel 上，以独立 2000 位 Decimal 算术核对相等/不等压强抵消、不同量纲下相邻浮点输入、镜模余量正负号、非连续多维数组及精确零值标志。"
+     "在已安装 wheel 上，以独立 2000 位 Decimal 算术核对相等/不等压强抵消、不同量纲下相邻浮点输入、镜模余量正负号、非连续多维数组及精确零值标志。",
+     "改造后的公开函数返回 scirel._result.Result，保持原键、数值、形状、dtype 和映射兼容性，属性读取解析到同一字段。"
     ],
     "evidence_ceiling": "有针对性的回归、明确解析构造例和所选 wheel 的安装运行覆盖本有限合同；不推断任意物理模型适用性、连续体收敛、人工科学认可或再分发许可。",
     "known_limitations": [

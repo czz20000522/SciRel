@@ -5,7 +5,7 @@
   "en": "Pointwise firehose pressure margin",
   "zh": "逐点火焰管压强裕度"
  },
- "summary": "Calculate the pointwise firehose margin B^2/mu0 + p_perp - p_parallel in Pa for anisotropic pressure and magnetic-field samples, with no derivative, no mirror branch and no stability flag.",
+ "summary": "Calculate the pointwise firehose margin B^2/mu0 + p_perp - p_parallel in Pa for anisotropic pressure and magnetic-field samples, returning the single field as a scirel._result.Result mapping with no derivative, mirror branch or stability flag.",
  "taxonomy": [
   "diagnostics",
   "anisotropic-pressure",
@@ -32,7 +32,7 @@
  "identity": {
   "relation": "Anisotropic pressures and magnetic-field samples to the pointwise firehose margin only",
   "direction": "(p_parallel, p_perp, B, mu0) -> firehose_margin",
-  "definition": "firehose_margin = B^2/mu0 + p_perp - p_parallel, evaluated independently at every sample in Pa. No sample-to-sample relation of any kind is used: no sorting, no derivative, no minimum reduction and no aggregate flag. A single sample or a set of all-equal B values is as valid as any other input of the same shape. The arithmetic kernel is shared with the combined firehose/mirror diagnostic, while this entry retains singleton, repeated-field and unsorted-field inputs without constructing a derivative. Normal non-cancelling values retain ordinary float64 operation order. If opposing contributions leave at most half the magnitude of the largest term, or an intermediate product/quotient loses range, the same complete relation is evaluated as an exact binary-rational expression and rounded once to float64. This protects finite cancellation residuals without a zero clamp or an equal-pressure special case; genuinely unrepresentable final margins fail.",
+  "definition": "firehose_margin = B^2/mu0 + p_perp - p_parallel, evaluated independently at every sample in Pa. No sample-to-sample relation of any kind is used: no sorting, no derivative, no minimum reduction and no aggregate flag. A single sample or a set of all-equal B values is as valid as any other input of the same shape. The arithmetic kernel is shared with the combined firehose/mirror diagnostic, while this entry retains singleton, repeated-field and unsorted-field inputs without constructing a derivative. Normal non-cancelling values retain ordinary float64 operation order. If opposing contributions leave at most half the magnitude of the largest term, or an intermediate product/quotient loses range, the same complete relation is evaluated as an exact binary-rational expression and rounded once to float64. This protects finite cancellation residuals without a zero clamp or an equal-pressure special case; genuinely unrepresentable final margins fail. The firehose_margin field is returned in a scirel._result.Result mapping; mapping and attribute access expose the same value.",
   "model": "The local fluid (CGL-ordering) firehose discriminant written in pressure units; positive values at samples are arithmetic observations, not a stability label, not a complete firehose criterion (gradient, kinetic and finite-Larmor corrections are outside this relation), and never a mirror-instability statement",
   "geometry": "No spatial grid geometry is used; array dimensions preserve sample layout only",
   "coordinates": "The margin is computed elementwise in the given sample layout; no coordinate is derived from the samples",
@@ -84,7 +84,7 @@
  "outputs": [
   {
    "name": "firehose_margin",
-   "description": "Pointwise B^2/mu0 + p_perp - p_parallel.",
+   "description": "Field of the returned scirel._result.Result mapping: pointwise B^2/mu0 + p_perp - p_parallel.",
    "units": "Pa",
    "shape": "same shape as input samples",
    "dtype": "float64 array",
@@ -111,7 +111,7 @@
   "invalid_input": "Raises ValueError for mismatched shape, an empty sample set, nonfinite pressures/field, a non-scalar mu0, or nonpositive/nonfinite mu0.",
   "runtime_failure": "ValueError when the final mathematical margin cannot be represented as finite float64; representable results are not rejected solely because an intermediate B square exceeds range. Other conversion/callback errors propagate.",
   "nonconvergence": "Not applicable; no iteration is performed.",
-  "partial_results": "None; the single margin field is returned only on success."
+  "partial_results": "None; the single firehose_margin field is returned as a scirel._result.Result mapping only on success."
  },
  "public_api": {
   "python": {
@@ -127,9 +127,9 @@
   "dependencies": []
  },
  "example": {
-  "description": "Evaluate the pointwise margin for a single sample and for an unsorted array, with no derivative or flag anywhere in the contract.",
-  "code": "import numpy as np\nfrom scirel.diagnostics import compute_pointwise_firehose_margin\nmu0 = 4.0e-7 * np.pi\nsingle = compute_pointwise_firehose_margin(810000.0, 740000.0, 0.93)\nassert float(single['firehose_margin']) == 0.93 ** 2 / mu0 + 740000.0 - 810000.0\nB = np.array([2.0, 1.0, 3.0, 1.5])\np_perp = 5.0 + 3.0 * B\nr = compute_pointwise_firehose_margin(p_perp - 2.0, p_perp, B)\nnp.testing.assert_allclose(r['firehose_margin'], B * B / mu0 + 2.0)\nassert set(r.keys()) == {'firehose_margin'}\n# Equal large pressures cancel exactly; the magnetic tension remains.\nassert float(compute_pointwise_firehose_margin(1e100, 1e100, 1., mu0=1.)['firehose_margin']) == 1.",
-  "expected": "The one-sample state yields the elementwise algebraic value directly (the one-sample case from the 2026-09-27 holdout evidence); the unsorted array reproduces the combined diagnostic's pointwise firehose_margin field exactly while the result contains no mirror, minimum or stable fields. Equal pressures of 1e100 Pa leave the unit magnetic-tension contribution of 1 Pa."
+  "description": "Evaluate the pointwise margin for a single sample and for an unsorted array, verify named mapping and attribute access, and retain no derivative or flag anywhere in the contract.",
+  "code": "import numpy as np\nfrom scirel._result import Result\nfrom scirel.diagnostics import compute_pointwise_firehose_margin\nmu0 = 4.0e-7 * np.pi\nsingle = compute_pointwise_firehose_margin(810000.0, 740000.0, 0.93)\nassert isinstance(single, Result)\nassert single.firehose_margin is single['firehose_margin']\nassert float(single['firehose_margin']) == 0.93 ** 2 / mu0 + 740000.0 - 810000.0\nB = np.array([2.0, 1.0, 3.0, 1.5])\np_perp = 5.0 + 3.0 * B\nresult = compute_pointwise_firehose_margin(p_perp - 2.0, p_perp, B)\nnp.testing.assert_allclose(result.firehose_margin, B * B / mu0 + 2.0)\nassert set(result.keys()) == {'firehose_margin'}\nassert float(compute_pointwise_firehose_margin(1e100, 1e100, 1., mu0=1.).firehose_margin) == 1.",
+  "expected": "The one-sample state yields the elementwise algebraic value directly as a scirel._result.Result mapping whose key and attribute agree; the unsorted array reproduces the combined diagnostic's pointwise firehose_margin field exactly while the result contains no mirror, minimum or stable fields. Equal pressures of 1e100 Pa leave the unit magnetic-tension contribution of 1 Pa."
  },
  "verification": {
   "scope": [
@@ -137,7 +137,8 @@
    "One-sample and all-equal-B validity, invalid-input rejections (shape, empty, nonfinite, non-scalar mu0, mu0) and the overflow gate.",
    "Shared arithmetic retains independent singleton, repeated and unsorted samples; no mirror derivative is inferred.",
    "Finite-input intermediate square overflow/underflow and cancellation are checked against an independent high-precision Decimal evaluation; genuinely unrepresentable final results still fail.",
-   "Finite equal and unequal-pressure cancellation, neighbouring binary64 inputs across dimensional scales, mirror residual signs, noncontiguous multidimensional arrays and exact-zero flags are checked against independent 2000-digit Decimal arithmetic in a no-source installed wheel."
+   "Finite equal and unequal-pressure cancellation, neighbouring binary64 inputs across dimensional scales, mirror residual signs, noncontiguous multidimensional arrays and exact-zero flags are checked against independent 2000-digit Decimal arithmetic in a no-source installed wheel.",
+   "The converted public function returns scirel._result.Result with the same key, value, shape, dtype and mapping compatibility, and attribute access resolves to the same field."
   ],
   "tests": [
    "tests/diagnostics/test_pointwise_firehose_margin.py",
