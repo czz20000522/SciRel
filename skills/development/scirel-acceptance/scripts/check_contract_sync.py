@@ -15,7 +15,8 @@ overlap the docstring are derived and must agree. This script checks, per asset:
   functions), Raises, See Also and Examples sections;
 - every contract input and output has a docstring entry, and every
   dimensional unit appears in that entry as ``[unit]`` exactly as written in
-  the contract;
+  the contract; contract inputs supplied through ``**kwargs`` may be described
+  in ``Other Parameters``;
 - every exception named in ``failure_semantics`` is listed under Raises;
 - the docstring Examples run as doctests and are the same code as the
   contract example;
@@ -80,6 +81,17 @@ def _code_ast(code: str) -> str:
     return ast.dump(ast.parse(code))
 
 
+def _missing_direct_parameter_docs(params, parts: dict[str, str]) -> list[str]:
+    """Return direct signature parameters missing from the Parameters section."""
+    documented = entries(parts.get("Parameters", ""))
+    return [
+        parameter.name
+        for parameter in params
+        if parameter.kind not in (parameter.VAR_KEYWORD, parameter.VAR_POSITIONAL)
+        and parameter.name not in documented
+    ]
+
+
 def check(asset: dict, root: Path = ROOT) -> list[str]:
     asset_id = asset["asset_id"]
     document = json.loads(
@@ -96,6 +108,7 @@ def check(asset: dict, root: Path = ROOT) -> list[str]:
     if api["signature"] != f"{api['symbol']}{signature}":
         fail(f"public_api.signature {api['signature']!r} != live {api['symbol']}{signature}")
     params = [p for p in signature.parameters.values()]
+    direct_params = [p for p in params if p.kind not in (p.VAR_KEYWORD, p.VAR_POSITIONAL)]
     inputs = document["inputs"]
     if not any(p.kind in (p.VAR_KEYWORD, p.VAR_POSITIONAL) for p in params):
         if [p.name for p in params] != [port["name"] for port in inputs]:
@@ -121,21 +134,29 @@ def check(asset: dict, root: Path = ROOT) -> list[str]:
     doc = inspect.getdoc(obj) or ""
     parts = sections(doc)
     needed = ["Raises", "See Also", "Examples"]
-    if inputs:
+    if inputs or direct_params:
         needed.insert(0, "Parameters")
     if not inspect.isclass(obj):
-        needed.insert(1 if inputs else 0, "Returns")
+        needed.insert(1 if inputs or direct_params else 0, "Returns")
     for name in needed:
         if name not in parts:
             fail(f"docstring has no {name} section")
+    for name in _missing_direct_parameter_docs(params, parts):
+        fail(f"Parameters has no entry for direct signature parameter {name!r}")
     for side, section in (("inputs", "Parameters"), ("outputs", "Returns")):
         if section not in parts:
             continue
         found = entries(parts[section])
+        has_var_keyword = any(p.kind is p.VAR_KEYWORD for p in params)
+        signature_names = {p.name for p in params}
+        other = entries(parts.get("Other Parameters", "")) if side == "inputs" else {}
         for port in document[side]:
             text = found.get(port["name"])
+            if text is None and has_var_keyword and port["name"] not in signature_names:
+                text = other.get(port["name"])
             if text is None:
-                fail(f"{section} has no entry for {side[:-1]} {port['name']!r}")
+                where = "Parameters/Other Parameters" if side == "inputs" else section
+                fail(f"{where} has no entry for {side[:-1]} {port['name']!r}")
             elif str(
                 port.get("units", "")
             ).strip() not in DIMENSIONLESS and f"[{port['units']}]" not in " ".join(text.split()):

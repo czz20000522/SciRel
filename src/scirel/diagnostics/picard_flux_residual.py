@@ -4,7 +4,61 @@ import numpy as np
 
 
 def compute_picard_flux_residual(psi_previous, psi_next):
-    """Evaluate the L2 relative-change formula with scaled finite arithmetic."""
+    """Compute the scaled relative L2 change between two flux states.
+
+    Parameters
+    ----------
+    psi_previous : array_like, shape (N_Z, N_R)
+        Two-dimensional flux state before the Picard update in ``[Wb]``.  All
+        values must be finite, and the shape must exactly match ``psi_next``.
+        An all-zero state is allowed.
+    psi_next : array_like, shape (N_Z, N_R)
+        Two-dimensional flux state after the Picard update in ``[Wb]``.  All
+        values must be finite, and the shape must exactly match
+        ``psi_previous``.  An all-zero state is allowed.
+
+    Returns
+    -------
+    residual : float
+        Nonnegative finite relative Euclidean change in ``[dimensionless]``.
+        The defining value is
+        ``||psi_next - psi_previous||_2 /
+        max(||psi_previous||_2, 1e-30 Wb)``, evaluated with a common
+        magnitude scale.  Two zero states return ``0.0``.
+
+    Raises
+    ------
+    ValueError
+        If the inputs are not same-shape two-dimensional arrays, contain
+        nonfinite values, produce a zero scaled denominator, or produce a
+        nonfinite relative residual.
+    TypeError
+        If either input cannot be converted to a floating-point array.
+
+    See Also
+    --------
+    scirel.diagnostics.reduce_observation_residuals
+        Reduce observations against already-computed predictions.
+    scirel.diagnostics.compute_parallel_pressure_residual
+        Check a local fixed-flux pressure relation.
+
+    Notes
+    -----
+    Both arrays are indexed as ``[Z, R]`` and every entry has equal weight; no
+    grid spacing, active-cell mask, or physical force-balance interpretation is
+    applied.  The ``1e-30 Wb`` denominator floor changes the ratio when the
+    previous-state norm is smaller than the floor.  The scaled arithmetic
+    handles selected very large and very small magnitudes, but a mathematical
+    ratio that is not representable as finite float64 is rejected.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from scirel.diagnostics import compute_picard_flux_residual
+    >>> previous = np.array([[3.0, 4.0]])
+    >>> assert compute_picard_flux_residual(previous, previous)['residual'] == 0.0
+    >>> assert np.isclose(compute_picard_flux_residual(previous, 2*previous)['residual'], 1.0)
+    """
     previous = np.asarray(psi_previous, dtype=float)
     next_state = np.asarray(psi_next, dtype=float)
     if previous.shape != next_state.shape or previous.ndim != 2:

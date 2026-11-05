@@ -16,15 +16,112 @@ def compute_parallel_pressure_residual(
     field_axis=None,
     psi=None,
 ):
-    """Check p_perp = p_parallel - B*(partial p_parallel/partial B)_psi.
+    """Check a local fixed-flux parallel-pressure relation.
 
-    Pressures are in Pa and B in tesla. Supply ``dp_parallel_dB`` (Pa/T,
-    array/scalar or callable(B,psi)), or ``field_axis`` and fixed-psi sample
-    lines. Spatial arrays sorted globally by B cannot establish this partial
-    derivative. Constant-field isotropic samples pass with explicit zero
-    derivative; without derivative information the result is indeterminate
-    and raises ValueError. A finite-difference residual includes sampling
-    error and is not a spatial force-balance or global-stability proof.
+    Parameters
+    ----------
+    p_parallel : array_like, shape (...)
+        Parallel pressure samples in ``[Pa]``.  Values must be finite; negative
+        values are not rejected.  The shape must exactly match ``p_perp`` and
+        ``magnetic_field``, and the sample set must be nonempty.
+    p_perp : array_like, shape (...)
+        Perpendicular pressure samples in ``[Pa]`` with the same shape and
+        finiteness constraints as ``p_parallel``.
+    magnetic_field : array_like, shape (...)
+        Positive magnetic-field magnitudes in ``[T]`` at the same samples.
+        Duplicate field values are allowed with an explicit derivative;
+        sampled fixed-flux lines require strict monotonicity.
+    rtol : real scalar, optional
+        Maximum allowed normalized residual for the ``passed`` flag in
+        ``[dimensionless]``.  It must be finite and nonnegative.  The default
+        is ``0.01``.
+    atol : real scalar, optional
+        Positive absolute pressure scale used in the normalized-residual
+        denominator in ``[Pa]``.  It must be finite and strictly positive.  The
+        default is ``1e-6``.
+    strict : truth-valued, optional
+        If truthy and the maximum normalized residual exceeds ``rtol``, raise
+        ``ValueError`` instead of returning ``passed=False`` in
+        ``[boolean flag]``.  It is interpreted by Python truth value and is not
+        type-checked.  The default is ``False``.
+    dp_parallel_dB : real scalar, array_like, or callable, optional
+        Explicit fixed-psi derivative ``(partial p_parallel / partial B)_psi``
+        in ``[Pa/T]``.  A scalar or array must broadcast exactly to the sample
+        shape; a callable is evaluated as ``callable(B, psi)``.  It cannot be
+        combined with ``field_axis``.
+    field_axis : integer, optional
+        Axis whose lines vary magnetic-field magnitude at fixed ``psi`` in
+        ``[axis index]``.  With no explicit derivative, each line must contain
+        at least two unique strictly monotone field samples.
+    psi : real scalar or array_like, optional
+        Flux labels broadcastable to the sample shape in
+        ``[consistent caller flux coordinate]``.  It is mandatory and exactly
+        constant along ``field_axis`` for sampled derivatives, and is forwarded
+        to an explicit derivative callable otherwise.
+
+    Returns
+    -------
+    rhs : ndarray of float64, same shape as the inputs
+        ``p_parallel - magnetic_field * dp_parallel_dB`` in ``[Pa]``.
+    error : ndarray of float64, same shape as the inputs
+        ``p_perp - rhs`` in ``[Pa]``.
+    relative_error : ndarray of float64, same shape as the inputs
+        ``abs(error) / max(abs(p_perp), abs(rhs), atol)`` in
+        ``[dimensionless]``.
+    max_relative_error : float
+        Maximum pointwise relative error in ``[dimensionless]``.
+    mean_relative_error : float
+        Arithmetic mean of the pointwise relative errors in
+        ``[dimensionless]``.
+    passed : bool
+        ``True`` exactly when ``max_relative_error <= rtol`` in ``[boolean]``.
+    dp_parallel_dB : ndarray of float64, same shape as the pressures
+        Fixed-psi derivative actually used by the diagnostic in ``[Pa/T]``.
+    derivative_method : str
+        Description of the derivative source in ``[text]``: either an explicit
+        fixed-flux derivative or a declared fixed-flux axis finite difference.
+
+    Raises
+    ------
+    ValueError
+        If derivative information is missing or conflicts with ``field_axis``,
+        array shapes or sample sets are invalid, values are nonfinite, the
+        magnetic field is not strictly positive, a field axis is invalid,
+        ``rtol`` or ``atol`` violates its bounds, or ``strict`` detects a
+        failure.
+    FloatingPointError
+        If the derivative or a computed pressure residual is not finite.
+    TypeError
+        If a numeric input cannot be converted to float64 or a derivative
+        callable has an incompatible call signature.
+
+    See Also
+    --------
+    scirel.diagnostics.compute_pointwise_firehose_margin
+        Evaluate the pointwise firehose pressure margin without a derivative.
+    scirel.diagnostics.compute_firehose_mirror_margins
+        Evaluate local firehose and fixed-flux mirror margins together.
+
+    Notes
+    -----
+    The diagnostic uses
+
+    ``rhs = p_parallel - B * (partial p_parallel / partial B)_psi``
+
+    and ``error = p_perp - rhs``.  It does not flatten or globally sort spatial
+    samples to manufacture a derivative.  An explicit zero derivative is
+    required for constant-field isotropic data.  A sampled finite-difference
+    derivative carries interpolation and sampling error, so a passing result is
+    a local pressure-compatibility observation, not a spatial force-balance or
+    global-stability proof.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from scirel.diagnostics.parallel_pressure_residual import compute_parallel_pressure_residual
+    >>> r=compute_parallel_pressure_residual([3.,3.],[3.,3.],[2.,2.],dp_parallel_dB=0.)
+    >>> np.testing.assert_array_equal(r['error'],[0.,0.])
+    >>> assert r['passed']
     """
     p_parallel, p_perp, magnetic_field = (
         np.asarray(x, dtype=float) for x in (p_parallel, p_perp, magnetic_field)

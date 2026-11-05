@@ -223,7 +223,7 @@
   "invalid_input": "ValueError for missing derivative information, conflicting derivative/axis inputs, nonfinite or nonpositive B, invalid shapes or nonmonotone/variable-psi derivative lines; other documented scalar controls are validated.",
   "runtime_failure": "FloatingPointError for nonfinite computed residuals or margins; callable errors propagate.",
   "nonconvergence": "No nonlinear solve; the caller is responsible for derivative sampling convergence.",
-  "partial_results": "None. Optional parallel-equilibrium values supplied alongside the margin API are forwarded without independent validation."
+  "partial_results": "None."
  },
  "public_api": {
   "python": {
