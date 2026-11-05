@@ -5,7 +5,7 @@
   "en": "Bounded anisotropic trial parameter optimization",
   "zh": "有界各向异性试探参数优化"
  },
- "summary": "Perform a local fit within finite valid bounds and a total scientific-call budget, never allowing a failed trial to become the best, and return the revalidated state at the actual terminal point.",
+ "summary": "Perform a local fit within finite valid bounds and a total scientific-call budget, never allowing a failed trial to become the best, and return the revalidated terminal state in a scirel._result.Result mapping.",
  "taxonomy": [
   "inference",
   "anisotropic-equilibrium",
@@ -31,7 +31,7 @@
  "identity": {
   "relation": "bounded parameters and a fixed-size trial to a local fit record validated by a fresh call",
   "direction": "initial_params, bounds, method, trial_evaluator and budget -> parameters, residuals, forward/optimization state and log",
-  "definition": "Validate every static control first. For optional LHS, check the complete design against the bounds and count, then evaluate it in order and use the valid sample with the lowest chi2 as the optimizer start; if none is valid, keep the submitted initial point. least_squares uses residuals; minimize uses L-BFGS-B with the squared sum. An invalid trial supplies an N-vector penalty to the optimizer but never participates in best_valid_trial. The budget counts LHS, numerical differences and terminal calls, reserving two slots for terminal/valid-fallback validation. A normally returned optimizer x must be revalidated with a fresh forward call; if the terminal point is invalid, only a revalidated historical valid candidate may be returned, with converged=False.",
+  "definition": "Validate every static control first. For optional LHS, check the complete design against the bounds and count, then evaluate it in order and use the valid sample with the lowest chi2 as the optimizer start; if none is valid, keep the submitted initial point. least_squares uses residuals; minimize uses L-BFGS-B with the squared sum. An invalid trial supplies an N-vector penalty to the optimizer but never participates in best_valid_trial. The budget counts LHS, numerical differences and terminal calls, reserving two slots for terminal/valid-fallback validation. A normally returned optimizer x must be revalidated with a fresh forward call; if the terminal point is invalid, only a revalidated historical valid candidate may be returned, with converged=False. All sixteen result fields are returned together in a scirel._result.Result mapping; mapping and attribute access expose the same values.",
   "model": "bounded local numerical optimization, with no equilibrium equation, global search or statistical identifiability proof",
   "geometry": "defined by trial_evaluator",
   "coordinates": "fit_keys order or bounds insertion order forms the optimization vector; non-fitted parameters are retained",
@@ -153,7 +153,7 @@
  "outputs": [
   {
    "name": "best_parameters",
-   "description": "The actual revalidated optimizer terminal point; on failure it may be a revalidated historical valid candidate.",
+   "description": "Field of the returned scirel._result.Result mapping: The actual revalidated optimizer terminal point; on failure it may be a revalidated historical valid candidate.",
    "units": "parameter units",
    "shape": "mapping or None",
    "dtype": "dict or None",
@@ -162,7 +162,7 @@
   },
   {
    "name": "chi2",
-   "description": "Normalized squared sum of the returned state; N*penalty^2 when there is no valid solution.",
+   "description": "Field of the returned scirel._result.Result mapping: Normalized squared sum of the returned state; N*penalty^2 when there is no valid solution.",
    "units": "dimensionless",
    "shape": "scalar",
    "dtype": "float",
@@ -171,7 +171,7 @@
   },
   {
    "name": "residual_vector",
-   "description": "Fixed-size residuals of the same trial that produced the returned state.",
+   "description": "Field of the returned scirel._result.Result mapping: Fixed-size residuals of the same trial that produced the returned state.",
    "units": "dimensionless",
    "shape": "[N]",
    "dtype": "float64 array",
@@ -180,7 +180,7 @@
   },
   {
    "name": "converged",
-   "description": "The optimizer succeeded and the latest forward evaluation at its actual terminal point is valid.",
+   "description": "Field of the returned scirel._result.Result mapping: The optimizer succeeded and the latest forward evaluation at its actual terminal point is valid.",
    "units": "boolean",
    "shape": "scalar",
    "dtype": "bool",
@@ -189,7 +189,7 @@
   },
   {
    "name": "forward_converged",
-   "description": "The currently returned state has actually passed forward and trial validation.",
+   "description": "Field of the returned scirel._result.Result mapping: The currently returned state has actually passed forward and trial validation.",
    "units": "boolean",
    "shape": "scalar",
    "dtype": "bool",
@@ -198,7 +198,7 @@
   },
   {
    "name": "optimizer_converged",
-   "description": "Raw boolean projection of SciPy success.",
+   "description": "Field of the returned scirel._result.Result mapping: Raw boolean projection of SciPy success.",
    "units": "boolean",
    "shape": "scalar",
    "dtype": "bool",
@@ -207,7 +207,7 @@
   },
   {
    "name": "equilibrium",
-   "description": "Forward state validated in the same call as best_parameters and residual_vector.",
+   "description": "Field of the returned scirel._result.Result mapping: Forward state validated in the same call as best_parameters and residual_vector.",
    "units": "mixed",
    "shape": "mapping or None",
    "dtype": "mapping or None",
@@ -216,7 +216,7 @@
   },
   {
    "name": "evaluation_log",
-   "description": "Parameters, chi2, valid, failure_reason and source of every actual evaluation.",
+   "description": "Field of the returned scirel._result.Result mapping: Parameters, chi2, valid, failure_reason and source of every actual evaluation.",
    "units": "mixed",
    "shape": "list[N_eval]",
    "dtype": "list of records",
@@ -225,7 +225,7 @@
   },
   {
    "name": "failure_reason",
-   "description": "Reason for budget exhaustion, numerical failure, terminal failure or optimizer stop.",
+   "description": "Field of the returned scirel._result.Result mapping: Reason for budget exhaustion, numerical failure, terminal failure or optimizer stop.",
    "units": "identifier",
    "shape": "string or None",
    "dtype": "string or None",
@@ -234,7 +234,7 @@
   },
   {
    "name": "optimizer_summary",
-   "description": "Method, success, status, message, nfev and parameters from the actual result.x.",
+   "description": "Field of the returned scirel._result.Result mapping: Method, success, status, message, nfev and parameters from the actual result.x.",
    "units": "mixed state and counts",
    "shape": "mapping or None",
    "dtype": "dict or None",
@@ -243,7 +243,7 @@
   },
   {
    "name": "best_valid_trial",
-   "description": "Complete record of the valid historical trial with the lowest chi2.",
+   "description": "Field of the returned scirel._result.Result mapping: Complete record of the valid historical trial with the lowest chi2.",
    "units": "mixed",
    "shape": "mapping or None",
    "dtype": "dict or None",
@@ -252,7 +252,7 @@
   },
   {
    "name": "scientific_evaluations",
-   "description": "Total number of actual trial calls.",
+   "description": "Field of the returned scirel._result.Result mapping: Total number of actual trial calls.",
    "units": "count",
    "shape": "scalar",
    "dtype": "int",
@@ -261,7 +261,7 @@
   },
   {
    "name": "max_evaluations",
-   "description": "The validated upper bound on scientific calls for this run.",
+   "description": "Field of the returned scirel._result.Result mapping: The validated upper bound on scientific calls for this run.",
    "units": "count",
    "shape": "scalar",
    "dtype": "int",
@@ -270,7 +270,7 @@
   },
   {
    "name": "valid_trial_count",
-   "description": "Number of valid trials in the evaluation log.",
+   "description": "Field of the returned scirel._result.Result mapping: Number of valid trials in the evaluation log.",
    "units": "count",
    "shape": "scalar",
    "dtype": "int",
@@ -279,7 +279,7 @@
   },
   {
    "name": "residual_size",
-   "description": "Fixed residual size for this run.",
+   "description": "Field of the returned scirel._result.Result mapping: Fixed residual size for this run.",
    "units": "count",
    "shape": "scalar",
    "dtype": "int",
@@ -288,7 +288,7 @@
   },
   {
    "name": "identifiability",
-   "description": "General identifiability status.",
+   "description": "Field of the returned scirel._result.Result mapping: General identifiability status.",
    "units": "identifier",
    "shape": "scalar",
    "dtype": "str",
@@ -312,7 +312,7 @@
   "invalid_input": "Raises ValueError before any scientific call for an invalid method, bounds, initial values, keys, samples or budget, or when a numeric conversion raises ValueError. TypeError may propagate when a conversion or injected port raises TypeError; trial contract ValueError/TypeError/KeyError propagate.",
   "runtime_failure": "An ArithmeticError/RuntimeError from a custom trial with explicit residual_size is recorded as a fixed-size failure and consumes the actual call budget; when N has not been established, the exception propagates rather than inventing a dimension. Optimizer ArithmeticError/RuntimeError and budget stops are reported separately; contract ValueError/TypeError/KeyError are not swallowed.",
   "nonconvergence": "Optimizer stop and forward validity are returned separately; a fallback is never called converged.",
-  "partial_results": "best_valid_trial stores the historical valid minimum; best_parameters comes only from a fresh terminal or fallback validation; both are None when everything fails."
+  "partial_results": "Returns a scirel._result.Result mapping in which best_valid_trial stores the historical valid minimum; best_parameters comes only from a fresh terminal or fallback validation, and both are None when everything fails."
  },
  "public_api": {
   "python": {
@@ -333,20 +333,22 @@
  },
  "example": {
   "description": "A scalar example illustrating only the optimization control; see direct-anisotropic-inversion for the physical closed loop.",
-  "code": "import numpy as np\nfrom scirel.inference import optimize_anisotropic_parameters\ndef trial(*, params):\n    residuals = np.array([params['x'] - 3.0])\n    return {'chi2': float(residuals @ residuals), 'residuals': residuals, 'equilibrium': {'converged': True}, 'failure_reason': None}\nr = optimize_anisotropic_parameters(initial_params={'x': 0.0, 'fixed': 7.0}, bounds={'x': (-5.0, 5.0)}, fit_keys=['x'], method='least_squares', trial_evaluator=trial)\nassert abs(r['best_parameters']['x'] - 3.0) < 1e-6\nassert r['best_parameters']['fixed'] == 7.0 and r['converged']\nassert r['chi2'] == min(e['chi2'] for e in r['evaluation_log'])",
-  "expected": "Recovers x≈3, retains fixed=7 and the terminal point is actually forward-valid; an invalid method raises directly."
+  "code": "import numpy as np\nfrom scirel._result import Result\nfrom scirel.inference import optimize_anisotropic_parameters\ndef trial(*, params):\n    residuals = np.array([params['x'] - 3.0])\n    return {'chi2': float(residuals @ residuals), 'residuals': residuals, 'equilibrium': {'converged': True}, 'failure_reason': None}\nr = optimize_anisotropic_parameters(initial_params={'x': 0.0, 'fixed': 7.0}, bounds={'x': (-5.0, 5.0)}, fit_keys=['x'], method='least_squares', trial_evaluator=trial)\nassert isinstance(r, Result)\nassert r.best_parameters is r['best_parameters']\nassert abs(r['best_parameters']['x'] - 3.0) < 1e-6\nassert r['best_parameters']['fixed'] == 7.0 and r['converged']\nassert r['chi2'] == min(e['chi2'] for e in r['evaluation_log'])",
+  "expected": "The call returns a scirel._result.Result mapping whose key and attribute access expose the same fields: x is recovered as approximately 3, fixed=7 is retained, and the terminal point is actually forward-valid; an invalid method raises directly."
  },
  "verification": {
   "scope": [
    "Retains the original valid scalar recovery, LHS starting point and residual numerical assertions.",
    "Invalid controls make zero scientific calls, a failed zero chi2 cannot become best, the dimension is fixed, and budget/terminal states are identical.",
-   "Two-parameter analytic recovery with real Picard and independent curved-field discrete-reference recovery."
+   "Two-parameter analytic recovery with real Picard and independent curved-field discrete-reference recovery.",
+   "The converted public function returns scirel._result.Result with the same keys, order, values, shapes, dtypes and mapping compatibility, and attribute access resolves to the same fields."
   ],
   "tests": [
    "tests/cross_domain/test_inference_physical_closure.py",
-   "tests/cross_domain/test_anisotropic_inference_independent.py"
+   "tests/cross_domain/test_anisotropic_inference_independent.py",
+   "tests/inference/test_inference_named_result.py"
   ],
-  "evidence_ceiling": "Bounded to a bounded local anisotropic-parameter fit with a total scientific-call budget and a never-best failed trial rule. Evidence: `test_inference_physical_closure.py` contains 20 test functions, none of which references `optimize_anisotropic_parameters`, and is shared by 4 assets; `test_anisotropic_inference_independent.py` contains 1 test function, none of which references `optimize_anisotropic_parameters`, and is shared by 4 assets; only shared-file coverage is bound, so a pass is file-level rather than asset-isolated; the bounded example was executed by this audit. Oracle: independent analytic and discrete-reference comparisons in the bound inference files. It does not establish global optimality, confidence intervals/identifiability proofs, or packaging a failed/old state as optimizer convergence.",
+  "evidence_ceiling": "Bounded to a bounded local anisotropic-parameter fit with a total scientific-call budget and a never-best failed trial rule. Evidence: `test_inference_physical_closure.py` contains 20 test functions, none of which references `optimize_anisotropic_parameters`, and is shared by 4 assets; `test_anisotropic_inference_independent.py` contains 1 test function, none of which references `optimize_anisotropic_parameters`, and is shared by 4 assets; only shared-file coverage is bound, so a pass is file-level rather than asset-isolated; the bounded example was executed by this audit. Oracle: independent analytic and discrete-reference comparisons in the bound inference files. It does not establish global optimality, confidence intervals/identifiability proofs, or packaging a failed/old state as optimizer convergence. The direct named-result test also checks the legacy values, key order and attribute access.",
   "known_limitations": [
    "May stall near a constant penalty; finite LHS and local optimization do not guarantee finding a feasible point.",
    "No automatic covariance, Fisher-rank or confidence-interval report is provided; additional scientific design is required.",

@@ -6045,9 +6045,9 @@
   },
   {
    "asset_id": "scirel.inference.anisotropic-trial-evaluation",
-   "source_sha256": "44d00c9bc0a947129d72c860b048315d54b49055986b00ef4bdb4d489937fbe9",
-   "summary": "以预先确定的残差维数评估一次前向平衡试探，区分有效、数值失败和不收敛；合同错误直接报告。",
-   "definition": "在科学调用前由标准观测布局取得 N，或由自定义端口显式给定 residual_size。深复制调用输入，执行一次 equilibrium_solver；未收敛时立即返回 N 维正罚值，不执行诊断。收敛时执行诊断与 reducer，并检查残差形状/有限性和 chi2=r·r。ArithmeticError/RuntimeError 记录为数值失败；ValueError/TypeError/KeyError 等合同错误传播。",
+   "source_sha256": "c85e1b03d81eb629989ec86b03b66ec0c0e4bed8e0fd2cbc38908f5007c57246",
+   "summary": "以预先确定的残差维数评估一次前向平衡试探，区分有效、数值失败和不收敛；合同错误直接报告，所有结果作为 scirel._result.Result 映射返回。",
+   "definition": "在科学调用前由标准观测布局取得 N，或由自定义端口显式给定 residual_size。深复制调用输入，执行一次 equilibrium_solver；未收敛时立即返回 N 维正罚值，不执行诊断。收敛时执行诊断与 reducer，并检查残差形状/有限性和 chi2=r·r。ArithmeticError/RuntimeError 记录为数值失败；ValueError/TypeError/KeyError 等合同错误传播。每条结果记录都是 scirel._result.Result 映射；按键和属性读取同一个值。",
    "model": "调用者前向模型、诊断与残差端口的受验证组合，不内置压强闭合",
    "boundary": "失败罚值是优化接口值，不是可接受的物理观测或可行性证明。参数范围由外层优化器与物理端口共同约束。",
    "assumptions": [
@@ -6108,55 +6108,55 @@
    "outputs": [
     {
      "name": "params",
-     "description": "提交参数的深副本。",
+     "description": "Result 字段：提交参数的深副本。",
      "constraints": "不会被端口对副本的写入改变。",
      "dtype": "dict"
     },
     {
      "name": "chi2",
-     "description": "成功向量的重新计算内积；失败时 N*penalty²。",
+     "description": "Result 字段：成功向量的重新计算内积；失败时 N*penalty²。",
      "constraints": "有限非负，不将失败 chi2 当作有效物理拟合。",
      "dtype": "float"
     },
     {
      "name": "residuals",
-     "description": "成功残差或同维罚值向量。",
+     "description": "Result 字段：成功残差或同维罚值向量。",
      "constraints": "每条成功/失败路径均保持 N。",
      "dtype": "float64 数组"
     },
     {
      "name": "equilibrium",
-     "description": "已取得的前向状态；数值异常前未取得时为 None。",
+     "description": "Result 字段：已取得的前向状态；数值异常前未取得时为 None。",
      "constraints": "失败记录可能保留未收敛状态，仅供诊断，不是合格解。",
      "dtype": "映射或 None"
     },
     {
      "name": "failure_reason",
-     "description": "明确的前向不收敛或数值异常原因；有效时为 None。",
+     "description": "Result 字段：明确的前向不收敛或数值异常原因；有效时为 None。",
      "constraints": "未收敛但无原因时补充通用说明。",
      "dtype": "字符串或 None"
     },
     {
      "name": "valid",
-     "description": "前向与残差合同全部满足。",
+     "description": "Result 字段：前向与残差合同全部满足。",
      "constraints": "只有 True 才可供优化器进行有效最优排序。",
      "dtype": "bool"
     },
     {
      "name": "status",
-     "description": "试探类别。",
+     "description": "Result 字段：试探类别。",
      "constraints": "valid、forward_nonconvergence 或 numerical_failure。",
      "dtype": "str"
     },
     {
      "name": "failed_port",
-     "description": "失败发生的端口。",
+     "description": "Result 字段：失败发生的端口。",
      "constraints": "equilibrium_solver、diagnostic_evaluator、residual_reducer；有效时 None。",
      "dtype": "字符串或 None"
     },
     {
      "name": "exception_type",
-     "description": "数值异常的实际类名。",
+     "description": "Result 字段：数值异常的实际类名。",
      "constraints": "无异常的不收敛记录为 None。",
      "dtype": "字符串或 None"
     }
@@ -6178,15 +6178,16 @@
     "invalid_input": "静态结构、端口或维数不合法，或数值转换抛出 ValueError 时抛 ValueError；转换或嵌套端口抛出 TypeError 时传播 TypeError。嵌套 ValueError/TypeError/KeyError 传播。",
     "runtime_failure": "嵌套 ArithmeticError（含 FloatingPointError）或 RuntimeError 返回同 N 的 numerical_failure，保留失败端口和异常类。进程级异常不捕获。",
     "nonconvergence": "前向 False 直接返回 forward_nonconvergence；绝不执行该状态的诊断。",
-    "partial_results": "保留实际已有前向状态供调查，但 valid=False；不丢失维数、不参与有效 best 排序。"
+    "partial_results": "返回 scirel._result.Result 映射并保留实际已有前向状态供调查，但 valid=False；不丢失维数、不参与有效 best 排序。"
    },
    "verification": {
     "scope": [
      "成功/数值失败/再次成功的固定维数与端口记录。",
      "非收敛短路、错误残差形状/NaN/chi2 拒绝、调用方深层非修改。",
-     "独立解析及曲场前向反演消费者。"
+     "独立解析及曲场前向反演消费者。",
+     "Result 改造后保持既有键顺序、数值、形状、dtype 和映射兼容性，并支持属性读取同一字段。"
     ],
-    "evidence_ceiling": "限于单次前向平衡试验，显式区分有效、数值失败与未收敛结果。证据：`test_inference_physical_closure.py` 含 20 个测试函数，其中没有函数引用 `evaluate_anisotropic_trial`，由 4 个资产共享; `test_anisotropic_inference_independent.py` 含 1 个测试函数，其中没有函数引用 `evaluate_anisotropic_trial`，由 4 个资产共享；仅绑定共享文件覆盖，因此通过是文件级事实、而非资产隔离证据；本审计已执行有界示例。真值来源：绑定 inference 文件中的独立解析与离散参照比较。不建立：把合同/编程异常伪装为物理不可行，或用惩罚项证明模型有效。",
+    "evidence_ceiling": "限于单次前向平衡试验，显式区分有效、数值失败与未收敛结果。证据：`test_inference_physical_closure.py` 含 20 个测试函数，其中没有函数引用 `evaluate_anisotropic_trial`，由 4 个资产共享; `test_anisotropic_inference_independent.py` 含 1 个测试函数，其中没有函数引用 `evaluate_anisotropic_trial`，由 4 个资产共享；仅绑定共享文件覆盖，因此通过是文件级事实、而非资产隔离证据；本审计已执行有界示例。真值来源：绑定 inference 文件中的独立解析与离散参照比较。不建立：把合同/编程异常伪装为物理不可行，或用惩罚项证明模型有效。另有直接命名结果测试核对旧值、键顺序和属性读取。",
     "known_limitations": [
      "RuntimeError 的科学含义由调用者端口负责；错误状态不能替代原异常调查。",
      "单次 trial 不判断参数可辨识性或最优性。"
@@ -6194,7 +6195,7 @@
    },
    "example": {
     "description": "两个观测的前向求解未收敛时，诊断不会调用，返回两个罚值。",
-    "expected": "N=2 不变，chi2=2e24，状态明确不收敛；没有诊断调用。"
+    "expected": "返回一个 scirel._result.Result 映射，按键和属性读取同一组字段；N=2 不变，chi2=2e24，状态明确不收敛，且没有诊断调用。"
    }
   },
   {
@@ -7046,9 +7047,9 @@
   },
   {
    "asset_id": "scirel.inference.latin-hypercube-sampling",
-   "source_sha256": "decbbb13d4105458fc7f4b4824c3ec5cf70e994104ca01a76d6a1e68c779c261",
-   "summary": "对每个拟合参数独立排列分层区间，产生有界参数字典供反演初始化。",
-   "definition": "每个选定参数以NumPy default_rng独立打乱n_samples层，每层抽一个均匀偏移；仿射映射到[low,high)，按选定键顺序组合样本字典。",
+   "source_sha256": "ae61e367567ce536177d8db9a7da3e3ae928b7f7885e684f4fae77b5a821804c",
+   "summary": "对每个拟合参数独立排列分层区间，产生有界参数字典供反演初始化，并作为 scirel._result.Result 映射返回。",
+   "definition": "每个选定参数以NumPy default_rng独立打乱n_samples层，每层抽一个均匀偏移；仿射映射到[low,high)，按选定键顺序组合样本字典。返回的 initial_samples 字段位于同一个 scirel._result.Result 映射中；按键和属性读取同一个值。",
    "model": "各坐标独立的拉丁超立方初始化，不是后验或不确定性模型。",
    "assumptions": [
     "参数单位与边界物理意义由调用者负责。",
@@ -7084,7 +7085,7 @@
    "outputs": [
     {
      "name": "initial_samples",
-     "description": "有序样本字典，仅含选定参数。",
+     "description": "Result 字段：有序样本字典，仅含选定参数。",
      "constraints": "每坐标每层一个值；空fit_keys得到n_samples个空字典。",
      "dtype": "float字典列表"
     }
@@ -7107,18 +7108,19 @@
     "invalid_input": "bounds非dict、样本数为布尔/非int/非正、选中端点非有限/非递增时ValueError；缺键KeyError，错误二元组、转换或种子错误传播。",
     "runtime_failure": "NumPy内存或随机数错误传播，不返回部分样本。",
     "nonconvergence": "有限抽样，不执行优化。",
-    "partial_results": "异常后无部分结果。"
+    "partial_results": "异常后不返回 scirel._result.Result 映射。"
    },
    "example": {
     "description": "固定种子为两个有界坐标生成可重复独立分层样本。",
-    "expected": "返回5个可重复字典，每个边缘分层恰一个样本。"
+    "expected": "返回一个键为 initial_samples 的 scirel._result.Result 映射，按键和属性读取同一个列表；列表含 5 个可重复字典，每个边缘分层恰一个样本。"
    },
    "verification": {
     "scope": [
      "两坐标固定种子复现及逐层单样本。",
-     "子集选择和非法样本数/边界拒绝。"
+     "子集选择和非法样本数/边界拒绝。",
+     "Result 改造后保持既有键顺序、数值、形状、dtype 和映射兼容性，并支持属性读取同一字段。"
     ],
-    "evidence_ceiling": "测试只建立所选确定性分层与失败，不认证跨RNG实现的统计质量、参数物理有效性或专家认可。",
+    "evidence_ceiling": "测试只建立所选确定性分层与失败，不认证跨RNG实现的统计质量、参数物理有效性或专家认可。另有直接命名结果测试核对旧值、键顺序和属性读取。",
     "known_limitations": [
      "仅校验选定边界，fit_keys不强制唯一或非空。",
      "固定种子不保证不同NumPy RNG版本样本相同。",
@@ -7562,9 +7564,9 @@
   },
   {
    "asset_id": "scirel.inference.anisotropic-parameter-optimization",
-   "source_sha256": "23328df6241b205c46f4ea20bab4335d4fdb4025a90e27c2305b21b15831cf09",
-   "summary": "在有限合法边界与总科学调用预算内作局部拟合，失败试探不可成为最优，返回实际终点的重新验证状态。",
-   "definition": "全部静态控制先验证。可选 LHS 的完整设计先核边界与数量，再按顺序评估，取 chi2 最低的有效样本作优化起点；若没有有效样本则保留提交的初值。least_squares 使用残差，minimize 使用 L-BFGS-B 与平方和；无效 trial 对优化器提供 N 维罚值，但永不参与 best_valid_trial。预算计入 LHS、数值差分与终点调用，预留两次终点/有效 fallback 验证。正常返回的优化器 x 必须重新调用前向验证；如终点无效，仅可返回重新验证的历史有效候选，且 converged=False。",
+   "source_sha256": "f6b9093cef43eb8085b6cb094c07de343bdd16f9428abe80877d3aa7e8b2d2ac",
+   "summary": "在有限合法边界与总科学调用预算内作局部拟合，失败试探不可成为最优，并以 scirel._result.Result 映射返回实际终点的重新验证状态。",
+   "definition": "全部静态控制先验证。可选 LHS 的完整设计先核边界与数量，再按顺序评估，取 chi2 最低的有效样本作优化起点；若没有有效样本则保留提交的初值。least_squares 使用残差，minimize 使用 L-BFGS-B 与平方和；无效 trial 对优化器提供 N 维罚值，但永不参与 best_valid_trial。预算计入 LHS、数值差分与终点调用，预留两次终点/有效 fallback 验证。正常返回的优化器 x 必须重新调用前向验证；如终点无效，仅可返回重新验证的历史有效候选，且 converged=False。全部十六个结果字段位于同一个 scirel._result.Result 映射中；按键和属性读取同一个值。",
    "model": "有界局部数值优化，不包含平衡方程、全球搜索或统计可辨识性证明",
    "boundary": "所有 bounds 均须有限严格递增，初值在边界内。错误方法、错误 LHS 或非法控制直接拒绝，不补做越界 fallback。",
    "assumptions": [
@@ -7643,97 +7645,97 @@
    "outputs": [
     {
      "name": "best_parameters",
-     "description": "实际重新验证的优化器终点；失败时可为重新验证的历史有效候选。",
+     "description": "Result 字段：实际重新验证的优化器终点；失败时可为重新验证的历史有效候选。",
      "constraints": "无有效候选则 None。正常终点与 optimizer_summary.parameters 一致；不声称始终是所有日志最小值。",
      "dtype": "dict 或 None"
     },
     {
      "name": "chi2",
-     "description": "所返回状态的归一化平方和；无有效解时为 N*penalty²。",
+     "description": "Result 字段：所返回状态的归一化平方和；无有效解时为 N*penalty²。",
      "constraints": "有限非负；失败 penalty 必须配合状态解读。",
      "dtype": "float"
     },
     {
      "name": "residual_vector",
-     "description": "所返回同一 trial 的固定维数残差。",
+     "description": "Result 字段：所返回同一 trial 的固定维数残差。",
      "constraints": "参数、状态与残差同属最后验证的试探；无有效解为罚值。",
      "dtype": "float64 数组"
     },
     {
      "name": "converged",
-     "description": "优化器成功且其实际终点的最新前向评估有效。",
+     "description": "Result 字段：优化器成功且其实际终点的最新前向评估有效。",
      "constraints": "fallback、耗尽预算或终点无效时 False；不表示残差小、全局最优或可辨识。",
      "dtype": "bool"
     },
     {
      "name": "forward_converged",
-     "description": "当前返回的状态已实际通过前向与 trial 验证。",
+     "description": "Result 字段：当前返回的状态已实际通过前向与 trial 验证。",
      "constraints": "可在优化器未收敛时 True，表示可用部分结果。",
      "dtype": "bool"
     },
     {
      "name": "optimizer_converged",
-     "description": "SciPy success 原始布尔投影。",
+     "description": "Result 字段：SciPy success 原始布尔投影。",
      "constraints": "常量失败罚值也可导致优化器停止，不能单独当作物理成功。",
      "dtype": "bool"
     },
     {
      "name": "equilibrium",
-     "description": "与 best_parameters 及 residual_vector 同次验证的前向状态。",
+     "description": "Result 字段：与 best_parameters 及 residual_vector 同次验证的前向状态。",
      "constraints": "无有效返回候选时 None。",
      "dtype": "映射或 None"
     },
     {
      "name": "evaluation_log",
-     "description": "所有实际评估的参数、chi2、valid、failure_reason 与 source。",
+     "description": "Result 字段：所有实际评估的参数、chi2、valid、failure_reason 与 source。",
      "constraints": "source 为 latin_hypercube、optimizer、terminal、best_valid_recheck。",
      "dtype": "记录列表"
     },
     {
      "name": "failure_reason",
-     "description": "预算、数值故障、终点失败或优化停止原因。",
+     "description": "Result 字段：预算、数值故障、终点失败或优化停止原因。",
      "constraints": "仅同时成功时为 None；合同错误抛出。",
      "dtype": "字符串或 None"
     },
     {
      "name": "optimizer_summary",
-     "description": "方法、success、status、message、nfev 与实际 result.x 的 parameters。",
+     "description": "Result 字段：方法、success、status、message、nfev 与实际 result.x 的 parameters。",
      "constraints": "SciPy nfev 不等于全部科学调用次数；预算中断时可能为 None。",
      "dtype": "dict 或 None"
     },
     {
      "name": "best_valid_trial",
-     "description": "所有历史有效试探中最低 chi2 的完整记录。",
+     "description": "Result 字段：所有历史有效试探中最低 chi2 的完整记录。",
      "constraints": "仅作观察记录；与返回终点分开，不给其套用另一点的收敛状态。",
      "dtype": "dict 或 None"
     },
     {
      "name": "scientific_evaluations",
-     "description": "实际 trial 调用总数。",
+     "description": "Result 字段：实际 trial 调用总数。",
      "constraints": "不超过 max_evaluations；含数值差分与终点验证。",
      "dtype": "int"
     },
     {
      "name": "max_evaluations",
-     "description": "本次已验证的科学调用上限。",
+     "description": "Result 字段：本次已验证的科学调用上限。",
      "constraints": "与输入一致。",
      "dtype": "int"
     },
     {
      "name": "valid_trial_count",
-     "description": "评估日志中有效 trial 数量。",
+     "description": "Result 字段：评估日志中有效 trial 数量。",
      "constraints": "失败试探不计入。",
      "dtype": "int"
     },
     {
      "name": "residual_size",
-     "description": "本次固定残差维数。",
+     "description": "Result 字段：本次固定残差维数。",
      "constraints": "所有向量维数相同。",
      "dtype": "int"
     },
     {
      "name": "identifiability",
-     "description": "通用可辨识性状态。",
+     "description": "Result 字段：通用可辨识性状态。",
      "constraints": "固定为 not_established；局部停止不等于可辨识性证明。",
      "dtype": "str"
     }
@@ -7754,15 +7756,16 @@
     "invalid_input": "方法、边界、初值、键、样本或预算不合法，或数值转换抛出 ValueError 时，在科学调用前抛 ValueError；转换或注入端口抛出 TypeError 时传播 TypeError；trial 合同 ValueError/TypeError/KeyError 传播。",
     "runtime_failure": "带显式 residual_size 的自定义 trial 的 ArithmeticError/RuntimeError 记录为固定维失败，并消耗实际调用预算；未建立 N 时传播异常，不伪造维数。优化器自身 ArithmeticError/RuntimeError 和预算停止单独报告；合同 ValueError/TypeError/KeyError 不吞掉。",
     "nonconvergence": "优化停止和前向有效性分开返回；fallback 从不称 converged。",
-    "partial_results": "best_valid_trial 保存历史有效最小值；best_parameters 只来自新的终点或 fallback 验证；全失败时两者均 None。"
+    "partial_results": "返回 scirel._result.Result 映射；best_valid_trial 保存历史有效最小值，best_parameters 只来自新的终点或 fallback 验证，全失败时两者均 None。"
    },
    "verification": {
     "scope": [
      "原有效标量恢复、LHS 起点与残差数值断言保留。",
      "非法控制零科学调用、失败零 chi2 不可 best、固定维数、预算/终点状态同一性。",
-     "真实 Picard 的双参数解析恢复与独立曲场离散参考恢复。"
+     "真实 Picard 的双参数解析恢复与独立曲场离散参考恢复。",
+     "Result 改造后保持既有键顺序、数值、形状、dtype 和映射兼容性，并支持属性读取同一字段。"
     ],
-    "evidence_ceiling": "限于带总科学调用预算、失败试验不得成为最优的有界局域各向异性参数拟合。证据：`test_inference_physical_closure.py` 含 20 个测试函数，其中没有函数引用 `optimize_anisotropic_parameters`，由 4 个资产共享; `test_anisotropic_inference_independent.py` 含 1 个测试函数，其中没有函数引用 `optimize_anisotropic_parameters`，由 4 个资产共享；仅绑定共享文件覆盖，因此通过是文件级事实、而非资产隔离证据；本审计已执行有界示例。真值来源：绑定 inference 文件中的独立解析与离散参照比较。不建立：全局最优性、置信区间/可辨识性证明，或把失败/旧状态包装为优化器收敛。",
+    "evidence_ceiling": "限于带总科学调用预算、失败试验不得成为最优的有界局域各向异性参数拟合。证据：`test_inference_physical_closure.py` 含 20 个测试函数，其中没有函数引用 `optimize_anisotropic_parameters`，由 4 个资产共享; `test_anisotropic_inference_independent.py` 含 1 个测试函数，其中没有函数引用 `optimize_anisotropic_parameters`，由 4 个资产共享；仅绑定共享文件覆盖，因此通过是文件级事实、而非资产隔离证据；本审计已执行有界示例。真值来源：绑定 inference 文件中的独立解析与离散参照比较。不建立：全局最优性、置信区间/可辨识性证明，或把失败/旧状态包装为优化器收敛。另有直接命名结果测试核对旧值、键顺序和属性读取。",
     "known_limitations": [
      "常量罚值附近可能停滞；有限 LHS 和局部优化不保证找出可行点。",
      "没有自动协方差、Fisher 秩或置信区间报告；需要额外科学设计。",
@@ -7771,7 +7774,7 @@
    },
    "example": {
     "description": "仅说明优化控制的标量例子；物理闭环见 direct-anisotropic-inversion。",
-    "expected": "恢复 x≈3，保留 fixed=7，终点实际前向有效；非法方法直接抛错。"
+    "expected": "返回一个 scirel._result.Result 映射，按键和属性读取同一组字段；恢复 x≈3，保留 fixed=7，终点实际前向有效；非法方法直接抛错。"
    }
   },
   {

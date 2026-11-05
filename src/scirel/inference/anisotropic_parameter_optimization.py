@@ -4,6 +4,9 @@ from __future__ import annotations
 from collections.abc import Mapping
 from copy import deepcopy
 import numpy as np
+
+from scirel._result import Result
+
 from .anisotropic_trial_evaluation import _size, _residual_record
 
 
@@ -25,7 +28,7 @@ def optimize_anisotropic_parameters(
     failure_penalty=1.0e12,
     max_evaluations=200,
 ):
-    """Fit bounded parameters without ranking a failed trial as a solution.
+    """Fit bounded parameters as a named result without ranking failed trials.
 
     Parameters
     ----------
@@ -80,55 +83,62 @@ def optimize_anisotropic_parameters(
     Returns
     -------
     best_parameters : dict or None
-        Revalidated optimizer terminal point, or a freshly revalidated
+        Field of the returned ``scirel._result.Result`` mapping containing the
+        revalidated optimizer terminal point, or a freshly revalidated
         historical valid candidate [parameter units]. It is None when no valid
         candidate exists.
     chi2 : float
-        Squared residual norm of the returned state, or the failed-state
-        penalty norm [dimensionless].
+        Field containing the squared residual norm of the returned state, or
+        the failed-state penalty norm [dimensionless].
     residual_vector : ndarray of float64, shape (N,)
-        Residuals from the same revalidated state as ``best_parameters``, or a
-        same-size penalty vector [dimensionless].
+        Field containing residuals from the same revalidated state as
+        ``best_parameters``, or a same-size penalty vector [dimensionless].
     converged : bool
-        Whether the optimizer succeeded and its freshly evaluated terminal
-        point is valid [boolean]. A fallback is never reported as converged.
+        Field indicating whether the optimizer succeeded and its freshly
+        evaluated terminal point is valid [boolean]. A fallback is never
+        reported as converged.
     forward_converged : bool
-        Whether a valid forward state is returned, even if the optimizer did
-        not converge [boolean].
+        Field indicating whether a valid forward state is returned, even if
+        the optimizer did not converge [boolean].
     optimizer_converged : bool
-        The optimizer library's success flag [boolean]. It may be True while
-        the terminal forward state is invalid, so it is not physical success.
+        Field containing the optimizer library's success flag [boolean]. It
+        may be True while the terminal forward state is invalid, so it is not
+        physical success.
     equilibrium : mapping or None
-        Forward state from the same revalidation as the returned residuals
-        [mixed]. It is None when no valid candidate exists.
+        Field containing the forward state from the same revalidation as the
+        returned residuals [mixed]. It is None when no valid candidate exists.
     evaluation_log : list of dict, length N_eval
-        Every actual trial record with parameters, ``chi2``, validity, failure
-        reason and source [mixed]. Sources are ``latin_hypercube``,
-        ``optimizer``, ``terminal`` or ``best_valid_recheck``.
+        Field containing every actual trial record with parameters, ``chi2``,
+        validity, failure reason and source [mixed]. Sources are
+        ``latin_hypercube``, ``optimizer``, ``terminal`` or
+        ``best_valid_recheck``.
     failure_reason : str or None
-        Reason for budget exhaustion, numerical failure, terminal failure or
-        optimizer stop [identifier]. It is None only when ``converged`` is
-        True.
+        Field containing the reason for budget exhaustion, numerical failure,
+        terminal failure or optimizer stop [identifier]. It is None only when
+        ``converged`` is True.
     optimizer_summary : dict or None
-        Method, success, status, message, ``nfev`` and optimizer terminal
-        parameters [mixed state and counts]. SciPy's ``nfev`` is not the total
-        scientific call count; this is None when no optimizer result exists.
+        Field containing method, success, status, message, ``nfev`` and
+        optimizer terminal parameters [mixed state and counts]. SciPy's
+        ``nfev`` is not the total scientific call count; this is None when no
+        optimizer result exists.
     best_valid_trial : dict or None
-        Lowest-chi2 valid trial seen during the run [mixed]. It is an
-        observation record and must not be assigned the returned terminal
-        point's convergence state.
+        Field containing the lowest-chi2 valid trial seen during the run
+        [mixed]. It is an observation record and must not be assigned the
+        returned terminal point's convergence state.
     scientific_evaluations : int
-        Number of actual trial calls [count]. It does not exceed
-        ``max_evaluations`` and includes numerical differences.
+        Field containing the number of actual trial calls [count]. It does not
+        exceed ``max_evaluations`` and includes numerical differences.
     max_evaluations : int
-        Validated scientific-call ceiling for this run [count].
+        Field containing the validated scientific-call ceiling for this run
+        [count].
     valid_trial_count : int
-        Number of valid trial records in the evaluation log [count].
+        Field containing the number of valid trial records in the evaluation
+        log [count].
     residual_size : int
-        Fixed residual-vector length for the run [count].
+        Field containing the fixed residual-vector length for the run [count].
     identifiability : str
-        Fixed value ``not_established`` [identifier]; a local optimizer stop
-        is not an identifiability proof.
+        Field containing the fixed value ``not_established`` [identifier]; a
+        local optimizer stop is not an identifiability proof.
 
     Raises
     ------
@@ -174,16 +184,21 @@ def optimize_anisotropic_parameters(
     A normally returned optimizer point is always evaluated again; an invalid
     terminal point can only fall back to a freshly revalidated historical
     valid candidate, with ``converged=False``. The failure penalty is only an
-    optimization control and is not a physical solution.
+    optimization control and is not a physical solution. All returns use one
+    ``scirel._result.Result`` mapping; mapping and attribute access expose the
+    same values.
 
     Examples
     --------
     >>> import numpy as np
+    >>> from scirel._result import Result
     >>> from scirel.inference import optimize_anisotropic_parameters
     >>> def trial(*, params):
     ...     residuals = np.array([params['x'] - 3.0])
     ...     return {'chi2': float(residuals @ residuals), 'residuals': residuals, 'equilibrium': {'converged': True}, 'failure_reason': None}
     >>> r = optimize_anisotropic_parameters(initial_params={'x': 0.0, 'fixed': 7.0}, bounds={'x': (-5.0, 5.0)}, fit_keys=['x'], method='least_squares', trial_evaluator=trial)
+    >>> assert isinstance(r, Result)
+    >>> assert r.best_parameters is r['best_parameters']
     >>> assert abs(r['best_parameters']['x'] - 3.0) < 1e-6
     >>> assert r['best_parameters']['fixed'] == 7.0 and r['converged']
     >>> assert r['chi2'] == min(e['chi2'] for e in r['evaluation_log'])
@@ -411,24 +426,26 @@ def optimize_anisotropic_parameters(
             "parameters": {k: float(v) for k, v in zip(keys, result.x)},
         }
     )
-    return {
-        "best_parameters": None if selected is None else selected["params"],
-        "chi2": float(vector @ vector),
-        "residual_vector": vector,
-        "converged": converged,
-        "forward_converged": selected is not None,
-        "optimizer_converged": optimizer_success,
-        "equilibrium": None if selected is None else selected["equilibrium"],
-        "evaluation_log": logs,
-        "failure_reason": None if converged else stop_reason,
-        "optimizer_summary": summary,
-        "best_valid_trial": deepcopy(best),
-        "scientific_evaluations": len(logs),
-        "max_evaluations": int(max_evaluations),
-        "valid_trial_count": len(valid_trials),
-        "residual_size": n,
-        "identifiability": "not_established",
-    }
+    return Result(
+        {
+            "best_parameters": None if selected is None else selected["params"],
+            "chi2": float(vector @ vector),
+            "residual_vector": vector,
+            "converged": converged,
+            "forward_converged": selected is not None,
+            "optimizer_converged": optimizer_success,
+            "equilibrium": None if selected is None else selected["equilibrium"],
+            "evaluation_log": logs,
+            "failure_reason": None if converged else stop_reason,
+            "optimizer_summary": summary,
+            "best_valid_trial": deepcopy(best),
+            "scientific_evaluations": len(logs),
+            "max_evaluations": int(max_evaluations),
+            "valid_trial_count": len(valid_trials),
+            "residual_size": n,
+            "identifiability": "not_established",
+        }
+    )
 
 
 run = optimize_anisotropic_parameters

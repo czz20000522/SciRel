@@ -5,7 +5,7 @@
   "en": "Seeded Latin-hypercube parameter samples",
   "zh": "带种子的拉丁超立方参数采样"
  },
- "summary": "Generate one independently permuted stratum per fitted parameter and return bounded parameter dictionaries for optional inversion initialization.",
+ "summary": "Generate one independently permuted stratum per fitted parameter and return bounded parameter dictionaries for optional inversion initialization in a scirel._result.Result mapping.",
  "taxonomy": [
   "inference",
   "sampling",
@@ -31,7 +31,7 @@
  "identity": {
   "relation": "parameter intervals and sample count to a stratified initial parameter design",
   "direction": "bounds, n_samples, seed and fit_keys -> initial_samples",
-  "definition": "For each selected key, independently permute the n_samples strata and draw one uniform offset within each stratum using a NumPy default_rng. Affinely map the unit values into that key's [low, high) interval and combine columns in selected-key order into n_samples dictionaries.",
+  "definition": "For each selected key, independently permute the n_samples strata and draw one uniform offset within each stratum using a NumPy default_rng. Affinely map the unit values into that key's [low, high) interval and combine columns in selected-key order into n_samples dictionaries. The returned initial_samples field is carried in a scirel._result.Result mapping; mapping and attribute access expose the same value.",
   "model": "independent-coordinate Latin-hypercube initialization, not a posterior or uncertainty model",
   "geometry": "rectangular continuous parameter domain; no spatial geometry",
   "coordinates": "each fit key is one independent parameter axis, in fit_keys order or bounds insertion order",
@@ -84,7 +84,7 @@
  "outputs": [
   {
    "name": "initial_samples",
-   "description": "Ordered sample dictionaries, each containing only selected parameter keys.",
+   "description": "Field of the returned scirel._result.Result mapping: Ordered sample dictionaries, each containing only selected parameter keys.",
    "units": "per-parameter caller units",
    "shape": "list[n_samples] of mapping[fit_key -> scalar]",
    "dtype": "list of dict of float",
@@ -110,7 +110,7 @@
   "invalid_input": "Raises ValueError for a non-dict bounds input, boolean/non-int or nonpositive n_samples, or selected nonfinite/nonincreasing endpoints. Missing selected keys raise KeyError; malformed pairs, conversion failures and invalid seeds propagate their native exceptions.",
   "runtime_failure": "NumPy allocation or RNG failures propagate; no partial sample result is returned.",
   "nonconvergence": "Not applicable; this is finite sampling, not optimization.",
-  "partial_results": "None after an exception."
+  "partial_results": "No scirel._result.Result mapping is returned after an exception."
  },
  "public_api": {
   "python": {
@@ -127,18 +127,20 @@
  },
  "example": {
   "description": "A fixed seed produces repeatable independent strata for two bounded coordinates.",
-  "code": "from scirel.inference import sample_latin_hypercube\nbounds = {'a': (0.0, 1.0), 'b': (10.0, 20.0)}\na = sample_latin_hypercube(bounds=bounds, n_samples=5, seed=4)['initial_samples']\nb = sample_latin_hypercube(bounds=bounds, n_samples=5, seed=4)['initial_samples']\nassert a == b\nassert sorted(int(row['a'] * 5) for row in a) == list(range(5))\nassert sorted(int((row['b'] - 10) / 10 * 5) for row in a) == list(range(5))",
-  "expected": "Five reproducible dictionaries with exactly one sample in each marginal stratum."
+  "code": "from scirel._result import Result\nfrom scirel.inference import sample_latin_hypercube\nbounds = {'a': (0.0, 1.0), 'b': (10.0, 20.0)}\nresult = sample_latin_hypercube(bounds=bounds, n_samples=5, seed=4)\nassert isinstance(result, Result)\nassert result.initial_samples is result['initial_samples']\na = result['initial_samples']\nb = sample_latin_hypercube(bounds=bounds, n_samples=5, seed=4)['initial_samples']\nassert a == b\nassert sorted(int(row['a'] * 5) for row in a) == list(range(5))\nassert sorted(int((row['b'] - 10) / 10 * 5) for row in a) == list(range(5))",
+  "expected": "The call returns a scirel._result.Result mapping whose initial_samples key and attribute expose the same list: five reproducible dictionaries with exactly one sample in each marginal stratum."
  },
  "verification": {
   "scope": [
    "Fixed-seed repeatability and one draw per stratum on two coordinates.",
-   "Subset selection and rejection of invalid sample count or selected bounds."
+   "Subset selection and rejection of invalid sample count or selected bounds.",
+   "The converted public function returns scirel._result.Result with the same keys, order, values, shapes, dtypes and mapping compatibility, and attribute access resolves to the same fields."
   ],
   "tests": [
-   "tests/inference/test_latin_hypercube_sampling.py"
+   "tests/inference/test_latin_hypercube_sampling.py",
+   "tests/inference/test_inference_named_result.py"
   ],
-  "evidence_ceiling": "Direct tests establish selected deterministic stratification and input failures only; they do not certify statistical quality across RNG implementations, physical parameter validity or expert approval.",
+  "evidence_ceiling": "Direct tests establish selected deterministic stratification and input failures only; they do not certify statistical quality across RNG implementations, physical parameter validity or expert approval. The direct named-result test also checks the legacy values, key order and attribute access.",
   "known_limitations": [
    "The implementation validates only selected bounds and does not enforce unique or nonempty fit_keys.",
    "A fixed seed is not a promise of identical samples across different NumPy RNG versions.",

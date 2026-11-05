@@ -919,10 +919,10 @@
    "modules": {
     "scirel._composition": "ce7f22d7d0978065cb3c56384d49fccf73bf41635cd51b3a8755cca5453e1ca7",
     "scirel.diagnostics.observation_residuals": "e806fbe6aef4b8b8373280df42ede57f23b1e6bc655dc555621aa30c23e48db2",
-    "scirel.inference.anisotropic_parameter_optimization": "caefc9c26a76eca151910427647e2cb023a7952acce6a36c1673fc2dedf7d45f",
-    "scirel.inference.anisotropic_trial_evaluation": "600eb0c260c2e0b5c771a287366c88ebdb8858bd7183fc5877ba8219aa4b7f4b",
+    "scirel.inference.anisotropic_parameter_optimization": "60e612cb9fba940bd19cc45626e56f07ebc32cfb7df8a4be253c30e9ece02023",
+    "scirel.inference.anisotropic_trial_evaluation": "c3f7aa7d1b1324e3d8fd67de41bffc604b895924bb942f2110ae7037cd3bee1f",
     "scirel.inference.direct_anisotropic_inversion": "78bef93e0cbdb22de5011e15ea5c60533ae69fa6d6e5eb66e2db1a21143f3616",
-    "scirel.inference.latin_hypercube_sampling": "0436db21bdfe353671113b9fd9110dd42e004d73c042cd360da1782962a01787"
+    "scirel.inference.latin_hypercube_sampling": "98a0819886ae12f2b730d9707b266adf0aa04880977f3aca37169d52ced02abe"
    },
    "review_basis": "Port identity only; root scientific acceptance is separate. Fixed standard observation layout supplies N to trial and optimizer; finite failure penalty and actual scientific call budget are explicit. Numerical failed trials are excluded from best, terminal parameters are freshly evaluated, optimizer/forward/identifiability states remain distinct."
   },

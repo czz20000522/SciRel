@@ -4,6 +4,8 @@ from __future__ import annotations
 from collections.abc import Mapping
 from copy import deepcopy
 import numpy as np
+
+from scirel._result import Result
 from scirel.diagnostics.observation_residuals import _observation_layout
 
 
@@ -43,7 +45,7 @@ def evaluate_anisotropic_trial(
     residual_size=None,
     failure_penalty=1.0e12,
 ):
-    """Evaluate one anisotropic inversion trial at a fixed residual size.
+    """Evaluate one anisotropic inversion trial as a named result.
 
     Parameters
     ----------
@@ -85,29 +87,35 @@ def evaluate_anisotropic_trial(
     Returns
     -------
     params : dict
-        Deep copy of the submitted parameter mapping [per parameter contract].
+        Field of the returned ``scirel._result.Result`` mapping containing a
+        deep copy of the submitted parameter mapping [per parameter contract].
     chi2 : float
-        Recomputed squared norm of a successful residual vector, or
-        ``N * failure_penalty**2`` for a failed trial [dimensionless].
-    residuals : ndarray of float64, shape (N,)
-        Successful normalized residuals or the same-size penalty vector
+        Field containing the recomputed squared norm of a successful residual
+        vector, or ``N * failure_penalty**2`` for a failed trial
         [dimensionless].
+    residuals : ndarray of float64, shape (N,)
+        Field containing successful normalized residuals or the same-size
+        penalty vector [dimensionless].
     equilibrium : mapping or None
-        Forward state obtained so far [mixed]. A failed forward state may be
-        retained for diagnosis but is not a valid physical solution.
+        Field containing the forward state obtained so far [mixed]. A failed
+        forward state may be retained for diagnosis but is not a valid physical
+        solution.
     failure_reason : str or None
-        Forward-nonconvergence or numerical-failure explanation [identifier].
-        It is None only when all trial contracts pass.
+        Field containing the forward-nonconvergence or numerical-failure
+        explanation [identifier]. It is None only when all trial contracts
+        pass.
     valid : bool
-        Whether the forward state and residual contract both pass [boolean].
+        Field indicating whether the forward state and residual contract both
+        pass [boolean].
     status : str
-        One of ``valid``, ``forward_nonconvergence`` or
+        Field containing one of ``valid``, ``forward_nonconvergence`` or
         ``numerical_failure`` [identifier].
     failed_port : str or None
-        Name of the port where a recorded failure occurred [identifier].
+        Field containing the name of the port where a recorded failure
+        occurred [identifier].
     exception_type : str or None
-        Class name of a recorded numerical exception, or None for
-        nonconvergence without an exception [identifier].
+        Field containing the class name of a recorded numerical exception, or
+        None for nonconvergence without an exception [identifier].
 
     Raises
     ------
@@ -144,15 +152,20 @@ def evaluate_anisotropic_trial(
     from the protected port calls become failure records; validation,
     programming and contract errors are not converted to physical
     infeasibility. The penalty is an optimizer-interface value, not an
-    observation or a feasible solution.
+    observation or a feasible solution. All outcome branches return one
+    ``scirel._result.Result`` mapping; mapping and attribute access expose the
+    same values.
 
     Examples
     --------
     >>> import numpy as np
+    >>> from scirel._result import Result
     >>> from scirel.inference import evaluate_anisotropic_trial
     >>> from scirel.diagnostics import reduce_observation_residuals
     >>> calls=[]
     >>> r=evaluate_anisotropic_trial(params={'p':1.}, observations={'flux_loops':{'values':[1.,2.]}}, solver_config={'r_grid':[0.],'z_grid':[0.]}, equilibrium_solver=lambda _: {'converged':False,'failure_reason':'iteration limit'}, diagnostic_evaluator=lambda _:calls.append('unexpected'), residual_reducer=reduce_observation_residuals)
+    >>> assert isinstance(r, Result)
+    >>> assert r.valid is r['valid'] and r.residuals is r['residuals']
     >>> assert not calls and not r['valid']
     >>> np.testing.assert_array_equal(r['residuals'],[1e12,1e12])
     >>> assert r['chi2']==2e24 and r['status']=='forward_nonconvergence'
@@ -176,17 +189,19 @@ def evaluate_anisotropic_trial(
 
     def failed(kind, reason, error_type=None):
         residuals = np.full(n, penalty, dtype=float)
-        return {
-            "params": deepcopy(dict(params)),
-            "residuals": residuals,
-            "chi2": float(residuals @ residuals),
-            "equilibrium": equilibrium,
-            "failure_reason": str(reason),
-            "valid": False,
-            "status": kind,
-            "failed_port": port,
-            "exception_type": error_type,
-        }
+        return Result(
+            {
+                "params": deepcopy(dict(params)),
+                "residuals": residuals,
+                "chi2": float(residuals @ residuals),
+                "equilibrium": equilibrium,
+                "failure_reason": str(reason),
+                "valid": False,
+                "status": kind,
+                "failed_port": port,
+                "exception_type": error_type,
+            }
+        )
 
     try:
         payload = deepcopy(dict(solver_config))
@@ -217,17 +232,19 @@ def evaluate_anisotropic_trial(
         residuals, chi2 = _residual_record(reduced, n)
     except (ArithmeticError, RuntimeError) as exc:
         return failed("numerical_failure", exc, type(exc).__name__)
-    return {
-        "params": deepcopy(dict(params)),
-        "chi2": chi2,
-        "residuals": residuals,
-        "equilibrium": equilibrium,
-        "failure_reason": None,
-        "valid": True,
-        "status": "valid",
-        "failed_port": None,
-        "exception_type": None,
-    }
+    return Result(
+        {
+            "params": deepcopy(dict(params)),
+            "chi2": chi2,
+            "residuals": residuals,
+            "equilibrium": equilibrium,
+            "failure_reason": None,
+            "valid": True,
+            "status": "valid",
+            "failed_port": None,
+            "exception_type": None,
+        }
+    )
 
 
 __all__ = ["evaluate_anisotropic_trial"]
