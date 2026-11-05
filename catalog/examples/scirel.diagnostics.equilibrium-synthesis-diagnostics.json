@@ -5,7 +5,7 @@
   "en": "Equilibrium synthetic point diagnostics",
   "zh": "平衡合成诊断"
  },
- "summary": "Sample flux and explicitly requested pressure, density or electron-temperature profiles on the same R-Z grid with explicit units; distinguish raw psi samples from single-turn linked flux.",
+ "summary": "Sample flux and explicitly requested pressure, density or electron-temperature profiles on the same R-Z grid with explicit units; distinguish raw psi samples from single-turn linked flux. Return the top-level named outputs as a scirel._result.Result mapping.",
  "taxonomy": [
   "diagnostics",
   "equilibrium",
@@ -31,7 +31,7 @@
  "identity": {
   "relation": "equilibrium field and explicit observation conventions to physical-quantity samples at requested points",
   "direction": "equilibrium, R, Z, observations -> flux_loops / thomson and units",
-  "definition": "Use the existing bilinear sampler. For flux_loops.quantity=raw_psi, retain equilibrium.psi_unit; for quantity=magnetic_flux, output Wb and multiply by 2*pi only when psi is explicitly declared in Wb/rad; Wb inputs are unchanged. thomson samples only the actually requested profiles whose units are declared consistently, and does not infer missing channels. Every result carries units.",
+  "definition": "Use the existing bilinear sampler. For flux_loops.quantity=raw_psi, retain equilibrium.psi_unit; for quantity=magnetic_flux, output Wb and multiply by 2*pi only when psi is explicitly declared in Wb/rad; Wb inputs are unchanged. thomson samples only the actually requested profiles whose units are declared consistently, and does not infer missing channels. Every result carries units. The top-level flux_loops, thomson and units fields are returned in a scirel._result.Result mapping; nested thomson and units mappings remain plain dict objects.",
   "model": "read-only point sampling of an equilibrium field; thomson is a legacy namespace, not a Thomson-scattering instrument model",
   "geometry": "rectangular R-Z grid in cylindrical coordinates",
   "coordinates": "fields are indexed [Z,R], observation points are [R,Z] per row, and coordinate units are m",
@@ -83,7 +83,7 @@
  "outputs": [
   {
    "name": "flux_loops",
-   "description": "Return raw psi samples or single-turn linked flux in point order.",
+   "description": "Field of the returned scirel._result.Result mapping: requested raw psi samples or single-turn linked flux in point order.",
    "units": "raw_psi: original unit; magnetic_flux: Wb",
    "shape": "[N_flux]",
    "dtype": "float64 array",
@@ -93,7 +93,7 @@
   },
   {
    "name": "thomson",
-   "description": "Return profile samples for explicitly requested channels; temperature or density is not inferred from pressure.",
+   "description": "Field of the returned scirel._result.Result mapping: profile samples for explicitly requested channels; temperature or density is not inferred from pressure.",
    "units": "pressure in Pa; density in m^-3; electron temperature as declared",
    "shape": "mapping[channel → [N_point]]",
    "dtype": "mapping and float64 arrays",
@@ -103,7 +103,7 @@
   },
   {
    "name": "units",
-   "description": "Unit metadata in one-to-one correspondence with the actual outputs.",
+   "description": "Field of the returned scirel._result.Result mapping: unit metadata in one-to-one correspondence with the actual outputs.",
    "units": "identifier",
    "shape": "mapping",
    "dtype": "string mapping",
@@ -128,7 +128,7 @@
   "invalid_input": "Raises ValueError for missing fields, empty/unknown requests, invalid point sets, unit mismatches or out-of-domain points.",
   "runtime_failure": "Sampler exceptions propagate; a nonfinite flux conversion raises FloatingPointError.",
   "nonconvergence": "This function does not solve an equilibrium; an inversion trial must verify forward convergence before entering it.",
-  "partial_results": "No partially successful result is returned on error; the caller's equilibrium is not modified."
+  "partial_results": "No partially successful scirel._result.Result mapping is returned on error; the caller's equilibrium is not modified."
  },
  "public_api": {
   "python": {
@@ -148,15 +148,16 @@
   ]
  },
  "example": {
-  "description": "A uniform axial field Bz=2 T has psi=R^2 Wb/rad; the single-turn flux at R=1 m should be 2*pi Wb.",
-  "code": "import numpy as np\nfrom scirel.diagnostics import synthesize_equilibrium_diagnostics\nR,Z=np.meshgrid([0.,1.,2.],[-1.,0.,1.])\nr=synthesize_equilibrium_diagnostics(R=R,Z=Z,equilibrium={'psi':R**2,'psi_unit':'Wb/rad'},observations={'flux_loops':{'points':[[1.,0.]],'quantity':'magnetic_flux','unit':'Wb'}})\nnp.testing.assert_allclose(r['flux_loops'],[2*np.pi],rtol=1e-14)\nassert r['units']['flux_loops']=='Wb'",
-  "expected": "Returns [2*pi] Wb, consistent with the independent analytic circular-area times Bz; a raw_psi request returns [1] Wb/rad."
+  "description": "A uniform axial field Bz=2 T has psi=R^2 Wb/rad; the single-turn flux at R=1 m should be 2*pi Wb in a named result mapping.",
+  "code": "import numpy as np\nfrom scirel._result import Result\nfrom scirel.diagnostics import synthesize_equilibrium_diagnostics\nR,Z=np.meshgrid([0.,1.,2.],[-1.,0.,1.])\nr=synthesize_equilibrium_diagnostics(R=R,Z=Z,equilibrium={'psi':R**2,'psi_unit':'Wb/rad'},observations={'flux_loops':{'points':[[1.,0.]],'quantity':'magnetic_flux','unit':'Wb'}})\nassert isinstance(r, Result)\nassert r.flux_loops is r['flux_loops']\nnp.testing.assert_allclose(r['flux_loops'],[2*np.pi],rtol=1e-14)\nassert r['units']['flux_loops']=='Wb'",
+  "expected": "Returns [2*pi] Wb, consistent with the independent analytic circular-area times Bz, as a scirel._result.Result mapping with the original top-level key order and nested mappings; attribute and key access reach the same output."
  },
  "verification": {
   "scope": [
    "Analytic psi-to-full-flux relation for a uniform Bz.",
    "Interior/boundary sampling of a linear manufactured profile, units and non-modification.",
-   "Rejection of missing channels/unknown requests/unsupported turns and reference-loop fields; real Picard inversion consumer."
+   "Rejection of missing channels/unknown requests/unsupported turns and reference-loop fields; real Picard inversion consumer.",
+   "Result wrapping preserves top-level key order, values, array shape/dtype, nested plain mappings and mapping access against baseline 0f74255b; attribute access reaches the same fields."
   ],
   "tests": [
    "tests/cross_domain/test_inference_physical_closure.py",

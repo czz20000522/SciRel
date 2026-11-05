@@ -1,6 +1,9 @@
 """Local gyrotropic tension and fixed-flux pressure-slope diagnostics."""
 
 import numpy as np
+
+from scirel._result import Result
+
 from ._fixed_flux_derivative import fixed_flux_derivative
 from .pointwise_firehose_margin import _firehose_kernel, _mirror_kernel
 
@@ -59,35 +62,47 @@ def compute_firehose_mirror_margins(
     Returns
     -------
     firehose_margin : ndarray of float64, same shape as the inputs
-        Pointwise ``B**2 / mu0 + p_perp - p_parallel`` in ``[Pa]``.
+        Field ``firehose_margin`` of the returned ``scirel._result.Result``
+        mapping, containing ``B**2 / mu0 + p_perp - p_parallel`` in ``[Pa]``.
     mirror_margin : ndarray of float64, same shape as the inputs
-        Fixed-flux total-pressure-slope margin
+        Field ``mirror_margin`` of the returned result mapping, containing the
+        fixed-flux total-pressure-slope margin
         ``B**2 / mu0 + B * dp_perp_dB`` in ``[Pa]``.
     firehose_stable : bool
+        Field ``firehose_stable`` of the returned result mapping.  It is
         ``True`` exactly when every sampled firehose margin is strictly
         positive in ``[boolean]``.
     mirror_stable : bool
-        ``True`` exactly when every sampled mirror margin is strictly positive
-        in ``[boolean]``.
+        Field ``mirror_stable`` of the returned result mapping.  It is ``True``
+        exactly when every sampled mirror margin is strictly positive in
+        ``[boolean]``.
     min_firehose_margin : float
-        Minimum sampled firehose margin in ``[Pa]``.
+        Field ``min_firehose_margin`` of the returned result mapping,
+        containing the minimum sampled firehose margin in ``[Pa]``.
     min_mirror_margin : float
-        Minimum sampled mirror margin in ``[Pa]``.
+        Field ``min_mirror_margin`` of the returned result mapping, containing
+        the minimum sampled mirror margin in ``[Pa]``.
     parallel_equilibrium_error : object or None
-        Unmodified ``parallel_equilibrium['error']`` when supplied, otherwise
-        ``None``, in
+        Field ``parallel_equilibrium_error`` of the returned result mapping,
+        containing the unmodified ``parallel_equilibrium['error']`` when
+        supplied, otherwise ``None``, in
         ``[upstream-defined, normally Pa, or not applicable]``.
     max_parallel_equilibrium_error : object or None
-        Unmodified ``parallel_equilibrium['max_relative_error']`` when
-        supplied, otherwise ``None``, in
+        Field ``max_parallel_equilibrium_error`` of the returned result
+        mapping, containing the unmodified
+        ``parallel_equilibrium['max_relative_error']`` when supplied, otherwise
+        ``None``, in
         ``[upstream-defined, normally dimensionless, or not applicable]``.
     dp_perp_dB : ndarray of float64, same shape as the pressures
-        Fixed-psi derivative actually used by the diagnostic in ``[Pa/T]``.
+        Field ``dp_perp_dB`` of the returned result mapping, containing the
+        fixed-psi derivative actually used by the diagnostic in ``[Pa/T]``.
     derivative_method : str
-        Description of the derivative source in ``[text]``: either an explicit
+        Field ``derivative_method`` of the returned result mapping,
+        describing the derivative source in ``[text]``: either an explicit
         fixed-flux derivative or a declared fixed-flux axis finite difference.
     criterion : str
-        Criterion identifier in ``[text]``, equal to
+        Field ``criterion`` of the returned result mapping, containing the
+        criterion identifier in ``[text]``, equal to
         ``local_gyrotropic_tension_and_fixed_flux_total_pressure_slope``.
 
     Raises
@@ -129,15 +144,20 @@ def compute_firehose_mirror_margins(
     derivative and kinetic bi-Maxwellian threshold rather than an opposing sign
     printed in one source; no publisher-confirmed erratum is asserted.
 
-    The result is a plain ``dict``.  No spatial field sorting or undocumented
-    zero-derivative fallback is used.  Normal values retain ordinary float64
-    operation order; dangerous cancellation or intermediate range loss uses an
-    exact binary-rational evaluation before one final float64 rounding.
+    The fields are returned in a ``scirel._result.Result`` mapping, which
+    retains dictionary access and also exposes each field as an attribute.  No
+    spatial field sorting or undocumented zero-derivative fallback is used.
+    Normal values retain ordinary float64 operation order; dangerous
+    cancellation or intermediate range loss uses an exact binary-rational
+    evaluation before one final float64 rounding.
 
     Examples
     --------
+    >>> from scirel._result import Result
     >>> from scirel.diagnostics.firehose_mirror_margins import compute_firehose_mirror_margins
     >>> r=compute_firehose_mirror_margins(1.,2.,1.,mu0=1.,dp_perp_dB=-4.)
+    >>> assert isinstance(r, Result)
+    >>> assert r.firehose_margin is r['firehose_margin']
     >>> assert abs(float(r['firehose_margin'])-2.)<1e-12
     >>> assert abs(float(r['mirror_margin'])+3.)<1e-12
     >>> assert r['firehose_stable'] and not r['mirror_stable']
@@ -163,19 +183,21 @@ def compute_firehose_mirror_margins(
     if parallel_equilibrium is not None and not isinstance(parallel_equilibrium, dict):
         raise ValueError("parallel_equilibrium must be a mapping when provided")
     state = parallel_equilibrium or {}
-    return {
-        "firehose_margin": firehose,
-        "mirror_margin": mirror,
-        "firehose_stable": bool(np.min(firehose) > 0),
-        "mirror_stable": bool(np.min(mirror) > 0),
-        "min_firehose_margin": float(np.min(firehose)),
-        "min_mirror_margin": float(np.min(mirror)),
-        "parallel_equilibrium_error": state.get("error"),
-        "max_parallel_equilibrium_error": state.get("max_relative_error"),
-        "dp_perp_dB": derivative,
-        "derivative_method": method,
-        "criterion": "local_gyrotropic_tension_and_fixed_flux_total_pressure_slope",
-    }
+    return Result(
+        {
+            "firehose_margin": firehose,
+            "mirror_margin": mirror,
+            "firehose_stable": bool(np.min(firehose) > 0),
+            "mirror_stable": bool(np.min(mirror) > 0),
+            "min_firehose_margin": float(np.min(firehose)),
+            "min_mirror_margin": float(np.min(mirror)),
+            "parallel_equilibrium_error": state.get("error"),
+            "max_parallel_equilibrium_error": state.get("max_relative_error"),
+            "dp_perp_dB": derivative,
+            "derivative_method": method,
+            "criterion": "local_gyrotropic_tension_and_fixed_flux_total_pressure_slope",
+        }
+    )
 
 
 __all__ = ["compute_firehose_mirror_margins"]

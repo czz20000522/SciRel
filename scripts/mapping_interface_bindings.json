@@ -371,7 +371,7 @@
    "modules": {
     "scirel._composition": "ce7f22d7d0978065cb3c56384d49fccf73bf41635cd51b3a8755cca5453e1ca7",
     "scirel._validation": "975d881f3b0115509aa13b5b50e9879762727f5a1d02d94043870a7ed1b63de8",
-    "scirel.diagnostics.picard_flux_residual": "194b2c5b822d02f2c3880586dc10c5d652c6481ced374e73f1eed478d472f2f2",
+    "scirel.diagnostics.picard_flux_residual": "8fbee6e510b43bc4315fc39a53b912915d004ab6029a1b3fa3354030d1d5ba5b",
     "scirel.equilibrium.anisotropic_picard_feedback": "36439767648044c8711bb880eda0d442c3495addb5a857c7088b3746097e269f",
     "scirel.equilibrium.anisotropic_toroidal_current": "a71f3169d7c6a7c3fe1ff8040538a7d80a10fd17b54e390b8b77791101d995cf",
     "scirel.equilibrium.free_boundary_anisotropic_picard": "5fd6123e3ba5c36c6fc1dcf571a8f30be466ab4725980144d3ed6f4e43f20f4d",
@@ -852,9 +852,9 @@
    ],
    "modules": {
     "scirel._composition": "ce7f22d7d0978065cb3c56384d49fccf73bf41635cd51b3a8755cca5453e1ca7",
-    "scirel.diagnostics.equilibrium_synthesis_diagnostics": "30b85a96c95d5c5f941aefc4884b54fa42ca2679f6424b3291c10c206e85af03",
+    "scirel.diagnostics.equilibrium_synthesis_diagnostics": "8c143404d6b0d6edb5ddd970665b4133bd531492cea006a8d7cca79618284210",
     "scirel.geometry.bilinear_grid_sampling": "289d2a4d6f84bfb0ccf248f64949f9358f760610e28506a6e3294bca3cb3dd6b",
-    "scirel.diagnostics.observation_residuals": "e806fbe6aef4b8b8373280df42ede57f23b1e6bc655dc555621aa30c23e48db2"
+    "scirel.diagnostics.observation_residuals": "b3962fafce6105d062b8ba9c53a3c24d6c83d3aeebf1c7878cfe51a942ad29c2"
    },
    "review_basis": "Port identity only; root scientific acceptance is separate. Current _run_composition validates nonempty explicit observation requests, source/profile units and psi-to-Wb convention before sampling. Shared channel vocabulary is source-bound; requested missing channels reject."
   },
@@ -918,7 +918,7 @@
    ],
    "modules": {
     "scirel._composition": "ce7f22d7d0978065cb3c56384d49fccf73bf41635cd51b3a8755cca5453e1ca7",
-    "scirel.diagnostics.observation_residuals": "e806fbe6aef4b8b8373280df42ede57f23b1e6bc655dc555621aa30c23e48db2",
+    "scirel.diagnostics.observation_residuals": "b3962fafce6105d062b8ba9c53a3c24d6c83d3aeebf1c7878cfe51a942ad29c2",
     "scirel.inference.anisotropic_parameter_optimization": "60e612cb9fba940bd19cc45626e56f07ebc32cfb7df8a4be253c30e9ece02023",
     "scirel.inference.anisotropic_trial_evaluation": "c3f7aa7d1b1324e3d8fd67de41bffc604b895924bb942f2110ae7037cd3bee1f",
     "scirel.inference.direct_anisotropic_inversion": "78bef93e0cbdb22de5011e15ea5c60533ae69fa6d6e5eb66e2db1a21143f3616",
