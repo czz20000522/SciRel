@@ -305,7 +305,7 @@ Actual output:
 
 ``G`` is ``9x9``: target rows and source columns, with the node-to-itself entries set to zero by the discrete zero-self convention. Its symmetry error is ``4.1e-24``; this same-node matrix differs from the mutual-inductance matrix of coaxial loops only by a ``2*pi`` factor (what is stored here is flux per radian); but **a zero diagonal is not physical self-inductance**. This model does not provide the self-inductance of a finite-cross-section conductor, and using the zero diagonal in an inductance calculation will give a wrong result.
 
-``green_response_matrices`` returns a triple, not a dictionary; ``dense_axisymmetric_green_response`` returns a dictionary, and so does ``circular_filament_green_response``. The return types differ, so read the code carefully. The matrix contraction is written ``gbz @ currents`` and agrees with the per-filament kernel sum.
+``green_response_matrices`` returns a triple; ``dense_axisymmetric_green_response`` and ``circular_filament_green_response`` return ``scirel._result.Result`` mappings. A ``Result`` still supports dictionary-style key lookup and also exposes fields as attributes. The two interface families have different return types, so read the code carefully. The matrix contraction is written ``gbz @ currents`` and agrees with the per-filament kernel sum.
 
 The matrix can also be used for a boundary correction. The example below has only 3 field points and 2 boundary samples; it is a linear-algebra demonstration, not a conducting-wall model:
 

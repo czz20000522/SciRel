@@ -305,7 +305,7 @@
 
 ``G`` 是 ``9x9``：目标行、源列，节点自身与自身的项按离散零自项约定置零。它的对称性误差是 ``4.1e-24``，这个同节点矩阵与同轴圆环的互感矩阵只差一个 ``2*pi`` 因子（这里存的是每弧度磁通）；但**对角线为零不是物理自感**。这个模型不提供有限截面导体的自感，把零对角元拿去做电感计算会得到错误结果。
 
-``green_response_matrices`` 返回的是三元组，不是字典；``dense_axisymmetric_green_response`` 返回字典，``circular_filament_green_response`` 也返回字典。这些返回类型不同，读代码时要看清。矩阵收缩写成 ``gbz @ currents``，与逐丝核函数求和一致。
+``green_response_matrices`` 返回三元组；``dense_axisymmetric_green_response`` 和 ``circular_filament_green_response`` 返回 ``scirel._result.Result`` 映射。``Result`` 仍像字典一样按键读取，同时支持按字段名读取属性。两类接口的返回类型不同，读代码时要看清。矩阵收缩写成 ``gbz @ currents``，与逐丝核函数求和一致。
 
 矩阵还可以用来做边界修正。下面的例子只有 3 个场点和 2 个边界采样，是一个线性代数演示，不是导体壁模型：
 

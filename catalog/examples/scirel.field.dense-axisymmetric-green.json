@@ -5,7 +5,7 @@
   "en": "Dense axisymmetric circular-filament Green matrices",
   "zh": "轴对称圆电流丝稠密 Green 矩阵"
  },
- "summary": "Build dense target-row/source-column circular-filament response matrices for psi, BR, and BZ.",
+ "summary": "Build dense target-row/source-column circular-filament response matrices for psi, BR, and BZ. The named fields are returned in one scirel._result.Result mapping.",
  "taxonomy": [
   "field",
   "green-function",
@@ -31,7 +31,7 @@
  "identity": {
   "relation": "Dense axisymmetric Green matrices",
   "direction": "target points and weighted source rows to response matrices",
-  "definition": "Evaluate the circular-filament response for each source column in caller order.",
+  "definition": "Evaluate the circular-filament response for each source column in caller order. The documented fields are returned together in a scirel._result.Result mapping; mapping and attribute access expose the same values. No nested mapping is returned.",
   "model": "Axisymmetric ideal circular-filament kernel with zero-radius, zero-weight, and exact self conventions.",
   "geometry": "Independent finite target and source point tables.",
   "coordinates": "R,Z in metres; source weight dimensionless; outputs Wb/rad/A and T/A.",
@@ -65,7 +65,7 @@
  "outputs": [
   {
    "name": "gpsi",
-   "description": "Weighted psi=R A_phi response for each target and source pair.",
+   "description": "Field of the returned scirel._result.Result mapping: Weighted psi=R A_phi response for each target and source pair.",
    "units": "Wb/rad/A",
    "shape": "[N_target,N_source]",
    "dtype": "float64",
@@ -74,7 +74,7 @@
   },
   {
    "name": "gBR",
-   "description": "Weighted radial-field response for each target and source pair.",
+   "description": "Field of the returned scirel._result.Result mapping: Weighted radial-field response for each target and source pair.",
    "units": "T/A",
    "shape": "[N_target,N_source]",
    "dtype": "float64",
@@ -83,7 +83,7 @@
   },
   {
    "name": "gBZ",
-   "description": "Weighted axial-field response for each target and source pair.",
+   "description": "Field of the returned scirel._result.Result mapping: Weighted axial-field response for each target and source pair.",
    "units": "T/A",
    "shape": "[N_target,N_source]",
    "dtype": "float64",
@@ -107,7 +107,7 @@
   "invalid_input": "ValueError is raised for malformed, complex, nonfinite, or negative-radius target/source arrays.",
   "runtime_failure": "FloatingPointError from an unrepresentable kernel response propagates.",
   "nonconvergence": "Not applicable; matrix entries are evaluated directly.",
-  "partial_results": "No response mapping is returned after validation or kernel failure."
+  "partial_results": "No scirel._result.Result response mapping is returned after validation or kernel failure."
  },
  "public_api": {
   "python": {
@@ -128,8 +128,8 @@
  },
  "example": {
   "description": "Compare one source with a changed weight and an empty source set.",
-  "code": "import numpy as np\nfrom scirel.field.dense_axisymmetric_green import dense_axisymmetric_green_response\ntargets = [[0.0, -0.1], [0.2, 0.15]]\nunit = dense_axisymmetric_green_response(targets, [[0.35, -0.1, 1.0]])\nweighted = dense_axisymmetric_green_response(targets, [[0.35, -0.1, -2.5]])\nempty = dense_axisymmetric_green_response(targets, [])\nfor name in ('gpsi', 'gBR', 'gBZ'):\n    assert unit[name].shape == (2, 1)\n    np.testing.assert_allclose(weighted[name], -2.5 * unit[name])\n    assert empty[name].shape == (2, 0)",
-  "expected": "Each nonempty response has shape (2,1), scaling by -2.5 is exact within the assertion, and the empty source result has shape (2,0)."
+  "code": "import numpy as np\nfrom scirel._result import Result\nfrom scirel.field import dense_axisymmetric_green_response\ntargets = [[0.0, -0.1], [0.2, 0.15]]\nresult = dense_axisymmetric_green_response(\n    targets, [[0.35, -0.1, 1.0]]\n)\nweighted = dense_axisymmetric_green_response(\n    targets, [[0.35, -0.1, -2.5]]\n)\nempty = dense_axisymmetric_green_response(targets, [])\nassert isinstance(result, Result)\nassert list(result) == ['gpsi', 'gBR', 'gBZ']\nassert result.gpsi is result['gpsi']\nfor name in ('gpsi', 'gBR', 'gBZ'):\n    assert result[name].shape == (2, 1)\n    np.testing.assert_allclose(weighted[name], -2.5 * result[name])\n    assert empty[name].shape == (2, 0)\n",
+  "expected": "Each nonempty response has shape (2,1), scaling by -2.5 is exact within the assertion, and the empty source result has shape (2,0). The returned object is a scirel._result.Result mapping; each field is also readable as an attribute."
  },
  "verification": {
   "scope": [
@@ -138,7 +138,8 @@
    "Circular-filament analytic axial-field limit.",
    "Columnwise equality with the separately maintained circular-filament flux and field kernel.",
    "Invalid radius and source-shape rejection.",
-   "Independent 70/80-digit ideal-loop relation checks cover very small positive radii, near-axis nonzero BR, near-wire cases and formula-evaluation branches while retaining the original numeric assertions and tolerances; the exact self term and arithmetic failure are handled separately."
+   "Independent 70/80-digit ideal-loop relation checks cover very small positive radii, near-axis nonzero BR, near-wire cases and formula-evaluation branches while retaining the original numeric assertions and tolerances; the exact self term and arithmetic failure are handled separately.",
+   "The named result preserves the captured key order, values, shapes, dtypes, mapping access and attribute access; failures retain their exception types and messages."
   ],
   "tests": [
    "tests/field/test_dense_axisymmetric_green.py",

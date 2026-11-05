@@ -5,7 +5,7 @@
   "en": "Circular-filament vacuum field on a cylindrical grid",
   "zh": "柱坐标网格上的圆电流丝真空场"
  },
- "summary": "Evaluate ideal circular-filament fields on a uniform rectilinear R,Z grid and integrate radial flux from the first radial node.",
+ "summary": "Evaluate ideal circular-filament fields on a uniform rectilinear R,Z grid and integrate radial flux from the first radial node. The named fields are returned in one scirel._result.Result mapping.",
  "taxonomy": [
   "field",
   "vacuum-field",
@@ -31,7 +31,7 @@
  "identity": {
   "relation": "Filament vacuum field and radial flux integration",
   "direction": "grid coordinates and filament currents to psi, BR, and BZ grids",
-  "definition": "Evaluate the Green kernel at grid points and integrate R*BZ with a radial trapezoid recurrence.",
+  "definition": "Evaluate the Green kernel at grid points and integrate R*BZ with a radial trapezoid recurrence. The documented fields are returned together in a scirel._result.Result mapping; mapping and attribute access expose the same values. No nested mapping is returned.",
   "model": "Ideal circular-filament vacuum field with no near-axis cutoff.",
   "geometry": "Rectilinear grid with the radial coordinate varying along exactly one array axis.",
   "coordinates": "R,Z in metres; filament current in amperes; psi Wb/rad; fields tesla.",
@@ -74,7 +74,7 @@
  "outputs": [
   {
    "name": "psi",
-   "description": "Psi=R A_phi from radial trapezoidal integration of R times B_Z, referenced to the first radial grid point.",
+   "description": "Field of the returned scirel._result.Result mapping: Psi=R A_phi from radial trapezoidal integration of R times B_Z, referenced to the first radial grid point.",
    "units": "Wb/rad",
    "shape": "same as r_grid",
    "dtype": "float64",
@@ -83,7 +83,7 @@
   },
   {
    "name": "b_r",
-   "description": "Superposed radial magnetic field.",
+   "description": "Field of the returned scirel._result.Result mapping: Superposed radial magnetic field.",
    "units": "T",
    "shape": "same as r_grid",
    "dtype": "float64",
@@ -92,7 +92,7 @@
   },
   {
    "name": "b_z",
-   "description": "Superposed axial magnetic field.",
+   "description": "Field of the returned scirel._result.Result mapping: Superposed axial magnetic field.",
    "units": "T",
    "shape": "same as r_grid",
    "dtype": "float64",
@@ -116,7 +116,7 @@
   "invalid_input": "ValueError is raised for malformed grids, nonfinite values, invalid axes, or source/target singularity.",
   "runtime_failure": "FloatingPointError is raised for a nonfinite Green or integrated result.",
   "nonconvergence": "Not applicable; kernel evaluation and quadrature are direct.",
-  "partial_results": "No field mapping is returned after validation or arithmetic failure."
+  "partial_results": "No scirel._result.Result field mapping is returned after validation or arithmetic failure."
  },
  "public_api": {
   "python": {
@@ -137,8 +137,8 @@
  },
  "example": {
   "description": "Evaluate one off-grid filament on a 4x5 rectilinear grid.",
-  "code": "import numpy as np\nfrom scirel.field.filament_vacuum_field import integrate_filament_vacuum_field\nr_grid, z_grid = np.meshgrid(np.linspace(0.0, 0.3, 5), np.linspace(-0.2, 0.2, 4))\nresult = integrate_filament_vacuum_field(r_grid, z_grid, [[0.45, -0.1, 1500.0]])\nassert set(result) == {'psi', 'b_r', 'b_z'}\nassert all(value.shape == r_grid.shape for value in result.values())\nassert np.isfinite(result['b_z']).all()\nnp.testing.assert_array_equal(result['psi'][:, 0], 0.0)\nnp.testing.assert_array_equal(result['b_r'][:, 0], 0.0)",
-  "expected": "All returned arrays have shape (4,5), psi and BR are zero on the first radial column, and BZ is finite."
+  "code": "import numpy as np\nfrom scirel._result import Result\nfrom scirel.field import integrate_filament_vacuum_field\nr_grid, z_grid = np.meshgrid(\n    np.linspace(0.0, 0.3, 5), np.linspace(-0.2, 0.2, 4)\n)\nresult = integrate_filament_vacuum_field(\n    r_grid, z_grid, [[0.45, -0.1, 1500.0]]\n)\nassert isinstance(result, Result)\nassert list(result) == ['psi', 'b_r', 'b_z']\nassert result.psi is result['psi']\nassert all(value.shape == r_grid.shape for value in result.values())\nassert np.isfinite(result['b_z']).all()\nnp.testing.assert_array_equal(result['psi'][:, 0], 0.0)\nnp.testing.assert_array_equal(result['b_r'][:, 0], 0.0)\n",
+  "expected": "All returned arrays have shape (4,5), psi and BR are zero on the first radial column, and BZ is finite. The returned object is a scirel._result.Result mapping; each field is also readable as an attribute."
  },
  "verification": {
   "scope": [
@@ -147,7 +147,8 @@
    "Radial quadrature increment and first-grid-point reference.",
    "Comparison with independent circular-filament psi=R A_phi Green values away from the source.",
    "Transposed rectilinear layout and invalid radial grid.",
-   "Independent 70/80-digit ideal-loop relation checks cover very small positive radii, near-axis nonzero BR, near-wire cases and formula-evaluation branches while retaining the original numeric assertions and tolerances; the exact self term and arithmetic failure are handled separately."
+   "Independent 70/80-digit ideal-loop relation checks cover very small positive radii, near-axis nonzero BR, near-wire cases and formula-evaluation branches while retaining the original numeric assertions and tolerances; the exact self term and arithmetic failure are handled separately.",
+   "The named result preserves the captured key order, values, shapes, dtypes, mapping access and attribute access; failures retain their exception types and messages."
   ],
   "tests": [
    "tests/field/test_filament_vacuum_field.py",

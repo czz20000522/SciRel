@@ -5,7 +5,7 @@
   "en": "Axisymmetric multi-coil vacuum field",
   "zh": "轴对称多矩形线圈真空场"
  },
- "summary": "Expand rectangular coil records into weighted filaments, evaluate each coil response, and superpose the drive currents.",
+ "summary": "Expand rectangular coil records into weighted filaments, evaluate each coil response, and superpose the drive currents. The named fields are returned in one scirel._result.Result mapping.",
  "taxonomy": [
   "field",
   "vacuum-field",
@@ -34,7 +34,7 @@
  "identity": {
   "relation": "Ordered multi-coil vacuum-field composition",
   "direction": "rectangular-coil records and target grid to vacuum fields and filament table",
-  "definition": "Discretize each caller coil, attach filament weights, and evaluate its target-ordered Green response. Each coil's drive is the per-filament current (current_a, or ampere_turns_a divided by the sum of the coil's weights). Stack the responses as [N_target,N_coil] matrices with one coil per column, contract the [N_coil] drive-current vector along axis 1, and reshape to the input grid.",
+  "definition": "Discretize each caller coil, attach filament weights, and evaluate its target-ordered Green response. Each coil's drive is the per-filament current (current_a, or ampere_turns_a divided by the sum of the coil's weights). Stack the responses as [N_target,N_coil] matrices with one coil per column, contract the [N_coil] drive-current vector along axis 1, and reshape to the input grid. The documented fields are returned together in a scirel._result.Result mapping; mapping and attribute access expose the same values. No nested mapping is returned.",
   "model": "Ordered acyclic composition of rectangular geometry, circular Green response, and current contraction.",
   "geometry": "Matching nonempty rectilinear target grid and nonempty ordered coil list; response matrices have target rows and caller-ordered coil columns.",
   "coordinates": "Grid and coil geometry in metres; current_a is amperes per filament, ampere_turns_a is amperes per coil; output psi Wb/rad and fields tesla.",
@@ -78,7 +78,7 @@
  "outputs": [
   {
    "name": "psi_vac",
-   "description": "Vacuum poloidal flux on the target grid.",
+   "description": "Field of the returned scirel._result.Result mapping: Vacuum poloidal flux on the target grid.",
    "units": "Wb/rad",
    "shape": "[N_Z,N_R]",
    "dtype": "float64",
@@ -87,7 +87,7 @@
   },
   {
    "name": "b_r_vac",
-   "description": "Vacuum radial magnetic field on the target grid.",
+   "description": "Field of the returned scirel._result.Result mapping: Vacuum radial magnetic field on the target grid.",
    "units": "T",
    "shape": "[N_Z,N_R]",
    "dtype": "float64",
@@ -96,7 +96,7 @@
   },
   {
    "name": "b_z_vac",
-   "description": "Vacuum axial magnetic field on the target grid.",
+   "description": "Field of the returned scirel._result.Result mapping: Vacuum axial magnetic field on the target grid.",
    "units": "T",
    "shape": "[N_Z,N_R]",
    "dtype": "float64",
@@ -105,7 +105,7 @@
   },
   {
    "name": "filaments",
-   "description": "Concatenated [R_m,Z_m,weight] rows in caller coil order.",
+   "description": "Field of the returned scirel._result.Result mapping: Concatenated [R_m,Z_m,weight] rows in caller coil order.",
    "units": "m,m,dimensionless",
    "shape": "[N_filament,3]",
    "dtype": "float64",
@@ -132,7 +132,7 @@
   "invalid_input": "ValueError is raised for missing, empty or malformed grids, empty/nonmapping coils, invalid geometry, weights, currents, or an active filament exactly coincident with a target grid node.",
   "runtime_failure": "Dependency ValueError/FloatingPointError propagates before any field is returned, including a nonrepresentable current-weighted Green contraction; no fallback or retry is performed.",
   "nonconvergence": "Not applicable; the graph has no feedback loop.",
-  "partial_results": "No field or filament output is returned after a failed graph stage."
+  "partial_results": "No scirel._result.Result field or filament output is returned after a failed graph stage."
  },
  "public_api": {
   "python": {
@@ -159,8 +159,8 @@
  },
  "example": {
   "description": "Expand one 2x2 rectangular coil on a 2x2 target grid and evaluate its vacuum field.",
-  "code": "import numpy as np\nfrom scirel.field import solve_multi_coil_vacuum_field\nr_grid, z_grid = np.meshgrid([0.0, 0.2], [-0.1, 0.1])\nresult = solve_multi_coil_vacuum_field(r_grid=r_grid, z_grid=z_grid, rectangular_coils=[{'r0_m': 0.45, 'z0_m': 0.0, 'nr': 2, 'nz': 2, 'dr_m': 0.04, 'dz_m': 0.05, 'current_a': 1000.0}])\nassert result['psi_vac'].shape == r_grid.shape\nassert result['filaments'].shape == (4, 3)\nassert np.isfinite(result['b_z_vac']).all()",
-  "expected": "The three field arrays have shape (2,2), the returned filament table has shape (4,3), and b_z_vac is finite."
+  "code": "import numpy as np\nfrom scirel._result import Result\nfrom scirel.field import solve_multi_coil_vacuum_field\nr_grid, z_grid = np.meshgrid([0.0, 0.2], [-0.1, 0.1])\nresult = solve_multi_coil_vacuum_field(\n    r_grid=r_grid,\n    z_grid=z_grid,\n    rectangular_coils=[{\n        'r0_m': 0.45, 'z0_m': 0.0, 'nr': 2, 'nz': 2,\n        'dr_m': 0.04, 'dz_m': 0.05, 'current_a': 1000.0,\n    }],\n)\nassert isinstance(result, Result)\nassert list(result) == [\n    'psi_vac', 'b_r_vac', 'b_z_vac', 'filaments'\n]\nassert result.psi_vac is result['psi_vac']\nassert result['psi_vac'].shape == r_grid.shape\nassert result['filaments'].shape == (4, 3)\nassert np.isfinite(result['b_z_vac']).all()\n",
+  "expected": "The three field arrays have shape (2,2), the returned filament table has shape (4,3), and b_z_vac is finite. The returned object is a scirel._result.Result mapping; each field is also readable as an attribute."
  },
  "verification": {
   "scope": [
@@ -172,7 +172,8 @@
    "Fixed Pleiades two-coil reference values and the full 9x9 truth arrays are covered by tests/cross_domain/multi_coil_vacuum_field/test_pleiades_two_coil_truth.py using the tracked domain fixture.",
    "scripts/build_pleiades_truth.py writes only an explicitly named candidate from a caller-supplied source checkout; it never overwrites the tracked fixture or vendors source.",
    "Per-filament current_a versus total ampere_turns_a: both forms give the same field, a single filament matches the on-axis loop formula, and both or neither raise ValueError.",
-   "Active filament/target exact coincidences are rejected, while zero-weight coincidences remain inactive."
+   "Active filament/target exact coincidences are rejected, while zero-weight coincidences remain inactive.",
+   "The named result preserves the captured key order, values, shapes, dtypes, mapping access and attribute access; failures retain their exception types and messages."
   ],
   "tests": [
    "tests/cross_domain/multi_coil_vacuum_field/test_composition_multi_coil_vacuum_field.py",

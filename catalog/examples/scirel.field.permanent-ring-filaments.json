@@ -5,7 +5,7 @@
   "en": "Permanent-ring surface filament discretization",
   "zh": "永磁环表面电流丝离散"
  },
- "summary": "Discretize a rectangular permanent-ring cross-section into two ordered eight-point filament faces with opposite weights.",
+ "summary": "Discretize a rectangular permanent-ring cross-section into two ordered eight-point filament faces with opposite weights. The named fields are returned in one scirel._result.Result mapping.",
  "taxonomy": [
   "field",
   "permanent-ring",
@@ -31,7 +31,7 @@
  "identity": {
   "relation": "Permanent-ring filament discretization",
   "direction": "section geometry to ordered point and default-weight arrays",
-  "definition": "Place eight axial points on each radial face and assign -1 to the first face and +1 to the second.",
+  "definition": "Place eight axial points on each radial face and assign -1 to the first face and +1 to the second. The documented fields are returned together in a scirel._result.Result mapping; mapping and attribute access expose the same values. No nested mapping is returned.",
   "model": "Signed ideal-filament geometry approximation.",
   "geometry": "Rectangular cross-section optionally rotated about its centroid.",
   "coordinates": "R,Z in metres; angle in degrees; weights dimensionless.",
@@ -93,7 +93,7 @@
  "outputs": [
   {
    "name": "rz_pts",
-   "description": "Ordered filament positions, each row [R,Z].",
+   "description": "Field of the returned scirel._result.Result mapping: Ordered filament positions, each row [R,Z].",
    "units": "m,m",
    "shape": "[16,2]",
    "dtype": "float64",
@@ -102,7 +102,7 @@
   },
   {
    "name": "default_weights",
-   "description": "Dimensionless relative source weights in point order.",
+   "description": "Field of the returned scirel._result.Result mapping: Dimensionless relative source weights in point order.",
    "units": "dimensionless",
    "shape": "[16]",
    "dtype": "float64",
@@ -126,7 +126,7 @@
   "invalid_input": "ValueError is raised for nonfinite or invalid dimensions, axis-crossing rotations, or nonfinite output points.",
   "runtime_failure": "No iterative runtime failure is defined; floating-point geometry validation fails closed.",
   "nonconvergence": "Not applicable; discretization is direct.",
-  "partial_results": "No point/weight mapping is returned after validation failure."
+  "partial_results": "No scirel._result.Result point/weight mapping is returned after validation failure."
  },
  "public_api": {
   "python": {
@@ -143,15 +143,16 @@
  },
  "example": {
   "description": "Discretize an unrotated ring cross-section and inspect order and signs.",
-  "code": "import numpy as np\nfrom scirel.field import discretize_permanent_ring\nresult = discretize_permanent_ring(2.0, 3.0, 4.0, 2.0)\nassert result['rz_pts'].shape == (16, 2)\nnp.testing.assert_allclose(result['rz_pts'][:8, 0], 0.0)\nnp.testing.assert_allclose(result['rz_pts'][8:, 0], 4.0)\nnp.testing.assert_allclose(result['rz_pts'][:8, 1], np.linspace(2.0, 4.0, 8))\nnp.testing.assert_allclose(result['default_weights'], [-1.0]*8 + [1.0]*8)",
-  "expected": "The result has 16 [R,Z] points: the first 8 have R=0, the last 8 have R=4, and default weights are eight -1 values followed by eight +1 values."
+  "code": "import numpy as np\nfrom scirel._result import Result\nfrom scirel.field import discretize_permanent_ring\nresult = discretize_permanent_ring(2.0, 3.0, 4.0, 2.0)\nassert isinstance(result, Result)\nassert list(result) == ['rz_pts', 'default_weights']\nassert result.rz_pts is result['rz_pts']\nassert result['rz_pts'].shape == (16, 2)\nnp.testing.assert_allclose(result['rz_pts'][:8, 0], 0.0)\nnp.testing.assert_allclose(result['rz_pts'][8:, 0], 4.0)\nnp.testing.assert_allclose(\n    result['rz_pts'][:8, 1], np.linspace(2.0, 4.0, 8)\n)\nnp.testing.assert_allclose(\n    result['default_weights'], [-1.0] * 8 + [1.0] * 8\n)\n",
+  "expected": "The result has 16 [R,Z] points: the first 8 have R=0, the last 8 have R=4, and default weights are eight -1 values followed by eight +1 values. The returned object is a scirel._result.Result mapping; each field is also readable as an attribute."
  },
  "verification": {
   "scope": [
    "Unrotated two-face ordering, Z spacing and relative weight signs.",
    "Ninety-degree rotation about the centroid with the maintained sign convention.",
    "Nonpositive width/height rejection.",
-   "Axis-crossing and nonfinite geometry rejection, exact tiny-angle rotation, and finite generation at a very large finite angle."
+   "Axis-crossing and nonfinite geometry rejection, exact tiny-angle rotation, and finite generation at a very large finite angle.",
+   "The named result preserves the captured key order, values, shapes, dtypes, mapping access and attribute access; failures retain their exception types and messages."
   ],
   "tests": [
    "tests/field/test_permanent_ring_filaments.py",

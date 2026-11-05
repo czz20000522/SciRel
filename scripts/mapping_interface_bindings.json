@@ -375,7 +375,7 @@
     "scirel.equilibrium.anisotropic_picard_feedback": "36439767648044c8711bb880eda0d442c3495addb5a857c7088b3746097e269f",
     "scirel.equilibrium.anisotropic_toroidal_current": "a71f3169d7c6a7c3fe1ff8040538a7d80a10fd17b54e390b8b77791101d995cf",
     "scirel.equilibrium.free_boundary_anisotropic_picard": "5fd6123e3ba5c36c6fc1dcf571a8f30be466ab4725980144d3ed6f4e43f20f4d",
-    "scirel.field.ideal_conductor_boundary": "ba1659642acf26a3c77faa800a08a61bbece11d0324b722c5e162520ce1dba32",
+    "scirel.field.ideal_conductor_boundary": "e8f8f21a770d278252ae461d84c65c56ea3ffd7b17063b3d96f117cc2cb713ad",
     "scirel.field.poloidal_field_magnitude": "49d726f03e80f85d751b4e044efcd18fcb89303fbb2f1036ca6c660b87ae3189"
    },
    "review_basis": "_run_composition requires grid,vacuum psi/Br/Bz,Green psi,params,pressure callable and tol/maxiter/relax. g_br/g_bz may be omitted; wall/current/full-state feedback uses existing accepted behavior. b0 can derive from initial field; mask/wall/cell_edges absent are None; compatibility/minimumB/strict defaults are explicit scalar parsers."
@@ -658,9 +658,9 @@
    ],
    "modules": {
     "scirel._composition": "ce7f22d7d0978065cb3c56384d49fccf73bf41635cd51b3a8755cca5453e1ca7",
-    "scirel.field.circular_filament_green": "ca46d03aa389ffd50cd6e26b634e538dd3eaca83c43db88e12c6d2218173cef9",
-    "scirel.field.current_green_superposition": "d0c820fd1b5a0337e1711d9fe2b5434c696cc74afd015ad9be95cc857856dbf9",
-    "scirel.field.multi_coil_vacuum_field": "4dc06c9703d16a28de50e600a8524a977c61441702a4ad1d2d507a0a9dc7e99b",
+    "scirel.field.circular_filament_green": "fcba85a0e0625ff2c211dbca20743d19c132f15101a0c9b50eef7eccdf6c5656",
+    "scirel.field.current_green_superposition": "4629e14f77539f13fa3665115d91aca8b4160d921a42cf54a1e4846c63b2788c",
+    "scirel.field.multi_coil_vacuum_field": "e7c2d28563f247597aef16f9945e08ef646011cf1d75afff25659663968a2c53",
     "scirel.field.rectangular_coil_filaments": "ee6206ae5432e6fae2e9cdc03da323249ddf1f8ec04b2c62c378ae204b35c34a"
    },
    "review_basis": "_run_composition requires r_grid,z_grid,rectangular_coils. Each coil requires center,counts,widths,current; angle defaults0 and weights defaultones inside nested coil configuration, not undocumented top-level ports. Active nonzero-current filaments coincident with target grid nodes are rejected before Green evaluation. Bound discretizer, analytic Green and signed superposition implement the existing graph."

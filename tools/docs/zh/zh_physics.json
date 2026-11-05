@@ -917,9 +917,9 @@
   },
   {
    "asset_id": "scirel.field.ideal-conductor-boundary",
-   "source_sha256": "fdfcb9f7272d39d9071d19b9c371ee8ecc81a7ed677707efc18ecd6440b71c61",
-   "summary": "求解截断 SVD 边界源系统，并将其 Green 修正加到场点磁通。",
-   "definition": "在边界采样场磁通，按相对奇异值截断求解 Gbb 电流 = −采样磁通，再应用 Gbf 电流。",
+   "source_sha256": "8a19934f9d5ad2edf741cb51927f2726cd325c268135f1cd1e2016e0a060398f",
+   "summary": "求解截断 SVD 边界源系统，并将其 Green 修正加到场点磁通。各命名字段作为同一个 scirel._result.Result 映射返回。",
+   "definition": "在边界采样场磁通，按相对奇异值截断求解 Gbb 电流 = −采样磁通，再应用 Gbf 电流。 各字段存于同一个 scirel._result.Result 映射；按键和属性读取同一值，不引入嵌套 Result。",
    "model": "降维 SVD 线性最小二乘修正。",
    "assumptions": [
     "所有数组为有限实数。",
@@ -962,49 +962,49 @@
    "outputs": [
     {
      "name": "corrected_field_flux",
-     "description": "原始场 psi 加上 Gbf@boundary_currents。",
+     "description": "Result 字段：原始场 psi 加上 Gbf@boundary_currents。",
      "constraints": "保持输入场点顺序。",
      "dtype": "float64 双精度浮点数"
     },
     {
      "name": "boundary_currents",
-     "description": "截断伪逆给出的等效源电流系数。",
+     "description": "Result 字段：截断伪逆给出的等效源电流系数。",
      "constraints": "只含保留的右奇异方向贡献。",
      "dtype": "float64 双精度浮点数"
     },
     {
      "name": "boundary_flux_correction",
-     "description": "边界采样点的 Gbb@boundary_currents。",
+     "description": "Result 字段：边界采样点的 Gbb@boundary_currents。",
      "constraints": "顺序与 Gbb 边界采样一致。",
      "dtype": "float64 双精度浮点数"
     },
     {
      "name": "field_flux_correction",
-     "description": "场点的 Gbf@boundary_currents。",
+     "description": "Result 字段：场点的 Gbf@boundary_currents。",
      "constraints": "加入 uncorrected_field_flux。",
      "dtype": "float64 双精度浮点数"
     },
     {
      "name": "singular_values",
-     "description": "边界格林矩阵的降序奇异值。",
+     "description": "Result 字段：边界格林矩阵的降序奇异值。",
      "constraints": "来自 Gbb 的约化 SVD。",
      "dtype": "float64 双精度浮点数"
     },
     {
      "name": "effective_rank",
-     "description": "严格超过相对阈值的奇异值个数。",
+     "description": "Result 字段：严格超过相对阈值的奇异值个数。",
      "constraints": "在 0 与 min(N_boundary,N_source) 之间。",
      "dtype": "整数"
     },
     {
      "name": "residual",
-     "description": "原采样边界 psi 与边界源修正之和。",
+     "description": "Result 字段：原采样边界 psi 与边界源修正之和。",
      "constraints": "等于 S@uncorrected_field_flux+Gbb@boundary_currents，可非零。",
      "dtype": "float64 双精度浮点数"
     },
     {
      "name": "residual_norm",
-     "description": "边界残差的欧几里得范数。",
+     "description": "Result 字段：边界残差的欧几里得范数。",
      "constraints": "非负；截断或不相容边界磁通可使其非零。",
      "dtype": "浮点数"
     }
@@ -1025,18 +1025,19 @@
     "invalid_input": "输入非有限、秩错误、形状不兼容、为空或 rcond 非法时抛出 ValueError。",
     "runtime_failure": "SVD 和矩阵乘法产生的线性代数或浮点失败会传播。",
     "nonconvergence": "不适用；求解是一次截断 SVD 运算。",
-    "partial_results": "验证或求解失败后不返回修正映射。"
+    "partial_results": "验证或求解失败后不返回 scirel._result.Result 映射。"
    },
    "example": {
     "description": "求解一个包含两个采样点的满秩边界修正。",
-    "expected": "修正磁通为 [0, 0.125, −0.125]，effective_rank 为 2，采样残差在浮点容差内为零。"
+    "expected": "修正磁通为 [0, 0.125, −0.125]，effective_rank 为 2，采样残差在浮点容差内为零。 返回对象是 scirel._result.Result 映射，各字段也支持属性读取。"
    },
    "verification": {
     "scope": [
      "满秩消去及采样一致修正场。",
      "所有磁通量一致乘 2π 后等效电流不变。",
      "相对奇异值截断与有效秩。",
-     "拒绝负 rcond。"
+     "拒绝负 rcond。",
+     "命名字段改造保留改造前的键序、数值、形状、dtype、映射访问和属性访问，失败路径继续匹配原异常类型与消息。"
     ],
     "evidence_ceiling": "直接测试覆盖一个小型满秩系统、一个截断秩案例和一致 2π 缩放；不验证任意格林数据、条件数保证、真实导体壁或专家认可。",
     "known_limitations": [
@@ -1050,9 +1051,9 @@
   },
   {
    "asset_id": "scirel.field.circular-filament-green",
-   "source_sha256": "a5f204c3fdd481657fec457b969f13de31f8c19f34cec3a60984747819bc4c10",
-   "summary": "在柱坐标目标点累加有序加权圆电流丝响应。",
-   "definition": "按源顺序将每个源行的权重乘以圆电流丝 Green 响应并求和。",
+   "source_sha256": "6b418e2bdeb50cd104952d1af3b1c4ff3e7844006c63d5a740dc4c407d2a5011",
+   "summary": "在柱坐标目标点累加有序加权圆电流丝响应。各命名字段作为同一个 scirel._result.Result 映射返回。",
+   "definition": "按源顺序将每个源行的权重乘以圆电流丝 Green 响应并求和。 各字段存于同一个 scirel._result.Result 映射；按键和属性读取同一值，不引入嵌套 Result。",
    "model": "含零半径、零权重和精确自作用约定的轴对称理想圆电流丝核。",
    "assumptions": [
     "输入是有限实数数组且半径非负。",
@@ -1077,19 +1078,19 @@
    "outputs": [
     {
      "name": "gpsi",
-     "description": "单位驱动电流的 R A_phi 磁通响应（Wb/rad/A）。",
+     "description": "Result 字段：单位驱动电流的 R A_phi 磁通响应（Wb/rad/A）。",
      "constraints": "按既有奇异值约定得到有限值。",
      "dtype": "float64 双精度浮点数"
     },
     {
      "name": "gBR",
-     "description": "单位驱动电流的径向磁场响应。",
+     "description": "Result 字段：单位驱动电流的径向磁场响应。",
      "constraints": "按既有奇异值约定得到有限值。",
      "dtype": "float64 双精度浮点数"
     },
     {
      "name": "gBZ",
-     "description": "单位驱动电流的轴向磁场响应。",
+     "description": "Result 字段：单位驱动电流的轴向磁场响应。",
      "constraints": "按既有奇异值约定得到有限值。",
      "dtype": "float64 双精度浮点数"
     }
@@ -1110,18 +1111,19 @@
     "invalid_input": "源或目标数组格式错误、含复数/非有限值或半径为负时抛出 ValueError。",
     "runtime_failure": "累加的有限响应不可表示时抛出 FloatingPointError。",
     "nonconvergence": "不适用；这是直接求和。",
-    "partial_results": "验证或算术失败后不返回结果映射。"
+    "partial_results": "验证或算术失败后不返回 scirel._result.Result 映射。"
    },
    "example": {
     "description": "在两个离轴目标点计算一根单位权重电流丝。",
-    "expected": "映射包含 gpsi、gBR 和 gBZ；每个都是形状 (2,) 的有限 float64 向量。"
+    "expected": "映射包含 gpsi、gBR 和 gBZ；每个都是形状 (2,) 的有限 float64 向量。 返回对象是 scirel._result.Result 映射，各字段也支持属性读取。"
    },
    "verification": {
     "scope": [
      "轴上源点跳过约定。",
      "源权重线性关系。",
      "中平面对称性及轴上 BZ 解析值。",
-     "独立 70/80 位精度圆环关系检查极小正半径、近轴非零 BR、近丝及公式求值分支；保持原断言和容差，区分精确自项约定与算术失败。"
+     "独立 70/80 位精度圆环关系检查极小正半径、近轴非零 BR、近丝及公式求值分支；保持原断言和容差，区分精确自项约定与算术失败。",
+     "命名字段改造保留改造前的键序、数值、形状、dtype、映射访问和属性访问，失败路径继续匹配原异常类型与消息。"
     ],
     "evidence_ceiling": "限于轴源跳过、加权源线性的圆细丝 Green 响应。证据：`test_circular_filament_green.py` 含 3 个测试函数，其中 1 个引用 `circular_filament_green_response`，仅由本资产绑定; `test_field_green_correction.py` 含 9 个测试函数，其中没有函数引用 `circular_filament_green_response`，由 5 个资产共享；本审计已执行有界示例。真值来源：独立解析重算与轴极限 BZ 检查。不建立：有限线自场、任意输入资格或持久场块。",
     "known_limitations": [
@@ -3975,9 +3977,9 @@
   },
   {
    "asset_id": "scirel.field.poloidal-field-magnitude",
-   "source_sha256": "f6a7c58407d3c465d4c18785d4002d39e753214a436b7e2d3f4182c5cf830669",
-   "summary": "计算带下限的极向场大小及其由中位数得到的参考值。",
-   "definition": "计算 hypot(BR,BZ)，将每个值下限截为 1e-30，并用相邻样本先求差、再取中点的方式返回中位数。",
+   "source_sha256": "dbb01367cd614ca97f50dcffc318323207a0501ebf6523cf1e65510ad07b386a",
+   "summary": "计算带下限的极向场大小及其由中位数得到的参考值。 各命名字段作为同一个 scirel._result.Result 映射返回。",
+   "definition": "计算 hypot(BR,BZ)，将每个值下限截为 1e-30，并用相邻样本先求差、再取中点的方式返回中位数。 两个字段存于同一个 scirel._result.Result 映射；按键和属性读取同一值，不引入嵌套 Result。",
    "model": "带有限正下限的逐点欧氏大小。",
    "assumptions": [
     "输入是相同二维形状的有限实数数组。",
@@ -4002,13 +4004,13 @@
    "outputs": [
     {
      "name": "B",
-     "description": "逐点施加下限后的极向场大小。",
+     "description": "Result 字段：逐点施加下限后的极向场大小。",
      "constraints": "幅值可由 float64 表示的接受输入得到有限值，且至少为 1e-30 T。",
      "dtype": "float64 双精度浮点数"
     },
     {
      "name": "B0_default",
-     "description": "返回 B 的中位数，可由调用者选作参考场。",
+     "description": "Result 字段：返回 B 的中位数，可由调用者选作参考场。",
      "constraints": "有限，至少为 1e-30 T，由全部网格返回值计算。",
      "dtype": "浮点数"
     }
@@ -4029,17 +4031,18 @@
     "invalid_input": "输入非有限、为空、非二维、形状不匹配或大小不可表示时抛出 ValueError。",
     "runtime_failure": "没有迭代运行时失败；上溢转换为 ValueError。",
     "nonconvergence": "不适用；大小和中位数是直接运算。",
-    "partial_results": "验证或上溢失败后不返回映射。"
+    "partial_results": "验证或溢出失败后不返回 scirel._result.Result 映射。"
    },
    "example": {
     "description": "计算一个 3-4-5 场点和一个零分量点。",
-    "expected": "B=[[5, 1e-30]] T，B0_default 为 2.5 T。"
+    "expected": "B=[[5, 1e-30]] T，B0_default 为 2.5 T。 返回对象是 scirel._result.Result 映射，各字段也支持属性读取。"
    },
    "verification": {
     "scope": [
      "3–4–5 幅值、零下限及中位参考。",
      "形状不齐、空网格和不可表示幅值的拒绝。",
-     "大有限分量及中位数算术回归。"
+     "大有限分量及中位数算术回归。",
+     "命名字段改造保留改造前的键序、数值、形状、dtype、映射访问和属性访问，失败路径继续匹配原异常类型与消息。"
     ],
     "evidence_ceiling": "直接测试只覆盖既有算术和所选浮点边界，不建立参考中位数的模型物理解读或专家认可。",
     "known_limitations": [
@@ -6544,9 +6547,9 @@
   },
   {
    "asset_id": "scirel.field.dense-axisymmetric-green",
-   "source_sha256": "e256cf4035167f45962ab05f115b0bb2c031517ca6c09c44394cd8f85f998841",
-   "summary": "为 psi、BR 和 BZ 构建稠密的目标行/源列圆电流丝响应矩阵。",
-   "definition": "按调用者顺序对每个源列计算圆电流丝响应。",
+   "source_sha256": "b4e324082252b4869f77ab25ba85134c1bedb11e403cfba9c4ee15f47b9890dc",
+   "summary": "为 psi、BR 和 BZ 构建稠密的目标行/源列圆电流丝响应矩阵。各命名字段作为同一个 scirel._result.Result 映射返回。",
+   "definition": "按调用者顺序对每个源列计算圆电流丝响应。 各字段存于同一个 scirel._result.Result 映射；按键和属性读取同一值，不引入嵌套 Result。",
    "model": "含零半径、零权重和精确自作用约定的轴对称理想圆电流丝核。",
    "assumptions": [
     "目标是有限实数的两列表，源是有限实数的三列表。",
@@ -6571,19 +6574,19 @@
    "outputs": [
     {
      "name": "gpsi",
-     "description": "每个目标-源对的加权 psi=R A_phi 响应。",
+     "description": "Result 字段：每个目标-源对的加权 psi=R A_phi 响应。",
      "constraints": "轴上源列为零；不应用 2π 因子。",
      "dtype": "float64 双精度浮点数"
     },
     {
      "name": "gBR",
-     "description": "每个目标-源对的加权径向场响应。",
+     "description": "Result 字段：每个目标-源对的加权径向场响应。",
      "constraints": "轴上源列为零。",
      "dtype": "float64 双精度浮点数"
     },
     {
      "name": "gBZ",
-     "description": "每个目标-源对的加权轴向场响应。",
+     "description": "Result 字段：每个目标-源对的加权轴向场响应。",
      "constraints": "轴上目标可保留解析有限极限。",
      "dtype": "float64 双精度浮点数"
     }
@@ -6604,11 +6607,11 @@
     "invalid_input": "目标或源数组格式错误、含复数/非有限值或半径为负时抛出 ValueError。",
     "runtime_failure": "核响应不可表示时产生的 FloatingPointError 会传播。",
     "nonconvergence": "不适用；矩阵项直接计算。",
-    "partial_results": "验证或核计算失败后不返回响应映射。"
+    "partial_results": "验证或核函数失败后不返回 scirel._result.Result 映射。"
    },
    "example": {
     "description": "比较单源改权重后的响应以及空源集。",
-    "expected": "每个非空响应的形状为 (2,1)，加权响应恰为 −2.5 倍单位响应；空源响应形状为 (2,0)。"
+    "expected": "每个非空响应的形状为 (2,1)，加权响应恰为 −2.5 倍单位响应；空源响应形状为 (2,0)。 返回对象是 scirel._result.Result 映射，各字段也支持属性读取。"
    },
    "verification": {
     "scope": [
@@ -6617,7 +6620,8 @@
      "圆电流丝轴向磁场解析极限。",
      "与独立维护的圆电流丝核逐列相等。",
      "非法半径及源形状的拒绝。",
-     "独立 70/80 位精度圆环关系检查极小正半径、近轴非零 BR、近丝及公式求值分支；保持原断言和容差，区分精确自项约定与算术失败。"
+     "独立 70/80 位精度圆环关系检查极小正半径、近轴非零 BR、近丝及公式求值分支；保持原断言和容差，区分精确自项约定与算术失败。",
+     "命名字段改造保留改造前的键序、数值、形状、dtype、映射访问和属性访问，失败路径继续匹配原异常类型与消息。"
     ],
     "evidence_ceiling": "限于保留独立源列的稠密轴对称 Green 响应。证据：`test_dense_axisymmetric_green.py` 含 9 个测试函数，其中 1 个引用 `dense_axisymmetric_green_response`，仅由本资产绑定; `test_field_green_correction.py` 含 9 个测试函数，其中没有函数引用 `dense_axisymmetric_green_response`，由 5 个资产共享；本审计已执行有界示例。真值来源：解析轴向场极限与逐列圆细丝核一致性。不建立：有限线自场、任意极端尺度精度或平衡声明。",
     "known_limitations": [
@@ -6628,9 +6632,9 @@
   },
   {
    "asset_id": "scirel.field.mirror-plasma-green",
-   "source_sha256": "3050539d502574877cfb2a85a4ebffb76f3b6944fcc0c38e4367ec98c10c2957",
-   "summary": "为均匀间距且关于 Z 反射对称的柱坐标网格构建稠密磁通响应矩阵。",
-   "definition": "在给定网格的实际坐标上计算圆电流丝磁通项，并保留 C 顺序展平。",
+   "source_sha256": "94555a740f628c8d875644cf328a6871a7276b8bd6a42a888a3567e408bdda17",
+   "summary": "为均匀间距且关于 Z 反射对称的柱坐标网格构建稠密磁通响应矩阵。各命名字段作为同一个 scirel._result.Result 映射返回。",
+   "definition": "在给定网格的实际坐标上计算圆电流丝磁通项，并保留 C 顺序展平。 各字段存于同一个 scirel._result.Result 映射；按键和属性读取同一值，不引入嵌套 Result。",
    "model": "带对称网格校验的轴对称理想圆电流丝磁通。",
    "assumptions": [
     "输入网格有限且形状匹配。",
@@ -6655,7 +6659,7 @@
    "outputs": [
     {
      "name": "g_psi",
-     "description": "每对目标和源网格单元的单位源电流 psi=R A_phi 响应。",
+     "description": "Result 字段：每对目标和源网格单元的单位源电流 psi=R A_phi 响应。",
      "constraints": "双轴按 [Z,R] 的 C 顺序展平；轴上源列及非有限项置零；不含网格面积或 2π 因子。",
      "dtype": "float64 双精度浮点数"
     }
@@ -6676,11 +6680,11 @@
     "invalid_input": "网格格式错误、非有限、非直角、非均匀或不对称时抛出 ValueError。",
     "runtime_failure": "不可表示 Green 矩阵产生的 FloatingPointError 会传播。",
     "nonconvergence": "不适用；矩阵构造是直接计算。",
-    "partial_results": "验证或核计算失败后不返回矩阵映射。"
+    "partial_results": "验证或核函数失败后不返回 scirel._result.Result 映射。"
    },
    "example": {
     "description": "构建一个 3×4 反射对称网格响应矩阵。",
-    "expected": "结果是有限的 (12,12) float64 矩阵，轴上源列为零，反射块相等。"
+    "expected": "结果是有限的 (12,12) float64 矩阵，轴上源列为零，反射块相等。 返回对象是 scirel._result.Result 映射，各字段也支持属性读取。"
    },
    "verification": {
     "scope": [
@@ -6688,7 +6692,8 @@
      "一个对称网格上整矩阵与直接稠密电流丝列相等。",
      "方阵形状、有限性及轴上源零列。",
      "拒绝不对称 Z 网格并检查反射分块。",
-     "独立 70/80 位精度圆环关系检查极小正半径、近轴非零 BR、近丝及公式求值分支；保持原断言和容差，区分精确自项约定与算术失败。"
+     "独立 70/80 位精度圆环关系检查极小正半径、近轴非零 BR、近丝及公式求值分支；保持原断言和容差，区分精确自项约定与算术失败。",
+     "命名字段改造保留改造前的键序、数值、形状、dtype、映射访问和属性访问，失败路径继续匹配原异常类型与消息。"
     ],
     "evidence_ceiling": "既有测试证明所选首平面公式、一个对称网格的整矩阵一致性、索引不变量和一个非法网格；不证明已分辨自场、任意网格有效性、整项目重组或专家认可。",
     "known_limitations": [
@@ -7796,9 +7801,9 @@
   },
   {
    "asset_id": "scirel.field.filament-vacuum-field",
-   "source_sha256": "d9cdd41493b1865fe30478dfcbe0afc00e243f8cc9f51815e234169e033a3720",
-   "summary": "在均匀 R–Z 直角网格上计算理想圆电流丝场，并从第一个径向节点起积分径向磁通。",
-   "definition": "在网格点计算 Green 核，并用径向梯形递推积分 R*BZ。",
+   "source_sha256": "e435a6d88e072435ff482028ab235d643329899e32952af7ed570e9397ca40f6",
+   "summary": "在均匀 R–Z 直角网格上计算理想圆电流丝场，并从第一个径向节点起积分径向磁通。各命名字段作为同一个 scirel._result.Result 映射返回。",
+   "definition": "在网格点计算 Green 核，并用径向梯形递推积分 R*BZ。 各字段存于同一个 scirel._result.Result 映射；按键和属性读取同一值，不引入嵌套 Result。",
    "model": "不带近轴截断的理想圆电流丝真空场。",
    "assumptions": [
     "径向轴非负、严格递增且等间距。",
@@ -7829,19 +7834,19 @@
    "outputs": [
     {
      "name": "psi",
-     "description": "由 R 乘 B_Z 的径向梯形积分得到的 Psi=R A_phi，以第一个径向网格点为参考。",
+     "description": "Result 字段：由 R 乘 B_Z 的径向梯形积分得到的 Psi=R A_phi，以第一个径向网格点为参考。",
      "constraints": "第一个径向网格点为零；不应用 2π 因子。",
      "dtype": "float64 双精度浮点数"
     },
     {
      "name": "b_r",
-     "description": "叠加后的径向磁场。",
+     "description": "Result 字段：叠加后的径向磁场。",
      "constraints": "按 Green 核轴极限，柱轴 R=0 处为零。",
      "dtype": "float64 双精度浮点数"
     },
     {
      "name": "b_z",
-     "description": "叠加后的轴向磁场。",
+     "description": "Result 字段：叠加后的轴向磁场。",
      "constraints": "成功返回时为有限值。",
      "dtype": "float64 双精度浮点数"
     }
@@ -7862,11 +7867,11 @@
     "invalid_input": "网格格式错误、含非有限值、轴非法或源/目标奇异时抛出 ValueError。",
     "runtime_failure": "Green 或积分结果非有限时抛出 FloatingPointError。",
     "nonconvergence": "不适用；核计算和求积是直接运算。",
-    "partial_results": "验证或算术失败后不返回场映射。"
+    "partial_results": "验证或算术失败后不返回 scirel._result.Result 映射。"
    },
    "example": {
     "description": "在 4×5 直角网格上计算一个不落在网格点的电流丝。",
-    "expected": "所有返回数组形状均为 (4,5)，psi 和 BR 的首个径向列为零，BZ 有限。"
+    "expected": "所有返回数组形状均为 (4,5)，psi 和 BR 的首个径向列为零，BZ 有限。 返回对象是 scirel._result.Result 映射，各字段也支持属性读取。"
    },
    "verification": {
     "scope": [
@@ -7875,7 +7880,8 @@
      "径向积分增量及首点参考。",
      "远离源时与独立 psi=R A_phi 格林值比较。",
      "转置网格布局及非法径向网格。",
-     "独立 70/80 位精度圆环关系检查极小正半径、近轴非零 BR、近丝及公式求值分支；保持原断言和容差，区分精确自项约定与算术失败。"
+     "独立 70/80 位精度圆环关系检查极小正半径、近轴非零 BR、近丝及公式求值分支；保持原断言和容差，区分精确自项约定与算术失败。",
+     "命名字段改造保留改造前的键序、数值、形状、dtype、映射访问和属性访问，失败路径继续匹配原异常类型与消息。"
     ],
     "evidence_ceiling": "限于细丝电流叠加、首网格点 psi 参考与径向求积。证据：`test_filament_vacuum_field.py` 含 7 个测试函数，其中 1 个引用 `integrate_filament_vacuum_field`，仅由本资产绑定; `test_field_green_correction.py` 含 9 个测试函数，其中没有函数引用 `integrate_filament_vacuum_field`，由 5 个资产共享；本审计已执行有界示例。真值来源：远离源处的解析圆细丝 psi=R A_phi 值。不建立：非正交网格、有限线自场或连续极限收敛。",
     "known_limitations": [
@@ -8244,9 +8250,9 @@
   },
   {
    "asset_id": "scirel.field.permanent-ring-filaments",
-   "source_sha256": "2c739c25452679777da2e879f2c9731e351d7acf3dd09737d35c4822d3bc055b",
-   "summary": "将矩形永久环截面离散为两面有序的八点电流丝，并赋予相反权重。",
-   "definition": "在每个径向面放置八个轴向点，第一面权重为 -1、第二面权重为 +1。",
+   "source_sha256": "1c1a3fd9a8f30f3e40d14db15c5e30da2f172e1db78f56372f2249db2ba4e616",
+   "summary": "将矩形永久环截面离散为两面有序的八点电流丝，并赋予相反权重。各命名字段作为同一个 scirel._result.Result 映射返回。",
+   "definition": "在每个径向面放置八个轴向点，第一面权重为 -1、第二面权重为 +1。 各字段存于同一个 scirel._result.Result 映射；按键和属性读取同一值，不引入嵌套 Result。",
    "model": "带符号的理想电流丝几何近似。",
    "assumptions": [
     "质心半径非负且尺寸为正。",
@@ -8289,13 +8295,13 @@
    "outputs": [
     {
      "name": "rz_pts",
-     "description": "有序电流丝位置，每行 [R,Z]。",
+     "description": "Result 字段：有序电流丝位置，每行 [R,Z]。",
      "constraints": "有限且半径非负；前八点负权重、后八点正权重，旋转保持顺序。",
      "dtype": "float64 双精度浮点数"
     },
     {
      "name": "default_weights",
-     "description": "按源点顺序给出的无量纲相对权重。",
+     "description": "Result 字段：按源点顺序给出的无量纲相对权重。",
      "constraints": "八个 −1 后接八个 +1，总和为零。",
      "dtype": "float64 双精度浮点数"
     }
@@ -8316,18 +8322,19 @@
     "invalid_input": "尺寸非有限或非法、旋转跨轴或输出点非有限时抛出 ValueError。",
     "runtime_failure": "没有迭代运行时失败；浮点几何验证在失败时关闭。",
     "nonconvergence": "不适用；离散化是直接计算。",
-    "partial_results": "验证失败后不返回点/权重映射。"
+    "partial_results": "验证失败后不返回 scirel._result.Result 映射。"
    },
    "example": {
     "description": "离散未旋转的永久环截面并检查顺序和符号。",
-    "expected": "结果含 16 个 [R,Z] 点：前 8 个 R=0，后 8 个 R=4；默认权重为先八个 −1、后八个 +1。"
+    "expected": "结果含 16 个 [R,Z] 点：前 8 个 R=0，后 8 个 R=4；默认权重为先八个 −1、后八个 +1。 返回对象是 scirel._result.Result 映射，各字段也支持属性读取。"
    },
    "verification": {
     "scope": [
      "两面顺序、Z 间距和权重符号。",
      "绕形心旋转 90° 的符号约定。",
      "非正宽高的拒绝行为。",
-     "跨轴及非有限几何拒绝、真实微角旋转和极大有限角度的有限结果。"
+     "跨轴及非有限几何拒绝、真实微角旋转和极大有限角度的有限结果。",
+     "命名字段改造保留改造前的键序、数值、形状、dtype、映射访问和属性访问，失败路径继续匹配原异常类型与消息。"
     ],
     "evidence_ceiling": "有针对性的回归、明确解析构造例和所选 wheel 的安装运行覆盖本有限合同；不推断任意物理模型适用性、连续体收敛、人工科学认可或再分发许可。",
     "known_limitations": [
@@ -9534,9 +9541,9 @@
   },
   {
    "asset_id": "scirel.field.current-green-superposition",
-   "source_sha256": "0c2156b72efaa1e427199ce96fa5570999fdc8bd5cb9ef7f06f99f8cbb87ff12",
-   "summary": "将标量或源向量电流与形状兼容的 Green 响应数组收缩。",
-   "definition": "秩一响应使用标量乘法，秩二响应沿源轴执行矩阵乘法。",
+   "source_sha256": "b9d6e94319e4e8c606a31d5711b7839a83889a7d535abecf16ddd0a72fa3457e",
+   "summary": "将标量或源向量电流与形状兼容的 Green 响应数组收缩。各命名字段作为同一个 scirel._result.Result 映射返回。",
+   "definition": "秩一响应使用标量乘法，秩二响应沿源轴执行矩阵乘法。 各字段存于同一个 scirel._result.Result 映射；按键和属性读取同一值，不引入嵌套 Result。",
    "model": "不重排响应的线性叠加。",
    "assumptions": [
     "所有值为有限实数数组。",
@@ -9573,19 +9580,19 @@
    "outputs": [
     {
      "name": "psi",
-     "description": "电流加权后的 R A_phi 磁通函数（Wb/rad）。",
+     "description": "Result 字段：电流加权后的 R A_phi 磁通函数（Wb/rad）。",
      "constraints": "保持目标点顺序。",
      "dtype": "float64 双精度浮点数"
     },
     {
      "name": "BR",
-     "description": "电流加权后的径向磁场。",
+     "description": "Result 字段：电流加权后的径向磁场。",
      "constraints": "保持目标点顺序。",
      "dtype": "float64 双精度浮点数"
     },
     {
      "name": "BZ",
-     "description": "电流加权后的轴向磁场。",
+     "description": "Result 字段：电流加权后的轴向磁场。",
      "constraints": "保持目标点顺序。",
      "dtype": "float64 双精度浮点数"
     }
@@ -9606,18 +9613,19 @@
     "invalid_input": "值非有限、电流秩不支持或响应形状不兼容时抛出 ValueError。",
     "runtime_failure": "标量或矩阵收缩无法表示为有限 float64 时抛出 FloatingPointError；不返回部分映射。",
     "nonconvergence": "不适用；这是直接收缩。",
-    "partial_results": "验证失败后不返回输出映射。"
+    "partial_results": "验证或算术失败后不返回 scirel._result.Result 映射。"
    },
    "example": {
     "description": "将两个有符号电流与两行响应收缩。",
-    "expected": "结果为 psi=[−2,1]、BR=[4,−4]、BZ=[−5,0]，并保持目标顺序。"
+    "expected": "结果为 psi=[−2,1]、BR=[4,−4]、BZ=[−5,0]，并保持目标顺序。 返回对象是 scirel._result.Result 映射，各字段也支持属性读取。"
    },
    "verification": {
     "scope": [
      "标量缩放。",
      "向量源轴收缩。",
      "错误源轴及非有限输入的失败行为。",
-     "标量或矩阵收缩不可表示时以 FloatingPointError 失败闭合。"
+     "标量或矩阵收缩不可表示时以 FloatingPointError 失败闭合。",
+     "命名字段改造保留改造前的键序、数值、形状、dtype、映射访问和属性访问，失败路径继续匹配原异常类型与消息。"
     ],
     "evidence_ceiling": "限于Green 响应列上的标量/矢量电流叠加。证据：`test_current_green_superposition.py` 含 6 个测试函数，其中 1 个引用 `superpose_current_green_field`，仅由本资产绑定；本审计已执行有界示例。真值来源：仅自洽/回归。不建立：更高秩电流、隐式重塑/转置或平衡解释。",
     "known_limitations": [
@@ -9629,9 +9637,9 @@
   },
   {
    "asset_id": "scirel.field.multi-coil-vacuum-field",
-   "source_sha256": "6f4cdec17abe876afcf034f11c88f1e94e17ae5392fb8d9e3a41ab16bc654368",
-   "summary": "将矩形线圈记录展开为加权电流丝，计算各线圈的 Green 响应并按驱动电流叠加。",
-   "definition": "逐个离散调用者线圈、附加电流丝权重并计算按目标点排序的 Green 响应。每个线圈的驱动量是每根电流丝的电流（current_a，或 ampere_turns_a 除以该线圈权重之和）。每个线圈占一列，组成 [N_target,N_coil] 矩阵，沿轴 1 与 [N_coil] 驱动电流向量收缩，再重塑回输入网格。",
+   "source_sha256": "150746cba7af21c359c7b5408d879d647145626eb4fa5c284192482399c1303d",
+   "summary": "将矩形线圈记录展开为加权电流丝，计算各线圈的 Green 响应并按驱动电流叠加。各命名字段作为同一个 scirel._result.Result 映射返回。",
+   "definition": "逐个离散调用者线圈、附加电流丝权重并计算按目标点排序的 Green 响应。每个线圈的驱动量是每根电流丝的电流（current_a，或 ampere_turns_a 除以该线圈权重之和）。每个线圈占一列，组成 [N_target,N_coil] 矩阵，沿轴 1 与 [N_coil] 驱动电流向量收缩，再重塑回输入网格。 各字段存于同一个 scirel._result.Result 映射；按键和属性读取同一值，不引入嵌套 Result。",
    "model": "矩形几何、圆电流丝 Green 响应和电流收缩的有序无环组合。",
    "assumptions": [
     "目标网格有限、形状匹配且非空，R、Z 轴严格递增；允许单点轴。",
@@ -9663,25 +9671,25 @@
    "outputs": [
     {
      "name": "psi_vac",
-     "description": "目标网格上的真空 R A_phi 磁通函数（Wb/rad）。",
+     "description": "Result 字段：目标网格上的真空 R A_phi 磁通函数（Wb/rad）。",
      "constraints": "与输入网格同形，并保持 C 顺序的点映射。",
      "dtype": "float64 双精度浮点数"
     },
     {
      "name": "b_r_vac",
-     "description": "目标网格上的真空径向磁场。",
+     "description": "Result 字段：目标网格上的真空径向磁场。",
      "constraints": "与输入网格同形，并保持 C 顺序的点映射。",
      "dtype": "float64 双精度浮点数"
     },
     {
      "name": "b_z_vac",
-     "description": "目标网格上的真空轴向磁场。",
+     "description": "Result 字段：目标网格上的真空轴向磁场。",
      "constraints": "与输入网格同形，并保持 C 顺序的点映射。",
      "dtype": "float64 双精度浮点数"
     },
     {
      "name": "filaments",
-     "description": "按调用者线圈顺序拼接的 [R_m,Z_m,weight] 行。",
+     "description": "Result 字段：按调用者线圈顺序拼接的 [R_m,Z_m,weight] 行。",
      "constraints": "保留线圈内部电流丝顺序及外层线圈顺序。",
      "dtype": "float64 双精度浮点数"
     }
@@ -9705,11 +9713,11 @@
     "invalid_input": "缺失、空或格式错误的网格、空/非映射线圈、非法几何、权重、电流，或活动电流丝与目标节点精确重合时抛出 ValueError。",
     "runtime_failure": "依赖产生的 ValueError/FloatingPointError 会在返回任何场之前传播，包括不可表示的电流加权 Green 收缩；不执行回退或重试。",
     "nonconvergence": "不适用；图没有反馈环。",
-    "partial_results": "任一步骤失败后不返回场或电流丝输出。"
+    "partial_results": "任一步骤失败后不返回 scirel._result.Result 场或电流丝输出。"
    },
    "example": {
     "description": "在 2×2 目标网格上展开一个 2×2 矩形线圈并计算真空场。",
-    "expected": "三个场数组形状为 (2,2)，返回的电流丝表形状为 (4,3)，且 b_z_vac 有限。"
+    "expected": "三个场数组形状为 (2,2)，返回的电流丝表形状为 (4,3)，且 b_z_vac 有限。 返回对象是 scirel._result.Result 映射，各字段也支持属性读取。"
    },
    "verification": {
     "scope": [
@@ -9721,7 +9729,8 @@
      "固定 Pleiades 双线圈参考值以及完整 9x9 数组，由 tests/cross_domain/multi_coil_vacuum_field/test_pleiades_two_coil_truth.py 使用领域内受跟踪 fixture 覆盖。",
      "scripts/build_pleiades_truth.py 只用调用者提供的外部 Pleiades source checkout 写入显式指定的候选输出；不会覆盖受跟踪 fixture，也不会携带 source。",
      "每根电流丝的 current_a 与线圈总安匝 ampere_turns_a：两种写法给出相同的场，单根电流丝与轴上圆环解析式一致，两者都给或都不给时抛出 ValueError。",
-     "活动电流丝与目标点精确重合时拒绝，零权重重合保持非活动。"
+     "活动电流丝与目标点精确重合时拒绝，零权重重合保持非活动。",
+     "命名字段改造保留改造前的键序、数值、形状、dtype、映射访问和属性访问，失败路径继续匹配原异常类型与消息。"
     ],
     "evidence_ceiling": "限于具有独立线圈电流的线性多线圈真空场与 Green 响应列。证据：`test_composition_multi_coil_vacuum_field.py` 检验独立线圈响应列、电流缩放、空网格拒绝与单点轴接受； `test_pleiades_two_coil_truth.py` 含 4 个测试函数，其中 2 个引用 `solve_multi_coil_vacuum_field`，仅由本资产绑定；本审计已执行有界示例。真值来源：受跟踪的 Pleiades simple-two-coil fixture（`tests/fixtures/multi_coil_vacuum_field/pleiades_simple_two_coil`）及其 provenance；每次都比较完整 9×9 数组。不建立：迭代线圈求解、非线性材料、有限线效应，或畸形/空线圈列表。 重合回归只覆盖精确的活动/非活动电流丝情形；有限导线自场行为仍不在范围内。",
     "known_limitations": [

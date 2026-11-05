@@ -4,6 +4,8 @@ from __future__ import annotations
 
 import numpy as np
 
+from scirel._result import Result
+
 CURRENT_KEYS = ("current_a", "ampere_turns_a")
 
 
@@ -137,7 +139,7 @@ def _run_composition(inputs, *, asset_loader):
 
 
 def solve_multi_coil_vacuum_field(inputs=None, **kwargs):
-    """Compute vacuum fields from ``rectangular_coils`` records.
+    """Compute vacuum fields from coil records as a named result.
 
     Each coil mapping gives ``r0_m, z0_m, nr, nz, dr_m, dz_m`` (an ``nr`` x ``nz``
     array of thin circular filaments centred on ``(r0_m, z0_m)`` with centre
@@ -194,18 +196,21 @@ def solve_multi_coil_vacuum_field(inputs=None, **kwargs):
     Returns
     -------
     psi_vac : float64, shape [N_Z,N_R]
-        Vacuum poloidal flux on the target grid [Wb/rad]. Same grid shape and
+        Field ``psi_vac`` of the returned ``scirel._result.Result`` mapping:
+        vacuum poloidal flux on the target grid [Wb/rad]. Same grid shape and
         C-order point mapping as inputs.
     b_r_vac : float64, shape [N_Z,N_R]
-        Vacuum radial magnetic field on the target grid [T]. Same grid shape and
-        C-order point mapping as inputs.
+        Field ``b_r_vac`` of the returned result mapping: vacuum radial
+        magnetic field on the target grid [T]. Same grid shape and C-order
+        point mapping as inputs.
     b_z_vac : float64, shape [N_Z,N_R]
-        Vacuum axial magnetic field on the target grid [T]. Same grid shape and
-        C-order point mapping as inputs.
+        Field ``b_z_vac`` of the returned result mapping: vacuum axial magnetic
+        field on the target grid [T]. Same grid shape and C-order point mapping
+        as inputs.
     filaments : float64, shape [N_filament,3]
-        Concatenated [R_m,Z_m,weight] rows in caller coil order
-        [m,m,dimensionless]. Preserves each coil's filament order and the outer
-        caller coil order.
+        Field ``filaments`` of the returned result mapping: concatenated
+        [R_m,Z_m,weight] rows in caller coil order [m,m,dimensionless].
+        Preserves each coil's filament order and the outer caller coil order.
 
     Raises
     ------
@@ -226,12 +231,31 @@ def solve_multi_coil_vacuum_field(inputs=None, **kwargs):
     scirel.electromagnetism.compute_greens : Circular-filament Green functions.
     scirel.configurations.WHAM : Fixed WHAM coil geometry preset.
 
+    Notes
+    -----
+    The four fields are stored directly in one ``scirel._result.Result``
+    mapping. No nested mapping is returned, and mapping access remains
+    available alongside attribute access.
+
     Examples
     --------
     >>> import numpy as np
+    >>> from scirel._result import Result
     >>> from scirel.field import solve_multi_coil_vacuum_field
     >>> r_grid, z_grid = np.meshgrid([0.0, 0.2], [-0.1, 0.1])
-    >>> result = solve_multi_coil_vacuum_field(r_grid=r_grid, z_grid=z_grid, rectangular_coils=[{'r0_m': 0.45, 'z0_m': 0.0, 'nr': 2, 'nz': 2, 'dr_m': 0.04, 'dz_m': 0.05, 'current_a': 1000.0}])
+    >>> result = solve_multi_coil_vacuum_field(
+    ...     r_grid=r_grid,
+    ...     z_grid=z_grid,
+    ...     rectangular_coils=[{
+    ...         'r0_m': 0.45, 'z0_m': 0.0, 'nr': 2, 'nz': 2,
+    ...         'dr_m': 0.04, 'dz_m': 0.05, 'current_a': 1000.0,
+    ...     }],
+    ... )
+    >>> assert isinstance(result, Result)
+    >>> assert list(result) == [
+    ...     'psi_vac', 'b_r_vac', 'b_z_vac', 'filaments'
+    ... ]
+    >>> assert result.psi_vac is result['psi_vac']
     >>> assert result['psi_vac'].shape == r_grid.shape
     >>> assert result['filaments'].shape == (4, 3)
     >>> assert np.isfinite(result['b_z_vac']).all()
@@ -241,17 +265,19 @@ def solve_multi_coil_vacuum_field(inputs=None, **kwargs):
     from scirel.field.current_green_superposition import superpose_current_green_field
     from scirel.field.rectangular_coil_filaments import discretize_rectangular_coil
 
-    return compose(
-        _run_composition,
-        inputs,
-        kwargs,
-        {
-            "asset_loader": {
-                "scirel.field.circular_filament_green": circular_filament_green_response,
-                "scirel.field.current_green_superposition": superpose_current_green_field,
-                "scirel.field.rectangular_coil_filaments": discretize_rectangular_coil,
-            }
-        },
+    return Result(
+        compose(
+            _run_composition,
+            inputs,
+            kwargs,
+            {
+                "asset_loader": {
+                    "scirel.field.circular_filament_green": circular_filament_green_response,
+                    "scirel.field.current_green_superposition": superpose_current_green_field,
+                    "scirel.field.rectangular_coil_filaments": discretize_rectangular_coil,
+                }
+            },
+        )
     )
 
 
