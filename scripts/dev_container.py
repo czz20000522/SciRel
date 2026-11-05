@@ -4,6 +4,8 @@
 from __future__ import annotations
 
 import argparse
+from collections.abc import Iterator
+from contextlib import contextmanager
 import hashlib
 import os
 from pathlib import Path
@@ -11,12 +13,14 @@ import shlex
 import shutil
 import subprocess
 import sys
+import tempfile
 
 ROOT = Path(__file__).resolve().parents[1]
 COMPOSE = ROOT / "containers" / "dev" / "compose.yaml"
 IMAGE = "scirel-dev-python:3.14.7"
 SYNC = "uv sync --locked --group test"
 PYTHON = "uv run --frozen python -B"
+GIT_COMMON_MOUNT = "/scirel-git"
 
 
 def project_name() -> str:
@@ -53,6 +57,76 @@ def compose_command(*args: str) -> list[str]:
         project_name(),
         *args,
     ]
+
+
+def git_discovery_environment() -> dict[str, str]:
+    """Return an environment that discovers Git from the checkout, not an outer run."""
+    env = os.environ.copy()
+    for name in ("GIT_DIR", "GIT_WORK_TREE"):
+        env.pop(name, None)
+    return env
+
+
+def linked_worktree_git_context() -> tuple[Path, str] | None:
+    """Return shared Git metadata for a linked worktree, or ``None`` otherwise."""
+    if not (ROOT / ".git").is_file():
+        return None
+    commands = (
+        ["git", "rev-parse", "--absolute-git-dir"],
+        ["git", "rev-parse", "--path-format=absolute", "--git-common-dir"],
+    )
+    resolved = []
+    for command in commands:
+        done = subprocess.run(
+            command,
+            cwd=ROOT,
+            env=git_discovery_environment(),
+            check=False,
+            capture_output=True,
+            text=True,
+        )
+        if done.returncode:
+            detail = done.stderr.strip() or done.stdout.strip()
+            raise RuntimeError(f"cannot resolve linked-worktree Git metadata: {detail}")
+        resolved.append(Path(done.stdout.strip()))
+    git_dir, common_dir = resolved
+    try:
+        relative_git_dir = git_dir.relative_to(common_dir)
+    except ValueError as error:
+        raise RuntimeError("linked-worktree Git directory is outside its common directory") from error
+    if not relative_git_dir.parts:
+        raise RuntimeError("linked-worktree Git directory has no path below its common directory")
+    return common_dir, relative_git_dir.as_posix()
+
+
+@contextmanager
+def container_git_mount() -> Iterator[list[str]]:
+    """Expose linked-worktree Git metadata without changing the run environment."""
+    context = linked_worktree_git_context()
+    if context is None:
+        yield []
+        return
+    common_dir, relative_git_dir = context
+    pointer = None
+    try:
+        with tempfile.NamedTemporaryFile(
+            mode="w",
+            encoding="utf-8",
+            prefix="scirel-container-gitdir-",
+            dir=common_dir,
+            delete=False,
+        ) as stream:
+            stream.write(f"gitdir: {GIT_COMMON_MOUNT}/{relative_git_dir}\n")
+            pointer = Path(stream.name)
+        yield [
+            "--volume",
+            f"{common_dir}:{GIT_COMMON_MOUNT}",
+            "--volume",
+            f"{pointer}:/workspace/.git:ro",
+        ]
+    finally:
+        if pointer is not None:
+            pointer.unlink(missing_ok=True)
 
 
 def run(command: list[str], *, interactive: bool = False) -> int:
@@ -100,7 +174,8 @@ def run_in_container(arguments: list[str], *, interactive: bool = False) -> int:
     command = compose_command("run", "--rm")
     if interactive:
         command.append("--interactive")
-    code = run([*command, "dev", *arguments], interactive=interactive)
+    with container_git_mount() as git_mount:
+        code = run([*command, *git_mount, "dev", *arguments], interactive=interactive)
     clean_generated_caches()
     return code
 

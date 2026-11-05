@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import importlib.util
 from pathlib import Path
+import subprocess
 import sys
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -71,3 +72,44 @@ def test_local_container_uses_the_selected_engine_architecture():
     assert "UV_PROJECT_ENVIRONMENT: /opt/scirel-venv" in compose
     assert "PYTHONPYCACHEPREFIX: /tmp/scirel-pycache" in compose
     assert "RUFF_CACHE_DIR: /tmp/scirel-ruff-cache" in compose
+
+
+def test_linked_worktree_git_metadata_is_mounted_portably(tmp_path, monkeypatch):
+    module = _load()
+    repository = tmp_path / "repository"
+    worktree = tmp_path / "worktree"
+    repository.mkdir()
+
+    def git(*arguments):
+        env = module.git_discovery_environment()
+        return subprocess.run(
+            ["git", *arguments],
+            cwd=repository,
+            env=env,
+            check=True,
+            capture_output=True,
+            text=True,
+        )
+
+    git("init", "-b", "main")
+    git("config", "user.name", "SciRel test")
+    git("config", "user.email", "scirel-test@example.invalid")
+    (repository / "README.md").write_text("fixture\n", encoding="utf-8")
+    git("add", "README.md")
+    git("commit", "-m", "fixture")
+    git("worktree", "add", "-b", "agent/test", str(worktree), "main")
+
+    monkeypatch.setattr(module, "ROOT", worktree)
+    context = module.linked_worktree_git_context()
+    assert context is not None
+    common_dir, relative_git_dir = context
+    assert common_dir == repository / ".git"
+    assert relative_git_dir.startswith("worktrees/")
+    with module.container_git_mount() as arguments:
+        assert arguments[:2] == ["--volume", f"{common_dir}:{module.GIT_COMMON_MOUNT}"]
+        pointer = Path(arguments[3].rsplit(":/workspace/.git:ro", 1)[0])
+        assert pointer.is_file()
+        assert pointer.read_text(encoding="utf-8") == (
+            f"gitdir: {module.GIT_COMMON_MOUNT}/{relative_git_dir}\n"
+        )
+    assert not pointer.exists()
