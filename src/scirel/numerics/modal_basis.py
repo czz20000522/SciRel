@@ -15,12 +15,13 @@ Two families share one construction:
     per-axis degree does not exceed ``order`` appears exactly once.
 
 ``serendipity``
-    The same tensor product with the monomials that reach the maximum total
-    degree on two or more axes removed, leaving
-    ``(order + 1) ** ndim - order ** ndim`` members.  The removed members are
-    the ones whose cross terms cost a full tensor slot without adding resolved
-    per-axis structure, so a serendipity basis keeps the per-axis resolution at
-    a lower member count.
+    The same tensor product restricted to exponent tuples where at most one
+    axis has exponent two or greater. At order zero there is one constant
+    member; for positive order the count is
+    ``2 ** ndim + ndim * (order - 1) * 2 ** (ndim - 1)``. The removed members
+    are the ones whose cross terms cost a full tensor slot without adding
+    resolved per-axis structure, so a serendipity basis keeps the per-axis
+    resolution at a lower member count.
 
 Members are ordered by total degree, then by descending exponent on the first
 axis, then the second, and so on.  The member order is part of the contract
@@ -61,22 +62,50 @@ def _check_ndim(ndim):
 
 
 def gauss_legendre(order):
-    """Nodes and weights of the ``order``-point Gauss-Legendre rule on ``[-1, 1]``.
+    """Return the Gauss-Legendre rule on ``[-1, 1]``.
 
-    The rule integrates every polynomial of degree up to ``2 * order - 1``
-    exactly.  Roots are refined from a Chebyshev initial guess by Newton
-    iteration on the three-term Legendre recurrence, so no ordinate table is
-    stored.
+    Parameters
+    ----------
+    order : int
+        Number of quadrature points [1]. The value must be a positive integer;
+        booleans and non-integral values are rejected.
 
-    Args:
-        order: Number of points, at least 1.
+    Returns
+    -------
+    nodes : ndarray of float64, shape (order,)
+        Ascending nodes on ``[-1, 1]`` [1].
+    weights : ndarray of float64, shape (order,)
+        Quadrature weights [1]. Their sum is two within floating-point
+        round-off.
 
-    Returns:
-        ``(nodes, weights)`` as float64 arrays of length ``order``; nodes ascend
-        and the weights sum to 2 within round-off.
+    Raises
+    ------
+    ValueError
+        If ``order`` is not a positive integer, or if the bounded Newton
+        iteration does not converge.
 
-    Raises:
-        ValueError: If ``order`` is not a positive integer.
+    See Also
+    --------
+    ModalBasis.quadrature : Form the tensor-product rule used by a basis.
+    ModalBasis.project : Use the rule to project samples onto a basis.
+
+    Notes
+    -----
+    The rule integrates every polynomial of degree at most
+    ``2 * order - 1`` exactly. Roots are refined from a Chebyshev initial
+    guess with Newton iteration on the three-term Legendre recurrence; no
+    ordinate table is stored. The iteration is bounded at 200 sweeps per root
+    and reports non-convergence rather than returning an approximate node.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from scirel.numerics.modal_basis import gauss_legendre
+    >>> nodes, weights = gauss_legendre(2)
+    >>> np.allclose(nodes, [-1.0 / np.sqrt(3.0), 1.0 / np.sqrt(3.0)])
+    True
+    >>> np.allclose(weights, [1.0, 1.0])
+    True
     """
     if isinstance(order, bool) or not isinstance(order, int) or order < 1:
         raise ValueError("order must be a positive integer")
@@ -711,22 +740,58 @@ def modal_basis(kind="tensor", ndim=1, order=1):
 def project_on_modal_basis(kind, ndim, order, values):
     """Project values sampled on the basis's own Gauss rule onto the basis.
 
-    This is the end-to-end projection step: build the orthonormal basis, form
-    its tensor Gauss-Legendre rule, and apply the weighted inner product that
-    the orthonormality of the members makes a projection.
+    Parameters
+    ----------
+    kind : {"tensor", "serendipity"}
+        Basis family selector [1].
+    ndim : int
+        Reference-cell dimension [1], from 1 through 6.
+    order : int
+        Polynomial order per axis [1], at least 0.
+    values : array_like, shape ((order + 1) ** ndim,)
+        Samples at the nodes of the constructed basis's own tensor
+        Gauss-Legendre rule, ordered as returned by ``ModalBasis.quadrature``.
+        Values are interpreted in the field unit [field] and converted to
+        float64.
 
-    Args:
-        kind: ``tensor`` or ``serendipity``.
-        ndim: Reference-cell dimension, 1 through 6.
-        order: Polynomial order, at least 0.
-        values: Samples at the nodes of ``ModalBasis.quadrature()``, with shape
-            ``((order + 1) ** ndim,)``.
+    Returns
+    -------
+    coefficients : ndarray of float64, shape (num_basis,)
+        Modal coefficients of the L2 projection [field], in the basis member
+        order.
 
-    Returns:
-        Modal coefficient array of shape ``(num_basis,)``.
+    Raises
+    ------
+    TypeError
+        If a required parameter is missing.
+    ValueError
+        If ``kind``, ``ndim`` or ``order`` is outside its domain, if
+        ``values`` has the wrong shape or contains a non-finite value, or if
+        the underlying Gauss-Legendre root iteration does not converge.
 
-    Raises:
-        ValueError: If the basis is undefined or the sample shape disagrees.
+    See Also
+    --------
+    modal_basis : Construct the basis and its tensor Gauss-Legendre rule.
+    ModalBasis.project : Apply the projection to a basis already in hand.
+
+    Notes
+    -----
+    The function constructs the basis, obtains its tensor rule, and evaluates
+    the weighted inner product of the samples with every orthonormal member.
+    It applies no physical mesh, Jacobian, filtering, limiting, or positivity
+    correction.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from scirel.numerics.modal_basis import modal_basis, project_on_modal_basis
+    >>> basis = modal_basis("tensor", 2, 2)
+    >>> nodes, _ = basis.quadrature()
+    >>> expected = np.linspace(-1.0, 1.0, basis.num_basis)
+    >>> values = basis.expand(nodes, expected)
+    >>> coefficients = project_on_modal_basis("tensor", 2, 2, values)
+    >>> print("coefficients recovered within 1e-12:", bool(np.abs(coefficients - expected).max() < 1e-12))
+    coefficients recovered within 1e-12: True
     """
     basis = modal_basis(kind=kind, ndim=ndim, order=order)
     return basis.project(values)
