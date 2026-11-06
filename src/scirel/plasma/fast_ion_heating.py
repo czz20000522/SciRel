@@ -14,22 +14,54 @@ __all__ = ["fast_ion_fractional_heating"]
 def fast_ion_fractional_heating(birth_energy, T_e, fast_ion_mass):
     """Return the ion fraction for fast-ion birth energy.
 
-    Parameters are in keV (``birth_energy`` and ``T_e``) and amu
-    (``fast_ion_mass``).  Inputs must be finite and strictly positive except
-    ``birth_energy``, which may be zero.  Scalar or broadcastable arrays are
-    accepted; the result has the broadcast shape and is dimensionless.
+    Parameters
+    ----------
+    birth_energy : real scalar or array_like
+        Fast-ion birth energy [keV]. Finite and nonnegative.
+    T_e : real scalar or array_like
+        Electron temperature [keV]. Finite and strictly positive.
+    fast_ion_mass : real scalar or array_like
+        Fast-ion mass [amu]. Finite and strictly positive, broadcast-compatible
+        with the other inputs.
 
-    This evaluates the specified local Mikkelsen approximation
-    ``f_i = 2/x² integral_0^x t/(1+t³) dt``, with
-    ``x² = birth_energy/(10*fast_ion_mass*T_e)``. Numerical verification
-    supports this fixed relation, including its mathematical zero-energy
-    limit. Applicability to a particular plasma composition or collisional
-    regime and experimental calibration are not established here. This
-    function does not simulate trajectories or transport evolution.
+    Returns
+    -------
+    ion_fraction : float64 scalar or ndarray
+        Fraction of fast-ion heating deposited into ions [dimensionless], with
+        the broadcast input shape.
 
-    Raises ValueError for invalid inputs or incompatible broadcast shapes,
-    and FloatingPointError if the computed dimensionless ratio or result
-    is nonfinite. Finite dimensional inputs can still overflow that ratio.
+    Raises
+    ------
+    ValueError
+        If an input is nonfinite, outside its stated domain, or incompatible
+        for broadcasting.
+    FloatingPointError
+        If the dimensionless ratio or the final fraction is nonfinite.
+
+    See Also
+    --------
+    calculate_dd_neutron_lab_energy_kev : Evaluate a related fusion kinematics
+        relation.
+
+    Notes
+    -----
+    The local Mikkelsen approximation uses
+    ``x**2 = birth_energy / (10 * fast_ion_mass * T_e)`` and
+
+    .. math:: f_i = 2 / x^2 * integral_0^x t / (1 + t^3) dt.
+
+    The zero-energy limit is evaluated explicitly. Positive inputs use a
+    twelve-term series near the origin and the closed form elsewhere. The
+    result does not establish applicability to a particular plasma composition,
+    collisional regime, or experimental calibration, and it does not simulate
+    trajectories or transport.
+
+    Examples
+    --------
+    >>> from scirel.plasma.fast_ion_heating import fast_ion_fractional_heating
+    >>> assert fast_ion_fractional_heating(0.0, 10.0, 2.0) == 1.0
+    >>> value = fast_ion_fractional_heating(20.0, 4.0, 2.0)
+    >>> assert 0.0 < value < 1.0
     """
     E, Te, mass = np.broadcast_arrays(
         np.asarray(birth_energy, dtype=float),

@@ -141,16 +141,79 @@ def calculate_dd_neutron_lab_energy_kev(
 ):
     """Return the unique positive DD neutron energy along a laboratory ray.
 
-    The velocities are finite shape-(3,) vectors in cm/s.  The detector vector
-    points from the reaction to the detector in the same Cartesian frame and
-    must have unit norm within an absolute tolerance of 1e-12.  After that gate,
-    its direction is treated as an exact ray, independent of its accepted norm.
+    Parameters
+    ----------
+    reactant1_velocity_cm_s : array_like, shape (3,)
+        First deuteron velocity in the laboratory Cartesian frame [cm/s].
+        Finite and real.
+    reactant2_velocity_cm_s : array_like, shape (3,)
+        Second deuteron velocity in the same laboratory frame [cm/s]. Finite
+        and real.
+    detector_unit_vector : array_like, shape (3,)
+        Unit direction from the reaction point to the detector [dimensionless].
+        The Euclidean norm must be within ``1e-12`` of one; after that gate
+        its direction is treated as an exact ray.
 
-    A ray with no strictly positive laboratory speed, or with two distinct
-    positive speeds, raises ValueError.  A single positive tangent root is
-    accepted; a zero-speed neutron cannot reach the detector.  A finite positive
-    energy must be representable as a Python float.  No speed cutoff, branch
-    selector, angular weight or empirical energy clamp is applied.
+    Returns
+    -------
+    neutron_energy_kev : float
+        Unique positive neutron kinetic energy along the detector ray [keV].
+        The returned value is finite and strictly positive.
+
+    Raises
+    ------
+    ValueError
+        If an input is non-real, non-finite, not shape ``(3,)``, the detector
+        norm is outside the stated gate, the ray has no strictly positive
+        speed, the ray has two distinct positive speeds, or the selected
+        positive energy cannot be represented as a finite positive float.
+
+    See Also
+    --------
+    fast_ion_fractional_heating : Evaluate a local fast-ion heating partition.
+
+    Notes
+    -----
+    For deuteron velocities ``v1`` and ``v2``, let ``V=(v1+v2)/2`` and let
+    ``u`` be the centre-of-mass neutron speed obtained from the
+    non-relativistic two-body energy balance with the fixed D(d,n)3He mass and
+    Q value. Along a detector unit vector ``n``, the laboratory speed ``s``
+    satisfies ``|s n - V|^2 = u^2``. Only strictly positive roots reach the
+    detector. The function returns only when one distinct positive root
+    exists; a zero-speed tangent and two distinct positive roots are not
+    single-valued results. No angular weight, reaction rate, transport model
+    or empirical clamp is applied.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from scirel.fusion import calculate_dd_neutron_lab_energy_kev as energy
+    >>> def E(v1, v2, d=(1.0, 0.0, 0.0)):
+    ...     return energy(reactant1_velocity_cm_s=v1,
+    ...                   reactant2_velocity_cm_s=v2,
+    ...                   detector_unit_vector=d)
+    >>> assert E((0, 0, 0), (0, 0, 0)) == 2450.47589941598
+    >>> v1, v2 = (1.0e8, 0, 0), (5.0e7, 0, 0)
+    >>> assert E(v1, v2) > E(v1, v2, (-1, 0, 0)) > 0
+    >>> perpendicular = E((1.0e8, 0, 0), (1.0e8, 0, 0), (0, 1, 0))
+    >>> assert np.isclose(perpendicular, 2445.2488724565214, rtol=1e-12)
+    >>> tiny = (-2165199149.095298, 0, 0)
+    >>> assert 0 < E(tiny, tiny) < 1e-24
+    >>> assert np.isfinite(E((1.0e150, 0, 0), (0, 0, 0)))
+    >>> for d in ((1, 0, 0), (-1, 0, 0), (0, 1, 0)):
+    ...     try:
+    ...         E((3.0e9, 0, 0), (3.0e9, 0, 0), d)
+    ...     except ValueError:
+    ...         pass
+    ...     else:
+    ...         raise AssertionError('an ambiguous or unreachable ray must fail')
+    >>> for bad in ((2, 0, 0), np.array([1+1j, 0, 0])):
+    ...     try:
+    ...         E((0, 0, 0), (0, 0, 0), bad)
+    ...     except ValueError:
+    ...         pass
+    ...     else:
+    ...         raise AssertionError('the detector contract must be enforced')
     """
     v1, v2, direction = _validated_vectors(
         reactant1_velocity_cm_s, reactant2_velocity_cm_s, detector_unit_vector

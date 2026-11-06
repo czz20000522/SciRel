@@ -23,19 +23,63 @@ def _profile(value, name, n=None):
 def calculate_stored_thermal_energy(p_el, p_ion, p_tot, vpr, drho_norm):
     """Return ``(W_el, W_ion, W_tot)`` in joules.
 
-    Inputs are pressure cell profiles in pascals and the same positive
-    ``vpr * drho_norm`` cell-volume weights. Each pressure is
-    integrated independently as ``1.5 * sum(p * vpr * drho_norm)``; the
-    function does not impose a closure between total, electron and ion
-    pressure. Signed finite values preserve the algebraic relation;
-    physical stored thermal energy requires nonnegative thermal pressures.
-    All vectors are nonempty equal-length 1D real inputs (including integer
-    and float32/64), converted to float64, with no broadcasting or defaults.
-    The weighted sums use exact rational arithmetic on the converted binary64
-    inputs and round only the final energies. This retains small residuals of
-    signed cancellation and avoids intermediate product overflow/underflow.
-    A nonfinite or unrepresentable result raises ``ValueError`` or
-    ``FloatingPointError`` respectively.
+    Parameters
+    ----------
+    p_el : array_like, shape (N,)
+        Electron pressure profile [Pa]. Finite and real; signed values are
+        algebraically accepted.
+    p_ion : array_like, shape (N,)
+        Ion pressure profile [Pa], with the same length as ``p_el``.
+    p_tot : array_like, shape (N,)
+        Total pressure profile [Pa], with the same length as ``p_el``.
+    vpr : array_like, shape (N,)
+        Volume metric per normalized-radius unit [m^3]. Finite and strictly
+        positive.
+    drho_norm : array_like, shape (N,)
+        Cell quadrature widths [dimensionless]. Finite and strictly positive.
+
+    Returns
+    -------
+    W_el : float
+        Electron stored thermal energy [J].
+    W_ion : float
+        Ion stored thermal energy [J].
+    W_tot : float
+        Total stored thermal energy [J].
+
+    Raises
+    ------
+    ValueError
+        If an input is malformed, non-real, non-finite, missing, not
+        one-dimensional, unequal in length, or if a weight is nonpositive.
+    FloatingPointError
+        If a finite result is not representable as float64 or underflows to
+        zero.
+
+    See Also
+    --------
+    calculate_main_ion_dilution_factor : Evaluate a related local composition
+        diagnostic.
+
+    Notes
+    -----
+    Each pressure is integrated independently as
+
+    .. math:: W = 1.5 * sum_i(p_i * vpr_i * drho_i).
+
+    No closure between total, electron and ion pressure is imposed. The
+    weighted sums use exact rational arithmetic on the converted binary64
+    inputs and round only the final energies, preserving signed cancellation
+    without intermediate product overflow or underflow. Physical stored
+    thermal energy requires nonnegative thermal pressures.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from scirel.physics import calculate_stored_thermal_energy
+    >>> v=np.array([2.,3.]); d=np.array([.4,.6])
+    >>> r=calculate_stored_thermal_energy([2,2],[3,3],[5,5],v,d)
+    >>> assert np.allclose(r,(7.8,11.7,19.5))
     """
     v = _profile(vpr, "vpr")
     d = _profile(drho_norm, "drho_norm", v.size)
