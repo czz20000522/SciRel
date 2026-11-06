@@ -2133,8 +2133,8 @@
   },
   {
    "asset_id": "scirel.collisions.molecular-hydrogen-collision-matrices",
-   "source_sha256": "b61b2ab32887b1c17597e91fe14fac5f7e21e921c9ae83d351999e3a54aa1270",
-   "summary": "在圆柱归一化速度网格上组装电荷交换、两路动量传递和自碰撞应力矩阵。明确 H/D 实验室能量缩放；弹性矩阵保留符号，支持显式增加角节点以检查收敛。",
+   "source_sha256": "cc5195d465525dd29475e9e7d69758a48607b671453c13ce76ca52804ccc284c",
+   "summary": "在圆柱归一化速度网格上组装电荷交换、两路动量传递和自碰撞应力矩阵。明确 H/D 实验室能量缩放；弹性矩阵保留符号，支持显式增加角节点以检查收敛。顶层结果为 scirel._result.Result 映射；嵌套数组字段仍为普通 NumPy 数组。",
    "definition": "令 g²=vr_i²+vr_k²−2vr_i vr_k cosθ+(vx_j−vx_l)²，θ_m=π(m+1/2)/n_theta。矩阵列权重为 Vr2pidVr_k*dVx_l，Fortran 排序 row=i+nvr*j、col=k+nvr*l。CX 核为 <g σ_CX>，混合动量核为 (vx_j−vx_l)<g σ_mt>，自碰撞应力核为 <(g_perp²−2g_x²)g σ_vis>*3/8。Vth²=2Q*Tnorm/(mu*H_MASS)。分子 CX 拟合能量为 g²*2Tnorm/mu，H2-H 与 H2-P 为 g²*Tnorm/mu，自黏性为 g²*2Tnorm。",
    "model": "轴对称速度积分核；动量传递截面与黏性截面采用不同同位素缩放。",
    "assumptions": [
@@ -2268,17 +2268,18 @@
     "invalid_input": "非实数、非有限、形状不匹配、轴不递增、非法权重/归一化或 n_theta 时抛 ValueError。",
     "runtime_failure": "热速度、截面或矩阵不可表示为有限值时抛 ValueError；内存不足也不返回部分矩阵。",
     "nonconvergence": "有限中点求积，无自适应迭代；收敛由调用者检查。",
-    "partial_results": "不返回部分结果。"
+    "partial_results": "出错时不返回部分 scirel._result.Result 映射。"
    },
    "example": {
     "description": "构建两乘两速度网格，检查带符号矩阵及默认五点角几何。",
-    "expected": "四个有限的 4×4 矩阵；CX 非负，弹性矩保留负值；返回五角几何与热速度平方。"
+    "expected": "四个有限的 4×4 矩阵；CX 非负，弹性矩保留负值；返回五角几何与热速度平方。顶层结果为 scirel._result.Result 映射，十个字段仍为原数组。"
    },
    "verification": {
     "scope": [
      "独立几何与拟合对照沿用既有数值容差。",
      "H/D 四通道 4096 角中点结果与独立 SciPy 自适应积分比较；检查带权交换关系和共同 boost。",
-     "真实归一化分布生成矩和 Alpha，验证 H↔H2 动量交换、Maxwell 平衡动量与弱漂移。"
+     "真实归一化分布生成矩和 Alpha，验证 H↔H2 动量交换、Maxwell 平衡动量与弱漂移。",
+     "顶层 Result 类型及属性/键等价性已回归测试；嵌套数组字段仍为普通 NumPy 数组。"
     ],
     "evidence_ceiling": "支持声明的速度积分核与已测离散输入的一致性；不是所有能区的实验截面验证，也不构成完整物理资格。",
     "known_limitations": [
@@ -2530,8 +2531,8 @@
   },
   {
    "asset_id": "scirel.collisions.relativistic-maxwellian-bessel-closure",
-   "source_sha256": "271c49ae093063f45fe30b179af72cf5290c8c9a001d2fe9fe3cc0d3499b74f1",
-   "summary": "计算相对论背景 Maxwell 分支所需的三个指数缩放修正 Bessel 量：exp(x)K₀(x)、exp(x)K₁(x) 与 K₂ 递推。关系直接求值，不再使用 Abramowitz–Stegun 分段近似，从而消除近似在 x = 2 分支边界处的 1.5e-3 相对不连续，并从公共合同中移除分支选择器、分支标签和各分支精度元数据。每次被接受的调用都返回三个有限浮点数；若某个合法自变量无法由双精度后端给出这些值，则拒绝该调用，而不是返回非有限值。",
+   "source_sha256": "c0c4847be0dde35eef57f95122c195fa2d343df279e31bb3e8c88c2d688ee27f",
+   "summary": "计算相对论背景 Maxwell 分支所需的三个指数缩放修正 Bessel 量：exp(x)K₀(x)、exp(x)K₁(x) 与 K₂ 递推。关系直接求值，不再使用 Abramowitz–Stegun 分段近似，从而消除近似在 x = 2 分支边界处的 1.5e-3 相对不连续，并从公共合同中移除分支选择器、分支标签和各分支精度元数据。每次被接受的调用都返回三个有限浮点数；若某个合法自变量无法由双精度后端给出这些值，则拒绝该调用，而不是返回非有限值。顶层结果为 scirel._result.Result 映射；嵌套数组字段仍为普通 NumPy 数组。",
    "definition": "bk0=scipy.special.kve(0,x)，bk1=kve(1,x)，bk2=bk0+2bk1/x；三量计算后统一检查有限性，任一失败则整次拒绝。",
    "model": "指数缩放的第二类修正 Bessel 函数；无可选近似分支，bk2 是恒等递推而非第三套近似。",
    "assumptions": [
@@ -2593,11 +2594,11 @@
     "invalid_input": "当自变量不是严格正有限实数标量时抛出 InvalidBesselArgumentError（ValueError 的子类），包括布尔、字符串、字节、复数、更高秩数组和非数值输入；错误信息指明该自变量。异常类范围较窄，使调用者能区分自身错误与后端失败。",
     "runtime_failure": "合法 x 产生任一非有限量时引发 BesselBackendEvaluationError（ValueError 子类），报告 x 及三结果，不给伪造域阈值。",
     "nonconvergence": "不适用；没有迭代。",
-    "partial_results": "不返回部分结果。"
+    "partial_results": "不返回；被拒绝的调用不产生 scirel._result.Result 映射。"
    },
    "example": {
     "description": "比较 x=2 及低一 ulp，检查递推、有限输出和两异常类型。",
-    "expected": "x = 2 时的 bk0、bk1 和 bk2 分别等于 scipy.special.kve(0, 2)、kve(1, 2) 以及递推 bk0 + 2*bk1/2，且都是有限 Python 浮点数；近似在 x = 2 边界两侧的 bk1 相对差为 1.5076691838017936e-03，而直接求值的相应差为 8.59408144671376e-16；样本中每个被接受的自变量都返回三个有限浮点数；非正自变量抛出 InvalidBesselArgumentError，两类拒绝异常都是 ValueError 的子类。示例不对后端在何处停止返回有限值作任何主张，因为那是所安装 SciPy 的性质，而非关系的性质。"
+    "expected": "x = 2 时的 bk0、bk1 和 bk2 分别等于 scipy.special.kve(0, 2)、kve(1, 2) 以及递推 bk0 + 2*bk1/2，且都是有限 Python 浮点数；近似在 x = 2 边界两侧的 bk1 相对差为 1.5076691838017936e-03，而直接求值的相应差为 8.59408144671376e-16；样本中每个被接受的自变量都返回三个有限浮点数；非正自变量抛出 InvalidBesselArgumentError，两类拒绝异常都是 ValueError 的子类。示例不对后端在何处停止返回有限值作任何主张，因为那是所安装 SciPy 的性质，而非关系的性质。顶层结果为 scirel._result.Result 映射，bk0、bk1 和 bk2 仍为 Python float。"
    },
    "verification": {
     "scope": [
@@ -2615,7 +2616,8 @@
      "两类拒绝异常可区分，且均为 ValueError 子类，因此只捕获 ValueError 的调用者仍能捕获关系抛出的这些错误；由维护测试直接保护。",
      "输入合同要求严格的正有限实数标量：非正或非有限自变量抛出带名称的消息，布尔、字符串、字节、复数和更高秩数组输入抛出 InvalidBesselArgumentError，而不是被强制转换。此处直接针对公共可调用对象保护该行为；这一严格门禁是审计修复，不是保留路径的裸 float() 转换。",
      "在宽范围对数扫描中，每次接受的调用均返回三个有限 Python 浮点数。维护测试覆盖 4000 个自变量，并将后端拒绝视为合法结果而非测试失败。",
-     "缩放函数恒等关系、渐近形式以及 bk0、bk1 随 x 单调递减，由维护测试直接保护，不依赖上述任一路径的比较。"
+     "缩放函数恒等关系、渐近形式以及 bk0、bk1 随 x 单调递减，由维护测试直接保护，不依赖上述任一路径的比较。",
+     "顶层 Result 类型及属性/键等价性已回归测试；bk0、bk1 和 bk2 仍为 Python float。"
     ],
     "evidence_ceiling": "限于所声明关系：bk0=scipy.special.kve(0,x)，bk1=kve(1,x)，bk2=bk0+2bk1/x；三量计算后统一检查有限性，任一失败则整次拒绝。证据：test_relativistic_maxwellian_bessel.py（记录 15 个测试函数；绑定文件覆盖；独立解析/高精度对照）；合同 example 已运行。不建立的范围：针对某个分布、温度或相对论参数的物理精度声明；未缩放的 K_order(x)；它在关注范围内会下溢。",
     "known_limitations": [
@@ -4583,8 +4585,8 @@
   },
   {
    "asset_id": "scirel.collisions.atomic-hydrogen-collision-matrices",
-   "source_sha256": "8ad5f2c3e37d78cd8cfd92a159f8cb591d894a254bcc42467c2e099be5d3130a",
-   "summary": "在圆柱归一化速度网格上组装电荷交换、两路动量传递和自碰撞应力矩阵。明确 H/D 实验室能量缩放；弹性矩阵保留符号，支持显式增加角节点以检查收敛。",
+   "source_sha256": "ee379e3f446ad744f149cab5486dd02b4cbdfb0ef252cf766698f6495e84ac4d",
+   "summary": "在圆柱归一化速度网格上组装电荷交换、两路动量传递和自碰撞应力矩阵。明确 H/D 实验室能量缩放；弹性矩阵保留符号，支持显式增加角节点以检查收敛。顶层结果为 scirel._result.Result 映射；嵌套数组字段仍为普通 NumPy 数组。",
    "definition": "令 g²=vr_i²+vr_k²−2vr_i vr_k cosθ+(vx_j−vx_l)²，θ_m=π(m+1/2)/n_theta。矩阵列权重为 Vr2pidVr_k*dVx_l，Fortran 排序 row=i+nvr*j、col=k+nvr*l。CX 核为 <g σ_CX>，混合动量核为 (vx_j−vx_l)<g σ_mt>，自碰撞应力核为 <(g_perp²−2g_x²)g σ_vis>*3/8。Vth²=2Q*Tnorm/(mu*H_MASS)。原子 CX 和混合动量拟合能量为 g²*Tnorm/mu，自黏性为 g²*Tnorm。",
    "model": "轴对称速度积分核；动量传递截面与黏性截面采用不同同位素缩放。",
    "assumptions": [
@@ -4718,17 +4720,18 @@
     "invalid_input": "非实数、非有限、形状不匹配、轴不递增、非法权重/归一化或 n_theta 时抛 ValueError。",
     "runtime_failure": "热速度、截面或矩阵不可表示为有限值时抛 ValueError；内存不足也不返回部分矩阵。",
     "nonconvergence": "有限中点求积，无自适应迭代；收敛由调用者检查。",
-    "partial_results": "不返回部分结果。"
+    "partial_results": "出错时不返回部分 scirel._result.Result 映射。"
    },
    "example": {
     "description": "构建两乘两速度网格，检查带符号矩阵及默认五点角几何。",
-    "expected": "四个有限的 4×4 矩阵；CX 非负，弹性矩保留负值；返回五角几何与热速度平方。"
+    "expected": "四个有限的 4×4 矩阵；CX 非负，弹性矩保留负值；返回五角几何与热速度平方。顶层结果为 scirel._result.Result 映射，十个字段仍为原数组。"
    },
    "verification": {
     "scope": [
      "独立几何与拟合对照沿用既有数值容差。",
      "H/D 四通道 4096 角中点结果与独立 SciPy 自适应积分比较；检查带权交换关系和共同 boost。",
-     "真实归一化分布生成矩和 Alpha，验证 H↔H2 动量交换、Maxwell 平衡动量与弱漂移。"
+     "真实归一化分布生成矩和 Alpha，验证 H↔H2 动量交换、Maxwell 平衡动量与弱漂移。",
+     "顶层 Result 类型及属性/键等价性已回归测试；嵌套数组字段仍为普通 NumPy 数组。"
     ],
     "evidence_ceiling": "支持声明的速度积分核与已测离散输入的一致性；不是所有能区的实验截面验证，也不构成完整物理资格。",
     "known_limitations": [

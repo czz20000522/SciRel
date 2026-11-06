@@ -90,6 +90,8 @@ import math
 
 import numpy as np
 
+from scirel._result import Result
+
 __all__ = [
     "BesselBackendEvaluationError",
     "InvalidBesselArgumentError",
@@ -176,6 +178,10 @@ def relativistic_maxwellian_bessel(x):
         ``scalar``. The value is finite on every accepted call; a non-finite
         recurrence rejects the whole call.
 
+    The complete result is returned as one ``scirel._result.Result`` mapping. No nested
+    mapping or recursive wrapping is introduced, and non-colliding fields also support
+    attribute access.
+
     Raises
     ------
     InvalidBesselArgumentError
@@ -208,6 +214,7 @@ def relativistic_maxwellian_bessel(x):
     --------
     >>> import numpy as np
     >>> from scipy.special import kve
+    >>> from scirel._result import Result
     >>> from scirel.collisions import (
     ...     BesselBackendEvaluationError,
     ...     InvalidBesselArgumentError,
@@ -217,6 +224,8 @@ def relativistic_maxwellian_bessel(x):
     >>> below = float(np.nextafter(boundary, -np.inf))
     >>> at = relativistic_maxwellian_bessel(boundary)
     >>> near = relativistic_maxwellian_bessel(below)
+    >>> assert isinstance(at, Result)
+    >>> assert at.bk0 == at['bk0']
     >>> assert set(at) == {'bk0', 'bk1', 'bk2'}
     >>> assert all(type(value) is float for value in at.values())
     >>> assert all(np.isfinite(value) for value in at.values())
@@ -248,4 +257,4 @@ def relativistic_maxwellian_bessel(x):
             f"scipy.special.kve did not return a finite closure for x={value!r}: "
             f"bk0={bk0!r}, bk1={bk1!r}, bk2={bk2!r}"
         )
-    return {"bk0": bk0, "bk1": bk1, "bk2": bk2}
+    return Result({"bk0": bk0, "bk1": bk1, "bk2": bk2})
