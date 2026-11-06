@@ -48,6 +48,7 @@ ERROR = re.compile(r"\b([A-Z][A-Za-z]*(?:Error|Exception|Warning|Failure))\b")
 
 sys.path.insert(0, str(ROOT / "scripts"))
 from code_digest import source_digest  # noqa: E402
+from public_api_binding import contract_default, format_signature  # noqa: E402
 
 
 def sections(doc: str) -> dict[str, str]:
@@ -151,8 +152,9 @@ def check(asset: dict, root: Path = ROOT) -> list[str]:
             signature = _mapping_signature(document, obj) or signature
         except (ImportError, KeyError, OSError, ValueError) as error:
             fail(str(error))
-    if api["signature"] != f"{api['symbol']}{live_signature}":
-        fail(f"public_api.signature {api['signature']!r} != live {api['symbol']}{live_signature}")
+    live_signature_text = f"{api['symbol']}{format_signature(live_signature)}"
+    if api["signature"] != live_signature_text:
+        fail(f"public_api.signature {api['signature']!r} != live {live_signature_text}")
     params = [p for p in signature.parameters.values()]
     direct_params = [p for p in params if p.kind not in (p.VAR_KEYWORD, p.VAR_POSITIONAL)]
     inputs = document["inputs"]
@@ -168,14 +170,13 @@ def check(asset: dict, root: Path = ROOT) -> list[str]:
                     fail(
                         f"input {p.name}: contract required={port.get('required')} but signature says {required}"
                     )
-                if (
-                    not required
-                    and "default" in port
-                    and _json_value(port["default"]) != _json_value(p.default)
-                ):
-                    fail(
-                        f"input {p.name}: contract default {port['default']!r} != signature {p.default!r}"
-                    )
+                if not required and "default" in port:
+                    runtime_default = contract_default(p.default)
+                    if _json_value(port["default"]) != _json_value(runtime_default):
+                        fail(
+                            f"input {p.name}: contract default {port['default']!r} "
+                            f"!= signature {runtime_default!r}"
+                        )
 
     doc = inspect.getdoc(obj) or ""
     parts = sections(doc)

@@ -1883,7 +1883,7 @@
   },
   {
    "asset_id": "scirel.geometry.axisymmetric-equilibrium-grid-support",
-   "source_sha256": "58740b8bfb435874b2d57a4117b96e6424cf332777eb53d553e95df78798cc04",
+   "source_sha256": "dac7de0723ec48e824e6ce2ece18bf4be4cc15003d67ee7169d376f37972f65a",
    "summary": "在一次调用中，用有序 DAG 把轴对称平衡重构到笛卡尔求解网格，并对该网格分类材料支撑；组合了映射关系和材料支撑关系两个依赖。",
    "definition": "先重构静场与极向磁通，构造目标柱坐标，从平衡映射读取分界磁通与所选侧，再用这些参数和重构磁通分类支撑。",
    "model": "张量积平衡重构与几何材料分类的组合，不执行场求解。",
@@ -1936,6 +1936,18 @@
      "description": "调用者PEC掩码。",
      "constraints": "与求解网格同形。",
      "dtype": "布尔类数组"
+    },
+    {
+     "name": "equilibrium_grid_mapping",
+     "description": "把平衡重构到求解网格的映射关系，默认使用已命名的轴对称网格映射。",
+     "constraints": "仅限关键字；必须保持所绑定映射关系的输入输出合同。",
+     "dtype": "Python callable"
+    },
+    {
+     "name": "material_support_classification",
+     "description": "映射之后使用的材料支撑分类关系，默认使用已命名的材料支撑分类器。",
+     "constraints": "仅限关键字；必须保持所绑定材料支撑关系的输入输出合同。",
+     "dtype": "Python callable"
     }
    ],
    "outputs": [
@@ -2007,7 +2019,7 @@
     ]
    },
    "failure_semantics": {
-    "invalid_input": "inputs非映射、七个所需输入缺失、equilibrium非映射或缺两分类参数时ValueError；依赖验证错误原样传播，由责任关系指出失败参数。",
+    "invalid_input": "缺少必需顶层参数、仍传已删除的 inputs mapping 或传未知关键字时由 Python 抛 TypeError；equilibrium 非映射或缺两个分类参数时抛 ValueError；两依赖的验证失败原样传播，由责任关系指出失败参数。",
     "runtime_failure": "依赖失败会立即中止并向上传播，不替换实现、不重试。",
     "nonconvergence": "有序DAG，没有反馈循环。",
     "partial_results": "节点失败不返回部分结果。"
@@ -2018,18 +2030,18 @@
    },
    "verification": {
     "scope": [
-     "六个输出与把映射关系和材料支撑关系直接作用于相同输入所得的结果精确一致。",
+     "八个输出与把映射关系和材料支撑关系直接作用于相同输入所得结果在键序、形状、dtype 和值上精确一致。",
      "记录调用器证实只绑定两个声明依赖。",
-     "拒绝未知组合关键字及缺必需输入。",
+     "已删除的 inputs mapping、未知关键字和缺必需顶层参数均由 Python 抛 TypeError；无效 equilibrium 仍抛 ValueError。",
      "图的导入情况，以及运行期不读取任何文件或配置。",
      "声明依赖闭包与节点相符，全部输入输出连通。",
      "分类参数原样转发；改变参数可移动支撑而重构输出不变。",
      "坐标连接与重构覆盖掩码一致。"
     ],
-    "evidence_ceiling": "限于所声明关系：先重构静场与极向磁通，构造目标柱坐标，从平衡映射读取分界磁通与所选侧，再用这些参数和重构磁通分类支撑。证据：test_composition_axisymmetric_equilibrium_grid_support.py（记录 16 个测试函数；绑定文件覆盖；仅自洽/回归）；合同 example 已运行。不建立的范围：不求场、波传播或等离子体响应；不支持非轴对称平衡。",
+    "evidence_ceiling": "限于所声明关系：先重构静场与极向磁通，构造目标柱坐标，从平衡映射读取分界磁通与所选侧，再用这些参数和重构磁通分类支撑。证据：test_composition_axisymmetric_equilibrium_grid_support.py（记录 8 个测试函数；绑定文件覆盖；仅自洽/回归）；合同 example 已运行。不建立的范围：不求场、波传播或等离子体响应；不支持非轴对称平衡。",
     "known_limitations": [
      "继承两依赖限制，包括域外裁边及最小半径代理磁轴。",
-     "两个诊断掩码是六个声明输出之外的附加项，按输出键集合比较的调用者必须把它们考虑在内。",
+     "两个诊断掩码是六个主要数据输出之外的附加项，按输出键集合比较的调用者必须把它们考虑在内。",
      "设计无反馈，需从重构场反求平衡的任务不在范围。",
      "未记录独立或外部 oracle；证据仅为自洽/回归。"
     ]

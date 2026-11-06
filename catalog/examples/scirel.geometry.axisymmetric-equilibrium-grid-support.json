@@ -106,6 +106,26 @@
    "dtype": "bool array-like",
    "required": true,
    "constraints": "Must match the solver grid shape."
+  },
+  {
+   "name": "equilibrium_grid_mapping",
+   "description": "Mapping relation used to reconstruct the static field and poloidal flux, defaulting to the named axisymmetric grid mapping.",
+   "units": "dimensionless",
+   "shape": "callable",
+   "dtype": "Python callable",
+   "required": false,
+   "default": "scirel.geometry.axisymmetric_grid_mapping.map_axisymmetric_equilibrium_to_cartesian_grid",
+   "constraints": "Keyword-only; must preserve the bound mapping relation input and output contract."
+  },
+  {
+   "name": "material_support_classification",
+   "description": "Classification relation used after mapping, defaulting to the named material-support classifier.",
+   "units": "dimensionless",
+   "shape": "callable",
+   "dtype": "Python callable",
+   "required": false,
+   "default": "scirel.geometry.material_support.classify_material_support",
+   "constraints": "Keyword-only; must preserve the bound material-support input and output contract."
   }
  ],
  "outputs": [
@@ -201,7 +221,7 @@
   ]
  },
  "failure_semantics": {
-  "invalid_input": "Raises ValueError when inputs is not a mapping, when any of the seven required inputs is missing, when equilibrium is not a mapping, or when the equilibrium mapping does not carry the two classification parameters. Validation failures of either bound relation propagate unchanged, so the failing parameter is named by the relation that owns it.",
+  "invalid_input": "Raises TypeError when a required top-level parameter is missing, the removed inputs mapping is supplied, or an unknown keyword is supplied. Raises ValueError when equilibrium is not a mapping or does not carry the two classification parameters. Validation failures of either bound relation propagate unchanged, so the failing parameter is named by the relation that owns it.",
   "runtime_failure": "A dependency failure aborts the graph and propagates; no fallback implementation is selected and no retry is attempted.",
   "nonconvergence": "Not applicable; this TaskGraph is an ordered DAG with no feedback loop.",
   "partial_results": "No partial result is returned after a node failure."
@@ -210,7 +230,7 @@
   "python": {
    "module": "scirel.geometry.axisymmetric_equilibrium_grid_support",
    "symbol": "solve_axisymmetric_equilibrium_grid_mapping",
-   "signature": "solve_axisymmetric_equilibrium_grid_mapping(inputs=None, **kwargs)",
+   "signature": "solve_axisymmetric_equilibrium_grid_mapping(equilibrium, x_m, y_m, z_m, xpoint_half_length_m, pml_cells, pec_mask, *, equilibrium_grid_mapping=scirel.geometry.axisymmetric_grid_mapping.map_axisymmetric_equilibrium_to_cartesian_grid, material_support_classification=scirel.geometry.material_support.classify_material_support)",
    "canonical_module": "scirel.geometry",
    "canonical_symbol": "solve_axisymmetric_equilibrium_grid_mapping"
   }
@@ -228,15 +248,15 @@
  },
  "example": {
   "description": "Compose equilibrium mapping and material-support classification on a synthetic 9x9x7 solver grid, checking every returned output mask and count.",
-  "code": "import numpy as np\nfrom scirel.geometry import solve_axisymmetric_equilibrium_grid_mapping\nr_axis = np.linspace(0.05, 1.0, 21)\nz_axis = np.linspace(-0.5, 0.5, 21)\nrr, zz = np.meshgrid(r_axis, z_axis, indexing='ij')\nequilibrium = {\n    'r_m': r_axis,\n    'z_m': z_axis,\n    'psi_wb_per_rad': 0.9 * rr + 0.1 * np.sin(2.0 * np.pi * zz),\n    'br_t': 0.3 * rr - 0.1 * zz ** 2,\n    'bz_t': 1.0 - 0.4 * rr ** 2,\n    'separatrix_flux_wb_per_rad': 0.4,\n    'closed_flux_side': 'less_than',\n}\nresult = solve_axisymmetric_equilibrium_grid_mapping(inputs={\n    'equilibrium': equilibrium,\n    'x_m': np.linspace(-0.5, 0.5, 9),\n    'y_m': np.linspace(-0.5, 0.5, 9),\n    'z_m': np.linspace(-0.4, 0.4, 7),\n    'xpoint_half_length_m': 0.2,\n    'pml_cells': 1,\n    'pec_mask': np.zeros((9, 9, 7), dtype=bool),\n})\nassert result['magnetic_flux_density_t'].shape == (9, 9, 7, 3)\nassert result['poloidal_flux_wb_per_rad'].shape == (9, 9, 7)\nassert result['covered_mask'].sum() == 560\nassert result['material_support_mask'].sum() > 0\nassert result['closed_flux_mask'].sum() >= result['material_support_mask'].sum()\nassert result['axis_segment_mask'].sum() == 0\nassert result['radially_clamped_point_count'] == 0\nassert result['axially_clamped_point_count'] == 0\nassert not result['material_support_mask'][0, :, :].any()\nassert not result['material_support_mask'][:, :, -1].any()",
+  "code": "import numpy as np\nfrom scirel.geometry import solve_axisymmetric_equilibrium_grid_mapping\nr_axis = np.linspace(0.05, 1.0, 21)\nz_axis = np.linspace(-0.5, 0.5, 21)\nrr, zz = np.meshgrid(r_axis, z_axis, indexing='ij')\nequilibrium = {\n    'r_m': r_axis,\n    'z_m': z_axis,\n    'psi_wb_per_rad': 0.9 * rr + 0.1 * np.sin(2.0 * np.pi * zz),\n    'br_t': 0.3 * rr - 0.1 * zz ** 2,\n    'bz_t': 1.0 - 0.4 * rr ** 2,\n    'separatrix_flux_wb_per_rad': 0.4,\n    'closed_flux_side': 'less_than',\n}\nresult = solve_axisymmetric_equilibrium_grid_mapping(\n    equilibrium,\n    np.linspace(-0.5, 0.5, 9),\n    np.linspace(-0.5, 0.5, 9),\n    np.linspace(-0.4, 0.4, 7),\n    0.2,\n    1,\n    np.zeros((9, 9, 7), dtype=bool),\n)\nassert result['magnetic_flux_density_t'].shape == (9, 9, 7, 3)\nassert result['poloidal_flux_wb_per_rad'].shape == (9, 9, 7)\nassert result['covered_mask'].sum() == 560\nassert result['material_support_mask'].sum() > 0\nassert result['closed_flux_mask'].sum() >= result['material_support_mask'].sum()\nassert result['axis_segment_mask'].sum() == 0\nassert result['radially_clamped_point_count'] == 0\nassert result['axially_clamped_point_count'] == 0\nassert not result['material_support_mask'][0, :, :].any()\nassert not result['material_support_mask'][:, :, -1].any()",
   "expected": "The finite field and flux have the declared shapes, 560 points are covered, support excludes solver-box faces, and the innermost-radius segment is empty."
  },
  "verification": {
   "scope": [
-   "Exact agreement of the six outputs with the mapping and material-support relations applied directly to the same inputs.",
+   "Exact agreement of all eight outputs with the mapping and material-support relations applied directly to the same inputs, preserving key order, shapes, dtypes and values.",
    "Binding of exactly the two declared dependencies, verified by injected recording callables.",
-   "Rejection of unknown composition keywords and of a missing required input.",
-   "The graph's imports, and the absence of any file or configuration read at run time.",
+   "Python TypeError rejection of the removed inputs mapping, an unknown keyword and a missing required top-level parameter, while invalid equilibrium values retain their ValueError behavior.",
+   "The graph imports, and the absence of any file or configuration read at run time.",
    "The declared dependency closure against the graph's own nodes, and the connectivity of every declared input and output.",
    "Forwarding of the classification parameters from the equilibrium mapping verbatim, verified by moving the support mask while the mapping outputs stay fixed.",
    "Agreement between the coordinate glue and the mapping relation's own coverage mask."
@@ -244,10 +264,10 @@
   "tests": [
    "tests/cross_domain/axisymmetric_equilibrium_grid_support/test_composition_axisymmetric_equilibrium_grid_support.py"
   ],
-  "evidence_ceiling": "Bounded to the declared relation: Reconstructs the static field and the poloidal flux on the solver grid, builds the cylindrical coordinates of that grid, reads the separatrix flux and the selected flux-surface side off the caller's equilibrium mapping, and classifies material support from…. Evidence: test_composition_axisymmetric_equilibrium_grid_support.py (16 recorded test functions; bound-file coverage; self-consistency/regression only); the contract example ran. Excluded scope: Field solves, wave propagation, and plasma response; Non-axisymmetric equilibria.",
+  "evidence_ceiling": "Bounded to the declared relation: Reconstructs the static field and the poloidal flux on the solver grid, builds the cylindrical coordinates of that grid, reads the separatrix flux and the selected flux-surface side off the caller's equilibrium mapping, and classifies material support from…. Evidence: test_composition_axisymmetric_equilibrium_grid_support.py (8 recorded test functions; bound-file coverage; self-consistency/regression only); the contract example ran. Excluded scope: Field solves, wave propagation, and plasma response; Non-axisymmetric equilibria.",
   "known_limitations": [
    "The composition inherits both dependencies' limitations, including the clamped out-of-box policy and the innermost-radius proxy for the magnetic axis.",
-   "The two diagnostic masks are additions beyond the six declared outputs, so a caller comparing output key sets must account for them.",
+   "The two diagnostic masks are additions beyond the six primary data outputs, so a caller comparing output key sets must account for them.",
    "The graph has no feedback loop by design, so an equilibrium that would need to be re-derived from the reconstructed field is out of scope.",
    "No independent or external oracle is recorded; the evidence is self-consistency/regression only."
   ]
@@ -277,7 +297,8 @@
      "equilibrium",
      "x_m",
      "y_m",
-     "z_m"
+     "z_m",
+     "equilibrium_grid_mapping"
     ],
     "outputs": [
      "magnetic_flux_density_t",
@@ -313,7 +334,8 @@
      "closed_flux_side",
      "xpoint_half_length_m",
      "pml_cells",
-     "pec_mask"
+     "pec_mask",
+     "material_support_classification"
     ],
     "outputs": [
      "material_support_mask",
@@ -697,11 +719,41 @@
     "transform": "Identity.",
     "kind": "data",
     "required": true
+   },
+   {
+    "from": {
+     "node": "$input",
+     "port": "equilibrium_grid_mapping"
+    },
+    "to": {
+     "node": "equilibrium_grid_mapping",
+     "port": "equilibrium_grid_mapping"
+    },
+    "description": "Optional replacement for the mapping relation, or its declared default.",
+    "condition": "Always; the default is bound when the caller omits the override.",
+    "transform": "Identity.",
+    "kind": "control",
+    "required": false
+   },
+   {
+    "from": {
+     "node": "$input",
+     "port": "material_support_classification"
+    },
+    "to": {
+     "node": "material_support_classification",
+     "port": "material_support_classification"
+    },
+    "description": "Optional replacement for the material-support relation, or its declared default.",
+    "condition": "Always; the default is bound when the caller omits the override.",
+    "transform": "Identity.",
+    "kind": "control",
+    "required": false
    }
   ],
   "execution": {
    "mode": "ordered_dag_composition",
-   "ordering": "Validate the caller's declarations, reconstruct the static field and poloidal flux on the solver grid, build the cylindrical coordinates of that grid, read the classification parameters off the equilibrium mapping, classify material support from the reconstructed flux and those parameters, and return.",
+   "ordering": "Resolve the explicit dependency overrides or their defaults, validate the caller's declarations, reconstruct the static field and poloidal flux on the solver grid, build the cylindrical coordinates of that grid, read the classification parameters off the equilibrium mapping, classify material support from the reconstructed flux and those parameters, and return.",
    "branches": [],
    "state_ownership": "The caller owns the equilibrium mapping, the grid axes, the PEC mask, and every returned array; the graph owns only the two coordinate arrays it builds for the current call and retains no mutable state between calls.",
    "failure_propagation": "Validation or dependency failure aborts the call immediately; no fallback, retry, or partial result is produced.",
