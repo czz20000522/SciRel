@@ -310,7 +310,7 @@ Freeman 分支在低能端比默认值高约 15%，到 100 keV 又低约 17%，�
    K = vr^2 - 2 (vx - u)^2
    W = sum(w f K) / n
 
-混合通道的分母是 ``(U - U_background)/Vth``，自碰撞通道的分母是 ``W``；``Omega = N/d``，``nu = Vth * Omega``。分母为零时，合同返回 ``NaN``、``defined=False``，但保留有限的碰撞矩；负比值保留并标记为 ``negative_no_bgk_closure``，不设下限、不截正。总频率是启用通道之和，任何一个启用通道未定义都会传播到总和。
+混合通道的分母是 ``(U - U_background)/Vth``，自碰撞通道的分母是 ``W``；``Omega = N/d``，``nu = Vth * Omega``。分母为零时，合同返回 ``NaN``、``defined=False``，但保留有限的碰撞矩；负比值保留并标记为 ``negative_no_bgk_closure``，不设下限、不截正、不取绝对值。分母满足 ``abs(d) <= 8 * eps * max(vx.max() - vx.min(), 1)``（含精确零）时标记为 ``near_equilibrium_ill_conditioned_denominator``，显式未定义。``Omega_EL`` 是异质诊断和，不是单一物理总碰撞频率；任一启用通道未定义都会传播 NaN。
 
 .. code-block:: python
 
@@ -378,9 +378,9 @@ Freeman 分支在低能端比默认值高约 15%，到 100 keV 又低约 17%，�
 
 ``VxH`` 是该单元原子氢的平均轴向速度，约 ``5.54e3`` m/s。``Wperp_paraH`` 是选定的中央应力（垂直减两倍轴向二阶矩），它是带符号量，约 ``-0.223``；负值不代表计算失败，也不能当方差解释。
 
-在这个算例中，H–H⁺ 混合通道的 ``Omega`` 约 ``0.153`` m^-1，``nu`` 约 ``6.70e3`` s^-1；H–H₂ 和 H–H 通道小得多；三通道总 ``nu`` 约 ``6.84e3`` s^-1。三个通道的 ``status`` 都是 ``finite_nonnegative``，说明分母非零且比值非负。
+在这个算例中，H–H⁺ 混合通道的 ``Omega`` 约 ``0.153`` m^-1，``nu`` 约 ``6.70e3`` s^-1；H–H₂ 和 H–H 通道小得多；三通道总 ``nu`` 约 ``6.84e3`` s^-1。三个通道的 ``status`` 都是 ``finite_nonnegative``，说明分母超过声明的病态边界且比值非负。
 
-最后一个调用故意把背景流速度设成与实际平均流一致，使混合通道的分母为零。结果 ``Omega_H_P`` 是 ``nan``、``defined=False``、状态为 ``undefined_zero_denominator``，但 ``moment_H_P`` 仍返回有限的 ``-6.376374e-03``。这正说明“频率未定义”和“碰撞矩不存在”不是一回事；也不能把 ``NaN`` 当成零碰撞。
+最后一个调用故意把背景流速度设成与实际平均流一致，使混合通道的分母为零。结果 ``Omega_H_P`` 是 ``nan``、``defined=False``、状态为 ``near_equilibrium_ill_conditioned_denominator``，但 ``moment_H_P`` 仍返回有限的 ``-6.376374e-03``。这正说明“频率未定义”和“碰撞矩不存在”不是一回事；也不能把 ``NaN`` 当成零碰撞。
 
 这一节不能推出：这是矩匹配的局部归约，不是完整 Boltzmann 碰撞算子；有限速度/角网格不保证精确 Maxwell 平衡；负比值虽然被保留，但不构成可接受的非负 BGK 松弛；单单元结果不能替代空间耦合、时间推进或收敛研究。
 
@@ -451,7 +451,7 @@ Freeman 分支在低能端比默认值高约 15%，到 100 keV 又低约 17%，�
 - 质量约定：碰撞能量按 ``particle_mass_amu`` 构造，不是约化质量；不要通过改质量来“补偿”模型差异。
 - 展平顺序：SIG 按 Fortran 顺序组装，Alpha 必须按 ``order='F'`` 收缩；C 顺序会产生可观察的数值错误。
 - 带符号中间量：弹性核和部分 Alpha 有负值，合同要求保留；截正会改变模型。
-- 未定义不是零：零分母给出 ``NaN`` 和 ``defined=False``；负比值有单独状态，不应被静默丢弃。
+- 未定义不是零：精确零或病态边界内的分母给出 ``NaN``、``defined=False`` 和 ``near_equilibrium_ill_conditioned_denominator``；负比值有单独状态，不应被静默丢弃。
 
 本章没有展开的入口，以及原因：
 

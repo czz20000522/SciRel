@@ -2,8 +2,11 @@
 
 SIG includes the target velocity quadrature, but not Vth. Therefore Alpha and
 Omega have units m^-1. This is a moment-matched BGK approximation, not the full
-Boltzmann collision operator. Undefined quotients are explicitly represented;
-the underlying collision moments remain available.
+Boltzmann collision operator. The quotient is never floored, clipped or made
+absolute. A finite denominator at or below the declared binary64 conditioning
+boundary and an exact zero denominator are both explicitly undefined; negative
+quotients keep their sign and are diagnostic no-BGK states. The underlying
+collision moments remain available.
 """
 
 from __future__ import annotations
@@ -141,6 +144,15 @@ def reduce_elastic_moments(
         stress[target_cells] = (integral((f - target) * kernel) / density)[target_cells]
     elif target_distribution is not None:
         raise ValueError("target_distribution supplied without a target-state cell")
+    # The declared conditioning reference is the caller velocity span (at
+    # least one dimensionless unit).  At the boundary |d| = 8*eps*scale, the
+    # implied relative size of one binary64 reciprocal step is at most
+    # 1/(8*eps); below it the quotient is classified as numerically
+    # ill-conditioned rather than presented as a physical rate.  This rule
+    # classifies undefinedness only; it does not floor, clip or regularize
+    # the signed ratio.
+    denominator_scale = max(float(np.max(vx) - np.min(vx)), 1.0)
+    conditioning_boundary = 8.0 * np.finfo(float).eps * denominator_scale
     with np.errstate(over="ignore", invalid="ignore", divide="ignore"):
         # SIG is column-weighted in Fortran velocity order.  Keep each
         # spatial cell as an m-by-1 matrix-vector product while broadcasting
@@ -162,16 +174,17 @@ def reduce_elastic_moments(
         zip(names, enabled, numerators, denominators)
     ):
         moment = numerator if on else np.zeros(nx)
-        defined = denominator != 0 if on else np.ones(nx, dtype=bool)
+        finite_denominator = (
+            np.abs(denominator) > conditioning_boundary if on else np.ones(nx, dtype=bool)
+        )
         omega = np.zeros(nx) if not on else np.full(nx, np.nan)
         if on:
-            with np.errstate(over="ignore", invalid="ignore", divide="ignore"):
-                np.divide(moment, denominator, out=omega, where=defined)
-        status = np.full(nx, "disabled", dtype="<U32")
+            omega[finite_denominator] = moment[finite_denominator] / denominator[finite_denominator]
+        status = np.full(nx, "disabled", dtype="<U48")
         if on:
-            status[:] = "undefined_zero_denominator"
-            status[defined & (omega >= 0)] = "finite_nonnegative"
-            status[defined & (omega < 0)] = "negative_no_bgk_closure"
+            status[:] = "near_equilibrium_ill_conditioned_denominator"
+            status[finite_denominator & (omega >= 0)] = "finite_nonnegative"
+            status[finite_denominator & (omega < 0)] = "negative_no_bgk_closure"
         with np.errstate(over="ignore", invalid="ignore"):
             nu = vth * omega
             # Physical acceleration (mixed) or central stress derivative (self).
@@ -181,21 +194,21 @@ def reduce_elastic_moments(
         if (
             not np.all(np.isfinite(moment))
             or not np.all(np.isfinite(physical_moment))
-            or not np.all(np.isfinite(omega[defined]))
-            or not np.all(np.isfinite(nu[defined]))
+            or not np.all(np.isfinite(omega[finite_denominator]))
+            or not np.all(np.isfinite(nu[finite_denominator]))
         ):
-            raise ValueError("elastic moment/rate is not representable")
+            raise FloatingPointError("Omega channel result is not representable")
         result.update(
             {
                 f"Omega_{name}": omega,
                 f"nu_{name}": nu,
                 f"moment_{name}": moment,
                 f"moment_rate_{name}": physical_moment,
-                f"defined_{name}": defined,
+                f"defined_{name}": finite_denominator,
                 f"status_{name}": status,
             }
         )
-        all_defined &= defined
+        all_defined &= finite_denominator
         omegas.append(omega)
     result["Omega_EL"] = sum(omegas)
     result["nu_EL"] = vth * result["Omega_EL"]
@@ -208,5 +221,7 @@ def reduce_elastic_moments(
         result["nu_EL"][all_defined],
     )
     if any(not np.all(np.isfinite(v)) for v in finite_core):
-        raise ValueError("elastic reduction produced an unrepresentable result")
+        raise FloatingPointError(
+            "elastic diagnostic aggregate derived from finite channels is not representable"
+        )
     return result

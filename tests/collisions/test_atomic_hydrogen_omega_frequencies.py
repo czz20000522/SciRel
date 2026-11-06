@@ -233,7 +233,7 @@ def test_zero_denominator_returns_moment_and_propagates_unknown(op, names, flow,
         assert np.isnan(q["Omega_" + name]).all()
         assert np.isnan(q["nu_" + name]).all()
         assert not q["defined_" + name].any()
-        assert (q["status_" + name] == "undefined_zero_denominator").all()
+        assert (q["status_" + name] == "near_equilibrium_ill_conditioned_denominator").all()
         assert getattr(q, "Omega_" + name) is q["Omega_" + name]
         assert getattr(q, "defined_" + name) is q["defined_" + name]
         assert getattr(q, "status_" + name) is q["status_" + name]

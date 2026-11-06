@@ -142,8 +142,12 @@ def assemble_molecular_hydrogen_omega_frequencies(
     ValueError
         If carrier shapes are inconsistent, data are non-real or non-finite,
         distributions are negative, density or weights are nonpositive, axes are
-        not increasing, channel flags are not booleans, target invariants fail, or
-        a required moment or frequency is not representable as a finite float64.
+        not increasing, channel flags are not booleans, or target invariants fail.
+    FloatingPointError
+        If a collision moment, moment rate, finite enabled frequency or finite
+        diagnostic aggregate derived from finite inputs is not representable as
+        float64. Non-representable values are neither returned as inf/nan nor
+        silently treated as truncated.
 
     See Also
     --------
@@ -160,10 +164,14 @@ def assemble_molecular_hydrogen_omega_frequencies(
     ``fH2`` and a target distribution that conserves particle number, mean
     velocity and total kinetic energy in the same cell. Mixed-channel denominators
     are normalized background-flow differences. No floor or positivity clipping
-    is applied: a zero denominator yields NaN with ``defined = False`` while the
-    finite moment is retained. Negative ratios are kept with
-    ``negative_no_bgk_closure``. Grid convergence remains the caller's
-    responsibility.
+    is applied. A finite denominator with
+    ``abs(d) <= 8 * eps * max(vx.max() - vx.min(), 1)`` and an exact zero
+    denominator yield NaN with ``defined = False`` and the
+    ``near_equilibrium_ill_conditioned_denominator`` status while the finite
+    moment is retained. Negative ratios are kept with
+    ``negative_no_bgk_closure``. ``Omega_EL`` is a heterogeneous diagnostic sum,
+    not a single physical total collision frequency. Grid convergence remains the
+    caller's responsibility.
 
     Examples
     --------

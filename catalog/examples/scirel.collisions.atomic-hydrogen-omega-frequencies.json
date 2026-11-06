@@ -5,7 +5,7 @@
   "en": "Atomic hydrogen elastic Omega aggregation",
   "zh": "原子氢弹性碰撞矩与局部松弛系数"
  },
- "summary": "Reduce atomic-hydrogen elastic collision momentum and stress moments independently in each spatial cell, returning normalized coefficients Omega (m^-1), physical frequencies nu (s^-1) and their definedness. A zero denominator retains the collision moment and returns an explicitly undefined frequency; no artificial floor or positive clipping hides it. The complete result is returned as one scirel._result.Result mapping; mapping access is retained and non-colliding fields also support attribute access.",
+ "summary": "Reduce atomic-hydrogen elastic collision momentum and stress moments independently in each spatial cell, returning normalized coefficients Omega (m^-1), physical frequencies nu (s^-1) and explicit status semantics. A denominator at or below the declared scale-aware conditioning boundary, including exact zero, retains the collision moment and is explicitly undefined; no floor, clipping or absolute value hides it. Omega_EL is a heterogeneous diagnostic sum, not a single physical total collision frequency. The complete result is returned as one scirel._result.Result mapping; mapping access is retained and non-colliding fields also support attribute access.",
  "taxonomy": [
   "collisions",
   "atomic-hydrogen",
@@ -26,24 +26,24 @@
   ],
   "model": "Moment-matched BGK approximation for momentum and stress; not the full Boltzmann collision operator.",
   "geometry": "Cylindrical (vr, vx) velocity carrier per spatial cell x with N = nvr*nvx Fortran-order matrix indexing; vr and vx normalized by Vth, with Vth, vxi and vxH2 in physical velocity units and no implicit conversion.",
-  "boundary": "Distributions finite and nonnegative, density and integration weights positive, axes strictly increasing, radii and Vth positive, and the density must equal the integral; a zero denominator in an enabled channel is reported through the returned status rather than silently replaced.",
+  "boundary": "Distributions finite and nonnegative, density and integration weights positive, axes strictly increasing, radii and Vth positive, and the density must equal the integral; a finite enabled denominator at or below the declared binary64 conditioning boundary, as well as exact zero, is reported through status as explicitly undefined rather than silently used.",
   "device_scope": "generic"
  },
  "identity": {
   "relation": "atomic H elastic Omega_H_P, Omega_H_H2 and Omega_H_H frequency aggregation",
   "direction": "physical distribution, density, two signed Alpha channels, self-collision SIG, velocity integration weights and explicit cell state -> collision moments, frequencies and status",
-  "definition": "Let w_ij = Vr2pidVr_i*dVx_j, n = sum(w*f), u = sum(w*f*vx)/n, U = Vth*u, and K = vr^2 - 2*(vx - u)^2. The central state uses W = sum(w*f*K)/n; the target state uses W = sum(w*(f - M)*K)/n, where M must conserve the cell particle number, mean velocity and total kinetic energy. For the two mixed channels N = sum(w*f*Alpha)/n and d = (U - U_background)/Vth; for self-collision Alpha = SIG_self @ F(f), N = sum(w*f*Alpha)/n and d = W. Omega = N/d and nu = Vth*Omega, with no negative clipping and no floor. The mixed physical acceleration is moment_rate = -beta*Vth^2*N and the self-collision stress rate is -Vth^3*N; atomic beta = (1/2, 2/3) and molecular beta = (1/3, 1/3). When d = 0, Omega/nu = NaN and defined = False, while finite N and moment_rate are still returned. A disabled channel is exactly zero with status disabled. The total frequency is the sum of the three channels and propagates undefined values from enabled channels.",
+  "definition": "Let w_ij = Vr2pidVr_i*dVx_j, n = sum(w*f), u = sum(w*f*vx)/n, U = Vth*u, and K = vr^2 - 2*(vx - u)^2. The central state uses W = sum(w*f*K)/n; the target state uses W = sum(w*(f - M)*K)/n, where M must conserve the cell particle number, mean velocity and total kinetic energy. For the two mixed channels N = sum(w*f*Alpha)/n and d = (U - U_background)/Vth; for self-collision Alpha = SIG_self @ F(f), N = sum(w*f*Alpha)/n and d = W. Omega = N/d and nu = Vth*Omega, with no negative clipping and no floor. The mixed physical acceleration is moment_rate = -beta*Vth^2*N and the self-collision stress rate is -Vth^3*N; atomic beta = (1/2, 2/3) and molecular beta = (1/3, 1/3). When abs(d) <= 8*eps*max(vx.max()-vx.min(),1), including exact d = 0, Omega/nu = NaN and defined = False, while finite N and moment_rate are still returned. A disabled channel is exactly zero with status disabled. Omega_EL and nu_EL are heterogeneous diagnostic sums of momentum-exchange and stress-relaxation channel rates, not a single physical total collision frequency, and an enabled undefined channel propagates NaN.",
   "model": "a moment-matched BGK approximation for momentum and stress; it is not the full Boltzmann collision operator, and a single-point 0/0 does not determine a unique linearized rate",
   "geometry": "cylindrical (vr,vx) velocity carrier per spatial cell x, with N=nvr*nvx Fortran-order matrix indexing",
   "coordinates": "vr and vx are normalized by Vth; Vth, vxi and vxH2 share physical velocity units; no implicit conversion",
-  "boundary": "finite nonnegative distributions, positive density and integration weights, strictly increasing axes, positive radii and Vth; the density must equal the integral. The target state is verified for conservation in each cell. A zero denominator in an enabled channel is not an input error but an explicitly undefined frequency",
+  "boundary": "finite nonnegative distributions, positive density and integration weights, strictly increasing axes, positive radii and Vth; the density must equal the integral. The target state is verified for conservation in each cell. A finite enabled denominator at or below the declared binary64 conditioning boundary, as well as exact zero, is not an input error but an explicitly undefined frequency",
   "assumptions": [
    "All velocities use the same Vth; integrating f over the dimensionless velocity volume gives m^-3, SIG already includes the target integration weights, and both Alpha and Omega have units m^-1.",
    "The two Alpha channels must be generated from real background distributions on the same grid and the corresponding SIG; the background flows must match those distributions. This function cannot recover the background distributions from Alpha alone.",
    "The atom, molecule and ion belong to the same H or D isotope, and the mixed-channel mass fractions follow from this; H/D mixed-isotope collisions are not treated as a verified range.",
    "moment_state is central or target and can be selected independently per cell; the target distribution is nonnegative and conserves density, flow velocity and kinetic energy to within 64 binary64 eps of integration roundoff. That tolerance applies only to the conservation check, not to the denominator.",
-   "Negative ratios are retained and marked negative_no_bgk_closure, meaning the moment cannot be represented by a nonnegative BGK relaxation rate; such a value is not a usable nonnegative collision frequency.",
-   "A Maxwell equilibrium on a finite velocity or angular grid may retain a stress residual; this function retains that residual and does not hide discretization error behind an undefined frequency."
+   "Negative ratios are retained and marked negative_no_bgk_closure, meaning the moment cannot be represented by a nonnegative BGK relaxation rate; such a value is not a usable nonnegative collision frequency. A finite denominator at or below 8*eps*max(vx.max()-vx.min(),1), including exact zero, is marked near_equilibrium_ill_conditioned_denominator and is explicitly undefined.",
+   "A Maxwell equilibrium on a finite velocity or angular grid may retain a stress residual. The declared scale-aware conditioning boundary classifies the resulting ratio as undefined; it does not hide the retained residual or alter the finite numerator."
   ]
  },
  "inputs": [
@@ -241,7 +241,7 @@
    "shape": "[nx]",
    "dtype": "float64 array",
    "required": true,
-   "constraints": "finite and signed where defined; NaN when enabled with a zero denominator; exactly zero when disabled"
+   "constraints": "finite and signed only for finite_nonnegative and negative_no_bgk_closure; NaN when enabled at or below the declared conditioning boundary, including exact zero; exactly zero when disabled"
   },
   {
    "name": "nu_H_P",
@@ -250,7 +250,7 @@
    "shape": "[nx]",
    "dtype": "float64 array",
    "required": true,
-   "constraints": "shares Omega's definedness; a negative value is not an acceptable nonnegative BGK relaxation"
+   "constraints": "shares Omega's definedness; a negative value or ill-conditioned diagnostic is not an acceptable nonnegative BGK relaxation"
   },
   {
    "name": "moment_H_P",
@@ -277,16 +277,16 @@
    "shape": "[nx]",
    "dtype": "bool array",
    "required": true,
-   "constraints": "True for a disabled channel; true for an enabled channel only where the denominator is nonzero"
+   "constraints": "True only where the denominator is finite and outside the declared conditioning boundary; disabled channels stay True, while exact-zero and near-equilibrium enabled denominators are False"
   },
   {
    "name": "status_H_P",
-   "description": "explicitly distinguishes disabled, finite nonnegative, negative ratio and zero denominator",
+   "description": "explicitly distinguishes disabled, finite nonnegative usable, negative/no-BGK-closure, near-equilibrium/ill-conditioned denominator and non-finite failure",
    "units": "dimensionless",
    "shape": "[nx]",
    "dtype": "string array",
    "required": true,
-   "constraints": "disabled / finite_nonnegative / negative_no_bgk_closure / undefined_zero_denominator"
+   "constraints": "disabled / finite_nonnegative / negative_no_bgk_closure / near_equilibrium_ill_conditioned_denominator / nonfinite_failure"
   },
   {
    "name": "Omega_H_H2",
@@ -295,7 +295,7 @@
    "shape": "[nx]",
    "dtype": "float64 array",
    "required": true,
-   "constraints": "finite and signed where defined; NaN when enabled with a zero denominator; exactly zero when disabled"
+   "constraints": "finite and signed only for finite_nonnegative and negative_no_bgk_closure; NaN when enabled at or below the declared conditioning boundary, including exact zero; exactly zero when disabled"
   },
   {
    "name": "nu_H_H2",
@@ -304,7 +304,7 @@
    "shape": "[nx]",
    "dtype": "float64 array",
    "required": true,
-   "constraints": "shares Omega's definedness; a negative value is not an acceptable nonnegative BGK relaxation"
+   "constraints": "shares Omega's definedness; a negative value or ill-conditioned diagnostic is not an acceptable nonnegative BGK relaxation"
   },
   {
    "name": "moment_H_H2",
@@ -331,16 +331,16 @@
    "shape": "[nx]",
    "dtype": "bool array",
    "required": true,
-   "constraints": "True for a disabled channel; true for an enabled channel only where the denominator is nonzero"
+   "constraints": "True only where the denominator is finite and outside the declared conditioning boundary; disabled channels stay True, while exact-zero and near-equilibrium enabled denominators are False"
   },
   {
    "name": "status_H_H2",
-   "description": "explicitly distinguishes disabled, finite nonnegative, negative ratio and zero denominator",
+   "description": "explicitly distinguishes disabled, finite nonnegative usable, negative/no-BGK-closure, near-equilibrium/ill-conditioned denominator and non-finite failure",
    "units": "dimensionless",
    "shape": "[nx]",
    "dtype": "string array",
    "required": true,
-   "constraints": "disabled / finite_nonnegative / negative_no_bgk_closure / undefined_zero_denominator"
+   "constraints": "disabled / finite_nonnegative / negative_no_bgk_closure / near_equilibrium_ill_conditioned_denominator / nonfinite_failure"
   },
   {
    "name": "Omega_H_H",
@@ -349,7 +349,7 @@
    "shape": "[nx]",
    "dtype": "float64 array",
    "required": true,
-   "constraints": "finite and signed where defined; NaN when enabled with a zero denominator; exactly zero when disabled"
+   "constraints": "finite and signed only for finite_nonnegative and negative_no_bgk_closure; NaN when enabled at or below the declared conditioning boundary, including exact zero; exactly zero when disabled"
   },
   {
    "name": "nu_H_H",
@@ -358,7 +358,7 @@
    "shape": "[nx]",
    "dtype": "float64 array",
    "required": true,
-   "constraints": "shares Omega's definedness; a negative value is not an acceptable nonnegative BGK relaxation"
+   "constraints": "shares Omega's definedness; a negative value or ill-conditioned diagnostic is not an acceptable nonnegative BGK relaxation"
   },
   {
    "name": "moment_H_H",
@@ -385,34 +385,34 @@
    "shape": "[nx]",
    "dtype": "bool array",
    "required": true,
-   "constraints": "True for a disabled channel; true for an enabled channel only where the denominator is nonzero"
+   "constraints": "True only where the denominator is finite and outside the declared conditioning boundary; disabled channels stay True, while exact-zero and near-equilibrium enabled denominators are False"
   },
   {
    "name": "status_H_H",
-   "description": "explicitly distinguishes disabled, finite nonnegative, negative ratio and zero denominator",
+   "description": "explicitly distinguishes disabled, finite nonnegative usable, negative/no-BGK-closure, near-equilibrium/ill-conditioned denominator and non-finite failure",
    "units": "dimensionless",
    "shape": "[nx]",
    "dtype": "string array",
    "required": true,
-   "constraints": "disabled / finite_nonnegative / negative_no_bgk_closure / undefined_zero_denominator"
+   "constraints": "disabled / finite_nonnegative / negative_no_bgk_closure / near_equilibrium_ill_conditioned_denominator / nonfinite_failure"
   },
   {
    "name": "Omega_EL",
-   "description": "sum of the three normalized channel coefficients",
+   "description": "heterogeneous diagnostic sum of the three normalized channel rates",
    "units": "m^-1",
    "shape": "[nx]",
    "dtype": "float64 array",
    "required": true,
-   "constraints": "NaNs from enabled channels propagate explicitly; undefined terms are not ignored"
+   "constraints": "heterogeneous momentum-exchange and stress-relaxation sum, not a physical total collision frequency; NaNs from enabled channels propagate explicitly and undefined terms are not ignored"
   },
   {
    "name": "nu_EL",
-   "description": "sum of the three physical channel frequencies",
+   "description": "heterogeneous diagnostic sum of the three physical channel rates",
    "units": "s^-1",
    "shape": "[nx]",
    "dtype": "float64 array",
    "required": true,
-   "constraints": "Omega_EL*Vth; undefined status propagates explicitly"
+   "constraints": "Omega_EL*Vth; heterogeneous momentum-exchange and stress-relaxation sum, not a physical total collision frequency; undefined status propagates explicitly"
   },
   {
    "name": "defined_EL",
@@ -421,13 +421,13 @@
    "shape": "[nx]",
    "dtype": "bool array",
    "required": true,
-   "constraints": "False when any enabled channel is undefined"
+   "constraints": "False when any enabled channel is exact zero or at or below the declared conditioning boundary"
   }
  ],
  "applicability": {
   "preconditions": [
    "the distribution, background Alpha, background mean velocities and SIG use the same isotope, grid, normalization and weights",
-   "the caller must inspect defined/status and must not treat a negative coefficient or NaN as a nonnegative BGK frequency"
+   "the caller must inspect status/defined and must accept only finite_nonnegative as a usable nonnegative BGK classification; negative and ill-conditioned values are diagnostics"
   ],
   "supported": [
    "per-cell physical collision moments, central or conserved-target stress differences, and explicitly undefined frequencies",
@@ -440,9 +440,9 @@
  },
  "failure_semantics": {
   "invalid_input": "raises ValueError when shapes, real finiteness, distribution nonnegativity, density or weight positivity, axis ordering, boolean flags or target conservation are not satisfied",
-  "runtime_failure": "raises ValueError when a collision moment or a frequency that should be defined is not representable as a finite float64",
+  "runtime_failure": "raises FloatingPointError when a collision moment, moment rate, finite enabled frequency or finite diagnostic aggregate derived from finite inputs is not representable as finite float64",
   "nonconvergence": "this function has no iteration; velocity and angular grid convergence are the caller's responsibility",
-  "partial_results": "a complete scirel._result.Result mapping is returned on success; NaN in an enabled zero-denominator channel is an explicit undefined result while the other finite moments are retained, and this is not a partial successful execution"
+  "partial_results": "a complete scirel._result.Result mapping is returned on success; NaN in an enabled channel at or below the declared conditioning boundary, including exact zero, is an explicit undefined result while the other finite moments are retained, and this is not a partial successful execution"
  },
  "public_api": {
   "python": {
@@ -471,7 +471,7 @@
  },
  "verification": {
   "scope": [
-   "the earlier failures around a global state sentinel, molecular central moments with a common velocity shift, and a zero denominator dropping finite moments were reproduced; each is now covered by an item-by-item regression",
+   "the earlier global-state-sentinel, common-shift and finite-moment-retention failures, plus the phase-0 scale-aware conditioning witness, are covered by item-by-item regressions for disabled, usable finite nonnegative, negative/no-BGK, near-equilibrium/ill-conditioned and non-finite failure states",
    "independent scalar double summation, conservation targets, spatial partitioning, a common velocity shift, negative-ratio status and undefined propagation",
    "Alpha generated from actual fit matrices and normalized Maxwell distributions; H/D adaptive angular integration, weighted exchange relations, equilibrium momentum and two-sided weak drift",
    "Top-level Result type and attribute/key equivalence are regression-tested; fields preserve their original order, arrays, NaN, defined and status values."
@@ -482,10 +482,10 @@
   ],
   "evidence_ceiling": "supports physical consistency of the given moment model with the tested discrete inputs; it does not represent full project-level application acceptance, nonnegative BGK closure for arbitrary distributions or external experimental accuracy. The candidate asset still requires independent intake acceptance; human scientific approval and public release are decided separately",
   "known_limitations": [
-   "the moment ratio may be ill-conditioned near a zero denominator; there is no arbitrary floor, and a unique equilibrium linearization rate is not invented from single-point data",
+   "near-equilibrium ratios at or below the declared binary64 conditioning boundary are explicitly undefined; there is no arbitrary floor, clipping or absolute value, and a unique equilibrium linearization rate is not invented from single-point data",
    "a finite angular or velocity grid may produce a Maxwell stress residual; convergence must be checked for the application",
    "the limitations of the cross-section fits, H/D scaling and the molecular-viscosity approximation are inherited; licensing remains to be determined",
-   "This is deliberately not source parity for zero/negative denominators: the canonical implementation floors the mixed drift and self-stress denominators and clips every Omega to nonnegative; this asset instead returns NaN with defined=False at a zero denominator and a negative_no_bgk_closure status for a negative ratio.",
+   "This is deliberately not source parity for conditioned zero/negative denominators: the canonical implementation floors the mixed drift and self-stress denominators and clips every Omega to nonnegative; this asset returns NaN with defined=False at or below the declared scale-aware conditioning boundary, including exact zero, and keeps negative_no_bgk_closure only for a genuinely larger negative denominator.",
    "The self-collision nu and moment_rate are physical Boltzmann rates when SIG comes from the collision-matrix assets, which use the 3/8 prefactor; they are three times the KN1D values."
   ]
  }

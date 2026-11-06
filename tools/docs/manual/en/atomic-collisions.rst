@@ -310,7 +310,7 @@ The final layer reduces Alpha inside each spatial cell to local moment-matching 
    K = vr^2 - 2 (vx - u)^2
    W = sum(w f K) / n
 
-The denominators are ``(U - U_background)/Vth`` for the mixed channels and ``W`` for the self-collision channel; ``Omega = N/d`` and ``nu = Vth * Omega``. When the denominator is zero, the contract returns ``NaN`` and ``defined=False`` but keeps the finite collision moments; negative ratios are retained and marked ``negative_no_bgk_closure``, with no floor and no clipping. The total frequency is the sum of the enabled channels, and an undefined value in any enabled channel propagates to the total.
+The denominators are ``(U - U_background)/Vth`` for the mixed channels and ``W`` for the self-collision channel; ``Omega = N/d`` and ``nu = Vth * Omega``. When the denominator is zero, the contract returns ``NaN`` and ``defined=False`` but keeps the finite collision moments; negative ratios are retained and marked ``negative_no_bgk_closure``, with no floor and no clipping. A denominator with ``abs(d) <= 8 * eps * max(vx.max() - vx.min(), 1)``, including exact zero, is marked ``near_equilibrium_ill_conditioned_denominator`` and is explicitly undefined. ``Omega_EL`` is a heterogeneous diagnostic sum, not a single physical total collision frequency; an undefined value in any enabled channel propagates NaN.
 
 .. code-block:: python
 
@@ -378,9 +378,9 @@ Actual output:
 
 ``VxH`` is the mean axial velocity of atomic hydrogen in this cell, about ``5.54e3`` m/s. ``Wperp_paraH`` is the selected central stress (perpendicular minus twice the axial second moment); it is signed, about ``-0.223``. A negative value does not mean the calculation failed, and it must not be interpreted as a variance.
 
-In this example the H–H⁺ mixed channel has ``Omega`` about ``0.153`` m^-1 and ``nu`` about ``6.70e3`` s^-1; the H–H₂ and H–H channels are much smaller; the three-channel total is about ``6.84e3`` s^-1. The ``status`` of all three channels is ``finite_nonnegative``, meaning the denominator is nonzero and the ratio is nonnegative.
+In this example the H–H⁺ mixed channel has ``Omega`` about ``0.153`` m^-1 and ``nu`` about ``6.70e3`` s^-1; the H–H₂ and H–H channels are much smaller; the three-channel total is about ``6.84e3`` s^-1. The ``status`` of all three channels is ``finite_nonnegative``, meaning the denominator is outside the declared conditioning boundary and the ratio is nonnegative.
 
-The last call deliberately sets the background flow velocity equal to the actual mean flow, making the mixed-channel denominator zero. The result is ``Omega_H_P = nan``, ``defined=False``, status ``undefined_zero_denominator``, but ``moment_H_P`` still returns a finite ``-6.376374e-03``. This shows precisely that "the frequency is undefined" and "the collision moment does not exist" are different statements; ``NaN`` must not be treated as zero collisions.
+The last call deliberately sets the background flow velocity equal to the actual mean flow, making the mixed-channel denominator zero. The result is ``Omega_H_P = nan``, ``defined=False``, status ``near_equilibrium_ill_conditioned_denominator``, but ``moment_H_P`` still returns a finite ``-6.376374e-03``. This shows precisely that "the frequency is undefined" and "the collision moment does not exist" are different statements; ``NaN`` must not be treated as zero collisions.
 
 What this section does not establish: this is a local moment-matching reduction, not a complete Boltzmann collision operator; a finite velocity/angle mesh does not guarantee an exact Maxwellian equilibrium; a negative ratio is retained but does not constitute an acceptable nonnegative BGK relaxation; and single-cell results do not replace spatial coupling, time advance or convergence studies.
 
@@ -451,7 +451,7 @@ A few common pitfalls:
 - Mass convention: the collision energy is constructed from ``particle_mass_amu``, not the reduced mass; do not "compensate" for model differences by changing the mass.
 - Flattening order: SIG is assembled in Fortran order, and Alpha must be contracted with ``order='F'``; C order produces an observable numerical error.
 - Signed intermediates: elastic kernels and some Alpha fields have negative values, and the contract requires them to be preserved; clipping changes the model.
-- Undefined is not zero: a zero denominator gives ``NaN`` and ``defined=False``; negative ratios have their own status and must not be silently dropped.
+- Undefined is not zero: an exact zero or conditioning-boundary denominator gives ``NaN``, ``defined=False`` and ``near_equilibrium_ill_conditioned_denominator``; negative ratios have their own status and must not be silently dropped.
 
 Entry points not covered in this chapter, and why:
 
