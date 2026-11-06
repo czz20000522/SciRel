@@ -58,6 +58,9 @@ no legitimate per-worktree configuration depends on the entry, remove the errone
 the named common config (or the named active `config.worktree`), and rerun the command. Do not use a
 global Git setting as a workaround.
 
+For linked worktrees, the container receives the common Git metadata read-only for the `config` file;
+Git discovery remains available, but container processes cannot rewrite the host repository config.
+
 ## Ratchets
 
 Two lists only tighten.

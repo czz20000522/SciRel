@@ -814,6 +814,9 @@ def container_git_mount() -> Iterator[list[str]]:
         yield []
         return
     common_dir, relative_git_dir = context
+    common_config = common_dir / "config"
+    if not common_config.is_file():
+        raise RuntimeError(f"cannot find repository-local Git config at {common_config}")
     pointer = None
     try:
         with tempfile.NamedTemporaryFile(
@@ -828,6 +831,8 @@ def container_git_mount() -> Iterator[list[str]]:
         yield [
             "--volume",
             f"{common_dir}:{GIT_COMMON_MOUNT}",
+            "--volume",
+            f"{common_config}:{GIT_COMMON_MOUNT}/config:ro",
             "--volume",
             f"{pointer}:/workspace/.git:ro",
         ]
