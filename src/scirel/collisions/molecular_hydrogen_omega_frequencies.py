@@ -15,6 +15,8 @@ linearization is inferred. The original the neutral-transport formulation model 
 approximation; finite-grid quadrature does not guarantee exact Maxwell balance.
 """
 
+from scirel._result import Result
+
 from ._elastic_moments import reduce_elastic_moments
 
 __all__ = ["assemble_molecular_hydrogen_omega_frequencies"]
@@ -131,6 +133,10 @@ def assemble_molecular_hydrogen_omega_frequencies(
     defined_EL : numpy.ndarray
         Conjunction of the three channel masks. [dimensionless] Shape: ``[nx]``.
 
+    The complete result is returned as one ``scirel._result.Result`` mapping. No nested
+    mapping or recursive wrapping is introduced, and non-colliding fields also support
+    attribute access.
+
     Raises
     ------
     ValueError
@@ -162,6 +168,7 @@ def assemble_molecular_hydrogen_omega_frequencies(
     Examples
     --------
     >>> import numpy as np
+    >>> from scirel._result import Result
     >>> from scirel.collisions import assemble_molecular_hydrogen_collision_matrices, assemble_molecular_hydrogen_omega_frequencies
     >>> vr = np.array([0.5, 1.0])
     >>> vx = np.array([-1.0, 0.0, 1.0])
@@ -177,11 +184,13 @@ def assemble_molecular_hydrogen_omega_frequencies(
     >>> ub = np.array([vth * np.sum(w * bg * vx) / np.sum(w * bg)])
     >>> alphas = [(s[k] @ bg.ravel(order='F')).reshape(f.shape, order='F')[:, :, None] for k in ['SIG_H2_P', 'SIG_H2_H']]
     >>> r = assemble_molecular_hydrogen_omega_frequencies(f[:, :, None], np.array([2e17]), *alphas, s['SIG_H2_H2'], wr, dx, vr, vx, vth, ub, ub)
+    >>> assert isinstance(r, Result)
+    >>> assert r.Omega_H2_P is r['Omega_H2_P']
     >>> assert np.isfinite(r['moment_H2_P']).all()
     >>> assert r['defined_H2_P'].all()
     >>> np.testing.assert_allclose(r['nu_H2_P'], vth * r['Omega_H2_P'], rtol=1e-14)
     """
-    return reduce_elastic_moments(
+    result = reduce_elastic_moments(
         fH2,
         nH2,
         Alpha_H2_P,
@@ -202,3 +211,4 @@ def assemble_molecular_hydrogen_omega_frequencies(
         stress_name="Wperp_paraH2",
         mass_fractions=(1 / 3, 1 / 3),
     )
+    return Result(result)
