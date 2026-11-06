@@ -48,10 +48,86 @@ def compute_anisotropic_force_balance(
 ):
     """Compute ``div(P)``, toroidal current, and closure diagnostics.
 
-    Inputs are finite, rectilinear ``[Z, R]`` arrays.  The imported numerical
-    kernel supplies the local pressure divergence; this wrapper adds the
-    dimensionless parallel-force and firehose diagnostics used by the graph
-    solvers.
+    Parameters
+    ----------
+    r_grid : finite real array-like
+        Cylindrical radius mesh [m] Shape [N_Z,N_R]. Rectilinear, nonnegative R, strictly increasing radial axis, at least three columns; same shape as other arrays.
+    z_grid : finite real array-like
+        Axial coordinate mesh [m] Shape [N_Z,N_R]. Rectilinear, strictly increasing axial axis, at least three rows; same shape as other arrays.
+    b_r : finite real array-like
+        Radial component of the poloidal magnetic field [T] Shape [N_Z,N_R]. Same grid shape; no nonzero-field precondition is enforced by this Operator.
+    b_z : finite real array-like
+        Axial component of the poloidal magnetic field [T] Shape [N_Z,N_R]. Same grid shape; combined with b_r for field magnitude and direction.
+    p_parallel : finite real array-like
+        Pressure parallel to the local poloidal magnetic field [Pa] Shape [N_Z,N_R]. Same grid shape and nonnegative; scalar broadcasting is not performed here.
+    p_perpendicular : finite real array-like
+        Pressure perpendicular to the local poloidal magnetic field [Pa] Shape [N_Z,N_R]. Same grid shape and nonnegative; scalar broadcasting is not performed here.
+    active_mask : boolean array-like or None
+        Cells included in the RMS parallel-force compatibility metric [boolean] Shape [N_Z,N_R] or null. If omitted, all cells are active; same shape when supplied. It does not suppress the returned force or current arrays.
+
+    Returns
+    -------
+    force_R : float64
+        Radial component of cylindrical div(P) [Pa/m] Shape [N_Z,N_R]. Axis column is set to zero when the first radius is exactly zero.
+    force_Z : float64
+        Axial component of cylindrical div(P) [Pa/m] Shape [N_Z,N_R]. Includes the off-axis P_RZ/R term.
+    parallel_force : float64
+        Pressure force projected along the poloidal field [Pa/m] Shape [N_Z,N_R]. Observational compatibility residual, not subtracted from the current relation.
+    J_phi : float64
+        Toroidal current-density projection of pressure force [A/m^2] Shape [N_Z,N_R]. Zero at the axis and where |B|^2 is at or below the numeric tiny threshold; active_mask does not zero it.
+    B : float64
+        Magnitude of the supplied poloidal field [T] Shape [N_Z,N_R]. Computed from B_R and B_Z using the maintained source-compatible hypot path.
+    parallel_force_error : float
+        Resolved RMS parallel-force after subtracting its dimensioned floating-point evaluation envelope, normalized by the larger of total-force RMS and envelope Shape scalar. Denominator also floored at numeric tiny; raw absolute, raw relative and envelope diagnostics remain available; returns 0.0 when no cell is active.
+    firehose_margin : float64
+        Local 1 - mu0*(p_parallel-p_perpendicular)/max(|B|^2,tiny) Shape [N_Z,N_R]. Diagnostic only; this Operator does not reject nonpositive margin.
+    force_roundoff_R : real array
+        Local floating-point evaluation envelope, not a truncation error [N/m^3] Shape [N_Z,N_R]. Local floating-point evaluation envelope, not a truncation error.
+    force_roundoff_Z : real array
+        Local floating-point evaluation envelope, not a truncation error [N/m^3] Shape [N_Z,N_R]. Local floating-point evaluation envelope, not a truncation error.
+    parallel_force_roundoff : real array
+        Local floating-point evaluation envelope, not a truncation error [N/m^3] Shape [N_Z,N_R]. Local floating-point evaluation envelope, not a truncation error.
+    parallel_force_absolute : float
+        Active-mask RMS raw force or its rounding envelope [N/m^3] Shape scalar. Active-mask RMS raw force or its rounding envelope.
+    parallel_force_roundoff_rms : float
+        Active-mask RMS raw force or its rounding envelope [N/m^3] Shape scalar. Active-mask RMS raw force or its rounding envelope.
+    parallel_force_error_raw : float
+        Unmodified RMS parallel force divided by RMS total force Shape scalar. Unmodified RMS parallel force divided by RMS total force.
+    parallel_force_roundoff_consistent : bool
+        Whether raw RMS parallel force is no larger than its rounding envelope [boolean] Shape scalar. Whether raw RMS parallel force is no larger than its rounding envelope.
+
+    Raises
+    ------
+    ValueError
+        Raised when the corresponding declared input, numerical or convergence condition fails.
+
+    See Also
+    --------
+    compute_anisotropic_toroidal_current : Split the toroidal current into isotropic and curvature terms.
+
+    Notes
+    -----
+    P=p_perpendicular I+(p_parallel-p_perpendicular)bb. Evaluate the cylindrical tensor divergence using difference-form quadratic stencils. At R=0, smooth odd P_RZ contributes a second d_R P_RZ term to force_Z; regular force_R=J_phi=0. Off axis, J_phi=(B_Z force_R-B_R force_Z)/B².
+
+    axisymmetric gyrotropic pressure tensor and perpendicular force-balance current projection
+
+    The supplied B_R and B_Z are components of the same poloidal field as the pressure arrays.
+
+    Both pressure components are nonnegative Pa values at grid nodes.
+
+    The optional active_mask selects cells for the parallel-force error metric only; this Operator does not zero J_phi outside it.
+
+    For an axis-containing mesh the physical field and tensor must have smooth axisymmetric parity: BR and PRZ odd, BZ and diagonal pressures even.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from scirel.equilibrium import compute_anisotropic_force_balance
+    >>> r_grid, z_grid = np.meshgrid(np.linspace(0.0, 0.4, 5), np.linspace(-0.3, 0.3, 5))
+    >>> result = compute_anisotropic_force_balance(r_grid, z_grid, np.zeros_like(r_grid), np.ones_like(r_grid), np.full_like(r_grid, 2.0), np.full_like(r_grid, 2.0))
+    >>> np.testing.assert_allclose(result['force_R'], 0.0, atol=1e-12)
+    >>> np.testing.assert_allclose(result['J_phi'], 0.0, atol=1e-12)
+    >>> np.testing.assert_allclose(result['firehose_margin'], 1.0)
     """
     arrays = [
         np.asarray(value, dtype=float)

@@ -106,10 +106,66 @@ def compute_equilibrium(
 ):
     """Run bounded pressure/current feedback and return its terminal state.
 
-    ``residual`` measures the Green-map flux update.  ``closure_residual``
-    measures the pressure-current equation in the terminal spline state.  Both
-    must satisfy ``tol`` for a ``converged`` result; ``maxiter=0`` performs no
-    update and returns a nonconverged state.
+    Parameters
+    ----------
+    R : finite real
+        Radial grid [source-unspecified] Shape 2-D rectangular. Column-consistent, uniformly spaced, at least 2x2
+    Z : finite real
+        Vertical grid [source-unspecified] Shape 2-D rectangular. Row-consistent, uniformly spaced, contains >=3 exact zero midplane points
+    Pfunc : finite real outputs on midplane
+        Pressure versus radius callable [source-unspecified] Shape callable. Must provide an exact zero pressure edge
+    psi_vac : finite real
+        Vacuum flux [source-unspecified] Shape R.shape. Midplane flux strictly increasing through pressure edge
+    g_psi : finite real
+        Supplied Green matrix [source-unspecified] Shape (R.size,R.size). Finite
+    tol : float
+        Threshold for both normalized flux-update and current-closure residuals Shape scalar. positive finite
+    maxiter : int
+        Maximum feedback updates Shape scalar. nonnegative nonboolean integer
+    relax : float
+        Weight on old current Shape scalar. finite in [0,1)
+    plas_clip : bool array or None
+        Optional plasma-current exclusion mask Shape R.shape or None. same grid shape and boolean
+    plotit : bool
+        GUI plotting selector Shape scalar. True is unsupported
+
+    Returns
+    -------
+    EquilibriumResult : dataclass
+        Flux, plasma currents, final pressure fit, status, iteration count, original update residual, closure_residual and reason; immutable residual_history and closure_residual_history tuples for completed paired residual evaluations [source-unspecified] Shape psi/plas_currents R.shape. status is converged, maxiter or nonfinite; history length may be less than attempted iterations when an update fails before residual evaluation
+
+    Raises
+    ------
+    ValueError
+        Raised when the corresponding declared input, numerical or convergence condition fails.
+
+    See Also
+    --------
+    build_pressure_flux_state : Build the pressure spline and derivative state.
+    pressure_flux_picard_step : Apply one isotropic Picard update.
+
+    Notes
+    -----
+    Pressure-only axisymmetric current closure j_phi=R dP/dpsi under psi=R A_phi. Update residual is ||psi_new-psi_old||_2/abs(edge_new). Closure residual is ||I_new-I_target(psi_new,new fit)||_2/||I_target||_2, with zero target/zero error mapped to zero and zero target/nonzero current mapped to an infinite residual and nonfinite terminal failure. Convergence requires both residuals <=tol. State is call-local; update fit derivative, clip, relaxed currents, Green contraction, new flux, edge/fit and both residuals in order; stop on convergence, invalid state or maxiter.
+
+    Pressure-versus-radius feedback with InterpolatedUnivariateSpline and a supplied Green matrix
+
+    Finite real arrays
+
+    Green matrix shape is (R.size,R.size)
+
+    Pressure-only closure; no toroidal F F-prime term, prescribed current profile or independent continuum force-balance certification.
+
+    relax is in [0,1) because relax=1 freezes zero initial currents
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from scirel.equilibrium import compute_equilibrium
+    >>> R = np.tile(np.arange(1.0, 6.0), (2, 1))
+    >>> Z = np.tile(np.array([-1.0, 0.0])[:, None], (1, 5))
+    >>> result = compute_equilibrium(R, Z, lambda r: 5.0-r, R, np.zeros((10, 10)))
+    >>> assert result.status == "converged"
     """
     if plotit:
         raise ValueError("plotting is outside this finite-contract proposal")

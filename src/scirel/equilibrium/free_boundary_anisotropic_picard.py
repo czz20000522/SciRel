@@ -368,45 +368,152 @@ def solve_free_boundary_anisotropic_picard(inputs=None, **kwargs):
     Parameters
     ----------
     inputs : mapping, optional
-        Mapping containing the rectilinear ``r_grid``/``z_grid``, vacuum
-        ``psi_vac``/``br_vac``/``bz_vac``, dense ``g_psi``, caller ``params``
-        and ``pressure_closure`` port, plus ``tol``, ``maxiter`` and
-        ``relax``.  Optional inputs provide paired ``g_br``/``g_bz``,
-        ``plasma_mask``, wall ``boundary_correction``, explicit ``cell_edges``
-        and compatibility/field-floor controls.
-    **kwargs
-        Composition overrides passed to the public composition boundary.
+        Composition input mapping. Its declared keys are listed under Other Parameters.
+    kwargs : mapping, optional
+        Additional composition inputs merged at the public boundary.
+
+    Other Parameters
+    ----------------
+    r_grid : finite real array-like
+        Cylindrical radius tensor grid [m] Shape [N_Z,N_R]. At least three samples per axis; strictly increasing, strictly monotone tensor axis; same shape as z_grid.
+    z_grid : finite real array-like
+        Axial coordinate tensor grid [m] Shape [N_Z,N_R]. Same shape as r_grid; strictly increasing, strictly monotone axial axis.
+    psi_vac : finite real array-like
+        Vacuum/external psi=R A_phi and initial Picard flux state [Wb/rad] Shape [N_Z,N_R]. Exact grid shape; validated by the feedback dependency during iteration or the zero-step terminal branch.
+    br_vac : finite real array-like
+        Vacuum radial poloidal field and initial BR [T] Shape [N_Z,N_R]. Exact grid shape; field-magnitude dependency validates finiteness before closure.
+    bz_vac : finite real array-like
+        Vacuum axial poloidal field and initial BZ [T] Shape [N_Z,N_R]. Exact grid shape and co-located with br_vac.
+    g_psi : finite real array-like
+        Dense source-cell-current to psi=R A_phi Green matrix [Wb/rad/A] Shape [N_Z*N_R,N_Z*N_R]. Exact square grid-point size, with C-order source columns and field rows.
+    g_br : finite real array-like or None
+        Optional source-current to radial-field Green matrix [T/A] Shape [N_Z*N_R,N_Z*N_R] or null. Must be supplied together with g_bz; when both are omitted, derive the BR increment from -(∂psi/∂Z)/R of the newly added plasma psi, then add br_vac and the optional wall increment.
+    g_bz : finite real array-like or None
+        Optional source-current to axial-field Green matrix [T/A] Shape [N_Z*N_R,N_Z*N_R] or null. Must be supplied together with g_br; when both are omitted, derive the BZ increment from (∂psi/∂R)/R of the newly added plasma psi (regular limit on the axis), then add bz_vac and the optional wall increment.
+    params : Python mapping
+        Caller-owned pressure-closure parameter mapping [mixed] Shape mapping. Shallow-copied before use; if B0 is absent, the graph inserts positive b0 or the initial field-magnitude median. Other keys are passed through without physical validation by this graph.
+    pressure_closure : Python callable
+        Caller-provided pressure closure evaluated at current state [psi Wb/rad, B T; pressure output Pa] Shape callable({psi,B,params})->mapping. Returns p_parallel, p_perp, density and electron_temperature; pressures must be finite nonnegative exact-grid arrays; latter two may be None or finite nonnegative exact-grid arrays. The relation for a given state must be deterministic and must not rewrite inputs, and multiple evaluations are allowed; a field below minimum_field is rejected before the callback.
+    tol : finite real scalar
+        Upper bound on the unrelaxed relative residual of every feedback state Shape scalar. Finite strictly positive; compare max(flux_fixed_point_residual,field_fixed_point_residual,current_fixed_point_residual), and do not substitute the relaxed flux step.
+    maxiter : integer scalar, not bool
+        Maximum number of Picard updates [iteration] Shape scalar. Nonnegative; zero skips the update loop but still runs terminal closure/current evaluation.
+    relax : finite real scalar
+        Retention weight of previous relaxed cell currents Shape scalar. 0 <= relax <= 1; this is current-state, not flux-state, relaxation.
+    b0 : finite real scalar or None
+        Positive reference field inserted into params.B0 only if that key is absent [T] Shape scalar or null. When needed, None uses the median initial field magnitude; an explicit value must be positive. An existing params.B0 is not replaced.
+    plasma_mask : boolean array or None
+        Active-cell selector for feedback and terminal current [boolean] Shape [N_Z,N_R] or null. Exact grid shape and bool dtype when supplied; True cells retain computed feedback and terminal current, while False cells are zeroed in both.
+    boundary_correction : Python mapping or None
+        Optional ideal-conductor wall-flux correction configuration [mixed] Shape mapping or null. When supplied, requires dimensionless boundary_sample_matrix [N_b,N_f] and Wb/rad/A green_boundary_to_boundary [N_b,N_w] and green_boundary_to_field [N_f,N_w]; optional rcond defaults to 1e-10. Matrix validation belongs to the wall Operator.
+    cell_edges : pair of finite arrays or None
+        Default composite-trapezoid weights integrate exactly over the supplied node-domain rectangle; boundary nodes have half-interval weights. Explicit cell_edges=(radial_edges,axial_edges), each with center_count+1 monotone finite entries enclosing its centers, instead define cell-center areas. No 2*pi*R factor multiplies toroidal filament current [m] Shape (N_R+1, N_Z+1) arrays or None. Default composite-trapezoid weights integrate exactly over the supplied node-domain rectangle; boundary nodes have half-interval weights. Explicit cell_edges=(radial_edges,axial_edges), each with center_count+1 monotone finite entries enclosing its centers, instead define cell-center areas. No 2*pi*R factor multiplies toroidal filament current.
+    compatibility_tol : float
+        Maximum resolved parallel-force fraction Shape scalar. Maximum resolved parallel-force fraction.
+    minimum_field : float
+        Positive terminal field floor in T [T] Shape scalar. Finite strictly positive; require all B>=minimum_field before every pressure-closure/current evaluation, including the initial state, intermediate feedback states and the returned state.
+    strict_compatibility : bool
+        Raise on incompatible parallel pressure force; false retains explicit failed compatibility Shape scalar. Raise on incompatible parallel pressure force; false retains explicit failed compatibility.
 
     Returns
     -------
-    dict
-        Terminal ``psi``, ``BR``, ``BZ`` and ``B`` fields, pressure-closure
-        profiles, toroidal and cell-integrated currents, force diagnostics,
-        full fixed-point residual components, iteration history and explicit
-        convergence/compatibility/failure fields.  Bounded nonconvergence
-        returns the last complete state with ``converged=False``.
+    psi : float64
+        Last wall-corrected or directly projected psi=R A_phi state [Wb/rad] Shape [N_Z,N_R]. At maxiter=0 equals psi_vac after terminal evaluation; optional wall correction changes psi and adds its consistent discrete magnetic-field increment.
+    BR : float64
+        Last radial field state including plasma and optional wall-flux increments [T] Shape [N_Z,N_R]. The supplied br_vac plus the g_br plasma response when field Green matrices are supplied, or the discrete radial field from the plasma flux increment otherwise; a completed wall correction adds its discrete radial field increment.
+    BZ : float64
+        Last axial field state including plasma and optional wall-flux increments [T] Shape [N_Z,N_R]. The supplied bz_vac plus the g_bz plasma response when field Green matrices are supplied, or the discrete axial field from the plasma flux increment otherwise; a completed wall correction adds its discrete axial field increment.
+    B : float64
+        Terminal poloidal magnitude from returned BR/BZ [T] Shape [N_Z,N_R]. Reevaluated from the returned BR/BZ after bounded iteration, including the discrete wall-flux field increment when present. Coherence of the supplied vacuum and Green responses remains a caller precondition.
+    profiles : Python mapping
+        Terminal pressure closure fields [p_parallel/p_perp Pa; density m^-3 or caller units; electron_temperature caller units] Shape mapping. Contains exactly p_parallel, p_perp, density and electron_temperature from the terminal callback, after array validation.
+    j_phi : float64
+        Terminal toroidal current density after optional mask [A/m^2] Shape [N_Z,N_R]. Reevaluated at final psi and B; True cells retain the computed value and False cells are zero.
+    plasma_currents : float64
+        Terminal or step current density integrated with the explicitly declared node/cell-domain weights [A] Shape [N_Z,N_R]. Default composite-trapezoid weights integrate exactly over the supplied node-domain rectangle; boundary nodes have half-interval weights. Explicit cell_edges=(radial_edges,axial_edges), each with center_count+1 monotone finite entries enclosing its centers, instead define cell-center areas. No 2*pi*R factor multiplies toroidal filament current.
+    picard_current_state : float64
+        Last relaxed flattened cell-current feedback state [A] Shape [N_Z*N_R]. At maxiter=0, the dependency's zero initial state is returned.
+    gradp_term : float64
+        Terminal isotropic-comparison current contribution [A/m^2] Shape [N_Z,N_R]. From unmasked terminal current decomposition; may be nonzero outside plasma_mask.
+    anisotropy_curvature_term : float64
+        Terminal current remainder after isotropic comparison [A/m^2] Shape [N_Z,N_R]. From unmasked current decomposition; may be nonzero outside plasma_mask.
+    converged : bool
+        True when every unrelaxed state closes, parallel pressure force is compatible, and at least one iteration has executed [boolean] Shape scalar. fixed_point_residual<=tol and equilibrium_compatible and iterations>0; a small flux step caused by relaxation is not sufficient to prove convergence.
+    iterations : integer
+        Number of performed feedback updates [iteration] Shape scalar. 0 <= iterations <= maxiter.
+    residual : float
+        Last relative flux-state change Shape scalar. Initially infinity for maxiter=0; finite after a successful update.
+    residual_history : float64 array
+        Relative flux change after each completed update Shape [iterations]. Empty when maxiter=0; otherwise one value per update.
+    parameters : Python dict
+        Shallow-copied input parameters with inserted B0 if absent [mixed] Shape mapping. Other caller keys are not normalized by the graph.
+    boundary_currents : float64 array or None
+        Last ideal-conductor source-current coefficients [A] Shape [N_wall] or null. None without a completed wall correction; from the last update if enabled.
+    boundary_flux_correction : float64 array or None
+        Last wall response at field flux points [Wb/rad] Shape [N_Z,N_R] or null. None without a completed wall correction; its discrete flux derivatives are added to BR and BZ during that update.
+    boundary_residual_norm : float or None
+        Last sampled boundary-flux residual norm [Wb/rad] Shape scalar or null. None without a completed wall correction; a nonzero value is allowed.
+    failure_reason : str or None
+        Explicit bounded nonconvergence marker Shape string or null. parallel_force_incompatible when compatibility fails and strict_compatibility=false; otherwise None when an update executed and the full fixed point passes, or maxiter_reached when it does not pass or when the step count is zero.
+    fixed_point_residual : float
+        Full unrelaxed fixed-point residual of the returned state Shape scalar. max(flux_fixed_point_residual,field_fixed_point_residual,current_fixed_point_residual); all candidates use the same plasma/wall projection, and convergence requires this value<=tol.
+    force_diagnostics : dict
+        Full terminal force mapping [mixed SI] Shape mapping. Full terminal force mapping.
+    parallel_force_diagnostics : dict
+        Compatibility reports the residual above a dimensioned 64-epsilon tensor/stencil rounding envelope, retaining raw absolute and relative residuals and the envelope. This is a floating-point resolution diagnostic, not a truncation-error bound or evidence that a sub-resolution physical force is exactly zero [mixed SI] Shape mapping. Compatibility reports the residual above a dimensioned 64-epsilon tensor/stencil rounding envelope, retaining raw absolute and relative residuals and the envelope. This is a floating-point resolution diagnostic, not a truncation-error bound or evidence that a sub-resolution physical force is exactly zero.
+    flux_converged : bool
+        Whether the last relaxed flux step stagnated within tol [boolean] Shape scalar. Whether the last relaxed flux step stagnated within tol.
+    equilibrium_compatible : bool
+        Whether the resolved parallel-force compatibility gate passes [boolean] Shape scalar. Whether the resolved parallel-force compatibility gate passes.
+    flux_fixed_point_residual : float
+        Unrelaxed target-to-current-state L2 difference for psi; denominator=max(||psi_target||,||psi_state||,||psi_vac||), and the residual is zero when all three are zero Shape scalar. Nonnegative dimensionless diagnostic; binary floating-point scaling avoids norm overflow for finite states.
+    field_fixed_point_residual : float
+        Maximum of the relative L2 differences for BR and BZ; each component denominator=max(||B_target||,||B_state||,||B_vac||), and that component is zero when all three are zero Shape scalar. Nonnegative dimensionless diagnostic; binary floating-point scaling avoids norm overflow for finite states.
+    current_fixed_point_residual : float
+        Unrelaxed target L2 difference between the current relaxed cell current and the returned-state pressure current; denominator=max(||I_target||,||I_state||), and the residual is zero when both are zero Shape scalar. Nonnegative dimensionless diagnostic; binary floating-point scaling avoids norm overflow for finite states.
 
     Raises
     ------
-    ValueError
-        If grids, ports, closure fields, controls, masks or wall configuration
-        violate the declared contract, or strict parallel-force compatibility
-        fails.
     FloatingPointError
-        If an intermediate or terminal field falls below ``minimum_field``.
-    Exception
-        Caller closure and dependency exceptions propagate unchanged.
+        Raised when the corresponding declared input, numerical or convergence condition fails.
+    TypeError
+        Raised when the corresponding declared input, numerical or convergence condition fails.
+    ValueError
+        Raised when the corresponding declared input, numerical or convergence condition fails.
+
+    See Also
+    --------
+    solve_axisymmetric_anisotropic_picard : Run the no-wall Picard composition.
 
     Notes
     -----
-    The stopping test uses the unrelaxed terminal flux, field and current
-    state, not only the relaxed flux increment.  ``maxiter=0`` returns a
-    nonconverged terminal evaluation.  The composition owns iteration and state
-    composition; it does not certify the physical wall model or a global
-    equilibrium. ``plasma_mask`` is a declared domain selector: True cells
-    retain the computed feedback and terminal current, False cells are zeroed
-    in both, and None treats every cell as active. Invalid masks fail before
-    iteration starts.
+    Recompute the deterministic pressure closure and toroidal current on the current psi, BR and BZ; integrate current with nodal trapezoidal weights or explicit cell boundaries, mix the old current by relax, and project the Green field. When paired field Green matrices are absent, derive the field from the newly added plasma flux. The wall branch adds both wall flux and its discrete magnetic-field derivative. Before stopping, construct the unrelaxed target from the current pressure/current and require psi, BR, BZ and current all to close. The returned state recomputes the closure, current and parallel-force compatibility; maxiter=0 performs no update and does not claim convergence.
+
+    axisymmetric gyrotropic-pressure Picard composition with caller-owned N4 pressure closure and optional linear ideal-conductor wall correction
+
+    The pressure_closure callback returns scientifically justified nonnegative co-located pressure arrays and optional density/temperature arrays for each state, interpreting psi as R A_phi in Wb/rad.
+
+    All flux and field Green matrices share the declared current basis and appropriate Wb/rad/A or T/A units.
+
+    No supplied pressure-closure parameter is interpreted by the graph except inserting B0 when absent; the caller owns its physical model.
+
+    Default composite-trapezoid weights integrate exactly over the supplied node-domain rectangle; boundary nodes have half-interval weights. Explicit cell_edges=(radial_edges,axial_edges), each with center_count+1 monotone finite entries enclosing its centers, instead define cell-center areas. No 2*pi*R factor multiplies toroidal filament current.
+
+    pressure_closure is a deterministic scientific relation for a given {psi,B,params}; it does not modify input arrays or depend on the call count, and the graph re-evaluates it at stopping and at the terminal state. B>=minimum_field is required before every closure and current evaluation.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from scirel.equilibrium import solve_free_boundary_anisotropic_picard
+    >>> r, z = np.meshgrid([0.2, 0.4, 0.6], [-0.1, 0.0, 0.1])
+    >>> shape, size = r.shape, r.size
+    >>> def closure(state):
+    ...     p = np.full(shape, 2.0)
+    ...     return {'p_parallel': p, 'p_perp': p, 'density': None, 'electron_temperature': None}
+    >>> result = solve_free_boundary_anisotropic_picard(r_grid=r, z_grid=z, psi_vac=r**2/2, br_vac=np.zeros(shape), bz_vac=np.ones(shape), g_psi=np.zeros((size, size)), params={}, pressure_closure=closure, tol=1e-12, maxiter=1, relax=0.0)
+    >>> np.testing.assert_allclose(result['psi'], r**2/2)
+    >>> np.testing.assert_allclose(result['j_phi'], 0.0, atol=1e-12)
+    >>> assert result['converged'] and result['iterations'] == 1 and result['failure_reason'] is None
     """
 
     from scirel._composition import compose
