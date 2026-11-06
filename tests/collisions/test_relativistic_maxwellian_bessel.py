@@ -35,6 +35,7 @@ import numpy as np
 import pytest
 from scipy.special import k0, kve
 
+from scirel._result import Result
 from scirel.collisions.relativistic_maxwellian_bessel import (
     BesselBackendEvaluationError,
     InvalidBesselArgumentError,
@@ -67,6 +68,11 @@ def relative(first, second):
 def test_the_closure_returns_only_the_three_quantities():
     """The branch selector, the branch label and the accuracy bounds are gone."""
     result = relativistic_maxwellian_bessel(1.5)
+    assert isinstance(result, Result)
+    assert list(result) == ["bk0", "bk1", "bk2"]
+    assert result.bk0 == result["bk0"]
+    assert result.bk1 == result["bk1"]
+    assert result.bk2 == result["bk2"]
     assert set(result) == {"bk0", "bk1", "bk2"}
 
 

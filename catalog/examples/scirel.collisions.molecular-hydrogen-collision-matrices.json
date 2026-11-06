@@ -5,7 +5,7 @@
   "en": "Molecular hydrogen four-family collision matrices",
   "zh": "分子氢四族碰撞矩阵组装"
  },
- "summary": "Assemble the charge-exchange, two momentum-transfer and self-collision stress matrices on a cylindrical normalized velocity grid. The H/D laboratory-energy scaling is explicit; elastic matrices retain their sign, and the angular node count can be increased for an explicit convergence check.",
+ "summary": "Assemble the charge-exchange, two momentum-transfer and self-collision stress matrices on a cylindrical normalized velocity grid. The H/D laboratory-energy scaling is explicit; elastic matrices retain their sign, and the angular node count can be increased for an explicit convergence check. The complete result is returned as one scirel._result.Result mapping; mapping access is retained and non-colliding fields also support attribute access.",
  "taxonomy": [
   "collisions",
   "collision-matrix",
@@ -222,7 +222,7 @@
   "invalid_input": "raises ValueError for non-real or non-finite values, mismatched shapes, non-increasing axes, invalid weights or normalization, or an invalid n_theta",
   "runtime_failure": "raises ValueError when the thermal speed, a cross section or a matrix is not representable as a finite value; an out-of-memory failure also returns no partial matrix",
   "nonconvergence": "a finite midpoint quadrature with no adaptive iteration; convergence is the caller's check",
-  "partial_results": "never returns partial results"
+  "partial_results": "No partial scirel._result.Result mapping is returned on error."
  },
  "public_api": {
   "python": {
@@ -252,14 +252,15 @@
  },
  "example": {
   "description": "build a two-by-two velocity grid and check the signed matrices and the default five-angle geometry",
-  "code": "import numpy as np\nfrom scirel.collisions import assemble_molecular_hydrogen_collision_matrices\nr = assemble_molecular_hydrogen_collision_matrices(\n    vr=np.array([0.5, 1.0]), vx=np.array([-1.0, 1.0]),\n    Vr2pidVr=np.array([1.0, 2.0]), dVx=np.array([2.0, 2.0]), Tnorm=1.0,\n)\nassert r['SIG_CX'].shape == (4, 4)\nassert r['v_v2'].shape == (2, 2, 2, 2, 5)\nassert np.isfinite(r['SIG_H2_H2']).all()\nassert (r['SIG_H2_H2'] < 0).any()\nassert r['Vth2'].shape == (1,)",
-  "expected": "four finite 4x4 matrices; CX is nonnegative and the elastic moments retain negative values; the five-angle geometry and the thermal-speed square are returned"
+  "code": "import numpy as np\nfrom scirel._result import Result\nfrom scirel.collisions import assemble_molecular_hydrogen_collision_matrices\nr = assemble_molecular_hydrogen_collision_matrices(\n    vr=np.array([0.5, 1.0]), vx=np.array([-1.0, 1.0]),\n    Vr2pidVr=np.array([1.0, 2.0]), dVx=np.array([2.0, 2.0]), Tnorm=1.0,\n)\nassert isinstance(r, Result)\nassert r.SIG_CX is r['SIG_CX']\nassert r['SIG_CX'].shape == (4, 4)\nassert r['v_v2'].shape == (2, 2, 2, 2, 5)\nassert np.isfinite(r['SIG_H2_H2']).all()\nassert (r['SIG_H2_H2'] < 0).any()\nassert r['Vth2'].shape == (1,)",
+  "expected": "four finite 4x4 matrices; CX is nonnegative and the elastic moments retain negative values; the five-angle geometry and the thermal-speed square are returned The top-level result is a scirel._result.Result mapping while all ten fields remain the same arrays."
  },
  "verification": {
   "scope": [
    "independent geometry and fit comparisons retain the existing numerical tolerances",
    "H/D four-channel 4096-angle midpoint results are compared with independent SciPy adaptive integration; weighted exchange relations and a common boost are checked",
-   "moments and Alpha from real normalized distributions verify H<->H2 momentum exchange, Maxwell equilibrium momentum and weak drift"
+   "moments and Alpha from real normalized distributions verify H<->H2 momentum exchange, Maxwell equilibrium momentum and weak drift",
+   "Top-level Result type and attribute/key equivalence are regression-tested; nested array fields remain plain NumPy arrays."
   ],
   "tests": [
    "tests/collisions/test_molecular_hydrogen_collision_matrices.py",

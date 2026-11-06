@@ -38,6 +38,8 @@ from __future__ import annotations
 
 import numpy as np
 
+from scirel._result import Result
+
 from .molecular_hydrogen_charge_exchange_cross_section import (
     evaluate_molecular_hydrogen_charge_exchange_cross_section,
 )
@@ -136,6 +138,10 @@ def assemble_molecular_hydrogen_collision_matrices(
         Square of the thermal speed normalization. [m^2/s^2] Shape: ``[1]``. The
         value is finite and strictly positive.
 
+    The complete result is returned as one ``scirel._result.Result`` mapping. No nested
+    mapping or recursive wrapping is introduced, and non-colliding fields also support
+    attribute access.
+
     Raises
     ------
     ValueError
@@ -177,11 +183,14 @@ def assemble_molecular_hydrogen_collision_matrices(
     Examples
     --------
     >>> import numpy as np
+    >>> from scirel._result import Result
     >>> from scirel.collisions import assemble_molecular_hydrogen_collision_matrices
     >>> r = assemble_molecular_hydrogen_collision_matrices(
     ...     vr=np.array([0.5, 1.0]), vx=np.array([-1.0, 1.0]),
     ...     Vr2pidVr=np.array([1.0, 2.0]), dVx=np.array([2.0, 2.0]), Tnorm=1.0,
     ... )
+    >>> assert isinstance(r, Result)
+    >>> assert r.SIG_CX is r['SIG_CX']
     >>> assert r['SIG_CX'].shape == (4, 4)
     >>> assert r['v_v2'].shape == (2, 2, 2, 2, 5)
     >>> assert np.isfinite(r['SIG_H2_H2']).all()
@@ -317,4 +326,4 @@ def assemble_molecular_hydrogen_collision_matrices(
     sig["vx_vx"] = vx_vx
     sig["Vr2pidVrdVx"] = Vr2pidVrdVx
     sig["Vth2"] = np.array([Vth2])
-    return sig
+    return Result(sig)

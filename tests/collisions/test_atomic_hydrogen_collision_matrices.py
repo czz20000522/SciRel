@@ -24,6 +24,7 @@ from __future__ import annotations
 import numpy as np
 import pytest
 
+from scirel._result import Result
 from scirel.collisions.atomic_hydrogen_collision_matrices import (
     assemble_atomic_hydrogen_collision_matrices,
 )
@@ -194,6 +195,22 @@ HOLDOUT = dict(
 def test_matches_independent_oracle_for_all_four_families(case):
     result = assemble_atomic_hydrogen_collision_matrices(**case)
     expected = _independent_oracle(**case)
+    assert isinstance(result, Result)
+    assert list(result) == [
+        "SIG_CX",
+        "SIG_H_H",
+        "SIG_H_H2",
+        "SIG_H_P",
+        "v_v2",
+        "v_v",
+        "vr2_vx2",
+        "vx_vx",
+        "Vr2pidVrdVx",
+        "Vth2",
+    ]
+    assert result.SIG_CX is result["SIG_CX"]
+    assert result.Vth2 is result["Vth2"]
+    assert all(isinstance(value, np.ndarray) for value in result.values())
     for name in ("SIG_CX", "SIG_H_H", "SIG_H_H2", "SIG_H_P"):
         # Structurally-independent oracle: tolerance covers last-ULP round-off.
         np.testing.assert_allclose(result[name], expected[name], rtol=1e-12, atol=0.0)
