@@ -18,6 +18,8 @@ from pathlib import Path
 import numpy as np
 import pytest
 
+from scirel._result import Result
+
 CLASSIFICATION_MODULE = (
     Path(importlib.import_module("scirel.geometry.material_support").__file__).resolve()
     if os.environ.get("SCIREL_INSTALLED_RUNTIME") == "1"
@@ -83,6 +85,14 @@ def test_u1_b_t01_closed_flux_side_selects_the_flux_surface_side(
         candidate, equilibrium, axes, cylindrical, side="greater_than", separatrix=0.4
     )
     # The two sides are disjoint and neither is empty on this map.
+    assert isinstance(less, Result)
+    assert list(less) == [
+        "material_support_mask",
+        "closed_flux_mask",
+        "axis_segment_mask",
+    ]
+    assert less.material_support_mask is less["material_support_mask"]
+    assert less.closed_flux_mask is less["closed_flux_mask"]
     assert less["closed_flux_mask"].sum() > 0
     assert greater["closed_flux_mask"].sum() > 0
     assert not np.any(less["closed_flux_mask"] & greater["closed_flux_mask"])
@@ -246,7 +256,7 @@ def test_u1_b_t09_classification_relation_is_free_of_map_arrays(candidate):
     imported = {
         node.module for node in ast.walk(tree) if isinstance(node, ast.ImportFrom) and node.module
     }
-    assert imported == {"__future__"}, imported
+    assert imported == {"__future__", "scirel._result"}, imported
     # The docstring may name the mapping relation; the executable body may not
     # depend on it, so the search runs over the body only.
     body = source.replace(candidate["classification_module"].__doc__, "")

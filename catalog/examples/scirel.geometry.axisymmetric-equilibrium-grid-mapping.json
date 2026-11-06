@@ -5,7 +5,7 @@
   "en": "Axisymmetric equilibrium map to Cartesian solver grid",
   "zh": "轴对称平衡映射到笛卡尔求解网格"
  },
- "summary": "Reconstruct the static magnetic field and poloidal flux of an axisymmetric equilibrium onto a Cartesian solver grid by tensor-product linear interpolation on the map's R-Z axes, clamping query points onto the closed map box and reporting where that clamping happened.",
+ "summary": "Reconstruct the static magnetic field and poloidal flux of an axisymmetric equilibrium onto a Cartesian solver grid by tensor-product linear interpolation on the map's R-Z axes, clamping query points onto the closed map box and reporting where that clamping happened. The complete result is returned as one scirel._result.Result mapping; mapping access is retained and non-colliding fields also support attribute access.",
  "taxonomy": [
   "geometry",
   "grid-mapping",
@@ -33,7 +33,7 @@
  "identity": {
   "relation": "an axisymmetric equilibrium map in cylindrical coordinates and a rectilinear Cartesian solver grid to the static field, the poloidal flux, and the coverage of that grid by the map",
   "direction": "equilibrium map arrays plus x_m, y_m, z_m -> magnetic_flux_density_t, poloidal_flux_wb_per_rad, covered_mask, radially_clamped_point_count, axially_clamped_point_count",
-  "definition": "Builds the radius and the axial coordinate of every Cartesian grid point, clamps each query coordinate onto the closed map box, evaluates the tensor-product linear interpolant of each map array at the clamped coordinates, splits the interpolated radial field into Cartesian transverse components, and marks the grid points that lay inside the closed map box.",
+  "definition": "Builds the radius and the axial coordinate of every Cartesian grid point, clamps each query coordinate onto the closed map box, evaluates the tensor-product linear interpolant of each map array at the clamped coordinates, splits the interpolated radial field into Cartesian transverse components, and marks the grid points that lay inside the closed map box. The complete result is returned as one scirel._result.Result mapping; mapping access is retained and non-colliding fields also support attribute access. No nested mapping is introduced.",
   "model": "tensor-product (bilinear) interpolation of an axisymmetric map on a rectilinear R-Z grid, with independent clamping of each query coordinate onto the closed map box",
   "geometry": "axisymmetric equilibrium map sampled on an R-Z grid, evaluated on a rectilinear Cartesian x-y-z solver grid",
   "coordinates": "the map is cylindrical (r, z) and the target is Cartesian (x, y, z) with the axial coordinate shared; mesh built with C-order ij indexing over the target axes",
@@ -87,7 +87,7 @@
  "outputs": [
   {
    "name": "magnetic_flux_density_t",
-   "description": "Static magnetic field on the solver grid, with the field vector in the last axis.",
+   "description": "Field of the returned scirel._result.Result mapping: Static magnetic field on the solver grid, with the field vector in the last axis.",
    "units": "T",
    "shape": "[N_x, N_y, N_z, 3]",
    "dtype": "float64",
@@ -96,7 +96,7 @@
   },
   {
    "name": "poloidal_flux_wb_per_rad",
-   "description": "Poloidal flux per radian interpolated onto the solver grid.",
+   "description": "Field of the returned scirel._result.Result mapping: Poloidal flux per radian interpolated onto the solver grid.",
    "units": "Wb/rad",
    "shape": "[N_x, N_y, N_z]",
    "dtype": "float64",
@@ -105,7 +105,7 @@
   },
   {
    "name": "covered_mask",
-   "description": "Grid points that lay inside the closed box spanned by the map axes before clamping.",
+   "description": "Field of the returned scirel._result.Result mapping: Grid points that lay inside the closed box spanned by the map axes before clamping.",
    "units": "dimensionless",
    "shape": "[N_x, N_y, N_z]",
    "dtype": "bool",
@@ -114,7 +114,7 @@
   },
   {
    "name": "radially_clamped_point_count",
-   "description": "Number of grid points whose radius exceeded the outer map radius and was clamped onto it.",
+   "description": "Field of the returned scirel._result.Result mapping: Number of grid points whose radius exceeded the outer map radius and was clamped onto it.",
    "units": "dimensionless",
    "shape": "scalar",
    "dtype": "int",
@@ -123,7 +123,7 @@
   },
   {
    "name": "axially_clamped_point_count",
-   "description": "Number of grid points whose axial coordinate lay outside the map axial axis and was clamped onto a face.",
+   "description": "Field of the returned scirel._result.Result mapping: Number of grid points whose axial coordinate lay outside the map axial axis and was clamped onto a face.",
    "units": "dimensionless",
    "shape": "scalar",
    "dtype": "int",
@@ -155,7 +155,7 @@
   "invalid_input": "Raises ValueError when equilibrium is not a mapping, when a required map entry is missing, when a map axis is not a finite strictly increasing 1D array of at least five points, when a map array does not have the [N_r, N_z] map shape or is not finite, or when a solver grid axis is not a finite strictly increasing 1D array of at least two points.",
   "runtime_failure": "Raises ValueError if floating-point interpolation or Cartesian assembly produces a non-finite poloidal flux or static field, including arithmetic overflow from finite source samples. There is no fallback interpolation method.",
   "nonconvergence": "Not applicable; this relation is a single closed-form evaluation with no iteration or feedback.",
-  "partial_results": "Never returned; a rejected call produces no mapping."
+  "partial_results": "No scirel._result.Result mapping is returned; a rejected call produces no output mapping."
  },
  "public_api": {
   "python": {
@@ -172,8 +172,8 @@
  },
  "example": {
   "description": "Reconstruct a synthetic axisymmetric equilibrium on a 9x9x7 Cartesian grid and verify field shapes, coverage, clamping counts, and the cylindrical-axis split.",
-  "code": "import numpy as np\nfrom scirel.geometry import map_axisymmetric_equilibrium_to_cartesian_grid\nr_axis = np.linspace(0.05, 1.0, 21)\nz_axis = np.linspace(-0.5, 0.5, 21)\nrr, zz = np.meshgrid(r_axis, z_axis, indexing='ij')\nequilibrium = {\n    'r_m': r_axis,\n    'z_m': z_axis,\n    'psi_wb_per_rad': 0.9 * rr + 0.1 * np.sin(2.0 * np.pi * zz),\n    'br_t': 0.3 * rr - 0.1 * zz ** 2,\n    'bz_t': 1.0 - 0.4 * rr ** 2,\n}\nresult = map_axisymmetric_equilibrium_to_cartesian_grid(\n    equilibrium,\n    np.linspace(-0.5, 0.5, 9),\n    np.linspace(-0.5, 0.5, 9),\n    np.linspace(-0.4, 0.4, 7),\n)\nmagnetic = result['magnetic_flux_density_t']\nassert magnetic.shape == (9, 9, 7, 3)\nassert result['poloidal_flux_wb_per_rad'].shape == (9, 9, 7)\nassert result['covered_mask'].shape == (9, 9, 7)\nassert result['covered_mask'].sum() == 560\nassert result['radially_clamped_point_count'] == 0\nassert result['axially_clamped_point_count'] == 0\nassert np.isfinite(magnetic).all()\nassert magnetic[4, 4, 3, 0] == 0.0 and magnetic[4, 4, 3, 1] == 0.0\nassert magnetic[4, 4, 3, 2] != 0.0",
-  "expected": "The output contains finite field and flux arrays with shapes (9, 9, 7, 3) and (9, 9, 7), 560 covered points, zero clamp counts, and zero transverse field on axis."
+  "code": "import numpy as np\nfrom scirel._result import Result\nfrom scirel.geometry import map_axisymmetric_equilibrium_to_cartesian_grid\nr_axis = np.linspace(0.05, 1.0, 21)\nz_axis = np.linspace(-0.5, 0.5, 21)\nrr, zz = np.meshgrid(r_axis, z_axis, indexing='ij')\nequilibrium = {\n    'r_m': r_axis,\n    'z_m': z_axis,\n    'psi_wb_per_rad': 0.9 * rr + 0.1 * np.sin(2.0 * np.pi * zz),\n    'br_t': 0.3 * rr - 0.1 * zz ** 2,\n    'bz_t': 1.0 - 0.4 * rr ** 2,\n}\nresult = map_axisymmetric_equilibrium_to_cartesian_grid(\n    equilibrium,\n    np.linspace(-0.5, 0.5, 9),\n    np.linspace(-0.5, 0.5, 9),\n    np.linspace(-0.4, 0.4, 7),\n)\nassert isinstance(result, Result)\nmagnetic = result['magnetic_flux_density_t']\nassert magnetic.shape == (9, 9, 7, 3)\nassert result['poloidal_flux_wb_per_rad'].shape == (9, 9, 7)\nassert result['covered_mask'].shape == (9, 9, 7)\nassert result['covered_mask'].sum() == 560\nassert result['radially_clamped_point_count'] == 0\nassert result['axially_clamped_point_count'] == 0\nassert np.isfinite(magnetic).all()\nassert magnetic[4, 4, 3, 0] == 0.0 and magnetic[4, 4, 3, 1] == 0.0\nassert magnetic[4, 4, 3, 2] != 0.0\n",
+  "expected": "The output contains finite field and flux arrays with shapes (9, 9, 7, 3) and (9, 9, 7), 560 covered points, zero clamp counts, and zero transverse field on axis. The returned object is a scirel._result.Result mapping; non-colliding fields also support attribute access."
  },
  "verification": {
   "scope": [
@@ -184,7 +184,8 @@
    "The signed cylindrical radial and axial components, their Cartesian transverse split, and the exactly zero on-axis convention.",
    "Fail-closed validation of the map axes, the map arrays, and the solver grid axes, including nonrepresentable interpolated flux from finite source samples.",
    "The absence of the classification parameters from this relation, by call and by import inspection.",
-   "Exact agreement with an independent reconstruction of the field, the flux, the coverage mask, and both counters."
+   "Exact agreement with an independent reconstruction of the field, the flux, the coverage mask, and both counters.",
+   "The direct tests verify the top-level scirel._result.Result mapping and attribute access."
   ],
   "tests": [
    "tests/geometry/test_axisymmetric_grid_mapping.py",

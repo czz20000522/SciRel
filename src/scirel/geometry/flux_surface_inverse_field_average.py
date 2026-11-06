@@ -4,6 +4,8 @@ from __future__ import annotations
 
 import numpy as np
 
+from scirel._result import Result
+
 __all__ = ["compute_flux_surface_inverse_field_average"]
 
 
@@ -49,6 +51,9 @@ def compute_flux_surface_inverse_field_average(
         supplied. [same as quantity] Shape: ``scalar or null``. Absent from the result
         mapping when quantity is None; otherwise finite.
 
+    The complete result is returned as one ``scirel._result.Result`` mapping. No nested
+    mapping is introduced, and when quantity is None only ``dl_B`` is present.
+
     Raises
     ------
     ValueError
@@ -87,10 +92,13 @@ def compute_flux_surface_inverse_field_average(
     Examples
     --------
     >>> import numpy as np
+    >>> from scirel._result import Result
     >>> from scirel.geometry.flux_surface_inverse_field_average import compute_flux_surface_inverse_field_average
     >>> r_grid, z_grid = np.meshgrid(np.linspace(0.0, 1.0, 5), np.linspace(-1.0, 1.0, 5))
     >>> line = np.array([[0.2, -0.5], [0.4, 0.0], [0.6, 0.5]])
     >>> result = compute_flux_surface_inverse_field_average(r_grid, z_grid, np.full_like(r_grid, 2.0), line, np.full_like(r_grid, 3.0))
+    >>> assert isinstance(result, Result)
+    >>> assert result.flux_surface_average == result['flux_surface_average']
     >>> length = np.linalg.norm(np.diff(line, axis=0), axis=1).sum()
     >>> np.testing.assert_allclose(result['dl_B'], length / 2.0)
     >>> np.testing.assert_allclose(result['flux_surface_average'], 3.0)
@@ -162,7 +170,7 @@ def compute_flux_surface_inverse_field_average(
     denominator = float(trapezoid(1.0 / magnetic_values, x=distance))
     if not np.isfinite(denominator) or denominator <= 0.0:
         raise ValueError("dl_B must be finite and strictly positive")
-    result = {"dl_B": denominator}
+    result = Result({"dl_B": denominator})
     if quantity is not None:
         q_values = np.asarray(
             RectBivariateSpline(z_axis, r_axis, quantity)(line[:, 1], line[:, 0], grid=False),

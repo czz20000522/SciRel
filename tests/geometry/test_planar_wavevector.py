@@ -3,12 +3,20 @@
 import numpy as np
 import pytest
 
+from scirel._result import Result
 from scirel.geometry import project_planar_wavevector
 
 
 def test_polar_projection_keeps_the_declared_angle_at_zero_magnitude():
     result = project_planar_wavevector(k_grid=[0.0, 5.0], theta_rad=np.pi / 2)
 
+    assert isinstance(result, Result)
+    assert list(result) == ["kx", "kz", "k", "theta_rad", "projection_mode"]
+    assert result.kx is result["kx"]
+    assert result.kz is result["kz"]
+    assert result.k is result["k"]
+    assert result.theta_rad == result["theta_rad"]
+    assert result.projection_mode == result["projection_mode"]
     np.testing.assert_allclose(result["kx"], [0.0, 5.0], rtol=0, atol=1e-15)
     np.testing.assert_allclose(result["kz"], [0.0, 0.0], rtol=0, atol=1e-15)
     np.testing.assert_array_equal(result["k"], [0.0, 5.0])
@@ -19,6 +27,10 @@ def test_polar_projection_keeps_the_declared_angle_at_zero_magnitude():
 def test_cartesian_components_are_paired_and_hypot_avoids_spurious_overflow():
     result = project_planar_wavevector(kx_grid=[3.0, 1e200], kz_grid=[4.0, 0.0])
 
+    assert isinstance(result, Result)
+    assert result.kx is result["kx"]
+    assert result.kz is result["kz"]
+    assert result.k is result["k"]
     np.testing.assert_array_equal(result["k"], [5.0, 1e200])
     np.testing.assert_array_equal(result["kx"], [3.0, 1e200])
     np.testing.assert_array_equal(result["kz"], [4.0, 0.0])

@@ -2,6 +2,7 @@ import unittest
 import numpy as np
 import pytest
 
+from scirel._result import Result
 from scirel.geometry.flux_surface_profile import evaluate_flux_surface_profile
 
 
@@ -10,8 +11,12 @@ class FluxSurfaceProfileTest(unittest.TestCase):
         result = evaluate_flux_surface_profile(
             psi_samples=[2.0, 0.0, 1.0, 1.0], values=[4.0, 0.0, 2.0, 3.0], target=[-1.0, 0.5, 3.0]
         )
+        assert isinstance(result, Result)
+        assert list(result) == ["values", "psi", "profile_values"]
         np.testing.assert_allclose(result["values"], [0.0, 1.0, 4.0])
         np.testing.assert_allclose(result["psi"], [0.0, 1.0, 2.0])
+        assert result.psi is result["psi"]
+        assert result.profile_values is result["profile_values"]
 
     def test_rejects_nonfinite(self):
         with self.assertRaises(ValueError):

@@ -18,6 +18,8 @@ from pathlib import Path
 import numpy as np
 import pytest
 
+from scirel._result import Result
+
 _CANDIDATE = (
     Path(
         importlib.import_module("scirel.geometry.complex_rectilinear_interpolation").__file__
@@ -120,6 +122,10 @@ def test_u2_t01_interior_points_match_independent_trilinear_reference():
 def test_u2_t02_result_dtype_keys_and_shapes():
     values = _field(1)
     result = INTERPOLATE(AXES, values, np.array([[1.0, 0.0, 1.0], [0.5, 0.0, 0.5]]))
+    assert isinstance(result, Result)
+    assert list(result) == ["interpolated_values", "valid_mask"]
+    assert result.interpolated_values is result["interpolated_values"]
+    assert result.valid_mask is result["valid_mask"]
     assert set(result) == {"interpolated_values", "valid_mask"}
     assert result["interpolated_values"].dtype == np.complex128
     assert result["interpolated_values"].shape == (2,)
@@ -360,7 +366,9 @@ def test_u2_t12_declared_sibling_relation_is_structural_not_a_duplicate():
         if isinstance(node, ast.Import)
         for alias in node.names
     } | {node.module or "" for node in ast.walk(tree) if isinstance(node, ast.ImportFrom)}
-    assert not any(name == "scirel" or name.startswith("scirel.") for name in imported)
+    assert {name for name in imported if name == "scirel" or name.startswith("scirel.")} == {
+        "scirel._result"
+    }
     assert not hasattr(MODULE, "sample_rectilinear_field")
     assert not hasattr(MODULE, "_axes")
     assert MODULE.__all__ == ["interpolate_complex_rectilinear_field"]

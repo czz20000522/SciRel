@@ -11,6 +11,8 @@ from collections.abc import Mapping
 
 import numpy as np
 
+from scirel._result import Result
+
 __all__ = ["map_axisymmetric_equilibrium_to_cartesian_grid"]
 _REQUIRED_FIELDS = ("psi_wb_per_rad", "br_t", "bz_t")
 
@@ -112,6 +114,9 @@ def map_axisymmetric_equilibrium_to_cartesian_grid(equilibrium, x_m, y_m, z_m):
         clamped onto a face. [dimensionless] Shape: ``scalar``. Counts points below the
         first and above the last map axial axis value.
 
+    The complete result is returned as one ``scirel._result.Result`` mapping. No nested
+    mapping is introduced, and non-colliding fields support attribute access.
+
     Raises
     ------
     ValueError
@@ -160,6 +165,7 @@ def map_axisymmetric_equilibrium_to_cartesian_grid(equilibrium, x_m, y_m, z_m):
     Examples
     --------
     >>> import numpy as np
+    >>> from scirel._result import Result
     >>> from scirel.geometry import map_axisymmetric_equilibrium_to_cartesian_grid
     >>> r_axis = np.linspace(0.05, 1.0, 21)
     >>> z_axis = np.linspace(-0.5, 0.5, 21)
@@ -177,6 +183,7 @@ def map_axisymmetric_equilibrium_to_cartesian_grid(equilibrium, x_m, y_m, z_m):
     ...     np.linspace(-0.5, 0.5, 9),
     ...     np.linspace(-0.4, 0.4, 7),
     ... )
+    >>> assert isinstance(result, Result)
     >>> magnetic = result['magnetic_flux_density_t']
     >>> assert magnetic.shape == (9, 9, 7, 3)
     >>> assert result['poloidal_flux_wb_per_rad'].shape == (9, 9, 7)
@@ -227,10 +234,14 @@ def map_axisymmetric_equilibrium_to_cartesian_grid(equilibrium, x_m, y_m, z_m):
         raise ValueError("mapped equilibrium produced non-finite static B0")
     if not np.isfinite(psi).all():
         raise ValueError("mapped equilibrium produced non-finite poloidal flux")
-    return {
-        "magnetic_flux_density_t": magnetic,
-        "poloidal_flux_wb_per_rad": psi,
-        "covered_mask": covered,
-        "radially_clamped_point_count": int(np.count_nonzero(radius > r_axis[-1])),
-        "axially_clamped_point_count": int(np.count_nonzero((zz < z_axis[0]) | (zz > z_axis[-1]))),
-    }
+    return Result(
+        {
+            "magnetic_flux_density_t": magnetic,
+            "poloidal_flux_wb_per_rad": psi,
+            "covered_mask": covered,
+            "radially_clamped_point_count": int(np.count_nonzero(radius > r_axis[-1])),
+            "axially_clamped_point_count": int(
+                np.count_nonzero((zz < z_axis[0]) | (zz > z_axis[-1]))
+            ),
+        }
+    )

@@ -5,7 +5,7 @@
   "en": "Complex rectilinear field interpolation",
   "zh": "复值直角网格场插值"
  },
- "summary": "Trilinearly interpolate a complex-valued field sampled on three strictly increasing rectilinear axes at caller-owned target points, returning a per-point geometric validity mask and nan+nanj for points outside the tolerance-expanded source box.",
+ "summary": "Trilinearly interpolate a complex-valued field sampled on three strictly increasing rectilinear axes at caller-owned target points, returning a per-point geometric validity mask and nan+nanj for points outside the tolerance-expanded source box. The complete result is returned as one scirel._result.Result mapping; mapping access is retained and non-colliding fields also support attribute access.",
  "taxonomy": [
   "geometry",
   "interpolation",
@@ -33,7 +33,7 @@
  "identity": {
   "relation": "complex field samples on three rectilinear axes to interpolated values at arbitrary target points",
   "direction": "source axes plus complex values plus target points -> interpolated_values, valid_mask",
-  "definition": "Separable trilinear interpolation in [x, y, z] axis order with the source values indexed [N_x, N_y, N_z]; target points inside the closed source box expanded by tol are clamped onto the closed box and interpolated, and target points outside that expanded box return nan+nanj with valid_mask false.",
+  "definition": "Separable trilinear interpolation in [x, y, z] axis order with the source values indexed [N_x, N_y, N_z]; target points inside the closed source box expanded by tol are clamped onto the closed box and interpolated, and target points outside that expanded box return nan+nanj with valid_mask false. The complete result is returned as one scirel._result.Result mapping; mapping access is retained and non-colliding fields also support attribute access. No nested mapping is introduced.",
   "model": "piecewise-trilinear reconstruction of a band-limited complex field",
   "geometry": "tensor-product rectilinear grid; no assumption of uniform spacing on any axis",
   "coordinates": "caller-declared Cartesian axes in metres, indexed [x, y, z]",
@@ -76,7 +76,7 @@
  "outputs": [
   {
    "name": "interpolated_values",
-   "description": "Interpolated complex field value per target point, with the source trailing axes preserved.",
+   "description": "Field of the returned scirel._result.Result mapping: Interpolated complex field value per target point, with the source trailing axes preserved.",
    "units": "caller-declared field units",
    "shape": "[N_point] plus optional trailing axes",
    "dtype": "complex128",
@@ -85,7 +85,7 @@
   },
   {
    "name": "valid_mask",
-   "description": "Geometric containment predicate: true exactly when the target point lies inside the closed source box expanded by tol.",
+   "description": "Field of the returned scirel._result.Result mapping: Geometric containment predicate: true exactly when the target point lies inside the closed source box expanded by tol.",
    "units": "dimensionless",
    "shape": "[N_point]",
    "dtype": "bool",
@@ -112,7 +112,7 @@
   "invalid_input": "Raises ValueError for a missing or non-mapping source_axes_m, an axis that is not one-dimensional, has fewer than two points, is non-finite, or is not strictly increasing, for a source_values leading shape that does not match the axes, and for target points that are not a finite (N,3) array.",
   "runtime_failure": "No exception is raised for out-of-domain points; they are reported through valid_mask with nan+nanj values. NumPy or SciPy errors for otherwise valid inputs propagate unchanged.",
   "nonconvergence": "Not applicable; this operator has no iteration or feedback.",
-  "partial_results": "Never returned; a rejected call produces no output mapping."
+  "partial_results": "No scirel._result.Result mapping is returned; a rejected call produces no output mapping."
  },
  "public_api": {
   "python": {
@@ -129,8 +129,8 @@
  },
  "example": {
   "description": "Interpolate a complex field at two geometrically valid points and one point outside the tolerance-expanded box.",
-  "code": "import numpy as np\nfrom scirel.geometry import interpolate_complex_rectilinear_field\naxes = {'x_m': np.array([0.0, 1.0, 2.0]), 'y_m': np.array([0.0, 1.0, 2.0]), 'z_m': np.array([0.0, 1.0, 2.0])}\nvalues = np.zeros((3, 3, 3), dtype=complex)\nvalues[1, 1, 1] = 4.0 + 2.0j\npoints = np.array([[1.0, 1.0, 1.0], [1.0 + 1.0e-15, 1.0, 1.0], [1.0, 1.0, 3.0]])\nresult = interpolate_complex_rectilinear_field(axes, values, points)\nassert result['valid_mask'].tolist() == [True, True, False]\nassert np.isfinite(result['interpolated_values'][:2]).all()\nassert np.isnan(result['interpolated_values'][2].real) and np.isnan(result['interpolated_values'][2].imag)",
-  "expected": "The complex value array has length three; the first two entries are finite and valid_mask is [True, True, False], with nan+nanj for the invalid point."
+  "code": "import numpy as np\nfrom scirel._result import Result\nfrom scirel.geometry import interpolate_complex_rectilinear_field\naxes = {'x_m': np.array([0.0, 1.0, 2.0]), 'y_m': np.array([0.0, 1.0, 2.0]), 'z_m': np.array([0.0, 1.0, 2.0])}\nvalues = np.zeros((3, 3, 3), dtype=complex)\nvalues[1, 1, 1] = 4.0 + 2.0j\npoints = np.array([[1.0, 1.0, 1.0], [1.0 + 1.0e-15, 1.0, 1.0], [1.0, 1.0, 3.0]])\nresult = interpolate_complex_rectilinear_field(axes, values, points)\nassert isinstance(result, Result)\nassert result['valid_mask'].tolist() == [True, True, False]\nassert np.isfinite(result['interpolated_values'][:2]).all()\nassert np.isnan(result['interpolated_values'][2].real) and np.isnan(result['interpolated_values'][2].imag)\n",
+  "expected": "The complex value array has length three; the first two entries are finite and valid_mask is [True, True, False], with nan+nanj for the invalid point. The returned object is a scirel._result.Result mapping; non-colliding fields also support attribute access."
  },
  "verification": {
   "scope": [
@@ -141,7 +141,8 @@
    "nan+nanj and a false mask for points outside the expanded box, including points that would clamp to a finite face value.",
    "Propagation of non-finite source values through the stencil while valid_mask stays true.",
    "Fail-closed validation of source axes, source shape, and target points.",
-   "Empty target sets and preservation of trailing source axes."
+   "Empty target sets and preservation of trailing source axes.",
+   "The direct tests verify the top-level scirel._result.Result mapping and attribute access."
   ],
   "tests": [
    "tests/geometry/test_complex_rectilinear_interpolation.py"

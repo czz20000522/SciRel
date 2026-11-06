@@ -6,6 +6,8 @@ import math
 
 import numpy as np
 
+from scirel._result import Result
+
 __all__ = ["ALLOWED_CLOSED_FLUX_SIDES", "classify_material_support"]
 ALLOWED_CLOSED_FLUX_SIDES = ("less_than", "greater_than")
 
@@ -116,6 +118,9 @@ def classify_material_support(
         coverage mask, it is empty whenever the sampled field's radial axis begins
         above the grid's minimum radius.
 
+    The complete result is returned as one ``scirel._result.Result`` mapping. No nested
+    mapping is introduced, and non-colliding fields support attribute access.
+
     Raises
     ------
     ValueError
@@ -161,6 +166,7 @@ def classify_material_support(
     Examples
     --------
     >>> import numpy as np
+    >>> from scirel._result import Result
     >>> from scirel.geometry import classify_material_support
     >>> x_m = np.linspace(-0.5, 0.5, 9)
     >>> y_m = np.linspace(-0.5, 0.5, 9)
@@ -182,6 +188,7 @@ def classify_material_support(
     ...     pml_cells=1,
     ...     pec_mask=pec,
     ... )
+    >>> assert isinstance(result, Result)
     >>> support = result['material_support_mask']
     >>> assert support.dtype == bool and support.shape == (9, 9, 7)
     >>> assert support.sum() > 0
@@ -240,8 +247,10 @@ def classify_material_support(
             "the innermost-radius segment, the PML frame, and the PEC mask leave no "
             "grid point with cold-plasma support"
         )
-    return {
-        "material_support_mask": support,
-        "closed_flux_mask": closed,
-        "axis_segment_mask": axis,
-    }
+    return Result(
+        {
+            "material_support_mask": support,
+            "closed_flux_mask": closed,
+            "axis_segment_mask": axis,
+        }
+    )
