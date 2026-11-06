@@ -2,6 +2,8 @@
 
 import numpy as np
 
+from scirel._result import Result
+
 
 def _bracket(axis, query):
     """Return lower indices and interpolation fractions, allowing extrapolation."""
@@ -57,7 +59,20 @@ def evaluate_tabulated_pressure(
     false, ``fill_value=None`` selects linear extrapolation and a finite scalar
     fills out-of-domain points.  Tables and returned pressures are finite and
     nonnegative; interpolation does not certify force balance.
-    """
+
+    Returns
+    -------
+    The top-level value is a ``scirel._result.Result`` mapping; field values
+    are available by key and preserve the baseline key order.
+    p_parallel : NumPy float64 array [Pa by caller table convention]
+        Interpolated parallel pressure at broadcast queries.
+    p_perpendicular : NumPy float64 array [Pa by caller table convention]
+        Interpolated perpendicular pressure, or a copy of parallel pressure in the one-dimensional
+        branch.
+    is_isotropic : Python bool [dimensionless]
+        Whether the complete supplied component tables are exactly equal after float64 conversion.
+    table_dimension : int [dimensionless]
+        Number of table interpolation coordinates."""
     psi_axis = np.asarray(psi_grid, dtype=float)
     parallel_table = np.asarray(p_parallel_table, dtype=float)
     if (
@@ -116,12 +131,14 @@ def evaluate_tabulated_pressure(
         )
         if not np.all(np.isfinite(pressure)) or np.any(pressure < 0.0):
             raise ValueError("interpolated pressure must be finite and nonnegative")
-        return {
-            "p_parallel": pressure,
-            "p_perpendicular": pressure.copy(),
-            "is_isotropic": True,
-            "table_dimension": 1,
-        }
+        return Result(
+            {
+                "p_parallel": pressure,
+                "p_perpendicular": pressure.copy(),
+                "is_isotropic": True,
+                "table_dimension": 1,
+            }
+        )
 
     b_axis = np.asarray(b_grid, dtype=float)
     import scipy  # noqa: F401
@@ -176,12 +193,14 @@ def evaluate_tabulated_pressure(
         or np.any(perpendicular < 0.0)
     ):
         raise ValueError("interpolated pressures must be finite and nonnegative")
-    return {
-        "p_parallel": parallel,
-        "p_perpendicular": perpendicular,
-        "is_isotropic": bool(np.array_equal(parallel_table, perpendicular_table)),
-        "table_dimension": 2,
-    }
+    return Result(
+        {
+            "p_parallel": parallel,
+            "p_perpendicular": perpendicular,
+            "is_isotropic": bool(np.array_equal(parallel_table, perpendicular_table)),
+            "table_dimension": 2,
+        }
+    )
 
 
 __all__ = ["evaluate_tabulated_pressure"]

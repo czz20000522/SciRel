@@ -5,7 +5,7 @@
   "en": "Quasineutral potential by vectorized bisection",
   "zh": "准中性电势二分求根"
  },
- "summary": "Find an active-surface potential by bounded bracket expansion and vectorized bisection of a caller-supplied logarithmic charge residual.",
+ "summary": "Find an active-surface potential by bounded bracket expansion and vectorized bisection of a caller-supplied logarithmic charge residual. The top-level result is a scirel._result.Result mapping; non-colliding fields also support attribute access.",
  "taxonomy": [
   "closures",
   "quasineutrality",
@@ -32,7 +32,7 @@
  "identity": {
   "relation": "root of a caller-supplied logarithmic ion-electron charge residual as a function of potential",
   "direction": "reference potential, ion and electron thermal energies, ion charge, active mask, residual evaluator and controls -> potential, final residual, iteration count and convergence flag",
-  "definition": "For each active surface solve the caller's R(phi)=log(Z*n_i(phi))-log(n_e(phi))=0, represented by logarithmic_charge_residual. Start at phi_ref +/- k*(T_parallel/q + T_e/e), where e=1.602176634e-19 C and k=initial_bracket_thermal. Expand invalid-sign brackets for at most eight rounds, then bisect. Return only when both the maximum active bracket width <= potential_tolerance_v and maximum absolute active midpoint residual <= quasineutral_tolerance within max_iterations. Inactive potentials remain at phi_ref. Finite midpoint evaluation avoids first summing large same-sign endpoints. A strict zero from the caller residual is an exact root hit for the supplied numerical residual and contracts that active bracket to the evaluated point. A small nonzero residual does not trigger this contraction; width and residual tolerances are unchanged.",
+  "definition": "For each active surface solve the caller's R(phi)=log(Z*n_i(phi))-log(n_e(phi))=0, represented by logarithmic_charge_residual. Start at phi_ref +/- k*(T_parallel/q + T_e/e), where e=1.602176634e-19 C and k=initial_bracket_thermal. Expand invalid-sign brackets for at most eight rounds, then bisect. Return only when both the maximum active bracket width <= potential_tolerance_v and maximum absolute active midpoint residual <= quasineutral_tolerance within max_iterations. Inactive potentials remain at phi_ref. Finite midpoint evaluation avoids first summing large same-sign endpoints. A strict zero from the caller residual is an exact root hit for the supplied numerical residual and contracts that active bracket to the evaluated point. A small nonzero residual does not trigger this contraction; width and residual tolerances are unchanged. The complete result is returned as one scirel._result.Result mapping; nested mapping fields remain plain dicts.",
   "model": "caller-owned decreasing residual with positive values below the root and negative values above it; this operator brackets and bisects but does not calculate either density",
   "geometry": "none imposed; broadcast elements represent independent surfaces with one shared vectorized stopping decision",
   "coordinates": "caller-supplied axes; NumPy broadcasting does not verify physical surface alignment",
@@ -194,7 +194,7 @@
   "invalid_input": "Raises ValueError for nonfinite potential or temperatures, nonpositive temperatures or charge, invalid positive controls, max_iterations outside integer >=2, or a callback result without a Mapping containing a finite broadcastable logarithmic_charge_residual. NumPy conversion, a noncallable callback or callback logic may raise TypeError or ValueError; callback exceptions propagate.",
   "runtime_failure": "Raises RuntimeError if active endpoint signs remain invalid after up to eight expansion rounds. Nonfinite midpoint endpoints raise FloatingPointError; callback validation/errors can also reject an overflowed thermal bracket. Extreme finite thermal scales may still require an unrepresentable bracket.",
   "nonconvergence": "Raises RuntimeError('ambipolar potential solve did not converge') if both width and residual tolerances are not met on all active surfaces within max_iterations. Adjacent-float stalling is not success: a root between representable potentials that cannot satisfy the residual gate raises rather than widening the tolerance.",
-  "partial_results": "No mapping is returned after validation, callback, bracketing or convergence failure; the final callback evaluation can also fail after midpoint stopping."
+  "partial_results": "No scirel._result.Result mapping is returned after validation, callback, bracketing or convergence failure; the final callback evaluation can also fail after midpoint stopping."
  },
  "public_api": {
   "python": {
@@ -212,7 +212,7 @@
  "example": {
   "description": "Solve a decreasing residual on one active surface and retain an inactive reference potential.",
   "code": "import numpy as np\nfrom scirel.closures import solve_quasineutral_potential\ne=1.602176634e-19\ndef residual(phi):\n    return {'logarithmic_charge_residual': 0.5-np.asarray(phi)}\nr=solve_quasineutral_potential([0.0,17.0],0.1*e,0.1*e,e,[True,False],residual)\nnp.testing.assert_allclose(r['potential_v'],[0.5,17.0],atol=1e-8)\nassert abs(r['logarithmic_charge_residual'][0])<=1e-10\nnp.testing.assert_allclose(r['logarithmic_charge_residual'][1],-16.5)\nassert r['converged'] and 1<=r['iterations']<=100",
-  "expected": "The active potential is about 0.5 V; the inactive potential stays 17 V and retains a nonneutral residual of -16.5."
+  "expected": "The active potential is about 0.5 V; the inactive potential stays 17 V and retains a nonneutral residual of -16.5. The top-level return is a scirel._result.Result mapping."
  },
  "verification": {
   "scope": [

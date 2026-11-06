@@ -5,7 +5,7 @@
   "en": "Reduced Hall toroidal drift closure",
   "zh": "约化 Hall 环向漂移闭合"
  },
- "summary": "Project gyrotropic pressure force to toroidal current on an R-Z grid, solve an optional bounded local toroidal-inertia correction, and report ion/electron drifts, generalized-Ohm and scale diagnostics.",
+ "summary": "Project gyrotropic pressure force to toroidal current on an R-Z grid, solve an optional bounded local toroidal-inertia correction, and report ion/electron drifts, generalized-Ohm and scale diagnostics. The top-level result is a scirel._result.Result mapping; non-colliding fields also support attribute access.",
  "taxonomy": [
   "closures",
   "hall",
@@ -32,7 +32,7 @@
  "identity": {
   "relation": "R-Z field, ion pressure, electrostatic potential and species closure state to reduced Hall toroidal current and drifts",
   "direction": "R-Z grid, B_R, B_Z, p_parallel, p_perpendicular, closure_state, plasma_mask and ion properties -> J_phi, toroidal species velocities and diagnostics",
-  "definition": "Form cylindrical gyrotropic pressure-force components using second-order grid gradients. Project their perpendicular part as J_phi=(B_Z force_R-B_R force_Z)/|B|^2. On active non-axis cells with ion density above the fractional peak-density floor and resolvable |B|, combine E=-grad(phi), electron pressure force and Hall multiplier to obtain the toroidal drift. Optionally iterate the radial centrifugal correction to J_phi with bounded under-relaxation and cap the ion velocity by maximum_inertial_mach times the ion thermal speed. Return masked current, species drifts and residual/scale diagnostics; the Hall multiplier and optional inertia are part of this implemented relation, not an unrestricted two-fluid solution. The shared cylindrical force kernel includes the regular-axis axial term and difference-form derivatives. Compatibility reports the residual above a dimensioned 64-epsilon tensor/stencil rounding envelope, retaining raw absolute and relative residuals and the envelope. This is a floating-point resolution diagnostic, not a truncation-error bound or evidence that a sub-resolution physical force is exactly zero. Omitted ion pressure is total minus electron pressure. Explicit independent fits retain and report residual stress; species_sum mode rejects incompatible components. Local inertia convergence is tested by the unrelaxed current map evaluated at final J; small relaxation steps never substitute for that residual.",
+  "definition": "Form cylindrical gyrotropic pressure-force components using second-order grid gradients. Project their perpendicular part as J_phi=(B_Z force_R-B_R force_Z)/|B|^2. On active non-axis cells with ion density above the fractional peak-density floor and resolvable |B|, combine E=-grad(phi), electron pressure force and Hall multiplier to obtain the toroidal drift. Optionally iterate the radial centrifugal correction to J_phi with bounded under-relaxation and cap the ion velocity by maximum_inertial_mach times the ion thermal speed. Return masked current, species drifts and residual/scale diagnostics; the Hall multiplier and optional inertia are part of this implemented relation, not an unrestricted two-fluid solution. The shared cylindrical force kernel includes the regular-axis axial term and difference-form derivatives. Compatibility reports the residual above a dimensioned 64-epsilon tensor/stencil rounding envelope, retaining raw absolute and relative residuals and the envelope. This is a floating-point resolution diagnostic, not a truncation-error bound or evidence that a sub-resolution physical force is exactly zero. Omitted ion pressure is total minus electron pressure. Explicit independent fits retain and report residual stress; species_sum mode rejects incompatible components. Local inertia convergence is tested by the unrelaxed current map evaluated at final J; small relaxation steps never substitute for that residual. The complete result is returned as one scirel._result.Result mapping; nested mapping fields remain plain dicts.",
   "model": "reduced axisymmetric Hall drift with gyrotropic pressure and optional local toroidal-inertia correction",
   "geometry": "rectilinear cylindrical R-Z grid, at least three nodes per axis",
   "coordinates": "R nonnegative, R and Z strictly increasing; arrays indexed [Z,R]",
@@ -658,7 +658,7 @@
   "invalid_input": "Raises ValueError for invalid mass, charge or scalar controls; a nonboolean inertia flag; malformed R-Z grid; nonfinite/mismatched field or pressure arrays; wrong-shaped or nonboolean mask; absent or nonfinite required closure_state fields; or negative density/electron and optional ion pressure components. Some malformed optional state arrays may propagate NumPy broadcasting errors. Negative primary total pressure or inconsistent species_sum state is rejected.",
   "runtime_failure": "A local inertia fixed point that exceeds inertia_max_iterations raises RuntimeError. Other NumPy arithmetic and conversion failures propagate; extreme finite inputs are not guaranteed to produce finite diagnostics.",
   "nonconvergence": "The local inertia loop is bounded; when enabled and its unrelaxed current-map residual threshold is not reached, RuntimeError is raised instead of returning a partial state.",
-  "partial_results": "No result mapping is returned after an exception. A returned mapping has inertia_converged=true, including the no-inertia branch."
+  "partial_results": "No scirel._result.Result mapping is returned after an exception. A returned mapping has inertia_converged=true, including the no-inertia branch."
  },
  "public_api": {
   "python": {
@@ -676,7 +676,7 @@
  "example": {
   "description": "Uniform isotropic pressure and potential in an axial field produce zero toroidal current and species drift.",
   "code": "import numpy as np\nfrom scirel.closures import close_reduced_hall_drift\nr_grid, z_grid = np.meshgrid([0.0, 0.2, 0.4], [-0.2, 0.0, 0.2])\nzeros = np.zeros_like(r_grid)\npressure = np.full_like(r_grid, 20.0)\nstate = {'ion_density': np.full_like(r_grid, 1e18), 'electron_pressure': zeros, 'electrostatic_potential': zeros}\nresult = close_reduced_hall_drift(r_grid, z_grid, zeros, np.full_like(r_grid, 2.0), pressure, pressure, state, np.ones_like(r_grid, dtype=bool), 1.67262192595e-27, 1.602176634e-19)\nnp.testing.assert_allclose(result['J_phi'], 0.0)\nnp.testing.assert_allclose(result['ion_toroidal_velocity'], 0.0)\nassert result['inertia_converged']",
-  "expected": "The current and ion toroidal velocity vanish and the bounded local inertia calculation reports convergence."
+  "expected": "The current and ion toroidal velocity vanish and the bounded local inertia calculation reports convergence. The top-level return is a scirel._result.Result mapping."
  },
  "verification": {
   "scope": [
