@@ -5478,7 +5478,7 @@
   },
   {
    "asset_id": "scirel.kinetic.mirror-invariant-distribution",
-   "source_sha256": "b8c1b21fe303a386b97bf9d9c190f572b642926730d1ab901c5649f00c0d0674",
+   "source_sha256": "ba4f448c369f1d2063b5015ac497210d3d42cadfdd643c1aca3a888a3fb35184",
    "summary": "由能量和磁矩求参考双 Maxwell 相空间密度，可乘双端磁塞损失锥占据及部分回填。",
    "definition": "μ=mv_perp²/(2B)，E=mv_parallel²/2+μB+qφ，C=(B−B_ref)/T_parallel+B_ref/T_perp,ref。f=n_ref(m/2π)^1.5/(T_perp,ref sqrt(T_parallel))×exp[−(E−qφ_ref)/T_parallel−μB_ref(1/T_perp,ref−1/T_parallel)]×occupation。双塞时 occupation=refill+(1−refill)1[E<min(μB_left+qφ_left,μB_right+qφ_right)]，等于屏障归入耗尽支。归一化和指数/占据在对数域合成；以相对电势及缩放运算求 f/占据，不用大绝对 energy_j 中丢失的低位热能判断。",
    "model": "导引中心回旋对称不变量双 Maxwell 规定分布；不求解场或矩。",
@@ -5492,31 +5492,31 @@
     {
      "name": "v_parallel_m_s",
      "description": "沿局部磁场的有符号速度。",
-     "constraints": "不做显式有限值检查；反转符号不改变能量贡献。",
+     "constraints": "必须有限；反转符号不改变能量贡献。",
      "dtype": "转为 float64 的实数类数组"
     },
     {
      "name": "v_perpendicular_m_s",
      "description": "通过平方参与计算的垂直速度。",
-     "constraints": "不做显式有限值或非负检查；符号不改变 μ。",
+     "constraints": "必须有限；不做非负检查，符号不改变 μ。",
      "dtype": "转为 float64 的实数类数组"
     },
     {
      "name": "b_t",
      "description": "局部磁场模 B。",
-     "constraints": "检查为严格正；NaN 在算术之前未单独拒绝。",
+     "constraints": "必须有限且严格为正。",
      "dtype": "转为 float64 的实数类数组"
     },
     {
      "name": "psi",
      "description": "剖面求值用的磁通坐标及形状载体。",
-     "constraints": "不做显式有限值、范围或磁通归一化检查。",
+     "constraints": "必须有限；不检查范围或磁通归一化。",
      "dtype": "转为 float64 的实数类数组"
     },
     {
      "name": "potential_v",
      "description": "局部静电势 φ。",
-     "constraints": "不做显式有限值检查。",
+     "constraints": "必须有限。",
      "dtype": "转为 float64 的实数类数组"
     },
     {

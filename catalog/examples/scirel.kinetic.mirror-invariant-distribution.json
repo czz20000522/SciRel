@@ -51,7 +51,7 @@
    "shape": "scalar or array broadcasting with the other four local quantities",
    "dtype": "real array-like converted to float64",
    "required": true,
-   "constraints": "No explicit finite-value check; sign reversal leaves the energy contribution unchanged."
+   "constraints": "Finite; sign reversal leaves the energy contribution unchanged."
   },
   {
    "name": "v_perpendicular_m_s",
@@ -60,7 +60,7 @@
    "shape": "scalar or array broadcasting with the other four local quantities",
    "dtype": "real array-like converted to float64",
    "required": true,
-   "constraints": "No explicit finite-value or nonnegative check; the sign does not change mu."
+   "constraints": "Finite; no nonnegative check; the sign does not change mu."
   },
   {
    "name": "b_t",
@@ -69,7 +69,7 @@
    "shape": "scalar or array broadcasting with the other four local quantities",
    "dtype": "real array-like converted to float64",
    "required": true,
-   "constraints": "Checked strictly positive; NaN is not separately rejected before arithmetic."
+   "constraints": "Finite and strictly positive."
   },
   {
    "name": "psi",
@@ -78,7 +78,7 @@
    "shape": "scalar or array broadcasting with the other four local quantities",
    "dtype": "real array-like converted to float64",
    "required": true,
-   "constraints": "No explicit finite-value, range or flux-normalization check."
+   "constraints": "Finite; no range or flux-normalization check."
   },
   {
    "name": "potential_v",
@@ -87,7 +87,7 @@
    "shape": "scalar or array broadcasting with the other four local quantities",
    "dtype": "real array-like converted to float64",
    "required": true,
-   "constraints": "No explicit finite-value check."
+   "constraints": "Finite."
   },
   {
    "name": "mass_kg",
