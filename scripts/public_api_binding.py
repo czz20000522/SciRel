@@ -10,8 +10,48 @@ canonical binding is a discoverable compatibility alias.
 from __future__ import annotations
 
 import ast
+from dataclasses import dataclass
+import inspect
+import json
 from pathlib import Path
 from typing import Any
+
+
+@dataclass(frozen=True)
+class _SignatureReference:
+    """Render a callable default by its stable import reference."""
+
+    reference: str
+
+    def __repr__(self) -> str:
+        return self.reference
+
+
+def contract_default(value: Any) -> Any:
+    """Return a deterministic, JSON-compatible value for a signature default."""
+
+    if callable(value):
+        module = getattr(value, "__module__", None)
+        qualname = getattr(value, "__qualname__", None)
+        if module and qualname:
+            return f"{module}.{qualname}"
+    try:
+        return json.loads(json.dumps(value))
+    except (TypeError, ValueError):
+        return value
+
+
+def format_signature(signature: inspect.Signature) -> str:
+    """Format a signature with stable references for callable defaults."""
+
+    parameters = []
+    for parameter in signature.parameters.values():
+        if parameter.default is not inspect.Parameter.empty and callable(parameter.default):
+            reference = contract_default(parameter.default)
+            if isinstance(reference, str):
+                parameter = parameter.replace(default=_SignatureReference(reference))
+        parameters.append(parameter)
+    return str(signature.replace(parameters=parameters))
 
 
 def _module_path(source_root: Path, module: str) -> tuple[Path, Path]:

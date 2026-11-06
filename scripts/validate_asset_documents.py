@@ -17,6 +17,7 @@ import textwrap
 from typing import Any
 
 from code_digest import source_digest
+from public_api_binding import contract_default, format_signature
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -682,7 +683,7 @@ def validate_runtime(
                 "canonical Python callable differs from implementation binding",
             )
     signature = inspect.signature(function)
-    actual_signature = f"{python_api['symbol']}{signature}"
+    actual_signature = f"{python_api['symbol']}{format_signature(signature)}"
     if actual_signature != python_api["signature"]:
         _fail(
             document["asset_id"],
@@ -877,13 +878,7 @@ def _validate_runtime_inputs(
         if port["required"] != runtime_required:
             _fail(document["asset_id"], f"required status differs for input: {name}")
         documented_default = port.get("default")
-        runtime_default = parameter.default
-        if not runtime_required:
-            # JSON arrays preserve the values of public tuple defaults.
-            try:
-                runtime_default = json.loads(json.dumps(runtime_default))
-            except (TypeError, ValueError):
-                pass
+        runtime_default = contract_default(parameter.default)
         if not runtime_required and documented_default != runtime_default:
             _fail(document["asset_id"], f"default differs for input: {name}")
 

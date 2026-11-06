@@ -10,15 +10,6 @@ from .axisymmetric_grid_mapping import map_axisymmetric_equilibrium_to_cartesian
 from .material_support import classify_material_support
 
 __all__ = ["solve_axisymmetric_equilibrium_grid_mapping"]
-_REQUIRED_INPUTS = (
-    "equilibrium",
-    "x_m",
-    "y_m",
-    "z_m",
-    "xpoint_half_length_m",
-    "pml_cells",
-    "pec_mask",
-)
 
 
 def _cylindrical_coordinates(x_m, y_m, z_m):
@@ -47,23 +38,23 @@ def _classification_parameters(equilibrium):
 
 
 def _run_composition(
-    inputs,
+    equilibrium,
+    x_m,
+    y_m,
+    z_m,
+    xpoint_half_length_m,
+    pml_cells,
+    pec_mask,
     *,
     equilibrium_grid_mapping=map_axisymmetric_equilibrium_to_cartesian_grid,
     material_support_classification=classify_material_support,
 ):
     """Run mapping followed by material-support classification."""
-    if not isinstance(inputs, Mapping):
-        raise ValueError("inputs must be a mapping")
-    missing = sorted(set(_REQUIRED_INPUTS).difference(inputs))
-    if missing:
-        raise ValueError(f"missing required composition inputs: {missing}")
-    equilibrium = inputs["equilibrium"]
     if not isinstance(equilibrium, Mapping):
         raise ValueError("equilibrium must be a mapping of caller-owned arrays")
 
-    mapped = equilibrium_grid_mapping(equilibrium, inputs["x_m"], inputs["y_m"], inputs["z_m"])
-    radius, axial = _cylindrical_coordinates(inputs["x_m"], inputs["y_m"], inputs["z_m"])
+    mapped = equilibrium_grid_mapping(equilibrium, x_m, y_m, z_m)
+    radius, axial = _cylindrical_coordinates(x_m, y_m, z_m)
     separatrix, side = _classification_parameters(equilibrium)
     classified = material_support_classification(
         mapped["poloidal_flux_wb_per_rad"],
@@ -72,9 +63,9 @@ def _run_composition(
         axial,
         separatrix_flux_wb_per_rad=separatrix,
         closed_flux_side=side,
-        xpoint_half_length_m=inputs["xpoint_half_length_m"],
-        pml_cells=inputs["pml_cells"],
-        pec_mask=inputs["pec_mask"],
+        xpoint_half_length_m=xpoint_half_length_m,
+        pml_cells=pml_cells,
+        pec_mask=pec_mask,
     )
     return {
         "magnetic_flux_density_t": mapped["magnetic_flux_density_t"],
@@ -88,15 +79,22 @@ def _run_composition(
     }
 
 
-def solve_axisymmetric_equilibrium_grid_mapping(inputs=None, **kwargs):
+def solve_axisymmetric_equilibrium_grid_mapping(
+    equilibrium,
+    x_m,
+    y_m,
+    z_m,
+    xpoint_half_length_m,
+    pml_cells,
+    pec_mask,
+    *,
+    equilibrium_grid_mapping=map_axisymmetric_equilibrium_to_cartesian_grid,
+    material_support_classification=classify_material_support,
+):
     """Axisymmetric equilibrium to solver-grid material support
 
     Parameters
     ----------
-    inputs : mapping, optional
-        Mapping containing the seven scientific inputs documented below. A missing or
-        non-mapping value is rejected.
-
     equilibrium : Python mapping
         Caller-owned equilibrium mapping carrying the map arrays r_m, z_m, psi_wb_per_rad,
         br_t, bz_t and the classification parameters separatrix_flux_wb_per_rad and
@@ -128,9 +126,16 @@ def solve_axisymmetric_equilibrium_grid_mapping(inputs=None, **kwargs):
         Caller-owned PEC mask passed to the material-support relation. [dimensionless]
         Shape: ``[N_x, N_y, N_z]``. Must match the solver grid shape.
 
-    **kwargs : keyword arguments, optional
-        Optional composition-node overrides named ``equilibrium_grid_mapping`` and
-        ``material_support_classification``.
+    equilibrium_grid_mapping : callable, keyword-only, optional
+        Mapping relation used to reconstruct the static field and poloidal flux.
+        [dimensionless] Shape: ``callable``. Defaults to
+        ``map_axisymmetric_equilibrium_to_cartesian_grid`` and may be replaced only by
+        a callable with the same input and output contract.
+
+    material_support_classification : callable, keyword-only, optional
+        Classification relation used after mapping. [dimensionless] Shape: ``callable``.
+        Defaults to ``classify_material_support`` and may be replaced only by a callable
+        with the same input and output contract.
 
     Returns
     -------
@@ -166,8 +171,14 @@ def solve_axisymmetric_equilibrium_grid_mapping(inputs=None, **kwargs):
 
     Raises
     ------
+    TypeError
+        If a required top-level argument is missing, the removed ``inputs`` mapping or an
+        unknown keyword is supplied.
+
     ValueError
-        Raises ValueError when inputs is not a mapping, when any of the seven required inputs is missing, when equilibrium is not a mapping, or when the equilibrium mapping does not carry the two classification parameters.
+        If ``equilibrium`` is not a mapping or does not carry the two classification
+        parameters. Validation failures from either declared dependency propagate
+        unchanged.
 
     See Also
     --------
@@ -219,15 +230,15 @@ def solve_axisymmetric_equilibrium_grid_mapping(inputs=None, **kwargs):
     ...     'separatrix_flux_wb_per_rad': 0.4,
     ...     'closed_flux_side': 'less_than',
     ... }
-    >>> result = solve_axisymmetric_equilibrium_grid_mapping(inputs={
-    ...     'equilibrium': equilibrium,
-    ...     'x_m': np.linspace(-0.5, 0.5, 9),
-    ...     'y_m': np.linspace(-0.5, 0.5, 9),
-    ...     'z_m': np.linspace(-0.4, 0.4, 7),
-    ...     'xpoint_half_length_m': 0.2,
-    ...     'pml_cells': 1,
-    ...     'pec_mask': np.zeros((9, 9, 7), dtype=bool),
-    ... })
+    >>> result = solve_axisymmetric_equilibrium_grid_mapping(
+    ...     equilibrium,
+    ...     np.linspace(-0.5, 0.5, 9),
+    ...     np.linspace(-0.5, 0.5, 9),
+    ...     np.linspace(-0.4, 0.4, 7),
+    ...     0.2,
+    ...     1,
+    ...     np.zeros((9, 9, 7), dtype=bool),
+    ... )
     >>> assert result['magnetic_flux_density_t'].shape == (9, 9, 7, 3)
     >>> assert result['poloidal_flux_wb_per_rad'].shape == (9, 9, 7)
     >>> assert result['covered_mask'].sum() == 560
@@ -239,10 +250,14 @@ def solve_axisymmetric_equilibrium_grid_mapping(inputs=None, **kwargs):
     >>> assert not result['material_support_mask'][0, :, :].any()
     >>> assert not result['material_support_mask'][:, :, -1].any()
     """
-    mapping = kwargs.pop("equilibrium_grid_mapping", map_axisymmetric_equilibrium_to_cartesian_grid)
-    classification = kwargs.pop("material_support_classification", classify_material_support)
-    if kwargs:
-        raise ValueError(f"unexpected composition keyword arguments: {sorted(kwargs)}")
     return _run_composition(
-        inputs, equilibrium_grid_mapping=mapping, material_support_classification=classification
+        equilibrium,
+        x_m,
+        y_m,
+        z_m,
+        xpoint_half_length_m,
+        pml_cells,
+        pec_mask,
+        equilibrium_grid_mapping=equilibrium_grid_mapping,
+        material_support_classification=material_support_classification,
     )

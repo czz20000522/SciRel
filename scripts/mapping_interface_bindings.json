@@ -37,46 +37,6 @@
    "review_basis": "The adapter copies inputs, pops grid_controls with {}, forwards outer ports and unpacked grid to _fluid_parallel.scan_fluid_corrected. Grid entries are documented nested scientific controls, not additional top-level document ports. Duplicate/unrecognized keywords preserve Python TypeError."
   },
   {
-   "asset_id": "scirel.geometry.axisymmetric-equilibrium-grid-support",
-   "callable": "scirel.geometry.axisymmetric_equilibrium_grid_support.solve_axisymmetric_equilibrium_grid_mapping",
-   "ports": [
-    {
-     "name": "equilibrium",
-     "required": true
-    },
-    {
-     "name": "x_m",
-     "required": true
-    },
-    {
-     "name": "y_m",
-     "required": true
-    },
-    {
-     "name": "z_m",
-     "required": true
-    },
-    {
-     "name": "xpoint_half_length_m",
-     "required": true
-    },
-    {
-     "name": "pml_cells",
-     "required": true
-    },
-    {
-     "name": "pec_mask",
-     "required": true
-    }
-   ],
-   "modules": {
-    "scirel.geometry.axisymmetric_equilibrium_grid_support": "f1ceda0e90a186ac28415d4dcbfa82d1305960a49e65720531d784e411339c0b",
-    "scirel.geometry.axisymmetric_grid_mapping": "47d2731ae71a66abad25d811a9884200f244adaebf5ce5337918856835b2ee28",
-    "scirel.geometry.material_support": "65f04824f94859245fff8b78690c63304bb2c1103057d79b948e3de2baae357d"
-   },
-   "review_basis": "Wrapper removes only the two injectable implementation callables then passes inputs to _run_composition. _run_composition requires exactly the seven documented scientific inputs via _REQUIRED_INPUTS, maps the caller equilibrium and solver axes, derives cylindrical geometry with read-only broadcast views, and applies caller separatrix/PML/PEC metadata. It does not solve equilibrium or reconstruct material physics. Runtime missing ports are rejected; extra scientific input mapping entries are ignored as documented by the unchanged implementation."
-  },
-  {
    "asset_id": "scirel.closures.mirror-quasineutral-closure",
    "callable": "scirel.closures.mirror_quasineutral_closure.solve_mirror_quasineutral_closure",
    "ports": [

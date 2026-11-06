@@ -47,7 +47,7 @@ def test_u1_c_t01_composition_returns_the_documented_outputs(
     candidate, equilibrium, axes, cylindrical
 ):
     inputs = _inputs(equilibrium, axes)
-    result = candidate["composition"](inputs)
+    result = candidate["composition"](**inputs)
     mapping = candidate["mapping"](
         inputs["equilibrium"], inputs["x_m"], inputs["y_m"], inputs["z_m"]
     )
@@ -65,6 +65,16 @@ def test_u1_c_t01_composition_returns_the_documented_outputs(
     )
     expected_outputs = {**mapping, **classification}
     assert set(result) == set(expected_outputs)
+    assert list(result) == [
+        "magnetic_flux_density_t",
+        "poloidal_flux_wb_per_rad",
+        "material_support_mask",
+        "covered_mask",
+        "radially_clamped_point_count",
+        "axially_clamped_point_count",
+        "closed_flux_mask",
+        "axis_segment_mask",
+    ]
     for name, expected in expected_outputs.items():
         actual = result[name]
         if isinstance(expected, np.ndarray):
@@ -73,8 +83,17 @@ def test_u1_c_t01_composition_returns_the_documented_outputs(
             assert actual == expected, name
     assert result["material_support_mask"].sum() == 176
     assert result["magnetic_flux_density_t"].shape == (9, 9, 7, 3)
+    assert result["poloidal_flux_wb_per_rad"].shape == (9, 9, 7)
+    assert result["magnetic_flux_density_t"].dtype == np.float64
+    assert result["poloidal_flux_wb_per_rad"].dtype == np.float64
     assert result["covered_mask"].dtype == bool
     assert result["material_support_mask"].dtype == bool
+    assert result["closed_flux_mask"].dtype == bool
+    assert result["axis_segment_mask"].dtype == bool
+    assert result["covered_mask"].shape == (9, 9, 7)
+    assert result["material_support_mask"].shape == (9, 9, 7)
+    assert result["closed_flux_mask"].shape == (9, 9, 7)
+    assert result["axis_segment_mask"].shape == (9, 9, 7)
     assert isinstance(result["radially_clamped_point_count"], int)
     assert isinstance(result["axially_clamped_point_count"], int)
 
@@ -108,7 +127,7 @@ def test_u1_c_t02_composition_binds_exactly_the_two_dependencies(candidate, equi
         }
 
     result = candidate["composition"](
-        inputs,
+        **inputs,
         equilibrium_grid_mapping=fake_mapping,
         material_support_classification=fake_classification,
     )
@@ -131,14 +150,24 @@ def test_u1_c_t02_composition_binds_exactly_the_two_dependencies(candidate, equi
     assert result["axially_clamped_point_count"] == 4
     assert result["material_support_mask"] is sentinel_support
 
-    with pytest.raises(ValueError, match="unexpected composition keyword"):
-        candidate["composition"](inputs, not_a_dependency=fake_mapping)
-    with pytest.raises(ValueError, match="missing required composition inputs"):
+    with pytest.raises(TypeError):
+        candidate["composition"](inputs)
+    with pytest.raises(TypeError):
+        candidate["composition"](inputs=inputs)
+    with pytest.raises(TypeError):
+        candidate["composition"](**inputs, not_a_dependency=fake_mapping)
+    with pytest.raises(TypeError):
         candidate["composition"](
-            {key: value for key, value in inputs.items() if key != "pml_cells"}
+            **{key: value for key, value in inputs.items() if key != "pml_cells"}
         )
-    with pytest.raises(ValueError, match="inputs must be a mapping"):
-        candidate["composition"](None)
+    with pytest.raises(ValueError, match="equilibrium must be a mapping"):
+        candidate["composition"](**{**inputs, "equilibrium": None})
+    missing_classification_parameter = dict(inputs["equilibrium"])
+    del missing_classification_parameter["closed_flux_side"]
+    with pytest.raises(
+        ValueError, match="requires separatrix_flux_wb_per_rad and closed_flux_side"
+    ):
+        candidate["composition"](**{**inputs, "equilibrium": missing_classification_parameter})
 
 
 # --- Test U1-C-T03: the composition is a pure ordered DAG. -----------------
@@ -174,7 +203,13 @@ def test_u1_c_t03_composition_is_a_pure_ordered_dag(candidate):
     )
     parameters = composition_signature.parameters
     assert list(parameters) == [
-        "inputs",
+        "equilibrium",
+        "x_m",
+        "y_m",
+        "z_m",
+        "xpoint_half_length_m",
+        "pml_cells",
+        "pec_mask",
         "equilibrium_grid_mapping",
         "material_support_classification",
     ]
@@ -226,10 +261,10 @@ def test_u1_c_t04_declared_dependency_closure_is_exactly_two_assets(candidate):
 # --- Test U1-C-T05: the classification parameters are forwarded verbatim. --
 def test_u1_c_t05_classification_parameters_are_forwarded_verbatim(candidate, equilibrium, axes):
     inputs = _inputs(equilibrium, axes)
-    less = candidate["composition"](inputs)
+    less = candidate["composition"](**inputs)
     inputs["equilibrium"]["closed_flux_side"] = "greater_than"
     inputs["equilibrium"]["separatrix_flux_wb_per_rad"] = 0.2
-    greater = candidate["composition"](inputs)
+    greater = candidate["composition"](**inputs)
     # The mapping outputs are unaffected by the classification parameters ...
     np.testing.assert_array_equal(
         less["poloidal_flux_wb_per_rad"], greater["poloidal_flux_wb_per_rad"]
@@ -246,7 +281,7 @@ def test_u1_c_t05_classification_parameters_are_forwarded_verbatim(candidate, eq
 # --- Test U1-C-T06: the coordinates are the composition's own glue. --------
 def test_u1_c_t06_coordinates_are_the_composition_glue(candidate, equilibrium, axes, cylindrical):
     inputs = _inputs(equilibrium, axes)
-    result = candidate["composition"](inputs)
+    result = candidate["composition"](**inputs)
     radii, axial = cylindrical(inputs["x_m"], inputs["y_m"], inputs["z_m"])
     assert radii.shape == (9, 9, 7)
     # The glue's coordinates reproduce the mapping's own coverage mask exactly,
@@ -259,7 +294,7 @@ def test_u1_c_t06_coordinates_are_the_composition_glue(candidate, equilibrium, a
     np.testing.assert_array_equal(result["covered_mask"], expected)
     # A grid whose axes are not one-dimensional is rejected by the glue.
     with pytest.raises(ValueError, match="must be a 1D array"):
-        candidate["composition"]({**inputs, "x_m": np.zeros((2, 2))})
+        candidate["composition"](**{**inputs, "x_m": np.zeros((2, 2))})
 
 
 def test_u1_c_t06_coordinate_glue_preserves_full_grid_values_without_mesh_copy(
@@ -286,9 +321,30 @@ def test_u1_c_t07_public_signature_is_the_documented_one(candidate):
     document = json.loads(COMPOSITION_DOCUMENT.read_text(encoding="utf-8"))
     python_api = document["public_api"]["python"]
     function = candidate["composition"]
-    assert f"{python_api['symbol']}{inspect.signature(function)}" == python_api["signature"]
+    signature = inspect.signature(function)
+    parameters = signature.parameters
+    assert list(parameters) == [
+        "equilibrium",
+        "x_m",
+        "y_m",
+        "z_m",
+        "xpoint_half_length_m",
+        "pml_cells",
+        "pec_mask",
+        "equilibrium_grid_mapping",
+        "material_support_classification",
+    ]
+    assert parameters["equilibrium_grid_mapping"].kind is inspect.Parameter.KEYWORD_ONLY
+    assert parameters["equilibrium_grid_mapping"].default is candidate["mapping"]
+    assert parameters["material_support_classification"].kind is inspect.Parameter.KEYWORD_ONLY
+    assert parameters["material_support_classification"].default is candidate["classification"]
     assert python_api["signature"] == (
-        "solve_axisymmetric_equilibrium_grid_mapping(inputs=None, **kwargs)"
+        "solve_axisymmetric_equilibrium_grid_mapping(equilibrium, x_m, y_m, z_m, "
+        "xpoint_half_length_m, pml_cells, pec_mask, *, equilibrium_grid_mapping="
+        "scirel.geometry.axisymmetric_grid_mapping."
+        "map_axisymmetric_equilibrium_to_cartesian_grid, "
+        "material_support_classification=scirel.geometry.material_support."
+        "classify_material_support)"
     )
     assert python_api["module"] == "scirel.geometry.axisymmetric_equilibrium_grid_support"
     assert "composition" in document

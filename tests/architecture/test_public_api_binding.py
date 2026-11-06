@@ -1,4 +1,5 @@
 import json
+import inspect
 from pathlib import Path
 import sys
 
@@ -9,7 +10,7 @@ ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "scripts"))
 
 from build_catalog import build_catalog  # noqa: E402
-from public_api_binding import implementation_module  # noqa: E402
+from public_api_binding import contract_default, format_signature, implementation_module  # noqa: E402
 from validate_asset_documents import (  # noqa: E402
     AssetDocumentError,
     validate_document,
@@ -19,6 +20,14 @@ from validate_asset_documents import (  # noqa: E402
 
 def _document(name: str) -> dict:
     return json.loads((ROOT / "catalog/examples" / name).read_text(encoding="utf-8"))
+
+
+def test_callable_defaults_have_a_stable_contract_representation():
+    def sampled(callback=len):
+        pass
+
+    assert contract_default(len) == "builtins.len"
+    assert format_signature(inspect.signature(sampled)) == "(callback=builtins.len)"
 
 
 def test_legacy_package_root_documents_resolve_to_child_implementations():
