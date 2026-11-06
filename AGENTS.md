@@ -48,11 +48,17 @@ licenses/          许可和署名
 完整检查。GitHub Actions 只保留为手动触发的 Linux/amd64 跨设备抽查，不进入每个 PR 的等待链。宿主机只需要
 Git、Python 3 启动器和 Docker-compatible engine；依赖、缓存和虚拟环境都留在项目自己的容器卷里。
 
+每个 clone 必须先显式选择自己的 Docker context；禁止依赖全局默认 context：
+
 ```sh
-python3 scripts/dev_container.py prepare   # Windows 可用 py -3
+python3 scripts/dev_container.py context <docker-context>  # Windows 可用 py -3
+python3 scripts/dev_container.py prepare
 python3 scripts/dev_container.py check
 python3 scripts/dev_container.py pytest tests/<domain>/test_<asset>.py
 ```
+
+选择保存在未提交的仓库 Git 元数据中，并被同一 clone 的所有 worktree 共享；临时覆盖使用
+`SCIReL_DOCKER_CONTEXT`。未配置、空值或 `default` context 会 fail-closed。`doctor` 显示选中的 context 和实际 engine 名称。
 
 本机原生 `.venv` 可以用于快速探索，但交付证据必须来自容器内同一条检查。检查入口是
 [`scirel-acceptance` skill](skills/development/scirel-acceptance/SKILL.md)，改代码前先读它。

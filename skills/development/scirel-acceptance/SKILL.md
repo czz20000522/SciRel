@@ -41,9 +41,15 @@ For each operator, the code signature and its numpydoc docstring are the source 
 ## Set up once per clone
 
 ```sh
+python3 scripts/dev_container.py context <docker-context>
 python3 scripts/dev_container.py prepare
 git config core.hooksPath .githooks
 ```
+
+Every clone must choose its own Docker context explicitly. The choice is stored in uncommitted shared Git
+metadata for that clone and reused by all linked worktrees; `SCIReL_DOCKER_CONTEXT` is a temporary override.
+Missing, empty, and `default` contexts fail closed so a command cannot silently land in another project's VM.
+`doctor` prints the selected context and the engine identity it reached.
 
 The hooks call the same container entry point: the staged-file check on `git commit` and the full check on
 `git push`. A push containing only remote-ref deletions skips the full check because it uploads no source tree;

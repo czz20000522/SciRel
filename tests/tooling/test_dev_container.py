@@ -20,6 +20,11 @@ ROOT = Path(__file__).resolve().parents[2]
 SCRIPT = ROOT / "scripts" / "dev_container.py"
 
 
+@pytest.fixture(autouse=True)
+def _configured_docker_context(monkeypatch):
+    monkeypatch.setenv("SCIReL_DOCKER_CONTEXT", "test-context")
+
+
 def _load():
     spec = importlib.util.spec_from_file_location("dev_container", SCRIPT)
     module = importlib.util.module_from_spec(spec)
@@ -154,6 +159,74 @@ def test_project_name_is_stable_and_checkout_scoped():
     assert first == module.project_name()
     assert first.startswith("scirel-dev-")
     assert len(first) == len("scirel-dev-") + 10
+
+
+def test_docker_context_precedence_and_file_fallback(tmp_path, monkeypatch):
+    module = _load()
+    repository = tmp_path / "repository"
+    _init_git_repository(repository)
+    monkeypatch.setattr(module, "ROOT", repository)
+
+    monkeypatch.setenv("SCIReL_DOCKER_CONTEXT", "project-context")
+    monkeypatch.setenv("DOCKER_CONTEXT", "ambient-context")
+    assert module.resolve_docker_context() == ("project-context", "SCIReL_DOCKER_CONTEXT")
+
+    monkeypatch.delenv("SCIReL_DOCKER_CONTEXT")
+    monkeypatch.setenv("DOCKER_CONTEXT", "other-project-context")
+    context_path = module.docker_context_path(create_directory=True)
+    context_path.write_text("file-context\n", encoding="utf-8")
+    assert module.resolve_docker_context() == ("file-context", str(context_path))
+
+    context_path.unlink()
+    with pytest.raises(module.DockerContextError, match="not configured"):
+        module.resolve_docker_context()
+
+
+def test_missing_or_default_docker_context_fails_closed(tmp_path, monkeypatch):
+    module = _load()
+    repository = tmp_path / "repository"
+    _init_git_repository(repository)
+    monkeypatch.setattr(module, "ROOT", repository)
+    monkeypatch.delenv("SCIReL_DOCKER_CONTEXT")
+    monkeypatch.setenv("DOCKER_CONTEXT", "default")
+
+    with pytest.raises(module.DockerContextError, match="not configured"):
+        module.resolve_docker_context()
+
+    monkeypatch.setenv("SCIReL_DOCKER_CONTEXT", "default")
+    with pytest.raises(module.DockerContextError, match="default"):
+        module.resolve_docker_context()
+
+
+def test_environment_propagates_context_and_removes_docker_host(monkeypatch):
+    module = _load()
+    monkeypatch.setenv("SCIReL_DOCKER_CONTEXT", "project-context")
+    monkeypatch.setenv("DOCKER_HOST", "unix:///wrong/project.sock")
+    env = module.environment()
+    assert env["DOCKER_CONTEXT"] == "project-context"
+    assert "DOCKER_HOST" not in env
+
+
+def test_configure_docker_context_validates_and_persists(tmp_path, monkeypatch):
+    module = _load()
+    repository = tmp_path / "repository"
+    _init_git_repository(repository)
+    monkeypatch.setattr(module, "ROOT", repository)
+    monkeypatch.setattr(module, "git_common_directory", lambda: repository / ".git")
+    calls = []
+
+    def fake_run(command, **kwargs):
+        calls.append((command, kwargs))
+        return subprocess.CompletedProcess(command, 0, "", "")
+
+    monkeypatch.setattr(module.subprocess, "run", fake_run)
+    assert module.configure_docker_context("scirel-local") == 0
+    assert calls[0][0] == ["docker", "context", "inspect", "scirel-local"]
+    assert calls[0][1]["env"]["DOCKER_CONTEXT"] == "scirel-local"
+    assert "DOCKER_HOST" not in calls[0][1]["env"]
+    path = module.docker_context_path()
+    assert path.read_text(encoding="utf-8").strip() == "scirel-local"
+    assert module.configure_docker_context("default") == 1
 
 
 def test_uv_cache_is_shared_but_virtualenv_is_checkout_scoped(tmp_path, monkeypatch):

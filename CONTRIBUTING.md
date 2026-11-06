@@ -14,12 +14,18 @@ SciRel 是一个自包含的科学计算库。贡献的核心单位是一个**�
 完整验收；Apple Silicon 使用原生 arm64 engine 快速开发。GitHub Actions 只保留为手动 Linux/amd64 抽查。
 宿主机只需要 Git、Python 3 launcher 和 Docker-compatible engine：
 
+每个 clone 必须显式选择 Docker context；不会继承一个可能属于其他项目的全局 context：
+
 ```bash
-python3 scripts/dev_container.py prepare   # Windows: py -3
+python3 scripts/dev_container.py context <docker-context>  # Windows: py -3
+python3 scripts/dev_container.py prepare
 python3 scripts/dev_container.py check
 python3 scripts/dev_container.py shell
 git config core.hooksPath .githooks
 ```
+
+`context <name>` 将选择保存在未提交的共享 Git 元数据中，同一 clone 的 worktree 自动复用。临时覆盖可设置
+`SCIReL_DOCKER_CONTEXT`。未配置、空值或 `default` context 会直接报错。`doctor` 会显示选中的 context 和实际 engine 名称。
 
 `prepare` 会在项目命名的容器卷中执行 `uv sync --locked --group test`，不会在宿主仓库里生成 `.venv`。
 `check` 是完整本地 CI。只跑一个测试文件时使用：

@@ -60,10 +60,16 @@ licenses/              # 许可与来源署名
 可复现环境使用项目内的 Python 3.14.7 容器；本地使用宿主 Docker engine 的 CPU 架构，
 GitHub Actions 只保留为手动 Linux/amd64 跨设备抽查：
 
+每个 clone 先选择自己的 Docker context（例如 Colima profile、Docker Desktop 或远程引擎），再运行容器：
+
 ```bash
-python3 scripts/dev_container.py prepare   # Windows: py -3
+python3 scripts/dev_container.py context <docker-context>  # Windows: py -3
+python3 scripts/dev_container.py prepare
 python3 scripts/dev_container.py check
 ```
+
+选择会保存在未提交的仓库 Git 元数据中，并与所有 worktree 共享；临时覆盖可设置
+`SCIReL_DOCKER_CONTEXT`。未配置或使用 `default` 时命令会失败，不会回退到全局 Docker context。
 
 当前处于首次公开发布前的开发阶段；wheel 仅用于本地 development 验收，发布基线确定后再统一冻结。
 
