@@ -56,14 +56,66 @@ def _ordered_degrees(xi_tp, mode_count):
 
 
 def solve_loss_cone_spectrum(xi_tp, mode_count, grid_points=256, backend="truncated"):
-    """Return the lowest Neumann-at-zero/Dirichlet-at-xi_tp even modes.
+    """Compute the lowest ordered even angular eigenmodes, returning integer degrees where they occur, with a regular initial-value solution.
 
-    Both legacy backend names now use the regular, untruncated even
-    solution through scaled initial-value integration. ``backend`` records the requested name and
-    ``evaluation_method`` the actual method. A Sturm phase orders roots and
-    retains integer degrees; an independently evaluated boundary value must
-    agree. The xi grid includes zero and excludes the Dirichlet endpoint.
-    This angular eigenproblem does not itself validate a kinetic population.
+    Parameters
+    ----------
+    xi_tp : float-convertible, scalar
+        Loss-cone pitch-cosine endpoint where the angular mode is set to zero. [dimensionless] Constraints: Converted with float; must satisfy 0 < xi_tp < 1.
+    mode_count : integer-valued real or integer, scalar
+        Number of lowest ordered modes, including any integer degree. [count] Constraints: Positive integer value; booleans and fractional values are rejected.
+    grid_points : int-convertible, scalar
+        Requested number of pitch-cosine samples for returned eigenfunctions. [count] Constraints: Integer value at least two; actual sample count is max(grid_points,mode_count+8). Default: ``256``.
+    backend : string-convertible, scalar
+        Backend selector; both accepted values select the same regular scaled evaluation. [text] Constraints: Only 'truncated' and 'hypergeometric'; both use regular scaled initial-value evaluation and Sturm root ordering. No truncated series is used. Default: ``'truncated'``.
+
+    Returns
+    -------
+    xi : float64 ndarray, (N_grid,)
+        Uniform pitch-cosine sample positions starting at the symmetry endpoint. [dimensionless] Constraints: xi[i]=i*xi_tp/N_grid for i=0..N_grid-1; xi_tp itself is not sampled.
+    eigenvalues : float64 ndarray, (N_mode,)
+        Angular eigenvalue nu(nu+1) for each returned degree. [dimensionless] Constraints: Positive and ordered with degrees for successful finite solves.
+    degrees : float64 ndarray, (N_mode,)
+        Nonnegative regular even-mode degree for each eigenvalue. [dimensionless] Constraints: Ordered with the eigenvalues; integer degrees are preserved.
+    eigenfunctions : float64 ndarray, (N_grid, N_mode)
+        Angular mode samples, one column per degree. [dimensionless] Constraints: First row is numerically normalized to one; no boundary row at xi_tp is returned.
+    backend : str, scalar
+        Requested legacy evaluator name; see evaluation_method for the actual numerical method. [text] Constraints: Either 'truncated' or 'hypergeometric'.
+    evaluation_method : str, scalar
+        Actual common evaluator used by both legacy backend names. [text] Constraints: regular_even_scaled_ivp_with_sturm_phase_ordering
+    boundary_residuals : float64 array, (N_mode,)
+        Regular-mode values at the Dirichlet endpoint. [dimensionless] Constraints: Absolute value at most 2e-8 on successful return.
+
+    Raises
+    ------
+    ValueError
+        If ``xi_tp`` is outside ``(0, 1)``, a count is invalid, the backend name
+        is unknown, or native numeric conversion fails.
+    RuntimeError
+        If the Sturm phase integration fails or an independently evaluated
+        endpoint residual exceeds ``2e-8``.
+    FloatingPointError
+        If a mode or boundary evaluation returns an unrepresentable non-finite
+        value.
+    See Also
+    --------
+    evaluate_plasma_dispersion
+        Maxwellian plasma dispersion function used by related wave calculations.
+    evaluate_generalized_dispersion
+        Generalized density transform for broader velocity distributions.
+    Notes
+    -----
+    The regular even solution satisfies ``-[(1-xi**2)u']' = lambda u`` with ``u(0)=1``, ``u'(0)=0`` and a Dirichlet condition at ``xi_tp``. A continuous Sturm phase orders roots; integer-coincident degrees are preserved. Both accepted backend names select the same regular scaled initial-value evaluator and Sturm ordering; no finite polynomial truncation is used. The returned pitch grid includes zero and excludes ``xi_tp``. This angular problem alone does not validate a kinetic population, transport model or global equilibrium.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from scirel.kinetic.loss_cone_spectrum import solve_loss_cone_spectrum
+    >>> r=solve_loss_cone_spectrum(1/np.sqrt(3),2,grid_points=40)
+    >>> np.testing.assert_allclose(r['eigenvalues'][0],6.,rtol=1e-10)
+    >>> np.testing.assert_allclose(r['eigenfunctions'][:,0],1-3*r['xi']**2,atol=2e-10)
+    >>> assert np.max(np.abs(r['boundary_residuals']))<2e-8
+
     """
     xi_tp = float(xi_tp)
     if not np.isfinite(xi_tp) or not 0.0 < xi_tp < 1.0:
