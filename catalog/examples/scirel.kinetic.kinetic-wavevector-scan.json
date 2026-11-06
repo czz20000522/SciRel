@@ -102,6 +102,15 @@
    "constraints": "Finite positive reference temperature in eV."
   },
   {
+   "name": "kz",
+   "description": "Absolute parallel wavenumber, the kz fixed by the source driver (2*5.0 for case 1 and 0.0 for case 2), entering the parallel resonance argument; the caller supplies this physical control directly, with no conversion from any reference wavenumber",
+   "units": "1/m",
+   "shape": "scalar",
+   "dtype": "real numeric",
+   "required": true,
+   "constraints": "Finite absolute parallel wavenumber; zero is supported by the kinetic paths."
+  },
+  {
    "name": "omega_scale",
    "description": "Start multiple of the scanned frequency ladder; multiplied by wn it gives the first angular frequency",
    "units": "dimensionless",
@@ -127,15 +136,6 @@
    "dtype": "real numeric",
    "required": true,
    "constraints": "Finite scan endpoint not below the start."
-  },
-  {
-   "name": "kz",
-   "description": "Absolute parallel wavenumber, the kz fixed by the source driver (2*5.0 for case 1 and 0.0 for case 2), entering the parallel resonance argument; the caller supplies this physical control directly, with no conversion from any reference wavenumber",
-   "units": "1/m",
-   "shape": "scalar",
-   "dtype": "real numeric",
-   "required": true,
-   "constraints": "Finite absolute parallel wavenumber; zero is supported by the kinetic paths."
   },
   {
    "name": "kx_scale",

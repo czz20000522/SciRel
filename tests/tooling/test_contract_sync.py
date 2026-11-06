@@ -53,3 +53,8 @@ inputs : mapping, optional
 """
     )
     assert module._missing_direct_parameter_docs(parameters, parts) == []
+
+
+def test_exception_names_include_custom_failure_types():
+    module = _load()
+    assert module.ERROR.findall("ContinuationFailure") == ["ContinuationFailure"]

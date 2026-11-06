@@ -44,7 +44,10 @@ ROOT = Path(__file__).resolve().parents[4]
 SCOPE = Path(__file__).with_name("contract_sync_scope.json")
 DIMENSIONLESS = {"", "1", "dimensionless", "none", "-", "n/a"}
 SECTION = re.compile(r"^([A-Z][A-Za-z ]+)\n-{3,}[ \t]*$", re.M)
-ERROR = re.compile(r"\b([A-Z][A-Za-z]*(?:Error|Exception|Warning))\b")
+ERROR = re.compile(r"\b([A-Z][A-Za-z]*(?:Error|Exception|Warning|Failure))\b")
+
+sys.path.insert(0, str(ROOT / "scripts"))
+from code_digest import source_digest  # noqa: E402
 
 
 def sections(doc: str) -> dict[str, str]:
@@ -92,6 +95,40 @@ def _missing_direct_parameter_docs(params, parts: dict[str, str]) -> list[str]:
     ]
 
 
+def _mapping_signature(document: dict, obj) -> inspect.Signature | None:
+    """Resolve a reviewed mapping wrapper to its declared scientific ports."""
+    path = ROOT / "scripts" / "mapping_interface_bindings.json"
+    if not path.is_file():
+        return None
+    rows = json.loads(path.read_text(encoding="utf-8"))["records"]
+    binding = next((row for row in rows if row["asset_id"] == document["asset_id"]), None)
+    if binding is None:
+        return None
+    actual = f"{obj.__module__}.{obj.__name__}"
+    if binding["callable"] != actual:
+        raise ValueError(f"mapping binding callable differs: {binding['callable']} != {actual}")
+    for module_name, expected in binding["modules"].items():
+        module = importlib.import_module(module_name)
+        if source_digest(module.__file__) != expected:
+            raise ValueError(f"mapping source binding differs: {module_name}")
+    actual_ports = [
+        {key: port[key] for key in ("name", "required", "default") if key in port}
+        for port in document["inputs"]
+    ]
+    if actual_ports != binding["ports"]:
+        raise ValueError("mapping scientific ports/defaults differ")
+    return inspect.Signature(
+        [
+            inspect.Parameter(
+                port["name"],
+                inspect.Parameter.KEYWORD_ONLY,
+                default=inspect.Parameter.empty if port["required"] else port["default"],
+            )
+            for port in binding["ports"]
+        ]
+    )
+
+
 def check(asset: dict, root: Path = ROOT) -> list[str]:
     asset_id = asset["asset_id"]
     document = json.loads(
@@ -104,9 +141,18 @@ def check(asset: dict, root: Path = ROOT) -> list[str]:
     def fail(message: str) -> None:
         errors.append(f"{asset_id}: {message}")
 
-    signature = inspect.signature(obj)
-    if api["signature"] != f"{api['symbol']}{signature}":
-        fail(f"public_api.signature {api['signature']!r} != live {api['symbol']}{signature}")
+    live_signature = inspect.signature(obj)
+    signature = live_signature
+    if "inputs" in signature.parameters and not any(
+        parameter.kind is inspect.Parameter.VAR_KEYWORD
+        for parameter in signature.parameters.values()
+    ):
+        try:
+            signature = _mapping_signature(document, obj) or signature
+        except (ImportError, KeyError, OSError, ValueError) as error:
+            fail(str(error))
+    if api["signature"] != f"{api['symbol']}{live_signature}":
+        fail(f"public_api.signature {api['signature']!r} != live {api['symbol']}{live_signature}")
     params = [p for p in signature.parameters.values()]
     direct_params = [p for p in params if p.kind not in (p.VAR_KEYWORD, p.VAR_POSITIONAL)]
     inputs = document["inputs"]

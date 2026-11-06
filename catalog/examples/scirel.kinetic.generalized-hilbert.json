@@ -127,7 +127,7 @@
  },
  "failure_semantics": {
   "invalid_input": "ValueError for an unsupported expression, non-finite phase/mesh, or malformed integration_mesh/continuation.",
-  "runtime_failure": "FloatingPointError for a non-finite continued transform and RuntimeError when quadrature fails; no fallback path is selected.",
+  "runtime_failure": "ValueError for a non-finite or otherwise unrepresentable continued transform and RuntimeError when quadrature fails; no fallback path is selected.",
   "nonconvergence": "RuntimeError when real-axis/exterior quadrature fails or the declared removable-point estimate is not representable.",
   "partial_results": "No partial Z/Zp pair is returned after a failed transform."
  },

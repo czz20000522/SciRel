@@ -82,7 +82,7 @@
   },
   "failure_semantics": {
     "invalid_input": "Raises ValueError for unsupported constants, nonzero collision matrix, ky != 0, invalid species dimensions, gamma_pressure != 1, nonpositive mass/density or relativistic speed >= c.",
-    "runtime_failure": "SciPy generalized eigensolver or finite-spectrum checks propagate numerical failures; no fallback spectrum is returned.",
+  "runtime_failure": "SciPy generalized-eigensolver failures propagate; a nonfinite complete spectrum raises FloatingPointError. No fallback spectrum is returned.",
     "nonconvergence": "Not applicable as an exposed iterative state; an eigensolver failure propagates.",
     "partial_results": "No spectrum mapping is returned after validation, eigensolver or finite-result failure."
   },

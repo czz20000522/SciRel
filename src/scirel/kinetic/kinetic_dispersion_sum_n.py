@@ -48,11 +48,101 @@ def _species_array(name, value):
 
 
 def evaluate_kinetic_dispersion_sum(*, B0, qs, ms, ns0, Ts0, f, kz, kx, lmx=5):
-    """Return K, D and det(D) for a truncated magnetized Maxwellian sum.
+    r"""Assemble the x-z-plane kinetic dielectric tensor, Maxwell dispersion tensor and determinant for a magnetized Maxwellian species mixture using a finite cyclotron-harmonic sum.
 
-    Inputs use SI units: B0 [T], q [C], m [kg], n [m^-3], T [K], f [Hz],
-    and kx/kz [m^-1]. The x-z plane convention and gamma/Z normalizations
-    follow the declared fluid-dispersion fD relation; no root finding is performed.
+    Parameters
+    ----------
+    B0 : real numeric
+        Signed homogeneous background magnetic field along z. [T] Shape: scalar. Finite and nonzero; boolean
+        and complex inputs are rejected.
+    qs : real numeric
+        Signed charges on the shared species axis. [C] Shape: (S,), S >= 1. Finite and nonzero, with the
+        same S as ms, ns0 and Ts0.
+    ms : real numeric
+        Species masses. [kg] Shape: (S,), same S as qs. Finite and strictly positive.
+    ns0 : real numeric
+        Species absolute number densities. [m^-3] Shape: (S,), same S as qs. Finite and strictly positive.
+    Ts0 : real numeric
+        Species equilibrium temperatures already converted to kelvin. [K] Shape: (S,), same S as qs. Finite
+        and strictly positive.
+    f : real numeric
+        Real wave frequency before angular-frequency conversion. [Hz] Shape: scalar. Finite and nonzero.
+    kz : real numeric
+        Wavevector component parallel to B0. [m^-1] Shape: scalar. Finite and nonzero; no silent near-zero
+        replacement.
+    kx : real numeric
+        Wavevector component perpendicular to B0 in the x-z plane. [m^-1] Shape: scalar. Finite and nonzero
+        because terms divide by a_s and b_s; zero is not regularized.
+    lmx : Python or NumPy integer
+        Inclusive cyclotron-harmonic cutoff for n=-lmx..lmx. [dimensionless integer] Shape: scalar. Default:
+        5. Non-negative integer; booleans, floats and numeric strings are rejected.
+
+    Returns
+    -------
+    K : complex128
+        Kinetic dielectric tensor with source sign convention. [dimensionless] Shape: (3, 3), x-y-z
+        component axes. Finite; K_yx=-K_xy, K_zy=-K_yz and K_zx=K_xz by assembly.
+    D : complex128
+        Dispersion tensor after Maxwell curl terms. [dimensionless] Shape: (3, 3), x-y-z component axes.
+        Finite; D_xx=K_xx-nz^2, D_yy=K_yy-nx^2-nz^2, D_zz=K_zz-nx^2 and D_xz=D_zx=K_xz+nx*nz.
+    determinant : complex numeric
+        Complex determinant of D. [dimensionless] Shape: scalar. Finite and representable; zero may indicate
+        a candidate mode but no root selection occurs.
+    omega : float
+        Angular frequency 2*pi*f. [rad/s] Shape: scalar. Finite and nonzero.
+    nx : float
+        Perpendicular refractive-index component c*kx/omega. [dimensionless] Shape: scalar. Finite.
+    nz : float
+        Parallel refractive-index component c*kz/omega. [dimensionless] Shape: scalar. Finite.
+    vts : float64
+        Species thermal speeds with sqrt(2) convention. [m/s] Shape: (S,). Finite and positive.
+    wcs : float64
+        Signed species cyclotron angular frequencies. [rad/s] Shape: (S,). Finite and nonzero.
+    wps2 : float64
+        Species plasma angular-frequency squared. [rad^2/s^2] Shape: (S,). Finite and positive.
+    b : float64
+        Species dimensionless squared Bessel arguments a_s^2. [dimensionless] Shape: (S,). Finite and
+        positive for accepted nonzero kx.
+    lmx : int
+        Echo of the used harmonic cutoff. [dimensionless integer] Shape: scalar. Non-negative.
+    tensor_convention : string
+        Explicit sign-convention label. [not applicable] Shape: scalar. Exactly K_ij = delta_ij -
+        sigma_ij/(i*omega*epsilon0).
+
+    Raises
+    ------
+    ValueError
+        Raises ValueError for nonfinite, boolean, complex or zero scalar fields where prohibited;
+        empty/mismatched/nonfinite species vectors, zero charge, nonpositive mass/density/temperature,
+        or lmx that is not a non-negative integer. Raises ValueError if derived scales become nonfinite
+        or zero where positivity is required, or if special-function contributions, tensors or
+        determinant become nonfinite or unrepresentable; other unexpected NumPy/SciPy errors propagate.
+
+    See Also
+    --------
+    scirel.kinetic.bessel_gamma.evaluate_bessel_gamma : Related contract dependency.
+    scirel.kinetic.plasma_dispersion.evaluate_plasma_dispersion : Related contract dependency.
+
+    Notes
+    -----
+    omega=2*pi*f; vts=sqrt(2*kB*T_s/m_s); wcs=q_s*B0/m_s; wps2=n_s*q_s^2/(m_s*epsilon0);
+    a_s=kx*sqrt(kB*T_s/m_s)/wcs; b_s=a_s^2; z_n=(omega-n*wcs)/(kz*vts). Sum n=-lmx..lmx with Gamma_n(b),
+    Gamma_prime_n(b) and analytic Z(z_n), weighting each species term by (wps2/omega^2)*z_0*Z(z_n).
+    Assemble the source-convention susceptibility components and K, then subtract the Maxwell curl terms
+    to obtain D and its determinant. K_ij = delta_ij - sigma_ij/(i*omega*epsilon0). Truncated
+    conventional cyclotron-harmonic sum for a homogeneous magnetized Maxwellian species mixture;
+    analytic SciRel Faddeeva Z rather than a finite Weideman implementation Assumptions: Each species
+    has a Maxwellian equilibrium with positive mass, number density and temperature. The caller judges
+    whether the chosen lmx gives sufficient harmonic convergence for its case. A determinant value is
+    not by itself a selected physical mode or a root.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from scirel.kinetic import evaluate_kinetic_dispersion_sum
+    >>> r = evaluate_kinetic_dispersion_sum(B0=1.0, qs=[-1.60217662e-19], ms=[9.1094e-31], ns0=[6.075e19], Ts0=[1000.0 * 1.6022e-19 / 1.38064852e-23], f=175881684853.009 / (2*np.pi), kz=1326.1942478795652, kx=13261.94247879565)
+    >>> assert r['K'].shape == (3, 3) and r['D'].shape == (3, 3)
+    >>> assert abs(r['determinant'] - (1184249.3244493124 + 4322451.2861608062j)) < 1e-6
     """
     B0 = _finite_scalar("B0", B0, nonzero=True)
     f = _finite_scalar("f", f, nonzero=True)

@@ -14,6 +14,53 @@ __all__ = ["solve_relativistic_codrift_spectrum"]
 
 
 def solve_relativistic_codrift_spectrum(case: dict) -> dict:
+    r"""Assemble and solve the declared normalized relativistic co-drift generalized spectrum for typed species and ky=0 wavevectors, returning complete per-wavevector modes in two independent orderings.
+
+    Parameters
+    ----------
+    case : Python mapping
+        Typed normalized constants, species records, relativistic branch flag, collision selector and
+        wavevectors. [normalized c=epsilon0=mu0=B0=1] Shape: mapping. constants must all equal 1;
+        collision_matrix must be 'zero'; k is [N,3] with every ky=0; species fields follow the declared
+        dimensions and positivity rules.
+
+    Returns
+    -------
+    spectra : nested Python lists of float pairs
+        One complete spectrum record per input wavevector, each carrying real_order and imag_order arrays of
+        real/imaginary pairs. [normalized frequency] Shape: list of N mappings; each order is [4*S+6,2].
+        Every returned pair is finite; real_order and imag_order are independent descending sorts of the
+        same complete spectrum.
+
+    Raises
+    ------
+    FloatingPointError
+        When the complete frequency spectrum is not finite after the eigensolve.
+    ValueError
+        For unsupported constants, nonzero collision matrix, ky != 0, invalid species dimensions,
+        gamma_pressure != 1, nonpositive mass/density or relativistic speed >= c.
+
+    See Also
+    --------
+    scirel.kinetic : Public kinetic-domain operators.
+
+    Notes
+    -----
+    Build a 4*S+6 square matrix M and generalized mass matrix A for each k, solve M X=lambda A X, map
+    omega=i lambda, and independently sort complete modes by descending real and imaginary parts.
+    Normalized linearized relativistic co-drift generalized spectrum; the relativistic branch uses
+    tangent inertia and the nonrelativistic branch uses A=I. Assumptions: Species pressure exponent is
+    gamma_pressure=1. Mass and density are positive and each species has three velocity and two
+    density-gradient components. The complete finite spectrum is returned per k; no physical mode
+    identification or stability interpretation is inferred.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from scirel.kinetic import solve_relativistic_codrift_spectrum
+    >>> case={'constants':{'c':1,'epsilon0':1,'mu0':1,'B0':1},'relativistic':False,'collision_matrix':'zero','species':[],'k':np.empty((0,3))}
+    >>> assert solve_relativistic_codrift_spectrum(case)['spectra']==[]
+    """
     c = float(case["constants"]["c"])
     eps0 = float(case["constants"]["epsilon0"])
     mu0 = float(case["constants"]["mu0"])

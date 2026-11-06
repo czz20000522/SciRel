@@ -6841,7 +6841,7 @@
   },
   {
    "asset_id": "scirel.kinetic.kinetic-wavevector-scan",
-   "source_sha256": "bc4b548c5570c879be6cd010fef9e93bd8de4ff0771c4f018aa02e12608c52a8",
+   "source_sha256": "0cc18176552c203cd35398210f3e2144436390757b4cad24fe27c0474bb8894a",
    "summary": "导出频率阶梯与固定初值，然后逐频点求解保留符号的 Ronnmark 复数 kx 根。",
    "definition": "任务图由 wn 导出有序频率阶梯，并确定唯一初值 kx_start=kx_scale*kn；有界求根器在每个频点独立重复使用该初值。",
    "model": "均匀磁化多组分 Maxwellian 等离子体",
@@ -6893,6 +6893,12 @@
      "dtype": "实数"
     },
     {
+     "name": "kz",
+     "description": "平行波数绝对值，即驱动写定的 kz（算例 1 为 2*5.0、算例 2 为 0.0），进入平行共振宗量；调用方直接给出物理控制量，不由任何参考波数换算",
+     "constraints": "须为有限的绝对平行波数；动力学路径允许零值。",
+     "dtype": "实数"
+    },
+    {
      "name": "omega_scale",
      "description": "扫描频率阶梯的起点倍数，乘以 wn 得到首个角频率",
      "constraints": "扫描起点须有限；每个导出的角频率均须非零。",
@@ -6908,12 +6914,6 @@
      "name": "omega_stop",
      "description": "扫描频率阶梯的终点倍数（3.95），与起点、步长一起写定冒号表达式，阶梯点数即由此导出",
      "constraints": "扫描终点须有限，且不小于起点。",
-     "dtype": "实数"
-    },
-    {
-     "name": "kz",
-     "description": "平行波数绝对值，即驱动写定的 kz（算例 1 为 2*5.0、算例 2 为 0.0），进入平行共振宗量；调用方直接给出物理控制量，不由任何参考波数换算",
-     "constraints": "须为有限的绝对平行波数；动力学路径允许零值。",
      "dtype": "实数"
     },
     {
@@ -7421,7 +7421,7 @@
   },
   {
    "asset_id": "scirel.kinetic.kinetic-dispersion-ronnmark",
-   "source_sha256": "6862d3fe8446592cde4f4ee9a81f035062be29870d69f0e791574bfbfab46403",
+   "source_sha256": "5663b266b9dd605e3180a467e64d49e051fdd33d7af024a116c6513be6a3d792",
    "summary": "计算 J=8 有理极点形式的 3×3 动力学张量和色散行列式，允许复数 kx 与零 kz。",
    "definition": "用 J=8 共振极点和 Ronnmark R 函数替代 Z 与谐波响应，加入 Maxwell 旋度项后计算 det(D)。",
    "model": "均匀磁化多组分 Maxwellian 等离子体",
@@ -7467,12 +7467,6 @@
      "dtype": "实数"
     },
     {
-     "name": "omega",
-     "description": "直接给定的角频率，可替代 `f` 进入共振宗量（沿用原始角频率 token，避免 `2*pi*f` 往返舍入）",
-     "constraints": "可选关键字参数，缺省 `None`；`omega` 与 `f` 二者恰好提供一个；给出 `omega` 时其值直接作为 $\\omega$ 并忽略 `f`，且须有限非零。",
-     "dtype": "实数"
-    },
-    {
      "name": "kz",
      "description": "波矢平行磁场分量，进入共振宗量并与热速度相乘",
      "constraints": "有限；允许为零（算例 2 取 `kz=0.0`），此时 $n_z=0$ 且平行共振宗量退化为 $\\omega/\\omega_{cs}$。",
@@ -7483,6 +7477,12 @@
      "description": "波矢垂直磁场分量，给出 $b=(k_\\perp\\rho_{cs})^2$ 与折射率",
      "constraints": "有限；复数值对应在复 kx 平面求根，此时 $b$ 带虚部。",
      "dtype": "complex128 复数"
+    },
+    {
+     "name": "omega",
+     "description": "直接给定的角频率，可替代 `f` 进入共振宗量（沿用原始角频率 token，避免 `2*pi*f` 往返舍入）",
+     "constraints": "可选关键字参数，缺省 `None`；`omega` 与 `f` 二者恰好提供一个；给出 `omega` 时其值直接作为 $\\omega$ 并忽略 `f`，且须有限非零。",
+     "dtype": "实数"
     }
    ],
    "outputs": [

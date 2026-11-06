@@ -8046,7 +8046,7 @@
   },
   {
    "asset_id": "scirel.kinetic.relativistic-codrift-generalized-spectrum",
-   "source_sha256": "2afb5a3c0b00bbe4cccbbeb2ed8968f04e88cfa13b7d9c485d34ebbfa5ecbd30",
+   "source_sha256": "9cc8f3800d8710a7e38a0d7b69f3bf81c2d6a7fe06cdea4f24e6873d0960323f",
    "summary": "对声明归一化常数、带漂移物种和 ky=0 波矢求解相对论协动广义谱。",
    "definition": "逐个波矢组装 4*S+6 阶 M 与 A，求解 M X=lambda A X，映射 omega=i lambda，并分别按实部和虚部降序排列完整谱。",
    "model": "归一化线性相对论协动广义本征问题；只支持 c=epsilon0=mu0=B0=1 和零碰撞。",
@@ -8088,7 +8088,7 @@
    },
    "failure_semantics": {
     "invalid_input": "不支持常数、非零碰撞、ky 非零、物种维度错误、gamma_pressure 非 1、非正质量/密度或相对论速度 >= c 时抛出 ValueError。",
-    "runtime_failure": "SciPy 广义特征求解或有限谱检查的数值异常向上传播，不返回备用谱。",
+    "runtime_failure": "SciPy 广义特征求解失败向上传播；完整频谱非有限时抛出 FloatingPointError，不返回备用谱。",
     "nonconvergence": "不适用；特征求解失败直接传播。",
     "partial_results": "校验、求解或有限性失败后不返回部分谱。"
    },

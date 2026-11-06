@@ -272,18 +272,123 @@ def _es1d_poles(J, opt):
 
 
 def default_deck(model="es1d"):
-    """Exact read-only legacy deck; callers explicitly select its unit convention."""
+    r"""Read the packaged model-specific original species deck into a fresh numeric array.
+
+    Parameters
+    ----------
+    model : str
+        Select es1d,es3d or em deck. [dimensionless] Shape: scalar. Default: 'es1d'. Select es1d, es3d or
+        em.
+
+    Returns
+    -------
+    deck : real array
+        Fresh species array with explicit model-specific legacy unit convention. [ES dimensionless; EM
+        q/e,m/me,n m^-3,T eV,vd/c] Shape: Sx5 or Sx6. Finite and representable in the declared numeric type.
+
+    Raises
+    ------
+    ValueError
+        ValueError for unknown model; packaged table read/parse errors propagate.
+
+    See Also
+    --------
+    scirel.kinetic : Public kinetic-domain operators.
+
+    Notes
+    -----
+    No hidden source-checkout read. The deck is a declared scientific fixture with model-specific
+    columns and units; calling the data accessor does not validate a physical application.
+    Nonrelativistic Gaussian species; explicit finite-harmonic/rational approximation when applicable.
+    Assumptions: Model-specific deck conventions are explicit. A numerical spectrum is not automatically
+    a physically certified mode.
+
+    References
+    ----------
+    Xie and Xiao, PDRK: A General Kinetic Dispersion Relation Solver for Magnetized Plasma, Plasma Science and Technology 18 (2016).
+
+    Examples
+    --------
+    >>> from scirel.kinetic.dispersion.rational import default_deck
+    >>> deck = default_deck('es1d')
+    >>> assert deck.ndim == 2 and deck.shape[1] == 5
+    """
     name = {"es1d": "es1d_deck.in", "es3d": "es3d_deck.in", "em": "em3d_deck.in"}[_model(model)]
     return np.loadtxt(_DATA / name, skiprows=1, ndmin=2)
 
 
 def equilibrium(model, deck, *, B0=None):
-    """Positive finite Maxwellian species scales; source constants explicit in output.
+    r"""Convert the declared legacy species deck into thermal, Debye, plasma and signed gyro scales; preserve explicit ES and EM unit conventions.
 
-    ES1D q,m,n,T,v dimensionless; ES3D q,m,n,Tparallel,Tperp,v dimensionless.
-    EM q/e,m/me,n[m^-3],Tparallel/perp[eV],v/c; source normalizers require two
-    species. ES3D rho is absolute; EM rho signed. Zero B in magnetized models
-    requires a different unmagnetized relation and is not replaced by epsilon.
+    Parameters
+    ----------
+    model : str
+        Select es1d, es3d or em frequency relation. [not applicable] Shape: scalar. Explicit model
+        selection; no implicit conversion between ES and EM deck conventions.
+    deck : real array
+        Explicit species table; use default_deck(model) to obtain the packaged table. ES1D columns
+        q,m,n,T,vd. ES3D q,m,n,Tparallel,Tperp,vd. EM q/e,m/me,n,Tparallel,Tperp,vd/c. [ES dimensionless
+        normalized quantities; EM n in m^-3, T in eV, mass in electron masses.] Shape: Sx5 for es1d; Sx6 for
+        es3d/em. Nonzero charge; positive mass,density,temperatures; EM S>=2 for declared second-species
+        normalizers. Finite after float64 narrowing. None is rejected by this direct operator; only
+        ordered_spectrum owns automatic default-deck selection.
+    B0 : real or None
+        Signed background field along z; None selects ES3D1 or EM100e-9. ES1D has no field. [ES3D normalized
+        B; EM tesla.] Shape: scalar. Default: None. Relevant magnetized field finite and nonzero; no
+        inferred unmagnetized substitute. ES3D Omega_s=B0*q_s/m_s.
+
+    Returns
+    -------
+    state : mapping
+        Named source scales: ES1D S,qs,ms,ns0,Ts,vs0,vts,lambdaDs,kDs,wps; ES3D uses Tzs,Tps,vtzs and adds
+        signed wcs plus absolute rhocs. EM additionally retains original deck quantities,
+        wps2,lmdT,betasz,betasp,vA,cS,wci,wpi,cwp,vAwp,c2,epsilon0,mu0,kB. Binary64 arrays keep their source
+        row shapes. [Model-dependent ES dimensionless or EM SI.] Shape: mapping. Binary64 arrays preserve
+        source row shapes; use named fields rather than inferred positional scales.
+    receipt : Python execution receipt
+        Frozen Python execution receipt for an executed pure-Python operator; execution provenance is
+        separate from scientific validity. [not applicable] Shape: Python execution receipt object.
+        Execution provenance does not certify scientific validity by itself.
+
+    Raises
+    ------
+    FloatingPointError
+        FloatingPointError if derived equilibrium scales are nonfinite; no root solver is used.
+    ValueError
+        ValueError for invalid model/deck, nonphysical charge/mass/density/temperature, magnetized B0=0 or
+        unrepresentable float64 input.
+
+    See Also
+    --------
+    scirel.kinetic : Public kinetic-domain operators.
+
+    Notes
+    -----
+    ES1D normalized scales: vts=sqrt(2T/m), lambdaDs=sqrt(T/(n q²)), kDs=1/lambdaDs, wps=sqrt(n q²/m).
+    ES3D uses Tparallel in those scales, Omega=B0*q/m, and rho=sqrt(Tperp/m)/abs(Omega); B0 is a signed
+    normalized input with default1, not a tesla label. EM constants are exactly qe=1.6022e-19 C,
+    me=9.1094e-31 kg, c=2.9979e8 m/s, epsilon0=8.8542e-12 F/m and kB=1.3807e-23 J/K; c2=c² and mu0=1/(c²
+    epsilon0). EM q=deck_q*qe, m=deck_m*me, Tz/p[K]=deck_Tz/p[eV]*qe/kB, vd=deck_vd*c. Then vtz=sqrt(2
+    kB Tz/m), lambdaD=sqrt(epsilon0 kB Tz/(n q²)), wp=sqrt(n q²/(m epsilon0)), signed Omega=B0*q/m and
+    signed rho=sqrt(kB Tp/m)/Omega. Source normalizers explicitly use wci=abs(Omega_second),
+    wpi=sqrt(n_first*q_second²/(m_second*epsilon0)), cwp=c/wpi, mu0 above; these are not silently
+    replaced by another species reference. Outputs also include beta_z/p=2mu0*n*kB*Tz/p/B0²,
+    vA=B0/sqrt(mu0 sum m*n), cS=sqrt(2min(kB*Tz)/max(m)), vAwp=vA/wci. This normalized ES/SI EM parsing
+    is distinct from the eight-column m/mp loss-cone initialization and from the maintained fluid
+    wavevector-at-fixed-frequency relations. ES1D or ES3D normalized Gaussian species, or EM SI drifting
+    bi-Maxwellian species using the exact listed legacy constants; no loss-cone branch implied.
+    Assumptions: Model-specific deck conventions are explicit. A numerical spectrum is not automatically
+    a physically certified mode.
+
+    References
+    ----------
+    Xie and Xiao, PDRK: A General Kinetic Dispersion Relation Solver for Magnetized Plasma, Plasma Science and Technology 18 (2016).
+
+    Examples
+    --------
+    >>> from scirel.kinetic.dispersion.rational import equilibrium
+    >>> r = equilibrium('em', [[-1, 1, 1e6, 100, 100, 0], [1, 1836, 1e6, 100, 100, 0]], B0=1e-7)
+    >>> assert r['state']['S'].item() == 2
     """
     model = _model(model)
     d = np.asarray(deck)
@@ -416,11 +521,58 @@ def equilibrium(model, deck, *, B0=None):
 
 
 def pole_table(model="es1d", J=8, *, opt=None):
-    """Explicit source-family pole data; no silent fallback to a different order.
+    r"""Select an explicit pole-table family and variant; J12 uses the high-precision reconstruction of the two-sided Padé equations.
 
-    ES1D J2,3,4,8,12; ES3D/EM J4,8,12. opt=1/2 distinguishes ES1D J4/J8
-    source tables. Table choice is approximation metadata, not a global accuracy
-    claim. General upper/lower-plane error domains still require qualification.
+    Parameters
+    ----------
+    model : str
+        Model selecting the legacy table family. [dimensionless] Shape: scalar. Default: 'es1d'. One of
+        es1d, es3d, em; selects its explicit source-family table.
+    J : integer
+        Number of Maxwellian rational poles. [dimensionless] Shape: scalar. Default: 8. ES1D supports
+        J=2,3,4,8,12; ES3D and EM support J=4,8,12. Unsupported orders fail without fallback.
+    opt : integer or None
+        ES1D variant: None selects 2 for J4, otherwise 1; explicit 1 or 2 accepted. Only J4/J8 change table
+        values. Other models ignore opt. [dimensionless] Shape: scalar. Default: None. When model=es1d,
+        resolved opt must be integer 1 or 2; ignored for ES3D/EM.
+
+    Returns
+    -------
+    state : mapping
+        Dimensionless state: J is a binary64 (1,1) scalar; bzj and czj are complex (1,J) rows in the
+        selected table order. [dimensionless] Shape: mapping. Binary64 row shapes preserved. Table selection
+        alone is not an approximation-error or physical-mode certificate.
+    receipt : Python execution receipt
+        Frozen Python execution receipt for an executed pure-Python operator; execution provenance is
+        separate from scientific validity. [not applicable] Shape: Python execution receipt object.
+        Execution provenance does not certify scientific validity by itself.
+
+    Raises
+    ------
+    ValueError
+        ValueError for invalid model, unsupported J or invalid ES1D opt.
+
+    See Also
+    --------
+    scirel.kinetic : Public kinetic-domain operators.
+
+    Notes
+    -----
+    Z_J(z)=sum_j b_j/(z-c_j). The lower-order families keep their declared table ordering; the
+    regenerated J12 is an intentional numerical correction, not a reproduction of earlier numbers.
+    Nonrelativistic Gaussian species; explicit finite-harmonic/rational approximation when applicable.
+    Assumptions: Model-specific deck conventions are explicit. A numerical spectrum is not automatically
+    a physically certified mode.
+
+    References
+    ----------
+    Xie and Xiao, PDRK: A General Kinetic Dispersion Relation Solver for Magnetized Plasma, Plasma Science and Technology 18 (2016).
+
+    Examples
+    --------
+    >>> from scirel.kinetic.dispersion.rational import pole_table
+    >>> r = pole_table('es1d', 8)
+    >>> assert r['state']['czj'].size == 8
     """
     model = _model(model)
     J = _integer(J, "J", 1)
@@ -442,13 +594,81 @@ def pole_table(model="es1d", J=8, *, opt=None):
 
 
 def point_matrix(model, state, *, k=None, kx=None, kz=None, N=None):
-    """Build model-specific eigenmatrix or corrected Harris descriptor coefficients.
+    r"""Assemble ES1D frequency matrix, corrected ES3D finite-Harris descriptor coefficients, or EM Maxwell pencil with causal signed wavevectors and exact axes.
 
-    ES3D deliberately does not expose the source's incorrect ordinary matrix M.
-    Exact parallel Bessel limits and a separate exact-perpendicular full-I pole
-    pencil retain both axes. Signed wavevectors select the causal pole sheet.
-    Signed and exact-axis responses have bounded independent qualification;
-    installed public contracts are checked separately.
+    Parameters
+    ----------
+    model : str
+        Physical relation variant: es1d, es3d or em. [not applicable] Shape: scalar. Select an explicitly
+        supported model.
+    state : mapping
+        Equilibrium and pole-table numeric state composed without renaming fields. [Model-specific ES
+        dimensionless or EM SI; named source scales.] Shape: mapping. Use the state returned by equilibrium
+        and pole_table for the same model.
+    k : numeric
+        ES1D signed nonzero wavevector. [dimensionless] Shape: scalar. Default: None. Required finite real
+        nonzero scalar for ES1D; ignored for ES3D/EM.
+    kx : numeric
+        Signed perpendicular wavevector. [ES dimensionless or EM m^-1] Shape: scalar. Default: None.
+        Required finite real scalar for ES3D/EM; ignored for ES1D. ES3D excludes total zero wavevector; EM
+        includes the uniform zero-wavevector limit.
+    kz : numeric
+        Signed parallel wavevector. [ES dimensionless or EM m^-1] Shape: scalar. Default: None. Required
+        finite real scalar for ES3D/EM; ignored for ES1D. ES3D excludes total zero wavevector; EM includes
+        the uniform zero-wavevector limit.
+    N : integer
+        Cyclotron harmonic cutoff, fixed at its declared default; ES3D default10 and EM default2.
+        [dimensionless] Shape: scalar. Default: None. Integer >=0 for ES3D/EM; None selects 10/2
+        respectively. Ignored for ES1D. Uniform EM analytic gyro response is independent of harmonic cutoff,
+        including N=0.
+
+    Returns
+    -------
+    state : mapping
+        Model-specific scientific numeric state with named physical scales or coefficient fields.
+        [Model-dependent ES dimensionless or EM SI.] Shape: mapping. Binary64 arrays preserve source row
+        shapes; use named fields rather than inferred positional scales.
+    receipt : Python execution receipt | mapping
+        Python execution receipt on pure-Python ES1D/ES3D and oblique EM paths; analytic exact-perpendicular
+        or uniform EM dispatch returns a provenance mapping. [not applicable] Shape: Python execution
+        receipt object or mapping. Execution provenance does not certify scientific validity by itself.
+
+    Raises
+    ------
+    KeyError
+        ValueError for invalid model, missing branch-required scalar, nonfinite/unrepresentable coordinates,
+        noninteger/negative N, ES1D k=0 or ES3D total zero wavevector; incomplete state can raise
+        KeyError.
+    ValueError
+        ValueError for invalid model, missing branch-required scalar, nonfinite/unrepresentable coordinates,
+        noninteger/negative N, ES1D k=0 or ES3D total zero wavevector; incomplete state can raise
+        KeyError.
+
+    See Also
+    --------
+    scirel.kinetic : Public kinetic-domain operators.
+
+    Notes
+    -----
+    ES3D D(omega)=a+sum B/(omega-C); source a*diag(C)-B*ones ordinary eigenvalues were scaled
+    incorrectly. EM includes full Maxwell constant in exact perpendicular response; uniform
+    zero-wavevector cold gyro response ignores harmonic cutoff analytically. Negative k/kz selects
+    causal Z poles. Compressed pole pencils retain E/B observables; source auxiliary aliases are not
+    physical waves. Nonrelativistic Gaussian species; explicit finite-harmonic/rational approximation
+    when applicable. Assumptions: Model-specific deck conventions are explicit. A numerical spectrum is
+    not automatically a physically certified mode.
+
+    References
+    ----------
+    Xie and Xiao, PDRK: A General Kinetic Dispersion Relation Solver for Magnetized Plasma, Plasma Science and Technology 18 (2016).
+
+    Examples
+    --------
+    >>> from scirel.kinetic.dispersion import rational
+    >>> eq = rational.equilibrium('es1d', [[1, 1, 1, 1, .17]])['state']
+    >>> tab = rational.pole_table('es1d', 8)['state']
+    >>> r = rational.point_matrix('es1d', {**eq, **tab}, k=.4)
+    >>> assert r['state']['M'].shape == (8, 8)
     """
     model = _model(model)
     s = dict(state)
@@ -721,12 +941,239 @@ def point_matrix(model, state, *, k=None, kx=None, kz=None, N=None):
 
 
 def solve_matrix(matrix, *, model="es1d", sp=0, nw=None, wg=0):
-    """Frequency solve with full eigenvectors/backward residual and explicit shift.
+    r"""Solve the frequency matrix or Harris descriptor with explicit residual, cancellation and infinite-mode taxonomy; retain complete near-pole carriers.
 
-    EM is binary64 eig/eigs, avoiding the source's post-eig VPA conversion which
-    does not improve eigenvalue accuracy. This intentional dependency change is
-    not a claim of identical incidental LAPACK root order. Physical roots require
-    independent dielectric checks as well as a backward-stable matrix solve.
+    Parameters
+    ----------
+    matrix : dense/sparse numeric matrix or mapping
+        ES1D/EM square matrix, or complete ES3D point state. [Frequency units follow selected model.] Shape:
+        n x n or mapping. Finite and representable in the declared numeric type.
+    model : str
+        Physical spectrum variant. [dimensionless] Shape: scalar. Default: 'es1d'. Select es1d, es3d or em.
+    sp : integer
+        Dense0 or shifted sparse1 for ES1D/EM. [dimensionless] Shape: scalar. Default: 0. For ES1D/EM,
+        integer 0 or 1; ignored by ES3D descriptor/interlacing branches.
+    nw : integer or None
+        Requested sparse count, default1; must be less than dimension-1. [dimensionless] Shape: scalar.
+        Default: None. For sparse ES1D/EM only: None selects 1, otherwise integer >=1 and <matrix
+        dimension-1; ignored for dense and ES3D.
+    wg : complex
+        Complex sparse target frequency. [frequency in selected model] Shape: scalar. Default: 0. Finite
+        complex128 scalar when consumed by sparse ES1D/EM; ignored for dense and ES3D.
+
+    Returns
+    -------
+    omega : complex128
+        ES1D/EM raw d alias; generic ES3D accepted roots sorted by growth; perpendicular ES3D binary64
+        rounded real roots. [ES dimensionless frequency or EM rad s^-1] Shape: (m,). Returned on successful
+        completion; this diagnostic does not independently certify physical applicability.
+    d : complex128
+        Unsorted eigenvalues; omega aliases d. [ES dimensionless frequency or EM rad s^-1] Shape: (m,).
+        Default: None. Present for ES1D/EM only; raw eigenpair diagnostics use the d/V column order, not
+        growth-sorted order.
+    V : complex128
+        Right eigenvectors aligned with unsorted d. [model-dependent state amplitudes] Shape: (n,m).
+        Default: None. Present for ES1D/EM only; raw eigenpair diagnostics use the d/V column order, not
+        growth-sorted order.
+    wi : float64
+        Imaginary parts of growth-sorted w. [ES dimensionless frequency or EM rad s^-1] Shape: (m,).
+        Default: None. Present for ES1D/EM only; raw eigenpair diagnostics use the d/V column order, not
+        growth-sorted order.
+    ind : integer array
+        Stable descending-imaginary permutation of unsorted d. [dimensionless] Shape: (m,). Default: None.
+        Present for ES1D/EM only; raw eigenpair diagnostics use the d/V column order, not growth-sorted
+        order.
+    indices : str
+        Literal zero-based index convention. [not applicable] Shape: scalar. Default: None. Present for
+        ES1D/EM only; raw eigenpair diagnostics use the d/V column order, not growth-sorted order.
+    backward_residual : float64
+        Normalized matrix eigenpair residual for each unsorted d/V column. [dimensionless] Shape: (m,).
+        Default: None. Present for ES1D/EM only; raw eigenpair diagnostics use the d/V column order, not
+        growth-sorted order.
+    wg : complex128
+        Growth-first root w[0], returned even for dense solve. [ES dimensionless frequency or EM rad s^-1]
+        Shape: scalar. Default: None. Present for ES1D/EM only; raw eigenpair diagnostics use the d/V column
+        order, not growth-sorted order.
+    w : complex128
+        ES1D/EM stable descending-imaginary ordering of d; perpendicular ES3D deterministic real-frequency
+        ordering. [ES dimensionless frequency or EM rad s^-1] Shape: (m,). Default: None. Present for
+        ES1D/EM and perpendicular ES3D; generic ES3D exposes its sorted roots as omega.
+    all_finite : complex128
+        All finite generalized eigenvalues before rational qualification. [ES dimensionless frequency]
+        Shape: (f,). Default: None. Present for generic ES3D descriptor/constant branches; absent on
+        exact-perpendicular ES3D.
+    infinite_count : int
+        Count of beta==0 generalized eigenvalues; constant branch returns zero. [dimensionless] Shape:
+        scalar. Default: None. Present for generic ES3D descriptor/constant branches; absent on
+        exact-perpendicular ES3D.
+    canceled_poles : complex128
+        Exactly coincident pole groups whose combined residue is exactly zero. [ES dimensionless frequency]
+        Shape: (c,). Default: None. Present for generic ES3D descriptor/constant branches; absent on
+        exact-perpendicular ES3D.
+    rational_residual : float64
+        Normalized represented rational-equation residual for all_finite. [dimensionless] Shape: (f,).
+        Default: None. Present for generic ES3D descriptor/constant branches; absent on exact-perpendicular
+        ES3D.
+    pencil_residual : float64
+        Normalized generalized eigenpair residual for all_finite. [dimensionless] Shape: (f,). Default:
+        None. Present for generic ES3D descriptor/constant branches; absent on exact-perpendicular ES3D.
+    constant : complex128
+        Dimensionless constant after coefficient validation. [dimensionless] Shape: scalar. Default: None.
+        Present for generic ES3D descriptor/constant branches; absent on exact-perpendicular ES3D.
+    poles : complex128
+        Exactly combined nonzero-residue pole groups. [ES dimensionless frequency] Shape: (r,). Default:
+        None. Present for generic ES3D descriptor/constant branches; absent on exact-perpendicular ES3D.
+    residues : complex128
+        Combined residues aligned with poles. [ES dimensionless frequency] Shape: (r,). Default: None.
+        Present for generic ES3D descriptor/constant branches; absent on exact-perpendicular ES3D.
+    accepted : bool array
+        Qualification mask aligned with all_finite; public solve raises with attached diagnostics if any
+        finite root is rejected. [dimensionless] Shape: (f,). Default: None. Present only for generic ES3D
+        with a nonzero combined residue; absent for constant and perpendicular branches.
+    alpha : complex128
+        Homogeneous generalized eigenvalue numerator, including infinite modes. [descriptor-dependent]
+        Shape: (r+1,). Default: None. Present only for generic ES3D with a nonzero combined residue; absent
+        for constant and perpendicular branches.
+    beta : complex128
+        Homogeneous denominator; exact zero identifies a constraint/infinite eigenvalue.
+        [descriptor-dependent] Shape: (r+1,). Default: None. Present only for generic ES3D with a nonzero
+        combined residue; absent for constant and perpendicular branches.
+    A : complex128
+        Reduced frequency descriptor after exact grouping/cancellation. [model-dependent descriptor units]
+        Shape: (r+1,r+1). Default: None. Present only for generic ES3D with a nonzero combined residue;
+        absent for constant and perpendicular branches.
+    H : complex128
+        Singular descriptor multiplier with zero algebraic field row. [dimensionless] Shape: (r+1,r+1).
+        Default: None. Present only for generic ES3D with a nonzero combined residue; absent for constant
+        and perpendicular branches.
+    classification : str
+        String taxonomy: IDENTICALLY_ZERO, NONZERO_CONSTANT_NO_ROOTS,
+        DESCRIPTOR_WITH_EXPLICIT_ROOT_QUALIFICATION, or
+        PERPENDICULAR_INTERLACING_NEAREST_POLE_OFFSET_CARRIER. Detailed perpendicular counts are in
+        mode_classification. [not applicable] Shape: scalar. Default: None. Present for ES3D only.
+    frequency_base : float64
+        Binary64 nearest reference-pole frequency base. [ES dimensionless frequency] Shape: (m,). Default:
+        None. Present only for exact-perpendicular ES3D positive-Gaussian interlacing branch.
+    frequency_offset : float64
+        Binary64 signed displacement from that base; decimal pair remains authoritative for sub-ulp modes.
+        [ES dimensionless frequency] Shape: (m,). Default: None. Present only for exact-perpendicular ES3D
+        positive-Gaussian interlacing branch.
+    frequency_base_decimal : list[str]
+        Canonical signed nearest-pole frequency base. Pair base and offset; rounded omega alone is
+        incomplete. [ES dimensionless frequency] Shape: length m. Default: None. Present only for
+        exact-perpendicular ES3D positive-Gaussian interlacing branch.
+    frequency_offset_decimal : list[str]
+        Canonical signed sub-ulp displacement from that base. Pair base and offset; rounded omega alone is
+        incomplete. [ES dimensionless frequency] Shape: length m. Default: None. Present only for
+        exact-perpendicular ES3D positive-Gaussian interlacing branch.
+    published_frequency_base_decimal : list[str]
+        Base separately divided by frequency_scale before rounding. Pair base and offset; rounded omega
+        alone is incomplete. [ES dimensionless frequency] Shape: length m. Default: None. Present only for
+        exact-perpendicular ES3D positive-Gaussian interlacing branch.
+    published_frequency_offset_decimal : list[str]
+        Offset separately divided by frequency_scale before rounding. Pair base and offset; rounded omega
+        alone is incomplete. [ES dimensionless frequency] Shape: length m. Default: None. Present only for
+        exact-perpendicular ES3D positive-Gaussian interlacing branch.
+    published_omega : complex128
+        Binary64 rounded normalized base+offset; public solve uses frequency_scale=1. [ES dimensionless
+        frequency] Shape: (m,). Default: None. Present only for exact-perpendicular ES3D positive-Gaussian
+        interlacing branch.
+    frequency_scale_decimal : str
+        Canonical-to-published divisor; public solve default is 1. [dimensionless] Shape: scalar. Default:
+        None. Present only for exact-perpendicular ES3D positive-Gaussian interlacing branch.
+    pole_square_decimal : list[str]
+        Distinct ordered positive squared cyclotron resonances. [squared ES frequency] Shape: length h.
+        Default: None. Present only for exact-perpendicular ES3D positive-Gaussian interlacing branch.
+    weights_decimal : list[str]
+        Positive residues W of the squared-frequency relation, aligned with poles. [squared ES frequency]
+        Shape: length h. Default: None. Present only for exact-perpendicular ES3D positive-Gaussian
+        interlacing branch.
+    constant_decimal : str
+        Positive finite-Harris constant a. [dimensionless] Shape: scalar. Default: None. Present only for
+        exact-perpendicular ES3D positive-Gaussian interlacing branch.
+    root_interval_index : list[int]
+        Index of the positive squared-root interval before applying root_sign. [dimensionless] Shape: length
+        m. Default: None. Present only for exact-perpendicular ES3D positive-Gaussian interlacing branch.
+    reference_pole_index : list[int]
+        Nearest endpoint pole chart for each returned mode. [dimensionless] Shape: length m. Default: None.
+        Present only for exact-perpendicular ES3D positive-Gaussian interlacing branch.
+    root_sign : list[int]
+        Signed frequency branch, -1 or +1. [dimensionless] Shape: length m. Default: None. Present only for
+        exact-perpendicular ES3D positive-Gaussian interlacing branch.
+    square_offset_decimal : list[str]
+        Signed x-p_reference displacement in the nearest-endpoint chart. [squared ES frequency] Shape:
+        length m. Default: None. Present only for exact-perpendicular ES3D positive-Gaussian interlacing
+        branch.
+    shift_chart_residual_decimal : list[str]
+        Normalized rational residual evaluated directly in the signed offset chart. [dimensionless] Shape:
+        length m. Default: None. Present only for exact-perpendicular ES3D positive-Gaussian interlacing
+        branch.
+    root_brackets_delta_decimal : list[list[str]]
+        Numerical lower/upper signed-offset bounds; not rigorous interval certificates. [squared ES
+        frequency] Shape: m pairs. Default: None. Present only for exact-perpendicular ES3D
+        positive-Gaussian interlacing branch.
+    precision_digits : int
+        Decimal working precision of the interlacing construction. [decimal digits] Shape: scalar. Default:
+        None. Present only for exact-perpendicular ES3D positive-Gaussian interlacing branch.
+    N : int
+        Finite harmonic cutoff. [dimensionless] Shape: scalar. Default: None. Present only for
+        exact-perpendicular ES3D positive-Gaussian interlacing branch.
+    source_pole_order : int
+        Source J used for auxiliary alias multiplicities, not additional physical roots. [dimensionless]
+        Shape: scalar. Default: None. Present only for exact-perpendicular ES3D positive-Gaussian
+        interlacing branch.
+    mode_count : int
+        Number of finite physical signed simple modes, 2*h. [dimensionless] Shape: scalar. Default: None.
+        Present only for exact-perpendicular ES3D positive-Gaussian interlacing branch.
+    mode_classification : mapping
+        Counts: source_auxiliary_modes, physical_finite_simple_modes, physical_zero_frequency_modes,
+        zero_residue_source_pole_aliases, repeated_nonzero_source_pole_aliases,
+        total_canceled_source_auxiliary_modes, associated_descriptor_infinite_constraint_modes;
+        associated_descriptor_constructed=False. source_pole_groups stores frequency_decimal, multiplicity
+        and physical_pole per group. Associated infinity is algebraic classification, not a measured
+        eigenvalue from a constructed descriptor. [dimensionless counts plus ES-frequency strings] Shape:
+        mapping. Default: None. Present only for exact-perpendicular ES3D positive-Gaussian interlacing
+        branch.
+    precision_limit : str
+        Rounded-frequency and decimal-carrier interpretation; numerical brackets are not rigorous intervals.
+        [not applicable] Shape: scalar. Default: None. Present only for exact-perpendicular ES3D
+        positive-Gaussian interlacing branch.
+
+    Raises
+    ------
+    ArithmeticError
+        ArithmeticError on backward residual or descriptor/interlacing qualification failure. Generic ES3D
+        rejected finite modes attach diagnostics to the error. No failed mode is silently accepted.
+    ValueError
+        ValueError for invalid model, nonsquare/nonfinite ES1D/EM matrix, unsupported sp, invalid sparse nw
+        or shift; ES3D requires its complete coefficient/carrier state.
+
+    See Also
+    --------
+    scirel.kinetic : Public kinetic-domain operators.
+
+    Notes
+    -----
+    Dense/sp0 eig or shifted sparse/sp1 eigs for ES1D/EM, complex128 eigenpairs and normalized backward
+    residual. Generic ES3D homogeneous descriptor exposes alpha,beta and infinite/canceled modes and
+    rejects unqualified finite roots. Positive perpendicular ES uses nearest-pole signed offset
+    interlacing at80 decimal digits; decimal base+offset carries sub-ulp displacement. Rounded
+    omega/plots are incomplete carriers. Nonrelativistic Gaussian species; explicit
+    finite-harmonic/rational approximation when applicable. Assumptions: Model-specific deck conventions
+    are explicit. A numerical spectrum is not automatically a physically certified mode.
+
+    References
+    ----------
+    Xie and Xiao, PDRK: A General Kinetic Dispersion Relation Solver for Magnetized Plasma, Plasma Science and Technology 18 (2016).
+
+    Examples
+    --------
+    >>> from scirel.kinetic.dispersion.rational import equilibrium, pole_table, point_matrix, solve_matrix
+    >>> eq = equilibrium('es1d', [[1, 1, 1, 1, 0]])['state']
+    >>> tab = pole_table('es1d', 4)['state']
+    >>> m = point_matrix('es1d', {**eq, **tab}, k=0.4)['state']['M']
+    >>> r = solve_matrix(m, model='es1d')
+    >>> assert len(r['omega']) == 4 and max(r['backward_residual']) <= 1e-11
     """
     model = _model(model)
     if model == "es3d":
@@ -796,7 +1243,63 @@ def solve_matrix(matrix, *, model="es1d", sp=0, nw=None, wg=0):
 
 
 def em_coordinates(kj, cwp, *, theta_degrees=71):
-    """Explicit legacy kc/omega_pi and degrees to SI wavevector components."""
+    r"""Convert dimensionless k c/omega_pi and propagation angle into SI perpendicular and parallel coordinates.
+
+    Parameters
+    ----------
+    kj : numeric
+        Signed normalized radial wavevector parameter k*c/omega_pi; negative values are allowed.
+        [dimensionless] Shape: scalar. Finite and representable in the declared numeric type.
+    cwp : numeric
+        Positive reference c/omega_pi. [m] Shape: scalar. Finite real scalar c/omega_pi >0.
+    theta_degrees : numeric
+        Propagation angle from the magnetic-field axis. [degree] Shape: scalar. Default: 71. Finite and
+        representable in the declared numeric type.
+
+    Returns
+    -------
+    kx : numeric
+        Signed perpendicular component. [m^-1] Shape: scalar. Derived float64 arithmetic from the declared
+        finite inputs; no additional post-division finite-output guard is applied.
+    kz : numeric
+        Signed parallel component. [m^-1] Shape: scalar. Derived float64 arithmetic from the declared finite
+        inputs; no additional post-division finite-output guard is applied.
+    k : float64
+        Signed radial parameter kj/cwp; not the nonnegative norm of the returned components. [m^-1] Shape:
+        scalar. Derived float64 arithmetic from the declared finite inputs; no additional post-division
+        finite-output guard is applied.
+    theta : float64
+        Input theta_degrees converted to radians without wrapping. [rad] Shape: scalar. Derived float64
+        arithmetic from the declared finite inputs; no additional post-division finite-output guard is
+        applied.
+
+    Raises
+    ------
+    ValueError
+        ValueError for nonfinite/unrepresentable real scalars or cwp<=0.
+
+    See Also
+    --------
+    scirel.kinetic : Public kinetic-domain operators.
+
+    Notes
+    -----
+    k=kj/cwp, kx=k sin(theta), kz=k cos(theta); cwp=c/omega_pi uses explicit source reference species,
+    theta in degrees. Nonrelativistic Gaussian species; explicit finite-harmonic/rational approximation
+    when applicable. Assumptions: Model-specific deck conventions are explicit. A numerical spectrum is
+    not automatically a physically certified mode.
+
+    References
+    ----------
+    Xie and Xiao, PDRK: A General Kinetic Dispersion Relation Solver for Magnetized Plasma, Plasma Science and Technology 18 (2016).
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from scirel.kinetic.dispersion.rational import em_coordinates
+    >>> r = em_coordinates(0.1, 2.0, theta_degrees=71)
+    >>> assert np.isclose(np.hypot(r['kx'], r['kz']), 0.05)
+    """
     k = _scalar(kj, "kj") / _scalar(cwp, "cwp", positive=True)
     theta = np.deg2rad(_scalar(theta_degrees, "theta_degrees"))
     return dict(kx=k * np.sin(theta), kz=k * np.cos(theta), theta=theta, k=k)
@@ -858,7 +1361,50 @@ def ordered_spectrum(
 
 
 def jpole_grid_coordinates():
-    """Source diagnostic grid; this is not an approximation-validity declaration."""
+    r"""Return the declared 101x101 complex diagnostic ndgrid, without implying approximation validity over the grid.
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+    state : mapping
+        Dimensionless x,y,z arrays, each (101,101): ndgrid of x=-5:0.1:5 and y=-3:0.08:5, z=x+1i*y. The
+        first index varies real x; the second varies imaginary y. [dimensionless] Shape: mapping. Preserve
+        complete NumPy ndgrid orientation. This historical diagnostic grid is not a declared
+        approximation-validity domain.
+    receipt : Python execution receipt
+        Frozen Python execution receipt for an executed pure-Python operator; execution provenance is
+        separate from scientific validity. [not applicable] Shape: Python execution receipt object.
+        Execution provenance does not certify scientific validity by itself.
+
+    Raises
+    ------
+    TypeError
+        Supplying any arguments raises TypeError; no caller-supplied scientific inputs are accepted.
+
+    See Also
+    --------
+    scirel.kinetic : Public kinetic-domain operators.
+
+    Notes
+    -----
+    Construct x,y ndgrid and z=x+i*y; preserve the complete two-dimensional orientation for diagnostic
+    plots. Deterministic NumPy coordinate construction; no dispersion function or rational approximation
+    is evaluated. Assumptions: The zero-argument helper fixes both axis ranges and the 101 samples on
+    each axis. Coordinates are diagnostic evaluation locations only; they establish no dispersion
+    relation, mode classification or approximation accuracy.
+
+    References
+    ----------
+    Xie and Xiao, PDRK: A General Kinetic Dispersion Relation Solver for Magnetized Plasma, Plasma Science and Technology 18 (2016).
+
+    Examples
+    --------
+    >>> from scirel.kinetic.dispersion.rational import jpole_grid_coordinates
+    >>> r = jpole_grid_coordinates()
+    >>> assert r['state']['z'].shape == (101, 101)
+    """
     x = np.linspace(-5, 5, 101)
     y = np.linspace(-3, 5, 101)
     xx, yy = np.meshgrid(x, y, indexing="ij")
@@ -866,7 +1412,58 @@ def jpole_grid_coordinates():
 
 
 def jpole_evaluate(bzj, czj, z):
-    """Evaluate a simple-pole rational approximation, preserving the z shape."""
+    r"""Evaluate a declared simple-pole rational approximation while preserving the evaluation-point shape.
+
+    Parameters
+    ----------
+    bzj : complex array
+        Aligned nonempty simple-pole residues. [dimensionless] Shape: J. Finite and representable in the
+        declared numeric type.
+    czj : complex array
+        Aligned simple poles. [dimensionless] Shape: J. Finite and representable in the declared numeric
+        type.
+    z : complex array
+        Complex evaluation arguments. [dimensionless] Shape: arbitrary shape. Finite and representable in
+        the declared numeric type.
+
+    Returns
+    -------
+    ZJ : complex array
+        Rational dispersion approximation. [dimensionless] Shape: same shape as z. Finite and representable
+        in the declared numeric type.
+
+    Raises
+    ------
+    FloatingPointError
+        FloatingPointError for nonfinite rational output; no iterative solver or approximation-domain
+        certification.
+    ValueError
+        For empty, misaligned or nonfinite poles, residues or evaluation points.
+    ZeroDivisionError
+        When an evaluation point exactly equals a rational pole.
+
+    See Also
+    --------
+    scirel.kinetic : Public kinetic-domain operators.
+
+    Notes
+    -----
+    Z_J(z)=sum b_j/(z-c_j), complex128 evaluation; no hidden Z-table choice or scientific-domain
+    extrapolation. Nonrelativistic Gaussian species; explicit finite-harmonic/rational approximation
+    when applicable. Assumptions: Model-specific deck conventions are explicit. A numerical spectrum is
+    not automatically a physically certified mode.
+
+    References
+    ----------
+    Xie and Xiao, PDRK: A General Kinetic Dispersion Relation Solver for Magnetized Plasma, Plasma Science and Technology 18 (2016).
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from scirel.kinetic.dispersion.rational import jpole_evaluate
+    >>> r = jpole_evaluate([-1], [-1j], 1+1j)
+    >>> assert np.isclose(r['ZJ'], -1/(1+2j))
+    """
     b = np.asarray(bzj, dtype=complex).ravel()
     c = np.asarray(czj, dtype=complex).ravel()
     z = np.asarray(z, dtype=complex)
@@ -881,11 +1478,117 @@ def jpole_evaluate(bzj, czj, z):
 
 
 def jpole_coefficients(J=12, I=16, *, precision=80):
-    """High-precision two-sided Maxwellian Padé construction, pending refinement.
+    r"""Solve the source Maxwellian Taylor/asymptotic matching equations at declared decimal precision, refine simple roots and compute residues.
 
-    Original J12 system condition~3.52e14 motivates explicit precision. No claim
-    of universal Z accuracy or monotonic improvement. Residues assume simple roots;
-    a repeated root requires a separate higher-order-pole representation.
+    Parameters
+    ----------
+    J : integer
+        Number of simple poles. [dimensionless] Shape: scalar. Default: 12. Finite and representable in the
+        declared numeric type.
+    I : integer
+        Number of Taylor matching equations. [dimensionless] Shape: scalar. Default: 16. Finite and
+        representable in the declared numeric type.
+    precision : integer
+        Decimal construction precision. [dimensionless] Shape: scalar. Default: 80. Finite and representable
+        in the declared numeric type.
+
+    Returns
+    -------
+    J : int
+        Number of simple poles. [dimensionless] Shape: scalar. Returned on successful completion; this
+        diagnostic does not independently certify physical applicability.
+    I : int
+        Taylor matching equation count. [dimensionless] Shape: scalar. Returned on successful completion;
+        this diagnostic does not independently certify physical applicability.
+    K : int
+        Inverse-power matching equation count, 2*J-I. [dimensionless] Shape: scalar. Returned on successful
+        completion; this diagnostic does not independently certify physical applicability.
+    precision_digits : int
+        Decimal precision used for coefficient and root construction. [decimal digits] Shape: scalar.
+        Returned on successful completion; this diagnostic does not independently certify physical
+        applicability.
+    bzj : complex128
+        Simple-pole residues in the refined pole order. [dimensionless] Shape: (J,). Returned on successful
+        completion; this diagnostic does not independently certify physical applicability.
+    czj : complex128
+        Refined simple poles, binary64 view. [dimensionless] Shape: (J,). Returned on successful completion;
+        this diagnostic does not independently certify physical applicability.
+    p : complex128
+        Numerator coefficients in descending polynomial order. [dimensionless] Shape: (J,). Returned on
+        successful completion; this diagnostic does not independently certify physical applicability.
+    q : complex128
+        Denominator coefficients in descending polynomial order. [dimensionless] Shape: (J+1,). Returned on
+        successful completion; this diagnostic does not independently certify physical applicability.
+    pq : complex128
+        Solved two-sided coefficient vector before descending-order rearrangement. [dimensionless] Shape:
+        (2*J,). Returned on successful completion; this diagnostic does not independently certify physical
+        applicability.
+    Mpq : complex128
+        Two-sided matching linear system matrix. [dimensionless] Shape: (2*J,2*J). Returned on successful
+        completion; this diagnostic does not independently certify physical applicability.
+    B : complex128
+        Matching system right-hand side. [dimensionless] Shape: (2*J,). Returned on successful completion;
+        this diagnostic does not independently certify physical applicability.
+    moments : complex128
+        Binary64 sums sum(b), sum(b*c), sum(b*c*c). [dimensionless] Shape: (3,). Returned on successful
+        completion; this diagnostic does not independently certify physical applicability.
+    high_precision_linear_residual : str
+        The normalized matching-system residual, returned as a decimal string. [dimensionless] Shape:
+        scalar. Returned on successful completion; this diagnostic does not independently certify physical
+        applicability.
+    high_precision_root_residual : list[str]
+        Normalized polynomial residual for each refined pole. Strings retain construction precision
+        independently of binary64 numeric ports. [dimensionless] Shape: length J. Returned on successful
+        completion; this diagnostic does not independently certify physical applicability.
+    high_precision_poles : list[str]
+        Complex refined poles at declared decimal precision. Strings retain construction precision
+        independently of binary64 numeric ports. [dimensionless] Shape: length J. Returned on successful
+        completion; this diagnostic does not independently certify physical applicability.
+    high_precision_residues : list[str]
+        Complex simple-pole residues at declared decimal precision. Strings retain construction precision
+        independently of binary64 numeric ports. [dimensionless] Shape: length J. Returned on successful
+        completion; this diagnostic does not independently certify physical applicability.
+    precision_claim : str
+        Construction precision and separate approximation-applicability limit. [not applicable] Shape:
+        scalar. Returned on successful completion; this diagnostic does not independently certify physical
+        applicability.
+
+    Raises
+    ------
+    ArithmeticError
+        Linear-solve errors propagate. ArithmeticError for unresolved/repeated/collapsed roots, failed
+        polynomial/linear residual or the bounded 100-step Newton refinement; FloatingPointError for
+        unrepresentable binary64 poles/residues.
+    FloatingPointError
+        Linear-solve errors propagate. ArithmeticError for unresolved/repeated/collapsed roots, failed
+        polynomial/linear residual or the bounded 100-step Newton refinement; FloatingPointError for
+        unrepresentable binary64 poles/residues.
+    ValueError
+        ValueError unless integer J>=1, integer 0<=I<=2J and integer precision>=32; no fixed-table family
+        restriction.
+
+    See Also
+    --------
+    scirel.kinetic : Public kinetic-domain operators.
+
+    Notes
+    -----
+    I+K=2J; Mpq*pq=B matches source Taylor and inverse-power coefficients. Residue
+    b=P(c)/Qprime(c).80/120-digit precision refinement and independent erfc response checks are separate
+    from matrix conditioning. Numeric ports remain complex128; construction strings retain higher
+    precision. Nonrelativistic Gaussian species; explicit finite-harmonic/rational approximation when
+    applicable. Assumptions: Model-specific deck conventions are explicit. A numerical spectrum is not
+    automatically a physically certified mode.
+
+    References
+    ----------
+    Xie and Xiao, PDRK: A General Kinetic Dispersion Relation Solver for Magnetized Plasma, Plasma Science and Technology 18 (2016).
+
+    Examples
+    --------
+    >>> from scirel.kinetic.dispersion.rational import jpole_coefficients
+    >>> r = jpole_coefficients(4, 4, precision=80)
+    >>> assert len(r['bzj']) == 4 and r['precision_digits'] == 80
     """
     from ._pade import construct_maxwellian_pade
 

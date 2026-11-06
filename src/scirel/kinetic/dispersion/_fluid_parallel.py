@@ -561,14 +561,65 @@ class ContinuationFailure(RuntimeError):
 
 
 def em1d_parallel_residual(state, omega, k, *, pm=1):
-    """Parallel drifting Maxwellian S-species EM relation, SI rad/s and m^-1.
+    r"""Evaluate the causal, signed-wavevector parallel electromagnetic residual for arbitrary species and either fixed circular-polarization sign.
 
-    f=omega^2-c^2 k^2+sum wp_s^2(omega-k vd_s)/(|k| vt_s) Z(z_s),
-    z_s=(omega-k vd_s+pm wc_s)/(|k| vt_s); vt uses sqrt(2kBT/m).
-    Causal Gaussian velocity integral uses |k| in both thermal denominators;
-    Doppler k*vd remains signed, pm labels fixed-z circular polarization.
-    From DLMF7.7.E2 Gaussian velocity integral; no helicity relabel on k reversal.
-    All supplied species participate; pm=+/-1 is explicit.
+    Parameters
+    ----------
+    state : mapping[str,numeric array or scalar]
+        Explicit initialized isotropic drifting-Maxwellian kinetic state. [wps2 s^-2; vds,vtzs m/s; wcs
+        rad/s; c2 m^2/s^2] Shape: mapping with matching nonempty (S,) vectors. wps2 nonnegative; vtzs
+        positive; finite c2. Optional Tzs,Tps must be equal and alphas must be one. Continuation defaults
+        additionally require cwp[m], wcs1[rad/s].
+    omega : complex128
+        Complex temporal frequency. [rad/s] Shape: scalar. Finite scalar before and after binary64
+        narrowing.
+    k : float64
+        Signed parallel wavevector. [m^-1] Shape: scalar. Real finite and nonzero before and after binary64
+        narrowing.
+    pm : int
+        Circular-polarization sign about the fixed positive z basis. [dimensionless] Shape: scalar. Default:
+        1. Exactly +1 or -1. This is not helicity defined along k and is not swapped when k changes sign.
+
+    Returns
+    -------
+    f : complex128
+        Complex unnormalized dispersion residual, first tuple item. [s^-2] Shape: scalar. Finite
+        representable result.
+    scale : float64
+        Positive sum-of-term-magnitudes scale, second tuple item. [s^-2] Shape: scalar. Finite positive;
+        abs(f)/scale is the acceptance residual.
+
+    Raises
+    ------
+    ValueError
+        ValueError or a missing required mapping key rejects invalid inputs.
+
+    See Also
+    --------
+    scirel.kinetic.plasma_dispersion.evaluate_plasma_dispersion : Related contract dependency.
+
+    Notes
+    -----
+    f=omega^2-c2*k^2+sum_s wps2_s*(omega-k*vds_s)/(|k|*vtzs_s)*Z((omega-k*vds_s+pm*wcs_s)/(|k|*vtzs_s)).
+    Z=i*sqrt(pi)*w; scale=max(|omega^2|+|c2*k^2|+sum|species terms|,tiny). Arbitrary-species drifting
+    isotropic Maxwellian parallel electromagnetic response. Assumptions: The Gaussian velocity integral
+    gives |k|*vt in both causal denominators, retaining signed k*vd. No anisotropic or loss-cone
+    substitution is made. Kinetic constants are caller-owned initialized state: c2, wps2, wcs and vtzs
+    are consumed without conversion; vtzs uses sqrt(2*kB*T/m). No fluid epsilon0/gamma/deck profile is
+    substituted. The source current initialization uses c2=(2.9979e8)^2, epsilon0=8.8542e-12,
+    kB=1.3807e-23, charge-unit=1.6022e-19 C, mass-unit=1.6726e-27 kg, eV-to-J=1.6022e-19; these define a
+    possible predecessor, not new fixed constants in this residual.
+
+    References
+    ----------
+    Xie and Xiao, PDRK: A General Kinetic Dispersion Relation Solver for Magnetized Plasma, Plasma Science and Technology 18 (2016).
+
+    Examples
+    --------
+    >>> from scirel.kinetic.dispersion.parallel import em1d_parallel_residual
+    >>> state = dict(wps2=[1.0], vds=[0.0], vtzs=[0.3], wcs=[-0.4], c2=1.0)
+    >>> f, scale = em1d_parallel_residual(state, 1.2+0.1j, -0.2, pm=-1)
+    >>> assert scale > 0
     """
     kval = np.asarray(k)
     if kval.shape != () or kval.dtype.kind not in "iuf" or (not np.isfinite(kval)) or (kval == 0):

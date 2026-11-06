@@ -44,12 +44,104 @@ def _scalar(value, name, *, positive=False, nonzero=False):
 
 
 def derive_species_equilibrium_scales(*, ms, qs, ns_unit, Ts_unit, B0, n00, T00):
-    """Derive per-species thermal, cyclotron, plasma and Debye SI scales.
+    r"""Derive SI thermal, cyclotron, plasma-frequency, gyroradius and Debye scales for a nonempty species mixture from reference density and temperature.
 
-    ``ms`` [kg], ``qs`` [C], ``ns_unit`` and ``Ts_unit`` [-] share a species axis.
-    ``B0`` [T] is signed; ``n00`` [m^-3] and ``T00`` [eV] are positive reference
-    values. The thermal speed uses sqrt(2 kB T/m), while the signed gyroradius
-    uses sqrt(kB T/m)/omega_c, as in the fluid-dispersion convention.
+    Parameters
+    ----------
+    ms : real numeric
+        Species masses on the shared species axis. [kg] Shape: (S,), S >= 1. Finite and strictly positive;
+        boolean values are rejected.
+    qs : real numeric
+        Signed species charges on the shared species axis. [C] Shape: (S,), same S as ms. Finite and
+        nonzero; boolean values are rejected.
+    ns_unit : real numeric
+        Species density factor relative to n00. [dimensionless] Shape: (S,), same S as ms. Finite and
+        strictly positive; boolean values are rejected.
+    Ts_unit : real numeric
+        Species temperature factor relative to T00. [dimensionless] Shape: (S,), same S as ms. Finite and
+        strictly positive; boolean values are rejected.
+    B0 : real numeric
+        Signed background magnetic field. [T] Shape: scalar. Finite and nonzero; boolean values are
+        rejected.
+    n00 : real numeric
+        Reference number density. [m^-3] Shape: scalar. Finite and strictly positive; boolean values are
+        rejected.
+    T00 : real numeric
+        Reference temperature before conversion to kelvin. [eV] Shape: scalar. Finite and strictly positive;
+        boolean values are rejected.
+
+    Returns
+    -------
+    c2 : float
+        Fixed vacuum light-speed squared. [m^2/s^2] Shape: scalar. Equals (2.99792458e8)^2.
+    epsilon0 : float
+        Fixed vacuum permittivity. [F/m] Shape: scalar. Equals 8.854187817e-12.
+    kB : float
+        Fixed Boltzmann constant. [J/K] Shape: scalar. Equals 1.38064852e-23.
+    c : float
+        Vacuum light speed from sqrt(c2). [m/s] Shape: scalar. Finite and positive.
+    ns0 : float64
+        Absolute species number density. [m^-3] Shape: (S,). Finite and strictly positive.
+    Ts0 : float64
+        Species temperature after eV-to-kelvin conversion. [K] Shape: (S,). Finite and strictly positive.
+    vts : float64
+        Species thermal speed with sqrt(2) factor. [m/s] Shape: (S,). Finite and strictly positive.
+    wcs : float64
+        Signed species cyclotron angular frequency. [rad/s] Shape: (S,). Finite and nonzero.
+    wps2 : float64
+        Species plasma angular-frequency squared. [rad^2/s^2] Shape: (S,). Finite and strictly positive.
+    wp2 : float
+        Sum of species plasma angular-frequency squared. [rad^2/s^2] Shape: scalar. Finite and strictly
+        positive.
+    rhocs : float64
+        Signed species gyroradius using sqrt(kB*T/m)/wcs. [m] Shape: (S,). Finite and nonzero.
+    absrhocs : float64
+        Absolute species gyroradius. [m] Shape: (S,). Finite and strictly positive.
+    sgns : float64
+        Sign of signed species gyroradius. [dimensionless] Shape: (S,). Each value is -1 or +1.
+    lambdaDs : float64
+        Species Debye length. [m] Shape: (S,). Finite and strictly positive.
+    kDs : float64
+        Inverse species Debye length. [m^-1] Shape: (S,). Finite and strictly positive.
+    wcn : float
+        Minimum absolute species cyclotron angular frequency. [rad/s] Shape: scalar. Finite and strictly
+        positive.
+    rhocn : float
+        Maximum absolute species gyroradius. [m] Shape: scalar. Finite and strictly positive.
+    kn : float
+        Inverse rhocn scan scale. [m^-1] Shape: scalar. Finite and strictly positive.
+    wn : float
+        Cyclotron-frequency scan scale equal to wcn. [rad/s] Shape: scalar. Finite and strictly positive.
+
+    Raises
+    ------
+    ValueError
+        Raises ValueError for empty, non-one-dimensional, mismatched, nonnumeric, boolean, nonfinite or
+        nonpositive vectors where positivity is required; zero charge or field and nonpositive n00/T00
+        also fail. Raises ValueError if a derived scale is nonfinite, unrepresentable or collapses to
+        zero; other unexpected NumPy errors propagate.
+
+    See Also
+    --------
+    scirel.kinetic : Public kinetic-domain operators.
+
+    Notes
+    -----
+    n_s=ns_unit_s*n00; T_s[K]=Ts_unit_s*T00[eV]*1.6022e-19/kB; vts=sqrt(2*kB*T_s/m_s); wcs=q_s*B0/m_s;
+    wps2=n_s*q_s^2/(m_s*epsilon0); rhocs=sqrt(kB*T_s/m_s)/wcs;
+    lambdaDs=sqrt(epsilon0*kB*T_s/(n_s*q_s^2)); wcn=min(abs(wcs)); rhocn=max(abs(rhocs)); kn=1/rhocn;
+    wn=wcn. Fixed constants are c2=(2.99792458e8)^2, epsilon0=8.854187817e-12 and kB=1.38064852e-23.
+    Magnetized Maxwellian species equilibrium using the declared thermal-speed and signed-gyroradius
+    conventions Assumptions: The caller supplies species values in SI units and reference temperature in
+    eV. Thermal speed contains sqrt(2), while the signed gyroradius uses sqrt(kB*T/m) without that
+    factor.
+
+    Examples
+    --------
+    >>> from scirel.kinetic import derive_species_equilibrium_scales
+    >>> r = derive_species_equilibrium_scales(ms=[9.1094e-31], qs=[-1.60217662e-19], ns_unit=[1.0], Ts_unit=[1.0], B0=1.0, n00=6.075e19, T00=1000.0)
+    >>> assert r['wcs'][0] < 0 and r['rhocs'][0] < 0
+    >>> assert r['wn'] == r['wcn'] and r['kn'] == 1.0 / r['rhocn']
     """
     ms = _species_vector(ms, "ms")
     qs = _species_vector(qs, "qs")

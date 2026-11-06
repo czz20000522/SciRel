@@ -185,7 +185,7 @@
  },
  "failure_semantics": {
   "invalid_input": "ValueError for an unknown kind, non-finite x/k, or invalid selector/expression/mesh; named IAW/beam parameters must satisfy the declared domain.",
-  "runtime_failure": "FloatingPointError for a non-representable Faddeeva/generalized response; bound quadrature errors propagate.",
+  "runtime_failure": "ValueError for a non-representable Faddeeva/generalized response; RuntimeError from bound generalized quadrature propagates.",
   "nonconvergence": "RuntimeError only where a bound generalized quadrature fails; IAW/beam use closed Faddeeva values.",
   "partial_results": "No partial dielectric residual is returned after rejection."
  },

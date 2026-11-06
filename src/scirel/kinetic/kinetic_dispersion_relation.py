@@ -65,11 +65,112 @@ def evaluate_kinetic_dispersion_relation(
     kx_frac,
     lmx=5,
 ):
-    """Return both kinetic determinant paths over one shared equilibrium snapshot.
+    r"""Evaluate conventional finite-harmonic and Ronnmark determinants at the same derived equilibrium wavepoint.
 
-    ``omega_frac`` and ``kx_frac`` are dimensionless fractions; the graph derives ``wn``,
-    ``kn`` and the absolute ``omega``/``kx`` itself from the caller's raw equilibrium
-    controls. ``kz`` is the declarationr's own absolute parallel wavenumber.
+    Parameters
+    ----------
+    ms : real numeric
+        Mass of each species, entering the thermal speed and cyclotron frequency [kg] Shape: (S,) one-
+        dimensional species axis. Finite positive masses, one value per species.
+    qs : real numeric
+        Charge of each species, setting the sign of the cyclotron frequency and coupling terms [C] Shape:
+        (S,) one-dimensional species axis. Finite nonzero charges, one value per species.
+    ns_unit : real numeric
+        Density of each species relative to the reference density [dimensionless] Shape: (S,) one-
+        dimensional species axis. Finite positive density ratios matching the species axis.
+    Ts_unit : real numeric
+        Temperature of each species relative to the reference temperature [dimensionless] Shape: (S,) one-
+        dimensional species axis. Finite positive temperature ratios matching the species axis.
+    B0 : real numeric
+        Background magnetic-field strength, setting the cyclotron frequency and entering the pole-resonance
+        argument [T] Shape: scalar. Finite nonzero background field.
+    n00 : real numeric
+        Reference number density, converting relative to absolute density [m^-3] Shape: scalar. Finite
+        positive reference density.
+    T00 : real numeric
+        Reference temperature, converting relative to absolute temperature [eV] Shape: scalar. Finite
+        positive reference temperature in eV.
+    omega_frac : real numeric
+        Angular frequency as a multiple of the wn derived internally by this graph (the source
+        implementation writes w=wf(p)*wcn); the caller supplies a dimensionless ratio and this graph derives
+        the absolute angular frequency [dimensionless] Shape: scalar. Finite ratio producing nonzero angular
+        frequency.
+    kz : real numeric
+        Wavevector component parallel to the magnetic field, entering the parallel-resonance argument [1/m]
+        Shape: scalar. Finite absolute parallel wavenumber; zero is supported by the kinetic paths.
+    kx_frac : real numeric
+        Perpendicular wavenumber as a multiple of the kn derived internally by this graph (the source
+        implementation writes kx=kxf(p)*kn); the caller supplies a dimensionless ratio and this graph
+        derives the absolute perpendicular wavenumber [dimensionless] Shape: scalar. Finite perpendicular-
+        wavenumber ratio.
+    lmx : integer
+        Bessel truncation order for the conventional harmonic sum [dimensionless] Shape: integer scalar.
+        Default: 5. Non-negative integer harmonic truncation.
+
+    Returns
+    -------
+    scales : mapping
+        Per-species scales derived from the equilibrium inputs, shared by both dispersion paths from the
+        same state snapshot [mixed (each key carries its own unit)] Shape: mapping/dict. The returned value
+        follows the stated shape and physical normalization.
+    determinant_sum_n : complex128 array
+        Dispersion determinant of the conventional truncated-harmonic-sum path [dimensionless] Shape:
+        complex scalar. The returned value follows the stated shape and physical normalization.
+    determinant_ronnmark : complex128 array
+        Dispersion determinant of the Ronnmark fast path [dimensionless] Shape: complex scalar. The returned
+        value follows the stated shape and physical normalization.
+    K_sum_n : complex128 array
+        Dielectric tensor of the conventional sum path [dimensionless] Shape: (3, 3) complex matrix. The
+        returned value follows the stated shape and physical normalization.
+    D_sum_n : complex128 array
+        Dispersion tensor of the conventional sum path [dimensionless] Shape: (3, 3) complex matrix. The
+        returned value follows the stated shape and physical normalization.
+    K_ronnmark : complex128 array
+        Dielectric tensor of the Ronnmark path [dimensionless] Shape: (3, 3) complex matrix. The returned
+        value follows the stated shape and physical normalization.
+    D_ronnmark : complex128 array
+        Dispersion tensor of the Ronnmark path [dimensionless] Shape: (3, 3) complex matrix. The returned
+        value follows the stated shape and physical normalization.
+    branches : string sequence
+        Method-branch label selected for each (species, pole) combination on the Ronnmark path [not
+        applicable] Shape: (S*J,) string sequence. The returned value follows the stated shape and physical
+        normalization.
+    omega : real numeric
+        Absolute angular frequency derived by this graph from omega_frac and the internal wn [rad/s] Shape:
+        scalar. The returned value follows the stated shape and physical normalization.
+    kx : real numeric
+        Absolute perpendicular wavenumber derived by this graph from kx_frac and the internal kn [1/m]
+        Shape: scalar. The returned value follows the stated shape and physical normalization.
+    f : real numeric
+        Frequency converted from the absolute angular frequency [Hz] Shape: scalar. The returned value
+        follows the stated shape and physical normalization.
+    graph_order : string sequence
+        Fixed execution-order labels of this graph [not applicable] Shape: (6,) string sequence. The
+        returned value follows the stated shape and physical normalization.
+
+    Raises
+    ------
+    ValueError
+        Raises ValueError from `derive_species_equilibrium_scales`, `probe_frequency`/`probe_wavenumber`
+        (nonfinite fractions, nonpositive `wn`/`kn`) or nonfinite `kz`; argument or `lmx` errors from
+        the kinetic sum propagate.
+
+    See Also
+    --------
+    scirel.kinetic.species_equilibrium_scales.derive_species_equilibrium_scales : Related contract dependency.
+    scirel.kinetic.kinetic_dispersion_sum_fluid.evaluate_fluid_kinetic_dispersion_sum : Related contract dependency.
+    scirel.kinetic.kinetic_dispersion_ronnmark.evaluate_kinetic_dispersion_ronnmark : Related contract dependency.
+
+    Notes
+    -----
+    The graph derives omega=omega_frac*wn, kx=kx_frac*kn and f=omega/(2*pi), then evaluates the Weideman
+    sum and Ronnmark paths with shared SI species state. homogeneous magnetized Maxwellian multi-species
+    plasma Assumptions: All species controls describe one shared equilibrium snapshot.
+
+    Examples
+    --------
+    >>> from scirel.kinetic import evaluate_kinetic_dispersion_relation
+    >>> r=evaluate_kinetic_dispersion_relation(ms=[9.1094e-31],qs=[-1.60217662e-19],ns_unit=[1],Ts_unit=[1],B0=1,n00=6.075e19,T00=1000,omega_frac=1,kz=1326.1942478795652,kx_frac=1); assert 'determinant_sum_n' in r and 'determinant_ronnmark' in r
     """
     # Resolve the scale operator first so its established input validation runs before
     # loading the two determinant implementations and their numerical helpers.

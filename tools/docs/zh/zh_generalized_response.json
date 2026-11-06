@@ -509,7 +509,7 @@
   },
   {
    "asset_id": "scirel.kinetic.generalized-hilbert",
-   "source_sha256": "1d7b2c4b9f1a2e07b98fefc811406327da6d7cb519337d7ea1bcec4743bcbce9",
+   "source_sha256": "5f9337437b97f98985ada89f5305f214487b77dffb15a499fbf0d349cf883d7a",
    "summary": "计算受限解析表达式及其导数变换。",
    "definition": "DensityExpression 解释受限 AST，按链式法则传播解析一阶导数，不使用 eval 或 SymPy。实轴被积函数先减去 f(x)·exp(-(v-x)²)；该项与 1/(v-x) 相乘后为奇函数，其全实轴主值为零。边界值加上 i·pi·f(x)，可选下半平面延拓再加上 2·pi·i·f(z)。|z|≥12 时，利用端点值消失所给出的恒等式 Zp=Cauchy[v·fprime]/z，避免总质量为零的密度导数发生相消；绝对求积容差与相位模成反比。密度导数及其解析延拓不由已舍入的 Z 或 epsilon 重建。",
    "model": "一维、无磁场、无碰撞的静电等离子体。",
@@ -590,7 +590,7 @@
    },
    "failure_semantics": {
     "invalid_input": "expression 不受支持、相位/网格非有限，或 integration_mesh/continuation 畸形时抛出 ValueError。",
-    "runtime_failure": "连续化变换非有限时抛出 FloatingPointError；求积失败时抛出 RuntimeError；不选择回退路径。",
+    "runtime_failure": "连续化变换非有限或不可表示时抛出 ValueError；求积失败时抛出 RuntimeError；不选择回退路径。",
     "nonconvergence": "实轴/外部求积失败，或声明的可去点估计不可表示时抛出 RuntimeError。",
     "partial_results": "变换失败后不返回部分 Z/Zp 对。"
    },
@@ -614,7 +614,7 @@
   },
   {
    "asset_id": "scirel.kinetic.generalized-residual",
-   "source_sha256": "2a5ff8c17b2806b5294f4f8a6a9d27414938c81365c96a1cbaacb5f5205b1c28",
+   "source_sha256": "e28d3546eb4efc907bc88004c6091b9170b0784302cd2b1ef9320f3f9fbb8107",
    "summary": "计算 Langmuir、离子声波、束流和广义分布残差。",
    "definition": "离子声波采用 D=k²+[1+xZ(x)]+[1+qZ(q)]/Ti，其中 q=x/sqrt(Ti/mi)。束流采用 D=k²+(1-nb)[1+xZ(x)]+nb/Tb[1+qZ(q)]，其中 q=x/sqrt(Tb)-vd。广义分布采用 D=k²-Zp/2。真空项与极化率归一化沿用既定约定。",
    "model": "一维、无磁场、无碰撞的静电等离子体。",
@@ -740,7 +740,7 @@
    },
    "failure_semantics": {
     "invalid_input": "kind 未知、x/k 非有限、selector/expression/mesh 非法，或具名 IAW/beam 参数超出声明域时抛出 ValueError。",
-    "runtime_failure": "Faddeeva/广义响应不可表示时抛出 FloatingPointError；绑定求积误差向上传播。",
+    "runtime_failure": "Faddeeva/广义响应不可表示时抛出 ValueError；绑定的广义求积失败时 RuntimeError 向上传播。",
     "nonconvergence": "仅当绑定的广义求积失败时抛出 RuntimeError；IAW/beam 使用闭式 Faddeeva 值。",
     "partial_results": "拒绝后不返回部分介电残差。"
    },
@@ -1025,7 +1025,7 @@
   },
   {
    "asset_id": "scirel.kinetic.gpdf-cauchy-transform",
-   "source_sha256": "8c90bbcfc1fec5615876c283079f326a06d723d2299e16f373b741972b455c80",
+   "source_sha256": "f4596e0d15d9f67c22baf5fccf79f28d6b3e4e74601aa6fccb796fbfe07b0d6f",
    "summary": "对调用者给定的密度特征求 Cauchy 变换，并针对近实轴核峰使用专门求积。",
    "definition": "G(z)=∫ density(v)/(v-z) dv。对 z=x+i·y，邻近投影的有限面板采用 v=x+abs(y)·sinh(t)，使被积核为 density(v)·(tanh(t)+i·sign(y)·sech(t))。变换后的有界面板可分辨已知核峰与长尾；平滑远面板和无穷尾部使用实坐标求积。仅按声明的支撑约定增加显式解析延拓。",
    "model": "一维广义等离子体响应。",
@@ -1055,12 +1055,6 @@
      "constraints": "None 表示须提供网格的全实轴模式；否则为有限有序实数对；拒绝布尔值和复数坐标。"
     },
     {
-     "name": "integration_mesh",
-     "description": "划分密度支撑与特征的有限递增实网格。",
-     "dtype": "有限实数组",
-     "constraints": "严格递增；有 bounds 时网格须位于 bounds 内。bounds=None 时网格端点界定已分辨的特征区域，并继续积分无穷尾部。"
-    },
-    {
      "name": "analytic_density",
      "description": "下半平面延拓的可选解析密度。",
      "dtype": "可调用对象",
@@ -1083,6 +1077,12 @@
      "description": "QUADPACK 子划分上限。",
      "dtype": "正整数",
      "constraints": "有限且可表示。"
+    },
+    {
+     "name": "integration_mesh",
+     "description": "划分密度支撑与特征的有限递增实网格。",
+     "dtype": "有限实数组",
+     "constraints": "严格递增；有 bounds 时网格须位于 bounds 内。bounds=None 时网格端点界定已分辨的特征区域，并继续积分无穷尾部。"
     }
    ],
    "outputs": [

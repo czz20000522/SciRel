@@ -61,12 +61,47 @@ def _maxwellian_susceptibility(*args, **kwargs):
 
 
 class DensityExpression:
-    """Evaluate a restricted real density expression and its first derivative.
+    r"""Compile a restricted density expression into value and analytic first-derivative callables.
 
-    Supported names are ``v``, ``pi`` and the elementary functions
-    ``exp``, ``log``, ``sqrt``, ``sin``, ``cos``, ``sinh``, ``cosh`` and
-    ``tanh``.  the reference environment elementwise operators are normalized before parsing;
-    arbitrary attributes, indexing, names and calls are rejected.
+    Parameters
+    ----------
+    expression : str
+        Analytic density in v using finite real constants, pi, arithmetic and
+        exp/log/sqrt/sin/cos/sinh/cosh/tanh; MATLAB point operators accepted. [dimensionless] Shape: scalar.
+        Real integrable density with decaying derivative; no arbitrary code, comparisons, attributes or
+        indexing.
+
+    Raises
+    ------
+    ValueError
+        ValueError for unsupported AST nodes, non-finite constants, malformed expressions, or non-numeric
+        velocity values.
+
+    See Also
+    --------
+    scirel.kinetic : Public kinetic-domain operators.
+
+    Notes
+    -----
+    Parse finite real constants, pi, v, arithmetic and the declared elementary functions; propagate
+    pairs (value, derivative) by exact analytic chain rules. MATLAB elementwise operators are normalized
+    before parsing. One-dimensional unmagnetized collisionless electrostatic plasma Assumptions: Density
+    is real and integrable on the real contour. No collective-mode uniqueness or certified global
+    quadrature bound is asserted. Expression has a valid analytic extension where continuation is
+    requested. Explicit increasing mesh resolves all density features and tails.
+
+    References
+    ----------
+    Hua-Sheng Xie, Generalized plasma dispersion function, Phys. Plasmas. 20 (2013), 092125 (scientific context)
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from scirel.kinetic.generalized_dispersion import DensityExpression
+    >>> f=DensityExpression('1./(1+v.^2)/pi')
+    >>> v=.7
+    >>> assert abs(f(v)-1/(1+v*v)/np.pi)<1e-14
+    >>> assert abs(f.derivative(v)+2*v/(1+v*v)**2/np.pi)<1e-14
     """
 
     _functions = {
@@ -255,7 +290,72 @@ def _transform(points, density, derivative, mesh, bounds=None, analytic=None, ep
 
 
 def evaluate_generalized_hilbert(z, expression, *, integration_mesh, continuation=True):
-    """Return ``Z`` and ``Zp`` for an analytic density expression."""
+    r"""Evaluate a safe analytic expression and its derivative transforms.
+
+    Parameters
+    ----------
+    z : real or complex numeric
+        Complex phase point z=omega/(sqrt(2)*k) for the Maxwellian normalization. [dimensionless] Shape:
+        scalar or nonempty array. Finite and representable.
+    expression : str
+        Analytic density in v using finite real constants, pi, arithmetic and
+        exp/log/sqrt/sin/cos/sinh/cosh/tanh; MATLAB point operators accepted. [dimensionless] Shape: scalar.
+        Real integrable density with decaying derivative; no arbitrary code, comparisons, attributes or
+        indexing.
+    integration_mesh : real vector
+        Feature-resolving finite increasing velocity mesh; infinite tails are also integrated.
+        [dimensionless] Shape: one-dimensional at least two points. All material features resolved; no
+        unresolved tail features.
+    continuation : bool
+        Add 2*pi*i*f(z) and derivative in the lower plane when true. [dimensionless] Shape: scalar. Default:
+        True. Finite and representable.
+
+    Returns
+    -------
+    Z : complex array
+        Integral f(v)/(v-z) dv with the declared continuation. [dimensionless] Shape: same as z. Finite and
+        representable.
+    Zp : complex array
+        Derivative dZ/dz including distributional jumps. [dimensionless] Shape: same as z. Finite and
+        representable.
+
+    Raises
+    ------
+    RuntimeError
+        When real-axis/exterior quadrature fails or the declared removable-point estimate is not
+        representable; no fallback path is selected.
+    ValueError
+        For an unsupported expression, non-finite phase/mesh, malformed integration_mesh/continuation,
+        or a non-finite continued transform that is not representable.
+
+    See Also
+    --------
+    scirel.kinetic : Public kinetic-domain operators.
+
+    Notes
+    -----
+    DensityExpression interprets the restricted AST and propagates analytic first derivatives by chain
+    rules without eval or SymPy. Real-axis integrands subtract f(x)*exp(-(v-x)²), whose whole-line odd
+    PV vanishes. Boundary values add i*pi*f(x); optional lower continuation adds 2*pi*i*f(z). For
+    |z|>=12 the vanishing-endpoint identity Zp=Cauchy[v*fprime]/z avoids cancellation of the zero-mass
+    derivative; the absolute quadrature tolerance scales inversely with phase magnitude. The density
+    derivative and its analytic continuation are not reconstructed from rounded Z or epsilon. One-
+    dimensional unmagnetized collisionless electrostatic plasma Assumptions: Density is real and
+    integrable on the real contour. No collective-mode uniqueness or certified global quadrature bound
+    is asserted. Expression has a valid analytic extension where continuation is requested. Explicit
+    increasing mesh resolves all density features and tails.
+
+    References
+    ----------
+    Hua-Sheng Xie, Generalized plasma dispersion function, Phys. Plasmas. 20 (2013), 092125 (scientific context)
+
+    Examples
+    --------
+    >>> from scirel.kinetic.generalized_dispersion import evaluate_generalized_hilbert
+    >>> z=.4-.7j
+    >>> r=evaluate_generalized_hilbert(z,'1/(1+v**2)/pi',integration_mesh=[-20,-2,-1,0,1,2,20])
+    >>> assert abs(r['Z']+1/(z+1j))<2e-9
+    """
     density = DensityExpression(expression)
     mesh = np.asarray(integration_mesh, dtype=float)
     if mesh.ndim != 1 or mesh.size < 2 or not np.isfinite(mesh).all() or np.any(np.diff(mesh) <= 0):
@@ -543,7 +643,75 @@ def evaluate_gpdf_residual(
     expression="exp(-v.^2)/sqrt(pi)",
     integration_mesh=None,
 ):
-    """Evaluate the dimensionless dielectric residual for a selected mixture."""
+    r"""Evaluate Langmuir, ion-acoustic, beam and generalized residuals.
+
+    Parameters
+    ----------
+    kind : str
+        langmuir, iaw, beam or generalized. [dimensionless] Shape: scalar. Finite and representable.
+    x : complex numeric
+        Phase omega/(sqrt(2)*k). [dimensionless] Shape: scalar or nonempty array. Finite and representable.
+    k : positive real
+        Inverse Debye-length normalized wavenumber. [dimensionless] Shape: scalar. Finite and representable.
+    ion_temperature : positive real
+        Ti/Te. [dimensionless] Shape: scalar. Default: 1.0. Finite and representable.
+    ion_mass : positive real
+        mi/me. [dimensionless] Shape: scalar. Default: 1836.0. Finite and representable.
+    beam_fraction : real
+        Beam density divided by total density. [dimensionless] Shape: scalar. Default: 0.1.
+        0<=beam_fraction<=1.
+    beam_temperature : positive real
+        Tb/Te. [dimensionless] Shape: scalar. Default: 1.0. Finite and representable.
+    beam_drift : real
+        Beam drift divided by beam thermal speed. [dimensionless] Shape: scalar. Default: 5.0. Finite and
+        representable.
+    selector : integer
+        Generalized distribution selector. [dimensionless] Shape: scalar. Default: 0. 0 through 6.
+    expression : str
+        Analytic density in v using finite real constants, pi, arithmetic and
+        exp/log/sqrt/sin/cos/sinh/cosh/tanh; MATLAB point operators accepted. [dimensionless] Shape: scalar.
+        Default: 'exp(-v.^2)/sqrt(pi)'. Real integrable density with decaying derivative; no arbitrary code,
+        comparisons, attributes or indexing.
+    integration_mesh : real vector
+        Feature-resolving finite increasing velocity mesh; infinite tails are also integrated.
+        [dimensionless] Shape: one-dimensional at least two points. Default: None. All material features
+        resolved; no unresolved tail features.
+
+    Returns
+    -------
+    return : complex array
+        Source-normalized D residual. [dimensionless] Shape: same as x. Finite and representable.
+
+    Raises
+    ------
+    RuntimeError
+        Only where a bound generalized quadrature fails; IAW/beam use closed Faddeeva values.
+    ValueError
+        For an unknown kind, non-finite x/k, an invalid selector/expression/mesh, an unrepresentable
+        Faddeeva/generalized response, or named IAW/beam parameters outside their declared domain.
+
+    See Also
+    --------
+    scirel.kinetic : Public kinetic-domain operators.
+
+    Notes
+    -----
+    IAW D=k²+[1+xZ(x)]+[1+qZ(q)]/Ti with q=x/sqrt(Ti/mi). Beam D=k²+(1-nb)[1+xZ(x)]+nb/Tb[1+qZ(q)] with
+    q=x/sqrt(Tb)-vd. Generalized D=k²-Zp/2. Vacuum and susceptibility normalization match the frozen
+    scripts. One-dimensional unmagnetized collisionless electrostatic plasma Assumptions: Density is
+    real and integrable on the real contour. No collective-mode uniqueness or certified global
+    quadrature bound is asserted. k is finite positive scalar.
+
+    References
+    ----------
+    Hua-Sheng Xie, Generalized plasma dispersion function, Phys. Plasmas. 20 (2013), 092125 (scientific context)
+
+    Examples
+    --------
+    >>> from scirel.kinetic.generalized_dispersion import evaluate_gpdf_residual
+    >>> r=evaluate_gpdf_residual('langmuir',1j,.3)
+    >>> assert abs(r.imag)<1e-12
+    """
     phase = _points(x)
     if not np.isscalar(k) or not np.isreal(k) or not np.isfinite(k) or k <= 0:
         raise ValueError("k must be finite positive scalar")
@@ -589,7 +757,50 @@ def evaluate_gpdf_residual(
 
 
 def evaluate_gpdf_small_k(k):
-    """Return the small-k real frequency and Landau damping asymptotic."""
+    r"""Evaluate source Langmuir frequency and damping asymptotics.
+
+    Parameters
+    ----------
+    k : positive real
+        Inverse Debye-length normalized small wavenumber. [dimensionless] Shape: scalar or nonempty array.
+        Finite and representable.
+
+    Returns
+    -------
+    omega_real : real array
+        Leading Bohm-Gross real frequency. [dimensionless] Shape: same as k. Finite and representable.
+    omega_imag : real array
+        Leading small-k Landau damping. [dimensionless] Shape: same as k. Finite and representable.
+
+    Raises
+    ------
+    ValueError
+        Raises ValueError for non-real, boolean, string, complex, empty, nonfinite or nonpositive `k`.
+        Raises ValueError when the computed real frequency or damping is not representable as finite
+        float64; there is no callback, quadrature or fallback path.
+
+    See Also
+    --------
+    scirel.kinetic : Public kinetic-domain operators.
+
+    Notes
+    -----
+    Logarithmic evaluation of the damping amplitude avoids the 0/0 form the direct expression takes when
+    k³ underflows. Exact k=0 is rejected. One-dimensional unmagnetized collisionless electrostatic
+    plasma Assumptions: Maxwellian normalized thermal standard deviation and plasma frequency equal one.
+    Asymptotic use requires k much smaller than one.
+
+    References
+    ----------
+    Hua-Sheng Xie, Generalized plasma dispersion function, Phys. Plasmas. 20 (2013), 092125 (scientific context)
+
+    Examples
+    --------
+    >>> from scirel.kinetic.generalized_dispersion import evaluate_gpdf_small_k
+    >>> r=evaluate_gpdf_small_k(.1)
+    >>> assert abs(r['omega_real']-1.015)<1e-14
+    >>> assert r['omega_imag']<0
+    """
     raw = np.asarray(k)
     if (
         raw.dtype.kind not in "iuf"
@@ -617,7 +828,104 @@ def scan_gpdf_roots(
     max_evaluations=300,
     **parameters,
 ):
-    """Follow a seeded complex root branch over the original scan grids."""
+    r"""Run all four seeded electrostatic root scans.
+
+    Parameters
+    ----------
+    kind : str
+        langmuir, iaw, beam or generalized. [dimensionless] Shape: scalar. Finite and representable.
+    k_values : real vector
+        Optional ordered positive scan grid; None selects the family grid. [dimensionless] Shape: nonempty
+        one-dimensional. Default: None. Finite and representable.
+    initial_guess : complex scalar
+        Optional complex seed: phase x except generalized uses frequency omega. None selects the family
+        seed. [dimensionless] Shape: scalar. Default: None. Finite and representable.
+    residual_tolerance : positive real
+        Absolute dielectric residual gate. [dimensionless] Shape: scalar. Default: 1e-09. Finite and
+        representable.
+    max_evaluations : positive integer
+        Per-point MINPACK function-evaluation limit. [dimensionless] Shape: scalar. Default: 300. Finite and
+        representable.
+    **parameters : mapping
+        Additional named scientific controls [dimensionless]; documented below.
+
+    Other Parameters
+    ----------------
+    ion_temperature : positive real
+        Ti/Te. [dimensionless] Shape: scalar. Default: 1.0. Finite and representable.
+    ion_mass : positive real
+        mi/me. [dimensionless] Shape: scalar. Default: 1836.0. Finite and representable.
+    beam_fraction : real
+        Beam density divided by total density. [dimensionless] Shape: scalar. Default: 0.1.
+        0<=beam_fraction<=1.
+    beam_temperature : positive real
+        Tb/Te. [dimensionless] Shape: scalar. Default: 1.0. Finite and representable.
+    beam_drift : real
+        Beam drift divided by beam thermal speed. [dimensionless] Shape: scalar. Default: 5.0. Finite and
+        representable.
+    selector : integer
+        Generalized distribution selector. [dimensionless] Shape: scalar. Default: 0. 0 through 6.
+    expression : str
+        Analytic density in v using finite real constants, pi, arithmetic and
+        exp/log/sqrt/sin/cos/sinh/cosh/tanh; MATLAB point operators accepted. [dimensionless] Shape: scalar.
+        Default: 'exp(-v.^2)/sqrt(pi)'. Real integrable density with decaying derivative; no arbitrary code,
+        comparisons, attributes or indexing.
+    integration_mesh : real vector
+        Feature-resolving finite increasing velocity mesh; infinite tails are also integrated.
+        [dimensionless] Shape: one-dimensional at least two points. Default: None. All material features
+        resolved; no unresolved tail features.
+
+    Returns
+    -------
+    k : real vector
+        Scan grid preserving requested order. [dimensionless] Shape: number of points. Finite and
+        representable.
+    omega : complex vector
+        Qualified roots normalized by plasma frequency. [dimensionless] Shape: number of points. Finite and
+        representable.
+    dielectric_residual : nonnegative real vector
+        Norm of real/imaginary dielectric residual. [dimensionless] Shape: number of points. Finite and
+        representable.
+    evaluations : integer vector
+        MINPACK function evaluations at each point. [count] Shape: number of points. Finite and
+        representable.
+
+    Raises
+    ------
+    RuntimeError
+        RuntimeError for Cauchy, real-axis or principal-value quadrature nonconvergence, or root
+        nonconvergence.
+    ValueError
+        ValueError for invalid, nonfinite or singular declared inputs. Callback arithmetic failures
+        propagate; nonrepresentable transform raises ValueError.
+
+    See Also
+    --------
+    scirel.kinetic.generalized_dispersion.evaluate_gpdf_residual : Related contract dependency.
+
+    Notes
+    -----
+    Declared grids: Langmuir .1:.1:1 then2:1:10 with fixed phase1-.1i; IAW1.1:-.05:.05 with
+    phase.04-.02i; beam.4:-.005:.05 with phase(1-.01i)*sqrt(2)*.4; generalized.1:.1:1 then1.5:.5:5 with
+    frequency1.5-.001i. IAW/beam continue previous phase; generalized continues previous frequency. k is
+    closed over instead of passed as the invalid fourth fsolve argument. Solvers use D/k², or qualified
+    Maxwellian epsilon directly, and require solver success, residual tolerance, and function-evaluation
+    budget. One-dimensional unmagnetized collisionless electrostatic plasma Assumptions: Each seeded
+    root must converge within its budget and dielectric residual tolerance. k_values preserve
+    continuation order; initial_guess units depend on family exactly as declared.
+
+    References
+    ----------
+    Hua-Sheng Xie, Generalized plasma dispersion function, Phys. Plasmas. 20 (2013), 092125 (scientific context)
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from scirel.kinetic.generalized_dispersion import scan_gpdf_roots
+    >>> r=scan_gpdf_roots('beam',k_values=[.3,.295],initial_guess=(1-.01j)/(np.sqrt(2)*.4))
+    >>> assert np.max(r['dielectric_residual'])<1e-9
+    >>> assert r['omega'][0].imag>0
+    """
     grids = {
         "langmuir": np.r_[np.arange(1, 11) / 10, np.arange(2, 11)],
         "iaw": np.arange(22, 0, -1) / 20,

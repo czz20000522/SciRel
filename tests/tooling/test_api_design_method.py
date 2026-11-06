@@ -148,6 +148,46 @@ def test_docs_check_passes_a_complete_docstring(tmp_path):
     assert done.returncode == 0, done.stdout
 
 
+def test_docs_check_does_not_require_a_returns_section_for_a_class(tmp_path):
+    name = _package(
+        tmp_path,
+        '''
+__all__ = ["Config"]
+
+
+class Config:
+    """Represent one reviewed configuration value.
+
+    Parameters
+    ----------
+    value : int
+        Stored configuration value [count].
+
+    Raises
+    ------
+    TypeError
+        If value is not an integer.
+
+    See Also
+    --------
+    dict : Related built-in mapping.
+
+    Examples
+    --------
+    >>> Config(3).value
+    3
+    """
+
+    def __init__(self, value):
+        if not isinstance(value, int):
+            raise TypeError("value must be an integer")
+        self.value = value
+''',
+    )
+    done = _run("check_docs_sync.py", name, "--src", str(tmp_path))
+    assert done.returncode == 0, done.stdout
+
+
 def test_docs_check_reports_each_kind_of_disagreement(tmp_path):
     name = _package(tmp_path, BAD)
     done = _run("check_docs_sync.py", name, "--src", str(tmp_path), "--unit-regex", r"\[[^\]]+\]")
