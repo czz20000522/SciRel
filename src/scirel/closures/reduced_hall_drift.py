@@ -336,6 +336,15 @@ def close_reduced_hall_drift(
     as a new physical species. A returned mapping is diagnostic for the
     prescribed state and does not establish a self-consistent equilibrium.
 
+    ``plasma_mask`` zeroes ``J_phi`` and the local inertia current/target values only outside
+    the selected plasma cells; active cells retain their computed values. ``hall_active_mask``
+    zeroes the trial and terminal inertia velocities, the final ion and electron toroidal
+    velocities, the centrifugal correction, and the two Ohm residual rows only outside the
+    intersection of the plasma mask, positive radius, density floor and resolvable field. These
+    are inactive-cell policies, not failure handling: invalid or nonfinite inputs raise during
+    validation, and a nonconverged inertia iteration raises ``RuntimeError`` instead of being
+    converted to zero.
+
     Examples
     --------
     >>> import numpy as np

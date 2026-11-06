@@ -36,7 +36,7 @@
   "model": "reduced axisymmetric Hall drift with gyrotropic pressure and optional local toroidal-inertia correction",
   "geometry": "rectilinear cylindrical R-Z grid, at least three nodes per axis",
   "coordinates": "R nonnegative, R and Z strictly increasing; arrays indexed [Z,R]",
-  "boundary": "Second-order one-sided gradient stencils at grid ends; the radial pressure force and initial pressure-current projection are set to zero at an included R=0 axis. The inertia iteration recomputes a current candidate without reapplying that axis rule, so returned J_phi is not unconditionally axis-zero. Hall drift is inactive on the axis and outside the selected density, field and plasma mask.",
+  "boundary": "Second-order one-sided gradient stencils at grid ends; the radial pressure force and initial pressure-current projection are set to zero at an included R=0 axis. The inertia iteration recomputes a current candidate without reapplying that axis rule, so returned J_phi is not unconditionally axis-zero. Hall drift is inactive on the axis and outside the selected density, field and plasma mask. Masking replaces only inactive-cell current and Hall outputs by zero; active cells retain their calculated values, and input validation or iteration failure is never converted to zero.",
   "assumptions": [
    "B_R and B_Z are poloidal field components in tesla, with no B_phi contribution in this relation.",
    "The pressure arrays and closure_state describe compatible ion/electron populations in SI units.",
@@ -114,7 +114,7 @@
    "shape": "[N_Z,N_R]",
    "dtype": "boolean array",
    "required": true,
-   "constraints": "Exactly grid-shaped and true boolean dtype; J_phi is zero outside it. Integer/float arrays are rejected without coercion. Hall drift additionally excludes R=0, low density and unresolved field cells."
+   "constraints": "Exactly grid-shaped and true boolean dtype; J_phi is zero outside it. Integer/float arrays are rejected without coercion. Hall drift additionally excludes R=0, low density and unresolved field cells. J_phi, the inertia current candidate and the terminal current target are zeroed outside this mask; active cells retain their computed values, and validation remains unconditional."
   },
   {
    "name": "ion_mass_kg",
@@ -519,7 +519,7 @@
    "shape": "[N_Z,N_R]",
    "dtype": "bool",
    "required": true,
-   "constraints": "Selects drift evaluation and active-cell Ohm diagnostics."
+   "constraints": "Selects drift evaluation and active-cell Ohm diagnostics. False cells are the only cells whose trial and terminal inertia velocities, drift, centrifugal and Ohm outputs are zeroed; true cells retain the calculated values."
   },
   {
    "name": "density_floor_m3",
@@ -656,7 +656,7 @@
  },
  "failure_semantics": {
   "invalid_input": "Raises ValueError for invalid mass, charge or scalar controls; a nonboolean inertia flag; malformed R-Z grid; nonfinite/mismatched field or pressure arrays; wrong-shaped or nonboolean mask; absent or nonfinite required closure_state fields; or negative density/electron and optional ion pressure components. Some malformed optional state arrays may propagate NumPy broadcasting errors. Negative primary total pressure or inconsistent species_sum state is rejected.",
-  "runtime_failure": "A local inertia fixed point that exceeds inertia_max_iterations raises RuntimeError. Other NumPy arithmetic and conversion failures propagate; extreme finite inputs are not guaranteed to produce finite diagnostics.",
+  "runtime_failure": "A local inertia fixed point that exceeds inertia_max_iterations raises RuntimeError. Other NumPy arithmetic and conversion failures propagate; extreme finite inputs are not guaranteed to produce finite diagnostics. Mask zeroing does not suppress input, finiteness or nonconvergence failures.",
   "nonconvergence": "The local inertia loop is bounded; when enabled and its unrelaxed current-map residual threshold is not reached, RuntimeError is raised instead of returning a partial state.",
   "partial_results": "No scirel._result.Result mapping is returned after an exception. A returned mapping has inertia_converged=true, including the no-inertia branch."
  },
@@ -684,17 +684,18 @@
    "Manufactured electron-pressure/potential gradients and generalized-Ohm drift.",
    "Axis/vacuum mask handling, source-compatible field hypot extremes and invalid species/control rejection.",
    "A zero Hall multiplier retains pressure-projection current, the no-inertia branch reports one update, and one-step inertia budget exhaustion raises without returning a state.",
-   "Near-unit inertia_relax cannot turn a finite unrelaxed residual into convergence; the preserved iteration cap raises RuntimeError. Analytic Bz=1, P=10+R², n=mi=qi=1 has positive fixed point J=R with the uncapped velocity."
+   "Near-unit inertia_relax cannot turn a finite unrelaxed residual into convergence; the preserved iteration cap raises RuntimeError. Analytic Bz=1, P=10+R², n=mi=qi=1 has positive fixed point J=R with the uncapped velocity.",
+   "Mask regressions distinguish inactive-cell zeroing from active-cell calculations and verify that a partial mask does not turn nonfinite input or inertia nonconvergence into a successful zero."
   ],
   "tests": [
    "tests/closures/test_reduced_hall_drift.py",
    "tests/cross_domain/test_anisotropic_core_scientific_correction.py"
   ],
-  "evidence_ceiling": "Bounded to projection of gyrotropic pressure force to toroidal current with an optional bounded local inertia correction. Evidence: `test_reduced_hall_drift.py` contains 9 test functions, 1 of which references `close_reduced_hall_drift`, and is bound only by this asset; `test_anisotropic_core_scientific_correction.py` contains 17 test functions, none of which references `close_reduced_hall_drift`, and is shared by 8 assets; the bounded example was executed by this audit. Oracle: independent manufactured/analytic discrete checks in the bound private and correction files. It does not establish a complete equilibrium/two-fluid transport solve, or automatic validity in low-density/near-zero-field/firehose-unstable regions.",
+  "evidence_ceiling": "Bounded to projection of gyrotropic pressure force to toroidal current with an optional bounded local inertia correction. Evidence: `test_reduced_hall_drift.py` contains 12 test functions, 1 of which references `close_reduced_hall_drift`, and is bound only by this asset; `test_anisotropic_core_scientific_correction.py` contains 17 test functions, none of which references `close_reduced_hall_drift`, and is shared by 8 assets; the bounded example was executed by this audit. Oracle: independent manufactured/analytic discrete checks in the bound private and correction files. It does not establish a complete equilibrium/two-fluid transport solve, or automatic validity in low-density/near-zero-field/firehose-unstable regions.",
   "known_limitations": [
    "Caller-supplied physical closures and Green responses require their own evidence and coherent psi=R A_phi (Wb/rad) normalization.",
    "Floating-point rounding envelopes do not bound discretization error or experimental uncertainty.",
-   "The asset-private test file has nine functions and one direct example; the shared correction file contains no direct call, so the inertia convergence and drift diagnostics are evidenced at composition level."
+   "The asset-private test file has twelve functions and one direct example; the shared correction file contains no direct call, so the inertia convergence and drift diagnostics are evidenced at composition level."
   ]
  }
 }

@@ -71,21 +71,24 @@ def test_zero_hall_multiplier_keeps_pressure_current_and_no_inertia_runs_once():
 def test_local_inertia_budget_exhaustion_returns_no_state():
     R, Z, BR, BZ = _grid()
     pressure = 20.0 + R
-    with pytest.raises(RuntimeError, match="inertia iteration did not converge"):
-        scientific_function(
-            R,
-            Z,
-            BR,
-            BZ,
-            pressure,
-            pressure,
-            _state(R.shape),
-            np.ones_like(R, dtype=bool),
-            M,
-            E,
-            inertia_max_iterations=1,
-            inertia_tolerance=1e-30,
-        )
+    partial_mask = np.ones_like(R, dtype=bool)
+    partial_mask[4, 4] = False
+    for mask in (np.ones_like(R, dtype=bool), partial_mask):
+        with pytest.raises(RuntimeError, match="inertia iteration did not converge"):
+            scientific_function(
+                R,
+                Z,
+                BR,
+                BZ,
+                pressure,
+                pressure,
+                _state(R.shape),
+                mask,
+                M,
+                E,
+                inertia_max_iterations=1,
+                inertia_tolerance=1e-30,
+            )
 
 
 def test_electron_gradient_drives_exact_generalized_ohm_drift():
@@ -119,6 +122,122 @@ def test_mask_excludes_axis_and_vacuum_cells():
     )
     assert not np.any(result["hall_active_mask"])
     np.testing.assert_allclose(result["J_phi"], 0.0)
+
+
+def test_plasma_mask_zeroes_only_inactive_current_cells():
+    R, Z, BR, BZ = _grid()
+    pressure = 20.0 + R
+    full = scientific_function(
+        R,
+        Z,
+        BR,
+        BZ,
+        pressure,
+        pressure,
+        _state(R.shape),
+        np.ones_like(R, dtype=bool),
+        M,
+        E,
+        include_toroidal_inertia=False,
+    )
+    mask = np.ones_like(R, dtype=bool)
+    inactive = (4, 4)
+    mask[inactive] = False
+    mixed = scientific_function(
+        R,
+        Z,
+        BR,
+        BZ,
+        pressure,
+        pressure,
+        _state(R.shape),
+        mask,
+        M,
+        E,
+        include_toroidal_inertia=False,
+    )
+
+    assert mixed["J_phi"][inactive] == 0.0
+    np.testing.assert_allclose(mixed["J_phi"][mask], full["J_phi"][mask])
+    assert mixed["inertia_fixed_point_residual"] == 0.0
+    for key in ("force_R", "force_Z", "pressure_force_R", "pressure_force_Z"):
+        np.testing.assert_array_equal(mixed[key], full[key])
+
+
+def test_hall_mask_zeroes_only_inactive_drift_and_ohm_cells():
+    R, Z, BR, BZ = _grid()
+    pressure = 20.0 + R
+    state = _state(R.shape)
+    state["electrostatic_potential"] = 3.0 * R
+    state["ion_density"][4, 4] = 1e10
+    mixed = scientific_function(
+        R,
+        Z,
+        BR,
+        BZ,
+        pressure,
+        pressure,
+        state,
+        np.ones_like(R, dtype=bool),
+        M,
+        E,
+        maximum_inertial_mach=10.0,
+    )
+    control_state = {
+        **state,
+        "ion_density": state["ion_density"].copy(),
+    }
+    control_state["ion_density"][4, 4] = 1e18
+    control = scientific_function(
+        R,
+        Z,
+        BR,
+        BZ,
+        pressure,
+        pressure,
+        control_state,
+        np.ones_like(R, dtype=bool),
+        M,
+        E,
+        maximum_inertial_mach=10.0,
+    )
+    active = mixed["hall_active_mask"]
+
+    assert not active[4, 4]
+    assert not np.any(active[:, 0])
+    assert mixed["inertia_converged"]
+    assert mixed["inertia_fixed_point_residual"] <= 1e-10
+    assert mixed["J_phi"][4, 4] != 0.0
+    np.testing.assert_allclose(mixed["J_phi"][active], control["J_phi"][active], atol=1e-12)
+    for key in (
+        "ion_toroidal_velocity",
+        "electron_toroidal_velocity",
+        "centrifugal_force_R",
+        "ohm_residual_R",
+        "ohm_residual_Z",
+    ):
+        assert np.all(mixed[key][~active] == 0.0)
+        np.testing.assert_allclose(mixed[key][active], control[key][active], atol=1e-12)
+
+
+def test_masks_do_not_swallow_nonfinite_inputs():
+    R, Z, BR, BZ = _grid()
+    state = _state(R.shape)
+    state["electron_pressure"][0, 0] = np.nan
+    with pytest.raises(ValueError, match="finite"):
+        scientific_function(
+            R,
+            Z,
+            BR,
+            BZ,
+            np.full_like(R, 20.0),
+            np.full_like(R, 20.0),
+            state,
+            np.zeros_like(R, dtype=bool),
+            M,
+            E,
+            include_toroidal_inertia=False,
+        )
 
 
 def test_source_hypot_preserves_finite_subnormal_and_large_results():
