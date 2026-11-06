@@ -37,25 +37,75 @@ def _vector(controller: Mapping[str, Any], name: str) -> np.ndarray:
 
 
 def simulate_feedback(inputs: Mapping[str, Any], controller: Mapping[str, Any]) -> dict[str, Any]:
-    """Evaluate the declared discrete feedback state primitive.
+    """Evaluate the declared ten-channel discrete feedback state primitive.
 
-    ``inputs`` is the typed fixture shape with ``input_time_s``,
-    ``observation_time_s`` and ``signals`` keys. ``controller`` contains the
-    sampled parameters from ``source-defaults.json``. Results are JSON-ready
-    mappings with value arrays and a state trace. The public evidence covers
-    the supplied 121-sample fixture and the listed parameter path.
+    Parameters
+    ----------
+    inputs : Python mapping
+        Sampled input mapping with ``input_time_s`` and ``observation_time_s``
+        vectors of shape ``(n,)`` and a ``signals`` mapping. [mixed T, A and s]
+        Shape: mapping with ``n`` samples. ``signals`` contains
+        ``reference_T`` and ``measured_T`` with shape ``(n, 10)``,
+        ``feedforward_current_A`` with shape ``(n, 11)``, and a binary
+        ``enable`` vector with shape ``(n,)``. Observation times must equal
+        input times in this interpolation-off path.
+    controller : Python mapping
+        Sampled controller parameters: ten-entry ``P``, ``I``, ``D`` and
+        ``N_per_s`` vectors, an ``(11, 10)`` unscaled coefficient matrix,
+        coefficient scale, sample period, ten-entry initial filter and
+        integrator states, and the declared binary integration controls.
+        [mixed controller units] Shape: mapping. ``sample_period_s`` must be
+        positive; ``N_per_s`` must be nonnegative; ``internal_reset`` must be
+        zero.
 
     Returns
     -------
-    The top-level value is a ``scirel._result.Result`` mapping; field values
-    are available by key and preserve the baseline key order.
-    result : JSON-ready Python mapping [mixed T, A, s and controller state units]
-        Mapping containing schema, time_s, values and state_trace.
+    result : scirel._result.Result mapping
+        Top-level mapping with ``schema``, ``time_s``, ``values`` and
+        ``state_trace``. [mixed T, A, s and controller state units] Shape:
+        mapping. ``values`` contains ``total_current_A`` and
+        ``feedback_current_A`` with shape ``(n, 11)``, ``pid_components`` with
+        shape ``(n, 30)`` in P1, I1, D1 channel order, and ``error_T`` with
+        shape ``(n, 10)``. Non-colliding fields support attribute access; the
+        key ``values`` collides with ``dict.values`` and must be read as
+        ``result["values"]``.
 
-    Attribute access follows the existing SciPy OptimizeResult-style behavior:
-    non-colliding fields are readable as attributes. The top-level key
-    ``values`` collides with ``dict.values`` and must be read as
-    ``result["values"]``; the method remains available as ``dict.values(result)``."""
+    Raises
+    ------
+    TypeError
+        If ``inputs`` or ``controller`` is not a mapping.
+    ValueError
+        If required signals are missing, shapes are incompatible, values are
+        nonfinite, the enable or integration controls are nonbinary, sample
+        timing is invalid, a filter rate is negative, or ``internal_reset`` is
+        nonzero.
+
+    See Also
+    --------
+    scirel.closures.close_reduced_hall_drift : Related current and Hall-state closure.
+
+    Notes
+    -----
+    Each sample forms ``error = reference - measured``. The enabled P, I and
+    filtered-D terms use the supplied gains and the first-order filter
+    ``f_k = f_(k-1) + N*dt*(error-f_(k-1))``. The scaled ``(11, 10)`` map
+    converts the three ten-channel PID terms to eleven feedback currents, and
+    the total current is feed-forward plus feedback while enabled. The first
+    sample and each rising enable edge reset the filter and integrator;
+    disabled samples retain the last PID and feedback values and emit only the
+    feed-forward current. This finite sampled pass makes no plant, saturation,
+    closed-loop convergence or stability claim.
+
+    Examples
+    --------
+    >>> from pathlib import Path
+    >>> import json
+    >>> from scirel.closures import simulate_discrete_vector_feedback
+    >>> root = Path('tests/fixtures/closures/discrete_vector_feedback/evidence')
+    >>> result = simulate_discrete_vector_feedback(json.loads((root/'fixtures/feedback-input.json').read_text()), json.loads((root/'source-defaults.json').read_text()))
+    >>> assert result['values']['total_current_A'][40] == result['values']['total_current_A'][40]
+    >>> assert len(result['time_s']) == 121
+    """
     if not isinstance(inputs, Mapping) or not isinstance(controller, Mapping):
         raise TypeError("inputs and controller must be mappings")
     signals = inputs.get("signals")

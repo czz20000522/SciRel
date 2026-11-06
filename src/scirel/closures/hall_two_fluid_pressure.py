@@ -29,49 +29,139 @@ def close_hall_two_fluid_pressure(
     electron_p_perpendicular_pa=None,
     pressure_composition_mode="independent_fit",
 ):
-    """Assemble a prescribed reduced Hall state in SI units.
+    """Assemble a prescribed reduced Hall two-fluid pressure state in SI units.
 
-    ``independent_fit`` permits total and ion tensors to be fitted independently.
-    Their difference after subtracting the electron
-    tensor is returned as residual stress, not a validated extra species.
-    Total force uses the supplied total tensor; ion thermal inertia uses only
-    ion moments. This prescribed state is not proof of self-consistent two-fluid
-    equilibrium. ``species_sum`` rejects inconsistent components (roundoff
-    allowance only). Omitted ion moments are total minus electron moments.
-    Electron density equals ion density under the source singly charged model.
+    Parameters
+    ----------
+    magnetic_field : real array-like
+        Magnetic-field magnitude. [T] Shape: scalar or array jointly
+        broadcast with ``psi``. Values must be finite.
+    psi : real array-like
+        Caller-defined flux coordinate. [caller-defined flux coordinate]
+        Shape: scalar or array jointly broadcast with ``magnetic_field``.
+        Values must be finite.
+    pressure_law : callable
+        Callable accepting the broadcast magnetic field and flux coordinate
+        and returning a dictionary with finite ``p_parallel`` and
+        ``p_perpendicular`` pressure profiles. [inputs T and caller-defined flux coordinate; outputs Pa]
+        Shape: callable returning scalar or broadcastable arrays.
+    ion_density_m3 : real array-like or callable
+        Ion number density or a callable of ``(magnetic_field, psi)``.
+        [m^-3] Shape: scalar, array or callable output broadcastable to the
+        common shape. Values must be finite and nonnegative.
+    electron_pressure_pa : real array-like or callable
+        Baseline electron pressure profile. [Pa] Shape: scalar, array or
+        callable output broadcastable to the common shape. Values must be
+        finite and nonnegative.
+    electrostatic_potential_v : real array-like or callable
+        Electrostatic potential profile. [V] Shape: scalar, array or callable
+        output broadcastable to the common shape. Values must be finite.
+    ion_p_parallel_pa : real array-like or callable, optional
+        Explicit ion parallel pressure. [Pa] Shape: scalar, array or callable
+        output broadcastable to the common shape. Default: None, which uses
+        ``p_parallel - electron_p_parallel_pa``.
+    ion_p_perpendicular_pa : real array-like or callable, optional
+        Explicit ion perpendicular pressure. [Pa] Shape: scalar, array or
+        callable output broadcastable to the common shape. Default: None,
+        which uses ``p_perpendicular - electron_p_perpendicular_pa``.
+    electron_p_parallel_pa : real array-like or callable, optional
+        Explicit electron parallel pressure. [Pa] Shape: scalar, array or
+        callable output broadcastable to the common shape. Default: None,
+        which reuses ``electron_pressure_pa``.
+    electron_p_perpendicular_pa : real array-like or callable, optional
+        Explicit electron perpendicular pressure. [Pa] Shape: scalar, array or
+        callable output broadcastable to the common shape. Default: None,
+        which reuses ``electron_pressure_pa``.
+    pressure_composition_mode : {'independent_fit', 'species_sum'}, optional
+        Composition contract for the total pressure. [enum] Shape: scalar.
+        Default: ``'independent_fit'``. ``'species_sum'`` requires the supplied
+        ion and electron components to sum to the total pressure within the
+        implementation's roundoff allowance.
 
     Returns
     -------
-    The top-level value is a ``scirel._result.Result`` mapping; field values
-    are available by key and preserve the baseline key order.
-    p_parallel : NumPy float64 array [Pa]
-        Total parallel pressure returned by pressure_law.
-    p_perpendicular : NumPy float64 array [Pa]
-        Total perpendicular pressure returned by pressure_law.
-    ion_density : NumPy float64 array [m^-3]
-        Prescribed ion number density.
-    electron_density : NumPy float64 array [m^-3]
-        Copy of the ion number density under the implemented single-charge neutrality assumption.
-    electron_pressure : NumPy float64 array [Pa]
-        Prescribed electron pressure baseline.
-    electron_p_parallel : NumPy float64 array [Pa]
-        Electron parallel pressure component.
-    electron_p_perpendicular : NumPy float64 array [Pa]
-        Electron perpendicular pressure component.
-    electrostatic_potential : NumPy float64 array [V]
-        Prescribed electrostatic potential.
-    ion_p_parallel : NumPy float64 array [Pa]
-        Ion parallel pressure, explicit or total minus electron parallel component.
-    ion_p_perpendicular : NumPy float64 array [Pa]
-        Ion perpendicular pressure, explicit or total minus electron perpendicular component.
-    pressure_composition_mode : string [enum]
-        Selected composition contract.
-    species_pressure_sum_consistent : Python bool [boolean]
-        Both residual stresses vanish within roundoff-scaled comparison.
-    residual_stress_parallel_pa : NumPy float64 scalar or array [Pa]
-        Total parallel stress minus specified ion/electron pressure components.
-    residual_stress_perpendicular_pa : NumPy float64 scalar or array [Pa]
-        Total perpendicular stress minus specified ion/electron pressure components."""
+    p_parallel : numpy.ndarray
+        Total parallel pressure returned by ``pressure_law``. [Pa] Shape:
+        common broadcast shape.
+    p_perpendicular : numpy.ndarray
+        Total perpendicular pressure returned by ``pressure_law``. [Pa] Shape:
+        common broadcast shape.
+    ion_density : numpy.ndarray
+        Prescribed ion number density. [m^-3] Shape: common broadcast shape.
+    electron_density : numpy.ndarray
+        Electron number density, equal to the ion density in the implemented
+        singly charged model. [m^-3] Shape: common broadcast shape.
+    electron_pressure : numpy.ndarray
+        Prescribed baseline electron pressure. [Pa] Shape: common broadcast
+        shape.
+    electron_p_parallel : numpy.ndarray
+        Electron parallel pressure component. [Pa] Shape: common broadcast
+        shape.
+    electron_p_perpendicular : numpy.ndarray
+        Electron perpendicular pressure component. [Pa] Shape: common
+        broadcast shape.
+    electrostatic_potential : numpy.ndarray
+        Prescribed electrostatic potential. [V] Shape: common broadcast shape.
+    ion_p_parallel : numpy.ndarray
+        Ion parallel pressure, explicit or derived from total minus electron
+        parallel pressure. [Pa] Shape: common broadcast shape.
+    ion_p_perpendicular : numpy.ndarray
+        Ion perpendicular pressure, explicit or derived from total minus
+        electron perpendicular pressure. [Pa] Shape: common broadcast shape.
+    pressure_composition_mode : str
+        Selected composition contract. [enum] Shape: scalar.
+    species_pressure_sum_consistent : bool
+        Whether both residual stresses vanish within the roundoff-scaled
+        comparison. [boolean] Shape: scalar.
+    residual_stress_parallel_pa : numpy.ndarray
+        Total parallel pressure minus the specified ion and electron
+        components. [Pa] Shape: common broadcast shape.
+    residual_stress_perpendicular_pa : numpy.ndarray
+        Total perpendicular pressure minus the specified ion and electron
+        components. [Pa] Shape: common broadcast shape.
+
+    Raises
+    ------
+    ValueError
+        If the composition mode is unsupported, the magnetic field or flux is
+        nonfinite, a profile cannot broadcast, a checked moment is negative,
+        or a requested species-sum identity is inconsistent.
+    FloatingPointError
+        If a profile or composed pressure sum contains a nonfinite value.
+    TypeError
+        If ``pressure_law`` is not callable or does not return a dictionary,
+        or if numeric conversion receives an unsupported kind.
+    KeyError
+        If ``pressure_law`` omits ``p_parallel`` or ``p_perpendicular``.
+
+    See Also
+    --------
+    scirel.closures.close_reduced_hall_drift : Reduced Hall state that consumes pressure and closure fields.
+
+    Notes
+    -----
+    ``pressure_law(b, psi)`` supplies the total parallel and perpendicular
+    pressures. Electron components default to ``electron_pressure_pa`` and
+    omitted ion components default to total minus electron pressure. The
+    residual stresses are diagnostics, not an implied additional species.
+    ``species_sum`` accepts only residuals within the declared roundoff
+    allowance; ``independent_fit`` reports the residual explicitly. The
+    returned electron density is a single-charge equilibrium assumption, not a
+    proof of a self-consistent two-fluid closure.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from scirel.closures import close_hall_two_fluid_pressure
+    >>> def law(b, psi):
+    ...     return {'p_parallel': 5.0 + b + psi, 'p_perpendicular': 4.0 + b + 2.0*psi}
+    >>> r = close_hall_two_fluid_pressure([[1.0, 2.0]], [[0.2, 0.4]], law, 1.0e18, 1.0, 3.0)
+    >>> np.testing.assert_allclose(r['p_parallel'], [[6.2, 7.4]])
+    >>> np.testing.assert_allclose(r['ion_p_parallel'] + r['electron_p_parallel'], r['p_parallel'])
+    >>> np.testing.assert_allclose(r['electron_density'], r['ion_density'])
+    >>> assert r['species_pressure_sum_consistent']
+    >>> np.testing.assert_allclose(r['residual_stress_parallel_pa'], 0., atol=1e-14)
+    """
     if pressure_composition_mode not in {"independent_fit", "species_sum"}:
         raise ValueError("pressure_composition_mode must be independent_fit or species_sum")
     b_t, flux = np.broadcast_arrays(

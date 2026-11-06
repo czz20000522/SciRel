@@ -128,6 +128,76 @@ def close_reduced_hall_drift(
 ):
     """Compute reduced Hall current, toroidal species drifts, and diagnostics.
 
+    Parameters
+    ----------
+    r_grid : real array-like
+        Rectilinear cylindrical radius mesh. [m] Shape: ``(N_Z, N_R)`` with at
+        least three columns. Values must be nonnegative and increasing along
+        the radial axis and match the field arrays.
+    z_grid : real array-like
+        Rectilinear axial coordinate mesh. [m] Shape: ``(N_Z, N_R)`` with at
+        least three rows. Values must be increasing along the axial axis and
+        match the field arrays.
+    b_r : real array-like
+        Radial poloidal magnetic-field component. [T] Shape: ``(N_Z, N_R)``
+        after joint field/pressure broadcasting. Values must be finite.
+    b_z : real array-like
+        Axial poloidal magnetic-field component. [T] Shape: ``(N_Z, N_R)``
+        after joint field/pressure broadcasting. Values must be finite.
+    p_parallel : real array-like
+        Pressure parallel to the local poloidal field used in the force
+        projection. [Pa] Shape: ``(N_Z, N_R)`` after joint broadcasting.
+        Values must be finite; a physical state should also be nonnegative.
+    p_perpendicular : real array-like
+        Pressure perpendicular to the local poloidal field used in the force
+        projection. [Pa] Shape: ``(N_Z, N_R)`` after joint broadcasting.
+        Values must be finite; a physical state should also be nonnegative.
+    closure_state : Python mapping
+        Species state with required ``ion_density``, ``electron_pressure`` and
+        ``electrostatic_potential`` fields, optionally with
+        ``electron_p_parallel``, ``electron_p_perpendicular``,
+        ``ion_p_parallel``, ``ion_p_perpendicular`` and
+        ``pressure_composition_mode``. [mixed SI: m^-3, Pa, V] Shape: mapping
+        of scalars or ``(N_Z, N_R)`` arrays. Required fields must broadcast to
+        the grid; densities and pressures must be nonnegative.
+    plasma_mask : boolean array
+        Cells used for current and Hall-drift support. [boolean] Shape:
+        ``(N_Z, N_R)``. Must be a true boolean array; ``J_phi`` is zero outside
+        the mask.
+    ion_mass_kg : real scalar
+        Positive ion mass. [kg] Shape: scalar. Must be finite and strictly
+        positive.
+    ion_charge_c : real scalar
+        Positive ion charge magnitude. [C] Shape: scalar. Must be finite and
+        strictly positive.
+    hall_multiplier : real scalar, optional
+        Multiplier in the Hall drift relation. [dimensionless] Shape: scalar.
+        Default: 1.0. Must be nonnegative; zero disables its explicit Hall
+        terms but not the pressure-current projection.
+    include_toroidal_inertia : bool, optional
+        Enable the bounded local centrifugal-current iteration. [boolean]
+        Shape: scalar. Default: True. Must be a real boolean scalar.
+    hall_density_floor_fraction : real scalar, optional
+        Fraction of peak in-mask density used as the Hall-active density
+        floor. [dimensionless] Shape: scalar. Default: 0.1. Must satisfy
+        ``0 <= value < 1``.
+    maximum_inertial_mach : real scalar, optional
+        Ion thermal-speed fraction used as the drift-velocity cap.
+        [dimensionless] Shape: scalar. Default: 0.5. Must be strictly
+        positive.
+    inertia_relax : real scalar, optional
+        Previous-current weight in the local inertia iteration.
+        [dimensionless] Shape: scalar. Default: 0.5. Must satisfy
+        ``0 <= value < 1``.
+    inertia_tolerance : real scalar, optional
+        Relative current-change stopping threshold for the local iteration.
+        [dimensionless] Shape: scalar. Default: 1e-10. Must be strictly
+        positive.
+    inertia_max_iterations : int, optional
+        Maximum local inertia-current updates. [count] Shape: scalar. Default:
+        80. Must be an integer of at least one; nonconvergence raises
+        RuntimeError.
+
     Returns
     -------
     The top-level value is a ``scirel._result.Result`` mapping; field values
@@ -233,7 +303,52 @@ def close_reduced_hall_drift(
         species.
     inertia_fixed_point_residual : float [dimensionless]
         Unrelaxed local current-map residual evaluated at the returned current and its newly
-        recomputed velocity/centrifugal force."""
+        recomputed velocity/centrifugal force.
+
+
+    Raises
+    ------
+    ValueError
+        If the mass, charge or scalar controls are invalid; the inertia flag
+        is not boolean; the R-Z grid is malformed; field or pressure arrays
+        are nonfinite or mismatched; the mask is wrong-shaped or nonboolean;
+        required closure fields are absent or nonfinite; density or pressure
+        components are negative; or a ``species_sum`` composition is
+        inconsistent.
+    RuntimeError
+        If the local inertia current map exceeds ``inertia_max_iterations`` or
+        its unrelaxed residual remains above ``inertia_tolerance``.
+
+    See Also
+    --------
+    scirel.closures.close_hall_two_fluid_pressure : Closes the pressure tensor fields consumed here.
+
+    Notes
+    -----
+    The pressure force is formed in cylindrical R-Z coordinates and projected
+    onto the poloidal field. The reduced Hall current is masked by plasma,
+    axis, density-floor and resolvable-field conditions; optional local
+    centrifugal inertia is advanced by a bounded relaxed fixed-point iteration
+    with a thermal-speed cap. Toroidal ion and electron drifts, generalized-Ohm
+    residuals, firehose margin and Hall/gyroradius scale diagnostics are
+    returned for the same state. The closure state may explicitly split ion and
+    electron components or report a residual stress; no residual is relabelled
+    as a new physical species. A returned mapping is diagnostic for the
+    prescribed state and does not establish a self-consistent equilibrium.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from scirel.closures import close_reduced_hall_drift
+    >>> r_grid, z_grid = np.meshgrid([0.0, 0.2, 0.4], [-0.2, 0.0, 0.2])
+    >>> zeros = np.zeros_like(r_grid)
+    >>> pressure = np.full_like(r_grid, 20.0)
+    >>> state = {'ion_density': np.full_like(r_grid, 1e18), 'electron_pressure': zeros, 'electrostatic_potential': zeros}
+    >>> result = close_reduced_hall_drift(r_grid, z_grid, zeros, np.full_like(r_grid, 2.0), pressure, pressure, state, np.ones_like(r_grid, dtype=bool), 1.67262192595e-27, 1.602176634e-19)
+    >>> np.testing.assert_allclose(result['J_phi'], 0.0)
+    >>> np.testing.assert_allclose(result['ion_toroidal_velocity'], 0.0)
+    >>> assert result['inertia_converged']
+    """
     ion_mass_kg = _require_finite_scalar(ion_mass_kg, "ion_mass_kg", positive=True)
     ion_charge_c = _require_finite_scalar(ion_charge_c, "ion_charge_c", positive=True)
     hall_multiplier = _require_finite_scalar(hall_multiplier, "hall_multiplier", nonnegative=True)

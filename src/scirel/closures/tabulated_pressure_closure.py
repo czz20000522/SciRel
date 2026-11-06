@@ -52,27 +52,108 @@ def evaluate_tabulated_pressure(
     bounds_error=True,
     fill_value=None,
 ):
-    """Return linearly interpolated parallel and perpendicular pressures.
+    """Interpolate isotropic or anisotropic pressure tables on broadcast queries.
 
-    A one-dimensional table is a function of ``psi`` and must be isotropic.
-    A two-dimensional table uses axes ``(B, psi)``.  With ``bounds_error``
-    false, ``fill_value=None`` selects linear extrapolation and a finite scalar
-    fills out-of-domain points.  Tables and returned pressures are finite and
-    nonnegative; interpolation does not certify force balance.
+    Parameters
+    ----------
+    magnetic_field : real array-like
+        Magnetic-field query used as the first interpolation coordinate when
+        ``b_grid`` is supplied and otherwise only for broadcasting. [T by caller convention]
+        Shape: scalar or array broadcast-compatible with ``psi``. Values must
+        be finite; positivity is not checked.
+    psi : real array-like
+        Flux-coordinate query at the same broadcast samples as
+        ``magnetic_field``. [same flux unit as psi_grid; historical label Wb]
+        Shape: scalar or array broadcast-compatible with ``magnetic_field``.
+        Values must be finite; coordinate and unit consistency are caller
+        obligations.
+    psi_grid : real array-like
+        Strictly increasing flux interpolation axis shared by both pressure
+        tables. [same caller flux unit as psi] Shape: one-dimensional
+        ``(N_psi,)`` with at least two points. Values must be finite.
+    p_parallel_table : real array-like
+        Parallel pressure samples on ``psi_grid`` or on the tensor
+        ``(b_grid, psi_grid)``. [Pa by caller convention] Shape: ``(N_psi,)``
+        when ``b_grid`` is None; otherwise ``(N_B, N_psi)``. Values must be
+        finite and nonnegative.
+    p_perpendicular_table : real array-like or None, optional
+        Optional perpendicular pressure samples. [Pa by caller convention]
+        Shape: None or the same shape as ``p_parallel_table``. Default: None.
+        In the one-dimensional branch a supplied table must exactly equal the
+        parallel table; in the two-dimensional branch it defaults to the
+        parallel table.
+    b_grid : real array-like or None, optional
+        Optional magnetic-field interpolation axis; supplying it selects the
+        two-dimensional branch. [same field unit as magnetic_field, historically T]
+        Shape: None or one-dimensional ``(N_B,)`` with at least two points.
+        Default: None. Values must be finite and strictly increasing.
+    bounds_error : bool, optional
+        Whether out-of-domain queries raise. [dimensionless] Shape: scalar.
+        Default: True. Must be boolean.
+    fill_value : real scalar or None, optional
+        Constant out-of-domain pressure when ``bounds_error`` is false.
+        [Pa when not None] Shape: scalar or None. Default: None, which requests
+        linear extrapolation in that mode. A supplied value must be finite and
+        nonnegative.
 
     Returns
     -------
-    The top-level value is a ``scirel._result.Result`` mapping; field values
-    are available by key and preserve the baseline key order.
-    p_parallel : NumPy float64 array [Pa by caller table convention]
-        Interpolated parallel pressure at broadcast queries.
-    p_perpendicular : NumPy float64 array [Pa by caller table convention]
-        Interpolated perpendicular pressure, or a copy of parallel pressure in the one-dimensional
-        branch.
-    is_isotropic : Python bool [dimensionless]
-        Whether the complete supplied component tables are exactly equal after float64 conversion.
-    table_dimension : int [dimensionless]
-        Number of table interpolation coordinates."""
+    p_parallel : numpy.ndarray
+        Interpolated parallel pressure at the broadcast queries. [Pa by caller
+        table convention] Shape: broadcast shape of ``magnetic_field`` and
+        ``psi``, including zero-dimensional scalar output.
+    p_perpendicular : numpy.ndarray
+        Interpolated perpendicular pressure, or a copy of parallel pressure in
+        the one-dimensional branch. [Pa by caller table convention] Shape:
+        same as ``p_parallel``.
+    is_isotropic : bool
+        Whether the complete supplied component tables are exactly equal after
+        float64 conversion. [dimensionless] Shape: scalar.
+    table_dimension : int
+        Number of table interpolation coordinates: one without ``b_grid`` and
+        two with it. [dimensionless] Shape: scalar.
+
+    Raises
+    ------
+    ValueError
+        If an axis has invalid rank, length, ordering or finiteness; a table
+        has invalid shape, nonfinite values or negative values; ``bounds_error``
+        is not boolean; ``fill_value`` is invalid; queries are nonfinite or
+        cannot broadcast; an out-of-domain query is rejected; or interpolation
+        returns a nonfinite or negative pressure.
+
+    See Also
+    --------
+    scirel.closures.close_hall_two_fluid_pressure : Hall pressure state that consumes pressure profiles.
+
+    Notes
+    -----
+    With ``b_grid=None`` the pressure is linear in ``psi`` and the result is
+    isotropic. With ``b_grid`` present the pressure is bilinear on
+    ``(B, psi)``. ``bounds_error=True`` rejects any query outside the selected
+    axes. With ``bounds_error=False``, ``fill_value=None`` uses the same
+    linear/bilinear extrapolation while a finite nonnegative scalar fills
+    outside points. The operation interpolates caller-supplied tables only; it
+    does not infer a pressure law, find flux surfaces or certify force balance.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from scirel.closures import evaluate_tabulated_pressure
+    >>> b_axis = np.array([1.0, 2.0])
+    >>> psi_axis = np.array([0.0, 1.0])
+    >>> parallel = np.array([[2.0, 4.0], [4.0, 6.0]])
+    >>> perpendicular = np.array([[3.0, 5.0], [5.0, 7.0]])
+    >>> a = evaluate_tabulated_pressure(1.5, 0.25, psi_axis, parallel, perpendicular, b_axis)
+    >>> np.testing.assert_allclose(a['p_parallel'], 3.5)
+    >>> np.testing.assert_allclose(a['p_perpendicular'], 4.5)
+    >>> assert a['is_isotropic'] is False
+    >>> b = evaluate_tabulated_pressure(10.0, 0.5, psi_axis, [2.0, 6.0])
+    >>> np.testing.assert_allclose(b['p_parallel'], 4.0)
+    >>> np.testing.assert_allclose(b['p_perpendicular'], 4.0)
+    >>> assert b['is_isotropic'] is True
+    >>> assert a['table_dimension']==2 and b['table_dimension']==1
+    """
     psi_axis = np.asarray(psi_grid, dtype=float)
     parallel_table = np.asarray(p_parallel_table, dtype=float)
     if (

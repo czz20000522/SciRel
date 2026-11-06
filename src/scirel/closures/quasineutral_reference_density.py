@@ -22,17 +22,19 @@ def compute_reference_electron_density(density_ref_m3, ion_charge_state):
 
     Returns
     -------
-    result : scirel._result.Result
-        Named mapping with one field:
-        ``electron_density_ref_m3``, the charge-state-weighted reference
-        electron number density in ``[m^-3]``.  Its shape is the common
-        broadcast shape; the mapping also supports attribute access.
+    electron_density_ref_m3 : numpy.ndarray
+        Charge-state-weighted reference electron number density. [m^-3]
+        Shape: common broadcast shape of both inputs, including scalar shape
+        ``()``. The top-level return is a ``scirel._result.Result`` mapping;
+        this field is available by key and by attribute access.
 
     Raises
     ------
     ValueError
         If either input is nonfinite or outside its declared domain, or the
         input shapes cannot be broadcast.
+    TypeError
+        If NumPy cannot convert an input to a numeric array.
     FloatingPointError
         If the validated finite inputs produce a nonfinite product.
 
@@ -52,9 +54,8 @@ def compute_reference_electron_density(density_ref_m3, ion_charge_state):
     >>> import numpy as np
     >>> from scirel.closures import compute_reference_electron_density
     >>> r = compute_reference_electron_density([1.0e18, 2.0e18], [1.0, 3.0])
-    >>> np.testing.assert_allclose(r.electron_density_ref_m3, [1.0e18, 6.0e18])
-    >>> r.electron_density_ref_m3.shape
-    (2,)
+    >>> np.testing.assert_allclose(r['electron_density_ref_m3'], [1.0e18, 6.0e18])
+    >>> assert r['electron_density_ref_m3'].shape == (2,)
     """
     density, charge_state = np.broadcast_arrays(
         np.asarray(density_ref_m3, dtype=float), np.asarray(ion_charge_state, dtype=float)

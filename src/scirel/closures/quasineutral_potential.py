@@ -36,27 +36,114 @@ def solve_quasineutral_potential(
     max_iterations=100,
     initial_bracket_thermal=8.0,
 ):
-    """Solve ``log(Z*n_i(phi))-log(n_e(phi)) == 0`` by vectorized bisection.
+    """Solve a vectorized logarithmic quasineutral potential relation.
 
-    ``residual`` is a caller-owned source-free evaluator returning a mapping with
-    ``logarithmic_charge_residual``. Positive residuals must be on the lower
-    potential side of the root. The operator owns bracket expansion and the
-    monotone bisection state, not the kinetic or electron relation. Midpoints
-    avoid adding large absolute potentials; convergence still requires the
-    actual returned potential to meet both original width and residual limits.
+    Parameters
+    ----------
+    potential_reference_v : real array-like
+        Reference potential, also returned on inactive surfaces. [V] Shape:
+        scalar or array broadcast with both temperatures and ``active``.
+        Every converted value must be finite.
+    temperature_parallel_j : real array-like
+        Ion parallel thermal-energy scale used in the initial bracket. [J]
+        Shape: scalar or array in the common broadcast shape. Values must be
+        finite and strictly positive.
+    electron_temperature_j : real array-like
+        Electron thermal-energy scale used in the initial bracket. [J] Shape:
+        scalar or array in the common broadcast shape. Values must be finite
+        and strictly positive.
+    charge_c : real scalar
+        Positive ion charge used to convert ion thermal energy to volts. [C]
+        Shape: scalar. Must convert to a finite positive float.
+    active : array-like
+        Mask selecting surfaces requiring a root. [dimensionless] Shape:
+        scalar or array in the common broadcast shape. Values are converted to
+        booleans; inactive positions are fixed at their reference potentials.
+    residual : callable
+        Caller-owned evaluator accepting a potential field and returning a
+        mapping with ``logarithmic_charge_residual``. [input V; output dimensionless]
+        Shape: callable result scalar or array broadcastable to the common
+        surface shape. Positive residuals must lie on the lower-potential side
+        of the desired root.
+    potential_tolerance_v : real scalar, optional
+        Maximum active bracket width at convergence. [V] Shape: scalar.
+        Default: 1e-8. Must be finite and strictly positive.
+    quasineutral_tolerance : real scalar, optional
+        Maximum absolute active logarithmic residual at convergence.
+        [dimensionless] Shape: scalar. Default: 1e-10. Must be finite and
+        strictly positive.
+    max_iterations : int, optional
+        Maximum vectorized midpoint evaluations after bracket expansion.
+        [iterations] Shape: scalar. Default: 100. Must be an integer of at
+        least two; booleans and floats are rejected.
+    initial_bracket_thermal : real scalar, optional
+        Initial half-width as a multiple of the combined ion and electron
+        thermal voltages. [dimensionless] Shape: scalar. Default: 8.0. Must be
+        finite and strictly positive.
 
     Returns
     -------
-    The top-level value is a ``scirel._result.Result`` mapping; field values
-    are available by key and preserve the baseline key order.
-    potential_v : NumPy float64 array [V]
-        Converged active potential and unchanged reference potential at inactive positions.
-    logarithmic_charge_residual : NumPy float64 array [dimensionless]
+    potential_v : numpy.ndarray
+        Converged active potentials and unchanged reference potentials on
+        inactive surfaces. [V] Shape: common broadcast shape, including scalar
+        shape ``()``.
+    logarithmic_charge_residual : numpy.ndarray
         Callback residual evaluated at the complete returned potential field.
-    iterations : Python int [iterations]
-        Shared number of vectorized bisection midpoint evaluations.
-    converged : Python bool [dimensionless]
-        Whether all active positions met both stopping conditions or no positions were active."""
+        [dimensionless] Shape: common broadcast shape.
+    iterations : int
+        Shared number of vectorized midpoint evaluations. [iterations] Shape:
+        scalar.
+    converged : bool
+        Whether all active positions met both stopping conditions or no
+        positions were active. [dimensionless] Shape: scalar.
+
+    Raises
+    ------
+    ValueError
+        If potentials or temperatures are nonfinite, temperatures or charge
+        are nonpositive, solver controls are invalid, ``max_iterations`` is
+        not an integer of at least two, or the callback result lacks a finite
+        broadcastable ``logarithmic_charge_residual``.
+    FloatingPointError
+        If a thermal bracket or midpoint evaluation produces a nonfinite
+        potential or residual.
+    TypeError
+        If the callback is not callable or numeric conversion receives an
+        unsupported kind.
+    RuntimeError
+        If endpoint expansion cannot bracket every active surface or the
+        bisection does not meet both width and residual tolerances within
+        ``max_iterations``.
+
+    See Also
+    --------
+    scirel.closures.solve_mirror_quasineutral_closure : Mirror closure that supplies the residual callback.
+
+    Notes
+    -----
+    The target equation is ``log(Z*n_i(phi)) - log(n_e(phi)) = 0``, but the
+    solver sees only the caller's logarithmic residual. It initializes the
+    bracket with ``temperature_parallel_j/charge_c +
+    electron_temperature_j/e``, expands each active side for at most eight
+    rounds, and then uses vectorized midpoint bisection. Success requires both
+    the original potential-width and residual tolerances on every active
+    surface. Midpoints avoid adding large absolute potentials; inactive
+    surfaces are held at their reference values during active evaluations.
+    No kinetic or electron closure is inferred by this operator.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from scirel.closures import solve_quasineutral_potential
+    >>> e=1.602176634e-19
+    >>> def residual(phi):
+    ...     return {'logarithmic_charge_residual': 0.5-np.asarray(phi)}
+    >>> r=solve_quasineutral_potential([0.0,17.0],0.1*e,0.1*e,e,[True,False],residual)
+    >>> np.testing.assert_allclose(r['potential_v'],[0.5,17.0],atol=1e-8)
+    >>> assert abs(r['logarithmic_charge_residual'][0])<=1e-10
+    >>> np.testing.assert_allclose(r['logarithmic_charge_residual'][1],-16.5)
+    >>> assert r['converged'] and 1<=r['iterations']<=100
+    """
     phi_ref, t_parallel, t_e, active = np.broadcast_arrays(
         np.asarray(potential_reference_v, dtype=float),
         np.asarray(temperature_parallel_j, dtype=float),
