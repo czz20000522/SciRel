@@ -1925,7 +1925,7 @@
   },
   {
    "asset_id": "scirel.closures.reduced-hall-drift",
-   "source_sha256": "bec6883d06514102ab5b80844a0a4f7dd54d5f6770dec81bc3ee414e7da680b1",
+   "source_sha256": "f83dcff86c1fecd1871623b8a1b599f58f836e79e45850e8b3f778e0353eee1b",
    "summary": "在 R-Z 网格把旋磁对称压强力投影为环向电流，可选求有限迭代的局部环向惯性修正，并给出物种漂移、广义欧姆及尺度诊断。 顶层返回值是 scirel._result.Result 映射；非冲突字段支持属性读取。",
    "definition": "用二阶网格导数计算柱坐标旋磁对称压强力，并取 J_phi=(B_Z*force_R-B_R*force_Z)/|B|²。在掩码内、非轴、密度超过峰值比例下限且磁场可解析的点，将 E=-grad(phi)、电子压强力和 Hall 乘子组合成环向漂移。可选欠松弛迭代径向离心修正，并以 maximum_inertial_mach 倍离子热速限制漂移。共享力核含正则轴向项和差分式导数；相容性诊断扣除有量纲的 64-epsilon 张量/差分舍入包络，同时保留原始绝对/相对残差与包络。这不是截断误差界，也不证明低于分辨率的物理力恰为零。未给离子压强时按总量减电子；独立拟合保留剩余应力，species_sum 拒绝不相容组分。惯性收敛检查返回 J 上重新求值的未松弛电流映射残差，不能以小松弛步代替。 完整结果作为同一个 scirel._result.Result 映射返回；嵌套 dict 字段保持普通 dict。",
    "model": "约化轴对称 Hall 漂移与旋磁对称压强，可选局部环向惯性修正，不是无限制的双流体解。",
@@ -1934,7 +1934,7 @@
     "压强和 closure_state 描述 SI 制下相容的离子/电子群。",
     "密度下限、Mach 上限和小分母分支是数值控制，不独立证明低密度/低磁场模型有效。"
    ],
-   "boundary": "网格端点使用二阶单边导数；若包含 R=0，径向压强力和初始压强电流投影置零。惯性候选不再次施加该轴规则，因此返回 J_phi 并非无条件轴上为零。Hall 漂移在轴上及密度、场、等离子体掩码外不活跃。",
+   "boundary": "网格端点使用二阶单边导数；若包含 R=0，径向压强力和初始压强电流投影置零。惯性候选不再次施加该轴规则，因此返回 J_phi 并非无条件轴上为零。Hall 漂移在轴上及密度、场、等离子体掩码外不活跃。 掩码只把非活动单元的电流和 Hall 输出置零；活动单元保留计算值，输入校验或迭代失败不会被转换成零。",
    "inputs": [
     {
      "name": "r_grid",
@@ -1981,7 +1981,7 @@
     {
      "name": "plasma_mask",
      "description": "电流与 Hall 支持区掩码。",
-     "constraints": "同网格且必须是真正的布尔 dtype；掩码外 J_phi=0；整数/浮点数组直接拒绝、不做转换。Hall 还排除轴、低密度及不可解析场。",
+     "constraints": "同网格且必须是真正的布尔 dtype；掩码外 J_phi=0；整数/浮点数组直接拒绝、不做转换。Hall 还排除轴、低密度及不可解析场。 J_phi、惯性电流候选和终末电流目标在掩码外置零；活动单元保留计算值，校验始终无条件执行。",
      "dtype": "布尔数组"
     },
     {
@@ -2247,7 +2247,7 @@
     {
      "name": "hall_active_mask",
      "description": "等离子体、非轴、高于密度下限及可解析磁场的交集。",
-     "constraints": "控制漂移计算及活跃点欧姆诊断。",
+     "constraints": "控制漂移计算及活跃点欧姆诊断。 只有该掩码为假的单元会把试算/终末惯性速度、漂移、离心力和 Ohm 输出置零；为真的单元保留计算值。",
      "dtype": "bool 数组"
     },
     {
@@ -2346,7 +2346,7 @@
    },
    "failure_semantics": {
     "invalid_input": "无效质量、电荷或标量控制、非布尔惯性开关、错误 R-Z 网格、非有限或不匹配的场/压强数组、错误形状或非布尔掩码、缺失或非有限必需 closure_state 字段、负密度或负电子/可选离子压强分量时抛出 ValueError。部分格式错误的可选状态数组可能传播 NumPy 广播错误。负主总压强或不一致的 species_sum 状态会被拒绝。",
-    "runtime_failure": "惯性超出步数上限抛 RuntimeError，其他运算/转换异常传播；极端有限输入不保证诊断仍有限。",
+    "runtime_failure": "惯性超出步数上限抛 RuntimeError，其他运算/转换异常传播；极端有限输入不保证诊断仍有限。 掩码置零不会吞掉输入、有限性或非收敛失败。",
     "nonconvergence": "启用惯性时未达到未松弛映射残差门槛就抛 RuntimeError，不返回部分状态。",
     "partial_results": "异常不返回 scirel._result.Result 映射；成功返回 inertia_converged=True，包括不启用惯性的分支。"
    },
@@ -2360,13 +2360,14 @@
      "人工构造电子压强/电势梯度与广义欧姆漂移。",
      "轴/真空掩码、与既有实现一致的 hypot 极值以及无效物种/控制拒绝。",
      "Hall 乘子为零仍保留压强投影电流；无惯性分支计一次；单步惯性预算耗尽不返回状态。",
-     "近 1 的 inertia_relax 不能把有限未松弛残差伪装为收敛，保持步数上限并抛 RuntimeError；解析 Bz=1、P=10+R²、n=mi=qi=1 的未限幅正不动点为 J=R。"
+     "近 1 的 inertia_relax 不能把有限未松弛残差伪装为收敛，保持步数上限并抛 RuntimeError；解析 Bz=1、P=10+R²、n=mi=qi=1 的未限幅正不动点为 J=R。",
+     "掩码区分回归：非活动单元只置零，活动单元保留计算值；部分掩码不会把非有限输入或惯性不收敛变成成功的零结果。"
     ],
-    "evidence_ceiling": "限于旋磁压力力到环向电流的投影及可选有界局部惯性修正。证据：`test_reduced_hall_drift.py` 含 9 个测试函数，其中 1 个引用 `close_reduced_hall_drift`，仅由本资产绑定; `test_anisotropic_core_scientific_correction.py` 含 17 个测试函数，其中没有函数引用 `close_reduced_hall_drift`，由 8 个资产共享；本审计已执行有界示例。真值来源：绑定私有文件与修正文件中的独立制造解/解析离散检查。不建立：完整平衡/双流体输运求解，或在低密度/近零场/firehose 不稳定区域的自动有效性。",
+    "evidence_ceiling": "限于旋磁压力力到环向电流的投影及可选有界局部惯性修正。证据：`test_reduced_hall_drift.py` 含 12 个测试函数，其中 1 个引用 `close_reduced_hall_drift`，仅由本资产绑定; `test_anisotropic_core_scientific_correction.py` 含 17 个测试函数，其中没有函数引用 `close_reduced_hall_drift`，由 8 个资产共享；本审计已执行有界示例。真值来源：绑定私有文件与修正文件中的独立制造解/解析离散检查。不建立：完整平衡/双流体输运求解，或在低密度/近零场/firehose 不稳定区域的自动有效性。",
     "known_limitations": [
      "调用者物理闭合与 Green 响应须有独立依据，并一致采用 psi=R A_phi（Wb/rad）。",
      "浮点舍入包络不界定离散化误差或实验不确定度。",
-     "资产私有测试文件有九个函数和一个直接示例；共享修正文件没有直接调用，因此惯性收敛与漂移诊断在组合级取证。"
+     "资产私有测试文件有十二个函数和一个直接示例；共享修正文件没有直接调用，因此惯性收敛与漂移诊断在组合级取证。"
     ],
     "tests": [
      "tests/closures/test_reduced_hall_drift.py",
