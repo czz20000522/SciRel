@@ -38,7 +38,8 @@
   "boundary": "Periodic/infinite homogeneous plane-wave response; finite numerical harmonic/pole representation explicitly declared.",
   "assumptions": [
    "Model-specific deck conventions are explicit.",
-   "A numerical spectrum is not automatically a physically certified mode."
+   "A numerical spectrum is not automatically a physically certified mode.",
+   "Fail-closed finiteness: finite constituent inputs are not a promise that every derived matrix, coefficient or auxiliary output is representable; such an output raises FloatingPointError before return, and no fixed numeric threshold is implied."
   ]
  },
  "inputs": [
@@ -109,7 +110,7 @@
    "shape": "mapping",
    "dtype": "mapping",
    "required": true,
-   "constraints": "Binary64 arrays preserve source row shapes; use named fields rather than inferred positional scales."
+   "constraints": "Binary64 arrays preserve source row shapes; use named fields rather than inferred positional scales. Derived matrix, coefficient and auxiliary arrays are finite; a non-representable derived output raises FloatingPointError before return."
   },
   {
    "name": "receipt",
@@ -123,22 +124,25 @@
  ],
  "applicability": {
   "preconditions": [
-   "Constituent inputs finite and representable in declared numeric ports."
+   "Constituent inputs finite and representable in declared numeric ports.",
+   "Every derived matrix, coefficient and auxiliary output must be representable as finite float64; finite inputs alone do not guarantee that."
   ],
   "supported": [
    "Magnetized Gaussian kinetic response, finite harmonics and rational parallel response.",
-   "Parallel/perpendicular EM axes and uniform k0 including N0."
+   "Parallel/perpendicular EM axes and uniform k0 including N0.",
+   "Representable finite-input assemblies across the declared ES1D, ES3D and EM branches."
   ],
   "excluded": [
    "ES total zero wavevector requires a separate longitudinal limit.",
-   "Exact perpendicular interlacing is restricted to positive Gaussian ES species."
+   "Exact perpendicular interlacing is restricted to positive Gaussian ES species.",
+   "Finite inputs whose derived matrix, coefficient or auxiliary outputs are non-finite; these calls fail closed with FloatingPointError instead of returning or forwarding those values."
   ]
  },
  "failure_semantics": {
   "invalid_input": "ValueError for invalid model, missing branch-required scalar, nonfinite/unrepresentable coordinates, noninteger/negative N, ES1D k=0 or ES3D total zero wavevector; incomplete state can raise KeyError.",
-  "runtime_failure": "Python numerical errors propagate with operation context; no source-runtime, checkout or network fallback.",
+  "runtime_failure": "FloatingPointError when finite inputs produce a derived matrix, coefficient or auxiliary output that is not representable as finite float64; the check runs before return and no fixed numeric threshold is implied. Python numerical errors otherwise propagate with operation context; no source-runtime, checkout or network fallback.",
   "nonconvergence": "Assembly/helper arithmetic errors propagate; this operation does not solve or certify roots.",
-  "partial_results": "No successful result is returned if this operation raises; no partial scientific return is promised."
+  "partial_results": "No successful result is returned if this operation raises; no partial scientific return is promised and no non-finite matrix or auxiliary vector is forwarded to a downstream solver."
  },
  "public_api": {
   "python": {
@@ -160,12 +164,14 @@
   "scope": [
    "Source-absent installed own scientific package; exact package/resource closure.",
    "All12 APIs, independent canonical and separate held-out response, axis and signed-wavevector gates.",
-   "Full perpendicular ES3D N10/J8 original50-point default with independent weak-coefficient and Decimal offset checks."
+   "Full perpendicular ES3D N10/J8 original50-point default with independent weak-coefficient and Decimal offset checks.",
+   "A direct regression pins ES1D k=1e308 to FloatingPointError before the matrix can reach solve_matrix, while the finite reference call keeps its coefficients and matrix unchanged.",
+   "Existing invalid-input ValueError semantics for non-finite and zero wavevectors remain unchanged."
   ],
   "tests": [
    "tests/kinetic/test_dispersion_rational.py"
   ],
-  "evidence_ceiling": "Direct contract tests and the declared finite cases bound the relation only where their numeric gates apply; the pure-Python execution runs on this macOS checkout without the declared local Python runtime.",
+  "evidence_ceiling": "Direct contract tests and the declared finite cases bound the relation only where their numeric gates apply; the pure-Python execution runs on this macOS checkout without the declared local Python runtime. The fail-closed regression binds the finite-input-derived non-representable branch only where it is exercised; it does not establish a numeric bound or full-domain representability.",
   "known_limitations": [
    "Redistribution permission for the reference material remains unresolved; this implementation does not execute the source runtime.",
    "Finite-J/finite-N physics must be qualified for a new requested regime.",

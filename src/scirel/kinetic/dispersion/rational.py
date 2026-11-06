@@ -200,6 +200,21 @@ def _row(values, dtype=None):
     return array.reshape(1, -1) if array.ndim == 1 else array
 
 
+def _check_finite_outputs(operation, outputs):
+    """Reject derived outputs that this arithmetic cannot represent as finite float64."""
+    for name, value in outputs.items():
+        if isinstance(value, dict):
+            _check_finite_outputs(operation, value)
+            continue
+        if hasattr(value, "data") and not isinstance(value, np.ndarray):
+            value = value.data
+        array = np.asarray(value)
+        if array.dtype.kind in "iufc" and not np.all(np.isfinite(array)):
+            raise FloatingPointError(
+                f"{operation} derived output {name!r} is not representable as finite float64"
+            )
+
+
 def _fixed_poles(J, *, variant="em"):
     """Return the packaged finite-pole tables without invoking a native runtime."""
     J = int(J)
@@ -635,6 +650,10 @@ def point_matrix(model, state, *, k=None, kx=None, kz=None, N=None):
 
     Raises
     ------
+    FloatingPointError
+        FloatingPointError when finite inputs produce a derived matrix, coefficient or auxiliary output that
+        is not representable as finite float64; the check runs before return and no numeric threshold is
+        implied.
     KeyError
         ValueError for invalid model, missing branch-required scalar, nonfinite/unrepresentable coordinates,
         noninteger/negative N, ES1D k=0 or ES3D total zero wavevector; incomplete state can raise
@@ -654,7 +673,10 @@ def point_matrix(model, state, *, k=None, kx=None, kz=None, N=None):
     incorrectly. EM includes full Maxwell constant in exact perpendicular response; uniform
     zero-wavevector cold gyro response ignores harmonic cutoff analytically. Negative k/kz selects
     causal Z poles. Compressed pole pencils retain E/B observables; source auxiliary aliases are not
-    physical waves. Nonrelativistic Gaussian species; explicit finite-harmonic/rational approximation
+    physical waves. Every derived matrix, coefficient and auxiliary output is checked finite before
+    return; a non-representable output raises FloatingPointError rather than reaching a downstream
+    solver, and the boundary is representability rather than a fixed magnitude threshold.
+    Nonrelativistic Gaussian species; explicit finite-harmonic/rational approximation
     when applicable. Assumptions: Model-specific deck conventions are explicit. A numerical spectrum is
     not automatically a physically certified mode.
 
@@ -717,6 +739,7 @@ def point_matrix(model, state, *, k=None, kx=None, kz=None, N=None):
             ),
             source_auxiliary_aliases="not certified as physical waves; compressed pole representation retains E/B observables",
         )
+        _check_finite_outputs("point_matrix('em' perpendicular)", p)
         return {
             "state": p,
             "receipt": {
@@ -740,16 +763,15 @@ def point_matrix(model, state, *, k=None, kx=None, kz=None, N=None):
         bsj = np.concatenate([vts[i] * bzj * czj * (kd[i] ** 2 / s["k"]) for i in range(S)])
         M = np.broadcast_to(-bsj, (len(bsj), len(bsj))).copy()
         np.fill_diagonal(M, np.diag(M) + csj)
-        return _result(
-            {
-                "M": M,
-                "SJ": np.array([[S * J]], float),
-                "csj": _row(csj),
-                "bsj": _row(bsj),
-                "causal_sheet": -1 if direction < 0 else 1,
-            },
-            "es1d_matrix",
-        )
+        state = {
+            "M": M,
+            "SJ": np.array([[S * J]], float),
+            "csj": _row(csj),
+            "bsj": _row(bsj),
+            "causal_sheet": -1 if direction < 0 else 1,
+        }
+        _check_finite_outputs("point_matrix('es1d')", state)
+        return _result(state, "es1d_matrix")
 
     kx_value, kz_value = s["kx"], s["kz"]
     k_value = float(np.hypot(kx_value, kz_value))
@@ -804,6 +826,7 @@ def point_matrix(model, state, *, k=None, kx=None, kz=None, N=None):
                 "N": s["N"],
                 "source_pole_order": J,
             }
+        _check_finite_outputs("point_matrix('es3d')", out)
         return _result(out, "es3d_matrix")
 
     # EM oblique Maxwell pencil. Exact perpendicular and zero-k limits are
@@ -937,6 +960,7 @@ def point_matrix(model, state, *, k=None, kx=None, kz=None, N=None):
         "b33snj": _row(b33s),
         "causal_sheet": -1 if direction < 0 else 1,
     }
+    _check_finite_outputs("point_matrix('em' oblique)", out)
     return _result(out, "em_matrix")
 
 
