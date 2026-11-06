@@ -46,28 +46,68 @@ def _real_array(value, name):
 
 
 def reduce_generation_density(distribution, cylindrical_weight, dvx):
-    """Reduce one generation distribution to per-cell densities.
+    """Reduce one neutral generation distribution to per-cell densities.
 
     Parameters
     ----------
-    distribution
-        The generation distribution as a finite ``(nvr, nvx, nx)`` array.
-    cylindrical_weight
-        The cylindrical quadrature weight: either a finite nonnegative
-        ``(nvr,)`` radial profile or a finite nonnegative ``(nvr, nvx)``
-        full cylindrical weight, aligned to the distribution's leading axes.
-    dvx
-        The axial cell sizes: a finite nonnegative ``(nvx,)`` array.
+    distribution : array_like, shape (nvr, nvx, nx)
+        Finite real generation distribution. Boolean, string and complex coercions
+        are rejected. [source-discrete]
+    cylindrical_weight : array_like, shape (nvr, nvx) or (nvr,)
+        Finite nonnegative cylindrical quadrature weight. A one-dimensional input
+        is a radial profile; a two-dimensional input must align with the leading
+        distribution axes, and uniform columns take the radial projection path.
+        [source-discrete measure]
+    dvx : array_like, shape (nvx,)
+        Finite nonnegative axial cell sizes aligned with the distribution velocity
+        axis. [source-discrete measure]
 
     Returns
     -------
-    numpy.ndarray
-        The per-spatial-cell densities, shape ``(nx,)``.
+    density : ndarray, shape (nx,)
+        Finite reduced density per spatial cell. Signed values are preserved; no
+        nonnegativity clamp is applied. [source-discrete density]
 
     Raises
     ------
     ValueError
-        If the fields are not finite and aligned or the weights are negative.
+        If a field is non-real, non-finite, misaligned or negative where forbidden,
+        or if the reduced density is non-finite.
+
+    See Also
+    --------
+    reduce_axisymmetric_neutral_moments : Full neutral velocity-space moments.
+    make_cylindrical_velocity_quadrature : Builds cylindrical velocity measures.
+
+    Notes
+    -----
+    For each spatial cell the reduction is the sum of
+    ``cylindrical_weight * distribution * dvx`` over both velocity axes. A
+    one-dimensional radial weight computes the axial contraction first, then
+    applies the radial weight. A two-dimensional weight uses the direct two-axis
+    sum, except that equal columns are routed through the radial projection so
+    the documented operation order is retained. The result follows the source's
+    discrete density normalization and is checked for finiteness.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from scirel.kinetic import reduce_generation_density
+    >>> f = np.ones((2, 2, 2))
+    >>> w2 = np.full((2, 2), 0.5)
+    >>> dx = np.array([0.5, 1.0])
+    >>> result = reduce_generation_density(f, w2, dx)
+    >>> np.testing.assert_allclose(result, [1.5, 1.5])
+    >>> radial = np.array([0.25, 0.75])
+    >>> uniform = np.repeat(radial[:, None], 2, axis=1)
+    >>> np.testing.assert_array_equal(reduce_generation_density(f, uniform, dx), reduce_generation_density(f, radial, dx))
+    >>> try:
+    ...     reduce_generation_density(f, np.ones((2, 2)), np.array([0.5, -1.0]))
+    ... except ValueError as error:
+    ...     assert 'aligned' in str(error)
+    ... else:
+    ...     raise AssertionError('a negative dvx must be rejected')
+
     """
     f = _real_array(distribution, "distribution")
     w = _real_array(cylindrical_weight, "cylindrical_weight")

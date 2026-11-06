@@ -94,46 +94,100 @@ def reduce_axisymmetric_neutral_moments(
     radial_quadrature=None,
     empty_slice_policy="reject",
 ):
-    """Return the saved neutral moment diagnostics for one distribution.
+    """Reduce an H or H2 axisymmetric neutral distribution to nine moment profiles.
 
     Parameters
     ----------
-    distribution
-        The velocity distribution as a finite ``(nvr, nvx, nx)`` array.
-    vx, vr
-        The axial and radial velocity-grid axes, finite one-dimensional
-        arrays of lengths ``(nvx,)`` and ``(nvr,)``.
-    cylindrical_volume
-        The finite positive cylindrical cell volumes, shape ``(nvr, nvx)``.
-    normalization_temperature_ev
-        The positive normalization temperature in eV (scalar).
-    isotope_mass_amu
-        Positive factor of the saved hydrogen mass, despite the historical
-        parameter name (scalar).
-    molecularity
-        ``1`` for H or ``2`` for H2.
-    axial_quadrature, radial_quadrature
-        Optional one-dimensional positive weights aligned to the axes; when
-        both are provided they must reconstruct ``cylindrical_volume``
-        exactly and the saved source-order per-slice summation is used.
-    empty_slice_policy
-        ``"reject"`` (default) fails closed on any nonpositive-density
-        spatial slice; ``"source_default"`` keeps the source-compatible
-        zero-density semantics (flow ``0 m/s``, temperature ``1 eV``).
+    distribution : array_like, shape (nvr, nvx, nx)
+        Finite real velocity distribution aligned with ``vr`` and ``vx``;
+        boolean, string and complex coercions are rejected. [source-normalized]
+    vx : array_like, shape (nvx,)
+        Finite axial velocity axis. [source-normalized]
+    vr : array_like, shape (nvr,)
+        Finite radial velocity axis. [source-normalized]
+    cylindrical_volume : array_like, shape (nvr, nvx)
+        Finite strictly positive cylindrical cell-volume weights aligned with the
+        velocity axes. [source-normalized measure]
+    normalization_temperature_ev : float
+        Positive finite normalization temperature. [eV]
+    isotope_mass_amu : float
+        Positive finite mass factor relative to the saved hydrogen mass
+        ``1.6726231e-27`` kg; the historical name does not mean the standard
+        atomic mass unit. [multiples of saved hydrogen mass (1.6726231e-27 kg)]
+    molecularity : int
+        Exactly ``1`` for H or ``2`` for H2. [dimensionless enum]
+    axial_quadrature : array_like, shape (nvx,), optional
+        Positive explicit axial weights. It must be supplied together with
+        ``radial_quadrature``; their outer product must equal
+        ``cylindrical_volume`` exactly. The default is ``None``. [source-normalized measure]
+    radial_quadrature : array_like, shape (nvr,), optional
+        Positive explicit radial weights. It must be supplied together with
+        ``axial_quadrature``. The default is ``None``. [source-normalized measure]
+    empty_slice_policy : {'reject', 'source_default'}, optional
+        Policy for spatial slices with nonpositive density. ``'reject'`` (the
+        default) raises; ``'source_default'`` preserves zero flow and temperature
+        ``1 eV``. [dimensionless enum]
 
     Returns
     -------
-    dict
-        ``density_m3``, ``axial_flux_m2_s``, ``axial_velocity_m_s``,
-        ``pressure_ev_m3``, ``temperature_ev``, ``stress_xx_ev_m3``,
-        ``stress_yy_ev_m3``, ``stress_zz_ev_m3`` (an independent copy of the
-        y stress, the source's cylindrical identification) and
-        ``random_heat_flux_w_m2``, each with shape ``(nx,)``.
+    moments : mapping
+        A mapping with exactly ``density_m3``, ``axial_flux_m2_s``,
+        ``axial_velocity_m_s``, ``pressure_ev_m3``, ``temperature_ev``,
+        ``stress_xx_ev_m3``, ``stress_yy_ev_m3``, ``stress_zz_ev_m3`` and
+        ``random_heat_flux_w_m2``. Each value is a finite ``float64`` array with
+        shape ``(nx,)``. ``stress_zz_ev_m3`` is an independent copy of
+        ``stress_yy_ev_m3``. [mixed (see constraints)]
 
     Raises
     ------
     ValueError
-        If any contract above is violated.
+        If the distribution, axes, volume, quadrature, species controls or policy
+        are invalid, a ``reject`` slice has nonpositive density, or a returned
+        moment is non-finite.
+
+    See Also
+    --------
+    compute_thermal_speed_m_s : Computes the thermal speed used by this reduction.
+    reduce_generation_density : Reduces a generation distribution to cell density.
+    reduce_terminal_molecular_flux_velocity : Terminal flux and flow diagnostic.
+
+    Notes
+    -----
+    With ``weighted = cylindrical_volume * distribution``, density is the sum of
+    ``weighted`` over both velocity axes and axial flux is ``Vth`` times the sum
+    of ``vx * weighted``. Flow is flux divided by positive density. The pressure
+    is the one-third trace of the centered second moment in eV m^-3; the diagonal
+    stresses and random heat flux use the same centered velocity field. The
+    terminal stress identification is exactly ``stress_zz_ev_m3 =
+    stress_yy_ev_m3`` as an independent copy; this records the saved cylindrical
+    convention and is not a stand-alone proof that the stress model is physically
+    complete. Explicit quadrature switches to the documented per-slice summation
+    order and must reconstruct the supplied volume.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from scirel.kinetic import compute_thermal_speed_m_s, reduce_axisymmetric_neutral_moments
+    >>> vr = (np.arange(160) + 0.5) * (4.0 / 160)
+    >>> vx = -4.0 + (np.arange(200) + 0.5) * (10.0 / 200)
+    >>> volume = np.outer(vr * (4.0 / 160), np.full(200, 10.0 / 200))
+    >>> vth = compute_thermal_speed_m_s(2.0, 1.0)['thermal_speed_m_s']
+    >>> vr_grid, vx_grid = np.meshgrid(vr, vx, indexing='ij')
+    >>> shift = 3.0e3 / vth
+    >>> f = np.exp(-(vr_grid[:, :, None] ** 2 + (vx_grid[:, :, None] - shift) ** 2))
+    >>> f = np.broadcast_to(f, (160, 200, 1)).copy()
+    >>> result = reduce_axisymmetric_neutral_moments(f, vx, vr, volume, normalization_temperature_ev=2.0, isotope_mass_amu=1.0, molecularity=1)
+    >>> assert abs(result['axial_velocity_m_s'][0] - 3.0e3) < 0.02 * 3.0e3
+    >>> assert abs(result['temperature_ev'][0] - 2.0) < 0.05 * 2.0
+    >>> assert np.array_equal(result['stress_zz_ev_m3'], result['stress_yy_ev_m3'])
+    >>> zero = np.zeros_like(f)
+    >>> try:
+    ...     reduce_axisymmetric_neutral_moments(zero, vx, vr, volume, normalization_temperature_ev=2.0, isotope_mass_amu=1.0, molecularity=1)
+    ... except ValueError as error:
+    ...     assert 'positive density' in str(error)
+    ... else:
+    ...     raise AssertionError('a zero-density slice must be rejected under the default policy')
+
     """
     f = _real_array("distribution", distribution)
     axial = _real_array("vx", vx)

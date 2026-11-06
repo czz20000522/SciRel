@@ -34,7 +34,76 @@ def reduce_terminal_molecular_ion_state(
     reaction_rate_table_s_inv,
     loss_frequency_s_inv,
 ):
-    """Return four terminal H2+ profiles, each with shape (nx,)."""
+    """Reduce explicit terminal state profiles to H2+ density and temperature diagnostics.
+
+    Parameters
+    ----------
+    molecular_density_m3 : array_like, shape (nx,)
+        Finite nonnegative terminal H2 density. [source-labeled m^-3]
+    neutral_density_m3 : array_like, shape (nx,)
+        Finite nonnegative neutral density used in dissociation and exchange terms.
+        [source-labeled m^-3]
+    ion_temperature_ev : array_like, shape (nx,)
+        Finite strictly positive ion temperature. [eV]
+    mass_ratio : float
+        Positive finite source-defined mass factor in the exchange frequency.
+        [source-defined dimensionless mass ratio]
+    ionization_rate_s_inv : array_like, shape (nx,)
+        Finite nonnegative ionization-rate profile. [source-labeled s^-1; density-scaled physical dimension unresolved]
+    reaction_rate_table_s_inv : array_like, shape (nx, 11)
+        Finite nonnegative reaction channels in source order; columns ``7:11``
+        enter dissociation. [source-labeled s^-1; density-scaled physical dimension unresolved]
+    loss_frequency_s_inv : array_like, shape (nx,)
+        Finite nonnegative loss frequency added to the dissociation denominator.
+        [source-labeled s^-1]
+
+    Returns
+    -------
+    molecular_ion_density_m3 : ndarray, shape (nx,)
+        Algebraic terminal H2+ density. [source-labeled m^-3; coefficient units pending review]
+    molecular_ion_temperature_ev : ndarray, shape (nx,)
+        Algebraic terminal H2+ temperature. [eV]
+    dissociation_frequency_s_inv : ndarray, shape (nx,)
+        Neutral density times the sum of reaction channels ``7:11``.
+        [source-labeled s^-1; coefficient units pending review]
+    energy_exchange_frequency_s_inv : ndarray, shape (nx,)
+        Source-calibrated exchange frequency with the explicit ``1e-6`` density
+        scaling. [source-labeled s^-1]
+
+    Raises
+    ------
+    ValueError
+        If inputs are non-real, non-finite or malformed, densities/rates are
+        negative, ion temperature or mass ratio is nonpositive, either computed
+        denominator is nonpositive or non-finite, or an output is invalid.
+
+    See Also
+    --------
+    reduce_generation_density : Reduces a generation distribution to density.
+    reduce_terminal_molecular_energy_transfer : Reduces signed transfer profiles.
+
+    Notes
+    -----
+    ``dissociation_frequency`` is the neutral density times the sum of reaction
+    channels 7 through 10. The H2+ density uses the ionization numerator divided
+    by dissociation plus loss frequency. The temperature uses the exchange
+    frequency divided by exchange plus that same denominator. Only channels
+    ``7:11`` affect the outputs. The historical input names and source-labeled
+    units leave the density-scaled dimensions unresolved; the numerical formulas
+    are preserved pending expert unit review, and this relation does not assemble
+    collision tables or evolve a terminal state.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from scirel.kinetic import reduce_terminal_molecular_ion_state
+    >>> rates = np.zeros((2, 11))
+    >>> rates[:, 7:11] = 1e-18
+    >>> r = reduce_terminal_molecular_ion_state(np.array([4e17, 5e17]), np.array([1e18, 2e18]), np.array([2., 3.]), 2., np.array([4., 5.]), rates, np.array([1., 3.]))
+    >>> assert set(r) == {'molecular_ion_density_m3', 'molecular_ion_temperature_ev', 'dissociation_frequency_s_inv', 'energy_exchange_frequency_s_inv'}
+    >>> assert all(value.shape == (2,) and np.isfinite(value).all() for value in r.values())
+
+    """
     molecular_density = _real_numeric("molecular_density_m3", molecular_density_m3)
     neutral_density = _real_numeric("neutral_density_m3", neutral_density_m3)
     ion_temperature = _real_numeric("ion_temperature_ev", ion_temperature_ev)

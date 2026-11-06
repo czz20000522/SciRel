@@ -30,11 +30,68 @@ def _real_1d(value, name):
 
 
 def interpolate_scalar_across_mesh(fa, xa, xb, do_warn=0):
-    """Interpolate ``fa`` from spatial mesh ``xa`` onto ``xb`` with zero fill.
+    """Interpolate a one-dimensional scalar profile onto another spatial mesh.
 
-    The nodes of ``xb`` that fall within ``xa`` must form one contiguous
-    index block. Unsorted nodes within that block retain their original order.
-    ``do_warn`` is an integer threshold switch for the saved boundary warnings.
+    Parameters
+    ----------
+    fa : array_like, shape (nxa,)
+        Finite real nonempty profile on ``xa``; boolean, string and complex
+        coercions are rejected. [caller units]
+    xa : array_like, shape (nxa,)
+        Finite strictly increasing source spatial nodes with at least two values,
+        aligned with ``fa``. [m]
+    xb : array_like, shape (nxb,)
+        Finite real nonempty destination spatial nodes. Out-of-range nodes receive
+        exact zero. [m]
+    do_warn : int, optional
+        Default ``0`` disables warnings. A nonzero integer applies the saved
+        ``do_warn * max(abs(fb))`` boundary threshold; output values are unchanged.
+        Boolean, fractional and string switches are rejected. [dimensionless]
+
+    Returns
+    -------
+    fb : ndarray, shape (nxb,)
+        Finite interpolated profile. In-range nodes use piecewise linear
+        interpolation and out-of-range nodes are exactly zero. [caller units]
+
+    Raises
+    ------
+    ValueError
+        If an array is not finite, real, nonempty and one-dimensional; ``xa`` is
+        not strictly increasing or has fewer than two nodes; lengths disagree; no
+        ``xb`` node is in range; in-range nodes are not contiguous; ``do_warn`` is
+        invalid; or the result is non-finite.
+
+    See Also
+    --------
+    interp_distribution_across_mesh : Conservative cylindrical distribution remap.
+
+    Notes
+    -----
+    The saved transfer uses linear interpolation in the contiguous block of
+    ``xb`` nodes inside ``[min(xa), max(xa)]``. Nodes outside that interval are
+    zero-filled. The warning threshold is diagnostic only and never changes the
+    returned values. The relation is a finite-mesh handoff, not a physical model
+    of either neutral species.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from scirel.kinetic import interpolate_scalar_across_mesh
+    >>> xa = np.array([0.0, 0.5, 1.0, 1.5, 2.0])
+    >>> fa = np.array([1.0, 2.0, 3.0, 4.0, 5.0])
+    >>> xb = np.array([0.0, 0.25, 0.8, 1.1, 1.6, 2.0])
+    >>> fb = interpolate_scalar_across_mesh(fa, xa, xb)
+    >>> np.testing.assert_allclose(fb, 1.0 + 2.0 * xb, rtol=0.0, atol=4e-16)
+    >>> fb2 = interpolate_scalar_across_mesh(fa, xa, np.array([-1.0, 0.5, 5.0]))
+    >>> assert fb2[0] == 0.0 and fb2[2] == 0.0 and fb2[1] == 2.0
+    >>> try:
+    ...     interpolate_scalar_across_mesh(fa, xa, np.array([5.0, 6.0]))
+    ... except ValueError as error:
+    ...     assert 'within range' in str(error)
+    ... else:
+    ...     raise AssertionError('a fully out-of-range mesh_b must be rejected')
+
     """
     fa = _real_1d(fa, "fa")
     xa = _real_1d(xa, "xa")

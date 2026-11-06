@@ -39,7 +39,64 @@ def reduce_terminal_molecular_flux_velocity(
     cylindrical_weight,
     dvx,
 ):
-    """Return terminal H2 axial flux and mean velocity, each with shape (nx,)."""
+    """Reduce a terminal H2 distribution to axial flux and mean velocity.
+
+    Parameters
+    ----------
+    vx : array_like, shape (nvx,)
+        Finite one-dimensional normalized axial velocity nodes; zero values are
+        allowed and no monotonicity gate is imposed. [v/Vth]
+    thermal_speed_m_s : float
+        Positive finite H2 thermal speed used by the axial-flux integral. [m/s]
+    terminal_distribution : array_like, shape (nvr, nvx, nx)
+        Finite nonnegative nonempty terminal distribution. [source-normalized distribution; no implicit conversion]
+    cylindrical_weight : array_like, shape (nvr,)
+        Finite nonnegative radial integration measure; zero cells are allowed when
+        integrated density remains positive. [source-normalized radial-area measure]
+    dvx : array_like, shape (nvx,)
+        Finite nonnegative normalized axial widths; zero cells are allowed when
+        integrated density remains positive. [normalized axial-speed increment]
+
+    Returns
+    -------
+    flux_profile_m2_s : ndarray, shape (nx,)
+        Signed terminal H2 axial particle flux. [source-discrete distribution measure times m/s]
+    mean_velocity_profile_m_s : ndarray, shape (nx,)
+        Terminal H2 mean axial velocity, flux divided by positive integrated
+        density. [m/s]
+
+    Raises
+    ------
+    ValueError
+        If inputs are non-real, non-finite or malformed, distribution/weights/widths
+        are negative, thermal speed is nonpositive, integrated density is
+        nonpositive, or density, flux or mean velocity is non-finite.
+
+    See Also
+    --------
+    reduce_axisymmetric_neutral_moments : Full neutral moments including stresses.
+    reduce_terminal_molecular_pressure_temperature : Terminal pressure and temperature.
+
+    Notes
+    -----
+    The density and axial flux use the declared per-slice matrix-vector and
+    radial reduction order. Individual quadrature cells may have zero weight or
+    width, but every spatial cell must have strictly positive integrated density.
+    The caller supplies the thermal-speed carrier directly; this narrow diagnostic
+    does not compute pressures, stresses or a complete terminal closure.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from scirel.kinetic import reduce_terminal_molecular_flux_velocity
+    >>> vx = np.array([-1., 0., 2.])
+    >>> f = np.ones((2, 3, 1))
+    >>> r = reduce_terminal_molecular_flux_velocity(vx, 5000., f, np.array([1., 2.]), np.array([0.5, 0., 0.25]))
+    >>> assert set(r) == {'flux_profile_m2_s', 'mean_velocity_profile_m_s'}
+    >>> assert r['flux_profile_m2_s'].shape == (1,)
+    >>> assert all(np.isfinite(value).all() for value in r.values())
+
+    """
     velocity = _real_numeric("vx", vx)
     thermal_speed = _real_numeric("thermal_speed_m_s", thermal_speed_m_s)
     distribution = _real_numeric("terminal_distribution", terminal_distribution)
