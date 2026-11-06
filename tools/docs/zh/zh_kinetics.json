@@ -6422,9 +6422,9 @@
   },
   {
    "asset_id": "scirel.kinetic.frank-egedal-source-projection",
-   "source_sha256": "a64723eb94c071ee581755d78e180d41c9ce4441c8db12695c1ebf0c8a7f0fc1",
+   "source_sha256": "73437d18286b46e602d647939356b1ff50b961d80df5daee3016da5e41562a10",
    "summary": "把点俯仰源投影到包含整数阶的正规偶角模，并用收敛求积求归一化。",
-   "definition": "由镜比/turning_b 得 ξ_tp=sqrt(max(0,1−1/max(R,1e-12)))。阶数显式给定或调用谱算子；计算系数 c_ν=u_ν(clip(cosθ_NBI,0,ξ_tp))/(4π∫u_ν²dξ)。正规偶初值解不排除整数阶、不截断多项式；Gauss–Legendre 节点逐次加倍，初始节点解析估计角振荡，归一积分相对一致性须达1e-10。",
+   "definition": "由 mirror_ratio 得 ξ_tp=sqrt(max(0,1−1/max(R,1e-12)))。阶数显式给定或调用谱算子；计算系数 c_ν=u_ν(clip(cosθ_NBI,0,ξ_tp))/(4π∫u_ν²dξ)。正规偶初值解不排除整数阶、不截断多项式；Gauss–Legendre 节点逐次加倍，初始节点解析估计角振荡，归一积分相对一致性须达1e-10。",
    "model": "规定点源的角模投影，不建立物理 NBI 群体。",
    "assumptions": [
     "显式阶数或注入谱函数的边界根有效性须独立证明。",
@@ -6433,15 +6433,57 @@
    "boundary": "u(0)=1、u′(0)=0；显式阶数不自动成为本征根；非正派生锥返回既有空闲空结果。",
    "inputs": [
     {
-     "name": "params",
-     "description": "镜比/turning_b、可选阶数/系数及旧控制量的配置。",
-     "constraints": "须为 dict；R默认2，terms默认15、backend默认truncated；激活时 int(terms)≥2且backend合法；阶数非空有限一维，系数同形有限；未知键忽略，其他控制按分支转换；旧terms不截断解，整数阶允许。",
-     "dtype": "字典"
+     "name": "mirror_ratio",
+     "description": "镜比，用于派生捕获俯仰边界；无量纲，默认 2.0。",
+     "constraints": "转换为 float；不另行强制有限或 >1；非正派生锥进入既有空闲分支。",
+     "dtype": "实数标量"
+    },
+    {
+     "name": "legendre_terms",
+     "description": "旧项数控制；单位为 count，默认 15。",
+     "constraints": "转换为 int；激活分支须 >=2，不截断正规模求值。",
+     "dtype": "可转换为整数的标量"
+    },
+    {
+     "name": "legendre_backend",
+     "description": "旧后端名称；单位为 text，默认 truncated。",
+     "constraints": "激活分支接受 truncated 或 hypergeometric；两者使用同一正规初值解；空闲分支不读取。",
+     "dtype": "字符串或可转换为字符串的标量"
+    },
+    {
+     "name": "legendre_degrees",
+     "description": "显式角阶数；无量纲，默认 None。",
+     "constraints": "提供时须为非空有限一维数组；允许整数阶。",
+     "dtype": "有限实数数组或 None"
+    },
+    {
+     "name": "legendre_mode_count",
+     "description": "无显式阶数时传给谱算子的模态数；单位为 count，默认 6。",
+     "constraints": "仅在调用谱算子时转换为 int。",
+     "dtype": "可转换为整数的标量"
+    },
+    {
+     "name": "legendre_spectrum_grid_points",
+     "description": "无显式阶数时传给谱算子的网格点数；单位为 count，默认 256。",
+     "constraints": "仅在调用谱算子时转换为 int。",
+     "dtype": "可转换为整数的标量"
+    },
+    {
+     "name": "source_coefficients",
+     "description": "与显式阶数配对的源系数；默认 None 时按点源俯仰投影计算。",
+     "constraints": "提供时须有限且与阶数同形；否则进入求积计算。",
+     "dtype": "有限实数数组或 None"
+    },
+    {
+     "name": "nbi_pitch_angle_deg",
+     "description": "点源 NBI 俯仰角；单位为 degree，默认 45.0。",
+     "constraints": "仅在计算系数时转换为 float；余弦裁剪到活动锥内。",
+     "dtype": "实数标量"
     },
     {
      "name": "spectrum_operator",
-     "description": "无显式阶数时的调用者谱生成器。",
-     "constraints": "仅激活且缺阶数时需要；接收 int 转换计数（默认6、256）和backend；返回非空有限一维阶数；不验证科学等价。",
+     "description": "无显式阶数时的调用者谱生成器；单位为 xi_tp_mid and returned degrees: dimensionless; mode_count and grid_points: count; backend: text。",
+     "constraints": "激活且缺阶数时需要；接收 int 转换计数和 backend，返回有限非空一维 degrees；不验证科学等价。",
      "dtype": "可调用对象或 None"
     }
    ],
@@ -6501,7 +6543,7 @@
     ]
    },
    "failure_semantics": {
-    "invalid_input": "非法激活阶数/系数数组、backend或项数引发 ValueError。",
+    "invalid_input": "已删除 params mapping、turning_b 别名或未知关键字由 Python 抛出 TypeError；非法激活阶数/系数数组、backend、项数或缺失所需谱算子引发 ValueError。",
     "runtime_failure": "模求值器失败向上传播。",
     "nonconvergence": "归一规则未达相对1e-10或需超过8192节点时 RuntimeError。",
     "partial_results": "仅既有空闲锥支返回空数组；失败激活投影不返部分系数。"
@@ -6513,13 +6555,14 @@
    "verification": {
     "scope": [
      "整数模的精确归一化和源系数。",
-     "模值共用已独立核验的正则求值器。"
+     "模值共用已独立核验的正则求值器。",
+     "显式签名、已删除 mapping/alias 拒绝、默认控制快照、空闲分支和激活失败路径。"
     ],
-    "evidence_ceiling": "限于所声明关系：由镜比/turning_b 得 ξ_tp=sqrt(max(0,1−1/max(R,1e-12)))。阶数显式给定或调用谱算子；计算系数 c_ν=u_ν(clip(cosθ_NBI,0,ξ_tp))/(4π∫u_ν²dξ)。正规偶初值解不排除整数阶、不截断多项式；Gauss–Legendre 节点逐次加倍，初始节点解析估计角振荡，归一积分相对一致性须达1e-10。证据：test_spectral_scientific_correction.py, test_frank_egedal_source_projection.py（记录 18 个测试函数；共享文件加直接组合/测试覆盖；独立解析/高精度对照）；合同 example 已运行。不建立的范围：不认证调用者本征值，不含有限宽源或任意有限模和的物理正性；外部物理验证。",
+    "evidence_ceiling": "限于所声明关系：由 mirror_ratio 得 ξ_tp=sqrt(max(0,1−1/max(R,1e-12)))。阶数显式给定或调用谱算子；计算系数 c_ν=u_ν(clip(cosθ_NBI,0,ξ_tp))/(4π∫u_ν²dξ)。正规偶初值解不排除整数阶、不截断多项式；Gauss–Legendre 节点逐次加倍，初始节点解析估计角振荡，归一积分相对一致性须达1e-10。证据：test_spectral_scientific_correction.py, test_frank_egedal_source_projection.py（记录31个测试案例；共享文件加直接组合/测试覆盖；独立解析/高精度对照）；合同 example 已运行。不建立的范围：不认证调用者本征值，不含有限宽源或任意有限模和的物理正性；外部物理验证。",
     "known_limitations": [
      "把点源俯仰角裁剪到锥内是所声明的投影约定，不是有限宽度注入模型。",
      "显式阶数用作损失锥模时需独立本征值依据。",
-     "仅绑定共享文件覆盖（test_spectral_scientific_correction.py）；未记录资产专属失败/边界探针。"
+     "直接测试覆盖显式签名、旧 mapping/alias 拒绝、默认控制快照、空闲分支和激活失败路径；不主张外部物理验证。"
     ]
    }
   },

@@ -23,7 +23,7 @@
   ],
   "operation": [
    "project a point-pitch source onto angular modes",
-   "(params, optional spectrum_operator) -> degrees, source_coefficients, degree_source, legendre controls, xi_tp_mid and fractional_mode callable"
+   "(mirror_ratio, optional controls, spectrum_operator) -> degrees, source_coefficients, degree_source, legendre controls, xi_tp_mid and fractional_mode callable"
   ],
   "model": "Angular point-source projection with caller-specified or numerically generated modes; it does not establish a physical NBI population.",
   "geometry": "One-dimensional pitch-cosine interval from xi=0 to the mirror-ratio-derived turning boundary xi_tp_mid",
@@ -32,8 +32,8 @@
  },
  "identity": {
   "relation": "Mirror-ratio loss-cone state and NBI source configuration to fractional Legendre degrees and source coefficients",
-  "direction": "(params, optional spectrum_operator) -> degrees, source_coefficients, degree_source, legendre controls, xi_tp_mid and fractional_mode callable",
-  "definition": "Set xi_tp_mid=sqrt(max(0,1-1/max(R,1e-12))) from mirror_ratio or turning_b. Use caller-supplied degrees or a supplied spectrum operator. For computed coefficients, c_nu=u_nu(clip(cos(theta_NBI),0,xi_tp_mid))/(4*pi*integral_0^xi_tp_mid u_nu^2 dxi). u_nu solves the regular even initial-value equation without integer exclusion or polynomial truncation. Successively doubled Gauss-Legendre rules normalize each mode; the initial node count resolves its estimated angular oscillation scale and the integral must agree within relative 1e-10.",
+  "direction": "(mirror_ratio, optional controls, spectrum_operator) -> degrees, source_coefficients, degree_source, legendre controls, xi_tp_mid and fractional_mode callable",
+  "definition": "Set xi_tp_mid=sqrt(max(0,1-1/max(mirror_ratio,1e-12))). Use caller-supplied degrees or a supplied spectrum operator. For computed coefficients, c_nu=u_nu(clip(cos(theta_NBI),0,xi_tp_mid))/(4*pi*integral_0^xi_tp_mid u_nu^2 dxi). u_nu solves the regular even initial-value equation without integer exclusion or polynomial truncation. Successively doubled Gauss-Legendre rules normalize each mode; the initial node count resolves its estimated angular oscillation scale and the integral must agree within relative 1e-10.",
   "model": "Angular point-source projection with caller-specified or numerically generated modes; it does not establish a physical NBI population.",
   "geometry": "One-dimensional pitch-cosine interval from xi=0 to the mirror-ratio-derived turning boundary xi_tp_mid",
   "coordinates": "xi and degree are dimensionless. nbi_pitch_angle_deg is in degrees and converted through cosine; the angle cosine is clipped to the active interval. Returned degree and coefficient arrays preserve supplied order.",
@@ -45,23 +45,94 @@
  },
  "inputs": [
   {
-   "name": "params",
-   "description": "Configuration dict holding mirror_ratio or turning_b; optional legendre_degrees, source_coefficients, legendre_terms, legendre_backend, legendre_mode_count, legendre_spectrum_grid_points and nbi_pitch_angle_deg.",
-   "units": "mirror ratio, degrees and xi: dimensionless; coefficients: caller source normalization when explicit; NBI pitch: degree; terms, mode_count and grid_points: count",
-   "shape": "dict with scalar controls and optional one-dimensional degree/coefficient arrays",
-   "dtype": "dict",
-   "required": true,
-   "constraints": "Must be a dict. R defaults to 2.0; legendre_terms to 15 and backend to 'truncated'. In the active branch, terms converted with int must be >=2 and backend must be 'truncated' or 'hypergeometric'; explicit degrees must form a nonempty finite 1-D array. Explicit coefficients must be finite with the same shape. Other controls are converted only on their exercised branch, and unknown keys are ignored. legendre_terms and the two backend names remain legacy controls; active mode evaluation is the same untruncated scaled initial-value solution. Integer degrees are allowed."
+   "name": "mirror_ratio",
+   "description": "Mirror ratio used to derive the trapped-pitch boundary.",
+   "units": "dimensionless",
+   "shape": "scalar",
+   "dtype": "real scalar",
+   "required": false,
+   "default": 2.0,
+   "constraints": "Converted to float. No independent finite or physical >1 validation is imposed; a nonpositive derived cone enters the inactive branch."
+  },
+  {
+   "name": "legendre_terms",
+   "description": "Legacy retained-term count carried through the interface.",
+   "units": "count",
+   "shape": "scalar",
+   "dtype": "integer-compatible scalar",
+   "required": false,
+   "default": 15,
+   "constraints": "Converted to int. In the active branch it must be at least two; it does not truncate regular mode evaluation."
+  },
+  {
+   "name": "legendre_backend",
+   "description": "Legacy backend label for the regular mode evaluator.",
+   "units": "text",
+   "shape": "scalar",
+   "dtype": "string-like scalar",
+   "required": false,
+   "default": "truncated",
+   "constraints": "Active branch accepts 'truncated' or 'hypergeometric'; both select the same regular scaled initial-value evaluator. The inactive branch does not read it."
+  },
+  {
+   "name": "legendre_degrees",
+   "description": "Explicit fractional angular degrees; supplying them bypasses the spectrum operator.",
+   "units": "dimensionless",
+   "shape": "(N_mode,)",
+   "dtype": "finite real array-like or None",
+   "required": false,
+   "default": null,
+   "constraints": "When supplied, must be a nonempty finite one-dimensional array; integer degrees are allowed."
+  },
+  {
+   "name": "legendre_mode_count",
+   "description": "Mode count passed to the spectrum operator when degrees are absent.",
+   "units": "count",
+   "shape": "scalar",
+   "dtype": "integer-compatible scalar",
+   "required": false,
+   "default": 6,
+   "constraints": "Converted to int only when the spectrum operator is called."
+  },
+  {
+   "name": "legendre_spectrum_grid_points",
+   "description": "Spectrum grid-point count passed when degrees are absent.",
+   "units": "count",
+   "shape": "scalar",
+   "dtype": "integer-compatible scalar",
+   "required": false,
+   "default": 256,
+   "constraints": "Converted to int only when the spectrum operator is called."
+  },
+  {
+   "name": "source_coefficients",
+   "description": "Explicit source amplitudes paired with explicit degrees.",
+   "units": "computed branch: dimensionless in the source-defined normalized angular convention; explicit branch: caller-supplied normalization",
+   "shape": "(N_mode,)",
+   "dtype": "finite real array-like or None",
+   "required": false,
+   "default": null,
+   "constraints": "When supplied, values must be finite and have the same shape as the degrees; otherwise point-pitch coefficients are computed."
+  },
+  {
+   "name": "nbi_pitch_angle_deg",
+   "description": "Point-source NBI pitch angle used when coefficients are computed.",
+   "units": "degree",
+   "shape": "scalar",
+   "dtype": "real scalar",
+   "required": false,
+   "default": 45.0,
+   "constraints": "Converted to float only when coefficients are computed; its cosine is clipped to the active cone."
   },
   {
    "name": "spectrum_operator",
-   "description": "Caller-provided degree generator when legendre_degrees is absent in the active branch.",
+   "description": "Caller-provided degree generator used when explicit degrees are absent.",
    "units": "xi_tp_mid and returned degrees: dimensionless; mode_count and grid_points: count; backend: text",
    "shape": "None or callable(xi_tp_mid, mode_count, grid_points, backend) -> mapping containing degrees",
    "dtype": "callable or None",
    "required": false,
    "default": null,
-   "constraints": "Required only in the active branch without explicit degrees. It receives int-converted counts defaulting to 6 and 256 and the selected backend; returned degrees must form a nonempty finite 1-D array. The callable is supplied by the caller, not imported or validated for scientific equivalence here."
+   "constraints": "Required in the active branch without explicit degrees. It receives int-converted counts and the selected backend; returned degrees must form a nonempty finite one-dimensional array."
   }
  ],
  "outputs": [
@@ -142,7 +213,7 @@
   ]
  },
  "failure_semantics": {
-  "invalid_input": "ValueError for invalid active degree/coefficient arrays, backend or term controls.",
+  "invalid_input": "TypeError when the removed params mapping, turning_b alias, or an unknown keyword is supplied. ValueError for invalid active degree or coefficient arrays, backend or term controls, or when spectrum_operator is required but absent.",
   "runtime_failure": "Mode-evaluator failures propagate.",
   "nonconvergence": "RuntimeError when normalization rules fail relative 1e-10 agreement or require more than 8192 nodes.",
   "partial_results": "Only the established inactive-cone branch returns empty arrays; failed active projections return no partial coefficients."
@@ -151,7 +222,7 @@
   "python": {
    "module": "scirel.kinetic.frank_egedal_source_projection",
    "symbol": "project_frank_egedal_source_modes",
-   "signature": "project_frank_egedal_source_modes(params, spectrum_operator=None)",
+   "signature": "project_frank_egedal_source_modes(*, mirror_ratio=2.0, legendre_terms=15, legendre_backend='truncated', legendre_degrees=None, legendre_mode_count=6, legendre_spectrum_grid_points=256, source_coefficients=None, nbi_pitch_angle_deg=45.0, spectrum_operator=None)",
    "canonical_module": "scirel.kinetic",
    "canonical_symbol": "project_frank_egedal_source_modes"
   }
@@ -162,23 +233,24 @@
  },
  "example": {
   "description": "Project a regular integer mode and compare its analytic normalization.",
-  "code": "import numpy as np\nfrom scirel.kinetic.frank_egedal_source_projection import project_frank_egedal_source_modes\nr=project_frank_egedal_source_modes({'mirror_ratio':1.5,'legendre_degrees':[2.],'nbi_pitch_angle_deg':60.})\na=1/np.sqrt(3); norm=a-2*a**3+9*a**5/5\nnp.testing.assert_allclose(r['source_coefficients'],[.25/(4*np.pi*norm)],rtol=2e-10)\n",
+  "code": "import numpy as np\nfrom scirel.kinetic.frank_egedal_source_projection import project_frank_egedal_source_modes\nr=project_frank_egedal_source_modes(mirror_ratio=1.5,legendre_degrees=[2.],nbi_pitch_angle_deg=60.)\na=1/np.sqrt(3); norm=a-2*a**3+9*a**5/5\nnp.testing.assert_allclose(r['source_coefficients'],[.25/(4*np.pi*norm)],rtol=2e-10)\n",
   "expected": "Observed PASS: Integer degree 2 is evaluated regularly and its projected coefficient matches the polynomial integral."
  },
  "verification": {
   "scope": [
    "Exact integer-mode normalization and source coefficient.",
-   "Mode values share the independently checked regular evaluator."
+   "Mode values share the independently checked regular evaluator.",
+   "Explicit signature, removed mapping/alias rejection, default-control snapshot, inactive branch and active validation failures."
   ],
   "tests": [
    "tests/cross_domain/test_spectral_scientific_correction.py",
    "tests/kinetic/test_frank_egedal_source_projection.py"
   ],
-  "evidence_ceiling": "Bounded to the declared relation: Set xi_tp_mid=sqrt(max(0,1-1/max(R,1e-12))) from mirror_ratio or turning_b. Use caller-supplied degrees or a supplied spectrum operator. For computed coefficients, c_nu=u_nu(clip(cos(theta_NBI),0,xi_tp_mid))/(4*pi*integral_0^xi_tp_mid u_nu^2 dxi)…. Evidence: test_spectral_scientific_correction.py, test_frank_egedal_source_projection.py (18 recorded test functions; shared-file plus direct composition/test coverage; independent analytic/high-precision oracle); the contract example ran. Excluded scope: Certification of caller-supplied eigenvalues, finite-width source distributions or physical positivity of an arbitrary truncated mode sum; external physical validation.",
+  "evidence_ceiling": "Bounded to the declared relation: Set xi_tp_mid=sqrt(max(0,1-1/max(R,1e-12))) from mirror_ratio. Use caller-supplied degrees or a supplied spectrum operator. For computed coefficients, c_nu=u_nu(clip(cos(theta_NBI),0,xi_tp_mid))/(4*pi*integral_0^xi_tp_mid u_nu^2 dxi)…. Evidence: test_spectral_scientific_correction.py, test_frank_egedal_source_projection.py (31 recorded test cases; shared-file plus direct composition/test coverage; independent analytic/high-precision oracle); the contract example ran. Excluded scope: Certification of caller-supplied eigenvalues, finite-width source distributions or physical positivity of an arbitrary truncated mode sum; external physical validation.",
   "known_limitations": [
    "Clipping the point-source pitch into the cone is the declared projection convention, not a finite-width injection model.",
    "Caller-supplied degrees need an independent eigenvalue justification if used as loss-cone modes.",
-   "Only shared-file coverage is bound (test_spectral_scientific_correction.py); no asset-specific failure/limit probe is recorded."
+   "Direct tests cover the explicit signature, removed mapping/alias rejection, default-control snapshot, inactive branch and active failure paths; no external physical validation is claimed."
   ]
  },
  "references": [

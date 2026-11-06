@@ -28,7 +28,7 @@ from scirel.kinetic.frank_egedal_source_projection import (
 assert project_frank_egedal_source_modes is direct
 assert "scipy" not in sys.modules
 try:
-    project_frank_egedal_source_modes({})
+    project_frank_egedal_source_modes()
 except ValueError as error:
     assert str(error) == "spectrum_operator is required when legendre_degrees is absent"
 else:
@@ -37,22 +37,18 @@ assert "scipy" not in sys.modules
 
 # Explicit coefficients do not need the quadrature backend and remain light.
 project_frank_egedal_source_modes(
-    {
-        "mirror_ratio": 2.0,
-        "legendre_degrees": [0.0],
-        "source_coefficients": [1.0],
-    }
+    mirror_ratio=2.0,
+    legendre_degrees=[0.0],
+    source_coefficients=[1.0],
 )
 assert "scipy" not in sys.modules
 
 # Omitting coefficients enters the numerical normalization path, where the
 # delayed roots_legendre import is required.
 output = project_frank_egedal_source_modes(
-    {
-        "mirror_ratio": 2.0,
-        "legendre_degrees": [0.0],
-        "legendre_terms": 2,
-    }
+    mirror_ratio=2.0,
+    legendre_degrees=[0.0],
+    legendre_terms=2,
 )
 assert output["source_coefficients"].shape == (1,)
 assert "scipy.special" in sys.modules

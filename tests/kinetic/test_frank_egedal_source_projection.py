@@ -1,3 +1,7 @@
+import inspect
+import math
+
+import numpy as np
 import pytest
 from scirel.kinetic.frank_egedal_source_projection import (
     project_frank_egedal_source_modes,
@@ -5,27 +9,81 @@ from scirel.kinetic.frank_egedal_source_projection import (
 )
 
 
-def test_rejects_incomplete_source_state():
-    with pytest.raises((KeyError, ValueError, TypeError)):
+def test_public_function_has_explicit_keyword_only_controls_and_rejects_legacy_entry_points():
+    signature = inspect.signature(scientific_function)
+    assert str(signature) == (
+        "(*, mirror_ratio=2.0, legendre_terms=15, legendre_backend='truncated', "
+        "legendre_degrees=None, legendre_mode_count=6, "
+        "legendre_spectrum_grid_points=256, source_coefficients=None, "
+        "nbi_pitch_angle_deg=45.0, spectrum_operator=None)"
+    )
+    assert all(
+        parameter.kind is inspect.Parameter.KEYWORD_ONLY
+        for parameter in signature.parameters.values()
+    )
+
+    with pytest.raises(TypeError, match="takes 0 positional arguments"):
         scientific_function({})
+    with pytest.raises(TypeError, match="unexpected keyword argument 'params'"):
+        scientific_function(params={})
+    with pytest.raises(TypeError, match="unexpected keyword argument 'turning_b'"):
+        scientific_function(turning_b=4.0)
+    with pytest.raises(TypeError, match="unexpected keyword argument 'unknown'"):
+        scientific_function(unknown=True)
+
+
+def test_requires_spectrum_operator_without_degrees():
+    with pytest.raises(ValueError, match="spectrum_operator is required"):
+        scientific_function()
+
+
+def test_explicit_default_controls_match_previous_mapping_snapshot():
+    # Captured from the parent mapping entry point before this interface migration.
+    got = scientific_function(legendre_degrees=[2.0])
+
+    assert list(got) == [
+        "degrees",
+        "source_coefficients",
+        "degree_source",
+        "legendre_terms",
+        "legendre_backend",
+        "xi_tp_mid",
+        "fractional_mode",
+    ]
+    np.testing.assert_array_equal(got["degrees"], [2.0])
+    np.testing.assert_array_equal(got["source_coefficients"], [-0.12504393279959847])
+    assert got["degree_source"] == "caller_supplied"
+    assert got["legendre_terms"] == 15
+    assert got["legendre_backend"] == "truncated"
+    assert got["xi_tp_mid"] == math.sqrt(0.5)
+
+
+@pytest.mark.parametrize(
+    "kwargs",
+    [
+        {"legendre_degrees": []},
+        {"legendre_degrees": [0.0], "legendre_backend": "not-a-backend"},
+        {"legendre_degrees": [0.0], "legendre_terms": 1},
+        {"legendre_degrees": [0.0], "source_coefficients": [1.0, 2.0]},
+    ],
+)
+def test_invalid_active_controls_fail_closed(kwargs):
+    with pytest.raises(ValueError):
+        scientific_function(**kwargs)
 
 
 def test_reviewed_relation_example():
-    import math
-    import numpy as np
     from scipy.integrate import quad
     from scipy.special import hyp2f1
 
     # 显式 degree、无显式系数：用独立自适应积分复算 NBI 投影系数。
     angle_deg = 60.0
     projected = project_frank_egedal_source_modes(
-        {
-            "mirror_ratio": 2.0,
-            "legendre_degrees": [0.5],
-            "nbi_pitch_angle_deg": angle_deg,
-            "legendre_terms": 24,
-            "legendre_backend": "hypergeometric",
-        }
+        mirror_ratio=2.0,
+        legendre_degrees=[0.5],
+        nbi_pitch_angle_deg=angle_deg,
+        legendre_terms=24,
+        legendre_backend="hypergeometric",
     )
     mode = projected["fractional_mode"]
     degree = 0.5
@@ -82,13 +140,11 @@ def test_reviewed_relation_example():
         return {"degrees": np.array([0.25, 0.75])}
 
     generated = project_frank_egedal_source_modes(
-        {
-            "mirror_ratio": 3.0,
-            "legendre_mode_count": 2,
-            "legendre_spectrum_grid_points": 80,
-            "legendre_backend": "truncated",
-            "source_coefficients": [1.0, -0.5],
-        },
+        mirror_ratio=3.0,
+        legendre_mode_count=2,
+        legendre_spectrum_grid_points=80,
+        legendre_backend="truncated",
+        source_coefficients=[1.0, -0.5],
         spectrum_operator=spectrum,
     )
     assert len(calls) == 1 and calls[0][1:] == (2, 80, "truncated")
@@ -96,7 +152,7 @@ def test_reviewed_relation_example():
     assert np.allclose(generated["source_coefficients"], [1.0, -0.5])
     assert generated["degree_source"] == "scirel.kinetic.loss_cone_spectrum"
 
-    inactive = project_frank_egedal_source_modes({"mirror_ratio": 1.0})
+    inactive = project_frank_egedal_source_modes(mirror_ratio=1.0)
     assert inactive["degrees"].size == 0
     assert inactive["degree_source"] == "inactive_loss_cone"
     assert "legendre_backend" not in inactive
