@@ -3,6 +3,7 @@
 import numpy as np
 import pytest
 
+from scirel._result import Result
 from scirel.equilibrium.axisymmetric_picard_update import (
     update_axisymmetric_picard_flux,
     update_axisymmetric_picard_flux as scientific_function,
@@ -26,6 +27,16 @@ def _inputs(**overrides):
 
 def test_flux_relaxation_and_cell_area_follow_declared_source_order():
     result = scientific_function(**_inputs())
+    assert isinstance(result, Result)
+    assert list(result) == [
+        "psi_next",
+        "plasma_cell_currents",
+        "relative_psi_change",
+        "relative_current_change",
+        "fixed_point_residual",
+    ]
+    for key in result:
+        assert getattr(result, key) is result[key]
     weights = np.outer([0.25, 0.5, 0.25], [0.25, 0.5, 0.25])
     np.testing.assert_allclose(result["plasma_cell_currents"], weights)
     np.testing.assert_allclose(result["psi_next"], 0.75 * (1.0 + weights))

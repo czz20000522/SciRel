@@ -4,6 +4,8 @@ from __future__ import annotations
 
 import numpy as np
 
+from scirel._result import Result
+
 from ._anisotropic_numerics import cell_areas, flux_field_increment
 
 __all__ = ["update_anisotropic_picard_flux"]
@@ -91,6 +93,9 @@ def update_anisotropic_picard_flux(
     plasma_currents : float64
         Terminal or step current density integrated with the explicitly declared node/cell-domain weights [A] Shape [N_Z,N_R]. Default composite-trapezoid weights integrate exactly over the supplied node-domain rectangle; boundary nodes have half-interval weights. Explicit cell_edges=(radial_edges,axial_edges), each with center_count+1 monotone finite entries enclosing its centers, instead define cell-center areas. No 2*pi*R factor multiplies toroidal filament current.
 
+    The complete result is returned as one ``scirel._result.Result`` mapping. No nested
+    mapping is introduced, and every field also supports attribute access.
+
     Raises
     ------
 
@@ -115,6 +120,7 @@ def update_anisotropic_picard_flux(
     Examples
     --------
     >>> import numpy as np
+    >>> from scirel._result import Result
     >>> from scirel.equilibrium import update_anisotropic_picard_flux
     >>> r, z = np.meshgrid([0.2, 0.4], [-0.1, 0.1])
     >>> j = np.array([[1.0, 2.0], [3.0, 4.0]])
@@ -123,11 +129,13 @@ def update_anisotropic_picard_flux(
     >>> result = update_anisotropic_picard_flux(j, r, z, mask, old, 0.25, np.eye(4), 2*np.eye(4), -np.eye(4), np.zeros((2,2)), np.ones((2,2)), 2*np.ones((2,2)), cell_edges=([.1,.3,.5],[-.2,0.,.2]))
     >>> raw = np.array([0.04, 0.0, 0.0, 0.16])
     >>> relaxed = 0.75*raw + 0.25*old
-    >>> np.testing.assert_allclose(result['plasma_currents'].ravel(), raw)
-    >>> np.testing.assert_allclose(result['picard_current_state'], relaxed)
-    >>> np.testing.assert_allclose(result['psi'].ravel(), relaxed)
-    >>> np.testing.assert_allclose(result['BR'].ravel(), 1.0 + 2*relaxed)
-    >>> np.testing.assert_allclose(result['BZ'].ravel(), 2.0 - relaxed)
+    >>> assert isinstance(result, Result)
+    >>> assert result.psi is result['psi']
+    >>> np.testing.assert_allclose(result.plasma_currents.ravel(), raw)
+    >>> np.testing.assert_allclose(result.picard_current_state, relaxed)
+    >>> np.testing.assert_allclose(result.psi.ravel(), relaxed)
+    >>> np.testing.assert_allclose(result.BR.ravel(), 1.0 + 2*relaxed)
+    >>> np.testing.assert_allclose(result.BZ.ravel(), 2.0 - relaxed)
     """
     r_grid = np.asarray(r_grid, dtype=float)
     if r_grid.ndim != 2:
@@ -185,12 +193,14 @@ def update_anisotropic_picard_flux(
     else:
         br = (br_vac.ravel() + green_br @ currents).reshape(shape)
         bz = (bz_vac.ravel() + green_bz @ currents).reshape(shape)
-    return {
-        "psi": psi,
-        "BR": br,
-        "BZ": bz,
-        "j_phi": density,
-        "initial_picard_current_state": np.zeros(size, dtype=float),
-        "picard_current_state": currents,
-        "plasma_currents": raw_currents,
-    }
+    return Result(
+        {
+            "psi": psi,
+            "BR": br,
+            "BZ": bz,
+            "j_phi": density,
+            "initial_picard_current_state": np.zeros(size, dtype=float),
+            "picard_current_state": currents,
+            "plasma_currents": raw_currents,
+        }
+    )

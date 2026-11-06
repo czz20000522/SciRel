@@ -1,4 +1,6 @@
 import pytest
+
+from scirel._result import Result
 from scirel.equilibrium.isotropic_picard_step import (
     pressure_flux_picard_step,
     pressure_flux_picard_step as scientific_function,
@@ -30,6 +32,10 @@ def test_reviewed_relation_example():
         currents_old,
         relax,
     )
+    assert isinstance(result, Result)
+    assert list(result) == ["plasma_currents", "psi_next", "residual"]
+    for key in result:
+        assert getattr(result, key) is result[key]
     d_area = 2.0
     expected_current = (
         1.0 - relax

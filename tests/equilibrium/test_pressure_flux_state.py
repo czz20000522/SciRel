@@ -6,6 +6,7 @@ import sys
 import numpy as np
 import pytest
 
+from scirel._result import Result
 from scirel.equilibrium.pressure_flux_state import (
     build_pressure_flux_state,
     build_pressure_flux_state as scientific_function,
@@ -30,6 +31,17 @@ def _case(**overrides):
 def test_builds_pressure_flux_state_from_exact_midplane():
     result = scientific_function(**_case())
 
+    assert isinstance(result, Result)
+    assert list(result) == [
+        "pressure_derivative",
+        "zero_currents",
+        "psi_edge",
+        "pressure_of_psi",
+        "limiter_index",
+    ]
+    for key in result:
+        assert getattr(result, key) is result[key]
+    assert type(result.pressure_of_psi) is dict
     assert result["limiter_index"] == 3
     np.testing.assert_allclose(result["psi_edge"], 0.8)
     np.testing.assert_allclose(result["pressure_derivative"], -1.0)

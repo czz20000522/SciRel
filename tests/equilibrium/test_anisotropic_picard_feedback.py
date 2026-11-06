@@ -3,6 +3,7 @@
 import numpy as np
 import pytest
 
+from scirel._result import Result
 from scirel.equilibrium.anisotropic_picard_feedback import (
     update_anisotropic_picard_flux,
     update_anisotropic_picard_flux as scientific_function,
@@ -31,6 +32,18 @@ def _inputs(**overrides):
 
 def test_zero_green_keeps_vacuum_field_and_emits_cell_current():
     result = scientific_function(**_inputs())
+    assert isinstance(result, Result)
+    assert list(result) == [
+        "psi",
+        "BR",
+        "BZ",
+        "j_phi",
+        "initial_picard_current_state",
+        "picard_current_state",
+        "plasma_currents",
+    ]
+    for key in result:
+        assert getattr(result, key) is result[key]
     np.testing.assert_allclose(result["psi"], _inputs()["psi_vac"])
     np.testing.assert_allclose(result["plasma_currents"], 0.01)
 

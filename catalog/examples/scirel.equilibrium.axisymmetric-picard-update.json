@@ -5,7 +5,7 @@
   "en": "Axisymmetric Picard Green flux update",
   "zh": "轴对称 Picard 磁通 Green 更新"
  },
- "summary": "Convert toroidal current density to cell currents, apply a dense cell-current-to-flux Green matrix, relax the resulting flux against the previous state, and report relative flux/current changes.",
+ "summary": "Convert toroidal current density to cell currents, apply a dense cell-current-to-flux Green matrix, relax the resulting flux against the previous state, and report relative flux/current changes. The complete result is returned as one scirel._result.Result mapping; mapping access is retained and every field also supports attribute access. No nested mapping is wrapped.",
  "taxonomy": [
   "equilibrium",
   "picard",
@@ -131,7 +131,7 @@
  "outputs": [
   {
    "name": "psi_next",
-   "description": "Flux-relaxed next total psi=R A_phi state.",
+   "description": "Field of the returned scirel._result.Result mapping: Flux-relaxed next total psi=R A_phi state.",
    "units": "Wb/rad",
    "shape": "[N_Z,N_R]",
    "dtype": "float64",
@@ -140,7 +140,7 @@
   },
   {
    "name": "plasma_cell_currents",
-   "description": "Terminal or step current density integrated with the explicitly declared node/cell-domain weights.",
+   "description": "Field of the returned scirel._result.Result mapping: Terminal or step current density integrated with the explicitly declared node/cell-domain weights.",
    "units": "A",
    "shape": "[N_Z,N_R]",
    "dtype": "float64",
@@ -149,7 +149,7 @@
   },
   {
    "name": "relative_psi_change",
-   "description": "L2 norm of psi_next-psi_state divided by max(||psi_next||,||psi_vac||,tiny).",
+   "description": "Field of the returned scirel._result.Result mapping: L2 norm of psi_next-psi_state divided by max(||psi_next||,||psi_vac||,tiny).",
    "units": "dimensionless",
    "shape": "scalar",
    "dtype": "float",
@@ -158,7 +158,7 @@
   },
   {
    "name": "relative_current_change",
-   "description": "L2 norm of raw currents minus prior currents divided by max(||raw currents||,1).",
+   "description": "Field of the returned scirel._result.Result mapping: L2 norm of raw currents minus prior currents divided by max(||raw currents||,1).",
    "units": "dimensionless",
    "shape": "scalar",
    "dtype": "float",
@@ -167,7 +167,7 @@
   },
   {
    "name": "fixed_point_residual",
-   "description": "Norm(candidate-psi_state)/max(norm(candidate),norm(psi_vac),tiny); independent of relax.",
+   "description": "Field of the returned scirel._result.Result mapping: Norm(candidate-psi_state)/max(norm(candidate),norm(psi_vac),tiny); independent of relax.",
    "units": "1",
    "shape": "scalar",
    "dtype": "float",
@@ -193,7 +193,7 @@
   "invalid_input": "Raises ValueError for wrong-rank, mismatched or nonfinite grid fields; negative/nonincreasing/nonrectilinear or too-small grids; invalid Green matrix; relax outside [0,1); or invalid previous currents.",
   "runtime_failure": "Unexpected NumPy arithmetic failures propagate. Intermediate overflow in matrix multiplication or norm evaluation is not separately trapped by a finite-output guard.",
   "nonconvergence": "Not applicable to one step; the caller controls and checks the iteration loop.",
-  "partial_results": "No partial mapping is returned after an exception."
+  "partial_results": "No scirel._result.Result mapping is returned after an exception; no nested Result is introduced."
  },
  "public_api": {
   "python": {
@@ -209,15 +209,16 @@
   "dependencies": []
  },
  "example": {
-  "description": "A nonuniform node-domain integral has exact linear current total.",
-  "code": "import numpy as np\nfrom scirel.equilibrium import update_axisymmetric_picard_flux\nr,z=np.meshgrid([1.,1.2,2.],[-.4,-.1,.4])\nout=update_axisymmetric_picard_flux(r,z,r,r*0,r*0,np.zeros((9,9)),0.)\nnp.testing.assert_allclose(out['plasma_cell_currents'].sum(),1.2,rtol=1e-14,atol=1e-14)",
-  "expected": "1.2 A over exactly the supplied node domain."
+  "description": "A nonuniform node-domain integral has exact linear current total; the named result also preserves mapping and attribute access.",
+  "code": "import numpy as np\nfrom scirel._result import Result\nfrom scirel.equilibrium import update_axisymmetric_picard_flux\nr,z=np.meshgrid([1.,1.2,2.],[-.4,-.1,.4])\nout=update_axisymmetric_picard_flux(r,z,r,r*0,r*0,np.zeros((9,9)),0.)\nassert isinstance(out, Result)\nassert out.plasma_cell_currents is out['plasma_cell_currents']\nnp.testing.assert_allclose(out.plasma_cell_currents.sum(),1.2,rtol=1e-14,atol=1e-14)\n",
+  "expected": "1.2 A over exactly the supplied node domain. The returned object is a scirel._result.Result mapping; every field is also readable as an attribute."
  },
  "verification": {
   "scope": [
    "Linear J=R integrates to 1.2 A on a nonuniform [1,2] by [-0.4,0.4] node domain.",
    "Compact polynomial current converges to 8/225 A on nonuniform grids.",
-   "Explicit uniform cell edges reproduce the full-area center convention."
+   "Explicit uniform cell edges reproduce the full-area center convention.",
+   "Return-type regression checks the top-level scirel._result.Result, key order and attribute access while retaining the existing numerical, state and failure assertions."
   ],
   "tests": [
    "tests/equilibrium/test_axisymmetric_picard_update.py",

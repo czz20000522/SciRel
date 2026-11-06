@@ -4,6 +4,8 @@ from __future__ import annotations
 
 import numpy as np
 
+from scirel._result import Result
+
 from ._pressure_current import fit_pressure_spline, pressure_derivative as _pressure_derivative
 
 __all__ = ["build_pressure_flux_state"]
@@ -58,9 +60,12 @@ def build_pressure_flux_state(r_grid, z_grid, psi, pressure_of_radius, plasma_ma
     psi_edge : float
         Flux at the first exact-zero-pressure midplane sample [Wb/rad] Shape scalar. Taken from the same midplane position as limiter_index.
     pressure_of_psi : mapping of float64 arrays, integer degree and string descriptors
-        Structured representation of the fitted pressure-versus-flux spline [psi fields Wb/rad; pressure fields Pa; degree and descriptors dimensionless] Shape mapping. psi_samples and pressure_samples contain exactly the fitted prefix through limiter_index; knots, coefficients, degree and extrapolation=zeros describe the same cubic spline.
+        Plain-dict representation of the fitted pressure-versus-flux spline [psi fields Wb/rad; pressure fields Pa; degree and descriptors dimensionless] Shape mapping. psi_samples and pressure_samples contain exactly the fitted prefix through limiter_index; knots, coefficients, degree and extrapolation=zeros describe the same cubic spline. This nested value is not a Result.
     limiter_index : int
         First exact-zero pressure index in increasing physical-radius order [index] Shape scalar. Zero-based position in the physically sorted midplane, not a whole-grid or storage-order index.
+
+    The complete result is returned as one ``scirel._result.Result`` mapping. No nested
+    mapping is wrapped, and every field also supports attribute access.
 
     Raises
     ------
@@ -88,6 +93,7 @@ def build_pressure_flux_state(r_grid, z_grid, psi, pressure_of_radius, plasma_ma
     Examples
     --------
     >>> import numpy as np
+    >>> from scirel._result import Result
     >>> from scirel.equilibrium.pressure_flux_state import build_pressure_flux_state
     >>> r_grid, z_grid = np.meshgrid(np.linspace(0.2, 0.8, 4), [-0.1, 0.0, 0.1])
     >>> mask = np.zeros_like(r_grid, dtype=bool)
@@ -95,11 +101,14 @@ def build_pressure_flux_state(r_grid, z_grid, psi, pressure_of_radius, plasma_ma
     >>> result = build_pressure_flux_state(r_grid, z_grid, r_grid.copy(), lambda radius: max(0.8 - radius, 0.0), plasma_mask=mask)
     >>> expected = np.full(r_grid.size, -1.0)
     >>> expected[6] = 0.0
-    >>> np.testing.assert_allclose(result['pressure_derivative'], expected)
-    >>> np.testing.assert_allclose(result['zero_currents'], 0.0)
-    >>> assert result['limiter_index'] == 3
-    >>> assert result['psi_edge'] == 0.8
-    >>> assert result['pressure_of_psi']['extrapolation'] == 'zeros'
+    >>> assert isinstance(result, Result)
+    >>> assert result.limiter_index == result['limiter_index']
+    >>> assert type(result.pressure_of_psi) is dict
+    >>> np.testing.assert_allclose(result.pressure_derivative, expected)
+    >>> np.testing.assert_allclose(result.zero_currents, 0.0)
+    >>> assert result.limiter_index == 3
+    >>> assert result.psi_edge == 0.8
+    >>> assert result.pressure_of_psi['extrapolation'] == 'zeros'
     """
     r_grid = _finite_grid("r_grid", r_grid)
     z_grid = _finite_grid("z_grid", z_grid, r_grid.shape)
@@ -141,10 +150,12 @@ def build_pressure_flux_state(r_grid, z_grid, psi, pressure_of_radius, plasma_ma
     derivative = _pressure_derivative(
         spline, flat_psi, psi_edge, None if mask is None else mask.ravel()
     )
-    return {
-        "pressure_derivative": derivative,
-        "zero_currents": np.zeros_like(derivative),
-        "psi_edge": psi_edge,
-        "pressure_of_psi": _representation(spline, psi_prefix, pressure[: limiter + 1]),
-        "limiter_index": limiter,
-    }
+    return Result(
+        {
+            "pressure_derivative": derivative,
+            "zero_currents": np.zeros_like(derivative),
+            "psi_edge": psi_edge,
+            "pressure_of_psi": _representation(spline, psi_prefix, pressure[: limiter + 1]),
+            "limiter_index": limiter,
+        }
+    )

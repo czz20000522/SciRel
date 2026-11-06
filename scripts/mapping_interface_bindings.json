@@ -229,7 +229,7 @@
     "scirel._validation": "975d881f3b0115509aa13b5b50e9879762727f5a1d02d94043870a7ed1b63de8",
     "scirel.equilibrium.anisotropic_force_balance": "7786d2f14b215180567973af30eb7c6e980dd27d82bd7ffbce51e2b150a210a7",
     "scirel.equilibrium.axisymmetric_anisotropic_picard": "51842f698710084d521ff887b01f84141a238616cf8440c1e88fdcd49fbfb5bb",
-    "scirel.equilibrium.axisymmetric_picard_update": "713b287e9595cb89059597fb3112d436d747e4ec6a9175b8068e53bbc1d675e6",
+    "scirel.equilibrium.axisymmetric_picard_update": "34b28419a434f2782ae4506db63edbde3687fe1e7cb7d947e0dcf519bf1e10f7",
     "scirel.field.poloidal_field_from_flux": "ca0874f3e4899708519aa5bf984473cf81cf04d44e0b297b7b84273fc7a4ba69"
    },
    "review_basis": "_run_composition requires R,Z,vacuum psi,Green and pressure callable; explicit scalar parsers define tolerance1e-8,maxiter200,relax0.5,minimumB1e-8,firehose0,compatibility0.05,strictTrue. Optional mask and cell_edges pass to the field/current feedback; terminal convergence uses the accepted fixed point residual."
@@ -332,8 +332,8 @@
     "scirel._composition": "ce7f22d7d0978065cb3c56384d49fccf73bf41635cd51b3a8755cca5453e1ca7",
     "scirel._validation": "975d881f3b0115509aa13b5b50e9879762727f5a1d02d94043870a7ed1b63de8",
     "scirel.diagnostics.picard_flux_residual": "8fbee6e510b43bc4315fc39a53b912915d004ab6029a1b3fa3354030d1d5ba5b",
-    "scirel.equilibrium.anisotropic_picard_feedback": "36439767648044c8711bb880eda0d442c3495addb5a857c7088b3746097e269f",
-    "scirel.equilibrium.anisotropic_toroidal_current": "a71f3169d7c6a7c3fe1ff8040538a7d80a10fd17b54e390b8b77791101d995cf",
+    "scirel.equilibrium.anisotropic_picard_feedback": "953f04df3d4f497cf205a08e4a1790aa040bb2d52d92509effbdfd63be93e1d7",
+    "scirel.equilibrium.anisotropic_toroidal_current": "1de8cc059421396e62dd9248a24df596b0ac9b61d94d59bfcb40b914f36412e0",
     "scirel.equilibrium.free_boundary_anisotropic_picard": "5fd6123e3ba5c36c6fc1dcf571a8f30be466ab4725980144d3ed6f4e43f20f4d",
     "scirel.field.ideal_conductor_boundary": "e8f8f21a770d278252ae461d84c65c56ea3ffd7b17063b3d96f117cc2cb713ad",
     "scirel.field.poloidal_field_magnitude": "49d726f03e80f85d751b4e044efcd18fcb89303fbb2f1036ca6c660b87ae3189"
@@ -593,7 +593,7 @@
     "scirel._composition": "ce7f22d7d0978065cb3c56384d49fccf73bf41635cd51b3a8755cca5453e1ca7",
     "scirel._validation": "975d881f3b0115509aa13b5b50e9879762727f5a1d02d94043870a7ed1b63de8",
     "scirel.closures.reduced_hall_drift": "e56b91441832d7c03519c6facd71149c756e798c42b8edd11fa714d720587288",
-    "scirel.equilibrium.axisymmetric_picard_update": "713b287e9595cb89059597fb3112d436d747e4ec6a9175b8068e53bbc1d675e6",
+    "scirel.equilibrium.axisymmetric_picard_update": "34b28419a434f2782ae4506db63edbde3687fe1e7cb7d947e0dcf519bf1e10f7",
     "scirel.equilibrium.reduced_hall_anisotropic_picard": "87e7e23600534cb1ef6e6f3f7478493aea51720c4514787e24db1f067f41ce7d",
     "scirel.field.poloidal_field_from_flux": "ca0874f3e4899708519aa5bf984473cf81cf04d44e0b297b7b84273fc7a4ba69"
    },
