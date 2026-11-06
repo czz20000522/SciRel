@@ -50,11 +50,76 @@ def propagate_neutral_generation(
     incoming_boundary=None,
     scattered_source_distribution=None,
 ):
-    """Return one normalized neutral distribution generation F.
+    r"""Propagate one neutral distribution generation in space with dimensionless axial nodes and normalized inverse-length transport/source coefficients.
 
-    ``vx`` is dimensionless u_x=v_x/Vth. Ak/Ck are dimensionless, Bk/Dk
-    are metres, Fk/Gk and ``incoming_boundary`` are F, and the scattered
-    spatial source is F/m. Coefficients and sources share one caller Vth.
+    Parameters
+    ----------
+    vx : real array-like, shape [nvx]
+        Velocity axis. [dimensionless (u=v/Vth)].
+        Constraints: Finite one-dimensional with both positive and negative branches.
+    Ak : real array-like, shape [nvr,nvx,nx]
+        Forward diagonal coefficient. [dimensionless].
+        Constraints: Finite 3-D.
+    Bk : real array-like, shape [nvr,nvx,nx]
+        Forward source coefficient (scattered branch). [m].
+        Constraints: Finite 3-D.
+    Fk : real array-like, shape [nvr,nvx,nx]
+        Forward source term (first-flight branch). [m^-3].
+        Constraints: Finite 3-D.
+    Ck : real array-like, shape [nvr,nvx,nx]
+        Backward diagonal coefficient. [dimensionless].
+        Constraints: Finite 3-D.
+    Dk : real array-like, shape [nvr,nvx,nx]
+        Backward source coefficient (scattered). [m].
+        Constraints: Finite 3-D.
+    Gk : real array-like, shape [nvr,nvx,nx]
+        Backward source term. [m^-3].
+        Constraints: Finite 3-D.
+    generation_kind : string scalar, shape scalar
+        The generation branch selector. [dimensionless].
+        Constraints: Exactly 'first_flight' or 'scattered'.
+    incoming_boundary : real array-like, shape [nvr,nvx]
+        The incoming boundary distribution (first_flight only). [m^-3].
+        Constraints: Required for first_flight; must be finite and aligned; must be None for scattered.
+        Default: None.
+    scattered_source_distribution : real array-like, shape [nvr,nvx,nx]
+        The scattered source distribution (scattered only). [m^-4 (F/m)].
+        Constraints: Required for scattered; must be finite and aligned; must be None for first_flight.
+        Default: None.
+
+    Returns
+    -------
+    generation : float64 array, shape [nvr,nvx,nx]
+        The propagated generation distribution. [m^-3].
+        Constraints: Finite.
+
+    Raises
+    ------
+    ValueError
+        Raises ValueError when vx lacks branches, coefficient fields are not finite aligned 3-D, generation_kind is invalid, or the wrong source/boundary is supplied. Raises ValueError if finite inputs overflow to a non-finite generation. Not applicable. Never returned; a rejected call produces no result.
+
+    See Also
+    --------
+    scirel.kinetic.assemble_neutral_upwind_transport_coefficients : Related neutral-transport operation.
+
+    Notes
+    -----
+        first_flight: forward from boundary on positive vx using Fk as source term, backward on negative vx using Gk as source term; scattered: forward on positive vx using Bk as source coefficient, backward on negative vx using Dk as source coefficient.
+    vx one-dimensional with both positive and negative branches; six coefficient fields finite aligned 3-D; generation_kind in {first_flight, scattered}; first_flight requires incoming_boundary; scattered requires scattered_source_distribution; nx must be at least one (a zero-node spatial axis fails closed with a named ValueError rather than a raw IndexError)
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from scirel.kinetic import assemble_neutral_upwind_transport_coefficients, propagate_neutral_generation
+    >>> x = np.linspace(0, 1, 3)
+    >>> vx = np.array([-1.0, 1.0])
+    >>> alpha = np.ones((2, 2, 3))
+    >>> source = np.ones((2, 2, 3))
+    >>> r = assemble_neutral_upwind_transport_coefficients(x, vx, alpha, source)
+    >>> boundary = np.ones((2, 2))
+    >>> gen = propagate_neutral_generation(vx, r['Ak'], r['Bk'], r['Fk'], r['Ck'], r['Dk'], r['Gk'], generation_kind='first_flight', incoming_boundary=boundary)
+    >>> assert gen.shape == (2, 2, 3)
+    >>> assert np.all(np.isfinite(gen))
     """
     axial = _finite_real_array(vx, "vx")
     coefficients = [

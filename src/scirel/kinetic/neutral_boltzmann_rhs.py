@@ -44,12 +44,66 @@ def assemble_neutral_boltzmann_rhs(
     elastic_source_sum,
     wall_source_sum,
 ):
-    """Return the physical RHS ``Vth*(S + Beta_CX - alpha_c*F + OmegaM + Swall)``.
+    r"""Convert the normalized spatial source balance S+Beta_CX-alpha*F+OmegaM+Swall from F/m to the physical Boltzmann distribution-rate RHS in F/s by one explicit Vth multiplication.
 
-    alpha_c=nu/Vth is in m^-1; every supplied source is Q/Vth in F/m.
-    This explicit boundary multiplies the whole normalized spatial balance
-    by the common thermal speed once, returning F/s. Supplying physical
-    collision frequencies or F/s sources here would apply Vth twice.
+    Parameters
+    ----------
+    thermal_speed_m_s : real scalar, shape scalar
+        The thermal speed. [m/s].
+        Constraints: Finite and strictly positive.
+    coefficient_source_distribution : real array-like, shape [nvr,nvx,nx]
+        The coefficient source term. Supply the normalized spatial source Q/Vth, not a physical F/s source. [m^-4 (F/m)].
+        Constraints: Finite 3-D.
+    charge_exchange_source_sum : real array-like, shape [nvr,nvx,nx]
+        The CX source sum. Supply the normalized spatial source Q/Vth, not a physical F/s source. [m^-4 (F/m)].
+        Constraints: Finite 3-D.
+    collision_frequency_m_inv : real array-like, shape [nvr,nvx,nx]
+        Inverse-length collision coefficient alpha=nu/Vth; the explicit final thermal-speed multiplication restores the physical loss nu*F. [m^-1].
+        Constraints: Finite 3-D.
+    total_distribution : real array-like, shape [nvr,nvx,nx]
+        The total distribution. [m^-3].
+        Constraints: Finite 3-D.
+    elastic_source_sum : real array-like, shape [nvr,nvx,nx]
+        The elastic source sum. Supply the normalized spatial source Q/Vth, not a physical F/s source. [m^-4 (F/m)].
+        Constraints: Finite 3-D.
+    wall_source_sum : real array-like, shape [nvr,nvx,nx]
+        The wall source sum. Supply the normalized spatial source Q/Vth, not a physical F/s source. [m^-4 (F/m)].
+        Constraints: Finite 3-D.
+
+    Returns
+    -------
+    rhs : float64 array, shape [nvr,nvx,nx]
+        Physical distribution-rate RHS; one Vth multiplication converts every normalized spatial balance term from F/m to F/s. [m^-3 s^-1 (F/s)].
+        Constraints: Finite.
+
+    Raises
+    ------
+    ValueError
+        Raises ValueError when the thermal speed is not finite and positive, any field is non-finite, or the fields do not share one common 3-D shape. Raises ValueError if finite inputs overflow to a non-finite RHS. Not applicable. Never returned; a rejected call produces no result.
+
+    See Also
+    --------
+    scirel.kinetic.assemble_neutral_upwind_transport_coefficients : Related neutral-transport operation.
+
+    Notes
+    -----
+        The signed sum: rhs = Vth * (coeff_source + charge_exchange_source_sum - collision_frequency * total_distribution + elastic_source_sum + wall_source_sum).
+    thermal speed finite and positive; all six fields finite 3-D arrays with one common shape
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from scirel.kinetic import assemble_neutral_boltzmann_rhs
+    >>> ones = np.ones((1, 1, 1))
+    >>> r = assemble_neutral_boltzmann_rhs(5000.0, ones, ones, ones, ones, ones, ones)
+    ... # Vth * (1 + 1 - 1*1 + 1 + 1) = 5000 * 3
+    >>> assert r['rhs'][0, 0, 0] == 15000.0
+    >>> try:
+    ...     assemble_neutral_boltzmann_rhs(float('nan'), ones, ones, ones, ones, ones, ones)
+    ... except ValueError as error:
+    ...     assert 'positive and finite' in str(error)
+    ... else:
+    ...     raise AssertionError('NaN thermal speed must be rejected')
     """
     try:
         raw_speed = np.asarray(thermal_speed_m_s)

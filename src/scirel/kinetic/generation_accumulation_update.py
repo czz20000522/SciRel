@@ -80,11 +80,54 @@ def _ordered_totals(distributions, densities):
 
 
 def update_neutral_generation_accumulation(state, generation_distribution, generation_density_m3):
-    """Append one source-order generation and preserve source-defined signed fields.
+    r"""Append one generation to the accumulated state: accumulates distribution, density, per-generation stacks, and the completed generation index.
 
-    Moment-compensated Maxwellian fields are allowed to contain signed cells in
-    the source contract.  The independently reduced density remains the
-    physical nonnegative quantity used by the generation stopping rule.
+    Parameters
+    ----------
+    state : mapping of arrays and an integer, shape mapping or None
+        The previous accumulation state (or None for first call). [source-discrete].
+        Constraints: When supplied, must contain generation_distributions [ngen,nvr,nvx,nx], generation_density_m3 [ngen,nx], total_distribution [nvr,nvx,nx], total_density_m3 [nx], and a zero-based integer completed_generation_index equal to ngen-1. Arrays must be finite and aligned; densities nonnegative; totals must equal the ordered sum of their stacks.
+    generation_distribution : real array-like, shape [nvr,nvx,nx]
+        The current generation distribution. [source-discrete].
+        Constraints: A finite three-dimensional array.
+    generation_density_m3 : real array-like, shape [nx]
+        The current generation density profile. [m^-3].
+        Constraints: A finite nonnegative one-dimensional array aligned to the distribution spatial axis.
+
+    Returns
+    -------
+    result : mapping of arrays and an integer, shape mapping
+        A mapping with total_distribution, total_density_m3, generation_distributions (stacked), generation_density_m3 (stacked), and completed_generation_index. [source-discrete].
+        Constraints: All arrays finite; total_distribution and total_density_m3 equal ordered sums of their generation stacks; density arrays nonnegative; completed_generation_index is the 0-based index of the last appended generation.
+
+    Raises
+    ------
+    ValueError
+        Raises ValueError for non-real, non-finite or misaligned generation fields, negative density, or an incomplete or internally inconsistent supplied state. Raises ValueError if adding finite generations overflows an accumulated total. Not applicable; this relation appends one generation and does not iterate. Never returned; a rejected call produces no result.
+
+    See Also
+    --------
+    scirel.kinetic.propagate_neutral_generation : Related neutral-transport operation.
+
+    Notes
+    -----
+        Append one generation to the accumulated state: accumulates distribution, density, per-generation stacks, and the completed generation index.
+    finite real 3-D generation distribution (signed cells allowed), aligned finite nonnegative 1-D generation density, and either None or a complete finite internally consistent prior accumulation state
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from scirel.kinetic import update_neutral_generation_accumulation
+    >>> dist1 = np.ones((1, 1, 2))
+    >>> dens1 = np.array([1.0, 2.0])
+    >>> state1 = update_neutral_generation_accumulation(None, dist1, dens1)
+    >>> assert state1['completed_generation_index'] == 0
+    >>> dist2 = np.ones((1, 1, 2)) * 2
+    >>> dens2 = np.array([2.0, 4.0])
+    >>> state2 = update_neutral_generation_accumulation(state1, dist2, dens2)
+    >>> assert state2['completed_generation_index'] == 1
+    >>> np.testing.assert_array_equal(state2['total_distribution'], dist1 + dist2)
+    >>> np.testing.assert_array_equal(state2['total_density_m3'], dens1 + dens2)
     """
     distribution = _finite_real_array(generation_distribution, "generation_distribution")
     density = _finite_real_array(generation_density_m3, "generation_density_m3")

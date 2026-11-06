@@ -67,35 +67,68 @@ def _incoming_flux(shape, axial, volume, speed):
 def normalize_incoming_neutral_boundary(
     boundary_shape, vx, cylindrical_volume, thermal_speed_m_s, target_flux_m2_s
 ):
-    """Scale the positive-vx source shape to the source desired incoming flux.
+    r"""Scale a caller-owned H or H2 boundary shape distribution on the positive axial-velocity half space to a requested incoming neutral particle flux, returning the scaled boundary distribution, the applied scale, and the pre-scale flux integral.
 
     Parameters
     ----------
-    boundary_shape
-        The caller's boundary shape as a finite nonnegative ``(nvr, nvx)``
-        array (axial velocity on the second axis).
-    vx
-        The axial velocity axis, a finite one-dimensional ``(nvx,)`` array
-        containing at least one positive node.
-    cylindrical_volume
-        The cylindrical quadrature weight, finite, shape ``(nvr, nvx)``.
-    thermal_speed_m_s
-        The positive thermal speed in ``m/s`` (the :doc:`thermal speed scale
-        <thermal_speed_scale>` of the species).
-    target_flux_m2_s
-        The requested incoming particle flux in ``m^-2 s^-1`` (finite).
+    boundary_shape : real array-like, shape [nvr,nvx]
+        The caller's boundary shape. [source-normalized].
+        Constraints: Finite nonnegative real numeric values; axial velocity on the second axis. Boolean, string and complex coercions are rejected.
+    vx : real array-like, shape [nvx]
+        The axial velocity axis. [source-normalized].
+        Constraints: Finite real numeric one-dimensional axis; must contain at least one positive node. Boolean, string and complex coercions are rejected.
+    cylindrical_volume : real array-like, shape [nvr,nvx]
+        The cylindrical quadrature weight. [source-normalized measure].
+        Constraints: Finite nonnegative real numeric values, same shape as the boundary shape. Boolean, string and complex coercions are rejected.
+    thermal_speed_m_s : real scalar, shape scalar
+        The species thermal speed. [m/s].
+        Constraints: Finite strictly positive real numeric scalar; booleans, strings, complex values and nonscalars are rejected.
+    target_flux_m2_s : real scalar, shape scalar
+        The requested incoming particle flux. [m^-2 s^-1].
+        Constraints: Finite real numeric scalar of any sign, including zero; booleans, strings, complex values and nonscalars are rejected.
 
     Returns
     -------
-    tuple
-        ``(incoming_boundary, scale, incoming_flux)``: the scaled boundary
-        distribution (zero on the nonpositive-vx half), the applied positive
-        scale, and the pre-scale positive-half flux integral.
+    incoming_boundary : float64 array, shape [nvr,nvx]
+        The scaled boundary distribution. [source-normalized].
+        Constraints: Finite; zero on the nonpositive-vx half; the scaled shape on the positive half.
+    scale : float scalar, shape scalar
+        The applied scalar scale. [dimensionless].
+        Constraints: Finite and nonnegative; positive for a nonzero target flux and exactly zero for a zero target.
+    incoming_flux : float scalar, shape scalar
+        The pre-scale positive-half flux integral. [m^-2 s^-1].
+        Constraints: Finite and positive.
 
     Raises
     ------
     ValueError
-        If any contract above is violated.
+        Raises ValueError for boolean, string, complex or nonscalar values outside the declared shapes, non-finite or negative shape/volume, non-finite vx or scalars, nonpositive thermal speed, no positive vx node, or nonpositive positive-half flux. Raises ValueError when the evaluated flux, scale or boundary is non-finite, or a nonzero target's scale underflows to zero; no fallback is selected. Not applicable. Never returned; a rejected call produces no result.
+
+    See Also
+    --------
+    scirel.kinetic.normalize_spatial_source_shape : Related neutral-transport operation.
+
+    Notes
+    -----
+        Only the positive-vx half enters the integral; the returned distribution is exactly zero on the nonpositive half; the scale is the abs(target)/flux form, so negative and positive targets of equal magnitude yield the same scale and a zero target yields zero scale and boundary
+    finite nonnegative (nvr,nvx) shape and volume, finite positive thermal speed, finite target flux, at least one positive vx node, strictly positive positive-half flux; evaluated outputs must be finite
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from scirel.kinetic import normalize_incoming_neutral_boundary
+    >>> shape = np.ones((2, 3))
+    >>> volume = np.ones((2, 3))
+    >>> vx = np.array([-1.0, 0.5, 1.0])
+    >>> result, scale, initial = normalize_incoming_neutral_boundary(shape, vx, volume, 2.0, -12.0)
+    >>> assert initial == 6.0 and scale == 2.0
+    >>> assert np.all(result[:, 0] == 0.0)
+    >>> try:
+    ...     normalize_incoming_neutral_boundary(shape, np.array([-1.0, -0.5, 0.0]), volume, 2.0, 12.0)
+    ... except ValueError as error:
+    ...     assert 'positive incoming half' in str(error)
+    ... else:
+    ...     raise AssertionError('a mesh without a positive-vx node must be rejected')
     """
     shape = _real_array(boundary_shape, "boundary_shape")
     axial = _real_array(vx, "vx")

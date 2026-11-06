@@ -7237,7 +7237,7 @@
   },
   {
    "asset_id": "scirel.kinetic.atomic-alpha-contraction",
-   "source_sha256": "0f57e79f1343586db0cacbafcd88513a530bf4dbfdc133b4d7fe352b8e8a223b",
+   "source_sha256": "d40f40e723e7668bd64b94837f935a5655e1be98ee1f9a0653c82b8c77b7bf2e",
    "summary": "逐空间单元将原子氢四类已组装 SIG 矩阵与 Fortran 展平的输入分布收缩为 Alpha 碰撞频率。",
    "definition": "逐 k 的矩阵–向量收缩：每个族将一个已组装的 (N,N) SIG 矩阵乘以一个输入分布按 Fortran 顺序展平到 (nvr*nvx,) Work 缓冲后的向量，并把乘积还原到 (nvr,nvx) 切片。CX 和 H-P 族携带按单元以 ni[k] 缩放的 fi_hat；H-H2 和 H-H 族携带裸分布 fH2 和 fH。",
    "model": "所声明合法域上逐 k 的原子四族 SIG 矩阵收缩。",
@@ -7258,7 +7258,7 @@
     },
     {
      "name": "SIG_H_H",
-     "description": "H–H 黏性分支矩阵，含 mu 能量因子及 /8。",
+     "description": "H–H 黏性分支矩阵，含 mu 能量因子及 Boltzmann 3/8 前因子。",
      "constraints": "有限 N×N 方阵，N=nvr*nvx；按 Fortran 速度布局；保留给定符号。",
      "dtype": "实数类数组"
     },

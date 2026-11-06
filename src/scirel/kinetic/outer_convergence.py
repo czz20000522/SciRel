@@ -41,7 +41,53 @@ def evaluate_outer_convergence(
     current_density_m3,
     truncate,
 ):
-    """Evaluate the outer-pass stop condition."""
+    r"""Evaluate the top-level outer-pass convergence: compares molecular density before/after an outer pass, re-enters while relative change exceeds truncate.
+
+    Parameters
+    ----------
+    previous_density_m3 : real array-like, shape [nx]
+        The density profile before the pass. [m^-3].
+        Constraints: Finite, nonnegative, one-dimensional.
+    current_density_m3 : real array-like, shape [nx]
+        The density profile after the pass. [m^-3].
+        Constraints: Finite, nonnegative, one-dimensional, same shape as previous.
+    truncate : real scalar, shape scalar
+        The convergence threshold. [dimensionless].
+        Constraints: Finite and strictly positive.
+
+    Returns
+    -------
+    result : mapping of scalars and a boolean, shape mapping
+        A mapping with seed_error (relative change), reentry_threshold (truncate), should_reiterate (bool), and reason ('reiterate' or 'converged'). [mixed (dimensionless ratio, boolean, string)].
+        Constraints: Finite seed_error; reentry_threshold = truncate; should_reiterate is a Python bool.
+
+    Raises
+    ------
+    ValueError
+        Raises ValueError for empty, non-real, non-finite, negative or misaligned density vectors, nonpositive current maximum, or non-real/non-finite/nonpositive truncate. Raises ValueError if finite inputs overflow seed_error. Not applicable; this relation reports convergence, it does not iterate. Never returned; a rejected call produces no result.
+
+    See Also
+    --------
+    scirel.kinetic.evaluate_neutral_outer_seed_convergence : Related neutral-transport operation.
+
+    Notes
+    -----
+        Evaluate the top-level outer-pass convergence: compares molecular density before/after an outer pass, re-enters while relative change exceeds truncate.
+    nonempty aligned finite nonnegative real 1-D density arrays, positive current maximum, finite positive real truncate, and representable finite seed_error
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from scirel.kinetic import evaluate_outer_convergence
+    >>> prev = np.array([100.0])
+    >>> curr = np.array([100.05])
+    >>> result = evaluate_outer_convergence(prev, curr, truncate=0.1)
+    >>> assert result['should_reiterate'] is False
+    >>> assert result['reentry_threshold'] == 0.1
+    >>> curr2 = np.array([120.0])
+    >>> result2 = evaluate_outer_convergence(prev, curr2, truncate=0.1)
+    >>> assert result2['should_reiterate'] is True
+    """
 
     previous = _finite_real(previous_density_m3, "previous_density_m3")
     current = _finite_real(current_density_m3, "current_density_m3")

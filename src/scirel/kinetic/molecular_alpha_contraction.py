@@ -65,28 +65,86 @@ def _batched_matrix_vectors(matrix, field):
 def contract_molecular_hydrogen_alpha_frequencies(
     SIG_CX, SIG_H2_H, SIG_H2_P, fH, fHp_hat, fi_hat, n, nHP, ni_correct=False
 ):
-    """Contract the molecular three-family SIG matrices to Alpha frequencies.
+    r"""Per spatial cell, contract the molecular three-family assembled SIG collision matrices (CX, H2-H, H2-H+) with the Fortran-order flattened predecessor distributions to three (nvr,nvx,nx) Alpha collision-frequency fields; ni_correct selects the source's max(n - nHP, 0) ion-density correction.
 
     Parameters
     ----------
-    SIG_CX : (N, N) array, H2 + H2+ charge-exchange collision matrix.
-    SIG_H2_H : (N, N) array, H2-H elastic collision matrix.
-    SIG_H2_P : (N, N) array, H2-H+ elastic collision matrix.
-    fH : (nvr, nvx, nx) array, atomic-H neutral velocity distribution.
-    fHp_hat : (nvr, nvx, nx) array, H2+ molecular-ion Maxwellian seed
-        (drift vxi, temperature THP).
-    fi_hat : (nvr, nvx, nx) array, H+ proton Maxwellian seed
-        (drift vxi, temperature Ti).
-    n : (nx,) array, electron density profile (source ``mesh.ne``), used as the
-        ion density ``ni`` unless ``ni_correct`` is set.
-    nHP : (nx,) array, H2+ molecular-ion density profile (m^-3).
-    ni_correct : bool, if True use ``ni = maximum((n - nHP), 0)`` instead of
-        ``ni = n`` (kinetic_h2.py:1222-1223).
+    SIG_CX : real array-like, shape [N, N] with N = nvr*nvx
+        Assembled H2 + H2+ charge-exchange collision matrix from the molecular three-family assembly: sigma_cx_hh evaluated on the velocity-carrier energy grid, multiplied by the relative speed and the (Vr2pidVr*dVx) quadrature weight, laid out on the Fortran-order flattened (nvr*nvx) velocity carrier. [source-discrete assembled collision-matrix measure (cross section x relative speed x velocity-space weight); no implicit conversion].
+        Constraints: Finite; must be 2-D square with order exactly nvr*nvx. The typical assembly yields a nonnegative SIG_CX, but the contraction preserves whatever sign pattern the caller supplies.
+    SIG_H2_H : real array-like, shape [N, N] with N = nvr*nvx
+        Assembled H2-H elastic collision matrix: sigma_el_h_hh with weight Vr2pidVr*dVx times the signed vx_vx factor, on the same Fortran-order velocity carrier. [source-discrete assembled collision-matrix measure (cross section x relative speed x velocity-space weight); no implicit conversion].
+        Constraints: Finite; 2-D square with order exactly nvr*nvx. Contains bounded negative cells from the signed vx_vx factor; reproduced as-is.
+    SIG_H2_P : real array-like, shape [N, N] with N = nvr*nvx
+        Assembled H2-H+ elastic collision matrix: sigma_el_p_h (two energy branches) with weight Vr2pidVr*dVx times the signed vx_vx factor, on the same Fortran-order velocity carrier. [source-discrete assembled collision-matrix measure (cross section x relative speed x velocity-space weight); no implicit conversion].
+        Constraints: Finite; 2-D square with order exactly nvr*nvx. Contains bounded negative cells from the signed vx_vx factor; reproduced as-is.
+    fH : real array-like, shape [nvr,nvx,nx]
+        Atomic neutral velocity distribution on the cylindrical (vr,vx) mesh, the predecessor carried unchanged into the Alpha_H2_H contraction. [source-discrete distribution density].
+        Constraints: Finite; shape (nvr,nvx,nx) exactly; its leading axes define N = nvr*nvx for every SIG matrix.
+    fHp_hat : real array-like, shape [nvr,nvx,nx]
+        H2+ molecular-ion Maxwellian seed distribution on the cylindrical (vr,vx) mesh (drift vxi, temperature THP); scaled cell-wise by nHP[k] inside the Alpha_CX contraction. [source-discrete normalized distribution density].
+        Constraints: Finite; shape (nvr,nvx,nx) exactly.
+    fi_hat : real array-like, shape [nvr,nvx,nx]
+        H+ proton Maxwellian seed distribution on the cylindrical (vr,vx) mesh (drift vxi, temperature Ti); scaled cell-wise by ni[k] inside the Alpha_H2_P contraction. [source-discrete normalized distribution density].
+        Constraints: Finite; shape (nvr,nvx,nx) exactly.
+    n : real array-like, shape [nx]
+        Electron density profile (source mesh.ne), used as the ion density ni in the Alpha_H2_P contraction unless ni_correct is set. [m^-3].
+        Constraints: Finite; 1-D with size nx. Negative or zero entries are not rejected at runtime: the contraction uses each value as given.
+    nHP : real array-like, shape [nx]
+        H2+ molecular-ion density profile scaling the fHp_hat carrier in the Alpha_CX contraction and entering the ni_correct density correction. [m^-3].
+        Constraints: Finite; 1-D with size nx. Negative or zero entries are not rejected at runtime.
+    ni_correct : boolean scalar, shape scalar
+        Branch selector for the source's ion-density correction: when set, ni = max(n - nHP, 0) instead of ni = n (kinetic_h2.py:1221-1223). [dimensionless].
+        Constraints: Truthiness selects the corrected-density branch; both branches are exercised by the maintained tests.
+        Default: False.
 
     Returns
     -------
-    dict with ``Alpha_CX``, ``Alpha_H2_H``, ``Alpha_H2_P``, each
-    ``(nvr, nvx, nx)``.
+    Alpha_CX : float64 array, shape [nvr,nvx,nx]
+        H2 + H2+ charge-exchange collision-frequency field: SIG_CX contracted with the Fortran-order flattened (fHp_hat*nHP) carrier, one (nvr,nvx) slice per spatial cell. [m^-1 (subject to the caller's assembled SIG measure; no implicit conversion)].
+        Constraints: Finite (fail closed otherwise); nonnegative wherever SIG_CX is nonnegative; never clamped.
+    Alpha_H2_H : float64 array, shape [nvr,nvx,nx]
+        H2-H elastic collision-frequency field: SIG_H2_H contracted with the Fortran-order flattened fH slice. [m^-1 (subject to the caller's assembled SIG measure; no implicit conversion)].
+        Constraints: Finite (fail closed otherwise); bounded negative cells inherited from the signed vx_vx SIG factor are reproduced as-is, never clamped.
+    Alpha_H2_P : float64 array, shape [nvr,nvx,nx]
+        H2-H+ elastic collision-frequency field: SIG_H2_P contracted with the Fortran-order flattened (fi_hat*ni) carrier, ni = n or max(n - nHP, 0) per the ni_correct branch. [m^-1 (subject to the caller's assembled SIG measure; no implicit conversion)].
+        Constraints: Finite (fail closed otherwise); bounded negative cells inherited from the signed vx_vx SIG factor are reproduced as-is, never clamped.
+
+    Raises
+    ------
+    ValueError
+        Raises ValueError when a SIG matrix is not 2-D square, when any SIG order differs from the nvr*nvx carrier, when any distribution is not (nvr,nvx,nx), when n or nHP is not 1-D of size nx, or when any input contains a non-finite value. Raises ValueError if any contracted family produces a non-finite array; no partial results are returned. Not applicable. Never returned.
+
+    See Also
+    --------
+    scirel.kinetic.contract_atomic_hydrogen_alpha_frequencies : Related neutral-transport operation.
+
+    Notes
+    -----
+        The per-k matrix-vector contraction: each family multiplies one assembled (N,N) SIG matrix by the Fortran-order flattening of one predecessor distribution carried on the (nvr*nvx,) Work buffer and restores the product to the (nvr,nvx) slice. The CX family carries fHp_hat (the H2+ Maxwellian seeded with drift vxi and temperature THP) scaled cell-wise by nHP[k]; the H2-H family carries the bare atomic distribution fH; the H2-P family carries the proton seed fi_hat scaled by ni, where ni = n or, when ni_correct is set, ni = max(n - nHP, 0) cell-wise.
+    finite aligned inputs of the declared shapes; negative or zero densities are not rejected at runtime -- every finite density profile is contracted as given (the ni_correct branch clamps n - nHP at zero cell-wise, which is a source-defined density correction, not a positivity gate); bounded negative output cells inherited from the signed elastic SIG families (vx_vx factors) are reproduced as-is, never clamped
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from scirel.kinetic import contract_molecular_hydrogen_alpha_frequencies
+    >>> nvr, nvx, nx = 2, 3, 2
+    >>> N = nvr * nvx
+    >>> fH = np.ones((nvr, nvx, nx))
+    >>> fHp_hat = np.ones((nvr, nvx, nx))
+    >>> fi_hat = np.ones((nvr, nvx, nx))
+    >>> n = np.full(nx, 1e18)
+    >>> nHP = np.full(nx, 4e17)
+    >>> result = contract_molecular_hydrogen_alpha_frequencies(
+    ...     np.eye(N), np.eye(N), np.eye(N), fH, fHp_hat, fi_hat, n, nHP,
+    ... )
+    >>> assert set(result) == {"Alpha_CX", "Alpha_H2_H", "Alpha_H2_P"}
+    >>> np.testing.assert_array_equal(result["Alpha_CX"], fHp_hat * 4e17)
+    >>> np.testing.assert_array_equal(result["Alpha_H2_P"], fi_hat * 1e18)
+    >>> corrected = contract_molecular_hydrogen_alpha_frequencies(
+    ...     np.eye(N), np.eye(N), np.eye(N), fH, fHp_hat, fi_hat, n, nHP, ni_correct=True,
+    ... )
+    >>> np.testing.assert_array_equal(corrected["Alpha_H2_P"], fi_hat * 6e17)
     """
     SIG_CX = _real_array(SIG_CX, "SIG_CX")
     SIG_H2_H = _real_array(SIG_H2_H, "SIG_H2_H")

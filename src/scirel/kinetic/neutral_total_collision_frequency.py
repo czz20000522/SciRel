@@ -34,11 +34,69 @@ def assemble_neutral_total_collision_frequency(
     charge_exchange_frequency_m_inv=None,
     charge_exchange_enabled=True,
 ):
-    """Return normalized CX + base + elastic + finite-pipe wall loss.
+    r"""Assemble the inverse-length neutral total-loss coefficient alpha=nu/Vth from optional charge exchange, base and elastic losses, and wall loss 2*u_r/D on a normalized cylindrical velocity grid.
 
-    ``vr`` and ``vx`` are dimensionless ``u=v/Vth``. All collision
-    coefficients are physical frequencies divided by that same caller Vth;
-    the wall coefficient is ``2*u_r/D`` in m^-1. No speed conversion occurs.
+    Parameters
+    ----------
+    vr : real array-like, shape [nvr]
+        The radial velocity axis. [dimensionless (u=v/Vth)].
+        Constraints: Finite, strictly positive nodes.
+    vx : real array-like, shape [nvx]
+        The axial velocity axis. [dimensionless (u=v/Vth)].
+        Constraints: Finite.
+    base_loss_frequency_m_inv : real array-like, shape [nx]
+        The base ionization/dissociation loss profile. This is the physical frequency divided by the same caller Vth used to normalize vr and vx. [m^-1].
+        Constraints: Finite and nonnegative.
+    elastic_frequency_m_inv : real array-like, shape [nx]
+        The elastic frequency profile. This is the physical frequency divided by the same caller Vth used to normalize vr and vx. [m^-1].
+        Constraints: Finite and nonnegative, same shape as the base loss.
+    pipe_diameter_m : real array-like, shape [nx]
+        The pipe diameter profile. [m].
+        Constraints: Finite and nonnegative; zero diameter cells get zero wall loss.
+    charge_exchange_frequency_m_inv : real array-like, shape [nvr,nvx,nx]
+        The optional CX frequency field. This is the physical frequency divided by the same caller Vth used to normalize vr and vx. [m^-1].
+        Constraints: When enabled: required, finite and nonnegative. When disabled: ignored even if supplied.
+        Default: None.
+    charge_exchange_enabled : boolean scalar, shape scalar
+        Whether the CX contribution is included. [dimensionless].
+        Constraints: Whether the CX contribution is included.
+        Default: True.
+
+    Returns
+    -------
+    total_frequency_m_inv : float64 array, shape [nvr,nvx,nx]
+        Total inverse-length loss coefficient alpha=nu/Vth for the spatial advance; multiply by the caller Vth only when a physical frequency is needed. [m^-1].
+        Constraints: Finite; nonnegative on the declared domain (all inputs nonnegative).
+
+    Raises
+    ------
+    ValueError
+        Raises ValueError when the axes/profiles violate the real-value, finiteness, nonnegativity or alignment contract, when charge_exchange_enabled is not boolean, or when enabled charge exchange lacks its explicit field. Raises ValueError when the evaluation produces a non-finite result where the contract demands finiteness; no fallback is selected. Not applicable. Never returned; a rejected call produces no result.
+
+    See Also
+    --------
+    scirel.kinetic.sum_elastic_frequency_channels : Related neutral-transport operation.
+
+    Notes
+    -----
+        The assembly order (base + elastic + wall, then + CX when enabled); zero pipe diameter yields zero wall loss in those cells (the declared semantics, not an infinite-pipe limit); enabling charge exchange without a field fails closed
+    finite one-dimensional axes with positive radial nodes; finite nonnegative base/elastic/diameter profiles of one common spatial shape; CX field (when enabled) finite nonnegative (nvr,nvx,nx)
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from scirel.kinetic import assemble_neutral_total_collision_frequency
+    >>> result = assemble_neutral_total_collision_frequency([1.0, 2.0], [-1.0, 1.0], [3.0, 4.0], [5.0, 6.0], [2.0, 0.0], np.ones((2, 2, 2)))
+    >>> np.testing.assert_allclose(result[:, :, 0], [[10.0, 10.0], [11.0, 11.0]])
+    >>> np.testing.assert_allclose(result[:, :, 1], [[11.0, 11.0], [11.0, 11.0]])
+    >>> disabled = assemble_neutral_total_collision_frequency([1.0, 2.0], [-1.0, 1.0], [3.0, 4.0], [5.0, 6.0], [2.0, 0.0], charge_exchange_enabled=False)
+    >>> np.testing.assert_allclose(disabled[:, :, 0], [[9.0, 9.0], [10.0, 10.0]])
+    >>> try:
+    ...     assemble_neutral_total_collision_frequency([1.0], [1.0], [1.0], [1.0], [0.0])
+    ... except ValueError as error:
+    ...     assert 'charge exchange' in str(error)
+    ... else:
+    ...     raise AssertionError('enabled CX without a field must fail closed')
     """
     if not isinstance(charge_exchange_enabled, (bool, np.bool_)):
         raise ValueError("charge_exchange_enabled must be a boolean scalar")

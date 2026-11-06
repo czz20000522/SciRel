@@ -28,11 +28,54 @@ def _real_array(value, name):
 def reduce_molecular_scattered_sources(
     wall_source_distribution, charge_exchange_source_distribution, elastic_source_distribution
 ):
-    """Return normalized spatial ``Swall + Beta_CX + OmegaM`` in F/m.
+    r"""The source-order sum Swall + Beta_CX + OmegaM of the molecular wall, charge-exchange and elastic scattered-generation normalized spatial source distributions (Q/Vth, in F/m) on one velocity-space mesh, preserving signed values.
 
-    All inputs use one common dimensionless u=v/Vth velocity grid and are
-    physical distribution-rate sources divided by that Vth. Signed cells
-    and the declared addition order are retained.
+    Parameters
+    ----------
+    wall_source_distribution : real array-like, shape [nvr,nvx,nx]
+        The wall scattered source. [m^-4 (F/m)].
+        Constraints: A finite three-dimensional field; signed values preserved.
+    charge_exchange_source_distribution : real array-like, shape [nvr,nvx,nx]
+        The CX scattered source. [m^-4 (F/m)].
+        Constraints: A finite three-dimensional field aligned to the wall field.
+    elastic_source_distribution : real array-like, shape [nvr,nvx,nx]
+        The elastic scattered source. [m^-4 (F/m)].
+        Constraints: A finite three-dimensional field aligned to the wall field.
+
+    Returns
+    -------
+    total_source : float64 array, shape [nvr,nvx,nx]
+        The aggregated scattered source. [m^-4 (F/m)].
+        Constraints: The pointwise sum in the declared order; finite; signed values preserved.
+
+    Raises
+    ------
+    ValueError
+        Raises ValueError for non-real/boolean/string/complex or nonfinite source values, or when the three sources are not aligned 3-D arrays. Raises ValueError when the signed aggregate is not finite; no clipping, channel drop or fallback is applied. Not applicable; the reduction is a direct pointwise sum. Never returned; a rejected call produces no partial array.
+
+    See Also
+    --------
+    scirel.kinetic.reduce_atomic_scattered_sources : Related neutral-transport operation.
+
+    Notes
+    -----
+        Plain pointwise addition in the order wall, CX, elastic; no clamping of signed values
+    three finite aligned three-dimensional fields; signed values preserved
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from scirel.kinetic import reduce_molecular_scattered_sources
+    >>> rng = np.random.default_rng(31)
+    >>> wall, cx, elastic = (rng.random((2, 3, 4)) for _ in range(3))
+    >>> result = reduce_molecular_scattered_sources(wall, cx, elastic)
+    >>> np.testing.assert_array_equal(result, wall + cx + elastic)
+    >>> try:
+    ...     reduce_molecular_scattered_sources(wall, cx, np.ones((2, 3, 5)))
+    ... except ValueError as error:
+    ...     assert 'finite aligned 3-D' in str(error)
+    ... else:
+    ...     raise AssertionError('a misaligned field must be rejected')
     """
     fields = (
         ("wall_source_distribution", wall_source_distribution),

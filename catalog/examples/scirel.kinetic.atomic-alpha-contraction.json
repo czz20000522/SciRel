@@ -57,7 +57,7 @@
   },
   {
    "name": "SIG_H_H",
-   "description": "Assembled H-H elastic (viscosity-branch) collision matrix: sigma_el_h_h with the mu energy factor and the source's /8 constant, weight Vr2pidVr*dVx, on the same Fortran-order velocity carrier.",
+   "description": "Assembled H-H elastic (viscosity-branch) collision matrix: sigma_el_h_h with the mu energy factor and the Boltzmann 3/8 constant, weight Vr2pidVr*dVx, on the same Fortran-order velocity carrier.",
    "units": "source-discrete assembled collision-matrix measure (cross section x relative speed x velocity-space weight); no implicit conversion",
    "shape": "[N, N] with N = nvr*nvx",
    "dtype": "real array-like",

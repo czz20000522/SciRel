@@ -58,26 +58,50 @@ def _thermal_speed_ratio(temperature, mass):
 
 
 def compute_thermal_speed_m_s(temperature_ev, mass_amu):
-    """Return ``{'thermal_speed_m_s': v}`` with ``v = sqrt(2 e T / m)``.
+    r"""The explicit second-moment thermal speed sqrt(2 e T / m) of a neutral species from its temperature in eV and a mass factor relative to the hydrogen mass, using frozen constants (hydrogen mass 1.6726231e-27 kg, elementary charge 1.602177e-19 J/eV).
 
     Parameters
     ----------
-    temperature_ev
-        Temperature in eV: a finite strictly positive scalar.
-    mass_amu
-        Factor relative to the saved hydrogen mass, despite the historical
-        parameter name: a finite strictly positive real numeric scalar.
+    temperature_ev : real scalar, shape scalar
+        Temperature of the species. [eV].
+        Constraints: A finite strictly positive real numeric scalar; booleans, strings, complex values and nonscalars are rejected.
+    mass_amu : real scalar, shape scalar
+        Particle mass factor relative to the hydrogen mass constant, despite the historical parameter name. [multiples of 1.6726231e-27 kg].
+        Constraints: A finite strictly positive real numeric scalar; booleans, strings, complex values and nonscalars are rejected.
 
     Returns
     -------
-    dict
-        ``{'thermal_speed_m_s': float}``, finite and strictly positive.
+    result : mapping with one float64 scalar, shape mapping
+        The thermal-speed mapping. [m/s].
+        Constraints: Carries exactly one field thermal_speed_m_s; finite and strictly positive.
 
     Raises
     ------
     ValueError
-        If either scalar is non-finite or nonpositive, or the result is not
-        finite and positive.
+        Raises ValueError for boolean, string, complex or nonscalar inputs, or when temperature_ev or mass_amu is non-finite or nonpositive. Raises ValueError only if the final speed is non-finite or nonpositive. Dangerous intermediate range uses 100-digit Decimal evaluation of the defining relation with exact binary64 inputs before final float rounding. Not applicable. Never returned; a rejected call produces no result.
+
+    See Also
+    --------
+    scirel.kinetic.create_adaptive_neutral_velocity_mesh : Related neutral-transport operation.
+
+    Notes
+    -----
+        v = sqrt(2 * 1.602177e-19 * T_ev / (m_amu * 1.6726231e-27)); the same Vth normalization the moment-reduction and boundary-flux relations consume
+    Both input scalars are finite and strictly positive; the final thermal speed must be finite and positive. Intermediate conversion underflow does not exclude a representable result.
+
+    Examples
+    --------
+    >>> import math
+    >>> from scirel.kinetic import compute_thermal_speed_m_s
+    >>> result = compute_thermal_speed_m_s(1.0, 2.0)
+    >>> assert result['thermal_speed_m_s'] == math.sqrt(2.0 * 1.602177e-19 / (2.0 * 1.6726231e-27))
+    >>> assert compute_thermal_speed_m_s(4.0, 2.0)['thermal_speed_m_s'] == 2.0 * result['thermal_speed_m_s']
+    >>> try:
+    ...     compute_thermal_speed_m_s(0.0, 1.0)
+    ... except ValueError as error:
+    ...     assert 'temperature_ev' in str(error)
+    ... else:
+    ...     raise AssertionError('a nonpositive temperature must be rejected')
     """
     temperature = _real_scalar(temperature_ev, "temperature_ev")
     mass = _real_scalar(mass_amu, "mass_amu")
