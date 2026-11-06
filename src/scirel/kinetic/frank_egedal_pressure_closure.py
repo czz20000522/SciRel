@@ -16,6 +16,10 @@ def _run_composition(inputs, *, asset_loader):
         raise ValueError(
             "params must use canonical pressure scale names; p0 and background_density are not accepted"
         )
+
+    def option(name, default):
+        return params[name] if name in params else default
+
     alpha = params["alpha"] if "alpha" in params else 1.0
     radial = asset_loader("scirel.kinetic.frank_egedal_radial_envelope")(
         inputs.get("psi"),
@@ -24,7 +28,15 @@ def _run_composition(inputs, *, asset_loader):
         alpha=alpha,
     )
     source = asset_loader("scirel.kinetic.frank_egedal_source_projection")(
-        params, spectrum_operator=asset_loader("scirel.kinetic.loss_cone_spectrum")
+        mirror_ratio=option("mirror_ratio", option("turning_b", 2.0)),
+        legendre_terms=option("legendre_terms", 15),
+        legendre_backend=option("legendre_backend", "truncated"),
+        legendre_degrees=option("legendre_degrees", None),
+        legendre_mode_count=option("legendre_mode_count", 6),
+        legendre_spectrum_grid_points=option("legendre_spectrum_grid_points", 256),
+        source_coefficients=option("source_coefficients", None),
+        nbi_pitch_angle_deg=option("nbi_pitch_angle_deg", 45.0),
+        spectrum_operator=asset_loader("scirel.kinetic.loss_cone_spectrum"),
     )
     hot = asset_loader("scirel.kinetic.frank_egedal_hot_ion_moments")(
         inputs.get("B"),

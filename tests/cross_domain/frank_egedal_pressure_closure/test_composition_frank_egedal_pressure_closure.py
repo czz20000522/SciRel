@@ -52,6 +52,13 @@ def test_yaml_declares_the_non_interchangeable_closure_pipeline():
     assert "id: loss_cone_spectrum" in contract
     assert "id: hot_ion_moments" in contract
     assert "from: hot_ion_moments" in contract
+    assert (
+        "inputs: [mirror_ratio, legendre_terms, legendre_backend, legendre_degrees, "
+        "legendre_mode_count, legendre_spectrum_grid_points, source_coefficients, "
+        "nbi_pitch_angle_deg, spectrum_operator]"
+    ) in contract
+    assert "to_input: spectrum_operator" in contract
+    assert "inputs: [params, spectrum_function]" not in contract
     assert "inputs: [psi, psi_axis, psi_edge, alpha]" in contract
     assert (
         "inputs: [psi, radial_shape, hot_parallel_shape, hot_perpendicular_shape, "

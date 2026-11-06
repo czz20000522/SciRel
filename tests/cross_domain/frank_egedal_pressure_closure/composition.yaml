@@ -235,7 +235,7 @@ nodes:
   kind: scientific_function
   callable: scirel.kinetic.frank_egedal_source_projection::project_frank_egedal_source_modes
   asset_ref: scirel.kinetic.frank_egedal_source_projection
-  inputs: [params, spectrum_function]
+  inputs: [mirror_ratio, legendre_terms, legendre_backend, legendre_degrees, legendre_mode_count, legendre_spectrum_grid_points, source_coefficients, nbi_pitch_angle_deg, spectrum_operator]
   outputs: [degrees, source_coefficients, legendre_terms, fractional_mode, xi_tp_mid, degree_source, legendre_backend]
 - id: hot_ion_moments
   name: Frank-Egedal 热离子矩
@@ -263,7 +263,7 @@ edges:
 - from: loss_cone_spectrum_port
   from_output: spectrum_state
   to: source_mode_projection
-  to_input: spectrum_function
+  to_input: spectrum_operator
   data: 损失锥谱 public callable
   condition: source projection needs generated degrees
   transform: callable binding; explicit legendre_degrees may bypass its invocation
