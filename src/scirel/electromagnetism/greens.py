@@ -135,6 +135,13 @@ def compute_greens(rzw, rz_pts):
     --------
     scirel.field.solve_multi_coil_vacuum_field : Field of rectangular coil blocks built from these filaments.
 
+    Notes
+    -----
+    A single ``rzw`` table returns three target-sized arrays. A list of source
+    tables returns three matrices with one source-set axis followed by the
+    target axis. The exact positive-radius self term is rejected rather than
+    assigned a finite-wire value.
+
     Examples
     --------
     >>> import numpy as np
@@ -238,7 +245,53 @@ def _psi_matrix(points, *, max_pairs=1_000_000):
 
 
 def get_gpsi(R, Z):
-    """Return the actual-coordinate ``(target, source)`` flux matrix."""
+    """Return the dense actual-coordinate circular-filament flux matrix.
+
+    Parameters
+    ----------
+    R : real array-like, shape [N_Z,N_R]
+        Cylindrical target/source radii [m]. Must be finite, nonnegative, and
+        have the same shape as ``Z``. Active positive-radius coordinate pairs
+        must be distinct.
+    Z : real array-like, shape [N_Z,N_R]
+        Cylindrical target/source heights [m]. Must be finite and match
+        ``R``. C-order flattening fixes matrix row and column order.
+
+    Returns
+    -------
+    G : ndarray of float64, shape (R.size,R.size)
+        Dense target-row/source-column flux response [Wb/rad/A]. The diagonal is
+        zero by the discrete zero-self convention, and rows or columns with
+        zero-radius sources are zero.
+
+    Raises
+    ------
+    ValueError
+        If ``R`` or ``Z`` is malformed, complex, nonfinite, negative-radius,
+        or contains duplicate active positive-radius nodes.
+    FloatingPointError
+        If any matrix entry is not representable as finite float64.
+
+    See Also
+    --------
+    scirel.electromagnetism.green_response_matrices : Build per-source psi, BR and BZ matrices.
+    scirel.electromagnetism.compute_greens : Evaluate circular-filament responses on arbitrary targets.
+
+    Notes
+    -----
+    This function evaluates the same axisymmetric ideal-filament kernel with
+    the target nodes also serving as sources. The matrix is dense and has
+    quadratic work and storage in ``R.size``. The zero diagonal is a discrete
+    self-response convention, not a finite-wire inductance model.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from scirel.electromagnetism import get_gpsi
+    >>> R,Z=np.meshgrid([.4,.8,1.2],[-.5,0.,.9])
+    >>> G=get_gpsi(R,Z)
+    >>> assert G.shape==(9,9) and np.all(np.diag(G)==0)
+    """
     if np.iscomplexobj(R) or np.iscomplexobj(Z):
         raise ValueError("R,Z must be real coordinate arrays")
     radius, height = np.asarray(R, dtype=float), np.asarray(Z, dtype=float)
@@ -262,7 +315,60 @@ def get_gpsi(R, Z):
 
 
 def green_response_matrices(rz_pts, rzw=None):
-    """Return ``(psi, BR, BZ)`` matrices with shape ``(target, source)``."""
+    """Return ordered circular-filament psi, BR, and BZ response matrices.
+
+    Parameters
+    ----------
+    rz_pts : real array-like, shape (Ntarget,2)
+        Target cylindrical ``(R, Z)`` coordinates [m]. Must be finite with
+        nonnegative radius.
+    rzw : real array-like, shape (Nsource,2) or (Nsource,3), optional
+        Ordered source ``(R, Z)`` coordinates with optional signed weights
+        [m,m,dimensionless]. Rows with a zero radius or zero weight are
+        inactive. If omitted, ``rz_pts`` itself supplies unit-weight sources.
+
+    Returns
+    -------
+    psi : ndarray of float64, shape (Ntarget,Nsource)
+        Flux response indexed by target row and source column [Wb/rad/A].
+        Exact source-target coincidences have zero entries.
+    BR : ndarray of float64, shape (Ntarget,Nsource)
+        Radial-field response indexed by target row and source column [T/A].
+    BZ : ndarray of float64, shape (Ntarget,Nsource)
+        Axial-field response indexed by target row and source column [T/A].
+
+    Raises
+    ------
+    ValueError
+        If target or source tables are malformed, complex, nonfinite, have a
+        negative radius, or an implicit source set has duplicate positive-
+        radius nodes.
+    FloatingPointError
+        If a kernel response is not representable as finite float64.
+
+    See Also
+    --------
+    scirel.electromagnetism.compute_greens : Evaluate aggregate responses on arbitrary targets.
+    scirel.electromagnetism.get_gpsi : Build the dense target-as-source flux matrix.
+
+    Notes
+    -----
+    Each source column is evaluated independently and source weights are
+    applied once. Explicit source rows may repeat because their columns remain
+    independent. The exact self term is set to zero by the discrete convention;
+    this is not a finite-conductor self-field model.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from scirel.electromagnetism import green_response_matrices
+    >>> targets=np.array([[0.,.2],[.8,-.3]])
+    >>> sources=np.array([[.4,.1,1.],[1.2,-.7,-2.],[.6,.9,.5]])
+    >>> gpsi,gbr,gbz=green_response_matrices(targets,sources)
+    >>> assert gpsi.shape==(2,3) and np.all(gpsi[0]==0.)
+    >>> field_bz=gbz@np.array([3.,-4.,2.])
+    >>> assert np.all(np.isfinite(field_bz))
+    """
     if np.iscomplexobj(rz_pts) or (rzw is not None and np.iscomplexobj(rzw)):
         raise ValueError("target and source coordinates/weights must be real")
     targets = _as_real_table(rz_pts, 2, "rz_pts")
