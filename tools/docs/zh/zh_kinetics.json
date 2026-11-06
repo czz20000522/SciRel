@@ -162,9 +162,9 @@
   },
   {
    "asset_id": "scirel.geometry.axisymmetric-equilibrium-grid-mapping",
-   "source_sha256": "f3ef7022bf1a1ab7f24c09d7aa89b3fa5f71522fb45cfcf7db2868cc6c34f1ec",
-   "summary": "将轴对称 R–Z 平衡映射以张量积线性插值重构到笛卡尔求解网格，域外查询点裁到闭盒边界并报告覆盖与裁剪计数。",
-   "definition": "求各笛卡尔点半径与轴坐标，逐坐标裁到闭映射盒，插值各场，再将径向场分解成横向笛卡尔分量；标记裁剪前位于闭盒内的点。",
+   "source_sha256": "9d4d54aa4aee6b2584d7546d0605f97a5b36fb587017e5791164c00d70642214",
+   "summary": "将轴对称 R–Z 平衡映射以张量积线性插值重构到笛卡尔求解网格，域外查询点裁到闭盒边界并报告覆盖与裁剪计数。 顶层返回值是 scirel._result.Result 映射；非冲突字段支持属性读取。",
+   "definition": "求各笛卡尔点半径与轴坐标，逐坐标裁到闭映射盒，插值各场，再将径向场分解成横向笛卡尔分量；标记裁剪前位于闭盒内的点。 完整结果作为同一个 scirel._result.Result 映射返回；映射访问保留，非冲突字段也支持属性读取，不引入嵌套 Result。",
    "model": "轴对称规则 R–Z 网格上的张量积双线性重构，查询坐标独立裁到闭盒边界。",
    "assumptions": [
     "平衡轴对称，只依赖半径和轴坐标，无环向模结构。",
@@ -203,31 +203,31 @@
    "outputs": [
     {
      "name": "magnetic_flux_density_t",
-     "description": "末轴为向量的静磁场。",
+     "description": "返回的 scirel._result.Result 映射字段：末轴为向量的静磁场。",
      "constraints": "处处有限；横向为br×(x,y)/r，轴上未定义处明确置零。",
      "dtype": "双精度浮点（float64）"
     },
     {
      "name": "poloidal_flux_wb_per_rad",
-     "description": "目标网格的每弧度极向磁通。",
+     "description": "返回的 scirel._result.Result 映射字段：目标网格的每弧度极向磁通。",
      "constraints": "有限，在裁后的坐标取值，域外点获得盒面值。",
      "dtype": "双精度浮点（float64）"
     },
     {
      "name": "covered_mask",
-     "description": "裁剪前位于映射轴闭盒内的网格点。",
+     "description": "返回的 scirel._result.Result 映射字段：裁剪前位于映射轴闭盒内的网格点。",
      "constraints": "半径和轴向均在两轴闭区间内；原径向轴通常正，因此r=0通常未覆盖。",
      "dtype": "布尔值（bool）"
     },
     {
      "name": "radially_clamped_point_count",
-     "description": "半径超过外映射半径并被裁到边界的点数。",
+     "description": "返回的 scirel._result.Result 映射字段：半径超过外映射半径并被裁到边界的点数。",
      "constraints": "只统计超过外映射半径的半径，与所声明的关系一致；低于内映射半径的半径同样被裁，但两个裁剪计数都不统计它们。",
      "dtype": "整数（int）"
     },
     {
      "name": "axially_clamped_point_count",
-     "description": "轴坐标位于映射轴范围外并被裁到盒面的点数。",
+     "description": "返回的 scirel._result.Result 映射字段：轴坐标位于映射轴范围外并被裁到盒面的点数。",
      "constraints": "统计低于首点及高于末点。",
      "dtype": "整数（int）"
     }
@@ -256,11 +256,11 @@
     "invalid_input": "非映射、缺所需场、源轴非法/非有限/非递增/少于5点、场非有限或非[Nr,Nz]、目标轴非法/少于2点时ValueError。",
     "runtime_failure": "浮点插值或笛卡尔组装产生非有限极向磁通或静场时抛出 ValueError，包括有限源样本在运算中溢出的情况；不使用回退插值。",
     "nonconvergence": "单次闭式求值，无迭代反馈。",
-    "partial_results": "不返回部分结果。"
+    "partial_results": "失败时不返回 scirel._result.Result 部分映射。"
    },
    "example": {
     "description": "将合成平衡重构到9×9×7网格，检查形状、覆盖点和轴上横向分量。",
-    "expected": "有限 [9,9,7,3] 静场和 [9,9,7] 磁通，560 个覆盖点，两个裁剪计数均为 0，轴上横向场严格为零。"
+    "expected": "有限 [9,9,7,3] 静场和 [9,9,7] 磁通，560 个覆盖点，两个裁剪计数均为 0，轴上横向场严格为零。 返回对象是 scirel._result.Result 映射；非冲突字段也支持属性读取。"
    },
    "verification": {
     "scope": [
@@ -271,7 +271,8 @@
      "有符号柱坐标径向、轴向分量的保留、横向笛卡尔分解及轴上精确零约定。",
      "映射轴、场及目标轴的拒绝门禁，包括有限源样本产生不可表示插值磁通时的拒绝。",
      "通过调用和导入检查确认此关系无分类参数。",
-     "场、磁通、覆盖掩码和两个计数器都与独立重构精确一致。"
+     "场、磁通、覆盖掩码和两个计数器都与独立重构精确一致。",
+     "直接测试验证顶层 scirel._result.Result 映射及属性读取。"
     ],
     "evidence_ceiling": "限于所声明的张量积插值、有符号柱坐标到笛卡尔场分解、覆盖与裁剪计数。绑定测试文件检验独立双线性重构、有符号分量保留，以及不可表示插值磁通的拒绝；合同示例是另一个有界调用。不建立非轴对称或三维平衡、映射盒外推的正确性；本关系采用裁边。",
     "known_limitations": [
@@ -285,9 +286,9 @@
   },
   {
    "asset_id": "scirel.geometry.complex-rectilinear-interpolation",
-   "source_sha256": "3d17782dfee9fc27ed1737769bac94da48110ffcd07889d99e2ba74b9a60d88b",
-   "summary": "在三个严格递增的直角坐标轴上三线性插值复数场，返回几何有效掩码；容差扩展盒外返回 nan+nanj。",
-   "definition": "源值按[Nx,Ny,Nz]排列，按[x,y,z]可分三线性插值。闭盒外扩tol内的点裁到闭盒采样；扩展盒外返回nan+nanj与False。",
+   "source_sha256": "9f3e5a6447f64979b46501353a7793baeb308af25343f1a794cb5d9a79143efe",
+   "summary": "在三个严格递增的直角坐标轴上三线性插值复数场，返回几何有效掩码；容差扩展盒外返回 nan+nanj。 顶层返回值是 scirel._result.Result 映射；非冲突字段支持属性读取。",
+   "definition": "源值按[Nx,Ny,Nz]排列，按[x,y,z]可分三线性插值。闭盒外扩tol内的点裁到闭盒采样；扩展盒外返回nan+nanj与False。 完整结果作为同一个 scirel._result.Result 映射返回；映射访问保留，非冲突字段也支持属性读取，不引入嵌套 Result。",
    "model": "带限复场的分片三线性重构。",
    "assumptions": [
     "各源轴严格递增，至少两个有限点。",
@@ -318,13 +319,13 @@
    "outputs": [
     {
      "name": "interpolated_values",
-     "description": "每个目标点一个复场值，保留源数组的末尾轴。",
+     "description": "返回的 scirel._result.Result 映射字段：每个目标点一个复场值，保留源数组的末尾轴。",
      "constraints": "无效位置nan+nanj；只有所触及源有限时，几何有效点才保证有限。",
      "dtype": "双精度复数（complex128）"
     },
     {
      "name": "valid_mask",
-     "description": "目标位于容差扩展闭盒内的几何判断。",
+     "description": "返回的 scirel._result.Result 映射字段：目标位于容差扩展闭盒内的几何判断。",
      "constraints": "与源/结果有限性无关，True不保证有限结果。",
      "dtype": "布尔值（bool）"
     }
@@ -348,11 +349,11 @@
     "invalid_input": "轴映射缺失/非映射、轴非一维/点不足/非有限/非递增、源前三维不匹配或目标非有限(N,3)时ValueError。",
     "runtime_failure": "域外不抛错，而返回False和nan+nanj；其他NumPy/SciPy错误原样传播。",
     "nonconvergence": "无迭代或反馈。",
-    "partial_results": "拒绝调用无输出映射。"
+    "partial_results": "失败时不返回 scirel._result.Result 部分映射。"
    },
    "example": {
     "description": "分别采样盒内、容差壳和扩展域外点，展示几何掩码及有限源结果。",
-    "expected": "返回长度 3 的复值向量：前两项有限，第三项为 nan+nanj；valid_mask 为 [True, True, False]。"
+    "expected": "返回长度 3 的复值向量：前两项有限，第三项为 nan+nanj；valid_mask 为 [True, True, False]。 返回对象是 scirel._result.Result 映射；非冲突字段也支持属性读取。"
    },
    "verification": {
     "scope": [
@@ -363,7 +364,8 @@
      "扩展域外nan+nanj和False，即使裁到面会得到有限值。",
      "非有限源经模板传播而掩码仍True。",
      "源轴、源形状与目标点的拒绝校验。",
-     "空目标集合与源末尾轴保留。"
+     "空目标集合与源末尾轴保留。",
+     "直接测试验证顶层 scirel._result.Result 映射及属性读取。"
     ],
     "evidence_ceiling": "限于所声明关系：源值按[Nx,Ny,Nz]排列，按[x,y,z]可分三线性插值。闭盒外扩tol内的点裁到闭盒采样；扩展盒外返回nan+nanj与False。证据：test_complex_rectilinear_interpolation.py（记录 12 个测试函数；绑定文件覆盖；独立解析/高精度对照）；合同 example 已运行。不建立的范围：不外推超出容差扩展盒的点；不支持曲线、柱坐标或非结构源网格。",
     "known_limitations": [
@@ -4077,9 +4079,9 @@
   },
   {
    "asset_id": "scirel.geometry.material-support-classification",
-   "source_sha256": "5303e53010f798047e9c4748f3be2b23b437f8052e475abcd21c79c0a389e441",
-   "summary": "由已采样极向磁通、圆柱坐标、分界磁通及所选侧、PML厚度和PEC掩码分类冷等离子体材料支撑点。",
-   "definition": "先在covered范围选择分界磁通指定侧，并加入极向半长度内最小网格半径段；随后排除求解盒六面PML边框和PEC，结果必须非空。",
+   "source_sha256": "17b82a77ce74a8d77bde7eed125f1b290a9a763e7d98b6762746a2fc5ff081d0",
+   "summary": "由已采样极向磁通、圆柱坐标、分界磁通及所选侧、PML厚度和PEC掩码分类冷等离子体材料支撑点。 顶层返回值是 scirel._result.Result 映射；非冲突字段支持属性读取。",
+   "definition": "先在covered范围选择分界磁通指定侧，并加入极向半长度内最小网格半径段；随后排除求解盒六面PML边框和PEC，结果必须非空。 完整结果作为同一个 scirel._result.Result 映射返回；映射访问保留，非冲突字段也支持属性读取，不引入嵌套 Result。",
    "model": "采样磁通上的纯几何材料分类，不求等离子体模型、场或重构磁面。",
    "assumptions": [
     "磁通已在同一网格采样，此处不插值。",
@@ -4148,19 +4150,19 @@
    "outputs": [
     {
      "name": "material_support_mask",
-     "description": "冷等离子体材料支撑点。",
+     "description": "返回的 scirel._result.Result 映射字段：冷等离子体材料支撑点。",
      "constraints": "保证非空，否则抛错，不返回无材料求解结果。",
      "dtype": "布尔值（bool）"
     },
     {
      "name": "closed_flux_mask",
-     "description": "PML/PEC排除前，分界所选侧的覆盖点。",
+     "description": "返回的 scirel._result.Result 映射字段：PML/PEC排除前，分界所选侧的覆盖点。",
      "constraints": "covered_mask子集，可帮助归因磁面选择。",
      "dtype": "布尔值（bool）"
     },
     {
      "name": "axis_segment_mask",
-     "description": "PML/PEC排除前，半长度内最小半径处的覆盖点。",
+     "description": "返回的 scirel._result.Result 映射字段：PML/PEC排除前，半长度内最小半径处的覆盖点。",
      "constraints": "covered_mask 的子集。由于该项与覆盖掩码相交，当采样平衡的径向轴起点高于网格最小半径时，它为空。",
      "dtype": "布尔值（bool）"
     }
@@ -4190,11 +4192,11 @@
     "invalid_input": "磁通非有限三维、各场形状不符、负/非有限半径、非有限坐标或分界、非法侧、半长度非正/非有限、厚度非正整数时ValueError。",
     "runtime_failure": "支撑为空时ValueError；错误列出分界侧、最内半径段、PML及PEC实际因素，不笼统归咎平衡。",
     "nonconvergence": "固定掩码操作序列，无迭代反馈。",
-    "partial_results": "不返回部分结果。"
+    "partial_results": "失败时不返回 scirel._result.Result 部分映射。"
    },
    "example": {
     "description": "在9×9×7合成磁通网格分类，检查PML与PEC均生效。",
-    "expected": "非空支撑，六面全排除，PEC点排除；磁通轴起于网格最小半径之上，轴段为空。"
+    "expected": "非空支撑，六面全排除，PEC点排除；磁通轴起于网格最小半径之上，轴段为空。 返回对象是 scirel._result.Result 映射；非冲突字段也支持属性读取。"
    },
    "verification": {
     "scope": [
@@ -4205,7 +4207,8 @@
      "轴段在排除轴的磁通侧可恰加入轴点，在覆盖掩码剔除时不生效。",
      "空支撑错误指出实际因素。",
      "全部参数拒绝门禁。",
-     "在相同采样磁通和坐标下，与独立计算的支撑掩码精确一致。"
+     "在相同采样磁通和坐标下，与独立计算的支撑掩码精确一致。",
+     "直接测试验证顶层 scirel._result.Result 映射及属性读取。"
     ],
     "evidence_ceiling": "限于所声明关系：先在covered范围选择分界磁通指定侧，并加入极向半长度内最小网格半径段；随后排除求解盒六面PML边框和PEC，结果必须非空。证据：test_material_support.py（记录 8 个测试函数；绑定文件覆盖；独立解析/高精度对照）；合同 example 已运行。不建立的范围：不插值或重构磁通；不推断哪侧受约束。",
     "known_limitations": [
@@ -4948,9 +4951,9 @@
   },
   {
    "asset_id": "scirel.geometry.flux-surface-inverse-field-average",
-   "source_sha256": "a4e86663dcb56b3d5ce4cffe8bc7fce2b400c2023d6e7741017f6d3fcf44dffa",
-   "summary": "沿给定R–Z折线插值正磁场模，以梯形求积计算∫dl/B，并可计算同权标量平均。",
-   "definition": "用三次RectBivariateSpline在路径点插值B及可选quantity；累计R–Z欧氏线段长度，梯形积分1/B；可选平均为∫quantity/B dl除以∫1/B dl。",
+   "source_sha256": "562862fad3b0f061932897a2212e182ca807d6e8fa0795d3caad5a87d632b6a8",
+   "summary": "沿给定R–Z折线插值正磁场模，以梯形求积计算∫dl/B，并可计算同权标量平均。 顶层返回值是 scirel._result.Result 映射；quantity=None 时只含 dl_B。",
+   "definition": "用三次RectBivariateSpline在路径点插值B及可选quantity；累计R–Z欧氏线段长度，梯形积分1/B；可选平均为∫quantity/B dl除以∫1/B dl。 完整结果作为同一个 scirel._result.Result 映射返回；映射访问保留，非冲突字段也支持属性读取，不引入嵌套 Result。",
    "model": "二维采样场插值及离散逆磁场路径求积。",
    "assumptions": [
     "磁场模单位T，在网格和插值路径点均严格正。",
@@ -4993,13 +4996,13 @@
    "outputs": [
     {
      "name": "dl_B",
-     "description": "沿累计折线长度的1/B梯形积分。",
+     "description": "返回的 scirel._result.Result 映射字段：沿累计折线长度的1/B梯形积分。",
      "constraints": "成功时有限严格正。",
      "dtype": "Python浮点数（float）"
     },
     {
      "name": "flux_surface_average",
-     "description": "quantity/B梯形积分除以dl_B。",
+     "description": "返回的 scirel._result.Result 映射字段：quantity/B梯形积分除以dl_B。",
      "constraints": "quantity=None时结果映射无此键，否则有限。",
      "dtype": "float或None"
     }
@@ -5022,18 +5025,19 @@
     "invalid_input": "错误形状、非有限、非规则或过小网格、网格或插值 B 非正、域外或重复点、dl_B 非正或非有限时引发 ValueError。",
     "runtime_failure": "SciPy插值/求积错误传播；插值标量或加权平均非有限时ValueError。",
     "nonconvergence": "插值和求积无迭代收敛判据。",
-    "partial_results": "失败无部分映射；quantity=None省略平均是正常行为。"
+    "partial_results": "失败时不返回 scirel._result.Result 部分映射；quantity=None 省略平均值是正常行为。"
    },
    "example": {
     "description": "在三点折线上用常数B和标量核对路径测度及均值。",
-    "expected": "逆磁场测度=折线长度/2T，加权平均=常数3。"
+    "expected": "逆磁场测度=折线长度/2T，加权平均=常数3。 返回对象是 scirel._result.Result 映射，映射访问保持不变。"
    },
    "verification": {
     "scope": [
      "常数B的解析路径测度与加权平均。",
      "可选标量省略。",
      "路径反向、重复线段及过小网格。",
-     "非正B及域外拒绝。"
+     "非正B及域外拒绝。",
+     "直接测试验证顶层 scirel._result.Result 映射及属性读取。"
     ],
     "evidence_ceiling": "小网格上的直接测试覆盖维护中的三次插值和离散折线求积；不验证调用者路径是完整磁面，也不证明项目完整性。",
     "known_limitations": [
@@ -7178,9 +7182,9 @@
   },
   {
    "asset_id": "scirel.geometry.flux-surface-profile",
-   "source_sha256": "b69fef69cbfe8d4fd810dc23a0278ea4f5e5b8feedfe5d0df44267f06c9184f1",
-   "summary": "对成对磁通坐标样本排序去重，线性插值标量剖面，并在两端以明确常数延拓。",
-   "definition": "展平成对样本后用NumPy argsort按磁通排序；重复坐标保留排序后第一次出现值；唯一点间线性插值，域外用left/right常数。并不保证重复值维持原输入先后顺序。",
+   "source_sha256": "3cacbf97691f74967aba251ac6946c4ffeba41979df38dfb9af44357ec24fed3",
+   "summary": "对成对磁通坐标样本排序去重，线性插值标量剖面，并在两端以明确常数延拓。 顶层返回值是 scirel._result.Result 映射；values 与字典方法同名，必须以 result[\"values\"] 读取。",
+   "definition": "展平成对样本后用NumPy argsort按磁通排序；重复坐标保留排序后第一次出现值；唯一点间线性插值，域外用left/right常数。并不保证重复值维持原输入先后顺序。 完整结果作为同一个 scirel._result.Result 映射返回；映射访问保留，非冲突字段也支持属性读取，不引入嵌套 Result。",
    "model": "调用者磁通坐标中的一维线性插值。",
    "assumptions": [
     "psi_samples与values的展平顺序一致。",
@@ -7223,19 +7227,19 @@
    "outputs": [
     {
      "name": "values",
-     "description": "目标处线性插值或常数延拓值。",
+     "description": "返回的 scirel._result.Result 映射字段：目标处线性插值或常数延拓值。",
      "constraints": "遵循声明端点策略。",
      "dtype": "双精度浮点（float64）"
     },
     {
      "name": "psi",
-     "description": "用于插值的有序唯一磁通坐标，无单位转换。",
+     "description": "返回的 scirel._result.Result 映射字段：用于插值的有序唯一磁通坐标，无单位转换。",
      "constraints": "至少两项且严格递增。",
      "dtype": "双精度浮点（float64）"
     },
     {
      "name": "profile_values",
-     "description": "排序去重后保留的样本值。",
+     "description": "返回的 scirel._result.Result 映射字段：排序去重后保留的样本值。",
      "constraints": "与psi对齐；重复坐标取NumPy排序后首值，不保证原始并列顺序。",
      "dtype": "双精度浮点（float64）"
     }
@@ -7257,18 +7261,19 @@
     "invalid_input": "成对样本长度不符/不足、唯一坐标少于2、输入或端点非有限时ValueError。",
     "runtime_failure": "NumPy转换和插值错误传播，不选回退剖面。",
     "nonconvergence": "无迭代求解器。",
-    "partial_results": "校验或插值失败无映射。"
+    "partial_results": "失败时不返回 scirel._result.Result 部分映射。"
    },
    "example": {
     "description": "对含重复磁通坐标的无序样本插值，显式给端点值。",
-    "expected": "排序唯一坐标[0,1,2]对应[0,2,4]；域外使用指定端点值。"
+    "expected": "排序唯一坐标[0,1,2]对应[0,2,4]；域外使用指定端点值。 返回对象是 scirel._result.Result 映射；非冲突字段也支持属性读取，values 用键读取。"
    },
    "verification": {
     "scope": [
      "当前NumPy下的排序与重复坐标处理。",
      "线性插值与默认/显式端点延拓。",
      "非有限输入/端点以及唯一点不足拒绝。",
-     "一个调用者一致的正坐标缩放保持插值值。"
+     "一个调用者一致的正坐标缩放保持插值值。",
+     "直接测试验证顶层 scirel._result.Result 映射及属性读取。"
     ],
     "evidence_ceiling": "有限算例上的直接测试确立维护中的插值与端点合同，不验证任何调用者提供的通量剖面数据的物理有效性，也不证明项目完整性。",
     "known_limitations": [

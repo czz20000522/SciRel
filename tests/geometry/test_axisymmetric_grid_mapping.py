@@ -19,6 +19,7 @@ import numpy as np
 import pytest
 from scipy.interpolate import RegularGridInterpolator
 
+from scirel._result import Result
 from scirel.geometry.axisymmetric_grid_mapping import (
     _evaluate_cylindrical,
     _interpolate_cylindrical,
@@ -62,6 +63,16 @@ def test_u1_a_t01_reconstruction_is_the_tensor_product_bilinear_interpolant(
     result = candidate["mapping"](eq, x_axis, y_axis, z_axis)
     reference, _, _ = _reference_bilinear(eq, x_axis, y_axis, z_axis)
 
+    assert isinstance(result, Result)
+    assert list(result) == [
+        "magnetic_flux_density_t",
+        "poloidal_flux_wb_per_rad",
+        "covered_mask",
+        "radially_clamped_point_count",
+        "axially_clamped_point_count",
+    ]
+    assert result.poloidal_flux_wb_per_rad is result["poloidal_flux_wb_per_rad"]
+    assert result.covered_mask is result["covered_mask"]
     np.testing.assert_allclose(
         result["poloidal_flux_wb_per_rad"], reference["psi_wb_per_rad"], rtol=1e-14, atol=1e-14
     )
@@ -311,7 +322,7 @@ def test_u1_a_t07_mapping_relation_is_free_of_classification_inputs(candidate, e
     imported = {
         node.module for node in ast.walk(tree) if isinstance(node, ast.ImportFrom) and node.module
     }
-    assert imported == {"__future__", "collections.abc"}, imported
+    assert imported == {"__future__", "collections.abc", "scirel._result"}, imported
     assert "material_support" not in MAPPING_MODULE.read_text(encoding="utf-8")
     assert "separatrix" not in MAPPING_MODULE.read_text(encoding="utf-8")
 
@@ -347,7 +358,9 @@ def test_u1_a_t10_declared_sibling_relation_is_structural_not_a_duplicate(
         if isinstance(node, ast.Import)
         for alias in node.names
     } | {node.module or "" for node in ast.walk(tree) if isinstance(node, ast.ImportFrom)}
-    assert not any(name == "scirel" or name.startswith("scirel.") for name in imported)
+    assert {name for name in imported if name == "scirel" or name.startswith("scirel.")} == {
+        "scirel._result"
+    }
     assert not hasattr(candidate["mapping_module"], "sample_rectilinear_field")
     assert not hasattr(candidate["mapping_module"], "_axes")
     assert "sample_rectilinear_field" in (candidate["mapping_module"].__doc__ or "")

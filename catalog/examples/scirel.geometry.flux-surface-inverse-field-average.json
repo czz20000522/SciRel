@@ -5,7 +5,7 @@
   "en": "Polyline inverse-field measure and weighted mean",
   "zh": "折线一除磁场测度与加权平均"
  },
- "summary": "Interpolate positive magnetic-field magnitude along a caller-supplied R-Z polyline, integrate dl/B by trapezoidal quadrature, and optionally average another scalar field with the same weight.",
+ "summary": "Interpolate positive magnetic-field magnitude along a caller-supplied R-Z polyline, integrate dl/B by trapezoidal quadrature, and optionally average another scalar field with the same weight. The complete result is returned as one scirel._result.Result mapping; when quantity is omitted only dl_B is present.",
  "taxonomy": [
   "geometry",
   "field-line",
@@ -31,7 +31,7 @@
  "identity": {
   "relation": "R-Z magnetic-field grid and ordered polyline to inverse-field path measure and optional weighted scalar mean",
   "direction": "rectilinear R-Z grids, positive B magnitude, path points and optional quantity -> dl_B and optional flux_surface_average",
-  "definition": "Use cubic RectBivariateSpline interpolation of B and optional quantity at each supplied path point. Form cumulative Euclidean segment length in the R-Z plane and trapezoidally integrate 1/B, with an optional ratio of trapezoidal integrals of quantity/B and 1/B.",
+  "definition": "Use cubic RectBivariateSpline interpolation of B and optional quantity at each supplied path point. Form cumulative Euclidean segment length in the R-Z plane and trapezoidally integrate 1/B, with an optional ratio of trapezoidal integrals of quantity/B and 1/B. The complete result is returned as one scirel._result.Result mapping; mapping access is retained and non-colliding fields also support attribute access. No nested mapping is introduced.",
   "model": "two-dimensional sampled-field interpolation and discrete inverse-B path quadrature",
   "geometry": "ordered R-Z polyline within a rectilinear cylindrical grid",
   "coordinates": "SI cylindrical R-Z coordinates; path order is supplied by the caller",
@@ -93,7 +93,7 @@
  "outputs": [
   {
    "name": "dl_B",
-   "description": "Trapezoidal integral of 1/B over cumulative polyline length.",
+   "description": "Field of the returned scirel._result.Result mapping: Trapezoidal integral of 1/B over cumulative polyline length.",
    "units": "m/T",
    "shape": "scalar",
    "dtype": "float",
@@ -102,7 +102,7 @@
   },
   {
    "name": "flux_surface_average",
-   "description": "Trapezoidal integral of quantity/B divided by dl_B, present only when quantity is supplied.",
+   "description": "Field of the returned scirel._result.Result mapping: Trapezoidal integral of quantity/B divided by dl_B, present only when quantity is supplied.",
    "units": "same as quantity",
    "shape": "scalar or null",
    "dtype": "float or None",
@@ -129,7 +129,7 @@
   "invalid_input": "Raises ValueError for wrong shapes, nonfinite values, nonrectilinear/undersized grid, nonpositive grid or interpolated B, out-of-grid or repeated path points, or nonpositive/nonfinite dl_B.",
   "runtime_failure": "SciPy interpolation and quadrature errors propagate; a nonfinite interpolated quantity or weighted mean raises ValueError.",
   "nonconvergence": "Not applicable; interpolation and quadrature have no iterative convergence criterion.",
-  "partial_results": "No partial result mapping is returned after a failed call; omission of the optional average when quantity is None is normal behavior."
+  "partial_results": "No scirel._result.Result mapping is returned after validation or calculation failure."
  },
  "public_api": {
   "python": {
@@ -146,15 +146,16 @@
  },
  "example": {
   "description": "Integrate dl/B and compute the B-weighted mean of a constant quantity along a three-point polyline.",
-  "code": "import numpy as np\nfrom scirel.geometry.flux_surface_inverse_field_average import compute_flux_surface_inverse_field_average\nr_grid, z_grid = np.meshgrid(np.linspace(0.0, 1.0, 5), np.linspace(-1.0, 1.0, 5))\nline = np.array([[0.2, -0.5], [0.4, 0.0], [0.6, 0.5]])\nresult = compute_flux_surface_inverse_field_average(r_grid, z_grid, np.full_like(r_grid, 2.0), line, np.full_like(r_grid, 3.0))\nlength = np.linalg.norm(np.diff(line, axis=0), axis=1).sum()\nnp.testing.assert_allclose(result['dl_B'], length / 2.0)\nnp.testing.assert_allclose(result['flux_surface_average'], 3.0)",
-  "expected": "The inverse-field path measure is polyline length divided by 2 T and the weighted mean is 3.0."
+  "code": "import numpy as np\nfrom scirel._result import Result\nfrom scirel.geometry.flux_surface_inverse_field_average import compute_flux_surface_inverse_field_average\nr_grid, z_grid = np.meshgrid(np.linspace(0.0, 1.0, 5), np.linspace(-1.0, 1.0, 5))\nline = np.array([[0.2, -0.5], [0.4, 0.0], [0.6, 0.5]])\nresult = compute_flux_surface_inverse_field_average(r_grid, z_grid, np.full_like(r_grid, 2.0), line, np.full_like(r_grid, 3.0))\nassert isinstance(result, Result)\nassert result.flux_surface_average == result['flux_surface_average']\nlength = np.linalg.norm(np.diff(line, axis=0), axis=1).sum()\nnp.testing.assert_allclose(result['dl_B'], length / 2.0)\nnp.testing.assert_allclose(result['flux_surface_average'], 3.0)\n",
+  "expected": "The inverse-field path measure is polyline length divided by 2 T and the weighted mean is 3.0. The returned object is a scirel._result.Result mapping; mapping access remains available."
  },
  "verification": {
   "scope": [
    "Constant-B analytic path measure and weighted mean.",
    "Optional quantity omission.",
    "Path reversal, repeated segments and undersized grid cases.",
-   "Nonpositive field and outside-grid rejection."
+   "Nonpositive field and outside-grid rejection.",
+   "The direct tests verify the top-level scirel._result.Result mapping and attribute access."
   ],
   "tests": [
    "tests/geometry/test_flux_surface_inverse_field_average.py"

@@ -8350,9 +8350,9 @@
   },
   {
    "asset_id": "scirel.geometry.planar-wavevector-projection",
-   "source_sha256": "4f05ac7171876441a4d8ec42592342035b5ed1a261fb51bbc3cd0e2738bdd0bf",
-   "summary": "由非负模长和角度投影实数 x-z 波矢，或由已使用 m^-1 单位的配对分量求模长。",
-   "definition": "极坐标模式：kx=k*sin(theta_rad)、kz=k*cos(theta_rad)；笛卡尔模式：k=hypot(kx,kz)。两个输入模式互斥。",
+   "source_sha256": "d33cb8695b3ad0cc0eb3894e7e42e60a3cfc419f626576a3237658f852809f9d",
+   "summary": "由非负模长和角度投影实数 x-z 波矢，或由已使用 m^-1 单位的配对分量求模长。 顶层返回值是 scirel._result.Result 映射；非冲突字段支持属性读取。",
+   "definition": "极坐标模式：kx=k*sin(theta_rad)、kz=k*cos(theta_rad)；笛卡尔模式：k=hypot(kx,kz)。两个输入模式互斥。 完整结果作为同一个 scirel._result.Result 映射返回；映射访问保留，非冲突字段也支持属性读取，不引入嵌套 Result。",
    "model": "欧氏波矢几何，不含色散或共振模型。",
    "assumptions": [
     "调用者已将全部波数转换为一致 m^-1。",
@@ -8388,31 +8388,31 @@
    "outputs": [
     {
      "name": "kx",
-     "description": "垂直 x 分量，单位 m^-1。",
+     "description": "返回的 scirel._result.Result 映射字段：垂直 x 分量，单位 m^-1。",
      "constraints": "被接受输入下有限。",
      "dtype": "float64 数组"
     },
     {
      "name": "kz",
-     "description": "平行 z 分量，单位 m^-1。",
+     "description": "返回的 scirel._result.Result 映射字段：平行 z 分量，单位 m^-1。",
      "constraints": "被接受输入下有限。",
      "dtype": "float64 数组"
     },
     {
      "name": "k",
-     "description": "非负波矢模长，单位 m^-1。",
+     "description": "返回的 scirel._result.Result 映射字段：非负波矢模长，单位 m^-1。",
      "constraints": "被接受输入下有限。",
      "dtype": "float64 数组"
     },
     {
      "name": "theta_rad",
-     "description": "给定的极坐标角，笛卡尔模式为 None。",
+     "description": "返回的 scirel._result.Result 映射字段：给定的极坐标角，笛卡尔模式为 None。",
      "constraints": "不是从笛卡尔分量推算的角。",
      "dtype": "float 或 None"
     },
     {
      "name": "projection_mode",
-     "description": "实际选取的输入模式。",
+     "description": "返回的 scirel._result.Result 映射字段：实际选取的输入模式。",
      "constraints": "polar 或 cartesian。",
      "dtype": "字符串"
     }
@@ -8434,17 +8434,18 @@
     "invalid_input": "缺失/混合模式、非实或非有限向量、纯或混合容器布尔、负模长、非法极坐标角、错形分量或非有限计算模长抛 ValueError。",
     "runtime_failure": "未预期 NumPy 异常传播；格式错误数值作为无效输入拒绝。",
     "nonconvergence": "不适用，无迭代。",
-    "partial_results": "完成验证和计算后才返回字典，无部分结果。"
+    "partial_results": "失败时不返回 scirel._result.Result 部分映射。"
    },
    "example": {
     "description": "由已转换为 m⁻¹ 的 3、4 分量计算 5 m⁻¹ 的波矢模长。",
-    "expected": "kx=[3]、kz=[4]、k=[5]，单位 m⁻¹，theta_rad=None。"
+    "expected": "kx=[3]、kz=[4]、k=[5]，单位 m⁻¹，theta_rad=None。 返回对象是 scirel._result.Result 映射；非冲突字段也支持属性读取。"
    },
    "verification": {
     "scope": [
      "极坐标与笛卡尔投影合同。",
      "零模长角度保留及模式区分。",
-     "字符串/布尔及其混合容器等非实数拒绝，非有限模长拒绝，以及大有限值 hypot 行为。"
+     "字符串/布尔及其混合容器等非实数拒绝，非有限模长拒绝，以及大有限值 hypot 行为。",
+     "直接测试验证顶层 scirel._result.Result 映射及属性读取。"
     ],
     "evidence_ceiling": "直接测试建立本树列明的有界算术、布尔伪数值拒绝及失败行为；本仓库无法重放任何外部跨实现比较，也不将其作为证据。",
     "known_limitations": [

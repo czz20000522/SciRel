@@ -4,6 +4,8 @@ from __future__ import annotations
 
 import numpy as np
 
+from scirel._result import Result
+
 __all__ = ["project_planar_wavevector"]
 
 
@@ -85,6 +87,9 @@ def project_planar_wavevector(*, k_grid=None, theta_rad=None, kx_grid=None, kz_g
     projection_mode : string
         Selected declaration mode. [dimensionless] Shape: ``scalar``. polar or cartesian.
 
+    The complete result is returned as one ``scirel._result.Result`` mapping. No nested
+    mapping is introduced, and non-colliding fields support attribute access.
+
     Raises
     ------
     ValueError
@@ -117,8 +122,10 @@ def project_planar_wavevector(*, k_grid=None, theta_rad=None, kx_grid=None, kz_g
 
     Examples
     --------
+    >>> from scirel._result import Result
     >>> from scirel.geometry import project_planar_wavevector
     >>> result = project_planar_wavevector(kx_grid=[3.0], kz_grid=[4.0])
+    >>> assert isinstance(result, Result)
     >>> assert result['k'][0] == 5.0
     """
     if k_grid is not None:
@@ -128,13 +135,15 @@ def project_planar_wavevector(*, k_grid=None, theta_rad=None, kx_grid=None, kz_g
         if np.any(magnitude < 0.0):
             raise ValueError("k_grid must be a nonempty finite nonnegative vector")
         theta = _finite_real_angle(theta_rad)
-        return {
-            "kx": magnitude * np.sin(theta),
-            "kz": magnitude * np.cos(theta),
-            "k": magnitude.copy(),
-            "theta_rad": theta,
-            "projection_mode": "polar",
-        }
+        return Result(
+            {
+                "kx": magnitude * np.sin(theta),
+                "kz": magnitude * np.cos(theta),
+                "k": magnitude.copy(),
+                "theta_rad": theta,
+                "projection_mode": "polar",
+            }
+        )
     if kx_grid is None or kz_grid is None:
         raise ValueError("both component grids are required")
     kx = _finite_real_vector(kx_grid, "kx_grid")
@@ -145,10 +154,12 @@ def project_planar_wavevector(*, k_grid=None, theta_rad=None, kx_grid=None, kz_g
         magnitude = np.hypot(kx, kz)
     if not np.isfinite(magnitude).all():
         raise ValueError("wavevector magnitude exceeds the finite numeric domain")
-    return {
-        "kx": kx.copy(),
-        "kz": kz.copy(),
-        "k": magnitude,
-        "theta_rad": None,
-        "projection_mode": "cartesian",
-    }
+    return Result(
+        {
+            "kx": kx.copy(),
+            "kz": kz.copy(),
+            "k": magnitude,
+            "theta_rad": None,
+            "projection_mode": "cartesian",
+        }
+    )

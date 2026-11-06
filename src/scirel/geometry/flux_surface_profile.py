@@ -4,6 +4,8 @@ from __future__ import annotations
 
 import numpy as np
 
+from scirel._result import Result
+
 __all__ = ["evaluate_flux_surface_profile"]
 
 
@@ -52,6 +54,11 @@ def evaluate_flux_surface_profile(
         values] Shape: ``[N_unique]``. Aligned with psi; duplicate coordinates retain the
         first occurrence after NumPy sorting, without a guaranteed original-input tie order.
 
+    The complete result is returned as one ``scirel._result.Result`` mapping. The
+    ``values`` key collides with the built-in mapping method of the same name, so read that
+    field as ``result["values"]``; non-colliding fields also support attribute access. No
+    nested mapping is introduced.
+
     Raises
     ------
     ValueError
@@ -90,8 +97,11 @@ def evaluate_flux_surface_profile(
     Examples
     --------
     >>> import numpy as np
+    >>> from scirel._result import Result
     >>> from scirel.geometry.flux_surface_profile import evaluate_flux_surface_profile
     >>> result = evaluate_flux_surface_profile(psi_samples=[2.0, 0.0, 1.0, 1.0], values=[4.0, 0.0, 2.0, 3.0], target=[-1.0, 0.5, 3.0], left=-7.0, right=9.0)
+    >>> assert isinstance(result, Result)
+    >>> assert result.psi is result['psi']
     >>> np.testing.assert_allclose(result['values'], [-7.0, 1.0, 9.0])
     >>> np.testing.assert_allclose(result['psi'], [0.0, 1.0, 2.0])
     >>> np.testing.assert_allclose(result['profile_values'], [0.0, 2.0, 4.0])
@@ -116,11 +126,13 @@ def evaluate_flux_surface_profile(
     if not np.isfinite(left_value) or not np.isfinite(right_value):
         raise ValueError("profile endpoint values must be finite")
     result = np.interp(query.ravel(), coordinates, samples, left=left_value, right=right_value)
-    return {
-        "values": result.reshape(query.shape),
-        "psi": coordinates,
-        "profile_values": samples,
-    }
+    return Result(
+        {
+            "values": result.reshape(query.shape),
+            "psi": coordinates,
+            "profile_values": samples,
+        }
+    )
 
 
 scientific_function = evaluate_flux_surface_profile

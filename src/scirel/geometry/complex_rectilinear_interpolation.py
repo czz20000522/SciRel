@@ -6,6 +6,8 @@ from collections.abc import Mapping
 
 import numpy as np
 
+from scirel._result import Result
+
 __all__ = ["interpolate_complex_rectilinear_field"]
 _AXIS_KEYS = ("x_m", "y_m", "z_m")
 
@@ -64,6 +66,9 @@ def interpolate_complex_rectilinear_field(source_axes_m, source_values, target_p
         of source and result finiteness; a true entry does not guarantee a finite
         interpolated value.
 
+    The complete result is returned as one ``scirel._result.Result`` mapping. No nested
+    mapping is introduced, and non-colliding fields support attribute access.
+
     Raises
     ------
     ValueError
@@ -100,12 +105,14 @@ def interpolate_complex_rectilinear_field(source_axes_m, source_values, target_p
     Examples
     --------
     >>> import numpy as np
+    >>> from scirel._result import Result
     >>> from scirel.geometry import interpolate_complex_rectilinear_field
     >>> axes = {'x_m': np.array([0.0, 1.0, 2.0]), 'y_m': np.array([0.0, 1.0, 2.0]), 'z_m': np.array([0.0, 1.0, 2.0])}
     >>> values = np.zeros((3, 3, 3), dtype=complex)
     >>> values[1, 1, 1] = 4.0 + 2.0j
     >>> points = np.array([[1.0, 1.0, 1.0], [1.0 + 1.0e-15, 1.0, 1.0], [1.0, 1.0, 3.0]])
     >>> result = interpolate_complex_rectilinear_field(axes, values, points)
+    >>> assert isinstance(result, Result)
     >>> assert result['valid_mask'].tolist() == [True, True, False]
     >>> assert np.isfinite(result['interpolated_values'][:2]).all()
     >>> assert np.isnan(result['interpolated_values'][2].real) and np.isnan(result['interpolated_values'][2].imag)
@@ -136,4 +143,4 @@ def interpolate_complex_rectilinear_field(source_axes_m, source_values, target_p
     )
     output = np.asarray(interpolator(query), dtype=complex)
     output[~valid] = np.nan + 1j * np.nan
-    return {"interpolated_values": output, "valid_mask": valid}
+    return Result({"interpolated_values": output, "valid_mask": valid})

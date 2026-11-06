@@ -71,8 +71,8 @@
    ],
    "modules": {
     "scirel.geometry.axisymmetric_equilibrium_grid_support": "f1ceda0e90a186ac28415d4dcbfa82d1305960a49e65720531d784e411339c0b",
-    "scirel.geometry.axisymmetric_grid_mapping": "88bedcfaecf1f12b02c306d12d3c7ed1de1ab3cbb74658eaee14204ffb4bf830",
-    "scirel.geometry.material_support": "41ee842b806d69a236ba39cb5f62d96d78553cf27631069901efcdb20cea0888"
+    "scirel.geometry.axisymmetric_grid_mapping": "47d2731ae71a66abad25d811a9884200f244adaebf5ce5337918856835b2ee28",
+    "scirel.geometry.material_support": "65f04824f94859245fff8b78690c63304bb2c1103057d79b948e3de2baae357d"
    },
    "review_basis": "Wrapper removes only the two injectable implementation callables then passes inputs to _run_composition. _run_composition requires exactly the seven documented scientific inputs via _REQUIRED_INPUTS, maps the caller equilibrium and solver axes, derives cylindrical geometry with read-only broadcast views, and applies caller separatrix/PML/PEC metadata. It does not solve equilibrium or reconstruct material physics. Runtime missing ports are rejected; extra scientific input mapping entries are ignored as documented by the unchanged implementation."
   },
@@ -798,7 +798,7 @@
     "scirel._composition": "ce7f22d7d0978065cb3c56384d49fccf73bf41635cd51b3a8755cca5453e1ca7",
     "scirel.closures.mirror_ambipolar_potential": "0743e2638e22d3743dab9cff9d14bff5589ba282d5d380a2071e5909e8d1f4cc",
     "scirel.closures.mirror_quasineutral_closure": "359f698398015639aa17cec5cb69e3b1ed73689bdc7461e8870694dcc9293cb2",
-    "scirel.geometry.flux_surface_profile": "89241ec9ae0e6c60645fc6a7b1486d8f7b8bcf9a64de11d9a99bd12a573cfb7c",
+    "scirel.geometry.flux_surface_profile": "a74e0b66c35a311f0fff3416e802f68777e0282eadcba528d30bd8558c9dca3d",
     "scirel.kinetic.grid_mirror_kinetic_closure": "581dfd6fced657315ce146d721c14f5c67018a109a8021a81ba52a9dee198c35"
    },
    "review_basis": "_run_composition requires thirteen grid/species/reference/plug fields. It maps reference and plug surfaces; input defaults and delegated ambipolar controls are bound to the current functions. ion_loss_refill defaults to loss_cone_refill or0, mode prescribed,confineTrue. The displayed conditional default is metadata, not a Python literal signature default."

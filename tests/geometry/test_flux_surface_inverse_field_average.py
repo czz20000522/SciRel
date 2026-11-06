@@ -2,6 +2,7 @@
 import numpy as np
 import pytest
 
+from scirel._result import Result
 from scirel.geometry.flux_surface_inverse_field_average import (
     compute_flux_surface_inverse_field_average,
     compute_flux_surface_inverse_field_average as scientific_function,
@@ -19,6 +20,10 @@ def _inputs():
 def test_constant_field_has_analytic_inverse_b_measure_and_average():
     R, Z, line = _inputs()
     result = scientific_function(R, Z, np.full_like(R, 2.0), line, np.full_like(R, 3.0))
+    assert isinstance(result, Result)
+    assert list(result) == ["dl_B", "flux_surface_average"]
+    assert result.dl_B == result["dl_B"]
+    assert result.flux_surface_average == result["flux_surface_average"]
     length = float(np.sum(np.linalg.norm(np.diff(line, axis=0), axis=1)))
     assert result["dl_B"] == pytest.approx(length / 2.0)
     assert result["flux_surface_average"] == pytest.approx(3.0)
@@ -27,7 +32,9 @@ def test_constant_field_has_analytic_inverse_b_measure_and_average():
 def test_quantity_is_optional_and_no_quantity_returns_only_measure():
     R, Z, line = _inputs()
     result = scientific_function(R, Z, np.full_like(R, 4.0), line)
+    assert isinstance(result, Result)
     assert set(result) == {"dl_B"}
+    assert result.dl_B == result["dl_B"]
     length = float(np.sum(np.linalg.norm(np.diff(line, axis=0), axis=1)))
     assert result["dl_B"] == pytest.approx(length / 4.0)
 

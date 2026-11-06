@@ -5,7 +5,7 @@
   "en": "Scalar profile on a flux coordinate",
   "zh": "磁通坐标上的标量剖面"
  },
- "summary": "Sort and deduplicate paired flux-coordinate samples, interpolate a scalar profile linearly, and apply explicit constant endpoint values outside the sampled interval.",
+ "summary": "Sort and deduplicate paired flux-coordinate samples, interpolate a scalar profile linearly, and apply explicit constant endpoint values outside the sampled interval. The complete result is returned as one scirel._result.Result mapping; the values key must be read with bracket access because it collides with dict.values.",
  "taxonomy": [
   "geometry",
   "flux-coordinate",
@@ -31,7 +31,7 @@
  "identity": {
   "relation": "paired scalar profile samples on a flux coordinate to values at target flux coordinates",
   "direction": "psi_samples, values, target and endpoint policy -> interpolated values and normalized samples",
-  "definition": "Flatten paired samples, sort by flux coordinate with NumPy argsort, retain the first occurrence in that sorted order for each duplicate coordinate, interpolate linearly between unique coordinates, and use constant left/right values beyond the interval. Equal-coordinate ties have no promised original-input ordering.",
+  "definition": "Flatten paired samples, sort by flux coordinate with NumPy argsort, retain the first occurrence in that sorted order for each duplicate coordinate, interpolate linearly between unique coordinates, and use constant left/right values beyond the interval. Equal-coordinate ties have no promised original-input ordering. The complete result is returned as one scirel._result.Result mapping; mapping access is retained and non-colliding fields also support attribute access. No nested mapping is introduced.",
   "model": "one-dimensional linear interpolation in a caller-supplied flux coordinate",
   "geometry": "sampled scalar relation indexed by flux, without a reconstructed spatial surface",
   "coordinates": "psi_samples and target use the same caller-selected poloidal-flux coordinate convention, either psi=R A_phi in Wb/rad or complete linked flux in Wb; the operator applies no conversion",
@@ -94,7 +94,7 @@
  "outputs": [
   {
    "name": "values",
-   "description": "Linearly interpolated or constant-extended profile at target.",
+   "description": "Field of the returned scirel._result.Result mapping: Linearly interpolated or constant-extended profile at target.",
    "units": "same as input values",
    "shape": "same as target",
    "dtype": "float64",
@@ -103,7 +103,7 @@
   },
   {
    "name": "psi",
-   "description": "Sorted unique sample coordinates used for interpolation, without unit conversion.",
+   "description": "Field of the returned scirel._result.Result mapping: Sorted unique sample coordinates used for interpolation, without unit conversion.",
    "units": "same as psi_samples",
    "shape": "[N_unique]",
    "dtype": "float64",
@@ -112,7 +112,7 @@
   },
   {
    "name": "profile_values",
-   "description": "Sample values retained after sorting and coordinate deduplication.",
+   "description": "Field of the returned scirel._result.Result mapping: Sample values retained after sorting and coordinate deduplication.",
    "units": "same as input values",
    "shape": "[N_unique]",
    "dtype": "float64",
@@ -137,7 +137,7 @@
   "invalid_input": "Raises ValueError for unequal or insufficient paired samples, fewer than two unique flux coordinates, nonfinite inputs or nonfinite endpoint values.",
   "runtime_failure": "NumPy conversion and interpolation errors propagate; no fallback profile is selected.",
   "nonconvergence": "Not applicable; no iterative solver is used.",
-  "partial_results": "No result mapping is returned after validation or interpolation failure."
+  "partial_results": "No scirel._result.Result mapping is returned after validation or calculation failure."
  },
  "public_api": {
   "python": {
@@ -154,15 +154,16 @@
  },
  "example": {
   "description": "Sort and deduplicate flux samples, interpolate one interior target, and apply explicit endpoint values outside the sampled interval.",
-  "code": "import numpy as np\nfrom scirel.geometry.flux_surface_profile import evaluate_flux_surface_profile\nresult = evaluate_flux_surface_profile(psi_samples=[2.0, 0.0, 1.0, 1.0], values=[4.0, 0.0, 2.0, 3.0], target=[-1.0, 0.5, 3.0], left=-7.0, right=9.0)\nnp.testing.assert_allclose(result['values'], [-7.0, 1.0, 9.0])\nnp.testing.assert_allclose(result['psi'], [0.0, 1.0, 2.0])\nnp.testing.assert_allclose(result['profile_values'], [0.0, 2.0, 4.0])",
-  "expected": "The unique profile is psi=[0,1,2] with values [0,2,4]; target values are [-7,1,9]."
+  "code": "import numpy as np\nfrom scirel._result import Result\nfrom scirel.geometry.flux_surface_profile import evaluate_flux_surface_profile\nresult = evaluate_flux_surface_profile(psi_samples=[2.0, 0.0, 1.0, 1.0], values=[4.0, 0.0, 2.0, 3.0], target=[-1.0, 0.5, 3.0], left=-7.0, right=9.0)\nassert isinstance(result, Result)\nassert result.psi is result['psi']\nnp.testing.assert_allclose(result['values'], [-7.0, 1.0, 9.0])\nnp.testing.assert_allclose(result['psi'], [0.0, 1.0, 2.0])\nnp.testing.assert_allclose(result['profile_values'], [0.0, 2.0, 4.0])\n",
+  "expected": "The unique profile is psi=[0,1,2] with values [0,2,4]; target values are [-7,1,9]. The returned object is a scirel._result.Result mapping; the non-colliding fields also support attribute access."
  },
  "verification": {
   "scope": [
    "Sample sorting and duplicate-coordinate handling under the current NumPy runtime.",
    "Linear interpolation and default/explicit endpoint extension.",
    "Nonfinite input and endpoint rejection, and fewer-than-two-unique-coordinate rejection.",
-   "One selected caller-consistent positive coordinate rescaling preserves interpolated values."
+   "One selected caller-consistent positive coordinate rescaling preserves interpolated values.",
+   "The direct tests verify the top-level scirel._result.Result mapping and attribute access."
   ],
   "tests": [
    "tests/geometry/test_flux_surface_profile.py"

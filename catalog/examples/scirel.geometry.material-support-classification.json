@@ -5,7 +5,7 @@
   "en": "Closed-flux and magnetic-axis material support classification",
   "zh": "闭合磁通面与磁轴材料支撑分类"
  },
- "summary": "Classify which points of a solver grid carry cold-plasma material support from the poloidal flux already sampled on that grid, the cylindrical coordinates of the grid, the separatrix flux and the selected flux-surface side, the PML frame thickness, and the caller-owned PEC mask.",
+ "summary": "Classify which points of a solver grid carry cold-plasma material support from the poloidal flux already sampled on that grid, the cylindrical coordinates of the grid, the separatrix flux and the selected flux-surface side, the PML frame thickness, and the caller-owned PEC mask. The complete result is returned as one scirel._result.Result mapping; mapping access is retained and non-colliding fields also support attribute access.",
  "taxonomy": [
   "geometry",
   "material-support",
@@ -33,7 +33,7 @@
  "identity": {
   "relation": "a sampled poloidal flux, the cylindrical coordinates of the sampling grid, a separatrix flux with a selected side, a PML frame thickness, and a PEC mask to the set of grid points with cold-plasma material support",
   "direction": "poloidal_flux_wb_per_rad, covered_mask, radii_m, axial_coordinate_m, separatrix_flux_wb_per_rad, closed_flux_side, xpoint_half_length_m, pml_cells, pec_mask -> material_support_mask, closed_flux_mask, axis_segment_mask",
-  "definition": "Forms the closed-flux mask as the covered points on the selected side of the separatrix flux, forms the innermost-radius segment as the covered points at the grid's minimum radius within the poloidal half length, excludes the PML frame on all six faces of the solver box, excludes the caller's PEC mask, and requires the result to be non-empty.",
+  "definition": "Forms the closed-flux mask as the covered points on the selected side of the separatrix flux, forms the innermost-radius segment as the covered points at the grid's minimum radius within the poloidal half length, excludes the PML frame on all six faces of the solver box, excludes the caller's PEC mask, and requires the result to be non-empty. The complete result is returned as one scirel._result.Result mapping; mapping access is retained and non-colliding fields also support attribute access. No nested mapping is introduced.",
   "model": "geometric material-support classification on a sampled flux surface; no plasma model, no field solve, and no flux-surface reconstruction is performed",
   "geometry": "the flux surface is supplied as a sampled scalar field, so the classification is purely geometric in the sampled flux value and in the grid coordinates",
   "coordinates": "cylindrical radius and axial coordinate of the sampling grid, together with the discrete index position of each point in the solver box",
@@ -132,7 +132,7 @@
  "outputs": [
   {
    "name": "material_support_mask",
-   "description": "Grid points carrying cold-plasma material support.",
+   "description": "Field of the returned scirel._result.Result mapping: Grid points carrying cold-plasma material support.",
    "units": "dimensionless",
    "shape": "[N_x, N_y, N_z]",
    "dtype": "bool",
@@ -141,7 +141,7 @@
   },
   {
    "name": "closed_flux_mask",
-   "description": "Covered grid points on the selected side of the separatrix flux, before the PML frame and the PEC mask are applied.",
+   "description": "Field of the returned scirel._result.Result mapping: Covered grid points on the selected side of the separatrix flux, before the PML frame and the PEC mask are applied.",
    "units": "dimensionless",
    "shape": "[N_x, N_y, N_z]",
    "dtype": "bool",
@@ -150,7 +150,7 @@
   },
   {
    "name": "axis_segment_mask",
-   "description": "Covered grid points at the grid's innermost radius within the poloidal half length, before the PML frame and the PEC mask are applied.",
+   "description": "Field of the returned scirel._result.Result mapping: Covered grid points at the grid's innermost radius within the poloidal half length, before the PML frame and the PEC mask are applied.",
    "units": "dimensionless",
    "shape": "[N_x, N_y, N_z]",
    "dtype": "bool",
@@ -183,7 +183,7 @@
   "invalid_input": "Raises ValueError when the flux is not a finite 3D array, when covered_mask, radii_m, axial_coordinate_m, or pec_mask does not match the flux shape, when radii_m is negative or non-finite, when the coordinate arrays are non-finite, when the separatrix flux is non-finite, when closed_flux_side is not one of the two allowed values, when the poloidal half length is non-finite or not strictly positive, or when pml_cells is not a positive integer.",
   "runtime_failure": "Raises ValueError when the classified support mask is empty. The message names the closed-flux side, the innermost-radius segment, the PML frame, and the PEC mask as the contributing causes, rather than attributing the outcome to the equilibrium.",
   "nonconvergence": "Not applicable; this relation is a fixed sequence of mask operations with no iteration or feedback.",
-  "partial_results": "Never returned; a rejected call produces no mapping."
+  "partial_results": "No scirel._result.Result mapping is returned; a rejected call produces no output mapping."
  },
  "public_api": {
   "python": {
@@ -200,8 +200,8 @@
  },
  "example": {
   "description": "Classify material support on a 9x9x7 grid while applying the PML frame and one PEC exclusion.",
-  "code": "import numpy as np\nfrom scirel.geometry import classify_material_support\nx_m = np.linspace(-0.5, 0.5, 9)\ny_m = np.linspace(-0.5, 0.5, 9)\nz_m = np.linspace(-0.4, 0.4, 7)\nxx, yy, zz = np.meshgrid(x_m, y_m, z_m, indexing='ij')\nradii = np.hypot(xx, yy)\nflux = 0.9 * radii + 0.1 * np.sin(2.0 * np.pi * zz)\ncovered = (radii >= 0.05) & (radii <= 1.0) & (zz >= -0.5) & (zz <= 0.5)\npec = np.zeros((9, 9, 7), dtype=bool)\npec[5, 5, 3] = True\nresult = classify_material_support(\n    flux,\n    covered,\n    radii,\n    zz,\n    separatrix_flux_wb_per_rad=0.4,\n    closed_flux_side='less_than',\n    xpoint_half_length_m=0.2,\n    pml_cells=1,\n    pec_mask=pec,\n)\nsupport = result['material_support_mask']\nassert support.dtype == bool and support.shape == (9, 9, 7)\nassert support.sum() > 0\nassert not support[0, :, :].any() and not support[-1, :, :].any()\nassert not support[:, 0, :].any() and not support[:, -1, :].any()\nassert not support[:, :, 0].any() and not support[:, :, -1].any()\nassert not support[5, 5, 3]\nassert not result['axis_segment_mask'].any()\nassert result['closed_flux_mask'].sum() >= support.sum()",
-  "expected": "Support is nonempty, absent on all six box faces, excludes the PEC point, and has an empty axis-segment mask."
+  "code": "import numpy as np\nfrom scirel._result import Result\nfrom scirel.geometry import classify_material_support\nx_m = np.linspace(-0.5, 0.5, 9)\ny_m = np.linspace(-0.5, 0.5, 9)\nz_m = np.linspace(-0.4, 0.4, 7)\nxx, yy, zz = np.meshgrid(x_m, y_m, z_m, indexing='ij')\nradii = np.hypot(xx, yy)\nflux = 0.9 * radii + 0.1 * np.sin(2.0 * np.pi * zz)\ncovered = (radii >= 0.05) & (radii <= 1.0) & (zz >= -0.5) & (zz <= 0.5)\npec = np.zeros((9, 9, 7), dtype=bool)\npec[5, 5, 3] = True\nresult = classify_material_support(\n    flux,\n    covered,\n    radii,\n    zz,\n    separatrix_flux_wb_per_rad=0.4,\n    closed_flux_side='less_than',\n    xpoint_half_length_m=0.2,\n    pml_cells=1,\n    pec_mask=pec,\n)\nassert isinstance(result, Result)\nsupport = result['material_support_mask']\nassert support.dtype == bool and support.shape == (9, 9, 7)\nassert support.sum() > 0\nassert not support[0, :, :].any() and not support[-1, :, :].any()\nassert not support[:, 0, :].any() and not support[:, -1, :].any()\nassert not support[:, :, 0].any() and not support[:, :, -1].any()\nassert not support[5, 5, 3]\nassert not result['axis_segment_mask'].any()\nassert result['closed_flux_mask'].sum() >= support.sum()\n",
+  "expected": "Support is nonempty, absent on all six box faces, excludes the PEC point, and has an empty axis-segment mask. The returned object is a scirel._result.Result mapping; non-colliding fields also support attribute access."
  },
  "verification": {
   "scope": [
@@ -212,7 +212,8 @@
    "The innermost-radius segment as a live branch, adding exactly the axis points on a side that excludes the axis, and as an inert branch when the coverage mask intersects it away.",
    "The empty-support error naming the actual contributing causes.",
    "Fail-closed validation of every parameter.",
-   "Exact agreement with the independently computed support mask for the same sampled flux and coordinates."
+   "Exact agreement with the independently computed support mask for the same sampled flux and coordinates.",
+   "The direct tests verify the top-level scirel._result.Result mapping and attribute access."
   ],
   "tests": [
    "tests/geometry/test_material_support.py"
