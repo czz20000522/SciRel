@@ -81,34 +81,134 @@ def _run_composition(inputs, *, asset_loader):
 
 
 def solve_frank_egedal_pressure_closure(inputs=None, **kwargs):
-    """Resolve the Frank--Egedal pressure-closure composition.
+    r"""Solve the Frank-Egedal pressure-closure composition from mapping ports.
 
     Parameters
     ----------
     inputs : mapping, optional
-        Mapping containing ``psi``, ``B`` and a required ``params`` mapping.
-        ``params`` carries radial normalization, loss-cone source, quadrature,
-        pressure and optional density/electron-temperature controls described
-        by the catalog contract.
-    **kwargs
-        Named inputs merged with ``inputs`` by the composition
-        boundary.
+        Existing input mapping containing the mapping ports documented under Other
+        Parameters. The default is None and is merged with named keyword ports by the
+        composition boundary. Units: [mapping].
+    **kwargs : mapping, optional
+        Named mapping ports merged with inputs by the composition boundary. A keyword takes
+        precedence over the same key in inputs. Units: [mapping].
+
+    Other Parameters
+    ----------------
+    psi : real array-like converted to float64
+        Caller flux-label grid used for the radial envelope and final pressure shape. Shape:
+        nonempty [N_Z,N_R]. Constraints: Finite two-dimensional values. psi_axis and
+        psi_edge default to its minimum and maximum; their finite difference must have
+        absolute value at least 1e-30. A constant grid therefore needs explicit distinct
+        axis and edge values. Units: [same flux coordinate as params.psi_axis/psi_edge;
+        historical label Wb, or Wb/rad when coupled to current SciRel free-boundary Picard].
+    B : real array-like converted to float64
+        Local magnetic-field magnitude at the same samples as psi. Shape: [N_Z,N_R], exactly
+        psi-shaped. Constraints: Finite and strictly positive; B0 is finite and strictly
+        positive. Shape agreement with psi is checked by the terminal assembly. Units: [T].
+    params : Python dict
+        Caller-owned closure configuration passed to the four active operators; see
+        constraints for nested names and defaults. Shape: mapping. Constraints: A dict is
+        required. Radial keys: psi_axis=min(psi), psi_edge=max(psi), alpha=1 with alpha>=0;
+        reversed edge orientation is permitted. Field/source keys: B0=median(B),
+        mirror_ratio=turning_b if mirror_ratio absent, otherwise mirror_ratio (default 2),
+        requiring >1; vc_over_v0=0.25 nonnegative; velocity_lower=perp_velocity_lower when
+        the legacy alias is supplied, otherwise 0, within [0,1); both names must agree and
+        define one common population; beta_m=zeff/2 if absent, otherwise beta_m (default
+        zeff=1), finite. Explicit nonempty finite legendre_degrees bypasses spectrum
+        evaluation; otherwise legendre_mode_count=6 and legendre_spectrum_grid_points=256
+        control it. source_coefficients must be finite and match degrees if supplied;
+        otherwise nbi_pitch_angle_deg=45 controls projection. legendre_terms=15 is a legacy
+        count >=2; both backend names 'truncated' (default) and 'hypergeometric' use the
+        corrected regular initial-value evaluator. velocity_nodes=pitch_nodes=24 by default,
+        each int-converted value >=2. Pressure keys: hot_pressure_scale defaults to 1 Pa;
+        gas_dynamic_pressure defaults to 0 Pa; gas_dynamic_density, hot_density_scale and
+        electron_temperature are optional canonical keys. The pressure-state adapter passes
+        these as keyword-only arguments and has no p0 or background_density fallback.
+        Present pressure, density and electron-energy scales must be finite and nonnegative;
+        the latter is J, not K. Some nested numeric conversions and Legendre evaluations can
+        raise their native exceptions. Raw moments refine with quadrature_rtol=1e-7 and
+        max_quadrature_nodes=max(768,2*max(initial counts)); zero-vc/zero-cutoff divergent
+        density, zero normalizers or unresolved refinement fail explicitly. Units: [mixed;
+        psi_axis/psi_edge same as psi, field T, pressure Pa, density m^-3, electron energy
+        J, angle deg and dimensionless controls].
 
     Returns
     -------
-    dict
-        ``p_parallel`` and ``p_perp`` pressure fields, optional density and
-        electron-temperature fields, and an inspectable ``closure_state``.
+    p_parallel : NumPy float64 array
+        Gas-dynamic plus optional electron plus hot-ion parallel pressure. Shape: [N_Z,N_R].
+        Constraints: Finite and nonnegative on successful return; hot term uses
+        hot_parallel_shape normalized at b=1. Units: [Pa].
+    p_perp : NumPy float64 array
+        Gas-dynamic plus optional electron plus hot-ion perpendicular pressure. Shape:
+        [N_Z,N_R]. Constraints: Finite and nonnegative on successful return; its hot term is
+        normalized to the b=1 parallel moment, so it need not equal p_parallel at b=1.
+        Units: [Pa].
+    density : NumPy float64 array or None
+        Gas-dynamic radial density plus radial hot-ion density when either density scale is
+        supplied. Shape: [N_Z,N_R] or None. Constraints: None when both gas_dynamic_density
+        and hot_density_scale are absent. The electron pressure is zero when
+        electron_temperature is absent or no density scale is supplied. Units: [m^-3 or not
+        applicable].
+    electron_temperature : NumPy float64 array or None
+        Constant electron thermal-energy field used for the optional electron pressure.
+        Shape: [N_Z,N_R] or None. Constraints: None when unconfigured; may be an array even
+        when density is None, in which case the electron pressure remains zero. Units: [J or
+        not applicable].
+    closure_state : Python dict containing NumPy arrays, strings, numbers and a quadrature dict
+        Inspectable intermediate source and hot-moment state added by the graph, not a
+        convergence certificate. Shape: mapping with [N_Z,N_R] normalized_field and
+        radial_shape, [mode] degrees and source_coefficients, scalar xi_tp_mid,
+        degree_source, legendre_backend, legendre_terms, normalization and quadrature,
+        velocity_domain and quadrature_convergence, reference_raw_moments. Constraints:
+        Initial quadrature counts, effective raw-moment convergence and common velocity
+        domain are inspectable. They do not establish a physical force balance or kinetic
+        equilibrium. Reference raw moments expose the normalization integrals before
+        division. Units: [mixed; normalized fields and mode arrays are dimensionless].
 
     Raises
     ------
     ValueError
-        If the parameter mapping or dependency inputs violate the declared
-        grid, normalization or control contract.
+        If inputs is not a mapping, required params are missing, or the parameter mapping
+        violates its declared normalization, shape, grid, source or control contract.
     RuntimeError
-        If source normalization, spectrum evaluation or hot-moment quadrature
-        cannot produce a converged closure; failures propagate without a
-        partial pressure result.
+        If source normalization, spectrum evaluation, hot-moment quadrature or pressure
+        assembly cannot produce a finite converged closure.
+
+    See Also
+    --------
+    scirel.kinetic.evaluate_frank_egedal_radial_envelope
+        Evaluate the radial pressure envelope.
+    scirel.kinetic.project_frank_egedal_source_modes
+        Project caller or spectral loss-cone source modes.
+    scirel.kinetic.evaluate_frank_egedal_hot_ion_moments
+        Evaluate the hot-ion moment closure state.
+    scirel.kinetic.assemble_frank_egedal_pressure
+        Assemble the returned pressure fields.
+
+    Notes
+    -----
+        The public wrapper accepts the existing `inputs` mapping and named `**kwargs`
+        mapping ports through the composition boundary. `psi` and `B` are caller-owned
+        arrays; `params` is passed through to the bound radial-envelope, source-projection,
+        hot-moment and pressure-state operators. The returned `closure_state` is an
+        inspectable record of source and hot-moment intermediates, not a convergence or
+        physical-force-balance certificate. Nested mappings remain ordinary Python
+        dictionaries.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from scirel.kinetic import solve_frank_egedal_pressure_closure
+    >>> psi = np.array([[0.0, 0.5], [0.25, 1.0]])
+    >>> B = np.array([[1.0, 1.1], [1.2, 1.3]])
+    >>> r = solve_frank_egedal_pressure_closure({'psi': psi, 'B': B, 'params': {'psi_axis': 0.0, 'psi_edge': 1.0, 'B0': 1.0, 'hot_pressure_scale': 8.0, 'mirror_ratio': 2.0, 'legendre_degrees': [0.5], 'source_coefficients': [1.0], 'velocity_nodes': 6, 'pitch_nodes': 6}})
+    >>> assert set(r) == {'p_parallel', 'p_perp', 'density', 'electron_temperature', 'closure_state'}
+    >>> assert r['p_parallel'].shape == r['p_perp'].shape == (2, 2)
+    >>> assert np.all(np.isfinite(r['p_parallel'])) and np.all(np.isfinite(r['p_perp']))
+    >>> assert r['density'] is None and r['electron_temperature'] is None
+    >>> assert r['closure_state']['degree_source'] == 'caller_supplied'
+    >>> assert r['closure_state']['normalization'] == 'pressure moments referenced to hot_parallel(b=1); density referenced to hot_density(b=1)'
     """
     from scirel._composition import compose
     from scirel.kinetic.frank_egedal_hot_ion_moments import (
