@@ -44,6 +44,12 @@ def test_rejects_nonfinite_matrix_and_bad_threshold():
         truncated_svd_inverse(np.eye(2), rcond=float("inf"))
 
 
+@pytest.mark.parametrize("bad_rcond", [None, "1e-10", [1.0e-10], True])
+def test_rejects_non_real_threshold(bad_rcond):
+    with pytest.raises(ValueError, match="rcond"):
+        truncated_svd_inverse(np.eye(2), rcond=bad_rcond)
+
+
 def test_rcond_is_relative_to_the_largest_singular_value():
     matrix = np.diag([1.0e-11, 1.0e-6])
     inverse = truncated_svd_inverse(matrix, rcond=1.0e-10)
@@ -55,3 +61,38 @@ def test_zero_matrix_returns_zero_pseudo_inverse():
     assert inverse.shape == (2, 3)
     assert np.all(inverse == 0.0)
     assert np.isfinite(inverse).all()
+
+
+def test_threshold_still_discards_singular_values_below_rcond():
+    # A singular value below the relative threshold is legitimately truncated,
+    # so its overflowing reciprocal is never formed.
+    matrix = np.diag([1.0, 1.0e-310])
+    np.testing.assert_allclose(
+        truncated_svd_inverse(matrix),
+        np.linalg.pinv(matrix, rcond=1.0e-10),
+        rtol=1e-14,
+        atol=0.0,
+    )
+
+
+def test_finite_input_with_unrepresentable_retained_reciprocal_raises():
+    with pytest.raises(FloatingPointError, match="not representable as finite float64"):
+        truncated_svd_inverse(np.array([[1.0e-310]]))
+
+
+def test_finite_input_retained_only_by_small_rcond_still_raises():
+    matrix = np.diag([1.0, 1.0e-310])
+    with pytest.raises(FloatingPointError, match="not representable as finite float64"):
+        truncated_svd_inverse(matrix, rcond=1.0e-320)
+
+
+def test_representable_small_reciprocal_keeps_its_numeric_value():
+    matrix = np.array([[1.0e-300]])
+    inverse = truncated_svd_inverse(matrix)
+    np.testing.assert_allclose(inverse, np.linalg.pinv(matrix), rtol=1e-14, atol=0.0)
+    assert np.isfinite(inverse).all()
+
+
+def test_finite_input_with_unrepresentable_singular_values_raises():
+    with pytest.raises(FloatingPointError, match="singular values"):
+        truncated_svd_inverse(np.full((2, 2), 1.0e308))

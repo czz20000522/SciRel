@@ -5,7 +5,7 @@
   "en": "Truncated SVD pseudo-inverse",
   "zh": "截断 SVD 伪逆"
  },
- "summary": "Compute the Moore-Penrose inverse of a finite real matrix, discarding singular values below a relative threshold.",
+ "summary": "Compute the Moore-Penrose inverse of a finite real matrix, discarding only singular values below a relative threshold; a finite input whose retained reciprocal is not representable raises FloatingPointError.",
  "taxonomy": [
   "analysis",
   "numerics"
@@ -14,29 +14,30 @@
  "discovery": {
   "capability": [
    "Truncated SVD pseudo-inverse",
-   "Compute the Moore-Penrose pseudo-inverse of a finite real matrix, discarding singular values below a relative threshold."
+   "Compute the Moore-Penrose inverse of a finite real matrix, discarding only singular values below a relative threshold; a finite input whose retained reciprocal is not representable raises FloatingPointError."
   ],
   "operation": [
    "thresholded Moore-Penrose inversion",
    "dense real matrix and relative rcond -> pseudo-inverse with truncated singular values"
   ],
-  "model": "Truncated singular-value decomposition of a dense real matrix: V diag(1/s for s>=rcond else 0) U^T.",
+  "model": "Truncated singular-value decomposition of a dense real matrix: V diag(1/s for s >= rcond * max(s) else 0) U^T.",
   "geometry": "Dense real matrix with no spatial geometry; matrix entries are dimensionless and rcond is a relative scalar threshold.",
-  "boundary": "Singular values below rcond are discarded; non-2-D, nonfinite or non-positive-threshold inputs are rejected, and complex or sparse matrices and iterative or weighted least-squares semantics are excluded.",
+  "boundary": "Singular values below rcond * max(s) are discarded; non-2-D, nonfinite or non-positive-threshold inputs are rejected; a finite input whose SVD singular values or retained reciprocal is not representable raises FloatingPointError; complex or sparse matrices and iterative or weighted least-squares semantics are excluded.",
   "device_scope": "generic"
  },
  "identity": {
   "relation": "thresholded Moore-Penrose pseudo-inverse",
   "direction": "real matrix M -> pseudo-inverse M^+",
-  "definition": "For M = U diag(s) V^T, return V diag(1/s for s >= rcond else 0) U^T.",
+  "definition": "For M = U diag(s) V^T, return V diag(1/s for s >= rcond * max(s) else 0) U^T.",
   "model": "truncated singular-value decomposition of a dense real matrix",
   "geometry": "dense real matrix without spatial geometry",
   "coordinates": "dimensionless matrix entries; rcond is a relative scalar threshold",
-  "boundary": "singular values below rcond are discarded; non-2-D, non-finite or non-positive-threshold inputs are rejected",
+  "boundary": "singular values below rcond * max(s) are discarded; non-2-D, non-finite or non-positive-threshold inputs are rejected; a finite input whose SVD singular values or retained reciprocal is not representable as finite float64 raises FloatingPointError instead of being truncated",
   "assumptions": [
    "The input is a finite real matrix.",
    "rcond is a positive finite relative threshold.",
-   "NumPy singular-value ordering and sign conventions are used."
+   "NumPy singular-value ordering and sign conventions are used.",
+   "The retained singular values have finite float64 reciprocals and the contracted pseudo-inverse is finite."
   ]
  },
  "inputs": [
@@ -68,28 +69,31 @@
    "shape": "(n,m)",
    "dtype": "float64 array",
    "required": true,
-   "constraints": "finite for a finite input"
+   "constraints": "values below rcond * max(s) are truncated; finite whenever the SVD singular values, retained reciprocals and contracted result are representable as float64; otherwise FloatingPointError is raised"
   }
  ],
  "applicability": {
   "preconditions": [
    "finite real 2-D input",
-   "positive finite rcond"
+   "positive finite rcond",
+   "retained singular values have finite float64 reciprocals"
   ],
   "supported": [
    "square, tall and wide matrices",
-   "rank-deficient spectra with thresholded singular values"
+   "rank-deficient spectra with thresholded singular values",
+   "finite inputs whose retained reciprocals stay inside the float64 range"
   ],
   "excluded": [
    "complex or sparse matrices",
-   "iterative or regularized least-squares semantics beyond truncation"
+   "iterative or regularized least-squares semantics beyond truncation",
+   "finite inputs whose retained reciprocal or contracted inverse exceeds the finite float64 range; these raise FloatingPointError instead of widening the dtype or truncating the singular value"
   ]
  },
  "failure_semantics": {
-  "invalid_input": "ValueError is raised for non-2-D or non-finite matrices and for a non-positive or non-finite rcond.",
-  "runtime_failure": "No additional runtime failure is defined; NumPy floating-point behavior applies.",
+  "invalid_input": "ValueError is raised for non-2-D or non-finite matrices and for an rcond that is not a positive finite real scalar.",
+  "runtime_failure": "FloatingPointError is raised when a finite input yields SVD singular values, a retained reciprocal, or a contracted pseudo-inverse that is not representable as finite float64; the message states non-representability and does not promise a numeric magnitude bound.",
   "nonconvergence": "Not applicable; the computation is a direct decomposition.",
-  "partial_results": "No partial result is returned after invalid input."
+  "partial_results": "No partial result or truncated substitute is returned after invalid input or a non-representable derived result."
  },
  "public_api": {
   "python": {
@@ -105,25 +109,28 @@
   "dependencies": []
  },
  "example": {
-  "description": "Invert a rank-deficient two-by-two matrix and a rectangular matrix.",
-  "code": "import numpy as np\nfrom scirel.geometry import truncated_svd_inverse\nm = np.array([[1., 2.], [2., 4.]])\nassert np.allclose(truncated_svd_inverse(m), np.linalg.pinv(m))\nr = truncated_svd_inverse(np.ones((5, 3)))\nassert r.shape == (3, 5)",
-  "expected": "The truncated inverse equals the NumPy pseudo-inverse on the rank-deficient case and preserves the (n,m) shape."
+  "description": "Invert a rank-deficient two-by-two matrix and a rectangular matrix, and observe the finite-input fail-closed branch.",
+  "code": "import numpy as np\nfrom scirel.geometry import truncated_svd_inverse\n\nm = np.array([[1.0, 2.0], [2.0, 4.0]])\nnp.testing.assert_allclose(truncated_svd_inverse(m), np.linalg.pinv(m))\ntruncated_svd_inverse(np.ones((5, 3))).shape\ntry:\n    truncated_svd_inverse(np.array([[1e-310]]))\nexcept FloatingPointError:\n    print(\"finite input, unrepresentable derived result\")\n",
+  "expected": "The rank-deficient inverse matches numpy.linalg.pinv, the rectangular case returns shape (3, 5), and a finite 1e-310 entry raises FloatingPointError instead of returning inf."
  },
  "verification": {
   "scope": [
    "Agreement with numpy.linalg.pinv on square, tall and wide full-rank matrices.",
    "Rank-deficient thresholding and the M M^+ M = M projection identity.",
    "Rejection of non-2-D and non-finite matrices and of non-positive or non-finite thresholds.",
-   "The zero matrix returns the zero pseudo-inverse, covered by tests/geometry/test_truncated_svd_inverse.py."
+   "The zero matrix returns the zero pseudo-inverse, covered by tests/geometry/test_truncated_svd_inverse.py.",
+   "Finite-input fail-closed boundary: a 1e-310 entry and an underflowed relative threshold raise FloatingPointError, while a representable 1e-300 reciprocal keeps its value.",
+   "Finite-input fail-closed boundary of the decomposition: a 2x2 matrix filled with 1e308 raises FloatingPointError when its SVD singular values are not representable."
   ],
   "tests": [
    "tests/geometry/test_truncated_svd_inverse.py"
   ],
-  "evidence_ceiling": "Mathematical identity checks on bounded dense matrices; no application-level diagnostic-fitting or statistical-error claim.",
+  "evidence_ceiling": "Mathematical identity checks on bounded dense matrices plus a finite float64 representability boundary witness; no application-level diagnostic-fitting, statistical-error claim, or numeric magnitude bound for arbitrary finite inputs is established.",
   "known_limitations": [
    "Complex and sparse matrices are not supported.",
    "rcond follows NumPy singular-value conventions; it is not a statistical noise model.",
-   "No iterative, weighted or regularized least-squares semantics are provided."
+   "No iterative, weighted or regularized least-squares semantics are provided.",
+   "Finite inputs whose SVD singular values, retained reciprocals, or contracted pseudo-inverse are not representable as finite float64 raise FloatingPointError; the implementation does not rescale, use extended precision, or silently drop singular values."
   ]
  }
 }

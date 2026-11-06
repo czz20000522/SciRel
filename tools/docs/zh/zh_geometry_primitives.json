@@ -2225,15 +2225,16 @@
   },
   {
    "asset_id": "scirel.numerics.truncated-svd-inverse",
-   "source_sha256": "d91b4c227b6f6a6dd684c2d43b1472a28c04ed934bd204fe5e3a31e28b61a987",
-   "summary": "计算有限实矩阵的 Moore–Penrose 伪逆，并按相对阈值截断奇异值。",
-   "definition": "对 M = U diag(s) V^T，返回 V diag(s ≥ rcond 时取 1/s，否则取 0) U^T。",
+   "source_sha256": "1f503dea64dfd1683084fb7d0ef6d075e18d8ab95c7d82d8f6fa9b5b5562dddb",
+   "summary": "计算有限实矩阵的 Moore–Penrose 伪逆，只按相对阈值截断奇异值；有限输入若其保留倒数不可表示，则抛出 FloatingPointError。",
+   "definition": "对 M = U diag(s) V^T，返回 V diag(s ≥ rcond·max(s) 时取 1/s，否则取 0) U^T。",
    "model": "稠密实矩阵的截断奇异值分解。",
-   "boundary": "低于 rcond 的奇异值被丢弃；非二维、非有限输入或非正阈值均被拒绝。",
+   "boundary": "低于 rcond·max(s) 的奇异值被截断；非二维、非有限输入或非正阈值均被拒绝；有限输入若 SVD 奇异值或保留奇异值的倒数无法以有限 float64 表示，则抛出 FloatingPointError，而不是把它当作已截断。",
    "assumptions": [
     "输入为有限实矩阵。",
     "rcond 为正的有限相对阈值。",
-    "采用 NumPy 的奇异值排序与符号约定。"
+    "采用 NumPy 的奇异值排序与符号约定。",
+    "保留奇异值的倒数及其收缩结果能以有限 float64 表示。"
    ],
    "inputs": [
     {
@@ -2253,47 +2254,53 @@
     {
      "name": "inverse",
      "description": "形状为 (n,m) 的截断伪逆。",
-     "constraints": "有限输入下返回有限数组。",
+     "constraints": "低于 rcond·max(s) 的奇异值被截断；SVD 奇异值、保留倒数与收缩结果都能以 float64 表示时返回有限数组，否则抛出 FloatingPointError。",
      "dtype": "float64 数组"
     }
    ],
    "applicability": {
     "preconditions": [
      "输入为有限实数二维数组。",
-     "rcond 为正的有限值。"
+     "rcond 为正的有限值。",
+     "保留奇异值的倒数能以有限 float64 表示。"
     ],
     "supported": [
      "方阵、长矩阵与宽矩阵。",
-     "秩亏谱的截断求逆。"
+     "秩亏谱的截断求逆。",
+     "保留倒数仍在 float64 范围内的有限输入。"
     ],
     "excluded": [
      "复数矩阵与稀疏格式。",
-     "截断之外的迭代或正则化最小二乘语义。"
+     "截断之外的迭代或正则化最小二乘语义。",
+     "保留倒数或收缩结果超出有限 float64 范围的有限输入；这类输入抛出 FloatingPointError，不换用更宽的数据类型，也不把它们当作已截断。"
     ]
    },
    "failure_semantics": {
-    "invalid_input": "非二维或非有限矩阵、非正或非有限 rcond 抛出 ValueError。",
-    "runtime_failure": "不额外定义运行时失败；遵循 NumPy 浮点行为。",
+    "invalid_input": "非二维或非有限矩阵、非正或非有限 rcond 抛出 ValueError；rcond 不是实数标量（如 None、列表、字符串或布尔值）同样抛出 ValueError。",
+    "runtime_failure": "有限输入若使 SVD 奇异值、保留倒数或收缩伪逆无法以有限 float64 表示，则抛出 FloatingPointError；错误信息说明派生结果不可表示，不承诺数值量级上界。",
     "nonconvergence": "不适用；分解为直接计算。",
-    "partial_results": "无效输入后不返回部分结果。"
+    "partial_results": "无效输入或派生结果不可表示后不返回部分结果，也不返回截断替代结果。"
    },
    "verification": {
     "scope": [
      "方阵、长矩阵与宽矩阵上与 numpy.linalg.pinv 的一致性。",
      "秩亏谱的阈值截断及 M M^+ M = M 投影恒等式。",
      "二维形状、非有限元素与非正阈值的拒绝行为。",
-     "全零矩阵返回零伪逆，见 tests/geometry/test_truncated_svd_inverse.py。"
+     "全零矩阵返回零伪逆，见 tests/geometry/test_truncated_svd_inverse.py。",
+     "有限输入的 fail-closed 边界：1e-310 元素及相对阈值下溢时抛出 FloatingPointError，而可表示的 1e-300 倒数保持原数值。",
+     "分解本身的有限输入 fail-closed 边界：2×2 矩阵全为 1e308 时，若 SVD 奇异值不可表示，抛出 FloatingPointError。"
     ],
     "known_limitations": [
      "不支持复矩阵与稀疏矩阵。",
      "rcond 遵循 NumPy 的奇异值约定，不是统计噪声模型。",
-     "不提供加权、迭代或正则化最小二乘语义。"
+     "不提供加权、迭代或正则化最小二乘语义。",
+     "有限输入的 SVD 奇异值、保留倒数或收缩伪逆无法以有限 float64 表示时抛出 FloatingPointError；实现不做重标定、不用扩展精度，也不静默丢弃这些奇异值。"
     ],
-    "evidence_ceiling": "仅在有界稠密矩阵上建立数学恒等式证据，不建立应用级诊断拟合或统计误差结论。"
+    "evidence_ceiling": "仅在有界稠密矩阵上建立数学恒等式证据，并给出一个有限 float64 可表示性边界见证；不建立应用级诊断拟合、统计误差结论，也不对任意有限输入承诺数值量级上界。"
    },
    "example": {
-    "description": "对一个秩亏 2×2 矩阵和矩形矩阵求截断伪逆。",
-    "expected": "秩亏用例与 numpy.linalg.pinv 一致，矩形用例返回 (n,m) 形状。"
+    "description": "对一个秩亏 2×2 矩阵和矩形矩阵求截断伪逆，并演示有限输入的 fail-closed 分支。",
+    "expected": "秩亏用例与 numpy.linalg.pinv 一致，矩形用例返回 (3,5) 形状；含 1e-310 的有限输入抛出 FloatingPointError，而不是返回 inf。"
    }
   },
   {
