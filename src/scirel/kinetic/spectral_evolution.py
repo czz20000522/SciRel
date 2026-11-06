@@ -132,23 +132,198 @@ def _species_data(species, unit):
 
 
 def initialize_plasma_state(species=None, *, unit="normalized", prior=None, cfg=None):
-    """Build fresh caller-owned state; ten columns q,m,n,vx,vy,vz,csz,csp,epsx,epsy.
+    r"""Initialize a caller-owned local multifluid plasma state.
 
-    SI uses C, kg, m^-3, m/s and m^-1; normalized uses c=epsilon0=1
-    defaults. gamma defaults to 1 normalized or 5/3 SI. Explicit constants
-    define the normalization. ``prior`` is accepted only as a mapping and
-    deliberately contributes no scientific fields: every input is recomputed.
-    The externally maintained background permits nonzero charge/current/gradient;
-    it does not claim unforced equilibrium. Equal rows remain distinct fluids.
-    ``collision_rates[i,j]`` is receiver i's nonnegative rate toward j;
-    its diagonal is zero, rho_i*rate_ij=rho_j*rate_ji. ``drag_rates`` couples
-    each fluid to a stationary external bath. Legacy rate controls use explicit
-    numerical light/heavy mass categories (normalized <=1 or SI
-    <=9.1093837139e-31 kg), not inferred physical species. collision_classes
-    overrides them with light/heavy labels (electron/ion are aliases). nue/nui
-    denote light/heavy bath rates; nuei is the light receiver's rate toward a
-    heavy fluid. For a same-class pair, nuee/nuii is the lower-rho receiver's
-    rate. Reverse rates enforce rho reciprocity; ordering does not change them.
+    Parameters
+    ----------
+    species : real array-like or string, optional
+        Rows q,m,n,vx,vy,vz,cs_parallel,cs_perpendicular,eps_x,eps_y; one header line
+        for text. Shape: [s,10] or text. Constraints: s>=1, m/n>0, cs>=0; None uses
+        documented example rows; rows are independent fluids, including equal rows.
+        Default normalized rows: [-1,1,4,0,0,0,0,0,0,0], [1,4,4,0,0,0,0,0,0,0]. Default
+        SI rows: [-1.602e-19,9.109e-31,8.7e6,0,0,0,4.631e6,4.631e6,0,0],
+        [1.602e-19,1.673e-27,8.7e6,0,0,0,9.360e4,9.360e4,0,0]. Default: None. Units: [SI
+        C,kg,m^-3,m/s,m^-1 by quantity; normalized units fixed by explicit c2,epsilon0
+        and B0].
+    unit : string, optional
+        Unit convention and default constants. Shape: scalar. Constraints: normalized or
+        si, without input conversion. Default: 'normalized'. Units: [dimensionless].
+    prior : dict or None, optional
+        Prior state accepted for call compatibility, never used as primary scientific
+        input. Shape: mapping or null. Constraints: Every field is freshly derived;
+        prior is not mutated. Default: None. Units: [state convention].
+    cfg : dict or None, optional
+        Constants B0,c2,epsilon0,gammaTs; collision controls and classification. Shape:
+        mapping or null. Constraints: Only documented fields; c2/epsilon0/gammaTs>0.
+        Explicit rates receiver i toward j, zero diagonal, nonnegative and rho
+        reciprocal. drag_rates>=0. Legacy nue/nui light/heavy bath, nuei light-receiver
+        cross-class, same-class nuee/nuii lower-rho receiver. Default mass classes
+        normalized<=1 or SI<=9.1093837139e-31 kg; collision_classes explicit light/heavy
+        (electron/ion aliases) overrides. These are numerical categories, not inferred
+        species identities. Defaults normalized: B0=1,c2=1,epsilon0=1,gammaTs=1; SI:
+        B0=8e-9 T,c2=(2.9979e8)^2,epsilon0=8.854e-12,gammaTs=5/3. All five legacy rates
+        zero; absent explicit pair/drag rates derive from those zero controls. Default
+        classes use the declared mass threshold. Default: None. Units: [B0 in T/SI or
+        normalized; c2 speed squared; epsilon0 SI or normalized; rates s^-1 or
+        normalized frequency].
+
+    Returns
+    -------
+    s : int
+        Number of fluid rows. Shape: scalar. Constraints: No deduplication or stale
+        tail. Units: [dimensionless].
+    unit : string
+        Declared unit convention. Shape: scalar. Constraints: normalized or si. Units:
+        [dimensionless].
+    species : float64
+        Owned copy of all primary species inputs. Shape: [s,10]. Constraints: Input
+        order preserved. Units: [SI C,kg,m^-3,m/s,m^-1 by quantity; normalized units
+        fixed by explicit c2,epsilon0 and B0].
+    qs : float64
+        Charges. Shape: [s]. Constraints: Finite. Units: [C or normalized charge].
+    ms : float64
+        Masses. Shape: [s]. Constraints: Positive. Units: [kg or normalized mass].
+    ns0 : float64
+        Number densities. Shape: [s]. Constraints: Positive. Units: [m^-3 or normalized
+        density].
+    vs0x : float64
+        x drift. Shape: [s]. Constraints: Finite. Units: [m/s or normalized speed].
+    vs0y : float64
+        y drift. Shape: [s]. Constraints: Finite. Units: [m/s or normalized speed].
+    vs0z : float64
+        z drift. Shape: [s]. Constraints: Finite. Units: [m/s or normalized speed].
+    csz2 : float64
+        Parallel sound speed squared. Shape: [s]. Constraints: Nonnegative. Units:
+        [m^2/s^2 or normalized speed squared].
+    csp2 : float64
+        Perpendicular sound speed squared. Shape: [s]. Constraints: Nonnegative. Units:
+        [m^2/s^2 or normalized speed squared].
+    epsnx : float64
+        x logarithmic density gradient. Shape: [s]. Constraints: Finite. Units: [m^-1 or
+        normalized inverse length].
+    epsny : float64
+        y logarithmic density gradient. Shape: [s]. Constraints: Finite. Units: [m^-1 or
+        normalized inverse length].
+    rhos0 : float64
+        Mass density m*n. Shape: [s]. Constraints: Positive. Units: [kg/m^3 or
+        normalized mass density].
+    gammaTs : float64
+        Algebraic pressure coefficient. Shape: [s]. Constraints: Positive. Units:
+        [dimensionless].
+    Psz : float64
+        Parallel background pressure rho*csz2/gamma. Shape: [s]. Constraints:
+        Nonnegative. Units: [Pa or normalized pressure].
+    Psp : float64
+        Perpendicular background pressure rho*csp2/gamma. Shape: [s]. Constraints:
+        Nonnegative. Units: [Pa or normalized pressure].
+    Deltas : float64
+        Magnetic director pressure coefficient (Psz-Psp)/B0. Shape: [s]. Constraints:
+        Exactly zero at B0=0, fixed z director. Units: [Pa/T or normalized
+        pressure/field].
+    vA : float64
+        Signed Alfvén scale B0/sqrt(mu0*rho). Shape: [s]. Constraints: Exactly zero at
+        B0=0. Units: [m/s or normalized speed].
+    wcs : float64
+        Signed gyrofrequency q*B0/m. Shape: [s]. Constraints: Zero is permitted. Units:
+        [s^-1 or normalized frequency].
+    wps : float64
+        Plasma frequency sqrt(n*q^2/(epsilon0*m)). Shape: [s]. Constraints: Nonnegative.
+        Units: [s^-1 or normalized frequency].
+    betasz : float64 array or None
+        Parallel beta 2*mu0*Psz/B0^2. Shape: [s] or null. Constraints: Undefined and
+        returned None at B0=0, not a stale or invented zero. Units: [dimensionless].
+    betasp : float64 array or None
+        Perpendicular beta 2*mu0*Psp/B0^2. Shape: [s] or null. Constraints: Undefined at
+        B0=0. Units: [dimensionless].
+    Q0 : float64
+        Total charge density sum(q*n). Shape: scalar. Constraints: May be nonzero under
+        externally maintained background. Units: [C/m^3 or normalized charge density].
+    J0x : float64
+        x background current. Shape: scalar. Constraints: Finite; no unforced
+        equilibrium claim. Units: [A/m^2 or normalized current density].
+    J0y : float64
+        y background current. Shape: scalar. Constraints: Finite. Units: [A/m^2 or
+        normalized current density].
+    J0z : float64
+        z background current. Shape: scalar. Constraints: Finite. Units: [A/m^2 or
+        normalized current density].
+    B0 : float64
+        z background field. Shape: scalar. Constraints: Finite including zero. Units: [T
+        or normalized field].
+    c2 : float64
+        Speed of light squared. Shape: scalar. Constraints: Positive. Units: [m^2/s^2 or
+        normalized speed squared].
+    epsilon0 : float64
+        Permittivity. Shape: scalar. Constraints: Positive. Units: [F/m or normalized
+        permittivity].
+    mu0 : float64
+        Permeability 1/(c2*epsilon0). Shape: scalar. Constraints: Positive finite.
+        Units: [H/m or normalized permeability].
+    mirror_factor : float64
+        Phenomenological longitudinal magnetic-pressure factor. Shape: scalar.
+        Constraints: Exactly 2. Units: [dimensionless].
+    nu : float64
+        Velocity collision generator: positive pair couplings and diagonal minus bath
+        and outgoing-rate sum. Shape: [s,s]. Constraints: Row sum=-drag_rates;
+        rho-weighted pairwise momentum conservation. Units: [s^-1 or normalized
+        frequency].
+    collision_rates : float64
+        Receiver-rate matrix. Shape: [s,s]. Constraints: Nonnegative, zero diagonal,
+        rho_i rate_ij=rho_j rate_ji; finite nonunderflowing momentum flux. Units: [s^-1
+        or normalized frequency].
+    drag_rates : float64
+        External stationary-bath rates. Shape: [s]. Constraints: Nonnegative. Units:
+        [s^-1 or normalized frequency].
+    collision_classes : string array
+        Declared numerical collision classes. Shape: [s]. Constraints: light/heavy,
+        preserved through assembly. Units: [dimensionless].
+    background : string
+        Prescribed background support convention. Shape: scalar. Constraints:
+        externally-maintained-zero-perturbation-response. Units: [dimensionless].
+    pressure_closure : string
+        Thermal relation label. Shape: scalar. Constraints:
+        algebraic-fixed-temperature-coefficients. Units: [dimensionless].
+    zero_field_director : string
+        Unmagnetized pressure orientation. Shape: scalar. Constraints: fixed-z. Units:
+        [dimensionless].
+
+    Raises
+    ------
+    ValueError
+        If inputs, physical controls, coefficient tables or a numerical response are
+        invalid or unrepresentable.
+
+    See Also
+    --------
+    assemble_spectral_matrix
+        Related kinetic amplitude or dispersion operator in the same workflow.
+    solve_temporal_spectrum
+        Related kinetic amplitude or dispersion operator in the same workflow.
+    evaluate_spectral_dispersion
+        Related kinetic amplitude or dispersion operator in the same workflow.
+
+    Notes
+    -----
+        All returned arrays are newly derived from the supplied rows or documented
+        defaults. The prior mapping is retained only as a call-compatibility input and
+        contributes no scientific state. Supported scope: Fresh normalized/SI
+        primary-state derivation, diagnostics, explicit and legacy reciprocal collision
+        rates, repeated calls and zero magnetic field. No eigenspectrum or scan is
+        calculated. Excluded scope: Effective local algebraic thermal model; not full
+        entropy evolution, CGL, kinetic physics, or the unmagnetized drift-directed
+        Appendix A model; Background sources and prescribed acceleration per mass have
+        zero perturbation response. Gradients define a local/eikonal symbol, not an
+        inhomogeneous global Maxwell-Gauss boundary solution; The magnetic longitudinal
+        pressure-divergence factor two is a phenomenological mirror correction; no
+        universal kinetic mirror threshold or experimental accuracy claim; Relativistic
+        inertia uses d(gamma*v)/dv with noncovariant pressure and friction; no fully
+        covariant thermodynamics claim is made.
+
+    Examples
+    --------
+    >>> from scirel.kinetic import initialize_plasma_state
+    >>> s = initialize_plasma_state()
+    >>> assert s['s'] == 2 and s['Q0'] == 0
     """
     if unit not in ("normalized", "si"):
         raise ValueError("unit must be normalized or si")
@@ -316,12 +491,89 @@ def _state(state):
 
 
 def assemble_spectral_matrix(state, kx, kz, *, rel=0):
-    """Assemble lambda*A*x=M*x, omega=i*lambda; species (dn,dvx,dvy,dvz), then E,B.
+    r"""Assemble the local spectral time-generator matrix.
 
-    k components may be finite complex scalars in declared inverse-length units.
-    rel=1 uses d(gamma*v)/dv, requires |v0|<c, and retains this effective
-    model's noncovariant algebraic pressure/friction terms. No relativistic
-    kinetic or covariant thermodynamic claim is made. rel=0 uses unit inertia.
+    Parameters
+    ----------
+    state : dict
+        Fresh plasma state with explicit primary data and configuration. Shape: mapping.
+        Constraints: Produced by initialize_plasma_state; primary inputs are revalidated
+        and all derived fields recomputed. Units: [mixed physical quantities as declared
+        by state].
+    kx : finite complex scalar
+        x wave number. Shape: scalar. Constraints: Complex values describe the local
+        spatial analytic symbol. Units: [m^-1 SI or normalized inverse length].
+    kz : finite complex scalar
+        z wave number. Shape: scalar. Constraints: Same convention as kx. Units: [m^-1
+        SI or normalized inverse length].
+    rel : int, optional
+        Relativistic inertia selector. Shape: scalar. Constraints: 0 or 1; rel=1
+        requires |v0|<c. Default: 0. Units: [dimensionless].
+
+    Returns
+    -------
+    M : complex128
+        Temporal generator with species [dn,dvx,dvy,dvz] then [Ex,Ey,Ez,Bx,By,Bz].
+        Shape: [4s+6,4s+6]. Constraints: Finite; lambda*A*x=M*x and omega=i*lambda.
+        Units: [row output units per second divided by column state units; normalized
+        analog].
+    A : complex128
+        Inertia matrix. Shape: [4s+6,4s+6]. Constraints: Identity except d(gamma*v)/dv
+        in rel=1 velocity blocks. Units: [dimensionless within equally scaled velocity
+        blocks].
+    state : dict
+        Revalidated fresh state used by the matrix. Shape: mapping. Constraints: No
+        stale derived fields; preserves explicit collision classes. Units: [per-state
+        quantity conventions].
+    scales : float64
+        Positive physical state-column scales for similarity transformation. Shape:
+        [4s+6]. Constraints: Density=n_j, velocity=c, B=sqrt(sum(rho)/epsilon0), E=c*B;
+        transforms rows and columns consistently. Units: [density,velocity,electric
+        field,magnetic field by component].
+    kx : complex
+        Accepted wave number x. Shape: scalar. Constraints: Same as requested. Units:
+        [m^-1 SI or normalized inverse length].
+    kz : complex
+        Accepted wave number z. Shape: scalar. Constraints: Same as requested. Units:
+        [m^-1 SI or normalized inverse length].
+
+    Raises
+    ------
+    ValueError
+        If inputs, physical controls, coefficient tables or a numerical response are
+        invalid or unrepresentable.
+
+    See Also
+    --------
+    initialize_plasma_state
+        Related kinetic amplitude or dispersion operator in the same workflow.
+    solve_temporal_spectrum
+        Related kinetic amplitude or dispersion operator in the same workflow.
+    evaluate_spectral_dispersion
+        Related kinetic amplitude or dispersion operator in the same workflow.
+
+    Notes
+    -----
+        The local algebraic thermal model assembles the state matrix from the explicit
+        species and configuration. Viscosity and relaxation fractions are clamped to the
+        declared numerical range before assembly. Supported scope: Corrected local
+        fluid/Maxwell generator, relativistic tangent inertia, algebraic anisotropic
+        pressure response and physical similarity scales. No eigenspectrum, scans or
+        plots are calculated. Excluded scope: Effective local algebraic thermal model;
+        not full entropy evolution, CGL, kinetic physics, or the unmagnetized
+        drift-directed Appendix A model; Background sources and prescribed acceleration
+        per mass have zero perturbation response. Gradients define a local/eikonal
+        symbol, not an inhomogeneous global Maxwell-Gauss boundary solution; The
+        magnetic longitudinal pressure-divergence factor two is a phenomenological
+        mirror correction; no universal kinetic mirror threshold or experimental
+        accuracy claim; Relativistic inertia is d(gamma*v)/dv with noncovariant pressure
+        and friction; no fully covariant thermodynamics claim.
+
+    Examples
+    --------
+    >>> from scirel.kinetic import initialize_plasma_state, assemble_spectral_matrix
+    >>> m = assemble_spectral_matrix(initialize_plasma_state(), .1, .2)
+    >>> assert m['M'].shape == (14, 14)
     """
     state = _state(state)
     rel = _integer(rel, "rel")
@@ -415,23 +667,104 @@ def _residuals(M, A, values, V):
 
 
 def solve_temporal_spectrum(M, A, *, vectors=False, oldmethod=2, scales=None, output_count=None):
-    """Conditioned eigensystem with component checks and genuine precision fallback.
+    r"""Solve the local spectral temporal eigenproblem.
 
-    oldmethod=1 is generalized eig; 2 explicitly solves A^-1*M. Both always
-    compute eigenvectors so requested arity cannot select different precision.
-    vpa conversion after double eig does not improve accuracy and is removed.
-    A radix-two similarity balance follows optional physical state scaling.
-    If active component backward errors exceed 1e-12, independently solve the
-    same rounded input matrix at 50 decimal digits using mpmath, then convert
-    to complex128. This is genuine arithmetic refinement of the specified
-    matrix, not accuracy beyond the supplied double-precision physical inputs.
-    Sorting real/imag parts independently is not branch tracking. Returned
-    residuals use scaled coordinates; they establish backward error, not
-    forward accuracy for ill-conditioned or degenerate eigenvalues.
-    The worst component metric ignores rows below 1e-12 of the per-column
-    global scale. Inactive rows remain in the global error and finite checks,
-    so a nonfinite residual still raises ``ArithmeticError``.
-    Optional output_count 0..6 returns (M,A,w1,w2,X1,X2)[:output_count].
+    Parameters
+    ----------
+    M : complex array-like
+        Temporal generator. Shape: [N,N]. Constraints: Nonempty finite square matrix.
+        Units: [row derivative units divided by column state units].
+    A : complex array-like
+        Inertia matrix of same size. Shape: [N,N]. Constraints: Nonsingular for finite
+        modes. Units: [inertia conventions paired with M].
+    vectors : bool, optional
+        Expose corresponding eigenvector columns. Shape: scalar. Constraints: Does not
+        change the eigenvalue calculation path. Default: False. Units: [dimensionless].
+    oldmethod : int, optional
+        Numerical initial solver selector. Shape: scalar. Constraints: 1 generalized
+        SciPy eig; 2 eig of solve(A,M); both use balanced coordinates and the same
+        refinement checks. Default: 2. Units: [dimensionless].
+    scales : real array-like or None, optional
+        Optional positive physical similarity scales. Shape: [N] or null. Constraints:
+        Both M and A transformed identically; radix-two balance follows. None uses
+        balancing alone. Default: None. Units: [state units per component].
+    output_count : int or None, optional
+        Optional positional local return count. Shape: scalar or null. Constraints: 0..6
+        returns (M,A,w1,w2,X1,X2) prefix; five now has a defined X1. None returns the
+        documented mapping. Default: None. Units: [dimensionless].
+
+    Returns
+    -------
+    w1 : complex128
+        Frequencies sorted by decreasing real part. Shape: [N]. Constraints:
+        omega=i*lambda; stable ties; not mode tracking. Units: [s^-1 SI or normalized
+        frequency].
+    w2 : complex128
+        Same modes sorted by decreasing imaginary part. Shape: [N]. Constraints:
+        Independent sort order. Units: [s^-1 SI or normalized frequency].
+    X1 : complex128
+        Eigenvector columns corresponding to w1. Shape: [N,N]. Constraints: Only
+        vectors=True (or positional return); arbitrary phase and degenerate basis.
+        Units: [mixed state units with max-absolute normalization].
+    X2 : complex128
+        Eigenvector columns corresponding to w2. Shape: [N,N]. Constraints: Only
+        vectors=True (or positional return). Units: [mixed state units with max-absolute
+        normalization].
+    residual1 : float64
+        Scaled global backward error for w1. Shape: [N]. Constraints: Finite and at
+        most1e-10; not a forward-accuracy certificate. Units: [dimensionless].
+    residual2 : float64
+        Scaled global backward error for w2. Shape: [N]. Constraints: Same criterion.
+        Units: [dimensionless].
+    component_residual : float64
+        Maximum active component backward error. Shape: scalar. Constraints: 50-decimal
+        fallback if double exceeds1e-12; reject if final exceeds1e-10. Units:
+        [dimensionless].
+    precision : string
+        Actual arithmetic path. Shape: scalar. Constraints: complex128 or
+        mpmath-50-decimal-to-complex128; original input coefficients remain double
+        precision. Units: [dimensionless].
+    oldmethod : int
+        Selected initial method. Shape: scalar. Constraints: 1 or2. Units:
+        [dimensionless].
+
+    Raises
+    ------
+    ArithmeticError
+        If eigenvalue qualification cannot establish a finite numerical result.
+    ValueError
+        If inputs, physical controls, coefficient tables or a numerical response are
+        invalid or unrepresentable.
+
+    See Also
+    --------
+    initialize_plasma_state
+        Related kinetic amplitude or dispersion operator in the same workflow.
+    assemble_spectral_matrix
+        Related kinetic amplitude or dispersion operator in the same workflow.
+    evaluate_spectral_dispersion
+        Related kinetic amplitude or dispersion operator in the same workflow.
+
+    Notes
+    -----
+        The generalized eigensolver returns frequencies sorted independently by real
+        part, together with paired eigenvalues and eigenvectors. Residual and
+        conditioning values qualify the numerical solve but do not establish continuous
+        branch identity. Supported scope: Dense generalized temporal eigenproblem with
+        coherent values/vectors, stable independent real/imaginary sorts and
+        backward-residual-controlled arithmetic. Excluded scope: No species
+        initialization, unit conversion, physical sign/relativity validation, scan
+        scheduling, plotting or mode tracking; No universal forward eigenvalue accuracy,
+        unique degenerate polarizations or recovery of precision lost in input
+        coefficients; Evaluated locally under the declared authorization only;
+        redistribution rights remain NOT_ESTABLISHED.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from scirel.kinetic import solve_temporal_spectrum
+    >>> r = solve_temporal_spectrum(np.diag([-1j, 2j]), np.eye(2), vectors=True)
+    >>> np.testing.assert_allclose(r['w1'], [1, -2])
     """
     M, A = np.asarray(M, dtype=complex), np.asarray(A, dtype=complex)
     if M.ndim != 2 or M.shape[0] != M.shape[1] or M.size == 0 or A.shape != M.shape:
@@ -564,19 +897,234 @@ def evaluate_spectral_dispersion(
     plot_path=None,
     output_count=None,
 ):
-    """Ordered initialization -> assembly -> spectrum graph; bounded scan then plot.
+    r"""Scan the local spectral multifluid dispersion graph.
 
-    Methods 0/1 and unknown nonnegative integers select a single point. 2 scans
-    magnitude (default angle pi/4 normalized, zero SI), 3 scans angle at k=2,
-    4 scans a Cartesian mesh in row-major (kz,kx) order. Default source grids
-    are retained: 101/196 magnitude points, 51 angles, 50x75 mesh. Controls
-    k/theta apply to single-point branch; custom grids apply to their scan.
-    At most max_points (default 10000) points; no feedback or iteration.
-    Always returns defined scan fields and last-point matrices/state. Modes are
-    sorted independently at each point, not tracked. Default plots for 2/3/4
-    are produced in memory using Agg; other selectors have no axes/export.
-    output_count normalized 0..4 or SI 0..17 returns original-position tuple
-    with formerly undefined outputs now defined; ordinary return is a dict.
+    Parameters
+    ----------
+    species : real array-like or string, optional
+        Rows q,m,n,vx,vy,vz,cs_parallel,cs_perpendicular,eps_x,eps_y; one header line
+        for text. Shape: [s,10] or text. Constraints: s>=1, m/n>0, cs>=0; None uses
+        documented example rows; rows are independent fluids, including equal rows.
+        Default normalized rows: [-1,1,4,0,0,0,0,0,0,0], [1,4,4,0,0,0,0,0,0,0]. Default
+        SI rows: [-1.602e-19,9.109e-31,8.7e6,0,0,0,4.631e6,4.631e6,0,0],
+        [1.602e-19,1.673e-27,8.7e6,0,0,0,9.360e4,9.360e4,0,0]. Default: None. Units: [SI
+        C,kg,m^-3,m/s,m^-1 by quantity; normalized units fixed by explicit c2,epsilon0
+        and B0].
+    unit : string, optional
+        Unit convention and default constants. Shape: scalar. Constraints: normalized or
+        si, without input conversion. Default: 'normalized'. Units: [dimensionless].
+    method : int, optional
+        Scan selector. Shape: scalar. Constraints: 0/1 and unknown nonnegative integers
+        single point;2 magnitude,3 angle,4 Cartesian mesh. Default: 2. Units:
+        [dimensionless].
+    rel : int, optional
+        Inertia selector passed unchanged to matrix assembly. Shape: scalar.
+        Constraints: 0 or1; rel1 strictly subluminal. Default: 0. Units:
+        [dimensionless].
+    vectors : bool, optional
+        Expose corresponding eigenvector columns. Shape: scalar. Constraints: Does not
+        change the eigenvalue calculation path. Default: False. Units: [dimensionless].
+    oldmethod : int, optional
+        Numerical initial solver selector. Shape: scalar. Constraints: 1 generalized
+        SciPy eig; 2 eig of solve(A,M); both use balanced coordinates and the same
+        refinement checks. Default: 2. Units: [dimensionless].
+    prior : dict or None, optional
+        Prior state accepted for call compatibility, never used as primary scientific
+        input. Shape: mapping or null. Constraints: Every field is freshly derived;
+        prior is not mutated. Default: None. Units: [state convention].
+    cfg : dict or None, optional
+        Constants B0,c2,epsilon0,gammaTs; collision controls and classification. Shape:
+        mapping or null. Constraints: Only documented fields; c2/epsilon0/gammaTs>0.
+        Explicit rates receiver i toward j, zero diagonal, nonnegative and rho
+        reciprocal. drag_rates>=0. Legacy nue/nui light/heavy bath, nuei light-receiver
+        cross-class, same-class nuee/nuii lower-rho receiver. Default mass classes
+        normalized<=1 or SI<=9.1093837139e-31 kg; collision_classes explicit light/heavy
+        (electron/ion aliases) overrides. These are numerical categories, not inferred
+        species identities. Defaults normalized: B0=1,c2=1,epsilon0=1,gammaTs=1; SI:
+        B0=8e-9 T,c2=(2.9979e8)^2,epsilon0=8.854e-12,gammaTs=5/3. All five legacy rates
+        zero; absent explicit pair/drag rates derive from those zero controls. Default
+        classes use the declared mass threshold. Default: None. Units: [B0 in T/SI or
+        normalized; c2 speed squared; epsilon0 SI or normalized; rates s^-1 or
+        normalized frequency].
+    k_grid : real array-like or None, optional
+        Magnitude scan override. Shape: [K] or null. Constraints: Finite nonempty;
+        method2 only. Default101 normalized or196 SI literal-source samples. Default:
+        None. Units: [m^-1 SI or normalized inverse length].
+    theta_grid : real array-like or None, optional
+        Angle scan override. Shape: [T] or null. Constraints: Finite nonempty; method3
+        only. Default51 samples0..pi/2. Default: None. Units: [rad].
+    kx_grid : real array-like or None, optional
+        Cartesian x scan override. Shape: [X] or null. Constraints: Finite nonempty;
+        method4 only. Default75 samples. Shape order [Z,X,N]. Default: None. Units:
+        [m^-1 SI or normalized inverse length].
+    kz_grid : real array-like or None, optional
+        Cartesian z scan override. Shape: [Z] or null. Constraints: Finite nonempty;
+        method4 only. Default50 samples. Default: None. Units: [m^-1 SI or normalized
+        inverse length].
+    k : complex numeric, optional
+        Single-point wave number. Shape: scalar. Constraints: Finite; applies only
+        single branch. Angle sweep retains source k=2. Default: 0.1. Units: [m^-1 SI or
+        normalized inverse length].
+    theta : real numeric, optional
+        Single-point propagation angle from z. Shape: scalar. Constraints: Finite;
+        method2 takes the declared pi/4 angle in normalized units, or 0 in SI. Default:
+        1.0471975511965976. Units: [rad].
+    max_points : int, optional
+        Upper bound on solved scan points. Shape: scalar. Constraints: Positive; whole
+        requested scan must fit. No feedback or iteration. Default: 10000. Units:
+        [dimensionless].
+    plot_path : path-like or None, optional
+        Optional compatibility path; current implementation does not render an image.
+        Shape: scalar or null. Constraints: Accepted by the signature; no PNG is
+        produced by the current implementation. Default: None. Units: [filesystem path].
+    output_count : int or None, optional
+        Optional source-position public return prefix. Shape: scalar or null.
+        Constraints: normalized0..4,SI0..17. All branches now define kk,ww1,ww2. None
+        returns mapping. Default: None. Units: [dimensionless].
+
+    Returns
+    -------
+    M : complex128
+        Temporal generator with species [dn,dvx,dvy,dvz] then [Ex,Ey,Ez,Bx,By,Bz].
+        Shape: [4s+6,4s+6]. Constraints: Finite; lambda*A*x=M*x and omega=i*lambda.
+        Units: [row output units per second divided by column state units; normalized
+        analog].
+    A : complex128
+        Inertia matrix. Shape: [4s+6,4s+6]. Constraints: Identity except d(gamma*v)/dv
+        in rel=1 velocity blocks. Units: [dimensionless within equally scaled velocity
+        blocks].
+    state : dict
+        Revalidated fresh state used by the matrix. Shape: mapping. Constraints: No
+        stale derived fields; preserves explicit collision classes. Units: [per-state
+        quantity conventions].
+    scales : float64
+        Positive physical state-column scales for similarity transformation. Shape:
+        [4s+6]. Constraints: Density=n_j, velocity=c, B=sqrt(sum(rho)/epsilon0), E=c*B;
+        transforms rows and columns consistently. Units: [density,velocity,electric
+        field,magnetic field by component].
+    kx : complex
+        Accepted wave number x. Shape: scalar. Constraints: Same as requested. Units:
+        [m^-1 SI or normalized inverse length].
+    kz : complex
+        Accepted wave number z. Shape: scalar. Constraints: Same as requested. Units:
+        [m^-1 SI or normalized inverse length].
+    w1 : complex128
+        Frequencies sorted by decreasing real part. Shape: [N]. Constraints:
+        omega=i*lambda; stable ties; not mode tracking. Units: [s^-1 SI or normalized
+        frequency].
+    w2 : complex128
+        Same modes sorted by decreasing imaginary part. Shape: [N]. Constraints:
+        Independent sort order. Units: [s^-1 SI or normalized frequency].
+    X1 : complex128
+        Eigenvector columns corresponding to w1. Shape: [N,N]. Constraints: Only the
+        mapping with vectors=True exposes corresponding last-point vectors; public
+        positional prefixes do not contain vectors. Arbitrary phase and degenerate
+        basis. Units: [mixed state units with max-absolute normalization].
+    X2 : complex128
+        Eigenvector columns corresponding to w2. Shape: [N,N]. Constraints: Only the
+        mapping with vectors=True exposes corresponding last-point vectors; public
+        positional prefixes do not contain vectors. Arbitrary phase and degenerate
+        basis. Units: [mixed state units with max-absolute normalization].
+    residual1 : float64
+        Scaled global backward error for w1. Shape: [N]. Constraints: Finite and at
+        most1e-10; not a forward-accuracy certificate. Units: [dimensionless].
+    residual2 : float64
+        Scaled global backward error for w2. Shape: [N]. Constraints: Same criterion.
+        Units: [dimensionless].
+    component_residual : float64
+        Maximum active component backward error. Shape: scalar. Constraints: 50-decimal
+        fallback if double exceeds1e-12; reject if final exceeds1e-10. Units:
+        [dimensionless].
+    precision : string
+        Actual arithmetic path. Shape: scalar. Constraints: complex128 or
+        mpmath-50-decimal-to-complex128; original input coefficients remain double
+        precision. Units: [dimensionless].
+    oldmethod : int
+        Selected initial method. Shape: scalar. Constraints: 1 or2. Units:
+        [dimensionless].
+    method : int
+        Executed selector. Shape: scalar. Constraints: Exact supplied method. Units:
+        [dimensionless].
+    unit : string
+        Unit convention. Shape: scalar. Constraints: normalized or si. Units:
+        [dimensionless].
+    kk : numeric array
+        Magnitude data. Shape: [K], [T], [Z,X], or[1]. Constraints: Always defined; SI
+        nonscan arities do not return undefined fields. Units: [m^-1 SI or normalized
+        inverse length].
+    tt : float64 array
+        Angle-scan abscissa. Shape: [T] or empty. Constraints: Populated only method3.
+        Units: [rad].
+    kkx : float64 array
+        Cartesian mesh x component. Shape: [Z,X] or empty. Constraints: Only method4.
+        Units: [m^-1 SI or normalized inverse length].
+    kkz : float64 array
+        Cartesian mesh z component. Shape: [Z,X] or empty. Constraints: Only method4.
+        Units: [m^-1 SI or normalized inverse length].
+    ww1 : complex128
+        Real-part independently sorted frequencies at every point. Shape:
+        [K,N],[T,N],[Z,X,N],or[1,N]. Constraints: Full scan arrays; not continuous mode
+        tracking. Units: [s^-1 SI or normalized frequency].
+    ww2 : complex128
+        Imaginary-part independently sorted frequencies at every point. Shape: same as
+        ww1. Constraints: Full scan arrays. Units: [s^-1 SI or normalized frequency].
+    points : int
+        Number of solved points. Shape: scalar. Constraints: At most max_points. Units:
+        [dimensionless].
+    execution_order : string
+        Explicit sequencing. Shape: scalar. Constraints: initialize; row-major
+        assemble/spectrum; plot. Units: [dimensionless].
+    max_points : int
+        Enforced point limit. Shape: scalar. Constraints: Same as supplied. Units:
+        [dimensionless].
+    graphics : dict
+        Axes and plotted mode counts. Shape: mapping. Constraints: Two axes for2/3/4,
+        zero axes for other selectors; no one-species mass title indexing or zero color
+        index. Units: [dimensionless].
+    plot_png : bytes
+        Empty bytes in the current implementation; retained for signature compatibility.
+        Shape: bytes or absent. Constraints: Empty payload; no image is rendered. Units:
+        [bytes].
+
+    Raises
+    ------
+    ArithmeticError
+        If eigenvalue qualification cannot establish a finite numerical result.
+    ValueError
+        If inputs, physical controls, coefficient tables or a numerical response are
+        invalid or unrepresentable.
+
+    See Also
+    --------
+    initialize_plasma_state
+        Related kinetic amplitude or dispersion operator in the same workflow.
+    assemble_spectral_matrix
+        Related kinetic amplitude or dispersion operator in the same workflow.
+    solve_temporal_spectrum
+        Related kinetic amplitude or dispersion operator in the same workflow.
+
+    Notes
+    -----
+        The graph initializes a local state, assembles each requested matrix, solves its
+        ordinary or generalized eigenproblem, and then records plotting metadata. Mode
+        branches are sorted independently at each point and are not tracked
+        continuously. Supported scope: The complete normalized/SI local multi-fluid
+        mapping, the declared scan selectors and caller-owned state under the explicitly
+        declared effective closure. Excluded scope: Effective local algebraic thermal
+        model; not full entropy evolution, CGL, kinetic physics, or the unmagnetized
+        drift-directed Appendix A model; Background sources and prescribed acceleration
+        per mass have zero perturbation response. Gradients define a local/eikonal
+        symbol, not an inhomogeneous global Maxwell-Gauss boundary solution; The
+        magnetic longitudinal pressure-divergence factor two is a phenomenological
+        mirror correction; no universal kinetic mirror threshold or experimental
+        accuracy claim; Relativistic inertia uses d(gamma*v)/dv with noncovariant
+        pressure and friction; no fully covariant thermodynamics claim is made.
+
+    Examples
+    --------
+    >>> from scirel.kinetic import evaluate_spectral_dispersion
+    >>> r = evaluate_spectral_dispersion(method=2, k_grid=[0, .1])
+    >>> assert r['ww1'].shape == (2, 14) and r['graphics']['axes_count'] == 2
     """
     state = initialize_plasma_state(species, unit=unit, prior=prior, cfg=cfg)
     method = _integer(method, "method")
