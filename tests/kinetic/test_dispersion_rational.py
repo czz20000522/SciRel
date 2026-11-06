@@ -92,6 +92,42 @@ def test_signed_es1d_causal_response_against_independent_Z(k):
     np.testing.assert_array_equal(tab["czj"], before)
 
 
+def test_es1d_finite_inputs_with_unrepresentable_derived_outputs_fail_closed():
+    eq = rational.equilibrium("es1d", [[1, 1, 1, 1, 0.17]])["state"]
+    tab = rational.pole_table("es1d", 8)["state"]
+    with np.errstate(over="ignore", invalid="ignore"):
+        with pytest.raises(FloatingPointError, match="not representable as finite float64"):
+            rational.point_matrix("es1d", {**eq, **tab}, k=1e308)
+        with pytest.raises(FloatingPointError, match="not representable as finite float64"):
+            rational.ordered_spectrum("es1d", points=[(1e308,)])
+    # The same finite reference call keeps the declared finite coefficients and matrix.
+    point = rational.point_matrix("es1d", {**eq, **tab}, k=0.4)["state"]
+    k = 0.4
+    csj = k * (tab["czj"].ravel() * eq["vts"].item() + eq["vs0"].item())
+    bsj = eq["vts"].item() * tab["bzj"].ravel() * tab["czj"].ravel() * (eq["kDs"].item() ** 2 / k)
+    expected = np.broadcast_to(-bsj, (len(bsj), len(bsj))).copy()
+    np.fill_diagonal(expected, np.diag(expected) + csj)
+    np.testing.assert_array_equal(point["csj"].ravel(), csj)
+    np.testing.assert_array_equal(point["bsj"].ravel(), bsj)
+    np.testing.assert_array_equal(point["M"], expected)
+    assert np.all(np.isfinite(point["M"]))
+
+
+@pytest.mark.parametrize("k", [np.nan, np.inf, -np.inf, 0.0])
+def test_es1d_invalid_wavevector_semantics_are_unchanged(k):
+    eq = rational.equilibrium("es1d", [[1, 1, 1, 1, 0.17]])["state"]
+    tab = rational.pole_table("es1d", 8)["state"]
+    with pytest.raises(ValueError):
+        rational.point_matrix("es1d", {**eq, **tab}, k=k)
+
+
+def test_es3d_zero_wavevector_semantics_are_unchanged():
+    eq = rational.equilibrium("es3d", [[1, 1, 1, 1, 1, 0]])["state"]
+    tab = rational.pole_table("es3d", 8)["state"]
+    with pytest.raises(ValueError, match="zero ES wavevector"):
+        rational.point_matrix("es3d", {**eq, **tab}, kx=0, kz=0)
+
+
 def test_descriptor_zero_constant_and_exact_cancellation_are_classified():
     zero = rational.solve_matrix(
         {"constant": 0, "poles": [1, 2], "residues": [1, -2]}, model="es3d"
