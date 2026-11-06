@@ -413,6 +413,34 @@ def _assemble_tensor(field, magnitude, stix_s, stix_d, stix_p):
 def cold_plasma_dielectric_tensor(frequency_hz, magnetic_flux_density_t, species):
     """Return the local cold-plasma relative dielectric tensor.
 
+    Parameters
+    ----------
+    frequency_hz : float
+        RF wave frequency [Hz]. Finite and strictly positive.
+    magnetic_flux_density_t : array_like, shape (..., 3)
+        Local static magnetic field [T] in the caller's Cartesian basis. The
+        final axis contains the three field components; any leading shape is
+        accepted and all values must be finite.
+    species : sequence of mapping
+        Species entries with ``density_m3`` [m^-3], ``charge_c`` [C],
+        ``mass_kg`` [kg], and optional ``collision_rate_s_inv`` [s^-1]. Values
+        are finite, density and collision rate are nonnegative, and mass is
+        positive. The mapping values use mixed SI units [mixed SI]. An empty
+        sequence is allowed and returns the vacuum tensor.
+
+    Returns
+    -------
+    epsilon_r : ndarray, shape (..., 3, 3), complex128
+        Relative dielectric tensor [dimensionless] in the caller's Cartesian
+        basis, with every entry finite on an accepted call.
+
+    See Also
+    --------
+    evaluate_kinetic_dielectric_tensor : Evaluate a kinetic dielectric tensor
+        for comparison with the local cold-plasma model.
+
+    Notes
+    -----
     The returned matrix is the representation, in the **caller's supplied
     Cartesian basis**, of the coordinate-free operator
     ``S I + (P - S) b b + i D [b]_x`` built from the supplied field direction.
@@ -525,6 +553,86 @@ def cold_plasma_dielectric_tensor(frequency_hz, magnetic_flux_density_t, species
         For malformed inputs, as documented.  In particular a frequency that is
         not finite and strictly positive is rejected before any arithmetic, so
         no accepted call can return a non-finite tensor.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from scirel.dielectric import (
+    ...     ColdPlasmaOverflowError,
+    ...     cold_plasma_dielectric_tensor,
+    ... )
+    >>> FREQUENCY_HZ = 60.0e6
+    >>> ELECTRON = {
+    ...     'density_m3': 1.0e19,
+    ...     'charge_c': -1.602176634e-19,
+    ...     'mass_kg': 9.1093837015e-31,
+    ... }
+    >>> PROTON = {
+    ...     'density_m3': 5.0e18,
+    ...     'charge_c': 1.602176634e-19,
+    ...     'mass_kg': 1.67262192369e-27,
+    ... }
+    >>> AXIAL_FIELD = np.array([0.0, 0.0, 0.3])
+    >>> epsilon = cold_plasma_dielectric_tensor(
+    ...     FREQUENCY_HZ, AXIAL_FIELD, [ELECTRON, PROTON]
+    ... )
+    >>> assert isinstance(epsilon, np.ndarray)
+    >>> assert epsilon.shape == (3, 3) and epsilon.dtype == np.complex128
+    >>> assert np.all(np.isfinite(epsilon))
+    >>> assert epsilon[0, 0] == epsilon[1, 1]
+    >>> assert epsilon[0, 1] == -epsilon[1, 0] and epsilon[0, 1].real == 0.0
+    >>> assert epsilon[0, 2] == 0.0 and epsilon[2, 0] == 0.0
+    >>> assert np.max(np.abs(epsilon - epsilon.conj().T)) == 0.0
+    >>> collisional = cold_plasma_dielectric_tensor(
+    ...     FREQUENCY_HZ, AXIAL_FIELD,
+    ...     [dict(ELECTRON, collision_rate_s_inv=1.0e6), PROTON],
+    ... )
+    >>> assert np.max(np.abs(collisional - collisional.conj().T)) > 0.0
+    >>> resonant_field_t = (
+    ...     2.0 * np.pi * FREQUENCY_HZ * ELECTRON['mass_kg'] / abs(ELECTRON['charge_c'])
+    ... )
+    >>> skipped = cold_plasma_dielectric_tensor(
+    ...     FREQUENCY_HZ, np.array([0.0, 0.0, resonant_field_t]),
+    ...     [dict(ELECTRON, density_m3=0.0)],
+    ... )
+    >>> assert np.array_equal(skipped, cold_plasma_dielectric_tensor(
+    ...     FREQUENCY_HZ, np.array([0.0, 0.0, resonant_field_t]), []))
+    >>> at_zero = cold_plasma_dielectric_tensor(
+    ...     FREQUENCY_HZ, np.zeros(3), [ELECTRON, PROTON]
+    ... )
+    >>> assert np.all(np.isfinite(at_zero))
+    >>> assert at_zero[0, 1] == 0.0 and at_zero[1, 0] == 0.0 and at_zero[0, 2] == 0.0
+    >>> assert at_zero[0, 0] == at_zero[1, 1] == at_zero[2, 2]
+    >>> vacuum = cold_plasma_dielectric_tensor(FREQUENCY_HZ, np.zeros(3), [])
+    >>> assert np.array_equal(vacuum, np.eye(3, dtype=complex))
+    >>> for bad_frequency in (float('nan'), float('inf'), -float('inf'), 0.0):
+    ...     try:
+    ...         cold_plasma_dielectric_tensor(bad_frequency, AXIAL_FIELD, [ELECTRON])
+    ...     except ValueError:
+    ...         pass
+    ...     else:
+    ...         raise AssertionError('a non-finite frequency must be rejected')
+    >>> try:
+    ...     cold_plasma_dielectric_tensor(FREQUENCY_HZ, np.array([0.0, 0.0]), [ELECTRON])
+    ... except ValueError:
+    ...     pass
+    ... else:
+    ...     raise AssertionError('a field without three components must be rejected')
+    >>> try:
+    ...     cold_plasma_dielectric_tensor(1.0e308, AXIAL_FIELD, [ELECTRON])
+    ... except ColdPlasmaOverflowError:
+    ...     pass
+    ... else:
+    ...     raise AssertionError('an overflowing finite frequency must fail closed')
+    >>> assert float(np.linalg.norm(np.array([5e-324, 0.0, 0.0]))) == 0.0
+    >>> try:
+    ...     cold_plasma_dielectric_tensor(
+    ...         FREQUENCY_HZ, np.array([5e-324, 0.0, 0.0]), [ELECTRON]
+    ...     )
+    ... except ColdPlasmaOverflowError:
+    ...     pass
+    ... else:
+    ...     raise AssertionError('a collapsed field magnitude must fail closed')
     """
     frequency = float(frequency_hz)
     # Finite first: `omega <= 0.0` is false for NaN and for positive infinity, so
