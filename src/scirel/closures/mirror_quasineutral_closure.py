@@ -198,10 +198,97 @@ def solve_mirror_quasineutral_closure(inputs=None, **kwargs):
         psi-shaped arrays or callables of ``psi``. Optional plug, reference
         density, potential-solver tolerance and iteration controls follow the
         catalog contract; keyword arguments are merged at the composition
-        boundary.
+        boundary. [not applicable]
     **kwargs
-        Named inputs merged with ``inputs`` by the composition
-        boundary.
+        Named inputs merged with ``inputs`` by the composition boundary.
+        [not applicable]
+
+    Other Parameters
+    ----------------
+    b_t : real array-like
+        Local mirror magnetic-field magnitude. [T] Shape: scalar or exactly
+        ``psi``-shaped array. Must be finite and positive for the ion-moment
+        operator.
+    psi : real array-like
+        Caller flux-profile label and output-shape carrier. [Wb (historical source label, not runtime-enforced)]
+        Shape: scalar or array. Must be finite; no axis or unit conversion is
+        performed.
+    mass_kg : real scalar
+        Positive-ion mass passed to the mirror moment operator. [kg] Shape:
+        scalar. Must be finite and strictly positive.
+    charge_c : real scalar
+        Positive-ion charge. [C] Shape: scalar. Must be finite and strictly
+        positive; its electron-charge-state ratio must also be finite and
+        positive.
+    density_ref_m3 : real array-like or callable
+        Ion reference number density. [m^-3] Shape: scalar, exactly
+        ``psi``-shaped array, or callable of ``psi``. Must be finite and
+        nonnegative, with positivity matching the electron reference density.
+    temperature_parallel_j : real array-like or callable
+        Ion parallel reference thermal energy. [J] Shape: scalar, exactly
+        ``psi``-shaped array, or callable of ``psi``. Must be finite and
+        strictly positive.
+    temperature_perpendicular_ref_j : real array-like or callable
+        Ion perpendicular reference thermal energy. [J] Shape: scalar,
+        ``psi``-compatible array, or callable of ``psi``. Must be finite and
+        strictly positive.
+    b_ref_t : real array-like or callable
+        Ion reference magnetic-field magnitude. [T] Shape: scalar,
+        ``psi``-compatible array, or callable of ``psi``. Must be finite and
+        strictly positive.
+    electron_temperature_j : real array-like or callable
+        Prescribed Boltzmann electron thermal energy. [J] Shape: scalar,
+        exactly ``psi``-shaped array, or callable of ``psi``. Must be finite
+        and strictly positive.
+    phi_ref_v : real array-like or callable, optional
+        Ion reference potential, also returned where both reference densities
+        are zero. [V] Shape: scalar, exactly ``psi``-shaped array, or callable
+        of ``psi``. Default: 0.
+    b_plug_left_t : real array-like or callable or None, optional
+        Left mirror-plug field for loss-cone moments. [T or not applicable]
+        Shape: None, scalar, ``psi``-compatible array, or callable of ``psi``.
+        Default: None. Supply with ``b_plug_right_t`` and positive finite
+        values when plug integration is active.
+    b_plug_right_t : real array-like or callable or None, optional
+        Right mirror-plug field for loss-cone moments. [T or not applicable]
+        Shape: None, scalar, ``psi``-compatible array, or callable of ``psi``.
+        Default: None. Supply with ``b_plug_left_t`` and positive finite values
+        when plug integration is active.
+    phi_plug_left_v : real array-like or callable, optional
+        Left plug electrostatic potential. [V] Shape: scalar,
+        ``psi``-compatible array, or callable of ``psi``. Default: 0.
+    phi_plug_right_v : real array-like or callable, optional
+        Right plug electrostatic potential. [V] Shape: scalar,
+        ``psi``-compatible array, or callable of ``psi``. Default: 0.
+    loss_cone_refill : real scalar, optional
+        Fraction restoring full bi-Maxwellian pitch occupation.
+        [dimensionless] Shape: scalar. Default: 0. Must be finite within
+        ``[0, 1]``; one bypasses plug integration.
+    quadrature_order : int, optional
+        Legendre order for active plug pitch integration. [count] Shape:
+        scalar. Default: 32. The ion-moment leaf requires at least eight.
+    electron_density_ref_m3 : real array-like or callable or None, optional
+        Explicit electron reference density. [m^-3] Shape: scalar, exactly
+        ``psi``-shaped array, callable of ``psi``, or None. Default: None,
+        which uses ``ion_charge_state * density_ref_m3``.
+    electron_phi_ref_v : real array-like or callable or None, optional
+        Electron reference potential. [V] Shape: scalar, ``psi``-compatible
+        array, callable of ``psi``, or None. Default: None, which follows the
+        ion reference potential.
+    potential_tolerance_v : real scalar, optional
+        Active potential-bracket width tolerance. [V] Shape: scalar. Default:
+        1e-8. Must be finite and strictly positive.
+    quasineutral_tolerance : real scalar, optional
+        Maximum absolute logarithmic charge residual. [dimensionless] Shape:
+        scalar. Default: 1e-10. Must be finite and strictly positive.
+    max_iterations : int, optional
+        Maximum potential-solver midpoint evaluations. [iterations] Shape:
+        scalar. Default: 100. Must be an integer of at least two after
+        preliminary graph validation.
+    initial_bracket_thermal : real scalar, optional
+        Initial bracket half-width in combined thermal-voltage units.
+        [dimensionless] Shape: scalar. Default: 8. Must be finite and strictly
+        positive.
 
     Returns
     -------
@@ -261,6 +348,37 @@ def solve_mirror_quasineutral_closure(inputs=None, **kwargs):
     RuntimeError
         If the bounded potential solve fails to bracket or converge, or the
         reevaluated terminal residual exceeds its declared tolerance.
+
+
+    See Also
+    --------
+    scirel.closures.solve_quasineutral_potential : Bounded potential solver used by this composition.
+
+    Notes
+    -----
+    The composition builds ion-moment profiles at trial potentials, evaluates
+    the Boltzmann electron response, and solves logarithmic charge neutrality
+    on the active surfaces. ``electron_density_ref_m3`` defaults to
+    ``ion_charge_state * density_ref_m3``. Optional plug fields select the
+    loss-cone moment branch. After convergence, ion moments and electron
+    pressure are recomputed at the returned potential before total pressures
+    are assembled. A zero reference-density surface is inactive and retains its
+    reference potential. The returned mapping is a composed closure result, not
+    a proof that the supplied moment model or plasma state is physically
+    self-consistent.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from scirel.closures import solve_mirror_quasineutral_closure
+    >>> e = 1.602176634e-19
+    >>> r = solve_mirror_quasineutral_closure(b_t=np.array([1.0, 1.4, 2.0]), psi=np.zeros(3), mass_kg=1.67262192595e-27, charge_c=e, density_ref_m3=2e18, temperature_parallel_j=1200*e, temperature_perpendicular_ref_j=2400*e, b_ref_t=1.0, electron_temperature_j=600*e)
+    >>> b = np.array([1.0, 1.4, 2.0])
+    >>> t_perp = b / ((b-1.0)/(1200*e) + 1.0/(2400*e))
+    >>> expected = np.log(t_perp/(2400*e)) / (e/(1200*e) + e/(600*e))
+    >>> np.testing.assert_allclose(r['electrostatic_potential'], expected, atol=2e-8)
+    >>> assert np.max(np.abs(r['relative_charge_residual'])) < 1e-10
+    >>> assert r['p_parallel'].shape == (3,) and r['converged']
     """
     from scirel._composition import compose
     from scirel.closures.boltzmann_quasineutrality import (
