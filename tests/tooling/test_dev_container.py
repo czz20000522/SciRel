@@ -1179,7 +1179,11 @@ def test_linked_worktree_git_metadata_is_mounted_portably(tmp_path, monkeypatch)
     assert relative_git_dir.startswith("worktrees/")
     with module.container_git_mount() as arguments:
         assert arguments[:2] == ["--volume", f"{common_dir}:{module.GIT_COMMON_MOUNT}"]
-        pointer = Path(arguments[3].rsplit(":/workspace/.git:ro", 1)[0])
+        assert arguments[2:4] == [
+            "--volume",
+            f"{common_dir / 'config'}:{module.GIT_COMMON_MOUNT}/config:ro",
+        ]
+        pointer = Path(arguments[5].rsplit(":/workspace/.git:ro", 1)[0])
         assert pointer.is_file()
         assert pointer.read_text(encoding="utf-8") == (
             f"gitdir: {module.GIT_COMMON_MOUNT}/{relative_git_dir}\n"
