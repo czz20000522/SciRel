@@ -38,7 +38,73 @@ def reduce_terminal_molecular_heat_flux(
     cylindrical_weight,
     dvx,
 ):
-    """Return terminal H2 random and total heat flux, each with shape (nx,)."""
+    """Reduce a terminal H2 distribution to random and total heat-flux profiles.
+
+    Parameters
+    ----------
+    radial_velocity_normalized : array_like, shape (nvr,)
+        Finite nonnegative normalized radial velocity nodes; zero nodes are
+        allowed and monotonicity is not required. [v/Vth]
+    axial_velocity_normalized : array_like, shape (nvx,)
+        Finite signed normalized axial velocity nodes; zero nodes are allowed.
+        [v/Vth]
+    mass_ratio : float
+        Positive finite factor multiplying the declared hydrogen mass; H2 uses
+        twice this factor. [factor of 1.6726231e-27 kg]
+    thermal_speed_m_s : float
+        Positive finite caller-supplied H2 thermal speed. [m/s]
+    terminal_distribution : array_like, shape (nvr, nvx, nx)
+        Finite nonnegative nonempty terminal distribution. [source-normalized distribution; no implicit conversion]
+    cylindrical_weight : array_like, shape (nvr,)
+        Finite nonnegative radial integration measure; zero cells are allowed when
+        integrated density remains positive. [source-normalized radial-area measure]
+    dvx : array_like, shape (nvx,)
+        Finite nonnegative normalized axial widths; zero cells are allowed when
+        integrated density remains positive. [normalized axial-speed increment]
+
+    Returns
+    -------
+    random_heat_flux_profile_w_m2 : ndarray, shape (nx,)
+        Centered axial random-energy flux. [W/m^2 on the source distribution normalization]
+    total_heat_flux_profile_w_m2 : ndarray, shape (nx,)
+        Total axial kinetic-energy flux including convective and random terms.
+        [W/m^2 on the source distribution normalization]
+
+    Raises
+    ------
+    ValueError
+        If inputs are non-real, non-finite or misaligned, radial nodes/distribution/
+        weights/widths are negative, mass ratio or thermal speed is nonpositive,
+        integrated density is nonpositive, or either output is non-finite.
+
+    See Also
+    --------
+    reduce_axisymmetric_neutral_moments : Full neutral moments and heat flux.
+    reduce_terminal_molecular_energy_transfer : Signed transfer-rate reduction.
+
+    Notes
+    -----
+    The centered axial velocity is formed from density and particle flux, then
+    the random heat flux is the centered third moment of the distribution. The
+    total flux adds the pressure, longitudinal-stress and convective terms using
+    the contract's fixed hydrogen mass and elementary-charge constants. The
+    caller owns the terminal distribution and thermal speed; this is a diagnostic
+    reduction, not a complete terminal closure or a validation of the incoming
+    distribution.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from scirel.kinetic import reduce_terminal_molecular_heat_flux
+    >>> vr = np.array([0.5, 1.0])
+    >>> vx = np.array([-1.0, 0.0, 2.0])
+    >>> f = np.ones((2, 3, 1))
+    >>> r = reduce_terminal_molecular_heat_flux(vr, vx, 1.0, 5000.0, f, np.array([1.0, 2.0]), np.array([0.5, 0.0, 0.25]))
+    >>> assert set(r) == {'random_heat_flux_profile_w_m2', 'total_heat_flux_profile_w_m2'}
+    >>> assert r['random_heat_flux_profile_w_m2'].shape == (1,)
+    >>> assert all(np.isfinite(value).all() for value in r.values())
+
+    """
     radial_velocity = _real_numeric("radial_velocity_normalized", radial_velocity_normalized)
     axial_velocity = _real_numeric("axial_velocity_normalized", axial_velocity_normalized)
     mass = _real_numeric("mass_ratio", mass_ratio)

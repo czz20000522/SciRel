@@ -347,55 +347,105 @@ def interp_distribution_across_mesh(
     Parameters
     ----------
     fa : array_like, shape (nvra, nvxa, nxa)
-        Finite real distribution; nonnegative when ``correct=1``.
-    vr_a, vx_a, x_a : array_like
-        Source radial velocity, axial velocity and spatial nodes. Each axis
-        is finite, strictly increasing and has at least two nodes; radial
-        nodes are nonnegative and axial nodes include both signs.
+        Finite real source distribution. It must be nonnegative when
+        ``correct=1``; signed finite inputs remain accepted only for the algebraic
+        ``correct=0`` branch. [source-normalized]
+    vr_a : array_like, shape (nvra,)
+        Finite nonnegative, strictly increasing source radial velocity axis with
+        at least two nodes. [source-normalized]
+    vx_a : array_like, shape (nvxa,)
+        Finite strictly increasing source axial velocity axis with at least two
+        nodes and both signs represented. [source-normalized]
+    x_a : array_like, shape (nxa,)
+        Finite strictly increasing source spatial axis with at least two nodes. [m]
     Tnorm_a : float
-        Positive finite source normalization temperature (eV).
-    vr_b, vx_b, x_b : array_like
-        Destination axes, subject to the same node contracts and the retained
-        velocity/spatial overlap requirements. Outside-source x nodes get zero.
+        Positive finite source normalization temperature. [eV]
+    vr_b : array_like, shape (nvrb,)
+        Finite nonnegative, strictly increasing destination radial axis with at
+        least two nodes. [source-normalized]
+    vx_b : array_like, shape (nvxb,)
+        Finite strictly increasing destination axial axis with at least two nodes
+        and both signs represented. [source-normalized]
+    x_b : array_like, shape (nxb,)
+        Finite strictly increasing destination spatial axis with at least two
+        nodes. Nodes outside the source interval are zero-filled. [m]
     Tnorm_b : float
-        Positive finite destination normalization temperature (eV).
+        Positive finite destination normalization temperature. [eV]
     correct : {0, 1}, optional
-        Default 1 applies nonnegative relative-entropy moment projection.
-        0 retains the historical algebraic interpolant and density rescale,
-        without a physical positivity or three-moment conservation guarantee.
+        ``1`` (default) applies the nonnegative relative-entropy moment
+        projection. ``0`` keeps the historical algebraic interpolation and
+        conditional density rescale without a positivity or three-moment guarantee.
+        Boolean and coercible selectors are rejected. [dimensionless]
     do_warn : int or None, optional
-        Historical boundary-warning threshold; it does not change output.
+        ``None`` (default) skips warnings; an integer applies the historical
+        ``do_warn * max(fb)`` boundary threshold without changing values.
+        [dimensionless]
     max_correction_iterations : int, optional
-        Positive cap on Newton updates per target spatial slice; default 1000.
+        Positive cap on damped-Newton updates per destination spatial node; the
+        default is ``1000``. [dimensionless]
 
     Returns
     -------
     fb : ndarray, shape (nvrb, nvxb, nxb)
-        Finite destination distribution. For ``correct=1`` it is nonnegative
-        and reproduces the spatially interpolated density, axial momentum
-        density and squared-speed energy density, to scaled binary64 roundoff.
+        Finite destination distribution. For ``correct=1`` it is nonnegative and
+        preserves the spatially interpolated discrete density, axial momentum
+        density and squared-speed energy density within the declared scaled
+        roundoff. For ``correct=0`` the result is finite but lacks that physical
+        guarantee. [source-normalized]
 
     Raises
     ------
-    InfeasibleMomentsError
-        Requested normalized moments lie outside the convex hull of destination
-        node velocity/energy pairs. Its ``diagnostics`` identifies the slice
-        and a separating inequality; changing solver iterations cannot fix it.
-    MomentCorrectionConvergenceError
-        A projection fails its iteration bound or numerical postcondition.
     ValueError
-        Invalid inputs, missing overlap or unrepresentable intermediates.
+        If inputs, axes, shapes, temperatures, selectors, overlap or
+        representable intermediates violate the declared contract.
+    InfeasibleMomentsError
+        If a requested normalized moment lies outside the destination-node convex
+        hull. This is a ``ValueError`` subclass and changing the iteration budget
+        cannot make the target feasible.
+    MomentCorrectionConvergenceError
+        If a feasible projection exhausts the bounded update budget or fails its
+        finite nonnegative three-moment postcondition. This is a ``ValueError``
+        subclass; no partial distribution is returned.
+
+    See Also
+    --------
+    interpolate_scalar_across_mesh : One-dimensional scalar handoff with zero fill.
+    make_cylindrical_velocity_quadrature : Builds the cylindrical velocity measures.
 
     Notes
     -----
-    Spatial interpolation acts on extensive moments before normalizing by
-    density. The 1e-12 positive reference mixture changes the entropy prior,
-    never the target moments. Cell-pair overlap weights are zero whenever the
-    source and destination velocity-cell intersections are empty; ``correct=0``
-    preserves those literal zeros, while ``correct=1`` may later populate
-    zero-overlap nodes through the declared positive reference mixture. No
-    negative clipping or partial result is used.
-    Finite-grid conservation does not establish an atomic-physics model.
+    Discrete cell masses use ``pi*(r_right**2-r_left**2)*dvx``. The source
+    density, axial momentum density and squared-speed energy density are linearly
+    interpolated in ``x`` before division by density. For each positive-density
+    destination slice, a relative-entropy projection enforces those three moments
+    and nonnegativity. Its ``1e-12`` positive reference mixture opens zero-overlap
+    cells without relaxing the targets. A finite grid cannot represent every
+    source moment: infeasible targets and numerical nonconvergence have distinct
+    errors. The ``correct=0`` branch is an algebraic compatibility path, not a
+    physical conservative remap.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from scirel.kinetic import interp_distribution_across_mesh
+    >>> def moments(f, r, v, T):
+    ...     re = np.r_[0.0, (r[:-1] + r[1:]) / 2, r[-1] + (r[-1] - r[-2]) / 2]
+    ...     ve = np.r_[v[0] - (v[1] - v[0]) / 2, (v[:-1] + v[1:]) / 2, v[-1] + (v[-1] - v[-2]) / 2]
+    ...     mass = f * (np.pi * np.diff(re**2)[:, None] * np.diff(ve)[None, :])[:, :, None]
+    ...     return np.array([mass.sum(axis=(0, 1)),
+    ...                      (mass * (np.sqrt(T) * v)[None, :, None]).sum(axis=(0, 1)),
+    ...                      (mass * (T * (r[:, None]**2 + v[None, :]**2))[:, :, None]).sum(axis=(0, 1))])
+    >>> ra, va, xa = np.linspace(0.5, 2.0, 4), np.linspace(-1.5, 1.5, 6), np.linspace(0, 1, 5)
+    >>> rb, vb, xb = np.linspace(0.1, 2.8, 8), np.linspace(-2.7, 2.7, 11), np.linspace(0.1, 0.9, 4)
+    >>> fa = np.exp(-ra[:, None, None]**2 - (va[None, :, None] - 0.3)**2) * (1 + 2 * xa)[None, None, :]
+    >>> fb = interp_distribution_across_mesh(fa, ra, va, xa, 2.0, rb, vb, xb, 1.5)
+    >>> source = moments(fa, ra, va, 2.0)
+    >>> expected = np.array([np.interp(xb, xa, row) for row in source])
+    >>> actual = moments(fb, rb, vb, 1.5)
+    >>> assert fb.shape == (8, 11, 4) and np.isfinite(fb).all() and np.all(fb >= 0)
+    >>> np.testing.assert_allclose(actual, expected, rtol=1e-11, atol=1e-13)
+    >>> print(actual)  # doctest: +SKIP
+
     """
     vr_a = _as_1d(vr_a, "vr_a")
     vx_a = _as_1d(vx_a, "vx_a")

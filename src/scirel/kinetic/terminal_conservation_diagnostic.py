@@ -36,7 +36,59 @@ def reduce_qh2_total_conservation_diagnostic(
     total_heat_flux_profile_w_m2,
     total_energy_transfer_rate_profile_w_m3,
 ):
-    """Return source-defined normalized energy-balance error at axial nodes."""
+    """Evaluate the source-defined terminal H2 total-energy balance residual.
+
+    Parameters
+    ----------
+    axial_position_m : array_like, shape (nx,)
+        Finite axial positions with at least two nodes and nonzero, finite
+        adjacent differences; decreasing and locally nonmonotonic positions are
+        accepted. [m]
+    total_heat_flux_profile_w_m2 : array_like, shape (nx,)
+        Finite signed total H2 heat-flux profile aligned with ``axial_position_m``.
+        [source-labeled W/m^2]
+    total_energy_transfer_rate_profile_w_m3 : array_like, shape (nx,)
+        Finite signed total H2 energy-transfer profile aligned with the positions.
+        [source-labeled W/m^3]
+
+    Returns
+    -------
+    total_energy_conservation_error_profile_dimensionless : ndarray, shape (nx,)
+        Nonnegative normalized absolute difference between the interval flux
+        gradient and adjacent transfer mean. The final entry is exactly zero by
+        the endpoint convention. [dimensionless on the supplied profile normalization]
+
+    Raises
+    ------
+    ValueError
+        If profiles are non-real, non-finite, malformed, misaligned, have fewer than
+        two nodes, have zero/non-finite spacing, or have zero/non-finite global
+        normalization; a non-finite output is also rejected.
+
+    See Also
+    --------
+    reduce_terminal_molecular_energy_transfer : Produces a total transfer profile.
+    reduce_terminal_molecular_heat_flux : Produces a total heat-flux profile.
+
+    Notes
+    -----
+    For each interval, the flux gradient is
+    ``(flux[k+1]-flux[k])/(x[k+1]-x[k])`` and the transfer value is the average
+    of adjacent nodes. The global normalization is the largest absolute value in
+    the two assembled arrays. The diagnostic accepts signed incident profiles;
+    the final zero is an endpoint convention, not a checked boundary equation,
+    and individual normalized residuals may exceed one. No heat flux, transfer
+    rate or terminal state is computed here.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from scirel.kinetic import reduce_qh2_total_conservation_diagnostic
+    >>> x = np.array([0.0, 1.0, 2.0])
+    >>> r = reduce_qh2_total_conservation_diagnostic(x, np.array([0.0, 2.0, 4.0]), np.array([2.0, 2.0, 2.0]))
+    >>> assert np.array_equal(r['total_energy_conservation_error_profile_dimensionless'], np.zeros(3))
+
+    """
     position = _real_numeric("axial_position_m", axial_position_m)
     total_heat_flux = _real_numeric("total_heat_flux_profile_w_m2", total_heat_flux_profile_w_m2)
     total_energy_transfer = _real_numeric(
