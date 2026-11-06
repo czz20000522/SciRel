@@ -5,7 +5,7 @@
   "en": "Exact-midplane pressure-flux state",
   "zh": "精确中平面压力磁通状态"
  },
- "summary": "Sample radial pressure along the exact Z=0 row, fit pressure against the increasing flux prefix through the first zero-pressure sample, and return a clipped pressure derivative and structured spline state.",
+ "summary": "Sample radial pressure along the exact Z=0 row, fit pressure against the increasing flux prefix through the first zero-pressure sample, and return a clipped pressure derivative and structured spline state. The complete result is returned as one scirel._result.Result mapping; mapping access is retained and every field also supports attribute access. The nested pressure_of_psi field remains a plain dict, not a Result.",
  "taxonomy": [
   "equilibrium",
   "axisymmetric",
@@ -94,7 +94,7 @@
  "outputs": [
   {
    "name": "pressure_derivative",
-   "description": "Finite spline derivative in C order after edge and boolean-mask clipping.",
+   "description": "Field of the returned scirel._result.Result mapping: Finite spline derivative in C order after edge and boolean-mask clipping.",
    "units": "Pa/(Wb/rad)",
    "shape": "[N_Z*N_R]",
    "dtype": "float64 array",
@@ -103,7 +103,7 @@
   },
   {
    "name": "zero_currents",
-   "description": "All-zero initial current vector aligned with pressure_derivative.",
+   "description": "Field of the returned scirel._result.Result mapping: All-zero initial current vector aligned with pressure_derivative.",
    "units": "A",
    "shape": "[N_Z*N_R]",
    "dtype": "float64 array",
@@ -112,7 +112,7 @@
   },
   {
    "name": "psi_edge",
-   "description": "Flux at the first exact-zero-pressure midplane sample.",
+   "description": "Field of the returned scirel._result.Result mapping: Flux at the first exact-zero-pressure midplane sample.",
    "units": "Wb/rad",
    "shape": "scalar",
    "dtype": "float",
@@ -121,7 +121,7 @@
   },
   {
    "name": "pressure_of_psi",
-   "description": "Structured representation of the fitted pressure-versus-flux spline.",
+   "description": "Plain-dict field of the returned scirel._result.Result mapping: Structured representation of the fitted pressure-versus-flux spline.",
    "units": "psi fields Wb/rad; pressure fields Pa; degree and descriptors dimensionless",
    "shape": "mapping",
    "dtype": "mapping of float64 arrays, integer degree and string descriptors",
@@ -130,7 +130,7 @@
   },
   {
    "name": "limiter_index",
-   "description": "First exact-zero pressure index in increasing physical-radius order.",
+   "description": "Field of the returned scirel._result.Result mapping: First exact-zero pressure index in increasing physical-radius order.",
    "units": "index",
    "shape": "scalar",
    "dtype": "int",
@@ -156,7 +156,7 @@
   "invalid_input": "Raises ValueError for non-2D, nonfinite or shape-mismatched grids; a missing or nonunique complete exact-zero row; noncallable pressure; nonfinite or negative pressure samples; no exact-zero pressure boundary; an insufficient or non-increasing midplane flux prefix; or wrong-shaped plasma_mask. Duplicate midplane radii and nonboolean masks also raise ValueError.",
   "runtime_failure": "FloatingPointError for nonfinite fitted coefficients or derivative; callback/SciPy failures propagate. Clipping cannot hide invalid numerical states.",
   "nonconvergence": "Not applicable; this spline construction does not iterate toward equilibrium.",
-  "partial_results": "No partial result mapping is returned if validation or spline construction raises."
+  "partial_results": "No scirel._result.Result mapping is returned after validation or spline failure; the nested pressure_of_psi field remains a plain dict."
  },
  "public_api": {
   "python": {
@@ -172,9 +172,9 @@
   "dependencies": []
  },
  "example": {
-  "description": "Fit a linearly decreasing midplane pressure profile and mask one derivative cell.",
-  "code": "import numpy as np\nfrom scirel.equilibrium.pressure_flux_state import build_pressure_flux_state\nr_grid, z_grid = np.meshgrid(np.linspace(0.2, 0.8, 4), [-0.1, 0.0, 0.1])\nmask = np.zeros_like(r_grid, dtype=bool)\nmask[1, 2] = True\nresult = build_pressure_flux_state(r_grid, z_grid, r_grid.copy(), lambda radius: max(0.8 - radius, 0.0), plasma_mask=mask)\nexpected = np.full(r_grid.size, -1.0)\nexpected[6] = 0.0\nnp.testing.assert_allclose(result['pressure_derivative'], expected)\nnp.testing.assert_allclose(result['zero_currents'], 0.0)\nassert result['limiter_index'] == 3\nassert result['psi_edge'] == 0.8\nassert result['pressure_of_psi']['extrapolation'] == 'zeros'",
-  "expected": "The unmasked flattened dP/dpsi values are -1 Pa/(Wb/rad), the selected cell and current vector are zero, and the first zero-pressure boundary has psi_edge=0.8 Wb/rad."
+  "description": "Fit the midplane pressure state, confirm the named result, and verify the derivative, edge and nested spline state.",
+  "code": "import numpy as np\nfrom scirel._result import Result\nfrom scirel.equilibrium.pressure_flux_state import build_pressure_flux_state\nr_grid, z_grid = np.meshgrid(np.linspace(0.2, 0.8, 4), [-0.1, 0.0, 0.1])\nmask = np.zeros_like(r_grid, dtype=bool)\nmask[1, 2] = True\nresult = build_pressure_flux_state(r_grid, z_grid, r_grid.copy(), lambda radius: max(0.8 - radius, 0.0), plasma_mask=mask)\nexpected = np.full(r_grid.size, -1.0)\nexpected[6] = 0.0\nassert isinstance(result, Result)\nassert result.limiter_index == result['limiter_index']\nassert type(result.pressure_of_psi) is dict\nnp.testing.assert_allclose(result.pressure_derivative, expected)\nnp.testing.assert_allclose(result.zero_currents, 0.0)\nassert result.limiter_index == 3\nassert result.psi_edge == 0.8\nassert result.pressure_of_psi['extrapolation'] == 'zeros'\n",
+  "expected": "Unmasked dP/dpsi is -1 Pa/(Wb/rad); the selected cell and current vector are zero, the first zero-pressure edge is psi_edge=0.8 Wb/rad, and pressure_of_psi remains a plain dict. The returned object is a scirel._result.Result mapping; every field is also readable as an attribute."
  },
  "verification": {
   "scope": [
@@ -182,7 +182,8 @@
    "Mask clipping, first-zero limiter index and zero-current vector.",
    "Selected invalid midplane and missing-zero-pressure boundary cases.",
    "An interior edge serializes exactly four fit points and independently reconstructs pressure and derivative.",
-   "Descending radial storage preserves physical edge and original output order; numeric masks and nonfinite fit/derivative fail."
+   "Descending radial storage preserves physical edge and original output order; numeric masks and nonfinite fit/derivative fail.",
+   "Return-type regression checks the top-level scirel._result.Result, key order and attribute access while retaining the existing numerical, state and failure assertions."
   ],
   "tests": [
    "tests/equilibrium/test_pressure_flux_state.py",

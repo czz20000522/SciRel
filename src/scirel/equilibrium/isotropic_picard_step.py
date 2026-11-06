@@ -4,6 +4,8 @@ from __future__ import annotations
 
 import numpy as np
 
+from scirel._result import Result
+
 from ._pressure_current import current_target, relaxed_green_update
 
 __all__ = ["pressure_flux_picard_step"]
@@ -44,6 +46,9 @@ def pressure_flux_picard_step(
     residual : Python float
         L2 norm of updated-minus-previous flux, divided by the absolute boundary flux Shape scalar. Finite normalized L2 update norm; no grid-size normalization; overflow raises FloatingPointError.
 
+    The complete result is returned as one ``scirel._result.Result`` mapping. No nested
+    mapping is introduced, and every field also supports attribute access.
+
     Raises
     ------
     FloatingPointError
@@ -70,12 +75,15 @@ def pressure_flux_picard_step(
     Examples
     --------
     >>> import numpy as np
+    >>> from scirel._result import Result
     >>> from scirel.equilibrium.isotropic_picard_step import pressure_flux_picard_step
     >>> r_grid, z_grid = np.meshgrid([1.0, 2.0], [-1.0, 1.0])
     >>> result = pressure_flux_picard_step(r_grid, z_grid, np.zeros((2, 2)), np.ones((2, 2)), np.eye(4), [1.0, 2.0, 3.0, 4.0], 2.0, [10.0, 20.0, 30.0, 40.0], 0.25)
-    >>> np.testing.assert_allclose(result['plasma_currents'], [4.0, 11.0, 12.0, 22.0])
-    >>> np.testing.assert_allclose(result['psi_next'], [[5.0, 12.0], [13.0, 23.0]])
-    >>> assert np.isclose(result['residual'], np.sqrt(867.0)/2.0)
+    >>> assert isinstance(result, Result)
+    >>> assert result.residual == result['residual']
+    >>> np.testing.assert_allclose(result.plasma_currents, [4.0, 11.0, 12.0, 22.0])
+    >>> np.testing.assert_allclose(result.psi_next, [[5.0, 12.0], [13.0, 23.0]])
+    >>> assert np.isclose(result.residual, np.sqrt(867.0)/2.0)
     """
     r_grid, z_grid, psi_state, psi_vac = [
         np.asarray(value, dtype=float) for value in (r_grid, z_grid, psi_state, psi_vac)
@@ -133,8 +141,10 @@ def pressure_flux_picard_step(
         residual = float(np.linalg.norm(flux - psi_state.ravel()) / abs(edge))
     if not np.isfinite(residual):
         raise FloatingPointError("nonfinite normalized flux-update residual")
-    return {
-        "plasma_currents": currents,
-        "psi_next": flux.reshape(r_grid.shape),
-        "residual": residual,
-    }
+    return Result(
+        {
+            "plasma_currents": currents,
+            "psi_next": flux.reshape(r_grid.shape),
+            "residual": residual,
+        }
+    )

@@ -5,7 +5,7 @@
   "en": "Isotropic pressure-flux Picard step",
   "zh": "各向同性压力-磁通 Picard 单步"
  },
- "summary": "Form relaxed plasma-cell currents from a pressure derivative, apply a supplied flux Green matrix, and measure the resulting flux change in one Picard update.",
+ "summary": "Form relaxed plasma-cell currents from a pressure derivative, apply a supplied flux Green matrix, and measure the resulting flux change in one Picard update. The complete result is returned as one scirel._result.Result mapping; mapping access is retained and every field also supports attribute access. No nested mapping is wrapped.",
  "taxonomy": [
   "equilibrium",
   "isotropic-pressure",
@@ -127,7 +127,7 @@
  "outputs": [
   {
    "name": "plasma_currents",
-   "description": "Relaxed, area-integrated cell-current vector.",
+   "description": "Field of the returned scirel._result.Result mapping: Relaxed, area-integrated cell-current vector.",
    "units": "A",
    "shape": "[N]",
    "dtype": "float64",
@@ -136,7 +136,7 @@
   },
   {
    "name": "psi_next",
-   "description": "Updated psi=R A_phi from Green plasma response plus fixed vacuum flux.",
+   "description": "Field of the returned scirel._result.Result mapping: Updated psi=R A_phi from Green plasma response plus fixed vacuum flux.",
    "units": "Wb/rad",
    "shape": "[N_Z,N_R]",
    "dtype": "float64",
@@ -145,7 +145,7 @@
   },
   {
    "name": "residual",
-   "description": "L2 norm of updated-minus-previous flux, divided by the absolute boundary flux.",
+   "description": "Field of the returned scirel._result.Result mapping: L2 norm of updated-minus-previous flux, divided by the absolute boundary flux.",
    "units": "1",
    "shape": "scalar",
    "dtype": "Python float",
@@ -172,7 +172,7 @@
   "invalid_input": "Raises ValueError for mismatched or non-2D flux/grid shapes, nonfinite grid or vector entries, nonrectilinear/nonuniform/non-increasing grid axes, wrong Green-matrix size, relax outside [0,1], or zero/nonfinite psi_edge. Conversion and missing-argument failures may raise TypeError or ValueError.",
   "runtime_failure": "FloatingPointError for nonfinite calculated current, Green contraction, total flux or update residual. Other NumPy errors propagate; no vacuum fallback.",
   "nonconvergence": "Not applicable to this single step; an enclosing task graph owns the iteration limit and convergence decision.",
-  "partial_results": "No mapping after validation or arithmetic failure. Every successful numerical result is finite."
+  "partial_results": "No scirel._result.Result mapping is returned after validation or arithmetic failure; successful numerical fields remain finite."
  },
  "public_api": {
   "python": {
@@ -188,16 +188,17 @@
   "dependencies": []
  },
  "example": {
-  "description": "Update four grid cells with an identity flux response and verify the relaxed currents and residual.",
-  "code": "import numpy as np\nfrom scirel.equilibrium.isotropic_picard_step import pressure_flux_picard_step\nr_grid, z_grid = np.meshgrid([1.0, 2.0], [-1.0, 1.0])\nresult = pressure_flux_picard_step(r_grid, z_grid, np.zeros((2, 2)), np.ones((2, 2)), np.eye(4), [1.0, 2.0, 3.0, 4.0], 2.0, [10.0, 20.0, 30.0, 40.0], 0.25)\nnp.testing.assert_allclose(result['plasma_currents'], [4.0, 11.0, 12.0, 22.0])\nnp.testing.assert_allclose(result['psi_next'], [[5.0, 12.0], [13.0, 23.0]])\nassert np.isclose(result['residual'], np.sqrt(867.0)/2.0)",
-  "expected": "C-order currents [4,11,12,22] A, updated psi [[5,12],[13,23]] Wb/rad and residual sqrt(867)/2."
+  "description": "Update four grid cells with an identity flux response, confirm the named result, and verify the relaxed currents and residual.",
+  "code": "import numpy as np\nfrom scirel._result import Result\nfrom scirel.equilibrium.isotropic_picard_step import pressure_flux_picard_step\nr_grid, z_grid = np.meshgrid([1.0, 2.0], [-1.0, 1.0])\nresult = pressure_flux_picard_step(r_grid, z_grid, np.zeros((2, 2)), np.ones((2, 2)), np.eye(4), [1.0, 2.0, 3.0, 4.0], 2.0, [10.0, 20.0, 30.0, 40.0], 0.25)\nassert isinstance(result, Result)\nassert result.residual == result['residual']\nnp.testing.assert_allclose(result.plasma_currents, [4.0, 11.0, 12.0, 22.0])\nnp.testing.assert_allclose(result.psi_next, [[5.0, 12.0], [13.0, 23.0]])\nassert np.isclose(result.residual, np.sqrt(867.0)/2.0)\n",
+  "expected": "C-order currents [4,11,12,22] A, updated psi [[5,12],[13,23]] Wb/rad and residual sqrt(867)/2. The returned object is a scirel._result.Result mapping; every field is also readable as an attribute."
  },
  "verification": {
   "scope": [
    "Direct example checks the area-weighted current, identity-Green flux and normalized residual for one four-cell grid.",
    "A graph-level one-cell current projection matches a selected off-source circular-filament psi=R A_phi response.",
    "Direct test checks rejection of an incomplete call.",
-   "Finite inputs that overflow current, Green contraction or total flux are independently reproduced as explicit failures."
+   "Finite inputs that overflow current, Green contraction or total flux are independently reproduced as explicit failures.",
+   "Return-type regression checks the top-level scirel._result.Result, key order and attribute access while retaining the existing numerical, state and failure assertions."
   ],
   "tests": [
    "tests/equilibrium/test_isotropic_picard_step.py",

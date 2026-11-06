@@ -1,6 +1,7 @@
 import numpy as np
 import pytest
 
+from scirel._result import Result
 from scirel.equilibrium.anisotropic_toroidal_current import (
     compute_anisotropic_toroidal_current,
     compute_anisotropic_toroidal_current as scientific_function,
@@ -22,6 +23,17 @@ def test_constant_pressure_has_zero_toroidal_current():
         np.ones_like(r_grid),
         np.ones_like(r_grid),
     )
+    assert isinstance(result, Result)
+    assert list(result) == [
+        "j_phi",
+        "gradp_term",
+        "anisotropy_curvature_term",
+        "B",
+        "force_diagnostics",
+    ]
+    for key in result:
+        assert getattr(result, key) is result[key]
+    assert type(result.force_diagnostics) is dict
     assert np.allclose(result["gradp_term"], 0.0)
     assert np.allclose(result["anisotropy_curvature_term"], 0.0)
     assert np.allclose(result["j_phi"], 0.0)

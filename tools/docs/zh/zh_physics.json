@@ -1748,9 +1748,9 @@
   },
   {
    "asset_id": "scirel.equilibrium.anisotropic-picard-feedback",
-   "source_sha256": "4fc834ce5a1b02bb5f917bac69dd9c24c347f72c305a45b1b0a109d212eeb49b",
-   "summary": "将环向电流密度按掩码和网格积分为单元电流，与旧电流松弛后投影到稠密格林磁通及可选磁场响应。",
-   "definition": "默认复合梯形权重恰覆盖给定节点矩形域，边界为半间隔；显式 cell_edges 则定义包围中心的单元面积。电流不乘 2πR。非激活密度置零，I=(1−relax)I_raw+relax I_old。磁通用 G_psi；成对 G_BR/G_BZ 求场，缺失时对同一新增磁通求导，再加真空场。",
+   "source_sha256": "9b113754d1f38f2e90faf84a2896768ec745685506aa034d00bf02678379f776",
+   "summary": "将环向电流密度按掩码和网格积分为单元电流，与旧电流松弛后投影到稠密格林磁通及可选磁场响应。 顶层返回值为 scirel._result.Result 映射；映射访问保留，字段也支持属性读取。 不引入嵌套映射。",
+   "definition": "默认复合梯形权重恰覆盖给定节点矩形域，边界为半间隔；显式 cell_edges 则定义包围中心的单元面积。电流不乘 2πR。非激活密度置零，I=(1−relax)I_raw+relax I_old。磁通用 G_psi；成对 G_BR/G_BZ 求场，缺失时对同一新增磁通求导，再加真空场。 完整结果作为同一个 scirel._result.Result 映射返回；仅包裹顶层，嵌套结构保持原类型。",
    "model": "使用调用者稠密线性格林响应的一次显式单元电流 Picard 反馈。",
    "assumptions": [
     "格林矩阵与电流顺序及 SI 单位一致。",
@@ -1842,43 +1842,43 @@
    "outputs": [
     {
      "name": "psi",
-     "description": "真空 psi 加上松弛电流的格林响应。",
+     "description": "返回的 scirel._result.Result 映射字段：真空 psi 加上松弛电流的格林响应。",
      "constraints": "矩阵作用于 C 顺序展平电流。",
      "dtype": "float64 双精度浮点数"
     },
     {
      "name": "BR",
-     "description": "真空径向场加同一新增等离子体磁通的场响应。",
+     "description": "返回的 scirel._result.Result 映射字段：真空径向场加同一新增等离子体磁通的场响应。",
      "constraints": "有场 Green 对时加 g_br 的松弛电流响应；缺省时加 −∂Z(psi−psi_vac)/R 的离散导数，采用规则轴极限。",
      "dtype": "float64 双精度浮点数"
     },
     {
      "name": "BZ",
-     "description": "真空轴向场加同一新增等离子体磁通的场响应。",
+     "description": "返回的 scirel._result.Result 映射字段：真空轴向场加同一新增等离子体磁通的场响应。",
      "constraints": "有场 Green 对时加 g_bz 的松弛电流响应；缺省时加 ∂R(psi−psi_vac)/R 的离散导数，采用规则轴极限。",
      "dtype": "float64 双精度浮点数"
     },
     {
      "name": "j_phi",
-     "description": "掩码截断后的电流密度。",
+     "description": "返回的 scirel._result.Result 映射字段：掩码截断后的电流密度。",
      "constraints": "有掩码时 True 处保留输入值，False 处为零。",
      "dtype": "float64 双精度浮点数"
     },
     {
      "name": "initial_picard_current_state",
-     "description": "供图零步初始化的零电流向量。",
+     "description": "返回的 scirel._result.Result 映射字段：供图零步初始化的零电流向量。",
      "constraints": "总为零，不依赖 currents_old。",
      "dtype": "float64 双精度浮点数"
     },
     {
      "name": "picard_current_state",
-     "description": "用于格林投影的 C 顺序松弛单元电流向量。",
+     "description": "返回的 scirel._result.Result 映射字段：用于格林投影的 C 顺序松弛单元电流向量。",
      "constraints": "(1−relax)×原始电流+relax×旧电流。",
      "dtype": "float64 双精度浮点数"
     },
     {
      "name": "plasma_currents",
-     "description": "按明确节点域或单元域权重积分的末次/单步电流密度。",
+     "description": "返回的 scirel._result.Result 映射字段：按明确节点域或单元域权重积分的末次/单步电流密度。",
      "constraints": "默认复合梯形覆盖节点矩形，边界半间隔；显式 cell_edges 定义中心面积；不乘 2πR。",
      "dtype": "float64 双精度浮点数"
     }
@@ -1899,17 +1899,18 @@
     "invalid_input": "拒绝数组非法、非张量/不单调网格、负半径、每轴少于两点、非法单元边界、掩码/状态/松弛错误以及不成对的场格林矩阵。",
     "runtime_failure": "NumPy 矩阵算术错误继续抛出；有限输入矩阵乘溢出后不另作有限性验证。",
     "nonconvergence": "不适用；只执行一次反馈，无收敛判定。",
-    "partial_results": "输入或矩阵失败不返回部分字典。"
+    "partial_results": "输入或矩阵失败时不返回 scirel._result.Result 映射；不引入嵌套 Result。"
    },
    "example": {
     "description": "以显式 2×2 单元边界区分原始与松弛电流，并测试三个格林投影。",
-    "expected": "仅两个单元带原始电流；磁通与场输出使用松弛电流向量。"
+    "expected": "仅两个单元带原始电流；磁通与场输出使用松弛电流向量。返回对象是 scirel._result.Result 映射，每个字段也可用属性读取。"
    },
    "verification": {
     "scope": [
      "显式单元均匀行为、非均匀节点域积分、双节点及降序轴支持。",
      "缺少场格林对时，以新增等离子体磁通的导数产生磁场增量，保留真空参考。",
-     "部分掩码保留激活区 j_phi，仅在单元加权前将非激活单元置零。"
+     "部分掩码保留激活区 j_phi，仅在单元加权前将非激活单元置零。",
+     "返回类型回归检查顶层 scirel._result.Result、键顺序及属性读取；既有数值、状态和失败断言保持不变。"
     ],
     "evidence_ceiling": "限于单次带掩码的环向电流反馈步及磁通/可选场投影。证据：`test_anisotropic_picard_feedback.py` 含 9 个测试函数，其中 3 个引用 `update_anisotropic_picard_flux`，仅由本资产绑定; `test_anisotropic_core_scientific_correction.py` 含 17 个测试函数，其中没有函数引用 `update_anisotropic_picard_flux`，由 8 个资产共享；本审计已执行有界示例。真值来源：绑定私有文件与修正文件中的独立制造解/解析离散检查。不建立：Green 响应的自动构造或物理验证，或完整平衡/壁求解。",
     "known_limitations": [
@@ -2382,9 +2383,9 @@
   },
   {
    "asset_id": "scirel.equilibrium.pressure-flux-state",
-   "source_sha256": "684a9a3bd86556a734d5848b2674aa1a7da5e2568eb3f3d59180c8ac364f5152",
-   "summary": "在严格 Z=0 的一行采样径向压力，将首个零压点之前含该点的递增磁通段拟合为压力样条，返回掩码截断后的压力导数和样条状态。",
-   "definition": "只把唯一精确 Z=0 中平面索引按物理半径递增排序，并拒绝重复半径。逐点采样有限非负压力，用至第一个向外零压点的至少四点严格递增磁通前缀拟合；序列化同一前缀、样条节点、系数及三次阶数。在原 C 顺序网格求导，先拒绝非有限系数或导数，再按边界和真实布尔掩码置零。",
+   "source_sha256": "09ab3286fd997469347d2c377688f1658d032c8128a8a44404f25fb101b10c4c",
+   "summary": "在严格 Z=0 的一行采样径向压力，将首个零压点之前含该点的递增磁通段拟合为压力样条，返回掩码截断后的压力导数和样条状态。 顶层返回值为 scirel._result.Result 映射；映射访问保留，字段也支持属性读取。 嵌套 pressure_of_psi 字段仍是普通字典，不是嵌套 Result。",
+   "definition": "只把唯一精确 Z=0 中平面索引按物理半径递增排序，并拒绝重复半径。逐点采样有限非负压力，用至第一个向外零压点的至少四点严格递增磁通前缀拟合；序列化同一前缀、样条节点、系数及三次阶数。在原 C 顺序网格求导，先拒绝非有限系数或导数，再按边界和真实布尔掩码置零。 完整结果作为同一个 scirel._result.Result 映射返回；仅包裹顶层，嵌套结构保持原类型。",
    "model": "按物理径向遍历、可精确重建的各向同性压力—磁通三次样条。",
    "assumptions": [
     "P(R) 为非负标量函数且存在精确零压边界。",
@@ -2427,31 +2428,31 @@
    "outputs": [
     {
      "name": "pressure_derivative",
-     "description": "边界和布尔掩码处理后的有限导数，保持 C 顺序。",
+     "description": "返回的 scirel._result.Result 映射字段：边界和布尔掩码处理后的有限导数，保持 C 顺序。",
      "constraints": "先验证有限再截断；psi>psi_edge 或真掩码处为零。",
      "dtype": "float64 双精度数组"
     },
     {
      "name": "zero_currents",
-     "description": "与压力导数对齐的全零初始电流向量。",
+     "description": "返回的 scirel._result.Result 映射字段：与压力导数对齐的全零初始电流向量。",
      "constraints": "C 顺序全零数组；此算子不求电流。",
      "dtype": "float64 双精度数组"
     },
     {
      "name": "psi_edge",
-     "description": "中平面首个精确零压样本的磁通。",
+     "description": "返回的 scirel._result.Result 映射字段：中平面首个精确零压样本的磁通。",
      "constraints": "位置与 limiter_index 一致。",
      "dtype": "浮点数"
     },
     {
      "name": "pressure_of_psi",
-     "description": "拟合后的压力—磁通样条结构表示。",
+     "description": "普通字典字段（不是嵌套 Result）：拟合后的压力—磁通样条结构表示。",
      "constraints": "psi_samples、pressure_samples 正好是拟合到 limiter_index 的前缀，节点/系数/阶数与零延拓描述同一三次样条。",
      "dtype": "含 float64 数组、整数次数和文本说明的映射"
     },
     {
      "name": "limiter_index",
-     "description": "按物理半径递增后的首个精确零压位置。",
+     "description": "返回的 scirel._result.Result 映射字段：按物理半径递增后的首个精确零压位置。",
      "constraints": "从零计数的排序中平面位置，不是原存储或全网格索引。",
      "dtype": "整数"
     }
@@ -2474,11 +2475,11 @@
     "invalid_input": "网格非二维、非有限或错形，严格中平面缺失或不唯一，压力不可调用、样本非有限或为负、无精确零边界，磁通前缀不足或不递增，掩码错形时抛出 ValueError。 重复中平面半径及非布尔掩码也拒绝。",
     "runtime_failure": "非有限拟合系数或导数抛 FloatingPointError；回调及 SciPy 异常继续抛出，截断不能掩盖无效数值。",
     "nonconvergence": "不适用；样条构建不迭代求平衡。",
-    "partial_results": "验证或样条构建失败不返回部分映射。"
+    "partial_results": "验证或样条构建失败时不返回 scirel._result.Result 映射；嵌套压力样条字段仍为普通字典。"
    },
    "example": {
     "description": "拟合线性下降的中平面压力，并掩去一个导数单元。",
-    "expected": "未掩蔽 dP/dpsi 为 −1 Pa/(Wb/rad)；选中单元和电流向量为零，首个零压边界 psi_edge=0.8 Wb/rad。"
+    "expected": "未掩蔽 dP/dpsi 为 −1 Pa/(Wb/rad)；选中单元和电流向量为零，首个零压边界 psi_edge=0.8 Wb/rad；pressure_of_psi 仍为普通字典。返回对象是 scirel._result.Result 映射，每个字段也可用属性读取。"
    },
    "verification": {
     "scope": [
@@ -2486,7 +2487,8 @@
      "掩码、首零压索引及零电流向量。",
      "所选非法中平面和缺失零压边界案例。",
      "内部零压边界只序列化实际四个拟合点，独立重建压力和导数。",
-     "降序存储保留物理边界及输出顺序；数字掩码和非有限拟合/导数失败。"
+     "降序存储保留物理边界及输出顺序；数字掩码和非有限拟合/导数失败。",
+     "返回类型回归检查顶层 scirel._result.Result、键顺序及属性读取；既有数值、状态和失败断言保持不变。"
     ],
     "evidence_ceiling": "限于精确 Z=0 径向压力采样与递增磁通前缀样条状态。证据：`test_pressure_flux_state.py` 含 5 个测试函数，其中 1 个引用 `build_pressure_flux_state`，仅由本资产绑定; `test_legacy_six_absorption.py` 含 18 个测试函数，其中 4 个引用 `build_pressure_flux_state`，由 8 个资产共享；本审计已执行有界示例。真值来源：绑定文件中的独立解析夹具与选定安装轮/源回归。不建立：通用磁轴/限制器/磁面推断、各向异性压力闭合，或压力-电流平衡求解。",
     "known_limitations": [
@@ -6709,9 +6711,9 @@
   },
   {
    "asset_id": "scirel.equilibrium.isotropic-picard-step",
-   "source_sha256": "29b89ead748f69c837ab7d57bbb61b73449e0640feb9b630f036b678f414ce54",
-   "summary": "由压力导数构造松弛后的网格电流，用外供格林矩阵更新磁通，并计算一次 Picard 更新的磁通变化。",
-   "definition": "按 C 顺序计算 I_target=R(dP/dpsi)dR dZ、I_new=(1−relax)I_target+relax I_old，再计算 Green 磁通和真空磁通之和。relax=1 明确保留旧电流，不计算未使用的目标。电流、Green 收缩、总磁通及 ||psi_next−psi_state||₂/|psi_edge| 任一非有限均失败，不静默置零；此接口只执行一步。",
+   "source_sha256": "250f91596d5f9636b0aed21a1c646dbf36785ad57a677590d6fb5f3beda61e9b",
+   "summary": "由压力导数构造松弛后的网格电流，用外供格林矩阵更新磁通，并计算一次 Picard 更新的磁通变化。 顶层返回值为 scirel._result.Result 映射；映射访问保留，字段也支持属性读取。 不引入嵌套映射。",
+   "definition": "按 C 顺序计算 I_target=R(dP/dpsi)dR dZ、I_new=(1−relax)I_target+relax I_old，再计算 Green 磁通和真空磁通之和。relax=1 明确保留旧电流，不计算未使用的目标。电流、Green 收缩、总磁通及 ||psi_next−psi_state||₂/|psi_edge| 任一非有限均失败，不静默置零；此接口只执行一步。 完整结果作为同一个 scirel._result.Result 映射返回；仅包裹顶层，嵌套结构保持原类型。",
    "model": "轴对称各向同性压力—磁通 Picard 网格电流更新，采用外供格林响应。",
    "assumptions": [
     "g_psi 将同一 C 顺序电流映射为 Wb/rad 的 psi=R A_phi；R dP/dpsi 使用同一每弧度坐标。",
@@ -6777,19 +6779,19 @@
    "outputs": [
     {
      "name": "plasma_currents",
-     "description": "经松弛并按面积积分的网格电流向量。",
+     "description": "返回的 scirel._result.Result 映射字段：经松弛并按面积积分的网格电流向量。",
      "constraints": "C 顺序；relax=1 保留旧电流。",
      "dtype": "float64 双精度浮点数"
     },
     {
      "name": "psi_next",
-     "description": "等离子体格林响应与固定真空磁通之和。",
+     "description": "返回的 scirel._result.Result 映射字段：等离子体格林响应与固定真空磁通之和。",
      "constraints": "成功时有限且保持网格形状；不掩盖非有限 Green 响应。",
      "dtype": "float64 双精度浮点数"
     },
     {
      "name": "residual",
-     "description": "新旧磁通差的 L2 范数除以边界磁通绝对值。",
+     "description": "返回的 scirel._result.Result 映射字段：新旧磁通差的 L2 范数除以边界磁通绝对值。",
      "constraints": "有限的归一化 L2 更新范数；不按网格大小归一化，溢出抛 FloatingPointError。",
      "dtype": "Python 浮点数"
     }
@@ -6813,18 +6815,19 @@
     "invalid_input": "网格/磁通错形或非二维、非有限值、非直角/非均匀/不递增坐标、格林尺寸错误、relax 越界、psi_edge 为零或非有限时抛出 ValueError；转换或缺参数也可抛 TypeError/ValueError。",
     "runtime_failure": "计算电流、Green 收缩、总磁通或残差非有限时抛 FloatingPointError；其他 NumPy 异常继续抛出，没有真空回退。",
     "nonconvergence": "不适用于单步；外层任务图决定迭代上限与收敛。",
-    "partial_results": "任何验证或算术异常不返回映射；成功的数值字段均有限。"
+    "partial_results": "任何验证或算术异常都不返回 scirel._result.Result 映射；成功返回的数值字段均有限。"
    },
    "example": {
     "description": "对四个网格单元使用单位响应矩阵，检查松弛电流及残差。",
-    "expected": "C 顺序电流为 [4,11,12,22] A；psi=[[5,12],[13,23]] Wb/rad；残差为 sqrt(867)/2≈14.7224。"
+    "expected": "C 顺序电流为 [4,11,12,22] A；psi=[[5,12],[13,23]] Wb/rad；残差为 sqrt(867)/2≈14.7224。返回对象是 scirel._result.Result 映射，每个字段也可用属性读取。"
    },
    "verification": {
     "scope": [
      "四单元例的面积电流、单位格林磁通和归一化残差。",
      "图层单单元电流投影与选定离源圆电流丝 psi 响应匹配。",
      "拒绝不完整调用。",
-     "有限输入导致电流、Green 收缩或总磁通溢出的真实失败回归。"
+     "有限输入导致电流、Green 收缩或总磁通溢出的真实失败回归。",
+     "返回类型回归检查顶层 scirel._result.Result、键顺序及属性读取；既有数值、状态和失败断言保持不变。"
     ],
     "evidence_ceiling": "限于单次经给定磁通 Green 矩阵的松弛等离子体单元电流步与磁通变化测量。证据：`test_isotropic_picard_step.py` 含 2 个测试函数，其中 1 个引用 `pressure_flux_picard_step`，仅由本资产绑定; `test_composition_isotropic_pressure_flux.py` 含 10 个测试函数，其中没有函数引用 `pressure_flux_picard_step`，由 2 个资产共享; `test_legacy_six_absorption.py` 含 18 个测试函数，其中 1 个引用 `pressure_flux_picard_step`，由 8 个资产共享；本审计已执行有界示例。真值来源：绑定文件中的独立解析夹具与选定安装轮/源回归。不建立：各向异性压力闭合、完整 Picard 求解器/收敛决策，或边界条件求解。",
     "known_limitations": [
@@ -7897,9 +7900,9 @@
   },
   {
    "asset_id": "scirel.equilibrium.anisotropic-toroidal-current",
-   "source_sha256": "c9484c78084b495792b61048fb6930f677b59af0481e2e0fb9e15c02fedb83e0",
-   "summary": "将轴对称旋磁压力力投影为环向电流，分离各向同性垂直压力贡献和各向异性余项。",
-   "definition": "调用压力力投影两次：一次用实际 p_parallel、p_perp，一次将两压力都设为 p_perp。第二次电流为 gradp_term；总电流与它的差为 anisotropy_curvature_term。此分解由离散差定义，不是独立离散的曲率公式。",
+   "source_sha256": "3b288b4e55a3ffac7795117a92e12c5f2d534adf54a95eafe3e40855975f64e0",
+   "summary": "将轴对称旋磁压力力投影为环向电流，分离各向同性垂直压力贡献和各向异性余项。 顶层返回值为 scirel._result.Result 映射；映射访问保留，字段也支持属性读取。 嵌套 force_diagnostics 字段仍是普通字典，不是嵌套 Result。",
+   "definition": "调用压力力投影两次：一次用实际 p_parallel、p_perp，一次将两压力都设为 p_perp。第二次电流为 gradp_term；总电流与它的差为 anisotropy_curvature_term。此分解由离散差定义，不是独立离散的曲率公式。 完整结果作为同一个 scirel._result.Result 映射返回；仅包裹顶层，嵌套结构保持原类型。",
    "model": "轴对称旋磁压力张量及垂直电流投影。",
    "assumptions": [
     "磁场及压力共用 R–Z 节点，分别用 T、Pa。",
@@ -7947,31 +7950,31 @@
    "outputs": [
     {
      "name": "j_phi",
-     "description": "完整旋磁环向电流密度投影。",
+     "description": "返回的 scirel._result.Result 映射字段：完整旋磁环向电流密度投影。",
      "constraints": "按构造等于两个分解项之和；R=0 列为零。",
      "dtype": "float64 双精度浮点数"
     },
     {
      "name": "gradp_term",
-     "description": "将两压力都设为 p_perp 的各向同性比较电流。",
+     "description": "返回的 scirel._result.Result 映射字段：将两压力都设为 p_perp 的各向同性比较电流。",
      "constraints": "恰为依赖该次求值的 J_phi，不是独立求出的梯度。",
      "dtype": "float64 双精度浮点数"
     },
     {
      "name": "anisotropy_curvature_term",
-     "description": "完整电流与各向同性比较电流之差。",
+     "description": "返回的 scirel._result.Result 映射字段：完整电流与各向同性比较电流之差。",
      "constraints": "j_phi−gradp_term；等压力时在算术误差内为零。",
      "dtype": "float64 双精度浮点数"
     },
     {
      "name": "B",
-     "description": "给定极向场大小。",
+     "description": "返回的 scirel._result.Result 映射字段：给定极向场大小。",
      "constraints": "来自完整力平衡求值。",
      "dtype": "float64 双精度浮点数"
     },
     {
      "name": "force_diagnostics",
-     "description": "完整修正张量力结果，含原始及可分辨兼容性诊断。",
+     "description": "普通字典字段（不是嵌套 Result）：完整修正张量力结果，含原始及可分辨兼容性诊断。",
      "constraints": "保留依赖输出中的力与诊断。",
      "dtype": "字典"
     }
@@ -7994,18 +7997,19 @@
     "invalid_input": "依赖对非有限、错维/错形、非法网格、负压力或点数不足抛出 ValueError；两次都用 active_mask=None。",
     "runtime_failure": "依赖与算术错误继续抛出；极端有限输入不保证有限电流。",
     "nonconvergence": "不适用；无迭代。",
-    "partial_results": "任一次力求值失败均不返回部分映射。"
+    "partial_results": "任一次力求值失败均不返回 scirel._result.Result 映射；成功后嵌套 force_diagnostics 仍为普通字典。"
    },
    "example": {
     "description": "均匀 2 T 轴场中，沿 R 线性增加的各向同性压力给出解析电流。",
-    "expected": "完整电流与各向同性比较电流均为 0.5 A/m²，各向异性差在容差内为零。"
+    "expected": "完整电流与各向同性比较电流均为 0.5 A/m²，各向异性差在容差内为零。返回对象是 scirel._result.Result 映射；force_diagnostics 仍为普通字典，顶层字段支持属性读取。"
    },
    "verification": {
     "scope": [
      "常压零电流极限。",
      "制造的径向垂直压力梯度及各向同性分解。",
      "旋转等幅场产生非零各向异性差。",
-     "R=0 电流列为零并拒绝负压。"
+     "R=0 电流列为零并拒绝负压。",
+     "返回类型回归检查顶层 scirel._result.Result、键顺序及属性读取；既有数值、状态和失败断言保持不变。"
     ],
     "evidence_ceiling": "限于各向同性垂直压力电流与各向异性环向电流余项的分离。证据：`test_anisotropic_toroidal_current.py` 含 4 个测试函数，其中 1 个引用 `compute_anisotropic_toroidal_current`，仅由本资产绑定; `test_anisotropic_core_scientific_correction.py` 含 17 个测试函数，其中没有函数引用 `compute_anisotropic_toroidal_current`，由 8 个资产共享；本审计已执行有界示例。真值来源：绑定私有文件与修正文件中的独立制造解/解析离散检查。不建立：独立曲率公式或平行力证明、非轴对称/环向场几何，或完整平衡求解器。",
     "known_limitations": [
@@ -9403,9 +9407,9 @@
   },
   {
    "asset_id": "scirel.equilibrium.axisymmetric-picard-update",
-   "source_sha256": "28614e47e57baf9185382bae4ab6f100aaa03ca6620d475e9f9629a9a15e5032",
-   "summary": "将环向电流密度积分为单元电流，经稠密格林矩阵求磁通候选，再对旧磁通松弛，报告磁通与电流相对变化。",
-   "definition": "默认复合梯形积分恰覆盖节点矩形域，边界权重为半间隔；显式 (radial_edges,axial_edges) 各有中心数加一项，有限、单调并包围中心，定义单元中心面积；不乘 2πR。 令 candidate=psi_vac+G_psi@I，psi_next=relax×psi_state+(1−relax)×candidate；返回松弛步变化、原始电流变化及未松弛固定点残差。",
+   "source_sha256": "616399863b8b1547e47baeac494ace4ce7575f06f6d1d0b939b86ab1e4d6392f",
+   "summary": "将环向电流密度积分为单元电流，经稠密格林矩阵求磁通候选，再对旧磁通松弛，报告磁通与电流相对变化。 顶层返回值为 scirel._result.Result 映射；映射访问保留，字段也支持属性读取。 不引入嵌套映射。",
+   "definition": "默认复合梯形积分恰覆盖节点矩形域，边界权重为半间隔；显式 (radial_edges,axial_edges) 各有中心数加一项，有限、单调并包围中心，定义单元中心面积；不乘 2πR。 令 candidate=psi_vac+G_psi@I，psi_next=relax×psi_state+(1−relax)×candidate；返回松弛步变化、原始电流变化及未松弛固定点残差。 完整结果作为同一个 scirel._result.Result 映射返回；仅包裹顶层，嵌套结构保持原类型。",
    "model": "轴对称稠密格林单步 Picard，松弛对象是磁通而非电流。",
    "assumptions": [
     "relax 是旧磁通权重，不混合电流。",
@@ -9472,31 +9476,31 @@
    "outputs": [
     {
      "name": "psi_next",
-     "description": "磁通松弛后的下一总 psi 状态。",
+     "description": "返回的 scirel._result.Result 映射字段：磁通松弛后的下一总 psi 状态。",
      "constraints": "必须满足公式约束：relax×psi_state+(1−relax)×(psi_vac+G_psi@raw_currents)。",
      "dtype": "float64 双精度浮点数"
     },
     {
      "name": "plasma_cell_currents",
-     "description": "按明确节点域/单元域权重积分的电流密度。",
+     "description": "返回的 scirel._result.Result 映射字段：按明确节点域/单元域权重积分的电流密度。",
      "constraints": "默认复合梯形积分恰覆盖节点矩形域，边界权重为半间隔；显式 (radial_edges,axial_edges) 各有中心数加一项，有限、单调并包围中心，定义单元中心面积；不乘 2πR。",
      "dtype": "float64 双精度浮点数"
     },
     {
      "name": "relative_psi_change",
-     "description": "该量的公式定义为 ||psi_next−psi_state||₂/max(||psi_next||,||psi_vac||,tiny)。",
+     "description": "返回的 scirel._result.Result 映射字段：该量的公式定义为 ||psi_next−psi_state||₂/max(||psi_next||,||psi_vac||,tiny)。",
      "constraints": "使用返回 psi_next 和前态 psi_state。",
      "dtype": "浮点数"
     },
     {
      "name": "relative_current_change",
-     "description": "原始新旧电流差的 L2 范数除以 max(||raw_currents||,1)。",
+     "description": "返回的 scirel._result.Result 映射字段：原始新旧电流差的 L2 范数除以 max(||raw_currents||,1)。",
      "constraints": "旧电流仅影响此诊断，不影响磁通更新。",
      "dtype": "浮点数"
     },
     {
      "name": "fixed_point_residual",
-     "description": "该量的公式定义为 ||candidate−psi_state||/max(||candidate||,||psi_vac||,tiny)。",
+     "description": "返回的 scirel._result.Result 映射字段：该量的公式定义为 ||candidate−psi_state||/max(||candidate||,||psi_vac||,tiny)。",
      "constraints": "与 relax 无关的未松弛固定点残差。",
      "dtype": "浮点数"
     }
@@ -9519,17 +9523,18 @@
     "invalid_input": "错维/错形/非有限数组、负半径/不递增/非直角/不足网格、非法格林、relax 不在 [0,1)、非法旧电流时抛出 ValueError。",
     "runtime_failure": "意外 NumPy 错误继续抛出；矩阵或范数中间溢出无独立有限性门禁。",
     "nonconvergence": "单步不适用；调用者控制并检查迭代。",
-    "partial_results": "异常后不返回部分映射。"
+    "partial_results": "异常后不返回 scirel._result.Result 映射；不引入嵌套 Result。"
    },
    "example": {
     "description": "非均匀节点域上的线性电流积分得到精确总电流。",
-    "expected": "在恰由输入节点限定的区域内总电流为 1.2 A。"
+    "expected": "在恰由输入节点限定的区域内总电流为 1.2 A。返回对象是 scirel._result.Result 映射，每个字段也可用属性读取。"
    },
    "verification": {
     "scope": [
      "J=R 在非均匀 [1,2]×[−0.4,0.4] 节点域积分为 1.2 A。",
      "紧支撑多项式电流在非均匀网格收敛到 8/225 A。",
-     "显式均匀单元边界复现完整中心面积约定。"
+     "显式均匀单元边界复现完整中心面积约定。",
+     "返回类型回归检查顶层 scirel._result.Result、键顺序及属性读取；既有数值、状态和失败断言保持不变。"
     ],
     "evidence_ceiling": "限于单次轴对称 Picard 磁通更新：环向电流经稠密单元电流 Green 矩阵。证据：`test_axisymmetric_picard_update.py` 含 5 个测试函数，其中 1 个引用 `update_axisymmetric_picard_flux`，仅由本资产绑定; `test_anisotropic_core_scientific_correction.py` 含 17 个测试函数，其中没有函数引用 `update_axisymmetric_picard_flux`，由 8 个资产共享；本审计已执行有界示例。真值来源：绑定私有文件与修正文件中的独立制造解/解析离散检查。不建立：完整收敛平衡、自动迭代次数选择、电流松弛或连 flux 转换。",
     "known_limitations": [

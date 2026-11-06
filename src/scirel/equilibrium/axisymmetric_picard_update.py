@@ -4,6 +4,8 @@ from __future__ import annotations
 
 import numpy as np
 
+from scirel._result import Result
+
 from ._anisotropic_numerics import cell_areas
 
 __all__ = ["update_axisymmetric_picard_flux"]
@@ -57,6 +59,9 @@ def update_axisymmetric_picard_flux(
     fixed_point_residual : float
         Norm(candidate-psi_state)/max(norm(candidate),norm(psi_vac),tiny); independent of relax Shape scalar. Norm(candidate-psi_state)/max(norm(candidate),norm(psi_vac),tiny); independent of relax.
 
+    The complete result is returned as one ``scirel._result.Result`` mapping. No nested
+    mapping is introduced, and every field also supports attribute access.
+
     Raises
     ------
     ValueError
@@ -81,10 +86,13 @@ def update_axisymmetric_picard_flux(
     Examples
     --------
     >>> import numpy as np
+    >>> from scirel._result import Result
     >>> from scirel.equilibrium import update_axisymmetric_picard_flux
     >>> r,z=np.meshgrid([1.,1.2,2.],[-.4,-.1,.4])
     >>> out=update_axisymmetric_picard_flux(r,z,r,r*0,r*0,np.zeros((9,9)),0.)
-    >>> np.testing.assert_allclose(out['plasma_cell_currents'].sum(),1.2,rtol=1e-14,atol=1e-14)
+    >>> assert isinstance(out, Result)
+    >>> assert out.plasma_cell_currents is out['plasma_cell_currents']
+    >>> np.testing.assert_allclose(out.plasma_cell_currents.sum(),1.2,rtol=1e-14,atol=1e-14)
     """
     arrays = [
         np.asarray(value, dtype=float) for value in (r_grid, z_grid, j_phi, psi_state, psi_vac)
@@ -141,10 +149,12 @@ def update_axisymmetric_picard_flux(
     relative_current_change = float(
         np.linalg.norm(raw_currents - old) / max(np.linalg.norm(raw_currents), 1.0)
     )
-    return {
-        "psi_next": psi_next,
-        "plasma_cell_currents": raw_currents,
-        "relative_psi_change": relative_psi_change,
-        "relative_current_change": relative_current_change,
-        "fixed_point_residual": fixed_point_residual,
-    }
+    return Result(
+        {
+            "psi_next": psi_next,
+            "plasma_cell_currents": raw_currents,
+            "relative_psi_change": relative_psi_change,
+            "relative_current_change": relative_current_change,
+            "fixed_point_residual": fixed_point_residual,
+        }
+    )

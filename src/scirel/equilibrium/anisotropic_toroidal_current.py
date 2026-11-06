@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from scirel._result import Result
+
 from .anisotropic_force_balance import compute_anisotropic_force_balance
 
 __all__ = ["compute_anisotropic_toroidal_current"]
@@ -36,7 +38,10 @@ def compute_anisotropic_toroidal_current(r_grid, z_grid, br, bz, p_parallel, p_p
     B : float64
         Magnitude of the supplied poloidal field [T] Shape [N_Z,N_R]. Taken from the full force-balance evaluation.
     force_diagnostics : dict
-        Full corrected tensor-force result, including raw and resolved compatibility diagnostics [mixed SI] Shape mapping. Full corrected tensor-force result, including raw and resolved compatibility diagnostics.
+        Plain-dict full corrected tensor-force result, including raw and resolved compatibility diagnostics [mixed SI] Shape mapping. This nested value is not a Result.
+
+    The complete result is returned as one ``scirel._result.Result`` mapping. No nested
+    mapping is wrapped, and every field also supports attribute access.
 
     Raises
     ------
@@ -60,21 +65,27 @@ def compute_anisotropic_toroidal_current(r_grid, z_grid, br, bz, p_parallel, p_p
     Examples
     --------
     >>> import numpy as np
+    >>> from scirel._result import Result
     >>> from scirel.equilibrium import compute_anisotropic_toroidal_current
     >>> r, z = np.meshgrid(np.linspace(0.2, 0.5, 5), np.linspace(-0.2, 0.2, 4))
     >>> p = 3.0 + r
     >>> result = compute_anisotropic_toroidal_current(r, z, np.zeros_like(r), np.full_like(r, 2.0), p, p)
-    >>> np.testing.assert_allclose(result['j_phi'], 0.5)
-    >>> np.testing.assert_allclose(result['gradp_term'], 0.5)
-    >>> np.testing.assert_allclose(result['anisotropy_curvature_term'], 0.0, atol=1e-12)
+    >>> assert isinstance(result, Result)
+    >>> assert result.j_phi is result['j_phi']
+    >>> assert type(result.force_diagnostics) is dict
+    >>> np.testing.assert_allclose(result.j_phi, 0.5)
+    >>> np.testing.assert_allclose(result.gradp_term, 0.5)
+    >>> np.testing.assert_allclose(result.anisotropy_curvature_term, 0.0, atol=1e-12)
     """
     full = compute_anisotropic_force_balance(r_grid, z_grid, br, bz, p_parallel, p_perp)
     isotropic = compute_anisotropic_force_balance(r_grid, z_grid, br, bz, p_perp, p_perp)
     gradp = isotropic["J_phi"]
-    return {
-        "j_phi": full["J_phi"],
-        "gradp_term": gradp,
-        "anisotropy_curvature_term": full["J_phi"] - gradp,
-        "B": full["B"],
-        "force_diagnostics": full,
-    }
+    return Result(
+        {
+            "j_phi": full["J_phi"],
+            "gradp_term": gradp,
+            "anisotropy_curvature_term": full["J_phi"] - gradp,
+            "B": full["B"],
+            "force_diagnostics": full,
+        }
+    )

@@ -5,7 +5,7 @@
   "en": "Gyrotropic-pressure toroidal current decomposition",
   "zh": "各向异性压强环向电流分解"
  },
- "summary": "Project axisymmetric gyrotropic pressure force onto toroidal current and separate the isotropic perpendicular-pressure contribution from the anisotropic remainder.",
+ "summary": "Project axisymmetric gyrotropic pressure force onto toroidal current and separate the isotropic perpendicular-pressure contribution from the anisotropic remainder. The complete result is returned as one scirel._result.Result mapping; mapping access is retained and every field also supports attribute access. The nested force_diagnostics field remains a plain dict, not a Result.",
  "taxonomy": [
   "equilibrium",
   "anisotropic-pressure",
@@ -101,7 +101,7 @@
  "outputs": [
   {
    "name": "j_phi",
-   "description": "Full gyrotropic toroidal current-density projection.",
+   "description": "Field of the returned scirel._result.Result mapping: Full gyrotropic toroidal current-density projection.",
    "units": "A/m^2",
    "shape": "[N_Z,N_R]",
    "dtype": "float64",
@@ -110,7 +110,7 @@
   },
   {
    "name": "gradp_term",
-   "description": "Toroidal current from the isotropic p_perp comparison.",
+   "description": "Field of the returned scirel._result.Result mapping: Toroidal current from the isotropic p_perp comparison.",
    "units": "A/m^2",
    "shape": "[N_Z,N_R]",
    "dtype": "float64",
@@ -119,7 +119,7 @@
   },
   {
    "name": "anisotropy_curvature_term",
-   "description": "Difference between full and isotropic-comparison current.",
+   "description": "Field of the returned scirel._result.Result mapping: Difference between full and isotropic-comparison current.",
    "units": "A/m^2",
    "shape": "[N_Z,N_R]",
    "dtype": "float64",
@@ -128,7 +128,7 @@
   },
   {
    "name": "B",
-   "description": "Magnitude of the supplied poloidal field.",
+   "description": "Field of the returned scirel._result.Result mapping: Magnitude of the supplied poloidal field.",
    "units": "T",
    "shape": "[N_Z,N_R]",
    "dtype": "float64",
@@ -137,7 +137,7 @@
   },
   {
    "name": "force_diagnostics",
-   "description": "Full corrected tensor-force result, including raw and resolved compatibility diagnostics.",
+   "description": "Plain-dict field of the returned scirel._result.Result mapping: Full corrected tensor-force result, including raw and resolved compatibility diagnostics.",
    "units": "mixed SI",
    "shape": "mapping",
    "dtype": "dict",
@@ -163,7 +163,7 @@
   "invalid_input": "The bound force-balance Operator raises ValueError for nonfinite, wrong-rank or mismatched arrays; invalid R-Z grid, negative pressure or insufficient samples. Both evaluations use active_mask=None.",
   "runtime_failure": "Dependency and arithmetic failures propagate; extreme finite inputs are not guaranteed to yield finite projected currents.",
   "nonconvergence": "Not applicable; this Operator performs no iteration.",
-  "partial_results": "No partial mapping is returned if either force-balance evaluation fails."
+  "partial_results": "No scirel._result.Result mapping is returned if either force-balance evaluation fails; force_diagnostics remains a plain dict on success."
  },
  "public_api": {
   "python": {
@@ -183,16 +183,17 @@
   ]
  },
  "example": {
-  "description": "An isotropic pressure increasing linearly in R gives an analytic current in a uniform 2 T axial field.",
-  "code": "import numpy as np\nfrom scirel.equilibrium import compute_anisotropic_toroidal_current\nr, z = np.meshgrid(np.linspace(0.2, 0.5, 5), np.linspace(-0.2, 0.2, 4))\np = 3.0 + r\nresult = compute_anisotropic_toroidal_current(r, z, np.zeros_like(r), np.full_like(r, 2.0), p, p)\nnp.testing.assert_allclose(result['j_phi'], 0.5)\nnp.testing.assert_allclose(result['gradp_term'], 0.5)\nnp.testing.assert_allclose(result['anisotropy_curvature_term'], 0.0, atol=1e-12)",
-  "expected": "The full and isotropic-comparison currents are 0.5 A/m^2, with zero anisotropic difference to tolerance."
+  "description": "Evaluate constant-magnitude pressure and field, confirm the named result, and verify the isotropic current decomposition.",
+  "code": "import numpy as np\nfrom scirel._result import Result\nfrom scirel.equilibrium import compute_anisotropic_toroidal_current\nr, z = np.meshgrid(np.linspace(0.2, 0.5, 5), np.linspace(-0.2, 0.2, 4))\np = 3.0 + r\nresult = compute_anisotropic_toroidal_current(r, z, np.zeros_like(r), np.full_like(r, 2.0), p, p)\nassert isinstance(result, Result)\nassert result.j_phi is result['j_phi']\nassert type(result.force_diagnostics) is dict\nnp.testing.assert_allclose(result.j_phi, 0.5)\nnp.testing.assert_allclose(result.gradp_term, 0.5)\nnp.testing.assert_allclose(result.anisotropy_curvature_term, 0.0, atol=1e-12)\n",
+  "expected": "The full current and isotropic comparison current are 0.5 A/m^2, and the anisotropic difference is zero within tolerance. The returned object is a scirel._result.Result mapping; force_diagnostics remains a plain dict and every top-level field supports attribute access."
  },
  "verification": {
   "scope": [
    "Constant-pressure zero-current limit.",
    "Manufactured radial perpendicular-pressure gradient and isotropic decomposition.",
    "Rotating constant-magnitude field produces a nonzero anisotropic difference.",
-   "The R=0 axis column is zero, and invalid negative pressure is rejected."
+   "The R=0 axis column is zero, and invalid negative pressure is rejected.",
+   "Return-type regression checks the top-level scirel._result.Result, key order and attribute access while retaining the existing numerical, state and failure assertions."
   ],
   "tests": [
    "tests/equilibrium/test_anisotropic_toroidal_current.py",
