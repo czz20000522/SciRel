@@ -166,7 +166,7 @@ The prediction in the previous section came from an analytic expression. In real
        params={'gradient': 1.7, 'ratio': 1.6}, observations=observations,
        solver_config={'r_grid': R, 'z_grid': Z},
        equilibrium_solver=picard,
-       diagnostic_evaluator=synthesize_equilibrium_diagnostics,
+       diagnostic_evaluator=lambda payload: synthesize_equilibrium_diagnostics(payload["equilibrium"], payload["R"], payload["Z"], payload["observations"]),
        residual_reducer=reduce_observation_residuals)
 
    print("valid =", good['valid'], " status =", good['status'])
@@ -197,7 +197,7 @@ Now look at a trial that is deliberately given only one iteration:
        params={'gradient': 1.0, 'ratio': 1.2}, observations=observations,
        solver_config={'r_grid': R, 'z_grid': Z},
        equilibrium_solver=lambda payload: picard(payload, maxiter=1),
-       diagnostic_evaluator=synthesize_equilibrium_diagnostics,
+       diagnostic_evaluator=lambda payload: synthesize_equilibrium_diagnostics(payload["equilibrium"], payload["R"], payload["Z"], payload["observations"]),
        residual_reducer=reduce_observation_residuals)
 
    print("valid =", bad['valid'], " status =", bad['status'])
@@ -257,7 +257,7 @@ Connecting the forward port, the diagnostic port and the fixed-size residual giv
        method='least_squares', n_initial_samples=8, seed=3, max_evaluations=140,
        observations=observations, solver_config={'r_grid': R, 'z_grid': Z},
        equilibrium_solver=picard,
-       diagnostic_evaluator=synthesize_equilibrium_diagnostics)
+       diagnostic_evaluator=lambda payload: synthesize_equilibrium_diagnostics(payload["equilibrium"], payload["R"], payload["Z"], payload["observations"]))
 
    print("best_parameters =", fit['best_parameters'])
    print("converged/optimizer/forward =",
@@ -299,7 +299,7 @@ Tighten the upper bound of ``ratio`` from ``2.5`` to ``1.4`` so that it excludes
        method='least_squares', n_initial_samples=8, seed=3, max_evaluations=140,
        observations=observations, solver_config={'r_grid': R, 'z_grid': Z},
        equilibrium_solver=picard,
-       diagnostic_evaluator=synthesize_equilibrium_diagnostics)
+       diagnostic_evaluator=lambda payload: synthesize_equilibrium_diagnostics(payload["equilibrium"], payload["R"], payload["Z"], payload["observations"]))
 
    print("best_parameters =", bounded['best_parameters'])
    print("converged/optimizer/forward =",

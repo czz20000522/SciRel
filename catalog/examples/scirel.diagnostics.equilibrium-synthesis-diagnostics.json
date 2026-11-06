@@ -125,7 +125,7 @@
   ]
  },
  "failure_semantics": {
-  "invalid_input": "Raises ValueError for missing fields, empty/unknown requests, invalid point sets, unit mismatches or out-of-domain points.",
+  "invalid_input": "Raises TypeError when the removed inputs mapping, an unknown keyword, or a required top-level parameter is missing. Raises ValueError for missing nested fields, empty/unknown requests, invalid point sets, unit mismatches or out-of-domain points.",
   "runtime_failure": "Sampler exceptions propagate; a nonfinite flux conversion raises FloatingPointError.",
   "nonconvergence": "This function does not solve an equilibrium; an inversion trial must verify forward convergence before entering it.",
   "partial_results": "No partially successful scirel._result.Result mapping is returned on error; the caller's equilibrium is not modified."
@@ -134,7 +134,7 @@
   "python": {
    "module": "scirel.diagnostics.equilibrium_synthesis_diagnostics",
    "symbol": "synthesize_equilibrium_diagnostics",
-   "signature": "synthesize_equilibrium_diagnostics(inputs=None, **kwargs)",
+   "signature": "synthesize_equilibrium_diagnostics(equilibrium, R, Z, observations)",
    "canonical_module": "scirel.diagnostics",
    "canonical_symbol": "synthesize_equilibrium_diagnostics"
   }
@@ -149,17 +149,19 @@
  },
  "example": {
   "description": "A uniform axial field Bz=2 T has psi=R^2 Wb/rad; the single-turn flux at R=1 m should be 2*pi Wb in a named result mapping.",
-  "code": "import numpy as np\nfrom scirel._result import Result\nfrom scirel.diagnostics import synthesize_equilibrium_diagnostics\nR,Z=np.meshgrid([0.,1.,2.],[-1.,0.,1.])\nr=synthesize_equilibrium_diagnostics(R=R,Z=Z,equilibrium={'psi':R**2,'psi_unit':'Wb/rad'},observations={'flux_loops':{'points':[[1.,0.]],'quantity':'magnetic_flux','unit':'Wb'}})\nassert isinstance(r, Result)\nassert r.flux_loops is r['flux_loops']\nnp.testing.assert_allclose(r['flux_loops'],[2*np.pi],rtol=1e-14)\nassert r['units']['flux_loops']=='Wb'",
+  "code": "import numpy as np\nfrom scirel._result import Result\nfrom scirel.diagnostics import synthesize_equilibrium_diagnostics\nR,Z=np.meshgrid([0.,1.,2.],[-1.,0.,1.])\nr=synthesize_equilibrium_diagnostics(equilibrium={'psi':R**2,'psi_unit':'Wb/rad'},R=R,Z=Z,observations={'flux_loops':{'points':[[1.,0.]],'quantity':'magnetic_flux','unit':'Wb'}})\nassert isinstance(r, Result)\nassert r.flux_loops is r['flux_loops']\nnp.testing.assert_allclose(r['flux_loops'],[2*np.pi],rtol=1e-14)\nassert r['units']['flux_loops']=='Wb'",
   "expected": "Returns [2*pi] Wb, consistent with the independent analytic circular-area times Bz, as a scirel._result.Result mapping with the original top-level key order and nested mappings; attribute and key access reach the same output."
  },
  "verification": {
   "scope": [
    "Analytic psi-to-full-flux relation for a uniform Bz.",
    "Interior/boundary sampling of a linear manufactured profile, units and non-modification.",
+   "Explicit signature and rejection of legacy mapping or missing arguments.",
    "Rejection of missing channels/unknown requests/unsupported turns and reference-loop fields; real Picard inversion consumer.",
    "Result wrapping preserves top-level key order, values, array shape/dtype, nested plain mappings and mapping access against baseline 0f74255b; attribute access reaches the same fields."
   ],
   "tests": [
+   "tests/cross_domain/equilibrium_synthesis_diagnostics/test_composition_equilibrium_synthesis_diagnostics.py",
    "tests/cross_domain/test_inference_physical_closure.py",
    "tests/cross_domain/test_anisotropic_inference_independent.py"
   ],

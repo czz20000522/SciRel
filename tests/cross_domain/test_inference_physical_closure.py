@@ -29,14 +29,22 @@ def diagnostic_input():
 def test_analytic_uniform_field_flux_has_explicit_2pi_conversion():
     # psi=Bz*R^2/2 with Bz=2 T; single-turn linked flux=pi*R^2*Bz.
     d = diagnostic_input()
-    p = diagnose(d)
+    p = diagnose(d["equilibrium"], d["R"], d["Z"], d["observations"])
     np.testing.assert_allclose(p["flux_loops"], [2 * np.pi], rtol=1e-14)
     assert p["units"]["flux_loops"] == "Wb"
     d["observations"]["flux_loops"].update(quantity="raw_psi", unit="Wb/rad")
-    np.testing.assert_allclose(diagnose(d)["flux_loops"], [1.0], rtol=1e-14)
+    np.testing.assert_allclose(
+        diagnose(d["equilibrium"], d["R"], d["Z"], d["observations"])["flux_loops"],
+        [1.0],
+        rtol=1e-14,
+    )
     d["equilibrium"]["psi_unit"] = "Wb"
     d["observations"]["flux_loops"].update(quantity="magnetic_flux", unit="Wb")
-    np.testing.assert_allclose(diagnose(d)["flux_loops"], [1.0], rtol=1e-14)
+    np.testing.assert_allclose(
+        diagnose(d["equilibrium"], d["R"], d["Z"], d["observations"])["flux_loops"],
+        [1.0],
+        rtol=1e-14,
+    )
 
 
 @pytest.mark.parametrize(
@@ -52,7 +60,7 @@ def test_invalid_observation_requests_rejected(observation_request):
     d = diagnostic_input()
     d["observations"] = observation_request
     with pytest.raises(ValueError):
-        diagnose(d)
+        diagnose(d["equilibrium"], d["R"], d["Z"], d["observations"])
 
 
 def test_missing_requested_channel_never_drops_from_residual():
@@ -285,7 +293,7 @@ def test_unsupported_flux_semantics_are_not_silently_ignored(change):
     d = diagnostic_input()
     d["observations"]["flux_loops"].update(change)
     with pytest.raises(ValueError):
-        diagnose(d)
+        diagnose(d["equilibrium"], d["R"], d["Z"], d["observations"])
 
 
 @pytest.mark.parametrize(
@@ -367,7 +375,7 @@ def test_bilinear_manufactured_nonmutation_and_density_temperature_units():
         }
     }
     before = deepcopy(d)
-    p = diagnose(d)
+    p = diagnose(d["equilibrium"], d["R"], d["Z"], d["observations"])
     np.testing.assert_allclose(p["thomson"]["density"], [2.65, 3.0], rtol=1e-14)
     np.testing.assert_allclose(p["thomson"]["electron_temperature"], [9.45, 14.0], rtol=1e-14)
     np.testing.assert_array_equal(

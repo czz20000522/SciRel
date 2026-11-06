@@ -128,7 +128,9 @@ def independent_case(n=5):
         solver_config=config,
         observations=obs,
         equilibrium_solver=forward,
-        diagnostic_evaluator=synthesize_equilibrium_diagnostics,
+        diagnostic_evaluator=lambda payload: synthesize_equilibrium_diagnostics(
+            payload["equilibrium"], payload["R"], payload["Z"], payload["observations"]
+        ),
     )
     assert fit["converged"]
     np.testing.assert_allclose(

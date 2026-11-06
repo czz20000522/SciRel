@@ -429,6 +429,10 @@ def _synthesis_thomson_kwargs():
     }
 
 
+def _synthesis_args(values):
+    return (values["equilibrium"], values["R"], values["Z"], values["observations"])
+
+
 # Expected values were captured from baseline 0f74255b before the five remaining
 # plain-dict diagnostics returns were wrapped in Result.
 DIAGNOSTICS_CASES = [
@@ -538,8 +542,8 @@ DIAGNOSTICS_CASES = [
     ),
     (
         "synthesize_equilibrium_diagnostics",
-        (),
-        _synthesis_flux_kwargs([[1.0, 0.0]]),
+        _synthesis_args(_synthesis_flux_kwargs([[1.0, 0.0]])),
+        {},
         {
             "flux_loops": np.asarray([2.0 * np.pi], dtype=np.float64),
             "units": {"flux_loops": "Wb"},
@@ -548,8 +552,8 @@ DIAGNOSTICS_CASES = [
     ),
     (
         "synthesize_equilibrium_diagnostics",
-        (),
-        _synthesis_thomson_kwargs(),
+        _synthesis_args(_synthesis_thomson_kwargs()),
+        {},
         {
             "thomson": {
                 "density": np.asarray([3.5], dtype=np.float64),
@@ -591,8 +595,6 @@ DIAGNOSTICS_CASES = [
 ]
 
 
-_SYNTHESIS_MISSING_R = _synthesis_flux_kwargs([[1.0, 0.0]])
-_SYNTHESIS_MISSING_R.pop("R")
 _SYNTHESIS_SHAPE_MISMATCH = _synthesis_flux_kwargs([[1.0, 0.0]])
 _SYNTHESIS_SHAPE_MISMATCH["Z"] = _SYNTHESIS_Z[:, :2]
 
@@ -743,52 +745,54 @@ DIAGNOSTICS_FAILURE_CASES = [
     (
         "synthesize_equilibrium_diagnostics",
         (),
-        _SYNTHESIS_MISSING_R,
-        ValueError,
-        "inputs requires non-null field R",
+        {},
+        TypeError,
+        "synthesize_equilibrium_diagnostics() missing 4 required positional arguments: 'equilibrium', 'R', 'Z', and 'observations'",
         "synthesis-missing-port",
     ),
     (
         "synthesize_equilibrium_diagnostics",
-        (),
-        _synthesis_flux_kwargs([[1.0]]),
+        _synthesis_args(_synthesis_flux_kwargs([[1.0]])),
+        {},
         ValueError,
         "diagnostic points must have nonempty shape (N, 2)",
         "synthesis-point-shape",
     ),
     (
         "synthesize_equilibrium_diagnostics",
-        (),
-        _synthesis_flux_kwargs([[10.0, 0.0]]),
+        _synthesis_args(_synthesis_flux_kwargs([[10.0, 0.0]])),
+        {},
         ValueError,
         "diagnostic point lies outside the R-Z grid",
         "synthesis-out-of-domain",
     ),
     (
         "synthesize_equilibrium_diagnostics",
-        (),
-        _synthesis_flux_kwargs([[np.nan, 0.0]]),
+        _synthesis_args(_synthesis_flux_kwargs([[np.nan, 0.0]])),
+        {},
         ValueError,
         "points must be a finite array with shape (n_points, 2)",
         "synthesis-nonfinite-point",
     ),
     (
         "synthesize_equilibrium_diagnostics",
-        (),
-        _SYNTHESIS_SHAPE_MISMATCH,
+        _synthesis_args(_SYNTHESIS_SHAPE_MISMATCH),
+        {},
         ValueError,
         "R and Z must be same-shape 2-D arrays",
         "synthesis-grid-shape",
     ),
     (
         "synthesize_equilibrium_diagnostics",
-        (),
-        {
-            "R": _SYNTHESIS_R,
-            "Z": _SYNTHESIS_Z,
-            "equilibrium": {"profiles": {}, "profile_units": {"p_perp": "Pa"}},
-            "observations": {"thomson": {"points": [[0.5, 0.5]], "p_perp": {"unit": "Pa"}}},
-        },
+        _synthesis_args(
+            {
+                "R": _SYNTHESIS_R,
+                "Z": _SYNTHESIS_Z,
+                "equilibrium": {"profiles": {}, "profile_units": {"p_perp": "Pa"}},
+                "observations": {"thomson": {"points": [[0.5, 0.5]], "p_perp": {"unit": "Pa"}}},
+            }
+        ),
+        {},
         ValueError,
         "equilibrium.profiles requires non-null field p_perp",
         "synthesis-missing-thomson-port",

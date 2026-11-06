@@ -85,7 +85,9 @@ def case(n=7, true_gradient=1.7, true_ratio=1.6, with_failed_trials=True):
         observations=observations,
         solver_config=config,
         equilibrium_solver=forward,
-        diagnostic_evaluator=synthesize_equilibrium_diagnostics,
+        diagnostic_evaluator=lambda payload: synthesize_equilibrium_diagnostics(
+            payload["equilibrium"], payload["R"], payload["Z"], payload["observations"]
+        ),
     )
     expected = {
         "gradient": true_gradient,

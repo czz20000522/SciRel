@@ -27,7 +27,7 @@ def _unit(value, name):
     return value
 
 
-def _run_composition(inputs, *, asset_loader):
+def _run_composition(equilibrium, R, Z, observations, *, asset_loader):
     """Sample raw psi or single-turn linked flux, and explicitly requested profiles.
 
     ``flux_loops.quantity`` is ``raw_psi`` or ``magnetic_flux``. Only declared
@@ -36,12 +36,10 @@ def _run_composition(inputs, *, asset_loader):
     Loop turns, reference subtraction and instrument response are not inferred.
     ``thomson`` is a legacy namespace for profile sampling, not scattering.
     """
-    inputs = _mapping(inputs, "inputs")
-    equilibrium = _mapping(inputs.get("equilibrium"), "equilibrium")
-    observations = _mapping(inputs.get("observations"), "observations")
+    equilibrium = _mapping(equilibrium, "equilibrium")
+    observations = _mapping(observations, "observations")
     if not observations or set(observations) - {"flux_loops", "thomson"}:
         raise ValueError("observations must request known nonempty flux_loops or thomson channels")
-    R, Z = _field(inputs, "R", "inputs"), _field(inputs, "Z", "inputs")
     sampler = asset_loader("scirel.geometry.bilinear_grid_sampling")
 
     def sample(values, points):
@@ -104,21 +102,11 @@ def _run_composition(inputs, *, asset_loader):
     return predicted
 
 
-def synthesize_equilibrium_diagnostics(inputs=None, **kwargs):
+def synthesize_equilibrium_diagnostics(equilibrium, R, Z, observations):
     """Sample declared equilibrium diagnostics at caller-supplied points.
 
     Parameters
     ----------
-    inputs : mapping, optional
-        Mapping containing the required ``equilibrium``, ``R``, ``Z`` and
-        nonempty ``observations`` entries described below.  The default
-        ``None`` is allowed only when ``kwargs`` supplies those entries.
-    **kwargs
-        Named mapping entries merged into ``inputs`` by the composition
-        boundary.  A keyword takes precedence over the same key in ``inputs``.
-
-    Other Parameters
-    ----------------
     equilibrium : mapping
         Equilibrium state in ``[physical units declared by the individual
         fields]``.  Flux sampling uses ``psi`` and ``psi_unit``; profile
@@ -171,8 +159,9 @@ def synthesize_equilibrium_diagnostics(inputs=None, **kwargs):
         bilinear domain, a profile is missing, or units conflict with the
         declared equilibrium metadata.
     TypeError
-        If ``inputs`` is neither ``None`` nor a mapping, or a numeric value
-        cannot be converted to a floating-point array.
+        If a required top-level argument is missing, an old ``inputs`` mapping
+        or unknown keyword is supplied, or a numeric value cannot be converted
+        to a floating-point array.
     FloatingPointError
         If a magnetic-flux conversion produces a nonfinite value.
 
@@ -208,21 +197,21 @@ def synthesize_equilibrium_diagnostics(inputs=None, **kwargs):
     >>> from scirel._result import Result
     >>> from scirel.diagnostics import synthesize_equilibrium_diagnostics
     >>> R,Z=np.meshgrid([0.,1.,2.],[-1.,0.,1.])
-    >>> r=synthesize_equilibrium_diagnostics(R=R,Z=Z,equilibrium={'psi':R**2,'psi_unit':'Wb/rad'},observations={'flux_loops':{'points':[[1.,0.]],'quantity':'magnetic_flux','unit':'Wb'}})
+    >>> r=synthesize_equilibrium_diagnostics(equilibrium={'psi':R**2,'psi_unit':'Wb/rad'},R=R,Z=Z,observations={'flux_loops':{'points':[[1.,0.]],'quantity':'magnetic_flux','unit':'Wb'}})
     >>> assert isinstance(r, Result)
     >>> assert r.flux_loops is r['flux_loops']
     >>> np.testing.assert_allclose(r['flux_loops'],[2*np.pi],rtol=1e-14)
     >>> assert r['units']['flux_loops']=='Wb'
     """
-    from scirel._composition import compose
     from scirel.geometry.bilinear_grid_sampling import sample_rectilinear_field
 
     return Result(
-        compose(
-            _run_composition,
-            inputs,
-            kwargs,
-            {"asset_loader": {"scirel.geometry.bilinear_grid_sampling": sample_rectilinear_field}},
+        _run_composition(
+            equilibrium,
+            R,
+            Z,
+            observations,
+            asset_loader=lambda _: sample_rectilinear_field,
         )
     )
 
