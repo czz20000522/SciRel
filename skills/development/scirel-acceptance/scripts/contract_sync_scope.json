@@ -734,7 +734,14 @@
    "asset_id": "scirel.kinetic.terminal-heat-flux-reduction"
   },
   {
-   "asset_id": "scirel.kinetic.terminal-ion-state-reduction"
+   "asset_id": "scirel.kinetic.terminal-ion-state-reduction",
+   "forbidden_phrases": [
+    "neutral_density_m3",
+    "ionization_rate_s_inv",
+    "reaction_rate_table_s_inv",
+    "dissociation_frequency",
+    "density-scaled physical dimension unresolved"
+   ]
   },
   {
    "asset_id": "scirel.kinetic.terminal-pressure-temperature-reduction"
