@@ -6,7 +6,62 @@ from scirel.electromagnetism import ArbitraryPoints, RectangularCoil, MagnetRing
 
 
 class TREXCoil(ArbitraryPoints):
-    """Represent the fixed conductor cloud of one TREX coil."""
+    """Construct the fixed 88-point conductor cloud of one TREX coil.
+
+    Parameters
+    ----------
+    z0 : float, optional
+        Axial reference-plane coordinate [m]. The default is ``1.1``.
+    **kwargs : object, optional
+        Additional inherited constructor entries; see Other Parameters.
+
+    Other Parameters
+    ----------------
+    current : real scalar, optional
+        Common drive current [A]. The default is ``1.0``.
+    weights : array_like, shape (88,), optional
+        Signed filament weights [dimensionless]. The default is one per point.
+    mesh : Mesh or array-like, optional
+        Target mesh [m] stored for later field calls. The default is ``None``.
+
+    Returns
+    -------
+    source : TREXCoil
+        Constructed source with the fixed ordered conductor cloud and inherited
+        current, weight, mesh and field methods [geometry m; current A;
+        weights dimensionless].
+
+    Raises
+    ------
+    ValueError
+        If ``z0``, current, weights, mesh, or field geometry violates the
+        declared domain, or a target is coincident with an active filament.
+    FloatingPointError
+        If a Green response is not representable.
+    NotImplementedError
+        If ``rz_pts`` is assigned directly.
+
+    See Also
+    --------
+    scirel.configurations.BRB : Fixed Big Red Ball source composition.
+    scirel.electromagnetism.ArbitraryPoints : Source with arbitrary filament points.
+    scirel.electromagnetism.Device : Ordered collection of source objects.
+
+    Notes
+    -----
+    Five radial columns contain sixteen axial points and a sixth column
+    contains eight axial midpoints, for 88 points total. Change the point
+    cloud through ``z0`` or the inherited rigid transforms; its area is a
+    geometry proxy, not a conductor model.
+
+    Examples
+    --------
+    >>> from scirel.configurations import TREXCoil
+    >>> c=TREXCoil(z0=.7)
+    >>> assert c.npts == 88
+    >>> c.translate([0.,.2])
+    >>> assert abs(c.z0-.9)<1e-15
+    """
 
     _RMIN = 2.00467
     _DR = 0.0134166
@@ -50,7 +105,47 @@ class TREXCoil(ArbitraryPoints):
 
 
 class BRB(Device):
-    """Big Red Ball filament geometry; cathode/anode and sweep APIs excluded."""
+    """Construct the fixed Big Red Ball filament geometry.
+
+    Returns
+    -------
+    source : BRB
+        Ordered device containing two TREX coils, two rectangular coils, and
+        thirty-six signed magnet rings [geometry m; current A; weights
+        dimensionless].
+
+    Raises
+    ------
+    TypeError
+        If constructor arguments are supplied.
+    ValueError
+        If a child source geometry, current, weight, or mesh is invalid, or a
+        child field has an active filament/target coincidence.
+    FloatingPointError
+        If a child Green response is not representable.
+    NotImplementedError
+        If cathode, anode, or sweep additions are requested.
+
+    See Also
+    --------
+    scirel.configurations.TREXCoil : Fixed 88-point TREX coil source.
+    scirel.electromagnetism.RectangularCoil : Parameterized rectangular source array.
+    scirel.electromagnetism.MagnetRing : Signed permanent-magnet ring approximation.
+
+    Notes
+    -----
+    The fixed geometry registers 40 children in attribute order: two TREX
+    coils, two rectangular coils, and 36 magnet rings. It is a geometry
+    composition and does not calibrate an experimental device or material
+    response.
+
+    Examples
+    --------
+    >>> from scirel.configurations import BRB
+    >>> d=BRB()
+    >>> assert len(d.current_sets)==40
+    >>> assert d.hh_n.npts==88
+    """
 
     def __init__(self):
         super().__init__()

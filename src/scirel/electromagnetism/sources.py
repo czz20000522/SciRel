@@ -211,19 +211,31 @@ class CurrentFilamentSet:
 
 
 class ArbitraryPoints(CurrentFilamentSet):
-    """Construct finite weighted circular-filament points.
+    """Construct finite weighted circular-filament source points.
 
     Parameters
     ----------
     rz_pts : array_like, shape (N, 2)
-        Finite cylindrical ``(R, Z)`` centers.
-    **kwargs
-        Finite common current, matching weights and an optional mesh.
+        Finite cylindrical ``(R, Z)`` filament centers [m]. Radius must be
+        nonnegative.
+    **kwargs : object, optional
+        Additional inherited constructor entries; see Other Parameters.
+
+    Other Parameters
+    ----------------
+    current : real scalar, optional
+        Common drive current [A]. The default is ``1.0``.
+    weights : array_like, shape (N,), optional
+        Signed filament weights [dimensionless]. The default is one per point.
+    mesh : Mesh or array-like, optional
+        Target mesh [m] used when calling field methods without a mesh. The
+        default is ``None``.
 
     Returns
     -------
-    ArbitraryPoints
-        A source exposing geometry and mesh-dependent fields.
+    source : ArbitraryPoints
+        Constructed source exposing geometry and mesh-dependent field methods
+        [Object; property units as described].
 
     Raises
     ------
@@ -231,11 +243,27 @@ class ArbitraryPoints(CurrentFilamentSet):
         If points, current, weights or mesh violate their contracts.
     FloatingPointError
         If a field evaluation is not representable.
+    NotImplementedError
+        If ``simplify`` is requested.
+
+    See Also
+    --------
+    scirel.electromagnetism.RectangularCoil : Parameterized rectangular source array.
+    scirel.electromagnetism.MagnetRing : Signed permanent-magnet ring approximation.
+    scirel.electromagnetism.Device : Ordered collection of source objects.
 
     Notes
     -----
-    Active source/target coincidence is singular.  Geometry is mutable and
-    checked again when a field is evaluated; coincidence is singular.
+    Points are ordinary ideal circular filaments in caller order. A positive-
+    radius filament is active unless its weight is zero; active source/target
+    coincidence is singular. Geometry and weights are mutable and are validated
+    again when a field is evaluated.
+
+    Examples
+    --------
+    >>> from scirel.electromagnetism import ArbitraryPoints
+    >>> s=ArbitraryPoints([[1.,0.]],mesh=[[.2,.3]])
+    >>> assert s.psi().shape == (1,)
     """
 
     def __init__(self, rz_pts, **kwargs):
@@ -250,21 +278,39 @@ class RectangularCoil(CurrentFilamentSet):
 
     Parameters
     ----------
-    r0, z0 : float, default=(1.0, 0.0)
-        Finite centroid coordinates; ``r0`` is nonnegative.
-    nr, nz : int, default=(1, 1)
-        Positive radial and axial counts; weights have cardinality ``nr*nz``.
-    dr, dz : float, default=(0.1, 0.1)
-        Positive spacings.
+    r0 : float, optional
+        Centroid radius [m]. Must be finite and nonnegative. The default is
+        ``1.0``.
+    z0 : float, optional
+        Centroid height [m]. Must be finite. The default is ``0.0``.
+    nr : int, optional
+        Positive radial point count [dimensionless]. The default is ``1``.
+    nz : int, optional
+        Positive axial point count [dimensionless]. The default is ``1``.
+    dr : float, optional
+        Positive radial center spacing [m]. The default is ``0.1``.
+    dz : float, optional
+        Positive axial center spacing [m]. The default is ``0.1``.
     angle : float, default=0.0
-        Finite orientation in degrees.
-    **kwargs
-        Inherited current, weights and mesh options.
+        Finite rotation angle [degree] about the centroid. The default is
+        ``0.0``.
+    **kwargs : object, optional
+        Additional inherited constructor entries; see Other Parameters.
+
+    Other Parameters
+    ----------------
+    current : real scalar, optional
+        Common drive current [A]. The default is ``1.0``.
+    weights : array_like, shape (nr*nz,), optional
+        Signed filament weights [dimensionless]. The default is one per point.
+    mesh : Mesh or array-like, optional
+        Target mesh [m] stored for later field calls. The default is ``None``.
 
     Returns
     -------
-    RectangularCoil
-        A source with ``area`` and ``current_density`` properties.
+    source : RectangularCoil
+        Constructed source with ordered filament centers, ``area`` [m2] and
+        ``current_density`` properties [Object; property units as described].
 
     Raises
     ------
@@ -273,11 +319,24 @@ class RectangularCoil(CurrentFilamentSet):
     FloatingPointError
         If a field evaluation is not representable.
 
+    See Also
+    --------
+    scirel.electromagnetism.ArbitraryPoints : Source with arbitrary filament points.
+    scirel.electromagnetism.MagnetRing : Signed permanent-magnet ring approximation.
+    scirel.electromagnetism.Device : Ordered collection of source objects.
+
     Notes
     -----
-    Parameterized setters rebuild atomically and preserve the valid prior
-    state when validation fails; changing counts must preserve weight
-    cardinality.  The source will rebuild atomically.
+    Points are ordered with radial index outermost and axial index innermost.
+    ``angle`` uses the package row-vector rotation convention. Parameterized
+    setters rebuild atomically and preserve the previous valid state when
+    validation fails; changing a count must preserve the weight cardinality.
+
+    Examples
+    --------
+    >>> from scirel.electromagnetism import RectangularCoil
+    >>> c=RectangularCoil(nr=2)
+    >>> assert c.npts == 2
     """
 
     def __init__(self, r0=1.0, z0=0.0, nr=1, nz=1, dr=0.1, dz=0.1, angle=0.0, **kwargs):
@@ -373,19 +432,36 @@ class MagnetRing(CurrentFilamentSet):
 
     Parameters
     ----------
-    r0, z0 : float, default=(1.0, 0.0)
-        Finite centroid coordinates; ``r0`` is nonnegative.
-    width, height : float, default=(0.01, 0.01)
-        Positive dimensions.
-    mu_hat : float, default=0.0
-        Finite orientation in degrees.
-    **kwargs
-        Inherited current, even-length weights and mesh options.
+    r0 : float, optional
+        Centroid radius [m]. Must be finite and nonnegative. The default is
+        ``1.0``.
+    z0 : float, optional
+        Centroid height [m]. Must be finite. The default is ``0.0``.
+    width : float, optional
+        Positive radial cross-section width [m]. The default is ``0.01``.
+    height : float, optional
+        Positive axial cross-section height [m]. The default is ``0.01``.
+    mu_hat : float, optional
+        Finite centroid orientation angle [degree]. The default is ``0.0``.
+    **kwargs : object, optional
+        Additional inherited constructor entries; see Other Parameters.
+
+    Other Parameters
+    ----------------
+    current : real scalar, optional
+        Common drive current [A]. The default is ``1.0``.
+    weights : array_like, shape (even N,), optional
+        Signed filament weights [dimensionless]. The default is eight ``-1``
+        values followed by eight ``+1`` values. An even positive finite vector
+        is required.
+    mesh : Mesh or array-like, optional
+        Target mesh [m] stored for later field calls. The default is ``None``.
 
     Returns
     -------
-    MagnetRing
-        A signed-filament source with mesh-dependent fields.
+    source : MagnetRing
+        Constructed signed-filament source with mesh-dependent fields
+        [Object; property units as described].
 
     Raises
     ------
@@ -396,10 +472,25 @@ class MagnetRing(CurrentFilamentSet):
     NotImplementedError
         If ``simplify`` is requested.
 
+    See Also
+    --------
+    scirel.electromagnetism.RectangularCoil : Parameterized rectangular source array.
+    scirel.electromagnetism.ArbitraryPoints : Source with arbitrary filament points.
+    scirel.electromagnetism.Device : Ordered collection of source objects.
+
     Notes
     -----
-    This is a signed-filament geometry approximation, not a material model.
-    Parameterized setters rebuild atomically.
+    The two radial faces each receive ``N/2`` axial filament points and
+    opposite default weights. This is a signed-filament geometry
+    approximation, not a material magnetization model. Parameterized setters
+    rebuild atomically and preserve the prior valid state when validation
+    fails.
+
+    Examples
+    --------
+    >>> from scirel.electromagnetism import MagnetRing
+    >>> r=MagnetRing()
+    >>> assert r.npts == 16
     """
 
     def __init__(self, r0=1.0, z0=0.0, width=0.01, height=0.01, mu_hat=0.0, **kwargs):
@@ -476,7 +567,51 @@ class MagnetRing(CurrentFilamentSet):
 
 
 class Device:
-    """Ordered current-set container with matrix-valued field responses."""
+    """Compose ordered circular-filament sources into one field response.
+
+    Parameters
+    ----------
+    mesh : Mesh or array-like, optional
+        Target mesh [m] stored for later field calls. The default is ``None``.
+    **kwargs : object, optional
+        Attributes assigned in insertion order; see Other Parameters.
+
+    Returns
+    -------
+    source : Device
+        Ordered container whose field methods sum child Green responses
+        [Object; property units as described].
+
+    Raises
+    ------
+    ValueError
+        If the mesh is invalid or missing, a current override is invalid, or a
+        child field is singular.
+    AttributeError
+        If the same child source object is registered under a second name.
+    FloatingPointError
+        If a child Green response is not representable.
+
+    See Also
+    --------
+    scirel.electromagnetism.ArbitraryPoints : Source with arbitrary filament points.
+    scirel.electromagnetism.RectangularCoil : Parameterized rectangular source array.
+    scirel.field.solve_multi_coil_vacuum_field : Build a field from caller-supplied coil data.
+
+    Notes
+    -----
+    Only ``CurrentFilamentSet`` attributes become registered children. Child
+    order is assignment order; scalar current overrides apply to every child
+    and vector overrides follow that order. A field call requires a configured
+    or supplied mesh.
+
+    Examples
+    --------
+    >>> from scirel.electromagnetism import Device,ArbitraryPoints
+    >>> d=Device(mesh=[[.2,.3]])
+    >>> d.a=ArbitraryPoints([[1.,0.]])
+    >>> assert d.psi().shape == (1,)
+    """
 
     def __init__(self, mesh=None, **kwargs):
         object.__setattr__(
