@@ -52,6 +52,102 @@ def _init_git_repository(path):
     _run_git(path, "commit", "-m", "fixture")
 
 
+def _append_git_config(path, text):
+    with path.open("a", encoding="utf-8") as stream:
+        stream.write(text)
+
+
+def test_repository_config_guard_accepts_healthy_repository_and_worktree(tmp_path, monkeypatch):
+    module = _load()
+    repository = tmp_path / "repository"
+    worktree = tmp_path / "worktree"
+    _init_git_repository(repository)
+    _run_git(repository, "worktree", "add", "-b", "agent/guard-check", str(worktree), "main")
+
+    for root in (repository, worktree):
+        monkeypatch.setattr(module, "ROOT", root)
+        module.guard_repository_config()
+
+
+def test_repository_config_guard_rejects_shared_core_worktree(tmp_path, monkeypatch):
+    module = _load()
+    repository = tmp_path / "repository"
+    worktree = tmp_path / "worktree"
+    _init_git_repository(repository)
+    _run_git(repository, "worktree", "add", "-b", "agent/guard-check", str(worktree), "main")
+    common_config = repository / ".git" / "config"
+    _append_git_config(common_config, "\n[core]\n\tworktree = /workspace\n")
+
+    monkeypatch.setattr(module, "ROOT", worktree)
+    with pytest.raises(module.RepositoryConfigError) as error:
+        module.guard_repository_config()
+    message = str(error.value)
+    assert str(common_config) in message
+    assert "/workspace" in message
+
+
+def test_repository_config_guard_checks_active_worktree_config(tmp_path, monkeypatch):
+    module = _load()
+    repository = tmp_path / "repository"
+    worktree = tmp_path / "worktree"
+    _init_git_repository(repository)
+    _run_git(repository, "config", "extensions.worktreeConfig", "true")
+    _run_git(repository, "worktree", "add", "-b", "agent/guard-check", str(worktree), "main")
+    gitdir = Path(
+        (worktree / ".git").read_text(encoding="utf-8").split("gitdir:", 1)[1].strip()
+    ).resolve()
+    worktree_config = gitdir / "config.worktree"
+    worktree_config.write_text(
+        f"[core]\n\tworktree = {worktree.resolve().as_posix()}\n", encoding="utf-8"
+    )
+    monkeypatch.setattr(module, "ROOT", worktree)
+    module.guard_repository_config()
+
+    worktree_config.write_text("[core]\n\tworktree = /workspace\n", encoding="utf-8")
+    with pytest.raises(module.RepositoryConfigError) as error:
+        module.guard_repository_config()
+    message = str(error.value)
+    assert str(worktree_config) in message
+    assert "/workspace" in message
+
+
+def test_repository_config_guard_ignores_global_core_worktree(tmp_path, monkeypatch):
+    module = _load()
+    repository = tmp_path / "repository"
+    global_config = tmp_path / "global.gitconfig"
+    _init_git_repository(repository)
+    global_config.write_text("[core]\n\tworktree = /workspace\n", encoding="utf-8")
+    monkeypatch.setenv("GIT_CONFIG_GLOBAL", str(global_config))
+    monkeypatch.setattr(module, "ROOT", repository)
+    module.guard_repository_config()
+
+
+def test_repository_config_guard_rejects_invalid_metadata(tmp_path, monkeypatch):
+    module = _load()
+    repository = tmp_path / "repository"
+    repository.mkdir()
+    (repository / ".git").write_text("not git metadata\n", encoding="utf-8")
+    monkeypatch.setattr(module, "ROOT", repository)
+    with pytest.raises(module.RepositoryConfigError, match="invalid Git metadata"):
+        module.guard_repository_config()
+
+
+def test_main_rejects_broken_config_before_container(tmp_path, monkeypatch, capsys):
+    module = _load()
+    repository = tmp_path / "repository"
+    _init_git_repository(repository)
+    config = repository / ".git" / "config"
+    _append_git_config(config, "\n[core]\n\tworktree = /workspace\n")
+    monkeypatch.setattr(module, "ROOT", repository)
+    monkeypatch.setattr(module.sys, "argv", ["dev_container.py", "doctor"])
+    monkeypatch.setattr(module, "docker_ready", lambda: pytest.fail("container must not start"))
+
+    assert module.main() == 1
+    message = capsys.readouterr().err
+    assert str(config) in message
+    assert "/workspace" in message
+
+
 def test_project_name_is_stable_and_checkout_scoped():
     module = _load()
     first = module.project_name()
