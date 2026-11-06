@@ -4,8 +4,11 @@ is intentionally not a compatibility requirement. Numerical tolerances unchanged
 for retained finite formula comparisons (rtol 1e-14, atol 1e-14).
 """
 
+import importlib
+
 import numpy as np
 import pytest
+from scirel._result import Result
 from scirel.collisions import assemble_atomic_hydrogen_omega_frequencies as atomic
 from scirel.collisions import assemble_molecular_hydrogen_omega_frequencies as molecular
 
@@ -13,6 +16,55 @@ OPS = [
     (atomic, ("H_P", "H_H2", "H_H"), "VxH", "Wperp_paraH"),
     (molecular, ("H2_P", "H2_H", "H2_H2"), "VxH2", "Wperp_paraH2"),
 ]
+
+
+def _expected_result_keys(names, flow, stress):
+    keys = [flow, stress, "central_stress"]
+    for name in names:
+        keys.extend(
+            [
+                "Omega_" + name,
+                "nu_" + name,
+                "moment_" + name,
+                "moment_rate_" + name,
+                "defined_" + name,
+                "status_" + name,
+            ]
+        )
+    keys.extend(["Omega_EL", "nu_EL", "defined_EL"])
+    return keys
+
+
+@pytest.mark.parametrize("op,names,flow,stress", OPS)
+def test_public_wrapper_only_wraps_the_plain_reduction(op, names, flow, stress, monkeypatch):
+    module = importlib.import_module(op.__module__)
+    original_reduce = module.reduce_elastic_moments
+    captured = []
+
+    def capture(*args, **kwargs):
+        plain = original_reduce(*args, **kwargs)
+        captured.append(plain)
+        return plain
+
+    monkeypatch.setattr(module, "reduce_elastic_moments", capture)
+    result = op(*arguments())
+    plain = captured.pop()
+    expected_keys = _expected_result_keys(names, flow, stress)
+
+    assert type(plain) is dict
+    assert type(result) is Result
+    assert list(plain) == expected_keys
+    assert list(result) == expected_keys
+    assert all(isinstance(value, np.ndarray) for value in result.values())
+    for key in expected_keys:
+        assert getattr(result, key) is result[key]
+        assert result[key] is plain[key]
+        assert type(result[key]) is type(plain[key])
+        assert result[key].shape == plain[key].shape
+        assert result[key].dtype == plain[key].dtype
+        for flag in ("c_contiguous", "f_contiguous", "owndata", "writeable", "aligned"):
+            assert getattr(result[key].flags, flag) == getattr(plain[key].flags, flag)
+        np.testing.assert_array_equal(result[key], plain[key])
 
 
 def arguments():
@@ -175,19 +227,27 @@ def test_zero_denominator_returns_moment_and_propagates_unknown(op, names, flow,
     a[10] = r[flow].copy()
     a[11] = r[flow].copy()
     q = op(*a, moment_state="target", target_distribution=a[0])
+    assert type(q) is Result
     for name in names:
         assert np.isfinite(q["moment_" + name]).all()
         assert np.isnan(q["Omega_" + name]).all()
         assert np.isnan(q["nu_" + name]).all()
         assert not q["defined_" + name].any()
         assert (q["status_" + name] == "undefined_zero_denominator").all()
+        assert getattr(q, "Omega_" + name) is q["Omega_" + name]
+        assert getattr(q, "defined_" + name) is q["defined_" + name]
+        assert getattr(q, "status_" + name) is q["status_" + name]
     assert np.isnan(q["Omega_EL"]).all() and not q["defined_EL"].any()
+    assert np.isnan(q.Omega_EL).all() and not q.defined_EL.any()
     flags = {name + "_EL": False for name in names}
     off = op(*a, moment_state="target", target_distribution=a[0], **flags)
+    assert type(off) is Result
     for name in names:
         np.testing.assert_array_equal(off["Omega_" + name], 0)
         assert (off["status_" + name] == "disabled").all()
+        assert getattr(off, "status_" + name) is off["status_" + name]
     assert off["defined_EL"].all()
+    assert off.defined_EL is off["defined_EL"]
 
 
 @pytest.mark.parametrize("op,names,flow,stress", OPS)
@@ -196,8 +256,11 @@ def test_negative_ratio_is_not_a_relaxation_frequency(op, names, flow, stress):
     a[2] = np.full_like(a[0], -1.0)
     a[10] = np.full(2, -100.0)
     r = op(*a)
+    assert type(r) is Result
     assert (r["Omega_" + names[0]] < 0).all()
     assert (r["status_" + names[0]] == "negative_no_bgk_closure").all()
+    assert getattr(r, "Omega_" + names[0]) is r["Omega_" + names[0]]
+    assert getattr(r, "status_" + names[0]) is r["status_" + names[0]]
 
 
 @pytest.mark.parametrize("op,names,flow,stress", OPS)

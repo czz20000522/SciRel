@@ -15,6 +15,8 @@ linearization is inferred. The original the neutral-transport formulation model 
 approximation; finite-grid quadrature does not guarantee exact Maxwell balance.
 """
 
+from scirel._result import Result
+
 from ._elastic_moments import reduce_elastic_moments
 
 __all__ = ["assemble_atomic_hydrogen_omega_frequencies"]
@@ -131,6 +133,10 @@ def assemble_atomic_hydrogen_omega_frequencies(
     defined_EL : numpy.ndarray
         Conjunction of the three channel masks. [dimensionless] Shape: ``[nx]``.
 
+    The complete result is returned as one ``scirel._result.Result`` mapping. No nested
+    mapping or recursive wrapping is introduced, and non-colliding fields also support
+    attribute access.
+
     Raises
     ------
     ValueError
@@ -162,6 +168,7 @@ def assemble_atomic_hydrogen_omega_frequencies(
     Examples
     --------
     >>> import numpy as np
+    >>> from scirel._result import Result
     >>> from scirel.collisions import assemble_atomic_hydrogen_collision_matrices, assemble_atomic_hydrogen_omega_frequencies
     >>> vr = np.array([0.5, 1.0])
     >>> vx = np.array([-1.0, 0.0, 1.0])
@@ -177,11 +184,13 @@ def assemble_atomic_hydrogen_omega_frequencies(
     >>> ub = np.array([vth * np.sum(w * bg * vx) / np.sum(w * bg)])
     >>> alphas = [(s[k] @ bg.ravel(order='F')).reshape(f.shape, order='F')[:, :, None] for k in ['SIG_H_P', 'SIG_H_H2']]
     >>> r = assemble_atomic_hydrogen_omega_frequencies(f[:, :, None], np.array([2e17]), *alphas, s['SIG_H_H'], wr, dx, vr, vx, vth, ub, ub)
+    >>> assert isinstance(r, Result)
+    >>> assert r.Omega_H_P is r['Omega_H_P']
     >>> assert np.isfinite(r['moment_H_P']).all()
     >>> assert r['defined_H_P'].all()
     >>> np.testing.assert_allclose(r['nu_H_P'], vth * r['Omega_H_P'], rtol=1e-14)
     """
-    return reduce_elastic_moments(
+    result = reduce_elastic_moments(
         fH,
         nH,
         Alpha_H_P,
@@ -202,3 +211,4 @@ def assemble_atomic_hydrogen_omega_frequencies(
         stress_name="Wperp_paraH",
         mass_fractions=(0.5, 2 / 3),
     )
+    return Result(result)

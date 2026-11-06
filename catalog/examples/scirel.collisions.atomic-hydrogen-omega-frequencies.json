@@ -5,7 +5,7 @@
   "en": "Atomic hydrogen elastic Omega aggregation",
   "zh": "原子氢弹性碰撞矩与局部松弛系数"
  },
- "summary": "Reduce atomic-hydrogen elastic collision momentum and stress moments independently in each spatial cell, returning normalized coefficients Omega (m^-1), physical frequencies nu (s^-1) and their definedness. A zero denominator retains the collision moment and returns an explicitly undefined frequency; no artificial floor or positive clipping hides it.",
+ "summary": "Reduce atomic-hydrogen elastic collision momentum and stress moments independently in each spatial cell, returning normalized coefficients Omega (m^-1), physical frequencies nu (s^-1) and their definedness. A zero denominator retains the collision moment and returns an explicitly undefined frequency; no artificial floor or positive clipping hides it. The complete result is returned as one scirel._result.Result mapping; mapping access is retained and non-colliding fields also support attribute access.",
  "taxonomy": [
   "collisions",
   "atomic-hydrogen",
@@ -442,7 +442,7 @@
   "invalid_input": "raises ValueError when shapes, real finiteness, distribution nonnegativity, density or weight positivity, axis ordering, boolean flags or target conservation are not satisfied",
   "runtime_failure": "raises ValueError when a collision moment or a frequency that should be defined is not representable as a finite float64",
   "nonconvergence": "this function has no iteration; velocity and angular grid convergence are the caller's responsibility",
-  "partial_results": "a complete state mapping is returned; NaN in an enabled zero-denominator channel is an explicit undefined result while the other finite moments are retained, and this is not a partial successful execution"
+  "partial_results": "a complete scirel._result.Result mapping is returned on success; NaN in an enabled zero-denominator channel is an explicit undefined result while the other finite moments are retained, and this is not a partial successful execution"
  },
  "public_api": {
   "python": {
@@ -465,15 +465,16 @@
   ]
  },
  "example": {
-  "description": "generate Alpha from the actual four-channel matrices and a nonnegative physical distribution, then inspect the local moments and the unit conversion",
-  "code": "import numpy as np\nfrom scirel.collisions import assemble_atomic_hydrogen_collision_matrices, assemble_atomic_hydrogen_omega_frequencies\nvr = np.array([0.5, 1.0]); vx = np.array([-1.0, 0.0, 1.0])\nwr = np.array([1.0, 2.0]); dx = np.ones(3); w = wr[:, None] * dx\nf = np.exp(-vr[:, None]**2 - (vx[None, :] - 0.2)**2)\nf *= 2e17 / np.sum(w * f)\nbg = np.exp(-vr[:, None]**2 - vx[None, :]**2)\nbg *= 3e17 / np.sum(w * bg)\ns = assemble_atomic_hydrogen_collision_matrices(vr, vx, wr, dx, 1.0, mu=2.0, n_theta=32)\nvth = float(np.sqrt(s['Vth2'][0])); ub = np.array([vth * np.sum(w * bg * vx) / np.sum(w * bg)])\nalphas = [(s[k] @ bg.ravel(order='F')).reshape(f.shape, order='F')[:, :, None] for k in ['SIG_H_P', 'SIG_H_H2']]\nr = assemble_atomic_hydrogen_omega_frequencies(f[:, :, None], np.array([2e17]), *alphas, s['SIG_H_H'], wr, dx, vr, vx, vth, ub, ub)\nassert np.isfinite(r['moment_H_P']).all()\nassert r['defined_H_P'].all()\nnp.testing.assert_allclose(r['nu_H_P'], vth * r['Omega_H_P'], rtol=1e-14)\n",
-  "expected": "the mixed collision moments generated from the actual SIG are finite; channels with nonzero drift are defined and nu equals Vth*Omega"
+  "description": "generate Alpha from the actual four-channel matrices and a nonnegative physical distribution, then inspect the named result mapping, local moments and unit conversion",
+  "code": "import numpy as np\nfrom scirel._result import Result\nfrom scirel.collisions import assemble_atomic_hydrogen_collision_matrices, assemble_atomic_hydrogen_omega_frequencies\nvr = np.array([0.5, 1.0]); vx = np.array([-1.0, 0.0, 1.0])\nwr = np.array([1.0, 2.0]); dx = np.ones(3); w = wr[:, None] * dx\nf = np.exp(-vr[:, None]**2 - (vx[None, :] - 0.2)**2)\nf *= 2e17 / np.sum(w * f)\nbg = np.exp(-vr[:, None]**2 - vx[None, :]**2)\nbg *= 3e17 / np.sum(w * bg)\ns = assemble_atomic_hydrogen_collision_matrices(vr, vx, wr, dx, 1.0, mu=2.0, n_theta=32)\nvth = float(np.sqrt(s['Vth2'][0])); ub = np.array([vth * np.sum(w * bg * vx) / np.sum(w * bg)])\nalphas = [(s[k] @ bg.ravel(order='F')).reshape(f.shape, order='F')[:, :, None] for k in ['SIG_H_P', 'SIG_H_H2']]\nr = assemble_atomic_hydrogen_omega_frequencies(f[:, :, None], np.array([2e17]), *alphas, s['SIG_H_H'], wr, dx, vr, vx, vth, ub, ub)\nassert isinstance(r, Result)\nassert r.Omega_H_P is r['Omega_H_P']\nassert np.isfinite(r['moment_H_P']).all()\nassert r['defined_H_P'].all()\nnp.testing.assert_allclose(r['nu_H_P'], vth * r['Omega_H_P'], rtol=1e-14)\n",
+  "expected": "the mixed collision moments generated from the actual SIG are finite; channels with nonzero drift are defined and nu equals Vth*Omega. The top-level result is a scirel._result.Result mapping while all documented fields remain the same arrays, including NaN, defined and status values for undefined channels."
  },
  "verification": {
   "scope": [
    "the earlier failures around a global state sentinel, molecular central moments with a common velocity shift, and a zero denominator dropping finite moments were reproduced; each is now covered by an item-by-item regression",
    "independent scalar double summation, conservation targets, spatial partitioning, a common velocity shift, negative-ratio status and undefined propagation",
-   "Alpha generated from actual fit matrices and normalized Maxwell distributions; H/D adaptive angular integration, weighted exchange relations, equilibrium momentum and two-sided weak drift"
+   "Alpha generated from actual fit matrices and normalized Maxwell distributions; H/D adaptive angular integration, weighted exchange relations, equilibrium momentum and two-sided weak drift",
+   "Top-level Result type and attribute/key equivalence are regression-tested; fields preserve their original order, arrays, NaN, defined and status values."
   ],
   "tests": [
    "tests/collisions/test_atomic_hydrogen_omega_frequencies.py",
