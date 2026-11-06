@@ -2770,27 +2770,30 @@
   },
   {
    "asset_id": "scirel.kinetic.terminal-ion-state-reduction",
-   "source_sha256": "874113b47e8d07e31443d88e1e82640273db8ce4002a029d59c279e7c131bb0d",
-   "summary": "由显式H₂/中性密度、离子温度与反应率求终态H₂⁺密度、温度、解离及能量交换剖面。",
-   "definition": "对每个空间格 k，dissociation_frequency=neutral_density[k]*sum(reaction_rate_table[k,7:11])，energy_exchange_frequency=(7.7e-7*neutral_density[k]*1e-6)/(sqrt(mass_ratio)*ion_temperature[k]^1.5)，并保持所声明的算术顺序。H2+ 密度分母是 dissociation_frequency+loss_frequency，必须有限且严格为正。分子离子密度等于 molecular_density*neutral_density*ionization_rate 除以该分母。分子离子温度等于 ion_temperature*energy_exchange_frequency 除以 energy_exchange_frequency 加密度分母；其分母也必须有限且严格为正。",
-   "model": "终态分子离子代数状态归约，速率表由调用者提供。",
+   "source_sha256": "5b1d070815082cadfad9938b7f5651b05615dad7864df34dcc69c3578b957b0b",
+   "summary": "由显式 H₂ 密度、电子密度、离子温度、R1 二体电离速率系数与 11 列二体速率表，求终态 H₂⁺ 密度、温度、电子碰撞损失频率与能量交换剖面。",
+   "definition": "对每个空间格 k，electron_loss_frequency=electron_density[k]*sum(reaction_rate_table_m3_s[k,7:11])，energy_exchange_frequency=(7.7e-7*electron_density[k]*1e-6)/(sqrt(mass_ratio)*ion_temperature_ev[k]^1.5)，并保持所声明的算术顺序。H2+ 密度分母是 electron_loss_frequency+loss_frequency_s_inv，必须有限且严格为正。分子离子密度等于 molecular_density_m3*electron_density_m3*ionization_rate_coefficient_m3_s 除以该分母。分子离子温度等于 ion_temperature_ev*energy_exchange_frequency 除以 energy_exchange_frequency 加密度分母；其分母也必须有限且严格为正。",
+   "model": "终态分子离子代数状态归约，速率表由调用者以二体速率系数提供。",
    "assumptions": [
-    "调用者负责11通道反应表及全部剖面；此入口不组装碰撞系数、不生成H₂⁺Maxwell分布、不迭代终态反馈。",
-    "仅列切片 7:11（即零起始索引 7–10）参与解离；前 7 列改变不影响输出。",
-    "输入名 ionization_rate_s_inv 和 reaction_rate_table_s_inv 沿用既有接口命名，但乘以中性密度后，其物理量纲仍未解决。数值公式和既有标签予以保留，等待专家复核单位。",
+    "调用者负责 11 通道反应表及全部状态剖面；此入口不组装碰撞系数、不生成 H₂⁺ Maxwell 分布、不迭代终态反馈。",
+    "两个速率输入都是单位为 m^3 s^-1 的二体速率系数，第二个密度是电子密度；数值公式及其显式 1e-6 密度缩放按既有接口原样保留，不做改动。",
+    "反应表索引映射：第 0 列空置，第 1 列是源通道 R1（e- + H2 -> H2+ + 2e-），第 7:11 列是源通道 R7 到 R10（H2+ + e- 源通道）。只读取第 7:11 列；改变前七列（含第 1 列）不影响本输出，因为 R1 速率系数由 ionization_rate_coefficient_m3_s 单独提供。",
+    "第 10 列是源通道 R10，其电子产物记账仍未解决。本合同只记录它为源通道，不对它声明具体产物反应。",
+    "energy_exchange_frequency_s_inv 是由显式 7.7e-7 与 1e-6 因子构成的源校准代数系数，不是完整的 H2+ 能量守恒闭合，本合同不作此类声明。",
+    "mass_ratio 只在 H=1 与 D=2 两种同位素质量因子下具有物理资格；其他任意正有限值只是同一公式的代数延拓，不是已验证的物理工况。",
     "维护的实数数值合同排除布尔、复数和数值字符串强制转换。"
    ],
-   "boundary": "非空有限对齐剖面；密度、反应率、损失及11反应通道非负；Ti和质量比正；两派生分母正有限。",
+   "boundary": "非空有限对齐剖面；分子密度、电子密度、电离速率系数、损失频率及 11 个反应通道非负；离子温度与质量比严格为正；两个派生分母均有限且严格为正。",
    "inputs": [
     {
      "name": "molecular_density_m3",
-     "description": "指定终态H₂密度。",
-     "constraints": "有限非负非空一维；分母正时可为零。",
+     "description": "指定终态 H₂ 密度。",
+     "constraints": "有限非负非空一维；分母为正时可为 0。",
      "dtype": "转为 float64 的实数类数组"
     },
     {
-     "name": "neutral_density_m3",
-     "description": "解离和交换项用的中性密度。",
+     "name": "electron_density_m3",
+     "description": "电子密度，在 H₂⁺ 电子损失频率和能量交换系数中乘以二体速率系数。",
      "constraints": "有限非负，每空间格一个值。",
      "dtype": "转为 float64 的实数类数组"
     },
@@ -2802,25 +2805,25 @@
     },
     {
      "name": "mass_ratio",
-     "description": "能量交换频率中的质量因子。",
-     "constraints": "有限严格正；拒绝布尔/字符串转换。",
+     "description": "能量交换系数中的源同位素质量因子；仅 H=1 与 D=2 有物理资格，其他正值属代数延拓。",
+     "constraints": "有限严格正；拒绝布尔与数值字符串转换。",
      "dtype": "实数标量"
     },
     {
-     "name": "ionization_rate_s_inv",
-     "description": "H₂⁺密度分子项所用电离率。",
-     "constraints": "有限非负，每格一个值；原单位随密度相乘后的解释待复核。",
+     "name": "ionization_rate_coefficient_m3_s",
+     "description": "e- + H2 -> H2+ + 2e- 的 R1 二体电离速率系数，用于 H₂⁺ 密度分子项。",
+     "constraints": "有限非负，每格一个值。",
      "dtype": "转为 float64 的实数类数组"
     },
     {
-     "name": "reaction_rate_table_s_inv",
-     "description": "每格11个非负反应通道。",
-     "constraints": "有限非负、恰好11列，按原顺序；7:11进入解离。",
+     "name": "reaction_rate_table_m3_s",
+     "description": "每格 11 个二体速率系数，按源通道顺序：第 0 列空置，第 1 列源通道 R1，第 7:11 列源通道 R7 到 R10。",
+     "constraints": "有限非负、恰好 11 列并按源顺序；只读取第 7:11 列。",
      "dtype": "转为 float64 的实数类数组"
     },
     {
      "name": "loss_frequency_s_inv",
-     "description": "解离分母附加损失频率。",
+     "description": "附加损失频率，在两个分母中与 H₂⁺ 电子损失频率相加。",
      "constraints": "有限非负，每格一个值。",
      "dtype": "转为 float64 的实数类数组"
     }
@@ -2828,61 +2831,63 @@
    "outputs": [
     {
      "name": "molecular_ion_density_m3",
-     "description": "代数终态H₂⁺密度。",
+     "description": "由所给二体速率形式得到的代数终态 H₂⁺ 密度。",
      "constraints": "有限非负。",
      "dtype": "float64 数组"
     },
     {
      "name": "molecular_ion_temperature_ev",
-     "description": "代数终态H₂⁺温度。",
-     "constraints": "有限非负；交换消失时可为零。",
+     "description": "代数终态 H₂⁺ 温度。",
+     "constraints": "有限非负；交换项消失时可为 0。",
      "dtype": "float64 数组"
     },
     {
-     "name": "dissociation_frequency_s_inv",
-     "description": "中性密度乘以反应列切片 7:11（零起始索引 7–10）之和。",
+     "name": "electron_loss_frequency_s_inv",
+     "description": "H₂⁺ 电子碰撞损失频率：电子密度乘以反应表第 7:11 列之和。",
      "constraints": "有限非负。",
      "dtype": "float64 数组"
     },
     {
      "name": "energy_exchange_frequency_s_inv",
-     "description": "带显式 1e-6 密度缩放的离子能量交换频率。",
+     "description": "带显式 1e-6 密度缩放的源校准代数交换系数；不是完整能量守恒闭合。",
      "constraints": "有限非负。",
      "dtype": "float64 数组"
     }
    ],
    "applicability": {
     "preconditions": [
-     "调用者提供对齐的H₂/中性密度、离子温度、反应率和11列表。",
-     "各格解离加损失及温度分母均正有限。"
+     "调用者提供对齐的终态 H₂ 密度、电子密度、离子温度、R1 二体电离速率系数、损失频率和 11 列二体速率表。",
+     "各格的电子损失加损失频率、以及温度分母都有限且严格为正。"
     ],
     "supported": [
-     "在有限一维载体上按所声明形式无状态地归约 H₂⁺ 密度和温度。"
+     "在有限一维载体上，以二体速率系数按所声明形式无状态地归约 H₂⁺ 密度与温度。"
     ],
     "excluded": [
-     "不构造反应表、不播种H₂⁺分布、不完成动力学碰撞闭合/终态反馈或外部物理验证。"
+     "不构造反应表、不播种 H₂⁺ 分布、不完成动力学碰撞闭合、终态反馈或外部物理验证。",
+     "不指定 R10 的产物通道，也不给出完整的 H₂⁺ 能量守恒闭合。"
     ]
    },
    "failure_semantics": {
-    "invalid_input": "非法实数/非有限、形状错误、负密度/率、非正Ti/质量比或派生分母非正/非有限时ValueError。",
-    "runtime_failure": "任一密度、温度或频率输出非有限/负时ValueError，无部分映射。",
+    "invalid_input": "出现非实数/非有限输入、剖面或表形状错误、密度或速率为负、离子温度或质量比非正、派生分母非正/非有限时抛 ValueError。",
+    "runtime_failure": "任一密度、温度或频率输出非有限或为负时抛 ValueError，不返回部分映射。",
     "nonconvergence": "不适用；没有迭代。",
-    "partial_results": "不返回部分结果。"
+    "partial_results": "从不返回部分结果。"
    },
    "example": {
-    "description": "由显式反应率计算两个对齐空间格的H₂⁺终态。",
-    "expected": "返回四个有限双格剖面，反应通道保持原顺序。"
+    "description": "由显式二体速率计算两个对齐空间格的 H₂⁺ 终态。",
+    "expected": "返回四个有限的双格剖面，反应通道保持源顺序。"
    },
    "verification": {
     "scope": [
-     "非均匀反应通道的独立逐格公式核对全部四字段。",
-     "改变前七通道和零分子密度核对所述边界。",
-     "三个固定用例覆盖有限输入的精确一致以及布尔强制转换上的分歧。"
+     "独立逐格公式核对在非均匀反应通道下检查全部四个字段。",
+     "改变反应表前七列或将分子密度置零时，所述边界行为保持不变。",
+     "固定的公开参数顺序与输出名、质量比 1、2、3 遵循同一代数形式，以及非正质量、非实数输入与零分母的失败闭合，均由测试覆盖。"
     ],
-    "evidence_ceiling": "直接数值比较在受测载体上确立有限离散代数关系与边界差异。它们不确立速率表的出处、绝对单位、完整的 H2+ 动力学闭合、完整资格或专家认可。",
+    "evidence_ceiling": "直接数值比较只在受测载体上确立有限离散代数关系与边界差异。它们不确立速率表出处、绝对系数的独立物理验证、完整的 H2+ 能量守恒闭合、未决的 R10 电子产物记账、完整资格或专家认可。",
     "known_limitations": [
      "与参考算例的数值一致只是有界证据，不构成完整资格。",
-     "随密度缩放的电离/反应率单位及H₂⁺绝对密度归一化需专家复核。",
+     "pass-with-limits：通道映射与二体单位按审阅决定固定，但 R10 电子产物记账、能量交换标定出处，以及 R7 到 R9 的独立复算仍未解决。",
+     "本关系不进行独立物理验证，交换项是代数系数而非能量平衡。",
      "公开分发许可仍待人工决定。"
     ]
    }

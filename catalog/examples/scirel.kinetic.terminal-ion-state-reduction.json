@@ -5,7 +5,7 @@
   "en": "Terminal molecular-ion density and temperature",
   "zh": "终态分子离子密度与温度归约"
  },
- "summary": "Reduce caller-supplied H2 and neutral densities, ion temperature and rate profiles to terminal H2+ density, temperature, dissociation and energy-exchange profiles.",
+ "summary": "Reduce caller-supplied H2 density, electron density, ion temperature, the R1 two-body ionization rate coefficient and an eleven-channel two-body rate table to terminal H2+ density, temperature, electron-loss and energy-exchange profiles.",
  "taxonomy": [
   "kinetic",
   "neutral-transport",
@@ -18,29 +18,32 @@
  "discovery": {
   "capability": [
    "Terminal molecular-ion density and temperature",
-   "Reduce caller-supplied H2 and neutral densities, ion temperature and rate profiles to terminal H2+ density, temperature, dissociation and energy-exchange profiles."
+   "Reduce caller-supplied H2 density, electron density, ion temperature, the R1 two-body ionization rate coefficient and an eleven-channel two-body rate table to terminal H2+ density, temperature, electron-loss and energy-exchange profiles."
   ],
   "operation": [
    "reduce the terminal molecular-ion state",
-   "aligned x profiles and an eleven-channel reaction table -> four x profiles"
+   "aligned x profiles and an eleven-channel two-body rate table -> four x profiles"
   ],
-  "model": "terminal molecular-ion algebraic state reduction with caller-supplied rate table",
+  "model": "terminal molecular-ion algebraic state reduction with caller-supplied two-body rate table",
   "geometry": "one-dimensional spatial cell profiles; no velocity-grid input or iteration",
-  "boundary": "finite aligned nonempty profiles; nonnegative molecular and neutral densities, ionization and loss rates, and eleven reaction channels; strictly positive ion temperature and mass ratio; both computed denominators finite and strictly positive",
+  "boundary": "finite aligned nonempty profiles; nonnegative molecular density, electron density, ionization rate coefficient, loss frequency and eleven reaction channels; strictly positive ion temperature and mass ratio; both computed denominators finite and strictly positive",
   "device_scope": "generic"
  },
  "identity": {
-  "relation": "terminal H2+ density and temperature from explicit density, temperature and rate profiles",
-  "direction": "aligned x profiles and an eleven-channel reaction table -> four x profiles",
-  "definition": "For each spatial cell k, dissociation_frequency=neutral_density[k]*sum(reaction_rate_table[k,7:11]) and energy_exchange_frequency=(7.7e-7*neutral_density[k]*1e-6)/(sqrt(mass_ratio)*ion_temperature[k]^1.5), preserving the stated arithmetic order. The H2+ density denominator is dissociation_frequency+loss_frequency and must be finite and strictly positive. Molecular-ion density is molecular_density*neutral_density*ionization_rate divided by that denominator. Molecular-ion temperature is ion_temperature*energy_exchange_frequency divided by energy_exchange_frequency plus the density denominator; its denominator must also be finite and strictly positive.",
-  "model": "terminal molecular-ion algebraic state reduction with caller-supplied rate table",
+  "relation": "terminal H2+ density and temperature from explicit H2 and electron density, ion temperature and two-body rate coefficients",
+  "direction": "aligned x profiles and an eleven-channel two-body rate table -> four x profiles",
+  "definition": "For each spatial cell k, electron_loss_frequency=electron_density[k]*sum(reaction_rate_table_m3_s[k,7:11]) and energy_exchange_frequency=(7.7e-7*electron_density[k]*1e-6)/(sqrt(mass_ratio)*ion_temperature_ev[k]^1.5), preserving the stated arithmetic order. The H2+ density denominator is electron_loss_frequency+loss_frequency_s_inv and must be finite and strictly positive. Molecular-ion density is molecular_density_m3*electron_density_m3*ionization_rate_coefficient_m3_s divided by that denominator. Molecular-ion temperature is ion_temperature_ev*energy_exchange_frequency divided by energy_exchange_frequency plus the density denominator; its denominator must also be finite and strictly positive.",
+  "model": "terminal molecular-ion algebraic state reduction with caller-supplied two-body rate table",
   "geometry": "one-dimensional spatial cell profiles; no velocity-grid input or iteration",
-  "coordinates": "all profiles share the same x-cell index; reaction table columns 7 through 10 use zero-based Python indexing",
-  "boundary": "finite aligned nonempty profiles; nonnegative molecular and neutral densities, ionization and loss rates, and eleven reaction channels; strictly positive ion temperature and mass ratio; both computed denominators finite and strictly positive",
+  "coordinates": "all profiles share the same x-cell index; reaction table columns use zero-based Python indexing, where column 0 is unused, column 1 is source channel R1 and columns 7 through 10 are source channels R7 through R10",
+  "boundary": "finite aligned nonempty profiles; nonnegative molecular density, electron density, ionization rate coefficient, loss frequency and eleven reaction channels; strictly positive ion temperature and mass ratio; both computed denominators finite and strictly positive",
   "assumptions": [
    "The caller owns the eleven-channel reaction table and all state profiles. This callable does not assemble collision coefficients, generate an H2+ Maxwellian or iterate a terminal feedback loop.",
-   "Only channels 7:11 contribute to dissociation; changing the first seven table columns does not change these outputs.",
-   "The input names ionization_rate_s_inv and reaction_rate_table_s_inv are inherited from the historical interface, but their multiplication by neutral density leaves their physical dimensions unresolved. The numerical formula and the historical labels are preserved pending expert unit review.",
+   "Both rate inputs are two-body rate coefficients in m^3 s^-1 and the second density is the electron density; the numerical formula and its explicit 1e-6 density scaling are preserved unchanged from the historical interface.",
+   "Reaction table index mapping: column 0 is unused, column 1 is source channel R1 (e- + H2 -> H2+ + 2e-), and columns 7:11 are source channels R7 through R10 (H2+ + e- source channels). Only columns 7:11 are read; changing the first seven columns, including column 1, does not change these outputs because the R1 coefficient is supplied separately as ionization_rate_coefficient_m3_s.",
+   "Column 10 is source channel R10, whose electron-product bookkeeping is unresolved. This contract records it only as a source channel and asserts no product reaction for it.",
+   "energy_exchange_frequency_s_inv is a source-calibrated algebraic coefficient built from the explicit 7.7e-7 and 1e-6 factors. It is not a complete H2+ energy-conservation closure, and no such closure is claimed.",
+   "mass_ratio has physical standing only for the H=1 and D=2 isotope mass factors. Every other positive finite value is an algebraic extension of the same formula, not a validated physical case.",
    "Boolean, complex and numeric-string coercions are excluded by the maintained real-numeric contract."
   ]
  },
@@ -48,16 +51,16 @@
   {
    "name": "molecular_density_m3",
    "description": "Caller-supplied terminal H2 density.",
-   "units": "source-labeled m^-3",
+   "units": "m^-3",
    "shape": "[nx]",
    "dtype": "real numeric array-like",
    "required": true,
    "constraints": "Finite, nonnegative, nonempty and one-dimensional; zero values are allowed if denominators remain positive."
   },
   {
-   "name": "neutral_density_m3",
-   "description": "Caller-supplied neutral density used in dissociation and exchange terms.",
-   "units": "source-labeled m^-3",
+   "name": "electron_density_m3",
+   "description": "Caller-supplied electron density multiplying the two-body rate coefficients in the H2+ electron-loss frequency and the energy exchange coefficient.",
+   "units": "m^-3",
    "shape": "[nx]",
    "dtype": "real numeric array-like",
    "required": true,
@@ -74,35 +77,35 @@
   },
   {
    "name": "mass_ratio",
-   "description": "Positive mass factor in the source energy-exchange frequency.",
-   "units": "source-defined dimensionless mass ratio",
+   "description": "Positive source isotope mass factor in the energy exchange coefficient; physical standing only for H=1 and D=2, other positive values are an algebraic extension.",
+   "units": "1",
    "shape": "scalar",
    "dtype": "real numeric scalar",
    "required": true,
    "constraints": "Finite and strictly positive; boolean and numeric-string coercions are rejected."
   },
   {
-   "name": "ionization_rate_s_inv",
-   "description": "Caller-supplied ionization-rate profile used in the H2+ density numerator.",
-   "units": "source-labeled s^-1; density-scaled physical dimension unresolved",
+   "name": "ionization_rate_coefficient_m3_s",
+   "description": "R1 two-body ionization rate coefficient for e- + H2 -> H2+ + 2e-, used in the H2+ density numerator.",
+   "units": "m^3 s^-1",
    "shape": "[nx]",
    "dtype": "real numeric array-like",
    "required": true,
    "constraints": "Finite and nonnegative; one value per x cell."
   },
   {
-   "name": "reaction_rate_table_s_inv",
-   "description": "Eleven nonnegative reaction channels per x cell; columns 7:11 enter dissociation.",
-   "units": "source-labeled s^-1; density-scaled physical dimension unresolved",
+   "name": "reaction_rate_table_m3_s",
+   "description": "Eleven two-body rate coefficients per x cell in source channel order: column 0 unused, column 1 source channel R1, columns 7:11 source channels R7 through R10.",
+   "units": "m^3 s^-1",
    "shape": "[nx,11]",
    "dtype": "real numeric array-like",
    "required": true,
-   "constraints": "Finite, nonnegative and exactly eleven columns in source order."
+   "constraints": "Finite, nonnegative and exactly eleven columns in source order; only columns 7:11 are read."
   },
   {
    "name": "loss_frequency_s_inv",
-   "description": "Caller-supplied loss frequency added to the dissociation denominator.",
-   "units": "source-labeled s^-1",
+   "description": "Caller-supplied loss frequency added to the H2+ electron-loss frequency in both denominators.",
+   "units": "s^-1",
    "shape": "[nx]",
    "dtype": "real numeric array-like",
    "required": true,
@@ -112,8 +115,8 @@
  "outputs": [
   {
    "name": "molecular_ion_density_m3",
-   "description": "Algebraic terminal H2+ density.",
-   "units": "source-labeled m^-3; coefficient units pending review",
+   "description": "Algebraic terminal H2+ density from the supplied two-body rate form.",
+   "units": "m^-3",
    "shape": "[nx]",
    "dtype": "float64 array",
    "required": true,
@@ -129,9 +132,9 @@
    "constraints": "Finite and nonnegative; zero is permitted when exchange vanishes."
   },
   {
-   "name": "dissociation_frequency_s_inv",
-   "description": "Neutral density times the sum of reaction channels 7 through 10.",
-   "units": "source-labeled s^-1; coefficient units pending review",
+   "name": "electron_loss_frequency_s_inv",
+   "description": "H2+ electron-impact loss frequency: electron density times the sum of reaction-table columns 7:11.",
+   "units": "s^-1",
    "shape": "[nx]",
    "dtype": "float64 array",
    "required": true,
@@ -139,8 +142,8 @@
   },
   {
    "name": "energy_exchange_frequency_s_inv",
-   "description": "Source-calibrated ion energy-exchange frequency with explicit 1e-6 density scaling.",
-   "units": "source-labeled s^-1",
+   "description": "Source-calibrated algebraic exchange coefficient with the explicit 1e-6 density scaling; not a complete energy-conservation closure.",
+   "units": "s^-1",
    "shape": "[nx]",
    "dtype": "float64 array",
    "required": true,
@@ -149,14 +152,15 @@
  ],
  "applicability": {
   "preconditions": [
-   "The caller supplies aligned terminal H2/neutral densities, ion temperature, rates and the eleven-column reaction table.",
-   "Dissociation plus loss and the temperature denominator remain finite and strictly positive in every cell."
+   "The caller supplies aligned terminal H2 density, electron density, ion temperature, the R1 two-body ionization rate coefficient, a loss frequency and the eleven-column two-body rate table.",
+   "Electron-loss plus loss and the temperature denominator remain finite and strictly positive in every cell."
   ],
   "supported": [
-   "Stateless source-form H2+ density and temperature reduction on finite one-dimensional carriers."
+   "Stateless source-form H2+ density and temperature reduction on finite one-dimensional carriers with two-body rate coefficients."
   ],
   "excluded": [
-   "Reaction-rate table construction, H2+ distribution seeding, kinetic collision closure, terminal feedback and external physical validation."
+   "Reaction-rate table construction, H2+ distribution seeding, kinetic collision closure, terminal feedback and external physical validation.",
+   "R10 product-channel assignment and a complete H2+ energy-conservation closure."
   ]
  },
  "failure_semantics": {
@@ -169,7 +173,7 @@
   "python": {
    "module": "scirel.kinetic.terminal_ion_state_reduction",
    "symbol": "reduce_terminal_molecular_ion_state",
-   "signature": "reduce_terminal_molecular_ion_state(molecular_density_m3, neutral_density_m3, ion_temperature_ev, mass_ratio, ionization_rate_s_inv, reaction_rate_table_s_inv, loss_frequency_s_inv)",
+   "signature": "reduce_terminal_molecular_ion_state(molecular_density_m3, electron_density_m3, ion_temperature_ev, mass_ratio, ionization_rate_coefficient_m3_s, reaction_rate_table_m3_s, loss_frequency_s_inv)",
    "canonical_module": "scirel.kinetic",
    "canonical_symbol": "reduce_terminal_molecular_ion_state"
   }
@@ -179,23 +183,24 @@
   "dependencies": []
  },
  "example": {
-  "description": "Reduce two aligned terminal H2+ state cells from explicit rates.",
-  "code": "import numpy as np\nfrom scirel.kinetic import reduce_terminal_molecular_ion_state\nrates = np.zeros((2, 11))\nrates[:, 7:11] = 1e-18\nr = reduce_terminal_molecular_ion_state(np.array([4e17, 5e17]), np.array([1e18, 2e18]), np.array([2., 3.]), 2., np.array([4., 5.]), rates, np.array([1., 3.]))\nassert set(r) == {'molecular_ion_density_m3', 'molecular_ion_temperature_ev', 'dissociation_frequency_s_inv', 'energy_exchange_frequency_s_inv'}\nassert all(value.shape == (2,) and np.isfinite(value).all() for value in r.values())",
-  "expected": "Four finite two-cell terminal H2+ profiles with source-order reaction channels."
+  "description": "Reduce two aligned terminal H2+ state cells from explicit two-body rates.",
+  "code": "import numpy as np\nfrom scirel.kinetic import reduce_terminal_molecular_ion_state\nrates = np.zeros((2, 11))\nrates[:, 7:11] = 1e-18\nr = reduce_terminal_molecular_ion_state(np.array([4e17, 5e17]), np.array([1e18, 2e18]), np.array([2., 3.]), 2., np.array([4., 5.]), rates, np.array([1., 3.]))\nassert set(r) == {'molecular_ion_density_m3', 'molecular_ion_temperature_ev', 'electron_loss_frequency_s_inv', 'energy_exchange_frequency_s_inv'}\nassert all(value.shape == (2,) and np.isfinite(value).all() for value in r.values())",
+  "expected": "Four finite two-cell terminal H2+ profiles with source-order two-body reaction channels."
  },
  "verification": {
   "scope": [
-   "Independent per-cell oracle checks all four fields with nonuniform reaction channels.",
-   "First-seven-channel variation and zero molecular density preserve the stated boundaries.",
-   "Three digest-pinned fixed cases cover exact finite agreement and the boolean-coercion divergence."
+   "An independent per-cell oracle checks all four fields with nonuniform reaction channels.",
+   "Changing the first seven reaction-table columns and zeroing the molecular density preserve the stated boundaries.",
+   "The canonical parameter order and output names are pinned, mass ratios 1, 2 and 3 follow one algebraic form, and nonpositive mass, non-real inputs and zero denominators fail closed."
   ],
   "tests": [
    "tests/kinetic/test_terminal_molecular_ion_state.py"
   ],
-  "evidence_ceiling": "Direct numerical comparisons establish the finite discrete algebraic relation and boundary differences on tested carriers. They do not establish rate-table provenance, absolute units, a full H2+ kinetic closure, complete qualification or expert approval.",
+  "evidence_ceiling": "Direct numerical comparisons establish the finite discrete algebraic relation and boundary differences on tested carriers. They do not establish rate-table provenance, an independent physical validation of the absolute coefficients, a complete H2+ energy-conservation closure, the unresolved R10 electron-product bookkeeping, complete qualification or expert approval.",
   "known_limitations": [
    "Numerical agreement with the reference cases is bounded evidence and does not establish full qualification.",
-   "The density-scaled ionization/reaction-rate units and absolute H2+ density normalization require expert review.",
+   "Pass-with-limits: the channel mapping and the two-body units follow the reviewed decision, but R10 electron-product bookkeeping, the energy-exchange calibration provenance and an independent recomputation of R7 through R9 remain unresolved.",
+   "The relation performs no independent physical validation, and the exchange term is an algebraic coefficient rather than an energy balance.",
    "Public distribution licensing remains pending."
   ]
  }
