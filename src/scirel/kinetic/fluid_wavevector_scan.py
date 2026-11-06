@@ -85,7 +85,154 @@ def scan_fluid_wavevectors(
     j_order,
     keep=5,
 ):
-    """Derive the axis and equilibrium state, then scan the fluid dispersion matrix."""
+    r"""Scan the fluid wavevector spectrum over equilibrium and frequency grids.
+
+    Parameters
+    ----------
+    ms : real numeric
+        Mass of each species, entering the thermal speed and cyclotron frequency Shape:
+        (S,) one-dimensional species axis. Constraints: Finite positive masses, one
+        value per species. Units: [kg].
+    qs : real numeric
+        Charge of each species, setting the sign of the cyclotron frequency and coupling
+        terms Shape: (S,) one-dimensional species axis. Constraints: Finite nonzero
+        charges, one value per species. Units: [C].
+    ns_unit : real numeric
+        Density of each species relative to the reference density Shape: (S,)
+        one-dimensional species axis. Constraints: Finite positive density ratios
+        matching the species axis. Units: [dimensionless].
+    Ts_unit : real numeric
+        Temperature of each species relative to the reference temperature Shape: (S,)
+        one-dimensional species axis. Constraints: Finite positive temperature ratios
+        matching the species axis. Units: [dimensionless].
+    B0 : real numeric
+        Background magnetic-field strength, setting the cyclotron-frequency scale Shape:
+        scalar. Constraints: Finite nonzero background field. Units: [T].
+    n00 : real numeric
+        Reference number density Shape: scalar. Constraints: Finite positive reference
+        density. Units: [m^-3].
+    T00 : real numeric
+        Reference temperature Shape: scalar. Constraints: Finite positive reference
+        temperature in eV. Units: [eV].
+    omega_scale : real numeric
+        Start fraction of the scan frequency ladder (0.05 in the source implementation);
+        multiplied by the wn derived internally by this graph to give the absolute start
+        frequency Shape: scalar. Constraints: Finite scan start; every derived angular
+        frequency must be nonzero. Units: [dimensionless].
+    omega_step : real numeric
+        Equal-step fraction of the scan frequency ladder (0.05 in the source
+        implementation); multiplied by the wn derived internally by this graph to give
+        the absolute step Shape: scalar. Constraints: Finite strictly positive scan
+        step. Units: [dimensionless].
+    omega_stop : real numeric
+        Stop multiple of the scan frequency ladder (3.95 in the source implementation);
+        together with the start and step it defines the source's colon expression, from
+        which the number of scan frequencies follows Shape: scalar. Constraints: Finite
+        scan endpoint not below the start. Units: [dimensionless].
+    kz_scale : real numeric
+        Parallel wavenumber relative to kn, giving the kz used by the scan Shape:
+        scalar. Constraints: Finite parallel-wavenumber ratio. Units: [dimensionless].
+    max_harmonic : integer
+        Maximum Bessel harmonic order N, setting the number of matrix blocks Shape:
+        integer scalar. Constraints: Integer from 0 through 7, limited by the frozen
+        L-pole tables. Units: [dimensionless].
+    j_order : integer
+        Z-pole order J, selecting the pole table and setting each species' pole-block
+        size Shape: integer scalar. Constraints: Integer 8 or 12, selecting a frozen
+        Z-pole table. Units: [dimensionless].
+    keep : integer, optional
+        Number of leading branches returned per frequency Shape: integer scalar.
+        Constraints: Positive integer branch count. Default: 5. Units: [dimensionless].
+
+    Returns
+    -------
+    scales : mapping
+        Per-species scales derived from the equilibrium inputs and consumed by both
+        assembly and the eigensolve Shape: mapping/dict. Constraints: The returned value
+        follows the stated shape and physical normalization. Units: [mixed (each key
+        carries its own unit)].
+    kn : real numeric
+        Wavenumber normalization scale derived internally by this graph,
+        kn=1/max|rho_cs|, returned as a top-level physical quantity Shape: scalar.
+        Constraints: The returned value follows the stated shape and physical
+        normalization. Units: [1/m].
+    wn : real numeric
+        Frequency normalization scale derived internally by this graph, wn=min|w_cs|,
+        returned as a top-level physical quantity Shape: scalar. Constraints: The
+        returned value follows the stated shape and physical normalization. Units:
+        [rad/s].
+    omegas : real numeric
+        Scan angular-frequency axis derived internally by this graph,
+        xx=(omega_scale:omega_step:omega_stop)*wn, which is the xx vector stored by the
+        source implementation Shape: (F,) one-dimensional frequency axis. Constraints:
+        The returned value follows the stated shape and physical normalization. Units:
+        [rad/s].
+    count : integer
+        Number of frequencies derived from the source's colon-style
+        (omega_scale:omega_step:omega_stop) ladder Shape: integer scalar. Constraints:
+        The returned value follows the stated shape and physical normalization. Units:
+        [dimensionless].
+    kx_spectra : object array
+        Complete kx spectrum at each frequency Shape: (F,) object array of full complex
+        spectra. Constraints: The returned value follows the stated shape and physical
+        normalization. Units: [1/m].
+    kx_selected : object array
+        Branches at each frequency that pass the real-part threshold, sorted in
+        ascending |Im| order Shape: (F,) object array of variable-length complex
+        branches. Constraints: The returned value follows the stated shape and physical
+        normalization. Units: [1/m].
+    kx_head : object array
+        First keep branches at each frequency, forming the scan curves Shape: (F,)
+        object array of variable-length complex branches. Constraints: The returned
+        value follows the stated shape and physical normalization. Units: [1/m].
+    kz : real numeric
+        Parallel wavenumber actually used by this scan Shape: scalar. Constraints: The
+        returned value follows the stated shape and physical normalization. Units:
+        [1/m].
+    matrix_sizes : object array
+        Matrix order and number of nonzero entries at each frequency Shape: (F,) object
+        array of (matrix order, nonzero count) tuples. Constraints: The returned value
+        follows the stated shape and physical normalization. Units: [dimensionless].
+    graph_order : string sequence
+        Execution order of this graph Shape: (7,) string array. Constraints: The
+        returned value follows the stated shape and physical normalization. Units: [not
+        applicable].
+
+    Raises
+    ------
+    LinAlgError
+        If the numerical eigensolver cannot produce a spectrum.
+    ValueError
+        If inputs, physical controls, coefficient tables or a numerical response are
+        invalid or unrepresentable.
+
+    See Also
+    --------
+    derive_species_equilibrium_scales
+        Related kinetic amplitude or dispersion operator in the same workflow.
+    get_gamma_lpole_coefficients
+        Related kinetic amplitude or dispersion operator in the same workflow.
+    get_z_pole_coefficients
+        Related kinetic amplitude or dispersion operator in the same workflow.
+    assemble_fluid_dispersion_matrix
+        Related kinetic amplitude or dispersion operator in the same workflow.
+    solve_fluid_wavevector_eigenproblem
+        Related kinetic amplitude or dispersion operator in the same workflow.
+
+    Notes
+    -----
+        The graph derives species scales, constructs the frequency and
+        parallel-wavenumber axes, assembles one matrix per frequency, and solves each
+        matrix directly. Completed point data are not exposed when any point fails.
+        Supported scope: Derive the equilibrium frequency ladder, assemble one L/J-pole
+        matrix per frequency, and select fluid kx branches. Excluded scope: No
+        unrequested mode identity or accuracy guarantee is inferred.
+
+    Examples
+    --------
+    >>> from scirel.kinetic import scan_fluid_wavevectors
+    >>> r=scan_fluid_wavevectors(ms=[9.1094e-31],qs=[-1.60217662e-19],ns_unit=[1],Ts_unit=[1],B0=1,n00=6.075e19,T00=1000,omega_scale=0.5,omega_step=0.05,omega_stop=0.5,kz_scale=0.1,max_harmonic=0,j_order=8); assert r['count']==1
+    """
     # These are graph dependencies, not namespace dependencies.  Resolve them
     # at call time so discovering the public scan operator does not import five
     # additional numerical modules or their transitive helpers.

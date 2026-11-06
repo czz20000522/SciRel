@@ -69,16 +69,19 @@ def vp_distribution(vv, Fn=2, *, k=0.15, kappa=1.0, cutoff_mode="weak"):
         kappa)) (1+v^2/(2 kappa))^-kappa, i.e. theta^2=2 with variance
         2kappa/(2kappa-3), NOT unit temperature; 3 triangle max(0,1-|v|), with
         zero derivative outside its support; 4 cutoff slowing-down. One of
-        1,2,3,4.
+        1,2,3,4. Units: [dimensionless].
     k : real scalar, default 0.15
-        Spatial Fourier wavenumber in inverse Debye length. Positive finite.
+        Spatial Fourier wavenumber in inverse Debye length. Positive finite. Units:
+        [dimensionless].
     kappa : real scalar, default 1.0
         Kappa index of the Fn=2 family. The family is not rescaled to unit
         variance; for a kappa distribution at a prescribed temperature pass its
-        derivative as df0dv to vp_init. For Fn=2 finite >1/2.
+        derivative as df0dv to vp_init. For Fn=2 finite >1/2. Units:
+        [dimensionless].
     cutoff_mode : string, default 'weak'
         Fn4 weak derivative or explicit source smooth-only forcing. weak or
-        smooth; weak Fn4 requires increasing uniform grid.
+        smooth; weak Fn4 requires increasing uniform grid. Units:
+        [dimensionless].
 
     Returns
     -------
@@ -200,15 +203,17 @@ def vp_field(df, k, dv):
     df : complex array, shape [N]
         Complex perturbation on velocity nodes. Finite one-dimensional N>=2.
     k : real scalar
-        Nonzero spatial Fourier wavenumber. Finite and nonzero.
+        Nonzero spatial Fourier wavenumber. Finite and nonzero. Units:
+        [dimensionless].
     dv : real scalar
-        Uniform velocity quadrature spacing. Positive finite.
+        Uniform velocity quadrature spacing. Positive finite. Units:
+        [dimensionless].
 
     Returns
     -------
     result : complex scalar, shape As described in output mapping or tuple.
         Complex scalar electric field satisfying ikE=-dv sum(df). Finite complex
-        scalar equal to the discrete Poisson field.
+        scalar equal to the discrete Poisson field. Units: [dimensionless].
 
     Raises
     ------
@@ -222,6 +227,12 @@ def vp_field(df, k, dv):
     --------
     vp_init : Initial state with a Poisson-consistent field.
     vp_evolve : Uses this closure at every step.
+
+    Notes
+    -----
+    The field uses periodic Fourier deposition on the uniform velocity grid.
+    The returned field is the correction field, not an external or total
+    electric field.
 
     Examples
     --------
@@ -239,7 +250,76 @@ def vp_field(df, k, dv):
 
 
 def vp_rhs(df, dE, vv, df0dv, k):
-    """Evaluate the linear Vlasov RHS for one shared electric field."""
+    r"""Evaluate the linearized Vlasov right-hand side.
+
+    Parameters
+    ----------
+    df : complex array
+        Complex perturbation on velocity nodes. Shape: [N]. Constraints: Finite
+        one-dimensional N>=2. Units: [dimensionless].
+    dE : complex scalar
+        Scalar Fourier electric field. Shape: scalar. Constraints: Finite scalar; RK4
+        requires Poisson consistency within rtol=1e-12,atol=1e-14. Units:
+        [dimensionless].
+    vv : real array
+        Velocity nodes. Shape: [N]. Constraints: Finite one-dimensional; aligned with df
+        and df0dv when applicable. Units: [dimensionless].
+    df0dv : real array
+        Equilibrium derivative or declared forcing on velocity nodes. Shape: [N].
+        Constraints: Finite one-dimensional aligned vector; can include
+        quadrature-deposited jump masses. Units: [dimensionless].
+    k : real scalar
+        Nonzero spatial Fourier wavenumber. Shape: scalar. Constraints: Finite and
+        nonzero. Units: [dimensionless].
+
+    Returns
+    -------
+    result : complex array
+        Complex vector [N] time derivative; no input mutation. Shape: As described in
+        output mapping or tuple.. Constraints: Finite complex array with the
+        distribution shape. Units: [dimensionless].
+
+    Raises
+    ------
+    FloatingPointError
+        If a required intermediate or returned quantity is not finite.
+    ValueError
+        If inputs, physical controls, coefficient tables or a numerical response are
+        invalid or unrepresentable.
+
+    See Also
+    --------
+    vp_distribution
+        Related kinetic amplitude or dispersion operator in the same workflow.
+    vp_init
+        Related kinetic amplitude or dispersion operator in the same workflow.
+    vp_field
+        Related kinetic amplitude or dispersion operator in the same workflow.
+    vp_rk4_step
+        Related kinetic amplitude or dispersion operator in the same workflow.
+    vp_evolve
+        Related kinetic amplitude or dispersion operator in the same workflow.
+    vp_envelope
+        Related kinetic amplitude or dispersion operator in the same workflow.
+    vp_diagnostic
+        Related kinetic amplitude or dispersion operator in the same workflow.
+    solve_vlasov_poisson
+        Related kinetic amplitude or dispersion operator in the same workflow.
+
+    Notes
+    -----
+        The right-hand side combines Fourier advection by the correction field with the
+        linearized background-gradient term. The caller supplies aligned velocity and
+        distribution vectors. Supported scope: Linear one-dimensional Vlasov RHS with
+        one shared electric field. Excluded scope: Nonlinear evolution, multidimensional
+        modes and implicit Poisson correction.
+
+    Examples
+    --------
+    >>> from scirel.kinetic.vlasov_poisson import vp_rhs
+    >>> r=vp_rhs([1,2],1j,[-1,1],[.1,-.1],.5)
+    >>> assert r.shape == (2,)
+    """
     distribution, velocity, derivative = _finite_vectors(df, vv, df0dv)
     if np.ndim(dE) != 0 or not np.isfinite(dE) or not np.isfinite(k) or k == 0:
         raise ValueError("dE must be a finite scalar and k finite and nonzero")
@@ -261,27 +341,34 @@ def vp_init(
     ----------
     Fn : int or None, default 2
         Built-in equilibrium family (see :func:`vp_distribution`). Pass
-        ``Fn=None`` together with ``df0dv`` to use your own equilibrium.
+        ``Fn=None`` together with ``df0dv`` to use your own equilibrium. Units:
+        [dimensionless].
     kappa : float, default 1.0
-        Kappa index or family parameter used by the built-in family.
+        Kappa index or family parameter used by the built-in family. Units:
+        [dimensionless].
     nv : int, default 2048
-        Number of equal velocity intervals; at least 2.
+        Number of equal velocity intervals; at least 2. Units:
+        [dimensionless].
     dt : float, default 0.01
-        Time step in inverse plasma frequency; positive.
+        Time step in inverse plasma frequency; positive. Units:
+        [dimensionless].
     nt : int, default 2000
-        Number of time steps; nonnegative.
+        Number of time steps; nonnegative. Units: [dimensionless].
     k : float, default 0.15
-        Spatial Fourier wavenumber in inverse Debye length; positive.
+        Spatial Fourier wavenumber in inverse Debye length; positive. Units:
+        [dimensionless].
     vmax : float, default 20.0
-        Half-width of the velocity window, in the grid's velocity units.
+        Half-width of the velocity window, in the grid's velocity units. Units:
+        [dimensionless].
     df_initial : array_like, optional
         Initial perturbation ``df(v, 0)`` on ``vv`` (length ``nv + 1``, real or
         complex). The default is ``0.1 * exp(-v**2)``, a fixed Gaussian in the
         grid's velocity units that is *not* proportional to ``f0``; pass your
-        own when the initial condition matters.
+        own when the initial condition matters. Units: [dimensionless].
     df0dv : array_like, optional
         Equilibrium derivative ``f0'(v)`` sampled on ``vv`` (length ``nv + 1``),
-        used instead of a built-in family. Requires ``Fn=None``.
+        used instead of a built-in family. Requires ``Fn=None``. Units:
+        [dimensionless].
 
     Returns
     -------
@@ -289,7 +376,8 @@ def vp_init(
         State mapping: Fn,kappa,nv,dt,nt,k,vmax,vmin,dv,TR; vv,df,df0dv [nv+1];
         scalar dE; dEt,tt [nt+1]; wr,wi are kappa=1 theory or None. Fields and
         arrays are independently owned. State mapping with finite arrays and an
-        initial field satisfying discrete Poisson closure.
+        initial field satisfying discrete Poisson closure. Units:
+        [dimensionless].
 
     Raises
     ------
@@ -384,7 +472,84 @@ def _grid_array(values, velocity, name):
 
 
 def vp_rk4_step(df, dE, vv, df0dv, k, dv, dt):
-    """Advance one classical RK4 step while enforcing Poisson at each stage."""
+    r"""Advance one Vlasov-Poisson state by one Poisson-closed RK4 step.
+
+    Parameters
+    ----------
+    df : complex array
+        Complex perturbation on velocity nodes. Shape: [N]. Constraints: Finite
+        one-dimensional N>=2. Units: [dimensionless].
+    dE : complex scalar
+        Scalar Fourier electric field. Shape: scalar. Constraints: Finite scalar; RK4
+        requires Poisson consistency within rtol=1e-12,atol=1e-14. Units:
+        [dimensionless].
+    vv : real array
+        Velocity nodes. Shape: [N]. Constraints: Finite one-dimensional; aligned with df
+        and df0dv when applicable. Units: [dimensionless].
+    df0dv : real array
+        Equilibrium derivative or declared forcing on velocity nodes. Shape: [N].
+        Constraints: Finite one-dimensional aligned vector; can include
+        quadrature-deposited jump masses. Units: [dimensionless].
+    k : real scalar
+        Nonzero spatial Fourier wavenumber. Shape: scalar. Constraints: Finite and
+        nonzero. Units: [dimensionless].
+    dv : real scalar
+        Uniform velocity quadrature spacing. Shape: scalar. Constraints: Positive
+        finite. Units: [dimensionless].
+    dt : real scalar
+        Time step in inverse plasma frequency. Shape: scalar. Constraints: Positive
+        finite. Units: [dimensionless].
+
+    Returns
+    -------
+    result : tuple
+        Tuple (new_df,new_dE), complex [N] vector and closed complex scalar; no input
+        mutation. Shape: As described in output mapping or tuple.. Constraints: Finite
+        updated distribution and field preserving discrete Poisson closure. Units:
+        [dimensionless].
+
+    Raises
+    ------
+    FloatingPointError
+        If a required intermediate or returned quantity is not finite.
+    ValueError
+        If inputs, physical controls, coefficient tables or a numerical response are
+        invalid or unrepresentable.
+
+    See Also
+    --------
+    vp_distribution
+        Related kinetic amplitude or dispersion operator in the same workflow.
+    vp_init
+        Related kinetic amplitude or dispersion operator in the same workflow.
+    vp_field
+        Related kinetic amplitude or dispersion operator in the same workflow.
+    vp_rhs
+        Related kinetic amplitude or dispersion operator in the same workflow.
+    vp_evolve
+        Related kinetic amplitude or dispersion operator in the same workflow.
+    vp_envelope
+        Related kinetic amplitude or dispersion operator in the same workflow.
+    vp_diagnostic
+        Related kinetic amplitude or dispersion operator in the same workflow.
+    solve_vlasov_poisson
+        Related kinetic amplitude or dispersion operator in the same workflow.
+
+    Notes
+    -----
+        The incoming field must satisfy the Poisson closure tolerance for the supplied
+        distribution. Four Vlasov stages are evaluated, each with its own Poisson field,
+        before the final state is returned. Supported scope: One classical RK4 step with
+        Poisson closure recomputed at every stage. Excluded scope: Nonlinear evolution,
+        multidimensional modes and unconstrained incoming fields.
+
+    Examples
+    --------
+    >>> from scirel.kinetic.vlasov_poisson import vp_init,vp_rk4_step
+    >>> s=vp_init(nv=32)
+    >>> f,E=vp_rk4_step(*(s[n] for n in ("df","dE","vv","df0dv","k","dv","dt")))
+    >>> assert f.shape == (33,)
+    """
     _positive_scalar(dt, "dt")
     distribution, velocity, derivative = _finite_vectors(df, vv, df0dv)
     closed_field = vp_field(distribution, k, dv)
@@ -423,7 +588,8 @@ def vp_evolve(state):
         State mapping produced by vp_init. To start from another perturbation or
         equilibrium pass df_initial or df0dv to vp_init; an edited df needs dE =
         vp_field(df,k,dv) or the call raises. Complete VP state; finite aligned
-        arrays; Poisson-closed initial field; integer nt>=0.
+        arrays; Poisson-closed initial field; integer nt>=0. Units:
+        [dimensionless].
 
     Returns
     -------
@@ -432,7 +598,7 @@ def vp_evolve(state):
         scalar dE; dEt,tt [nt+1]; wr,wi are kappa=1 theory or None. Fields and
         arrays are independently owned. Input is not mutated; repeated calls
         start a new local time trace from supplied df. Copied state with finite
-        field history and closed initial field.
+        field history and closed initial field. Units: [dimensionless].
 
     Raises
     ------
@@ -446,6 +612,12 @@ def vp_evolve(state):
     --------
     vp_init : Build the state.
     vp_diagnostic : Fit damping and frequency from the history.
+
+    Notes
+    -----
+    The input mapping is copied before stepping. Every RK4 stage closes the
+    Poisson field from that stage's distribution, and the returned history
+    retains all field samples from initialization through the final step.
 
     Examples
     --------
@@ -481,7 +653,71 @@ def vp_evolve(state):
 
 
 def vp_envelope(dEt, tt, *, wr=None, wi=None):
-    """Return ``log(abs(E))`` and, when supplied, the theoretical envelope."""
+    r"""Fit the electric-field envelope and damping rate.
+
+    Parameters
+    ----------
+    dEt : complex array
+        Complex electric field time series. Shape: [T]. Constraints: Finite
+        one-dimensional T>=2. Units: [dimensionless].
+    tt : real array
+        Sampling times. Shape: [T]. Constraints: Finite strictly increasing, same shape
+        as dEt. Units: [dimensionless].
+    wr : real scalar or None, optional
+        Optional theoretical real frequency; returned metadata only. Shape: scalar.
+        Constraints: Finite; see function-specific scientific conditions. Default: None.
+        Units: [dimensionless].
+    wi : real scalar or None, optional
+        Optional theoretical damping rate. Shape: scalar. Constraints: Finite; see
+        function-specific scientific conditions. Default: None. Units: [dimensionless].
+
+    Returns
+    -------
+    result : dict
+        Mapping ttmp[T], lndE[T], lndEe[T] or None, wr,wi. Exact zero amplitude yields
+        -inf; all samples retained. Shape: As described in output mapping or tuple..
+        Constraints: Finite logs except documented zero-field -inf; theory envelope only
+        when wi is supplied. Units: [dimensionless].
+
+    Raises
+    ------
+    ValueError
+        If inputs, physical controls, coefficient tables or a numerical response are
+        invalid or unrepresentable.
+
+    See Also
+    --------
+    vp_distribution
+        Related kinetic amplitude or dispersion operator in the same workflow.
+    vp_init
+        Related kinetic amplitude or dispersion operator in the same workflow.
+    vp_field
+        Related kinetic amplitude or dispersion operator in the same workflow.
+    vp_rhs
+        Related kinetic amplitude or dispersion operator in the same workflow.
+    vp_rk4_step
+        Related kinetic amplitude or dispersion operator in the same workflow.
+    vp_evolve
+        Related kinetic amplitude or dispersion operator in the same workflow.
+    vp_diagnostic
+        Related kinetic amplitude or dispersion operator in the same workflow.
+    solve_vlasov_poisson
+        Related kinetic amplitude or dispersion operator in the same workflow.
+
+    Notes
+    -----
+        The envelope is formed from the complex electric-field history. The optional
+        real frequency and damping controls define the fitted comparison; exact zero
+        amplitude can produce negative infinite log amplitudes as declared. Supported
+        scope: Log-magnitude history and optional theoretical exponential envelope.
+        Excluded scope: Peak fitting, nonlinear fields and continuum accuracy claims.
+
+    Examples
+    --------
+    >>> from scirel.kinetic.vlasov_poisson import vp_envelope
+    >>> r=vp_envelope([1j,2j],[0,1])
+    >>> assert r["lndE"].shape == (2,)
+    """
     field, times = _finite_vectors(dEt, tt)
     if np.iscomplexobj(times) or np.any(np.diff(times) <= 0):
         raise ValueError("tt must be real and strictly increasing")
@@ -502,17 +738,18 @@ def vp_diagnostic(dEt, tt, *, start=None, end=None):
         Sampling times. Finite strictly increasing, same shape as dEt.
     start : real scalar or None, default None
         Window start; None means 5% of actual time span. Finite; see
-        function-specific scientific conditions.
+        function-specific scientific conditions. Units: [dimensionless].
     end : real scalar or None, default None
         Window end; None means 80% of actual time span. Finite; see
-        function-specific scientific conditions.
+        function-specific scientific conditions. Units: [dimensionless].
 
     Returns
     -------
     result : dict, shape As described in output mapping or tuple.
         Mapping peak_indices,peak_times,peak_log_magnitudes [P>=2], scalar
         omega,gamma,gammas; gammas aliases gamma. Diagnostic mapping with finite
-        fit when enough peaks are available; otherwise the declared status.
+        fit when enough peaks are available; otherwise the declared status. Units:
+        [dimensionless].
 
     Raises
     ------
@@ -524,6 +761,12 @@ def vp_diagnostic(dEt, tt, *, start=None, end=None):
     --------
     vp_evolve : Produces the field history.
     solve_maxwellian_electrostatic_mode : Dispersion-relation root to compare with.
+
+    Notes
+    -----
+    The diagnostic fits isolated nonzero field maxima between the requested
+    time bounds. Fewer than two usable peaks raise ``ValueError``; the composed
+    solver converts that condition into an explicit unavailable status.
 
     Examples
     --------
@@ -571,22 +814,27 @@ def solve_vlasov_poisson(Fn=2, kappa=1.0, nv=2048, dt=0.01, nt=2000, *, k=0.15, 
         (unit variance); 2 kappa Gamma(kappa)/(Gamma(kappa-1/2) sqrt(2 pi
         kappa)) (1+v^2/(2 kappa))^-kappa, i.e. theta^2=2 with variance
         2kappa/(2kappa-3), NOT unit temperature; 3 triangle max(0,1-|v|); 4
-        cutoff slowing-down. One of 1,2,3,4.
+        cutoff slowing-down. One of 1,2,3,4. Units: [dimensionless].
     kappa : real scalar, default 1.0
         Kappa index of the Fn=2 family. The family is not rescaled to unit
         variance; for a kappa distribution at a prescribed temperature pass its
-        derivative as df0dv to vp_init. For Fn=2 finite >1/2.
+        derivative as df0dv to vp_init. For Fn=2 finite >1/2. Units:
+        [dimensionless].
     nv : integer, default 2048
-        Number of equal velocity intervals. Integer >=2, boolean rejected.
+        Number of equal velocity intervals. Integer >=2, boolean rejected. Units:
+        [dimensionless].
     dt : real scalar, default 0.01
-        Time step in inverse plasma frequency. Positive finite.
+        Time step in inverse plasma frequency. Positive finite. Units:
+        [dimensionless].
     nt : integer, default 2000
         Exact number of ordered time steps. Nonnegative integer, boolean
-        rejected.
+        rejected. Units: [dimensionless].
     k : real scalar, default 0.15
-        Spatial Fourier wavenumber in inverse Debye length. Positive finite.
+        Spatial Fourier wavenumber in inverse Debye length. Positive finite. Units:
+        [dimensionless].
     vmax : real scalar, default 20.0
-        Symmetric velocity window extent. Positive finite.
+        Symmetric velocity window extent. Positive finite. Units:
+        [dimensionless].
 
     Returns
     -------
@@ -595,7 +843,7 @@ def solve_vlasov_poisson(Fn=2, kappa=1.0, nv=2048, dt=0.01, nt=2000, *, k=0.15, 
         diagnostic_status. For nt=0 envelope and diagnostic are None; inadequate
         peaks give diagnostic=None and reason while retaining evolution.
         Composed final state and diagnostics; no claim beyond the declared time
-        window and grid.
+        window and grid. Units: [dimensionless].
 
     Raises
     ------
@@ -611,6 +859,13 @@ def solve_vlasov_poisson(Fn=2, kappa=1.0, nv=2048, dt=0.01, nt=2000, *, k=0.15, 
     vp_init : Initialization step.
     vp_evolve : Time advance.
     vp_diagnostic : Rate and frequency fit.
+
+    Notes
+    -----
+    The solve initializes the reference state, evolves all requested steps,
+    and obtains the damping envelope when enough field extrema are available.
+    The evolved state remains available when only the optional diagnostic is
+    unavailable.
 
     Examples
     --------

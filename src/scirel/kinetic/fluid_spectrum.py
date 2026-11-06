@@ -219,6 +219,67 @@ def _r_harmonic(y, b):
 
 
 def evaluate_fluid_special(method, x, parameter=None):
+    r"""Evaluate the fluid-dispersion special functions.
+
+    Parameters
+    ----------
+    method : string
+        Scientific method selector. Shape: string. Constraints: Gamman, Gammapn, zfun,
+        RTAY, RASY, RINT or RYLA. Units: [dimensionless].
+    x : real/complex
+        Integer Bessel order, Z argument or R argument Y. Shape: array for Gamma/Z;
+        scalar for R. Constraints: Integer real Gamma order; finite other arguments.
+        Units: [dimensionless].
+    parameter : real/complex or None, optional
+        Bessel b or R b; unused for Z. Shape: array for Gamma; scalar for R; None for Z.
+        Constraints: Required for Gamma/R; finite. Default: None. Units:
+        [dimensionless].
+
+    Returns
+    -------
+    value : complex numeric array
+        Gamma/Gamma derivative or Z array, or full R response matrix. Shape: broadcast
+        input shape or 2x2. Constraints: Finite or explicit precision/pole failure.
+        Units: [dimensionless].
+
+    Raises
+    ------
+    FloatingPointError
+        If a required intermediate or returned quantity is not finite.
+    ValueError
+        If inputs, physical controls, coefficient tables or a numerical response are
+        invalid or unrepresentable.
+
+    See Also
+    --------
+    derive_fluid_case
+        Related kinetic amplitude or dispersion operator in the same workflow.
+    evaluate_fluid_dispersion
+        Related kinetic amplitude or dispersion operator in the same workflow.
+    solve_fluid_bonk
+        Related kinetic amplitude or dispersion operator in the same workflow.
+    assemble_fluid_em
+        Related kinetic amplitude or dispersion operator in the same workflow.
+    solve_fluid_em
+        Related kinetic amplitude or dispersion operator in the same workflow.
+
+    Notes
+    -----
+        Gamma_n uses the scaled Bessel relation exp(-b) I_n(b). The R selectors evaluate
+        the finite resonant sum with tail bounds, overflow checks and explicit
+        zero-argument limits. Supported scope: Gamma_n=e^-b I_n(b) and its
+        neighbor-identity derivative for integer n; finite scalar/array b;
+        Z(z)=i*sqrt(pi)*wofz(z) via scipy.special; explicit overflow failure; Full
+        scalar R response for complex Y,b with tail and floating cancellation checks,
+        bounded at 65536 terms; b=0 and Y=0 analytic limits. Excluded scope: No
+        execution or fidelity claim for the Taylor/asymptotic/integral selector; No
+        certified entire-complex-plane precision claim.
+
+    Examples
+    --------
+    >>> from scirel.kinetic.fluid_spectrum import evaluate_fluid_special
+    >>> value=evaluate_fluid_special('RTAY',2,0)
+    """
     if method == "zfun":
         arr = np.asarray(x)
         if arr.size == 0 or not np.all(np.isfinite(arr)):
@@ -308,6 +369,59 @@ def _case_constants(family, jcase):
 
 
 def derive_fluid_case(family, jcase=None):
+    r"""Build a source-defined BONK or electromagnetic fluid case state.
+
+    Parameters
+    ----------
+    family : string
+        Source case family. Shape: string. Constraints: bonk or em. Units:
+        [dimensionless].
+    jcase : integer or None, optional
+        Source case selector. Shape: scalar or None. Constraints: BONK1/2/3; EM1/2; None
+        selects BONK1 or EM2. Default: None. Units: [dimensionless].
+
+    Returns
+    -------
+    result : mapping
+        Complete species scales and source material metadata; EM sets kz=0.1kn. Shape:
+        mapping of MATLAB-shape arrays. Constraints: State and terminal diagnostics
+        retain scientific meaning; no caller state mutation. Units: [mixed SI and
+        dimensionless as described].
+
+    Raises
+    ------
+    ValueError
+        If inputs, physical controls, coefficient tables or a numerical response are
+        invalid or unrepresentable.
+
+    See Also
+    --------
+    evaluate_fluid_special
+        Related kinetic amplitude or dispersion operator in the same workflow.
+    evaluate_fluid_dispersion
+        Related kinetic amplitude or dispersion operator in the same workflow.
+    solve_fluid_bonk
+        Related kinetic amplitude or dispersion operator in the same workflow.
+    assemble_fluid_em
+        Related kinetic amplitude or dispersion operator in the same workflow.
+    solve_fluid_em
+        Related kinetic amplitude or dispersion operator in the same workflow.
+
+    Notes
+    -----
+        The BONK and electromagnetic cases use their source-defined species tables,
+        densities, temperatures, magnetic field and normalized axes. The returned
+        mapping is an independent state assembled from those controls. Supported scope:
+        BONK cases1/2/3 and EM cases1/2; complete fixed source constants/state. Excluded
+        scope: No arbitrary species model construction through case controls; Global
+        charge-neutral or self-consistent background equilibrium proof for electron-only
+        case2.
+
+    Examples
+    --------
+    >>> from scirel.kinetic.fluid_spectrum import derive_fluid_case
+    >>> s=derive_fluid_case('bonk',3)
+    """
     if family not in {"bonk", "em"}:
         raise ValueError("family must be bonk or em")
     jcase = _integer(
@@ -485,6 +599,66 @@ def _tensor(kx, state, lmx):
 
 
 def evaluate_fluid_dispersion(kx, state, method="fDR"):
+    r"""Evaluate the local fluid dielectric response and determinant.
+
+    Parameters
+    ----------
+    kx : real/complex
+        Transverse wavevector. Shape: scalar. Constraints: Finite scalar. Units: [m^-1].
+    state : mapping
+        Explicit isotropic Maxwellian SI state. S species; c2; signed wcs and rhocs;
+        positive wps2 and vts; w and signed kz. Matrix assembly additionally requires
+        epsilon0. rho=vts/(sqrt(2)*wcs). Shape: mapping; species vectors length S;
+        numeric arrays retain MATLAB shapes. Constraints: Finite numeric fields and
+        coherent thermal/gyro scales; metadata cannot override explicit controls. Units:
+        [c2 m²/s²; wcs,w rad/s; wps2 s^-2; rhocs m; vts m/s; kz m^-1; epsilon0 F/m].
+    method : string, optional
+        Numerical response approximation. Shape: string. Constraints: fD, fDR or
+        fDtensor. Default: 'fDR'. Units: [dimensionless].
+
+    Returns
+    -------
+    result : mapping
+        determinant, K[3x3], D[3x3] dimensionless; unchanged explicit state_after.
+        Shape: mapping of MATLAB-shape arrays. Constraints: State and terminal
+        diagnostics retain scientific meaning; no caller state mutation. Units: [mixed
+        SI and dimensionless as described].
+
+    Raises
+    ------
+    ValueError
+        If inputs, physical controls, coefficient tables or a numerical response are
+        invalid or unrepresentable.
+
+    See Also
+    --------
+    derive_fluid_case
+        Related kinetic amplitude or dispersion operator in the same workflow.
+    evaluate_fluid_special
+        Related kinetic amplitude or dispersion operator in the same workflow.
+    solve_fluid_bonk
+        Related kinetic amplitude or dispersion operator in the same workflow.
+    assemble_fluid_em
+        Related kinetic amplitude or dispersion operator in the same workflow.
+    solve_fluid_em
+        Related kinetic amplitude or dispersion operator in the same workflow.
+
+    Notes
+    -----
+        The response builds the plasma susceptibility and Maxwell operator from an
+        explicit isotropic Maxwellian state. The fD, fDR and fDtensor selectors use
+        their declared finite-harmonic or rational approximations. Supported scope:
+        Coherent SI state, complex kx, signed and zero kz; analytic nonresonant kx=0
+        limits; Finite5/15 and full-harmonic J8 models, distinguished in output
+        contract. Excluded scope: Genuine nonzero-residue cyclotron poles at zero kz;
+        unmagnetized/zero-temperature/density/static-frequency limits.
+
+    Examples
+    --------
+    >>> from scirel.kinetic.fluid_spectrum import derive_fluid_case,evaluate_fluid_dispersion
+    >>> s=derive_fluid_case('bonk',2);s['w']=.63*s['wn']
+    >>> r=evaluate_fluid_dispersion(0,s,'fD')
+    """
     if method not in {"fD", "fDR", "fDtensor"}:
         raise ValueError("method must be fD, fDR or fDtensor")
     local = copy.deepcopy(state)
@@ -543,6 +717,63 @@ def evaluate_fluid_dispersion(kx, state, method="fDR"):
 
 
 def solve_fluid_bonk(jcase=1, omegas=None):
+    r"""Solve the BONK fluid determinant over an angular-frequency axis.
+
+    Parameters
+    ----------
+    jcase : integer, optional
+        Source-defined case number. Shape: scalar. Constraints: Exactly BONK case1,2
+        or3. Default: 1. Units: [dimensionless].
+    omegas : real array or None, optional
+        Angular frequency axis; None selects the source frequency ladder. Shape:
+        nonempty vector or None. Constraints: Finite real nonzero elements in the
+        caller's order. Default: None. Units: [rad/s].
+
+    Returns
+    -------
+    result : mapping
+        nf[m^-1], ordered xx[rad/s], root_valid, dual residuals, raw solver flags,
+        iterations/evaluations, all attempts and complete source material state. Shape:
+        mapping of MATLAB-shape arrays. Constraints: State and terminal diagnostics
+        retain scientific meaning; no caller state mutation. Units: [mixed SI and
+        dimensionless as described].
+
+    Raises
+    ------
+    ValueError
+        If inputs, physical controls, coefficient tables or a numerical response are
+        invalid or unrepresentable.
+
+    See Also
+    --------
+    derive_fluid_case
+        Related kinetic amplitude or dispersion operator in the same workflow.
+    evaluate_fluid_special
+        Related kinetic amplitude or dispersion operator in the same workflow.
+    evaluate_fluid_dispersion
+        Related kinetic amplitude or dispersion operator in the same workflow.
+    assemble_fluid_em
+        Related kinetic amplitude or dispersion operator in the same workflow.
+    solve_fluid_em
+        Related kinetic amplitude or dispersion operator in the same workflow.
+
+    Notes
+    -----
+        The determinant is evaluated with the fitted fDR response. Each frequency tries
+        five complex seeds and accepts a candidate only when both the normalized wave
+        residual and determinant residual are at most 1e-8. Unverified candidates remain
+        in the returned attempt records. Supported scope: Three complete cases and
+        source default77-frequency axis; arbitrary valid finite supplied axes; Original
+        solver tolerances; explicit bounded attempts and root verification. Excluded
+        scope: No branch tracking, complete physical-mode enumeration or unconditional
+        convergence.
+
+    Examples
+    --------
+    >>> from scirel.kinetic.fluid_spectrum import derive_fluid_case,solve_fluid_bonk
+    >>> s=derive_fluid_case('bonk',2)
+    >>> r=solve_fluid_bonk(2,[.63*s['wn'].item()])
+    """
     state = derive_fluid_case("bonk", jcase)
     xx = np.asarray(
         (np.arange(0.11, 3.95 + 0.025, 0.05) * float(np.asarray(state["wcn"]).item()))
@@ -803,6 +1034,71 @@ def _legacy_bonk_result(
 
 
 def assemble_fluid_em(state, omega, j_order=8, max_harmonic=6):
+    r"""Assemble the electromagnetic fluid matrix at one frequency.
+
+    Parameters
+    ----------
+    state : mapping
+        Explicit isotropic Maxwellian SI state. S species; c2; signed wcs and rhocs;
+        positive wps2 and vts; optional metadata w and signed kz. Matrix assembly
+        additionally requires epsilon0. rho=vts/(sqrt(2)*wcs). Explicit omega is
+        authoritative; state w is not required. Shape: mapping; species vectors length
+        S; numeric arrays retain MATLAB shapes. Constraints: Finite numeric fields and
+        coherent thermal/gyro scales; metadata cannot override explicit controls. Units:
+        [c2 m²/s²; wcs,w rad/s; wps2 s^-2; rhocs m; vts m/s; kz m^-1; epsilon0 F/m].
+    omega : real
+        Explicit angular frequency, authoritative over state metadata. Shape: scalar.
+        Constraints: Finite nonzero scalar. Units: [rad/s].
+    j_order : integer, optional
+        Source J-pole approximation order. Shape: scalar. Constraints: Exactly 8 or 12.
+        Default: 8. Units: [dimensionless].
+    max_harmonic : integer, optional
+        Finite L-table maximum harmonic. Shape: scalar. Constraints: Integer 0..7.
+        Default: 6. Units: [dimensionless].
+
+    Returns
+    -------
+    result : mapping
+        M entries carry mixed-state SI dimensions for kx X=M X; corrected poles,
+        measured inverse_moment_diagnostics, state, omega and N. Shape: mapping of
+        MATLAB-shape arrays. Constraints: State and terminal diagnostics retain
+        scientific meaning; no caller state mutation. Units: [mixed SI and dimensionless
+        as described].
+
+    Raises
+    ------
+    ValueError
+        If inputs, physical controls, coefficient tables or a numerical response are
+        invalid or unrepresentable.
+
+    See Also
+    --------
+    derive_fluid_case
+        Related kinetic amplitude or dispersion operator in the same workflow.
+    evaluate_fluid_special
+        Related kinetic amplitude or dispersion operator in the same workflow.
+    evaluate_fluid_dispersion
+        Related kinetic amplitude or dispersion operator in the same workflow.
+    solve_fluid_bonk
+        Related kinetic amplitude or dispersion operator in the same workflow.
+    solve_fluid_em
+        Related kinetic amplitude or dispersion operator in the same workflow.
+
+    Notes
+    -----
+        The electromagnetic feedback terms are added to the fluid dielectric matrix at
+        the caller-supplied frequency. Matrix completeness does not by itself identify
+        which eigenvalues are physical modes. Supported scope: J8/J12, every N0..7,
+        complete matrix state and source tables; Coherent SI state; signed/zero kz away
+        from true rational resonance denominators. Excluded scope: No identity between
+        finite fitted response and exact Bessel/Z kinetic dielectric.
+
+    Examples
+    --------
+    >>> from scirel.kinetic.fluid_spectrum import derive_fluid_case,assemble_fluid_em
+    >>> s=derive_fluid_case('em',2)
+    >>> r=assemble_fluid_em(s,.83*s['wn'].item(),8,0)
+    """
     j_order = _integer(j_order, "j_order")
     N = _integer(max_harmonic, "max_harmonic")
     if j_order not in (8, 12):
@@ -884,6 +1180,68 @@ def assemble_fluid_em(state, omega, j_order=8, max_harmonic=6):
 
 
 def solve_fluid_em(jcase=2, j_order=8, max_harmonic=6, omegas=None):
+    r"""Solve the electromagnetic fluid spectrum over an angular-frequency axis.
+
+    Parameters
+    ----------
+    jcase : integer, optional
+        Source-defined case number. Shape: scalar. Constraints: Exactly EM case1 or2.
+        Default: 2. Units: [dimensionless].
+    j_order : integer, optional
+        Source J-pole approximation order. Shape: scalar. Constraints: Exactly 8 or 12.
+        Default: 8. Units: [dimensionless].
+    max_harmonic : integer, optional
+        Finite L-table maximum harmonic. Shape: scalar. Constraints: Integer 0..7.
+        Default: 6. Units: [dimensionless].
+    omegas : real array or None, optional
+        Angular frequency axis; None selects the source frequency ladder. Shape:
+        nonempty vector or None. Constraints: Finite real nonzero elements in the
+        caller's order. Default: None. Units: [rad/s].
+
+    Returns
+    -------
+    result : mapping
+        kxx[axis length,5] m^-1; all spectra and selection candidates per frequency,
+        matrix, exact tables, source case state and independent eigen diagnostics.
+        Shape: mapping of MATLAB-shape arrays. Constraints: State and terminal
+        diagnostics retain scientific meaning; no caller state mutation. Units: [mixed
+        SI and dimensionless as described].
+
+    Raises
+    ------
+    ValueError
+        If inputs, physical controls, coefficient tables or a numerical response are
+        invalid or unrepresentable.
+
+    See Also
+    --------
+    derive_fluid_case
+        Related kinetic amplitude or dispersion operator in the same workflow.
+    evaluate_fluid_special
+        Related kinetic amplitude or dispersion operator in the same workflow.
+    evaluate_fluid_dispersion
+        Related kinetic amplitude or dispersion operator in the same workflow.
+    solve_fluid_bonk
+        Related kinetic amplitude or dispersion operator in the same workflow.
+    assemble_fluid_em
+        Related kinetic amplitude or dispersion operator in the same workflow.
+
+    Notes
+    -----
+        Each frequency is assembled independently. Eigenvalues with positive real
+        candidates are sorted by absolute imaginary part and the first five are
+        selected; this is a deterministic heuristic rather than branch tracking.
+        Supported scope: Two cases, J8/J12, all eight N controls and source79-frequency
+        default; All finite spectra, original-order values, selection candidates and
+        terminal matrices. Excluded scope: No claim that every auxiliary eigenvalue is a
+        kinetic physical mode; no infinite-mode completeness or cross-thread invariance.
+
+    Examples
+    --------
+    >>> from scirel.kinetic.fluid_spectrum import derive_fluid_case,solve_fluid_em
+    >>> s=derive_fluid_case('em',2)
+    >>> r=solve_fluid_em(2,8,0,[.83*s['wn'].item()])
+    """
     state = derive_fluid_case("em", jcase)
     N = _integer(max_harmonic, "max_harmonic")
     xx = np.asarray(state["xx"] if omegas is None else omegas, float).ravel()

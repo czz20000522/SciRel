@@ -65,15 +65,84 @@ def fluid_equilibrium_si(
     bath_drag=None,
     pressure_frame="field_following",
 ):
-    """Explicit ten-column SI state, source constants retained as a named convention.
+    r"""Build a multifluid equilibrium state in SI units.
 
-    q,m,n,vx,vy,vz,cs_parallel,cs_perp,epsnx,epsny. cs are nonnegative
-    speeds, pressure is rho*cs^2/gamma. B0 is signed along z.
-    At genuine B0=0: Alfvén species scales are zero; beta is undefined
-    (None, not an invented finite zero); only isotropic pressure has a unique
-    zero-field limit of the specified gyrotropic B/|B| closure. A separate
-    explicit fixed_z closure freezes the pressure axes and supports anisotropic
-    zero-B data without pretending that the field-following limit exists.
+    Parameters
+    ----------
+    deck : float64 array or None, optional
+        Ten-column physical deck:
+        q,m,n,vx,vy,vz,cs_parallel,cs_perpendicular,epsnx,epsny. Shape: (S,10), S>=1.
+        Constraints: Finite; mass and density positive; sound speeds nonnegative. None
+        loads the independent two-species SI deck. Default: None. Units: [C; kg; m^-3;
+        m/s; m/s; m/s; m/s; m/s; m^-1; m^-1].
+    B0 : float64, optional
+        Uniform signed equilibrium magnetic field along z. Shape: scalar. Constraints:
+        Finite; zero-field field-following pressure must be isotropic. Default: 1e-07.
+        Units: [T].
+    gamma : float64, optional
+        Species pressure closure exponent. Shape: scalar or (S,). Constraints: Finite
+        and strictly positive. Default: 1.6666666666666667. Units: [dimensionless].
+    exchange : float64 array or None, optional
+        Symmetric pair momentum-transfer coefficients K. Shape: (S,S) or null.
+        Constraints: Nonnegative, exactly symmetric, zero diagonal; None means zero.
+        Default: None. Units: [kg m^-3 s^-1].
+    bath_drag : float64 array or None, optional
+        Independent momentum loss to an external stationary bath. Shape: (S,) or null.
+        Constraints: Finite nonnegative; None means zero. Default: None. Units: [s^-1].
+    pressure_frame : str, optional
+        Pressure-tensor orientation model. Shape: scalar. Constraints: 'field_following'
+        rotates gyrotropic pressure with B; 'fixed_z' freezes its axes and sets magnetic
+        pressure-rotation term to zero. Default: 'field_following'. Units:
+        [dimensionless].
+
+    Returns
+    -------
+    state : dict of float64 arrays/scalars, str, nullable beta arrays
+        Independent equilibrium mapping:
+        q,m,n,v,csz2,csp2,epsnx,epsny,rho,B0,gamma,c2,epsilon0,mu0,Pz,Pp,Delta,pressure_frame,beta_z,beta_p,vA_species,velocity_collision,charge_density,current_density.
+        Shape: species vectors; v(S,3); velocity_collision(S,S); current_density(3,).
+        Constraints: rho=m*n; P=rho*cs^2/gamma. At B0=0 both beta arrays are None and
+        Alfven speeds vanish; neutrality/current balance are reported, not imposed.
+        Units: [q C; m kg; n m^-3; v m/s; cs^2,c2 m^2/s^2; epsn m^-1; rho kg/m^3; B0 T;
+        gamma,beta dimensionless; epsilon0 F/m; mu0 H/m; P Pa; Delta Pa/T; vA m/s;
+        collision s^-1; charge_density C/m^3; current_density A/m^2].
+
+    Raises
+    ------
+    ValueError
+        If inputs, physical controls, coefficient tables or a numerical response are
+        invalid or unrepresentable.
+
+    See Also
+    --------
+    fluid_deck
+        Related kinetic amplitude or dispersion operator in the same workflow.
+    fluid_equilibrium_relative_rates
+        Related kinetic amplitude or dispersion operator in the same workflow.
+    fluid_frequency_pencil
+        Related kinetic amplitude or dispersion operator in the same workflow.
+    fluid_solve_state
+        Related kinetic amplitude or dispersion operator in the same workflow.
+    scan_fluid_corrected
+        Related kinetic amplitude or dispersion operator in the same workflow.
+
+    Notes
+    -----
+        Density, pressure, gyrotropic anisotropy, Alfven scales and collision operators
+        are derived from the ten-column deck. At zero field, field-following anisotropic
+        pressure is rejected because no unique pressure direction exists. Supported
+        scope: Physical SI decks of arbitrary positive species count; Zero collisions,
+        conservative pair exchange, and explicitly nonconservative bath drag; Isotropic
+        zero B and separately declared fixed-axis anisotropic zero B. Excluded scope:
+        Field-following anisotropic pressure at B0=0; Implicit collision frequency
+        semantics or automatically imposed quasineutrality.
+
+    Examples
+    --------
+    >>> from scirel.kinetic.dispersion.multifluid import fluid_equilibrium_si
+    >>> s = fluid_equilibrium_si()
+    >>> assert s["velocity_collision"].shape == (2, 2)
+    >>> assert (s["velocity_collision"] == 0).all()
     """
     if deck is None:
         from ._example_support import fluid_deck
@@ -131,16 +200,70 @@ def fluid_equilibrium_si(
 
 
 def fluid_frequency_pencil(state, kx, kz, *, relativistic=False):
-    """PRIVATE derived omega pencil lambda A X=M X, lambda=-i omega.
+    r"""Assemble the multifluid time-generator pencil.
 
-    X=(dn_j,dvx_j,dvy_j,dvz_j,Ex,Ey,Ez,Bx,By,Bz), 4S+6. Isotropic/cold
-    nonzero/zero-B and relativistic inertia are retained. Weak x/y density
-    gradients are the source local-WKB model, not a global equilibrium proof.
-    Gyrotropic pressure is Pperp I+(Ppar-Pperp)bb: z-force's Bx coefficient
-    has factor ONE from its divergence. D0 factor TWO is a separately recorded
-    contradiction, requiring independent tensor-perturbation validation.
-    Collision model is explicit nonrelativistic friction; full relativistic
-    collision four-force is not inferred from the source's ignored correction.
+    Parameters
+    ----------
+    state : mapping[str, numeric array or scalar]
+        Explicit equilibrium mapping; no global state is read. Fluid fields are produced
+        by fluid_equilibrium_si or fluid_equilibrium_relative_rates. Shape: mapping with
+        S species. Constraints: Required fluid fields
+        q,m,n,v,csz2,csp2,epsnx,epsny,rho,B0,gamma,c2,epsilon0,mu0,Pz,Pp,Delta,pressure_frame,velocity_collision;
+        retain nullable beta fields for rendering. Units: [field-specific SI].
+    kx : complex128
+        Signed x wavevector component. Shape: scalar. Constraints: Finite; complex
+        spatial wavevector is supported by the fluid pencil. Units: [m^-1].
+    kz : complex128
+        Signed z wavevector component. Shape: scalar. Constraints: Finite; complex
+        spatial wavevector is supported by the fluid pencil. Units: [m^-1].
+    relativistic : bool, optional
+        Use the derivative of relativistic momentum in each species velocity block.
+        Shape: scalar. Constraints: If true, all species speeds must be below c and
+        velocity_collision must vanish. Default: False. Units: [dimensionless].
+
+    Returns
+    -------
+    pencil : dict[str,complex128 or float64 arrays]
+        Time-generator generalized pencil M X=lambda A X with lambda=-i omega, plus
+        signed wcs and nonnegative wps. Shape: M,A:(d,d), d=4*S+6; wcs,wps:(S,).
+        Constraints: X=(dn,dvx,dvy,dvz) for each species, then Ex,Ey,Ez,Bx,By,Bz. M_ab
+        has units (unit X_a)/(s*unit X_b), A_ab has units (unit X_a)/(unit X_b).
+        Matrices retain original physical state units. Units: [mixed SI; lambda s^-1;
+        wcs,wps rad/s].
+
+    Raises
+    ------
+    ValueError
+        If inputs, physical controls, coefficient tables or a numerical response are
+        invalid or unrepresentable.
+
+    See Also
+    --------
+    fluid_deck
+        Related kinetic amplitude or dispersion operator in the same workflow.
+    fluid_equilibrium_si
+        Related kinetic amplitude or dispersion operator in the same workflow.
+    fluid_equilibrium_relative_rates
+        Related kinetic amplitude or dispersion operator in the same workflow.
+    fluid_solve_state
+        Related kinetic amplitude or dispersion operator in the same workflow.
+    scan_fluid_corrected
+        Related kinetic amplitude or dispersion operator in the same workflow.
+
+    Notes
+    -----
+        The return contains the generalized pencil M X = lambda A X with lambda=-i
+        omega. Signed cyclotron frequencies and nonnegative plasma frequencies are
+        retained for downstream diagnostics. Supported scope: Nonrelativistic
+        conservative collisions and explicit bath drag; Collision-free relativistic
+        inertia and complex kx,kz. Excluded scope: Relativistic friction four-forces;
+        Universal kinetic, mirror/firehose or global equilibrium accuracy claims.
+
+    Examples
+    --------
+    >>> from scirel.kinetic.dispersion.multifluid import fluid_equilibrium_si, fluid_frequency_pencil
+    >>> p = fluid_frequency_pencil(fluid_equilibrium_si(), 1e-5, 2e-5)
+    >>> assert p["M"].shape == p["A"].shape == (14, 14)
     """
     kx = complex(np.asarray(kx).item())
     kz = complex(np.asarray(kz).item())
@@ -813,10 +936,108 @@ def fluid_equilibrium_relative_rates(
     pressure_frame="field_following",
     **relative_rate_controls,
 ):
-    """Production corrected variant: explicit roles and physical relative rates.
+    r"""Build a multifluid equilibrium using explicit relative collision rates.
 
-    The five named controls have the declared pair-relative/bath interpretation;
-    legacy ambiguous nue/nui/nuee/nuii/nuei ports are not silently accepted.
+    Parameters
+    ----------
+    deck : float64 array or None
+        Ten-column physical deck:
+        q,m,n,vx,vy,vz,cs_parallel,cs_perpendicular,epsnx,epsny. Shape: (S,10), S>=1.
+        Constraints: Finite; mass and density positive; sound speeds nonnegative. None
+        loads the independent two-species SI deck. Units: [C; kg; m^-3; m/s; m/s; m/s;
+        m/s; m/s; m^-1; m^-1].
+    species_classes : sequence[str]
+        Explicit scientific collision class for every species. Shape: (S,). Constraints:
+        Each entry is 'electron' or 'ion'; class is not inferred from mass or charge
+        sign. Units: [dimensionless].
+    B0 : float64, optional
+        Uniform signed equilibrium magnetic field along z. Shape: scalar. Constraints:
+        Finite; zero-field field-following pressure must be isotropic. Default: 1e-07.
+        Units: [T].
+    gamma : float64, optional
+        Species pressure closure exponent. Shape: scalar or (S,). Constraints: Finite
+        and strictly positive. Default: 1.6666666666666667. Units: [dimensionless].
+    pressure_frame : str, optional
+        Pressure-tensor orientation model. Shape: scalar. Constraints: 'field_following'
+        rotates gyrotropic pressure with B; 'fixed_z' freezes its axes and sets magnetic
+        pressure-rotation term to zero. Default: 'field_following'. Units:
+        [dimensionless].
+    **relative_rate_controls : mapping, optional
+        Additional named relative-rate controls are documented below; unknown names
+        preserve the Python TypeError. Units: [field-specific SI].
+
+    Other Parameters
+    ----------------
+    electron_bath_rate : float64, optional
+        Electron-class drag against an external stationary bath. Shape: scalar.
+        Constraints: Finite nonnegative stationary-bath velocity drag rate; zero
+        disables this channel. Default: 0.0. Units: [s^-1].
+    ion_bath_rate : float64, optional
+        Ion-class drag against an external stationary bath. Shape: scalar. Constraints:
+        Finite nonnegative stationary-bath velocity drag rate; zero disables this
+        channel. Default: 0.0. Units: [s^-1].
+    electron_pair_relative_rate : float64, optional
+        Relative velocity damping for each electron/electron pair. Shape: scalar.
+        Constraints: Finite nonnegative relative damping rate; zero disables this
+        channel. Default: 0.0. Units: [s^-1].
+    ion_pair_relative_rate : float64, optional
+        Relative velocity damping for each ion/ion pair. Shape: scalar. Constraints:
+        Finite nonnegative relative damping rate; zero disables this channel. Default:
+        0.0. Units: [s^-1].
+    electron_ion_relative_rate : float64, optional
+        Relative velocity damping for each electron/ion pair. Shape: scalar.
+        Constraints: Finite nonnegative relative damping rate; zero disables this
+        channel. Default: 0.0. Units: [s^-1].
+
+    Returns
+    -------
+    state : dict of float64 arrays/scalars, str, tuple[str], nullable beta arrays
+        Independent equilibrium mapping:
+        q,m,n,v,csz2,csp2,epsnx,epsny,rho,B0,gamma,c2,epsilon0,mu0,Pz,Pp,Delta,pressure_frame,beta_z,beta_p,vA_species,velocity_collision,charge_density,current_density.
+        Also includes exchange, bath_drag, species_classes, collision_contract. Shape:
+        species vectors; v(S,3); velocity_collision(S,S); current_density(3,);
+        exchange(S,S); bath_drag(S,); species_classes tuple of length S;
+        collision_contract scalar string. Constraints: rho=m*n; P=rho*cs^2/gamma. At
+        B0=0 both beta arrays are None and Alfven speeds vanish; neutrality/current
+        balance are reported, not imposed. Units: [q C; m kg; n m^-3; v m/s; cs^2,c2
+        m^2/s^2; epsn m^-1; rho kg/m^3; B0 T; gamma,beta dimensionless; epsilon0 F/m;
+        mu0 H/m; P Pa; Delta Pa/T; vA m/s; collision s^-1; charge_density C/m^3;
+        current_density A/m^2; exchange K kg m^-3 s^-1; bath_drag s^-1; species_classes
+        and collision_contract dimensionless labels].
+
+    Raises
+    ------
+    ValueError
+        If inputs, physical controls, coefficient tables or a numerical response are
+        invalid or unrepresentable.
+
+    See Also
+    --------
+    fluid_deck
+        Related kinetic amplitude or dispersion operator in the same workflow.
+    fluid_equilibrium_si
+        Related kinetic amplitude or dispersion operator in the same workflow.
+    fluid_frequency_pencil
+        Related kinetic amplitude or dispersion operator in the same workflow.
+    fluid_solve_state
+        Related kinetic amplitude or dispersion operator in the same workflow.
+    scan_fluid_corrected
+        Related kinetic amplitude or dispersion operator in the same workflow.
+
+    Notes
+    -----
+        Five explicit rate controls define stationary electron and ion baths plus
+        pair-relative damping. The older ambiguous rate names are not interpreted
+        through aliases. Supported scope: Arbitrary explicitly classified species,
+        including negative ions classified as ions; Five nonnegative scalar
+        relative/bath rate controls. Excluded scope: Reinterpreting the
+        nue/nui/nuee/nuii/nuei controls without a physical declaration.
+
+    Examples
+    --------
+    >>> from scirel.kinetic.dispersion.multifluid import fluid_deck, fluid_equilibrium_relative_rates
+    >>> s = fluid_equilibrium_relative_rates(fluid_deck(), species_classes=["electron", "ion"], electron_ion_relative_rate=2.0)
+    >>> assert s["exchange"][0, 1] > 0
     """
     state = fluid_equilibrium_si(deck, B0=B0, gamma=gamma, pressure_frame=pressure_frame)
     rates = pair_exchange_from_relative_rates(
@@ -860,11 +1081,83 @@ def fluid_state_scales(state):
 def fluid_solve_state(
     state, kx, kz, *, relativistic=False, state_scales=None, backward_tolerance=1e-10
 ):
-    """Public-shaped corrected state→M/A→omega/eigenvectors composition.
+    r"""Solve the multifluid generalized frequency eigenproblem.
 
-    QZ/refinement replaces both oldmethod branches; outputs include the point
-    pencil, both sorted spectra/eigenvectors, scales and qualification metadata.
-    No claim that symbolic16-digit rounding creates16-digit forward accuracy.
+    Parameters
+    ----------
+    state : mapping[str, numeric array or scalar]
+        Explicit equilibrium mapping; no global state is read. Fluid fields are produced
+        by fluid_equilibrium_si or fluid_equilibrium_relative_rates. Shape: mapping with
+        S species. Constraints: Required fluid fields
+        q,m,n,v,csz2,csp2,epsnx,epsny,rho,B0,gamma,c2,epsilon0,mu0,Pz,Pp,Delta,pressure_frame,velocity_collision;
+        retain nullable beta fields for rendering. Units: [field-specific SI].
+    kx : complex128
+        Signed x wavevector component. Shape: scalar. Constraints: Finite; complex
+        spatial wavevector is supported by the fluid pencil. Units: [m^-1].
+    kz : complex128
+        Signed z wavevector component. Shape: scalar. Constraints: Finite; complex
+        spatial wavevector is supported by the fluid pencil. Units: [m^-1].
+    relativistic : bool, optional
+        Use the derivative of relativistic momentum in each species velocity block.
+        Shape: scalar. Constraints: If true, all species speeds must be below c and
+        velocity_collision must vanish. Default: False. Units: [dimensionless].
+    state_scales : float64 array or None, optional
+        Positive diagonal state-coordinate scales used only for numerical conditioning.
+        Shape: (4*S+6,) or null. Constraints: Finite positive entries. None selects
+        physical density/velocity/electric/magnetic scales; eigenvectors return in
+        original coordinates. Default: None. Units: [field-specific SI].
+    backward_tolerance : float64, optional
+        Maximum accepted componentwise backward error in original units. Shape: scalar.
+        Constraints: Finite and positive. Default: 1e-10. Units: [dimensionless].
+
+    Returns
+    -------
+    solution : dict[str, numeric arrays or structured metadata]
+        Pencil and sorted spectra/eigenvectors with full-original-unit backward-error
+        and checked zero-structure metadata. Shape: M,A:(d,d); w1,w2:(d,); X1,X2:(d,d);
+        errors:(d,d). Constraints: w1 sorted by descending real part, w2 by descending
+        imaginary part; X1/X2 columns correspond. Errors use original solver order.
+        Repeated defective zeros do not imply a complete eigenbasis or Jordan chain.
+        Units: [omega rad/s; eigenvectors mixed state units].
+
+    Raises
+    ------
+    ArithmeticError
+        If eigenvalue qualification cannot establish a finite numerical result.
+    ValueError
+        If inputs, physical controls, coefficient tables or a numerical response are
+        invalid or unrepresentable.
+
+    See Also
+    --------
+    fluid_deck
+        Related kinetic amplitude or dispersion operator in the same workflow.
+    fluid_equilibrium_si
+        Related kinetic amplitude or dispersion operator in the same workflow.
+    fluid_equilibrium_relative_rates
+        Related kinetic amplitude or dispersion operator in the same workflow.
+    fluid_frequency_pencil
+        Related kinetic amplitude or dispersion operator in the same workflow.
+    scan_fluid_corrected
+        Related kinetic amplitude or dispersion operator in the same workflow.
+
+    Notes
+    -----
+        The solver decomposes the pencil by support, uses standard or generalized
+        eigenproblems as appropriate, and reports original-unit componentwise backward
+        errors. Backward error is a numerical qualification, not a forward-error proof.
+        Supported scope: Full dense spectrum, original-unit eigenvectors, exact
+        algebraic/geometric zero metadata; Bounded high-precision refinement using
+        mpmath when double refinement is insufficient. Excluded scope: Complete
+        eigenbasis at defective eigenvalues; An 80-digit forward-accuracy claim from
+        binary64 public outputs.
+
+    Examples
+    --------
+    >>> from scirel.kinetic.dispersion.multifluid import fluid_equilibrium_si, fluid_solve_state
+    >>> s = fluid_solve_state(fluid_equilibrium_si(), 1e-5, 2e-5)
+    >>> assert s["w1"].shape == (14,)
+    >>> assert s["componentwise_backward_errors"].max() <= 1e-10
     """
     pencil = fluid_frequency_pencil(state, kx, kz, relativistic=relativistic)
     scales = fluid_state_scales(state) if state_scales is None else state_scales

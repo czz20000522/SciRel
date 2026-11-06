@@ -37,12 +37,90 @@ def _source_runtime_eigvals(matrix):
 
 
 def solve_fluid_wavevector_eigenproblem(*, matrix, kn, real_floor_scale=1e-5, keep=5):
-    """Return the perpendicular wavenumbers of the fluid matrix eigenproblem.
+    r"""Solve and qualify the fluid wavevector eigenproblem.
 
-    The caller supplies the assembled matrix ``matrix`` (complex, square) and the wavenumber
-    normalisation ``kn`` [1/m]. The relation solved is ``kx * X = matrix @ X``; eigenvalues with
-    ``Re(kx) <= real_floor_scale * kn`` are rejected as non-propagating, and the survivors are
-    ordered by ascending ``|Im(kx)|`` so that the least damped branch comes first.
+    Parameters
+    ----------
+    matrix : complex128
+        Complex square matrix whose eigenproblem is solved, usually the fluid dispersion
+        matrix Shape: `(NN, NN)` complex square matrix. Constraints: Nonempty square
+        matrix with finite entries. Units: [Consistent with the matrix-assembly
+        convention].
+    kn : real numeric
+        Wavenumber normalization scale used to turn the real-part threshold into an
+        absolute threshold Shape: scalar. Constraints: Finite and strictly positive.
+        Units: [1/m].
+    real_floor_scale : real numeric, optional
+        Relative real-part threshold for non-propagating eigenvalues Shape: scalar.
+        Constraints: Finite and nonnegative, default `1e-5`. Default: 1e-05. Units:
+        [dimensionless].
+    keep : integer, optional
+        Number of leading eigenvalues to return Shape: integer scalar. Constraints: At
+        least 1, default 5. Default: 5. Units: [dimensionless].
+
+    Returns
+    -------
+    eigenvalues : complex128
+        All eigenvalues, that is, the complete $k_\perp$ spectrum Shape: Complex array
+        of length `NN`. Constraints: Finite complex numbers. Units: [1/m].
+    selected : complex128
+        Eigenvalues whose real part exceeds the threshold, sorted in ascending
+        $|\operatorname{Im}|$ order Shape: Complex array of length `selected_count`.
+        Constraints: A subset of `eigenvalues`. Units: [1/m].
+    head : complex128
+        First `keep` sorted physical eigenvalues Shape: Complex array of length at most
+        `keep`. Constraints: When fewer than `keep` eigenvalues survive, returns every
+        surviving value. Units: [1/m].
+    eigenvalue_count : integer
+        Total number of eigenvalues, equal to the matrix order Shape: integer scalar.
+        Constraints: Equal to the number of rows of `matrix`. Units: [dimensionless].
+    selected_count : integer
+        Number of eigenvalues passing the real-part threshold Shape: integer scalar.
+        Constraints: At most `eigenvalue_count`. Units: [dimensionless].
+    returned_count : integer
+        Length of `head` Shape: integer scalar. Constraints: Equal to `min(keep,
+        selected_count)`. Units: [dimensionless].
+    real_floor : real numeric
+        Absolute real-part threshold actually used Shape: scalar. Constraints: Equal to
+        `real_floor_scale*kn`. Units: [1/m].
+    sort_key : string
+        Sort-key label Shape: string. Constraints: Fixed to `ascending_abs_imag`. Units:
+        [not applicable].
+
+    Raises
+    ------
+    LinAlgError
+        If the numerical eigensolver cannot produce a spectrum.
+    ValueError
+        If inputs, physical controls, coefficient tables or a numerical response are
+        invalid or unrepresentable.
+
+    See Also
+    --------
+    derive_species_equilibrium_scales
+        Related kinetic amplitude or dispersion operator in the same workflow.
+    get_gamma_lpole_coefficients
+        Related kinetic amplitude or dispersion operator in the same workflow.
+    get_z_pole_coefficients
+        Related kinetic amplitude or dispersion operator in the same workflow.
+    assemble_fluid_dispersion_matrix
+        Related kinetic amplitude or dispersion operator in the same workflow.
+    scan_fluid_wavevectors
+        Related kinetic amplitude or dispersion operator in the same workflow.
+
+    Notes
+    -----
+        The direct eigensolve returns the complete finite matrix spectrum and a leading
+        branch selection. Residuals and conditioning metadata describe qualification;
+        they do not prove forward accuracy for ill-conditioned or repeated modes.
+        Supported scope: Solve a general complex fluid eigenmatrix and select
+        positive-real least-damped kx branches. Excluded scope: No mode identity or
+        arbitrary-parameter accuracy is inferred beyond the declared numerical method.
+
+    Examples
+    --------
+    >>> from scirel.kinetic import solve_fluid_wavevector_eigenproblem
+    >>> r=solve_fluid_wavevector_eigenproblem(matrix=__import__('numpy').diag([1+1j,-1+0j]),kn=1); assert len(r['selected'])==1
     """
 
     matrix = np.asarray(matrix, dtype=complex)
