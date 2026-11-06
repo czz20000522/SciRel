@@ -32,6 +32,12 @@ CHECK_RECEIPT_MAX_ENTRIES = 16
 CHECK_RECEIPT_MAX_AGE_SECONDS = 30 * 24 * 60 * 60
 CHECK_RECEIPT_TEMP_PREFIX = "check-receipt-"
 RECEIPT_CACHE_COMPONENTS = ("scirel-acceptance", "receipts")
+DOCKER_CONTEXT_ENV = "SCIReL_DOCKER_CONTEXT"
+DOCKER_CONTEXT_FILENAME = "docker-context"
+
+
+class DockerContextError(RuntimeError):
+    """Raised when the project Docker context is missing or unsafe."""
 
 
 class ReceiptCacheUnavailable(RuntimeError):
@@ -83,8 +89,149 @@ def _container_proxy(value: str | None) -> str:
     )
 
 
+def docker_context_path(*, create_directory: bool = False) -> Path:
+    """Return the validated per-clone Docker context file in shared Git metadata."""
+    common = git_common_directory()
+    try:
+        common_real = common.resolve(strict=True)
+    except OSError as error:
+        raise DockerContextError(f"cannot resolve Git common directory: {error}") from error
+    if not common_real.is_dir():
+        raise DockerContextError("Git common directory is not a directory")
+
+    directory = common / "scirel-acceptance"
+    if _is_link_like(directory):
+        raise DockerContextError("Docker context directory is a symlink or junction")
+    try:
+        directory.lstat()
+    except FileNotFoundError:
+        if not create_directory:
+            raise DockerContextError("Docker context is not configured") from None
+        try:
+            directory.mkdir()
+        except FileExistsError:
+            pass
+        except OSError as error:
+            raise DockerContextError(f"cannot create Docker context directory: {error}") from error
+    except OSError as error:
+        raise DockerContextError(f"cannot inspect Docker context directory: {error}") from error
+    if _is_link_like(directory) or not directory.is_dir():
+        raise DockerContextError("Docker context path is not a real directory")
+
+    path = directory / DOCKER_CONTEXT_FILENAME
+    if _is_link_like(path):
+        raise DockerContextError("Docker context file is a symlink or junction")
+    try:
+        mode = path.lstat().st_mode
+    except FileNotFoundError:
+        return path
+    except OSError as error:
+        raise DockerContextError(f"cannot inspect Docker context file: {error}") from error
+    if not stat.S_ISREG(mode):
+        raise DockerContextError("Docker context path is not a regular file")
+    try:
+        path.resolve(strict=True).relative_to(common_real)
+    except (OSError, ValueError) as error:
+        raise DockerContextError("Docker context file resolves outside Git metadata") from error
+    return path
+
+
+def _validated_docker_context(value: str, source: str) -> str:
+    context = value.strip()
+    if not context:
+        raise DockerContextError(f"{source} is empty")
+    if context == "default":
+        raise DockerContextError(
+            "the Docker context 'default' is not allowed for SciRel development; "
+            "choose the project-specific context explicitly"
+        )
+    if any(character.isspace() for character in context):
+        raise DockerContextError(f"{source} contains whitespace")
+    return context
+
+
+def resolve_docker_context() -> tuple[str, str]:
+    """Return the selected context and a short source description."""
+    project_value = os.environ.get(DOCKER_CONTEXT_ENV, "")
+    if project_value.strip():
+        return _validated_docker_context(project_value, DOCKER_CONTEXT_ENV), DOCKER_CONTEXT_ENV
+
+    path = docker_context_path()
+    try:
+        value = path.read_text(encoding="utf-8")
+    except FileNotFoundError:
+        pass
+    except OSError as error:
+        raise DockerContextError(f"cannot read Docker context {path}: {error}") from error
+    else:
+        return _validated_docker_context(value, str(path)), str(path)
+
+    raise DockerContextError(
+        "Docker context is not configured. Run "
+        "`python3 scripts/dev_container.py context <docker-context>` once per clone, "
+        f"or set {DOCKER_CONTEXT_ENV}."
+    )
+
+
+def configure_docker_context(name: str) -> int:
+    """Validate and persist one explicit Docker context for this clone."""
+    try:
+        context = _validated_docker_context(name, "Docker context")
+    except DockerContextError as error:
+        print(f"ERROR: {error}", file=sys.stderr)
+        return 1
+
+    env = os.environ.copy()
+    env.pop("DOCKER_HOST", None)
+    env["DOCKER_CONTEXT"] = context
+    try:
+        done = subprocess.run(
+            ["docker", "context", "inspect", context],
+            cwd=ROOT,
+            env=env,
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+    except FileNotFoundError:
+        print("Docker is not installed or is not on PATH.", file=sys.stderr)
+        return 127
+    if done.returncode:
+        detail = (done.stderr or done.stdout).strip()
+        message = f"Docker context {context!r} is not available"
+        if detail:
+            message += f": {detail}"
+        print(f"ERROR: {message}", file=sys.stderr)
+        return done.returncode
+
+    try:
+        path = docker_context_path(create_directory=True)
+        with tempfile.NamedTemporaryFile(
+            mode="w",
+            encoding="utf-8",
+            prefix="docker-context-",
+            dir=path.parent,
+            delete=False,
+        ) as stream:
+            stream.write(f"{context}\n")
+            temporary = Path(stream.name)
+        try:
+            temporary.replace(path)
+        finally:
+            temporary.unlink(missing_ok=True)
+    except (DockerContextError, OSError) as error:
+        print(f"ERROR: cannot store Docker context: {error}", file=sys.stderr)
+        return 1
+
+    print(f"SciRel Docker context set to {context!r} in {path}")
+    return 0
+
+
 def environment() -> dict[str, str]:
     env = os.environ.copy()
+    context, _ = resolve_docker_context()
+    env["DOCKER_CONTEXT"] = context
+    env.pop("DOCKER_HOST", None)
     env.setdefault("SCIReL_IMAGE_KEY", "3.14.7")
     env["SCIReL_HTTP_PROXY"] = _container_proxy(env.get("HTTP_PROXY") or env.get("http_proxy"))
     env["SCIReL_HTTPS_PROXY"] = _container_proxy(env.get("HTTPS_PROXY") or env.get("https_proxy"))
@@ -852,13 +999,21 @@ def run(command: list[str], *, interactive: bool = False) -> int:
     except FileNotFoundError:
         print("Docker is not installed or is not on PATH.", file=sys.stderr)
         return 127
+    except DockerContextError as error:
+        print(f"ERROR: {error}", file=sys.stderr)
+        return 2
 
 
 def docker_ready() -> bool:
+    try:
+        env = environment()
+    except DockerContextError as error:
+        print(f"ERROR: {error}", file=sys.stderr)
+        return False
     done = subprocess.run(
         ["docker", "info"],
         cwd=ROOT,
-        env=environment(),
+        env=env,
         stdout=subprocess.DEVNULL,
         stderr=subprocess.DEVNULL,
         check=False,
@@ -1125,6 +1280,7 @@ def doctor() -> int:
         return 2
     commands = [
         ["docker", "context", "show"],
+        ["docker", "info", "--format", "engine={{.Name}}"],
         ["docker", "compose", "version"],
         ["docker", "image", "inspect", IMAGE, "--format", "{{.Id}}"],
     ]
@@ -1145,6 +1301,10 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     subparsers = parser.add_subparsers(dest="command", required=True)
 
+    context_parser = subparsers.add_parser(
+        "context", help="show or set the explicit Docker context for this clone"
+    )
+    context_parser.add_argument("name", nargs="?")
     subparsers.add_parser("doctor", help="check Docker and the development image")
     subparsers.add_parser("prepare", help="sync the locked test environment")
     subparsers.add_parser("shell", help="open a shell in the development container")
@@ -1164,6 +1324,16 @@ def main() -> int:
     )
 
     args = parser.parse_args()
+    if args.command == "context":
+        if args.name is not None:
+            return configure_docker_context(args.name)
+        try:
+            selected, source = resolve_docker_context()
+        except DockerContextError as error:
+            print(f"ERROR: {error}", file=sys.stderr)
+            return 1
+        print(f"{selected} ({source})")
+        return 0
     if args.command == "doctor":
         return doctor()
     if args.command == "prepare":
