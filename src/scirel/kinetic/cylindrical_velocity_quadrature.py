@@ -71,21 +71,53 @@ def make_cylindrical_velocity_quadrature(*, vr, vx):
 
     Parameters
     ----------
-    vr, vx
-        Finite strictly increasing one-dimensional meshes (length >= 2) of the
-        normalized radial speed and axial velocity.  ``vx`` must contain at
+    vr : real array_like, shape [nvr]
+        Finite strictly increasing one-dimensional normalized radial-speed
+        mesh [v/vth (caller's normalized unit)], length at least two, with
+        nonnegative entries.
+    vx : real array_like, shape [nvx]
+        Finite strictly increasing one-dimensional normalized axial-velocity
+        mesh [v/vth (caller's normalized unit)], length at least two, with at
         least one strictly negative and one strictly positive entry.
 
     Returns
     -------
-    dict
-        The saved source's field set: ``radial_measure``,
-        ``radial_four_pi_measure``, ``dvx``, ``vr_left``, ``vr_right``,
-        ``vx_left``, ``vx_right``, ``volume``, ``inv_dvx_ghost``,
-        ``vx_over_dvx_ghost``, ``vr_over_dvr_ghost``, ``speed_squared``,
-        ``positive_vx_indices``, ``positive_vx_first_index``,
-        ``positive_vx_last_index``, ``negative_vx_indices``,
-        ``negative_vx_first_index``, ``negative_vx_last_index``.
+    radial_measure : ndarray of float64, shape [nvr]
+        Annular radial measure [normalized velocity-space measure].
+    radial_four_pi_measure : ndarray of float64, shape [nvr]
+        Four-pi radial measure [normalized velocity-space measure].
+    dvx : ndarray of float64, shape [nvx]
+        Axial cell widths [v/vth].
+    vr_left : ndarray of float64, shape [nvr]
+        Left radial faces [v/vth].
+    vr_right : ndarray of float64, shape [nvr]
+        Right radial faces [v/vth].
+    vx_left : ndarray of float64, shape [nvx]
+        Left axial faces [v/vth].
+    vx_right : ndarray of float64, shape [nvx]
+        Right axial faces [v/vth].
+    volume : ndarray of float64, shape [nvr,nvx]
+        Cell volumes [normalized velocity-space measure].
+    inv_dvx_ghost : ndarray of float64, shape [nvr+2,nvx+2]
+        Ghosted inverse axial widths [v/vth inverse].
+    vx_over_dvx_ghost : ndarray of float64, shape [nvr+2,nvx+2]
+        Ghosted axial velocity over width [dimensionless].
+    vr_over_dvr_ghost : ndarray of float64, shape [nvr+2,nvx+2]
+        Ghosted radial velocity over width [dimensionless].
+    speed_squared : ndarray of float64, shape [nvr,nvx]
+        Node speed squared [dimensionless (normalized speed squared)].
+    positive_vx_indices : ndarray of int64, shape [n_positive]
+        Indices of strictly positive axial velocities [dimensionless].
+    positive_vx_first_index : int
+        First strictly positive axial index [dimensionless].
+    positive_vx_last_index : int
+        Last strictly positive axial index [dimensionless].
+    negative_vx_indices : ndarray of int64, shape [n_negative]
+        Indices of strictly negative axial velocities [dimensionless].
+    negative_vx_first_index : int
+        First strictly negative axial index [dimensionless].
+    negative_vx_last_index : int
+        Last strictly negative axial index [dimensionless].
 
     Raises
     ------
@@ -95,6 +127,54 @@ def make_cylindrical_velocity_quadrature(*, vr, vx):
         axis, so negative nodes are outside the domain), if ``vx`` does not
         contain both negative and positive velocities, or if the outputs are
         not representable in double precision for the supplied finite inputs.
+
+    See Also
+    --------
+    scirel.kinetic.build_shifted_maxwellian_seed : Consume these volumes in a normalized seed.
+    scirel.collisions.average_cross_section_over_maxwellian : Consume the volume measure in a rate average.
+
+    Notes
+    -----
+    The radial mesh is extended by mirroring its last spacing and the axial
+    mesh by mirroring both ends. Cell faces are midpoints of the extended
+    nodes, with the innermost radial face fixed at zero. ``radial_measure`` is
+    ``pi*(r_right**2-r_left**2)``; ``volume`` is its outer product with
+    ``dvx``; and the four-pi measure is
+    ``4/3*pi*(r_right**3-r_left**3)``. The ghosted coefficient arrays are zero
+    on their boundary shell and contain the indicated interior ratios. Invalid
+    or unrepresentable outputs are rejected rather than returned as NaN.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from scirel.kinetic import make_cylindrical_velocity_quadrature
+    >>> from scirel.collisions import average_cross_section_over_maxwellian
+    >>> vr = np.array([0.5, 1.5])
+    >>> vx = np.array([-1.5, -0.5, 0.5, 1.5])
+    >>> result = make_cylindrical_velocity_quadrature(vr=vr, vx=vx)
+    >>> np.testing.assert_allclose(result['radial_measure'], [np.pi, 3.0 * np.pi], rtol=0, atol=0)
+    >>> np.testing.assert_allclose(result['vx_left'], [-2.0, -1.0, 0.0, 1.0], rtol=0, atol=0)
+    >>> assert np.all(result['inv_dvx_ghost'][0, :] == 0.0)
+    >>> assert np.all(result['inv_dvx_ghost'][1:-1, 1:-1] == 1.0)
+    >>> assert result['positive_vx_first_index'] == 2
+    >>> rate = average_cross_section_over_maxwellian(
+    ...     particle_energy_ev=np.array([0.0, 10.0]),
+    ...     particle_mass_amu=1.0,
+    ...     target_temperature_ev=10.0,
+    ...     target_mass_amu=2.0,
+    ...     vx=vx,
+    ...     vr=vr,
+    ...     tnorm_ev=20.0,
+    ...     cylindrical_volume=result['volume'],
+    ...     cross_section_m2=lambda energy: np.full_like(energy, 3.0e-20),
+    ... )
+    >>> assert np.all(np.isfinite(rate)) and np.all(rate > 0.0)
+    >>> try:
+    ...     make_cylindrical_velocity_quadrature(vr=vr, vx=np.array([1.0, np.nan, 2.0]))
+    ... except ValueError as error:
+    ...     assert 'vx' in str(error)
+    ... else:
+    ...     raise AssertionError('a non-finite mesh must be rejected')
     """
     radial = _finite_increasing("vr", vr)
     axial = _finite_increasing("vx", vx)

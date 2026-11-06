@@ -216,8 +216,37 @@ def build_compensated_shifted_maxwellian(
 
     Parameters
     ----------
-    moment_rtol : float, default=0.01
-        Largest accepted relative error of each returned slice. See Raises.
+    vr : real array_like, shape [nvr]
+        Finite nonempty one-dimensional normalized radial-speed mesh [v/vth].
+        Passed to the cylindrical velocity quadrature.
+    vx : real array_like, shape [nvx]
+        Finite nonempty one-dimensional normalized axial-velocity mesh [v/vth].
+        Passed to the cylindrical velocity quadrature.
+    temperatures_eV : real array_like, shape [nshift]
+        Temperature per shift [eV]. Nonpositive entries return exactly zero
+        slices; entries must otherwise be finite and positive.
+    shifts_ms : real array_like, shape [nshift]
+        Physical axial shifts [m/s], with the same shape as
+        ``temperatures_eV``.
+    mu : real scalar
+        Species mass multiplier [dimensionless] used in the thermal speed and
+        target energy.
+    molecularity : real scalar
+        Molecule-count exponent multiplier [dimensionless] used in the
+        exponent and target energy.
+    tnorm_eV : real scalar
+        Normalization temperature [eV] used to construct the thermal speed.
+    moment_rtol : float, optional
+        Largest accepted relative error of each returned slice
+        [dimensionless]. Must be positive; the default is ``0.01``.
+
+    Returns
+    -------
+    distribution : ndarray of float64, shape [nvr,nvx,nshift]
+        Moment-compensated shifted-Maxwellian slices [normalized density per
+        cylindrical velocity volume]. Positive-temperature slices are
+        renormalized on the generated quadrature; zero and negative
+        temperature branches are zero.
 
     Raises
     ------
@@ -231,6 +260,11 @@ def build_compensated_shifted_maxwellian(
         can give any drift or temperature, including a negative one. Use a larger
         velocity mesh.
 
+    See Also
+    --------
+    make_cylindrical_velocity_quadrature : Build the mesh weights and cell measures.
+    compensate_velocity_slice : Apply the one-slice bounded correction primitive.
+
     Notes
     -----
     A Maxwellian with drift ``U`` and temperature ``T`` has mean ``vx = U`` and
@@ -243,6 +277,12 @@ def build_compensated_shifted_maxwellian(
     ----------
     B. LaBombard, "KN1D: A 1-D Space, Kinetic Transport Algorithm for Atomic and
     Molecular Hydrogen in an Ionizing Plasma", MIT PSFC report RR-01-3 (2001).
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from scirel.kinetic import build_compensated_shifted_maxwellian
+    >>> vr=np.array([.25,.75,1.5]); vx=np.array([-2.5,-1.5,-.5,.5,1.5,2.5]); out=build_compensated_shifted_maxwellian(vr=vr,vx=vx,temperatures_eV=np.array([5.,0.,-1.]),shifts_ms=np.array([0.,100.,-100.]),mu=1,molecularity=1,tnorm_eV=5., moment_rtol=0.1); assert out.shape==(3,6,3) and np.all(out[:,:,1:]==0)
     """
     vr, vx = np.asarray(vr), np.asarray(vx)
     temperatures_eV, shifts_ms = np.asarray(temperatures_eV), np.asarray(shifts_ms)

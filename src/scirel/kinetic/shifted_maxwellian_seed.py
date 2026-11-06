@@ -41,39 +41,102 @@ def build_shifted_maxwellian_seed(
 
     Parameters
     ----------
-    vr, vx
-        Finite nonempty one-dimensional normalized radial-speed and
-        axial-velocity meshes.
-    tnorm_ev
-        Positive scalar normalization temperature in eV; fixes the thermal
-        speed that converts the shifts into mesh units.
-    shifted_vx_m_s
-        Nonempty one-dimensional array of axial shifts in m/s.
-    temperature_ev
-        One-dimensional array of per-shift temperatures in eV, same length as
-        the shifts; every entry finite and positive.
-    mass_amu
-        Positive scalar factor relative to the saved hydrogen mass
-        (1.6726231e-27 kg), despite the historical parameter name.
-    molecule_count
-        Integer scalar: exactly ``1`` (atomic) or ``2`` (molecular hydrogen);
-        scales the exponent.
-    cylindrical_volume
-        Finite strictly positive cell volumes with shape ``(vr.size,
-        vx.size)``.
+    vr : real array_like, shape [nvr]
+        Finite nonempty one-dimensional normalized radial-speed mesh
+        [v/vth (caller's normalized unit)].
+    vx : real array_like, shape [nvx]
+        Finite nonempty one-dimensional normalized axial-velocity mesh
+        [v/vth (caller's normalized unit)].
+    tnorm_ev : real scalar
+        Positive finite normalization temperature [eV]; fixes the thermal
+        speed converting shifts into mesh units.
+    shifted_vx_m_s : real array_like, shape [n_shifts]
+        Finite nonempty one-dimensional axial shifts [m/s].
+    temperature_ev : real array_like, shape [n_shifts]
+        Per-shift temperatures [eV], same shape as the shifts; every entry is
+        finite and strictly positive.
+    mass_amu : real scalar
+        Positive finite mass multiplier [multiples of 1.6726231e-27 kg],
+        relative to the saved hydrogen mass despite the historical name.
+    molecule_count : integer scalar
+        Integer scalar exactly ``1`` for atomic hydrogen or ``2`` for
+        molecular hydrogen [dimensionless]; scales the exponent.
+    cylindrical_volume : real array_like, shape [nvr,nvx]
+        Finite strictly positive cell volumes [normalized velocity-space
+        measure], shape ``(vr.size, vx.size)``.
 
     Returns
     -------
-    dict
-        ``distribution`` (float64, shape ``(vr.size, vx.size, n_shifts)``,
-        normalized per shift), ``thermal_speed_m_s`` (scalar), ``exponent``
-        (raw exponent, shape as the distribution).
+    distribution : ndarray of float64, shape [nvr,nvx,n_shifts]
+        Normalized exponential seed [normalized distribution density], finite
+        and strictly positive; ``sum(volume * distribution) == 1`` per shift.
+    thermal_speed_m_s : float
+        Thermal speed ``sqrt(2 e T_norm / (m m_H))`` [m/s].
+    exponent : ndarray of float64, shape [nvr,nvx,n_shifts]
+        Raw exponent per mesh node and shift [dimensionless]. It is finite and
+        nonpositive for accepted inputs; a zero entry marks the peak that the
+        seed floors to ``exp(-80)``.
 
     Raises
     ------
     ValueError
         If an input leaves the domain stated above, including empty shift
         arrays, or the shapes are inconsistent.
+
+    See Also
+    --------
+    scirel.kinetic.make_cylindrical_velocity_quadrature : Build the required cell volumes.
+    scirel.collisions.average_cross_section_over_maxwellian : Consume the seed in a rate average.
+
+    Notes
+    -----
+    The mesh axes are normalized by the thermal speed
+    ``sqrt(2 e T_norm / (m m_H))``. The seed is normalized by the supplied
+    cylindrical cell volumes; the strict-interior clamp ``exp(-80)`` is applied
+    before normalization. ``molecule_count`` is interpreted as the exponent
+    multiplier, and no external distribution or collision model is inferred.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from scirel.kinetic import build_shifted_maxwellian_seed, make_cylindrical_velocity_quadrature
+    >>> from scirel.collisions import average_cross_section_over_maxwellian
+    >>> vr = np.array([0.5, 1.5])
+    >>> vx = np.array([-1.5, -0.5, 0.5, 1.5])
+    >>> quadrature = make_cylindrical_velocity_quadrature(vr=vr, vx=vx)
+    >>> volume = quadrature['volume']
+    >>> seed = build_shifted_maxwellian_seed(
+    ...     vr=vr, vx=vx, tnorm_ev=20.0,
+    ...     shifted_vx_m_s=np.array([0.0]),
+    ...     temperature_ev=np.array([10.0]),
+    ...     mass_amu=2.0, molecule_count=1,
+    ...     cylindrical_volume=volume,
+    ... )
+    >>> assert seed['distribution'].shape == (2, 4, 1)
+    >>> assert np.sum(volume * seed['distribution'][:, :, 0]) == 1.0
+    >>> assert np.all(np.isfinite(seed['distribution']))
+    >>> rate = average_cross_section_over_maxwellian(
+    ...     particle_energy_ev=np.array([0.0, 10.0]),
+    ...     particle_mass_amu=1.0,
+    ...     target_temperature_ev=10.0,
+    ...     target_mass_amu=2.0,
+    ...     vx=vx, vr=vr, tnorm_ev=20.0,
+    ...     cylindrical_volume=volume,
+    ...     cross_section_m2=lambda energy: np.full_like(energy, 3.0e-20),
+    ... )
+    >>> assert np.all(np.isfinite(rate)) and np.all(rate > 0.0)
+    >>> try:
+    ...     build_shifted_maxwellian_seed(
+    ...         vr=vr, vx=vx, tnorm_ev=20.0,
+    ...         shifted_vx_m_s=np.array([0.0]),
+    ...         temperature_ev=np.array([10.0]),
+    ...         mass_amu=2.0, molecule_count=3,
+    ...         cylindrical_volume=volume,
+    ...     )
+    ... except ValueError as error:
+    ...     assert 'physical' in str(error)
+    ... else:
+    ...     raise AssertionError('molecule_count 3 must be rejected')
     """
     radial = _real_array("vr", vr)
     axial = _real_array("vx", vx)
