@@ -321,16 +321,12 @@ def evaluate_generalized_hilbert(z, expression, *, integration_mesh, continuatio
 
     Raises
     ------
-    FloatingPointError
-        FloatingPointError for a non-finite continued transform and RuntimeError when quadrature fails; no
-        fallback path is selected.
     RuntimeError
-        FloatingPointError for a non-finite continued transform and RuntimeError when quadrature fails; no
-        fallback path is selected. RuntimeError when real-axis/exterior quadrature fails or the declared
-        removable-point estimate is not representable.
+        When real-axis/exterior quadrature fails or the declared removable-point estimate is not
+        representable; no fallback path is selected.
     ValueError
-        ValueError for an unsupported expression, non-finite phase/mesh, or malformed
-        integration_mesh/continuation.
+        For an unsupported expression, non-finite phase/mesh, malformed integration_mesh/continuation,
+        or a non-finite continued transform that is not representable.
 
     See Also
     --------
@@ -688,14 +684,11 @@ def evaluate_gpdf_residual(
 
     Raises
     ------
-    FloatingPointError
-        FloatingPointError for a non-representable Faddeeva/generalized response; bound quadrature errors
-        propagate.
     RuntimeError
-        RuntimeError only where a bound generalized quadrature fails; IAW/beam use closed Faddeeva values.
+        Only where a bound generalized quadrature fails; IAW/beam use closed Faddeeva values.
     ValueError
-        ValueError for an unknown kind, non-finite x/k, or invalid selector/expression/mesh; named IAW/beam
-        parameters must satisfy the declared domain.
+        For an unknown kind, non-finite x/k, an invalid selector/expression/mesh, an unrepresentable
+        Faddeeva/generalized response, or named IAW/beam parameters outside their declared domain.
 
     See Also
     --------

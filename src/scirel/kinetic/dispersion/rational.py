@@ -1438,11 +1438,9 @@ def jpole_evaluate(bzj, czj, z):
         FloatingPointError for nonfinite rational output; no iterative solver or approximation-domain
         certification.
     ValueError
-        ValueError for empty/misaligned/nonfinite poles, residues or points; exact evaluation at a rational
-        pole raises ZeroDivisionError.
+        For empty, misaligned or nonfinite poles, residues or evaluation points.
     ZeroDivisionError
-        ValueError for empty/misaligned/nonfinite poles, residues or points; exact evaluation at a rational
-        pole raises ZeroDivisionError.
+        When an evaluation point exactly equals a rational pole.
 
     See Also
     --------

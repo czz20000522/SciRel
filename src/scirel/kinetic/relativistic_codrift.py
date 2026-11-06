@@ -34,9 +34,11 @@ def solve_relativistic_codrift_spectrum(case: dict) -> dict:
 
     Raises
     ------
+    FloatingPointError
+        When the complete frequency spectrum is not finite after the eigensolve.
     ValueError
-        Raises ValueError for unsupported constants, nonzero collision matrix, ky != 0, invalid species
-        dimensions, gamma_pressure != 1, nonpositive mass/density or relativistic speed >= c.
+        For unsupported constants, nonzero collision matrix, ky != 0, invalid species dimensions,
+        gamma_pressure != 1, nonpositive mass/density or relativistic speed >= c.
 
     See Also
     --------

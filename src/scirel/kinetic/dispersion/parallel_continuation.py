@@ -125,9 +125,11 @@ def continue_em1d(inputs):
     Raises
     ------
     ValueError
-        ValueError or a missing required mapping key rejects invalid inputs. A non-accepted continuation
-        raises ContinuationFailure carrying attempted k, seed, solver success/status, scaled residual
-        and the accepted prefix; no partial result is returned.
+        For invalid inputs or a missing required mapping key.
+    ContinuationFailure
+        When a point is not accepted as a converged root. The exception carries attempted k, seed,
+        solver success/status, scaled residual and the accepted prefix; no partial result is returned
+        as a successful complete continuation.
 
     See Also
     --------

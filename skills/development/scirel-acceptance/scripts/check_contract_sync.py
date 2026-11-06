@@ -44,7 +44,7 @@ ROOT = Path(__file__).resolve().parents[4]
 SCOPE = Path(__file__).with_name("contract_sync_scope.json")
 DIMENSIONLESS = {"", "1", "dimensionless", "none", "-", "n/a"}
 SECTION = re.compile(r"^([A-Z][A-Za-z ]+)\n-{3,}[ \t]*$", re.M)
-ERROR = re.compile(r"\b([A-Z][A-Za-z]*(?:Error|Exception|Warning))\b")
+ERROR = re.compile(r"\b([A-Z][A-Za-z]*(?:Error|Exception|Warning|Failure))\b")
 
 sys.path.insert(0, str(ROOT / "scripts"))
 from code_digest import source_digest  # noqa: E402

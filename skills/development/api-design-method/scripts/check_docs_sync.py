@@ -97,6 +97,8 @@ def check(name, obj, sections, unit_regex, run_doctest):
     for section in sections:
         if section == "Parameters" and parameters == []:
             continue
+        if section == "Returns" and inspect.isclass(obj):
+            continue
         if section not in found:
             problems.append(f"{name}: missing section {section}")
     if parameters is not None and "Parameters" in found:
