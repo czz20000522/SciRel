@@ -804,35 +804,6 @@
    "review_basis": "_run_composition requires thirteen grid/species/reference/plug fields. It maps reference and plug surfaces; input defaults and delegated ambipolar controls are bound to the current functions. ion_loss_refill defaults to loss_cone_refill or0, mode prescribed,confineTrue. The displayed conditional default is metadata, not a Python literal signature default."
   },
   {
-   "asset_id": "scirel.diagnostics.equilibrium-synthesis-diagnostics",
-   "callable": "scirel.diagnostics.equilibrium_synthesis_diagnostics.synthesize_equilibrium_diagnostics",
-   "ports": [
-    {
-     "name": "equilibrium",
-     "required": true
-    },
-    {
-     "name": "R",
-     "required": true
-    },
-    {
-     "name": "Z",
-     "required": true
-    },
-    {
-     "name": "observations",
-     "required": true
-    }
-   ],
-   "modules": {
-    "scirel._composition": "ce7f22d7d0978065cb3c56384d49fccf73bf41635cd51b3a8755cca5453e1ca7",
-    "scirel.diagnostics.equilibrium_synthesis_diagnostics": "8c143404d6b0d6edb5ddd970665b4133bd531492cea006a8d7cca79618284210",
-    "scirel.geometry.bilinear_grid_sampling": "289d2a4d6f84bfb0ccf248f64949f9358f760610e28506a6e3294bca3cb3dd6b",
-    "scirel.diagnostics.observation_residuals": "b3962fafce6105d062b8ba9c53a3c24d6c83d3aeebf1c7878cfe51a942ad29c2"
-   },
-   "review_basis": "Port identity only; root scientific acceptance is separate. Current _run_composition validates nonempty explicit observation requests, source/profile units and psi-to-Wb convention before sampling. Shared channel vocabulary is source-bound; requested missing channels reject."
-  },
-  {
    "asset_id": "scirel.inference.direct-anisotropic-inversion",
    "callable": "scirel.inference.direct_anisotropic_inversion.solve_direct_anisotropic_inversion",
    "ports": [

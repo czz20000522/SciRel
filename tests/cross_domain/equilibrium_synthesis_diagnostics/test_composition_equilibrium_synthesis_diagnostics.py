@@ -16,7 +16,13 @@ def _asset_loader(asset_ref):
 
 
 def _run(inputs):
-    return composition._run_composition(inputs, asset_loader=_asset_loader)
+    return composition._run_composition(
+        inputs["equilibrium"],
+        inputs["R"],
+        inputs["Z"],
+        inputs["observations"],
+        asset_loader=_asset_loader,
+    )
 
 
 def test_public_callable_documents_the_catalog_contract():
@@ -26,9 +32,25 @@ def test_public_callable_documents_the_catalog_contract():
     assert "FloatingPointError" in text
 
 
+def test_explicit_signature_rejects_legacy_mapping_and_missing_arguments():
+    assert str(inspect.signature(synthesize_equilibrium_diagnostics)) == (
+        "(equilibrium, R, Z, observations)"
+    )
+    with pytest.raises(TypeError):
+        synthesize_equilibrium_diagnostics(_inputs())
+    with pytest.raises(TypeError):
+        synthesize_equilibrium_diagnostics(inputs=_inputs())
+    with pytest.raises(TypeError):
+        synthesize_equilibrium_diagnostics(
+            equilibrium=_inputs()["equilibrium"],
+            Z=_inputs()["Z"],
+            observations=_inputs()["observations"],
+        )
+
+
 def test_public_scirel_injects_declared_sampler_dependency():
 
-    result = synthesize_equilibrium_diagnostics(_inputs())
+    result = synthesize_equilibrium_diagnostics(**_inputs())
     np.testing.assert_allclose(result["flux_loops"], [1.5])
 
 

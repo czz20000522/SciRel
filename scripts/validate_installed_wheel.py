@@ -872,20 +872,18 @@ def _run_cross_domain_task() -> tuple[dict[str, Any], list[str]]:
         r_grid, z_grid = np.meshgrid(np.array([0.0, 1.0]), np.array([0.0, 1.0]))
         result = synthesize_equilibrium_diagnostics(
             {
-                "R": r_grid,
-                "Z": z_grid,
-                "equilibrium": {
-                    "psi": r_grid + 2.0 * z_grid,
-                    "psi_unit": "Wb/rad",
-                },
-                "observations": {
-                    "flux_loops": {
-                        "points": np.array([[0.5, 0.5]]),
-                        "quantity": "raw_psi",
-                        "unit": "Wb/rad",
-                    }
-                },
-            }
+                "psi": r_grid + 2.0 * z_grid,
+                "psi_unit": "Wb/rad",
+            },
+            r_grid,
+            z_grid,
+            {
+                "flux_loops": {
+                    "points": np.array([[0.5, 0.5]]),
+                    "quantity": "raw_psi",
+                    "unit": "Wb/rad",
+                }
+            },
         )
         summary = _array_summary(result["flux_loops"], (1,))
         details = {

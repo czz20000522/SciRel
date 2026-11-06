@@ -1350,7 +1350,7 @@
   },
   {
    "asset_id": "scirel.inference.direct-anisotropic-inversion",
-   "source_sha256": "4a8752802bd8bc14238054fffc0d8df7188515bf51a9c35f2ce22483faf02e7a",
+   "source_sha256": "38e3524146090cd8b41730592a39cda05e5a13084dc06df46679e7cc8bf42df0",
    "summary": "将真实各向异性前向求解、显式单位诊断和有界优化连接为单一调用入口，持续保持固定观测维数与有效终点。",
    "definition": "先按标准观测构造 N，再把 trial、严格残差和有界优化器组合起来。前向 solver_config 深复制并加入 params；未收敛时提前短路，失败的 trial 不参与有效最优。可选 LHS 与总预算在优化器中统一执行，最终参数、残差和状态绑定同一次新评估。当前验证同时包含解析制造的非零 Green 反馈和独立 Biot–Savart/张量散度参考的曲场恢复。",
    "model": "调用者指定物理闭合的直接反演组合，复用已资格化前向关系，不另造各向异性平衡方程",
@@ -3692,7 +3692,7 @@
   },
   {
    "asset_id": "scirel.diagnostics.equilibrium-synthesis-diagnostics",
-   "source_sha256": "37d6efa2a8bdd45645dc6936547ef9588ebd9b7392bfbddb216be01f2c172aa2",
+   "source_sha256": "8a572bb8bfaa23589edb77059a854198da5e07da77f0772195c2210fa90921a7",
    "summary": "在同一 R–Z 网格上按明确单位采样磁通与所请求的压强、密度或电子温度；区分原始 psi 样本与完整圆环磁通。 以 scirel._result.Result 映射返回顶层命名字段。",
    "definition": "使用既有双线性采样器。flux_loops.quantity=raw_psi 时保留 equilibrium.psi_unit；quantity=magnetic_flux 时输出 Wb，仅对明确声明为 Wb/rad 的 psi 乘以 2π，Wb 输入不变。thomson 只采样明确请求且具有相同单位声明的实际 profile，不推算缺失通道。所有结果附 units。 顶层 flux_loops、thomson 与 units 字段作为 scirel._result.Result 映射返回；嵌套 thomson 与 units 仍为普通 dict。",
    "model": "平衡场的只读点采样；thomson 是历史命名空间，不是 Thomson 散射仪器模型",
@@ -3762,13 +3762,14 @@
     ]
    },
    "failure_semantics": {
-    "invalid_input": "缺字段、空/未知请求、错误点集、单位不匹配或越界点抛 ValueError。",
+    "invalid_input": "已删除 inputs mapping、未知关键字或缺少必需顶层参数时由 Python 抛出 TypeError；缺失嵌套字段、空/未知请求、错误点集、单位不匹配或越界点抛 ValueError。",
     "runtime_failure": "采样器异常传播；磁通换算为非有限时抛 FloatingPointError。",
     "nonconvergence": "本函数不求平衡；反演 trial 必须在进入此函数之前核对前向收敛。",
     "partial_results": "出现错误时不返回部分 scirel._result.Result 映射；不修改调用方平衡态。"
    },
    "verification": {
     "scope": [
+     "显式签名和旧 mapping/缺参拒绝。",
      "均匀 Bz 的 psi→完整磁通解析关系。",
      "线性制造 profile 的内部点/边界采样、单位与非修改性。",
      "漏通道/未知请求/不支持的匝数与参考环字段拒绝；真实 Picard 反演消费者。",
