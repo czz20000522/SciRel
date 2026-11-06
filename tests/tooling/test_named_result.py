@@ -4,7 +4,7 @@ import numpy as np
 import pytest
 
 from scirel._result import Result
-from scirel import closures, diagnostics, field
+from scirel import closures, diagnostics, field, neoclassical
 from scirel.field import compute_poloidal_field_magnitude
 from scirel.kinetic import evaluate_plasma_dispersion
 
@@ -1339,6 +1339,151 @@ def test_closures_failure_cases_cover_every_migrated_callable():
 
 @pytest.mark.parametrize("name,call,exception_type,message", _CLOSURES_FAILURE_CASES)
 def test_closures_failures_match_baseline_type_and_message(name, call, exception_type, message):
+    with pytest.raises(exception_type) as error:
+        call()
+    assert str(error.value) == message
+
+
+# Baseline checks for the one plain-dict neoclassical return migrated in #2.
+# The coefficient fits intentionally remain tuples under the unchanged public
+# contract, so these cases distinguish the migrated mapping from bare returns.
+_NEOCLASSICAL_F = np.array([0.2, 0.5])
+_NEOCLASSICAL_NU_E = np.array([0.01, 10.0])
+_NEOCLASSICAL_Z = np.array([1.5, 2.0])
+_NEOCLASSICAL_NU_I = np.array([0.03, 2.0])
+
+
+def _neoclassical_current_inputs():
+    one = np.ones(3)
+    zero = np.zeros(3)
+    return {
+        "rho_face": [0.0, 0.5, 1.0],
+        "F_face": one,
+        "B0": 2.0,
+        "dpsi_drho_face": one,
+        "p_e_face": one,
+        "p_i_face": one,
+        "dlnne_drho_face": one,
+        "dlnni_drho_face": zero,
+        "dlnte_drho_face": zero,
+        "dlnti_drho_face": zero,
+        "L31": one,
+        "L32": zero,
+        "L34": one,
+        "alpha": one,
+    }
+
+
+def _neoclassical_current_call():
+    return neoclassical.calculate_bootstrap_current(**_neoclassical_current_inputs())
+
+
+_NEOCLASSICAL_CASES = {
+    "calculate_sauter_coefficients": (
+        lambda: neoclassical.calculate_sauter_coefficients(
+            _NEOCLASSICAL_F,
+            _NEOCLASSICAL_NU_E,
+            _NEOCLASSICAL_Z,
+            _NEOCLASSICAL_NU_I,
+        ),
+        tuple,
+        (
+            np.array([0.25917819213065246, 0.13392807216870214]),
+            np.array([-0.11574116188410322, 0.0702213976355152]),
+            np.array([0.2591068046093363, 0.1202184934201009]),
+            np.array([-0.870010942879218, -0.22957797344199568]),
+        ),
+    ),
+    "calculate_redl_coefficients": (
+        lambda: neoclassical.calculate_redl_coefficients(
+            _NEOCLASSICAL_F,
+            _NEOCLASSICAL_NU_E,
+            _NEOCLASSICAL_Z,
+            _NEOCLASSICAL_NU_I,
+        ),
+        tuple,
+        (
+            np.array([0.21296571828116218, 0.07440042135914428]),
+            np.array([-0.10833728380262302, 0.09740318582888735]),
+            np.array([0.21296571828116218, 0.07440042135914428]),
+            np.array([-0.7951882184432387, 0.6440950155435712]),
+        ),
+    ),
+    "calculate_bootstrap_current": (
+        _neoclassical_current_call,
+        Result,
+        {
+            "j_parallel_bootstrap_face": np.array([0.0, -np.pi, -np.pi]),
+            "j_parallel_bootstrap": np.array([-np.pi / 2.0, -np.pi]),
+        },
+    ),
+}
+
+_NEOCLASSICAL_MIGRATED = {"calculate_bootstrap_current"}
+_NEOCLASSICAL_BARE_RETURN_CASES = {
+    "calculate_sauter_coefficients",
+    "calculate_redl_coefficients",
+}
+
+_NEOCLASSICAL_FAILURE_CASES = [
+    (
+        "calculate_sauter_coefficients",
+        lambda: neoclassical.calculate_sauter_coefficients(
+            [True, 0.5], [1.0, 1.0], [2.0, 2.0], [1.0, 1.0]
+        ),
+        ValueError,
+        "f_trap must be a real numeric face array",
+    ),
+    (
+        "calculate_redl_coefficients",
+        lambda: neoclassical.calculate_redl_coefficients(
+            [True, 0.5], [1.0, 1.0], [2.0, 2.0], [1.0, 1.0]
+        ),
+        ValueError,
+        "f_trap must be a real numeric face array",
+    ),
+    (
+        "calculate_bootstrap_current",
+        lambda: neoclassical.calculate_bootstrap_current(
+            **{**_neoclassical_current_inputs(), "B0": 0.0}
+        ),
+        ValueError,
+        "B0 must be finite and nonzero; multiplier must be finite",
+    ),
+]
+
+
+def test_neoclassical_cases_cover_every_public_callable():
+    assert set(_NEOCLASSICAL_CASES) == set(neoclassical.__all__)
+    assert _NEOCLASSICAL_MIGRATED == {
+        name for name, case in _NEOCLASSICAL_CASES.items() if case[1] is Result
+    }
+    assert _NEOCLASSICAL_BARE_RETURN_CASES == {
+        name for name, case in _NEOCLASSICAL_CASES.items() if case[1] is tuple
+    }
+
+
+@pytest.mark.parametrize("name", sorted(_NEOCLASSICAL_CASES))
+def test_neoclassical_results_preserve_baseline_values_and_return_types(name):
+    call, expected_type, expected = _NEOCLASSICAL_CASES[name]
+    result = call()
+    assert type(result) is expected_type
+    if expected_type is Result:
+        assert isinstance(result, dict)
+        assert list(result) == list(expected)
+        _assert_mapping_values_equal(result, expected, root=True)
+        for key in expected:
+            assert getattr(result, key) is result[key]
+    else:
+        _assert_value_equal(result, expected)
+
+
+def test_neoclassical_failure_cases_cover_every_public_callable():
+    assert {case[0] for case in _NEOCLASSICAL_FAILURE_CASES} == set(neoclassical.__all__)
+
+
+@pytest.mark.parametrize("name,call,exception_type,message", _NEOCLASSICAL_FAILURE_CASES)
+def test_neoclassical_failures_match_baseline_type_and_message(name, call, exception_type, message):
     with pytest.raises(exception_type) as error:
         call()
     assert str(error.value) == message

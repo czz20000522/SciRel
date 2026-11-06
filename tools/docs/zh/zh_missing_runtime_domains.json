@@ -537,15 +537,15 @@
     "输入转为 binary64 后须有限；调用者提供一致单位和归一化。"
    ],
    "boundary": "只有 rho_face == 0 的面是磁轴，电流严格取零；其他位置的梯度显式提供。",
-   "definition": "平行电流密度逐面计算：四项分别是密度梯度项 L31*pe*dlnne、离子密度梯度项 L31*pi*dlnni、电子温度梯度项 (L31+L32)*pe*dlnTe 和离子温度梯度项 (L31+alpha*L34)*pi*dlnTi；四项相加后乘以 -F*multiplier/(B0*dpsi_per_radian_drho)，给出总磁通形式时 dpsi_per_radian_drho = dpsi_drho/(2π)。两种磁通导数约定只接受一种，两者都给或都不给抛出 ValueError。只有 rho_face == 0 的面视为磁轴并严格取零。单元电流取相邻面的算术平均，并采用可防溢出的有限中点实现。",
+   "definition": "平行电流密度逐面计算：四项分别是密度梯度项 L31*pe*dlnne、离子密度梯度项 L31*pi*dlnni、电子温度梯度项 (L31+L32)*pe*dlnTe 和离子温度梯度项 (L31+alpha*L34)*pi*dlnTi；四项相加后乘以 -F*multiplier/(B0*dpsi_per_radian_drho)，给出总磁通形式时 dpsi_per_radian_drho = dpsi_drho/(2π)。两种磁通导数约定只接受一种，两者都给或都不给抛出 ValueError。只有 rho_face == 0 的面视为磁轴并严格取零。单元电流取相邻面的算术平均，并采用可防溢出的有限中点实现。两个命名字段作为同一个 scirel._result.Result 映射返回；按键和属性读取同一个值。",
    "example": {
     "description": "检查磁轴零值，以及总磁通与每弧度两种写法一致。",
-    "expected": "两种约定下面电流都是 [0,-pi,-pi]。"
+    "expected": "返回带两个命名字段的 scirel._result.Result 映射，按键和属性读取同一个值；两种约定下面电流都是 [0,-pi,-pi]。"
    },
    "failure_semantics": {
     "invalid_input": "形状、定义域、非有限或掩码输入抛出 ValueError；不返回部分结果。",
     "nonconvergence": "不适用；这是直接解析拟合和算术映射。",
-    "partial_results": "失败后不返回部分结果。",
+    "partial_results": "失败后不返回 scirel._result.Result 映射。",
     "runtime_failure": "系数或电流算术产生非有限结果时抛出 FloatingPointError；不返回回退值。"
    },
    "inputs": [
@@ -682,7 +682,7 @@
    "outputs": [
     {
      "name": "j_parallel_bootstrap_face",
-     "description": "面上的平行电流密度 <j·B>/B0；rho_face == 0 的面为零",
+     "description": "Result 字段：面上的平行电流密度 <j·B>/B0；rho_face == 0 的面为零",
      "constraints": "有限、显式、一维，面形状须匹配，不广播。",
      "dtype": "实数数值，转换为 float64",
      "shape": "N+1",
@@ -690,15 +690,15 @@
     },
     {
      "name": "j_parallel_bootstrap",
-     "description": "相邻面平均的单元电流密度",
+     "description": "Result 字段：相邻面平均的单元电流密度",
      "constraints": "有限、显式、一维，面形状须匹配，不广播。",
      "dtype": "实数数值，转换为 float64",
      "shape": "N",
      "units": "A/m^2"
     }
    ],
-   "source_sha256": "82fdcc6dc255a34c889180bd1df6d204c3e7c2427ebf9bacd32d5e17a80e939d",
-   "summary": "由压强、对数梯度及拟合系数组装平行自举电流。",
+   "source_sha256": "714cb0451c34aa2339c372b31f7d29763bebfc9936d8af7add5a87644c77cf32",
+   "summary": "由压强、对数梯度及拟合系数组装平行自举电流，以 scirel._result.Result 映射返回两个命名字段。",
    "verification": {
     "evidence_ceiling": "仅证明拟合代数与显式组装，不构成经验模型的全面物理资格。",
     "known_limitations": [
@@ -708,6 +708,7 @@
     ],
     "scope": [
      "独立 Decimal 拟合检查、系数与调用者对照以及有限算术回归。",
+     "Result 改造后保持既有键顺序、数值、形状、dtype 和映射兼容性，并支持属性读取同一字段。",
      "总磁通与每弧度磁通导数两种写法一致；两者都给或都不给、rho_face 不递增或为负、磁轴外磁通导数为零时抛出 ValueError；不在磁轴上的第一个面不被置零。"
     ],
     "tests": [

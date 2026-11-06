@@ -5,7 +5,7 @@
   "en": "Analytic parallel bootstrap current",
   "zh": "解析平行自举电流"
  },
- "summary": "Evaluate parallel current density from explicit pressure/logarithmic gradients and fit coefficients",
+ "summary": "Evaluate parallel current density from explicit pressure/logarithmic gradients and fit coefficients. The two named fields are returned in one scirel._result.Result mapping.",
  "taxonomy": [
   "neoclassical",
   "bootstrap"
@@ -28,7 +28,7 @@
  "identity": {
   "relation": "Sauter PoP1999 Eq12 / Redl PoP2021 Eq5",
   "direction": "Explicit inputs to fit coefficients/current",
-  "definition": "j_face=-F*multiplier/(B0*dpsi_per_radian_drho) * [L31*pe*dlnne+L31*pi*dlnni+(L31+L32)*pe*dlnTe+(L31+alpha*L34)*pi*dlnTi], with dpsi_per_radian_drho = dpsi_drho/(2*pi) when the total-flux form is given. Exactly one flux-derivative convention is accepted; both or neither raise ValueError. A face with rho_face == 0 is the axis and is set exactly to zero; no other face is zeroed. Cells use adjacent arithmetic face midpoints with the overflow-safe finite midpoint implementation.",
+  "definition": "j_face=-F*multiplier/(B0*dpsi_per_radian_drho) * [L31*pe*dlnne+L31*pi*dlnni+(L31+L32)*pe*dlnTe+(L31+alpha*L34)*pi*dlnTi], with dpsi_per_radian_drho = dpsi_drho/(2*pi) when the total-flux form is given. Exactly one flux-derivative convention is accepted; both or neither raise ValueError. A face with rho_face == 0 is the axis and is set exactly to zero; no other face is zeroed. Cells use adjacent arithmetic face midpoints with the overflow-safe finite midpoint implementation. The two named arrays are returned together in one scirel._result.Result mapping; mapping lookup and attribute access expose the same fields.",
   "model": "Bounded analytic empirical tokamak fit",
   "geometry": "Caller-supplied axisymmetric tokamak face data",
   "coordinates": "rho_face normalized radius (nonnegative, strictly increasing); poloidal-flux derivative as total flux dpsi_drho_face [Wb] or per radian dpsi_per_radian_drho_face [Wb/rad]",
@@ -189,7 +189,7 @@
  "outputs": [
   {
    "name": "j_parallel_bootstrap_face",
-   "description": "Parallel current density <j.B>/B0 on faces; zero at a face with rho_face == 0",
+   "description": "Field of the returned scirel._result.Result mapping: parallel current density <j.B>/B0 on faces; zero at a face with rho_face == 0",
    "units": "A/m^2",
    "shape": "N+1",
    "dtype": "real numeric converted to float64",
@@ -198,7 +198,7 @@
   },
   {
    "name": "j_parallel_bootstrap",
-   "description": "Arithmetic adjacent-face cell current density",
+   "description": "Field of the returned scirel._result.Result mapping: arithmetic adjacent-face cell current density",
    "units": "A/m^2",
    "shape": "N",
    "dtype": "real numeric converted to float64",
@@ -223,7 +223,7 @@
   "invalid_input": "ValueError for malformed, nonfinite, masked, mismatched or out-of-domain face inputs; no partial result.",
   "runtime_failure": "FloatingPointError for nonfinite coefficient/current arithmetic; no fallback is returned.",
   "nonconvergence": "Not applicable; these are direct analytic fit and arithmetic mappings.",
-  "partial_results": "No partial output returned on failure."
+  "partial_results": "No scirel._result.Result mapping is returned on failure."
  },
  "public_api": {
   "python": {
@@ -244,12 +244,13 @@
  },
  "example": {
   "description": "Check the axis zero and that the total-flux and per-radian forms agree.",
-  "code": "import numpy as np\nfrom scirel.neoclassical import calculate_bootstrap_current\none=np.ones(3); zero=np.zeros(3)\nkw=dict(rho_face=[0.,.5,1.],F_face=one,B0=2.,p_e_face=one,p_i_face=one,dlnne_drho_face=one,dlnni_drho_face=zero,dlnte_drho_face=zero,dlnti_drho_face=zero,L31=one,L32=zero,L34=one,alpha=one)\nx=calculate_bootstrap_current(dpsi_drho_face=one,**kw)\nnp.testing.assert_allclose(x['j_parallel_bootstrap_face'],[0,-np.pi,-np.pi])\ny=calculate_bootstrap_current(dpsi_per_radian_drho_face=one/(2*np.pi),**kw)\nnp.testing.assert_allclose(y['j_parallel_bootstrap_face'],x['j_parallel_bootstrap_face'])",
-  "expected": "Face current is [0,-pi,-pi] in both conventions."
+  "code": "import numpy as np\nfrom scirel._result import Result\nfrom scirel.neoclassical import calculate_bootstrap_current\none=np.ones(3); zero=np.zeros(3)\nkw=dict(rho_face=[0.,.5,1.],F_face=one,B0=2.,p_e_face=one,p_i_face=one,dlnne_drho_face=one,dlnni_drho_face=zero,dlnte_drho_face=zero,dlnti_drho_face=zero,L31=one,L32=zero,L34=one,alpha=one)\nx=calculate_bootstrap_current(dpsi_drho_face=one,**kw)\nassert isinstance(x, Result)\nassert list(x) == ['j_parallel_bootstrap_face', 'j_parallel_bootstrap']\nassert x.j_parallel_bootstrap_face is x['j_parallel_bootstrap_face']\nnp.testing.assert_allclose(x['j_parallel_bootstrap_face'],[0,-np.pi,-np.pi])\ny=calculate_bootstrap_current(dpsi_per_radian_drho_face=one/(2*np.pi),**kw)\nnp.testing.assert_allclose(y['j_parallel_bootstrap_face'],x['j_parallel_bootstrap_face'])",
+  "expected": "The returned object is a scirel._result.Result mapping with fields readable by key and attribute. Face current is [0,-pi,-pi] in both conventions."
  },
  "verification": {
   "scope": [
    "Independent Decimal fit checks, source-bound coefficient/caller parity and finite arithmetic regressions",
+   "The named-result migration preserves existing key order, values, shape and dtype while exposing the same fields by attribute.",
    "Total-flux and per-radian flux derivatives agree; giving both or neither, a non-increasing or negative rho_face, or a zero flux derivative off the axis raise ValueError; an off-axis first face is not zeroed."
   ],
   "tests": [

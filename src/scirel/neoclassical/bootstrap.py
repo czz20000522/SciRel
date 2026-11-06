@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import numpy as np
 
+from scirel._result import Result
 from scirel.geometry.face_to_cell import face_to_cell
 
 __all__ = [
@@ -290,12 +291,15 @@ def calculate_bootstrap_current(
     L34,
     alpha,
 ):
-    """Evaluate the parallel bootstrap current density on faces and cell means.
+    """Evaluate the parallel bootstrap current density on faces and cell means as a named result.
 
     ``<j.B>/B0 = -(F / (B0 dpsi/drho)) [L31 p_e dln n_e + L31 p_i dln n_i
     + (L31 + L32) p_e dln T_e + (L31 + alpha L34) p_i dln T_i]`` with the
     gradients taken with respect to the same radius as ``dpsi/drho``, and
     ``psi`` the poloidal flux per radian (``R * A_phi``, Wb/rad).
+
+    The two arrays are returned together in one ``scirel._result.Result``
+    mapping; mapping lookup and attribute access expose the same fields.
 
     Parameters
     ----------
@@ -352,12 +356,13 @@ def calculate_bootstrap_current(
     Returns
     -------
     j_parallel_bootstrap_face : real numeric converted to float64, shape N+1
-        Parallel current density <j.B>/B0 on faces; zero at a face with rho_face
-        == 0 [A/m^2]. Finite; equal explicit one-dimensional face shape; no
-        broadcasting.
+        Field of the returned ``scirel._result.Result`` mapping: parallel current
+        density <j.B>/B0 on faces; zero at a face with rho_face == 0 [A/m^2].
+        Finite; equal explicit one-dimensional face shape; no broadcasting.
     j_parallel_bootstrap : real numeric converted to float64, shape N
-        Arithmetic adjacent-face cell current density [A/m^2]. Finite; equal
-        explicit one-dimensional face shape; no broadcasting.
+        Field of the returned ``scirel._result.Result`` mapping: arithmetic
+        adjacent-face cell current density [A/m^2]. Finite; equal explicit
+        one-dimensional face shape; no broadcasting.
 
     Raises
     ------
@@ -377,10 +382,14 @@ def calculate_bootstrap_current(
     Examples
     --------
     >>> import numpy as np
+    >>> from scirel._result import Result
     >>> from scirel.neoclassical import calculate_bootstrap_current
     >>> one=np.ones(3); zero=np.zeros(3)
     >>> kw=dict(rho_face=[0.,.5,1.],F_face=one,B0=2.,p_e_face=one,p_i_face=one,dlnne_drho_face=one,dlnni_drho_face=zero,dlnte_drho_face=zero,dlnti_drho_face=zero,L31=one,L32=zero,L34=one,alpha=one)
     >>> x=calculate_bootstrap_current(dpsi_drho_face=one,**kw)
+    >>> assert isinstance(x, Result)
+    >>> assert list(x) == ['j_parallel_bootstrap_face', 'j_parallel_bootstrap']
+    >>> assert x.j_parallel_bootstrap_face is x['j_parallel_bootstrap_face']
     >>> np.testing.assert_allclose(x['j_parallel_bootstrap_face'],[0,-np.pi,-np.pi])
     >>> y=calculate_bootstrap_current(dpsi_per_radian_drho_face=one/(2*np.pi),**kw)
     >>> np.testing.assert_allclose(y['j_parallel_bootstrap_face'],x['j_parallel_bootstrap_face'])
@@ -438,4 +447,9 @@ def calculate_bootstrap_current(
     current[axis] = 0.0
     if not np.all(np.isfinite(current)):
         raise FloatingPointError("bootstrap current is not finite")
-    return {"j_parallel_bootstrap_face": current, "j_parallel_bootstrap": face_to_cell(current)}
+    return Result(
+        {
+            "j_parallel_bootstrap_face": current,
+            "j_parallel_bootstrap": face_to_cell(current),
+        }
+    )
