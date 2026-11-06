@@ -51,6 +51,13 @@ mixed deletion/update pushes and normal updates still require acceptance. Hooks 
 replacement for running the checks yourself. Do not bypass them with `--no-verify`. If a hook is wrong,
 fix the hook.
 
+Before any development-container command, the wrapper inspects the common repository-local Git config
+without relying on Git worktree discovery. A repository-local `core.worktree` is rejected with the
+offending config path and value because it can redirect every linked worktree. To recover, verify that
+no legitimate per-worktree configuration depends on the entry, remove the erroneous _local_ entry from
+the named common config (or the named active `config.worktree`), and rerun the command. Do not use a
+global Git setting as a workaround.
+
 ## Ratchets
 
 Two lists only tighten.

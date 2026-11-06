@@ -42,6 +42,10 @@ class ContainerLockUnavailable(RuntimeError):
     """Raised when the per-worktree container lock cannot be used safely."""
 
 
+class RepositoryConfigError(RuntimeError):
+    """Raised when repository-local Git configuration is unsafe for discovery."""
+
+
 RECEIPT_CACHE_ERRORS = (
     OSError,
     RuntimeError,
@@ -109,6 +113,146 @@ def git_discovery_environment() -> dict[str, str]:
     for name in ("GIT_DIR", "GIT_WORK_TREE"):
         env.pop(name, None)
     return env
+
+
+def _read_metadata_file(path: Path, label: str) -> str:
+    try:
+        return path.read_text(encoding="utf-8").strip()
+    except OSError as error:
+        raise RepositoryConfigError(f"cannot read {label} {path}: {error}") from error
+
+
+def _resolve_metadata_path(base: Path, value: str, label: str) -> Path:
+    if not value:
+        raise RepositoryConfigError(f"{label} is empty")
+    path = Path(value)
+    if not path.is_absolute():
+        path = base / path
+    try:
+        return path.resolve(strict=True)
+    except OSError as error:
+        raise RepositoryConfigError(f"cannot resolve {label} {path}: {error}") from error
+
+
+def _git_config_values(path: Path, key: str) -> list[str]:
+    """Read one explicit Git config file without consulting repository discovery."""
+    env = os.environ.copy()
+    for name in ("GIT_DIR", "GIT_WORK_TREE"):
+        env.pop(name, None)
+    env["GIT_CONFIG_NOSYSTEM"] = "1"
+    env["GIT_CONFIG_GLOBAL"] = os.devnull
+    env["GIT_CONFIG_SYSTEM"] = os.devnull
+    try:
+        done = subprocess.run(
+            ["git", "config", "--file", str(path), "--get-all", key],
+            cwd=ROOT,
+            env=env,
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+    except OSError as error:
+        raise RepositoryConfigError(f"cannot run Git config for {path}: {error}") from error
+    if done.returncode == 1:
+        return []
+    if done.returncode:
+        detail = done.stderr.strip() or done.stdout.strip()
+        raise RepositoryConfigError(f"cannot read Git config {path}: {detail}")
+    return done.stdout.splitlines()
+
+
+def _config_bool(path: Path, key: str, value: str) -> bool:
+    normalized = value.strip().lower()
+    if normalized in {"true", "yes", "on", "1"}:
+        return True
+    if normalized in {"false", "no", "off", "0"}:
+        return False
+    raise RepositoryConfigError(f"{path} has invalid boolean {key}={value!r}")
+
+
+def _is_absolute_path_value(value: str) -> bool:
+    import ntpath
+    import posixpath
+
+    return Path(value).is_absolute() or ntpath.isabs(value) or posixpath.isabs(value)
+
+
+def _is_local_worktree_path(value: str) -> bool:
+    """Return whether an absolute worktree config value names this checkout."""
+    import ntpath
+
+    if not _is_absolute_path_value(value):
+        return True
+    if os.name != "nt" and ntpath.isabs(value) and not Path(value).is_absolute():
+        return False
+    try:
+        configured = Path(value).expanduser().resolve(strict=False)
+        root = ROOT.resolve(strict=False)
+    except OSError:
+        return False
+    return os.path.normcase(os.path.abspath(configured)) == os.path.normcase(os.path.abspath(root))
+
+
+def repository_config_paths() -> tuple[Path, Path | None]:
+    """Return the common config and active worktree config paths without Git discovery."""
+    dot_git = ROOT / ".git"
+    if dot_git.is_dir():
+        git_directory = dot_git.resolve(strict=True)
+        common_directory = git_directory
+    elif dot_git.is_file():
+        metadata = _read_metadata_file(dot_git, "Git metadata file")
+        first_line = metadata.splitlines()[0].strip() if metadata else ""
+        if not first_line.startswith("gitdir:"):
+            raise RepositoryConfigError(f"invalid Git metadata file {dot_git}: {first_line!r}")
+        git_directory = _resolve_metadata_path(
+            ROOT, first_line[len("gitdir:") :].strip(), "gitdir from .git"
+        )
+        commondir_file = git_directory / "commondir"
+        if commondir_file.is_file():
+            common_directory = _resolve_metadata_path(
+                git_directory,
+                _read_metadata_file(commondir_file, "commondir file"),
+                "commondir from worktree metadata",
+            )
+        else:
+            common_directory = git_directory
+    else:
+        raise RepositoryConfigError(f"cannot find Git metadata at {dot_git}")
+
+    common_config = common_directory / "config"
+    if not common_config.is_file():
+        raise RepositoryConfigError(f"cannot find repository-local Git config at {common_config}")
+
+    worktree_config = None
+    worktree_config_values = _git_config_values(common_config, "extensions.worktreeConfig")
+    if worktree_config_values and _config_bool(
+        common_config, "extensions.worktreeConfig", worktree_config_values[-1]
+    ):
+        candidate = git_directory / "config.worktree"
+        if candidate.is_file():
+            worktree_config = candidate
+    return common_config, worktree_config
+
+
+def guard_repository_config() -> None:
+    """Reject repository-local worktree paths that can break Git discovery."""
+    common_config, worktree_config = repository_config_paths()
+    values = _git_config_values(common_config, "core.worktree")
+    if values:
+        raise RepositoryConfigError(
+            f"unsafe repository-local Git config {common_config} sets "
+            f"core.worktree={values[-1]!r}; remove that local entry after checking "
+            "that no legitimate per-worktree configuration depends on it"
+        )
+
+    if worktree_config is not None:
+        values = _git_config_values(worktree_config, "core.worktree")
+        for value in values:
+            if not _is_local_worktree_path(value):
+                raise RepositoryConfigError(
+                    f"unsafe worktree Git config {worktree_config} sets "
+                    f"core.worktree={value!r}; it does not name this checkout"
+                )
 
 
 def git_output(*arguments: str) -> str:
@@ -987,6 +1131,12 @@ def doctor() -> int:
 
 
 def main() -> int:
+    try:
+        guard_repository_config()
+    except RepositoryConfigError as error:
+        print(f"ERROR: {error}", file=sys.stderr)
+        return 1
+
     parser = argparse.ArgumentParser(description=__doc__)
     subparsers = parser.add_subparsers(dest="command", required=True)
 
