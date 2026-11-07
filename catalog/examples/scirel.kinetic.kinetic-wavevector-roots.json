@@ -208,12 +208,12 @@
   },
   {
    "name": "converged",
-   "description": "Whether the exit flag is positive at each frequency point (that is, the reference runtime judged convergence)",
+   "description": "Whether the solver converged at each frequency point, following the SciPy `success` convention: the residual or step-size criterion was met (`exit_flags` of 1, 2 or 3)",
    "units": "not applicable",
    "shape": "`(F,)` one-dimensional frequency-axis boolean array",
    "dtype": "bool",
    "required": true,
-   "constraints": "When false, the root is still a numerical stationary point or an unconverged point of the determinant; the caller must decide acceptance from `residuals` and `determinant_scale`."
+   "constraints": "When false the exit flag is non-positive (`0` iteration or evaluation limit reached, `-2` degenerate Jacobian, `-3` collapsed trust region); the root is still a numerical stationary point of the determinant and the caller must decide acceptance from `residuals` and `determinant_scale`."
   },
   {
    "name": "omegas",
