@@ -80,7 +80,7 @@ def prepare(payload: Path, metadata: Path, output: Path, path_map: Path | None =
         admission.check_path_map(mapping, members, stored, errors)
         if errors:
             return report
-        admission.check_references(final, members, errors)
+        admission.check_references(final, members, stored, errors)
         if errors:
             return report
         # Catch non-encodable metadata before creating the new directory.

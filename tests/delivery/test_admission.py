@@ -63,6 +63,51 @@ def _write_final(directory: Path, *, path_map_bytes=b"{}\n", **overrides) -> Pat
     return directory
 
 
+def _rebind(directory: Path, final: dict) -> None:
+    """Rewrite FINAL/FILES/ROOT from what is actually on disk."""
+    final_path = directory / "FINAL.json"
+    members = sorted(
+        path.relative_to(directory).as_posix()
+        for path in directory.rglob("*")
+        if path.is_file() and path.name not in {"FILES.json", "ROOT.sha256"}
+    )
+    final["payload_files"] = len(members)
+    while True:
+        final_path.write_text(json.dumps(final, indent=1) + "\n", encoding="utf-8")
+        total = sum((directory / name).stat().st_size for name in members)
+        if final["payload_bytes"] == total:
+            break
+        final["payload_bytes"] = total
+    entries = [
+        {
+            "path": name,
+            "bytes": (directory / name).stat().st_size,
+            "sha256": admission._sha(directory / name),
+        }
+        for name in members
+    ]
+    (directory / "FILES.json").write_text(
+        json.dumps({"schema": "scirel.final-files", "files": entries}, indent=1) + "\n",
+        encoding="utf-8",
+    )
+    admission._emit_root(directory)
+
+
+def _write_composition(
+    directory: Path, *, graph_members=admission.GRAPH_REQUIRED_MEMBERS, create_directory=True
+) -> Path:
+    """Declare a composition whose callable package contains only ``graph_members``."""
+    composition = directory / "task_graphs" / "example"
+    if create_directory:
+        composition.mkdir(parents=True, exist_ok=True)
+    for name in graph_members:
+        (composition / name).write_bytes(f"{name} bytes\n".encode("utf-8"))
+    final = json.loads((directory / "FINAL.json").read_text(encoding="utf-8"))
+    final["compositions"] = [{"directory": "task_graphs/example", "name": "example"}]
+    _rebind(directory, final)
+    return directory
+
+
 def test_valid_submission_passes(tmp_path):
     report = admission.validate(_write_final(tmp_path / "FINAL"))
     assert report["status"] == "PASS", report["errors"]
@@ -123,6 +168,51 @@ def test_license_reference_must_be_a_member(tmp_path):
     report = admission.validate(final)
     assert report["status"] == "FAIL"
     assert any("license reference" in error for error in report["errors"])
+
+
+def test_composition_with_complete_graph_package_passes(tmp_path):
+    final = _write_composition(_write_final(tmp_path / "FINAL"))
+    report = admission.validate(final)
+    assert report["status"] == "PASS", report["errors"]
+
+
+def test_composition_without_any_graph_artifact_is_rejected(tmp_path):
+    """The Pleiades failure mode: FINAL declares a composition but ships no graph."""
+    final = _write_composition(_write_final(tmp_path / "FINAL"), graph_members=())
+    report = admission.validate(final)
+    assert report["status"] == "FAIL"
+    missing = {
+        "graph.py",
+        "task_graph.yaml",
+        "test_task_graph.py",
+    }
+    assert {
+        name
+        for name in missing
+        if any(f"has no admitted graph artifact {name!r}" in error for error in report["errors"])
+    } == missing
+
+
+@pytest.mark.parametrize("name", sorted(admission.GRAPH_REQUIRED_MEMBERS))
+def test_composition_missing_one_graph_member_is_rejected(tmp_path, name):
+    kept = tuple(item for item in admission.GRAPH_REQUIRED_MEMBERS if item != name)
+    final = _write_composition(_write_final(tmp_path / "FINAL"), graph_members=kept)
+    report = admission.validate(final)
+    assert report["status"] == "FAIL"
+    assert any(f"has no admitted graph artifact {name!r}" in error for error in report["errors"]), (
+        report["errors"]
+    )
+
+
+def test_composition_directory_must_be_stored(tmp_path):
+    final = _write_composition(
+        _write_final(tmp_path / "FINAL"), graph_members=(), create_directory=False
+    )
+    report = admission.validate(final)
+    assert report["status"] == "FAIL"
+    assert any(
+        "composition directory is not stored in the package" in error for error in report["errors"]
+    ), report["errors"]
 
 
 def test_unsorted_manifest_rejected(tmp_path):

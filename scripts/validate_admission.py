@@ -22,6 +22,11 @@ PATH_MAP_SCHEMA = ROOT / "contracts/admission/path-map.schema.json"
 BOUND = ("FINAL.json", "FILES.json", "PATH_MAP.json")
 ROOT_BINDING = "ROOT.sha256"
 CONTROLS = frozenset((*BOUND, ROOT_BINDING))
+# A declared composition must carry the callable TaskGraph package, not just a
+# directory path. Omitting these lets an admission be formally valid while the
+# bound graph artifact is absent, which is exactly how a composition loses its
+# reviewed evidence.
+GRAPH_REQUIRED_MEMBERS = ("graph.py", "task_graph.yaml", "test_task_graph.py")
 DERIVED_KEYS = frozenset(
     ("schema", "files", "path_map", "root_binding", "payload_files", "payload_bytes")
 )
@@ -231,7 +236,7 @@ def _check_final(final, errors: list[str]) -> None:
     check_schema(final, FINAL_SCHEMA, errors, "FINAL.json")
 
 
-def check_references(final: dict, members: set[str], errors: list[str]) -> None:
+def check_references(final: dict, members: set[str], stored: set[str], errors: list[str]) -> None:
     for reference in final["license"]["references"]:
         if _safe_relative(reference, errors, "license reference") and reference not in members:
             errors.append(f"FINAL.json: license reference is not a FILES member: {reference}")
@@ -239,7 +244,21 @@ def check_references(final: dict, members: set[str], errors: list[str]) -> None:
         if _safe_relative(value, errors, f"stage_evidence.{key}") and value not in members:
             errors.append(f"FINAL.json: stage_evidence.{key} is not a FILES member: {value}")
     for item in final.get("compositions", []):
-        _safe_relative(item["directory"], errors, "composition directory")
+        directory = item["directory"]
+        if not _safe_relative(directory, errors, "composition directory"):
+            continue
+        if directory not in stored:
+            errors.append(
+                f"FINAL.json: composition directory is not stored in the package: {directory}"
+            )
+            continue
+        for name in GRAPH_REQUIRED_MEMBERS:
+            member = f"{directory}/{name}"
+            if member not in members:
+                errors.append(
+                    f"FINAL.json: composition {directory!r} has no admitted graph artifact "
+                    f"{name!r} in FILES.json"
+                )
 
 
 def check_path_map(mapping, members: set[str], stored: set[str], errors: list[str]) -> None:
@@ -357,7 +376,7 @@ def validate(final_dir: Path, *, emit_root: bool = False) -> dict:
             errors.append("FINAL.json: payload_files does not match FILES member count")
         if final["payload_bytes"] != total:
             errors.append("FINAL.json: payload_bytes does not match FILES byte sum")
-        check_references(final, members, errors)
+        check_references(final, members, stored, errors)
         check_path_map(mapping, members, stored, errors)
         if emit_root and not errors:
             _emit_root(final_dir)
