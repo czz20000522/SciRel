@@ -3,12 +3,21 @@ from scirel.inference.direct_anisotropic_inversion import solve_direct_anisotrop
 from cross_domain._review_bindings import load_asset as _load_asset, load_callable as _load_callable
 from pathlib import Path
 from functools import partial
+import hashlib
 import inspect
+import json
+import re
 
 import numpy as np
 import pytest
 
 from scirel.inference import direct_anisotropic_inversion as composition
+
+ROOT = Path(__file__).resolve().parents[3]
+# 现存 composition.yaml 是 later snapshot，不是准入原件；准入原件的字节不在本仓库，
+# 判定过程与证据见 catalog/review/DIRECT_INVERSION_ARTIFACT.md。
+LOCKED_COMPOSITION_SHA256 = "563d23f8d3d5812555dcac044c4f322d139094a5589c7562dc3345a05145956d"
+HELD_ASSET = "scirel.inference.direct-anisotropic-inversion"
 
 
 def _callable_loader(asset_ref, callable_name=None):
@@ -130,6 +139,29 @@ def test_yaml_declares_explicit_cross_node_ports():
     assert "N6 required Picard convergence tolerance" in contract
     assert "N6 required Picard iteration limit" in contract
     assert "N6 required Picard relaxation" in contract
+
+
+# 验证：现存 composition.yaml 的字节被钉住。它是 later snapshot，
+# 不是准入原件；改动它之前必须先面对"这是不是 substitution"。
+def test_composition_yaml_bytes_are_locked():
+    payload = Path(__file__).with_name("composition.yaml").read_bytes()
+    assert hashlib.sha256(payload).hexdigest() == LOCKED_COMPOSITION_SHA256
+
+
+# 验证：现存快照与合同 composition 不是同一版，资产因此仍在 hold。
+# 这条不判断哪一版正确，只把"两者不同版"变成机器可见的事实。
+def test_composition_yaml_is_not_the_admitted_artifact():
+    text = Path(__file__).with_name("composition.yaml").read_text(encoding="utf-8")
+    graph_nodes = set(re.findall(r"^- id: (\S+)", text, re.M))
+    contract = json.loads(
+        (ROOT / "catalog/review/examples" / f"{HELD_ASSET}.json").read_text(encoding="utf-8")
+    )
+    contract_nodes = {node["id"] for node in contract["composition"]["nodes"]}
+    assert graph_nodes != contract_nodes
+    assert graph_nodes & contract_nodes == {"direct_optimizer"}
+    hold = json.loads((ROOT / "catalog/review/HOLD.json").read_text(encoding="utf-8"))
+    record = hold["assets"][HELD_ASSET]
+    assert "exact admitted direct-inversion graph artifact is missing" in record["reason"]
 
 
 # 验证：相同 seed、bounds 和 fit_keys 产生相同 permutation 和 strata 内样本。
