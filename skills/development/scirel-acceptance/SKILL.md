@@ -30,6 +30,9 @@ remove. Missing or non-matching requested receipts are cache misses and run the 
 Unsafe cache directories and unreadable or malformed current receipts are also misses; malformed
 unrelated entries are pruned when possible or skipped without hiding a readable current receipt.
 
+把 receipt 变成 PR 上可核对的验收证据（模板原文、字段来源、哪句话不许写）见
+[`references/pr-evidence.md`](references/pr-evidence.md)，入口是 `python3 scripts/acceptance_evidence.py`。
+
 It runs the full test suite, the review registry gate, contract signatures and examples, the docstring and contract sync check, the scan for new hazard patterns, the documentation build, the report validator on every solved example, the lockfile check, and a wheel build with its exposure check.
 
 ## Docstring and contract: one source of truth

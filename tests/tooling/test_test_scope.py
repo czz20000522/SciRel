@@ -48,6 +48,7 @@ def test_consumer_tools_select_the_delivery_tests(script):
         ("validate_capability_runtime_closure.py", {"architecture"}),
         ("validate_runtime_imports.py", {"architecture"}),
         ("dev_container.py", {"tooling", "architecture"}),
+        ("acceptance_evidence.py", {"tooling"}),
     ],
 )
 def test_shared_tools_select_direct_and_transitive_consumer_layers(script, owners):

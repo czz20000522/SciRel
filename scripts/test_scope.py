@@ -39,6 +39,7 @@ FULL_SUITE_EXIT = 2
 # another script. New tools must declare their consumers instead of silently
 # inheriting tooling/architecture, which misses delivery and docs regressions.
 SCRIPT_LAYERS = {
+    "acceptance_evidence.py": ("tooling",),
     "audit_public_export_documents.py": ("architecture",),
     "build_capability_matrix.py": ("tooling", "docs", "delivery"),
     "build_catalog.py": ("tooling", "architecture"),
