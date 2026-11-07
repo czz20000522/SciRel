@@ -988,11 +988,8 @@ def _legacy_bonk_result(
             "root_valid": np.asarray(valid, dtype=np.uint8),
             "nx": _mat_scalar(len(frequencies)),
             "options": {
-                "Display": "off",
-                "TolFun": _mat_scalar(1e-16),
-                "TolX": _mat_scalar(1e-16),
-                "MaxIter": _mat_scalar(400),
-                "MaxFunEvals": _mat_scalar(100),
+                "xtol": _mat_scalar(1e-12),
+                "maxfev": _mat_scalar(100),
             },
             "out": {
                 "iterations": _mat_scalar(iterations[-1, 0]),
