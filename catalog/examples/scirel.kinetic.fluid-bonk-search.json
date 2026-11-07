@@ -25,8 +25,8 @@
    "Declared Python 3.14 runtime with NumPy 2.5.4 and SciPy 1.18.1; no external runtime is required."
   ],
   "supported": [
-   "Three complete cases and source default77-frequency axis; arbitrary valid finite supplied axes.",
-   "Original solver tolerances; explicit bounded attempts and root verification."
+   "Three complete cases and source default78-frequency axis; arbitrary valid finite supplied axes.",
+   "SciPy hybr tolerances (xtol=1e-12, maxfev=100); explicit bounded attempts and root verification."
   ]
  },
  "asset_id": "scirel.kinetic.fluid-bonk-search",
@@ -118,8 +118,8 @@
    "Pure-Python execution is tested on this host; native parity is not claimed."
   ],
   "scope": [
-   "Three complete cases and source default77-frequency axis; arbitrary valid finite supplied axes.",
-   "Original solver tolerances; explicit bounded attempts and root verification."
+   "Three complete cases and source default78-frequency axis; arbitrary valid finite supplied axes.",
+   "SciPy hybr tolerances (xtol=1e-12, maxfev=100); explicit bounded attempts and root verification."
   ],
   "tests": [
    "tests/kinetic/test_fluid_spectrum_full.py"
@@ -276,7 +276,7 @@
      "continue_when": "fsolve has budget and has not terminated; after an unverified attempt advance to next fixed seed",
      "id": "bonk_search",
      "initialization": "per omega fixed seeds0.6,0.6+0.1i,0.6−0.1i,1,2 in q=kx/kn",
-     "iteration_bound": "five attempts per omega; each MaxIter400,MaxFunEvals100; TolFun/TolX1e-16",
+     "iteration_bound": "five attempts per omega; SciPy hybr xtol=1e-12, maxfev=100",
      "nonconvergence": "return all attempts and best candidate with root_valid false; no invented root",
      "state": "q real/imaginary coordinates and fsolve trust region; local candidate/attempt diagnostics",
      "stop_when": "both normalized determinant and sigma_min(D)/max(1,sigma_max(D))<=1e-8, or all five attempts terminate",

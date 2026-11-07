@@ -32,7 +32,7 @@
  "asset_id": "scirel.kinetic.fluid-em-matrix",
  "example": {
   "code": "from scirel.kinetic.fluid_spectrum import derive_fluid_case,assemble_fluid_em\ns=derive_fluid_case('em',2)\nr=assemble_fluid_em(s,.83*s['wn'].item(),8,0)\n",
-  "description": "Pure Python/NumPy implementation; executes on this macOS host without the reference runtime.",
+  "description": "API-shape example with max_harmonic=0; N=0 does not demonstrate matrix convergence against the exact kinetic dielectric.",
   "expected": "PASS: the example runs locally and returns the declared output structure."
  },
  "failure_semantics": {
