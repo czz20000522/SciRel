@@ -208,12 +208,12 @@
   },
   {
    "name": "converged",
-   "description": "Whether the exit flag is positive at each frequency point (that is, the reference runtime judged convergence)",
+   "description": "Whether the solver returned a finite complex root at each frequency point.",
    "units": "not applicable",
    "shape": "`(F,)` one-dimensional frequency-axis boolean array",
    "dtype": "bool",
    "required": true,
-   "constraints": "When false, the root is still a numerical stationary point or an unconverged point of the determinant; the caller must decide acceptance from `residuals` and `determinant_scale`."
+   "constraints": "False only for a non-finite root; `residuals` and `determinant_scale` remain the caller acceptance metrics."
   },
   {
    "name": "omegas",
