@@ -1,4 +1,4 @@
-"""Input contract shared by the collision-energy cross-section fits."""
+"""Input contract shared by the collision-energy and temperature fits."""
 
 from __future__ import annotations
 

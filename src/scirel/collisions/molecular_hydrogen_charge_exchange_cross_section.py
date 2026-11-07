@@ -1,35 +1,21 @@
 """Molecular-hydrogen charge-exchange cross-section fit.
 
-One leaf recovered from the saved the neutral-transport formulation ``sigma_cx_hh`` slice,
-integrated as
-:func:`evaluate_molecular_hydrogen_charge_exchange_cross_section`:
+Evaluate the H2 + H2+ charge-exchange cross section in ``m^2`` from collision
+energy in ``eV`` using one Janev nine-coefficient logarithmic polynomial,
+``exp(polyval(log(E_clipped), a)) * 1e-4``, on ``[0.1, 2.01e4] eV``.
 
-the H2 + H2+ charge-exchange cross section in ``m^2`` as a function of the
-collision energy in eV -- a Janev nine-coefficient logarithmic polynomial,
-``exp(polyval(log(E), a)) * 1e-4``, evaluated on the source-clipped domain
-``[0.1, 2.01e4] eV``.
+**Boundary semantics.**  A positive input below the lower fit endpoint returns
+the lower endpoint silently.  A positive input above the upper fit endpoint
+returns the upper endpoint and emits one ``RuntimeWarning``; it is a declared
+model limit, not an extrapolation.  Negative energies are rejected before
+evaluation.  The fit is non-monotonic between about 978 and 8291 eV, so
+monotonicity is not promised.
 
-**The fit domain is source-clipped, and the clipping is declared.**  Endpoint
-values repeat outside the fit's range.  This is the saved source's declared
-behavior, exercised by its package tests, and is kept unchanged.
-
-**Input-contract repairs relative to the saved implementation.**  The saved
-document declares the energy nonnegative, but its implementation silently
-clipped negative energies to the lower endpoint; this module rejects them.
-Non-real energies, including numeric strings and boolean cells, are also
-rejected before float conversion.  The arithmetic is preserved on finite
-nonnegative real inputs.
-
-Evidence ceiling: this module establishes the clipped fit against an
-independent evaluation of the same formula, the endpoint clipping, the input
-and failure contracts, these repairs, and -- in the environment-gated replay
-test -- exact agreement with the saved the neutral-transport formulation implementation on the declared
-domain.  The saved bundle's strict D1 qualification has been withdrawn; that
-replay is historical development evidence, not qualified-L1 provenance.  No
-test establishes the fit against an external physical cross-section
-reference: the saved package records that residual as ``validation_oracle_gap``.
-This module evaluates no velocity mesh, no rate coefficient and no transport
-source; those are separate relations.
+Evidence ceiling: tests establish this relation against an independent
+evaluation of the same formula, endpoint behavior, warnings, and input/failure
+contracts.  No external atomic-physics oracle is bound.  This callable
+evaluates no velocity mesh, rate coefficient, or transport source; those are
+separate relations.
 """
 
 from __future__ import annotations
@@ -37,12 +23,14 @@ from __future__ import annotations
 
 import numpy as np
 
-from ._energy_input import clipped_energy, log_polynomial
+from ._energy_input import clipped_energy, log_polynomial, warn_above_fit
 
 __all__ = [
     "evaluate_molecular_hydrogen_charge_exchange_cross_section",
 ]
 
+_FIT_LOWER_EV = 0.1
+_FIT_UPPER_EV = 2.01e4
 _COEFFICIENTS = np.array(
     [
         -3.427958758517e1,
@@ -65,8 +53,9 @@ def evaluate_molecular_hydrogen_charge_exchange_cross_section(energy_ev):
     ----------
     energy_ev : real scalar or array-like
         Collision energy. [eV] Shape: ``scalar or array``. The value must be finite
-        and nonnegative. Values outside ``[0.1, 2.01e4]`` eV are clipped to the
-        range endpoints.
+        and nonnegative. Values below ``0.1 eV`` are clipped to that endpoint
+        silently. Values above ``2.01e4 eV`` are clipped to that endpoint and emit
+        ``RuntimeWarning``.
 
     Returns
     -------
@@ -78,6 +67,12 @@ def evaluate_molecular_hydrogen_charge_exchange_cross_section(energy_ev):
     ------
     ValueError
         If ``energy_ev`` is not real numeric, is non-finite or is negative.
+
+    Warns
+    -----
+    RuntimeWarning
+        If a requested energy is above ``2.01e4 eV``. The returned value is the
+        endpoint value, not an extrapolation.
 
     See Also
     --------
@@ -91,9 +86,8 @@ def evaluate_molecular_hydrogen_charge_exchange_cross_section(energy_ev):
     -----
     The relation uses one nine-coefficient logarithmic polynomial,
     ``exp(polyval(log(E_clipped), a)) * 1e-4``, on the clipped fit interval.
-    Endpoint clipping is silent and intentional. The frozen fit is non-monotonic
-    between about 978 and 8291 eV, so monotonicity is not promised. No external
-    atomic-physics oracle is bound.
+    The frozen fit is non-monotonic between about 978 and 8291 eV, so
+    monotonicity is not promised. No external atomic-physics oracle is bound.
 
     Examples
     --------
@@ -114,6 +108,12 @@ def evaluate_molecular_hydrogen_charge_exchange_cross_section(energy_ev):
     ... else:
     ...     raise AssertionError('a negative energy must be rejected')
     """
-    clipped = clipped_energy(energy_ev, 0.1, 2.01e4)
-    log_sigma = log_polynomial(np.log(clipped), _COEFFICIENTS)
+    raw_energy = clipped_energy(energy_ev, _FIT_LOWER_EV, np.inf)
+    warn_above_fit(
+        raw_energy,
+        _FIT_UPPER_EV,
+        "evaluate_molecular_hydrogen_charge_exchange_cross_section",
+    )
+    energy = clipped_energy(raw_energy, _FIT_LOWER_EV, _FIT_UPPER_EV)
+    log_sigma = log_polynomial(np.log(energy), _COEFFICIENTS)
     return np.exp(log_sigma) * 1.0e-4

@@ -79,6 +79,13 @@ def test_clipping_and_scalar_shape():
     assert np.ndim(evaluate_hydrogen2_charge_exchange_rate(1.0, 2.0)) == 0
 
 
+def test_upper_clipping_emits_one_runtime_warning():
+    with pytest.warns(RuntimeWarning, match="upper limit"):
+        above = evaluate_hydrogen2_charge_exchange_rate(np.array([50_000.0]), np.array([1.0]))
+    edge = evaluate_hydrogen2_charge_exchange_rate(np.array([20_100.0]), np.array([1.0]))
+    np.testing.assert_array_equal(above, edge)
+
+
 @pytest.mark.parametrize(
     "temperature,energy",
     [
