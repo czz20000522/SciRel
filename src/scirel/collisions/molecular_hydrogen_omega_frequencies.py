@@ -210,5 +210,6 @@ def assemble_molecular_hydrogen_omega_frequencies(
         flow_name="VxH2",
         stress_name="Wperp_paraH2",
         mass_fractions=(1 / 3, 1 / 3),
+        conditioning_policy="molecular_near_equilibrium",
     )
     return Result(result)

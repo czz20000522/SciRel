@@ -38,6 +38,7 @@ def reduce_elastic_moments(
     flow_name,
     stress_name,
     mass_fractions,
+    conditioning_policy=None,
 ):
     f, density, alpha1, alpha2, sig_self, wr, dx, vr, vx, flow1, flow2 = (
         _real(v, n)
@@ -141,6 +142,9 @@ def reduce_elastic_moments(
         stress[target_cells] = (integral((f - target) * kernel) / density)[target_cells]
     elif target_distribution is not None:
         raise ValueError("target_distribution supplied without a target-state cell")
+    molecular_conditioning = conditioning_policy == "molecular_near_equilibrium"
+    if molecular_conditioning:
+        conditioning_boundary = 8.0 * np.finfo(float).eps * max(float(np.max(vx) - np.min(vx)), 1.0)
     with np.errstate(over="ignore", invalid="ignore", divide="ignore"):
         # SIG is column-weighted in Fortran velocity order.  Keep each
         # spatial cell as an m-by-1 matrix-vector product while broadcasting
@@ -163,6 +167,10 @@ def reduce_elastic_moments(
     ):
         moment = numerator if on else np.zeros(nx)
         defined = denominator != 0 if on else np.ones(nx, dtype=bool)
+        ill_conditioned = np.zeros(nx, dtype=bool)
+        if molecular_conditioning and on:
+            ill_conditioned = (np.abs(denominator) <= conditioning_boundary) & (denominator != 0)
+            defined = defined & np.logical_not(ill_conditioned)
         omega = np.zeros(nx) if not on else np.full(nx, np.nan)
         if on:
             with np.errstate(over="ignore", invalid="ignore", divide="ignore"):
@@ -170,6 +178,7 @@ def reduce_elastic_moments(
         status = np.full(nx, "disabled", dtype="<U32")
         if on:
             status[:] = "undefined_zero_denominator"
+            status[ill_conditioned] = "ill_conditioned_denominator"
             status[defined & (omega >= 0)] = "finite_nonnegative"
             status[defined & (omega < 0)] = "negative_no_bgk_closure"
         with np.errstate(over="ignore", invalid="ignore"):
