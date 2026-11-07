@@ -44,6 +44,9 @@ python3 scripts/dev_container.py pytest tests/<domain>/test_<asset>.py
    保留原断言与容差；不得为让实现通过而放宽容差。
 3. 未公开发布前公共 API 可以重构（改域名、函数名、签名），不保留兼容别名；同时更新合同、
    测试与双语阅读层。
+4. 公共 API 的命名与数值语义对标 SciPy（参数名、默认值、结果字段、成功判定），不自造约定；
+   SciPy 没有覆盖的部分（合同机制、三层角色、catalog 准入）保留项目自有规范。细则见
+   [`RULES.md`](RULES.md) 第 15 节。
 
 ## 实现与性能
 
