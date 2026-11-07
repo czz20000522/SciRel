@@ -3407,19 +3407,19 @@
   },
   {
    "asset_id": "scirel.collisions.molecular-hydrogen-omega-frequencies",
-   "source_sha256": "79d2ddc184be39e266af6f7aa44e06711d45d79c86ae078e45646e401607ce67",
-   "summary": "在每个空间单元独立归约分子氢弹性碰撞动量与应力矩，返回归一化系数 Omega（m⁻¹）、物理频率 nu（s⁻¹）及可定义性。零分母保留碰撞矩并显式返回未定义频率，不用人为下限或截正掩盖。顶层结果为 scirel._result.Result 映射；键访问保持可用，不冲突字段也支持属性访问。",
-   "definition": "令 w_ij=Vr2pidVr_i*dVx_j，n=Σwf，u=Σwf vx/n，U=Vth*u，K=vr²−2(vx−u)²。central 状态取 W=ΣwfK/n；target 状态取 W=Σw(f−M)K/n，M 必须保持本单元粒子数、平均速度与总动能。两混合通道 N=Σwf Alpha/n、d=(U−U_background)/Vth；自碰撞 Alpha=SIG_self@F(f)，N=Σwf Alpha/n、d=W。Omega=N/d，nu=Vth*Omega，不截负、不加下限。混合物理加速度 moment_rate=−β Vth² N，自碰撞应力变化率=−Vth³ N；原子 β=(1/2,2/3)，分子 β=(1/3,1/3)。d=0 时 Omega/nu=NaN、defined=False；有限 N 与 moment_rate 仍返回。关闭通道为精确零且状态 disabled。总频率为三通道之和，传播启用通道的未定义值。",
+   "source_sha256": "d42fd79bf25a932471e84ffd7c83d5ddb4ed0a6484c8b5e2b58b207cf4756f94",
+   "summary": "在每个空间单元独立归约分子氢弹性碰撞动量与应力矩，返回归一化系数 Omega（m⁻¹）、物理频率 nu（s⁻¹）及可定义性。精确零和分子病态分母都保留碰撞矩并显式未定义，不用人为下限、截正或绝对值掩盖。顶层结果为 scirel._result.Result 映射；键访问保持可用，不冲突字段也支持属性访问。",
+   "definition": "令 w_ij=Vr2pidVr_i*dVx_j，n=Σwf，u=Σwf vx/n，U=Vth*u，K=vr²−2(vx−u)²。central 状态取 W=ΣwfK/n；target 状态取 W=Σw(f−M)K/n，M 必须保持本单元粒子数、平均速度与总动能。两混合通道 N=Σwf Alpha/n、d=(U−U_background)/Vth；自碰撞 Alpha=SIG_self@F(f)，N=Σwf Alpha/n、d=W。Omega=N/d，nu=Vth*Omega，不截负、不加下限。混合物理加速度 moment_rate=−β Vth² N，自碰撞应力变化率=−Vth³ N；原子 β=(1/2,2/3)，分子 β=(1/3,1/3)。d=0 时 Omega/nu=NaN、defined=False，状态 undefined_zero_denominator；有限 N 与 moment_rate 仍返回。本分子资产中，非零 d 满足 abs(d)<=8*eps*max(vx.max()-vx.min(),1) 时标为 ill_conditioned_denominator，并进入同样的 NaN/defined=False 商边界。关闭通道为精确零且状态 disabled。总频率为三通道之和，传播启用通道的未定义值。",
    "model": "动量/应力矩匹配的 BGK 近似；不是完整 Boltzmann 碰撞算子，也不由单点 0/0 推断唯一线性化率。",
    "assumptions": [
     "所有速度使用同一 Vth；f 对无量纲速度体积积分得到 m⁻³，SIG 已含目标积分权重，Alpha 与 Omega 的量纲均为 m⁻¹。",
     "两路 Alpha 必须由相同网格上的真实背景分布与对应 SIG 生成；背景流速必须与该分布一致。本函数无法仅从 Alpha 反推出背景分布。",
     "原子、分子与离子属于相同 H 或 D 同位素，混合通道质量分数据此确定；不把 H/D 混合同位素碰撞当作已验证范围。",
     "moment_state 为 central 或 target，可逐单元选择；target 分布非负，并在 64 个 binary64 eps 的积分舍入误差内保持密度、流速与动能。该误差只用于守恒检查，不作用于分母。",
-    "负比值保留并标为 negative_no_bgk_closure，表示该矩不能由非负 BGK 松弛率代表；它不是可直接使用的非负碰撞频率。",
+    "负比值保留并标为 negative_no_bgk_closure，表示该矩不能由非负 BGK 松弛率代表；本分子资产中，非零分母在 8*eps*max(vx.max()-vx.min(),1) 内另标 ill_conditioned_denominator，精确零仍保留 undefined_zero_denominator。二者都不是可直接使用的非负碰撞频率。",
     "有限速度/角网格的 Maxwell 平衡可有应力残差；本函数保留该残差，不能以频率未定义掩盖离散误差。"
    ],
-   "boundary": "有限非负分布，正密度与积分权重，严格递增轴、正半径和 Vth；密度必须等于积分。target 状态按单元验证守恒。启用通道零分母不是输入异常，而是明确的未定义频率。",
+   "boundary": "有限非负分布，正密度与积分权重，严格递增轴、正半径和 Vth；密度必须等于积分。target 状态按单元验证守恒。启用通道精确零分母不是输入异常，而是明确的未定义频率；非零病态分母另有显式状态。",
    "inputs": [
     {
      "name": "fH2",
@@ -3546,7 +3546,7 @@
     {
      "name": "Omega_H2_P",
      "description": "对应通道的归一化矩匹配系数。",
-     "constraints": "可定义时有限且保留符号；启用且分母为零时 NaN；关闭为零。",
+     "constraints": "可定义时有限且保留符号；启用且精确零或病态时 NaN；关闭为零。",
      "dtype": "float64 数组"
     },
     {
@@ -3570,19 +3570,19 @@
     {
      "name": "defined_H2_P",
      "description": "对应频率是否可定义。",
-     "constraints": "关闭通道为 True；启用通道仅在非零分母时为 True。",
+     "constraints": "关闭通道为 True；启用通道在非零且超过分子病态边界的分母时为 True；精确零和病态通道为 False。",
      "dtype": "bool 数组"
     },
     {
      "name": "status_H2_P",
-     "description": "明确区分关闭、有限非负、负比值及零分母。",
-     "constraints": "disabled / finite_nonnegative / negative_no_bgk_closure / undefined_zero_denominator。",
+     "description": "明确区分关闭、有限非负、负比值/无非负BGK闭合、精确零未定义以及分子病态分母。",
+     "constraints": "disabled / finite_nonnegative / negative_no_bgk_closure / undefined_zero_denominator / ill_conditioned_denominator。",
      "dtype": "字符串数组"
     },
     {
      "name": "Omega_H2_H",
      "description": "对应通道的归一化矩匹配系数。",
-     "constraints": "可定义时有限且保留符号；启用且分母为零时 NaN；关闭为零。",
+     "constraints": "可定义时有限且保留符号；启用且精确零或病态时 NaN；关闭为零。",
      "dtype": "float64 数组"
     },
     {
@@ -3606,19 +3606,19 @@
     {
      "name": "defined_H2_H",
      "description": "对应频率是否可定义。",
-     "constraints": "关闭通道为 True；启用通道仅在非零分母时为 True。",
+     "constraints": "关闭通道为 True；启用通道在非零且超过分子病态边界的分母时为 True；精确零和病态通道为 False。",
      "dtype": "bool 数组"
     },
     {
      "name": "status_H2_H",
-     "description": "明确区分关闭、有限非负、负比值及零分母。",
-     "constraints": "disabled / finite_nonnegative / negative_no_bgk_closure / undefined_zero_denominator。",
+     "description": "明确区分关闭、有限非负、负比值/无非负BGK闭合、精确零未定义以及分子病态分母。",
+     "constraints": "disabled / finite_nonnegative / negative_no_bgk_closure / undefined_zero_denominator / ill_conditioned_denominator。",
      "dtype": "字符串数组"
     },
     {
      "name": "Omega_H2_H2",
      "description": "对应通道的归一化矩匹配系数。",
-     "constraints": "可定义时有限且保留符号；启用且分母为零时 NaN；关闭为零。",
+     "constraints": "可定义时有限且保留符号；启用且精确零或病态时 NaN；关闭为零。",
      "dtype": "float64 数组"
     },
     {
@@ -3642,13 +3642,13 @@
     {
      "name": "defined_H2_H2",
      "description": "对应频率是否可定义。",
-     "constraints": "关闭通道为 True；启用通道仅在非零分母时为 True。",
+     "constraints": "关闭通道为 True；启用通道在非零且超过分子病态边界的分母时为 True；精确零和病态通道为 False。",
      "dtype": "bool 数组"
     },
     {
      "name": "status_H2_H2",
-     "description": "明确区分关闭、有限非负、负比值及零分母。",
-     "constraints": "disabled / finite_nonnegative / negative_no_bgk_closure / undefined_zero_denominator。",
+     "description": "明确区分关闭、有限非负、负比值/无非负BGK闭合、精确零未定义以及分子病态分母。",
+     "constraints": "disabled / finite_nonnegative / negative_no_bgk_closure / undefined_zero_denominator / ill_conditioned_denominator。",
      "dtype": "字符串数组"
     },
     {
@@ -3688,7 +3688,7 @@
     "invalid_input": "形状、实数有限性、分布非负性、密度/权重正性、轴顺序、布尔开关或目标守恒不满足时抛 ValueError。",
     "runtime_failure": "碰撞矩或本应可定义的频率不可表示为有限 float64 时抛 ValueError。",
     "nonconvergence": "本函数没有迭代；调用方负责速度和角网格收敛。",
-    "partial_results": "成功时返回完整 scirel._result.Result 映射；启用零分母项的 NaN 是明确的未定义结果，其他有限矩保留，不是部分执行成功。"
+    "partial_results": "成功时返回完整 scirel._result.Result 映射；启用通道精确零或分子病态分母的 NaN 是显式未定义结果，其余有限矩仍保留，这不是部分成功。"
    },
    "example": {
     "description": "用实际四通道矩阵和非负物理分布生成 Alpha，再检查命名结果映射、局部矩和单位换算。",
@@ -3703,10 +3703,10 @@
     ],
     "evidence_ceiling": "支持给定矩模型与已测离散输入的物理一致性；不代表完整项目级应用验收、任意分布的非负 BGK 闭合或外部实验精度。作者提交的候选实现仍需独立接收；人工科学认可和公开发行另行决定。",
     "known_limitations": [
-     "矩比在接近零的分母处可能病态；没有任意下限，也不由单点数据虚构平衡线性化率。",
+     "本分子资产中，非零分母在声明的 binary64 病态边界内标为病态；精确零仍保持独立状态。没有任意下限、截断或绝对值，也不由单点数据虚构平衡线性化率。",
      "有限角/速度网格可能产生 Maxwell 应力残差，需按应用收敛检查。",
      "截面拟合、H/D 缩放与分子黏性近似的限制继承；许可仍待判断。",
-     "该实现在零/负分母分支上刻意不追求 source parity：canonical 实现会为混合漂移与自应力分母设下限，并把所有 Omega 裁剪为非负；本资产在零分母时返回 NaN 与 defined=False，负比值返回 negative_no_bgk_closure 状态。canonical 的零累积 sentinel 分支选择由显式 moment_state/target_distribution 取代，目标分支不再依赖全局累积目标的符号。",
+     "该实现在零/负/病态分母分支上刻意不追求 source parity：canonical 实现会为混合漂移与自应力分母设下限，并把所有 Omega 裁剪为非负；本资产在精确零和声明的分子病态边界内返回 NaN 与 defined=False，负比值返回 negative_no_bgk_closure 状态。canonical 的零累积 sentinel 分支选择由显式 moment_state/target_distribution 取代，目标分支不再依赖全局累积目标的符号。",
      "当 SIG 取自碰撞矩阵资产时，自碰撞 nu 和 moment_rate 是使用 3/8 前因子的玻尔兹曼物理速率，是 KN1D 值的三倍。"
     ]
    }
