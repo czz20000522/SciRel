@@ -473,7 +473,7 @@ Maxwellian 初值：归一化与矩
 - 要由已有 ``vr``、``vx`` 构造积分测度：用 :doc:`../reference/generated/scirel.kinetic.cylindrical-velocity-quadrature`。它不生成网格，也不做单位换算。
 - 要构造平移 Maxwellian 初值：用 :doc:`../reference/generated/scirel.kinetic.shifted-maxwellian-seed`。它不做矩补偿，归一化依赖你传入的 ``cylindrical_volume``。
 - 要从分布得到密度、流速、温度、应力和随机热通量：用 :doc:`../reference/generated/scirel.kinetic.axisymmetric-neutral-moments`。注意空切片策略和 ``stress_zz`` 的别名约定。
-- 要组装归一化总损失系数 ``nu/Vth``：用 :doc:`../reference/generated/scirel.kinetic.neutral-total-collision-frequency`。电荷交换启用时必须显式给出逆长度系数场；``D = 0`` 关闭壁面项。
+- 要组装归一化总损失系数 ``nu/Vth``：用 :doc:`../reference/generated/scirel.kinetic.neutral-total-collision-frequency`。电荷交换启用时必须显式给出逆长度系数场；精确零直径 ``D = 0`` 是显式关闭壁面的哨兵值，不是 ``D -> 0+`` 的极限；封闭或退化几何解释由调用方在输运边界层决定。
 - 要组装一维上风系数：用 :doc:`../reference/generated/scirel.kinetic.neutral-upwind-transport-coefficients`。首飞和散射两条路径消费不同的系数，先确定 ``generation_kind``。
 - 要传播一代中性粒子：用 :doc:`../reference/generated/scirel.kinetic.neutral-generation-propagation`。首飞只用正速度边界；散射需要 ``scattered_source_distribution``。
 - 要由终态分布读通量和流速：用 :doc:`../reference/generated/scirel.kinetic.terminal-flux-velocity-reduction`；读压强和温度：用 :doc:`../reference/generated/scirel.kinetic.terminal-pressure-temperature-reduction`；读随机/总热通量：用 :doc:`../reference/generated/scirel.kinetic.terminal-heat-flux-reduction`。

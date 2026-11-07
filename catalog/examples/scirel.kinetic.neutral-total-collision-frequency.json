@@ -30,16 +30,16 @@
   "device_scope": "device-parameterized"
  },
  "identity": {
-  "relation": "alpha_c[vr,vx,x] = optional CX[vr,vx,x] + base[x] + elastic[x] + wall[vr,x], with wall = 2 vr / D[x] where D[x] > 0 and zero where D[x] = 0",
+  "relation": "alpha_c[vr,vx,x] = optional CX[vr,vx,x] + base[x] + elastic[x] + wall[vr,x], with wall = 2 vr / D[x] only where D[x] > 0 and zero where D[x] = 0",
   "direction": "axes, base/elastic/diameter profiles and optional CX field -> (nvr,nvx,nx) total frequency",
-  "definition": "The assembly order (base + elastic + wall, then + CX when enabled); zero pipe diameter yields zero wall loss in those cells (the declared semantics, not an infinite-pipe limit); enabling charge exchange without a field fails closed",
+  "definition": "The assembly order (base + elastic + wall, then + CX when enabled); each spatial cell independently applies wall loss 2*u_r/D only where its diameter is positive, while an exact zero diameter is an explicit wall-off sentinel, not the D -> 0+ limit and not a closed or degenerate geometry model; closing or reflecting the stream is a caller-side transport-boundary decision outside this coefficient assembly; enabling charge exchange without a field fails closed",
   "model": "the total-loss assembly",
   "geometry": "one radial and one axial velocity dimension over one spatial axis",
   "coordinates": "x and pipe diameter in m; vr and vx are dimensionless u=v/Vth; every collision coefficient and alpha are in m^-1.",
   "boundary": "finite one-dimensional axes with positive radial nodes; finite nonnegative base/elastic/diameter profiles of one common spatial shape; CX field (when enabled) finite nonnegative (nvr,nvx,nx)",
   "assumptions": [
    "The normalized wall coefficient 2*u_r/D is the free-flight pipe escape frequency 2*v_r/D divided by Vth; it is not a surface-interaction model.",
-   "A zero pipe diameter means no wall loss in the stated arithmetic; whether the published contract should instead reject zero diameters is an open expert question.",
+   "An exact zero diameter is a declared wall-off sentinel, not the D -> 0+ limit. It does not encode a closed or degenerate geometry; closing, reflecting or interpreting a missing pipe is a caller-side transport-boundary decision outside this coefficient assembly.",
    "Fail-closed finiteness: extreme-but-valid inputs can overflow, so this asset rejects a non-finite result instead of returning it, per the declared finite-output contract. A bounded regression test pins that behaviour.",
    "The public transport convention is u=v/Vth on one caller-selected thermal-speed scale: alpha=nu/Vth has units m^-1, F integrates over normalized velocity volume to number density in m^-3, and every spatial source coefficient is Q/Vth in F/m. Physical rates in s^-1 must be divided by that same Vth before this spatial operator; no automatic conversion is performed."
   ]
@@ -88,7 +88,7 @@
    "shape": "[nx]",
    "dtype": "real array-like",
    "required": true,
-   "constraints": "Finite and nonnegative; zero diameter cells get zero wall loss."
+   "constraints": "Finite and nonnegative; exact zero diameter is a declared wall-off sentinel, not the D -> 0+ limit. The formula itself is only used where diameter is positive."
   },
   {
    "name": "charge_exchange_frequency_m_inv",
