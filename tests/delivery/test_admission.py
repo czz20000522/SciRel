@@ -199,20 +199,19 @@ def test_composition_missing_one_graph_member_is_rejected(tmp_path, name):
     final = _write_composition(_write_final(tmp_path / "FINAL"), graph_members=kept)
     report = admission.validate(final)
     assert report["status"] == "FAIL"
-    assert any(
-        f"has no admitted graph artifact {name!r}" in error for error in report["errors"]
-    ), report["errors"]
+    assert any(f"has no admitted graph artifact {name!r}" in error for error in report["errors"]), (
+        report["errors"]
+    )
 
 
 def test_composition_directory_must_be_stored(tmp_path):
     final = _write_composition(
-        _write_final(tmp_path / "FINAL"), create_directory=False
+        _write_final(tmp_path / "FINAL"), graph_members=(), create_directory=False
     )
     report = admission.validate(final)
     assert report["status"] == "FAIL"
     assert any(
-        "composition directory is not stored in the package" in error
-        for error in report["errors"]
+        "composition directory is not stored in the package" in error for error in report["errors"]
     ), report["errors"]
 
 
