@@ -64,6 +64,13 @@ def test_endpoint_clipping_is_preserved():
     assert result[-1] == result[-2]
 
 
+def test_upper_clipping_emits_runtime_warning():
+    with pytest.warns(RuntimeWarning, match="upper limit"):
+        above = evaluate_molecular_hydrogen_charge_exchange_cross_section(np.array([40_000.0]))
+    edge = evaluate_molecular_hydrogen_charge_exchange_cross_section(np.array([20_100.0]))
+    np.testing.assert_array_equal(above, edge)
+
+
 def test_scalar_input_returns_zero_dimensional_result():
     result = evaluate_molecular_hydrogen_charge_exchange_cross_section(np.asarray(100.0))
     assert np.ndim(result) == 0

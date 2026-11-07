@@ -5,10 +5,12 @@ from __future__ import annotations
 
 import numpy as np
 
-from ._energy_input import log_polynomial, positive_real_array
+from ._energy_input import log_polynomial, positive_real_array, warn_above_fit
 
 __all__ = ["evaluate_janev_electron_impact_ionization_rate"]
 
+_FIT_LOWER_EV = 0.1
+_FIT_UPPER_EV = 2.01e4
 _COEFFICIENTS = {
     "H": np.array(
         [
@@ -50,8 +52,9 @@ def evaluate_janev_electron_impact_ionization_rate(
     electron_temperature_ev : real scalar or array-like
         Electron temperature for the selected Maxwellian fit. [eV] Shape:
         ``scalar or array``. The value must be finite and strictly positive.
-        Positive values outside ``[0.1, 2.01e4]`` eV are clipped to the nearest
-        endpoint.
+        Values below ``0.1 eV`` are clipped to that endpoint silently. Values
+        above ``2.01e4 eV`` are clipped to that endpoint and emit
+        ``RuntimeWarning``.
     target_species : {'H', 'H2'}
         Target-species selector. [dimensionless enumeration] Shape: ``scalar``.
         The value must be the exact string ``'H'`` or ``'H2'``; there is no
@@ -71,6 +74,12 @@ def evaluate_janev_electron_impact_ionization_rate(
         nonpositive, if ``target_species`` is not exactly ``'H'`` or ``'H2'``, or
         if the evaluated rate is not finite and positive.
 
+    Warns
+    -----
+    RuntimeWarning
+        If a temperature is above ``2.01e4 eV``. The returned value is the
+        endpoint value, not an extrapolation.
+
     See Also
     --------
     evaluate_atomic_hydrogen_1s_radiative_recombination_rate : The H(1s)
@@ -83,11 +92,10 @@ def evaluate_janev_electron_impact_ionization_rate(
     The H and H2 branches each use the declared nine-coefficient Janev
     logarithmic polynomial,
     ``exp(polyval(log(T_clipped), a_species)) * 1e-6``. The two coefficient sets
-    are distinct and are not interchangeable. Endpoint clipping is silent and
-    intentional. Each fit has a single temperature maximum in the sampled range
-    (about 137 eV for H and 156 eV for H2), so the rate is not monotone. No
-    external atomic-physics oracle is bound, and a rate coefficient is not by
-    itself a density-scaled source or sink.
+    are distinct and are not interchangeable. Each fit has a single temperature
+    maximum in the sampled range (about 137 eV for H and 156 eV for H2), so the
+    rate is not monotone. No external atomic-physics oracle is bound, and a rate
+    coefficient is not by itself a density-scaled source or sink.
 
     Examples
     --------
@@ -104,7 +112,14 @@ def evaluate_janev_electron_impact_ionization_rate(
     if not isinstance(target_species, str) or target_species not in _COEFFICIENTS:
         raise ValueError("target_species must be H or H2")
     temperature = positive_real_array(electron_temperature_ev, "electron_temperature_ev")
-    clipped = np.clip(temperature, 0.1, 2.01e4)
+    warn_above_fit(
+        temperature,
+        _FIT_UPPER_EV,
+        "evaluate_janev_electron_impact_ionization_rate",
+        quantity="temperature",
+        effect="returns the endpoint rate rather than extrapolating",
+    )
+    clipped = np.clip(temperature, _FIT_LOWER_EV, _FIT_UPPER_EV)
     rate = np.exp(log_polynomial(np.log(clipped), _COEFFICIENTS[target_species])) * 1.0e-6
     if not np.all(np.isfinite(rate)) or np.any(rate <= 0.0):
         raise ValueError("Janev ionization fit produced a non-finite or nonpositive rate")

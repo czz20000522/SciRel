@@ -55,7 +55,7 @@
    "shape": "any (scalar or array)",
    "dtype": "real array-like",
    "required": true,
-   "constraints": "Finite and nonnegative. Values above or below the fit range are clipped to the range endpoints."
+   "constraints": "Finite and nonnegative. Values below the fit range are clipped silently; values above it are clipped to the upper endpoint and emit RuntimeWarning."
   }
  ],
  "outputs": [
@@ -125,7 +125,7 @@
   "known_limitations": [
    "The integrated input check rejects complex, boolean and numeric-string energies before float conversion; no coercion is performed. Valid real-input fit arithmetic is unchanged.",
    "This fit is not validated against an external atomic-physics reference; no external validation gap is closed here.",
-   "Energies outside the fit range silently return the endpoint value; this is the declared clipping convention, not an error.",
+   "Energies outside the fit range return the endpoint value; values above the upper edge emit RuntimeWarning. This remains the declared clipping convention, not an error.",
    "The negative-energy rejection is an explicit precondition of this contract: a negative energy raises ValueError rather than returning the clipped endpoint.",
    "No environment-gated external-implementation comparison exists in this repository; any earlier external comparison is not replayed by the maintained tests.",
    "Public distribution licensing remains pending a human decision."

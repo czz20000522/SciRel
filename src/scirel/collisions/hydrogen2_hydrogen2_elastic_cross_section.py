@@ -1,36 +1,16 @@
 """H2-on-H2 elastic momentum-transfer cross-section fit.
 
-One leaf recovered from the saved the neutral-transport formulation ``sigma_el_hh_hh`` slice, integrated as
-:func:`evaluate_hydrogen2_hydrogen2_elastic_cross_section`:
+Evaluate the H2-on-H2 elastic momentum-transfer cross section in ``m^2`` from
+collision energy in ``eV`` with one five-coefficient logarithmic polynomial,
+``exp(polyval(log(E_clipped), a)) * 1e-4``, on ``[0.03, 1.01e4] eV``. The
+``viscosity=True`` selector remains a documented same-fit fallback, not a
+second parameterization, and emits no extra warning.
 
-the H2-on-H2 elastic momentum-transfer cross section in ``m^2`` as a function
-of the collision energy in eV -- a single five-coefficient logarithmic
-polynomial, ``exp(polyval(log(E), a)) * 1e-4``, evaluated on the
-source-clipped domain ``[0.03, 1.01e4]`` eV.
-
-**The saved implementation's selector validation is kept as the contract.**
-``viscosity=True`` is the source's documented fallback that evaluates the same
-momentum-transfer fit (the source emits a non-scientific warning there, which
-is not reproduced); the selector must be a scalar boolean or integer, and the
-saved implementation already rejects arrays and non-integral scalars.  The
-endpoint clipping repeats values outside the range.
-
-**Input-contract repairs relative to the saved implementation.**  The saved
-document declares the energy nonnegative, but its implementation silently
-clipped negative energies to the lower endpoint; this module rejects them.
-Non-real energies, including numeric strings and boolean cells, are also
-rejected before float conversion.  The arithmetic is preserved on finite
-nonnegative real inputs.
-
-Evidence ceiling: this module establishes the clipped fit against an
-independent evaluation of the same formula, the viscosity fallback, the
-selector validation, the endpoint clipping, the input and failure contracts,
-these repairs, and -- in the environment-gated replay test -- exact agreement
-with the saved the neutral-transport formulation implementation on the declared domain.  The saved
-bundle's strict D1 qualification has been withdrawn; that replay is historical
-development evidence, not qualified-L1 provenance.  No test establishes the
-fit against an external physical cross-section reference: the saved package
-records that residual as ``validation_oracle_gap``.
+A positive input below ``0.03 eV`` returns the lower endpoint silently. A
+positive input above ``1.01e4 eV`` returns the upper endpoint and emits one
+``RuntimeWarning``. Negative energies are rejected before evaluation. No
+independent molecular-viscosity measurement or external experimental
+cross-section reference is bound.
 """
 
 from __future__ import annotations
@@ -38,12 +18,14 @@ from __future__ import annotations
 
 import numpy as np
 
-from ._energy_input import clipped_energy, log_polynomial
+from ._energy_input import clipped_energy, log_polynomial, warn_above_fit
 
 __all__ = [
     "evaluate_hydrogen2_hydrogen2_elastic_cross_section",
 ]
 
+_FIT_LOWER_EV = 0.03
+_FIT_UPPER_EV = 1.01e4
 _COEFFICIENTS = np.array(
     [-3.430345e1, -2.960406e-1, -6.382532e-2, -7.557519e-3, 2.606259e-4],
     dtype=float,
@@ -57,8 +39,9 @@ def evaluate_hydrogen2_hydrogen2_elastic_cross_section(energy_ev, viscosity=Fals
     ----------
     energy_ev : real scalar or array-like
         Collision energy. [eV] Shape: ``scalar or array``. The value must be finite
-        and nonnegative. Values outside ``[0.03, 1.01e4]`` eV are clipped to the
-        range endpoints.
+        and nonnegative. Values below ``0.03 eV`` are clipped to that endpoint
+        silently. Values above ``1.01e4 eV`` are clipped to that endpoint and emit
+        ``RuntimeWarning``.
     viscosity : bool or integer, optional
         Same-fit fallback selector. [dimensionless] Shape: ``scalar``. The default
         ``False`` selects the momentum-transfer fit. ``True`` selects the retained
@@ -77,6 +60,13 @@ def evaluate_hydrogen2_hydrogen2_elastic_cross_section(energy_ev, viscosity=Fals
         If ``energy_ev`` is not real numeric, is non-finite or is negative, or if
         ``viscosity`` is not a scalar boolean or integer.
 
+    Warns
+    -----
+    RuntimeWarning
+        If a requested energy is above ``1.01e4 eV``. The returned value is the
+        endpoint value, not an extrapolation. The fallback selector itself emits
+        no warning.
+
     See Also
     --------
     evaluate_atomic_hydrogen_elastic_cross_section : The H-on-H elastic
@@ -89,9 +79,9 @@ def evaluate_hydrogen2_hydrogen2_elastic_cross_section(energy_ev, viscosity=Fals
     -----
     The relation uses one five-coefficient logarithmic polynomial on the clipped
     fit interval. ``viscosity=True`` is a documented same-fit fallback, not a
-    second viscosity parameterization; it emits no extra warning. Endpoint
-    clipping is silent and intentional. No independent molecular-viscosity
-    measurement or external experimental cross-section reference is bound.
+    second viscosity parameterization; it emits no extra warning. No independent
+    molecular-viscosity measurement or external experimental cross-section
+    reference is bound.
 
     Examples
     --------
@@ -125,6 +115,12 @@ def evaluate_hydrogen2_hydrogen2_elastic_cross_section(energy_ev, viscosity=Fals
         selector.dtype, np.integer
     ):
         raise ValueError("viscosity must be a scalar boolean")
-    clipped = clipped_energy(energy_ev, 0.03, 1.01e4)
-    log_sigma = log_polynomial(np.log(clipped), _COEFFICIENTS)
+    raw_energy = clipped_energy(energy_ev, _FIT_LOWER_EV, np.inf)
+    warn_above_fit(
+        raw_energy,
+        _FIT_UPPER_EV,
+        "evaluate_hydrogen2_hydrogen2_elastic_cross_section",
+    )
+    energy = clipped_energy(raw_energy, _FIT_LOWER_EV, _FIT_UPPER_EV)
+    log_sigma = log_polynomial(np.log(energy), _COEFFICIENTS)
     return np.exp(log_sigma) * 1.0e-4

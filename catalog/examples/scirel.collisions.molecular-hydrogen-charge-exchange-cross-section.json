@@ -30,13 +30,13 @@
   ],
   "model": "Single declared Janev nine-coefficient logarithmic-polynomial fit; no alternative branch, external-data interpolation or rate integration.",
   "geometry": "None; scalar material function of collision energy with no spatial axis (coordinate: collision energy in eV; output in m^2).",
-  "boundary": "Energies must be finite and nonnegative; values outside the [0.1, 2.01e4] eV fit range clip to the endpoints; the fit is strictly positive and finite on its clipped domain.",
+  "boundary": "Energies must be finite and nonnegative; values outside the [0.1, 2.01e4] eV fit range clip to the endpoints, and values above the upper endpoint emit RuntimeWarning; the fit is strictly positive and finite on its clipped domain.",
   "device_scope": "generic"
  },
  "identity": {
   "relation": "the H2 + H2+ charge-exchange cross section as a function of collision energy, given by the Janev logarithmic polynomial exp(polyval(log(E), a)) * 1e-4",
   "direction": "collision energies -> cross section per energy",
-  "definition": "Energies are clipped to [0.1, 2.01e4] eV and the cross section is exp(polyval(log(E_clipped), a)) * 1e-4 m^2 with the nine Janev coefficients a. Endpoint values repeat outside the clipped range.",
+  "definition": "Energies are clipped to [0.1, 2.01e4] eV and the cross section is exp(polyval(log(E_clipped), a)) * 1e-4 m^2 with the nine Janev coefficients a. Endpoint values repeat outside the clipped range; values above the upper edge emit RuntimeWarning.",
   "model": "a single declared cross-section fit; no interpolation of external data, no alternative branch and no rate integration",
   "geometry": "none; a scalar material function of collision energy",
   "coordinates": "collision energy in eV; output cross section in m^2",
@@ -44,7 +44,7 @@
   "assumptions": [
    "The Janev coefficients are the declared fit values, evaluated with the declared expression; they are not re-derived from any external reference.",
    "The atomic H + H+ charge-exchange cross section (a sibling asset) is a different physical system: the two fits disagree and are not interchangeable.",
-   "Endpoint clipping is the declared behavior: a caller evaluating far outside the fit range silently obtains the endpoint value.",
+   "Endpoint clipping is the declared behavior: a caller evaluating outside the fit range obtains the endpoint value, and values above the upper edge emit RuntimeWarning.",
    "No external physical cross-section reference is bound; this residual stays open."
   ]
  },
@@ -56,7 +56,7 @@
    "shape": "any (scalar or array)",
    "dtype": "real array-like",
    "required": true,
-   "constraints": "Finite and nonnegative. Values above or below the fit range are clipped to the range endpoints."
+   "constraints": "Finite and nonnegative. Values below the fit range are clipped silently; values above it are clipped to the upper endpoint and emit RuntimeWarning."
   }
  ],
  "outputs": [
@@ -128,7 +128,7 @@
   "known_limitations": [
    "The integrated input check rejects complex, boolean and numeric-string energies before float conversion; no coercion is performed. Valid real-input fit arithmetic is unchanged.",
    "Neither branch is validated against an external atomic-physics reference; no external validation gap is closed here.",
-   "Energies outside the fit range silently return the endpoint value; this is the declared clipping convention, not an error.",
+   "Energies outside the fit range return the endpoint value; values above the upper edge emit RuntimeWarning. This remains the declared clipping convention, not an error.",
    "The negative-energy rejection is an explicit precondition of this contract: a negative energy raises ValueError rather than returning the clipped endpoint.",
    "No environment-gated external-implementation comparison exists in this repository; any earlier external comparison is not replayed by the maintained tests.",
    "Public distribution licensing remains pending a human decision.",

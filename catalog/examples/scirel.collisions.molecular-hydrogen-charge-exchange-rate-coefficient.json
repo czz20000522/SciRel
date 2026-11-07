@@ -39,7 +39,7 @@
   "model": "Molecular-H2 nine-by-nine bivariate logarithmic rate fit; not a velocity-mesh Maxwellian integral",
   "geometry": "none; paired scalar or array material samples",
   "coordinates": "temperature and impact energy in eV, with no spatial or velocity axis inferred",
-  "boundary": "finite real numeric inputs of identical shape; temperature strictly positive, impact energy nonnegative; endpoint clipping in both dimensions; finite positive represented output",
+  "boundary": "finite real numeric inputs of identical shape; temperature strictly positive, impact energy nonnegative; endpoint clipping in both dimensions, with RuntimeWarning above the upper edge; finite positive represented output",
   "assumptions": [
    "The molecular coefficient table and summation order define the fit on finite real inputs.",
    "The atomic-H charge-exchange rate is a distinct physical system with another coefficient table. The molecular fit also does not call the molecular cross-section fit or maxwellian-relative-speed-rate-average; their equivalence is not established.",
@@ -55,7 +55,7 @@
    "shape": "scalar or array; exactly the shape of energy_ev",
    "dtype": "real numeric array-like",
    "required": true,
-   "constraints": "Finite and strictly positive; values below 0.1 or above 2.01e4 eV are clipped to the respective endpoint."
+   "constraints": "Finite and strictly positive; values below 0.1 eV are clipped silently; values above 2.01e4 eV are clipped to the upper endpoint and emit RuntimeWarning."
   },
   {
    "name": "energy_ev",
@@ -64,7 +64,7 @@
    "shape": "scalar or array; exactly the shape of temperature_ev",
    "dtype": "real numeric array-like",
    "required": true,
-   "constraints": "Finite and nonnegative; zero and positive values below 0.1 or above 2.01e4 eV are clipped to the respective endpoint."
+   "constraints": "Finite and nonnegative; zero and positive values below 0.1 eV are clipped silently; values above 2.01e4 eV are clipped to the upper endpoint and emit RuntimeWarning."
   }
  ],
  "outputs": [

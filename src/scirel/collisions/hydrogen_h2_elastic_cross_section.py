@@ -1,35 +1,14 @@
 """H-on-H2 elastic momentum-transfer cross-section fit.
 
-One leaf recovered from the saved the neutral-transport formulation ``sigma_el_h_hh`` slice, integrated as
-:func:`evaluate_hydrogen_h2_elastic_cross_section`:
+Evaluate the H-on-H2 elastic momentum-transfer cross section in ``m^2`` from
+collision energy in ``eV`` with one five-coefficient logarithmic polynomial,
+``exp(polyval(log(E_clipped), a)) * 1e-4``, on ``[0.03, 1.01e4] eV``.
 
-the H-on-H2 elastic momentum-transfer cross section in ``m^2`` as a function
-of the collision energy in eV -- a single five-coefficient logarithmic
-polynomial, ``exp(polyval(log(E), a)) * 1e-4``, evaluated on the
-source-clipped domain ``[0.03, 1.01e4]`` eV.
-
-**Two declared source behaviors are kept exactly.**  The endpoint clipping
-repeats values outside the range, and the output shape equals the input shape,
-matching the canonical KN1DPy commit ``bb22c872`` source.  The older saved
-package's ``np.array([E])`` wrapper is not retained; the source conflict was
-resolved against the canonical E-archive source.
-
-**Input-contract repairs relative to the saved implementation.**  The saved
-document declares the energy nonnegative, but its implementation silently
-clipped negative energies to the lower endpoint; this module rejects them.
-Non-real energies, including numeric strings and boolean cells, are also
-rejected before float conversion.  The arithmetic is preserved on finite
-nonnegative real inputs.
-
-Evidence ceiling: this module establishes the clipped fit against an
-independent evaluation of the same formula, the input-preserving output shape,
-the endpoint clipping, the input and failure contracts, these repairs, and --
-in the environment-gated replay test -- exact agreement with the canonical
-KN1DPy implementation on the declared domain.  The saved bundle's strict D1
-qualification has been withdrawn; that replay is historical development
-evidence, not qualified-L1 provenance.  No test establishes the fit against an
-external physical cross-section reference: the saved package records that
-residual as ``validation_oracle_gap``.
+A positive input below ``0.03 eV`` returns the lower endpoint silently. A
+positive input above ``1.01e4 eV`` returns the upper endpoint and emits one
+``RuntimeWarning``. Negative energies are rejected before evaluation. The
+output shape equals the input shape. No external experimental cross-section
+reference is bound.
 """
 
 from __future__ import annotations
@@ -37,12 +16,14 @@ from __future__ import annotations
 
 import numpy as np
 
-from ._energy_input import clipped_energy, log_polynomial
+from ._energy_input import clipped_energy, log_polynomial, warn_above_fit
 
 __all__ = [
     "evaluate_hydrogen_h2_elastic_cross_section",
 ]
 
+_FIT_LOWER_EV = 0.03
+_FIT_UPPER_EV = 1.01e4
 _COEFFICIENTS = np.array(
     [-3.495671e1, -4.062257e-1, -3.820531e-2, -9.404486e-3, 3.963723e-4],
     dtype=float,
@@ -56,8 +37,9 @@ def evaluate_hydrogen_h2_elastic_cross_section(energy_ev):
     ----------
     energy_ev : real scalar or array-like
         Collision energy. [eV] Shape: ``scalar or array``. The value must be finite
-        and nonnegative. Values outside ``[0.03, 1.01e4]`` eV are clipped to the
-        range endpoints.
+        and nonnegative. Values below ``0.03 eV`` are clipped to that endpoint
+        silently. Values above ``1.01e4 eV`` are clipped to that endpoint and emit
+        ``RuntimeWarning``.
 
     Returns
     -------
@@ -70,6 +52,12 @@ def evaluate_hydrogen_h2_elastic_cross_section(energy_ev):
     ValueError
         If ``energy_ev`` is not real numeric, is non-finite or is negative.
 
+    Warns
+    -----
+    RuntimeWarning
+        If a requested energy is above ``1.01e4 eV``. The returned value is the
+        endpoint value, not an extrapolation.
+
     See Also
     --------
     evaluate_hydrogen2_hydrogen2_elastic_cross_section : The H2-on-H2 elastic fit.
@@ -81,8 +69,8 @@ def evaluate_hydrogen_h2_elastic_cross_section(energy_ev):
     -----
     The relation uses one five-coefficient logarithmic polynomial,
     ``exp(polyval(log(E_clipped), a)) * 1e-4``, on the clipped fit interval. The
-    output preserves the input shape. Endpoint clipping is silent and intentional.
-    No external experimental cross-section reference is bound.
+    output preserves the input shape. No external experimental cross-section
+    reference is bound.
 
     Examples
     --------
@@ -101,5 +89,7 @@ def evaluate_hydrogen_h2_elastic_cross_section(energy_ev):
     ... else:
     ...     raise AssertionError('a negative energy must be rejected')
     """
-    clipped = clipped_energy(energy_ev, 0.03, 1.01e4)
-    return np.exp(log_polynomial(np.log(clipped), _COEFFICIENTS)) * 1.0e-4
+    raw_energy = clipped_energy(energy_ev, _FIT_LOWER_EV, np.inf)
+    warn_above_fit(raw_energy, _FIT_UPPER_EV, "evaluate_hydrogen_h2_elastic_cross_section")
+    energy = clipped_energy(raw_energy, _FIT_LOWER_EV, _FIT_UPPER_EV)
+    return np.exp(log_polynomial(np.log(energy), _COEFFICIENTS)) * 1.0e-4

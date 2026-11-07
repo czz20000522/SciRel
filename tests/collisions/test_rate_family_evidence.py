@@ -236,3 +236,44 @@ def test_cross_section_positive_out_of_range_clips_to_endpoints(label, call, low
     assert np.array_equal(np.ravel(above), np.ravel(at_upper))
     with pytest.raises(ValueError):
         call(-1.0)
+
+
+@pytest.mark.parametrize(
+    "call,upper",
+    [
+        (evaluate_hydrogen_h2_elastic_cross_section, 1.01e4),
+        (evaluate_hydrogen2_hydrogen2_elastic_cross_section, 1.01e4),
+        (evaluate_hydrogen2_proton_elastic_cross_section, 1.01e4),
+        (evaluate_molecular_hydrogen_charge_exchange_cross_section, 2.01e4),
+    ],
+)
+def test_selected_upper_fit_limits_warn_before_endpoint_clipping(call, upper):
+    with pytest.warns(RuntimeWarning, match="upper limit"):
+        above = call(np.asarray([2.0 * upper]))
+    edge = call(np.asarray([upper]))
+    np.testing.assert_array_equal(above, edge)
+
+
+@pytest.mark.parametrize(
+    "call,upper,args",
+    [
+        (
+            evaluate_hydrogen2_charge_exchange_rate,
+            2.01e4,
+            (np.asarray([1.0]), np.asarray([2.0 * 2.01e4])),
+        ),
+        (
+            evaluate_janev_electron_impact_ionization_rate,
+            2.01e4,
+            (np.asarray([2.0 * 2.01e4]), "H"),
+        ),
+    ],
+)
+def test_selected_upper_rate_limits_warn_before_endpoint_clipping(call, upper, args):
+    with pytest.warns(RuntimeWarning, match="upper limit"):
+        above = call(*args)
+    if call is evaluate_hydrogen2_charge_exchange_rate:
+        edge = call(np.asarray([1.0]), np.asarray([upper]))
+    else:
+        edge = call(np.asarray([upper]), "H")
+    np.testing.assert_array_equal(above, edge)

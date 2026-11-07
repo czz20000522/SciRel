@@ -89,9 +89,9 @@
   },
   {
    "asset_id": "scirel.collisions.janev-electron-impact-ionization-rate",
-   "source_sha256": "d6e5bb9c436aee6f13ad7abd370937bf1393d63fa69afeaebeb76870341463ab",
+   "source_sha256": "f11a7a2013b0a7547c03ed92daf33f57e130cad5729e0d1411e3be191748e2f3",
    "summary": "由电子温度求 H 与 H₂ 各自 Maxwell 分布的电子碰撞电离速率拟合。",
-   "definition": "将严格正的电子温度截断至 [0.1, 2.01e4] eV，再用所选 H 或 H₂ 分支的升幂九系数 Janev 表计算 exp(polyval(log(T), a_species))×1e-6 m³/s，保持输入形状和 NumPy 多项式求值顺序。",
+   "definition": "将严格正的电子温度截断至 [0.1, 2.01e4] eV，再用所选 H 或 H₂ 分支的升幂九系数 Janev 表计算 exp(polyval(log(T), a_species))×1e-6 m³/s，保持输入形状和 NumPy 多项式求值顺序；超过上端点时发出 RuntimeWarning。",
    "model": "Janev 的 H 与 H₂ Maxwell 电离速率拟合，不是运行时的截面积分。",
    "assumptions": [
     "两张系数表、1e-6 单位换算和多项式求值顺序共同定义有限正实温度上的拟合。",
@@ -1657,9 +1657,9 @@
   },
   {
    "asset_id": "scirel.collisions.atomic-molecular-hydrogen-elastic-cross-section",
-   "source_sha256": "73aae0ec6818c4a1c07b1f47f5ca676aa95c6f031ca9606846b62cc844f8586a",
+   "source_sha256": "0ce3fc2a631e2e43ecdb9f6dad841b4f4d70ba24bdf0c96e52258c7f12ec4caa",
    "summary": "以碰撞能量（eV）为自变量，给出 H–H₂ 弹性动量转移截面（m²）：在 [0.03, 1.01e4] eV 上截断的单一五系数对数多项式，返回与输入相同的形状。负能量被拒绝。",
-   "definition": "将能量截断至 [0.03, 1.01e4] eV，再以五系数计算 exp(polyval(log(E_clipped), a))×1e-4 m²。结果形状与输入相同。",
+   "definition": "将能量截断至 [0.03, 1.01e4] eV，再以五系数计算 exp(polyval(log(E_clipped), a))×1e-4 m²。结果形状与输入相同；超过上端点时发出 RuntimeWarning。",
    "model": "单一所声明的截面拟合；不插值外部数据，也不对速率做积分。",
    "assumptions": [
     "五个系数和端点截断是所声明的拟合约定。",
@@ -1671,7 +1671,7 @@
     {
      "name": "energy_ev",
      "description": "求值所用碰撞能量。",
-     "constraints": "必须有限且非负；拟合范围以外取相应端点值。",
+     "constraints": "必须有限且非负；拟合范围以外取相应端点值；超过上端点时发出 RuntimeWarning。",
      "dtype": "实数标量或类数组"
     }
    ],
@@ -4459,9 +4459,9 @@
   },
   {
    "asset_id": "scirel.collisions.proton-molecular-hydrogen-elastic-cross-section",
-   "source_sha256": "36159b3d4bb8562c3d60ade8fbd4a2f66f49db57c7e74372fb5dff79feb4d8b9",
+   "source_sha256": "fbe647bb9f74bbfdd11ccdbee68524c916faa142a15dcb4a9963562a6a766f04",
    "summary": "以碰撞能量（eV）为自变量，给出 H₂–H⁺ 弹性动量转移截面（m²）：在 [0.03, 1.01e4] eV 上截断的单一五系数对数多项式。负能量被拒绝。",
-   "definition": "将能量截断至 [0.03, 1.01e4] eV，再以五系数计算 exp(polyval(log(E_clipped), a))×1e-4 m²。截断范围之外返回端点值。",
+   "definition": "将能量截断至 [0.03, 1.01e4] eV，再以五系数计算 exp(polyval(log(E_clipped), a))×1e-4 m²。截断范围之外返回端点值；超过上端点时发出 RuntimeWarning。",
    "model": "单一所声明的截面拟合；不插值外部数据，也不对速率做积分。",
    "assumptions": [
     "系数是所声明的拟合值，按所声明的表达式求值，不从任何外部参考重新推导。",
@@ -4472,7 +4472,7 @@
     {
      "name": "energy_ev",
      "description": "求值所用碰撞能量。",
-     "constraints": "必须有限且非负；拟合范围以外取相应端点值。",
+     "constraints": "必须有限且非负；拟合范围以外取相应端点值；超过上端点时发出 RuntimeWarning。",
      "dtype": "实数标量或类数组"
     }
    ],
@@ -4894,9 +4894,9 @@
   },
   {
    "asset_id": "scirel.collisions.molecular-hydrogen-elastic-cross-section",
-   "source_sha256": "a97561b40e473dc02290abc5d422a383b5e09fb44a6fb8b7317b7bfd58f72763",
+   "source_sha256": "da0706ff9ac3bf116fbee53c4a329d365f063a5d72fdf67cbfa5392f71cb47b7",
    "summary": "以碰撞能量（eV）为自变量，给出 H₂–H₂ 弹性动量转移截面（m²）：在 [0.03, 1.01e4] eV 上截断的单一五系数对数多项式。选择器校验保留：viscosity=True 选择所声明的同一拟合回退，选择器必须是标量布尔或整数。负能量被拒绝。",
-   "definition": "将能量截断至 [0.03, 1.01e4] eV，再以五系数计算 exp(polyval(log(E_clipped), a))×1e-4 m²。viscosity=True 选择所声明的回退，仍求同一动量转移拟合。截断范围之外返回端点值。",
+   "definition": "将能量截断至 [0.03, 1.01e4] eV，再以五系数计算 exp(polyval(log(E_clipped), a))×1e-4 m²。viscosity=True 选择所声明的回退，仍求同一动量转移拟合。截断范围之外返回端点值；超过上端点时发出 RuntimeWarning。",
    "model": "单一所声明的截面拟合，附一个所声明的无操作回退选择器；不插值外部数据，也不对速率做积分。",
    "assumptions": [
     "系数和回退选择器约定逐位保留；回退路径不发出警告。",
@@ -4907,7 +4907,7 @@
     {
      "name": "energy_ev",
      "description": "求值所用碰撞能量。",
-     "constraints": "必须有限且非负；拟合范围以外取相应端点值。",
+     "constraints": "必须有限且非负；拟合范围以外取相应端点值；超过上端点时发出 RuntimeWarning。",
      "dtype": "实数标量或类数组"
     },
     {
@@ -5075,14 +5075,14 @@
   },
   {
    "asset_id": "scirel.collisions.molecular-hydrogen-charge-exchange-cross-section",
-   "source_sha256": "33a4967406ad1e867a549e23d98b0ee31987bb9012308d7e03aa883a6d1f41db",
-   "summary": "以碰撞能量（eV）为自变量，给出 H₂ + H₂⁺ 电荷交换截面（m²）：在截断后的 [0.1, 2.01e4] eV 域上求值的九系数 Janev 对数多项式，因此拟合范围之外返回端点值。负能量被拒绝。",
-   "definition": "将能量截断至 [0.1, 2.01e4] eV，再以九系数 Janev 表 a 计算 exp(polyval(log(E_clipped), a))×1e-4 m²。截断范围之外返回端点值。",
+   "source_sha256": "ff91d63c6885e85b8b747d67969e0c0b7b3bbd6896eeb71eaca26a44ade4f99f",
+   "summary": "以碰撞能量（eV）为自变量，给出 H₂ + H₂⁺ 电荷交换截面（m²）：在截断后的 [0.1, 2.01e4] eV 域上求值的九系数 Janev 对数多项式，因此拟合范围之外返回端点值；超过上端点时发出 RuntimeWarning。负能量被拒绝。",
+   "definition": "将能量截断至 [0.1, 2.01e4] eV，再以九系数 Janev 表 a 计算 exp(polyval(log(E_clipped), a))×1e-4 m²。截断范围之外返回端点值；超过上端点时发出 RuntimeWarning。",
    "model": "单一所声明的截面拟合；不插值外部数据，无替代分支，也不对速率做积分。",
    "assumptions": [
     "Janev 系数是所声明的拟合值，按所声明的表达式求值，不从任何外部参考重新推导。",
     "原子 H + H⁺ 属于另一物理系统，其拟合与分子拟合不一致，不可互换。",
-    "端点截断是所声明的行为：在拟合范围外很远处求值的调用者会静默得到端点值。",
+    "端点截断是所声明的行为：在拟合范围外很远处求值的调用者会得到端点值；超过上端点时发出 RuntimeWarning。",
     "未绑定外部物理截面参考；该缺口保持开放。"
    ],
    "boundary": "能量有限且非负；截断域内截面有限且为正。",
@@ -5090,7 +5090,7 @@
     {
      "name": "energy_ev",
      "description": "求值所用碰撞能量。",
-     "constraints": "必须有限且非负；拟合范围以外取相应端点值。",
+     "constraints": "必须有限且非负；拟合范围以外取相应端点值；超过上端点时发出 RuntimeWarning。",
      "dtype": "实数标量或类数组"
     }
    ],
@@ -5799,7 +5799,7 @@
   },
   {
    "asset_id": "scirel.collisions.molecular-hydrogen-charge-exchange-rate-coefficient",
-   "source_sha256": "8d1bcbe5a5bfdf9bbff09ef0c2c33f7b56ccab1076525fce69a40258965febe9",
+   "source_sha256": "b5ca6e191acd27d25ea95eb483909f7cdf392c8b8d56d024eb1f7992d549d796",
    "summary": "由成对的等离子体温度和碰撞能量样本（eV）计算 H₂ + H₂⁺ 电荷交换 Maxwell 速率系数拟合。",
    "definition": "先将正温度和不可负的碰撞能量依次截断至 [0.1, 2.01e4] eV。令 L_T=log(T)、L_E=log(E)，按能量外层、温度内层的累加顺序和分子 9×9 系数表累加 log_rate=Σ_j=0..8 Σ_i=0..8 a[i,j]*L_E^j*L_T^i。返回 exp(log_rate)×1e-6 m³/s。输出保持成对输入形状。",
    "model": "分子 H₂ 的 9×9 二元对数速率拟合，不是在速度网格上积分 Maxwell 分布。",
@@ -5814,13 +5814,13 @@
     {
      "name": "temperature_ev",
      "description": "分子 Maxwell 速率拟合所用的等离子体温度。",
-     "constraints": "有限且>0，与能量同形状；范围外截断至 [0.1, 2.01e4] eV。",
+     "constraints": "有限且>0，与能量同形状；范围外截断至 [0.1, 2.01e4] eV；超过上端点时发出 RuntimeWarning。",
      "dtype": "实数标量或类数组"
     },
     {
      "name": "energy_ev",
      "description": "逐项配对的碰撞能量。",
-     "constraints": "有限且≥0，与温度同形状；范围外截断。",
+     "constraints": "有限且≥0，与温度同形状；范围外截断；超过上端点时发出 RuntimeWarning。",
      "dtype": "实数标量或类数组"
     }
    ],

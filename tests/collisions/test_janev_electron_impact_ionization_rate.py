@@ -58,6 +58,13 @@ def test_species_distinction_clipping_and_scalar_shape():
     assert not np.allclose(h, h2, rtol=1e-12, atol=0.0)
 
 
+def test_upper_clipping_emits_runtime_warning():
+    with pytest.warns(RuntimeWarning, match="upper limit"):
+        above = evaluate_janev_electron_impact_ionization_rate(np.array([50_000.0]), "H")
+    edge = evaluate_janev_electron_impact_ionization_rate(np.array([20_100.0]), "H")
+    np.testing.assert_array_equal(above, edge)
+
+
 @pytest.mark.parametrize(
     "temperature",
     [

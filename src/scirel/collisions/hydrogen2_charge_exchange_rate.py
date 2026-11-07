@@ -9,9 +9,17 @@ from __future__ import annotations
 
 import numpy as np
 
-from ._energy_input import bivariate_log_fit, finite_nonnegative_energy, positive_real_array
+from ._energy_input import (
+    bivariate_log_fit,
+    finite_nonnegative_energy,
+    positive_real_array,
+    warn_above_fit,
+)
 
 __all__ = ["evaluate_hydrogen2_charge_exchange_rate"]
+
+_FIT_LOWER_EV = 0.1
+_FIT_UPPER_EV = 2.01e4
 
 _COEFFICIENTS = np.array(
     [
@@ -127,12 +135,14 @@ def evaluate_hydrogen2_charge_exchange_rate(temperature_ev, energy_ev):
     temperature_ev : real scalar or array-like
         Plasma temperature paired with each impact energy. [eV] Shape:
         ``scalar or array``. The value must be finite and strictly positive.
-        Values outside ``[0.1, 2.01e4]`` eV are clipped to the range endpoints.
+        Values below ``0.1 eV`` are clipped to that endpoint silently. Values
+        above ``2.01e4 eV`` are clipped to that endpoint and emit
+        ``RuntimeWarning``.
     energy_ev : real scalar or array-like
         Impact energy paired with each temperature. [eV] Shape: ``same as
-        temperature_ev``. The value must be finite and nonnegative. Zero and
-        positive values outside ``[0.1, 2.01e4]`` eV are clipped to the range
-        endpoints.
+        temperature_ev``. The value must be finite and nonnegative. Values
+        below ``0.1 eV`` are clipped to that endpoint silently. Values above
+        ``2.01e4 eV`` are clipped to that endpoint and emit ``RuntimeWarning``.
 
     Returns
     -------
@@ -147,6 +157,12 @@ def evaluate_hydrogen2_charge_exchange_rate(temperature_ev, energy_ev):
         If either input is not real numeric, is non-finite or has the wrong shape,
         if temperature is nonpositive or energy is negative, or if the evaluated
         rate is not finite and positive.
+
+    Warns
+    -----
+    RuntimeWarning
+        If either paired sample is above ``2.01e4 eV``. The fit uses the endpoint
+        value in that dimension; it does not extrapolate.
 
     See Also
     --------
@@ -182,8 +198,21 @@ def evaluate_hydrogen2_charge_exchange_rate(temperature_ev, energy_ev):
     if temperature.shape != energy.shape:
         raise ValueError("temperature_ev and energy_ev must have the same shape")
 
-    clipped_temperature = np.minimum(np.maximum(temperature, 0.1), 2.01e4)
-    clipped_energy = np.minimum(np.maximum(energy, 0.1), 2.01e4)
+    warn_above_fit(
+        energy,
+        _FIT_UPPER_EV,
+        "evaluate_hydrogen2_charge_exchange_rate",
+        effect="uses the clipped upper edge in that fit dimension",
+    )
+    warn_above_fit(
+        temperature,
+        _FIT_UPPER_EV,
+        "evaluate_hydrogen2_charge_exchange_rate",
+        quantity="temperature",
+        effect="uses the clipped upper edge in that fit dimension",
+    )
+    clipped_temperature = np.clip(temperature, _FIT_LOWER_EV, _FIT_UPPER_EV)
+    clipped_energy = np.clip(energy, _FIT_LOWER_EV, _FIT_UPPER_EV)
     log_temperature = np.log(clipped_temperature)
     log_energy = np.log(clipped_energy)
     log_rate = bivariate_log_fit(log_energy, log_temperature, _COEFFICIENTS)
