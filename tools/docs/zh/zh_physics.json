@@ -3763,7 +3763,7 @@
   },
   {
    "asset_id": "scirel.kinetic.kinetic-wavevector-roots",
-   "source_sha256": "4864e3d302a3e775fffccfa4a2b16030789957e8669ff8ea74c99980bdedd604",
+   "source_sha256": "43192fb29d3e691b6ef04fe744de4554275e8a905d689da21f2806877156a58f",
    "summary": "对输入的每个角频率，均从同一个固定初值求解 Ronnmark 行列式的复数 kx 零点。",
    "definition": "每个频点独立从 kx_start 开始，用复数信赖域 dogleg 算法求解 det(D)=0，并限制迭代和函数求值次数。",
    "model": "均匀磁化多组分 Maxwellian 等离子体",
@@ -3884,8 +3884,8 @@
     },
     {
      "name": "converged",
-     "description": "求解器在每个频率点是否返回有限复数根。",
-     "constraints": "只有根为非有限值时为假；物理接受仍由 `residuals` 与 `determinant_scale` 判断。",
+     "description": "各频点退出标志是否为正（即 Octave 判定收敛）",
+     "constraints": "为假时根仍是行列式的数值驻点或未收敛点，调用者须按 `residuals` 与 `determinant_scale` 自行判定是否接受。",
      "dtype": "布尔值"
     },
     {
