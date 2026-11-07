@@ -221,17 +221,17 @@ def render(evidence: Evidence) -> str:
             f"- 架构（architecture）：`{evidence.architecture}`",
             f"- 检查完成时间：`{local_time(evidence.checked_at_unix)}`"
             f"（UTC `{utc_time(evidence.checked_at_unix)}`）",
-            f"- receipt：`.git/scirel-acceptance/receipts/{evidence.receipt_name}`，schema 2，"
-            "字段只有 tree、architecture、checked_at_unix",
+            f"- receipt：`.git/scirel-acceptance/receipts/{evidence.receipt_name}`，schema 3，"
+            "字段：schema/tree/architecture/checked_at_unix/command/image_id/image_ref/docker_context",
             "- 匹配范围：receipt 存在本 clone 的共享 Git 元数据里，只按 tree + architecture 匹配，"
-            "不记录执行者、Docker context、机器名，也不记录由哪个 checkout 写入",
+            "不记录执行者、机器名，也不记录由哪个 checkout 写入；`docker_context` 记的是解析值",
             f"- 填表人：{evidence.actor}（填表人自行声明；receipt 不记录执行者，"
             "真正跑检查的人未知）",
             "- 复核：`git rev-parse HEAD^{tree}` 应得到同一个 tree；"
             "`python3 scripts/dev_container.py check` 可复跑",
             "",
             f"> 该证据只覆盖本机 `{evidence.architecture}` 引擎。跨设备抽查另行手动触发 "
-            "`Cross-device check`；receipt 不记录 context，无法据此判断用的是哪个 Docker 引擎。",
+            "`Cross-device check`；receipt 里的 `docker_context` 是解析值，不是机器名。",
             "",
         ]
     )

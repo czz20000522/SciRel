@@ -25,13 +25,37 @@ The pre-push fast path reuses a successful check only for the exact `HEAD` tree 
 architecture. Receipts live in shared Git metadata keyed by that pair: different trees use different
 entries, while linked worktrees at the same tree and architecture share one entry. The cache keeps at
 most 16 receipts for 30 days and writes each receipt atomically. Under one cross-worktree lock, it
-prunes expired, schema-mismatched, malformed and excess entries when they are safe to read and
-remove. Missing or non-matching requested receipts are cache misses and run the complete check.
+prunes expired, malformed and excess entries when they are safe to read and remove; entries written
+under another schema are kept as history and never counted against the limit. Missing or non-matching
+requested receipts are cache misses and run the complete check.
 Unsafe cache directories and unreadable or malformed current receipts are also misses; malformed
 unrelated entries are pruned when possible or skipped without hiding a readable current receipt.
 
 把 receipt 变成 PR 上可核对的验收证据（模板原文、字段来源、哪句话不许写）见
 [`references/pr-evidence.md`](references/pr-evidence.md)，入口是 `python3 scripts/acceptance_evidence.py`。
+
+Each receipt is schema 3, so it can answer which version, which environment and what ran:
+
+| Field | Meaning |
+| --- | --- |
+| `schema` / `tree` / `architecture` / `checked_at_unix` | Version anchor, host architecture and when the check finished |
+| `command` | The exact check entry point that ran, not "ran the tests" |
+| `image_id` | Image content address from `docker image inspect --format '{{.Id}}'`; never a digest |
+| `image_ref` | The `name:tag` used for the build; an `@sha256:…` suffix appears only when the image really has a registry digest |
+| `docker_context` | The context resolved for that run, read from the clone-local context selection |
+
+The filename derives from schema, tree and architecture, so a schema-2 receipt is never a hit. It
+stays in the cache as history — `_prune_check_receipts()` only deletes expired, damaged and excess
+entries, never an older schema — and **must not be used as release evidence**: it cannot say what
+ran or on which engine. Replace it by running one complete check on that tree; do not migrate it and
+do not add a second read path for the old schema.
+
+Locally built images have no registry digest, so `image_id` carries the content address and nothing
+else. That ID is not comparable across runs (rebuilding the same tag yields different IDs); the
+reproducible anchor is the tree plus the `containers/dev/Dockerfile` bytes at that tree, which is a
+tag reference rather than a digest pin. A receipt is written only when the check exits zero and every
+field above can be resolved; if the image identity or the Docker context cannot be read, no receipt
+is written at all.
 
 It runs the full test suite, the review registry gate, contract signatures and examples, the docstring and contract sync check, the scan for new hazard patterns, the documentation build, the report validator on every solved example, the lockfile check, and a wheel build with its exposure check.
 

@@ -18,6 +18,7 @@ import pytest
 
 ROOT = Path(__file__).resolve().parents[2]
 SCRIPT = ROOT / "scripts" / "dev_container.py"
+FAKE_IMAGE_ID = "sha256:" + "a" * 64
 
 
 @pytest.fixture(autouse=True)
@@ -25,11 +26,16 @@ def _configured_docker_context(monkeypatch):
     monkeypatch.setenv("SCIReL_DOCKER_CONTEXT", "test-context")
 
 
-def _load():
+def _load(*, image_identity=None, stub_image=True):
+    """Load the wrapper; the default image identity keeps the tests off Docker."""
     spec = importlib.util.spec_from_file_location("dev_container", SCRIPT)
     module = importlib.util.module_from_spec(spec)
     sys.modules[spec.name] = module
     spec.loader.exec_module(module)
+    if image_identity is not None:
+        module.image_identity = image_identity
+    elif stub_image:
+        module.image_identity = lambda: (FAKE_IMAGE_ID, module.IMAGE)
     return module
 
 
@@ -619,6 +625,131 @@ def test_check_receipt_rejects_another_schema(tmp_path, monkeypatch):
     assert "schema" in reason
 
 
+@pytest.mark.parametrize(
+    ("repo_digests", "expected_ref_suffix"),
+    [
+        ([], ""),
+        (["scirel-dev-python@sha256:" + "b" * 64], "@sha256:" + "b" * 64),
+    ],
+)
+def test_image_identity_keeps_the_tag_and_only_appends_a_real_digest(
+    monkeypatch, repo_digests, expected_ref_suffix
+):
+    module = _load(stub_image=False)
+    image_id = "sha256:" + "c" * 64
+
+    class Completed:
+        returncode = 0
+        stdout = f"{image_id}\t{json.dumps(repo_digests)}\n"
+        stderr = ""
+
+    monkeypatch.setattr(module.subprocess, "run", lambda *arguments, **keywords: Completed())
+
+    assert module.image_identity() == (image_id, f"{module.IMAGE}{expected_ref_suffix}")
+
+
+def test_receipt_records_command_image_and_context(tmp_path, monkeypatch):
+    module = _load()
+    repository = tmp_path / "repository"
+    _init_git_repository(repository)
+    monkeypatch.setattr(module, "ROOT", repository)
+    assert module.record_check_receipt(command="pytest -q")
+
+    receipt = json.loads(module.check_receipt_path().read_text(encoding="utf-8"))
+    assert receipt["schema"] == 3
+    assert receipt["command"] == "pytest -q"
+    assert receipt["image_id"] == FAKE_IMAGE_ID
+    assert receipt["image_ref"] == module.IMAGE
+    assert receipt["docker_context"] == "test-context"
+    assert set(receipt) == {
+        "schema",
+        "tree",
+        "architecture",
+        "checked_at_unix",
+        *module.CHECK_RECEIPT_FIELDS,
+    }
+
+
+@pytest.mark.parametrize("missing", ["command", "image_id", "image_ref", "docker_context"])
+def test_receipt_without_an_evidence_field_is_rejected(tmp_path, monkeypatch, missing):
+    module = _load()
+    repository = tmp_path / "repository"
+    _init_git_repository(repository)
+    monkeypatch.setattr(module, "ROOT", repository)
+    assert module.record_check_receipt()
+    path = module.check_receipt_path()
+    receipt = json.loads(path.read_text(encoding="utf-8"))
+    del receipt[missing]
+    path.write_text(json.dumps(receipt), encoding="utf-8")
+
+    valid, reason = module.check_receipt_status()
+    assert not valid, missing
+    assert missing in reason
+    assert not path.exists()
+
+
+def test_receipt_with_schema_two_is_rejected(tmp_path, monkeypatch):
+    module = _load()
+    repository = tmp_path / "repository"
+    _init_git_repository(repository)
+    monkeypatch.setattr(module, "ROOT", repository)
+    assert module.record_check_receipt()
+    path = module.check_receipt_path()
+    receipt = json.loads(path.read_text(encoding="utf-8"))
+    receipt["schema"] = 2
+    path.write_text(json.dumps(receipt), encoding="utf-8")
+
+    valid, reason = module.check_receipt_status()
+    assert not valid
+    assert "schema" in reason
+
+
+def test_receipt_is_not_written_when_the_image_identity_is_unavailable(
+    tmp_path, monkeypatch, capsys
+):
+    module = _load()
+
+    def unavailable():
+        raise module.ReceiptCacheUnavailable("cannot inspect image")
+
+    module.image_identity = unavailable
+    repository = tmp_path / "repository"
+    _init_git_repository(repository)
+    monkeypatch.setattr(module, "ROOT", repository)
+
+    assert not module.record_check_receipt()
+    assert not module.check_receipt_path().exists()
+    assert "cannot inspect image" in capsys.readouterr().out
+
+
+def test_prune_keeps_receipts_from_another_schema_as_history(tmp_path, monkeypatch):
+    """Prune removes expired and damaged entries; it does not adjudicate versions."""
+    module = _load()
+    repository = tmp_path / "repository"
+    _init_git_repository(repository)
+    monkeypatch.setattr(module, "ROOT", repository)
+    assert module.record_check_receipt()
+
+    directory = module.validated_receipt_directory(create=True)
+    older = directory / "older-schema.json"
+    older.write_text(
+        json.dumps(
+            {
+                "schema": module.CHECK_RECEIPT_SCHEMA - 1,
+                "tree": "b" * 40,
+                "architecture": "test-architecture",
+                "checked_at_unix": 1.0,
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    valid, _ = module.check_receipt_status()
+    assert valid
+    assert older.is_file(), "an older schema is history, not garbage"
+    assert len(list(directory.glob("*.json"))) == 2
+
+
 def test_corrupt_receipt_and_temporary_file_are_treated_as_misses(tmp_path, monkeypatch):
     module = _load()
     repository = tmp_path / "repository"
@@ -676,7 +807,14 @@ def test_unrelated_damaged_receipts_are_skipped_with_or_without_a_cache_hit(
         assert module.record_check_receipt()
     directory = module.validated_receipt_directory(create=True)
 
-    common_fields = {"schema": module.CHECK_RECEIPT_SCHEMA, "architecture": "test"}
+    common_fields = {
+        "schema": module.CHECK_RECEIPT_SCHEMA,
+        "architecture": "test",
+        "command": module.CHECK_COMMAND,
+        "image_id": FAKE_IMAGE_ID,
+        "image_ref": module.IMAGE,
+        "docker_context": "test-context",
+    }
     oversized = {**common_fields, "tree": "a" * 40, "checked_at_unix": 10**1000}
     surrogate = {**common_fields, "tree": "\ud800", "checked_at_unix": 1}
     damaged = {
@@ -792,6 +930,7 @@ sys.modules[spec.name] = module
 spec.loader.exec_module(module)
 module.ROOT = Path(os.environ['RECEIPT_REPO'])
 module.platform.machine = lambda: os.environ['RECEIPT_ARCHITECTURE']
+module.image_identity = lambda: ('sha256:' + 'a' * 64, module.IMAGE)
 module.CHECK_RECEIPT_MAX_ENTRIES = 4
 module.CHECK_RECEIPT_MAX_AGE_SECONDS = 1_000
 module.time.time = lambda: float(os.environ['RECEIPT_NOW'])

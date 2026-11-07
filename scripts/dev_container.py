@@ -27,7 +27,11 @@ IMAGE = "scirel-dev-python:3.14.7"
 SYNC = "uv sync --locked --group test"
 PYTHON = "uv run --frozen python -B"
 GIT_COMMON_MOUNT = "/scirel-git"
-CHECK_RECEIPT_SCHEMA = 2
+CHECK_RECEIPT_SCHEMA = 3
+# Evidence fields every receipt must carry. They answer "which environment" and
+# "what was run"; a receipt without them is not evidence, so they fail closed.
+CHECK_RECEIPT_FIELDS = ("command", "image_id", "image_ref", "docker_context")
+CHECK_COMMAND = f"{SYNC} && {PYTHON} skills/development/scirel-acceptance/scripts/check_all.py"
 CHECK_RECEIPT_MAX_ENTRIES = 16
 CHECK_RECEIPT_MAX_AGE_SECONDS = 30 * 24 * 60 * 60
 CHECK_RECEIPT_TEMP_PREFIX = "check-receipt-"
@@ -709,6 +713,10 @@ def _read_check_receipt(
         return None, "invalid local check receipt architecture"
     if _receipt_timestamp(checked_at) is None:
         return None, "invalid local check receipt timestamp"
+    for name in CHECK_RECEIPT_FIELDS:
+        value = receipt.get(name)
+        if not isinstance(value, str) or not value.strip():
+            return None, f"invalid local check receipt {name}"
     if expected_tree is not None and tree != expected_tree:
         return None, "local check receipt is for another Git tree"
     if expected_architecture is not None and architecture != expected_architecture:
@@ -730,6 +738,21 @@ def _check_receipt_is_fresh(receipt: dict[str, object], now: float) -> bool:
     return 0 <= age < CHECK_RECEIPT_MAX_AGE_SECONDS
 
 
+def _receipt_schema(path: Path) -> tuple[bool, object]:
+    """Return whether the file parses as a receipt and its schema number.
+
+    Used by the pruner to tell an older evidence version (keep as history) from
+    a damaged file (remove).
+    """
+    try:
+        raw = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, UnicodeError, json.JSONDecodeError):
+        return False, None
+    if not isinstance(raw, dict):
+        return False, None
+    return True, raw.get("schema")
+
+
 def _prune_check_receipts(directory: Path, now: float) -> None:
     """Remove expired, corrupt, temporary, and excess entries while cache-locked."""
     directory = validated_receipt_directory()
@@ -742,6 +765,13 @@ def _prune_check_receipts(directory: Path, now: float) -> None:
         try:
             safe_path = validated_receipt_file(path)
         except RECEIPT_CACHE_ERRORS:
+            continue
+        parsed, stored_schema = _receipt_schema(safe_path)
+        if parsed and type(stored_schema) is int and stored_schema != CHECK_RECEIPT_SCHEMA:
+            # Another schema is history, not garbage: prune removes expired,
+            # damaged and temporary files, it does not adjudicate evidence
+            # versions. Reading only the schema number here is not a second
+            # read path; such a receipt is never a cache hit.
             continue
         try:
             receipt, _ = _read_check_receipt(safe_path)
@@ -813,7 +843,58 @@ def clear_check_receipt() -> None:
         print(f"WARNING: could not clear local check receipt: {error}", file=sys.stderr)
 
 
-def record_check_receipt(tree: str | None = None) -> bool:
+def image_identity() -> tuple[str, str]:
+    """Return ``(image_id, image_ref)`` for the development image.
+
+    ``image_id`` is always the content address of the image this engine runs
+    (``docker image inspect --format '{{.Id}}'``), never a digest: locally built
+    images have no ``RepoDigests``, and putting a digest-shaped value in a field
+    called ``image_id`` invites a wrong comparison later. ``image_ref`` is the
+    ``name:tag`` used for the build, and only gains an ``@sha256:…`` suffix when
+    the image really does carry a registry digest.
+    """
+    completed = subprocess.run(
+        ["docker", "image", "inspect", IMAGE, "--format", "{{.Id}}\t{{json .RepoDigests}}"],
+        cwd=ROOT,
+        env=environment(),
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    if completed.returncode:
+        detail = completed.stderr.strip() or f"exit code {completed.returncode}"
+        raise ReceiptCacheUnavailable(f"cannot inspect image {IMAGE}: {detail}")
+    image_id, _, digests_text = completed.stdout.strip().partition("\t")
+    if not image_id.startswith("sha256:"):
+        raise ReceiptCacheUnavailable(f"image {IMAGE} has no sha256 content address")
+    image_ref = IMAGE
+    try:
+        digests = json.loads(digests_text) if digests_text else []
+    except json.JSONDecodeError:
+        digests = []
+    if isinstance(digests, list):
+        for digest in digests:
+            if isinstance(digest, str) and "@sha256:" in digest:
+                # Keep name:tag and only append the registry digest, so the ref
+                # stays resolvable and the digest, when present, is visible.
+                image_ref = f"{IMAGE}@{digest.split('@', 1)[1]}"
+                break
+    return image_id, image_ref
+
+
+def receipt_evidence(command: str) -> dict[str, str]:
+    """Return the fields that answer "which environment" and "what was run"."""
+    context, _ = resolve_docker_context()
+    image_id, image_ref = image_identity()
+    return {
+        "command": command,
+        "image_id": image_id,
+        "image_ref": image_ref,
+        "docker_context": context,
+    }
+
+
+def record_check_receipt(tree: str | None = None, *, command: str = CHECK_COMMAND) -> bool:
     if tree is None:
         tree = candidate_tree()
     if tree is None:
@@ -821,12 +902,18 @@ def record_check_receipt(tree: str | None = None) -> bool:
             "Local check receipt not written: commit or clean unstaged and untracked files first."
         )
         return False
+    try:
+        evidence = receipt_evidence(command)
+    except (DockerContextError, ReceiptCacheUnavailable, OSError) as error:
+        print(f"Local check receipt not written: {error}")
+        return False
     architecture = platform.machine()
     receipt = {
         "schema": CHECK_RECEIPT_SCHEMA,
         "tree": tree,
         "architecture": architecture,
         "checked_at_unix": time.time(),
+        **evidence,
     }
     try:
         path = check_receipt_path(tree, architecture)
@@ -866,10 +953,9 @@ def check_receipt_status() -> tuple[bool, str]:
 
 def run_check() -> int:
     clear_check_receipt()
-    script = f"{SYNC} && {PYTHON} skills/development/scirel-acceptance/scripts/check_all.py"
-    code = run_in_container(shell_command(script))
+    code = run_in_container(shell_command(CHECK_COMMAND))
     if not code:
-        record_check_receipt()
+        record_check_receipt(command=CHECK_COMMAND)
     return code
 
 

@@ -66,10 +66,14 @@ def _write_receipt(module, path, *, tree, architecture, checked_at_unix):
     directory = path / ".git" / "scirel-acceptance" / "receipts"
     directory.mkdir(parents=True, exist_ok=True)
     receipt = {
-        "schema": 2,
+        "schema": 3,
         "tree": tree,
         "architecture": architecture,
         "checked_at_unix": checked_at_unix,
+        "command": module.DEV.CHECK_COMMAND,
+        "image_id": "sha256:" + "a" * 64,
+        "image_ref": module.DEV.IMAGE,
+        "docker_context": "test-context",
     }
     filename = module.DEV._check_receipt_filename(tree, architecture)
     (directory / filename).write_text(json.dumps(receipt, sort_keys=True), encoding="utf-8")
@@ -130,7 +134,7 @@ def test_matching_fresh_receipt_renders_the_paste_ready_block(clone, capsys):
     assert f"`{architecture}`" in captured.out
     assert "退出码 0" in captured.out
     assert "scripts/dev_container.py:867-873" in captured.out
-    assert "schema 2" in captured.out
+    assert "schema 3" in captured.out
     assert "填表人：Reviewer" in captured.out
     assert ".git/scirel-acceptance/receipts/" in captured.out
     # 结论只能说到"本 clone 上某个 checkout"，receipt 不记录是谁、在哪个 checkout 里跑的。
