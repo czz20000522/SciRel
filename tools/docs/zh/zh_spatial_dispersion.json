@@ -462,7 +462,7 @@
     ],
     "supported": [
      "两个算例、J8/J12、全部八个 N 控制和默认 79 个频率。",
-     "全部有限谱、按原始次序排列的值、每频率候选、末端矩阵（`matM`、`roots`、`w`、`eigen_diagnostics`、`selected_candidates` 只对应最后一个给定频率；完整轴在 `kxx`、`spectra`、`diagnostic_rows`）。"
+     "全部有限谱、按原始次序排列的值、每频率候选、末端矩阵（`matM`、`roots`、`w`、`eigen_diagnostics` 只对应最后一个给定频率；每频率数据在 `kxx`、`spectra`、`selected_candidates`、`diagnostic_rows`）。"
     ],
     "excluded": [
      "不把全部辅助本征值认定为动理学物理模态，不保证无限模态完备性或跨线程不变性。"
@@ -477,7 +477,7 @@
    "verification": {
     "scope": [
      "两个算例、J8/J12、全部八个 N 控制和默认 79 个频率。",
-     "全部有限谱、按原始次序排列的值、每频率候选、末端矩阵（`matM`、`roots`、`w`、`eigen_diagnostics`、`selected_candidates` 只对应最后一个给定频率；完整轴在 `kxx`、`spectra`、`diagnostic_rows`）。"
+     "全部有限谱、按原始次序排列的值、每频率候选、末端矩阵（`matM`、`roots`、`w`、`eigen_diagnostics` 只对应最后一个给定频率；每频率数据在 `kxx`、`spectra`、`selected_candidates`、`diagnostic_rows`）。"
     ],
     "known_limitations": [
      "直接绑定的函数是六资产共享文件 `test_fluid_spectrum_full.py` 中的 `test_status_and_complete_finite_spectrum_are_explicit` 与 `test_multifrequency_em_preserves_each_nested_diagnostic_array`；另有专门的 `test_fluid_em_diagnostics.py` 检查实测逆矩、退役字段和公开嵌套结构。",

@@ -763,10 +763,10 @@ def solve_fluid_bonk(jcase=1, omegas=None):
         five complex seeds and accepts a candidate only when both the normalized wave
         residual and determinant residual are at most 1e-8. Unverified candidates remain
         in the returned attempt records. Supported scope: Three complete cases and
-        source default77-frequency axis; arbitrary valid finite supplied axes; Original
-        solver tolerances; explicit bounded attempts and root verification. Excluded
-        scope: No branch tracking, complete physical-mode enumeration or unconditional
-        convergence.
+        source default78-frequency axis; arbitrary valid finite supplied axes; SciPy hybr
+        tolerances (xtol=1e-12, maxfev=100); explicit bounded attempts and root
+        verification. Excluded scope: No branch tracking, complete physical-mode
+        enumeration or unconditional convergence.
 
     Examples
     --------
