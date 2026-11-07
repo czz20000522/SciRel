@@ -52,7 +52,7 @@ def assemble_neutral_total_collision_frequency(
         Constraints: Finite and nonnegative, same shape as the base loss.
     pipe_diameter_m : real array-like, shape [nx]
         The pipe diameter profile. [m].
-        Constraints: Finite and nonnegative; zero diameter cells get zero wall loss.
+        Constraints: Finite and nonnegative; exact zero diameter is a declared wall-off sentinel, not the D -> 0+ limit. The formula itself is only used where diameter is positive.
     charge_exchange_frequency_m_inv : real array-like, shape [nvr,nvx,nx]
         The optional CX frequency field. This is the physical frequency divided by the same caller Vth used to normalize vr and vx. [m^-1].
         Constraints: When enabled: required, finite and nonnegative. When disabled: ignored even if supplied.
@@ -79,7 +79,7 @@ def assemble_neutral_total_collision_frequency(
 
     Notes
     -----
-        The assembly order (base + elastic + wall, then + CX when enabled); zero pipe diameter yields zero wall loss in those cells (the declared semantics, not an infinite-pipe limit); enabling charge exchange without a field fails closed
+        The assembly order (base + elastic + wall, then + CX when enabled); each spatial cell independently applies wall loss 2*u_r/D only where its diameter is positive, while an exact zero diameter is an explicit wall-off sentinel, not the D -> 0+ limit and not a closed or degenerate geometry model; closing or reflecting the stream is a caller-side transport-boundary decision outside this coefficient assembly; enabling charge exchange without a field fails closed
     finite one-dimensional axes with positive radial nodes; finite nonnegative base/elastic/diameter profiles of one common spatial shape; CX field (when enabled) finite nonnegative (nvr,nvx,nx)
 
     Examples
