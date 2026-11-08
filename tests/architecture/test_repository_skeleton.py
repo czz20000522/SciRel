@@ -90,14 +90,34 @@ def test_tests_and_tools_do_not_read_old_git_objects():
     assert hits == []
 
 
+# 文档里不许手写目录规模：规模由生成物给出，写进散文就会随树漂移。
+CATALOG_SIZE = re.compile(
+    r"\b\d{3} (admitted|public|contracts|assets|exposed|held)\b|共 \d{3} (份|个)合同"
+)
+
+
 def test_catalog_size_is_not_hand_written_into_documents():
-    pattern = re.compile(r"\b\d{3} (admitted|public|contracts|assets)\b|共 \d{3} (份|个)合同")
     hits = [
         str(p.relative_to(ROOT))
         for p, text in texts()
-        if p.suffix == ".md" and pattern.search(text)
+        if p.suffix == ".md" and CATALOG_SIZE.search(text)
     ]
     assert hits == []
+
+
+def test_catalog_size_guard_catches_the_wording_that_escaped_it():
+    """回归：`256 exposed contracts` 曾因数字后紧跟 exposed 而绕过守卫。
+
+    `exposed` 和 `held` 都是这类句子里的常见词；漏掉任意一个，手写规模
+    就会换个词继续留在文档里。
+    """
+    for escaped in (
+        "all 256 exposed contracts",
+        "300 held contracts under `catalog/review/`",
+        "261 admitted assets",
+        "共 300 份合同",
+    ):
+        assert CATALOG_SIZE.search(escaped), escaped
 
 
 def test_python_floor_is_consistent_with_the_pinned_dependencies():
@@ -115,14 +135,11 @@ def test_plotting_stays_out_of_the_runtime_dependencies():
     assert not list((ROOT / "src").rglob("*.png"))
 
 
-def test_held_code_is_outside_the_installed_package():
-    hold = json.loads((ROOT / "catalog/review/HOLD.json").read_text(encoding="utf-8"))["assets"]
-    for asset in hold:
-        document = json.loads(
-            (ROOT / "catalog/review/examples" / f"{asset}.json").read_text(encoding="utf-8")
-        )
+def test_review_contract_code_is_outside_the_installed_package():
+    for path in sorted((ROOT / "catalog/review/examples").glob("*.json")):
+        document = json.loads(path.read_text(encoding="utf-8"))
         module = document["public_api"]["python"]["module"].split(".")
-        assert not (ROOT / "src").joinpath(*module).with_suffix(".py").exists(), asset
+        assert not (ROOT / "src").joinpath(*module).with_suffix(".py").exists(), path.stem
 
 
 def test_usage_directory_holds_exactly_the_delivered_skills():

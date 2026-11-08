@@ -2,7 +2,8 @@
 
 This document is the canonical project description of the three-line boundary,
 task-graph roles and the retrieval path for a growing static SciReL asset set.
-The asset contract remains the scientific truth. This document does not create
+The implementation is the truth; the asset contract is its derived record and
+the documentation derives from the contract. This document does not create
 a second catalog, runtime protocol or acceptance standard.
 
 ## Three independent lines

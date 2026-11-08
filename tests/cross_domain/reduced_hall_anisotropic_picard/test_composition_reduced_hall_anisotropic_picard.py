@@ -187,7 +187,7 @@ def test_yaml_declares_three_leaves_and_explicit_closure_port():
     assert "pressure_closure" in text
 
 
-def test_review_gate_rejects_nonfinite_and_coerced_hall_controls():
+def test_contract_rejects_nonfinite_and_coerced_hall_controls():
     with pytest.raises(ValueError, match="tol must be a finite scalar"):
         composition._run_composition(_inputs(tol=np.nan), asset_loader=_loader)
     with pytest.raises(ValueError, match="maxiter must be an integer"):
@@ -198,7 +198,7 @@ def test_review_gate_rejects_nonfinite_and_coerced_hall_controls():
         composition._run_composition(_inputs(inertia_tolerance=np.nan), asset_loader=_loader)
 
 
-def test_review_gate_allows_negative_firehose_threshold_to_disable_that_check():
+def test_contract_allows_negative_firehose_threshold_to_disable_that_check():
     def loader(reference):
         asset = _load_asset(reference)
         if reference != "scirel.closures.reduced_hall_drift":
@@ -218,7 +218,7 @@ def test_review_gate_allows_negative_firehose_threshold_to_disable_that_check():
     assert np.all(result["firehose_margin"] == -1.0)
 
 
-def test_review_gate_rejects_nonfinite_hall_grid_state():
+def test_contract_rejects_nonfinite_hall_grid_state():
     values = _inputs()
     values["psi_vac"] = np.array(values["psi_vac"], copy=True)
     values["psi_vac"][0, 0] = np.nan

@@ -5,7 +5,7 @@ SciRel has three roles. Each has one entry skill and its own acceptance standard
 | Role | What it does | Entry skill | Done when |
 | --- | --- | --- | --- |
 | **Supplier** | Extracts scientific functions from a source project as self-contained candidates | [`scientific-computation-asset-extraction`](extraction/scientific-computation-asset-extraction/SKILL.md) | The packet passes `scripts/validate_admission.py` against [`contracts/admission`](../contracts/admission/README.md) and carries boundary tests and evidence |
-| **Merger** | Brings candidates into the library: admission, contract, tests, review, documents | [`scirel-integration`](development/integration/scirel-integration/SKILL.md) | [`scirel-acceptance`](development/scirel-acceptance/SKILL.md) is green, code follows [`scirel-code-style`](development/scirel-code-style/SKILL.md), and a human recorded the status in `catalog/review/VERDICTS.json` |
+| **Merger** | Brings candidates into the library: admission, contract, tests, review, documents | [`scirel-integration`](development/integration/scirel-integration/SKILL.md) | [`scirel-acceptance`](development/scirel-acceptance/SKILL.md) is green, code follows [`scirel-code-style`](development/scirel-code-style/SKILL.md), and the contract, implementation and tests agree |
 | **Consumer** | A user's agent answers a question with the delivered package | [`scirel-solving`](development/usage/scirel-solving/SKILL.md) | The report passes its validator and a physicist can follow it; [`scirel-outbound-evaluation`](development/scirel-outbound-evaluation/SKILL.md) measures this for maintainers |
 
 ## Audience

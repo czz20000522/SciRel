@@ -296,7 +296,7 @@ def test_reviewed_relation_example():
     )
 
 
-def test_review_gate_rejects_nonfinite_species_and_refill_controls():
+def test_contract_rejects_nonfinite_species_and_refill_controls():
     import pytest
 
     values = dict(

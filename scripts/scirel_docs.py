@@ -22,8 +22,8 @@ from urllib.parse import parse_qs, urlsplit
 
 from packaging.version import InvalidVersion, Version
 
+from exposure import excluded_asset_ids
 from validate_asset_documents import load_document_set
-from exposure import held_asset_ids
 from build_scirel_sphinx import (
     LANGUAGE_TAGS,
     english_available_docs,
@@ -492,8 +492,15 @@ def _public_exception_source(root, module, symbol):
     return {relative.as_posix(): sha(data) for relative, (data, _) in trees.items()}
 
 
-def tutorial_source_bindings(root, documents, *, held_ids=()):
-    """Bind authored tutorial references/imports; this is not scientific review."""
+def tutorial_source_bindings(root, documents, *, excluded_ids):
+    """Bind authored tutorial references/imports; this is not scientific review.
+
+    ``excluded_ids`` is required on purpose. A default of ``()`` reads the same as
+    "there is nothing to exclude" while actually meaning "the caller forgot the
+    list", which silently cuts the tutorial input off from the exclusions.
+    """
+    excluded_set = set(excluded_ids)
+    documents = [document for document in documents if document["asset_id"] not in excluded_set]
     ids = {doc["asset_id"] for doc in documents}
     bindings = set()
     for document in documents:
@@ -502,7 +509,6 @@ def tutorial_source_bindings(root, documents, *, held_ids=()):
         if "canonical_module" in api:
             bindings.add((api["canonical_module"], api["canonical_symbol"]))
     result = []
-    held_ids = set(held_ids)
     for language, relative_root in [
         ("zh", root / "tools/docs/manual"),
         ("en", root / "tools/docs/manual/en"),
@@ -512,11 +518,11 @@ def tutorial_source_bindings(root, documents, *, held_ids=()):
             text = data.decode()
             references = set(re.findall(r":doc:`[^`]*?(scirel\.[a-zA-Z0-9_.-]+)[^`]*`", text))
             unknown = references - ids
-            if unknown - held_ids:
+            if unknown - excluded_set:
                 raise ValueError(
                     "tutorial refers to unknown or renamed assets: " + str(sorted(unknown))
                 )
-            excluded = bool(unknown & held_ids)
+            excluded = bool(unknown & excluded_set)
             imports = tutorial_imports(text)
             support = {}
             invalid = []
@@ -571,17 +577,16 @@ def build(
     source_inputs = documentation_input_digests(
         documents, outline=outline, translation_paths=translation_paths
     )
-    docs = load_document_set(documents)
-    held = held_asset_ids()
-    docs = [document for document in docs if document["asset_id"] not in held]
-    public_documents = [
+    excluded = excluded_asset_ids()
+    docs = [
         document
-        for document in load_document_set(ROOT / "catalog/examples")
-        if document["asset_id"] not in held
+        for document in load_document_set(documents)
+        if document["asset_id"] not in excluded
     ]
-    tutorial_bindings = tutorial_source_bindings(ROOT, public_documents, held_ids=held)
+    raw_public_documents = load_document_set(ROOT / "catalog/examples")
+    tutorial_bindings = tutorial_source_bindings(ROOT, raw_public_documents, excluded_ids=excluded)
     if not docs:
-        raise ValueError("all documents are withheld by the exposure hold")
+        raise ValueError("no documents to document")
     if documentation_version is None:
         documentation_version = project_version()
     if not isinstance(documentation_version, str) or not documentation_version.strip():
@@ -600,7 +605,7 @@ def build(
         dirty = bool(subprocess.check_output(["git", "status", "--porcelain"], cwd=ROOT))
     if language == "zh":
         translations = load_translations(
-            ROOT, documents, docs, translation_paths=translation_paths, excluded_ids=held
+            ROOT, documents, docs, translation_paths=translation_paths, excluded_ids=excluded
         )
     else:
         if translation_paths is not None:
@@ -684,7 +689,7 @@ def build(
             figure_files=figure_files,
             matrix=matrix,
             language=language,
-            withheld_ids=held,
+            withheld_ids=excluded,
         )
     )
     if language == "en":
@@ -709,12 +714,11 @@ def build(
         raise ValueError("documentation source inputs changed during build") from error
     if final_inputs != source_inputs:
         raise ValueError("documentation source inputs changed during build")
-    final_public_documents = [
-        document
-        for document in load_document_set(ROOT / "catalog/examples")
-        if document["asset_id"] not in held
-    ]
-    if tutorial_source_bindings(ROOT, final_public_documents, held_ids=held) != tutorial_bindings:
+    final_public_documents = load_document_set(ROOT / "catalog/examples")
+    if (
+        tutorial_source_bindings(ROOT, final_public_documents, excluded_ids=excluded)
+        != tutorial_bindings
+    ):
         raise ValueError("documentation tutorial inputs changed during build")
     manifest = {
         "schema": SCHEMA,

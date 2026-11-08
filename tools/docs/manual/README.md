@@ -43,7 +43,7 @@
 - 用户指南只接受手写 `tools/docs/manual/<chapter>.rst`；没有手写稿就空白，不回退合同摘要。
 - API 参考由合同生成，但生成后必须逐页人工审查；生成成功不等于正确。
 - 中英文各自人工审查：英文合同字段必须英文，中文侧车必须中文；不得出现中文页夹英文整段或英文页夹中文整段。
-- 每个页面/合同必须经过“实现 → 合同 → 示例 → API 页/用户指南”的同一真值检查。
+- 每个页面/合同必须经过“实现 → 合同 → 示例 → API 页/用户指南”的同一条派生链检查：代码即真值，合同是代码的衍生品，文档是合同的衍生品。
 - 完整 HTML 发布站点生成到仓库内 `dist/`（gitignored）；本机是唯一真源，不提交 Git，不放 E 盘。
 - 可发布产物：`dist/docs-<date>/` 与 `dist/scirel-docs-<date>.tar.gz`；能力矩阵随站点发布
   （`capability-matrix.json`、`CAPABILITY_MATRIX.md`、`web/user-guide/capability-matrix.html`）。

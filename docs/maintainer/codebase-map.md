@@ -1,6 +1,8 @@
 # Current codebase maintainer map
 
-This map is an orientation aid, not a second source of truth. The contracts in
+This map is an orientation aid, not a second source of truth: the implementation
+is the truth, contracts are its derived record, and documentation derives from
+the contracts. The contracts in
 `catalog/examples/` own scientific behavior; this page shows where to read and
 how the layers connect.
 
@@ -12,9 +14,11 @@ how the layers connect.
 - Tests: 253 `test_*.py` files, about 36,900 lines.
 - Public API inventory: 251 non-module names, made up of 214 functions,
   36 classes and one data value. The inventory also exposes 19 public modules.
-- Contracts: 256 exposed contracts and 5 held contracts under
-  `catalog/review/`.
-- Review decisions: 49 `pass`, 207 `pass-with-limits`, and 5 `human-review`.
+- Contracts: `catalog/examples/` holds the public contract set, and every entry
+  there has an implementation in `src/scirel/`. Assets kept out of the installed
+  package and the generated documentation are listed in
+  `catalog/review/excluded_from_package.json`; there is no status registry, so
+  no per-asset review verdict is recorded in the tree.
 - Composition contracts: 22 exposed contracts carry an explicit composition
   graph.
 - Every count above is structural. It does not establish complete scientific
@@ -53,7 +57,7 @@ runtime dependencies of the public package.
 ## The main chain
 
 ```text
-catalog/examples/<asset>.json       scientific truth: model, ports, limits, evidence
+catalog/examples/<asset>.json       derived contract: model, ports, limits, evidence
         |
         +--> src/scirel/<domain>/   implementation and public lazy exports
         +--> tests/<domain>/        direct numerical and failure tests
@@ -61,9 +65,8 @@ catalog/examples/<asset>.json       scientific truth: model, ports, limits, evid
         +--> discovery/query tools  derived capability index and search cards
 ```
 
-The contract's `verification.tests` list binds the asset to its tests. The
-`public_api.python` block binds it to the implementation, and
-`catalog/review/VERDICTS.json` records the review decision. Do not infer any of
+The contract's `verification.tests` list binds the asset to its tests and the
+`public_api.python` block binds it to the implementation. Do not infer any of
 those facts from file names alone.
 
 When code and contract disagree:
@@ -79,16 +82,16 @@ Read [`catalog/README.md`](../../catalog/README.md) before changing any asset.
 
 The package is broad, but the maintenance surface clusters into these areas:
 
-| Area | Public names | Exposed contracts | Review shape | Start with |
-| --- | ---: | ---: | --- | --- |
-| Geometry, numerics and finite volumes | 57 | 52 | 13 pass, 39 pass-with-limits | `geometry/`, `numerics/`, `fvm/`; field lines, meshes, interpolation, basis functions and conservative operators |
-| Fields, coils and device configurations | 25 | 24 | 12 pass, 12 pass-with-limits | `field/`, `electromagnetism/`, `configurations/`; Green responses, filament/coil geometry and WHAM/BRB/TREX data |
-| Equilibrium and closure relations | 22 | 21 | 21 pass-with-limits | `equilibrium/`, `closures/`; Grad-Shafranov/Picard steps, pressure flux, ambipolar and quasineutral closures |
-| Kinetic and neutral transport | 94 | 112 | 7 pass, 105 pass-with-limits | `kinetic/`; waves, spectral solvers, generalized dispersion, Vlasov-Poisson, mirror and neutral transport |
-| Collisions and atomic data | 22 | 20 | 1 pass, 19 pass-with-limits | `collisions/`; hydrogen cross-sections, reaction rates, collision matrices and stopping increments |
-| Diagnostics and inference | 10 | 10 | 6 pass, 4 pass-with-limits | `diagnostics/`, `inference/`; residual diagnostics, stability margins and bounded anisotropic inference |
-| Physics, neoclassical, fusion, plasma and dielectric | 13 | 11 | 5 pass, 6 pass-with-limits | `physics/`, `neoclassical/`, `fusion/`, `plasma/`, `dielectric/`; small algebraic relations and bounded model assemblies |
-| I/O and source profiles | 8 | 6 | 5 pass, 1 pass-with-limits | `io/`, `source/`; EQDSK/GEQDSK interchange and normalized 1-D profiles |
+| Area | Public names | Exposed contracts | Start with |
+| --- | ---: | ---: | --- |
+| Geometry, numerics and finite volumes | 57 | 52 | `geometry/`, `numerics/`, `fvm/`; field lines, meshes, interpolation, basis functions and conservative operators |
+| Fields, coils and device configurations | 25 | 24 | `field/`, `electromagnetism/`, `configurations/`; Green responses, filament/coil geometry and WHAM/BRB/TREX data |
+| Equilibrium and closure relations | 22 | 21 | `equilibrium/`, `closures/`; Grad-Shafranov/Picard steps, pressure flux, ambipolar and quasineutral closures |
+| Kinetic and neutral transport | 94 | 112 | `kinetic/`; waves, spectral solvers, generalized dispersion, Vlasov-Poisson, mirror and neutral transport |
+| Collisions and atomic data | 22 | 20 | `collisions/`; hydrogen cross-sections, reaction rates, collision matrices and stopping increments |
+| Diagnostics and inference | 10 | 10 | `diagnostics/`, `inference/`; residual diagnostics, stability margins and bounded anisotropic inference |
+| Physics, neoclassical, fusion, plasma and dielectric | 13 | 11 | `physics/`, `neoclassical/`, `fusion/`, `plasma/`, `dielectric/`; small algebraic relations and bounded model assemblies |
+| I/O and source profiles | 8 | 6 | `io/`, `source/`; EQDSK/GEQDSK interchange and normalized 1-D profiles |
 
 The public-name and contract counts do not have to match one-for-one. A contract
 can bind a canonical package export to a child implementation; that relationship
@@ -111,26 +114,24 @@ Do not rename or regroup these modules until the API issues have been narrowed.
 The planned kinetic split in issue #8 is a large structural batch, not a starter
 task.
 
-## Review states and held work
+## Review-stage work
 
-`catalog/review/VERDICTS.json` is the status registry. `pass-with-limits` is an
-exposed result with explicit evidence boundaries in its contract; it is not a
-synonym for a known wrong answer.
+A contract's `verification` block states the evidence boundary of the claim: what
+was compared, against what oracle, and where the domain stops. That boundary is
+part of the contract, not a verdict attached to it; the tree records no
+per-asset review status.
 
-The following five assets are held and excluded from the public package,
-documentation, discovery index and capability matrix:
+Five contracts under `catalog/review/examples/` are not part of the public
+catalog: their implementations are not in `src/`, so they are neither packaged,
+documented, indexed nor counted by the capability matrix. They stay readable as
+review input and are promoted by moving the contract into `catalog/examples/`
+once its implementation lands:
 
 - `scirel.equilibrium.finite-frc-feedback`
 - `scirel.equilibrium.finite-limited-boundary`
 - `scirel.inference.direct-anisotropic-inversion`
 - `scirel.kinetic.atomic-slab-transport`
 - `scirel.kinetic.multiscale-sat123`
-
-The human decisions and release conditions are in
-[`catalog/review/HUMAN_REVIEW_TODO.md`](../../catalog/review/HUMAN_REVIEW_TODO.md)
-and [`catalog/review/HOLD.json`](../../catalog/review/HOLD.json). The exceptional
-review-harness failure caused by these held examples is recorded in
-[`AGENTS.md`](../../AGENTS.md).
 
 ## Public API signals that need work
 
@@ -173,8 +174,8 @@ pass is not evidence that every possible user task is covered.
 ## Review, docs and delivery
 
 - `catalog/examples/` is the public contract set.
-- `catalog/review/` contains held contracts, candidate code and the verdict
-  registry; it is not installed.
+- `catalog/review/` contains candidate contracts and candidate code; it is not
+  installed.
 - `tools/docs/manual/` contains authored bilingual user guides.
 - `tools/docs/zh/*.json` contains Chinese reader records bound to contract bytes.
 - `src/scirel/_result.py` defines the named `Result` mapping used by public
@@ -233,6 +234,6 @@ local full acceptance check establishes structural and regression health. It
 does not independently validate every scientific formula, every stated physical
 domain or the rights of all source material.
 
-NOT_RUN for this map: independent scientific review of all 256 exposed
-contracts, manual review of every generated API page, and reference-answer
-parity for the systems outside the public package.
+NOT_RUN for this map: independent scientific review of every exposed contract,
+manual review of every generated API page, and reference-answer parity for the
+systems outside the public package.

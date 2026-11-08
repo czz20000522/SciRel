@@ -24,11 +24,6 @@ def _documents():
     ]
 
 
-def _held():
-    payload = json.loads((ROOT / "catalog" / "review" / "HOLD.json").read_text())
-    return set(payload["assets"])
-
-
 def test_matrix_covers_every_asset_and_domain():
     tool = _load()
     documents = _documents()
@@ -59,5 +54,5 @@ def test_markdown_and_cli_output(tmp_path):
     code = tool.main(["--catalog", str(ROOT / "catalog" / "examples"), "--output", str(tmp_path)])
     assert code == 0
     payload = json.loads((tmp_path / "capability-matrix.json").read_text(encoding="utf-8"))
-    assert payload["total_assets"] == len([d for d in documents if d["asset_id"] not in _held()])
+    assert payload["total_assets"] == len(documents)
     assert (tmp_path / "CAPABILITY_MATRIX.md").is_file()

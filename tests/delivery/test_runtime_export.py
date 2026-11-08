@@ -142,6 +142,11 @@ def _rewrite_contract(case, document):
 @pytest.fixture
 def export_case(tmp_path, monkeypatch):
     source = tmp_path / "source"
+    _write(
+        source,
+        "catalog/review/excluded_from_package.json",
+        '{"schema": "scirel.excluded-from-package", "ids": []}\n',
+    )
     case = SimpleNamespace(
         source=source,
         wheel=tmp_path / "synthetic-0-py3-none-any.whl",
@@ -149,22 +154,6 @@ def export_case(tmp_path, monkeypatch):
         dirty=False,
     )
     _rewrite_contract(case, _document())
-    _write(
-        source,
-        "catalog/review/HOLD.json",
-        encode(
-            {
-                "schema": "scirel.exposure-hold",
-                "assets": {
-                    "scirel.synthetic.withheld": {
-                        "status": "human-review",
-                        "reason": "Synthetic review only",
-                        "required_decision": "Synthetic decision",
-                    }
-                },
-            }
-        ),
-    )
     _write(source, "licenses/NOTICE.txt", NOTICE)
     _write(source, "pyproject.toml", '[project]\nname = "synthetic"\nversion = "0"\n')
     for name in delivery.BUILD_INPUTS:
@@ -305,7 +294,6 @@ def test_runtime_from_original_contracts_and_bound_readers_is_standalone(export_
     for relative in (
         "catalog/examples/" + ASSET + ".json",
         "tools/docs/zh/synthetic.json",
-        "catalog/review/HOLD.json",
         "src/scirel/synthetic.py",
         "tests/test_synthetic.py",
     ):
@@ -325,7 +313,6 @@ def test_runtime_from_original_contracts_and_bound_readers_is_standalone(export_
     [
         "catalog/examples/" + ASSET + ".json",
         "tools/docs/zh/synthetic.json",
-        "catalog/review/HOLD.json",
         "scripts/query.py",
         "tools/docs/mcp-requirements.txt",
         "skills/development/usage/scirel-solving/scripts/delivery.py",

@@ -135,7 +135,7 @@ def test_reviewed_relation_example():
         raise AssertionError("a residual without a sign change must be rejected")
 
 
-def test_review_gate_rejects_nonfinite_solver_controls_and_accepts_mapping_results():
+def test_contract_rejects_nonfinite_solver_controls_and_accepts_mapping_results():
     import pytest
 
     def residual(potential):

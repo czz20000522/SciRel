@@ -16,17 +16,20 @@ project's task graph and it does not describe a user's private program.
 
 Any agent changing a capability must read this file first.
 
-## Review status
+## Public catalog and review copies
 
-Each contract has one status in `catalog/review/VERDICTS.json`.
-`scripts/review_gate.py --check` confirms that the registry and the catalog agree;
-it checks structure only and makes no scientific claim. Human review decides the
-status. See [`AUDIT.md`](AUDIT.md).
+`catalog/examples/` holds the contracts of capabilities that have an
+implementation in `src/`. `catalog/review/examples/` holds contracts whose
+implementation has not landed; nothing there is packaged, documented or indexed.
+Promotion is a code change plus its contract, not a status vote: move the
+contract into `catalog/examples/` in the same change that adds the
+implementation. See [`AUDIT.md`](AUDIT.md).
 
 ## One truth, no silent divergence
 
-When contract and implementation disagree, choose one truth explicitly and
-record the decision in the change:
+The implementation is the truth; the contract records it and the documentation
+derives from the contract. When contract and implementation disagree, fix the
+contract in the same change:
 
 1. If the contract encodes a scientific convention, a fail-closed requirement
    or a public promise, fix the implementation and add a regression test.

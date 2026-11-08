@@ -14,8 +14,7 @@ import pytest
 from scirel.inference import direct_anisotropic_inversion as composition
 
 ROOT = Path(__file__).resolve().parents[3]
-# 现存 composition.yaml 是 later snapshot，不是准入原件；准入原件的字节不在本仓库，
-# 判定过程与证据见 catalog/review/DIRECT_INVERSION_ARTIFACT.md。
+# 现存 composition.yaml 是 later snapshot，不是准入原件；准入原件的字节不在本仓库。
 LOCKED_COMPOSITION_SHA256 = "563d23f8d3d5812555dcac044c4f322d139094a5589c7562dc3345a05145956d"
 HELD_ASSET = "scirel.inference.direct-anisotropic-inversion"
 
@@ -148,7 +147,8 @@ def test_composition_yaml_bytes_are_locked():
     assert hashlib.sha256(payload).hexdigest() == LOCKED_COMPOSITION_SHA256
 
 
-# 验证：现存快照与合同 composition 不是同一版，资产因此仍在 hold。
+# 验证：现存快照与合同 composition 不是同一版。资产因此不进公开 catalog，
+# 只留在 catalog/review/examples/ 与 excluded_from_package.json 里。
 # 这条不判断哪一版正确，只把"两者不同版"变成机器可见的事实。
 def test_composition_yaml_is_not_the_admitted_artifact():
     text = Path(__file__).with_name("composition.yaml").read_text(encoding="utf-8")
@@ -159,9 +159,6 @@ def test_composition_yaml_is_not_the_admitted_artifact():
     contract_nodes = {node["id"] for node in contract["composition"]["nodes"]}
     assert graph_nodes != contract_nodes
     assert graph_nodes & contract_nodes == {"direct_optimizer"}
-    hold = json.loads((ROOT / "catalog/review/HOLD.json").read_text(encoding="utf-8"))
-    record = hold["assets"][HELD_ASSET]
-    assert "exact admitted direct-inversion graph artifact is missing" in record["reason"]
 
 
 # 验证：相同 seed、bounds 和 fit_keys 产生相同 permutation 和 strata 内样本。
@@ -279,7 +276,7 @@ def test_public_simplified_parameter_fit_scenario():
     assert abs(result["best_parameters"]["hot_pressure_scale"] - 4.0) < 1.0e-6
 
 
-def test_review_gate_reports_nonconverged_equilibrium_reason():
+def test_contract_reports_nonconverged_equilibrium_reason():
     r_grid, z_grid = np.meshgrid(np.array([0.2, 0.4]), np.array([-0.1, 0.1]))
 
     def equilibrium_solver(_state):

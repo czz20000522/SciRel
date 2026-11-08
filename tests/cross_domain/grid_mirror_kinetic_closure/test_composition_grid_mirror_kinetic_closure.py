@@ -162,7 +162,7 @@ def test_profile_port_is_evaluated_against_current_flux():
     assert np.max(np.abs(result["relative_charge_residual"])) < 1e-9
 
 
-def test_review_gate_reference_potential_shape_and_end_loss_refill_fail_closed():
+def test_contract_reference_potential_shape_and_end_loss_refill_fail_closed():
     import pytest
 
     values = _inputs()
@@ -176,7 +176,7 @@ def test_review_gate_reference_potential_shape_and_end_loss_refill_fail_closed()
         _run(values)
 
 
-def test_review_gate_keeps_pitch_integral_diagnostics_full_grid_when_confined():
+def test_contract_keeps_pitch_integral_diagnostics_full_grid_when_confined():
     unconfined = _run(
         {**_inputs(), "plug_left_z": -0.6, "plug_right_z": 0.6, "confine_to_plug_planes": False}
     )
@@ -192,7 +192,7 @@ def test_review_gate_keeps_pitch_integral_diagnostics_full_grid_when_confined():
     np.testing.assert_allclose(confined["ion_density"][[0, -1]], 0.0)
 
 
-def test_review_gate_rejects_nonrectilinear_or_nonboolean_controls():
+def test_contract_rejects_nonrectilinear_or_nonboolean_controls():
     import pytest
 
     values = _inputs()
@@ -219,7 +219,7 @@ def test_review_gate_rejects_nonrectilinear_or_nonboolean_controls():
         _run(values)
 
 
-def test_review_gate_rejects_quadrature_order_below_nested_moment_requirement():
+def test_contract_rejects_quadrature_order_below_nested_moment_requirement():
     import pytest
 
     with pytest.raises(ValueError, match="quadrature_order"):

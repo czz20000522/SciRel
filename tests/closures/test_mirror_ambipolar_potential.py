@@ -258,7 +258,7 @@ def test_reviewed_relation_example():
         raise AssertionError("an unbracketed extreme current ratio must be rejected")
 
 
-def test_review_gate_rejects_nonfinite_and_noninteger_solver_controls():
+def test_contract_rejects_nonfinite_and_noninteger_solver_controls():
     import pytest
 
     base = dict(

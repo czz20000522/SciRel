@@ -50,8 +50,8 @@ SCRIPT_LAYERS = {
     "code_digest.py": ("tooling", "docs", "delivery"),
     "consumer_tools.py": ("delivery",),
     "dev_container.py": ("tooling", "architecture"),
-    "exposure.py": ("tooling", "architecture", "docs", "delivery"),
     "export_admission_tools.py": ("delivery",),
+    "exposure.py": ("docs", "delivery"),
     "mapping_interface_bindings.json": ("tooling", "architecture", "docs", "delivery"),
     "measure_capability_runtime.py": ("architecture",),
     "package_catalog_snapshot.py": ("tooling",),
@@ -59,7 +59,6 @@ SCRIPT_LAYERS = {
     "public_api_binding.py": ("tooling", "architecture", "docs", "delivery"),
     "query.py": ("delivery",),
     "solving_skill.py": ("delivery",),
-    "review_gate.py": ("tooling",),
     "scirel_docs.py": ("docs", "delivery"),
     "serve_consumer_mcp.py": ("delivery",),
     "test_scope.py": ("tooling",),
@@ -201,8 +200,6 @@ def _classify_tests(relative: Path) -> tuple[list[str], list[str]]:
 
 
 def _classify_script(name: str) -> tuple[list[str], list[str]]:
-    if name == "review_harness.py":
-        return _review_scope(), ["held contract tests and review harness boundaries"]
     if name == "build_pleiades_truth.py":
         return ["tests/cross_domain/multi_coil_vacuum_field"], [
             "downstream truth consumers only: pytest does not execute the external source generator; "
@@ -211,28 +208,6 @@ def _classify_script(name: str) -> tuple[list[str], list[str]]:
     if name not in SCRIPT_LAYERS:
         raise UnresolvedPath(f"script has no declared test consumers: scripts/{name}")
     return [_layer_target(layer) for layer in SCRIPT_LAYERS[name]], []
-
-
-def _review_scope(module: str | None = None, asset_id: str | None = None) -> list[str]:
-    from review_harness import load_review_documents, review_test_references
-
-    try:
-        documents = load_review_documents(ROOT)
-        if module is not None:
-            documents = [
-                document
-                for document in documents
-                if document["public_api"]["python"]["module"] == module
-                or document["public_api"]["python"]["module"].startswith(module + ".")
-            ]
-        if asset_id is not None:
-            documents = [document for document in documents if document["asset_id"] == asset_id]
-        if (module is not None or asset_id is not None) and not documents:
-            raise ValueError("review candidate has no held contract binding")
-        tests = review_test_references(documents, ROOT)
-    except (OSError, ValueError, KeyError, TypeError) as error:
-        raise UnresolvedPath(str(error)) from error
-    return [*tests, _layer_target("tooling"), _layer_target("architecture")]
 
 
 def classify(relative: Path) -> tuple[list[str], list[str]]:
@@ -264,12 +239,12 @@ def classify(relative: Path) -> tuple[list[str], list[str]]:
             module_parts = list(parts[4:-1])
             if relative.stem != "__init__":
                 module_parts.append(relative.stem)
-            return _review_scope(module=".".join(module_parts)), [
-                "held implementation: tests bound by its review contract"
+            return [_layer_target("tooling"), _layer_target("architecture")], [
+                "review candidate code: structural checks only"
             ]
         if len(parts) == 4 and parts[1:3] == ("review", "examples") and relative.suffix == ".json":
-            return _review_scope(asset_id=relative.stem), [
-                "held contract: direct tests and review boundaries"
+            return [_layer_target("tooling"), _layer_target("architecture")], [
+                "review contract copy: structural checks only"
             ]
         if len(parts) >= 3 and parts[1] == "examples":
             targets, notes = _classify_catalog(ROOT / relative)

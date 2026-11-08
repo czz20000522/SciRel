@@ -22,7 +22,6 @@ def steps(output: Path) -> list[tuple[str, list[str]]]:
     python = [sys.executable, "-B"]
     plan = [
         ("tests", [*python, "-m", "pytest", "-q", "-p", "no:cacheprovider"]),
-        ("review registry", [*python, "scripts/review_gate.py", "--check"]),
         (
             "contracts and examples",
             [

@@ -245,7 +245,7 @@ def test_current_grid_validation_precedes_required_port_validation():
         _run(values)
 
 
-def test_review_gate_rejects_invalid_closure_fields_and_mask_shape():
+def test_contract_rejects_invalid_closure_fields_and_mask_shape():
     values = _inputs()
 
     def invalid_closure(state):
@@ -267,7 +267,7 @@ def test_review_gate_rejects_invalid_closure_fields_and_mask_shape():
         _run({**values, "plasma_mask": np.ones(values["r_grid"].shape, dtype=int)})
 
 
-def test_review_gate_terminal_outputs_share_the_returned_state():
+def test_contract_terminal_outputs_share_the_returned_state():
     values = _inputs()
     result = _run(values)
     weights = np.outer([0.05, 0.1, 0.05], [0.1, 0.2, 0.1])
@@ -275,7 +275,7 @@ def test_review_gate_terminal_outputs_share_the_returned_state():
     np.testing.assert_allclose(result["profiles"]["p_parallel"], 2.0 + result["psi"])
 
 
-def test_review_gate_rejects_nonuniform_rz_axes_before_iteration():
+def test_contract_rejects_nonuniform_rz_axes_before_iteration():
     r_grid, z_grid = np.meshgrid(np.array([0.2, 0.4, 0.7]), np.array([-0.1, 0.0, 0.1]))
     # Historical node ID: monotone nonuniform coordinates are now supported
     # with explicit per-node weights, rather than rejected or first-spaced.
@@ -285,7 +285,7 @@ def test_review_gate_rejects_nonuniform_rz_axes_before_iteration():
     np.testing.assert_allclose(np.sum(weights), 0.5 * 0.2)
 
 
-def test_review_gate_rejects_fractional_picard_iteration_count():
+def test_contract_rejects_fractional_picard_iteration_count():
     with pytest.raises(ValueError, match="maxiter must be an integer"):
         _run(_inputs(maxiter=1.2))
 

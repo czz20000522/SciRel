@@ -15,7 +15,7 @@ import stat
 import subprocess
 
 from capability_query import CAPABILITY_INDEX_SCHEMA, DEVICE_SCOPES, validate_capability_index
-from exposure import held_asset_ids
+from exposure import excluded_asset_ids
 from validate_asset_documents import validate_document
 
 LANGUAGES = ("zh", "en")
@@ -395,7 +395,8 @@ class PublicCatalog:
     """Read the public working tree without building or importing scientific code.
 
     This identity binds current public inputs, not a wheel or a past acceptance
-    run. HOLD is read only to filter exposure; review evidence is never loaded.
+    run. Everything under ``catalog/examples`` is public: no review artifact
+    filters what is exposed.
     """
 
     def __init__(self, root, expected_digest=None):
@@ -404,13 +405,13 @@ class PublicCatalog:
         self.input_bytes = {}
         revision, dirty = self._git_identity()
         self._git_state = (revision, dirty)
-        hold = self.root / "catalog/review/HOLD.json"
-        self._read("catalog/review/HOLD.json")
-        held = held_asset_ids(hold, read_bytes=self._captured)
-        self._held_ids = held
+        exclusion_path = self.root / "catalog/review/excluded_from_package.json"
+        self._read("catalog/review/excluded_from_package.json")
+        excluded = excluded_asset_ids(exclusion_path, read_bytes=self._captured)
+        self._excluded_ids = excluded
         self.documents = {}
         for path in sorted((self.root / "catalog/examples").glob("*.json")):
-            if path.stem in held:
+            if path.stem in excluded:
                 continue
             document = json.loads(self._read("catalog/examples/" + path.name))
             validate_document(document, location=path.name)
@@ -435,7 +436,7 @@ class PublicCatalog:
             self.root / "catalog/examples",
             documents,
             translation_paths=reader_paths,
-            excluded_ids=held,
+            excluded_ids=excluded,
             read_bytes=self._captured,
         )
         self.index = build_capability_index(
@@ -506,7 +507,7 @@ class PublicCatalog:
             or {
                 path.stem
                 for path in (self.root / "catalog/examples").glob("*.json")
-                if path.stem not in self._held_ids
+                if path.stem not in self._excluded_ids
             }
             != set(self.documents)
             or sorted((self.root / "tools/docs/zh").glob("*.json")) != self._reader_paths

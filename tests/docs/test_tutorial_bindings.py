@@ -49,7 +49,7 @@ def test_human_tutorial_binding_rejects_stale_reference_import_and_invalid_code(
         text += "   incomplete = (\n"
     (manual / "example.rst").write_text(text)
     with pytest.raises(ValueError):
-        tutorial_source_bindings(tmp_path, [DOCUMENT])
+        tutorial_source_bindings(tmp_path, [DOCUMENT], excluded_ids=set())
 
 
 def test_public_exception_is_bound_statically_without_running_module_and_held_guide_is_placeholder(
@@ -67,7 +67,7 @@ def test_public_exception_is_bound_statically_without_running_module_and_held_gu
 class FormatError(ValueError): pass
 raise AssertionError('tutorial binding must never import this module')
 """)
-    bound = tutorial_source_bindings(tmp_path, [DOCUMENT])
+    bound = tutorial_source_bindings(tmp_path, [DOCUMENT], excluded_ids=set())
     assert bound[0]["public_imports"] == [["scirel.synthetic", "evaluate"]]
     proof = bound[0]["public_exception_imports"]["scirel.synthetic.FormatError"]
     assert set(proof) == {"src/scirel/synthetic.py"}
@@ -78,5 +78,5 @@ raise AssertionError('tutorial binding must never import this module')
 
    from scirel.synthetic import held
 """)
-    bound = tutorial_source_bindings(tmp_path, [DOCUMENT], held_ids={"scirel.synthetic.held"})
+    bound = tutorial_source_bindings(tmp_path, [DOCUMENT], excluded_ids={"scirel.synthetic.held"})
     assert bound[1]["delivery_status"] == "subset-placeholder"

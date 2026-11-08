@@ -18,10 +18,6 @@ from scirel_docs import Documentation, build, project_version, server
 from _document_fixtures import copy_example_closure, example_document_sources
 
 
-def held_assets():
-    return set(json.loads((ROOT / "catalog/review/HOLD.json").read_text())["assets"])
-
-
 def test_queries_are_bounded_and_exact_records_unchanged(snapshot):
     docs = Documentation(snapshot)
     p = docs.search("equilibrium", limit=2)
@@ -389,12 +385,7 @@ def test_user_guide_is_authored_and_never_projects_contract_prose(snapshot):
         html = docs.read("web/user-guide/" + chapter["id"] + ".html").decode()
         for forbidden in ("选择计算入口", "模型与使用条件", "验证与使用边界"):
             assert forbidden not in html, (chapter["id"], forbidden)
-        first_exposed = next(
-            asset
-            for topic in chapter["topics"]
-            for asset in topic["assets"]
-            if asset not in held_assets()
-        )
+        first_exposed = next(asset for topic in chapter["topics"] for asset in topic["assets"])
         assert "参数" in docs.read("web/reference/generated/" + first_exposed + ".html").decode()
 
 
@@ -449,12 +440,7 @@ def test_reference_domains_list_linked_functions_and_keep_sidebar_compact(snapsh
     for chapter in book["chapters"]:
         page = BeautifulSoup(docs.read("web/reference/" + chapter["id"] + ".html"), "html.parser")
         rows = page.select("article table.scirel-api-summary tbody tr")
-        expected = [
-            asset
-            for topic in chapter["topics"]
-            for asset in topic["assets"]
-            if asset not in held_assets()
-        ]
+        expected = [asset for topic in chapter["topics"] for asset in topic["assets"]]
         assert len(rows) == len(expected)
         for row, asset in zip(rows, expected, strict=True):
             seen.add(asset)

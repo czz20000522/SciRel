@@ -55,7 +55,7 @@ def test_reviewed_relation_example():
     )
 
 
-def test_review_gate_rejects_duplicate_nondegenerate_field_samples():
+def test_contract_rejects_duplicate_nondegenerate_field_samples():
     import numpy as np
     import pytest
 

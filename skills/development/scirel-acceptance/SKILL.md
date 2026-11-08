@@ -21,14 +21,9 @@ A change is done only when the checks here pass. Run them yourself; do not assum
 
 It prints the time of each step and takes about five minutes. Much longer means the machine is busy: look for other runs before suspecting the code. Only one run per checkout is allowed. Run it in the foreground, so that you see the result.
 
-The pre-push fast path reuses a successful check only for the exact `HEAD` tree and current host
-architecture. Receipts live in shared Git metadata keyed by that pair: different trees use different
-entries, while linked worktrees at the same tree and architecture share one entry. The cache keeps at
-most 16 receipts for 30 days and writes each receipt atomically. Under one cross-worktree lock, it
-prunes expired, schema-mismatched, malformed and excess entries when they are safe to read and
-remove. Missing or non-matching requested receipts are cache misses and run the complete check.
-Unsafe cache directories and unreadable or malformed current receipts are also misses; malformed
-unrelated entries are pruned when possible or skipped without hiding a readable current receipt.
+Every push runs the complete check. No result is cached and no earlier run is reused: the tree you
+push is the tree that gets checked, in the same container, every time. Budget the five to ten minutes
+instead of looking for a shortcut, and expect two pushes on a branch to pay it twice.
 
 It runs the full test suite, the review registry gate, contract signatures and examples, the docstring and contract sync check, the scan for new hazard patterns, the documentation build, the report validator on every solved example, the lockfile check, and a wheel build with its exposure check.
 

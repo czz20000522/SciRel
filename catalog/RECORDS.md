@@ -32,14 +32,11 @@ outcome in the existing task; a policy edit alone is not completed cleanup.
 
 | location | contents | lifetime | cleanup / change |
 | --- | --- | --- | --- |
-| `catalog/examples/` | admitted scientific contracts (single truth) | project lifetime | only by reviewed contract change; never delete to hide a failure |
-| `catalog/review/HOLD.json` | human-review exposure hold | until owner decision | remove only after the review record and evidence are complete |
-| `catalog/review/VERDICTS.json` | one review status per asset | project lifetime | changed by human review; never silently drop an asset |
-| `catalog/AUDIT.md`, `catalog/review/MERGE_CHAIN.md` | audit, merge and quarantine policy | project lifetime | controlled doc change |
-| `scripts/review_gate.py`, tests | enforcement of the policy | project lifetime | change with the policy and its tests |
+| `catalog/examples/` | public contracts, derived from `src/` implementations | project lifetime | change it in the same commit as the code it records |
+| `catalog/AUDIT.md` | audit and promotion policy | project lifetime | controlled doc change |
 
-These are process truth, not scientific truth; the contract remains the single
-scientific truth.
+These are process records. The implementation is the truth: the contract is its
+derived record, and the documentation derives from the contract.
 
 ## Separate process records from results
 
@@ -71,7 +68,8 @@ cause and regression result in the existing task/evidence record. A rejected
 package with no continuing use is then removed immediately; retaining a whole
 wheel/docs/partial tree is not failure evidence. Builders stage outputs and roll
 back owned partial outputs on failure without touching pre-existing targets.
-Keep only genuinely needed human-review evidence in the existing review record.
+Keep only genuinely needed audit evidence, in the tests the contract names and in
+the contract's `verification` block.
 
 Task handoffs end when the recipient has taken over; problem notes end when the
 problem is resolved. Transfer necessary conclusions into the existing canonical
@@ -113,8 +111,8 @@ only after the merged closure is green; the verdict record remains.
 3. The final deliverable is bound to its clean source and exact content. Remove
    superseded snapshots and rejected packages with no continuing reference/use;
    a superseded label alone is not retirement. Keep genuinely referenced final
-   deliveries and valid HOLD scientific/verdict evidence for their actual scope.
-4. Every truth artifact has provenance and a reproducible generator.
-5. Every held/candidate record has a verdict and, if unresolved, a named owner
-   decision in `catalog/review/HUMAN_REVIEW_TODO.md`.
-6. No held code or contract is installed/exposed; a guard is only transitional.
+   deliveries for their actual scope.
+4. Every derived artifact has provenance and a reproducible generator.
+5. A contract whose implementation has not landed lives in
+   `catalog/review/examples/` and is promoted together with that code.
+6. Review-stage code and contracts are never installed or exposed.

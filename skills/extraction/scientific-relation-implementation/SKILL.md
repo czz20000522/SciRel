@@ -55,9 +55,9 @@ Before merging a candidate:
 4. re-run the closure; a composition with a held/failed member is not exposed;
 5. delete the staged copy only after the merged closure is green.
 
-If an outbound request needs an absent/held capability, treat it as a gap to fill
+If an outbound request needs an absent/excluded capability, treat it as a gap to fill
 inside the request: mark it, try a public formula/exposed composition, verify and
 continue; otherwise report the concrete missing input and a bounded result. Do
 not turn the gap into a user task to obtain a human reviewer or decompose the
-library. The exposure hold is a catalog-publication state, not an outbound stop
-line.
+library. Exclusion from the package is a catalog-publication state, not an
+outbound stop line.

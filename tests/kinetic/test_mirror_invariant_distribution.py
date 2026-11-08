@@ -165,7 +165,7 @@ def test_reviewed_relation_example():
     assert np.allclose(reversed_velocity["f0_s3_m6"], unplugged["f0_s3_m6"])
 
 
-def test_review_gate_rejects_nonfinite_mass_and_charge():
+def test_contract_rejects_nonfinite_mass_and_charge():
     import pytest
 
     base = dict(

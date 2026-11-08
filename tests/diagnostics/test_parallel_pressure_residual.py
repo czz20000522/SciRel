@@ -72,7 +72,7 @@ def test_reviewed_relation_example():
         raise AssertionError("strict mode must reject an inconsistent perpendicular pressure")
 
 
-def test_review_gate_rejects_an_empty_pressure_sample_set():
+def test_contract_rejects_an_empty_pressure_sample_set():
     import numpy as np
     import pytest
 

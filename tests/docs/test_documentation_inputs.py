@@ -11,6 +11,46 @@ sys.path.insert(0, str(ROOT / "scripts"))
 import scirel_docs as docs  # noqa: E402
 
 
+def _local_script_imports(name):
+    """Return local script modules imported by one script, without executing it."""
+    import ast
+
+    path = ROOT / "scripts" / name
+    tree = ast.parse(path.read_bytes(), filename=str(path))
+    found = set()
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Import):
+            for alias in node.names:
+                found.add(alias.name.split(".")[0])
+        elif isinstance(node, ast.ImportFrom) and node.level == 0 and node.module:
+            found.add(node.module.split(".")[0])
+    return {
+        candidate + ".py"
+        for candidate in found
+        if (ROOT / "scripts" / (candidate + ".py")).is_file()
+    }
+
+
+def test_digest_list_covers_the_documentation_build_import_closure():
+    """身份清单必须覆盖真实 import 闭包，漏项等于身份不覆盖决定结果的代码。
+
+    名单硬编码在 scirel_docs.DOCUMENTATION_BUILD_SCRIPTS 里，所以这里从 import
+    关系推导闭包来对账，而不是把当前文件再抄一份——下一个漏项才会被自动发现。
+    """
+    pending = ["scirel_docs.py"]
+    seen = set()
+    while pending:
+        current = pending.pop()
+        if current in seen:
+            continue
+        seen.add(current)
+        pending.extend(_local_script_imports(current) - seen)
+    missing = sorted(seen - set(docs.DOCUMENTATION_BUILD_SCRIPTS))
+    assert missing == [], (
+        "documentation build imports scripts missing from the digest list: " + str(missing)
+    )
+
+
 @pytest.fixture
 def source_tree(tmp_path, monkeypatch):
     root = tmp_path / "source"
@@ -106,7 +146,7 @@ def test_input_mutation_during_render_aborts_before_output(
         "verification": {"evidence_ceiling": "synthetic fixture", "known_limitations": []},
     }
     monkeypatch.setattr(docs, "load_document_set", lambda path: [document])
-    monkeypatch.setattr(docs, "held_asset_ids", lambda: frozenset())
+    monkeypatch.setattr(docs, "excluded_asset_ids", lambda: frozenset())
     monkeypatch.setattr(docs, "project_version", lambda: "0.1.0")
     monkeypatch.setattr(docs, "handbook_document", lambda ids, outline: {"chapters": []})
     monkeypatch.setattr(docs, "load_english_handbook", lambda root, book: book)
