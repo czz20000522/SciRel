@@ -807,3 +807,127 @@ def test_linked_worktree_git_metadata_is_mounted_portably(tmp_path, monkeypatch)
             f"gitdir: {module.GIT_COMMON_MOUNT}/{relative_git_dir}\n"
         )
     assert not pointer.exists()
+
+
+def _stub_hygiene(
+    monkeypatch,
+    module,
+    tmp_path,
+    *,
+    worktrees=(),
+    branches=("main",),
+    remote=("main",),
+    in_use=("main",),
+    containers=(),
+    volumes=(),
+):
+    main_root = tmp_path / "checkout"
+    main_root.mkdir(exist_ok=True)
+    paths = [main_root, *[tmp_path / name for name in worktrees]]
+    for path in paths[1:]:
+        path.mkdir(parents=True, exist_ok=True)
+    monkeypatch.setattr(module, "worktree_entries", lambda: paths)
+    monkeypatch.setattr(module, "git_common_directory", lambda: main_root / ".git")
+    monkeypatch.setattr(module, "local_branch_names", lambda: list(branches))
+    monkeypatch.setattr(module, "remote_branch_names", lambda: set(remote))
+    monkeypatch.setattr(module, "checked_out_branches", lambda: set(in_use))
+    monkeypatch.setattr(module, "container_records", lambda: list(containers))
+    monkeypatch.setattr(module, "_hygiene_docker", lambda *arguments: list(volumes))
+    return main_root
+
+
+def _checkout_volume(module, tmp_path, name):
+    return module.venv_volume_for(tmp_path / name)
+
+
+def test_hygiene_reports_the_four_indicators_and_stays_green_when_clean(
+    monkeypatch, tmp_path, capsys
+):
+    module = _load()
+    _stub_hygiene(monkeypatch, module, tmp_path)
+
+    assert module.hygiene(enforce=False) == 0
+    assert module.hygiene(enforce=True) == 0
+    output = capsys.readouterr().out
+    assert "worktrees besides the main checkout" in output
+    assert "agent/task branches whose remote is gone" in output
+    assert ".worktrees/ directories not registered in git" in output
+
+
+def test_hygiene_warn_mode_never_fails_but_names_every_offender(monkeypatch, tmp_path, capsys):
+    module = _load()
+    orphan = _checkout_volume(module, tmp_path, "gone")
+    _stub_hygiene(monkeypatch, module, tmp_path, branches=("main", "agent/gone"), volumes=(orphan,))
+
+    assert module.hygiene(enforce=False) == 0
+    output = capsys.readouterr().out
+    assert "agent/gone" in output
+    assert orphan in output
+
+
+def test_hygiene_enforce_fails_and_names_the_indicator(monkeypatch, tmp_path, capsys):
+    module = _load()
+    orphan = _checkout_volume(module, tmp_path, "gone")
+    _stub_hygiene(monkeypatch, module, tmp_path, branches=("main", "agent/gone"), volumes=(orphan,))
+
+    assert module.hygiene(enforce=True) == 1
+    captured = capsys.readouterr()
+    assert "threshold exceeded" in captured.err
+    assert "remote-gone branch: agent/gone" in captured.out
+
+
+def test_hygiene_ignores_the_branch_checked_out_by_a_live_worktree(monkeypatch, tmp_path):
+    module = _load()
+    _stub_hygiene(
+        monkeypatch,
+        module,
+        tmp_path,
+        worktrees=("agent/wip",),
+        branches=("main", "agent/wip"),
+        in_use=("main", "agent/wip"),
+    )
+
+    assert module.hygiene(enforce=True) == 0
+
+
+def test_hygiene_ignores_foreign_containers_and_volumes(monkeypatch, tmp_path):
+    module = _load()
+    _stub_hygiene(
+        monkeypatch,
+        module,
+        tmp_path,
+        containers=(("suspicious_wiles", ""), ("other-project-db-1", "other-project")),
+        volumes=("other-project-data", "scirel-venv-legacy-name"),
+    )
+
+    assert module.hygiene(enforce=True) == 0
+
+
+def test_hygiene_fails_loudly_when_a_probe_cannot_measure(monkeypatch, tmp_path, capsys):
+    module = _load()
+    _stub_hygiene(monkeypatch, module, tmp_path)
+
+    def unreadable():
+        raise module.HygieneError("git worktree list --porcelain reported no worktrees")
+
+    monkeypatch.setattr(module, "worktree_entries", unreadable)
+
+    assert module.hygiene(enforce=False) == 2
+    assert "hygiene probe failed" in capsys.readouterr().err
+
+
+def test_prune_dry_runs_by_default_and_removes_only_claimable_volumes(
+    monkeypatch, tmp_path, capsys
+):
+    module = _load()
+    orphan = _checkout_volume(module, tmp_path, "gone")
+    _stub_hygiene(monkeypatch, module, tmp_path, volumes=(orphan, "scirel-venv-legacy-name"))
+    removed = []
+    monkeypatch.setattr(module, "run", lambda command, **kwargs: removed.append(command) or 0)
+
+    assert module.prune(apply=False) == 0
+    assert removed == []
+    assert "dry run" in capsys.readouterr().out
+
+    assert module.prune(apply=True) == 0
+    assert removed == [["docker", "volume", "rm", orphan]]
