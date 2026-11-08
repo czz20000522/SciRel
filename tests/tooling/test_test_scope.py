@@ -169,3 +169,29 @@ def test_shared_fixture_without_a_test_consumer_fails_closed(tmp_path, monkeypat
 def test_shared_harness_selects_all_declared_consumers(path, expected):
     targets, _ = test_scope.classify(Path(path))
     assert targets == expected
+
+
+def _classifies(relative: Path) -> bool:
+    try:
+        test_scope.classify(relative)
+    except test_scope.UnresolvedPath:
+        return False
+    return True
+
+
+def test_script_layers_has_no_orphan_entries():
+    """表里每一条都必须对应磁盘上的真实文件——删掉脚本后孤儿条目不该永远绿。"""
+    orphans = sorted(
+        name for name in test_scope.SCRIPT_LAYERS if not (ROOT / "scripts" / name).is_file()
+    )
+    assert orphans == [], "script layer entries without a file on disk: " + str(orphans)
+
+
+def test_every_script_on_disk_is_registered_or_named_as_an_exception():
+    """反向校验：磁盘上每个脚本要么进表，要么在下面被点名——新豁免必须显式决定。"""
+    on_disk = {path.name for path in (ROOT / "scripts").iterdir() if path.is_file()}
+    registered = set(test_scope.SCRIPT_LAYERS)
+    outside = {name for name in sorted(on_disk - registered) if _classifies(Path("scripts") / name)}
+    assert outside == {"build_pleiades_truth.py"}, (
+        "scripts classified outside SCRIPT_LAYERS changed: " + str(outside)
+    )
