@@ -106,7 +106,7 @@ def test_input_mutation_during_render_aborts_before_output(
         "verification": {"evidence_ceiling": "synthetic fixture", "known_limitations": []},
     }
     monkeypatch.setattr(docs, "load_document_set", lambda path: [document])
-    monkeypatch.setattr(docs, "held_asset_ids", lambda: frozenset())
+    monkeypatch.setattr(docs, "excluded_asset_ids", lambda: frozenset())
     monkeypatch.setattr(docs, "project_version", lambda: "0.1.0")
     monkeypatch.setattr(docs, "handbook_document", lambda ids, outline: {"chapters": []})
     monkeypatch.setattr(docs, "load_english_handbook", lambda root, book: book)

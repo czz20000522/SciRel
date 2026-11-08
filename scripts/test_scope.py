@@ -51,6 +51,7 @@ SCRIPT_LAYERS = {
     "consumer_tools.py": ("delivery",),
     "dev_container.py": ("tooling", "architecture"),
     "export_admission_tools.py": ("delivery",),
+    "exposure.py": ("docs", "delivery"),
     "mapping_interface_bindings.json": ("tooling", "architecture", "docs", "delivery"),
     "measure_capability_runtime.py": ("architecture",),
     "package_catalog_snapshot.py": ("tooling",),

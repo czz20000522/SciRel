@@ -1,0 +1,12 @@
+{
+  "schema": "scirel.excluded-from-package",
+  "purpose": "Assets kept out of the installed package, the generated documentation, the capability index, the query service and the capability matrix. This file records packaging scope only and makes no judgement about scientific correctness.",
+  "revisit_when": "Re-evaluate every id once its admission source bytes arrive or the issue that owns it closes. An entry must not stay here indefinitely; this is not a permanent exemption.",
+  "ids": [
+    "scirel.equilibrium.finite-frc-feedback",
+    "scirel.equilibrium.finite-limited-boundary",
+    "scirel.inference.direct-anisotropic-inversion",
+    "scirel.kinetic.atomic-slab-transport",
+    "scirel.kinetic.multiscale-sat123"
+  ]
+}

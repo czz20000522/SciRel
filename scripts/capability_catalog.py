@@ -15,6 +15,7 @@ import stat
 import subprocess
 
 from capability_query import CAPABILITY_INDEX_SCHEMA, DEVICE_SCOPES, validate_capability_index
+from exposure import excluded_asset_ids
 from validate_asset_documents import validate_document
 
 LANGUAGES = ("zh", "en")
@@ -404,8 +405,16 @@ class PublicCatalog:
         self.input_bytes = {}
         revision, dirty = self._git_identity()
         self._git_state = (revision, dirty)
+        exclusion_path = self.root / "catalog/review/excluded_from_package.json"
+        excluded = frozenset()
+        if exclusion_path.exists():
+            self._read("catalog/review/excluded_from_package.json")
+            excluded = excluded_asset_ids(exclusion_path, read_bytes=self._captured)
+        self._excluded_ids = excluded
         self.documents = {}
         for path in sorted((self.root / "catalog/examples").glob("*.json")):
+            if path.stem in excluded:
+                continue
             document = json.loads(self._read("catalog/examples/" + path.name))
             validate_document(document, location=path.name)
             if document["asset_id"] != path.stem:
@@ -429,7 +438,7 @@ class PublicCatalog:
             self.root / "catalog/examples",
             documents,
             translation_paths=reader_paths,
-            excluded_ids=held,
+            excluded_ids=excluded,
             read_bytes=self._captured,
         )
         self.index = build_capability_index(
@@ -500,7 +509,7 @@ class PublicCatalog:
             or {
                 path.stem
                 for path in (self.root / "catalog/examples").glob("*.json")
-                if path.stem not in self._held_ids
+                if path.stem not in self._excluded_ids
             }
             != set(self.documents)
             or sorted((self.root / "tools/docs/zh").glob("*.json")) != self._reader_paths

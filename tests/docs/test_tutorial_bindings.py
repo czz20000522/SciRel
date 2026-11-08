@@ -78,5 +78,5 @@ raise AssertionError('tutorial binding must never import this module')
 
    from scirel.synthetic import held
 """)
-    bound = tutorial_source_bindings(tmp_path, [DOCUMENT], held_ids={"scirel.synthetic.held"})
+    bound = tutorial_source_bindings(tmp_path, [DOCUMENT], excluded_ids={"scirel.synthetic.held"})
     assert bound[1]["delivery_status"] == "subset-placeholder"

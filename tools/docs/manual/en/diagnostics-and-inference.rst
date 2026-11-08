@@ -335,6 +335,7 @@ Which layer to use when
 - You have your own forward, diagnostic and residual ports and only want one penalized trial: :doc:`../reference/generated/scirel.inference.anisotropic-trial-evaluation`.
 - You only need a stratified initial-value design: :doc:`../reference/generated/scirel.inference.latin-hypercube-sampling`.
 - You already have a ``trial_evaluator`` and only want bounded local optimization: :doc:`../reference/generated/scirel.inference.anisotropic-parameter-optimization`.
+- You have forward and diagnostic ports and want the direct "observation → trial → bounded fit" path: :doc:`../reference/generated/scirel.inference.direct-anisotropic-inversion`.
 
 Pitfalls and boundaries
 -----------------------

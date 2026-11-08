@@ -49,6 +49,9 @@ def source(tmp_path):
     contract = (ROOT / "catalog/examples" / (ASSET + ".json")).read_bytes()
     (contracts / (ASSET + ".json")).write_bytes(contract)
     (root / "catalog/review").mkdir()
+    (root / "catalog/review" / "excluded_from_package.json").write_text(
+        json.dumps({"schema": "scirel.excluded-from-package", "ids": [HELD]}) + "\n"
+    )
     (root / "catalog/review" / "PRIVATE_NOTES.md").write_text(
         "private history, outside query inputs"
     )
@@ -89,8 +92,9 @@ def test_source_describe_search_and_exact_get_reuse_the_public_projection(source
     read_bytes, read_text = Path.read_bytes, Path.read_text
 
     def public_only(path, original, *args, **kwargs):
-        if path == source / "catalog/examples" / (HELD + ".json") or path.is_relative_to(
-            source / "catalog/review"
+        if path == source / "catalog/examples" / (HELD + ".json") or (
+            path.is_relative_to(source / "catalog/review")
+            and path.name != "excluded_from_package.json"
         ):
             raise AssertionError("query read a non-public payload or private review history")
         return original(path, *args, **kwargs)
@@ -124,6 +128,7 @@ def test_source_describe_search_and_exact_get_reuse_the_public_projection(source
     )
     assert set(docs.input_digests) == {
         "catalog/examples/" + ASSET + ".json",
+        "catalog/review/excluded_from_package.json",
         "tools/docs/zh/reader.json",
     }
 
@@ -283,19 +288,19 @@ def test_hold_aba_cannot_expose_a_held_contract_under_bound_hold_bytes(source, m
     reader_path.write_bytes(encode(bundle))
     commit(source)
     baseline = SourceDocumentation(source)
-    original = capability_catalog.held_asset_ids
+    original = capability_catalog.excluded_asset_ids
 
     def swap_during_hold_parse(path, **kwargs):
         before = path.read_bytes()
         temporary = json.loads(before)
-        temporary["assets"] = {}
+        temporary["ids"] = []
         path.write_bytes(encode(temporary))
         try:
             return original(path, **kwargs)
         finally:
             path.write_bytes(before)
 
-    monkeypatch.setattr(capability_catalog, "held_asset_ids", swap_during_hold_parse)
+    monkeypatch.setattr(capability_catalog, "excluded_asset_ids", swap_during_hold_parse)
     queried = SourceDocumentation(source)
     assert queried.describe() == baseline.describe()
     assert queried.asset(HELD)["outcome"] == "unknown_asset"
