@@ -44,6 +44,30 @@ in the same commit:
 - never keep both truths alive, add compatibility aliases, or only patch a
   translation.
 
+### No manual verdict tables
+
+The judgement layer was deleted (`catalog/review/VERDICTS.json`,
+`catalog/review/HOLD.json`, `catalog/review/HUMAN_REVIEW_TODO.md`,
+`catalog/review/MERGE_CHAIN.md`, `scripts/review_gate.py`,
+`scripts/review_harness.py`): it used derived records to judge the implementation
+they were derived from, so the direction of the dependency was inverted.
+
+**Do not rebuild it under another name.** An accepted list, a whitelist or a
+review-conclusion table has the same shape as the deleted verdict table, and
+"same shape, new name" was the most repeated defect of that period.
+
+Three interfaces carry what the judgement layer was previously used for, and
+none of them decides whether the science is right:
+
+| Question | Owner |
+| --- | --- |
+| Is the input well formed and self-consistent? | `scripts/validate_admission.py` |
+| Which assets stay out of the installed package? | `catalog/review/excluded_from_package.json` (scope only, with a revisit condition) |
+| Is a contract claim backed by an executable test? | the contract's `verification.tests` |
+
+Anything else that would need a recorded human verdict belongs in an issue, not
+in a table next to the contracts.
+
 ## 4. Review every delivered line
 
 - Generated output is not reviewed output. Every API page, tutorial, contract
