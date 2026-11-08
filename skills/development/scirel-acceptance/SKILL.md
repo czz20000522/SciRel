@@ -25,7 +25,7 @@ Every push runs the complete check. No result is cached and no earlier run is re
 push is the tree that gets checked, in the same container, every time. Budget the five to ten minutes
 instead of looking for a shortcut, and expect two pushes on a branch to pay it twice.
 
-It runs the full test suite, the review registry gate, contract signatures and examples, the docstring and contract sync check, the scan for new hazard patterns, the documentation build, the report validator on every solved example, the lockfile check, and a wheel build with its exposure check.
+It runs the full test suite, contract signatures and examples, the docstring and contract sync check, the scan for new hazard patterns, the documentation build, the report validator on every solved example, the lockfile check, and a wheel build with its exposure check.
 
 ## 让检查结果能被复核
 
