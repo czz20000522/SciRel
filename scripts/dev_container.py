@@ -9,6 +9,7 @@ from contextlib import contextmanager
 import errno
 import hashlib
 import os
+import re
 from pathlib import Path
 import shlex
 import shutil
@@ -41,10 +42,20 @@ class RepositoryConfigError(RuntimeError):
     """Raised when repository-local Git configuration is unsafe for discovery."""
 
 
-def project_name() -> str:
-    identity = os.path.normcase(str(ROOT))
+def project_name_for(root: Path) -> str:
+    """Return the Compose project name that belongs to one checkout path."""
+    identity = os.path.normcase(str(Path(root).resolve()))
     digest = hashlib.sha256(identity.encode("utf-8")).hexdigest()[:10]
     return f"scirel-dev-{digest}"
+
+
+def venv_volume_for(root: Path) -> str:
+    """Return the per-checkout virtualenv volume name for one checkout path."""
+    return "scirel-venv-" + project_name_for(root).removeprefix("scirel-dev-")
+
+
+def project_name() -> str:
+    return project_name_for(ROOT)
 
 
 def python_version() -> str:
@@ -548,6 +559,14 @@ def pre_push(refs: Iterable[str] | None = None) -> int:
     if _all_pushed_refs_are_deletions(refs):
         print("All pushed refs are deletions; skipping local acceptance check.")
         return 0
+    print("Hygiene report before push (report only; does not block yet).")
+    hygiene_code = hygiene(enforce=False)
+    if hygiene_code:
+        print(
+            "WARNING: the hygiene probe could not measure the workspace; "
+            "the push is not blocked, but the report above is incomplete.",
+            file=sys.stderr,
+        )
     print("Running the complete local check before push.")
     return run_check()
 
@@ -881,6 +900,268 @@ def clean(*, remove_cache: bool = False, remove_image: bool = False) -> int:
         return code
 
 
+HYGIENE_WORKTREE_THRESHOLD = 3
+HYGIENE_BRANCH_PREFIXES = ("agent/", "task/")
+SHARED_VOLUME_PREFIX = "scirel-uv-cache-"
+VENV_VOLUME_PATTERN = re.compile(r"scirel-venv-[0-9a-f]{10}")
+
+
+class HygieneError(RuntimeError):
+    """Raised when a hygiene probe cannot produce a trustworthy measurement."""
+
+
+def _hygiene_git(*arguments: str) -> str:
+    try:
+        return git_output(*arguments)
+    except (OSError, RuntimeError) as error:
+        raise HygieneError(str(error)) from error
+
+
+def worktree_entries() -> list[Path]:
+    """Return every checkout path registered in this repository, main checkout first."""
+    text = _hygiene_git("worktree", "list", "--porcelain")
+    entries: list[Path] = []
+    for block in text.split("\n\n"):
+        for line in block.splitlines():
+            if line.startswith("worktree "):
+                entries.append(Path(line[len("worktree ") :]))
+                break
+    if not entries:
+        raise HygieneError(
+            "`git worktree list --porcelain` reported no worktrees; "
+            "refusing to report an empty checkout set as clean"
+        )
+    return entries
+
+
+def checked_out_branches() -> set[str]:
+    """Return the branches currently checked out by a live worktree."""
+    text = _hygiene_git("worktree", "list", "--porcelain")
+    names = set()
+    for line in text.splitlines():
+        if line.startswith("branch refs/heads/"):
+            names.add(line[len("branch refs/heads/") :])
+    return names
+
+
+def local_branch_names() -> list[str]:
+    """Return local branch names, or fail loudly rather than yielding an empty set."""
+    text = _hygiene_git("for-each-ref", "--format=%(refname:short)", "refs/heads/")
+    names = [line.strip() for line in text.splitlines() if line.strip()]
+    if not names:
+        raise HygieneError(
+            "`git for-each-ref` reported no local branches; "
+            "an unreadable branch set is not the same as an empty one"
+        )
+    return names
+
+
+def remote_branch_names() -> set[str]:
+    """Return the branch names that still exist on `origin`, read fresh from the remote."""
+    text = _hygiene_git("ls-remote", "--heads", "origin")
+    names = set()
+    for line in text.splitlines():
+        fields = line.split()
+        if len(fields) == 2 and fields[1].startswith("refs/heads/"):
+            names.add(fields[1][len("refs/heads/") :])
+    if not names:
+        raise HygieneError(
+            "`git ls-remote --heads origin` returned no branch; "
+            "every local branch would be misreported as remote-gone"
+        )
+    return names
+
+
+def _hygiene_docker(*arguments: str) -> list[str]:
+    try:
+        env = environment()
+    except DockerContextError as error:
+        raise HygieneError(f"cannot probe Docker: {error}") from error
+    try:
+        done = subprocess.run(
+            ["docker", *arguments],
+            cwd=ROOT,
+            env=env,
+            check=False,
+            capture_output=True,
+            text=True,
+        )
+    except OSError as error:
+        raise HygieneError(f"cannot run `docker {' '.join(arguments)}`: {error}") from error
+    if done.returncode:
+        detail = done.stderr.strip() or done.stdout.strip()
+        raise HygieneError(f"`docker {' '.join(arguments)}` failed: {detail}")
+    return [line for line in done.stdout.splitlines() if line.strip()]
+
+
+def container_records() -> list[tuple[str, str]]:
+    """Return `(name, compose project label)` for every container on the project engine."""
+    records = []
+    for line in _hygiene_docker(
+        "ps", "-a", "--format", '{{.Names}}\t{{.Label "com.docker.compose.project"}}'
+    ):
+        name, _, project = line.partition("\t")
+        records.append((name.strip(), project.strip()))
+    return records
+
+
+def hygiene_report() -> dict[str, object]:
+    """Measure the four hygiene indicators without changing anything."""
+    worktrees = worktree_entries()
+    main_root = git_common_directory().parent
+    live_roots = [*worktrees]
+    if main_root.resolve() not in {path.resolve() for path in worktrees}:
+        live_roots.append(main_root)
+    live_projects = {project_name_for(path) for path in live_roots}
+    live_volumes = {venv_volume_for(path) for path in live_roots}
+
+    orphan_directories = []
+    managed_directory = main_root / ".worktrees"
+    if managed_directory.is_dir():
+        registered = {path.resolve() for path in worktrees}
+        for child in sorted(managed_directory.iterdir()):
+            if child.is_dir() and child.resolve() not in registered:
+                orphan_directories.append(child)
+
+    remote = remote_branch_names()
+    in_use = checked_out_branches()
+    remote_gone = [
+        name
+        for name in local_branch_names()
+        if name.startswith(HYGIENE_BRANCH_PREFIXES) and name not in remote and name not in in_use
+    ]
+
+    orphan_containers = []
+    for name, project in container_records():
+        if project.startswith("scirel-dev-"):
+            if project not in live_projects:
+                orphan_containers.append(f"{name} (project {project})")
+        elif name.startswith("scirel-dev-") and not any(
+            name.startswith(f"{candidate}-") for candidate in live_projects
+        ):
+            orphan_containers.append(f"{name} (no compose project label)")
+
+    orphan_volumes = []
+    unattributed_volumes = []
+    for name in _hygiene_docker("volume", "ls", "--format", "{{.Name}}"):
+        if name.startswith(SHARED_VOLUME_PREFIX):
+            continue
+        if not name.startswith("scirel-"):
+            continue
+        if name in live_volumes:
+            continue
+        if VENV_VOLUME_PATTERN.fullmatch(name):
+            orphan_volumes.append(name)
+        else:
+            unattributed_volumes.append(name)
+
+    main_checkout = worktrees[0]
+    return {
+        "worktree_count": len(worktrees) - 1,
+        "main_checkout": main_checkout,
+        "remote_gone": remote_gone,
+        "orphan_containers": orphan_containers,
+        "orphan_volumes": orphan_volumes,
+        "unattributed_volumes": unattributed_volumes,
+        "orphan_directories": orphan_directories,
+    }
+
+
+def _print_hygiene_rows(report: dict[str, object]) -> list[str]:
+    rows = (
+        (
+            "worktrees besides the main checkout",
+            report["worktree_count"],
+            HYGIENE_WORKTREE_THRESHOLD,
+        ),
+        ("agent/task branches whose remote is gone", len(report["remote_gone"]), 0),
+        (
+            "orphan containers plus volumes",
+            len(report["orphan_containers"]) + len(report["orphan_volumes"]),
+            0,
+        ),
+        (".worktrees/ directories not registered in git", len(report["orphan_directories"]), 0),
+    )
+    exceeded = []
+    for label, value, threshold in rows:
+        state = "OK" if value <= threshold else "OVER"
+        print(f"{value:>3}  {state:<4}  {label}  (threshold {threshold})")
+        if value > threshold:
+            exceeded.append(label)
+    for name in report["remote_gone"]:
+        print(f"       remote-gone branch: {name} (push it or delete it)")
+    for name in report["orphan_containers"]:
+        print(f"       orphan container: {name}")
+    for name in report["orphan_volumes"]:
+        print(f"       orphan volume: {name} (belongs to a checkout that no longer exists)")
+    for path in report["orphan_directories"]:
+        print(f"       orphan directory: {path}")
+    for name in report["unattributed_volumes"]:
+        print(
+            f"       project volume outside the current naming: {name} "
+            "(not attributable; confirm before removing)"
+        )
+    return exceeded
+
+
+def hygiene(enforce: bool = False) -> int:
+    """Report the four hygiene indicators; fail only when asked to enforce."""
+    try:
+        report = hygiene_report()
+    except (HygieneError, OSError) as error:
+        print(f"ERROR: hygiene probe failed: {error}", file=sys.stderr)
+        return 2
+    exceeded = _print_hygiene_rows(report)
+    if not enforce:
+        print("hygiene: report only, exit code stays 0 (use --enforce to fail on a threshold)")
+        return 0
+    if exceeded:
+        print(
+            "hygiene: threshold exceeded in " + "; ".join(exceeded) + ".",
+            file=sys.stderr,
+        )
+        if report["orphan_volumes"]:
+            print(
+                "Run `dev_container.py prune --apply` to reclaim orphan volumes.",
+                file=sys.stderr,
+            )
+        return 1
+    print("hygiene: enforce, nothing over threshold")
+    return 0
+
+
+def prune(apply: bool = False) -> int:
+    """Reclaim volumes whose checkout no longer exists. Dry run unless `apply` is set."""
+    try:
+        report = hygiene_report()
+    except (HygieneError, OSError) as error:
+        print(f"ERROR: prune probe failed: {error}", file=sys.stderr)
+        return 2
+    volumes = list(report["orphan_volumes"])
+    if not volumes:
+        print("prune: no orphan volumes; every project volume belongs to an existing checkout")
+        return 0
+    print(f"prune: {len(volumes)} volume(s) belong to checkouts that no longer exist:")
+    for name in volumes:
+        print(f"       {name}")
+    if not apply:
+        print("prune: dry run, nothing removed (rerun with --apply to reclaim)")
+        return 0
+    failures = 0
+    for name in volumes:
+        code = run(["docker", "volume", "rm", name])
+        if code:
+            failures += 1
+            print(f"prune: could not remove {name} (exit {code})", file=sys.stderr)
+        else:
+            print(f"prune: removed {name}")
+    if failures:
+        print(f"prune: {failures} volume(s) could not be removed", file=sys.stderr)
+        return 1
+    print(f"prune: removed {len(volumes)} volume(s)")
+    return 0
+
+
 def doctor() -> int:
     if not docker_ready():
         return 2
@@ -917,6 +1198,20 @@ def main() -> int:
     subparsers.add_parser("check", help="run the complete acceptance check")
     subparsers.add_parser("precommit", help="run the staged-file pre-commit check")
     subparsers.add_parser("pre-push", help="run the full check before a push")
+    hygiene_parser = subparsers.add_parser(
+        "hygiene", help="report worktree, branch, container and volume hygiene (read only)"
+    )
+    hygiene_parser.add_argument(
+        "--enforce",
+        action="store_true",
+        help="exit non-zero when an indicator is over threshold (default: report only)",
+    )
+    prune_parser = subparsers.add_parser(
+        "prune", help="reclaim volumes whose checkout no longer exists"
+    )
+    prune_parser.add_argument(
+        "--apply", action="store_true", help="actually remove the orphan volumes"
+    )
     pytest_parser = subparsers.add_parser("pytest", help="run pytest with optional arguments")
     pytest_parser.add_argument("arguments", nargs=argparse.REMAINDER)
     clean_parser = subparsers.add_parser(
@@ -953,6 +1248,10 @@ def main() -> int:
         return run_in_container(shell_command(script))
     if args.command == "pre-push":
         return pre_push()
+    if args.command == "hygiene":
+        return hygiene(enforce=args.enforce)
+    if args.command == "prune":
+        return prune(apply=args.apply)
     if args.command == "pytest":
         arguments = args.arguments or ["-q"]
         script = f"{SYNC} && {PYTHON} -m pytest {shlex.join(arguments)}"

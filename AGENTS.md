@@ -72,6 +72,22 @@ macOS 用 Colima 起本机 Docker engine 时，禁止把整个 `$HOME` 挂进 VM
 并行容器只用于开发期局部验证，结果不写进 PR 证据，也不据此判红判绿。`tests/docs` 的 Sphinx 夹具在并发
 内存压力下会在 setup 阶段失败，那是假红，不是代码缺陷；遇到这种红先确认引擎是否被别的容器占着。
 
+## 清理门禁（hygiene / prune）
+
+`dev_container.py hygiene` 只读地报告四项指标，并点名超阈值的具体条目：除主 checkout 外的 worktree 数（阈值 3）、
+远端已不存在但仍留在本地的 `agent/*` 与 `task/*` 分支、无主容器与无主卷（名字或 Compose 项目标签对不上任何现存
+checkout）、以及 `.worktrees/` 下没有登记进 `git worktree list` 的目录。
+
+默认 `--warn`：只报告，退出码恒为 0；加 `--enforce` 才在超阈值时非零退出。`pre-push` 目前只打印这份报告，
+不阻塞推送。
+
+`dev_container.py prune` 回收"卷还在、checkout 已不存在"的虚拟环境卷，默认 `--dry-run`，真删要显式 `--apply`。
+只回收符合当前命名 `scirel-venv-<10 位十六进制>` 的卷；其它 `scirel-*` 卷只打印成"无法归因、需人工确认"，
+不自动删。共享的 `scirel-uv-cache-*` 不属于任何单个 checkout，永不参与回收。
+
+判定一律用远端实测（`git ls-remote`）和当前 checkout 集合，不拿本地远端跟踪引用当依据；当前 worktree 正在
+使用的分支不算"远端已删"。探测命令本身失败时直接报错退出（退出码 2），不把"读不到"当成"没问题"。
+
 ## 写入边界
 
 - 一个 agent 只能修改分配给它自己的 worktree 和 issue 明确要求的仓库内路径。
