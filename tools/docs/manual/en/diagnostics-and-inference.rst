@@ -1,9 +1,9 @@
-Diagnostic modelling and parameter inversion: from observation residuals to a bounded fit
+Diagnostic modelling and parameter optimization: from observation residuals to bounded local optimization
 =========================================================================================
 
-This chapter answers one concrete question: **given an axisymmetric equilibrium model and measurements of flux and pressure at a few locations, how do you turn model predictions into residuals with consistent dimensions, and recover two parameters within parameter bounds?**
+This chapter answers one concrete question: **given an axisymmetric equilibrium model and measurements of flux and pressure at a few locations, how do you turn model predictions into residuals with consistent dimensions, and connect that layer to bounded local optimization?**
 
-By the end you should be able to carry out this chain on your own: sample predictions at specified ``R-Z`` points, normalize the mismatch by the observation standard deviations, run one trial with the real Picard forward, and finally perform a fit from Latin-hypercube initial values with bounded least squares — and understand the difference between "the optimizer converged" and "the fit is trustworthy".
+By the end you should be able to carry out this chain on your own: sample predictions at specified ``R-Z`` points, normalize the mismatch by the observation standard deviations, run one penalized trial with the real Picard forward, and prepare initial values for a bounded optimizer from a Latin-hypercube design — and understand the difference between "the optimizer converged" and "the fit is trustworthy".
 
 .. note::
 
@@ -218,14 +218,14 @@ When the forward does not converge, neither the diagnostics nor the residual red
 
 **What this section does not establish**: ``valid`` for a single trial only says that this forward chain completed; a small fixed-point residual does not imply a small residual ``chi2``, and even less that the parameters are identifiable or optimal.
 
-Fitting inside a bounded box from stratified initial values
+Designing stratified starting points
 -----------------------------------------------------------
 
 The optimizer needs a starting point. ``sample_latin_hypercube`` draws one point from each stratum of each parameter and then combines them with random permutations, so the initial values do not all cluster in the middle of the box. ``n_samples`` must be a positive integer; a boolean raises ``ValueError`` instead of leaking a NumPy ``TypeError``.
 
 .. code-block:: python
 
-   from scirel.inference import sample_latin_hypercube, solve_direct_anisotropic_inversion
+   from scirel.inference import sample_latin_hypercube
 
    design = sample_latin_hypercube(
        bounds={'gradient': (0.2, 3.0), 'ratio': (1.1, 2.5)},
@@ -247,85 +247,12 @@ Actual output:
 
 With the random seed fixed, the eight samples of each coordinate fall exactly one per stratum; the permutations of the two coordinates are independent. This is an initial-value design, not a posterior distribution, and it does not mean that these points "cover the physically reasonable parameters".
 
-Connecting the forward port, the diagnostic port and the fixed-size residual gives an end-to-end inversion:
+.. note::
 
-.. code-block:: python
-
-   fit = solve_direct_anisotropic_inversion(
-       initial_params={'gradient': 1.0, 'ratio': 1.2},
-       bounds={'gradient': (0.2, 3.0), 'ratio': (1.1, 2.5)},
-       method='least_squares', n_initial_samples=8, seed=3, max_evaluations=140,
-       observations=observations, solver_config={'r_grid': R, 'z_grid': Z},
-       equilibrium_solver=picard,
-       diagnostic_evaluator=lambda payload: synthesize_equilibrium_diagnostics(payload["equilibrium"], payload["R"], payload["Z"], payload["observations"]))
-
-   print("best_parameters =", fit['best_parameters'])
-   print("converged/optimizer/forward =",
-         fit['converged'], fit['optimizer_converged'], fit['forward_converged'])
-   print("chi2 =", f"{fit['chi2']:.3e}", " residual_size =", fit['residual_size'])
-   print("scientific_evaluations =", fit['scientific_evaluations'],
-         " valid_trial_count =", fit['valid_trial_count'])
-   print("fixed_point_residual =", f"{fit['equilibrium']['fixed_point_residual']:.3e}")
-   print("max flux increment =",
-         f"{float(np.max(np.abs(fit['equilibrium']['psi'] - R**2/2))):.6f}")
-
-Actual output:
-
-.. code-block:: text
-
-   best_parameters = {'gradient': 1.7000000000010203, 'ratio': 1.5999999999999683}
-   converged/optimizer/forward = True True True
-   chi2 = 9.200e-23  residual_size = 6
-   scientific_evaluations = 27  valid_trial_count = 27
-   fixed_point_residual = 3.765e-14
-   max flux increment = 0.011070
-
-The absolute error of both parameters is about ``1e-12`` and ``chi2`` drops to ``9.2e-23``. ``residual_size=6`` is frozen by the observation layout before optimization starts; ``scientific_evaluations=27`` includes the initial samples, numerical differences and the final re-evaluation; ``valid_trial_count=27`` says that all 27 scientific calls produced a valid forward. This clean case has no failed trials; the failure path was shown separately in the previous section. The final parameters, residual and state come from a fresh forward call at the end, not from values cached by the optimizer.
-
-The last number, ``max flux increment = 0.011070``, is the maximum difference between the final ``psi`` and the vacuum field ``R^2/2``. It is nonzero, which shows that the pressure gradient really does change the flux through the Green response; if this number were zero, the flux observations would carry no information about ``gradient``.
-
-**What this section does not establish**: this is a noiseless, same-model manufactured case; the high recovery accuracy is constructed, not experimental identifiability. The optimizer stopping only means that the local iteration ended; there is no covariance, Fisher information, confidence interval or proof of a global optimum here.
-
-Tightening the bound: optimizer convergence does not imply a trustworthy fit
-----------------------------------------------------------------------------
-
-Tighten the upper bound of ``ratio`` from ``2.5`` to ``1.4`` so that it excludes the true value ``1.6``, leaving every other setting unchanged:
-
-.. code-block:: python
-
-   bounded = solve_direct_anisotropic_inversion(
-       initial_params={'gradient': 1.0, 'ratio': 1.2},
-       bounds={'gradient': (0.2, 3.0), 'ratio': (1.1, 1.4)},
-       method='least_squares', n_initial_samples=8, seed=3, max_evaluations=140,
-       observations=observations, solver_config={'r_grid': R, 'z_grid': Z},
-       equilibrium_solver=picard,
-       diagnostic_evaluator=lambda payload: synthesize_equilibrium_diagnostics(payload["equilibrium"], payload["R"], payload["Z"], payload["observations"]))
-
-   print("best_parameters =", bounded['best_parameters'])
-   print("converged/optimizer/forward =",
-         bounded['converged'], bounded['optimizer_converged'],
-         bounded['forward_converged'])
-   print("chi2 =", f"{bounded['chi2']:.3e}")
-   print("scientific_evaluations =", bounded['scientific_evaluations'])
-   print("ratio at upper bound =",
-         abs(bounded['best_parameters']['ratio'] - 1.4) < 1e-12)
-   print("fixed_point_residual =",
-         f"{bounded['equilibrium']['fixed_point_residual']:.3e}")
-
-Actual output:
-
-.. code-block:: text
-
-   best_parameters = {'gradient': 2.303615923647581, 'ratio': 1.3999999999999997}
-   converged/optimizer/forward = True True True
-   chi2 = 4.915e+03
-   scientific_evaluations = 30
-   ratio at upper bound = True
-   fixed_point_residual = 8.265e-14
-
-All three "success" flags are still true: the optimizer stopped, the final forward is valid, and the fixed-point residual is small. But ``chi2`` is ``4915``, ``ratio`` sits on the upper bound ``1.4``, and ``gradient`` is pushed to ``2.30`` to compensate for the truncated anisotropy. This is not a broken solver; the best point in the feasible region simply lies on the boundary.
-
-**What this section does not establish**: you cannot treat ``gradient = 2.30`` as an estimate of the true value, and you cannot conclude that the parameters are unidentifiable just because ``ratio`` lands on the bound. What happens here is a bounded projection: the true value lies outside the box, so the fit can only return the best point inside it. Distinguishing a "boundary effect" from "insufficient data" requires widening the bounds, examining the residual structure, and performing a separate identifiability analysis.
+   End-to-end inversion — wiring the forward port, the diagnostic port and the fixed-size residual straight into
+   a direct anisotropic inversion — is not part of the current package: there is no such implementation under
+   ``src/scirel/inference/``, and ``scirel.inference`` does not export it. This chapter stops at bounded local
+   optimization and does not offer an automatic "observation → trial → fit" path.
 
 Which layer to use when
 -----------------------
@@ -335,7 +262,6 @@ Which layer to use when
 - You have your own forward, diagnostic and residual ports and only want one penalized trial: :doc:`../reference/generated/scirel.inference.anisotropic-trial-evaluation`.
 - You only need a stratified initial-value design: :doc:`../reference/generated/scirel.inference.latin-hypercube-sampling`.
 - You already have a ``trial_evaluator`` and only want bounded local optimization: :doc:`../reference/generated/scirel.inference.anisotropic-parameter-optimization`.
-- You have forward and diagnostic ports and want the direct "observation → trial → bounded fit" path: :doc:`../reference/generated/scirel.inference.direct-anisotropic-inversion`.
 
 Pitfalls and boundaries
 -----------------------
@@ -347,7 +273,7 @@ Pitfalls and boundaries
 - **Read the three kinds of "convergence" separately.** ``optimizer_converged`` is a numerical stop, ``forward_converged`` is the forward fixed point, and ``converged`` is their combined state; none of them means that the residual has reached an experimental threshold.
 - **Bounds change the answer.** When the true value lies outside the box, the best point sticks to the boundary and distorts the other parameters; check whether ``best_parameters`` lies on a bound before interpreting the numbers.
 
-The numbers in this chapter correspond only to this manufactured two-parameter model. Changing the Green response, the observation noise, the parameterization or the device means that the ``gradient``, ``ratio`` and ``chi2`` here cannot be reused directly. Complete parameter validation, exception types and the evidence boundary for larger parameter domains are on the API reference pages above; those pages are the contract-generated reference layer, while this chapter only tells one inference path clearly.
+The numbers in this chapter correspond only to this manufactured two-parameter model. Changing the Green response, the observation noise, the parameterization or the device means that the ``gradient``, ``ratio`` and ``chi2`` here cannot be reused directly. Complete parameter validation, exception types and the evidence boundary for larger parameter domains are on the API reference pages above; those pages are the contract-generated reference layer, while this chapter only explains each port layer from diagnostic synthesis to bounded optimization.
 
 .. seealso::
 

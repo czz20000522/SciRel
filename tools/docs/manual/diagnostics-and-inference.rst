@@ -1,9 +1,9 @@
-诊断建模与参数反演：从观测残差到有界拟合
+诊断建模与参数优化：从观测残差到有界局部优化
 ========================================
 
-这一章回答一个具体问题：**已经有一个轴对称平衡模型，并且在几个位置上测到了磁通和压强，怎样把模型预测变成统一尺寸的残差，并在参数上下界内恢复两个参数？**
+这一章回答一个具体问题：**已经有一个轴对称平衡模型，并且在几个位置上测到了磁通和压强，怎样把模型预测变成统一尺寸的残差，并把这一层接到有界局部优化上？**
 
-读完之后，你应该能独立完成下面这条链：先在指定 ``R-Z`` 点上采样预测，再用观测标准差把失配归一化，然后用真实的 Picard 前向做一次试探，最后用拉丁超立方初值和有界最小二乘做一次拟合，并读懂“优化器收敛”与“拟合可信”之间的差别。
+读完之后，你应该能独立完成下面这条链：先在指定 ``R-Z`` 点上采样预测，再用观测标准差把失配归一化，然后用真实的 Picard 前向做一次带罚值的试探，最后用拉丁超立方布点给有界优化器准备初值，并读懂“优化器收敛”与“拟合可信”之间的差别。
 
 .. note::
 
@@ -218,14 +218,14 @@
 
 **这一节不能推出**：单次试探的 ``valid`` 只表示这条前向链路走通；固定点残差小不代表残差 ``chi2`` 小，更不代表参数可辨识或最优。
 
-用分层初值在有界盒内拟合
+用分层初值设计起点
 ------------------------
 
 优化器需要一个起点。``sample_latin_hypercube`` 在每个参数的每个分层里各取一个点，再用随机排列组合，避免初值都挤在盒子中央。``n_samples`` 必须是正整数；布尔值会按非法参数抛 ``ValueError``，而不是泄漏 NumPy 的 ``TypeError``。
 
 .. code-block:: python
 
-   from scirel.inference import sample_latin_hypercube, solve_direct_anisotropic_inversion
+   from scirel.inference import sample_latin_hypercube
 
    design = sample_latin_hypercube(
        bounds={'gradient': (0.2, 3.0), 'ratio': (1.1, 2.5)},
@@ -247,85 +247,12 @@
 
 固定随机种子后，每个坐标的八个样本恰好落在八个分层里各一个；两个坐标的排列互相独立。它是初值设计，不是后验分布，也不代表这些点“覆盖了物理上合理的参数”。
 
-把前向端口、诊断端口和固定维数残差接起来，就得到端到端反演：
+.. note::
 
-.. code-block:: python
-
-   fit = solve_direct_anisotropic_inversion(
-       initial_params={'gradient': 1.0, 'ratio': 1.2},
-       bounds={'gradient': (0.2, 3.0), 'ratio': (1.1, 2.5)},
-       method='least_squares', n_initial_samples=8, seed=3, max_evaluations=140,
-       observations=observations, solver_config={'r_grid': R, 'z_grid': Z},
-       equilibrium_solver=picard,
-       diagnostic_evaluator=lambda payload: synthesize_equilibrium_diagnostics(payload["equilibrium"], payload["R"], payload["Z"], payload["observations"]))
-
-   print("best_parameters =", fit['best_parameters'])
-   print("converged/optimizer/forward =",
-         fit['converged'], fit['optimizer_converged'], fit['forward_converged'])
-   print("chi2 =", f"{fit['chi2']:.3e}", " residual_size =", fit['residual_size'])
-   print("scientific_evaluations =", fit['scientific_evaluations'],
-         " valid_trial_count =", fit['valid_trial_count'])
-   print("fixed_point_residual =", f"{fit['equilibrium']['fixed_point_residual']:.3e}")
-   print("max flux increment =",
-         f"{float(np.max(np.abs(fit['equilibrium']['psi'] - R**2/2))):.6f}")
-
-实际输出：
-
-.. code-block:: text
-
-   best_parameters = {'gradient': 1.7000000000010203, 'ratio': 1.5999999999999683}
-   converged/optimizer/forward = True True True
-   chi2 = 9.200e-23  residual_size = 6
-   scientific_evaluations = 27  valid_trial_count = 27
-   fixed_point_residual = 3.765e-14
-   max flux increment = 0.011070
-
-两个参数的绝对误差都约 ``1e-12``，``chi2`` 降到 ``9.2e-23``。``residual_size=6`` 在优化开始前就由观测布局冻结；``scientific_evaluations=27`` 包括初值样本、数值差分和终点复验；``valid_trial_count=27`` 说明这 27 次科学调用都得到了有效前向；这次干净算例没有失败试探，失败路径已经在上一节单独展示。终点的参数、残差和状态来自同一次新的前向调用，而不是优化器缓存的旧值。
-
-最后一个数 ``max flux increment = 0.011070`` 是终态 ``psi`` 与真空场 ``R^2/2`` 的最大差。它不为零，说明压强梯度确实通过 Green 响应改变了磁通；如果这个数为零，磁通观测就不会携带 ``gradient`` 的信息。
-
-**这一节不能推出**：这是无噪声、同模型的制造算例，恢复精度高是构造出来的，不是实验可辨识性。优化器停止只说明局部迭代结束；这里没有协方差、Fisher 信息、置信区间或全局最优证明。
-
-把边界收紧：优化器收敛不等于拟合可信
-------------------------------------
-
-把 ``ratio`` 的上界从 ``2.5`` 收紧到 ``1.4``，使它排除真值 ``1.6``，其余设置不变：
-
-.. code-block:: python
-
-   bounded = solve_direct_anisotropic_inversion(
-       initial_params={'gradient': 1.0, 'ratio': 1.2},
-       bounds={'gradient': (0.2, 3.0), 'ratio': (1.1, 1.4)},
-       method='least_squares', n_initial_samples=8, seed=3, max_evaluations=140,
-       observations=observations, solver_config={'r_grid': R, 'z_grid': Z},
-       equilibrium_solver=picard,
-       diagnostic_evaluator=lambda payload: synthesize_equilibrium_diagnostics(payload["equilibrium"], payload["R"], payload["Z"], payload["observations"]))
-
-   print("best_parameters =", bounded['best_parameters'])
-   print("converged/optimizer/forward =",
-         bounded['converged'], bounded['optimizer_converged'],
-         bounded['forward_converged'])
-   print("chi2 =", f"{bounded['chi2']:.3e}")
-   print("scientific_evaluations =", bounded['scientific_evaluations'])
-   print("ratio at upper bound =",
-         abs(bounded['best_parameters']['ratio'] - 1.4) < 1e-12)
-   print("fixed_point_residual =",
-         f"{bounded['equilibrium']['fixed_point_residual']:.3e}")
-
-实际输出：
-
-.. code-block:: text
-
-   best_parameters = {'gradient': 2.303615923647581, 'ratio': 1.3999999999999997}
-   converged/optimizer/forward = True True True
-   chi2 = 4.915e+03
-   scientific_evaluations = 30
-   ratio at upper bound = True
-   fixed_point_residual = 8.265e-14
-
-三个“成功”标志仍然为真：优化器停了，终点前向有效，固定点残差也很小。但 ``chi2`` 是 ``4915``，``ratio`` 贴在上界 ``1.4``，``gradient`` 被推到 ``2.30`` 去补偿被截断的各向异性。这不是求解器坏了，而是可行域里最好的点就在边界上。
-
-**这一节不能推出**：不能把 ``gradient = 2.30`` 当成真值的估计，也不能因为 ``ratio`` 落在边界就断言参数不可辨识。这里发生的是有界投影：真值在盒外，拟合只能返回盒内的最优点。要区分“边界效应”和“数据不足”，需要放宽边界、检查残差结构并单独做可辨识性分析。
+   端到端反演（把前向端口、诊断端口和固定维数残差直接接起来的 direct anisotropic inversion）不在当前安装包内：
+   ``src/scirel/inference/`` 里没有这个实现，``scirel.inference`` 也不导出它。
+   本章只讲到有界局部优化这一层，不提供“观测 → 试探 → 自动拟合”的完整路径。
+   需要这一层时，先按上面的端口各自用起，再自己接。
 
 什么时候该用哪一层
 ------------------
@@ -335,7 +262,6 @@
 - 有自己的前向、诊断和残差端口，只做一次带罚值的试探：:doc:`../reference/generated/scirel.inference.anisotropic-trial-evaluation`。
 - 只需要分层初值设计：:doc:`../reference/generated/scirel.inference.latin-hypercube-sampling`。
 - 已有 ``trial_evaluator``，只做有界局部优化：:doc:`../reference/generated/scirel.inference.anisotropic-parameter-optimization`。
-- 已有前向和诊断端口，想直接走“观测 → 试探 → 有界拟合”：:doc:`../reference/generated/scirel.inference.direct-anisotropic-inversion`。
 
 易错点与边界
 ------------
@@ -347,7 +273,7 @@
 - **三种“收敛”要分开读。** ``optimizer_converged`` 是数值停止，``forward_converged`` 是前向固定点，``converged`` 是组合状态；它们都不等于残差达到实验阈值。
 - **边界会改变答案。** 真值在盒外时，最优点会贴边并扭曲其它参数；先检查 ``best_parameters`` 是否落在边界上，再解释数值。
 
-本章的数值只对应这个制造的两参数模型。换 Green 响应、换观测噪声、换参数化或换装置，都不能把这里的 ``gradient``、``ratio`` 和 ``chi2`` 直接套用。完整参数校验、异常类型和更大参数域的验证边界见上面的 API 参考页；那里是由合同生成的参考层，本章只负责把一条推断路径讲清楚。
+本章的数值只对应这个制造的两参数模型。换 Green 响应、换观测噪声、换参数化或换装置，都不能把这里的 ``gradient``、``ratio`` 和 ``chi2`` 直接套用。完整参数校验、异常类型和更大参数域的验证边界见上面的 API 参考页；那里是由合同生成的参考层，本章只负责把从诊断合成到有界优化的每一层端口讲清楚。
 
 .. seealso::
 
