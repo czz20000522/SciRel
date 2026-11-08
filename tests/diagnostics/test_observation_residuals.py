@@ -32,7 +32,7 @@ def test_reviewed_relation_example():
     assert scaled["chi2"] == 4.25
 
 
-def test_review_gate_rejects_missing_matching_prediction_as_a_contract_error():
+def test_contract_rejects_missing_matching_prediction_as_a_contract_error():
     import pytest
 
     with pytest.raises(ValueError, match="usable signal"):
@@ -42,7 +42,7 @@ def test_review_gate_rejects_missing_matching_prediction_as_a_contract_error():
         )
 
 
-def test_review_gate_rejects_invalid_residual_channel_domains():
+def test_contract_rejects_invalid_residual_channel_domains():
     import numpy as np
     import pytest
 

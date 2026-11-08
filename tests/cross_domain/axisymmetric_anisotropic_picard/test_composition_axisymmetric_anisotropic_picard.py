@@ -100,7 +100,7 @@ def test_missing_closure_and_invalid_relax_fail_closed():
         _run(_inputs(relax=1.0))
 
 
-def test_review_gate_uniform_bz_linear_isotropic_pressure_has_analytic_current():
+def test_contract_uniform_bz_linear_isotropic_pressure_has_analytic_current():
     r_grid, z_grid = np.meshgrid(np.linspace(0.2, 0.6, 5), np.linspace(-0.2, 0.2, 5))
 
     def linear_isotropic_pressure(_b, _psi):
@@ -128,7 +128,7 @@ def test_review_gate_uniform_bz_linear_isotropic_pressure_has_analytic_current()
     np.testing.assert_allclose(np.sum(result["plasma_cell_currents"]), 0.08)
 
 
-def test_review_gate_firehose_and_parallel_compatibility_fail_closed():
+def test_contract_firehose_and_parallel_compatibility_fail_closed():
     r_grid, z_grid = np.meshgrid(np.linspace(0.2, 0.6, 5), np.linspace(-0.2, 0.2, 5))
     base = {
         "r_grid": r_grid,
@@ -195,7 +195,7 @@ def test_axisymmetric_terminal_floor_precedes_terminal_closure():
     assert calls["closure"] == 1
 
 
-def test_review_gate_rejects_nonfinite_and_coerced_control_values():
+def test_contract_rejects_nonfinite_and_coerced_control_values():
     with pytest.raises(ValueError, match="tol must be a finite scalar"):
         _run(_inputs(tol=np.nan))
     with pytest.raises(ValueError, match="maxiter must be an integer"):

@@ -76,7 +76,7 @@ def test_reviewed_relation_example():
     np.testing.assert_allclose(constant["dl_B"], expected_length / 2.0, rtol=1e-12)
 
 
-def test_review_gate_rejects_degenerate_path_and_undersized_cubic_grid():
+def test_contract_rejects_degenerate_path_and_undersized_cubic_grid():
     import numpy as np
     import pytest
 

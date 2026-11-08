@@ -301,7 +301,7 @@ def test_reviewed_relation_example():
     assert not np.any(result["hall_active_mask"][:, 0])
 
 
-def test_review_gate_rejects_nonfinite_species_and_nonboolean_inertia_control():
+def test_contract_rejects_nonfinite_species_and_nonboolean_inertia_control():
     import pytest
 
     R, Z, BR, BZ = _grid()

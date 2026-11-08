@@ -2,10 +2,10 @@
 
 SciRel's consumer runtime supplies complete original public contract JSON, a
 lightweight discovery index, the self-contained `scirel-solving` skill, query
-tools and an exact Python wheel. Contracts remain the scientific truth.
-Discovery is derived from their reviewed metadata rather than a second
-classification table. Human API pages, tutorials and the bilingual site have a
-separate documentation pipeline.
+tools and an exact Python wheel. Contracts are derived from the code and carried
+verbatim to the consumer. Discovery is derived from their metadata rather than a
+second classification table. Human API pages, tutorials and the bilingual site
+have a separate documentation pipeline.
 
 The consumer is a static asset for general agents. The outbound agent owns the
 program and task graph it creates for a user request; the consumer runtime does

@@ -508,7 +508,6 @@ def tutorial_source_bindings(root, documents, *, excluded_ids):
         if "canonical_module" in api:
             bindings.add((api["canonical_module"], api["canonical_symbol"]))
     result = []
-    excluded_ids = set(excluded_ids)
     for language, relative_root in [
         ("zh", root / "tools/docs/manual"),
         ("en", root / "tools/docs/manual/en"),
@@ -518,11 +517,11 @@ def tutorial_source_bindings(root, documents, *, excluded_ids):
             text = data.decode()
             references = set(re.findall(r":doc:`[^`]*?(scirel\.[a-zA-Z0-9_.-]+)[^`]*`", text))
             unknown = references - ids
-            if unknown - excluded_ids:
+            if unknown - excluded_set:
                 raise ValueError(
                     "tutorial refers to unknown or renamed assets: " + str(sorted(unknown))
                 )
-            excluded = bool(unknown & excluded_ids)
+            excluded = bool(unknown & excluded_set)
             imports = tutorial_imports(text)
             support = {}
             invalid = []

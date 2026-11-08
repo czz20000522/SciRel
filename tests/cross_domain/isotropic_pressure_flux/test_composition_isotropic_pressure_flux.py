@@ -90,7 +90,7 @@ def test_requires_all_yaml_required_picard_controls():
             _run_composition(values)
 
 
-def test_review_gate_validates_grid_before_zero_iteration_return():
+def test_contract_validates_grid_before_zero_iteration_return():
     r_grid, z_grid = np.meshgrid(np.array([0.2, 0.4, 0.7]), np.array([-0.1, 0.0, 0.1]))
     with pytest.raises(ValueError, match="uniformly spaced tensor-product grids"):
         _run_composition(
@@ -104,7 +104,7 @@ def test_review_gate_validates_grid_before_zero_iteration_return():
         )
 
 
-def test_review_gate_linear_pressure_flux_produces_analytic_cell_current():
+def test_contract_linear_pressure_flux_produces_analytic_cell_current():
     values = _inputs()
     result = _run_composition(values)
     dr = values["r_grid"][0, 1] - values["r_grid"][0, 0]
@@ -113,12 +113,12 @@ def test_review_gate_linear_pressure_flux_produces_analytic_cell_current():
     np.testing.assert_allclose(result["plasma_currents"], expected, rtol=2.0e-12, atol=2.0e-12)
 
 
-def test_review_gate_rejects_fractional_picard_iteration_count():
+def test_contract_rejects_fractional_picard_iteration_count():
     with pytest.raises(ValueError, match="maxiter must be an integer"):
         _run_composition(_inputs(maxiter=1.2))
 
 
-def test_review_gate_zero_iteration_returns_an_independent_vacuum_flux_state():
+def test_contract_zero_iteration_returns_an_independent_vacuum_flux_state():
     values = _inputs(maxiter=0)
     vacuum_flux = values["psi_vac"]
 

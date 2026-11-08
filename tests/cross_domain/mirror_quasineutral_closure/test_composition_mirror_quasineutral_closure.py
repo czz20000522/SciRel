@@ -161,7 +161,7 @@ def test_profile_ports_receive_current_psi_values():
     assert np.max(np.abs(callable_result["relative_charge_residual"])) < 1e-10
 
 
-def test_review_gate_propagates_invalid_quasineutral_iteration_budget():
+def test_contract_propagates_invalid_quasineutral_iteration_budget():
     import pytest
 
     with pytest.raises(ValueError, match="at least 2"):
@@ -173,7 +173,7 @@ def test_review_gate_propagates_invalid_quasineutral_iteration_budget():
         )
 
 
-def test_review_gate_rejects_fractional_max_iterations_without_truncation():
+def test_contract_rejects_fractional_max_iterations_without_truncation():
     import pytest
 
     with pytest.raises(ValueError, match="max_iterations must be an integer"):

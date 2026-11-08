@@ -283,7 +283,7 @@ def test_unrepresentable_vacuum_field_fails_closed():
     )
 
 
-def test_review_gate_keeps_two_coil_source_blocks_and_currents_independent():
+def test_contract_keeps_two_coil_source_blocks_and_currents_independent():
     first = _inputs(700.0)
     second = _inputs(-300.0)
     second["rectangular_coils"][0]["z0_m"] = 0.08

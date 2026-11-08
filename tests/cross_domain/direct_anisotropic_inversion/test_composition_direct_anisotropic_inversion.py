@@ -276,7 +276,7 @@ def test_public_simplified_parameter_fit_scenario():
     assert abs(result["best_parameters"]["hot_pressure_scale"] - 4.0) < 1.0e-6
 
 
-def test_review_gate_reports_nonconverged_equilibrium_reason():
+def test_contract_reports_nonconverged_equilibrium_reason():
     r_grid, z_grid = np.meshgrid(np.array([0.2, 0.4]), np.array([-0.1, 0.1]))
 
     def equilibrium_solver(_state):

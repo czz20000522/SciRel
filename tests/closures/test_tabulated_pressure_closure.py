@@ -70,7 +70,7 @@ def test_reviewed_relation_example():
     assert isotropic["is_isotropic"]
 
 
-def test_review_gate_rejects_nonfinite_fill_and_nonphysical_extrapolation():
+def test_contract_rejects_nonfinite_fill_and_nonphysical_extrapolation():
     import numpy as np
     import pytest
 

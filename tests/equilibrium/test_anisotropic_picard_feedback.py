@@ -114,7 +114,7 @@ def test_reviewed_relation_example():
     np.testing.assert_allclose(result["BZ"], 2.0 - relaxed.reshape(2, 2))
 
 
-def test_review_gate_rejects_a_grid_without_a_cell_area():
+def test_contract_rejects_a_grid_without_a_cell_area():
     import pytest
 
     with pytest.raises(ValueError, match="at least two points per axis"):
