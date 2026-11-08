@@ -91,6 +91,7 @@ DOCUMENTATION_BUILD_SCRIPTS = (
     "capability_catalog.py",
     "validate_asset_documents.py",
     "public_api_binding.py",
+    "exposure.py",
 )
 
 
