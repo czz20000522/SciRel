@@ -133,8 +133,26 @@ CodeFusion 正在做同一件事：合并即清 + `dev_container.sh prune` + `ch
 - 不碰仓库外目录（`~/Projects/SciRel-ghost` 等）。
 - 不做"自动清理定时任务"——清理必须是有人看着的显式动作。
 
-## 八、已知的既有实现，先冻结
+## 八、已知的既有实现，冻结但要留出复用
 
 `.worktrees/hygiene-gate`（分支 `agent/hygiene-gate`，`2ac20abf`）上已经有一份实现：`AGENTS.md` +16、`dev_container.py` +300、`test_dev_container.py` +128，含 `prune()` / `hygiene()` / `worktree_entries()` 等。
 
-它是在"等 CodeFusion 形态"这条决定之前写的。**按当前决定冻结，不合、不扩、不删**，等 CodeFusion 的接口定下来后作为参照吸收或丢弃。保留它的理由是里面的扫描逻辑（hash 判活、网络/卷/容器三类分开）可以复用到最终实现里。
+它是在"等 CodeFusion 形态"这条决定之前写的。**按当前决定冻结，不合、不扩、不删**，等 CodeFusion 的接口定下来后作为参照吸收或丢弃。
+
+### 冻结前先记下：哪几块值得复用
+
+别让它在冻结里烂掉。这三块将来大概率直接用：
+
+| 复用什么 | 位置（该分支） | 为什么值得留 |
+| --- | --- | --- |
+| `project_name_for(root)` / `venv_volume_for(root)` | `dev_container.py` | 把"按任意路径算 hash"从"只算当前 checkout"里拆出来。prune 必须能对**不在场的** checkout 算 hash，这两个函数就是那个能力 |
+| `worktree_entries()` / `checked_out_branches()` / `local_branch_names()` | 同上 | 把"活 checkout 集合"和"分支集合"变成可复用的只读查询，判活只依赖它，不依赖任何持久记录 |
+| 卷 / 网络 / 容器三类分开扫的结构 | `container_records()` + `hygiene_report()` | 三类资源的判据不同（卷按 hash、网络按 hash、容器还要看 `Up`/`Exited`），混在一个循环里迟早出错。分开扫的结构是对的 |
+
+**不复用的部分**：`HYGIENE_WORKTREE_THRESHOLD = 3` 这种固定阈值。本规格第四节已经说明阈值应取"活 checkout 数"而不是常量，固定值迟早要改且改的人不知道为什么。
+
+### owner 与期限
+
+- **owner**：SciReL 项目总控（本规格作者）。
+- **期限**：CodeFusion 的 `dev_container.sh prune` / `check_workspace_hygiene` 形态落地后一周内，决定吸收哪几块、然后删掉这个 worktree 和分支。超期未决则在 #121 账本里重新登记并说明为什么还挂着。
+- 冻结期间**不许往这个 worktree 里提交**；要改规格就改本文件，不动那份实现。

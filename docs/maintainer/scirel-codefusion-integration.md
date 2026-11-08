@@ -32,7 +32,9 @@
 | 可选 MCP | `tools/server.py` | stdio 或 loopback Streamable HTTP | 只是传输适配层 |
 | 方法 skill | `skills/development/usage/scirel-solving/` | SKILL.md + references | 外部 agent 按它组织求解步骤 |
 
-**明确不提供**：`scirel_adapter` 分发。当前 wheel 里没有它，任何"adapter 已接入"的说法在拿到独立分发物之前都不成立。
+**明确不提供**：`scirel_adapter` 分发。当前 wheel 里没有它。
+
+**已裁定：adapter 从验收口径移除，不单独立项。** 理由是它和"不建议给 CodeFusion 单做一套 SciReL 专用接口"是同一件事的两面——最小切片走的是普通 shell + wheel + CLI，本来就没有 adapter 的位置；为了一个验收条目去补一份分发物，等于把"中立层不认识领域"这个前提再破一次。将来真需要"SciReL 作为一等工具"时按新需求立项，不按今天的口径补。
 
 ## 二、数据怎么过去
 
@@ -88,21 +90,38 @@ SciReL 的计算结果是**用户的交付物**，落在项目文件里，不变
 
 ### 要等主链路闭合的
 
-- adapter 路径的 `catalog.discover → asset.read(detail=document) → callable.invoke` 证据（缺 `scirel_adapter` 分发物，见下）。
 - 生命周期验收：Product 重启后读回真实结果、再在新 turn 消费。这条依赖 CodeFusion 的恢复语义先落地。
 - Linux/amd64 跨设备抽查。
+
+**adapter 路径已移出验收口径**，不算"待闭合"，也不再是阻塞项（见第一节）。
+
+### 入场券：30 行参考程序（已写好）
+
+`examples/consumer/minimal_scirel_call.py` 是最小切片的第一行代码，不是示意。CodeFusion 侧可以直接把它粘进 sandbox：
+
+```sh
+python <分发包根>/tools/query.py --root <分发包根> describe   # 取 snapshot/wheel 的 pin
+python -m pip install <分发包根>/wheel/<wheel>
+python minimal_scirel_call.py --out result.json
+```
+
+程序本身只做四件事：解析 `--out`、调 `assemble_neutral_total_collision_frequency`、把结果写成 JSON 交付物、退出码 0。失败就让它抛出去，不 catch、不重试、不填默认值——那正是 SciReL 合同里 `failure_semantics` 要求的 fail-closed。
+
+选这个函数当切片对象的理由：输入全是数组、不依赖任何外部数据文件、合同已绑定测试（`tests/kinetic/test_neutral_frequency_assembly.py`），而且它的零直径语义是显式声明的哨兵值（见 `#117`），不会在边界上给出模棱两可的答案。
+
+**它还没有被任何测试覆盖**——写这份规格时没有开容器。接进最小切片时应当顺手补一条断言它退出码和输出文件形状的测试。
 
 ## 五、SciReL 侧最少要改哪几处
 
 先把话说清楚：**接入本身几乎不需要改 SciReL**。现有分发包已经能支撑最小切片。真正要动的只有下面三条，按必要性排序：
 
 1. **什么都不用改就能跑最小切片。** wheel、catalog、`tools/query.py`、`scirel-solving` 都在，`build_pure_delivery.py` 能产出完整分发包。这是这一轮最重要的结论。
-2. **要补一份"最小科学调用"的参考程序**（约 30 行）。现在 `scirel-solving` skill 讲的是方法，没有一份可以直接粘进 shell 的完整例子；CodeFusion 侧要自己摸一遍公开 API 才能写出第一行。这是唯一我认为值得马上补的。
+2. **参考程序已补**：`examples/consumer/minimal_scirel_call.py`。现在 CodeFusion 侧不用再摸一遍公开 API 才写得出第一行。它还缺一条测试，接进切片时补。
 3. **`describe` 的 runtime 声明需要一次核对**：确认它输出的 `runtime.wheel` 与分发包里的实际文件名一致，且 `runtime-requirements.txt` 与 wheel 的 `Requires-Dist` 不矛盾。这条我没在容器里验过，只读了文档，属于待验证项。
 
 **不建议做的**：为 CodeFusion 单独做一套 SciReL 专用接口。一旦有了专用接口，最小切片就不再走"普通 shell"这条路，也就失去了"中立层不认识领域"这个前提。
 
-**明确阻塞项**：adapter 路径无法验证，因为 `scirel_adapter` 不存在于任何分发物里。要么单独立项做这个分发，要么把 adapter 从验收口径里拿掉。这条要用户定。
+**已解除的阻塞**：adapter 路径不再阻塞任何事，它已从验收口径移除（见第一节）。
 
 ## 六、待验证 / 没做的事
 
