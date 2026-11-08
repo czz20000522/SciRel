@@ -498,6 +498,8 @@ def tutorial_source_bindings(root, documents, *, excluded_ids):
     "there is nothing to exclude" while actually meaning "the caller forgot the
     list", which silently cuts the tutorial input off from the exclusions.
     """
+    excluded_set = set(excluded_ids)
+    documents = [document for document in documents if document["asset_id"] not in excluded_set]
     ids = {doc["asset_id"] for doc in documents}
     bindings = set()
     for document in documents:
@@ -581,12 +583,8 @@ def build(
         for document in load_document_set(documents)
         if document["asset_id"] not in excluded
     ]
-    public_documents = [
-        document
-        for document in load_document_set(ROOT / "catalog/examples")
-        if document["asset_id"] not in excluded
-    ]
-    tutorial_bindings = tutorial_source_bindings(ROOT, public_documents, excluded_ids=excluded)
+    raw_public_documents = load_document_set(ROOT / "catalog/examples")
+    tutorial_bindings = tutorial_source_bindings(ROOT, raw_public_documents, excluded_ids=excluded)
     if not docs:
         raise ValueError("no documents to document")
     if documentation_version is None:
@@ -716,11 +714,7 @@ def build(
         raise ValueError("documentation source inputs changed during build") from error
     if final_inputs != source_inputs:
         raise ValueError("documentation source inputs changed during build")
-    final_public_documents = [
-        document
-        for document in load_document_set(ROOT / "catalog/examples")
-        if document["asset_id"] not in excluded
-    ]
+    final_public_documents = load_document_set(ROOT / "catalog/examples")
     if (
         tutorial_source_bindings(ROOT, final_public_documents, excluded_ids=excluded)
         != tutorial_bindings

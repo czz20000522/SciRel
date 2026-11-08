@@ -406,10 +406,8 @@ class PublicCatalog:
         revision, dirty = self._git_identity()
         self._git_state = (revision, dirty)
         exclusion_path = self.root / "catalog/review/excluded_from_package.json"
-        excluded = frozenset()
-        if exclusion_path.exists():
-            self._read("catalog/review/excluded_from_package.json")
-            excluded = excluded_asset_ids(exclusion_path, read_bytes=self._captured)
+        self._read("catalog/review/excluded_from_package.json")
+        excluded = excluded_asset_ids(exclusion_path, read_bytes=self._captured)
         self._excluded_ids = excluded
         self.documents = {}
         for path in sorted((self.root / "catalog/examples").glob("*.json")):

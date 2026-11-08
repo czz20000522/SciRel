@@ -142,6 +142,11 @@ def _rewrite_contract(case, document):
 @pytest.fixture
 def export_case(tmp_path, monkeypatch):
     source = tmp_path / "source"
+    _write(
+        source,
+        "catalog/review/excluded_from_package.json",
+        '{"schema": "scirel.excluded-from-package", "ids": []}\n',
+    )
     case = SimpleNamespace(
         source=source,
         wheel=tmp_path / "synthetic-0-py3-none-any.whl",

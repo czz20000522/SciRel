@@ -133,6 +133,13 @@ def test_source_describe_search_and_exact_get_reuse_the_public_projection(source
     }
 
 
+def test_missing_exclusion_list_fails_closed(source):
+    """缺清单必须报错：静默返回空集等于取消「挡在包外」这层保护。"""
+    (source / "catalog/review/excluded_from_package.json").unlink()
+    with pytest.raises((FileNotFoundError, ValueError)):
+        SourceDocumentation(source)
+
+
 def test_source_identity_binds_dirty_contract_reader_hold_and_head(source):
     initial = SourceDocumentation(source).describe()
     contract_path = source / "catalog/examples" / (ASSET + ".json")
