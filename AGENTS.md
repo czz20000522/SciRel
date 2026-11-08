@@ -60,6 +60,10 @@ python3 scripts/dev_container.py pytest tests/<domain>/test_<asset>.py
 选择保存在未提交的仓库 Git 元数据中，并被同一 clone 的所有 worktree 共享；临时覆盖使用
 `SCIReL_DOCKER_CONTEXT`。未配置、空值或 `default` context 会 fail-closed。`doctor` 显示选中的 context 和实际 engine 名称。
 
+macOS 用 Colima 起本机 Docker engine 时，禁止把整个 `$HOME` 挂进 VM。Colima 默认会用 virtiofs 把整个家目录
+挂载进去，文件一多就可能把系统拖死。启动时用 `--mount` 只指定真正需要的目录；或者改用
+`--mount-type sshfs`。切换挂载类型通常要重建 VM，Colima 会先提示，按提示操作即可。
+
 本机原生 `.venv` 可以用于快速探索，但交付证据必须来自容器内同一条检查。检查入口是
 [`scirel-acceptance` skill](skills/development/scirel-acceptance/SKILL.md)，改代码前先读它。
 不再维护 WSL、Windows 或 macOS 专属的隐藏测试环境。
