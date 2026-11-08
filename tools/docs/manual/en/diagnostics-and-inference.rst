@@ -1,5 +1,5 @@
 Diagnostic modelling and parameter optimization: from observation residuals to bounded local optimization
-=========================================================================================
+=========================================================================================================
 
 This chapter answers one concrete question: **given an axisymmetric equilibrium model and measurements of flux and pressure at a few locations, how do you turn model predictions into residuals with consistent dimensions, and connect that layer to bounded local optimization?**
 
