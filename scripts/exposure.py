@@ -18,8 +18,6 @@ EXCLUSION_SCHEMA = "scirel.excluded-from-package"
 def excluded_asset_ids(path: Path | None = None, *, read_bytes=None) -> frozenset[str]:
     """Return excluded asset ids, optionally parsing already captured bytes."""
     path = DEFAULT_EXCLUSIONS if path is None else Path(path)
-    if read_bytes is None and not path.exists():
-        return frozenset()
     payload = json.loads(path.read_bytes() if read_bytes is None else read_bytes(path))
     if not isinstance(payload, dict) or payload.get("schema") != EXCLUSION_SCHEMA:
         raise ValueError(f"invalid package exclusion schema: {path}")

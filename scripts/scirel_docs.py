@@ -711,7 +711,11 @@ def build(
         raise ValueError("documentation source inputs changed during build") from error
     if final_inputs != source_inputs:
         raise ValueError("documentation source inputs changed during build")
-    final_public_documents = load_document_set(ROOT / "catalog/examples")
+    final_public_documents = [
+        document
+        for document in load_document_set(ROOT / "catalog/examples")
+        if document["asset_id"] not in excluded
+    ]
     if (
         tutorial_source_bindings(ROOT, final_public_documents, excluded_ids=excluded)
         != tutorial_bindings

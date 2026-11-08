@@ -14,8 +14,7 @@ import pytest
 from scirel.inference import direct_anisotropic_inversion as composition
 
 ROOT = Path(__file__).resolve().parents[3]
-# 现存 composition.yaml 是 later snapshot，不是准入原件；准入原件的字节不在本仓库，
-# 判定过程与证据见 catalog/review/DIRECT_INVERSION_ARTIFACT.md。
+# 现存 composition.yaml 是 later snapshot，不是准入原件；准入原件的字节不在本仓库。
 LOCKED_COMPOSITION_SHA256 = "563d23f8d3d5812555dcac044c4f322d139094a5589c7562dc3345a05145956d"
 HELD_ASSET = "scirel.inference.direct-anisotropic-inversion"
 
