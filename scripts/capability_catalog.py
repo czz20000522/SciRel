@@ -15,7 +15,6 @@ import stat
 import subprocess
 
 from capability_query import CAPABILITY_INDEX_SCHEMA, DEVICE_SCOPES, validate_capability_index
-from exposure import held_asset_ids
 from validate_asset_documents import validate_document
 
 LANGUAGES = ("zh", "en")
@@ -395,7 +394,8 @@ class PublicCatalog:
     """Read the public working tree without building or importing scientific code.
 
     This identity binds current public inputs, not a wheel or a past acceptance
-    run. HOLD is read only to filter exposure; review evidence is never loaded.
+    run. Everything under ``catalog/examples`` is public: no review artifact
+    filters what is exposed.
     """
 
     def __init__(self, root, expected_digest=None):
@@ -404,14 +404,8 @@ class PublicCatalog:
         self.input_bytes = {}
         revision, dirty = self._git_identity()
         self._git_state = (revision, dirty)
-        hold = self.root / "catalog/review/HOLD.json"
-        self._read("catalog/review/HOLD.json")
-        held = held_asset_ids(hold, read_bytes=self._captured)
-        self._held_ids = held
         self.documents = {}
         for path in sorted((self.root / "catalog/examples").glob("*.json")):
-            if path.stem in held:
-                continue
             document = json.loads(self._read("catalog/examples/" + path.name))
             validate_document(document, location=path.name)
             if document["asset_id"] != path.stem:

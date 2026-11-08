@@ -34,7 +34,6 @@ BUILD_INPUTS = (
     "public_api_binding.py",
     "check_wheel_exposure.py",
     "validate_installed_wheel.py",
-    "exposure.py",
     "code_digest.py",
 )
 

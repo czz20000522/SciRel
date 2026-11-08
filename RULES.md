@@ -18,26 +18,25 @@ file in this repository; chat-only knowledge is not durable.
 
 | Kind of knowledge | Canonical location |
 | --- | --- |
-| Contract truth, asset rules, conflict policy | `catalog/README.md`, `catalog/examples/` |
+| Code truth, asset rules, conflict policy | `src/scirel/`, `catalog/README.md`, `catalog/examples/` |
 | Docs/API/bilingual/review/publish rules | `tools/docs/manual/README.md`, `tools/docs/` |
 | Agent working conventions, required reading, current state | `AGENTS.md` |
 | Solving workflow, physical method, report format | `skills/development/usage/scirel-solving/references/` |
 | Decomposition methodology, candidate/info/delivery boundaries | `skills/extraction/scientific-computation-asset-extraction/references/` |
 | Decisions and rationale | the commit that makes the change, plus the canonical file it changes |
-| Pending human decisions | `catalog/review/HUMAN_REVIEW_TODO.md` |
 | Generated publish artifacts | `dist/` (gitignored); never a source of truth |
 | Runtime work, probes, intermediate containers | execution environment; disposable |
 
 Do not create a second copy of the same rule in several places. Use one canonical
 entry and link to it.
 
-## 3. One truth, explicit choice
+## 3. Code is the truth
 
-Every capability has one public contract truth. Implementation, tests, API pages,
-user-guide links and the capability matrix are projections of that truth.
+The implementation is the truth. The contract records it, and tests, API pages,
+user-guide links and the capability matrix derive from the contract.
 
-When contract and implementation disagree, choose one truth explicitly and record
-the reason:
+When contract and implementation disagree, the code wins and the contract changes
+in the same commit:
 
 - scientific convention, fail-closed behavior or public promise -> fix implementation
   and add a regression test;
@@ -185,8 +184,8 @@ oracle, receiver roadmap, and private acceptance material stay with the owner.
 
 The published code, tests, gates and documentation build depend only on files
 tracked in this repository. They must not read, name or require review material
-kept elsewhere. Review status changes by human decision and is recorded in
-`catalog/review/VERDICTS.json`; see `catalog/AUDIT.md`.
+kept elsewhere. The public surface follows the code: a capability becomes public
+when its implementation and contract land together; see `catalog/AUDIT.md`.
 
 ## 13. 编程题式能力测试与对抗性覆盖
 

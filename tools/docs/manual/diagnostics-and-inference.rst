@@ -335,7 +335,6 @@
 - 有自己的前向、诊断和残差端口，只做一次带罚值的试探：:doc:`../reference/generated/scirel.inference.anisotropic-trial-evaluation`。
 - 只需要分层初值设计：:doc:`../reference/generated/scirel.inference.latin-hypercube-sampling`。
 - 已有 ``trial_evaluator``，只做有界局部优化：:doc:`../reference/generated/scirel.inference.anisotropic-parameter-optimization`。
-- 已有前向和诊断端口，想直接走“观测 → 试探 → 有界拟合”：:doc:`../reference/generated/scirel.inference.direct-anisotropic-inversion`。
 
 易错点与边界
 ------------

@@ -159,9 +159,6 @@ def test_composition_yaml_is_not_the_admitted_artifact():
     contract_nodes = {node["id"] for node in contract["composition"]["nodes"]}
     assert graph_nodes != contract_nodes
     assert graph_nodes & contract_nodes == {"direct_optimizer"}
-    hold = json.loads((ROOT / "catalog/review/HOLD.json").read_text(encoding="utf-8"))
-    record = hold["assets"][HELD_ASSET]
-    assert "exact admitted direct-inversion graph artifact is missing" in record["reason"]
 
 
 # 验证：相同 seed、bounds 和 fit_keys 产生相同 permutation 和 strata 内样本。

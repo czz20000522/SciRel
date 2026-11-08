@@ -33,10 +33,6 @@ CJK = re.compile(r"[\u3400-\u4dbf\u4e00-\u9fff\u3000-\u303f\uff00-\uffef]")
 CLEAN_ASSET = "scirel.field.poloidal-field-magnitude"
 
 
-def held_assets():
-    return set(json.loads((ROOT / "catalog/review/HOLD.json").read_text())["assets"])
-
-
 def test_language_selector_is_explicit_and_fails_closed(tmp_path):
     assert LANGUAGES == ("zh", "en")
     with pytest.raises(ValueError, match="language must be one of"):
@@ -97,7 +93,6 @@ def test_english_handbook_uses_reviewed_navigation(english_snapshot):
     assets = [asset for topic in topics for asset in topic["assets"]]
     assert len(chapters) == 9
     assert topics
-    assert all(asset not in held_assets() for asset in assets)
     assert len(assets) == len(set(assets))
     assert set(assets) == docs.ids
     for chapter in chapters:
@@ -151,15 +146,12 @@ def test_english_handbook_file_matches_canonical_structure():
     assert structure(english) == structure(canonical)
     assert len(english["chapters"]) == 9
     assert sum(len(chapter["topics"]) for chapter in english["chapters"]) == 75
-    held = set(
-        json.loads((ROOT / "catalog/review/HOLD.json").read_text(encoding="utf-8"))["assets"]
-    )
     assert {
         asset
         for chapter in english["chapters"]
         for topic in chapter["topics"]
         for asset in topic["assets"]
-    } - held == {path.stem for path in (ROOT / "catalog/examples").glob("*.json")}
+    } == {path.stem for path in (ROOT / "catalog/examples").glob("*.json")}
     assert not CJK.search(json.dumps(english, ensure_ascii=False))
 
 

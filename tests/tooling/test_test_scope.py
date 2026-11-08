@@ -39,7 +39,6 @@ def test_consumer_tools_select_the_delivery_tests(script):
         ("build_capability_matrix.py", {"tooling", "docs", "delivery"}),
         ("validate_asset_documents.py", {"tooling", "architecture", "docs", "delivery"}),
         ("public_api_binding.py", {"tooling", "architecture", "docs", "delivery"}),
-        ("exposure.py", {"tooling", "architecture", "docs", "delivery"}),
         ("mapping_interface_bindings.json", {"tooling", "architecture", "docs", "delivery"}),
         ("package_catalog_snapshot.py", {"tooling"}),
         ("build_catalog.py", {"tooling", "architecture"}),

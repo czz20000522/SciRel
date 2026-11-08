@@ -1,6 +1,8 @@
 # Current codebase maintainer map
 
-This map is an orientation aid, not a second source of truth. The contracts in
+This map is an orientation aid, not a second source of truth: the implementation
+is the truth, contracts are its derived record, and documentation derives from
+the contracts. The contracts in
 `catalog/examples/` own scientific behavior; this page shows where to read and
 how the layers connect.
 
@@ -53,7 +55,7 @@ runtime dependencies of the public package.
 ## The main chain
 
 ```text
-catalog/examples/<asset>.json       scientific truth: model, ports, limits, evidence
+catalog/examples/<asset>.json       derived contract: model, ports, limits, evidence
         |
         +--> src/scirel/<domain>/   implementation and public lazy exports
         +--> tests/<domain>/        direct numerical and failure tests
@@ -61,9 +63,8 @@ catalog/examples/<asset>.json       scientific truth: model, ports, limits, evid
         +--> discovery/query tools  derived capability index and search cards
 ```
 
-The contract's `verification.tests` list binds the asset to its tests. The
-`public_api.python` block binds it to the implementation, and
-`catalog/review/VERDICTS.json` records the review decision. Do not infer any of
+The contract's `verification.tests` list binds the asset to its tests and the
+`public_api.python` block binds it to the implementation. Do not infer any of
 those facts from file names alone.
 
 When code and contract disagree:
@@ -111,26 +112,22 @@ Do not rename or regroup these modules until the API issues have been narrowed.
 The planned kinetic split in issue #8 is a large structural batch, not a starter
 task.
 
-## Review states and held work
+## Review-stage work
 
-`catalog/review/VERDICTS.json` is the status registry. `pass-with-limits` is an
-exposed result with explicit evidence boundaries in its contract; it is not a
-synonym for a known wrong answer.
+`pass-with-limits` in a contract means the result has explicit evidence
+boundaries; it is not a synonym for a known wrong answer.
 
-The following five assets are held and excluded from the public package,
-documentation, discovery index and capability matrix:
+Five contracts under `catalog/review/examples/` are not part of the public
+catalog: their implementations are not in `src/`, so they are neither packaged,
+documented, indexed nor counted by the capability matrix. They stay readable as
+review input and are promoted by moving the contract into `catalog/examples/`
+once its implementation lands:
 
 - `scirel.equilibrium.finite-frc-feedback`
 - `scirel.equilibrium.finite-limited-boundary`
 - `scirel.inference.direct-anisotropic-inversion`
 - `scirel.kinetic.atomic-slab-transport`
 - `scirel.kinetic.multiscale-sat123`
-
-The human decisions and release conditions are in
-[`catalog/review/HUMAN_REVIEW_TODO.md`](../../catalog/review/HUMAN_REVIEW_TODO.md)
-and [`catalog/review/HOLD.json`](../../catalog/review/HOLD.json). The exceptional
-review-harness failure caused by these held examples is recorded in
-[`AGENTS.md`](../../AGENTS.md).
 
 ## Public API signals that need work
 

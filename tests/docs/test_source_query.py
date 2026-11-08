@@ -48,25 +48,10 @@ def source(tmp_path):
     contracts.mkdir(parents=True)
     contract = (ROOT / "catalog/examples" / (ASSET + ".json")).read_bytes()
     (contracts / (ASSET + ".json")).write_bytes(contract)
-    # This deliberately unreadable held payload must never be parsed, even by get.
-    (contracts / (HELD + ".json")).write_text("held payload is not public JSON")
-    hold = root / "catalog/review/HOLD.json"
-    hold.parent.mkdir()
-    hold.write_bytes(
-        encode(
-            {
-                "schema": "scirel.exposure-hold",
-                "assets": {
-                    HELD: {
-                        "status": "human-review",
-                        "reason": "withheld",
-                        "required_decision": "review",
-                    }
-                },
-            }
-        )
+    (root / "catalog/review").mkdir()
+    (root / "catalog/review" / "PRIVATE_NOTES.md").write_text(
+        "private history, outside query inputs"
     )
-    (hold.parent / "PRIVATE_NOTES.md").write_text("private history, outside query inputs")
     reader = next(
         record
         for path in (ROOT / "tools/docs/zh").glob("*.json")
@@ -104,12 +89,10 @@ def test_source_describe_search_and_exact_get_reuse_the_public_projection(source
     read_bytes, read_text = Path.read_bytes, Path.read_text
 
     def public_only(path, original, *args, **kwargs):
-        if (
-            path == source / "catalog/examples" / (HELD + ".json")
-            or path.is_relative_to(source / "catalog/review")
-            and path.name != "HOLD.json"
+        if path == source / "catalog/examples" / (HELD + ".json") or path.is_relative_to(
+            source / "catalog/review"
         ):
-            raise AssertionError("query read withheld payload or private review history")
+            raise AssertionError("query read a non-public payload or private review history")
         return original(path, *args, **kwargs)
 
     monkeypatch.setattr(
@@ -140,7 +123,6 @@ def test_source_describe_search_and_exact_get_reuse_the_public_projection(source
         == "unknown_asset"
     )
     assert set(docs.input_digests) == {
-        "catalog/review/HOLD.json",
         "catalog/examples/" + ASSET + ".json",
         "tools/docs/zh/reader.json",
     }
@@ -165,17 +147,11 @@ def test_source_identity_binds_dirty_contract_reader_hold_and_head(source):
     reader_path.write_bytes(encode(readers))
     reader_changed = SourceDocumentation(source).describe()
     assert reader_changed["source_inputs_sha256"] != changed["source_inputs_sha256"]
-    hold_path = source / "catalog/review/HOLD.json"
-    hold = json.loads(hold_path.read_bytes())
-    hold["assets"][HELD]["status"] = "rejected"
-    hold_path.write_bytes(encode(hold))
-    hold_changed = SourceDocumentation(source).describe()
-    assert hold_changed["source_inputs_sha256"] != reader_changed["source_inputs_sha256"]
     commit(source)
     committed = SourceDocumentation(source).describe()
     assert committed["source_dirty"] is False
     assert committed["source_revision"] != initial["source_revision"]
-    assert committed["source_inputs_sha256"] == hold_changed["source_inputs_sha256"]
+    assert committed["source_inputs_sha256"] == reader_changed["source_inputs_sha256"]
     with pytest.raises(ValueError, match="expected digest"):
         SourceDocumentation(source, initial["source_identity_sha256"])
     assert SourceDocumentation(source, committed["source_identity_sha256"]).describe() == committed
@@ -231,9 +207,6 @@ print(json.dumps(SourceDocumentation(sys.argv[2]).describe()))
         "reader_list",
         "reader_null_failure",
         "reader_null_section",
-        "hold",
-        "hold_list",
-        "missing_hold",
         "file_link_or_reparse",
     ],
 )
@@ -253,10 +226,6 @@ def test_corrupt_source_metadata_fails_instead_of_claiming_no_hit(source, fault,
         else:
             bundle["records"][0]["verification"] = None
         reader_path.write_bytes(encode(bundle))
-    elif fault in ("hold", "hold_list"):
-        (source / "catalog/review/HOLD.json").write_text("{}" if fault == "hold" else "[]")
-    elif fault == "missing_hold":
-        (source / "catalog/review/HOLD.json").unlink()
     else:
         external = tmp_path / "external.json"
         external.write_bytes(contract_path.read_bytes())

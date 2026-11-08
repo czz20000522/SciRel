@@ -107,30 +107,25 @@ itself" as the final proof.
 
 ## Merge layers and exposure hold
 
-Candidate admission has three outcomes:
+A candidate is public when, and only when, both its implementation and its
+contract land in `src/scirel/` and `catalog/examples/`. Until then it stays
+under `catalog/review/`: the contract and its tests are preserved there, and it
+is excluded from packaging, documentation, the capability index, the query
+service and the capability matrix. A failing structural check keeps it there too,
+with the failure recorded beside it.
 
-- **auto-merge**: agent verdict is `pass` or `pass-with-limits`, no agent
-  disagreement remains, and the evidence is reproducible. The asset enters the
-  exposed catalog.
-- **human-review**: the agent cannot decide, agents disagree, or a model/source
-  attribution needs an owner decision. The contract/test evidence is preserved
-  but the asset is listed in `catalog/review/HOLD.json` and excluded from
-  documentation, capability index, query service and capability matrix.
-- **rejected**: a required check fails; record the failure and do not expose.
-
-A tier-A asset with only self-consistency evidence cannot auto-merge. An asset
-leaves the hold only after the owner records the decision and the missing
-evidence; then its contract is rebound and it can be exposed. The hold is not a
-second truth: the contract remains the single scientific truth while review is
-pending.
+A tier-A asset with only self-consistency evidence cannot auto-merge. A contract
+under `catalog/review/examples/` stays there until its implementation lands in
+`src/`: the implementation is the truth, the contract is its derived record, and
+the documentation derives from the contract. Review notes never override code.
 
 
-## Status registry and gate
+## Structure checks
 
-`catalog/review/VERDICTS.json` records one status per catalog asset, and human
-review is the authority for changing it. The gate
-(`scripts/review_gate.py --check`) fails when an asset has no status, an exposed
-asset is not `pass`/`pass-with-limits`, or a held asset is not `human-review`.
+There is no status registry: what exists in `src/` and `catalog/examples/` is the
+public surface, and `scripts/validate_asset_documents.py` checks only structural
+consistency — required fields, schema conformance, ports that match the
+implementation. It reports no scientific verdict.
 `not-audited` and `blocked` are never exposed. A new asset without a reviewed
 status is held rather than given a passing one. The gate needs only tracked files
 and checks structure only. The claim ceiling of each capability is in its contract

@@ -32,8 +32,8 @@ SciRel 是聚变和等离子体方向的 Python 科学计算库，每个公开�
 ```text
 src/scirel/        科学实现，按领域组织
 tests/             功能测试和架构、文档、交付、工具测试
-catalog/examples/  已公开功能的合同（科学真值）
-catalog/review/    审查状态、被 hold 的合同和代码（不进入安装包）
+catalog/examples/  已公开功能的合同（由代码派生的记录）
+catalog/review/    评审期合同与候选代码（不进入安装包）
 contracts/         合同 schema 和准入规则
 scripts/           校验和构建工具
 skills/            求解、开发和提取方法
@@ -90,12 +90,12 @@ python3 scripts/dev_container.py pytest tests/<domain>/test_<asset>.py
 - 新增脚本必须能在容器中运行；如果必须依赖某个宿主系统能力，先说明原因、替代方案和删除条件。
 ## 必须遵守
 
-这些规则多数由 `tests/architecture/test_repository_skeleton.py` 和 `scripts/review_gate.py` 检查。
+这些规则多数由 `tests/architecture/test_repository_skeleton.py` 检查。
 
-1. **合同是科学真值。** 实现和合同不一致时明确选一个并记录原因，不留两个版本。
+1. **代码即真值。** 合同是代码的衍生品，文档是合同的衍生品。实现和合同不一致时以代码为准、改合同，不留两个版本。
 2. **不擅自改物理。** 公式、符号、单位、数值方法的取舍要先问维护者。不能为了通过测试放宽容差。
 3. **公开仓库自给自足。** 代码、测试、门禁和文档构建只依赖仓库内跟踪的文件，不写本机路径，也不依赖私人笔记。
-4. **状态由人工审查决定。** 没审过的功能放进 hold，不直接标为通过。门禁只检查结构。
+4. **公开与否由实现决定。** `src/` 里没有实现的资产不进公开 catalog，合同留在 `catalog/review/examples/`；门禁只检查结构，不判科学对错。
 5. **报告先回答问题。** 方法写物理，结果配图，不越权判定可用或不可用。SciRel 只在恰好用到时顺带提及。
 6. **如实写结果。** 失败和未运行的内容不能写成通过。
 
@@ -103,11 +103,9 @@ python3 scripts/dev_container.py pytest tests/<domain>/test_<asset>.py
 
 待办都放在固定位置，不另写交接日志：
 
-- 待人工决定：[catalog/review/HUMAN_REVIEW_TODO.md](catalog/review/HUMAN_REVIEW_TODO.md)
 - 其余案例的整理计划：[examples/PLAN.md](examples/PLAN.md)
 
 已知未完成：
 
 - `skills/` 下的测试不在默认测试范围内，也没有整理到能全部通过。
-- `scripts/review_harness.py --check` 会因被 hold 的合同示例而失败，这是预期行为。
 - 公开 API 的迁移进度见 [API 规范](skills/development/scirel-code-style/references/api-spec.md)。

@@ -23,7 +23,6 @@ from urllib.parse import parse_qs, urlsplit
 from packaging.version import InvalidVersion, Version
 
 from validate_asset_documents import load_document_set
-from exposure import held_asset_ids
 from build_scirel_sphinx import (
     LANGUAGE_TAGS,
     english_available_docs,
@@ -91,7 +90,6 @@ DOCUMENTATION_BUILD_SCRIPTS = (
     "capability_catalog.py",
     "validate_asset_documents.py",
     "public_api_binding.py",
-    "exposure.py",
 )
 
 
@@ -572,16 +570,10 @@ def build(
         documents, outline=outline, translation_paths=translation_paths
     )
     docs = load_document_set(documents)
-    held = held_asset_ids()
-    docs = [document for document in docs if document["asset_id"] not in held]
-    public_documents = [
-        document
-        for document in load_document_set(ROOT / "catalog/examples")
-        if document["asset_id"] not in held
-    ]
-    tutorial_bindings = tutorial_source_bindings(ROOT, public_documents, held_ids=held)
+    public_documents = load_document_set(ROOT / "catalog/examples")
+    tutorial_bindings = tutorial_source_bindings(ROOT, public_documents)
     if not docs:
-        raise ValueError("all documents are withheld by the exposure hold")
+        raise ValueError("no documents to document")
     if documentation_version is None:
         documentation_version = project_version()
     if not isinstance(documentation_version, str) or not documentation_version.strip():
@@ -600,7 +592,7 @@ def build(
         dirty = bool(subprocess.check_output(["git", "status", "--porcelain"], cwd=ROOT))
     if language == "zh":
         translations = load_translations(
-            ROOT, documents, docs, translation_paths=translation_paths, excluded_ids=held
+            ROOT, documents, docs, translation_paths=translation_paths, excluded_ids=()
         )
     else:
         if translation_paths is not None:
@@ -684,7 +676,7 @@ def build(
             figure_files=figure_files,
             matrix=matrix,
             language=language,
-            withheld_ids=held,
+            withheld_ids=(),
         )
     )
     if language == "en":
@@ -709,12 +701,8 @@ def build(
         raise ValueError("documentation source inputs changed during build") from error
     if final_inputs != source_inputs:
         raise ValueError("documentation source inputs changed during build")
-    final_public_documents = [
-        document
-        for document in load_document_set(ROOT / "catalog/examples")
-        if document["asset_id"] not in held
-    ]
-    if tutorial_source_bindings(ROOT, final_public_documents, held_ids=held) != tutorial_bindings:
+    final_public_documents = load_document_set(ROOT / "catalog/examples")
+    if tutorial_source_bindings(ROOT, final_public_documents) != tutorial_bindings:
         raise ValueError("documentation tutorial inputs changed during build")
     manifest = {
         "schema": SCHEMA,

@@ -115,14 +115,11 @@ def test_plotting_stays_out_of_the_runtime_dependencies():
     assert not list((ROOT / "src").rglob("*.png"))
 
 
-def test_held_code_is_outside_the_installed_package():
-    hold = json.loads((ROOT / "catalog/review/HOLD.json").read_text(encoding="utf-8"))["assets"]
-    for asset in hold:
-        document = json.loads(
-            (ROOT / "catalog/review/examples" / f"{asset}.json").read_text(encoding="utf-8")
-        )
+def test_review_contract_code_is_outside_the_installed_package():
+    for path in sorted((ROOT / "catalog/review/examples").glob("*.json")):
+        document = json.loads(path.read_text(encoding="utf-8"))
         module = document["public_api"]["python"]["module"].split(".")
-        assert not (ROOT / "src").joinpath(*module).with_suffix(".py").exists(), asset
+        assert not (ROOT / "src").joinpath(*module).with_suffix(".py").exists(), path.stem
 
 
 def test_usage_directory_holds_exactly_the_delivered_skills():
