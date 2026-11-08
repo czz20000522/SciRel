@@ -491,8 +491,13 @@ def _public_exception_source(root, module, symbol):
     return {relative.as_posix(): sha(data) for relative, (data, _) in trees.items()}
 
 
-def tutorial_source_bindings(root, documents, *, excluded_ids=()):
-    """Bind authored tutorial references/imports; this is not scientific review."""
+def tutorial_source_bindings(root, documents, *, excluded_ids):
+    """Bind authored tutorial references/imports; this is not scientific review.
+
+    ``excluded_ids`` is required on purpose. A default of ``()`` reads the same as
+    "there is nothing to exclude" while actually meaning "the caller forgot the
+    list", which silently cuts the tutorial input off from the exclusions.
+    """
     ids = {doc["asset_id"] for doc in documents}
     bindings = set()
     for document in documents:

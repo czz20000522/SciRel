@@ -14,9 +14,11 @@ how the layers connect.
 - Tests: 253 `test_*.py` files, about 36,900 lines.
 - Public API inventory: 251 non-module names, made up of 214 functions,
   36 classes and one data value. The inventory also exposes 19 public modules.
-- Contracts: 256 exposed contracts and 5 held contracts under
-  `catalog/review/`.
-- Review decisions: 49 `pass`, 207 `pass-with-limits`, and 5 `human-review`.
+- Contracts: `catalog/examples/` holds the public contract set, and every entry
+  there has an implementation in `src/scirel/`. Assets kept out of the installed
+  package and the generated documentation are listed in
+  `catalog/review/excluded_from_package.json`; there is no status registry, so
+  no per-asset review verdict is recorded in the tree.
 - Composition contracts: 22 exposed contracts carry an explicit composition
   graph.
 - Every count above is structural. It does not establish complete scientific
@@ -80,16 +82,16 @@ Read [`catalog/README.md`](../../catalog/README.md) before changing any asset.
 
 The package is broad, but the maintenance surface clusters into these areas:
 
-| Area | Public names | Exposed contracts | Review shape | Start with |
-| --- | ---: | ---: | --- | --- |
-| Geometry, numerics and finite volumes | 57 | 52 | 13 pass, 39 pass-with-limits | `geometry/`, `numerics/`, `fvm/`; field lines, meshes, interpolation, basis functions and conservative operators |
-| Fields, coils and device configurations | 25 | 24 | 12 pass, 12 pass-with-limits | `field/`, `electromagnetism/`, `configurations/`; Green responses, filament/coil geometry and WHAM/BRB/TREX data |
-| Equilibrium and closure relations | 22 | 21 | 21 pass-with-limits | `equilibrium/`, `closures/`; Grad-Shafranov/Picard steps, pressure flux, ambipolar and quasineutral closures |
-| Kinetic and neutral transport | 94 | 112 | 7 pass, 105 pass-with-limits | `kinetic/`; waves, spectral solvers, generalized dispersion, Vlasov-Poisson, mirror and neutral transport |
-| Collisions and atomic data | 22 | 20 | 1 pass, 19 pass-with-limits | `collisions/`; hydrogen cross-sections, reaction rates, collision matrices and stopping increments |
-| Diagnostics and inference | 10 | 10 | 6 pass, 4 pass-with-limits | `diagnostics/`, `inference/`; residual diagnostics, stability margins and bounded anisotropic inference |
-| Physics, neoclassical, fusion, plasma and dielectric | 13 | 11 | 5 pass, 6 pass-with-limits | `physics/`, `neoclassical/`, `fusion/`, `plasma/`, `dielectric/`; small algebraic relations and bounded model assemblies |
-| I/O and source profiles | 8 | 6 | 5 pass, 1 pass-with-limits | `io/`, `source/`; EQDSK/GEQDSK interchange and normalized 1-D profiles |
+| Area | Public names | Exposed contracts | Start with |
+| --- | ---: | ---: | --- |
+| Geometry, numerics and finite volumes | 57 | 52 | `geometry/`, `numerics/`, `fvm/`; field lines, meshes, interpolation, basis functions and conservative operators |
+| Fields, coils and device configurations | 25 | 24 | `field/`, `electromagnetism/`, `configurations/`; Green responses, filament/coil geometry and WHAM/BRB/TREX data |
+| Equilibrium and closure relations | 22 | 21 | `equilibrium/`, `closures/`; Grad-Shafranov/Picard steps, pressure flux, ambipolar and quasineutral closures |
+| Kinetic and neutral transport | 94 | 112 | `kinetic/`; waves, spectral solvers, generalized dispersion, Vlasov-Poisson, mirror and neutral transport |
+| Collisions and atomic data | 22 | 20 | `collisions/`; hydrogen cross-sections, reaction rates, collision matrices and stopping increments |
+| Diagnostics and inference | 10 | 10 | `diagnostics/`, `inference/`; residual diagnostics, stability margins and bounded anisotropic inference |
+| Physics, neoclassical, fusion, plasma and dielectric | 13 | 11 | `physics/`, `neoclassical/`, `fusion/`, `plasma/`, `dielectric/`; small algebraic relations and bounded model assemblies |
+| I/O and source profiles | 8 | 6 | `io/`, `source/`; EQDSK/GEQDSK interchange and normalized 1-D profiles |
 
 The public-name and contract counts do not have to match one-for-one. A contract
 can bind a canonical package export to a child implementation; that relationship
@@ -114,8 +116,10 @@ task.
 
 ## Review-stage work
 
-`pass-with-limits` in a contract means the result has explicit evidence
-boundaries; it is not a synonym for a known wrong answer.
+A contract's `verification` block states the evidence boundary of the claim: what
+was compared, against what oracle, and where the domain stops. That boundary is
+part of the contract, not a verdict attached to it; the tree records no
+per-asset review status.
 
 Five contracts under `catalog/review/examples/` are not part of the public
 catalog: their implementations are not in `src/`, so they are neither packaged,
@@ -170,8 +174,8 @@ pass is not evidence that every possible user task is covered.
 ## Review, docs and delivery
 
 - `catalog/examples/` is the public contract set.
-- `catalog/review/` contains held contracts, candidate code and the verdict
-  registry; it is not installed.
+- `catalog/review/` contains candidate contracts and candidate code; it is not
+  installed.
 - `tools/docs/manual/` contains authored bilingual user guides.
 - `tools/docs/zh/*.json` contains Chinese reader records bound to contract bytes.
 - `src/scirel/_result.py` defines the named `Result` mapping used by public
@@ -230,6 +234,6 @@ local full acceptance check establishes structural and regression health. It
 does not independently validate every scientific formula, every stated physical
 domain or the rights of all source material.
 
-NOT_RUN for this map: independent scientific review of all 256 exposed
-contracts, manual review of every generated API page, and reference-answer
-parity for the systems outside the public package.
+NOT_RUN for this map: independent scientific review of every exposed contract,
+manual review of every generated API page, and reference-answer parity for the
+systems outside the public package.

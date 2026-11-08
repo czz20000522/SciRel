@@ -25,7 +25,7 @@ the submitted examples.
 
 ## Per-asset audit record
 
-Each audited asset records:
+An audit writes down, for one asset:
 
 - asset_id, domain, risk tier, owner;
 - declared applicability and numerical limits;
@@ -34,7 +34,11 @@ Each audited asset records:
   extreme magnitude, dtype, invalid/failure paths;
 - external truth: source project, independent analytic/limit, or `NONE`;
 - contract claims re-checked against observed behavior;
-- residual risks and a verdict (`pass`, `pass-with-limits`, `fail`, `blocked`).
+- residual risks, and the boundary those risks put on the claim.
+
+The record has no verdict field. What carries the result is the implementation,
+the tests it names and the contract's `verification` block; a status word in a
+side file is not evidence and is not committed.
 
 ## Required checks
 
@@ -62,7 +66,8 @@ evidence. No open P0 finding remains.
 ## Gate
 
 - No unresolved tier-A defect enters a release candidate.
-- Every asset has an audit status and evidence link.
+- Every asset in `catalog/examples/` has an implementation in `src/scirel/` and
+  tests named by its `verification.tests`.
 - A capability with a known limitation may pass only with that limitation in its
   contract and user-facing API documentation.
 
@@ -95,17 +100,17 @@ submitted tests pass. Future intake requires:
    environment and may add cases that the decomposer did not know about; this is
    not a demand for receiver-specific behavior, only an adversarial test of the
    declared scientific relation.
-8. **Verdict before admission** — tier A needs an audit verdict (`pass`,
-   `pass-with-limits`, `blocked`); no unresolved tier-A defect enters a release
-   candidate. A known limitation is allowed only when it is written into the
-   contract and user-facing API documentation.
+8. **Admission by implementation** — an asset is admitted when its implementation
+   and its contract land in the same change; no unresolved tier-A defect enters a
+   release candidate. A known limitation is allowed only when it is written into
+   the contract and user-facing API documentation.
 
 The decomposer still owns the source-faithful translation and its evidence. The
 receiver owns the independent acceptance test, the declared scope and the
 decision to admit. Neither side may use "tests pass" or "SciRel output matches
 itself" as the final proof.
 
-## Merge layers and exposure hold
+## Merge layers and packaging exclusion
 
 A candidate is public when, and only when, both its implementation and its
 contract land in `src/scirel/` and `catalog/examples/`. Until then it stays
@@ -126,20 +131,24 @@ There is no status registry: what exists in `src/` and `catalog/examples/` is th
 public surface, and `scripts/validate_asset_documents.py` checks only structural
 consistency — required fields, schema conformance, ports that match the
 implementation. It reports no scientific verdict.
-`not-audited` and `blocked` are never exposed. A new asset without a reviewed
-status is held rather than given a passing one. The gate needs only tracked files
-and checks structure only. The claim ceiling of each capability is in its contract
-`verification` block.
+An asset whose implementation is not in `src/` has no public catalog entry and
+no generated documentation; nothing counts the assets that are missing, because
+absence is not a status. The gate needs only tracked files and checks structure
+only. The claim ceiling of each capability is in its contract `verification`
+block.
 
-## Exposure hold is not an outbound handoff
+## Exclusion is not an outbound handoff
 
-Holding an asset means only that it is not exposed as a catalog capability. It
-does not authorize the outbound worker to stop a user's request or to ask the
-user to obtain a human review/decomposition. During a real request a held or
+An asset listed in `catalog/review/excluded_from_package.json` is only outside
+packaging, documentation, the capability index, the query service and the
+capability matrix. The list carries ids, a purpose and a revisit condition; it
+records packaging scope and makes no judgement about scientific correctness.
+It does not authorize the outbound worker to stop a user's request or to ask the
+user to obtain a human review/decomposition. During a real request an excluded or
 missing capability is a gap: mark it, try an independent public-science glue or
 substitute, verify it, and continue; if that is impossible, state the concrete
 missing input/fact and deliver the bounded result that remains. Never read or
-import the held implementation as a hidden shortcut.
+import an excluded implementation as a hidden shortcut.
 
 ## Outbound gap and input-failure policy
 
@@ -162,8 +171,8 @@ three trees:
 - `src/scirel/` — only merged, admitted code; nothing held is installed or
   importable;
 - `catalog/examples/` — only admitted contracts and public evidence;
-- `catalog/review/` (and an optional external review tree) — candidate contracts,
-  candidate code, audit verdicts and human-review records; never installed.
+- `catalog/review/` (and an optional external review tree) — candidate contracts
+  and candidate code; never installed.
 
 A candidate moves in this order:
 

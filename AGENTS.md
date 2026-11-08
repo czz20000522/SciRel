@@ -64,6 +64,10 @@ python3 scripts/dev_container.py pytest tests/<domain>/test_<asset>.py
 [`scirel-acceptance` skill](skills/development/scirel-acceptance/SKILL.md)，改代码前先读它。
 不再维护 WSL、Windows 或 macOS 专属的隐藏测试环境。
 
+作放行依据的那次完整检查必须独占引擎：跑之前确认 `docker ps` 里没有其他容器，跑完记录当时是独占。
+并行容器只用于开发期局部验证，结果不写进 PR 证据，也不据此判红判绿。`tests/docs` 的 Sphinx 夹具在并发
+内存压力下会在 setup 阶段失败，那是假红，不是代码缺陷；遇到这种红先确认引擎是否被别的容器占着。
+
 ## 写入边界
 
 - 一个 agent 只能修改分配给它自己的 worktree 和 issue 明确要求的仓库内路径。

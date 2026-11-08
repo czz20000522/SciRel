@@ -68,7 +68,8 @@ cause and regression result in the existing task/evidence record. A rejected
 package with no continuing use is then removed immediately; retaining a whole
 wheel/docs/partial tree is not failure evidence. Builders stage outputs and roll
 back owned partial outputs on failure without touching pre-existing targets.
-Keep only genuinely needed human-review evidence in the existing review record.
+Keep only genuinely needed audit evidence, in the tests the contract names and in
+the contract's `verification` block.
 
 Task handoffs end when the recipient has taken over; problem notes end when the
 problem is resolved. Transfer necessary conclusions into the existing canonical

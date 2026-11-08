@@ -147,7 +147,8 @@ def test_composition_yaml_bytes_are_locked():
     assert hashlib.sha256(payload).hexdigest() == LOCKED_COMPOSITION_SHA256
 
 
-# 验证：现存快照与合同 composition 不是同一版，资产因此仍在 hold。
+# 验证：现存快照与合同 composition 不是同一版。资产因此不进公开 catalog，
+# 只留在 catalog/review/examples/ 与 excluded_from_package.json 里。
 # 这条不判断哪一版正确，只把"两者不同版"变成机器可见的事实。
 def test_composition_yaml_is_not_the_admitted_artifact():
     text = Path(__file__).with_name("composition.yaml").read_text(encoding="utf-8")
