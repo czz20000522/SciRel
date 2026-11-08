@@ -32,7 +32,7 @@
  "asset_id": "scirel.kinetic.fluid-em-spectrum",
  "example": {
   "code": "from scirel.kinetic.fluid_spectrum import derive_fluid_case,solve_fluid_em\ns=derive_fluid_case('em',2)\nr=solve_fluid_em(2,8,0,[.83*s['wn'].item()])\n",
-  "description": "Pure Python/NumPy implementation; executes on this macOS host without the reference runtime.",
+  "description": "API-shape example with max_harmonic=0; N=0 does not demonstrate a converged physical spectrum.",
   "expected": "PASS: the example runs locally and returns the declared output structure."
  },
  "failure_semantics": {
@@ -118,15 +118,15 @@
   }
  },
  "schema": "scirel.asset-document",
- "summary": "Compose EM cases, corrected finite matrices and original-order spectra with bounded numerical evidence.",
+ "summary": "Compose EM cases, corrected finite rational matrices and heuristic candidate spectra with explicit model/evidence ceilings.",
  "taxonomy": [
   "kinetic",
   "plasma-waves",
   "fluid-dispersion"
  ],
  "title": {
-  "en": "Corrected EM finite spectra and candidates",
-  "zh": "修正的 EM 有限谱及候选"
+  "en": "EM finite rational-model spectra with candidate selection",
+  "zh": "EM 有限有理模型谱与候选选取"
  },
  "verification": {
   "evidence_ceiling": "Bounded to the J8/J12 EM spectra with all eight N controls and the source-default frequency axis. Evidence: `test_fluid_spectrum_full.py` contains 9 test functions, 2 of which reference `solve_fluid_em`, and is shared by 6 assets; only shared-file coverage is bound, so a pass is file-level rather than asset-isolated; the bounded example was executed by this audit. Oracle: self-consistency/regression only. It does not establish that every auxiliary eigenvalue is a kinetic physical mode, or infinite-mode completeness.",

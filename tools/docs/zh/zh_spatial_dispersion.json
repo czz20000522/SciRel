@@ -281,11 +281,11 @@
     }
    ],
    "example": {
-    "description": "在 EM 算例 2 上取 omega=0.83wn，以 J8 和 max_harmonic=0 组装有限矩阵。",
+    "description": "API 形状示例（max_harmonic=0）；N=0 不作为矩阵收敛到精确动理学介电的证据。",
     "expected": "返回 M 为 40×40、N=0 的映射，并含 poles、state 与 omega。"
    },
    "asset_id": "scirel.kinetic.fluid-em-matrix",
-   "source_sha256": "282ba42741718a42d44f6b27a1170c42c2d70966b8f5ea5b0d4aed35091f37f4",
+   "source_sha256": "93d5129d2a9545fe19033835df8482e065177dd5da50403ec675dfcbc6d1ddbc",
    "model": "均匀磁场沿 z 轴，波矢为 (kx,0,kz)；静止、各向同性 Maxwell 分布等离子体及明确声明的数值近似。",
    "boundary": "均匀线性响应，采用 SI 制及 exp(i k·x−i omega t)，回旋频率和半径带符号；真正共振与可去奇点的解析极限分别处理。",
    "assumptions": [
@@ -360,7 +360,7 @@
     "expected": "返回完整诊断映射；root_valid 为 [[True]]，nf≈-7.67e-12+1304.24j m^-1，xx≈1.108e11 rad/s。"
    },
    "asset_id": "scirel.kinetic.fluid-bonk-search",
-   "source_sha256": "8738eb05a092c2c2d11cc846f38f1d230b2063f78b28a40427f0e36df9b8c542",
+   "source_sha256": "f0dcb1c633d731ceaf5cdc6fb5e4f10d0813dc50d41da917683f7ac71b3c7c71",
    "model": "均匀磁场沿 z 轴，波矢为 (kx,0,kz)；静止、各向同性 Maxwell 分布等离子体及明确声明的数值近似。",
    "boundary": "均匀线性响应，采用 SI 制及 exp(i k·x−i omega t)，回旋频率和半径带符号；真正共振与可去奇点的解析极限分别处理。",
    "assumptions": [
@@ -374,8 +374,8 @@
      "合同声明使用 SciRel 的 Python 3.14、NumPy 2.5.4 与 SciPy 1.18.1 环境；Linux amd64 本地运行时仍是声明要求。"
     ],
     "supported": [
-     "三个完整算例及默认的 77 个频率；也允许任意符合合同的有限频率轴。",
-     "沿用求解器原有容差，并显式记录有界尝试与根核验。"
+     "三个完整算例及默认的 78 个频率；也允许任意符合合同的有限频率轴。",
+     "沿用 SciPy hybr 数值容差（xtol=1e-12，maxfev=100），并显式记录有界尝试与根核验。"
     ],
     "excluded": [
      "不提供分支追踪、全部物理模态枚举或无条件收敛保证。"
@@ -389,8 +389,8 @@
    },
    "verification": {
     "scope": [
-     "三个完整算例及默认的 77 个频率；也允许任意符合合同的有限频率轴。",
-     "沿用求解器原有容差，并显式记录有界尝试与根核验。"
+     "三个完整算例及默认的 78 个频率；也允许任意符合合同的有限频率轴。",
+     "沿用 SciPy hybr 数值容差（xtol=1e-12，maxfev=100），并显式记录有界尝试与根核验。"
     ],
     "known_limitations": [
      "BONK 返回每次尝试的行；若无根通过声明的残差门限，会返回 `root_valid=false` 的未验证行；该行是搜索候选而非物理根。",
@@ -406,7 +406,7 @@
    ]
   },
   {
-   "summary": "组合 EM 算例、修正后的有限矩阵与按原始次序排列的谱，并附带有限的数值证据。",
+   "summary": "组装 EM 算例、修正的有限有理矩阵与启发式候选谱，并明确模型与证据边界。",
    "definition": "返回全部有限矩阵本征值；按正实部及较小虚部绝对值启发式选取五个候选，返回 `eigenvalues`、有限谱计数和启发式候选；`eigenpair_residuals_computed=false`，不计算物理资格门。",
    "inputs": [
     {
@@ -443,11 +443,11 @@
     }
    ],
    "example": {
-    "description": "在 EM 算例 2 上对一个频率点计算有限矩阵谱并选取五个候选。",
+    "description": "API 形状示例（max_harmonic=0）；N=0 不作为收敛物理谱的证据。",
     "expected": "返回 kxx 形状为 (1,5) 的谱映射，并含 roots、matM、spectra 与 eigen_diagnostics。"
    },
    "asset_id": "scirel.kinetic.fluid-em-spectrum",
-   "source_sha256": "ff718e0422d2a436d16eb2217456ec11f90fdc83a00ab92db22350eface621e0",
+   "source_sha256": "33c4895c11479d60c1157a8824ec6895363c4d8394c56c75bdf7aa77051da06d",
    "model": "均匀磁场沿 z 轴，波矢为 (kx,0,kz)；静止、各向同性 Maxwell 分布等离子体及明确声明的数值近似。",
    "boundary": "均匀线性响应，采用 SI 制及 exp(i k·x−i omega t)，回旋频率和半径带符号；真正共振与可去奇点的解析极限分别处理。",
    "assumptions": [
@@ -462,7 +462,7 @@
     ],
     "supported": [
      "两个算例、J8/J12、全部八个 N 控制和默认 79 个频率。",
-     "全部有限谱、按原始次序排列的值、候选及末端矩阵。"
+     "全部有限谱、按原始次序排列的值、每频率候选、末端矩阵（`matM`、`roots`、`w`、`eigen_diagnostics` 只对应最后一个给定频率；每频率数据在 `kxx`、`spectra`、`selected_candidates`、`diagnostic_rows`）。"
     ],
     "excluded": [
      "不把全部辅助本征值认定为动理学物理模态，不保证无限模态完备性或跨线程不变性。"
@@ -477,7 +477,7 @@
    "verification": {
     "scope": [
      "两个算例、J8/J12、全部八个 N 控制和默认 79 个频率。",
-     "全部有限谱、按原始次序排列的值、候选及末端矩阵。"
+     "全部有限谱、按原始次序排列的值、每频率候选、末端矩阵（`matM`、`roots`、`w`、`eigen_diagnostics` 只对应最后一个给定频率；每频率数据在 `kxx`、`spectra`、`selected_candidates`、`diagnostic_rows`）。"
     ],
     "known_limitations": [
      "直接绑定的函数是六资产共享文件 `test_fluid_spectrum_full.py` 中的 `test_status_and_complete_finite_spectrum_are_explicit` 与 `test_multifrequency_em_preserves_each_nested_diagnostic_array`；另有专门的 `test_fluid_em_diagnostics.py` 检查实测逆矩、退役字段和公开嵌套结构。",
@@ -491,7 +491,11 @@
    "source_conflicts": [
     "applicability.preconditions 同时要求 Linux amd64 上的本地运行时 7.3.0 和 SciRel 的 Python 3.14/NumPy 2.5.4/SciPy 1.18.1 环境，并重复声明需要 Linux amd64；本实现为纯 Python/NumPy/SciPy，示例已在本机 macOS 直接运行。该前置条件与实现不一致，待合同修订。",
     "definition 原称物理状态相似缩放后的后向误差门槛不超过 2e-12；旧的后向误差字段和 2e-12 物理门槛未计算，已退役；当前返回 `eigenpair_residuals_computed=false`，保留真实本征值、有限谱计数与启发式选择。"
-   ]
+   ],
+   "title": {
+    "en": "EM finite rational-model spectra with candidate selection",
+    "zh": "EM 有限有理模型谱与候选选取"
+   }
   }
  ]
 }
