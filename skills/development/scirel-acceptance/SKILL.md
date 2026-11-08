@@ -27,6 +27,14 @@ instead of looking for a shortcut, and expect two pushes on a branch to pay it t
 
 It runs the full test suite, the review registry gate, contract signatures and examples, the docstring and contract sync check, the scan for new hazard patterns, the documentation build, the report validator on every solved example, the lockfile check, and a wheel build with its exposure check.
 
+## 让检查结果能被复核
+
+要当证据的那次检查，执行命令里不许接管道。写成 `python3 scripts/dev_container.py check > /tmp/check.log 2>&1; echo EXIT=$?`，先拿到真实退出码，再看日志里的细节。`a | b` 的退出码是 `b` 的，而 `tail`、`grep`、`tee` 正常结束一律返回 0，检查失败会被读成成功——#117 的批跑里就有人写成 `check 2>&1 | tail -20`，一次真实的失败报出了 0。管道留给事后读已经落盘的日志用（`tail -20 /tmp/check.log`），不要出现在执行检查的那一条命令里。
+
+退出码非 0 时，把完整输出留下来再报，不要只贴尾部。`tail` 挑出来的那几行往往正好丢掉"哪一步失败、为什么失败"，评审拿到一段像成功的尾巴，比没有日志更难判。要看重点，也是在完整输出之外另附摘要，不能拿摘要替换输出。
+
+这两条是同一个病根：为了看得方便，把判断依据裁掉了。而判断依据一裁掉就没有第二份能还原——这次运行同时会覆盖上一次的判定依据，容器里重建的虚拟环境、wheel 和文档输出都已经是这一次的状态，事后只剩这一个退出码和这一份完整日志。收窄成几十行，等于把"这一次过没过"和"上一次是什么结论"一起丢掉；等到有人回头核对，既补不出当时的输出，也复现不出当时的结论。放行用的那次完整检查还必须独占引擎，见 `AGENTS.md` 的「环境和验收」段，这里不重复。
+
 ## Docstring and contract: one source of truth
 
 For each operator, the code signature and its numpydoc docstring are the source of truth for parameter names, order, defaults, units, return entries, raised exceptions and the example. The JSON contract keeps what is only for agents (model, scope, applicability, failure semantics, evidence, limitations), and its fields that overlap the docstring are derived from it. When you change one, change the other in the same commit.
