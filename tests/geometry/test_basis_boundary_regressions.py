@@ -59,3 +59,14 @@ def test_basis_matrix_accepts_zero_clamped_endpoint_slopes():
 def test_spline_basis_rejects_too_few_knots():
     with pytest.raises(ValueError, match="n_knots must be at least 3"):
         basis.BasisMatrix("clamped_cubic_spline2", n_knots=1)
+
+
+def test_basis_matrix_forwards_keywords_to_spline_columns_and_polynomial_rejects_them():
+    matrix = basis.BasisMatrix("clamped_cubic_spline2", n_knots=5)
+    domain = np.linspace(0.0, 1.0, 4)
+    forwarded = matrix(domain, deriv=1)
+    expected = np.column_stack([fn(domain, deriv=1) for fn in matrix.basis_fns])
+    np.testing.assert_array_equal(forwarded, expected)
+    assert not np.array_equal(forwarded, matrix(domain))
+    with pytest.raises(TypeError):
+        basis.BasisMatrix("poly")(domain, deriv=1)

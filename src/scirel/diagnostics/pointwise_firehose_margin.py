@@ -18,7 +18,9 @@ def _margin_kernel(magnetic_field, mu0, p_perp=0.0, p_parallel=0.0, derivative=N
     contributions reduce the result to at most half the largest contribution,
     at least one leading binary magnitude bit is lost: evaluate that sample as
     an exact rational expression, then round once. This arithmetic switch is
-    not a physical tolerance, a clamp, or a zero-pressure special case.
+    not a physical tolerance, a clamp, or a zero-pressure special case. The
+    ``np.maximum`` calls only form the cancellation scale; they do not clamp the
+    returned value.
     Intermediate overflow/underflow also takes the exact path; only a genuinely
     unrepresentable final result fails. Non-cancelling normal values retain
     their ordinary floating-point rounding.

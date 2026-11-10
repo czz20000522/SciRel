@@ -43,7 +43,13 @@ def _map_axes(r_m, z_m):
 
 
 def _interpolation_coordinates(r_axis, z_axis, radii, axial):
-    """Return cell indices and normalized coordinates for bilinear evaluation."""
+    """Return cell indices and normalized coordinates for bilinear evaluation.
+
+    A query on or outside the last axis entry selects the final interval because
+    ``searchsorted`` then reports the last index and ``index + 1`` must stay inside
+    the axis. The clamp chooses a stencil, not a value; the caller has already
+    clamped the query coordinate onto the closed map box.
+    """
     r_index = np.clip(np.searchsorted(r_axis, radii, side="right") - 1, 0, r_axis.size - 2)
     z_index = np.clip(np.searchsorted(z_axis, axial, side="right") - 1, 0, z_axis.size - 2)
     r_fraction = (radii - r_axis[r_index]) / (r_axis[r_index + 1] - r_axis[r_index])

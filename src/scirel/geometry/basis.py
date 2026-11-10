@@ -13,7 +13,12 @@ import numpy as np
 
 
 def _lazy_special(name):
-    """Resolve an optional SciPy special function only when it is called."""
+    """Resolve an optional SciPy special function only when it is called.
+
+    The returned callable forwards its positional and keyword arguments unchanged
+    to the named ``scipy.special`` function, so the arguments it accepts are that
+    function's, not this module's.
+    """
 
     def _call(*args, **kwargs):
         from scipy import special
@@ -97,7 +102,13 @@ def _solve_natural_slopes(x_step, y_step):
 
 
 def _hermite_values(x_value, x_data, y_data, slopes, deriv):
-    """Evaluate one Hermite spline for an arbitrary shaped query array."""
+    """Evaluate one Hermite spline for an arbitrary shaped query array.
+
+    A query exactly at the last knot falls in the final interval: ``searchsorted``
+    reports ``x_data.size - 1``, which is clamped to ``x_data.size - 2`` so that
+    ``interval + 1`` stays inside the sample table. The clamp chooses a stencil,
+    not a value; the Hermite form is already exact at the shared endpoint.
+    """
 
     query = np.array(x_value, dtype=float)
     result = np.zeros_like(query)
@@ -659,6 +670,7 @@ def build_basis(basis="poly", **kwargs):
 
 
 def _poly_basis(**kwargs):
+    """Build polynomial evaluators; an unknown keyword is rejected, not ignored."""
     poly_deg = kwargs.pop("poly_deg", 3)
     coeffs = kwargs.pop("coeffs", None)
     if kwargs:
@@ -670,6 +682,7 @@ def _poly_basis(**kwargs):
 
 
 def _spline_basis(spline_fn, **kwargs):
+    """Build spline evaluators; leftover keywords go to the selected spline class."""
     if spline_fn is ClampedCubicSpline:
         yp = np.asarray(kwargs["yp"] if "yp" in kwargs else (0.0, 0.0), dtype=float)
         if np.any(yp != 0.0):
@@ -803,6 +816,21 @@ class BasisMatrix(object):
         return self._basis_dim
 
     def __call__(self, domain, **kwargs):
+        """Evaluate every basis column at ``domain``.
+
+        Parameters
+        ----------
+        domain : real array-like
+            Query coordinates, evaluated by each basis function in factory order.
+        **kwargs : object, optional
+            Forwarded unchanged to each basis evaluator. Polynomial bases accept no
+            keyword arguments, so ``deriv`` is valid only for spline selections.
+
+        Returns
+        -------
+        matrix : ndarray of float64, shape (len(domain), K)
+            Basis values, one column per evaluator.
+        """
         result = np.zeros((len(domain), self._basis_dim))
         for index, fn in enumerate(self._basis_fns):
             result[:, index] = fn(domain, **kwargs)

@@ -29,6 +29,13 @@ def _axes(r_grid, z_grid):
 
 
 def _cell_indices(axis, values):
+    """Return the lower cell index per value, clamped onto the closed axis box.
+
+    ``searchsorted(..., side="right") - 1`` selects the interval containing each
+    value; values at or beyond the last node would report the last index, so the
+    result is clamped to ``axis.size - 2`` and ``index + 1`` stays inside the axis.
+    The clamp chooses a stencil, not a value.
+    """
     return np.clip(np.searchsorted(axis, values, side="right") - 1, 0, axis.size - 2)
 
 

@@ -139,7 +139,8 @@ def _sample_fieldline(vertices, R, Z, Q, method, filter_nonfinite):
             spline = RectBivariateSpline(z_axis, r_axis, values, kx=3, ky=3, s=0)
             result[inside] = spline.ev(query_z[inside], query_r[inside])
             # FITPACK interpolation should reproduce supplied nodes exactly,
-            # including a zero value at a node.
+            # including a zero value at a node. The index clamp only locates the nearest
+            # node of an inside query; it is not a value clamp.
             r_index = np.clip(np.searchsorted(r_axis, query_r), 0, r_axis.size - 1)
             z_index = np.clip(np.searchsorted(z_axis, query_z), 0, z_axis.size - 1)
             at_node = inside & (query_r == r_axis[r_index]) & (query_z == z_axis[z_index])
@@ -181,6 +182,8 @@ def _curve_curvature(vertices, br, bz):
     offsets = np.arange(width)
     target_moment = np.zeros(width)
     target_moment[1] = 1.0
+    # The moving window needs ``width`` rows, so its start is clamped onto the closed
+    # range of valid starts. The clamp chooses which samples are fitted, not a value.
     starts = np.minimum(
         np.maximum(np.arange(points.shape[0]) - width // 2, 0), points.shape[0] - width
     )
