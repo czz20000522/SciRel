@@ -12,18 +12,17 @@ A change is done only when the checks here pass. Run them yourself; do not assum
 | Moment | Command | What it covers | Time |
 | --- | --- | --- | --- |
 | While working | `python3 scripts/dev_container.py shell`, then run `python -B scripts/test_scope.py --changed <path>` and the command it prints | The affected tests | Seconds to minutes |
-| Before asking for review | `python3 scripts/dev_container.py check` on the host-native container architecture | Full local acceptance and merge evidence, fastest on Apple Silicon arm64 | About 5 minutes on native CPU |
+| Before each commit | `git commit`; the hook runs `precommit_check.py` with the host `python3` | Private paths and secrets in staged text | Under a second |
+| Before asking for review, and before saying a change is done | `python3 scripts/dev_container.py check` on the host-native container architecture | Full local acceptance and merge evidence, fastest on Apple Silicon arm64 | About 5 minutes on native CPU |
 | Optional cross-device spot check | Manually dispatch the `Cross-device check` workflow | Same full acceptance on Linux/amd64 | About 5-15 minutes |
-| Before each commit | `python3 scripts/dev_container.py precommit` | Lint and format on staged Python, no private paths or secrets in staged text | Seconds |
-| Before each push, and before saying a change is done | `python3 scripts/dev_container.py check` | Everything listed below | About 5 minutes |
 
 `check_all.py` prints `ALL GREEN` when everything passes. Any other ending means the tree is not green.
 
 It prints the time of each step and takes about five minutes. Much longer means the machine is busy: look for other runs before suspecting the code. Only one run per checkout is allowed. Run it in the foreground, so that you see the result.
 
-Every push runs the complete check. No result is cached and no earlier run is reused: the tree you
-push is the tree that gets checked, in the same container, every time. Budget the five to ten minutes
-instead of looking for a shortcut, and expect two pushes on a branch to pay it twice.
+A push runs nothing: there is no `pre-push` hook, so pushing is cheap and proves nothing. The
+complete check runs when you run it, on the commit you intend to merge. No result is reused: a tree is
+green only for the commit that was checked.
 
 It runs the full test suite, contract signatures and examples, the docstring and contract sync check, the scan for new hazard patterns, the documentation build, the report validator on every solved example, the lockfile check, and a wheel build with its exposure check.
 
@@ -54,11 +53,11 @@ metadata for that clone and reused by all linked worktrees; `SCIReL_DOCKER_CONTE
 Missing, empty, and `default` contexts fail closed so a command cannot silently land in another project's VM.
 `doctor` prints the selected context and the engine identity it reached.
 
-The hooks call the same container entry point: the staged-file check on `git commit` and the full check on
-`git push`. A push containing only remote-ref deletions skips the full check because it uploads no source tree;
-mixed deletion/update pushes and normal updates still require acceptance. Hooks are a safety net, not a
-replacement for running the checks yourself. Do not bypass them with `--no-verify`. If a hook is wrong,
-fix the hook.
+The `pre-commit` hook scans staged text on the host, with the host `python3 -I`, the standard library and
+`git` only; it starts no container, so a documentation commit works with the Docker engine stopped. It does
+not run lint or format: those belong to the complete check, where they gate what is merged rather than what
+is saved. Hooks are a safety net, not a replacement for running the checks yourself. Do not bypass them with
+`--no-verify`. If a hook is wrong, fix the hook.
 
 Before any development-container command, the wrapper inspects the common repository-local Git config
 without relying on Git worktree discovery. A repository-local `core.worktree` is rejected with the
