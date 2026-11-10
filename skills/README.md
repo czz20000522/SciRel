@@ -8,6 +8,8 @@ SciRel has three roles. Each has one entry skill and its own acceptance standard
 | **Merger** | Brings candidates into the library: admission, contract, tests, review, documents | [`scirel-integration`](development/integration/scirel-integration/SKILL.md) | [`scirel-acceptance`](development/scirel-acceptance/SKILL.md) is green, code follows [`scirel-code-style`](development/scirel-code-style/SKILL.md), and the contract, implementation and tests agree |
 | **Consumer** | A user's agent answers a question with the delivered package | [`scirel-solving`](development/usage/scirel-solving/SKILL.md) | The report passes its validator and a physicist can follow it; [`scirel-outbound-evaluation`](development/scirel-outbound-evaluation/SKILL.md) measures this for maintainers |
 
+> Supply and integration are currently frozen: no new assets are accepted while the backlog is paid down. See [AGENTS.md「当前状态」](../AGENTS.md#当前状态).
+
 ## Audience
 
 - **`development/usage/`** is delivered to every user's agent. It holds only general method and speaks to any user. It never mentions evaluation, cases, repository files or catalog sizes.

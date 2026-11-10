@@ -90,11 +90,17 @@ in a table next to the contracts.
 
 ## 6. Correctness and competitive value
 
-- Correctness is the product. An unverified capability has no reason to exist;
-  users can use the mature source project instead.
-- Coverage never justifies invented behavior, silent fallbacks or hidden failures.
-- Prefer the longest available evidence chain: source parity, independent oracle,
-  analytic invariant, boundary probe, or an explicit evidence gap.
+- 正确性是产品本身。没有证据的能力没有存在的理由；用户可以改用成熟的上游项目。
+- 覆盖面永远不能成为编造行为、静默兜底或隐藏失败的借口。
+- **物理正确优先于与来源一致。** 与来源一致只证明“和来源一样”，不证明“物理正确”。
+  能修成物理上正确的版本，就必须修。
+- 判定“来源错了”必须先拿出依据：文献、解析推导或独立数值对照，并说明为什么它不是
+  来源有意采用的物理近似或约定。有依据就改，不因为“与来源不同”而保留错误。
+- 拿不出依据的，不改实现：把疑点写进合同的局限性，并在 issue 里记录，等证据出现。
+- **物理争议靠证据裁决。** 意见不一致时，谁能拿出证据说服对方，就按谁的来；双方都拿
+  不出证据的，标为未定，不改代码。讨论留在 GitHub 的 issue 或 PR 评论里。
+- 优先选择最长的证据链：独立 oracle、解析不变量、边界探针、来源一致，或明确声明证据
+  缺口。来源一致只是其中一环，不能单独证明物理正确性。
 
 ## 7. Capability thinking, not LOC thinking
 
@@ -141,7 +147,7 @@ candidate.
 - Source identity is not part of the published repository. Do not add a provenance
   ledger, source audit, or checkout path to the public tree.
 - Source identity is not a discovery label or a public API promise.
-- A source-parity note is not a physical-correctness claim.
+- A source-parity note is not a physical-correctness claim (see §6).
 
 ## 10. Storage and publication
 
