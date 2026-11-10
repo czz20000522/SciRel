@@ -22,7 +22,7 @@ file in this repository; chat-only knowledge is not durable.
 | Docs/API/bilingual/review/publish rules | `tools/docs/manual/README.md`, `tools/docs/` |
 | Agent working conventions, required reading, current state | `AGENTS.md` |
 | Solving workflow, physical method, report format | `skills/development/usage/scirel-solving/references/` |
-| Decomposition methodology, candidate/info/delivery boundaries | `skills/extraction/scientific-computation-asset-extraction/references/` |
+| Extraction method and package format | `skills/extraction/scientific-computation-asset-extraction/`, rationale in `docs/maintainer/supply-pipeline.md` |
 | Decisions and rationale | the commit that makes the change, plus the canonical file it changes |
 | Generated publish artifacts | `dist/` (gitignored); never a source of truth |
 | Runtime work, probes, intermediate containers | execution environment; disposable |
@@ -106,17 +106,20 @@ in a table next to the contracts.
 
 - Decompose and organize by scientific capability, operator/function or
   composition/task graph, never by lines of code, file count or directory shape.
-- Decomposition is a proactive supply line; it does not wait for a demand map.
-  Produce a complete candidate inventory, preserve uncertain candidates, and let
-  the receiver choose.
-- 10-20% is a receiver-side expectation, not an extraction quota or a LOC target.
+- Extraction takes the skeleton, not everything: the core physical relations on
+  the source's main computational path, plus side relations that are reusable on
+  their own. Every part not taken gets one disposition line with a reason, so a
+  deliberate omission can be told apart from a miss.
+- Extraction compares each relation with the frozen SciReL contracts and
+  implements only the complement.
 
 ## 8. Information boundaries
 
-- Decomposition workers know the source, methodology, capability definitions and
-  delivery format; not the receiver catalog/roadmap/acceptance decisions.
-- Receiver workers know the self-contained package, contracts/tests/evidence and
-  local acceptance rules; not source identity or decomposition history.
+- Extraction workers know the source, the method, and a frozen SciReL commit
+  with its contracts, API rules and checks.
+- Receiver workers know the extraction package, contracts, tests, evidence and
+  local acceptance rules; not source identity, which stays in the package's
+  `private/` part.
 - The source, maintenance and outbound lines are independent. A general outbound
   agent consumes the static package without sending its private program, task
   graph or gap list back to the maintainer. An optional coordinator may track

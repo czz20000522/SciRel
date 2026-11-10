@@ -1,30 +1,11 @@
-# SciRel decomposition skill bundle
+# 拆解与出题
 
-## 来源侧需求题库
+两个入口彼此独立：
 
-[`scientific-requirements-extraction`](scientific-requirements-extraction/SKILL.md)
-是独立入口：从冻结源码、论文与案例盘点物理能力，
-估算需求题数量与投入，并生成来源中立的题面、私有参考复现及覆盖缺口记录。
-它不审查算法正确性、不接收入库，也不自动恢复 D0–D3 拆解；不属于下述固定七入口交付包。
+| 入口 | 做什么 | 产物 |
+| --- | --- | --- |
+| [`scientific-computation-asset-extraction`](scientific-computation-asset-extraction/SKILL.md) | 从来源中找出骨架，与冻结版 SciReL 比对取补集，按最终形态实现 | 拆解包（补丁加说明材料），交给合并线 |
+| [`scientific-requirements-extraction`](scientific-requirements-extraction/SKILL.md) | 从来源、论文和案例出题 | 能力题（题面加隐藏测试），进入题库 |
 
-## D0–D3 拆解包
-
-This directory is the standalone D0-D3 decomposition package. Give the bundle,
-the target project and an authorized Codex/Claude execution environment to a
-worker; the result is a digest-bound decomposition packet for a separate
-development owner.
-
-The extraction `SKILL.md` is the first instruction an extraction worker reads.
-It carries the phase card, dynamic probe, boundary-test matrix and handoff
-requirements. The reference files explain a method when a step needs detail;
-they are not a substitute for the executable skill protocol.
-
-The D0/D1 entrypoints preserve source intake, extraction, operator review and relation implementation. Computation validation and runtime dataset construction are shared canonical routes under `../development/`; extraction calls them in D1/source-fidelity mode. The two stage entrypoints add D2 claim decomposition and D3 application observation. They emit raw material and evidence only. They do not import a development checkout, merge candidates, modify a user project, approve, publish or release.
-
-Stage standards live in this skill bundle. The final submission is governed by
-SciRel's admission contract (`contracts/admission/`): one `decomposition/FINAL/`
-directory with `FINAL.json`, `FILES.json`, `PATH_MAP.json` and `ROOT.sha256`, no
-version-suffixed schema and no required D0-D3 package records. See the live
-receiver contract in `../contracts/admission/`.
-
-A bundle digest proves the payload, not scientific truth or downstream acceptance.
+题库和拆解互不依赖：有题库时，拆解可以优先拆有题的能力；没有题库时，拆解照常进行。
+设计理由见 [`docs/maintainer/supply-pipeline.md`](../../docs/maintainer/supply-pipeline.md)。

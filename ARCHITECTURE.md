@@ -11,8 +11,8 @@ a second catalog, runtime protocol or acceptance standard.
 SciReL work is divided into three independent responsibilities:
 
 ```text
-source line      source behavior -> neutral candidate packet
-maintenance line candidate packet -> static SciReL asset
+source line      source + frozen SciReL -> extraction package (patch in final form)
+maintenance line extraction package -> static SciReL asset
 outbound line    user requirement + static SciReL -> user-owned program and result
 ```
 
@@ -24,25 +24,25 @@ any other agent.
 
 ### Source line
 
-The source line extracts observable behavior from a frozen source or source
-slice. Its candidate packet may contain operators, a source behavior task graph,
-inputs, outputs, state transitions, failure paths and correctness evidence. It
-does not choose SciRel asset IDs, public taxonomy, final aliases or receiver
-roadmap decisions.
-
-The source line may be invoked without any user question or benchmark problem.
-In that case it builds a source inventory and provisional scientific boundaries
-from the source itself. It records what is observed, what is an independently
-meaningful relation, and which projection decisions remain unresolved. A source
-specific orchestration is not automatically “glue”: glue is a consumer-context
-classification made when a user task or public contract is available.
+The source line works in its own container with the source material and a
+frozen SciReL commit. It finds the core physical relations of the source (its
+skeleton), compares each with the frozen contracts, and implements only the
+complement directly in SciReL's final form: asset IDs, domain, layer, model
+family, names and contracts follow the current API rules. Its product is an
+extraction package: a patch against the frozen commit plus manifest, evidence,
+disposition and tickets. It passes the same checks as the maintenance line
+before it is archived, and it can be resumed by any later agent. The package
+format and method are in
+[`docs/maintainer/supply-pipeline.md`](docs/maintainer/supply-pipeline.md) and the
+[extraction skill](skills/extraction/scientific-computation-asset-extraction/SKILL.md).
 
 ### Maintenance line
 
-The maintenance line admits self-contained candidate packets and maintains the
-public implementation, tests, contract, discovery projection, dependencies and
-documentation. It decides whether a candidate is a leaf operator, a public
-composition, a variant or an internal implementation. It does not inspect a
+The maintenance line consumes extraction packages and maintains the public
+implementation, tests, contract, discovery projection, dependencies and
+documentation. It rebases the patch, runs the checks and reviews; it does not
+rewrite a package. A package that fails goes back to a new extraction agent
+with a defect list. It does not inspect a
 user's private outbound program and does not require outbound feedback to make
 the package usable.
 
