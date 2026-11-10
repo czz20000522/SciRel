@@ -1,6 +1,6 @@
 import numpy as np
 
-from scirel.kinetic.mirror_invariant_distribution import (
+from scirel.mirror.mirror_invariant_distribution import (
     evaluate_mirror_invariant_distribution,
     evaluate_mirror_invariant_distribution as scientific_function,
 )

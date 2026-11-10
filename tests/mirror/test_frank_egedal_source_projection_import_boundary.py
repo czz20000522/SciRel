@@ -20,8 +20,8 @@ def test_source_projection_defers_scipy_until_quadrature_is_needed() -> None:
             "-c",
             """
 import sys
-from scirel.kinetic import project_frank_egedal_source_modes
-from scirel.kinetic.frank_egedal_source_projection import (
+from scirel.mirror import project_frank_egedal_source_modes
+from scirel.mirror.frank_egedal_source_projection import (
     project_frank_egedal_source_modes as direct,
 )
 

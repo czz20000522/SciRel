@@ -32,7 +32,7 @@ def evaluate_frank_egedal_radial_envelope(psi, *, psi_axis=None, psi_edge=None, 
         If numeric conversion of an input fails with a native TypeError.
     See Also
     --------
-    scirel.kinetic.assemble_frank_egedal_pressure
+    scirel.mirror.assemble_frank_egedal_pressure
         Assemble pressure fields using this radial envelope.
     Notes
     -----
@@ -41,7 +41,7 @@ def evaluate_frank_egedal_radial_envelope(psi, *, psi_axis=None, psi_edge=None, 
     Examples
     --------
     >>> import numpy as np
-    >>> from scirel.kinetic import evaluate_frank_egedal_radial_envelope
+    >>> from scirel.mirror import evaluate_frank_egedal_radial_envelope
     >>> psi = np.array([[-1.0, 0.0, 0.5], [1.0, 1.5, 2.0]])
     >>> r = evaluate_frank_egedal_radial_envelope(
     ...     psi, psi_axis=0.0, psi_edge=1.0, alpha=2.0

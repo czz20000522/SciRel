@@ -212,8 +212,8 @@ nodes:
 - id: kinetic_moments
   name: 双温镜约束速度矩
   kind: scientific_function
-  callable: scirel.kinetic.mirror_constrained_moments::evaluate_mirror_constrained_moments
-  asset_ref: scirel.kinetic.mirror_constrained_moments
+  callable: scirel.mirror.mirror_constrained_moments::evaluate_mirror_constrained_moments
+  asset_ref: scirel.mirror.mirror_constrained_moments
   inputs: [b_t, psi, potential_v, mass_kg, charge_c, density_ref_m3, temperature_parallel_j, temperature_perpendicular_ref_j, b_ref_t, phi_ref_v, b_plug_left_t, b_plug_right_t, phi_plug_left_v, phi_plug_right_v, loss_cone_refill, quadrature_order]
   outputs: [density_m3, p_parallel_pa, p_perpendicular_pa, temperature_parallel_j, temperature_perpendicular_local_j, untruncated_density_m3, density_pitch_integral, parallel_pitch_integral, perpendicular_pitch_integral]
 - id: boltzmann_electron_response
@@ -233,8 +233,8 @@ nodes:
 - id: pressure_state_assembly
   name: 双温镜总压强状态组装
   kind: scientific_function
-  callable: scirel.kinetic.mirror_total_pressure::assemble_mirror_total_pressure
-  asset_ref: scirel.kinetic.mirror_total_pressure
+  callable: scirel.mirror.mirror_total_pressure::assemble_mirror_total_pressure
+  asset_ref: scirel.mirror.mirror_total_pressure
   inputs: [kinetic_moments, electron_state]
   outputs: [p_parallel, p_perpendicular, ion_density, ion_p_parallel, ion_p_perpendicular, electron_density, electron_pressure, relative_charge_residual, kinetic_moments]
 edges:

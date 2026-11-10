@@ -1,12 +1,12 @@
 import inspect
 
-from scirel.closures.mirror_quasineutral_closure import solve_mirror_quasineutral_closure
+from scirel.mirror.mirror_quasineutral_closure import solve_mirror_quasineutral_closure
 from cross_domain._review_bindings import load_asset as _load_asset
 # 覆盖：解析准中性、损失锥闭合、零密度回退与 caller profile(psi) 端口。
 
 import numpy as np
 
-from scirel.closures import mirror_quasineutral_closure as composition
+from scirel.mirror import mirror_quasineutral_closure as composition
 
 E = 1.602176634e-19
 M = 1.67262192595e-27
@@ -100,9 +100,9 @@ def test_final_moments_and_electrons_are_reevaluated_after_potential_solve():
     assert result["converged"] is True
     assert events[-4:] == [
         "solver_end",
-        "scirel.kinetic.mirror_constrained_moments",
+        "scirel.mirror.mirror_constrained_moments",
         "scirel.closures.boltzmann_quasineutrality",
-        "scirel.kinetic.mirror_total_pressure",
+        "scirel.mirror.mirror_total_pressure",
     ]
 
 
@@ -118,7 +118,7 @@ def test_solver_failure_propagates_without_terminal_pressure_assembly():
                 raise failure
 
             return fail
-        if asset_ref == "scirel.kinetic.mirror_total_pressure":
+        if asset_ref == "scirel.mirror.mirror_total_pressure":
 
             def unexpected(*_args, **_kwargs):
                 pytest.fail("terminal pressure assembly ran after solver failure")

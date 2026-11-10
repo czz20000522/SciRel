@@ -2835,7 +2835,7 @@
   },
   {
    "asset_id": "scirel.closures.mirror-quasineutral-closure",
-   "source_sha256": "af9b1d597968270db382fce01da191d42a231ea9b6a0e6846650662b0dcf8da2",
+   "source_sha256": "6efee0934134445e998f33a9869d10924cf7205fe509c69360c3dd7dc01c5a3b",
    "summary": "组合镜约束离子矩、Boltzmann 电子与有界电势二分求解，在最终电势重新计算物种状态并组装总压强。 顶层返回值是 scirel._result.Result 映射；非冲突字段支持属性读取。",
    "definition": "对活跃样本求解 log(Z_i*n_i(phi))-log(n_e(phi))=0，其中 Z_i=charge_c/e；离子矩来自镜约束双 Maxwell 分布，电子来自 Boltzmann 响应。两种参考密度均为正时活跃，均为零时保留离子参考电势。有限次扩展括区后至多二分 max_iterations 步。返回前重新计算离子和电子，核对求解器收敛状态及所有活跃样本的有限对数残差不超过容差，再把电子压强分别加到离子平行和垂直压强。 完整组合状态作为同一个 scirel._result.Result 映射返回；kinetic_moments 字段保持普通 dict。",
    "model": "单一正离子的守恒量双 Maxwell 模型，可选两端磁塞损失锥；电子温度预设，满足 Boltzmann 响应。这里只局部闭合电中性，不求解平衡磁场。",
@@ -3676,7 +3676,7 @@
   },
   {
    "asset_id": "scirel.kinetic.frank-egedal-radial-envelope",
-   "source_sha256": "56d67a5e35ce774e8d4941091f2834fab07a4fe69180edadb8fcc88a49fce97e",
+   "source_sha256": "016b3a097bbc822bab1990151ed14f8e9fd535884d3ddb544847c2b5505223cc",
    "summary": "在二维磁通网格上计算截断的幂律径向包络，参考磁通与指数由显式参数给出。",
    "definition": "令 u=clip((psi-psi_axis)/(psi_edge-psi_axis),0,1)，逐点返回 clip(1-u,0,infinity)^alpha。psi_axis 默认 min(psi)，psi_edge 默认 max(psi)，alpha 默认 1。允许有限非零磁通区间的两种方向。按 NumPy 零次幂约定，alpha=0 时整个网格均为 1，包括外侧端点。",
    "model": "Frank-Egedal 压强构造中由给定条件定义的径向乘子，不计算压强或平衡。",
@@ -3756,8 +3756,8 @@
      "独立解析对照不能替代外部实验参考。"
     ],
     "tests": [
-     "tests/kinetic/test_frank_egedal_radial_envelope.py",
-     "tests/kinetic/test_frank_egedal_radial_envelope_admitted.py"
+     "tests/mirror/test_frank_egedal_radial_envelope.py",
+     "tests/mirror/test_frank_egedal_radial_envelope_admitted.py"
     ]
    }
   },
@@ -4806,7 +4806,7 @@
   },
   {
    "asset_id": "scirel.kinetic.frank-egedal-pressure-state",
-   "source_sha256": "a430761166e4ed75593a07d4143faa06022b6715bad63e1a39e120007e051c80",
+   "source_sha256": "199e5522ff7e65dc4697585f66ad4562a35ba48b4496609c3a895e442e2d497c",
    "summary": "把径向包络、无量纲热离子矩形状与气体、密度、电子能量尺度组合成平行/垂直压强及可选密度和电子温度场。",
    "definition": "设 r 为径向包络，h_parallel、h_perp、h_n 为热离子形状。热压强尺度 p_hot=hot_pressure_scale（默认 1 Pa），气体压强尺度 p_gd=gas_dynamic_pressure（默认 0 Pa）。配置 gas_dynamic_density 或 hot_density_scale 时 n=r*gas_dynamic_density+r*h_n*hot_density_scale，只加入存在项；均无配置则 density=None，但电子压强内部使用零密度。配置 electron_temperature 时返回其常量网格并令 p_e=n*T_e，否则返回 None 且 p_e=0。最终 p_parallel=p_gd*r+p_e+p_hot*r*h_parallel，p_perp=p_gd*r+p_e+p_hot*r*h_perp。",
    "model": "从外部形状逐点组装 Frank-Egedal 压强状态，不计算源模态矩、径向包络或电子温度。",
@@ -4942,7 +4942,7 @@
      "独立解析对照不能替代外部实验参考。"
     ],
     "tests": [
-     "tests/kinetic/test_frank_egedal_pressure_state.py"
+     "tests/mirror/test_frank_egedal_pressure_state.py"
     ]
    }
   },
@@ -5610,7 +5610,7 @@
   },
   {
    "asset_id": "scirel.kinetic.grid-mirror-kinetic-closure",
-   "source_sha256": "1573eac11d7e2eb6a068b1ac3771824f07ff99e6b95846cdf5ceac5690423a11",
+   "source_sha256": "946af907398c6d3f37fe3df4e7ce9586abd88691ab9987eebbbdac9944bb74dc",
    "summary": "在 R-Z 网格选择参考面与两个磁塞面，经磁通剖面插值连接端损失和局部准中性闭合，并按需限制指定输出场。",
    "definition": "以所给 z 坐标的首个最近网格点确定左、参考、右三行，要求索引严格递增。把三行 B 及参考行 phi_ref 作为 psi 剖面插值到全网格。端算子默认求值给定磁塞电势，也可在 ambipolar_end_loss 模式分别求两端单向离子/电子电流平衡，再把参考行端电势按 psi 映射到全网格。嵌套镜准中性图求局部电势和压强；父图添加端诊断及旧版别名。可选限制只把磁塞行外指定顶层密度、压强、相对电荷残差置零。要求求端平衡时，未置 current_balance_solved 的端状态被拒绝。局部 converged 单独表示经终末残差验证的准中性结果。",
    "model": "单一正离子的双温镜矩闭合、预设温度的 Boltzmann 电子，以及独立端损失通量平衡。端电流平衡与局部准中性是不同计算，均不等于自洽 R-Z 磁平衡。",
@@ -7083,7 +7083,7 @@
   },
   {
    "asset_id": "scirel.kinetic.mirror-total-pressure",
-   "source_sha256": "87fc9f1ff7f418b9ee0cbe9579dfb87cdf3bbea747d0d8fe731ebbcb0c882270",
+   "source_sha256": "c63bae4b26678585fa402379eb6cbbdb1782500e0d8da3334b51e142319fb6b0",
    "summary": "将外供各向同性电子压力同时加到两种离子压力上，组装保留密度、残差、可选势和离子矩的末态。",
    "definition": "将压力、密度、残差及可选势共同广播，要求物种密度/压力有限非负、残差/势有限；两离子压力分别加电子压力并拒绝非有限和。返回浅拷贝，保留原 kinetic_moments 映射及验证后的原密度/残差/势对象。残差只作观测，不证明准中性。",
    "model": "镜动力学离子态与外供各向同性电子压的末态组装，不求压力、电子响应或准中性。",
@@ -7206,7 +7206,7 @@
      "未记录独立或外部 oracle；证据仅为自洽/回归。"
     ],
     "tests": [
-     "tests/kinetic/test_mirror_total_pressure.py",
+     "tests/mirror/test_mirror_total_pressure.py",
      "tests/cross_domain/test_mirror_kinetic_scientific_correction.py"
     ]
    },
@@ -8025,7 +8025,7 @@
   },
   {
    "asset_id": "scirel.closures.mirror-ambipolar-potential",
-   "source_sha256": "0c5cec163f1aa0b9521f387cf100d3cdcae787f1fd77161c5b3727d7c15511b0",
+   "source_sha256": "b2cc71ec7a05b6c38111c52c028d9a649e8e5db8a0dc9b787c21828101ffc679",
    "summary": "在指定端塞电势计算单向离子/电子端损通量，或逐磁面通过有界括区与二分求电荷加权通量平衡。 顶层返回值是 scirel._result.Result 映射；非冲突字段支持属性读取。",
    "definition": "每物种通量为 n sqrt(T_parallel/(2πm)) I(s,a) refill，s=(T_perpendicular/T_parallel)(B_plug/B_reference−1)，a=q(phi_plug−phi_reference)/T_parallel。I(s,a)=∫₀^∞ exp(−y−max(s y+a,0)) dy；s≥0 时，a≥0 为 exp(−a)/(1+s)，a<0 且 s>0 为 1−(s/(1+s)) exp(a/s)，a<0 且 s=0 为 1。电势降 Δφ = potential_v − phi_reference_v，两者使用调用者的同一电压零点。电子使用固定质量、−e 电荷和两方向相同热能。evaluate 只求给定电势通量；solve 对电荷加权离子/电子通量对数比求根，热电压初始括区最多扩展八轮再共享二分。双真空保留参考势；有界指数差商与对数归一化保留正物种下溢后的对数通量。测试电势与返回电势相同；使用缩放相对势差和安全中点，回调严格零才收缩括区，否则半宽与残差原门槛同时满足才算收敛。 完整结果作为同一个 scirel._result.Result 映射返回；嵌套 dict 字段保持普通 dict。",
    "model": "单正离子与电子的半空间磁镜/静电端损模型，参考粒子群和补充比例外供；不是完整碰撞输运或自洽平衡。",
@@ -8248,7 +8248,7 @@
      "公开许可及专家认可待人工决定。"
     ],
     "tests": [
-     "tests/closures/test_mirror_ambipolar_potential.py",
+     "tests/mirror/test_mirror_ambipolar_potential.py",
      "tests/kinetic/test_reviewed_failure_semantics.py",
      "tests/cross_domain/test_mirror_kinetic_scientific_correction.py",
      "tests/cross_domain/test_mirror_gauge_scientific_correction.py"
@@ -8634,7 +8634,7 @@
   },
   {
    "asset_id": "scirel.kinetic.frank-egedal-pressure-closure",
-   "source_sha256": "2978ab75c62aa0fd0aa4db4d10a3feb629e7d0aa17128959d9cfbb3c25a3e9b0",
+   "source_sha256": "48c4e76711f2c01ae169178f4f0efa1cd4bc753f354c5ba3ebd1e985b8ab8d0c",
    "summary": "把同一粒子群的显式热离子矩与径向包络和预设压强/密度尺度组合成闭合。",
    "definition": "径向算子计算 r(psi)=max(1-clip((psi-psi_axis)/(psi_edge-psi_axis),0,1),0)^alpha。源算子使用给定 Legendre 阶数，或由损失锥谱算子求阶数，再选取或投影源系数。热离子算子在 b=B/B0 处积分，平行和垂直压强都以 b=1 的平行矩归一化，密度以其自身 b=1 矩归一化。压强算子加入气体项、可选 n*T_e 和相应热压强；图另附 closure_state。密度和两个热压强分量共同使用 velocity_lower（历史别名 perp_velocity_lower），默认 0；可达轨道、统一速度域和原始矩收敛遵循热离子算子。这修正了旧版只截断垂直项的做法，不宣称论文作者确认过勘误。",
    "model": "预设有限模态非负参考粒子群，加气体及可选电子压强；不求动力学演化，也不确证它是精确的物理 Frank-Egedal 分布。",

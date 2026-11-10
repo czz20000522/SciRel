@@ -3,20 +3,20 @@
 from importlib import import_module
 
 _ASSETS = {
-    "scirel.kinetic.frank_egedal_pressure_state": (
-        "scirel.kinetic.frank_egedal_pressure_state",
+    "scirel.mirror.frank_egedal_pressure_state": (
+        "scirel.mirror.frank_egedal_pressure_state",
         "assemble_frank_egedal_pressure",
     ),
-    "scirel.kinetic.frank_egedal_radial_envelope": (
-        "scirel.kinetic.frank_egedal_radial_envelope",
+    "scirel.mirror.frank_egedal_radial_envelope": (
+        "scirel.mirror.frank_egedal_radial_envelope",
         "evaluate_frank_egedal_radial_envelope",
     ),
-    "scirel.kinetic.frank_egedal_source_projection": (
-        "scirel.kinetic.frank_egedal_source_projection",
+    "scirel.mirror.frank_egedal_source_projection": (
+        "scirel.mirror.frank_egedal_source_projection",
         "project_frank_egedal_source_modes",
     ),
-    "scirel.kinetic.frank_egedal_hot_ion_moments": (
-        "scirel.kinetic.frank_egedal_hot_ion_moments",
+    "scirel.mirror.frank_egedal_hot_ion_moments": (
+        "scirel.mirror.frank_egedal_hot_ion_moments",
         "evaluate_frank_egedal_hot_ion_moments",
     ),
     "scirel.closures.hall_two_fluid_pressure": (
@@ -43,16 +43,16 @@ _ASSETS = {
         "scirel.equilibrium.pressure_flux_state",
         "build_pressure_flux_state",
     ),
-    "scirel.kinetic.mirror_invariant_distribution": (
-        "scirel.kinetic.mirror_invariant_distribution",
+    "scirel.mirror.mirror_invariant_distribution": (
+        "scirel.mirror.mirror_invariant_distribution",
         "evaluate_mirror_invariant_distribution",
     ),
-    "scirel.kinetic.mirror_total_pressure": (
-        "scirel.kinetic.mirror_total_pressure",
+    "scirel.mirror.mirror_total_pressure": (
+        "scirel.mirror.mirror_total_pressure",
         "assemble_mirror_total_pressure",
     ),
-    "scirel.kinetic.mirror_constrained_moments": (
-        "scirel.kinetic.mirror_constrained_moments",
+    "scirel.mirror.mirror_constrained_moments": (
+        "scirel.mirror.mirror_constrained_moments",
         "evaluate_mirror_constrained_moments",
     ),
     "scirel.equilibrium.anisotropic_picard_feedback": (
@@ -83,8 +83,8 @@ _ASSETS = {
         "scirel.diagnostics.parallel_pressure_residual",
         "compute_parallel_pressure_residual",
     ),
-    "scirel.kinetic.loss_cone_spectrum": (
-        "scirel.kinetic.loss_cone_spectrum",
+    "scirel.mirror.loss_cone_spectrum": (
+        "scirel.mirror.loss_cone_spectrum",
         "solve_loss_cone_spectrum",
     ),
     "scirel.field.poloidal_field_magnitude": (
@@ -163,8 +163,8 @@ _ASSETS = {
         "scirel.field.mirror_plasma_green",
         "build_mirror_plasma_flux_green",
     ),
-    "scirel.closures.mirror_ambipolar_potential": (
-        "scirel.closures.mirror_ambipolar_potential",
+    "scirel.mirror.mirror_ambipolar_potential": (
+        "scirel.mirror.mirror_ambipolar_potential",
         "solve_mirror_ambipolar_potential",
     ),
 }
@@ -182,12 +182,12 @@ _COMPOSITIONS = {
         "scirel.diagnostics.equilibrium_synthesis_diagnostics",
         "synthesize_equilibrium_diagnostics",
     ),
-    "scirel.closures.compositions.mirror_quasineutral_closure": (
-        "scirel.closures.mirror_quasineutral_closure",
+    "scirel.mirror.compositions.mirror_quasineutral_closure": (
+        "scirel.mirror.mirror_quasineutral_closure",
         "solve_mirror_quasineutral_closure",
     ),
-    "scirel.kinetic.compositions.grid_mirror_kinetic_closure": (
-        "scirel.kinetic.grid_mirror_kinetic_closure",
+    "scirel.mirror.compositions.grid_mirror_kinetic_closure": (
+        "scirel.mirror.grid_mirror_kinetic_closure",
         "solve_grid_mirror_kinetic_closure",
     ),
     "scirel.equilibrium.compositions.axisymmetric_anisotropic_picard": (
@@ -207,7 +207,7 @@ _COMPOSITIONS = {
         "solve_multi_coil_vacuum_field",
     ),
     "scirel.kinetic.compositions.frank_egedal_pressure_closure": (
-        "scirel.kinetic.frank_egedal_pressure_closure",
+        "scirel.mirror.frank_egedal_pressure_closure",
         "solve_frank_egedal_pressure_closure",
     ),
     "scirel.equilibrium.compositions.kinetic_mirror_hall_equilibrium": (

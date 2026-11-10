@@ -71,9 +71,9 @@ def assemble_frank_egedal_pressure(
 
     See Also
     --------
-    scirel.kinetic.evaluate_frank_egedal_radial_envelope
+    scirel.mirror.evaluate_frank_egedal_radial_envelope
         Build the radial envelope used by this assembly.
-    scirel.kinetic.solve_frank_egedal_pressure_closure
+    scirel.mirror.solve_frank_egedal_pressure_closure
         Compose the full Frank--Egedal pressure closure.
 
     Notes
@@ -94,7 +94,7 @@ def assemble_frank_egedal_pressure(
     Examples
     --------
     >>> import numpy as np
-    >>> from scirel.kinetic import assemble_frank_egedal_pressure
+    >>> from scirel.mirror import assemble_frank_egedal_pressure
     >>> psi = np.zeros((1, 2))
     >>> radial = np.array([[1.0, 0.5]])
     >>> r = assemble_frank_egedal_pressure(

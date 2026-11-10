@@ -3,7 +3,7 @@ import math
 
 import numpy as np
 import pytest
-from scirel.kinetic.frank_egedal_source_projection import (
+from scirel.mirror.frank_egedal_source_projection import (
     project_frank_egedal_source_modes,
     project_frank_egedal_source_modes as scientific_function,
 )
@@ -150,7 +150,7 @@ def test_reviewed_relation_example():
     assert len(calls) == 1 and calls[0][1:] == (2, 80, "truncated")
     assert np.allclose(generated["degrees"], [0.25, 0.75])
     assert np.allclose(generated["source_coefficients"], [1.0, -0.5])
-    assert generated["degree_source"] == "scirel.kinetic.loss_cone_spectrum"
+    assert generated["degree_source"] == "scirel.mirror.loss_cone_spectrum"
 
     inactive = project_frank_egedal_source_modes(mirror_ratio=1.0)
     assert inactive["degrees"].size == 0

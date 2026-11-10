@@ -249,12 +249,12 @@ assert "scipy" in sys.modules
     assert result.returncode == 0, result.stdout + result.stderr
 
 
-def test_kinetic_loss_cone_spectrum_defers_scipy_until_valid_call() -> None:
+def test_mirror_loss_cone_spectrum_defers_scipy_until_valid_call() -> None:
     result = _run(
         """
 import sys
-from scirel.kinetic import solve_loss_cone_spectrum
-from scirel.kinetic.loss_cone_spectrum import solve_loss_cone_spectrum as direct
+from scirel.mirror import solve_loss_cone_spectrum
+from scirel.mirror.loss_cone_spectrum import solve_loss_cone_spectrum as direct
 
 assert solve_loss_cone_spectrum is direct
 assert "scipy" not in sys.modules

@@ -132,7 +132,7 @@ def evaluate_frank_egedal_hot_ion_moments(
     Examples
     --------
     >>> import numpy as np
-    >>> from scirel.kinetic.frank_egedal_hot_ion_moments import evaluate_frank_egedal_hot_ion_moments
+    >>> from scirel.mirror.frank_egedal_hot_ion_moments import evaluate_frank_egedal_hot_ion_moments
     >>> r = evaluate_frank_egedal_hot_ion_moments(
     ...     [[1.0, 0.25]],
     ...     {'B0': 1.0, 'mirror_ratio': 4.0, 'beta_m': 0.0, 'velocity_lower': 0.2},

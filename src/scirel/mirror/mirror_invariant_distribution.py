@@ -2,7 +2,7 @@
 
 import math
 import numpy as np
-from ._mirror_numerics import _scaled_difference
+from scirel._numerics import _scaled_difference
 
 
 def _field(value, psi, name):
@@ -127,7 +127,7 @@ def evaluate_mirror_invariant_distribution(
     --------
     >>> import math
     >>> import numpy as np
-    >>> from scirel.kinetic import evaluate_mirror_invariant_distribution
+    >>> from scirel.mirror import evaluate_mirror_invariant_distribution
     >>> e = 1.602176634e-19
     >>> m = 1.67262192595e-27
     >>> t_parallel, t_perp = 1200.0*e, 2400.0*e

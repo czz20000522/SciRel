@@ -50,6 +50,7 @@ __all__ = [
     "inference",
     "io",
     "kinetic",
+    "mirror",
     "neoclassical",
     "numerics",
     "physics",

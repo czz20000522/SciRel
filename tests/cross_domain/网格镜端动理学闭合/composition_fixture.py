@@ -1,4 +1,4 @@
-from scirel.kinetic.grid_mirror_kinetic_closure import (
+from scirel.mirror.grid_mirror_kinetic_closure import (
     solve_grid_mirror_kinetic_closure as _public_function,
 )
 

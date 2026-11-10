@@ -128,10 +128,10 @@ def _run_composition(inputs, *, asset_loader):
             "ion and electron reference densities must be both positive or both zero on each surface for quasineutral solve"
         )
     active = (n_i_ref > 0.0) & (n_e_ref > 0.0)
-    moment = asset_loader("scirel.kinetic.mirror_constrained_moments")
+    moment = asset_loader("scirel.mirror.mirror_constrained_moments")
     electron_response = asset_loader("scirel.closures.boltzmann_quasineutrality")
     potential_solver = asset_loader("scirel.closures.quasineutral_potential")
-    pressure_assembly = asset_loader("scirel.kinetic.mirror_total_pressure")
+    pressure_assembly = asset_loader("scirel.mirror.mirror_total_pressure")
 
     def state_at(potential):
         return moment(b_t=b_t, psi=psi, potential_v=potential, **moment_inputs)
@@ -370,7 +370,7 @@ def solve_mirror_quasineutral_closure(inputs=None, **kwargs):
     Examples
     --------
     >>> import numpy as np
-    >>> from scirel.closures import solve_mirror_quasineutral_closure
+    >>> from scirel.mirror import solve_mirror_quasineutral_closure
     >>> e = 1.602176634e-19
     >>> r = solve_mirror_quasineutral_closure(b_t=np.array([1.0, 1.4, 2.0]), psi=np.zeros(3), mass_kg=1.67262192595e-27, charge_c=e, density_ref_m3=2e18, temperature_parallel_j=1200*e, temperature_perpendicular_ref_j=2400*e, b_ref_t=1.0, electron_temperature_j=600*e)
     >>> b = np.array([1.0, 1.4, 2.0])
@@ -388,10 +388,10 @@ def solve_mirror_quasineutral_closure(inputs=None, **kwargs):
     from scirel.closures.quasineutral_reference_density import (
         compute_reference_electron_density as _dependency_2,
     )
-    from scirel.kinetic.mirror_constrained_moments import (
+    from scirel.mirror.mirror_constrained_moments import (
         evaluate_mirror_constrained_moments as _dependency_3,
     )
-    from scirel.kinetic.mirror_total_pressure import assemble_mirror_total_pressure as _dependency_4
+    from scirel.mirror.mirror_total_pressure import assemble_mirror_total_pressure as _dependency_4
 
     result = compose(
         _run_composition,
@@ -402,8 +402,8 @@ def solve_mirror_quasineutral_closure(inputs=None, **kwargs):
                 "scirel.closures.boltzmann_quasineutrality": _dependency_0,
                 "scirel.closures.quasineutral_potential": _dependency_1,
                 "scirel.closures.quasineutral_reference_density": _dependency_2,
-                "scirel.kinetic.mirror_constrained_moments": _dependency_3,
-                "scirel.kinetic.mirror_total_pressure": _dependency_4,
+                "scirel.mirror.mirror_constrained_moments": _dependency_3,
+                "scirel.mirror.mirror_total_pressure": _dependency_4,
             }
         },
     )

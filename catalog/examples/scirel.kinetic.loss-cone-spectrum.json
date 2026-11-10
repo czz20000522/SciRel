@@ -166,10 +166,10 @@
  },
  "public_api": {
   "python": {
-   "module": "scirel.kinetic.loss_cone_spectrum",
+   "module": "scirel.mirror.loss_cone_spectrum",
    "symbol": "solve_loss_cone_spectrum",
    "signature": "solve_loss_cone_spectrum(xi_tp, mode_count, grid_points=256, backend='truncated')",
-   "canonical_module": "scirel.kinetic",
+   "canonical_module": "scirel.mirror",
    "canonical_symbol": "solve_loss_cone_spectrum"
   }
  },
@@ -179,7 +179,7 @@
  },
  "example": {
   "description": "Recover the exact lowest integer mode at xi_tp=1/sqrt(3).",
-  "code": "import numpy as np\nfrom scirel.kinetic.loss_cone_spectrum import solve_loss_cone_spectrum\nr=solve_loss_cone_spectrum(1/np.sqrt(3),2,grid_points=40)\nnp.testing.assert_allclose(r['eigenvalues'][0],6.,rtol=1e-10)\nnp.testing.assert_allclose(r['eigenfunctions'][:,0],1-3*r['xi']**2,atol=2e-10)\nassert np.max(np.abs(r['boundary_residuals']))<2e-8",
+  "code": "import numpy as np\nfrom scirel.mirror.loss_cone_spectrum import solve_loss_cone_spectrum\nr=solve_loss_cone_spectrum(1/np.sqrt(3),2,grid_points=40)\nnp.testing.assert_allclose(r['eigenvalues'][0],6.,rtol=1e-10)\nnp.testing.assert_allclose(r['eigenfunctions'][:,0],1-3*r['xi']**2,atol=2e-10)\nassert np.max(np.abs(r['boundary_residuals']))<2e-8",
   "expected": "At xi_tp=1/sqrt(3), the first two eigenvalues were 6.0 and 58.08747396, with endpoint residuals below 8e-14; the first eigenfunction matches 1-3*xi^2 within the example tolerance."
  },
  "verification": {

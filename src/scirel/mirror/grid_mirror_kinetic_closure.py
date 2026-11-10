@@ -108,7 +108,7 @@ def _run_composition(inputs, *, asset_loader, composition_loader):
     b_ref = profile(psi_samples=psi_reference, values=b_reference, target=psi)["values"]
     phi_ref = _field(inputs.get("phi_ref_v", 0.0), psi_reference, "phi_ref_v")
     phi_ref_grid = profile(psi_samples=psi_reference, values=phi_ref, target=psi)["values"]
-    end_loss = asset_loader("scirel.closures.mirror_ambipolar_potential")
+    end_loss = asset_loader("scirel.mirror.mirror_ambipolar_potential")
     common = {
         key: inputs[key]
         for key in (
@@ -171,7 +171,7 @@ def _run_composition(inputs, *, asset_loader, composition_loader):
     phi_right = profile(psi_samples=psi_reference, values=right["potential_v"], target=psi)[
         "values"
     ]
-    ambipolar = composition_loader("scirel.closures.compositions.mirror_quasineutral_closure")
+    ambipolar = composition_loader("scirel.mirror.compositions.mirror_quasineutral_closure")
     raw_quadrature_order = inputs.get("quadrature_order", 32)
     if (
         isinstance(raw_quadrature_order, (bool, np.bool_))
@@ -510,9 +510,9 @@ def solve_grid_mirror_kinetic_closure(inputs=None, **kwargs):
 
     See Also
     --------
-    scirel.closures.solve_mirror_ambipolar_potential
+    scirel.mirror.solve_mirror_ambipolar_potential
         Evaluate or solve one mirror endpoint potential.
-    scirel.closures.solve_mirror_quasineutral_closure
+    scirel.mirror.solve_mirror_quasineutral_closure
         Evaluate the local quasineutral closure.
     scirel.geometry.evaluate_flux_surface_profile
         Map reference-row profiles over the full grid.
@@ -531,7 +531,7 @@ def solve_grid_mirror_kinetic_closure(inputs=None, **kwargs):
     Examples
     --------
     >>> import numpy as np
-    >>> from scirel.kinetic import solve_grid_mirror_kinetic_closure
+    >>> from scirel.mirror import solve_grid_mirror_kinetic_closure
     >>> e = 1.602176634e-19
     >>> r, z = np.linspace(0.0, 0.2, 5), np.linspace(-1.0, 1.0, 7)
     >>> R, Z = np.meshgrid(r, z)
@@ -543,11 +543,11 @@ def solve_grid_mirror_kinetic_closure(inputs=None, **kwargs):
     """
 
     from scirel._composition import compose
-    from scirel.closures.mirror_ambipolar_potential import (
+    from scirel.mirror.mirror_ambipolar_potential import (
         solve_mirror_ambipolar_potential as _dependency_0,
     )
     from scirel.geometry.flux_surface_profile import evaluate_flux_surface_profile as _dependency_1
-    from scirel.closures.mirror_quasineutral_closure import (
+    from scirel.mirror.mirror_quasineutral_closure import (
         solve_mirror_quasineutral_closure as _dependency_2,
     )
 
@@ -557,11 +557,11 @@ def solve_grid_mirror_kinetic_closure(inputs=None, **kwargs):
         kwargs,
         {
             "asset_loader": {
-                "scirel.closures.mirror_ambipolar_potential": _dependency_0,
+                "scirel.mirror.mirror_ambipolar_potential": _dependency_0,
                 "scirel.geometry.flux_surface_profile": _dependency_1,
             },
             "composition_loader": {
-                "scirel.closures.compositions.mirror_quasineutral_closure": _dependency_2
+                "scirel.mirror.compositions.mirror_quasineutral_closure": _dependency_2
             },
         },
     )

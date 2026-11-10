@@ -5,7 +5,7 @@ import importlib
 import pytest
 
 COMPOSITION_MODULES = (
-    "scirel.closures.mirror_quasineutral_closure",
+    "scirel.mirror.mirror_quasineutral_closure",
     "scirel.diagnostics.equilibrium_synthesis_diagnostics",
     "scirel.equilibrium.axisymmetric_anisotropic_picard",
     "scirel.equilibrium.free_boundary_anisotropic_picard",
@@ -14,8 +14,8 @@ COMPOSITION_MODULES = (
     "scirel.equilibrium.reduced_hall_anisotropic_picard",
     "scirel.field.multi_coil_vacuum_field",
     "scirel.geometry.axisymmetric_equilibrium_grid_support",
-    "scirel.kinetic.frank_egedal_pressure_closure",
-    "scirel.kinetic.grid_mirror_kinetic_closure",
+    "scirel.mirror.frank_egedal_pressure_closure",
+    "scirel.mirror.grid_mirror_kinetic_closure",
 )
 
 

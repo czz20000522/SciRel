@@ -1,6 +1,6 @@
 import numpy as np
 import pytest
-from scirel.kinetic.frank_egedal_radial_envelope import (
+from scirel.mirror.frank_egedal_radial_envelope import (
     evaluate_frank_egedal_radial_envelope as envelope,
 )
 

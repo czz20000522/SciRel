@@ -4,13 +4,13 @@ import math
 import numpy as np
 import pytest
 from scipy.integrate import quad
-from scirel.kinetic.mirror_invariant_distribution import (
+from scirel.mirror.mirror_invariant_distribution import (
     evaluate_mirror_invariant_distribution as distribution,
 )
-from scirel.kinetic.mirror_constrained_moments import evaluate_mirror_constrained_moments as moments
-from scirel.closures.mirror_ambipolar_potential import solve_mirror_ambipolar_potential as end_loss
+from scirel.mirror.mirror_constrained_moments import evaluate_mirror_constrained_moments as moments
+from scirel.mirror.mirror_ambipolar_potential import solve_mirror_ambipolar_potential as end_loss
 from scirel.closures.hall_two_fluid_pressure import close_hall_two_fluid_pressure as hall
-from scirel.kinetic.mirror_total_pressure import assemble_mirror_total_pressure as total
+from scirel.mirror.mirror_total_pressure import assemble_mirror_total_pressure as total
 
 E = 1.602176634e-19
 M = 1.67262192369e-27
@@ -229,7 +229,7 @@ def test_boltzmann_relative_residual_avoids_sum_overflow_and_underflow_false_roo
 
 
 def test_barrier_integral_subnormal_crossing_has_finite_limit():
-    from scirel.kinetic._mirror_numerics import _barrier_log_integral
+    from scirel.mirror._mirror_numerics import _barrier_log_integral
 
     value = _barrier_log_integral(-1e308, 1e-300)
     assert value == 0.0
@@ -252,15 +252,15 @@ def test_total_pressure_broadcasts_valid_observational_potential():
 
 @pytest.mark.parametrize("poison", ["nonconverged", "wrong_final_state"])
 def test_quasineutral_composition_checks_actual_terminal_state(poison):
-    from scirel.closures.mirror_quasineutral_closure import _run_composition
+    from scirel.mirror.mirror_quasineutral_closure import _run_composition
     from scirel.closures.boltzmann_quasineutrality import compute_boltzmann_electron_state
     from scirel.closures.quasineutral_reference_density import compute_reference_electron_density
 
     deps = {
-        "scirel.kinetic.mirror_constrained_moments": moments,
+        "scirel.mirror.mirror_constrained_moments": moments,
         "scirel.closures.boltzmann_quasineutrality": compute_boltzmann_electron_state,
         "scirel.closures.quasineutral_reference_density": compute_reference_electron_density,
-        "scirel.kinetic.mirror_total_pressure": total,
+        "scirel.mirror.mirror_total_pressure": total,
     }
 
     def fake(*args, **kwargs):
@@ -326,7 +326,7 @@ def test_general_moment_refinement_and_refill(refill):
 
 
 def test_grid_rejects_endpoint_evaluation_in_place_of_requested_balance():
-    from scirel.kinetic.grid_mirror_kinetic_closure import _run_composition
+    from scirel.mirror.grid_mirror_kinetic_closure import _run_composition
     from scirel.geometry.flux_surface_profile import evaluate_flux_surface_profile
 
     R, Z = np.meshgrid([0.0, 1.0], [-1.0, 0.0, 1.0])
@@ -336,7 +336,7 @@ def test_grid_rejects_endpoint_evaluation_in_place_of_requested_balance():
 
     deps = {
         "scirel.geometry.flux_surface_profile": evaluate_flux_surface_profile,
-        "scirel.closures.mirror_ambipolar_potential": endpoint,
+        "scirel.mirror.mirror_ambipolar_potential": endpoint,
     }
 
     def nested(_):

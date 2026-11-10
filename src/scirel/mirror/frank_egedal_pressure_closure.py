@@ -21,13 +21,13 @@ def _run_composition(inputs, *, asset_loader):
         return params[name] if name in params else default
 
     alpha = params["alpha"] if "alpha" in params else 1.0
-    radial = asset_loader("scirel.kinetic.frank_egedal_radial_envelope")(
+    radial = asset_loader("scirel.mirror.frank_egedal_radial_envelope")(
         inputs.get("psi"),
         psi_axis=params.get("psi_axis"),
         psi_edge=params.get("psi_edge"),
         alpha=alpha,
     )
-    source = asset_loader("scirel.kinetic.frank_egedal_source_projection")(
+    source = asset_loader("scirel.mirror.frank_egedal_source_projection")(
         mirror_ratio=option("mirror_ratio", option("turning_b", 2.0)),
         legendre_terms=option("legendre_terms", 15),
         legendre_backend=option("legendre_backend", "truncated"),
@@ -36,9 +36,9 @@ def _run_composition(inputs, *, asset_loader):
         legendre_spectrum_grid_points=option("legendre_spectrum_grid_points", 256),
         source_coefficients=option("source_coefficients", None),
         nbi_pitch_angle_deg=option("nbi_pitch_angle_deg", 45.0),
-        spectrum_operator=asset_loader("scirel.kinetic.loss_cone_spectrum"),
+        spectrum_operator=asset_loader("scirel.mirror.loss_cone_spectrum"),
     )
-    hot = asset_loader("scirel.kinetic.frank_egedal_hot_ion_moments")(
+    hot = asset_loader("scirel.mirror.frank_egedal_hot_ion_moments")(
         inputs.get("B"),
         params,
         source["degrees"],
@@ -46,7 +46,7 @@ def _run_composition(inputs, *, asset_loader):
         source["legendre_terms"],
         source["fractional_mode"],
     )
-    result = asset_loader("scirel.kinetic.frank_egedal_pressure_state")(
+    result = asset_loader("scirel.mirror.frank_egedal_pressure_state")(
         inputs.get("psi"),
         radial,
         hot["hot_parallel_shape"],
@@ -177,13 +177,13 @@ def solve_frank_egedal_pressure_closure(inputs=None, **kwargs):
 
     See Also
     --------
-    scirel.kinetic.evaluate_frank_egedal_radial_envelope
+    scirel.mirror.evaluate_frank_egedal_radial_envelope
         Evaluate the radial pressure envelope.
-    scirel.kinetic.project_frank_egedal_source_modes
+    scirel.mirror.project_frank_egedal_source_modes
         Project caller or spectral loss-cone source modes.
-    scirel.kinetic.evaluate_frank_egedal_hot_ion_moments
+    scirel.mirror.evaluate_frank_egedal_hot_ion_moments
         Evaluate the hot-ion moment closure state.
-    scirel.kinetic.assemble_frank_egedal_pressure
+    scirel.mirror.assemble_frank_egedal_pressure
         Assemble the returned pressure fields.
 
     Notes
@@ -199,7 +199,7 @@ def solve_frank_egedal_pressure_closure(inputs=None, **kwargs):
     Examples
     --------
     >>> import numpy as np
-    >>> from scirel.kinetic import solve_frank_egedal_pressure_closure
+    >>> from scirel.mirror import solve_frank_egedal_pressure_closure
     >>> psi = np.array([[0.0, 0.5], [0.25, 1.0]])
     >>> B = np.array([[1.0, 1.1], [1.2, 1.3]])
     >>> r = solve_frank_egedal_pressure_closure({'psi': psi, 'B': B, 'params': {'psi_axis': 0.0, 'psi_edge': 1.0, 'B0': 1.0, 'hot_pressure_scale': 8.0, 'mirror_ratio': 2.0, 'legendre_degrees': [0.5], 'source_coefficients': [1.0], 'velocity_nodes': 6, 'pitch_nodes': 6}})
@@ -211,19 +211,19 @@ def solve_frank_egedal_pressure_closure(inputs=None, **kwargs):
     >>> assert r['closure_state']['normalization'] == 'pressure moments referenced to hot_parallel(b=1); density referenced to hot_density(b=1)'
     """
     from scirel._composition import compose
-    from scirel.kinetic.frank_egedal_hot_ion_moments import (
+    from scirel.mirror.frank_egedal_hot_ion_moments import (
         evaluate_frank_egedal_hot_ion_moments as _dependency_0,
     )
-    from scirel.kinetic.frank_egedal_pressure_state import (
+    from scirel.mirror.frank_egedal_pressure_state import (
         assemble_frank_egedal_pressure as _dependency_1,
     )
-    from scirel.kinetic.frank_egedal_radial_envelope import (
+    from scirel.mirror.frank_egedal_radial_envelope import (
         evaluate_frank_egedal_radial_envelope as _dependency_2,
     )
-    from scirel.kinetic.frank_egedal_source_projection import (
+    from scirel.mirror.frank_egedal_source_projection import (
         project_frank_egedal_source_modes as _dependency_3,
     )
-    from scirel.kinetic.loss_cone_spectrum import solve_loss_cone_spectrum as _dependency_4
+    from scirel.mirror.loss_cone_spectrum import solve_loss_cone_spectrum as _dependency_4
 
     return compose(
         _run_composition,
@@ -231,11 +231,11 @@ def solve_frank_egedal_pressure_closure(inputs=None, **kwargs):
         kwargs,
         {
             "asset_loader": {
-                "scirel.kinetic.frank_egedal_hot_ion_moments": _dependency_0,
-                "scirel.kinetic.frank_egedal_pressure_state": _dependency_1,
-                "scirel.kinetic.frank_egedal_radial_envelope": _dependency_2,
-                "scirel.kinetic.frank_egedal_source_projection": _dependency_3,
-                "scirel.kinetic.loss_cone_spectrum": _dependency_4,
+                "scirel.mirror.frank_egedal_hot_ion_moments": _dependency_0,
+                "scirel.mirror.frank_egedal_pressure_state": _dependency_1,
+                "scirel.mirror.frank_egedal_radial_envelope": _dependency_2,
+                "scirel.mirror.frank_egedal_source_projection": _dependency_3,
+                "scirel.mirror.loss_cone_spectrum": _dependency_4,
             }
         },
     )

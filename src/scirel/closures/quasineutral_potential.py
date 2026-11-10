@@ -117,7 +117,7 @@ def solve_quasineutral_potential(
 
     See Also
     --------
-    scirel.closures.solve_mirror_quasineutral_closure : Mirror closure that supplies the residual callback.
+    scirel.mirror.solve_mirror_quasineutral_closure : Mirror closure that supplies the residual callback.
 
     Notes
     -----

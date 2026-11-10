@@ -1,4 +1,4 @@
-from scirel.kinetic.grid_mirror_kinetic_closure import solve_grid_mirror_kinetic_closure
+from scirel.mirror.grid_mirror_kinetic_closure import solve_grid_mirror_kinetic_closure
 
 # 覆盖：端态映射、端塞外屏蔽、YAML 嵌套声明与 caller profile(psi) 端口。
 from pathlib import Path
@@ -110,9 +110,9 @@ def test_confinement_preserves_original_moments_and_endpoint_diagnostics():
 
 
 def test_endpoint_and_nested_failures_propagate_without_terminal_state():
-    from scirel.kinetic.grid_mirror_kinetic_closure import _run_composition
+    from scirel.mirror.grid_mirror_kinetic_closure import _run_composition
     from scirel.geometry.flux_surface_profile import evaluate_flux_surface_profile
-    from scirel.closures.mirror_ambipolar_potential import solve_mirror_ambipolar_potential
+    from scirel.mirror.mirror_ambipolar_potential import solve_mirror_ambipolar_potential
 
     calls = []
 
@@ -127,7 +127,7 @@ def test_endpoint_and_nested_failures_propagate_without_terminal_state():
     def loader(endpoint):
         return lambda asset_id: {
             "scirel.geometry.flux_surface_profile": evaluate_flux_surface_profile,
-            "scirel.closures.mirror_ambipolar_potential": endpoint,
+            "scirel.mirror.mirror_ambipolar_potential": endpoint,
         }[asset_id]
 
     with pytest.raises(RuntimeError, match="endpoint failure"):
@@ -151,7 +151,7 @@ def test_endpoint_and_nested_failures_propagate_without_terminal_state():
 def test_yaml_declares_nested_composition_dependency():
     text = Path(__file__).with_name("composition.yaml").read_text(encoding="utf-8")
     assert "kind: scientific_composition" in text
-    assert "scirel.closures.compositions.mirror_quasineutral_closure" in text
+    assert "scirel.mirror.compositions.mirror_quasineutral_closure" in text
 
 
 def test_profile_port_is_evaluated_against_current_flux():

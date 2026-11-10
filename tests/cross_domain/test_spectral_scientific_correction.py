@@ -3,9 +3,9 @@
 import math
 import numpy as np
 import pytest
-from scirel.kinetic.loss_cone_spectrum import solve_loss_cone_spectrum
-from scirel.kinetic.frank_egedal_source_projection import fractional_mode
-from scirel.kinetic.frank_egedal_hot_ion_moments import evaluate_frank_egedal_hot_ion_moments
+from scirel.mirror.loss_cone_spectrum import solve_loss_cone_spectrum
+from scirel.mirror.frank_egedal_source_projection import fractional_mode
+from scirel.mirror.frank_egedal_hot_ion_moments import evaluate_frank_egedal_hot_ion_moments
 from scirel.diagnostics.parallel_pressure_residual import compute_parallel_pressure_residual
 from scirel.diagnostics.firehose_mirror_margins import compute_firehose_mirror_margins
 
@@ -85,7 +85,7 @@ def test_same_population_tensor_uses_identical_velocity_domain(lower):
 
 
 def test_reference_population_below_reference_field_has_accessible_pitch_support():
-    from scirel.kinetic.frank_egedal_hot_ion_moments import evaluate_frank_egedal_hot_ion_moments
+    from scirel.mirror.frank_egedal_hot_ion_moments import evaluate_frank_egedal_hot_ion_moments
 
     b, mirror = 0.25, 4.0
     upper, lower = np.sqrt(1 - b / mirror), np.sqrt(1 - b)
@@ -110,7 +110,7 @@ def test_reference_population_below_reference_field_has_accessible_pitch_support
 
 
 def test_zero_critical_speed_zero_lower_density_is_not_normalizable():
-    from scirel.kinetic.frank_egedal_hot_ion_moments import evaluate_frank_egedal_hot_ion_moments
+    from scirel.mirror.frank_egedal_hot_ion_moments import evaluate_frank_egedal_hot_ion_moments
 
     with pytest.raises(ValueError, match="density"):
         evaluate_frank_egedal_hot_ion_moments(
@@ -124,7 +124,7 @@ def test_zero_critical_speed_zero_lower_density_is_not_normalizable():
 
 
 def test_zero_critical_speed_positive_lower_remains_integrable():
-    from scirel.kinetic.frank_egedal_hot_ion_moments import evaluate_frank_egedal_hot_ion_moments
+    from scirel.mirror.frank_egedal_hot_ion_moments import evaluate_frank_egedal_hot_ion_moments
 
     got = evaluate_frank_egedal_hot_ion_moments(
         [[1.0]],
@@ -139,7 +139,7 @@ def test_zero_critical_speed_positive_lower_remains_integrable():
 
 
 def test_nonintegrable_negative_beta_cannot_hide_behind_reference_normalization():
-    from scirel.kinetic.frank_egedal_hot_ion_moments import evaluate_frank_egedal_hot_ion_moments
+    from scirel.mirror.frank_egedal_hot_ion_moments import evaluate_frank_egedal_hot_ion_moments
 
     with pytest.raises(RuntimeError, match="quadrature"):
         evaluate_frank_egedal_hot_ion_moments(
@@ -153,7 +153,7 @@ def test_nonintegrable_negative_beta_cannot_hide_behind_reference_normalization(
 
 
 def test_integrable_negative_beta_retains_finite_normalized_population():
-    from scirel.kinetic.frank_egedal_hot_ion_moments import evaluate_frank_egedal_hot_ion_moments
+    from scirel.mirror.frank_egedal_hot_ion_moments import evaluate_frank_egedal_hot_ion_moments
 
     got = evaluate_frank_egedal_hot_ion_moments(
         [[1.0]],
@@ -170,7 +170,7 @@ def test_integrable_negative_beta_retains_finite_normalized_population():
 @pytest.mark.parametrize("backend", ["truncated", "hypergeometric"])
 def test_high_integer_mode_matches_independent_legendre_polynomial(backend):
     from scipy.special import eval_legendre
-    from scirel.kinetic.frank_egedal_source_projection import fractional_mode
+    from scirel.mirror.frank_egedal_source_projection import fractional_mode
 
     x = np.linspace(-0.974, 0.974, 121)
     expected = eval_legendre(30, x) / eval_legendre(30, 0.0)
@@ -178,7 +178,7 @@ def test_high_integer_mode_matches_independent_legendre_polynomial(backend):
 
 
 def test_narrow_loss_cone_high_degree_modes_respect_rayleigh_bounds():
-    from scirel.kinetic.loss_cone_spectrum import solve_loss_cone_spectrum
+    from scirel.mirror.loss_cone_spectrum import solve_loss_cone_spectrum
 
     x = 1e-4
     got = solve_loss_cone_spectrum(x, 3)
@@ -190,7 +190,7 @@ def test_narrow_loss_cone_high_degree_modes_respect_rayleigh_bounds():
 
 @pytest.mark.parametrize("beta", [-0.3, -0.4, -0.4999])
 def test_integrable_endpoint_singularity_remains_resolved(beta):
-    from scirel.kinetic.frank_egedal_hot_ion_moments import evaluate_frank_egedal_hot_ion_moments
+    from scirel.mirror.frank_egedal_hot_ion_moments import evaluate_frank_egedal_hot_ion_moments
 
     got = evaluate_frank_egedal_hot_ion_moments(
         [[0.9, 1.0, 1.2]],
@@ -205,7 +205,7 @@ def test_integrable_endpoint_singularity_remains_resolved(beta):
 
 
 def test_field_normalization_overflow_rejects_false_finite_population():
-    from scirel.kinetic.frank_egedal_hot_ion_moments import evaluate_frank_egedal_hot_ion_moments
+    from scirel.mirror.frank_egedal_hot_ion_moments import evaluate_frank_egedal_hot_ion_moments
 
     with np.errstate(over="ignore"), pytest.raises(ValueError, match="B/B0"):
         evaluate_frank_egedal_hot_ion_moments(

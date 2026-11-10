@@ -219,36 +219,36 @@ nodes:
 - id: radial_profile
   name: 磁通径向包络
   kind: scientific_function
-  callable: scirel.kinetic.frank_egedal_radial_envelope::evaluate_frank_egedal_radial_envelope
-  asset_ref: scirel.kinetic.frank_egedal_radial_envelope
+  callable: scirel.mirror.frank_egedal_radial_envelope::evaluate_frank_egedal_radial_envelope
+  asset_ref: scirel.mirror.frank_egedal_radial_envelope
   inputs: [psi, psi_axis, psi_edge, alpha]
   outputs: [radial_shape]
 - id: loss_cone_spectrum_port
   name: 损失锥谱求解器依赖
   kind: scientific_function
-  callable: scirel.kinetic.loss_cone_spectrum::solve_loss_cone_spectrum
-  asset_ref: scirel.kinetic.loss_cone_spectrum
+  callable: scirel.mirror.loss_cone_spectrum::solve_loss_cone_spectrum
+  asset_ref: scirel.mirror.loss_cone_spectrum
   inputs: [xi_tp, mode_count, grid_points, backend]
   outputs: [spectrum_state]
 - id: source_mode_projection
   name: Frank-Egedal 源模态投影
   kind: scientific_function
-  callable: scirel.kinetic.frank_egedal_source_projection::project_frank_egedal_source_modes
-  asset_ref: scirel.kinetic.frank_egedal_source_projection
+  callable: scirel.mirror.frank_egedal_source_projection::project_frank_egedal_source_modes
+  asset_ref: scirel.mirror.frank_egedal_source_projection
   inputs: [mirror_ratio, legendre_terms, legendre_backend, legendre_degrees, legendre_mode_count, legendre_spectrum_grid_points, source_coefficients, nbi_pitch_angle_deg, spectrum_operator]
   outputs: [degrees, source_coefficients, legendre_terms, fractional_mode, xi_tp_mid, degree_source, legendre_backend]
 - id: hot_ion_moments
   name: Frank-Egedal 热离子矩
   kind: scientific_function
-  callable: scirel.kinetic.frank_egedal_hot_ion_moments::evaluate_frank_egedal_hot_ion_moments
-  asset_ref: scirel.kinetic.frank_egedal_hot_ion_moments
+  callable: scirel.mirror.frank_egedal_hot_ion_moments::evaluate_frank_egedal_hot_ion_moments
+  asset_ref: scirel.mirror.frank_egedal_hot_ion_moments
   inputs: [B, params, degrees, source_coefficients, legendre_terms, fractional_mode]
   outputs: [normalized_field, hot_parallel_shape, hot_perpendicular_shape, hot_density_shape, quadrature]
 - id: pressure_assembly
   name: Frank-Egedal 压强状态组装
   kind: scientific_function
-  callable: scirel.kinetic.frank_egedal_pressure_state::assemble_frank_egedal_pressure
-  asset_ref: scirel.kinetic.frank_egedal_pressure_state
+  callable: scirel.mirror.frank_egedal_pressure_state::assemble_frank_egedal_pressure
+  asset_ref: scirel.mirror.frank_egedal_pressure_state
   inputs: [psi, radial_shape, hot_parallel_shape, hot_perpendicular_shape, hot_density_shape, hot_pressure_scale, gas_dynamic_pressure, gas_dynamic_density, hot_density_scale, electron_temperature]
   outputs: [p_parallel, p_perp, density, electron_temperature]
 edges:

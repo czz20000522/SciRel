@@ -1,5 +1,5 @@
 import pytest
-from scirel.kinetic.frank_egedal_pressure_state import (
+from scirel.mirror.frank_egedal_pressure_state import (
     assemble_frank_egedal_pressure,
     assemble_frank_egedal_pressure as scientific_function,
 )

@@ -1,4 +1,4 @@
-from scirel.kinetic.frank_egedal_pressure_closure import (
+from scirel.mirror.frank_egedal_pressure_closure import (
     solve_frank_egedal_pressure_closure as _public_function,
 )
 

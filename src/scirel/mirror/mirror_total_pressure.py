@@ -60,7 +60,7 @@ def assemble_mirror_total_pressure(kinetic_moments, electron_state):
     Examples
     --------
     >>> import numpy as np
-    >>> from scirel.kinetic import assemble_mirror_total_pressure
+    >>> from scirel.mirror import assemble_mirror_total_pressure
     >>> ion = {'p_parallel_pa': [2.0, 3.0], 'p_perpendicular_pa': [4.0, 5.0], 'density_m3': [1.0, 2.0], 'marker': 'ion'}
     >>> electron = {'electron_density_m3': [6.0, 7.0], 'electron_pressure_pa': 1.5, 'relative_charge_residual': [0.1, 0.2]}
     >>> r = assemble_mirror_total_pressure(ion, electron)

@@ -4,7 +4,7 @@ import numpy as np
 import pytest
 
 from scirel._result import Result
-from scirel import closures, diagnostics, field, neoclassical
+from scirel import closures, diagnostics, field, mirror, neoclassical
 from scirel.field import compute_poloidal_field_magnitude
 from scirel.kinetic import evaluate_plasma_dispersion
 
@@ -981,8 +981,8 @@ def _closure_quasi_call():
     )
 
 
-def _closure_ambipolar_call():
-    return closures.solve_mirror_ambipolar_potential(
+def _mirror_ambipolar_call():
+    return mirror.solve_mirror_ambipolar_potential(
         1.0,
         1.0,
         0.0,
@@ -1023,8 +1023,8 @@ def _closure_reduced_hall_call():
     )
 
 
-def _closure_mirror_quasi_call():
-    return closures.solve_mirror_quasineutral_closure(
+def _mirror_quasineutral_call():
+    return mirror.solve_mirror_quasineutral_closure(
         b_t=np.array([1.0, 1.4, 2.0]),
         psi=np.zeros(3),
         mass_kg=1.67262192595e-27,
@@ -1142,28 +1142,6 @@ _CLOSURE_CASES = {
         },
         Result,
     ),
-    "solve_mirror_ambipolar_potential": (
-        _closure_ambipolar_call,
-        (
-            "potential_v",
-            "ion_particle_flux_m2_s",
-            "electron_particle_flux_m2_s",
-            "log_current_ratio",
-            "relative_current_residual",
-            "iterations",
-            "converged",
-            "evaluation_complete",
-            "current_balance_solved",
-        ),
-        {
-            "potential_v": np.array(1.0),
-            "ion_particle_flux_m2_s": np.float64(1.674573179533026e21),
-            "electron_particle_flux_m2_s": np.float64(2.5096434433404035e23),
-            "iterations": 0,
-            "current_balance_solved": False,
-        },
-        Result,
-    ),
     "close_reduced_hall_drift": (
         _closure_reduced_hall_call,
         tuple(
@@ -1188,19 +1166,6 @@ _CLOSURE_CASES = {
             "inertia_iterations": 1,
             "inertia_converged": True,
         },
-        Result,
-    ),
-    "solve_mirror_quasineutral_closure": (
-        _closure_mirror_quasi_call,
-        tuple(
-            """density_m3 p_parallel_pa p_perpendicular_pa temperature_parallel_j
-            temperature_perpendicular_local_j untruncated_density_m3 density_pitch_integral
-            parallel_pitch_integral perpendicular_pitch_integral p_parallel p_perpendicular
-            ion_density ion_p_parallel ion_p_perpendicular electron_density electron_pressure
-            electrostatic_potential relative_charge_residual kinetic_moments iterations
-            converged""".split()
-        ),
-        {"converged": True},
         Result,
     ),
     "simulate_discrete_vector_feedback": (
@@ -1233,8 +1198,6 @@ _CLOSURES_MIGRATED = {
     "evaluate_tabulated_pressure",
     "close_reduced_hall_drift",
     "simulate_discrete_vector_feedback",
-    "solve_mirror_ambipolar_potential",
-    "solve_mirror_quasineutral_closure",
 }
 # No public closure callable returns a bare tuple or ndarray in this baseline.
 _CLOSURES_BARE_RETURN_CASES = set()
@@ -1261,14 +1224,6 @@ _CLOSURES_FAILURE_CASES = [
         "psi_grid must be one-dimensional, finite, and strictly increasing",
     ),
     (
-        "solve_mirror_ambipolar_potential",
-        lambda: closures.solve_mirror_ambipolar_potential(
-            1.0, 1.0, 0.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, mode="bad"
-        ),
-        ValueError,
-        "mode must be solve or evaluate",
-    ),
-    (
         "close_reduced_hall_drift",
         lambda: closures.close_reduced_hall_drift(
             np.ones((2, 2)),
@@ -1284,12 +1239,6 @@ _CLOSURES_FAILURE_CASES = [
         ),
         ValueError,
         "a rectilinear R-Z grid with at least 3 points per axis is required",
-    ),
-    (
-        "solve_mirror_quasineutral_closure",
-        lambda: closures.solve_mirror_quasineutral_closure(inputs={}),
-        ValueError,
-        "missing required inputs: b_ref_t, b_t, charge_c, density_ref_m3, electron_temperature_j, mass_kg, psi, temperature_parallel_j, temperature_perpendicular_ref_j",
     ),
     (
         "simulate_discrete_vector_feedback",
@@ -1343,6 +1292,102 @@ def test_closures_failure_cases_cover_every_migrated_callable():
 
 @pytest.mark.parametrize("name,call,exception_type,message", _CLOSURES_FAILURE_CASES)
 def test_closures_failures_match_baseline_type_and_message(name, call, exception_type, message):
+    with pytest.raises(exception_type) as error:
+        call()
+    assert str(error.value) == message
+
+
+# The mirror domain keeps the two closures that used to live in ``closures``.
+# They are the only mirror callables that return ``Result``; the remaining mirror
+# surface still returns plain mappings, so the coverage claim is scoped to these.
+_MIRROR_CASES = {
+    "solve_mirror_ambipolar_potential": (
+        _mirror_ambipolar_call,
+        (
+            "potential_v",
+            "ion_particle_flux_m2_s",
+            "electron_particle_flux_m2_s",
+            "log_current_ratio",
+            "relative_current_residual",
+            "iterations",
+            "converged",
+            "evaluation_complete",
+            "current_balance_solved",
+        ),
+        {
+            "potential_v": np.array(1.0),
+            "ion_particle_flux_m2_s": np.float64(1.674573179533026e21),
+            "electron_particle_flux_m2_s": np.float64(2.5096434433404035e23),
+            "iterations": 0,
+            "current_balance_solved": False,
+        },
+        Result,
+    ),
+    "solve_mirror_quasineutral_closure": (
+        _mirror_quasineutral_call,
+        tuple(
+            """density_m3 p_parallel_pa p_perpendicular_pa temperature_parallel_j
+            temperature_perpendicular_local_j untruncated_density_m3 density_pitch_integral
+            parallel_pitch_integral perpendicular_pitch_integral p_parallel p_perpendicular
+            ion_density ion_p_parallel ion_p_perpendicular electron_density electron_pressure
+            electrostatic_potential relative_charge_residual kinetic_moments iterations
+            converged""".split()
+        ),
+        {"converged": True},
+        Result,
+    ),
+}
+
+_MIRROR_RESULT_CALLABLES = {
+    "solve_mirror_ambipolar_potential",
+    "solve_mirror_quasineutral_closure",
+}
+
+_MIRROR_FAILURE_CASES = [
+    (
+        "solve_mirror_ambipolar_potential",
+        lambda: mirror.solve_mirror_ambipolar_potential(
+            1.0, 1.0, 0.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, mode="bad"
+        ),
+        ValueError,
+        "mode must be solve or evaluate",
+    ),
+    (
+        "solve_mirror_quasineutral_closure",
+        lambda: mirror.solve_mirror_quasineutral_closure(inputs={}),
+        ValueError,
+        "missing required inputs: b_ref_t, b_t, charge_c, density_ref_m3, electron_temperature_j, mass_kg, psi, temperature_parallel_j, temperature_perpendicular_ref_j",
+    ),
+]
+
+
+def test_mirror_cases_cover_the_result_returning_callables():
+    assert set(_MIRROR_CASES) == _MIRROR_RESULT_CALLABLES
+    assert _MIRROR_RESULT_CALLABLES <= set(mirror.__all__)
+
+
+@pytest.mark.parametrize("name", sorted(_MIRROR_CASES))
+def test_mirror_results_preserve_baseline_values_and_return_types(name):
+    call, expected_keys, expected, expected_type = _MIRROR_CASES[name]
+    result = call()
+    assert type(result) is expected_type
+    assert isinstance(result, dict)
+    assert list(result) == list(expected_keys)
+    for key in expected_keys:
+        assert getattr(result, key) is result[key]
+    for key, expected_value in expected.items():
+        _assert_closure_value(result[key], expected_value)
+    if name == "solve_mirror_quasineutral_closure":
+        assert result["p_parallel"].shape == (3,)
+        assert np.max(np.abs(result["relative_charge_residual"])) < 1e-10
+
+
+def test_mirror_failure_cases_cover_the_result_returning_callables():
+    assert {case[0] for case in _MIRROR_FAILURE_CASES} == _MIRROR_RESULT_CALLABLES
+
+
+@pytest.mark.parametrize("name,call,exception_type,message", _MIRROR_FAILURE_CASES)
+def test_mirror_failures_match_baseline_type_and_message(name, call, exception_type, message):
     with pytest.raises(exception_type) as error:
         call()
     assert str(error.value) == message

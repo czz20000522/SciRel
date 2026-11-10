@@ -4,22 +4,12 @@ from importlib import import_module as _import_module
 
 # Keep this list as the stable kinetic-domain public contract.
 __all__ = [
-    "assemble_frank_egedal_pressure",
-    "evaluate_frank_egedal_radial_envelope",
-    "project_frank_egedal_source_modes",
-    "evaluate_frank_egedal_hot_ion_moments",
-    "evaluate_mirror_invariant_distribution",
-    "assemble_mirror_total_pressure",
-    "evaluate_mirror_constrained_moments",
-    "solve_loss_cone_spectrum",
     "evaluate_plasma_dispersion",
     "evaluate_bessel_gamma",
     "evaluate_kinetic_dispersion_sum",
     "derive_species_equilibrium_scales",
     "compute_thermal_speed_m_s",
     "reduce_generation_density",
-    "solve_grid_mirror_kinetic_closure",
-    "solve_frank_egedal_pressure_closure",
     "evaluate_plasma_dispersion_weideman",
     "evaluate_fluid_kinetic_dispersion_sum",
     "get_z_pole_coefficients",
@@ -101,32 +91,6 @@ __all__ = [
 ]
 
 _LAZY_EXPORTS = {
-    "assemble_frank_egedal_pressure": (
-        "frank_egedal_pressure_state",
-        "assemble_frank_egedal_pressure",
-    ),
-    "evaluate_frank_egedal_radial_envelope": (
-        "frank_egedal_radial_envelope",
-        "evaluate_frank_egedal_radial_envelope",
-    ),
-    "project_frank_egedal_source_modes": (
-        "frank_egedal_source_projection",
-        "project_frank_egedal_source_modes",
-    ),
-    "evaluate_frank_egedal_hot_ion_moments": (
-        "frank_egedal_hot_ion_moments",
-        "evaluate_frank_egedal_hot_ion_moments",
-    ),
-    "evaluate_mirror_invariant_distribution": (
-        "mirror_invariant_distribution",
-        "evaluate_mirror_invariant_distribution",
-    ),
-    "assemble_mirror_total_pressure": ("mirror_total_pressure", "assemble_mirror_total_pressure"),
-    "evaluate_mirror_constrained_moments": (
-        "mirror_constrained_moments",
-        "evaluate_mirror_constrained_moments",
-    ),
-    "solve_loss_cone_spectrum": ("loss_cone_spectrum", "solve_loss_cone_spectrum"),
     "evaluate_plasma_dispersion": ("plasma_dispersion", "evaluate_plasma_dispersion"),
     "evaluate_bessel_gamma": ("bessel_gamma", "evaluate_bessel_gamma"),
     "evaluate_kinetic_dispersion_sum": (
@@ -139,14 +103,6 @@ _LAZY_EXPORTS = {
     ),
     "compute_thermal_speed_m_s": ("thermal_speed_scale", "compute_thermal_speed_m_s"),
     "reduce_generation_density": ("generation_density_reduction", "reduce_generation_density"),
-    "solve_grid_mirror_kinetic_closure": (
-        "grid_mirror_kinetic_closure",
-        "solve_grid_mirror_kinetic_closure",
-    ),
-    "solve_frank_egedal_pressure_closure": (
-        "frank_egedal_pressure_closure",
-        "solve_frank_egedal_pressure_closure",
-    ),
     "evaluate_plasma_dispersion_weideman": (
         "plasma_dispersion_weideman",
         "evaluate_plasma_dispersion_weideman",

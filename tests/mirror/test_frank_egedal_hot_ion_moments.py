@@ -1,6 +1,6 @@
 import numpy as np
 import pytest
-from scirel.kinetic.frank_egedal_hot_ion_moments import (
+from scirel.mirror.frank_egedal_hot_ion_moments import (
     evaluate_frank_egedal_hot_ion_moments,
     evaluate_frank_egedal_hot_ion_moments as scientific_function,
 )
@@ -210,7 +210,7 @@ def test_reviewed_relation_example():
     import math
     import numpy as np
     from scipy.integrate import quad
-    from scirel.kinetic.frank_egedal_hot_ion_moments import evaluate_frank_egedal_hot_ion_moments
+    from scirel.mirror.frank_egedal_hot_ion_moments import evaluate_frank_egedal_hot_ion_moments
 
     def mode(degree, xi, terms):
         # 一个非恒定的角向模态；改变 degree 必须改变垂直矩。

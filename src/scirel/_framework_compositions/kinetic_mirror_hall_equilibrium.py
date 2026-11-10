@@ -7,7 +7,7 @@ from collections.abc import Callable, Mapping
 from scirel.equilibrium.reduced_hall_anisotropic_picard import (
     solve_reduced_hall_anisotropic_picard,
 )
-from scirel.kinetic.grid_mirror_kinetic_closure import solve_grid_mirror_kinetic_closure
+from scirel.mirror.grid_mirror_kinetic_closure import solve_grid_mirror_kinetic_closure
 
 
 def compose_kinetic_mirror_hall_equilibrium(

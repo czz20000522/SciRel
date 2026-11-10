@@ -3064,7 +3064,7 @@
   },
   {
    "asset_id": "scirel.kinetic.frank-egedal-hot-ion-moments",
-   "source_sha256": "58888b4b1ced329060d936a661adbd2f071d865e219e60094b41a73548df6493",
+   "source_sha256": "39aa4558db333a3632154f83d2438168904131d7fa47fcd820a15ce24af8ad2f",
    "summary": "在共同速度域上，对明确定义的非负参考群体同时积分密度和平行/垂直压力。",
    "definition": "b=B/B0，ξ_max=sqrt(max(0,1−b/R))、ξ_min=sqrt(max(0,1−b))、ξ0=sqrt((ξ²−(1−b))/b)。只计可达 B0 的俯仰域，b≥R 时矩为0。共同 s=v/v0∈[s_min,1]；f=max(Σc_j u_νj(ξ0)U(s)^[νj(νj+1)]/(s³+vc³),0)，U=[(1+vc³)s³/(s³+vc³)]^(β_m/3)。n=4π∫s²f，P∥=4π∫s⁴ξ²f，P⊥=2π∫s⁴(1−ξ²)f，积分域完全相同。两压力同除 P∥(b=1)，密度除 n(b=1)；先细化原始矩再除。零下限且 vc>0 时提取最小速度幂 q=min(β_mν(ν+1))，q>−3 可用 v^(2+q) Gauss–Jacobi 权重处理可积奇点。",
    "model": "有限模参考分布非负部分的数学矩，不宣称精确 Frank–Egedal 动力学解或实测群体。",
@@ -5500,7 +5500,7 @@
   },
   {
    "asset_id": "scirel.kinetic.mirror-invariant-distribution",
-   "source_sha256": "ba4f448c369f1d2063b5015ac497210d3d42cadfdd643c1aca3a888a3fb35184",
+   "source_sha256": "b48aeeb6b0110ae72dab22b62e78990a7b4d35512389d494b3034a05b5aa5573",
    "summary": "由能量和磁矩求参考双 Maxwell 相空间密度，可乘双端磁塞损失锥占据及部分回填。",
    "definition": "μ=mv_perp²/(2B)，E=mv_parallel²/2+μB+qφ，C=(B−B_ref)/T_parallel+B_ref/T_perp,ref。f=n_ref(m/2π)^1.5/(T_perp,ref sqrt(T_parallel))×exp[−(E−qφ_ref)/T_parallel−μB_ref(1/T_perp,ref−1/T_parallel)]×occupation。双塞时 occupation=refill+(1−refill)1[E<min(μB_left+qφ_left,μB_right+qφ_right)]，等于屏障归入耗尽支。归一化和指数/占据在对数域合成；以相对电势及缩放运算求 f/占据，不用大绝对 energy_j 中丢失的低位热能判断。",
    "model": "导引中心回旋对称不变量双 Maxwell 规定分布；不求解场或矩。",
@@ -5684,7 +5684,7 @@
   },
   {
    "asset_id": "scirel.kinetic.loss-cone-spectrum",
-   "source_sha256": "97a990505151ec99d559e0f761110ba1c4dfcbf43258ec9c57ef7cd5144bb21b",
+   "source_sha256": "b0fc7087b48453018294601192ad1e8cddca7f0ba3bc123e8c257852de79071d",
    "summary": "计算最低的若干有序偶宇称角向本征模，在出现整数阶时返回该整数阶，并使用正规初值问题解。",
    "definition": "求解 −[(1−ξ²)u′]′=λu，u(0)=1、u′(0)=0、u(ξ_tp)=0。通过连续 Sturm 相位 θ′=sqrt(λ)[cos²θ/(1−ξ²)+sin²θ]、θ(0)=π/2 排根，目标为 θ(ξ_tp)=(j+1)π。由 p(ξ)≤1 得到 Rayleigh 界，为每个根提供括区。通过一个独立的缩放线性初值方程求 u；它就是正规偶 ₂F₁(−ν/2,(ν+1)/2;1/2;ξ²)，λ=ν(ν+1)。阶数一般不是整数；当某个根恰好与整数阶重合时，返回该整数。不存在有限多项式截断。",
    "model": "正规自伴 Neumann/Dirichlet 角向 Sturm–Liouville 问题，不求分布演化。",
@@ -6449,7 +6449,7 @@
   },
   {
    "asset_id": "scirel.kinetic.frank-egedal-source-projection",
-   "source_sha256": "73437d18286b46e602d647939356b1ff50b961d80df5daee3016da5e41562a10",
+   "source_sha256": "be5698f0bf2c6aabd2a18fc91132dc8d80be8fcbeb6de17c3255b3dc3bc87fb3",
    "summary": "把点俯仰源投影到包含整数阶的正规偶角模，并用收敛求积求归一化。",
    "definition": "由 mirror_ratio 得 ξ_tp=sqrt(max(0,1−1/max(R,1e-12)))。阶数显式给定或调用谱算子；计算系数 c_ν=u_ν(clip(cosθ_NBI,0,ξ_tp))/(4π∫u_ν²dξ)。正规偶初值解不排除整数阶、不截断多项式；Gauss–Legendre 节点逐次加倍，初始节点解析估计角振荡，归一积分相对一致性须达1e-10。",
    "model": "规定点源的角模投影，不建立物理 NBI 群体。",
@@ -6530,7 +6530,7 @@
     {
      "name": "degree_source",
      "description": "所报告的阶数依据。",
-     "constraints": "caller_supplied、scirel.kinetic.loss_cone_spectrum 或 inactive_loss_cone；注入其他函数时谱标签仍固定。",
+     "constraints": "caller_supplied、scirel.mirror.loss_cone_spectrum 或 inactive_loss_cone；注入其他函数时谱标签仍固定。",
      "dtype": "字符串"
     },
     {
@@ -7431,7 +7431,7 @@
   },
   {
    "asset_id": "scirel.kinetic.mirror-constrained-moments",
-   "source_sha256": "2f39b3ee803fc40ed1f1bfa22391933c971eb1094142d70ae6ff702da577bdcd",
+   "source_sha256": "75b84d76cdd139e6a3d2a4984792bf3c2bd3fc961534d56fde264b3d7b46af92",
    "summary": "计算不变量双 Maxwell 的局部密度和平行/垂直压力，并可用双端损失锥俯仰积分修正。",
    "definition": "C=(B−B_ref)/T_parallel+B_ref/T_perp,ref，T_perp,local=B/C；n_full=exp[log(n_ref)+log(T_perp,local/T_perp,ref)−q(φ−φ_ref)/T_parallel]。令 x=μC，y=max(min(a_left x+b_left,a_right x+b_right),0)，a=(B_end−B)/(CT_parallel)，b=q(φ_end−φ)/T_parallel，分别积分 e^(−x)P(1/2,y)、e^(−x)P(3/2,y)、x e^(−x)P(1/2,y)。回填后乘 n_full、n_fullT_parallel、n_fullT_perp,local。纯磁采用解析角积分，一般情形在 sqrt(x) 上分屏障段控误差求积；对数合成乘积，先取电势差并缩放避免中间溢出。",
    "model": "含规定双塞损失锥的回旋对称双 Maxwell 矩；不自洽求电势或平衡。",

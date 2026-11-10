@@ -414,7 +414,7 @@ def test_capability_matrix_is_published_with_the_handbook(snapshot):
     matrix = json.loads(docs.read("capability-matrix.json"))
     assert matrix["schema"] == "scirel.capability-matrix"
     assert matrix["total_assets"] == len(docs.ids)
-    assert matrix["total_domains"] == 19
+    assert matrix["total_domains"] == 20
     page = docs.read("web/user-guide/capability-matrix.html").decode()
     assert "能力矩阵" in page and "capability-matrix.json" in page
     assert docs.read("CAPABILITY_MATRIX.md").startswith(b"# SciRel capability matrix")
