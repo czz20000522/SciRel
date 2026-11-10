@@ -68,6 +68,14 @@ macOS 用 Colima 起本机 Docker engine 时，禁止把整个 `$HOME` 挂进 VM
 [`scirel-acceptance` skill](skills/development/scirel-acceptance/SKILL.md)，改代码前先读它。
 不再维护 WSL、Windows 或 macOS 专属的隐藏测试环境。
 
+提交前的门禁按风险分层，防的是自己和 agent 的失误，不是攻击者：所有防线都绕得过，拦的是无心之失在
+不可逆之前被喊停。`pre-commit` 在宿主机上用 `python3 -I` 运行
+`skills/development/scirel-acceptance/scripts/precommit_check.py`，只扫描暂存文本里的凭据和私有路径：
+这类东西一旦进了公开历史，就要轮换凭据、改写历史，代价不可逆，值得堵在每一次提交上。lint、format 和
+lockfile 属于质量问题，改一次提交就能修，放在合并前的完整检查里跑即可，不值得绑死提交路径。hook 是绊网，
+绕得过，所以不能替代自己跑检查；反过来说，本该执行却静默跳过的检查等于防线失效——缺 `uv` 时完整检查必须
+显式判红，不能悄悄判绿。
+
 作放行依据的那次完整检查必须独占引擎：跑之前确认 `docker ps` 里没有其他容器，跑完记录当时是独占。
 并行容器只用于开发期局部验证，结果不写进 PR 证据，也不据此判红判绿。`tests/docs` 的 Sphinx 夹具在并发
 内存压力下会在 setup 阶段失败，那是假红，不是代码缺陷；遇到这种红先确认引擎是否被别的容器占着。

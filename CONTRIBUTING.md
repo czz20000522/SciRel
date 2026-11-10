@@ -27,6 +27,10 @@ git config core.hooksPath .githooks
 `context <name>` 将选择保存在未提交的共享 Git 元数据中，同一 clone 的 worktree 自动复用。临时覆盖可设置
 `SCIReL_DOCKER_CONTEXT`。未配置、空值或 `default` context 会直接报错。`doctor` 会显示选中的 context 和实际 engine 名称。
 
+`core.hooksPath` 指向 `.githooks` 后，`git commit` 在宿主机运行 `precommit_check.py`：只扫描暂存文本里的私有路径
+和密钥，只用标准库和 Git，不启动容器，Docker engine 停着也能提交。lint、format 和 lockfile 检查只在 `check`
+里运行。push 不触发任何检查，合并前自己跑一次完整检查。
+
 `prepare` 会在项目命名的容器卷中执行 `uv sync --locked --group test`，不会在宿主仓库里生成 `.venv`。
 `check` 是完整本地 CI。只跑一个测试文件时使用：
 
