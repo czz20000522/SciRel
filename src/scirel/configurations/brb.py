@@ -149,9 +149,8 @@ class BRB(Device):
 
     def __init__(self):
         super().__init__()
-        patch_kw = {}
-        self.hh_n = TREXCoil(1.1, patch_kw=patch_kw)
-        self.hh_s = TREXCoil(-1.1, patch_kw=patch_kw)
+        self.hh_n = TREXCoil(1.1)
+        self.hh_s = TREXCoil(-1.1)
         r0, z0 = 0.185725, 1.6367
         dr, dz = 0.010583333, 0.01031667
         self.ltrx_n = RectangularCoil(r0, z0, nr=10, nz=13, dr=dr, dz=dz)
@@ -172,12 +171,15 @@ class BRB(Device):
             )
 
     def add_cathode(self, *args, **kwargs):
+        """Refuse cathode geometry, which is outside the filament contract."""
         raise NotImplementedError("cathodes are outside the filament geometry contract")
 
     def add_anode(self, *args, **kwargs):
+        """Refuse anode geometry, which is outside the filament contract."""
         raise NotImplementedError("anodes are outside the filament geometry contract")
 
     def add_sweep(self, *args, **kwargs):
+        """Refuse persistent sweep geometry, which is not implemented."""
         raise NotImplementedError("persistent sweep geometry is not implemented")
 
 

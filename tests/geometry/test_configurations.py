@@ -1,7 +1,7 @@
 import numpy as np
 import pytest
 from scirel.configurations import BRB, TREXCoil, WHAM
-from scirel.electromagnetism import MagnetRing, RectangularCoil
+from scirel.electromagnetism import ArbitraryPoints, CurrentFilamentSet, MagnetRing, RectangularCoil
 
 
 def test_configurations_construct_and_preserve_source_counts():
@@ -43,3 +43,18 @@ def test_magnet_ring_rotate_then_translate_preserves_parameter_state():
     np.testing.assert_allclose(ring.rz_pts, rotated + [0.2, 0.1])
     np.testing.assert_allclose(ring.centroid, [1.2, 0.3])
     assert ring.mu_hat == pytest.approx(50.0)
+
+
+def test_filament_sources_reject_unknown_keywords_instead_of_ignoring_them():
+    for constructor, args in (
+        (CurrentFilamentSet, ()),
+        (ArbitraryPoints, ([[1.0, 0.0]],)),
+        (RectangularCoil, ()),
+        (MagnetRing, ()),
+        (TREXCoil, ()),
+    ):
+        with pytest.raises(TypeError):
+            constructor(*args, patch_kw={})
+    assert RectangularCoil(nr=2).npts == 2
+    assert MagnetRing().npts == 16
+    assert ArbitraryPoints([[1.0, 0.0]], current=2.0).current == 2.0

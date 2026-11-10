@@ -142,6 +142,28 @@ def test_scan_finds_silent_patterns_and_the_baseline_only_lets_known_hits_pass(t
     assert "new.py" in again.stdout and "code.py" not in again.stdout
 
 
+def test_scan_reports_diagonal_assembly_but_a_literal_non_finite_fill(tmp_path):
+    source = tmp_path / "src"
+    source.mkdir()
+    (source / "assembly.py").write_text(
+        "import numpy as np\n"
+        "def build(n):\n"
+        "    matrix = np.zeros((n, n))\n"
+        "    np.fill_diagonal(matrix, np.ones(n))\n"
+        "    return matrix\n"
+        "def sentinel(n):\n"
+        "    matrix = np.zeros((n, n))\n"
+        "    np.fill_diagonal(matrix, np.inf)\n"
+        "    return matrix\n"
+    )
+    done = _run("scan_hazards.py", str(source), "--json")
+    assert done.returncode == 1
+    flagged = {
+        hit["function"] for hit in json.loads(done.stdout) if hit["rule"] == "non-finite-replaced"
+    }
+    assert flagged == {"<module>.sentinel"}, flagged
+
+
 def test_docs_check_passes_a_complete_docstring(tmp_path):
     name = _package(tmp_path, GOOD)
     done = _run("check_docs_sync.py", name, "--src", str(tmp_path), "--unit-regex", r"\[[^\]]+\]")
