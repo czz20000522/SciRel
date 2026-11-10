@@ -3,6 +3,7 @@
 
 from __future__ import annotations
 
+from dataclasses import dataclass
 import fcntl
 import hashlib
 from pathlib import Path
@@ -18,15 +19,21 @@ VALIDATE_REPORT = "skills/development/usage/scirel-solving/scripts/validate_repo
 WHEEL = "scirel-0.0.0-py3-none-any.whl"
 
 
-NOT_RUN_WITHOUT_UV = ("lint", "format", "lockfile", "wheel build", "wheel exposure")
+@dataclass(frozen=True)
+class Step:
+    """One acceptance step. Without uv, a step marked ``requires_uv`` is NOT_RUN and fails."""
+
+    name: str
+    command: list[str]
+    requires_uv: bool = False
 
 
-def steps(output: Path) -> tuple[list[tuple[str, list[str]]], list[str]]:
-    """Return the steps to run and the steps uv is required for but cannot run."""
+def steps(output: Path) -> list[Step]:
     python = [sys.executable, "-B"]
+    wheels = output / "wheel"
     plan = [
-        ("tests", [*python, "-m", "pytest", "-q", "-p", "no:cacheprovider"]),
-        (
+        Step("tests", [*python, "-m", "pytest", "-q", "-p", "no:cacheprovider"]),
+        Step(
             "contracts and examples",
             [
                 *python,
@@ -36,11 +43,11 @@ def steps(output: Path) -> tuple[list[tuple[str, list[str]]], list[str]]:
                 "--execute-examples",
             ],
         ),
-        (
+        Step(
             "contract sync",
             [*python, "skills/development/scirel-acceptance/scripts/check_contract_sync.py"],
         ),
-        (
+        Step(
             "new hazard patterns",
             [
                 *python,
@@ -50,38 +57,49 @@ def steps(output: Path) -> tuple[list[tuple[str, list[str]]], list[str]]:
                 "skills/development/scirel-acceptance/hazard_baseline.json",
             ],
         ),
-        (
+        Step(
             "documentation build",
             [*python, "scripts/scirel_docs.py", "build", "--output", str(output / "docs")],
         ),
     ]
     for report in sorted(ROOT.glob("examples/*/REPORT.md")):
-        plan.append((f"report {report.parent.name}", [*python, VALIDATE_REPORT, str(report)]))
-    if not shutil.which("uv"):
-        # uv is the only source of lint, format, lockfile and wheel checks. A missing uv must fail
-        # the run: a silently skipped lint is not a green tree.
-        return plan, list(NOT_RUN_WITHOUT_UV)
-    plan.append(
-        ("lint", ["uv", "run", "--frozen", "ruff", "check", ".", "--output-format", "concise"])
+        plan.append(Step(f"report {report.parent.name}", [*python, VALIDATE_REPORT, str(report)]))
+    # uv is the only source of lint, format, lockfile and wheel checks. Marking the steps here, in
+    # the one list that defines them, keeps the uv and no-uv branches from drifting apart: a new
+    # uv-only step is a single entry with requires_uv=True.
+    plan.extend(
+        [
+            Step(
+                "lint",
+                ["uv", "run", "--frozen", "ruff", "check", ".", "--output-format", "concise"],
+                requires_uv=True,
+            ),
+            Step(
+                "format",
+                ["uv", "run", "--frozen", "ruff", "format", "--check", "."],
+                requires_uv=True,
+            ),
+            Step("lockfile", ["uv", "lock", "--check"], requires_uv=True),
+            Step(
+                "wheel build",
+                ["uv", "build", "--wheel", "--out-dir", str(wheels), "."],
+                requires_uv=True,
+            ),
+            Step(
+                "wheel exposure",
+                [
+                    *python,
+                    "scripts/check_wheel_exposure.py",
+                    "--source-root",
+                    str(ROOT / "src"),
+                    "--wheel",
+                    str(wheels / WHEEL),
+                ],
+                requires_uv=True,
+            ),
+        ]
     )
-    plan.append(("format", ["uv", "run", "--frozen", "ruff", "format", "--check", "."]))
-    plan.append(("lockfile", ["uv", "lock", "--check"]))
-    wheels = output / "wheel"
-    plan.append(("wheel build", ["uv", "build", "--wheel", "--out-dir", str(wheels), "."]))
-    plan.append(
-        (
-            "wheel exposure",
-            [
-                *python,
-                "scripts/check_wheel_exposure.py",
-                "--source-root",
-                str(ROOT / "src"),
-                "--wheel",
-                str(wheels / WHEEL),
-            ],
-        )
-    )
-    return plan, []
+    return plan
 
 
 def run_step(command: list[str]) -> subprocess.CompletedProcess:
@@ -113,18 +131,21 @@ def main() -> int:
         print("another check_all is running on this checkout; wait for it or stop it")
         return 2
     failed = []
+    not_run = []
     with tempfile.TemporaryDirectory(prefix="scirel-check-") as temporary:
-        plan, not_run = steps(Path(temporary))
-        for name in not_run:
-            print(f"NOT_RUN  {name}  (uv is not on PATH)", flush=True)
-            failed.append(name)
-        for name, command in plan:
+        has_uv = shutil.which("uv") is not None
+        for step in steps(Path(temporary)):
+            if step.requires_uv and not has_uv:
+                print(f"NOT_RUN  {step.name}  (uv is not on PATH)", flush=True)
+                not_run.append(step.name)
+                failed.append(step.name)
+                continue
             started = time.perf_counter()
-            completed = run_step(command)
+            completed = run_step(step.command)
             status = "PASS" if completed.returncode == 0 else "FAIL"
-            print(f"{status}  {name}  ({time.perf_counter() - started:.0f} s)", flush=True)
+            print(f"{status}  {step.name}  ({time.perf_counter() - started:.0f} s)", flush=True)
             if completed.returncode:
-                failed.append(name)
+                failed.append(step.name)
                 print((completed.stdout + completed.stderr)[-4000:])
     for leftover in ("build", "src/scirel.egg-info"):
         shutil.rmtree(ROOT / leftover, ignore_errors=True)
