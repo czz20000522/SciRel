@@ -18,10 +18,8 @@ to run five agents or load every skill for every operator.
 
 | Skill | Responsibility | Handoff |
 | --- | --- | --- |
-| `scientific-computation-asset-extraction` | Identify complete scientific mappings, graph boundaries, source scope and delivered contracts | Concrete relation/defect, affected nodes and ports |
-| `scientific-relation-implementation` | Derive and implement the justified correction | Changed relation, code, assumptions and impact |
+| `scientific-computation-asset-extraction` | Identify relations, derive and implement the justified correction in final form | Changed relation, code, assumptions and impact |
 | `scientific-computation-validation` | Independent oracle, meaningful tests, numerical and terminal-state verification | Actual metrics and separately bounded claims |
-| `scientific-operator-review` | Read-only challenge of the submitted revision and sufficiency of evidence | Advisory findings for the exact scope; never stage completion or approval |
 | `scientific-runtime-dataset-construction` | When needed, recover missing source state and record genuine before/after observations | Immutable observations, failure case and held-out inputs; never truth by itself |
 
 Cycle through the relevant owners until the known defect is repaired and validated, or a specific

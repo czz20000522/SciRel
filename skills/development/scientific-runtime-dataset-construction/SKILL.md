@@ -5,7 +5,7 @@ description: Capture source-runtime inputs, predecessor/hidden state, branches, 
 
 # Scientific runtime dataset construction
 
-Read the applicable shared operating contract once: [development lifecycle](../references/scirel-development-core.md) for D2/development work, or [extraction contract](../../extraction/scientific-computation-asset-extraction/references/scirel-skill-core.md) for D1/source-fidelity work. Do not reload it for each routed sub-skill.
+Read the shared operating contract once: [development lifecycle](../references/scirel-development-core.md). During extraction, the [extraction skill](../../extraction/scientific-computation-asset-extraction/SKILL.md) governs instead. Do not reload it for each routed sub-skill.
 Use the real bound source runtime to expose a named observation gap in D1 source-fidelity or a D2 correctness investigation. The dataset is external evidence, never a
 formal operator/TaskGraph dependency or a captured answer. This skill does not choose boundaries, implement science,
 judge correctness, write owner state or accept/release an asset.
@@ -25,7 +25,7 @@ human choice is a blocked owner decision with a reopen condition.
    `operators/` and `task_graphs/`.
 3. Validate capture integrity, reachability, semantic completion and provenance before handing observations to the
    caller. A partial/failed capture remains visible; do not fill missing rows from reports or interpolate hidden state.
-4. If proposing a typed carrier, bind it to source observations and distinguish it from a captured fixture. Route a relation gap to [D2 asset correctness](../integration/scientific-asset-correctness/SKILL.md) or, from D1 extraction, [relation implementation](../../extraction/scientific-relation-implementation/SKILL.md); claim evaluation always returns to [computation validation](../scientific-computation-validation/SKILL.md).
+4. If proposing a typed carrier, bind it to source observations and distinguish it from a captured fixture. Route a relation gap to [D2 asset correctness](../integration/scientific-asset-correctness/SKILL.md) or, during extraction, [the extraction skill](../../extraction/scientific-computation-asset-extraction/SKILL.md); claim evaluation always returns to [computation validation](../scientific-computation-validation/SKILL.md).
 
 Read [dataset contract](references/dataset_contract.md) for manifest/case fields and [boundary coverage](references/boundary_coverage.md)
 for case design. Use [method feedback protocol](references/method_feedback_protocol.md) only for a bounded routine

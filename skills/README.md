@@ -4,7 +4,7 @@ SciRel has three roles. Each has one entry skill and its own acceptance standard
 
 | Role | What it does | Entry skill | Done when |
 | --- | --- | --- | --- |
-| **Supplier** | Extracts scientific functions from a source project as self-contained candidates | [`scientific-computation-asset-extraction`](extraction/scientific-computation-asset-extraction/SKILL.md) | The packet passes `scripts/validate_admission.py` against [`contracts/admission`](../contracts/admission/README.md) and carries boundary tests and evidence |
+| **Supplier** | Extracts a source's core relations into an extraction package in SciReL's final form | [`scientific-computation-asset-extraction`](extraction/scientific-computation-asset-extraction/SKILL.md) | The package's patch passes the full check on the frozen commit, and its manifest and disposition reconcile with the relation count |
 | **Merger** | Brings candidates into the library: admission, contract, tests, review, documents | [`scirel-integration`](development/integration/scirel-integration/SKILL.md) | [`scirel-acceptance`](development/scirel-acceptance/SKILL.md) is green, code follows [`scirel-code-style`](development/scirel-code-style/SKILL.md), and the contract, implementation and tests agree |
 | **Consumer** | A user's agent answers a question with the delivered package | [`scirel-solving`](development/usage/scirel-solving/SKILL.md) | The report passes its validator and a physicist can follow it; [`scirel-outbound-evaluation`](development/scirel-outbound-evaluation/SKILL.md) measures this for maintainers |
 
@@ -19,11 +19,8 @@ SciRel has three roles. Each has one entry skill and its own acceptance standard
 
 | Skill | Use |
 | --- | --- |
-| `extraction/scientific-computation-asset-extraction` | Entry: D0 and D1 extraction |
-| `extraction/scientific-operator-review` | Review one extracted operator |
-| `extraction/scientific-relation-implementation` | Implement one relation |
-| `extraction/scientific-d2-decomposition`, `extraction/scientific-d3-decomposition` | D2 and D3 stages |
-| `extraction/scientific-requirements-extraction` | Requirement cases from a source |
+| `extraction/scientific-computation-asset-extraction` | Entry: skeleton, comparison, final-form implementation, extraction package |
+| `extraction/scientific-requirements-extraction` | Independent: capability problems for the problem bank |
 
 ## Merger
 

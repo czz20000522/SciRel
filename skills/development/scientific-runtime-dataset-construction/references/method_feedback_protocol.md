@@ -39,10 +39,10 @@ changes. The cases below are scoped evidence patterns, not a checklist every ext
   and dataset integrity belong here.
 - Candidate identity, framework ownership, operator/task-graph boundary, and bundle shape belong
   to `scientific-computation-asset-extraction`.
-- Scientific/numerical implementation belongs to `scientific-relation-implementation`.
+- Scientific/numerical implementation belongs to `scientific-computation-asset-extraction`.
 - Independent oracle choice, tolerances, residuals, refinement, and earned claims belong to
   `scientific-computation-validation`.
-- Acceptance decisions belong to `scientific-operator-review`.
+- Acceptance decisions belong to the maintenance line's review.
 
 If a finding affects two skills, put the authoritative rule in the owner and add only a short
 cross-reference in the other. Do not copy the same workflow into multiple `SKILL.md` files.

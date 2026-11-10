@@ -5,7 +5,7 @@ description: Design, execute, or assess claim-specific scientific and numerical 
 
 # Scientific computation validation
 
-Read the applicable shared operating contract once: [development lifecycle](../references/scirel-development-core.md) for D2/development work, or [extraction contract](../../extraction/scientific-computation-asset-extraction/references/scirel-skill-core.md) for D1/source-fidelity work. Do not reload it for each routed sub-skill.
+Read the shared operating contract once: [development lifecycle](../references/scirel-development-core.md). During extraction, the [extraction skill](../../extraction/scientific-computation-asset-extraction/SKILL.md) governs instead. Do not reload it for each routed sub-skill.
 This is the single validation route for D1 source-fidelity, D2 scientific/numerical correctness and declared D3 functional reassembly claims. It proves named claims for one exact target. It does not choose extraction boundaries, implement repairs,
 normalize candidates, approve assets, write stage state or release a package.
 

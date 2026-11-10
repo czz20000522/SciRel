@@ -1,101 +1,100 @@
 ---
 name: scientific-computation-asset-extraction
-description: Prepare a versioned source project in D0 and coordinate complete, source-faithful D1 extraction into source-free operators and TaskGraphs; diagnose existing extraction read-only.
+description: 从来源项目（源码、论文、材料）中找出核心物理关系，与冻结版 SciReL 合同比对后取补集，按 SciReL 最终形态实现并交付一个可续拆的拆解包。用于整项目拆解、定向拆解某项能力和续拆；不用于出题（见 scientific-requirements-extraction），也不用于合并入库。
 ---
 
-# Scientific computation asset extraction
+# 科学能力拆解
 
-Read [the shared operating contract](references/scirel-skill-core.md) first. This entrypoint is the D0/D1
-coordinator; it owns project scope, denominator, worker integration, stage standards and the immutable stage artifacts. It does not own
-D2 scientific correctness, D3 application acceptance, human approval, rights or release.
+你在一个独立容器里工作。容器里有来源材料和一份冻结版 SciReL。你的产物是一个**拆解包**：基于冻结版本的补丁，外加说明材料。合并线只消费这个包，而且只判题、评审，不会替你重写。所以你交出的必须已经是 SciReL 的最终形态，并且已经通过与合并线相同的检查。
 
-## Priority execution card
+设计理由见 `docs/maintainer/supply-pipeline.md`；分层、模型族和接口规范见 `skills/development/scirel-code-style/references/api-spec.md`。这两份都在冻结版 SciReL 里。
 
-This skill is the worker's operating protocol, not background reading. On
-entry, write a small state card with `owner`, `source/slice`, `stage`,
-`denominator`, `runtime`, `outputs`, `stop condition` and `reopen condition`.
-Then execute the smallest dynamic probe that distinguishes source behavior from
-an extraction or environment problem. Read supporting references only when the
-current step requires them; do not replace the protocol with a static summary.
+## 0. 开工
 
-Every selected relation needs a test matrix with normal, lower-bound and
-upper-bound cases, plus applicable degenerate, branch, failure and composition
-cases. Preserve the source behavior and failure rows. If a test exposes a
-general relation missing from the candidate, record it as a candidate capability
-or a successor task; do not silently specialize the implementation to the
-first example. A `SOURCE_HOLD` means the exact next evidence or probe is named;
-it is not a reason to stop a runnable branch.
+1. 确认以下几项都在。缺任何一项，就在 `PACKAGE.md` 里写明缺什么，然后停下，不要猜：
+   - 来源材料及其版本（commit、tag 或归档摘要）。来源目录**只读**，探针和修改都在副本里做。
+   - 冻结版 SciReL：某个 commit 的源码副本。在这个副本上检索合同、运行检查、生成补丁。
+   - 任务范围：整个来源，或者"只要能力 X"。
+   - 输出目录。
+   - 可选：题库中与本来源相关的题目。
+2. 如果输出目录里已经有 `PACKAGE.md`，这是**续拆**。先读它的"未完成项"和随附的缺陷清单，从那里接着做，不要从头开始。
+3. 否则，按 [拆解包格式](references/package-format.md) 新建 `PACKAGE.md`，写上任务、来源版本、冻结 commit 和范围。之后每完成一步就更新它。容器随时可能被回收，`PACKAGE.md` 必须始终足以让另一个 agent 接手。
 
-The handoff must state the public capability claim, task-specific glue that is
-still needed, tested boundary families, failed and `NOT_RUN` rows, and the
-reopen trigger. A worker is complete only when the declared scope and its
-evidence packet are complete, not when a single demo output exists.
+## 1. 找骨架
 
-For a bounded portfolio wave, close with a source-free evidence packet and a
-projection note. The packet records observed source behavior, independently
-meaningful relation identities, operator/task-graph boundaries, tests and
-failures. The projection note records provisional candidates for public
-capabilities, source-specific coordination and unresolved decisions. If no
-consumer problem exists, do not invent task glue; leave consumer-dependent
-classification for the receiving/maintenance line. Include the smallest next
-probe for each unresolved boundary.
+1. 从来源的入口、示例、测试和配套论文出发，沿主计算路径往下追，记下路径上的每一个物理关系。这条关系链就是**骨架**。
+2. 如果范围是"只要能力 X"，就从 X 往下追它的依赖链，只记这条链上的关系。
+3. 主路径之外的关系，只在它能独立复用时才记。
+4. 对每个记下的关系，写一张关系卡：作用（一句话）、输入和输出（含单位、形状）、模型假设、来源锚点（写进 `private/`）。
+5. 遇到下面这些，不拆，在 `disposition.md` 写一行"类别 + 理由"：
+   - 画图、文件路径、命令行、日志、来源自己的流程编排（驱动循环、配置解析）；
+   - 包装类、来源特有的组织方式。这时只拆被包住的物理关系；
+   - 与物理无关的数值工具。SciPy 有的直接用 SciPy；确实需要的放进 `scirel.numerics`；
+   - 装置数据（某台装置的线圈表等）。把它记作参考数据候选，不算能力。
+6. 来源中每一个文件或模块，要么出现在关系卡里，要么出现在 `disposition.md` 里。两边都没有的，就是漏拆。
 
-The caller owns the lifecycle of the main extraction session. A worker may
-archive only child sessions it created and only after their assigned packet is
-sealed and readable. Reopen only for the named successor condition; do not
-archive the caller's session or any session owned by another coordinator.
+## 2. 与冻结合同比对
 
-## Trigger and route
+对每张关系卡，在冻结版 SciReL 里检索合同（`python scripts/scirel_docs.py query --source-root . --describe`，再用 `search`、`get`），然后给出且只给出下面一个结论：
 
-| Request | Load one reference / route |
-| --- | --- |
-| inspect progress or an existing handoff | [progress diagnosis](references/progress_diagnosis.md), read-only |
-| prepare or freeze source | [material access and preprocessing](references/material_access_and_preprocessing.md#d0-source-preparation) |
-| understand why and how to decompose | [decomposition purpose and use](references/decomposition-purpose.md) |
-| check role knowledge and delivery boundaries | [information boundaries](references/information_boundaries.md) |
-| inventory candidate capabilities and receiver selection | [candidate capability inventory](references/core_capability_selection.md) |
-| decide operator/TaskGraph/support/disposition | [asset projection decision](references/asset_projection_decision_manual.md) |
-| map source framework or physics | [source framework method](references/source_framework_production_manual.md); physics manual only if needed |
-| implement one source-backed relation | [relation implementation](../scientific-relation-implementation/SKILL.md), `source_fidelity` |
-| compare source and candidate | [computation validation](../../development/scientific-computation-validation/SKILL.md), `source_fidelity` |
-| recover hidden state or missing observations | [source-free playbook](references/source_free_extraction_playbook.md), then runtime dataset construction |
-| review fidelity/completeness | [operator review](../scientific-operator-review/SKILL.md), `source_fidelity` |
-| package/load a bundle | [intake directory contract](references/intake_directory_contract.md) |
-| run an external worker or close FINAL | [external run and FINAL gates](references/external-run-and-final-gate.md) |
-| prepare or check the final delivery package | [delivery package format](references/delivery-package.md) |
-| repeated work or evidence invalidation | [workflow optimization](references/workflow_optimization.md) |
+| 结论 | 判断依据 | 接下来做什么 |
+| --- | --- | --- |
+| 已有 | 物理输入、输出、模型都相同 | 不拆。把来源与 SciReL 在同一组输入上的结果对照一次；不一致的，按第 4 节的物理纠正规则处理，或者开工单 |
+| 新 method | 同一个物理关系，模型或拟合不同 | 作为已有族的新 `method` 实现，签名和 Result 键与族内保持一致 |
+| 全新 | 库里没有这个关系 | 实现。先按分层表确定领域和层 |
+| 不收 | 不满足第 1 步的要求 | 写进 `disposition.md` |
 
-Do not preload the references in the table. A specialist returns a bounded candidate or evidence; the coordinator
-owns integration and never self-approves independent review.
+不要因为"名字像"就判为已有，判断依据是物理输入、输出和模型。拿不准时选"全新"，并在 `manifest.md` 中写明疑似和谁重复。
 
-## D0 then D1
+结论写进 `manifest.md`，有题库题目的，标上对应的题号。
 
-1. Keep official upstream read-only. In an owned workcopy, build or reuse the source index, record upstream
-   delta and retained entrypoints, and freeze a digest-bound D0. Bind the runtime-provided public admission
-   contract/tool bundle and its identity together with the source and method; use the early producer/preflight
-   route in [delivery package format](references/delivery-package.md). D0 preparation is not scientific qualification.
-2. Bind D1 to that exact D0. Map the complete frozen-D0 capability denominator, material branches, state/order,
-   terminal outputs and source failures. A partial pilot must declare its narrower denominator and cannot be called
-   project completion.
-3. Partition by scientific relation and target path, not file count. Workers use private writes and scoped material;
-   one integrator assembles the candidate. Verify actual runner/model/material access before dispatch and preserve
-   prompt, session, stdout/stderr and resumable output. Select a complete declared source scope, which may be
-   partial; do not derive its denominator backwards from receiver catalog entries or question inputs.
-   A process or compact report is not a FINAL artifact.
-4. Implement or wrap source behavior with the smallest interface/dependency change. Use `source_fidelity`: the
-   frozen D0 is the oracle, including reproducible defects. Record source issues for D2; repair only introduced
-   extraction/interface defects here.
-5. Close the full denominator with attributable package, source-free, source-comparison and composition evidence,
-   including material branch/state/failure cases. Preserve uncovered scope and `NOT_RUN`; never shrink cases,
-   loosen tolerances or overwrite frozen evidence.
-6. Save a durable handoff containing exact bundle/dependency/runtime identities, source mapping, evidence hashes,
-   claim ceiling, limitations, next D2 owner and reopen condition. Preserve capability-level replay inputs and
-   observations for downstream evidence consumers under the [evidence lifecycle](references/evidence_persistence_boundary.md);
-   source-comparison PASS alone does not retire them. Formal asset documents belong after D2 stability.
+## 3. 按 SciReL 最终形态实现
 
-## Failure and output
+在冻结版 SciReL 的副本里直接修改 `src/`、`tests/`、`catalog/`：
 
-Classify each issue as source behavior, extraction defect, runtime/dependency, evidence gap or owner decision.
-Keep the original error and exit status; a checker repair creates a successor receipt and reruns only affected
-comparisons. Return the shared contract's compact handoff with `covered/failed/blocked/NOT_RUN/inapplicable` counts.
-D1 completion means source fidelity/completeness only; it is not correctness, endorsement or release.
+1. 遵守 api-spec：`verb_object` 命名、参数显式写出（不用 `inputs` mapping 或 `**kwargs`）、多个返回量用 `Result`、完整的 numpydoc，并写明合同 ID 的领域段等于模块所在领域。
+2. 去掉来源的痕迹：不用来源的函数名、前缀、缩写、类层次，也不保留只为兼容来源而存在的布尔开关或参数别名。
+3. 依赖只能往下层走（分层表），不能和同层领域互相引用。
+4. 报错和警告遵守 api-spec 的要素：哪个参数、违反了什么、实际值、合法值、合同 ID。超出适用范围不能静默截断。
+5. 合同由代码派生：签名、单位、Raises 先写在 docstring，合同照着写，不要反过来。
+
+## 4. 测试、证据与物理纠正
+
+按 [测试与证据](references/tests-and-evidence.md) 执行。要点：
+
+- 每个关系的测试矩阵至少覆盖：正常、下界、上界；适用时还要覆盖退化、分支、失败路径、迭代终止和组合。
+- 每条测试的预期值都要标明来源：解析 / 文献 / 守恒 / 来源输出。**优先用独立依据**（可以联网检索文献）。只有来源输出作依据的，在 `evidence/` 里显式标出。
+- 发现来源在物理上有错时，按 RULES §6 处理：
+  - 有依据（文献、推导、独立对照），并能说明这不是来源有意的近似 → 实现正确版本，在 `evidence/` 写明原行为、依据、改动和前后对比；
+  - 没有依据 → 照来源实现，把疑点写进合同的局限性；影响面大的，开工单。
+- 不放宽容差，不删除失败的用例，不用实现的输出去反推预期值。
+
+## 5. 打包与自检
+
+1. 生成补丁：在副本里提交，然后对冻结 commit 运行 `git format-patch`，结果放进 `patch/`。
+2. 按 [拆解包格式](references/package-format.md) 补齐 `manifest.md`、`evidence/`、`disposition.md`、`tickets/` 和 `private/`。
+3. 在副本上运行完整检查：`python skills/development/scirel-acceptance/scripts/check_all.py`（容器里需要有 uv）。把步骤数和 pytest 的选中、通过、失败、跳过数写进 `PACKAGE.md`。
+4. 对账：
+   - `manifest.md` 里各结论的数量，加上 `disposition.md` 的条数，等于关系卡总数；
+   - 每个"全新"和"新 method"在补丁里都有实现、测试和合同。
+5. 完整检查不通过，或者对账对不上，就不能把 `PACKAGE.md` 的状态写成 `done`，而要写成 `partial`，并列出未完成项。
+
+## 6. 工单
+
+遇到下面的情况，在 `tickets/` 里写一张工单，格式见 `docs/maintainer/supply-pipeline.md` 第 7 节。写之前先执行安全默认：不改实现，把疑点写进局限性；新增的能力先不放进补丁。
+
+- 你和来源（或冻结合同）之间有物理分歧，但双方都拿不出决定性的证据；
+- 存在几种合法的约定（单位制、符号、归一化），需要人来选定；
+- 范围问题：收不收、拆到哪一层。
+
+工单只写物理内容和选项。**不写来源项目的名字、路径或未公开的材料**，因为工单最终会进入公开仓库。需要对照来源时，写"见本拆解包 `private/`"。
+
+## 状态词
+
+`passed`、`failed`、`blocked`（缺一个必需的事实或决定）、`NOT_RUN`（没有执行）、`inapplicable`。`blocked` 和 `NOT_RUN` 都不算通过。第一次失败的原始报错和退出码要原样保留，修复后重跑的结果另记一条，不覆盖原记录。
+
+## 不做的事
+
+- 不合并入库，不修改冻结版 SciReL 以外的仓库，不写来源目录。
+- 不为了凑覆盖率去实现胶水代码，也不把来源的驱动流程包装成公开函数。
+- 不把来源身份写进 `patch/`、`manifest.md`、`evidence/`、`disposition.md` 或 `tickets/`；来源身份只出现在 `private/`。
