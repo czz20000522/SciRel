@@ -201,3 +201,74 @@ def test_package_ticket_must_follow_the_format(setup):
     (package / "tickets/T-2026-0001.md").write_text("---\nid: T-2026-0001\n---\n", encoding="utf-8")
     code, out = _run(package, repo)
     assert code == 1 and "missing key: kind" in out, out
+
+
+def _commit_onto_package(package, repo, change):
+    """Rebuild the package patch with one more commit made by ``change(repo)``."""
+    commit = [
+        line
+        for line in (package / "PACKAGE.md").read_text(encoding="utf-8").splitlines()
+        if "冻结 SciReL commit" in line
+    ][0].split("：")[1]
+    for patch in sorted((package / "patch").glob("*.patch")):
+        _git(repo, "am", "-q", str(patch))
+    change(repo)
+    _git(repo, "add", "-A")
+    _git(repo, "commit", "-qm", "extra change")
+    for patch in (package / "patch").glob("*.patch"):
+        patch.unlink()
+    _git(repo, "format-patch", "-q", "-o", str(package / "patch"), commit)
+    _git(repo, "reset", "-q", "--hard", commit)
+
+
+def _edit_existing_contract(repo):
+    path = repo / f"catalog/examples/{TEMPLATE}.json"
+    data = json.loads(path.read_text(encoding="utf-8"))
+    data["summary"] += " Changed."
+    path.write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
+
+
+def test_unlisted_added_contract_is_rejected(setup):
+    package, repo = setup
+
+    def add_unlisted(repo):
+        source = repo / f"catalog/examples/{NEW_ID}.json"
+        data = json.loads(source.read_text(encoding="utf-8"))
+        data["asset_id"] = "scirel.fusion.hidden-relation"
+        data["public_api"]["python"]["module"] = "scirel.fusion.hidden_relation"
+        (repo / "catalog/examples/scirel.fusion.hidden-relation.json").write_text(
+            json.dumps(data), encoding="utf-8"
+        )
+
+    _commit_onto_package(package, repo, add_unlisted)
+    code, out = _run(package, repo)
+    assert (
+        code == 1 and "adds scirel.fusion.hidden-relation but manifest.md marks it nowhere" in out
+    ), out
+
+
+def test_changed_existing_contract_must_be_declared(setup):
+    package, repo = setup
+    _commit_onto_package(package, repo, _edit_existing_contract)
+    code, out = _run(package, repo)
+    assert code == 1 and f"the patch changes {TEMPLATE} but manifest.md marks it 已有" in out, out
+
+
+def test_declared_correction_of_existing_contract_needs_evidence(setup):
+    package, repo = setup
+
+    def correct(repo):
+        _edit_existing_contract(repo)
+        for test in json.loads(
+            (repo / f"catalog/examples/{TEMPLATE}.json").read_text(encoding="utf-8")
+        )["verification"]["tests"]:
+            (repo / test).parent.mkdir(parents=True, exist_ok=True)
+            (repo / test).write_text("def test_placeholder():\n    assert True\n")
+
+    _commit_onto_package(package, repo, correct)
+    (package / "manifest.md").write_text(MANIFEST.replace("对照一致", "物理纠正"), encoding="utf-8")
+    code, out = _run(package, repo)
+    assert code == 1 and f"{TEMPLATE}: evidence/{TEMPLATE}.md is missing" in out, out
+    (package / f"evidence/{TEMPLATE}.md").write_text(EVIDENCE, encoding="utf-8")
+    code, out = _run(package, repo)
+    assert code == 2, out

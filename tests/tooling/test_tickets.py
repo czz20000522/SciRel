@@ -61,7 +61,7 @@ def test_open_ticket_cannot_carry_a_resolution():
 def test_decided_needs_enough_agreeing_reviewers():
     one = '[{"reviewer": "r1", "option": "A", "rationale": "x", "date": "2026-11-11"}]'
     errors = tickets.check(_ticket(status="decided", resolution="A", decisions=one))
-    assert any("needs 2 agreeing" in e for e in errors)
+    assert any("needs 2 distinct agreeing" in e for e in errors)
 
 
 def test_split_human_decisions_cannot_be_decided():
@@ -102,3 +102,16 @@ def test_package_tickets_must_still_be_open():
     assert any(
         "status must be one of open" in e for e in tickets.check(text, allowed_statuses=("open",))
     )
+
+
+def test_one_reviewer_cannot_vote_twice_or_anonymously():
+    twice = (
+        '[{"reviewer": "r1", "option": "A", "rationale": "x", "date": "d"},'
+        ' {"reviewer": "r1", "option": "A", "rationale": "x", "date": "d"}]'
+    )
+    errors = tickets.check(_ticket(status="decided", resolution="A", decisions=twice))
+    assert any("only one decision" in e for e in errors)
+    assert any("needs 2 distinct agreeing" in e for e in errors)
+    anonymous = '[{"option": "A"}, {"option": "A"}]'
+    errors = tickets.check(_ticket(status="decided", resolution="A", decisions=anonymous))
+    assert any("must name its reviewer" in e for e in errors)
