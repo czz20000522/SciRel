@@ -93,6 +93,8 @@ Bring existing functions up to this as they are touched. New functions meet it f
 
 ## Deprecation
 
+Nothing is published to PyPI yet; SciRel is used internally or delivered as a built-in capability, so the pre-release rule applies.
+
 Before the first public release, rename directly and update every caller, with no alias. After it, keep an old name for at least two minor releases, emit `DeprecationWarning` naming the replacement, and record it in the release notes. Do not change the meaning of an existing name or parameter in place.
 
 ## Migration status
