@@ -18,7 +18,11 @@ VALIDATE_REPORT = "skills/development/usage/scirel-solving/scripts/validate_repo
 WHEEL = "scirel-0.0.0-py3-none-any.whl"
 
 
-def steps(output: Path) -> list[tuple[str, list[str]]]:
+NOT_RUN_WITHOUT_UV = ("lint", "format", "lockfile", "wheel build", "wheel exposure")
+
+
+def steps(output: Path) -> tuple[list[tuple[str, list[str]]], list[str]]:
+    """Return the steps to run and the steps uv is required for but cannot run."""
     python = [sys.executable, "-B"]
     plan = [
         ("tests", [*python, "-m", "pytest", "-q", "-p", "no:cacheprovider"]),
@@ -53,28 +57,31 @@ def steps(output: Path) -> list[tuple[str, list[str]]]:
     ]
     for report in sorted(ROOT.glob("examples/*/REPORT.md")):
         plan.append((f"report {report.parent.name}", [*python, VALIDATE_REPORT, str(report)]))
-    if shutil.which("uv"):
-        plan.append(
-            ("lint", ["uv", "run", "--frozen", "ruff", "check", ".", "--output-format", "concise"])
+    if not shutil.which("uv"):
+        # uv is the only source of lint, format, lockfile and wheel checks. A missing uv must fail
+        # the run: a silently skipped lint is not a green tree.
+        return plan, list(NOT_RUN_WITHOUT_UV)
+    plan.append(
+        ("lint", ["uv", "run", "--frozen", "ruff", "check", ".", "--output-format", "concise"])
+    )
+    plan.append(("format", ["uv", "run", "--frozen", "ruff", "format", "--check", "."]))
+    plan.append(("lockfile", ["uv", "lock", "--check"]))
+    wheels = output / "wheel"
+    plan.append(("wheel build", ["uv", "build", "--wheel", "--out-dir", str(wheels), "."]))
+    plan.append(
+        (
+            "wheel exposure",
+            [
+                *python,
+                "scripts/check_wheel_exposure.py",
+                "--source-root",
+                str(ROOT / "src"),
+                "--wheel",
+                str(wheels / WHEEL),
+            ],
         )
-        plan.append(("format", ["uv", "run", "--frozen", "ruff", "format", "--check", "."]))
-        plan.append(("lockfile", ["uv", "lock", "--check"]))
-        wheels = output / "wheel"
-        plan.append(("wheel build", ["uv", "build", "--wheel", "--out-dir", str(wheels), "."]))
-        plan.append(
-            (
-                "wheel exposure",
-                [
-                    *python,
-                    "scripts/check_wheel_exposure.py",
-                    "--source-root",
-                    str(ROOT / "src"),
-                    "--wheel",
-                    str(wheels / WHEEL),
-                ],
-            )
-        )
-    return plan
+    )
+    return plan, []
 
 
 def run_step(command: list[str]) -> subprocess.CompletedProcess:
@@ -107,7 +114,11 @@ def main() -> int:
         return 2
     failed = []
     with tempfile.TemporaryDirectory(prefix="scirel-check-") as temporary:
-        for name, command in steps(Path(temporary)):
+        plan, not_run = steps(Path(temporary))
+        for name in not_run:
+            print(f"NOT_RUN  {name}  (uv is not on PATH)", flush=True)
+            failed.append(name)
+        for name, command in plan:
             started = time.perf_counter()
             completed = run_step(command)
             status = "PASS" if completed.returncode == 0 else "FAIL"
@@ -117,6 +128,8 @@ def main() -> int:
                 print((completed.stdout + completed.stderr)[-4000:])
     for leftover in ("build", "src/scirel.egg-info"):
         shutil.rmtree(ROOT / leftover, ignore_errors=True)
+    if not_run:
+        print("A missing uv fails the run: lint, format, lockfile and wheel checks did not run.")
     print("ALL GREEN" if not failed else f"FAILED: {failed}")
     return 1 if failed else 0
 

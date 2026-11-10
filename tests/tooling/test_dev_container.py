@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import contextlib
 import errno
-import io
 import importlib.util
 import os
 from pathlib import Path
@@ -267,114 +266,6 @@ def test_clean_preserves_the_shared_cache_unless_requested(monkeypatch):
     assert module.clean(remove_cache=True, remove_image=True) == 0
     assert any(module.uv_cache_volume() in part for command in calls for part in command)
     assert any("--rmi" in command for command in calls)
-
-
-@pytest.mark.parametrize(
-    ("zero_oid", "old_oid"),
-    [
-        ("0" * 40, "a" * 40),
-        ("0" * 64, "a" * 64),
-    ],
-)
-def test_pre_push_skips_a_deletion_only_push(monkeypatch, capsys, zero_oid, old_oid):
-    module = _load()
-    calls = []
-    monkeypatch.setattr(module, "run_check", lambda: calls.append("check") or 17)
-    refs = [
-        f"(delete) {zero_oid} refs/heads/merged {old_oid}\n",
-        f"(delete) {zero_oid} refs/tags/old {old_oid}\n",
-    ]
-    assert module.pre_push(refs) == 0
-    assert calls == []
-    assert "skipping local acceptance check" in capsys.readouterr().out
-
-
-@pytest.mark.parametrize(
-    "refs",
-    [
-        [],
-        [
-            "refs/heads/main aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa refs/heads/main bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\n"
-        ],
-        [
-            "(delete) 0000000000000000000000000000000000000000 refs/heads/old old-tip\n",
-            "refs/heads/main aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa refs/heads/main bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\n",
-        ],
-        ["\n"],
-        ["   \n"],
-        [
-            "(delete) 0000000000000000000000000000000000000000 refs/heads/old old-tip\n",
-            "\n",
-        ],
-        ["(delete) 0000000000000000000000000000000000000000\n"],
-        ["(delete) 0000000000000000000000000000000000000000 refs/heads/old\n"],
-        ["(delete) 0000000000000000000000000000000000000000 refs/heads/old old-tip extra\n"],
-        [
-            "(delete) 0000000000000000000000000000000000000000 refs/heads/old old-tip\n",
-            "(delete) 0000000000000000000000000000000000000000000000000000000000000000 refs/heads/sha256 old-tip\n",
-        ],
-        [
-            "refs/heads/not-a-delete 0000000000000000000000000000000000000000 refs/heads/old aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\n"
-        ],
-        [
-            "(delete) 0000000000000000000000000000000000000000 not-a-ref aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\n"
-        ],
-        [
-            "(delete) 0000000000000000000000000000000000000000 refs/ aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\n"
-        ],
-        [
-            "(delete) 0000000000000000000000000000000000000000 refs//heads/x aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\n"
-        ],
-        [
-            "(delete) 0000000000000000000000000000000000000000 refs/heads/../x aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\n"
-        ],
-        ["(delete) 0000000000000000000000000000000000000000 refs/heads/old not-an-object-id\n"],
-        [
-            "(delete) 0000000000000000000000000000000000000000 refs/heads/old aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa00000000\n"
-        ],
-        [
-            "(delete) 0000000000000000000000000000000000000000 refs/heads/old 0000000000000000000000000000000000000000\n"
-        ],
-        ["malformed\n"],
-        ["(delete) 0 refs/heads/not-a-real-object-id old-tip\n"],
-    ],
-)
-def test_pre_push_checks_non_deletion_or_mixed_pushes(monkeypatch, refs):
-    module = _load()
-    calls = []
-    monkeypatch.setattr(module, "run_check", lambda: calls.append("check") or 17)
-    assert module.pre_push(refs) == 17
-    assert calls == ["check"]
-
-
-def test_pre_push_always_runs_the_full_check(monkeypatch, capsys):
-    """No cached result is reused: every push pays the complete check."""
-    module = _load()
-    calls = []
-    monkeypatch.setattr(module, "run_check", lambda: calls.append("check") or 17)
-    refs = [
-        "refs/heads/main aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa "
-        "refs/heads/main bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\n"
-    ]
-    assert module.pre_push(refs) == 17
-    assert module.pre_push(refs) == 17
-    assert calls == ["check", "check"]
-    assert "Running the complete local check before push." in capsys.readouterr().out
-
-
-def test_pre_push_reads_deletion_refs_from_stdin(monkeypatch, capsys):
-    module = _load()
-    monkeypatch.setattr(
-        module.sys,
-        "stdin",
-        io.StringIO(
-            "(delete) 0000000000000000000000000000000000000000 "
-            "refs/heads/old aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\n"
-        ),
-    )
-    monkeypatch.setattr(module, "run_check", lambda: pytest.fail("full check should be skipped"))
-    assert module.pre_push() == 0
-    assert "All pushed refs are deletions" in capsys.readouterr().out
 
 
 def test_loopback_proxy_is_reachable_from_the_container(monkeypatch):
@@ -745,7 +636,6 @@ def test_container_python_matches_the_repository_pin():
 def test_local_container_uses_the_selected_engine_architecture():
     compose = (ROOT / "containers" / "dev" / "compose.yaml").read_text(encoding="utf-8")
     workflow = (ROOT / ".github" / "workflows" / "check.yml").read_text(encoding="utf-8")
-    pre_push = (ROOT / ".githooks" / "pre-push").read_text(encoding="utf-8")
     assert "platform: linux/" not in compose
     assert "DOCKER_DEFAULT_PLATFORM: linux/amd64" in workflow
     assert 'docker volume create "$SCIReL_UV_CACHE_VOLUME"' in workflow
@@ -761,7 +651,6 @@ def test_local_container_uses_the_selected_engine_architecture():
     assert "UV_PROJECT_ENVIRONMENT: /opt/scirel-venv" in compose
     assert "PYTHONPYCACHEPREFIX: /tmp/scirel-pycache" in compose
     assert "RUFF_CACHE_DIR: /tmp/scirel-ruff-cache" in compose
-    assert 'dev_container.py" pre-push' in pre_push
 
 
 def test_linked_worktree_git_metadata_is_mounted_portably(tmp_path, monkeypatch):

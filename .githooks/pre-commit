@@ -1,14 +1,16 @@
 #!/bin/sh
-# Run the staged-file check in the same Linux environment as CI.
+# Scan staged files on the host: the standard library and git only, so a commit works with the
+# Docker engine stopped. Lint and format run in the complete check, not here.
 root="$(git rev-parse --show-toplevel)"
+scanner="$root/skills/development/scirel-acceptance/scripts/precommit_check.py"
 if command -v python3 >/dev/null 2>&1; then
-    exec python3 "$root/scripts/dev_container.py" precommit
+    exec python3 -I "$scanner"
 fi
 if command -v python >/dev/null 2>&1; then
-    exec python "$root/scripts/dev_container.py" precommit
+    exec python -I "$scanner"
 fi
 if command -v py >/dev/null 2>&1; then
-    exec py -3 "$root/scripts/dev_container.py" precommit
+    exec py -3 -I "$scanner"
 fi
-echo "Python 3 is required to enter the SciRel development container." >&2
+echo "Python 3 is required to scan staged files before committing." >&2
 exit 127
