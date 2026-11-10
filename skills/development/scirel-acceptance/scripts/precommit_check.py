@@ -1,12 +1,17 @@
 #!/usr/bin/env python3
-"""Fast checks on staged files. The complete check is check_all.py in this directory."""
+"""Scan staged files before a commit, on the host.
+
+This runs from `.githooks/pre-commit` with the host `python3 -I` and must stay on the standard
+library plus `git` alone: a commit must work with the Docker engine stopped, and the hook must not
+need the development container's environment. Lint, format and the wheel checks belong to
+`check_all.py`, the complete check.
+"""
 
 from __future__ import annotations
 
 from pathlib import Path
 import re
 import subprocess
-import sys
 
 ROOT = Path(__file__).resolve().parents[4]
 TEXT_SUFFIXES = {".md", ".py", ".json", ".toml", ".yaml", ".yml", ".txt", ".rst", ".sh"}
@@ -53,27 +58,9 @@ def scan(names: list[str], read=None) -> list[str]:
     return errors
 
 
-def lint(names: list[str]) -> list[str]:
-    targets = [
-        name for name in names if name.endswith(".py") and name.startswith(("src/", "tests/"))
-    ]
-    if not targets:
-        return []
-    ruff = [sys.executable, "-m", "ruff"]
-    errors = []
-    for command in (
-        [*ruff, "check", "--quiet", *targets],
-        [*ruff, "format", "--check", "--quiet", *targets],
-    ):
-        done = subprocess.run(command, cwd=ROOT, capture_output=True, text=True)
-        if done.returncode:
-            errors.append((done.stdout + done.stderr).strip() or f"failed: {' '.join(command)}")
-    return errors
-
-
 def main() -> int:
     names = staged()
-    errors = scan(names) + lint(names)
+    errors = scan(names)
     for error in errors:
         print("ERROR:", error)
     if errors:

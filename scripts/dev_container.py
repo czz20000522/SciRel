@@ -4,7 +4,7 @@
 from __future__ import annotations
 
 import argparse
-from collections.abc import Iterable, Iterator
+from collections.abc import Iterator
 from contextlib import contextmanager
 import errno
 import hashlib
@@ -510,48 +510,6 @@ def run_check() -> int:
     return run_in_container(shell_command(script))
 
 
-def _all_pushed_refs_are_deletions(lines: Iterable[str]) -> bool:
-    object_id_length = None
-    saw_record = False
-    for line in lines:
-        record = line.split()
-        if len(record) != 4:
-            return False
-        local_ref, local_object, remote_ref, remote_object = record
-        if local_ref != "(delete)" or not remote_ref.startswith("refs/"):
-            return False
-        try:
-            git_output("check-ref-format", remote_ref)
-        except (OSError, RuntimeError):
-            return False
-        lengths = (len(local_object), len(remote_object))
-        if lengths not in {(40, 40), (64, 64)}:
-            return False
-        if any(character not in "0123456789abcdefABCDEF" for character in remote_object):
-            return False
-        if set(local_object) != {"0"} or set(remote_object) == {"0"}:
-            return False
-        if object_id_length is None:
-            object_id_length = lengths[0]
-        elif lengths[0] != object_id_length:
-            return False
-        saw_record = True
-    return saw_record
-
-
-def pre_push(refs: Iterable[str] | None = None) -> int:
-    if refs is None:
-        try:
-            refs = sys.stdin.readlines()
-        except (AttributeError, OSError):
-            refs = []
-    if _all_pushed_refs_are_deletions(refs):
-        print("All pushed refs are deletions; skipping local acceptance check.")
-        return 0
-    print("Running the complete local check before push.")
-    return run_check()
-
-
 def linked_worktree_git_context() -> tuple[Path, str] | None:
     """Return shared Git metadata for a linked worktree, or ``None`` otherwise."""
     if not (ROOT / ".git").is_file():
@@ -915,8 +873,6 @@ def main() -> int:
     subparsers.add_parser("prepare", help="sync the locked test environment")
     subparsers.add_parser("shell", help="open a shell in the development container")
     subparsers.add_parser("check", help="run the complete acceptance check")
-    subparsers.add_parser("precommit", help="run the staged-file pre-commit check")
-    subparsers.add_parser("pre-push", help="run the full check before a push")
     pytest_parser = subparsers.add_parser("pytest", help="run pytest with optional arguments")
     pytest_parser.add_argument("arguments", nargs=argparse.REMAINDER)
     clean_parser = subparsers.add_parser(
@@ -946,13 +902,6 @@ def main() -> int:
         return run_in_container(["bash", "-l"], interactive=True)
     if args.command == "check":
         return run_check()
-    if args.command == "precommit":
-        script = (
-            f"{SYNC} && {PYTHON} skills/development/scirel-acceptance/scripts/precommit_check.py"
-        )
-        return run_in_container(shell_command(script))
-    if args.command == "pre-push":
-        return pre_push()
     if args.command == "pytest":
         arguments = args.arguments or ["-q"]
         script = f"{SYNC} && {PYTHON} -m pytest {shlex.join(arguments)}"
