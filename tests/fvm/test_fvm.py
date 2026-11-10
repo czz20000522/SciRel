@@ -230,3 +230,24 @@ def test_face_grad_dirichlet_mask_and_face_value_contracts():
     for invalid in ([0, 1, 1, 0], [True, False], True):
         with pytest.raises(ValueError):
             n.face_grad(two_point_mask=invalid)
+
+
+def test_zero_face_diffusivity_keeps_the_upwind_limit_of_the_peclet_floor():
+    """``abs(d_face)`` is floored at ``1e-20`` in the Peclet scale only."""
+    var = CellVariable(
+        [2.0, 1.0, 3.0],
+        [0.0, 1.0, 2.5, 3.0],
+        left_face_grad_constraint=0.0,
+        right_face_grad_constraint=0.0,
+    )
+    velocity = [1.0, -0.5, 2.0, 0.25]
+    floored, floored_forcing = make_convection_terms(velocity, [0.0, 0.0, 0.0, 0.0], var)
+    nearly_zero, nearly_zero_forcing = make_convection_terms(velocity, [1e-12] * 4, var)
+    np.testing.assert_allclose(
+        floored.matvec(var.value) + floored_forcing,
+        nearly_zero.matvec(var.value) + nearly_zero_forcing,
+        rtol=1e-6,
+        atol=1e-9,
+    )
+    assert np.all(np.isfinite(floored.matvec(np.ones(3))))
+    assert np.all(np.isfinite(floored_forcing))
