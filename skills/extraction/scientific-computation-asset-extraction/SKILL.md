@@ -73,13 +73,28 @@ description: 从来源项目（源码、论文、材料）中找出核心物理�
 
 1. 生成补丁：在副本里提交，然后对冻结 commit 运行 `git format-patch`，结果放进 `patch/`。
 2. 按 [拆解包格式](references/package-format.md) 补齐 `manifest.md`、`evidence/`、`disposition.md`、`tickets/` 和 `private/`。
-3. 在副本上运行完整检查：`python skills/development/scirel-acceptance/scripts/check_all.py`（容器里需要有 uv）。把步骤数和 pytest 的选中、通过、失败、跳过数写进 `PACKAGE.md`。
-4. 对账：
-   - `manifest.md` 中四类结论的数量之和，等于关系卡总数（即 `PACKAGE.md` 的对账行）；
-   - 每个"不收"的关系在 `disposition.md` 里有对应的一行。`disposition.md` 还包括画图、IO 这类不构成关系卡的部分，所以它的行数可以多于"不收"的数量；
-   - 来源中每个文件或模块，要么出现在关系卡里，要么出现在 `disposition.md` 里（第 1 步第 6 条）；
-   - 每个"全新"和"新 method"在补丁里都有实现、测试和合同。
-5. 完整检查不通过，或者对账对不上，就不能把 `PACKAGE.md` 的状态写成 `done`，而要写成 `partial`，并列出未完成项。
+3. 自己核对一项校验器查不到的内容：来源中每个文件或模块，要么出现在关系卡里，要么出现在 `disposition.md` 里（第 1 步第 6 条）。来源不在拆解包里，所以这一项只能由你核对。
+4. 在冻结版 SciReL 的目录里运行校验器。合并线运行的也是同一条命令：
+
+   ```sh
+   python scripts/validate_extraction_package.py <拆解包目录> --repo <冻结版 SciReL 的 git 目录>
+   ```
+
+   它依次检查以下各项：
+   - 结构；
+   - 对账：`manifest.md` 四类结论之和等于 `PACKAGE.md` 的对账行；每个"不收"在 `disposition.md` 里有对应行（`disposition.md` 还包括画图、IO 这类不构成关系卡的部分，行数可以更多）；
+   - 补丁新增或改动的每个合同，都在 `manifest.md` 里被标为"全新"或"新 method"；
+   - 工单格式；
+   - 来源身份泄漏；
+   - 补丁能否应用到冻结 commit；
+   - 合同集合；
+   - `evidence/` 表格；
+   - 完整检查（`check_all.py`，容器里需要有 uv）；
+   - 每个新合同的变异测试（`scripts/mutation_check.py`）。
+
+   开发途中可以加 `--fast`，跳过完整检查和变异测试。这时退出码是 2，永远不会是 0，不能当作通过。
+5. 把校验器输出的完整检查结果（步骤数，以及 pytest 的选中、通过、失败、跳过数）写进 `PACKAGE.md`。
+6. 校验器不通过，就不能把 `PACKAGE.md` 的状态写成 `done`，而要写成 `partial`，并列出未完成项。变异测试有存活的变异体，说明测试抓不住这类错误：补测试，不要改校验器。
 
 ## 6. 工单
 
