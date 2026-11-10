@@ -17,7 +17,9 @@ Checks, in order (each prints what it counted):
 6. leak scan: no source identity (names listed in ``private/source.md``), private path or secret
    outside ``private/``, patch included;
 7. patch: ``git am`` applies on the frozen commit; the patched catalog is a valid document set;
-   every new or extended contract exists, lives in the domain its ID names, has its
+   every contract the patch adds or changes (its JSON, or the source module its ``public_api``
+   names) is classified in manifest.md (added: 全新; changed: 新 method, or 已有 marked 物理纠正);
+   every new or extended contract lives in the domain its ID names, has its
    ``verification.tests`` files and an ``evidence/<id>.md`` table;
 8. full check: ``check_all.py`` on the patched tree;
 9. mutation: ``mutation_check.py`` on every new or extended contract.
@@ -198,7 +200,7 @@ def check_manifest(package: Path, report: Report, info: dict) -> list[dict]:
                 "manifest.md", f"row {number} has {len(row)} cells, expected {len(expected)}"
             )
             continue
-        relation, conclusion, asset_id, domain_layer, family, _problem, _note = row
+        relation, conclusion, asset_id, domain_layer, family, _problem, note = row
         where = f"row {number} ({relation})"
         if conclusion not in CONCLUSIONS:
             report.fail(
@@ -207,7 +209,12 @@ def check_manifest(package: Path, report: Report, info: dict) -> list[dict]:
             )
             continue
         counts[conclusion] += 1
-        entry = {"relation": relation, "conclusion": conclusion, "asset_id": asset_id}
+        entry = {
+            "relation": relation,
+            "conclusion": conclusion,
+            "asset_id": asset_id,
+            "note": note,
+        }
         if conclusion == "不收":
             if asset_id not in ("—", "-", ""):
                 report.fail("manifest.md", f"{where}: 不收 has no contract ID")
@@ -345,28 +352,28 @@ def _git(args: list[str], cwd: Path) -> subprocess.CompletedProcess[str]:
 
 def apply_patch(
     package: Path, repo: Path, commit: str, workdir: Path, report: Report
-) -> tuple[Path | None, set[str]]:
+) -> tuple[Path | None, set[str], list[str]]:
     patches = sorted((package / "patch").glob("*.patch"))
     tree = workdir / "tree"
     if not patches:
         report.fail("patch", "patch/ contains no *.patch files from git format-patch")
         report.section("patch", "FAIL", "0 patches")
-        return None, set()
+        return None, set(), []
     if _git(["cat-file", "-e", f"{commit}^{{commit}}"], repo).returncode:
         report.fail("patch", f"frozen commit {commit} is not in {repo}")
         report.section("patch", "FAIL", "unknown commit")
-        return None, set()
+        return None, set(), []
     done = _git(["worktree", "add", "--detach", str(tree), commit], repo)
     if done.returncode:
         report.fail("patch", f"cannot check out {commit}: {done.stderr.strip()}")
         report.section("patch", "FAIL", "checkout failed")
-        return None, set()
+        return None, set(), []
     frozen_ids = {p.stem for p in (tree / "catalog/examples").glob("*.json")}
     done = _git(["am", "--keep-cr", *map(str, patches)], tree)
     if done.returncode:
         report.fail("patch", f"git am failed on {commit}: {(done.stdout + done.stderr).strip()}")
         report.section("patch", "FAIL", f"{len(patches)} patches, not applicable")
-        return None, frozen_ids
+        return None, frozen_ids, []
     changed = _git(["diff", "--name-only", commit, "HEAD"], tree).stdout.split()
     leaked = [p for p in changed if p.startswith(("private/", "tickets/"))]
     for path in leaked:
@@ -376,11 +383,51 @@ def apply_patch(
         "FAIL" if leaked else "PASS",
         f"{len(patches)} patches applied, {len(changed)} files changed",
     )
-    return tree, frozen_ids
+    return tree, frozen_ids, changed
+
+
+CORRECTION_NOTE = "物理纠正"
+
+
+def _changed_contracts(
+    changed: list[str], documents: dict[str, dict], frozen_ids: set[str]
+) -> tuple[set[str], set[str], set[str], list[str]]:
+    """Split the contracts a patch touches into added, modified and deleted.
+
+    A contract counts as modified when its JSON changes or when a changed file under ``src/`` is
+    the module its ``public_api`` names. Changed source files that are no contract's module are
+    returned so the report can list them.
+    """
+    json_ids = {
+        Path(p).stem for p in changed if p.startswith("catalog/examples/") and p.endswith(".json")
+    }
+    added = {i for i in json_ids if i not in frozen_ids}
+    deleted = {i for i in json_ids if i in frozen_ids and i not in documents}
+    modified = {i for i in json_ids if i in frozen_ids and i in documents}
+    by_module: dict[str, set[str]] = {}
+    for asset_id, document in documents.items():
+        by_module.setdefault(document["public_api"]["python"]["module"], set()).add(asset_id)
+    unmapped = []
+    for path in changed:
+        if not (path.startswith("src/") and path.endswith(".py")):
+            continue
+        module = ".".join(Path(path).with_suffix("").parts[1:])
+        module = module.removesuffix(".__init__")
+        owners = by_module.get(module, set()) - added
+        if owners:
+            modified |= owners & frozen_ids
+        elif not by_module.get(module):
+            unmapped.append(path)
+    return added, modified, deleted, unmapped
 
 
 def check_contracts(
-    package: Path, tree: Path, frozen_ids: set[str], entries: list[dict], report: Report
+    package: Path,
+    tree: Path,
+    frozen_ids: set[str],
+    entries: list[dict],
+    changed: list[str],
+    report: Report,
 ) -> list[str]:
     errors_before = len(report.errors)
     try:
@@ -389,6 +436,30 @@ def check_contracts(
         report.fail("contracts", f"patched catalog is not a valid document set: {error}")
         report.section("contracts", "FAIL", "invalid catalog")
         return []
+    added, modified, deleted, unmapped = _changed_contracts(changed, documents, frozen_ids)
+    by_id = {e["asset_id"]: e for e in entries if e["conclusion"] != "不收"}
+    for asset_id in sorted(deleted):
+        report.fail(
+            "contracts", f"the patch deletes {asset_id}; extraction never removes contracts"
+        )
+    for asset_id in sorted(added):
+        conclusion = by_id.get(asset_id, {}).get("conclusion")
+        if conclusion != "全新":
+            report.fail(
+                "contracts",
+                f"the patch adds {asset_id} but manifest.md marks it {conclusion or 'nowhere'};"
+                " an added contract must be a 全新 row",
+            )
+    for asset_id in sorted(modified):
+        entry = by_id.get(asset_id, {})
+        conclusion = entry.get("conclusion")
+        corrected = conclusion == "已有" and CORRECTION_NOTE in entry.get("note", "")
+        if conclusion != "新 method" and not corrected:
+            report.fail(
+                "contracts",
+                f"the patch changes {asset_id} but manifest.md marks it {conclusion or 'nowhere'};"
+                f" a changed contract must be a 新 method row, or 已有 with 备注 {CORRECTION_NOTE}",
+            )
     implemented = []
     source_only = []
     for entry in entries:
@@ -405,7 +476,8 @@ def check_contracts(
                 report.fail(
                     "contracts", f"{asset_id} is marked 已有 but is not in the frozen catalog"
                 )
-            continue
+            if asset_id not in modified:
+                continue  # unchanged and already in the library: nothing new to verify
         if conclusion == "全新" and asset_id in frozen_ids:
             report.fail(
                 "contracts", f"{asset_id} is marked 全新 but already exists in the frozen catalog"
@@ -459,6 +531,13 @@ def check_contracts(
             bases.add(basis)
         if bases == {"来源输出"}:
             source_only.append(asset_id)
+    if unmapped:
+        report.section(
+            "changed helpers",
+            "PASS",
+            f"{len(unmapped)} changed source files are no contract's module; only the full check"
+            f" covers them: {', '.join(unmapped)}",
+        )
     detail = f"{len(documents)} contracts in set, {len(implemented)} new or extended, {len(source_only)} with source-output evidence only"
     if source_only:
         detail += f" ({', '.join(source_only)})"
@@ -532,11 +611,11 @@ def main() -> int:
         check_leaks(package, report)
         workdir = Path(tempfile.mkdtemp(prefix="scirel-package-"))
         try:
-            tree, frozen = (None, set())
+            tree, frozen, changed = (None, set(), [])
             if info.get("commit"):
-                tree, frozen = apply_patch(package, repo, info["commit"], workdir, report)
+                tree, frozen, changed = apply_patch(package, repo, info["commit"], workdir, report)
             if tree is not None:
-                implemented = check_contracts(package, tree, frozen, entries, report)
+                implemented = check_contracts(package, tree, frozen, entries, changed, report)
                 if args.fast:
                     report.section("full check", "NOT_RUN", "--fast")
                     report.section("mutation", "NOT_RUN", "--fast")

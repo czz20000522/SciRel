@@ -131,12 +131,23 @@ def check(text: str, *, allowed_statuses: tuple[str, ...] = STATUSES) -> list[st
         if data["resolution"] not in options:
             errors.append(f"resolution must be one of the options {options}")
         decisions = data["decisions"] if isinstance(data["decisions"], list) else []
-        agreeing = [
-            d for d in decisions if isinstance(d, dict) and d.get("option") == data["resolution"]
-        ]
+        reviewers = [d.get("reviewer") if isinstance(d, dict) else None for d in decisions]
+        if any(not isinstance(r, str) or not r.strip() for r in reviewers):
+            errors.append("every decision must name its reviewer")
+        named = [r for r in reviewers if isinstance(r, str) and r.strip()]
+        if len(named) != len(set(named)):
+            errors.append("a reviewer may record only one decision per ticket")
+        agreeing = {
+            d["reviewer"]
+            for d in decisions
+            if isinstance(d, dict)
+            and isinstance(d.get("reviewer"), str)
+            and d["reviewer"].strip()
+            and d.get("option") == data["resolution"]
+        }
         if isinstance(required, int) and len(agreeing) < required:
             errors.append(
-                f"resolution needs {required} agreeing reviewer decisions; found {len(agreeing)}"
+                f"resolution needs {required} distinct agreeing reviewers; found {len(agreeing)}"
             )
         if len({d.get("option") for d in decisions if isinstance(d, dict)}) > 1:
             errors.append("reviewers disagree; a ticket with split decisions stays open")
