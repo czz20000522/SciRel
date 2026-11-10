@@ -110,7 +110,7 @@ def solve_loss_cone_spectrum(xi_tp, mode_count, grid_points=256, backend="trunca
     Examples
     --------
     >>> import numpy as np
-    >>> from scirel.kinetic.loss_cone_spectrum import solve_loss_cone_spectrum
+    >>> from scirel.mirror.loss_cone_spectrum import solve_loss_cone_spectrum
     >>> r=solve_loss_cone_spectrum(1/np.sqrt(3),2,grid_points=40)
     >>> np.testing.assert_allclose(r['eigenvalues'][0],6.,rtol=1e-10)
     >>> np.testing.assert_allclose(r['eigenfunctions'][:,0],1-3*r['xi']**2,atol=2e-10)

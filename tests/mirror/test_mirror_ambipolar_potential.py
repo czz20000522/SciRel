@@ -2,7 +2,7 @@
 import numpy as np
 import pytest
 
-from scirel.closures.mirror_ambipolar_potential import (
+from scirel.mirror.mirror_ambipolar_potential import (
     ELEMENTARY_CHARGE_C,
     solve_mirror_ambipolar_potential,
     solve_mirror_ambipolar_potential as scientific_function,
@@ -285,7 +285,7 @@ def test_contract_rejects_nonfinite_and_noninteger_solver_controls():
 def test_fluxes_follow_the_closed_form_barrier_integral_with_an_offset_reference():
     import math
 
-    from scirel.closures import solve_mirror_ambipolar_potential
+    from scirel.mirror import solve_mirror_ambipolar_potential
 
     charge, mass = 1.602176634e-19, 3.3435837768e-27
 

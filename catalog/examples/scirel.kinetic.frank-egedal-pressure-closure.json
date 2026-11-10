@@ -139,10 +139,10 @@
  },
  "public_api": {
   "python": {
-   "module": "scirel.kinetic.frank_egedal_pressure_closure",
+   "module": "scirel.mirror.frank_egedal_pressure_closure",
    "symbol": "solve_frank_egedal_pressure_closure",
    "signature": "solve_frank_egedal_pressure_closure(inputs=None, **kwargs)",
-   "canonical_module": "scirel.kinetic",
+   "canonical_module": "scirel.mirror",
    "canonical_symbol": "solve_frank_egedal_pressure_closure"
   }
  },
@@ -168,7 +168,7 @@
  },
  "example": {
   "description": "Evaluate a two-by-two prescribed closure with explicit fractional degree and inspect the returned state without invoking the spectrum solver.",
-  "code": "import numpy as np\nfrom scirel.kinetic import solve_frank_egedal_pressure_closure\npsi = np.array([[0.0, 0.5], [0.25, 1.0]])\nB = np.array([[1.0, 1.1], [1.2, 1.3]])\nr = solve_frank_egedal_pressure_closure({'psi': psi, 'B': B, 'params': {'psi_axis': 0.0, 'psi_edge': 1.0, 'B0': 1.0, 'hot_pressure_scale': 8.0, 'mirror_ratio': 2.0, 'legendre_degrees': [0.5], 'source_coefficients': [1.0], 'velocity_nodes': 6, 'pitch_nodes': 6}})\nassert set(r) == {'p_parallel', 'p_perp', 'density', 'electron_temperature', 'closure_state'}\nassert r['p_parallel'].shape == r['p_perp'].shape == (2, 2)\nassert np.all(np.isfinite(r['p_parallel'])) and np.all(np.isfinite(r['p_perp']))\nassert r['density'] is None and r['electron_temperature'] is None\nassert r['closure_state']['degree_source'] == 'caller_supplied'\nassert r['closure_state']['normalization'] == 'pressure moments referenced to hot_parallel(b=1); density referenced to hot_density(b=1)'\n",
+  "code": "import numpy as np\nfrom scirel.mirror import solve_frank_egedal_pressure_closure\npsi = np.array([[0.0, 0.5], [0.25, 1.0]])\nB = np.array([[1.0, 1.1], [1.2, 1.3]])\nr = solve_frank_egedal_pressure_closure({'psi': psi, 'B': B, 'params': {'psi_axis': 0.0, 'psi_edge': 1.0, 'B0': 1.0, 'hot_pressure_scale': 8.0, 'mirror_ratio': 2.0, 'legendre_degrees': [0.5], 'source_coefficients': [1.0], 'velocity_nodes': 6, 'pitch_nodes': 6}})\nassert set(r) == {'p_parallel', 'p_perp', 'density', 'electron_temperature', 'closure_state'}\nassert r['p_parallel'].shape == r['p_perp'].shape == (2, 2)\nassert np.all(np.isfinite(r['p_parallel'])) and np.all(np.isfinite(r['p_perp']))\nassert r['density'] is None and r['electron_temperature'] is None\nassert r['closure_state']['degree_source'] == 'caller_supplied'\nassert r['closure_state']['normalization'] == 'pressure moments referenced to hot_parallel(b=1); density referenced to hot_density(b=1)'\n",
   "expected": "Observed PASS: Finite two-by-two parallel/perpendicular pressure fields, absent optional density/electron-energy fields and a caller-supplied-degree closure state."
  },
  "verification": {

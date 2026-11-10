@@ -13,7 +13,7 @@ def _run_composition(inputs, *, composition_loader):
     missing = [name for name in required if name not in inputs]
     if missing:
         raise ValueError(f"{missing[0]} is required")
-    kinetic = composition_loader("scirel.kinetic.compositions.grid_mirror_kinetic_closure")
+    kinetic = composition_loader("scirel.mirror.compositions.grid_mirror_kinetic_closure")
     hall = composition_loader("scirel.equilibrium.compositions.reduced_hall_anisotropic_picard")
     kinetic_config = dict(inputs["kinetic_config"])
 
@@ -196,7 +196,7 @@ def solve_kinetic_mirror_hall_equilibrium(
     from scirel.equilibrium.reduced_hall_anisotropic_picard import (
         solve_reduced_hall_anisotropic_picard,
     )
-    from scirel.kinetic.grid_mirror_kinetic_closure import solve_grid_mirror_kinetic_closure
+    from scirel.mirror.grid_mirror_kinetic_closure import solve_grid_mirror_kinetic_closure
 
     return compose(
         _run_composition,
@@ -204,7 +204,7 @@ def solve_kinetic_mirror_hall_equilibrium(
         kwargs,
         {
             "composition_loader": {
-                "scirel.kinetic.compositions.grid_mirror_kinetic_closure": kinetic_composition
+                "scirel.mirror.compositions.grid_mirror_kinetic_closure": kinetic_composition
                 or solve_grid_mirror_kinetic_closure,
                 "scirel.equilibrium.compositions.reduced_hall_anisotropic_picard": hall_composition
                 or solve_reduced_hall_anisotropic_picard,

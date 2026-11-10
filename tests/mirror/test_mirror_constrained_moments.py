@@ -7,7 +7,7 @@ import sys
 import numpy as np
 import pytest
 
-from scirel.kinetic.mirror_constrained_moments import (
+from scirel.mirror.mirror_constrained_moments import (
     evaluate_mirror_constrained_moments,
     evaluate_mirror_constrained_moments as scientific_function,
 )
@@ -21,7 +21,7 @@ def test_mirror_numerics_defers_scipy_until_nonanalytic_trapping_call():
     root = Path(__file__).resolve().parents[2]
     source = """
 import sys
-from scirel.kinetic import evaluate_mirror_constrained_moments
+from scirel.mirror import evaluate_mirror_constrained_moments
 
 assert "scipy" not in sys.modules
 try:
@@ -178,7 +178,7 @@ def test_reviewed_relation_example():
     import math
     import numpy as np
     from scipy.integrate import quad
-    from scirel.kinetic.mirror_constrained_moments import evaluate_mirror_constrained_moments
+    from scirel.mirror.mirror_constrained_moments import evaluate_mirror_constrained_moments
 
     ELEMENTARY_CHARGE = 1.602176634e-19
     PROTON_MASS = 1.67262192595e-27

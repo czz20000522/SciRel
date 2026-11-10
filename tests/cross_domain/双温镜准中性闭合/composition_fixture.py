@@ -1,4 +1,4 @@
-from scirel.closures.mirror_quasineutral_closure import (
+from scirel.mirror.mirror_quasineutral_closure import (
     solve_mirror_quasineutral_closure as _public_function,
 )
 

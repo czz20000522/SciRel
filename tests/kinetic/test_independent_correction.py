@@ -12,10 +12,10 @@ from scipy.optimize import brentq
 from scirel.equilibrium.anisotropic_force_balance import compute_anisotropic_force_balance
 from scirel.equilibrium.axisymmetric_picard_update import update_axisymmetric_picard_flux
 from scirel.field.poloidal_field_from_flux import poloidal_field_from_flux
-from scirel.closures.mirror_ambipolar_potential import solve_mirror_ambipolar_potential
+from scirel.mirror.mirror_ambipolar_potential import solve_mirror_ambipolar_potential
 from scirel.closures.boltzmann_quasineutrality import compute_boltzmann_electron_state
-from scirel.kinetic.mirror_constrained_moments import evaluate_mirror_constrained_moments
-from scirel.kinetic.loss_cone_spectrum import solve_loss_cone_spectrum
+from scirel.mirror.mirror_constrained_moments import evaluate_mirror_constrained_moments
+from scirel.mirror.loss_cone_spectrum import solve_loss_cone_spectrum
 
 
 @pytest.mark.parametrize(
@@ -150,7 +150,7 @@ def test_boltzmann_density_and_residual_use_unclipped_combined_log(exponent, nre
 
 @pytest.mark.parametrize("lower", [0.0, 0.25, 0.7])
 def test_common_population_angular_moments_and_reachable_orbits(lower):
-    from scirel.kinetic.frank_egedal_hot_ion_moments import evaluate_frank_egedal_hot_ion_moments
+    from scirel.mirror.frank_egedal_hot_ion_moments import evaluate_frank_egedal_hot_ion_moments
 
     b = np.array([[0.35, 0.7, 1.0, 1.4, 2.2, 3.0]])
     mirror = 3.0
@@ -218,7 +218,7 @@ def test_boltzmann_resolves_difference_before_multiplication():
 
 
 def test_invariant_distribution_is_electrostatic_gauge_invariant():
-    from scirel.kinetic.mirror_invariant_distribution import evaluate_mirror_invariant_distribution
+    from scirel.mirror.mirror_invariant_distribution import evaluate_mirror_invariant_distribution
 
     states = [
         evaluate_mirror_invariant_distribution(
@@ -230,7 +230,7 @@ def test_invariant_distribution_is_electrostatic_gauge_invariant():
 
 
 def test_trapped_occupation_is_electrostatic_gauge_invariant():
-    from scirel.kinetic.mirror_invariant_distribution import evaluate_mirror_invariant_distribution
+    from scirel.mirror.mirror_invariant_distribution import evaluate_mirror_invariant_distribution
 
     states = [
         evaluate_mirror_invariant_distribution(

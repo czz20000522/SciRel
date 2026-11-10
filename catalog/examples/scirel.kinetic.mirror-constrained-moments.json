@@ -301,10 +301,10 @@
  },
  "public_api": {
   "python": {
-   "module": "scirel.kinetic.mirror_constrained_moments",
+   "module": "scirel.mirror.mirror_constrained_moments",
    "symbol": "evaluate_mirror_constrained_moments",
    "signature": "evaluate_mirror_constrained_moments(b_t, psi, potential_v, mass_kg, charge_c, density_ref_m3, temperature_parallel_j, temperature_perpendicular_ref_j, b_ref_t, phi_ref_v=0.0, b_plug_left_t=None, b_plug_right_t=None, phi_plug_left_v=0.0, phi_plug_right_v=0.0, loss_cone_refill=0.0, quadrature_order=32)",
-   "canonical_module": "scirel.kinetic",
+   "canonical_module": "scirel.mirror",
    "canonical_symbol": "evaluate_mirror_constrained_moments"
   }
  },
@@ -314,7 +314,7 @@
  },
  "example": {
   "description": "Check the analytic untruncated bi-Maxwellian limit at two magnetic-field values.",
-  "code": "import numpy as np\nfrom scirel.kinetic import evaluate_mirror_constrained_moments\ne = 1.602176634e-19\nb = np.array([1.0, 2.0])\nr = evaluate_mirror_constrained_moments(b, np.zeros(2), 0.0, 1.67262192595e-27, e, 2.0e18, 1200.0*e, 2400.0*e, 1.0)\nt_perp = b / ((b-1.0)/(1200.0*e) + 1.0/(2400.0*e))\nn = 2.0e18*t_perp/(2400.0*e)\nnp.testing.assert_allclose(r['density_m3'], n)\nnp.testing.assert_allclose(r['p_parallel_pa'], n*1200.0*e)\nnp.testing.assert_allclose(r['p_perpendicular_pa'], n*t_perp)\nnp.testing.assert_allclose(r['density_pitch_integral'], 1.0)",
+  "code": "import numpy as np\nfrom scirel.mirror import evaluate_mirror_constrained_moments\ne = 1.602176634e-19\nb = np.array([1.0, 2.0])\nr = evaluate_mirror_constrained_moments(b, np.zeros(2), 0.0, 1.67262192595e-27, e, 2.0e18, 1200.0*e, 2400.0*e, 1.0)\nt_perp = b / ((b-1.0)/(1200.0*e) + 1.0/(2400.0*e))\nn = 2.0e18*t_perp/(2400.0*e)\nnp.testing.assert_allclose(r['density_m3'], n)\nnp.testing.assert_allclose(r['p_parallel_pa'], n*1200.0*e)\nnp.testing.assert_allclose(r['p_perpendicular_pa'], n*t_perp)\nnp.testing.assert_allclose(r['density_pitch_integral'], 1.0)",
   "expected": "The untruncated example returned density [2.0e18, 1.3333333333333333e18] m^-3, parallel pressure [384.52239216, 256.34826144] Pa, and perpendicular pressure [769.04478432, 341.79768192] Pa."
  },
  "verification": {
@@ -323,7 +323,7 @@
    "The example exercises one bounded representative case; it does not extend applicability beyond the declared preconditions."
   ],
   "tests": [
-   "tests/kinetic/test_mirror_constrained_moments.py",
+   "tests/mirror/test_mirror_constrained_moments.py",
    "tests/cross_domain/test_mirror_kinetic_scientific_correction.py",
    "tests/cross_domain/test_mirror_gauge_scientific_correction.py",
    "tests/kinetic/test_independent_correction.py"

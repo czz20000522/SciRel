@@ -161,7 +161,7 @@
    "shape": "scalar",
    "dtype": "str",
    "required": true,
-   "constraints": "One of 'caller_supplied', 'scirel.kinetic.loss_cone_spectrum' or 'inactive_loss_cone'. The spectrum label is fixed even if the injected callable is not SciRel's solver."
+   "constraints": "One of 'caller_supplied', 'scirel.mirror.loss_cone_spectrum' or 'inactive_loss_cone'. The spectrum label is fixed even if the injected callable is not SciRel's solver."
   },
   {
    "name": "legendre_terms",
@@ -220,10 +220,10 @@
  },
  "public_api": {
   "python": {
-   "module": "scirel.kinetic.frank_egedal_source_projection",
+   "module": "scirel.mirror.frank_egedal_source_projection",
    "symbol": "project_frank_egedal_source_modes",
    "signature": "project_frank_egedal_source_modes(*, mirror_ratio=2.0, legendre_terms=15, legendre_backend='truncated', legendre_degrees=None, legendre_mode_count=6, legendre_spectrum_grid_points=256, source_coefficients=None, nbi_pitch_angle_deg=45.0, spectrum_operator=None)",
-   "canonical_module": "scirel.kinetic",
+   "canonical_module": "scirel.mirror",
    "canonical_symbol": "project_frank_egedal_source_modes"
   }
  },
@@ -233,7 +233,7 @@
  },
  "example": {
   "description": "Project a regular integer mode and compare its analytic normalization.",
-  "code": "import numpy as np\nfrom scirel.kinetic.frank_egedal_source_projection import project_frank_egedal_source_modes\nr=project_frank_egedal_source_modes(mirror_ratio=1.5,legendre_degrees=[2.],nbi_pitch_angle_deg=60.)\na=1/np.sqrt(3); norm=a-2*a**3+9*a**5/5\nnp.testing.assert_allclose(r['source_coefficients'],[.25/(4*np.pi*norm)],rtol=2e-10)\n",
+  "code": "import numpy as np\nfrom scirel.mirror.frank_egedal_source_projection import project_frank_egedal_source_modes\nr=project_frank_egedal_source_modes(mirror_ratio=1.5,legendre_degrees=[2.],nbi_pitch_angle_deg=60.)\na=1/np.sqrt(3); norm=a-2*a**3+9*a**5/5\nnp.testing.assert_allclose(r['source_coefficients'],[.25/(4*np.pi*norm)],rtol=2e-10)\n",
   "expected": "Observed PASS: Integer degree 2 is evaluated regularly and its projected coefficient matches the polynomial integral."
  },
  "verification": {
@@ -244,7 +244,7 @@
   ],
   "tests": [
    "tests/cross_domain/test_spectral_scientific_correction.py",
-   "tests/kinetic/test_frank_egedal_source_projection.py"
+   "tests/mirror/test_frank_egedal_source_projection.py"
   ],
   "evidence_ceiling": "Bounded to the declared relation: Set xi_tp_mid=sqrt(max(0,1-1/max(R,1e-12))) from mirror_ratio. Use caller-supplied degrees or a supplied spectrum operator. For computed coefficients, c_nu=u_nu(clip(cos(theta_NBI),0,xi_tp_mid))/(4*pi*integral_0^xi_tp_mid u_nu^2 dxi)…. Evidence: test_spectral_scientific_correction.py, test_frank_egedal_source_projection.py (31 recorded test cases; shared-file plus direct composition/test coverage; independent analytic/high-precision oracle); the contract example ran. Excluded scope: Certification of caller-supplied eigenvalues, finite-width source distributions or physical positivity of an arbitrary truncated mode sum; external physical validation.",
   "known_limitations": [

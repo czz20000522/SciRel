@@ -1,13 +1,13 @@
 import inspect
 
-from scirel.kinetic.frank_egedal_pressure_closure import solve_frank_egedal_pressure_closure
+from scirel.mirror.frank_egedal_pressure_closure import solve_frank_egedal_pressure_closure
 from cross_domain._review_bindings import load_asset as _load_asset
 from pathlib import Path
 
 import numpy as np
 import pytest
 
-from scirel.kinetic import frank_egedal_pressure_closure as composition
+from scirel.mirror import frank_egedal_pressure_closure as composition
 
 
 def _asset_loader(asset_ref):
@@ -151,7 +151,7 @@ def test_uses_emitted_loss_cone_asset_when_degrees_are_not_supplied():
     inputs["params"]["legendre_mode_count"] = 1
     inputs["params"]["legendre_spectrum_grid_points"] = 16
     result = _run_composition(inputs)
-    assert result["closure_state"]["degree_source"] == "scirel.kinetic.loss_cone_spectrum"
+    assert result["closure_state"]["degree_source"] == "scirel.mirror.loss_cone_spectrum"
     assert result["closure_state"]["degrees"].shape == (1,)
 
 

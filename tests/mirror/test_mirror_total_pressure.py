@@ -1,7 +1,7 @@
 import numpy as np
 import pytest
 
-from scirel.kinetic.mirror_total_pressure import (
+from scirel.mirror.mirror_total_pressure import (
     assemble_mirror_total_pressure,
     assemble_mirror_total_pressure as scientific_function,
 )
@@ -62,7 +62,7 @@ def test_density_and_residual_are_unvalidated_pass_through_fields():
 
 def test_reviewed_relation_example():
     import numpy as np
-    from scirel.kinetic.mirror_total_pressure import assemble_mirror_total_pressure
+    from scirel.mirror.mirror_total_pressure import assemble_mirror_total_pressure
 
     ion = {
         "p_parallel_pa": [2.0, 3.0],

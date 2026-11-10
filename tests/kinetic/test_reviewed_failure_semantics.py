@@ -3,8 +3,8 @@
 import numpy as np
 import pytest
 
-from scirel.closures.mirror_ambipolar_potential import solve_mirror_ambipolar_potential
-from scirel.closures.mirror_quasineutral_closure import solve_mirror_quasineutral_closure
+from scirel.mirror.mirror_ambipolar_potential import solve_mirror_ambipolar_potential
+from scirel.mirror.mirror_quasineutral_closure import solve_mirror_quasineutral_closure
 from scirel.diagnostics.parallel_pressure_residual import compute_parallel_pressure_residual
 
 E = 1.602176634e-19

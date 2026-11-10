@@ -86,7 +86,7 @@ def compute_boltzmann_electron_state(
     --------
     scirel.closures.compute_reference_electron_density
         Computes a charge-state-weighted reference electron density.
-    scirel.closures.solve_mirror_quasineutral_closure
+    scirel.mirror.solve_mirror_quasineutral_closure
         Solves a mirror-electron quasineutrality relation that consumes this
         state.
 

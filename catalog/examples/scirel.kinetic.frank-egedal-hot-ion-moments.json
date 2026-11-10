@@ -206,10 +206,10 @@
  },
  "public_api": {
   "python": {
-   "module": "scirel.kinetic.frank_egedal_hot_ion_moments",
+   "module": "scirel.mirror.frank_egedal_hot_ion_moments",
    "symbol": "evaluate_frank_egedal_hot_ion_moments",
    "signature": "evaluate_frank_egedal_hot_ion_moments(magnetic_field, params, degrees, source_coefficients, legendre_terms, fractional_mode)",
-   "canonical_module": "scirel.kinetic",
+   "canonical_module": "scirel.mirror",
    "canonical_symbol": "evaluate_frank_egedal_hot_ion_moments"
   }
  },
@@ -219,7 +219,7 @@
  },
  "example": {
   "description": "Check a common constant-mode population at reference field and below it.",
-  "code": "import numpy as np\nfrom scirel.kinetic.frank_egedal_hot_ion_moments import evaluate_frank_egedal_hot_ion_moments\nr=evaluate_frank_egedal_hot_ion_moments([[1.,.25]],{'B0':1.,'mirror_ratio':4.,'beta_m':0.,'velocity_lower':.2},[0.],[1.],2,lambda degree,xi,terms:np.ones_like(xi))\na=np.sqrt(.75);lo=np.sqrt(.75);hi=np.sqrt(1-.25/4)\nnp.testing.assert_allclose(r['hot_density_shape'],[[1.,(hi-lo)/a]],rtol=2e-11)\nnp.testing.assert_allclose(r['hot_perpendicular_shape'][0,0],1.5,rtol=2e-11)\nassert r['velocity_domain']['common_to_density_and_both_pressures']\n",
+  "code": "import numpy as np\nfrom scirel.mirror.frank_egedal_hot_ion_moments import evaluate_frank_egedal_hot_ion_moments\nr=evaluate_frank_egedal_hot_ion_moments([[1.,.25]],{'B0':1.,'mirror_ratio':4.,'beta_m':0.,'velocity_lower':.2},[0.],[1.],2,lambda degree,xi,terms:np.ones_like(xi))\na=np.sqrt(.75);lo=np.sqrt(.75);hi=np.sqrt(1-.25/4)\nnp.testing.assert_allclose(r['hot_density_shape'],[[1.,(hi-lo)/a]],rtol=2e-11)\nnp.testing.assert_allclose(r['hot_perpendicular_shape'][0,0],1.5,rtol=2e-11)\nassert r['velocity_domain']['common_to_density_and_both_pressures']\n",
   "expected": "Observed PASS: The reference perpendicular-to-parallel ratio is 1.5 for this finite cone, and below-B0 density only counts orbits reaching the reference plane."
  },
  "verification": {
@@ -232,7 +232,7 @@
   ],
   "tests": [
    "tests/cross_domain/test_spectral_scientific_correction.py",
-   "tests/kinetic/test_frank_egedal_hot_ion_moments.py"
+   "tests/mirror/test_frank_egedal_hot_ion_moments.py"
   ],
   "evidence_ceiling": "Bounded to the declared relation: Let b=B/B0, xi_max=sqrt(max(0,1-b/R)), xi_min=sqrt(max(0,1-b)), and xi0=sqrt((xi^2-(1-b))/b). Only xi_min<=xi<=xi_max belongs to the population specified at B0; for b>=R moments are zero…. Evidence: test_spectral_scientific_correction.py, test_frank_egedal_hot_ion_moments.py (25 recorded test functions; shared-file plus direct composition/test coverage; independent analytic/high-precision oracle); the contract example ran. Excluded scope: Unspecified populations on orbits that cannot reach B0, arbitrary callback feature discovery, zero normalizers and divergent or unresolved integrals; A claim that the printed Eq19b discrepancy has been confirmed as an author erratum.",
   "known_limitations": [

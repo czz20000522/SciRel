@@ -1,7 +1,7 @@
 import numpy as np
 import pytest
 
-from scirel.kinetic.loss_cone_spectrum import (
+from scirel.mirror.loss_cone_spectrum import (
     solve_loss_cone_spectrum,
     solve_loss_cone_spectrum as scientific_function,
 )

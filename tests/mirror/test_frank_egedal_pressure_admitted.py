@@ -1,6 +1,6 @@
 import numpy as np
 import pytest
-from scirel.kinetic.frank_egedal_pressure_state import assemble_frank_egedal_pressure as assemble
+from scirel.mirror.frank_egedal_pressure_state import assemble_frank_egedal_pressure as assemble
 
 
 def run(a=None, **scales):

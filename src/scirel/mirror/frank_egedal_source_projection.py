@@ -96,7 +96,7 @@ def project_frank_egedal_source_modes(
         normalization]. The inactive branch returns an empty array.
     degree_source : str
         Degree origin [text]: ``'caller_supplied'``,
-        ``'scirel.kinetic.loss_cone_spectrum'`` or
+        ``'scirel.mirror.loss_cone_spectrum'`` or
         ``'inactive_loss_cone'``.
     legendre_terms : int
         Converted term-count control [count] carried in the result.
@@ -148,7 +148,7 @@ def project_frank_egedal_source_modes(
     Examples
     --------
     >>> import numpy as np
-    >>> from scirel.kinetic.frank_egedal_source_projection import project_frank_egedal_source_modes
+    >>> from scirel.mirror.frank_egedal_source_projection import project_frank_egedal_source_modes
     >>> r=project_frank_egedal_source_modes(mirror_ratio=1.5,legendre_degrees=[2.],nbi_pitch_angle_deg=60.)
     >>> a=1/np.sqrt(3); norm=a-2*a**3+9*a**5/5
     >>> np.testing.assert_allclose(r['source_coefficients'],[.25/(4*np.pi*norm)],rtol=2e-10)
@@ -188,7 +188,7 @@ def project_frank_egedal_source_modes(
             raise ValueError(
                 "spectrum_operator must return a non-empty finite one-dimensional degrees array"
             )
-        degree_source = "scirel.kinetic.loss_cone_spectrum"
+        degree_source = "scirel.mirror.loss_cone_spectrum"
     if n_terms < 2:
         raise ValueError("legendre_terms must be at least two")
     explicit_coefficients = source_coefficients

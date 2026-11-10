@@ -40,7 +40,7 @@ def compute_reference_electron_density(density_ref_m3, ion_charge_state):
 
     See Also
     --------
-    scirel.closures.solve_mirror_quasineutral_closure
+    scirel.mirror.solve_mirror_quasineutral_closure
         Closure that consumes the reference-density leaf relation.
 
     Notes

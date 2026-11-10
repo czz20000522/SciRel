@@ -21,8 +21,8 @@ def test_hot_ion_moments_defers_scipy_until_valid_quadrature_call() -> None:
             """
 import sys
 import numpy as np
-from scirel.kinetic import evaluate_frank_egedal_hot_ion_moments
-from scirel.kinetic.frank_egedal_hot_ion_moments import (
+from scirel.mirror import evaluate_frank_egedal_hot_ion_moments
+from scirel.mirror.frank_egedal_hot_ion_moments import (
     evaluate_frank_egedal_hot_ion_moments as direct,
 )
 

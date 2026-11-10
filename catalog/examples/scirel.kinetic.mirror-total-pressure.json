@@ -177,10 +177,10 @@
  },
  "public_api": {
   "python": {
-   "module": "scirel.kinetic.mirror_total_pressure",
+   "module": "scirel.mirror.mirror_total_pressure",
    "symbol": "assemble_mirror_total_pressure",
    "signature": "assemble_mirror_total_pressure(kinetic_moments, electron_state)",
-   "canonical_module": "scirel.kinetic",
+   "canonical_module": "scirel.mirror",
    "canonical_symbol": "assemble_mirror_total_pressure"
   }
  },
@@ -190,7 +190,7 @@
  },
  "example": {
   "description": "Add a scalar electron pressure to two ion pressure arrays while retaining the ion input mapping and an absent potential.",
-  "code": "import numpy as np\nfrom scirel.kinetic import assemble_mirror_total_pressure\nion = {'p_parallel_pa': [2.0, 3.0], 'p_perpendicular_pa': [4.0, 5.0], 'density_m3': [1.0, 2.0], 'marker': 'ion'}\nelectron = {'electron_density_m3': [6.0, 7.0], 'electron_pressure_pa': 1.5, 'relative_charge_residual': [0.1, 0.2]}\nr = assemble_mirror_total_pressure(ion, electron)\nnp.testing.assert_allclose(r['p_parallel'], [3.5, 4.5])\nnp.testing.assert_allclose(r['p_perpendicular'], [5.5, 6.5])\nassert r['kinetic_moments'] is ion and r['marker'] == 'ion'\nassert r['electrostatic_potential'] is None",
+  "code": "import numpy as np\nfrom scirel.mirror import assemble_mirror_total_pressure\nion = {'p_parallel_pa': [2.0, 3.0], 'p_perpendicular_pa': [4.0, 5.0], 'density_m3': [1.0, 2.0], 'marker': 'ion'}\nelectron = {'electron_density_m3': [6.0, 7.0], 'electron_pressure_pa': 1.5, 'relative_charge_residual': [0.1, 0.2]}\nr = assemble_mirror_total_pressure(ion, electron)\nnp.testing.assert_allclose(r['p_parallel'], [3.5, 4.5])\nnp.testing.assert_allclose(r['p_perpendicular'], [5.5, 6.5])\nassert r['kinetic_moments'] is ion and r['marker'] == 'ion'\nassert r['electrostatic_potential'] is None",
   "expected": "The returned total pressures were p_parallel=[3.5, 4.5] Pa and p_perpendicular=[5.5, 6.5] Pa; the ion mapping was passed through and electrostatic_potential was None."
  },
  "verification": {
@@ -199,7 +199,7 @@
    "The example exercises one bounded representative case; it does not extend applicability beyond the declared preconditions."
   ],
   "tests": [
-   "tests/kinetic/test_mirror_total_pressure.py",
+   "tests/mirror/test_mirror_total_pressure.py",
    "tests/cross_domain/test_mirror_kinetic_scientific_correction.py"
   ],
   "evidence_ceiling": "Bounded to the declared relation: Broadcast ion/electron pressure fields together with density, residual and optional potential shapes…. Evidence: test_mirror_total_pressure.py, test_mirror_kinetic_scientific_correction.py (21 recorded test functions; bound-file coverage; self-consistency/regression only); the contract example ran. Excluded scope: Computing ion moments, Boltzmann electron response, electrostatic potential or a quasineutral root; Certifying charge neutrality, potential units, array-axis alignment or the physical correctness of the supplied pressure model; finite nonnegative species density and pressure are nevertheless mandatory numerical input checks.",

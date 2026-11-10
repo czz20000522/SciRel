@@ -43,7 +43,7 @@ def test_documented_closure_capability_does_not_load_kinetic_private_helpers() -
 
     assert result["status"] == "PASS"
     assert "scirel._numerics" in result["loaded_scirel_modules"]
-    assert "scirel.kinetic._mirror_numerics" not in result["loaded_scirel_modules"]
+    assert "scirel.mirror._mirror_numerics" not in result["loaded_scirel_modules"]
 
 
 def test_reduced_hall_closure_does_not_load_equilibrium_private_helpers() -> None:
@@ -54,12 +54,14 @@ def test_reduced_hall_closure_does_not_load_equilibrium_private_helpers() -> Non
     assert "scirel.equilibrium._anisotropic_numerics" not in result["loaded_scirel_modules"]
 
 
-def test_mirror_ambipolar_closure_does_not_load_kinetic_private_helpers() -> None:
+def test_mirror_ambipolar_closure_loads_only_the_mirror_private_kernel() -> None:
     result = measure(ROOT, asset_id="scirel.closures.mirror-ambipolar-potential")
 
     assert result["status"] == "PASS"
-    assert "scirel._mirror_numerics" in result["loaded_scirel_modules"]
-    assert "scirel.kinetic._mirror_numerics" not in result["loaded_scirel_modules"]
+    assert "scirel.mirror._mirror_numerics" in result["loaded_scirel_modules"]
+    assert not any(
+        module.startswith("scirel.kinetic") for module in result["loaded_scirel_modules"]
+    )
 
 
 def test_direct_dispersion_capability_reports_implementation_path() -> None:

@@ -4,11 +4,11 @@ from fractions import Fraction
 import numpy as np
 import pytest
 from scirel.closures.boltzmann_quasineutrality import compute_boltzmann_electron_state as boltz
-from scirel.kinetic.mirror_invariant_distribution import (
+from scirel.mirror.mirror_invariant_distribution import (
     evaluate_mirror_invariant_distribution as invariant,
 )
-from scirel.kinetic.mirror_constrained_moments import evaluate_mirror_constrained_moments as moments
-from scirel.kinetic._mirror_numerics import _mirror_flux
+from scirel.mirror.mirror_constrained_moments import evaluate_mirror_constrained_moments as moments
+from scirel.mirror._mirror_numerics import _mirror_flux
 
 Q = 1.602176634e-19
 
@@ -115,7 +115,7 @@ def test_refill_boundary_and_even_velocity_preserved_under_gauge():
 
 @pytest.mark.parametrize("shift", [1e20, -1e20, 1e308, -1e308])
 def test_local_quasineutral_midpoint_preserves_large_representable_root(shift):
-    from scirel.closures.mirror_quasineutral_closure import solve_mirror_quasineutral_closure
+    from scirel.mirror.mirror_quasineutral_closure import solve_mirror_quasineutral_closure
 
     x = solve_mirror_quasineutral_closure(
         b_t=1.0,
@@ -136,7 +136,7 @@ def test_local_quasineutral_midpoint_preserves_large_representable_root(shift):
 
 @pytest.mark.parametrize("shift", [1e20, -1e20, 1e308, -1e308])
 def test_end_loss_midpoint_preserves_large_representable_balanced_root(shift):
-    from scirel.closures.mirror_ambipolar_potential import solve_mirror_ambipolar_potential
+    from scirel.mirror.mirror_ambipolar_potential import solve_mirror_ambipolar_potential
 
     x = solve_mirror_ambipolar_potential(
         1.0,

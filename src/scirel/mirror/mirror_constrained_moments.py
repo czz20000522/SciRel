@@ -1,11 +1,11 @@
 """Integrate density and gyrotropic pressures of an invariant mirror distribution."""
 
 import numpy as np
+from scirel._numerics import _scaled_difference
 from ._mirror_numerics import (
     _trapped_fractions,
     _density_exponential,
     _positive_product,
-    _scaled_difference,
 )
 
 
@@ -124,7 +124,7 @@ def evaluate_mirror_constrained_moments(
     Examples
     --------
     >>> import numpy as np
-    >>> from scirel.kinetic import evaluate_mirror_constrained_moments
+    >>> from scirel.mirror import evaluate_mirror_constrained_moments
     >>> e = 1.602176634e-19
     >>> b = np.array([1.0, 2.0])
     >>> r = evaluate_mirror_constrained_moments(b, np.zeros(2), 0.0, 1.67262192595e-27, e, 2.0e18, 1200.0*e, 2400.0*e, 1.0)

@@ -264,10 +264,10 @@
  },
  "public_api": {
   "python": {
-   "module": "scirel.kinetic.mirror_invariant_distribution",
+   "module": "scirel.mirror.mirror_invariant_distribution",
    "symbol": "evaluate_mirror_invariant_distribution",
    "signature": "evaluate_mirror_invariant_distribution(v_parallel_m_s, v_perpendicular_m_s, b_t, psi, potential_v, mass_kg, charge_c, density_ref_m3, temperature_parallel_j, temperature_perpendicular_ref_j, b_ref_t, phi_ref_v=0.0, b_plug_left_t=None, b_plug_right_t=None, phi_plug_left_v=0.0, phi_plug_right_v=0.0, loss_cone_refill=0.0)",
-   "canonical_module": "scirel.kinetic",
+   "canonical_module": "scirel.mirror",
    "canonical_symbol": "evaluate_mirror_invariant_distribution"
   }
  },
@@ -277,7 +277,7 @@
  },
  "example": {
   "description": "At an unplugged reference field, verify the analytic bi-Maxwellian normalization and invariant energy/moment.",
-  "code": "import math\nimport numpy as np\nfrom scirel.kinetic import evaluate_mirror_invariant_distribution\ne = 1.602176634e-19\nm = 1.67262192595e-27\nt_parallel, t_perp = 1200.0*e, 2400.0*e\nr = evaluate_mirror_invariant_distribution(0.0, 0.0, 1.0, 0.0, 0.0, m, e, 2.0e18, t_parallel, t_perp, 1.0)\nexpected = 2.0e18*(m/(2.0*math.pi))**1.5/(t_perp*math.sqrt(t_parallel))\nnp.testing.assert_allclose(r['f0_s3_m6'], expected)\nnp.testing.assert_allclose(r['energy_j'], 0.0)\nnp.testing.assert_allclose(r['magnetic_moment_j_t'], 0.0)\nassert r['occupation'] == 1.0",
+  "code": "import math\nimport numpy as np\nfrom scirel.mirror import evaluate_mirror_invariant_distribution\ne = 1.602176634e-19\nm = 1.67262192595e-27\nt_parallel, t_perp = 1200.0*e, 2400.0*e\nr = evaluate_mirror_invariant_distribution(0.0, 0.0, 1.0, 0.0, 0.0, m, e, 2.0e18, t_parallel, t_perp, 1.0)\nexpected = 2.0e18*(m/(2.0*math.pi))**1.5/(t_perp*math.sqrt(t_parallel))\nnp.testing.assert_allclose(r['f0_s3_m6'], expected)\nnp.testing.assert_allclose(r['energy_j'], 0.0)\nnp.testing.assert_allclose(r['magnetic_moment_j_t'], 0.0)\nassert r['occupation'] == 1.0",
   "expected": "At zero velocity and reference potential, f0_s3_m6 was 1.6292563266109574, energy_j and magnetic_moment_j_t were zero, and occupation was 1.0."
  },
  "verification": {
@@ -286,7 +286,7 @@
    "The example exercises one bounded representative case; it does not extend applicability beyond the declared preconditions."
   ],
   "tests": [
-   "tests/kinetic/test_mirror_invariant_distribution.py",
+   "tests/mirror/test_mirror_invariant_distribution.py",
    "tests/cross_domain/test_mirror_kinetic_scientific_correction.py",
    "tests/cross_domain/test_mirror_gauge_scientific_correction.py",
    "tests/kinetic/test_independent_correction.py"

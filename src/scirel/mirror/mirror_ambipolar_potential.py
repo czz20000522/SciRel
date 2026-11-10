@@ -7,7 +7,7 @@ from scirel._validation import (
 import numpy as np
 
 from scirel._result import Result
-from scirel._mirror_numerics import _mirror_flux
+from ._mirror_numerics import _mirror_flux
 from scirel._numerics import _potential_midpoint
 
 ELEMENTARY_CHARGE_C = 1.602176634e-19
@@ -235,7 +235,7 @@ def solve_mirror_ambipolar_potential(
     Examples
     --------
     >>> import numpy as np
-    >>> from scirel.closures import solve_mirror_ambipolar_potential
+    >>> from scirel.mirror import solve_mirror_ambipolar_potential
     >>> e = 1.602176634e-19
     >>> m_i = 1.67262192595e-27
     >>> m_e = 9.1093837139e-31
