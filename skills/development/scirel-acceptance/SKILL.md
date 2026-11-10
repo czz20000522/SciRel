@@ -16,7 +16,17 @@ A change is done only when the checks here pass. Run them yourself; do not assum
 | Before asking for review, and before saying a change is done | `python3 scripts/dev_container.py check` on the host-native container architecture | Full local acceptance and merge evidence, fastest on Apple Silicon arm64 | About 5 minutes on native CPU |
 | Optional cross-device spot check | Manually dispatch the `Cross-device check` workflow | Same full acceptance on Linux/amd64 | About 5-15 minutes |
 
-`check_all.py` prints `ALL GREEN` when everything passes. Any other ending means the tree is not green.
+`check_all.py` prints one line with both counts before its verdict, for example:
+
+```text
+steps 10/10 passed; tests collected 3021, selected 3021, deselected 0, passed 3019, failed 0, error 0, skipped 2, xfailed 0, xpassed 0 (skip reasons: engine is not running (2))
+SKIP  engine is not running  (2): tests/docs/test_build.py::test_live_build, tests/docs/test_build.py::test_live_links
+ALL GREEN
+```
+
+`ALL GREEN` is the last line when everything passes. Any other ending means the tree is not green. The step count alone is not evidence: it says that ten steps exited zero, not what the tests did. A large skip would otherwise hide behind a passing exit code, so each skip reason gets its own `SKIP` line with its count and the first few test IDs.
+
+The test counts come from pytest itself. `scripts/scirel_pytest_counts.py` observes the run and changes no outcome; `check_all.py` loads it with `-p scirel_pytest_counts` and has it write JSON into the run's temporary directory, which is removed with the run. Nothing is read from the human-readable summary. If that report is missing, unreadable, or its numbers disagree — every selected test must reach exactly one outcome, and `selected` must equal `passed + failed + error + skipped + xfailed + xpassed` — the `tests` step is red: a count nobody can check cannot support a green.
 
 It prints the time of each step and takes about five minutes. Much longer means the machine is busy: look for other runs before suspecting the code. Only one run per checkout is allowed. Run it in the foreground, so that you see the result.
 
@@ -33,6 +43,8 @@ It runs the full test suite, contract signatures and examples, the docstring and
 退出码非 0 时，把完整输出留下来再报，不要只贴尾部。`tail` 挑出来的那几行往往正好丢掉"哪一步失败、为什么失败"，评审拿到一段像成功的尾巴，比没有日志更难判。要看重点，也是在完整输出之外另附摘要，不能拿摘要替换输出。
 
 这两条是同一个病根：为了看得方便，把判断依据裁掉了。而判断依据一裁掉就没有第二份能还原——这次运行同时会覆盖上一次的判定依据，容器里重建的虚拟环境、wheel 和文档输出都已经是这一次的状态，事后只剩这一个退出码和这一份完整日志。收窄成几十行，等于把"这一次过没过"和"上一次是什么结论"一起丢掉；等到有人回头核对，既补不出当时的输出，也复现不出当时的结论。放行用的那次完整检查还必须独占引擎，见 `AGENTS.md` 的「环境和验收」段，这里不重复。
+
+证据里要同时写两个计数：`steps N/M passed` 的步骤数，和 pytest 的测试计数（collected、selected、passed、failed、skipped，跳过写原因与条数）。只写步骤数就是"缺分母的成功"——三千条测试里跳过了多少、为什么跳过，读者看不到；而 pytest 只要退出码是 0，这一步同样算过。照 `check_all.py` 最后那几行原样贴（汇总行加 `SKIP` 行再加强末行），不要只摘一句 `ALL GREEN`。
 
 ## Docstring and contract: one source of truth
 
