@@ -76,10 +76,28 @@ def _replace_points_atomic(source, value):
 
 
 class CurrentFilamentSet:
-    """A finite collection of weighted circular filaments."""
+    """A finite collection of weighted circular filaments.
 
-    def __init__(self, current=1.0, weights=None, mesh=None, **kwargs):
-        del kwargs
+    Parameters
+    ----------
+    current : real scalar, optional
+        Common drive current [A]. Must be finite. The default is ``1.0``.
+    weights : array_like, shape (N,), optional
+        Signed filament weights [dimensionless], one per point. Must be finite
+        and match the point count. The default is one per point.
+    mesh : Mesh or array-like, optional
+        Target mesh [m] stored for later field calls. The default is ``None``.
+
+    Raises
+    ------
+    ValueError
+        If ``current``, ``weights``, or ``mesh`` violates its contract.
+    TypeError
+        If an unknown keyword argument is supplied; a misspelt entry is not
+        silently ignored.
+    """
+
+    def __init__(self, current=1.0, weights=None, mesh=None):
         self._mesh = None
         _points(self._rz_pts)
         self._current = _common_current(current)

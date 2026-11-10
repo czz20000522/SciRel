@@ -12,6 +12,7 @@ import argparse
 import ast
 from collections import Counter
 import json
+import math
 from pathlib import Path
 
 RULES = {
@@ -30,13 +31,29 @@ RULES = {
     "unused-parameter": "a parameter that is never used is silently ignored",
 }
 CLAMP_NAMES = {"clip", "clamp", "minimum", "maximum"}
-REPLACE_NAMES = {"nan_to_num", "fill_diagonal"}
+REPLACE_NAMES = {"nan_to_num"}
+NON_FINITE_NAMES = {"inf", "infinity", "infty", "nan", "NAN", "NaN", "NINF", "PINF"}
 INPUT_MAPPINGS = {"inputs", "params", "parameters", "config", "options", "case", "kwargs", "settings"}
 
 
 def call_name(node):
     func = node.func
     return func.attr if isinstance(func, ast.Attribute) else func.id if isinstance(func, ast.Name) else ""
+
+
+def non_finite_literal(node):
+    """Return whether an argument is a literal non-finite number, not a computed value."""
+    if isinstance(node, ast.UnaryOp) and isinstance(node.op, (ast.USub, ast.UAdd)):
+        node = node.operand
+    if isinstance(node, ast.Constant):
+        return isinstance(node.value, float) and not math.isfinite(node.value)
+    if isinstance(node, ast.Name):
+        return node.id in NON_FINITE_NAMES
+    if isinstance(node, ast.Attribute):
+        return node.attr in NON_FINITE_NAMES
+    if isinstance(node, ast.Call) and node.args:
+        return non_finite_literal(node.args[0])
+    return False
 
 
 class Visitor(ast.NodeVisitor):
@@ -93,6 +110,13 @@ class Visitor(ast.NodeVisitor):
             self.hit("error-state-ignored", node)
         elif name in REPLACE_NAMES:
             self.hit("non-finite-replaced", node)
+        elif name == "fill_diagonal":
+            # ``fill_diagonal(a, value)`` writes a supplied value onto the diagonal of a
+            # matrix under construction, so an ordinary call is assembly rather than a
+            # replacement of non-finite entries. Only a literal non-finite fill value
+            # matches the rule.
+            if len(node.args) > 1 and non_finite_literal(node.args[1]):
+                self.hit("non-finite-replaced", node)
         elif name in CLAMP_NAMES:
             self.hit("clip", node)
         elif name in ("filterwarnings", "simplefilter", "catch_warnings"):
