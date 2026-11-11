@@ -15,6 +15,8 @@ SciRel 是聚变和等离子体方向的 Python 科学计算库，每个公开�
 
 要改进外部 agent 的回答，就改 skills、检索和合同，因为分发包里只有这些。`examples/` 不随包分发，只用来检验流程。改完用 `scripts/build_pure_delivery.py` 确认内容已进入分发包。
 
+**开工第一步：查工单。** 运行 `python3 scripts/tickets.py list tickets --status decided`，列出的工单已有人工裁决，先执行它们，做法见 [tickets/README.md](tickets/README.md)。
+
 代码和测试之外的规则，按需要读：
 
 | 要做的事 | 读这里 |
@@ -25,6 +27,7 @@ SciRel 是聚变和等离子体方向的 Python 科学计算库，每个公开�
 | 改代码或加功能 | [CONTRIBUTING.md](CONTRIBUTING.md) |
 | 改合同 | [catalog/README.md](catalog/README.md)、[catalog/AUDIT.md](catalog/AUDIT.md) |
 | 代码风格和公开 API | [`scirel-code-style` skill](skills/development/scirel-code-style/SKILL.md)（标准）、[`api-design-method` skill](skills/development/api-design-method/SKILL.md)（通用方法） |
+| 遇到证据定不下来的物理问题 | [tickets/README.md](tickets/README.md)、[分级与工单格式](docs/maintainer/supply-pipeline.md) 第 7 节 |
 | 回答用户的物理问题 | [求解 skill](skills/development/usage/scirel-solving/SKILL.md)、[流程框架](skills/development/usage/scirel-solving/references/workflow.md) |
 
 ## 目录
@@ -39,6 +42,7 @@ scripts/           校验和构建工具
 skills/            求解、开发和提取方法
 tools/docs/        手册内容和构建器
 examples/          求解样例和待整理案例
+tickets/           需要人工裁决的工单（按 kind 分目录）
 licenses/          许可和署名
 ```
 
@@ -116,6 +120,7 @@ POSIX 主机上，入口收到 `SIGINT`、`SIGTERM` 或 `SIGHUP` 时会停止本
 待办都放在固定位置，不另写交接日志：
 
 - 其余案例的整理计划：[examples/PLAN.md](examples/PLAN.md)
+- 等待人工裁决的问题：`tickets/` 下 `status: open` 的工单
 
 已知未完成：
 
