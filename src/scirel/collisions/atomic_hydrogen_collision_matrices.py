@@ -14,12 +14,16 @@ operators, while the theta quadrature remains local. Bounded negative cells
 in the elastic families are intrinsic (signed
 ``vr2_vx2`` / ``vx_vx`` factors) and are reproduced as-is, never clamped.
 
-Physical energy convention: the input to each fit is the equivalent hydrogen
-projectile laboratory energy with a stationary target. For H/D momentum
-transfer the neutral-transport formulation section 2.1.2.6 maps E_D to E_D/2; for viscosity it maps E_D to
-E_D. Thus mixed/CX factors are Tnorm/mu and self viscosity is Tnorm.
-Default five-angle midpoint integration is approximate. n_theta enables an
-explicit angular convergence study; fit fidelity is not universal accuracy.
+Physical energy convention: the assembly evaluates each fit at the equivalent
+hydrogen projectile laboratory energy with a stationary target, g^2*Tnorm/mu
+(the 1/mu enters through Vth^2, not a separate conversion); the self viscosity
+kernel sees g^2*Tnorm. The H+-on-H fit converts its laboratory argument to the
+center-of-mass energy internally, so the SIG_H_P call site passes the
+laboratory energy unchanged. The CX and mixed-kernel energy conventions have
+not been verified against their source tables (UNKNOWN, issue #10 item 2) and
+are passed through unchanged. Default five-angle midpoint integration is
+approximate. n_theta enables an explicit angular convergence study; fit
+fidelity is not universal accuracy.
 """
 
 from __future__ import annotations
@@ -147,8 +151,9 @@ def assemble_atomic_hydrogen_collision_matrices(vr, vx, Vr2pidVr, dVx, Tnorm, mu
     -----
     The relation assembles axisymmetric velocity-space kernels on a cylindrical
     grid. ``SIG_CX`` uses the fitted charge-exchange cross section; ``SIG_H_H``,
-    ``SIG_H_H2`` and ``SIG_H_P`` use their declared laboratory-energy scalings and
-    retain the signed elastic geometry. The default five-angle midpoint rule is an
+    ``SIG_H_H2`` and ``SIG_H_P`` are evaluated at their declared laboratory-energy
+    arguments and retain the signed elastic geometry. The CX and H-H2 energy
+    conventions are unverified against their source tables (issue #10 item 2). The default five-angle midpoint rule is an
     approximation, not a convergence guarantee; increase ``n_theta`` for the
     caller's own study. The self-stress kernel uses the Boltzmann prefactor
     ``3/8``. That is three times the self-collision value in KN1D Appendix B,
@@ -252,7 +257,10 @@ def assemble_atomic_hydrogen_collision_matrices(vr, vx, Vr2pidVr, dVx, Tnorm, mu
         vr, vx, Vr2pidVr, dVx, n_theta
     )
 
-    # Energy factor shared by SIG_CX / SIG_H_H2 / SIG_H_P (0.5*H_MASS*Vth2/Q).
+    # Energy factor shared by SIG_CX / SIG_H_H2 / SIG_H_P (0.5*H_MASS*Vth2/Q = Tnorm/mu):
+    # the laboratory projectile energy on a stationary target for g^2 = 1.
+    # SIG_CX / SIG_H_H2 energy conventions are unverified against their source
+    # tables (UNKNOWN, issue #10 item 2); left untouched this change.
     # SIG_H_H uses the mu-scaled factor 0.5*H_MASS*mu*Vth2/Q (source kinetic_h.py:957).
     ecx = 0.5 * H_MASS * Vth2 / Q
     ehh = 0.5 * H_MASS * mu * Vth2 / Q
@@ -292,7 +300,9 @@ def assemble_atomic_hydrogen_collision_matrices(vr, vx, Vr2pidVr, dVx, Tnorm, mu
         nsig,
     )
 
-    # SIG_H_P (source kinetic_h.py:1004-1011)
+    # SIG_H_P (source kinetic_h.py:1004-1011). The public fit converts the
+    # laboratory argument to the center-of-mass energy internally (issue #10
+    # item 2), so the call site passes the laboratory energy unchanged.
     sig["SIG_H_P"] = averaged_matrix(
         v_v * evaluate_hydrogen_proton_elastic_cross_section(v_v2 * ecx),
         Vr2pidVrdVx * vx_vx,

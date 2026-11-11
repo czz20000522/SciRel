@@ -763,7 +763,7 @@
   },
   {
    "asset_id": "scirel.collisions.atomic-hydrogen-omega-frequencies",
-   "source_sha256": "c58a6bff27e1257d8b7f921f65fe529aaaa448818b74c3f12879b04f81bdb229",
+   "source_sha256": "ae132b354db53d7174fdb77f7ac1391837ca9fd10c61f700657f8e1160a1235d",
    "summary": "在每个空间单元独立归约原子氢弹性碰撞动量与应力矩，返回归一化系数 Omega（m⁻¹）、物理频率 nu（s⁻¹）及可定义性。零分母保留碰撞矩并显式返回未定义频率，不用人为下限或截正掩盖。顶层结果为 scirel._result.Result 映射；键访问保持可用，不冲突字段也支持属性访问。",
    "definition": "令 w_ij=Vr2pidVr_i*dVx_j，n=Σwf，u=Σwf vx/n，U=Vth*u，K=vr²−2(vx−u)²。central 状态取 W=ΣwfK/n；target 状态取 W=Σw(f−M)K/n，M 必须保持本单元粒子数、平均速度与总动能。两混合通道 N=Σwf Alpha/n、d=(U−U_background)/Vth；自碰撞 Alpha=SIG_self@F(f)，N=Σwf Alpha/n、d=W。Omega=N/d，nu=Vth*Omega，不截负、不加下限。混合物理加速度 moment_rate=−β Vth² N，自碰撞应力变化率=−Vth³ N；原子 β=(1/2,2/3)，分子 β=(1/3,1/3)。d=0 时 Omega/nu=NaN、defined=False；有限 N 与 moment_rate 仍返回。关闭通道为精确零且状态 disabled。总频率为三通道之和，传播启用通道的未定义值。",
    "model": "动量/应力矩匹配的 BGK 近似；不是完整 Boltzmann 碰撞算子，也不由单点 0/0 推断唯一线性化率。",
@@ -1063,7 +1063,8 @@
      "有限角/速度网格可能产生 Maxwell 应力残差，需按应用收敛检查。",
      "截面拟合、H/D 缩放与分子黏性近似的限制继承；许可仍待判断。",
      "该实现在零/负分母分支上刻意不追求 source parity：canonical 实现会为混合漂移与自应力分母设下限，并把所有 Omega 裁剪为非负；本资产在零分母时返回 NaN 与 defined=False，负比值返回 negative_no_bgk_closure 状态。",
-     "当 SIG 取自碰撞矩阵资产时，自碰撞 nu 和 moment_rate 是使用 3/8 前因子的玻尔兹曼物理速率，是 KN1D 值的三倍。"
+     "当 SIG 取自碰撞矩阵资产时，自碰撞 nu 和 moment_rate 是使用 3/8 前因子的玻尔兹曼物理速率，是 KN1D 值的三倍。",
+     "nu_EL 只合并弹性通道，不含电荷交换动量通道；消费者若把 SIG_CX 的 v_x 矩加进 nu_EL，会重复计入共振电荷交换动量。"
     ]
    }
   },
@@ -3970,16 +3971,16 @@
   },
   {
    "asset_id": "scirel.collisions.proton-atomic-hydrogen-elastic-cross-section",
-   "source_sha256": "c75ec4c0591348924e5f7a1026e5bc207039612538107ff7ededf8a03f9dd696",
-   "summary": "计算静止原子氢靶上的质子弹性动量传递截面；按所声明的分段拟合：E<10 eV 使用低能多项式，E≥10 eV 使用高能多项式，因此恰好 10 eV 属于高能分支；输出形状与输入相同。",
-   "definition": "将实验室质子能量 E 裁到 [0.001,1.01e5] eV。E<10 使用七系数低能 log 多项式，E≥10 使用二系数高能多项式；截面为 exp(poly(log E))*1e-4 m²。两段经验拟合不强制连续；结果形状与输入相同。",
+   "source_sha256": "31f81e946885c09fc62ce9286318c489cec47a8e19903ad01232b3dd049b741b",
+   "summary": "计算静止原子氢靶上的质子弹性动量传递截面；函数内部先把实验室能量换算为质心能量 E_cm=E_lab/2（等质量对称体系），再按质心变量的分段拟合求值：E_cm<10 eV 使用低能多项式，E_cm≥10 eV（即实验室 E≥20 eV）使用高能多项式，因此实验室恰好 20 eV 属于高能分支；输出形状与输入相同。",
+   "definition": "将实验室质子能量 E 裁到 [0.001,1.01e5] eV，再换算 E_cm=E/2。E_cm<10 使用七系数低能 log 多项式，E_cm≥10 使用二系数高能多项式；截面为 exp(poly(log E_cm))*1e-4 m²。两段经验拟合不强制连续；结果形状与输入相同。",
    "model": "H+-on-H 动量传递经验拟合；能量为静止靶参考系的弹丸能量。",
    "assumptions": [
-    "低/高能拟合系数沿用所声明的数值；E<10 eV 使用低能分支，E≥10 eV（包括恰好 10 eV）使用高能分支。",
+    "低/高能拟合系数沿用所声明的数值；在质心变量上 E_cm<10 eV 使用低能分支，E_cm≥10 eV（实验室 E≥20 eV，包括实验室恰好 20 eV）使用高能分支。",
     "端点裁剪不代表域外实验精度；低高段可能有有限跳变，不进行无依据平滑。",
     "输出保留输入形状，不附加前导单例轴；负能量、布尔值、复数和字符串均被拒绝。"
    ],
-   "boundary": "输入必须是有限非负实数；能域外取端点值，恰好 10 eV 使用高能分支。",
+   "boundary": "输入必须是有限非负实数；能域外取端点值，实验室恰好 20 eV（质心 10 eV）使用高能分支。",
    "inputs": [
     {
      "name": "energy_ev",
@@ -4019,14 +4020,15 @@
    },
    "verification": {
     "scope": [
-     "直接探测所声明的 10 eV 断点：E<10 使用低能分支，E≥10（含 10 eV）使用高能分支；覆盖紧邻断点两侧的值。",
+     "直接探测所声明的断点（质心 10 eV = 实验室 20 eV）：E_cm<10 使用低能分支，E_cm≥10 使用高能分支；覆盖紧邻断点两侧的实验室能量值。",
      "保留输出与输入同形、非法输入拒绝和端点裁剪的断言。",
      "后续原子碰撞矩阵与独立角积分使用修正后的分段定义。"
     ],
     "evidence_ceiling": "已确立所声明的分段拟合与断点行为，未建立新的实验截面普适精度；接收、人工科学认可及许可另行记录。",
     "known_limitations": [
      "拟合端点裁剪和低高段不连续继承；不擅自平滑。",
-     "此前的资格撤回和待定许可仍有记录；本次修正不改写该历史。"
+     "此前的资格撤回和待定许可仍有记录；本次修正不改写该历史。",
+     "该拟合的动量转移截面含共振电荷交换搬运的动量（APID 8，1999，§1.2，p.2–3）；它不是可区分粒子的动量转移截面，本仓库也没有可区分粒子参数化。"
     ]
    }
   },
@@ -4604,7 +4606,7 @@
   },
   {
    "asset_id": "scirel.collisions.atomic-hydrogen-collision-matrices",
-   "source_sha256": "ee379e3f446ad744f149cab5486dd02b4cbdfb0ef252cf766698f6495e84ac4d",
+   "source_sha256": "d71b75850936d28be68a01067110bb4d88e8e64ee75e5f6353f7487beca1df1d",
    "summary": "在圆柱归一化速度网格上组装电荷交换、两路动量传递和自碰撞应力矩阵。明确 H/D 实验室能量缩放；弹性矩阵保留符号，支持显式增加角节点以检查收敛。顶层结果为 scirel._result.Result 映射；嵌套数组字段仍为普通 NumPy 数组。",
    "definition": "令 g²=vr_i²+vr_k²−2vr_i vr_k cosθ+(vx_j−vx_l)²，θ_m=π(m+1/2)/n_theta。矩阵列权重为 Vr2pidVr_k*dVx_l，Fortran 排序 row=i+nvr*j、col=k+nvr*l。CX 核为 <g σ_CX>，混合动量核为 (vx_j−vx_l)<g σ_mt>，自碰撞应力核为 <(g_perp²−2g_x²)g σ_vis>*3/8。Vth²=2Q*Tnorm/(mu*H_MASS)。原子 CX 和混合动量拟合能量为 g²*Tnorm/mu，自黏性为 g²*Tnorm。",
    "model": "轴对称速度积分核；动量传递截面与黏性截面采用不同同位素缩放。",
@@ -4757,7 +4759,8 @@
      "拟合端点裁剪和分子黏性替代属于模型近似。",
      "默认五角没有普适精度保证；高阶验证不替代用户网格收敛。",
      "人类科学认可和再分发许可单独决定；验证缺口不因本文件而闭合。",
-     "自碰撞前因子取玻尔兹曼值 3/8，可复现 Chapman-Enskog 硬球 p/μ。KN1D 报告（LaBombard，PSFC/RR-01-3，附录 B）取 1/8，因为它把 BGK 的 (2v_x²−v_r²) 积分（等于 v_x² 积分的三倍）直接等同于 v_x² 变化率；因此这一通道的结果与 KN1D 相差这一倍数。"
+     "自碰撞前因子取玻尔兹曼值 3/8，可复现 Chapman-Enskog 硬球 p/μ。KN1D 报告（LaBombard，PSFC/RR-01-3，附录 B）取 1/8，因为它把 BGK 的 (2v_x²−v_r²) 积分（等于 v_x² 积分的三倍）直接等同于 v_x² 变化率；因此这一通道的结果与 KN1D 相差这一倍数。",
+     "APID 8（1999）p.77 的 Momentum Transfer 列等于其 Spin Exchange 列的两倍；按 §1.5.3，质心能量约 1 eV 以上时自旋交换截面趋近电荷交换截面，而每次共振电荷交换对动量转移的贡献权重约为 2。因此在该范围内该列主要由电荷交换动量构成，与独立的 SIG_CX 动量项叠加时 p–H 动量交换可能接近翻倍；具体份额未定量（UNKNOWN）。在可区分粒子核出现之前，两者不得共用同一个动量预算。"
     ]
    }
   },
