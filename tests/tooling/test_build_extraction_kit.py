@@ -1,4 +1,5 @@
 from pathlib import Path
+import os
 import subprocess
 import sys
 
@@ -101,3 +102,65 @@ def test_cli_reports_failure_with_nonzero_exit(repo, tmp_path, capsys):
     )
     assert code == 1
     assert "FAIL" in capsys.readouterr().err
+
+
+def _clean_identity_env(tmp_path):
+    """Return an environment with no usable git identity, like a fresh HOME."""
+    home = tmp_path / "clean-home"
+    home.mkdir(exist_ok=True)
+    env = dict(os.environ)
+    for name in (
+        "GIT_AUTHOR_NAME",
+        "GIT_AUTHOR_EMAIL",
+        "GIT_COMMITTER_NAME",
+        "GIT_COMMITTER_EMAIL",
+        "EMAIL",
+    ):
+        env.pop(name, None)
+    env.update(
+        {
+            "HOME": str(home),
+            "GIT_CONFIG_NOSYSTEM": "1",
+            "GIT_CONFIG_GLOBAL": str(home / "no-global-config"),
+        }
+    )
+    return env
+
+
+# 验证：按 KIT.md 的步骤在无 git 身份的干净环境里能提交；缺这一步时提交确实失败。
+def test_documented_identity_step_makes_the_commit_work_in_a_clean_home(repo, tmp_path):
+    source, first = repo
+    output = tmp_path / "kit"
+    kit.build_kit(source, first, output)
+    text = (output / "KIT.md").read_text(encoding="utf-8")
+    assert "git -C scirel config user.name" in text
+    assert "git -C scirel config user.email" in text
+
+    clone = output / "scirel"
+    (clone / "added.py").write_text("NEW = 3\n", encoding="utf-8")
+    env = _clean_identity_env(tmp_path)
+    subprocess.run(["git", "add", "added.py"], cwd=clone, env=env, check=True)
+    without_identity = subprocess.run(
+        ["git", "commit", "--quiet", "-m", "add relation"],
+        cwd=clone,
+        env=env,
+        capture_output=True,
+        text=True,
+    )
+    assert without_identity.returncode != 0
+    assert "auto-detect" in (without_identity.stdout + without_identity.stderr)
+
+    for command in (
+        ["git", "-C", "scirel", "config", "user.name", "extractor"],
+        ["git", "-C", "scirel", "config", "user.email", "extractor@example.invalid"],
+    ):
+        subprocess.run(command, cwd=output, env=env, check=True, capture_output=True)
+    committed = subprocess.run(
+        ["git", "commit", "--quiet", "-m", "add relation"],
+        cwd=clone,
+        env=env,
+        capture_output=True,
+        text=True,
+    )
+    assert committed.returncode == 0, committed.stderr
+    assert _git(clone, "rev-parse", "HEAD") != first

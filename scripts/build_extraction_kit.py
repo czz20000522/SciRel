@@ -36,15 +36,23 @@ KIT_TEMPLATE = """\
 
 ## 用法
 
-1. 在 `scirel/` 里检索合同、修改 `src/`、`tests/`、`catalog/`，并在分支 `{branch}` 上提交。
-2. `PACKAGE.md` 的"冻结 SciReL commit"写上面这个 commit。
-3. 生成补丁：
+1. 先设置提交身份。工具包不继承构建机的 git 配置，缺身份时 `git commit` 会以
+   `fatal: unable to auto-detect email address` 失败：
+
+   ```sh
+   git -C scirel config user.name "<你的名字>"
+   git -C scirel config user.email "<你的邮箱>"
+   ```
+
+2. 在 `scirel/` 里检索合同、修改 `src/`、`tests/`、`catalog/`，并在分支 `{branch}` 上提交。
+3. `PACKAGE.md` 的"冻结 SciReL commit"写上面这个 commit。
+4. 生成补丁：
 
    ```sh
    git -C scirel format-patch {commit} -o <拆解包目录>/patch
    ```
 
-4. 自检，合并线运行的也是同一条命令：
+5. 自检，合并线运行的也是同一条命令：
 
    ```sh
    cd scirel && python scripts/validate_extraction_package.py <拆解包目录> --repo .
