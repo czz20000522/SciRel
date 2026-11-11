@@ -42,6 +42,7 @@ SCRIPT_LAYERS = {
     "audit_public_export_documents.py": ("architecture",),
     "build_capability_matrix.py": ("tooling", "docs", "delivery"),
     "build_catalog.py": ("tooling", "architecture"),
+    "build_extraction_kit.py": ("tooling",),
     "build_pure_delivery.py": ("delivery",),
     "build_scirel_sphinx.py": ("docs", "delivery"),
     "capability_catalog.py": ("docs", "delivery"),
@@ -50,13 +51,11 @@ SCRIPT_LAYERS = {
     "code_digest.py": ("tooling", "docs", "delivery"),
     "consumer_tools.py": ("delivery",),
     "dev_container.py": ("tooling", "architecture"),
-    "export_admission_tools.py": ("delivery",),
     "exposure.py": ("docs", "delivery"),
     "mapping_interface_bindings.json": ("tooling", "architecture", "docs", "delivery"),
     "measure_capability_runtime.py": ("architecture",),
     "mutation_check.py": ("tooling",),
     "package_catalog_snapshot.py": ("tooling",),
-    "prepare_admission.py": ("delivery",),
     "public_api_binding.py": ("tooling", "architecture", "docs", "delivery"),
     "query.py": ("delivery",),
     "scirel_mutation_plugin.py": ("tooling",),
@@ -65,7 +64,6 @@ SCRIPT_LAYERS = {
     "serve_consumer_mcp.py": ("delivery",),
     "test_scope.py": ("tooling",),
     "tickets.py": ("tooling",),
-    "validate_admission.py": ("delivery",),
     "validate_asset_documents.py": ("tooling", "architecture", "docs", "delivery"),
     "validate_capability_runtime_closure.py": ("architecture",),
     "validate_extraction_package.py": ("tooling",),
@@ -266,8 +264,8 @@ def classify(relative: Path) -> tuple[list[str], list[str]]:
         return [_layer_target("tooling"), _layer_target("architecture")], []
 
     if parts[0] == "contracts":
-        if len(parts) >= 2 and parts[1] in {"admission", "reception"}:
-            return [_layer_target("delivery")], ["admission/reception contract"]
+        if len(parts) >= 2 and parts[1] == "reception":
+            return [_layer_target("delivery")], ["reception contract"]
         return [
             _layer_target("architecture"),
             _layer_target("tooling"),

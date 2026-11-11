@@ -61,7 +61,7 @@ none of them decides whether the science is right:
 
 | Question | Owner |
 | --- | --- |
-| Is the input well formed and self-consistent? | `scripts/validate_admission.py` |
+| Is the input well formed and self-consistent? | `scripts/validate_extraction_package.py` |
 | Which assets stay out of the installed package? | `catalog/review/excluded_from_package.json` (scope only, with a revisit condition) |
 | Is a contract claim backed by an executable test? | the contract's `verification.tests` |
 
