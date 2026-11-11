@@ -242,6 +242,11 @@ def test_zero_face_diffusivity_keeps_the_upwind_limit_of_the_peclet_floor():
     )
     velocity = [1.0, -0.5, 2.0, 0.25]
     floored, floored_forcing = make_convection_terms(velocity, [0.0, 0.0, 0.0, 0.0], var)
+    below_floor, below_floor_forcing = make_convection_terms(velocity, [1e-22] * 4, var)
+    np.testing.assert_allclose(
+        below_floor.matvec(var.value) + below_floor_forcing,
+        floored.matvec(var.value) + floored_forcing,
+    )
     nearly_zero, nearly_zero_forcing = make_convection_terms(velocity, [1e-12] * 4, var)
     np.testing.assert_allclose(
         floored.matvec(var.value) + floored_forcing,

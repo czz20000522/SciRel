@@ -42,17 +42,28 @@ def call_name(node):
 
 
 def non_finite_literal(node):
-    """Return whether an argument is a literal non-finite number, not a computed value."""
+    """Return whether an argument is a literal non-finite number, not a computed value.
+
+    Covers a non-finite float constant, the names and attributes commonly used for
+    infinity and NaN, and conversions of such a string, such as ``float("inf")``.
+    """
     if isinstance(node, ast.UnaryOp) and isinstance(node.op, (ast.USub, ast.UAdd)):
         node = node.operand
     if isinstance(node, ast.Constant):
-        return isinstance(node.value, float) and not math.isfinite(node.value)
+        if isinstance(node.value, float):
+            return not math.isfinite(node.value)
+        if isinstance(node.value, str):
+            try:
+                return not math.isfinite(float(node.value))
+            except ValueError:
+                return False
+        return False
     if isinstance(node, ast.Name):
         return node.id in NON_FINITE_NAMES
     if isinstance(node, ast.Attribute):
         return node.attr in NON_FINITE_NAMES
-    if isinstance(node, ast.Call) and node.args:
-        return non_finite_literal(node.args[0])
+    if isinstance(node, ast.Call):
+        return any(non_finite_literal(argument) for argument in node.args)
     return False
 
 
@@ -114,8 +125,11 @@ class Visitor(ast.NodeVisitor):
             # ``fill_diagonal(a, value)`` writes a supplied value onto the diagonal of a
             # matrix under construction, so an ordinary call is assembly rather than a
             # replacement of non-finite entries. Only a literal non-finite fill value
-            # matches the rule.
-            if len(node.args) > 1 and non_finite_literal(node.args[1]):
+            # matches the rule, in either its positional or its ``val=`` keyword form.
+            fill_values = node.args[1:2] + [
+                keyword.value for keyword in node.keywords if keyword.arg == "val"
+            ]
+            if any(non_finite_literal(value) for value in fill_values):
                 self.hit("non-finite-replaced", node)
         elif name in CLAMP_NAMES:
             self.hit("clip", node)
