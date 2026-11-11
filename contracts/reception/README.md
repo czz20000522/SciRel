@@ -1,7 +1,9 @@
-# Reception after admission
+# Reception
 
-Admission (`contracts/admission/`) decides whether a FINAL submission enters
-SciRel. This directory holds SciRel's own post-admission rules.
+An extraction package that passes `scripts/validate_extraction_package.py` (format in
+[`docs/maintainer/supply-pipeline.md`](../../docs/maintainer/supply-pipeline.md)) reaches the
+merge line. This directory holds SciRel's own rules for comparing what it brings with the
+current catalog.
 
 An accepted submission is compared with the current catalog and recorded as an
 **overlap record**: `none`, `same-relation`, `convention-only` or

@@ -42,9 +42,9 @@
 
 | 内容 | 作用 | 复用现有的 |
 | --- | --- | --- |
-| 冻结版 SciReL（某个 commit 的 wheel、catalog 和查询工具） | 拆解者手上**总有一份合同**，可以先比对、再取补集；新实现在这个版本上运行测试 | `scripts/build_pure_delivery.py` |
+| 冻结版 SciReL（某个 commit 的 git 副本，含源码、catalog 和查询工具） | 拆解者手上**总有一份合同**，可以先比对、再取补集；新实现在这个版本上运行测试 | `scripts/build_extraction_kit.py` |
 | 规范文档（api-spec、分层与模型族、本文第 4、5 节） | 拆解者按 SciReL 的最终形态写代码 | `skills/development/scirel-code-style/` |
-| 拆解包校验器 | **与合并线使用同一套检查**：结构、api-spec、合同 schema、测试、变异测试 | 替代 `scripts/export_admission_tools.py` 导出的 FINAL 校验 |
+| 拆解包校验器 | **与合并线使用同一套检查**：结构、api-spec、合同 schema、测试、变异测试 | `scripts/validate_extraction_package.py`（已替代原 FINAL 准入校验） |
 
 工具包里的冻结版本**不是为了直接开 PR**，而是为了让拆解者的产物格式不出错，并且手上永远有合同可以比对。
 

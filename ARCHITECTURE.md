@@ -216,4 +216,4 @@ into an automatic proof.
 - Contract truth and discovery ownership: [`catalog/README.md`](catalog/README.md)
 - Project boundaries and information flow: [`RULES.md`](RULES.md)
 - Static consumer protocol: [`tools/docs/PURE_CONSUMPTION.md`](tools/docs/PURE_CONSUMPTION.md)
-- Admission boundary: [`contracts/admission/README.md`](contracts/admission/README.md)
+- Extraction package format and checks: [`docs/maintainer/supply-pipeline.md`](docs/maintainer/supply-pipeline.md), `scripts/validate_extraction_package.py`

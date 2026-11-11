@@ -5,7 +5,7 @@ SciRel has three roles. Each has one entry skill and its own acceptance standard
 | Role | What it does | Entry skill | Done when |
 | --- | --- | --- | --- |
 | **Supplier** | Extracts a source's core relations into an extraction package in SciReL's final form | [`scientific-computation-asset-extraction`](extraction/scientific-computation-asset-extraction/SKILL.md) | The package's patch passes the full check on the frozen commit, and its manifest and disposition reconcile with the relation count |
-| **Merger** | Brings candidates into the library: admission, contract, tests, review, documents | [`scirel-integration`](development/integration/scirel-integration/SKILL.md) | [`scirel-acceptance`](development/scirel-acceptance/SKILL.md) is green, code follows [`scirel-code-style`](development/scirel-code-style/SKILL.md), and the contract, implementation and tests agree |
+| **Merger** | Brings extraction packages into the library: package checks, contract, tests, review, documents | [`scirel-integration`](development/integration/scirel-integration/SKILL.md) | [`scirel-acceptance`](development/scirel-acceptance/SKILL.md) is green, code follows [`scirel-code-style`](development/scirel-code-style/SKILL.md), and the contract, implementation and tests agree |
 | **Consumer** | A user's agent answers a question with the delivered package | [`scirel-solving`](development/usage/scirel-solving/SKILL.md) | The report passes its validator and a physicist can follow it; [`scirel-outbound-evaluation`](development/scirel-outbound-evaluation/SKILL.md) measures this for maintainers |
 
 > Supply and integration are currently frozen: no new assets are accepted while the backlog is paid down. See [AGENTS.md「当前状态」](../AGENTS.md#当前状态).

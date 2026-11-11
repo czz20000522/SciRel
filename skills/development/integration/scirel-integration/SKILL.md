@@ -60,7 +60,7 @@ denominator.
    relevant first-failure/repair chain. A source PASS summary alone is insufficient. These records are evidence
    outside callable runtime dependencies, not hidden answers to a new application question; preserve them while
    D2 replay/review consumes them without requiring the source checkout or private project mapping. Retain legal
-   attribution bytes unchanged. Validate outer admission through the runtime-provided public tools; do not repair
+   attribution bytes unchanged. Validate the extraction package with `scripts/validate_extraction_package.py`; do not repair
    frozen controls in place or rerun valid science for a packaging defect.
 2. Route each issue once: scientific/numerical claim to [asset correctness](../scientific-asset-correctness/SKILL.md);
    selected qualified batch to [normalization](../scientific-asset-normalization/SKILL.md); source-only gap back to D1;
