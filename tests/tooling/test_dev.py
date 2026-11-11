@@ -5,8 +5,10 @@ from __future__ import annotations
 import importlib.util
 import os
 from pathlib import Path
+import signal
 import subprocess
 import sys
+import time
 
 import pytest
 
@@ -166,3 +168,123 @@ def test_pytest_receives_its_flags_without_argparse_consuming_them(monkeypatch, 
     monkeypatch.setattr(module, "pytest", lambda args: seen.append(args) or 0)
     assert module.main(["pytest", *flags]) == 0
     assert seen == [flags[1:] if flags[:1] == ["--"] else flags]
+
+
+def _wait_for_file(path: Path, timeout: float = 5) -> None:
+    deadline = time.monotonic() + timeout
+    while not path.exists() and time.monotonic() < deadline:
+        time.sleep(0.02)
+    assert path.exists(), f"the owned subprocess did not reach {path.name}"
+
+
+@pytest.mark.skipif(os.name != "posix", reason="POSIX termination and process groups")
+@pytest.mark.parametrize(
+    "signal_name,early_exit,during_spawn",
+    [
+        ("SIGTERM", False, False),
+        ("SIGINT", False, False),
+        ("SIGHUP", False, False),
+        ("SIGTERM", True, False),
+        ("SIGTERM", False, True),
+    ],
+)
+def test_termination_stops_descendants_before_releasing_the_clone_lock(
+    tmp_path, monkeypatch, signal_name, early_exit, during_spawn
+):
+    repository, _ = _repository_with_worktree(tmp_path)
+    module = _load()
+    monkeypatch.setattr(module, "ROOT", repository)
+    ready, stopping, release, stopped = [
+        tmp_path / name for name in ("ready", "stopping", "release", "stopped")
+    ]
+    grandchild = """
+from pathlib import Path
+import os, signal, sys, time
+ready, stopping, release, stopped = map(Path, sys.argv[1:])
+def stop(signum, frame):
+    stopping.touch()
+    while not release.exists():
+        time.sleep(0.02)
+    stopped.touch()
+    raise SystemExit(0)
+for name in ('SIGTERM', 'SIGINT', 'SIGHUP'):
+    signal.signal(getattr(signal, name), stop)
+ready.write_text(str(os.getpid()))
+while True:
+    time.sleep(0.02)
+"""
+    child = """
+import signal, subprocess, sys
+process = subprocess.Popen([sys.executable, '-c', sys.argv[1], *sys.argv[2:]])
+for name in ('SIGTERM', 'SIGINT', 'SIGHUP'):
+    signal.signal(getattr(signal, name), lambda signum, frame: None)
+raise SystemExit(process.wait())
+"""
+    if early_exit:
+        child = child.replace("lambda signum, frame: None", "lambda signum, frame: sys.exit(0)")
+    wrapper_code = """
+import importlib.util, os, signal, sys, time
+from pathlib import Path
+spec = importlib.util.spec_from_file_location('test_supervisor', sys.argv[1])
+module = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(module)
+module.ROOT = Path(sys.argv[2])
+module.prepare = lambda: 0
+if sys.argv[3] == 'True':
+    module.shared_root = lambda: module.ROOT
+    module.environment = lambda: dict(os.environ)
+    original_popen = module.subprocess.Popen
+    def interrupt_during_spawn(*args, **kwargs):
+        child = original_popen(*args, **kwargs)
+        while not Path(sys.argv[-4]).exists():
+            time.sleep(0.02)
+        os.kill(os.getpid(), signal.SIGTERM)
+        return child
+    module.subprocess.Popen = interrupt_during_spawn
+raise SystemExit(module.run_locked([sys.executable, '-c', *sys.argv[4:]], exclusive=True))
+"""
+    wrapper = subprocess.Popen(
+        [
+            sys.executable,
+            "-B",
+            "-c",
+            wrapper_code,
+            str(SCRIPT),
+            str(repository),
+            str(during_spawn),
+            child,
+            grandchild,
+            *(str(path) for path in (ready, stopping, release, stopped)),
+        ],
+        start_new_session=True,
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+    )
+    try:
+        _wait_for_file(ready)
+        signum = getattr(signal, signal_name)
+        if not during_spawn:
+            wrapper.send_signal(signum)
+        _wait_for_file(stopping)
+        wrapper.send_signal(signal.SIGINT if signum != signal.SIGINT else signal.SIGTERM)
+        assert wrapper.poll() is None, "the wrapper released its lock while a descendant runs"
+        with pytest.raises(module.LockBusy):
+            with module.acceptance_lock(exclusive=True):
+                pass
+        release.touch()
+        assert wrapper.wait(timeout=5) == 128 + signum
+        assert stopped.exists(), "the descendant must stop before the clone lock is released"
+        with module.acceptance_lock(exclusive=True):
+            pass
+    finally:
+        release.touch()
+        if ready.exists() and not stopped.exists():
+            try:
+                os.kill(int(ready.read_text()), signal.SIGTERM)
+            except ProcessLookupError:
+                pass
+        try:
+            os.killpg(wrapper.pid, signal.SIGKILL)
+        except ProcessLookupError:
+            pass
+        wrapper.wait(timeout=5)
