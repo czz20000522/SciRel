@@ -359,3 +359,48 @@ def test_null_intermediate_field_fails_before_pressure_current_evaluation():
             )
         )
     assert not calls
+
+
+def _beyond_firehose_closure(state):
+    psi = np.asarray(state["psi"], dtype=float)
+    return {
+        "p_parallel": np.full_like(psi, 2.0e6),
+        "p_perp": np.zeros_like(psi),
+        "density": None,
+        "electron_temperature": None,
+    }
+
+
+def _hot_beyond_threshold_only(state):
+    psi = np.asarray(state["psi"], dtype=float)
+    pressure = np.where(psi > 0.5, 2.0e6, 0.0)
+    return {
+        "p_parallel": pressure,
+        "p_perp": np.zeros_like(psi),
+        "density": None,
+        "electron_temperature": None,
+    }
+
+
+# 验证：终态越过 firehose 阈值时拒绝返回，中间态只告警；1 T 下阈值是 p_parallel - p_perp >= B^2/mu0。
+def test_terminal_state_beyond_the_firehose_threshold_is_rejected():
+    values = _inputs(pressure_closure=_beyond_firehose_closure)
+    with pytest.warns(RuntimeWarning):
+        with pytest.raises(ValueError, match="firehose"):
+            _run(values)
+
+
+# 验证：门只看 plasma_mask 为真的 cell，掩掉高温区后同一个 closure 不再被拒。
+def test_plasma_mask_excludes_inactive_cells_from_the_firehose_gate():
+    r_grid, _ = np.meshgrid(np.array([0.2, 0.4, 0.6]), np.array([-0.1, 0.0, 0.1]))
+    outside = r_grid > 0.5
+    with pytest.raises(ValueError, match="firehose"):
+        _run(_inputs(pressure_closure=_hot_beyond_threshold_only, maxiter=0))
+    result = _run(
+        _inputs(
+            pressure_closure=_hot_beyond_threshold_only,
+            plasma_mask=~outside,
+            maxiter=0,
+        )
+    )
+    assert result["iterations"] == 0

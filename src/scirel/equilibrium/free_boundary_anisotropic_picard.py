@@ -7,6 +7,8 @@ from scirel._validation import (
     bool_scalar as _require_bool_scalar,
 )
 from collections.abc import Mapping
+import warnings
+
 import numpy as np
 from ._anisotropic_numerics import cell_areas, flux_field_increment
 
@@ -138,6 +140,7 @@ def _run_composition(inputs, *, asset_loader):
         plasma_mask = np.asarray(inputs["plasma_mask"])
         if plasma_mask.shape != r_grid.shape or plasma_mask.dtype != np.dtype(bool):
             raise ValueError("plasma_mask must be a boolean array with the same shape as r_grid")
+    active = np.ones_like(r_grid, dtype=bool) if plasma_mask is None else plasma_mask
     pressure_closure = _require_ports(inputs)
     params = dict(_require_mapping(inputs["params"], "params"))
     magnitude = asset_loader("scirel.field.poloidal_field_magnitude")
@@ -225,6 +228,11 @@ def _run_composition(inputs, *, asset_loader):
         current_error = relative(target["picard_current_state"], old, np.zeros(r_grid.size))
         return flux_error, field_error, current_error
 
+    def firehose_margin(parts):
+        """Return the active-cell local firehose margins of one current evaluation."""
+        margin = np.asarray(parts["force_diagnostics"]["firehose_margin"], dtype=float)
+        return margin[active] if np.any(active) else margin[:0]
+
     currents_old = None
     residual = float("inf")
     residual_history = []
@@ -233,6 +241,7 @@ def _run_composition(inputs, *, asset_loader):
     current_parts = None
     boundary_result = None
     boundary_flux_correction = None
+    firehose_warned = False
     while iterations < maxiter:
         field = magnitude(br, bz)
         if np.any(field["B"] < minimum_field):
@@ -243,6 +252,16 @@ def _run_composition(inputs, *, asset_loader):
         current_parts = current(
             inputs["r_grid"], inputs["z_grid"], br, bz, profiles["p_parallel"], profiles["p_perp"]
         )
+        intermediate_margin = firehose_margin(current_parts)
+        if not firehose_warned and intermediate_margin.size:
+            if float(np.min(intermediate_margin)) <= 0.0:
+                firehose_warned = True
+                warnings.warn(
+                    "an intermediate Picard state crosses the firehose threshold; the terminal "
+                    "state is rejected if it remains at or beyond it",
+                    RuntimeWarning,
+                    stacklevel=2,
+                )
         target = target_state(current_parts)
         if iterations > 0 and max(state_residuals(target, psi, br, bz, currents_old)) <= tol:
             break
@@ -279,6 +298,13 @@ def _run_composition(inputs, *, asset_loader):
     current_parts = current(
         inputs["r_grid"], inputs["z_grid"], br, bz, profiles["p_parallel"], profiles["p_perp"]
     )
+    terminal_margin = firehose_margin(current_parts)
+    if terminal_margin.size and float(np.min(terminal_margin)) <= 0.0:
+        raise ValueError(
+            "terminal state is at or beyond the firehose threshold: minimum active-cell "
+            f"firehose margin {float(np.min(terminal_margin)):.6g} <= 0, so "
+            "p_parallel - p_perp >= B^2/mu0 lies outside the gyrotropic equilibrium model"
+        )
     terminal_j_phi = np.asarray(current_parts["j_phi"], dtype=float)
     if plasma_mask is not None:
         terminal_j_phi = np.where(plasma_mask, terminal_j_phi, 0.0)
@@ -308,7 +334,6 @@ def _run_composition(inputs, *, asset_loader):
         flux_fixed_point_residual, field_fixed_point_residual, current_fixed_point_residual
     )
     force_diagnostics = current_parts["force_diagnostics"]
-    active = np.ones_like(r_grid, dtype=bool) if plasma_mask is None else plasma_mask
     from ._anisotropic_numerics import residual_metrics
 
     compatibility = residual_metrics(
@@ -479,7 +504,9 @@ def solve_free_boundary_anisotropic_picard(inputs=None, **kwargs):
     TypeError
         Raised when the corresponding declared input, numerical or convergence condition fails.
     ValueError
-        Raised when the corresponding declared input, numerical or convergence condition fails.
+        Raised when the corresponding declared input, numerical or convergence condition fails,
+        and when the terminal state is at or beyond the local firehose threshold
+        (``p_parallel - p_perp >= B**2/mu0`` on an active cell, i.e. ``firehose_margin <= 0``).
 
     See Also
     --------
@@ -488,6 +515,17 @@ def solve_free_boundary_anisotropic_picard(inputs=None, **kwargs):
     Notes
     -----
     Recompute the deterministic pressure closure and toroidal current on the current psi, BR and BZ; integrate current with nodal trapezoidal weights or explicit cell boundaries, mix the old current by relax, and project the Green field. When paired field Green matrices are absent, derive the field from the newly added plasma flux. The wall branch adds both wall flux and its discrete magnetic-field derivative. Before stopping, construct the unrelaxed target from the current pressure/current and require psi, BR, BZ and current all to close. The returned state recomputes the closure, current and parallel-force compatibility; maxiter=0 performs no update and does not claim convergence.
+
+    Stable-domain requirement: on active cells the local CGL firehose margin
+    ``1 - mu0*(p_parallel - p_perp)/B**2`` must stay positive. That factor is the
+    coefficient whose nonpositive value marks the loss of ellipticity of the
+    gyrotropic Grad-Shafranov relation, so a converged state beyond it is not a
+    maintainable equilibrium. An intermediate
+    Picard state beyond the threshold warns with RuntimeWarning; the terminal state
+    is rejected with ValueError. The gate covers the local, parallel-propagating
+    CGL firehose criterion of the poloidal field only; the mirror-mode threshold
+    ``p_perp - p_parallel > B**2/(2*mu0)`` is a separate compressible instability
+    and is outside this model.
 
     axisymmetric gyrotropic-pressure Picard composition with caller-owned N4 pressure closure and optional linear ideal-conductor wall correction
 
