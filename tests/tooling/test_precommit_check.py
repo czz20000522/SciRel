@@ -34,7 +34,7 @@ def test_script_runs_in_an_isolated_interpreter_without_pythonpath():
     """The hook runs this with ``python3 -I`` on a host that has no project environment.
 
     ``-S`` drops site-packages as well, so an import of any third-party package fails here instead of
-    working by accident in the development container.
+    working by accident in the project environment.
     """
     env = {name: value for name, value in os.environ.items() if name != "PYTHONPATH"}
     done = subprocess.run(

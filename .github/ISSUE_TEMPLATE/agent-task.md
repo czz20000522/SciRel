@@ -37,9 +37,9 @@ labels: agent-task
 ## Rules for every PR
 
 - Use one issue, one temporary branch and one worktree per agent; do not share a mutable worktree.
-- Set up with `python3 scripts/dev_container.py prepare` (Windows: `py -3`) and `git config core.hooksPath .githooks`.
-- Run `python3 scripts/dev_container.py check` in the foreground and paste the final lines in the PR. It must end with `ALL GREEN`; this local check is the merge gate. GitHub Actions is manual and optional.
-- Write only inside the issue's declared repository paths. Do not change the user home, sibling projects, global Git/Docker configuration or another worktree.
+- Set up with `python3 scripts/dev.py prepare` (Windows: `py -3`) and `git config core.hooksPath .githooks`.
+- Run `python3 scripts/dev.py check` in the foreground and paste the final lines in the PR. It must end with `ALL GREEN`; this local check is the merge gate. GitHub Actions is manual and optional.
+- Write only inside the issue's declared repository paths. Do not change the user home, sibling projects, global Git configuration or another worktree.
 - Interface and style work must not change results. If you find a result you think is wrong, stop and comment here.
 - Physics changes need a reference and the maintainer's decision. Never widen a tolerance to pass.
 - Put the explanation in the commit message. Do not add change-log files.

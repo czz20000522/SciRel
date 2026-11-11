@@ -6,6 +6,7 @@ import os
 from pathlib import Path
 import subprocess
 import sys
+from types import SimpleNamespace
 
 import pytest
 
@@ -241,6 +242,35 @@ def test_a_green_pytest_run_with_counts_is_green(tmp_path):
     status, detail, report = check_all.step_status(step, 0)
     assert (status, detail) == ("PASS", "")
     assert report["selected"] == report["passed"] == 3
+
+
+def test_a_filtered_green_pytest_run_is_not_full_acceptance(tmp_path):
+    directory = _sample(tmp_path)
+    done = _run(directory, ["-k", "test_passes"], with_plugin=True)
+    assert done.returncode == 0
+    report_path = directory / "counts.json"
+    observed = json.loads(report_path.read_text(encoding="utf-8"))
+    assert observed["selected"] == 1 and observed["deselected"] == 6
+    step = check_all.Step("tests", ["pytest"], counts=report_path)
+    status, detail, _ = check_all.step_status(step, done.returncode)
+    assert status == "FAIL"
+    assert "deselected" in detail
+
+
+def test_a_step_runs_when_the_platform_has_no_sighup(monkeypatch):
+    registered = []
+    monkeypatch.setattr(
+        check_all,
+        "signal",
+        SimpleNamespace(
+            SIGTERM=15,
+            signal=lambda signum, handler: registered.append(signum),
+        ),
+    )
+    done = check_all.run_step([sys.executable, "-c", "print('completed')"], {})
+    assert done.returncode == 0
+    assert done.stdout.strip() == "completed"
+    assert registered == [15]
 
 
 def test_a_broken_counts_report_makes_the_whole_run_fail(tmp_path, monkeypatch, capsys):

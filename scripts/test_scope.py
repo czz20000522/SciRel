@@ -50,7 +50,7 @@ SCRIPT_LAYERS = {
     "check_wheel_exposure.py": ("delivery",),
     "code_digest.py": ("tooling", "docs", "delivery"),
     "consumer_tools.py": ("delivery",),
-    "dev_container.py": ("tooling", "architecture"),
+    "dev.py": ("tooling", "architecture"),
     "exposure.py": ("docs", "delivery"),
     "mapping_interface_bindings.json": ("tooling", "architecture", "docs", "delivery"),
     "measure_capability_runtime.py": ("architecture",),
@@ -73,8 +73,8 @@ SCRIPT_LAYERS = {
 }
 PACKAGING_FILES = {"pyproject.toml", "setup.py", "setup.cfg", "MANIFEST.in"}
 GLOBAL_PATHS = {"tests/conftest.py"}
-INFRASTRUCTURE_FILES = {".dockerignore", ".gitattributes", ".gitignore"}
-INFRASTRUCTURE_PREFIXES = (".githooks/", ".github/", "containers/")
+INFRASTRUCTURE_FILES = {".gitattributes", ".gitignore", ".python-version"}
+INFRASTRUCTURE_PREFIXES = (".githooks/", ".github/")
 MAINTAINER_DOCS = {"AGENTS.md", "ARCHITECTURE.md", "CONTRIBUTING.md", "README.md", "RULES.md"}
 TEST_HARNESS_TARGETS = {
     "tests/_review_bindings.py": ("tests/cross_domain",),
@@ -224,7 +224,7 @@ def classify(relative: Path) -> tuple[list[str], list[str]]:
         INFRASTRUCTURE_PREFIXES
     ):
         return [_layer_target("tooling"), _layer_target("architecture")], [
-            "development infrastructure changes hooks, CI, containers or checkout metadata"
+            "development infrastructure changes hooks, CI, the interpreter pin or checkout metadata"
         ]
     if relative.as_posix() in MAINTAINER_DOCS:
         return [_layer_target("architecture"), _layer_target("docs")], [

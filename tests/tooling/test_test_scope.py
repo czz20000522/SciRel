@@ -43,7 +43,7 @@ def test_consumer_tools_select_the_delivery_tests(script):
         ("measure_capability_runtime.py", {"architecture"}),
         ("validate_capability_runtime_closure.py", {"architecture"}),
         ("validate_runtime_imports.py", {"architecture"}),
-        ("dev_container.py", {"tooling", "architecture"}),
+        ("dev.py", {"tooling", "architecture"}),
     ],
 )
 def test_shared_tools_select_direct_and_transitive_consumer_layers(script, owners):
@@ -54,14 +54,12 @@ def test_shared_tools_select_direct_and_transitive_consumer_layers(script, owner
 @pytest.mark.parametrize(
     "path",
     [
-        ".dockerignore",
         ".gitattributes",
         ".gitignore",
         ".githooks/pre-commit",
         ".github/workflows/check.yml",
         ".github/pull_request_template.md",
-        "containers/dev/Dockerfile",
-        "containers/dev/compose.yaml",
+        ".python-version",
     ],
 )
 def test_development_infrastructure_selects_architecture_and_tooling(path):

@@ -30,9 +30,12 @@ def test_bonk_default_axis_count_matches_contract():
     result = solve_fluid_bonk(2)
     xx = np.asarray(result["xx"], float).ravel()
     assert xx.size == 78
-    np.testing.assert_array_equal(xx, np.arange(0.11, 3.95 + 0.025, 0.05) * wcn)
+    expected_axis = np.arange(0.11, 3.95 + 0.025, 0.05) * wcn
+    np.testing.assert_array_equal(xx, expected_axis)
     np.testing.assert_allclose(xx[0], 0.11 * wcn, rtol=0, atol=0)
-    np.testing.assert_allclose(xx[-1], 3.96 * wcn, rtol=0, atol=0)
+    # The contract specifies arange, whose last binary64 value can differ from
+    # the literal 3.96 on another CPU. Keep exact equality to that declared axis.
+    np.testing.assert_allclose(xx[-1], expected_axis[-1], rtol=0, atol=0)
 
 
 def test_bonk_options_match_actual_solver_call(monkeypatch):

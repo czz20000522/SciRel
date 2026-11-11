@@ -5,7 +5,7 @@ description: 从来源项目（源码、论文、材料）中找出核心物理�
 
 # 科学能力拆解
 
-你在一个独立容器里工作。容器里有来源材料和一份冻结版 SciReL。你的产物是一个**拆解包**：基于冻结版本的补丁，外加说明材料。合并线只消费这个包，而且只判题、评审，不会替你重写。所以你交出的必须已经是 SciReL 的最终形态，并且已经通过与合并线相同的检查。
+你在一个独立工作目录里工作，其中有来源材料和一份冻结版 SciReL。你的产物是一个**拆解包**：基于冻结版本的补丁，外加说明材料。合并线只消费这个包，而且只判题、评审，不会替你重写。所以你交出的必须已经是 SciReL 的最终形态，并且已经通过与合并线相同的检查。
 
 设计理由见 `docs/maintainer/supply-pipeline.md`；分层、模型族和接口规范见 `skills/development/scirel-code-style/references/api-spec.md`。这两份都在冻结版 SciReL 里。
 
@@ -18,7 +18,7 @@ description: 从来源项目（源码、论文、材料）中找出核心物理�
    - 输出目录。
    - 可选：题库中与本来源相关的题目。
 2. 如果输出目录里已经有 `PACKAGE.md`，这是**续拆**。先读它的"未完成项"和随附的缺陷清单，从那里接着做，不要从头开始。
-3. 否则，按 [拆解包格式](references/package-format.md) 新建 `PACKAGE.md`，写上任务、来源版本、冻结 commit 和范围。之后每完成一步就更新它。容器随时可能被回收，`PACKAGE.md` 必须始终足以让另一个 agent 接手。
+3. 否则，按 [拆解包格式](references/package-format.md) 新建 `PACKAGE.md`，写上任务、来源版本、冻结 commit 和范围。之后每完成一步就更新它。工作目录随时可能被归档，`PACKAGE.md` 必须始终足以让另一个 agent 接手。
 
 ## 1. 找骨架
 
@@ -77,7 +77,7 @@ description: 从来源项目（源码、论文、材料）中找出核心物理�
 4. 在冻结版 SciReL 的目录里运行校验器。合并线运行的也是同一条命令：
 
    ```sh
-   python scripts/validate_extraction_package.py <拆解包目录> --repo <冻结版 SciReL 的 git 目录>
+   python3 scripts/dev.py run python -B scripts/validate_extraction_package.py <拆解包目录> --repo <冻结版 SciReL 的 git 目录>
    ```
 
    它依次检查以下各项：
@@ -89,7 +89,7 @@ description: 从来源项目（源码、论文、材料）中找出核心物理�
    - 补丁能否应用到冻结 commit；
    - 合同集合；
    - `evidence/` 表格；
-   - 完整检查（`check_all.py`，容器里需要有 uv）；
+   - 补丁应用后目录里的完整检查（`check_all.py`，由校验器在项目环境中调用）；
    - 每个新合同的变异测试（`scripts/mutation_check.py`）。
 
    开发途中可以加 `--fast`，跳过完整检查和变异测试。这时退出码是 2，永远不会是 0，不能当作通过。

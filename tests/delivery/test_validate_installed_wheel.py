@@ -88,19 +88,24 @@ def test_runtime_identity_rejects_external_site_packages(
 def test_runtime_identity_rejects_a_free_threaded_abi_for_regular_cpython(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
+    # Simulate the candidate runtime on this module only. Mutating the process-wide
+    # sys.version_info/implementation also changes sysconfig and pytest themselves.
     monkeypatch.setattr(
-        validator.sys,
-        "implementation",
-        SimpleNamespace(name="cpython", cache_tag="cpython-314t"),
+        validator,
+        "sys",
+        SimpleNamespace(
+            implementation=SimpleNamespace(name="cpython", cache_tag="cpython-314t"),
+            version_info=SimpleNamespace(major=3, minor=14),
+            prefix="/tmp/scirel-venv",
+            base_prefix="/tmp/scirel-python",
+            path=["/tmp/scirel-venv/lib/python3.14/site-packages"],
+            executable=sys.executable,
+        ),
     )
     monkeypatch.setattr(validator.platform, "python_implementation", lambda: "CPython")
     monkeypatch.setattr(validator.platform, "python_version", lambda: "3.14.0")
     monkeypatch.setattr(validator.platform, "system", lambda: "Linux")
     monkeypatch.setattr(validator.platform, "machine", lambda: "x86_64")
-    monkeypatch.setattr(validator.sys, "version_info", SimpleNamespace(major=3, minor=14))
-    monkeypatch.setattr(validator.sys, "prefix", "/tmp/scirel-venv")
-    monkeypatch.setattr(validator.sys, "base_prefix", "/tmp/scirel-python")
-    monkeypatch.setattr(validator.sys, "path", ["/tmp/scirel-venv/lib/python3.14/site-packages"])
 
     actual, errors = validator._runtime_identity("linux-x86_64-cp314", "3.14")
 
