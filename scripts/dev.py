@@ -25,18 +25,62 @@ from contextlib import contextmanager
 import os
 from pathlib import Path
 import shutil
+import signal
 import subprocess
 import sys
+import time
 
 ROOT = Path(__file__).resolve().parents[1]
 RUNTIME = ".runtime"
 CHECK_ALL = "skills/development/scirel-acceptance/scripts/check_all.py"
 SYNC = ["uv", "sync", "--locked", "--group", "test"]
 LOCK_NAME = "acceptance.lock"
+STOP_TIMEOUT = 5
 
 
 class LockBusy(RuntimeError):
     """Raised when another test run or acceptance check holds the clone-wide lock."""
+
+
+def stop_command(process: subprocess.Popen, signum: int) -> None:
+    """Stop and reap our child before the caller can release the clone lock."""
+
+    def send(forced: bool = False) -> None:
+        try:
+            if os.name == "posix":
+                os.killpg(process.pid, signal.SIGKILL if forced else signum)
+            elif forced:
+                process.kill()
+            else:
+                process.terminate()
+        except ProcessLookupError:
+            pass
+
+    send()
+    if os.name == "posix":
+
+        def group_exists() -> bool:
+            process.poll()  # Reap the launcher too; a zombie keeps its group alive.
+            try:
+                os.killpg(process.pid, 0)
+                return True
+            except ProcessLookupError:
+                return False
+
+        deadline = time.monotonic() + STOP_TIMEOUT
+        while group_exists() and time.monotonic() < deadline:
+            time.sleep(0.02)
+        if group_exists():
+            send(forced=True)
+            print("STOPPING  waiting for owned process group to exit", file=sys.stderr)
+            while group_exists():
+                time.sleep(0.02)
+    else:
+        try:
+            process.wait(timeout=STOP_TIMEOUT)
+        except subprocess.TimeoutExpired:
+            send(forced=True)
+    process.wait()
 
 
 def python_version() -> str:
@@ -120,11 +164,41 @@ def ensure_runtime() -> None:
 
 
 def run(command: list[str]) -> int:
+    process = None
+    handlers = {}
+    interrupted = None
+
+    def interrupt(signum, _frame):
+        nonlocal interrupted
+        # Only record the request: raising here can interrupt Popen before its
+        # child is assigned, or interrupt cleanup on a second signal.
+        if interrupted is None:
+            interrupted = signum
+
     try:
-        return subprocess.run(command, cwd=ROOT, env=environment(), check=False).returncode
+        for name in ("SIGINT", "SIGTERM", "SIGHUP"):
+            if hasattr(signal, name):
+                signum = getattr(signal, name)
+                handlers[signum] = signal.signal(signum, interrupt)
+        process = subprocess.Popen(
+            command, cwd=ROOT, env=environment(), start_new_session=os.name == "posix"
+        )
+        while interrupted is None:
+            try:
+                code = process.wait(timeout=0.1)
+            except subprocess.TimeoutExpired:
+                continue
+            if interrupted is None:
+                return code
+        stop_command(process, interrupted)
+        print(f"INTERRUPTED  signal {interrupted}; owned command stopped", file=sys.stderr)
+        return 128 + interrupted
     except FileNotFoundError:
         print(f"ERROR: {command[0]} is not on PATH.", file=sys.stderr)
         return 127
+    finally:
+        for signum, handler in handlers.items():
+            signal.signal(signum, handler)
 
 
 def prepare() -> int:
