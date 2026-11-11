@@ -10,36 +10,35 @@ SciRel 是一个自包含的科学计算库。贡献的核心单位是一个**�
 
 ## 环境
 
-可复现环境使用项目内的 Python 3.14.7 容器，包声明支持 `>=3.12`。本地容器跟随 Docker engine 架构并承担
-完整验收；Apple Silicon 使用原生 arm64 engine 快速开发。GitHub Actions 只保留为手动 Linux/amd64 抽查。
-宿主机只需要 Git、Python 3 launcher 和 Docker-compatible engine：
-
-每个 clone 必须显式选择 Docker context；不会继承一个可能属于其他项目的全局 context：
+开发环境由宿主机上的 uv 管理，包声明支持 `>=3.12`。宿主机需要 Git、Python 3 launcher 和
+[uv](https://docs.astral.sh/uv/)；开发用的解释器版本由 `.python-version` 固定（3.14.7），安装在项目 `.runtime/python/` 中，依赖由 `uv.lock` 固定。GitHub Actions 只保留为手动 Linux/amd64 抽查。
 
 ```bash
-python3 scripts/dev_container.py context <docker-context>  # Windows: py -3
-python3 scripts/dev_container.py prepare
-python3 scripts/dev_container.py check
-python3 scripts/dev_container.py shell
+python3 scripts/dev.py prepare  # Windows: py -3
+python3 scripts/dev.py check
+python3 scripts/dev.py run python -B scripts/test_scope.py --changed <path>
 git config core.hooksPath .githooks
 ```
 
-`context <name>` 将选择保存在未提交的共享 Git 元数据中，同一 clone 的 worktree 自动复用。临时覆盖可设置
-`SCIReL_DOCKER_CONTEXT`。未配置、空值或 `default` context 会直接报错。`doctor` 会显示选中的 context 和实际 engine 名称。
+`prepare` 安装固定版本的解释器，再执行 `uv sync --locked --group test`。解释器和所有运行产物都留在项目内
+已被忽略的 `.runtime/` 下，不写到项目目录之外：
+
+- 主 checkout 的 `.runtime/`：同一 clone 的所有 worktree 共用的解释器、uv 缓存和检查锁；
+- 每个 worktree 自己的 `.runtime/`：venv、字节码、ruff 缓存和临时目录。
+
+`dev.py` 设置这些位置，所以要通过它运行命令（`run`、`pytest`、`check`），不要直接调用宿主机的 `python` 或
+`uv run`。`doctor` 列出解释器、uv 和每个运行目录；`clean` 删除本 worktree 的环境和缓存，保留日志；`clean --shared`
+还会清理共用的 uv 缓存。解释器保留，供其他 worktree 使用。
 
 `core.hooksPath` 指向 `.githooks` 后，`git commit` 在宿主机运行 `precommit_check.py`：只扫描暂存文本里的私有路径
-和密钥，只用标准库和 Git，不启动容器，Docker engine 停着也能提交。lint、format 和 lockfile 检查只在 `check`
-里运行。push 不触发任何检查，合并前自己跑一次完整检查。
+和密钥，只用标准库和 Git，不需要项目环境。lint、format 和 lockfile 检查只在 `check` 里运行。push 不触发任何
+检查，合并前自己跑一次完整检查。
 
-`prepare` 会在项目命名的容器卷中执行 `uv sync --locked --group test`，不会在宿主仓库里生成 `.venv`。
-`check` 是完整本地 CI。只跑一个测试文件时使用：
+只跑一个测试文件时使用：
 
 ```bash
-python3 scripts/dev_container.py pytest tests/<domain>/test_<asset>.py
+python3 scripts/dev.py pytest tests/<domain>/test_<asset>.py
 ```
-
-容器只挂载当前 checkout，不挂用户主目录。删除该 checkout 的容器卷使用
-`python3 scripts/dev_container.py clean`。原生 `.venv` 只用于临时探索，不作为交付证据。
 
 ## 修改前
 
@@ -63,14 +62,13 @@ python3 scripts/dev_container.py pytest tests/<domain>/test_<asset>.py
 
 ```bash
 # 最接近的测试
-python3 scripts/dev_container.py pytest tests/<domain>/test_<asset>.py
+python3 scripts/dev.py pytest tests/<domain>/test_<asset>.py
 
-# 根据实际改动选择受影响域和通用层，再在容器内执行打印出的命令
-python3 scripts/dev_container.py shell
-python -B scripts/test_scope.py --changed src/scirel/<domain>/<module>.py
+# 根据实际改动选择受影响域和通用层，再执行打印出的命令
+python3 scripts/dev.py run python -B scripts/test_scope.py --changed src/scirel/<domain>/<module>.py
 
 # 合并前完整验收：全量测试、门禁、合同示例、文档与 wheel 暴露检查
-python3 scripts/dev_container.py check
+python3 scripts/dev.py check
 ```
 
 `check` 必须在最终提交上通过并打印 `ALL GREEN`；这个本地结果是合并门禁。GitHub Actions 不自动运行，只在需要跨设备抽查时手动触发。

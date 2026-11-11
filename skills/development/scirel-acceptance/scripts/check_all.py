@@ -4,8 +4,6 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-import fcntl
-import hashlib
 import json
 import os
 from pathlib import Path
@@ -167,6 +165,11 @@ def read_counts(path: Path) -> dict:
             f"{path.name}: collected {report['collected']} != selected {report['selected']}"
             f" + deselected {report['deselected']}"
         )
+    if report["deselected"]:
+        raise CountsError(
+            f"{path.name}: {report['deselected']} tests were deselected; full acceptance requires"
+            " the whole suite, so remove test filters and rerun"
+        )
     accounted = sum(
         report[name] for name in ("passed", "failed", "error", "skipped", "xfailed", "xpassed")
     )
@@ -234,28 +237,40 @@ def run_step(command: list[str], env: dict[str, str]) -> subprocess.CompletedPro
         raise SystemExit(128 + signum)
 
     signal.signal(signal.SIGTERM, stop)
-    signal.signal(signal.SIGHUP, stop)
+    if hasattr(signal, "SIGHUP"):
+        signal.signal(signal.SIGHUP, stop)
     stdout, stderr = process.communicate()
     return subprocess.CompletedProcess(command, process.returncode, stdout, stderr)
 
 
 def main() -> int:
     # Two runs at once slow each other and share build directories, so allow one per checkout.
-    lock = open(
-        Path(tempfile.gettempdir())
-        / f"scirel-check-{hashlib.sha256(str(ROOT).encode()).hexdigest()[:12]}.lock",
-        "w",
-    )
+    temporary_root = ROOT / ".runtime" / "tmp"
+    temporary_root.mkdir(parents=True, exist_ok=True)
+    lock_path = ROOT / ".runtime" / "locks" / "check-all.lock"
+    lock_path.parent.mkdir(parents=True, exist_ok=True)
+    lock = lock_path.open("a+b")
     try:
-        fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        if sys.platform == "win32":
+            import msvcrt
+
+            lock.write(b"0")
+            lock.flush()
+            lock.seek(0)
+            msvcrt.locking(lock.fileno(), msvcrt.LK_NBLCK, 1)
+        else:
+            import fcntl
+
+            fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
     except OSError:
+        lock.close()
         print("another check_all is running on this checkout; wait for it or stop it")
         return 2
     failed = []
     not_run = []
     counts_report = None
     plan = []
-    with tempfile.TemporaryDirectory(prefix="scirel-check-") as temporary:
+    with tempfile.TemporaryDirectory(prefix="scirel-check-", dir=temporary_root) as temporary:
         has_uv = shutil.which("uv") is not None
         plan = steps(Path(temporary))
         for step in plan:
@@ -286,6 +301,7 @@ def main() -> int:
             print(line)
         print(counts_summary(len(plan) - len(failed), len(plan), counts_report))
     print("ALL GREEN" if not failed else f"FAILED: {failed}")
+    lock.close()
     return 1 if failed else 0
 
 

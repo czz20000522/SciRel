@@ -24,14 +24,13 @@ how the layers connect.
 - Every count above is structural. It does not establish complete scientific
   review or coverage.
 
-Refresh the structural inventory from the local container:
+Refresh the structural inventory in the project environment:
 
 ```sh
-python3 scripts/dev_container.py shell
-python -B skills/development/api-design-method/scripts/api_inventory.py scirel --src src --json \
-  > /tmp/api-inventory.json
-python -B scripts/build_capability_matrix.py \
-  --catalog catalog/examples --output /tmp/capability-matrix
+python3 scripts/dev.py run python -B skills/development/api-design-method/scripts/api_inventory.py \
+  scirel --src src --json > .runtime/tmp/api-inventory.json
+python3 scripts/dev.py run python -B scripts/build_capability_matrix.py \
+  --catalog catalog/examples --output .runtime/tmp/capability-matrix
 ```
 
 ## What the project is

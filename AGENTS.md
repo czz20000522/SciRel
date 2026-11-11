@@ -44,29 +44,22 @@ licenses/          许可和署名
 
 ## 环境和验收
 
-可复现开发环境由项目内的 Python 3.14.7 容器定义。本地容器跟随 Docker engine 架构，并承担日常和合并前的
-完整检查。GitHub Actions 只保留为手动触发的 Linux/amd64 跨设备抽查，不进入每个 PR 的等待链。宿主机只需要
-Git、Python 3 启动器和 Docker-compatible engine；依赖、缓存和虚拟环境都留在项目自己的容器卷里。
-
-每个 clone 必须先显式选择自己的 Docker context；禁止依赖全局默认 context：
+开发环境由宿主机上的 uv 管理（维护者决定，不使用容器）。解释器版本由 `.python-version` 固定，解释器和依赖都由 uv 安装到项目目录内；依赖版本由 `uv.lock` 固定。宿主机只需要 Git、Python 3 启动器和 uv。GitHub Actions
+只保留为手动触发的 Linux/amd64 跨设备抽查，不进入每个 PR 的等待链。
 
 ```sh
-python3 scripts/dev_container.py context <docker-context>  # Windows 可用 py -3
-python3 scripts/dev_container.py prepare
-python3 scripts/dev_container.py check
-python3 scripts/dev_container.py pytest tests/<domain>/test_<asset>.py
+python3 scripts/dev.py prepare  # Windows 可用 py -3
+python3 scripts/dev.py check
+python3 scripts/dev.py pytest tests/<domain>/test_<asset>.py
+python3 scripts/dev.py run python -B scripts/test_scope.py --changed <path>
 ```
 
-选择保存在未提交的仓库 Git 元数据中，并被同一 clone 的所有 worktree 共享；临时覆盖使用
-`SCIReL_DOCKER_CONTEXT`。未配置、空值或 `default` context 会 fail-closed。`doctor` 显示选中的 context 和实际 engine 名称。
+解释器、运行产物一律留在项目内已被忽略的 `.runtime/` 下，不写到项目目录之外：主 checkout 的
+`.runtime/` 放同一 clone 共用的解释器、uv 缓存和检查锁，每个 worktree 自己的 `.runtime/` 放 venv、字节码、ruff 缓存和
+临时目录。这些位置由 `dev.py` 设置，所以命令都经它运行，不直接调用宿主机的 `python` 或 `uv run`。
 
-macOS 用 Colima 起本机 Docker engine 时，禁止把整个 `$HOME` 挂进 VM。Colima 默认会用 virtiofs 把整个家目录
-挂载进去，文件一多就可能把系统拖死。启动时用 `--mount` 只指定真正需要的目录；或者改用
-`--mount-type sshfs`。切换挂载类型通常要重建 VM，Colima 会先提示，按提示操作即可。
-
-本机原生 `.venv` 可以用于快速探索，但交付证据必须来自容器内同一条检查。检查入口是
+交付证据必须来自 `python3 scripts/dev.py check`。检查入口是
 [`scirel-acceptance` skill](skills/development/scirel-acceptance/SKILL.md)，改代码前先读它。
-不再维护 WSL、Windows 或 macOS 专属的隐藏测试环境。
 
 提交前的门禁按风险分层，防的是自己和 agent 的失误，不是攻击者：所有防线都绕得过，拦的是无心之失在
 不可逆之前被喊停。`pre-commit` 在宿主机上用 `python3 -I` 运行
@@ -76,24 +69,25 @@ lockfile 属于质量问题，改一次提交就能修，放在合并前的完�
 绕得过，所以不能替代自己跑检查；反过来说，本该执行却静默跳过的检查等于防线失效——缺 `uv` 时完整检查必须
 显式判红，不能悄悄判绿。
 
-作放行依据的那次完整检查必须独占引擎：跑之前确认 `docker ps` 里没有其他容器，跑完记录当时是独占。
-并行容器只用于开发期局部验证，结果不写进 PR 证据，也不据此判红判绿。`tests/docs` 的 Sphinx 夹具在并发
-内存压力下会在 setup 阶段失败，那是假红，不是代码缺陷；遇到这种红先确认引擎是否被别的容器占着。
+作放行依据的那次完整检查必须独占本仓库的测试（含所有 worktree）：`check` 持有同一 clone 的排他锁，`prepare`、`pytest`、`run` 持有共享锁，有别的
+测试或检查在跑时 `check` 直接拒绝启动，开始时打印 `EXCLUSIVE` 行，PR 证据里贴上这一行。绕过 `dev.py` 直接跑的
+测试不受锁约束，所以跑检查期间不要另起测试。并行测试只用于开发期局部验证，结果不写进 PR 证据，也不据此判红
+判绿。`tests/docs` 的 Sphinx 夹具在并发内存压力下会在 setup 阶段失败，那是假红，不是代码缺陷；遇到这种红先
+确认是否有别的测试在跑。
 
 ## 写入边界
 
 - 一个 agent 只能修改分配给它自己的 worktree 和 issue 明确要求的仓库内路径。
-- 不写用户主目录、`Projects` 的同级目录、`.codex`、全局 Git 配置、SSH、Docker 配置、包管理器配置或其他项目。
-- 临时输出写到容器内临时目录，或仓库中已被忽略且能立即清理的运行目录；提交前必须清掉。
-- 容器只挂载当前 checkout 和项目命名的依赖卷，不挂载用户主目录。需要改动宿主机 Docker 引擎或安装系统软件时，
-  属于环境操作，先单独获得任务授权并报告，不把它伪装成项目改动。
+- 不写用户主目录、`Projects` 的同级目录、`.codex`、全局 Git 配置、SSH、包管理器配置或其他项目。
+- 临时输出写到 `.runtime/` 或仓库中其他已被忽略且能立即清理的运行目录；提交前必须清掉。
+- 需要安装或升级宿主机软件（包括 uv 本身）时，属于环境操作，先单独获得任务授权并报告，不把它伪装成项目改动。
 - 仓库文件是唯一交付物；聊天记录、私人路径和某台机器的环境事实不能成为运行依赖。
 
 ## 并行开发与合并
 
 - 一个 issue 对应一个临时分支和至少一个独立 worktree。分支名用 `agent/<issue>-<short-topic>`。
 - 每个 agent 从最新的 `origin/main` 开始；不要多人共用一个可变 worktree。
-- 功能或整理完成前先在独立 worktree 内做局部验证；PR 前 rebase 到最新 `origin/main`，再在最终提交上跑完整容器检查。
+- 功能或整理完成前先在独立 worktree 内做局部验证；PR 前 rebase 到最新 `origin/main`，再在最终提交上跑完整检查。
 - `main` 只接收通过 PR 和本地完整检查的合并。涉及多个候选时，由集成者另开干净的 integration worktree 重新验证组合结果。
 - 合并后删除临时分支和 worktree。只有确实会丢失历史指针时才保留 `refs/archive/*` 存档引用。
 
@@ -101,9 +95,8 @@ lockfile 属于质量问题，改一次提交就能修，放在合并前的完�
 
 - 代码、脚本和文档只使用仓库相对路径；禁止盘符、WSL 内部路径、固定用户名和机器专属目录。
 - Python 路径处理使用 `pathlib`；Git hook 只使用 POSIX `sh` 和 Python launcher，Windows 走 Git Bash。
-- 本地容器跟随当前 Docker engine 的 CPU 架构，Apple Silicon 默认使用原生 arm64，避免模拟器拖慢开发。
-- GitHub Actions 固定使用 Linux/amd64，但只作为手动跨设备抽查；PR 合并前以本地容器检查为最终门禁。
-- 新增脚本必须能在容器中运行；如果必须依赖某个宿主系统能力，先说明原因、替代方案和删除条件。
+- GitHub Actions 固定使用 Linux/amd64，但只作为手动跨设备抽查；PR 合并前以本地完整检查为最终门禁。
+- 新增脚本必须能经 `dev.py run` 在项目环境中运行；如果必须依赖某个宿主系统能力，先说明原因、替代方案和删除条件。
 ## 必须遵守
 
 这些规则多数由 `tests/architecture/test_repository_skeleton.py` 检查。

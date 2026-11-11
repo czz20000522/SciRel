@@ -1,6 +1,6 @@
 #!/bin/sh
-# Scan staged files on the host: the standard library and git only, so a commit works with the
-# Docker engine stopped. Lint and format run in the complete check, not here.
+# Scan staged files on the host: the standard library and git only, so a commit works before
+# `scripts/dev.py prepare`. Lint and format run in the complete check, not here.
 root="$(git rev-parse --show-toplevel)"
 scanner="$root/skills/development/scirel-acceptance/scripts/precommit_check.py"
 if command -v python3 >/dev/null 2>&1; then

@@ -2,8 +2,8 @@
 """Scan staged files before a commit, on the host.
 
 This runs from `.githooks/pre-commit` with the host `python3 -I` and must stay on the standard
-library plus `git` alone: a commit must work with the Docker engine stopped, and the hook must not
-need the development container's environment. Lint, format and the wheel checks belong to
+library plus `git` alone: a commit must work before the project environment exists, and the hook
+must not need it. Lint, format and the wheel checks belong to
 `check_all.py`, the complete check.
 """
 

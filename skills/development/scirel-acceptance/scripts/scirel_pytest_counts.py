@@ -75,9 +75,9 @@ class CountsPlugin:
     def pytest_deselected(self, items) -> None:
         self.deselected += len(items)
 
-    def pytest_collection_modifyitems(self, session, config, items) -> None:
-        # Deselection already happened, so this is the selected set.
-        self.selected = len(items)
+    def pytest_collection_finish(self, session) -> None:
+        # All collection filters have finished; modifyitems hook order is not fixed.
+        self.selected = len(session.items)
 
     def pytest_runtest_logreport(self, report) -> None:
         outcome = self._outcome(report)

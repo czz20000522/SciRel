@@ -1,4 +1,4 @@
-"""Build the extraction kit: a frozen SciReL checkout that an extraction container works in.
+"""Build the extraction kit: a frozen SciReL checkout for an independent extraction worker.
 
 The kit is a directory with two entries:
 
@@ -55,7 +55,8 @@ KIT_TEMPLATE = """\
 5. 自检，合并线运行的也是同一条命令：
 
    ```sh
-   cd scirel && python scripts/validate_extraction_package.py <拆解包目录> --repo .
+   cd scirel
+   python3 scripts/dev.py run python -B scripts/validate_extraction_package.py <拆解包目录> --repo .
    ```
 
    退出码为 0 才能把 `PACKAGE.md` 的状态写成 `done`。`--fast` 的退出码永远是 2，不算通过。
