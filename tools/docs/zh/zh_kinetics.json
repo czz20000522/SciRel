@@ -1804,7 +1804,7 @@
   },
   {
    "asset_id": "scirel.collisions.atomic-hydrogen-charge-exchange-cross-section",
-   "source_sha256": "f28e19e0721841e55556d037b5e6eb2458eb750ca62a6fee5c045a4cb3eeb4f7",
+   "source_sha256": "33987ea9872e97111682f1b3048c49f4b30cddb2eaec232c428e967ac1c98c7f",
    "summary": "以碰撞能量（eV）为自变量，给出 H + H⁺ 电荷交换截面（m²）。默认是连续复合：Janev 多项式用在 12.673175 keV 以下，Lindsay–Stebbings 2005 Table 1 用在交点至 250 keV；freeman=True 保留独立的 Freeman–Jones 比较分支至 100 keV。越过高能端点会裁剪并发出 RuntimeWarning；负能量和非标量分支选择器被拒绝。",
    "definition": "默认分支先将能量裁剪到 [0.1, 2.5e5] eV；E ≤ 1.267317514018116e4 eV 时返回九系数 Janev 多项式 exp(polyval(log(E),a))×1e-4 m²，E 高于交点时返回 (4.15−0.531 ln(E_keV))²(1−exp(−67.3/E_keV))^4.5×1e-20 m²。freeman=True 将能量裁剪到 [0.1,1e5] eV，返回独立 Freeman–Jones 解析式。超过所选上限时发出 RuntimeWarning 并返回端点。",
    "model": "连续的 Janev/Lindsay–Stebbings 默认复合截面，加上独立的 Freeman–Jones 比较分支；不做运行时外部数据插值，也不做速率积分。",
@@ -1878,7 +1878,8 @@
      "Lindsay–Stebbings Table 1 到 250 keV 为止；更高能量发出警告并重复端点，不外推。",
      "论文给出 6 keV 以上约 ±11% 的可靠度，同时记录 100 keV 处约 30% 的理论/实验分歧；不能把拟合差直接当作新的完整不确定度预算。",
      "Freeman–Jones 是独立比较分支，不是默认，也不是对复合的修正。",
-     "公开分发许可仍待人工决定。"
+     "公开分发许可仍待人工决定。",
+     "0.1–12 eV 没有任何独立的测量或独立计算截面源（Red Book 从 12 eV 起、Khoma 只覆盖 1e-4–1e-3 eV），因此拟合声明区间的低端没有外部对拍。"
     ]
    }
   },
@@ -3971,7 +3972,7 @@
   },
   {
    "asset_id": "scirel.collisions.proton-atomic-hydrogen-elastic-cross-section",
-   "source_sha256": "31f81e946885c09fc62ce9286318c489cec47a8e19903ad01232b3dd049b741b",
+   "source_sha256": "2eef52e4094dab3a0449fad5602df1c0b43bae84d14b75da00388b69e626e65b",
    "summary": "计算静止原子氢靶上的质子弹性动量传递截面；函数内部先把实验室能量换算为质心能量 E_cm=E_lab/2（等质量对称体系），再按质心变量的分段拟合求值：E_cm<10 eV 使用低能多项式，E_cm≥10 eV（即实验室 E≥20 eV）使用高能多项式，因此实验室恰好 20 eV 属于高能分支；输出形状与输入相同。",
    "definition": "将实验室质子能量 E 裁到 [0.001,1.01e5] eV，再换算 E_cm=E/2。E_cm<10 使用七系数低能 log 多项式，E_cm≥10 使用二系数高能多项式；截面为 exp(poly(log E_cm))*1e-4 m²。两段经验拟合不强制连续；结果形状与输入相同。",
    "model": "H+-on-H 动量传递经验拟合；能量为静止靶参考系的弹丸能量。",
@@ -4028,7 +4029,8 @@
     "known_limitations": [
      "拟合端点裁剪和低高段不连续继承；不擅自平滑。",
      "此前的资格撤回和待定许可仍有记录；本次修正不改写该历史。",
-     "该拟合的动量转移截面含共振电荷交换搬运的动量（APID 8，1999，§1.2，p.2–3）；它不是可区分粒子的动量转移截面，本仓库也没有可区分粒子参数化。"
+     "该拟合的动量转移截面含共振电荷交换搬运的动量（APID 8，1999，§1.2，p.2–3）；它不是可区分粒子的动量转移截面，本仓库也没有可区分粒子参数化。",
+     "该动量转移列中由共振电荷交换搬运的份额未定量（UNKNOWN）；只能以上述证据为界，且 0.1–12 eV 没有任何独立的截面源。"
     ]
    }
   },
@@ -4606,7 +4608,7 @@
   },
   {
    "asset_id": "scirel.collisions.atomic-hydrogen-collision-matrices",
-   "source_sha256": "d71b75850936d28be68a01067110bb4d88e8e64ee75e5f6353f7487beca1df1d",
+   "source_sha256": "f64865b3c8081e78e0dcc0341e7f1b0ec674f326daf1daa2c987c8415e1b6bdf",
    "summary": "在圆柱归一化速度网格上组装电荷交换、两路动量传递和自碰撞应力矩阵。明确 H/D 实验室能量缩放；弹性矩阵保留符号，支持显式增加角节点以检查收敛。顶层结果为 scirel._result.Result 映射；嵌套数组字段仍为普通 NumPy 数组。",
    "definition": "令 g²=vr_i²+vr_k²−2vr_i vr_k cosθ+(vx_j−vx_l)²，θ_m=π(m+1/2)/n_theta。矩阵列权重为 Vr2pidVr_k*dVx_l，Fortran 排序 row=i+nvr*j、col=k+nvr*l。CX 核为 <g σ_CX>，混合动量核为 (vx_j−vx_l)<g σ_mt>，自碰撞应力核为 <(g_perp²−2g_x²)g σ_vis>*3/8。Vth²=2Q*Tnorm/(mu*H_MASS)。原子 CX 和混合动量拟合能量为 g²*Tnorm/mu，自黏性为 g²*Tnorm。",
    "model": "轴对称速度积分核；动量传递截面与黏性截面采用不同同位素缩放。",
@@ -4760,7 +4762,8 @@
      "默认五角没有普适精度保证；高阶验证不替代用户网格收敛。",
      "人类科学认可和再分发许可单独决定；验证缺口不因本文件而闭合。",
      "自碰撞前因子取玻尔兹曼值 3/8，可复现 Chapman-Enskog 硬球 p/μ。KN1D 报告（LaBombard，PSFC/RR-01-3，附录 B）取 1/8，因为它把 BGK 的 (2v_x²−v_r²) 积分（等于 v_x² 积分的三倍）直接等同于 v_x² 变化率；因此这一通道的结果与 KN1D 相差这一倍数。",
-     "APID 8（1999）p.77 的 Momentum Transfer 列等于其 Spin Exchange 列的两倍；按 §1.5.3，质心能量约 1 eV 以上时自旋交换截面趋近电荷交换截面，而每次共振电荷交换对动量转移的贡献权重约为 2。因此在该范围内该列主要由电荷交换动量构成，与独立的 SIG_CX 动量项叠加时 p–H 动量交换可能接近翻倍；具体份额未定量（UNKNOWN）。在可区分粒子核出现之前，两者不得共用同一个动量预算。"
+     "APID 8（1999）p.77 的 Momentum Transfer 列等于其 Spin Exchange 列的两倍；按 §1.5.3，质心能量约 1 eV 以上自旋交换截面趋近电荷交换截面（属渐近趋势，不是恒等）。定性后果是该列本身已含共振电荷交换的动量：本仓库里 SIG_CX 是唯一不带速度矩阵元的族，任何消费者既取 Alpha_CX 的 v_x 矩又施加 SIG_H_P，就把该动量计了两次。在可区分粒子核出现之前，两者不得共用同一个动量预算；重复计入的份额未定量（UNKNOWN）。",
+     "该列中电荷交换搬运的动量份额未定量；0.1–12 eV 无任何独立截面源，而现存两个独立源在重叠区互差 40–50%，因此既推不出重复计入的量级，也推不出可区分粒子核。"
     ]
    }
   },
