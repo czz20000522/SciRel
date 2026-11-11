@@ -69,19 +69,21 @@
  ],
  "applicability": {
   "preconditions": [
-   "The caller supplies electron temperature in eV and accepts endpoint clipping."
+   "The caller supplies electron temperature in eV and accepts endpoint clipping.",
+   "Above 30 eV the caller accepts a low-biased endpoint value: the fit is validated only on [0.1, 30] eV and warns above 30 eV."
   ],
   "supported": [
-   "Scalar and array evaluation of the H(1s) analytic fit on or clipped to its declared temperature interval."
+   "Scalar and array evaluation of the H(1s) analytic fit on [0.1, 30] eV, where it agrees with an independent Stobbe-Milne oracle to 5.3% at worst (the 0.1 eV edge) and to 4.9% or better from 1 eV up."
   ],
   "excluded": [
    "Excited-level, three-body and dielectronic recombination, or electron-impact ionization.",
-   "A physically validated recombination model outside the compared domain or without an external atomic-physics reference."
+   "A physically validated recombination model outside the compared domain or without an external atomic-physics reference.",
+   "Qualified use above 30 eV: there the fit understates the true rate (about 37% at 1 keV, a factor of about 2.0-2.1 at 10-20 keV), so those samples return the fit's own value at that temperature with a warning, not a validated rate."
   ]
  },
  "failure_semantics": {
   "invalid_input": "Raises ValueError for non-real numeric, non-finite or nonpositive electron temperature. Boolean, complex and numeric-string coercions are rejected.",
-  "runtime_failure": "Raises ValueError if the derived rate is non-finite or nonpositive; no partial output is returned.",
+  "runtime_failure": "Raises ValueError if the derived rate is non-finite or nonpositive; no partial output is returned. Emits scirel.ApplicabilityWarning when any input temperature is above 30 eV, the validated upper limit; those samples still return the fit's own value at their temperature (clipped only at the fit interval's 2.01e4 eV endpoint).",
   "nonconvergence": "Not applicable; no iteration.",
   "partial_results": "Never returned."
  },
@@ -99,16 +101,17 @@
   "dependencies": []
  },
  "example": {
-  "description": "Evaluate ground-state recombination and its clipped endpoints.",
-  "code": "import numpy as np\nfrom scirel.collisions import evaluate_atomic_hydrogen_1s_radiative_recombination_rate\nt = np.array([0.01, 1.0, 50000.0])\nr = evaluate_atomic_hydrogen_1s_radiative_recombination_rate(t)\nedge = evaluate_atomic_hydrogen_1s_radiative_recombination_rate(np.array([0.1, 1.0, 20100.0]))\nassert r.shape == (3,) and np.all(np.isfinite(r)) and np.all(r > 0.0)\nassert np.array_equal(r, edge)",
-  "expected": "Three positive H(1s) rates with values outside the fit interval exactly repeating the endpoints."
+  "description": "Evaluate ground-state recombination at in-range and out-of-range temperatures and its clipped endpoints.",
+  "code": "import warnings\nimport numpy as np\nimport scirel\nfrom scirel.collisions import evaluate_atomic_hydrogen_1s_radiative_recombination_rate\nt = np.array([0.01, 1.0, 50000.0])\nwith warnings.catch_warnings(record=True) as caught:\n    warnings.simplefilter('always')\n    r = evaluate_atomic_hydrogen_1s_radiative_recombination_rate(t)\n    edge = evaluate_atomic_hydrogen_1s_radiative_recombination_rate(\n        np.array([0.1, 1.0, 20100.0])\n    )\nassert r.shape == (3,) and np.all(np.isfinite(r)) and np.all(r > 0.0)\nassert np.array_equal(r, edge)\nassert len(caught) == 2 and issubclass(caught[0].category, scirel.ApplicabilityWarning)\n",
+  "expected": "Three positive H(1s) rates; values outside the fit interval exactly repeat the endpoints, and each out-of-range call emits one ApplicabilityWarning."
  },
  "verification": {
   "scope": [
    "Six fixed reference values and an independent closed-form evaluation hold to a 1e-15 relative tolerance, including on a holdout grid.",
    "Direct tests cover monotonic temperature dependence on the sampled grid, clipping, scalar shape, invalid domain and non-real input rejection.",
    "No external implementation comparison is maintained or replayed by this repository; the maintained tests validate the declared relation against an in-repository independent formulation and cover the stated rejection and clipping behaviour only on their tested grids.",
-   "Low- and high-temperature logarithmic slopes converge to the analytic -1/2 and -3/2 asymptotic limits within the audited temperature windows."
+   "Low- and high-temperature logarithmic slopes converge to the analytic -1/2 and -3/2 asymptotic limits within the audited temperature windows.",
+   "Against a precise Stobbe-Milne oracle (Stobbe 1930 photoionization closed form plus the Milne relation), the fit/oracle ratios at 0.1, 1, 10 and 30 eV are 0.947, 0.965, 1.043 and 1.049, which pins the declared 5.3% band in the direct tests."
   ],
   "tests": [
    "tests/collisions/test_atomic_hydrogen_1s_radiative_recombination_rate.py"
