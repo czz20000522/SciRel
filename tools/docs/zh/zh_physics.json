@@ -314,12 +314,13 @@
     "excluded": [
      "内置 Frank–Egedal 闭合或对 params/压力物理的独立验证。",
      "对外供真空、格林或壁响应的独立物理资格；一致离散壁场增量仍不证明真实边界模型。",
-     "一般自由边界平衡保证、自动格林构建或保证收敛。"
+     "一般自由边界平衡保证、自动格林构建或保证收敛。",
+     "镜模阈值 p_perp - p_parallel > B^2/(2 mu0) 属另一类可压缩不稳定性，不在 firehose 门的强制范围内；该门只覆盖极向场的局部平行传播 CGL 判据。"
     ]
    },
    "failure_semantics": {
     "invalid_input": "缺端口、非法网格/非布尔或错形掩码/控制/参数/闭合输出或不完整壁配置抛 ValueError；依赖错误继续抛出；此实现先验证网格和掩码再检查必要端口；位置参数非映射时组合层抛 TypeError。",
-    "runtime_failure": "回调及依赖错误传播；初态、中间态和返回态均在每次闭合/电流求值前检查 B>=minimum_field，违例抛 FloatingPointError；strict_compatibility=true 的返回平行力不相容抛 ValueError。物理 Green/墙模型须另有依据。",
+    "runtime_failure": "回调及依赖错误传播；初态、中间态和返回态均在每次闭合/电流求值前检查 B>=minimum_field，违例抛 FloatingPointError；strict_compatibility=true 的返回平行力不相容抛 ValueError。物理 Green/墙模型须另有依据；返回态在活动 cell 上处于或越过局部 firehose 阈值（p_parallel - p_perp >= B^2/mu0，firehose_margin <= 0）时抛 ValueError，因为非正 margin 标志着各向异性 Grad–Shafranov 关系失去椭圆性；中间态越过只发 RuntimeWarning。",
     "nonconvergence": "最多 maxiter 更新后若完整固定点或力相容性未通过，返回 converged=false 和明确原因；最后允许更新恰通过仍可 converged=true。零步末态评估后 residual=inf、空记录且不声称收敛。",
     "partial_results": "异常不返回映射；有界不收敛返回完整末态，不抛异常。"
    },
