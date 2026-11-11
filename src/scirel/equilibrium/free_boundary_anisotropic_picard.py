@@ -7,8 +7,6 @@ from scirel._validation import (
     bool_scalar as _require_bool_scalar,
 )
 from collections.abc import Mapping
-import warnings
-
 import numpy as np
 from ._anisotropic_numerics import cell_areas, flux_field_increment
 
@@ -241,7 +239,8 @@ def _run_composition(inputs, *, asset_loader):
     current_parts = None
     boundary_result = None
     boundary_flux_correction = None
-    firehose_warned = False
+    last_crossing_step = None
+    lowest_margin = None
     while iterations < maxiter:
         field = magnitude(br, bz)
         if np.any(field["B"] < minimum_field):
@@ -253,14 +252,17 @@ def _run_composition(inputs, *, asset_loader):
             inputs["r_grid"], inputs["z_grid"], br, bz, profiles["p_parallel"], profiles["p_perp"]
         )
         intermediate_margin = firehose_margin(current_parts)
-        if not firehose_warned and intermediate_margin.size:
-            if float(np.min(intermediate_margin)) <= 0.0:
-                firehose_warned = True
-                warnings.warn(
-                    "an intermediate Picard state crosses the firehose threshold; the terminal "
-                    "state is rejected if it remains at or beyond it",
-                    RuntimeWarning,
-                    stacklevel=2,
+        if intermediate_margin.size:
+            intermediate_value = float(np.min(intermediate_margin))
+            if intermediate_value <= 0.0:
+                # A transient crossing during iteration is a normal Picard path; only the
+                # terminal state claims a maintainable equilibrium, so record the crossing
+                # for the terminal diagnostic instead of warning.
+                last_crossing_step = iterations + 1
+                lowest_margin = (
+                    intermediate_value
+                    if lowest_margin is None
+                    else min(lowest_margin, intermediate_value)
                 )
         target = target_state(current_parts)
         if iterations > 0 and max(state_residuals(target, psi, br, bz, currents_old)) <= tol:
@@ -300,9 +302,16 @@ def _run_composition(inputs, *, asset_loader):
     )
     terminal_margin = firehose_margin(current_parts)
     if terminal_margin.size and float(np.min(terminal_margin)) <= 0.0:
+        terminal_value = float(np.min(terminal_margin))
+        crossing = (
+            ""
+            if last_crossing_step is None
+            else f"; last intermediate crossing at iteration {last_crossing_step} "
+            f"with minimum margin {lowest_margin:.6g}"
+        )
         raise ValueError(
             "terminal state is at or beyond the firehose threshold: minimum active-cell "
-            f"firehose margin {float(np.min(terminal_margin)):.6g} <= 0, so "
+            f"firehose margin {terminal_value:.6g} <= 0{crossing}, so "
             "p_parallel - p_perp >= B^2/mu0 lies outside the gyrotropic equilibrium model"
         )
     terminal_j_phi = np.asarray(current_parts["j_phi"], dtype=float)
@@ -507,9 +516,6 @@ def solve_free_boundary_anisotropic_picard(inputs=None, **kwargs):
         Raised when the corresponding declared input, numerical or convergence condition fails,
         and when the terminal state is at or beyond the local firehose threshold
         (``p_parallel - p_perp >= B**2/mu0`` on an active cell, i.e. ``firehose_margin <= 0``).
-    RuntimeWarning
-        If an intermediate Picard state crosses the firehose threshold. The terminal state is
-        still returned only when it stays inside the stable domain; otherwise ValueError is raised.
 
     See Also
     --------
@@ -524,8 +530,9 @@ def solve_free_boundary_anisotropic_picard(inputs=None, **kwargs):
     coefficient whose nonpositive value marks the loss of ellipticity of the
     gyrotropic Grad-Shafranov relation, so a converged state beyond it is not a
     maintainable equilibrium. An intermediate
-    Picard state beyond the threshold warns with RuntimeWarning; the terminal state
-    is rejected with ValueError. The gate covers the local, parallel-propagating
+    Picard state beyond the threshold is a normal iteration path and is not reported;
+    only the terminal state is rejected, with ValueError naming the last crossing
+    iteration and the lowest margin seen. The gate covers the local, parallel-propagating
     CGL firehose criterion of the poloidal field only; the mirror-mode threshold
     ``p_perp - p_parallel > B**2/(2*mu0)`` is a separate compressible instability
     and is outside this model.
