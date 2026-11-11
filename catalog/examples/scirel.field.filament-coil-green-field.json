@@ -17,13 +17,13 @@
  "discovery": {
   "capability": [
    "Filament-coil Green field response",
-   "Evaluate the closed-form psi, BR and BZ response of aligned circular coils from caller-supplied elliptic values."
+   "Evaluate the closed-form psi, BR and BZ response of aligned circular coils."
   ],
   "operation": [
    "closed-form filament-coil Green response",
-   "regularized observation geometry, coil vectors and elliptic values -> summed flux and fields"
+   "regularized observation geometry and coil vectors -> summed flux and fields"
   ],
-  "model": "Closed-form axisymmetric circular-coil response using supplied K(m) and E(m).",
+  "model": "Closed-form axisymmetric circular-coil response evaluated through the canonical circular-filament kernel (small-modulus hypergeometric branch below m=0.5, complementary elliptic form above it).",
   "geometry": "One observation point paired with one-dimensional coil arrays.",
   "boundary": "Observation on a source ring is singular and rejected; the observation-radius offset is not repeated.",
   "device_scope": "device-parameterized"
@@ -31,15 +31,15 @@
  "identity": {
   "relation": "Closed-form filament-coil Green response",
   "direction": "regularized observation geometry and coil vectors to summed flux and fields",
-  "definition": "Apply the scalar closed-form Green expressions to aligned coil arrays and sum the per-coil terms.",
-  "model": "Closed-form axisymmetric circular-coil response using supplied K(m) and E(m).",
+  "definition": "Evaluate each weighted ring response with the canonical circular-filament kernel and sum the per-coil terms. The kernel switches to a small-modulus hypergeometric form below m = 0.5, which removes the (2-m)K-2E cancellation that the polynomial-log elliptic approximation suffered near the cylindrical axis (issue #10 item 4).",
+  "model": "Closed-form axisymmetric circular-coil response evaluated through the canonical circular-filament kernel (small-modulus hypergeometric branch below m=0.5, complementary elliptic form above it).",
   "geometry": "One observation point paired with one-dimensional coil arrays.",
   "coordinates": "R,Z in metres; current amperes; turns count; psi Wb/rad and fields tesla.",
   "boundary": "Observation on a source ring is singular and rejected; the observation-radius offset is not repeated.",
   "assumptions": [
    "All coil vectors are finite one-dimensional arrays with matching shapes.",
-   "Accepted modulus values lie in (0,1).",
-   "Supplied elliptic values correspond to the supplied modulus values."
+   "Coil radii are strictly positive; the observation radius is the geometry operator's regularized value.",
+   "The response uses the canonical kernel, so callers no longer supply elliptic values."
   ]
  },
  "inputs": [
@@ -96,33 +96,6 @@
    "dtype": "real array-like",
    "required": true,
    "constraints": "Finite 1-D, shared shape."
-  },
-  {
-   "name": "modulus_squared",
-   "description": "Per-coil squared elliptic modulus m = k^2.",
-   "units": "dimensionless",
-   "shape": "[ncoil]",
-   "dtype": "real array-like",
-   "required": true,
-   "constraints": "Finite; entries in (0, 1) after singular rejection; exactly 1 marks an observation point on a filament ring and is rejected."
-  },
-  {
-   "name": "complete_k",
-   "description": "Per-coil first-kind complete elliptic integral K(m).",
-   "units": "dimensionless",
-   "shape": "[ncoil]",
-   "dtype": "real array-like",
-   "required": true,
-   "constraints": "Finite where modulus != 1 (the singular-geometry rejection makes non-finite pairings unreachable on accepted inputs)."
-  },
-  {
-   "name": "complete_e",
-   "description": "Per-coil second-kind complete elliptic integral E(m).",
-   "units": "dimensionless",
-   "shape": "[ncoil]",
-   "dtype": "real array-like",
-   "required": true,
-   "constraints": "Finite, shared shape."
   }
  ],
  "outputs": [
@@ -157,13 +130,13 @@
  "applicability": {
   "preconditions": [
    "All coil vectors are finite one-dimensional arrays with matching shapes.",
-   "Accepted modulus values lie in (0,1)."
+   "Coil radii are strictly positive."
   ],
   "supported": [
    "Finite aligned coil arrays, current linearity, mirrored-pair cancellation, and singular/overflow failures in direct tests."
   ],
   "excluded": [
-   "Misaligned coil geometry, internally recomputing elliptic integrals, and arbitrary extreme-scale guarantees."
+   "Misaligned coil geometry, caller-supplied elliptic values, and arbitrary extreme-scale guarantees."
   ]
  },
  "failure_semantics": {
@@ -176,7 +149,7 @@
   "python": {
    "module": "scirel.field.filament_coil_green_field",
    "symbol": "evaluate_filament_coil_green_field",
-   "signature": "evaluate_filament_coil_green_field(regularized_radius_m, observation_z_m, coil_radius_m, coil_z_m, current_a, turns, modulus_squared, complete_k, complete_e)",
+   "signature": "evaluate_filament_coil_green_field(regularized_radius_m, observation_z_m, coil_radius_m, coil_z_m, current_a, turns)",
    "canonical_module": "scirel.field",
    "canonical_symbol": "evaluate_filament_coil_green_field"
   }
@@ -194,13 +167,13 @@
  },
  "example": {
   "description": "Evaluate a mirrored pair of coils and repeat with doubled current.",
-  "code": "import numpy as np\nfrom scirel.field import (\n    compute_axisymmetric_coil_modulus,\n    evaluate_complete_elliptic_integrals,\n    evaluate_filament_coil_green_field,\n)\nradius, modulus, _ = compute_axisymmetric_coil_modulus(\n    0.3, 0.0, np.array([0.2, 0.2]), np.array([-0.1, 0.1]))\nk, e = evaluate_complete_elliptic_integrals(modulus)\nflux, br, bz = evaluate_filament_coil_green_field(\n    radius, 0.0, np.array([0.2, 0.2]), np.array([-0.1, 0.1]),\n    np.array([10.0, 10.0]), np.array([2.0, 2.0]), modulus, k, e)\nassert abs(br) < 1e-18\nflux2, br2, bz2 = evaluate_filament_coil_green_field(\n    radius, 0.0, np.array([0.2, 0.2]), np.array([-0.1, 0.1]),\n    np.array([20.0, 20.0]), np.array([2.0, 2.0]), modulus, k, e)\nassert flux2 == 2.0 * flux and bz2 == 2.0 * bz",
-  "expected": "The mirrored pair cancels BR on the midplane; doubling current doubles the flux and axial response."
+  "code": "import numpy as np\nfrom scirel.field import compute_axisymmetric_coil_modulus, evaluate_filament_coil_green_field\nradius, modulus, _ = compute_axisymmetric_coil_modulus(\n    0.3, 0.0, np.array([0.2, 0.2]), np.array([-0.1, 0.1]))\nflux, br, bz = evaluate_filament_coil_green_field(\n    radius, 0.0, np.array([0.2, 0.2]), np.array([-0.1, 0.1]),\n    np.array([10.0, 10.0]), np.array([2.0, 2.0]))\nassert abs(br) < 1e-18\nflux2, br2, bz2 = evaluate_filament_coil_green_field(\n    radius, 0.0, np.array([0.2, 0.2]), np.array([-0.1, 0.1]),\n    np.array([20.0, 20.0]), np.array([2.0, 2.0]))\nassert flux2 == 2.0 * flux and bz2 == 2.0 * bz",
+  "expected": "The mirrored pair cancels BR on the midplane; doubling current doubles the flux and axial response. Elliptic values are no longer caller-supplied: the canonical kernel selects its own branch."
  },
  "verification": {
   "scope": [
    "Closed-form responses against an independent recomputation.",
-   "Cross-implementation agreement with the baseline scipy-elliptic filament relation at equal elliptic values.",
+   "Near-axis accuracy against a 50-digit reference for r in [1e-8, 1e-2] (issue #10 item 4).",
    "Singular-geometry rejection and input failure contracts."
   ],
   "tests": [

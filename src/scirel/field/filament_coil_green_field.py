@@ -4,6 +4,8 @@ from __future__ import annotations
 
 import numpy as np
 
+from scirel.electromagnetism.greens import compute_greens
+
 MU0_OVER_2PI = 2.0e-7
 
 
@@ -14,79 +16,52 @@ def evaluate_filament_coil_green_field(
     coil_z_m,
     current_a,
     turns,
-    modulus_squared,
-    complete_k,
-    complete_e,
 ):
     """Return summed ``(psi, B_R, B_Z)`` for aligned coil arrays.
 
     ``regularized_radius_m`` is already offset by the geometry operator.  The
     response therefore applies no second axis shift.  Coincident rings are
     singular and rejected before any nonfinite response can escape.
+
+    The per-ring response comes from
+    :func:`scirel.electromagnetism.compute_greens`, the canonical
+    circular-filament kernel.  That kernel uses a small-modulus
+    hypergeometric branch below ``m = 0.5`` and the complementary elliptic
+    form above it, so the flux and radial field stay accurate near the
+    cylindrical axis where the ``(2-m)K-2E`` combination cancels (issue #10
+    item 4).  Reusing it also removes a second, independent implementation of
+    the same Green relation; the remaining duplicate between ``field`` and
+    ``electromagnetism`` is tracked in #155.
     """
     radius = float(regularized_radius_m)
     observation_z_m = float(observation_z_m)
-    arrays = tuple(
-        np.asarray(value, dtype=float)
-        for value in (
-            coil_radius_m,
-            coil_z_m,
-            current_a,
-            turns,
-            modulus_squared,
-            complete_k,
-            complete_e,
-        )
+    coil_radius, coil_z, current, winding = (
+        np.asarray(value, dtype=float) for value in (coil_radius_m, coil_z_m, current_a, turns)
     )
-    coil_radius, coil_z, current, winding, modulus, k_value, e_value = arrays
     if radius <= 0.0 or not np.isfinite(radius) or not np.isfinite(observation_z_m):
         raise ValueError(
             "regularized observation coordinates must be finite and positive in radius"
         )
-    if any(value.ndim != 1 or value.shape != coil_radius.shape for value in arrays):
-        raise ValueError(
-            "coil inputs and elliptic values must be same-shape vectors with valid geometry"
-        )
-    finite_geometry = all(
-        np.all(np.isfinite(value)) for value in (coil_radius, coil_z, current, winding, modulus)
-    )
-    if (
-        not finite_geometry
-        or np.any(coil_radius <= 0.0)
-        or np.any(modulus <= 0.0)
-        or np.any(modulus > 1.0)
-        or np.any(~np.isfinite(e_value))
-        or np.any(~np.isfinite(k_value) & (modulus != 1.0))
+    if any(
+        value.ndim != 1 or value.shape != coil_radius.shape for value in (coil_z, current, winding)
     ):
         raise ValueError(
             "coil inputs and elliptic values must be same-shape vectors with valid geometry"
         )
-    dz = observation_z_m - coil_z
-    with np.errstate(over="ignore", divide="raise", invalid="raise"):
-        distance = np.hypot(radius + coil_radius, dz)
-        separation2 = (radius - coil_radius) ** 2 + dz**2
-        if np.any(separation2 <= 0.0) or np.any(modulus >= 1.0):
-            raise ValueError("singular coil geometry: observation point on a filament ring")
-        factor = MU0_OVER_2PI * winding * current
-        flux_terms = (
-            factor
-            / np.sqrt(modulus)
-            * np.sqrt(radius * coil_radius)
-            * ((2.0 - modulus) * k_value - 2.0 * e_value)
+    if not all(
+        np.all(np.isfinite(value)) for value in (coil_radius, coil_z, current, winding)
+    ) or np.any(coil_radius <= 0.0):
+        raise ValueError(
+            "coil inputs and elliptic values must be same-shape vectors with valid geometry"
         )
-        radial_terms = (
-            factor
-            * dz
-            / radius
-            / distance
-            * ((radius**2 + coil_radius**2 + dz**2) / separation2 * e_value - k_value)
-        )
-        axial_terms = (
-            factor
-            / distance
-            * ((coil_radius**2 - radius**2 - dz**2) / separation2 * e_value + k_value)
-        )
-        result = tuple(float(np.sum(terms)) for terms in (flux_terms, radial_terms, axial_terms))
+    separation2 = (radius - coil_radius) ** 2 + (observation_z_m - coil_z) ** 2
+    if np.any(separation2 <= 0.0):
+        raise ValueError("singular coil geometry: observation point on a filament ring")
+
+    sources = np.column_stack((coil_radius, coil_z, winding * current))
+    targets = np.array([[radius, observation_z_m]])
+    psi, b_r, b_z = compute_greens(sources, targets)
+    result = (float(psi[0]), float(b_r[0]), float(b_z[0]))
     if not all(np.isfinite(value) for value in result):
         raise ValueError("filament-coil response overflowed to a non-finite value")
     return result
