@@ -9,7 +9,7 @@ mutant.
 
 States per mutant:
 
-- ``killed``: the tests failed. This is the required outcome.
+- ``killed``: a test observed an actual output change and failed during its call phase.
 - ``survived``: the tests passed although the output was changed.
 - ``not_exercised``: the tests passed and the mutation never changed a returned value, so the
   tests do not call the function with numeric output through its public name.
@@ -41,21 +41,55 @@ from scirel_mutation_plugin import KINDS  # noqa: E402
 FAILING_STATES = {"survived", "not_exercised", "error", "baseline_failed"}
 
 
-def _pytest(root: Path, tests: list[str], env_extra: dict[str, str] | None) -> int:
+def _pytest(root: Path, tests: list[str], spec: dict, output: Path) -> dict:
     env = dict(os.environ)
     env["PYTHONPATH"] = os.pathsep.join(
         [str(root / "src"), str(SCRIPTS), env.get("PYTHONPATH", "")]
     )
-    env.pop("SCIREL_MUTATION", None)
-    command = [sys.executable, "-m", "pytest", "-q", "-x", "-p", "no:cacheprovider", *tests]
-    if env_extra is not None:
-        env.update(env_extra)
-        command[5:5] = ["-p", "scirel_mutation_plugin"]
+    env.pop("PYTEST_ADDOPTS", None)
+    counts_path = output.with_suffix(".json")
+    env.update(
+        SCIREL_MUTATION=json.dumps(spec),
+        SCIREL_MUTATION_LOG=str(output.with_suffix(".mutations")),
+        SCIREL_MUTATION_REPORT=str(counts_path),
+    )
+    command = [
+        sys.executable,
+        "-B",
+        "-m",
+        "pytest",
+        "-q",
+        "-x",
+        "-p",
+        "no:cacheprovider",
+        "-p",
+        "scirel_mutation_plugin",
+        *tests,
+    ]
     done = subprocess.run(command, cwd=root, env=env, capture_output=True, text=True)
-    return done.returncode
+    output.write_text(done.stdout + done.stderr, encoding="utf-8")
+    counts = None
+    try:
+        counts = json.loads(counts_path.read_text(encoding="utf-8"))
+        if (
+            counts.get("schema") != 1
+            or counts.get("exit_code") != done.returncode
+            or not isinstance(counts.get("selected"), int)
+            or not isinstance(counts.get("executed"), int)
+            or not isinstance(counts.get("deselected"), int)
+            or not all(
+                isinstance(counts.get(key), list)
+                for key in ("applied", "applicable", "call_failed", "errors")
+            )
+            or counts["executed"] > counts["selected"]
+        ):
+            counts = None
+    except (OSError, ValueError, AttributeError):
+        counts = None
+    return {"exit_code": done.returncode, "counts": counts, "log": str(output)}
 
 
-def check_asset(root: Path, asset_id: str) -> dict:
+def check_asset(root: Path, asset_id: str, *, log_dir: Path | None = None) -> dict:
     path = root / "catalog" / "examples" / f"{asset_id}.json"
     report = {"asset_id": asset_id, "mutants": {}}
     if not path.is_file():
@@ -71,43 +105,64 @@ def check_asset(root: Path, asset_id: str) -> dict:
         report["state"] = "error"
         report["detail"] = f"verification.tests missing or not found: {missing or 'empty'}"
         return report
-    baseline = _pytest(root, tests, None)
-    if baseline != 0:
-        report["state"] = "baseline_failed"
-        report["detail"] = f"the unmodified tests exit with {baseline}"
-        return report
     spec = {
         "module": api["module"],
         "symbol": api["symbol"],
         "canonical_module": api.get("canonical_module", api["module"]),
         "canonical_symbol": api.get("canonical_symbol", api["symbol"]),
     }
+    logs_root = log_dir if log_dir is not None else root / ".runtime" / "logs"
+    logs_root.mkdir(parents=True, exist_ok=True)
+    logs = Path(tempfile.mkdtemp(prefix="mutation-", dir=logs_root))
+    report["log_dir"] = str(logs)
+    report["runs"] = {}
+    # The control has the same wrapping as a mutant but returns original outputs.
+    # Signature/introspection failures caused by wrapping are not numerical evidence.
+    baseline = _pytest(root, tests, {**spec, "kind": "baseline"}, logs / "baseline.log")
+    report["runs"]["baseline"] = baseline
+    counts = baseline["counts"]
+    if (
+        baseline["exit_code"] != 0
+        or counts is None
+        or counts["selected"] <= 0
+        or counts["executed"] != counts["selected"]
+        or counts["deselected"]
+        or counts["errors"]
+    ):
+        report["state"] = "baseline_failed"
+        report["detail"] = (
+            f"original-output control failed (exit {baseline['exit_code']}); read {baseline['log']}"
+        )
+        return report
     for kind in KINDS:
-        with tempfile.NamedTemporaryFile("w+", suffix=".log", delete=False) as log:
-            log_path = log.name
-        try:
-            code = _pytest(
-                root,
-                tests,
-                {
-                    "SCIREL_MUTATION": json.dumps({**spec, "kind": kind}),
-                    "SCIREL_MUTATION_LOG": log_path,
-                },
-            )
-            applied = Path(log_path).read_text(encoding="utf-8").strip() != ""
-        finally:
-            Path(log_path).unlink(missing_ok=True)
-        if code == 1:
+        observed = _pytest(root, tests, {**spec, "kind": kind}, logs / f"{kind}.log")
+        report["runs"][kind] = observed
+        code, counts = observed["exit_code"], observed["counts"]
+        if (
+            counts is None
+            or counts["selected"] <= 0
+            or counts["executed"] <= 0
+            or counts["deselected"]
+            or counts["errors"]
+        ):
+            state = "error"
+        elif code == 1 and set(counts["applied"]) & set(counts["call_failed"]):
             state = "killed"
-        elif code == 0:
-            state = "survived" if applied else "not_exercised"
+        elif not counts["applied"] and code in (0, 1):
+            state = "not_exercised"
+        elif code == 0 and counts["executed"] == counts["selected"]:
+            state = "survived"
         else:
             state = "error"
         report["mutants"][kind] = state
-    exercised = [k for k, s in report["mutants"].items() if s != "not_exercised"]
+    exercised = [k for k, s in report["mutants"].items() if s in ("killed", "survived")]
     if exercised:
         for kind, state in report["mutants"].items():
-            if state == "not_exercised" and kind == "swap":
+            if (
+                state == "not_exercised"
+                and kind == "swap"
+                and not report["runs"][kind]["counts"]["applicable"]
+            ):
                 report["mutants"][kind] = "inapplicable"
     states = set(report["mutants"].values())
     report["state"] = "failed" if states & FAILING_STATES else "passed"
@@ -121,9 +176,10 @@ def main() -> int:
         "--root", type=Path, default=ROOT, help="SciReL tree to test (default: this one)"
     )
     parser.add_argument("--json", action="store_true", help="print the full report as JSON")
+    parser.add_argument("--log-dir", type=Path, help="keep raw output and execution reports here")
     args = parser.parse_args()
     root = args.root.resolve()
-    reports = [check_asset(root, asset_id) for asset_id in args.asset_ids]
+    reports = [check_asset(root, asset_id, log_dir=args.log_dir) for asset_id in args.asset_ids]
     if args.json:
         print(json.dumps(reports, ensure_ascii=False, indent=2))
     counts: dict[str, int] = {}
@@ -131,6 +187,12 @@ def main() -> int:
         mutants = report["mutants"]
         summary = ", ".join(f"{k} {v}" for k, v in mutants.items()) or report.get("detail", "")
         print(f"{report['state'].upper():16} {report['asset_id']}: {summary}")
+        if "log_dir" in report:
+            baseline = report["runs"]["baseline"]["counts"]
+            if baseline is not None:
+                print(
+                    f"  control selected {baseline['selected']}, executed {baseline['executed']}, deselected {baseline['deselected']}; logs {report['log_dir']}"
+                )
         for state in mutants.values():
             counts[state] = counts.get(state, 0) + 1
     failed = sum(r["state"] != "passed" for r in reports)

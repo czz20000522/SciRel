@@ -3,6 +3,7 @@
 
 from __future__ import annotations
 
+import argparse
 from dataclasses import dataclass, field
 import json
 import os
@@ -60,6 +61,7 @@ def steps(output: Path) -> list[Step]:
                 *python,
                 "-m",
                 "pytest",
+                "tests",
                 "-q",
                 "-p",
                 "no:cacheprovider",
@@ -153,13 +155,20 @@ def read_counts(path: Path) -> dict:
         raise CountsError(f"{path.name} is not readable JSON: {error}") from error
     if not isinstance(report, dict):
         raise CountsError(f"{path.name} is not a JSON object")
-    wrong = [name for name in COUNT_FIELDS if not isinstance(report.get(name), int)]
+    wrong = [name for name in COUNT_FIELDS if type(report.get(name)) is not int or report[name] < 0]
     if wrong:
         raise CountsError(f"{path.name} lacks integer counts: {wrong}")
+    if not isinstance(report.get("skip_reasons"), dict) or any(
+        not isinstance(reason, str) or not isinstance(nodes, list)
+        for reason, nodes in report["skip_reasons"].items()
+    ):
+        raise CountsError(f"{path.name} lacks skip reasons")
     if report.get("consistent") is not True:
         raise CountsError(
             f"{path.name} reports inconsistency: {report.get('inconsistency') or 'no reason given'}"
         )
+    if report["selected"] <= 0:
+        raise CountsError(f"{path.name}: no tests executed; rerun the required suite")
     if report["collected"] != report["selected"] + report["deselected"]:
         raise CountsError(
             f"{path.name}: collected {report['collected']} != selected {report['selected']}"
@@ -182,15 +191,13 @@ def read_counts(path: Path) -> dict:
 
 def step_status(step: Step, returncode: int) -> tuple[str, str, dict | None]:
     """Judge one finished step: a green pytest run also needs counts that add up."""
-    if returncode != 0:
-        return "FAIL", "", None
     if step.counts is None:
-        return "PASS", "", None
+        return ("FAIL" if returncode else "PASS"), "", None
     try:
         report = read_counts(step.counts)
     except CountsError as error:
         return "FAIL", f"  (test counts unusable: {error})", None
-    return "PASS", "", report
+    return ("FAIL" if returncode else "PASS"), "", report
 
 
 def counts_summary(steps_passed: int, steps_total: int, report: dict) -> str:
@@ -243,10 +250,16 @@ def run_step(command: list[str], env: dict[str, str]) -> subprocess.CompletedPro
     return subprocess.CompletedProcess(command, process.returncode, stdout, stderr)
 
 
-def main() -> int:
+def main(report_path: Path | None = None) -> int:
     # Two runs at once slow each other and share build directories, so allow one per checkout.
     temporary_root = ROOT / ".runtime" / "tmp"
     temporary_root.mkdir(parents=True, exist_ok=True)
+    logs_root = ROOT / ".runtime" / "logs"
+    logs_root.mkdir(parents=True, exist_ok=True)
+    if report_path is None:
+        report_path = Path(tempfile.mkdtemp(prefix="check-", dir=logs_root)) / "result.json"
+    report_path = report_path.resolve()
+    report_path.parent.mkdir(parents=True, exist_ok=True)
     lock_path = ROOT / ".runtime" / "locks" / "check-all.lock"
     lock_path.parent.mkdir(parents=True, exist_ok=True)
     lock = lock_path.open("a+b")
@@ -270,6 +283,7 @@ def main() -> int:
     not_run = []
     counts_report = None
     plan = []
+    records = []
     with tempfile.TemporaryDirectory(prefix="scirel-check-", dir=temporary_root) as temporary:
         has_uv = shutil.which("uv") is not None
         plan = steps(Path(temporary))
@@ -278,10 +292,29 @@ def main() -> int:
                 print(f"NOT_RUN  {step.name}  (uv is not on PATH)", flush=True)
                 not_run.append(step.name)
                 failed.append(step.name)
+                records.append(
+                    {
+                        "name": step.name,
+                        "status": "NOT_RUN",
+                        "returncode": None,
+                        "detail": "uv is not on PATH",
+                    }
+                )
                 continue
             started = time.perf_counter()
             completed = run_step(step.command, step.env)
             status, detail, report = step_status(step, completed.returncode)
+            log_path = report_path.parent / f"step-{len(records):02d}.log"
+            log_path.write_text(completed.stdout + completed.stderr, encoding="utf-8")
+            records.append(
+                {
+                    "name": step.name,
+                    "status": status,
+                    "returncode": completed.returncode,
+                    "detail": detail,
+                    "log": str(log_path),
+                }
+            )
             if report is not None:
                 counts_report = report
             print(
@@ -291,6 +324,7 @@ def main() -> int:
             if status == "FAIL":
                 failed.append(step.name)
                 if completed.returncode:
+                    print(f"Full output: {log_path}; excerpt follows:")
                     print((completed.stdout + completed.stderr)[-4000:])
     for leftover in ("build", "src/scirel.egg-info"):
         shutil.rmtree(ROOT / leftover, ignore_errors=True)
@@ -300,10 +334,22 @@ def main() -> int:
         for line in skip_lines(counts_report):
             print(line)
         print(counts_summary(len(plan) - len(failed), len(plan), counts_report))
+    result = {
+        "schema": "scirel.acceptance.v1",
+        "steps": records,
+        "tests": counts_report,
+        "exit_code": 1 if failed else 0,
+    }
+    report_path.write_text(
+        json.dumps(result, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
+    )
+    print(f"RESULT  {report_path}")
     print("ALL GREEN" if not failed else f"FAILED: {failed}")
     lock.close()
     return 1 if failed else 0
 
 
 if __name__ == "__main__":
-    raise SystemExit(main())
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--report", type=Path, help="write the structured result here")
+    raise SystemExit(main(parser.parse_args().report))

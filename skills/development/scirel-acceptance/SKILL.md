@@ -31,6 +31,12 @@ The test counts come from pytest itself. `scripts/scirel_pytest_counts.py` obser
 Full acceptance also requires `deselected 0`. `dev.py` clears the host's `PYTEST_ADDOPTS` so a
 personal test filter cannot reduce the suite. Pass filters explicitly to `dev.py pytest` for local work.
 
+The complete check explicitly selects `tests/`, rather than accepting a different `testpaths`
+from a candidate. It always retains each step's complete output and a `scirel.acceptance.v1`
+JSON result under `.runtime/logs/`; `RESULT` prints its location. The extraction validator passes
+`--report <path>` to preserve those records after deleting its temporary candidate tree. A green
+exit without a complete result, or with zero executed tests, cannot support package admission.
+
 It prints the time of each step and takes about five minutes. Much longer means the machine is busy: look for other runs before suspecting the code. Only one run per checkout is allowed. Run it in the foreground, so that you see the result.
 
 A push runs nothing: there is no `pre-push` hook, so pushing is cheap and proves nothing. The
