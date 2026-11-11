@@ -244,6 +244,14 @@ def test_a_green_pytest_run_with_counts_is_green(tmp_path):
     assert report["selected"] == report["passed"] == 3
 
 
+def test_a_failed_pytest_run_retains_usable_counts(tmp_path):
+    report_path = tmp_path / "counts.json"
+    report_path.write_text(json.dumps(_report(passed=2, failed=1)), encoding="utf-8")
+    step = check_all.Step("tests", ["pytest"], counts=report_path)
+    status, _, report = check_all.step_status(step, 1)
+    assert status == "FAIL" and report["selected"] == 3 and report["failed"] == 1
+
+
 def test_a_filtered_green_pytest_run_is_not_full_acceptance(tmp_path):
     directory = _sample(tmp_path)
     done = _run(directory, ["-k", "test_passes"], with_plugin=True)
@@ -295,3 +303,28 @@ def test_summary_carries_both_the_step_and_the_test_counts():
     assert line.startswith("steps 9/10 passed; tests collected 3, selected 3")
     assert "skipped 1" in line
     assert "no engine (1)" in line
+
+
+def test_zero_execution_counts_do_not_support_a_green(tmp_path):
+    report = _report(collected=0, selected=0, passed=0)
+    path = tmp_path / "counts.json"
+    path.write_text(json.dumps(report))
+    with pytest.raises(check_all.CountsError, match="no tests"):
+        check_all.read_counts(path)
+
+
+def test_full_suite_discovery_cannot_be_replaced_by_smoke_testpaths(tmp_path, monkeypatch):
+    (tmp_path / "tests").mkdir()
+    (tmp_path / "smoke").mkdir()
+    (tmp_path / "tests/test_regression.py").write_text(
+        "def test_real_regression():\n    assert False\n"
+    )
+    (tmp_path / "smoke/test_smoke.py").write_text("def test_smoke():\n    assert True\n")
+    (tmp_path / "pyproject.toml").write_text('[tool.pytest.ini_options]\ntestpaths=["smoke"]\n')
+    monkeypatch.setattr(check_all, "ROOT", tmp_path)
+    step = check_all.steps(tmp_path)[0]
+    done = subprocess.run(
+        step.command, cwd=tmp_path, env={**os.environ, **step.env}, capture_output=True, text=True
+    )
+    assert done.returncode == 1, done.stdout + done.stderr
+    assert "test_real_regression" in done.stdout

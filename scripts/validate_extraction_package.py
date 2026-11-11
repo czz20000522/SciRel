@@ -31,9 +31,11 @@ a fast run is a development aid, not acceptance.
 from __future__ import annotations
 
 import argparse
+import json
 import os
 from pathlib import Path
 import re
+import runpy
 import shutil
 import subprocess
 import sys
@@ -47,6 +49,7 @@ sys.path.insert(0, str(ROOT / "skills/development/scirel-acceptance/scripts"))
 import tickets  # noqa: E402
 from precommit_check import FORBIDDEN  # noqa: E402
 from validate_asset_documents import ASSET_ID_RE, AssetDocumentError, load_document_set  # noqa: E402
+from check_all import CountsError, counts_summary, read_counts, steps as acceptance_steps  # noqa: E402
 
 CONCLUSIONS = ("已有", "新 method", "全新", "不收")
 IMPLEMENTED = ("新 method", "全新")
@@ -66,18 +69,43 @@ EVIDENCE_BASES = ("解析", "文献", "守恒", "来源输出")
 RESULT_STATES = ("passed", "failed", "blocked", "NOT_RUN", "inapplicable")
 LAYER_RE = re.compile(r"^L[0-5]$")
 TEXT_SUFFIXES = {".md", ".py", ".json", ".toml", ".yaml", ".yml", ".txt", ".rst", ".patch", ".sh"}
+STAGES = (
+    "structure",
+    "PACKAGE.md",
+    "manifest.md",
+    "disposition.md",
+    "tickets",
+    "leak scan",
+    "patch",
+    "contracts",
+    "full check",
+    "mutation",
+)
 
 
 class Report:
     def __init__(self) -> None:
         self.sections: list[tuple[str, str, str]] = []
         self.errors: list[str] = []
+        self.output_dir: Path | None = None
 
     def section(self, name: str, state: str, detail: str) -> None:
         self.sections.append((name, state, detail))
 
     def fail(self, name: str, message: str) -> None:
         self.errors.append(f"{name}: {message}")
+
+    def directory(self) -> Path:
+        if self.output_dir is None:
+            root = ROOT / ".runtime" / "logs"
+            root.mkdir(parents=True, exist_ok=True)
+            self.output_dir = Path(tempfile.mkdtemp(prefix="extraction-", dir=root))
+        return self.output_dir
+
+    def output(self, name: str, done) -> Path:
+        path = self.directory() / f"{name}.log"
+        path.write_text(done.stdout + done.stderr, encoding="utf-8")
+        return path
 
 
 def _field(text: str, label: str) -> str | None:
@@ -375,15 +403,38 @@ def apply_patch(
         report.section("patch", "FAIL", f"{len(patches)} patches, not applicable")
         return None, frozen_ids, []
     changed = _git(["diff", "--name-only", commit, "HEAD"], tree).stdout.split()
-    leaked = [p for p in changed if p.startswith(("private/", "tickets/"))]
+    leaked = []
+    for path in changed:
+        parts = Path(path).parts
+        allowed = (
+            path.startswith(
+                ("src/scirel/", "tests/", "catalog/examples/", "docs/", "tools/docs/manual/")
+            )
+            or path == "README.md"
+        )
+        protected = Path(path).name in (
+            "conftest.py",
+            "pytest.ini",
+            ".pytest.ini",
+            "pyproject.toml",
+            "tox.ini",
+            "setup.cfg",
+        ) or path.startswith(
+            ("tests/tooling/", "tests/architecture/", "tests/delivery/", "tests/docs/")
+        )
+        if not allowed or protected or ".." in parts:
+            leaked.append(path)
     for path in leaked:
-        report.fail("patch", f"the patch must not add {path}")
+        report.fail(
+            "patch",
+            f"the scientific patch must not modify {path}; change admission rules or test configuration in a separate maintenance PR",
+        )
     report.section(
         "patch",
         "FAIL" if leaked else "PASS",
         f"{len(patches)} patches applied, {len(changed)} files changed",
     )
-    return tree, frozen_ids, changed
+    return (None if leaked else tree), frozen_ids, changed
 
 
 CORRECTION_NOTE = "物理纠正"
@@ -501,16 +552,26 @@ def check_contracts(
         if not evidence.is_file():
             report.fail("contracts", f"{asset_id}: evidence/{asset_id}.md is missing")
             continue
-        table = _table(evidence.read_text(encoding="utf-8"), "用例")
+        text = evidence.read_text(encoding="utf-8")
+        if CORRECTION_NOTE in entry.get("note", ""):
+            for label in ("原行为", "依据", "改动", "前后对比"):
+                if not _field(text, label):
+                    report.fail(
+                        "contracts",
+                        f"{asset_id}: 物理纠正 needs a nonempty '- {label}：...' explanation",
+                    )
+        table = _table(text, "用例")
         if table is None or not table[1]:
             report.fail("contracts", f"{asset_id}: evidence has no 用例 table rows")
             continue
-        bases = set()
+        latest = {}
         for number, row in enumerate(table[1], start=1):
             if len(row) != 5:
                 report.fail("contracts", f"{asset_id}: evidence row {number} needs 5 cells")
                 continue
-            _case, category, basis, origin, result = row
+            case, category, basis, origin, result = row
+            if not case:
+                report.fail("contracts", f"{asset_id}: evidence row {number}: case name is empty")
             if category not in EVIDENCE_CATEGORIES:
                 report.fail(
                     "contracts",
@@ -528,8 +589,23 @@ def check_contracts(
                     "contracts",
                     f"{asset_id}: evidence row {number}: 结果 {result!r} not in {', '.join(RESULT_STATES)}",
                 )
-            bases.add(basis)
-        if bases == {"来源输出"}:
+            latest[(case, category)] = (result, basis)
+        categories = {category for _, category in latest}
+        missing = {"正常", "下界", "上界"} - categories
+        if missing:
+            report.fail(
+                "contracts",
+                f"{asset_id}: evidence missing required categories: {', '.join(sorted(missing))}",
+            )
+        for (case, category), (result, _basis) in latest.items():
+            if result != "passed" and not (
+                result == "inapplicable" and category not in ("正常", "下界", "上界")
+            ):
+                report.fail(
+                    "contracts",
+                    f"{asset_id}: evidence {case!r} ({category}) is {result}; complete it and append the passed rerun before admission",
+                )
+        if {basis for _, basis in latest.values()} == {"来源输出"}:
             source_only.append(asset_id)
     if unmapped:
         report.section(
@@ -545,49 +621,94 @@ def check_contracts(
     return implemented
 
 
+def _candidate_environment(tree: Path) -> dict[str, str]:
+    """Use the frozen checkout's runtime locations, never the caller's editable install."""
+    developer = runpy.run_path(str(tree / "scripts/dev.py"))
+    developer["ensure_runtime"]()
+    env = developer["environment"]()
+    env["PYTHONPATH"] = str(tree / "src")
+    return env
+
+
+def _run_in_candidate(tree: Path, command: list[str]) -> subprocess.CompletedProcess[str]:
+    return subprocess.run(
+        ["uv", "run", "--frozen", "--group", "test", *command],
+        cwd=tree,
+        env=_candidate_environment(tree),
+        capture_output=True,
+        text=True,
+    )
+
+
 def run_full_check(tree: Path, report: Report) -> None:
     script = tree / "skills/development/scirel-acceptance/scripts/check_all.py"
-    done = subprocess.run([sys.executable, str(script)], cwd=tree, capture_output=True, text=True)
-    lines = (done.stdout + done.stderr).strip().splitlines()
-    if done.returncode:
-        # Name each failing step and the lines that say why, so a worker can act without rerunning.
-        stripped = [line.strip() for line in lines]
-        # Step names and causes first, then the individual failing tests.
-        causes = [
-            line
-            for line in stripped
-            if line.startswith(("FAIL ", "ERROR:")) or re.match(r"\w+Error: ", line)
+    result_path = report.directory() / "acceptance.json"
+    try:
+        done = _run_in_candidate(tree, ["python", "-B", str(script), "--report", str(result_path)])
+    except OSError as error:
+        report.fail("full check", f"cannot start the candidate environment: {error}")
+        report.section("full check", "FAIL", "candidate environment did not start")
+        return
+    log = report.output("full-check", done)
+    try:
+        result = json.loads(result_path.read_text(encoding="utf-8"))
+        records = result["steps"]
+        expected = [step.name for step in acceptance_steps(report.directory())]
+        if (
+            result.get("schema") != "scirel.acceptance.v1"
+            or result.get("exit_code") != done.returncode
+            or [step["name"] for step in records] != expected
+        ):
+            raise ValueError("required check steps are missing or disagree with the exit status")
+        counts_path = report.directory() / "tests-counts.json"
+        counts_path.write_text(json.dumps(result["tests"]), encoding="utf-8")
+        counts = read_counts(counts_path)
+        incomplete = [
+            step["name"] + ": " + step["status"] + " " + step.get("detail", "")
+            for step in records
+            if step["status"] != "PASS" or step["returncode"] != 0
         ]
-        tests = [line for line in stripped if line.startswith(("FAILED tests", "ERROR tests"))]
-        reasons = causes + tests
-        for line in reasons[:25]:
-            report.fail("full check", line)
-        if len(reasons) > 25:
-            report.fail(
-                "full check",
-                f"... {len(reasons) - 25} more lines; rerun check_all.py on the patched tree",
-            )
-    report.section(
-        "full check", "FAIL" if done.returncode else "PASS", lines[-1] if lines else "no output"
-    )
+        if any(not Path(step["log"]).is_file() for step in records if step["status"] == "PASS"):
+            raise ValueError("a completed step has no retained output log")
+        if done.returncode or incomplete or counts["failed"] or counts["error"]:
+            raise ValueError("; ".join(incomplete) or f"check exited {done.returncode}")
+        detail = counts_summary(len(records), len(records), counts)
+        report.section("full check", "PASS", f"{detail}; log {log}")
+    except (OSError, ValueError, KeyError, TypeError, AttributeError, CountsError) as error:
+        report.fail(
+            "full check",
+            f"unusable or failed execution result: {error}; read {log} and rerun after fixing it",
+        )
+        report.section("full check", "FAIL", f"exit {done.returncode}; log {log}")
 
 
 def run_mutation(tree: Path, asset_ids: list[str], report: Report) -> None:
     if not asset_ids:
         report.section("mutation", "PASS", "no new or extended contracts")
         return
-    done = subprocess.run(
-        [sys.executable, str(SCRIPTS / "mutation_check.py"), "--root", str(tree), *asset_ids],
-        capture_output=True,
-        text=True,
+    done = _run_in_candidate(
+        tree,
+        [
+            "python",
+            "-B",
+            str(SCRIPTS / "mutation_check.py"),
+            "--root",
+            str(tree),
+            "--log-dir",
+            str(report.directory() / "mutation"),
+            *asset_ids,
+        ],
     )
     lines = (done.stdout + done.stderr).strip().splitlines()
+    log = report.output("mutation", done)
     if done.returncode:
         for line in lines[:-1]:
             if not line.startswith("PASSED"):
                 report.fail("mutation", line)
     report.section(
-        "mutation", "FAIL" if done.returncode else "PASS", lines[-1] if lines else "no output"
+        "mutation",
+        "FAIL" if done.returncode else "PASS",
+        f"{lines[-1] if lines else 'no output'}; log {log}",
     )
 
 
@@ -609,23 +730,35 @@ def main() -> int:
         check_disposition(package, report, entries)
         check_tickets(package, report)
         check_leaks(package, report)
-        workdir = Path(tempfile.mkdtemp(prefix="scirel-package-"))
+        temporary = ROOT / ".runtime" / "tmp"
+        temporary.mkdir(parents=True, exist_ok=True)
+        workdir = Path(tempfile.mkdtemp(prefix="scirel-package-", dir=temporary))
         try:
             tree, frozen, changed = (None, set(), [])
             if info.get("commit"):
                 tree, frozen, changed = apply_patch(package, repo, info["commit"], workdir, report)
             if tree is not None:
                 implemented = check_contracts(package, tree, frozen, entries, changed, report)
-                if args.fast:
-                    report.section("full check", "NOT_RUN", "--fast")
-                    report.section("mutation", "NOT_RUN", "--fast")
+                if args.fast or report.errors:
+                    reason = "--fast" if args.fast else "fix the preceding package defects first"
+                    report.section("full check", "NOT_RUN", reason)
+                    report.section("mutation", "NOT_RUN", reason)
                 else:
                     run_full_check(tree, report)
-                    run_mutation(tree, implemented, report)
+                    if report.errors:
+                        report.section("mutation", "NOT_RUN", "fix the full check first")
+                    else:
+                        run_mutation(tree, implemented, report)
         finally:
             if (workdir / "tree").exists():
                 _git(["worktree", "remove", "--force", str(workdir / "tree")], repo)
             shutil.rmtree(workdir, ignore_errors=True)
+    recorded = {name for name, _, _ in report.sections}
+    for stage in STAGES:
+        if stage not in recorded:
+            report.section(
+                stage, "NOT_RUN", "a preceding prerequisite failed; fix its errors and rerun"
+            )
     for name, state, detail in report.sections:
         print(f"{state:8} {name}: {detail}")
     for error in report.errors:
@@ -635,9 +768,18 @@ def main() -> int:
     print(
         f"sections {len(states)}: passed {passed}, failed {states.count('FAIL')}, NOT_RUN {states.count('NOT_RUN')}"
     )
-    if report.errors or "FAIL" in states:
-        return 1
-    return 2 if "NOT_RUN" in states else 0
+    code = 1 if report.errors or "FAIL" in states else (2 if "NOT_RUN" in states else 0)
+    path = report.directory() / "validation.json"
+    path.write_text(
+        json.dumps(
+            {"sections": report.sections, "errors": report.errors, "exit_code": code},
+            ensure_ascii=False,
+            indent=2,
+        ),
+        encoding="utf-8",
+    )
+    print(f"RESULT   {path}")
+    return code
 
 
 if __name__ == "__main__":

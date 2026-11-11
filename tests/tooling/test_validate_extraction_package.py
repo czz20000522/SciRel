@@ -1,6 +1,7 @@
 """The extraction package validator accepts a well-formed package and names each defect."""
 
 import json
+import importlib.util
 import os
 from pathlib import Path
 import shutil
@@ -55,6 +56,8 @@ EVIDENCE = """## 测试矩阵
 | --- | --- | --- | --- | --- |
 | 零输入 | 退化 | 解析 | 推导 | passed |
 | 同输入对照 | 正常 | 来源输出 | private/ | passed |
+| 合同下界 | 下界 | 解析 | 边界推导 | passed |
+| 合同上界 | 上界 | 解析 | 渐近推导 | passed |
 """
 
 
@@ -185,6 +188,9 @@ def test_unknown_frozen_commit_is_rejected(setup):
     (package / "PACKAGE.md").write_text(text.replace(commit, "0" * 40), encoding="utf-8")
     code, out = _run(package, repo)
     assert code == 1 and "is not in" in out, out
+    assert "NOT_RUN  contracts" in out, out
+    assert "NOT_RUN  full check" in out, out
+    assert "NOT_RUN  mutation" in out, out
 
 
 def test_done_requires_a_green_full_check(setup):
@@ -271,4 +277,201 @@ def test_declared_correction_of_existing_contract_needs_evidence(setup):
     assert code == 1 and f"{TEMPLATE}: evidence/{TEMPLATE}.md is missing" in out, out
     (package / f"evidence/{TEMPLATE}.md").write_text(EVIDENCE, encoding="utf-8")
     code, out = _run(package, repo)
+    assert code == 1 and "原行为" in out, out
+    (package / f"evidence/{TEMPLATE}.md").write_text(
+        EVIDENCE
+        + "\n## 物理纠正\n- 原行为：旧关系\n- 依据：独立推导\n- 改动：修正系数\n- 前后对比：同输入对比见测试\n",
+        encoding="utf-8",
+    )
+    code, out = _run(package, repo)
     assert code == 2, out
+
+
+@pytest.mark.parametrize("state", ["failed", "blocked", "NOT_RUN", "inapplicable"])
+def test_unpassed_required_evidence_is_not_admission(setup, state):
+    package, repo = setup
+    (package / f"evidence/{NEW_ID}.md").write_text(EVIDENCE.replace("passed", state))
+    code, out = _run(package, repo)
+    assert code == 1 and "evidence" in out, out
+
+
+@pytest.mark.parametrize(
+    "path",
+    [
+        "pyproject.toml",
+        "pytest.ini",
+        "tests/conftest.py",
+        "skills/development/scirel-acceptance/scripts/check_all.py",
+    ],
+)
+def test_scientific_patches_cannot_change_the_admission_rules(setup, path):
+    package, repo = setup
+
+    def change(root):
+        target = root / path
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_text("# validation must not be rewritten by the scientific patch\n")
+
+    _commit_onto_package(package, repo, change)
+    code, out = _run(package, repo)
+    assert code == 1 and path in out, out
+
+
+def test_empty_cases_and_missing_boundaries_are_rejected(setup):
+    package, repo = setup
+    (package / f"evidence/{NEW_ID}.md").write_text("""| 用例 | 类别 | 预期值依据 | 依据出处 | 结果 |
+| --- | --- | --- | --- | --- |
+| | 正常 | 解析 | 推导 | passed |
+""")
+    code, out = _run(package, repo)
+    assert code == 1 and "case name" in out and "下界" in out and "上界" in out, out
+
+
+def _validator():
+    spec = importlib.util.spec_from_file_location("package_validator_probe", SCRIPT)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+def test_an_empty_full_check_is_not_passed(tmp_path, monkeypatch):
+    module = _validator()
+    script = tmp_path / "skills/development/scirel-acceptance/scripts/check_all.py"
+    script.parent.mkdir(parents=True)
+    script.write_text('def main():\n    raise AssertionError("gate never entered")\n')
+    monkeypatch.setattr(
+        module,
+        "_run_in_candidate",
+        lambda tree, command: subprocess.run(
+            [sys.executable, *command[1:]], cwd=tree, capture_output=True, text=True
+        ),
+    )
+    report = module.Report()
+    module.run_full_check(tmp_path, report)
+    assert report.sections[-1][1] == "FAIL", report.sections
+
+
+def test_successful_rerun_supersedes_the_same_case_failure(setup):
+    package, repo = setup
+    history = EVIDENCE.replace(
+        "| 零输入", "| 同输入对照 | 正常 | 来源输出 | private/ | failed |\n| 零输入"
+    )
+    (package / f"evidence/{NEW_ID}.md").write_text(history, encoding="utf-8")
+    code, out = _run(package, repo)
+    assert code == 2, out
+
+
+def test_old_failed_independent_evidence_does_not_upgrade_source_only_reruns(setup):
+    package, repo = setup
+    current = EVIDENCE.replace("| 解析 |", "| 来源输出 |")
+    current = current.replace(
+        "| 零输入 |", "| 零输入 | 退化 | 解析 | 推导 | failed |\n| 零输入 |", 1
+    )
+    (package / f"evidence/{NEW_ID}.md").write_text(current, encoding="utf-8")
+    code, out = _run(package, repo)
+    assert code == 2 and "1 with source-output evidence only" in out, out
+
+
+def _acceptance_result(module, directory):
+    records = []
+    for index, step in enumerate(module.acceptance_steps(directory)):
+        log = directory / f"step-{index}.log"
+        log.write_text(f"complete output for {step.name}\n", encoding="utf-8")
+        records.append({"name": step.name, "status": "PASS", "returncode": 0, "log": str(log)})
+    return {
+        "schema": "scirel.acceptance.v1",
+        "steps": records,
+        "exit_code": 0,
+        "tests": {
+            "collected": 2,
+            "selected": 2,
+            "deselected": 0,
+            "passed": 2,
+            "failed": 0,
+            "error": 0,
+            "skipped": 0,
+            "xfailed": 0,
+            "xpassed": 0,
+            "consistent": True,
+            "skip_reasons": {},
+        },
+    }
+
+
+@pytest.mark.parametrize(
+    "defect", [None, "nonzero", "missing step", "missing counts", "NOT_RUN", "missing output"]
+)
+def test_full_result_protocol_preserves_the_actual_output(tmp_path, monkeypatch, defect):
+    """Exercise the report consumer; this fixture is not a real package acceptance run."""
+    module = _validator()
+    report = module.Report()
+    report.output_dir = tmp_path
+    result = _acceptance_result(module, tmp_path)
+    code = 0
+    if defect == "nonzero":
+        code = result["exit_code"] = 1
+        result["steps"][0].update(status="FAIL", returncode=1)
+    elif defect == "missing step":
+        result["steps"].pop()
+    elif defect == "missing counts":
+        result["tests"] = None
+    elif defect == "NOT_RUN":
+        result["steps"][0].update(status="NOT_RUN", returncode=None)
+    elif defect == "missing output":
+        Path(result["steps"][0]["log"]).unlink()
+
+    def execute(tree, command):
+        Path(command[-1]).write_text(json.dumps(result), encoding="utf-8")
+        return subprocess.CompletedProcess(
+            command, code, "earliest cause: fixture diagnostic\n", ""
+        )
+
+    monkeypatch.setattr(module, "_run_in_candidate", execute)
+    module.run_full_check(tmp_path, report)
+    assert report.sections[-1][1] == ("PASS" if defect is None else "FAIL"), report.errors
+    assert "earliest cause" in (tmp_path / "full-check.log").read_text()
+    if defect is None:
+        assert "selected 2" in report.sections[-1][2]
+
+
+def test_candidate_runtime_does_not_rebind_the_callers_environment(tmp_path, monkeypatch):
+    module = _validator()
+    (tmp_path / "scripts").mkdir()
+    shutil.copy(ROOT / "scripts/dev.py", tmp_path / "scripts/dev.py")
+    shutil.copy(ROOT / ".python-version", tmp_path / ".python-version")
+    source = tmp_path / "src"
+    source.mkdir()
+    (source / "probe_candidate.py").write_text("VALUE = 'patched checkout'\n")
+    monkeypatch.setenv("UV_PROJECT_ENVIRONMENT", "caller-environment-must-not-change")
+    monkeypatch.setenv("PYTHONPATH", "caller-source-must-not-load")
+    env = module._candidate_environment(tmp_path)
+    assert Path(env["UV_PROJECT_ENVIRONMENT"]) == tmp_path / ".runtime/venv"
+    assert Path(env["TMPDIR"]) == tmp_path / ".runtime/tmp"
+    assert env["PYTHONPATH"] == str(source)
+    done = subprocess.run(
+        [sys.executable, "-B", "-c", "import probe_candidate; print(probe_candidate.VALUE)"],
+        env=env,
+        cwd=tmp_path,
+        capture_output=True,
+        text=True,
+    )
+    assert done.returncode == 0 and done.stdout.strip() == "patched checkout", done.stderr
+    (tmp_path / "pyproject.toml").write_text(
+        '[project]\nname="candidate-probe"\nversion="0"\nrequires-python=">=3.12"\n'
+        "[dependency-groups]\ntest=[]\n",
+        encoding="utf-8",
+    )
+    locked = subprocess.run(["uv", "lock"], cwd=tmp_path, env=env, capture_output=True, text=True)
+    assert locked.returncode == 0, locked.stdout + locked.stderr
+    actual = module._run_in_candidate(
+        tmp_path,
+        [
+            "python",
+            "-B",
+            "-c",
+            "import probe_candidate, sys; print(probe_candidate.VALUE); print(sys.prefix)",
+        ],
+    )
+    assert actual.returncode == 0, actual.stdout + actual.stderr
+    assert actual.stdout.splitlines() == ["patched checkout", str(tmp_path / ".runtime/venv")]
+    assert os.environ["UV_PROJECT_ENVIRONMENT"] == "caller-environment-must-not-change"
