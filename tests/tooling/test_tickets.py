@@ -233,6 +233,21 @@ def test_base_revision_catches_a_skipped_step_and_a_deleted_ticket(tmp_path):
         tickets.base_texts(root, "no-such-rev")
 
 
+def test_a_single_file_argument_does_not_report_its_siblings_as_deleted(tmp_path):
+    root = tmp_path / "tickets"
+    one = _write(root, "physics-dispute", "T-2026-0001.md", OPEN)
+    _write(root, "physics-dispute", "T-2026-0002.md", OPEN.replace("0001", "0002"))
+    _git(tmp_path, "init", "--quiet")
+    _git(tmp_path, "add", ".")
+    _git(tmp_path, "commit", "--quiet", "-m", "base")
+
+    assert tickets.check_files([one], base=tickets.base_for([one], "HEAD")) == []
+    (root / "physics-dispute" / "T-2026-0002.md").unlink()
+    assert tickets.check_files([one], base=tickets.base_for([one], "HEAD")) == []
+    errors = tickets.check_files([one], base=tickets.base_for([root], "HEAD"))
+    assert any("T-2026-0002.md: tickets are never deleted" in e for e in errors)
+
+
 def test_repository_tickets_follow_the_format():
     files = sorted(p for p in (ROOT / "tickets").rglob("*.md") if p.name != "README.md")
     assert files, "tickets/ holds at least the first real ticket"

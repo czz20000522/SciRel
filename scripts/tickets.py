@@ -247,6 +247,23 @@ def base_texts(root: Path, base: str) -> dict[Path, str]:
     return texts
 
 
+def base_for(paths: list[Path], base: str) -> dict[Path, str]:
+    """Return the baseline texts in the scope of ``paths``.
+
+    A directory covers every ticket under it, so a ticket deleted there is reported. A file
+    covers only itself: its siblings are outside the requested scope and must not be reported
+    as deleted.
+    """
+    texts: dict[Path, str] = {}
+    for path in paths:
+        if path.is_dir():
+            texts.update(base_texts(path, base))
+        else:
+            wanted = path.resolve()
+            texts.update({k: v for k, v in base_texts(path.parent, base).items() if k == wanted})
+    return texts
+
+
 def check_files(files: list[Path], *, base: dict[Path, str] | None = None) -> list[str]:
     """Return every error of the repository tickets ``files``, prefixed with their path."""
     errors = []
@@ -296,9 +313,7 @@ def main() -> int:
         try:
             base = None
             if args.base:
-                base = {}
-                for path in args.paths:
-                    base.update(base_texts(path if path.is_dir() else path.parent, args.base))
+                base = base_for(args.paths, args.base)
         except TicketError as error:
             print(f"FAIL {error}")
             return 1
