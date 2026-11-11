@@ -904,15 +904,17 @@
   },
   {
    "applicability": {
-    "excluded": [
-     "本页只覆盖声明的库仑对数代数，不提供碰撞频率组合。",
-     "零或负对数不能解释为有效弱耦合碰撞物理；不提供实验标定或分区切换模型。"
-    ],
     "preconditions": [
-     "T_e、n_e 均为正有限值，温度以 keV、密度以 m^-3 输入。"
+     "T_e、n_e 均为正有限值，温度以 keV、密度以 m^-3 输入。",
+     "高于 10 eV 时调用者接受高温（量子截止）分支：本关系是 NRL 在 T_e > 10 Z² eV 的形式，本签名 Z 为 1，故边界是 10 eV，低于它会发告警。"
     ],
     "supported": [
-     "指定关系及广播形状上的有限 NumPy 计算。"
+     "量子截止分支上（高于 NRL 边界 T_e ≈ 10 Z² eV，即 10 eV）的有限 NumPy 计算及广播形状。"
+    ],
+    "excluded": [
+     "本页只覆盖声明的库仑对数代数，不提供碰撞频率组合。",
+     "零或负对数不能解释为有效弱耦合碰撞物理；不提供实验标定或分区切换模型。",
+     "不提供低温经典截止支（NRL：23 − ln(n_e^0.5 Z T_e^-1.5)，T_e [eV]、n_e [cm^-3]）：低于 10 eV 时返回的量子分支值相对该形式偏高（0.1 eV 约 +49%、1 eV 约 +14%，n_e = 1e19 m^-3），且只发告警。"
     ]
    },
    "asset_id": "scirel.physics.coulomb-ee",
@@ -930,7 +932,7 @@
     "invalid_input": "布尔、字符串、复数、掩码、空数组、非有限值、形状不合或非正输入抛出 ValueError。",
     "nonconvergence": "不适用；直接代数计算。",
     "partial_results": "失败后不返回部分结果。",
-    "runtime_failure": "有限输入计算出不可表示结果时抛出 FloatingPointError，不返回替代值。"
+    "runtime_failure": "有限输入计算出不可表示结果时抛出 FloatingPointError，不返回替代值。任一输入温度低于 10 eV（Z = 1 时量子分支的 NRL 边界）时发 scirel.ApplicabilityWarning；返回值不变。"
    },
    "inputs": [
     {
@@ -961,14 +963,15 @@
      "units": "无量纲"
     }
    ],
-   "source_sha256": "329416725a33447ab9d53e392caa910cc9007b8a930d068cefef5ec22870582b",
+   "source_sha256": "acad936c5b3ca73de89d145002a5a0a72f68f5e1e9de5dfdf5892705f71d959c",
    "summary": "电子-电子库仑对数估计。",
    "verification": {
     "evidence_ceiling": "维护测试仅支持所列关系、形状和指定边界行为，不构成普遍物理标定。",
     "known_limitations": [
      "不声称外部标定或完整碰撞频率组合。",
      "仅覆盖 Wesson 代数和声明的数值边界。",
-     "命名说明：'ee' 是 Wesson 的电子-电子形式，常数为 31.0。Sauter 等（1999）碰撞率中的电子库仑对数 lnΛ_e = 31.3 − ln(√n_e / T_e[eV]) 对应 'ei' 形式（scirel.physics.coulomb-ei，常数 31.3），不是本函数。"
+     "命名说明：'ee' 是 Wesson 的电子-电子形式，常数为 31.0。Sauter 等（1999）碰撞率中的电子库仑对数 lnΛ_e = 31.3 − ln(√n_e / T_e[eV]) 对应 'ei' 形式（scirel.physics.coulomb-ei，常数 31.3），不是本函数。",
+     "NRL 边界 T_e ≈ 10 Z² eV 以下的低温段未实现：低温经典截止支是另一个关系，此处的量子分支值相对它偏高（n_e = 1e19 m^-3 时 0.1 eV 约 +49%）且只发告警。"
     ],
     "scope": [
      "以独立 60 位 Decimal 对数覆盖温度、密度的最小次正规数至最大 float64，并检查尺度变换恒等式。",
@@ -982,15 +985,17 @@
   },
   {
    "applicability": {
-    "excluded": [
-     "本页只覆盖声明的库仑对数代数，不提供碰撞频率组合。",
-     "零或负对数不能解释为有效弱耦合碰撞物理；不提供实验标定或分区切换模型。"
-    ],
     "preconditions": [
-     "T_e、n_e 均为正有限值，温度以 keV、密度以 m^-3 输入。"
+     "T_e、n_e 均为正有限值，温度以 keV、密度以 m^-3 输入。",
+     "高于 10 eV 时调用者接受高温（量子截止）分支：本关系是 NRL 在 T_e > 10 Z² eV 的形式，本签名 Z 为 1，故边界是 10 eV，低于它会发告警。"
     ],
     "supported": [
-     "指定关系及广播形状上的有限 NumPy 计算。"
+     "量子截止分支上（高于 NRL 边界 T_e ≈ 10 Z² eV，即 10 eV）的有限 NumPy 计算及广播形状。"
+    ],
+    "excluded": [
+     "本页只覆盖声明的库仑对数代数，不提供碰撞频率组合。",
+     "零或负对数不能解释为有效弱耦合碰撞物理；不提供实验标定或分区切换模型。",
+     "不提供低温经典截止支（NRL：23 − ln(n_e^0.5 Z T_e^-1.5)，T_e [eV]、n_e [cm^-3]）：低于 10 eV 时返回的量子分支值相对该形式偏高（0.1 eV 约 +49%、1 eV 约 +14%，n_e = 1e19 m^-3），且只发告警。"
     ]
    },
    "asset_id": "scirel.physics.coulomb-ei",
@@ -1008,7 +1013,7 @@
     "invalid_input": "布尔、字符串、复数、掩码、空数组、非有限值、形状不合或非正输入抛出 ValueError。",
     "nonconvergence": "不适用；直接代数计算。",
     "partial_results": "失败后不返回部分结果。",
-    "runtime_failure": "有限输入计算出不可表示结果时抛出 FloatingPointError，不返回替代值。"
+    "runtime_failure": "有限输入计算出不可表示结果时抛出 FloatingPointError，不返回替代值。任一输入温度低于 10 eV（Z = 1 时量子分支的 NRL 边界）时发 scirel.ApplicabilityWarning；返回值不变。"
    },
    "inputs": [
     {
@@ -1039,14 +1044,15 @@
      "units": "无量纲"
     }
    ],
-   "source_sha256": "b7071dccf6dd823563eb55fd0ab1fd457a68a39ea5212af5fc47bd0af0d80a5e",
+   "source_sha256": "fc8df54340b05c6de1ca874955745a156007c148623b14c2a3027e8355a35a2c",
    "summary": "电子-离子库仑对数估计。",
    "verification": {
     "evidence_ceiling": "维护测试仅支持所列关系、形状和指定边界行为，不构成普遍物理标定。",
     "known_limitations": [
      "不声称外部标定或完整碰撞频率组合。",
      "仅覆盖 Wesson 代数和声明的数值边界。",
-     "Sauter 等（1999）在电子碰撞率 ν*_e 中用的 lnΛ_e 就是这个形式（31.3 − ln(√n_e/T_e[eV])，此处 T 以 keV 输入）；'ee' 函数（常数 31.0）是另一种估计。"
+     "Sauter 等（1999）在电子碰撞率 ν*_e 中用的 lnΛ_e 就是这个形式（31.3 − ln(√n_e/T_e[eV])，此处 T 以 keV 输入）；'ee' 函数（常数 31.0）是另一种估计。",
+     "NRL 边界 T_e ≈ 10 Z² eV 以下的低温段未实现：低温经典截止支是另一个关系，此处的量子分支值相对它偏高（n_e = 1e19 m^-3 时 0.1 eV 约 +49%）且只发告警。"
     ],
     "scope": [
      "以独立 60 位 Decimal 对数覆盖温度、密度的最小次正规数至最大 float64，并检查尺度变换恒等式。",

@@ -74,19 +74,21 @@
  ],
  "applicability": {
   "preconditions": [
-   "strictly positive finite T_e in keV and n_e in m^-3"
+   "strictly positive finite T_e in keV and n_e in m^-3",
+   "Above 10 eV the caller accepts the high-temperature (quantum cutoff) branch: the relation is the NRL form for T_e > 10 Z^2 eV, which is 10 eV at Z = 1 for this signature, and warns below it."
   ],
   "supported": [
-   "Finite NumPy evaluation of the declared relation and broadcast shape."
+   "Finite NumPy evaluation of the declared relation and broadcast shape on the quantum-cutoff branch, valid above the NRL boundary T_e ~ 10 Z^2 eV (10 eV here)."
   ],
   "excluded": [
    "Whole-transport evolution, experimental calibration, and implicit coordinate reconstruction.",
-   "Interpreting zero or negative computed logarithms as valid weakly coupled collision physics; physical calibration or a regime-switching model."
+   "Interpreting zero or negative computed logarithms as valid weakly coupled collision physics; physical calibration or a regime-switching model.",
+   "The low-temperature classical-cutoff branch (NRL: 23 - ln(n_e^0.5 Z T_e^-1.5), T_e in eV, n_e in cm^-3) is not provided: below 10 eV the returned quantum-branch value overstates the logarithm relative to that form (about +49% at 0.1 eV and +14% at 1 eV for n_e = 1e19 m^-3) and only warns."
   ]
  },
  "failure_semantics": {
   "invalid_input": "Raises ValueError for boolean/string/complex/masked or empty input, non-finite values, malformed or incompatible shape, and the nonpositive or singular domains named by the callable contract.",
-  "runtime_failure": "Raises FloatingPointError if accepted finite inputs produce an unrepresentable output; no fallback is returned.",
+  "runtime_failure": "Raises FloatingPointError if accepted finite inputs produce an unrepresentable output; no fallback is returned. Emits scirel.ApplicabilityWarning when any input temperature is below 10 eV, the NRL boundary for the quantum branch at Z = 1; the value is returned unchanged.",
   "nonconvergence": "Not applicable; this is a direct algebraic mapping.",
   "partial_results": "No output is returned after an exception."
  },
@@ -105,8 +107,8 @@
  },
  "example": {
   "description": "Run the relation on a finite declared-domain case.",
-  "code": "import numpy as np\nfrom scirel.physics import calculate_log_lambda_ee\nr=calculate_log_lambda_ee(2., 1e19)\nassert np.isfinite(r)",
-  "expected": "A finite dimensionless logarithm"
+  "code": "import warnings\nimport numpy as np\nfrom scirel.physics import calculate_log_lambda_ee\nr=calculate_log_lambda_ee(2., 1e19)\nassert np.isfinite(r)\nwith warnings.catch_warnings(record=True) as caught:\n    warnings.simplefilter('always')\n    low = calculate_log_lambda_ee(0.005, 1e19)\nassert np.isfinite(low) and len(caught) == 1\n",
+  "expected": "A finite Coulomb logarithm for the in-range sample, plus one ApplicabilityWarning for the below-10-eV sample whose value is returned unchanged."
  },
  "verification": {
   "scope": [
@@ -115,13 +117,15 @@
    "Agreement with the canonical SciRel callers and dependencies of this relation."
   ],
   "tests": [
-   "tests/cross_domain/test_algebra_grid.py"
+   "tests/cross_domain/test_algebra_grid.py",
+   "tests/physics/test_coulomb_logs_low_temperature.py"
   ],
   "evidence_ceiling": "Maintained tests establish the named relation, shape and selected boundary behavior only; they do not establish global physical calibration.",
   "known_limitations": [
    "No external calibration or collision-frequency composition is claimed.",
    "Only the Wesson algebra and declared numerical boundaries are covered.",
-   "Naming: 'ee' is Wesson's electron-electron form with constant 31.0. The electron Coulomb logarithm in Sauter et al. (1999) collisionality, lnLambda_e = 31.3 - ln(sqrt(n_e)/T_e[eV]), is the 'ei' form (scirel.physics.coulomb-ei, constant 31.3), not this one."
+   "Naming: 'ee' is Wesson's electron-electron form with constant 31.0. The electron Coulomb logarithm in Sauter et al. (1999) collisionality, lnLambda_e = 31.3 - ln(sqrt(n_e)/T_e[eV]), is the 'ei' form (scirel.physics.coulomb-ei, constant 31.3), not this one.",
+   "The low-temperature regime below the NRL boundary T_e ~ 10 Z^2 eV is not represented: the classical-cutoff branch (NRL 23 - ln(n_e^0.5 Z T_e^-1.5)) is a separate relation, so the returned quantum-branch value overstates the logarithm relative to it (about +49% at 0.1 eV for n_e = 1e19 m^-3) and only warns."
   ]
  }
 }
