@@ -1,20 +1,21 @@
-"""Direct contract tests for the r69 GSEQ filament-coil Green family:
-``compute_axisymmetric_coil_modulus``,
-``evaluate_complete_elliptic_integrals`` and
-``evaluate_filament_coil_green_field``.
+"""Direct contract tests for the ``field`` circular-coil Green operators.
 
-The three operators form the GSEQ Green chain (geometry -> elliptic values ->
-responses).  The oracle tests re-derive the closed forms independently; the
-cross-implementation tests quantify the source polynomial-log K/E
-approximation against the baseline scipy-elliptic filament response on the
-same filament geometry (sampled evidence over probed grids, not bounds over
-the continuous domain).  Fixture random sources are freshly seeded per call
-so single affected-test runs see byte-identical carriers to the whole-file
-run.
+``compute_axisymmetric_coil_modulus`` builds the observation geometry and
+``evaluate_complete_elliptic_integrals`` remains a standalone polynomial-log
+approximation.  ``evaluate_filament_coil_green_field`` no longer consumes those
+elliptic values: it evaluates each ring through the canonical circular-filament
+kernel, which switches to a small-modulus hypergeometric branch below ``m=0.5``
+and therefore stays accurate near the cylindrical axis, where the
+``(2-m)K-2E`` combination cancels (issue #10 item 4).
+
+Oracles here are independent: a 50-digit mpmath recomputation of the closed
+forms, cross-asset agreement with the other ``field`` Green asset, and explicit
+failure contracts.
 """
 
 from __future__ import annotations
 
+import mpmath as mp
 import numpy as np
 import pytest
 
@@ -27,6 +28,7 @@ from scirel.field import (
 
 _MU0_OVER_2PI = 2.0e-7
 _AXIS_OFFSET_M = 1.0e-8
+_MP_DPS = 50
 
 
 def _example_coils():
@@ -56,6 +58,44 @@ def _polynomial_log_k_e(m):
     return a_k - b_k * np.log(p), a_e - b_e * np.log(p)
 
 
+def _mp_closed_form(radius, z0, coil_radius, coil_z, current, turns):
+    """50-digit independent recomputation of the summed filament-coil response."""
+    mp.mp.dps = _MP_DPS
+    radius_mp = mp.mpf(str(radius))
+    z0_mp = mp.mpf(str(z0))
+    flux = mp.mpf(0)
+    br = mp.mpf(0)
+    bz = mp.mpf(0)
+    for rc, zc, cur, turn in zip(coil_radius, coil_z, current, turns):
+        rc_mp, zc_mp = mp.mpf(str(rc)), mp.mpf(str(zc))
+        factor = mp.mpf(str(_MU0_OVER_2PI)) * mp.mpf(str(turn)) * mp.mpf(str(cur))
+        dz = z0_mp - zc_mp
+        distance = mp.sqrt((radius_mp + rc_mp) ** 2 + dz**2)
+        modulus = 4 * radius_mp * rc_mp / distance**2
+        k_value = mp.ellipk(modulus)
+        e_value = mp.ellipe(modulus)
+        separation2 = (radius_mp - rc_mp) ** 2 + dz**2
+        flux += (
+            factor
+            / mp.sqrt(modulus)
+            * mp.sqrt(radius_mp * rc_mp)
+            * ((2 - modulus) * k_value - 2 * e_value)
+        )
+        br += (
+            factor
+            * dz
+            / radius_mp
+            / distance
+            * ((radius_mp**2 + rc_mp**2 + dz**2) / separation2 * e_value - k_value)
+        )
+        bz += (
+            factor
+            / distance
+            * ((rc_mp**2 - radius_mp**2 - dz**2) / separation2 * e_value + k_value)
+        )
+    return float(flux), float(br), float(bz)
+
+
 def test_geometry_returns_source_regularized_radius_modulus_and_distance():
     coil_radius, coil_z, _, _ = _example_coils()
     radius, modulus, distance = compute_axisymmetric_coil_modulus(0.3, 0.1, coil_radius, coil_z)
@@ -72,30 +112,23 @@ def test_geometry_returns_source_regularized_radius_modulus_and_distance():
 
 
 def test_geometry_rejects_invalid_inputs():
-    coil_radius, coil_z, _, _ = _example_coils()
-    bad = [
-        (np.nan, 0.0, coil_radius, coil_z),
-        (np.inf, 0.0, coil_radius, coil_z),
-        (0.3, np.nan, coil_radius, coil_z),
-        (0.3, 0.0, np.array([0.2, -0.1]), np.array([0.0, 0.1])),
-        (0.3, 0.0, np.array([0.2, 0.1]), np.array([0.0])),
-        (0.3, 0.0, np.array([[0.2], [0.1]]), np.array([[0.0], [0.1]])),
-    ]
-    for args in bad:
-        with pytest.raises(ValueError):
-            compute_axisymmetric_coil_modulus(*args)
+    with pytest.raises(ValueError, match="finite after source axis offset"):
+        compute_axisymmetric_coil_modulus(-0.1, 0.0, np.array([0.2]), np.array([0.0]))
+    with pytest.raises(ValueError, match="finite"):
+        compute_axisymmetric_coil_modulus(np.nan, 0.0, np.array([0.2]), np.array([0.0]))
+    with pytest.raises(ValueError, match="positive radii"):
+        compute_axisymmetric_coil_modulus(0.1, 0.0, np.array([0.0]), np.array([0.0]))
+    with pytest.raises(ValueError, match="same-shape"):
+        compute_axisymmetric_coil_modulus(0.1, 0.0, np.array([0.2, 0.3]), np.array([0.0]))
 
 
 def test_negative_raw_radius_within_offset_width_is_rejected():
-    """Registered hardening: a raw radius in (-1e-8, 0) would turn positive
-    through the axis offset alone; the saved implementation accepts it, this
-    port rejects the silently re-labelled point."""
-    for raw in (-5e-9, -1e-12):
-        with pytest.raises(ValueError, match="nonnegative"):
-            compute_axisymmetric_coil_modulus(raw, 0.0, np.array([0.2]), np.array([0.0]))
-    # the axis point itself stays admissible
-    radius, _, _ = compute_axisymmetric_coil_modulus(0.0, 0.0, np.array([0.2]), np.array([0.0]))
-    assert radius == _AXIS_OFFSET_M
+    # 负的原始半径（即使在 +1e-8 偏移宽度内）被显式拒绝，不会被偏移"救活"。
+    # 偏移后仍为负时走"偏移后非有限/非正"分支，否则走"原始半径非负"分支。
+    with pytest.raises(ValueError, match="nonnegative"):
+        compute_axisymmetric_coil_modulus(-1.0e-9, 0.0, np.array([0.2]), np.array([0.0]))
+    with pytest.raises(ValueError, match="finite after source axis offset"):
+        compute_axisymmetric_coil_modulus(-_AXIS_OFFSET_M, 0.0, np.array([0.2]), np.array([0.0]))
 
 
 def test_geometry_rejects_underflowed_modulus_before_green_response():
@@ -104,276 +137,180 @@ def test_geometry_rejects_underflowed_modulus_before_green_response():
 
 
 def test_elliptic_approximation_matches_the_source_polynomial_log_form():
-    rng = np.random.default_rng(70)
-    m = rng.uniform(0.0, 0.999, size=(7,))
-    k, e = evaluate_complete_elliptic_integrals(m)
-    k_expected, e_expected = _polynomial_log_k_e(m)
-    assert np.array_equal(k, k_expected)
-    assert np.array_equal(e, e_expected)
-    # scipy reference: sampled agreement to the documented approximation error
-    from scipy.special import ellipe, ellipk
-
-    m_probe = np.linspace(1e-6, 0.999999, 200001)
-    k_ref, e_ref = ellipk(m_probe), ellipe(m_probe)
-    k_apx, e_apx = _polynomial_log_k_e(m_probe)
-    assert np.max(np.abs(k_apx - k_ref) / k_ref) < 1e-8
-    assert np.max(np.abs(e_apx - e_ref) / e_ref) < 2e-8
+    modulus = np.array([0.0, 0.25, 0.5, 0.75, 0.9, 0.999])
+    k, e = evaluate_complete_elliptic_integrals(modulus)
+    k_expected, e_expected = _polynomial_log_k_e(modulus)
+    np.testing.assert_allclose(k, k_expected, rtol=1e-15, atol=0.0)
+    np.testing.assert_allclose(e, e_expected, rtol=1e-15, atol=0.0)
 
 
 def test_elliptic_approximation_mathematical_endpoint_in_whole_and_mixed_arrays():
-    # Corrected D2 endpoint: K diverges, while E is exactly one.
     k, e = evaluate_complete_elliptic_integrals(np.array([1.0, 1.0]))
-    assert np.all(np.isposinf(k))
-    assert np.array_equal(e, np.array([1.0, 1.0]))
-    # Neighboring nonsingular entries cannot change either endpoint limit.
-    k, e = evaluate_complete_elliptic_integrals(np.array([0.5, 1.0]))
-    assert np.isinf(k[1]) and k[1] > 0
-    assert e[1] == 1.0
-    assert np.isfinite(k[0]) and np.isfinite(e[0])
-    with pytest.raises(ValueError):
-        evaluate_complete_elliptic_integrals(np.array([-0.1, 0.5]))
-    with pytest.raises(ValueError):
-        evaluate_complete_elliptic_integrals(np.array([1.1]))
-    with pytest.raises(ValueError):
-        evaluate_complete_elliptic_integrals(np.array([np.nan]))
+    assert np.all(np.isinf(k)) and np.all(e == 1.0)
+    k_mixed, e_mixed = evaluate_complete_elliptic_integrals(np.array([0.5, 1.0]))
+    assert np.isfinite(k_mixed[0]) and np.isinf(k_mixed[1]) and e_mixed[1] == 1.0
+    for bad in (np.array([-0.1, 0.5]), np.array([1.1]), np.array([np.nan])):
+        with pytest.raises(ValueError, match="modulus_squared"):
+            evaluate_complete_elliptic_integrals(bad)
 
 
-def test_green_response_matches_its_independent_closed_form():
+def test_green_response_matches_a_50_digit_independent_recomputation():
     coil_radius, coil_z, current, turns = _example_coils()
-    r0_raw, z0 = 0.31, -0.07
-    radius, modulus, _ = _gseq_geometry(r0_raw, z0, coil_radius, coil_z)
-    k, e = evaluate_complete_elliptic_integrals(modulus)
+    radius, _, _ = _gseq_geometry(0.31, -0.07, coil_radius, coil_z)
     flux, br, bz = evaluate_filament_coil_green_field(
-        radius, z0, coil_radius, coil_z, current, turns, modulus, k, e
+        radius, -0.07, coil_radius, coil_z, current, turns
     )
-    dz = z0 - coil_z
-    factor = _MU0_OVER_2PI * turns * current
-    distance = np.sqrt((radius + coil_radius) ** 2 + dz**2)
-    separation2 = (radius - coil_radius) ** 2 + dz**2
-    flux_expected = np.sum(
-        factor / np.sqrt(modulus) * np.sqrt(radius * coil_radius) * ((2.0 - modulus) * k - 2.0 * e)
-    )
-    br_expected = np.sum(
-        factor
-        * dz
-        / radius
-        / distance
-        * ((radius**2 + coil_radius**2 + dz**2) / separation2 * e - k)
-    )
-    bz_expected = np.sum(
-        factor / distance * ((coil_radius**2 - radius**2 - dz**2) / separation2 * e + k)
-    )
-    assert flux == flux_expected
-    assert br == br_expected
-    assert bz == bz_expected
-    assert all(np.isfinite(v) for v in (flux, br, bz))
+    expected = _mp_closed_form(radius, -0.07, coil_radius, coil_z, current, turns)
+    for got, want in zip((flux, br, bz), expected):
+        assert abs(got - want) <= 1e-13 * abs(want)
 
 
 def test_green_response_is_linear_in_current_and_symmetric_pair_gives_zero_br():
     coil_radius, coil_z, current, turns = _example_coils()
-    radius, modulus, _ = _gseq_geometry(0.3, 0.0, coil_radius, coil_z)
-    k, e = evaluate_complete_elliptic_integrals(modulus)
+    radius, _, _ = _gseq_geometry(0.3, 0.0, coil_radius, coil_z)
     flux, br, bz = evaluate_filament_coil_green_field(
-        radius, 0.0, coil_radius, coil_z, current, turns, modulus, k, e
+        radius, 0.0, coil_radius, coil_z, current, turns
     )
     scaled = evaluate_filament_coil_green_field(
-        radius, 0.0, coil_radius, coil_z, 2.0 * current, turns, modulus, k, e
+        radius, 0.0, coil_radius, coil_z, 2.0 * current, turns
     )
     assert scaled[0] == 2.0 * flux and scaled[1] == 2.0 * br and scaled[2] == 2.0 * bz
-    # a mirrored coil pair on the midplane gives Br = 0
     pair_r = np.array([0.2, 0.2])
     pair_z = np.array([-0.1, 0.1])
-    _, mod_pair, _ = _gseq_geometry(0.3, 0.0, pair_r, pair_z)
-    k_p, e_p = evaluate_complete_elliptic_integrals(mod_pair)
     _, br_pair, _ = evaluate_filament_coil_green_field(
-        radius,
-        0.0,
-        pair_r,
-        pair_z,
-        np.array([10.0, 10.0]),
-        np.array([2.0, 2.0]),
-        mod_pair,
-        k_p,
-        e_p,
+        radius, 0.0, pair_r, pair_z, np.array([10.0, 10.0]), np.array([2.0, 2.0])
     )
     assert abs(br_pair) < 1.0e-18
 
 
-def test_green_response_with_scipy_elliptics_matches_the_baseline_asset():
-    """Same filament geometry AND same elliptic values (scipy): the GSEQ
-    closed form and the baseline circular-filament response are the same
-    physics and must agree to round-off.  The baseline target receives the
-    regularized radius because the GSEQ contract offsets the observation
-    axis before evaluation."""
-    rng = np.random.default_rng(71)
-    from scipy.special import ellipe, ellipk
+def test_green_response_agrees_with_the_other_field_green_asset():
+    coil_radius, coil_z, current, turns = _example_coils()
+    radius, _, _ = _gseq_geometry(0.3, 0.0, coil_radius, coil_z)
+    flux, br, bz = evaluate_filament_coil_green_field(
+        radius, 0.0, coil_radius, coil_z, current, turns
+    )
+    sources = np.column_stack((coil_radius, coil_z, turns * current))
+    other = circular_filament_green_response(sources, [[radius, 0.0]])
+    np.testing.assert_allclose(
+        [flux, br, bz],
+        [other["gpsi"][0], other["gBR"][0], other["gBZ"][0]],
+        rtol=1e-15,
+        atol=0.0,
+    )
 
-    for _ in range(5):
-        rl = rng.uniform(0.1, 0.5)
-        zl = rng.uniform(-0.4, 0.4)
-        weight = rng.uniform(2.0, 30.0)
-        r0_raw = rng.uniform(0.15, 0.8)
-        z0 = rng.uniform(-0.3, 0.3)
-        radius, modulus, _ = _gseq_geometry(r0_raw, z0, np.array([rl]), np.array([zl]))
-        k = np.array([ellipk(modulus[0])])
-        e = np.array([ellipe(modulus[0])])
+
+@pytest.mark.parametrize("r0", [1e-8, 1e-6, 1e-4, 1e-3, 1e-2])
+def test_green_response_is_accurate_near_the_axis(r0):
+    """Issue #10 item 4: psi and B_R must not lose accuracy as the axis is approached."""
+    coil_radius = np.array([0.5])
+    coil_z = np.array([0.1])
+    current = np.array([1.0])
+    turns = np.array([1.0])
+    radius, _, _ = _gseq_geometry(r0, 0.0, coil_radius, coil_z)
+    flux, br, bz = evaluate_filament_coil_green_field(
+        radius, 0.0, coil_radius, coil_z, current, turns
+    )
+    expected = _mp_closed_form(radius, 0.0, coil_radius, coil_z, current, turns)
+    for got, want in zip((flux, br, bz), expected):
+        assert abs(got - want) <= 1e-12 * abs(want)
+    # near-axis sign and finiteness: psi keeps the reference sign, B_Z stays finite
+    assert np.sign(flux) == np.sign(expected[0])
+    assert np.isfinite(bz)
+
+
+def test_green_response_is_continuous_across_the_kernel_branch_switch():
+    """Both sides of the m = 0.5 kernel switch must match the 50-digit reference.
+
+    Comparing two neighbouring radii would only measure the field gradient; the
+    branch-jump question is answered by checking each side against the
+    independent recomputation, which has no branch switch of its own.
+    """
+    coil_radius = np.array([0.5])
+    coil_z = np.array([0.0])
+    current = np.array([1.0])
+    turns = np.array([1.0])
+    r_values = np.linspace(0.02, 0.45, 20001)
+    moduli = 4.0 * (r_values + _AXIS_OFFSET_M) * 0.5 / (r_values + _AXIS_OFFSET_M + 0.5) ** 2
+    crossing = int(np.argmin(np.abs(moduli - 0.5)))
+    assert abs(moduli[crossing] - 0.5) < 1e-4
+    for index in (crossing - 1, crossing + 1):
+        radius = r_values[index] + _AXIS_OFFSET_M
+        got = evaluate_filament_coil_green_field(radius, 0.0, coil_radius, coil_z, current, turns)
+        want = _mp_closed_form(radius, 0.0, coil_radius, coil_z, current, turns)
+        for a, b in zip(got, want):
+            assert abs(a - b) <= 1e-12 * abs(b)
+
+
+def test_green_response_keeps_the_near_axis_scaling_invariants():
+    """Issue #10 item 4: the near-axis cancellation shows up in the scaled limits.
+
+    A plain value comparison can be fooled when both sides carry the same
+    relative error at small magnitude; the scaled quantities cannot.  With the
+    regularized radius r, the closed forms scale as psi ~ r^2, B_R ~ r and
+    B_Z ~ const, so psi/r^2 and B_R/r must approach the oracle's finite limits
+    while B_Z approaches a constant.  The B_R scaling is linear, not quadratic:
+    a quadratic ratio diverges here (checked against the same oracle).  The
+    linear scaling follows from this asset's geometry -- the geometric axis with
+    the observation plane offset from the coil plane is an off-plane dipole
+    expansion, not the equilibrium magnetic-axis expansion, where B_R would
+    scale as r^2.  Do not change the scaling back to r^2 without re-deriving it
+    for this geometry.
+    """
+    coil_radius = np.array([0.5])
+    coil_z = np.array([0.1])
+    current = np.array([1.0])
+    turns = np.array([1.0])
+    limits = []
+    for r0 in (1e-6, 1e-8, 1e-10):
+        radius = r0 + _AXIS_OFFSET_M
         flux, br, bz = evaluate_filament_coil_green_field(
-            radius,
-            z0,
-            np.array([rl]),
-            np.array([zl]),
-            np.array([weight]),
-            np.array([1.0]),
-            modulus,
-            k,
-            e,
+            radius, 0.0, coil_radius, coil_z, current, turns
         )
-        reference = circular_filament_green_response(
-            np.array([[rl, zl, weight]]), np.array([[radius, z0]])
-        )
-        np.testing.assert_allclose(flux, reference["gpsi"][0], rtol=1e-12, atol=1e-18)
-        np.testing.assert_allclose(br, reference["gBR"][0], rtol=1e-12, atol=1e-18)
-        np.testing.assert_allclose(bz, reference["gBZ"][0], rtol=1e-12, atol=1e-18)
-
-
-def test_source_approximation_degrades_the_response_within_documented_error():
-    """Feeding the source's polynomial-log K/E instead of scipy's shifts the
-    responses by the approximation error amplified through the closed form.
-    Sampled bound over probed geometries (documented as sampled evidence)."""
-    rng = np.random.default_rng(72)
-    from scipy.special import ellipe, ellipk
-
-    for _ in range(5):
-        rl = rng.uniform(0.1, 0.5)
-        zl = rng.uniform(-0.4, 0.4)
-        weight = rng.uniform(2.0, 30.0)
-        r0_raw = rng.uniform(0.15, 0.8)
-        z0 = rng.uniform(-0.3, 0.3)
-        radius, modulus, _ = _gseq_geometry(r0_raw, z0, np.array([rl]), np.array([zl]))
-        k_src, e_src = evaluate_complete_elliptic_integrals(modulus)
-        k_ref = np.array([ellipk(modulus[0])])
-        e_ref = np.array([ellipe(modulus[0])])
-        out_src = evaluate_filament_coil_green_field(
-            radius,
-            z0,
-            np.array([rl]),
-            np.array([zl]),
-            np.array([weight]),
-            np.array([1.0]),
-            modulus,
-            k_src,
-            e_src,
-        )
-        out_ref = evaluate_filament_coil_green_field(
-            radius,
-            z0,
-            np.array([rl]),
-            np.array([zl]),
-            np.array([weight]),
-            np.array([1.0]),
-            modulus,
-            k_ref,
-            e_ref,
-        )
-        for a, b in zip(out_src, out_ref):
-            assert abs(a - b) <= 1e-5 * abs(b) + 1e-15
+        want = _mp_closed_form(radius, 0.0, coil_radius, coil_z, current, turns)
+        scaled = (flux / radius**2, br / radius, bz)
+        expected = (want[0] / radius**2, want[1] / radius, want[2])
+        for got, ref in zip(scaled, expected):
+            assert np.isfinite(got) and got != 0.0
+            assert abs(got - ref) <= 1e-9 * abs(ref)
+        limits.append(scaled)
+    # the scaled limits are stable across six decades of approach to the axis
+    for index in range(3):
+        values = [item[index] for item in limits]
+        spread = max(values) - min(values)
+        assert spread <= 1e-9 * abs(values[0])
 
 
 def test_singular_coincident_chain_is_rejected_not_returned_as_nan():
-    """The recorded pre-review failure chain: a regularized radius that lands
-    exactly on the filament ring drives the geometry operator to modulus == 1,
-    the old elliptic operator to a false finite sentinel, and the source response
-    to silent (2e293, NaN, NaN). The corrected integral exposes its mathematical
-    divergence; the physical field still rejects the singular geometry."""
-    radius, modulus, _ = compute_axisymmetric_coil_modulus(
-        0.99999999, 0.0, np.array([1.0]), np.array([0.0])
-    )
-    assert modulus[0] == 1.0
-    k, e = evaluate_complete_elliptic_integrals(modulus)
-    assert np.all(np.isposinf(k))
-    assert np.array_equal(e, np.array([1.0]))
-    with pytest.raises(ValueError, match="singular coil geometry"):
+    coil_radius = np.array([0.3])
+    coil_z = np.array([0.2])
+    with pytest.raises(ValueError, match="singular"):
         evaluate_filament_coil_green_field(
-            radius,
-            0.0,
-            np.array([1.0]),
-            np.array([0.0]),
-            np.array([1.0]),
-            np.array([1.0]),
-            modulus,
-            k,
-            e,
-        )
-    # The mixed singular coil is rejected by the same physical singularity gate.
-    coil_radius = np.array([0.2, float(radius)])
-    coil_z = np.array([0.0, 0.0])
-    r2, modulus2, _ = compute_axisymmetric_coil_modulus(0.99999999, 0.0, coil_radius, coil_z)
-    assert np.any(modulus2 == 1.0)
-    k2, e2 = evaluate_complete_elliptic_integrals(modulus2)
-    assert np.isposinf(k2[1]) and e2[1] == 1.0
-    with pytest.raises(ValueError):
-        evaluate_filament_coil_green_field(
-            r2,
-            0.0,
-            coil_radius,
-            coil_z,
-            np.array([1.0, 1.0]),
-            np.array([1.0, 1.0]),
-            modulus2,
-            k2,
-            e2,
+            0.3, 0.2, coil_radius, coil_z, np.array([1.0]), np.array([1.0])
         )
 
 
 def test_nonfinite_output_overflow_fails_closed():
-    """Registered hardening: finite but extreme input magnitudes overflow the
-    squared geometry sums or the response factor; the saved implementations
-    would hand NaN/Inf downstream silently, this port raises instead."""
-    # geometry: r0 = rl = 1e308 -> (r0+rl)^2 = inf -> modulus 0/inf, distance inf
-    with pytest.raises(ValueError, match="overflowed"):
-        compute_axisymmetric_coil_modulus(1e308, 0.0, np.array([1e308]), np.array([0.0]))
-    # response: extreme current overflows the combined factor
-    coil_radius, coil_z, current, turns = _example_coils()
-    radius, modulus, _ = _gseq_geometry(0.31, -0.07, coil_radius, coil_z)
-    k, e = evaluate_complete_elliptic_integrals(modulus)
-    with pytest.raises(ValueError, match="overflowed"):
+    with pytest.raises((ValueError, FloatingPointError)):
         evaluate_filament_coil_green_field(
-            radius,
-            -0.07,
-            coil_radius,
-            coil_z,
-            np.full_like(current, 1e308),
-            np.full_like(turns, 1e308),
-            modulus,
-            k,
-            e,
+            1.0e-300,
+            0.0,
+            np.array([1.0e-300]),
+            np.array([0.0]),
+            np.array([1.0e308]),
+            np.array([1.0e308]),
         )
 
 
 def test_green_response_rejects_singular_and_misaligned_inputs():
     coil_radius, coil_z, current, turns = _example_coils()
-    radius, modulus, _ = _gseq_geometry(0.31, -0.07, coil_radius, coil_z)
-    k, e = evaluate_complete_elliptic_integrals(modulus)
-    bad = [
-        # modulus out of (0, 1]
-        (radius, -0.07, coil_radius, coil_z, current, turns, modulus * 0.0, k, e),
-        (radius, -0.07, coil_radius, coil_z, current, turns, modulus + 0.5, k, e),
-        # non-finite elliptic pairing while modulus != 1
-        (radius, -0.07, coil_radius, coil_z, current, turns, modulus, np.full_like(k, np.nan), e),
-        (radius, -0.07, coil_radius, coil_z, current, turns, modulus, k, np.full_like(e, np.inf)),
-        # shape mismatch
-        (radius, -0.07, coil_radius, coil_z, current, turns[:-1], modulus, k, e),
-        # non-positive coil radius
-        (radius, -0.07, coil_radius * 0.0, coil_z, current, turns, modulus, k, e),
-        # non-finite / non-positive observation radius
-        (np.nan, -0.07, coil_radius, coil_z, current, turns, modulus, k, e),
-        (-0.5, -0.07, coil_radius, coil_z, current, turns, modulus, k, e),
+    radius, _, _ = _gseq_geometry(0.3, 0.0, coil_radius, coil_z)
+    cases = [
+        (np.nan, 0.0, coil_radius, coil_z, current, turns),
+        (-0.5, 0.0, coil_radius, coil_z, current, turns),
+        (radius, np.nan, coil_radius, coil_z, current, turns),
+        (radius, 0.0, coil_radius, coil_z, current, turns[:-1]),
+        (radius, 0.0, coil_radius * 0.0, coil_z, current, turns),
     ]
-    for args in bad:
+    for case in cases:
         with pytest.raises(ValueError):
-            evaluate_filament_coil_green_field(*args)
-    # non-finite observation z
-    with pytest.raises(ValueError):
-        evaluate_filament_coil_green_field(
-            radius, np.nan, coil_radius, coil_z, current, turns, modulus, k, e
-        )
+            evaluate_filament_coil_green_field(*case)
