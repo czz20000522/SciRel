@@ -2,12 +2,13 @@
 
 The canonical KN1DPy commit ``bb22c872`` leaf fits the H+-on-H elastic
 momentum-transfer cross section with a distinct logarithmic polynomial below
-and at/above 10 eV, clipped to ``[0.001, 1.01e5] eV``. The canonical Python
-source uses the low-energy branch for ``E < 10`` and the high-energy branch for
-``E >= 10``; exactly 10 eV is therefore the high-energy polynomial. The output
-shape is the input shape. Negative energies are rejected instead of silently
-clipped; all fit coefficients and clipping endpoints retain their original
-numerical assertions.
+and at/above 10 eV in the center-of-mass variable; the public function converts
+its laboratory argument to ``E_cm = E_lab/2`` first (issue #10 item 2), so the
+laboratory breakpoint is 20 eV and exactly 20 eV laboratory uses the
+high-energy polynomial. Inputs are clipped to ``[0.001, 1.01e5] eV``
+laboratory. The output shape is the input shape. Negative energies are
+rejected instead of silently clipped; all fit coefficients and clipping
+endpoints retain their original numerical assertions.
 """
 
 from __future__ import annotations
@@ -25,19 +26,27 @@ HIGH_ENERGY_COEFFICIENTS = np.array([-3.231141e1, -1.386002e-1], dtype=float)
 
 
 def independent_piecewise(energy):
+    """Same conversion contract: clip laboratory energy, halve to CM, branch at 10 eV CM."""
     clipped = np.clip(energy, 0.001, 1.01e5)
+    center_of_mass = clipped / 2.0
     result = np.zeros_like(clipped, dtype=float)
-    low = clipped < 10.0
-    high = clipped >= 10.0
+    low = center_of_mass < 10.0
+    high = center_of_mass >= 10.0
     if np.any(low):
         result[low] = (
-            np.exp(np.polynomial.polynomial.polyval(np.log(clipped[low]), LOW_ENERGY_COEFFICIENTS))
+            np.exp(
+                np.polynomial.polynomial.polyval(
+                    np.log(center_of_mass[low]), LOW_ENERGY_COEFFICIENTS
+                )
+            )
             * 1.0e-4
         )
     if np.any(high):
         result[high] = (
             np.exp(
-                np.polynomial.polynomial.polyval(np.log(clipped[high]), HIGH_ENERGY_COEFFICIENTS)
+                np.polynomial.polynomial.polyval(
+                    np.log(center_of_mass[high]), HIGH_ENERGY_COEFFICIENTS
+                )
             )
             * 1.0e-4
         )
@@ -52,16 +61,16 @@ def test_piecewise_branches_match_independent_evaluation():
 
 
 def test_breakpoint_uses_canonical_high_energy_branch():
-    """Canonical source: low for E<10, high for E>=10; 10 eV is high."""
-    result = evaluate_hydrogen_proton_elastic_cross_section(np.array([9.999, 10.0, 10.001]))
-    high_at_10 = (
+    """Canonical source: low for E_cm<10, high for E_cm>=10; 20 eV lab is high."""
+    result = evaluate_hydrogen_proton_elastic_cross_section(np.array([19.999, 20.0, 20.001]))
+    high_at_10_cm = (
         np.exp(np.polynomial.polynomial.polyval(np.log(10.0), HIGH_ENERGY_COEFFICIENTS)) * 1.0e-4
     )
-    low_at_10 = (
+    low_at_10_cm = (
         np.exp(np.polynomial.polynomial.polyval(np.log(10.0), LOW_ENERGY_COEFFICIENTS)) * 1.0e-4
     )
-    np.testing.assert_allclose(result[1], high_at_10, rtol=1e-15, atol=0.0)
-    assert not np.isclose(result[1], low_at_10, rtol=1e-14, atol=0.0)
+    np.testing.assert_allclose(result[1], high_at_10_cm, rtol=1e-15, atol=0.0)
+    assert not np.isclose(result[1], low_at_10_cm, rtol=1e-14, atol=0.0)
     assert result[0] > 0.0 and result[1] > 0.0 and result[2] > 0.0
 
 

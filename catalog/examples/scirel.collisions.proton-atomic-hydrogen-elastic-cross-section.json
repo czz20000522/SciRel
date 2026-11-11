@@ -102,8 +102,8 @@
  },
  "example": {
   "description": "check the 10 eV breakpoint and the finite positive cross sections on both sides",
-  "code": "import numpy as np\nfrom scirel.collisions import evaluate_hydrogen_proton_elastic_cross_section\ny = evaluate_hydrogen_proton_elastic_cross_section(np.array([np.nextafter(10., 0.), 10., np.nextafter(10., np.inf)]))\nassert y.shape == (3,)\nassert np.isfinite(y).all() and (y > 0).all()\nhigh = np.exp(np.polynomial.polynomial.polyval(np.log(10.0), np.array([-3.231141e1, -1.386002e-1]))) * 1.0e-4\nnp.testing.assert_allclose(y[1], high, rtol=1e-15)",
-  "expected": "Three finite positive cross sections with input shape; exactly 10 eV belongs to the high-energy branch, and the empirical fit may jump across the breakpoint."
+  "code": "import numpy as np\nfrom scirel.collisions import evaluate_hydrogen_proton_elastic_cross_section\ny = evaluate_hydrogen_proton_elastic_cross_section(np.array([np.nextafter(20., 0.), 20., np.nextafter(20., np.inf)]))\nassert y.shape == (3,)\nassert np.isfinite(y).all() and (y > 0).all()\n# breakpoint: CM 10 eV == 20 eV laboratory; 20 eV lab is the high branch.\nhigh = np.exp(np.polynomial.polynomial.polyval(np.log(10.0), np.array([-3.231141e1, -1.386002e-1]))) * 1.0e-4\nnp.testing.assert_allclose(y[1], high, rtol=1e-15)",
+  "expected": "Three finite positive cross sections with input shape; exactly 20 eV laboratory (10 eV center-of-mass) belongs to the high-energy branch, and the empirical fit may jump across the breakpoint."
  },
  "verification": {
   "scope": [
@@ -119,7 +119,8 @@
   "evidence_ceiling": "the declared piecewise fit and breakpoint behavior are established; no new universal experimental cross-section accuracy is established. Intake acceptance, human scientific approval and licensing are recorded separately",
   "known_limitations": [
    "endpoint clipping and the discontinuity between the low- and high-energy segments are inherited; no unsupported smoothing is applied",
-   "a previous qualification withdrawal and pending licensing remain recorded; this correction does not rewrite that history"
+   "a previous qualification withdrawal and pending licensing remain recorded; this correction does not rewrite that history",
+   "the momentum-transfer cross section of this fit contains the momentum carried by resonant charge exchange (APID 8, 1999, section 1.2, p. 2-3); it is not a distinguishable-particle momentum-transfer cross section, and no distinguishable-particle parameterization exists in this repository"
   ]
  }
 }

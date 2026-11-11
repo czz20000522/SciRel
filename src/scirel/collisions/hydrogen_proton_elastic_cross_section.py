@@ -1,13 +1,18 @@
 """H+-on-H elastic momentum-transfer fit in m^2.
 
-The input is projectile proton laboratory energy in eV with target H at rest.
-The canonical KN1DPy commit ``bb22c872`` ``sigma_el_p_h`` source uses
-``E < 10`` for the low-energy polynomial and ``E >= 10`` for the high-energy
-polynomial, so exactly 10 eV uses the high-energy branch. The two empirical
-fits are not forced continuous. Endpoint clipping [0.001, 1.01e5] eV and the
-input-preserving output shape are explicit. Fit fidelity does not establish
-accuracy outside the cited experimental/model range or grant redistribution
-approval.
+The input is projectile proton laboratory energy in eV with target H at rest;
+the function converts it to the center-of-mass energy ``E_cm = E_lab/2``
+(equal masses, stationary target) before evaluating the parameterization,
+whose tabulated variable is the center-of-mass energy (Janev 1995, ch. 11
+p. 298, via the KN1DPy ``sigma_el_p_h`` source). The valid laboratory range
+of the underlying table is 0.2-200 eV (APID 8, 1999, p. 1 and p. 77); the
+declared fit domain remains the KN1DPy clipping window. The canonical
+KN1DPy commit ``bb22c872`` uses ``E < 10`` for the low-energy polynomial and
+``E >= 10`` for the high-energy polynomial, so exactly 10 eV uses the
+high-energy branch. The two empirical fits are not forced continuous.
+Endpoint clipping [0.001, 1.01e5] eV and the input-preserving output shape
+are explicit. Fit fidelity does not establish accuracy outside the cited
+experimental/model range or grant redistribution approval.
 """
 
 from __future__ import annotations
@@ -57,33 +62,38 @@ def evaluate_hydrogen_proton_elastic_cross_section(energy_ev):
 
     Notes
     -----
-    This is a piecewise empirical momentum-transfer fit. Energies below 10 eV use
-    a seven-coefficient low-energy logarithmic polynomial; energies at or above
-    10 eV use a two-coefficient high-energy polynomial. Exactly 10 eV belongs to
-    the high-energy branch. The two segments are not forced to be continuous, so a
-    finite jump at the breakpoint is retained. Endpoint clipping is silent and
-    does not imply experimental accuracy outside the declared range.
+    This is a piecewise empirical momentum-transfer fit evaluated at the
+    center-of-mass energy ``E_cm = E_lab/2``. Laboratory energies below 20 eV
+    use a seven-coefficient low-energy logarithmic polynomial; laboratory
+    energies at or above 20 eV use a two-coefficient high-energy polynomial.
+    Exactly 20 eV laboratory (10 eV center-of-mass) belongs to the high-energy
+    branch. The two segments are not forced to be continuous, so a finite jump
+    at the breakpoint is retained. Endpoint clipping is silent and does not
+    imply experimental accuracy outside the declared range.
 
     Examples
     --------
     >>> import numpy as np
     >>> from scirel.collisions import evaluate_hydrogen_proton_elastic_cross_section
-    >>> y = evaluate_hydrogen_proton_elastic_cross_section(np.array([np.nextafter(10., 0.), 10., np.nextafter(10., np.inf)]))
+    >>> y = evaluate_hydrogen_proton_elastic_cross_section(np.array([np.nextafter(20., 0.), 20., np.nextafter(20., np.inf)]))
     >>> assert y.shape == (3,)
     >>> assert np.isfinite(y).all() and (y > 0).all()
     >>> high = np.exp(np.polynomial.polynomial.polyval(np.log(10.0), np.array([-3.231141e1, -1.386002e-1]))) * 1.0e-4
     >>> np.testing.assert_allclose(y[1], high, rtol=1e-15)
     """
     clipped = clipped_energy(energy_ev, 0.001, 1.01e5)
+    # Equal-mass symmetric system with a stationary target: the parameterized
+    # variable of the Janev fit is the center-of-mass energy (issue #10 item 2).
+    center_of_mass = clipped / 2.0
     result = np.zeros_like(clipped, dtype=float)
-    low = clipped < 10.0
-    high = clipped >= 10.0
+    low = center_of_mass < 10.0
+    high = center_of_mass >= 10.0
     if np.any(low):
         result[low] = (
-            np.exp(log_polynomial(np.log(clipped[low]), _LOW_ENERGY_COEFFICIENTS)) * 1.0e-4
+            np.exp(log_polynomial(np.log(center_of_mass[low]), _LOW_ENERGY_COEFFICIENTS)) * 1.0e-4
         )
     if np.any(high):
         result[high] = (
-            np.exp(log_polynomial(np.log(clipped[high]), _HIGH_ENERGY_COEFFICIENTS)) * 1.0e-4
+            np.exp(log_polynomial(np.log(center_of_mass[high]), _HIGH_ENERGY_COEFFICIENTS)) * 1.0e-4
         )
     return result

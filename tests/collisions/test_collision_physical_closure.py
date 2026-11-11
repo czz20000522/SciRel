@@ -60,6 +60,9 @@ def test_adaptive_angular_oracle_and_weighted_exchange(make, reduce, names, fits
     coords = [(r, x) for x in vx for r in vr]
     r = make(vr, vx, wr, dx, T, mu, n_theta=4096)
     factor = 1 if make is atomic_matrices else 2
+    # ci 序 = [SIG_CX, SIG_H_P, SIG_H_H2, SIG_H_H]。修正在公开拟合函数内部
+    # （#10 项2：lab→CM 换算移入 sigma_p_h），装配与 oracle 都按实验室能量
+    # g^2*Tnorm/mu 求值，调用点不再减半。
     energy = [factor * T / mu, T / mu, T / mu, factor * T]
     for ci, key in enumerate(["SIG_CX"] + ["SIG_" + n for n in names]):
         expected = np.empty((4, 4))

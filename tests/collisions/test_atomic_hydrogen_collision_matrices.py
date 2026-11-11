@@ -111,15 +111,25 @@ def _sigma_h_hh(e):
     )
 
 
-def _sigma_p_h(e):
-    e = np.minimum(np.maximum(e, 0.001), 1.01e5)
+def _sigma_p_h(e_lab):
+    """修正形状（#10 项2）：剪裁 lab 能量，换算 E_cm=E_lab/2，在 CM 变量上分支（CM 10 eV 断点）。"""
+    e = np.minimum(np.maximum(e_lab, 0.001), 1.01e5) / 2.0
     result = np.zeros(np.shape(e), dtype=float)
     result = np.where(e <= 10.0, np.exp(_poly(np.log(e), _H_P_LOW_COEFFICIENTS)) * 1.0e-4, result)
     result = np.where(e > 10.0, np.exp(_poly(np.log(e), _H_P_HIGH_COEFFICIENTS)) * 1.0e-4, result)
     return result
 
 
-def _independent_oracle(vr, vx, Vr2pidVr, dVx, Tnorm, mu=1.0):
+def _sigma_p_h_pre_fix(e_lab):
+    """修正前的形状：系数直接对实验室能量求值，断点在实验室 10 eV（无 lab→CM 换算）。"""
+    e = np.minimum(np.maximum(e_lab, 0.001), 1.01e5)
+    result = np.zeros(np.shape(e), dtype=float)
+    result = np.where(e <= 10.0, np.exp(_poly(np.log(e), _H_P_LOW_COEFFICIENTS)) * 1.0e-4, result)
+    result = np.where(e > 10.0, np.exp(_poly(np.log(e), _H_P_HIGH_COEFFICIENTS)) * 1.0e-4, result)
+    return result
+
+
+def _independent_oracle(vr, vx, Vr2pidVr, dVx, Tnorm, mu=1.0, *, hp_fit=None):
     """Independent replay: broadcasting geometry + einsum theta quadrature."""
     vr = np.asarray(vr, float)
     vx = np.asarray(vx, float)
@@ -163,7 +173,7 @@ def _independent_oracle(vr, vx, Vr2pidVr, dVx, Tnorm, mu=1.0):
         "SIG_CX": contract(v_v * _sigma_cx(v_v2 * ecx), None),
         "SIG_H_H": contract(vr2_vx2 * v_v * _sigma_h_h(v_v2 * ehh) * 3.0 / 8.0, None),
         "SIG_H_H2": contract(v_v * _sigma_h_hh(v_v2 * ecx), None, with_vx_vx=True),
-        "SIG_H_P": contract(v_v * _sigma_p_h(v_v2 * ecx), None, with_vx_vx=True),
+        "SIG_H_P": contract(v_v * (hp_fit or _sigma_p_h)(v_v2 * ecx), None, with_vx_vx=True),
         "v_v2": v_v2,
         "v_v": v_v,
         "vr2_vx2": vr2_vx2,
@@ -323,3 +333,106 @@ def test_underflowed_mass_denominator_is_rejected():
     case = dict(CANONICAL, mu=np.nextafter(0.0, 1.0))
     with pytest.raises(ValueError, match="thermal normalization"):
         assemble_atomic_hydrogen_collision_matrices(**case)
+
+
+# Issue #10 item 2: the H+-on-H momentum-transfer fit is parameterized in the
+# center-of-mass energy (Janev 1995, ch. 11 p. 298), so the public function now
+# converts its laboratory argument internally (E_cm = E_lab/2). The IAEA APID 8
+# (1999) p.77 momentum-transfer table for H+ + H is the independent oracle;
+# E_lab = 2*E_cm on an equal-mass collision with a stationary target.
+# a0^2 = 2.800285e-21 m^2.
+_APID8_TABLE_AU = (
+    398.50,
+    387.76,
+    359.85,
+    319.00,
+    298.46,
+    265.61,
+    241.96,
+    219.48,
+    190.74,
+    170.25,
+)
+_APID8_E_CM_EV = (0.100, 0.200, 0.501, 1.000, 1.995, 5.012, 10.000, 19.950, 50.120, 100.000)
+
+
+def test_public_fit_maps_lab_energy_to_the_cm_table_band():
+    """公开函数收实验室能量（=2·表点 CM），比值须落 0.970–1.078 带。"""
+    from scirel.collisions.hydrogen_proton_elastic_cross_section import (
+        evaluate_hydrogen_proton_elastic_cross_section as fit,
+    )
+
+    table_m2 = np.array(_APID8_TABLE_AU) * 2.800285e-21
+    lab_argument = np.array(_APID8_E_CM_EV) * 2.0
+    corrected = fit(lab_argument)
+    ratio = corrected / table_m2
+    # 带端点来自 d 的表值（4 位有效数字），端点比较带 1e-3 数值容差。
+    assert np.all(ratio >= 0.970 - 1e-3) and np.all(ratio <= 1.078 + 1e-3)
+    assert abs(ratio.mean() - 1.0) < 0.078
+
+    # 反向验证：修正前的形状（把 lab 当 CM 用，等于只喂一半能量）必出带——
+    # 钉住"换算在函数内部发生"。能量减半 → 拟合值系统性偏大（约 1.08–1.13）。
+    stale = fit(np.array(_APID8_E_CM_EV))
+    stale_ratio = stale / table_m2
+    assert np.any(stale_ratio > 1.078)
+    assert stale_ratio.min() > 1.05  # 全部点都偏出带上沿，不是个别抖动
+
+
+# 冻结快照：CANONICAL 输入下、改动前实现的 SIG_CX / SIG_H_H2 逐位输出。
+# 本 PR 只允许 SIG_H_P 变化，这两族必须与快照逐位相同——任何让它们的求值
+# 因子（共用的 ecx）或权重发生变化的改动都会立刻判红。快照由改动前的
+# assemble_atomic_hydrogen_collision_matrices(**CANONICAL) 落盘得到。
+_SIG_CX_SNAPSHOT = np.array(
+    [
+        [
+            1.4134154005321963e-18,
+            3.905706098481516e-18,
+            3.815086517562888e-18,
+            7.182456796981614e-18,
+        ],
+        [
+            2.1969596803958525e-18,
+            4.458401438723501e-18,
+            4.040131948302158e-18,
+            7.523219884639363e-18,
+        ],
+        [
+            3.815086517562888e-18,
+            7.182456796981614e-18,
+            1.4134154005321963e-18,
+            3.905706098481516e-18,
+        ],
+        [
+            4.040131948302158e-18,
+            7.523219884639363e-18,
+            2.1969596803958525e-18,
+            4.458401438723501e-18,
+        ],
+    ]
+)
+_SIG_H_H2_SNAPSHOT = np.array(
+    [
+        [0.0, 0.0, -4.769147066353033e-19, -8.358191730684909e-19],
+        [0.0, 0.0, -4.701482848510261e-19, -8.228837636557339e-19],
+        [4.769147066353033e-19, 8.358191730684909e-19, 0.0, 0.0],
+        [4.701482848510261e-19, 8.228837636557339e-19, 0.0, 0.0],
+    ]
+)
+
+
+def test_only_sig_hp_changes_against_the_frozen_pre_fix_snapshots():
+    """机械闸门（Physics-Review 钉的）：三族共用 ecx，修正必须只挪 SIG_H_P。
+
+    用公开装配的真实输出对冻结快照做逐位比较，而不是比较两份手写表达式——
+    后者恒真（同一个表达式写两遍），拦不住"改一处、脏三处"。
+    """
+    result = assemble_atomic_hydrogen_collision_matrices(**CANONICAL)
+    np.testing.assert_array_equal(result["SIG_CX"], _SIG_CX_SNAPSHOT)
+    np.testing.assert_array_equal(result["SIG_H_H2"], _SIG_H_H2_SNAPSHOT)
+
+    # SIG_H_P 必须变化：与"修正前形状"的独立重算结果不同。
+    pre_fix = _independent_oracle(**CANONICAL, hp_fit=_sigma_p_h_pre_fix)
+    assert not np.allclose(result["SIG_H_P"], pre_fix["SIG_H_P"], rtol=1e-6, atol=0.0)
+    # 且与"修正后形状"的独立重算一致（换算确实发生在函数内部）。
+    post_fix = _independent_oracle(**CANONICAL)
+    np.testing.assert_allclose(result["SIG_H_P"], post_fix["SIG_H_P"], rtol=1e-12, atol=0.0)
