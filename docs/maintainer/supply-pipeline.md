@@ -189,7 +189,7 @@ applied: null                  # agent 写入：{by, ref, date}
 | --- | --- |
 | M1 | 精简拆解方法：按第 4、5 节重写入口 skill，每一步都写成"遇到 X 就做 Y"；references 约 5,400 行逐份处理（整树约 1.56 万行，含 scripts 与 assets，一并处置），有用的并入，可做成检查的做成检查，其余删除；D2、D3 阶段取消 |
 | M2 | 拆解包校验器和工具包构建脚本；用它替换 `contracts/admission` 的 FINAL d0–d3 格式和 `export_admission_tools.py` |
-| M3 | 工单协议：`tickets/` 目录与格式校验脚本（含列出待审工单、检查状态流转），以及 AGENTS.md 路由中"开工先查工单"那一条 |
+| M3 | 工单协议：`tickets/` 目录与格式校验脚本（含列出待审工单、检查状态流转），以及 AGENTS.md 路由中"开工先查工单"那一条。已完成（#174），首张工单是 `tickets/convention/T-2026-0001.md` |
 | M4 | Pleiades 试点：用新方法对 Pleiades 做反向盘点和比对，**不往库里新增能力**，只产出债务清单和第一批真实工单，用来检验格式是否好用，并测量每张卡的成本 |
 | M5 | 装置数据迁移（第 8 节） |
 

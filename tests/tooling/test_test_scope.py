@@ -164,3 +164,10 @@ def test_shared_fixture_without_a_test_consumer_fails_closed(tmp_path, monkeypat
 def test_shared_harness_selects_all_declared_consumers(path, expected):
     targets, _ = test_scope.classify(Path(path))
     assert targets == expected
+
+
+@pytest.mark.parametrize("path", ["tickets/README.md", "tickets/convention/T-2026-0001.md"])
+def test_tickets_select_the_tooling_layer_and_name_the_transition_check(path):
+    targets, notes = test_scope.classify(Path(path))
+    assert targets == ["tests/tooling"]
+    assert any("--base origin/main" in note for note in notes)

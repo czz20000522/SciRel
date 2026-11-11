@@ -284,6 +284,12 @@ def classify(relative: Path) -> tuple[list[str], list[str]]:
             "solving source projection and helper closure; scientific task acceptance is separate"
         ]
 
+    if parts[0] == "tickets":
+        return [_layer_target("tooling")], [
+            "human-review tickets: format, location and ids are checked by tests/tooling; "
+            "run python3 scripts/tickets.py check tickets --base origin/main for the transitions"
+        ]
+
     if parts[0] == "licenses":
         return [_layer_target("delivery")], ["license files are part of the wheel contract"]
 
