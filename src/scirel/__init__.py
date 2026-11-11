@@ -35,6 +35,33 @@ def _project_version():
 
 __version__ = _project_version()
 
+
+class ApplicabilityWarning(UserWarning):
+    """A result was returned outside the relation's declared applicability range.
+
+    A relation that raises this warning still returns a value: the input left the range in
+    which the relation is validated (for example above or below the temperatures its fit was
+    compared against), so the result is low- or high-biased rather than undefined. Raise it
+    only for that case; ``ValueError`` and ``TypeError`` keep the cases where no meaningful
+    value exists at all, and ``FloatingPointError`` the ones where the value is unrepresentable.
+
+    Callers who require validated inputs can turn it into an error::
+
+        warnings.simplefilter("error", scirel.ApplicabilityWarning)
+
+    The message of every warning of this class names the quantity, its declared range, the
+    effect of the offending value on the result, and the contract ID that states the limit.
+
+    Defined here, in the root module, rather than in a private submodule: importing ``scirel``
+    must load no submodule and keep working when only this file is vendored, which two
+    architecture tests pin.
+    """
+
+
+# The root namespace lists domain subpackages only: ``from scirel import *`` must keep
+# yielding modules, which the architecture tests pin. ``ApplicabilityWarning`` is exported as a
+# plain attribute (``scirel.ApplicabilityWarning`` and ``from scirel import ApplicabilityWarning``)
+# and appears in ``dir()``, without joining this domain list.
 __all__ = [
     "closures",
     "collisions",
@@ -71,4 +98,4 @@ def __dir__():
     # Keep discovery focused on the package contract.  Implementation helpers
     # such as ``_project_version`` remain available to the module itself but
     # are not part of ``dir(scirel)`` for callers using introspection.
-    return sorted(set(__all__) | {"__version__"})
+    return sorted(set(__all__) | {"__version__", "ApplicabilityWarning"})
