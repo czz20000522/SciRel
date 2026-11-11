@@ -81,9 +81,10 @@ def make_convection_terms(v_face, d_face, var, dirichlet_mode="ghost", neumann_m
     The assembled expression is the conservative flux difference for
     ``-d(v*u)/dx``.  The local interpolation uses a bounded power-law weight
     based on the face Peclet number.  The Peclet scale floors ``abs(d_face)`` at
-    ``1e-20`` and keeps the sign of ``d_face``; the floor only prevents division by
-    zero for an exactly zero face diffusivity and does not alter the assembled
-    coefficients otherwise.  The resulting matrix and forcing are
+    ``1e-20`` and keeps the sign of ``d_face``.  The floor prevents division by zero
+    for an exactly zero face diffusivity, and any nonzero magnitude below ``1e-20``
+    is approximated by that floor, so such a face carries the floored Peclet number
+    rather than its own.  The resulting matrix and forcing are
     returned as one ordinary ``(matrix, forcing)`` pair; no fallback or
     clipping of a non-finite result is applied.  The returned operator is
     valid for the supplied cell grid and must be rebuilt if that grid changes.

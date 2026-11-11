@@ -147,21 +147,32 @@ def test_scan_reports_diagonal_assembly_but_a_literal_non_finite_fill(tmp_path):
     source.mkdir()
     (source / "assembly.py").write_text(
         "import numpy as np\n"
-        "def build(n):\n"
-        "    matrix = np.zeros((n, n))\n"
-        "    np.fill_diagonal(matrix, np.ones(n))\n"
-        "    return matrix\n"
-        "def sentinel(n):\n"
-        "    matrix = np.zeros((n, n))\n"
+        "def build(matrix, diagonal):\n"
+        "    np.fill_diagonal(matrix, diagonal)\n"
+        "def zero_fill(matrix):\n"
+        "    np.fill_diagonal(matrix, 0.0)\n"
+        "def sentinel(matrix):\n"
         "    np.fill_diagonal(matrix, np.inf)\n"
-        "    return matrix\n"
+        "def string_sentinel(matrix):\n"
+        "    np.fill_diagonal(matrix, float('inf'))\n"
+        "def nan_string(matrix):\n"
+        "    np.fill_diagonal(matrix, float('nan'))\n"
+        "def keyword_sentinel(matrix):\n"
+        "    np.fill_diagonal(matrix, val=np.inf)\n"
+        "def finite_string(matrix):\n"
+        "    np.fill_diagonal(matrix, float('1.0'))\n"
     )
     done = _run("scan_hazards.py", str(source), "--json")
     assert done.returncode == 1
     flagged = {
         hit["function"] for hit in json.loads(done.stdout) if hit["rule"] == "non-finite-replaced"
     }
-    assert flagged == {"<module>.sentinel"}, flagged
+    assert flagged == {
+        "<module>.sentinel",
+        "<module>.string_sentinel",
+        "<module>.nan_string",
+        "<module>.keyword_sentinel",
+    }, flagged
 
 
 def test_docs_check_passes_a_complete_docstring(tmp_path):
