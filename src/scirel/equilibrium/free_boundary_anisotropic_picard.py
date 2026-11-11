@@ -507,6 +507,9 @@ def solve_free_boundary_anisotropic_picard(inputs=None, **kwargs):
         Raised when the corresponding declared input, numerical or convergence condition fails,
         and when the terminal state is at or beyond the local firehose threshold
         (``p_parallel - p_perp >= B**2/mu0`` on an active cell, i.e. ``firehose_margin <= 0``).
+    RuntimeWarning
+        If an intermediate Picard state crosses the firehose threshold. The terminal state is
+        still returned only when it stays inside the stable domain; otherwise ValueError is raised.
 
     See Also
     --------

@@ -4,7 +4,7 @@
  "records": [
   {
    "asset_id": "scirel.equilibrium.free-boundary-anisotropic-picard",
-   "source_sha256": "a2f8c6a34047bca1065dd297c5058428cb3e9ddbef97af5f7c5cc8dee3ee3b82",
+   "source_sha256": "3ab191ff3702cb489fd3f19a58d68e597441cbc9c99a7c4295f38a2da5d8ad2c",
    "summary": "执行显式各向异性压力、电流与 Green 场的有界 Picard 反馈；可选墙磁通和对应磁场导数共同更新，以全部未松弛反馈状态残差及平行力相容性决定收敛。",
    "definition": "当前 psi、BR、BZ 上重求确定性压力闭合与环向电流，按节点梯形或显式单元边界积分并松弛电流后投影 Green 场。缺少场 Green 对时对新增磁通求场导数，墙分支同步加墙磁通及离散场。判停要求 psi、BR、BZ 和电流的未松弛目标全部闭合，返回态再重求闭合、电流及力相容性；零步不声称收敛。",
    "model": "外供 N4 压力闭合和可选线性理想导体壁修正的轴对称旋磁压力 Picard 组合。",
