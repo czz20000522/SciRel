@@ -3,6 +3,7 @@ from scirel.equilibrium.free_boundary_anisotropic_picard import (
 )
 from pathlib import Path
 import inspect
+import warnings
 
 import numpy as np
 import pytest
@@ -382,12 +383,38 @@ def _hot_beyond_threshold_only(state):
     }
 
 
-# 验证：终态越过 firehose 阈值时拒绝返回，中间态只告警；1 T 下阈值是 p_parallel - p_perp >= B^2/mu0。
+# 验证：终态越过 firehose 阈值时拒绝返回，消息带最后越界迭代步号与最小 margin。
 def test_terminal_state_beyond_the_firehose_threshold_is_rejected():
     values = _inputs(pressure_closure=_beyond_firehose_closure)
-    with pytest.warns(RuntimeWarning):
-        with pytest.raises(ValueError, match="firehose"):
-            _run(values)
+    with pytest.raises(ValueError, match="firehose") as excinfo:
+        _run(values)
+    message = str(excinfo.value)
+    assert "iteration" in message and "margin" in message
+
+
+# 验证：中间态越界属正常迭代路径，终态稳定时既不告警也不报错。
+def test_intermediate_firehose_crossing_is_silent_when_the_terminal_state_is_stable():
+    r_grid, _ = np.meshgrid(np.array([0.2, 0.4, 0.6]), np.array([-0.1, 0.0, 0.1]))
+    psi_vac = r_grid.copy()
+
+    def closure(state):
+        psi = np.asarray(state["psi"], dtype=float)
+        untouched = np.abs(psi - psi_vac) < 1.0e-12
+        p_perp = np.where(untouched, 2.0e6 * (0.5 + r_grid), 0.0)
+        return {
+            "p_parallel": p_perp + np.where(untouched, 1.0e6, 0.0),
+            "p_perp": p_perp,
+            "density": None,
+            "electron_temperature": None,
+        }
+
+    with warnings.catch_warnings(record=True) as caught:
+        warnings.simplefilter("always")
+        result = _run(
+            _inputs(pressure_closure=closure, g_psi=1.0e-6 * np.eye(r_grid.size), maxiter=1)
+        )
+    assert not [item for item in caught if issubclass(item.category, RuntimeWarning)]
+    assert result["iterations"] == 1
 
 
 # 验证：门只看 plasma_mask 为真的 cell，掩掉高温区后同一个 closure 不再被拒。
