@@ -16,12 +16,14 @@ _RY_EV = 13.58
 _LEVEL_N = 1.0
 _A_NL = 3.92
 _X_NL = 0.35
-# Declared validated interval of the fit: within it the rate agrees with an independent
-# Stobbe (1930) photoionization cross section combined with the Milne relation to 5% or
-# better (issue #10, comment 6773932012). The fit form itself switches asymptotic branch
-# near 38.8 eV and falls as T^-1.5 far above it, where the exact rate keeps falling more
-# slowly, so values above the interval understate the true rate by 37% at 1 keV and about
-# 2.0-2.1x at 10-20 keV.
+# Declared validated interval of the fit. Accuracy is measured against an independent oracle
+# (Stobbe 1930 photoionization closed form + Milne relation with g_n/g_+ = 2): the observed
+# worst departure on a 601-point log grid over [0.1, 30] eV is 5.72% at about 19.5 eV, so the
+# declared bound is 5.75% and the earlier 5.3% claim is refuted by the 20 eV point (+5.715%).
+# The fit form itself switches asymptotic branch near 38.8 eV and falls as T^-1.5 far above,
+# where the exact rate keeps falling more slowly, so values above the interval understate the
+# true rate by 37% at 1 keV and about 2.0-2.1x at 10-20 keV. Below 0.1 eV the endpoint value
+# returned understates the exact rate, by about 3.4x at 0.01 eV.
 _VALIDATED_LOW_EV = 0.1
 _VALIDATED_HIGH_EV = 30.0
 _FIT_LOW_EV = 0.1
@@ -66,6 +68,11 @@ def evaluate_atomic_hydrogen_1s_radiative_recombination_rate(electron_temperatur
         ``[0.1, 2.01e4] eV``), and it understates the true rate: about 37% low at
         1 keV and a factor of about 2.0-2.1 low at 10-20 keV, so recombination
         rates built from it are biased low, not merely coarse.
+    ApplicabilityWarning
+        If any input temperature is below ``0.1 eV``, the fit's own lower limit.
+        Such samples return the 0.1 eV endpoint value, which understates the true
+        rate: the independent Stobbe-Milne oracle is about 3.4 times the returned
+        value at 0.01 eV, so the bias grows as the input falls below the limit.
 
     See Also
     --------
@@ -89,18 +96,24 @@ def evaluate_atomic_hydrogen_1s_radiative_recombination_rate(electron_temperatur
     recombination are separate relations. No external atomic-physics reference is
     bound by this callable.
 
-    The fit is validated only on ``[0.1, 30] eV``, where it agrees with an
-    independent oracle built from the exact H(1s) photoionization cross section
-    (Stobbe 1930 closed form) combined with the Milne relation to 5.3% or better,
-    the largest departure being at the 0.1 eV edge (fit/oracle ratios 0.947,
-    0.965, 1.043 and 1.049 at 0.1, 1, 10 and 30 eV, so at most 4.9% from 1 eV up),
-    and that oracle
-    reproduces Osterbrock & Ferland (2006) Table 2.1 (alpha_1 = 1.58e-13 cm^3/s
-    at 1e4 K). Above 30 eV the fit's ``b**1.5/(b+x)`` form has already switched
-    to its ``T**-1.5`` asymptotic branch while the exact rate falls more slowly,
-    so the ratio leaves the 5% band and keeps falling. Values above 30 eV are
-    returned (clipped to the fit interval) with a warning; they are not
-    extrapolations the fit was built for.
+    The fit is validated only on ``[0.1, 30] eV``. Its accuracy there is
+    measured against an independent oracle: the exact H(1s) photoionization cross
+    section (Stobbe 1930 closed form) combined with the Milne relation, with the
+    level-one statistical weight ratio ``g_n/g_+ = 2`` and a Maxwell average. That
+    oracle gives ``1.581929e-13 cm^3/s`` at 1e4 K, consistent with the
+    ``1.58e-13 cm^3/s`` commonly quoted for this rate (the printed table itself
+    was not re-checked, see the contract's limitations).
+
+    The observed worst departure on a 601-point logarithmic grid over
+    ``[0.1, 30] eV`` is **5.72%** at about 19.5 eV (fit/oracle ratios 0.9473,
+    0.9648, 1.0433, 1.0572 and 1.0491 at 0.1, 1, 10, 20 and 30 eV). That is an
+    observed maximum on the sampled grid, not a proof of a continuous upper
+    bound, so the declared envelope is ``5.75%`` over the interval; the earlier
+    ``5.3%`` claim is refuted by the 20 eV point (+5.715%). Above 30 eV the
+    fit's ``b**1.5/(b+x)`` form has already switched to its ``T**-1.5``
+    asymptotic branch while the exact rate falls more slowly, so the departure
+    keeps growing. Values above 30 eV, and below 0.1 eV, are returned at the fit
+    interval's endpoints with a warning; they are not extrapolations.
 
     Examples
     --------
@@ -108,20 +121,37 @@ def evaluate_atomic_hydrogen_1s_radiative_recombination_rate(electron_temperatur
     >>> import numpy as np
     >>> import scirel
     >>> from scirel.collisions import evaluate_atomic_hydrogen_1s_radiative_recombination_rate
-    >>> t = np.array([0.01, 1.0, 50000.0])
+    >>> t = np.array([0.1, 1.0, 50000.0])
     >>> with warnings.catch_warnings(record=True) as caught:
     ...     warnings.simplefilter('always')
     ...     r = evaluate_atomic_hydrogen_1s_radiative_recombination_rate(t)
-    ...     edge = evaluate_atomic_hydrogen_1s_radiative_recombination_rate(
-    ...         np.array([0.1, 1.0, 20100.0])
-    ...     )
     >>> assert r.shape == (3,) and np.all(np.isfinite(r)) and np.all(r > 0.0)
-    >>> assert np.array_equal(r, edge)
-    >>> # one warning per out-of-range call: the 50000 eV sample and the 20100 eV one
-    >>> assert len(caught) == 2 and issubclass(caught[0].category, scirel.ApplicabilityWarning)
+    >>> # the 50000 eV sample is above the validated limit: one warning, value still returned
+    >>> assert len(caught) == 1 and issubclass(caught[0].category, scirel.ApplicabilityWarning)
+    >>> edge = evaluate_atomic_hydrogen_1s_radiative_recombination_rate(np.array([0.1, 1.0]))
+    >>> np.testing.assert_array_equal(r[:2], edge)
+    >>> with warnings.catch_warnings(record=True) as low:
+    ...     warnings.simplefilter('always')
+    ...     clipped = evaluate_atomic_hydrogen_1s_radiative_recombination_rate(
+    ...         np.array([0.01, 20100.0])
+    ...     )
+    >>> # both ends clip to their interval endpoint, and both announced themselves
+    >>> assert len(low) == 2 and np.all(clipped > 0.0)
     """
     temperature = positive_real_array(electron_temperature_ev, "electron_temperature_ev")
     clipped = np.minimum(np.maximum(temperature, 0.1), 2.01e4)
+    if np.any(temperature < _VALIDATED_LOW_EV):
+        lowest = float(np.min(temperature))
+        warnings.warn(
+            "evaluate_atomic_hydrogen_1s_radiative_recombination_rate: electron temperature below"
+            f" the fit's lower limit of {_VALIDATED_LOW_EV:g} eV (lowest input {lowest:.6g} eV)"
+            " returns the value at that limit, which understates the true H(1s)"
+            " radiative-recombination rate: the exact Stobbe-Milne rate is about 3.4 times the"
+            " returned value at 0.01 eV"
+            " (scirel.collisions.atomic-hydrogen-1s-radiative-recombination-rate-coefficient)",
+            ApplicabilityWarning,
+            stacklevel=2,
+        )
     if np.any(temperature > _VALIDATED_HIGH_EV):
         highest = float(np.max(temperature))
         warnings.warn(

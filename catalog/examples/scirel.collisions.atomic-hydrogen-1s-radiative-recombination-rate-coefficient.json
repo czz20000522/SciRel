@@ -70,20 +70,22 @@
  "applicability": {
   "preconditions": [
    "The caller supplies electron temperature in eV and accepts endpoint clipping.",
-   "Above 30 eV the caller accepts a low-biased endpoint value: the fit is validated only on [0.1, 30] eV and warns above 30 eV."
+   "Above 30 eV the caller accepts a low-biased value: the fit is validated only on [0.1, 30] eV and warns outside it.",
+   "Below 0.1 eV the caller accepts the 0.1 eV endpoint value, which understates the true rate and warns."
   ],
   "supported": [
-   "Scalar and array evaluation of the H(1s) analytic fit on [0.1, 30] eV, where it agrees with an independent Stobbe-Milne oracle to 5.3% at worst (the 0.1 eV edge) and to 4.9% or better from 1 eV up."
+   "Scalar and array evaluation of the H(1s) analytic fit on [0.1, 30] eV. The fit's accuracy there is a 5.75% envelope: the observed worst departure from an independent Stobbe-Milne oracle is 5.72% at about 19.5 eV on a 601-point log grid, so 5.75% bounds the sampled interval rather than describing a measured precision."
   ],
   "excluded": [
    "Excited-level, three-body and dielectronic recombination, or electron-impact ionization.",
    "A physically validated recombination model outside the compared domain or without an external atomic-physics reference.",
-   "Qualified use above 30 eV: there the fit understates the true rate (about 37% at 1 keV, a factor of about 2.0-2.1 at 10-20 keV), so those samples return the fit's own value at that temperature with a warning, not a validated rate."
+   "Qualified use above 30 eV: the fit understates the true rate (about 37% at 1 keV, a factor of about 2.0-2.1 at 10-20 keV); those samples return the fit's own value at their temperature with a warning.",
+   "Qualified use below 0.1 eV: the 0.1 eV endpoint value is returned and understates the true rate (about 3.4x low at 0.01 eV); a warning is emitted."
   ]
  },
  "failure_semantics": {
   "invalid_input": "Raises ValueError for non-real numeric, non-finite or nonpositive electron temperature. Boolean, complex and numeric-string coercions are rejected.",
-  "runtime_failure": "Raises ValueError if the derived rate is non-finite or nonpositive; no partial output is returned. Emits scirel.ApplicabilityWarning when any input temperature is above 30 eV, the validated upper limit; those samples still return the fit's own value at their temperature (clipped only at the fit interval's 2.01e4 eV endpoint).",
+  "runtime_failure": "Raises ValueError if the derived rate is non-finite or nonpositive; no partial output is returned. Emits scirel.ApplicabilityWarning when any input temperature is above 30 eV (the validated upper limit) or below 0.1 eV (the fit's lower limit); those samples return the value at the corresponding fit-interval endpoint or the fit's own value, never a silent truncation.",
   "nonconvergence": "Not applicable; no iteration.",
   "partial_results": "Never returned."
  },
@@ -101,9 +103,9 @@
   "dependencies": []
  },
  "example": {
-  "description": "Evaluate ground-state recombination at in-range and out-of-range temperatures and its clipped endpoints.",
-  "code": "import warnings\nimport numpy as np\nimport scirel\nfrom scirel.collisions import evaluate_atomic_hydrogen_1s_radiative_recombination_rate\nt = np.array([0.01, 1.0, 50000.0])\nwith warnings.catch_warnings(record=True) as caught:\n    warnings.simplefilter('always')\n    r = evaluate_atomic_hydrogen_1s_radiative_recombination_rate(t)\n    edge = evaluate_atomic_hydrogen_1s_radiative_recombination_rate(\n        np.array([0.1, 1.0, 20100.0])\n    )\nassert r.shape == (3,) and np.all(np.isfinite(r)) and np.all(r > 0.0)\nassert np.array_equal(r, edge)\nassert len(caught) == 2 and issubclass(caught[0].category, scirel.ApplicabilityWarning)\n",
-  "expected": "Three positive H(1s) rates; values outside the fit interval exactly repeat the endpoints, and each out-of-range call emits one ApplicabilityWarning."
+  "description": "Evaluate ground-state recombination inside and outside the validated interval.",
+  "code": "import warnings\nimport numpy as np\nimport scirel\nfrom scirel.collisions import evaluate_atomic_hydrogen_1s_radiative_recombination_rate\nt = np.array([0.1, 1.0, 50000.0])\nwith warnings.catch_warnings(record=True) as caught:\n    warnings.simplefilter('always')\n    r = evaluate_atomic_hydrogen_1s_radiative_recombination_rate(t)\nassert r.shape == (3,) and np.all(np.isfinite(r)) and np.all(r > 0.0)\n# the 50000 eV sample is above the validated limit: one warning, value still returned\nassert len(caught) == 1 and issubclass(caught[0].category, scirel.ApplicabilityWarning)\nedge = evaluate_atomic_hydrogen_1s_radiative_recombination_rate(np.array([0.1, 1.0]))\nnp.testing.assert_array_equal(r[:2], edge)\nwith warnings.catch_warnings(record=True) as low:\n    warnings.simplefilter('always')\n    clipped = evaluate_atomic_hydrogen_1s_radiative_recombination_rate(\n        np.array([0.01, 20100.0])\n    )\n# both ends clip to their interval endpoint, and both announced themselves\nassert len(low) == 2 and np.all(clipped > 0.0)\n",
+  "expected": "Three positive H(1s) rates; in-range samples equal the fit, out-of-range samples clip to the interval endpoint and emit one ApplicabilityWarning each call."
  },
  "verification": {
   "scope": [
@@ -111,18 +113,20 @@
    "Direct tests cover monotonic temperature dependence on the sampled grid, clipping, scalar shape, invalid domain and non-real input rejection.",
    "No external implementation comparison is maintained or replayed by this repository; the maintained tests validate the declared relation against an in-repository independent formulation and cover the stated rejection and clipping behaviour only on their tested grids.",
    "Low- and high-temperature logarithmic slopes converge to the analytic -1/2 and -3/2 asymptotic limits within the audited temperature windows.",
-   "Against a precise Stobbe-Milne oracle (Stobbe 1930 photoionization closed form plus the Milne relation), the fit/oracle ratios at 0.1, 1, 10 and 30 eV are 0.947, 0.965, 1.043 and 1.049, which pins the declared 5.3% band in the direct tests."
+   "Against an independent Stobbe-Milne oracle (Stobbe 1930 photoionization closed form plus the Milne relation with g_n/g_+ = 2, no fit input), the observed worst departure on a 601-point log grid over [0.1, 30] eV is 5.72% at about 19.5 eV; the anchor ratios at 0.1, 1, 10, 20 and 30 eV are 0.9473085930, 0.9647996863, 1.0432707998, 1.0571517077 and 1.0490534031, and the oracle gives 1.581929e-13 cm^3/s at 1e4 K."
   ],
   "tests": [
    "tests/collisions/test_atomic_hydrogen_1s_radiative_recombination_rate.py"
   ],
-  "evidence_ceiling": "The tests establish the discrete fit, clipping and failure contract on tested samples. Bit-exact agreement with the in-file independent evaluation of the same expressions holds on the compared grids only. No external atomic-physics oracle validates the fit; public distribution licensing is absent.",
+  "evidence_ceiling": "The tests establish the discrete fit, clipping and failure contract on tested samples and bound its accuracy on [0.1, 30] eV against a physics-only oracle (observed maximum 5.72% on the tested grid, not a proven continuous bound). The printed literature table was not re-verified in this round. Public distribution licensing remains pending.",
   "known_limitations": [
    "No external physical-reference oracle is bound; this gap remains open.",
    "Ry=13.58 eV is the fit constant and is not replaced with a modern re-derived value.",
    "Out-of-fit-range positive temperatures silently repeat endpoint rates.",
    "Public distribution licensing remains pending.",
-   "No environment-gated external-implementation comparison exists in this repository; any earlier external comparison is not replayed by the maintained tests."
+   "No environment-gated external-implementation comparison exists in this repository; any earlier external comparison is not replayed by the maintained tests.",
+   "The declared 5.75% accuracy is an observed maximum on a 601-point log grid, not a proof of a continuous upper bound; the earlier 5.3% claim was refuted by the 20 eV point (+5.715%).",
+   "The oracle agrees with the commonly quoted alpha_1 = 1.58e-13 cm^3/s at 1e4 K, but the printed table behind that number was not re-checked; treat the literature comparison as UNKNOWN until it is."
   ]
  }
 }

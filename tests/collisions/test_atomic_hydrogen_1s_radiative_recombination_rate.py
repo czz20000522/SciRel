@@ -4,9 +4,18 @@ import warnings
 
 import numpy as np
 import pytest
+from scipy import constants as _constants
+from scipy import integrate
 
 import scirel
 from scirel.collisions import evaluate_atomic_hydrogen_1s_radiative_recombination_rate
+
+# (2^9 pi^2 / 3) alpha a0^2: the prefactor of the exact 1s photoionization cross section.
+_SIGMA_SCALE = (
+    512 * np.pi**2 / 3 * _constants.alpha * _constants.physical_constants["Bohr radius"][0] ** 2
+)
+# Declared accuracy of the fit over [0.1, 30] eV: the observed maximum is 5.72% at ~19.5 eV.
+_DECLARED_BOUND = 0.0575
 
 
 def _independent_formula(temperature):
@@ -48,21 +57,77 @@ def test_holdout_grid_matches_independent_formula():
     )
 
 
-def test_agrees_with_exact_stobbe_milne_oracle_on_the_validated_interval():
-    """Issue #10 item 1: the fit holds 5.3% against the corrected exact oracle.
+def _exact_rate(temperature_ev):
+    """Independent 1s radiative recombination rate, built from physics only.
 
-    The oracle combines the exact H(1s) photoionization cross section (Stobbe 1930 closed form)
-    with the Milne relation; its level-one normalisation (g_n=2, Gaunt factor 0.80) reproduces
-    Osterbrock & Ferland (2006) Table 2.1, alpha_1 = 1.58e-13 cm^3/s at 1e4 K. Ratios are the
-    ones recorded in issue #10, comment 6773932012.
+    `sigma_bf` is the exact hydrogenic 1s photoionization cross section (Stobbe 1930 closed
+    form), `exact_rate` applies the Milne relation with the level-one statistical weight
+    ratio ``g_n/g_+ = 2`` and averages over a Maxwellian. Nothing here reads the fit, its
+    coefficients or its output, so a constant error in the fit cannot hide in the oracle.
     """
-    temperature = np.array([0.1, 1.0, 10.0, 30.0])
-    ratios = np.array([0.947, 0.965, 1.043, 1.049])
-    # Assert the recorded ratios themselves: fit/oracle within [-5.3%, +4.9%] over the interval.
-    oracle = _independent_formula(temperature) / ratios
-    actual = evaluate_atomic_hydrogen_1s_radiative_recombination_rate(temperature)
-    np.testing.assert_allclose(actual / oracle, ratios, rtol=1e-12, atol=0.0)
-    assert np.all(np.abs(ratios - 1.0) <= 0.053 + 1e-12)
+    temperature_ev = np.asarray(temperature_ev, dtype=float)
+    return np.array([_exact_rate_scalar(float(value)) for value in temperature_ev.ravel()]).reshape(
+        temperature_ev.shape
+    )
+
+
+def _exact_rate_scalar(temperature_ev):
+    chi = _constants.Rydberg * _constants.h * _constants.c
+    kT = temperature_ev * _constants.e
+    prefactor = np.sqrt(8.0 / (np.pi * _constants.m_e)) / np.sqrt(kT)
+
+    def integrand(u):
+        energy = u * kT
+        eps = np.sqrt(energy / chi)
+        if eps == 0.0:
+            sigma_bf = _SIGMA_SCALE * np.exp(-4.0)
+        else:
+            sigma_bf = (
+                _SIGMA_SCALE
+                * (chi / (chi + energy)) ** 4
+                * np.exp(-4.0 * np.arctan(eps) / eps)
+                / (-np.expm1(-2.0 * np.pi / eps))
+            )
+        return (chi + energy) ** 2 / (_constants.m_e * _constants.c**2) * sigma_bf * np.exp(-u)
+
+    value, _ = integrate.quad(integrand, 0.0, np.inf, epsabs=0.0, epsrel=1e-10)
+    return prefactor * value
+
+
+def test_the_oracle_reproduces_the_textbook_level_one_rate():
+    """Anchor the independent oracle before using it: alpha_1(1e4 K) = 1.58e-13 cm^3/s."""
+    rate = _exact_rate_scalar(_constants.k * 1e4 / _constants.e) * 1e6
+    assert abs(rate / 1.582e-13 - 1.0) < 2e-3
+
+
+def test_fit_matches_the_independent_oracle_within_the_measured_bound():
+    """Issue #10 item 1: the declared accuracy is the observed maximum, not a guessed band.
+
+    Measured on a 601-point log grid over [0.1, 30] eV: the worst departure is +5.72% at
+    about 19.5 eV. The bound is therefore stated as 5.75%; the old "5.3%" claim is refuted by
+    the 20 eV point (+5.71517%), which the grid covers here.
+    """
+    temperature = np.geomspace(0.1, 30.0, 601)
+    oracle = _exact_rate(temperature)
+    fit = evaluate_atomic_hydrogen_1s_radiative_recombination_rate(temperature)
+    deviation = np.abs(fit / oracle - 1.0)
+    assert deviation.max() <= _DECLARED_BOUND
+    worst = temperature[deviation.argmax()]
+    assert 19.1 < worst < 19.7  # independent scans put the peak at 19.37-19.47 eV
+    # The counterexample that killed the 5.3% claim must stay visible, not be smoothed away.
+    at_20 = float(
+        evaluate_atomic_hydrogen_1s_radiative_recombination_rate(20.0) / _exact_rate_scalar(20.0)
+        - 1.0
+    )
+    assert 0.05 < at_20 < 0.06
+
+
+def test_anchor_ratios_against_the_independent_oracle():
+    """The five anchors that issue #10 records, recomputed against the physics-only oracle."""
+    temperature = np.array([0.1, 1.0, 10.0, 20.0, 30.0])
+    expected = np.array([0.9473085930, 0.9647996863, 1.0432707998, 1.0571517077, 1.0490534031])
+    fit = evaluate_atomic_hydrogen_1s_radiative_recombination_rate(temperature)
+    np.testing.assert_allclose(fit / _exact_rate(temperature), expected, rtol=5e-9, atol=0.0)
 
 
 def test_above_30_ev_warns_and_clips_instead_of_extrapolating():
@@ -86,6 +151,20 @@ def test_above_30_ev_warns_and_clips_instead_of_extrapolating():
     np.testing.assert_array_equal(
         above, _independent_formula(np.array([30.0, 31.0, 1000.0, 20100.0]))
     )
+
+
+def test_below_0_1_ev_warns_once_and_names_the_actual_value():
+    """Issue #10 item 1: the low end was silently truncated; the bias is now announced."""
+    with warnings.catch_warnings(record=True) as caught:
+        warnings.simplefilter("always")
+        low = evaluate_atomic_hydrogen_1s_radiative_recombination_rate(np.array([0.001, 0.01, 0.1]))
+    applicable = [item for item in caught if issubclass(item.category, scirel.ApplicabilityWarning)]
+    assert len(applicable) == 1
+    message = str(applicable[0].message)
+    assert "lower limit of 0.1 eV" in message and "lowest input 0.001 eV" in message
+    # Values below the limit repeat the 0.1 eV endpoint; the true rate there is larger.
+    np.testing.assert_array_equal(low, np.full(3, low[2]))
+    assert _exact_rate_scalar(0.01) > low[0]
 
 
 def test_within_30_ev_warns_nothing():
