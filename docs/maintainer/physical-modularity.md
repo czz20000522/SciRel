@@ -61,30 +61,11 @@ OpenFOAM 曾经出现独立求解器越来越多、彼此重复的问题。它�
 
 ### 4.1 分层表（提案）
 
-| 层 | 领域 | 职责 | 不允许出现 |
-| --- | --- | --- | --- |
-| L0 私有基础 | `_result` `_validation` `_numerics` `_optional` | Result 类型、输入校验、通用数值工具 | 任何物理名词 |
-| L1 数学与数值 | `numerics`（物理无关工具的唯一共享位置，按数学主题分子包，见 D3） `fvm` `io` | 插值、基函数、差分、拟合、线性代数、有限体积、文件格式 | 等离子体物理量 |
-| L2 局部物理关系 | `physics` `collisions` `fusion` `dielectric` `plasma` | 点态物理量：特征尺度、库仑对数、截面、反应率、介电张量 | 场分布、输运求解 |
-| L3 几何与场 | `geometry` `electromagnetism` `field` `configurations` | 通量面、场线、网格映射、真空磁场、线圈、器件数据 | 动理学或输运 |
-| L4 物理子系统 | `kinetic` `neutrals`（新） `mirror`（新） `neoclassical` `closures` `source` | 一类物理现象自己的模型 | 跨子系统的耦合迭代 |
-| L5 耦合与反演 | `equilibrium` `diagnostics` `inference` | 跨子系统组合、残差、参数估计 | 被更低层引用 |
+**规则正文已迁至 [api-spec](../../skills/development/scirel-code-style/references/api-spec.md) 的 `Domains` 一节**（分层表、同层白名单、函数内导入计入）。本节只保留理由，见 4.3。
 
 ### 4.2 依赖规则
 
-1. 领域只能依赖比自己更低的层。
-2. 同一层内的依赖必须在下面的白名单中显式列出，并且不能成环。没列出的就算违规。
-3. 统计依赖时，函数体内的导入和模块顶层的导入一样算。
-4. 根级私有模块只能放与物理无关的工具。带物理含义的私有代码放进所属领域，写成 `<domain>/_*.py`。
-5. 跨领域只能引用对方的公开名字（对方 `__all__` 里的名字），不能引用对方的私有模块。
-
-同层白名单（提案，迁移时按实测结果修订）：
-
-| 层 | 允许的同层依赖 |
-| --- | --- |
-| L3 | `field → electromagnetism`，`configurations → electromagnetism`，`electromagnetism → geometry` |
-| L4 | `mirror → closures`，`mirror → kinetic`（若实测需要） |
-| L5 | `equilibrium → diagnostics`，`inference → diagnostics` |
+**规则正文已迁至 [api-spec](../../skills/development/scirel-code-style/references/api-spec.md) 的 `Domains` 一节**：领域只依赖更低层、同层依赖须在白名单内且不得成环、函数体内导入与顶层导入同等计入、根级私有模块不得带物理含义、跨领域只能引用对方 `__all__` 里的名字。
 
 ### 4.3 为什么这样分
 
@@ -102,17 +83,11 @@ OpenFOAM 曾经出现独立求解器越来越多、彼此重复的问题。它�
 
 ### 5.2 约定（提案）
 
-1. **一族一个入口。** 用 `method=` 关键字选择模型，和 `scipy.optimize.minimize`、`scipy.integrate.solve_ivp` 一致。`method` 的取值是封闭集合，默认值在合同里写明并说明理由。
-2. **物理输入的签名一致。** 同一族的函数使用相同的物理参数名、单位和轴序。某个模型独有的参数是 keyword-only，传给不支持它的模型时报 `TypeError`。
-3. **Result 键一致。** 同一族返回同一组键。某个模型不提供的量不出现在 Result 里，也不填 `nan`。
-4. **适用范围按模型分别声明。** 每个 `method` 在合同里有自己的适用范围。超出范围时的行为（报错或警告）按第 7 节执行。
-5. **族归属由人决定，写进合同。** 合同新增一个 `family` 字段，记录族名和 `method` 名。族索引由合同生成，不提交进 Git。
-
-族归属是人做的判断，属于需要提交的事实；族索引是机器算出来的结果，每次构建时重新生成。
+**规则正文已迁至 [api-spec](../../skills/development/scirel-code-style/references/api-spec.md) 的 `Model families` 一节**：一族一个入口、`method=` 为封闭集合且默认值写明理由、物理输入签名一致、Result 键一致、按 method 分别声明适用范围、族归属写进合同的 `family` 字段。
 
 ### 5.3 什么时候不该合成一族
 
-如果两个模型的物理输入不同（例如一个需要温度，一个需要完整的分布函数），说明它们回答的不是同一个问题，应该保持为两个函数，在 See Also 里互相引用。不要为了凑成一族，引入"有的模型用、有的模型不用"的物理参数。
+**判据已迁至 [api-spec](../../skills/development/scirel-code-style/references/api-spec.md) 的 `Model families` 一节末段。** 保留的理由：两个模型回答的不是同一个问题时硬合成一族，必然引入"有的模型用、有的模型不用"的物理参数，那会让签名本身开始撒谎。
 
 ## 6. 组合
 
@@ -126,15 +101,7 @@ agent 没有人类工程师那样的旁路能力：它记不住意图，不会�
 
 ### 7.1 报错
 
-报错消息要让 agent 不翻源码就知道下一步该做什么。必须包含：
-
-1. **哪个参数**：参数名。
-2. **违反了什么条件**：例如有限、正值、形状 `(n_r, n_z)`、单位为 eV。
-3. **实际收到的是什么**：形状、dtype、取值范围或违约元素的数目。不要打印整个数组。
-4. **合法的是什么**：封闭选项集要列出全部合法值，数值约束要给出范围。
-5. **去哪里查**：合同的 asset ID。
-
-例子：
+**五要素规则已迁至 [api-spec](../../skills/development/scirel-code-style/references/api-spec.md) 的 `Returns and errors` 一节。** 下面只留一个示意，说明这些要素读起来是什么样：
 
 ```text
 ValueError: method='lindsay' is not a charge-exchange fit; valid methods are
@@ -142,20 +109,15 @@ ValueError: method='lindsay' is not a charge-exchange fit; valid methods are
 scirel.collisions.atomic-hydrogen-charge-exchange-cross-section.
 ```
 
-（例子里的方法名只是示意，不代表实际实现。）
-
-异常类型沿用 api-spec：`ValueError`、`TypeError`、`FloatingPointError`，以及各领域已有的子类。规则是：**库内不允许捕获异常后换成默认值继续运行。**
+（方法名只是示意，不代表实际实现。）
 
 ### 7.2 超出适用范围
 
-- **结果会错得没有任何迹象时**，报错。
-- **结果仍有一定意义、但精度下降时**，发出警告。警告使用统一的 `scirel.ApplicabilityWarning`（`UserWarning` 的子类，新增）。这样 agent 和用户可以用 `warnings.filterwarnings("error", category=...)` 把它升级成错误。目前警告用的是裸 `UserWarning`，无法和其他来源的警告区分。
-- **警告消息必须说明**：哪个量、合法范围、实际取值、对结果的影响（偏高还是偏低，有多严重），以及合同 ID。
-- **静默截断或静默外推一律禁止。** 每次截断都要么报错，要么警告。
+**规则正文已迁至 [api-spec](../../skills/development/scirel-code-style/references/api-spec.md) 的 `Returns and errors` 一节**（何时报错、何时用 `scirel.ApplicabilityWarning` 告警、警告必须说明什么、禁止静默截断与外推）。
 
 ### 7.3 不收敛与状态
 
-迭代求解器的返回值带 `success`、`status`、`message`，和 SciPy 的 `OptimizeResult` 一致。不收敛的结果不能看起来像收敛了。具体是报错还是带状态返回，由合同的 `failure_semantics.nonconvergence` 决定。
+**口径见 [api-spec](../../skills/development/scirel-code-style/references/api-spec.md) 的 `Returns and errors` 一节**：不收敛结果带 `success`/`status`/`message`，是否报错还是带状态返回由合同 `failure_semantics.nonconvergence` 决定。
 
 ### 7.4 自描述
 
@@ -187,19 +149,19 @@ agent 应当只靠安装好的包和分发包，就能从问题一路找到函�
 
 ### 7.6 合同 ID 与包路径一一对应
 
-合同 ID `scirel.<domain>.<name>` 中的 `<domain>`，必须等于该函数的规范模块所在的领域。由检查强制执行。这样 agent 看到 ID 就能直接定位到模块，反过来也一样。
+**规则正文已迁至 [api-spec](../../skills/development/scirel-code-style/references/api-spec.md) 的 `One truth` 一节末段**：合同 ID 的 `<domain>` 段必须等于规范模块所在领域，由合同校验强制执行。
 
 ## 8. 规则放在哪里
 
 | 规则 | 放在哪 | 执行方式 |
 | --- | --- | --- |
-| 分层表、同层白名单、不能成环、函数体内导入也算 | `tests/architecture/` 新检查 + api-spec 的领域表 | 检查失败就判红 |
-| 根级私有模块不得带物理含义；跨领域只能引用公开名字 | 同上 | 检查 |
-| 合同 ID 领域与模块领域一致（7.6） | 合同校验 | 检查 |
+| 分层表、同层白名单、不能成环、函数体内导入也算 | [api-spec](../../skills/development/scirel-code-style/references/api-spec.md) 的 `Domains` 一节 + `tests/architecture/` 检查 | 检查失败就判红 |
+| 根级私有模块不得带物理含义；跨领域只能引用公开名字 | [api-spec](../../skills/development/scirel-code-style/references/api-spec.md) 的 `Domains` 一节 + `tests/architecture/` 检查 | 检查 |
+| 合同 ID 领域与模块领域一致 | [api-spec](../../skills/development/scirel-code-style/references/api-spec.md) 的 `One truth` 一节 + 合同校验 | 检查 |
 | 每层直接子项不超过上限（7.5） | `tests/architecture/` 新检查 | 检查 |
 | 每个 `method` 都有合同条目；`family` 字段齐全 | 合同校验 | 检查 |
-| 报错的五个要素 | api-spec 的 "Returns and errors" 一节 | skill（评审时对照） |
-| 判断哪些函数属于同一族 | api-spec 新增 "Model families" 一节 | skill（需要人判断） |
+| 报错的五个要素、越界告警、不收敛状态 | [api-spec](../../skills/development/scirel-code-style/references/api-spec.md) 的 `Returns and errors` 一节 | skill（评审时对照） |
+| 判断哪些函数属于同一族 | [api-spec](../../skills/development/scirel-code-style/references/api-spec.md) 的 `Model families` 一节 | skill（需要人判断） |
 | 测试不导入私有模块（例外须写明原因） | 检查，附例外清单 | 检查 |
 
 ## 9. 迁移顺序
