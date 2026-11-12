@@ -45,7 +45,11 @@ agree on the evidence. Graded review is the maintainer's authority
 (see #165), so a complete evidence chain is enough to proceed — do not wait for a
 separate human sign-off, and do not widen a tolerance to make a row pass. When
 the evidence cannot settle the question, file a ticket (below) and apply the safe
-default: keep the implementation, record the doubt in the contract's limitations.
+default of `RULES.md` §6, in order: ① change no number, narrow the declared range and
+warn outside it (`ApplicabilityWarning`); ② if the range cannot be stated, record
+UNKNOWN in the contract's `known_limitations` and keep the current behaviour; ③ if an
+out-of-range input yields a wrong result that cannot be warned about, reject it. Never
+widen a tolerance or silently keep an out-of-range claim while waiting for a new model.
 
 ## Tickets
 
