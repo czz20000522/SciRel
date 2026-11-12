@@ -1,6 +1,6 @@
 {
  "schema": "scirel.asset-document",
- "asset_id": "scirel.kinetic.frank-egedal-pressure-closure",
+ "asset_id": "scirel.mirror.frank-egedal-pressure-closure",
  "title": {
   "en": "Frank-Egedal anisotropic pressure closure",
   "zh": "Frank-Egedal 各向异性压强闭合"
@@ -150,19 +150,19 @@
   "implementation_version": "0.0.0",
   "dependencies": [
    {
-    "asset_id": "scirel.kinetic.frank-egedal-radial-envelope"
+    "asset_id": "scirel.mirror.frank-egedal-radial-envelope"
    },
    {
-    "asset_id": "scirel.kinetic.loss-cone-spectrum"
+    "asset_id": "scirel.mirror.loss-cone-spectrum"
    },
    {
-    "asset_id": "scirel.kinetic.frank-egedal-source-projection"
+    "asset_id": "scirel.mirror.frank-egedal-source-projection"
    },
    {
-    "asset_id": "scirel.kinetic.frank-egedal-hot-ion-moments"
+    "asset_id": "scirel.mirror.frank-egedal-hot-ion-moments"
    },
    {
-    "asset_id": "scirel.kinetic.frank-egedal-pressure-state"
+    "asset_id": "scirel.mirror.frank-egedal-pressure-state"
    }
   ]
  },
@@ -195,7 +195,7 @@
    {
     "id": "radial_profile",
     "kind": "function",
-    "asset_id": "scirel.kinetic.frank-egedal-radial-envelope",
+    "asset_id": "scirel.mirror.frank-egedal-radial-envelope",
     "description": "Evaluate the clipped flux-envelope array; runtime asset_loader uses the underscored identity.",
     "inputs": [
      "psi",
@@ -208,7 +208,7 @@
    {
     "id": "loss_cone_spectrum_port",
     "kind": "function",
-    "asset_id": "scirel.kinetic.loss-cone-spectrum",
+    "asset_id": "scirel.mirror.loss-cone-spectrum",
     "description": "Bind the public spectrum callable for source projection; its numerical invocation occurs only when legendre_degrees is absent.",
     "inputs": [],
     "outputs": [
@@ -218,7 +218,7 @@
    {
     "id": "source_mode_projection",
     "kind": "function",
-    "asset_id": "scirel.kinetic.frank-egedal-source-projection",
+    "asset_id": "scirel.mirror.frank-egedal-source-projection",
     "description": "Select or generate Legendre degrees and source coefficients, retaining source and backend metadata.",
     "inputs": [
      "params",
@@ -237,7 +237,7 @@
    {
     "id": "hot_ion_moments",
     "kind": "function",
-    "asset_id": "scirel.kinetic.frank-egedal-hot-ion-moments",
+    "asset_id": "scirel.mirror.frank-egedal-hot-ion-moments",
     "description": "Evaluate field-dependent hot moments and normalize them at b=1 using local quadrature.",
     "inputs": [
      "B",
@@ -258,7 +258,7 @@
    {
     "id": "pressure_assembly",
     "kind": "function",
-    "asset_id": "scirel.kinetic.frank-egedal-pressure-state",
+    "asset_id": "scirel.mirror.frank-egedal-pressure-state",
     "description": "Apply caller scales and radial profile to hot moments and optional gas/electron contributions.",
     "inputs": [
      "psi",

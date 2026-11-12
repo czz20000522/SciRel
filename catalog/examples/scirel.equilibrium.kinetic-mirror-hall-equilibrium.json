@@ -106,7 +106,7 @@
    "shape": "mapping",
    "dtype": "Python dict",
    "required": true,
-   "constraints": "Must be a dict. The bound graph requires mass_kg, charge_c, density_ref_m3, temperature_parallel_j, temperature_perpendicular_ref_j, electron_temperature_j, reference_z, plug_left_z and plug_right_z. Optional kinetic controls, their defaults and validation are defined by scirel.kinetic.grid-mirror-kinetic-closure; r_grid, z_grid, b_t and psi are supplied from the current Hall call and override matching entries. Psi-dependent profiles must interpret the Hall psi=R A_phi in Wb/rad. The wrapper does not reconcile kinetic mass/charge with the Hall mass/charge."
+   "constraints": "Must be a dict. The bound graph requires mass_kg, charge_c, density_ref_m3, temperature_parallel_j, temperature_perpendicular_ref_j, electron_temperature_j, reference_z, plug_left_z and plug_right_z. Optional kinetic controls, their defaults and validation are defined by scirel.mirror.grid-mirror-kinetic-closure; r_grid, z_grid, b_t and psi are supplied from the current Hall call and override matching entries. Psi-dependent profiles must interpret the Hall psi=R A_phi in Wb/rad. The wrapper does not reconcile kinetic mass/charge with the Hall mass/charge."
   },
   {
    "name": "tol",
@@ -550,7 +550,7 @@
   "implementation_version": "0.0.0",
   "dependencies": [
    {
-    "asset_id": "scirel.kinetic.grid-mirror-kinetic-closure"
+    "asset_id": "scirel.mirror.grid-mirror-kinetic-closure"
    },
    {
     "asset_id": "scirel.equilibrium.reduced-hall-anisotropic-picard"
@@ -586,7 +586,7 @@
    {
     "id": "kinetic_binding",
     "kind": "composition",
-    "asset_id": "scirel.kinetic.grid-mirror-kinetic-closure",
+    "asset_id": "scirel.mirror.grid-mirror-kinetic-closure",
     "description": "Bind the nested kinetic callable; it is invoked later by Hall through pressure_closure for each current B and psi.",
     "inputs": [
      "kinetic_composition"

@@ -146,10 +146,10 @@
       "scirel.closures.quasineutral-reference-density",
       "scirel.closures.boltzmann-quasineutrality",
       "scirel.closures.quasineutral-potential",
-      "scirel.closures.mirror-ambipolar-potential",
-      "scirel.kinetic.mirror-total-pressure",
-      "scirel.closures.mirror-quasineutral-closure",
-      "scirel.kinetic.grid-mirror-kinetic-closure"
+      "scirel.mirror.mirror-ambipolar-potential",
+      "scirel.mirror.mirror-total-pressure",
+      "scirel.mirror.mirror-quasineutral-closure",
+      "scirel.mirror.grid-mirror-kinetic-closure"
      ]
     },
     {
@@ -157,9 +157,9 @@
      "title": "Constructing anisotropic pressure from a reference population",
      "introduction": "Given a radial envelope and reference-population moments, assemble parallel and perpendicular pressures and an optional density state. The Frank–Egedal composite entry point uses the documented finite-mode nonnegative reference population; it is not a universally valid exact kinetic solution. Distribution and angular-mode entry points appear in the distribution-function chapter.",
      "assets": [
-      "scirel.kinetic.frank-egedal-radial-envelope",
-      "scirel.kinetic.frank-egedal-pressure-state",
-      "scirel.kinetic.frank-egedal-pressure-closure"
+      "scirel.mirror.frank-egedal-radial-envelope",
+      "scirel.mirror.frank-egedal-pressure-state",
+      "scirel.mirror.frank-egedal-pressure-closure"
      ]
     },
     {
@@ -577,11 +577,11 @@
      "title": "Describing mirror populations and loss cones",
      "introduction": "Inspect the invariant two-temperature distribution and its velocity moments separately, or construct regular angular modes, point-source projections and hot-ion moments for a given reference population. Loss-cone occupation, accessible orbits and normalization conditions must be explicit; computing a distribution or moments does not simultaneously solve the potential, collision evolution and magnetic field.",
      "assets": [
-      "scirel.kinetic.mirror-invariant-distribution",
-      "scirel.kinetic.mirror-constrained-moments",
-      "scirel.kinetic.loss-cone-spectrum",
-      "scirel.kinetic.frank-egedal-source-projection",
-      "scirel.kinetic.frank-egedal-hot-ion-moments"
+      "scirel.mirror.mirror-invariant-distribution",
+      "scirel.mirror.mirror-constrained-moments",
+      "scirel.mirror.loss-cone-spectrum",
+      "scirel.mirror.frank-egedal-source-projection",
+      "scirel.mirror.frank-egedal-hot-ion-moments"
      ]
     },
     {

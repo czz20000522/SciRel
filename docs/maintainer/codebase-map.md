@@ -165,7 +165,7 @@ Representative entry points:
 - `scirel.kinetic.generalized-root-scans`
 - `scirel.kinetic.vp-landau`
 - `scirel.kinetic.kinetic-dispersion-relation`
-- `scirel.closures.mirror-quasineutral-closure`
+- `scirel.mirror.mirror-quasineutral-closure`
 
 Compositions inherit the contracts of their member operators. A composition
 pass is not evidence that every possible user task is covered.
