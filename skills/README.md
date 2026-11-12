@@ -26,7 +26,7 @@ SciRel has three roles. Each has one entry skill and its own acceptance standard
 
 | Skill | Use |
 | --- | --- |
-| `development/integration/scirel-integration` | Entry: integrate candidates |
+| `development/integration/scirel-integration` | Entry: the merge line — validate an extraction package, judge its manifest verdicts, answer every open review comment |
 | `development/integration/scientific-asset-normalization`, `scientific-asset-correctness`, `scirel-review-preparation` | Steps it routes to |
 | `development/scirel-acceptance` | Local checks for every change |
 | `development/scirel-code-style` | Code style and public API rules |

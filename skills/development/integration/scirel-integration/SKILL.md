@@ -1,95 +1,105 @@
 ---
 name: scirel-integration
-description: Coordinate D2 integration of saved D1 assets into a runnable scientific development library, routing correctness, normalization, repair and documentation with exact evidence.
+description: Merge-line method for bringing an extraction package into SciRel — validate the package, judge each manifest verdict, file decided tickets, answer every open review comment, and never rewrite the extractor's work.
 ---
 
-# SciReL D2 integration
+# SciRel merge line
 
-Use the shared operating contract already loaded for this task mode. If it is
-not loaded, read [the shared operating contract](../../references/scirel-development-core.md)
-once before proceeding; do not reload it for each routed sub-skill.
-Outbound capability-gap cards use the shared format in
-[`capability-gap-intake.md`](../../scirel-outbound-evaluation/references/capability-gap-intake.md).
-Treat them as intake evidence: promote only reusable scientific relations;
-leave task-specific orchestration as explicit glue.
-Own the D2 queue and the durable development candidate: compare, deduplicate, route correctness, normalize,
-assemble and prepare stable documentation. D1 fidelity (including original errors) and D3 application evidence are
-separate. This skill cannot grant human approval, rights or release.
+The merge line consumes an **extraction package** and decides whether it enters
+the library. It judges and reviews; it does not re-extract, does not repair a
+defective package, and does not fill in an expert decision. The rules behind
+this method are in [`docs/maintainer/supply-pipeline.md`](../../../../docs/maintainer/supply-pipeline.md)
+sections 5–7; read them once before using this skill.
 
-## Priority execution card
+Read the shared operating contract once if this task mode has not loaded it:
+[the shared operating contract](../../references/scirel-development-core.md).
 
-Treat this skill as the merge coordinator's operating protocol. On entry,
-write `packet`, `scope`, `public claim`, `glue claim`, `test matrix`,
-`reverse dependencies`, `stop condition` and `reopen condition`. Read the
-actual packet and public contracts before choosing a projection; do not infer a
-capability from a demo script or a test count.
+## Inputs
 
-Before promotion, run or reuse evidence for normal, lower-bound and upper-bound
-inputs, then attack applicable degenerate, branch, failure and composition
-paths. Use failures to refine the public contract or create a successor packet.
-Do not make the first example the API. Keep task-specific orchestration and
-ordinary data/control glue explicit and testable; promote a relation only when
-it recurs across independent tasks or has a stable public scientific contract.
+The only input is an extraction package. Its format is defined in
+`supply-pipeline.md` section 5: `manifest.md` (one row per capability: contract
+id, domain, layer, family, and one of the four comparison verdicts),
+`disposition.md` (one line per un-extracted part and why), `tickets/`, and the
+candidate assets with their contracts and tests.
 
-Close with an integration result that names accepted public assets, retained
-glue, affected tests, failed/`NOT_RUN` rows, and the exact next action. An
-integrated code diff without this evidence remains a development candidate.
+Run `scripts/validate_extraction_package.py` first. A format failure is a
+package defect: return the defect list to the extraction line and let a new
+extraction agent continue from the archived package. Do not repair frozen
+controls in place, do not rerun valid science for a packaging defect, and do not
+edit the package to make the validator pass.
 
-At portfolio scale, maintain a promotion queue separate from the demo queue.
-The queue may be opened by a source candidate packet even when no user problem
-exists; a later consumer challenge is evidence for usability, not a prerequisite
-for noticing a reusable relation. Promote a relation only when its contract and
-boundary matrix are supported by the packet and it recurs across independent
-consumers, or when it is a stable public composition with its own direct tests.
-A source-specific orchestration remains source evidence until a consumer
-contract makes its glue status meaningful. After promotion, rerun the clean
-outbound challenge and only the affected reverse dependencies; lifecycle actions
-apply only to merge workers owned by the current coordinator.
+## Judge each verdict
 
-## Coordinator loop
+Walk `manifest.md` row by row. Each verdict is one of four values and each has
+one required action:
 
-When the task consumes an exact D1 packet, run the following coordinator loop.
-For direct SciRel product development without a D1 packet, use the product
-development path below and do not invent a D1 freeze or a complete project
-denominator.
+| Verdict | Action |
+| --- | --- |
+| Already present | Bind to the existing asset; add a new method only if the row carries independent evidence for it |
+| New method of an existing family | Add the method to that family; the family keeps one entry and one selector convention |
+| Genuinely new | New asset with its own contract, direct tests and boundary matrix |
+| Not accepted | Record the reason; the capability does not enter the library |
 
-1. Freeze the D1 handoff, complete denominator, target/dependency hashes, source issues, runtime and rights/licence
-   evidence. Keep upstream deliveries read-only and preserve every failure/`NOT_RUN` row. Receive the neutral
-   capability-level replay data as well as the callable package: frozen inputs/expected observations, exact
-   encoding/special-token decoding, axes/units/real-complex and NaN/Inf/comparison rules, diagnostics and the
-   relevant first-failure/repair chain. A source PASS summary alone is insufficient. These records are evidence
-   outside callable runtime dependencies, not hidden answers to a new application question; preserve them while
-   D2 replay/review consumes them without requiring the source checkout or private project mapping. Retain legal
-   attribution bytes unchanged. Validate the extraction package with `scripts/validate_extraction_package.py`; do not repair
-   frozen controls in place or rerun valid science for a packaging defect.
-2. Route each issue once: scientific/numerical claim to [asset correctness](../scientific-asset-correctness/SKILL.md);
-   selected qualified batch to [normalization](../scientific-asset-normalization/SKILL.md); source-only gap back to D1;
-   application/repeatability to D3. Do not send every intermediate choice to a human.
-3. For a confirmed determinate defect, use [scientific correction](../scientific-asset-correctness/references/scientific-correction.md):
-   diagnose, implement successor, independently validate, then obtain read-only review. A defect list is not
-   remediation; temporary runtime failure remains pending with a reopen condition.
-4. Assemble only compatible contracts. Preserve ports, units, axes, state ownership, order, convergence, exceptions,
-   native/build/ABI and dependency closure. Keep task-specific glue explicit and
-   testable; do not hide a reusable scientific relation in glue or replace a
-   declared failure with a warning.
-5. Reuse evidence by exact identity; rerun affected reverse dependencies after changes. Produce a stable candidate,
-   exact integration manifest, evidence matrix, limitations, unresolved owner decisions and next review owner.
+A **physics correction** is a B-level change: two independent reviewers must
+agree on the evidence. Graded review is the maintainer's authority
+(see #165), so a complete evidence chain is enough to proceed — do not wait for a
+separate human sign-off, and do not widen a tolerance to make a row pass. When
+the evidence cannot settle the question, file a ticket (below) and apply the safe
+default: keep the implementation, record the doubt in the contract's limitations.
 
-Formal asset documents are created once code is stable and before final review freeze. The compact handoff is evidence,
-not approval or release; the receiving project supplies lifecycle and distribution policy.
+## Tickets
 
-## Direct product-development path
+Move the package's `tickets/` into this repository as `tickets/<kind>/<id>.md`
+(M3), preserving frontmatter. The repository is public: a ticket must not name
+the source project, a private path or unpublished material; point at the
+package's `private/` instead. Status lives only in frontmatter, and only the
+owner of a field writes it — the review platform writes `decisions`,
+`resolution` and the `decided` transition; agents write everything else.
 
-For a source, API, test, documentation or performance change made in the
-SciRel tree, bind the Git base/head and the affected public surface, then use
-the repository's affected selector and reverse dependencies. Add a regression
-before changing scientific behavior, keep existing tolerances and failure
-semantics, and update the callable docstring/user-facing example when a public
-contract changes. Update benchmarks when making a performance claim and record
-a comparable before/after observation. Accumulate complete related changes in
-Git; do not mix unrelated work into the same commit.
+Before starting any work, list tickets whose status is `decided` and handle them
+first. A ticket must be readable on its own page: an expert decides from that
+file without opening anything else.
 
-Keep the direct path in `development` unless the task names a consumer,
-handoff or release decision. Use the canonical
-[development lifecycle](../../references/development-lifecycle.md) for version,
-closure, artifact and gate decisions; do not reproduce those rules here.
+## Answer every open review comment before merging
+
+A review comment is part of the evidence chain, so an unanswered comment means
+the review did not happen. Before merging, list every comment on the pull
+request — `gh pr view <n> --comments` and
+`gh api repos/{owner}/{repo}/pulls/<n>/comments` — and require a written response
+for each of these:
+
+- every Codex finding while `has_unresolved_findings` is true;
+- every human or agent review marked as a required change.
+
+A response is either "changed in `<sha>`" or "not changing, because …". A
+reasoned refusal may merge, but it needs a tracking issue. The merge record (the
+final "reviewed and merged" comment) lists the disposition of every such comment.
+Skipping this step is not a shortcut; it is the failure mode where a merged
+branch keeps contradicting its own contract.
+
+## Assemble and verify
+
+- Rebase the patch onto the latest `main`. Mechanical conflicts (a path or a name
+  that already moved) are the merge line's job.
+- Run the validator and the complete check with `scripts/dev.py check`; add the
+  hidden tests when the case maps to one. Release evidence is that run, and it
+  must carry the `EXCLUSIVE` line.
+- Preserve ports, units, axes, state ownership, order, convergence, exceptions,
+  native/build/ABI and dependency closure. Keep task-specific glue explicit and
+  testable; do not hide a reusable scientific relation in glue and do not replace
+  a declared failure with a warning.
+- When several candidates merge together, open a separate integration worktree
+  and re-verify the combination there; do not merge on the strength of
+  per-branch runs alone.
+- Reuse evidence by exact identity and rerun the affected reverse dependencies
+  after a change.
+
+Close with a merge record that names the accepted assets, the retained glue, the
+affected tests, the failed and `NOT_RUN` rows, and the disposition of every review
+comment. A diff without that record is still a candidate.
+
+## What this skill cannot do
+
+It cannot grant human approval, rights or release; it cannot decide a C-level
+question; and it cannot accept a capability the maintainer froze. A freeze is a
+scope decision, not a merge-line judgement.

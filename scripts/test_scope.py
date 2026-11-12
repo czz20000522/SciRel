@@ -68,7 +68,6 @@ SCRIPT_LAYERS = {
     "validate_capability_runtime_closure.py": ("architecture",),
     "validate_extraction_package.py": ("tooling",),
     "validate_installed_wheel.py": ("delivery",),
-    "validate_overlap_record.py": ("delivery",),
     "validate_runtime_imports.py": ("architecture",),
 }
 PACKAGING_FILES = {"pyproject.toml", "setup.py", "setup.cfg", "MANIFEST.in"}
@@ -264,8 +263,6 @@ def classify(relative: Path) -> tuple[list[str], list[str]]:
         return [_layer_target("tooling"), _layer_target("architecture")], []
 
     if parts[0] == "contracts":
-        if len(parts) >= 2 and parts[1] == "reception":
-            return [_layer_target("delivery")], ["reception contract"]
         return [
             _layer_target("architecture"),
             _layer_target("tooling"),
