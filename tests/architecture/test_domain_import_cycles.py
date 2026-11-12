@@ -13,9 +13,9 @@ SOURCE = Path(__file__).resolve().parents[2] / "src" / "scirel"
 COMPOSITION_LAYER = "_framework_compositions"
 
 
-def module_name(path: Path) -> str:
-    """返回 ``src/scirel`` 下某个文件对应的点分模块名。"""
-    relative = path.relative_to(SOURCE.parent)
+def module_name(path: Path, source: Path = SOURCE) -> str:
+    """返回 ``source`` 下某个文件对应的点分模块名。"""
+    relative = path.relative_to(source.parent)
     parts = (
         list(relative.parent.parts)
         if path.name == "__init__.py"
@@ -62,9 +62,15 @@ def imported_targets(tree: ast.AST, module: str, domains: frozenset[str], *, is_
             absolute = _absolute_target(node, package)
             if absolute is None:
                 continue
-            target = domain_of(absolute, domains)
-            if target is not None:
-                yield target, node.lineno, in_function
+            seen = set()
+            candidates = [absolute] + [
+                f"{absolute}.{alias.name}" for alias in node.names if alias.name != "*"
+            ]
+            for candidate in candidates:
+                target = domain_of(candidate, domains)
+                if target is not None and target not in seen:
+                    seen.add(target)
+                    yield target, node.lineno, in_function
 
 
 def _walk_with_function_context(node: ast.AST, in_function: bool = False):
@@ -94,7 +100,7 @@ def domain_edges(root: Path = SOURCE):
     nested = []
     files = sorted(root.rglob("*.py"))
     for path in files:
-        module = module_name(path)
+        module = module_name(path, root)
         source = domain_of(module, domains)
         tree = ast.parse(path.read_text(encoding="utf-8"))
         is_package = path.name == "__init__.py"
@@ -166,14 +172,32 @@ def test_import_scan_reaches_function_bodies_and_relative_imports():
         "    from . import helper\n"
         "    from ..beta.deep import other\n"
         "    import scirel.alpha.sub\n"
+        "from scirel import beta as beta_package\n"
+        "from .. import alpha as alpha_package\n"
     )
     found = sorted(imported_targets(tree, "scirel.alpha.module", domains, is_package=False))
     assert found == [
         ("alpha", 3, True),
         ("alpha", 5, True),
+        ("alpha", 7, False),
         ("beta", 1, False),
         ("beta", 4, True),
+        ("beta", 6, False),
     ], found
+
+
+def test_cycle_visible_only_through_root_package_aliases_is_detected(tmp_path):
+    """只在 ``from scirel import X`` 这种根包别名下存在的环，也必须被抓到。"""
+    source = tmp_path / "src" / "scirel"
+    for name in ("alpha", "beta"):
+        (source / name).mkdir(parents=True)
+    (source / "alpha" / "__init__.py").write_text("from scirel import beta\n", encoding="utf-8")
+    (source / "beta" / "__init__.py").write_text("from scirel import alpha\n", encoding="utf-8")
+
+    edges, _, scanned = domain_edges(source)
+
+    assert scanned == 2
+    assert strongly_connected(edges) == [["alpha", "beta"]], edges
 
 
 def _describe(cycles, edges) -> str:
