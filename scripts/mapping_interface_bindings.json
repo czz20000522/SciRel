@@ -37,7 +37,7 @@
    "review_basis": "The adapter copies inputs, pops grid_controls with {}, forwards outer ports and unpacked grid to _fluid_parallel.scan_fluid_corrected. Grid entries are documented nested scientific controls, not additional top-level document ports. Duplicate/unrecognized keywords preserve Python TypeError."
   },
   {
-   "asset_id": "scirel.closures.mirror-quasineutral-closure",
+   "asset_id": "scirel.mirror.mirror-quasineutral-closure",
    "callable": "scirel.mirror.mirror_quasineutral_closure.solve_mirror_quasineutral_closure",
    "ports": [
     {
@@ -600,7 +600,7 @@
    "review_basis": "_run_composition requires R,Z,vacuum psi,Green psi,pressure callable,ion mass/charge. Scalar parsers establish the documented outer/Hall/inertial defaults, mask/cell_edges default None, terminal fixed point/current/Ohm evidence reused. compose merges supplied mappings and kwargs before graph evaluation."
   },
   {
-   "asset_id": "scirel.kinetic.frank-egedal-pressure-closure",
+   "asset_id": "scirel.mirror.frank-egedal-pressure-closure",
    "callable": "scirel.mirror.frank_egedal_pressure_closure.solve_frank_egedal_pressure_closure",
    "ports": [
     {
@@ -628,7 +628,7 @@
    "review_basis": "_run_composition consumes psi,B,params and calls radial envelope,source projection with spectral solver,hot-ion moments,then pressure assembly. The pressure adapter passes the five canonical pressure scales as keyword-only arguments and rejects the removed p0/background_density aliases. The document has exactly these three scientific ports; other closure defaults remain inside params and bound dependencies."
   },
   {
-   "asset_id": "scirel.kinetic.grid-mirror-kinetic-closure",
+   "asset_id": "scirel.mirror.grid-mirror-kinetic-closure",
    "callable": "scirel.mirror.grid_mirror_kinetic_closure.solve_grid_mirror_kinetic_closure",
    "ports": [
     {

@@ -147,10 +147,10 @@
       "scirel.closures.quasineutral-reference-density",
       "scirel.closures.boltzmann-quasineutrality",
       "scirel.closures.quasineutral-potential",
-      "scirel.closures.mirror-ambipolar-potential",
-      "scirel.kinetic.mirror-total-pressure",
-      "scirel.closures.mirror-quasineutral-closure",
-      "scirel.kinetic.grid-mirror-kinetic-closure"
+      "scirel.mirror.mirror-ambipolar-potential",
+      "scirel.mirror.mirror-total-pressure",
+      "scirel.mirror.mirror-quasineutral-closure",
+      "scirel.mirror.grid-mirror-kinetic-closure"
      ]
     },
     {
@@ -158,9 +158,9 @@
      "title": "由参考粒子群构造各向异性压强",
      "introduction": "给定径向包络和参考粒子群矩，组装平行、垂直压强以及可选密度状态。Frank–Egedal 复合入口采用文档中明确的有限模态非负参考群体；它不是普遍成立的精确动理学解。分布与角模态入口见分布函数一章。",
      "assets": [
-      "scirel.kinetic.frank-egedal-radial-envelope",
-      "scirel.kinetic.frank-egedal-pressure-state",
-      "scirel.kinetic.frank-egedal-pressure-closure"
+      "scirel.mirror.frank-egedal-radial-envelope",
+      "scirel.mirror.frank-egedal-pressure-state",
+      "scirel.mirror.frank-egedal-pressure-closure"
      ]
     },
     {
@@ -584,11 +584,11 @@
      "title": "描述磁镜粒子群与损失锥",
      "introduction": "分别查看不变量双温分布及其速度矩，或构造规则角模态、点源投影和给定参考群体的热离子矩。损失锥占据、可达轨道与归一化条件须明确；计算分布或矩并不同时求解电势、碰撞演化和磁场。",
      "assets": [
-      "scirel.kinetic.mirror-invariant-distribution",
-      "scirel.kinetic.mirror-constrained-moments",
-      "scirel.kinetic.loss-cone-spectrum",
-      "scirel.kinetic.frank-egedal-source-projection",
-      "scirel.kinetic.frank-egedal-hot-ion-moments"
+      "scirel.mirror.mirror-invariant-distribution",
+      "scirel.mirror.mirror-constrained-moments",
+      "scirel.mirror.loss-cone-spectrum",
+      "scirel.mirror.frank-egedal-source-projection",
+      "scirel.mirror.frank-egedal-hot-ion-moments"
      ]
     },
     {

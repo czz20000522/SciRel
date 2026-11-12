@@ -55,7 +55,7 @@ def test_reduced_hall_closure_does_not_load_equilibrium_private_helpers() -> Non
 
 
 def test_mirror_ambipolar_closure_loads_only_the_mirror_private_kernel() -> None:
-    result = measure(ROOT, asset_id="scirel.closures.mirror-ambipolar-potential")
+    result = measure(ROOT, asset_id="scirel.mirror.mirror-ambipolar-potential")
 
     assert result["status"] == "PASS"
     assert "scirel.mirror._mirror_numerics" in result["loaded_scirel_modules"]

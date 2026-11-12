@@ -1,6 +1,6 @@
 {
  "schema": "scirel.asset-document",
- "asset_id": "scirel.closures.mirror-quasineutral-closure",
+ "asset_id": "scirel.mirror.mirror-quasineutral-closure",
  "title": {
   "en": "Bi-Maxwellian mirror quasineutral closure",
   "zh": "双温镜准中性闭合"
@@ -490,10 +490,10 @@
     "asset_id": "scirel.closures.quasineutral-reference-density"
    },
    {
-    "asset_id": "scirel.kinetic.mirror-constrained-moments"
+    "asset_id": "scirel.mirror.mirror-constrained-moments"
    },
    {
-    "asset_id": "scirel.kinetic.mirror-total-pressure"
+    "asset_id": "scirel.mirror.mirror-total-pressure"
    }
   ]
  },
@@ -629,7 +629,7 @@
    {
     "id": "kinetic_moments",
     "kind": "function",
-    "asset_id": "scirel.kinetic.mirror-constrained-moments",
+    "asset_id": "scirel.mirror.mirror-constrained-moments",
     "description": "Expand moment_inputs and evaluate the mirror ion mapping at each trial potential and once more at the final potential.",
     "inputs": [
      "moment_inputs",
@@ -684,7 +684,7 @@
    {
     "id": "pressure_assembly",
     "kind": "function",
-    "asset_id": "scirel.kinetic.mirror-total-pressure",
+    "asset_id": "scirel.mirror.mirror-total-pressure",
     "description": "Assemble final ion/electron mappings and add electron pressure to both ion pressure components.",
     "inputs": [
      "kinetic_moments",

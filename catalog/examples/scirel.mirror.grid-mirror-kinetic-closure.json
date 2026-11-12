@@ -1,6 +1,6 @@
 {
  "schema": "scirel.asset-document",
- "asset_id": "scirel.kinetic.grid-mirror-kinetic-closure",
+ "asset_id": "scirel.mirror.grid-mirror-kinetic-closure",
  "title": {
   "en": "Grid-aware mirror kinetic and ambipolar closure",
   "zh": "网格镜端动理学闭合"
@@ -672,10 +672,10 @@
   "implementation_version": "0.0.0",
   "dependencies": [
    {
-    "asset_id": "scirel.closures.mirror-ambipolar-potential"
+    "asset_id": "scirel.mirror.mirror-ambipolar-potential"
    },
    {
-    "asset_id": "scirel.closures.mirror-quasineutral-closure"
+    "asset_id": "scirel.mirror.mirror-quasineutral-closure"
    },
    {
     "asset_id": "scirel.geometry.flux-surface-profile"
@@ -766,7 +766,7 @@
    {
     "id": "end_loss",
     "kind": "function",
-    "asset_id": "scirel.closures.mirror-ambipolar-potential",
+    "asset_id": "scirel.mirror.mirror-ambipolar-potential",
     "description": "Run the end-loss operator once per side in evaluate mode for prescribed plug potentials or solve mode for ambipolar_end_loss.",
     "inputs": [
      "field_profiles",
@@ -791,7 +791,7 @@
    {
     "id": "local_quasineutral",
     "kind": "composition",
-    "asset_id": "scirel.closures.mirror-quasineutral-closure",
+    "asset_id": "scirel.mirror.mirror-quasineutral-closure",
     "description": "Solve the nested local quasineutral potential, ion/electron state and total pressure on the full grid.",
     "inputs": [
      "grid_and_rows",
