@@ -12,8 +12,8 @@ the caller remains responsible for selecting a collision model and checking
 whether a returned logarithm is physically adequate.
 
 ``calculate_log_lambda_ee`` and ``calculate_log_lambda_ei`` evaluate the
-high-temperature (quantum cutoff, ``b_min = lambda_dB``) branch, which the NRL
-Plasma Formulary uses above ``T_e ~ 10 Z^2 eV``; for the Z=1 signatures here
+high-temperature (quantum cutoff, ``b_min = lambda_dB``) branch, which the standard classical-cutoff convention
+switches at ``T_e ~ 10 Z^2 eV`` (source provenance pending, see below); for the Z=1 signatures here
 that is 10 eV. Below it the classical cutoff ``b_cl = Z e^2/(4 pi eps0 k T)``
 sets ``b_min`` and the quantum branch overstates the logarithm, so those two
 relations warn below the boundary (issue #10 item 3). ``calculate_log_lambda_ii``
@@ -28,7 +28,10 @@ import numpy as np
 
 from scirel import ApplicabilityWarning
 
-# NRL Plasma Formulary low-temperature boundary for the electron branches: T_e ~ 10 Z^2 eV.
+# Low-temperature boundary for the electron branches, T_e ~ 10 Z^2 eV. The attribution of this
+# value (and of the classical forms below) is NOT verified against an original source: the
+# Formulary PDF was unavailable, so the contracts say "a classical-cutoff form (source pending)"
+# rather than naming it as a verified citation.
 # These signatures carry no charge number, so Z = 1 and the boundary is 10 eV = 0.01 keV.
 _QUANTUM_BRANCH_LOW_KEV = 0.01
 
@@ -73,20 +76,66 @@ def _finite_result(value, name):
     return value
 
 
-def _warn_below_quantum_branch(temperature_kev, name, contract_id):
-    """Warn once per call when a sample sits below the NRL quantum-branch boundary."""
-    if np.any(np.asarray(temperature_kev) < _QUANTUM_BRANCH_LOW_KEV):
-        lowest_ev = float(np.min(np.asarray(temperature_kev))) * 1000.0
-        warnings.warn(
-            f"{name}: electron temperature below the NRL quantum-branch boundary of 10 Z^2 eV"
-            f" (Z = 1 here, so 10 eV; lowest input {lowest_ev:.6g} eV) returns the high-temperature"
-            " value of the Coulomb logarithm: relative to the NRL classical form below the boundary"
-            " (23 - ln(n_e^0.5 Z T_e^-1.5), T_e in eV, n_e in cm^-3) it reads about +49% at"
-            " 0.1 eV and +14% at 1 eV for n_e = 1e19 m^-3, because there the classical cutoff"
-            f" b_cl = Z e^2/(4 pi eps0 k T) sets the minimum impact parameter ({contract_id})",
-            ApplicabilityWarning,
-            stacklevel=3,
-        )
+def _lowest_ev(temperature_kev):
+    """Return the lowest input temperature in eV, or None when no sample is below the boundary."""
+    values = np.asarray(temperature_kev)
+    if not np.any(values < _QUANTUM_BRANCH_LOW_KEV):
+        return None
+    return float(np.min(values)) * 1000.0
+
+
+def _warn_below_quantum_branch_ee(temperature_kev):
+    """Warn once per call for e-e samples below the quantum-branch boundary.
+
+    The e-e pair has its own classical reference, ``24 - ln(n_e^0.5 T_e^-1)``: the
+    two branches share the same temperature dependence, so the quantum form stays
+    within about 1.4% of it instead of the much larger e-i gap.  Keeping this text
+    separate is deliberate -- the e-i numbers do not describe this pair.
+    """
+    lowest_ev = _lowest_ev(temperature_kev)
+    if lowest_ev is None:
+        return
+    warnings.warn(
+        "calculate_log_lambda_ee: electron temperature below the 10 Z^2 eV quantum-branch boundary of"
+        f" 10 Z^2 eV (Z = 1 here, so 10 eV; lowest input {lowest_ev:.6g} eV) returns the"
+        " high-temperature value of the electron-electron Coulomb logarithm. Below the boundary"
+        " the classical cutoff b_cl = e^2/(4 pi eps0 k T) sets the minimum impact parameter and"
+        " a classical-cutoff e-e form 24 - ln(n_e^0.5 T_e^-1) (T_e in eV, n_e in cm^-3; source pending,"
+        " UNKNOWN) applies;"
+        " the returned value is about +1.37% above it at 0.1 eV and +1.02% at 1 eV for"
+        " n_e = 1e19 m^-3. The value is returned unchanged; the classical branch is a separate"
+        " relation (scirel.physics.coulomb-ee)",
+        ApplicabilityWarning,
+        stacklevel=3,
+    )
+
+
+def _warn_below_quantum_branch_ei(temperature_kev):
+    """Warn once per call for e-i samples below the quantum-branch boundary.
+
+    The e-i classical reference is ``23 - ln(n_e^0.5 Z T_e^-1.5)``.  That branch
+    differs in temperature dependence, so the gap is large below the boundary
+    (+55% at 0.1 eV) and the two forms cross near 16.2 eV -- above the crossing the
+    quantum form reads *lower*, which is why the boundary is not a "below is wrong,
+    above is right" rule.
+    """
+    lowest_ev = _lowest_ev(temperature_kev)
+    if lowest_ev is None:
+        return
+    warnings.warn(
+        "calculate_log_lambda_ei: electron temperature below the 10 Z^2 eV quantum-branch boundary of"
+        f" 10 Z^2 eV (Z = 1 here, so 10 eV; lowest input {lowest_ev:.6g} eV) returns the"
+        " high-temperature value of the electron-ion Coulomb logarithm. Below the boundary the"
+        " classical cutoff b_cl = Z e^2/(4 pi eps0 k T) sets the minimum impact parameter and the"
+        " a classical-cutoff e-i form 23 - ln(n_e^0.5 Z T_e^-1.5) (T_e in eV, n_e in cm^-3; source"
+        " pending, UNKNOWN) applies;"
+        " the returned value is about +55.5% above it at 0.1 eV and +17.3% at 1 eV for"
+        " n_e = 1e19 m^-3, and the two forms cross near 16.2 eV, above which this quantum form"
+        " reads lower. The value is returned unchanged; the classical branch is a separate"
+        " relation (scirel.physics.coulomb-ei)",
+        ApplicabilityWarning,
+        stacklevel=3,
+    )
 
 
 def calculate_log_lambda_ee(T_e, n_e):
@@ -125,14 +174,17 @@ def calculate_log_lambda_ee(T_e, n_e):
     Warns
     -----
     ApplicabilityWarning
-        If any input temperature is below 10 eV, the NRL Plasma Formulary
-        boundary ``T_e ~ 10 Z^2 eV`` for this quantum-cutoff (``b_min =
-        lambda_dB``) branch at Z = 1. Below it the classical cutoff
-        ``b_cl = Z e^2/(4 pi eps0 k T)`` sets the minimum impact parameter and
-        the value returned here overstates the logarithm relative to the NRL
-        classical form: about +49% at 0.1 eV and +14% at 1 eV for
-        ``n_e = 1e19 m^-3``. The value is returned unchanged; the classical
-        branch is a separate relation.
+        If any input temperature is below 10 eV, the ``T_e ~ 10 Z^2 eV``
+        boundary for this quantum-cutoff (``b_min = lambda_dB``) branch at Z = 1.
+        Below it the classical cutoff ``b_cl = e^2/(4 pi eps0 k T)`` sets the
+        minimum impact parameter and a classical-cutoff **electron-electron** form
+        ``24 - ln(n_e^0.5 T_e^-1)`` (source provenance pending, UNKNOWN)
+        (``T_e`` in eV, ``n_e`` in cm^-3) applies. The two e-e branches share the
+        same temperature dependence, so the value returned here stays close to
+        that form: about +1.37% at 0.1 eV and +1.02% at 1 eV for
+        ``n_e = 1e19 m^-3``. Do not reuse the e-i numbers here -- the e-i pair
+        has a different classical form and a much larger gap. The value is
+        returned unchanged; the classical branch is a separate relation.
 
     See Also
     --------
@@ -152,7 +204,7 @@ def calculate_log_lambda_ee(T_e, n_e):
     >>> assert np.isfinite(low) and len(caught) == 1
     """
     T, n = _positive_broadcast(("T_e", T_e), ("n_e", n_e))
-    _warn_below_quantum_branch(T, "calculate_log_lambda_ee", "scirel.physics.coulomb-ee")
+    _warn_below_quantum_branch_ee(T)
     with np.errstate(over="ignore", invalid="ignore"):
         result = 31.0 + np.log(1000.0) + np.log(T) - 0.5 * np.log(n)
     return _finite_result(result, "electron-electron Coulomb logarithm")
@@ -194,14 +246,17 @@ def calculate_log_lambda_ei(T_e, n_e):
     Warns
     -----
     ApplicabilityWarning
-        If any input temperature is below 10 eV, the NRL Plasma Formulary
-        boundary ``T_e ~ 10 Z^2 eV`` for this quantum-cutoff (``b_min =
-        lambda_dB``) branch at Z = 1. Below it the classical cutoff
-        ``b_cl = Z e^2/(4 pi eps0 k T)`` sets the minimum impact parameter and
-        the value returned here overstates the logarithm, whose NRL classical
-        form is ``23 - ln(n_e^0.5 Z T_e^-1.5)`` with ``T_e`` in eV and ``n_e``
-        in cm^-3. The value is returned unchanged; the classical branch is a
-        separate relation.
+        If any input temperature is below 10 eV, the ``T_e ~ 10 Z^2 eV``
+        boundary for this quantum-cutoff (``b_min = lambda_dB``) branch at Z = 1.
+        Below it the classical cutoff ``b_cl = Z e^2/(4 pi eps0 k T)`` sets the
+        minimum impact parameter and a classical-cutoff **electron-ion** form
+        (source provenance pending, UNKNOWN)
+        ``23 - ln(n_e^0.5 Z T_e^-1.5)`` (``T_e`` in eV, ``n_e`` in cm^-3)
+        applies; the value returned here is about +55% above it at 0.1 eV and
+        +17% at 1 eV for ``n_e = 1e19 m^-3``. The two forms cross near 16.2 eV,
+        and above the crossing this quantum form reads *lower*, so the boundary
+        is not a "below is wrong, above is right" rule. The value is returned
+        unchanged; the classical branch is a separate relation.
 
     See Also
     --------
@@ -221,7 +276,7 @@ def calculate_log_lambda_ei(T_e, n_e):
     >>> assert np.isfinite(low) and len(caught) == 1
     """
     T, n = _positive_broadcast(("T_e", T_e), ("n_e", n_e))
-    _warn_below_quantum_branch(T, "calculate_log_lambda_ei", "scirel.physics.coulomb-ei")
+    _warn_below_quantum_branch_ei(T)
     with np.errstate(over="ignore", invalid="ignore"):
         result = 31.3 + np.log(1000.0) + np.log(T) - 0.5 * np.log(n)
     return _finite_result(result, "electron-ion Coulomb logarithm")
@@ -266,7 +321,7 @@ def calculate_log_lambda_ii(T_i, n_i, Z_i):
     Notes
     -----
     This relation already uses the classical cutoff branch (``T_i^1.5``), which
-    is what the NRL formulary uses for ion-ion collisions, so the
+    is the classical-cutoff form used for ion-ion collisions, so the
     ``T_e ~ 10 Z^2 eV`` boundary that applies to the electron forms does not
     trigger a warning here (issue #10 item 3).
 

@@ -75,20 +75,20 @@
  "applicability": {
   "preconditions": [
    "strictly positive finite T_e in keV and n_e in m^-3",
-   "Above 10 eV the caller accepts the high-temperature (quantum cutoff) branch: the relation is the NRL form for T_e > 10 Z^2 eV, which is 10 eV at Z = 1 for this signature, and warns below it."
+   "Above 10 eV the caller accepts the high-temperature (quantum cutoff) branch: the relation is the quantum-cutoff form for T_e > 10 Z^2 eV, which is 10 eV at Z = 1 for this signature, and warns below it. The provenance of the 10 Z^2 eV boundary is NOT verified against an original source (UNKNOWN)."
   ],
   "supported": [
-   "Finite NumPy evaluation of the declared relation and broadcast shape on the quantum-cutoff branch, valid above the NRL boundary T_e ~ 10 Z^2 eV (10 eV here)."
+   "Finite NumPy evaluation of the declared relation and broadcast shape on the quantum-cutoff branch, valid above the declared T_e ~ 10 Z^2 eV boundary (10 eV here; boundary provenance UNKNOWN)."
   ],
   "excluded": [
    "Whole-transport evolution, experimental calibration, and implicit coordinate reconstruction.",
    "Interpreting zero or negative computed logarithms as valid weakly coupled collision physics; physical calibration or a regime-switching model.",
-   "The low-temperature classical-cutoff branch (NRL: 23 - ln(n_e^0.5 Z T_e^-1.5), T_e in eV, n_e in cm^-3) is not provided: below 10 eV the returned quantum-branch value overstates the logarithm relative to that form (about +49% at 0.1 eV and +14% at 1 eV for n_e = 1e19 m^-3) and only warns."
+   "The low-temperature electron-electron classical-cutoff branch (a classical-cutoff form 24 - ln(n_e^0.5 T_e^-1), T_e in eV, n_e in cm^-3; source provenance pending, UNKNOWN) is not provided: below 10 eV the returned quantum-branch value only warns, and it sits about +1.37% above that form at 0.1 eV and +1.02% at 1 eV for n_e = 1e19 m^-3. The electron-ion classical form is a different collision pair and does not quantify this pair's deviation."
   ]
  },
  "failure_semantics": {
   "invalid_input": "Raises ValueError for boolean/string/complex/masked or empty input, non-finite values, malformed or incompatible shape, and the nonpositive or singular domains named by the callable contract.",
-  "runtime_failure": "Raises FloatingPointError if accepted finite inputs produce an unrepresentable output; no fallback is returned. Emits scirel.ApplicabilityWarning when any input temperature is below 10 eV, the NRL boundary for the quantum branch at Z = 1; the value is returned unchanged.",
+  "runtime_failure": "Raises FloatingPointError if accepted finite inputs produce an unrepresentable output; no fallback is returned. Emits scirel.ApplicabilityWarning when any input temperature is below 10 eV, the declared boundary for the quantum branch at Z = 1 (provenance UNKNOWN); the value is returned unchanged.",
   "nonconvergence": "Not applicable; this is a direct algebraic mapping.",
   "partial_results": "No output is returned after an exception."
  },
@@ -125,7 +125,7 @@
    "No external calibration or collision-frequency composition is claimed.",
    "Only the Wesson algebra and declared numerical boundaries are covered.",
    "Naming: 'ee' is Wesson's electron-electron form with constant 31.0. The electron Coulomb logarithm in Sauter et al. (1999) collisionality, lnLambda_e = 31.3 - ln(sqrt(n_e)/T_e[eV]), is the 'ei' form (scirel.physics.coulomb-ei, constant 31.3), not this one.",
-   "The low-temperature regime below the NRL boundary T_e ~ 10 Z^2 eV is not represented: the classical-cutoff branch (NRL 23 - ln(n_e^0.5 Z T_e^-1.5)) is a separate relation, so the returned quantum-branch value overstates the logarithm relative to it (about +49% at 0.1 eV for n_e = 1e19 m^-3) and only warns."
+   "The low-temperature regime below the declared boundary T_e ~ 10 Z^2 eV (boundary provenance UNKNOWN) is not represented: a classical-cutoff electron-electron form (24 - ln(n_e^0.5 T_e^-1), T_e in eV and n_e in cm^-3; source provenance pending, UNKNOWN) is a separate relation, so the returned quantum-branch value only warns. Because the two e-e branches share the same temperature dependence the gap is small: about +1.37% at 0.1 eV and +1.02% at 1 eV for n_e = 1e19 m^-3. The electron-ion form is a different collision pair with its own classical reference and must not be used to quantify this pair's deviation."
   ]
  }
 }

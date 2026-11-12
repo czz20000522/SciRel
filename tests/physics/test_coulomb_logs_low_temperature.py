@@ -67,3 +67,85 @@ def test_ion_ion_form_never_warns_on_the_electron_boundary():
         warnings.simplefilter("always")
         calculate_log_lambda_ii(1e-4, 1e19, 1.0)
     assert caught == []
+
+
+# --- Issue #10 item 3 split round: ee and ei are different collision pairs ---------
+# Their classical references differ, so the deviation of the quantum branch must be
+# measured per pair.  The references below are the NRL classical forms recomputed
+# here, not taken from the implementation's warning text.
+
+
+def _nrl_classical_ee(te_ev, ne_m3):
+    """NRL classical e-e form: 24 - ln(n_e^0.5 T_e^-1), T_e in eV, n_e in cm^-3."""
+    return 24.0 - np.log(np.sqrt(ne_m3 / 1e6) / te_ev)
+
+
+def _nrl_classical_ei(te_ev, ne_m3, z=1.0):
+    """NRL classical e-i form: 23 - ln(n_e^0.5 Z T_e^-1.5)."""
+    return 23.0 - np.log(np.sqrt(ne_m3 / 1e6) * z * te_ev**-1.5)
+
+
+def _warned_message(function, te_kev, ne_m3=1e19):
+    with warnings.catch_warnings(record=True) as caught:
+        warnings.simplefilter("always")
+        function(te_kev, ne_m3)
+    messages = [
+        str(item.message) for item in caught if issubclass(item.category, scirel.ApplicabilityWarning)
+    ]
+    assert len(messages) == 1
+    return messages[0]
+
+
+def test_the_two_pairs_do_not_share_one_warning_message():
+    """A shared message was the defect: it quoted the e-i reference for both pairs."""
+    ee_message = _warned_message(calculate_log_lambda_ee, 0.005)
+    ei_message = _warned_message(calculate_log_lambda_ei, 0.005)
+    assert ee_message != ei_message
+    # each message cites its own pair's classical reference
+    assert "24 - ln(n_e^0.5 T_e^-1)" in ee_message
+    assert "23 - ln(n_e^0.5 Z T_e^-1.5)" in ei_message
+    assert "23 - ln(n_e^0.5 Z T_e^-1.5)" not in ee_message
+    assert "24 - ln(n_e^0.5 T_e^-1)" not in ei_message
+
+
+@pytest.mark.parametrize(
+    "function, reference, expected",
+    [
+        # (pair, its own classical form, independently recomputed quantum/classical - 1)
+        (calculate_log_lambda_ee, _nrl_classical_ee, {0.1: 1.37, 1.0: 1.02}),
+        (calculate_log_lambda_ei, _nrl_classical_ei, {0.1: 55.54, 1.0: 17.33}),
+    ],
+)
+def test_the_warned_deviation_matches_an_independent_recomputation(function, reference, expected):
+    """The quoted percentages must match a recomputation against the pair's own form."""
+    ne = 1e19
+    for te_ev, quoted in expected.items():
+        quantum = function(te_ev / 1000.0, ne)
+        classical = reference(te_ev, ne)
+        measured = (quantum / classical - 1.0) * 100.0
+        # the message quotes two decimals for the e-e pair and one for the e-i pair;
+        # the recomputation must agree at the quoted scale.
+        assert abs(measured - quoted) < 0.05, (te_ev, measured, quoted)
+        message = _warned_message(function, te_ev / 1000.0, ne)
+        candidates = {f"{quoted:.2f}%", f"{quoted:.1f}%", f"{quoted:.0f}%"}
+        assert any(c in message for c in candidates), (te_ev, message)
+
+
+def test_ei_quantum_branch_crosses_its_classical_form_near_sixteen_ev():
+    """Above the crossing the quantum e-i form reads lower, so the boundary is not a
+    'below is wrong, above is right' rule; the e-e pair has no crossing in this range."""
+    ne = 1e19
+    below = calculate_log_lambda_ei(0.010, ne) - _nrl_classical_ei(10.0, ne)
+    above = calculate_log_lambda_ei(0.030, ne) - _nrl_classical_ei(30.0, ne)
+    assert below > 0.0 and above < 0.0
+    grid = np.logspace(-2, 4, 4000)
+    crossings = [
+        te for a, b, te in zip(grid[:-1], grid[1:], grid[1:])
+        if (calculate_log_lambda_ei(a / 1000.0, ne) - _nrl_classical_ei(a, ne))
+        * (calculate_log_lambda_ei(b / 1000.0, ne) - _nrl_classical_ei(b, ne)) < 0
+    ]
+    assert len(crossings) == 1 and 16.0 < crossings[0] < 16.5
+    ee_gap = [
+        calculate_log_lambda_ee(te / 1000.0, ne) - _nrl_classical_ee(te, ne) for te in grid
+    ]
+    assert all(value > 0.0 for value in ee_gap)
