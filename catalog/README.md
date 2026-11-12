@@ -164,8 +164,11 @@ The decomposition side submits only a candidate: neutral description, model,
 geometry, boundary, ports, raw correctness evidence and unknowns. It does not write
 `asset_id`, SciRel `taxonomy`, final `aliases`, a `device_scope` decision or any
 acceptance conclusion. The SciRel intake owner is the sole author of the contract
-discovery fields, the `evidence.status` decision, the overlap record
-(`contracts/reception/`) and the generated discovery projection. Intake must not
+discovery fields, the `evidence.status` decision and the generated discovery
+projection. The comparison against the frozen catalog is recorded as the
+manifest's four-valued verdict per capability (see
+`docs/maintainer/supply-pipeline.md` sections 4–5), so no separate overlap record
+is kept. Intake must not
 ask a decomposition worker for receiver-side tags, search keywords or device-scope
 judgements.
 
