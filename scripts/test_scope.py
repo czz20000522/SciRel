@@ -281,6 +281,11 @@ def classify(relative: Path) -> tuple[list[str], list[str]]:
             "solving source projection and helper closure; scientific task acceptance is separate"
         ]
 
+    if parts[:4] == ("skills", "development", "usage", "scirel-capability-discovery"):
+        return [_layer_target("delivery")], [
+            "discovery skill is assembled with canonical scripts by build_pure_delivery"
+        ]
+
     if parts[0] == "tickets":
         return [_layer_target("tooling")], [
             "human-review tickets: format, location and ids are checked by tests/tooling; "

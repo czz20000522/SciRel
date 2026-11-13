@@ -188,7 +188,9 @@ def main(argv=None):
     from consumer_tools import TOOL_PREFIX, call_tool, is_error_result, tools
 
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--root", type=Path, default=Path(__file__).absolute().parents[1])
+    parser.add_argument(
+        "--root", type=Path, default=Path.cwd(), help="Package root (default: current directory)"
+    )
     sub = parser.add_subparsers(dest="command", required=True)
     for tool in tools():
         command = tool["name"].removeprefix(TOOL_PREFIX)

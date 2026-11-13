@@ -21,7 +21,12 @@ from validate_installed_wheel import _catalog_wheel_closure
 
 ROOT = Path(__file__).resolve().parents[1]
 SKILL_NAMES = ("scirel-solving", "scirel-capability-discovery", "scirel-result-validation")
-DISCOVERY_SCRIPTS = ("capability_query.py", "consumer_tools.py", "query.py", "server.py")
+DISCOVERY_SCRIPTS = {
+    "capability_query.py": "capability_query.py",
+    "consumer_tools.py": "consumer_tools.py",
+    "query.py": "query.py",
+    "serve_consumer_mcp.py": "server.py",
+}
 BUILD_INPUTS = (
     "build_pure_delivery.py",
     "capability_catalog.py",
@@ -36,6 +41,11 @@ BUILD_INPUTS = (
     "validate_installed_wheel.py",
     "code_digest.py",
 )
+
+
+def _reject_discovery_copies(skill_root):
+    if any((skill_root / "scripts" / name).exists() for name in DISCOVERY_SCRIPTS.values()):
+        raise ValueError("discovery script sources belong in scripts/, not in the skill")
 
 
 def _delivery_files(directory):
@@ -143,15 +153,9 @@ def _export(wheel, output):
         skill_name: ROOT / "skills/development/usage" / skill_name for skill_name in SKILL_NAMES
     }
     skill_inputs = {}
-    available_skills = {
-        skill_name: skill_root
-        for skill_name, skill_root in skill_exports.items()
-        if skill_root.is_dir()
-    }
-    if "scirel-solving" not in available_skills:
-        raise ValueError("missing delivery skill: " + str(skill_exports["scirel-solving"]))
-    discovery_enabled = "scirel-capability-discovery" in available_skills
-    for skill_name, skill_root in available_skills.items():
+    for skill_name, skill_root in skill_exports.items():
+        if not skill_root.is_dir():
+            raise ValueError("missing delivery skill: " + str(skill_root))
         linked = load_solving_skill(skill_root)
         skill_inputs[skill_name] = linked
         for relative, data in linked.items():
@@ -159,13 +163,7 @@ def _export(wheel, output):
             source.input_bytes[key] = data
             source.input_digests[key] = sha(data)
         if skill_name == "scirel-capability-discovery":
-            for filename in DISCOVERY_SCRIPTS:
-                relative = "scripts/" + filename
-                data = source._read(f"skills/development/usage/{skill_name}/{relative}")
-                source.input_bytes[f"skills/development/usage/{skill_name}/{relative}"] = data
-                source.input_digests[f"skills/development/usage/{skill_name}/{relative}"] = sha(
-                    data
-                )
+            _reject_discovery_copies(skill_root)
 
     wheel_bytes = wheel.read_bytes()
     proof = inspect_wheel(wheel, source_root=ROOT / "src")
@@ -206,53 +204,30 @@ def _export(wheel, output):
     for skill_name, linked in skill_inputs.items():
         for relative, data in linked.items():
             put(f"skills/{skill_name}/{relative}", data)
-    if discovery_enabled:
-        for filename in DISCOVERY_SCRIPTS:
-            relative = "scripts/" + filename
-            source_key = f"skills/development/usage/scirel-capability-discovery/{relative}"
-            put(f"skills/scirel-capability-discovery/{relative}", source.input_bytes[source_key])
-    else:
-        legacy_tools = {
-            "capability_query.py": "capability_query.py",
-            "query.py": "query.py",
-            "consumer_tools.py": "consumer_tools.py",
-            "serve_consumer_mcp.py": "server.py",
-        }
-        for name, target in legacy_tools.items():
-            put("tools/" + target, source.input_bytes["scripts/" + name])
+    for name, target in DISCOVERY_SCRIPTS.items():
+        put(
+            "skills/scirel-capability-discovery/scripts/" + target,
+            source.input_bytes["scripts/" + name],
+        )
     put("mcp-requirements.txt", source.input_bytes["tools/docs/mcp-requirements.txt"])
-    if discovery_enabled:
-        put(
-            "mcp-connections.json",
-            encode(
-                {
-                    "stdio": {
-                        "command": "python",
-                        "args": [
-                            "skills/scirel-capability-discovery/scripts/server.py",
-                            "--root",
-                            ".",
-                            "--transport",
-                            "stdio",
-                        ],
-                    },
-                    "streamable_http": {"url": "http://127.0.0.1:8765/mcp"},
-                }
-            ),
-        )
-    else:
-        put(
-            "mcp-connections.json",
-            encode(
-                {
-                    "stdio": {
-                        "command": "python",
-                        "args": ["tools/server.py", "--root", ".", "--transport", "stdio"],
-                    },
-                    "streamable_http": {"url": "http://127.0.0.1:8765/mcp"},
-                }
-            ),
-        )
+    put(
+        "mcp-connections.json",
+        encode(
+            {
+                "stdio": {
+                    "command": "python",
+                    "args": [
+                        "skills/scirel-capability-discovery/scripts/server.py",
+                        "--root",
+                        ".",
+                        "--transport",
+                        "stdio",
+                    ],
+                },
+                "streamable_http": {"url": "http://127.0.0.1:8765/mcp"},
+            }
+        ),
+    )
     for asset in sorted(source.documents):
         put(
             "catalog/contracts/" + asset + ".json",
@@ -279,18 +254,11 @@ def _export(wheel, output):
         "dependencies_bundled": False,
     }
     source.verify_unchanged()
-    for skill_name, skill_root in available_skills.items():
+    for skill_name, skill_root in skill_exports.items():
         if load_solving_skill(skill_root) != skill_inputs[skill_name]:
             raise ValueError(f"{skill_name} source changed during export")
         if skill_name == "scirel-capability-discovery":
-            for filename in DISCOVERY_SCRIPTS:
-                relative = "scripts/" + filename
-                current = source._read(f"skills/development/usage/{skill_name}/{relative}")
-                if (
-                    current
-                    != source.input_bytes[f"skills/development/usage/{skill_name}/{relative}"]
-                ):
-                    raise ValueError(f"{skill_name} source changed during export: {relative}")
+            _reject_discovery_copies(skill_root)
     if sorted(path for path in (ROOT / "licenses").rglob("*") if path.is_file()) != notices:
         raise ValueError("license source membership changed during export")
     if wheel.read_bytes() != wheel_bytes:

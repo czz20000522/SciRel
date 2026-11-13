@@ -48,6 +48,8 @@ Record the asset IDs you used and the identity values below, so the result can b
 
 From the package root (the directory that contains `runtime.json`):
 
+`--root` defaults to the current working directory. When running from another directory, pass the package root explicitly.
+
 ```sh
 python skills/scirel-capability-discovery/scripts/query.py --root . describe
 python skills/scirel-capability-discovery/scripts/query.py --root . search --q '<one to three words>' --limit 5 \
@@ -71,3 +73,4 @@ python skills/scirel-capability-discovery/scripts/server.py --root . --transport
 ```
 
 It exposes the same four read-only tools: `scirel_describe`, `scirel_browse`, `scirel_search`, `scirel_get`. Install `mcp-requirements.txt` in the server's environment and keep it separate from the environment where the SciRel wheel and `runtime-requirements.txt` are installed.
+
