@@ -75,20 +75,21 @@
  "applicability": {
   "preconditions": [
    "strictly positive finite T_e in keV and n_e in m^-3",
-   "Above 10 eV the caller accepts the high-temperature (quantum cutoff) branch: the relation is the quantum-cutoff form for T_e > 10 Z^2 eV, which is 10 eV at Z = 1 for this signature, and warns below it. The provenance of the 10 Z^2 eV boundary is NOT verified against an original source (UNKNOWN)."
+   "Above the repository's 10 eV advisory boundary the caller accepts the high-temperature (quantum cutoff) branch; below it the relation warns and still returns the value. The formulary's own T_e > 10 Z^2 eV condition belongs to the e-i branches, not to e-e, and is transcribed from the 2016 printed p. 34 table (see #197)."
   ],
   "supported": [
-   "Finite NumPy evaluation of the declared relation and broadcast shape on the quantum-cutoff branch, valid above the declared T_e ~ 10 Z^2 eV boundary (10 eV here; boundary provenance UNKNOWN)."
+   "Finite NumPy evaluation of the declared relation and broadcast shape on the quantum-cutoff branch. The 10 eV line is a repository-conservative advisory boundary for this relation, not a formulary branch condition: the formulary's T_e > 10 Z^2 eV condition belongs to the e-i branches."
   ],
   "excluded": [
    "Whole-transport evolution, experimental calibration, and implicit coordinate reconstruction.",
    "Interpreting zero or negative computed logarithms as valid weakly coupled collision physics; physical calibration or a regime-switching model.",
-   "The low-temperature electron-electron classical-cutoff branch (a classical-cutoff form 24 - ln(n_e^0.5 T_e^-1), T_e in eV, n_e in cm^-3; source provenance pending, UNKNOWN) is not provided: below 10 eV the returned quantum-branch value only warns, and it sits above that form by about +1.02% at n_e = 1e17 m^-3, +1.37% at 1e19 and +2.08% at 1e21 (0.1 eV; the gap grows with density). The electron-ion classical form is a different collision pair and does not quantify this pair's deviation."
+   "The formulary's low-temperature e-e relation 23.5 - ln(sqrt(n_e) T_e^(-5/4)) - sqrt(1e-5 + (ln T_e - 2)^2/16) (T_e in eV, n_e in cm^-3; transcribed from the 2016 printed p. 34 table, see #197) is not provided as a public relation here: below the 10 eV advisory boundary the returned quantum-branch value differs from it (an algebraic, density-dependent gap) and only warns.",
+   "Using the e-i low-temperature branch (23 - ln(sqrt(n_e) Z T_e^(-3/2))) or its T_e > 10 Z^2 eV condition to quantify this relation's gap: that is a different collision pair."
   ]
  },
  "failure_semantics": {
   "invalid_input": "Raises ValueError for boolean/string/complex/masked or empty input, non-finite values, malformed or incompatible shape, and the nonpositive or singular domains named by the callable contract.",
-  "runtime_failure": "Raises FloatingPointError if accepted finite inputs produce an unrepresentable output; no fallback is returned. Emits scirel.ApplicabilityWarning when any input temperature is below 10 eV, the declared boundary for the quantum branch at Z = 1 (provenance UNKNOWN); the value is returned unchanged.",
+  "runtime_failure": "Raises FloatingPointError if accepted finite inputs produce an unrepresentable output; no fallback is returned. Emits scirel.ApplicabilityWarning when any input temperature is below 10 eV, a repository-conservative advisory boundary; the message names the lowest input and the algebraic gap to the NRL Plasma Formulary e-e relation, 2016 printed p.34 (PPPL official copy), as transcribed from the original table (see #197): 23.5 - ln(sqrt(n_e) T_e^(-5/4)) - sqrt(1e-5 + (ln T_e - 2)^2/16), T_e in eV and n_e in cm^-3. The value is returned unchanged.",
   "nonconvergence": "Not applicable; this is a direct algebraic mapping.",
   "partial_results": "No output is returned after an exception."
  },
@@ -125,7 +126,9 @@
    "No external calibration or collision-frequency composition is claimed.",
    "Only the Wesson algebra and declared numerical boundaries are covered.",
    "Naming: 'ee' is Wesson's electron-electron form with constant 31.0. The electron Coulomb logarithm in Sauter et al. (1999) collisionality, lnLambda_e = 31.3 - ln(sqrt(n_e)/T_e[eV]), is the 'ei' form (scirel.physics.coulomb-ei, constant 31.3), not this one.",
-   "The low-temperature regime below the declared boundary T_e ~ 10 Z^2 eV (boundary provenance UNKNOWN) is not represented: a classical-cutoff electron-electron form (24 - ln(n_e^0.5 T_e^-1), T_e in eV and n_e in cm^-3; source provenance pending, UNKNOWN) is a separate relation, so the returned quantum-branch value only warns. Because the two e-e branches share the same temperature dependence the gap is small, and it depends on density: at 0.1 eV it is about +1.02% at n_e = 1e17 m^-3, +1.37% at 1e19 and +2.08% at 1e21 (the fixed absolute offset is divided by a smaller logarithm as density rises). The warning computes this deviation at the caller's own sample instead of quoting a fixed percentage. The electron-ion form is a different collision pair with its own classical reference and must not be used to quantify this pair's deviation."
+   "The 10 eV warning trigger is a repository-conservative advisory boundary, not a branch condition of this e-e relation: the formulary gives the e-e relation as a single expression, and its 10 Z^2 eV condition belongs to the e-i branches.",
+   "The gap to the formulary's e-e relation is an algebraic difference between two estimates, not an error against measured physics: at n_e = 1e19 m^-3 it is +48.99% at 0.1 eV, +13.60% at 1 eV and +0.81% at 10 eV, and it grows with density (+32.60% at 1e17 m^-3 and +98.54% at 1e21 m^-3 at 0.1 eV), which is why the warning computes it per sample instead of quoting a fixed percentage.",
+   "Wesson's edition and section were not verified and remain UNKNOWN; in this round only the NRL relation was transcribed from the original table (maintainer-verified, see #197)."
   ]
  }
 }

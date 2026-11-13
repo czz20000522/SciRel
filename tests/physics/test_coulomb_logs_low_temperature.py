@@ -1,5 +1,12 @@
-"""Issue #10 item 3: the Coulomb logarithms declare the NRL low-temperature boundary."""
+"""Issue #197: each Coulomb-log pair carries its own low-temperature reference.
 
+The e-e reference is the NRL Plasma Formulary (2016, printed p. 34) e-e relation itself, not its
+high-temperature limit. The e-i reference is the formulary's low-temperature e-i branch, whose
+``T_e > 10 Z^2 eV`` condition belongs to e-i only. Expected deviations are recomputed here from
+the published formulas, never from the implementation under test.
+"""
+
+import math
 import warnings
 
 import numpy as np
@@ -12,7 +19,33 @@ from scirel.physics import (
     calculate_log_lambda_ii,
 )
 
-BOUNDARY_KEV = 0.01  # NRL boundary T_e ~ 10 Z^2 eV at Z = 1
+# Advisory line below which both relations warn (eV).
+BOUNDARY_EV = 10.0
+
+
+def _quantum_ee(t_ev, n_m3):
+    """The high-temperature branch SciRel evaluates for e-e, from its documented algebra."""
+    return 31.0 + math.log(t_ev) - 0.5 * math.log(n_m3)
+
+
+def _quantum_ei(t_ev, n_m3):
+    return 31.3 + math.log(t_ev) - 0.5 * math.log(n_m3)
+
+
+def _nrl_ee(t_ev, n_m3):
+    """NRL Plasma Formulary 2016 printed p.34 e-e relation (T_e in eV, n_e in cm^-3)."""
+    n_cm3 = n_m3 * 1e-6
+    return (
+        23.5
+        - math.log(math.sqrt(n_cm3) * t_ev**-1.25)
+        - math.sqrt(1e-5 + (math.log(t_ev) - 2.0) ** 2 / 16.0)
+    )
+
+
+def _nrl_ei_low(t_ev, n_m3, z=1.0):
+    """NRL low-temperature e-i branch (T_e in eV, n_e in cm^-3)."""
+    n_cm3 = n_m3 * 1e-6
+    return 23.0 - math.log(math.sqrt(n_cm3) * z * t_ev**-1.5)
 
 
 def _hand_formula_ee(te_kev, ne_m3):
@@ -23,42 +56,108 @@ def _hand_formula_ei(te_kev, ne_m3):
     return 31.3 - 0.5 * np.log(ne_m3) + np.log(1e3 * te_kev)
 
 
+def _applicability(warnings_list):
+    return [
+        item for item in warnings_list if issubclass(item.category, scirel.ApplicabilityWarning)
+    ]
+
+
 @pytest.mark.parametrize(
     "function, hand_formula",
     [(calculate_log_lambda_ee, _hand_formula_ee), (calculate_log_lambda_ei, _hand_formula_ei)],
 )
-def test_below_ten_ev_warns_once_and_returns_the_same_value(function, hand_formula):
+def test_below_the_advisory_boundary_warns_once_and_returns_the_same_value(function, hand_formula):
     """The value is unchanged; only the missing low-temperature regime is announced."""
     with warnings.catch_warnings(record=True) as caught:
         warnings.simplefilter("always")
         value = function(0.005, 1e19)
-    runtime = [item for item in caught if issubclass(item.category, scirel.ApplicabilityWarning)]
-    assert len(runtime) == 1
-    message = str(runtime[0].message)
-    assert "10 Z^2 eV" in message and "10 eV" in message
+    found = _applicability(caught)
+    assert len(found) == 1
+    message = str(found[0].message)
+    assert "10 eV" in message
     # api-spec: the message names the actual offending value, not just the limit.
     assert "lowest input 5 eV" in message
     assert np.isclose(value, hand_formula(0.005, 1e19), rtol=0, atol=1e-14)
 
 
 @pytest.mark.parametrize("function", [calculate_log_lambda_ee, calculate_log_lambda_ei])
-def test_above_the_nrl_boundary_warns_nothing(function):
+def test_at_or_above_the_advisory_boundary_warns_nothing(function):
     with warnings.catch_warnings(record=True) as caught:
         warnings.simplefilter("always")
         function(np.array([0.01, 0.011, 1.0, 50.0]), 1e19)
     assert caught == []
 
 
-@pytest.mark.parametrize("function", [calculate_log_lambda_ee, calculate_log_lambda_ei])
-def test_boundary_is_the_nrl_ten_ev_point_not_the_twenty_seven_ev_crossover(function):
-    """Issue #10 item 3: the declared boundary follows the formulary, not the derived crossing."""
+def test_ee_message_uses_the_nrl_ee_relation_and_reports_the_measured_gap():
+    """Issue #197: the e-e gap is ~+49% at 0.1 eV against the NRL e-e relation.
+
+    The NRL e-e form and its high-temperature limit differ by this much, so quoting the limit
+    (the old behaviour, which produced +1.37%) understates the gap by more than an order of
+    magnitude.
+    """
     with warnings.catch_warnings(record=True) as caught:
         warnings.simplefilter("always")
-        function(np.array([0.0099, 0.0101]), 1e19)
-    assert (
-        len([item for item in caught if issubclass(item.category, scirel.ApplicabilityWarning)])
-        == 1
-    )
+        calculate_log_lambda_ee(0.002, 1e19)  # 2 eV -> below the advisory line
+    message = str(_applicability(caught)[0].message)
+    expected = _quantum_ee(2.0, 1e19) / _nrl_ee(2.0, 1e19) - 1.0
+    assert "T_e^(-5/4)" in message and "sqrt(1e-5" in message
+    assert "algebraic difference" in message
+    assert f"{expected:+.2%}" in message
+    assert "not to this relation" in message  # the 10 Z^2 condition belongs to e-i
+
+
+def test_ee_deviation_against_the_nrl_relation_at_the_issue_anchors():
+    """Anchor values from issue #197 (n_e = 1e19 m^-3), recomputed from the published formula."""
+    anchors = {0.1: 0.489929631, 1.0: 0.135967796, 10.0: 0.008143358}
+    for t_ev, expected in anchors.items():
+        deviation = _quantum_ee(t_ev, 1e19) / _nrl_ee(t_ev, 1e19) - 1.0
+        assert deviation == pytest.approx(expected, abs=5e-9)
+    # And the implementation's returned value reproduces the same ratio.
+    for t_ev, expected in anchors.items():
+        value = float(calculate_log_lambda_ee(t_ev / 1000.0, 1e19))
+        assert value / _nrl_ee(t_ev, 1e19) - 1.0 == pytest.approx(expected, abs=1e-9)
+
+
+def test_ee_deviation_grows_with_density_so_it_is_computed_per_sample():
+    """A fixed percentage would be wrong: the same offset spans ~+33% to ~+99% at 0.1 eV."""
+    expected = {1e17: 0.3260, 1e19: 0.4899, 1e21: 0.9854}
+    for density, ratio in expected.items():
+        deviation = _quantum_ee(0.1, density) / _nrl_ee(0.1, density) - 1.0
+        assert deviation == pytest.approx(ratio, abs=5e-4)
+    with warnings.catch_warnings(record=True) as caught:
+        warnings.simplefilter("always")
+        calculate_log_lambda_ee(1e-4, 1e21)  # 0.1 eV at high density
+    message = str(_applicability(caught)[0].message)
+    assert "n_e = 1e+21 m^-3" in message
+
+
+def test_ei_message_states_its_own_branches_and_units():
+    with warnings.catch_warnings(record=True) as caught:
+        warnings.simplefilter("always")
+        calculate_log_lambda_ei(0.005, 1e19)
+    message = str(_applicability(caught)[0].message)
+    assert "23 - ln(sqrt(n_e) Z T_e^(-1.5))" in message
+    assert "T_e in eV" in message and "n_e in cm^-3" in message
+    assert "algebraic extrapolation" in message
+
+
+def test_ei_deviation_against_its_own_low_temperature_branch_at_the_issue_anchors():
+    anchors = {0.1: 0.5554, 1.0: 0.1733}
+    for t_ev, expected in anchors.items():
+        deviation = _quantum_ei(t_ev, 1e19) / _nrl_ei_low(t_ev, 1e19) - 1.0
+        assert deviation == pytest.approx(expected, abs=5e-4)
+
+
+def test_ei_intersection_with_the_extended_low_temperature_form_is_about_16_ev():
+    """The ~16.2 eV crossing is algebra on an extrapolated branch, not a physical switch."""
+    low, high = 1.0, 100.0
+    for _ in range(200):
+        mid = math.sqrt(low * high)
+        if _quantum_ei(mid, 1e19) - _nrl_ei_low(mid, 1e19) > 0:
+            low = mid
+        else:
+            high = mid
+    assert math.sqrt(low * high) == pytest.approx(16.2, abs=0.1)
 
 
 def test_ion_ion_form_never_warns_on_the_electron_boundary():
@@ -67,112 +166,3 @@ def test_ion_ion_form_never_warns_on_the_electron_boundary():
         warnings.simplefilter("always")
         calculate_log_lambda_ii(1e-4, 1e19, 1.0)
     assert caught == []
-
-
-# --- Issue #10 item 3 split round: ee and ei are different collision pairs ---------
-# Their classical references differ, so the deviation of the quantum branch must be
-# measured per pair.  The references below are the NRL classical forms recomputed
-# here, not taken from the implementation's warning text.
-
-
-def _nrl_classical_ee(te_ev, ne_m3):
-    """NRL classical e-e form: 24 - ln(n_e^0.5 T_e^-1), T_e in eV, n_e in cm^-3."""
-    return 24.0 - np.log(np.sqrt(ne_m3 / 1e6) / te_ev)
-
-
-def _nrl_classical_ei(te_ev, ne_m3, z=1.0):
-    """NRL classical e-i form: 23 - ln(n_e^0.5 Z T_e^-1.5)."""
-    return 23.0 - np.log(np.sqrt(ne_m3 / 1e6) * z * te_ev**-1.5)
-
-
-def _warned_message(function, te_kev, ne_m3=1e19):
-    with warnings.catch_warnings(record=True) as caught:
-        warnings.simplefilter("always")
-        function(te_kev, ne_m3)
-    messages = [
-        str(item.message)
-        for item in caught
-        if issubclass(item.category, scirel.ApplicabilityWarning)
-    ]
-    assert len(messages) == 1
-    return messages[0]
-
-
-def test_the_two_pairs_do_not_share_one_warning_message():
-    """A shared message was the defect: it quoted the e-i reference for both pairs."""
-    ee_message = _warned_message(calculate_log_lambda_ee, 0.005)
-    ei_message = _warned_message(calculate_log_lambda_ei, 0.005)
-    assert ee_message != ei_message
-    # each message cites its own pair's classical reference
-    assert "24 - ln(n_e^0.5 T_e^-1)" in ee_message
-    assert "23 - ln(n_e^0.5 Z T_e^-1.5)" in ei_message
-    assert "23 - ln(n_e^0.5 Z T_e^-1.5)" not in ee_message
-    assert "24 - ln(n_e^0.5 T_e^-1)" not in ei_message
-
-
-@pytest.mark.parametrize(
-    "function, reference",
-    [
-        (calculate_log_lambda_ee, _nrl_classical_ee),
-        (calculate_log_lambda_ei, _nrl_classical_ei),
-    ],
-)
-@pytest.mark.parametrize("te_ev", [0.1, 1.0])
-@pytest.mark.parametrize("ne", [1e17, 1e19, 1e21])
-def test_the_warned_deviation_is_computed_at_the_offending_sample(function, reference, te_ev, ne):
-    """The message must quote the deviation at the caller's own density.
-
-    A fixed percentage would mislead: the relative gap grows with density, so the
-    same pair reads very differently at 1e17 and 1e21.  The check recomputes the
-    ratio from the pair's own classical form and requires the quoted value to
-    match at the printed precision.
-    """
-    measured = (function(te_ev / 1000.0, ne) / reference(te_ev, ne) - 1.0) * 100.0
-    message = _warned_message(function, te_ev / 1000.0, ne)
-    assert f"n_e = {ne:.6g} m^-3" in message
-    quoted = [
-        float(token.rstrip("%"))
-        for token in message.replace("+", " ").split()
-        if token.endswith("%") and _is_number(token.rstrip("%"))
-    ]
-    assert quoted, message
-    assert any(abs(value - measured) < 0.5 for value in quoted), (measured, quoted, message)
-
-
-def _is_number(text):
-    try:
-        float(text)
-        return True
-    except ValueError:
-        return False
-
-
-def test_the_relative_gap_grows_with_density_for_both_pairs():
-    """Both pairs keep a fixed absolute offset, so the relative gap rises with density."""
-    for function, reference in (
-        (calculate_log_lambda_ee, _nrl_classical_ee),
-        (calculate_log_lambda_ei, _nrl_classical_ei),
-    ):
-        low = function(1e-4, 1e17) / reference(0.1, 1e17) - 1.0
-        high = function(1e-4, 1e21) / reference(0.1, 1e21) - 1.0
-        assert high > low
-
-
-def test_ei_quantum_branch_crosses_its_classical_form_near_sixteen_ev():
-    """Above the crossing the quantum e-i form reads lower, so the boundary is not a
-    'below is wrong, above is right' rule; the e-e pair has no crossing in this range."""
-    ne = 1e19
-    below = calculate_log_lambda_ei(0.010, ne) - _nrl_classical_ei(10.0, ne)
-    above = calculate_log_lambda_ei(0.030, ne) - _nrl_classical_ei(30.0, ne)
-    assert below > 0.0 and above < 0.0
-    grid = np.logspace(-2, 4, 4000)
-    crossings = [
-        te
-        for a, b, te in zip(grid[:-1], grid[1:], grid[1:])
-        if (calculate_log_lambda_ei(a / 1000.0, ne) - _nrl_classical_ei(a, ne))
-        * (calculate_log_lambda_ei(b / 1000.0, ne) - _nrl_classical_ei(b, ne))
-        < 0
-    ]
-    assert len(crossings) == 1 and 16.0 < crossings[0] < 16.5
-    ee_gap = [calculate_log_lambda_ee(te / 1000.0, ne) - _nrl_classical_ee(te, ne) for te in grid]
-    assert all(value > 0.0 for value in ee_gap)
