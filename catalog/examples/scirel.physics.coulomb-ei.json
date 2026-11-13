@@ -83,7 +83,7 @@
   "excluded": [
    "Whole-transport evolution, experimental calibration, and implicit coordinate reconstruction.",
    "Interpreting zero or negative computed logarithms as valid weakly coupled collision physics; physical calibration or a regime-switching model.",
-   "The low-temperature electron-ion classical-cutoff branch (a classical-cutoff form 23 - ln(n_e^0.5 Z T_e^-1.5), T_e in eV, n_e in cm^-3; source provenance pending, UNKNOWN) is not provided: below 10 eV the returned quantum-branch value only warns, and it sits about +55.5% above that form at 0.1 eV and +17.3% at 1 eV for n_e = 1e19 m^-3. The two forms cross near 16.2 eV, above which the quantum form reads lower."
+   "The low-temperature electron-ion classical-cutoff branch (a classical-cutoff form 23 - ln(n_e^0.5 Z T_e^-1.5), T_e in eV, n_e in cm^-3; source provenance pending, UNKNOWN) is not provided: below 10 eV the returned quantum-branch value only warns, and it sits above that form by about +37% at n_e = 1e17 m^-3, +55.5% at 1e19 and +112% at 1e21 (0.1 eV; the gap grows with density). The two forms cross near 16.2 eV, above which the quantum form reads lower."
   ]
  },
  "failure_semantics": {
@@ -125,7 +125,7 @@
    "No external calibration or collision-frequency composition is claimed.",
    "Only the Wesson algebra and declared numerical boundaries are covered.",
    "Sauter et al. (1999) use this form (31.3 - ln(sqrt(n_e)/T_e[eV]), with T in keV here) as lnLambda_e in the electron collisionality nu*_e; the 'ee' function (constant 31.0) is a different estimate.",
-   "The low-temperature regime below the declared boundary T_e ~ 10 Z^2 eV (boundary provenance UNKNOWN) is not represented: a classical-cutoff electron-ion form (23 - ln(n_e^0.5 Z T_e^-1.5), T_e in eV and n_e in cm^-3; source provenance pending, UNKNOWN) is a separate relation, so the returned quantum-branch value only warns. Relative to that form the returned value is about +55.5% at 0.1 eV and +17.3% at 1 eV for n_e = 1e19 m^-3, and the two forms cross near 16.2 eV, above which the quantum form reads lower; the boundary is therefore not a 'below is wrong, above is right' rule."
+   "The low-temperature regime below the declared boundary T_e ~ 10 Z^2 eV (boundary provenance UNKNOWN) is not represented: a classical-cutoff electron-ion form (23 - ln(n_e^0.5 Z T_e^-1.5), T_e in eV and n_e in cm^-3; source provenance pending, UNKNOWN) is a separate relation, so the returned quantum-branch value only warns. Relative to that form the returned value is about +37% at 0.1 eV for n_e = 1e17 m^-3, +55.5% at 1e19 and +112% at 1e21 (the gap grows with density because the fixed absolute offset is divided by a smaller logarithm), and the two forms cross near 16.2 eV, above which the quantum form reads lower; the boundary is therefore not a 'below is wrong, above is right' rule. The warning computes this deviation at the caller's own sample instead of quoting a fixed percentage."
   ]
  }
 }
