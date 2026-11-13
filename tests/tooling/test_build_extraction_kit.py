@@ -122,6 +122,12 @@ def _clean_identity_env(tmp_path):
             "HOME": str(home),
             "GIT_CONFIG_NOSYSTEM": "1",
             "GIT_CONFIG_GLOBAL": str(home / "no-global-config"),
+            # git 2.54 can synthesize "user@hostname" when no identity is configured,
+            # so "no config" does not guarantee a failed commit. Disable the guess
+            # explicitly; this stays independent of the host's user name and hostname.
+            "GIT_CONFIG_COUNT": "1",
+            "GIT_CONFIG_KEY_0": "user.useConfigOnly",
+            "GIT_CONFIG_VALUE_0": "true",
         }
     )
     return env
