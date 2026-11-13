@@ -90,7 +90,9 @@ def _warned_message(function, te_kev, ne_m3=1e19):
         warnings.simplefilter("always")
         function(te_kev, ne_m3)
     messages = [
-        str(item.message) for item in caught if issubclass(item.category, scirel.ApplicabilityWarning)
+        str(item.message)
+        for item in caught
+        if issubclass(item.category, scirel.ApplicabilityWarning)
     ]
     assert len(messages) == 1
     return messages[0]
@@ -109,26 +111,51 @@ def test_the_two_pairs_do_not_share_one_warning_message():
 
 
 @pytest.mark.parametrize(
-    "function, reference, expected",
+    "function, reference",
     [
-        # (pair, its own classical form, independently recomputed quantum/classical - 1)
-        (calculate_log_lambda_ee, _nrl_classical_ee, {0.1: 1.37, 1.0: 1.02}),
-        (calculate_log_lambda_ei, _nrl_classical_ei, {0.1: 55.54, 1.0: 17.33}),
+        (calculate_log_lambda_ee, _nrl_classical_ee),
+        (calculate_log_lambda_ei, _nrl_classical_ei),
     ],
 )
-def test_the_warned_deviation_matches_an_independent_recomputation(function, reference, expected):
-    """The quoted percentages must match a recomputation against the pair's own form."""
-    ne = 1e19
-    for te_ev, quoted in expected.items():
-        quantum = function(te_ev / 1000.0, ne)
-        classical = reference(te_ev, ne)
-        measured = (quantum / classical - 1.0) * 100.0
-        # the message quotes two decimals for the e-e pair and one for the e-i pair;
-        # the recomputation must agree at the quoted scale.
-        assert abs(measured - quoted) < 0.05, (te_ev, measured, quoted)
-        message = _warned_message(function, te_ev / 1000.0, ne)
-        candidates = {f"{quoted:.2f}%", f"{quoted:.1f}%", f"{quoted:.0f}%"}
-        assert any(c in message for c in candidates), (te_ev, message)
+@pytest.mark.parametrize("te_ev", [0.1, 1.0])
+@pytest.mark.parametrize("ne", [1e17, 1e19, 1e21])
+def test_the_warned_deviation_is_computed_at_the_offending_sample(function, reference, te_ev, ne):
+    """The message must quote the deviation at the caller's own density.
+
+    A fixed percentage would mislead: the relative gap grows with density, so the
+    same pair reads very differently at 1e17 and 1e21.  The check recomputes the
+    ratio from the pair's own classical form and requires the quoted value to
+    match at the printed precision.
+    """
+    measured = (function(te_ev / 1000.0, ne) / reference(te_ev, ne) - 1.0) * 100.0
+    message = _warned_message(function, te_ev / 1000.0, ne)
+    assert f"n_e = {ne:.6g} m^-3" in message
+    quoted = [
+        float(token.rstrip("%"))
+        for token in message.replace("+", " ").split()
+        if token.endswith("%") and _is_number(token.rstrip("%"))
+    ]
+    assert quoted, message
+    assert any(abs(value - measured) < 0.5 for value in quoted), (measured, quoted, message)
+
+
+def _is_number(text):
+    try:
+        float(text)
+        return True
+    except ValueError:
+        return False
+
+
+def test_the_relative_gap_grows_with_density_for_both_pairs():
+    """Both pairs keep a fixed absolute offset, so the relative gap rises with density."""
+    for function, reference in (
+        (calculate_log_lambda_ee, _nrl_classical_ee),
+        (calculate_log_lambda_ei, _nrl_classical_ei),
+    ):
+        low = function(1e-4, 1e17) / reference(0.1, 1e17) - 1.0
+        high = function(1e-4, 1e21) / reference(0.1, 1e21) - 1.0
+        assert high > low
 
 
 def test_ei_quantum_branch_crosses_its_classical_form_near_sixteen_ev():
@@ -140,12 +167,12 @@ def test_ei_quantum_branch_crosses_its_classical_form_near_sixteen_ev():
     assert below > 0.0 and above < 0.0
     grid = np.logspace(-2, 4, 4000)
     crossings = [
-        te for a, b, te in zip(grid[:-1], grid[1:], grid[1:])
+        te
+        for a, b, te in zip(grid[:-1], grid[1:], grid[1:])
         if (calculate_log_lambda_ei(a / 1000.0, ne) - _nrl_classical_ei(a, ne))
-        * (calculate_log_lambda_ei(b / 1000.0, ne) - _nrl_classical_ei(b, ne)) < 0
+        * (calculate_log_lambda_ei(b / 1000.0, ne) - _nrl_classical_ei(b, ne))
+        < 0
     ]
     assert len(crossings) == 1 and 16.0 < crossings[0] < 16.5
-    ee_gap = [
-        calculate_log_lambda_ee(te / 1000.0, ne) - _nrl_classical_ee(te, ne) for te in grid
-    ]
+    ee_gap = [calculate_log_lambda_ee(te / 1000.0, ne) - _nrl_classical_ee(te, ne) for te in grid]
     assert all(value > 0.0 for value in ee_gap)

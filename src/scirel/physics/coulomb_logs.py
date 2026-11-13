@@ -22,6 +22,7 @@ already uses the classical cutoff form and is not affected.
 
 from __future__ import annotations
 
+import math
 import warnings
 
 import numpy as np
@@ -76,6 +77,15 @@ def _finite_result(value, name):
     return value
 
 
+def _lowest_sample(temperature_kev, density_m3):
+    """Return the (temperature, density) pair of the lowest-temperature sample."""
+    temperatures, densities = np.broadcast_arrays(
+        np.asarray(temperature_kev, dtype=float), np.asarray(density_m3, dtype=float)
+    )
+    index = np.unravel_index(np.argmin(temperatures), temperatures.shape)
+    return float(temperatures[index]), float(densities[index])
+
+
 def _lowest_ev(temperature_kev):
     """Return the lowest input temperature in eV, or None when no sample is below the boundary."""
     values = np.asarray(temperature_kev)
@@ -84,54 +94,103 @@ def _lowest_ev(temperature_kev):
     return float(np.min(values)) * 1000.0
 
 
-def _warn_below_quantum_branch_ee(temperature_kev):
+def _format_deviation(deviation):
+    """Render a deviation for the warning, or say it is not representable."""
+    if deviation is None:
+        return "a deviation that is not representable at this extreme sample"
+    return f"{deviation:+.2%}"
+
+
+def _deviation_at(temperature_kev, density_m3, constant, offset, slope):
+    """Return quantum/classical - 1 at the lowest-temperature sample, or None.
+
+    Both forms are evaluated in logarithmic form, exactly as the public relations
+    are: the classical-cutoff value is ``offset - 0.5*ln(n_e/1e6) + slope*ln(T_eV)``,
+    which cannot overflow for a subnormal temperature or the largest finite
+    density.  When the classical value is zero or non-finite the numeric deviation
+    is undefined, so the warning reports that instead of quoting a number.
+    """
+    temperature, density = _lowest_sample(temperature_kev, density_m3)
+    t_eV = temperature * 1000.0
+    if not (t_eV > 0.0 and density > 0.0):
+        return None
+    log_temperature = math.log(t_eV)
+    # log(n_e / 1e6) is formed as a difference so a subnormal density cannot
+    # underflow to zero before the logarithm is taken.
+    log_density = math.log(density) - math.log(1e6)
+    quantum = constant + math.log(1000.0) + math.log(temperature) - 0.5 * math.log(density)
+    classical_value = offset - 0.5 * log_density + slope * log_temperature
+    if classical_value == 0.0 or not math.isfinite(classical_value):
+        return None
+    deviation = quantum / classical_value - 1.0
+    return deviation if math.isfinite(deviation) else None
+
+
+def _ee_deviation_at(temperature_kev, density_m3):
+    """e-e deviation against ``24 - ln(n_e^0.5 T_e^-1)``."""
+    return _deviation_at(temperature_kev, density_m3, 31.0, 24.0, 1.0)
+
+
+def _ei_deviation_at(temperature_kev, density_m3):
+    """e-i deviation against ``23 - ln(n_e^0.5 Z T_e^-1.5)``."""
+    return _deviation_at(temperature_kev, density_m3, 31.3, 23.0, 1.5)
+
+
+def _warn_below_quantum_branch_ee(temperature_kev, density_m3):
     """Warn once per call for e-e samples below the quantum-branch boundary.
 
-    The e-e pair has its own classical reference, ``24 - ln(n_e^0.5 T_e^-1)``: the
-    two branches share the same temperature dependence, so the quantum form stays
-    within about 1.4% of it instead of the much larger e-i gap.  Keeping this text
-    separate is deliberate -- the e-i numbers do not describe this pair.
+    The e-e pair has its own classical reference, ``24 - ln(n_e^0.5 T_e^-1)``
+    (``T_e`` in eV, ``n_e`` in cm^-3), and the two branches share the same
+    temperature dependence, so the gap is small.  The deviation is computed at
+    the offending sample instead of quoting a fixed percentage: the relative gap
+    grows with density (the same absolute offset is divided by a smaller
+    logarithm), so a fixed number would mislead at other densities.
     """
     lowest_ev = _lowest_ev(temperature_kev)
     if lowest_ev is None:
         return
+    deviation = _ee_deviation_at(temperature_kev, density_m3)
     warnings.warn(
-        "calculate_log_lambda_ee: electron temperature below the 10 Z^2 eV quantum-branch boundary of"
-        f" 10 Z^2 eV (Z = 1 here, so 10 eV; lowest input {lowest_ev:.6g} eV) returns the"
-        " high-temperature value of the electron-electron Coulomb logarithm. Below the boundary"
-        " the classical cutoff b_cl = e^2/(4 pi eps0 k T) sets the minimum impact parameter and"
-        " a classical-cutoff e-e form 24 - ln(n_e^0.5 T_e^-1) (T_e in eV, n_e in cm^-3; source pending,"
-        " UNKNOWN) applies;"
-        " the returned value is about +1.37% above it at 0.1 eV and +1.02% at 1 eV for"
-        " n_e = 1e19 m^-3. The value is returned unchanged; the classical branch is a separate"
-        " relation (scirel.physics.coulomb-ee)",
+        "calculate_log_lambda_ee: electron temperature below the 10 Z^2 eV quantum-branch boundary"
+        f" of (Z = 1 here, so 10 eV; lowest input {lowest_ev:.6g} eV) returns the high-temperature"
+        " value of the electron-electron Coulomb logarithm. Below the boundary the classical cutoff"
+        " b_cl = e^2/(4 pi eps0 k T) sets the minimum impact parameter and a classical-cutoff e-e"
+        " form 24 - ln(n_e^0.5 T_e^-1) (T_e in eV, n_e in cm^-3; source provenance pending,"
+        f" UNKNOWN) applies. At that sample (n_e = {_lowest_sample(temperature_kev, density_m3)[1]:.6g}"
+        f" m^-3) the returned value is {_format_deviation(deviation)} above that form; the relative"
+        " gap grows with density because the absolute offset is divided by a smaller logarithm."
+        " The value is returned unchanged; the classical branch is a separate relation"
+        " (scirel.physics.coulomb-ee)",
         ApplicabilityWarning,
         stacklevel=3,
     )
 
 
-def _warn_below_quantum_branch_ei(temperature_kev):
+def _warn_below_quantum_branch_ei(temperature_kev, density_m3):
     """Warn once per call for e-i samples below the quantum-branch boundary.
 
-    The e-i classical reference is ``23 - ln(n_e^0.5 Z T_e^-1.5)``.  That branch
-    differs in temperature dependence, so the gap is large below the boundary
-    (+55% at 0.1 eV) and the two forms cross near 16.2 eV -- above the crossing the
-    quantum form reads *lower*, which is why the boundary is not a "below is wrong,
-    above is right" rule.
+    The e-i classical reference is ``23 - ln(n_e^0.5 Z T_e^-1.5)`` (``T_e`` in eV,
+    ``n_e`` in cm^-3).  Its temperature dependence differs, so the gap is large
+    below the boundary and the two forms cross near 16.2 eV -- above the crossing
+    the quantum form reads *lower*, which is why the boundary is not a "below is
+    wrong, above is right" rule.  The deviation is computed at the offending
+    sample rather than quoted as a fixed percentage, because it grows with
+    density.
     """
     lowest_ev = _lowest_ev(temperature_kev)
     if lowest_ev is None:
         return
+    deviation = _ei_deviation_at(temperature_kev, density_m3)
     warnings.warn(
-        "calculate_log_lambda_ei: electron temperature below the 10 Z^2 eV quantum-branch boundary of"
-        f" 10 Z^2 eV (Z = 1 here, so 10 eV; lowest input {lowest_ev:.6g} eV) returns the"
-        " high-temperature value of the electron-ion Coulomb logarithm. Below the boundary the"
-        " classical cutoff b_cl = Z e^2/(4 pi eps0 k T) sets the minimum impact parameter and the"
-        " a classical-cutoff e-i form 23 - ln(n_e^0.5 Z T_e^-1.5) (T_e in eV, n_e in cm^-3; source"
-        " pending, UNKNOWN) applies;"
-        " the returned value is about +55.5% above it at 0.1 eV and +17.3% at 1 eV for"
-        " n_e = 1e19 m^-3, and the two forms cross near 16.2 eV, above which this quantum form"
-        " reads lower. The value is returned unchanged; the classical branch is a separate"
+        "calculate_log_lambda_ei: electron temperature below the 10 Z^2 eV quantum-branch boundary"
+        f" of (Z = 1 here, so 10 eV; lowest input {lowest_ev:.6g} eV) returns the high-temperature"
+        " value of the electron-ion Coulomb logarithm. Below the boundary the classical cutoff"
+        " b_cl = Z e^2/(4 pi eps0 k T) sets the minimum impact parameter and a classical-cutoff"
+        " e-i form 23 - ln(n_e^0.5 Z T_e^-1.5) (T_e in eV, n_e in cm^-3; source provenance"
+        f" pending, UNKNOWN) applies. At that sample (n_e = {_lowest_sample(temperature_kev, density_m3)[1]:.6g}"
+        f" m^-3) the returned value is {_format_deviation(deviation)} above that form, and the two"
+        " forms cross near 16.2 eV, above which this quantum form reads lower; the relative gap"
+        " grows with density. The value is returned unchanged; the classical branch is a separate"
         " relation (scirel.physics.coulomb-ei)",
         ApplicabilityWarning,
         stacklevel=3,
@@ -204,7 +263,7 @@ def calculate_log_lambda_ee(T_e, n_e):
     >>> assert np.isfinite(low) and len(caught) == 1
     """
     T, n = _positive_broadcast(("T_e", T_e), ("n_e", n_e))
-    _warn_below_quantum_branch_ee(T)
+    _warn_below_quantum_branch_ee(T, n)
     with np.errstate(over="ignore", invalid="ignore"):
         result = 31.0 + np.log(1000.0) + np.log(T) - 0.5 * np.log(n)
     return _finite_result(result, "electron-electron Coulomb logarithm")
@@ -276,7 +335,7 @@ def calculate_log_lambda_ei(T_e, n_e):
     >>> assert np.isfinite(low) and len(caught) == 1
     """
     T, n = _positive_broadcast(("T_e", T_e), ("n_e", n_e))
-    _warn_below_quantum_branch_ei(T)
+    _warn_below_quantum_branch_ei(T, n)
     with np.errstate(over="ignore", invalid="ignore"):
         result = 31.3 + np.log(1000.0) + np.log(T) - 0.5 * np.log(n)
     return _finite_result(result, "electron-ion Coulomb logarithm")
