@@ -143,6 +143,7 @@ def test_documented_identity_step_makes_the_commit_work_in_a_clean_home(repo, tm
     assert "git -C scirel config user.email" in text
 
     clone = output / "scirel"
+    assert _git(clone, "config", "--local", "--get", "user.useConfigOnly") == "true"
     (clone / "added.py").write_text("NEW = 3\n", encoding="utf-8")
     env = _clean_identity_env(tmp_path)
     subprocess.run(["git", "add", "added.py"], cwd=clone, env=env, check=True)
