@@ -12,12 +12,21 @@ the caller remains responsible for selecting a collision model and checking
 whether a returned logarithm is physically adequate.
 
 ``calculate_log_lambda_ee`` and ``calculate_log_lambda_ei`` evaluate the
-high-temperature (quantum cutoff, ``b_min = lambda_dB``) branch, which the standard classical-cutoff convention
-switches at ``T_e ~ 10 Z^2 eV`` (source provenance pending, see below); for the Z=1 signatures here
-that is 10 eV. Below it the classical cutoff ``b_cl = Z e^2/(4 pi eps0 k T)``
-sets ``b_min`` and the quantum branch overstates the logarithm, so those two
-relations warn below the boundary (issue #10 item 3). ``calculate_log_lambda_ii``
-already uses the classical cutoff form and is not affected.
+high-temperature (quantum cutoff, ``b_min = lambda_dB``) branch. Below it the
+classical cutoff ``b_cl = Z e^2/(4 pi eps0 k T)`` sets ``b_min`` and the quantum
+branch differs from the low-temperature estimate, so both relations warn below
+10 eV (issue #10 item 3).
+
+The two pairs are not the same reference, and the boundary is not the same
+statement. The NRL *Plasma Formulary* (2016, printed p. 34) gives the e-e relation
+as a single expression,
+``23.5 - ln(sqrt(n_e) T_e^(-5/4)) - sqrt(1e-5 + (ln T_e - 2)^2/16)``, with no
+``10 Z^2 eV`` branch condition; that condition belongs to the e-i branches
+(``T_e > 10 Z^2 eV`` for ``24 - ln(sqrt(n_e)/T_e)``, below it
+``23 - ln(sqrt(n_e) Z T_e^(-3/2))``). Here 10 eV is therefore a
+repository-conservative advisory line applied to both relations, while the e-i
+switching condition is the source's own. ``calculate_log_lambda_ii`` already uses
+the classical cutoff form and is not affected.
 """
 
 from __future__ import annotations
@@ -29,12 +38,16 @@ import numpy as np
 
 from scirel import ApplicabilityWarning
 
-# Low-temperature boundary for the electron branches, T_e ~ 10 Z^2 eV. The attribution of this
-# value (and of the classical forms below) is NOT verified against an original source: the
-# Formulary PDF was unavailable, so the contracts say "a classical-cutoff form (source pending)"
-# rather than naming it as a verified citation.
-# These signatures carry no charge number, so Z = 1 and the boundary is 10 eV = 0.01 keV.
-_QUANTUM_BRANCH_LOW_KEV = 0.01
+# Advisory boundary below which both electron relations warn, 10 eV = 0.01 keV.
+#
+# It is a repository-conservative advisory line, not a branch condition of the e-e relation: the
+# NRL Plasma Formulary (2016, printed p. 34) gives the e-e relation as a single expression, while
+# its ``T_e > 10 Z^2 eV`` condition belongs to the two e-i branches. Z = 1 for these signatures,
+# so the e-i switching condition is 10 eV as well, but the two must not be conflated in wording.
+# The e-e reference below is transcribed from that table (the maintainer checked the transcription
+# against the original; this implementation only re-evaluates the transcribed formula); the e-i branch
+# conditions carry their own (previously recorded) provenance note.
+_ADVISORY_BOUNDARY_KEV = 0.01
 
 __all__ = [
     "calculate_log_lambda_ee",
@@ -89,7 +102,7 @@ def _lowest_sample(temperature_kev, density_m3):
 def _lowest_ev(temperature_kev):
     """Return the lowest input temperature in eV, or None when no sample is below the boundary."""
     values = np.asarray(temperature_kev)
-    if not np.any(values < _QUANTUM_BRANCH_LOW_KEV):
+    if not np.any(values < _ADVISORY_BOUNDARY_KEV):
         return None
     return float(np.min(values)) * 1000.0
 
@@ -126,9 +139,33 @@ def _deviation_at(temperature_kev, density_m3, constant, offset, slope):
     return deviation if math.isfinite(deviation) else None
 
 
+def _ee_classical_value(temperature_ev, density_m3):
+    """NRL e-e relation value at one sample (``T_e`` eV, ``n_e`` cm^-3).
+
+    ``23.5 - ln(sqrt(n_e) T_e^(-5/4)) - sqrt(1e-5 + (ln T_e - 2)^2/16)``, evaluated in
+    logarithmic form so a subnormal temperature or the largest finite density cannot overflow.
+    """
+    log_temperature = math.log(temperature_ev)
+    log_density = math.log(density_m3) - math.log(1e6)
+    correction = math.sqrt(1e-5 + (log_temperature - 2.0) ** 2 / 16.0)
+    return 23.5 - 0.5 * log_density + 1.25 * log_temperature - correction
+
+
 def _ee_deviation_at(temperature_kev, density_m3):
-    """e-e deviation against ``24 - ln(n_e^0.5 T_e^-1)``."""
-    return _deviation_at(temperature_kev, density_m3, 31.0, 24.0, 1.0)
+    """e-e deviation against the NRL original e-e relation (not its high-T limit)."""
+    temperature, density = _lowest_sample(temperature_kev, density_m3)
+    temperature_ev = temperature * 1000.0
+    if not (temperature_ev > 0.0 and density > 0.0):
+        return None
+    quantum = 31.0 + math.log(1000.0) + math.log(temperature) - 0.5 * math.log(density)
+    try:
+        classical_value = _ee_classical_value(temperature_ev, density)
+    except (OverflowError, ValueError):
+        return None
+    if classical_value == 0.0 or not math.isfinite(classical_value):
+        return None
+    deviation = quantum / classical_value - 1.0
+    return deviation if math.isfinite(deviation) else None
 
 
 def _ei_deviation_at(temperature_kev, density_m3):
@@ -139,28 +176,31 @@ def _ei_deviation_at(temperature_kev, density_m3):
 def _warn_below_quantum_branch_ee(temperature_kev, density_m3):
     """Warn once per call for e-e samples below the quantum-branch boundary.
 
-    The e-e pair has its own classical reference, ``24 - ln(n_e^0.5 T_e^-1)``
-    (``T_e`` in eV, ``n_e`` in cm^-3), and the two branches share the same
-    temperature dependence, so the gap is small.  The deviation is computed at
-    the offending sample instead of quoting a fixed percentage: the relative gap
-    grows with density (the same absolute offset is divided by a smaller
-    logarithm), so a fixed number would mislead at other densities.
+    The reference is the NRL *Plasma Formulary* (2016, printed p. 34) e-e relation itself,
+    ``23.5 - ln(sqrt(n_e) T_e^(-5/4)) - sqrt(1e-5 + (ln T_e - 2)^2/16)`` (``T_e`` in eV,
+    ``n_e`` in cm^-3), not its high-temperature limit ``24 - ln(sqrt(n_e)/T_e)``; the two differ
+    by ~+49% at 0.1 eV.  The deviation is computed at the offending sample instead of quoting a
+    fixed percentage, because it grows with density.  The trigger temperature below is a
+    repository-conservative advisory line, not a branch condition of this relation: the
+    formulary's ``T_e > 10 Z^2 eV`` condition belongs to the e-i branches.
     """
     lowest_ev = _lowest_ev(temperature_kev)
     if lowest_ev is None:
         return
     deviation = _ee_deviation_at(temperature_kev, density_m3)
+    sample_temperature, sample_density = _lowest_sample(temperature_kev, density_m3)
     warnings.warn(
-        "calculate_log_lambda_ee: electron temperature below the 10 Z^2 eV quantum-branch boundary"
-        f" of (Z = 1 here, so 10 eV; lowest input {lowest_ev:.6g} eV) returns the high-temperature"
-        " value of the electron-electron Coulomb logarithm. Below the boundary the classical cutoff"
-        " b_cl = e^2/(4 pi eps0 k T) sets the minimum impact parameter and a classical-cutoff e-e"
-        " form 24 - ln(n_e^0.5 T_e^-1) (T_e in eV, n_e in cm^-3; source provenance pending,"
-        f" UNKNOWN) applies. At that sample (n_e = {_lowest_sample(temperature_kev, density_m3)[1]:.6g}"
-        f" m^-3) the returned value is {_format_deviation(deviation)} above that form; the relative"
-        " gap grows with density because the absolute offset is divided by a smaller logarithm."
-        " The value is returned unchanged; the classical branch is a separate relation"
-        " (scirel.physics.coulomb-ee)",
+        "calculate_log_lambda_ee: electron temperature is below this repository's conservative"
+        f" advisory boundary of 10 eV (lowest input {lowest_ev:.6g} eV). Below it the classical"
+        " cutoff b_cl = e^2/(4 pi eps0 k T) sets the minimum impact parameter, and the NRL e-e"
+        " relation 23.5 - ln(sqrt(n_e) T_e^(-5/4)) - sqrt(1e-5 + (ln T_e - 2)^2/16)"
+        " (T_e in eV, n_e in cm^-3; as transcribed from the formulary (see #197); the transcription was checked by the maintainer against the original table) reads this"
+        f" apart: at n_e = {sample_density:.6g} m^-3, T_e = {sample_temperature * 1000.0:.6g} eV,"
+        f" the returned value is {_format_deviation(deviation)} above it. That is an algebraic"
+        " difference between two estimates, not an error against measured physics, and it grows"
+        " with density. The boundary is advisory: the formulary's 10 Z^2 eV condition belongs to"
+        " the e-i branches, not to this relation. The returned value is unchanged; the classical"
+        " forms are separate relations (scirel.physics.coulomb-ee)",
         ApplicabilityWarning,
         stacklevel=3,
     )
@@ -169,29 +209,31 @@ def _warn_below_quantum_branch_ee(temperature_kev, density_m3):
 def _warn_below_quantum_branch_ei(temperature_kev, density_m3):
     """Warn once per call for e-i samples below the quantum-branch boundary.
 
-    The e-i classical reference is ``23 - ln(n_e^0.5 Z T_e^-1.5)`` (``T_e`` in eV,
-    ``n_e`` in cm^-3).  Its temperature dependence differs, so the gap is large
-    below the boundary and the two forms cross near 16.2 eV -- above the crossing
-    the quantum form reads *lower*, which is why the boundary is not a "below is
-    wrong, above is right" rule.  The deviation is computed at the offending
-    sample rather than quoted as a fixed percentage, because it grows with
-    density.
+    The e-i branches in the same source are: ``24 - ln(sqrt(n_e)/T_e)`` for ``T_e > 10 Z^2 eV``
+    (this high-temperature branch is what the relation here evaluates) and
+    ``23 - ln(sqrt(n_e) Z T_e^(-3/2))`` below it, with ``T_e`` in eV and ``n_e`` in cm^-3.  The
+    ~16.2 eV intersection with the latter is an algebraic crossing with a formula extrapolated
+    outside its own low-temperature range, not a physical switch or an accuracy criterion.  The
+    deviation is computed at the offending sample rather than quoted as a fixed percentage,
+    because it grows with density.  Branch-condition provenance stays pending (UNKNOWN) in the
+    contract.
     """
     lowest_ev = _lowest_ev(temperature_kev)
     if lowest_ev is None:
         return
     deviation = _ei_deviation_at(temperature_kev, density_m3)
+    sample_temperature, sample_density = _lowest_sample(temperature_kev, density_m3)
     warnings.warn(
-        "calculate_log_lambda_ei: electron temperature below the 10 Z^2 eV quantum-branch boundary"
-        f" of (Z = 1 here, so 10 eV; lowest input {lowest_ev:.6g} eV) returns the high-temperature"
-        " value of the electron-ion Coulomb logarithm. Below the boundary the classical cutoff"
-        " b_cl = Z e^2/(4 pi eps0 k T) sets the minimum impact parameter and a classical-cutoff"
-        " e-i form 23 - ln(n_e^0.5 Z T_e^-1.5) (T_e in eV, n_e in cm^-3; source provenance"
-        f" pending, UNKNOWN) applies. At that sample (n_e = {_lowest_sample(temperature_kev, density_m3)[1]:.6g}"
-        f" m^-3) the returned value is {_format_deviation(deviation)} above that form, and the two"
-        " forms cross near 16.2 eV, above which this quantum form reads lower; the relative gap"
-        " grows with density. The value is returned unchanged; the classical branch is a separate"
-        " relation (scirel.physics.coulomb-ei)",
+        "calculate_log_lambda_ei: electron temperature is below the 10 Z^2 eV branch condition"
+        f" (Z = 1 here, so 10 eV; lowest input {lowest_ev:.6g} eV) under which the source switches"
+        " the electron-ion relation to its low-temperature form. This relation evaluates the"
+        " high-temperature branch. The low-temperature form is"
+        " 23 - ln(sqrt(n_e) Z T_e^(-1.5)) (T_e in eV, n_e in cm^-3); at"
+        f" n_e = {sample_density:.6g} m^-3, T_e = {sample_temperature * 1000.0:.6g} eV the returned"
+        f" value is {_format_deviation(deviation)} above it. The ~16.2 eV crossing with the"
+        " low-temperature form is an algebraic extrapolation, not a physical switch or an accuracy"
+        " criterion; the relative gap grows with density. The returned value is unchanged; the"
+        " low-temperature forms are separate relations (scirel.physics.coulomb-ei)",
         ApplicabilityWarning,
         stacklevel=3,
     )
@@ -233,17 +275,22 @@ def calculate_log_lambda_ee(T_e, n_e):
     Warns
     -----
     ApplicabilityWarning
-        If any input temperature is below 10 eV, the ``T_e ~ 10 Z^2 eV``
-        boundary for this quantum-cutoff (``b_min = lambda_dB``) branch at Z = 1.
-        Below it the classical cutoff ``b_cl = e^2/(4 pi eps0 k T)`` sets the
-        minimum impact parameter and a classical-cutoff **electron-electron** form
-        ``24 - ln(n_e^0.5 T_e^-1)`` (source provenance pending, UNKNOWN)
-        (``T_e`` in eV, ``n_e`` in cm^-3) applies. The two e-e branches share the
-        same temperature dependence, so the value returned here stays close to
-        that form: about +1.37% at 0.1 eV and +1.02% at 1 eV for
-        ``n_e = 1e19 m^-3``. Do not reuse the e-i numbers here -- the e-i pair
-        has a different classical form and a much larger gap. The value is
-        returned unchanged; the classical branch is a separate relation.
+        If any input temperature is below 10 eV, a repository-conservative advisory
+        boundary for this quantum-cutoff (``b_min = lambda_dB``) branch. Below it
+        the classical cutoff ``b_cl = e^2/(4 pi eps0 k T)`` sets the minimum impact
+        parameter, and the NRL Plasma Formulary e-e relation
+        ``23.5 - ln(sqrt(n_e) T_e^(-5/4)) - sqrt(1e-5 + (ln T_e - 2)^2/16)``
+        (``T_e`` in eV, ``n_e`` in cm^-3, as transcribed from the 2016 printed
+        p. 34 table; the transcription was checked by the maintainer, see #197) reads the
+        value here about +48.99% higher at 0.1 eV, +13.60% at
+        1 eV and +0.81% at 10 eV for ``n_e = 1e19 m^-3``; the gap grows with
+        density (+32.60% at 1e17 m^-3 and +98.54% at 1e21 m^-3 at 0.1 eV), so the
+        warning computes it per sample instead of quoting a fixed percentage.
+        That difference is algebraic between two estimates, not an error against
+        measured physics. The 10 eV trigger is advisory: the formulary's
+        ``10 Z^2 eV`` condition belongs to the e-i branches, not to this relation.
+        Do not reuse the e-i numbers here. The value is returned unchanged; the
+        low-temperature estimates are separate relations.
 
     See Also
     --------
@@ -305,17 +352,18 @@ def calculate_log_lambda_ei(T_e, n_e):
     Warns
     -----
     ApplicabilityWarning
-        If any input temperature is below 10 eV, the ``T_e ~ 10 Z^2 eV``
-        boundary for this quantum-cutoff (``b_min = lambda_dB``) branch at Z = 1.
-        Below it the classical cutoff ``b_cl = Z e^2/(4 pi eps0 k T)`` sets the
-        minimum impact parameter and a classical-cutoff **electron-ion** form
-        (source provenance pending, UNKNOWN)
-        ``23 - ln(n_e^0.5 Z T_e^-1.5)`` (``T_e`` in eV, ``n_e`` in cm^-3)
-        applies; the value returned here is about +55% above it at 0.1 eV and
-        +17% at 1 eV for ``n_e = 1e19 m^-3``. The two forms cross near 16.2 eV,
-        and above the crossing this quantum form reads *lower*, so the boundary
-        is not a "below is wrong, above is right" rule. The value is returned
-        unchanged; the classical branch is a separate relation.
+        If any input temperature is below ``10 Z^2 eV`` (10 eV at Z = 1), the
+        source's own switch to its low-temperature e-i branch: the formulary gives
+        ``24 - ln(sqrt(n_e)/T_e)`` above that condition and
+        ``23 - ln(sqrt(n_e) Z T_e^(-3/2))`` below it (``T_e`` in eV, ``n_e`` in
+        cm^-3, as transcribed from the 2016 printed p. 34 table; the transcription was
+        checked by the maintainer, see #197). This relation evaluates the upper
+        branch, and the value returned is about +55.5% above
+        the low-temperature branch at 0.1 eV and +17.3% at 1 eV for
+        ``n_e = 1e19 m^-3``. The ~16.2 eV intersection with that branch is
+        algebra on a formula extrapolated outside its own range; it is not a
+        physical switching point and not an accuracy criterion. The value is
+        returned unchanged; the low-temperature estimates are separate relations.
 
     See Also
     --------
