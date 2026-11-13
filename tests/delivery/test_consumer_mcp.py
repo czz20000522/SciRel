@@ -475,9 +475,9 @@ def test_cli_without_sdk_fails_closed_on_corrupt_runtime(consumer_snapshot, memb
     assert json.loads(completed.stdout)["outcome"] == "metadata_error"
 
 
-def test_exported_cli_resolves_its_runtime_root_without_sdk(consumer_snapshot):
-    adapter = consumer_snapshot / "tools"
-    adapter.mkdir()
+def test_packaged_cli_uses_its_working_directory_without_sdk(consumer_snapshot):
+    adapter = consumer_snapshot / "skills/scirel-capability-discovery/scripts"
+    adapter.mkdir(parents=True)
     for filename in ("query.py", "consumer_tools.py", "capability_query.py"):
         shutil.copyfile(ROOT / "scripts" / filename, adapter / filename)
     completed = _cli(consumer_snapshot, "describe", entry=adapter / "query.py", explicit_root=False)
@@ -486,16 +486,14 @@ def test_exported_cli_resolves_its_runtime_root_without_sdk(consumer_snapshot):
     assert not list(adapter.rglob("__pycache__"))
 
 
-def test_exported_cli_rejects_a_linked_default_runtime_root(consumer_snapshot, tmp_path):
-    adapter = consumer_snapshot / "tools"
-    adapter.mkdir()
+def test_packaged_cli_rejects_an_explicit_linked_runtime_root(consumer_snapshot, tmp_path):
+    adapter = consumer_snapshot / "skills/scirel-capability-discovery/scripts"
+    adapter.mkdir(parents=True)
     for filename in ("query.py", "consumer_tools.py", "capability_query.py"):
         shutil.copyfile(ROOT / "scripts" / filename, adapter / filename)
     linked_root = directory_link(tmp_path / "linked-runtime", consumer_snapshot)
 
-    completed = _cli(
-        consumer_snapshot, "describe", entry=linked_root / "tools" / "query.py", explicit_root=False
-    )
+    completed = _cli(linked_root, "describe", entry=adapter / "query.py")
 
     assert completed.returncode == 2, completed.stderr
     response = json.loads(completed.stdout)

@@ -173,6 +173,12 @@ def export_case(tmp_path, monkeypatch):
     )
     _write(case.skill, "references/checks.md", "# Checks\n\n[Helper](../scripts/delivery.py)\n")
     _write(case.skill, "scripts/delivery.py", 'print("synthetic helper")\n')
+    for name in delivery.SKILL_NAMES[1:]:
+        _write(
+            source,
+            f"skills/development/usage/{name}/SKILL.md",
+            f"---\nname: {name}\ndescription: Synthetic skill.\n---\n# Skill\n",
+        )
     with ZipFile(case.wheel, "w") as wheel:
         wheel.writestr(
             "synthetic-0.dist-info/METADATA",
@@ -224,7 +230,7 @@ def _cli(case, *arguments, expected_exit=0):
             sys.executable,
             "-S",
             "-B",
-            str(case.output / "tools/query.py"),
+            str(case.output / "skills/scirel-capability-discovery/scripts/query.py"),
             "--root",
             str(case.output),
             *arguments,
@@ -251,10 +257,12 @@ def test_runtime_from_original_contracts_and_bound_readers_is_standalone(export_
         "mcp-requirements.txt",
         "mcp-connections.json",
         "wheel/" + case.wheel.name,
-        "tools/query.py",
-        "tools/capability_query.py",
-        "tools/consumer_tools.py",
-        "tools/server.py",
+        "skills/scirel-capability-discovery/SKILL.md",
+        "skills/scirel-capability-discovery/scripts/query.py",
+        "skills/scirel-capability-discovery/scripts/capability_query.py",
+        "skills/scirel-capability-discovery/scripts/consumer_tools.py",
+        "skills/scirel-capability-discovery/scripts/server.py",
+        "skills/scirel-result-validation/SKILL.md",
         "skills/scirel-solving/SKILL.md",
         "skills/scirel-solving/references/checks.md",
         "skills/scirel-solving/scripts/delivery.py",
@@ -288,6 +296,13 @@ def test_runtime_from_original_contracts_and_bound_readers_is_standalone(export_
     with ZipFile(case.output / "wheel" / case.wheel.name) as wheel:
         assert wheel.read("synthetic-0.dist-info/licenses/licenses/NOTICE.txt") == NOTICE
     closure = result["checks"]["source_closure"]
+    for name, target in delivery.DISCOVERY_SCRIPTS.items():
+        assert (
+            case.output / "skills/scirel-capability-discovery/scripts" / target
+        ).read_bytes() == (case.source / "scripts" / name).read_bytes()
+        assert closure["source_inputs"]["scripts/" + name] == sha(
+            (case.source / "scripts" / name).read_bytes()
+        )
     assert closure["source_signature_check"] == "PASS"
     assert closure["catalog_wheel_closure"]["status"] == "PASS"
     assert closure["scientific_runtime_revalidated"] is False
@@ -306,6 +321,106 @@ def test_runtime_from_original_contracts_and_bound_readers_is_standalone(export_
     assert selected["digests"]["catalog/contracts/" + ASSET + ".json"] == sha(case.contract)
     _write(case.output, "catalog/contracts/" + ASSET + ".json", b'{"asset_id":"changed"}\n')
     assert _cli(case, "get", ASSET, expected_exit=2)["outcome"] == "metadata_error"
+
+
+@pytest.mark.parametrize("name", delivery.SKILL_NAMES)
+def test_missing_delivery_skill_is_an_error(export_case, name):
+    case = export_case
+    root = case.source / "skills/development/usage" / name
+    root.rename(root.with_name(name + "-absent"))
+    with pytest.raises(ValueError, match="missing delivery skill"):
+        delivery.build(case.wheel, case.output)
+    assert not case.output.exists()
+
+
+def test_discovery_source_copy_in_skill_is_rejected(export_case):
+    case = export_case
+    _write(case.source, "skills/development/usage/scirel-capability-discovery/scripts/query.py", "")
+    with pytest.raises(ValueError, match="sources belong in scripts"):
+        delivery.build(case.wheel, case.output)
+    assert not case.output.exists()
+
+
+def test_delivered_query_default_root_is_its_working_directory(export_case):
+    case = export_case
+    delivery.build(case.wheel, case.output)
+    command = [
+        sys.executable,
+        "-S",
+        "-B",
+        str(case.output / "skills/scirel-capability-discovery/scripts/query.py"),
+        "describe",
+    ]
+    result = subprocess.run(command, cwd=case.output, capture_output=True, text=True, timeout=20)
+    assert result.returncode == 0, result.stderr or result.stdout
+    assert json.loads(result.stdout)["asset_count"] == 1
+    result = subprocess.run(
+        command, cwd=case.output.parent, capture_output=True, text=True, timeout=20
+    )
+    assert result.returncode == 2
+    assert json.loads(result.stdout)["outcome"] == "metadata_error"
+
+
+def test_delivered_server_requires_root_and_fails_explicitly_without_sdk(export_case):
+    case = export_case
+    delivery.build(case.wheel, case.output)
+    command = [
+        sys.executable,
+        "-S",
+        "-B",
+        str(case.output / "skills/scirel-capability-discovery/scripts/server.py"),
+    ]
+    result = subprocess.run(command, cwd=case.output, capture_output=True, text=True, timeout=20)
+    assert result.returncode == 2
+    assert "--root" in result.stderr
+    result = subprocess.run(
+        [*command, "--root", str(case.output)],
+        cwd=case.output.parent,
+        capture_output=True,
+        text=True,
+        timeout=20,
+    )
+    assert result.returncode == 2
+    assert "MCP adapter dependency unavailable" in result.stderr
+    assert not list(case.output.rglob("__pycache__"))
+
+
+def test_delivered_server_dispatches_the_delivered_registry_without_science(export_case):
+    case = export_case
+    delivery.build(case.wheel, case.output)
+    script = r"""
+import importlib.util
+import json
+from pathlib import Path
+import sys
+
+root = Path(sys.argv[1])
+entry = root / "skills/scirel-capability-discovery/scripts/server.py"
+sys.path.insert(0, str(entry.parent))
+spec = importlib.util.spec_from_file_location("delivered_server", entry)
+server = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(server)
+registry = server.consumer_tools
+description = registry.call_tool(root, "scirel_describe", {})
+pins = {key: description[key] for key in ("snapshot_sha256", "wheel_sha256")}
+arguments = {"expected_" + key: value for key, value in pins.items()}
+contract = registry.call_tool(root, "scirel_get", {**arguments, "asset_id": sys.argv[2]})
+assert not any(name.split(".")[0] in {"mcp", "numpy", "scipy", "scirel"} for name in sys.modules)
+print(json.dumps({"tools": registry.tools(), "description": description, "contract": contract}))
+"""
+    result = subprocess.run(
+        [sys.executable, "-S", "-B", "-c", script, str(case.output), ASSET],
+        cwd=case.output.parent,
+        capture_output=True,
+        text=True,
+        timeout=20,
+    )
+    assert result.returncode == 0, result.stderr or result.stdout
+    data = json.loads(result.stdout)
+    assert len(data["tools"]) == 4
+    assert data["description"]["asset_count"] == 1
+    assert data["contract"]["document"] == case.document
+    assert not list(case.output.rglob("__pycache__"))
 
 
 @pytest.mark.parametrize(

@@ -171,3 +171,11 @@ def test_tickets_select_the_tooling_layer_and_name_the_transition_check(path):
     targets, notes = test_scope.classify(Path(path))
     assert targets == ["tests/tooling"]
     assert any("--base origin/main" in note for note in notes)
+
+
+def test_discovery_skill_selects_the_actual_delivery_tests():
+    targets, notes = test_scope.classify(
+        Path("skills/development/usage/scirel-capability-discovery/SKILL.md")
+    )
+    assert targets == ["tests/delivery"]
+    assert any("canonical scripts" in note for note in notes)

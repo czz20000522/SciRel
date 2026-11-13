@@ -33,15 +33,16 @@ installed-wheel or scientific-execution claim. Malformed inputs produce
 
 ## CLI and optional MCP
 
-The exported `tools/query.py` is the real standard-library CLI. It requires
+The exported `skills/scirel-capability-discovery/scripts/query.py` is the standard-library CLI. It requires
 neither an MCP connection nor its SDK. Source `scripts/query.py` is copied to
-that path unchanged. The CLI derives its commands and arguments from the same
+that path unchanged; the repository keeps no skill-side source copy. Without
+`--root`, the current working directory must be the package root. The CLI derives its commands and arguments from the same
 registry and calls the same dispatcher as MCP:
 
 ```sh
-python <package>/tools/query.py --root <package> describe
-python <package>/tools/query.py --root <package> search --q coulomb --limit 3 --expected-snapshot-sha256 <snapshot_sha256> --expected-wheel-sha256 <wheel_sha256>
-python <package>/tools/query.py --root <package> get <asset-id> --expected-snapshot-sha256 <snapshot_sha256> --expected-wheel-sha256 <wheel_sha256>
+python <package>/skills/scirel-capability-discovery/scripts/query.py --root <package> describe
+python <package>/skills/scirel-capability-discovery/scripts/query.py --root <package> search --q coulomb --limit 3 --expected-snapshot-sha256 <snapshot_sha256> --expected-wheel-sha256 <wheel_sha256>
+python <package>/skills/scirel-capability-discovery/scripts/query.py --root <package> get <asset-id> --expected-snapshot-sha256 <snapshot_sha256> --expected-wheel-sha256 <wheel_sha256>
 ```
 
 `--root` precedes the command. Take both pins from `describe`, then preserve them
@@ -61,7 +62,7 @@ These are the only runtime query operations. Contracts use their original
 English fields; retrieval has no language selector or tutorial collection.
 
 MCP adds the official pinned SDK as a transport adapter. For stdio the client
-launches `python tools/server.py --root <package> --transport stdio` and owns its
+launches `python skills/scirel-capability-discovery/scripts/server.py --root <package> --transport stdio` and owns its
 lifecycle. For loopback Streamable HTTP, start the same server with
 `--transport streamable-http --host 127.0.0.1 --port 8765`; its endpoint is
 `http://127.0.0.1:8765/mcp`. Keep the server and client in the selected execution
