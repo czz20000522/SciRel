@@ -36,8 +36,9 @@ KIT_TEMPLATE = """\
 
 ## 用法
 
-1. 先设置提交身份。工具包不继承构建机的 git 配置，缺身份时 `git commit` 会以
-   `fatal: unable to auto-detect email address` 失败：
+1. 先设置提交身份。工具包不继承构建机的身份，并在自己的 git 配置中设置
+   `user.useConfigOnly=true`，禁止 Git 自动推测姓名和邮箱。没有明确配置身份时
+   `git commit` 会失败；已有的全局显式身份配置也可使用：
 
    ```sh
    git -C scirel config user.name "<你的名字>"
@@ -103,6 +104,7 @@ def build_kit(repo: Path, revision: str, output: Path) -> str:
     clone = output / "scirel"
     clone.mkdir(parents=True)
     _git(["init", "--quiet", "--initial-branch", BRANCH], clone)
+    _git(["config", "--local", "user.useConfigOnly", "true"], clone)
     _git(
         ["fetch", "--quiet", "--depth", "1", "--upload-pack", UPLOAD_PACK, repo.as_uri(), commit],
         clone,
