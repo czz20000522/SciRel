@@ -21,6 +21,7 @@ overlap the docstring are derived and must agree. This script checks, per asset:
 - the docstring Examples run as doctests and are the same code as the
   contract example;
 - the Chinese reader record is bound to the current contract bytes;
+- translated clause lists have the contract's counts and no unknown section keys;
 - no phrase listed as stale for the asset appears in the contract, the
   reader record or the docstring.
 
@@ -49,6 +50,62 @@ ERROR = re.compile(r"\b([A-Z][A-Za-z]*(?:Error|Exception|Warning|Failure))\b")
 sys.path.insert(0, str(ROOT / "scripts"))
 from code_digest import source_digest  # noqa: E402
 from public_api_binding import contract_default, format_signature  # noqa: E402
+
+
+def digest_error(record: dict, digest: str, filename: str) -> str | None:
+    """Report a stale reader digest separately from any clause mismatch."""
+    recorded = record.get("source_sha256")
+    if recorded == digest:
+        return None
+    reader_digest = "missing" if recorded is None else repr(recorded)
+    if isinstance(recorded, str) and recorded:
+        reader_digest = recorded
+    return (
+        f"{filename} reader record digest is stale at source_sha256: reader "
+        f"{reader_digest} vs contract {digest}"
+    )
+
+
+def clause_errors(document: dict, record: dict) -> list[str]:
+    """Compare the reader record's clause lists against the contract.
+
+    Clause counts and the record digest are independent failure modes: equal
+    counts do not prove the digest is current, and a current digest does not
+    prove the clauses match. Field names and expected counts come from the
+    contract, not a second field list. verification.tests names executable
+    evidence and is not a translated clause list. This adds early diagnostics
+    without replacing capability_catalog.load_translations or judging semantics.
+    """
+    errors: list[str] = []
+    for section in ("applicability", "verification"):
+        contract_section = document[section]
+        reader_section = record.get(section)
+        if not isinstance(reader_section, dict):
+            errors.append(f"invalid reader section at {section}: expected an object")
+            continue
+        for key, contract_values in contract_section.items():
+            if not isinstance(contract_values, list) or (
+                section == "verification" and key == "tests"
+            ):
+                continue
+            reader_values = reader_section.get(key)
+            if not isinstance(reader_values, list):
+                actual = "no field" if key not in reader_section else type(reader_values).__name__
+                errors.append(
+                    f"clause count mismatch at {section}.{key}: the contract has "
+                    f"{len(contract_values)} clause(s), the reader record has "
+                    f"{actual} (expected a list)"
+                )
+            elif len(contract_values) != len(reader_values):
+                side = "fewer" if len(reader_values) < len(contract_values) else "more"
+                errors.append(
+                    f"clause count mismatch at {section}.{key}: the contract has "
+                    f"{len(contract_values)} clause(s), the reader record has "
+                    f"{len(reader_values)} ({side} on the reader side)"
+                )
+        for key in sorted(reader_section.keys() - contract_section.keys()):
+            errors.append(f"unknown reader key at {section}.{key}: not a contract clause field")
+    return errors
 
 
 def sections(doc: str) -> dict[str, str]:
@@ -132,9 +189,8 @@ def _mapping_signature(document: dict, obj) -> inspect.Signature | None:
 
 def check(asset: dict, root: Path = ROOT) -> list[str]:
     asset_id = asset["asset_id"]
-    document = json.loads(
-        (root / "catalog/examples" / f"{asset_id}.json").read_text(encoding="utf-8")
-    )
+    contract_bytes = (root / "catalog/examples" / f"{asset_id}.json").read_bytes()
+    document = json.loads(contract_bytes)
     api = document["public_api"]["python"]
     obj = getattr(importlib.import_module(api["module"]), api["symbol"])
     errors: list[str] = []
@@ -243,11 +299,12 @@ def check(asset: dict, root: Path = ROOT) -> list[str]:
         for record in json.loads(path.read_text(encoding="utf-8"))["records"]:
             if record["asset_id"] == asset_id:
                 zh_text = json.dumps(record, ensure_ascii=False)
-                digest = hashlib.sha256(
-                    (root / "catalog/examples" / f"{asset_id}.json").read_bytes()
-                ).hexdigest()
-                if record.get("source_sha256") != digest:
-                    fail(f"{path.name} reader record is bound to an older contract")
+                digest = hashlib.sha256(contract_bytes).hexdigest()
+                stale = digest_error(record, digest, path.name)
+                if stale is not None:
+                    fail(stale)
+                for message in clause_errors(document, record):
+                    fail(f"{path.name} {message}")
     if not zh_text:
         fail("no Chinese reader record")
     contract_text = json.dumps(document, ensure_ascii=False)
