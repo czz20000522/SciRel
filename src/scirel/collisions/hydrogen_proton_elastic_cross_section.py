@@ -8,7 +8,8 @@ p. 298, via the KN1DPy ``sigma_el_p_h`` source). The valid laboratory range
 of the underlying table is 0.2-200 eV (APID 8, 1999, p. 1 and p. 77); the
 declared fit domain remains the KN1DPy clipping window. The canonical
 KN1DPy commit ``bb22c872`` uses ``E < 10`` for the low-energy polynomial and
-``E >= 10`` for the high-energy polynomial, so exactly 10 eV uses the
+``E >= 10`` for the high-energy polynomial. Here that polynomial variable
+is ``E_cm``: exactly 10 eV center-of-mass (20 eV laboratory) uses the
 high-energy branch. The two empirical fits are not forced continuous.
 Endpoint clipping [0.001, 1.01e5] eV and the input-preserving output shape
 are explicit. Fit fidelity does not establish accuracy outside the cited
@@ -70,6 +71,15 @@ def evaluate_hydrogen_proton_elastic_cross_section(energy_ev):
     branch. The two segments are not forced to be continuous, so a finite jump
     at the breakpoint is retained. Endpoint clipping is silent and does not
     imply experimental accuracy outside the declared range.
+
+    This momentum-transfer cross section includes resonant charge-exchange
+    momentum (IAEA APID Vol. 8, 1999, section 1.2, p. 3); it is not a pure
+    distinguishable-particle elastic cross section. A full-velocity
+    charge-exchange gain-loss operator already transfers momentum. Adding its
+    momentum moment to the H-P moment built from this fit is not a supported
+    composition. The individual calculations are retained; no subtraction of
+    twice the charge-exchange cross section or replacement collision model is
+    implied, and the actual duplicate share remains unqualified.
 
     Examples
     --------

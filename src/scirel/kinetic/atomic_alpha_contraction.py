@@ -112,6 +112,14 @@ def contract_atomic_hydrogen_alpha_frequencies(
         The per-k matrix-vector contraction: each family multiplies one assembled (N,N) SIG matrix by the Fortran-order flattening of one input distribution carried on the (nvr*nvx,) Work buffer and restores the product to the (nvr,nvx) slice. The CX and H-P families carry fi_hat scaled cell-wise by ni[k]; the H-H2 and H-H families carry the bare distributions fH2 and fH.
     finite aligned inputs of the declared shapes; negative or zero densities are not rejected at runtime -- every finite density profile is contracted as given; bounded negative output cells inherited from the signed elastic SIG families (vx_vx / vr2_vx2 factors) are reproduced as-is, never clamped
 
+    When the input matrices come from SciRel's atomic collision-matrix
+    assembly, ``SIG_H_P`` already includes resonant charge-exchange momentum.
+    The corresponding H-P momentum moment must not be added to that of a
+    full-velocity charge-exchange gain-loss operator using ``SIG_CX`` and
+    ``Alpha_CX``. This direct composition is unsupported. Returning both
+    contracted fields does not combine their collision operators, validate
+    caller-supplied cross sections or provide a replacement scattering model.
+
     Examples
     --------
     >>> import numpy as np

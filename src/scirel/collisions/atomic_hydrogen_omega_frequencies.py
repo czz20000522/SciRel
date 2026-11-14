@@ -165,6 +165,14 @@ def assemble_atomic_hydrogen_omega_frequencies(
     ``negative_no_bgk_closure``. Grid convergence remains the caller's
     responsibility.
 
+    If ``Alpha_H_P`` comes from SciRel's atomic collision-matrix assembly,
+    ``moment_rate_H_P`` uses a momentum-transfer fit that already includes
+    resonant charge-exchange momentum. Adding this moment to the momentum
+    moment of a full-velocity charge-exchange gain-loss operator built from
+    ``SIG_CX`` is unsupported. ``nu_EL`` retains its existing channel sum;
+    its name does not mean that charge-exchange momentum was removed from
+    the H-P fit. This reduction does not repair or validate that composition.
+
     Examples
     --------
     >>> import numpy as np

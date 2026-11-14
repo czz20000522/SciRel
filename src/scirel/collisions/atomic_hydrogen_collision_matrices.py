@@ -161,6 +161,15 @@ def assemble_atomic_hydrogen_collision_matrices(vr, vx, Vr2pidVr, dVx, Tnorm, mu
     (``mu=2``) cases are physically checked; other positive mass factors are
     algebraic extensions only.
 
+    The four kernels are separate outputs, not an accepted combined transport
+    operator. The H-P momentum-transfer fit used by ``SIG_H_P`` already
+    includes resonant charge-exchange momentum (IAEA APID Vol. 8, 1999,
+    section 1.2, p. 3). Do not add its H-P momentum moment to the momentum
+    moment of a full-velocity charge-exchange gain-loss operator built from
+    ``SIG_CX``. That direct composition is unsupported; neither dropping the
+    H-P term nor subtracting cross sections is an approved replacement model.
+    This assembly does not detect how a caller later combines its outputs.
+
     References
     ----------
     .. [1] B. LaBombard, "KN1D: A 1-D Space, 2-D Velocity, Kinetic Transport
