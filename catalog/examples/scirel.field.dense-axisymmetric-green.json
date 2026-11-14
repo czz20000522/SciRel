@@ -136,19 +136,19 @@
    "Source-weight scaling and empty-source shape.",
    "Axis-source zero-column convention.",
    "Circular-filament analytic axial-field limit.",
-   "Columnwise equality with the separately maintained circular-filament flux and field kernel.",
+   "Columnwise equality with the maintained circular-filament response through the shared kernel; this is wrapper consistency, not an independent numerical oracle.",
    "Invalid radius and source-shape rejection.",
-   "Independent 70/80-digit ideal-loop relation checks cover very small positive radii, near-axis nonzero BR, near-wire cases and formula-evaluation branches while retaining the original numeric assertions and tolerances; the exact self term and arithmetic failure are handled separately.",
+   "In tests/cross_domain/test_field_green_correction.py, test_every_positive_loop_radius_retains_analytic_axis_field with api=dense compares gBZ for a 1e-13 source radius at axial targets with a 70-digit ideal-loop reference and checks zero gBR; test_exact_self_rule_is_distinct_from_arithmetic_failure with api=dense separates zero exact-self entries from FloatingPointError at weight 1e308. test_public_field_interfaces_reject_complex_coordinates includes api=dense.",
    "The named result preserves the captured key order, values, shapes, dtypes, mapping access and attribute access; failures retain their exception types and messages."
   ],
   "tests": [
    "tests/field/test_dense_axisymmetric_green.py",
    "tests/cross_domain/test_field_green_correction.py"
   ],
-  "evidence_ceiling": "Bounded to the dense axisymmetric Green response preserving separate source columns. Evidence: `test_dense_axisymmetric_green.py` contains 9 test functions, 1 of which references `dense_axisymmetric_green_response`, and is bound only by this asset; `test_field_green_correction.py` contains 9 test functions, none of which references `dense_axisymmetric_green_response`, and is shared by 5 assets; the bounded example was executed by this audit. Oracle: analytic axial-field limit and columnwise circular-filament kernel equality. It does not establish finite-wire self-fields, arbitrary extreme-scale accuracy, or equilibrium claims.",
+  "evidence_ceiling": "tests/field/test_dense_axisymmetric_green.py directly invokes dense_axisymmetric_green_response as scientific_function and by its own name: test_source_weight_scales_each_column_and_zeroes_a_column, test_columns_match_individual_filament_flux_and_field_responses, test_axis_bz_matches_circular_filament_limit, and the shape/empty-source/rejection assertions bind separate source columns, scaling, the analytic axial limit and maintained-kernel agreement. The api=dense cases named in scope are direct public-entry assertions, not merely shared-file references. Formula-cutover and radially separated near-wire assertions in the shared file call aggregate only; they are dependency evidence, not direct dense-entry coverage. No finite-wire self-field, arbitrary extreme-scale accuracy or equilibrium claim follows.",
   "known_limitations": [
    "The result preserves separate source columns and does not sum them.",
-   "The asset-private test file has nine functions but one direct example; `test_field_green_correction.py` is shared by five assets and contains no direct call, so the nonfinite-response path is contract-only."
+   "The direct arithmetic-failure fixture uses a tiny source and large weight; coverage of every other unrepresentable response and every shared-kernel branch through this wrapper is UNKNOWN."
   ]
  }
 }

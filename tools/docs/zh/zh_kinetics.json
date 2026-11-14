@@ -8205,7 +8205,7 @@
   },
   {
    "asset_id": "scirel.kinetic.velocity-slice-moment-compensation",
-   "source_sha256": "b1b345f6f8c3fafeb43dc7dbad13a97e979df267569e79f96ed550d83d870016",
+   "source_sha256": "9c1debc9c0d0af2333451a6f7e52b17f024c3edf4b6374c6840433c45dd561ef",
    "summary": "对一个圆柱速度分布切片施加有界离散修正，使轴向漂移和能量矩接近目标。",
    "definition": "按源顺序计算矩、有限体积差分和四种符号组合，必要时施加带符号缩放，返回修正切片及缩放因子。",
    "model": "离散有限体积双分量矩补偿；没有非线性收敛循环。",
@@ -8272,7 +8272,7 @@
     },
     {
      "name": "moment_rtol",
-     "description": "返回矩允许的最大相对误差",
+     "description": "修正后矩误差触发 RuntimeWarning 的阈值；超过阈值仍可能返回切片，不保证返回矩已达标。",
      "constraints": "正数",
      "dtype": "float64"
     }
@@ -8306,7 +8306,7 @@
    },
    "failure_semantics": {
     "invalid_input": "NumPy 形状、索引、转换和算术异常向上传播；不新增输入修复。",
-    "runtime_failure": "奇异或非有限算术遵循源形状计算，不选择备用修正。",
+    "runtime_failure": "非有限或奇异算术按原计算传播，不选择备用修正。被计算的误差超过 moment_rtol 时发出 RuntimeWarning，随后仍返回切片；调用者将警告设为错误时会抛出异常。密度误差为 abs(density/nb-1)，漂移误差为 abs(mean_vx-target_vx)/sqrt(abs(target_energy))，能量误差为 abs(mean_energy/target_energy-1)；目标能量为零时，后两项警告误差置零。这些诊断不保证守恒或收敛。",
     "nonconvergence": "不适用；无迭代。",
     "partial_results": "异常后不返回部分映射。"
    },

@@ -145,20 +145,20 @@
    "Filament-current superposition.",
    "Circular-filament analytic axial-field limit.",
    "Radial quadrature increment and first-grid-point reference.",
-   "Comparison with independent circular-filament psi=R A_phi Green values away from the source.",
+   "test_radial_flux_matches_psi_ra_phi_with_first_radius_reference compares radial quadrature with the maintained circular-filament psi=R A_phi response away from the source; this is a shared-kernel comparison, not an independent psi oracle.",
    "Transposed rectilinear layout and invalid radial grid.",
-   "Independent 70/80-digit ideal-loop relation checks cover very small positive radii, near-axis nonzero BR, near-wire cases and formula-evaluation branches while retaining the original numeric assertions and tolerances; the exact self term and arithmetic failure are handled separately.",
+   "In tests/cross_domain/test_field_green_correction.py, test_radial_quadrature_uses_correct_unclipped_filament_field directly calls integrate at (R,Z)=(1e-10,0.2) and (0.4,1e-8), comparing b_r and b_z with a 70-digit ideal-loop expression and checking the first-column zero reference and next-column trapezoid. test_radial_quadrature_active_and_inactive_self_are_distinct checks active coincidence rejection and zero-current coincidence; test_public_field_interfaces_reject_complex_coordinates includes api=integrate.",
    "The named result preserves the captured key order, values, shapes, dtypes, mapping access and attribute access; failures retain their exception types and messages."
   ],
   "tests": [
    "tests/field/test_filament_vacuum_field.py",
    "tests/cross_domain/test_field_green_correction.py"
   ],
-  "evidence_ceiling": "Bounded to filament-current superposition, first-grid-point psi reference and radial quadrature. Evidence: `test_filament_vacuum_field.py` contains 7 test functions, 1 of which references `integrate_filament_vacuum_field`, and is bound only by this asset; `test_field_green_correction.py` contains 9 test functions, none of which references `integrate_filament_vacuum_field`, and is shared by 5 assets; the bounded example was executed by this audit. Oracle: analytic circular-filament psi=R A_phi values away from the source. It does not establish nonrectilinear grids, finite-wire self-fields, or continuum convergence.",
+  "evidence_ceiling": "tests/field/test_filament_vacuum_field.py calls integrate_filament_vacuum_field as scientific_function and by its own name. test_superposition_and_axis_boundary and test_axis_field_matches_circular_filament_analytic_limit bind superposition, the first-radius reference and the analytic axial field; test_radial_flux_preserves_left_to_right_trapezoid_recurrence covers both array orientations. The direct integrate cases in the shared file supply independent high-precision b_r/b_z comparisons at the named near-axis and near-wire points. The psi comparison uses a maintained shared kernel. Aggregate-only formula-cutover and radial near-wire separation assertions do not directly cover this wrapper. No nonrectilinear-grid, finite-wire self-field or continuum-convergence certification follows.",
   "known_limitations": [
    "The returned flux uses the first radial grid point as reference and omits a 2-pi flux factor.",
-   "The ideal source is singular at coincident targets, which are rejected.",
-   "The asset-private file has seven functions and one direct example; the shared correction file contains no direct call, so the nonfinite integrated-field path is contract-only.",
+   "An active nonzero-current ideal source coincident with a target is singular and is rejected; a zero-current coincident source remains inactive, as asserted by test_radial_quadrature_active_and_inactive_self_are_distinct.",
+   "The bound tests directly check singularity and complex-input rejection, but do not directly assert the final nonfinite integrated-output check. That path is implemented; its direct fixture coverage is UNKNOWN.",
    "The radial trapezoidal error in psi must be verified by grid refinement; even when the magnetic field uses the analytic relation, the discrete psi is not claimed to equal the analytic R*A_phi."
   ]
  }

@@ -45,8 +45,12 @@ def evaluate_complete_elliptic_integrals(modulus_squared):
 
     References
     ----------
-    See ``scipy.special.ellipk`` and ``scipy.special.ellipe`` for the integral
-    definitions; this function evaluates its fixed polynomial coefficients.
+    Abramowitz and Stegun, Handbook of Mathematical Functions, formulas
+    17.3.34 and 17.3.36, pp. 591-592. The tabulated real-arithmetic absolute
+    approximation error is at most ``2e-8`` for ``0 <= m < 1``; the tests
+    compare a fixed interior/near-endpoint grid with SciPy and allow for
+    binary64 evaluation roundoff separately. This is not a new proof of a
+    uniform binary64 error bound.
 
     Examples
     --------

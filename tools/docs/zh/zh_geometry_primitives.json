@@ -81,7 +81,7 @@
   },
   {
    "asset_id": "scirel.basis.build-basis",
-   "source_sha256": "158a1b5d44cc6d9cd869474d2133220f965636c9282f1ad6648c209aabc32ca0",
+   "source_sha256": "440e2c21e91454caee8822aac07a3e44eba1bc3569fc8d5d58b22cebb2b62748",
    "summary": "构造可调用的升幂多项式或三次样条基函数。",
    "definition": "构造升幂多项式或三次样条求值器列表。",
    "model": "按映射选择升幂多项式或 C2 三次样条基函数；多项式默认有三个基函数（0、1、2 次幂），样条默认有五个节点、四个区间。",
@@ -132,7 +132,7 @@
     ]
    },
    "failure_semantics": {
-    "invalid_input": "未注册的基函数选择器抛出 KeyError；已注册但未实现的选择器抛出 NotImplementedError；未知关键字抛出 TypeError。非有限或不匹配样本、未排序节点或无效边界参数抛出 ValueError 或 AssertionError；线性系统失败向上传播。",
+    "invalid_input": "未注册选择器抛出 KeyError；保留但未实现的选择器抛出 NotImplementedError；未知关键字抛出 TypeError；非法样本、节点或边界参数抛出 ValueError。保留的 clamped 样条构造器在断言启用时，端点斜率向量长度不为二会抛出 AssertionError。非零端点斜率因不构成齐次基而被拒绝；线性系统失败向上传播。",
     "runtime_failure": "数值线性代数或可选 SciPy 特殊函数异常从求值向上传播。",
     "nonconvergence": "不适用；基函数构造和求值是直接计算，不声明迭代收敛。",
     "partial_results": "构造失败时不返回求值器；样条选择下节点区间外的有限值和非有限查询值按零填充约定处理，多项式选择直接求值。"
@@ -687,7 +687,7 @@
   },
   {
    "asset_id": "scirel.fieldline.fieldline",
-   "source_sha256": "889c6c70b947cc301554d005bc431aebda4f8f83134e1246e9e965eeff2a1a91",
+   "source_sha256": "0e3dbb36bb1b72a356cf944e6e54c951c91fff11ea95748d8e675007b71af00f",
    "summary": "拟合轮廓路径，并提供弧长、场插值、梯度、曲率和有界交点诊断。",
    "definition": "拟合有序参数线；场曲率沿拟合几何对归一化插值 BR、BZ 求导。",
    "model": "默认二次样条、可选网格插值、局部多项式曲率导数，以及独立的均匀网格磁通梯度曲率路径。",
@@ -732,27 +732,30 @@
     ]
    },
    "failure_semantics": {
-    "invalid_input": "曲率支持未定义、顶点重复、通量网格无效或插值结果非有限时抛出 ValueError；其他 SciPy 错误向上传播。",
+    "invalid_input": "interpolate_onto 和 get_gradpsi 在插值无定义或查询不受支持时可返回 NaN；需要有限结果的调用者须自行检查。get_kappa_n 遇到非有限或零插值磁场、相邻重复顶点或无定义切向支撑时抛出 ValueError。get_kappa_n_2 另拒绝非法、非有限或非均匀磁通网格、零磁通梯度支撑及非有限插值曲率。其他 SciPy 构造和插值错误继续抛出。",
     "runtime_failure": "底层插值、线性代数和浮点异常向上传播。",
     "nonconvergence": "在拟合区间内找不到唯一交点时，交点方法抛出 ValueError；有限多起点搜索不能证明根已穷尽。",
     "partial_results": "仅在两个交点都成功后，apply_boundary 才更新两个边界；构造失败时不返回线对象。"
    },
    "verification": {
     "scope": [
-     "仅覆盖明确声明的有限输入域和指定直接试验、独立安装样例。",
-     "具名样例采用 13×9 仿射梯度输入和绝对误差 4e-9 判据，两种入口的记录最大误差均不超过 1.3323e-15。圆形案例采用 401 点及空间网格 40／80／160，场曲率向量误差依次为 1.1787063e-5、1.3972100e-6、1.6021077e-7，满足两级缩减比 >3.4 和末级误差 <.004。这些观测不构成普遍收敛率保证。",
-     "留出样例采用 71×83 非等距网格和 257 点椭圆，同时核对下降坐标、磁场反向及顶点反向，记录最大分量误差不超过 1.329318e-7。边界样例拒绝域外、重复顶点、非有限场及真实场零点；有符号 1e-180／1e180 场强和几何平移样例通过原有的有限判据，不推及任意动态范围。"
+     "tests/equilibrium/test_analysis_families.py 的 test_fieldline_geometry_shapes_selection_and_gradient 在 13×9 仿射梯度网格上检查两类场线，绝对容差为 4e-9，FieldLine 取 npts=73，HelperFieldLine 使用默认采样。tests/equilibrium/test_fieldline_t7_precision.py 的 test_t7_default_cubic_affine_gradient 在其声明的仿射输入域上另以相同绝对判据检查两类。",
+     "tests/equilibrium/test_fieldline_t7_precision.py 的 test_t7_field_curvature_spatial_refinement 对两类直接调用 get_kappa_n(method=\"cubic\")，使用 401 点圆弧和 40/80/160 空间网格；断言两次误差缩减比 >3.4、末级向量误差 <0.004，磁场反向前后 atol=2e-13。这是基于磁场的曲率检查，与 FieldLine.get_kappa_n_2 分开。",
+     "tests/equilibrium/test_curvature_consumer.py 的 test_actual_circular_field_curvature_consumer 和 test_heldout_elliptic_affine_field_curvature 对两类调用 get_kappa_n，包含磁场和顶点反向：圆弧为 257 点及 80/160 方网格，椭圆弧为 321 点及径向 67 点、轴向 91 点的各轴等间距网格。分量对照均用 rtol=0、atol=2.5e-3。test_curvature_refinement_and_null_outside_failure 在固定 80 方网格上检查 65/129/257 路径点的逐级误差缩减比 >3，并检查零场及域外拒绝；test_exact_sampled_field_null_has_no_curvature 检查实际采样场零点拒绝。",
+     "tests/equilibrium/test_fieldline_t7_precision.py 的 test_curvature_constant_field_scale_does_not_create_a_null 对两类只检查正值恒定磁场 1e-180 和 1e180，BR=scale、BZ=0，采用 5×5 网格和 7 点直线，以 atol=1e-13 断言曲率为零；不代表检查过有符号极端量级非恒定场或历史椭圆样例。",
+     "tests/equilibrium/test_analysis_corrections.py 的 test_line_derivative_uses_actual_nonuniform_arclength 在非均匀直线路径上以 atol=3e-13 检查公开导数。test_curvature_is_translation_and_field_reversal_invariant 直接提供精确插值场值，以 atol=6e-5 单独检查曲率求导，不检验插值。tests/equilibrium/test_fieldline_geometry_repair.py 中两类参数化断言检查开放路径顺序、端点及内部交点、无交点与多交点拒绝，以及边界更新的整体提交。",
+     "仅 FieldLine：tests/equilibrium/test_analysis_families.py 的 test_closed_circle_flux_curvature_refinement 对 401 点闭圆和 40/80/160 网格调用 get_kappa_n_2(method=\"linear\")，要求两次误差缩减比 >3.4、末级向量误差 <0.004。tests/equilibrium/test_fieldline_geometry_repair.py 的 test_flux_gradient_curvature_rejects_undefined_or_nonuniform_support 与 test_flux_gradient_curvature_rejects_outside_query_support 绑定非法磁通网格或梯度及域外查询拒绝；这些断言不属于 HelperFieldLine。"
     ],
     "known_limitations": [
      "交点仅搜索拟合参数区间，未找到交点或找到多个根均拒绝；切触情况与根的完备性尚未验证。",
      "未验证任意轮廓拓扑、磁轴极限或物理稳定性。",
      "get_kappa_n_2 要求均匀 xy 网格及非零磁通梯度。",
      "极坐标投影由单独入口提供，显式给定角度并拒绝原点；磁轴极限仍未验证。",
-     "在固定插值场上加密路径采样不保证物理曲率误差单调减小；四项固定插值加密案例仍记录为失败，与空间网格加密判据分开。",
+     "固定插值场上增加路径采样点不保证误差普遍单调下降。历史固定插值失败未被改判为通过；当前具名回归只对其自身样例作断言。没有绑定回执时，历史失败条数及精确观测值保留为 UNKNOWN。",
      "局部四次场曲率导数要求足够光滑的真实磁场线；公开 d_ds 保留折线弧长上的三点合同，两者均不保证普遍曲率误差。",
      "磁力线路径的选择：轴对称场中，过某点的磁力线位于过该点的等值线 psi = R*A_phi = 常数 上。本类对调用者给出的等值线顶点拟合一条光滑路径，并不积分磁力线方程。只需要磁力线上的点时，psi 的等值线就够了；需要弧长、沿线插值的场、曲率或交点时才用这个拟合。相同输入顶点和默认拟合设置下，FieldLine 与 HelperFieldLine 使用相同的二次样条拟合过程，均采样为 1000 点。FieldLine 构造器另接受 u、s、k、npts 拟合参数，HelperFieldLine 构造器不接受这些参数。interpolate_onto 中，FieldLine 过滤非有限源场值，HelperFieldLine 则把全部源场值传给 SciPy。get_kappa_n 在 FieldLine 中返回形状为 (npts, 2) 的数组，在 HelperFieldLine 中返回由两个形状为 (npts,) 的数组组成的元组 (kappa_r, kappa_z)。只有 FieldLine 提供磁通梯度曲率方法 get_kappa_n_2。独立检查方法：从某个顶点积分 dR/ds = B_R/|B_p|、dZ/ds = B_Z/|B_p|，确认 psi 保持不变。"
     ],
-    "evidence_ceiling": "本仓库自身测试的具名样例技术证据；不建立任意输入正确性、实验验证或发行批准。"
+    "evidence_ceiling": "具名测试仅绑定 scope 指出的具体类、方法、输入与断言。共享文件不会让两类继承文件内所有方法的验证；私有 _curve_curvature 的标量参照检查属于底层依赖证据。历史精确观测最大值及 71×83 非均匀网格、257 点椭圆样例，在此没有绑定冻结实现、具体类、方法和输入的可复现回执；它们作为现行验证的状态为 UNKNOWN。绑定测试不建立任意输入精度、实验验证或人工认可。"
    },
    "example": {
     "description": "用三个有序顶点拟合一条开放的 FieldLine。",
@@ -886,7 +889,7 @@
   },
   {
    "asset_id": "scirel.fieldline.helper-fieldline",
-   "source_sha256": "a626365fa98bb39fe8a50236542c5c9c3bc51c497a95c541d757d77f5c0ed736",
+   "source_sha256": "a9c4bf4b2facaaf0d8ec87dc22b95019a7716c06a0e8062b8b75de5f8bf647fb",
    "summary": "拟合轮廓路径，并提供辅助插值、弧长、梯度、场曲率和有界交点诊断。",
    "definition": "拟合有序参数线；辅助插值将全部源场值（包括非有限值）传给 SciPy，同时场曲率沿拟合几何对归一化后的插值 BR、BZ 求导。",
    "model": "固定为 1000 点的二次默认样条，支持选择 linear、nearest 或 cubic 插值及局部多项式曲率导数。",
@@ -931,27 +934,30 @@
     ]
    },
    "failure_semantics": {
-    "invalid_input": "曲率支持未定义、顶点重复或切向量/场值非有限时抛出 ValueError；其他 SciPy 错误向上传播。",
+    "invalid_input": "interpolate_onto 和 get_gradpsi 在插值无定义或查询不受支持时可返回 NaN；需要有限结果的调用者须自行检查。get_kappa_n 遇到非有限或零插值磁场、相邻重复顶点或无定义切向支撑时抛出 ValueError。其他 SciPy 构造和插值错误继续抛出。",
     "runtime_failure": "底层插值、线性代数和浮点异常向上传播。",
     "nonconvergence": "找不到唯一的拟合区间交点时交点方法抛出 ValueError；有限多起点搜索不证明根的完备性。",
     "partial_results": "仅在两个交点都成功后，apply_boundary 才更新两个边界；构造失败时不返回辅助线对象。"
    },
    "verification": {
     "scope": [
-     "仅覆盖明确声明的有限输入域和指定直接试验、独立安装样例。",
-     "具名样例采用 13×9 仿射梯度输入和绝对误差 4e-9 判据，两种入口的记录最大误差均不超过 1.3323e-15。圆形案例采用 401 点及空间网格 40／80／160，场曲率向量误差依次为 1.1787063e-5、1.3972100e-6、1.6021077e-7，满足两级缩减比 >3.4 和末级误差 <.004。这些观测不构成普遍收敛率保证。",
-     "留出样例采用 71×83 非等距网格和 257 点椭圆，同时核对下降坐标、磁场反向及顶点反向，记录最大分量误差不超过 1.329318e-7。边界样例拒绝域外、重复顶点、非有限场及真实场零点；有符号 1e-180／1e180 场强和几何平移样例通过原有的有限判据，不推及任意动态范围。"
+     "tests/equilibrium/test_analysis_families.py 的 test_fieldline_geometry_shapes_selection_and_gradient 在 13×9 仿射梯度网格上检查两类场线，绝对容差为 4e-9，FieldLine 取 npts=73，HelperFieldLine 使用默认采样。tests/equilibrium/test_fieldline_t7_precision.py 的 test_t7_default_cubic_affine_gradient 在其声明的仿射输入域上另以相同绝对判据检查两类。",
+     "tests/equilibrium/test_fieldline_t7_precision.py 的 test_t7_field_curvature_spatial_refinement 对两类直接调用 get_kappa_n(method=\"cubic\")，使用 401 点圆弧和 40/80/160 空间网格；断言两次误差缩减比 >3.4、末级向量误差 <0.004，磁场反向前后 atol=2e-13。这是基于磁场的曲率检查，与 FieldLine.get_kappa_n_2 分开。",
+     "tests/equilibrium/test_curvature_consumer.py 的 test_actual_circular_field_curvature_consumer 和 test_heldout_elliptic_affine_field_curvature 对两类调用 get_kappa_n，包含磁场和顶点反向：圆弧为 257 点及 80/160 方网格，椭圆弧为 321 点及径向 67 点、轴向 91 点的各轴等间距网格。分量对照均用 rtol=0、atol=2.5e-3。test_curvature_refinement_and_null_outside_failure 在固定 80 方网格上检查 65/129/257 路径点的逐级误差缩减比 >3，并检查零场及域外拒绝；test_exact_sampled_field_null_has_no_curvature 检查实际采样场零点拒绝。",
+     "tests/equilibrium/test_fieldline_t7_precision.py 的 test_curvature_constant_field_scale_does_not_create_a_null 对两类只检查正值恒定磁场 1e-180 和 1e180，BR=scale、BZ=0，采用 5×5 网格和 7 点直线，以 atol=1e-13 断言曲率为零；不代表检查过有符号极端量级非恒定场或历史椭圆样例。",
+     "tests/equilibrium/test_analysis_corrections.py 的 test_line_derivative_uses_actual_nonuniform_arclength 在非均匀直线路径上以 atol=3e-13 检查公开导数。test_curvature_is_translation_and_field_reversal_invariant 直接提供精确插值场值，以 atol=6e-5 单独检查曲率求导，不检验插值。tests/equilibrium/test_fieldline_geometry_repair.py 中两类参数化断言检查开放路径顺序、端点及内部交点、无交点与多交点拒绝，以及边界更新的整体提交。",
+     "仅 HelperFieldLine：tests/equilibrium/test_fieldline_t7_precision.py 的 test_helper_gradient_honors_linear_method 断言 get_gradpsi(method=\"linear\") 与两次显式线性 interpolate_onto 调用完全相等。HelperFieldLine 没有 get_kappa_n_2，FieldLine 专有的磁通梯度曲率断言不能分配给本类。"
     ],
     "known_limitations": [
      "交点仅搜索拟合参数区间，未找到交点或找到多个根均拒绝；切触情况与根的完备性尚未验证。",
      "未验证任意轮廓拓扑、磁轴极限或物理稳定性。",
      "极坐标投影由单独入口提供，显式给定角度并拒绝原点；磁轴极限仍未验证。",
      "HelperFieldLine 只提供基于磁场的曲率；磁通梯度曲率属于独立 FieldLine 变体。采样及梯度／曲率消费遵从显式方法选择。",
-     "在固定插值场上加密路径采样不保证物理曲率误差单调减小；四项固定插值加密案例仍记录为失败，与空间网格加密判据分开。",
+     "固定插值场上增加路径采样点不保证误差普遍单调下降。历史固定插值失败未被改判为通过；当前具名回归只对其自身样例作断言。没有绑定回执时，历史失败条数及精确观测值保留为 UNKNOWN。",
      "局部四次场曲率导数要求足够光滑的真实磁场线；公开 d_ds 保留折线弧长上的三点合同，两者均不保证普遍曲率误差。",
      "磁力线路径的选择：轴对称场中，过某点的磁力线位于过该点的等值线 psi = R*A_phi = 常数 上。本类对调用者给出的等值线顶点拟合一条光滑路径，并不积分磁力线方程。只需要磁力线上的点时，psi 的等值线就够了；需要弧长、沿线插值的场、曲率或交点时才用这个拟合。相同输入顶点和默认拟合设置下，FieldLine 与 HelperFieldLine 使用相同的二次样条拟合过程，均采样为 1000 点。FieldLine 构造器另接受 u、s、k、npts 拟合参数，HelperFieldLine 构造器不接受这些参数。interpolate_onto 中，FieldLine 过滤非有限源场值，HelperFieldLine 则把全部源场值传给 SciPy。get_kappa_n 在 FieldLine 中返回形状为 (npts, 2) 的数组，在 HelperFieldLine 中返回由两个形状为 (npts,) 的数组组成的元组 (kappa_r, kappa_z)。只有 FieldLine 提供磁通梯度曲率方法 get_kappa_n_2。独立检查方法：从某个顶点积分 dR/ds = B_R/|B_p|、dZ/ds = B_Z/|B_p|，确认 psi 保持不变。"
     ],
-    "evidence_ceiling": "本仓库自身测试的具名样例技术证据；不建立任意输入正确性、实验验证或发行批准。"
+    "evidence_ceiling": "具名测试仅绑定 scope 指出的具体类、方法、输入与断言。共享文件不会让两类继承文件内所有方法的验证；私有 _curve_curvature 的标量参照检查属于底层依赖证据。历史精确观测最大值及 71×83 非均匀网格、257 点椭圆样例，在此没有绑定冻结实现、具体类、方法和输入的可复现回执；它们作为现行验证的状态为 UNKNOWN。绑定测试不建立任意输入精度、实验验证或人工认可。"
    },
    "example": {
     "description": "用三个有序顶点拟合一条开放的 HelperFieldLine。",

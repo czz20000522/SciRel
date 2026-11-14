@@ -144,6 +144,31 @@ def test_elliptic_approximation_matches_the_source_polynomial_log_form():
     np.testing.assert_allclose(e, e_expected, rtol=1e-15, atol=0.0)
 
 
+def test_elliptic_approximation_sampled_accuracy_against_independent_scipy_values():
+    from scipy.special import ellipe, ellipk
+
+    # Abramowitz-Stegun 17.3.34 and 17.3.36 (pp. 591-592) give the
+    # implemented coefficients and 2e-8 absolute approximation errors.
+    # The relative term only allows for binary64 evaluation roundoff.
+    modulus = np.unique(
+        np.r_[
+            np.linspace(0.0, 0.999, 257),
+            1.0 - np.geomspace(1.0e-15, 1.0, 257),
+            np.nextafter(1.0, 0.0),
+        ]
+    )
+    assert np.all((modulus >= 0.0) & (modulus < 1.0))
+    k, e = evaluate_complete_elliptic_integrals(modulus)
+    for actual, expected in ((k, ellipk(modulus)), (e, ellipe(modulus))):
+        np.testing.assert_allclose(
+            actual,
+            expected,
+            rtol=128 * np.finfo(float).eps,
+            atol=2.0e-8,
+            err_msg="fixed polynomial-log approximation must meet its published absolute budget",
+        )
+
+
 def test_elliptic_approximation_mathematical_endpoint_in_whole_and_mixed_arrays():
     k, e = evaluate_complete_elliptic_integrals(np.array([1.0, 1.0]))
     assert np.all(np.isinf(k)) and np.all(e == 1.0)

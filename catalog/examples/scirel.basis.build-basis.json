@@ -89,7 +89,7 @@
   ]
  },
  "failure_semantics": {
-  "invalid_input": "Raises KeyError for an unregistered selector, NotImplementedError for an unsupported retained selector, TypeError for an unknown keyword, and ValueError for invalid spline samples/knots/boundary parameters; linear-system failures propagate. Nonzero clamped endpoint slopes raise ValueError because they define an affine family.",
+  "invalid_input": "Raises KeyError for an unregistered selector, NotImplementedError for an unsupported retained selector, TypeError for an unknown keyword, and ValueError for invalid spline samples/knots/boundary parameters; linear-system failures propagate. Nonzero clamped endpoint slopes raise ValueError because they define an affine family. With assertions enabled, the retained clamped-spline constructor raises AssertionError when its endpoint-slope vector does not have length two.",
   "runtime_failure": "Numerical linear-algebra or optional SciPy special-function exceptions propagate from evaluation.",
   "nonconvergence": "Not applicable; basis construction and evaluation are direct computations without an iterative convergence claim.",
   "partial_results": "A failed constructor returns no evaluator; for spline selections, finite values outside the knot interval and nonfinite query values follow the zero-fill convention, while polynomial selections evaluate directly."

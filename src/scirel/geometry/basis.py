@@ -610,6 +610,9 @@ def build_basis(basis="poly", **kwargs):
         If the basis selector is not registered.
     NotImplementedError
         If a retained basis selector is not implemented.
+    AssertionError
+        With assertions enabled, if the retained clamped-spline constructor
+        receives an endpoint-slope vector whose length is not two.
 
     See Also
     --------

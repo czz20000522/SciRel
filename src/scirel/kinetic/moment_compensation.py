@@ -133,8 +133,10 @@ def compensate_velocity_slice(
 
     Notes
     -----
-    Errors are relative: the drift to ``sqrt(target_energy)``, the energy and the
-    density to the target energy and ``nb``.
+    Errors are relative: the drift to ``sqrt(abs(target_energy))``, the energy
+    and density to the target energy and ``nb``. If ``target_energy`` is zero,
+    the drift and energy warning terms are set to zero. These are warning
+    diagnostics, not a conservation or convergence guarantee.
 
     Singular coefficients retain zero values in that sign trial; no iterative
     fallback is applied. Nonfinite arithmetic follows NumPy and can emit

@@ -155,7 +155,7 @@
   "tests": [
    "tests/field/test_filament_coil_green.py"
   ],
-  "evidence_ceiling": "Bounded to source-regularized axisymmetric coil modulus and distance geometry. Evidence: `test_filament_coil_green.py` contains 13 test functions, 6 of which reference `compute_axisymmetric_coil_modulus`, and is shared by 3 assets; only shared-file coverage is bound, so a pass is file-level rather than asset-isolated; the bounded example was executed by this audit. Oracle: independent analytic recomputation of the regularized geometry. It does not establish coil-field evaluation, singular response handling, or overflow behavior outside validated float64.",
+  "evidence_ceiling": "Bounded to regularized modulus and distance geometry. Direct assertions in test_geometry_returns_source_regularized_radius_modulus_and_distance, test_geometry_rejects_invalid_inputs, test_negative_raw_radius_within_offset_width_is_rejected and test_geometry_rejects_underflowed_modulus_before_green_response in tests/field/test_filament_coil_green.py check the analytic geometry, raw-radius rejection and modulus-underflow boundary. That file is shared; its other field-response and elliptic-integral tests are not geometry-asset evidence. This does not establish coil-field evaluation, finite-wire physics or arbitrary-scale accuracy.",
   "known_limitations": [
    "No external cross-implementation comparison is bound to this contract; only the tests in this repository establish its behaviour.",
    "Declared input hardening: raw observation radii in (-1e-8, 0) are rejected rather than silently regularized to positive values by the axis offset.",
