@@ -27,7 +27,7 @@ def main():
     assert server == root / "skills/scirel-capability-discovery/scripts/server.py"
     assert (
         hashlib.sha256(server.read_bytes()).hexdigest()
-        == identity["files"][str(server.relative_to(root))]["sha256"]
+        == identity["files"][server.relative_to(root).as_posix()]["sha256"]
     )
     # Expected schemas come from the actual export, never repository scripts.
     sys.path.insert(0, str(server.parent))
@@ -117,7 +117,7 @@ runpy.run_path(str(entry), run_name='__main__')
             document = await call("get", {**pins, "asset_id": asset})
             assert document["document"] == json.loads(contract.read_bytes())
             assert document["digests"] == {
-                str(contract.relative_to(root)): hashlib.sha256(contract.read_bytes()).hexdigest()
+                contract.relative_to(root).as_posix(): hashlib.sha256(contract.read_bytes()).hexdigest()
             }
             search = await call("search", {**pins, "q": asset, "limit": 100}, "match")
             assert asset in [item["asset_id"] for item in search["result"]["items"]]
