@@ -76,7 +76,7 @@ def evaluate_fluid_kinetic_dispersion_sum(*, B0, qs, ms, ns0, Ts0, f, kz, kx, lm
         Thermal speed of each species $\sqrt{2k_BT_s/m_s}$ [m/s] Shape: `(S,)`. Strictly positive.
     wcs : real numeric
         Signed cyclotron frequency of each species [rad/s] Shape: `(S,)`. Nonzero, with the sign following
-        qs.
+        qs*B0.
     wps2 : real numeric
         Plasma-frequency squared of each species [rad^2/s^2] Shape: `(S,)`. Strictly positive.
     b : real numeric
