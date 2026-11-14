@@ -44,8 +44,24 @@ class LockBusy(RuntimeError):
 
 def stop_command(process: subprocess.Popen, signum: int) -> None:
     """Stop and reap our child before the caller can release the clone lock."""
+    permission_denied = False
+    group_absent = False
+
+    def denied(operation: str, error: PermissionError) -> None:
+        nonlocal permission_denied
+        if not permission_denied:
+            print(
+                f"STOPPING  permission denied while {operation} for command {process.pid}: "
+                f"{error}; "
+                "no further signals; clone lock retained until exit is confirmed",
+                file=sys.stderr,
+            )
+        permission_denied = True
 
     def send(forced: bool = False) -> None:
+        nonlocal group_absent
+        if permission_denied:
+            return
         try:
             if os.name == "posix":
                 os.killpg(process.pid, signal.SIGKILL if forced else signum)
@@ -54,25 +70,38 @@ def stop_command(process: subprocess.Popen, signum: int) -> None:
             else:
                 process.terminate()
         except ProcessLookupError:
-            pass
+            group_absent = True
+        except PermissionError as error:
+            denied("sending a signal", error)
 
     send()
     if os.name == "posix":
 
         def group_exists() -> bool:
+            nonlocal group_absent
+            if group_absent:
+                return False
             process.poll()  # Reap the launcher too; a zombie keeps its group alive.
             try:
                 os.killpg(process.pid, 0)
-                return True
             except ProcessLookupError:
+                group_absent = True
                 return False
+            except PermissionError as error:
+                # Permission denial cannot establish exit or authorize escalation.
+                denied("probing the process group", error)
+            return True
 
         deadline = time.monotonic() + STOP_TIMEOUT
         while group_exists() and time.monotonic() < deadline:
             time.sleep(0.02)
         if group_exists():
             send(forced=True)
-            print("STOPPING  waiting for owned process group to exit", file=sys.stderr)
+            if not permission_denied:
+                print(
+                    "STOPPING  waiting for process group exit; clone lock retained",
+                    file=sys.stderr,
+                )
             while group_exists():
                 time.sleep(0.02)
     else:
