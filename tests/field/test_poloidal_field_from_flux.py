@@ -1,4 +1,6 @@
 import numpy as np
+import pytest
+import warnings
 
 from scirel._result import Result
 from scirel.field.poloidal_field_from_flux import (
@@ -51,6 +53,53 @@ def test_nonrectilinear_grid_is_rejected():
     except ValueError:
         return
     raise AssertionError("expected invalid mesh failure")
+
+
+@pytest.mark.parametrize("argument", [0, 1, 2], ids=["R", "Z", "psi"])
+@pytest.mark.parametrize("imaginary", [0.0, 0.1])
+def test_complex_arrays_are_rejected_before_float_conversion(argument, imaginary):
+    r_grid, z_grid = np.meshgrid([0.1, 0.2, 0.3], [-0.1, 0.0, 0.1])
+    values = [r_grid, z_grid, r_grid**2]
+    values[argument] = values[argument].astype(complex) + imaginary * 1j
+    with pytest.raises(ValueError, match="real"):
+        scientific_function(*values)
+
+
+@pytest.mark.parametrize("argument", [0, 1, 2], ids=["R", "Z", "psi"])
+@pytest.mark.parametrize("complex_type", [complex, np.complex64, np.complex128])
+@pytest.mark.parametrize("imaginary", [0.0, 0.1])
+def test_complex_values_in_an_object_array_follow_the_input_failure_contract(
+    argument, complex_type, imaginary
+):
+    r_grid, z_grid = np.meshgrid([0.1, 0.2, 0.3], [-0.1, 0.0, 0.1])
+    values = [r_grid, z_grid, r_grid**2]
+    values[argument] = values[argument].astype(object)
+    values[argument][1, 1] = complex_type(values[argument][1, 1] + imaginary * 1j)
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore", np.exceptions.ComplexWarning)
+        with pytest.raises(ValueError, match="real"):
+            scientific_function(*values)
+
+
+def test_real_object_arrays_preserve_the_same_field():
+    r_grid, z_grid = np.meshgrid([0.1, 0.2, 0.3], [-0.1, 0.0, 0.1])
+    arrays = [r_grid, z_grid, r_grid**2]
+    expected = scientific_function(*arrays)
+    actual = scientific_function(*(array.astype(object) for array in arrays))
+    for key in expected:
+        np.testing.assert_array_equal(actual[key], expected[key])
+
+
+@pytest.mark.parametrize("include_axis", [False, True])
+def test_unrepresentable_field_does_not_return_a_partial_result(include_axis):
+    radial = [0.0, 0.1, 0.2] if include_axis else [0.1, 0.2, 0.3]
+    r_grid, z_grid = np.meshgrid(radial, [-0.1, 0.0, 0.1])
+    psi = np.tile([1.0e308, -1.0e308, 1.0e308], (3, 1))
+    assert np.isfinite(psi).all()
+    # Explicitly ignoring NumPy warnings must not bypass the public failure.
+    with np.errstate(over="ignore", invalid="ignore", divide="ignore"):
+        with pytest.raises(FloatingPointError, match="not representable"):
+            scientific_function(r_grid, z_grid, psi)
 
 
 def test_source_hypot_preserves_finite_subnormal_and_large_results():

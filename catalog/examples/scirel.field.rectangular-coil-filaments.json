@@ -133,7 +133,7 @@
  },
  "failure_semantics": {
   "invalid_input": "ValueError is raised for nonfinite center/angle, invalid counts or spacings, negative center radius, or axis-crossing output.",
-  "runtime_failure": "No iterative runtime failure is defined; direct geometry arithmetic fails closed.",
+  "runtime_failure": "No iterative runtime failure is defined; ValueError is raised if direct geometry arithmetic produces nonfinite coordinates.",
   "nonconvergence": "Not applicable; discretization is direct.",
   "partial_results": "No point array is returned after validation failure."
  },

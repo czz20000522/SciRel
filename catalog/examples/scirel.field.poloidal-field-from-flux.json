@@ -114,7 +114,7 @@
  },
  "failure_semantics": {
   "invalid_input": "ValueError is raised for complex/nonfinite/mismatched arrays, nonrectilinear grids, too few nodes, or invalid axes.",
-  "runtime_failure": "Floating-point failures propagate if a finite accepted calculation is not representable.",
+  "runtime_failure": "FloatingPointError is raised if a finite accepted calculation produces an unrepresentable field component or magnitude; no partial Result is returned.",
   "nonconvergence": "Not applicable; gradients and axis handling are direct.",
   "partial_results": "No scirel._result.Result mapping is returned after validation or arithmetic failure."
  },

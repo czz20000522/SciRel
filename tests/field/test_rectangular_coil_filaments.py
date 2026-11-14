@@ -29,6 +29,27 @@ def test_rejects_invalid_filament_counts_or_spacings(keyword, value):
         scientific_function(**values)
 
 
+@pytest.mark.parametrize("mode", ["ignore", "warn", "raise"])
+@pytest.mark.parametrize(
+    "parameters",
+    [
+        (1.0e308, 0.0, 3, 1, 1.0e308, 1.0, 0.0),
+        (1.0, 0.0, 1, 3, 1.0, 1.7e308, 0.0),
+        (9.0e307, 9.0e307, 3, 3, 8.0e307, 8.0e307, 45.0),
+    ],
+    ids=["radial-endpoint", "axial-span", "rotation"],
+)
+def test_finite_inputs_cannot_return_nonfinite_generated_coordinates(mode, parameters):
+    with np.errstate(over=mode, invalid=mode):
+        with pytest.raises(ValueError, match="not representable"):
+            scientific_function(*parameters)
+
+
+def test_generated_coil_crossing_the_axis_is_rejected():
+    with pytest.raises(ValueError, match="crosses the cylindrical axis"):
+        scientific_function(0.1, 0.0, nr=3, nz=1, dr=0.2, dz=0.1)
+
+
 def test_reviewed_relation_example():
     import numpy as np
 
