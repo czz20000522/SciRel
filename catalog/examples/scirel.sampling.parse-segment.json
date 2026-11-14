@@ -106,7 +106,7 @@
   ]
  },
  "failure_semantics": {
-  "invalid_input": "Raises ValueError or the underlying NumPy/SciPy exception for nonfinite, mismatched, unsorted, out-of-domain, or malformed inputs; no input repair is inferred.",
+  "invalid_input": "Raises ValueError or the underlying NumPy/SciPy exception for nonfinite, mismatched, unsorted, out-of-domain, or malformed inputs; no input repair is inferred. Nonfinite vertices or supplied start/end coordinates are rejected with ValueError before orientation or endpoint selection. Finite numeric object elements are checked without changing the calculation inputs; object representations unsupported by the existing calculation remain unsupported.",
   "runtime_failure": "Numerical, interpolation, or optional-dependency exceptions propagate from the direct calculation.",
   "nonconvergence": "Not applicable; the relation uses direct finite-difference, interpolation, selection, or quadrature operations.",
   "partial_results": "No partial result is promised when input validation or the underlying numerical operation fails."
@@ -138,7 +138,8 @@
   "tests": [
    "tests/equilibrium/test_analysis_families.py",
    "tests/equilibrium/test_analysis_corrections.py",
-   "tests/geometry/test_parse_segment_closure.py"
+   "tests/geometry/test_parse_segment_closure.py",
+   "tests/geometry/test_sampling_failures.py"
   ],
   "evidence_ceiling": "Direct examples and named regression fixtures establish the documented relation on those inputs; they do not establish arbitrary-input correctness, experimental validation, or release approval.",
   "known_limitations": [

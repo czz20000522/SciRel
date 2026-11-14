@@ -24,7 +24,7 @@
   ],
   "model": "Rectangular-spline sampling along the path plus trapezoidal polygonal quadrature over explicit chord arclength.",
   "geometry": "Planar rectangular R-Z grid and ordered planar path; coordinates are xy grid axes with explicit chord arclength, and no line closing or toroidal geometric factor is applied.",
-  "boundary": "Finite positive B along a finite interior path and matching finite Q when supplied are required; zero or nonfinite B and outside-support queries are excluded, and physical flux-volume or closed-surface interpretation is unqualified.",
+  "boundary": "Finite positive B along a finite interior path and matching finite Q when supplied are required; zero or nonfinite B and outside-support queries are excluded, and physical flux-volume or closed-surface interpretation is unqualified. Zero-length paths return zero for the integral when Q is None; an average requires a nonzero integral of 1/B.",
   "device_scope": "generic"
  },
  "identity": {
@@ -34,7 +34,7 @@
   "model": "Source rectangular spline sampling and trapezoid polygonal quadrature",
   "geometry": "planar R-Z grid and polyline path",
   "coordinates": "xy rectangular grids and planar path with explicit chord arclength",
-  "boundary": "No line closing or toroidal geometric factor",
+  "boundary": "No line closing or toroidal geometric factor. Zero-length paths return zero for the integral when Q is None; an average requires a nonzero integral of 1/B.",
   "assumptions": [
    "Finite positive B along finite interior path",
    "Finite matching Q when supplied",
@@ -115,7 +115,7 @@
   ]
  },
  "failure_semantics": {
-  "invalid_input": "Raises ValueError or the underlying NumPy/SciPy exception for nonfinite, mismatched, unsorted, out-of-domain, or malformed inputs; nonpositive or nonfinite interpolated B and nonfinite Q are rejected before quadrature; no input repair is inferred.",
+  "invalid_input": "Raises ValueError or the underlying NumPy/SciPy exception for nonfinite, mismatched, unsorted, out-of-domain, or malformed inputs; nonpositive or nonfinite interpolated B and nonfinite Q are rejected before quadrature; no input repair is inferred. Nonfinite grid, B, path or supplied Q data are rejected with ValueError before interpolation; a zero integral of 1/B is rejected with ValueError only when Q is supplied. Zero-length integral-only paths still return zero. Finite numeric object elements are checked without changing the calculation inputs; object representations unsupported by the existing calculation remain unsupported.",
   "runtime_failure": "Numerical, interpolation, or optional-dependency exceptions propagate from the direct calculation.",
   "nonconvergence": "Not applicable; the relation uses direct finite-difference, interpolation, selection, or quadrature operations.",
   "partial_results": "No partial result is promised when input validation or the underlying numerical operation fails."
@@ -153,7 +153,8 @@
    "Rejection of nonpositive or nonfinite B before quadrature."
   ],
   "tests": [
-   "tests/equilibrium/test_analysis_families.py"
+   "tests/equilibrium/test_analysis_families.py",
+   "tests/geometry/test_sampling_failures.py"
   ],
   "evidence_ceiling": "Direct examples and named regression fixtures establish the documented relation on those inputs; they do not establish arbitrary-input correctness, experimental validation, or release approval.",
   "known_limitations": [

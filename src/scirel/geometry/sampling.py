@@ -185,6 +185,7 @@ def poly_fit(x, y, order=3):
     ------
     ValueError
         Raises ValueError or the underlying NumPy/SciPy exception for nonfinite, mismatched, unsorted, out-of-domain, or malformed inputs;
+        nonfinite x or y samples are rejected with ValueError before constructing the fit.
 
     See Also
     --------
@@ -195,6 +196,8 @@ def poly_fit(x, y, order=3):
     Notes
     -----
     Compute minimum-norm ascending-power coefficients with absolute singular cutoff1e-10
+    Finite numeric object elements are checked without changing the calculation inputs;
+    object representations unsupported by the existing calculation remain unsupported.
 
     **Coordinates.** Generic x,y sample units; coefficients y/x**power
 
@@ -217,6 +220,22 @@ def poly_fit(x, y, order=3):
     >>> _, coefficients = poly_fit(np.array([-1.0, 0.0, 1.0]), np.array([2.0, 1.0, 0.0]), order=1)
     >>> np.testing.assert_allclose(coefficients, [1.0, -1.0])
     """
+    for sample in (x, y):
+        data = np.asarray(sample)
+        if data.dtype == object:
+            finite = all(
+                value.is_finite()
+                if hasattr(value, "is_finite")
+                else all(
+                    part == part and part != np.inf and part != -np.inf
+                    for part in (value.real, value.imag)
+                )
+                for value in data.flat
+            )
+        else:
+            finite = np.isfinite(data).all()
+        if not finite:
+            raise ValueError("x and y samples must be finite")
     count = order + 1
     basis = [(lambda value, power=power: value**power) for power in range(count)]
     x_values = np.ma.asarray(x, dtype=float).filled(np.nan)
@@ -498,7 +517,8 @@ def locs_to_vals(X, Y, Q, coord_list):
         Sample field [field units] Shape: ``same as X``. Finite
 
     coord_list : float64
-        Desired coordinate pairs [coordinate units] Shape: ``list of (x,y)``. Finite queries
+        Desired coordinate pairs [coordinate units] Shape: ``list of (x,y)``. Finite queries;
+        each pair is independently copied and checked as the iterable is consumed once
 
     Returns
     -------
@@ -510,6 +530,8 @@ def locs_to_vals(X, Y, Q, coord_list):
     ------
     ValueError
         Raises ValueError or the underlying NumPy/SciPy exception for nonfinite, mismatched, unsorted, out-of-domain, or malformed inputs;
+        nonfinite sample coordinates, Q data or query coordinates reject the whole request
+        with ValueError.
 
     See Also
     --------
@@ -520,6 +542,8 @@ def locs_to_vals(X, Y, Q, coord_list):
     Notes
     -----
     Choose x-column and y-row independently nearest each query
+    Finite numeric object elements are checked without changing the calculation inputs;
+    object representations unsupported by the existing calculation remain unsupported.
 
     **Coordinates.** X column coordinate, Y row coordinate or matched scattered point arrays
 
@@ -544,6 +568,33 @@ def locs_to_vals(X, Y, Q, coord_list):
     >>> values = locs_to_vals(x, y, x + 2.0 * y, [(0.5, 0.5)])
     >>> np.testing.assert_allclose(values, [1.5])
     """
+    from copy import deepcopy
+    from itertools import chain
+
+    queries = []
+    for sample, is_query in chain(
+        ((X, False), (Y, False), (Q, False)),
+        # Copy each yielded component before the producer can reuse its storage.
+        ((deepcopy(tuple(point)), True) for point in coord_list),
+    ):
+        data = np.asarray(sample)
+        if data.dtype == object:
+            finite = all(
+                value.is_finite()
+                if hasattr(value, "is_finite")
+                else all(
+                    part == part and part != np.inf and part != -np.inf
+                    for part in (value.real, value.imag)
+                )
+                for value in data.flat
+            )
+        else:
+            finite = np.isfinite(data).all()
+        if not finite:
+            raise ValueError("sample coordinates, Q data and query coordinates must be finite")
+        if is_query:
+            queries.append(sample)
+    coord_list = queries
     values = []
     for x, y in coord_list:
         ix = np.argmin(np.abs(X[0, :] - x))
@@ -638,7 +689,8 @@ def locs_to_vals1D(X, Y, Q, coord_list):
         Sample field [field units] Shape: ``same as X``. Finite
 
     coord_list : float64
-        Desired coordinate pairs [coordinate units] Shape: ``list of (x,y)``. Finite queries
+        Desired coordinate pairs [coordinate units] Shape: ``list of (x,y)``. Finite queries;
+        each pair is independently copied and checked as the iterable is consumed once
 
     Returns
     -------
@@ -650,6 +702,8 @@ def locs_to_vals1D(X, Y, Q, coord_list):
     ------
     ValueError
         Raises ValueError or the underlying NumPy/SciPy exception for nonfinite, mismatched, unsorted, out-of-domain, or malformed inputs;
+        nonfinite sample coordinates, Q data or query coordinates reject the whole request
+        with ValueError.
 
     See Also
     --------
@@ -660,6 +714,8 @@ def locs_to_vals1D(X, Y, Q, coord_list):
     Notes
     -----
     Choose flattened point of minimum squared coordinate distance
+    Finite numeric object elements are checked without changing the calculation inputs;
+    object representations unsupported by the existing calculation remain unsupported.
 
     **Coordinates.** X column coordinate, Y row coordinate or matched scattered point arrays
 
@@ -684,6 +740,33 @@ def locs_to_vals1D(X, Y, Q, coord_list):
     >>> values = locs_to_vals1D(x, y, x + 2.0 * y, [(0.5, 0.5)])
     >>> np.testing.assert_allclose(values, [1.5])
     """
+    from copy import deepcopy
+    from itertools import chain
+
+    queries = []
+    for sample, is_query in chain(
+        ((X, False), (Y, False), (Q, False)),
+        # Copy each yielded component before the producer can reuse its storage.
+        ((deepcopy(tuple(point)), True) for point in coord_list),
+    ):
+        data = np.asarray(sample)
+        if data.dtype == object:
+            finite = all(
+                value.is_finite()
+                if hasattr(value, "is_finite")
+                else all(
+                    part == part and part != np.inf and part != -np.inf
+                    for part in (value.real, value.imag)
+                )
+                for value in data.flat
+            )
+        else:
+            finite = np.isfinite(data).all()
+        if not finite:
+            raise ValueError("sample coordinates, Q data and query coordinates must be finite")
+        if is_query:
+            queries.append(sample)
+    coord_list = queries
     values = []
     flat_q = np.asarray(Q).ravel()
     for x, y in coord_list:
@@ -812,6 +895,8 @@ def parse_segment(flpoints, start_coord=None, end_coord=None, clockwise=True):
     ------
     ValueError
         Raises ValueError or the underlying NumPy/SciPy exception for nonfinite, mismatched, unsorted, out-of-domain, or malformed inputs;
+        nonfinite vertices or supplied start/end coordinates are rejected with ValueError
+        before orientation or endpoint selection.
 
     See Also
     --------
@@ -823,6 +908,8 @@ def parse_segment(flpoints, start_coord=None, end_coord=None, clockwise=True):
     -----
     Roll to nearest start, orient by signed polygon test, normalize an exact closure marker,
     and retain selected terminal vertex
+    Finite numeric object elements are checked without changing the calculation inputs;
+    object representations unsupported by the existing calculation remain unsupported.
 
     **Coordinates.** Planar coordinates in length units
 
@@ -846,6 +933,24 @@ def parse_segment(flpoints, start_coord=None, end_coord=None, clockwise=True):
     >>> np.testing.assert_array_equal(parse_segment(segment), segment)
     """
     points = np.asarray(flpoints)
+    for sample in (points, start_coord, end_coord):
+        if sample is None:
+            continue
+        data = np.asarray(sample)
+        if data.dtype == object:
+            finite = all(
+                value.is_finite()
+                if hasattr(value, "is_finite")
+                else all(
+                    part == part and part != np.inf and part != -np.inf
+                    for part in (value.real, value.imag)
+                )
+                for value in data.flat
+            )
+        else:
+            finite = np.isfinite(data).all()
+        if not finite:
+            raise ValueError("path vertices and supplied start/end coordinates must be finite")
     closed = points.ndim == 2 and points.shape[0] > 1 and np.array_equal(points[0], points[-1])
     if closed:
         points = points[:-1]
@@ -886,6 +991,7 @@ def get_fieldline_distance(flpoints):
     ------
     ValueError
         Raises ValueError or the underlying NumPy/SciPy exception for nonfinite, mismatched, unsorted, out-of-domain, or malformed inputs;
+        nonfinite vertices are rejected with ValueError before accumulating distance.
 
     See Also
     --------
@@ -896,6 +1002,8 @@ def get_fieldline_distance(flpoints):
     Notes
     -----
     Accumulate Euclidean adjacent-vertex distances from zero
+    Finite numeric object elements are checked without changing the calculation inputs;
+    object representations unsupported by the existing calculation remain unsupported.
 
     **Coordinates.** Planar pairs in coherent length units
 
@@ -917,6 +1025,20 @@ def get_fieldline_distance(flpoints):
     >>> np.testing.assert_allclose(get_fieldline_distance(points), [0.0, 3.0, 7.0])
     """
     points = np.asarray(flpoints)
+    if points.dtype == object:
+        finite = all(
+            value.is_finite()
+            if hasattr(value, "is_finite")
+            else all(
+                part == part and part != np.inf and part != -np.inf
+                for part in (value.real, value.imag)
+            )
+            for value in points.flat
+        )
+    else:
+        finite = np.isfinite(points).all()
+    if not finite:
+        raise ValueError("path vertices must be finite")
     distances = np.zeros(points.shape[0])
     distances[1:] = np.cumsum(np.linalg.norm(np.diff(points, axis=0), axis=1))
     return distances
@@ -1049,6 +1171,9 @@ def flux_surface_avg(Rho, Z, B, flpoints, Q=None):
     ------
     ValueError
         Raises ValueError or the underlying NumPy/SciPy exception for nonfinite, mismatched, unsorted, out-of-domain, or malformed inputs;
+        nonfinite grid, B, path or supplied Q data are rejected with ValueError before
+        interpolation; a zero integral of 1/B is rejected with ValueError only when Q is
+        supplied.
 
     See Also
     --------
@@ -1059,10 +1184,13 @@ def flux_surface_avg(Rho, Z, B, flpoints, Q=None):
     Notes
     -----
     Return integral(1/B ds) or integral(Q/B ds)/integral(1/B ds)
+    Finite numeric object elements are checked without changing the calculation inputs;
+    object representations unsupported by the existing calculation remain unsupported.
 
     **Coordinates.** xy rectangular grids and planar path with explicit chord arclength
 
-    **Boundary.** No line closing or toroidal geometric factor
+    **Boundary.** No line closing or toroidal geometric factor. Zero-length paths return
+    zero for the integral when Q is None; an average requires a nonzero integral of 1/B.
 
     **Preconditions.**
 
@@ -1085,6 +1213,23 @@ def flux_surface_avg(Rho, Z, B, flpoints, Q=None):
     """
     import scipy.integrate
 
+    samples = (Rho, Z, B, flpoints) + (() if Q is None else (Q,))
+    for sample in samples:
+        data = np.asarray(sample)
+        if data.dtype == object:
+            finite = all(
+                value.is_finite()
+                if hasattr(value, "is_finite")
+                else all(
+                    part == part and part != np.inf and part != -np.inf
+                    for part in (value.real, value.imag)
+                )
+                for value in data.flat
+            )
+        else:
+            finite = np.isfinite(data).all()
+        if not finite:
+            raise ValueError("grid coordinates, B data, path vertices and Q data must be finite")
     field = interp(Rho, Z, B, flpoints)
     if not np.all(np.isfinite(field)) or np.any(field <= 0.0):
         raise ValueError("interpolated B must be finite and positive along the sampled path")
@@ -1092,6 +1237,8 @@ def flux_surface_avg(Rho, Z, B, flpoints, Q=None):
     denominator = scipy.integrate.trapezoid(y=1.0 / field, x=distance)
     if Q is None:
         return denominator
+    if denominator == 0.0:
+        raise ValueError("weighted average requires a nonzero integral of 1/B")
     quantity = interp(Rho, Z, Q, flpoints)
     if not np.all(np.isfinite(quantity)):
         raise ValueError("interpolated Q must be finite along the sampled path")
