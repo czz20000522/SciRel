@@ -42,7 +42,7 @@
    "Constants H_MASS = 1.6726231e-27 kg and Q = 1.602177e-19 C; Vth = sqrt(2*Q*Tnorm/(mu*H_MASS)), and every node uses v/Vth.",
    "Every kernel is evaluated at the laboratory projectile energy on a stationary target: g^2*Tnorm/mu for the CX and mixed kernels (the 1/mu enters through Vth^2 and is not a lab-to-CM conversion) and g^2*Tnorm for the self viscosity kernel. The H+-on-H momentum-transfer fit converts its laboratory argument to the center-of-mass energy internally (E_cm = E_lab/2 for equal masses, independent of mu; Janev 1995, ch. 11 p. 298), so the SIG_H_P call site passes the laboratory energy unchanged. The energy conventions of the CX and H-H2 fits have not been verified against their source tables (UNKNOWN); they are passed through unchanged. H (mu=1) and D (mu=2) are verified, and other positive mu values are only an algebraic extension without new physical qualification.",
    "The molecular CX projectile mass is 2*H_MASS; the mixed H-H2/P-H2 fits always use the H projectile mass, and exchanging the test particle and the background does not change the relative-speed cross section.",
-   "The H+-H fit uses the low-energy polynomial for E < 10 eV and the high-energy polynomial for E >= 10 eV, including exactly 10 eV; the segments are not forced into a smooth splice.",
+   "The H+-H fit uses the low-energy polynomial for E_cm < 10 eV and the high-energy polynomial for E_cm >= 10 eV, including exactly 10 eV center-of-mass (20 eV laboratory); the segments are not forced into a smooth splice.",
    "The default five-angle rule is a numerical approximation; the caller must independently check angular and velocity-grid convergence."
   ]
  },
@@ -215,7 +215,8 @@
   ],
   "excluded": [
    "full transport-equation solution, cross-call cache lifetime, other species, and unverified isotope extrapolation",
-   "inferring accuracy for arbitrary distributions or new experimental cross-section qualification from a finite node count"
+   "inferring accuracy for arbitrary distributions or new experimental cross-section qualification from a finite node count",
+   "Directly adding the H-P momentum moment from SciRel's atomic matrix assembly to the momentum moment of a full-velocity charge-exchange gain-loss operator built from SIG_CX is unsupported. Separate channel outputs do not qualify that combined transport model."
   ]
  },
  "failure_semantics": {
@@ -260,11 +261,13 @@
    "independent geometry and fit comparisons retain the existing numerical tolerances",
    "H/D four-channel 4096-angle midpoint results are compared with independent SciPy adaptive integration; weighted exchange relations and a common boost are checked",
    "moments and Alpha from real normalized distributions verify H<->H2 momentum exchange, Maxwell equilibrium momentum and weak drift",
-   "Top-level Result type and attribute/key equivalence are regression-tested; nested array fields remain plain NumPy arrays."
+   "Top-level Result type and attribute/key equivalence are regression-tested; nested array fields remain plain NumPy arrays.",
+   "The declared equal-mass discrete momentum construction is checked through matrix assembly, Alpha contraction and moment reduction, including an explicitly constructed full-velocity CX gain-loss operator. This is algebraic and quadrature evidence, not a production combined transport solver or an independent cross-section accuracy oracle."
   ],
   "tests": [
    "tests/collisions/test_atomic_hydrogen_collision_matrices.py",
-   "tests/collisions/test_collision_physical_closure.py"
+   "tests/collisions/test_collision_physical_closure.py",
+   "tests/collisions/test_atomic_momentum_budget.py"
   ],
   "evidence_ceiling": "supports consistency of the declared velocity integration kernels with the tested discrete inputs; it is not experimental cross-section validation over all energy ranges and does not constitute full physical qualification",
   "known_limitations": [
@@ -272,8 +275,8 @@
    "the default five-angle rule has no universal accuracy guarantee; higher-order checks do not replace the caller's grid convergence",
    "human scientific acceptance and redistribution licensing are decided separately; the verification gap is not closed by this file",
    "The self-collision prefactor is the Boltzmann value 3/8, which reproduces the Chapman-Enskog hard-sphere p/mu. The KN1D report (LaBombard, PSFC/RR-01-3, Appendix B) has 1/8 because it equates the BGK integral of (2 v_x^2 - v_r^2), three times that of v_x^2, to the v_x^2 rate; results here therefore differ from KN1D by that factor in this channel.",
-   "the APID 8 (1999) p. 77 Momentum Transfer column equals twice its Spin Exchange column, and by section 1.5.3 the spin exchange cross section tends to the charge-exchange cross section above about 1 eV center-of-mass (an asymptotic tendency, not an identity). The qualitative consequence is that this column already carries resonant charge-exchange momentum: SIG_CX is the only family here without a velocity matrix element, so any consumer that takes the v_x moment of Alpha_CX and also applies SIG_H_P counts that momentum twice. The two must not share one momentum budget until a distinguishable-particle kernel exists. The magnitude of the duplicate share is not quantified (UNKNOWN)",
-   "the momentum share carried by charge exchange in this column is not quantified; no independent cross-section source covers 0.1-12 eV, and the two independent sources that do exist disagree with each other by 40-50% in the region where they overlap, so neither a duplicate-count magnitude nor a distinguishable-particle kernel can be derived from them"
+   "The H-P momentum-transfer fit already includes resonant charge-exchange momentum (IAEA APID Vol.8, 1999, section 1.2, p.3). It is not a pure distinguishable-particle elastic kernel. Adding its H-P momentum moment to that of a full-velocity CX gain-loss operator built from SIG_CX is unsupported; no subtraction or replacement scattering model is implied.",
+   "The resonant charge-exchange share of the total momentum transfer remains unquantified (UNKNOWN). Independent validation of separated channels over the underlying 0.1-100 eV center-of-mass table range has not been established here; this is a verification gap, not a claim that suitable literature or data do not exist."
   ]
  }
 }
