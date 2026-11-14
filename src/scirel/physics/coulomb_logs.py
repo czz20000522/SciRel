@@ -27,6 +27,22 @@ as a single expression,
 repository-conservative advisory line applied to both relations, while the e-i
 switching condition is the source's own. ``calculate_log_lambda_ii`` already uses
 the classical cutoff form and is not affected.
+
+The e-i entries of that table are conditioned on three quantities, not on
+``T_e`` alone: ``T_i m_e/m_i < T_e < 10 Z^2 eV`` selects the low-temperature
+form, ``T_i m_e/m_i < 10 Z^2 eV < T_e`` the high-temperature one, and the table
+lists a ``T_e < T_i m_e/m_i`` branch as well. ``calculate_log_lambda_ei`` accepts
+neither ``T_i`` nor an ion mass and fixes ``Z = 1`` for electrons, so it can only
+see the ``10 Z^2 eV`` boundary; whether a call sits inside the transcribed
+conditions remains the caller's judgement, and the warning reports only the part
+of them this interface can evaluate.
+
+The value returned here is also not the formulary's high-temperature expression
+numerically. Converted to these units that expression is
+``(24 + ln 1000) + ln T_e - 0.5 ln n_e``, whose constant ``24 + ln 1000`` is
+30.907755..., whereas ``calculate_log_lambda_ei`` returns the Wesson estimate with
+constant 31.3. Both are high-temperature estimates of the same quantity and
+differ by about 0.392 in the logarithm; neither is substituted for the other.
 """
 
 from __future__ import annotations
@@ -210,13 +226,17 @@ def _warn_below_quantum_branch_ei(temperature_kev, density_m3):
     """Warn once per call for e-i samples below the quantum-branch boundary.
 
     The e-i branches in the same source are: ``24 - ln(sqrt(n_e)/T_e)`` for ``T_e > 10 Z^2 eV``
-    (this high-temperature branch is what the relation here evaluates) and
-    ``23 - ln(sqrt(n_e) Z T_e^(-3/2))`` below it, with ``T_e`` in eV and ``n_e`` in cm^-3.  The
-    ~16.2 eV intersection with the latter is an algebraic crossing with a formula extrapolated
-    outside its own low-temperature range, not a physical switch or an accuracy criterion.  The
-    deviation is computed at the offending sample rather than quoted as a fixed percentage,
-    because it grows with density.  Branch-condition provenance stays pending (UNKNOWN) in the
-    contract.
+    and ``23 - ln(sqrt(n_e) Z T_e^(-3/2))`` below it, with ``T_e`` in eV and ``n_e`` in cm^-3,
+    each conditioned on ``T_i m_e/m_i`` as well (module docstring).  The relation here is a
+    high-temperature estimate of the same quantity, not that branch numerically: converted to
+    these units the formulary constant is ``24 + ln 1000`` = 30.907755..., while this relation
+    uses 31.3, about 0.392 apart in the logarithm.  The ~16.2 eV intersection with the
+    low-temperature form is an algebraic crossing with a formula extrapolated outside its own
+    low-temperature range, not a physical switch or an accuracy criterion.  The deviation is
+    computed at the offending sample rather than quoted as a fixed percentage, because it grows
+    with density.  The transcription of the NRL table was checked by the maintainer (see #197,
+    #212); the Wesson edition and section remain UNKNOWN, and the two provenance facts are
+    recorded separately in the contract.
     """
     lowest_ev = _lowest_ev(temperature_kev)
     if lowest_ev is None:
@@ -226,8 +246,12 @@ def _warn_below_quantum_branch_ei(temperature_kev, density_m3):
     warnings.warn(
         "calculate_log_lambda_ei: electron temperature is below the 10 Z^2 eV branch condition"
         f" (Z = 1 here, so 10 eV; lowest input {lowest_ev:.6g} eV) under which the source switches"
-        " the electron-ion relation to its low-temperature form. This relation evaluates the"
-        " high-temperature branch. The low-temperature form is"
+        " the electron-ion relation to its low-temperature form. The formulary conditions both"
+        " branches on T_i m_e/m_i as well; this signature accepts no T_i or ion mass, so only the"
+        " 10 Z^2 eV part is evaluated here and the rest stays the caller's judgement. The returned"
+        " relation is a high-temperature estimate of the same quantity, not that branch numerically:"
+        " the formulary constant is 24 + ln 1000 = 30.907755..., this relation uses 31.3. The"
+        " low-temperature form is"
         " 23 - ln(sqrt(n_e) Z T_e^(-1.5)) (T_e in eV, n_e in cm^-3); at"
         f" n_e = {sample_density:.6g} m^-3, T_e = {sample_temperature * 1000.0:.6g} eV the returned"
         f" value is {_format_deviation(deviation)} above it. The ~16.2 eV crossing with the"
@@ -357,8 +381,13 @@ def calculate_log_lambda_ei(T_e, n_e):
         ``24 - ln(sqrt(n_e)/T_e)`` above that condition and
         ``23 - ln(sqrt(n_e) Z T_e^(-3/2))`` below it (``T_e`` in eV, ``n_e`` in
         cm^-3, as transcribed from the 2016 printed p. 34 table; the transcription was
-        checked by the maintainer, see #197). This relation evaluates the upper
-        branch, and the value returned is about +55.5% above
+        checked by the maintainer, see #197 and #212). The formulary conditions both
+        branches on ``T_i m_e/m_i`` as well; this signature accepts no ``T_i`` or ion
+        mass and fixes ``Z = 1``, so only the ``10 Z^2 eV`` part is evaluated here and
+        the remaining conditions stay the caller's judgement. The relation returned is
+        a high-temperature estimate of the same quantity, not that branch numerically:
+        converted to these units the formulary constant is ``24 + ln 1000`` =
+        30.907755..., against 31.3 here. The value returned is about +55.5% above
         the low-temperature branch at 0.1 eV and +17.3% at 1 eV for
         ``n_e = 1e19 m^-3``. The ~16.2 eV intersection with that branch is
         algebra on a formula extrapolated outside its own range; it is not a

@@ -75,21 +75,21 @@
  "applicability": {
   "preconditions": [
    "strictly positive finite T_e in keV and n_e in m^-3",
-   "Above the formulary's 10 Z^2 eV condition (10 eV at Z = 1, transcribed from the 2016 printed p. 34 table, see #197) the caller accepts the high-temperature (quantum cutoff) branch; below it the relation warns and still returns the value."
+   "Above the formulary's 10 Z^2 eV condition (10 eV at Z = 1) the caller accepts the high-temperature (quantum cutoff) branch; below it the relation warns and still returns the value. The table conditions both e-i branches on more than T_e: T_i*m_e/m_i < T_e < 10 Z^2 eV selects the low-temperature form, T_i*m_e/m_i < 10 Z^2 eV < T_e the high-temperature one, and a T_e < T_i*m_e/m_i branch is listed as well. This interface accepts neither T_i nor an ion mass and fixes Z = 1 for electrons, so those conditions stay the caller's judgement."
   ],
   "supported": [
-   "Finite NumPy evaluation of the declared relation and broadcast shape on the quantum-cutoff branch, valid above the declared T_e ~ 10 Z^2 eV boundary (10 eV here; boundary provenance UNKNOWN)."
+   "Finite NumPy evaluation of the declared relation and broadcast shape on the quantum-cutoff branch, valid above the declared T_e ~ 10 Z^2 eV boundary (10 eV here; that boundary is transcribed from the NRL Plasma Formulary 2016 printed p. 34 table and was maintainer-checked in #212, while the Wesson edition and section remain UNKNOWN)."
   ],
   "excluded": [
    "Whole-transport evolution, experimental calibration, and implicit coordinate reconstruction.",
    "Interpreting zero or negative computed logarithms as valid weakly coupled collision physics; physical calibration or a regime-switching model.",
-   "The low-temperature electron-ion classical-cutoff branch (a classical-cutoff form 23 - ln(n_e^0.5 Z T_e^-1.5), T_e in eV, n_e in cm^-3; source provenance pending, UNKNOWN) is not provided: below 10 eV the returned quantum-branch value only warns, and it sits above that form by about +37% at n_e = 1e17 m^-3, +55.5% at 1e19 and +112% at 1e21 (0.1 eV; the gap grows with density). The two forms cross near 16.2 eV, above which the quantum form reads lower.",
-   "The low-temperature e-i estimate is not provided as a public relation: below 10 Z^2 eV the returned high-temperature branch differs from it and only warns."
+   "The low-temperature electron-ion classical-cutoff branch (a classical-cutoff form 23 - ln(n_e^0.5 Z T_e^-1.5), T_e in eV, n_e in cm^-3; transcribed from the NRL Plasma Formulary 2016 printed p. 34 table, maintainer-checked in #212) is not provided: below 10 eV the returned quantum-branch value only warns, and it sits above that form by about +37% at n_e = 1e17 m^-3, +55.5% at 1e19 and +112% at 1e21 (0.1 eV; the gap grows with density). The two forms cross near 16.2 eV, above which the quantum form reads lower.",
+   "The low-temperature e-i estimate is not provided as a public relation: below 10 Z^2 eV the returned high-temperature estimate differs from it and only warns."
   ]
  },
  "failure_semantics": {
   "invalid_input": "Raises ValueError for boolean/string/complex/masked or empty input, non-finite values, malformed or incompatible shape, and the nonpositive or singular domains named by the callable contract.",
-  "runtime_failure": "Raises FloatingPointError if accepted finite inputs produce an unrepresentable output; no fallback is returned. Emits scirel.ApplicabilityWarning when any input temperature is below 10 Z^2 eV (10 eV at Z = 1), the source's own switch to its low-temperature e-i branch; the message names the lowest input, the low-temperature branch, and the gap to the NRL Plasma Formulary e-i branches, 2016 printed p.34 (PPPL official copy), as transcribed from the original table (see #197): 24 - ln(sqrt(n_e)/T_e) for T_e > 10 Z^2 eV and 23 - ln(sqrt(n_e) Z T_e^(-3/2)) below it, T_e in eV and n_e in cm^-3. The value is returned unchanged.",
+  "runtime_failure": "Raises FloatingPointError if accepted finite inputs produce an unrepresentable output; no fallback is returned. Emits scirel.ApplicabilityWarning when any input temperature is below 10 Z^2 eV (10 eV at Z = 1), the part of the source's e-i branch conditions this interface can evaluate; the table also conditions both branches on T_i*m_e/m_i, which this signature cannot evaluate (no T_i or ion mass, Z = 1), so the remaining conditions stay the caller's judgement. The message names the lowest input, the low-temperature branch, and the gap to the NRL Plasma Formulary e-i branches, 2016 printed p.34 (PPPL official copy), as transcribed from the original table (see #197, #212): 24 - ln(sqrt(n_e)/T_e) for T_e > 10 Z^2 eV and 23 - ln(sqrt(n_e) Z T_e^(-3/2)) below it, T_e in eV and n_e in cm^-3; the returned relation keeps constant 31.3, about 0.392 above that branch's converted constant 24 + ln 1000 = 30.907755... The value is returned unchanged.",
   "nonconvergence": "Not applicable; this is a direct algebraic mapping.",
   "partial_results": "No output is returned after an exception."
  },
@@ -125,10 +125,11 @@
   "known_limitations": [
    "No external calibration or collision-frequency composition is claimed.",
    "Only the Wesson algebra and declared numerical boundaries are covered.",
-   "Sauter et al. (1999) use this form (31.3 - ln(sqrt(n_e)/T_e[eV]), with T in keV here) as lnLambda_e in the electron collisionality nu*_e; the 'ee' function (constant 31.0) is a different estimate.",
-   "The e-i branches and their T_e > 10 Z^2 eV condition come from the NRL Plasma Formulary, 2016 printed p.34, as transcribed from the original table; the transcription was checked by the maintainer (see #197). The ~16.2 eV intersection with the low-temperature branch is algebra on a formula extrapolated outside its own range; it is not a physical switching point and not an accuracy criterion.",
+   "Sauter et al. (1999) are cited in this contract for the form 31.3 - ln(sqrt(n_e)/T_e[eV]) as lnLambda_e in the electron collisionality nu*_e; the edition, section and equation of that attribution were not verified in this round and remain UNKNOWN, on the same footing as Wesson below. The 'ee' function (constant 31.0) is a different estimate.",
+   "The e-i branches and their T_e > 10 Z^2 eV condition come from the NRL Plasma Formulary, 2016 printed p.34, transcribed from the original table and checked by the maintainer (see #197, #212). The table additionally conditions both branches on T_i*m_e/m_i and lists a T_e < T_i*m_e/m_i branch, and this interface cannot evaluate those (no T_i or ion mass, Z = 1). The ~16.2 eV intersection with the low-temperature branch is algebra on a formula extrapolated outside its own range; it is not a physical switching point and not an accuracy criterion.",
    "The gap to the low-temperature branch is an algebraic difference between two estimates, not an error against measured physics: at n_e = 1e19 m^-3 it is +55.54% at 0.1 eV and +17.33% at 1 eV, and it grows with density, so the warning computes it per sample.",
-   "Wesson's edition and section were not verified and remain UNKNOWN; in this round only the NRL relation was transcribed from the original table (maintainer-verified, see #197)."
+   "Wesson's edition and section were not verified and remain UNKNOWN; the NRL transcription recorded above is a separate, maintainer-checked fact (see #197, #212), so the two provenance states are kept apart rather than combined.",
+   "The relation returned here (constant 31.3) is a high-temperature estimate of the same quantity as the formulary's high-temperature e-i expression, whose constant after unit conversion is 24 + ln 1000 = 30.907755...; the two differ by about 0.392 in the logarithm, and neither is claimed to be numerically identical to the other. That ~0.392 is a difference between two published sources' constants (31.3 here versus 24 + ln 1000 in the NRL table), not a convention difference within one formula; where it originates is not derived here and remains UNKNOWN."
   ]
  }
 }
