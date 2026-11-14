@@ -272,13 +272,14 @@ def test_a_step_runs_when_the_platform_has_no_sighup(monkeypatch):
         "signal",
         SimpleNamespace(
             SIGTERM=15,
+            getsignal=lambda signum: None,
             signal=lambda signum, handler: registered.append(signum),
         ),
     )
     done = check_all.run_step([sys.executable, "-c", "print('completed')"], {})
     assert done.returncode == 0
     assert done.stdout.strip() == "completed"
-    assert registered == [15]
+    assert registered == [15, 15]
 
 
 def test_a_broken_counts_report_makes_the_whole_run_fail(tmp_path, monkeypatch, capsys):
@@ -287,14 +288,14 @@ def test_a_broken_counts_report_makes_the_whole_run_fail(tmp_path, monkeypatch, 
     report.write_text("{not json", encoding="utf-8")
     broken = check_all.Step("tests", [sys.executable, "-c", "pass"], counts=report)
     monkeypatch.setattr(check_all, "ROOT", tmp_path)
-    monkeypatch.setattr(check_all, "steps", lambda output: [broken])
+    monkeypatch.setattr(check_all, "steps", lambda output, **kwargs: [broken])
     monkeypatch.setattr(check_all.shutil, "which", lambda name: "/usr/bin/uv")
 
     assert check_all.main() == 1
     printed = capsys.readouterr().out
     assert "FAIL  tests" in printed
     assert "test counts unusable" in printed
-    assert printed.rstrip().endswith("FAILED: ['tests']")
+    assert "FAILED: ['tests']" in printed
 
 
 def test_summary_carries_both_the_step_and_the_test_counts():
@@ -311,6 +312,300 @@ def test_zero_execution_counts_do_not_support_a_green(tmp_path):
     path.write_text(json.dumps(report))
     with pytest.raises(check_all.CountsError, match="no tests"):
         check_all.read_counts(path)
+
+
+def test_all_skipped_tests_do_not_support_a_green(tmp_path):
+    path = tmp_path / "counts.json"
+    path.write_text(
+        json.dumps(_report(passed=0, skipped=3, skip_reasons={"absent": ["a", "b", "c"]}))
+    )
+    with pytest.raises(check_all.CountsError, match="no tests executed"):
+        check_all.read_counts(path)
+
+
+def _git(root, *arguments):
+    env = {
+        **os.environ,
+        "GIT_AUTHOR_NAME": "fixture",
+        "GIT_COMMITTER_NAME": "fixture",
+        "GIT_AUTHOR_EMAIL": "fixture@invalid",
+        "GIT_COMMITTER_EMAIL": "fixture@invalid",
+    }
+    return subprocess.run(
+        ["git", *arguments], cwd=root, env=env, check=True, capture_output=True, text=True
+    ).stdout.strip()
+
+
+def _candidate(root):
+    _git(root, "init", "-q")
+    (root / ".gitignore").write_text(".runtime/\n")
+    (root / "uv.lock").write_text("fixture lock\n")
+    (root / ".python-version").write_text("fixture python\n")
+    (root / "tracked.txt").write_text("original\n")
+    _git(root, "add", ".")
+    _git(root, "commit", "-qm", "fixture candidate")
+
+
+def _mini_acceptance(root, monkeypatch, *, counts_report=None):
+    """Run the real reporting loop with one tiny subprocess, never the full suite."""
+    _candidate(root)
+    monkeypatch.setattr(check_all, "ROOT", root)
+
+    def plan(output, **kwargs):
+        counts = output / "tests-counts.json"
+        code = (
+            f"from pathlib import Path; Path({str(counts)!r}).write_text({json.dumps(counts_report or _report())!r}); "
+            "print('complete fixture output')"
+        )
+        return [check_all.Step("tests", [sys.executable, "-B", "-c", code], counts=counts)]
+
+    monkeypatch.setattr(check_all, "steps", plan)
+    return root / ".runtime/logs/result.json", plan
+
+
+def test_report_binds_real_candidate_environment_and_started_argv(tmp_path, monkeypatch, capsys):
+    import hashlib
+
+    path, _ = _mini_acceptance(tmp_path, monkeypatch)
+    launched = []
+    original = check_all.run_step
+
+    def execute(command, env):
+        launched.append(list(command))
+        return original(command, env)
+
+    monkeypatch.setattr(check_all, "run_step", execute)
+    identity = check_all.candidate_identity(tmp_path)
+    assert identity["commit"] == _git(tmp_path, "rev-parse", "HEAD")
+    assert identity["tree"] == _git(tmp_path, "rev-parse", "HEAD^{tree}")
+    assert identity["dirty"] is False
+    assert check_all.main(path, run_id="fixture invocation") == 0
+    result = json.loads(path.read_text())
+    assert result["candidate"] == {"before": identity, "after": identity}
+    assert result["run_id"] == "fixture invocation"
+    assert result["evidence"] == "clean_candidate"
+    environment = result["environment"]["before"]
+    assert environment == result["environment"]["after"]
+    assert set(environment) == {
+        "python",
+        "platform",
+        "architecture",
+        "uv_lock_sha256",
+        "python_version_sha256",
+    }
+    assert set(environment["python"]) == {"implementation", "version"}
+    assert (
+        environment["uv_lock_sha256"]
+        == hashlib.sha256((tmp_path / "uv.lock").read_bytes()).hexdigest()
+    )
+    assert (
+        environment["python_version_sha256"]
+        == hashlib.sha256((tmp_path / ".python-version").read_bytes()).hexdigest()
+    )
+    assert environment["python"]["version"] == ".".join(map(str, sys.version_info[:3]))
+    (record,) = result["steps"]
+    assert record["started"] is True
+    assert record["argv"] == launched[0]
+    assert Path(record["log"]).read_text() == "complete fixture output\n"
+    assert result["tests"]["selected"] == 3
+    assert capsys.readouterr().out.rstrip().endswith("ALL GREEN")
+
+
+@pytest.mark.parametrize(
+    "edit",
+    ["commit", "tree", "dirty", "dirty content", "untracked content", "index", "staged content"],
+)
+def test_identity_drift_cannot_be_green(tmp_path, monkeypatch, edit):
+    path, _ = _mini_acceptance(tmp_path, monkeypatch)
+    if edit == "dirty content":
+        (tmp_path / "tracked.txt").write_text("first edit\n")
+    if edit == "untracked content":
+        (tmp_path / "extra.txt").write_text("first edit\n")
+    if edit == "staged content":
+        (tmp_path / "tracked.txt").write_text("first index edit\n")
+        _git(tmp_path, "add", "tracked.txt")
+        (tmp_path / "tracked.txt").write_text("working edit\n")
+    original = check_all.run_step
+
+    def execute(command, env):
+        done = original(command, env)
+        if edit == "commit":
+            _git(tmp_path, "commit", "--allow-empty", "-qm", "same tree new commit")
+        elif edit in ("index", "staged content"):
+            (tmp_path / "tracked.txt").write_text("staged change\n")
+            _git(tmp_path, "add", "tracked.txt")
+            if edit == "staged content":
+                (tmp_path / "tracked.txt").write_text("working edit\n")
+        else:
+            (tmp_path / ("extra.txt" if edit == "untracked content" else "tracked.txt")).write_text(
+                "second edit\n"
+            )
+            if edit == "tree":
+                _git(tmp_path, "add", "tracked.txt")
+                _git(tmp_path, "commit", "-qm", "new tree")
+        return done
+
+    monkeypatch.setattr(check_all, "run_step", execute)
+    assert check_all.main(path) == 1
+    result = json.loads(path.read_text())
+    assert result["evidence"] == "invalid"
+    assert result["candidate"]["before"] != result["candidate"]["after"]
+    if edit == "commit":
+        assert result["candidate"]["before"]["tree"] == result["candidate"]["after"]["tree"]
+
+
+def test_stable_dirty_candidate_is_development_only(tmp_path, monkeypatch, capsys):
+    path, _ = _mini_acceptance(tmp_path, monkeypatch)
+    (tmp_path / "tracked.txt").write_text("development edit\n")
+    assert check_all.main(path) == 0
+    result = json.loads(path.read_text())
+    assert result["evidence"] == "development"
+    assert result["candidate"]["before"] == result["candidate"]["after"]
+    assert "ALL GREEN" not in capsys.readouterr().out
+
+
+def test_all_skipped_run_retains_counts_and_reasons_while_failing(tmp_path, monkeypatch, capsys):
+    counts = _report(passed=0, skipped=3, skip_reasons={"absent": ["a", "b", "c"]})
+    path, _ = _mini_acceptance(tmp_path, monkeypatch, counts_report=counts)
+    assert check_all.main(path) == 1
+    result = json.loads(path.read_text())
+    assert result["tests"] == counts
+    assert result["steps"][0]["status"] == "FAIL"
+    output = capsys.readouterr().out
+    assert "skipped 3" in output and "SKIP  absent  (3)" in output
+    assert "ALL GREEN" not in output
+
+
+@pytest.mark.parametrize("missing", ["uv.lock", ".python-version", "git"])
+def test_missing_binding_cannot_be_green(tmp_path, monkeypatch, missing):
+    path, _ = _mini_acceptance(tmp_path, monkeypatch)
+    if missing == "git":
+
+        def unavailable(root):
+            raise check_all.BindingError("git identity command could not start")
+
+        monkeypatch.setattr(check_all, "candidate_identity", unavailable)
+    else:
+        (tmp_path / missing).unlink()
+    assert check_all.main(path) == 1
+    result = json.loads(path.read_text())
+    assert result["binding_errors"]
+    assert result["evidence"] == "invalid"
+
+
+def test_lock_digest_drift_cannot_be_green(tmp_path, monkeypatch):
+    path, _ = _mini_acceptance(tmp_path, monkeypatch)
+    original = check_all.run_step
+
+    def execute(command, env):
+        done = original(command, env)
+        (tmp_path / "uv.lock").write_text("changed lock\n")
+        return done
+
+    monkeypatch.setattr(check_all, "run_step", execute)
+    assert check_all.main(path) == 1
+    result = json.loads(path.read_text())
+    assert result["environment"]["before"] != result["environment"]["after"]
+
+
+def test_missing_uv_records_planned_argv_without_claiming_a_start(tmp_path, monkeypatch):
+    path, plan = _mini_acceptance(tmp_path, monkeypatch)
+    monkeypatch.setattr(check_all.shutil, "which", lambda name: None)
+    monkeypatch.setattr(
+        check_all,
+        "steps",
+        lambda output, **kwargs: [
+            *plan(output),
+            check_all.Step("lint", ["uv", "run", "ruff", "check"], requires_uv=True),
+        ],
+    )
+    assert check_all.main(path) == 1
+    tests, lint = json.loads(path.read_text())["steps"]
+    assert tests["started"] is True
+    assert lint["status"] == "NOT_RUN" and lint["returncode"] is None
+    assert lint["started"] is False and lint["argv"] == ["uv", "run", "ruff", "check"]
+    assert "uv is not on PATH" in lint["detail"]
+
+
+def test_failed_spawn_does_not_claim_execution(tmp_path, monkeypatch):
+    path, _ = _mini_acceptance(tmp_path, monkeypatch)
+
+    def cannot_start(command, env):
+        raise check_all.StepStartError("fixture executable absent")
+
+    monkeypatch.setattr(check_all, "run_step", cannot_start)
+    assert check_all.main(path) == 1
+    (record,) = json.loads(path.read_text())["steps"]
+    assert record["started"] is False and record["returncode"] is None
+    assert record["status"] == "NOT_RUN"
+    assert record["argv"][0] == sys.executable
+
+
+def test_interrupted_step_retains_output_and_cannot_resume_the_plan(tmp_path, monkeypatch):
+    path, plan = _mini_acceptance(tmp_path, monkeypatch)
+    monkeypatch.setattr(
+        check_all,
+        "steps",
+        lambda output, **kwargs: [*plan(output), check_all.Step("later", ["must-not-start"])],
+    )
+
+    def interrupted(command, env):
+        raise check_all.StepInterrupted(
+            subprocess.CompletedProcess(command, 130, "before interrupt\n", "")
+        )
+
+    monkeypatch.setattr(check_all, "run_step", interrupted)
+    assert check_all.main(path) == 1
+    first, later = json.loads(path.read_text())["steps"]
+    assert first["started"] is True and first["status"] == "FAIL"
+    assert Path(first["log"]).read_text() == "before interrupt\n"
+    assert later["status"] == "NOT_RUN" and later["started"] is False
+
+
+def test_an_old_green_result_is_never_overwritten_or_used(tmp_path, monkeypatch):
+    path, _ = _mini_acceptance(tmp_path, monkeypatch)
+    assert check_all.main(path) == 0
+    original = path.read_bytes()
+    assert check_all.main(path) == 2
+    assert path.read_bytes() == original
+
+
+@pytest.mark.parametrize("marker", ['skip(reason="fixture")', 'xfail(run=False, reason="fixture")'])
+def test_a_suite_that_never_calls_a_test_body_is_not_green(tmp_path, marker):
+    (tmp_path / "test_sample.py").write_text(
+        f"import pytest\n@pytest.mark.{marker}\ndef test_not_called():\n    assert False\n"
+    )
+    done = _run(tmp_path, [], with_plugin=True)
+    assert done.returncode == 0, done.stdout + done.stderr
+    with pytest.raises(check_all.CountsError, match="no tests executed"):
+        check_all.read_counts(tmp_path / "counts.json")
+
+
+def test_spawn_failure_is_distinct_from_a_started_process(tmp_path, monkeypatch):
+    monkeypatch.setattr(check_all, "ROOT", tmp_path)
+    with pytest.raises(check_all.StepStartError):
+        check_all.run_step([str(tmp_path / "missing-executable")], {})
+
+
+@pytest.mark.skipif(sys.platform == "win32", reason="POSIX signal fixture")
+def test_run_step_retains_output_when_its_child_interrupts_it(tmp_path):
+    # A separate driver receives the signal, never the pytest process or its outer dev.py lock.
+    child = "import os, signal; print('before termination', flush=True); os.kill(os.getppid(), signal.SIGTERM)"
+    driver = (
+        f"import sys; sys.path.insert(0, {str(SCRIPTS)!r}); import check_all\n"
+        "try:\n"
+        f"    check_all.run_step([sys.executable, '-B', '-c', {child!r}], {{}})\n"
+        "except check_all.StepInterrupted as error:\n"
+        "    print(error.completed.returncode)\n"
+        "    print(error.completed.stdout, end='')\n"
+        "else:\n"
+        "    raise AssertionError('child did not interrupt the driver')\n"
+    )
+    done = subprocess.run(
+        [sys.executable, "-B", "-c", driver], cwd=tmp_path, capture_output=True, text=True
+    )
+    assert done.returncode == 0, done.stdout + done.stderr
+    assert done.stdout.splitlines() == [str(128 + 15), "before termination"]
 
 
 def test_full_suite_discovery_cannot_be_replaced_by_smoke_testpaths(tmp_path, monkeypatch):

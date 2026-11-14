@@ -37,6 +37,62 @@ JSON result under `.runtime/logs/`; `RESULT` prints its location. The extraction
 `--report <path>` to preserve those records after deleting its temporary candidate tree. A green
 exit without a complete result, or with zero executed tests, cannot support package admission.
 
+The current `scirel.acceptance.v1` result also binds the following fields; older results lacking
+them are rejected, not upgraded or reused:
+
+- `run_id` identifies this invocation. The extraction validator supplies a fresh ID and a new
+  result filename for each run, and checks both. `--report` refuses an existing file, so a
+  failed or interrupted run cannot inherit a previous green result.
+- `candidate.before` and `candidate.after` contain the actual `commit`, HEAD `tree`, `dirty`
+  flag and `worktree_sha256`. The last field hashes Git status, staged and working changes,
+  and untracked file contents; those names and contents are not copied into the result.
+  A change to any identity field fails the run, including a different commit with the same
+  tree or a content change while the worktree stays dirty.
+- `environment.before` and `environment.after` contain only Python implementation/version,
+  platform, architecture, `uv_lock_sha256` and `python_version_sha256`. These SHA-256 digests
+  identify the exact bytes of `uv.lock` and `.python-version`. Missing identity or unreadable
+  dependency inputs fail the binding; changed environment inputs also fail the run. The
+  result does not collect environment variables, hostnames, email addresses or credentials.
+- Each step retains its `argv` and `started` flag alongside its status, exit code and full
+  output log. `argv` is the argument list passed to the subprocess, or the planned list when
+  it could not start. Missing uv or a failed spawn means `started: false`, `NOT_RUN` and a
+  null return code. A started, interrupted step fails; later steps are `NOT_RUN`.
+- `evidence` is `clean_candidate`, `development` or `invalid`, and `binding_errors` retains
+  identification failures. Stable dirty runs can exit zero as development feedback, ending
+  with `DEVELOPMENT PASS (dirty candidate)` rather than `ALL GREEN`; they cannot support
+  package admission. A failed step or binding failure sets `exit_code: 1` and `invalid`.
+
+The extraction validator observes the real candidate before and after its run, **after
+`git am`**, and compares both observations with the fresh result. The frozen base commit is
+not the candidate identity. It also checks the actual candidate's step plan and argument lists,
+started flags, retained logs and unchanged environment. Missing fields, stale IDs, mismatched
+commits, dirty candidates and identity drift are rejected. Counts still retain every outcome
+and skip reason: at least one `passed`, `failed` or `xpassed` outcome is required to demonstrate
+execution. All-skipped, all-error or solely `xfailed` results cannot establish it; pytest can
+record `xfailed` without calling a test body (`xfail(run=False)`).
+
+The result bindings alone do not establish clone-wide exclusivity. `dev.py check` and the
+explicit `dev.py run --exclusive <command>` entry acquire the existing clone-wide EX lock
+and print `EXCLUSIVE`. Ordinary `run`, `prepare` and `pytest` keep their shared lock.
+For complete extraction-package validation, run from the clone containing the frozen commit:
+
+```sh
+python3 scripts/dev.py run --exclusive python -B scripts/validate_extraction_package.py <package> --repo .
+```
+
+The outer entry holds the lock across patch application, the candidate's direct `check_all.py`
+call and mutation. The validator verifies the candidate's actual Git common directory, a fresh
+credential under the existing `.runtime/locks/`, and the live kernel lock before and after both
+checks, retaining the same credential throughout. On POSIX an independent shared-lock probe
+must be blocked; a shared holder cannot satisfy it. Windows probes the existing serialized
+byte lock. Bare environment values, retired credentials, free/shared locks and a different
+clone are rejected. Ordinary commands clear inherited exclusive markers and stale records;
+credentials are retired under the original lock after the command group has exited, including
+on interruption. This is verification of the outer lock, not permission to reacquire or bypass
+it. Do not nest `dev.py check` inside `dev.py run`; the locks conflict. A direct `check_all.py`
+invocation alone is still not evidence of exclusivity. `--fast` skips admission and exits 2
+for an otherwise valid package.
+
 It prints the time of each step and takes about five minutes. Much longer means the machine is busy: look for other runs before suspecting the code. Only one run per checkout is allowed. Run it in the foreground, so that you see the result.
 
 A push runs nothing: there is no `pre-push` hook, so pushing is cheap and proves nothing. The

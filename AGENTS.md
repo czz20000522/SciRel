@@ -56,6 +56,7 @@ python3 scripts/dev.py prepare  # Windows 可用 py -3
 python3 scripts/dev.py check
 python3 scripts/dev.py pytest tests/<domain>/test_<asset>.py
 python3 scripts/dev.py run python -B scripts/test_scope.py --changed <path>
+python3 scripts/dev.py run --exclusive python -B scripts/validate_extraction_package.py <package> --repo .
 ```
 
 解释器、运行产物一律留在项目内已被忽略的 `.runtime/` 下，不写到项目目录之外：主 checkout 的
@@ -73,13 +74,15 @@ lockfile 属于质量问题，改一次提交就能修，放在合并前的完�
 绕得过，所以不能替代自己跑检查；反过来说，本该执行却静默跳过的检查等于防线失效——缺 `uv` 时完整检查必须
 显式判红，不能悄悄判绿。
 
-作放行依据的那次完整检查必须独占本仓库的测试（含所有 worktree）：`check` 持有同一 clone 的排他锁，`prepare`、`pytest`、`run` 持有共享锁，有别的
+作放行依据的那次完整检查必须独占本仓库的测试（含所有 worktree）：`check` 和显式 `run --exclusive <command>` 持有同一 clone 的排他锁，`prepare`、`pytest`、普通 `run` 持有共享锁，有别的
 测试或检查在跑时 `check` 直接拒绝启动，开始时打印 `EXCLUSIVE` 行，PR 证据里贴上这一行。绕过 `dev.py` 直接跑的
 测试不受锁约束，所以跑检查期间不要另起测试。并行测试只用于开发期局部验证，结果不写进 PR 证据，也不据此判红
 判绿。`tests/docs` 的 Sphinx 夹具在并发内存压力下会在 setup 阶段失败，那是假红，不是代码缺陷；遇到这种红先
 确认是否有别的测试在跑。
 
-POSIX 主机上，入口收到 `SIGINT`、`SIGTERM` 或 `SIGHUP` 时会停止本次启动的命令进程组，并等整组退出后才释放锁；
+提取包完整校验用上面的显式独占命令，`--repo` 与候选必须属于被锁住的同一 clone。校验器在完整检查和变异前后核对本次短期凭据与真实内核锁；普通共享运行不继承独占标记。直接调用 `check_all.py` 不等于独占，不要在 `run` 中嵌套 `dev.py check`。
+
+POSIX 主机上，入口收到 `SIGINT`、`SIGTERM` 或 `SIGHUP` 时会停止本次启动的命令进程组，并等整组退出后才释放锁；独占命令正常返回时也先收尾残留子进程。短期凭据在整组退出后、原锁释放前退役。
 5 秒内未退出的进程组会被强制停止。中断结果不是通过，不得沿用中断前的绿灯。
 
 ## 写入边界

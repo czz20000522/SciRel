@@ -46,7 +46,10 @@ def test_kit_freezes_a_non_tip_commit_with_its_real_id(repo, tmp_path):
     assert _git(clone, "branch", "--show-current") == kit.BRANCH
     assert _git(clone, "rev-list", "--count", "HEAD") == "1"
     assert (clone / "module.py").read_text(encoding="utf-8") == "VALUE = 1\n"
-    assert first in (output / "KIT.md").read_text(encoding="utf-8")
+    instructions = (output / "KIT.md").read_text(encoding="utf-8")
+    assert first in instructions
+    assert "cd scirel\n   python3 scripts/dev.py run --exclusive python -B" in instructions
+    assert "--repo ." in instructions
 
 
 def test_kit_carries_no_path_of_the_building_machine(repo, tmp_path):

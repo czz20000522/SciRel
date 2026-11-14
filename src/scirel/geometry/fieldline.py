@@ -1001,6 +1001,14 @@ class FieldLine:
         return self.interpolate(np.linspace(self.ubound0, self.ubound1, npts))
 
 
+def _contour_lines(contourset, factory):
+    """把每个等值级别的分段构造成 ``factory(level, segment)`` 的列表。"""
+    return {
+        level: [factory(level, segment) for segment in contourset.allsegs[index]]
+        for index, level in enumerate(contourset.levels)
+    }
+
+
 def contour_points(contourset):
     """Contour field-line collection contour_points
 
@@ -1059,10 +1067,7 @@ def contour_points(contourset):
     >>> r=contour_points(c)
     >>> assert len(r[.2])==1
     """
-    return {
-        level: [FieldLine(level, segment) for segment in contourset.allsegs[index]]
-        for index, level in enumerate(contourset.levels)
-    }
+    return _contour_lines(contourset, FieldLine)
 
 
 class Boundary:
@@ -1225,8 +1230,9 @@ class HelperFieldLine:
 
     Notes
     -----
-    Fit an ordered parametric line; helper interpolation preserves nonfinite query behavior
-    while field curvature differentiates normalized BR,BZ along fitted geometry.
+    Fit an ordered parametric line; helper interpolation passes all source field values,
+    including nonfinite ones, to SciPy. Field curvature differentiates normalized BR,BZ
+    along fitted geometry.
 
     **Coordinates.** Planar R,Z in caller length units; psi is a contour label.
 
@@ -1794,7 +1800,4 @@ def helper_contour_points(contourset):
     >>> r=helper_contour_points(c)
     >>> assert len(r[.2])==1
     """
-    return {
-        level: [HelperFieldLine(level, segment) for segment in contourset.allsegs[index]]
-        for index, level in enumerate(contourset.levels)
-    }
+    return _contour_lines(contourset, HelperFieldLine)

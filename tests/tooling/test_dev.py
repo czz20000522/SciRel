@@ -359,6 +359,240 @@ def _wait_for_file(path: Path, timeout: float = 5) -> None:
     assert path.exists(), f"the owned subprocess did not reach {path.name}"
 
 
+def test_run_exclusive_is_an_explicit_cli_choice(monkeypatch):
+    module = _load()
+    calls = []
+    monkeypatch.setattr(
+        module, "run_locked", lambda command, *, exclusive: calls.append((command, exclusive)) or 0
+    )
+    assert module.main(["run", "--exclusive", "python", "-B", "probe.py"]) == 0
+    assert calls == [(["uv", "run", "--frozen", "python", "-B", "probe.py"], True)]
+
+
+@pytest.mark.parametrize(
+    "arguments", [["run", "python", "probe.py"], ["prepare"], ["pytest", "-q"]]
+)
+def test_ordinary_commands_keep_the_shared_lock(monkeypatch, arguments):
+    module = _load()
+    calls = []
+    monkeypatch.setattr(
+        module, "run_locked", lambda command, *, exclusive: calls.append(exclusive) or 0
+    )
+    assert module.main(arguments) == 0
+    assert calls == [False]
+
+
+def test_exclusive_descendant_checks_the_real_kernel_lock(tmp_path, monkeypatch):
+    """Real parent/child locks; prepare is omitted to avoid installing a fixture project."""
+    repository, worktree = _repository_with_worktree(tmp_path)
+    module = _load()
+    monkeypatch.setattr(module, "ROOT", repository)
+    monkeypatch.setattr(module, "prepare", lambda: 0)
+    probe = """
+import importlib.util, sys
+from pathlib import Path
+spec = importlib.util.spec_from_file_location('probe', sys.argv[1])
+module = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(module)
+assert module.require_exclusive(Path(sys.argv[2]))
+print('verified', flush=True)
+"""
+    # The child uses the linked worktree, so the protected identity must be clone-wide.
+    assert (
+        module.run_locked(
+            [sys.executable, "-B", "-c", probe, str(SCRIPT), str(worktree)], exclusive=True
+        )
+        == 0
+    )
+    assert not (module.runtime_paths()["locks"] / module.EXCLUSIVE_RECORD).exists()
+
+
+LOCKED_WRAPPER = """
+import importlib.util, sys
+from pathlib import Path
+spec = importlib.util.spec_from_file_location('locked_runner', sys.argv[1])
+module = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(module)
+module.ROOT = Path(sys.argv[2])
+module.prepare = lambda: 0
+raise SystemExit(module.run_locked(
+    [sys.executable, '-B', '-c', *sys.argv[4:]], exclusive=sys.argv[3] == 'True'))
+"""
+
+
+def _locked_command(repository, exclusive, child, *args):
+    return [
+        sys.executable,
+        "-B",
+        "-c",
+        LOCKED_WRAPPER,
+        str(SCRIPT),
+        str(repository),
+        str(exclusive),
+        child,
+        *map(str, args),
+    ]
+
+
+@pytest.mark.parametrize("holder,contender", [(False, True), (True, False), (True, True)])
+def test_real_process_conflicts_refuse_before_command_start(tmp_path, holder, contender):
+    repository, worktree = _repository_with_worktree(tmp_path)
+    ready, release, forbidden = [tmp_path / name for name in ("ready", "release", "forbidden")]
+    child = """
+import sys, time
+from pathlib import Path
+Path(sys.argv[1]).touch()
+while not Path(sys.argv[2]).exists():
+    time.sleep(0.02)
+"""
+    with (tmp_path / "holder.log").open("w") as output:
+        process = subprocess.Popen(
+            _locked_command(repository, holder, child, ready, release), stdout=output, stderr=output
+        )
+        try:
+            _wait_for_file(ready)
+            result = subprocess.run(
+                _locked_command(
+                    worktree,
+                    contender,
+                    "import sys; from pathlib import Path; Path(sys.argv[1]).touch()",
+                    forbidden,
+                ),
+                capture_output=True,
+                text=True,
+                timeout=5,
+            )
+            assert result.returncode == 75, result.stdout + result.stderr
+            assert "EXCLUSIVE" not in result.stdout
+            assert not forbidden.exists()
+        finally:
+            release.touch()
+            assert process.wait(timeout=5) == 0
+
+
+@pytest.mark.parametrize(
+    "mode", ["missing", "wrong", "wrong-clone", "free", "shared", "old-run", "other-exclusive"]
+)
+def test_exclusive_proof_rejects_stale_or_unprotected_markers(tmp_path, monkeypatch, mode):
+    repository, _ = _repository_with_worktree(tmp_path)
+    module = _load()
+    monkeypatch.setattr(module, "ROOT", repository)
+    monkeypatch.setattr(module, "prepare", lambda: 0)
+    probe = """
+import importlib.util, sys
+from pathlib import Path
+spec = importlib.util.spec_from_file_location('proof', sys.argv[1])
+module = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(module)
+try:
+    module.require_exclusive(Path(sys.argv[2]))
+except module.LockBusy:
+    raise SystemExit(23)
+raise SystemExit(0)
+"""
+    command = [sys.executable, "-B", "-c", probe, str(SCRIPT), str(repository)]
+    with module.acceptance_lock(exclusive=True), module.exclusive_credential() as token:
+        env = dict(os.environ, **{module.EXCLUSIVE_MARKER: token})
+        if mode == "missing":
+            env.pop(module.EXCLUSIVE_MARKER)
+        elif mode == "wrong":
+            env[module.EXCLUSIVE_MARKER] = "wrong"
+        elif mode == "wrong-clone":
+            other = tmp_path / "other"
+            _git(tmp_path, "clone", "--quiet", str(repository), str(other))
+            command[-1] = str(other)
+        if mode in ("missing", "wrong", "wrong-clone"):
+            done = subprocess.run(command, env=env, timeout=5)
+            assert done.returncode == 23
+            return
+    # Recreate the exact old credential to model an uncleanly terminated holder.
+    record = module.runtime_paths()["locks"] / module.EXCLUSIVE_RECORD
+    record.write_text(token)
+    if mode == "shared":
+        if sys.platform == "win32":
+            pytest.skip("Windows serializes locks; ordinary shared entry retires stale proof")
+        with module.acceptance_lock(exclusive=False):
+            record.write_text(token)
+            done = subprocess.run(command, env=env, timeout=5)
+    elif mode == "old-run":
+        monkeypatch.setenv(module.EXCLUSIVE_MARKER, token)
+        command[3] = "import os; assert 'SCIREL_EXCLUSIVE_TOKEN' not in os.environ\n" + probe
+        assert module.run_locked(command, exclusive=False) == 23
+        assert not record.exists()
+        return
+    elif mode == "other-exclusive":
+        with module.acceptance_lock(exclusive=True):
+            done = subprocess.run(command, env=env, timeout=5)
+    else:
+        done = subprocess.run(command, env=env, timeout=5)
+    assert done.returncode == 23
+
+
+@pytest.mark.skipif(os.name != "posix", reason="POSIX process group lifecycle")
+@pytest.mark.parametrize("interrupt", [False, True], ids=["normal-exit", "interrupted"])
+def test_exclusive_credential_outlives_descendants(tmp_path, monkeypatch, interrupt):
+    repository, _ = _repository_with_worktree(tmp_path)
+    module = _load()
+    monkeypatch.setattr(module, "ROOT", repository)
+    ready, stopping, release = [tmp_path / name for name in ("ready", "stopping", "release")]
+    descendant = """
+import signal, sys, time
+from pathlib import Path
+ready, stopping, release = map(Path, sys.argv[1:])
+def stop(signum, frame):
+    stopping.touch()
+    while not release.exists():
+        time.sleep(0.02)
+    raise SystemExit(0)
+signal.signal(signal.SIGTERM, stop)
+ready.touch()
+while True:
+    time.sleep(0.02)
+"""
+    leader = """
+import signal, subprocess, sys, time
+from pathlib import Path
+signal.signal(signal.SIGTERM, lambda *args: None)
+child = subprocess.Popen([sys.executable, '-B', '-c', *sys.argv[2:]])
+while not Path(sys.argv[3]).exists():
+    time.sleep(0.02)
+raise SystemExit(child.wait() if sys.argv[1] == 'True' else 0)
+"""
+    with (tmp_path / "lifecycle.log").open("w") as output:
+        process = subprocess.Popen(
+            _locked_command(
+                repository, True, leader, interrupt, descendant, ready, stopping, release
+            ),
+            stdout=output,
+            stderr=output,
+        )
+        try:
+            _wait_for_file(ready)
+            if interrupt:
+                process.send_signal(signal.SIGTERM)
+            _wait_for_file(stopping)
+            record = module.runtime_paths()["locks"] / module.EXCLUSIVE_RECORD
+            token = record.read_text()
+            monkeypatch.setenv(module.EXCLUSIVE_MARKER, token)
+            assert module.require_exclusive(repository, token) == token
+            assert process.poll() is None
+            with pytest.raises(module.LockBusy):
+                with module.acceptance_lock(exclusive=False):
+                    pass
+            release.touch()
+            assert process.wait(timeout=5) == (128 + signal.SIGTERM if interrupt else 0)
+            assert not record.exists()
+            with pytest.raises(module.LockBusy):
+                module.require_exclusive(repository, token)
+            with module.acceptance_lock(exclusive=True):
+                pass
+        finally:
+            release.touch()
+            if process.poll() is None:
+                process.send_signal(signal.SIGTERM)
+            process.wait(timeout=8)
+
+
 @pytest.mark.skipif(os.name != "posix", reason="POSIX termination and process groups")
 @pytest.mark.parametrize("early_exit", [False, True], ids=["leader-alive", "leader-exited"])
 @pytest.mark.parametrize("recovery_delay", [0.1, 0.8], ids=["before-deadline", "after-deadline"])

@@ -57,10 +57,12 @@ KIT_TEMPLATE = """\
 
    ```sh
    cd scirel
-   python3 scripts/dev.py run python -B scripts/validate_extraction_package.py <拆解包目录> --repo .
+   python3 scripts/dev.py run --exclusive python -B scripts/validate_extraction_package.py <拆解包目录> --repo .
    ```
 
    退出码为 0 才能把 `PACKAGE.md` 的状态写成 `done`。`--fast` 的退出码永远是 2，不算通过。
+   外层持有本 clone 的独占锁，覆盖候选检查和变异；`--repo` 必须属于同一 clone。
+   普通 `run` 的共享锁、裸环境标记和其他 clone 的独占均不能用于完整放行。
 
 方法见 `scirel/skills/extraction/scientific-computation-asset-extraction/SKILL.md`。
 """

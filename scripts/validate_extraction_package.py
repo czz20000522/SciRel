@@ -40,6 +40,7 @@ import shutil
 import subprocess
 import sys
 import tempfile
+import uuid
 
 SCRIPTS = Path(__file__).resolve().parent
 ROOT = SCRIPTS.parent
@@ -47,9 +48,18 @@ sys.path.insert(0, str(SCRIPTS))
 sys.path.insert(0, str(ROOT / "skills/development/scirel-acceptance/scripts"))
 
 import tickets  # noqa: E402
+from dev import EXCLUSIVE_MARKER, LockBusy, require_exclusive  # noqa: E402
 from precommit_check import FORBIDDEN  # noqa: E402
 from validate_asset_documents import ASSET_ID_RE, AssetDocumentError, load_document_set  # noqa: E402
-from check_all import CountsError, counts_summary, read_counts, steps as acceptance_steps  # noqa: E402
+from check_all import (  # noqa: E402
+    BindingError,
+    CountsError,
+    candidate_identity,
+    counts_summary,
+    dependency_digests,
+    read_counts,
+    steps as acceptance_steps,
+)
 
 CONCLUSIONS = ("已有", "新 method", "全新", "不收")
 IMPLEMENTED = ("新 method", "全新")
@@ -623,10 +633,12 @@ def check_contracts(
 
 def _candidate_environment(tree: Path) -> dict[str, str]:
     """Use the frozen checkout's runtime locations, never the caller's editable install."""
+    token = require_exclusive(tree)
     developer = runpy.run_path(str(tree / "scripts/dev.py"))
     developer["ensure_runtime"]()
     env = developer["environment"]()
     env["PYTHONPATH"] = str(tree / "src")
+    env[EXCLUSIVE_MARKER] = token
     return env
 
 
@@ -640,26 +652,88 @@ def _run_in_candidate(tree: Path, command: list[str]) -> subprocess.CompletedPro
     )
 
 
-def run_full_check(tree: Path, report: Report) -> None:
+def run_full_check(tree: Path, report: Report, *, exclusive_token: str | None = None) -> None:
     script = tree / "skills/development/scirel-acceptance/scripts/check_all.py"
-    result_path = report.directory() / "acceptance.json"
+    run_id = uuid.uuid4().hex
+    result_path = report.directory() / f"acceptance-{run_id}.json"
     try:
-        done = _run_in_candidate(tree, ["python", "-B", str(script), "--report", str(result_path)])
-    except OSError as error:
+        token = require_exclusive(tree, exclusive_token)
+        before = candidate_identity(tree)
+        environment_before = dependency_digests(tree)
+        done = _run_in_candidate(
+            tree, ["python", "-B", str(script), "--run-id", run_id, "--report", str(result_path)]
+        )
+    except (OSError, BindingError, LockBusy) as error:
         report.fail("full check", f"cannot start the candidate environment: {error}")
         report.section("full check", "FAIL", "candidate environment did not start")
         return
     log = report.output("full-check", done)
     try:
+        require_exclusive(tree, token)
+        after = candidate_identity(tree)
+        environment_after = dependency_digests(tree)
         result = json.loads(result_path.read_text(encoding="utf-8"))
+        runtime = result["environment"]["before"]
+        # A frozen candidate may pin a different interpreter from this receiver. Compare its
+        # own two observations and independently checked file hashes, not our Python version.
+        if (
+            runtime != result["environment"]["after"]
+            or set(runtime) != {"python", "platform", "architecture", *environment_before}
+            or set(runtime["python"]) != {"implementation", "version"}
+            or not all(
+                isinstance(value, str) and value
+                for value in (
+                    runtime["platform"],
+                    runtime["architecture"],
+                    *runtime["python"].values(),
+                )
+            )
+            or any(runtime[key] != value for key, value in environment_before.items())
+            or environment_before != environment_after
+        ):
+            raise ValueError(
+                "candidate runtime identity or dependency digests are missing or changed"
+            )
+        if (
+            result["run_id"] != run_id
+            or result["candidate"] != {"before": before, "after": after}
+            or before != after
+            or before["dirty"]
+            or result["binding_errors"] != []
+            or result["evidence"] != "clean_candidate"
+        ):
+            raise ValueError(
+                "result does not bind this invocation to the unchanged clean candidate and runtime"
+            )
         records = result["steps"]
-        expected = [step.name for step in acceptance_steps(report.directory())]
+        # Reconstruct the current plan with the candidate's paths, not the frozen base's paths.
+        # Temporary build/count paths are supplied by this run, but must stay in its runtime.
+        argv = records[0]["argv"]
+        executable = Path(argv[0])
+        python_bin = tree / ".runtime/venv" / ("Scripts" if sys.platform == "win32" else "bin")
+        count_arguments = [arg for arg in argv if arg.startswith("--scirel-counts=")]
+        if (
+            executable.parent != python_bin
+            or not re.fullmatch(r"python(?:\d+(?:\.\d+)*)?(?:\.exe)?", executable.name)
+            or len(count_arguments) != 1
+        ):
+            raise ValueError("tests argv does not identify the candidate interpreter and counts")
+        counts_location = Path(count_arguments[0].split("=", 1)[1])
+        output = counts_location.parent
+        if counts_location.name != "tests-counts.json" or output.parent != tree / ".runtime/tmp":
+            raise ValueError("tests argv does not use the candidate temporary directory")
+        plan = acceptance_steps(output, root=tree, executable=str(executable))
         if (
             result.get("schema") != "scirel.acceptance.v1"
             or result.get("exit_code") != done.returncode
-            or [step["name"] for step in records] != expected
+            or [step["name"] for step in records] != [step.name for step in plan]
         ):
             raise ValueError("required check steps are missing or disagree with the exit status")
+        if any(
+            record["started"] is not True or record["argv"] != step.command
+            for record, step in zip(records, plan, strict=True)
+        ):
+            raise ValueError("a required step was not started with its planned argv")
         counts_path = report.directory() / "tests-counts.json"
         counts_path.write_text(json.dumps(result["tests"]), encoding="utf-8")
         counts = read_counts(counts_path)
@@ -674,7 +748,17 @@ def run_full_check(tree: Path, report: Report) -> None:
             raise ValueError("; ".join(incomplete) or f"check exited {done.returncode}")
         detail = counts_summary(len(records), len(records), counts)
         report.section("full check", "PASS", f"{detail}; log {log}")
-    except (OSError, ValueError, KeyError, TypeError, AttributeError, CountsError) as error:
+    except (
+        OSError,
+        ValueError,
+        KeyError,
+        IndexError,
+        TypeError,
+        AttributeError,
+        CountsError,
+        BindingError,
+        LockBusy,
+    ) as error:
         report.fail(
             "full check",
             f"unusable or failed execution result: {error}; read {log} and rerun after fixing it",
@@ -682,25 +766,50 @@ def run_full_check(tree: Path, report: Report) -> None:
         report.section("full check", "FAIL", f"exit {done.returncode}; log {log}")
 
 
-def run_mutation(tree: Path, asset_ids: list[str], report: Report) -> None:
-    if not asset_ids:
-        report.section("mutation", "PASS", "no new or extended contracts")
+def run_mutation(
+    tree: Path, asset_ids: list[str], report: Report, *, exclusive_token: str | None = None
+) -> None:
+    try:
+        token = require_exclusive(tree, exclusive_token)
+    except LockBusy as error:
+        report.fail("mutation", str(error))
+        report.section("mutation", "FAIL", "exclusive lock verification failed")
         return
-    done = _run_in_candidate(
-        tree,
-        [
-            "python",
-            "-B",
-            str(SCRIPTS / "mutation_check.py"),
-            "--root",
-            str(tree),
-            "--log-dir",
-            str(report.directory() / "mutation"),
-            *asset_ids,
-        ],
-    )
+    if not asset_ids:
+        try:
+            require_exclusive(tree, token)
+        except LockBusy as error:
+            report.fail("mutation", str(error))
+            report.section("mutation", "FAIL", "exclusive lock verification failed")
+        else:
+            report.section("mutation", "PASS", "no new or extended contracts")
+        return
+    try:
+        done = _run_in_candidate(
+            tree,
+            [
+                "python",
+                "-B",
+                str(SCRIPTS / "mutation_check.py"),
+                "--root",
+                str(tree),
+                "--log-dir",
+                str(report.directory() / "mutation"),
+                *asset_ids,
+            ],
+        )
+    except (OSError, LockBusy) as error:
+        report.fail("mutation", str(error))
+        report.section("mutation", "FAIL", "candidate environment did not start")
+        return
     lines = (done.stdout + done.stderr).strip().splitlines()
     log = report.output("mutation", done)
+    try:
+        require_exclusive(tree, token)
+    except LockBusy as error:
+        report.fail("mutation", str(error))
+        report.section("mutation", "FAIL", f"exclusive lock verification failed; log {log}")
+        return
     if done.returncode:
         for line in lines[:-1]:
             if not line.startswith("PASSED"):
@@ -724,6 +833,12 @@ def main() -> int:
     args = parser.parse_args()
     package, repo = args.package.resolve(), args.repo.resolve()
     report = Report()
+    token = None
+    if not args.fast:
+        try:
+            token = require_exclusive(repo)
+        except LockBusy as error:
+            report.fail("full check", str(error))
     if check_structure(package, report):
         info = check_package_md(package, report)
         entries = check_manifest(package, report, info)
@@ -735,7 +850,7 @@ def main() -> int:
         workdir = Path(tempfile.mkdtemp(prefix="scirel-package-", dir=temporary))
         try:
             tree, frozen, changed = (None, set(), [])
-            if info.get("commit"):
+            if info.get("commit") and (args.fast or token is not None):
                 tree, frozen, changed = apply_patch(package, repo, info["commit"], workdir, report)
             if tree is not None:
                 implemented = check_contracts(package, tree, frozen, entries, changed, report)
@@ -744,11 +859,11 @@ def main() -> int:
                     report.section("full check", "NOT_RUN", reason)
                     report.section("mutation", "NOT_RUN", reason)
                 else:
-                    run_full_check(tree, report)
+                    run_full_check(tree, report, exclusive_token=token)
                     if report.errors:
                         report.section("mutation", "NOT_RUN", "fix the full check first")
                     else:
-                        run_mutation(tree, implemented, report)
+                        run_mutation(tree, implemented, report, exclusive_token=token)
         finally:
             if (workdir / "tree").exists():
                 _git(["worktree", "remove", "--force", str(workdir / "tree")], repo)

@@ -624,7 +624,7 @@
   },
   {
    "asset_id": "scirel.fieldline.contour-points",
-   "source_sha256": "1bf3d28885d23208ac4ffe84415ebd93b998434fafd04e28450966aa3513f374",
+   "source_sha256": "64e165d37d6c99ea12fd4d6917ab2030c533a9bf83a275b5f9dee84cf2dc0a3c",
    "summary": "将每个等值级别映射为拟合后的 FieldLine 对象列表。",
    "definition": "对每个等值级别，在对应的 allsegs 条目中为每条线段构造一个 FieldLine。",
    "model": "直接构造集合，不重建场。",
@@ -676,7 +676,7 @@
      "交点搜索限于拟合参数区间；无交点或多根的情况均被拒绝，切触情况与根的完备性尚未验证。",
      "任意轮廓拓扑、磁轴极限和物理稳定性均未验证。",
      "get_kappa_n_2 要求均匀 xy 网格和非零磁通梯度。",
-     "磁力线路径的选择：轴对称场中，过某点的磁力线位于过该点的等值线 psi = R*A_phi = 常数 上。本类对调用者给出的等值线顶点拟合一条光滑路径，并不积分磁力线方程。只需要磁力线上的点时，psi 的等值线就够了；需要弧长、沿线插值的场、曲率或交点时才用这个拟合。FieldLine 与 HelperFieldLine 拟合的是同一条路径，区别只在辅助插值如何处理非有限查询。独立检查方法：从某个顶点积分 dR/ds = B_R/|B_p|、dZ/ds = B_Z/|B_p|，确认 psi 保持不变。"
+     "磁力线路径的选择：轴对称场中，过某点的磁力线位于过该点的等值线 psi = R*A_phi = 常数 上。本类对调用者给出的等值线顶点拟合一条光滑路径，并不积分磁力线方程。只需要磁力线上的点时，psi 的等值线就够了；需要弧长、沿线插值的场、曲率或交点时才用这个拟合。相同输入顶点和默认拟合设置下，FieldLine 与 HelperFieldLine 使用相同的二次样条拟合过程，均采样为 1000 点。FieldLine 构造器另接受 u、s、k、npts 拟合参数，HelperFieldLine 构造器不接受这些参数。interpolate_onto 中，FieldLine 过滤非有限源场值，HelperFieldLine 则把全部源场值传给 SciPy。get_kappa_n 在 FieldLine 中返回形状为 (npts, 2) 的数组，在 HelperFieldLine 中返回由两个形状为 (npts,) 的数组组成的元组 (kappa_r, kappa_z)。只有 FieldLine 提供磁通梯度曲率方法 get_kappa_n_2。独立检查方法：从某个顶点积分 dR/ds = B_R/|B_p|、dZ/ds = B_Z/|B_p|，确认 psi 保持不变。"
     ],
     "evidence_ceiling": "仅针对具名样例的数值证据；不建立任意输入正确性或实验物理验证。"
    },
@@ -687,7 +687,7 @@
   },
   {
    "asset_id": "scirel.fieldline.fieldline",
-   "source_sha256": "02c87886177bee1e3294b191ce99fa288ce86450341d36f03a2c27857dc1ec1f",
+   "source_sha256": "889c6c70b947cc301554d005bc431aebda4f8f83134e1246e9e965eeff2a1a91",
    "summary": "拟合轮廓路径，并提供弧长、场插值、梯度、曲率和有界交点诊断。",
    "definition": "拟合有序参数线；场曲率沿拟合几何对归一化插值 BR、BZ 求导。",
    "model": "默认二次样条、可选网格插值、局部多项式曲率导数，以及独立的均匀网格磁通梯度曲率路径。",
@@ -750,7 +750,7 @@
      "极坐标投影由单独入口提供，显式给定角度并拒绝原点；磁轴极限仍未验证。",
      "在固定插值场上加密路径采样不保证物理曲率误差单调减小；四项固定插值加密案例仍记录为失败，与空间网格加密判据分开。",
      "局部四次场曲率导数要求足够光滑的真实磁场线；公开 d_ds 保留折线弧长上的三点合同，两者均不保证普遍曲率误差。",
-     "磁力线路径的选择：轴对称场中，过某点的磁力线位于过该点的等值线 psi = R*A_phi = 常数 上。本类对调用者给出的等值线顶点拟合一条光滑路径，并不积分磁力线方程。只需要磁力线上的点时，psi 的等值线就够了；需要弧长、沿线插值的场、曲率或交点时才用这个拟合。FieldLine 与 HelperFieldLine 拟合的是同一条路径，区别只在辅助插值如何处理非有限查询。独立检查方法：从某个顶点积分 dR/ds = B_R/|B_p|、dZ/ds = B_Z/|B_p|，确认 psi 保持不变。"
+     "磁力线路径的选择：轴对称场中，过某点的磁力线位于过该点的等值线 psi = R*A_phi = 常数 上。本类对调用者给出的等值线顶点拟合一条光滑路径，并不积分磁力线方程。只需要磁力线上的点时，psi 的等值线就够了；需要弧长、沿线插值的场、曲率或交点时才用这个拟合。相同输入顶点和默认拟合设置下，FieldLine 与 HelperFieldLine 使用相同的二次样条拟合过程，均采样为 1000 点。FieldLine 构造器另接受 u、s、k、npts 拟合参数，HelperFieldLine 构造器不接受这些参数。interpolate_onto 中，FieldLine 过滤非有限源场值，HelperFieldLine 则把全部源场值传给 SciPy。get_kappa_n 在 FieldLine 中返回形状为 (npts, 2) 的数组，在 HelperFieldLine 中返回由两个形状为 (npts,) 的数组组成的元组 (kappa_r, kappa_z)。只有 FieldLine 提供磁通梯度曲率方法 get_kappa_n_2。独立检查方法：从某个顶点积分 dR/ds = B_R/|B_p|、dZ/ds = B_Z/|B_p|，确认 psi 保持不变。"
     ],
     "evidence_ceiling": "本仓库自身测试的具名样例技术证据；不建立任意输入正确性、实验验证或发行批准。"
    },
@@ -823,7 +823,7 @@
   },
   {
    "asset_id": "scirel.fieldline.helper-contour-points",
-   "source_sha256": "3c73420308910acb544ac01db6d8b9d8b94086bf5387d247528bd065a78ee587",
+   "source_sha256": "9d71f1863a3f6f7308b18140c8acb38398d2499055a0f1259aeb4db56e7dabba",
    "summary": "将每个等值级别映射为拟合后的 HelperFieldLine 对象列表。",
    "definition": "对每个等值级别，在 allsegs 中为每条线段构造一个 HelperFieldLine。",
    "model": "直接构造集合，不重建场。",
@@ -875,7 +875,7 @@
      "交点搜索限于拟合参数区间，无交点或多根的情况均被拒绝；切触情况与根的完备性未经验证。",
      "任意轮廓拓扑、磁轴极限和物理稳定性未验证。",
      "HelperFieldLine 没有磁通梯度曲率入口，此集合仅继承基于磁场的曲率方法。",
-     "磁力线路径的选择：轴对称场中，过某点的磁力线位于过该点的等值线 psi = R*A_phi = 常数 上。本类对调用者给出的等值线顶点拟合一条光滑路径，并不积分磁力线方程。只需要磁力线上的点时，psi 的等值线就够了；需要弧长、沿线插值的场、曲率或交点时才用这个拟合。FieldLine 与 HelperFieldLine 拟合的是同一条路径，区别只在辅助插值如何处理非有限查询。独立检查方法：从某个顶点积分 dR/ds = B_R/|B_p|、dZ/ds = B_Z/|B_p|，确认 psi 保持不变。"
+     "磁力线路径的选择：轴对称场中，过某点的磁力线位于过该点的等值线 psi = R*A_phi = 常数 上。本类对调用者给出的等值线顶点拟合一条光滑路径，并不积分磁力线方程。只需要磁力线上的点时，psi 的等值线就够了；需要弧长、沿线插值的场、曲率或交点时才用这个拟合。相同输入顶点和默认拟合设置下，FieldLine 与 HelperFieldLine 使用相同的二次样条拟合过程，均采样为 1000 点。FieldLine 构造器另接受 u、s、k、npts 拟合参数，HelperFieldLine 构造器不接受这些参数。interpolate_onto 中，FieldLine 过滤非有限源场值，HelperFieldLine 则把全部源场值传给 SciPy。get_kappa_n 在 FieldLine 中返回形状为 (npts, 2) 的数组，在 HelperFieldLine 中返回由两个形状为 (npts,) 的数组组成的元组 (kappa_r, kappa_z)。只有 FieldLine 提供磁通梯度曲率方法 get_kappa_n_2。独立检查方法：从某个顶点积分 dR/ds = B_R/|B_p|、dZ/ds = B_Z/|B_p|，确认 psi 保持不变。"
     ],
     "evidence_ceiling": "仅针对具名样例的数值证据；不建立任意输入正确性或实验物理验证。"
    },
@@ -886,9 +886,9 @@
   },
   {
    "asset_id": "scirel.fieldline.helper-fieldline",
-   "source_sha256": "7dc8c5e95db2a45536e8bb697389ab665bce9adb335f801e9168ba29c139dac4",
+   "source_sha256": "a626365fa98bb39fe8a50236542c5c9c3bc51c497a95c541d757d77f5c0ed736",
    "summary": "拟合轮廓路径，并提供辅助插值、弧长、梯度、场曲率和有界交点诊断。",
-   "definition": "拟合有序参数线；辅助插值保留查询值为非有限时的原有行为，同时场曲率沿拟合几何对归一化插值 BR、BZ 求导。",
+   "definition": "拟合有序参数线；辅助插值将全部源场值（包括非有限值）传给 SciPy，同时场曲率沿拟合几何对归一化后的插值 BR、BZ 求导。",
    "model": "固定为 1000 点的二次默认样条，支持选择 linear、nearest 或 cubic 插值及局部多项式曲率导数。",
    "assumptions": [
     "有限顶点足以进行 splprep 拟合，且相邻拟合样本保持不同。",
@@ -949,7 +949,7 @@
      "HelperFieldLine 只提供基于磁场的曲率；磁通梯度曲率属于独立 FieldLine 变体。采样及梯度／曲率消费遵从显式方法选择。",
      "在固定插值场上加密路径采样不保证物理曲率误差单调减小；四项固定插值加密案例仍记录为失败，与空间网格加密判据分开。",
      "局部四次场曲率导数要求足够光滑的真实磁场线；公开 d_ds 保留折线弧长上的三点合同，两者均不保证普遍曲率误差。",
-     "磁力线路径的选择：轴对称场中，过某点的磁力线位于过该点的等值线 psi = R*A_phi = 常数 上。本类对调用者给出的等值线顶点拟合一条光滑路径，并不积分磁力线方程。只需要磁力线上的点时，psi 的等值线就够了；需要弧长、沿线插值的场、曲率或交点时才用这个拟合。FieldLine 与 HelperFieldLine 拟合的是同一条路径，区别只在辅助插值如何处理非有限查询。独立检查方法：从某个顶点积分 dR/ds = B_R/|B_p|、dZ/ds = B_Z/|B_p|，确认 psi 保持不变。"
+     "磁力线路径的选择：轴对称场中，过某点的磁力线位于过该点的等值线 psi = R*A_phi = 常数 上。本类对调用者给出的等值线顶点拟合一条光滑路径，并不积分磁力线方程。只需要磁力线上的点时，psi 的等值线就够了；需要弧长、沿线插值的场、曲率或交点时才用这个拟合。相同输入顶点和默认拟合设置下，FieldLine 与 HelperFieldLine 使用相同的二次样条拟合过程，均采样为 1000 点。FieldLine 构造器另接受 u、s、k、npts 拟合参数，HelperFieldLine 构造器不接受这些参数。interpolate_onto 中，FieldLine 过滤非有限源场值，HelperFieldLine 则把全部源场值传给 SciPy。get_kappa_n 在 FieldLine 中返回形状为 (npts, 2) 的数组，在 HelperFieldLine 中返回由两个形状为 (npts,) 的数组组成的元组 (kappa_r, kappa_z)。只有 FieldLine 提供磁通梯度曲率方法 get_kappa_n_2。独立检查方法：从某个顶点积分 dR/ds = B_R/|B_p|、dZ/ds = B_Z/|B_p|，确认 psi 保持不变。"
     ],
     "evidence_ceiling": "本仓库自身测试的具名样例技术证据；不建立任意输入正确性、实验验证或发行批准。"
    },
