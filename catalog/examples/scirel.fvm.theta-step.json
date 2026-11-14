@@ -213,7 +213,7 @@
  "verification": {
   "scope": [
    "Independent flux conservation, exact linear/constant states, uniform manufactured diffusion convergence and theta causality checks",
-   "Direct failure regressions distinguish finite-input overflow in the implicit matrix or right-hand side (FloatingPointError) from nonfinite input (ValueError), under NumPy warn/ignore/raise policies. The explicit branch retains its existing overflow class, and failed implicit matrix/right-hand-side construction leaves the caller's variable unchanged."
+   "Under NumPy warn/ignore/raise policies, finite-input overflow in the implicit matrix or right-hand side raises FloatingPointError, and the explicit branch retains its existing overflow class. Separately, two nonfinite-input samples under the default policy raise ValueError. Failed implicit matrix/right-hand-side construction leaves the caller's variable values unchanged."
   ],
   "tests": [
    "tests/fvm/test_fvm.py",

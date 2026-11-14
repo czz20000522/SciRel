@@ -434,7 +434,7 @@
      "units": "Q"
     }
    ],
-   "source_sha256": "e64c8af045119595050266a87b58bc62f9e84fa013132232ae42cae0c55a85c0",
+   "source_sha256": "36c711194aa8798c23e9befb616ddb07647152e0555bc1fc7b6da38bc7271cd8",
    "summary": "用分别给出的旧、新线性算子推进单个通道一步。",
    "verification": {
     "evidence_ceiling": "仅支持所列离散不变量与均匀网格制造解收敛；不声称任意网格稳定性、精度或完整输运模拟。",
@@ -444,7 +444,7 @@
     ],
     "scope": [
      "独立检查通量守恒、线性/常数精确态、均匀网格制造扩散解收敛和 theta 时间因果性。",
-     "直接失败回归在 NumPy warn/ignore/raise 策略下区分有限输入导致的隐式矩阵或右端项溢出（FloatingPointError）与非有限输入（ValueError）；显式分支保留原溢出异常类型，隐式矩阵或右端项构造失败不改变调用者的变量。"
+     "在 NumPy warn/ignore/raise 三种策略下，有限输入导致的隐式矩阵或右端项溢出抛 FloatingPointError，显式分支保留原溢出异常类型；另有两个非有限输入样本在默认策略下抛 ValueError。隐式矩阵或右端项构造失败不改变调用者的变量值。"
     ],
     "tests": [
      "tests/fvm/test_fvm.py",
