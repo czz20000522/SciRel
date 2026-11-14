@@ -146,7 +146,7 @@ def compute_equilibrium(
 
     Notes
     -----
-    Pressure-only axisymmetric current closure j_phi=R dP/dpsi under psi=R A_phi. Update residual is ||psi_new-psi_old||_2/abs(edge_new). Closure residual is ||I_new-I_target(psi_new,new fit)||_2/||I_target||_2, with zero target/zero error mapped to zero and zero target/nonzero current mapped to an infinite residual and nonfinite terminal failure. Convergence requires both residuals <=tol. State is call-local; update fit derivative, clip, relaxed currents, Green contraction, new flux, edge/fit and both residuals in order; stop on convergence, invalid state or maxiter.
+    Pressure-only axisymmetric current closure j_phi=R dP/dpsi under psi=R A_phi. Update residual is ||psi_new-psi_old||_2/abs(edge_new). Closure residual is ||I_new-I_target(psi_new,new fit)||_2/||I_target||_2, with zero target/zero error mapped to zero and zero target/nonzero current mapped to an infinite residual and nonfinite terminal failure. Convergence requires both residuals <=tol. Even at maxiter=0, the initial pressure fit and nonzero psi_edge gate run first. Initial-fit failure or psi_edge=0 returns status=nonfinite, iterations=0 and both residuals NaN; only a valid initial state with no updates returns maxiter with both residuals +inf. State is call-local; update fit derivative, clip, relaxed currents, Green contraction, new flux, edge/fit and both residuals in order; stop on convergence, invalid state or maxiter.
 
     Pressure-versus-radius feedback with InterpolatedUnivariateSpline and a supplied Green matrix
 

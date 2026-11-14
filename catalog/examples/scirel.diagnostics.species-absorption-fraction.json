@@ -156,11 +156,11 @@
    "tests/diagnostics/test_species_absorption_fraction.py",
    "tests/cross_domain/test_legacy_admission_regressions.py"
   ],
-  "evidence_ceiling": "Bounded to the declared relation: Sum the four supplied real binary64 powers, divide each by the total and scale by one hundred. Signed totals use the exact rational sum before binary64 rounding; same-sign ordinary totals retain the established floating reduction…. Evidence: test_species_absorption_fraction.py, test_legacy_admission_regressions.py (19 recorded test functions; bound-file coverage; independent analytic/high-precision oracle); the contract example ran. Excluded scope: Ledgers whose total is exactly zero, for which no percentage result is defined; Ledgers with fewer or more than four species.",
+  "evidence_ceiling": "Direct ledger arithmetic, ordering, validation and Result assertions are in tests/diagnostics/test_species_absorption_fraction.py (including the parametrized test_u3_t01_fraction_uses_the_derived_total). Named signed-cancellation, intermediate-overflow and subnormal-share regressions are in tests/cross_domain/test_legacy_admission_regressions.py. These assertions establish the listed finite ledger cases; no current optional external-comparison execution/skip mechanism or experimental validation is established.",
   "known_limitations": [
    "The species count is fixed at four; no general-length ledger is supported.",
    "The zero-total branch is unavailable by design, so a physically zero-absorption run cannot be represented.",
-   "The optional cross-implementation comparison runs only when an external implementation is reachable; it is skipped rather than silently passed when it is not.",
+   "UNKNOWN: no replayable external-implementation comparison was located in the bound tests or inspected local history; no environment-gated comparison/skip path is provided. Direct evidence is tests/diagnostics/test_species_absorption_fraction.py::test_u3_t01_fraction_uses_the_derived_total and the signed-cancellation/range assertions in tests/cross_domain/test_legacy_admission_regressions.py, including test_exact_signed_sum_survives_intermediate_overflow.",
    "The independent analytic comparison does not replace an external experimental reference."
   ]
  }

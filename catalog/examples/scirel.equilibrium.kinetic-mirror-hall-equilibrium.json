@@ -110,7 +110,7 @@
   },
   {
    "name": "tol",
-   "description": "Outer Hall relative flux-change stopping threshold.",
+   "description": "Outer unrelaxed flux-map fixed-point residual threshold, also reevaluated on returned psi; the relaxed flux step and inner inertia residual are separate quantities.",
    "units": "dimensionless",
    "shape": "scalar",
    "dtype": "finite real scalar",
@@ -220,7 +220,7 @@
   },
   {
    "name": "inertia_tolerance",
-   "description": "Hall local inertia stopping threshold.",
+   "description": "Hall local unrelaxed current-map residual threshold, passed unchanged to the leaf; distinct from the outer flux-map residual.",
    "units": "dimensionless",
    "shape": "scalar",
    "dtype": "finite real scalar",

@@ -126,7 +126,7 @@
   "evidence_ceiling": "The tests establish the discrete fit, clipping and failure contract on tested samples. Bit-exact agreement with the in-file independent evaluation of the same expressions holds on the compared grids only. No external atomic-physics oracle validates the fit; public distribution licensing is absent.",
   "known_limitations": [
    "No external atomic-physics oracle is bound; the fit is not independently validated as a physical rate model.",
-   "Out-of-fit-range values silently repeat endpoint rates rather than extrapolating or failing.",
+   "Admissible inputs below the lower fit endpoint return that endpoint silently; inputs above the upper endpoint return the clipped value and emit RuntimeWarning.",
    "The fitted rate is not derived at runtime from the separate molecular cross-section asset or the mesh rate-average asset.",
    "Public distribution licensing remains pending.",
    "No environment-gated external-implementation comparison exists in this repository; any earlier external comparison is not replayed by the maintained tests.",

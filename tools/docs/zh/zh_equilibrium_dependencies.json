@@ -4,7 +4,7 @@
  "records": [
   {
    "asset_id": "scirel.equilibrium.compute-equilibrium",
-   "source_sha256": "2d7ac8fdcbd8cf62055dae0ed6d6b88484d0c7a2ac530a7b305de0744c9e5ae0",
+   "source_sha256": "9868f6711aa195d5a3682cb43ff45dd3d3ff900d4593552e72301a423f053f14",
    "summary": "在给定真空磁通与 Green 矩阵下执行有界轴对称压力—电流反馈，并返回显式终态。",
    "definition": "压力闭合为 j_phi=R dP/dpsi，其中 psi=R A_phi。更新残差为 ||psi_new-psi_old||_2/abs(edge_new)。闭合残差为 ||I_new-I_target(psi_new,新拟合)||_2/||I_target||_2：目标为零且误差为零时取零；目标为零但电流非零时残差为无穷，并给出非有限终态。只有两个残差同时不超过 tol 才算收敛。状态只在本次调用内有效；依次计算拟合导数、应用掩膜、更新松弛电流、做 Green 收缩、更新磁通与边界/拟合，并求两个残差，在收敛、状态无效或达到 maxiter 时停止。",
    "model": "基于压力—半径反馈，使用 InterpolatedUnivariateSpline 和调用者提供的 Green 矩阵。",
@@ -130,7 +130,7 @@
    "failure_semantics": {
     "invalid_input": "形状、dtype、网格、参数、掩膜或合同违规时，在迭代前抛出 ValueError。",
     "runtime_failure": "导数、电流、Green 收缩、拟合或残差出现非有限值时，终态记为 nonfinite；不会把非有限压力导数静默替换为零。",
-    "nonconvergence": "达到 maxiter 时返回状态 maxiter，并带上最后一次局部状态与残差；maxiter=0 时残差为 +inf。",
+    "nonconvergence": "到迭代上限仍未通过双残差门禁时返回 maxiter 及最后状态。maxiter=0 仍先执行初态压力拟合与非零 psi_edge 检查；初拟合失败或 psi_edge=0 返回 status=nonfinite、iterations=0、两残差 NaN。只有初态有效且未更新时才返回 maxiter 和两残差 +inf。",
     "partial_results": "明确不接受 nonfinite 结果；Green 运算失败时沿用此前有限的磁通/电流对。历史只包含已完成的成对残差求值。"
    },
    "example": {

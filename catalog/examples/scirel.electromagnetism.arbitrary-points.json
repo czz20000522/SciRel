@@ -22,7 +22,7 @@
   "known_limitations": [
    "No experimental validation of source device constants, conductor area proxy or material magnetization is claimed.",
    "Direct geometry/weight arrays can be mutated; cache content changes are detected, but mutation that desynchronizes parameterized geometry from its parameters is outside the supported contract.",
-   "Unknown **kwargs are permissive where inherited; no arbitrary keyword semantic claim.",
+   "Only declared inherited current, weights and mesh keywords are accepted; unknown keywords raise TypeError through CurrentFilamentSet. This follows the constructor signature and forwarding path; a dedicated unknown-keyword assertion for this class is not bound.",
    "Plotting/patch, simplify/clone, multiprocessing, electrodes and persistent sweeps are excluded or unresolved.",
    "No scientific, experimental or licensing approval is claimed."
   ]
@@ -134,7 +134,7 @@
   ]
  },
  "failure_semantics": {
-  "invalid_input": "ValueError is raised for malformed or nonfinite points, currents, weights, meshes, or active-filament coincidences; unsupported simplify or device additions raise NotImplementedError.",
+  "invalid_input": "ValueError is raised for malformed or nonfinite points, currents, weights, meshes, or active-filament coincidences; unsupported simplify or device additions raise NotImplementedError. Unknown constructor keywords raise TypeError.",
   "runtime_failure": "FloatingPointError from a nonrepresentable Green response propagates; failed parameterized updates restore the previous valid geometry.",
   "nonconvergence": "Not applicable; construction and field evaluation are direct.",
   "partial_results": "A failed constructor returns no object; atomic updates keep the previous valid state."

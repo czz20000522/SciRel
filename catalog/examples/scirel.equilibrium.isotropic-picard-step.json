@@ -195,7 +195,7 @@
  "verification": {
   "scope": [
    "Direct example checks the area-weighted current, identity-Green flux and normalized residual for one four-cell grid.",
-   "A graph-level one-cell current projection matches a selected off-source circular-filament psi=R A_phi response.",
+   "tests/equilibrium/test_isotropic_picard_step.py::test_reviewed_relation_example directly calls the step with four cells and an artificial identity Green matrix. tests/cross_domain/test_legacy_six_absorption.py::test_picard_nonfinite_state_fails_instead_of_vacuum_mask covers its nonfinite arithmetic rejection. The full-solver composition cases do not directly call this legacy step.",
    "Direct test checks rejection of an incomplete call.",
    "Finite inputs that overflow current, Green contraction or total flux are independently reproduced as explicit failures.",
    "Return-type regression checks the top-level scirel._result.Result, key order and attribute access while retaining the existing numerical, state and failure assertions."
@@ -205,12 +205,13 @@
    "tests/cross_domain/isotropic_pressure_flux/test_composition_isotropic_pressure_flux.py",
    "tests/cross_domain/test_legacy_six_absorption.py"
   ],
-  "evidence_ceiling": "Bounded to one relaxed plasma-cell current step through a supplied flux Green matrix and flux-change measurement. Evidence: `test_isotropic_picard_step.py` contains 2 test functions, 1 of which references `pressure_flux_picard_step`, and is bound only by this asset; `test_composition_isotropic_pressure_flux.py` contains 10 test functions, none of which references `pressure_flux_picard_step`, and is shared by 2 assets; `test_legacy_six_absorption.py` contains 18 test functions, 1 of which references `pressure_flux_picard_step`, and is shared by 8 assets; the bounded example was executed by this audit. Oracle: independent analytic fixtures and frozen source regressions in the bound files. It does not establish an anisotropic pressure closure, a complete Picard solver/convergence decision, or a boundary-condition solve.",
+  "evidence_ceiling": "tests/equilibrium/test_isotropic_picard_step.py::test_reviewed_relation_example directly calls the step with four cells and an artificial identity Green matrix. tests/cross_domain/test_legacy_six_absorption.py::test_picard_nonfinite_state_fails_instead_of_vacuum_mask covers its nonfinite arithmetic rejection. The full-solver composition cases do not directly call this legacy step. This is bounded discrete arithmetic evidence, not the missing independent off-source filament normalization check or complete-solver convergence evidence.",
   "known_limitations": [
    "The caller supplies pressure_derivative, g_psi, vacuum flux and the Picard iteration policy.",
    "A finite flux-update norm alone does not establish pressure-current closure; the full solver checks a second residual.",
    "The implementation does not enforce nonnegative radii or a Z=0 plane.",
-   "The private file has two functions and one direct example; the shared composition file has no direct call, while the shared legacy file adds one direct nonfinite-state rejection test."
+   "The named step assertions are direct calls (including scientific_function aliases). Full-solver tests cover their own maintained computation path; they are not additional direct step coverage.",
+   "UNKNOWN: the claimed off-source, single-cell circular-filament psi normalization witness was not located in this asset's bound tests or inspected local history. Artificial identity/diagonal Green regressions do not independently establish its no-2*pi physical normalization. The required Green units and function support are unchanged."
   ]
  }
 }

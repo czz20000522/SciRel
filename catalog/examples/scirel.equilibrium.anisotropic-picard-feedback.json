@@ -276,11 +276,11 @@
    "tests/equilibrium/test_anisotropic_picard_feedback.py",
    "tests/cross_domain/test_anisotropic_core_scientific_correction.py"
   ],
-  "evidence_ceiling": "Bounded to one masked toroidal-current feedback step with flux and optional field projection. Evidence: `test_anisotropic_picard_feedback.py` contains 9 test functions, 3 of which reference `update_anisotropic_picard_flux`, and is bound only by this asset; `test_anisotropic_core_scientific_correction.py` contains 17 test functions, none of which references `update_anisotropic_picard_flux`, and is shared by 8 assets; the bounded example was executed by this audit. Oracle: independent manufactured/analytic discrete checks in the bound private and correction files. It does not establish automatic construction or physical validation of a Green response, or a complete equilibrium/wall solution.",
+  "evidence_ceiling": "tests/cross_domain/test_anisotropic_core_scientific_correction.py directly imports this maintained function as feedback; test_feedback_without_field_greens_recovers_plasma_field, test_two_node_feedback_remains_supported_with_explicit_cells assert field recovery without field Green matrices and explicit two-node cells. These are bounded manufactured/analytic discrete cases, not full-file coverage or physical validation of arbitrary caller pressure/Green/wall models.",
   "known_limitations": [
    "Caller-supplied physical closures and Green responses require their own evidence and coherent psi=R A_phi (Wb/rad) normalization.",
    "Floating-point rounding envelopes do not bound discretization error or experimental uncertainty.",
-   "The private file has nine functions with three direct references: the mask preservation regression, the relation example and the grid-without-cell-area rejection; the shared correction file adds no direct symbol call."
+   "The named shared-file assertions exercise the real entry point, including its parametrized samples. Their scope is limited to the listed cases; other assets in the file are not evidence for this one."
   ]
  }
 }

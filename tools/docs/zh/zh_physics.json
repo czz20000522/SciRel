@@ -4,7 +4,7 @@
  "records": [
   {
    "asset_id": "scirel.equilibrium.free-boundary-anisotropic-picard",
-   "source_sha256": "61cf1f3ff5e5a3bfa525290cd8d5146d5b1ea84c2a009e122c1fa2bcf1448a06",
+   "source_sha256": "bade1a6a367da416958c1c45635388057c889259073048398a1844b150162be8",
    "summary": "执行显式各向异性压力、电流与 Green 场的有界 Picard 反馈；可选墙磁通和对应磁场导数共同更新，以全部未松弛反馈状态残差及平行力相容性决定收敛。",
    "definition": "当前 psi、BR、BZ 上重求确定性压力闭合与环向电流，按节点梯形或显式单元边界积分并松弛电流后投影 Green 场。缺少场 Green 对时对新增磁通求场导数，墙分支同步加墙磁通及离散场。判停要求 psi、BR、BZ 和电流的未松弛目标全部闭合，返回态再重求闭合、电流及力相容性；零步不声称收敛。",
    "model": "外供 N4 压力闭合和可选线性理想导体壁修正的轴对称旋磁压力 Picard 组合。",
@@ -337,11 +337,11 @@
      "磁通不变而场和电流仍变化时不声称收敛；空场在压力回调前拒绝。",
      "部分掩码保留激活区末态 j_phi，仅将非激活单元置零。"
     ],
-    "evidence_ceiling": "限于带可选壁磁通与磁场导数的有界各向异性 Picard 反馈。证据：`test_composition_free_boundary_anisotropic_picard.py` 含 21 个测试函数，其中 1 个引用 `solve_free_boundary_anisotropic_picard`，仅由本资产绑定; `test_anisotropic_core_scientific_correction.py` 含 17 个测试函数，其中没有函数引用 `solve_free_boundary_anisotropic_picard`，由 8 个资产共享；本审计已执行有界示例。真值来源：绑定组合文件与修正文件中的独立制造解/解析离散检查。不建立：内置 Frank-Egedal 闭合、对调用者压力物理的独立验证，或物理边界/壁模型。",
+    "evidence_ceiling": "tests/cross_domain/test_anisotropic_core_scientific_correction.py 将本维护实现直接导入为 free；test_free_boundary_flux_and_magnetic_correction_same_terminal_state, test_free_boundary_true_parallel_force_cannot_be_converged, test_retained_current_is_not_false_fixed_point 断言同态壁磁通/场、真实平行力拒绝及近 1 松弛。这些是有界制造/解析离散用例，不是整文件覆盖，也不验证任意外供压力、Green 或壁模型的物理正确性。",
     "known_limitations": [
      "外供物理闭合和格林响应须有独立证据，并一致使用 psi=R A_phi（Wb/rad）。",
      "浮点舍入包络不约束离散误差或实验不确定度。",
-     "资产私有组合文件中只有一个直接函数按名称引用求解器（`test_public_solver_docstring_declares_contract`，文档串检查）；共享修正文件没有直接调用，因此收敛与壁分支证据是组合级。"
+     "上述共享文件中的具名断言实际调用本入口，包括其参数化样本；范围仅限所列用例，文件中其他资产的断言不计入本项。"
     ],
     "tests": [
      "tests/cross_domain/free_boundary_anisotropic_picard/test_composition_free_boundary_anisotropic_picard.py",
@@ -351,7 +351,7 @@
   },
   {
    "asset_id": "scirel.diagnostics.parallel-pressure-residual",
-   "source_sha256": "3524707ca98792cb1d53674ff898be6e10ab0d98dce5037525a05ff3e1698d1e",
+   "source_sha256": "b0d699cf8a561808421009b9e08b0ba4d05b730d2551ba4bb87da56d07b36b8c",
    "summary": "给定固定磁通导数，检查局部旋磁对称平行压强相容性。 以 scirel._result.Result 映射返回全部命名字段。",
    "definition": "rhs=p_parallel-B*(partial p_parallel/partial B)|psi，等价于 -B²*partial(p_parallel/B)/partial B|psi。error=p_perp-rhs，relative_error=abs(error)/max(abs(p_perp),abs(rhs),atol)；最大相对误差 <=rtol 时 passed=True。 所有命名字段作为同一个 scirel._result.Result 映射返回；按键和属性读取同一个值。",
    "model": "显式固定磁通压强定律的旋磁对称相容性，不是空间力平衡残差。",
@@ -493,15 +493,14 @@
    },
    "verification": {
     "scope": [
-     "显式均匀各向同性和固定 psi 多线多项式回归。",
-     "63 个守恒量双 Maxwell 状态交叉核对压强相容性与总压强斜率阈值。",
-     "四级采样加密展示固定 psi 线上有限差分收敛。",
+     "tests/cross_domain/test_spectral_scientific_correction.py::test_uniform_isotropic_parallel_state_with_explicit_derivative 断言零残差；tests/cross_domain/test_spectral_scientific_correction.py::test_fixed_flux_derivative_must_not_mix_flux_surfaces 检查两条固定 psi 多项式线；tests/cross_domain/test_spectral_scientific_correction.py::test_missing_derivative_information_is_not_silently_zero 检查缺导数拒绝。",
      "Result 包装保持全部键、键顺序、数值、形状、dtype 与映射访问（基线 0f74255b）；属性读取到同一字段。"
     ],
-    "evidence_ceiling": "解析恒等式、显式失败回归和独立数值比较支持所述数学合同，不确证实测等离子体有效性或一般稳定性定理。",
+    "evidence_ceiling": "tests/cross_domain/test_spectral_scientific_correction.py::test_uniform_isotropic_parallel_state_with_explicit_derivative 断言零残差；tests/cross_domain/test_spectral_scientific_correction.py::test_fixed_flux_derivative_must_not_mix_flux_surfaces 检查两条固定 psi 多项式线；tests/cross_domain/test_spectral_scientific_correction.py::test_missing_derivative_information_is_not_silently_zero 检查缺导数拒绝。 证据限于这些具名样本及其余绑定算术回归；缺少的扫描/加密证据保持 UNKNOWN，不证明实测等离子体有效性或一般稳定性定理。",
     "known_limitations": [
      "导数/轴/psi 参数要求调用者提供缺失的物理信息；全局 B 排序不属于本合同。",
-     "样本标志和残差只是局部模型诊断，不证明全局平衡或动力学稳定性。"
+     "样本标志和残差只是局部模型诊断，不证明全局平衡或动力学稳定性。",
+     "UNKNOWN：此前所述 63 个守恒量双 Maxwell 状态扫描及四级固定 psi 差分加密，均未在绑定断言及查阅的本地历史中定位；不声称这两项已有可重放覆盖，模型支持保持原样。"
     ],
     "tests": [
      "tests/cross_domain/test_spectral_scientific_correction.py"
@@ -1752,7 +1751,7 @@
   },
   {
    "asset_id": "scirel.equilibrium.anisotropic-picard-feedback",
-   "source_sha256": "9b113754d1f38f2e90faf84a2896768ec745685506aa034d00bf02678379f776",
+   "source_sha256": "7d9f3e0ca13d873f36aa1403c71b8673264ea366ae94dcf3f0cbb2d4ccc7de2a",
    "summary": "将环向电流密度按掩码和网格积分为单元电流，与旧电流松弛后投影到稠密格林磁通及可选磁场响应。 顶层返回值为 scirel._result.Result 映射；映射访问保留，字段也支持属性读取。 不引入嵌套映射。",
    "definition": "默认复合梯形权重恰覆盖给定节点矩形域，边界为半间隔；显式 cell_edges 则定义包围中心的单元面积。电流不乘 2πR。非激活密度置零，I=(1−relax)I_raw+relax I_old。磁通用 G_psi；成对 G_BR/G_BZ 求场，缺失时对同一新增磁通求导，再加真空场。 完整结果作为同一个 scirel._result.Result 映射返回；仅包裹顶层，嵌套结构保持原类型。",
    "model": "使用调用者稠密线性格林响应的一次显式单元电流 Picard 反馈。",
@@ -1916,11 +1915,11 @@
      "部分掩码保留激活区 j_phi，仅在单元加权前将非激活单元置零。",
      "返回类型回归检查顶层 scirel._result.Result、键顺序及属性读取；既有数值、状态和失败断言保持不变。"
     ],
-    "evidence_ceiling": "限于单次带掩码的环向电流反馈步及磁通/可选场投影。证据：`test_anisotropic_picard_feedback.py` 含 9 个测试函数，其中 3 个引用 `update_anisotropic_picard_flux`，仅由本资产绑定; `test_anisotropic_core_scientific_correction.py` 含 17 个测试函数，其中没有函数引用 `update_anisotropic_picard_flux`，由 8 个资产共享；本审计已执行有界示例。真值来源：绑定私有文件与修正文件中的独立制造解/解析离散检查。不建立：Green 响应的自动构造或物理验证，或完整平衡/壁求解。",
+    "evidence_ceiling": "tests/cross_domain/test_anisotropic_core_scientific_correction.py 将本维护实现直接导入为 feedback；test_feedback_without_field_greens_recovers_plasma_field, test_two_node_feedback_remains_supported_with_explicit_cells 断言无场 Green 的磁场恢复及显式两节点单元。这些是有界制造/解析离散用例，不是整文件覆盖，也不验证任意外供压力、Green 或壁模型的物理正确性。",
     "known_limitations": [
      "外供闭合和格林需要独立证据及一致 Wb/rad 归一化。",
      "舍入包络不是离散误差或实验不确定度界。",
-     "私有文件有九个函数和三个直接引用：掩码保留回归、关系示例与无单元面积网格拒绝；共享修正文件没有直接符号调用。"
+     "上述共享文件中的具名断言实际调用本入口，包括其参数化样本；范围仅限所列用例，文件中其他资产的断言不计入本项。"
     ],
     "tests": [
      "tests/equilibrium/test_anisotropic_picard_feedback.py",
@@ -1930,7 +1929,7 @@
   },
   {
    "asset_id": "scirel.closures.reduced-hall-drift",
-   "source_sha256": "f83dcff86c1fecd1871623b8a1b599f58f836e79e45850e8b3f778e0353eee1b",
+   "source_sha256": "6e9725173dfa4a24e03ced60f013a869b6456c7a742827b0ad4df91c2c110bda",
    "summary": "在 R-Z 网格把旋磁对称压强力投影为环向电流，可选求有限迭代的局部环向惯性修正，并给出物种漂移、广义欧姆及尺度诊断。 顶层返回值是 scirel._result.Result 映射；非冲突字段支持属性读取。",
    "definition": "用二阶网格导数计算柱坐标旋磁对称压强力，并取 J_phi=(B_Z*force_R-B_R*force_Z)/|B|²。在掩码内、非轴、密度超过峰值比例下限且磁场可解析的点，将 E=-grad(phi)、电子压强力和 Hall 乘子组合成环向漂移。可选欠松弛迭代径向离心修正，并以 maximum_inertial_mach 倍离子热速限制漂移。共享力核含正则轴向项和差分式导数；相容性诊断扣除有量纲的 64-epsilon 张量/差分舍入包络，同时保留原始绝对/相对残差与包络。这不是截断误差界，也不证明低于分辨率的物理力恰为零。未给离子压强时按总量减电子；独立拟合保留剩余应力，species_sum 拒绝不相容组分。惯性收敛检查返回 J 上重新求值的未松弛电流映射残差，不能以小松弛步代替。 完整结果作为同一个 scirel._result.Result 映射返回；嵌套 dict 字段保持普通 dict。",
    "model": "约化轴对称 Hall 漂移与旋磁对称压强，可选局部环向惯性修正，不是无限制的双流体解。",
@@ -1968,19 +1967,19 @@
     {
      "name": "p_parallel",
      "description": "力投影使用的平行离子或总压强，单位 Pa。",
-     "constraints": "联合广播后须与网格同形；物理使用要求一致的非负压强，尽管该主数组只检查有限性。",
+     "constraints": "联合广播后与网格同形；所有值须有限且非负，即使显式提供了离子压强也会检查主压强。",
      "dtype": "有限实数数组"
     },
     {
      "name": "p_perpendicular",
      "description": "力投影使用的垂直压强，单位 Pa。",
-     "constraints": "联合广播后须与网格同形；物理使用要求一致的非负压强，尽管该主数组只检查有限性。",
+     "constraints": "联合广播后与网格同形；所有值须有限且非负，即使显式提供了离子压强也会检查主压强。",
      "dtype": "有限实数数组"
     },
     {
      "name": "closure_state",
      "description": "含 ion_density、electron_pressure、electrostatic_potential 及可选分量的物种状态。",
-     "constraints": "必需键可广播到网格；ion_density 与电子压强非负。可选电子压强分量默认取 electron_pressure；可选离子压强分量默认取主 p_parallel/p_perpendicular，且须有限非负。可选 pressure_composition_mode 为 independent_fit（默认）或 species_sum。离子矩默认取总量减电子。未计入的残余应力会报告，不会静默当作离子压强。",
+     "constraints": "必需键可广播到网格；ion_density 与电子压强非负。可选电子压强分量默认取 electron_pressure；省略离子压强分量时，各方向分别取 p_parallel-electron_p_parallel 和 p_perpendicular-electron_p_perpendicular，且须有限非负。可选 pressure_composition_mode 为 independent_fit（默认）或 species_sum。离子矩默认取总量减电子。未计入的残余应力会报告，不会静默当作离子压强。",
      "dtype": "含有限实数值的 Python 映射"
     },
     {
@@ -2033,8 +2032,8 @@
     },
     {
      "name": "inertia_tolerance",
-     "description": "局部惯性收敛容差。",
-     "constraints": "默认 1e-10，严格为正；原输入描述称电流变化，definition 和新增残差输出要求未松弛映射残差。",
+     "description": "在返回电流 J 上重新计算未松弛映射残差 norm(T(J)-J)/max(norm(J),1 A/m²) 的停止阈值。",
+     "constraints": "默认 1e-10，严格为正；inertia_relative_change 仅是松弛步变化诊断，不用于判停。",
      "dtype": "有限实数标量"
     },
     {
@@ -2095,8 +2094,8 @@
     },
     {
      "name": "parallel_force_error",
-     "description": "掩码内平行目标力 RMS 与目标力模 RMS 之比。",
-     "constraints": "分母使用数值 tiny 下限；空掩码为零。",
+     "description": "在相应掩码上返回扣除舍入包络后的相对误差 max(absolute-roundoff,0)/max(scale_rms,roundoff,tiny)；absolute 为残差均方根，roundoff 为舍入包络均方根；原始均方根比值保留在 parallel_force_diagnostics.raw_relative。",
+     "constraints": "空掩码或残差落在舍入包络内时可为零；不表示原始残差恰为零。包络不约束离散误差。 scale_rms 为等离子体掩码内 hypot(force_R,force_Z) 的均方根。",
      "dtype": "float 浮点数"
     },
     {
@@ -2113,8 +2112,8 @@
     },
     {
      "name": "momentum_error",
-     "description": "掩码内动量残差模 RMS 与目标力模 RMS 之比。",
-     "constraints": "仅诊断；空掩码为零。",
+     "description": "在相应掩码上返回扣除舍入包络后的相对误差 max(absolute-roundoff,0)/max(scale_rms,roundoff,tiny)；absolute 为残差均方根，roundoff 为舍入包络均方根；原始均方根比值保留在 momentum_diagnostics.raw_relative。",
+     "constraints": "空掩码或残差落在舍入包络内时可为零；不表示原始残差恰为零。包络不约束离散误差。 scale_rms 为等离子体掩码内 hypot(force_R,force_Z) 的均方根。",
      "dtype": "float 浮点数"
     },
     {
@@ -2197,8 +2196,8 @@
     },
     {
      "name": "generalized_ohm_error",
-     "description": "活跃点欧姆残差 RMS 与电场/Hall/漂移尺度 RMS 之比。",
-     "constraints": "仅诊断；活跃掩码空时为零。",
+     "description": "在相应掩码上返回扣除舍入包络后的相对误差 max(absolute-roundoff,0)/max(scale_rms,roundoff,tiny)；absolute 为残差均方根，roundoff 为舍入包络均方根；原始均方根比值保留在 ohm_diagnostics.raw_relative。",
+     "constraints": "空掩码或残差落在舍入包络内时可为零；不表示原始残差恰为零。包络不约束离散误差。 scale_rms 为 Hall 活跃掩码内 sqrt(|E|²+|hall_electric_field|²+(ion_toroidal_velocity*B)²) 的均方根。",
      "dtype": "float 浮点数"
     },
     {
@@ -2275,7 +2274,7 @@
     },
     {
      "name": "inertia_relative_change",
-     "description": "最后一次局部电流更新的相对范数变化。",
+     "description": "最后一次松弛电流更新的相对范数变化，仅作诊断，不是判停残差。",
      "constraints": "分母为 max(norm(next current),1)。",
      "dtype": "float 浮点数"
     },
@@ -2368,22 +2367,17 @@
      "近 1 的 inertia_relax 不能把有限未松弛残差伪装为收敛，保持步数上限并抛 RuntimeError；解析 Bz=1、P=10+R²、n=mi=qi=1 的未限幅正不动点为 J=R。",
      "掩码区分回归：非活动单元只置零，活动单元保留计算值；部分掩码不会把非有限输入或惯性不收敛变成成功的零结果。"
     ],
-    "evidence_ceiling": "限于旋磁压力力到环向电流的投影及可选有界局部惯性修正。证据：`test_reduced_hall_drift.py` 含 12 个测试函数，其中 1 个引用 `close_reduced_hall_drift`，仅由本资产绑定; `test_anisotropic_core_scientific_correction.py` 含 17 个测试函数，其中没有函数引用 `close_reduced_hall_drift`，由 8 个资产共享；本审计已执行有界示例。真值来源：绑定私有文件与修正文件中的独立制造解/解析离散检查。不建立：完整平衡/双流体输运求解，或在低密度/近零场/firehose 不稳定区域的自动有效性。",
+    "evidence_ceiling": "限于压力力到电流的投影及局部 Hall 惯性。tests/cross_domain/test_anisotropic_core_scientific_correction.py 以 hall 别名直接调用维护实现：test_hall_component_accounting_explicit 检查两种组分模式，test_hall_primary_negative_pressure_rejected 检查负主压拒绝，test_hall_near_unit_relaxation_cannot_fake_local_convergence 检查原步数上限，test_hall_analytic_local_fixed_point_uses_returned_current 检查 J=R 及终末残差。tests/closures/test_reduced_hall_drift.py 的 scientific_function 也是本函数，其 test_reviewed_relation_example 检查均匀极限。 这些制造/解析离散用例不证明完整平衡、双流体输运或低密度、近零场及不稳定区的自动有效性。",
     "known_limitations": [
      "调用者物理闭合与 Green 响应须有独立依据，并一致采用 psi=R A_phi（Wb/rad）。",
      "浮点舍入包络不界定离散化误差或实验不确定度。",
-     "资产私有测试文件有十二个函数和一个直接示例；共享修正文件没有直接调用，因此惯性收敛与漂移诊断在组合级取证。"
+     "直接证据限于上述具名局部断言，不能把整个共享文件算给本资产。UNKNOWN：尚未定位“非零电子压且省略离子分量”的专门断言。"
     ],
     "tests": [
      "tests/closures/test_reduced_hall_drift.py",
      "tests/cross_domain/test_anisotropic_core_scientific_correction.py"
     ]
-   },
-   "source_conflicts": [
-    "inputs.p_parallel/p_perpendicular.constraints 称主压强仅检查有限性，但 failure_semantics.invalid_input 明确写负主总压强会被拒绝。",
-    "inputs.closure_state.constraints 对省略离子分量同时写默认主压强与默认总压强减电子；identity.definition 采用后者，两处字段不一致。",
-    "inputs.inertia_tolerance.description 称相对电流变化停止，而 identity.definition 与 outputs.inertia_fixed_point_residual 要求终末未松弛电流映射残差；两种量不能等同。"
-   ]
+   }
   },
   {
    "asset_id": "scirel.equilibrium.pressure-flux-state",
@@ -3541,7 +3535,7 @@
   },
   {
    "asset_id": "scirel.closures.quasineutral-potential",
-   "source_sha256": "4cb3ad07c06d79831d68bade9a098524ec8376ec22d187b9d1bb9faae76aff2a",
+   "source_sha256": "26df3a19da5814a05f8ce4688172d410e238ead98e554d6f2cd3b23d2b934f45",
    "summary": "对调用者提供的对数电荷残差进行有界扩展括区与向量化二分，求激活磁面的电势。 顶层返回值是 scirel._result.Result 映射；非冲突字段支持属性读取。",
    "definition": "每个激活面求 R(phi)=log(Z n_i(phi))−log(n_e(phi))=0。初区间 phi_ref±k(T_parallel/q+T_e/e)，不满足端点符号时最多扩展八轮再二分；仅当全部激活面的最大区间宽度≤电势容差且最大中点残差≤准中性容差才返回。非激活势固定参考；中点避免先加大同号端点。回调精确零将该括区收缩至求值点，小非零不收缩且不改变容差。 完整结果作为同一个 scirel._result.Result 映射返回；嵌套 dict 字段保持普通 dict。",
    "model": "外供单调递减残差的括区和二分：根下正、根上负；不计算任一密度。",
@@ -3666,14 +3660,15 @@
     "scope": [
      "已知根单调残差、括区扩展、混合/全非激活及非激活回调势固定。",
      "所选回调映射/控制错误、括区失败及迭代上限不收敛。",
-     "±1e20、±1e308 公共势下精确可表示局部中性根，以及相邻浮点中点制造根须按原容差失败。"
+     "tests/cross_domain/test_mirror_gauge_scientific_correction.py::test_local_quasineutral_midpoint_preserves_large_representable_root 经维护的镜闭合调用本求根器；按其参数化大公共势样本断言返回根、密度及电荷残差。"
     ],
-    "evidence_ceiling": "支持所选制造根、实际局部闭合组合、失败和有限中点情形；精确零只表明所给数值回调的根，不独立证明其物理，亦不覆盖所有模型/浮点域或专家认可。",
+    "evidence_ceiling": "绑定断言支持所选制造根、普通回调/括区/预算失败，以及具名镜闭合组合中的大公共势可表示根；相邻浮点中点根的见证仍为 UNKNOWN。数值回调精确为零不独立证明其物理模型、全部浮点域或专家认可。",
     "known_limitations": [
      "无法发现数值有效但物理错误的回调。",
      "八轮扩展和次数上限不保证能括根或收敛。",
      "广播不证明物理对齐；极端有限热尺度可使括区溢出。",
-     "公开许可及专家认可待人工决定。"
+     "公开许可及专家认可待人工决定。",
+     "UNKNOWN：在绑定测试及查阅的本地历史中未定位相邻可表示势中点制造根的断言。原残差门槛及相邻浮点停滞须失败的合同保留；tests/closures/test_quasineutral_potential.py::test_iteration_budget_has_no_hidden_convergence_evaluation 只覆盖普通预算耗尽，不替代该边界见证。"
     ],
     "tests": [
      "tests/closures/test_quasineutral_potential.py",
@@ -4066,7 +4061,7 @@
   },
   {
    "asset_id": "scirel.equilibrium.kinetic-mirror-hall-equilibrium",
-   "source_sha256": "a448d58ec1434c864c52c9ae66a8f4c7c90a936f8e244c3ed281f81d0177dc35",
+   "source_sha256": "db34b9cdeff8fafe6b2e23e73abbc13fea75e80b91e5f5b51b57aed445f4f307",
    "summary": "将网格镜动力学闭合接入约化 Hall 各向异性 Picard 图的压强入口，在每次磁更新前用当前场和磁通求动力学状态。",
    "definition": "复制 kinetic_config，构造 pressure_closure(B,psi)，向网格镜动力学图传入当前 Hall 的 B、psi，并用外层 r_grid/z_grid 覆盖配置同名项。Hall 载荷中移除 kinetic_config，以新闭合覆盖原 pressure_closure，原样返回 Hall 图结果。此封装本身不更新磁场；嵌套 Hall 图负责有限 Picard/可选惯性迭代，并在终末动力学闭合前检查场下限，然后重算终末动力学状态。",
    "model": "轴对称网格镜端损失/准中性动力学闭合与约化 Hall 各向异性 Picard 反馈的组合。",
@@ -4121,7 +4116,7 @@
     },
     {
      "name": "tol",
-     "description": "Hall 外层相对磁通停止阈值。",
+     "description": "外层未松弛磁通映射固定点残差阈值，并在返回 psi 上重算；松弛磁通步幅及内层惯性残差是另外的量。",
      "constraints": "默认 1e-8，只核对有限性，预期使用应选正值。",
      "dtype": "有限实数标量"
     },
@@ -4187,7 +4182,7 @@
     },
     {
      "name": "inertia_tolerance",
-     "description": "局部惯性电流容差。",
+     "description": "原样传给 Hall 叶的局部未松弛电流映射残差阈值，区别于外层磁通映射残差。",
      "constraints": "默认 1e-10，严格正；实际残差定义遵循 Hall 叶。",
      "dtype": "有限实数标量"
     },
@@ -4608,7 +4603,7 @@
   },
   {
    "asset_id": "scirel.equilibrium.isotropic-pressure-flux",
-   "source_sha256": "e306e92cbdcbc7047998e6af3ef685e6faf46b2591ff4f42a41263c4361fe11e",
+   "source_sha256": "4c1669f52a9293378f3232477e49e8a4335ff36350618e1cbde28615f6a42e78",
    "summary": "通过唯一共享的轴对称压力电流求解器执行有界反馈，同时检查磁通更新和末态电流闭合残差，并序列化最终压力样条。",
    "definition": "委派给已维护的 compute_equilibrium：按物理半径向外构造压力样条，求目标电流、松弛电流及 Green 磁通，重建末态样条；同时检查归一化磁通变化和 ||I_new−I_target(psi_new)||₂/||I_target||₂。零目标且零误差取零，零目标而电流非零失败。只有实际更新后两项有限且不大于 tol 才收敛。适配入口不再维护第二迭代环，并返回精确拟合前缀。",
    "model": "复用共享双残差求解器的轴对称各向同性纯压力离散闭合。",
@@ -4652,7 +4647,7 @@
     {
      "name": "tol",
      "description": "磁通更新与压力电流闭合两项残差的共同阈值。",
-     "constraints": "有限且严格为正；无更新时两残差保持正无穷。",
+     "constraints": "有限且严格为正；仅当初拟合和非零边界检查通过且未更新时，两残差为正无穷；初态失败为 nonfinite 和 NaN。",
      "dtype": "有限实标量"
     },
     {
@@ -4701,8 +4696,8 @@
     },
     {
      "name": "residual",
-     "description": "末次归一化 L2 磁通变化，未更新时为正无穷。",
-     "constraints": "与闭合残差均有限且不大于 tol 才收敛；非有限状态明确标记。",
+     "description": "最后一次归一化 L2 磁通变化残差。 未更新前只有初拟合和非零边界检查通过时为 +inf；初态失败为 NaN。",
+     "constraints": "收敛仍须本项及 closure_residual 有限且 <=tol。maxiter=0 仍先执行初态压力拟合与非零 psi_edge 检查；初拟合失败或 psi_edge=0 返回 status=nonfinite、iterations=0、两残差 NaN。只有初态有效且未更新时才返回 maxiter 和两残差 +inf。",
      "dtype": "浮点数"
     },
     {
@@ -4725,8 +4720,8 @@
     },
     {
      "name": "closure_residual",
-     "description": "末态压力电流方程的归一化残差。",
-     "constraints": "共同分量缩放保留目标范数定义；无更新时为正无穷。",
+     "description": "终末归一化压力电流残差。 未更新前只有初拟合和非零边界检查通过时为 +inf；初态失败为 NaN。",
+     "constraints": "共同分量缩放保持按目标范数归一化的定义。maxiter=0 仍先执行初态压力拟合与非零 psi_edge 检查；初拟合失败或 psi_edge=0 返回 status=nonfinite、iterations=0、两残差 NaN。只有初态有效且未更新时才返回 maxiter 和两残差 +inf。",
      "dtype": "浮点数"
     },
     {
@@ -4746,7 +4741,7 @@
     "preconditions": [
      "全部数组和控制量满足形状、有限性要求。",
      "精确中平面和磁通样本满足压力状态算子的样条条件。",
-     "执行至少一步时 psi_edge 必须非零。"
+     "包括 maxiter=0 时，初态压力样条须有效且 psi_edge 非零；失败返回 nonfinite、零次迭代和 NaN 残差。"
     ],
     "supported": [
      "升序或降序均匀存储上的有界纯压力反馈、末态双残差门禁和明确终末状态。"
@@ -4760,7 +4755,7 @@
    "failure_semantics": {
     "invalid_input": "缺少必需参数、使用已删除的 mapping 或 **kwargs 入口、或传入未知关键字时抛 TypeError；数组、网格、回调、控制量或布尔掩码不满足合同时抛 ValueError；压力样本须有限非负标量；pressure_of_radius 自身异常原样传播。",
     "runtime_failure": "计算导数、电流、Green 收缩、拟合或残差无效时共享求解器返回 nonfinite 和具体原因；输入或回调异常直接抛出，无备用路径。",
-    "nonconvergence": "到上限而未同时满足两门禁时返回 maxiter、converged=False 和 maxiter_reached；maxiter=0 时两残差正无穷。",
+    "nonconvergence": "到上限未通过双门禁时，status=maxiter、converged=False、failure_reason=maxiter_reached。maxiter=0 仍先执行初态压力拟合与非零 psi_edge 检查；初拟合失败或 psi_edge=0 返回 status=nonfinite、iterations=0、两残差 NaN。只有初态有效且未更新时才返回 maxiter 和两残差 +inf。",
     "partial_results": "失败时保留可取得的末态与记录；样条无效则 pressure_of_psi=None。Green 算术失败保留前一个有限磁通/电流对；部分状态不当成解。"
    },
    "example": {
@@ -4770,19 +4765,20 @@
    "verification": {
     "scope": [
      "零与非零格林矩阵路径。",
-     "真实图的单单元电流给出选定离源 psi 增量，不含 2π 因子。",
-     "明确反馈及上限不收敛。",
+     "UNKNOWN：此前所称真实图单单元离源圆丝归一化检查尚未定位绑定断言；现有人工 Green 断言见下列具名用例。",
+     "tests/cross_domain/isotropic_pressure_flux/test_composition_isotropic_pressure_flux.py 经 _run_composition 实际执行维护求解器，包括 test_contract_linear_pressure_flux_produces_analytic_cell_current 与 test_nonzero_green_changes_flux_through_sequential_feedback；tests/cross_domain/test_legacy_six_absorption.py::test_nonzero_green_manufactured_solution_and_both_histories 直接检查人工对角 Green 解及双残差历史。",
      "压力掩码抑制电流。",
      "显式公开签名与仅关键字控制；删除 mapping 和 **kwargs 入口，覆盖错格林形状、缺控制、非均匀网格和非整数 maxiter 失败。",
      "零步返回独立磁通数组。",
      "零 Green 松弛电流与零次更新的假收敛均被拒绝。",
      "非零对角 Green 构造解满足独立二次方程，电流、磁通及两项记录得到核对。"
     ],
-    "evidence_ceiling": "限于带磁通更新与终态电流闭合残差的有界各向同性压力-电流反馈。证据：`test_composition_isotropic_pressure_flux.py` 含 10 个测试函数，其中没有函数引用 `solve_isotropic_pressure_flux`，由 2 个资产共享; `test_legacy_six_absorption.py` 含 19 个测试函数，其中 5 个引用 `solve_isotropic_pressure_flux`，由 8 个资产共享；仅绑定共享文件覆盖，因此通过是文件级事实、而非资产隔离证据；本审计已执行有界示例。真值来源：绑定文件中的独立解析夹具与选定安装轮/源回归。不建立：各向异性压力闭合、非结构/非轴对称网格，或有限迭代必然收敛的保证。",
+    "evidence_ceiling": "tests/cross_domain/isotropic_pressure_flux/test_composition_isotropic_pressure_flux.py 经 _run_composition 实际执行维护求解器，包括 test_contract_linear_pressure_flux_produces_analytic_cell_current 与 test_nonzero_green_changes_flux_through_sequential_feedback；tests/cross_domain/test_legacy_six_absorption.py::test_nonzero_green_manufactured_solution_and_both_histories 直接检查人工对角 Green 解及双残差历史。 这些有界解析/人工 Green 用例不证明独立离源圆丝归一化、任意物理压力/Green 的有效性或必然收敛。",
     "known_limitations": [
      "稠密方格林矩阵，压力样条要求精确中平面及精确零压样本。",
      "不做自适应阻尼或模型选择。",
-     "资产私有组合文件有十个测试函数且没有直接符号调用；共享 legacy 文件中有五个直接测试，覆盖显式签名与删除入口、零更新/不谎报收敛、拒绝 relax=1 以及非零制造 Green 历史。"
+     "组合文件通过包装入口运行真实维护求解器，具名 legacy 测试直接调用公共求解器；不以裸名称函数计数声明覆盖。",
+     "UNKNOWN：本资产绑定测试及查阅的本地历史中未定位离源单单元圆丝 psi 归一化见证；人工单位/对角 Green 回归不独立证明无 2*pi 的物理归一化。所需 Green 单位及功能支持不变。"
     ],
     "tests": [
      "tests/cross_domain/isotropic_pressure_flux/test_composition_isotropic_pressure_flux.py",
@@ -5020,7 +5016,7 @@
   },
   {
    "asset_id": "scirel.closures.hall-two-fluid-pressure",
-   "source_sha256": "0fc116478b4c7d26a77079a188ec49c9dcc85e6027d292558fb444b13a37d5e5",
+   "source_sha256": "411ef8a1c35b2fcd0a926bd3ffaef9479953949ab4fec6a603d4f904a718947c",
    "summary": "按默认离子代数压力拆分组装广播 Hall 状态。 顶层返回值是 scirel._result.Result 映射；非冲突字段支持属性读取。",
    "definition": "联合广播 B、psi 并求总压力，再广播各剖面；令电子密度等于离子密度。电子两分量缺省等于 electron_pressure，离子分量缺省为总压减电子压。默认 independent_fit 保留独立指定的总压与物种压，并显式报告两方向总压−离子压−电子压的残余应力；不是新物种。species_sum 要求两个残差在局部压力尺度的 64ε 内为零，否则拒绝。两种模式都报告数值组分一致性；不检查总压力正性。 完整结果作为同一个 scirel._result.Result 映射返回；嵌套 dict 字段保持普通 dict。",
    "model": "给定旋磁总应力和物种分解，可含独立拟合残余应力；不是自洽双流体平衡。下游总力已包含残余应力，离子矩仍仅属离子。",
@@ -5070,13 +5066,13 @@
     {
      "name": "ion_p_parallel_pa",
      "description": "可选显式离子平行压力，替代总压减电子平行压。",
-     "constraints": "有限非负；independent_fit 下不强制与电子分量之和等于总压。",
+     "constraints": "若提供须有限非负。independent_fit 允许总压减组分和非零；species_sum 要求各方向残差不超过 64*float64_epsilon*max(abs(total),abs(ion+electron),tiny)。",
      "dtype": "实数数组或返回实数数组的函数"
     },
     {
      "name": "ion_p_perpendicular_pa",
      "description": "可选显式离子垂直压力，替代总压减电子垂直压。",
-     "constraints": "有限非负；independent_fit 下不强制与电子分量之和等于总压。",
+     "constraints": "若提供须有限非负。independent_fit 允许总压减组分和非零；species_sum 要求各方向残差不超过 64*float64_epsilon*max(abs(total),abs(ion+electron),tiny)。",
      "dtype": "实数数组或返回实数数组的函数"
     },
     {
@@ -5150,13 +5146,13 @@
     {
      "name": "ion_p_parallel",
      "description": "显式或总平行压减电子平行压得到的离子压力。",
-     "constraints": "有限非负；独立拟合模式不要求组分和等于总压。",
+     "constraints": "有限非负；independent_fit 不强制显式离子与电子分量和等于总压，species_sum 执行按局部压强尺度的舍入校验。",
      "dtype": "NumPy float64 数组"
     },
     {
      "name": "ion_p_perpendicular",
      "description": "显式或总垂直压减电子垂直压得到的离子压力。",
-     "constraints": "有限非负；独立拟合模式不要求组分和等于总压。",
+     "constraints": "有限非负；independent_fit 不强制显式离子与电子分量和等于总压，species_sum 执行按局部压强尺度的舍入校验。",
      "dtype": "NumPy float64 数组"
     },
     {
@@ -5195,7 +5191,7 @@
     ],
     "excluded": [
      "从第一性原理计算平衡、电势、压力定律或 Hall 电流。",
-     "强制显式离子分量与总压相等，或多物种电荷求和及超出 NumPy 广播的物理轴对齐。"
+     "independent_fit 模式下强制组分和等于总压、多物种电荷求和，以及超出 NumPy 广播的物理轴对齐；species_sum 支持两方向组分和的舍入校验。"
     ]
    },
    "failure_semantics": {
@@ -5225,14 +5221,11 @@
      "tests/closures/test_hall_two_fluid_pressure.py",
      "tests/cross_domain/test_mirror_kinetic_scientific_correction.py"
     ]
-   },
-   "source_conflicts": [
-    "applicability.excluded[1] 未限定模式地排除显式离子分量与总压相等校验，identity.definition 却规定 species_sum 模式强制组分和，只有默认 independent_fit 不强制。definition 前段“显式离子分量不校验总和”的未限定说法亦与后段模式区分不一致。"
-   ]
+   }
   },
   {
    "asset_id": "scirel.equilibrium.anisotropic-force-balance",
-   "source_sha256": "459c541e4d9ca1b0df3d83440ea73cd3533ad22a959f8b44e7f215dc3d416601",
+   "source_sha256": "8e918e9b0da4459bf6535ff9557c58b1c61dda37a91b0bc2c7fbf99b5bf6e32b",
    "summary": "在给定 R–Z 磁场网格上计算旋磁压力张量的柱坐标散度、垂直力对应的环向电流、平行力诊断和 firehose 裕度。",
    "definition": "P=p_perpendicular I+(p_parallel−p_perpendicular)bb。用差值形式二次模板求柱坐标散度；R=0 处光滑奇函数 P_RZ 给 force_Z 额外一个 ∂R P_RZ，规则轴上 force_R=J_phi=0；离轴 J_phi=(B_Z force_R−B_R force_Z)/B²。",
    "model": "轴对称旋磁压力张量及垂直力平衡电流投影。",
@@ -5404,11 +5397,11 @@
      "16 个常压网格保持零力，不误判兼容失败。",
      "可分辨的平行力不平衡仍被拒绝。"
     ],
-    "evidence_ceiling": "限于旋磁压力张量的柱散度、其环向电流投影与 firehose 裕度。证据：`test_anisotropic_force_balance.py` 含 5 个测试函数，其中 1 个引用 `compute_anisotropic_force_balance`，仅由本资产绑定; `test_anisotropic_core_scientific_correction.py` 含 17 个测试函数，其中没有函数引用 `compute_anisotropic_force_balance`，由 8 个资产共享；本审计已执行有界示例。真值来源：绑定私有文件与修正文件中的独立制造解/解析离散检查。不建立：完整平衡求解器、平行力相容保证，或自动场下限/firehose 强制。",
+    "evidence_ceiling": "tests/cross_domain/test_anisotropic_core_scientific_correction.py 将本维护实现直接导入为 force；test_exact_vacuum_tensor_equilibrium_axis, test_zero_force_not_rejected 断言制造张量平衡及参数化常压零力。这些是有界制造/解析离散用例，不是整文件覆盖，也不验证任意外供压力、Green 或壁模型的物理正确性。",
     "known_limitations": [
      "外供物理闭合和格林响应须有独立证据及一致 Wb/rad 规范。",
      "浮点包络不是离散误差或实验不确定度界。",
-     "资产私有测试文件有五个函数和一个直接示例；共享修正文件没有直接符号调用，因此力平衡证据是示例加组合级检查。"
+     "上述共享文件中的具名断言实际调用本入口，包括其参数化样本；范围仅限所列用例，文件中其他资产的断言不计入本项。"
     ],
     "tests": [
      "tests/equilibrium/test_anisotropic_force_balance.py",
@@ -6169,16 +6162,13 @@
      "tests/cross_domain/test_mirror_kinetic_scientific_correction.py",
      "tests/cross_domain/test_mirror_gauge_scientific_correction.py"
     ]
-   },
-   "source_conflicts": [
-    "example.expected 把电子压力写成 6e Pa；按 6 m⁻³ 与 e=1.602176634×10⁻¹⁹ C 计算应为约 9.613×10⁻¹⁹ Pa，本页中文按实际值给出。"
-   ]
+   }
   },
   {
    "asset_id": "scirel.equilibrium.reduced-hall-anisotropic-picard",
-   "source_sha256": "befada81197b294dfd5200ef8089bfd435c0e255f4fa0533b8caeebc41521ea7",
+   "source_sha256": "a2607854d5b8cb28c07f4fc3da185f0e5b06dedc0c0e9d34e4fb7f3daa6aaaf0",
    "summary": "将调用者压强闭合、约化 Hall 漂移/电流和稠密 Green 更新连接为轴对称磁通迭代，重算终末状态并返回收敛与相容性诊断。",
-   "definition": "从 psi_vac 副本及零初始单元电流开始，每步由 psi 求 B，检查场下限，调用 pressure_closure(B,psi)，核对并广播压强，选活跃点，求约化 Hall 电流/漂移，再执行磁通松弛 Green 更新。停止条件为 relative_psi_change<=tol 或 maxiter，但输出还提供终末未松弛固定点残差门槛。返回 psi 上重新计算磁场、闭合、压强形状、Hall 状态和单元电流，再检查活跃点的 firehose 裕度及可选的严格力/欧姆相容性。终末在调用闭合/Hall 之前检查场下限；图级非负压强检查仍不重复，Hall 叶仍验证自身输入。每次 Hall 计算可含独立有限惯性迭代。",
+   "definition": "从 psi_vac 副本及零初始单元电流开始，每步由 psi 求 B，检查场下限，调用 pressure_closure(B,psi)，核对并广播压强，选活跃点，求约化 Hall 电流/漂移，再执行磁通松弛 Green 更新。以 update.fixed_point_residual<=tol 或 maxiter 判停；relative_psi_change 仅作诊断。返回 converged 重新由终末未松弛磁通映射残差是否通过 tol 决定。返回 psi 上重新计算磁场、闭合、压强形状、Hall 状态和单元电流，再检查活跃点的 firehose 裕度及可选的严格力/欧姆相容性。终末在调用闭合/Hall 之前检查场下限；图级非负压强检查仍不重复，Hall 叶仍验证自身输入。每次 Hall 计算可含独立有限惯性迭代。",
    "model": "由调用者闭合驱动的轴对称约化 Hall、旋磁对称压强 Picard 反馈。",
    "assumptions": [
     "压强闭合须将 psi 解释为 R A_phi、单位 Wb/rad，并给出物理相容状态及 Hall 必需密度、电子压强与电势。",
@@ -6232,7 +6222,7 @@
     },
     {
      "name": "tol",
-     "description": "外层相对磁通停止阈值。",
+     "description": "外层未松弛磁通映射固定点残差阈值，并在返回 psi 上重算；松弛磁通步幅及内层惯性残差是另外的量。",
      "constraints": "本图只检查有限性，不检查正性；预期停止判据应取正值。",
      "dtype": "有限实数标量"
     },
@@ -6298,7 +6288,7 @@
     },
     {
      "name": "inertia_tolerance",
-     "description": "局部惯性电流容差。",
+     "description": "局部 Hall 未松弛电流映射残差 norm(T(J)-J)/max(norm(J),1 A/m²) 的阈值，区别于外层磁通残差和松弛电流步幅。",
      "constraints": "默认 1e-10，严格正；实际残差定义遵循 Hall 叶。",
      "dtype": "有限实数标量"
     },
@@ -6373,13 +6363,13 @@
     {
      "name": "p_parallel",
      "description": "终末闭合平行压强，单位 Pa。",
-     "constraints": "标量广播为网格，Hall 叶验证有限性；图级非负检查不在终末重复。",
+     "constraints": "终末由 Hall 叶检查网格形状、有限且非负；图本身不重复迭代层的独立压强检查。",
      "dtype": "float64 数组"
     },
     {
      "name": "p_perpendicular",
      "description": "终末闭合垂直压强，单位 Pa。",
-     "constraints": "标量广播为网格，Hall 叶验证有限性；图级非负检查不在终末重复。",
+     "constraints": "终末由 Hall 叶检查网格形状、有限且非负；图本身不重复迭代层的独立压强检查。",
      "dtype": "float64 数组"
     },
     {
@@ -6432,7 +6422,7 @@
     },
     {
      "name": "converged",
-     "description": "终末未松弛固定点残差通过 tol 的收敛标志。",
+     "description": "终末场/firehose 门禁通过后，恰在终末未松弛磁通映射 fixed_point_residual<=tol 时为真。严格相容性超限抛异常；非严格相容性消息不改变该数值标志。本图不求自由边界条件。",
      "constraints": "仅松弛停滞不能建立收敛。",
      "dtype": "bool 布尔值"
     },
@@ -6509,7 +6499,7 @@
    "failure_semantics": {
     "invalid_input": "缺口、无效网格/Green/回调/控制/非布尔或错形掩码或状态抛 ValueError/TypeError，叶与回调异常传播。终末只重复压强形状处理，叶仍拒绝非有限及无效组分；图级网格未拒负 R，但场/Hall 叶会拒绝。",
     "runtime_failure": "迭代场低于 minimum_field 时在其闭合调用前抛 FloatingPointError。终末活跃 firehose 裕度处于或低于非负 minimum_firehose_margin 时抛 FloatingPointError。终末严格平行力或广义欧姆阈值超限抛 ValueError。Hall 局部惯性不收敛抛 RuntimeError；其他回调或依赖异常继续传播。终末场在调用终末闭合前对照 minimum_field 检查。",
-    "nonconvergence": "达到外层 maxiter 后仍终末重算与检查，可返回 converged=False、最后 psi 与记录；局部惯性失败则抛 RuntimeError。",
+    "nonconvergence": "有界外层迭代后，若终末未松弛磁通映射 fixed_point_residual 仍高于 tol，在终末场/firehose 及所要求的严格相容性检查通过后返回 converged=False、重算的最后 psi 和记录；非严格相容性消息不改 converged。局部 Hall 惯性不收敛抛 RuntimeError。",
     "partial_results": "异常后不返回映射；外层有界未收敛可返回通过终末门禁的完整最后状态。"
    },
    "example": {
@@ -6524,20 +6514,17 @@
      "标量压强广播、错形拒绝、非有限/无效控制及关闭张力阈值。",
      "带插桩的终末闭合用例显示：终末场低于 minimum_field 时，在调用终末闭合之前抛错。"
     ],
-    "evidence_ceiling": "限于经调用者闭合、约化 Hall 漂移与稠密 Green 更新的有界轴对称 Picard 反馈。证据：`test_composition_reduced_hall_anisotropic_picard.py` 含 12 个测试函数，其中 1 个引用 `solve_reduced_hall_anisotropic_picard`，仅由本资产绑定; `test_anisotropic_core_scientific_correction.py` 含 17 个测试函数，其中没有函数引用 `solve_reduced_hall_anisotropic_picard`，由 8 个资产共享；本审计已执行有界示例。真值来源：绑定组合文件与修正文件中的独立制造解/解析离散检查。不建立：内置动理学压力模型、密度演化、自由边界响应、非轴对称平衡，或任意调用者闭合的收敛保证。",
+    "evidence_ceiling": "tests/cross_domain/reduced_hall_anisotropic_picard/test_composition_reduced_hall_anisotropic_picard.py 的 test_hall_disabled_recovers_static_pressure_current_and_vacuum_flux、test_nonzero_green_uses_previous_actual_state_feedback 等具名数值回归经 _run_composition 实际执行维护图。这些有界用例不证明任意闭合收敛、内置动理学模型、密度演化或自由边界响应。共享修正文件的局部 Hall 断言属于叶，不自动覆盖外层判停分支。",
     "known_limitations": [
      "调用者物理闭合与 Green 响应须有独立依据及一致 Wb/rad 磁通归一化。",
      "浮点舍入包络不界定离散化误差或实验不确定度。",
-     "资产私有组合文件中只有一个直接函数按名称引用求解器（`test_public_solver_docstring_declares_contract`，文档串检查）；共享修正文件没有直接符号调用，因此数值分支证据是组合级。"
+     "UNKNOWN：绑定图测试中未定位外层近 1 松弛及“非严格相容性超限但 converged 为真”的专门断言；停止公式及非严格消息行为依据维护实现的终末分支，不用局部 Hall 惯性测试替代这些外层用例。"
     ],
     "tests": [
      "tests/cross_domain/reduced_hall_anisotropic_picard/test_composition_reduced_hall_anisotropic_picard.py",
      "tests/cross_domain/test_anisotropic_core_scientific_correction.py"
     ]
-   },
-   "source_conflicts": [
-    "identity.definition 称按松弛后的 relative_psi_change 停止，但 outputs.converged/fixed_point_residual 要求终末未松弛映射残差通过 tol；outputs.converged 还引用本图未定义的“自由边界力相容性”。"
-   ]
+   }
   },
   {
    "asset_id": "scirel.field.dense-axisymmetric-green",
@@ -6701,7 +6688,7 @@
   },
   {
    "asset_id": "scirel.equilibrium.isotropic-picard-step",
-   "source_sha256": "250f91596d5f9636b0aed21a1c646dbf36785ad57a677590d6fb5f3beda61e9b",
+   "source_sha256": "d8985b57f081edcedd6d1e1811399914a88a5706b334ac42d8467876a697c21b",
    "summary": "由压力导数构造松弛后的网格电流，用外供格林矩阵更新磁通，并计算一次 Picard 更新的磁通变化。 顶层返回值为 scirel._result.Result 映射；映射访问保留，字段也支持属性读取。 不引入嵌套映射。",
    "definition": "按 C 顺序计算 I_target=R(dP/dpsi)dR dZ、I_new=(1−relax)I_target+relax I_old，再计算 Green 磁通和真空磁通之和。relax=1 明确保留旧电流，不计算未使用的目标。电流、Green 收缩、总磁通及 ||psi_next−psi_state||₂/|psi_edge| 任一非有限均失败，不静默置零；此接口只执行一步。 完整结果作为同一个 scirel._result.Result 映射返回；仅包裹顶层，嵌套结构保持原类型。",
    "model": "轴对称各向同性压力—磁通 Picard 网格电流更新，采用外供格林响应。",
@@ -6814,17 +6801,18 @@
    "verification": {
     "scope": [
      "四单元例的面积电流、单位格林磁通和归一化残差。",
-     "图层单单元电流投影与选定离源圆电流丝 psi 响应匹配。",
+     "tests/equilibrium/test_isotropic_picard_step.py::test_reviewed_relation_example 直接调用四单元人工单位 Green 单步；tests/cross_domain/test_legacy_six_absorption.py::test_picard_nonfinite_state_fails_instead_of_vacuum_mask 检查其非有限算术拒绝。完整求解器组合用例不直接调用这个旧单步。",
      "拒绝不完整调用。",
      "有限输入导致电流、Green 收缩或总磁通溢出的真实失败回归。",
      "返回类型回归检查顶层 scirel._result.Result、键顺序及属性读取；既有数值、状态和失败断言保持不变。"
     ],
-    "evidence_ceiling": "限于单次经给定磁通 Green 矩阵的松弛等离子体单元电流步与磁通变化测量。证据：`test_isotropic_picard_step.py` 含 2 个测试函数，其中 1 个引用 `pressure_flux_picard_step`，仅由本资产绑定; `test_composition_isotropic_pressure_flux.py` 含 10 个测试函数，其中没有函数引用 `pressure_flux_picard_step`，由 2 个资产共享; `test_legacy_six_absorption.py` 含 18 个测试函数，其中 1 个引用 `pressure_flux_picard_step`，由 8 个资产共享；本审计已执行有界示例。真值来源：绑定文件中的独立解析夹具与选定安装轮/源回归。不建立：各向异性压力闭合、完整 Picard 求解器/收敛决策，或边界条件求解。",
+    "evidence_ceiling": "tests/equilibrium/test_isotropic_picard_step.py::test_reviewed_relation_example 直接调用四单元人工单位 Green 单步；tests/cross_domain/test_legacy_six_absorption.py::test_picard_nonfinite_state_fails_instead_of_vacuum_mask 检查其非有限算术拒绝。完整求解器组合用例不直接调用这个旧单步。 这是有界离散算术证据，不替代缺少的独立离源圆丝归一化核验或完整求解器收敛证据。",
     "known_limitations": [
      "压力导数、格林矩阵、真空磁通和迭代策略由调用者提供。",
      "有限磁通更新量不等于压力电流闭合；完整求解器另验闭合残差。",
      "不强制非负半径或 Z=0 平面。",
-     "私有文件有两个函数和一个直接示例；共享组合文件没有直接调用；共享 legacy 文件增加一个直接非有限状态拒绝测试。"
+     "上述单步断言是直接调用（包括 scientific_function 别名）；完整求解器测试只覆盖其实际维护路径，不算额外的单步直接覆盖。",
+     "UNKNOWN：本资产绑定测试及查阅的本地历史中未定位离源单单元圆丝 psi 归一化见证；人工单位/对角 Green 回归不独立证明无 2*pi 的物理归一化。所需 Green 单位及功能支持不变。"
     ],
     "tests": [
      "tests/equilibrium/test_isotropic_picard_step.py",
@@ -7620,7 +7608,7 @@
   },
   {
    "asset_id": "scirel.diagnostics.firehose-mirror-margins",
-   "source_sha256": "3e2187a4c6a9c14a00c0e0f6da840e729c0c8fa104c0fc8aa5363f747add1e9f",
+   "source_sha256": "ce203200c0f6b463eafa6546a3413a4693812c091757278219467d2a5af5d330",
    "summary": "用显式固定磁通导数计算局部旋磁对称压强诊断。 以 scirel._result.Result 映射返回全部命名字段。",
    "definition": "firehose_margin=B²/mu0+p_perp-p_parallel；mirror_margin=B*d[p_perp+B²/(2*mu0)]/dB|psi=B²/mu0+B*dp_perp/dB。所有样本最小值严格为正时相应局部标志为 True。对守恒量双 Maxwell 分布，镜模条件为 1-beta_perp*(T_perp/T_parallel-1)>0。 普通非严重相消数值保留原 float64 运算顺序。异号贡献抵消后，若结果幅度不大于最大项的一半，或中间乘积/商丢失量级，则对完整关系使用精确二进制有理数求值，最后一次舍入到 float64。此算术分支不是物理容差，不把结果钳制为零，也不只特判相等压强；最终确实不可表示时仍失败。 所有命名字段作为同一个 scirel._result.Result 映射返回；按键和属性读取同一个值。",
    "model": "局部无流旋磁对称张力和长波总压强斜率准则。正导数号由此定义和双 Maxwell 阈值给出，与 Frank2509.17288v4 Eq6 的字面反号冲突；不声称作者确认勘误。",
@@ -7774,18 +7762,17 @@
    },
    "verification": {
     "scope": [
-     "显式均匀各向同性和固定 psi 多线多项式回归。",
-     "63 个守恒量双 Maxwell 状态交叉核对压强相容性与总压强斜率阈值。",
-     "四级采样加密展示固定 psi 线上有限差分收敛。",
+     "tests/cross_domain/test_spectral_scientific_correction.py::test_invariant_bimaxwellian_mirror_threshold_has_positive_slope_sign 断言显式双 Maxwell 镜模/火管用例；tests/cross_domain/test_spectral_scientific_correction.py::test_missing_derivative_information_is_not_silently_zero 检查缺导数拒绝。另绑定的相消测试检查浮点算术，不构成物理状态扫描。",
      "以独立高精度 Decimal 验证有限输入的中间平方上下溢及相消；最终不可表示的结果仍拒绝。",
      "在已安装 wheel 上，以独立 2000 位 Decimal 算术核对相等/不等压强抵消、不同量纲下相邻浮点输入、镜模余量正负号、非连续多维数组及精确零值标志。",
      "Result 包装保持全部键、键顺序、数值、形状、dtype 与映射访问（基线 0f74255b），包括零维标量裕度；属性读取到同一字段。"
     ],
-    "evidence_ceiling": "解析恒等式、显式失败回归和独立数值比较支持所述数学合同，不确证实测等离子体有效性或一般稳定性定理。",
+    "evidence_ceiling": "tests/cross_domain/test_spectral_scientific_correction.py::test_invariant_bimaxwellian_mirror_threshold_has_positive_slope_sign 断言显式双 Maxwell 镜模/火管用例；tests/cross_domain/test_spectral_scientific_correction.py::test_missing_derivative_information_is_not_silently_zero 检查缺导数拒绝。另绑定的相消测试检查浮点算术，不构成物理状态扫描。 证据限于这些具名样本及其余绑定算术回归；缺少的扫描/加密证据保持 UNKNOWN，不证明实测等离子体有效性或一般稳定性定理。",
     "known_limitations": [
      "导数/轴/psi 参数要求调用者提供缺失的物理信息；全局 B 排序不属于本合同。",
      "样本标志和残差只是局部模型诊断，不证明全局平衡或动力学稳定性。",
-     "已记录 Frank Eq6 的字面符号冲突；实现采用所述总压强导数及双 Maxwell 准则，不宣称作者勘误。"
+     "已记录 Frank Eq6 的字面符号冲突；实现采用所述总压强导数及双 Maxwell 准则，不宣称作者勘误。",
+     "UNKNOWN：此前所述 63 个守恒量双 Maxwell 状态扫描及四级固定 psi 差分加密，均未在绑定断言及查阅的本地历史中定位；不声称这两项已有可重放覆盖，模型支持保持原样。"
     ],
     "tests": [
      "tests/cross_domain/test_spectral_scientific_correction.py",
@@ -8726,9 +8713,9 @@
   },
   {
    "asset_id": "scirel.equilibrium.axisymmetric-anisotropic-picard",
-   "source_sha256": "d6e8536d04873b7121e88507e50f0cf101fa6d875a6fa9dfb8b2a1b986edbfd5",
+   "source_sha256": "f62c406052d13d93ddd87b5277954d2b1fdaad206c7d75e707028e290314509b",
    "summary": "将外供各向异性压力闭合与当前极向场、柱坐标压力力和稠密格林磁通更新迭代耦合，最后重新求值并检查返回的末状态。",
-   "definition": "从 psi_vac 副本重构场并执行迭代场门禁，调用 pressure_closure(B,psi)，广播或验证压力，求 div(P)、掩蔽非激活 J_phi，再做磁通松弛 Green 更新。以未松弛 step.fixed_point_residual<=tol 或次数上限判停，相对松弛磁通步幅仅作诊断；末 psi 上重算场、闭合、力及电流，按所声明顺序检查最小场、firehose 裕度和严格平行力相容性。",
+   "definition": "从 psi_vac 副本重构场并执行迭代场门禁，调用 pressure_closure(B,psi)，广播或验证压力，求 div(P)、掩蔽非激活 J_phi，再做磁通松弛 Green 更新。以未松弛 step.fixed_point_residual<=tol 或次数上限判停，相对松弛磁通步幅仅作诊断；末 psi 上先重算场并检查 minimum_field，通过后才调用终末闭合、掩码回调和力核，再重算电流及未松弛映射，最后检查 firehose 裕度和可选严格平行力相容性。",
    "model": "有界轴对称旋磁压力 Picard 组合，压力闭合由调用者提供。",
    "assumptions": [
     "闭合解释当前 Wb/rad 的 psi 并返回有物理依据的 Pa 压力。",
@@ -9397,7 +9384,7 @@
   },
   {
    "asset_id": "scirel.equilibrium.axisymmetric-picard-update",
-   "source_sha256": "616399863b8b1547e47baeac494ace4ce7575f06f6d1d0b939b86ab1e4d6392f",
+   "source_sha256": "27ecc64bdfad33d07d88d75df46bdc8a64328e2098b2a4ae7263f67ef16ec5b0",
    "summary": "将环向电流密度积分为单元电流，经稠密格林矩阵求磁通候选，再对旧磁通松弛，报告磁通与电流相对变化。 顶层返回值为 scirel._result.Result 映射；映射访问保留，字段也支持属性读取。 不引入嵌套映射。",
    "definition": "默认复合梯形积分恰覆盖节点矩形域，边界权重为半间隔；显式 (radial_edges,axial_edges) 各有中心数加一项，有限、单调并包围中心，定义单元中心面积；不乘 2πR。 令 candidate=psi_vac+G_psi@I，psi_next=relax×psi_state+(1−relax)×candidate；返回松弛步变化、原始电流变化及未松弛固定点残差。 完整结果作为同一个 scirel._result.Result 映射返回；仅包裹顶层，嵌套结构保持原类型。",
    "model": "轴对称稠密格林单步 Picard，松弛对象是磁通而非电流。",
@@ -9526,11 +9513,11 @@
      "显式均匀单元边界复现完整中心面积约定。",
      "返回类型回归检查顶层 scirel._result.Result、键顺序及属性读取；既有数值、状态和失败断言保持不变。"
     ],
-    "evidence_ceiling": "限于单次轴对称 Picard 磁通更新：环向电流经稠密单元电流 Green 矩阵。证据：`test_axisymmetric_picard_update.py` 含 5 个测试函数，其中 1 个引用 `update_axisymmetric_picard_flux`，仅由本资产绑定; `test_anisotropic_core_scientific_correction.py` 含 17 个测试函数，其中没有函数引用 `update_axisymmetric_picard_flux`，由 8 个资产共享；本审计已执行有界示例。真值来源：绑定私有文件与修正文件中的独立制造解/解析离散检查。不建立：完整收敛平衡、自动迭代次数选择、电流松弛或连 flux 转换。",
+    "evidence_ceiling": "tests/cross_domain/test_anisotropic_core_scientific_correction.py 将本维护实现直接导入为 update；test_nonuniform_compact_current_integral_converges, test_uniform_positive_radius_explicit_cells_preserved, test_linear_nodal_domain_integral_exact 断言非均匀积分、显式单元面积及线性节点积分。这些是有界制造/解析离散用例，不是整文件覆盖，也不验证任意外供压力、Green 或壁模型的物理正确性。",
     "known_limitations": [
      "外供物理闭合和格林响应须有独立证据，并一致使用 psi=R A_phi（Wb/rad）。",
      "浮点舍入包络不约束离散误差或实验不确定度。",
-     "资产私有测试文件有五个函数和一个直接示例；共享修正文件没有直接符号调用，因此有限更新证据是示例加组合级修正检查。"
+     "上述共享文件中的具名断言实际调用本入口，包括其参数化样本；范围仅限所列用例，文件中其他资产的断言不计入本项。"
     ],
     "tests": [
      "tests/equilibrium/test_axisymmetric_picard_update.py",

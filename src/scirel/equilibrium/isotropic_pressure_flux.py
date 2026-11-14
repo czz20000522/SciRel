@@ -166,7 +166,8 @@ def solve_isotropic_pressure_flux(
         ``maxiter``.
     residual : float
         Last normalized L2 flux-change residual [dimensionless]; positive
-        infinity before any update.
+        infinity only after valid initialization and before any update; initial-fit
+        failure or zero psi_edge instead yields nonfinite status and NaN residuals.
     residual_history : ndarray of float64, shape [N_completed]
         Flux residuals after completed paired residual evaluations
         [dimensionless].
@@ -178,7 +179,8 @@ def solve_isotropic_pressure_flux(
         the shared solver's specific terminal failure reason.
     closure_residual : float
         Terminal normalized pressure-current residual [dimensionless];
-        positive infinity before any update.
+        positive infinity only after valid initialization and before any update; initial-fit
+        failure or zero psi_edge instead yields nonfinite status and NaN residuals.
     closure_residual_history : ndarray of float64, shape [N_completed]
         Closure residuals at the same states as ``residual_history``
         [dimensionless].

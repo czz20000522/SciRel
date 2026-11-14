@@ -147,11 +147,11 @@ def close_reduced_hall_drift(
     p_parallel : real array-like
         Pressure parallel to the local poloidal field used in the force
         projection. [Pa] Shape: ``(N_Z, N_R)`` after joint broadcasting.
-        Values must be finite; a physical state should also be nonnegative.
+        Values must be finite and nonnegative, including with explicit ion pressures.
     p_perpendicular : real array-like
         Pressure perpendicular to the local poloidal field used in the force
         projection. [Pa] Shape: ``(N_Z, N_R)`` after joint broadcasting.
-        Values must be finite; a physical state should also be nonnegative.
+        Values must be finite and nonnegative, including with explicit ion pressures.
     closure_state : Python mapping
         Species state with required ``ion_density``, ``electron_pressure`` and
         ``electrostatic_potential`` fields, optionally with
@@ -159,7 +159,9 @@ def close_reduced_hall_drift(
         ``ion_p_parallel``, ``ion_p_perpendicular`` and
         ``pressure_composition_mode``. [mixed SI: m^-3, Pa, V] Shape: mapping
         of scalars or ``(N_Z, N_R)`` arrays. Required fields must broadcast to
-        the grid; densities and pressures must be nonnegative.
+        the grid; densities and pressures must be nonnegative. Omitted electron
+        components reuse electron_pressure; each omitted ion component is the
+        corresponding total minus electron pressure and must remain nonnegative.
     plasma_mask : boolean array
         Cells used for current and Hall-drift support. [boolean] Shape:
         ``(N_Z, N_R)``. Must be a true boolean array; ``J_phi`` is zero outside
@@ -190,7 +192,9 @@ def close_reduced_hall_drift(
         [dimensionless] Shape: scalar. Default: 0.5. Must satisfy
         ``0 <= value < 1``.
     inertia_tolerance : real scalar, optional
-        Relative current-change stopping threshold for the local iteration.
+        Threshold for the unrelaxed current-map residual
+        norm(T(J)-J)/max(norm(J),1 A/m^2), reevaluated at the returned J.
+        The relaxed inertia_relative_change is diagnostic only.
         [dimensionless] Shape: scalar. Default: 1e-10. Must be strictly
         positive.
     inertia_max_iterations : int, optional
@@ -219,13 +223,15 @@ def close_reduced_hall_drift(
     parallel_force : float64 [Pa/m]
         Target force projected along the poloidal field.
     parallel_force_error : float [dimensionless]
-        In-mask RMS parallel target force divided by RMS target-force magnitude.
+        Resolved relative error max(absolute-roundoff,0)/max(scale_rms,roundoff,tiny)
+        on the plasma mask; the raw RMS ratio is parallel_force_diagnostics.raw_relative.
     momentum_residual_R : float64 [Pa/m]
         Radial residual J_phi B_Z minus target radial force.
     momentum_residual_Z : float64 [Pa/m]
         Axial residual -J_phi B_R minus target axial force.
     momentum_error : float [dimensionless]
-        In-mask RMS momentum-residual magnitude divided by RMS target-force magnitude.
+        Resolved relative error max(absolute-roundoff,0)/max(scale_rms,roundoff,tiny)
+        on the plasma mask; the raw RMS ratio is momentum_diagnostics.raw_relative.
     ion_toroidal_velocity : float64 [m/s]
         Capped ion toroidal drift on Hall-active cells.
     electron_toroidal_velocity : float64 [m/s]
@@ -253,7 +259,8 @@ def close_reduced_hall_drift(
     ohm_parallel : float64 [V/m]
         Generalized-Ohm residual projected along the poloidal field.
     generalized_ohm_error : float [dimensionless]
-        Active-cell RMS generalized-Ohm residual divided by RMS electric/Hall/drift scale.
+        Resolved relative error max(absolute-roundoff,0)/max(scale_rms,roundoff,tiny)
+        on Hall-active cells; the raw RMS ratio is ohm_diagnostics.raw_relative.
     firehose_margin : float64 [dimensionless]
         Local 1-mu0*(p_parallel-p_perpendicular)/max(|B|^2,tiny).
     ion_skin_depth : float64 [m]
@@ -279,7 +286,7 @@ def close_reduced_hall_drift(
     inertia_iterations : integer [count]
         Executed local current updates, including one pass when inertia is disabled.
     inertia_relative_change : float [dimensionless]
-        Last local current update's relative norm change.
+        Last relaxed local current update's relative norm change; diagnostic only.
     inertia_converged : bool [boolean]
         Whether local iteration stopped successfully or inertia was bypassed.
     parallel_force_diagnostics : dict [mixed SI]

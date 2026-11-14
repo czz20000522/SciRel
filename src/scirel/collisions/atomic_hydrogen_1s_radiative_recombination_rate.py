@@ -91,10 +91,12 @@ def evaluate_atomic_hydrogen_1s_radiative_recombination_rate(electron_temperatur
     ``A_nl * 1e-14 * sqrt(ionization_energy / Ry)
     * (b_n**1.5 / (b_n + x_nl)) * 1e-6``
 
-    after clipping the temperature to the declared fit interval. Endpoint values
-    repeat outside that interval. Excited-level, three-body and dielectronic
-    recombination are separate relations. No external atomic-physics reference is
-    bound by this callable.
+    after numerical clipping to [0.1, 20100] eV, a range distinct from the
+    [0.1, 30] eV accuracy domain. Endpoint values repeat only outside the
+    numerical range. Excited-level, three-body and dielectronic recombination
+    are separate relations. An independent physics-only oracle is bound in
+    the named tests; an external experimental or printed-table check remains
+    UNKNOWN.
 
     The fit is validated only on ``[0.1, 30] eV``. Its accuracy there is
     measured against an independent oracle: the exact H(1s) photoionization cross
@@ -112,8 +114,11 @@ def evaluate_atomic_hydrogen_1s_radiative_recombination_rate(electron_temperatur
     ``5.3%`` claim is refuted by the 20 eV point (+5.715%). Above 30 eV the
     fit's ``b**1.5/(b+x)`` form has already switched to its ``T**-1.5``
     asymptotic branch while the exact rate falls more slowly, so the departure
-    keeps growing. Values above 30 eV, and below 0.1 eV, are returned at the fit
-    interval's endpoints with a warning; they are not extrapolations.
+    keeps growing. Numerical clipping is [0.1, 20100] eV: below 0.1 eV
+    return the low endpoint, 30<T<=20100 eV evaluates at T, and T>20100 eV
+    returns the high endpoint. Inputs below 0.1 or above 30 eV emit
+    ApplicabilityWarning once per violated side per call. Domain-external
+    finite values do not extend the accuracy claim.
 
     Examples
     --------

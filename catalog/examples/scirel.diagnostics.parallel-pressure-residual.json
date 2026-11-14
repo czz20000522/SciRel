@@ -245,18 +245,17 @@
  },
  "verification": {
   "scope": [
-   "Explicit uniform-isotropic and fixed-psi multi-line polynomial regressions.",
-   "Sixty-three invariant bi-Maxwellian states cross-check pressure compatibility and total-pressure-slope threshold.",
-   "Four sample refinements demonstrate finite-difference convergence along fixed-psi lines.",
+   "tests/cross_domain/test_spectral_scientific_correction.py::test_uniform_isotropic_parallel_state_with_explicit_derivative asserts zero residual; tests/cross_domain/test_spectral_scientific_correction.py::test_fixed_flux_derivative_must_not_mix_flux_surfaces checks the two fixed-psi polynomial lines; tests/cross_domain/test_spectral_scientific_correction.py::test_missing_derivative_information_is_not_silently_zero checks missing-derivative rejection.",
    "Result wrapping preserves every key, key order, value, shape, dtype and mapping access against baseline 0f74255b; attribute access reaches the same fields."
   ],
   "tests": [
    "tests/cross_domain/test_spectral_scientific_correction.py"
   ],
-  "evidence_ceiling": "Analytic identities, explicit failure regressions and independent numerical comparisons establish the stated mathematical contract. They do not establish measured-plasma validity or a general stability theorem.",
+  "evidence_ceiling": "tests/cross_domain/test_spectral_scientific_correction.py::test_uniform_isotropic_parallel_state_with_explicit_derivative asserts zero residual; tests/cross_domain/test_spectral_scientific_correction.py::test_fixed_flux_derivative_must_not_mix_flux_surfaces checks the two fixed-psi polynomial lines; tests/cross_domain/test_spectral_scientific_correction.py::test_missing_derivative_information_is_not_silently_zero checks missing-derivative rejection. The evidence is limited to those named samples and the remaining bound arithmetic regressions; the missing survey/refinement stays UNKNOWN. No measured-plasma validity or general stability theorem is established.",
   "known_limitations": [
    "The derivative/axis/psi keywords require callers to supply missing physical information; global-B sorting is not part of this contract.",
-   "Sampled flags and residuals are local model diagnostics, not proof of global equilibrium or kinetic stability."
+   "Sampled flags and residuals are local model diagnostics, not proof of global equilibrium or kinetic stability.",
+   "UNKNOWN: the previously stated 63-state invariant bi-Maxwellian survey and four-level fixed-psi finite-difference refinement were not located in the bound assertions or inspected local history. No claim of replayable coverage for those two checks is made; model support is unchanged."
   ]
  },
  "references": [

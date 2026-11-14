@@ -4,7 +4,7 @@
  "records": [
   {
    "asset_id": "scirel.electromagnetism.arbitrary-points",
-   "source_sha256": "c6767826df0a9a0ed585eff3b0c6e080a3d95c8762be1b890f09be274a9a6f40",
+   "source_sha256": "457857f2ff17fbf657c89d362e4cac326e5bc13361a6e75bffbdd22eb2d719e6",
    "summary": "构造有限个带符号权重的圆电流丝源点，并计算依赖目标网格的场。",
    "definition": "有限个 (R,Z) 点共用一个电流标量，并带有无量纲有符号权重。",
    "model": "用 Green 核计算的轴对称理想圆电流丝。",
@@ -62,7 +62,7 @@
     ]
    },
    "failure_semantics": {
-    "invalid_input": "点、电流、权重、网格畸形或非有限，或与活动电流丝重合时抛出 ValueError；不支持的 simplify 或装置添加抛出 NotImplementedError。",
+    "invalid_input": "点、电流、权重、网格畸形或非有限，或与活动电流丝重合时抛出 ValueError；不支持的 simplify 或装置添加抛出 NotImplementedError。 构造器的未知关键字抛出 TypeError。",
     "runtime_failure": "不可表示的 Green 响应产生 FloatingPointError 并向上传播；参数化更新失败时恢复先前的有效几何。",
     "nonconvergence": "不适用；构造和场计算均为直接操作。",
     "partial_results": "构造器失败不返回对象；原子化更新保持先前的有效状态。"
@@ -76,7 +76,7 @@
     "known_limitations": [
      "不声称对装置常数、导体面积代理或材料磁化做过实验验证。",
      "几何与权重数组可以直接修改，缓存会检测内容变化；但使参数化几何与其参数不一致的修改不在支持约定内。",
-     "继承接口对未知 **kwargs 可能较为宽松，但不保证任意关键字的语义。",
+     "只接受已声明的父类 current、weights、mesh 关键字；未知关键字沿构造器转发到 CurrentFilamentSet 时抛 TypeError。依据为签名和转发路径；未绑定本类的未知关键字定向断言。",
      "绘图与 patch、简化与克隆、多进程、电极以及持久扫描均被排除或尚未解决。",
      "不主张科学正确性、实验验证或发行批准。"
     ],
@@ -214,9 +214,9 @@
   },
   {
    "asset_id": "scirel.electromagnetism.magnet-ring",
-   "source_sha256": "666be44b545b5e178ebc84a425ee6d4b52fcb2669fa4de956bdc005bb3e54331",
-   "summary": "构造矩形永磁环截面的有符号双面 16 丝近似。",
-   "definition": "两个径向面各放置 8 个轴向电流丝点，并使用相反的默认权重。",
+   "source_sha256": "0afd8770d9c7ca59bbd18812fff82129e915d2845da400d1a00d2822fb4d4c16",
+   "summary": "构造矩形永磁环截面的有符号双面近似，默认共 16 丝。",
+   "definition": "N=len(weights) 为正偶数，两个径向面各放 N/2 个轴向电流丝点；默认 N=16、每面 8 点，默认权重方向相反。",
    "model": "用轴对称理想圆电流丝近似几何。",
    "boundary": "生成的电流丝半径必须非负；活动源与目标重合仍会产生奇异性。",
    "assumptions": [
@@ -295,7 +295,7 @@
     ]
    },
    "failure_semantics": {
-    "invalid_input": "几何、电流、权重、网格无效或与活动电流丝重合时抛出 ValueError；simplify 抛出 NotImplementedError。",
+    "invalid_input": "几何、电流、权重、网格无效或与活动电流丝重合时抛出 ValueError；simplify 抛出 NotImplementedError。 构造器的未知关键字抛出 TypeError。",
     "runtime_failure": "不可表示的 Green 响应产生 FloatingPointError 并向上传播。",
     "nonconvergence": "不适用；几何和场计算均为直接操作。",
     "partial_results": "构造器失败不返回源；原子化更新保持先前状态。"
@@ -309,7 +309,7 @@
     "known_limitations": [
      "不声称对装置常数、导体面积代理或材料磁化做过实验验证。",
      "几何与权重数组可以直接修改，缓存会检测内容变化；但使参数化几何与其参数不一致的修改不在支持约定内。",
-     "继承接口对未知 **kwargs 可能较为宽松，但不保证任意关键字的语义。",
+     "只接受已声明的父类 current、weights、mesh 关键字；未知关键字沿构造器转发到 CurrentFilamentSet 时抛 TypeError。依据为签名和转发路径；未绑定本类的未知关键字定向断言。",
      "绘图与 patch、简化与克隆、多进程、电极以及持久扫描均被排除或尚未解决。",
      "不主张科学正确性、实验验证或发行批准。"
     ],
@@ -322,7 +322,7 @@
   },
   {
    "asset_id": "scirel.electromagnetism.rectangular-coil",
-   "source_sha256": "ad9e7fb059a3f8a8952b7e9cfc6796d8d2feae4509addfe4b05d4529c6e0b805",
+   "source_sha256": "c4f9d5b36f47fd3763003f8abb4ac8cba1eda4dbbd20b49a3441e4e4be54d0a5",
    "summary": "构造有序的矩形圆电流丝阵列，支持可选旋转，并继承电流与权重控制。",
    "definition": "生成 nr×nz 个中心点，径向索引在外、轴向索引在内。",
    "model": "轴对称理想圆电流丝源阵列。",
@@ -415,7 +415,7 @@
     ]
    },
    "failure_semantics": {
-    "invalid_input": "几何、计数、电流、权重、网格无效或与活动电流丝重合时抛出 ValueError。",
+    "invalid_input": "几何、计数、电流、权重、网格无效或与活动电流丝重合时抛出 ValueError。 构造器的未知关键字抛出 TypeError。",
     "runtime_failure": "不可表示的 Green 响应产生 FloatingPointError 并向上传播。",
     "nonconvergence": "不适用；几何和场计算均为直接操作。",
     "partial_results": "构造器失败不返回源；原子化几何更新保持先前状态。"
@@ -429,7 +429,7 @@
     "known_limitations": [
      "不声称对装置常数、导体面积代理或材料磁化做过实验验证。",
      "几何与权重数组可以直接修改，缓存会检测内容变化；但使参数化几何与其参数不一致的修改不在支持约定内。",
-     "继承接口对未知 **kwargs 可能较为宽松，但不保证任意关键字的语义。",
+     "只接受已声明的父类 current、weights、mesh 关键字；未知关键字沿构造器转发到 CurrentFilamentSet 时抛 TypeError。依据为签名和转发路径；未绑定本类的未知关键字定向断言。",
      "绘图与 patch、简化与克隆、多进程、电极以及持久扫描均被排除或尚未解决。",
      "不主张科学正确性、实验验证或发行批准。"
     ],
@@ -442,7 +442,7 @@
   },
   {
    "asset_id": "scirel.electromagnetism.trex-coil",
-   "source_sha256": "d592bac186a71cbb7a0bf390f5ec6fa7037b9178c1065a9c6130b5f6523c9096",
+   "source_sha256": "d90be0d349865bdf950c29d408c135737bfd4dd19d2e06f1d6af935d170e7afd",
    "summary": "构造固定的 88 点 TREX 线圈几何，并继承电流、权重、网格和场方法。",
    "definition": "五个径向列各含 16 个轴向点，第六列含 8 个轴向中点。",
    "model": "采用声明几何常数的轴对称理想圆电流丝点云。",
@@ -499,7 +499,7 @@
     ]
    },
    "failure_semantics": {
-    "invalid_input": "z0、电流、权重或网格无效，或与活动电流丝重合时抛出 ValueError；直接赋值 rz_pts 抛出 NotImplementedError。",
+    "invalid_input": "z0、电流、权重或网格无效，或与活动电流丝重合时抛出 ValueError；直接赋值 rz_pts 抛出 NotImplementedError。 构造器的未知关键字抛出 TypeError。",
     "runtime_failure": "Green 响应的 FloatingPointError 向上传播。",
     "nonconvergence": "不适用；几何和场计算均为直接操作。",
     "partial_results": "构造或更新失败时不返回新源，并保留先前的有效几何。"
@@ -513,7 +513,7 @@
     "known_limitations": [
      "不声称对装置常数、导体面积代理或材料磁化做过实验验证。",
      "几何与权重数组可以直接修改，缓存会检测内容变化；但使参数化几何与其参数不一致的修改不在支持约定内。",
-     "继承接口对未知 **kwargs 可能较为宽松，但不保证任意关键字的语义。",
+     "只接受已声明的父类 current、weights、mesh 关键字；未知关键字沿构造器转发到 CurrentFilamentSet 时抛 TypeError。依据为签名和转发路径；未绑定本类的未知关键字定向断言。",
      "绘图与 patch、简化与克隆、多进程、电极以及持久扫描均被排除或尚未解决。",
      "不主张科学正确性、实验验证或发行批准。"
     ],

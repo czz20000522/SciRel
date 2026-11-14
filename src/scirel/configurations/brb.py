@@ -33,6 +33,8 @@ class TREXCoil(ArbitraryPoints):
 
     Raises
     ------
+    TypeError
+        If an unknown constructor keyword reaches CurrentFilamentSet.
     ValueError
         If ``z0``, current, weights, mesh, or field geometry violates the
         declared domain, or a target is coincident with an active filament.

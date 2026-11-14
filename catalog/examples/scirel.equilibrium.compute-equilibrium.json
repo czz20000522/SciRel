@@ -172,7 +172,7 @@
  "failure_semantics": {
   "invalid_input": "ValueError before iteration for shape, dtype, grid, parameter, mask or contract violations.",
   "runtime_failure": "nonfinite status for nonfinite derivative/current/Green/fit/residual; no nonfinite pressure derivative is silently replaced by zero.",
-  "nonconvergence": "maxiter status with last local state and residual; maxiter=0 has residual +inf.",
+  "nonconvergence": "At the iteration bound without both residual gates passing, return maxiter and the last state. Even at maxiter=0, the initial pressure fit and nonzero psi_edge gate run first. Initial-fit failure or psi_edge=0 returns status=nonfinite, iterations=0 and both residuals NaN; only a valid initial state with no updates returns maxiter with both residuals +inf.",
   "partial_results": "nonfinite is explicitly not accepted; failed Green arithmetic retains the preceding finite flux/current pair. Histories contain only completed paired residual evaluations."
  },
  "public_api": {

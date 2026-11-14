@@ -22,7 +22,7 @@
   "known_limitations": [
    "No experimental validation of source device constants, conductor area proxy or material magnetization is claimed.",
    "Direct geometry/weight arrays can be mutated; cache content changes are detected, but mutation that desynchronizes parameterized geometry from its parameters is outside the supported contract.",
-   "Unknown **kwargs are permissive where inherited; no arbitrary keyword semantic claim.",
+   "Only declared inherited current, weights and mesh keywords are accepted; unknown keywords raise TypeError through CurrentFilamentSet. This follows the constructor signature and forwarding path; a dedicated unknown-keyword assertion for this class is not bound.",
    "Plotting/patch, simplify/clone, multiprocessing, electrodes and persistent sweeps are excluded or unresolved.",
    "No scientific, experimental or licensing approval is claimed."
   ]
@@ -135,7 +135,7 @@
   ]
  },
  "failure_semantics": {
-  "invalid_input": "ValueError is raised for invalid z0, current, weights, mesh, or active-filament coincidence; direct rz_pts assignment is NotImplementedError.",
+  "invalid_input": "ValueError is raised for invalid z0, current, weights, mesh, or active-filament coincidence; direct rz_pts assignment is NotImplementedError. Unknown constructor keywords raise TypeError.",
   "runtime_failure": "FloatingPointError from the Green response propagates.",
   "nonconvergence": "Not applicable; the geometry and field evaluation are direct.",
   "partial_results": "A failed construction or update returns no new source and preserves prior valid geometry."
