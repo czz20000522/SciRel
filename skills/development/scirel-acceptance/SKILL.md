@@ -19,8 +19,9 @@ A change is done only when the checks here pass. Run them yourself; do not assum
 `check_all.py` prints one line with both counts before its verdict, for example:
 
 ```text
-steps 10/10 passed; tests collected 3021, selected 3021, deselected 0, passed 3019, failed 0, error 0, skipped 2, xfailed 0, xpassed 0 (skip reasons: engine is not running (2))
-SKIP  engine is not running  (2): tests/docs/test_build.py::test_live_build, tests/docs/test_build.py::test_live_links
+steps 10/10 passed; tests collected 3021, selected 3021, deselected 0, passed 3019, failed 0, error 0, skipped 2, xfailed 0, xpassed 0 (skip reasons: Windows-only path test (1); empty report parameter set (1))
+SKIP  Windows-only path test  (1): tests/delivery/test_solving_skill.py::test_windows_skill_root_cannot_have_a_redirected_ancestor
+SKIP  empty report parameter set  (1): tests/tooling/test_solved_examples.py::test_example_reports_pass_the_validator[NOTSET]
 ALL GREEN
 ```
 
