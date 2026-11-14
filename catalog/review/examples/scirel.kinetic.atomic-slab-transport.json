@@ -5,7 +5,7 @@
   "en": "Finite atomic slab transport composition",
   "zh": "有限速度原子 slab 输运组合"
  },
- "summary": "Run reusable finite velocity mesh, boundary, collision, generation and moment composition for an atomic slab.",
+ "summary": "Review-only finite atomic slab candidate with synthetic tests for generation bookkeeping, stopping and selected input rejection; independent scientific validation is unknown.",
  "taxonomy": [
   "kinetic",
   "neutral-transport",
@@ -16,67 +16,69 @@
  ],
  "discovery": {
   "capability": [
-   "Finite atomic slab transport composition",
-   "Run reusable finite velocity mesh, boundary, collision, generation and moment composition for an atomic slab."
+   "Review-only finite atomic slab transport composition",
+   "Synthetic behavior checks for generation accumulation and stopping."
   ],
   "operation": [
    "atomic slab inputs -> generation distributions, moments and stopping diagnostics"
   ],
-  "model": "Finite atomic slab transport composition.",
-  "geometry": "Finite typed scientific input mapping",
-  "boundary": "Declared finite input and typed failure contract",
-  "device_scope": "generic"
+  "model": "Candidate composition of a finite velocity mesh, incoming boundary, ionization, simple charge exchange, radiative recombination and moment reduction; no molecular or elastic source.",
+  "geometry": "One spatial axis x in metres and normalized cylindrical velocity axes vr/vx; synthetic tests use four spatial samples.",
+  "boundary": "Incoming positive-vx first flight and zero incoming scattered-generation boundaries; tested with an x-aligned zero pipe diameter.",
+  "device_scope": "unclassified"
  },
  "identity": {
   "relation": "atomic slab inputs -> generation distributions, moments and stopping diagnostics",
-  "direction": "typed inputs -> typed scientific result",
-  "definition": "Finite atomic slab transport composition.",
-  "model": "Finite atomic slab transport composition.",
-  "geometry": "Finite typed scientific input mapping",
-  "coordinates": "Caller-declared units and axes",
-  "boundary": "No hidden defaults or source checkout dependencies",
+  "direction": "candidate input mapping -> generation fields, moments and stopping diagnostics",
+  "definition": "Review candidate implemented only in catalog/review/candidates/src/scirel/kinetic/atomic_slab_transport.py; tests/conftest.py extends imports for the review harness. This is not an installed-wheel capability.",
+  "model": "Finite slab first-flight and scattered-generation composition with simple charge exchange and radiative recombination; scientific applicability is not established by the synthetic tests.",
+  "geometry": "One spatial axis with cylindrical velocity distributions shaped (nvr, nvx, nx).",
+  "coordinates": "profiles.x in metres, Ti/Te and incident energies in eV, profiles.n in m^-3; normalized velocity axes are returned.",
+  "boundary": "The current implementation passes incident.density_m3 directly as a boundary flux target; the synthetic tests do not validate that unit interpretation.",
   "assumptions": [
-   "Caller supplies complete finite typed inputs",
-   "Declared failure states are preserved"
+   "The synthetic case supplies aligned x/Ti/Te/n arrays, positive temperatures and density, mu=2, mesh_size=3, one 3 eV energy and zero pipe diameter.",
+   "Stopping is controlled by a positive truncate threshold and an integer-converted max_generations value of at least one; reaching the cap returns diagnostics rather than raising for nonconvergence."
   ]
  },
  "inputs": [
   {
    "name": "inputs",
-   "description": "Complete typed scientific input mapping.",
-   "units": "caller-declared",
+   "description": "Candidate mapping with profiles, incident, configuration.kinetic_h, pipe_diameter_m and solver controls; see identity for the tested field interpretation.",
+   "units": "mixed; see identity.coordinates and identity.boundary",
    "shape": "mapping",
    "dtype": "mapping",
    "required": true,
-   "constraints": "Finite fields and declared model controls."
+   "constraints": "The tests supply four aligned spatial samples, Ti=Te=5 eV, n=1e18 m^-3, positive boundary target and generation caps 1, 2 and 3. These values are synthetic inputs, not physical calibration."
   }
  ],
  "outputs": [
   {
    "name": "result",
-   "description": "Complete scientific result mapping.",
-   "units": "caller-declared",
+   "description": "Distribution, generation_distributions, generation_count, axes, moments, source fields and generation_delta/stopped/stop_reason diagnostics from the review candidate.",
+   "units": "mixed candidate field units; no independent unit validation asserted",
    "shape": "mapping",
    "dtype": "mapping",
    "required": true,
-   "constraints": "Finite fields and declared diagnostics."
+   "constraints": "The synthetic tests check finite field shapes, positive density, nonzero generations, distribution accumulation and stopping diagnostics. They do not establish independent physical correctness."
   }
  ],
  "applicability": {
   "preconditions": [
-   "Inputs satisfy the declared finite model contract"
+   "Candidate imports require the repository review harness; this record does not declare an installed-wheel entry point.",
+   "The tested synthetic fields satisfy existing candidate and leaf input checks."
   ],
   "supported": [
-   "Run reusable finite velocity mesh, boundary, collision, generation and moment composition for an atomic slab."
+   "Repository-local behavior checks on a four-point synthetic slab: finite outputs, generation caps, accumulated fields and threshold stopping."
   ],
   "excluded": [
-   "Unspecified source models and hidden runtime state"
+   "Public package availability, generic-device applicability and release acceptance.",
+   "Reconstruction of the unavailable private case, independent physical validation and parameter-envelope or lower/upper-bound coverage."
   ]
  },
  "failure_semantics": {
-  "invalid_input": "Raises ValueError for malformed or nonfinite inputs.",
-  "runtime_failure": "Propagates numerical failures without fabricated output.",
-  "nonconvergence": "Returns declared bounded nonconvergence state when applicable.",
+  "invalid_input": "Selected existing ValueError paths are tested: non-dict inputs; misaligned profiles; nonpositive temperatures; negative or nonfinite density; repeated x; nonpositive generation cap; zero/nonfinite truncate; invalid pipe text or shape. This is not exhaustive malformed-input coverage.",
+  "runtime_failure": "Leaf errors propagate; numerical overflow and other runtime failure paths are not exercised by this synthetic suite.",
+  "nonconvergence": "When the generation cap is reached before threshold stopping, returns generation_stopped=False and generation_stop_reason='max_generations'; this is not an exception or proof of convergence.",
   "partial_results": "No partial result on validation failure."
  },
  "public_api": {
@@ -91,21 +93,25 @@
   "dependencies": []
  },
  "example": {
-  "description": "Bounded representative call.",
-  "code": "from scirel.kinetic import solve_atomic_slab_transport\nresult=solve_atomic_slab_transport(inputs)\nassert result[\"distribution\"].ndim == 3",
-  "expected": "Finite typed result mapping."
+  "description": "Repository review-harness example only, using the same synthetic fields as the direct tests; the submodule is not in the public wheel.",
+  "code": "from scirel.kinetic.atomic_slab_transport import solve_atomic_slab_transport\ninputs = {\"profiles\": {\"x\": [0.0, 1e-4, 2e-4, 3e-4], \"Ti\": [5.0]*4, \"Te\": [5.0]*4, \"n\": [1e18]*4, \"mu\": 2.0}, \"configuration\": {\"kinetic_h\": {\"mesh_size\": 3}}, \"incident\": {\"energies_eV\": [3.0], \"density_m3\": 1e15}, \"pipe_diameter_m\": [0.0]*4, \"solver\": {\"truncate\": 1e-30, \"max_generations\": 3}}\nresult = solve_atomic_slab_transport(inputs)\nassert result[\"distribution\"].shape == (4, 8, 4)\nassert result[\"generation_count\"] == 3\nassert result[\"generation_stop_reason\"] == \"max_generations\"",
+  "expected": "Synthetic candidate arrays with distribution shape (4, 8, 4) and three generations stopped by the configured cap; not an independent physical reference."
  },
  "verification": {
   "scope": [
-   "normal, lower-bound and upper-bound inputs",
-   "applicable failure and composition paths"
+   "Four-point synthetic slab with Ti=Te=5 eV, n=1e18 m^-3, mu=2, mesh_size=3, one 3 eV incident energy, boundary target 1e15 and zero pipe diameter; no external input file.",
+   "Generation caps 1/2/3: finite shapes, nonzero per-generation fields, accumulated distribution equal to their sum, preserved generation prefixes and increasing density across capped runs.",
+   "Threshold stopping at truncate=2 and truncate=1, plus the selected existing input rejection paths listed in failure_semantics.invalid_input."
   ],
   "tests": [
    "tests/kinetic/test_atomic_slab_transport.py"
   ],
-  "evidence_ceiling": "Bounded public composition evidence; scientific acceptance remains separate.",
+  "evidence_ceiling": "Synthetic composition behavior and internal bookkeeping only. Test execution must be confirmed by the current run record; these assertions are not an independent physical oracle. Independent scientific validation is UNKNOWN; no public-wheel, device-scope or release acceptance is implied.",
   "known_limitations": [
-   "No external physical validation or release approval is implied."
+   "The implementation remains in catalog/review/candidates and is imported by tests/conftest.py; public_api records the candidate symbol, not public availability.",
+   "The original private inputs are unavailable. No numerical reconstruction, source-case parity or parameter-envelope coverage is claimed.",
+   "incident.density_m3 is passed directly to a boundary flux target by the current candidate; its physical unit interpretation is not validated here.",
+   "No molecular or elastic source, independent transport solution, convergence accuracy or external physical validation is established."
   ]
  }
 }
