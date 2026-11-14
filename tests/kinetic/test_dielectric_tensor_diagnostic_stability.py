@@ -99,6 +99,13 @@ def _response_switch_case(sign, target):
     return arguments
 
 
+def _low_frequency_xy_case(f_sign, kz_sign):
+    arguments = _small_z_case()
+    arguments["f"] *= f_sign
+    arguments["kz"] = kz_sign * 1681258066.787961
+    return arguments
+
+
 def _species(value):
     return (value,) if np.ndim(value) == 0 else tuple(value)
 
@@ -221,6 +228,11 @@ _CASES = [
         for sign in (-1, 1)
         for name, target in (("below", 1 - 1e-8), ("center", 1), ("above", 1 + 1e-8))
     ],
+    *[
+        pytest.param(_low_frequency_xy_case(f_sign, kz_sign), id=f"low-f-xy-{f_sign}-{kz_sign}")
+        for f_sign in (-1, 1)
+        for kz_sign in (-1, 1)
+    ],
 ]
 
 
@@ -233,7 +245,13 @@ def test_diagnostic_matches_independent_original_finite_sum(arguments):
 
 
 @pytest.mark.parametrize(
-    "arguments", [_case(b=8, order=30), _case(b=-1 + 0.5j, order=30), _small_z_case()]
+    "arguments",
+    [
+        _case(b=8, order=30),
+        _case(b=-1 + 0.5j, order=30),
+        _small_z_case(),
+        _low_frequency_xy_case(1, 1),
+    ],
 )
 def test_unrounded_reference_is_stable_at_two_precisions(arguments):
     lower = _reference(arguments, 140)

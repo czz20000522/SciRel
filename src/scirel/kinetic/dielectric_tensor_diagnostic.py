@@ -346,6 +346,8 @@ def evaluate_kinetic_dielectric_tensor(B0, qs, ms, ns0, Ts0, f, kz, kx, lmx=_LMX
     they use analytic real A(z)=1+z*Z(z) without subtracting nearly equal terms. The real A and
     positive-b tail kernels are shared with the conventional sum. Even for complex kx, z remains real;
     only a, b and the Gamma weights are complex.
+    The antisymmetric xy/yx pair sums real and imaginary contributions separately with fsum,
+    reducing cancellation in the original sequential harmonic accumulation without changing Z.
     Symmetric finite-sum identities keep the endpoint Gamma_(N+1)-Gamma_N and the full omitted Gamma
     tail. For complex or negative b, sum the complex tail with a bound derived from
     |I_n(b)|<=I_n(|b|) and the positive Bessel generating function (DLMF 10.25.2, 10.35.1).
@@ -431,7 +433,7 @@ def evaluate_kinetic_dielectric_tensor(B0, qs, ms, ns0, Ts0, f, kz, kx, lmx=_LMX
             # small response. The original z*Z expression has no large-z
             # cancellation when every harmonic argument is inside [-1, 1].
             direct_response = (abs(w) + lmx * abs(wcs[j])) / (response_kz * vts[j]) <= 1.0
-            xz_terms, yz_terms, zz_terms = [], [], []
+            xy_terms, xz_terms, yz_terms, zz_terms = [], [], [], []
             for l in range(-lmx, lmx + 1):
                 zn = (w - l * wcs[j]) / (response_kz * vts[j])
 
@@ -439,7 +441,6 @@ def evaluate_kinetic_dielectric_tensor(B0, qs, ms, ns0, Ts0, f, kz, kx, lmx=_LMX
                 gamp = _gammapn(l, b)
                 xsn_xx = l**2 * gam / b
                 xsn_xy = 1j * l * gamp
-                xsn_yx = -xsn_xy
                 xsn_yy = l**2 / b * gam - 2.0 * b * gamp
                 zn_val = _zfun(zn)
                 # zn remains real even for complex kx. Outside the small-z
@@ -452,11 +453,13 @@ def evaluate_kinetic_dielectric_tensor(B0, qs, ms, ns0, Ts0, f, kz, kx, lmx=_LMX
                 term1 = wps2[j] / w**2 * (z0 * zn_val)
 
                 K[0, 0] = K[0, 0] + term1 * xsn_xx
-                K[0, 1] = K[0, 1] + term1 * xsn_xy
-                K[1, 0] = K[1, 0] + term1 * xsn_yx
+                xy_terms.append(term1 * xsn_xy)
                 K[1, 1] = K[1, 1] + term1 * xsn_yy
 
             alpha = wps2[j] / w**2
+            cross_xy = _complex_sum(xy_terms)
+            K[0, 1] += cross_xy
+            K[1, 0] -= cross_xy
             # Sum(n*Gamma_n)=0, sum(Gamma'_n)=Gamma_(N+1)-Gamma_N.
             # Keep the finite-N complement: changing it would change the model.
             # The direct z*Z representation keeps the original +2*alpha*z0^2.

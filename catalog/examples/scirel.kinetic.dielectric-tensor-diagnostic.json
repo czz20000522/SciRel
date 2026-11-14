@@ -28,7 +28,7 @@
  "identity": {
   "relation": "SI species and wavepoint to full K, D and six-term determinant",
   "direction": "SI species and wavepoint to full K, D and six-term determinant",
-  "definition": "Sum l=-lmx..lmx Maxwellian contributions, form D with Maxwell curl terms, and retain the explicit six-term determinant. xx/xy/yy retain N64 Weideman Z; xz/yz/zz use analytic real A=1+z*Z, finite Gamma derivative endpoints and the omitted Gamma tail. Complex/negative b uses a complex tail sum with an absolute exact-remainder bound from |I_n(b)|<=I_n(|b|) and DLMF 10.35.1. Per species, if every harmonic |z_n|<=1, xz/yz/zz instead use direct z_n*Z(z_n) and the original additive zz term to retain small responses. At b=0 the omitted Gamma tail is exactly zero.",
+  "definition": "Sum l=-lmx..lmx Maxwellian contributions, form D with Maxwell curl terms, and retain the explicit six-term determinant. xx/xy/yy retain N64 Weideman Z; xz/yz/zz use analytic real A=1+z*Z, finite Gamma derivative endpoints and the omitted Gamma tail. Complex/negative b uses a complex tail sum with an absolute exact-remainder bound from |I_n(b)|<=I_n(|b|) and DLMF 10.35.1. Per species, if every harmonic |z_n|<=1, xz/yz/zz instead use direct z_n*Z(z_n) and the original additive zz term to retain small responses. At b=0 the omitted Gamma tail is exactly zero. xy/yx retain their Z backend but accumulate each real/imaginary harmonic sum with fsum.",
   "model": "homogeneous magnetized Maxwellian multi-species plasma",
   "geometry": "homogeneous plasma",
   "coordinates": "wavevector x-z plane; complex kx permitted, z parallel to B0",
@@ -286,7 +286,7 @@
  },
  "verification": {
   "scope": [
-   "Complete complex K/D from public-input independent original finite-N sums at selected real/complex kx, positive/negative near-zero and ordinary kz, lmx=0/1/15/30/60, A dispatch boundaries, and species broadcasting; controls, diagnostic fields and tail rejection checked separately. Small-z reviewer regressions, neighbors of the |z_n|<=1 representation switch and each finite/singular kx=0 component are included."
+   "Complete complex K/D from public-input independent original finite-N sums at selected real/complex kx, positive/negative near-zero and ordinary kz, lmx=0/1/15/30/60, A dispatch boundaries, and species broadcasting; controls, diagnostic fields and tail rejection checked separately. Small-z reviewer regressions, neighbors of the |z_n|<=1 representation switch and each finite/singular kx=0 component are included. Four signed low-frequency xy/yx cancellation regressions are checked independently."
   ],
   "tests": [
    "tests/kinetic/test_dielectric_tensor_diagnostic_stability.py",
