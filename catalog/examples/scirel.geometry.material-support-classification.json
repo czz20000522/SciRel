@@ -90,7 +90,7 @@
    "shape": "scalar",
    "dtype": "real",
    "required": true,
-   "constraints": "Finite. Not required to lie inside the sampled flux range; a separatrix outside the range simply makes the selected side empty, which then fails the non-empty support requirement."
+   "constraints": "Finite. Not required to lie inside the sampled flux range. Depending on less_than/greater_than and the threshold, the selected covered side can be full or empty. Support is the union of that side and the covered axis segment, followed by PML and PEC exclusion; only an empty final support raises ValueError."
   },
   {
    "name": "closed_flux_side",

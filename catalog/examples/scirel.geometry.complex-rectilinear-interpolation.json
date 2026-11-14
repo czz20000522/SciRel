@@ -52,7 +52,7 @@
    "shape": "mapping of three [N_axis] arrays",
    "dtype": "real array-like",
    "required": true,
-   "constraints": "Each axis is one-dimensional, finite, has at least two points, and is strictly increasing."
+   "constraints": "Each axis is one-dimensional, finite, has at least two points, and is strictly increasing. Axes are consumed by x_m, y_m, z_m key order; the callable cannot detect a caller assigning the wrong physical axis to a key."
   },
   {
    "name": "source_values",
@@ -135,7 +135,7 @@
  "verification": {
   "scope": [
    "Agreement with an independent explicit eight-corner trilinear reference at interior points.",
-   "Axis-order and leading-shape conformance, including rejection of a permuted axis mapping.",
+   "Axis-key order and leading-shape conformance: test_u2_t08_source_shape_dtype_and_axis_order_conformance accepts a permuted mapping and checks that it changes the result; a reversed, non-increasing axis is rejected.",
    "valid_mask equals tolerance-expanded geometric containment, including the exactly-at-tol boundary.",
    "Clamping of tolerance-shell points onto the closed box, proven by equality with the corresponding face point.",
    "nan+nanj and a false mask for points outside the expanded box, including points that would clamp to a finite face value.",

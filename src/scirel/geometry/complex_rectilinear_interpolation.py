@@ -37,9 +37,10 @@ def interpolate_complex_rectilinear_field(source_axes_m, source_values, target_p
     Parameters
     ----------
     source_axes_m : real array-like
-        Mapping with keys x_m, y_m, and z_m holding the three strictly increasing source
-        axes. [m] Shape: ``mapping of three [N_axis] arrays``. Each axis is one-dimensional,
-        finite, has at least two points, and is strictly increasing.
+        Mapping with keys x_m, y_m, and z_m holding the three strictly increasing source axes.
+        [m] Shape: mapping of three [N_axis] arrays. Each axis is one-dimensional, finite, has
+        at least two points, and is strictly increasing. Axes are consumed by x_m, y_m, z_m key
+        order; the callable cannot detect a caller assigning the wrong physical axis to a key.
 
     source_values : complex array-like
         Complex field samples on the tensor-product source grid, indexed [x, y, z]; trailing

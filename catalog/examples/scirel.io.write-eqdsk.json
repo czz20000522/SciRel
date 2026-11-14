@@ -95,7 +95,7 @@
   "invalid_input": "KeyError when data omits a required record key; EQDSKFormatError for invalid shapes, non-finite values, unrepresentable fields, or fixed-origin conflicts.",
   "runtime_failure": "OSError from filesystem access propagates; validation errors occur before destination truncation.",
   "nonconvergence": "Not applicable.",
-  "partial_results": "No partial file is written; validation errors occur before destination truncation."
+  "partial_results": "Data validation and formatting finish before opening/truncating the destination. Later filesystem I/O failures may leave an existing file changed or partially written; there is no atomic replacement or rollback guarantee."
  },
  "public_api": {
   "python": {
@@ -118,7 +118,7 @@
  "verification": {
   "scope": [
    "Roundtrip, lexical fixed-width, malformed input and class-state tests",
-   "Nonzero-origin rejection, unchanged destination on failure, opaque scalar preservation."
+   "Nonzero-origin rejection, unchanged destination on pre-write validation failure, and opaque scalar preservation in test_eqdsk.py; mid-write I/O atomicity is not tested or guaranteed."
   ],
   "tests": [
    "tests/io/test_eqdsk.py"

@@ -305,8 +305,8 @@ def build_compensated_shifted_maxwellian(
     tnorm_eV : real scalar
         Normalization temperature [eV] used to construct the thermal speed.
     moment_rtol : float, optional
-        Largest accepted relative error of each returned slice
-        [dimensionless]. Must be positive; the default is ``0.01``.
+        Largest accepted relative error of the returned moments [dimensionless] Shape: scalar.
+        Positive Default: 0.01.
 
     Returns
     -------
@@ -319,14 +319,11 @@ def build_compensated_shifted_maxwellian(
     Raises
     ------
     ValueError
-        If a returned slice misses its temperature by more than ``moment_rtol``
-        relative to the temperature, misses its drift by more than that relative
-        to the larger of the drift and the thermal speed, or goes negative below
-        ``-moment_rtol`` times its peak. This happens when the mesh is too small
-        for the temperature, typically ``vmax`` under about twice the thermal
-        speed. The correction then changes the density, and normalizing afterwards
-        can give any drift or temperature, including a negative one. Use a larger
-        velocity mesh.
+        Quadrature and array shape/index errors propagate; no alternate mesh or solver is
+        selected. Raises ValueError if absolute drift error exceeds moment_rtol*max(abs(target
+        drift), sqrt(3*CHARGE*T/m)), absolute temperature error exceeds moment_rtol*T, or
+        min(f) < -moment_rtol*max(f), with target T in eV and m=molecularity*mu*HYDROGEN_MASS.
+        A finite correctly shaped mesh can still fail these returned-moment checks.
 
     See Also
     --------
@@ -336,10 +333,14 @@ def build_compensated_shifted_maxwellian(
     Notes
     -----
     A Maxwellian with drift ``U`` and temperature ``T`` has mean ``vx = U`` and
-    mean speed squared ``U**2 + 3 T / m``. These exact moments are the targets
+    mean speed squared ``U**2 + 3*CHARGE*T/m`` for T in eV and
+    m = molecularity*mu*HYDROGEN_MASS. These exact moments are the targets
     and the acceptance test. The correction follows LaBombard's shifted-Maxwellian
     construction, which compensates for velocity-mesh discretization error; it
     is not meant to represent a distribution the mesh cannot hold.
+    The small illustrative example explicitly uses moment_rtol=0.1; the default
+    remains 0.01. This local example choice is not a general remedy for an
+    inadequate velocity mesh.
 
     References
     ----------

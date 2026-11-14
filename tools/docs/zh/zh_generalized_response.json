@@ -4,7 +4,7 @@
  "records": [
   {
    "asset_id": "scirel.kinetic.evaluate-faddeeva-dr",
-   "source_sha256": "4c5d9600487b7f66562d0193435236197836ac93637ac38c2acb3b4a1d414752",
+   "source_sha256": "1683d789dbd8558fcc217d2dcf2109b952268b2ac80c591a5169dafb5fa677ed",
    "summary": "按默认阶数求值 16 阶 Faddeeva 变体，并遵循所声明的失败语义。",
    "definition": "采用 Weideman 有理 FFT 展开，在虚轴使用 erfcx 求值。",
    "model": "一维 Maxwellian 等离子体响应。",
@@ -73,20 +73,20 @@
    },
    "verification": {
     "scope": [
-     "覆盖默认与显式阶数、标量和矩阵形状、反射恒等式、归一化及正虚轴溢出回归。",
-     "使用 80 位精度 mpmath 方程网格和 70 位精度的独立 Gaussian Cauchy 积分作对照。"
+     "test_defaults_and_independent_complex_error_function 直接参数化 DR，检查默认阶数、矩阵形状及与 scipy.special.wofz 的比较（含 40j）；test_explicit_empty_and_overflow 检查其 None 默认；test_invalid_truncation 直接参数化其非法阶数。",
+     "test_high_precision_equation_grid 直接用 80 位 mpmath 方程比较 DR，容差见该断言的 DR 分支；Gaussian Cauchy 积分及 GPDF 反射断言调用的是其他入口。"
     ],
     "known_limitations": [
      "下半平面指数项可能超出 float64。",
      "固定截断误差取决于相位点和阶数。",
-     "仅绑定共享文件覆盖（test_generalized_dispersion_faddeeva_variants.py）；未记录资产专属失败/边界探针。"
+     "DR 有直接非法阶数及 None 默认断言；GPDF 的显式下半平面溢出、反射和大实部断言不能记作 DR 专属测试。"
     ],
-    "evidence_ceiling": "限于所声明关系：采用 Weideman 有理 FFT 展开，在虚轴使用 erfcx 求值。证据：test_generalized_dispersion_faddeeva_variants.py, test_generalized_dispersion_faddeeva_independent.py（记录 9 个测试函数；仅共享文件覆盖；独立解析/高精度对照）；合同 example 已运行。不建立的范围：不提供有保证的全局误差界；不提供任意分布的响应。"
+    "evidence_ceiling": "直接与依赖证据按上述 scope 分开，具名断言见 tests/kinetic/test_generalized_dispersion_faddeeva_variants.py 及 tests/kinetic/test_generalized_dispersion_faddeeva_independent.py。各入口比较保留原断言容差，只适用于采样相位点与阶数；共享文件不使各入口继承其中全部断言。不建立全域误差界、任意分布响应或实验验证。"
    }
   },
   {
    "asset_id": "scirel.kinetic.evaluate-faddeeva-gpdf",
-   "source_sha256": "86650d598048c2d1e483b42e6de52977884243f8d470b7d47a31996f0c71ad41",
+   "source_sha256": "0e20f276b5e3b4129e9cc89297ce049685be6f895f55e17b8f80be3f28cd1435",
    "summary": "按默认阶数求值 32 阶 Faddeeva 变体，并遵循所声明的失败语义。",
    "definition": "采用 Weideman 有理 FFT 展开，在虚轴使用 erfcx 求值。",
    "model": "一维 Maxwellian 等离子体响应。",
@@ -155,20 +155,20 @@
    },
    "verification": {
     "scope": [
-     "覆盖默认与显式阶数、标量和矩阵形状、反射恒等式、归一化及正虚轴溢出回归。",
-     "使用 80 位精度 mpmath 方程网格和 70 位精度的独立 Gaussian Cauchy 积分作对照。"
+     "test_defaults_and_independent_complex_error_function、test_imaginary_axis_overflow_regression 与 test_fft_normalization_and_reflection 直接检查 GPDF 默认、矩阵形状、具名正虚轴回归和反射；test_invalid_truncation、test_explicit_empty_and_overflow 与 test_large_real_finite_response 直接覆盖非法阶数、None 默认、下半平面溢出拒绝和大有限相位点。",
+     "test_high_precision_equation_grid 直接用 80 位 mpmath 方程比较 GPDF，使用该入口对应的断言容差；70 位 Gaussian Cauchy 积分调用的是 J-pole。"
     ],
     "known_limitations": [
      "下半平面指数项可能超出 float64。",
      "固定截断误差取决于相位点和阶数。",
-     "仅绑定共享文件覆盖（test_generalized_dispersion_faddeeva_variants.py）；未记录资产专属失败/边界探针。"
+     "GPDF 存在直接失败及边界断言；所采样的相位点与阶数不构成全域误差或可表示性保证。"
     ],
-    "evidence_ceiling": "限于所声明关系：采用 Weideman 有理 FFT 展开，在虚轴使用 erfcx 求值。证据：test_generalized_dispersion_faddeeva_variants.py, test_generalized_dispersion_faddeeva_independent.py（记录 9 个测试函数；仅共享文件覆盖；独立解析/高精度对照）；合同 example 已运行。不建立的范围：不提供有保证的全局误差界；不提供任意分布的响应。"
+    "evidence_ceiling": "直接与依赖证据按上述 scope 分开，具名断言见 tests/kinetic/test_generalized_dispersion_faddeeva_variants.py 及 tests/kinetic/test_generalized_dispersion_faddeeva_independent.py。各入口比较保留原断言容差，只适用于采样相位点与阶数；共享文件不使各入口继承其中全部断言。不建立全域误差界、任意分布响应或实验验证。"
    }
   },
   {
    "asset_id": "scirel.kinetic.evaluate-maxwellian-fft",
-   "source_sha256": "2002950a30818ad85ad6001dfe575bfa1c3e4a2e5903f1989b28a44b7f242fce",
+   "source_sha256": "6aa48e20ecbca1db5d33aaf9641256a2d72b7e01067a63425d8ac9ff11b2ce4e",
    "summary": "按默认阶数求值 FFT Maxwellian 色散近似，并遵循所声明的失败语义。",
    "definition": "采用 Weideman 有理 FFT 展开，在虚轴使用 erfcx 求值。",
    "model": "一维 Maxwellian 等离子体响应。",
@@ -237,21 +237,21 @@
    },
    "verification": {
     "scope": [
-     "覆盖默认与显式阶数、标量和矩阵形状、反射恒等式、归一化及正虚轴溢出回归。",
-     "使用 80 位精度 mpmath 方程网格和 70 位精度的独立 Gaussian Cauchy 积分作对照。",
-     "当 w 有限而缩放后的 Z 溢出时明确失败；覆盖混合矩阵及负虚轴数学缩放阈值的两侧。"
+     "test_fft_normalization_and_reflection 在参数化阶数下直接检查 FFT 的 Z=i*sqrt(pi)*w 与 GPDF 一致；反射部分直接检查 GPDF。test_invalid_truncation 与 test_explicit_empty_and_overflow 直接拒绝非法 FFT 阶数和 None。",
+     "80 位方程网格直接检查 GPDF 依赖及 DR，70 位 Gaussian Cauchy 积分检查 J-pole；这些属于依赖或相邻入口证据，不能写成 FFT 自身的高精度网格直接覆盖。",
+     "test_generalized_dispersion_fft_scaling.py 直接检查 w 有限而 Z 溢出、可表示邻点、混合矩阵失败及数学缩放阈值两侧；有界比较和拒绝门限见其中具名断言。"
     ],
     "known_limitations": [
      "下半平面指数项可能超出 float64。",
      "固定截断误差取决于相位点和阶数。",
      "独立解析对照不能替代外部实验参考。"
     ],
-    "evidence_ceiling": "限于所声明关系：采用 Weideman 有理 FFT 展开，在虚轴使用 erfcx 求值。证据：test_generalized_dispersion_faddeeva_variants.py, test_generalized_dispersion_faddeeva_independent.py, test_generalized_dispersion_fft_scaling.py（记录 13 个测试函数；绑定文件覆盖；独立解析/高精度对照）；合同 example 已运行。不建立的范围：不提供有保证的全局误差界；不提供任意分布的响应。"
+    "evidence_ceiling": "直接与依赖证据按上述 scope 分开，具名断言见 tests/kinetic/test_generalized_dispersion_faddeeva_variants.py 及 tests/kinetic/test_generalized_dispersion_faddeeva_independent.py 和 tests/kinetic/test_generalized_dispersion_fft_scaling.py。各入口比较保留原断言容差，只适用于采样相位点与阶数；共享文件不使各入口继承其中全部断言。不建立全域误差界、任意分布响应或实验验证。"
    }
   },
   {
    "asset_id": "scirel.kinetic.evaluate-maxwellian-jpole",
-   "source_sha256": "ac85f6f79f372d7bec24f7608c99eacac52104ae022fca0302e85fdb6175594f",
+   "source_sha256": "185d99f7820deb97b10df1182d20c6c34c5d9bc949704b5a2121fe729b419523",
    "summary": "按默认阶数求值固定极点 Maxwellian 色散近似，并遵循所声明的失败语义。",
    "definition": "采用固定数表的部分分式近似；先在上半平面求值，再用 Gaussian 反射关系取得下半平面值。",
    "model": "一维 Maxwellian 等离子体响应。",
@@ -320,15 +320,15 @@
    },
    "verification": {
     "scope": [
-     "覆盖默认与显式阶数、标量和矩阵形状、反射恒等式、归一化及正虚轴溢出回归。",
-     "使用 80 位精度 mpmath 方程网格和 70 位精度的独立 Gaussian Cauchy 积分作对照。"
+     "test_jpole_all_matrix_entries_and_scalar_reference 直接检查各受支持数表阶数、标量/矩阵一致性及与 scipy.special.wofz 的比较；test_explicit_empty_and_overflow 直接拒绝 order=10；test_large_real_finite_response 直接检查 order=8 的大实部渐近值。",
+     "test_jpole_gaussian_cauchy_integral 在受支持阶数下直接用 70 位独立 Gaussian Cauchy 积分比较 J-pole，容差见该断言；80 位方程网格、GPDF 反射与正虚轴回归调用的是其他入口。"
     ],
     "known_limitations": [
      "下半平面指数项可能超出 float64。",
      "固定截断误差取决于相位点和阶数。",
-     "仅绑定共享文件覆盖（test_generalized_dispersion_faddeeva_variants.py）；未记录资产专属失败/边界探针。"
+     "J-pole 存在直接不支持阶数及大实部断言；GPDF 专属下半平面溢出与反射断言不认证 J-pole 的全部延拓点。"
     ],
-    "evidence_ceiling": "限于所声明关系：采用固定数表的部分分式近似；先在上半平面求值，再用 Gaussian 反射关系取得下半平面值。证据：test_generalized_dispersion_faddeeva_variants.py, test_generalized_dispersion_faddeeva_independent.py（记录 9 个测试函数；仅共享文件覆盖；独立解析/高精度对照）；合同 example 已运行。不建立的范围：不提供有保证的全局误差界；不提供任意分布的响应。"
+    "evidence_ceiling": "直接与依赖证据按上述 scope 分开，具名断言见 tests/kinetic/test_generalized_dispersion_faddeeva_variants.py 及 tests/kinetic/test_generalized_dispersion_faddeeva_independent.py。各入口比较保留原断言容差，只适用于采样相位点与阶数；共享文件不使各入口继承其中全部断言。不建立全域误差界、任意分布响应或实验验证。"
    }
   },
   {

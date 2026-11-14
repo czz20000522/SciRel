@@ -477,7 +477,8 @@ def write_eqdsk(data: Mapping[str, Any], filename: str | Path) -> None:
         has the wrong shape, a title is invalid, or a supplied grid/origin
         cannot be represented by the dialect.
     OSError
-        If the destination cannot be written.
+        If the destination cannot be written. A failure after opening can
+        leave an existing file changed or partially written.
 
     See Also
     --------
@@ -491,7 +492,9 @@ def write_eqdsk(data: Mapping[str, Any], filename: str | Path) -> None:
     and axial extents; it cannot represent an arbitrary radial or axial
     origin. Supplied ``R``/``Z`` arrays or ``r_origin``/``z_origin`` values
     are accepted only when they match the reconstructed fixed-origin grid.
-    Validation failures occur before the destination is truncated.
+    Validation and formatting finish before the destination is opened or
+    truncated. Later I/O failures may leave changed or partial file contents;
+    there is no atomic replacement or rollback guarantee.
 
     Examples
     --------

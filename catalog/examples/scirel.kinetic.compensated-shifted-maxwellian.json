@@ -142,7 +142,7 @@
   ]
  },
  "failure_semantics": {
-  "invalid_input": "Quadrature and array shape/index errors propagate; no alternate mesh or solver is selected. Raises ValueError if a returned slice misses its drift or temperature by more than moment_rtol, or goes negative below -moment_rtol times its peak, which happens when the velocity mesh is too small for the temperature.",
+  "invalid_input": "Quadrature and array shape/index errors propagate; no alternate mesh or solver is selected. Raises ValueError if absolute drift error exceeds moment_rtol*max(abs(target drift), sqrt(3*CHARGE*T/m)), absolute temperature error exceeds moment_rtol*T, or min(f) < -moment_rtol*max(f), with target T in eV and m=molecularity*mu*HYDROGEN_MASS. A finite correctly shaped mesh can still fail these returned-moment checks.",
   "runtime_failure": "Overflow, NaN and warning behavior follows NumPy arithmetic and the retained source-shaped correction.",
   "nonconvergence": "Not applicable; no iterative solver is exposed.",
   "partial_results": "No partial distribution mapping is returned after an exception."
@@ -168,19 +168,19 @@
   ]
  },
  "example": {
-  "description": "Build three shifts including the zero-temperature branch. The mesh here is deliberately small, so the accepted moment error is widened from its default.",
+  "description": "Build three shifts including nonpositive-temperature zero slices. This deliberately small illustrative mesh explicitly uses moment_rtol=0.1 instead of the unchanged default 0.01; that choice is local to the example, not a general remedy for an inadequate mesh.",
   "code": "import numpy as np\nfrom scirel.kinetic import build_compensated_shifted_maxwellian\nvr=np.array([.25,.75,1.5]); vx=np.array([-2.5,-1.5,-.5,.5,1.5,2.5]); out=build_compensated_shifted_maxwellian(vr=vr,vx=vx,temperatures_eV=np.array([5.,0.,-1.]),shifts_ms=np.array([0.,100.,-100.]),mu=1,molecularity=1,tnorm_eV=5., moment_rtol=0.1); assert out.shape==(3,6,3) and np.all(out[:,:,1:]==0)",
   "expected": "The distribution has shape (3,6,3); zero and negative temperature slices are exactly zero."
  },
  "verification": {
   "scope": [
-   "Direct shape, zero-temperature branch and finite positive-temperature slice checks.",
+   "Direct shape and nonpositive-temperature zero-slice checks, plus test_adequate_mesh_returns_the_exact_maxwellian_moments, test_mesh_too_small_for_the_temperature_raises_instead_of_returning_wrong_moments and test_moment_tolerance_is_the_caller_s_choice for analytic drift/temperature moments, inadequate-mesh rejection and explicit caller tolerance.",
    "Retained candidate evidence covers temperature branches, clipping, nonuniform deuterium and NaN/negative/zero edge rows."
   ],
   "tests": [
    "tests/kinetic/test_moment_compensation.py"
   ],
-  "evidence_ceiling": "Bounded source-fidelity partial for A06; one NaN payload/warning difference, integer/float type differences, independent scientific correctness, ADAS/JH validation, full solver and acceptance remain unresolved.",
+  "evidence_ceiling": "The named direct tests in test_moment_compensation.py provide analytic returned-moment assertions and rejection regressions on their finite meshes. Broader source-fidelity evidence remains partial: the historical NaN payload/warning and integer/float differences, ADAS/JH validation, molecular/coupled transport, full solver and general scientific correctness remain unresolved.",
   "known_limitations": [
    "This extends the existing pre-compensation shifted Maxwellian leaf with a source-shaped correction stage; it does not replace that leaf.",
    "The fixed constants and clipped arithmetic are model conventions, not calibration evidence.",
