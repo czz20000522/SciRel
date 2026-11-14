@@ -27,6 +27,19 @@ human choice is a blocked owner decision with a reopen condition.
    caller. A partial/failed capture remains visible; do not fill missing rows from reports or interpolate hidden state.
 4. If proposing a typed carrier, bind it to source observations and distinguish it from a captured fixture. Route a relation gap to [D2 asset correctness](../integration/scientific-asset-correctness/SKILL.md) or, during extraction, [the extraction skill](../../extraction/scientific-computation-asset-extraction/SKILL.md); claim evaluation always returns to [computation validation](../scientific-computation-validation/SKILL.md).
 
+## Validate a manifest
+
+The validator lives at `scripts/validate_dataset_manifest.py` in this skill directory and needs no third-party packages:
+
+```sh
+python3 scripts/dev.py run python -B skills/development/scientific-runtime-dataset-construction/scripts/validate_dataset_manifest.py <dataset>/manifest.json --check-files
+python3 scripts/dev.py run python -B skills/development/scientific-runtime-dataset-construction/scripts/validate_dataset_manifest.py --self-test
+```
+
+Run through `scripts/dev.py` so the project interpreter, `.runtime/tmp` and the clone lock apply; calling the script with a bare interpreter would use a temporary directory outside the project.
+
+`--check-files` resolves every artifact path against the manifest's own directory and verifies its size and SHA-256; without it only the manifest structure is checked. A failed run exits non-zero and names the offending field or artifact in the error message: fix the manifest or the captured artifact and re-run — never relax the manifest to pass. A successful run prints one JSON line containing `valid: true` with the case, artifact and covered-partition counts; keep that line with the dataset as evidence.
+
 Read [dataset contract](references/dataset_contract.md) for manifest/case fields and [boundary coverage](references/boundary_coverage.md)
 for case design. Use [method feedback protocol](references/method_feedback_protocol.md) only for a bounded routine
 microprobe. Return dataset path, manifest/hash, source/runtime provenance, case counts by state, covered gap, failed,
