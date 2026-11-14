@@ -36,6 +36,8 @@ def rotate(pts, angle, pivot=(0.0, 0.0)):
         nonfinite point coordinates, a pivot not shaped (2,) or containing nonfinite
         values, or a nonfinite angle. Negative R is not rejected by this planar
         transform.
+    FloatingPointError
+        If finite inputs produce nonfinite intermediate values or rotated points.
 
     See Also
     --------
@@ -84,4 +86,14 @@ def rotate(pts, angle, pivot=(0.0, 0.0)):
     radians = math.radians(angle)
     cosine, sine = math.cos(radians), math.sin(radians)
     rotation = np.array([[cosine, -sine], [sine, cosine]])
-    return (points - center) @ rotation + center
+    with np.errstate(over="ignore", invalid="ignore"):
+        rotated = (points - center) @ rotation + center
+    if not np.all(np.isfinite(rotated)):
+        raise FloatingPointError(
+            "pts, angle and pivot produced "
+            f"{np.count_nonzero(~np.isfinite(rotated))} nonfinite rotated values "
+            f"(shape {rotated.shape}, dtype {rotated.dtype}); "
+            "rotation intermediates and results must be finite float64; "
+            "see scirel.geometry.rotate"
+        )
+    return rotated

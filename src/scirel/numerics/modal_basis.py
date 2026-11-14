@@ -634,6 +634,8 @@ class ModalBasis:
         ------
         ValueError
             If ``values`` has the wrong shape or contains a non-finite value.
+        FloatingPointError
+            If finite samples produce non-finite projection coefficients.
 
         See Also
         --------
@@ -666,7 +668,17 @@ class ModalBasis:
         if not np.all(np.isfinite(samples)):
             raise ValueError("values must be finite")
         members = self.evaluate(nodes)
-        return np.einsum("q,qi,q->i", weights, members, samples)
+        with np.errstate(over="ignore", invalid="ignore"):
+            coefficients = np.einsum("q,qi,q->i", weights, members, samples)
+        if not np.all(np.isfinite(coefficients)):
+            raise FloatingPointError(
+                "values produced "
+                f"{np.count_nonzero(~np.isfinite(coefficients))} non-finite coefficients "
+                f"(shape {coefficients.shape}, dtype {coefficients.dtype}); "
+                "projection coefficients must be finite float64; "
+                "see scirel.numerics.modal-projection"
+            )
+        return coefficients
 
 
 def modal_basis(kind="tensor", ndim=1, order=1):
@@ -692,7 +704,10 @@ def modal_basis(kind="tensor", ndim=1, order=1):
         A basis whose members are orthonormal with unit norm under the
         unweighted inner product on ``[-1, 1] ** ndim`` [1]. The returned
         handle exposes the member order, evaluation, differentiation,
-        reflection, quadrature, and projection operations.
+        reflection, quadrature, and projection operations. Calling its
+        ``project`` method raises ``FloatingPointError`` if finite samples
+        produce non-finite coefficients; constructing the handle does not
+        itself project any samples.
 
     Raises
     ------
@@ -716,6 +731,9 @@ def modal_basis(kind="tensor", ndim=1, order=1):
     meaningful only with the same family, dimension, order, and member order
     that produced it. Regression evidence covers dimensions one through three
     and orders zero through three; higher accepted values are unqualified.
+    Projection recovers expansions in the same basis on its own Gauss rule.
+    For arbitrary samples it is a discrete weighted projection, not necessarily
+    the continuous L2 projection of an underlying function.
 
     Examples
     --------
@@ -769,6 +787,8 @@ def project_on_modal_basis(kind, ndim, order, values):
         If ``kind``, ``ndim`` or ``order`` is outside its domain, if
         ``values`` has the wrong shape or contains a non-finite value, or if
         the underlying Gauss-Legendre root iteration does not converge.
+    FloatingPointError
+        If finite samples produce non-finite projection coefficients.
 
     See Also
     --------
@@ -830,6 +850,8 @@ def modal_projection(kind, ndim, order, values):
     ValueError
         If ``kind``, ``ndim`` or ``order`` is outside its domain, or if
         ``values`` has the wrong shape or contains a non-finite value.
+    FloatingPointError
+        If finite samples produce non-finite projection coefficients.
 
     See Also
     --------

@@ -5,7 +5,7 @@
   "en": "Modal projection of values sampled on a Gauss rule",
   "zh": "高斯规则采样值上的模态投影"
  },
- "summary": "Build an orthonormal modal basis and return the discrete Gauss-weighted projection coefficients of its node samples.",
+ "summary": "Build an orthonormal modal basis and return finite discrete Gauss-weighted projection coefficients of its node samples, or raise FloatingPointError if finite samples produce non-finite coefficients.",
  "taxonomy": [
   "numerical-methods",
   "modal-discretization",
@@ -94,7 +94,7 @@
  },
  "failure_semantics": {
   "invalid_input": "Raises TypeError when required parameters are missing, including the former single mapping call, and raises ValueError when the basis arguments are outside their domain or the sample array has the wrong shape or contains a non-finite value.",
-  "runtime_failure": "Raises ValueError if the underlying Gauss-Legendre root iteration does not converge.",
+  "runtime_failure": "Raises FloatingPointError if finite samples produce non-finite projection coefficients, independently of NumPy warn, ignore or raise settings. Raises ValueError if the underlying Gauss-Legendre root iteration does not converge.",
   "nonconvergence": "No approximate nodes are substituted; the underlying rule reports failure.",
   "partial_results": "Returns the full coefficient array or raises; no partial or zero-filled coefficient array is returned."
  },
@@ -125,7 +125,8 @@
    "Public callable signature and documented rejection behavior",
    "Exact coefficient recovery for tensor and serendipity samples",
    "Explicit parameter order and required flags, including rejection of the legacy mapping call",
-   "The executable example stored in this contract"
+   "The executable example stored in this contract",
+   "Finite-sample overflow raises FloatingPointError through ModalBasis.project, project_on_modal_basis and modal_projection for both families under NumPy warn, ignore and raise modes; non-finite samples still raise ValueError, and representable results preserve the float64 array type, shape and caller-owned samples."
   ],
   "tests": [
    "tests/numerics/test_modal_basis.py"
@@ -247,7 +248,7 @@
    "ordering": "Construct the basis from the declared family, dimension and order, then apply its weighted inner product to the supplied samples",
    "branches": [],
    "state_ownership": "The caller owns the basis arguments and the sample array; the composition allocates only the coefficient array.",
-   "failure_propagation": "A rejected basis argument raises from the basis step; a rejected sample shape or non-finite sample raises from the glue step.",
+   "failure_propagation": "A rejected basis argument raises from the basis step; a rejected sample shape or non-finite sample raises from the glue step. Finite samples producing non-finite projection coefficients raise FloatingPointError from the shared projection step; no coefficients are returned.",
    "feedback": []
   }
  }

@@ -8,7 +8,8 @@
   "scope": [
    "test_rotation_inverse_distance_and_nonmutation checks inverse rotation, distance preservation and unchanged inputs at its parametrized angles.",
    "The executable rotation example stored in this contract.",
-   "Direct shape regressions require ValueError for scalar points and preserve the input shape and values for zero-angle single, empty and batched (..., 2) points without mutating the caller's array."
+   "Direct shape regressions require ValueError for scalar points and preserve the input shape and values for zero-angle single, empty and batched (..., 2) points without mutating the caller's array.",
+   "Finite-input translation, rotation and final-addition overflow raises FloatingPointError under NumPy warn, ignore and raise modes; non-finite inputs still raise ValueError, and representable results preserve float64, shape and caller-owned inputs."
   ],
   "tests": [
    "tests/geometry/test_geometry_qualification.py",
@@ -25,7 +26,7 @@
   "en": "Planar cylindrical rotation",
   "zh": "柱面平面旋转"
  },
- "summary": "Rotate row-vectors in the cylindrical R,Z plane.",
+ "summary": "Rotate row-vectors in the cylindrical R,Z plane, returning finite points or raising FloatingPointError if finite-input arithmetic produces non-finite values.",
  "taxonomy": [
   "geometry",
   "coordinates",
@@ -118,7 +119,7 @@
  },
  "failure_semantics": {
   "invalid_input": "Raises ValueError for scalar pts, points without a final axis of length 2, nonfinite point coordinates, a pivot not shaped (2,) or containing nonfinite values, or a nonfinite angle. Negative R is not rejected by this planar transform.",
-  "runtime_failure": "Python/NumPy conversion or transformation exceptions propagate.",
+  "runtime_failure": "Raises FloatingPointError if finite inputs produce non-finite intermediate values or rotated points, independently of NumPy warn, ignore or raise settings. Python/NumPy conversion exceptions propagate.",
   "nonconvergence": "Not applicable; rotation is a direct operation.",
   "partial_results": "A failed call returns no rotated array."
  },

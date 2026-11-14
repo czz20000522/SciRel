@@ -70,7 +70,7 @@
    "shape": "ModalBasis",
    "dtype": "ModalBasis",
    "required": true,
-   "constraints": "Members are orthonormal under the unweighted inner product on the reference cell"
+   "constraints": "Members are orthonormal under the unweighted inner product on the reference cell; calling the returned basis.project method raises FloatingPointError if finite samples produce nonfinite coefficients. Constructing the basis does not itself project samples."
   }
  ],
  "applicability": {
@@ -87,12 +87,12 @@
    "No physical mesh, Jacobian, metric or cell measure is applied; mapping to a physical element is the caller's responsibility.",
    "No boundary condition, upwinding, limiting or positivity handling is provided.",
    "Serendipity members do not span the same polynomial space as the tensor family at the same order; the two are not interchangeable.",
-   "The projection is exact only for values sampled on this basis's own quadrature nodes."
+   "Coefficient recovery applies to an expansion in the same basis sampled on its own Gauss rule. For arbitrary samples, this discrete weighted projection need not equal the continuous L2 projection of an underlying function."
   ]
  },
  "failure_semantics": {
   "invalid_input": "Raises ValueError when kind is not tensor or serendipity, ndim is outside 1..6, order is negative or non-integral, a boolean is passed where an integer is required, coordinates are non-finite or outside the reference cell, a coordinate array has the wrong trailing axis, a coefficient or sample array has the wrong shape or contains a non-finite value, or a direction is outside range(ndim).",
-  "runtime_failure": "Raises ValueError if the Gauss-Legendre root iteration does not converge; no approximate ordinates are substituted.",
+  "runtime_failure": "Raises ValueError if the Gauss-Legendre root iteration does not converge; no approximate ordinates are substituted. Projection is a separate call on the returned handle; its computed-output failure is described on the basis output and ModalBasis.project.",
   "nonconvergence": "The Gauss-Legendre Newton iteration is bounded at 200 sweeps per root and reports failure instead of returning an unconverged node.",
   "partial_results": "Construction is atomic: a rejected basis exposes no members. Evaluation returns a complete array or raises; no partial member set is returned."
  },
@@ -119,7 +119,8 @@
    "Public callable signature and documented rejection behavior",
    "Member counts and one-dimensional member literals against the reference kernel",
    "Orthonormality, quadrature exactness and projection recovery on named fixtures",
-   "The executable example stored in this contract"
+   "The executable example stored in this contract",
+   "test_finite_projection_overflow_raises_without_mutating_samples explicitly exercises the returned handle.project method as well as both function entry points, checking computed-overflow rejection without changing input samples; constructing a handle alone is not that test."
   ],
   "tests": [
    "tests/numerics/test_modal_basis.py"

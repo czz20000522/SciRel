@@ -966,8 +966,8 @@
   },
   {
    "asset_id": "scirel.geometry.rotate",
-   "source_sha256": "5aee084f7413455a6f8f5557d18cb6518cb4c4ec87aa7478d68f266159ae8d1a",
-   "summary": "在柱坐标 R、Z 平面旋转行向量。",
+   "source_sha256": "7865aded13daef886d75dcad0bac6ba56b2e6456d7f4f33cf64683e2053c4e96",
+   "summary": "在柱坐标 R、Z 平面旋转行向量；返回有限坐标，有限输入的计算产生非有限值时抛出 FloatingPointError。",
    "definition": "采用顺时针为正的行向量旋转，角度单位为度。",
    "model": "二维 R、Z 平面。",
    "boundary": "点和旋转中心都必须是有限的二分量值。",
@@ -1016,7 +1016,7 @@
    },
    "failure_semantics": {
     "invalid_input": "pts 为标量、点数组末轴长度不为 2、点坐标非有限、pivot 不是有限 (2,) 数组或角度非有限时抛 ValueError。这个平面变换不拒绝负 R。",
-    "runtime_failure": "Python/NumPy 的转换或变换异常向上传播。",
+    "runtime_failure": "有限输入产生非有限中间量或旋转后坐标时，无论 NumPy 设置为 warn、ignore 还是 raise，都抛出 FloatingPointError。Python/NumPy 转换异常向上传播。",
     "nonconvergence": "不适用；旋转是直接操作。",
     "partial_results": "调用失败不返回旋转数组。"
    },
@@ -1024,7 +1024,8 @@
     "scope": [
      "test_rotation_inverse_distance_and_nonmutation 在参数化角度下检查逆旋转、距离保持和输入不变。",
      "本合同所载可执行旋转示例。",
-     "直接形状回归要求标量点抛 ValueError，并检查零角旋转对单点、空数组及批量 (...,2) 点保持形状和数值，且不修改调用者数组。"
+     "直接形状回归要求标量点抛 ValueError，并检查零角旋转对单点、空数组及批量 (...,2) 点保持形状和数值，且不修改调用者数组。",
+     "有限输入在平移、旋转和最终加回中心时溢出，在 NumPy 的 warn、ignore、raise 模式下均抛 FloatingPointError；非有限输入仍抛 ValueError，可表示结果保持 float64、原形状及调用者输入不变。"
     ],
     "known_limitations": [
      "这个平面变换不验证物理场模型，也不强制柱半径 R 非负。"
