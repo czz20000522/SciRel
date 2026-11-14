@@ -4,7 +4,7 @@
  "records": [
   {
    "asset_id": "scirel.equilibrium.free-boundary-anisotropic-picard",
-   "source_sha256": "bade1a6a367da416958c1c45635388057c889259073048398a1844b150162be8",
+   "source_sha256": "1384e5e5c289444e941a293abeb4c7a849edd3071a15cff5137a56e0d8d55c34",
    "summary": "执行显式各向异性压力、电流与 Green 场的有界 Picard 反馈；可选墙磁通和对应磁场导数共同更新，以全部未松弛反馈状态残差及平行力相容性决定收敛。",
    "definition": "当前 psi、BR、BZ 上重求确定性压力闭合与环向电流，按节点梯形或显式单元边界积分并松弛电流后投影 Green 场。缺少场 Green 对时对新增磁通求场导数，墙分支同步加墙磁通及离散场。判停要求 psi、BR、BZ 和电流的未松弛目标全部闭合，返回态再重求闭合、电流及力相容性；零步不声称收敛。",
    "model": "外供 N4 压力闭合和可选线性理想导体壁修正的轴对称旋磁压力 Picard 组合。",
@@ -335,7 +335,8 @@
      "relax=1 的完全保留不能将非零固定点残差伪装为收敛。",
      "解析秩一 Green 检查两步状态传递及 I²+I−K=0 终态；接近完全保留的松弛不能因小步幅提前退出。",
      "磁通不变而场和电流仍变化时不声称收敛；空场在压力回调前拒绝。",
-     "部分掩码保留激活区末态 j_phi，仅将非激活单元置零。"
+     "部分掩码保留激活区末态 j_phi，仅将非激活单元置零。",
+     "直接输入回归检查映射及关键字调用缺少 r_grid/z_grid、网格不足声明尺寸时先于其他必需端口报错、其他缺失端口仍抛 ValueError，以及回调的 IndexError/KeyError 继续传播；这些失败检查不验证任意物理闭合。"
     ],
     "evidence_ceiling": "tests/cross_domain/test_anisotropic_core_scientific_correction.py 将本维护实现直接导入为 free；test_free_boundary_flux_and_magnetic_correction_same_terminal_state, test_free_boundary_true_parallel_force_cannot_be_converged, test_retained_current_is_not_false_fixed_point 断言同态壁磁通/场、真实平行力拒绝及近 1 松弛。这些是有界制造/解析离散用例，不是整文件覆盖，也不验证任意外供压力、Green 或壁模型的物理正确性。",
     "known_limitations": [
@@ -345,7 +346,8 @@
     ],
     "tests": [
      "tests/cross_domain/free_boundary_anisotropic_picard/test_composition_free_boundary_anisotropic_picard.py",
-     "tests/cross_domain/test_anisotropic_core_scientific_correction.py"
+     "tests/cross_domain/test_anisotropic_core_scientific_correction.py",
+     "tests/equilibrium/test_picard_input_validation.py"
     ]
    }
   },
@@ -6686,7 +6688,7 @@
   },
   {
    "asset_id": "scirel.equilibrium.isotropic-picard-step",
-   "source_sha256": "d8985b57f081edcedd6d1e1811399914a88a5706b334ac42d8467876a697c21b",
+   "source_sha256": "f7838fa0c2a274fe0746598bf491b083f5d2040c52450be4ad0d99f350cab7e1",
    "summary": "由压力导数构造松弛后的网格电流，用外供格林矩阵更新磁通，并计算一次 Picard 更新的磁通变化。 顶层返回值为 scirel._result.Result 映射；映射访问保留，字段也支持属性读取。 不引入嵌套映射。",
    "definition": "按 C 顺序计算 I_target=R(dP/dpsi)dR dZ、I_new=(1−relax)I_target+relax I_old，再计算 Green 磁通和真空磁通之和。relax=1 明确保留旧电流，不计算未使用的目标。电流、Green 收缩、总磁通及 ||psi_next−psi_state||₂/|psi_edge| 任一非有限均失败，不静默置零；此接口只执行一步。 完整结果作为同一个 scirel._result.Result 映射返回；仅包裹顶层，嵌套结构保持原类型。",
    "model": "轴对称各向同性压力—磁通 Picard 网格电流更新，采用外供格林响应。",
@@ -6802,7 +6804,8 @@
      "tests/equilibrium/test_isotropic_picard_step.py::test_reviewed_relation_example 直接调用四单元人工单位 Green 单步；tests/cross_domain/test_legacy_six_absorption.py::test_picard_nonfinite_state_fails_instead_of_vacuum_mask 检查其非有限算术拒绝。完整求解器组合用例不直接调用这个旧单步。",
      "拒绝不完整调用。",
      "有限输入导致电流、Green 收缩或总磁通溢出的真实失败回归。",
-     "返回类型回归检查顶层 scirel._result.Result、键顺序及属性读取；既有数值、状态和失败断言保持不变。"
+     "返回类型回归检查顶层 scirel._result.Result、键顺序及属性读取；既有数值、状态和失败断言保持不变。",
+     "test_isotropic_rejects_too_small_grid_before_indexing 直接检查任一轴不足两点的网格在索引前被拒绝；这是输入错误证据，不是物理归一化或收敛核验。"
     ],
     "evidence_ceiling": "tests/equilibrium/test_isotropic_picard_step.py::test_reviewed_relation_example 直接调用四单元人工单位 Green 单步；tests/cross_domain/test_legacy_six_absorption.py::test_picard_nonfinite_state_fails_instead_of_vacuum_mask 检查其非有限算术拒绝。完整求解器组合用例不直接调用这个旧单步。 这是有界离散算术证据，不替代缺少的独立离源圆丝归一化核验或完整求解器收敛证据。",
     "known_limitations": [
@@ -6815,7 +6818,8 @@
     "tests": [
      "tests/equilibrium/test_isotropic_picard_step.py",
      "tests/cross_domain/isotropic_pressure_flux/test_composition_isotropic_pressure_flux.py",
-     "tests/cross_domain/test_legacy_six_absorption.py"
+     "tests/cross_domain/test_legacy_six_absorption.py",
+     "tests/equilibrium/test_picard_input_validation.py"
     ]
    }
   },

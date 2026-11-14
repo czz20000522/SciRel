@@ -7,11 +7,13 @@
  "verification": {
   "scope": [
    "test_rotation_inverse_distance_and_nonmutation checks inverse rotation, distance preservation and unchanged inputs at its parametrized angles.",
-   "The executable rotation example stored in this contract."
+   "The executable rotation example stored in this contract.",
+   "Direct shape regressions require ValueError for scalar points and preserve the input shape and values for zero-angle single, empty and batched (..., 2) points without mutating the caller's array."
   ],
   "tests": [
    "tests/geometry/test_geometry_qualification.py",
-   "tests/geometry/test_runtime_lifecycle.py"
+   "tests/geometry/test_runtime_lifecycle.py",
+   "tests/geometry/test_rotate_failures.py"
   ],
   "evidence_ceiling": "Named finite geometry cases only; no field-solver, experimental, or release claim is made.",
   "known_limitations": [

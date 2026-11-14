@@ -966,7 +966,7 @@
   },
   {
    "asset_id": "scirel.geometry.rotate",
-   "source_sha256": "25beb08b2feb2708daaf3173dab465cc739f94e94ffd78af5f61035e9b9fb1c6",
+   "source_sha256": "5aee084f7413455a6f8f5557d18cb6518cb4c4ec87aa7478d68f266159ae8d1a",
    "summary": "在柱坐标 R、Z 平面旋转行向量。",
    "definition": "采用顺时针为正的行向量旋转，角度单位为度。",
    "model": "二维 R、Z 平面。",
@@ -1023,12 +1023,18 @@
    "verification": {
     "scope": [
      "test_rotation_inverse_distance_and_nonmutation 在参数化角度下检查逆旋转、距离保持和输入不变。",
-     "本合同所载可执行旋转示例。"
+     "本合同所载可执行旋转示例。",
+     "直接形状回归要求标量点抛 ValueError，并检查零角旋转对单点、空数组及批量 (...,2) 点保持形状和数值，且不修改调用者数组。"
     ],
     "known_limitations": [
      "这个平面变换不验证物理场模型，也不强制柱半径 R 非负。"
     ],
-    "evidence_ceiling": "仅限具名有限几何案例；不主张场求解器、实验或发行结论。"
+    "evidence_ceiling": "仅限具名有限几何案例；不主张场求解器、实验或发行结论。",
+    "tests": [
+     "tests/geometry/test_geometry_qualification.py",
+     "tests/geometry/test_runtime_lifecycle.py",
+     "tests/geometry/test_rotate_failures.py"
+    ]
    },
    "example": {
     "description": "按文档规定的“顺时针为正”约定，将一条 R-Z 行向量旋转 90 度。",
