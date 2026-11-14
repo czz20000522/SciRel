@@ -166,7 +166,8 @@
    "Atomic four-family Alpha collision-frequency contraction (Alpha_CX, Alpha_H_H2, Alpha_H_P, Alpha_H_H) on a declared velocity carrier."
   ],
   "excluded": [
-   "Molecular three-family contraction, the Omega_* downstream aggregation inside do_fH_Iterate, Do_Alpha_* gating, KH.Internal cache lifecycle, and external physical validation."
+   "Molecular three-family contraction, the Omega_* downstream aggregation inside do_fH_Iterate, Do_Alpha_* gating, KH.Internal cache lifecycle, and external physical validation.",
+   "Directly adding the H-P momentum moment from SciRel's atomic matrix assembly to the momentum moment of a full-velocity charge-exchange gain-loss operator built from SIG_CX is unsupported. Separate channel outputs do not qualify that combined transport model."
   ]
  },
  "failure_semantics": {
@@ -195,15 +196,17 @@
  },
  "verification": {
   "scope": [
-   "Input and failure contracts."
+   "Input and failure contracts.",
+   "The declared equal-mass discrete momentum construction is checked through matrix assembly, Alpha contraction and moment reduction, including an explicitly constructed full-velocity CX gain-loss operator. This is algebraic and quadrature evidence, not a production combined transport solver or an independent cross-section accuracy oracle."
   ],
   "tests": [
-   "tests/kinetic/test_alpha_contraction.py"
+   "tests/kinetic/test_alpha_contraction.py",
+   "tests/collisions/test_atomic_momentum_budget.py"
   ],
-  "evidence_ceiling": "Bounded to the declared relation: The per-k matrix-vector contraction: each family multiplies one assembled (N,N) SIG matrix by the Fortran-order flattening of one input distribution carried on the (nvr*nvx,) Work buffer and restores the product to the (nvr,nvx) slice…. Evidence: test_alpha_contraction.py (11 recorded test functions; shared-file coverage only; self-consistency/regression only); the contract example ran. Excluded scope: Molecular three-family contraction, the Omega_* downstream aggregation inside do_fH_Iterate, Do_Alpha_* gating, KH.Internal cache lifecycle, and external physical validation; external physical validation.",
+  "evidence_ceiling": "Input/failure regression covers the declared matrix-vector contraction. The bound discrete momentum test additionally follows SciRel-assembled matrices through Alpha and moment reduction for equal masses, with an explicitly assumed CX gain-loss operator. These checks do not validate arbitrary caller-supplied kernels, separated cross sections, a production combined transport solver or experimental accuracy.",
   "known_limitations": [
    "Negative cells in the elastic families and negative densities are reproduced or contracted as given; their physical acceptability is an open expert question, not a runtime gate.",
-   "Only shared-file coverage is bound (test_alpha_contraction.py); no asset-specific failure/limit probe is recorded."
+   "Shared-file regression and the declared equal-mass momentum construction do not establish physical accuracy of arbitrary caller-supplied SIG kernels or of an unqualified combined transport model."
   ]
  }
 }
