@@ -5,7 +5,7 @@
   "en": "Filament-coil Green field response",
   "zh": "环形线圈 Green 场响应"
  },
- "summary": "Evaluate the closed-form psi, BR, and BZ response of aligned circular coils from caller-supplied elliptic values.",
+ "summary": "Evaluate the summed psi, BR, and BZ response of aligned circular coils through the canonical circular-filament kernel, using observation geometry, currents and winding counts.",
  "taxonomy": [
   "field",
   "axisymmetric",
@@ -17,7 +17,7 @@
  "discovery": {
   "capability": [
    "Filament-coil Green field response",
-   "Evaluate the closed-form psi, BR and BZ response of aligned circular coils."
+   "Evaluate the summed psi, BR, and BZ response of aligned circular coils through the canonical circular-filament kernel, using observation geometry, currents and winding counts."
   ],
   "operation": [
    "closed-form filament-coil Green response",
@@ -106,7 +106,7 @@
    "shape": "scalar",
    "dtype": "float",
    "required": true,
-   "constraints": "Finite on accepted inputs; overflow from finite but extreme currents/turns raises ValueError (declared hardening)."
+   "constraints": "Finite on accepted inputs; extreme finite currents/turns can raise ValueError for overflowed source weights or nonfinite wrapper output, or FloatingPointError from arithmetic inside the canonical kernel."
   },
   {
    "name": "radial_field_t",
@@ -115,7 +115,7 @@
    "shape": "scalar",
    "dtype": "float",
    "required": true,
-   "constraints": "Finite on accepted inputs; overflow from finite but extreme currents/turns raises ValueError (declared hardening)."
+   "constraints": "Finite on accepted inputs; extreme finite currents/turns can raise ValueError for overflowed source weights or nonfinite wrapper output, or FloatingPointError from arithmetic inside the canonical kernel."
   },
   {
    "name": "axial_field_t",
@@ -124,7 +124,7 @@
    "shape": "scalar",
    "dtype": "float",
    "required": true,
-   "constraints": "Finite on accepted inputs; overflow from finite but extreme currents/turns raises ValueError (declared hardening)."
+   "constraints": "Finite on accepted inputs; extreme finite currents/turns can raise ValueError for overflowed source weights or nonfinite wrapper output, or FloatingPointError from arithmetic inside the canonical kernel."
   }
  ],
  "applicability": {
@@ -136,12 +136,12 @@
    "Finite aligned coil arrays, current linearity, mirrored-pair cancellation, and singular/overflow failures in direct tests."
   ],
   "excluded": [
-   "Misaligned coil geometry, caller-supplied elliptic values, and arbitrary extreme-scale guarantees."
+   "Misaligned coil geometry or guarantees for arbitrary extreme scales."
   ]
  },
  "failure_semantics": {
-  "invalid_input": "ValueError is raised for malformed vectors, invalid modulus/elliptic values, singular geometry, or nonfinite output.",
-  "runtime_failure": "Arithmetic overflow and invalid closed-form operations are converted to ValueError.",
+  "invalid_input": "ValueError is raised for invalid observation coordinates or coil vectors, singular geometry, or nonfinite output.",
+  "runtime_failure": "FloatingPointError from overflow or invalid arithmetic inside the canonical kernel propagates unchanged. Wrapper validation, including overflowed source weights or nonfinite returned scalar values, raises ValueError; no fallback or partial tuple is returned.",
   "nonconvergence": "Not applicable; the response is a finite direct sum.",
   "partial_results": "No scalar tuple is returned after validation or singularity failure."
  },
@@ -161,7 +161,7 @@
     "asset_id": "scirel.field.coil-green-geometry"
    },
    {
-    "asset_id": "scirel.field.complete-elliptic-integrals-approx"
+    "asset_id": "scirel.electromagnetism.circular-filament-green"
    }
   ]
  },
@@ -179,14 +179,14 @@
   "tests": [
    "tests/field/test_filament_coil_green.py"
   ],
-  "evidence_ceiling": "Bounded to the closed-form filament-coil Green field with caller-supplied elliptic values. Evidence: `test_filament_coil_green.py` contains 13 test functions, 7 of which reference `evaluate_filament_coil_green_field`, and is shared by 3 assets; only shared-file coverage is bound, so a pass is file-level rather than asset-isolated; the bounded example was executed by this audit. Oracle: independent closed-form recomputation and SciPy-elliptic baseline parity. It does not establish misaligned geometry, internally recomputed elliptic integrals, or arbitrary extreme-scale guarantees.",
+  "evidence_ceiling": "Bounded to the geometries in tests/field/test_filament_coil_green.py: independent 50-digit mpmath closed-form recomputations, near-axis accuracy for r in [1e-8, 1e-2], near-axis scaling, current linearity, mirrored-coil cancellation, and declared invalid/singular/overflow cases. Agreement with the other field Green response is an internal consistency check. Reusing the canonical kernel is implementation structure, not independent physical validation. These shared-file tests do not establish arbitrary extreme-scale accuracy, misaligned geometry, or experimental validity.",
   "known_limitations": [
    "No external cross-implementation comparison is bound to this contract; only the tests in this repository establish its behaviour.",
-   "This asset is a declared relation variant of scirel.field.circular-filament-green, not a new Green capability; the variant boundary (caller-supplied elliptic values, scalar target, source regularization, fail-closed singulars) must not be collapsed by silent unification.",
-   "Declared input hardening chain (documented for the family): the geometry operator rejects raw negative observation radii, and this operator rejects zero-separation/modulus-1 singular geometry; neither boundary is silently accepted here.",
-   "Declared output hardening: finite but extreme current/turns magnitudes that overflow the combined response factor raise ValueError instead of returning Inf/NaN.",
+   "This wrapper uses the canonical circular-filament kernel; its single-target, caller-applied radius offset and singular-rejection boundaries remain explicit.",
+   "The geometry helper rejects raw negative observation radii. This response accepts an already positive regularized radius and rejects zero-separation singular geometry; it neither repeats the offset nor accepts modulus or K/E input ports.",
+   "Extreme finite currents/turns do not guarantee a finite response: overflowed source weights can raise ValueError, and arithmetic overflow inside the canonical kernel propagates FloatingPointError. No fallback response is selected.",
    "The singular-geometry rejection (observation point on a filament ring) is an explicit contract: that configuration raises rather than returning NaN responses.",
-   "The closed-form variant is evaluated from caller-supplied elliptic values; no independent SciPy recomputation occurs inside the operator."
+   "Elliptic values are evaluated inside the canonical kernel; the caller supplies no K/E values. The standalone polynomial-log approximation is not used by this response."
   ]
  }
 }

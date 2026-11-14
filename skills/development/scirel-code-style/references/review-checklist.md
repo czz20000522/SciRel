@@ -8,7 +8,7 @@ Send a PR back if any item below fails. Ask for the smallest fix, and say which 
 
 - The PR pastes the end of `check_all.py`, run on the final commit, ending in `ALL GREEN`. There is no CI, so rerun it before merging anything that touches results.
 - The issue's `Done when` is met, checked by you and not taken from the description.
-- The scope lists only tighten: no asset left `contract_sync_scope.json`, and new `hazard_baseline.json` entries are each justified as documented behaviour.
+- The checks only tighten: contract synchronization covers every public catalog asset with all existing field and `contract_sync_rules.json` stale-phrase checks, and new `hazard_baseline.json` entries are each justified as documented behaviour.
 
 ## One source of truth
 

@@ -40,7 +40,7 @@
   "assumptions": [
    "The vmax = 3.5 truncation and the 0.1*Tmax uniformity threshold are fixed constants of this relation.",
    "The mesh is species-agnostic: callers pass their own temperatures and energies.",
-   "The callable defaults requested_energy_ev to the empty tuple; the JSON form uses None as the equivalent and treats it identically (the mesh result is unchanged for both defaults).",
+   "The callable defaults requested_energy_ev to None and treats it as the empty tuple: both request no additional energy nodes.",
    "Declared fail-closed tightenings: fractional nv would build a fractional-count mesh and non-finite temperatures would yield an all-NaN mesh; this asset fail-closes on non-integer nv and on non-finite temperatures, per the positive-integer and finite-input contracts. Regression tests pin those boundaries.",
    "The cap filters the population used for Tnorm and base-mesh stretching, but every positive requested energy is still inserted, even one above the cap. This can extend the final mesh beyond the base 3.5 endpoint.",
    "This asset rejects boolean, numeric-string and complex input coercions, non-finite requested energies or cap, and duplicate insertions that leave a non-strict final mesh. Duplicate axes are rejected because the cylindrical quadrature requires strictly increasing nodes. The finite real-valued mesh formula and index lifecycle are unchanged on the accepted domain."

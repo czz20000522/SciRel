@@ -11,6 +11,53 @@ def evaluate_complete_elliptic_integrals(modulus_squared):
     The endpoint is assigned its mathematical limits ``K(1)=inf`` and
     ``E(1)=1`` independently for each element, so mixed arrays do not inherit
     a batch-level sentinel.
+
+    Parameters
+    ----------
+    modulus_squared : array_like
+        Elliptic parameter ``m = k**2`` [dimensionless]. After float
+        conversion, every entry must be finite and in ``[0, 1]``.
+
+    Returns
+    -------
+    complete_k : ndarray
+        First-kind complete elliptic integral approximation [dimensionless],
+        with the input shape. Every ``m = 1`` entry is positive infinity.
+    complete_e : ndarray
+        Second-kind complete elliptic integral approximation [dimensionless],
+        with the input shape. Every ``m = 1`` entry is exactly one.
+
+    Raises
+    ------
+    ValueError
+        If any converted entry is nonfinite or outside ``[0, 1]``.
+
+    See Also
+    --------
+    scipy.special.ellipk : Library first-kind complete elliptic integral.
+    scipy.special.ellipe : Library second-kind complete elliptic integral.
+
+    Notes
+    -----
+    Fixed polynomials in ``p = 1-m`` are combined with ``log(p)``. This is
+    a real elementwise approximation, without complex analytic continuation.
+    The divergent ``K(1)`` does not represent a finite filament field.
+
+    References
+    ----------
+    See ``scipy.special.ellipk`` and ``scipy.special.ellipe`` for the integral
+    definitions; this function evaluates its fixed polynomial coefficients.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from scirel.field import evaluate_complete_elliptic_integrals
+    >>> k, e = evaluate_complete_elliptic_integrals(np.array([0.5, 0.9]))
+    >>> assert np.all(np.isfinite(k)) and np.all(np.isfinite(e))
+    >>> k1, e1 = evaluate_complete_elliptic_integrals(np.array([1.0]))
+    >>> assert np.isposinf(k1[0]) and e1[0] == 1.0
+    >>> km, em = evaluate_complete_elliptic_integrals(np.array([0.5, 1.0]))
+    >>> assert np.isposinf(km[1]) and em[1] == 1.0
     """
     m = np.asarray(modulus_squared, dtype=float)
     if not np.all(np.isfinite(m)) or np.any(m < 0.0) or np.any(m > 1.0):

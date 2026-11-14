@@ -394,7 +394,8 @@
 - 想构造同节点磁通矩阵或目标-源响应矩阵：:doc:`../reference/generated/scirel.electromagnetism.loop-flux-matrix`、:doc:`../reference/generated/scirel.electromagnetism.green-response-matrices`。
 - 想做截断 SVD 的边界修正：:doc:`../reference/generated/scirel.field.ideal-conductor-boundary`。
 - 想在镜像对称的 Z 网格上构造等离子体磁通响应矩阵：:doc:`../reference/generated/scirel.field.mirror-plasma-green`。
-- 想走椭圆积分分支，自己检查模数、``K``、``E`` 和闭合形式：:doc:`../reference/generated/scirel.field.coil-green-geometry`、:doc:`../reference/generated/scirel.field.complete-elliptic-integrals-approx`、:doc:`../reference/generated/scirel.field.filament-coil-green-field`。
+- 想检查几何模数或独立的 ``K``、``E`` 近似：:doc:`../reference/generated/scirel.field.coil-green-geometry`、:doc:`../reference/generated/scirel.field.complete-elliptic-integrals-approx`。它们分别计算几何量和椭圆积分近似。
+- 想用已施加一次半径偏移的单个观测点、电流和匝数累加线圈响应：:doc:`../reference/generated/scirel.field.filament-coil-green-field`。这个入口内部调用统一圆丝核，不接收 ``K``、``E``，也不使用上述独立近似。
 - 想用径向积分得到以第一径向节点为零点的 ``psi``：:doc:`../reference/generated/scirel.field.filament-vacuum-field`。
 - 想用固定几何的磁环或装置：:doc:`../reference/generated/scirel.electromagnetism.magnet-ring`、:doc:`../reference/generated/scirel.field.permanent-ring-filaments`、:doc:`../reference/generated/scirel.electromagnetism.trex-coil`、:doc:`../reference/generated/scirel.electromagnetism.brb`、:doc:`../reference/generated/scirel.electromagnetism.wham`。这些是几何与丝排列，不是材料磁化或实验标定。
 

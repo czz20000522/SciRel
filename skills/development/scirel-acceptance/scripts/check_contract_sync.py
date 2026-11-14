@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Check that code docstrings and JSON contracts agree, for the assets in a scope list.
+"""Check that code docstrings and JSON contracts agree for every public catalog asset.
 
 Source of truth: the code signature and its numpydoc docstring own parameter
 names, order, defaults, units, return entries, raised exceptions and the
@@ -25,7 +25,10 @@ overlap the docstring are derived and must agree. This script checks, per asset:
 - no phrase listed as stale for the asset appears in the contract, the
   reader record or the docstring.
 
-Usage: check_contract_sync.py [--scope FILE] [asset_id ...]
+The default set comes only from catalog/examples. Rules add asset-specific
+checks; they never select or exempt assets. Unknown IDs and empty catalogs fail.
+
+Usage: check_contract_sync.py [--rules FILE] [asset_id ...]
 """
 
 from __future__ import annotations
@@ -42,7 +45,7 @@ import re
 import sys
 
 ROOT = Path(__file__).resolve().parents[4]
-SCOPE = Path(__file__).with_name("contract_sync_scope.json")
+RULES = Path(__file__).with_name("contract_sync_rules.json")
 DIMENSIONLESS = {"", "1", "dimensionless", "none", "-", "n/a"}
 SECTION = re.compile(r"^([A-Z][A-Za-z ]+)\n-{3,}[ \t]*$", re.M)
 ERROR = re.compile(r"\b([A-Z][A-Za-z]*(?:Error|Exception|Warning|Failure))\b")
@@ -319,18 +322,85 @@ def check(asset: dict, root: Path = ROOT) -> list[str]:
     return errors
 
 
+def _unique_keys(pairs: list[tuple[str, object]]) -> dict:
+    result = {}
+    for key, value in pairs:
+        if key in result:
+            raise ValueError(f"duplicate rules key: {key}")
+        result[key] = value
+    return result
+
+
+def selected_assets(root: Path, rules_path: Path, asset_ids: list[str]) -> list[dict]:
+    """Derive the checked set from public contracts, then attach validated rules."""
+    catalog = root / "catalog/examples"
+    if not catalog.is_dir():
+        raise ValueError("missing public catalog directory: catalog/examples")
+    paths = sorted(catalog.glob("*.json"))
+    if not paths:
+        raise ValueError("empty public catalog: catalog/examples")
+    public = {}
+    for path in paths:
+        document = json.loads(path.read_text(encoding="utf-8"))
+        if not isinstance(document, dict) or document.get("asset_id") != path.stem:
+            raise ValueError(f"catalog asset_id must match filename: {path.name}")
+        public[path.stem] = {"asset_id": path.stem}
+
+    config = json.loads(rules_path.read_text(encoding="utf-8"), object_pairs_hook=_unique_keys)
+    if (
+        not isinstance(config, dict)
+        or config.get("schema") != "scirel.contract-sync-rules"
+        or not isinstance(config.get("assets"), list)
+        or config.keys() - {"schema", "note", "assets"}
+    ):
+        raise ValueError("invalid contract sync rules: expected schema and assets list")
+    seen = set()
+    for rule in config["assets"]:
+        if not isinstance(rule, dict) or not isinstance(rule.get("asset_id"), str):
+            raise ValueError("invalid asset rule: expected asset_id")
+        asset_id = rule["asset_id"]
+        if asset_id not in public:
+            raise ValueError(f"unknown rule asset_id: {asset_id}")
+        if asset_id in seen:
+            raise ValueError(f"duplicate rule asset_id: {asset_id}")
+        seen.add(asset_id)
+        phrases = rule.get("forbidden_phrases")
+        if (
+            rule.keys() != {"asset_id", "forbidden_phrases"}
+            or not isinstance(phrases, list)
+            or not phrases
+            or any(not isinstance(phrase, str) or not phrase.strip() for phrase in phrases)
+        ):
+            raise ValueError(f"invalid forbidden_phrases rule: {asset_id}")
+        public[asset_id] = rule
+
+    unknown = sorted(set(asset_ids) - public.keys())
+    if unknown:
+        raise ValueError(f"unknown asset selection: {unknown!r}")
+    selected = sorted(set(asset_ids)) if asset_ids else list(public)
+    return [public[asset_id] for asset_id in selected]
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(
         description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter
     )
-    parser.add_argument("--scope", type=Path, default=SCOPE)
+    parser.add_argument("--rules", type=Path, default=RULES)
     parser.add_argument("asset_ids", nargs="*")
     args = parser.parse_args(argv)
     sys.path.insert(0, str(ROOT / "src"))
-    assets = json.loads(args.scope.read_text(encoding="utf-8"))["assets"]
-    if args.asset_ids:
-        assets = [a for a in assets if a["asset_id"] in args.asset_ids]
-    errors = [error for asset in assets for error in check(asset)]
+    try:
+        assets = selected_assets(ROOT, args.rules, args.asset_ids)
+    except (OSError, ValueError) as error:
+        print("ERROR:", error)
+        print("contract sync: 0 assets, 1 problems (selection/configuration failed)")
+        return 1
+    errors = []
+    for asset in assets:
+        try:
+            errors.extend(check(asset, root=ROOT))
+        except (AttributeError, ImportError, KeyError, OSError, TypeError, ValueError) as error:
+            errors.append(f"{asset['asset_id']}: {type(error).__name__}: {error}")
     for error in errors:
         print("ERROR:", error)
     print(f"contract sync: {len(assets)} assets, {len(errors)} problems")

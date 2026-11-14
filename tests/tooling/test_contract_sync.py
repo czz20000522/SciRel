@@ -326,3 +326,222 @@ def test_check_reports_independent_reader_failures_with_asset_and_file(reader_ca
         assert f"reader record has {2 if change == 'more' else 0} " in count_error
     if change == "key":
         assert "verification.known_limitation:" in errors[0]
+
+
+@pytest.fixture
+def catalog_case(tmp_path, monkeypatch):
+    module = _load()
+    catalog = tmp_path / "catalog/examples"
+    catalog.mkdir(parents=True)
+    asset_ids = ["scirel.test.first", "scirel.test.without-rules"]
+    for asset_id in asset_ids:
+        (catalog / f"{asset_id}.json").write_text(
+            json.dumps({"asset_id": asset_id}), encoding="utf-8"
+        )
+    rules = tmp_path / "rules.json"
+    rules.write_text(
+        json.dumps({"schema": "scirel.contract-sync-rules", "assets": []}), encoding="utf-8"
+    )
+    monkeypatch.setattr(module, "ROOT", tmp_path)
+    monkeypatch.setattr(module, "RULES", rules, raising=False)
+    visited = []
+
+    def check(asset, **kwargs):
+        visited.append(asset)
+        return []
+
+    monkeypatch.setattr(module, "check", check)
+    return module, catalog, rules, asset_ids, visited
+
+
+def test_default_checks_every_public_asset_without_requiring_rules(catalog_case, capsys):
+    module, _, _, asset_ids, visited = catalog_case
+    assert module.main([]) == 0
+    assert [asset["asset_id"] for asset in visited] == asset_ids
+    assert "2 assets, 0 problems" in capsys.readouterr().out
+
+
+@pytest.mark.parametrize("selection", [["scirel.nonexistent.phase1-proof"], [""]])
+def test_unknown_or_empty_explicit_selection_fails(catalog_case, capsys, selection):
+    module, _, _, _, visited = catalog_case
+    assert module.main(selection) == 1
+    assert "unknown asset" in capsys.readouterr().out
+    assert visited == []
+
+
+def test_mixed_known_and_unknown_selection_cannot_hide_unknown_id(catalog_case, capsys):
+    module, _, _, asset_ids, _ = catalog_case
+    assert module.main([asset_ids[0], "scirel.nonexistent.phase1-proof"]) == 1
+    assert "scirel.nonexistent.phase1-proof" in capsys.readouterr().out
+
+
+def test_explicit_selection_checks_public_asset_without_rules(catalog_case):
+    module, _, _, asset_ids, visited = catalog_case
+    assert module.main([asset_ids[1]]) == 0
+    assert visited == [{"asset_id": asset_ids[1]}]
+
+
+@pytest.mark.parametrize("missing", [False, True])
+def test_empty_or_missing_catalog_fails(catalog_case, capsys, missing):
+    module, catalog, _, _, visited = catalog_case
+    for path in catalog.iterdir():
+        path.unlink()
+    if missing:
+        catalog.rmdir()
+    assert module.main([]) == 1
+    assert "catalog" in capsys.readouterr().out
+    assert visited == []
+
+
+@pytest.mark.parametrize("duplicate", [False, True])
+def test_unknown_or_duplicate_rule_id_fails(catalog_case, capsys, duplicate):
+    module, _, rules, asset_ids, visited = catalog_case
+    row = {"asset_id": asset_ids[0], "forbidden_phrases": ["stale phrase"]}
+    rows = [row, row] if duplicate else [dict(row, asset_id="scirel.nonexistent.rule")]
+    rules.write_text(
+        json.dumps({"schema": "scirel.contract-sync-rules", "assets": rows}),
+        encoding="utf-8",
+    )
+    assert module.main([]) == 1
+    assert ("duplicate rule" if duplicate else "unknown rule") in capsys.readouterr().out
+    assert visited == []
+
+
+def test_rules_are_options_and_do_not_select_the_checked_assets(catalog_case):
+    module, _, rules, asset_ids, visited = catalog_case
+    row = {"asset_id": asset_ids[0], "forbidden_phrases": ["stale phrase"]}
+    rules.write_text(
+        json.dumps({"schema": "scirel.contract-sync-rules", "assets": [row]}),
+        encoding="utf-8",
+    )
+    assert module.main([]) == 0
+    assert visited == [row, {"asset_id": asset_ids[1]}]
+
+
+def test_real_checked_asset_failure_makes_main_red(reader_case, tmp_path, monkeypatch, capsys):
+    record, check_record = reader_case
+    record["verification"]["known_limitations"].pop()
+    assert len(check_record()) == 1
+    module = _load()
+    rules = tmp_path / "rules.json"
+    rules.write_text(
+        json.dumps({"schema": "scirel.contract-sync-rules", "assets": []}), encoding="utf-8"
+    )
+    monkeypatch.setattr(module, "ROOT", tmp_path)
+    monkeypatch.setattr(module, "RULES", rules, raising=False)
+    assert module.main([]) == 1
+    output = capsys.readouterr().out
+    assert "clause count mismatch at verification.known_limitations" in output
+    assert "1 assets, 1 problems" in output
+
+
+@pytest.mark.parametrize(
+    "config",
+    [
+        [],
+        {},
+        {"schema": "wrong", "assets": []},
+        {"schema": "scirel.contract-sync-rules", "assets": {}},
+        {"schema": "scirel.contract-sync-rules", "assets": [], "unknown": []},
+    ],
+)
+def test_invalid_rules_document_fails(catalog_case, capsys, config):
+    module, _, rules, _, visited = catalog_case
+    rules.write_text(json.dumps(config), encoding="utf-8")
+    assert module.main([]) == 1
+    assert "invalid contract sync rules" in capsys.readouterr().out
+    assert visited == []
+
+
+@pytest.mark.parametrize("phrases", [None, [], "stale", [""], [1], [False]])
+def test_invalid_or_option_free_rule_fails(catalog_case, capsys, phrases):
+    module, _, rules, asset_ids, visited = catalog_case
+    rules.write_text(
+        json.dumps(
+            {
+                "schema": "scirel.contract-sync-rules",
+                "assets": [{"asset_id": asset_ids[0], "forbidden_phrases": phrases}],
+            }
+        ),
+        encoding="utf-8",
+    )
+    assert module.main([]) == 1
+    assert "invalid forbidden_phrases rule" in capsys.readouterr().out
+    assert visited == []
+
+
+@pytest.mark.parametrize("contents", ["{", '{"assets": [], "assets": []}'])
+def test_malformed_or_duplicate_json_rules_keys_fail(catalog_case, capsys, contents):
+    module, _, rules, _, visited = catalog_case
+    rules.write_text(contents, encoding="utf-8")
+    assert module.main([]) == 1
+    assert "ERROR:" in capsys.readouterr().out
+    assert visited == []
+
+
+def test_explicit_rules_file_is_the_only_rules_source(catalog_case):
+    module, _, rules, _, visited = catalog_case
+    alternative = rules.with_name("alternative.json")
+    rules.rename(alternative)
+    assert module.main(["--rules", str(alternative)]) == 0
+    assert len(visited) == 2
+    visited.clear()
+    assert module.main([]) == 1
+    assert visited == []
+
+
+def test_rule_ids_are_validated_even_outside_local_selection(catalog_case, capsys):
+    module, _, rules, asset_ids, visited = catalog_case
+    rules.write_text(
+        json.dumps(
+            {
+                "schema": "scirel.contract-sync-rules",
+                "assets": [{"asset_id": "unknown", "forbidden_phrases": ["stale"]}],
+            }
+        ),
+        encoding="utf-8",
+    )
+    assert module.main([asset_ids[0]]) == 1
+    assert "unknown rule" in capsys.readouterr().out
+    assert visited == []
+
+
+def test_contract_identity_must_match_its_catalog_filename(catalog_case, capsys):
+    module, catalog, _, asset_ids, visited = catalog_case
+    (catalog / f"{asset_ids[0]}.json").write_text(
+        json.dumps({"asset_id": asset_ids[1]}), encoding="utf-8"
+    )
+    assert module.main([]) == 1
+    assert "catalog asset_id must match filename" in capsys.readouterr().out
+    assert visited == []
+
+
+@pytest.mark.parametrize("where", ["contract", "reader record", "docstring"])
+def test_real_stale_phrase_failure_makes_main_red(
+    reader_case, tmp_path, monkeypatch, capsys, where
+):
+    _, check_record = reader_case
+    assert check_record() == []
+    asset_id = "scirel.test.contract-sync"
+    phrase = {
+        "contract": "Mechanical consistency only.",
+        "reader record": "仅检查机械一致性。",
+        "docstring": "Return one.",
+    }[where]
+    rules = tmp_path / "rules.json"
+    rules.write_text(
+        json.dumps(
+            {
+                "schema": "scirel.contract-sync-rules",
+                "assets": [{"asset_id": asset_id, "forbidden_phrases": [phrase]}],
+            }
+        ),
+        encoding="utf-8",
+    )
+    module = _load()
+    monkeypatch.setattr(module, "ROOT", tmp_path)
+    monkeypatch.setattr(module, "RULES", rules)
+    assert module.main([]) == 1
+    output = capsys.readouterr().out
+    assert f"stale phrase {phrase!r} in the {where}" in output
+    assert "1 assets, 1 problems" in output
