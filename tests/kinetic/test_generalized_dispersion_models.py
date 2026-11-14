@@ -119,6 +119,65 @@ def test_maxwellian_residual_small_k_and_mixture_normalization():
 
 
 @pytest.mark.parametrize(
+    "kind,kwargs", [("iaw", {}), ("beam", {}), ("generalized", {"selector": 1})]
+)
+@pytest.mark.parametrize("phase", [1j, [1j, 0.5 + 0.2j], [[1j, 0.5 + 0.2j]]])
+@pytest.mark.parametrize("k", [1e200, np.float64(1e200)])
+@pytest.mark.parametrize("errors", ["ignore", "raise"])
+def test_residual_rejects_unrepresentable_final_value(kind, kwargs, phase, k, errors):
+    # Real finite inputs overflow k*k even when every susceptibility is finite.
+    with np.errstate(over=errors, invalid=errors, divide=errors):
+        with pytest.raises(ValueError, match="representable"):
+            evaluate_gpdf_residual(kind, phase, k, **kwargs)
+
+
+@pytest.mark.parametrize(
+    "kind,bad_phase,kwargs",
+    [
+        ("iaw", -26.6j, {"ion_mass": 1.0}),
+        ("beam", -26.6j, {}),
+        ("generalized", 1e-155 + 0j, {"selector": 1}),
+    ],
+)
+@pytest.mark.parametrize("shape", ["scalar", "vector", "matrix"])
+@pytest.mark.parametrize("errors", ["ignore", "raise"])
+def test_residual_rejects_nonfinite_element_without_partial_result(
+    kind, bad_phase, kwargs, shape, errors
+):
+    # The first array element is representable; the second must reject the whole call.
+    assert np.isfinite(evaluate_gpdf_residual(kind, 1j, 0.3, **kwargs))
+    phase = {"scalar": bad_phase, "vector": [1j, bad_phase], "matrix": [[1j, bad_phase]]}[shape]
+    with np.errstate(over=errors, invalid=errors, divide=errors):
+        with pytest.raises(ValueError, match="representable"):
+            evaluate_gpdf_residual(kind, phase, 0.3, **kwargs)
+
+
+@pytest.mark.parametrize("kind", ["langmuir", "generalized"])
+@pytest.mark.parametrize("phase", [1j, [1j, 0.5 + 0.2j], [[1j, 0.5 + 0.2j]]])
+def test_residual_maxwellian_large_k_rejection_preserved(kind, phase):
+    with pytest.raises(ValueError, match="representable"):
+        evaluate_gpdf_residual(kind, phase, 1e200)
+
+
+@pytest.mark.parametrize("kind", ["iaw", "beam", "generalized"])
+@pytest.mark.parametrize("phase", [1j, [1j, 0.5 + 0.2j], [[1j, 0.5 + 0.2j]]])
+@pytest.mark.parametrize("k", [0.3, 1e154])
+def test_residual_finite_values_and_shapes_preserved(kind, phase, k):
+    phase = np.asarray(phase, dtype=complex)
+    response = lambda z: 1 + z * 1j * np.sqrt(np.pi) * wofz(z)
+    if kind == "iaw":
+        expected = k * k + response(phase) + response(phase * np.sqrt(1836))
+    elif kind == "beam":
+        expected = k * k + 0.9 * response(phase) + 0.1 * response(phase - 5)
+    else:
+        expected = k * k - (1 / phase**2) / 2
+    result = evaluate_gpdf_residual(kind, phase, k, selector=1)
+    assert np.shape(result) == phase.shape
+    assert np.isfinite(result).all()
+    np.testing.assert_allclose(result, expected, rtol=1e-14, atol=1e-14)
+
+
+@pytest.mark.parametrize(
     "kind,ks,seed",
     [
         ("langmuir", [0.3, 0.4], None),

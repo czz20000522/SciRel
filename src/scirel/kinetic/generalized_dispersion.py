@@ -716,44 +716,52 @@ def evaluate_gpdf_residual(
     if not np.isscalar(k) or not np.isreal(k) or not np.isfinite(k) or k <= 0:
         raise ValueError("k must be finite positive scalar")
     response = lambda value: 1 + value * _evaluate_plasma_dispersion(value)["Z"]
-    if kind == "langmuir":
-        return _evaluate_maxwellian_electrostatic(phase * np.sqrt(2) * k, k)["D"]
-    if kind == "generalized":
-        if selector == 0 and expression == "exp(-v.^2)/sqrt(pi)":
-            return _evaluate_maxwellian_electrostatic(phase * np.sqrt(2) * k, k)["D"]
-        return (
-            k * k
-            - evaluate_generalized_dispersion(
-                phase, selector, expression=expression, integration_mesh=integration_mesh
-            )["Zp"]
-            / 2
-        )
-    if kind == "iaw":
-        if (
-            not np.isfinite([ion_temperature, ion_mass]).all()
-            or min(ion_temperature, ion_mass) <= 0
-        ):
-            raise ValueError("ion temperature and mass must be positive")
-        return (
-            k * k
-            + response(phase)
-            + response(phase / np.sqrt(ion_temperature / ion_mass)) / ion_temperature
-        )
-    if kind == "beam":
-        if (
-            not np.isfinite([beam_fraction, beam_temperature, beam_drift]).all()
-            or not 0 <= beam_fraction <= 1
-            or beam_temperature <= 0
-        ):
-            raise ValueError("invalid beam parameters")
-        return (
-            k * k
-            + (1 - beam_fraction) * response(phase)
-            + beam_fraction
-            / beam_temperature
-            * response(phase / np.sqrt(beam_temperature) - beam_drift)
-        )
-    raise ValueError("unknown residual kind")
+    try:
+        if kind == "langmuir":
+            residual = _evaluate_maxwellian_electrostatic(phase * np.sqrt(2) * k, k)["D"]
+        elif kind == "generalized":
+            if selector == 0 and expression == "exp(-v.^2)/sqrt(pi)":
+                residual = _evaluate_maxwellian_electrostatic(phase * np.sqrt(2) * k, k)["D"]
+            else:
+                residual = (
+                    k * k
+                    - evaluate_generalized_dispersion(
+                        phase, selector, expression=expression, integration_mesh=integration_mesh
+                    )["Zp"]
+                    / 2
+                )
+        elif kind == "iaw":
+            if (
+                not np.isfinite([ion_temperature, ion_mass]).all()
+                or min(ion_temperature, ion_mass) <= 0
+            ):
+                raise ValueError("ion temperature and mass must be positive")
+            residual = (
+                k * k
+                + response(phase)
+                + response(phase / np.sqrt(ion_temperature / ion_mass)) / ion_temperature
+            )
+        elif kind == "beam":
+            if (
+                not np.isfinite([beam_fraction, beam_temperature, beam_drift]).all()
+                or not 0 <= beam_fraction <= 1
+                or beam_temperature <= 0
+            ):
+                raise ValueError("invalid beam parameters")
+            residual = (
+                k * k
+                + (1 - beam_fraction) * response(phase)
+                + beam_fraction
+                / beam_temperature
+                * response(phase / np.sqrt(beam_temperature) - beam_drift)
+            )
+        else:
+            raise ValueError("unknown residual kind")
+    except FloatingPointError as error:
+        raise ValueError("generalized residual is not representable") from error
+    if not np.isfinite(residual).all():
+        raise ValueError("generalized residual is not representable")
+    return residual
 
 
 def evaluate_gpdf_small_k(k):
