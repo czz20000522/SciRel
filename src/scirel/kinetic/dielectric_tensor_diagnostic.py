@@ -1,5 +1,6 @@
 """Evaluate the finite-harmonic kinetic dielectric tensor and determinant with local special-function backends."""
 
+import math as _math
 import operator as _operator
 
 import numpy as _np
@@ -96,6 +97,70 @@ def _gammapn(n, x):
     )
 
 
+def _complex_sum(values):
+    """Sum the two components separately, including cancelling harmonics."""
+    return complex(
+        _math.fsum(value.real for value in values), _math.fsum(value.imag for value in values)
+    )
+
+
+def _gamma_complex_tail(b, start, limit=20000):
+    """Evaluate 2*sum(n>=start) exp(-b)*I_n(b), including complex/negative b.
+
+    DLMF 10.25.2 implies |I_n(b)| <= I_n(|b|). The positive generating
+    function (10.35.1) then bounds the omitted one-sided exact tail by
+    exp[|b|-Re(b)+|b|*(cosh(t)-1)-m*t], t=asinh(m/|b|).
+    Compare this bound to 1e-18*|sum| in log space. It bounds omitted exact
+    terms only, not backend or rounding error. fsum reduces accumulation
+    error; the absolute-sum check rejects severe cancellation, without claiming
+    a global Bessel-backend error bound. Exhaustion, underflow and nonfinite
+    terms raise rather than returning zero or an unbounded partial sum.
+    """
+    b = complex(b)
+    radius_b = abs(b)
+    if not _math.isfinite(radius_b) or radius_b == 0:
+        raise ValueError("complex harmonic tail argument must be finite and nonzero")
+    start = max(start, 1)
+    pieces = []
+    magnitudes = []
+    for first in range(start, start + limit, 64):
+        stop = min(first + 64, start + limit)
+        values = _gamman(_np.arange(first, stop), b)
+        if not _np.all(_np.isfinite(values)):
+            raise ValueError("complex harmonic tail terms must be finite")
+        pieces.append(_complex_sum(values))
+        magnitudes.append(_math.fsum(abs(value) for value in values))
+        total = _complex_sum(pieces)
+        magnitude = abs(total)
+        if magnitude < _np.finfo(float).tiny:
+            raise ValueError("complex harmonic tail is not representable with reliable precision")
+        m = float(stop)
+        radius = _math.hypot(m, radius_b)
+        ratio = m / radius_b
+        tilt = (
+            _math.asinh(ratio)
+            if _math.isfinite(ratio)
+            else _math.log(m) + _math.log(2) - _math.log(radius_b)
+        )
+        log_bound = radius_b - b.real + m * ((m / radius) / (1 + radius_b / radius) - tilt)
+        if _math.isfinite(log_bound) and log_bound <= _math.log(magnitude) + _math.log(1e-18):
+            if _np.finfo(float).eps * _math.fsum(magnitudes) > 1e-14 * magnitude:
+                raise ValueError(
+                    "complex harmonic tail is too ill-conditioned to evaluate reliably"
+                )
+            return 2 * total
+    raise ValueError("complex harmonic tail remainder could not be bounded within the term budget")
+
+
+def _gamma_tail(b, start):
+    # The real positive kernel's positivity premise must not leak into complex b.
+    if b.imag == 0 and b.real > 0:
+        from .kinetic_dispersion_sum_n import _gamma_positive_tail
+
+        return _gamma_positive_tail(b.real, start)
+    return _gamma_complex_tail(b, start)
+
+
 def _species_array(value, name):
     arr = _np.asarray(value)
     if arr.dtype.kind not in "iuf":
@@ -183,9 +248,8 @@ def evaluate_kinetic_dielectric_tensor(B0, qs, ms, ns0, Ts0, f, kz, kx, lmx=_LMX
         divides by zero); internally uses `w=2*pi*f` (frozen source). [Hz] Shape: scalar. Finite nonzero
         real number (`w=2*pi*f=0` divides by zero); internally uses `w=2*pi*f` (frozen source).
     kz : real numeric
-        Parallel wavenumber; scalar; unit rad/m; must be a finite nonzero real number (`z0` and `zn` are
-        both divided by `kz`, frozen source). [rad/m] Shape: scalar. Finite nonzero real number (`z0` and
-        `zn` are both divided by `kz`, frozen source).
+        Signed parallel wavenumber; the response uses abs(kz), while z0s retains its sign. No near-zero
+        clamp is applied. [rad/m] Shape: scalar. Finite and nonzero.
     kx : complex128
         Perpendicular wavenumber; scalar; unit rad/m; must be finite and may be real or complex (the source
         `fsolve` scan uses complex `kx`); at `kx=0`, `as=0` and `Xsn_xz/Xsn_zz` become `NaN` (the source
@@ -201,12 +265,9 @@ def evaluate_kinetic_dielectric_tensor(B0, qs, ms, ns0, Ts0, f, kz, kx, lmx=_LMX
     Returns
     -------
     K : complex128 array
-        Kinetic dielectric tensor `K_ij`; `(3,3)` complex `numpy.ndarray` (axis 0 is row i, axis 1 is column
-        j); dimensionless; initialized to `diag(1,1,1)`; when `kx=0` or `kz` is near zero some components
-        may be `NaN`/`inf`, matching the source implementation without replacement. [dimensionless] Shape:
-        (3,3). Kinetic dielectric tensor `K_ij`; `(3,3)` complex `numpy.ndarray` (axis 0 is row i, axis 1 is
-        column j); dimensionless; initialized to `diag(1,1,1)`; when `kx=0` or `kz` is near zero some
-        components may be `NaN`/`inf`, matching the source implementation without replacement.
+        Kinetic dielectric tensor, row/column axes x-y-z, initialized to the identity. At kx=0 the
+        original nonfinite diagnostic is retained; extreme scale arithmetic can also be nonfinite.
+        [dimensionless] Shape: (3,3).
     D : complex128 array
         Dispersion tensor `D_ij`; `(3,3)` complex `numpy.ndarray`; dimensionless; obtained from `K` by
         adding `nx^2`, `nz^2` and `nx*nz`; when `K` is `NaN` the corresponding components are also `NaN`.
@@ -214,12 +275,8 @@ def evaluate_kinetic_dielectric_tensor(B0, qs, ms, ns0, Ts0, f, kz, kx, lmx=_LMX
         dimensionless; obtained from `K` by adding `nx^2`, `nz^2` and `nx*nz`; when `K` is `NaN` the
         corresponding components are also `NaN`.
     det_D : complex128
-        Dispersion determinant `det(D)`; complex scalar; dimensionless; evaluated from the six-term
-        expansion and agrees with `numpy.linalg.det(D)` within floating-point error (a relative deviation of
-        about 1e-9 is allowed when the real and imaginary magnitudes differ greatly). [dimensionless] Shape:
-        scalar. Dispersion determinant `det(D)`; complex scalar; dimensionless; evaluated from the six-term
-        expansion and agrees with `numpy.linalg.det(D)` within floating-point error (a relative deviation of
-        about 1e-9 is allowed when the real and imaginary magnitudes differ greatly).
+        Dispersion determinant from the original explicit six-term expansion. Tensor comparisons do not
+        certify determinant or root accuracy. [dimensionless] Shape: scalar.
     w : real numeric
         Angular frequency; real scalar; unit rad/s; equal to `2*pi*f` and defined only when `f` is nonzero.
         [rad/s] Shape: scalar. Angular frequency; real scalar; unit rad/s; equal to `2*pi*f` and defined
@@ -229,9 +286,9 @@ def evaluate_kinetic_dielectric_tensor(B0, qs, ms, ns0, Ts0, f, kz, kx, lmx=_LMX
         strictly positive. [m/s] Shape: (S,) species array. Strictly positive.
     wcs : float64 array
         Cyclotron frequency `qs*B0/ms` of each species; real array of shape `(S,)`; unit rad/s; carries the
-        charge sign and is nonzero when `B0` is nonzero. [rad/s] Shape: (S,) species array. Cyclotron
+        sign of qs*B0 and is nonzero when `B0` is nonzero. [rad/s] Shape: (S,) species array. Cyclotron
         frequency `qs*B0/ms` of each species; real array of shape `(S,)`; unit rad/s; carries the charge
-        sign and is nonzero when `B0` is nonzero.
+        times B0 sign and is nonzero when `B0` is nonzero.
     wps2 : float64 array
         Plasma-frequency squared `ns0*qs^2/ms/epsilon0` of each species; real array of shape `(S,)`; unit
         s^-2; nonnegative. [s^-2] Shape: (S,) species array. Plasma-frequency squared `ns0*qs^2/ms/epsilon0`
@@ -272,7 +329,9 @@ def evaluate_kinetic_dielectric_tensor(B0, qs, ms, ns0, Ts0, f, kz, kx, lmx=_LMX
     Raises
     ------
     ValueError
-        Raises ValueError for declared invalid inputs; numeric conversion errors may propagate for
+        Raises ValueError for declared invalid inputs, a tail whose remainder cannot be bounded within
+        its term budget, nonfinite tail terms, an unrepresentable tail, or severe complex-tail
+        cancellation. No partial mapping is returned. Numeric conversion errors may propagate for
         unsupported Python objects.
 
     See Also
@@ -281,10 +340,23 @@ def evaluate_kinetic_dielectric_tensor(B0, qs, ms, ns0, Ts0, f, kz, kx, lmx=_LMX
 
     Notes
     -----
-    Sum l=-lmx..lmx Maxwellian harmonic contributions, form D from K with Maxwell curl terms, and
-    evaluate its explicit six-term determinant. homogeneous magnetized Maxwellian multi-species plasma
-    Assumptions: Input units and normalization follow the declared ports; no physical parameters are
-    inferred.
+    Sum l=-lmx..lmx Maxwellian contributions and form D with Maxwell curl terms. The xx/xy/yy entries
+    retain the N=64 Weideman Z backend; xz/yz/zz use the analytic real-argument A(z)=1+z*Z(z) without
+    subtracting nearly equal terms. The real A and positive-b tail kernels are shared with the
+    conventional sum. Even for complex kx, z remains real; only a, b and the Gamma weights are complex.
+    Symmetric finite-sum identities keep the endpoint Gamma_(N+1)-Gamma_N and the full omitted Gamma
+    tail. For complex or negative b, sum the complex tail with a bound derived from
+    |I_n(b)|<=I_n(|b|) and the positive Bessel generating function (DLMF 10.25.2, 10.35.1).
+
+    This corrects the numerical method of the same finite-N model; it is not exact parity with the
+    frozen N=64 rational expression. The remainder bound covers omitted exact terms, not backend or
+    rounding errors. Complex accumulation uses separate compensated component sums and rejects severe
+    cancellation. Tail-budget exhaustion, underflow or nonfinite terms raise ValueError; no partial
+    tail is returned. Bounded independent 140/180-digit references test complete complex K/D at 2e-12
+    for selected real/complex inputs. They do not prove a continuous-domain error bound, harmonic
+    convergence, or determinant/root accuracy. A genuinely large finite-N tail is retained. Default
+    lmx=15, scalar species broadcasting, signed diagnostics, kx=0 behavior and the six-term determinant
+    stay unchanged. Homogeneous magnetized Maxwellian plasma; no physical parameters are inferred.
 
     Examples
     --------
@@ -346,39 +418,51 @@ def evaluate_kinetic_dielectric_tensor(B0, qs, ms, ns0, Ts0, f, kz, kx, lmx=_LMX
         sqrt2 = _np.sqrt(2.0)
 
         # bonk/fDtensor.m:48-78
+        from .kinetic_dispersion_sum_n import _a_function
+
         for j in range(species_count):
             z0 = w / (response_kz * vts[j])
             z0s[j] = w / (kz_c * vts[j])
             b = bs[j]
             a = as_[j]
+            xz_terms, yz_terms, zz_terms = [], [], []
             for l in range(-lmx, lmx + 1):
                 zn = (w - l * wcs[j]) / (response_kz * vts[j])
 
-                xsn_xx = l**2 * _gamman(l, b) / b
-                xsn_xy = 1j * l * _gammapn(l, b)
-                xsn_xz = sqrt2 * zn * l * _gamman(l, b) / a
+                gam = _gamman(l, b)
+                gamp = _gammapn(l, b)
+                xsn_xx = l**2 * gam / b
+                xsn_xy = 1j * l * gamp
                 xsn_yx = -xsn_xy
-                xsn_yy = l**2 / b * _gamman(l, b) - 2.0 * b * _gammapn(l, b)
-                xsn_yz = -1j * sqrt2 * zn * a * _gammapn(l, b)
-                xsn_zx = xsn_xz
-                xsn_zy = -xsn_yz
-                xsn_zz = 2.0 * zn**2 * _gamman(l, b)
+                xsn_yy = l**2 / b * gam - 2.0 * b * gamp
+                # zn remains real even for complex kx. Use analytic A=1+zn*Z,
+                # not subtraction from the fixed N64 rational approximation.
+                response = complex(_a_function(_np.asarray(zn)))
+                xz_terms.append(l * gam * response)
+                yz_terms.append(gamp * response)
+                zz_terms.append(zn * gam * response)
 
                 zn_val = _zfun(zn)
                 term1 = wps2[j] / w**2 * (z0 * zn_val)
 
                 K[0, 0] = K[0, 0] + term1 * xsn_xx
                 K[0, 1] = K[0, 1] + term1 * xsn_xy
-                K[0, 2] = K[0, 2] + term1 * xsn_xz
                 K[1, 0] = K[1, 0] + term1 * xsn_yx
                 K[1, 1] = K[1, 1] + term1 * xsn_yy
-                K[1, 2] = K[1, 2] + term1 * xsn_yz
-                K[2, 0] = K[2, 0] + term1 * xsn_zx
-                K[2, 1] = K[2, 1] + term1 * xsn_zy
-                K[2, 2] = K[2, 2] + term1 * xsn_zz
 
-            # bonk/fDtensor.m:77：fDR.m 中被注释掉、此处 load-bearing 的收尾项
-            K[2, 2] = K[2, 2] + wps2[j] / w**2 * 2.0 * z0**2
+            alpha = wps2[j] / w**2
+            # Sum(n*Gamma_n)=0, sum(Gamma'_n)=Gamma_(N+1)-Gamma_N.
+            # Keep the finite-N complement: changing it would change the model.
+            # kx=0 deliberately retains its original nonfinite diagnostic.
+            tail = _gamma_tail(b, lmx + 1) if b != 0 else complex("nan")
+            edge = _gamman(lmx + 1, b) - _gamman(lmx, b)
+            cross_x = sqrt2 * alpha * z0 / a * _complex_sum(xz_terms)
+            cross_y = -1j * sqrt2 * alpha * z0 * a * (_complex_sum(yz_terms) - edge)
+            K[0, 2] += cross_x
+            K[2, 0] += cross_x
+            K[1, 2] += cross_y
+            K[2, 1] -= cross_y
+            K[2, 2] += 2 * alpha * z0 * _complex_sum(zz_terms) + 2 * alpha * z0**2 * tail
 
         if kz_c < 0.0:
             K[0, 2] = -K[0, 2]

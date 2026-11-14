@@ -3257,9 +3257,9 @@
   },
   {
    "asset_id": "scirel.kinetic.dielectric-tensor-diagnostic",
-   "source_sha256": "9291bfecdb31b62cf5102541f71be996e8bf23e5fe4906b98e097533a3cf81b6",
+   "source_sha256": "4ad45398198d0aa460e683fa7d7950a2e7d87c2771e56cfa63f9ed61b4d3064f",
    "summary": "按默认 lmx=15 的谐波截断计算介电张量和色散张量的全部九个分量。",
-   "definition": "对 l=-lmx..lmx 的 Maxwellian 谐波贡献求和，通过 Maxwell 旋度项由 K 形成 D，并用显式六项展开式计算其行列式。",
+   "definition": "对 l=-lmx..lmx 的 Maxwellian 谐波贡献求和，通过 Maxwell 旋度项形成 D，保留显式六项行列式。xx/xy/yy 保留 N64 Weideman Z；xz/yz/zz 使用实参解析 A=1+zZ、有限 Gamma 导数端点和遗漏尾项。复数或负 b 的尾项按复数求和，由 |I_n(b)|≤I_n(|b|) 和 DLMF 10.35.1 建立精确遗漏项绝对界。",
    "model": "均匀磁化多组分 Maxwellian 等离子体",
    "boundary": "默认 lmx=15；静态无漂移各向同性 Maxwellian 对有符号 kz 使用因果坐标反射，近零 kz 仍不钳位。",
    "assumptions": [
@@ -3304,8 +3304,8 @@
     },
     {
      "name": "kz",
-     "description": "有符号平行波数；标量；单位 rad/m；须非零有限实数。内部以 |kz| 求因果共振，返回的 z0s 仍保留有符号 kz。",
-     "constraints": "非零有限实数（`z0`、`zn` 均除以 `kz`）。",
+     "description": "有符号平行波数；响应按 |kz| 计算，z0s 保留其符号；近零 kz 不钳位。",
+     "constraints": "非零有限实数。",
      "dtype": "实数"
     },
     {
@@ -3324,8 +3324,8 @@
    "outputs": [
     {
      "name": "K",
-     "description": "动力学介电张量 `K_ij`；`(3,3)` 复数 `numpy.ndarray`（轴 0 为行 i，轴 1 为列 j）；无量纲；初始为 `diag(1,1,1)`，`kx=0` 或 `kz` 近零时部分分量可为 `NaN`/`inf`，此行为固定，不做替换。",
-     "constraints": "动力学介电张量 `K_ij`；`(3,3)` 复数 `numpy.ndarray`（轴 0 为行 i，轴 1 为列 j）；无量纲；初始为 `diag(1,1,1)`，`kx=0` 或 `kz` 近零时部分分量可为 `NaN`/`inf`，此行为固定，不做替换。",
+     "description": "动力学介电张量，行列均按 x-y-z 排列，从单位阵开始累加。kx=0 保留原有非有限诊断；极端尺度算术仍可能非有限。",
+     "constraints": "同一有限 N 张量；kx=0 保留原有非有限诊断。不承诺连续全域精度。",
      "dtype": "complex128 数组"
     },
     {
@@ -3336,8 +3336,8 @@
     },
     {
      "name": "det_D",
-     "description": "色散行列式 `det(D)`；复数标量；无量纲；按六项展开式计算，与 `numpy.linalg.det(D)` 在浮点误差内一致（实/虚部量级差极大时允许约 1e-9 的相对偏离）。",
-     "constraints": "色散行列式 `det(D)`；复数标量；无量纲；按六项展开式计算，与 `numpy.linalg.det(D)` 在浮点误差内一致（实/虚部量级差极大时允许约 1e-9 的相对偏离）。",
+     "description": "原有显式六项展开式得到的色散行列式；张量对照不构成行列式或求根精度认证。",
+     "constraints": "保留原六项展开；不据此推断行列式或求根精度。",
      "dtype": "complex128 复数"
     },
     {
@@ -3354,8 +3354,8 @@
     },
     {
      "name": "wcs",
-     "description": "各成分回旋频率 `qs*B0/ms`；形状 `(S,)` 的实数数组；单位 rad/s；带电荷符号，`B0` 非零时非零。",
-     "constraints": "各成分回旋频率 `qs*B0/ms`；形状 `(S,)` 的实数数组；单位 rad/s；带电荷符号，`B0` 非零时非零。",
+     "description": "回旋频率 qs*B0/ms，符号由 qs*B0 决定。",
+     "constraints": "带 qs*B0 的符号；B0、qs 均非零时非零。",
      "dtype": "float64 数组"
     },
     {
@@ -3420,7 +3420,7 @@
    },
    "failure_semantics": {
     "invalid_input": "输入违反所列条件时抛出 ValueError；不受支持的 Python 对象可能直接传播数值转换异常。",
-    "runtime_failure": "既有算术可能在奇异波点返回非有限值。",
+    "runtime_failure": "尾项预算耗尽、尾项不可可靠表示、出现非有限尾项或严重复数相消时抛 ValueError，不返回部分尾项。kx=0 保留原非有限诊断；极端尺度算术仍可能非有限。",
     "nonconvergence": "不适用；该入口不执行迭代求根。",
     "partial_results": "发生异常后不返回部分结果映射。"
    },
@@ -3430,15 +3430,18 @@
    },
    "verification": {
     "scope": [
-     "声明的数值案例及相关失败边界。"
+     "用公开输入独立计算原有限 N 和式，对照所选实数/复数 kx、正负近零及普通 kz、lmx=0/1/15/30/60、A 分支边界和物种广播下的完整复数 K/D；另测控制量、诊断字段和尾项拒绝。"
     ],
-    "evidence_ceiling": "限于源默认 15 谐波下的九个介电/色散张量分量。证据：`test_fluid_spectrum_r43_kinetic.py` 含 12 个测试函数，其中 5 个引用 `evaluate_kinetic_dielectric_tensor`，由 4 个资产共享；仅绑定共享文件覆盖，因此通过是文件级事实、而非资产隔离证据；本审计已执行有界示例。真值来源：有界源方法一致性（非独立真值）。不建立：模身份、任意参数精度或独立完整动理学张量。",
+    "evidence_ceiling": "独立 mpmath 参照从公开输入重算尺度、exp(-b)I_n(b) 和 erfc 定义的 Z，计算原有限 N 和式，不复用生产 A/尾项核。完整复数 K/D 保持 2e-12；140/180 位自核保留未舍入数值。补充有界复数尾项相位/大小和公开拒绝验证。这是数值方法纠正，不是与冻结 N64 有理式精确一致，也不是连续全域定理、谐波收敛或行列式/求根认证。",
     "known_limitations": [
-     "默认 lmx=15；与常规求和路径不同，不对近零 kz 钳位。",
-     "四资产共享动理学文件中的五个直接函数覆盖 15 谐波/六项行列式、非法种类控制、星号导入面与 SciPy 惰性加载；未绑定独立 Bessel 求和张量参照。",
-     "SciPy 惰性加载与张量精度分开测试；导入边界测试通过不构成张量参照。"
+     "保留默认 lmx=15、近零 kz 不钳位、标量广播、有符号 z0s、复数 kx 和六项行列式；kx=0 仍返回非有限诊断。",
+     "尾项恒等式保留调用者指定的同一有限 N 模型；大尾项是截断本身的结果，不能据此默增 lmx。",
+     "复数尾界只约束精确遗漏项，不包含 Bessel 后端、表示、求和及乘回大系数的误差；测得严重尾项相消、下溢、非有限项或预算耗尽时抛 ValueError。样本不建立全复数域保证。",
+     "xx/xy/yy 保留 N64 Weideman Z；xz/yz/zz 复用实参解析 A。完整张量对照不认证行列式/求根精度或极端尺度可表示性；SciPy 惰性加载是独立导入边界验证。"
     ],
     "tests": [
+     "tests/kinetic/test_dielectric_tensor_diagnostic_stability.py",
+     "tests/kinetic/test_kinetic_signed_kz.py",
      "tests/kinetic/test_fluid_spectrum_r43_kinetic.py"
     ]
    }
