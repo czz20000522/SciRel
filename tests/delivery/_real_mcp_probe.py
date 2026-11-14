@@ -117,7 +117,9 @@ runpy.run_path(str(entry), run_name='__main__')
             document = await call("get", {**pins, "asset_id": asset})
             assert document["document"] == json.loads(contract.read_bytes())
             assert document["digests"] == {
-                contract.relative_to(root).as_posix(): hashlib.sha256(contract.read_bytes()).hexdigest()
+                contract.relative_to(root).as_posix(): hashlib.sha256(
+                    contract.read_bytes()
+                ).hexdigest()
             }
             search = await call("search", {**pins, "q": asset, "limit": 100}, "match")
             assert asset in [item["asset_id"] for item in search["result"]["items"]]
