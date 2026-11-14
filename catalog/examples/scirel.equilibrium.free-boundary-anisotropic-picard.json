@@ -544,11 +544,13 @@
    "Full retention relax=1 cannot turn a nonzero fixed-point residual into convergence.",
    "An analytic rank-one Green feedback checks two-step state propagation and the terminal I^2+I-K=0 relation; relaxation that nearly preserves the old state must not exit early on a small step.",
    "Do not claim convergence when flux stays fixed while field and current still change; a zero magnetic field fails closed before the pressure callback.",
-   "A partial plasma mask preserves active terminal j_phi values and zeros only inactive cells."
+   "A partial plasma mask preserves active terminal j_phi values and zeros only inactive cells.",
+   "Direct input regressions check missing r_grid/z_grid through mapping and keyword calls, reject grids below the declared minimum before checking other required ports, preserve ValueError for other missing ports, and propagate callback IndexError/KeyError. These failure checks do not validate arbitrary physical closures."
   ],
   "tests": [
    "tests/cross_domain/free_boundary_anisotropic_picard/test_composition_free_boundary_anisotropic_picard.py",
-   "tests/cross_domain/test_anisotropic_core_scientific_correction.py"
+   "tests/cross_domain/test_anisotropic_core_scientific_correction.py",
+   "tests/equilibrium/test_picard_input_validation.py"
   ],
   "evidence_ceiling": "tests/cross_domain/test_anisotropic_core_scientific_correction.py directly imports this maintained function as free; test_free_boundary_flux_and_magnetic_correction_same_terminal_state, test_free_boundary_true_parallel_force_cannot_be_converged, test_retained_current_is_not_false_fixed_point assert same-state wall flux/field, true parallel-force rejection and near-unit relaxation. These are bounded manufactured/analytic discrete cases, not full-file coverage or physical validation of arbitrary caller pressure/Green/wall models.",
   "known_limitations": [

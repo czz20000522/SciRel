@@ -212,10 +212,12 @@
  },
  "verification": {
   "scope": [
-   "Independent flux conservation, exact linear/constant states, uniform manufactured diffusion convergence and theta causality checks"
+   "Independent flux conservation, exact linear/constant states, uniform manufactured diffusion convergence and theta causality checks",
+   "Direct failure regressions distinguish finite-input overflow in the implicit matrix or right-hand side (FloatingPointError) from nonfinite input (ValueError), under NumPy warn/ignore/raise policies. The explicit branch retains its existing overflow class, and failed implicit matrix/right-hand-side construction leaves the caller's variable unchanged."
   ],
   "tests": [
-   "tests/fvm/test_fvm.py"
+   "tests/fvm/test_fvm.py",
+   "tests/fvm/test_theta_failure_semantics.py"
   ],
   "evidence_ceiling": "Named discrete invariants and manufactured uniform-grid convergence; no arbitrary-grid stability/accuracy or full transport-simulation claim.",
   "known_limitations": [
