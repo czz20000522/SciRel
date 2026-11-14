@@ -1,7 +1,7 @@
 {
  "schema": "scirel.executed-tutorial",
  "tutorial": "kinetic-initial-value",
- "source_revision": "47bfcf1069d8750d4e8ed3f94c366b4985f01813",
+ "source_revision": "5fd627d4c93d19365569c9b5119ddad7f815f031",
  "wheel_version": "0.0.0",
  "wheel_sha256": null,
  "results": {
@@ -16,10 +16,10 @@
   "recurrence_time": 2144.660584850632,
   "diagnostic_status": "available"
  },
- "results_sha256": "93541b672e985b39225a0367bc9ef1595df2beca4d54b79c5adcbe2b14673a80",
+ "results_sha256": "004dede727a375950ba906d6dbb901bb0263eddff37024c53354b460cf7bc6ca",
  "source_files": {
-  "src/scirel/kinetic/generalized_dispersion.py": "08f8779d21031dd345c6602ac3dcdc872072d7c87cdcaa6e5debf29b99b9e461",
-  "src/scirel/kinetic/vlasov_poisson.py": "dd2e9685d49de86e29475417197536eee4feadd6b19a94189d4af3e2795fdea5"
+  "src/scirel/kinetic/generalized_dispersion.py": "73a2b87ac78fea7928d75e37eb9d77fe1f439b7ce24bb1359aaa9d2380c30285",
+  "src/scirel/kinetic/vlasov_poisson.py": "de971244bb89a8efee7edd81c28524b80ec6b633c7b7268e1e1147b287e92910"
  },
  "document_files": {
   "catalog/examples/scirel.kinetic.generalized-root-scans.json": "075de80e4cca0a5a47399dc674141cd1b57412b1ecbfdd05e280da8981dfbbea",
@@ -31,16 +31,16 @@
   "numpy": "2.5.4",
   "scipy": "1.18.1",
   "matplotlib": null,
-  "platform": "macOS arm64",
-  "execution_environment": "macOS arm64 CPython 3.14.7 source checkout with locked development dependencies; tutorial code blocks rerun from source; Rebound on 2026-11-03 after documentation and explicit-argument changes (multi-coil ampere_turns_a, vp_init df_initial/df0dv, docstrings, ruff formatting): replayed on Linux x86_64 with CPython/NumPy/SciPy 3.14.10 2.5.4 1.18.1; all chapter checks passed, magnetostatics values agree with results.json to 1.3e-18 T, and the kinetic tutorial reproduced its printed Vlasov-Poisson outputs exactly (its root-scan residual printed 1.038893e-12 against the recorded 1.038967e-12, platform rounding far below the 1e-9 assertion). Results and figures retained unchanged.; Rebound on 2026-11-03 after docstring-only changes (numpydoc Parameters/Returns/Raises/See Also/Examples) and ruff formatting: replayed on Linux x86_64; outputs identical to the previous replay.",
+  "platform": "Darwin arm64",
+  "execution_environment": "macOS arm64 CPython 3.14.7 source checkout with locked development dependencies; tutorial code blocks rerun from source; Rebound on 2026-11-03 after documentation and explicit-argument changes (multi-coil ampere_turns_a, vp_init df_initial/df0dv, docstrings, ruff formatting): replayed on Linux x86_64 with CPython/NumPy/SciPy 3.14.10 2.5.4 1.18.1; all chapter checks passed, magnetostatics values agree with results.json to 1.3e-18 T, and the kinetic tutorial reproduced its printed Vlasov-Poisson outputs exactly (its root-scan residual printed 1.038893e-12 against the recorded 1.038967e-12, platform rounding far below the 1e-9 assertion). Results and figures retained unchanged.; Rebound on 2026-11-03 after docstring-only changes (numpydoc Parameters/Returns/Raises/See Also/Examples) and ruff formatting: replayed on Linux x86_64; outputs identical to the previous replay. Rebound on 2026-11-15 from clean source 5fd627d4c93d19365569c9b5119ddad7f815f031: executed both unchanged RST Python blocks in their original order in one namespace under the project-managed Mac environment. All original assertions passed; all recorded result values and displayed output lines match exactly. This is bounded source execution, not an installed-wheel, cross-platform or all-domain physics approval.",
   "network": "none during tutorial execution",
   "source_or_saved_answers": false,
   "exit_code": 0,
   "system_site_packages": false,
-  "developer_tools": "SciRel functions resolved from current source checkout; tutorial code blocks executed in one namespace and reproduced the recorded outputs exactly",
+  "developer_tools": "Current source checkout; unchanged RST Python blocks executed in one namespace; result values and printed output verified exactly against the authored tutorial.",
   "source_checkout_mounted": true
  },
  "human_approval": false,
  "release_approval": false,
- "previous_execution_sha256": "c9fd775b87f18811a3974eb00e614212fd4ab5795158bbad4caec533f4c6974c"
+ "previous_execution_sha256": "7e44d9492eadee7898a7678c2897d62a19daec3f4d93f27f619afbeb68f09dce"
 }
