@@ -37,7 +37,7 @@ def _source_runtime_eigvals(matrix):
 
 
 def solve_fluid_wavevector_eigenproblem(*, matrix, kn, real_floor_scale=1e-5, keep=5):
-    r"""Solve and qualify the fluid wavevector eigenproblem.
+    r"""Solve the fluid wavevector eigenproblem and select sorted candidates.
 
     Parameters
     ----------
@@ -68,7 +68,8 @@ def solve_fluid_wavevector_eigenproblem(*, matrix, kn, real_floor_scale=1e-5, ke
         $|\operatorname{Im}|$ order Shape: Complex array of length `selected_count`.
         Constraints: A subset of `eigenvalues`. Units: [1/m].
     head : complex128
-        First `keep` sorted physical eigenvalues Shape: Complex array of length at most
+        First `keep` sorted candidate eigenvalues; no physical mode identity is
+        certified. Shape: Complex array of length at most
         `keep`. Constraints: When fewer than `keep` eigenvalues survive, returns every
         surviving value. Units: [1/m].
     eigenvalue_count : integer
@@ -111,8 +112,8 @@ def solve_fluid_wavevector_eigenproblem(*, matrix, kn, real_floor_scale=1e-5, ke
     Notes
     -----
         The direct eigensolve returns the complete finite matrix spectrum and a leading
-        branch selection. Residuals and conditioning metadata describe qualification;
-        they do not prove forward accuracy for ill-conditioned or repeated modes.
+        candidate selection. It computes no eigenvectors, eigenvector residuals or
+        conditioning metadata; the ordering does not certify physical mode identity.
         Supported scope: Solve a general complex fluid eigenmatrix and select
         positive-real least-damped kx branches. Excluded scope: No mode identity or
         arbitrary-parameter accuracy is inferred beyond the declared numerical method.

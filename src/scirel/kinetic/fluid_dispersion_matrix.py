@@ -102,8 +102,9 @@ def assemble_fluid_dispersion_matrix(
         `NSL=n_species*sum(order_lengths)`. Constraints: Finite complex numbers. Units:
         [Mixed dimensions (each block normalized to its own physical quantity)].
     n_sl : integer
-        Velocity-expansion dimension of each species $\sum_l L(l)$ Shape: integer
-        scalar. Constraints: Positive integer. Units: [dimensionless].
+        Single velocity-component block dimension across all species, S*sum(L);
+        n_l=sum(L) is the per-species pole count. Shape: integer scalar.
+        Constraints: Positive integer. Units: [dimensionless].
     n_sl3 : integer
         Total dimension of the three velocity-component blocks $3\,NSL$ Shape: integer
         scalar. Constraints: Positive integer. Units: [dimensionless].

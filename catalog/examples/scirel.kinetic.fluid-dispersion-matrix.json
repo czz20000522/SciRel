@@ -204,7 +204,7 @@
   },
   {
    "name": "n_sl",
-   "description": "Velocity-expansion dimension of each species $\\sum_l L(l)$",
+   "description": "Single velocity-component block dimension across all species, S*sum(L); n_l=sum(L) is the per-species pole count",
    "units": "dimensionless",
    "shape": "integer scalar",
    "dtype": "integer",

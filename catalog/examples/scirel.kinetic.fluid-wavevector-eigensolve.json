@@ -98,7 +98,7 @@
   },
   {
    "name": "head",
-   "description": "First `keep` sorted physical eigenvalues",
+   "description": "First `keep` sorted candidate eigenvalues; no physical mode identity is certified",
    "units": "1/m",
    "shape": "Complex array of length at most `keep`",
    "dtype": "complex128",

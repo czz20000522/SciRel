@@ -42,8 +42,8 @@
    ],
    "applicability": {
     "preconditions": [
-     "合同要求在 Linux amd64 上固定本地运行时 7.3.0；OPENBLAS_NUM_THREADS 与 OMP_NUM_THREADS 均为 1。",
-     "合同声明使用 SciRel 的 Python 3.14、NumPy 2.5.4 与 SciPy 1.18.1 环境；Linux amd64 本地运行时仍是声明要求。"
+     "声明的本地 Python 环境为 Python 3.14、NumPy 2.5.4、SciPy 1.18.1；BLAS 使用单线程。",
+     "使用声明的 Python 3.14、NumPy 2.5.4 与 SciPy 1.18.1 环境；不需要外部运行时。"
     ],
     "supported": [
      "BONK 的三个算例与 EM 的两个算例，包含完整固定常量及状态。"
@@ -71,10 +71,7 @@
      "纯 Python 实现已在本机测试；不声称与原生运行时逐位一致。"
     ],
     "evidence_ceiling": "限于所声明关系：热速度为 sqrt(2 kB T/m)，含符号回旋半径为 sqrt(kB T/m)/Omega；wn=min abs(Omega)，kn=1/max abs(rho)；温度按 1.6022e-19/kB 由 eV 换算为 K。证据：test_fluid_spectrum_full.py（记录 9 个测试函数；仅共享文件覆盖；仅自洽/回归）；合同 example 已运行。不建立的范围：不能通过算例控制参数构造任意组分模型；不证明仅含电子的算例 2 具有全局电中性或自洽背景平衡。"
-   },
-   "source_conflicts": [
-    "applicability.preconditions 同时要求 Linux amd64 上的本地运行时 7.3.0 和 SciRel 的 Python 3.14/NumPy 2.5.4/SciPy 1.18.1 环境，并重复声明需要 Linux amd64；本实现为纯 Python/NumPy/SciPy，示例已在本机 macOS 直接运行。该前置条件与实现不一致，待合同修订。"
-   ]
+   }
   },
   {
    "summary": "计算 Gamma、Z 函数与完整 R 响应合同；四个既有 R 方法名共用同一修正谐波求值器。",
@@ -102,7 +99,7 @@
    "outputs": [
     {
      "name": "value",
-     "description": "Gamma、Gamma 导数或 Z 数组，或完整的 2×2 R 响应矩阵。",
+     "description": "Gamma、Gamma 导数或 Z 数组：先广播求值，再将零维标量转为 (1,1)、一维 (n,) 转为 (1,n)，二维及以上保留广播形状；R 始终返回完整的 (2,2) 响应矩阵。",
      "constraints": "返回有限值，否则明确报告精度失败或极点。",
      "dtype": "复数数值数组"
     }
@@ -112,7 +109,7 @@
     "expected": "返回 2×2 complex128 矩阵，元素约为 [[0.6667, 0.6667], [-1.1111, -1.1111]]。"
    },
    "asset_id": "scirel.kinetic.fluid-special-functions",
-   "source_sha256": "e4364c42d08eb383fdd75e7066bf79485b85c26c2713ef5cf5eaac2e41b13900",
+   "source_sha256": "d35c4b056a2a968192b0ca7f571be6c7b8d0deff607c52c1d1f4dda448b8cdd8",
    "model": "均匀磁场沿 z 轴，波矢为 (kx,0,kz)；静止、各向同性 Maxwell 分布等离子体及明确声明的数值近似。",
    "boundary": "均匀线性响应，采用 SI 制及 exp(i k·x−i omega t)，回旋频率和半径带符号；真正共振与可去奇点的解析极限分别处理。",
    "assumptions": [
@@ -122,8 +119,8 @@
    ],
    "applicability": {
     "preconditions": [
-     "合同要求在 Linux amd64 上固定本地运行时 7.3.0；OPENBLAS_NUM_THREADS 与 OMP_NUM_THREADS 均为 1。",
-     "合同声明使用 SciRel 的 Python 3.14、NumPy 2.5.4 与 SciPy 1.18.1 环境；Linux amd64 本地运行时仍是声明要求。",
+     "声明的本地 Python 环境为 Python 3.14、NumPy 2.5.4、SciPy 1.18.1；BLAS 使用单线程。",
+     "使用声明的 Python 3.14、NumPy 2.5.4 与 SciPy 1.18.1 环境；不需要外部运行时。",
      "Gamma 的谐波阶数必须是有限整数；Gamma 和 R 必须提供 parameter，Z 忽略该参数。"
     ],
     "supported": [
@@ -156,11 +153,7 @@
      "纯 Python 实现已在本机测试；不声称与原生运行时逐位一致。"
     ],
     "evidence_ceiling": "限于所声明关系：RC=[R,d(bR)/db;Y dR/dY,Y d/dY(d(bR)/db)]，R=2Y/b sum(n² Gamma_n/(Y²−n²),n>=1)；真正的极点会报错。RTAY、RASY、RINT、RYLA 四个既有方法名共用同一修正谐波求值器，并不代表四种不同算法。证据：test_fluid_spectrum_full.py（记录 9 个测试函数；仅共享文件覆盖；独立解析/高精度对照）；合同 example 已运行。不建立的范围：不宣称执行或忠实复现 Taylor、渐近、积分等选择器对应的算法；不宣称整个复平面具有认证精度。"
-   },
-   "source_conflicts": [
-    "applicability.preconditions 同时要求 Linux amd64 上的本地运行时 7.3.0 和 SciRel 的 Python 3.14/NumPy 2.5.4/SciPy 1.18.1 环境，并重复声明需要 Linux amd64；本实现为纯 Python/NumPy/SciPy，示例已在本机 macOS 直接运行。该前置条件与实现不一致，待合同修订。",
-    "applicability.supported 与 verification.scope 原称 Z(z) 使用 Weideman 64 阶算法并在虚轴使用 erfcx；当前实现 zfun 直接调用 SciPy 的 Faddeeva 函数 wofz。本页已按实现改写该条，合同待修订。"
-   ]
+   }
   },
   {
    "summary": "从显式 SI 状态计算行列式、介电张量 K、Maxwell 色散张量 D 与未改动的状态，并覆盖带符号及零波矢极限。",
@@ -208,8 +201,8 @@
    ],
    "applicability": {
     "preconditions": [
-     "合同要求在 Linux amd64 上固定本地运行时 7.3.0；OPENBLAS_NUM_THREADS 与 OMP_NUM_THREADS 均为 1。",
-     "合同声明使用 SciRel 的 Python 3.14、NumPy 2.5.4 与 SciPy 1.18.1 环境；Linux amd64 本地运行时仍是声明要求。"
+     "声明的本地 Python 环境为 Python 3.14、NumPy 2.5.4、SciPy 1.18.1；BLAS 使用单线程。",
+     "使用声明的 Python 3.14、NumPy 2.5.4 与 SciPy 1.18.1 环境；不需要外部运行时。"
     ],
     "supported": [
      "一致的 SI 状态、复数 kx、有符号或为零的 kz，以及非共振 kx=0 的解析极限。",
@@ -238,14 +231,11 @@
      "纯 Python 实现已在本机测试；不声称与原生运行时逐位一致。"
     ],
     "evidence_ceiling": "限于复/零 kz 下的相干 SI 流体色散，包括 kx=0 极限与 J8/J15 选择。证据：`test_fluid_spectrum_full.py` 含 9 个测试函数，其中 2 个引用 `evaluate_fluid_dispersion`，由 6 个资产共享；仅绑定共享文件覆盖，因此通过是文件级事实、而非资产隔离证据；本审计已执行有界示例。真值来源：仅自洽/回归。不建立：零 kz 处真实非零留数回旋极点，或未磁化/零温度/零密度/静频极限。"
-   },
-   "source_conflicts": [
-    "applicability.preconditions 同时要求 Linux amd64 上的本地运行时 7.3.0 和 SciRel 的 Python 3.14/NumPy 2.5.4/SciPy 1.18.1 环境，并重复声明需要 Linux amd64；本实现为纯 Python/NumPy/SciPy，示例已在本机 macOS 直接运行。该前置条件与实现不一致，待合同修订。"
-   ]
+   }
   },
   {
-   "summary": "组装完整的有限 L/J 矩阵，恢复电导多项式并对原始表矩施加约束。",
-   "definition": "M 作用于按 Jx_snl、Jy_snl、Jz_snl、Ey、Ez、By、Bz 排列的状态，满足 kx X=M X；电导多项式恢复四个矩阵元素，n>=1 的逆矩投影为零，并稳定计算 Gamma。",
+   "summary": "组装完整的有限 L/J 矩阵，恢复电导多项式并报告源系数表的实测诊断。",
+   "definition": "M 作用于按 Jx_snl、Jy_snl、Jz_snl、Ey、Ez、By、Bz 排列的状态，满足 kx X=M X；电导多项式恢复四个矩阵元素。n>=1 的逆矩从唯一的稳定 Gamma 系数表实测得到；model_target=0 仅描述模型目标，不对系数或逆矩做投影。",
    "inputs": [
     {
      "name": "state",
@@ -285,7 +275,7 @@
     "expected": "返回 M 为 40×40、N=0 的映射，并含 poles、state 与 omega。"
    },
    "asset_id": "scirel.kinetic.fluid-em-matrix",
-   "source_sha256": "93d5129d2a9545fe19033835df8482e065177dd5da50403ec675dfcbc6d1ddbc",
+   "source_sha256": "0a0673e50d4d12e0cbdedcb7d583aa64dac8ee091018e96e0cfb4f221e4f4893",
    "model": "均匀磁场沿 z 轴，波矢为 (kx,0,kz)；静止、各向同性 Maxwell 分布等离子体及明确声明的数值近似。",
    "boundary": "均匀线性响应，采用 SI 制及 exp(i k·x−i omega t)，回旋频率和半径带符号；真正共振与可去奇点的解析极限分别处理。",
    "assumptions": [
@@ -295,8 +285,8 @@
    ],
    "applicability": {
     "preconditions": [
-     "合同要求在 Linux amd64 上固定本地运行时 7.3.0；OPENBLAS_NUM_THREADS 与 OMP_NUM_THREADS 均为 1。",
-     "合同声明使用 SciRel 的 Python 3.14、NumPy 2.5.4 与 SciPy 1.18.1 环境；Linux amd64 本地运行时仍是声明要求。"
+     "声明的本地 Python 环境为 Python 3.14、NumPy 2.5.4、SciPy 1.18.1；BLAS 使用单线程。",
+     "使用声明的 Python 3.14、NumPy 2.5.4 与 SciPy 1.18.1 环境；不需要外部运行时。"
     ],
     "supported": [
      "J8/J12 与全部 N=0..7 控制，包含完整矩阵状态及源系数表。",
@@ -314,21 +304,19 @@
    },
    "verification": {
     "scope": [
-     "J8/J12 与全部 N=0..7 控制，包含完整矩阵状态及源系数表。",
-     "一致的 SI 状态，允许有符号或为零的 kz，但须避开真正的有理共振分母。"
+     "assemble_fluid_em 公开入口的成功直接断言使用 EM 算例 2、J8/N0；频率为 0.83*wn，实测表扰动诊断另使用 1.0e11 rad/s。",
+     "绑定断言覆盖有限有理电导多项式恢复、非法控制拒绝、显式控制优先级，以及不投影系数的实测逆矩。"
     ],
     "known_limitations": [
      "六资产共享文件中的三个直接函数覆盖有理矩阵恢复、未定义表拒绝与显式控制优先级；奇异源共振会被拒绝而不是拟合。",
      "不保证跨线程/平台不变性、任意精度、所有物理模态完备性或非线性求解无条件收敛。",
      "J/L 极点和有限谐波近似的误差，与关系一致性和数值残差分开判断。",
      "有限拟合响应不等同于精确 Bessel/Z 动理学介电张量；该等价性被明确排除。",
-     "纯 Python 实现已在本机测试；不声称与原生运行时逐位一致。"
+     "纯 Python 实现已在本机测试；不声称与原生运行时逐位一致。",
+     "绑定的公开包装入口成功断言未验证 J12 或 N1..7；接受这些控制参数不等于每种配置已有直接测试覆盖。"
     ],
-    "evidence_ceiling": "限于N0..N7 及源表上的稠密 J8/J12 流体电磁本征矩阵。证据：`test_fluid_spectrum_full.py` 含 9 个测试函数，其中 3 个引用 `assemble_fluid_em`，由 6 个资产共享；仅绑定共享文件覆盖，因此通过是文件级事实、而非资产隔离证据；本审计已执行有界示例。真值来源：仅自洽/回归。不建立：有限拟合响应与精确 Bessel/Z 动理学介电张量之间的等同。"
-   },
-   "source_conflicts": [
-    "applicability.preconditions 同时要求 Linux amd64 上的本地运行时 7.3.0 和 SciRel 的 Python 3.14/NumPy 2.5.4/SciPy 1.18.1 环境，并重复声明需要 Linux amd64；本实现为纯 Python/NumPy/SciPy，示例已在本机 macOS 直接运行。该前置条件与实现不一致，待合同修订。"
-   ]
+    "evidence_ceiling": "支持控制仍为 J8/J12 与 N0..7。公开包装入口的成功直接断言限于 EM 算例 2、J8/N0，频率为 0.83*wn 和 1.0e11 rad/s。test_fluid_spectrum_full.py 含 9 个测试函数，其中 3 个引用 assemble_fluid_em，由 6 个资产共享；test_fluid_em_diagnostics.py 另检查实测逆矩和实时系数表扰动。共享文件覆盖不是资产隔离证据。J12/N=1.5 的拒绝不构成 J12 成功见证，低层 J8/N6 组装也不验证本公开包装入口的 N6。依据是有界的独立有限有理本构对照及自洽/回归；不建立与精确 Bessel/Z 动理学介电张量的等同。"
+   }
   },
   {
    "summary": "组合完整 BONK 算例与有序根搜索，显式给出已核验根和末端状态诊断。",
@@ -437,7 +425,7 @@
    "outputs": [
     {
      "name": "result",
-     "description": "kxx 为频率轴长度×5 的 m^-1 数组；另含每个频率的全部谱、候选、矩阵、精确表、算例状态和独立本征诊断。",
+     "description": "kxx 为频率轴长度×5 的 m^-1 数组；另含每个频率的全部谱、候选、矩阵、精确表、算例状态及本征值/计数诊断；eigenpair_residuals_computed=false。",
      "constraints": "状态与末端诊断保持科学含义，不修改调用者的状态。",
      "dtype": "映射"
     }
@@ -447,7 +435,7 @@
     "expected": "返回 kxx 形状为 (1,5) 的谱映射，并含 roots、matM、spectra 与 eigen_diagnostics。"
    },
    "asset_id": "scirel.kinetic.fluid-em-spectrum",
-   "source_sha256": "33c4895c11479d60c1157a8824ec6895363c4d8394c56c75bdf7aa77051da06d",
+   "source_sha256": "376bbad439583e086f1d5a4ae0c570e222f42bc51824737ab135208f1db7ba58",
    "model": "均匀磁场沿 z 轴，波矢为 (kx,0,kz)；静止、各向同性 Maxwell 分布等离子体及明确声明的数值近似。",
    "boundary": "均匀线性响应，采用 SI 制及 exp(i k·x−i omega t)，回旋频率和半径带符号；真正共振与可去奇点的解析极限分别处理。",
    "assumptions": [
@@ -457,8 +445,8 @@
    ],
    "applicability": {
     "preconditions": [
-     "合同要求在 Linux amd64 上固定本地运行时 7.3.0；OPENBLAS_NUM_THREADS 与 OMP_NUM_THREADS 均为 1。",
-     "合同声明使用 SciRel 的 Python 3.14、NumPy 2.5.4 与 SciPy 1.18.1 环境；Linux amd64 本地运行时仍是声明要求。"
+     "声明的本地 Python 环境为 Python 3.14、NumPy 2.5.4、SciPy 1.18.1；BLAS 使用单线程。",
+     "使用声明的 Python 3.14、NumPy 2.5.4 与 SciPy 1.18.1 环境；不需要外部运行时。"
     ],
     "supported": [
      "两个算例、J8/J12、全部八个 N 控制和默认 79 个频率。",
@@ -476,22 +464,19 @@
    },
    "verification": {
     "scope": [
-     "两个算例、J8/J12、全部八个 N 控制和默认 79 个频率。",
-     "全部有限谱、按原始次序排列的值、每频率候选、末端矩阵（`matM`、`roots`、`w`、`eigen_diagnostics` 只对应最后一个给定频率；每频率数据在 `kxx`、`spectra`、`selected_candidates`、`diagnostic_rows`）。"
+     "solve_fluid_em 公开入口的成功直接断言使用 EM 算例 2、J8/N0，显式单频率 0.83*wn 或有序频率 [0.37,0.83,1.43]*wn。",
+     "绑定断言覆盖每频率 40 个有限矩阵本征值、五个启发式候选、嵌套诊断数组及 eigenpair_residuals_computed=false。"
     ],
     "known_limitations": [
      "直接绑定的函数是六资产共享文件 `test_fluid_spectrum_full.py` 中的 `test_status_and_complete_finite_spectrum_are_explicit` 与 `test_multifrequency_em_preserves_each_nested_diagnostic_array`；另有专门的 `test_fluid_em_diagnostics.py` 检查实测逆矩、退役字段和公开嵌套结构。",
      "不保证跨线程/平台不变性、任意精度、所有物理模态完备性或非线性求解无条件收敛。",
      "J/L 极点和有限谐波近似的误差，与关系一致性和数值残差分开判断。",
      "EM 分支使用固定历史常数 `c2=2.99792458e8**2`、`epsilon0=8.854187817e-12` 与 `kB=1.38064852e-23`；不做单位换算或现代 CODATA 替换。",
-     "纯 Python 实现已在本机测试；不声称与原生运行时逐位一致。"
+     "纯 Python 实现已在本机测试；不声称与原生运行时逐位一致。",
+     "绑定的公开包装入口成功断言未验证算例 1、J12、N1..7 或默认 79 频率扫描；保留这些支持控制，不补造成功见证。"
     ],
-    "evidence_ceiling": "限于带全部八个 N 控制与源默认频率轴的 J8/J12 电磁谱。证据：`test_fluid_spectrum_full.py` 含 9 个测试函数，其中 2 个引用 `solve_fluid_em`，由 6 个资产共享；仅绑定共享文件覆盖，因此通过是文件级事实、而非资产隔离证据；本审计已执行有界示例。真值来源：仅自洽/回归。不建立：每个辅助本征值都是动理学物理模，或无限模完备性。"
+    "evidence_ceiling": "支持控制仍为 EM 算例 1/2、J8/J12、N0..7 和默认 79 频率轴。公开包装入口的成功直接断言限于 EM 算例 2、J8/N0，显式频率为 0.83*wn 或 [0.37,0.83,1.43]*wn。test_fluid_spectrum_full.py 含 9 个测试函数，其中 2 个引用 solve_fluid_em，由 6 个资产共享；test_fluid_em_diagnostics.py 另检查仅本征值诊断的嵌套及退役字段。共享文件覆盖不是资产隔离证据。这些断言未验证算例 1、J12 成功路径、N1..7 或默认轴的执行。依据仅为自洽/回归；不建立物理模态身份或无限模态完备性。"
    },
-   "source_conflicts": [
-    "applicability.preconditions 同时要求 Linux amd64 上的本地运行时 7.3.0 和 SciRel 的 Python 3.14/NumPy 2.5.4/SciPy 1.18.1 环境，并重复声明需要 Linux amd64；本实现为纯 Python/NumPy/SciPy，示例已在本机 macOS 直接运行。该前置条件与实现不一致，待合同修订。",
-    "definition 原称物理状态相似缩放后的后向误差门槛不超过 2e-12；旧的后向误差字段和 2e-12 物理门槛未计算，已退役；当前返回 `eigenpair_residuals_computed=false`，保留真实本征值、有限谱计数与启发式选择。"
-   ],
    "title": {
     "en": "EM finite rational-model spectra with candidate selection",
     "zh": "EM 有限有理模型谱与候选选取"
