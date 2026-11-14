@@ -52,6 +52,9 @@ def poloidal_field_from_flux(r_grid, z_grid, psi):
     ValueError
         ValueError is raised for complex/nonfinite/mismatched arrays,
         nonrectilinear grids, too few nodes, or invalid axes.
+    FloatingPointError
+        If an accepted finite input produces an unrepresentable field
+        component or magnitude. No partial result is returned.
 
     See Also
     --------
@@ -78,11 +81,17 @@ def poloidal_field_from_flux(r_grid, z_grid, psi):
     >>> np.testing.assert_allclose(result['B_Z'], 2.0)
     >>> np.testing.assert_allclose(result['B'], 2.0)
     """
-    r_grid, z_grid, psi = (
-        np.asarray(r_grid, dtype=float),
-        np.asarray(z_grid, dtype=float),
-        np.asarray(psi, dtype=float),
-    )
+    values = tuple(np.asarray(value) for value in (r_grid, z_grid, psi))
+    if any(
+        np.iscomplexobj(value)
+        or (value.dtype.kind == "O" and any(np.iscomplexobj(item) for item in value.flat))
+        for value in values
+    ):
+        raise ValueError("R, Z, and psi must be real-valued arrays")
+    try:
+        r_grid, z_grid, psi = (np.asarray(value, dtype=float) for value in values)
+    except (TypeError, ValueError, OverflowError) as error:
+        raise ValueError("R, Z, and psi must be real-valued arrays") from error
     if r_grid.ndim != 2 or r_grid.shape != z_grid.shape or psi.shape != r_grid.shape:
         raise ValueError("R, Z, and psi must be equal-shape 2-D arrays")
     if not np.all(np.isfinite(r_grid)) or not np.all(np.isfinite(z_grid)):
@@ -113,7 +122,10 @@ def poloidal_field_from_flux(r_grid, z_grid, psi):
     if radial[0] == 0.0:
         b_r[:, 0] = 0.0
         b_z[:, 0] = 2.0 * (psi[:, 1] - psi[:, 0]) / radial[1] ** 2
-    return Result({"B_R": b_r, "B_Z": b_z, "B": _source_hypot(b_r, b_z)})
+    magnitude = _source_hypot(b_r, b_z)
+    if not all(np.isfinite(value).all() for value in (b_r, b_z, magnitude)):
+        raise FloatingPointError("poloidal field is not representable")
+    return Result({"B_R": b_r, "B_Z": b_z, "B": magnitude})
 
 
 __all__ = ["poloidal_field_from_flux"]

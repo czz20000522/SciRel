@@ -52,7 +52,7 @@ def discretize_rectangular_coil(r0, z0, nr, nz, dr, dz, angle_deg=0.0):
     ValueError
         If a center or angle is nonfinite, a count is not a positive integer,
         a spacing is not positive, ``r0`` is negative, or the rotated points
-        cross the cylindrical axis.
+        cross the cylindrical axis or contain unrepresentable coordinates.
 
     See Also
     --------
@@ -85,14 +85,19 @@ def discretize_rectangular_coil(r0, z0, nr, nz, dr, dz, angle_deg=0.0):
     if not np.isfinite(angle_deg):
         raise ValueError("angle_deg must be finite")
 
-    radial = np.linspace(r0 - 0.5 * dr * (nr - 1), r0 + 0.5 * dr * (nr - 1), nr)
-    axial = np.linspace(z0 - 0.5 * dz * (nz - 1), z0 + 0.5 * dz * (nz - 1), nz)
-    points = np.column_stack((np.repeat(radial, nz), np.tile(axial, nr)))
-    if angle_deg != 0.0:
-        theta = np.deg2rad(angle_deg)
-        cosine, sine = np.cos(theta), np.sin(theta)
-        rotation = np.array([[cosine, -sine], [sine, cosine]])
-        points = (points - np.array([r0, z0])) @ rotation + np.array([r0, z0])
+    try:
+        radial = np.linspace(r0 - 0.5 * dr * (nr - 1), r0 + 0.5 * dr * (nr - 1), nr)
+        axial = np.linspace(z0 - 0.5 * dz * (nz - 1), z0 + 0.5 * dz * (nz - 1), nz)
+        points = np.column_stack((np.repeat(radial, nz), np.tile(axial, nr)))
+        if angle_deg != 0.0:
+            theta = np.deg2rad(angle_deg)
+            cosine, sine = np.cos(theta), np.sin(theta)
+            rotation = np.array([[cosine, -sine], [sine, cosine]])
+            points = (points - np.array([r0, z0])) @ rotation + np.array([r0, z0])
+    except FloatingPointError as error:
+        raise ValueError("coil geometry is not representable") from error
+    if not np.isfinite(points).all():
+        raise ValueError("coil geometry is not representable")
     if np.any(points[:, 0] < 0.0):
         raise ValueError("coil geometry crosses the cylindrical axis")
     return points

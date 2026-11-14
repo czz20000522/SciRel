@@ -633,7 +633,7 @@
   },
   {
    "asset_id": "scirel.field.rectangular-coil-filaments",
-   "source_sha256": "10313b26bc3c6c0be0a5a189561a36eb95ff9082b2b6bfb91b85afa807be9a77",
+   "source_sha256": "7e46f191e4be1e1e084bfda0009dd024375ecd132b4fa228bcb8211a08d269d0",
    "summary": "将矩形线圈截面离散为有序的柱坐标电流丝中心，并可绕质心旋转。",
    "definition": "生成 nr 个径向位置和 nz 个轴向位置，径向为外层顺序、轴向为内层顺序；可按既有行向量旋转约定绕 (r0,z0) 旋转。",
    "model": "由理想圆电流丝位置表示的有限矩形中心格点。",
@@ -709,7 +709,7 @@
    },
    "failure_semantics": {
     "invalid_input": "中心或角度非有限、计数或间距非法、中心半径为负或输出跨轴时抛出 ValueError。",
-    "runtime_failure": "没有迭代运行时失败；直接几何运算在验证失败时关闭。",
+    "runtime_failure": "无迭代运行失败；直接几何运算若生成非有限坐标，抛出 ValueError。",
     "nonconvergence": "不适用；离散化是直接计算。",
     "partial_results": "验证失败后不返回点数组。"
    },
@@ -3448,7 +3448,7 @@
   },
   {
    "asset_id": "scirel.field.poloidal-field-from-flux",
-   "source_sha256": "8ae9df5da98e6ccffe5c77b0de414c09418b4c03df4d9451442e9cc281999142",
+   "source_sha256": "5e8a776fac0ba9a5e93eb5b738337bc70a8db87da708e87ba20df1cc455d632a",
    "summary": "在柱坐标 R–Z 直角网格上由 psi=R A_phi 恢复 BR、BZ 及其大小，并以 scirel._result.Result 映射返回三个命名字段。",
    "definition": "在直角网格上对 psi 求导并除以 R；包含 R=0 时使用偶对称磁通轴规则。三个数组作为同一个 scirel._result.Result 映射返回；按键和属性读取同一个值。",
    "model": "柱坐标 R-Z 网格上的稳定局部有限差分梯度。",
@@ -3512,7 +3512,7 @@
    },
    "failure_semantics": {
     "invalid_input": "数组含复数/非有限值、形状不匹配、网格非直角、节点过少或轴非法时抛出 ValueError。",
-    "runtime_failure": "已接受的有限计算不可表示时浮点失败会传播。",
+    "runtime_failure": "有限且已接受的输入若算出不可表示的场分量或幅值，抛出 FloatingPointError；不返回部分 Result。",
     "nonconvergence": "不适用；梯度和轴处理是直接计算。",
     "partial_results": "验证或算术失败后不返回 scirel._result.Result 映射。"
    },
