@@ -3160,7 +3160,7 @@
   },
   {
    "asset_id": "scirel.field.coil-green-geometry",
-   "source_sha256": "2fdbc9e0e946dd7881dfbcff61df67e7f52efd21ecc85f88b1f5ad31995c2f3c",
+   "source_sha256": "8c8f8209ef384dd372a49351939a99c83aa4502719f99a944cf1bdb7b70483b4",
    "summary": "计算线圈电流丝 Green 表达式所需的观测半径偏移、椭圆模平方和距离。",
    "definition": "应用固定的 1e-8 m 观测半径偏移，并逐元素计算模平方 m 与距离分母。",
    "model": "对齐圆线圈的标量观测几何。",
@@ -3244,7 +3244,7 @@
      "输入及失败合同。",
      "在响应求值前拒绝模数下溢为零的极端有限几何。"
     ],
-    "evidence_ceiling": "限于源正则化轴对称线圈模数与距离几何。证据：`test_filament_coil_green.py` 含 13 个测试函数，其中 6 个引用 `compute_axisymmetric_coil_modulus`，由 3 个资产共享；仅绑定共享文件覆盖，因此通过是文件级事实、而非资产隔离证据；本审计已执行有界示例。真值来源：正则化几何的独立解析重算。不建立：线圈场求值、奇异响应处理或已验证 float64 范围外的溢出行为。",
+    "evidence_ceiling": "限于已施加一次半径偏移的模值与距离几何。test_filament_coil_green.py 中的几何量解析对照、非法输入、偏移宽度内负半径拒绝和模值下溢拒绝分别有直接断言；该共享文件的场响应与椭圆积分测试不算此几何资产的独立证据。不建立线圈场求值、有限导线物理或任意尺度精度。",
     "known_limitations": [
      "本合同不绑定外部跨实现比较；只有本仓库测试建立其行为。",
      "声明式输入硬化：原始观测半径在 (-1e-8,0) 内一律拒绝，不能靠轴偏移静默变正。",
@@ -3518,7 +3518,7 @@
    },
    "example": {
     "description": "从包含 R=0 的 psi=R² 网格恢复磁场。",
-    "expected": "返回一个带 BR、BZ、B 三个命名字段的 scirel._result.Result 映射，按键和属性读取同一个值；包括轴列在内各点均有 BR=0，BZ 和 B 均为 2 T。"
+    "expected": "返回一个带 B_R、B_Z、B 三个命名字段的 scirel._result.Result 映射，按键和属性读取同一个值；包括轴列在内各点均有 BR=0，BZ 和 B 均为 2 T。"
    },
    "verification": {
     "scope": [
@@ -6541,7 +6541,7 @@
   },
   {
    "asset_id": "scirel.field.dense-axisymmetric-green",
-   "source_sha256": "b4e324082252b4869f77ab25ba85134c1bedb11e403cfba9c4ee15f47b9890dc",
+   "source_sha256": "2c56acb2426a0192504b2edda9ae081feda4632a1416381895e66a83c9226a9d",
    "summary": "为 psi、BR 和 BZ 构建稠密的目标行/源列圆电流丝响应矩阵。各命名字段作为同一个 scirel._result.Result 映射返回。",
    "definition": "按调用者顺序对每个源列计算圆电流丝响应。 各字段存于同一个 scirel._result.Result 映射；按键和属性读取同一值，不引入嵌套 Result。",
    "model": "含零半径、零权重和精确自作用约定的轴对称理想圆电流丝核。",
@@ -6612,21 +6612,21 @@
      "权重缩放及空源形状。",
      "轴上源零列约定。",
      "圆电流丝轴向磁场解析极限。",
-     "与独立维护的圆电流丝核逐列相等。",
+     "通过共享核与现有圆电流丝响应逐列相等；这是包装入口的一致性检查，不是独立数值真值参照。",
      "非法半径及源形状的拒绝。",
-     "独立 70/80 位精度圆环关系检查极小正半径、近轴非零 BR、近丝及公式求值分支；保持原断言和容差，区分精确自项约定与算术失败。",
+     "tests/cross_domain/test_field_green_correction.py 中，test_every_positive_loop_radius_retains_analytic_axis_field 的 api=dense 分支将 1e-13 源半径的轴上 gBZ 与 70 位独立圆环参照比较，并断言 gBR 为零；test_exact_self_rule_is_distinct_from_arithmetic_failure 的 api=dense 分支分别检查精确自项为零及权重 1e308 时抛出 FloatingPointError。test_public_field_interfaces_reject_complex_coordinates 也包含 api=dense。",
      "命名字段改造保留改造前的键序、数值、形状、dtype、映射访问和属性访问，失败路径继续匹配原异常类型与消息。"
     ],
-    "evidence_ceiling": "限于保留独立源列的稠密轴对称 Green 响应。证据：`test_dense_axisymmetric_green.py` 含 9 个测试函数，其中 1 个引用 `dense_axisymmetric_green_response`，仅由本资产绑定; `test_field_green_correction.py` 含 9 个测试函数，其中没有函数引用 `dense_axisymmetric_green_response`，由 5 个资产共享；本审计已执行有界示例。真值来源：解析轴向场极限与逐列圆细丝核一致性。不建立：有限线自场、任意极端尺度精度或平衡声明。",
+    "evidence_ceiling": "tests/field/test_dense_axisymmetric_green.py 通过 scientific_function 别名及原名直接调用 dense_axisymmetric_green_response：test_source_weight_scales_each_column_and_zeroes_a_column、test_columns_match_individual_filament_flux_and_field_responses、test_axis_bz_matches_circular_filament_limit，以及形状、空源和拒绝断言，绑定独立源列、缩放、解析轴上极限及现有核一致性。scope 中具名的 api=dense 分支直接调用公开入口，并非仅引用共享文件。共享文件中公式切换及径向分离近丝断言只调用 aggregate，对本入口仅属底层依赖证据，不能算直接覆盖。不据此承诺有限导线自场、任意极端尺度精度或平衡结论。",
     "known_limitations": [
      "结果保留独立源列，不求和。",
-     "资产私有测试文件有九个函数但仅一个直接示例；`test_field_green_correction.py` 由五个资产共享且没有直接调用，因此非有限响应路径仅为合同声明。"
+     "直接算术失败样例使用极小源半径与大权重；其他不可表示响应及所有共享核分支经本包装入口的覆盖仍为 UNKNOWN。"
     ]
    }
   },
   {
    "asset_id": "scirel.field.mirror-plasma-green",
-   "source_sha256": "94555a740f628c8d875644cf328a6871a7276b8bd6a42a888a3567e408bdda17",
+   "source_sha256": "e592b94a44de007ae426195918140a33a5a850448adc69baa5396a03413ec274",
    "summary": "为均匀间距且关于 Z 反射对称的柱坐标网格构建稠密磁通响应矩阵。各命名字段作为同一个 scirel._result.Result 映射返回。",
    "definition": "在给定网格的实际坐标上计算圆电流丝磁通项，并保留 C 顺序展平。 各字段存于同一个 scirel._result.Result 映射；按键和属性读取同一值，不引入嵌套 Result。",
    "model": "带对称网格校验的轴对称理想圆电流丝磁通。",
@@ -6654,7 +6654,7 @@
     {
      "name": "g_psi",
      "description": "Result 字段：每对目标和源网格单元的单位源电流 psi=R A_phi 响应。",
-     "constraints": "双轴按 [Z,R] 的 C 顺序展平；轴上源列及非有限项置零；不含网格面积或 2π 因子。",
+     "constraints": "双轴按 [Z,R] 的 C 顺序展平；零半径源列与精确自项按离散约定为零。不可表示的非自项响应抛出 FloatingPointError，不替换为零；不含网格面积或 2π 因子。",
      "dtype": "float64 双精度浮点数"
     }
    ],
@@ -6682,19 +6682,20 @@
    },
    "verification": {
     "scope": [
-     "首源平面逐列对照 80 位独立椭圆积分；原 binary64 检查公式消差经独立高精度证明并修复，rtol=2e-14 保持。",
+     "tests/field/test_mirror_plasma_green.py 的 test_first_source_plane_matches_independent_circular_filament_formula 在 3×4 网格上将 g_psi 源列与 80 位独立椭圆积分公式比较，使用 rtol=2e-14、atol=1e-300。",
      "一个对称网格上整矩阵与直接稠密电流丝列相等。",
      "方阵形状、有限性及轴上源零列。",
      "拒绝不对称 Z 网格并检查反射分块。",
-     "独立 70/80 位精度圆环关系检查极小正半径、近轴非零 BR、近丝及公式求值分支；保持原断言和容差，区分精确自项约定与算术失败。",
+     "tests/cross_domain/test_field_green_correction.py 的 test_mirror_small_positive_loops_are_not_removed_by_axis_tolerance 在半径 [1e-13,2e-13]、Z=[-1e-13,1e-13] 的网格上，将 g_psi 矩阵与 70 位独立圆环公式比较，使用 rtol=2e-14、atol=1e-300，并保留对角自项为零。test_public_field_interfaces_reject_complex_coordinates 包含 api=mirror。",
      "命名字段改造保留改造前的键序、数值、形状、dtype、映射访问和属性访问，失败路径继续匹配原异常类型与消息。"
     ],
-    "evidence_ceiling": "既有测试证明所选首平面公式、一个对称网格的整矩阵一致性、索引不变量和一个非法网格；不证明已分辨自场、任意网格有效性、整项目重组或专家认可。",
+    "evidence_ceiling": "专用文件通过 scientific_function 别名及原名调用 build_mirror_plasma_flux_green。具名首平面公式断言使用独立参照；test_reflected_matrix_matches_direct_filament_columns_on_symmetric_grid 对比现有稠密响应，形状、轴上源、反射块及非对称网格断言覆盖各自样例。共享文件只直接检查 scope 中具名的 mirror 情况。本入口仅返回磁通；仅对 aggregate 执行的 BR/BZ、公式切换、近丝及算术失败断言只能作为底层依赖证据，不能分配给本包装入口。任意网格有效性、有限导线自场及实验验证仍未认证。",
     "known_limitations": [
      "稠密矩阵为 O((N_Z N_R)²)，大网格成本高。",
      "电流收缩与单元面积由调用者负责。",
      "公开许可及 SciRel 专家认可仍待人工决定。",
-     "本入口仍限定均匀对称 Z 张量网格；一般不规则坐标使用 electromagnetism 实际坐标矩阵入口。"
+     "本入口仍限定均匀对称 Z 张量网格；一般不规则坐标使用 electromagnetism 实际坐标矩阵入口。",
+     "绑定测试中经 mirror 包装入口的直接溢出覆盖为 UNKNOWN；异常传播由实现确认，不能继承 aggregate 或 dense 的失败断言。"
     ]
    }
   },
@@ -7796,7 +7797,7 @@
   },
   {
    "asset_id": "scirel.field.filament-vacuum-field",
-   "source_sha256": "e435a6d88e072435ff482028ab235d643329899e32952af7ed570e9397ca40f6",
+   "source_sha256": "761c0f7f28224650ea6e775c16c216af4a50efe337cd9655cff2fcbbd9d5313b",
    "summary": "在均匀 R–Z 直角网格上计算理想圆电流丝场，并从第一个径向节点起积分径向磁通。各命名字段作为同一个 scirel._result.Result 映射返回。",
    "definition": "在网格点计算 Green 核，并用径向梯形递推积分 R*BZ。 各字段存于同一个 scirel._result.Result 映射；按键和属性读取同一值，不引入嵌套 Result。",
    "model": "不带近轴截断的理想圆电流丝真空场。",
@@ -7873,16 +7874,16 @@
      "电流叠加。",
      "圆电流丝轴向磁场解析极限。",
      "径向积分增量及首点参考。",
-     "远离源时与独立 psi=R A_phi 格林值比较。",
+     "test_radial_flux_matches_psi_ra_phi_with_first_radius_reference 将径向积分与现有圆电流丝 psi=R A_phi 响应在远离源处比较；这是共享核对照，不是独立磁通真值参照。",
      "转置网格布局及非法径向网格。",
-     "独立 70/80 位精度圆环关系检查极小正半径、近轴非零 BR、近丝及公式求值分支；保持原断言和容差，区分精确自项约定与算术失败。",
+     "tests/cross_domain/test_field_green_correction.py 的 test_radial_quadrature_uses_correct_unclipped_filament_field 通过 integrate 别名直接调用本入口，在 (R,Z)=(1e-10,0.2) 和 (0.4,1e-8) 处将 b_r、b_z 与 70 位独立圆环公式比较，并检查首径向列零参考及下一列梯形积分。test_radial_quadrature_active_and_inactive_self_are_distinct 检查活跃源重合拒绝及零电流重合；test_public_field_interfaces_reject_complex_coordinates 包含 api=integrate。",
      "命名字段改造保留改造前的键序、数值、形状、dtype、映射访问和属性访问，失败路径继续匹配原异常类型与消息。"
     ],
-    "evidence_ceiling": "限于细丝电流叠加、首网格点 psi 参考与径向求积。证据：`test_filament_vacuum_field.py` 含 7 个测试函数，其中 1 个引用 `integrate_filament_vacuum_field`，仅由本资产绑定; `test_field_green_correction.py` 含 9 个测试函数，其中没有函数引用 `integrate_filament_vacuum_field`，由 5 个资产共享；本审计已执行有界示例。真值来源：远离源处的解析圆细丝 psi=R A_phi 值。不建立：非正交网格、有限线自场或连续极限收敛。",
+    "evidence_ceiling": "tests/field/test_filament_vacuum_field.py 通过 scientific_function 别名及原名调用 integrate_filament_vacuum_field。test_superposition_and_axis_boundary 与 test_axis_field_matches_circular_filament_analytic_limit 绑定叠加、首径向点参考及解析轴向场；test_radial_flux_preserves_left_to_right_trapezoid_recurrence 覆盖数组的两种方向。共享文件中直接调用 integrate 的具名近轴、近丝点检查为 b_r/b_z 提供独立高精度对照。psi 对比使用现有共享核。仅对 aggregate 执行的公式切换及径向分离近丝断言不直接覆盖本包装入口。不据此认证非直角网格、有限导线自场或连续收敛。",
     "known_limitations": [
      "磁通以首径向点为参考，不含 2π 因子。",
-     "理想源重合时奇异，拒绝活跃源重合目标。",
-     "资产私有文件有七个函数和一个直接示例；共享修正文件没有直接调用，因此非有限积分场路径仅为合同声明。",
+     "活跃的非零电流理想源与目标重合时为奇异点并被拒绝；零电流重合源保持不活跃，见 test_radial_quadrature_active_and_inactive_self_are_distinct。",
+     "绑定测试直接检查奇异点和复数输入拒绝，但没有直接断言最终积分输出的非有限检查。该路径已有实现，其直接样例覆盖仍为 UNKNOWN。",
      "psi 径向梯形误差需网格加密验证；解析磁场不意味着离散 psi 等于解析 R A_phi。"
     ]
    }
@@ -8455,7 +8456,7 @@
   },
   {
    "asset_id": "scirel.field.complete-elliptic-integrals-approx",
-   "source_sha256": "62b08593866e5de0bc07dbfafa9bc6c7a9931d8e69557a71b809523252fc13a4",
+   "source_sha256": "ec61ea8011bde45a68397197b82e3f2fb16014d226d501ab353bd0f82565af29",
    "summary": "在 0<=m<=1 的数组上计算完全椭圆积分 K(m) 和 E(m) 的多项式-对数近似。",
    "definition": "逐元素计算固定的多项式-对数近似，并赋予 K(1)=+Inf、E(1)=1。",
    "model": "椭圆参数 m 上的分段数值近似。",
@@ -8515,10 +8516,10 @@
      "逐元素解析端点极限以及不变的非法输入拒绝。",
      "对 SciPy ellipk、ellipe 的采样精度。"
     ],
-    "evidence_ceiling": "限于源多项式-对数完全椭圆近似及解析端点。证据：`test_filament_coil_green.py` 含 13 个测试函数，其中 8 个引用 `evaluate_complete_elliptic_integrals`，由 3 个资产共享; `test_legacy_admission_regressions.py` 含 9 个测试函数，其中 1 个引用 `evaluate_complete_elliptic_integrals`，由 3 个资产共享；仅绑定共享文件覆盖，因此通过是文件级事实、而非资产隔离证据；本审计已执行有界示例。真值来源：独立源多项式重算与 SciPy `ellipk`/`ellipe` 一致性。不建立：m 超出 [0,1]、复数值或已测近似之外的误差保证。",
+    "evidence_ceiling": "test_filament_coil_green.py 分别直接检查固定多项式、逐元素端点/非法输入，以及预先固定的内部与近一网格对照 scipy.special.ellipk/ellipe。精度预算取与当前系数相符的 Abramowitz–Stegun 17.3.34/17.3.36 所列 2e-8 绝对近似误差，加上参考幅值乘128个binary64机器精度的求值舍入项。test_legacy_admission_regressions.py 另有端点断言。共享文件的场响应测试不算此近似的证据；采样通过不构成新的连续域binary64误差证明或物理场验证。",
     "known_limitations": [
-     "本合同不绑定外部跨实现比较；只有本仓库测试建立其行为。",
-     "近似精度低于库特殊函数，较高精度应采用基线 SciPy 椭圆积分关系。",
+     "独立SciPy对照仅限预先确定的测试网格；这是数值近似证据，不是实验或有限导线验证。",
+     "固定系数的原文绝对近似误差界为2e-8，范围0<=m<1；它不是统一相对1e-8的binary64保证。更高精度应使用scipy.special.ellipk和ellipe。",
      "端点值取解析极限而非受保护替代量；不能将 K(1) 视作有限磁场。",
      "近似只在 `[0,1]` 内的实 `m` 上求值；不提供解析延拓或复模数路径。"
     ]
@@ -9539,7 +9540,7 @@
   },
   {
    "asset_id": "scirel.field.current-green-superposition",
-   "source_sha256": "b9d6e94319e4e8c606a31d5711b7839a83889a7d535abecf16ddd0a72fa3457e",
+   "source_sha256": "e2d8979dbb9f8cd8219b07420c1905fb79a7f31f531590e9610f7348d1626c24",
    "summary": "将标量或源向量电流与形状兼容的 Green 响应数组收缩。各命名字段作为同一个 scirel._result.Result 映射返回。",
    "definition": "秩一响应使用标量乘法，秩二响应沿源轴执行矩阵乘法。 各字段存于同一个 scirel._result.Result 映射；按键和属性读取同一值，不引入嵌套 Result。",
    "model": "不重排响应的线性叠加。",
@@ -9552,14 +9553,14 @@
    "inputs": [
     {
      "name": "currents",
-     "description": "一个驱动电流，或每个响应行对应的一个电流。",
+     "description": "一个驱动电流，或每个响应源列对应的一个电流；响应行对应目标点。",
      "constraints": "有限；只允许零维或一维。",
      "dtype": "实数数组或可转换为数组的输入"
     },
     {
      "name": "gpsi",
      "description": "R A_phi 的单位电流磁通响应（Wb/rad/A）。",
-     "constraints": "有限，与电流及另两个响应形状兼容。",
+     "constraints": "有限，与电流及另两个响应形状兼容；二维响应的第二轴为源轴，列数必须等于电流个数。",
      "dtype": "实数数组或可转换为数组的输入"
     },
     {
@@ -9625,11 +9626,11 @@
      "标量或矩阵收缩不可表示时以 FloatingPointError 失败闭合。",
      "命名字段改造保留改造前的键序、数值、形状、dtype、映射访问和属性访问，失败路径继续匹配原异常类型与消息。"
     ],
-    "evidence_ceiling": "限于Green 响应列上的标量/矢量电流叠加。证据：`test_current_green_superposition.py` 含 6 个测试函数，其中 1 个引用 `superpose_current_green_field`，仅由本资产绑定；本审计已执行有界示例。真值来源：仅自洽/回归。不建立：更高秩电流、隐式重塑/转置或平衡解释。",
+    "evidence_ceiling": "tests/field/test_current_green_superposition.py 以原名和 scientific_function 别名直接调用公开函数。test_scalar_current_scales_rank_one_green_responses 断言标量缩放；test_vector_current_contracts_green_source_columns 和 test_matrix_contraction_preserves_target_axis 断言有符号源列收缩及非方阵的目标轴保留；test_rejects_wrong_green_source_axis 断言源列数错误会被拒绝；test_unrepresentable_contraction_fails_closed 对标量和矩阵溢出分别要求 FloatingPointError。test_reviewed_relation_example 另检查源基向量选择。这些是收缩与失败回归，不独立认证输入的 Green 响应或平衡模型。",
     "known_limitations": [
      "只支持标量或一维电流。",
      "不推断或重新排列源轴。",
-     "已审查示例是唯一直接数值情形；没有测试绑定非有限收缩的 `FloatingPointError` 路径。"
+     "具名溢出断言针对有限输入收缩后不可表示的情况，不代表穷尽非有限输入或所有极端量级组合。"
     ]
    }
   },

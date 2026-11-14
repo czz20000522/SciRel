@@ -70,7 +70,7 @@
    "shape": "[N_Z*N_R,N_Z*N_R]",
    "dtype": "float64",
    "required": true,
-   "constraints": "Both axes follow C-order [Z,R] flattening; axis-source columns and nonfinite formula elements use the zero convention; no cell-area or 2*pi factor is included."
+   "constraints": "Both axes follow C-order [Z,R] flattening; zero-radius source columns and exact self entries use the discrete zero convention. Unrepresentable non-self responses raise FloatingPointError rather than being replaced by zero; no cell-area or 2*pi factor is included."
   }
  ],
  "applicability": {
@@ -115,23 +115,24 @@
  },
  "verification": {
   "scope": [
-   "The first source plane is compared column by column with an independent 80-digit elliptic-integral expression; the original binary64 checker cancellation was proven by independent high precision and repaired, and the rtol=2e-14 gate is retained.",
+   "test_first_source_plane_matches_independent_circular_filament_formula in tests/field/test_mirror_plasma_green.py compares g_psi source columns on a 3-by-4 grid with an independent 80-digit elliptic-integral expression at rtol=2e-14 and atol=1e-300.",
    "Whole-matrix equality with direct dense filament columns on a symmetric grid.",
    "Square shape, finite output and axis-source zero-column convention.",
    "Rejection of an axially nonsymmetric grid and reflection-block relation.",
-   "Independent 70/80-digit ideal-loop relation checks cover very small positive radii, near-axis nonzero BR, near-wire cases and formula-evaluation branches while retaining the original numeric assertions and tolerances; the exact self term and arithmetic failure are handled separately.",
+   "In tests/cross_domain/test_field_green_correction.py, test_mirror_small_positive_loops_are_not_removed_by_axis_tolerance checks the g_psi matrix on radii [1e-13,2e-13] and Z=[-1e-13,1e-13] against a 70-digit ideal-loop expression at rtol=2e-14 and atol=1e-300, retaining zero diagonal entries. test_public_field_interfaces_reject_complex_coordinates includes api=mirror.",
    "The named result preserves the captured key order, values, shapes, dtypes, mapping access and attribute access; failures retain their exception types and messages."
   ],
   "tests": [
    "tests/field/test_mirror_plasma_green.py",
    "tests/cross_domain/test_field_green_correction.py"
   ],
-  "evidence_ceiling": "Direct SciRel tests establish selected source-plane formula values, whole-matrix agreement with the maintained dense filament response on one symmetric grid, indexing invariants and one invalid-grid case. They do not prove resolved self-fields, arbitrary-grid validity, whole-project reassembly or expert recognition of this development record.",
+  "evidence_ceiling": "The dedicated test file calls build_mirror_plasma_flux_green as scientific_function and by its own name. The named first-plane formula assertion is independent; test_reflected_matrix_matches_direct_filament_columns_on_symmetric_grid compares with the maintained dense response, and the shape/axis-source/reflected-block and nonsymmetric-grid assertions cover the stated fixtures. The shared file directly checks only the mirror cases named in scope. This entry returns flux only: aggregate-only BR/BZ, formula-cutover, near-wire and arithmetic-failure assertions are dependency evidence and cannot be assigned to this wrapper. Arbitrary-grid validity, finite-wire self-fields and experimental validation remain unqualified.",
   "known_limitations": [
    "The result is a dense O((N_Z*N_R)^2) matrix and may be costly on large grids.",
    "Current contraction and cell-area factors are caller responsibilities.",
    "Public distribution licensing and SciRel expert recognition remain pending.",
-   "The dedicated mirror entry remains limited to uniform, symmetric Z tensor grids; for general irregular coordinates use the actual-coordinate matrix entry in the electromagnetism domain."
+   "The dedicated mirror entry remains limited to uniform, symmetric Z tensor grids; for general irregular coordinates use the actual-coordinate matrix entry in the electromagnetism domain.",
+   "Direct overflow coverage through the mirror wrapper is UNKNOWN in the bound tests; failure propagation is established by the implementation, not by inheriting aggregate or dense failure assertions."
   ]
  }
 }

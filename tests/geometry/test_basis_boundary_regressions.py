@@ -70,3 +70,8 @@ def test_basis_matrix_forwards_keywords_to_spline_columns_and_polynomial_rejects
     assert not np.array_equal(forwarded, matrix(domain))
     with pytest.raises(TypeError):
         basis.BasisMatrix("poly")(domain, deriv=1)
+
+
+def test_invalid_clamped_slope_vector_length_has_the_documented_constructor_failure():
+    with pytest.raises(AssertionError, match="yp must be a vector of length 2"):
+        basis.build_basis("clamped_cubic_spline", yp=(0.0, 0.0, 0.0))
