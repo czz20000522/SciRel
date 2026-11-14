@@ -21,11 +21,13 @@ from __future__ import annotations
 
 import argparse
 from collections.abc import Iterator
-from contextlib import contextmanager
+from contextlib import contextmanager, nullcontext
+import errno
 import os
 from pathlib import Path
 import shutil
 import signal
+import secrets
 import subprocess
 import sys
 import time
@@ -35,6 +37,8 @@ RUNTIME = ".runtime"
 CHECK_ALL = "skills/development/scirel-acceptance/scripts/check_all.py"
 SYNC = ["uv", "sync", "--locked", "--group", "test"]
 LOCK_NAME = "acceptance.lock"
+EXCLUSIVE_RECORD = "acceptance-exclusive"
+EXCLUSIVE_MARKER = "SCIREL_EXCLUSIVE_TOKEN"
 STOP_TIMEOUT = 5
 
 
@@ -122,11 +126,11 @@ def python_version() -> str:
     return (ROOT / ".python-version").read_text(encoding="utf-8").strip()
 
 
-def shared_root() -> Path:
+def shared_root(root: Path | None = None) -> Path:
     """Return the main checkout that every worktree of this clone shares."""
     done = subprocess.run(
         ["git", "rev-parse", "--path-format=absolute", "--git-common-dir"],
-        cwd=ROOT,
+        cwd=ROOT if root is None else root,
         capture_output=True,
         text=True,
         check=False,
@@ -134,7 +138,68 @@ def shared_root() -> Path:
     common = Path(done.stdout.strip()) if done.returncode == 0 and done.stdout.strip() else None
     if common is not None and common.name == ".git" and common.parent.is_dir():
         return common.parent.resolve()
+    if root is not None:
+        raise LockBusy("exclusive verification requires the candidate's real git clone")
     return ROOT
+
+
+def require_exclusive(root: Path, expected: str | None = None) -> str:
+    """Verify the current credential against this clone and its live kernel EX lock.
+
+    An independent shared-lock probe succeeds beside another shared lock on POSIX;
+    only an exclusive holder can block it. Windows serializes the same single byte.
+    No lock is inherited, reacquired or bypassed by this verification.
+    """
+    token = os.environ.get(EXCLUSIVE_MARKER)
+    locks = shared_root(root) / RUNTIME / "locks"
+    try:
+        if not token or (expected is not None and token != expected):
+            raise ValueError("missing or changed marker")
+        if (locks / EXCLUSIVE_RECORD).read_text(encoding="ascii") != token:
+            raise ValueError("stale marker or wrong clone")
+        with (locks / LOCK_NAME).open("r+b") as probe:
+            if sys.platform == "win32":
+                import msvcrt
+
+                try:
+                    msvcrt.locking(probe.fileno(), msvcrt.LK_NBLCK, 1)
+                except OSError as error:
+                    if error.errno not in (errno.EACCES, errno.EAGAIN, errno.EDEADLK):
+                        raise
+                else:
+                    msvcrt.locking(probe.fileno(), msvcrt.LK_UNLCK, 1)
+                    raise ValueError("kernel lock is free")
+            else:
+                import fcntl
+
+                try:
+                    fcntl.flock(probe.fileno(), fcntl.LOCK_SH | fcntl.LOCK_NB)
+                except BlockingIOError:
+                    pass
+                else:
+                    fcntl.flock(probe.fileno(), fcntl.LOCK_UN)
+                    raise ValueError("kernel lock is free or only shared")
+        # Reject retirement/replacement during the probe as well.
+        if (locks / EXCLUSIVE_RECORD).read_text(encoding="ascii") != token:
+            raise ValueError("credential changed during verification")
+    except (OSError, ValueError) as error:
+        raise LockBusy(
+            f"valid clone exclusive lock required ({error}); "
+            "start in the candidate clone with dev.py run --exclusive <command>"
+        ) from error
+    return token
+
+
+@contextmanager
+def exclusive_credential() -> Iterator[str]:
+    """Publish only while the caller holds acceptance_lock(EX), then retire before unlock."""
+    record = runtime_paths()["locks"] / EXCLUSIVE_RECORD
+    token = secrets.token_hex(32)
+    try:
+        record.write_text(token, encoding="ascii")
+        yield token
+    finally:
+        record.unlink(missing_ok=True)
 
 
 def runtime_paths() -> dict[str, Path]:
@@ -164,6 +229,7 @@ def environment() -> dict[str, str]:
         "UV_PROJECT",
         "UV_WORKING_DIR",
         "UV_PYTHON_INSTALL_DIR",
+        EXCLUSIVE_MARKER,
     ):
         env.pop(key, None)
     temporary = str(paths["tmp"])
@@ -198,7 +264,7 @@ def ensure_runtime() -> None:
             path.mkdir(parents=True, exist_ok=True)
 
 
-def run(command: list[str]) -> int:
+def run(command: list[str], *, exclusive_token: str | None = None) -> int:
     process = None
     handlers = {}
     interrupted = None
@@ -215,16 +281,22 @@ def run(command: list[str]) -> int:
             if hasattr(signal, name):
                 signum = getattr(signal, name)
                 handlers[signum] = signal.signal(signum, interrupt)
-        process = subprocess.Popen(
-            command, cwd=ROOT, env=environment(), start_new_session=os.name == "posix"
-        )
+        env = environment()
+        if exclusive_token is not None:
+            env[EXCLUSIVE_MARKER] = exclusive_token
+        process = subprocess.Popen(command, cwd=ROOT, env=env, start_new_session=os.name == "posix")
         while interrupted is None:
             try:
                 code = process.wait(timeout=0.1)
             except subprocess.TimeoutExpired:
                 continue
             if interrupted is None:
-                return code
+                if exclusive_token is not None:
+                    # A successful launcher may leave children behind. Keep the credential
+                    # and lock until our existing supervisor has reaped the whole group.
+                    stop_command(process, signal.SIGTERM)
+                if interrupted is None:
+                    return code
         stop_command(process, interrupted)
         print(f"INTERRUPTED  signal {interrupted}; owned command stopped", file=sys.stderr)
         return 128 + interrupted
@@ -268,6 +340,8 @@ def acceptance_lock(*, exclusive: bool) -> Iterator[None]:
             except OSError as error:
                 raise LockBusy("another test run or check holds the clone lock") from error
             try:
+                # A previous owner may have died without retiring its credential.
+                (path.parent / EXCLUSIVE_RECORD).unlink(missing_ok=True)
                 yield
             finally:
                 stream.seek(0)
@@ -284,6 +358,7 @@ def acceptance_lock(*, exclusive: bool) -> Iterator[None]:
                 )
                 raise LockBusy(f"{what} is running in this clone; wait for it to finish") from None
             try:
+                (path.parent / EXCLUSIVE_RECORD).unlink(missing_ok=True)
                 yield
             finally:
                 fcntl.flock(stream.fileno(), fcntl.LOCK_UN)
@@ -295,9 +370,10 @@ def run_locked(command: list[str] | None, *, exclusive: bool) -> int:
             prepared = prepare()
             if prepared:
                 return prepared
-            if exclusive:
-                print("EXCLUSIVE  no other test run or check holds the clone lock", flush=True)
-            return run(command) if command is not None else 0
+            with exclusive_credential() if exclusive else nullcontext(None) as token:
+                if exclusive:
+                    print("EXCLUSIVE  no other test run or check holds the clone lock", flush=True)
+                return run(command, exclusive_token=token) if command is not None else 0
     except LockBusy as error:
         print(f"ERROR: {error}", file=sys.stderr)
         return 75
@@ -312,7 +388,7 @@ def pytest(arguments: list[str]) -> int:
     return run_locked(command, exclusive=False)
 
 
-def run_command(arguments: list[str]) -> int:
+def run_command(arguments: list[str], *, exclusive: bool = False) -> int:
     if arguments[:1] == ["--"]:
         arguments = arguments[1:]
     if not arguments:
@@ -320,7 +396,7 @@ def run_command(arguments: list[str]) -> int:
             "ERROR: run needs a command, for example `run python -B scripts/x.py`.", file=sys.stderr
         )
         return 2
-    return run_locked(["uv", "run", "--frozen", *arguments], exclusive=False)
+    return run_locked(["uv", "run", "--frozen", *arguments], exclusive=exclusive)
 
 
 def doctor() -> int:
@@ -372,6 +448,7 @@ def main(argv: list[str] | None = None) -> int:
     pytest_parser = subparsers.add_parser("pytest", help="run pytest with optional arguments")
     pytest_parser.add_argument("arguments", nargs=argparse.REMAINDER)
     run_parser = subparsers.add_parser("run", help="run one command in the project environment")
+    run_parser.add_argument("--exclusive", action="store_true", help="hold the clone EX lock")
     run_parser.add_argument("arguments", nargs=argparse.REMAINDER)
     clean_parser = subparsers.add_parser(
         "clean", help="remove this worktree's environment and caches; retain logs"
@@ -392,7 +469,7 @@ def main(argv: list[str] | None = None) -> int:
     if args.command == "pytest":
         return pytest(args.arguments)
     if args.command == "run":
-        return run_command(args.arguments)
+        return run_command(args.arguments, exclusive=args.exclusive)
     if args.command == "clean":
         return clean(shared=args.shared)
     parser.error(f"unknown command: {args.command}")

@@ -334,11 +334,22 @@ def _validator():
     return module
 
 
+def _mock_lock_boundary(module, monkeypatch):
+    """Report/environment protocol fixtures only; not real exclusive acceptance evidence."""
+    monkeypatch.setattr(
+        module, "require_exclusive", lambda tree, expected=None: expected or "fixture"
+    )
+
+
 def test_an_empty_full_check_is_not_passed(tmp_path, monkeypatch):
     module = _validator()
-    script = tmp_path / "skills/development/scirel-acceptance/scripts/check_all.py"
+    _mock_lock_boundary(module, monkeypatch)
+    tree = _acceptance_candidate(tmp_path)
+    script = tree / "skills/development/scirel-acceptance/scripts/check_all.py"
     script.parent.mkdir(parents=True)
     script.write_text('def main():\n    raise AssertionError("gate never entered")\n')
+    _git(tree, "add", ".")
+    _git(tree, "commit", "-qm", "empty gate fixture")
     monkeypatch.setattr(
         module,
         "_run_in_candidate",
@@ -347,7 +358,7 @@ def test_an_empty_full_check_is_not_passed(tmp_path, monkeypatch):
         ),
     )
     report = module.Report()
-    module.run_full_check(tmp_path, report)
+    module.run_full_check(tree, report)
     assert report.sections[-1][1] == "FAIL", report.sections
 
 
@@ -372,14 +383,138 @@ def test_old_failed_independent_evidence_does_not_upgrade_source_only_reruns(set
     assert code == 2 and "1 with source-output evidence only" in out, out
 
 
-def _acceptance_result(module, directory):
+def _acceptance_candidate(directory):
+    tree = directory / "candidate"
+    tree.mkdir()
+    _git(tree, "init", "-q")
+    (tree / ".gitignore").write_text(".runtime/\n")
+    for name in ("uv.lock", ".python-version"):
+        shutil.copy(ROOT / name, tree / name)
+    # The plan must be based on the actual patched tree, including newly added reports.
+    example = tree / "examples/patched/REPORT.md"
+    example.parent.mkdir(parents=True)
+    example.write_text("fixture report\n")
+    _git(tree, "add", ".")
+    _git(tree, "commit", "-qm", "patched candidate fixture")
+    return tree
+
+
+@pytest.mark.parametrize("stage", ["full check", "mutation"])
+def test_unlocked_candidate_never_starts_admission(tmp_path, monkeypatch, stage):
+    module = _validator()
+    tree = _acceptance_candidate(tmp_path)
+    monkeypatch.setattr(
+        module, "_run_in_candidate", lambda *args: pytest.fail("unlocked admission started")
+    )
+    report = module.Report()
+    report.output_dir = tmp_path
+    if stage == "full check":
+        module.run_full_check(tree, report)
+    else:
+        module.run_mutation(tree, [NEW_ID], report)
+    assert report.sections[-1][:2] == (stage, "FAIL")
+    assert "exclusive" in " ".join(report.errors).lower()
+
+
+@pytest.mark.parametrize("stage", ["full check", "mutation"])
+@pytest.mark.parametrize("change", ["retired", "replaced"])
+def test_admission_rechecks_the_same_live_credential(tmp_path, monkeypatch, stage, change):
+    """Real EX lock and a real subprocess; the tiny probe is not a full acceptance run."""
+    module = _validator()
+    import dev
+
+    tree = _acceptance_candidate(tmp_path)
+    monkeypatch.setattr(dev, "ROOT", tree)
+    report = module.Report()
+    report.output_dir = tmp_path
+    with dev.acceptance_lock(exclusive=True), dev.exclusive_credential() as token:
+        monkeypatch.setenv(dev.EXCLUSIVE_MARKER, token)
+        record = dev.runtime_paths()["locks"] / dev.EXCLUSIVE_RECORD
+
+        def execute(candidate, command):
+            # Do not manufacture a full-check result: only change the real lock record.
+            done = subprocess.run(
+                [sys.executable, "-B", "-c", "print('credential boundary probe only')"],
+                capture_output=True,
+                text=True,
+                check=True,
+            )
+            if change == "retired":
+                record.unlink()
+            else:
+                record.write_text("new-invocation")
+                monkeypatch.setenv(dev.EXCLUSIVE_MARKER, "new-invocation")
+            return done
+
+        monkeypatch.setattr(module, "_run_in_candidate", execute)
+        if stage == "full check":
+            module.run_full_check(tree, report, exclusive_token=token)
+        else:
+            module.run_mutation(tree, [NEW_ID], report, exclusive_token=token)
+    assert report.sections[-1][:2] == (stage, "FAIL")
+    assert "exclusive" in " ".join(report.errors).lower()
+    assert (
+        "credential boundary probe only"
+        in (tmp_path / f"{stage.replace(' ', '-')}.log").read_text()
+    )
+
+
+def test_full_validation_refuses_another_clone_before_applying_patches(
+    setup, tmp_path, monkeypatch
+):
+    _validator()
+    import dev
+
+    package, candidate_repo = setup
+    receiver = tmp_path / "receiver"
+    _git(tmp_path, "clone", "--quiet", str(candidate_repo), str(receiver))
+    monkeypatch.setattr(dev, "ROOT", receiver)
+    with dev.acceptance_lock(exclusive=True), dev.exclusive_credential() as token:
+        env = dict(os.environ, **{dev.EXCLUSIVE_MARKER: token})
+        done = subprocess.run(
+            [sys.executable, "-B", str(SCRIPT), str(package), "--repo", str(candidate_repo)],
+            env=env,
+            capture_output=True,
+            text=True,
+            timeout=10,
+        )
+    assert done.returncode == 1, done.stdout + done.stderr
+    assert "exclusive lock required" in done.stdout
+    assert "NOT_RUN  patch" in done.stdout
+
+
+def _acceptance_result(module, directory, tree):
     records = []
-    for index, step in enumerate(module.acceptance_steps(directory)):
+    output = tree / ".runtime/tmp/fixture-check"
+    executable = (
+        tree / ".runtime/venv" / ("Scripts/python.exe" if sys.platform == "win32" else "bin/python")
+    )
+    for index, step in enumerate(
+        module.acceptance_steps(output, root=tree, executable=str(executable))
+    ):
         log = directory / f"step-{index}.log"
         log.write_text(f"complete output for {step.name}\n", encoding="utf-8")
-        records.append({"name": step.name, "status": "PASS", "returncode": 0, "log": str(log)})
+        records.append(
+            {
+                "name": step.name,
+                "status": "PASS",
+                "returncode": 0,
+                "log": str(log),
+                "argv": step.command,
+                "started": True,
+            }
+        )
+    identity = module.candidate_identity(tree)
+    import check_all
+
+    environment = check_all.runtime_environment(tree)
     return {
         "schema": "scirel.acceptance.v1",
+        "candidate": {"before": dict(identity), "after": dict(identity)},
+        "environment": {"before": dict(environment), "after": dict(environment)},
+        "run_id": "stale fixture invocation",
+        "binding_errors": [],
+        "evidence": "clean_candidate",
         "steps": records,
         "exit_code": 0,
         "tests": {
@@ -404,9 +539,11 @@ def _acceptance_result(module, directory):
 def test_full_result_protocol_preserves_the_actual_output(tmp_path, monkeypatch, defect):
     """Exercise the report consumer; this fixture is not a real package acceptance run."""
     module = _validator()
+    _mock_lock_boundary(module, monkeypatch)
+    tree = _acceptance_candidate(tmp_path)
     report = module.Report()
     report.output_dir = tmp_path
-    result = _acceptance_result(module, tmp_path)
+    result = _acceptance_result(module, tmp_path, tree)
     code = 0
     if defect == "nonzero":
         code = result["exit_code"] = 1
@@ -421,21 +558,149 @@ def test_full_result_protocol_preserves_the_actual_output(tmp_path, monkeypatch,
         Path(result["steps"][0]["log"]).unlink()
 
     def execute(tree, command):
+        result["run_id"] = command[command.index("--run-id") + 1]
         Path(command[-1]).write_text(json.dumps(result), encoding="utf-8")
         return subprocess.CompletedProcess(
             command, code, "earliest cause: fixture diagnostic\n", ""
         )
 
     monkeypatch.setattr(module, "_run_in_candidate", execute)
-    module.run_full_check(tmp_path, report)
+    module.run_full_check(tree, report)
     assert report.sections[-1][1] == ("PASS" if defect is None else "FAIL"), report.errors
     assert "earliest cause" in (tmp_path / "full-check.log").read_text()
     if defect is None:
         assert "selected 2" in report.sections[-1][2]
 
 
+@pytest.mark.parametrize(
+    "defect",
+    [
+        "missing identity",
+        "same tree different commit",
+        "all skipped",
+        "not started",
+        "missing argv",
+        "wrong argv",
+        "stale invocation",
+        "identity drift",
+        "environment drift",
+        "missing lock digest",
+        "dirty",
+        "development",
+        "missing report",
+    ],
+)
+def test_unbound_green_is_refused(tmp_path, monkeypatch, defect):
+    module = _validator()
+    _mock_lock_boundary(module, monkeypatch)
+    tree = _acceptance_candidate(tmp_path)
+    report = module.Report()
+    report.output_dir = tmp_path
+    if defect == "dirty":
+        (tree / "untracked.txt").write_text("development only\n")
+    result = _acceptance_result(module, tmp_path, tree)
+    if defect == "missing identity":
+        del result["candidate"]
+    if defect == "same tree different commit":
+        _git(tree, "commit", "--allow-empty", "-qm", "same tree different commit")
+        assert result["candidate"]["before"]["tree"] == _git(tree, "rev-parse", "HEAD^{tree}")
+        assert result["candidate"]["before"]["commit"] != _git(tree, "rev-parse", "HEAD")
+    elif defect == "all skipped":
+        result["tests"].update(passed=0, skipped=2, skip_reasons={"absent": ["a", "b"]})
+    elif defect == "not started":
+        result["steps"][0]["started"] = False
+    elif defect == "missing argv":
+        del result["steps"][0]["argv"]
+    elif defect == "wrong argv":
+        result["steps"][0]["argv"].extend(["-k", "smoke"])
+    elif defect == "missing lock digest":
+        for environment in result["environment"].values():
+            del environment["uv_lock_sha256"]
+    elif defect == "development":
+        result["evidence"] = "development"
+
+    def execute(tree, command):
+        if defect != "stale invocation":
+            result["run_id"] = command[command.index("--run-id") + 1]
+        path = tmp_path / "acceptance.json" if defect == "missing report" else Path(command[-1])
+        path.write_text(json.dumps(result), encoding="utf-8")
+        if defect == "identity drift":
+            _git(tree, "commit", "--allow-empty", "-qm", "changed while running")
+        elif defect == "environment drift":
+            (tree / "uv.lock").write_text("changed during execution\n")
+        return subprocess.CompletedProcess(command, 0, "fixture only\n", "")
+
+    monkeypatch.setattr(module, "_run_in_candidate", execute)
+    module.run_full_check(tree, report)
+    assert report.sections[-1][1] == "FAIL", report.errors
+    assert "fixture only" in (tmp_path / "full-check.log").read_text()
+
+
+@pytest.mark.parametrize("use_frozen_identity", [False, True])
+def test_full_check_binds_the_git_am_candidate_not_its_frozen_base(
+    tmp_path, monkeypatch, use_frozen_identity
+):
+    module = _validator()
+    _mock_lock_boundary(module, monkeypatch)
+    tree = _acceptance_candidate(tmp_path)
+    frozen = module.candidate_identity(tree)
+    (tree / "patched.txt").write_text("candidate addition\n")
+    _git(tree, "add", ".")
+    _git(tree, "commit", "-qm", "candidate patch")
+    patch = _git(tree, "format-patch", "--stdout", "HEAD^..HEAD")
+    patch_path = tree / ".runtime/candidate.patch"
+    patch_path.parent.mkdir()
+    patch_path.write_text(patch + "\n")
+    _git(tree, "reset", "--hard", frozen["commit"])
+    _git(tree, "am", str(patch_path))
+    patched = module.candidate_identity(tree)
+    assert patched["commit"] != frozen["commit"]
+    assert patched["tree"] != frozen["tree"]
+    result = _acceptance_result(module, tmp_path, tree)
+    if use_frozen_identity:
+        result["candidate"] = {"before": frozen, "after": frozen}
+
+    def execute(candidate, command):
+        assert candidate == tree
+        result["run_id"] = command[command.index("--run-id") + 1]
+        Path(command[-1]).write_text(json.dumps(result), encoding="utf-8")
+        return subprocess.CompletedProcess(command, 0, "fixture output\n", "")
+
+    monkeypatch.setattr(module, "_run_in_candidate", execute)
+    report = module.Report()
+    report.output_dir = tmp_path
+    module.run_full_check(tree, report)
+    assert report.sections[-1][1] == ("FAIL" if use_frozen_identity else "PASS"), report.errors
+
+
+def test_candidate_interpreter_is_not_assumed_to_be_the_receivers(tmp_path, monkeypatch):
+    module = _validator()
+    _mock_lock_boundary(module, monkeypatch)
+    tree = _acceptance_candidate(tmp_path)
+    candidate_version = "3.12.9"
+    assert candidate_version != ".".join(map(str, sys.version_info[:3]))
+    (tree / ".python-version").write_text(candidate_version + "\n")
+    _git(tree, "add", ".python-version")
+    _git(tree, "commit", "-qm", "candidate interpreter pin fixture")
+    result = _acceptance_result(module, tmp_path, tree)
+    for environment in result["environment"].values():
+        environment["python"] = {"implementation": "CPython", "version": candidate_version}
+
+    def execute(candidate, command):
+        result["run_id"] = command[command.index("--run-id") + 1]
+        Path(command[-1]).write_text(json.dumps(result), encoding="utf-8")
+        return subprocess.CompletedProcess(command, 0, "fixture only\n", "")
+
+    monkeypatch.setattr(module, "_run_in_candidate", execute)
+    report = module.Report()
+    report.output_dir = tmp_path
+    module.run_full_check(tree, report)
+    assert report.sections[-1][1] == "PASS", report.errors
+
+
 def test_candidate_runtime_does_not_rebind_the_callers_environment(tmp_path, monkeypatch):
     module = _validator()
+    _mock_lock_boundary(module, monkeypatch)
     (tmp_path / "scripts").mkdir()
     shutil.copy(ROOT / "scripts/dev.py", tmp_path / "scripts/dev.py")
     shutil.copy(ROOT / ".python-version", tmp_path / ".python-version")

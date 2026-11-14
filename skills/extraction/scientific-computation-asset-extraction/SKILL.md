@@ -77,8 +77,13 @@ description: 从来源项目（源码、论文、材料）中找出核心物理�
 4. 在冻结版 SciReL 的目录里运行校验器。合并线运行的也是同一条命令：
 
    ```sh
-   python3 scripts/dev.py run python -B scripts/validate_extraction_package.py <拆解包目录> --repo <冻结版 SciReL 的 git 目录>
+   python3 scripts/dev.py run --exclusive python -B scripts/validate_extraction_package.py <拆解包目录> --repo .
    ```
+
+   外层入口独占当前 clone，覆盖补丁应用、候选完整检查和变异测试。`--repo` 必须属于这个
+   clone（可为它的其他 worktree）；不能锁住接收者后检查另一个 clone。校验器在完整检查和
+   变异前后核对同一本次凭据和真实内核锁。普通 `run`、过期标记或缺锁都会拒绝完整放行。
+   不要在外层 `run` 内嵌套 `dev.py check`，它会与外层锁冲突。
 
    它依次检查以下各项：
    - 结构；
