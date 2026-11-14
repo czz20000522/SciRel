@@ -295,11 +295,12 @@
   "evidence_ceiling": "Bounded to one or more homogeneous magnetized Maxwellian species with finite harmonic sums and analytic Z values. Evidence: `test_kinetic_dispersion_sum_n.py` contains 4 test functions, 4 of which reference `evaluate_kinetic_dispersion_sum`, and is bound only by this asset; the bounded example was executed by this audit. Oracle: independent analytic/high-precision Z-function references plus frozen fluid-BW values. It does not establish kx=0/kz=0 limits, complex roots, drift/loss-cone distributions, or automatic harmonic convergence.",
   "known_limitations": [
    "The x-z-plane real-wavepoint contract excludes perpendicular/parallel zero-wavevector limits and complex root-search inputs.",
-   "No near-zero kz clamping is inherited from the source path.",
+   "The truncated harmonic sum keeps its truncation tail. For small kz it is evaluated through the stable identity A(zeta) = 1 + zeta*Z(zeta) with the truncation tail formed as a positive sum 2*sum_{n>N} Gamma_n, so binary64 rounding is not amplified by 1/kz^2 (issue #203). No clamp and no silent switch to another algorithm: a large tensor from an insufficient N (for example b=8, N=30, kz=1e-7, which is about 7.7e4) is a property of that finite N, not a rounding error, and must not be read as the converged value.",
    "The finite cutoff may be insufficient at larger kx*rho; callers must assess it independently.",
    "This relation's local tensor tests do not establish an end-to-end closure of the terminal matrix outputs through a full pipeline.",
    "The bound tests compare frozen fluid-BW determinants and analytic Z-based terms; no external kinetic code or full-parameter-space oracle is bound.",
-   "The model uses analytic SciRel `Z` values rather than a finite-order Weideman special-function implementation, so cross-code absolute parity is not claimed."
+   "The model uses analytic SciRel `Z` values rather than a finite-order Weideman special-function implementation, so cross-code absolute parity is not claimed.",
+   "The stability regression compares the full tensor against an 80-digit evaluation of the same finite-N expression whose scales are derived from the public inputs; it covers one species with b in {1, 8, 40}, N in {5, 30, 60} and kz from 1e-12 to 1e3 at one fixed frequency ratio. Complex kx, exact cyclotron resonance, exactly zero kz and extreme floating-point ranges stay outside that evidence."
   ]
  }
 }

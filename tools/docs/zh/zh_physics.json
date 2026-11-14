@@ -733,7 +733,7 @@
   },
   {
    "asset_id": "scirel.kinetic.kinetic-dispersion-sum",
-   "source_sha256": "e74a6c579500d274c634a1eba164eeaaa3270f1fa4109ef469603521afb8ca7f",
+   "source_sha256": "49044ab83e3db2c92c430b84a7484aedbf181cfb68b6e1515e0e9b4384ba5e68",
    "summary": "使用有限回旋谐波求和，为磁化 Maxwellian 多组分等离子体组装 x-z 平面的动力学介电张量、Maxwell 色散张量及其行列式。",
    "definition": "omega=2*pi*f；vts=sqrt(2*kB*T_s/m_s)；wcs=q_s*B0/m_s；wps2=n_s*q_s^2/(m_s*epsilon0)；a_s=kx*sqrt(kB*T_s/m_s)/wcs；b_s=a_s^2；z_n=(omega-n*wcs)/(kz*vts)。使用 Gamma_n(b)、Gamma_prime_n(b) 和解析 Z(z_n)，在 n=-lmx..lmx 范围求和，各组分项的权重为 (wps2/omega^2)*z_0*Z(z_n)。按既有磁化率分量约定组装 K，再减去 Maxwell 旋度项得到 D 及其行列式。符号约定为 K_ij = delta_ij - sigma_ij/(i*omega*epsilon0)。",
    "model": "均匀磁化 Maxwellian 多组分等离子体的截断常规回旋谐波求和；使用 SciRel 解析 Faddeeva Z，而非有限阶 Weideman 实现。",
@@ -906,11 +906,12 @@
     "evidence_ceiling": "限于一个或多个均匀磁化麦克斯韦种类，采用有限谐波和与解析 Z 值。证据：`test_kinetic_dispersion_sum_n.py` 含 4 个测试函数，其中 4 个引用 `evaluate_kinetic_dispersion_sum`，仅由本资产绑定；本审计已执行有界示例。真值来源：独立解析/高精度 Z 函数参照加冻结 fluid-BW 值。不建立：kx=0/kz=0 极限、复根、漂移/损失锥分布或自动谐波收敛。",
     "known_limitations": [
      "x-z 平面的实数波点合同不包含垂直或平行零波数极限，也不包含复数求根输入。",
-     "未继承既有路径对近零 kz 的钳位。",
+     "有限谐波和保留截断尾项。kz 很小时改为通过稳定恒等式 A(ζ)=1+ζZ(ζ) 求值，截断尾项写成 2·Σ_{n>N}Γ_n 的正项和，因此 binary64 舍入不会被 1/kz² 放大（issue #203）。不做钳位、不静默换算法：N 不足时的大张量（例如 b=8、N=30、kz=1e-7 约 7.7e4）是该有限 N 的性质、不是舍入误差，不得当作收敛值。",
      "在较大的 kx*rho 下，有限截断可能不足，调用者须独立评估。",
      "本关系的局部张量测试不能证明终末矩阵输出经完整流水线端到端闭合。",
      "绑定测试比较冻结 fluid-BW 行列式与基于解析 Z 的项；未绑定外部动理学代码或全参数空间参照。",
-     "模型使用解析 SciRel `Z` 值而非有限阶 Weideman 特殊函数实现，因此不声称跨代码绝对一致。"
+     "模型使用解析 SciRel `Z` 值而非有限阶 Weideman 特殊函数实现，因此不声称跨代码绝对一致。",
+     "稳定性回归把完整张量对 80 位同式复算比较，参照的尺度由公开输入独立推导；只覆盖单物种、b∈{1,8,40}、N∈{5,30,60}、kz 从 1e-12 到 1e3 且固定频率比。复 kx、恰好回旋谐振、恰好零 kz 与极端浮点范围不在该证据内。"
     ],
     "tests": [
      "tests/kinetic/test_kinetic_dispersion_sum_n.py"

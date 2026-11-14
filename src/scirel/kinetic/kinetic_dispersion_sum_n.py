@@ -1,6 +1,7 @@
 """Assemble the finite-harmonic Maxwellian kinetic dielectric tensor with NumPy species and harmonic arrays."""
 
 import numpy as np
+from scipy.special import hyp1f1
 
 from .bessel_gamma import evaluate_bessel_gamma
 from .plasma_dispersion import evaluate_plasma_dispersion
@@ -9,6 +10,60 @@ from .plasma_dispersion import evaluate_plasma_dispersion
 _C2 = (2.99792458e8) ** 2
 _EPSILON0 = 8.854187817e-12
 _KB = 1.38064852e-23
+
+
+_A_SERIES_THRESHOLD = 32.0
+
+
+def _a_function(zeta):
+    """Return ``A(zeta) = 1 + zeta*Z(zeta)`` without catastrophic cancellation.
+
+    ``A = hyp1f1(1, 1/2, -zeta^2) + i*sqrt(pi)*zeta*exp(-zeta^2)`` is the stable identity
+    (damped-Dawson derivative relation) on ``|zeta| < 32``; beyond that the same function is
+    evaluated from its asymptotic series ``-1/(2 zeta^2) - 3/(4 zeta^4) - ...``, where the
+    exponential term is far below binary64 resolution. Either way no ``1 - something`` pair of
+    O(1) terms is subtracted, which is what made the previous ``zeta*Z`` evaluation lose the
+    O(kz^-2) amplification (issue #203).
+    """
+    zeta = np.asarray(zeta, dtype=float)
+    result = np.empty(zeta.shape, dtype=complex)
+    small = np.abs(zeta) < _A_SERIES_THRESHOLD
+    if np.any(small):
+        z = zeta[small]
+        result[small] = hyp1f1(1.0, 0.5, -(z * z)) + 1j * np.sqrt(np.pi) * z * np.exp(-(z * z))
+    if np.any(~small):
+        z = zeta[~small]
+        inv_square = 1.0 / (z * z)
+        term = -0.5 * inv_square
+        total = term.copy()
+        for k in range(1, 24):
+            term = term * ((2.0 * k + 1.0) / 2.0) * inv_square
+            total = total + term
+            if np.all(np.abs(term) <= 1e-18 * np.abs(total)):
+                break
+        result[~small] = total
+    return result
+
+
+def _gamma_positive_tail(b, start, limit=2000):
+    """Return ``2*sum_{n>N} Gamma_n(b)`` as a positive tail sum, or 0.0 when unresolvable.
+
+    The identity ``sum_{n=-inf..inf} Gamma_n = 1`` must not be used to form this tail as
+    ``1 - sum(finite)``: for tiny ``kz`` that difference is multiplied by ``1/kz^2`` and its
+    rounding error would be amplified instead of the (physically meaningful) truncation tail.
+    """
+    total = 0.0
+    decaying = False
+    for n in range(max(start, 0), start + limit):
+        gamma = float(np.real(evaluate_bessel_gamma(n, b)["Gamma_n"]))
+        if not np.isfinite(gamma):
+            break
+        total += gamma
+        if n >= b:
+            decaying = True
+        if decaying and gamma <= 1e-18 * total:
+            break
+    return 2.0 * total
 
 
 def _finite_scalar(name, value, *, nonzero=False):
@@ -136,6 +191,14 @@ def evaluate_kinetic_dispersion_sum(*, B0, qs, ms, ns0, Ts0, f, kz, kx, lmx=5):
     whether the chosen lmx gives sufficient harmonic convergence for its case. A determinant value is
     not by itself a selected physical mode or a root.
 
+    The truncated sum is evaluated so that rounding does not grow as ``kz -> 0``: the O(zeta^2)
+    terms that cancel the Maxwell curl contribution are folded through
+    ``A(zeta) = 1 + zeta*Z(zeta) = hyp1f1(1, 1/2, -zeta^2) + i*sqrt(pi)*zeta*exp(-zeta^2)``, the
+    ``xz``/``yz`` sums use the exact symmetric-truncation identities, and the truncation tail is
+    formed as the positive sum ``2*sum_{n>N}Gamma_n``. The same finite ``N`` model is kept: an
+    insufficient ``N`` still returns a large tensor (that is truncation, not rounding) and no
+    clamp or algorithm switch is applied.
+
     Examples
     --------
     >>> import numpy as np
@@ -182,27 +245,42 @@ def evaluate_kinetic_dispersion_sum(*, B0, qs, ms, ns0, Ts0, f, kz, kx, lmx=5):
     k_tensor = np.eye(3, dtype=complex)
     for s in range(qs.size):
         z0 = omega / (response_kz * vts[s])
+        alpha = wps2[s] / omega**2
+        # Same finite symmetric harmonic sum, rewritten through A(zeta)=1+zeta*Z(zeta) so the
+        # O(zeta^2) pieces that cancel the Maxwell curl term are never formed as differences of
+        # O(zeta^2) floats (issue #203). Kxz/Kyz drop the exact zero of sum(n*Gamma_n) and pick up
+        # the endpoint term of sum(Gamma_prime_n); Kzz keeps the truncation tail as a positive sum.
+        sum_xz = 0.0j
+        sum_yz = 0.0j
+        sum_zz = 0.0j
         for n in range(-lmx, lmx + 1):
             zn = (omega - n * wcs[s]) / (response_kz * vts[s])
             gamma = evaluate_bessel_gamma(n, b[s])
             g = complex(gamma["Gamma_n"])
             gp = complex(gamma["Gamma_prime_n"])
-            z = complex(evaluate_plasma_dispersion(zn)["Z"])
+            a_value = complex(_a_function(np.asarray(zn)))
+            sum_xz += n * g * a_value
+            sum_yz += gp * a_value
+            sum_zz += zn * g * a_value
+            # xx/xy/yy stay as before: their O(1) prefactors are not amplified by z0^2, and
+            # alpha*z0*Z is evaluated the way the relation has always evaluated it.
+            term = alpha * z0 * complex(evaluate_plasma_dispersion(zn)["Z"])
             xx = n**2 * g / b[s]
             xy = 1j * n * gp
-            xz = np.sqrt(2.0) * zn * n * g / a[s]
             yy = xx - 2.0 * b[s] * gp
-            yz = -1j * np.sqrt(2.0) * zn * a[s] * gp
-            zz = 2.0 * zn**2 * g
-            term = wps2[s] / omega**2 * z0 * z
-            k_tensor += term * np.array(
-                [
-                    [xx, xy, xz],
-                    [-xy, yy, yz],
-                    [xz, -yz, zz],
-                ]
-            )
-        k_tensor[2, 2] += wps2[s] / omega**2 * 2.0 * z0**2
+            k_tensor[0, 0] += term * xx
+            k_tensor[0, 1] += term * xy
+            k_tensor[1, 0] -= term * xy
+            k_tensor[1, 1] += term * yy
+        tail = _gamma_positive_tail(b[s], lmx + 1)
+        edge = complex(evaluate_bessel_gamma(lmx + 1, b[s])["Gamma_n"]) - complex(
+            evaluate_bessel_gamma(lmx, b[s])["Gamma_n"]
+        )
+        k_tensor[0, 2] += np.sqrt(2.0) * alpha * z0 / a[s] * sum_xz
+        k_tensor[2, 0] += np.sqrt(2.0) * alpha * z0 / a[s] * sum_xz
+        k_tensor[1, 2] += -1j * np.sqrt(2.0) * alpha * z0 * a[s] * (sum_yz - edge)
+        k_tensor[2, 1] += 1j * np.sqrt(2.0) * alpha * z0 * a[s] * (sum_yz - edge)
+        k_tensor[2, 2] += 2.0 * alpha * z0 * sum_zz + 2.0 * alpha * z0**2 * tail
 
     if kz < 0.0:
         k_tensor[0, 2] = -k_tensor[0, 2]

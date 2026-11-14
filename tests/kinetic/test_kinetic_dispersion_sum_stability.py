@@ -1,0 +1,181 @@
+"""Issue #203: the truncated harmonic sum must be accurate as ``kz -> 0`` without a clamp.
+
+The reference below is the *same* finite-N expression evaluated in 80-digit arithmetic with the
+run's scales derived from the public inputs only (``B0``, ``qs``, ``ms``, ``ns0``, ``Ts0``, ``f``,
+``kx``, ``kz``). It never reads the implementation's returned scales or tensor, so a scale or
+normalisation error in the implementation cannot hide in the reference. Nothing here compares
+determinants: the whole tensor is compared component by component, as issue #203 requires.
+"""
+
+import mpmath as mp
+import numpy as np
+import pytest
+
+from scirel.kinetic import evaluate_kinetic_dispersion_sum
+
+Q = -1.60217662e-19
+M = 9.1094e-31
+KB = 1.38064852e-23
+EPSILON0 = 8.854187817e-12
+C2 = (2.99792458e8) ** 2
+TEMPERATURE = 1000.0 * 1.6022e-19 / 1.38064852e-23
+B0 = 1.0
+DENSITY = 6.075e19
+KX_B1 = 13261.94247879565  # kx that gives b = 1 for this species at this temperature
+
+# The published accuracy goal for this batch, applied to max_ij |K - K_ref| / max(1, |K_ref_ij|).
+TOLERANCE = 2e-12
+
+
+def _plasma_z(zeta):
+    """Faddeeva Z at 80 digits from its erfc definition; mpmath handles every magnitude."""
+    zeta = mp.mpf(zeta)
+    return 1j * mp.sqrt(mp.pi) * mp.exp(-zeta * zeta) * mp.erfc(-1j * zeta)
+
+
+def _gamma(n, b):
+    return mp.exp(-b) * mp.besseli(n, b)
+
+
+def _reference_tensor(*, b_target, lmx, kz):
+    """Same finite-N tensor in high-precision arithmetic, with scales derived from public inputs.
+
+    The working precision is set here rather than at import time: other kinetic tests lower
+    ``mp.mp.dps`` for their own references, and a module-level global would make this reference
+    depend on test order.
+    """
+    with mp.workdps(90):
+        return _reference_tensor_at_precision(b_target=b_target, lmx=lmx, kz=kz)
+
+
+def _reference_tensor_at_precision(*, b_target, lmx, kz):
+    kx = KX_B1 * np.sqrt(b_target)
+    omega = 0.7 * abs(Q / M)
+    vts = mp.sqrt(2 * mp.mpf(KB) * mp.mpf(TEMPERATURE) / mp.mpf(M))
+    wcs = mp.mpf(Q) * mp.mpf(B0) / mp.mpf(M)
+    wps2 = mp.mpf(DENSITY) * mp.mpf(Q) ** 2 / mp.mpf(M) / mp.mpf(EPSILON0)
+    a = mp.mpf(kx) * mp.sqrt(mp.mpf(KB) * mp.mpf(TEMPERATURE) / mp.mpf(M)) / wcs
+    b = a * a
+    response_kz = abs(mp.mpf(kz))
+    z0 = mp.mpf(omega) / (response_kz * vts)
+    alpha = wps2 / mp.mpf(omega) ** 2
+
+    tensor = mp.matrix(3, 3)
+    for index in range(3):
+        tensor[index, index] = 1
+    for n in range(-lmx, lmx + 1):
+        gamma = _gamma(n, b)
+        gamma_prime = (_gamma(n - 1, b) + _gamma(n + 1, b)) / 2 - gamma
+        zeta = (mp.mpf(omega) - n * wcs) / (response_kz * vts)
+        z_value = _plasma_z(zeta)
+        xx = mp.mpf(n) ** 2 * gamma / b
+        xy = 1j * n * gamma_prime
+        xz = mp.sqrt(2) * zeta * n * gamma / a
+        yy = xx - 2 * b * gamma_prime
+        yz = -1j * mp.sqrt(2) * zeta * a * gamma_prime
+        zz = 2 * zeta**2 * gamma
+        term = alpha * z0 * z_value
+        tensor[0, 0] += term * xx
+        tensor[0, 1] += term * xy
+        tensor[0, 2] += term * xz
+        tensor[1, 0] += term * (-xy)
+        tensor[1, 1] += term * yy
+        tensor[1, 2] += term * yz
+        tensor[2, 0] += term * xz
+        tensor[2, 1] += term * (-yz)
+        tensor[2, 2] += term * zz
+    tensor[2, 2] += alpha * 2 * z0**2
+    if kz < 0:
+        for row, column in ((0, 2), (1, 2), (2, 0), (2, 1)):
+            tensor[row, column] = -tensor[row, column]
+    return np.array([[complex(tensor[i, j]) for j in range(3)] for i in range(3)])
+
+
+def _tensor_error(actual, reference):
+    worst = 0.0
+    for i in range(3):
+        for j in range(3):
+            scale = max(1.0, abs(reference[i, j]))
+            worst = max(worst, abs(actual[i, j] - reference[i, j]) / scale)
+    return worst
+
+
+@pytest.mark.parametrize(
+    "b_target, lmx, kz",
+    [
+        (1, 30, 1e-7),
+        (1, 30, -1e-7),
+        (1, 30, 1e-12),
+        (1, 30, -1e-12),
+        (1, 30, 1e3),
+        (8, 5, 1e3),
+        (8, 30, 10.0),
+    ],
+)
+def test_tensor_matches_the_independent_high_precision_reference(b_target, lmx, kz):
+    result = evaluate_kinetic_dispersion_sum(
+        B0=B0,
+        qs=[Q],
+        ms=[M],
+        ns0=[DENSITY],
+        Ts0=[TEMPERATURE],
+        f=0.7 * abs(Q / M) / (2 * np.pi),
+        kz=kz,
+        kx=KX_B1 * np.sqrt(b_target),
+        lmx=lmx,
+    )
+    reference = _reference_tensor(b_target=b_target, lmx=lmx, kz=kz)
+    assert _tensor_error(result["K"], reference) <= TOLERANCE
+
+
+def test_truncation_tail_survives_and_is_not_smoothed_away():
+    """b=8, N=30, kz=1e-7 is genuinely ~7.7e4 from this finite N; only rounding was broken."""
+    result = evaluate_kinetic_dispersion_sum(
+        B0=B0,
+        qs=[Q],
+        ms=[M],
+        ns0=[DENSITY],
+        Ts0=[TEMPERATURE],
+        f=0.7 * abs(Q / M) / (2 * np.pi),
+        kz=1e-7,
+        kx=KX_B1 * np.sqrt(8),
+        lmx=30,
+    )
+    reference = _reference_tensor(b_target=8, lmx=30, kz=1e-7)
+    assert _tensor_error(result["K"], reference) <= TOLERANCE
+    assert abs(result["K"][2, 2].real - 77445.395838) < 1.0
+    # The N=60 value is a different truncation, not a correction of this one.
+    assert abs(result["K"][2, 2].real - 3.0290608) > 1.0
+
+
+def test_kz_sign_only_flips_the_cross_components():
+    common = dict(
+        B0=B0,
+        qs=[Q],
+        ms=[M],
+        ns0=[DENSITY],
+        Ts0=[TEMPERATURE],
+        f=0.7 * abs(Q / M) / (2 * np.pi),
+        kx=KX_B1,
+        lmx=30,
+    )
+    positive = evaluate_kinetic_dispersion_sum(kz=1e-7, **common)["K"]
+    negative = evaluate_kinetic_dispersion_sum(kz=-1e-7, **common)["K"]
+    for row, column in ((0, 2), (1, 2), (2, 0), (2, 1)):
+        assert negative[row, column] == pytest.approx(-positive[row, column], abs=1e-18)
+    for row, column in ((0, 0), (0, 1), (1, 0), (1, 1), (2, 2)):
+        assert negative[row, column] == pytest.approx(positive[row, column], rel=1e-15)
+
+
+def test_zero_kz_is_still_rejected():
+    with pytest.raises(ValueError, match="kz"):
+        evaluate_kinetic_dispersion_sum(
+            B0=B0,
+            qs=[Q],
+            ms=[M],
+            ns0=[DENSITY],
+            Ts0=[TEMPERATURE],
+            f=0.7 * abs(Q / M) / (2 * np.pi),
+            kz=0.0,
+            kx=KX_B1,
+        )
