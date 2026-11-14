@@ -1,6 +1,6 @@
 """Issue #203: the truncated harmonic sum must be accurate as ``kz -> 0`` without a clamp.
 
-The reference below is the *same* finite-N expression evaluated in 80-digit arithmetic with the
+The reference below is the *same* finite-N expression evaluated in 90-digit arithmetic with the
 run's scales derived from the public inputs only (``B0``, ``qs``, ``ms``, ``ns0``, ``Ts0``, ``f``,
 ``kx``, ``kz``). It never reads the implementation's returned scales or tensor, so a scale or
 normalisation error in the implementation cannot hide in the reference. Nothing here compares
@@ -35,7 +35,7 @@ TOLERANCE = 2e-12
 
 
 def _plasma_z(zeta):
-    """Faddeeva Z at 80 digits from its erfc definition; mpmath handles every magnitude."""
+    """Faddeeva Z from its erfc definition at the caller's working precision."""
     zeta = mp.mpf(zeta)
     return 1j * mp.sqrt(mp.pi) * mp.exp(-zeta * zeta) * mp.erfc(-1j * zeta)
 
@@ -117,6 +117,9 @@ def _tensor_error(actual, reference):
         (1, 30, 1e3),
         (8, 5, 1e3),
         (8, 30, 10.0),
+        (8, 60, 1e-7),
+        (8, 60, -1e-7),
+        (40, 60, 1e-7),
     ],
 )
 def test_tensor_matches_the_independent_high_precision_reference(b_target, lmx, kz):
@@ -189,7 +192,7 @@ def test_zero_kz_is_still_rejected():
 
 
 def _reference_a(zeta):
-    """``A(zeta) = 1 + zeta*Z(zeta)`` at 80 digits, from the ``erfc`` definition of ``Z``."""
+    """``A(zeta) = 1 + zeta*Z(zeta)`` at 90 digits, from the ``erfc`` definition of ``Z``."""
     with mp.workdps(90):
         return complex(1 + mp.mpf(zeta) * _plasma_z(zeta))
 
@@ -205,19 +208,15 @@ THRESHOLD = kinetic_dispersion_sum_n._A_SERIES_THRESHOLD
     "zeta",
     [THRESHOLD - 0.1, THRESHOLD, THRESHOLD + 0.1, 1.5 * THRESHOLD, 2 * THRESHOLD, 8.0],
 )
-def test_both_a_branches_are_accurate_at_and_past_the_switch_point(zeta):
+@pytest.mark.parametrize("sign", [-1, 1])
+def test_both_a_branches_are_accurate_at_and_past_the_switch_point(zeta, sign):
     """The near-zero-``kz`` fix mostly runs where ``|zeta|`` is large, so validate both branches.
 
-    ``_a_series`` (``hyp1f1``) is the side that could have gone wrong: at ``zeta^2 ~ 1e3`` it has
-    to cancel alternating terms of size ~1 down to ``1/(2 zeta^2) ~ 5e-4``. Measured on
-    2026-11-14, both branches sit at ~2.2e-16 relative error at every one of the three seam points
-    ``zeta = 31.9 / 32.0 / 32.1``, so the switch is not a step. ``zeta = 8`` is the lowest magnitude
-    at which the asymptotic series is still at binary64 resolution (it degrades to 6.4e-13 at
-    ``zeta = 6`` and 9.5e-5 at ``zeta = 4``), which is why the seam is not lowered.
-
-    Each branch is asserted against the independent 90-digit value *and* against the other branch,
-    so a dispatch choice cannot hide a bad formula on either side of the seam.
+    Each representation is checked against the independent 90-digit value for both signs.
+    Comparing the representations as well cannot hide a bad formula behind the dispatch choice.
+    No assumption about the internal arithmetic of SciPy's hyp1f1 backend is needed.
     """
+    zeta *= sign
     reference = _reference_a(zeta)
     series = complex(_a_series(np.asarray([zeta]))[0])
     asymptotic = complex(_a_asymptotic(np.asarray([zeta]))[0])
@@ -254,10 +253,10 @@ def _large_argument_tail(nmax, b, terms=4):
     return 1.0 - total
 
 
-def test_truncation_tail_is_complete_when_the_peak_lies_beyond_the_term_budget():
+def test_large_tail_uses_a_well_conditioned_complement():
     """Codex P2 on #215: a budgeted positive sum must not be returned as if it had converged.
 
-    ``Gamma_n(1e8)`` peaks near ``n = 1e8``, so terms ``n = 6..2005`` are all about
+    ``Gamma_n(1e8)`` has width of order sqrt(b), so terms ``n = 6..2005`` are all about
     ``(2 pi b)^-1/2`` and their sum (0.1585107) is not the truncation tail (0.9995612). The tail is
     O(1) here, so the complement identity is exact and cannot cancel.
     """
@@ -280,8 +279,8 @@ def test_truncation_tail_is_complete_when_the_peak_lies_beyond_the_term_budget()
 
 
 @pytest.mark.parametrize("b", [100.0, 1000.0, 1900.0, 2005.0, 3000.0, 1e4])
-def test_both_tail_representations_agree_across_the_term_budget_edge(b):
-    """The branch that wins may change with ``b``; the value must not step at the switch."""
+def test_large_tails_agree_with_the_well_conditioned_complement(b):
+    """These large-tail cases test conditioning, not two independent tail algorithms."""
     lmx = 5
     positive = _gamma_positive_tail(b, lmx + 1)
     complement = 1.0 - _gamma_partial_sum(b, lmx)
@@ -289,7 +288,7 @@ def test_both_tail_representations_agree_across_the_term_budget_edge(b):
 
 
 def test_tail_matches_high_precision_positive_summation_at_moderate_b():
-    """``b=60`` keeps the peak inside the budget, so this exercises the positive-sum branch."""
+    """``b=60,N=5`` has head > 1/2, so this exercises the positive-sum branch."""
     b, lmx = 60.0, 5
     with mp.workdps(90):
         excess = mp.mpf(0)
@@ -300,3 +299,102 @@ def test_tail_matches_high_precision_positive_summation_at_moderate_b():
                 break
         reference = float(2 * excess)
     assert _rel(_gamma_positive_tail(b, lmx + 1), reference) <= TOLERANCE
+
+
+def _independent_tiny_tail(dps):
+    """DLMF 10.35.1 coefficient contour, independent of the production Bessel backend.
+
+    Shift the Fourier coefficient contour by -i*t, sum its geometric tail, and set
+    theta=u/sqrt(b*cosh(t)). This avoids subtracting a nearly unit finite head.
+    """
+    with mp.workdps(dps):
+        b, first = mp.mpf(4000000), mp.mpf(20001)
+        tilt = mp.asinh(first / b)
+        curvature = b * mp.cosh(tilt)
+        scale = mp.sqrt(curvature)
+        leading = 2 * mp.exp(b * (mp.cosh(tilt) - 1) - first * tilt) / (mp.pi * scale)
+
+        def integrand(u):
+            theta = u / scale
+            attenuation = mp.exp(-2 * curvature * mp.sin(theta / 2) ** 2)
+            phase = first * (mp.sin(theta) - theta)
+            return attenuation * mp.re(mp.exp(1j * phase) / (-mp.expm1(-tilt - 1j * theta)))
+
+        value = leading * mp.quad(integrand, [0, 1, 2, 4, 8, 12, 20, 30])
+        # Beyond u=30 the attenuation decreases up to pi*scale, and the geometric
+        # denominator has modulus >= 1-exp(-tilt). Bound that whole omitted arc.
+        remainder = (
+            leading
+            * (mp.pi * scale - 30)
+            * mp.exp(-2 * curvature * mp.sin(30 / (2 * scale)) ** 2)
+            / (-mp.expm1(-tilt))
+        )
+        assert remainder < mp.mpf("1e-150") * value
+        return value
+
+
+def test_tiny_positive_tail_does_not_fall_back_to_cancelling_complement():
+    """DLMF 10.35.1 coefficient contour and Miller/90/120-digit checks agree.
+
+    For b=4e6,N=20000, 2000 positive terms fail the old convergence test,
+    but that does not make subtraction from one safe. The actual tail is
+    smaller than 4e-22; the cancelling complement returns about 9.77e-15.
+    """
+    reference = 1.5202816368677509046184770723329128489563610079733588e-23
+    low, high = _independent_tiny_tail(90), _independent_tiny_tail(120)
+    with mp.workdps(130):
+        assert abs(low - high) / high < mp.mpf("1e-70")
+        assert _rel(reference, float(high)) <= TOLERANCE
+    assert _rel(_gamma_positive_tail(4e6, 20001), reference) <= TOLERANCE
+
+
+def test_tail_budget_exhaustion_cannot_return_an_unbounded_partial_sum():
+    # A budget is a cost bound. It cannot certify either representation.
+    with pytest.raises(ValueError, match="tail"):
+        _gamma_positive_tail(4e6, 20001, limit=1)
+
+
+def test_unrepresentable_positive_tail_is_rejected_instead_of_returned_as_zero():
+    with pytest.raises(ValueError, match="tail"):
+        _gamma_positive_tail(1.0, 501)
+
+
+@pytest.mark.parametrize("sign", [-1, 1])
+@pytest.mark.parametrize("direction", [-np.inf, np.inf])
+def test_a_at_adjacent_floats_on_both_dispatch_seams(sign, direction):
+    zeta = np.nextafter(sign * THRESHOLD, direction)
+    assert _rel(complex(_a_function(np.asarray(zeta))), _reference_a(zeta)) <= TOLERANCE
+
+
+@pytest.mark.parametrize("sign", [-1, 1])
+def test_a_keeps_the_imaginary_part_near_the_zero_of_its_real_part(sign):
+    zeta = sign * 0.9241388730045918
+    reference = _reference_a(zeta)
+    actual = complex(_a_function(np.asarray(zeta)))
+    assert abs(actual.real - reference.real) <= TOLERANCE
+    assert _rel(actual.imag, reference.imag) <= TOLERANCE
+    assert np.signbit(actual.imag) == (sign < 0)
+
+
+@pytest.mark.parametrize("kz", [-1e-12, 1e-12])
+def test_large_b_tiny_tail_remains_accurate_through_the_public_tensor(kz):
+    """Original finite-N Kzz from public inputs, independently recomputed at 90 and 120 digits.
+
+    The reference uses mpmath I_0 and downward Miller ratios, then the original finite harmonic
+    expression. All |zeta_n| exceed 1e15: the omitted 1/zeta^5 term in Z changes Kzz by <1e-27.
+    It agrees with the independent coefficient-contour tail calculation; no output scale is read.
+    The previous complement fallback gave Kzz about 1.12e19 instead of 1.67e10.
+    """
+    result = evaluate_kinetic_dispersion_sum(
+        B0=B0,
+        qs=[Q],
+        ms=[M],
+        ns0=[DENSITY],
+        Ts0=[TEMPERATURE],
+        f=0.7 * abs(Q / M) / (2 * np.pi),
+        kz=kz,
+        kx=KX_B1 * 2000,
+        lmx=20000,
+    )
+    reference = 16711893312.470150912933564567938666119593682469824351
+    assert _rel(result["K"][2, 2], reference) <= TOLERANCE

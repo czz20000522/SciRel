@@ -1,5 +1,7 @@
 """Assemble the finite-harmonic Maxwellian kinetic dielectric tensor with NumPy species and harmonic arrays."""
 
+import math
+
 import numpy as np
 from scipy.special import hyp1f1
 
@@ -12,11 +14,8 @@ _EPSILON0 = 8.854187817e-12
 _KB = 1.38064852e-23
 
 
-# ``hyp1f1`` stays at binary64 resolution out to ``|zeta| = 32`` (measured: relative error 2.2e-16
-# at ``zeta = 32``, i.e. ``zeta^2 = 1024``, where the alternating series must cancel O(1) terms down
-# to ``1/(2 zeta^2) ~ 5e-4``), while the asymptotic series only reaches that accuracy for
-# ``|zeta| >= 8`` (measured: 6.4e-13 at 6, 9.5e-5 at 4). The seam therefore sits on the side with
-# both branches deeply converged; moving it lower would buy nothing and shrink the margin.
+# Both representations are checked against independent high-precision values around +/-32.
+# Those bounded checks support this dispatch threshold, not a global special-function error bound.
 _A_SERIES_THRESHOLD = 32.0
 
 
@@ -34,10 +33,11 @@ def _a_series(zeta):
 def _a_asymptotic(zeta):
     """Return ``A(zeta)`` from its asymptotic series ``-1/(2 zeta^2) - 3/(4 zeta^4) - ...``.
 
-    Used past ``_A_SERIES_THRESHOLD``, where the ``exp(-zeta^2)`` term is far below binary64
-    resolution. The series is alternating and truncated at the smallest kept term, so its error is
-    bounded by that term; the truncation is validated against the ``hyp1f1`` branch by
-    ``tests/kinetic/test_kinetic_dispersion_sum_stability.py``.
+    For real zeta all algebraic terms have the same negative sign. At most 24 terms are kept;
+    the loop stops earlier when the latest term is at most 1e-18 of the current sum. This is not
+    a rigorous remainder bound or a search for the least term. Accuracy evidence is limited to
+    the independent high-precision comparisons in the stability tests. Past the dispatch
+    threshold the omitted exponential imaginary part is below binary64 range.
     """
     zeta = np.asarray(zeta, dtype=float)
     inv_square = 1.0 / (zeta * zeta)
@@ -65,40 +65,57 @@ def _a_function(zeta):
 
 def _gamma_partial_sum(b, nmax):
     """Return ``sum_{n=-nmax..nmax} Gamma_n(b)`` from strictly positive terms."""
-    total = float(np.real(evaluate_bessel_gamma(0, b)["Gamma_n"]))
-    for n in range(1, nmax + 1):
-        total += 2.0 * float(np.real(evaluate_bessel_gamma(n, b)["Gamma_n"]))
-    return total
+    pieces = []
+    for first in range(0, nmax + 1, 256):
+        orders = np.arange(first, min(first + 256, nmax + 1))
+        values = np.real(evaluate_bessel_gamma(orders, b)["Gamma_n"])
+        if np.any(values < 0) or not np.all(np.isfinite(values)):
+            raise ValueError("harmonic tail terms must be finite and nonnegative")
+        weights = np.where(orders == 0, 1.0, 2.0)
+        pieces.append(math.fsum(weights * values))
+    return math.fsum(pieces)
 
 
-def _gamma_positive_tail(b, start, limit=2000):
+def _gamma_positive_tail(b, start, limit=20000):
     """Return ``2*sum_{n>N} Gamma_n(b)`` for ``N = start - 1``.
 
-    ``Gamma_n(b) = exp(-b) I_n(b)`` peaks at ``n ~ b``, which splits the two regimes:
+    Fixed positive b has its largest Gamma term at n=0. Use the complement only when the
+    computed finite head is at most 1/2; this bounds subtraction conditioning, not SciPy's
+    term errors. Otherwise sum positive terms with math.fsum and an independent remainder bound.
 
-    * peak inside the term budget -- sum the positive tail directly. This is the only safe form
-      when the tail is small: forming it as ``1 - sum(finite)`` subtracts two O(1) numbers, and
-      for tiny ``kz`` that rounding is multiplied by ``1/kz^2`` (issue #203);
-    * peak beyond the budget (large ``b``) -- the positive sum cannot converge, because
-      ``Gamma_n`` stays near ``(2 pi b)^-1/2`` throughout the budget, and the tail is then O(1).
-      There the complement ``1 - sum_{|n|<=N} Gamma_n`` is exact and accurate: its subtrahend is
-      small, so nothing cancels. Returning the budgeted partial sum as if converged under-states
-      the correction (``b=1e8, lmx=5``: 0.15851 instead of 0.99956, Codex P2 on #215).
+    DLMF 10.35.1 gives sum_j Gamma_j*exp(t*j)=exp[b*(cosh(t)-1)]. Positivity implies that the
+    omitted one-sided tail starting at m is at most exp[b*(cosh(t)-1)-m*t]. Choose
+    t=asinh(m/b), and compare the bound in log space to 1e-18 times the accumulated one-sided
+    sum. This bounds omitted exact terms; it does not bound Bessel-backend or rounding errors.
+    The finite term budget is only a cost bound: exhaustion, underflow or an unusable bound
+    raises ValueError rather than returning zero, a partial sum or a cancelling complement.
     """
     start = max(start, 1)
-    total = 0.0
-    converged = False
-    for n in range(start, start + limit):
-        gamma = float(np.real(evaluate_bessel_gamma(n, b)["Gamma_n"]))
-        if not np.isfinite(gamma):
-            break
-        total += gamma
-        if gamma <= 1e-18 * total:
-            converged = True
-            break
-    if converged:
-        return 2.0 * total
-    return 1.0 - _gamma_partial_sum(b, start - 1)
+    if not np.isfinite(b) or b <= 0:
+        raise ValueError("harmonic tail argument must be finite and positive")
+    head = _gamma_partial_sum(b, start - 1)
+    if 0.0 <= head <= 0.5:
+        return 1.0 - head
+    pieces = []
+    for first in range(start, start + limit, 256):
+        stop = min(first + 256, start + limit)
+        values = np.real(evaluate_bessel_gamma(np.arange(first, stop), b)["Gamma_n"])
+        if np.any(values < 0) or not np.all(np.isfinite(values)):
+            raise ValueError("harmonic tail terms must be finite and nonnegative")
+        pieces.append(math.fsum(values))
+        total = math.fsum(pieces)
+        if total < np.finfo(float).tiny:
+            raise ValueError("positive harmonic tail is not representable with reliable precision")
+        m = float(stop)
+        radius = math.hypot(m, b)
+        ratio = m / b
+        tilt = (
+            math.asinh(ratio) if math.isfinite(ratio) else math.log(m) + math.log(2) - math.log(b)
+        )
+        log_bound = m * ((m / radius) / (1.0 + b / radius) - tilt)
+        if math.isfinite(log_bound) and log_bound <= math.log(total) + math.log(1e-18):
+            return 2.0 * total
+    raise ValueError("harmonic tail remainder could not be bounded within the term budget")
 
 
 def _finite_scalar(name, value, *, nonzero=False):
@@ -206,7 +223,10 @@ def evaluate_kinetic_dispersion_sum(*, B0, qs, ms, ns0, Ts0, f, kz, kx, lmx=5):
         empty/mismatched/nonfinite species vectors, zero charge, nonpositive mass/density/temperature,
         or lmx that is not a non-negative integer. Raises ValueError if derived scales become nonfinite
         or zero where positivity is required, or if special-function contributions, tensors or
-        determinant become nonfinite or unrepresentable; other unexpected NumPy/SciPy errors propagate.
+        determinant become nonfinite or unrepresentable. Raises ValueError if a positive harmonic
+        tail is below reliable float64 range or its omitted remainder cannot be bounded within
+        the evaluation budget; no partial tail or tensor is returned. Other unexpected NumPy/SciPy
+        errors propagate.
 
     See Also
     --------
@@ -226,15 +246,15 @@ def evaluate_kinetic_dispersion_sum(*, B0, qs, ms, ns0, Ts0, f, kz, kx, lmx=5):
     whether the chosen lmx gives sufficient harmonic convergence for its case. A determinant value is
     not by itself a selected physical mode or a root.
 
-    The truncated sum is evaluated so that rounding does not grow as ``kz -> 0``: the O(zeta^2)
-    terms that cancel the Maxwell curl contribution are folded through
+    The truncated sum avoids subtracting the large cancelling terms in the parallel response through
     ``A(zeta) = 1 + zeta*Z(zeta) = hyp1f1(1, 1/2, -zeta^2) + i*sqrt(pi)*zeta*exp(-zeta^2)``, the
     ``xz``/``yz`` sums use the exact symmetric-truncation identities, and the truncation tail is
-    formed as the positive sum ``2*sum_{n>N}Gamma_n`` where that sum converges, and through the
-    exact complement ``1 - sum_{|n|<=N}Gamma_n`` when the peak of ``Gamma_n`` lies beyond the term
-    budget (large ``b``; see ``_gamma_positive_tail``). The same finite ``N`` model is kept: an
-    insufficient ``N`` still returns a large tensor (that is truncation, not rounding) and no
-    clamp or algorithm switch is applied.
+    formed through ``1 - sum_{|n|<=N}Gamma_n`` only when the finite head is at most one half.
+    Otherwise positive terms are summed with a generating-function bound on the omitted tail.
+    An insufficient evaluation budget or unrepresentable positive tail raises ValueError. The
+    budget does not change the caller's finite ``N``. The truncation tail still scales with
+    ``z0**2``: avoiding catastrophic cancellation is not a global bound on rounding errors.
+    Insufficient ``N`` can return a large tensor; this is truncation, not harmonic convergence.
 
     Examples
     --------
@@ -275,6 +295,7 @@ def evaluate_kinetic_dispersion_sum(*, B0, qs, ms, ns0, Ts0, f, kz, kx, lmx=5):
     if (
         not all(np.all(np.isfinite(values)) for values in (omega, vts, wcs, wps2, nx, nz, a, b))
         or np.any(a == 0)
+        or np.any(b <= 0)
         or np.any(wps2 <= 0)
     ):
         raise ValueError("derived kinetic scales must be finite and nonzero where divided")
