@@ -1,10 +1,13 @@
-"""Issue #203: the truncated harmonic sum must be accurate as ``kz -> 0`` without a clamp.
+"""Issues #203/#232: finite-N accuracy at small kz and small z, without a kz clamp.
 
 The reference below is the *same* finite-N expression evaluated in 90-digit arithmetic with the
 run's scales derived from the public inputs only (``B0``, ``qs``, ``ms``, ``ns0``, ``Ts0``, ``f``,
 ``kx``, ``kz``). It never reads the implementation's returned scales or tensor, so a scale or
 normalisation error in the implementation cannot hide in the reference. Nothing here compares
 determinants: the whole tensor is compared component by component, as issue #203 requires.
+
+The small-z follow-up derives independent original K/D from arbitrary public inputs
+at 140/180 digits and keeps those references unrounded through the comparisons.
 """
 
 import mpmath as mp
@@ -105,6 +108,192 @@ def _tensor_error(actual, reference):
             scale = max(1.0, abs(reference[i, j]))
             worst = max(worst, abs(actual[i, j] - reference[i, j]) / scale)
     return worst
+
+
+def _small_z_case(*, order=15):
+    """Issue #232's public real-kx counterexample, also valid for sum-n."""
+    return dict(
+        B0=1.0,
+        qs=(Q,),
+        ms=(M,),
+        ns0=(3.1e18,),
+        Ts0=(8123283.9767213175,),
+        f=0.02799243954368732,
+        kz=112083871.11918993,
+        kx=-16312.089086095832,
+        lmx=order,
+    )
+
+
+def _original_tensors_unrounded(arguments, digits=180):
+    """Original finite-N K/D for arbitrary public inputs; no A/tail or production scales.
+
+    Recompute every scale and each original tensor block with Bessel I and the
+    erfc definition of Z. Keep mpmath components on return, including for the
+    140/180-digit self-check. In particular kz is never clamped here.
+    """
+    with mp.workdps(digits):
+        omega = 2 * mp.pi * mp.mpf(arguments["f"])
+        kz, kx = mp.mpf(arguments["kz"]), mp.mpf(arguments["kx"])
+        tensor = mp.eye(3)
+        order = arguments["lmx"]
+        for charge, mass, density, temperature in zip(
+            arguments["qs"], arguments["ms"], arguments["ns0"], arguments["Ts0"], strict=True
+        ):
+            charge, mass, density, temperature = map(mp.mpf, (charge, mass, density, temperature))
+            thermal = mp.sqrt(2 * mp.mpf(KB) * temperature / mass)
+            cyclotron = charge * mp.mpf(arguments["B0"]) / mass
+            alpha = density * charge**2 / (mass * mp.mpf(EPSILON0) * omega**2)
+            a = kx * mp.sqrt(mp.mpf(KB) * temperature / mass) / cyclotron
+            b = a**2
+            z0 = omega / (abs(kz) * thermal)
+            for n in range(-order, order + 1):
+                g = _gamma(n, b)
+                gp = (_gamma(n - 1, b) + _gamma(n + 1, b)) / 2 - g
+                z = (omega - n * cyclotron) / (abs(kz) * thermal)
+                xx, xy = n**2 * g / b, 1j * n * gp
+                xz, yz = mp.sqrt(2) * z * n * g / a, -1j * mp.sqrt(2) * z * a * gp
+                block = mp.matrix(
+                    [[xx, xy, xz], [-xy, xx - 2 * b * gp, yz], [xz, -yz, 2 * z**2 * g]]
+                )
+                tensor += alpha * z0 * _plasma_z(z) * block
+            tensor[2, 2] += 2 * alpha * z0**2
+        if kz < 0:
+            for row, column in ((0, 2), (1, 2), (2, 0), (2, 1)):
+                tensor[row, column] = -tensor[row, column]
+        nx, nz = mp.mpf(299792458) * kx / omega, mp.mpf(299792458) * kz / omega
+        dispersion = tensor.copy()
+        dispersion[0, 0] -= nz**2
+        dispersion[1, 1] -= nx**2 + nz**2
+        dispersion[2, 2] -= nx**2
+        dispersion[0, 2] += nx * nz
+        dispersion[2, 0] += nx * nz
+        return tuple(
+            tuple(tuple(matrix[row, column] for column in range(3)) for row in range(3))
+            for matrix in (tensor, dispersion)
+        )
+
+
+def _unrounded_error(actual, reference):
+    with mp.workdps(180):
+        return max(
+            abs(actual[row][column] - reference[row][column])
+            / max(mp.mpf(1), abs(reference[row][column]))
+            for row in range(3)
+            for column in range(3)
+        )
+
+
+def _assert_original_tensor(actual, reference, label):
+    with mp.workdps(180):
+        promoted = tuple(
+            tuple(mp.mpc(float(value.real), float(value.imag)) for value in row) for row in actual
+        )
+        error = _unrounded_error(promoted, reference)
+        assert error <= mp.mpf("2e-12"), f"{label}: scaled complex error={mp.nstr(error, 22)}"
+
+
+@pytest.mark.parametrize("key,index", [("K", 0), ("D", 1)])
+def test_small_z_issue232_matches_original_finite_sum(key, index):
+    arguments = _small_z_case()
+    reference = _original_tensors_unrounded(arguments)[index]
+    result = evaluate_kinetic_dispersion_sum(**arguments)
+    _assert_original_tensor(result[key], reference, key)
+
+
+def test_small_z_issue232_reference_140_180_digits_agree_before_rounding():
+    arguments = _small_z_case()
+    low = _original_tensors_unrounded(arguments, digits=140)
+    high = _original_tensors_unrounded(arguments, digits=180)
+    with mp.workdps(180):
+        for key, lower, higher in zip(("K", "D"), low, high, strict=True):
+            error = _unrounded_error(lower, higher)
+            assert error < mp.mpf("1e-45"), f"{key}: unrounded reference error={error}"
+
+
+@pytest.mark.parametrize("frequency_sign", (-1, 1))
+@pytest.mark.parametrize("kz_sign", (-1, 1))
+def test_small_z_large_kz_xy_matches_original_sum(frequency_sign, kz_sign):
+    arguments = _small_z_case()
+    arguments["f"] *= frequency_sign
+    arguments["kz"] = kz_sign * 1681258066.787961
+    reference = _original_tensors_unrounded(arguments)
+    result = evaluate_kinetic_dispersion_sum(**arguments)
+    for key, expected in zip(("K", "D"), reference, strict=True):
+        _assert_original_tensor(result[key], expected, key)
+
+
+def _small_z_switch_case(frequency_sign, kz_sign, target):
+    arguments = _small_z_case()
+    arguments["f"] *= frequency_sign
+    thermal = np.sqrt(2.0 * KB * arguments["Ts0"][0] / M)
+    maximum_numerator = abs(2.0 * np.pi * arguments["f"]) + arguments["lmx"] * abs(Q / M)
+    arguments["kz"] = kz_sign * maximum_numerator / (thermal * target)
+    return arguments
+
+
+def _unit_small_z_case(kz, *, pair=False, reverse=False):
+    """Unit thermal speed: the max-|z_n|=1 endpoint is kz=4*pi for N=1."""
+    arguments = dict(
+        B0=2.0 * np.pi,
+        qs=(-1.0,),
+        ms=(1.0,),
+        ns0=(EPSILON0,),
+        Ts0=(1.0 / (2.0 * KB),),
+        f=1.0,
+        kz=float(kz),
+        kx=-2.0 * np.pi * np.sqrt(2.0),
+        lmx=1,
+    )
+    if pair:
+        # The two species select different responses (max |z_n| = 0.5 and 5).
+        arguments.update(
+            qs=(-1.0, 1.0),
+            ms=(1.0, 1.0),
+            ns0=(EPSILON0, EPSILON0),
+            Ts0=(1.0 / (2.0 * KB), 1.0 / (200.0 * KB)),
+        )
+        if reverse:
+            for name in ("qs", "ms", "ns0", "Ts0"):
+                arguments[name] = arguments[name][::-1]
+    return arguments
+
+
+_SMALL_Z_REPRESENTATION_CASES = (
+    [
+        pytest.param(
+            _small_z_switch_case(frequency_sign, kz_sign, target),
+            id=f"switch-f{frequency_sign:+d}-kz{kz_sign:+d}-{name}",
+        )
+        for frequency_sign in (-1, 1)
+        for kz_sign in (-1, 1)
+        for name, target in (("below", 1.0 - 1e-8), ("center", 1.0), ("above", 1.0 + 1e-8))
+    ]
+    + [
+        pytest.param(_unit_small_z_case(kz), id=f"switch-adjacent-{name}")
+        for name, kz in (
+            ("outside", np.nextafter(4.0 * np.pi, 0.0)),
+            ("endpoint", 4.0 * np.pi),
+            ("inside", np.nextafter(4.0 * np.pi, np.inf)),
+        )
+    ]
+    + [pytest.param(_small_z_case(order=order), id=f"finite-N{order}") for order in (0, 1, 5)]
+    + [
+        pytest.param(
+            _unit_small_z_case(-8.0 * np.pi, pair=True, reverse=reverse),
+            id=f"mixed-response-species-{reverse}",
+        )
+        for reverse in (False, True)
+    ]
+)
+
+
+@pytest.mark.parametrize("arguments", _SMALL_Z_REPRESENTATION_CASES)
+def test_small_z_representation_matches_original_full_tensors(arguments):
+    reference = _original_tensors_unrounded(arguments)
+    result = evaluate_kinetic_dispersion_sum(**arguments)
+    for key, expected in zip(("K", "D"), reference, strict=True):
+        _assert_original_tensor(result[key], expected, key)
 
 
 @pytest.mark.parametrize(

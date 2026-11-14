@@ -246,7 +246,11 @@ def evaluate_kinetic_dispersion_sum(*, B0, qs, ms, ns0, Ts0, f, kz, kx, lmx=5):
     whether the chosen lmx gives sufficient harmonic convergence for its case. A determinant value is
     not by itself a selected physical mode or a root.
 
-    The truncated sum avoids subtracting the large cancelling terms in the parallel response through
+    For each species with (abs(omega)+lmx*abs(wcs))/(abs(kz)*vts)<=1, the mixed/parallel
+    components use z_n*Z(z_n) directly with the existing analytic Z backend, retaining the
+    original +2*alpha*z0**2 in zz. This keeps a small response from being lost by subtracting
+    the constant part of A after summation. Outside that regime the truncated sum avoids
+    subtracting the large cancelling terms in the parallel response through
     ``A(zeta) = 1 + zeta*Z(zeta) = hyp1f1(1, 1/2, -zeta^2) + i*sqrt(pi)*zeta*exp(-zeta^2)``, the
     ``xz``/``yz`` sums use the exact symmetric-truncation identities, and the truncation tail is
     formed through ``1 - sum_{|n|<=N}Gamma_n`` only when the finite head is at most one half.
@@ -304,7 +308,10 @@ def evaluate_kinetic_dispersion_sum(*, B0, qs, ms, ns0, Ts0, f, kz, kx, lmx=5):
     for s in range(qs.size):
         z0 = omega / (response_kz * vts[s])
         alpha = wps2[s] / omega**2
-        # Same finite symmetric harmonic sum, rewritten through A(zeta)=1+zeta*Z(zeta) so the
+        # For small arguments keep z*Z itself, rather than losing that small
+        # response by removing the O(1) part of A after summation (issue #232).
+        direct_response = (abs(omega) + lmx * abs(wcs[s])) / (response_kz * vts[s]) <= 1.0
+        # Otherwise the same finite sum is rewritten through A(zeta)=1+zeta*Z(zeta) so the
         # O(zeta^2) pieces that cancel the Maxwell curl term are never formed as differences of
         # O(zeta^2) floats (issue #203). Kxz/Kyz drop the exact zero of sum(n*Gamma_n) and pick up
         # the endpoint term of sum(Gamma_prime_n); Kzz keeps the truncation tail in the form that
@@ -317,13 +324,14 @@ def evaluate_kinetic_dispersion_sum(*, B0, qs, ms, ns0, Ts0, f, kz, kx, lmx=5):
             gamma = evaluate_bessel_gamma(n, b[s])
             g = complex(gamma["Gamma_n"])
             gp = complex(gamma["Gamma_prime_n"])
-            a_value = complex(_a_function(np.asarray(zn)))
-            sum_xz += n * g * a_value
-            sum_yz += gp * a_value
-            sum_zz += zn * g * a_value
+            z_value = complex(evaluate_plasma_dispersion(zn)["Z"])
+            response = zn * z_value if direct_response else complex(_a_function(np.asarray(zn)))
+            sum_xz += n * g * response
+            sum_yz += gp * response
+            sum_zz += zn * g * response
             # xx/xy/yy stay as before: their O(1) prefactors are not amplified by z0^2, and
             # alpha*z0*Z is evaluated the way the relation has always evaluated it.
-            term = alpha * z0 * complex(evaluate_plasma_dispersion(zn)["Z"])
+            term = alpha * z0 * z_value
             xx = n**2 * g / b[s]
             xy = 1j * n * gp
             yy = xx - 2.0 * b[s] * gp
@@ -331,9 +339,14 @@ def evaluate_kinetic_dispersion_sum(*, B0, qs, ms, ns0, Ts0, f, kz, kx, lmx=5):
             k_tensor[0, 1] += term * xy
             k_tensor[1, 0] -= term * xy
             k_tensor[1, 1] += term * yy
-        tail = _gamma_positive_tail(b[s], lmx + 1)
-        edge = complex(evaluate_bessel_gamma(lmx + 1, b[s])["Gamma_n"]) - complex(
-            evaluate_bessel_gamma(lmx, b[s])["Gamma_n"]
+        # Direct z*Z needs no endpoint subtraction and retains the original
+        # +2*alpha*z0**2. The A branch keeps its finite-N endpoint and tail.
+        tail = 1.0 if direct_response else _gamma_positive_tail(b[s], lmx + 1)
+        edge = (
+            0.0
+            if direct_response
+            else complex(evaluate_bessel_gamma(lmx + 1, b[s])["Gamma_n"])
+            - complex(evaluate_bessel_gamma(lmx, b[s])["Gamma_n"])
         )
         k_tensor[0, 2] += np.sqrt(2.0) * alpha * z0 / a[s] * sum_xz
         k_tensor[2, 0] += np.sqrt(2.0) * alpha * z0 / a[s] * sum_xz
