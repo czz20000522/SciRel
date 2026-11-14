@@ -104,10 +104,13 @@ def evaluate_fluid_kinetic_dispersion_sum(*, B0, qs, ms, ns0, Ts0, f, kz, kx, lm
     Notes
     -----
     Sum harmonics -lmx..lmx using scaled Bessel Gamma terms. The xx/xy/yy components retain N=64
-    Weideman Z. The xz/yz/zz components use the analytic real-argument response A(z)=1+z*Z(z),
-    evaluated directly without subtracting two nearly equal terms. Symmetric finite-sum identities
-    retain the endpoint Gamma_(N+1)-Gamma_N and the tail 1-sum(Gamma_n); the tail is formed from
-    positive terms when its complement is ill-conditioned. D adds Maxwell curl terms to K and
+    Weideman Z. For each species with (abs(omega)+lmx*abs(wcs))/(abs(effective_kz)*vts)<=1,
+    xz/yz/zz use z*Z(z) directly with the same Weideman Z, retaining the original +2*alpha*z0**2
+    in zz. Otherwise they use the analytic real-argument response A(z)=1+z*Z(z), evaluated
+    directly without subtracting two nearly equal terms. In that branch symmetric finite-sum
+    identities retain the endpoint Gamma_(N+1)-Gamma_N and the tail 1-sum(Gamma_n); the tail is
+    formed from positive terms when its complement is ill-conditioned. effective_kz includes
+    the declared positive near-zero clamp. D adds Maxwell curl terms to K and
     determinant=det(D). Homogeneous magnetized Maxwellian plasma. Assumptions: Input units and
     normalization follow the declared ports; no physical parameters are inferred.
 
@@ -189,21 +192,26 @@ def evaluate_fluid_kinetic_dispersion_sum(*, B0, qs, ms, ns0, Ts0, f, kz, kx, lm
         alpha = wps2[s] / omega**2
         b = bs[s]
         a = a_s[s]
+        # When all |z_n|<=1, keep the small z*Z response before multiplying
+        # by large coefficients. Summing A near 1 then removing its constant
+        # would lose it. Large-z cancellation still needs the analytic A path.
+        direct_response = (abs(omega) + lmx * abs(wcs[s])) / (response_kz * vts[s]) <= 1.0
         sum_xz = 0.0j
         sum_yz = 0.0j
         sum_zz = 0.0j
         for l in range(-lmx, lmx + 1):
             zn = (omega - l * wcs[s]) / (response_kz * vts[s])
             gam, gamp = _gamma_and_prime(l, b)
-            a_value = complex(_a_function(np.asarray(zn)))
-            sum_xz += l * gam * a_value
-            sum_yz += gamp * a_value
-            sum_zz += zn * gam * a_value
+            zn_value = _zfun(zn)
+            response = zn * zn_value if direct_response else complex(_a_function(np.asarray(zn)))
+            sum_xz += l * gam * response
+            sum_yz += gamp * response
+            sum_zz += zn * gam * response
             x_xx = l**2 * gam / b
             x_xy = 1j * l * gamp
             x_yy = l**2 / b * gam - 2.0 * b * gamp
             # The ordinary components retain their fixed N=64 Z backend.
-            term = alpha * (z0 * _zfun(zn))
+            term = alpha * (z0 * zn_value)
             k_tensor[0, 0] += term * x_xx
             k_tensor[0, 1] += term * x_xy
             k_tensor[1, 0] += term * (-x_xy)
@@ -211,8 +219,14 @@ def evaluate_fluid_kinetic_dispersion_sum(*, B0, qs, ms, ns0, Ts0, f, kz, kx, lm
         # z*Z=A-1 with symmetric finite sums: sum(l*Gamma_l)=0,
         # sum(Gamma'_l)=Gamma_(N+1)-Gamma_N. Keep both finite endpoints;
         # the positive tail computes 1-sum(Gamma_l), without changing N.
-        tail = _gamma_positive_tail(b, lmx + 1)
-        edge = _gamma_and_prime(lmx + 1, b)[0] - _gamma_and_prime(lmx, b)[0]
+        # Direct z*Z needs no endpoint subtraction and retains the original
+        # +2*alpha*z0**2. Otherwise keep the finite-N endpoint and tail exactly.
+        tail = 1.0 if direct_response else _gamma_positive_tail(b, lmx + 1)
+        edge = (
+            0.0
+            if direct_response
+            else _gamma_and_prime(lmx + 1, b)[0] - _gamma_and_prime(lmx, b)[0]
+        )
         cross_x = np.sqrt(2.0) * alpha * z0 / a * sum_xz
         cross_y = -1j * np.sqrt(2.0) * alpha * z0 * a * (sum_yz - edge)
         k_tensor[0, 2] += cross_x

@@ -1,4 +1,4 @@
-"""Issue #226: bounded finite-N fluid tensor accuracy, including the positive kz clamp.
+"""Issues #226/#232: bounded finite-N fluid accuracy, including small z and the kz clamp.
 
 The reference evaluates the original finite harmonic expression in mpmath, not the
 production A-function rearrangement. Every scale comes from public inputs; Gamma is
@@ -89,6 +89,59 @@ def _pair_case():
         ns0=(DENSITY, DENSITY),
         Ts0=(TEMPERATURE, TEMPERATURE / 2.0),
     )
+    return arguments
+
+
+def _small_z_issue232_case():
+    """The real-kx regression reported in #232; keep the public inputs exact."""
+    return dict(
+        B0=1.0,
+        qs=(Q,),
+        ms=(M,),
+        ns0=(3.1e18,),
+        Ts0=(8123283.9767213175,),
+        f=0.02799243954368732,
+        kz=112083871.11918993,
+        kx=-16312.089086095832,
+        lmx=15,
+    )
+
+
+def _small_z_switch_case(frequency_sign, kz_sign, target):
+    """Place the finite-N maximum argument on either side of 1 from public inputs.
+
+    Offsets of 1e-8 straddle the switch despite binary64 scale rounding; the
+    center sample need not land on exactly 1. No production kernel is queried.
+    """
+    arguments = _small_z_issue232_case()
+    arguments["f"] *= frequency_sign
+    thermal = np.sqrt(2.0 * KB * arguments["Ts0"][0] / M)
+    maximum_numerator = abs(2.0 * np.pi * arguments["f"]) + arguments["lmx"] * abs(Q / M)
+    arguments["kz"] = kz_sign * maximum_numerator / (thermal * target)
+    return arguments
+
+
+def _mixed_response_pair_case(reverse):
+    """Two species with maximum |z_n|=0.5 and 5, hence different representations."""
+    arguments = _resonance_case(1.0)
+    arguments.update(
+        qs=(-1.0, 1.0),
+        ms=(1.0, 1.0),
+        ns0=(EPSILON0, EPSILON0),
+        Ts0=(1.0 / (2.0 * KB), 1.0 / (200.0 * KB)),
+        kz=-8.0 * np.pi,
+        kx=-arguments["kx"],
+    )
+    if reverse:
+        for name in ("qs", "ms", "ns0", "Ts0"):
+            arguments[name] = arguments[name][::-1]
+    return arguments
+
+
+def _adjacent_small_z_switch_case(kz):
+    """Unit thermal speed makes kz=4*pi the binary64 max-|z_n|=1 endpoint."""
+    arguments = _resonance_case(1.0)
+    arguments["kz"] = float(kz)
     return arguments
 
 
@@ -232,11 +285,37 @@ _RESONANCE_CASES = [
         ("above", np.nextafter(1.0, np.inf)),
     )
 ]
+_SMALL_Z_CASES = [
+    pytest.param(_case(b=8, order=order, kz=1e8), id=f"small-z-b8-N{order}") for order in (0, 1, 5)
+]
+_SMALL_Z_SWITCH_CASES = [
+    pytest.param(
+        _small_z_switch_case(frequency_sign, kz_sign, target),
+        id=f"small-z-switch-f{frequency_sign:+d}-kz{kz_sign:+d}-{name}",
+    )
+    for frequency_sign in (-1, 1)
+    for kz_sign in (-1, 1)
+    for name, target in (("below", 1.0 - 1e-8), ("center", 1.0), ("above", 1.0 + 1e-8))
+]
 _TENSOR_CASES = (
     _CORE_CASES
     + _CLAMP_CASES
     + _SWITCH_CASES
     + _RESONANCE_CASES
+    + _SMALL_Z_CASES
+    + _SMALL_Z_SWITCH_CASES
+    + [
+        pytest.param(_adjacent_small_z_switch_case(kz), id=f"small-z-switch-adjacent-{name}")
+        for name, kz in (
+            ("outside", np.nextafter(4.0 * np.pi, 0.0)),
+            ("endpoint", 4.0 * np.pi),
+            ("inside", np.nextafter(4.0 * np.pi, np.inf)),
+        )
+    ]
+    + [
+        pytest.param(_mixed_response_pair_case(reverse), id=f"mixed-response-pair-{reverse}")
+        for reverse in (False, True)
+    ]
     + [pytest.param(_pair_case(), id="two-species-negative-B-f-kx-kz")]
 )
 
@@ -255,11 +334,25 @@ def test_fluid_tensor_matches_independent_original_finite_sum(arguments):
         _assert_componentwise_close(observed, expected, tolerance="2e-12", label=key)
 
 
+@pytest.mark.parametrize("key", ("K", "D"))
+def test_fluid_small_z_issue232_matches_original_finite_sum(key):
+    arguments = _small_z_issue232_case()
+    reference = dict(zip(("K", "D"), _reference_tensors(arguments), strict=True))[key]
+    result = evaluate_fluid_kinetic_dispersion_sum(**arguments)
+    with mp.workdps(180):
+        observed = tuple(
+            tuple(mp.mpc(float(value.real), float(value.imag)) for value in row)
+            for row in result[key]
+        )
+    _assert_componentwise_close(observed, reference, tolerance="2e-12", label=key)
+
+
 @pytest.mark.parametrize(
     "arguments",
     [
         pytest.param(_case(kz=1e-12), id="worst-positive-clamp-b1-N30"),
         pytest.param(_case(b=8, kz=1e-7), id="large-finite-tail-b8-N30"),
+        pytest.param(_small_z_issue232_case(), id="small-z-issue232"),
     ],
 )
 def test_reference_140_180_digits_agree_before_binary64_rounding(arguments):
