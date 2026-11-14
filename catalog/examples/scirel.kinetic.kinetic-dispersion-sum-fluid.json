@@ -28,7 +28,7 @@
  "identity": {
   "relation": "SI species and wavepoint to dielectric and dispersion tensors and determinant",
   "direction": "SI species and wavepoint to dielectric and dispersion tensors and determinant",
-  "definition": "Sum harmonics -lmx..lmx using scaled Bessel Gamma terms. The xx/xy/yy components retain N=64 Weideman Z. The xz/yz/zz components use the analytic real-argument response A(z)=1+z*Z(z), evaluated directly without subtracting two nearly equal terms. Symmetric finite-sum identities retain the endpoint Gamma_(N+1)-Gamma_N and the tail 1-sum(Gamma_n); the tail is formed from positive terms when its complement is ill-conditioned. D adds Maxwell curl terms to K and determinant=det(D).",
+  "definition": "Sum harmonics -lmx..lmx using scaled Bessel Gamma terms. The xx/xy/yy components retain N=64 Weideman Z. For each species with (abs(omega)+lmx*abs(wcs))/(abs(effective_kz)*vts)<=1, xz/yz/zz use z*Z(z) directly with the same Weideman Z, retaining the original +2*alpha*z0**2 in zz. Otherwise they use the analytic real-argument response A(z)=1+z*Z(z), evaluated directly without subtracting two nearly equal terms. In that branch symmetric finite-sum identities retain the endpoint Gamma_(N+1)-Gamma_N and the tail 1-sum(Gamma_n); the tail is formed from positive terms when its complement is ill-conditioned. effective_kz includes the declared positive near-zero clamp. D adds Maxwell curl terms to K and determinant=det(D).",
   "model": "homogeneous magnetized Maxwellian plasma",
   "geometry": "homogeneous plasma",
   "coordinates": "wavevector in the x-z plane, with z parallel to B0",
@@ -270,19 +270,19 @@
  },
  "verification": {
   "scope": [
-   "Bounded full-complex K/D comparisons against an independent high-precision original finite sum, including near-zero kz, finite-cutoff endpoints, the real-response switch, resonance and signed multi-species cases; positive-tail failure boundaries."
+   "Bounded full-complex K/D comparisons against an independent high-precision original finite sum, including the small-z regression, neighbors of the per-species maximum-|z_n|=1 representation switch, small-z finite cutoffs, mixed-representation species in either order, near-zero kz, finite-cutoff endpoints, the analytic real-response switch, resonance and signed multi-species cases; positive-tail failure boundaries."
   ],
   "tests": [
    "tests/kinetic/test_kinetic_dispersion_sum_fluid_stability.py",
    "tests/kinetic/test_kinetic_signed_kz.py",
    "tests/kinetic/test_fluid_spectrum_r43_variants.py"
   ],
-  "evidence_ceiling": "Independent mpmath evaluation derives every scale from the public inputs and evaluates the original finite harmonic expression through Bessel I and the erfc definition of Z. Full complex K/D are compared componentwise at |error|/max(1,|reference|)<=2e-12 on the cases enumerated in test_kinetic_dispersion_sum_fluid_stability.py; selected 140/180-digit references are checked before binary64 rounding. This is bounded arithmetic evidence, not a continuous-domain error theorem, harmonic-convergence guarantee, determinant/root-accuracy claim or physical calibration. The ordinary xx/xy/yy components retain N=64 Weideman Z; the mixed/parallel components use directly evaluated analytic A and finite-sum identities. This numerical-method correction is not parity with the frozen N=64 rational expression.",
+  "evidence_ceiling": "Independent mpmath evaluation derives every scale from the public inputs and evaluates the original finite harmonic expression through Bessel I and the erfc definition of Z. Full complex K/D are compared componentwise at |error|/max(1,|reference|)<=2e-12 on the cases enumerated in test_kinetic_dispersion_sum_fluid_stability.py; selected 140/180-digit references, including the small-z regression, are checked before binary64 rounding. This is bounded arithmetic evidence, not a continuous-domain error theorem, harmonic-convergence guarantee, determinant/root-accuracy claim or physical calibration. The ordinary xx/xy/yy components retain N=64 Weideman Z; for each species the mixed/parallel components use direct z*Z with that backend when every |z_n|<=1, retaining the original zz constant, and analytic A with finite-sum identities otherwise. This numerical-method correction is not parity with the frozen N=64 rational expression.",
   "known_limitations": [
    "abs(kz)<1e-10 is replaced by +1e-10 before all resonant divisions",
-   "Only xx/xy/yy retain the fixed N=64 Weideman Z approximation; xz/yz/zz use a separate stable real-argument A evaluator. The sampled arithmetic checks do not establish a continuous-domain error bound.",
+   "The xx/xy/yy components retain fixed N=64 Weideman Z. The xz/yz/zz representation is selected per species: direct z*Z with that backend when (abs(omega)+lmx*abs(wcs))/(abs(effective_kz)*vts)<=1, otherwise a separate stable real-argument A evaluator. The sampled arithmetic checks do not establish a continuous-domain error bound.",
    "The finite harmonic cutoff lmx is caller-supplied. Its finite Gamma tail is retained and can give a genuinely large tensor; no automatic increase of lmx or harmonic-convergence guarantee is provided.",
-   "An unrepresentable positive tail or an unbounded remainder within the evaluation budget raises ValueError; no partial tail or fallback to the former cancelling expression is returned."
+   "In the analytic-A branch, an unrepresentable positive tail or an unbounded remainder within the evaluation budget raises ValueError; no partial tail or fallback to a cancelling large-z expression is returned."
   ]
  }
 }
