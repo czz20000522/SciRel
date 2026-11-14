@@ -127,7 +127,7 @@ POSIX 主机上，入口收到 `SIGINT`、`SIGTERM` 或 `SIGHUP` 时会停止本
 
 已知未完成：
 
-- `skills/` 下的测试不在默认测试范围内，也没有整理到能全部通过。
+- skills 相关测试已移至 `tests/`，由默认测试入口运行；`skills/` 内脚本仍分别由验收、交付或各自 skill 的人工入口负责调用。
 - 公开 API 的迁移进度见 [API 规范](skills/development/scirel-code-style/references/api-spec.md)。
 
 **能力边界冻结（维护者决定）：** 暂停接收新资产，供给线的准入随之中止，先还债、先清理。解除条件由维护者另行决定。

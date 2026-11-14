@@ -24,8 +24,8 @@ file in this repository; chat-only knowledge is not durable.
 | Solving workflow, physical method, report format | `skills/development/usage/scirel-solving/references/` |
 | Extraction method and package format | `skills/extraction/scientific-computation-asset-extraction/`, rationale in `docs/maintainer/supply-pipeline.md` |
 | Decisions and rationale | the commit that makes the change, plus the canonical file it changes |
-| Generated publish artifacts | `dist/` (gitignored); never a source of truth |
-| Runtime work, probes, intermediate containers | execution environment; disposable |
+| Generated publish artifacts | project-local `.runtime/` (gitignored); never a source of truth |
+| Runtime work, probes and temporary products | task-owned project-local `.runtime/`; retire after evidence transfer and the end of continuing use |
 
 Do not create a second copy of the same rule in several places. Use one canonical
 entry and link to it.
@@ -175,8 +175,10 @@ candidate.
 
 - The Git repository is the only source of truth. External project sources, runtime
   workspaces and generated release artifacts do not belong in Git.
-- Generated HTML/API/matrix sites go to `dist/` (gitignored); deployment is a
-  separate action.
+- New generated HTML/API/matrix sites and delivery artifacts go to project-local
+  `.runtime/` (gitignored); deployment is a separate action. Existing immutable
+  artifacts stay unchanged while a named consumer still requires their bytes;
+  retirement follows `catalog/RECORDS.md`.
 - No secrets in the repository; credentials stay outside the source tree.
 - Delivery may be a cloud Git repo, archive or object store; SciRel evaluates the
   self-contained result and correctness evidence.

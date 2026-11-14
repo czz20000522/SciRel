@@ -83,13 +83,80 @@ def test_external_truth_generator_selects_its_consumers_with_an_evidence_limit()
     assert any("does not execute the external source generator" in note for note in notes)
 
 
-@pytest.mark.parametrize(
-    "relative", ["SKILL.md", "references/result-checks.md", "scripts/delivery.py"]
-)
+@pytest.mark.parametrize("relative", ["SKILL.md", "references/result-checks.md"])
 def test_solving_source_changes_select_the_projection_consumer(relative):
     targets, notes = test_scope.classify(Path("skills/development/usage/scirel-solving") / relative)
-    assert targets == ["tests/delivery"]
+    assert set(targets) == {"tests/delivery", "tests/tooling/test_solved_examples.py"}
     assert any("scientific task acceptance is separate" in note for note in notes)
+
+
+@pytest.mark.parametrize(
+    ("script", "expected"),
+    [
+        (
+            "skills/development/api-design-method/scripts/api_inventory.py",
+            {"tests/tooling/test_api_design_method.py"},
+        ),
+        (
+            "skills/development/api-design-method/scripts/check_docs_sync.py",
+            {"tests/tooling/test_api_design_method.py"},
+        ),
+        (
+            "skills/development/api-design-method/scripts/scan_hazards.py",
+            {"tests/tooling/test_api_design_method.py"},
+        ),
+        (
+            "skills/development/scientific-runtime-dataset-construction/scripts/"
+            "validate_dataset_manifest.py",
+            {"tests/tooling/test_dataset_manifest.py"},
+        ),
+        (
+            "skills/development/scirel-acceptance/scripts/check_all.py",
+            {
+                "tests/tooling/test_check_all.py",
+                "tests/tooling/test_validate_extraction_package.py",
+            },
+        ),
+        (
+            "skills/development/scirel-acceptance/scripts/check_contract_sync.py",
+            {"tests/tooling/test_contract_sync.py"},
+        ),
+        (
+            "skills/development/scirel-acceptance/scripts/precommit_check.py",
+            {
+                "tests/tooling/test_precommit_check.py",
+                "tests/tooling/test_validate_extraction_package.py",
+            },
+        ),
+        (
+            "skills/development/scirel-acceptance/scripts/scirel_pytest_counts.py",
+            {"tests/tooling/test_check_all.py"},
+        ),
+        (
+            "skills/development/usage/scirel-solving/scripts/delivery.py",
+            {"tests/delivery", "tests/tooling/test_solved_examples.py"},
+        ),
+        (
+            "skills/development/usage/scirel-solving/scripts/validate_report.py",
+            {"tests/delivery", "tests/tooling/test_solved_examples.py"},
+        ),
+        (
+            "skills/extraction/scientific-requirements-extraction/scripts/validate_package.py",
+            {"tests/tooling/test_requirement_case_package.py"},
+        ),
+    ],
+)
+def test_skill_scripts_select_direct_and_transitive_consumers(script, expected):
+    targets, _ = test_scope.classify(Path(script))
+    assert set(targets) == expected
+
+
+def test_current_skill_script_inventory_has_an_explicit_bounded_scope():
+    for script in sorted((ROOT / "skills").rglob("*.py")):
+        targets, _ = test_scope.classify(script.relative_to(ROOT))
+        assert targets, script
+        assert "<full-suite>" not in targets, script
+        assert all((ROOT / target.split("::")[0]).exists() for target in targets), script
 
 
 def test_current_script_inventory_has_an_explicit_bounded_scope():
@@ -114,6 +181,29 @@ def test_unknown_path_fails_closed_even_with_a_resolved_path(unknown, capsys):
     assert "FAIL-CLOSED" in output
     assert "Resolved partial scope:" in output
     assert "tests/delivery tests/docs tests/tooling" in output
+    assert (
+        f"Full suite (required until the mapping is extended):\n  {sys.executable} -m pytest -q\n"
+        in output
+    )
+
+
+@pytest.mark.parametrize(
+    "unknown",
+    [
+        "skills/development/api-design-method/scripts/new_tool.py",
+        "skills/development/api-design-method/scripts/nested/api_inventory.py",
+        "skills/development/another-skill/scripts/api_inventory.py",
+        "skills/development/usage/scirel-solving/scripts/new_tool.py",
+        "skills/development/usage/scirel-solving/scripts/nested/validate_report.py",
+        "skills/development/usage/scirel-capability-discovery/scripts/new_tool.py",
+        "skills/development/usage/scirel-capability-discovery/scripts/nested/delivery.py",
+    ],
+)
+def test_unknown_skill_script_fails_closed_even_with_a_resolved_path(unknown, capsys):
+    assert test_scope.main(["--changed", "scripts/query.py", unknown]) == 2
+    output = capsys.readouterr().out
+    assert "FAIL-CLOSED" in output
+    assert "Resolved partial scope:\n  tests/delivery\n" in output
     assert (
         f"Full suite (required until the mapping is extended):\n  {sys.executable} -m pytest -q\n"
         in output

@@ -70,6 +70,46 @@ SCRIPT_LAYERS = {
     "validate_installed_wheel.py": ("delivery",),
     "validate_runtime_imports.py": ("architecture",),
 }
+# Match complete paths: a new script or a nested namesake must declare its own
+# consumers. Manual design tools stay manual; these are regression scopes only.
+SKILL_SCRIPT_TARGETS = {
+    "skills/development/api-design-method/scripts/api_inventory.py": (
+        "tests/tooling/test_api_design_method.py",  # Also imported by check_docs_sync.
+    ),
+    "skills/development/api-design-method/scripts/check_docs_sync.py": (
+        "tests/tooling/test_api_design_method.py",
+    ),
+    "skills/development/api-design-method/scripts/scan_hazards.py": (
+        "tests/tooling/test_api_design_method.py",
+    ),
+    "skills/development/scientific-runtime-dataset-construction/scripts/"
+    "validate_dataset_manifest.py": ("tests/tooling/test_dataset_manifest.py",),
+    "skills/development/scirel-acceptance/scripts/check_all.py": (
+        "tests/tooling/test_check_all.py",
+        "tests/tooling/test_validate_extraction_package.py",  # Imports acceptance helpers.
+    ),
+    "skills/development/scirel-acceptance/scripts/check_contract_sync.py": (
+        "tests/tooling/test_contract_sync.py",
+    ),
+    "skills/development/scirel-acceptance/scripts/precommit_check.py": (
+        "tests/tooling/test_precommit_check.py",
+        "tests/tooling/test_validate_extraction_package.py",  # Imports FORBIDDEN.
+    ),
+    "skills/development/scirel-acceptance/scripts/scirel_pytest_counts.py": (
+        "tests/tooling/test_check_all.py",  # Loads the real pytest plugin in subprocesses.
+    ),
+    "skills/development/usage/scirel-solving/scripts/delivery.py": (
+        "tests/delivery",
+        "tests/tooling/test_solved_examples.py",  # Captures the real solving skill closure.
+    ),
+    "skills/development/usage/scirel-solving/scripts/validate_report.py": (
+        "tests/delivery",  # Retain the source projection and packaged helper consumers.
+        "tests/tooling/test_solved_examples.py",  # Also imports and calls the validator.
+    ),
+    "skills/extraction/scientific-requirements-extraction/scripts/validate_package.py": (
+        "tests/tooling/test_requirement_case_package.py",
+    ),
+}
 PACKAGING_FILES = {"pyproject.toml", "setup.py", "setup.cfg", "MANIFEST.in"}
 GLOBAL_PATHS = {"tests/conftest.py"}
 INFRASTRUCTURE_FILES = {".gitattributes", ".gitignore", ".python-version"}
@@ -276,8 +316,14 @@ def classify(relative: Path) -> tuple[list[str], list[str]]:
             raise UnresolvedPath(f"script path has no declared test consumers: {relative}")
         return _classify_script(parts[1])
 
+    if parts[0] == "skills" and relative.suffix == ".py":
+        targets = SKILL_SCRIPT_TARGETS.get(relative.as_posix())
+        if targets is None:
+            raise UnresolvedPath(f"skill script has no declared test consumers: {relative}")
+        return list(targets), ["skill script: direct and transitive test consumers"]
+
     if parts[:4] == ("skills", "development", "usage", "scirel-solving"):
-        return [_layer_target("delivery")], [
+        return [_layer_target("delivery"), "tests/tooling/test_solved_examples.py"], [
             "solving source projection and helper closure; scientific task acceptance is separate"
         ]
 
