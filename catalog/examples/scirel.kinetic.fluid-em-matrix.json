@@ -127,17 +127,18 @@
   "zh": "修正的有限有理 EM 矩阵"
  },
  "verification": {
-  "evidence_ceiling": "Bounded to the dense J8/J12 fluid EM eigenmatrix over N0..N7 and the source tables. Evidence: `test_fluid_spectrum_full.py` contains 9 test functions, 3 of which reference `assemble_fluid_em`, and is shared by 6 assets; only shared-file coverage is bound, so a pass is file-level rather than asset-isolated; the bounded example was executed by this audit. Oracle: self-consistency/regression only. It does not establish identity between the finite fitted response and an exact Bessel/Z kinetic dielectric.",
+  "evidence_ceiling": "Supported controls remain J8/J12 and N0..7. Direct successful public-wrapper assertions are bounded to EM case2, J8/N0, at omega=0.83*wn and 1.0e11 rad/s. Evidence: test_fluid_spectrum_full.py contains 9 test functions, 3 referencing assemble_fluid_em, and is shared by 6 assets; test_fluid_em_diagnostics.py also checks measured moments and live-table perturbation. Shared-file coverage is not asset-isolated evidence. The J12/N=1.5 rejection is not a successful J12 witness; low-level J8/N6 assembly does not verify this public wrapper at N6. Oracle: bounded independent finite-rational constitutive comparison and self-consistency/regression; no identity with the exact Bessel/Z kinetic dielectric is established.",
   "known_limitations": [
    "Three direct functions in the six-asset-shared file cover rational-matrix restoration, undefined-table rejection and explicit-control precedence; a singular source resonance is rejected rather than fitted.",
    "No cross-thread/platform invariance, arbitrary precision, all physical-mode completeness or unconditional nonlinear convergence.",
    "J/L pole and finite-harmonic approximation errors remain distinct from relation consistency and numerical residual.",
    "The finite fitted response is not identified with an exact Bessel/Z kinetic dielectric; that equivalence is explicitly excluded.",
-   "Pure-Python execution is tested on this host; native parity is not claimed."
+   "Pure-Python execution is tested on this host; native parity is not claimed.",
+   "The bound successful public-wrapper assertions do not verify J12 or N1..7; accepted controls are not a claim of directly tested coverage for every configuration."
   ],
   "scope": [
-   "J8/J12, every N0..7, complete matrix state and source tables.",
-   "Coherent SI state; signed/zero kz away from true rational resonance denominators."
+   "Direct successful assemble_fluid_em assertions use EM case2, J8/N0, at omega=0.83*wn and at 1.0e11 rad/s for live-table diagnostic perturbation.",
+   "Bound assertions cover finite-rational polynomial restoration, invalid-control rejection, explicit-control precedence and measured inverse moments without coefficient projection."
   ],
   "tests": [
    "tests/kinetic/test_fluid_spectrum_full.py",

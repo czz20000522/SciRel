@@ -95,7 +95,7 @@
    "dtype": "complex numeric array",
    "name": "value",
    "required": true,
-   "shape": "broadcast input shape or 2x2",
+   "shape": "Gamma/Z: scalar -> (1,1), 1D (n,) -> (1,n), ndim>=2 retains broadcast shape; R: (2,2)",
    "units": "dimensionless"
   }
  ],

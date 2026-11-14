@@ -511,7 +511,7 @@
   },
   {
    "asset_id": "scirel.kinetic.fluid-wavevector-eigensolve",
-   "source_sha256": "1f857e5ad06c0f66769d180a95444d657ef53954b505ac419a086b2f97180d4b",
+   "source_sha256": "87edfd71e5dbdb3de4f2fc44e13bb96a58a7347bc1a477209f3c0e714be0d022",
    "summary": "求解一般复数流体本征矩阵，筛选实部为正且按衰减大小排序的 kx 分支。",
    "definition": "用通用复数 LAPACK zgeev 求解 kx X=M X；保留 Re(kx)>real_floor_scale*kn 的值，再按 |Im(kx)| 作稳定排序。",
    "model": "线性化流体极点色散本征问题",
@@ -560,7 +560,7 @@
     },
     {
      "name": "head",
-     "description": "前 `keep` 个已排序的物理本征值",
+     "description": "前 `keep` 个排序后的候选本征值；不认证物理模态身份",
      "constraints": "当存活本征值不足 `keep` 个时返回全部存活值。",
      "dtype": "complex128 复数"
     },
@@ -1425,7 +1425,7 @@
   },
   {
    "asset_id": "scirel.kinetic.fluid-dispersion-matrix",
-   "source_sha256": "464fe01273d208eae6fb2be1711a55c94e90543eda5b48a4a2c245ee8e12b8d4",
+   "source_sha256": "1eafec534e6b0fc1d8ba7ff14685b1c3edf5b913b8207332a0f28266920afc33",
    "summary": "给定角频率和平行波数，组装稠密的一阶流体本征矩阵。",
    "definition": "按 [vx_snl,vy_snl,vz_snl,Ey,Ez,By,Bz] 的状态顺序组装 kx X=M X 中的 M；维数为 3*S*sum(L)+4。",
    "model": "均匀磁化多组分 Maxwellian 流体极点展开",
@@ -1546,7 +1546,7 @@
     },
     {
      "name": "n_sl",
-     "description": "每组分的速度展开维数 $\\sum_l L(l)$",
+     "description": "全部组分合计的单个速度分量块维数 S*sum(L)；n_l=sum(L) 是每组分极点数",
      "constraints": "正整数。",
      "dtype": "整数"
     },

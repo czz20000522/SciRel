@@ -238,8 +238,9 @@ def evaluate_fluid_special(method, x, parameter=None):
     Returns
     -------
     value : complex numeric array
-        Gamma/Gamma derivative or Z array, or full R response matrix. Shape: broadcast
-        input shape or 2x2. Constraints: Finite or explicit precision/pole failure.
+        Gamma/Gamma derivative or Z array, or full R response matrix. Shape: Gamma/Z
+        scalar -> (1,1), 1D (n,) -> (1,n), ndim>=2 retains broadcast shape; R: (2,2).
+        Constraints: Finite or explicit precision/pole failure.
         Units: [dimensionless].
 
     Raises
@@ -1085,10 +1086,14 @@ def assemble_fluid_em(state, omega, j_order=8, max_harmonic=6):
     -----
         The electromagnetic feedback terms are added to the fluid dielectric matrix at
         the caller-supplied frequency. Matrix completeness does not by itself identify
-        which eigenvalues are physical modes. Supported scope: J8/J12, every N0..7,
+        which eigenvalues are physical modes. Inverse moments are measured from the
+        unchanged coefficient table; model_target=0 is descriptive, with no projection.
+        Supported scope: J8/J12, every N0..7,
         complete matrix state and source tables; Coherent SI state; signed/zero kz away
         from true rational resonance denominators. Excluded scope: No identity between
-        finite fitted response and exact Bessel/Z kinetic dielectric.
+        finite fitted response and exact Bessel/Z kinetic dielectric. Direct successful
+        public-wrapper assertions use case2, J8/N0 at 0.83*wn and 1.0e11 rad/s;
+        they do not verify successful J12 or N1..7 configurations.
 
     Examples
     --------
@@ -1199,9 +1204,9 @@ def solve_fluid_em(jcase=2, j_order=8, max_harmonic=6, omegas=None):
     -------
     result : mapping
         kxx[axis length,5] m^-1; all spectra and selection candidates per frequency,
-        matrix, exact tables, source case state and independent eigen diagnostics.
-        Shape: mapping of MATLAB-shape arrays. Constraints: State and terminal
-        diagnostics retain scientific meaning; no caller state mutation. Units: [mixed
+        matrix, exact tables, source case state and eigenvalue/count diagnostics;
+        eigenpair_residuals_computed=false. Shape: mapping of MATLAB-shape arrays.
+        Constraints: State and terminal diagnostics retain scientific meaning; no caller state mutation. Units: [mixed
         SI and dimensionless as described].
 
     Raises
@@ -1228,10 +1233,15 @@ def solve_fluid_em(jcase=2, j_order=8, max_harmonic=6, omegas=None):
         Each frequency is assembled independently. Eigenvalues with positive real
         candidates are sorted by absolute imaginary part and the first five are
         selected; this is a deterministic heuristic rather than branch tracking.
+        The eigensolver computes eigenvalues only. Fewer than five positive-real
+        candidates raises ValueError; no eigenvector residual gate is evaluated.
         Supported scope: Two cases, J8/J12, all eight N controls and source79-frequency
         default; All finite spectra, original-order values, selection candidates and
         terminal matrices. Excluded scope: No claim that every auxiliary eigenvalue is a
         kinetic physical mode; no infinite-mode completeness or cross-thread invariance.
+        Direct successful public-wrapper assertions use case2, J8/N0 with explicit
+        0.83*wn or [0.37,0.83,1.43]*wn frequencies; they do not verify case1, J12,
+        N1..7 or execution of the default 79-frequency sweep.
 
     Examples
     --------
