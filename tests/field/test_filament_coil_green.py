@@ -289,16 +289,28 @@ def test_singular_coincident_chain_is_rejected_not_returned_as_nan():
         )
 
 
-def test_nonfinite_output_overflow_fails_closed():
-    with pytest.raises((ValueError, FloatingPointError)):
+def test_nonfinite_source_weight_overflow_fails_closed():
+    with (
+        pytest.warns(RuntimeWarning, match="overflow encountered in multiply"),
+        pytest.raises(ValueError, match="rzw must be finite"),
+    ):
         evaluate_filament_coil_green_field(
-            1.0e-300,
+            0.3,
             0.0,
-            np.array([1.0e-300]),
-            np.array([0.0]),
+            np.array([0.2]),
+            np.array([0.1]),
             np.array([1.0e308]),
             np.array([1.0e308]),
         )
+
+
+def test_kernel_arithmetic_overflow_propagates_its_exception():
+    geometry = (1.2e-100, 0.0, np.array([1.0e-100]), np.array([0.1e-100]))
+    # The same noncoincident geometry succeeds at ordinary source weight.
+    control = evaluate_filament_coil_green_field(*geometry, np.array([1.0]), np.array([1.0]))
+    assert np.isfinite(control).all()
+    with pytest.raises(FloatingPointError, match="overflow encountered in multiply"):
+        evaluate_filament_coil_green_field(*geometry, np.array([1.0e308]), np.array([1.0]))
 
 
 def test_green_response_rejects_singular_and_misaligned_inputs():
