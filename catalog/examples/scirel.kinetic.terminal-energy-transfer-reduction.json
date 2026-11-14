@@ -205,14 +205,14 @@
   "scope": [
    "Independent centered RHS moments and a raw uncentered energy-moment oracle check all four outputs on a signed nonuniform carrier.",
    "External-source variation changes only loss; some zero quadrature cells are accepted with positive density.",
-   "Three digest-pinned reference cases cover exact finite replay and the declared boolean-coercion divergence."
+   "UNKNOWN: the historical claim of three digest-pinned reference cases, exact two-carrier replay and boolean-coercion divergence is not bound to case inputs, digests, counterpart versions and per-case comparisons; the direct tests above remain the current evidence."
   ],
   "tests": [
    "tests/kinetic/test_terminal_molecular_energy_transfer.py"
   ],
   "evidence_ceiling": "Direct comparisons establish the finite discrete RHS reduction and boundary differences on tested carriers. They do not establish the incoming terminal distribution or RHS, absolute physical normalization, qualification of the whole closure or expert approval.",
   "known_limitations": [
-   "No independently reviewed qualification of parity with an external implementation holds; parity evidence is bounded to the declared finite cases.",
+   "The bound independent cell/moment comparisons establish the tested finite relation, not independent expert qualification or external-implementation parity. The historical three-case replay remains unbound; it is not a new mandatory acceptance gate.",
    "The source-labeled momentum unit and absolute distribution/RHS normalization require expert review.",
    "Public distribution licensing remains pending."
   ]

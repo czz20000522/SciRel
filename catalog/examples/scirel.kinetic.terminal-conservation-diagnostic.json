@@ -123,14 +123,14 @@
   "scope": [
    "Independent interval slopes, adjacent transfer means and global normalization on signed nonuniform profiles; linear-balance and decreasing-grid witnesses.",
    "Direct rejection tests cover shape, spacing, non-real inputs, zero normalization and non-finite derived gradient.",
-   "Three optional digest-pinned reference cases compare two finite carriers exactly and document the boolean-coercion divergence."
+   "UNKNOWN: the historical claim of three optional digest-pinned reference cases, exact two-carrier replay and boolean-coercion divergence is not bound to case inputs, digests, counterpart versions and per-case comparisons; the direct tests above remain the current evidence."
   ],
   "tests": [
    "tests/kinetic/test_terminal_molecular_conservation.py"
   ],
   "evidence_ceiling": "Direct tests establish this discrete diagnostic on tested profiles; they do not establish the incident total-profile normalization, the full boundary balance, qualification of the whole closure or expert approval.",
   "known_limitations": [
-   "No independently reviewed qualification of parity with an external implementation holds; comparison evidence is bounded to the tested profiles.",
+   "The bound independent cell/moment comparisons establish the tested finite relation, not independent expert qualification or external-implementation parity. The historical three-case replay remains unbound; it is not a new mandatory acceptance gate.",
    "Absolute physical meaning of the incident total profiles and their unit labels requires expert review.",
    "The final node is not independently checked and a zero error does not establish a complete conservation law.",
    "Public distribution licensing remains pending."

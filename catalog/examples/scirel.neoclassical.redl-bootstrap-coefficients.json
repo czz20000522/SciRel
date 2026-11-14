@@ -124,15 +124,17 @@
  },
  "verification": {
   "scope": [
-   "Independent Decimal fit checks, source-bound coefficient/caller parity and finite arithmetic regressions"
+   "Redl alpha large-collisionality limit and exact L34=L31 in test_bootstrap.py; the selected test_named_result.py case checks all four ordinary coefficient baseline arrays and tuple return type."
   ],
   "tests": [
-   "tests/tooling/test_bootstrap.py"
+   "tests/tooling/test_bootstrap.py",
+   "tests/tooling/test_named_result.py::test_neoclassical_results_preserve_baseline_values_and_return_types[calculate_redl_coefficients]"
   ],
   "evidence_ceiling": "Mathematical fit arithmetic and explicit assembly only; no empirical full-physics qualification.",
   "known_limitations": [
    "Empirical coefficients are not experimentally calibrated here. Caller must supply model-consistent collisionalities and trapped fraction; no geometry reconstruction, edge pedestal or full-transport physics qualification.",
-   "Large finite charge/collisionality combinations may have nonrepresentable intermediate or final arithmetic and fail explicitly. Float64 conversion cannot recover prior lost precision."
+   "Large finite charge/collisionality combinations may have nonrepresentable intermediate or final arithmetic and fail explicitly. Float64 conversion cannot recover prior lost precision.",
+   "UNKNOWN: the historical independent Decimal fit checks are not bound to per-asset inputs, precision, reference values and assertions. Binary64 baseline arrays and an exact-decimal limit described in a comment do not establish Decimal verification of every coefficient or current drive term."
   ]
  },
  "references": [

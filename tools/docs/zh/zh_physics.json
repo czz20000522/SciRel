@@ -7187,10 +7187,7 @@
      "tests/mirror/test_mirror_total_pressure.py",
      "tests/cross_domain/test_mirror_kinetic_scientific_correction.py"
     ]
-   },
-   "source_conflicts": [
-    "applicability.excluded[1] 仍列“不验证密度正性”，而 identity.definition、inputs、failure_semantics 和 verification 已明确拒绝负密度，合同内部不一致。"
-   ]
+   }
   },
   {
    "asset_id": "scirel.closures.tabulated-pressure",
@@ -8002,7 +7999,7 @@
   },
   {
    "asset_id": "scirel.mirror.mirror-ambipolar-potential",
-   "source_sha256": "fca859bc71c6300e886ac0c877503e2562f13f5a4bcf185ec7b615a7f00bec99",
+   "source_sha256": "de840dae8f94f8272f7d7b8b84fee18904ea724c54c769784fcd3d7888352578",
    "summary": "在指定端塞电势计算单向离子/电子端损通量，或逐磁面通过有界括区与二分求电荷加权通量平衡。 顶层返回值是 scirel._result.Result 映射；非冲突字段支持属性读取。",
    "definition": "每物种通量为 n sqrt(T_parallel/(2πm)) I(s,a) refill，s=(T_perpendicular/T_parallel)(B_plug/B_reference−1)，a=q(phi_plug−phi_reference)/T_parallel。I(s,a)=∫₀^∞ exp(−y−max(s y+a,0)) dy；s≥0 时，a≥0 为 exp(−a)/(1+s)，a<0 且 s>0 为 1−(s/(1+s)) exp(a/s)，a<0 且 s=0 为 1。电势降 Δφ = potential_v − phi_reference_v，两者使用调用者的同一电压零点。电子使用固定质量、−e 电荷和两方向相同热能。evaluate 只求给定电势通量；solve 对电荷加权离子/电子通量对数比求根，热电压初始括区最多扩展八轮再共享二分。双真空保留参考势；有界指数差商与对数归一化保留正物种下溢后的对数通量。测试电势与返回电势相同；使用缩放相对势差和安全中点，回调严格零才收缩括区，否则半宽与残差原门槛同时满足才算收敛。 完整结果作为同一个 scirel._result.Result 映射返回；嵌套 dict 字段保持普通 dict。",
    "model": "单正离子与电子的半空间磁镜/静电端损模型，参考粒子群和补充比例外供；不是完整碰撞输运或自洽平衡。",
@@ -8213,22 +8210,24 @@
      "零镜斜率解析极限及所选向量、函数剖面和平衡案例。",
      "双真空单步、单边真空拒绝、非法控制、括区失败和上限不收敛。",
      "evaluate 不平衡但 converged=True，solve 忽略指定势。",
-     "a=−100、b=1000 下坡势垒仍有限；100 位独立检查覆盖 −1 附近、零及两种符号斜率。",
+     "a=-100、b=1000 的极端下坡势垒有解析有限通量见证。既有 test_finite_end_loss_flux_against_bounded_direct_integral 对五组公开入口输入作独立 SciPy 积分对照；历史声称的 -1 附近、零及两符号斜率的 100 位检查仍未绑定，状态为 UNKNOWN。",
      "等质量等温、共同 ±1e20/±1e308 势下平衡根不因中点溢出丢失零电流态，端点指定求值与求平衡保持区别。",
      "在势垒正负两侧、且 phi_reference_v 非零时，返回通量等于 n sqrt(T_parallel/(2πm)) I(s,a)，I 取闭式。"
     ],
-    "evidence_ceiling": "直接测试支持所选半空间极限、双真空参考势、一个收敛例、函数密度等价及失败路径；不证明真实端损模型、所有积分分支、任意参数、根唯一、所有极端末残差界或专家认可。",
+    "evidence_ceiling": "直接测试支持所选半空间极限、双真空参考势、一个收敛例、函数密度等价及失败路径；不证明真实端损模型、所有积分分支、任意参数、根唯一、所有极端末残差界或专家认可。 新绑定的 test_finite_end_loss_flux_against_bounded_direct_integral 使用五组有限下坡势垒输入和独立 binary64 SciPy 求积，不是 100 位真值对照。历史 100 位比较的输入/参考/断言记录目前未绑定，状态为 UNKNOWN。",
     "known_limitations": [
      "补充比例及参考剖面为外部模型输入，不是推导的输运物理。",
      "evaluate 的 converged 仍表示求值成功，应以 current_balance_solved 区分。",
      "有限模型输入可要求不可表示通量或括区，此时明确失败；参考群体及补充仍为给定唯象。",
-     "公开许可及专家认可待人工决定。"
+     "公开许可及专家认可待人工决定。",
+     "UNKNOWN：历史 -1 附近、零及两符号斜率的 100 位势垒比较目前未绑定。另行绑定的约束矩俯仰积分不能用作此端点通量声明的证据。"
     ],
     "tests": [
      "tests/mirror/test_mirror_ambipolar_potential.py",
      "tests/kinetic/test_reviewed_failure_semantics.py",
      "tests/cross_domain/test_mirror_kinetic_scientific_correction.py",
-     "tests/cross_domain/test_mirror_gauge_scientific_correction.py"
+     "tests/cross_domain/test_mirror_gauge_scientific_correction.py",
+     "tests/kinetic/test_independent_correction.py::test_finite_end_loss_flux_against_bounded_direct_integral"
     ]
    }
   },

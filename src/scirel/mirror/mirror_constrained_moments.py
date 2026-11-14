@@ -121,6 +121,11 @@ def evaluate_mirror_constrained_moments(
     -----
     For ``C=(B-B_ref)/T_parallel+B_ref/T_perp,ref`` and ``T_perp,local=B/C``, the untruncated density is formed without exponent clipping. With no plugs or ``loss_cone_refill=1`` the three pitch fractions are one. Otherwise the two plug barriers define the trapped pitch fractions, and refill mixes them as ``refill+(1-refill)*fraction``. The final density and pressure products are formed without premature overflow. ``quadrature_order`` is converted with ``int`` for the work budget: a finite non-integer value at least eight is accepted and truncated, for example ``8.9`` becomes ``8``; this historical behavior is recorded, not corrected here. The callable does not solve the potential, field-line geometry or a self-consistent mirror equilibrium.
 
+    General pitch quadrature uses the internal ``quad_vec`` error estimate and
+    rejects a result outside ``max(2e-13, 2e-11*max(abs(fractions)))`` or an
+    unsuccessful integration with RuntimeError. This internal control does not
+    add an error-estimate field: the public mapping retains its nine outputs.
+
     Examples
     --------
     >>> import numpy as np

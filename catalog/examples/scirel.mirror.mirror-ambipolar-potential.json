@@ -353,7 +353,7 @@
    "An analytic zero-mirror-slope flux limit and selected vectorized, profile-callable and current-balance cases.",
    "Joint-vacuum single-update behavior, one-sided-vacuum rejection, invalid controls, bracket failure and iteration-budget nonconvergence.",
    "Evaluate-mode unbalanced current with converged=True, and solve-mode disregard of phi_plug_v.",
-   "Analytic extreme downhill barrier a=-100,b=1000 yields finite flux; 100-digit independent barrier checks cover slopes around -1, zero and both signs.",
+   "Analytic extreme downhill barrier a=-100,b=1000 yields finite flux. The existing test_finite_end_loss_flux_against_bounded_direct_integral checks five public-entry cases against independent SciPy quadrature; historical 100-digit checks around slope -1, zero and both signs remain unbound (UNKNOWN).",
    "Equal-mass, equal-temperature balanced roots at positive/negative common potentials 1e20 and 1e308 retain the actual zero-current state without midpoint overflow; prescribed endpoint evaluation remains distinct from solving current balance.",
    "Returned fluxes equal n*sqrt(T_parallel/(2*pi*m))*I(s,a) with the closed-form I on both sides of the barrier sign, with a nonzero phi_reference_v."
   ],
@@ -361,14 +361,16 @@
    "tests/mirror/test_mirror_ambipolar_potential.py",
    "tests/kinetic/test_reviewed_failure_semantics.py",
    "tests/cross_domain/test_mirror_kinetic_scientific_correction.py",
-   "tests/cross_domain/test_mirror_gauge_scientific_correction.py"
+   "tests/cross_domain/test_mirror_gauge_scientific_correction.py",
+   "tests/kinetic/test_independent_correction.py::test_finite_end_loss_flux_against_bounded_direct_integral"
   ],
-  "evidence_ceiling": "Direct SciRel tests establish selected flux values from an independent half-space limit, reference-potential retention on joint vacuum, a convergent current-balance example, callable density profile equivalence, and selected failure paths. They do not prove the physical end-loss model, all pitch-integral branches, arbitrary parameter regimes, uniqueness of roots, final residual bounds at every extreme or current expert recognition.",
+  "evidence_ceiling": "Direct SciRel tests establish selected flux values from an independent half-space limit, reference-potential retention on joint vacuum, a convergent current-balance example, callable density profile equivalence, and selected failure paths. They do not prove the physical end-loss model, all pitch-integral branches, arbitrary parameter regimes, uniqueness of roots, final residual bounds at every extreme or current expert recognition. The additionally bound test_finite_end_loss_flux_against_bounded_direct_integral uses five finite downhill-barrier cases and independent binary64 SciPy quadrature, not a 100-digit oracle. The historical 100-digit comparison input/reference/assertion record is currently unbound (UNKNOWN).",
   "known_limitations": [
    "Refill fractions and the prescribed reference profiles are external model inputs, not derived transport physics.",
    "Evaluate-mode converged retains the historical evaluation-success meaning; current_balance_solved explicitly distinguishes it from a solved endpoint.",
    "Finite model inputs can require an unrepresentable flux or bracket; these fail explicitly. Refill and reference populations remain prescribed phenomenology.",
-   "Public distribution licensing and expert recognition remain pending."
+   "Public distribution licensing and expert recognition remain pending.",
+   "UNKNOWN: the historical 100-digit barrier comparisons near slope -1, zero and both signs are not currently bound. The separately bound constrained-moment pitch integrals are not evidence for this endpoint-flux claim."
   ]
  }
 }

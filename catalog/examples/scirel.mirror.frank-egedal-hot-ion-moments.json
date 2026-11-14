@@ -226,20 +226,21 @@
   "scope": [
    "Declared defaults and legacy-alias precedence, including exact default-versus-explicit result regressions and the default quadrature node cap.",
    "Same-population tensor and lower-cutoff regression.",
-   "Thirty-six independent polynomial moment/support cases, including b<1, closed cone and vc=0 with positive cutoff.",
+   "Bound analytic support/moment witnesses cover a common velocity domain, b<1 accessibility, a divergent vc=0 zero-cutoff density and an integrable positive cutoff; no complete 36-case inventory is currently bound (historical claim UNKNOWN).",
    "A divergent negative-beta raw density is rejected while a demonstrated integrable negative-beta input remains supported.",
-   "Independent 70-digit incomplete-Beta raw-moment values for degree 2 and beta=-0.1,-0.3,-0.4,-0.4999,0,0.5, including near the density-integrability boundary."
+   "At beta=0, test_reviewed_relation_example compares normalized perpendicular moments for two supplied angular modes against independent SciPy quadrature. For beta=-0.1,-0.3,-0.4,-0.4999, the bound tests check finite normalized outputs and internal raw-moment refinement; these are not independent 70-digit incomplete-Beta raw-moment comparisons."
   ],
   "tests": [
    "tests/cross_domain/test_spectral_scientific_correction.py",
    "tests/mirror/test_frank_egedal_hot_ion_moments.py"
   ],
-  "evidence_ceiling": "Bounded to the declared relation: Let b=B/B0, xi_max=sqrt(max(0,1-b/R)), xi_min=sqrt(max(0,1-b)), and xi0=sqrt((xi^2-(1-b))/b). Only xi_min<=xi<=xi_max belongs to the population specified at B0; for b>=R moments are zero…. Evidence: test_spectral_scientific_correction.py, test_frank_egedal_hot_ion_moments.py (25 recorded test functions; shared-file plus direct composition/test coverage; independent analytic/high-precision oracle); the contract example ran. Excluded scope: Unspecified populations on orbits that cannot reach B0, arbitrary callback feature discovery, zero normalizers and divergent or unresolved integrals; A claim that the printed Eq19b discrepancy has been confirmed as an author erratum.",
+  "evidence_ceiling": "The bound test_spectral_scientific_correction.py and test_frank_egedal_hot_ion_moments.py provide shared-file analytic support/common-domain and integrability witnesses, direct default/callback/failure regressions, and the beta=0 normalized-moment comparison with independent SciPy quadrature. Internal agreement between refined unnormalized raw moments is a numerical self-check, not an external high-precision reference. The historical complete 36-case inventory and 70-digit degree-2 incomplete-Beta raw-moment values at beta=-0.1,-0.3,-0.4,-0.4999,0,0.5 are not currently bound (UNKNOWN). This does not establish physical calibration, arbitrary callback resolution or an author-confirmed Eq19b erratum.",
   "known_limitations": [
    "The positive part of a finite modal sum is an explicitly modified mathematical model; arbitrary mode truncation does not establish physical positivity or kinetic equivalence.",
    "Raw quadrature refinement is a finite numerical agreement test and cannot discover arbitrary unresolved caller-function features.",
    "The common-domain correction changes legacy density/parallel values when perp_velocity_lower was set.",
-   "The bounded probes cover declared defaults, representative relation and limit cases, but do not establish arbitrary callback features or physical calibration of the defaults."
+   "The bounded probes cover declared defaults, representative relation and limit cases, but do not establish arbitrary callback features or physical calibration of the defaults.",
+   "UNKNOWN: the historical 36-case matrix and 70-digit raw reference values lack a current bound per-case input/reference/comparison record. Integrable negative beta remains supported; finite output and raw_moments_checked alone do not certify raw-moment accuracy against that missing reference."
   ]
  },
  "references": [

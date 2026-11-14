@@ -150,14 +150,14 @@
   "scope": [
    "Independent per-cell reduction checks both outputs on a nonuniform signed carrier.",
    "Positive-weight overlap agrees with the existing nine-moment relation; zero-weight acceptance distinguishes their contracts.",
-   "Three digest-pinned fixed cases cover exact finite agreement and the boolean-coercion divergence."
+   "UNKNOWN: the historical claim of three digest-pinned reference cases, exact two-carrier replay and boolean-coercion divergence is not bound to case inputs, digests, counterpart versions and per-case comparisons; the direct tests above remain the current evidence."
   ],
   "tests": [
    "tests/kinetic/test_terminal_molecular_flux_velocity.py"
   ],
   "evidence_ceiling": "Direct numerical comparisons establish the stated finite discrete relation and boundary differences on tested carriers. They do not establish the incoming terminal distribution, physical normalization, complete qualification or expert approval.",
   "known_limitations": [
-   "Numerical agreement with the reference cases is bounded evidence and does not establish full qualification.",
+   "The bound independent cell/moment comparisons establish the tested finite relation, not independent expert qualification or external-implementation parity. The historical three-case replay remains unbound; it is not a new mandatory acceptance gate.",
    "The physical normalization of the supplied distribution and source flux label requires expert review.",
    "Public distribution licensing remains pending."
   ]

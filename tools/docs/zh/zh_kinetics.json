@@ -2962,7 +2962,7 @@
   },
   {
    "asset_id": "scirel.kinetic.terminal-pressure-temperature-reduction",
-   "source_sha256": "f6803b1998131792c3fea5d3be1e27d4cd65f8f240e189cec44727c2e001d023",
+   "source_sha256": "113a66713216a26775866357ba0d9a48dc50e30225c275b813dc17084a0a77cd",
    "summary": "用显式热速度、质量比和柱坐标求积计算终态H₂中心压力与温度。",
    "definition": "对每个空间格 k，density=sum_i weight[i]*sum_j f[i,j,k]*dvx[j]，flux=Vth*sum_i weight[i]*sum_j vx[j]*f[i,j,k]*dvx[j]，并遵循所声明的逐格矩阵–向量和径向归约顺序。中心化归一化速度平方为 vr[i]^2+(vx[j]-flux/(density*Vth))^2。压力为其加权分布积分乘以 2*mass_ratio*1.6726231e-27*Vth^2/(3*1.602177e-19)；温度为压力/密度。每个空间格的密度必须严格为正，但单个权重可以为零。",
    "model": "终态 H₂ 中心矩诊断，质量比和热速度由调用者提供。",
@@ -3056,11 +3056,11 @@
     "scope": [
      "非均匀含正负速度网格的独立中心二阶矩核对两个输出。",
      "正权重重叠域与九矩关系相符，零权重接受区分合同。",
-     "三个固定用例覆盖有限输入的精确一致以及布尔强制转换上的分歧。"
+     "UNKNOWN：历史声称的三个摘要固定参考例、双载体精确重放及布尔强制转换分歧，尚未绑定逐例输入、摘要、双方版本和比较断言；当前证据仍为上述直接测试。"
     ],
     "evidence_ceiling": "直接数值比较在受测载体上确立有限离散中心矩关系与边界差异。它们不确立上游终态分布、物理归一化、完整资格或专家认可。",
     "known_limitations": [
-     "与参考算例的数值一致只是有界证据，不构成完整资格。",
+     "绑定的独立单元/矩比较只支持受测有限关系，不构成独立专家认可或与外部实现一致性的证明。历史三例重放仍未绑定，不把它变成新增强制验收门槛。",
      "所给分布的物理归一化需专家复核。",
      "公开分发许可仍待人工决定。"
     ]
@@ -3068,7 +3068,7 @@
   },
   {
    "asset_id": "scirel.mirror.frank-egedal-hot-ion-moments",
-   "source_sha256": "6c4670eef37c29537fc830539a82f8452ee1f11983ad3e830ccf9990caf31283",
+   "source_sha256": "ab05af6467608bb85648f23bbb5387bec9ae193ffb3b40132ea58169df4ad44f",
    "summary": "在共同速度域上，对明确定义的非负参考群体同时积分密度和平行/垂直压力。",
    "definition": "b=B/B0，ξ_max=sqrt(max(0,1−b/R))、ξ_min=sqrt(max(0,1−b))、ξ0=sqrt((ξ²−(1−b))/b)。只计可达 B0 的俯仰域，b≥R 时矩为0。共同 s=v/v0∈[s_min,1]；f=max(Σc_j u_νj(ξ0)U(s)^[νj(νj+1)]/(s³+vc³),0)，U=[(1+vc³)s³/(s³+vc³)]^(β_m/3)。n=4π∫s²f，P∥=4π∫s⁴ξ²f，P⊥=2π∫s⁴(1−ξ²)f，积分域完全相同。两压力同除 P∥(b=1)，密度除 n(b=1)；先细化原始矩再除。零下限且 vc>0 时提取最小速度幂 q=min(β_mν(ν+1))，q>−3 可用 v^(2+q) Gauss–Jacobi 权重处理可积奇点。",
    "model": "有限模参考分布非负部分的数学矩，不宣称精确 Frank–Egedal 动力学解或实测群体。",
@@ -3202,22 +3202,23 @@
     "scope": [
      "声明默认值与旧别名优先顺序，并回归默认调用和显式参数调用结果完全一致及默认求积节点上限。",
      "同一粒子群张量与下截断回归。",
-     "36个独立多项式矩/支撑例，含b<1、闭锥及vc=0配正下截断。",
+     "已绑定解析支撑/矩见证覆盖共同速度域、b<1 可达域、vc=0 且零下限的密度发散及正下限可积；完整 36 例清单目前未绑定，历史声明状态为 UNKNOWN。",
      "拒绝发散负beta密度，同时支持已证明可积的负beta用例。",
-     "独立70位不完全Beta原始矩：degree2、beta=−0.1、−0.3、−0.4、−0.4999、0、0.5，含密度可积边界附近。"
+     "beta=0 时，test_reviewed_relation_example 用独立 SciPy 求积核对两个给定角向模态的归一化垂直矩。beta=-0.1、-0.3、-0.4、-0.4999 的绑定测试检查有限归一化输出及内部原始矩细化；这些不等于独立 70 位不完全 Beta 原始矩比较。"
     ],
-    "evidence_ceiling": "限于所声明关系：b=B/B0，ξ_max=sqrt(max(0,1−b/R))、ξ_min=sqrt(max(0,1−b))、ξ0=sqrt((ξ²−(1−b))/b)。只计可达 B0 的俯仰域，b≥R 时矩为0。共同 s=v/v0∈[s_min,1]；f=max(Σc_j u_νj(ξ0)U(s)^[νj(νj+1)]/(s³+vc³),0)，U=[(1+vc³)s³/(s³+vc³)]^(β_m/3)。n=4π∫s²f，P∥=4π∫s⁴ξ²f，P⊥=2π∫s⁴(1−ξ²)f，积分域完全相同。两压力同除 P∥(b=1)，密度除…。证据：test_spectral_scientific_correction.py, test_frank_egedal_hot_ion_moments.py（记录 25 个测试函数；共享文件加直接组合/测试覆盖；独立解析/高精度对照）；合同 example 已运行。不建立的范围：排除不能到达B0轨道上的未指定粒子群、任意回调特征发现、零归一化及发散/未解析积分；不宣称印刷Eq19b差异已由作者确认为勘误。",
+    "evidence_ceiling": "已绑定的 test_spectral_scientific_correction.py 与 test_frank_egedal_hot_ion_moments.py 提供共享文件中的解析支撑/共同域与可积性见证、默认值/回调/失败回归，以及 beta=0 下归一化矩对独立 SciPy 求积的比较。未归一化原始矩的内部细化一致性是数值自查，不是外部高精度参考。历史完整 36 例清单，以及 degree=2、beta=-0.1、-0.3、-0.4、-0.4999、0、0.5 的 70 位不完全 Beta 原始矩参考目前未绑定，状态为 UNKNOWN。这不建立物理标定、任意回调解析能力或作者确认的 Eq19b 勘误。",
     "known_limitations": [
      "有限模和的非负部分是修改模型，不证明动力学等价。",
      "有限求积细化不能发现任意未解析回调特征。",
      "共同域纠正改变设置旧垂直下限时的密度/平行值。",
-     "有限探针覆盖声明默认值、代表性关系和边界情形，但不建立任意回调特征或默认值的物理解释。"
+     "有限探针覆盖声明默认值、代表性关系和边界情形，但不建立任意回调特征或默认值的物理解释。",
+     "UNKNOWN：历史 36 例矩阵和 70 位原始矩参考，缺少当前绑定的逐例输入/参考/比较记录。保留可积负 beta 支持；有限输出与 raw_moments_checked 本身不证明对该缺失参考的原始矩精度。"
     ]
    }
   },
   {
    "asset_id": "scirel.kinetic.terminal-flux-velocity-reduction",
-   "source_sha256": "e45dca79d86dde802c8c3233f3e22d1fb64ed70bd64a663a486e576d287a30e9",
+   "source_sha256": "ce97525a6ff9e73b9908eb7f572059698a3849582f86db33f17d59f8098e2e25",
    "summary": "用调用者热速度及径向/轴向求积将终态 H₂ 分布归约为轴向通量和平均速度；允许零权重单元，只要求每个空间格积分密度为正，且不计算高阶矩。",
    "definition": "每空间格按矩阵向量乘及径向加和顺序计算 n=Σ_i w_iΣ_j f_ijk dvx_j，Γ=VthΣ_i w_iΣ_j vx_j f_ijk dvx_j，u=Γ/n。单元权重可零，但每格积分密度必须正。",
    "model": "终态 H₂ 诊断，热速度由调用者提供。",
@@ -3299,11 +3300,11 @@
     "scope": [
      "非均匀含正负速度网格的独立逐格归约核对两个输出。",
      "正权重重叠域与九矩关系相符，零权重接受行为区分合同。",
-     "三个固定用例覆盖有限输入的精确一致以及布尔强制转换上的分歧。"
+     "UNKNOWN：历史声称的三个摘要固定参考例、双载体精确重放及布尔强制转换分歧，尚未绑定逐例输入、摘要、双方版本和比较断言；当前证据仍为上述直接测试。"
     ],
     "evidence_ceiling": "直接数值比较在受测载体上确立所声明的有限离散关系与边界差异。它们不确立上游终态分布、物理归一化、完整资格或专家认可。",
     "known_limitations": [
-     "与参考算例的数值一致只是有界证据，不构成完整资格。",
+     "绑定的独立单元/矩比较只支持受测有限关系，不构成独立专家认可或与外部实现一致性的证明。历史三例重放仍未绑定，不把它变成新增强制验收门槛。",
      "分布物理归一化及原通量单位标签需专家复核。",
      "公开分发许可仍待人工决定。"
     ]
@@ -4775,7 +4776,7 @@
   },
   {
    "asset_id": "scirel.kinetic.terminal-energy-transfer-reduction",
-   "source_sha256": "c3cffd371888ffa1ebb973d92a0b693fe4f9cdd6e6be9a3379517218108e0f3f",
+   "source_sha256": "8374e948a350e58baff37bd3af29d9fd7066892dbc59100af7ff890efd2a0d3b",
    "summary": "由终态H₂分布、有符号碰撞右端和外部源求损失、热能、动量及总能量传递剖面。",
    "definition": "对每个空间格 k，density=sum_i weight[i]*sum_j f[i,j,k]*dvx[j]，particle_flux=Vth*sum_i weight[i]*sum_j vx[j]*f[i,j,k]*dvx[j]，遵循所声明的逐格矩阵–向量和径向顺序。令 u=particle_flux/density、c_x=vx-u/Vth、c_squared=vr^2+c_x^2、m=2*mass_ratio*1.6726231e-27 kg。损失为 external_source 减去加权 RHS 积分。热传递为 0.5*m*Vth^2 乘以 c_squared*RHS 的加权积分。动量传递为 m*Vth 乘以 c_x*RHS 的加权积分。总传递为 thermal_transfer+momentum_transfer*u-0.5*m*(loss-external_source)*u^2。在有限精确算术下，总传递等于 0.5*m*Vth^2 乘以 (vr^2+vx^2)*RHS 的加权积分，且与外部源输入无关。",
    "model": "在显式碰撞 RHS 和外部分子源上的终态 H₂ 损失、动量与能量传递诊断。",
@@ -4894,11 +4895,11 @@
     "scope": [
      "独立中心RHS矩及非中心能量矩核对有符号非均匀网格四输出。",
      "改变外部源只改变损失；正密度下允许部分零求积格。",
-     "三个固定参考用例覆盖有限输入的精确一致以及所声明的布尔强制转换分歧。"
+     "UNKNOWN：历史声称的三个摘要固定参考例、双载体精确重放及布尔强制转换分歧，尚未绑定逐例输入、摘要、双方版本和比较断言；当前证据仍为上述直接测试。"
     ],
     "evidence_ceiling": "直接比较在受测载体上确立有限离散 RHS 归约与边界差异。它们不确立上游终态分布或 RHS、绝对物理归一化、整个闭合的资格或专家认可。",
     "known_limitations": [
-     "不存在经独立评审的、与外部实现一致性的资格；一致性证据只限于所声明的有限用例。",
+     "绑定的独立单元/矩比较只支持受测有限关系，不构成独立专家认可或与外部实现一致性的证明。历史三例重放仍未绑定，不把它变成新增强制验收门槛。",
      "原动量单位及分布/RHS绝对归一化需专家复核。",
      "公开分发许可仍待人工决定。"
     ]
@@ -5286,7 +5287,7 @@
   },
   {
    "asset_id": "scirel.plasma.fast-ion-heating",
-   "source_sha256": "adeda6571fc8ca0d38eda4be9da79ffa37f95503d7994236ef5cb5923045d718",
+   "source_sha256": "3f9aeaf0d7cc7362d8c53395252d51e463bc27669cbb1ef1547214047ff93bcf",
    "summary": "计算指定局部Mikkelsen加热分配近似，包括有限的零能量极限。",
    "definition": "f_i(x)=2/x²∫₀ˣ t/(1+t³)dt，x²=E_birth/(10m_fast T_e)；小x用收敛级数，其他区域用闭式，连续极限f_i(0)=1。",
    "model": "固定能量/温度/质量尺度的局部Mikkelsen近似。",
@@ -5348,15 +5349,16 @@
    },
    "verification": {
     "scope": [
-     "独立积分求积及连续零能量极限。",
+     "已有断言覆盖零能量极限和标量/数组回归；历史声称的独立积分求积目前未绑定，状态为 UNKNOWN。",
      "留出有限能量点的闭式一致性。",
      "有限与域外输入行为。"
     ],
-    "evidence_ceiling": "独立求积、解析极限和回归支持规定失败语义下的数学求值，不建立实验标定或更广物理适用性。",
+    "evidence_ceiling": "绑定的直接测试覆盖精确零能量极限、一个有限能量点上同形闭式表达式的 binary64 对照、标量/数组一致性及声明的域外拒绝。对该资产检索到的当前仓库证据中，历史独立积分求积声明尚未绑定输入、数值参考或比较断言，状态为 UNKNOWN。这些测试不建立实验标定或更广物理适用性。",
     "known_limitations": [
      "数值验证只证明指定数学近似的求值，不证明实验标定或特定成分/碰撞区间适用性。",
      "有限输入也可能产生非有限无量纲比并抛FloatingPointError。",
-     "完整慢化轨迹、空间输运及其他模型耦合不在本算子内。"
+     "完整慢化轨迹、空间输运及其他模型耦合不在本算子内。",
+     "UNKNOWN：历史独立求积目前未绑定；同形闭式表达式或与实现自身一致，不是独立积分参考。"
     ]
    }
   },
@@ -5689,10 +5691,7 @@
      "未记录独立或外部 oracle；证据仅为自洽/回归。",
      "合同不建立：不自洽求电势、平衡、碰撞、输运或积分矩。。"
     ]
-   },
-   "source_conflicts": [
-    "输入约束声称 v_parallel、v_perpendicular、b_t、psi、potential 未做显式有限性检查或未拒绝 NaN；但同一合同的 failure_semantics 与 verification.scope 又记录了这些局部量非有限值的拒绝及回归测试。两种叙述并存，尚待统一。"
-   ]
+   }
   },
   {
    "asset_id": "scirel.mirror.loss-cone-spectrum",
@@ -5983,7 +5982,7 @@
   },
   {
    "asset_id": "scirel.kinetic.terminal-heat-flux-reduction",
-   "source_sha256": "011c0b392bdb57985a5ff425019cba4a3633393dd5ceb6c723865551e3145f48",
+   "source_sha256": "f76efa86dcc5083aa62906bda3d91395ccd2c93b6e933bd46f342ce4f55b1cde",
    "summary": "用显式质量、热速度和柱坐标求积计算终态H₂随机能流与总轴向能流。",
    "definition": "对每个空间格 k，density=sum_i weight[i]*sum_j f[i,j,k]*dvx[j]，particle_flux=Vth*sum_i weight[i]*sum_j vx[j]*f[i,j,k]*dvx[j]，使用所声明的逐格矩阵–向量和径向顺序。令 u=particle_flux/density、c_x=vx-u/Vth、c_squared=vr^2+c_x^2、m=2*mass_ratio*1.6726231e-27 kg。随机通量为 0.5*m*Vth^3 乘以 c_squared*c_x*f 的加权积分。压力为 m*Vth^2/(3*1.602177e-19) 乘以 c_squared*f 的加权积分，轴向应力为 m*Vth^2/1.602177e-19 乘以 c_x^2*f 的加权积分再减去压力。总通量为 (0.5*density*m*u^2+2.5*pressure*1.602177e-19)*u+1.602177e-19*axial_stress*u+random_flux。在有限精确算术下，它等于原始动能通量 0.5*m*Vth^3 乘以 (vr^2+vx^2)*vx*f 的加权积分。",
    "model": "终态 H₂ 能量矩热通量诊断，质量比和热速度由调用者提供。",
@@ -6077,11 +6076,11 @@
     "scope": [
      "独立中心化和原始能流积分核对非均匀含正负速度网格上的两个输出。",
      "正权重随机能流与九矩关系相符；零权重接受区分合同。",
-     "三个固定参考用例覆盖有限输入的精确一致以及所声明的布尔强制转换分歧。"
+     "UNKNOWN：历史声称的三个摘要固定参考例、双载体精确重放及布尔强制转换分歧，尚未绑定逐例输入、摘要、双方版本和比较断言；当前证据仍为上述直接测试。"
     ],
     "evidence_ceiling": "直接比较在受测载体上确立有限离散热通量关系与边界差异。它们不确立上游终态分布、物理归一化、整个闭合的资格或专家认可。",
     "known_limitations": [
-     "不存在经独立评审的、与外部实现一致性的资格；一致性证据只限于所声明的有限用例。",
+     "绑定的独立单元/矩比较只支持受测有限关系，不构成独立专家认可或与外部实现一致性的证明。历史三例重放仍未绑定，不把它变成新增强制验收门槛。",
      "分布物理归一化需专家复核。",
      "公开分发许可仍待人工决定。"
     ]
@@ -6244,7 +6243,7 @@
   },
   {
    "asset_id": "scirel.kinetic.terminal-conservation-diagnostic",
-   "source_sha256": "32516655799609bbff88ec7bbc34f91354131776c2598f95b9443c2f9cb4b5d7",
+   "source_sha256": "d006d5f987bbd19308f1625169b10c0eaaf41f428aebfd08ea3270da6c8b6bc1",
    "summary": "比较总H₂热流的轴向差分与相邻单元总能量传递率的均值，给出全局归一化残差。",
    "definition": "区间k取q1=(flux[k+1]−flux[k])/(x[k+1]−x[k])，q2=(transfer[k+1]+transfer[k])/2；末节点两者置零。N为两整数组绝对值的共同最大值，须正有限；返回abs(q1−q2)/N。末零是约定，不是边界方程核验；残差可超过1。",
    "model": "在调用者拥有的入射剖面上做终态 H₂ 总能量剖面诊断。",
@@ -6308,11 +6307,11 @@
     "scope": [
      "对有符号非均匀剖面独立求区间斜率、相邻均值与全局归一化；含线性平衡和递减网格证据。",
      "拒绝测试覆盖形状、间距、非法实数、零归一化与非有限梯度。",
-     "三个可选的固定参考用例精确比较两个有限载体，并记录布尔强制转换上的分歧。"
+     "UNKNOWN：历史声称的三个可选的摘要固定参考例、双载体精确重放及布尔强制转换分歧，尚未绑定逐例输入、摘要、双方版本和比较断言；当前证据仍为上述直接测试。"
     ],
     "evidence_ceiling": "直接测试在受测剖面上确立该离散诊断；它们不确立入射总剖面归一化、完整边界平衡、整个闭合的资格或专家认可。",
     "known_limitations": [
-     "不存在经独立评审的、与外部实现一致性的资格；比较证据只限于受测剖面。",
+     "绑定的独立单元/矩比较只支持受测有限关系，不构成独立专家认可或与外部实现一致性的证明。历史三例重放仍未绑定，不把它变成新增强制验收门槛。",
      "入射总剖面及其单位标签的绝对物理意义需要专家复核。",
      "末节点未独立核验，零误差不建立完整守恒律。",
      "公开分发许可仍待人工决定。"
@@ -7445,9 +7444,9 @@
   },
   {
    "asset_id": "scirel.mirror.mirror-constrained-moments",
-   "source_sha256": "e6ee93c9060cdabf27fd8be3f33eff7cd69785079f595e7e88876320019cbd9e",
+   "source_sha256": "39f6ad9ba65e625e2a864bb7d7cde4248637712d2e8dbd097852b04d83388437",
    "summary": "计算不变量双 Maxwell 的局部密度和平行/垂直压力，并可用双端损失锥俯仰积分修正。",
-   "definition": "C=(B−B_ref)/T_parallel+B_ref/T_perp,ref，T_perp,local=B/C；n_full=exp[log(n_ref)+log(T_perp,local/T_perp,ref)−q(φ−φ_ref)/T_parallel]。令 x=μC，y=max(min(a_left x+b_left,a_right x+b_right),0)，a=(B_end−B)/(CT_parallel)，b=q(φ_end−φ)/T_parallel，分别积分 e^(−x)P(1/2,y)、e^(−x)P(3/2,y)、x e^(−x)P(1/2,y)。回填后乘 n_full、n_fullT_parallel、n_fullT_perp,local。纯磁采用解析角积分，一般情形在 sqrt(x) 上分屏障段控误差求积；对数合成乘积，先取电势差并缩放避免中间溢出。",
+   "definition": "C=(B−B_ref)/T_parallel+B_ref/T_perp,ref，T_perp,local=B/C；n_full=exp[log(n_ref)+log(T_perp,local/T_perp,ref)−q(φ−φ_ref)/T_parallel]。令 x=μC，y=max(min(a_left x+b_left,a_right x+b_right),0)，a=(B_end−B)/(CT_parallel)，b=q(φ_end−φ)/T_parallel，分别积分 e^(−x)P(1/2,y)、e^(−x)P(3/2,y)、x e^(−x)P(1/2,y)。回填后乘 n_full、n_fullT_parallel、n_fullT_perp,local。纯磁采用解析角积分，一般情形在 sqrt(x) 上分屏障段控误差求积；对数合成乘积，先取电势差并缩放避免中间溢出。 一般求积内部按 quad_vec 的误差估计执行绝对 2e-13 / 相对 2e-11 目标，未达标抛出 RuntimeError；公开返回仍只有九个既定字段，不含误差估计字段。",
    "model": "含规定双塞损失锥的回旋对称双 Maxwell 矩；不自洽求电势或平衡。",
    "assumptions": [
     "同一物种/参考态的物理一致性由调用者保证。",
@@ -7620,7 +7619,7 @@
     ],
     "excluded": [
      "不单凭返回矩确定静电势、镜平衡或自洽分布。",
-     "不提供单侧塞、磁通自动换算、任意磁力线几何或有限俯仰求积的误差估计。"
+     "不提供单侧塞、磁通自动换算、任意磁力线几何或公开返回的有限俯仰求积误差估计字段。内部仍用 quad_vec 误差估计执行绝对 2e-13 / 相对 2e-11 目标，达标才返回。"
     ]
    },
    "failure_semantics": {
@@ -7638,7 +7637,7 @@
      "当前 SciRel 实现及本合同列出的仓库测试覆盖所声明的公共端口与数值关系。",
      "示例只演练一个有界的代表性算例，不把适用范围扩展到声明前提之外。"
     ],
-    "evidence_ceiling": "限于所声明关系：C=(B−B_ref)/T_parallel+B_ref/T_perp,ref，T_perp,local=B/C；n_full=exp[log(n_ref)+log(T_perp,local/T_perp,ref)−q(φ−φ_ref)/T_parallel]。令 x=μC，y=max(min(a_left x+b_left,a_right x+b_right),0)，a=(B_end−B)/(CT_parallel)，b=q(φ_end−φ)/T_parallel，分别积分…。证据：test_mirror_constrained_moments.py, test_mirror_kinetic_scientific_correction.py, test_mirror_gauge_scientific_correction.py, test_independent_correction.py（记录 46 个测试函数；绑定文件覆盖；仅自洽/回归）；合同 example 已运行。不建立的范围：不单凭返回矩确定静电势、镜平衡或自洽分布；不提供单侧塞、磁通自动换算、任意磁力线几何或有限俯仰求积的误差估计。",
+    "evidence_ceiling": "限于所声明关系：C=(B−B_ref)/T_parallel+B_ref/T_perp,ref，T_perp,local=B/C；n_full=exp[log(n_ref)+log(T_perp,local/T_perp,ref)−q(φ−φ_ref)/T_parallel]。令 x=μC，y=max(min(a_left x+b_left,a_right x+b_right),0)，a=(B_end−B)/(CT_parallel)，b=q(φ_end−φ)/T_parallel，分别积分…。证据：test_mirror_constrained_moments.py, test_mirror_kinetic_scientific_correction.py, test_mirror_gauge_scientific_correction.py, test_independent_correction.py（记录 46 个测试函数；绑定文件覆盖；仅自洽/回归）；合同 example 已运行。不建立的范围：不单凭返回矩确定静电势、镜平衡或自洽分布；不提供单侧塞、磁通自动换算、任意磁力线几何或公开返回的有限俯仰求积误差估计字段。内部仍用 quad_vec 误差估计执行绝对 2e-13 / 相对 2e-11 目标，达标才返回。",
     "known_limitations": [
      "x>40尾界按声明处理；自适应误差估计非所有浮点组合的形式证明，近零比例采用绝对误差目标。",
      "回填是指定现象学；refill精确1时不求塞剖面；不可表示的小值下溢可变零。",
@@ -7647,10 +7646,7 @@
      "未记录独立或外部 oracle；证据仅为自洽/回归。",
      "合同不建立：不单凭返回矩确定静电势、镜平衡或自洽分布。。"
     ]
-   },
-   "source_conflicts": [
-    "合同内部矛盾：applicability.excluded[1] 声称不提供有限俯仰求积的误差估计，但同一合同的身份、输出、失败语义与验证范围又声明了误差控制的积分与误差目标。本页保留该排除条目的原文并在此标注冲突，不取消现有误差输出合同。"
-   ]
+   }
   },
   {
    "asset_id": "scirel.inference.anisotropic-parameter-optimization",
