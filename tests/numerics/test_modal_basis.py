@@ -331,6 +331,67 @@ def test_projection_rejects_mismatched_samples():
         basis.project(np.ones(3))
 
 
+def _project_with_entry(entry, kind, ndim, order, values):
+    if entry == "method":
+        return modal_basis(kind, ndim, order).project(values)
+    return entry(kind, ndim, order, values)
+
+
+@pytest.mark.parametrize("mode", ("warn", "ignore", "raise"))
+@pytest.mark.parametrize("kind", ("tensor", "serendipity"))
+@pytest.mark.parametrize("entry", ("method", project_on_modal_basis, modal_projection))
+def test_finite_projection_overflow_raises_without_mutating_samples(mode, kind, entry):
+    samples = np.array([1e308])
+    before = samples.copy()
+    samples.flags.writeable = False
+    with np.errstate(over=mode, invalid=mode):
+        settings = np.geterr()
+        with pytest.raises(FloatingPointError):
+            _project_with_entry(entry, kind, 2, 0, samples)
+        assert np.geterr() == settings
+    np.testing.assert_array_equal(samples, before)
+
+
+@pytest.mark.parametrize("mode", ("warn", "ignore", "raise"))
+@pytest.mark.parametrize("bad", (np.nan, np.inf, -np.inf))
+@pytest.mark.parametrize("entry", ("method", project_on_modal_basis, modal_projection))
+def test_nonfinite_projection_samples_still_raise_value_error(mode, bad, entry):
+    with np.errstate(over=mode, invalid=mode):
+        with pytest.raises(ValueError, match="values must be finite"):
+            _project_with_entry(entry, "tensor", 2, 0, [bad])
+
+
+@pytest.mark.parametrize("mode", ("warn", "ignore", "raise"))
+@pytest.mark.parametrize("kind", ("tensor", "serendipity"))
+@pytest.mark.parametrize("entry", ("method", project_on_modal_basis, modal_projection))
+@pytest.mark.parametrize("dtype", (np.int64, np.float32, np.float64))
+def test_representable_projection_preserves_array_type_shape_and_inputs(mode, kind, entry, dtype):
+    samples = np.array([3], dtype=dtype)
+    before = samples.copy()
+    samples.flags.writeable = False
+    with np.errstate(over=mode, invalid=mode):
+        result = _project_with_entry(entry, kind, 2, 0, samples)
+    assert isinstance(result, np.ndarray)
+    assert result.shape == (1,)
+    assert result.dtype == np.dtype(np.float64)
+    np.testing.assert_allclose(result, [6.0], rtol=1e-14)
+    np.testing.assert_array_equal(samples, before)
+
+
+@pytest.mark.parametrize("mode", ("warn", "ignore", "raise"))
+@pytest.mark.parametrize("kind", ("tensor", "serendipity"))
+@pytest.mark.parametrize("entry", ("method", project_on_modal_basis, modal_projection))
+def test_large_representable_projection_is_not_rejected(mode, kind, entry):
+    samples = np.array([8e307])
+    with np.errstate(over=mode, invalid=mode):
+        result = _project_with_entry(entry, kind, 2, 0, samples)
+    assert isinstance(result, np.ndarray)
+    assert result.shape == (1,)
+    assert result.dtype == np.dtype(np.float64)
+    np.testing.assert_allclose(result, [1.6e308], rtol=1e-14)
+    np.testing.assert_array_equal(samples, [8e307])
+
+
 def test_gauss_legendre_rejects_a_non_positive_order():
     for order in (0, -1, 1.5, True):
         with pytest.raises(ValueError, match="order must be a positive integer"):
