@@ -1025,7 +1025,7 @@
   },
   {
    "asset_id": "scirel.kinetic.gpdf-cauchy-transform",
-   "source_sha256": "f4596e0d15d9f67c22baf5fccf79f28d6b3e4e74601aa6fccb796fbfe07b0d6f",
+   "source_sha256": "c274f301801450cd067f9fc3b6c2c96eb324fc59a09ed0ad34d880954fa3e6ac",
    "summary": "对调用者给定的密度特征求 Cauchy 变换，并针对近实轴核峰使用专门求积。",
    "definition": "G(z)=∫ density(v)/(v-z) dv。对 z=x+i·y，邻近投影的有限面板采用 v=x+abs(y)·sinh(t)，使被积核为 density(v)·(tanh(t)+i·sign(y)·sech(t))。变换后的有界面板可分辨已知核峰与长尾；平滑远面板和无穷尾部使用实坐标求积。仅按声明的支撑约定增加显式解析延拓。",
    "model": "一维广义等离子体响应。",
@@ -1132,7 +1132,7 @@
      "解析延拓须显式提供与密度一致的解析回调。",
      "绑定直接测试覆盖高斯/Faddeeva 恒等式与有限支撑延拓，但未绑定仅回调全线支撑或求积证书情形。"
     ],
-    "evidence_ceiling": "限于有限区间与特征网格全线 Cauchy 变换及分量误差报告。证据：`test_generalized_dispersion_d2.py` 含 4 个测试函数，其中 2 个引用 `evaluate_cauchy_transform`，由 3 个资产共享; `test_generalized_dispersion_d2_successor.py` 含 7 个测试函数，其中 5 个引用 `evaluate_cauchy_transform`，由 3 个资产共享; `test_generalized_dispersion_numerical_repair.py` 含 11 个测试函数，其中没有函数引用 `evaluate_cauchy_transform`，由 3 个资产共享; `test_cauchy_kernel_resolution.py` 含 6 个测试函数，其中没有函数引用 `evaluate_cauchy_transform`，仅由本资产绑定；本审计已执行有界示例。真值来源：独立解析有限区间恒等式与 Faddeeva 参照。不建立：仅回调的全线支撑发现或源 MATLAB 行为。"
+    "evidence_ceiling": "限于有限区间及显式特征网格的全实轴 Cauchy 变换。四个绑定文件都有直接调用，包括 cauchy 导入别名：numerical_repair 文件核对平移 Gaussian/Faddeeva 值、有限支撑的对数延拓、非法控制与求积失败；kernel_resolution 文件直接核对多项式原函数、近实轴核峰、端点、Gaussian 尾部、面板细化和 Cauchy 密度留数恒等式。d2 与 d2_successor 文件也直接检查 Gaussian 恒等式、显式特征分辨和失败。这些是有界解析参照与误差指标检查，不建立回调支撑自动发现或全局求积认证。"
    },
    "example": {
     "description": "用显式有限特征网格积分归一化 Gaussian。",
@@ -1141,7 +1141,7 @@
   },
   {
    "asset_id": "scirel.kinetic.maxwellian-electrostatic-mode",
-   "source_sha256": "3a3cf8a775a93ec4de9a6705f73077919a29dcc391c1e59457884d6d437f40f8",
+   "source_sha256": "8b70dbcd4d32602ecee898f71d997c6e880644799740e26c565a7dc146695007",
    "summary": "计算归一化 Maxwellian 介电响应，并避免大相速处的相消。",
    "definition": "epsilon=1+chi，chi=(1+z*Z(z))/k²。大 |z| 使用等价 Gaussian 矩展开避免相消，D=k²*epsilon 仅作为诊断量。",
    "model": "一维均匀 Maxwellian 等离子体，等离子体频率归一化为一。",
@@ -1215,9 +1215,9 @@
     "known_limitations": [
      "epsilon_error 只是估计，不是严格包络。",
      "有限输入仍可能有不可表示复响应；单次求值不表示找到根。",
-     "仅绑定共享文件覆盖（test_generalized_dispersion_d2.py）；未记录资产专属失败/边界探针。"
+     "三个绑定文件包含直接解析恒等式、小 k 与形状检查，也包含 response 别名调用；这些采样用例不建立全域精度。"
     ],
-    "evidence_ceiling": "限于所声明关系：epsilon=1+chi，chi=(1+z*Z(z))/k²。大 |z| 使用等价 Gaussian 矩展开避免相消，D=k²*epsilon 仅作为诊断量。证据：test_generalized_dispersion_d2.py, test_generalized_dispersion_d2_successor.py, test_generalized_dispersion_numerical_repair.py（记录 22 个测试函数；仅共享文件覆盖；仅自洽/回归）；合同 example 已运行。不建立的范围：不复现 MATLAB 行为、绘图、全局根扫描或任意解析延拓；外部物理验证。"
+    "evidence_ceiling": "Maxwellian 介电响应的有界证据包括 d2 文件的直接 Faddeeva 恒等式、d2_successor 文件的小 k 冷极限与数组/标量检查，以及 numerical_repair 文件通过 response 别名的直接调用。修复测试在 k=1e-5、1e-7、1e-9、1e-10 处，将 epsilon(2,k) 与独立 Gaussian 矩展开 0.75-3*k^2/16-15*k^4/64 比较，绝对误差小于 1e-13。共享文件通过不代表每项资产全覆盖；这些有界参照不认证任意解析延拓或外部物理适用性。"
    },
    "example": {
     "description": "计算一个归一化 Maxwellian 静电残差。",
@@ -1226,7 +1226,7 @@
   },
   {
    "asset_id": "scirel.kinetic.maxwellian-electrostatic-solver",
-   "source_sha256": "e42b0ab47dbdd2da984e739746399f5b4e455b731f8f5c762ad2cb779622f3ac",
+   "source_sha256": "35cf66272d9f166e2cae0999b1ec2ce7122ae8a5a9ee9d4d5f4af43852b788c6",
    "summary": "从显式复种子求一个 Maxwellian 模态，并检查残差与误差。",
    "definition": "用两个实分量求解 epsilon(omega,k)=0，再进行不依赖 k² 缩放的归一化残差与估计误差门禁。",
    "model": "一维均匀 Maxwellian 等离子体，等离子体频率归一化为一。",
@@ -1330,9 +1330,9 @@
     "known_limitations": [
      "估计误差不是严格包络。",
      "不承诺唯一根、最弱阻尼分支或全局选根；种子决定分支。",
-     "三个共享广义色散文件中只有两个直接函数（`test_maxwellian_root_checks_residual` 与 `test_small_k_maxwellian_limit_is_three_quarters_and_false_seed_rejected`）；含十一个测试的修复文件没有任何直接调用。"
+     "三个绑定文件共有上述四个直接测试函数，其中 numerical_repair 文件有两个 solve 别名调用；独立小 k 参照仅覆盖相应采样点，不认证全部模态。"
     ],
-    "evidence_ceiling": "限于有限正实 k 与可表示复频率下的麦克斯韦静电模。证据：`test_generalized_dispersion_d2.py` 含 4 个测试函数，其中 1 个引用 `solve_maxwellian_electrostatic_mode`，由 3 个资产共享; `test_generalized_dispersion_d2_successor.py` 含 7 个测试函数，其中 1 个引用 `solve_maxwellian_electrostatic_mode`，由 3 个资产共享; `test_generalized_dispersion_numerical_repair.py` 含 11 个测试函数，其中没有函数引用 `solve_maxwellian_electrostatic_mode`，由 3 个资产共享；仅绑定共享文件覆盖，因此通过是文件级事实、而非资产隔离证据；本审计已执行有界示例。真值来源：仅自洽/回归。不建立：全局根扫描或任意解析延拓。"
+    "evidence_ceiling": "限于单个种子选出的 Maxwellian 模态。直接求解调用包括 test_maxwellian_root_checks_residual、test_small_k_maxwellian_limit_is_three_quarters_and_false_seed_rejected，以及通过 solve 别名调用的 test_small_k_root_does_not_accept_nonroot_seed 和 test_successful_roots_pass_normalized_physical_residual。小 k 检查使用独立 Gaussian 矩介电展开；成功求根检查归一化残差与估计误差门槛，并拒绝仅一次求值预算。不建立全局选根、唯一性、全部分支或任意解析延拓；共享文件的每条测试并非都覆盖本求解器。"
    },
    "example": {
     "description": "求解一个由种子指定的 Maxwellian 模态。",

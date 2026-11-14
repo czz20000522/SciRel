@@ -2815,7 +2815,7 @@
    },
    "example": {
     "description": "在 (x, λ)=(0.5, 0.25) 处计算 Ronnmark R 函数。",
-    "expected": "示例返回 R≈−0.550443+0j、dR/dλ≈−0.449557+0j，分支为 RTAY(AL<4)，并给出 2×2 伴随矩阵 RC。"
+    "expected": "示例返回 R≈−0.550443+0j、d(λR)/dλ≈−0.449557+0j，分支为 RTAY(AL<4)，并给出 2×2 伴随矩阵 RC。"
    },
    "verification": {
     "scope": [
@@ -3765,7 +3765,7 @@
   },
   {
    "asset_id": "scirel.kinetic.kinetic-wavevector-roots",
-   "source_sha256": "f284436c3e4a5bc415a980bed7bb3c73a10a67a65a25403687bc7c6984f950e3",
+   "source_sha256": "eb8e13a5215760bf29e40bcd3451b1df8a3a3d5d789a7cbeeaa37b1256b70d77",
    "summary": "对输入的每个角频率，均从同一个固定初值求解 Ronnmark 行列式的复数 kx 零点。",
    "definition": "每个频点独立从 kx_start 开始，用复数信赖域 dogleg 算法求解 det(D)=0，并限制迭代和函数求值次数。",
    "model": "均匀磁化多组分 Maxwellian 等离子体",
@@ -3857,7 +3857,7 @@
     {
      "name": "residuals",
      "description": "各根处的色散行列式残差 $\\mathcal{D}$",
-     "constraints": "有限复数；根的质量须由该残差与 `last_updates` 共同判断。",
+     "constraints": "有限复数；按同一频点索引下的 residuals、determinant_scale、exit_flags 与 converged 判断最终候选。",
      "dtype": "complex128 复数"
     },
     {
@@ -3887,7 +3887,7 @@
     {
      "name": "converged",
      "description": "各频点求解器是否收敛（对齐 SciPy `success`：残差或步长判据满足，对应 `exit_flags` 1、2、3）",
-     "constraints": "为假时退出标志非正（`0` 迭代或求值次数用尽、`-2` Jacobian 退化、`-3` 信赖域坍缩），根仍是行列式的数值驻点，调用者须按 `residuals` 与 `determinant_scale` 自行判定是否接受。",
+     "constraints": "为假时退出标志非正（0 为预算用尽、-2 为 Jacobian 退化、-3 为信赖域坍缩）。返回根仅为未被接受的最终候选，也可能就是初始种子；不保证是零点或驻点。",
      "dtype": "布尔值"
     },
     {
@@ -3935,7 +3935,7 @@
     {
      "name": "solver",
      "description": "求根算法的文字标识，供调用者核对所用的数值路径",
-     "constraints": "固定为 `octave_fsolve_dogleg_on_fDR`。",
+     "constraints": "固定为 `reference_fsolve_dogleg_on_fDR`。",
      "dtype": "字符串"
     }
    ],
@@ -3977,9 +3977,7 @@
     ]
    },
    "source_conflicts": [
-    "kx_start 的端口描述使用“延续求根”，但定义与 omegas 描述明确说明各频点独立重复同一初值，不进行频点间延续；本页提示该矛盾。",
-    "residuals 的约束引用 last_updates，但当前 outputs 清单未声明该返回键；不据此承诺未声明的公开输出。",
-    "example.expected 把残差实部写成 +1.14e-13，实际运行结果为 −1.14e-13；本页中文按实测值给出。"
+    "kx_start 的端口描述使用“延续求根”，但定义与 omegas 描述明确说明各频点独立重复同一初值，不进行频点间延续；本页提示该矛盾。"
    ]
   },
   {
@@ -6823,7 +6821,7 @@
   },
   {
    "asset_id": "scirel.kinetic.kinetic-wavevector-scan",
-   "source_sha256": "0cc18176552c203cd35398210f3e2144436390757b4cad24fe27c0474bb8894a",
+   "source_sha256": "e590553e2144126665a538b907a8e4d230d49c276e7632b67fcde464950f6767",
    "summary": "导出频率阶梯与固定初值，然后逐频点求解保留符号的 Ronnmark 复数 kx 根。",
    "definition": "任务图由 wn 导出有序频率阶梯，并确定唯一初值 kx_start=kx_scale*kn；有界求根器在每个频点独立重复使用该初值。",
    "model": "均匀磁化多组分 Maxwellian 等离子体",
@@ -7029,7 +7027,7 @@
    "failure_semantics": {
     "invalid_input": "`scan_frequencies`/`seed_wavenumber` 对非有限边界、非正 `wn`/`kn`/`omega_step`、`omega_stop < omega_scale`、空阶梯或非有限 `kz` 抛出 ValueError；非法平衡控制会在根图导入前由 `derive_species_equilibrium_scales` 失败。",
     "runtime_failure": "根求解器的数值失败从 `solve_kinetic_wavevector_roots` 传播；不替换回退根、钳制或重试。",
-    "nonconvergence": "每个逐频根字典保留 `exit_flag` 与残差（及非正根标志）；未收敛项可被观察，不被静默替换。",
+    "nonconvergence": "有界未收敛通过 roots、residuals、determinant_scale、exit_flags、iterations、function_evals、converged 等频率轴并列数组报告。第 i 个频点读取 result[\"exit_flags\"][i] 与 result[\"converged\"][i]；不返回逐频根字典，也不保证失败候选为驻点。",
     "partial_results": "根图抛出异常时不返回部分扫描映射；已完成的扫描仍可能包含逐频未收敛项。"
    },
    "example": {
@@ -7460,7 +7458,7 @@
     {
      "name": "omega",
      "description": "直接给定的角频率，可替代 `f` 进入共振宗量（沿用原始角频率 token，避免 `2*pi*f` 往返舍入）",
-     "constraints": "可选关键字参数，缺省 `None`；`omega` 与 `f` 二者恰好提供一个；给出 `omega` 时其值直接作为 $\\omega$ 并忽略 `f`，且须有限非零。",
+     "constraints": "可选关键字参数，缺省 `None`；`omega` 与 `f` 二者恰好提供一个；给出 `omega` 时其值直接作为 $\\omega$ ，且须有限非零。",
      "dtype": "实数"
     }
    ],
@@ -7599,9 +7597,7 @@
      "tests/kinetic/test_fluid_spectrum_r43_kinetic.py"
     ]
    },
-   "source_conflicts": [
-    "omega 的约束同时写明“omega 与 f 恰好提供一个”和“给出 omega 时忽略 f”；后者不能被解读为允许同时传入二者。措辞需在后续合同修订中核对。"
-   ]
+   "source_conflicts": []
   },
   {
    "asset_id": "scirel.diagnostics.firehose-mirror-margins",
@@ -9171,7 +9167,7 @@
   },
   {
    "asset_id": "scirel.kinetic.species-equilibrium-scales",
-   "source_sha256": "907f648cc4186ebb8e907c12bbfe3c849a2da375f6160cb73c5c30b9628f0a4d",
+   "source_sha256": "c7bef50687d426c51046127c83402da1e1e415d750eae0e1c7391b4dc9e88226",
    "summary": "从非空物种混合物及参考密度、温度导出 SI 热速、回旋频率、等离子体频率、回旋半径和 Debye 尺度。",
    "definition": "n_s=ns_unit_s*n00；T_s[K]=Ts_unit_s*T00[eV]*1.6022e-19/kB；vts=sqrt(2*kB*T_s/m_s)；wcs=q_s*B0/m_s；wps2=n_s*q_s²/(m_s*epsilon0)；rhocs=sqrt(kB*T_s/m_s)/wcs；lambdaDs=sqrt(epsilon0*kB*T_s/(n_s*q_s²))。扫描尺度为 wcn=min(abs(wcs))、rhocn=max(abs(rhocs))、kn=1/rhocn、wn=wcn。固定 c2=(2.99792458e8)²、epsilon0=8.854187817e-12、kB=1.38064852e-23。",
    "model": "磁化 Maxwellian 物种平衡，采用声明的热速和有符号回旋半径约定。",
@@ -9367,10 +9363,10 @@
    "verification": {
     "scope": [
      "单/双物种尺度恒等式、有符号方向、形状与不修改输入。",
-     "单/双物种参考值只读对照摘要固定的参考数据。",
+     "historical-unbound UNKNOWN：单/双物种摘要固定参考对照及其独立复核尚未绑定可审比较回执；现有尺度恒等式、方向、形状、输入所有权和拒绝断言保持。",
      "无效输入和不可表示派生值明确拒绝。"
     ],
-    "evidence_ceiling": "直接测试支持公式与失败行为；只读对照在两个参考案例核对全部 19 字段，但不覆盖任意混合物或归一化。对该对照的独立复核只支持其声明范围，不扩大任意输入保真或授予专家认可。",
+    "evidence_ceiling": "直接测试检查热速度/回旋半径恒等式、单/双物种方向与形状、不修改输入、非法输入和不可表示输出。这些有界内部恒等式不证明历史两案例全部 19 字段独立对照或其单独复核；相应声称在绑定比较回执前为 historical-unbound UNKNOWN。已声明的尺度计算仍受支持。",
     "known_limitations": [
      "常数和 eV 到 K 因子有意采用声明的数值约定。",
      "不返回热分布、波色散或根结果。",

@@ -129,11 +129,11 @@
   "zh": "Maxwellian 静电响应"
  },
  "verification": {
-  "evidence_ceiling": "Bounded to the declared relation: epsilon=1+chi with chi=(1+z Z(z))/k²; for large |z| the equivalent Gaussian moment expansion is used to avoid cancellation, and D=k²epsilon remains a diagnostic. Evidence: test_generalized_dispersion_d2.py, test_generalized_dispersion_d2_successor.py, test_generalized_dispersion_numerical_repair.py (22 recorded test functions; shared-file coverage only; self-consistency/regression only); the contract example ran. Excluded scope: Source-project MATLAB behavior, graphics, global root scans and arbitrary analytic continuation; external physical validation.",
+  "evidence_ceiling": "Bounded Maxwellian dielectric evidence includes direct Faddeeva-identity checks in test_generalized_dispersion_d2.py, small-k cold-limit and array/scalar checks in test_generalized_dispersion_d2_successor.py, and response alias calls in test_generalized_dispersion_numerical_repair.py. The repair test compares epsilon(2,k) with the independent Gaussian-moment expansion 0.75-3*k^2/16-15*k^4/64 for k=1e-5,1e-7,1e-9,1e-10 at absolute error below 1e-13. Shared-file success is not per-asset full coverage; these bounded references do not certify arbitrary analytic continuation or external physical applicability.",
   "known_limitations": [
    "epsilon_error is an estimate rather than a rigorous enclosure.",
    "Finite inputs can have unrepresentable complex response; no root is inferred from an evaluation.",
-   "Only shared-file coverage is bound (test_generalized_dispersion_d2.py); no asset-specific failure/limit probe is recorded."
+   "Direct analytic-identity, small-k and shape checks are bound through the three named files, including the response alias; their sampled cases do not establish global accuracy."
   ],
   "scope": [
    "Current SciRel implementation and the repository tests listed in this contract cover the declared public ports and numerical relation.",

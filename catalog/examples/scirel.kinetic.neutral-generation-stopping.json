@@ -32,13 +32,13 @@
  "identity": {
   "relation": "Evaluate the source Delta_n stopping criterion for collision-generation convergence: returns the relative generation density ratio and whether the next generation is unnecessary.",
   "direction": "current and accumulated generation density profiles plus stop controls -> (delta, done, reason)",
-  "definition": "Evaluate the source Delta_n stopping criterion for collision-generation convergence: returns the relative generation density ratio and whether the next generation is unnecessary.",
+  "definition": "After validating all inputs and seed controls, delta=max(generation_density_m3)/max(accumulated_density_m3). First delta<truncate returns (delta, True, \"truncate\"). Otherwise, only when seed_iteration_enabled and delta<0.003*seed_error, return (delta, True, \"seed_relative\"); else return (delta, False, \"continue\"). Both comparisons are strict: equality does not trigger that stopping branch; 0.003 is fixed, not a parameter.",
   "model": "the per-generation ratio-of-max stopping relation with explicit fail-closed domain tightenings",
   "geometry": "one spatial axis for two aligned density profiles",
   "coordinates": "densities in m^-3, truncate dimensionless",
   "boundary": "nonempty finite nonnegative 1-D density arrays of one shape; accumulated density has a positive maximum; finite positive real truncate; boolean seed_iteration_enabled and a finite nonnegative real seed_error exactly when enabled; derived delta finite",
   "assumptions": [
-   "The relation applies the ratio-of-max test with strict truncate and seed-relative comparisons. SciRel validates seed controls before the early truncate return and rejects real-value coercions and non-finite derived delta.",
+   "The fixed factor 0.003 and ordered strict comparisons are part of this implemented relation. Seed controls are validated before either stopping branch; equality at truncate may still satisfy the later seed-relative condition.",
    "No external atomic-physics reference is bound: the residual is recorded as validation_oracle_gap."
   ]
  },

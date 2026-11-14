@@ -4,12 +4,12 @@
  "records": [
   {
    "asset_id": "scirel.kinetic.neutral-generation-stopping",
-   "source_sha256": "ded35195d6006511e0e74e27eb14a722a6832c1f216e8314e3ca351b11b92548",
+   "source_sha256": "3116fa834bf9e4355d3fbf0db4a8a10aec1bf73f6022f8981db51e1c67674ce5",
    "summary": "计算碰撞代的相对密度比 Δn，并判断是否还需下一代。",
-   "definition": "delta=max(generation_density)/max(accumulated_density)，按严格截断或相对种子误差条件返回 done 与 reason。",
+   "definition": "先校验全部输入与种子控制，计算 delta=max(generation_density_m3)/max(accumulated_density_m3)。先判断 delta<truncate，成立返回 (delta, True, \"truncate\")；否则仅在 seed_iteration_enabled 且 delta<0.003*seed_error 时返回 (delta, True, \"seed_relative\")，其余返回 (delta, False, \"continue\")。两个比较均严格小于：等号不触发相应停止分支；0.003 是固定常数，不是参数。",
    "model": "逐代最大值比停止关系，并对非法输入域作显式失败关闭收紧。",
    "assumptions": [
-    "关系采用最大值之比以及严格的 truncate 与种子相对比较。SciRel 在提前返回 truncate 之前校验种子控制，并拒绝实数值强制转换和非有限派生 delta。",
+    "固定系数 0.003 与有先后次序的严格比较属于现行关系。两个停止分支前均校验种子控制；delta 等于 truncate 时仍可能满足后续种子相对条件。",
     "未绑定外部原子物理参考；该缺口记录为 validation_oracle_gap。"
    ],
    "boundary": "密度是非空、有限、非负、同形一维数组，累计最大值正；truncate有限正；种子开关为布尔且仅启用时给有限非负seed_error。",
@@ -460,7 +460,7 @@
   },
   {
    "asset_id": "scirel.kinetic.shifted-maxwellian-seed",
-   "source_sha256": "31a4b448a77d6d910b76a1e48842b538b702404f7f92091a46845cd3c23f91a0",
+   "source_sha256": "aa64617318d1b065451c506be135a051c5e663d4c107247398a1575a94f4b84b",
    "summary": "在圆柱 (vr, vx) 速度网格上给出矩补偿之前的归一化指数分布种子：每个轴向漂移对应一个温度，指数中含分子数因子，采用严格内部 −80 截断，并按调用者提供的圆柱单元体积归一化。它与圆柱速度求积组合使用，止于任何矩补偿步骤之前。",
    "definition": "取 m_H = 1.6726231e-27 kg（氢质量常数），vth = sqrt(2 e T_norm / (m m_H))。每个漂移的原始指数为 -(vr² + (vx - shift/vth)²) * molecule_count * T_norm / T_shift。原始种子在 -80 < argument < 0 时取 exp(argument)，其余情况（包括 argument = 0）一律取 exp(-80)：这是严格内部截断，因此恰好落在漂移峰上的网格节点也像远端尾部一样被压到下限，而返回的 exponent 仍报告原始值。分布按每个漂移和给定单元体积归一化：每个漂移满足 sum(volume * distribution) = 1。",
    "model": "显式网格上的漂移 Maxwell 指数种子；任何下游矩补偿步骤都刻意留在此叶函数之外。",
@@ -574,14 +574,14 @@
      "每位移层满足Σvolume×distribution=1。",
      "严格内部裁剪反例：恰位移峰值argument=0时分布取exp(−80)，指数输出仍为原零。",
      "所有指数低于−80时种子精确为网格均匀分布。",
-     "molecule_count=2使指数倍增，分布与独立式一致且归一化为1。",
+     "分子数因子：molecule_count=2 使指数加倍，分布与同一关系的文件内循环结果一致，并保持单位归一化。",
      "正位移使体积加权轴向矩为正。",
      "柱求积体积归一化种子，并在同不可变网格快照上接入Maxwell平均。",
      "拒绝Tnorm=1e308热速度溢出、极小Tnorm配1e308位移的无限原指数、1e−320体积使分母下溢/分布溢出及近float64上限体积使加权和溢出后全零；普通输入不变。",
      "非空位移层、形状一致、实数有限、正温度/质量/Tnorm、整数molecule_count精确1或2及严格正体积门禁。",
-     "对独立执行、以固定校验和锚定的参考实现做有界固定用例比较，在单分子和双分子留出输入上复现分布、指数和热速度，rtol 1e-15。该比较受环境门禁限制，不构成完整资格。"
+     "historical-unbound UNKNOWN：在已检查证据中，尚不能绑定所称单独执行、SHA-256 固定的参考比较回执。现有文件内循环、归一化、严格指数区间和求积串接断言仍作为回归检查保留，不冒充该历史独立执行的证明。"
     ],
-    "evidence_ceiling": "限于所声明关系：取 m_H = 1.6726231e-27 kg（氢质量常数），vth = sqrt(2 e T_norm / (m m_H))。每个漂移的原始指数为 -(vr² + (vx - shift/vth)²) * molecule_count * T_norm / T_shift。原始种子在 -80 < argument < 0 时取 exp(argument)，其余情况（包括 argument = 0）一律取 exp(-80)：这是严格内部截断，因此恰好落在漂移峰上的网格节点也像远端尾部一样被压到下限，而返回的…。证据：test_shifted_maxwellian_seed.py（记录 22 个测试函数；绑定文件覆盖；有界 source-method 对照）；合同 example 已运行。不建立的范围：任何下游矩补偿步骤：本叶函数只返回补偿前的种子；不提供非Maxwell/非指数种子或碰撞、场模型。",
+    "evidence_ceiling": "绑定直接测试将分布、指数和热速度与同一离散关系的文件内循环比较，并检查逐漂移层归一化、有符号漂移、分子数、严格指数区间、可表示性、失败及求积串接。这支持有界数学/回归行为。单独执行且摘要固定的参考比较为 historical-unbound UNKNOWN；文件内同式复算不能证明该历史回执，也不因此收缩已支持计算。",
     "known_limitations": [
      "该种子明确处于矩补偿之前：任何矩补偿步骤都在本叶函数之外，因此该分布不是最终补偿结果。",
      "常数是固定的既往数值，不是当前最佳估计；AMU_KG 指氢质量而非标准 amu，且不做换算。",
@@ -1072,7 +1072,7 @@
   },
   {
    "asset_id": "scirel.kinetic.molecular-alpha-contraction",
-   "source_sha256": "e8ddb0c9d262afac647a5cc7da257744b6b10574909b34eb31092eb5cc14fd20",
+   "source_sha256": "fa6fe02878e0e73097469d9b57ee505ab61f6c3f69b1b03f499e4dacf1064237",
    "summary": "逐空间单元将分子三类 SIG 碰撞矩阵与 Fortran 顺序展平的前态分布收缩为三个 Alpha 碰撞频率场；ni_correct 可按逐点 max(n−nHP,0) 修正离子密度。",
    "definition": "逐 k 的矩阵–向量收缩：每个家族用一个装配好的 (N,N) SIG 矩阵乘以某个前驱分布按 Fortran 顺序展平后的向量，并把乘积还原到 (nvr,nvx) 切片。CX 家族携带 fHp_hat（以漂移 vxi 和温度 THP 为参数的 H2+ Maxwell 种子），按单元乘以 nHP[k]；H2-H 家族携带裸原子分布 fH；H2-P 家族携带质子种子 fi_hat，按 ni 缩放，其中 ni = n，或在设置 ni_correct 时按单元取 ni = max(n - nHP, 0)。",
    "model": "Fortran 顺序收缩，并包含保持顺序的最小 reshape 修复；维护回归测试在所声明的合法域内逐位复现。",
@@ -1144,7 +1144,7 @@
     {
      "name": "Alpha_CX",
      "description": "SIG_CX 与 fHp_hat×nHP 的收缩场。",
-     "constraints": "有限（否则失败关闭）；在 SIG_CX 非负的区域内非负；不做钳制。",
+     "constraints": "有限（否则失败关闭）；仅当 SIG_CX 与完整加权载体 fHp_hat*nHP 均非负时保证非负；带符号收缩照常保留，不做钳制。",
      "dtype": "float64 数组"
     },
     {
@@ -2391,7 +2391,7 @@
   },
   {
    "asset_id": "scirel.kinetic.hydrogen-saha-equilibrium-population",
-   "source_sha256": "963bd6b89bf250c22ea46f100e69e7ea2a431c787646e6b941d96214df88d3c1",
+   "source_sha256": "b6889ba00cc6fbecdd76e71f39de9ac54643782d3194b90ca1f354447aef0cba",
    "summary": "以所声明的常数，由成对电子密度和温度求原子氢 Saha 能级布居。",
    "definition": "对主量子数 n，按所声明的运算顺序计算 n_e×(3.310e-28 n_e)×n²×exp(13.6057/(n²T_e))/T_e^1.5。第二个 n_e 因子在模型假设 n_H⁺=n_e 下替代氢离子密度。常数是 Saha 因子和以 eV 为单位的电离能。",
    "model": "正有限科学分支上的闭式 Saha 平衡关系，氢离子密度取为电子密度；不含动态状态或非平衡动力学。",
@@ -2458,15 +2458,15 @@
     "scope": [
      "固定常数公式及主能级 1、2、3 以 1e-15 相对容差核验，并精确处理整数 2^53+1 与 2^64。",
      "核验一维成对形状、科学域界限、非法能级、转换拒绝与非有限结果门禁，含调用者np.errstate(all=raise)。",
-     "用 CODATA 常数独立构造的 Saha 关系在代表性密度、温度和主量子数网格上以 1.5e-3 的相对容差复现该冻结常数关系。"
+     "tests/collisions/test_rate_family_evidence.py 的 test_saha_matches_the_codata_relation 用 scipy.constants 的 h、m_e、e 独立构造前因子，并取 Rydberg=13.605693 eV；配对密度 [1e16,1e18,1e20] m^-3、温度 [0.5,1,5] eV 与能级 1、2、3 满足 rtol=1.5e-3、atol=0。"
     ],
-    "evidence_ceiling": "限于成对电子密度/温度下冻结常数的原子氢 Saha 能级布居。证据：`test_hydrogen_saha_equilibrium_population.py` 含 6 个测试函数，其中 6 个引用 `evaluate_h_saha_equilibrium_population`，仅由本资产绑定；本审计已执行有界示例。真值来源：未记录外部参照；绑定测试复述冻结公式及其能级缩放。不建立：非平衡/分子/离子布居、n_H+ 与 n_e 不同的混合态，或外部原子物理精度。",
+    "evidence_ceiling": "Saha 专属测试核对冻结公式、整数能级缩放、形状与失败；另行绑定的跨族 test_saha_matches_the_codata_relation 独立构造 CODATA 前因子，在所列配对样本和能级 1、2、3 上按 rtol=1.5e-3 比较。这是有界常数/公式对照，不是实验验证、非平衡精度或全部密度温度组合的认证；n_H+=n_e 仍为假设。",
     "known_limitations": [
      "Saha 平衡与 n_H⁺=n_e 各自需要依据。",
      "不支持标量/剖面读法；本合同遵循一维限制。",
-     "绑定文件为资产私有，含六个直接函数，覆盖冻结关系、整数能级缩放、非法/非实数/非有限拒绝与严格 NumPy 溢出；未绑定外部原子物理参照。",
-     "冻结前因子 `3.310e-28 m^3 eV^(3/2)` 与 Rydberg `13.6057 eV` 与 CODATA 相差最多 0.09%；1.5e-3 一致性界是常数精度限制，不是外部验证。",
-     "冻结的前因子 3.310e-28 m^3 eV^(3/2) 与 13.6057 eV 的 Rydberg 值与当前 CODATA 值最多相差 0.09%；1.5e-3 的一致界是该资产的物理常数极限，n_H+ = n_e 假设仍然显式保留。"
+     "专属文件的六个直接函数重放冻结关系与保护检查；所绑定跨族测试仅在其声明网格上补充独立常数对照。",
+     "相对所绑定 CODATA 测试明确使用的常数，冻结前因子 3.310e-28 m^3 eV^(3/2) 与 Rydberg 13.6057 eV 的差异不超过 0.09%；1.5e-3 比较门槛仅用于该测试所列配对样本，不是连续定义域误差上界。",
+     "1.5e-3 门槛用于所列配对样本，不是连续定义域误差上界或外部原子物理认证；Saha 平衡与 n_H+=n_e 是独立模型假设。"
     ]
    }
   },

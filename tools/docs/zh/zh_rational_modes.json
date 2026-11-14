@@ -964,9 +964,9 @@
   },
   {
    "asset_id": "scirel.kinetic.rational-jpole-coefficients",
-   "source_sha256": "1eb439cda4578ea27355c2dfd1b6755a89db32b9f2cb4765223a58595f63276f",
+   "source_sha256": "3d315416bea7035a182364ffda6b82efd095193e68b0481dbcf2d08c0d0f5ef9",
    "summary": "在声明的十进制精度下求解 Maxwellian 分布的 Taylor／渐近匹配方程，细化单根并计算留数。",
-   "definition": "I+K=2J；Mpq*pq=B 匹配 Taylor 系数与逆幂系数。留数 b=P(c)/Qprime(c)。80/120 位精度细化及独立 erfc 响应检查与矩阵调理分别记录。数值端口仍为 complex128；构造字符串保留更高精度。",
+   "definition": "I+K=2J；Mpq*pq=B 匹配 Taylor 系数与逆幂系数。留数 b=P(c)/Qprime(c)。构造暴露声明精度；历史 80/120 位细化与独立 erfc 比较为 historical-unbound UNKNOWN，与矩阵调理分开。数值端口仍为 complex128；构造字符串保留更高精度。",
    "model": "非相对论高斯物种；适用时显式声明有限谐波／有理近似。",
    "boundary": "周期或无限均匀介质中的平面波响应；显式声明有限数值谐波／极点表示。",
    "assumptions": [
@@ -1118,8 +1118,8 @@
    },
    "verification": {
     "scope": [
-     "当前 SciRel 实现及本合同列出的仓库测试覆盖所声明的公共端口与数值关系。",
-     "示例仅运行一个有界代表用例，不把适用范围扩展到所声明的前置条件之外。"
+     "已声明的 Taylor/渐近匹配构造及有界合同示例仍可执行；共享有理测试文件没有直接调用 jpole_coefficients。",
+     "historical-unbound UNKNOWN：此处未绑定安装包闭包、全部 12 API 资格、完整 50 点 N10/J8 运行及 80/120 位独立比较回执。包内元数据或可执行构造能力不证明这些历史执行；保留已支持计算与所列直接断言。"
     ],
     "known_limitations": [
      "参考材料的再分发许可未核实；MATLAB 执行状态为 NOT_RUN。",
@@ -1128,7 +1128,7 @@
      "仅绑定共享文件覆盖（test_dispersion_rational.py）；未记录资产专属失败/边界探针。",
      "未记录独立或外部 oracle；证据仅为自洽/回归。"
     ],
-    "evidence_ceiling": "限于所声明关系：I+K=2J；Mpq*pq=B 匹配 Taylor 系数与逆幂系数。留数 b=P(c)/Qprime(c)。80/120 位精度细化及独立 erfc 响应检查与矩阵调理分别记录。数值端口仍为 complex128；构造字符串保留更高精度。证据：test_dispersion_rational.py（记录 6 个测试函数；仅共享文件覆盖；仅自洽/回归）；合同 example 已运行。不建立的范围：重复／未分辨的根需要高阶极点表示；有限 J 的 Z 精度必须在目标定义域中检查。"
+    "evidence_ceiling": "共享测试文件含十个测试函数，但没有 jpole_coefficients 的直接数值比较；合同示例是有界构造/形状检查，不是独立近似认证。 historical-unbound UNKNOWN：此处未绑定安装包闭包、全部 12 API 资格、完整 50 点 N10/J8 运行及 80/120 位独立比较回执。包内元数据或可执行构造能力不证明这些历史执行；保留已支持计算与所列直接断言。"
    },
    "example": {
     "description": "使用实际声明科学端口的有界可执行示例。",
@@ -1137,7 +1137,7 @@
   },
   {
    "asset_id": "scirel.kinetic.rational-jpole-evaluate",
-   "source_sha256": "50264e25cd2d1953c03ce479aad25448fd239446e2b9e6a717d455caacdf9609",
+   "source_sha256": "0e3d0e97b0a1dd381a3526bc79b4404dfd93e5e82362448160d5e785dc9ff138",
    "summary": "求值声明的单极点有理近似，并保留求值点的形状。",
    "definition": "Z_J(z)=sum b_j/(z-c_j)，使用 complex128 求值；不隐藏选择 Z 系数表，也不外推科学定义域。",
    "model": "非相对论高斯物种；适用时显式声明有限谐波／有理近似。",
@@ -1186,25 +1186,25 @@
     ]
    },
    "failure_semantics": {
-    "invalid_input": "极点、留数或求值点为空、不对齐或非有限时抛出 ValueError；恰在有理极点求值时抛出 ZeroDivisionError。",
+    "invalid_input": "极点/留数数组为空或不对齐，或极点、留数、求值点非有限时抛出 ValueError；有限空 z 数组成功返回同形 ZJ。恰在有理极点求值时抛出 ZeroDivisionError。",
     "runtime_failure": "Python／依赖错误向上传播；此算子不启动原生进程，也没有原生执行回执。",
     "nonconvergence": "有理求值结果非有限时抛出 FloatingPointError；不执行迭代求解，也不认证近似定义域。",
     "partial_results": "此操作抛出异常时不返回成功结果；不承诺部分科学结果。"
    },
    "verification": {
     "scope": [
-     "在没有源码检出的环境中安装本包；包与资源闭包精确一致。",
-     "全部 12 个 API，以及独立标准样例和另行留出的响应、坐标轴与有符号波矢门禁。",
-     "完整的垂直 ES3D N10/J8 原始 50 点默认用例，含独立弱系数与 Decimal 偏移检查。"
+     "共享直接测试保留实际调用处的有符号 ES1D Faddeeva 响应、零波矢冷回旋响应、描述子消去/无穷根分类、渐近矩及非法/不可表示输出保护；仅同属一个文件不算逐资产证据。",
+     "historical-unbound UNKNOWN：此处未绑定安装包闭包、全部 12 API 资格、完整 50 点 N10/J8 运行及 80/120 位独立比较回执。包内元数据或可执行构造能力不证明这些历史执行；保留已支持计算与所列直接断言。",
+     "现有直接文件演练有界点和关系；不证明完整 50 点默认运行或历史弱系数/Decimal 偏移资格已经执行。"
     ],
     "known_limitations": [
      "参考材料的再分发授权仍未解决；原生 MATLAB／参考运行时执行为 NOT_RUN。",
      "有限 J／有限 N 物理近似用于新的目标参数区间前，必须取得相应资格。",
      "早期固定距离趋轴辅助断言仍作为失败记录保留；精确轴与直接响应门禁另行验证。",
      "人工科学认可与绘图验收仍待完成。",
-     "原生示例与完整原生路径的资格验证需要 Linux amd64 上声明的本地 Python 运行时；本机（macOS）未运行。"
+     "历史资格未绑定（UNKNOWN）；当前直接检查与有界示例既不新增平台限制，也不认证任意参数区间。"
     ],
-    "evidence_ceiling": "直接合同测试与所声明的有限用例只在各自数值门禁适用的范围内约束该关系；原生参考运行时执行需要 Linux amd64 上声明的本地 Python 运行时，在本次 macOS 检出中为 NOT_RUN。"
+    "evidence_ceiling": "绑定共享文件没有直接调用 jpole_evaluate；单极点合同示例检查精确有理恒等式。有限空 z 保持原形状。 historical-unbound UNKNOWN：此处未绑定安装包闭包、全部 12 API 资格、完整 50 点 N10/J8 运行及 80/120 位独立比较回执。包内元数据或可执行构造能力不证明这些历史执行；保留已支持计算与所列直接断言。"
    },
    "example": {
     "description": "在复自变量处计算一个有限单极点有理项。",
@@ -1276,7 +1276,7 @@
   },
   {
    "asset_id": "scirel.kinetic.rational-point-matrix",
-   "source_sha256": "b0fc7de0fcf7c68ae3ecfd831643d7bf2ff7ab77a99e5c02de316456e64f1c90",
+   "source_sha256": "50abe94dd4e3c85ddda6a943f68de806f0d9f828265e2005b0d808dd0f5d3a5b",
    "summary": "组装 ES1D 频率矩阵、修正后的 ES3D 有限 Harris 描述子系数，或具有因果有符号波矢与精确轴极限的 EM Maxwell 矩阵束。",
    "definition": "ES3D 中 D(omega)=a+sum B/(omega-C)；既有普通本征问题 a*diag(C)-B*ones 的本征值缩放错误。EM 精确垂直响应包含完整 Maxwell 常数；均匀零波矢冷回旋响应在解析上不依赖谐波截断。负 k/kz 选择满足因果性的 Z 极点。压缩极点铅笔保留 E/B 可观测量；辅助变量别名不是物理波。",
    "model": "非相对论高斯物种；适用时显式声明有限谐波／有理近似。",
@@ -1362,9 +1362,9 @@
    },
    "verification": {
     "scope": [
-     "在没有源码检出的环境中安装本包；包与资源闭包精确一致。",
-     "全部 12 个 API，以及独立标准样例和另行留出的响应、坐标轴与有符号波矢门禁。",
-     "完整的垂直 ES3D N10/J8 原始 50 点默认用例，含独立弱系数与 Decimal 偏移检查。",
+     "共享直接测试保留实际调用处的有符号 ES1D Faddeeva 响应、零波矢冷回旋响应、描述子消去/无穷根分类、渐近矩及非法/不可表示输出保护；仅同属一个文件不算逐资产证据。",
+     "historical-unbound UNKNOWN：此处未绑定安装包闭包、全部 12 API 资格、完整 50 点 N10/J8 运行及 80/120 位独立比较回执。包内元数据或可执行构造能力不证明这些历史执行；保留已支持计算与所列直接断言。",
+     "现有直接文件演练有界点和关系；不证明完整 50 点默认运行或历史弱系数/Decimal 偏移资格已经执行。",
      "直接回归将 ES1D k=1e308 固定在矩阵到达 solve_matrix 之前抛出 FloatingPointError，同时有限参考调用的系数和矩阵保持不变。",
      "非有限与零波矢的既有 ValueError 输入语义保持不变。"
     ],
@@ -1373,9 +1373,9 @@
      "有限 J／有限 N 物理近似用于新的目标参数区间前，必须取得相应资格。",
      "早期固定距离趋轴辅助断言仍作为失败记录保留；精确轴与直接响应门禁另行验证。",
      "人工科学认可与绘图验收仍待完成。",
-     "纯 Python 示例与有界资格验证在本次 macOS 主机上运行；任意参数区间仍不在证据范围内。"
+     "历史资格未绑定（UNKNOWN）；当前直接检查与有界示例既不新增平台限制，也不认证任意参数区间。"
     ],
-    "evidence_ceiling": "直接合同测试与所声明的有限用例只在各自数值门禁适用的范围内约束该关系；纯 Python 执行在本次 macOS 检出中运行，无需所声明的本地 Python 运行时。失败关闭回归只在所演练的范围内绑定“有限输入派生不可表示输出”分支；不建立数值界或全参数域可表示性。"
+    "evidence_ceiling": "直接测试演练有符号 ES1D 响应、均匀冷回旋 Schur 响应和不可表示/非法波矢，不认证全部有限 N/J 参数区间。 historical-unbound UNKNOWN：此处未绑定安装包闭包、全部 12 API 资格、完整 50 点 N10/J8 运行及 80/120 位独立比较回执。包内元数据或可执行构造能力不证明这些历史执行；保留已支持计算与所列直接断言。"
    },
    "example": {
     "description": "通过纯 Python 算子组装代表性的 ES1D 频率矩阵。",
@@ -1384,7 +1384,7 @@
   },
   {
    "asset_id": "scirel.kinetic.rational-pole-table",
-   "source_sha256": "6cd5ce53de9657776b3d2742abbb111b43649af823351c53f0008f44a4a3f456",
+   "source_sha256": "064b7a604254c9cb0e0cee9021dc41a0ebdb306690e9760058dc8e58a07088a4",
    "summary": "选择显式的极点表族与变体；J12 使用对双侧 Padé 方程的高精度重构。",
    "definition": "Z_J(z)=sum_j b_j/(z-c_j)。低阶族沿用其声明的系数表次序；重新生成的 J12 是有意的数值修正，不是历史数值的逐值复制。",
    "model": "非相对论高斯物种；适用时显式声明有限谐波／有理近似。",
@@ -1448,18 +1448,18 @@
    },
    "verification": {
     "scope": [
-     "在没有源码检出的环境中安装本包；包与资源闭包精确一致。",
-     "全部 12 个 API，以及独立标准样例和另行留出的响应、坐标轴与有符号波矢门禁。",
-     "完整的垂直 ES3D N10/J8 原始 50 点默认用例，含独立弱系数与 Decimal 偏移检查。"
+     "共享直接测试保留实际调用处的有符号 ES1D Faddeeva 响应、零波矢冷回旋响应、描述子消去/无穷根分类、渐近矩及非法/不可表示输出保护；仅同属一个文件不算逐资产证据。",
+     "historical-unbound UNKNOWN：此处未绑定安装包闭包、全部 12 API 资格、完整 50 点 N10/J8 运行及 80/120 位独立比较回执。包内元数据或可执行构造能力不证明这些历史执行；保留已支持计算与所列直接断言。",
+     "现有直接文件演练有界点和关系；不证明完整 50 点默认运行或历史弱系数/Decimal 偏移资格已经执行。"
     ],
     "known_limitations": [
      "参考材料的再分发授权仍未解决；纯 Python 实现不执行来源运行时。",
      "有限 J／有限 N 物理近似用于新的目标参数区间前，必须取得相应资格。",
      "早期固定距离趋轴辅助断言仍作为失败记录保留；精确轴与直接响应门禁另行验证。",
      "人工科学认可与绘图验收仍待完成。",
-     "纯 Python 示例与有界资格验证在本次 macOS 主机上运行；任意参数区间仍不在证据范围内。"
+     "历史资格未绑定（UNKNOWN）；当前直接检查与有界示例既不新增平台限制，也不认证任意参数区间。"
     ],
-    "evidence_ceiling": "直接合同测试与所声明的有限用例只在各自数值门禁适用的范围内约束该关系；纯 Python 实现在本次 macOS 检出中已验证。"
+    "evidence_ceiling": "直接表调用支持 J12 三个渐近矩与有界响应检查；未绑定 80/120 位表比较回执。 historical-unbound UNKNOWN：此处未绑定安装包闭包、全部 12 API 资格、完整 50 点 N10/J8 运行及 80/120 位独立比较回执。包内元数据或可执行构造能力不证明这些历史执行；保留已支持计算与所列直接断言。"
    },
    "example": {
     "description": "通过纯 Python 算子选择声明的 Maxwell 极点表。",
@@ -1468,7 +1468,7 @@
   },
   {
    "asset_id": "scirel.kinetic.rational-solve-matrix",
-   "source_sha256": "b30c774d3a29e233606abec1a7d08d6da3ed60c7ebcf3f788ceed435d019a5db",
+   "source_sha256": "3909e47b2e4e056278ed42ce16a70180cd38e958305ff6ae87b5f36f534cbcd1",
    "summary": "求解频率矩阵或 Harris 描述子，显式提供残差、消去与无穷模态分类，并保留完整近极点载体。",
    "definition": "ES1D／EM 使用稠密 sp0 eig 或移位稀疏 sp1 eigs，返回 complex128 本征对与归一化后向残差。一般 ES3D 齐次描述子给出 alpha,beta 和无穷／消去模态，拒绝未获资格的有限根。正值物种的垂直 ES 使用 80 位十进制的最近极点有符号偏移交错方法；十进制 base+offset 保留小于 ulp 的位移。舍入后的 omega／图不是完整载体。",
    "model": "非相对论高斯物种；适用时显式声明有限谐波／有理近似。",
@@ -1802,24 +1802,24 @@
    },
    "failure_semantics": {
     "invalid_input": "非法模型、非方阵／非有限 ES1D／EM 矩阵、不支持的 sp、非法稀疏 nw 或移位触发 ValueError；ES3D 要求完整的系数／载体状态。",
-    "runtime_failure": "SciPy eig/eigs 与 Python 依赖错误向上传播；此操作返回 Python 执行回执。",
+    "runtime_failure": "SciPy eig/eigs 与 Python 依赖错误向上传播；仅返回已列明的谱及诊断，不返回执行回执。",
     "nonconvergence": "后向残差或描述子／交错资格检查失败时抛出 ArithmeticError。一般 ES3D 的有限模态被拒绝时，错误附带诊断。不静默接受失败模态。",
     "partial_results": "此操作抛出异常时不返回成功结果；不承诺部分科学结果。"
    },
    "verification": {
     "scope": [
-     "在没有源码检出的环境中安装本包；包与资源闭包精确一致。",
-     "全部 12 个 API，以及独立标准样例和另行留出的响应、坐标轴与有符号波矢门禁。",
-     "完整的垂直 ES3D N10/J8 原始 50 点默认用例，含独立弱系数与 Decimal 偏移检查。"
+     "共享直接测试保留实际调用处的有符号 ES1D Faddeeva 响应、零波矢冷回旋响应、描述子消去/无穷根分类、渐近矩及非法/不可表示输出保护；仅同属一个文件不算逐资产证据。",
+     "historical-unbound UNKNOWN：此处未绑定安装包闭包、全部 12 API 资格、完整 50 点 N10/J8 运行及 80/120 位独立比较回执。包内元数据或可执行构造能力不证明这些历史执行；保留已支持计算与所列直接断言。",
+     "现有直接文件演练有界点和关系；不证明完整 50 点默认运行或历史弱系数/Decimal 偏移资格已经执行。"
     ],
     "known_limitations": [
      "参考材料的再分发授权仍未解决；纯 Python 实现不执行来源运行时。",
      "有限 J／有限 N 物理近似用于新的目标参数区间前，必须取得相应资格。",
      "早期固定距离趋轴辅助断言仍作为失败记录保留；精确轴与直接响应门禁另行验证。",
      "人工科学认可与绘图验收仍待完成。",
-     "纯 Python 示例与有界资格验证在本次 macOS 主机上运行；任意参数区间仍不在证据范围内。"
+     "历史资格未绑定（UNKNOWN）；当前直接检查与有界示例既不新增平台限制，也不认证任意参数区间。"
     ],
-    "evidence_ceiling": "直接合同测试与所声明的有限用例只在各自数值门禁适用的范围内约束该关系；纯 Python 实现在本次 macOS 检出中已验证。"
+    "evidence_ceiling": "直接求谱测试检查有限谱后向残差、ES3D 描述子相消、有理/矩阵束残差与无穷根计数；不建立全部根的前向精度。 historical-unbound UNKNOWN：此处未绑定安装包闭包、全部 12 API 资格、完整 50 点 N10/J8 运行及 80/120 位独立比较回执。包内元数据或可执行构造能力不证明这些历史执行；保留已支持计算与所列直接断言。"
    },
    "example": {
     "description": "通过纯 Python 算子求解代表性的有理描述子。",
@@ -1828,9 +1828,9 @@
   },
   {
    "asset_id": "scirel.kinetic.rational-z-poles",
-   "source_sha256": "08b4d351db11b9170b57632a4019e07528ce0976a2177ae59534cb164951d7bc",
+   "source_sha256": "0bf35fd8a5f3da7fffc366b2fcf0de18dadcaf71f988d055f490135e0ec42680",
    "summary": "返回有序 J4/J8 表，或精度修正后的 J12/I16/K8 极点－留数表。",
-   "definition": "Z_J(z)=sum_j bzj[j]/(z-czj[j])；成对系数表在 binary64 精度内满足 sum b=-1,sum bc=0,sum bc^2=-1/2。J12 以 80 位精度重新生成所规定的 Padé 关系，并在舍入为 binary64 前与 120 位构造核对；J4/J8 表值按给定值保留。",
+   "definition": "Z_J(z)=sum_j bzj[j]/(z-czj[j])；成对系数表在 binary64 精度内满足 sum b=-1、sum bc=0、sum bc^2=-1/2。J12 保存 80 位构造元数据和 binary64 系数；历史 120 位比较为 historical-unbound UNKNOWN。J4/J8 表值按给定值保留。",
    "model": "用于磁化动理学响应的显式有理近似或双高斯表示。",
    "boundary": "均匀或局部的平面波响应；不求解空间边值问题或非线性饱和。",
    "assumptions": [
@@ -1872,17 +1872,17 @@
    },
    "verification": {
     "scope": [
-     "前三个渐近矩保留 1e-10 门槛；J12 原始 80/120 位构造产生稳定的 binary64 系数。",
-     "独立 Z 值与已充分分辨的动理学响应约束修正后的 J12 表；J4/J8 低阶近似误差仍作为显式诊断保留。"
+     "test_regenerated_j12_preserves_asymptotic_moments 直接检查 ES1D、ES3D、EM 的 J12 表前三矩 sum b=-1、sum bc=0、sum bc^2=-1/2，门槛为 1e-10。",
+     "historical-unbound UNKNOWN：此处未绑定安装包闭包、全部 12 API 资格、完整 50 点 N10/J8 运行及 80/120 位独立比较回执。包内元数据或可执行构造能力不证明这些历史执行；保留已支持计算与所列直接断言。"
     ],
     "known_limitations": [
      "限本地技术开发；人工科学认可与公开发布许可仍待处理。",
      "有限谐波 N 与有理极点 J 近似在进入新的物理参数区间时，需要独立的收敛性检查。",
      "通过有限范围内的响应、状态和后向误差测试，不代表物理模态跟踪唯一、全部根的前向精度合格或视觉验收通过。",
      "下半平面极点定义一种有理近似；有界上半平面响应测试不能证明其全局强阻尼精度。",
-     "纯 Python 示例与有界资格验证在本次 macOS 主机上运行；任意参数区间仍不在证据范围内。"
+     "历史资格未绑定（UNKNOWN）；当前直接检查与有界示例既不新增平台限制，也不认证任意参数区间。"
     ],
-    "evidence_ceiling": "直接合同测试与所声明的有限用例只在各自数值门禁适用的范围内约束该关系；纯 Python 执行在本次 macOS 检出中运行，无需所声明的本地 Python 运行时。"
+    "evidence_ceiling": "1e-10 渐近矩断言与有界响应测试仍为科学检查；更高精度表比较的历史没有已绑定回执。 historical-unbound UNKNOWN：此处未绑定安装包闭包、全部 12 API 资格、完整 50 点 N10/J8 运行及 80/120 位独立比较回执。包内元数据或可执行构造能力不证明这些历史执行；保留已支持计算与所列直接断言。"
    },
    "example": {
     "description": "返回纯 Python J-pole 表并检查其矩。",

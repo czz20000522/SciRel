@@ -196,17 +196,17 @@
    "Volume-weighted normalization: sum(volume * distribution) = 1 per shift for the supplied cell volumes.",
    "The strict-interior clamp witness: a mesh node exactly at the shifted peak (argument == 0) is floored to exp(-80) in the distribution while the exponent output reports the raw zero.",
    "The far-shift limit: when every exponent sits below the -80 floor, the normalized seed is exactly the uniform distribution over the mesh.",
-   "The molecule-count factor: molecule_count 2 doubles the exponent and the distribution matches the independent formulation at molecule_count 2 with unit normalization.",
+   "The molecule-count factor: molecule_count 2 doubles the exponent and the distribution matches the in-file loop formulation of the same relation at molecule_count 2 with unit normalization.",
    "A positive shift moves the volume-weighted axial moment positive.",
    "The composition contract: the cylindrical quadrature's volumes normalize the seed and feed the Maxwellian relative-speed rate average on one immutable mesh snapshot.",
    "Output representability: a normalization temperature at 1e308 (thermal-speed overflow), a tiny normalization temperature with a 1e308 shift (infinite raw exponent), a 1e-320 cell volume (normalization denominator underflows, divided distribution overflows) and cell volumes near the float64 ceiling (weighted raw seed sums overflow, divided distribution collapses to zeros) are each rejected with a ValueError. Ordinary inputs produce unchanged numbers.",
    "The input contract: nonempty shift layers, shape consistency, real numeric finite values, positive temperatures/masses/tnorm, integer molecule_count exactly 1 or 2, and strictly positive volumes; every out-of-domain value is rejected.",
-   "A bounded fixed-case comparison against a separately executed reference implementation, pinned by SHA-256, reproduces the distribution, exponent and thermal speed for single- and double-molecule holdouts at rtol 1e-15. That comparison is environment-gated and does not establish full qualification."
+   "historical-unbound UNKNOWN: the claimed separately executed SHA-256-pinned reference comparison has no bindable comparison receipt in the inspected evidence. The direct in-file loop, normalization, strict exponent interval and quadrature-composition assertions remain supported regression checks, not proof of that historical independent execution."
   ],
   "tests": [
    "tests/kinetic/test_shifted_maxwellian_seed.py"
   ],
-  "evidence_ceiling": "Bounded to the declared relation: With m_H = 1.6726231e-27 kg (the hydrogen mass constant), vth = sqrt(2 e T_norm / (m m_H)). The raw exponent is -(vr^2 + (vx - shift/vth)^2) * molecule_count * T_norm / T_shift per shift…. Evidence: test_shifted_maxwellian_seed.py (22 recorded test functions; bound-file coverage; bounded source-method parity); the contract example ran. Excluded scope: Any downstream moment-compensation step: this leaf returns the seed before compensation; Non-Maxwellian or non-exponential seeds, and any collision or field model.",
+  "evidence_ceiling": "The bound direct tests compare distribution, exponent and thermal speed with an in-file loop of the same discrete relation, and check per-shift normalization, signed shift, molecule count, strict exponent interval, representability, failures and quadrature composition. This establishes bounded mathematical/regression behavior. historical-unbound UNKNOWN applies to the separately executed digest-pinned reference comparison; that historical receipt is not established by the in-file formulation and does not limit supported computation.",
   "known_limitations": [
    "The seed is explicitly the pre-compensation stage: any moment-compensation step is outside this leaf, so this distribution is not the final compensated result.",
    "The constants are fixed historical values, not current best estimates; AMU_KG names the hydrogen mass rather than standard amu, and no conversion is performed.",

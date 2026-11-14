@@ -1462,7 +1462,7 @@ def jpole_evaluate(bzj, czj, z):
         FloatingPointError for nonfinite rational output; no iterative solver or approximation-domain
         certification.
     ValueError
-        For empty, misaligned or nonfinite poles, residues or evaluation points.
+        For empty or misaligned pole/residue arrays or nonfinite poles, residues or evaluation points.
     ZeroDivisionError
         When an evaluation point exactly equals a rational pole.
 
@@ -1473,7 +1473,8 @@ def jpole_evaluate(bzj, czj, z):
     Notes
     -----
     Z_J(z)=sum b_j/(z-c_j), complex128 evaluation; no hidden Z-table choice or scientific-domain
-    extrapolation. Nonrelativistic Gaussian species; explicit finite-harmonic/rational approximation
+    extrapolation. Empty finite z arrays succeed with ZJ preserving their shape.
+    Nonrelativistic Gaussian species; explicit finite-harmonic/rational approximation
     when applicable. Assumptions: Model-specific deck conventions are explicit. A numerical spectrum is
     not automatically a physically certified mode.
 
@@ -1598,8 +1599,9 @@ def jpole_coefficients(J=12, I=16, *, precision=80):
     Notes
     -----
     I+K=2J; Mpq*pq=B matches source Taylor and inverse-power coefficients. Residue
-    b=P(c)/Qprime(c).80/120-digit precision refinement and independent erfc response checks are separate
-    from matrix conditioning. Numeric ports remain complex128; construction strings retain higher
+    b=P(c)/Qprime(c). The construction exposes declared precision; historical 80/120-digit refinement
+    and independent erfc comparison are historical-unbound UNKNOWN, separate from matrix conditioning.
+    Numeric ports remain complex128; construction strings retain higher
     precision. Nonrelativistic Gaussian species; explicit finite-harmonic/rational approximation when
     applicable. Assumptions: Model-specific deck conventions are explicit. A numerical spectrum is not
     automatically a physically certified mode.
