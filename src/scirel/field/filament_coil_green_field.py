@@ -32,6 +32,71 @@ def evaluate_filament_coil_green_field(
     item 4).  Reusing it also removes a second, independent implementation of
     the same Green relation; the remaining duplicate between ``field`` and
     ``electromagnetism`` is tracked in #155.
+
+    Parameters
+    ----------
+    regularized_radius_m : real scalar
+        Finite strictly positive observation radius [m], already offset by
+        ``compute_axisymmetric_coil_modulus``.
+    observation_z_m : real scalar
+        Finite observation height [m].
+    coil_radius_m : array_like, shape (ncoil,)
+        Finite strictly positive coil radii [m].
+    coil_z_m : array_like, shape (ncoil,)
+        Finite coil heights [m], matching the coil radii.
+    current_a : array_like, shape (ncoil,)
+        Finite coil currents [A], matching the coil radii.
+    turns : array_like, shape (ncoil,)
+        Finite winding multipliers [count], matching the coil radii.
+
+    Returns
+    -------
+    flux_weber : float
+        Summed poloidal flux ``psi = R*A_phi``
+        [Wb/rad (per the psi = R A_phi convention; subject to the caller's current units)].
+    radial_field_t : float
+        Summed radial field [T].
+    axial_field_t : float
+        Summed axial field [T].
+
+    Raises
+    ------
+    ValueError
+        If observation coordinates or coil vectors are invalid, the target
+        coincides with a ring, source weights overflow, or the wrapper's
+        returned scalar values are nonfinite.
+    FloatingPointError
+        If overflow or invalid floating-point arithmetic occurs inside the
+        circular-filament kernel. This exception propagates unchanged.
+
+    See Also
+    --------
+    compute_axisymmetric_coil_modulus : Apply the observation-radius offset once.
+    scirel.electromagnetism.compute_greens : Evaluate the circular-filament kernel.
+
+    Notes
+    -----
+    The current of each source is ``current_a * turns``. Elliptic values are
+    computed by the kernel; there are no caller-supplied elliptic inputs.
+
+    References
+    ----------
+    See ``scirel.electromagnetism.compute_greens`` for the kernel relation.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from scirel.field import compute_axisymmetric_coil_modulus, evaluate_filament_coil_green_field
+    >>> radius, modulus, _ = compute_axisymmetric_coil_modulus(
+    ...     0.3, 0.0, np.array([0.2, 0.2]), np.array([-0.1, 0.1]))
+    >>> flux, br, bz = evaluate_filament_coil_green_field(
+    ...     radius, 0.0, np.array([0.2, 0.2]), np.array([-0.1, 0.1]),
+    ...     np.array([10.0, 10.0]), np.array([2.0, 2.0]))
+    >>> assert abs(br) < 1e-18
+    >>> flux2, br2, bz2 = evaluate_filament_coil_green_field(
+    ...     radius, 0.0, np.array([0.2, 0.2]), np.array([-0.1, 0.1]),
+    ...     np.array([20.0, 20.0]), np.array([2.0, 2.0]))
+    >>> assert flux2 == 2.0 * flux and bz2 == 2.0 * bz
     """
     radius = float(regularized_radius_m)
     observation_z_m = float(observation_z_m)

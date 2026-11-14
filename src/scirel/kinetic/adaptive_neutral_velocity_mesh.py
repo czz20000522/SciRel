@@ -76,32 +76,68 @@ def create_adaptive_neutral_velocity_mesh(
 
     Parameters
     ----------
-    nv
+    nv : int
         Positive integer base node count.
-    ion_temperature_ev
-        The species' ion temperatures in eV: a nonempty positive
+    ion_temperature_ev : array_like
+        The species' ion temperatures [eV]: a nonempty finite positive
         one-dimensional array.
-    requested_energy_ev
-        Optional finite one-dimensional discharge energies in eV; positive
+    requested_energy_ev : array_like, optional
+        Optional finite one-dimensional discharge energies [eV]; positive
         entries are inserted as exact mesh nodes even when the cap excludes
-        them from the normalization population.
-    temperature_cap_ev
-        Optional finite nonnegative scalar cap: temperatures/energies at or
+        them from the normalization population. ``None`` means no requests.
+    temperature_cap_ev : real scalar, optional
+        Optional finite nonnegative scalar cap [eV]: temperatures/energies at or
         above the cap are dropped from the normalization population
         (``0.0`` disables the cap).
 
     Returns
     -------
-    tuple
-        ``(vx, vr, tnorm, ix, ir)`` with the symmetric axial mesh, the radial
-        mesh, the normalization temperature (mean of the selected
-        population), and the requested-energy index positions.
+    mesh : tuple
+        ``(vx, vr, tnorm, ix, ir)`` [mixed], with normalized speed axes
+        ``vx`` and ``vr`` [v/vth], normalization temperature ``tnorm`` [eV]
+        (mean of the selected population), and the last positive requested
+        energy's zero-based index positions. Indices are arrays unless there
+        is exactly one match, in which case a scalar index is returned.
 
     Raises
     ------
     ValueError
         If the declared input contract is violated or inserted nodes make
         the final radial mesh non-finite or non-strictly increasing.
+
+    See Also
+    --------
+    make_cylindrical_velocity_quadrature : Build measures from the returned axes.
+
+    Notes
+    -----
+    The base mesh ends at 3.5 and is uniform if ``Tmax-Tmin <= 0.1*Tmax``;
+    otherwise it uses quadratic stretching. The cap filters the population
+    used for normalization and stretching. Every positive requested energy
+    is then inserted, including entries above the cap, so the final mesh can
+    exceed 3.5. Boolean, string and complex inputs are not coerced to real data.
+
+    References
+    ----------
+    The base-mesh and insertion formulas are given in Notes and implemented
+    directly in this operator.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from scirel.kinetic import create_adaptive_neutral_velocity_mesh
+    >>> vx, vr, tnorm, ix, ir = create_adaptive_neutral_velocity_mesh(4, (1.0, 1.05))
+    >>> assert np.array_equal(vr, (0.875, 1.75, 2.625, 3.5))
+    >>> assert np.array_equal(vx, -vx[::-1])
+    >>> assert tnorm == 1.025
+    >>> vx2, vr2, tnorm2, ix2, ir2 = create_adaptive_neutral_velocity_mesh(4, (1.0, 9.0), temperature_cap_ev=4.0)
+    >>> assert tnorm2 == 1.0
+    >>> try:
+    ...     create_adaptive_neutral_velocity_mesh(0, (1.0,))
+    ... except ValueError as error:
+    ...     assert 'nv must be a positive integer' in str(error)
+    ... else:
+    ...     raise AssertionError('nv=0 must be rejected')
     """
     temperature = _real_array("ion_temperature_ev", ion_temperature_ev)
     if requested_energy_ev is None:

@@ -72,6 +72,52 @@ def compensate_velocity_slice(
     The four sign combinations and optional signed-distribution cutoff follow
     the bounded source transcription; no iterative convergence claim is made.
 
+    Parameters
+    ----------
+    f_slice : ndarray, shape (nvr, nvx)
+        Distribution slice [source distribution units], aligned with the mesh.
+    quadrature : mapping or object
+        Measures and face/sign indices for this mesh
+        [normalized velocity-space measure]. A mapping is returned by
+        ``make_cylindrical_velocity_quadrature``; objects expose the internal
+        cell-field attributes.
+    vr : array_like, shape (nvr,)
+        Normalized radial-speed axis [v/vth].
+    vx : array_like, shape (nvx,)
+        Normalized axial-velocity axis [v/vth], with both signs.
+    vth : real scalar
+        Thermal speed scale [m/s].
+    target_vx : real scalar
+        Target axial drift [m/s].
+    target_energy : real scalar
+        Target mean squared speed [m^2/s^2].
+    nb : real scalar, optional
+        Normalization multiplier [caller-defined], default ``1.0``.
+    assume_pos : bool, optional
+        Default ``True`` skips the signed-slice cutoff and scale limiter.
+        ``False`` enables that path, including its nonpositive-slice branch.
+    moment_rtol : float, optional
+        Relative error threshold for warnings [dimensionless], default ``0.01``.
+        The caller supplies a positive value; no separate validation is applied.
+
+    Returns
+    -------
+    adjusted_slice : ndarray
+        Corrected slice [source distribution units], with the input shape.
+        No density conservation or target-moment convergence is guaranteed.
+    scale : float
+        Applied correction scale [dimensionless]. The signed path may reduce
+        it; otherwise it is one.
+
+    Raises
+    ------
+    ValueError, TypeError, IndexError, KeyError, AttributeError
+        Array conversion, incompatible shapes, indexing or missing quadrature
+        fields propagate their native errors; inputs are not repaired.
+    RuntimeWarning
+        A moment-error warning is emitted as described below. If warnings are
+        configured as errors, it propagates as an exception.
+
     Warns
     -----
     RuntimeWarning
@@ -80,10 +126,30 @@ def compensate_velocity_slice(
         that. The correction is linear in the targets and does not conserve
         density, so a mesh too small for the distribution can miss badly.
 
+    See Also
+    --------
+    make_cylindrical_velocity_quadrature : Build measures for the same mesh.
+    build_compensated_shifted_maxwellian : Build and verify Maxwellian slices.
+
     Notes
     -----
     Errors are relative: the drift to ``sqrt(target_energy)``, the energy and the
     density to the target energy and ``nb``.
+
+    Singular coefficients retain zero values in that sign trial; no iterative
+    fallback is applied. Nonfinite arithmetic follows NumPy and can emit
+    warnings without producing a finite or moment-matched result.
+
+    References
+    ----------
+    B. LaBombard, "KN1D: A 1-D Space, Kinetic Transport Algorithm for Atomic and
+    Molecular Hydrogen in an Ionizing Plasma", MIT PSFC report RR-01-3 (2001).
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from scirel.kinetic import make_cylindrical_velocity_quadrature, compensate_velocity_slice
+    >>> vr=np.array([.25,.75,1.5]); vx=np.array([-2.5,-1.5,-.5,.5,1.5,2.5]); q=make_cylindrical_velocity_quadrature(vr=vr,vx=vx); f=np.exp(-(vr[:,None]**2+vx[None,:]**2)); corrected,scale=compensate_velocity_slice(f,q,vr,vx,1.0,0.0,3.0); assert corrected.shape==f.shape
     """
     result, scale = _compensate_slice(
         f_slice, quadrature, vr, vx, vth, target_vx, target_energy, nb, assume_pos

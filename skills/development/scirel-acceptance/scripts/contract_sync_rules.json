@@ -1,0 +1,30 @@
+{
+ "schema": "scirel.contract-sync-rules",
+ "note": "Asset-specific stale-phrase checks. The checked asset set comes only from catalog/examples, never from these rules.",
+ "assets": [
+  {
+   "asset_id": "scirel.neoclassical.bootstrap-current",
+   "forbidden_phrases": [
+    "First current face",
+    "psi total flux Wb",
+    "total-flux/field"
+   ]
+  },
+  {
+   "asset_id": "scirel.kinetic.generalized-dispersion",
+   "forbidden_phrases": [
+    "normalized gamma"
+   ]
+  },
+  {
+   "asset_id": "scirel.kinetic.terminal-ion-state-reduction",
+   "forbidden_phrases": [
+    "neutral_density_m3",
+    "ionization_rate_s_inv",
+    "reaction_rate_table_s_inv",
+    "dissociation_frequency",
+    "density-scaled physical dimension unresolved"
+   ]
+  }
+ ]
+}

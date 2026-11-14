@@ -19,9 +19,9 @@ A change is done only when the checks here pass. Run them yourself; do not assum
 `check_all.py` prints one line with both counts before its verdict, for example:
 
 ```text
-steps 10/10 passed; tests collected 3021, selected 3021, deselected 0, passed 3019, failed 0, error 0, skipped 2, xfailed 0, xpassed 0 (skip reasons: Windows-only path test (1); empty report parameter set (1))
-SKIP  Windows-only path test  (1): tests/delivery/test_solving_skill.py::test_windows_skill_root_cannot_have_a_redirected_ancestor
-SKIP  empty report parameter set  (1): tests/tooling/test_solved_examples.py::test_example_reports_pass_the_validator[NOTSET]
+steps 10/10 passed; tests collected 3021, selected 3021, deselected 0, passed 3019, failed 0, error 0, skipped 2, xfailed 0, xpassed 0 (skip reasons: Windows root component traversal (1); got empty parameter set for (report) (1))
+SKIP  Windows root component traversal  (1): tests/delivery/test_solving_skill.py::test_windows_skill_root_cannot_have_a_redirected_ancestor
+SKIP  got empty parameter set for (report)  (1): tests/tooling/test_solved_examples.py::test_example_reports_pass_the_validator[NOTSET]
 ALL GREEN
 ```
 
@@ -116,7 +116,7 @@ It runs the full test suite, contract signatures and examples, the docstring and
 
 For each operator, the code signature and its numpydoc docstring are the source of truth for parameter names, order, defaults, units, return entries, raised exceptions and the example. The JSON contract keeps what is only for agents (model, scope, applicability, failure semantics, evidence, limitations), and its fields that overlap the docstring are derived from it. When you change one, change the other in the same commit.
 
-`skills/development/scirel-acceptance/scripts/check_contract_sync.py` enforces this for the assets listed in `skills/development/scirel-acceptance/scripts/contract_sync_scope.json`: signature and input names, required flags and defaults; Parameters, Returns, Raises, See Also and Examples sections; every contract unit written as `[unit]` in the matching docstring entry; every exception in `failure_semantics` listed under Raises; Examples that run as doctests and are the same code as `example.code`; the Chinese reader record bound to the current contract; and phrases listed as stale for the asset. Add an asset to the scope list once its docstring passes; the goal is the whole catalog.
+`skills/development/scirel-acceptance/scripts/check_contract_sync.py` enforces this for every public asset derived directly from `catalog/examples/`: signature and input names, required flags and defaults; Parameters, Returns, Raises, See Also and Examples sections; every contract unit written as `[unit]` in the matching docstring entry; every exception in `failure_semantics` listed under Raises; Examples that run as doctests and are the same code as `example.code`; the Chinese reader record bound to the current contract; translated clause counts and unknown keys; and phrases listed as stale for the asset. Optional positional asset IDs select local checks; unknown IDs, an empty selection and a missing or empty catalog fail. `--rules` selects `skills/development/scirel-acceptance/scripts/contract_sync_rules.json` by default. It holds only asset-specific stale-phrase options, never a checked-asset list; unknown or duplicate rule IDs fail.
 
 ## Set up once per clone
 
@@ -140,9 +140,9 @@ is saved. Hooks are a safety net, not a replacement for running the checks yours
 
 ## Ratchets
 
-Two lists only tighten.
+Checks only tighten.
 
-- `skills/development/scirel-acceptance/scripts/contract_sync_scope.json` lists the assets whose docstring and contract are checked for agreement. Add to it; do not remove from it.
+- Contract synchronization covers the entire public catalog automatically. Do not exclude an asset or weaken any existing field check to pass. The asset-specific stale-phrase rules in `skills/development/scirel-acceptance/scripts/contract_sync_rules.json` remain enforced independently of coverage; removing an option-free row cannot remove an asset from checking.
 - `skills/development/scirel-acceptance/hazard_baseline.json` lists accepted hits of the hazard scan. A new hit fails the check. Read it with the `api-design-method` skill's checklist. Fix it, or if it is intended, regenerate the baseline with `scan_hazards.py src/scirel --write-baseline <file>` and say why in the commit message.
 
 ## When a check fails

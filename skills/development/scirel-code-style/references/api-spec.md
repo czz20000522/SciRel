@@ -131,7 +131,8 @@ Bring existing functions up to this as they are touched. New functions meet it f
 | Public names | `__all__` | Contract `public_api`, documentation |
 | Model, applicability, evidence, limitations | Contract | None |
 
-`check_contract_sync.py` enforces the derived columns for the assets in its scope list.
+`check_contract_sync.py` enforces the derived columns for every public asset in
+`catalog/examples/`; asset-specific stale-phrase rules do not select the checked set.
 
 A contract ID `scirel.<domain>.<name>` must name the domain whose module defines the function: the `<domain>` segment equals the canonical module's domain. Contract validation enforces it, so an ID locates the module and the module locates the ID.
 

@@ -4499,8 +4499,8 @@
   },
   {
    "asset_id": "scirel.field.filament-coil-green-field",
-   "source_sha256": "55dbccf0c2f1e138f32775ae684b8856075c9e2b4847413ed5b3d6af584482c5",
-   "summary": "通过对齐圆线圈的规范圆丝核函数计算 psi、BR 和 BZ 响应并累加；近轴精度由核函数的小模值超几何分支保证。",
+   "source_sha256": "f51a225815af8850a076f9ca09bbac222e86922ed8561ba77133fbe7735ae9de",
+   "summary": "给定观测几何、线圈电流和匝数，通过统一的圆形电流丝核函数计算并累加 psi、BR 和 BZ 响应。",
    "definition": "用规范圆丝核函数求每个带权环的响应，再累加各线圈项；核函数在 m<0.5 时走小模值超几何形式，消除 (2−m)K−2E 在近轴的相消（issue #10 项4）。",
    "model": "闭式轴对称圆线圈响应，由规范圆丝核函数求值（m<0.5 超几何分支，m≥0.5 补角椭圆形式）。",
    "assumptions": [
@@ -4551,37 +4551,37 @@
     {
      "name": "flux_weber",
      "description": "线圈叠加后的极向磁通响应 psi=R A_phi。",
-     "constraints": "接受输入时有限；极端有限电流或匝数造成溢出时抛出 ValueError。",
+     "constraints": "接受输入时有限；极端有限电流或匝数可使源权重溢出或封装输出非有限而抛出 ValueError，也可在统一核函数内部算术中抛出 FloatingPointError。",
      "dtype": "浮点数"
     },
     {
      "name": "radial_field_t",
      "description": "线圈叠加后的径向磁场 B_r。",
-     "constraints": "接受输入时有限；极端有限电流或匝数造成溢出时抛出 ValueError。",
+     "constraints": "接受输入时有限；极端有限电流或匝数可使源权重溢出或封装输出非有限而抛出 ValueError，也可在统一核函数内部算术中抛出 FloatingPointError。",
      "dtype": "浮点数"
     },
     {
      "name": "axial_field_t",
      "description": "线圈叠加后的轴向磁场 B_z。",
-     "constraints": "接受输入时有限；极端有限电流或匝数造成溢出时抛出 ValueError。",
+     "constraints": "接受输入时有限；极端有限电流或匝数可使源权重溢出或封装输出非有限而抛出 ValueError，也可在统一核函数内部算术中抛出 FloatingPointError。",
      "dtype": "浮点数"
     }
    ],
    "applicability": {
     "preconditions": [
      "所有线圈向量为形状匹配的有限一维数组。",
-     "接受的模值位于 (0,1) 内。"
+     "线圈半径严格为正。"
     ],
     "supported": [
      "支持有限对齐线圈数组、电流线性、镜像对抵消以及直接测试中的奇异/上溢失败。"
     ],
     "excluded": [
-     "不处理错位线圈几何、内部重算椭圆积分或任意极端尺度保证。"
+     "不处理错位线圈几何，也不保证任意极端尺度。"
     ]
    },
    "failure_semantics": {
-    "invalid_input": "向量格式错误、模值/椭圆值非法、几何奇异或输出非有限时抛出 ValueError。",
-    "runtime_failure": "算术上溢和无效闭式运算转换为 ValueError。",
+    "invalid_input": "观测坐标或线圈向量非法、几何奇异或输出非有限时抛出 ValueError。",
+    "runtime_failure": "统一核函数内部上溢或无效算术抛出的 FloatingPointError 原样传出。封装层验证（包括溢出的源权重或非有限标量输出）抛出 ValueError；不使用备用计算，也不返回部分元组。",
     "nonconvergence": "不适用；响应是有限直接求和。",
     "partial_results": "验证或奇异性失败后不返回标量元组。"
    },
@@ -4592,22 +4592,19 @@
    "verification": {
     "scope": [
      "闭式响应与独立重算。",
-     "相同椭圆积分值下与基线 SciPy 电流丝关系比较。",
+     "在半径 r∈[1e-8,1e-2] 的范围内，对照 50 位精度独立参照核对近轴精度（issue #10 项4）。",
      "奇异几何拒绝及输入失败合同。"
     ],
-    "evidence_ceiling": "限于调用者给定椭圆值的闭式细丝线圈 Green 场。证据：`test_filament_coil_green.py` 含 13 个测试函数，其中 7 个引用 `evaluate_filament_coil_green_field`，由 3 个资产共享；仅绑定共享文件覆盖，因此通过是文件级事实、而非资产隔离证据；本审计已执行有界示例。真值来源：独立闭式重算与 SciPy 椭圆基线一致性。不建立：错位几何、内部重算椭圆积分或任意极端尺度保证。",
+    "evidence_ceiling": "限于 tests/field/test_filament_coil_green.py 的测试几何：50 位精度 mpmath 独立闭式重算、r∈[1e-8,1e-2] 的近轴精度、近轴标度、电流线性、镜像线圈抵消及声明的非法输入、奇异和溢出分支。与另一个 field 格林响应比较只检查库内一致性；复用统一核函数只说明实现结构，不构成独立物理验证。这些共享文件测试不建立任意极端尺度精度、错位几何或实验有效性。",
     "known_limitations": [
      "本合同不绑定外部跨实现比较；只有本仓库测试建立其行为。",
-     "这是 circular-filament-green 的声明关系变体，不能静默合并其外供 K/E、单目标、轴偏移和奇异拒绝边界。",
-     "声明式输入硬化链（按族文档）：几何端拒绝原始负半径，响应端拒绝零间距或 m=1 奇异几何；这两处边界在此均不会被静默接受。",
-     "声明式输出硬化：有限但极端的电流/匝数使组合响应因子溢出时抛出 ValueError，而不是返回 Inf/NaN。",
+     "此封装使用统一的圆形电流丝核函数；单目标、调用者施加半径偏移和奇异拒绝的边界仍须明确保留。",
+     "几何辅助函数拒绝原始负观测半径。此响应接收已为正的偏移后半径并拒绝零间距奇异几何；它不重复施加偏移，也不接受模值或 K/E 输入端口。",
+     "极端有限电流或匝数不保证有限响应：源权重溢出可抛出 ValueError，统一核函数内部算术上溢则原样传出 FloatingPointError；不选择备用响应。",
      "目标在线圈上时的奇异几何拒绝是显式合同：该配置抛出错误而非返回 NaN 响应。",
-     "闭式变体根据调用者提供的椭圆值求值；算符内部不进行独立 SciPy 重算。"
+     "椭圆积分值由统一核函数内部求值；调用者不提供 K/E。该响应不使用独立的多项式—对数近似。"
     ]
-   },
-   "source_conflicts": [
-    "example.expected 声称源环奇异点会抛 ValueError，但示例代码未调用该分支；本页中文只描述示例实际覆盖的行为。"
-   ]
+   }
   },
   {
    "asset_id": "scirel.equilibrium.isotropic-pressure-flux",
