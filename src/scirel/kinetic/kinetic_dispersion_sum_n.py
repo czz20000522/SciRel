@@ -63,25 +63,42 @@ def _a_function(zeta):
     return result
 
 
-def _gamma_positive_tail(b, start, limit=2000):
-    """Return ``2*sum_{n>N} Gamma_n(b)`` as a positive tail sum, or 0.0 when unresolvable.
+def _gamma_partial_sum(b, nmax):
+    """Return ``sum_{n=-nmax..nmax} Gamma_n(b)`` from strictly positive terms."""
+    total = float(np.real(evaluate_bessel_gamma(0, b)["Gamma_n"]))
+    for n in range(1, nmax + 1):
+        total += 2.0 * float(np.real(evaluate_bessel_gamma(n, b)["Gamma_n"]))
+    return total
 
-    The identity ``sum_{n=-inf..inf} Gamma_n = 1`` must not be used to form this tail as
-    ``1 - sum(finite)``: for tiny ``kz`` that difference is multiplied by ``1/kz^2`` and its
-    rounding error would be amplified instead of the (physically meaningful) truncation tail.
+
+def _gamma_positive_tail(b, start, limit=2000):
+    """Return ``2*sum_{n>N} Gamma_n(b)`` for ``N = start - 1``.
+
+    ``Gamma_n(b) = exp(-b) I_n(b)`` peaks at ``n ~ b``, which splits the two regimes:
+
+    * peak inside the term budget -- sum the positive tail directly. This is the only safe form
+      when the tail is small: forming it as ``1 - sum(finite)`` subtracts two O(1) numbers, and
+      for tiny ``kz`` that rounding is multiplied by ``1/kz^2`` (issue #203);
+    * peak beyond the budget (large ``b``) -- the positive sum cannot converge, because
+      ``Gamma_n`` stays near ``(2 pi b)^-1/2`` throughout the budget, and the tail is then O(1).
+      There the complement ``1 - sum_{|n|<=N} Gamma_n`` is exact and accurate: its subtrahend is
+      small, so nothing cancels. Returning the budgeted partial sum as if converged under-states
+      the correction (``b=1e8, lmx=5``: 0.15851 instead of 0.99956, Codex P2 on #215).
     """
+    start = max(start, 1)
     total = 0.0
-    decaying = False
-    for n in range(max(start, 0), start + limit):
+    converged = False
+    for n in range(start, start + limit):
         gamma = float(np.real(evaluate_bessel_gamma(n, b)["Gamma_n"]))
         if not np.isfinite(gamma):
             break
         total += gamma
-        if n >= b:
-            decaying = True
-        if decaying and gamma <= 1e-18 * total:
+        if gamma <= 1e-18 * total:
+            converged = True
             break
-    return 2.0 * total
+    if converged:
+        return 2.0 * total
+    return 1.0 - _gamma_partial_sum(b, start - 1)
 
 
 def _finite_scalar(name, value, *, nonzero=False):
@@ -213,7 +230,9 @@ def evaluate_kinetic_dispersion_sum(*, B0, qs, ms, ns0, Ts0, f, kz, kx, lmx=5):
     terms that cancel the Maxwell curl contribution are folded through
     ``A(zeta) = 1 + zeta*Z(zeta) = hyp1f1(1, 1/2, -zeta^2) + i*sqrt(pi)*zeta*exp(-zeta^2)``, the
     ``xz``/``yz`` sums use the exact symmetric-truncation identities, and the truncation tail is
-    formed as the positive sum ``2*sum_{n>N}Gamma_n``. The same finite ``N`` model is kept: an
+    formed as the positive sum ``2*sum_{n>N}Gamma_n`` where that sum converges, and through the
+    exact complement ``1 - sum_{|n|<=N}Gamma_n`` when the peak of ``Gamma_n`` lies beyond the term
+    budget (large ``b``; see ``_gamma_positive_tail``). The same finite ``N`` model is kept: an
     insufficient ``N`` still returns a large tensor (that is truncation, not rounding) and no
     clamp or algorithm switch is applied.
 
@@ -267,7 +286,8 @@ def evaluate_kinetic_dispersion_sum(*, B0, qs, ms, ns0, Ts0, f, kz, kx, lmx=5):
         # Same finite symmetric harmonic sum, rewritten through A(zeta)=1+zeta*Z(zeta) so the
         # O(zeta^2) pieces that cancel the Maxwell curl term are never formed as differences of
         # O(zeta^2) floats (issue #203). Kxz/Kyz drop the exact zero of sum(n*Gamma_n) and pick up
-        # the endpoint term of sum(Gamma_prime_n); Kzz keeps the truncation tail as a positive sum.
+        # the endpoint term of sum(Gamma_prime_n); Kzz keeps the truncation tail in the form that
+        # converges for this ``b`` instead of returning a budgeted partial sum.
         sum_xz = 0.0j
         sum_yz = 0.0j
         sum_zz = 0.0j

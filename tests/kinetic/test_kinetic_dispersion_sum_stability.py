@@ -12,7 +12,13 @@ import numpy as np
 import pytest
 
 from scirel.kinetic import evaluate_kinetic_dispersion_sum, kinetic_dispersion_sum_n
-from scirel.kinetic.kinetic_dispersion_sum_n import _a_asymptotic, _a_function, _a_series
+from scirel.kinetic.kinetic_dispersion_sum_n import (
+    _a_asymptotic,
+    _a_function,
+    _a_series,
+    _gamma_partial_sum,
+    _gamma_positive_tail,
+)
 
 Q = -1.60217662e-19
 M = 9.1094e-31
@@ -226,3 +232,71 @@ def test_dispatch_across_the_threshold_has_no_step(offset):
     zeta = THRESHOLD + offset
     value = complex(_a_function(np.asarray([zeta]))[0])
     assert _rel(value, _reference_a(zeta)) <= TOLERANCE
+
+
+def _large_argument_tail(nmax, b, terms=4):
+    """``1 - sum_{|n|<=nmax} Gamma_n`` using the fixed-order large-argument form of ``I_n(b)``.
+
+    ``I_n(b) ~ e^b/sqrt(2 pi b) * sum_k (-1)^k prod_{j<k}(4n^2-(2j+1)^2) / (k! (8b)^k)`` for fixed
+    ``n`` and large ``b``. At ``b = 1e8`` the first omitted term is below ``1e-28`` relative, so
+    this is an independent value the implementation has to reproduce rather than a copy of it.
+    """
+    inv = 1.0 / np.sqrt(2 * np.pi * b)
+    total = 0.0
+    for n in range(nmax + 1):
+        mu = 4.0 * n * n
+        series = 1.0
+        coefficient = 1.0
+        for k in range(1, terms + 1):
+            coefficient *= (mu - (2 * k - 1) ** 2) / (k * 8.0 * b)
+            series += (-1) ** k * coefficient
+        total += (1.0 if n == 0 else 2.0) * inv * series
+    return 1.0 - total
+
+
+def test_truncation_tail_is_complete_when_the_peak_lies_beyond_the_term_budget():
+    """Codex P2 on #215: a budgeted positive sum must not be returned as if it had converged.
+
+    ``Gamma_n(1e8)`` peaks near ``n = 1e8``, so terms ``n = 6..2005`` are all about
+    ``(2 pi b)^-1/2`` and their sum (0.1585107) is not the truncation tail (0.9995612). The tail is
+    O(1) here, so the complement identity is exact and cannot cancel.
+    """
+    b, lmx = 1e8, 5
+    tail = _gamma_positive_tail(b, lmx + 1)
+    assert _rel(tail, _large_argument_tail(lmx, b)) <= 1e-12
+    assert tail > 0.99  # the old budgeted partial sum returned 0.1585107 here
+    result = evaluate_kinetic_dispersion_sum(
+        B0=B0,
+        qs=[Q],
+        ms=[M],
+        ns0=[DENSITY],
+        Ts0=[TEMPERATURE],
+        f=0.7 * abs(Q / M) / (2 * np.pi),
+        kz=1e-7,
+        kx=KX_B1 * np.sqrt(b),
+        lmx=lmx,
+    )
+    assert np.all(np.isfinite(result["K"]))
+
+
+@pytest.mark.parametrize("b", [100.0, 1000.0, 1900.0, 2005.0, 3000.0, 1e4])
+def test_both_tail_representations_agree_across_the_term_budget_edge(b):
+    """The branch that wins may change with ``b``; the value must not step at the switch."""
+    lmx = 5
+    positive = _gamma_positive_tail(b, lmx + 1)
+    complement = 1.0 - _gamma_partial_sum(b, lmx)
+    assert _rel(positive, complement) <= TOLERANCE
+
+
+def test_tail_matches_high_precision_positive_summation_at_moderate_b():
+    """``b=60`` keeps the peak inside the budget, so this exercises the positive-sum branch."""
+    b, lmx = 60.0, 5
+    with mp.workdps(90):
+        excess = mp.mpf(0)
+        for n in range(lmx + 1, 400):
+            gamma = mp.exp(-mp.mpf(b)) * mp.besseli(n, mp.mpf(b))
+            excess += gamma
+            if gamma < mp.mpf("1e-50"):
+                break
+        reference = float(2 * excess)
+    assert _rel(_gamma_positive_tail(b, lmx + 1), reference) <= TOLERANCE
