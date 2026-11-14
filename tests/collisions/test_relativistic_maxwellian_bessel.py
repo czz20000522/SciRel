@@ -30,6 +30,10 @@ import importlib
 import inspect
 import math
 import pathlib
+import warnings
+from array import array
+from decimal import Decimal
+from fractions import Fraction
 
 import numpy as np
 import pytest
@@ -352,3 +356,144 @@ def test_non_real_coercions_are_rejected_as_invalid_arguments(bad):
     """Boolean, string, complex and non-scalar inputs are not positive scalars."""
     with pytest.raises(InvalidBesselArgumentError):
         relativistic_maxwellian_bessel(bad)
+
+
+SCALAR_WRAPPINGS = ("scalar", "ndarray", "object", "nested-ndarray", "nested-object")
+
+
+def _wrap_scalar(value, wrapping):
+    """Build caller inputs, preserving the payload type in object arrays."""
+    if wrapping == "scalar":
+        return value
+    if wrapping == "ndarray":
+        return np.array(value)
+    if wrapping == "nested-ndarray":
+        value = np.array(value)
+    if wrapping == "nested-object":
+        for _ in range(3):
+            outer = np.empty((), dtype=object)
+            outer[()] = value
+            value = outer
+    outer = np.empty((), dtype=object)
+    outer[()] = value
+    return outer
+
+
+@pytest.mark.parametrize("wrapping", SCALAR_WRAPPINGS)
+@pytest.mark.parametrize(
+    "bad",
+    [
+        pytest.param(True, id="bool-true"),
+        pytest.param(False, id="bool-false"),
+        pytest.param("1.0", id="str"),
+        pytest.param(b"1.0", id="bytes"),
+        pytest.param(1 + 0j, id="complex-zero-imag"),
+        pytest.param(1 + 0.1j, id="complex-nonzero-imag"),
+        pytest.param(np.bool_(True), id="np-bool-true"),
+        pytest.param(np.bool_(False), id="np-bool-false"),
+        pytest.param(np.str_("1.0"), id="np-str"),
+        pytest.param(np.bytes_(b"1.0"), id="np-bytes"),
+        *[
+            pytest.param(dtype(value), id=f"{dtype.__name__}-{label}")
+            for dtype in (np.complex64, np.complex128, np.clongdouble)
+            for value, label in ((1 + 0j, "zero-imag"), (1 + 0.1j, "nonzero-imag"))
+        ],
+    ],
+)
+def test_forbidden_scalar_types_are_rejected_even_with_warnings_ignored(bad, wrapping):
+    """Rejection must survive wrapping and cannot depend on ComplexWarning policy."""
+    argument = _wrap_scalar(bad, wrapping)
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        with pytest.raises(InvalidBesselArgumentError, match="positive and finite"):
+            relativistic_maxwellian_bessel(argument)
+
+
+class _FloatScalar:
+    """An existing float-convertible numeric input, without a NumPy dtype."""
+
+    def __float__(self):
+        return 1.25
+
+
+@pytest.mark.parametrize("wrapping", SCALAR_WRAPPINGS)
+@pytest.mark.parametrize(
+    "value",
+    [
+        pytest.param(1, id="int"),
+        pytest.param(1.25, id="float"),
+        pytest.param(Decimal("1.25"), id="decimal"),
+        pytest.param(Fraction(5, 4), id="fraction"),
+        pytest.param(_FloatScalar(), id="float-convertible"),
+        *[
+            pytest.param(dtype(1), id=dtype.__name__)
+            for dtype in (
+                np.int8,
+                np.int16,
+                np.int32,
+                np.int64,
+                np.uint8,
+                np.uint16,
+                np.uint32,
+                np.uint64,
+            )
+        ],
+        *[
+            pytest.param(dtype(1.25), id=dtype.__name__)
+            for dtype in (np.float16, np.float32, np.float64, np.longdouble)
+        ],
+    ],
+)
+def test_supported_real_scalars_keep_their_float_conversion(value, wrapping):
+    """The input guard must preserve existing real-scalar conversion semantics."""
+    expected = relativistic_maxwellian_bessel(float(value))
+    result = relativistic_maxwellian_bessel(_wrap_scalar(value, wrapping))
+    assert result == expected
+    assert all(type(component) is float for component in result.values())
+
+
+@pytest.mark.parametrize("wrapping", SCALAR_WRAPPINGS)
+@pytest.mark.parametrize("bad", [0.0, -1.0, float("nan"), float("inf"), -float("inf")])
+def test_wrapped_non_positive_or_non_finite_reals_remain_invalid(bad, wrapping):
+    with pytest.raises(InvalidBesselArgumentError, match="positive and finite"):
+        relativistic_maxwellian_bessel(_wrap_scalar(bad, wrapping))
+
+
+@pytest.mark.parametrize("bad", [[1.0], np.array([1.0]), np.array([[1.0]])])
+def test_nested_object_non_scalars_remain_invalid(bad):
+    with pytest.raises(InvalidBesselArgumentError, match="positive and finite"):
+        relativistic_maxwellian_bessel(_wrap_scalar(bad, "nested-object"))
+
+
+@pytest.mark.parametrize("length", [1, 2])
+def test_cyclic_object_scalars_are_rejected(length):
+    """Unwrapping malformed object arrays must terminate with the input error."""
+    wrappers = [np.empty((), dtype=object) for _ in range(length)]
+    for index, wrapper in enumerate(wrappers):
+        wrapper[()] = wrappers[(index + 1) % length]
+    with pytest.raises(InvalidBesselArgumentError, match="positive and finite"):
+        relativistic_maxwellian_bessel(wrappers[0])
+
+
+@pytest.mark.parametrize("wrapping", ("scalar", "object", "nested-object"))
+@pytest.mark.parametrize(
+    "buffer",
+    [bytearray(b"1.0"), memoryview(b"1.0"), array("B", b"1.0")],
+    ids=("bytearray", "memoryview", "array-buffer"),
+)
+def test_numeric_text_buffers_are_not_real_scalars(buffer, wrapping):
+    """Parsing a buffer's text is not a caller-supplied numeric conversion."""
+    with pytest.raises(InvalidBesselArgumentError, match="positive and finite"):
+        relativistic_maxwellian_bessel(_wrap_scalar(buffer, wrapping))
+
+
+class _IndexScalar:
+    def __index__(self):
+        return 2
+
+
+@pytest.mark.parametrize("wrapping", SCALAR_WRAPPINGS)
+def test_index_protocol_scalars_remain_supported(wrapping):
+    """A genuine numeric index conversion keeps its previous scalar behavior."""
+    expected = relativistic_maxwellian_bessel(2.0)
+    assert relativistic_maxwellian_bessel(_wrap_scalar(_IndexScalar(), wrapping)) == expected

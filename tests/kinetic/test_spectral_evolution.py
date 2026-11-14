@@ -103,14 +103,45 @@ def test_si_arity_and_local_five_outputs_are_defined():
     assert len(out) == 5 and out[4].shape == (14, 14)
 
 
-def test_plot_one_and_high_species_without_index_failure(tmp_path):
+def test_presentation_metadata_handles_one_and_many_species_without_images():
     for s in [1, 17]:
         data = np.tile([0, 1, 1, 0, 0, 0, 0, 0, 0, 0], (s, 1))
-        out = evaluate_spectral_dispersion(
-            data, method=2, k_grid=[0, 0.1], plot_path=tmp_path / f"s{s}.png"
-        )
+        out = evaluate_spectral_dispersion(data, method=2, k_grid=[0, 0.1])
         assert out["plot_png"] == b""
         assert out["graphics"]["axes_count"] == 2
+
+
+@pytest.mark.parametrize("method", [1, 2, 3, 4])
+@pytest.mark.parametrize("output_count", [None, -1])
+def test_retired_plot_path_is_rejected_without_touching_an_existing_file(
+    tmp_path, method, output_count
+):
+    target = tmp_path / "existing-report.png"
+    original = b"owned regression fixture: these bytes must be preserved"
+    target.write_bytes(original)
+    with pytest.raises(TypeError, match="plot_path"):
+        evaluate_spectral_dispersion(
+            method=method,
+            k_grid=[0.0],
+            theta_grid=[0.0],
+            kx_grid=[0.0],
+            kz_grid=[0.0],
+            plot_path=target,
+            output_count=output_count,
+        )
+    assert target.read_bytes() == original
+
+
+def test_spectral_calls_return_only_data_and_do_not_create_or_change_files(tmp_path, monkeypatch):
+    target = tmp_path / "owned-file.txt"
+    target.write_bytes(b"unchanged fixture")
+    monkeypatch.chdir(tmp_path)
+    before = {path.name: path.read_bytes() for path in tmp_path.iterdir()}
+    out = evaluate_spectral_dispersion(method=2, k_grid=[0.0])
+    assert out["plot_png"] == b""
+    with pytest.raises(ValueError, match="output_count"):
+        evaluate_spectral_dispersion(method=2, k_grid=[0.0], output_count=-1)
+    assert {path.name: path.read_bytes() for path in tmp_path.iterdir()} == before
 
 
 def test_explicit_collision_categories_survive_graph_state():

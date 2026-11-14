@@ -133,14 +133,19 @@ def _positive_finite_scalar(x):
     reported as :class:`InvalidBesselArgumentError`, the same class the public
     contract uses for an invalid argument.
     """
-    if isinstance(x, (bool, np.bool_, str, bytes, complex)):
-        raise InvalidBesselArgumentError("x must be positive and finite")
-    if isinstance(x, np.ndarray):
-        if x.ndim != 0:
+    seen_arrays = set()
+    while isinstance(x, np.ndarray):
+        # Object scalars can contain further arrays, including cyclic wrappers.
+        if x.ndim != 0 or id(x) in seen_arrays:
             raise InvalidBesselArgumentError("x must be positive and finite")
-        if isinstance(x.item(), (bool, np.bool_, complex)):
-            raise InvalidBesselArgumentError("x must be positive and finite")
+        seen_arrays.add(id(x))
         x = x.item()
+    if isinstance(x, (bool, np.bool_, str, bytes, complex, np.complexfloating)):
+        raise InvalidBesselArgumentError("x must be positive and finite")
+    # float() also parses arbitrary byte buffers as text. Require a numeric
+    # conversion protocol so those containers cannot masquerade as real scalars.
+    if not (hasattr(type(x), "__float__") or hasattr(type(x), "__index__")):
+        raise InvalidBesselArgumentError("x must be positive and finite")
     try:
         return float(x)
     except (TypeError, ValueError, OverflowError) as error:

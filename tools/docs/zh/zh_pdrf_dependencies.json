@@ -145,7 +145,7 @@
   },
   {
    "asset_id": "scirel.kinetic.spectral-dispersion-scan",
-   "source_sha256": "2a08db4f62687dba44865fbb6478944af40071856b709306733658070d6a1fd6",
+   "source_sha256": "992fc0914de384cd05e92861d7c12e1f73d7add8786b727f40bc554f45eeb7e4",
    "summary": "用修正后的算子运行完整扫描族，并显式给出状态与限制。",
    "definition": "初始化一次；对每个按方法选定的 k 点组装修正矩阵并计算条件化本征谱；收集全部排序后的模式，并记录最后一点的 M、A、w1、w2、state。方法 2 在归一化/SI 单位下分别使用 101/196 个幅值点，方法 3 使用 51 个角度，方法 4 使用 50×75 笛卡尔网格并按先 kz 后 kx 的行主序扫描；method 为 0、1 或未知非负整数时走单点分支。随后为 2/3/4 返回双面板图形元数据；其他选择器保持零坐标轴。可选的 SI 位置返回前缀为 (M,A,w1,w2,kk,ww1,ww2,betasz,vA,csz2,c2,rhos0,wcs,qs,ms,wps,B0)，各字段均有定义。",
    "model": "由新建状态、修正后的局域多流体矩阵和条件化谱组合而成；扫描网格遵循声明的方法默认值。",
@@ -276,14 +276,6 @@
      "dtype": "整数",
      "shape": "标量",
      "units": "无量纲"
-    },
-    {
-     "name": "plot_path",
-     "description": "可选的显式 PNG 导出路径。",
-     "constraints": "仅方法 2/3/4；Agg 在内存中生成 PNG，并在提供路径时写入。",
-     "dtype": "路径或 None",
-     "shape": "标量或 null",
-     "units": "文件系统路径"
     },
     {
      "name": "output_count",
@@ -490,7 +482,7 @@
     {
      "name": "execution_order",
      "description": "显式执行顺序。",
-     "constraints": "初始化；行主序组装/求谱；绘图。",
+     "constraints": "初始化；行主序组装/求谱；呈现元数据；不渲染或导出文件。",
      "dtype": "字符串",
      "shape": "标量",
      "units": "无量纲"
@@ -505,8 +497,8 @@
     },
     {
      "name": "graphics",
-     "description": "坐标轴数与模式计数的元数据。",
-     "constraints": "方法 2/3/4 为两个坐标轴，其他选择器为零个；不对单物种的质量标题索引或零颜色索引作额外处理。",
+     "description": "轴与模式数量的呈现元数据；不实际渲染坐标轴。",
+     "constraints": "方法 2/3/4 的坐标轴计数为二，其他选择器为零；不实际渲染坐标轴或图像。",
      "dtype": "字典",
      "shape": "映射",
      "units": "无量纲"
@@ -514,10 +506,10 @@
     {
      "name": "plot_png",
      "description": "PNG 字节；当前实现返回空字节，不包含图像数据。",
-     "constraints": "仅方法 2/3/4；请求的文件写入相同字节。",
+     "constraints": "仅方法 2/3/4 返回空字节；不渲染图像、不导出文件。",
      "dtype": "字节",
      "shape": "字节或缺失",
-     "units": "PNG 字节"
+     "units": "字节"
     }
    ],
    "applicability": {
@@ -537,13 +529,13 @@
    },
    "failure_semantics": {
     "invalid_input": "单位、形状、非有限数据、物理符号、速率、选择器无效，或状态在数值上不可表示时抛出 ValueError；矩阵在 rel=1 且漂移达到或超过 c 时拒绝。",
-    "runtime_failure": "原生 NumPy/SciPy/mpmath 或文件导出失败会向上传播；残差或本征向量不合格由 ArithmeticError 拒绝。",
+    "runtime_failure": "NumPy/SciPy/mpmath 原生失败向上传播；残差或本征向量失败抛出 ArithmeticError。不进行文件导出。",
     "nonconvergence": "没有物理迭代。数值本征求解器失败会向上传播；失败时不声称得到结果。",
-    "partial_results": "失败后不返回结果字典；只有调用者明确请求 PNG 时才产生文件副作用。"
+    "partial_results": "失败后不返回结果字典；成功或失败调用都不导出或覆盖文件。"
    },
    "example": {
     "description": "完整的两点幅值扫描。",
-    "expected": "归一化两点扫描返回的 ww1 形状为 (2,14)，图形元数据中的 axes_count=2、mode_count=5，plot_png 为 0 字节（当前实现未生成 PNG 图像）。"
+    "expected": "归一化两点扫描返回 ww1 形状(2,14)，图形元数据 axes_count=2、mode_count=5；plot_png=b''，不渲染图片，也不写文件。"
    },
    "verification": {
     "scope": [
@@ -562,10 +554,7 @@
     "tests": [
      "tests/kinetic/test_spectral_evolution.py"
     ]
-   },
-   "source_conflicts": [
-    "outputs.plot_png 与示例预期原称方法 2/3/4 生成内存 PNG；当前实现 _plot 返回空字节 b\"\"，plot_path 也只写入空文件，示例实际得到 0 字节。本页已按实际运行改写示例预期，合同待修订。"
-   ]
+   }
   },
   {
    "asset_id": "scirel.kinetic.spectral-temporal-spectrum",

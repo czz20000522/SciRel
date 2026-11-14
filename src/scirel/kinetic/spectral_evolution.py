@@ -25,7 +25,8 @@ momentum; SI category thresholds use electron mass; initialization replaces
 stale globals; beta at B0=0 is undefined (None); pressure-force denominator
 and magnetic-pressure coefficient gradients are linearized; invalid inputs
 fail before calculation; values/vectors share a numerical path; all return
-arities and terminal scan fields are defined; plotting indices are bounded.
+arities and terminal scan fields are defined; presentation metadata is returned
+without rendering images or exporting files.
 Original behavior and D1 assertions are preserved outside the runtime package.
 """
 
@@ -33,7 +34,6 @@ from __future__ import annotations
 
 import io
 import operator
-from pathlib import Path
 
 import numpy as np
 
@@ -861,7 +861,7 @@ def _grid(value, default, name):
     return arr
 
 
-def _plot(out, path):
+def _presentation_metadata(out):
     """Return presentation metadata without importing a plotting backend."""
     if out["method"] == 4:
         modes = out["ww1"].shape[-1]
@@ -872,8 +872,6 @@ def _plot(out, path):
             else out["ww1"].shape[-1]
         )
     png = b""
-    if path is not None:
-        Path(path).write_bytes(png)
     return {"axes_count": 2, "mode_count": modes}, png
 
 
@@ -894,7 +892,6 @@ def evaluate_spectral_dispersion(
     k=0.1,
     theta=np.pi / 3,
     max_points=10000,
-    plot_path=None,
     output_count=None,
 ):
     r"""Scan the local spectral multifluid dispersion graph.
@@ -973,10 +970,6 @@ def evaluate_spectral_dispersion(
         Upper bound on solved scan points. Shape: scalar. Constraints: Positive; whole
         requested scan must fit. No feedback or iteration. Default: 10000. Units:
         [dimensionless].
-    plot_path : path-like or None, optional
-        Optional compatibility path; current implementation does not render an image.
-        Shape: scalar or null. Constraints: Accepted by the signature; no PNG is
-        produced by the current implementation. Default: None. Units: [filesystem path].
     output_count : int or None, optional
         Optional source-position public return prefix. Shape: scalar or null.
         Constraints: normalized0..4,SI0..17. All branches now define kk,ww1,ww2. None
@@ -1073,18 +1066,17 @@ def evaluate_spectral_dispersion(
         [dimensionless].
     execution_order : string
         Explicit sequencing. Shape: scalar. Constraints: initialize; row-major
-        assemble/spectrum; plot. Units: [dimensionless].
+        assemble/spectrum; presentation metadata. Units: [dimensionless].
     max_points : int
         Enforced point limit. Shape: scalar. Constraints: Same as supplied. Units:
         [dimensionless].
     graphics : dict
-        Axes and plotted mode counts. Shape: mapping. Constraints: Two axes for2/3/4,
-        zero axes for other selectors; no one-species mass title indexing or zero color
-        index. Units: [dimensionless].
+        Axis and mode counts as presentation metadata. Shape: mapping. Constraints:
+        Two axes for2/3/4, zero axes for other selectors; no axes or images are
+        rendered. Units: [dimensionless].
     plot_png : bytes
-        Empty bytes in the current implementation; retained for signature compatibility.
-        Shape: bytes or absent. Constraints: Empty payload; no image is rendered. Units:
-        [bytes].
+        Empty image payload. Shape: bytes or absent. Constraints: Only methods2/3/4;
+        no image is rendered or exported to a file. Units: [bytes].
 
     Raises
     ------
@@ -1187,14 +1179,12 @@ def evaluate_spectral_dispersion(
         ww1=np.asarray(w1).reshape(shape + (-1,)),
         ww2=np.asarray(w2).reshape(shape + (-1,)),
         points=len(kxs),
-        execution_order="initialize; row-major assemble/spectrum; plot",
+        execution_order="initialize; row-major assemble/spectrum; presentation metadata",
         max_points=limit,
         graphics={"axes_count": 0, "mode_count": 0},
     )
     if method in (2, 3, 4):
-        out["graphics"], out["plot_png"] = _plot(out, plot_path)
-    elif plot_path is not None:
-        raise ValueError("single-point selector has no plot; plot_path requires method 2/3/4")
+        out["graphics"], out["plot_png"] = _presentation_metadata(out)
     if output_count is not None:
         count = _integer(output_count, "output_count")
         maximum = 4 if unit == "normalized" else 17
