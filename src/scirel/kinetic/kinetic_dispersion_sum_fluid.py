@@ -6,6 +6,8 @@ import operator
 from functools import lru_cache
 import numpy as np
 
+from .kinetic_dispersion_sum_n import _a_function, _gamma_positive_tail
+
 _C2 = (2.99792458e8) ** 2
 _EPSILON0 = 8.854187817e-12
 _KB = 1.38064852e-23
@@ -92,7 +94,8 @@ def evaluate_fluid_kinetic_dispersion_sum(*, B0, qs, ms, ns0, Ts0, f, kz, kx, lm
     ValueError
         Raises ValueError for declared invalid inputs; numeric conversion errors may propagate for
         unsupported Python objects. Raises ValueError if the calculated tensor or function value is
-        nonfinite.
+        nonfinite, or if a positive harmonic tail cannot be represented reliably or bounded within
+        the evaluation budget. No partial tail or tensor is returned.
 
     See Also
     --------
@@ -100,9 +103,22 @@ def evaluate_fluid_kinetic_dispersion_sum(*, B0, qs, ms, ns0, Ts0, f, kz, kx, lm
 
     Notes
     -----
-    Sum harmonics -lmx..lmx using scaled Bessel Gamma terms and N=64 Weideman Z; D adds Maxwell curl
-    terms to K and determinant=det(D). homogeneous magnetized Maxwellian plasma Assumptions: Input units
-    and normalization follow the declared ports; no physical parameters are inferred.
+    Sum harmonics -lmx..lmx using scaled Bessel Gamma terms. The xx/xy/yy components retain N=64
+    Weideman Z. The xz/yz/zz components use the analytic real-argument response A(z)=1+z*Z(z),
+    evaluated directly without subtracting two nearly equal terms. Symmetric finite-sum identities
+    retain the endpoint Gamma_(N+1)-Gamma_N and the tail 1-sum(Gamma_n); the tail is formed from
+    positive terms when its complement is ill-conditioned. D adds Maxwell curl terms to K and
+    determinant=det(D). Homogeneous magnetized Maxwellian plasma. Assumptions: Input units and
+    normalization follow the declared ports; no physical parameters are inferred.
+
+    This is a numerical-method correction of the same finite-harmonic model, not parity with
+    the frozen N=64 rational expression. The real-argument A and positive-tail evaluators are
+    shared with the conventional sum; the positive near-zero kz clamp and caller's lmx stay
+    unchanged. Bounded tests compare full complex K/D against independent high-precision finite
+    sums; they do not prove a continuous-domain error bound or harmonic convergence. An insufficient
+    lmx can give a genuinely large tensor. An exhausted tail budget or unreliable positive tail
+    raises ValueError instead of returning a partial sum or changing lmx. Root and determinant
+    accuracy are not established by the tensor comparisons.
 
     Examples
     --------
@@ -170,28 +186,40 @@ def evaluate_fluid_kinetic_dispersion_sum(*, B0, qs, ms, ns0, Ts0, f, kz, kx, lm
     k_tensor = np.eye(3, dtype=complex)
     for s in range(n_species):
         z0 = omega / (response_kz * vts[s])
+        alpha = wps2[s] / omega**2
         b = bs[s]
         a = a_s[s]
+        sum_xz = 0.0j
+        sum_yz = 0.0j
+        sum_zz = 0.0j
         for l in range(-lmx, lmx + 1):
             zn = (omega - l * wcs[s]) / (response_kz * vts[s])
             gam, gamp = _gamma_and_prime(l, b)
+            a_value = complex(_a_function(np.asarray(zn)))
+            sum_xz += l * gam * a_value
+            sum_yz += gamp * a_value
+            sum_zz += zn * gam * a_value
             x_xx = l**2 * gam / b
             x_xy = 1j * l * gamp
-            x_xz = np.sqrt(2.0) * zn * l * gam / a
             x_yy = l**2 / b * gam - 2.0 * b * gamp
-            x_yz = -1j * np.sqrt(2.0) * zn * a * gamp
-            x_zz = 2.0 * zn**2 * gam
-            term = wps2[s] / omega**2 * (z0 * _zfun(zn))
+            # The ordinary components retain their fixed N=64 Z backend.
+            term = alpha * (z0 * _zfun(zn))
             k_tensor[0, 0] += term * x_xx
             k_tensor[0, 1] += term * x_xy
-            k_tensor[0, 2] += term * x_xz
             k_tensor[1, 0] += term * (-x_xy)
             k_tensor[1, 1] += term * x_yy
-            k_tensor[1, 2] += term * x_yz
-            k_tensor[2, 0] += term * x_xz
-            k_tensor[2, 1] += term * (-x_yz)
-            k_tensor[2, 2] += term * x_zz
-        k_tensor[2, 2] += wps2[s] / omega**2 * 2.0 * z0**2
+        # z*Z=A-1 with symmetric finite sums: sum(l*Gamma_l)=0,
+        # sum(Gamma'_l)=Gamma_(N+1)-Gamma_N. Keep both finite endpoints;
+        # the positive tail computes 1-sum(Gamma_l), without changing N.
+        tail = _gamma_positive_tail(b, lmx + 1)
+        edge = _gamma_and_prime(lmx + 1, b)[0] - _gamma_and_prime(lmx, b)[0]
+        cross_x = np.sqrt(2.0) * alpha * z0 / a * sum_xz
+        cross_y = -1j * np.sqrt(2.0) * alpha * z0 * a * (sum_yz - edge)
+        k_tensor[0, 2] += cross_x
+        k_tensor[2, 0] += cross_x
+        k_tensor[1, 2] += cross_y
+        k_tensor[2, 1] -= cross_y
+        k_tensor[2, 2] += 2.0 * alpha * z0 * sum_zz + 2.0 * alpha * z0**2 * tail
 
     if kz < 0.0:
         k_tensor[0, 2] = -k_tensor[0, 2]

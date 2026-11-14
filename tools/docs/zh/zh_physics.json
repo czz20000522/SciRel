@@ -5418,9 +5418,9 @@
   },
   {
    "asset_id": "scirel.kinetic.kinetic-dispersion-sum-fluid",
-   "source_sha256": "d7f9b1876b9ebb1340f5c43e02350ad5b415e49d300c85fa972cfe668054e8b9",
+   "source_sha256": "fed00b77a7e59c0288f071f9a22e94113732d5517567b2d34d128e3ff0fe20d1",
    "summary": "使用有限回旋谐波求和组装 Maxwellian 等离子体的 3×3 动力学张量，并对近零 kz 施加正向钳位。",
-   "definition": "使用缩放 Bessel Gamma 项和 N=64 Weideman Z，对 -lmx 至 lmx 的谐波求和；在 K 中加入 Maxwell 旋度项得到 D，再计算 determinant=det(D)。",
+   "definition": "使用缩放 Bessel Gamma 项，对 -lmx 至 lmx 的谐波求和。xx/xy/yy 分量保留 N=64 Weideman Z；xz/yz/zz 直接计算解析实参响应 A(z)=1+z*Z(z)，避免先计算两个几乎相等的量再相减。有限对称求和保留端点 Gamma_(N+1)-Gamma_N 和尾项 1-sum(Gamma_n)；补集求差不稳定时直接累加正尾项。在 K 中加入 Maxwell 旋度项得到 D，再计算 determinant=det(D)。",
    "model": "均匀磁化 Maxwellian 等离子体",
    "boundary": "先将 abs(kz)<1e-10 替换为 +1e-10；其余有符号 kz 使用 |kz| 因果共振并反射四个混合张量分量。",
    "assumptions": [
@@ -5571,7 +5571,7 @@
    },
    "failure_semantics": {
     "invalid_input": "输入违反所列条件时抛出 ValueError；不受支持的 Python 对象可能直接传播数值转换异常。",
-    "runtime_failure": "计算得到的张量或函数值非有限时抛出 ValueError。",
+    "runtime_failure": "计算得到的张量或函数值非有限，或正谐波尾项无法可靠表示、无法在求值预算内界定余项时抛出 ValueError；不返回部分尾项或张量。",
     "nonconvergence": "不适用；该入口不执行迭代求根。",
     "partial_results": "发生异常后不返回部分结果映射。"
    },
@@ -5581,15 +5581,18 @@
    },
    "verification": {
     "scope": [
-     "声明的数值案例及相关失败边界。"
+     "用独立高精度原始有限和逐分量比较完整复数 K/D，覆盖近零 kz、有限截断端点、实参响应分支、共振及含符号双物种点，并检查正尾项失败边界。"
     ],
-    "evidence_ceiling": "限于带正近零 kz 截断的有限回旋谐波求和麦克斯韦 3x3 动理学张量。证据：`test_fluid_spectrum_r43_variants.py` 含 6 个测试函数，其中 3 个引用 `evaluate_fluid_kinetic_dispersion_sum`，由 2 个资产共享；仅绑定共享文件覆盖，因此通过是文件级事实、而非资产隔离证据；本审计已执行有界示例。真值来源：有界源方法一致性（非独立真值）。不建立：超出已测有限谐波近似的模身份、求根或精度。",
+    "evidence_ceiling": "独立 mpmath 参照从公开输入重算全部尺度，用 Bessel I 和 Z 的 erfc 定义计算原始有限谐波式。在 test_kinetic_dispersion_sum_fluid_stability.py 列出的样本上，对完整复数 K/D 逐分量检查 |误差|/max(1,|参照|)<=2e-12；选定参照在转为 binary64 前以 140/180 位自核。这是有界算术证据，不是连续输入域的误差定理、谐波收敛保证、行列式/根精度声明或物理标定。普通 xx/xy/yy 保留 N=64 Weideman Z；混合/平行分量改为直接求 A 并保留有限和恒等式。该数值方法修正不声称与冻结的 N=64 有理式一致。",
     "known_limitations": [
      "在所有共振除法前，将 abs(kz)<1e-10 替换为 +1e-10。",
-     "有限谐波和采用解析 SciRel `Z` 值；不声称与有限阶 Weideman 特殊函数一致。",
-     "有限谐波截断 `lmx` 由调用者给定；绑定测试不建立更大 `kx*rho` 下的充分性，也不涉及求根/模身份。"
+     "只有 xx/xy/yy 保留固定 N=64 Weideman Z 近似；xz/yz/zz 使用单独的稳定实参 A 求值器。样本算术检查不构成连续输入域的误差上界。",
+     "有限谐波截断 lmx 由调用者给定；有限 Gamma 尾项保留，可能产生真实的大张量。实现不自动增加 lmx，也不保证谐波收敛。",
+     "正尾项无法可靠表示，或求值预算内不能界定余项时抛出 ValueError；不返回部分尾项，也不退回原来发生大项相消的算式。"
     ],
     "tests": [
+     "tests/kinetic/test_kinetic_dispersion_sum_fluid_stability.py",
+     "tests/kinetic/test_kinetic_signed_kz.py",
      "tests/kinetic/test_fluid_spectrum_r43_variants.py"
     ]
    }
