@@ -9,6 +9,8 @@ import sys
 
 import pytest
 
+from fs_links import file_link_or_reparse
+
 ROOT = Path(__file__).resolve().parents[2]
 SKILL = ROOT / "skills/extraction/scientific-requirements-extraction"
 SCRIPT = SKILL / "scripts/validate_package.py"
@@ -148,14 +150,21 @@ def test_linked_material_is_rejected_even_when_its_target_is_a_real_file(tmp_pat
     outside = _write(tmp_path / "outside.json", '{"secret": true}\n')
     root = _candidate(tmp_path)
     (root / "题面/inputs.json").unlink()
-    os.symlink(outside, root / "题面/inputs.json")
+    file_link_or_reparse(root / "题面/inputs.json", outside)
 
     result = validator.validate(root)
 
     assert result["status"] == "FAIL"
     assert "case_root: linked member 题面/inputs.json" in result["errors"]
-    rejected_member = "public.inputs[0]: links/reparse points are not accepted packet members"
-    assert rejected_member in result["errors"]
+    # The declared member is rejected by name on every platform. On POSIX the
+    # member check names the link itself; a Windows file reparse point is opaque
+    # to `exists()`, so the same rejection surfaces as a missing file while the
+    # root scan above still names the linked member.
+    declared = [error for error in result["errors"] if error.startswith("public.inputs[0]:")]
+    assert declared, result["errors"]
+    if os.name != "nt":
+        rejected_member = "public.inputs[0]: links/reparse points are not accepted packet members"
+        assert rejected_member in result["errors"]
 
 
 def test_a_frozen_case_without_accepted_review_is_rejected(tmp_path):
