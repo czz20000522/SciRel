@@ -32,7 +32,7 @@
  "identity": {
   "relation": "SI species equilibrium and one real wave point to a complex kinetic dispersion tensor and determinant",
   "direction": "(B0, q_s, m_s, n_s, T_s, f, k_z, k_x, lmx) -> K, D, det(D) and derived scales",
-  "definition": "omega=2*pi*f; vts=sqrt(2*kB*T_s/m_s); wcs=q_s*B0/m_s; wps2=n_s*q_s^2/(m_s*epsilon0); a_s=kx*sqrt(kB*T_s/m_s)/wcs; b_s=a_s^2; z_n=(omega-n*wcs)/(kz*vts). Sum n=-lmx..lmx with Gamma_n(b), Gamma_prime_n(b) and analytic Z(z_n), weighting each species term by (wps2/omega^2)*z_0*Z(z_n). Assemble the source-convention susceptibility components and K, then subtract the Maxwell curl terms to obtain D and its determinant. K_ij = delta_ij - sigma_ij/(i*omega*epsilon0).",
+  "definition": "omega=2*pi*f; vts=sqrt(2*kB*T_s/m_s); wcs=q_s*B0/m_s; wps2=n_s*q_s^2/(m_s*epsilon0); a_s=kx*sqrt(kB*T_s/m_s)/wcs; b_s=a_s^2; z_n=(omega-n*wcs)/(abs(kz)*vts). Sum n=-lmx..lmx with Gamma_n(b), Gamma_prime_n(b) and analytic Z(z_n), weighting each species term by (wps2/omega^2)*z_0*Z(z_n). Assemble the source-convention susceptibility components and K, then subtract the Maxwell curl terms to obtain D and its determinant. K_ij = delta_ij - sigma_ij/(i*omega*epsilon0). z_0 uses abs(kz) as well; negative kz reflects xz/yz/zx/zy after assembly.",
   "model": "Truncated conventional cyclotron-harmonic sum for a homogeneous magnetized Maxwellian species mixture; analytic SciRel Faddeeva Z rather than a finite Weideman implementation",
   "geometry": "Uniform background field along z with a real wavevector in the x-z plane; tensor axes are x, y, z",
   "coordinates": "Signed B0 and charges; kx perpendicular, kz parallel; frequency f is in Hz and omega in rad/s",

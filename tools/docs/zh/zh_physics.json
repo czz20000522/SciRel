@@ -733,9 +733,9 @@
   },
   {
    "asset_id": "scirel.kinetic.kinetic-dispersion-sum",
-   "source_sha256": "309b8fc5cf4441c7b110396dc197c8b21823e38a70d92cd8a71a4037f67c0087",
+   "source_sha256": "0b4b2f20a7c5cf112395d0514a50117e5d79bc203864796ba1225b0ae7e2fc1d",
    "summary": "使用有限回旋谐波求和，为磁化 Maxwellian 多组分等离子体组装 x-z 平面的动力学介电张量、Maxwell 色散张量及其行列式。",
-   "definition": "omega=2*pi*f；vts=sqrt(2*kB*T_s/m_s)；wcs=q_s*B0/m_s；wps2=n_s*q_s^2/(m_s*epsilon0)；a_s=kx*sqrt(kB*T_s/m_s)/wcs；b_s=a_s^2；z_n=(omega-n*wcs)/(kz*vts)。使用 Gamma_n(b)、Gamma_prime_n(b) 和解析 Z(z_n)，在 n=-lmx..lmx 范围求和，各组分项的权重为 (wps2/omega^2)*z_0*Z(z_n)。按既有磁化率分量约定组装 K，再减去 Maxwell 旋度项得到 D 及其行列式。符号约定为 K_ij = delta_ij - sigma_ij/(i*omega*epsilon0)。",
+   "definition": "omega=2*pi*f；vts=sqrt(2*kB*T_s/m_s)；wcs=q_s*B0/m_s；wps2=n_s*q_s^2/(m_s*epsilon0)；a_s=kx*sqrt(kB*T_s/m_s)/wcs；b_s=a_s^2；z_n=(omega-n*wcs)/(|kz|*vts)。使用 Gamma_n(b)、Gamma_prime_n(b) 和解析 Z(z_n)，在 n=-lmx..lmx 范围求和，各组分项的权重为 (wps2/omega^2)*z_0*Z(z_n)。按既有磁化率分量约定组装 K，再减去 Maxwell 旋度项得到 D 及其行列式。符号约定为 K_ij = delta_ij - sigma_ij/(i*omega*epsilon0)。 z_0 同样使用 |kz|，负 kz 在组装后反射 xz/yz/zx/zy。",
    "model": "均匀磁化 Maxwellian 多组分等离子体的截断常规回旋谐波求和；使用 SciRel 解析 Faddeeva Z，而非有限阶 Weideman 实现。",
    "boundary": "B0、f、kz 和 kx 均须非零；所有导出项、终末张量与行列式须有限且可表示。谐波截断有限，由调用者选择。",
    "assumptions": [
@@ -899,19 +899,19 @@
    },
    "verification": {
     "scope": [
-     "本合同的 SciRel 实现与仓库测试覆盖所声明的公共端口和数值关系。",
+     "当前实现及所列测试覆盖声明端口、近零 kz 不钳位的稳定性、小 z 完整 K/D 回归、四组正负 f/kz 大 kz 实数 kx 的 xy/yx 保护、每物种 max|z_n|=1 两侧及相邻浮点数、有限截断和两种排列的混合表示物种。",
      "示例只运行一个有界代表案例，不把适用范围扩展到声明前提之外。",
      "Python 示例已在本机运行；本地执行覆盖本资产。"
     ],
-    "evidence_ceiling": "限于所声明的均匀磁化麦克斯韦有限 N 方程。直接测试包含冻结 fluid-BW 值、解析 Z 核对、由公开输入独立推导尺度的 90 位完整张量参照，以及 90/120 位大 b 的 Kzz 参照。它们检验给定有限 N 的数值求值，不证明实验模型精度、自动谐波收敛、任意多物种或全部浮点输入。",
+    "evidence_ceiling": "限于所声明的均匀磁化 Maxwellian 有限 N 方程。直接测试包含冻结 fluid-BW 值、解析 Z 核对、由公开输入独立推尺度的 90 位完整张量参照及 90/120 位大 b 的 Kzz 参照。新增小 z 和表示切换样本按 |误差|/max(1,|参照|)≤2e-12 比较完整复数 K/D；180 位参照用 Bessel I 和 erfc 定义的 Z 计算原有限和，回归的 140/180 位自核保留未舍入数值，不用生产尺度、A 或尾项算法。它们不证明实验模型精度、自动谐波收敛、行列式/求根精度、任意物种或全部浮点输入。",
     "known_limitations": [
      "x-z 平面的实数波点合同不包含垂直或平行零波数极限，也不包含复数求根输入。",
-     "保留有限 N 的截断尾项。通过 A(ζ)=1+ζZ(ζ) 和对称截断恒等式改写大项相消。仅在计算出的有限头和不超过 1/2 时使用补集；否则用 math.fsum 累加正项，并以生成函数给出遗漏余项界。该界只约束精确遗漏项，不涵盖 SciPy 后端或舍入误差。尾项及其绝对算术误差仍随 z0² 放大。N 不足时仍可得到大张量（b=8、N=30、kz=1e-7 时 Kzz 约 7.7e4）；它不是谐波收敛值。",
+     "保留有限 N 截断尾项。每物种 (|omega|+lmx|wcs|)/(|kz|vts)≤1 时混合/平行项使用既有解析 Z 后端直接求 zZ，并保留 zz 中原来的 +2alpha z0²；其他情形使用 A=1+zZ 和有限对称截断恒等式。在 A 分支仅当有限头和不超过 1/2 时使用补集，否则用 math.fsum 累加正项，并以生成函数约束精确遗漏项；不包含后端和舍入误差。尾项及绝对算术误差仍随 z0² 放大。N 不足仍可给出大张量（b=8、N=30、kz=1e-7 时 Kzz 约 7.7e4），不能冒充谐波收敛值。",
      "在较大的 kx*rho 下，有限截断可能不足，调用者须独立评估。",
      "本关系的局部张量测试不能证明终末矩阵输出经完整流水线端到端闭合。",
      "绑定测试比较冻结 fluid-BW 行列式与基于解析 Z 的项；未绑定外部动理学代码或全参数空间参照。",
      "模型使用解析 SciRel `Z` 值而非有限阶 Weideman 特殊函数实现，因此不声称跨代码绝对一致。",
-     "已提交的稳定性测试覆盖指定单物种完整张量参数组：b∈{1,8,40}、N∈{5,30,60}、带符号 kz 从 1e-12 到 1e3，频率比固定。另以 b=4e6、N=20000 的 Kzz 测试和 90/120 位尾项参照覆盖大参数小尾项；大尾项核对含 b=1e8、N=5。A 的正负切换点、相邻浮点数及实部零点附近的虚部均有独立核对。这不是所有参数组合，也不是全域精度证明。复 kx、恰好回旋谐振和极端浮点范围仍在准确性证据之外；恰好零 kz 会被拒绝。"
+     "原稳定性样本含 b∈{1,8,40}、N∈{5,30,60}、带符号 kz 从 1e-12 至 1e3 及固定频率比；另有 b=4e6、N=20000 的 Kzz/90和120位参照，以及 b=1e8、N=5 大尾项。新增原式完整 K/D 样本含小 z 回归、四组正负 f/kz 较大 kz 实数 kx、每物种 max|z_n|=1 两侧和相邻浮点数、N∈{0,1,5,15}及混合表示物种。A 的正负切换点及零点附近虚部另有独立验证。这不是全参数组合或全域精度证明；单位尺度谐振样本不证明全部回旋谐振精度。复 kx 和极端浮点范围仍在准确性证据之外，零 kz 被拒绝。"
     ],
     "tests": [
      "tests/kinetic/test_kinetic_signed_kz.py",
@@ -5421,9 +5421,9 @@
   },
   {
    "asset_id": "scirel.kinetic.kinetic-dispersion-sum-fluid",
-   "source_sha256": "e5cd288ce2518c12d2694e572bbdd673f7ed50f07f50a50d5815c802832b4a4d",
+   "source_sha256": "e3f3dcb6975c3718fa9554f64e578393b45191b9fb6eb08089b197901814f5c1",
    "summary": "使用有限回旋谐波求和组装 Maxwellian 等离子体的 3×3 动力学张量，并对近零 kz 施加正向钳位。",
-   "definition": "使用缩放 Bessel Gamma 项，对 -lmx 至 lmx 的谐波求和。xx/xy/yy 分量保留 N=64 Weideman Z；xz/yz/zz 直接计算解析实参响应 A(z)=1+z*Z(z)，避免先计算两个几乎相等的量再相减。有限对称求和保留端点 Gamma_(N+1)-Gamma_N 和尾项 1-sum(Gamma_n)；补集求差不稳定时直接累加正尾项。在 K 中加入 Maxwell 旋度项得到 D，再计算 determinant=det(D)。",
+   "definition": "使用缩放 Bessel Gamma 对 -lmx 至 lmx 求和。xx/xy/yy 保留 N64 Weideman Z。每物种 (|omega|+lmx|wcs|)/(|effective_kz|vts)≤1 时，xz/yz/zz 用同一 Weideman Z 直接求 zZ，保留 zz 的原 +2alpha z0²；其他情形直接计算解析实参 A=1+zZ，以有限对称恒等式保留 Gamma_(N+1)-Gamma_N 端点和遗漏尾项；补集不稳定时累加正尾项。effective_kz 包含既有正向近零钳位。K 加 Maxwell 旋度项得到 D，再计算 determinant=det(D)。",
    "model": "均匀磁化 Maxwellian 等离子体",
    "boundary": "先将 abs(kz)<1e-10 替换为 +1e-10；其余有符号 kz 使用 |kz| 因果共振并反射四个混合张量分量。",
    "assumptions": [
@@ -5584,12 +5584,12 @@
    },
    "verification": {
     "scope": [
-     "用独立高精度原始有限和逐分量比较完整复数 K/D，覆盖近零 kz、有限截断端点、实参响应分支、共振及含符号双物种点，并检查正尾项失败边界。"
+     "独立高精度原有限和对照完整复数 K/D，覆盖近零 kz、有限截断端点、A 分支、共振和有符号物种；补充小 z 回归、直接 zZ/A 切换两侧、逐物种混合表示及四个正负 f/kz 实数 kx 的 xy/yx 保护，并验证正尾项失败边界。"
     ],
-    "evidence_ceiling": "独立 mpmath 参照从公开输入重算全部尺度，用 Bessel I 和 Z 的 erfc 定义计算原始有限谐波式。在 test_kinetic_dispersion_sum_fluid_stability.py 列出的样本上，对完整复数 K/D 逐分量检查 |误差|/max(1,|参照|)<=2e-12；选定参照在转为 binary64 前以 140/180 位自核。这是有界算术证据，不是连续输入域的误差定理、谐波收敛保证、行列式/根精度声明或物理标定。普通 xx/xy/yy 保留 N=64 Weideman Z；混合/平行分量改为直接求 A 并保留有限和恒等式。该数值方法修正不声称与冻结的 N=64 有理式一致。",
+    "evidence_ceiling": "独立 mpmath 参照从公开输入重算全部尺度，用 Bessel I 和 erfc 定义的 Z 计算原有限谐波式。test_kinetic_dispersion_sum_fluid_stability.py 所选样本完整复数 K/D 保持 |误差|/max(1,|参照|)≤2e-12；所选 140/180 位自核不先舍入成 binary64。它不构成连续域误差定理、谐波收敛保证、行列式/根精度声明或物理标定。普通 xx/xy/yy 保留 N64 Weideman Z；混合/平行项按各物种 max|z_n|≤1 使用直接 zZ，否则使用 A/有限和恒等式。不是冻结 N64 有理式的等价重排；包括小 z 反例、切换邻点、相邻浮点数和混合表示物种的独立原式核验。",
     "known_limitations": [
      "在所有共振除法前，将 abs(kz)<1e-10 替换为 +1e-10。",
-     "只有 xx/xy/yy 保留固定 N=64 Weideman Z 近似；xz/yz/zz 使用单独的稳定实参 A 求值器。样本算术检查不构成连续输入域的误差上界。",
+     "xx/xy/yy 保留固定 N64 Weideman Z；每物种全部谐波 |z_n|≤1 时 xz/yz/zz 直接求 zZ，否则使用稳定实参 A。所选切换邻点和样本不建立连续域误差界，仍保留原正向 kz 钳位和调用者指定有限 N。",
      "有限谐波截断 lmx 由调用者给定；有限 Gamma 尾项保留，可能产生真实的大张量。实现不自动增加 lmx，也不保证谐波收敛。",
      "正尾项无法可靠表示，或求值预算内不能界定余项时抛出 ValueError；不返回部分尾项，也不退回原来发生大项相消的算式。"
     ],
