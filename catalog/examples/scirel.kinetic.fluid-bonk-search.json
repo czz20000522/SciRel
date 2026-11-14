@@ -109,20 +109,22 @@
   "zh": "修正的 BONK 有界根搜索"
  },
  "verification": {
-  "evidence_ceiling": "Bounded to the three bounded BONK cases plus caller-supplied finite frequency axes. Evidence: `test_fluid_spectrum_full.py` contains 9 test functions, 1 of which references `solve_fluid_bonk`, and is shared by 6 assets; only shared-file coverage is bound, so a pass is file-level rather than asset-isolated; the bounded example was executed by this audit. Oracle: self-consistency/regression only. It does not establish branch tracking, complete mode enumeration or unconditional convergence.",
+  "evidence_ceiling": "The successful scientific regression is a bounded case2 single-frequency self-consistency/regression check, not an independent BONK physical reference. The direct failure tests cover axis ordering and exception propagation; controlled solver termination tests the candidate protocol rather than convergence. The shared test file also exercises other assets, which do not independently certify this search.",
   "known_limitations": [
    "BONK returns every attempted row and an unverified row with `root_valid=false` when no root passes the declared residual gate; that row is a search candidate, not a physical root.",
    "No cross-thread/platform invariance, arbitrary precision, all physical-mode completeness or unconditional nonlinear convergence.",
    "J/L pole and finite-harmonic approximation errors remain distinct from relation consistency and numerical residual.",
-   "The bound file `test_fluid_spectrum_full.py` is shared by six assets and one direct function exercises `solve_fluid_bonk`; no independent BONK reference is bound.",
-   "Pure-Python execution is tested on this host; native parity is not claimed."
+   "Pure-Python execution is tested on this host; native parity is not claimed.",
+   "Successful default-axis, cases1/3 and broader frequency behavior are not certified by the direct single-frequency regression. No independent BONK physical oracle is bound."
   ],
   "scope": [
-   "Three complete cases and source default78-frequency axis; arbitrary valid finite supplied axes.",
-   "SciPy hybr tolerances (xtol=1e-12, maxfev=100); explicit bounded attempts and root verification."
+   "Direct successful case2 at omega=0.63*wn checks candidate shape, root_valid, the 1e-8 residual gate and the retained wavevector regression.",
+   "Genuine harmonic-pole failures at first, middle, last and only frequency propagate rather than returning a fabricated earlier row.",
+   "Injected operator exceptions retain their real identity; controlled finite solver termination preserves five real candidates and root_valid=false without weakening the residual gate."
   ],
   "tests": [
-   "tests/kinetic/test_fluid_spectrum_full.py"
+   "tests/kinetic/test_fluid_spectrum_full.py",
+   "tests/kinetic/test_bonk_failure_semantics.py"
   ]
  },
  "version": {

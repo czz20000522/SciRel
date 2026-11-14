@@ -1148,7 +1148,7 @@
   },
   {
    "asset_id": "scirel.io.read-geqdsk",
-   "source_sha256": "8fd17a219f56bf04941e5f60298996d37b5107363544e90a1d20be8424e4a643",
+   "source_sha256": "6dad285d44f226ee6283153c65876cbcf074621c5841eb234ab600c9ed929d20",
    "summary": "把一份标准 EFIT G-EQDSK 平衡文件解析为带名称的数组和网格坐标。",
    "definition": "首行：48 字符说明，之后的整数中最后两个为 NW、NH；四条标量记录（RDIM ZDIM RCENTR RLEFT ZMID / RMAXIS ZMAXIS SIMAG SIBRY BCENTR / CURRENT 及重复值）；FPOL、PRES、FFPRIM、PPRIME（各 NW 个）；PSIRZ（NW×NH，R 下标变化最快）；QPSI（NW 个）；NBBBS、LIMITR；边界和限制器的 (R,Z) 坐标对。",
    "model": "按公开格式规范的 EFIT G-EQDSK 记录布局。",
@@ -1167,8 +1167,8 @@
     },
     {
      "name": "strict",
-     "description": "拒绝限制器之后的多余数值。",
-     "constraints": "False 忽略追加记录，但仍要求全部标准记录。",
+     "description": "拒绝限制器之后的多余内容。",
+     "constraints": "False 忽略追加记录，但仍要求全部标准记录只包含合法数值。",
      "dtype": "布尔"
     }
    ],
@@ -1185,7 +1185,7 @@
      "标准 EFIT G-EQDSK 文本，R 与 Z 方向各至少两个网格点。"
     ],
     "supported": [
-     "定宽 5e16.9 记录，包括以负号相连的字段。",
+     "定宽 5e16.9 实数记录，包括以负号相连的字段，以及独立的 2i5 计数记录，包括相邻满宽计数。",
      "空白分隔的自由格式数值和 D 指数。",
      "空的边界或限制器列表。",
      "strict=False 时允许追加记录。"
@@ -1198,7 +1198,7 @@
     ]
    },
    "failure_semantics": {
-    "invalid_input": "记录缺失、截断、非数值或非有限，计数不是整数，RDIM 或 ZDIM 不为正，SIMAG 等于 SIBRY，或严格模式下有多余数值时，抛 EQDSKFormatError。",
+    "invalid_input": "记录缺失、截断、非数值或非有限，任一标准数值记录中有损坏的数值文本或未消费的非空白字符（无论 strict 如何设置），计数不是整数，RDIM 或 ZDIM 不为正，SIMAG 等于 SIBRY，或严格模式下有多余内容时，抛 EQDSKFormatError。",
     "runtime_failure": "文件系统错误照常抛出。",
     "nonconvergence": "不适用。",
     "partial_results": "无；读取失败不返回任何内容。"
@@ -1209,7 +1209,7 @@
    },
    "verification": {
     "scope": [
-     "按公开布局手写的记录：标量位置、剖面和磁通图顺序、网格、边界与限制器、相连字段、自由格式、严格模式的尾随策略和畸形输入。"
+     "按公开布局手写的记录：标量位置、剖面和磁通图顺序、网格、边界与限制器（包括相邻满宽 2i5 计数和空列表）、相连字段、E/D 指数、自由格式、严格模式的尾随策略，以及对损坏数值和未消费字符的拒绝。"
     ],
     "evidence_ceiling": "仅为结构性 I/O；不主张物理解释或符号约定。",
     "known_limitations": [

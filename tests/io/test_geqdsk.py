@@ -142,3 +142,124 @@ def test_extended_dialect_reader_still_rejects_a_standard_file(path):
 
     with pytest.raises(EQDSKFormatError):
         read_eqdsk(path)
+
+
+def contour_text(nbbbs, limitr):
+    """Replace only the count record and its coordinate records."""
+    prefix = text().split("    3    2\n", 1)[0]
+    boundary = np.column_stack((np.arange(nbbbs) * 0.25, -np.arange(nbbbs) * 0.5))
+    limiter = np.column_stack((np.arange(limitr) * 0.5, -np.arange(limitr) * 0.25))
+    lines = [f"{nbbbs:5d}{limitr:5d}", *records(boundary), *records(limiter)]
+    return prefix + "\n".join(lines) + "\n", boundary, limiter
+
+
+@pytest.mark.parametrize(
+    "nbbbs, limitr",
+    [(10000, 10000), (10000, 2), (3, 10000), (0, 10000), (10000, 0), (0, 0), (0, 2), (3, 0)],
+)
+def test_count_record_uses_two_five_character_fields(tmp_path, nbbbs, limitr):
+    content, boundary, limiter = contour_text(nbbbs, limitr)
+    target = tmp_path / "counts"
+    target.write_text(content)
+    g = read_geqdsk(target)
+    assert type(g["nbbbs"]) is int and type(g["limitr"]) is int
+    assert (g["nbbbs"], g["limitr"]) == (nbbbs, limitr)
+    for key, expected in (
+        ("rbbbs", boundary[:, 0]), ("zbbbs", boundary[:, 1]),
+        ("rlim", limiter[:, 0]), ("zlim", limiter[:, 1]),
+    ):  # fmt: skip
+        assert type(g[key]) is np.ndarray
+        assert g[key].dtype == expected.dtype
+        assert g[key].shape == expected.shape
+        assert g[key].tobytes() == expected.tobytes()
+
+
+def test_free_format_large_count_is_not_guessed_from_its_digits(tmp_path):
+    head, body = text().replace("    3    2", "1000010000 0", 1).split("\n", 1)
+    target = tmp_path / "free-large-count"
+    target.write_text(head + "\n" + " ".join(body.split()) + "\n")
+    with pytest.raises(EQDSKFormatError, match="truncated boundary: expected 2000020000 values"):
+        read_geqdsk(target)
+
+
+@pytest.mark.parametrize("exponent", ["E", "e", "D", "d"])
+@pytest.mark.parametrize("free", [False, True])
+def test_valid_exponents_and_signed_adjacency_preserve_every_value(tmp_path, path, exponent, free):
+    expected = read_geqdsk(path)
+    head, body = text().split("\n", 1)
+    body = body.replace("E", exponent)
+    if free:
+        body = " \t".join(body.split()) + "\n"
+    target = tmp_path / "exponents"
+    target.write_text(head + "\n" + body)
+    actual = read_geqdsk(target)
+    assert type(actual) is type(expected) is dict
+    assert list(actual) == list(expected)
+    for key, value in expected.items():
+        assert type(actual[key]) is type(value)
+        if isinstance(value, np.ndarray):
+            assert actual[key].dtype == value.dtype
+            assert actual[key].shape == value.shape
+            assert actual[key].tobytes() == value.tobytes()
+        else:
+            assert actual[key] == value
+
+
+@pytest.mark.parametrize("strict", [False, True])
+@pytest.mark.parametrize(
+    "edit",
+    [
+        pytest.param(lambda t: t.replace("\n", "\nBROKEN\n", 1), id="standalone-scalar-prefix"),
+        pytest.param(lambda t: t.replace("E+00", "E+00BROKEN", 1), id="scalar-suffix"),
+        pytest.param(lambda t: t.replace("E+00", "E", 1), id="incomplete-E"),
+        pytest.param(lambda t: t.replace("E+00", "E+", 1), id="incomplete-E-plus"),
+        pytest.param(lambda t: t.replace("E+00", "D-", 1), id="incomplete-D-minus"),
+        pytest.param(lambda t: t.replace("E+00", "E++00", 1), id="double-exponent-sign"),
+        pytest.param(
+            lambda t: t.replace("-3.000000000E+00", "BROKEN -3.000000000E+00", 1), id="profile"
+        ),
+        pytest.param(
+            lambda t: t.replace("1.100000000E+01", "1.100000000E+01 BROKEN", 1), id="psirz"
+        ),
+        pytest.param(
+            lambda t: t.replace("1.050000000E+00", "1.050000000E+00 BROKEN", 1), id="qpsi"
+        ),
+        pytest.param(lambda t: t.replace("    3    2\n", "    3    2BROKEN\n", 1), id="counts"),
+        pytest.param(
+            lambda t: t.replace("-5.000000000E-01", "-5.000000000E-01 BROKEN", 1), id="boundary"
+        ),
+        pytest.param(lambda t: t.rstrip() + " BROKEN\n", id="last-limiter-record"),
+        pytest.param(
+            lambda t: t.replace("2.000000000E+00", "2.000000000E+00.5", 1), id="unsigned-adjacency"
+        ),
+    ],
+)
+def test_standard_records_reject_unconsumed_characters(tmp_path, strict, edit):
+    target = tmp_path / "corrupt"
+    target.write_text(edit(text()))
+    with pytest.raises(EQDSKFormatError):
+        read_geqdsk(target, strict=strict)
+
+
+@pytest.mark.parametrize("counts", ["   -1    2", "    3   -1", "  3.5    2", "    3  2.5"])
+def test_invalid_contour_counts_are_rejected(tmp_path, counts):
+    target = tmp_path / "invalid-counts"
+    target.write_text(text().replace("    3    2", counts, 1))
+    with pytest.raises(EQDSKFormatError, match="NBBBS|LIMITR"):
+        read_geqdsk(target)
+
+
+@pytest.mark.parametrize("trailing", ["BROKEN\n", "1.000000000E+\n", "1 2 3\n"])
+@pytest.mark.parametrize("empty", [False, True])
+def test_only_appended_records_may_be_ignored(tmp_path, trailing, empty):
+    content = contour_text(0, 0)[0] if empty else text()
+    target = tmp_path / "appended"
+    target.write_text(content)
+    expected = read_geqdsk(target)
+    target.write_text(content + trailing)
+    with pytest.raises(EQDSKFormatError, match="strict=False"):
+        read_geqdsk(target)
+    actual = read_geqdsk(target, strict=False)
+    assert list(actual) == list(expected)
+    for key, value in expected.items():
+        np.testing.assert_array_equal(actual[key], value)

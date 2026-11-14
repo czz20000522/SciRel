@@ -59,12 +59,12 @@
   },
   {
    "name": "strict",
-   "description": "Reject numbers after the limiter section",
+   "description": "Reject extra content after the limiter section",
    "units": "dimensionless",
    "shape": "scalar",
    "dtype": "bool",
    "required": false,
-   "constraints": "False ignores appended records but still requires every standard record",
+   "constraints": "False ignores appended records but still requires every standard record to contain only valid numbers",
    "default": true
   }
  ],
@@ -84,7 +84,7 @@
    "Standard EFIT G-EQDSK text with at least two grid points in R and Z"
   ],
   "supported": [
-   "Fixed-width 5e16.9 records including fields joined by a minus sign",
+   "Fixed-width 5e16.9 real records including fields joined by a minus sign, and separate 2i5 count records including adjacent full-width counts",
    "Free-format whitespace-separated numbers and D exponents",
    "Empty boundary or limiter lists",
    "Appended records with strict=False"
@@ -97,7 +97,7 @@
   ]
  },
  "failure_semantics": {
-  "invalid_input": "EQDSKFormatError for a missing, truncated, non-numeric or non-finite record, a non-integer count, non-positive RDIM or ZDIM, equal SIMAG and SIBRY, or extra numbers when strict.",
+  "invalid_input": "EQDSKFormatError for a missing, truncated, non-numeric or non-finite record, malformed numeric text or unconsumed non-whitespace characters in any standard numeric record regardless of strict, a non-integer count, non-positive RDIM or ZDIM, equal SIMAG and SIBRY, or extra content when strict.",
   "runtime_failure": "Filesystem errors propagate.",
   "nonconvergence": "Not applicable.",
   "partial_results": "None; a failed read returns nothing."
@@ -122,7 +122,7 @@
  },
  "verification": {
   "scope": [
-   "Hand-written records following the published layout: scalar positions, profile and flux-map order, grids, boundary and limiter, joined fields, free format, strict trailing policy and malformed input"
+   "Hand-written records following the published layout: scalar positions, profile and flux-map order, grids, boundary and limiter including adjacent full-width 2i5 counts and empty lists, joined fields, E/D exponents, free format, strict trailing policy and rejection of malformed numbers or unconsumed characters"
   ],
   "tests": [
    "tests/io/test_geqdsk.py"

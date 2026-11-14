@@ -44,7 +44,18 @@ _PROFILES = ("fpol", "pres", "ffprim", "pprime")
 
 
 def _numbers(text: str) -> list[str]:
-    return _NUMBER.findall(text)
+    """Tokenize one record, rejecting every unconsumed non-whitespace character."""
+    tokens = []
+    end = 0
+    for match in _NUMBER.finditer(text):
+        gap = text[end : match.start()]
+        if gap.strip() or (end and not gap and match.group()[0] not in "+-"):
+            raise EQDSKFormatError("non-numeric content or malformed number in record")
+        tokens.append(match.group())
+        end = match.end()
+    if text[end:].strip():
+        raise EQDSKFormatError("non-numeric content or malformed number in record")
+    return tokens
 
 
 def _header(line: str) -> tuple[str, int, int]:
@@ -62,18 +73,41 @@ def _header(line: str) -> tuple[str, int, int]:
 
 
 class _Stream:
-    """Numbers after the first record, consumed in specification order."""
+    """Read records on demand, retaining the boundary needed by the 2i5 counts."""
 
-    def __init__(self, tokens: list[str]):
-        self.tokens = tokens
+    def __init__(self, text: str):
+        self.records = text.splitlines()
+        self.record = 0
+        self.tokens: list[str] = []
         self.position = 0
 
+    def _refill(self, *, counts: bool = False) -> bool:
+        while self.position == len(self.tokens) and self.record < len(self.records):
+            record = self.records[self.record]
+            self.record += 1
+            fields = [record[:5], record[5:10]]
+            if (
+                counts
+                and len(record) >= 10
+                and not record[10:].strip()
+                and all(re.fullmatch(r" *[+-]?\d+ *", field) for field in fields)
+            ):
+                # Only a complete, separate 2i5 record supplies two fixed fields.
+                # Counts within a free-format record remain ordinary tokens.
+                self.tokens = fields
+            else:
+                self.tokens = _numbers(record)
+            self.position = 0
+        return self.position < len(self.tokens)
+
     def take(self, count: int, section: str) -> np.ndarray:
-        stop = self.position + count
-        if stop > len(self.tokens):
-            raise EQDSKFormatError(f"truncated {section}: expected {count} values")
-        chunk = self.tokens[self.position : stop]
-        self.position = stop
+        chunk = []
+        while len(chunk) < count:
+            if not self._refill():
+                raise EQDSKFormatError(f"truncated {section}: expected {count} values")
+            stop = min(len(self.tokens), self.position + count - len(chunk))
+            chunk.extend(self.tokens[self.position : stop])
+            self.position = stop
         try:
             values = np.array([float(token.replace("D", "E").replace("d", "e")) for token in chunk])
         except ValueError as exc:
@@ -88,6 +122,15 @@ class _Stream:
             raise EQDSKFormatError(f"{section} must be a non-negative integer")
         return int(token)
 
+    def take_counts(self) -> tuple[int, int]:
+        self._refill(counts=True)
+        return self.take_count("NBBBS"), self.take_count("LIMITR")
+
+    def has_remaining(self) -> bool:
+        return self.position < len(self.tokens) or any(
+            record.strip() for record in self.records[self.record :]
+        )
+
 
 def read_geqdsk(filename: str | Path, *, strict: bool = True) -> dict[str, Any]:
     r"""Read a standard EFIT G-EQDSK file.
@@ -97,9 +140,9 @@ def read_geqdsk(filename: str | Path, *, strict: bool = True) -> dict[str, Any]:
     filename : str or Path
         Path of the G-EQDSK text file.
     strict : bool, optional
-        If True (default), reject numbers after the limiter section.  Some codes
+        If True (default), reject extra content after the limiter section. Some codes
         append extra records; ``strict=False`` ignores them, but every record of
-        the standard layout must still be present.
+        the standard layout must still be present and contain only valid numbers.
 
     Returns
     -------
@@ -131,7 +174,7 @@ def read_geqdsk(filename: str | Path, *, strict: bool = True) -> dict[str, Any]:
     EQDSKFormatError
         If a record is missing, non-numeric or non-finite, a count is not a
         non-negative integer, a grid extent is not positive, the axis and
-        boundary flux coincide, or ``strict`` is True and extra numbers follow.
+        boundary flux coincide, or ``strict`` is True and extra content follows.
 
     See Also
     --------
@@ -167,7 +210,7 @@ def read_geqdsk(filename: str | Path, *, strict: bool = True) -> dict[str, Any]:
     text = Path(filename).read_text()
     first, _, rest = text.partition("\n")
     description, nw, nh = _header(first.rstrip("\r"))
-    stream = _Stream(_numbers(rest))
+    stream = _Stream(rest)
     data: dict[str, Any] = {"description": description, "nw": nw, "nh": nh}
     scalars = stream.take(20, "scalar records")
     data.update({name: float(scalars[index]) for name, index in _SCALARS.items()})
@@ -179,14 +222,12 @@ def read_geqdsk(filename: str | Path, *, strict: bool = True) -> dict[str, Any]:
         data[name] = stream.take(nw, name)
     data["psirz"] = stream.take(nw * nh, "psirz").reshape(nh, nw)
     data["qpsi"] = stream.take(nw, "qpsi")
-    data["nbbbs"] = stream.take_count("NBBBS")
-    data["limitr"] = stream.take_count("LIMITR")
+    data["nbbbs"], data["limitr"] = stream.take_counts()
     boundary = stream.take(2 * data["nbbbs"], "boundary").reshape(-1, 2)
     limiter = stream.take(2 * data["limitr"], "limiter").reshape(-1, 2)
-    if strict and stream.position != len(stream.tokens):
-        extra = len(stream.tokens) - stream.position
+    if strict and stream.has_remaining():
         raise EQDSKFormatError(
-            f"{extra} numbers follow the limiter section; use strict=False to ignore them"
+            "extra content follows the limiter section; use strict=False to ignore it"
         )
     data["rbbbs"], data["zbbbs"] = boundary[:, 0].copy(), boundary[:, 1].copy()
     data["rlim"], data["zlim"] = limiter[:, 0].copy(), limiter[:, 1].copy()
