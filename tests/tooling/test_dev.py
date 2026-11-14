@@ -170,11 +170,351 @@ def test_pytest_receives_its_flags_without_argparse_consuming_them(monkeypatch, 
     assert seen == [flags[1:] if flags[:1] == ["--"] else flags]
 
 
+@pytest.mark.skipif(os.name != "posix", reason="POSIX termination and process groups")
+@pytest.mark.parametrize(
+    "probe_denial,send_denial,reap_launcher,exit_after,expected_signals",
+    [
+        pytest.param("always", None, None, 1, ["SIGINT"], id="probe-once"),
+        pytest.param("always", None, None, 3, ["SIGINT"], id="probe-repeated"),
+        pytest.param("always", None, None, 8, ["SIGINT"], id="probe-past-deadline"),
+        pytest.param("once", None, None, 8, ["SIGINT", "SIGKILL"], id="probe-recovers"),
+        pytest.param(
+            "until-after-deadline", None, None, 8, ["SIGINT", "SIGKILL"], id="probe-recovers-late"
+        ),
+        pytest.param("never", "SIGINT", None, 8, ["SIGINT", "SIGKILL"], id="initial-send"),
+        pytest.param("always", "SIGINT", None, 8, ["SIGINT"], id="send-and-probe"),
+        pytest.param(
+            "never", "SIGKILL", None, 8, ["SIGINT", "SIGKILL", "SIGKILL"], id="forced-send"
+        ),
+        pytest.param(
+            "after-force",
+            "SIGKILL",
+            None,
+            8,
+            ["SIGINT", "SIGKILL"],
+            id="forced-send-and-probe",
+        ),
+        pytest.param("after-force", None, None, 8, ["SIGINT", "SIGKILL"], id="probe-after-force"),
+        pytest.param("never", None, "probe", 8, ["SIGINT", "SIGKILL"], id="launcher-reaped"),
+        pytest.param("always", None, "probe", 8, ["SIGINT"], id="reaped-and-denied"),
+        pytest.param(
+            "never", None, "before-send", 8, ["SIGINT", "SIGKILL"], id="launcher-already-reaped"
+        ),
+        pytest.param("never", None, None, 8, ["SIGINT", "SIGKILL"], id="ordinary-force-once"),
+    ],
+)
+def test_permission_errors_keep_the_lock_until_descendants_stop(
+    tmp_path,
+    monkeypatch,
+    capsys,
+    probe_denial,
+    send_denial,
+    reap_launcher,
+    exit_after,
+    expected_signals,
+):
+    """Inject permission errors; this does not reproduce the macOS permission cause."""
+    module = _load()
+    send_denial = getattr(signal, send_denial) if send_denial is not None else None
+    expected_signals = [getattr(signal, name) for name in expected_signals]
+    monkeypatch.setattr(module, "ROOT", tmp_path)
+    monkeypatch.setattr(module, "shared_root", lambda: tmp_path)
+    monkeypatch.setattr(module, "prepare", lambda: 0)
+    monkeypatch.setattr(module, "environment", lambda: {})
+    handlers = {}
+    sent = []
+    sleeps = 0
+    probes = 0
+    descendant_alive = True
+    reaped = False
+    permission_denied = False
+    send_denied = False
+
+    class Command:
+        pid = 12345
+        started = False
+        returncode = None
+
+        def wait(self, timeout=None):
+            nonlocal reaped
+            if not self.started:
+                self.started = True
+                handlers[signal.SIGINT](signal.SIGINT, None)
+                if reap_launcher == "before-send":
+                    self.returncode = 0
+                    return 0
+                raise subprocess.TimeoutExpired("owned command", timeout)
+            assert not descendant_alive, "cleanup returned while a descendant was alive"
+            self.returncode = 0
+            reaped = True
+            return 0
+
+        def poll(self):
+            if reap_launcher == "probe" or not descendant_alive:
+                self.returncode = 0
+            return self.returncode
+
+    command = Command()
+
+    def install_handler(signum, handler):
+        previous = handlers.get(signum, signal.SIG_DFL)
+        handlers[signum] = handler
+        return previous
+
+    def assert_locked():
+        with pytest.raises(module.LockBusy):
+            with module.acceptance_lock(exclusive=True):
+                pass
+
+    def killpg(pid, signum):
+        nonlocal probes, permission_denied, send_denied
+        assert pid == command.pid, "must only address the owned process group"
+        assert_locked()
+        if signum:
+            assert not permission_denied, "must not send signals before a probe confirms recovery"
+            if signum == signal.SIGKILL:
+                assert sleeps >= module.STOP_TIMEOUT, "must retain the original stop deadline"
+            sent.append((pid, signum))
+            if signum == send_denial and not send_denied:
+                send_denied = True
+                permission_denied = True
+                raise PermissionError(1, "injected process-group send denial")
+            return
+        probes += 1
+        if not descendant_alive:
+            raise ProcessLookupError(3, "the simulated owned group has now exited")
+        if (
+            probe_denial == "always"
+            or (probe_denial == "once" and probes == 1)
+            or (probe_denial == "until-after-deadline" and sleeps < module.STOP_TIMEOUT + 1)
+            or (probe_denial == "after-force" and (pid, signal.SIGKILL) in sent)
+        ):
+            permission_denied = True
+            raise PermissionError(1, "injected process-group probe denial")
+        permission_denied = False
+
+    def sleep(_seconds):
+        nonlocal sleeps, descendant_alive
+        sleeps += 1
+        assert sleeps <= exit_after, "cleanup did not finish after confirmed group exit"
+        assert_locked()
+        # A second interruption must neither cancel cleanup nor change its result.
+        handlers[signal.SIGTERM](signal.SIGTERM, None)
+        if sleeps == exit_after:
+            descendant_alive = False
+
+    monkeypatch.setattr(module.signal, "signal", install_handler)
+    monkeypatch.setattr(module.subprocess, "Popen", lambda *args, **kwargs: command)
+    monkeypatch.setattr(module.os, "killpg", killpg)
+    monkeypatch.setattr(module.time, "monotonic", lambda: float(sleeps))
+    monkeypatch.setattr(module.time, "sleep", sleep)
+
+    assert module.run_locked(["owned command"], exclusive=True) == 128 + signal.SIGINT
+    assert reaped
+    assert not descendant_alive
+    assert sent == [(command.pid, signum) for signum in expected_signals]
+    captured = capsys.readouterr()
+    assert "ALL GREEN" not in captured.out + captured.err
+    assert "INTERRUPTED" in captured.err
+    if probe_denial != "never" or send_denial is not None:
+        assert captured.err.count("STOPPING  permission denied") == 1
+        assert "clone lock retained" in captured.err
+    else:
+        assert "permission denied" not in captured.err
+    with module.acceptance_lock(exclusive=True):
+        pass
+
+
+@pytest.mark.skipif(os.name != "posix", reason="POSIX termination and process groups")
+def test_a_missing_owned_group_is_not_probed_again(monkeypatch):
+    module = _load()
+
+    class Command:
+        pid = 12345
+        returncode = None
+        reaped = False
+
+        def poll(self):
+            pytest.fail("must not probe a group id after confirmed absence; it can be reused")
+
+        def wait(self):
+            self.reaped = True
+            return 0
+
+    command = Command()
+
+    def killpg(pid, signum):
+        assert (pid, signum) == (command.pid, signal.SIGINT)
+        raise ProcessLookupError(3, "the owned group has exited")
+
+    monkeypatch.setattr(module.os, "killpg", killpg)
+    module.stop_command(command, signal.SIGINT)
+    assert command.reaped
+
+
 def _wait_for_file(path: Path, timeout: float = 5) -> None:
     deadline = time.monotonic() + timeout
     while not path.exists() and time.monotonic() < deadline:
         time.sleep(0.02)
     assert path.exists(), f"the owned subprocess did not reach {path.name}"
+
+
+@pytest.mark.skipif(os.name != "posix", reason="POSIX termination and process groups")
+@pytest.mark.parametrize("early_exit", [False, True], ids=["leader-alive", "leader-exited"])
+@pytest.mark.parametrize("recovery_delay", [0.1, 0.8], ids=["before-deadline", "after-deadline"])
+def test_recovered_permissions_force_persistent_descendants_to_stop(
+    tmp_path, early_exit, recovery_delay
+):
+    """Use real descendants with injected probe denial, not a claim about its macOS cause."""
+    module = _load()
+    module.ROOT = tmp_path
+    module.shared_root = lambda: tmp_path
+    ready, leader, denied, recovered, forced = [
+        tmp_path / name for name in ("ready", "leader", "denied", "recovered", "forced")
+    ]
+    grandchild = """
+import os, signal, sys, time
+from pathlib import Path
+for name in ('SIGINT', 'SIGTERM', 'SIGHUP'):
+    signal.signal(getattr(signal, name), signal.SIG_IGN)
+Path(sys.argv[1]).write_text(str(os.getpid()))
+while True:
+    time.sleep(0.02)
+"""
+    child = """
+import signal, subprocess, sys
+signal.signal(signal.SIGINT, lambda signum, frame: sys.exit(0) if sys.argv[1] == 'True' else None)
+process = subprocess.Popen([sys.executable, '-c', sys.argv[2], sys.argv[3]])
+raise SystemExit(process.wait())
+"""
+    wrapper_code = """
+import importlib.util, os, signal, sys, time
+from pathlib import Path
+spec = importlib.util.spec_from_file_location('test_supervisor', sys.argv[1])
+module = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(module)
+module.ROOT = Path(sys.argv[2])
+module.shared_root = lambda: module.ROOT
+module.environment = lambda: dict(os.environ)
+module.prepare = lambda: 0
+module.STOP_TIMEOUT = 0.4
+recovery_delay = float(sys.argv[3])
+original_popen, original_killpg = module.subprocess.Popen, module.os.killpg
+command = None
+denied_at = None
+interrupted_at = None
+def record_popen(*args, **kwargs):
+    global command
+    command = original_popen(*args, **kwargs)
+    (module.ROOT / 'leader').write_text(str(command.pid))
+    return command
+def killpg(pid, signum):
+    global denied_at, interrupted_at
+    assert pid == command.pid
+    try:
+        with module.acceptance_lock(exclusive=True):
+            raise AssertionError('clone lock released while descendants are alive')
+    except module.LockBusy:
+        pass
+    if signum == signal.SIGINT:
+        interrupted_at = time.monotonic()
+    if signum == 0:
+        if denied_at is None:
+            denied_at = time.monotonic()
+            (module.ROOT / 'denied').touch()
+        if (
+            not (module.ROOT / 'allow-recovery').exists()
+            or time.monotonic() - denied_at < recovery_delay
+        ):
+            raise PermissionError(1, 'injected temporary process-group probe denial')
+        (module.ROOT / 'recovered').touch()
+    if signum == signal.SIGKILL:
+        assert time.monotonic() - interrupted_at >= module.STOP_TIMEOUT
+        assert (module.ROOT / 'recovered').exists()
+        (module.ROOT / 'forced').write_text(str(command.poll()))
+    return original_killpg(pid, signum)
+module.subprocess.Popen, module.os.killpg = record_popen, killpg
+raise SystemExit(module.run_locked([sys.executable, '-c', *sys.argv[4:]], exclusive=True))
+"""
+
+    def wait_until_absent(pid, *, group=False):
+        deadline = time.monotonic() + 5
+        while True:
+            try:
+                if group:
+                    os.killpg(pid, 0)
+                else:
+                    os.kill(pid, 0)
+            except ProcessLookupError:
+                return
+            assert time.monotonic() < deadline, (
+                f"owned {'group' if group else 'process'} {pid} survived"
+            )
+            time.sleep(0.02)
+
+    with (tmp_path / "supervisor.log").open("w") as output:
+        wrapper = subprocess.Popen(
+            [
+                sys.executable,
+                "-B",
+                "-c",
+                wrapper_code,
+                str(SCRIPT),
+                str(tmp_path),
+                str(recovery_delay),
+                child,
+                str(early_exit),
+                grandchild,
+                str(ready),
+            ],
+            start_new_session=True,
+            stdout=output,
+            stderr=subprocess.STDOUT,
+        )
+        group_absent = False
+        try:
+            _wait_for_file(ready)
+            _wait_for_file(leader)
+            wrapper.send_signal(signal.SIGINT)
+            _wait_for_file(denied)
+            with pytest.raises(module.LockBusy):
+                with module.acceptance_lock(exclusive=True):
+                    pass
+            wrapper.send_signal(signal.SIGTERM)
+            (tmp_path / "allow-recovery").touch()
+            try:
+                code = wrapper.wait(timeout=4)
+            except subprocess.TimeoutExpired:
+                pytest.fail("permission recovered but the persistent descendant was never killed")
+            assert code == 128 + signal.SIGINT
+            assert recovered.exists()
+            assert forced.exists(), "a persistent descendant requires timeout escalation"
+            assert forced.read_text() == ("0" if early_exit else "None")
+            wait_until_absent(int(leader.read_text()), group=True)
+            group_absent = True
+            wait_until_absent(int(ready.read_text()))
+            with module.acceptance_lock(exclusive=True):
+                pass
+        finally:
+            if leader.exists() and not group_absent:
+                try:
+                    os.killpg(int(leader.read_text()), signal.SIGKILL)
+                except ProcessLookupError:
+                    group_absent = True
+            try:
+                wrapper.wait(timeout=5)
+            except subprocess.TimeoutExpired:
+                wrapper.kill()
+                wrapper.wait(timeout=5)
+            if leader.exists() and not group_absent:
+                wait_until_absent(int(leader.read_text()), group=True)
+            if ready.exists():
+                wait_until_absent(int(ready.read_text()))
+            print(
+                f"CLEANUP wrapper={wrapper.pid} exit={wrapper.returncode}; "
+                f"group={leader.read_text() if leader.exists() else 'not-started'} absent; "
+                f"descendant={ready.read_text() if ready.exists() else 'not-started'} absent"
+            )
 
 
 @pytest.mark.skipif(os.name != "posix", reason="POSIX termination and process groups")
