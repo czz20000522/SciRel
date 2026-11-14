@@ -348,7 +348,7 @@
     "expected": "返回完整诊断映射；root_valid 为 [[True]]，nf≈-7.67e-12+1304.24j m^-1，xx≈1.108e11 rad/s。"
    },
    "asset_id": "scirel.kinetic.fluid-bonk-search",
-   "source_sha256": "f0dcb1c633d731ceaf5cdc6fb5e4f10d0813dc50d41da917683f7ac71b3c7c71",
+   "source_sha256": "d9573c41f1de8c3ca92e49c759b25dfd84b4aa52c7223351474924c9401cee42",
    "model": "均匀磁场沿 z 轴，波矢为 (kx,0,kz)；静止、各向同性 Maxwell 分布等离子体及明确声明的数值近似。",
    "boundary": "均匀线性响应，采用 SI 制及 exp(i k·x−i omega t)，回旋频率和半径带符号；真正共振与可去奇点的解析极限分别处理。",
    "assumptions": [
@@ -358,8 +358,8 @@
    ],
    "applicability": {
     "preconditions": [
-     "合同要求在 Linux amd64 上固定本地运行时 7.3.0；OPENBLAS_NUM_THREADS 与 OMP_NUM_THREADS 均为 1。",
-     "合同声明使用 SciRel 的 Python 3.14、NumPy 2.5.4 与 SciPy 1.18.1 环境；Linux amd64 本地运行时仍是声明要求。"
+     "声明的本地运行环境为 Python 3.14、NumPy 2.5.4、SciPy 1.18.1，BLAS 使用单线程。",
+     "使用上述 Python/NumPy/SciPy 环境，不需要 Linux 或外部运行时。"
     ],
     "supported": [
      "三个完整算例及默认的 78 个频率；也允许任意符合合同的有限频率轴。",
@@ -377,21 +377,19 @@
    },
    "verification": {
     "scope": [
-     "三个完整算例及默认的 78 个频率；也允许任意符合合同的有限频率轴。",
-     "沿用 SciPy hybr 数值容差（xtol=1e-12，maxfev=100），并显式记录有界尝试与根核验。"
+     "直接成功断言限于 case2、omega=0.63*wn：检查候选形状、root_valid、1e-8 残差门与既有波数回归。",
+     "真实谐波极点位于首项、中间、末项或单项频率时均传播错误，不返回虚构的前序候选。",
+     "注入的算子异常原样传播；受控的有限求解终止保留五条实际候选和 root_valid=false，不放宽残差门。"
     ],
     "known_limitations": [
-     "BONK 返回每次尝试的行；若无根通过声明的残差门限，会返回 `root_valid=false` 的未验证行；该行是搜索候选而非物理根。",
-     "不保证跨线程/平台不变性、任意精度、所有物理模态完备性或非线性求解无条件收敛。",
-     "J/L 极点和有限谐波近似的误差，与关系一致性和数值残差分开判断。",
-     "绑定文件 `test_fluid_spectrum_full.py` 由六个资产共享，仅一个直接函数调用 `solve_fluid_bonk`；未绑定独立 BONK 参照。",
-     "纯 Python 实现已在本机测试；不声称与原生运行时逐位一致。"
+     "BONK 保留全部实际尝试；未通过残差门的候选保留 root_valid=false，不能当作物理根。算子异常中止整个频率轴，不返回部分结果。",
+     "不承诺跨线程/平台不变性、任意精度、物理模完备性或无条件非线性收敛。",
+     "J/L 极点和有限谐波近似误差与关系一致性及数值残差分别考虑。",
+     "公开实现使用本地 Python；不声称与外部运行时逐位一致。",
+     "直接单频成功断言不认证默认频率轴、case1/3 或更广频率行为；没有独立 BONK 物理参照。"
     ],
-    "evidence_ceiling": "限于三个有界 BONK 情形及调用者提供的有限频率轴。证据：`test_fluid_spectrum_full.py` 含 9 个测试函数，其中 1 个引用 `solve_fluid_bonk`，由 6 个资产共享；仅绑定共享文件覆盖，因此通过是文件级事实、而非资产隔离证据；本审计已执行有界示例。真值来源：仅自洽/回归。不建立：分支追踪、完整模枚举或无条件收敛。"
-   },
-   "source_conflicts": [
-    "applicability.preconditions 同时要求 Linux amd64 上的本地运行时 7.3.0 和 SciRel 的 Python 3.14/NumPy 2.5.4/SciPy 1.18.1 环境，并重复声明需要 Linux amd64；本实现为纯 Python/NumPy/SciPy，示例已在本机 macOS 直接运行。该前置条件与实现不一致，待合同修订。"
-   ]
+    "evidence_ceiling": "成功断言是单频 case2 的自洽/回归；没有绑定独立 BONK 物理参照。失败断言检查频率顺序和异常传播；受控终止只验证候选协议，不证明收敛。共享文件中其他资产的断言不构成本搜索的独立认证。"
+   }
   },
   {
    "summary": "组装 EM 算例、修正的有限有理矩阵与启发式候选谱，并明确模型与证据边界。",

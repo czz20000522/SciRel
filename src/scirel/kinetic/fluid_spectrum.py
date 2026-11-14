@@ -763,7 +763,8 @@ def solve_fluid_bonk(jcase=1, omegas=None):
         The determinant is evaluated with the fitted fDR response. Each frequency tries
         five complex seeds and accepts a candidate only when both the normalized wave
         residual and determinant residual are at most 1e-8. Unverified candidates remain
-        in the returned attempt records. Supported scope: Three complete cases and
+        in the returned attempt records. Operator exceptions stop the axis and
+        propagate without a partial result. Supported scope: Three complete cases and
         source default78-frequency axis; arbitrary valid finite supplied axes; SciPy hybr
         tolerances (xtol=1e-12, maxfev=100); explicit bounded attempts and root
         verification. Excluded scope: No branch tracking, complete physical-mode
@@ -785,7 +786,7 @@ def solve_fluid_bonk(jcase=1, omegas=None):
     if xx.size == 0 or not np.all(np.isfinite(xx)) or np.any(xx == 0):
         raise ValueError("nonempty finite nonzero real omega vector required")
     kn = float(np.asarray(state["kn"]).item())
-    nf = np.empty((xx.size, 1), complex)
+    nf = np.full((xx.size, 1), np.nan + 0j)
     residual = np.full((xx.size, 1), np.inf)
     normalized = np.full((xx.size, 1), np.inf)
     solver_residual = np.full((xx.size, 1), np.nan + 0j)
@@ -806,48 +807,47 @@ def solve_fluid_bonk(jcase=1, omegas=None):
                 ].item()
                 return [f.real, f.imag]
 
-            try:
-                sol = optimize.root(
-                    fun,
-                    [seed.real, seed.imag],
-                    method="hybr",
-                    options={"xtol": 1e-12, "maxfev": 100},
-                )
-                candidate = (sol.x[0] + 1j * sol.x[1]) * kn
-                rr = evaluate_fluid_dispersion(candidate, local, "fDR")
-                sv = np.linalg.svd(rr["D"], compute_uv=False)
-                wave = float(np.min(sv) / max(1, np.max(sv)))
-                detres = float(
-                    abs(np.asarray(rr["determinant"]).item())
-                    / max(1, np.prod(np.linalg.norm(rr["D"], axis=1)))
-                )
-                ok = np.isfinite(wave) and np.isfinite(detres) and wave <= 1e-8 and detres <= 1e-8
-                rows.append(
-                    {
-                        "seed_kn": seed,
-                        "candidate": candidate,
-                        "solver_info": int(sol.status),
-                        "raw_determinant": rr["determinant"].item(),
-                        "scaled_fval": np.asarray(fun(sol.x)),
-                        "wave_residual": wave,
-                        "determinant_residual": detres,
-                        "iterations": int(sol.nfev),
-                        "function_evals": int(sol.nfev),
-                    }
-                )
-                if wave < best or ok:
-                    best = wave
-                    nf[i, 0] = candidate
-                    residual[i, 0] = wave
-                    normalized[i, 0] = detres
-                    solver_residual[i, 0] = np.asarray(rr["determinant"]).item()
-                    status[i, 0] = int(sol.status)
-                    iterations[i, 0] = int(sol.nfev)
-                if ok:
-                    valid[i, 0] = True
-                    break
-            except Exception as exc:
-                rows.append({"seed_kn": seed, "error": str(exc)})
+            sol = optimize.root(
+                fun,
+                [seed.real, seed.imag],
+                method="hybr",
+                options={"xtol": 1e-12, "maxfev": 100},
+            )
+            candidate = (sol.x[0] + 1j * sol.x[1]) * kn
+            rr = evaluate_fluid_dispersion(candidate, local, "fDR")
+            sv = np.linalg.svd(rr["D"], compute_uv=False)
+            wave = float(np.min(sv) / max(1, np.max(sv)))
+            detres = float(
+                abs(np.asarray(rr["determinant"]).item())
+                / max(1, np.prod(np.linalg.norm(rr["D"], axis=1)))
+            )
+            if not (np.isfinite(wave) and np.isfinite(detres)):
+                raise ValueError("BONK root residuals must be finite")
+            ok = np.isfinite(wave) and np.isfinite(detres) and wave <= 1e-8 and detres <= 1e-8
+            rows.append(
+                {
+                    "seed_kn": seed,
+                    "candidate": candidate,
+                    "solver_info": int(sol.status),
+                    "raw_determinant": rr["determinant"].item(),
+                    "scaled_fval": np.asarray(fun(sol.x)),
+                    "wave_residual": wave,
+                    "determinant_residual": detres,
+                    "iterations": int(sol.nfev),
+                    "function_evals": int(sol.nfev),
+                }
+            )
+            if wave < best or ok:
+                best = wave
+                nf[i, 0] = candidate
+                residual[i, 0] = wave
+                normalized[i, 0] = detres
+                solver_residual[i, 0] = np.asarray(rr["determinant"]).item()
+                status[i, 0] = int(sol.status)
+                iterations[i, 0] = int(sol.nfev)
+            if ok:
+                valid[i, 0] = True
+                break
         attempts[0, i] = rows
     return _legacy_bonk_result(
         state, xx, nf, residual, normalized, valid, status, solver_residual, iterations, attempts
