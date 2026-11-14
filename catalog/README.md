@@ -3,10 +3,10 @@
 # Asset contracts: single truth, audit and change rules
 
 Every public capability is defined by one `catalog/examples/<asset-id>.json`
-(`scirel.asset-document`). The contract is the public truth for ports, units,
-axes, state/order, failure semantics, applicability and examples. The
-implementation must satisfy it; tests, API pages, user-guide chapters and the
-capability matrix are projections of the same truth.
+(`scirel.asset-document`). The implementation is the truth; the contract records
+its ports, units, axes, state/order, failure semantics, applicability and examples.
+Tests check those claims; API pages, user-guide chapters and the capability matrix
+derive from the contract.
 
 The project-level boundary between source behavior graphs, public composition
 graphs and user-owned outbound task graphs is defined in
@@ -68,15 +68,23 @@ the docs tests.
 
 ## Required checks before accepting a contract change
 
+Run from the repository root in the project environment described in
+[`../AGENTS.md`](../AGENTS.md). If it has not been prepared, first run
+`python3 scripts/dev.py prepare`. Keep generated output under `.runtime/`:
+
 ```bash
-.venv/bin/python scripts/validate_asset_documents.py catalog/examples
-.venv/bin/python -m pytest -q tests/docs
-.venv/bin/python scripts/build_capability_matrix.py --output /tmp/capability-matrix
+python3 scripts/dev.py run python -B scripts/validate_asset_documents.py catalog/examples
+python3 scripts/dev.py pytest -q tests/docs
+python3 scripts/dev.py run python -B scripts/build_capability_matrix.py --output .runtime/tmp/capability-matrix
 ```
 
-Also run the direct tests listed in `verification.tests`, and execute the
-contract example. If the contract has an API-reference page, inspect it after
-rebuilding docs; do not accept "the generator ran" as review.
+Also run the direct tests listed in `verification.tests` through
+`python3 scripts/dev.py pytest <test-path>`. Rerun the validator with
+`--check-runtime --execute-examples` to check runtime bindings and execute contract
+examples. If the contract has an API-reference page, inspect it after rebuilding
+docs; do not accept "the generator ran" as review.
+These are local checks; merge evidence requires the complete, exclusive check in
+the [`scirel-acceptance` skill](../skills/development/scirel-acceptance/SKILL.md).
 
 ## Known contract-audit decisions
 
