@@ -286,7 +286,7 @@
   },
   {
    "asset_id": "scirel.geometry.complex-rectilinear-interpolation",
-   "source_sha256": "9f3e5a6447f64979b46501353a7793baeb308af25343f1a794cb5d9a79143efe",
+   "source_sha256": "33b86da610ec70c70fda111f3fd97e4fbcf3dc9885801ea48c967c93d2000a78",
    "summary": "在三个严格递增的直角坐标轴上三线性插值复数场，返回几何有效掩码；容差扩展盒外返回 nan+nanj。 顶层返回值是 scirel._result.Result 映射；非冲突字段支持属性读取。",
    "definition": "源值按[Nx,Ny,Nz]排列，按[x,y,z]可分三线性插值。闭盒外扩tol内的点裁到闭盒采样；扩展盒外返回nan+nanj与False。 完整结果作为同一个 scirel._result.Result 映射返回；映射访问保留，非冲突字段也支持属性读取，不引入嵌套 Result。",
    "model": "带限复场的分片三线性重构。",
@@ -300,7 +300,7 @@
     {
      "name": "source_axes_m",
      "description": "含x_m、y_m、z_m的源轴映射。",
-     "constraints": "各轴有限一维、至少两点、严格递增。",
+     "constraints": "各轴有限一维、至少两点、严格递增。按 x_m、y_m、z_m 键顺序参与计算；入口不能识别调用者是否给某个键分配了错误的物理轴。",
      "dtype": "转为 float64 的实数类数组"
     },
     {
@@ -358,7 +358,7 @@
    "verification": {
     "scope": [
      "内部点与独立八角点显式参考相符。",
-     "轴顺序与前三维匹配，包括置换轴映射拒绝。",
+     "test_u2_t08_source_shape_dtype_and_axis_order_conformance 检查按轴键及前三维顺序计算：置换轴映射会被接受且改变结果；拒绝的是倒序、非递增的轴。",
      "掩码等于扩展几何包含判断，含恰好tol边界。",
      "容差壳点裁到闭盒，相应面点结果相等。",
      "扩展域外nan+nanj和False，即使裁到面会得到有限值。",
@@ -4110,7 +4110,7 @@
   },
   {
    "asset_id": "scirel.geometry.material-support-classification",
-   "source_sha256": "17b82a77ce74a8d77bde7eed125f1b290a9a763e7d98b6762746a2fc5ff081d0",
+   "source_sha256": "ff91f4d0893c48d53c412e1a66860a0cbf4ae4b466d822eaba42d9d562f7a6d8",
    "summary": "由已采样极向磁通、圆柱坐标、分界磁通及所选侧、PML厚度和PEC掩码分类冷等离子体材料支撑点。 顶层返回值是 scirel._result.Result 映射；非冲突字段支持属性读取。",
    "definition": "先在covered范围选择分界磁通指定侧，并加入极向半长度内最小网格半径段；随后排除求解盒六面PML边框和PEC，结果必须非空。 完整结果作为同一个 scirel._result.Result 映射返回；映射访问保留，非冲突字段也支持属性读取，不引入嵌套 Result。",
    "model": "采样磁通上的纯几何材料分类，不求等离子体模型、场或重构磁面。",
@@ -4150,7 +4150,7 @@
     {
      "name": "separatrix_flux_wb_per_rad",
      "description": "分界每弧度极向磁通。",
-     "constraints": "有限，不要求位于样本范围内；范围外可能使所选侧为空并触发非空门禁。",
+     "constraints": "有限，不要求位于采样磁通范围内。依 less_than/greater_than 与阈值，covered 内的所选侧可能全满或为空；该侧先与 covered 内的轴段取并集，再排除 PML 和 PEC，只有最终支撑为空才抛 ValueError。",
      "dtype": "实数"
     },
     {
@@ -5364,7 +5364,7 @@
   },
   {
    "asset_id": "scirel.kinetic.cross-mesh-distribution-interpolation",
-   "source_sha256": "babdd4dfc9641bc0a9db5849a26a55bb1c3ecddb01d19657bbe1c28c010bb234",
+   "source_sha256": "6ac936ce4f5b78732c7910baaca475401983ac59a2b465e0162ff062288a09b1",
    "summary": "在两个相空间网格之间转移柱坐标速度分布。默认分支通过带约束的相对熵投影保持分布非负，并保持经过空间插值的离散密度、轴向动量密度和速度平方能量密度；目标网格无法实现所需矩时明确报错。",
    "definition": "单元体积为 w_ij = pi*(r_right^2-r_left^2)*dvx，速度尺度为 fV = sqrt(Tnorm_b/Tnorm_a)。先在源网格计算 M_a = sum w_a*fa*(1, vx_a/fV, (vr_a/fV)^2+(vx_a/fV)^2)，再对这三个广延矩进行空间线性插值。对 n=M_0>0 的目标位置，求满足 p>=0、sum p=1、E_p[vx_b]=M_1/n 和 E_p[vr_b^2+vx_b^2]=M_2/n 的单元概率，并最小化 sum p*log(p/q)。参考概率 q 在可行面上把归一化重叠质量与 1e-12 的单元体积概率混合。最后返回 fb=n*p/w_b。零密度返回零；相同速度网格和归一化温度直接采用凸空间插值。",
    "model": "无状态的二维速度、一维空间轴单元重叠重映射，随后执行非负相对熵投影；这是修正后的 AN/BN 投影，不是对缺陷分支的复现。",
@@ -5502,13 +5502,13 @@
      "检查输入拒绝、不可行与有界数值耗尽的区分、输入不变性、重复调用确定性，以及 correct=0/警告行为。",
      "检查不相交的目标速度单元保持为零，且相交单元保留其常数代数结果。"
     ],
-    "evidence_ceiling": "限于正守恒三阶矩跨网格分布插值及其不可行失败。证据：`test_cross_mesh_distribution.py` 含 15 个测试函数，其中 15 个引用 `interp_distribution_across_mesh`，仅由本资产绑定; `test_positive_conservative_remap.py` 含 11 个测试函数，其中没有函数引用 `interp_distribution_across_mesh`，仅由本资产绑定; `test_cylindrical_velocity_quadrature.py` 含 17 个测试函数，其中没有函数引用 `interp_distribution_across_mesh`，由 2 个资产共享；本审计已执行有界示例。真值来源：解析凸包不可行性证明加冻结构造值。不建立：物理上不可实现的矩目标、更高阶矩/形状保持或熵守恒。",
+    "evidence_ceiling": "直接证据：test_positive_conservative_remap.py 将 interp_distribution_across_mesh 导入为 remap，check 包装直接调用公开叶入口，并独立积分密度、轴向动量密度、速度平方能量密度这三个矩。具名可行样本、非均匀不等网格、零密度、恒等、凸包边界、不可行矩、迭代耗尽和负输入测试覆盖对应分支。test_cross_mesh_distribution.py 直接检查代数分支与校验；test_cylindrical_velocity_quadrature.py 检查共享求积依赖，不直接调用 remap。这些离散的三个矩断言不建立三次速度矩或更高阶矩守恒、形状保持或熵守恒。",
     "known_limitations": [
      "有限的目标节点可能使请求的矩不可实现；调用者必须提供可行的网格，或处理 InfeasibleMomentsError。",
-     "有限目标节点可能无法实现请求的矩；调用方须提供可行网格或处理 InfeasibleMomentsError。",
-     "熵参考概率包含 1e-12 单元体积混合，可填充零重叠单元；三个矩约束不保持高阶矩或细致分布形状。",
+     "熵参考概率含 1e-12 单元体积混合，可填充零重叠单元；密度、轴向动量密度、速度平方能量密度这三个矩约束不保持高阶矩或细致分布形状。",
+     "binary64 条件性、非常靠近凸包面的目标及不可表示中间量可能导致显式数值失败；迭代预算不保证普遍收敛。",
      "correct=0 只是代数兼容，不携带默认分支的物理保证。",
-     "修正以缩放矩残差 `<=32 eps` 停止，并要求实际输出三阶矩后置条件在 `128 eps` 内；耗尽 `max_correction_iterations` 会抛出 `MomentCorrectionConvergenceError`，不返回部分分布。"
+     "修正以缩放矩残差 <=32 eps 停止，并要求实际输出的上述三个矩后置条件在 128 eps 内；耗尽 max_correction_iterations 会抛 MomentCorrectionConvergenceError，不返回部分分布。"
     ]
    }
   },
@@ -6088,7 +6088,7 @@
   },
   {
    "asset_id": "scirel.inference.anisotropic-trial-evaluation",
-   "source_sha256": "c85e1b03d81eb629989ec86b03b66ec0c0e4bed8e0fd2cbc38908f5007c57246",
+   "source_sha256": "20b3c817b992eaf64e696a1cc85541555497a7fc273d7498596345213f836122",
    "summary": "以预先确定的残差维数评估一次前向平衡试探，区分有效、数值失败和不收敛；合同错误直接报告，所有结果作为 scirel._result.Result 映射返回。",
    "definition": "在科学调用前由标准观测布局取得 N，或由自定义端口显式给定 residual_size。深复制调用输入，执行一次 equilibrium_solver；未收敛时立即返回 N 维正罚值，不执行诊断。收敛时执行诊断与 reducer，并检查残差形状/有限性和 chi2=r·r。ArithmeticError/RuntimeError 记录为数值失败；ValueError/TypeError/KeyError 等合同错误传播。每条结果记录都是 scirel._result.Result 映射；按键和属性读取同一个值。",
    "model": "调用者前向模型、诊断与残差端口的受验证组合，不内置压强闭合",
@@ -6227,10 +6227,10 @@
     "scope": [
      "成功/数值失败/再次成功的固定维数与端口记录。",
      "非收敛短路、错误残差形状/NaN/chi2 拒绝、调用方深层非修改。",
-     "独立解析及曲场前向反演消费者。",
+     "仓库测试使用 review-hold 模式：tests/conftest.py 设置 SCIREL_REVIEW_HOLD=1，并把 catalog/review/candidates/src/scirel/inference 加入 inference 导入路径。held direct_anisotropic_inversion 图显式导入公开 anisotropic_parameter_optimization.optimize_anisotropic_parameters 与 anisotropic_trial_evaluation.evaluate_anisotropic_trial；compose 按这些同一函数对象解析依赖，run_composition 把绑定物理端口的 partial(公开 trial) 交给公开优化器。test_real_picard_forward_recovers_two_physical_parameters_from_analytic_observations 执行 tests/fixtures/inference/anisotropic_recovery.py::run，检查制造双参数恢复、Picard 收敛状态、psi/J_phi、残差与 chi2、失败试探及保留试探有效性。test_independent_curved_field_biot_savart_tensor_observations 执行 independent_case，对独立构造的离散 Biot-Savart/张量观测检查双参数恢复和 psi/J_phi，并检查残差维数、chi2 及实际生效的各向异性响应。样本与容差由这些既有具名断言限定。",
      "Result 改造后保持既有键顺序、数值、形状、dtype 和映射兼容性，并支持属性读取同一字段。"
     ],
-    "evidence_ceiling": "限于单次前向平衡试验，显式区分有效、数值失败与未收敛结果。证据：`test_inference_physical_closure.py` 含 20 个测试函数，其中没有函数引用 `evaluate_anisotropic_trial`，由 4 个资产共享; `test_anisotropic_inference_independent.py` 含 1 个测试函数，其中没有函数引用 `evaluate_anisotropic_trial`，由 4 个资产共享；仅绑定共享文件覆盖，因此通过是文件级事实、而非资产隔离证据；本审计已执行有界示例。真值来源：绑定 inference 文件中的独立解析与离散参照比较。不建立：把合同/编程异常伪装为物理不可行，或用惩罚项证明模型有效。另有直接命名结果测试核对旧值、键顺序和属性读取。",
+    "evidence_ceiling": "直接叶入口证据：test_inference_physical_closure.py 将 evaluate_anisotropic_trial 导入为 trial。test_failed_trial_keeps_dimension_and_short_circuits_diagnostics、test_success_failure_success_keeps_shape_and_records_numerical_port、test_invalid_trial_contract_propagates_instead_of_becoming_physical_failure 和 test_inputs_are_deep_copied_before_injected_ports 直接检查不收敛、固定残差维数、失败归属、合同异常及输入副本。test_inference_named_result.py 直接检查成功/失败数值和 Result 映射/属性兼容性。仓库测试使用 review-hold 模式：tests/conftest.py 设置 SCIREL_REVIEW_HOLD=1，并把 catalog/review/candidates/src/scirel/inference 加入 inference 导入路径。held direct_anisotropic_inversion 图显式导入公开 anisotropic_parameter_optimization.optimize_anisotropic_parameters 与 anisotropic_trial_evaluation.evaluate_anisotropic_trial；compose 按这些同一函数对象解析依赖，run_composition 把绑定物理端口的 partial(公开 trial) 交给公开优化器。test_real_picard_forward_recovers_two_physical_parameters_from_analytic_observations 执行 tests/fixtures/inference/anisotropic_recovery.py::run，检查制造双参数恢复、Picard 收敛状态、psi/J_phi、残差与 chi2、失败试探及保留试探有效性。test_independent_curved_field_biot_savart_tensor_observations 执行 independent_case，对独立构造的离散 Biot-Savart/张量观测检查双参数恢复和 psi/J_phi，并检查残差维数、chi2 及实际生效的各向异性响应。样本与容差由这些既有具名断言限定。这些评审模式消费者为公开叶入口提供有界科学证据。graph 仍处于 HOLD 且不在公开导出中，普通模式导入隔离是有意设置。这些证据不代表 graph 已公开、新包已认证、装置已标定、连续网格收敛已证明，或全局最优与一般可辨识性已有保证。",
     "known_limitations": [
      "RuntimeError 的科学含义由调用者端口负责；错误状态不能替代原异常调查。",
      "单次 trial 不判断参数可辨识性或最优性。"
@@ -6866,7 +6866,7 @@
   },
   {
    "asset_id": "scirel.kinetic.cylindrical-velocity-quadrature",
-   "source_sha256": "cae0e6bf56203cc196a1870ee4357c1dc945f61637e41eebd3ce187ec8e0afcf",
+   "source_sha256": "e39393fd8716587fbf455ee6a02b7b49df7e9689edb5a595cd566326ab93ecc6",
    "summary": "由严格递增归一化径向和轴向速度网格构造幽灵扩展单元面、环测度、柱坐标体积、有限体积差分系数、速度平方及正负轴向索引；体积输出供 Maxwell 相对速率平均使用。",
    "definition": "径向外端镜像 2vr[-1]−vr[-2]，轴向两端镜像；相邻扩展节点中点为单元面，最内径向面固定 0。径向测度 π(r_right²−r_left²)，体积为径向测度×dvx，另输出 4π/3(r_right³−r_left³)。幽灵数组内部存 1/dvx、vx/dvx、vr/dvr，外壳精确零；索引只取严格正/负 vx。",
    "model": "按所声明的虚拟面约定构造离散有限体积量；不计算分布、碰撞模型或场模型。",
@@ -7037,15 +7037,15 @@
      "非均匀径向下含镜像外面构造的环测度仍精确。",
      "虚拟系数边界壳精确零，内部为1/dvx、vx/dvx及vr/dvr。",
      "体积接入Maxwell相对速率平均产生有限正值。",
-     "长度≥2、有限递增、径向非负且轴向双符号；按参数名拒绝 NaN/无穷与负径向。非有限拒绝是修复：较早的实现会静默传播 NaN。"
+     "输出可表示性：test_nonrepresentable_quadrature_outputs_are_rejected、test_an_overflowing_axial_ghost_is_rejected 和 test_an_underflowing_radial_mesh_is_rejected 检查径向/轴向外推面溢出以及径向平方面下溢为零时抛 ValueError；普通正网格保持原有数值。"
     ],
-    "evidence_ceiling": "限于调用者给定 vr/vx 网格上的十八字段柱速度求积。证据：`test_cylindrical_velocity_quadrature.py` 含 17 个测试函数，其中 4 个引用 `make_cylindrical_velocity_quadrature`，由 2 个资产共享；仅绑定共享文件覆盖，因此通过是文件级事实、而非资产隔离证据；本审计已执行有界示例。真值来源：在与参考算例不同的网格上手工推导的解析求积参照。不建立：网格生成/自适应，或任何分布/碰撞模型。",
+    "evidence_ceiling": "直接证据：test_cylindrical_velocity_quadrature.py 用 _call 包装调用 make_cylindrical_velocity_quadrature。test_the_result_keys_are_exactly_the_saved_field_set 与 test_the_hand_derived_oracle_on_a_four_point_axial_mesh 检查具名字段与解析求积；test_a_negative_radial_mesh_is_rejected、test_nonrepresentable_quadrature_outputs_are_rejected、test_an_overflowing_axial_ghost_is_rejected 和 test_an_underflowing_radial_mesh_is_rejected 直接断言拒绝。这些有限网格断言不建立网格生成/自适应或分布/碰撞模型。",
     "known_limitations": [
      "外侧面采用所声明的半单元外推（镜像最后一个节点）；期望不同面位置的格式不得在未经审查的情况下复用该测度。",
      "不换单位，网格和输出均随调用者归一化单位，物理热速度归调用者。",
      "非有限和非实数网格拒绝是超出原有行为的已记录修复：依赖较早行为的调用者会在原先看到强制转换、无关 TypeError 或静默损坏求积的位置看到 ValueError。非负径向域和输出可表示性检查同样如此：较早行为以负或非有限测度接受的负网格或 float64 上限网格，在这里会被拒绝。",
      "非负径向域使正径向速度约定明确；认为带符号径向轴有意义的调用者，看的是另一种关系。",
-     "绑定文件由两个资产共享，其手工推导参照在四点轴向网格上检查十八字段；输出可表示性与负径向拒绝分支仅为合同声明。"
+     "具名测试通过 _call 直接覆盖负径向、径向溢出、轴向虚拟面溢出及径向下溢拒绝；这些样本不认证所有其他可接受网格的可表示性。"
     ]
    }
   },
@@ -7650,7 +7650,7 @@
   },
   {
    "asset_id": "scirel.inference.anisotropic-parameter-optimization",
-   "source_sha256": "f6b9093cef43eb8085b6cb094c07de343bdd16f9428abe80877d3aa7e8b2d2ac",
+   "source_sha256": "bcef57c13fbe5dafdb0e8909401cb2f9e1db553f1ed483f4812f35a28881badf",
    "summary": "在有限合法边界与总科学调用预算内作局部拟合，失败试探不可成为最优，并以 scirel._result.Result 映射返回实际终点的重新验证状态。",
    "definition": "全部静态控制先验证。可选 LHS 的完整设计先核边界与数量，再按顺序评估，取 chi2 最低的有效样本作优化起点；若没有有效样本则保留提交的初值。least_squares 使用残差，minimize 使用 L-BFGS-B 与平方和；无效 trial 对优化器提供 N 维罚值，但永不参与 best_valid_trial。预算计入 LHS、数值差分与终点调用，预留两次终点/有效 fallback 验证。正常返回的优化器 x 必须重新调用前向验证；如终点无效，仅可返回重新验证的历史有效候选，且 converged=False。全部十六个结果字段位于同一个 scirel._result.Result 映射中；按键和属性读取同一个值。",
    "model": "有界局部数值优化，不包含平衡方程、全球搜索或统计可辨识性证明",
@@ -7848,10 +7848,10 @@
     "scope": [
      "原有效标量恢复、LHS 起点与残差数值断言保留。",
      "非法控制零科学调用、失败零 chi2 不可 best、固定维数、预算/终点状态同一性。",
-     "真实 Picard 的双参数解析恢复与独立曲场离散参考恢复。",
+     "仓库测试使用 review-hold 模式：tests/conftest.py 设置 SCIREL_REVIEW_HOLD=1，并把 catalog/review/candidates/src/scirel/inference 加入 inference 导入路径。held direct_anisotropic_inversion 图显式导入公开 anisotropic_parameter_optimization.optimize_anisotropic_parameters 与 anisotropic_trial_evaluation.evaluate_anisotropic_trial；compose 按这些同一函数对象解析依赖，run_composition 把绑定物理端口的 partial(公开 trial) 交给公开优化器。test_real_picard_forward_recovers_two_physical_parameters_from_analytic_observations 执行 tests/fixtures/inference/anisotropic_recovery.py::run，检查制造双参数恢复、Picard 收敛状态、psi/J_phi、残差与 chi2、失败试探及保留试探有效性。test_independent_curved_field_biot_savart_tensor_observations 执行 independent_case，对独立构造的离散 Biot-Savart/张量观测检查双参数恢复和 psi/J_phi，并检查残差维数、chi2 及实际生效的各向异性响应。样本与容差由这些既有具名断言限定。",
      "Result 改造后保持既有键顺序、数值、形状、dtype 和映射兼容性，并支持属性读取同一字段。"
     ],
-    "evidence_ceiling": "限于带总科学调用预算、失败试验不得成为最优的有界局域各向异性参数拟合。证据：`test_inference_physical_closure.py` 含 20 个测试函数，其中没有函数引用 `optimize_anisotropic_parameters`，由 4 个资产共享; `test_anisotropic_inference_independent.py` 含 1 个测试函数，其中没有函数引用 `optimize_anisotropic_parameters`，由 4 个资产共享；仅绑定共享文件覆盖，因此通过是文件级事实、而非资产隔离证据；本审计已执行有界示例。真值来源：绑定 inference 文件中的独立解析与离散参照比较。不建立：全局最优性、置信区间/可辨识性证明，或把失败/旧状态包装为优化器收敛。另有直接命名结果测试核对旧值、键顺序和属性读取。",
+    "evidence_ceiling": "直接叶入口证据：test_inference_physical_closure.py 将 optimize_anisotropic_parameters 导入为 optimize。test_invalid_optimizer_controls_never_call_science、test_failed_zero_chi2_never_becomes_best、test_budget_includes_finite_differences_and_fresh_recheck、test_all_failed_states_never_produce_a_best_fit、test_minimize_valid_terminal_is_same_params_state_and_residual 和 test_numeric_callback_exceptions_are_counted_and_never_ranked 直接检查控制、有效最优排序、预算及终点。test_inference_named_result.py 直接检查局部拟合数值、fallback、失败和 Result 键/属性。仓库测试使用 review-hold 模式：tests/conftest.py 设置 SCIREL_REVIEW_HOLD=1，并把 catalog/review/candidates/src/scirel/inference 加入 inference 导入路径。held direct_anisotropic_inversion 图显式导入公开 anisotropic_parameter_optimization.optimize_anisotropic_parameters 与 anisotropic_trial_evaluation.evaluate_anisotropic_trial；compose 按这些同一函数对象解析依赖，run_composition 把绑定物理端口的 partial(公开 trial) 交给公开优化器。test_real_picard_forward_recovers_two_physical_parameters_from_analytic_observations 执行 tests/fixtures/inference/anisotropic_recovery.py::run，检查制造双参数恢复、Picard 收敛状态、psi/J_phi、残差与 chi2、失败试探及保留试探有效性。test_independent_curved_field_biot_savart_tensor_observations 执行 independent_case，对独立构造的离散 Biot-Savart/张量观测检查双参数恢复和 psi/J_phi，并检查残差维数、chi2 及实际生效的各向异性响应。样本与容差由这些既有具名断言限定。这些评审模式消费者为公开叶入口提供有界科学证据。graph 仍处于 HOLD 且不在公开导出中，普通模式导入隔离是有意设置。这些证据不代表 graph 已公开、新包已认证、装置已标定、连续网格收敛已证明，或全局最优与一般可辨识性已有保证。",
     "known_limitations": [
      "常量罚值附近可能停滞；有限 LHS 和局部优化不保证找出可行点。",
      "没有自动协方差、Fisher 秩或置信区间报告；需要额外科学设计。",
@@ -8325,7 +8325,7 @@
   },
   {
    "asset_id": "scirel.kinetic.compensated-shifted-maxwellian",
-   "source_sha256": "7cc66799676e950beb71dcdb30a4669f5185384a7f8784ea5ebd4876d63ecbbe",
+   "source_sha256": "5ae7e39b49dec0d41589e6281dbce4c84e9068bb8409745c3a0103349d0f2ff9",
    "summary": "构造裁剪并按圆柱求积归一化的平移 Maxwell 分布切片，再应用有界离散漂移/能量补偿阶段。",
    "definition": "计算热速度和裁剪指数，按求积归一化每个切片，施加 compensate_velocity_slice 后再次归一化。",
    "model": "固定氢质量/电荷常数的离散平移 Maxwell 分布与源形状矩补偿。",
@@ -8406,14 +8406,14 @@
     ]
    },
    "failure_semantics": {
-    "invalid_input": "求积、形状或索引异常向上传播；不选择备用网格/求解器。",
+    "invalid_input": "求积、形状或索引异常向上传播，不选择备用网格/求解器。漂移绝对误差超过 moment_rtol*max(abs(目标漂移), sqrt(3*CHARGE*T/m))、温度绝对误差超过 moment_rtol*T，或 min(f)<-moment_rtol*max(f) 时抛 ValueError；T 为目标温度（eV），m=molecularity*mu*HYDROGEN_MASS。有限且形状正确的网格仍可能无法通过这些返回矩检查。",
     "runtime_failure": "溢出、NaN 和警告遵循 NumPy 算术及源形状修正。",
     "nonconvergence": "不适用；无迭代。",
     "partial_results": "异常后不返回部分分布。"
    },
    "verification": {
     "scope": [
-     "直接检查形状、不正温分支和正温有限切片。",
+     "直接检查形状与不正温零切片；test_adequate_mesh_returns_the_exact_maxwellian_moments、test_mesh_too_small_for_the_temperature_raises_instead_of_returning_wrong_moments 和 test_moment_tolerance_is_the_caller_s_choice 检查解析漂移/温度矩、网格不足拒绝及调用者显式容差。",
      "候选证据保留温度分支、裁剪、非均匀氘以及 NaN/负/零边界行。"
     ],
     "known_limitations": [
@@ -8421,10 +8421,10 @@
      "固定常数和裁剪算术是模型约定，不是标定证据。",
      "候选证据不覆盖分子耦合通道或完整输运求解器。"
     ],
-    "evidence_ceiling": "限于 A06 源保真部分；NaN payload/警告差异及整数/浮点类型差异仍开放，独立科学正确性、ADAS/JH、完整求解器和人工接受未建立。"
+    "evidence_ceiling": "test_moment_compensation.py 中具名直接测试提供其有限网格上的解析返回矩断言及拒绝回归。更广源保真证据仍为部分：历史 NaN payload/警告及整数/浮点差异、ADAS/JH 验证、分子耦合输运、完整求解器和一般科学正确性仍未闭合。"
    },
    "example": {
-    "description": "构造含零温分支的三个平移。",
+    "description": "构造含不正温零切片的三个平移。这个刻意选小的演示网格显式使用 moment_rtol=0.1，默认值仍为 0.01；此选择只属于示例，不能作为网格不足时的通用处理。",
     "expected": "分布形状为 (3,6,3)，零和负温切片恰为零。"
    }
   },

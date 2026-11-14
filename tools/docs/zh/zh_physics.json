@@ -3251,7 +3251,7 @@
   },
   {
    "asset_id": "scirel.kinetic.dielectric-tensor-diagnostic",
-   "source_sha256": "102927fcc230dbdbc96b0f592d9b650d9a044c633621262458b329080a581d52",
+   "source_sha256": "789d971fef84c565db02f4b7ac64db99fd63e5bfe743ccefc2a57649a6b2c4b6",
    "summary": "按默认 lmx=15 的谐波截断计算介电张量和色散张量的全部九个分量。",
    "definition": "对 l=-lmx..lmx 的 Maxwellian 谐波贡献求和，通过 Maxwell 旋度项形成 D，保留显式六项行列式。xx/xy/yy 保留 N64 Weideman Z；xz/yz/zz 使用实参解析 A=1+zZ、有限 Gamma 导数端点和遗漏尾项。复数或负 b 的尾项按复数求和，由 |I_n(b)|≤I_n(|b|) 和 DLMF 10.35.1 建立精确遗漏项绝对界。 各物种全部谐波 |z_n|≤1 时，xz/yz/zz 改用直接 z_n Z(z_n) 和原有 zz 加项，保住小响应；b=0 的遗漏 Gamma 尾项精确为零。 xy/yx 保留原 Z 后端，谐波贡献的实部和虚部分别用 fsum 累加。",
    "model": "均匀磁化多组分 Maxwellian 等离子体",
@@ -3304,8 +3304,8 @@
     },
     {
      "name": "kx",
-     "description": "垂直波数；标量；单位 rad/m；须有限，可为实数或复数（在复 kx 平面扫描即复数 kx）；`kx=0` 时 `as=0`，`Xsn_xz/Xsn_zz` 会出现 `NaN`（此行为固定，本算子不掩盖）。",
-     "constraints": "有限，可为实数或复数（在复 kx 平面扫描即复数 kx）；`kx=0` 时 `as=0`，`Xsn_xz/Xsn_zz` 会出现 `NaN`（此行为固定，本算子不掩盖）。",
+     "description": "垂直波数，有限实数或复数标量。kx=0 时 as、bs 为零。test_zero_wavevector_boundaries_are_preserved 逐项检查其常规端点样本的 K/D：xx、yy、xz、zx 非有限，xy、yx、yz、zy、zz 有限；zz 另与独立解析式核对。这不消除其余奇异分量，也不认证极端尺度可表示性。",
+     "constraints": "有限实数或复数标量。kx=0 时 as、bs 为零。test_zero_wavevector_boundaries_are_preserved 逐项检查其常规端点样本的 K/D：xx、yy、xz、zx 非有限，xy、yx、yz、zy、zz 有限；zz 另与独立解析式核对。这不消除其余奇异分量，也不认证极端尺度可表示性。",
      "dtype": "complex128 复数"
     },
     {
@@ -3318,8 +3318,8 @@
    "outputs": [
     {
      "name": "K",
-     "description": "动力学介电张量，行列均按 x-y-z 排列，从单位阵开始累加。kx=0 保留原有非有限诊断；极端尺度算术仍可能非有限。",
-     "constraints": "同一有限 N 张量；kx=0 保留原有非有限诊断。不承诺连续全域精度。",
+     "description": "动力学介电张量，行列按 x-y-z 排列，从单位阵开始累加。kx=0 时 as、bs 为零。test_zero_wavevector_boundaries_are_preserved 逐项检查其常规端点样本的 K/D：xx、yy、xz、zx 非有限，xy、yx、yz、zy、zz 有限；zz 另与独立解析式核对。这不消除其余奇异分量，也不认证极端尺度可表示性。",
+     "constraints": "同一有限 N 张量；kx=0 时 as、bs 为零。test_zero_wavevector_boundaries_are_preserved 逐项检查其常规端点样本的 K/D：xx、yy、xz、zx 非有限，xy、yx、yz、zy、zz 有限；zz 另与独立解析式核对。这不消除其余奇异分量，也不认证极端尺度可表示性。不承诺连续全域精度。",
      "dtype": "complex128 数组"
     },
     {
@@ -3384,8 +3384,8 @@
     },
     {
      "name": "bs",
-     "description": "各成分 `as.^2`；形状 `(S,)` 的复数数组；无量纲；`bs=0`（即 `kx=0`）时 `Gamman(l,b)/b` 出现 `NaN`，此行为固定。",
-     "constraints": "各成分 `as.^2`；形状 `(S,)` 的复数数组；无量纲；`bs=0`（即 `kx=0`）时 `Gamman(l,b)/b` 出现 `NaN`，此行为固定。",
+     "description": "每物种 bs=as**2；kx=0 时这个诊断数组为零。横向分量中的奇异 Gamma_n(b)/b 因子不意味着 zz 也非有限。",
+     "constraints": "等于 as**2，形状 (S,)；kx=0 保留零 bs 和按分量区分的张量端点行为。",
      "dtype": "complex128 数组"
     },
     {
@@ -7318,7 +7318,7 @@
   },
   {
    "asset_id": "scirel.kinetic.bessel-gamma",
-   "source_sha256": "d2a3e501ac91a8ca0f24259173c60d91adb61aad696d8e25412c33ff3b988072",
+   "source_sha256": "edf39e9e63b6af6c81e98d9f388d699319ae57a4bd16e028c314eb2840790469",
    "summary": "以可广播整数阶数和实/复自变量计算无量纲 Bessel-Gamma 谐波项及相邻阶组合导数。",
    "definition": "Gamma_n=ive(n,x)*exp(-x+abs(Re(x)))；Gamma_prime_n=[ive(n-1,x)/2+ive(n+1,x)/2-ive(n,x)]*exp(-x+abs(Re(x)))。ive 是指数缩放修正 Bessel I；可表示域内分别等于 exp(-x)*I_n(x) 及其对 x 的导数。",
    "model": "有限 Maxwell 回旋谐波求和使用的整数阶修正 Bessel 项。",
@@ -7382,14 +7382,14 @@
    "verification": {
     "scope": [
      "有限网格与修正 Bessel 定义比较、原点恒等式和复广播。",
-     "与 98 点实自变量参考基准作只读比较。"
+     "非法阶数、非法自变量及不可表示输出的拒绝。"
     ],
-    "evidence_ceiling": "限于所声明关系：Gamma_n=ive(n,x)*exp(-x+abs(Re(x)))；Gamma_prime_n=[ive(n-1,x)/2+ive(n+1,x)/2-ive(n,x)]*exp(-x+abs(Re(x)))。ive 是指数缩放修正 Bessel I；可表示域内分别等于 exp(-x)*I_n(x) 及其对 x 的导数。证据：test_bessel_gamma.py（记录 4 个测试函数；绑定文件覆盖；仅自洽/回归）；合同 example 已运行。不建立的范围：不支持非整数 Bessel 阶数，也不自动把任意 x 解释成物理波参数；不选择谐波截断、组装 Maxwell 色散张量或选择模态/根。",
+    "evidence_ceiling": "test_analytic_definition_and_neighbour_derivative 以 scipy.special.iv 的修正 Bessel 定义比较 Gamma_n、Gamma_prime_n；test_origin_and_complex_broadcast_preserve_shape_and_inputs、test_large_positive_argument_remains_representable 和 test_invalid_or_unrepresentable_values_fail_closed 提供具名恒等式、形状、可表示性与拒绝样本。这是同类特殊函数后端的有界自洽/回归证据，不是独立物理真值参照；不覆盖谐波截断、张量组装或模态/根选择。",
     "known_limitations": [
      "极端输入可能受浮点下溢或不可表示输出限制，非有限结果会抛异常。",
      "既有表述曾隐式接受某些非整数阶，SciRel 有意只接受精确可表示整数 n。",
      "未记录独立或外部 oracle；证据仅为自洽/回归。",
-     "仅记录 4 个绑定测试函数；不主张更宽参数覆盖。"
+     "历史中文独有的 98 点实自变量参考比较为 UNKNOWN；当前证据集未绑定相应夹具或回执。上述具名直接断言仍然存在，但不能据它们重建那份历史比较。"
     ],
     "tests": [
      "tests/kinetic/test_bessel_gamma.py"

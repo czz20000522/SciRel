@@ -6,8 +6,8 @@
  },
  "verification": {
   "scope": [
-   "Constructor and coordinate-shape invariants covered by the direct geometry tests",
-   "The executable constructor example stored in this contract"
+   "test_rotation_inverse_distance_and_nonmutation checks inverse rotation, distance preservation and unchanged inputs at its parametrized angles.",
+   "The executable rotation example stored in this contract."
   ],
   "tests": [
    "tests/geometry/test_geometry_qualification.py",
@@ -15,7 +15,7 @@
   ],
   "evidence_ceiling": "Named finite geometry cases only; no field-solver, experimental, or release claim is made.",
   "known_limitations": [
-   "Mesh objects do not by themselves validate a physical field model or device geometry."
+   "This planar transform does not validate a physical field model or enforce nonnegative cylindrical R."
   ]
  },
  "asset_id": "scirel.geometry.rotate",
@@ -115,10 +115,10 @@
   ]
  },
  "failure_semantics": {
-  "invalid_input": "Raises ValueError for nonfinite coordinates, mismatched shapes, negative radius, malformed point dimensions, or invalid rectangular bounds/counts.",
-  "runtime_failure": "Direct NumPy coordinate construction or transform exceptions propagate.",
-  "nonconvergence": "Not applicable; mesh construction and rotation are direct operations.",
-  "partial_results": "A failed constructor returns no mesh object."
+  "invalid_input": "Raises ValueError for scalar pts, points without a final axis of length 2, nonfinite point coordinates, a pivot not shaped (2,) or containing nonfinite values, or a nonfinite angle. Negative R is not rejected by this planar transform.",
+  "runtime_failure": "Python/NumPy conversion or transformation exceptions propagate.",
+  "nonconvergence": "Not applicable; rotation is a direct operation.",
+  "partial_results": "A failed call returns no rotated array."
  },
  "public_api": {
   "python": {

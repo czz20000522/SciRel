@@ -128,12 +128,12 @@
   "tests": [
    "tests/kinetic/test_bessel_gamma.py"
   ],
-  "evidence_ceiling": "Bounded to the declared relation: Gamma_n=ive(n,x)*exp(-x+abs(Re(x))); Gamma_prime_n=[ive(n-1,x)/2+ive(n+1,x)/2-ive(n,x)]*exp(-x+abs(Re(x))). Here ive is the exponentially scaled modified Bessel I. For representable values this is exp(-x) I_n(x) and its derivative with respect to x. Evidence: test_bessel_gamma.py (4 recorded test functions; bound-file coverage; self-consistency/regression only); the contract example ran. Excluded scope: Noninteger Bessel orders or automatic interpretation of arbitrary x as a physical wave parameter; Harmonic truncation, Maxwellian dispersion tensor assembly and mode/root selection.",
+  "evidence_ceiling": "test_analytic_definition_and_neighbour_derivative compares Gamma_n and Gamma_prime_n with the modified-Bessel definition using scipy.special.iv; test_origin_and_complex_broadcast_preserve_shape_and_inputs, test_large_positive_argument_remains_representable and test_invalid_or_unrepresentable_values_fail_closed add named identity, shape, representability and rejection cases. This is bounded self-consistency/regression evidence using the same special-function backend family, not an independent physical oracle. Harmonic truncation, tensor assembly and mode/root selection are outside these assertions.",
   "known_limitations": [
    "Floating-point underflow or a nonrepresentable result can bound extreme inputs; the callable raises rather than returning nonfinite outputs.",
    "The source implementation accepted some noninteger orders implicitly; SciRel intentionally restricts n to exactly representable integers.",
    "No independent or external oracle is recorded; the evidence is self-consistency/regression only.",
-   "Only 4 recorded test functions are bound; broader parameter coverage is not claimed."
+   "Historical Chinese-only 98-point real-reference comparison: UNKNOWN, with no bound fixture or receipt in the current evidence set. The named direct assertions above remain available; they do not reconstruct that historical comparison."
   ]
  }
 }

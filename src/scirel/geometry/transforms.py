@@ -32,7 +32,10 @@ def rotate(pts, angle, pivot=(0.0, 0.0)):
     Raises
     ------
     ValueError
-        Raises ValueError for nonfinite coordinates, mismatched shapes, negative radius, malformed point dimensions, or invalid rectangular bounds/counts.
+        Raises ValueError for scalar pts, points without a final axis of length 2,
+        nonfinite point coordinates, a pivot not shaped (2,) or containing nonfinite
+        values, or a nonfinite angle. Negative R is not rejected by this planar
+        transform.
 
     See Also
     --------
@@ -42,7 +45,8 @@ def rotate(pts, angle, pivot=(0.0, 0.0)):
 
     Notes
     -----
-    Clockwise-positive row-vector rotation in degrees
+    Clockwise-positive row-vector rotation in degrees. This planar operation
+    does not enforce nonnegative R on input points, pivot or output points.
 
     **Coordinates.** Cylindrical R,Z
 

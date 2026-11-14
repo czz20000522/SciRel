@@ -32,16 +32,16 @@
  },
  "verification": {
   "scope": [
-   "Default and explicit order, scalar/matrix shapes, reflection, normalization, positive imaginary axis overflow regression.",
-   "80-digit mpmath equation grid and 70-digit independent Gaussian Cauchy integrals.",
-   "Finite w but overflowing scaled Z fails explicitly, including mixed matrices and both sides of the mathematical negative-imaginary-axis scaling threshold."
+   "test_fft_normalization_and_reflection directly checks FFT Z=i*sqrt(pi)*w against GPDF for its parametrized orders; the reflection part directly checks GPDF. test_invalid_truncation and test_explicit_empty_and_overflow directly reject invalid FFT orders and None.",
+   "The 80-digit equation grid directly checks the GPDF dependency and DR, while the 70-digit Gaussian Cauchy integral checks J-pole. These are dependency/neighbor evidence, not direct high-precision-grid coverage of FFT.",
+   "test_generalized_dispersion_fft_scaling.py directly checks finite w versus overflowing Z, representable neighbors, mixed-matrix failure and both sides of the mathematical scaling threshold; its named assertions retain the bounded comparison and rejection tolerances."
   ],
   "tests": [
    "tests/kinetic/test_generalized_dispersion_faddeeva_variants.py",
    "tests/kinetic/test_generalized_dispersion_faddeeva_independent.py",
    "tests/kinetic/test_generalized_dispersion_fft_scaling.py"
   ],
-  "evidence_ceiling": "Bounded to the declared relation: Weideman rational FFT expansion with erfcx on imaginary axis. Evidence: test_generalized_dispersion_faddeeva_variants.py, test_generalized_dispersion_faddeeva_independent.py, test_generalized_dispersion_fft_scaling.py (13 recorded test functions; bound-file coverage; independent analytic/high-precision oracle); the contract example ran. Excluded scope: A guaranteed global error bound; An arbitrary distribution response.",
+  "evidence_ceiling": "Direct and dependency evidence are separated in scope above; named assertions are in tests/kinetic/test_generalized_dispersion_faddeeva_variants.py and tests/kinetic/test_generalized_dispersion_faddeeva_independent.py and tests/kinetic/test_generalized_dispersion_fft_scaling.py. Entry-specific comparisons retain the tolerances of those assertions and apply only to their sampled phase points and orders. Shared files do not confer every assertion on every entry point. No global error bound, arbitrary-distribution response or experimental validation is established.",
   "known_limitations": [
    "Lower-plane exponential may exceed float64.",
    "Fixed truncation error depends on phase point and order.",

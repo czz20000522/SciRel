@@ -251,12 +251,17 @@ def evaluate_kinetic_dielectric_tensor(B0, qs, ms, ns0, Ts0, f, kz, kx, lmx=_LMX
         Signed parallel wavenumber; the response uses abs(kz), while z0s retains its sign. No near-zero
         clamp is applied. [rad/m] Shape: scalar. Finite and nonzero.
     kx : complex128
-        Perpendicular wavenumber; scalar; unit rad/m; must be finite and may be real or complex (the source
-        `fsolve` scan uses complex `kx`); at `kx=0`, `as=0` and `Xsn_xz/Xsn_zz` become `NaN` (the source
-        implementation behaves the same way; this operator does not mask it). [rad/m] Shape: scalar. Finite
-        and may be real or complex (the source `fsolve` scan uses complex `kx`); at `kx=0`, `as=0` and
-        `Xsn_xz/Xsn_zz` become `NaN` (the source implementation behaves the same way; this operator does not
-        mask it).
+        Perpendicular wavenumber; finite real or complex scalar. At kx=0, as and bs are zero.
+        test_zero_wavevector_boundaries_are_preserved checks K and D entry by entry: xx, yy, xz
+        and zx are nonfinite; xy, yx, yz, zy and zz are finite for its regular endpoint sample,
+        with zz also checked against an independent analytic expression. This does not
+        regularize the singular entries or certify extreme-scale representability. [rad/m]
+        Shape: scalar. Finite real or complex scalar. At kx=0, as and bs are zero.
+        test_zero_wavevector_boundaries_are_preserved checks K and D entry by entry: xx, yy, xz
+        and zx are nonfinite; xy, yx, yz, zy and zz are finite for its regular endpoint sample,
+        with zz also checked against an independent analytic expression. This does not
+        regularize the singular entries or certify extreme-scale representability.
+
     lmx : integer
         Bessel harmonic-sum truncation limit; integer scalar; dimensionless; must be a nonnegative integer,
         default `15` (frozen source); increase it to check convergence. [dimensionless] Shape: scalar.
@@ -265,9 +270,17 @@ def evaluate_kinetic_dielectric_tensor(B0, qs, ms, ns0, Ts0, f, kz, kx, lmx=_LMX
     Returns
     -------
     K : complex128 array
-        Kinetic dielectric tensor, row/column axes x-y-z, initialized to the identity. At kx=0 the
-        original nonfinite diagnostic is retained; extreme scale arithmetic can also be nonfinite.
-        [dimensionless] Shape: (3,3).
+        Kinetic dielectric tensor with x-y-z row/column axes, initialized to the identity. At
+        kx=0, as and bs are zero. test_zero_wavevector_boundaries_are_preserved checks K and D
+        entry by entry: xx, yy, xz and zx are nonfinite; xy, yx, yz, zy and zz are finite for
+        its regular endpoint sample, with zz also checked against an independent analytic
+        expression. This does not regularize the singular entries or certify extreme-scale
+        representability. [dimensionless] Shape: (3,3). Finite-N tensor; At kx=0, as and bs are
+        zero. test_zero_wavevector_boundaries_are_preserved checks K and D entry by entry: xx,
+        yy, xz and zx are nonfinite; xy, yx, yz, zy and zz are finite for its regular endpoint
+        sample, with zz also checked against an independent analytic expression. This does not
+        regularize the singular entries or certify extreme-scale representability. No
+        continuous-domain accuracy guarantee.
     D : complex128 array
         Dispersion tensor `D_ij`; `(3,3)` complex `numpy.ndarray`; dimensionless; obtained from `K` by
         adding `nx^2`, `nz^2` and `nx*nz`; when `K` is `NaN` the corresponding components are also `NaN`.
@@ -311,10 +324,10 @@ def evaluate_kinetic_dielectric_tensor(B0, qs, ms, ns0, Ts0, f, kz, kx, lmx=_LMX
         is real. [dimensionless] Shape: (S,) species array. `kx*rhocs` of each species; complex array of
         shape `(S,)`; dimensionless; reduces to real when `kx` is real.
     bs : complex128 array
-        `as.^2` of each species; complex array of shape `(S,)`; dimensionless; at `bs=0` (that is, `kx=0`)
-        `Gamman(l,b)/b` becomes `NaN`, matching the source implementation. [dimensionless] Shape: (S,)
-        species array. `as.^2` of each species; complex array of shape `(S,)`; dimensionless; at `bs=0`
-        (that is, `kx=0`) `Gamman(l,b)/b` becomes `NaN`, matching the source implementation.
+        Per-species bs=as**2. At kx=0 this diagnostic array is zero; the singular Gamma_n(b)/b
+        factors in transverse entries do not imply a nonfinite zz component. [dimensionless]
+        Shape: (S,) species array. Equals as**2; shape (S,). kx=0 retains zero bs and the
+        component-specific tensor endpoint behavior.
     z0s : complex128 array
         `z0=w/(kz*vts)` of each species; complex array of shape `(S,)`; dimensionless; diagnostic only and
         not accumulated downstream. [dimensionless] Shape: (S,) species array. `z0=w/(kz*vts)` of each

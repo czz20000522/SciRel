@@ -75,9 +75,11 @@ def classify_material_support(
         length.
 
     separatrix_flux_wb_per_rad : real
-        Poloidal flux per radian of the separatrix. [Wb/rad] Shape: ``scalar``. Finite. Not
-        required to lie inside the sampled flux range; a separatrix outside the range simply
-        makes the selected side empty, which then fails the non-empty support requirement.
+        Poloidal flux per radian of the separatrix. [Wb/rad] Shape: scalar. Finite. Not
+        required to lie inside the sampled flux range. Depending on less_than/greater_than and
+        the threshold, the selected covered side can be full or empty. Support is the union of
+        that side and the covered axis segment, followed by PML and PEC exclusion; only an
+        empty final support raises ValueError.
 
     closed_flux_side : string
         Which side of the separatrix flux is confined. [dimensionless] Shape: ``scalar``.
@@ -137,6 +139,8 @@ def classify_material_support(
     flux, forms the innermost-radius segment as the covered points at the grid's minimum
     radius within the poloidal half length, excludes the PML frame on all six faces of the
     solver box, excludes the caller's PEC mask, and requires the result to be non-empty.
+    The closed-flux side and the covered axis segment are combined by union before
+    those exclusions; an empty closed-flux side alone does not imply empty support.
 
     **Coordinates.** cylindrical radius and axial coordinate of the sampling grid, together
     with the discrete index position of each point in the solver box

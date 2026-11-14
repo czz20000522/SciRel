@@ -65,7 +65,7 @@
    "shape": "N",
    "dtype": "Finite float64",
    "required": true,
-   "constraints": "Nonnegative radius"
+   "constraints": "Finite and nonnegative for physical spherical-radius use. The input radius sign is not checked independently before transformation; PointsMesh checks the generated cylindrical R and Z."
   },
   {
    "name": "theta0",
@@ -92,17 +92,17 @@
  "applicability": {
   "preconditions": [
    "Inputs satisfy the documented finite cylindrical coordinate and shape contract",
-   "Generated cylindrical R must be nonnegative; use nonnegative spherical radii and degree angles in the usual 0..180 polar domain."
+   "Physical spherical radii are nonnegative, with degree angles in the usual 0..180 polar domain. Implementation validation applies to the generated cylindrical coordinates, requiring finite coordinates and R >= 0; it does not separately reject every negative input spherical radius."
   ],
   "supported": [
    "Finite spherical radial chord"
   ],
   "excluded": [
-   "Negative radius"
+   "Physical interpretation of a negative spherical radius; successful coordinate generation is not validation of that physical premise."
   ]
  },
  "failure_semantics": {
-  "invalid_input": "Raises ValueError for nonfinite coordinates, mismatched shapes, negative radius, malformed point dimensions, or invalid rectangular bounds/counts.",
+  "invalid_input": "Raises ValueError when generated cylindrical coordinates are nonfinite, their shapes differ after squeeze, or generated R is negative. No independent pre-transform sign check is made on the spherical radius; R=-0.0 passes the R < 0 check.",
   "runtime_failure": "Direct NumPy coordinate construction or transform exceptions propagate.",
   "nonconvergence": "Not applicable; mesh construction and rotation are direct operations.",
   "partial_results": "A failed constructor returns no mesh object."

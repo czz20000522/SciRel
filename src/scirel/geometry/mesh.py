@@ -225,23 +225,28 @@ class PointsMesh(Mesh):
     Parameters
     ----------
     rpts : Finite float64
-        Radial coordinates [m] Shape: ``N``. Equal shape to zpts; R >= 0
+        Radial coordinates [m] Shape: arbitrary matching shape after squeeze; scalar becomes
+        (1,). After squeeze, shape must match zpts; scalar pairs are reshaped to (1,).
+        Remaining dimensions are preserved. R >= 0.
 
     zpts : Finite float64
-        Axial coordinates [m] Shape: ``N``. Equal shape to rpts
+        Axial coordinates [m] Shape: arbitrary matching shape after squeeze; scalar becomes
+        (1,). After squeeze, shape must match rpts; scalar pairs are reshaped to (1,).
+        Remaining dimensions are preserved.
 
     Returns
     -------
     mesh : PointsMesh
-        Constructed PointsMesh object. Available properties/methods: R: Radial coordinates
-        [m], N; Z: Axial coordinates [m], N [Object; property units as described] Shape:
-        ``one object``. Properties expose generated coordinates; field methods require
-        configured or supplied target mesh
+        Constructed PointsMesh object. R and Z [m] retain the matching shape after squeeze,
+        with scalar pairs stored as (1,); multidimensional arrays are not flattened. [Object;
+        property units as described] Shape: one object. Properties expose generated
+        coordinates; field methods require configured or supplied target mesh
 
     Raises
     ------
     ValueError
-        Raises ValueError for nonfinite coordinates, mismatched shapes, negative radius, malformed point dimensions, or invalid rectangular bounds/counts.
+        Raises ValueError for nonfinite coordinates, shapes that differ after squeeze, or a
+        negative cylindrical radius R. There is no one-dimensional-only check.
 
     See Also
     --------
@@ -252,7 +257,9 @@ class PointsMesh(Mesh):
 
     Notes
     -----
-    Each paired rpts,zpts value defines one point
+    Each paired rpts,zpts value defines one point. Both arrays are squeezed;
+    scalar pairs become (1,), and any remaining dimensions are preserved.
+    Multidimensional coordinate arrays are not flattened or rejected for their rank.
 
     **Coordinates.** Cylindrical R-Z
 
@@ -417,11 +424,12 @@ class SphericalRChord(PointsMesh):
     Parameters
     ----------
     rpts : Finite float64
-        Spherical radius [m] Shape: ``N``. Nonnegative radius
+        Spherical radius [m] Shape: N. Finite and nonnegative for physical spherical-radius
+        use. The input radius sign is not checked independently before transformation;
+        PointsMesh checks the generated cylindrical R and Z.
 
     theta0 : Finite float64, optional
-        Fixed polar angle [degree] Shape: ``scalar``. Finite degrees Optional; default
-        ``0.0``.
+        Fixed polar angle [degree] Shape: scalar. Finite degrees Default: 0.0.
 
     Returns
     -------
@@ -434,7 +442,9 @@ class SphericalRChord(PointsMesh):
     Raises
     ------
     ValueError
-        Raises ValueError for nonfinite coordinates, mismatched shapes, negative radius, malformed point dimensions, or invalid rectangular bounds/counts.
+        Raises ValueError when generated cylindrical coordinates are nonfinite, their shapes
+        differ after squeeze, or generated R is negative. No independent pre-transform sign
+        check is made on the spherical radius; R=-0.0 passes the R < 0 check.
 
     See Also
     --------
@@ -453,12 +463,11 @@ class SphericalRChord(PointsMesh):
     **Preconditions.**
 
     * Inputs satisfy the documented finite cylindrical coordinate and shape contract
-    * Generated cylindrical R must be nonnegative; use nonnegative spherical radii and
-      degree angles in the usual 0..180 polar domain.
+    * Physical spherical radii are nonnegative, with degree angles in the usual 0..180 polar domain. Implementation validation applies to the generated cylindrical coordinates, requiring finite coordinates and R >= 0; it does not separately reject every negative input spherical radius.
 
     **Limits.**
 
-    * Negative radius
+    * Physical interpretation of a negative spherical radius; successful coordinate generation is not validation of that physical premise.
 
     Examples
     --------
@@ -481,11 +490,12 @@ class ThetaChord(PointsMesh):
     Parameters
     ----------
     tpts : Finite float64
-        Polar angles [degree] Shape: ``N``. Finite degrees
+        Polar angles [degree] Shape: N. Finite degrees
 
     r0 : Finite float64, optional
-        Fixed spherical radius [m] Shape: ``scalar``. Finite radius Optional; default
-        ``1.0``.
+        Fixed spherical radius [m] Shape: scalar. Finite and nonnegative for physical
+        spherical-radius use. The input radius sign is not checked independently before
+        transformation; PointsMesh checks the generated cylindrical R and Z. Default: 1.0.
 
     Returns
     -------
@@ -498,7 +508,9 @@ class ThetaChord(PointsMesh):
     Raises
     ------
     ValueError
-        Raises ValueError for nonfinite coordinates, mismatched shapes, negative radius, malformed point dimensions, or invalid rectangular bounds/counts.
+        Raises ValueError when generated cylindrical coordinates are nonfinite, their shapes
+        differ after squeeze, or generated R is negative. No independent pre-transform sign
+        check is made on the spherical radius; R=-0.0 passes the R < 0 check.
 
     See Also
     --------
@@ -517,12 +529,11 @@ class ThetaChord(PointsMesh):
     **Preconditions.**
 
     * Inputs satisfy the documented finite cylindrical coordinate and shape contract
-    * Generated cylindrical R must be nonnegative; use nonnegative spherical radii and
-      degree angles in the usual 0..180 polar domain.
+    * Physical spherical radii are nonnegative, with degree angles in the usual 0..180 polar domain. Implementation validation applies to the generated cylindrical coordinates, requiring finite coordinates and R >= 0; it does not separately reject every negative input spherical radius.
 
     **Limits.**
 
-    * Negative fixed radius
+    * Physical interpretation of a negative spherical radius; successful coordinate generation is not validation of that physical premise.
 
     Examples
     --------

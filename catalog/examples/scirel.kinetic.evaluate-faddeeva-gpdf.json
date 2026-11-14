@@ -32,18 +32,18 @@
  },
  "verification": {
   "scope": [
-   "Default and explicit order, scalar/matrix shapes, reflection, normalization, positive imaginary axis overflow regression.",
-   "80-digit mpmath equation grid and 70-digit independent Gaussian Cauchy integrals."
+   "test_defaults_and_independent_complex_error_function, test_imaginary_axis_overflow_regression and test_fft_normalization_and_reflection directly exercise GPDF defaults, matrix shape, the named positive-imaginary-axis regression and reflection. test_invalid_truncation, test_explicit_empty_and_overflow and test_large_real_finite_response directly cover invalid orders, None default, lower-plane overflow rejection and large finite phase points.",
+   "test_high_precision_equation_grid directly compares GPDF with the 80-digit mpmath equation using its entry-specific tolerances. The 70-digit Gaussian Cauchy integral calls J-pole, not GPDF."
   ],
   "tests": [
    "tests/kinetic/test_generalized_dispersion_faddeeva_variants.py",
    "tests/kinetic/test_generalized_dispersion_faddeeva_independent.py"
   ],
-  "evidence_ceiling": "Bounded to the declared relation: Weideman rational FFT expansion with erfcx on imaginary axis. Evidence: test_generalized_dispersion_faddeeva_variants.py, test_generalized_dispersion_faddeeva_independent.py (9 recorded test functions; shared-file coverage only; independent analytic/high-precision oracle); the contract example ran. Excluded scope: A guaranteed global error bound; An arbitrary distribution response.",
+  "evidence_ceiling": "Direct and dependency evidence are separated in scope above; named assertions are in tests/kinetic/test_generalized_dispersion_faddeeva_variants.py and tests/kinetic/test_generalized_dispersion_faddeeva_independent.py. Entry-specific comparisons retain the tolerances of those assertions and apply only to their sampled phase points and orders. Shared files do not confer every assertion on every entry point. No global error bound, arbitrary-distribution response or experimental validation is established.",
   "known_limitations": [
    "Lower-plane exponential may exceed float64.",
    "Fixed truncation error depends on phase point and order.",
-   "Only shared-file coverage is bound (test_generalized_dispersion_faddeeva_variants.py); no asset-specific failure/limit probe is recorded."
+   "Direct GPDF failure and boundary assertions are present, but their sampled phase points and orders do not establish a global error or representability guarantee."
   ]
  },
  "asset_id": "scirel.kinetic.evaluate-faddeeva-gpdf",

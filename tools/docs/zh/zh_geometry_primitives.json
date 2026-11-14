@@ -966,7 +966,7 @@
   },
   {
    "asset_id": "scirel.geometry.rotate",
-   "source_sha256": "92b2d2178c8319439603899ddc002b777fa3760f4fcd7e9c70955c470fa0d466",
+   "source_sha256": "25beb08b2feb2708daaf3173dab465cc739f94e94ffd78af5f61035e9b9fb1c6",
    "summary": "在柱坐标 R、Z 平面旋转行向量。",
    "definition": "采用顺时针为正的行向量旋转，角度单位为度。",
    "model": "二维 R、Z 平面。",
@@ -1015,18 +1015,18 @@
     ]
    },
    "failure_semantics": {
-    "invalid_input": "对非有限坐标、形状不匹配、负半径、格式错误的点维度或无效矩形边界/数量抛出 ValueError。",
-    "runtime_failure": "直接 NumPy 坐标构造或变换异常向上传播。",
-    "nonconvergence": "不适用；网格构造和旋转是直接操作。",
-    "partial_results": "构造失败时不返回网格对象。"
+    "invalid_input": "pts 为标量、点数组末轴长度不为 2、点坐标非有限、pivot 不是有限 (2,) 数组或角度非有限时抛 ValueError。这个平面变换不拒绝负 R。",
+    "runtime_failure": "Python/NumPy 的转换或变换异常向上传播。",
+    "nonconvergence": "不适用；旋转是直接操作。",
+    "partial_results": "调用失败不返回旋转数组。"
    },
    "verification": {
     "scope": [
-     "直接几何测试覆盖构造器和坐标形状不变量。",
-     "本合同所载可执行构造器示例。"
+     "test_rotation_inverse_distance_and_nonmutation 在参数化角度下检查逆旋转、距离保持和输入不变。",
+     "本合同所载可执行旋转示例。"
     ],
     "known_limitations": [
-     "网格对象本身不能验证物理场模型或装置几何。"
+     "这个平面变换不验证物理场模型，也不强制柱半径 R 非负。"
     ],
     "evidence_ceiling": "仅限具名有限几何案例；不主张场求解器、实验或发行结论。"
    },

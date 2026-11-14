@@ -32,18 +32,18 @@
  },
  "verification": {
   "scope": [
-   "Default and explicit order, scalar/matrix shapes, reflection, normalization, positive imaginary axis overflow regression.",
-   "80-digit mpmath equation grid and 70-digit independent Gaussian Cauchy integrals."
+   "test_jpole_all_matrix_entries_and_scalar_reference directly checks each supported tabulated order, scalar/matrix agreement and scipy.special.wofz comparison. test_explicit_empty_and_overflow directly rejects order=10; test_large_real_finite_response directly checks the order-8 large-real-phase asymptote.",
+   "test_jpole_gaussian_cauchy_integral directly compares J-pole at its supported orders with the 70-digit independent Gaussian Cauchy integral using the tolerances in that assertion. The 80-digit equation grid, GPDF reflection and positive-imaginary-axis regression call other entry points."
   ],
   "tests": [
    "tests/kinetic/test_generalized_dispersion_faddeeva_variants.py",
    "tests/kinetic/test_generalized_dispersion_faddeeva_independent.py"
   ],
-  "evidence_ceiling": "Bounded to the declared relation: Fixed tabulated partial-fraction approximation; upper-plane evaluation and Gaussian lower-plane reflection. Evidence: test_generalized_dispersion_faddeeva_variants.py, test_generalized_dispersion_faddeeva_independent.py (9 recorded test functions; shared-file coverage only; independent analytic/high-precision oracle); the contract example ran. Excluded scope: A guaranteed global error bound; An arbitrary distribution response.",
+  "evidence_ceiling": "Direct and dependency evidence are separated in scope above; named assertions are in tests/kinetic/test_generalized_dispersion_faddeeva_variants.py and tests/kinetic/test_generalized_dispersion_faddeeva_independent.py. Entry-specific comparisons retain the tolerances of those assertions and apply only to their sampled phase points and orders. Shared files do not confer every assertion on every entry point. No global error bound, arbitrary-distribution response or experimental validation is established.",
   "known_limitations": [
    "Lower-plane exponential may exceed float64.",
    "Fixed truncation error depends on phase point and order.",
-   "Only shared-file coverage is bound (test_generalized_dispersion_faddeeva_variants.py); no asset-specific failure/limit probe is recorded."
+   "Direct unsupported-order and large-real-phase assertions exist for J-pole. GPDF-specific lower-plane overflow and reflection assertions do not certify every J-pole continuation point."
   ]
  },
  "asset_id": "scirel.kinetic.evaluate-maxwellian-jpole",

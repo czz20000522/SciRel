@@ -6,7 +6,7 @@
  },
  "verification": {
   "scope": [
-   "Constructor and coordinate-shape invariants covered by the direct geometry tests",
+   "Vector PointsMesh coordinates consumed in test_device_ordered_current_matrix_override_and_mesh_lifecycle and test_complete_configuration_current_reversal_and_direct_child_state; these tests do not assert rejection of multidimensional input.",
    "The executable constructor example stored in this contract"
   ],
   "tests": [
@@ -62,25 +62,25 @@
    "name": "rpts",
    "description": "Radial coordinates",
    "units": "m",
-   "shape": "N",
+   "shape": "arbitrary matching shape after squeeze; scalar becomes (1,)",
    "dtype": "Finite float64",
    "required": true,
-   "constraints": "Equal shape to zpts; R >= 0"
+   "constraints": "After squeeze, shape must match zpts; scalar pairs are reshaped to (1,). Remaining dimensions are preserved. R >= 0."
   },
   {
    "name": "zpts",
    "description": "Axial coordinates",
    "units": "m",
-   "shape": "N",
+   "shape": "arbitrary matching shape after squeeze; scalar becomes (1,)",
    "dtype": "Finite float64",
    "required": true,
-   "constraints": "Equal shape to rpts"
+   "constraints": "After squeeze, shape must match rpts; scalar pairs are reshaped to (1,). Remaining dimensions are preserved."
   }
  ],
  "outputs": [
   {
    "name": "mesh",
-   "description": "Constructed PointsMesh object. Available properties/methods: R: Radial coordinates [m], N; Z: Axial coordinates [m], N",
+   "description": "Constructed PointsMesh object. R and Z [m] retain the matching shape after squeeze, with scalar pairs stored as (1,); multidimensional arrays are not flattened.",
    "units": "Object; property units as described",
    "shape": "one object",
    "dtype": "PointsMesh",
@@ -102,7 +102,7 @@
   ]
  },
  "failure_semantics": {
-  "invalid_input": "Raises ValueError for nonfinite coordinates, mismatched shapes, negative radius, malformed point dimensions, or invalid rectangular bounds/counts.",
+  "invalid_input": "Raises ValueError for nonfinite coordinates, shapes that differ after squeeze, or a negative cylindrical radius R. There is no one-dimensional-only check.",
   "runtime_failure": "Direct NumPy coordinate construction or transform exceptions propagate.",
   "nonconvergence": "Not applicable; mesh construction and rotation are direct operations.",
   "partial_results": "A failed constructor returns no mesh object."

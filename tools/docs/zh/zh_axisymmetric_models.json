@@ -586,7 +586,7 @@
   },
   {
    "asset_id": "scirel.geometry.points-mesh",
-   "source_sha256": "d622564152a1bfebd80f7447c513c4952e0f6b41f35643c01145399fdaf8dd5f",
+   "source_sha256": "8437db4b59dd0ea5c3c5c8903451a5defb559b6d6809f880b6dd501a84263c6b",
    "summary": "有限的非结构柱坐标点集。",
    "definition": "每对 rpts、zpts 值定义一个点。",
    "model": "非结构有限点集。",
@@ -598,20 +598,20 @@
     {
      "name": "rpts",
      "description": "径向坐标，单位 m。",
-     "constraints": "与 zpts 同形状，R≥0。",
+     "constraints": "squeeze 后须与 zpts 同形；标量对重塑为 (1,)，其余维度原样保留。 R≥0。",
      "dtype": "有限 float64"
     },
     {
      "name": "zpts",
      "description": "轴向坐标，单位 m。",
-     "constraints": "与 rpts 同形状。",
+     "constraints": "squeeze 后须与 rpts 同形；标量对重塑为 (1,)，其余维度原样保留。",
      "dtype": "有限 float64"
     }
    ],
    "outputs": [
     {
      "name": "mesh",
-     "description": "PointsMesh 对象；R 和 Z 分别公开长度 N 的径向、轴向坐标，单位 m。",
+     "description": "PointsMesh 对象；R、Z 的单位为 m，保留 squeeze 后的共同形状；标量对保存为 (1,)，多维数组不会被展平。",
      "constraints": "属性公开生成坐标；场方法要求已配置或显式提供目标网格。",
      "dtype": "PointsMesh"
     }
@@ -630,14 +630,14 @@
     ]
    },
    "failure_semantics": {
-    "invalid_input": "坐标非有限、形状不匹配、半径为负、点维度错误或矩形边界/计数无效时抛出 ValueError。",
+    "invalid_input": "坐标非有限、squeeze 后形状不匹配或柱半径 R<0 时抛 ValueError；没有仅准许一维数组的检查。",
     "runtime_failure": "NumPy 坐标构造或变换异常向上传播。",
     "nonconvergence": "不适用；网格构造和旋转均为直接操作。",
     "partial_results": "构造失败不返回网格对象。"
    },
    "verification": {
     "scope": [
-     "直接几何测试覆盖构造器及坐标形状不变量。",
+     "test_device_ordered_current_matrix_override_and_mesh_lifecycle 与 test_complete_configuration_current_reversal_and_direct_child_state 消费向量 PointsMesh 坐标；这些测试未断言多维输入应被拒绝。",
      "运行合同内附带的构造器示例。"
     ],
     "known_limitations": [
@@ -809,7 +809,7 @@
   },
   {
    "asset_id": "scirel.geometry.spherical-r-chord",
-   "source_sha256": "8cc387267410dc7a4b83ebe5547ed9d1d76ec08ba9e5f0f3200038c57b3bbd3e",
+   "source_sha256": "9c7e4743942ccd9b023c034f9774aa9d8d4c74ab44d0835cef1d1c30ab2bb844",
    "summary": "在固定角度处改变球半径得到点列。",
    "definition": "按 R=r sinθ、Z=r cosθ 将球坐标输入映射为柱坐标。",
    "model": "球坐标到柱坐标的映射。",
@@ -821,7 +821,7 @@
     {
      "name": "rpts",
      "description": "球半径，单位 m。",
-     "constraints": "半径非负。",
+     "constraints": "作为物理球半径使用时应有限、非负。变换前没有独立检查输入球半径的符号；PointsMesh 检查生成的柱坐标 R、Z。",
      "dtype": "有限 float64"
     },
     {
@@ -842,17 +842,17 @@
    "applicability": {
     "preconditions": [
      "输入满足文档中有限柱坐标和形状合同。",
-     "生成的柱坐标 R 必须非负；球半径非负，极角使用通常 0..180 度范围。"
+     "物理球半径应非负，通常极角域为 0..180 度。实现校验的是生成的柱坐标，要求坐标有限且 R≥0；它没有单独拒绝所有负的输入球半径。"
     ],
     "supported": [
      "有限球半径弦。"
     ],
     "excluded": [
-     "负半径。"
+     "负球半径的物理解释；成功生成坐标不代表该物理前提通过验证。"
     ]
    },
    "failure_semantics": {
-    "invalid_input": "坐标非有限、形状不匹配、半径为负、点维度错误或矩形边界/计数无效时抛出 ValueError。",
+    "invalid_input": "生成的柱坐标非有限、squeeze 后形状不匹配或生成的 R<0 时抛 ValueError。变换前不独立检查球半径符号；R=-0.0 不满足 R<0，能够通过。",
     "runtime_failure": "NumPy 坐标构造或变换异常向上传播。",
     "nonconvergence": "不适用；网格构造和旋转均为直接操作。",
     "partial_results": "构造失败不返回网格对象。"
@@ -874,7 +874,7 @@
   },
   {
    "asset_id": "scirel.geometry.theta-chord",
-   "source_sha256": "7c6e67c72464e484b2a38c5996c849af9f449ff9480f2293f426818ee1f542ac",
+   "source_sha256": "fe7cad633ed5ae09444bfee0e8f7148ffaaba602d01db97512890975adfeae12",
    "summary": "在固定球半径上随极角变化的一组点。",
    "definition": "R=r0 sin(theta)，Z=r0 cos(theta)。",
    "model": "极角坐标映射；由输入角度生成并以柱坐标保存。",
@@ -892,7 +892,7 @@
     {
      "name": "r0",
      "description": "固定球半径，单位 m，默认 1。",
-     "constraints": "有限半径。",
+     "constraints": "作为物理球半径使用时应有限、非负。变换前没有独立检查输入球半径的符号；PointsMesh 检查生成的柱坐标 R、Z。",
      "dtype": "有限 float64"
     }
    ],
@@ -907,17 +907,17 @@
    "applicability": {
     "preconditions": [
      "输入满足文档所述有限柱坐标和形状合同。",
-     "生成的柱半径 R 必须非负；采用非负球半径及通常的 0..180 度极角范围。"
+     "物理球半径应非负，通常极角域为 0..180 度。实现校验的是生成的柱坐标，要求坐标有限且 R≥0；它没有单独拒绝所有负的输入球半径。"
     ],
     "supported": [
      "有限极角弦。"
     ],
     "excluded": [
-     "负的固定半径。"
+     "负球半径的物理解释；成功生成坐标不代表该物理前提通过验证。"
     ]
    },
    "failure_semantics": {
-    "invalid_input": "坐标非有限、形状不匹配、半径为负、点维度错误或矩形边界/计数无效时抛出 ValueError。",
+    "invalid_input": "生成的柱坐标非有限、squeeze 后形状不匹配或生成的 R<0 时抛 ValueError。变换前不独立检查球半径符号；R=-0.0 不满足 R<0，能够通过。",
     "runtime_failure": "NumPy 坐标构造或变换异常向上传播。",
     "nonconvergence": "不适用；网格构造和旋转均为直接操作。",
     "partial_results": "构造失败不返回网格对象。"
@@ -1222,7 +1222,7 @@
   },
   {
    "asset_id": "scirel.io.write-eqdsk",
-   "source_sha256": "fefc941d3e21dbccf50bcdb4eb0edba022dc59f5b3547b21962f10d444e9f521",
+   "source_sha256": "b65bd1bc00a640ea3193be0dd79ef4b0945bd54bfbff46bc53f626d65313e7c8",
    "summary": "序列化一个已验证的扩展 EQDSK 映射。",
    "definition": "48 字符标题、四个整数字段、四条各含 5 个值的标量记录、五个剖面、按 C 序排列的 psi 网格、q 剖面，以及定宽 limiter/vessel 坐标对。可选提供的 R/Z 或 r_origin/z_origin 必须匹配此方言的固定原点，否则在截断目标文件前抛错。",
    "model": "采用固定宽度记录块和声明网格原点约定的扩展 EQDSK 文本格式。",
@@ -1276,7 +1276,7 @@
     "invalid_input": "data 缺少必需记录键时抛 KeyError；形状无效、数值非有限、字段不可表示或固定原点冲突时抛 EQDSKFormatError。",
     "runtime_failure": "文件系统访问错误抛 OSError；验证错误发生在目标文件截断之前。",
     "nonconvergence": "不适用。",
-    "partial_results": "不写入部分文件；验证错误发生在目标截断之前。"
+    "partial_results": "数据验证与格式化在打开或截断目标文件前完成。之后发生的文件系统 I/O 错误可能使已有文件被改变或只写入部分内容；不保证原子替换或失败回滚。"
    },
    "example": {
     "description": "序列化调用者提供的最小扩展 EQDSK 映射，并检查定宽头部。",
@@ -1285,7 +1285,7 @@
    "verification": {
     "scope": [
      "往返读写、定宽词法、畸形输入及类状态测试。",
-     "非零原点拒绝、失败时目标不变、不透明标量保持。"
+     "test_eqdsk.py 检查非零原点拒绝、写入前验证失败时目标不变及不透明标量保持；不检查也不保证中途 I/O 失败的原子性。"
     ],
     "evidence_ceiling": "仅有结构性 I/O 边界；不主张物理解释或发行批准。",
     "known_limitations": [
