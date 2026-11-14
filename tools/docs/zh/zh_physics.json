@@ -5418,7 +5418,7 @@
   },
   {
    "asset_id": "scirel.kinetic.kinetic-dispersion-sum-fluid",
-   "source_sha256": "fed00b77a7e59c0288f071f9a22e94113732d5517567b2d34d128e3ff0fe20d1",
+   "source_sha256": "e5cd288ce2518c12d2694e572bbdd673f7ed50f07f50a50d5815c802832b4a4d",
    "summary": "使用有限回旋谐波求和组装 Maxwellian 等离子体的 3×3 动力学张量，并对近零 kz 施加正向钳位。",
    "definition": "使用缩放 Bessel Gamma 项，对 -lmx 至 lmx 的谐波求和。xx/xy/yy 分量保留 N=64 Weideman Z；xz/yz/zz 直接计算解析实参响应 A(z)=1+z*Z(z)，避免先计算两个几乎相等的量再相减。有限对称求和保留端点 Gamma_(N+1)-Gamma_N 和尾项 1-sum(Gamma_n)；补集求差不稳定时直接累加正尾项。在 K 中加入 Maxwell 旋度项得到 D，再计算 determinant=det(D)。",
    "model": "均匀磁化 Maxwellian 等离子体",
@@ -5528,7 +5528,7 @@
     {
      "name": "wcs",
      "description": "各组分含符号回旋频率",
-     "constraints": "非零，符号随 qs。",
+     "constraints": "非零，符号随 qs*B0。",
      "dtype": "实数"
     },
     {
