@@ -102,7 +102,7 @@
   "dependencies": []
  },
  "example": {
-  "description": "check the 10 eV breakpoint and the finite positive cross sections on both sides",
+  "description": "Check the 20 eV laboratory (10 eV center-of-mass) breakpoint and finite positive cross sections on both sides.",
   "code": "import numpy as np\nfrom scirel.collisions import evaluate_hydrogen_proton_elastic_cross_section\ny = evaluate_hydrogen_proton_elastic_cross_section(np.array([np.nextafter(20., 0.), 20., np.nextafter(20., np.inf)]))\nassert y.shape == (3,)\nassert np.isfinite(y).all() and (y > 0).all()\n# breakpoint: CM 10 eV == 20 eV laboratory; 20 eV lab is the high branch.\nhigh = np.exp(np.polynomial.polynomial.polyval(np.log(10.0), np.array([-3.231141e1, -1.386002e-1]))) * 1.0e-4\nnp.testing.assert_allclose(y[1], high, rtol=1e-15)",
   "expected": "Three finite positive cross sections with input shape; exactly 20 eV laboratory (10 eV center-of-mass) belongs to the high-energy branch, and the empirical fit may jump across the breakpoint."
  },
