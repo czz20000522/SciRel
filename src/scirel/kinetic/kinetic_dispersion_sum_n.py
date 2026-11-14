@@ -236,7 +236,7 @@ def evaluate_kinetic_dispersion_sum(*, B0, qs, ms, ns0, Ts0, f, kz, kx, lmx=5):
     Notes
     -----
     omega=2*pi*f; vts=sqrt(2*kB*T_s/m_s); wcs=q_s*B0/m_s; wps2=n_s*q_s^2/(m_s*epsilon0);
-    a_s=kx*sqrt(kB*T_s/m_s)/wcs; b_s=a_s^2; z_n=(omega-n*wcs)/(kz*vts). Sum n=-lmx..lmx with Gamma_n(b),
+    a_s=kx*sqrt(kB*T_s/m_s)/wcs; b_s=a_s^2; z_n=(omega-n*wcs)/(abs(kz)*vts). Sum n=-lmx..lmx with Gamma_n(b),
     Gamma_prime_n(b) and analytic Z(z_n), weighting each species term by (wps2/omega^2)*z_0*Z(z_n).
     Assemble the source-convention susceptibility components and K, then subtract the Maxwell curl terms
     to obtain D and its determinant. K_ij = delta_ij - sigma_ij/(i*omega*epsilon0). Truncated
@@ -244,7 +244,8 @@ def evaluate_kinetic_dispersion_sum(*, B0, qs, ms, ns0, Ts0, f, kz, kx, lmx=5):
     analytic SciRel Faddeeva Z rather than a finite Weideman implementation Assumptions: Each species
     has a Maxwellian equilibrium with positive mass, number density and temperature. The caller judges
     whether the chosen lmx gives sufficient harmonic convergence for its case. A determinant value is
-    not by itself a selected physical mode or a root.
+    not by itself a selected physical mode or a root. z_0 also uses abs(kz); after assembly negative
+    kz reflects xz/yz/zx/zy, preserving the signed Maxwell curl terms.
 
     For each species with (abs(omega)+lmx*abs(wcs))/(abs(kz)*vts)<=1, the mixed/parallel
     components use z_n*Z(z_n) directly with the existing analytic Z backend, retaining the
