@@ -281,7 +281,7 @@
   "scope": [
    "Exact anisotropic vacuum tensor equilibrium on three refinements including R=0.",
    "Sixteen constant-pressure grids retain zero force without false compatibility rejection.",
-   "Resolved parallel-force imbalance remains rejected."
+   "This diagnostic reports resolved parallel-force residuals; test_true_parallel_imbalance_still_rejected checks rejection in its upper-level solve_axisymmetric_anisotropic_picard consumer, not in this diagnostic leaf."
   ],
   "tests": [
    "tests/equilibrium/test_anisotropic_force_balance.py",

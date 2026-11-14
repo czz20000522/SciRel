@@ -49,12 +49,12 @@
   },
   {
    "name": "lambda_",
-   "description": "AL=lambda=(k_perp*rho_c)^2, the Ronnmark expansion parameter (frozen source). Shape/axis order: scalar (real or complex; with a nonzero imaginary part on the complex kx plane). Units: dimensionless. Validity constraint: must be finite; nonnegative real for real kx and complex for complex kx; lambda=0 makes RINT's C=YR/AL and XO diverge and lies in the source's own undefined domain.",
+   "description": "AL=lambda=(k_perp*rho_c)^2, the Ronnmark expansion parameter (frozen source). Shape/axis order: scalar (real or complex; with a nonzero imaginary part on the complex kx plane). Units: dimensionless. Validity constraint: must be finite; nonnegative real for real kx and complex for complex kx; real lambda=0 selects the public Taylor branch, not the private RINT division by lambda; Taylor resonances and nonfinite arithmetic retain their existing behavior.",
    "units": "dimensionless",
    "shape": "scalar",
    "dtype": "real or complex numeric",
    "required": true,
-   "constraints": "Must be finite; nonnegative real for real kx and complex for complex kx; lambda=0 makes RINT's C=YR/AL and XO diverge and lies in the source's own undefined domain."
+   "constraints": "Must be finite; nonnegative real for real kx and complex for complex kx; real lambda=0 selects the public Taylor branch, not the private RINT division by lambda; Taylor resonances and nonfinite arithmetic retain their existing behavior."
   }
  ],
  "outputs": [
@@ -140,7 +140,8 @@
   "evidence_ceiling": "Direct Python tests establish only the listed finite cases and tolerances; source parity, arbitrary-parameter accuracy and release approval are outside that evidence.",
   "known_limitations": [
    "branch comparisons and arithmetic follow source real/complex behavior; scalar finite inputs only",
-   "Full source/runtime qualification that uses the declared local Python runtime on Linux amd64 is NOT_RUN in this macOS checkout."
+   "Full source/runtime qualification that uses the declared local Python runtime on Linux amd64 is NOT_RUN in this macOS checkout.",
+   "UNKNOWN: no dedicated independent accuracy assertion for the real lambda=0 Taylor branch is bound here; accepting that branch is not an accuracy certification."
   ]
  },
  "references": [

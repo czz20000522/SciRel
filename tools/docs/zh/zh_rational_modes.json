@@ -1276,7 +1276,7 @@
   },
   {
    "asset_id": "scirel.kinetic.rational-point-matrix",
-   "source_sha256": "50abe94dd4e3c85ddda6a943f68de806f0d9f828265e2005b0d808dd0f5d3a5b",
+   "source_sha256": "9fd42e78e1ceaf7b34354edf993c1b54b5d0c3b481d93e8df9dd85abf0bb8945",
    "summary": "组装 ES1D 频率矩阵、修正后的 ES3D 有限 Harris 描述子系数，或具有因果有符号波矢与精确轴极限的 EM Maxwell 矩阵束。",
    "definition": "ES3D 中 D(omega)=a+sum B/(omega-C)；既有普通本征问题 a*diag(C)-B*ones 的本征值缩放错误。EM 精确垂直响应包含完整 Maxwell 常数；均匀零波矢冷回旋响应在解析上不依赖谐波截断。负 k/kz 选择满足因果性的 Z 极点。压缩极点铅笔保留 E/B 可观测量；辅助变量别名不是物理波。",
    "model": "非相对论高斯物种；适用时显式声明有限谐波／有理近似。",
@@ -1362,7 +1362,7 @@
    },
    "verification": {
     "scope": [
-     "共享直接测试保留实际调用处的有符号 ES1D Faddeeva 响应、零波矢冷回旋响应、描述子消去/无穷根分类、渐近矩及非法/不可表示输出保护；仅同属一个文件不算逐资产证据。",
+     "test_uniform_k0_is_cold_gyro_response_including_N0 与 test_signed_es1d_causal_response_against_independent_Z 直接调用 point_matrix 检查冷回旋 Schur 与有符号 ES1D 响应；test_es1d_finite_inputs_with_unrepresentable_derived_outputs_fail_closed、test_es1d_invalid_wavevector_semantics_are_unchanged、test_es3d_zero_wavevector_semantics_are_unchanged 检查本入口的计算溢出与非法波矢失败。手工系数的 solve_matrix 描述子测试和 pole_table 渐近矩只归各自 API，不算 point_matrix 组装证据。",
      "historical-unbound UNKNOWN：此处未绑定安装包闭包、全部 12 API 资格、完整 50 点 N10/J8 运行及 80/120 位独立比较回执。包内元数据或可执行构造能力不证明这些历史执行；保留已支持计算与所列直接断言。",
      "现有直接文件演练有界点和关系；不证明完整 50 点默认运行或历史弱系数/Decimal 偏移资格已经执行。",
      "直接回归将 ES1D k=1e308 固定在矩阵到达 solve_matrix 之前抛出 FloatingPointError，同时有限参考调用的系数和矩阵保持不变。",
