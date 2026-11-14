@@ -20,6 +20,7 @@ Usage::
 from __future__ import annotations
 
 import argparse
+import ast
 from pathlib import Path
 import subprocess
 import sys
@@ -92,6 +93,32 @@ def resolve_commit(repo: Path, revision: str) -> str:
         ) from None
 
 
+def require_frozen_entrypoint(repo: Path, commit: str) -> None:
+    """Reject snapshots predating the interface used in the generated instructions.
+
+    Inspect the frozen source rather than the builder's checkout. This is a
+    capability check for our own runtime, not a claim that arbitrary code is safe.
+    """
+    message = f"frozen commit {commit} does not provide the current run --exclusive entrypoint"
+    try:
+        source = ast.parse(_git(["show", f"{commit}:scripts/dev.py"], repo))
+    except (KitError, SyntaxError) as error:
+        raise KitError(message) from error
+    verifies_lock = any(
+        isinstance(node, ast.FunctionDef) and node.name == "require_exclusive"
+        for node in source.body
+    )
+    declares_option = any(
+        isinstance(node, ast.Call)
+        and isinstance(node.func, ast.Attribute)
+        and node.func.attr == "add_argument"
+        and any(isinstance(arg, ast.Constant) and arg.value == "--exclusive" for arg in node.args)
+        for node in ast.walk(source)
+    )
+    if not (verifies_lock and declares_option):
+        raise KitError(message)
+
+
 def build_kit(repo: Path, revision: str, output: Path) -> str:
     """Create the kit for ``revision`` of ``repo`` in the new directory ``output``.
 
@@ -103,6 +130,7 @@ def build_kit(repo: Path, revision: str, output: Path) -> str:
     if output.exists():
         raise KitError(f"--output {output} already exists; choose a new directory")
     commit = resolve_commit(repo, revision)
+    require_frozen_entrypoint(repo, commit)
     clone = output / "scirel"
     clone.mkdir(parents=True)
     _git(["init", "--quiet", "--initial-branch", BRANCH], clone)

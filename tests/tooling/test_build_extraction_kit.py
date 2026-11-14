@@ -27,7 +27,9 @@ def repo(tmp_path):
     source.mkdir()
     _git(source, "init", "--quiet", "--initial-branch", "main")
     (source / "module.py").write_text("VALUE = 1\n", encoding="utf-8")
-    _git(source, "add", "module.py")
+    (source / "scripts").mkdir()
+    (source / "scripts/dev.py").write_bytes((ROOT / "scripts/dev.py").read_bytes())
+    _git(source, "add", "module.py", "scripts/dev.py")
     _git(source, "commit", "--quiet", "-m", "first")
     first = _git(source, "rev-parse", "HEAD")
     (source / "module.py").write_text("VALUE = 2\n", encoding="utf-8")
@@ -96,6 +98,33 @@ def test_unknown_commit_names_the_argument(repo, tmp_path):
     with pytest.raises(kit.KitError, match="--commit 'no-such-rev' does not name a commit"):
         kit.build_kit(source, "no-such-rev", tmp_path / "kit")
     assert not (tmp_path / "kit").exists()
+
+
+@pytest.mark.parametrize(
+    "developer",
+    [
+        None,
+        "# --exclusive used to be planned here\ndef require_exclusive(): pass\n",
+        "parser.add_argument('--exclusive', action='store_true')\n",
+    ],
+)
+def test_frozen_commit_without_the_exclusive_entrypoint_is_refused(repo, tmp_path, developer):
+    source, first = repo
+    path = source / "scripts/dev.py"
+    if developer is None:
+        path.unlink()
+    else:
+        path.write_text(developer, encoding="utf-8")
+    _git(source, "add", "scripts/dev.py")
+    _git(source, "commit", "--quiet", "-m", "unsupported runtime")
+    unsupported = _git(source, "rev-parse", "HEAD")
+    output = tmp_path / "unsupported-kit"
+
+    with pytest.raises(kit.KitError, match="frozen.*run --exclusive"):
+        kit.build_kit(source, unsupported, output)
+    assert not output.exists(), "reject an unsupported commit before creating a partial kit"
+    # A supported non-tip commit is still a valid frozen version.
+    assert kit.build_kit(source, first, tmp_path / "supported-kit") == first
 
 
 def test_cli_reports_failure_with_nonzero_exit(repo, tmp_path, capsys):
