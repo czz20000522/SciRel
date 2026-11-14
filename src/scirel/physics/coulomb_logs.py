@@ -26,7 +26,8 @@ as a single expression,
 ``23 - ln(sqrt(n_e) Z T_e^(-3/2))``). Here 10 eV is therefore a
 repository-conservative advisory line applied to both relations, while the e-i
 switching condition is the source's own. ``calculate_log_lambda_ii`` already uses
-the classical cutoff form and is not affected.
+the classical cutoff form and is not affected. In those table expressions,
+temperatures are in eV and densities in cm^-3, unlike the callable inputs.
 
 The e-i entries of that table are conditioned on three quantities, not on
 ``T_e`` alone: ``T_i m_e/m_i < T_e < 10 Z^2 eV`` selects the low-temperature
@@ -39,10 +40,13 @@ of them this interface can evaluate.
 
 The value returned here is also not the formulary's high-temperature expression
 numerically. Converted to these units that expression is
-``(24 + ln 1000) + ln T_e - 0.5 ln n_e``, whose constant ``24 + ln 1000`` is
-30.907755..., whereas ``calculate_log_lambda_ei`` returns the Wesson estimate with
-constant 31.3. Both are high-temperature estimates of the same quantity and
-differ by about 0.392 in the logarithm; neither is substituted for the other.
+``(24 + ln 1000) + ln(1000*T_e) - 0.5 ln n_e``, with ``T_e`` in keV and
+``n_e`` in m^-3. The first ``ln 1000`` converts the density convention; the
+``1000*T_e`` converts keV to eV. Its constant before ``ln(T_e[eV])`` is
+``24 + ln 1000`` = 30.907755..., whereas the existing implementation keeps
+31.3. The difference is about 0.392 in the logarithm. The historical
+Wesson/Sauter attribution of 31.3 and the origin of that difference remain
+UNKNOWN; neither expression is substituted for the other.
 """
 
 from __future__ import annotations
@@ -235,8 +239,8 @@ def _warn_below_quantum_branch_ei(temperature_kev, density_m3):
     low-temperature range, not a physical switch or an accuracy criterion.  The deviation is
     computed at the offending sample rather than quoted as a fixed percentage, because it grows
     with density.  The transcription of the NRL table was checked by the maintainer (see #197,
-    #212); the Wesson edition and section remain UNKNOWN, and the two provenance facts are
-    recorded separately in the contract.
+    #212); the Wesson attribution, edition and section remain UNKNOWN, and the two provenance
+    facts are recorded separately in the contract.
     """
     lowest_ev = _lowest_ev(temperature_kev)
     if lowest_ev is None:
@@ -318,7 +322,7 @@ def calculate_log_lambda_ee(T_e, n_e):
 
     See Also
     --------
-    calculate_log_lambda_ei : Electron-ion form (31.3), the lnLambda_e of Sauter (1999).
+    calculate_log_lambda_ei : Electron-ion estimate (31.3); Sauter (1999) attribution unverified.
     calculate_log_lambda_ii : Ion-ion form.
 
     Examples
@@ -386,8 +390,9 @@ def calculate_log_lambda_ei(T_e, n_e):
         mass and fixes ``Z = 1``, so only the ``10 Z^2 eV`` part is evaluated here and
         the remaining conditions stay the caller's judgement. The relation returned is
         a high-temperature estimate of the same quantity, not that branch numerically:
-        converted to these units the formulary constant is ``24 + ln 1000`` =
-        30.907755..., against 31.3 here. The value returned is about +55.5% above
+        with density in m^-3 and temperature in eV, the formulary constant is
+        ``24 + ln 1000`` = 30.907755..., against 31.3 here; the keV input still
+        requires ``ln(1000*T_e)``. The value returned is about +55.5% above
         the low-temperature branch at 0.1 eV and +17.3% at 1 eV for
         ``n_e = 1e19 m^-3``. The ~16.2 eV intersection with that branch is
         algebra on a formula extrapolated outside its own range; it is not a

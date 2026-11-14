@@ -5,8 +5,9 @@ high-temperature limit. The e-i reference is the formulary's low-temperature e-i
 ``T_e > 10 Z^2 eV`` condition belongs to e-i only. Issue #212 adds two statement requirements: the
 e-i entries are also conditioned on ``T_i m_e/m_i`` (which this interface cannot evaluate), and the
 returned e-i relation keeps constant 31.3 rather than the formulary's converted ``24 + ln 1000``.
-Expected deviations are recomputed here from the published formulas, never from the implementation
-under test.
+Expected deviations compare the declared unchanged return relation with an independently written
+NRL reference, never with the implementation's warning helpers. The historical Wesson/Sauter
+attribution of constant 31.3 remains unverified.
 """
 
 import json
@@ -211,12 +212,75 @@ def test_ei_statements_give_both_bibliographic_attributions_the_same_status():
     for side in (contract, reader):
         limitations = side["verification"]["known_limitations"]
         for source in ("Sauter", "Wesson"):
-            assert any(
-                source in clause and "UNKNOWN" in clause for clause in limitations
-            ), (source, side["asset_id"])
-    gap_clause = [clause for clause in contract["verification"]["known_limitations"] if "0.392" in clause]
-    assert gap_clause and "published sources' constants" in gap_clause[0]
-    assert "UNKNOWN" in gap_clause[0]
+            assert any(source in clause and "UNKNOWN" in clause for clause in limitations), (
+                source,
+                side["asset_id"],
+            )
+    for side in (contract, reader):
+        gap_clauses = [
+            clause for clause in side["verification"]["known_limitations"] if "0.392" in clause
+        ]
+        assert gap_clauses and "UNKNOWN" in gap_clauses[0]
+        assert "published sources' constants" not in gap_clauses[0]
+        assert "两个公开来源常数之差" not in gap_clauses[0]
+
+
+@pytest.mark.parametrize(
+    "function, hand_formula, reference",
+    [
+        (calculate_log_lambda_ee, _hand_formula_ee, _nrl_ee),
+        (calculate_log_lambda_ei, _hand_formula_ei, _nrl_ei_low),
+    ],
+)
+@pytest.mark.parametrize("t_ev", [0.1, 1.0, 5.0])
+@pytest.mark.parametrize("density", [1e17, 1e19, 1e21])
+def test_public_warning_uses_the_actual_temperature_and_density(
+    function, hand_formula, reference, t_ev, density
+):
+    """A fixed percentage or a wrong collision-pair reference must fail this matrix."""
+    expected_value = float(hand_formula(t_ev / 1000.0, density))
+    expected_gap = expected_value / reference(t_ev, density) - 1.0
+
+    with warnings.catch_warnings(record=True) as caught:
+        warnings.simplefilter("always")
+        value = function(t_ev / 1000.0, density)
+
+    found = _applicability(caught)
+    assert len(found) == 1
+    assert np.isclose(value, expected_value, rtol=0, atol=1e-14)
+    message = str(found[0].message)
+    assert f"lowest input {t_ev:.6g} eV" in message
+    assert f"n_e = {density:.6g} m^-3, T_e = {t_ev:.6g} eV" in message
+    assert f"the returned value is {expected_gap:+.2%} above it" in message
+
+
+@pytest.mark.parametrize(
+    "function, hand_formula, reference",
+    [
+        (calculate_log_lambda_ee, _hand_formula_ee, _nrl_ee),
+        (calculate_log_lambda_ei, _hand_formula_ei, _nrl_ei_low),
+    ],
+)
+def test_public_broadcast_warning_keeps_the_lowest_temperature_paired_with_its_density(
+    function, hand_formula, reference
+):
+    temperatures_kev = np.array([0.005, 0.0001, 0.001])
+    densities_m3 = np.array([1e17, 1e21, 1e19])
+    expected_values = hand_formula(temperatures_kev, densities_m3)
+    expected_gap = float(expected_values[1]) / reference(0.1, 1e21) - 1.0
+
+    with warnings.catch_warnings(record=True) as caught:
+        warnings.simplefilter("always")
+        values = function(temperatures_kev, densities_m3)
+
+    found = _applicability(caught)
+    assert len(found) == 1
+    assert values.shape == temperatures_kev.shape
+    np.testing.assert_allclose(values, expected_values, rtol=0, atol=1e-14)
+    message = str(found[0].message)
+    assert "lowest input 0.1 eV" in message
+    assert "n_e = 1e+21 m^-3, T_e = 0.1 eV" in message
+    assert f"the returned value is {expected_gap:+.2%} above it" in message
 
 
 def test_ei_deviation_against_its_own_low_temperature_branch_at_the_issue_anchors():
