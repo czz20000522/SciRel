@@ -257,6 +257,8 @@ class ArbitraryPoints(CurrentFilamentSet):
 
     Raises
     ------
+    TypeError
+        If an unknown constructor keyword is forwarded to CurrentFilamentSet.
     ValueError
         If points, current, weights or mesh violate their contracts.
     FloatingPointError
@@ -332,6 +334,8 @@ class RectangularCoil(CurrentFilamentSet):
 
     Raises
     ------
+    TypeError
+        If an unknown constructor keyword is forwarded to CurrentFilamentSet.
     ValueError
         If geometry, counts or inherited options are invalid.
     FloatingPointError
@@ -483,6 +487,8 @@ class MagnetRing(CurrentFilamentSet):
 
     Raises
     ------
+    TypeError
+        If an unknown constructor keyword is forwarded to CurrentFilamentSet.
     ValueError
         If geometry or weights violate the declared domain.
     FloatingPointError
@@ -498,6 +504,7 @@ class MagnetRing(CurrentFilamentSet):
 
     Notes
     -----
+    N is the positive even length of weights, with N=16 by default.
     The two radial faces each receive ``N/2`` axial filament points and
     opposite default weights. This is a signed-filament geometry
     approximation, not a material magnetization model. Parameterized setters

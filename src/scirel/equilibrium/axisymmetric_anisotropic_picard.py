@@ -350,7 +350,7 @@ def solve_axisymmetric_anisotropic_picard(inputs=None, **kwargs):
 
     Notes
     -----
-    Starting at a copy of psi_vac, derive B_R/B_Z/B from psi, gate the iteration field, call pressure_closure(B,psi), broadcast scalar pressures or require exact grid shapes, evaluate cylindrical div(P), mask inactive J_phi, and apply a flux-relaxed Green update. Stop when the step's unrelaxed fixed_point_residual reaches tol or maxiter is exhausted; the relaxed relative_psi_change is diagnostic; then rederive the terminal field, call the closure and force, recompute masked cell currents, and check minimum field, firehose and parallel-force compatibility in that order.
+    Starting at a copy of psi_vac, derive B_R/B_Z/B from psi, gate the iteration field, call pressure_closure(B,psi), broadcast scalar pressures or require exact grid shapes, evaluate cylindrical div(P), mask inactive J_phi, and apply a flux-relaxed Green update. Stop when the step's unrelaxed fixed_point_residual reaches tol or maxiter is exhausted; the relaxed relative_psi_change is diagnostic; then rederive the terminal field and check minimum_field before any terminal closure, mask callback or force evaluation. Next call the closure, select the mask, compute force and masked currents, reevaluate the unrelaxed flux map, then apply firehose and optional parallel-force gates.
 
     bounded axisymmetric gyrotropic pressure Picard composition with externally supplied pressure closure
 

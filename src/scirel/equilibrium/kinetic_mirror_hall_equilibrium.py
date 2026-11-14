@@ -66,7 +66,7 @@ def solve_kinetic_mirror_hall_equilibrium(
     kinetic_config : Python dict
         Fixed inputs for each evaluation of the nested grid mirror kinetic closure [mixed SI; psi-dependent profiles use Wb/rad] Shape mapping. Must be a dict. The bound graph requires mass_kg, charge_c, density_ref_m3, temperature_parallel_j, temperature_perpendicular_ref_j, electron_temperature_j, reference_z, plug_left_z and plug_right_z. Optional kinetic controls, their defaults and validation are defined by scirel.mirror.grid-mirror-kinetic-closure; r_grid, z_grid, b_t and psi are supplied from the current Hall call and override matching entries. Psi-dependent profiles must interpret the Hall psi=R A_phi in Wb/rad. The wrapper does not reconcile kinetic mass/charge with the Hall mass/charge.
     tol : finite real scalar
-        Outer Hall relative flux-change stopping threshold Shape scalar. The Hall graph checks finiteness, not positivity; choose a positive value for intended stopping.
+        Outer Hall unrelaxed flux-map fixed-point residual stopping threshold Shape scalar. The Hall graph checks finiteness, not positivity; choose a positive value for intended stopping.
     maxiter : integer scalar
         Hall Picard update bound [count] Shape scalar. Integer >= 1; outer nonconvergence returns converged=false if terminal checks pass.
     relax : finite real scalar
@@ -88,7 +88,7 @@ def solve_kinetic_mirror_hall_equilibrium(
     inertia_relax : finite real scalar
         Previous-current weight in Hall local inertia iteration Shape scalar. 0 <= value < 1.
     inertia_tolerance : finite real scalar
-        Hall local inertia stopping threshold Shape scalar. Strictly positive.
+        Hall local unrelaxed current-map residual stopping threshold Shape scalar. Strictly positive.
     inertia_max_iterations : integer scalar
         Hall local inertia iteration bound [count] Shape scalar. Integer >= 1; local nonconvergence raises.
     compatibility_tol : finite real scalar

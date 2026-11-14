@@ -116,7 +116,7 @@
    "Bounded Green comparison fixtures",
    "Axis and derivative regressions",
    "Explicit singularity and lifecycle tests",
-   "Independent 70-digit angular-integration checks of near-wire BZ and the continuous response on both sides of m=0.5 retain the original tolerances; very small positive source radii, on-axis BZ and unrepresentable-arithmetic failures are also covered."
+   "tests/cross_domain/test_field_green_correction.py::high_precision_loop uses 70-digit mpmath ellipk/ellipe closed-form values for test_near_wire_radial_separation_is_not_lost_by_squared_subtraction and test_equivalent_formula_cutover_retains_psi_and_analytic_derivatives. These calls reach this kernel through the field aggregate/dense wrappers; their zero-self convention is not this kernel's singularity contract. Separate ordinary SciPy angular quadrature is loop_integrals in tests/geometry/test_geometry_fields.py. The original tolerances and small-radius/axis/arithmetic-failure checks are retained."
   ],
   "tests": [
    "tests/geometry/test_geometry_fields.py",

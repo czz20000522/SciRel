@@ -318,7 +318,7 @@ def solve_reduced_hall_anisotropic_picard(inputs=None, **kwargs):
     ion_charge_c : finite real scalar
         Positive ion charge magnitude passed to the Hall leaf [C] Shape scalar. Strictly positive in the bound Hall leaf.
     tol : finite real scalar
-        Outer relative flux-change stopping threshold Shape scalar. The graph checks finiteness but not positivity; choose a positive value for the intended stopping criterion.
+        Outer unrelaxed flux-map fixed-point residual stopping threshold Shape scalar. The graph checks finiteness but not positivity; choose a positive value for the intended stopping criterion.
     maxiter : integer scalar
         Maximum outer Picard updates [count] Shape scalar. Integer >= 1; no automatic retry beyond this bound.
     relax : finite real scalar
@@ -340,7 +340,7 @@ def solve_reduced_hall_anisotropic_picard(inputs=None, **kwargs):
     inertia_relax : finite real scalar
         Previous-current weight inside the Hall leaf's local iteration Shape scalar. 0 <= value < 1.
     inertia_tolerance : finite real scalar
-        Local inertia current-change tolerance Shape scalar. Strictly positive.
+        Local unrelaxed current-map residual tolerance, distinct from the outer flux residual Shape scalar. Strictly positive.
     inertia_max_iterations : integer scalar
         Local inertia iteration bound per Hall call [count] Shape scalar. Integer >= 1; local nonconvergence raises rather than returning the outer graph state.
     compatibility_tol : finite real scalar
@@ -367,9 +367,9 @@ def solve_reduced_hall_anisotropic_picard(inputs=None, **kwargs):
     B : float64
         Terminal poloidal-field magnitude [T] Shape [N_Z,N_R]. Terminal field is checked against minimum_field before the terminal closure/Hall reevaluation.
     p_parallel : float64
-        Terminal caller-closure parallel pressure after scalar broadcast [Pa] Shape [N_Z,N_R]. Grid-shaped and checked finite by the Hall leaf; the graph-level nonnegative pressure gate is not repeated at terminal evaluation.
+        Terminal caller-closure parallel pressure after scalar broadcast [Pa] Shape [N_Z,N_R]. Grid-shaped and checked finite and nonnegative by the terminal Hall leaf; the graph does not repeat its separate iteration-level pressure gate.
     p_perpendicular : float64
-        Terminal caller-closure perpendicular pressure after scalar broadcast [Pa] Shape [N_Z,N_R]. Grid-shaped and checked finite by the Hall leaf; the graph-level nonnegative pressure gate is not repeated at terminal evaluation.
+        Terminal caller-closure perpendicular pressure after scalar broadcast [Pa] Shape [N_Z,N_R]. Grid-shaped and checked finite and nonnegative by the terminal Hall leaf; the graph does not repeat its separate iteration-level pressure gate.
     parallel_force : float64
         Terminal Hall target force projected along the field [Pa/m] Shape [N_Z,N_R]. Diagnostic from hall_state.
     force_R : float64
@@ -387,7 +387,7 @@ def solve_reduced_hall_anisotropic_picard(inputs=None, **kwargs):
     hall_state : Python mapping
         Complete terminal reduced-Hall Operator result including local masks and diagnostics [mixed SI] Shape mapping. Not a separate published asset; follows the bound Hall leaf's output contract.
     converged : bool
-        True only when the terminal unrelaxed fixed-point residual passes tol (and free-boundary force compatibility passes) [boolean] Shape scalar. Relaxed stagnation alone does not establish convergence.
+        True exactly when the terminal unrelaxed flux-map residual passes tol after field/firehose gates; strict compatibility failures raise, while non-strict messages do not change the flag [boolean] Shape scalar. Relaxed stagnation alone does not establish convergence.
     iterations : integer
         Executed outer Picard update count [count] Shape scalar. Between one and maxiter inclusive.
     relative_psi_change : float
@@ -424,7 +424,7 @@ def solve_reduced_hall_anisotropic_picard(inputs=None, **kwargs):
 
     Notes
     -----
-    Starting from a copy of psi_vac and zero prior cell currents, each outer step derives B from the current psi, checks the step field floor, calls pressure_closure(B,psi), validates and broadcasts the primary pressures, selects active cells, computes reduced-Hall J_phi and drifts, then applies a flux-relaxed Green update. The outer loop stops at relative_psi_change <= tol or maxiter. On the returned psi it derives the field, checks the terminal field floor before invoking the terminal closure, repeats closure, pressure shape coercion, Hall and cell-current evaluation, then applies active-cell firehose and optional strict parallel-force/generalized-Ohm compatibility checks. The terminal path still does not repeat the graph-level pressure nonnegativity gate; the Hall leaf checks pressure finiteness and its optional ion-pressure state. The Hall Operator may run its own bounded local inertia iteration inside each evaluation.
+    Starting from a copy of psi_vac and zero prior cell currents, each outer step derives B from the current psi, checks the step field floor, calls pressure_closure(B,psi), validates and broadcasts the primary pressures, selects active cells, computes reduced-Hall J_phi and drifts, then applies a flux-relaxed Green update. The outer loop stops at update.fixed_point_residual <= tol or maxiter; relative_psi_change is diagnostic only. The returned converged flag is recomputed from the terminal unrelaxed map residual <=tol. On the returned psi it derives the field, checks the terminal field floor before invoking the terminal closure, repeats closure, pressure shape coercion, Hall and cell-current evaluation, then applies active-cell firehose and optional strict parallel-force/generalized-Ohm compatibility checks. The terminal path still does not repeat the graph-level pressure nonnegativity gate; the Hall leaf checks finite, nonnegative primary pressures and its species-pressure state. The Hall Operator may run its own bounded local inertia iteration inside each evaluation.
 
     axisymmetric reduced Hall and gyrotropic-pressure Picard feedback with caller-bound closure
 

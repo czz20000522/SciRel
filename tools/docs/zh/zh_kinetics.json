@@ -152,7 +152,7 @@
     "evidence_ceiling": "测试在受测样本上确立两分支离散拟合、截断和失败合同。与仓内独立求值仅能在所比较的网格上逐位一致；没有外部原子物理基准验证这两个拟合，公开分发许可尚未确定。",
     "known_limitations": [
      "未绑定外部物理参考基准；该缺口保持开放。",
-     "域外正温度静默重复端点速率，不外推或抛错。",
+     "合法电子温度低于拟合下端时静默取低端点；高于上端时取高端点并发 RuntimeWarning。不把域外值当作物理精度认证。",
      "速率系数须结合调用者密度和状态合同才能成为完整源或汇。",
      "公开分发许可仍待人工决定。",
      "本仓库不存在环境门控的外部实现对账测试；此前的任何外部对照都不由维护测试重放。",
@@ -1724,7 +1724,7 @@
     "known_limitations": [
      "统一输入检查在转浮点之前拒绝复数、布尔和数值字符串能量，不做强制转换；合法实数输入的拟合算术不变。",
      "该拟合未对照外部原子物理参考做验证；此处不闭合任何外部验证缺口。",
-     "拟合范围外的能量静默返回端点值；这是所声明的截断约定，不是错误。",
+     "合法输入低于拟合下端时静默取低端点；高于上端时返回截断值并发 RuntimeWarning。",
      "负能量拒绝是本合同的显式前提：负能量抛出 ValueError，而不是返回截断端点。",
      "本仓库不存在环境门控的外部实现对账测试；此前的任何外部对照都不由维护测试重放。",
      "公开分发许可仍待人工决定。"
@@ -1806,14 +1806,14 @@
   },
   {
    "asset_id": "scirel.collisions.atomic-hydrogen-charge-exchange-cross-section",
-   "source_sha256": "33987ea9872e97111682f1b3048c49f4b30cddb2eaec232c428e967ac1c98c7f",
+   "source_sha256": "0b80bbdeda9b89e5820ddf16e0042848633053e788b14e5f9b0d1a5d594a6f86",
    "summary": "以碰撞能量（eV）为自变量，给出 H + H⁺ 电荷交换截面（m²）。默认是连续复合：Janev 多项式用在 12.673175 keV 以下，Lindsay–Stebbings 2005 Table 1 用在交点至 250 keV；freeman=True 保留独立的 Freeman–Jones 比较分支至 100 keV。越过高能端点会裁剪并发出 RuntimeWarning；负能量和非标量分支选择器被拒绝。",
    "definition": "默认分支先将能量裁剪到 [0.1, 2.5e5] eV；E ≤ 1.267317514018116e4 eV 时返回九系数 Janev 多项式 exp(polyval(log(E),a))×1e-4 m²，E 高于交点时返回 (4.15−0.531 ln(E_keV))²(1−exp(−67.3/E_keV))^4.5×1e-20 m²。freeman=True 将能量裁剪到 [0.1,1e5] eV，返回独立 Freeman–Jones 解析式。超过所选上限时发出 RuntimeWarning 并返回端点。",
    "model": "连续的 Janev/Lindsay–Stebbings 默认复合截面，加上独立的 Freeman–Jones 比较分支；不做运行时外部数据插值，也不做速率积分。",
    "assumptions": [
     "Janev 系数、Lindsay–Stebbings Table 1 参数和 Freeman–Jones 常数按各自声明的算式求值。",
     "Lindsay & Stebbings 2005, Table 1 与 §4.1 给出高能拟合及可靠度；本仓库不把该拟合冒充独立实验复验。",
-    "两个拟合在 12.67317514018116 eV 处以数值精度相交，因此默认复合在该点连续。",
+    "两个拟合在 12.67317514018116 keV 处以数值精度相交，因此默认复合在该点连续。",
     "Lindsay–Stebbings Table 1 只覆盖 0.005–250 keV；该表之外的结论不由它支持。"
    ],
    "boundary": "能量为有限非负实数；默认范围 [0.1,2.5e5] eV，Freeman–Jones 范围 [0.1,1e5] eV；低端裁剪静默，高端裁剪发出 RuntimeWarning。",
@@ -4494,7 +4494,7 @@
    ],
    "applicability": {
     "preconditions": [
-     "调用者接受截断约定：拟合范围外的能量静默返回端点值。"
+     "调用者接受截断约定：合法能量低于下端静默取低端点，高于上端取高端点并发 RuntimeWarning。"
     ],
     "supported": [
      "在声明能量范围内（或截断到该范围后）计算 H₂–H⁺ 弹性动量转移截面。",
@@ -4529,7 +4529,7 @@
     "known_limitations": [
      "统一输入检查在转浮点之前拒绝复数、布尔和数值字符串能量，不做强制转换；合法实数输入的拟合算术不变。",
      "没有分支对照外部原子物理参考做验证；此处不闭合任何外部验证缺口。",
-     "拟合范围外的能量静默返回端点值；这是所声明的截断约定，不是错误。",
+     "合法输入低于拟合下端时静默取低端点；高于上端时返回截断值并发 RuntimeWarning。",
      "负能量拒绝是本合同的显式前提：负能量抛出 ValueError，而不是返回截断端点。",
      "本仓库不存在环境门控的外部实现对账测试；此前的任何外部对照都不由维护测试重放。",
      "公开分发许可仍待人工决定。"
@@ -4906,7 +4906,7 @@
   },
   {
    "asset_id": "scirel.collisions.molecular-hydrogen-elastic-cross-section",
-   "source_sha256": "da0706ff9ac3bf116fbee53c4a329d365f063a5d72fdf67cbfa5392f71cb47b7",
+   "source_sha256": "51ae8d0fe9c43bddfb25eb29ad8d5b8febdd085247704409e97bb55dc4d2e9eb",
    "summary": "以碰撞能量（eV）为自变量，给出 H₂–H₂ 弹性动量转移截面（m²）：在 [0.03, 1.01e4] eV 上截断的单一五系数对数多项式。选择器校验保留：viscosity=True 选择所声明的同一拟合回退，选择器必须是标量布尔或整数。负能量被拒绝。",
    "definition": "将能量截断至 [0.03, 1.01e4] eV，再以五系数计算 exp(polyval(log(E_clipped), a))×1e-4 m²。viscosity=True 选择所声明的回退，仍求同一动量转移拟合。截断范围之外返回端点值；超过上端点时发出 RuntimeWarning。",
    "model": "单一所声明的截面拟合，附一个所声明的无操作回退选择器；不插值外部数据，也不对速率做积分。",
@@ -4976,11 +4976,11 @@
      "统一输入检查在转浮点之前拒绝复数、布尔和数值字符串能量，不做强制转换；合法实数输入的拟合算术不变。",
      "没有分支对照外部原子物理参考做验证；此处不闭合任何外部验证缺口。",
      "viscosity 选择器是无操作回退约定，不是第二个拟合；调用者无法从本资产获得该物种对的独立黏性截面。",
-     "拟合范围外的能量静默返回端点值；这是所声明的截断约定，不是错误。",
+     "合法输入低于拟合下端时静默取低端点；高于上端时返回截断值并发 RuntimeWarning。提供 viscosity 回退的入口不因选择该回退另发警告。",
      "负能量拒绝是本合同的显式前提：负能量抛出 ValueError，而不是返回截断端点。",
      "本仓库不存在环境门控的外部实现对账测试；此前的任何外部对照都不由维护测试重放。",
      "公开分发许可仍待人工决定。",
-     "该实现在两个输入/selector 行为上刻意不追求 source parity：canonical 实现会把负能量静默裁剪到 0.03 eV 端点，并在 viscosity=True 时打印警告；本资产用 ValueError 拒绝负能量，要求标量布尔/整数 selector，且不输出警告。非负能量上的拟合算术、端点裁剪与标量 selector 校验仍按声明合同保留。"
+     "该实现在两个输入/selector 行为上刻意不追求 source parity：canonical 实现会把负能量静默裁剪到 0.03 eV 端点，并在 viscosity=True 时打印警告；本资产用 ValueError 拒绝负能量，要求标量布尔/整数 selector，不因 viscosity 回退另发警告，但高端越界仍发 RuntimeWarning。非负能量上的拟合算术、端点裁剪与标量 selector 校验仍按声明合同保留。"
     ]
    }
   },
@@ -5087,7 +5087,7 @@
   },
   {
    "asset_id": "scirel.collisions.molecular-hydrogen-charge-exchange-cross-section",
-   "source_sha256": "ff91d63c6885e85b8b747d67969e0c0b7b3bbd6896eeb71eaca26a44ade4f99f",
+   "source_sha256": "7e991469fb260f4bb37f0e69c1b679cb259f0d83bfd6fd2116611b6df567a02b",
    "summary": "以碰撞能量（eV）为自变量，给出 H₂ + H₂⁺ 电荷交换截面（m²）：在截断后的 [0.1, 2.01e4] eV 域上求值的九系数 Janev 对数多项式，因此拟合范围之外返回端点值；超过上端点时发出 RuntimeWarning。负能量被拒绝。",
    "definition": "将能量截断至 [0.1, 2.01e4] eV，再以九系数 Janev 表 a 计算 exp(polyval(log(E_clipped), a))×1e-4 m²。截断范围之外返回端点值；超过上端点时发出 RuntimeWarning。",
    "model": "单一所声明的截面拟合；不插值外部数据，无替代分支，也不对速率做积分。",
@@ -5102,7 +5102,7 @@
     {
      "name": "energy_ev",
      "description": "求值所用碰撞能量。",
-     "constraints": "必须有限且非负；拟合范围以外取相应端点值；超过上端点时发出 RuntimeWarning。",
+     "constraints": "有限且非负；低于 0.1 eV 静默取低端点，高于 20100 eV 取高端点并发 RuntimeWarning。",
      "dtype": "实数标量或类数组"
     }
    ],
@@ -5116,7 +5116,7 @@
    ],
    "applicability": {
     "preconditions": [
-     "调用者接受截断约定：拟合范围外的能量静默返回端点值，而不是报错或外推。"
+     "调用者接受端点截断：非负能量低于 0.1 eV 时静默取低端点，高于 20100 eV 时取高端点并发 RuntimeWarning。"
     ],
     "supported": [
      "在声明能量范围内（或截断到该范围后）计算 H₂ + H₂⁺ 电荷交换截面。",
@@ -5154,7 +5154,7 @@
     "known_limitations": [
      "统一输入检查在转浮点之前拒绝复数、布尔和数值字符串能量，不做强制转换；合法实数输入的拟合算术不变。",
      "没有分支对照外部原子物理参考做验证；此处不闭合任何外部验证缺口。",
-     "拟合范围外的能量静默返回端点值；这是所声明的截断约定，不是错误。",
+     "合法输入低于拟合下端时静默取低端点；高于上端时返回截断值并发 RuntimeWarning。",
      "负能量拒绝是本合同的显式前提：负能量抛出 ValueError，而不是返回截断端点。",
      "本仓库不存在环境门控的外部实现对账测试；此前的任何外部对照都不由维护测试重放。",
      "公开分发许可仍待人工决定。",
@@ -5811,7 +5811,7 @@
   },
   {
    "asset_id": "scirel.collisions.molecular-hydrogen-charge-exchange-rate-coefficient",
-   "source_sha256": "b5ca6e191acd27d25ea95eb483909f7cdf392c8b8d56d024eb1f7992d549d796",
+   "source_sha256": "22d06194eec8be5fe0d7e04e5f771de9bdb76da1cf5cae64fc9ea840438114de",
    "summary": "由成对的等离子体温度和碰撞能量样本（eV）计算 H₂ + H₂⁺ 电荷交换 Maxwell 速率系数拟合。",
    "definition": "先将正温度和不可负的碰撞能量依次截断至 [0.1, 2.01e4] eV。令 L_T=log(T)、L_E=log(E)，按能量外层、温度内层的累加顺序和分子 9×9 系数表累加 log_rate=Σ_j=0..8 Σ_i=0..8 a[i,j]*L_E^j*L_T^i。返回 exp(log_rate)×1e-6 m³/s。输出保持成对输入形状。",
    "model": "分子 H₂ 的 9×9 二元对数速率拟合，不是在速度网格上积分 Maxwell 分布。",
@@ -5875,7 +5875,7 @@
     "evidence_ceiling": "测试在受测样本上确立离散拟合、截断和失败合同。与仓内独立求值仅能在所比较的网格上逐位一致。没有外部原子物理基准验证该拟合，公开分发许可尚未确定。",
     "known_limitations": [
      "未绑定外部原子物理基准；该拟合未作为物理速率模型得到独立验证。",
-     "域外静默重复端点速率，不外推或抛错。",
+     "合法输入低于拟合下端时静默取低端点；高于上端时取高端点并发 RuntimeWarning。双输入速率分别检查温度和入射能量，不把域外值当作物理精度认证。",
      "运行时不从独立分子截面或网格速率平均资产推导该拟合。",
      "公开分发许可仍待人工决定。",
      "本仓库不存在环境门控的外部实现对账测试；此前的任何外部对照都不由维护测试重放。",
@@ -6682,7 +6682,7 @@
   },
   {
    "asset_id": "scirel.diagnostics.species-absorption-fraction",
-   "source_sha256": "5cd0be47cfd1fdeb832f98cd8a2913041748286ca7a5a6d04ada5ef973cab38b",
+   "source_sha256": "11c12b78c2304915fe6fbd968beea785610d363337c730247a0ac577e0c4ad5a",
    "summary": "把四物种有符号吸收功率换算为按输入顺序排列的百分比；稳定处理相消和中间数值溢出，返回带五个命名字段的 scirel._result.Result 映射，并仅拒绝零总功率或无法表示的最终结果。",
    "definition": "先求四项输入功率总和，再按各项占总和的比例乘以 100。有正负相消时，先对输入 binary64 数值作精确有理求和；普通同号账本保留原浮点归约。普通百分比保留先除后乘顺序；严重相消或中间量超出数值范围时，用精确有理比值计算。残差针对实际返回的浮点百分比，而非未舍入理论值。五个字段作为同一个 scirel._result.Result 映射返回；按键和属性读取同一个值。",
    "model": "在恰好四个物种之间分配吸收功率。",
@@ -6768,11 +6768,11 @@
      "加入命名字段包装后，返回类型、键顺序、映射兼容性和属性读取保持不变。",
      "部分和溢出但数学总和为零、相消间的小项、部分和溢出但最终有限、次正规百分比及最终不可表示拒绝。"
     ],
-    "evidence_ceiling": "限于所声明关系：先求四项输入功率总和，再按各项占总和的比例乘以 100。有正负相消时，先对输入 binary64 数值作精确有理求和；普通同号账本保留原浮点归约。普通百分比保留先除后乘顺序；严重相消或中间量超出数值范围时，用精确有理比值计算。残差针对实际返回的浮点百分比，而非未舍入理论值。证据：test_species_absorption_fraction.py, test_legacy_admission_regressions.py（记录 19 个测试函数；绑定文件覆盖；独立解析/高精度对照）；合同 example 已运行。不建立的范围：总和恰为零的账本，此时百分比结果无定义；排除少于或多于四物种。",
+    "evidence_ceiling": "tests/diagnostics/test_species_absorption_fraction.py 直接检查账本算术、顺序、校验和 Result，包括参数化的 test_u3_t01_fraction_uses_the_derived_total；tests/cross_domain/test_legacy_admission_regressions.py 包含具名带符号相消、中间溢出及次正规份额回归。断言只支持所列有限账本用例，不证明当前存在可选外部比较执行/跳过机制，也不构成实验验证。",
     "known_limitations": [
      "固定四物种，不支持任意长度。",
      "零总和分支不可用，不能表示物理零吸收运行。",
-     "可选的跨实现比较只在可访问外部实现时运行；不可访问时跳过，而不是静默通过。",
+     "UNKNOWN：绑定测试及查阅的本地历史中未定位可重放的外部实现比较；当前没有环境门控比较/跳过路径。直接证据为 tests/diagnostics/test_species_absorption_fraction.py::test_u3_t01_fraction_uses_the_derived_total 及 tests/cross_domain/test_legacy_admission_regressions.py 的带符号相消/数值范围断言，包括 test_exact_signed_sum_survives_intermediate_overflow。",
      "独立解析对照不能替代外部实验参考。"
     ]
    }
@@ -7957,7 +7957,7 @@
   },
   {
    "asset_id": "scirel.collisions.atomic-hydrogen-1s-radiative-recombination-rate-coefficient",
-   "source_sha256": "66ca21b21b774739e033a1c7eed2cd3a525c5203a35f79dfc4a1a3e5ab8f0d7d",
+   "source_sha256": "074a2f1716b0e7ce1985fcab208899d21d19fd5745a9cbc02ec9c2fc20e9017a",
    "summary": "由电子温度计算 H⁺ + e → H(1s) + hν 的解析速率系数。",
    "definition": "将严格正的电子温度截断至 [0.1, 2.01e4] eV。取 Ry=13.58 eV、n=1、A_nl=3.92、x_nl=0.35，令 ionization_energy=Ry/n、b_n=ionization_energy/T。按所声明的算术顺序返回 A_nl*1e-14*sqrt(ionization_energy/Ry)*(b_n^1.5/(b_n+x_nl))*1e-6 m³/s。",
    "model": "固定常数的 1 能级 Storey 型解析拟合；不插值外部数据，也不在运行时做截面积分。",
@@ -7971,7 +7971,7 @@
     {
      "name": "electron_temperature_ev",
      "description": "H(1s) 复合拟合的电子温度。",
-     "constraints": "有限且>0；正值超出 [0.1, 2.01e4] eV 时截断。",
+     "constraints": "有限且严格为正；数值截断域为 [0.1,20100] eV。精度仅在 [0.1,30] eV 上有验证：低于 0.1 eV 返回低端点并发 ApplicabilityWarning；30<T<=20100 eV 按 T 求值并告警；T>20100 eV 返回 20100 eV 端点并告警。每次调用每个越界方向各告警一次，并非逐样本告警。",
      "dtype": "实数标量或类数组"
     }
    ],
@@ -8001,13 +8001,13 @@
    },
    "failure_semantics": {
     "invalid_input": "非实数、非有限、非正温度引发 ValueError；拒绝布尔、复数、数字字符串。",
-    "runtime_failure": "派生速率非有限或非正时引发 ValueError。任一输入温度超过 30 eV（验证上限）或低于 0.1 eV（拟合下限）时发 scirel.ApplicabilityWarning；这些样本返回对应端点值或该温度处的拟合值，不再有静默截断。",
+    "runtime_failure": "计算所得速率非有限或非正时抛 ValueError。精度仅在 [0.1,30] eV 上有验证：低于 0.1 eV 返回低端点并发 ApplicabilityWarning；30<T<=20100 eV 按 T 求值并告警；T>20100 eV 返回 20100 eV 端点并告警。每次调用每个越界方向各告警一次，并非逐样本告警。",
     "nonconvergence": "不适用；没有迭代。",
     "partial_results": "不返回部分结果。"
    },
    "example": {
     "description": "计算基态复合并检查截断端点。",
-    "expected": "三个正速率；区间外的值精确重复相应端点。"
+    "expected": "三个正速率；示例中 50000 eV 数值截至 20100 eV，另一次调用的 0.01 eV 截至 0.1 eV，20100 eV 仍按自身温度求值；相应高/低方向发出 ApplicabilityWarning。"
    },
    "verification": {
     "scope": [
@@ -8015,16 +8015,16 @@
      "直接测试覆盖受测温度网格的单调性、裁剪、标量形状、非法域及非实数拒绝。",
      "本仓库不维护也不重放任何外部实现对照；维护测试只用仓内独立表述核验所声明关系，且仅在受测网格上覆盖所述拒绝与裁剪行为。",
      "低温和高温的对数斜率在审计温度窗内分别收敛到解析的 -1/2 与 -3/2 渐近极限。",
-     "与独立的 Stobbe–Milne 基准（Stobbe 1930 闭式光电离截面加 Milne 关系，g_n/g_+=2，不使用拟合的任何输入）比对：601 点对数网格上 [0.1, 30] eV 的观测最大偏差是 19.5 eV 附近的 5.72%；0.1/1/10/20/30 eV 的锚点比值分别为 0.9473085930/0.9647996863/1.0432707998/1.0571517077/1.0490534031；基准在 1e4 K 给出 1.581929e-13 cm³/s。"
+     "独立 Stobbe–Milne 对照见 tests/collisions/test_atomic_hydrogen_1s_radiative_recombination_rate.py 的 test_fit_matches_the_independent_oracle_within_the_measured_bound、test_anchor_ratios_against_the_independent_oracle 和 test_the_oracle_reproduces_the_textbook_level_one_rate；教科书数值断言不等于重新查阅印刷来源。"
     ],
-    "evidence_ceiling": "测试在受测样本上确立离散拟合、截断和失败合同，并在 [0.1, 30] eV 上以精确 Stobbe–Milne 基准约束 5.3% 档；该基准是闭式加数值积分，不是外部软件实现的对拍。公开分发许可尚未确定。",
+    "evidence_ceiling": "tests/collisions/test_atomic_hydrogen_1s_radiative_recombination_rate.py::test_fit_matches_the_independent_oracle_within_the_measured_bound 在其 601 点 [0.1,30] eV 对数网格上对照独立 Stobbe–Milne 基准，按原断言检查 5.75% 包络；观测峰值约 5.72%。其中具名的 20 eV 反例推翻旧 5.3% 声明。这是采样观察，不是连续上界证明。印刷文献表未回核，该比较仍为 UNKNOWN；公开分发许可仍待决定。",
     "known_limitations": [
-     "未绑定外部物理参考基准；该缺口保持开放。",
+     "tests/collisions/test_atomic_hydrogen_1s_radiative_recombination_rate.py 已绑定只依赖物理关系的 Stobbe–Milne 基准；外部实验/印刷表比较仍为 UNKNOWN。",
      "Ry=13.58 eV 是拟合常数，不替换为现代重新推导的值。",
-     "域外正温度仍由拟合按该温度求值：30 eV 至 2.01e4 eV 之间数值偏低而不只是粗糙（1 keV 低约 37%），超过 2.01e4 eV 则重复端点值；两种情况都会发 scirel.ApplicabilityWarning。",
+     "精度仅在 [0.1,30] eV 上有验证：低于 0.1 eV 返回低端点并发 ApplicabilityWarning；30<T<=20100 eV 按 T 求值并告警；T>20100 eV 返回 20100 eV 端点并告警。每次调用每个越界方向各告警一次，并非逐样本告警。 域外有限数值不扩展物理精度声明。",
      "公开分发许可仍待人工决定。",
      "本仓库不存在环境门控的外部实现对账测试；此前的任何外部对照都不由维护测试重放。",
-     "声明的 5.75% 是 601 点对数网格上的观测最大值，不是连续上界的证明；旧的 5.3% 声明已被 20 eV 处的 +5.715% 反例否定。",
+     "5.75% 包络覆盖受测网格的观测最大偏差；包络本身不是观测最大值，也不是连续上界。见上述具名基准及 20 eV 断言。",
      "基准在 1e4 K 给出 1.581929e-13 cm³/s，与常引的 1.58e-13 cm³/s 一致，但承载该数字的印刷表本轮未复核，文献对比暂标 UNKNOWN。"
     ]
    }

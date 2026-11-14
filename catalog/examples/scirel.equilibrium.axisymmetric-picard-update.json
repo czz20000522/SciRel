@@ -224,11 +224,11 @@
    "tests/equilibrium/test_axisymmetric_picard_update.py",
    "tests/cross_domain/test_anisotropic_core_scientific_correction.py"
   ],
-  "evidence_ceiling": "Bounded to one axisymmetric Picard flux update from toroidal current through a dense cell-current Green matrix. Evidence: `test_axisymmetric_picard_update.py` contains 5 test functions, 1 of which references `update_axisymmetric_picard_flux`, and is bound only by this asset; `test_anisotropic_core_scientific_correction.py` contains 17 test functions, none of which references `update_axisymmetric_picard_flux`, and is shared by 8 assets; the bounded example was executed by this audit. Oracle: independent manufactured/analytic discrete checks in the bound private and correction files. It does not establish a complete converged equilibrium, automatic iteration-count selection, current relaxation, or linked-flux conversion.",
+  "evidence_ceiling": "tests/cross_domain/test_anisotropic_core_scientific_correction.py directly imports this maintained function as update; test_nonuniform_compact_current_integral_converges, test_uniform_positive_radius_explicit_cells_preserved, test_linear_nodal_domain_integral_exact assert nonuniform integration, explicit cell areas and linear nodal integration. These are bounded manufactured/analytic discrete cases, not full-file coverage or physical validation of arbitrary caller pressure/Green/wall models.",
   "known_limitations": [
    "Caller-supplied physical closures and Green responses require their own evidence and coherent psi=R A_phi (Wb/rad) normalization.",
    "Floating-point rounding envelopes do not bound discretization error or experimental uncertainty.",
-   "The asset-private test file has five functions and one direct example; the shared correction file contains no direct symbol call, so the finite-update evidence is the example plus composition-level correction checks."
+   "The named shared-file assertions exercise the real entry point, including its parametrized samples. Their scope is limited to the listed cases; other assets in the file are not evidence for this one."
   ]
  }
 }

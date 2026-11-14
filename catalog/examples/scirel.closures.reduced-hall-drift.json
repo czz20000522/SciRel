@@ -87,7 +87,7 @@
    "shape": "[N_Z,N_R]",
    "dtype": "finite real array-like",
    "required": true,
-   "constraints": "Exactly grid-shaped after joint broadcasting; physical use requires a consistent nonnegative pressure even though this primary array is checked only for finiteness."
+   "constraints": "Exactly grid-shaped after joint broadcasting; all values must be finite and nonnegative, including when explicit ion pressures are supplied."
   },
   {
    "name": "p_perpendicular",
@@ -96,7 +96,7 @@
    "shape": "[N_Z,N_R]",
    "dtype": "finite real array-like",
    "required": true,
-   "constraints": "Exactly grid-shaped after joint broadcasting; physical use requires a consistent nonnegative pressure even though this primary array is checked only for finiteness."
+   "constraints": "Exactly grid-shaped after joint broadcasting; all values must be finite and nonnegative, including when explicit ion pressures are supplied."
   },
   {
    "name": "closure_state",
@@ -105,7 +105,7 @@
    "shape": "mapping of scalars or [N_Z,N_R] arrays",
    "dtype": "Python mapping containing finite real array-like values",
    "required": true,
-   "constraints": "Required keys broadcast to the grid; ion_density and electron pressures nonnegative. Optional electron pressure components default to electron_pressure; optional ion pressure components default to primary p_parallel/p_perpendicular and must be finite and nonnegative. Optional pressure_composition_mode is independent_fit (default) or species_sum. Ion moments default to total minus electron. Unaccounted residual stress is reported, not silently identified with ion pressure."
+   "constraints": "Required keys broadcast to the grid; ion_density and electron pressures nonnegative. Optional electron pressure components default to electron_pressure; omitted ion components default direction by direction to p_parallel-electron_p_parallel and p_perpendicular-electron_p_perpendicular and must be finite and nonnegative. Optional pressure_composition_mode is independent_fit (default) or species_sum. Ion moments default to total minus electron. Unaccounted residual stress is reported, not silently identified with ion pressure."
   },
   {
    "name": "plasma_mask",
@@ -186,7 +186,7 @@
   },
   {
    "name": "inertia_tolerance",
-   "description": "Relative current-change stopping threshold for the local iteration.",
+   "description": "Stopping threshold for the unrelaxed local current-map residual norm(T(J)-J)/max(norm(J),1 A/m^2), reevaluated at the returned J.",
    "units": "dimensionless",
    "shape": "scalar",
    "dtype": "finite real scalar",
@@ -280,12 +280,12 @@
   },
   {
    "name": "parallel_force_error",
-   "description": "In-mask RMS parallel target force divided by RMS target-force magnitude.",
+   "description": "Resolved relative error max(absolute-roundoff,0)/max(scale_rms,roundoff,tiny) on the plasma mask; absolute is residual RMS and roundoff is the RMS rounding envelope. The unmodified RMS ratio is parallel_force_diagnostics.raw_relative.",
    "units": "dimensionless",
    "shape": "scalar",
    "dtype": "float",
    "required": true,
-   "constraints": "Denominator uses the implementation's numeric tiny floor; zero for an empty plasma mask."
+   "constraints": "Zero for an empty mask or a residual inside the rounding envelope; zero does not assert an exactly zero raw residual. The envelope is not a discretization-error bound. scale_rms is the in-plasma RMS of hypot(force_R,force_Z)."
   },
   {
    "name": "momentum_residual_R",
@@ -307,12 +307,12 @@
   },
   {
    "name": "momentum_error",
-   "description": "In-mask RMS momentum-residual magnitude divided by RMS target-force magnitude.",
+   "description": "Resolved relative error max(absolute-roundoff,0)/max(scale_rms,roundoff,tiny) on the plasma mask; absolute is residual RMS and roundoff is the RMS rounding envelope. The unmodified RMS ratio is momentum_diagnostics.raw_relative.",
    "units": "dimensionless",
    "shape": "scalar",
    "dtype": "float",
    "required": true,
-   "constraints": "Diagnostic only; zero for an empty plasma mask."
+   "constraints": "Zero for an empty mask or a residual inside the rounding envelope; zero does not assert an exactly zero raw residual. The envelope is not a discretization-error bound. scale_rms is the in-plasma RMS of hypot(force_R,force_Z)."
   },
   {
    "name": "ion_toroidal_velocity",
@@ -433,12 +433,12 @@
   },
   {
    "name": "generalized_ohm_error",
-   "description": "Active-cell RMS generalized-Ohm residual divided by RMS electric/Hall/drift scale.",
+   "description": "Resolved relative error max(absolute-roundoff,0)/max(scale_rms,roundoff,tiny) on the Hall-active mask; absolute is residual RMS and roundoff is the RMS rounding envelope. The unmodified RMS ratio is ohm_diagnostics.raw_relative.",
    "units": "dimensionless",
    "shape": "scalar",
    "dtype": "float",
    "required": true,
-   "constraints": "Diagnostic only; zero for an empty active mask."
+   "constraints": "Zero for an empty mask or a residual inside the rounding envelope; zero does not assert an exactly zero raw residual. The envelope is not a discretization-error bound. scale_rms is the Hall-active RMS of sqrt(|E|^2+|hall_electric_field|^2+(ion_toroidal_velocity*B)^2)."
   },
   {
    "name": "firehose_margin",
@@ -550,7 +550,7 @@
   },
   {
    "name": "inertia_relative_change",
-   "description": "Last local current update's relative norm change.",
+   "description": "Last relaxed local current update's relative norm change; diagnostic only, not the stopping residual.",
    "units": "dimensionless",
    "shape": "scalar",
    "dtype": "float",
@@ -691,11 +691,11 @@
    "tests/closures/test_reduced_hall_drift.py",
    "tests/cross_domain/test_anisotropic_core_scientific_correction.py"
   ],
-  "evidence_ceiling": "Bounded to projection of gyrotropic pressure force to toroidal current with an optional bounded local inertia correction. Evidence: `test_reduced_hall_drift.py` contains 12 test functions, 1 of which references `close_reduced_hall_drift`, and is bound only by this asset; `test_anisotropic_core_scientific_correction.py` contains 17 test functions, none of which references `close_reduced_hall_drift`, and is shared by 8 assets; the bounded example was executed by this audit. Oracle: independent manufactured/analytic discrete checks in the bound private and correction files. It does not establish a complete equilibrium/two-fluid transport solve, or automatic validity in low-density/near-zero-field/firehose-unstable regions.",
+  "evidence_ceiling": "Bounded to pressure-force/current projection and local Hall inertia. tests/cross_domain/test_anisotropic_core_scientific_correction.py directly calls the maintained function as hall: test_hall_component_accounting_explicit checks both pressure-composition modes, test_hall_primary_negative_pressure_rejected checks primary-pressure rejection, test_hall_near_unit_relaxation_cannot_fake_local_convergence checks the unchanged iteration cap, and test_hall_analytic_local_fixed_point_uses_returned_current checks J=R and its terminal residual. tests/closures/test_reduced_hall_drift.py also calls this function as scientific_function; its test_reviewed_relation_example checks the uniform limit. These manufactured/analytic discrete cases do not establish a complete equilibrium, two-fluid transport or automatic validity in low-density, near-zero-field or unstable regions.",
   "known_limitations": [
    "Caller-supplied physical closures and Green responses require their own evidence and coherent psi=R A_phi (Wb/rad) normalization.",
    "Floating-point rounding envelopes do not bound discretization error or experimental uncertainty.",
-   "The asset-private test file has twelve functions and one direct example; the shared correction file contains no direct call, so the inertia convergence and drift diagnostics are evidenced at composition level."
+   "Direct assertions are the named local cases above; the shared file is not blanket coverage of this asset. UNKNOWN: no dedicated assertion was located for omitted ion components together with nonzero electron pressure."
   ]
  }
 }

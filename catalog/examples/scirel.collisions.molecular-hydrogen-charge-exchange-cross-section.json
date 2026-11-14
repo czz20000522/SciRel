@@ -56,7 +56,7 @@
    "shape": "any (scalar or array)",
    "dtype": "real array-like",
    "required": true,
-   "constraints": "Finite and nonnegative. Values below the fit range are clipped silently; values above it are clipped to the upper endpoint and emit RuntimeWarning."
+   "constraints": "Finite and nonnegative; below 0.1 eV silently use the low endpoint, above 20100 eV use the high endpoint and emit RuntimeWarning."
   }
  ],
  "outputs": [
@@ -72,7 +72,7 @@
  ],
  "applicability": {
   "preconditions": [
-   "The caller accepts the clipping convention: energies outside the fit range silently return the endpoint value rather than an error or an extrapolation."
+   "The caller accepts endpoint clipping: nonnegative energies below 0.1 eV silently return the low endpoint; energies above 20100 eV return the high endpoint and emit RuntimeWarning."
   ],
   "supported": [
    "H2 + H2+ charge-exchange cross sections on the fit within (or clamped to) its declared energy range.",

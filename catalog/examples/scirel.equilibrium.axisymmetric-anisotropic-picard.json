@@ -32,7 +32,7 @@
  "identity": {
   "relation": "vacuum flux, dense cell-current Green response and caller pressure closure to a bounded anisotropic axisymmetric equilibrium state",
   "direction": "R-Z grid, psi_vac, g_psi, pressure_closure and controls -> final psi, magnetic/pressure/force fields, cell currents and iteration diagnostics",
-  "definition": "Starting at a copy of psi_vac, derive B_R/B_Z/B from psi, gate the iteration field, call pressure_closure(B,psi), broadcast scalar pressures or require exact grid shapes, evaluate cylindrical div(P), mask inactive J_phi, and apply a flux-relaxed Green update. Stop when the step's unrelaxed fixed_point_residual reaches tol or maxiter is exhausted; the relaxed relative_psi_change is diagnostic; then rederive the terminal field, call the closure and force, recompute masked cell currents, and check minimum field, firehose and parallel-force compatibility in that order.",
+  "definition": "Starting at a copy of psi_vac, derive B_R/B_Z/B from psi, gate the iteration field, call pressure_closure(B,psi), broadcast scalar pressures or require exact grid shapes, evaluate cylindrical div(P), mask inactive J_phi, and apply a flux-relaxed Green update. Stop when the step's unrelaxed fixed_point_residual reaches tol or maxiter is exhausted; the relaxed relative_psi_change is diagnostic; then rederive the terminal field and check minimum_field before any terminal closure, mask callback or force evaluation. Next call the closure, select the mask, compute force and masked currents, reevaluate the unrelaxed flux map, then apply firehose and optional parallel-force gates.",
   "model": "bounded axisymmetric gyrotropic pressure Picard composition with externally supplied pressure closure",
   "geometry": "rectilinear cylindrical R-Z grid with at least three nodes per axis",
   "coordinates": "all state arrays indexed [Z,R]; dense Green axes use C-order field points and cell currents",
@@ -465,7 +465,7 @@
    {
     "id": "field_gate",
     "kind": "controlled_glue",
-    "description": "Gate the field before closure on Picard iterations; pass the terminal field through for the later terminal-state check.",
+    "description": "Gate both iteration and terminal fields before any closure, mask callback or force evaluation.",
     "inputs": [
      "magnetic",
      "minimum_field"
@@ -582,7 +582,7 @@
    {
     "id": "terminal_state",
     "kind": "controlled_glue",
-    "description": "After terminal field, closure and force evaluation, recompute masked cell currents, check minimum_field, then apply firehose and optional parallel-force gates.",
+    "description": "Derive the terminal field and gate minimum_field before terminal closure, mask or force; then recompute masked cell currents and the unrelaxed map, and apply firehose and optional parallel-force gates.",
     "inputs": [
      "psi_state",
      "magnetic",
@@ -729,7 +729,7 @@
      "node": "pressure_closure",
      "port": "magnetic"
     },
-    "description": "Iteration B passes the minimum-field gate before closure; terminal B passes through and is checked after terminal force evaluation.",
+    "description": "Iteration and terminal B both pass the minimum-field gate before closure, mask callback or force evaluation.",
     "condition": "Each iteration and terminal reevaluation.",
     "transform": "Pass B magnitude to caller.",
     "kind": "data",
@@ -1868,7 +1868,7 @@
   ],
   "execution": {
    "mode": "bounded_picard_feedback_with_terminal_reevaluation",
-   "ordering": "Validate controls and geometry; for each step derive field, gate minimum B, call/normalize closure, select active cells, compute force, mask J_phi, update flux and record changes. After stopping, derive the final field, call closure and force, mask current, then check minimum B, firehose and compatibility before returning. Terminal reevaluation computes the unrelaxed flux-map residual on the returned field/closure state; it determines converged independently of a small relaxed step.",
+   "ordering": "Validate controls and geometry; for each step derive field, gate minimum B, call/normalize closure, select active cells, compute force, mask J_phi, update flux and record changes. After stopping, derive the final field and check minimum B before terminal closure, mask callback or force; then call closure, select the mask, compute force and masked current, and apply firehose and optional compatibility gates before returning. Terminal reevaluation computes the unrelaxed flux-map residual on the returned field/closure state; it determines converged independently of a small relaxed step.",
    "branches": [
     "A fixed mask, dynamic mask or all-active default is selected by the caller's plasma_mask port.",
     "At maxiter, reevaluate the terminal unrelaxed flux-map residual and return converged=true exactly when it is <=tol, otherwise false after terminal checks.",
@@ -1885,7 +1885,7 @@
      "continue_when": "Unrelaxed step fixed_point_residual > tol and executed count < maxiter.",
      "stop_when": "Unrelaxed step fixed_point_residual <= tol or maxiter reached; terminal reevaluation independently determines the returned convergence flag.",
      "iteration_bound": "Validated runtime integer maxiter >= 1",
-     "nonconvergence": "Recompute terminal field, closure and force, apply terminal gates, then return converged=false with the last state and history; no retry is hidden."
+     "nonconvergence": "Recompute terminal field and gate minimum_field before closure, mask callback and force; then apply firehose and optional compatibility gates and return the last state/history with converged=false if the terminal unrelaxed residual exceeds tol. No hidden retry."
     }
    ]
   }
