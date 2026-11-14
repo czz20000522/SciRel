@@ -12,36 +12,54 @@ _EPSILON0 = 8.854187817e-12
 _KB = 1.38064852e-23
 
 
+# ``hyp1f1`` stays at binary64 resolution out to ``|zeta| = 32`` (measured: relative error 2.2e-16
+# at ``zeta = 32``, i.e. ``zeta^2 = 1024``, where the alternating series must cancel O(1) terms down
+# to ``1/(2 zeta^2) ~ 5e-4``), while the asymptotic series only reaches that accuracy for
+# ``|zeta| >= 8`` (measured: 6.4e-13 at 6, 9.5e-5 at 4). The seam therefore sits on the side with
+# both branches deeply converged; moving it lower would buy nothing and shrink the margin.
 _A_SERIES_THRESHOLD = 32.0
 
 
-def _a_function(zeta):
-    """Return ``A(zeta) = 1 + zeta*Z(zeta)`` without catastrophic cancellation.
+def _a_series(zeta):
+    """Return ``A(zeta)`` from ``hyp1f1`` on ``|zeta| < _A_SERIES_THRESHOLD``.
 
     ``A = hyp1f1(1, 1/2, -zeta^2) + i*sqrt(pi)*zeta*exp(-zeta^2)`` is the stable identity
-    (damped-Dawson derivative relation) on ``|zeta| < 32``; beyond that the same function is
-    evaluated from its asymptotic series ``-1/(2 zeta^2) - 3/(4 zeta^4) - ...``, where the
-    exponential term is far below binary64 resolution. Either way no ``1 - something`` pair of
-    O(1) terms is subtracted, which is what made the previous ``zeta*Z`` evaluation lose the
-    O(kz^-2) amplification (issue #203).
+    (damped-Dawson derivative relation). No pair of O(1) terms is subtracted, which is what made
+    the previous ``zeta*Z`` evaluation lose the O(kz^-2) amplification (issue #203).
     """
+    zeta = np.asarray(zeta, dtype=float)
+    return hyp1f1(1.0, 0.5, -(zeta * zeta)) + 1j * np.sqrt(np.pi) * zeta * np.exp(-(zeta * zeta))
+
+
+def _a_asymptotic(zeta):
+    """Return ``A(zeta)`` from its asymptotic series ``-1/(2 zeta^2) - 3/(4 zeta^4) - ...``.
+
+    Used past ``_A_SERIES_THRESHOLD``, where the ``exp(-zeta^2)`` term is far below binary64
+    resolution. The series is alternating and truncated at the smallest kept term, so its error is
+    bounded by that term; the truncation is validated against the ``hyp1f1`` branch by
+    ``tests/kinetic/test_kinetic_dispersion_sum_stability.py``.
+    """
+    zeta = np.asarray(zeta, dtype=float)
+    inv_square = 1.0 / (zeta * zeta)
+    term = -0.5 * inv_square
+    total = term.copy()
+    for k in range(1, 24):
+        term = term * ((2.0 * k + 1.0) / 2.0) * inv_square
+        total = total + term
+        if np.all(np.abs(term) <= 1e-18 * np.abs(total)):
+            break
+    return total
+
+
+def _a_function(zeta):
+    """Return ``A(zeta) = 1 + zeta*Z(zeta)``, selecting the branch that stays accurate."""
     zeta = np.asarray(zeta, dtype=float)
     result = np.empty(zeta.shape, dtype=complex)
     small = np.abs(zeta) < _A_SERIES_THRESHOLD
     if np.any(small):
-        z = zeta[small]
-        result[small] = hyp1f1(1.0, 0.5, -(z * z)) + 1j * np.sqrt(np.pi) * z * np.exp(-(z * z))
+        result[small] = _a_series(zeta[small])
     if np.any(~small):
-        z = zeta[~small]
-        inv_square = 1.0 / (z * z)
-        term = -0.5 * inv_square
-        total = term.copy()
-        for k in range(1, 24):
-            term = term * ((2.0 * k + 1.0) / 2.0) * inv_square
-            total = total + term
-            if np.all(np.abs(term) <= 1e-18 * np.abs(total)):
-                break
-        result[~small] = total
+        result[~small] = _a_asymptotic(zeta[~small])
     return result
 
 

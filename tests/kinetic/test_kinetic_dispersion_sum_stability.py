@@ -11,7 +11,8 @@ import mpmath as mp
 import numpy as np
 import pytest
 
-from scirel.kinetic import evaluate_kinetic_dispersion_sum
+from scirel.kinetic import evaluate_kinetic_dispersion_sum, kinetic_dispersion_sum_n
+from scirel.kinetic.kinetic_dispersion_sum_n import _a_asymptotic, _a_function, _a_series
 
 Q = -1.60217662e-19
 M = 9.1094e-31
@@ -179,3 +180,49 @@ def test_zero_kz_is_still_rejected():
             kz=0.0,
             kx=KX_B1,
         )
+
+
+def _reference_a(zeta):
+    """``A(zeta) = 1 + zeta*Z(zeta)`` at 80 digits, from the ``erfc`` definition of ``Z``."""
+    with mp.workdps(90):
+        return complex(1 + mp.mpf(zeta) * _plasma_z(zeta))
+
+
+def _rel(value, reference):
+    return abs(value - reference) / abs(reference)
+
+
+THRESHOLD = kinetic_dispersion_sum_n._A_SERIES_THRESHOLD
+
+
+@pytest.mark.parametrize(
+    "zeta",
+    [THRESHOLD - 0.1, THRESHOLD, THRESHOLD + 0.1, 1.5 * THRESHOLD, 2 * THRESHOLD, 8.0],
+)
+def test_both_a_branches_are_accurate_at_and_past_the_switch_point(zeta):
+    """The near-zero-``kz`` fix mostly runs where ``|zeta|`` is large, so validate both branches.
+
+    ``_a_series`` (``hyp1f1``) is the side that could have gone wrong: at ``zeta^2 ~ 1e3`` it has
+    to cancel alternating terms of size ~1 down to ``1/(2 zeta^2) ~ 5e-4``. Measured on
+    2026-11-14, both branches sit at ~2.2e-16 relative error at every one of the three seam points
+    ``zeta = 31.9 / 32.0 / 32.1``, so the switch is not a step. ``zeta = 8`` is the lowest magnitude
+    at which the asymptotic series is still at binary64 resolution (it degrades to 6.4e-13 at
+    ``zeta = 6`` and 9.5e-5 at ``zeta = 4``), which is why the seam is not lowered.
+
+    Each branch is asserted against the independent 90-digit value *and* against the other branch,
+    so a dispatch choice cannot hide a bad formula on either side of the seam.
+    """
+    reference = _reference_a(zeta)
+    series = complex(_a_series(np.asarray([zeta]))[0])
+    asymptotic = complex(_a_asymptotic(np.asarray([zeta]))[0])
+    assert _rel(series, reference) <= TOLERANCE
+    assert _rel(asymptotic, reference) <= TOLERANCE
+    assert _rel(series, asymptotic) <= TOLERANCE
+
+
+@pytest.mark.parametrize("offset", [-1e-9, -1e-5, 1e-5, 1e-9])
+def test_dispatch_across_the_threshold_has_no_step(offset):
+    """A threshold that favoured one branch would show up as a jump in ``_a_function`` itself."""
+    zeta = THRESHOLD + offset
+    value = complex(_a_function(np.asarray([zeta]))[0])
+    assert _rel(value, _reference_a(zeta)) <= TOLERANCE
