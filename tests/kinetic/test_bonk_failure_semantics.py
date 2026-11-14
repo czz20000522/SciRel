@@ -34,7 +34,9 @@ def test_search_does_not_swallow_operator_exceptions(monkeypatch, exception):
     def fail(*args, **kwargs):
         raise error
 
-    monkeypatch.setattr(MODULE.optimize, "root", fail)
+    # Patching a missing attribute on the lazy proxy would leave a shadowing
+    # root attribute when monkeypatch restores it, hiding later backend spies.
+    monkeypatch.setattr(MODULE, "optimize", SimpleNamespace(root=fail))
     with pytest.raises(exception, match="independent operator failure") as caught:
         solve_fluid_bonk(2, [0.63 * state["wn"].item()])
     assert caught.value is error, "Return the real cause, not a fabricated terminal failure."
@@ -52,7 +54,7 @@ def test_finite_bounded_nonconvergence_retains_real_attempts(monkeypatch):
         calls.append(q.copy())
         return SimpleNamespace(x=q, status=2, nfev=100)
 
-    monkeypatch.setattr(MODULE.optimize, "root", terminate)
+    monkeypatch.setattr(MODULE, "optimize", SimpleNamespace(root=terminate))
     result = solve_fluid_bonk(2, [0.63 * state["wn"].item()])
     rows = result["solver_attempts"][0, 0]
     assert len(calls) == rows.size == 5
