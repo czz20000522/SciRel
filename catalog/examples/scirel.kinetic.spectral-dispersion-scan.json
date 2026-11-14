@@ -21,7 +21,7 @@
   ],
   "operation": [
    "run the effective multifluid dispersion scan",
-   "species,selectors,grids -> complete scan spectra, last-point matrices/state, plotting"
+   "species,selectors,grids -> complete scan spectra, last-point matrices/state, presentation metadata"
   ],
   "model": "Composition of fresh state, corrected local multi-fluid matrix and conditioned spectrum; the scan grids follow the declared method defaults",
   "geometry": "x-z wavevector scans; B0 along z",
@@ -30,8 +30,8 @@
  },
  "identity": {
   "relation": "Complete bounded effective multi-fluid spectrum scan and terminal projection",
-  "direction": "species,selectors,grids -> complete scan spectra, last-point matrices/state, plotting",
-  "definition": "Initialize once; for each source-selected k point assemble the corrected matrix and compute the conditioned eigenspectrum; collect every sorted mode and retain the last-point M,A,w1,w2,state. Methods2/3/4 retain defaults101/196 magnitude points,51 angles,50x75 Cartesian mesh and row-major kz then kx order. Single branch handles0/1 and unknown nonnegative selectors. No image is rendered by the current implementation; graphics metadata is returned, and plot_png is an empty compatibility payload. Optional SI positional return is (M,A,w1,w2,kk,ww1,ww2,betasz,vA,csz2,c2,rhos0,wcs,qs,ms,wps,B0) prefix, all defined.",
+  "direction": "species,selectors,grids -> complete scan spectra, last-point matrices/state, presentation metadata",
+  "definition": "Initialize once; for each source-selected k point assemble the corrected matrix and compute the conditioned eigenspectrum; collect every sorted mode and retain the last-point M,A,w1,w2,state. Methods2/3/4 retain defaults101/196 magnitude points,51 angles,50x75 Cartesian mesh and row-major kz then kx order. Single branch handles0/1 and unknown nonnegative selectors. No image is rendered by the current implementation; graphics metadata is returned, and plot_png is empty bytes rather than an image. Optional SI positional return is (M,A,w1,w2,kk,ww1,ww2,betasz,vA,csz2,c2,rhos0,wcs,qs,ms,wps,B0) prefix, all defined.",
   "model": "Composition of fresh state, corrected local multi-fluid matrix and conditioned spectrum; the scan grids follow the declared method defaults",
   "geometry": "x-z wavevector scans; B0 along z",
   "coordinates": "Scan axes precede mode axis; Cartesian shape [kz_index,kx_index,mode]",
@@ -193,16 +193,6 @@
    "required": false,
    "constraints": "Positive; whole requested scan must fit. No feedback or iteration.",
    "default": 10000
-  },
-  {
-   "name": "plot_path",
-   "description": "Optional compatibility path; current implementation does not render an image.",
-   "units": "filesystem path",
-   "shape": "scalar or null",
-   "dtype": "path-like or None",
-   "required": false,
-   "constraints": "Accepted by the signature; no PNG is produced by the current implementation.",
-   "default": null
   },
   {
    "name": "output_count",
@@ -441,7 +431,7 @@
    "shape": "scalar",
    "dtype": "string",
    "required": true,
-   "constraints": "initialize; row-major assemble/spectrum; plot."
+   "constraints": "initialize; row-major assemble/spectrum; presentation metadata. No rendering or file export."
   },
   {
    "name": "max_points",
@@ -454,21 +444,21 @@
   },
   {
    "name": "graphics",
-   "description": "Axes and plotted mode counts.",
+   "description": "Axis and mode counts as presentation metadata.",
    "units": "dimensionless",
    "shape": "mapping",
    "dtype": "dict",
    "required": true,
-   "constraints": "Two axes for2/3/4, zero axes for other selectors; no one-species mass title indexing or zero color index."
+   "constraints": "Two axes for2/3/4, zero axes for other selectors; no axes or images are rendered."
   },
   {
    "name": "plot_png",
-   "description": "Empty bytes in the current implementation; retained for signature compatibility.",
+   "description": "Empty image payload.",
    "units": "bytes",
    "shape": "bytes or absent",
    "dtype": "bytes",
    "required": false,
-   "constraints": "Empty payload; no image is rendered.",
+   "constraints": "Only methods2/3/4; no image is rendered or exported to a file.",
    "default": null
   }
  ],
@@ -489,15 +479,15 @@
  },
  "failure_semantics": {
   "invalid_input": "ValueError for invalid units, shape, nonfinite data, physical signs, rates, selectors, or a numerically unrepresentable state. The matrix rejects rel=1 at or above c.",
-  "runtime_failure": "Native NumPy/SciPy/mpmath or file export failures propagate; ArithmeticError rejects residual or eigenvector failure.",
+  "runtime_failure": "Native NumPy/SciPy/mpmath failures propagate; ArithmeticError rejects residual or eigenvector failure. No file export is performed.",
   "nonconvergence": "No physical iteration. Numerical eigensolver failure propagates; no result is claimed on failure.",
-  "partial_results": "No result dictionary is returned after failure; no PNG side effect is produced by the current implementation."
+  "partial_results": "No result dictionary is returned after failure; neither successful nor failed calls export or overwrite files."
  },
  "public_api": {
   "python": {
    "module": "scirel.kinetic.spectral_evolution",
    "symbol": "evaluate_spectral_dispersion",
-   "signature": "evaluate_spectral_dispersion(species=None, *, unit='normalized', method=2, rel=0, vectors=False, oldmethod=2, prior=None, cfg=None, k_grid=None, theta_grid=None, kx_grid=None, kz_grid=None, k=0.1, theta=1.0471975511965976, max_points=10000, plot_path=None, output_count=None)",
+   "signature": "evaluate_spectral_dispersion(species=None, *, unit='normalized', method=2, rel=0, vectors=False, oldmethod=2, prior=None, cfg=None, k_grid=None, theta_grid=None, kx_grid=None, kz_grid=None, k=0.1, theta=1.0471975511965976, max_points=10000, output_count=None)",
    "canonical_module": "scirel.kinetic",
    "canonical_symbol": "evaluate_spectral_dispersion"
   }
@@ -519,7 +509,7 @@
  "example": {
   "description": "Complete two-point magnitude scan.",
   "code": "from scirel.kinetic import evaluate_spectral_dispersion\nr = evaluate_spectral_dispersion(method=2, k_grid=[0, .1])\nassert r['ww1'].shape == (2, 14) and r['graphics']['axes_count'] == 2",
-  "expected": "The normalized two-point scan returned ww1 with shape (2,14), graphics axes_count=2 and mode_count=5, and the current implementation returns an empty PNG payload (0 bytes) while reporting graphics metadata."
+  "expected": "The normalized two-point scan returns ww1 with shape (2,14), graphics metadata axes_count=2 and mode_count=5, and plot_png=b'': no image is rendered and no file is written."
  },
  "verification": {
   "scope": [
@@ -562,7 +552,7 @@
    {
     "id": "schedule",
     "kind": "controlled_glue",
-    "description": "Select source grid, point cap, row-major order and return/plot controls; no plasma arithmetic.",
+    "description": "Select the source grid, point cap, row-major order and return controls; no plasma arithmetic or export.",
     "inputs": [
      "method",
      "rel",
@@ -575,7 +565,6 @@
      "k",
      "theta",
      "max_points",
-     "plot_path",
      "output_count"
     ],
     "outputs": [
@@ -617,7 +606,7 @@
    {
     "id": "terminal",
     "kind": "controlled_glue",
-    "description": "Collect full arrays and final state/matrices, then plot in Agg and optionally return a positional prefix.",
+    "description": "Collect full arrays and final state/matrices, report presentation metadata without rendering or file output, then optionally return a positional prefix.",
     "inputs": [
      "matrix",
      "spectrum",
@@ -874,21 +863,6 @@
     "to": {
      "node": "schedule",
      "port": "max_points"
-    },
-    "description": "Pass declared graph input.",
-    "condition": "always",
-    "transform": "identity",
-    "kind": "data",
-    "required": true
-   },
-   {
-    "from": {
-     "node": "$input",
-     "port": "plot_path"
-    },
-    "to": {
-     "node": "schedule",
-     "port": "plot_path"
     },
     "description": "Pass declared graph input.",
     "condition": "always",
@@ -1469,7 +1443,7 @@
   ],
   "execution": {
    "mode": "dag",
-   "ordering": "initialize; finite row-major point schedule; assemble then spectrum per point; collect terminal then plot. One pass, at most max_points(default10000); no state feedback.",
+   "ordering": "initialize; finite row-major point schedule; assemble then spectrum per point; collect terminal and presentation metadata. One pass, at most max_points(default10000); no state feedback or file export.",
    "branches": [
     "method0/1/unknown nonnegative: single point",
     "method2: magnitude",
@@ -1478,7 +1452,7 @@
     "vectors and oldmethod forwarded unchanged; positive point bound checked before loop"
    ],
    "state_ownership": "Caller inputs remain untouched; fresh graph-local state; prior contributes no fields. Each point derives from the same explicit primaries.",
-   "failure_propagation": "First invalid input, arithmetic, eigensolver or export failure propagates; no partial result dictionary.",
+   "failure_propagation": "First invalid input, arithmetic or eigensolver failure propagates; no partial result dictionary or file output.",
    "feedback": []
   }
  }
