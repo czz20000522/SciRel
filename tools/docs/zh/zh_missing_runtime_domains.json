@@ -697,22 +697,24 @@
      "units": "A/m^2"
     }
    ],
-   "source_sha256": "714cb0451c34aa2339c372b31f7d29763bebfc9936d8af7add5a87644c77cf32",
+   "source_sha256": "8834e5db66aef84b58873ef1b214c6ea8ab4f39bf5bf224abf194e340697c58c",
    "summary": "由压强、对数梯度及拟合系数组装平行自举电流，以 scirel._result.Result 映射返回两个命名字段。",
    "verification": {
     "evidence_ceiling": "仅证明拟合代数与显式组装，不构成经验模型的全面物理资格。",
     "known_limitations": [
      "这里不作经验系数的实验标定。调用者提供符合模型的碰撞度与俘获份额；不重建几何、边缘台基或完整输运物理。",
      "电荷/碰撞度组合即使数值有限，只要量级很大，中间量或最终结果仍可能无法表示，此时会明确失败；float64 转换也无法恢复此前丢失的精度。",
-     "物理解释要求轴对称托卡马克、非负标量热压强、取对数前密度和温度为正，以及一致的极向磁通和磁场符号。有符号输入仅有代数意义。"
+     "物理解释要求轴对称托卡马克、非负标量热压强、取对数前密度和温度为正，以及一致的极向磁通和磁场符号。有符号输入仅有代数意义。",
+     "UNKNOWN：历史独立 Decimal 拟合检查尚未逐资产绑定输入、精度、参考值与断言。binary64 基线数组以及注释中的精确十进制极限，不证明每个系数或电流驱动项都经过 Decimal 验证。"
     ],
     "scope": [
-     "独立 Decimal 拟合检查、系数与调用者对照以及有限算术回归。",
+     "电流组装见证覆盖电子密度梯度项、磁轴与中点行为、极端有限算术、总磁通/每弧度磁通等价及拒绝/非磁轴规则；精确选定的 test_named_result.py 用例另核对既有电流数组及命名结果行为。",
      "Result 改造后保持既有键顺序、数值、形状、dtype 和映射兼容性，并支持属性读取同一字段。",
      "总磁通与每弧度磁通导数两种写法一致；两者都给或都不给、rho_face 不递增或为负、磁轴外磁通导数为零时抛出 ValueError；不在磁轴上的第一个面不被置零。"
     ],
     "tests": [
-     "tests/tooling/test_bootstrap.py"
+     "tests/tooling/test_bootstrap.py",
+     "tests/tooling/test_named_result.py::test_neoclassical_results_preserve_baseline_values_and_return_types[calculate_bootstrap_current]"
     ]
    }
   },
@@ -790,24 +792,23 @@
      "units": "无量纲"
     }
    ],
-   "source_sha256": "d1a1bd8b13f9dad3e3861a5384407924cdb3e162075fa7c3b75c413e514b7971",
+   "source_sha256": "007020d6cb2db8a27b374f133eeabe57f9479f419181ea67f6b8f894989a52ea",
    "summary": "由显式面碰撞度计算 Redl 无量纲自举电流拟合系数。",
    "verification": {
     "evidence_ceiling": "仅证明拟合代数与有限算术，不构成经验模型的全面物理资格。",
     "known_limitations": [
      "这里不作经验系数的实验标定。调用者提供符合模型的碰撞度与俘获份额；不重建几何、边缘台基或完整输运物理。",
-     "电荷/碰撞度组合即使数值有限，只要量级很大，中间量或最终结果仍可能无法表示，此时会明确失败；float64 转换也无法恢复此前丢失的精度。"
+     "电荷/碰撞度组合即使数值有限，只要量级很大，中间量或最终结果仍可能无法表示，此时会明确失败；float64 转换也无法恢复此前丢失的精度。",
+     "UNKNOWN：历史独立 Decimal 拟合检查尚未逐资产绑定输入、精度、参考值与断言。binary64 基线数组以及注释中的精确十进制极限，不证明每个系数或电流驱动项都经过 Decimal 验证。"
     ],
     "scope": [
-     "独立 Decimal 拟合检查、系数与调用方结果对照以及有限算术回归。"
+     "test_bootstrap.py 覆盖 Redl alpha 的大碰撞度极限及精确 L34=L31；精确选定的 test_named_result.py 用例另核对普通输入下四个系数的基线数组与 tuple 返回类型。"
     ],
     "tests": [
-     "tests/tooling/test_bootstrap.py"
+     "tests/tooling/test_bootstrap.py",
+     "tests/tooling/test_named_result.py::test_neoclassical_results_preserve_baseline_values_and_return_types[calculate_redl_coefficients]"
     ]
-   },
-   "source_conflicts": [
-    "identity.boundary 原称“First current face at magnetic axis exactly zero”，但本入口只计算无量纲拟合系数，不组装电流，也没有磁轴面置零步骤。本页边界说明已按实现改写，合同待修订。"
-   ]
+   }
   },
   {
    "applicability": {
@@ -883,24 +884,23 @@
      "units": "无量纲"
     }
    ],
-   "source_sha256": "ee69492a93fbe030cdc9eab12ea1541a19802b673560c4587fb404af617c2bdc",
+   "source_sha256": "2f4636592024461a89e012f354204218af10bd2251e724d5628558522d28e961",
    "summary": "由显式面碰撞度计算 Sauter 无量纲自举电流拟合系数。",
    "verification": {
     "evidence_ceiling": "仅证明拟合代数与有限算术，不构成经验模型的全面物理资格。",
     "known_limitations": [
      "这里不作经验系数的实验标定。调用者提供符合模型的碰撞度与俘获份额；不重建几何、边缘台基或完整输运物理。",
-     "电荷/碰撞度组合即使数值有限，只要量级很大，中间量或最终结果仍可能无法表示，此时会明确失败；float64 转换也无法恢复此前丢失的精度。"
+     "电荷/碰撞度组合即使数值有限，只要量级很大，中间量或最终结果仍可能无法表示，此时会明确失败；float64 转换也无法恢复此前丢失的精度。",
+     "UNKNOWN：历史独立 Decimal 拟合检查尚未逐资产绑定输入、精度、参考值与断言。binary64 基线数组以及注释中的精确十进制极限，不证明每个系数或电流驱动项都经过 Decimal 验证。"
     ],
     "scope": [
-     "独立 Decimal 拟合检查、系数与调用方结果对照以及有限算术回归。"
+     "test_bootstrap.py 覆盖 Sauter alpha 的大碰撞度极限、普通 alpha 的 binary64 表达式及指数抵消见证；精确选定的 test_named_result.py 用例另核对普通输入下四个系数的基线数组与 tuple 返回类型。"
     ],
     "tests": [
-     "tests/tooling/test_bootstrap.py"
+     "tests/tooling/test_bootstrap.py",
+     "tests/tooling/test_named_result.py::test_neoclassical_results_preserve_baseline_values_and_return_types[calculate_sauter_coefficients]"
     ]
-   },
-   "source_conflicts": [
-    "identity.boundary 原称“First current face at magnetic axis exactly zero”，但本入口只计算无量纲拟合系数，不组装电流，也没有磁轴面置零步骤。本页边界说明已按实现改写，合同待修订。"
-   ]
+   }
   },
   {
    "applicability": {

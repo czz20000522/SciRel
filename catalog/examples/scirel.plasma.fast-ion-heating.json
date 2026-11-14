@@ -120,18 +120,19 @@
  },
  "verification": {
   "scope": [
-   "Independent integral quadrature and continuous zero-energy limit.",
+   "An asserted zero-energy limit and scalar/array regression; the historical independent integral-quadrature claim is currently unbound (UNKNOWN).",
    "Closed-form agreement at a held-out finite energy.",
    "Finite and out-of-domain input behavior."
   ],
   "tests": [
    "tests/plasma/test_fast_ion_heating.py"
   ],
-  "evidence_ceiling": "Independent quadrature, analytic boundary limits and regression tests support numerical evaluation of the stated mathematical relation under the declared failure behavior. They do not establish experimental calibration or wider physical applicability.",
+  "evidence_ceiling": "Bound direct tests cover the exact zero-energy limit, a same-form binary64 closed-expression comparison at one finite energy, scalar/array consistency and declared domain rejection. The historical independent integral-quadrature claim has no bound inputs, numerical references or comparison assertions in the current repository evidence located for this asset (UNKNOWN). These tests do not establish experimental calibration or wider physical applicability.",
   "known_limitations": [
    "Numerical verification establishes evaluation of the specified mathematical approximation, not experimental calibration or applicability to a particular plasma composition or collisional regime.",
    "Finite input values can produce a nonfinite dimensionless ratio and then raise FloatingPointError.",
-   "Full slowing-down trajectories, spatial transport evolution and coupling to other plasma models are outside this operator."
+   "Full slowing-down trajectories, spatial transport evolution and coupling to other plasma models are outside this operator.",
+   "UNKNOWN: the historical independent quadrature is not presently bound; a same-form closed expression or agreement with the implementation is not an independent integration reference."
   ]
  },
  "references": [
