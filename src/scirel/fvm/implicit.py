@@ -161,13 +161,14 @@ def theta_step(
         + (1.0 - weight) * old_offset
         + weight * new_offset
     )
+    rhs = checked(rhs)
     if weight == 0.0:
-        return replace(var_new, value=checked(rhs))
+        return replace(var_new, value=rhs)
 
     lhs = TriDiagonal(
-        1.0 - step * weight * new_matrix.diagonal,
-        -step * weight * new_matrix.above,
-        -step * weight * new_matrix.below,
+        checked(1.0 - step * weight * new_matrix.diagonal),
+        checked(-step * weight * new_matrix.above),
+        checked(-step * weight * new_matrix.below),
     )
     from scipy.linalg import solve_banded
 

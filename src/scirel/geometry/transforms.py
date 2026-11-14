@@ -65,7 +65,7 @@ def rotate(pts, angle, pivot=(0.0, 0.0)):
     >>> np.testing.assert_allclose(rotated, [[0.0, -1.0]], atol=1e-15)
     """
     points = np.asarray(pts, dtype=float)
-    if points.shape[-1] != 2:
+    if points.ndim == 0 or points.shape[-1] != 2:
         raise ValueError("points must have a final dimension of length 2")
     if not np.all(np.isfinite(points)):
         raise ValueError("points must contain only finite values")
