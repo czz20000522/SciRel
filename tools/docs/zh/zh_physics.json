@@ -3257,9 +3257,9 @@
   },
   {
    "asset_id": "scirel.kinetic.dielectric-tensor-diagnostic",
-   "source_sha256": "9dd9b0e0afb58e00f8e8838a3d27e2eb8caf3a2452f86b9e0b37754f358f5124",
+   "source_sha256": "102927fcc230dbdbc96b0f592d9b650d9a044c633621262458b329080a581d52",
    "summary": "按默认 lmx=15 的谐波截断计算介电张量和色散张量的全部九个分量。",
-   "definition": "对 l=-lmx..lmx 的 Maxwellian 谐波贡献求和，通过 Maxwell 旋度项形成 D，保留显式六项行列式。xx/xy/yy 保留 N64 Weideman Z；xz/yz/zz 使用实参解析 A=1+zZ、有限 Gamma 导数端点和遗漏尾项。复数或负 b 的尾项按复数求和，由 |I_n(b)|≤I_n(|b|) 和 DLMF 10.35.1 建立精确遗漏项绝对界。 各物种全部谐波 |z_n|≤1 时，xz/yz/zz 改用直接 z_n Z(z_n) 和原有 zz 加项，保住小响应；b=0 的遗漏 Gamma 尾项精确为零。",
+   "definition": "对 l=-lmx..lmx 的 Maxwellian 谐波贡献求和，通过 Maxwell 旋度项形成 D，保留显式六项行列式。xx/xy/yy 保留 N64 Weideman Z；xz/yz/zz 使用实参解析 A=1+zZ、有限 Gamma 导数端点和遗漏尾项。复数或负 b 的尾项按复数求和，由 |I_n(b)|≤I_n(|b|) 和 DLMF 10.35.1 建立精确遗漏项绝对界。 各物种全部谐波 |z_n|≤1 时，xz/yz/zz 改用直接 z_n Z(z_n) 和原有 zz 加项，保住小响应；b=0 的遗漏 Gamma 尾项精确为零。 xy/yx 保留原 Z 后端，谐波贡献的实部和虚部分别用 fsum 累加。",
    "model": "均匀磁化多组分 Maxwellian 等离子体",
    "boundary": "默认 lmx=15；静态无漂移各向同性 Maxwellian 对有符号 kz 使用因果坐标反射，近零 kz 仍不钳位。",
    "assumptions": [
@@ -3430,7 +3430,7 @@
    },
    "verification": {
     "scope": [
-     "用公开输入独立计算原有限 N 和式，对照所选实数/复数 kx、正负近零及普通 kz、lmx=0/1/15/30/60、A 分支边界和物种广播下的完整复数 K/D；另测控制量、诊断字段和尾项拒绝。 包括评审发现的小 z 回归、|z_n|≤1 表示切换邻点，以及 kx=0 每个有限/奇异分量。"
+     "用公开输入独立计算原有限 N 和式，对照所选实数/复数 kx、正负近零及普通 kz、lmx=0/1/15/30/60、A 分支边界和物种广播下的完整复数 K/D；另测控制量、诊断字段和尾项拒绝。 包括评审发现的小 z 回归、|z_n|≤1 表示切换邻点，以及 kx=0 每个有限/奇异分量。 另有四个低频正负频率/波数 xy/yx 相消回归独立核验。"
     ],
     "evidence_ceiling": "独立 mpmath 参照从公开输入重算尺度、exp(-b)I_n(b) 和 erfc 定义的 Z，计算原有限 N 和式，不复用生产 A/尾项核。完整复数 K/D 保持 2e-12；140/180 位自核保留未舍入数值。补充有界复数尾项相位/大小和公开拒绝验证。这是数值方法纠正，不是与冻结 N64 有理式精确一致，也不是连续全域定理、谐波收敛或行列式/求根认证。",
     "known_limitations": [
