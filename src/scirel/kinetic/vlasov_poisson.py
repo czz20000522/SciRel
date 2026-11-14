@@ -424,7 +424,7 @@ def vp_init(
             velocity, Fn, k=k, kappa=kappa
         )
     else:
-        derivative = _grid_array(df0dv, velocity, "df0dv").real
+        derivative = _grid_array(df0dv, velocity, "df0dv").real.copy()
         if np.iscomplexobj(np.asarray(df0dv)) and np.any(np.imag(df0dv) != 0):
             raise ValueError("df0dv must be real")
         real_frequency = imaginary_frequency = None

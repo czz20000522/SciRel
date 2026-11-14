@@ -244,3 +244,50 @@ def test_custom_equilibrium_and_initial_perturbation_reproduce_the_builtin_maxwe
 def test_custom_vp_arrays_are_explicit_and_on_the_grid(kwargs):
     with pytest.raises(ValueError):
         vlasov_poisson.vp_init(nv=256, vmax=8.0, **kwargs)
+
+
+@pytest.mark.parametrize("layout", ["contiguous", "sliced", "readonly"])
+@pytest.mark.parametrize(
+    "dtype", [np.float32, np.float64, np.int32, np.uint32, np.complex64, np.complex128]
+)
+def test_custom_vp_derivative_is_independently_owned(layout, dtype):
+    backing = np.arange(10 if layout == "sliced" else 5, dtype=dtype)
+    derivative = backing[::2] if layout == "sliced" else backing.view()
+    if layout == "readonly":
+        derivative.flags.writeable = False
+    expected = derivative.real.copy()
+    first = vp_init(Fn=None, nv=4, nt=0, df0dv=derivative)
+    second = vp_init(Fn=None, nv=4, nt=0, df0dv=derivative)
+
+    for state in (first, second):
+        assert type(state["df0dv"]) is np.ndarray
+        assert state["df0dv"].dtype == expected.dtype
+        assert state["df0dv"].shape == expected.shape
+        np.testing.assert_array_equal(state["df0dv"], expected)
+        assert not np.shares_memory(state["df0dv"], derivative)
+        assert not np.shares_memory(state["df0dv"], backing)
+        assert state["df0dv"].flags.writeable
+    assert not np.shares_memory(first["df0dv"], second["df0dv"])
+
+    # The writable owner also lets us change the input of a read-only view.
+    backing[0] = 11
+    assert derivative[0] == 11
+    np.testing.assert_array_equal(first["df0dv"], expected)
+    np.testing.assert_array_equal(second["df0dv"], expected)
+    input_after_mutation = derivative.copy()
+
+    first["df0dv"][1] = 13
+    np.testing.assert_array_equal(derivative, input_after_mutation)
+    np.testing.assert_array_equal(second["df0dv"], expected)
+    first_after_mutation = first["df0dv"].copy()
+    second["df0dv"][2] = 17
+    np.testing.assert_array_equal(derivative, input_after_mutation)
+    np.testing.assert_array_equal(first["df0dv"], first_after_mutation)
+
+
+@pytest.mark.parametrize("dtype", [np.complex64, np.complex128])
+def test_custom_vp_derivative_rejects_nonzero_imaginary_part(dtype):
+    derivative = np.zeros(5, dtype=dtype)
+    derivative[2] = 1e-12j
+    with pytest.raises(ValueError, match="df0dv must be real"):
+        vp_init(Fn=None, nv=4, nt=0, df0dv=derivative)
