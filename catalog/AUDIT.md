@@ -14,6 +14,11 @@ the submitted examples.
 
 ## Risk tiers
 
+These tiers select scientific probes. They are separate from the A/B/C review
+levels in [supply-pipeline section 7](../docs/maintainer/supply-pipeline.md#7-人工审核分级并且异步),
+which determine who reviews a change. Review and safe defaults follow
+[`RULES.md` sections 3 and 6](../RULES.md).
+
 - **A (critical)**: eigen/singular/generalized pencils, roots, iterative
   convergence, equilibrium/Picard, Green inversions, adaptive quadrature,
   interpolation near discontinuities, collision/rate asymptotics, anything whose
@@ -36,9 +41,12 @@ An audit writes down, for one asset:
 - contract claims re-checked against observed behavior;
 - residual risks, and the boundary those risks put on the claim.
 
-The record has no verdict field. What carries the result is the implementation,
-the tests it names and the contract's `verification` block; a status word in a
-side file is not evidence and is not committed.
+Put observed behavior and reproducible checks in the implementation and direct
+tests, and the tested scope and limitations in the contract's `verification`
+block. Keep review reasoning in the original issue/PR and commit. Questions that
+need human adjudication use the existing [ticket protocol](../tickets/README.md)
+and the safe defaults in `RULES.md` section 6. Do not create a separate audit
+registry or verdict table; the packaging exclusion list records scope only.
 
 ## Required checks
 
@@ -61,7 +69,8 @@ the independent external PDRF oracle regression
 `tests/kinetic/test_dispersion_multifluid_oracle.py` (14 real frequencies at four
 k points, rtol 2e-9, backward error <=1e-10) plus the named historical reproducer
 in the same file. The external oracle, not SciRel self-consistency, is the closure
-evidence. No open P0 finding remains.
+evidence for that historical finding. This paragraph is not an inventory of
+current defects or a new acceptance run.
 
 ## Gate
 
@@ -75,7 +84,9 @@ evidence. No open P0 finding remains.
 
 The failures found by the audit are mostly ingestion-design failures, not isolated
 coding mistakes. The receiver must not accept a candidate merely because its
-submitted tests pass. Future intake requires:
+submitted tests pass. Intake of new assets is currently frozen by
+[`AGENTS.md`](../AGENTS.md); the following method remains useful for maintenance
+audits and applies to future intake only if the maintainer lifts the freeze:
 
 1. **Declared evidence envelope** — the candidate states the tested parameter
    ranges, branches, grids, species/model regimes and known singular limits. A
@@ -116,8 +127,8 @@ A candidate is public when, and only when, both its implementation and its
 contract land in `src/scirel/` and `catalog/examples/`. Until then it stays
 under `catalog/review/`: the contract and its tests are preserved there, and it
 is excluded from packaging, documentation, the capability index, the query
-service and the capability matrix. A failing structural check keeps it there too,
-with the failure recorded beside it.
+service and the capability matrix. A failing structural check keeps it there too;
+record its command, failure and affected candidate in the original issue/PR.
 
 A tier-A asset with only self-consistency evidence cannot auto-merge. A contract
 under `catalog/review/examples/` stays there until its implementation lands in
@@ -163,32 +174,35 @@ These are process behaviours, tested independently of capability count:
   call a representation/API mismatch "invalid physics", and do not call valid
   data outside a numerical envelope "invalid user data".
 
-## Final quarantine architecture and merge chain reaction
+## Review-tree separation and dependency closure
 
-The import guard is a transitional stopgap. The target architecture separates
-three trees:
+The repository separates three trees:
 
 - `src/scirel/` — only merged, admitted code; nothing held is installed or
   importable;
 - `catalog/examples/` — only admitted contracts and public evidence;
-- `catalog/review/` (and an optional external review tree) — candidate contracts
-  and candidate code; never installed.
+- `catalog/review/` — candidate contracts and candidate code; never installed.
 
-A candidate moves in this order:
+When intake is authorized again, a candidate moves in this order:
 
 1. stage it in the review tree, outside the package and public catalog;
-2. run its contract, direct tests, adversarial probes and import-surface check
-   in a review harness;
-3. record the verdict; unresolved disagreement or missing owner decision keeps
-   it staged;
-4. on approval, merge in dependency order (leaf capability before composition);
-5. regenerate the public export manifest and docs; run the dependency closure;
+2. run the structural validator, direct tests, adversarial probes and
+   import-surface checks through `scripts/dev.py`, following the
+   [acceptance skill](../skills/development/scirel-acceptance/SKILL.md);
+3. review under supply-pipeline section 7; record evidence and reasoning in the
+   tests, contract and original issue/PR. Unresolved human decisions use the
+   existing tickets and safe defaults; a new capability stays staged;
+4. after the required review, merge in dependency order (leaf capability before
+   composition);
+5. regenerate the contract-derived docs and indexes, check public exports, and
+   run the dependency closure;
 6. remove the staged copy only after the merged copy is green.
 
 Avoiding a merge chain reaction:
 
-- derive public exports, docs and capability index from the admitted manifest,
-  not from a filesystem glob or hand-maintained `__all__`;
+- derive docs and the capability index from the implemented contracts in
+  `catalog/examples/`, with the scope exclusions from
+  `catalog/review/excluded_from_package.json` applied by the documentation builder;
 - compute the reverse-dependency closure from contract dependencies and Python
   imports before merging; a merge is a batch, never a partial file move;
 - require the closure's tests, docs build and import-surface check to pass;
@@ -196,6 +210,34 @@ Avoiding a merge chain reaction:
   exposed; do not ship a partially wired chain;
 - package/wheel checks must prove that held modules and symbols are absent, not
   merely guarded at runtime.
+
+The old phrase "admitted manifest" does not name a standalone admission file.
+The existing generated views have specific owners:
+
+- [`scripts/scirel_docs.py`](../scripts/scirel_docs.py) builds a documentation
+  snapshot's `manifest.json`, `index.json` and `capabilities.json` from contracts
+  and documentation inputs. `manifest.json` binds source identity, file digests
+  and `asset_count`; [`scripts/capability_catalog.py`](../scripts/capability_catalog.py)
+  supplies the capability-index projection. These are build artifacts, not
+  scientific approval records.
+- [`scripts/build_catalog.py`](../scripts/build_catalog.py) builds the catalog
+  distribution's `release.json`, records, routes, summaries and reverse
+  dependencies from the selected contract set. Its counts describe that build.
+- Public Python exports belong to the domain `src/scirel/<domain>/__init__.py`
+  files. [`scripts/audit_public_export_documents.py`](../scripts/audit_public_export_documents.py)
+  checks their callable `__all__` entries against current contracts; it does not
+  generate exports from a manifest.
+
+For the current contract count, run the capability-matrix command in
+[`README.md`](README.md#required-checks-before-accepting-a-contract-change):
+[`scripts/build_capability_matrix.py`](../scripts/build_capability_matrix.py)
+prints the count and writes `total_assets` plus `source_revision` in
+`.runtime/tmp/capability-matrix/capability-matrix.json`. Public callable counts
+are a different denominator, computed by:
+
+```bash
+python3 scripts/dev.py run python -B scripts/audit_public_export_documents.py
+```
 
 ## Complex-case replication direction (recorded, not started)
 
@@ -206,7 +248,14 @@ candidates, integration tests, external truth), not a single capability audit.
 It is recorded as a direction, not a release gate; no coverage claim is made
 until the workflow and its acceptance evidence exist.
 
-## Outbound acceptance S1-S6 (exposed 247)
+## Historical outbound acceptance S1-S6
+
+The following results belong to the earlier snapshot labelled "exposed 247".
+That number and the PASS labels are historical evidence only: they are neither
+the current catalog denominator nor acceptance evidence for a later commit or
+environment. See the commands above for counts from the current tree; a fresh
+acceptance run must bind its own candidate and environment under `RULES.md`
+section 6.
 
 - S1 fillable gap: PASS; |B| ratio via glue matched Pleiades truth exactly.
 - S2 unfillable gap: PASS; parametric/bounded CX rate, no user handoff.
@@ -215,8 +264,10 @@ until the workflow and its acceptance evidence exist.
 - S5 success chain: PASS; B0/peak matched Pleiades truth.
 - S6 held dependency: PASS-WITH-LIMITS; held axisymmetric Picard replaced by exposed free-boundary chain with a disclosed claim ceiling.
 
-The exposed outbound chain is usable; held capabilities remain in-flow gaps to fill
-or bound, not user handoffs. The capability count is not the acceptance metric.
+That run demonstrated the named outbound chains within their recorded limits;
+it does not establish current usability. The process rule remains: held
+capabilities are in-flow gaps to fill or bound, not user handoffs. The capability
+count is not the acceptance metric.
 
 ## Source-based decisions
 
@@ -232,12 +283,16 @@ between two physically defensible models:
 - **source defect**: the source itself has a silent floor, warning-only guard,
   lost branch or similar defect. A repair is allowed only when it is explicit,
   tested and labelled `source-defect repair`, never `source parity`.
-- **no source / missing artifact**: keep the asset held. Do not substitute a
-  plausible formula or a missing graph artifact.
+- **no source / missing artifact**: keep a new candidate staged. For an existing
+  capability, record the evidence gap and apply `RULES.md` section 6's safe default
+  through the contract and ticket. Do not invent a formula or graph artifact.
 - **API policy**: mask strictness, terminal ordering, fail-closed continuation or
   similar receiver policy is not source behaviour. Record it as SciRel policy,
   not as parity.
 
-Source identity and commit hashes belong in the review verdict/evidence record,
-not in the public contract body. A source-parity result never replaces an
-external physical oracle or user acceptance.
+Private source identity and source commit hashes stay in the extraction package's
+`private/` part under [supply-pipeline sections 5 and 7](../docs/maintainer/supply-pipeline.md).
+Public contracts, tests, issues/PRs and tickets retain neutral scientific evidence
+and limitations without exposing private source material or depending on it at
+runtime. No separate verdict record is created. A source-parity result never
+replaces an external physical oracle or user acceptance.
