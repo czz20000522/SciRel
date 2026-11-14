@@ -31,7 +31,7 @@
  "identity": {
   "relation": "Rational plasma-dispersion poles",
   "direction": "J -> bzj,czj",
-  "definition": "Z_J(z)=sum_j bzj[j]/(z-czj[j]); paired tables obey sum b=-1,sum bc=0,sum bc^2=-1/2 within binary64 precision. J12 regenerates the prescribed Padé relation at 80 digits, checked against a 120-digit construction before rounding to binary64; the J4/J8 tabulated values are kept as given.",
+  "definition": "Z_J(z)=sum_j bzj[j]/(z-czj[j]); paired tables obey sum b=-1,sum bc=0,sum bc^2=-1/2 within binary64 precision. J12 stores 80-digit construction metadata and binary64 coefficients; the historical 120-digit comparison is historical-unbound UNKNOWN. The J4/J8 tabulated values are kept as given.",
   "model": "Explicit rational approximation or two-Gaussian representation for magnetized kinetic response.",
   "geometry": "Cartesian k=(kx,0,kz), B0 along signed z; non-spatial representation for pole/partition operators.",
   "coordinates": "SI angular frequency rad/s and wave number m^-1; normalized source scan/selection quantities are labeled explicitly.",
@@ -99,19 +99,19 @@
  },
  "verification": {
   "scope": [
-   "First three asymptotic moments retain the1e-10 gate; J12 raw80/120 construction yields stable binary64 coefficients.",
-   "Independent Z values and resolved kinetic responses bound the corrected J12 table; J4/J8 lower-order approximation errors remain explicit diagnostics."
+   "test_regenerated_j12_preserves_asymptotic_moments directly checks sum b=-1, sum bc=0 and sum bc^2=-1/2 within 1e-10 for ES1D, ES3D and EM J12 tables.",
+   "historical-unbound UNKNOWN: installed-package closure, all-12-API qualification, the full 50-point N10/J8 run and 80/120-digit independent comparison receipts are not bound here. Package metadata and construction capability do not prove those historical executions; supported calculation and the named direct assertions are retained."
   ],
   "tests": [
    "tests/kinetic/test_dispersion_rational.py"
   ],
-  "evidence_ceiling": "Direct contract tests and the declared finite cases bound the relation only where their numeric gates apply; the pure-Python execution runs on this macOS checkout without the declared local Python runtime.",
+  "evidence_ceiling": "The 1e-10 moment assertions and bounded response tests remain scientific checks; the higher-precision table-comparison history has no bound receipt. historical-unbound UNKNOWN: installed-package closure, all-12-API qualification, the full 50-point N10/J8 run and 80/120-digit independent comparison receipts are not bound here. Package metadata and construction capability do not prove those historical executions; supported calculation and the named direct assertions are retained.",
   "known_limitations": [
    "Local technical development; human scientific endorsement and publication clearance remain pending.",
    "Finite harmonic N and rational-pole J approximations require independent convergence checks for a new physical regime.",
    "Passing bounded response, state and backward-error tests does not establish unique physical-mode tracking, all-root forward accuracy or visual acceptance.",
    "Lower-half-plane poles define a rational approximation; its global strong-damping accuracy is not established by bounded upper-half-plane response tests.",
-   "The pure-Python example and bounded verification run on this macOS host; arbitrary parameter regimes remain outside the evidence."
+   "Historical qualification is unbound (UNKNOWN); current direct checks and bounded examples neither impose a new platform restriction nor certify arbitrary parameter regimes."
   ]
  },
  "references": [

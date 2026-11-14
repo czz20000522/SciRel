@@ -31,7 +31,7 @@
  "identity": {
   "relation": "Two-sided Padé coefficient construction",
   "direction": "Declared inputs to named scientific outputs.",
-  "definition": "I+K=2J; Mpq*pq=B matches source Taylor and inverse-power coefficients. Residue b=P(c)/Qprime(c).80/120-digit precision refinement and independent erfc response checks are separate from matrix conditioning. Numeric ports remain complex128; construction strings retain higher precision.",
+  "definition": "I+K=2J; Mpq*pq=B matches source Taylor and inverse-power coefficients. Residue b=P(c)/Qprime(c).The construction exposes declared precision; historical 80/120-digit refinement and independent erfc comparison are historical-unbound UNKNOWN, separate from matrix conditioning. Numeric ports remain complex128; construction strings retain higher precision.",
   "model": "Nonrelativistic Gaussian species; explicit finite-harmonic/rational approximation when applicable.",
   "geometry": "Homogeneous plasma with background field along z; k=(kx,0,kz) where applicable.",
   "coordinates": "Explicit ES dimensionless normalization or EM SI; complex frequency follows exp(-i omega t).",
@@ -265,13 +265,13 @@
  },
  "verification": {
   "scope": [
-   "Current SciRel implementation and the repository tests listed in this contract cover the declared public ports and numerical relation.",
-   "The example exercises one bounded representative case; it does not extend applicability beyond the declared preconditions."
+   "The documented Taylor/asymptotic matching construction and its bounded contract example remain available; the shared rational test file does not directly call jpole_coefficients.",
+   "historical-unbound UNKNOWN: installed-package closure, all-12-API qualification, the full 50-point N10/J8 run and 80/120-digit independent comparison receipts are not bound here. Package metadata and construction capability do not prove those historical executions; supported calculation and the named direct assertions are retained."
   ],
   "tests": [
    "tests/kinetic/test_dispersion_rational.py"
   ],
-  "evidence_ceiling": "Bounded to the declared relation: I+K=2J; Mpq*pq=B matches source Taylor and inverse-power coefficients. Residue b=P(c)/Qprime(c).80/120-digit precision refinement and independent erfc response checks are separate from matrix conditioning…. Evidence: test_dispersion_rational.py (6 recorded test functions; shared-file coverage only; self-consistency/regression only); the contract example ran. Excluded scope: Repeated/unresolved roots require a higher-order-pole representation; Finite-J Z accuracy must be checked in the requested domain.",
+  "evidence_ceiling": "The shared test file has ten test functions but no direct jpole_coefficients numerical comparison; its contract example is a bounded construction/shape check, not independent approximation certification. historical-unbound UNKNOWN: installed-package closure, all-12-API qualification, the full 50-point N10/J8 run and 80/120-digit independent comparison receipts are not bound here. Package metadata and construction capability do not prove those historical executions; supported calculation and the named direct assertions are retained.",
   "known_limitations": [
    "Redistribution permission for the reference material is unverified; MATLAB execution NOT_RUN.",
    "Finite-J/finite-N physics must be qualified for a new requested regime.",

@@ -54,8 +54,8 @@ def pole_coefficients(J=8):
     Notes
     -----
     Z_J(z)=sum_j bzj[j]/(z-czj[j]); paired tables obey sum b=-1,sum bc=0,sum bc^2=-1/2 within binary64
-    precision. J12 regenerates the prescribed Padé relation at 80 digits, checked against a 120-digit
-    construction before rounding to binary64; the J4/J8 tabulated values are kept as given. Explicit
+    precision. J12 stores 80-digit construction metadata and binary64 coefficients; the historical
+    120-digit comparison is historical-unbound UNKNOWN. The J4/J8 tabulated values are kept as given. Explicit
     rational approximation or two-Gaussian representation for magnetized kinetic response. Assumptions:
     Linear small-amplitude response. Caller retains the explicit truncation, state provenance and
     normalization.

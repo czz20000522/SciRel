@@ -137,7 +137,7 @@
    "shape": "[nvr,nvx,nx]",
    "dtype": "float64 array",
    "required": true,
-   "constraints": "Finite (fail closed otherwise); nonnegative wherever SIG_CX is nonnegative; never clamped."
+   "constraints": "Finite (fail closed otherwise); nonnegative when both SIG_CX and the complete weighted carrier fHp_hat*nHP are nonnegative; signed contractions are retained and never clamped."
   },
   {
    "name": "Alpha_H2_H",

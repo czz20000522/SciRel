@@ -77,6 +77,11 @@ def evaluate_neutral_generation_stopping(
     Notes
     -----
         Evaluate the source Delta_n stopping criterion for collision-generation convergence: returns the relative generation density ratio and whether the next generation is unnecessary.
+    After validating inputs and seed controls, delta=max(generation_density_m3)/max(accumulated_density_m3).
+    First delta<truncate returns done=True, reason='truncate'. Otherwise, when seed_iteration_enabled
+    and delta<0.003*seed_error, return done=True, reason='seed_relative'; else done=False, reason='continue'.
+    Both comparisons are strict; equality does not trigger that branch. Equality at truncate can still
+    satisfy the later seed-relative branch. The factor 0.003 is fixed, not a parameter.
     nonempty finite nonnegative 1-D density arrays of one shape; accumulated density has a positive maximum; finite positive real truncate; boolean seed_iteration_enabled and a finite nonnegative real seed_error exactly when enabled; derived delta finite
 
     Examples

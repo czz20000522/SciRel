@@ -168,7 +168,7 @@
    "shape": "`(F,)` one-dimensional frequency-axis complex array",
    "dtype": "complex128",
    "required": true,
-   "constraints": "Finite complex; the quality of the root must be judged from this residual together with `last_updates`."
+   "constraints": "Finite complex; assess each final candidate using residuals, determinant_scale, exit_flags and converged at the same frequency index."
   },
   {
    "name": "determinant_scale",
@@ -213,7 +213,7 @@
    "shape": "`(F,)` one-dimensional frequency-axis boolean array",
    "dtype": "bool",
    "required": true,
-   "constraints": "When false the exit flag is non-positive (`0` iteration or evaluation limit reached, `-2` degenerate Jacobian, `-3` collapsed trust region); the root is still a numerical stationary point of the determinant and the caller must decide acceptance from `residuals` and `determinant_scale`."
+   "constraints": "When false the exit flag is non-positive (0 budget exhausted, -2 degenerate Jacobian, -3 collapsed trust region). The returned root is only the final unaccepted candidate, possibly the initial seed; neither a zero nor a stationary point is guaranteed."
   },
   {
    "name": "omegas",

@@ -320,13 +320,13 @@
  "verification": {
   "scope": [
    "One- and two-species scale identities, signed orientation, shape and nonmutation.",
-   "One- and two-species reference values compared read-only against digest-pinned reference data.",
+   "historical-unbound UNKNOWN: the digest-pinned one-/two-species reference comparison and its independent review are not bound to an inspectable comparison receipt. Existing direct scale-identity, orientation, shape, input-ownership and rejection assertions remain in force.",
    "Invalid inputs and unrepresentable derived values fail closed."
   ],
   "tests": [
    "tests/kinetic/test_species_equilibrium_scales.py"
   ],
-  "evidence_ceiling": "Direct SciRel tests establish these formulas and failure behavior. A read-only comparison checked all 19 returned fields at two reference cases, but not all species mixtures or alternate normalizations. An independent review of that comparison supports its declared scope only; it does not expand parity to arbitrary inputs or confer expert approval.",
+  "evidence_ceiling": "Direct tests check thermal/gyroradius identities, one-/two-species orientation and shape, nonmutation, invalid inputs and unrepresentable outputs. These bounded internal identities do not establish the historical two-case independent comparison of all 19 fields or its separate review: those claims are historical-unbound UNKNOWN until a comparison receipt is bound. The documented scale computation remains supported.",
   "known_limitations": [
    "The constants and eV-to-K factor intentionally use the declared numeric convention.",
    "No thermal distribution, wave dispersion or root result is returned.",

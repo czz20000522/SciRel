@@ -129,18 +129,19 @@
   "scope": [
    "Frozen-constant formula and principal levels 1, 2 and 3 at 1e-15 relative tolerance, plus exact handling of integer levels 2^53+1 and 2^64.",
    "One-dimensional paired shape, scientific-domain bounds, invalid levels, coercion rejection and non-finite result guard, including under caller np.errstate(all='raise').",
-   "An independent Saha evaluation built from CODATA constants reproduces the frozen-constant relation within a 1.5e-3 relative tolerance on representative density, temperature and principal-level grids."
+   "test_saha_matches_the_codata_relation in tests/collisions/test_rate_family_evidence.py independently forms the prefactor from scipy.constants h, m_e and e, with Rydberg 13.605693 eV; paired densities [1e16,1e18,1e20] m^-3 and temperatures [0.5,1,5] eV at levels 1,2,3 satisfy rtol=1.5e-3, atol=0."
   ],
   "tests": [
-   "tests/kinetic/test_hydrogen_saha_equilibrium_population.py"
+   "tests/kinetic/test_hydrogen_saha_equilibrium_population.py",
+   "tests/collisions/test_rate_family_evidence.py"
   ],
-  "evidence_ceiling": "Bounded to the frozen-constant atomic-hydrogen Saha level population for paired electron density and temperature. Evidence: `test_hydrogen_saha_equilibrium_population.py` contains 6 test functions, 6 of which reference `evaluate_h_saha_equilibrium_population`, and is bound only by this asset; the bounded example was executed by this audit. Oracle: no external oracle recorded; the bound tests replay the frozen formula and its level scaling. It does not establish non-equilibrium/molecular/ion populations, mixed states with n_H+ different from n_e, or external atomic-physics accuracy.",
+  "evidence_ceiling": "The private Saha test file checks the frozen formula, integral-level scaling, shape and failures. The additionally bound cross-family test_saha_matches_the_codata_relation independently constructs the CODATA prefactor and compares the named paired samples at levels 1,2,3 within rtol=1.5e-3. This is a bounded constants/formula comparison, not experimental validation, nonequilibrium accuracy or a certificate for all density/temperature combinations; n_H+=n_e remains an assumption.",
   "known_limitations": [
    "Saha equilibrium and n_H+ = n_e are separate assumptions, neither inferred from inputs; states with n_H+ different from n_e require a different relation.",
    "The scalar/profile reading is not supported; this contract follows the one-dimensional restriction.",
-   "The bound file is asset-private with six direct functions covering the frozen relation, integral-level scaling, invalid/non-real/nonfinite rejection and strict-NumPy overflow; no external atomic-physics reference is bound.",
-   "The frozen prefactor `3.310e-28 m^3 eV^(3/2)` and Rydberg `13.6057 eV` differ from CODATA by up to 0.09%; the 1.5e-3 agreement bound is a constant-accuracy limit, not external validation.",
-   "The frozen prefactor 3.310e-28 m^3 eV^(3/2) and the 13.6057 eV Rydberg differ from current CODATA values by at most 0.09%; the 1.5e-3 agreement bound is the physical-constant limit of this asset, and the n_H+ = n_e assumption remains explicit."
+   "The six direct functions in the private file replay the frozen relation and guards; the named cross-family test supplies the additional independent-constant comparison only on its stated grid.",
+   "Against the constants explicitly used by the bound CODATA test, the frozen prefactor 3.310e-28 m^3 eV^(3/2) and Rydberg 13.6057 eV differ by at most 0.09%; the 1.5e-3 comparison gate applies to that test's named paired samples, not a continuous-domain error bound.",
+   "The 1.5e-3 gate applies to the named paired samples, not a continuous-domain error bound or external atomic-physics certification; Saha equilibrium and n_H+=n_e are separate model assumptions."
   ]
  }
 }

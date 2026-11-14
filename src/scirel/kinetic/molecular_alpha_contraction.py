@@ -102,7 +102,7 @@ def contract_molecular_hydrogen_alpha_frequencies(
     -------
     Alpha_CX : float64 array, shape [nvr,nvx,nx]
         H2 + H2+ charge-exchange collision-frequency field: SIG_CX contracted with the Fortran-order flattened (fHp_hat*nHP) carrier, one (nvr,nvx) slice per spatial cell. [m^-1 (subject to the caller's assembled SIG measure; no implicit conversion)].
-        Constraints: Finite (fail closed otherwise); nonnegative wherever SIG_CX is nonnegative; never clamped.
+        Constraints: Finite (fail closed otherwise); nonnegative when SIG_CX and the complete weighted carrier fHp_hat*nHP are both nonnegative; signed contractions are retained, never clamped.
     Alpha_H2_H : float64 array, shape [nvr,nvx,nx]
         H2-H elastic collision-frequency field: SIG_H2_H contracted with the Fortran-order flattened fH slice. [m^-1 (subject to the caller's assembled SIG measure; no implicit conversion)].
         Constraints: Finite (fail closed otherwise); bounded negative cells inherited from the signed vx_vx SIG factor are reproduced as-is, never clamped.

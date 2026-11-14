@@ -330,7 +330,7 @@
  "failure_semantics": {
   "invalid_input": "Raises ValueError from `scan_frequencies`/`seed_wavenumber` for nonfinite bounds, nonpositive `wn`/`kn`/`omega_step`, `omega_stop < omega_scale`, an empty ladder, or nonfinite `kz`; invalid equilibrium controls fail in `derive_species_equilibrium_scales` before the root graph is imported.",
   "runtime_failure": "Root-solver numerical failures propagate from `solve_kinetic_wavevector_roots`; no fallback root, clamp or retry is substituted.",
-  "nonconvergence": "Each per-frequency root dictionary retains its `exit_flag` and residual (plus nonpositive-root flags); a nonconverged entry is observed, not silently replaced.",
+  "nonconvergence": "Bounded nonconvergence is reported in parallel frequency-axis arrays: roots, residuals, determinant_scale, exit_flags, iterations, function_evals and converged. Inspect result[\"exit_flags\"][i] and result[\"converged\"][i] for frequency i; no per-frequency root dictionary or stationary-point guarantee is returned.",
   "partial_results": "If the root graph raises, no partial scan mapping is returned; a completed scan may still contain nonconverged per-frequency entries."
  },
  "public_api": {
