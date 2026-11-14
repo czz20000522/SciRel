@@ -270,7 +270,7 @@
  },
  "verification": {
   "scope": [
-   "Bounded full-complex K/D comparisons against an independent high-precision original finite sum, including the small-z regression, neighbors of the per-species maximum-|z_n|=1 representation switch, small-z finite cutoffs, mixed-representation species in either order, near-zero kz, finite-cutoff endpoints, the analytic real-response switch, resonance and signed multi-species cases; positive-tail failure boundaries."
+   "Bounded full-complex K/D comparisons against an independent high-precision original finite sum, including the small-z regression, four signed f/kz large-kz real-kx cases protecting xy/yx, neighbors of the per-species maximum-|z_n|=1 representation switch, small-z finite cutoffs, mixed-representation species in either order, near-zero kz, finite-cutoff endpoints, the analytic real-response switch, resonance and signed multi-species cases; positive-tail failure boundaries."
   ],
   "tests": [
    "tests/kinetic/test_kinetic_dispersion_sum_fluid_stability.py",

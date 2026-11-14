@@ -347,6 +347,23 @@ def test_fluid_small_z_issue232_matches_original_finite_sum(key):
     _assert_componentwise_close(observed, reference, tolerance="2e-12", label=key)
 
 
+@pytest.mark.parametrize("frequency_sign", (-1, 1))
+@pytest.mark.parametrize("kz_sign", (-1, 1))
+def test_fluid_small_z_large_kz_xy_matches_original_sum(frequency_sign, kz_sign):
+    arguments = _small_z_issue232_case()
+    arguments["f"] *= frequency_sign
+    arguments["kz"] = kz_sign * 1681258066.787961
+    reference = _reference_tensors(arguments)
+    result = evaluate_fluid_kinetic_dispersion_sum(**arguments)
+    for key, expected in zip(("K", "D"), reference, strict=True):
+        with mp.workdps(180):
+            observed = tuple(
+                tuple(mp.mpc(float(value.real), float(value.imag)) for value in row)
+                for row in result[key]
+            )
+        _assert_componentwise_close(observed, expected, tolerance="2e-12", label=key)
+
+
 @pytest.mark.parametrize(
     "arguments",
     [
