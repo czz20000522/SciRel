@@ -109,6 +109,9 @@ def _run_composition(inputs, *, asset_loader):
     """
     if not isinstance(inputs, Mapping):
         raise ValueError("inputs must be a mapping")
+    for name in ("r_grid", "z_grid"):
+        if name not in inputs:
+            raise ValueError(f"{name} is required by composition.yaml")
     r_grid = np.asarray(inputs["r_grid"], dtype=float)
     z_grid = np.asarray(inputs["z_grid"], dtype=float)
     if (

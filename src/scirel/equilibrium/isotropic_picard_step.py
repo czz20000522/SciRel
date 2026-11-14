@@ -94,14 +94,14 @@ def pressure_flux_picard_step(
         raise ValueError("r_grid, z_grid, psi_state and psi_vac must be same-shape [Z,R] grids")
     if any(not np.all(np.isfinite(value)) for value in (r_grid, z_grid, psi_state, psi_vac)):
         raise ValueError("r_grid, z_grid, psi_state and psi_vac must be finite")
+    if r_grid.shape[0] < 2 or r_grid.shape[1] < 2:
+        raise ValueError("r_grid and z_grid must be uniformly spaced tensor-product grids")
 
     r_axis, z_axis = r_grid[0], z_grid[:, 0]
     uniform_r = np.allclose(np.diff(r_axis), np.diff(r_axis)[0], rtol=1e-12, atol=1e-14)
     uniform_z = np.allclose(np.diff(z_axis), np.diff(z_axis)[0], rtol=1e-12, atol=1e-14)
     if (
-        r_axis.size < 2
-        or z_axis.size < 2
-        or not np.allclose(r_grid, r_axis[None, :])
+        not np.allclose(r_grid, r_axis[None, :])
         or not np.allclose(z_grid, z_axis[:, None])
         or np.any(np.diff(r_axis) <= 0.0)
         or np.any(np.diff(z_axis) <= 0.0)
