@@ -5,7 +5,7 @@
   "en": "Modal projection of values sampled on a Gauss rule",
   "zh": "高斯规则采样值上的模态投影"
  },
- "summary": "Build an orthonormal modal basis, sample the values that drive it, and return the modal coefficients of their L2 projection.",
+ "summary": "Build an orthonormal modal basis and return the discrete Gauss-weighted projection coefficients of its node samples.",
  "taxonomy": [
   "numerical-methods",
   "modal-discretization",
@@ -19,13 +19,13 @@
  "identity": {
   "relation": "c_i = sum_q w_q b_i(z_q) f_q",
   "direction": "Sampled values on a declared Gauss rule to modal coefficients",
-  "definition": "The projection is the weighted inner product of the samples with each orthonormal member, using the tensor Gauss-Legendre rule that the basis itself declares. Because the members are orthonormal under the reference-cell inner product and the rule integrates every member product exactly, the returned coefficients reproduce the sampled member combination exactly when the samples come from that basis, and give the L2 projection otherwise.",
-  "model": "Modal L2 projection on a single reference hypercube",
+  "definition": "The coefficients are the weighted inner products of the node samples with each orthonormal member on the basis-owned tensor Gauss-Legendre rule. The rule integrates member products exactly in exact arithmetic, recovering represented member combinations up to numerical error. For arbitrary samples the result is a discrete weighted projection; it equals a continuous L2 projection of an underlying function only when the rule integrates each basis-member times that function exactly. Node samples alone do not establish that condition.",
+  "model": "Discrete Gauss-weighted modal projection on a single reference hypercube",
   "geometry": "Reference cell [-1,1]^ndim; passthrough of the basis geometry",
   "coordinates": "Logical coordinates of the basis's own quadrature nodes",
   "boundary": "No boundary condition is applied; the reference cell has no physical boundary",
   "assumptions": [
-   "Samples arrive in the member order and node order of the constructed basis",
+   "Sample order matches the basis quadrature nodes; coefficient order matches the basis members",
    "Finite float64 conversion of every sample and coefficient"
   ]
  },
@@ -70,7 +70,7 @@
  "outputs": [
   {
    "name": "coefficients",
-   "description": "Modal coefficients of the L2 projection, in the basis member order",
+   "description": "Discrete Gauss-weighted projection coefficients, in the basis member order",
    "units": "field",
    "shape": "num_basis",
    "dtype": "float64",
@@ -133,7 +133,8 @@
   "evidence_ceiling": "Exact recovery establishes the documented relation for samples produced by the same basis; it does not establish L2 optimality on arbitrary sampled data, physical-cell accuracy, or agreement with any specific discretization package. Higher dimensions and orders outside the tested bounded set are unqualified.",
   "known_limitations": [
    "Only the basis's own quadrature nodes are accepted, so off-node sampled data is unqualified.",
-   "Orders above three and dimensions above three are exercised only for member counts, not for projection accuracy."
+   "Orders above three and dimensions above three are exercised only for member counts, not for projection accuracy.",
+   "Arbitrary node samples do not determine a continuous L2 projection. For one dimension and order zero, samples of x**2 at the sole node zero give coefficient zero, while the continuous normalized constant coefficient is sqrt(2)/3."
   ]
  },
  "composition": {
@@ -155,7 +156,7 @@
    {
     "id": "project",
     "kind": "controlled_glue",
-    "description": "Apply the basis's own weighted inner product to the samples, which is the L2 projection because the members are orthonormal.",
+    "description": "Apply the basis-owned fixed quadrature weighted inner product to the samples; continuous L2 equality requires exact integration of every member-times-function product.",
     "inputs": [
      "values"
     ],
@@ -234,7 +235,7 @@
      "node": "$output",
      "port": "coefficients"
     },
-    "description": "Modal coefficients of the L2 projection",
+    "description": "Discrete Gauss-weighted modal coefficients",
     "condition": "always",
     "transform": "identity",
     "kind": "data",
