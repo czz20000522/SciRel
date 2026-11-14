@@ -45,23 +45,25 @@ class LockBusy(RuntimeError):
 def stop_command(process: subprocess.Popen, signum: int) -> None:
     """Stop and reap our child before the caller can release the clone lock."""
     permission_denied = False
+    permission_reported = False
     group_absent = False
 
     def denied(operation: str, error: PermissionError) -> None:
-        nonlocal permission_denied
-        if not permission_denied:
+        nonlocal permission_denied, permission_reported
+        if not permission_reported:
             print(
                 f"STOPPING  permission denied while {operation} for command {process.pid}: "
                 f"{error}; "
-                "no further signals; clone lock retained until exit is confirmed",
+                "clone lock retained; waiting for permission recovery or confirmed exit",
                 file=sys.stderr,
             )
+            permission_reported = True
         permission_denied = True
 
-    def send(forced: bool = False) -> None:
+    def send(forced: bool = False) -> bool:
         nonlocal group_absent
         if permission_denied:
-            return
+            return False
         try:
             if os.name == "posix":
                 os.killpg(process.pid, signal.SIGKILL if forced else signum)
@@ -73,12 +75,15 @@ def stop_command(process: subprocess.Popen, signum: int) -> None:
             group_absent = True
         except PermissionError as error:
             denied("sending a signal", error)
+        else:
+            return True
+        return False
 
     send()
     if os.name == "posix":
 
         def group_exists() -> bool:
-            nonlocal group_absent
+            nonlocal group_absent, permission_denied
             if group_absent:
                 return False
             process.poll()  # Reap the launcher too; a zombie keeps its group alive.
@@ -88,22 +93,23 @@ def stop_command(process: subprocess.Popen, signum: int) -> None:
                 group_absent = True
                 return False
             except PermissionError as error:
-                # Permission denial cannot establish exit or authorize escalation.
+                # Keep the lock and defer signals until a later probe succeeds.
                 denied("probing the process group", error)
+            else:
+                permission_denied = False
             return True
 
         deadline = time.monotonic() + STOP_TIMEOUT
-        while group_exists() and time.monotonic() < deadline:
+        forced = False
+        while group_exists():
+            if not forced and time.monotonic() >= deadline:
+                forced = send(forced=True)
+                if forced:
+                    print(
+                        "STOPPING  waiting for process group exit; clone lock retained",
+                        file=sys.stderr,
+                    )
             time.sleep(0.02)
-        if group_exists():
-            send(forced=True)
-            if not permission_denied:
-                print(
-                    "STOPPING  waiting for process group exit; clone lock retained",
-                    file=sys.stderr,
-                )
-            while group_exists():
-                time.sleep(0.02)
     else:
         try:
             process.wait(timeout=STOP_TIMEOUT)
