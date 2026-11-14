@@ -341,9 +341,11 @@ def evaluate_kinetic_dielectric_tensor(B0, qs, ms, ns0, Ts0, f, kz, kx, lmx=_LMX
     Notes
     -----
     Sum l=-lmx..lmx Maxwellian contributions and form D with Maxwell curl terms. The xx/xy/yy entries
-    retain the N=64 Weideman Z backend; xz/yz/zz use the analytic real-argument A(z)=1+z*Z(z) without
-    subtracting nearly equal terms. The real A and positive-b tail kernels are shared with the
-    conventional sum. Even for complex kx, z remains real; only a, b and the Gamma weights are complex.
+    retain the N=64 Weideman Z backend. When every harmonic |z|<=1 for a species, xz/yz/zz use direct
+    z*Z and the original additive zz term, so A near 1 does not destroy a small response. Otherwise
+    they use analytic real A(z)=1+z*Z(z) without subtracting nearly equal terms. The real A and
+    positive-b tail kernels are shared with the conventional sum. Even for complex kx, z remains real;
+    only a, b and the Gamma weights are complex.
     Symmetric finite-sum identities keep the endpoint Gamma_(N+1)-Gamma_N and the full omitted Gamma
     tail. For complex or negative b, sum the complex tail with a bound derived from
     |I_n(b)|<=I_n(|b|) and the positive Bessel generating function (DLMF 10.25.2, 10.35.1).
@@ -425,6 +427,10 @@ def evaluate_kinetic_dielectric_tensor(B0, qs, ms, ns0, Ts0, f, kz, kx, lmx=_LMX
             z0s[j] = w / (kz_c * vts[j])
             b = bs[j]
             a = as_[j]
+            # Here A is close to 1, so subtracting its constant loses the
+            # small response. The original z*Z expression has no large-z
+            # cancellation when every harmonic argument is inside [-1, 1].
+            direct_response = (abs(w) + lmx * abs(wcs[j])) / (response_kz * vts[j]) <= 1.0
             xz_terms, yz_terms, zz_terms = [], [], []
             for l in range(-lmx, lmx + 1):
                 zn = (w - l * wcs[j]) / (response_kz * vts[j])
@@ -435,14 +441,14 @@ def evaluate_kinetic_dielectric_tensor(B0, qs, ms, ns0, Ts0, f, kz, kx, lmx=_LMX
                 xsn_xy = 1j * l * gamp
                 xsn_yx = -xsn_xy
                 xsn_yy = l**2 / b * gam - 2.0 * b * gamp
-                # zn remains real even for complex kx. Use analytic A=1+zn*Z,
-                # not subtraction from the fixed N64 rational approximation.
-                response = complex(_a_function(_np.asarray(zn)))
+                zn_val = _zfun(zn)
+                # zn remains real even for complex kx. Outside the small-z
+                # regime use analytic A, not 1 + the fixed N64 approximation.
+                response = zn * zn_val if direct_response else complex(_a_function(_np.asarray(zn)))
                 xz_terms.append(l * gam * response)
                 yz_terms.append(gamp * response)
                 zz_terms.append(zn * gam * response)
 
-                zn_val = _zfun(zn)
                 term1 = wps2[j] / w**2 * (z0 * zn_val)
 
                 K[0, 0] = K[0, 0] + term1 * xsn_xx
@@ -453,9 +459,11 @@ def evaluate_kinetic_dielectric_tensor(B0, qs, ms, ns0, Ts0, f, kz, kx, lmx=_LMX
             alpha = wps2[j] / w**2
             # Sum(n*Gamma_n)=0, sum(Gamma'_n)=Gamma_(N+1)-Gamma_N.
             # Keep the finite-N complement: changing it would change the model.
-            # kx=0 deliberately retains its original nonfinite diagnostic.
-            tail = _gamma_tail(b, lmx + 1) if b != 0 else complex("nan")
-            edge = _gamman(lmx + 1, b) - _gamman(lmx, b)
+            # The direct z*Z representation keeps the original +2*alpha*z0^2.
+            # At b=0 Gamma_n=delta_n0, so the exact omitted tail is zero;
+            # preserve both the old finite zz and the other singular entries.
+            tail = 1.0 if direct_response else (_gamma_tail(b, lmx + 1) if b != 0 else 0.0)
+            edge = 0.0 if direct_response else _gamman(lmx + 1, b) - _gamman(lmx, b)
             cross_x = sqrt2 * alpha * z0 / a * _complex_sum(xz_terms)
             cross_y = -1j * sqrt2 * alpha * z0 * a * (_complex_sum(yz_terms) - edge)
             K[0, 2] += cross_x

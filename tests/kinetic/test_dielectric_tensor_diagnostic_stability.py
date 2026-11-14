@@ -73,6 +73,32 @@ def _resonance_case(frequency):
     )
 
 
+def _small_z_case():
+    # Independently found by reviewer B: A~1 loses the small yz response.
+    return dict(
+        B0=1.0,
+        qs=-1.60217662e-19,
+        ms=9.1094e-31,
+        ns0=3.1e18,
+        Ts0=8123283.9767213175,
+        f=0.02799243954368732,
+        kz=112083871.11918993,
+        kx=complex(-16312.089086095832, -3850.761879351035),
+        lmx=15,
+    )
+
+
+def _response_switch_case(sign, target):
+    arguments = _small_z_case()
+    arguments["f"] *= sign
+    thermal = np.sqrt(2 * KB * arguments["Ts0"] / arguments["ms"])
+    endpoint = abs(2 * np.pi * arguments["f"]) + arguments["lmx"] * abs(
+        arguments["qs"] / arguments["ms"]
+    )
+    arguments["kz"] = endpoint / (thermal * target)
+    return arguments
+
+
 def _species(value):
     return (value,) if np.ndim(value) == 0 else tuple(value)
 
@@ -189,6 +215,12 @@ _CASES = [
         )
     ],
     pytest.param(_broadcast_case(), id="broadcast-negative-B-f-kz-complex-kx"),
+    pytest.param(_small_z_case(), id="small-z-reviewer-counterexample"),
+    *[
+        pytest.param(_response_switch_case(sign, target), id=f"response-switch-{sign}-{name}")
+        for sign in (-1, 1)
+        for name, target in (("below", 1 - 1e-8), ("center", 1), ("above", 1 + 1e-8))
+    ],
 ]
 
 
@@ -200,7 +232,9 @@ def test_diagnostic_matches_independent_original_finite_sum(arguments):
         _assert_close(result[key], wanted, "2e-12", key)
 
 
-@pytest.mark.parametrize("arguments", [_case(b=8, order=30), _case(b=-1 + 0.5j, order=30)])
+@pytest.mark.parametrize(
+    "arguments", [_case(b=8, order=30), _case(b=-1 + 0.5j, order=30), _small_z_case()]
+)
 def test_unrounded_reference_is_stable_at_two_precisions(arguments):
     lower = _reference(arguments, 140)
     higher = _reference(arguments, 180)
@@ -254,9 +288,27 @@ def test_zero_wavevector_boundaries_are_preserved():
     arguments["kz"] = 0
     with pytest.raises(ValueError, match="kz must be non-zero"):
         evaluate_kinetic_dielectric_tensor(**arguments)
-    arguments.update(kz=1, kx=0)
+    arguments.update(kz=1e3, kx=0)
     result = evaluate_kinetic_dielectric_tensor(**arguments)
-    assert np.any(~np.isfinite(result["K"])), "kx=0 keeps its documented nonfinite diagnostic"
+    expected_mask = np.array([[False, True, False], [True, False, True], [False, True, True]])
+    for key in ("K", "D"):
+        np.testing.assert_array_equal(
+            np.isfinite(result[key]),
+            expected_mask,
+            err_msg="kx=0 must retain each finite/singular component",
+        )
+    with mp.workdps(180):
+        omega = 2 * mp.pi * mp.mpf(arguments["f"])
+        thermal = mp.sqrt(2 * mp.mpf(KB) * mp.mpf(TEMPERATURE) / mp.mpf(M))
+        z0 = omega / (mp.mpf(arguments["kz"]) * thermal)
+        alpha = mp.mpf(6.075e19) * mp.mpf(Q) ** 2 / mp.mpf(M) / mp.mpf(EPSILON0) / omega**2
+        plasma_z = 1j * mp.sqrt(mp.pi) * mp.exp(-z0 * z0) * mp.erfc(-1j * z0)
+        expected = 1 + 2 * alpha * z0**2 * (1 + z0 * plasma_z)
+        for key in ("K", "D"):
+            value = mp.mpc(complex(result[key][2, 2]))
+            assert abs(value - expected) / max(1, abs(expected)) < mp.mpf("2e-12"), (
+                "kx=0 has an independently finite zz component"
+            )
 
 
 @pytest.mark.parametrize(

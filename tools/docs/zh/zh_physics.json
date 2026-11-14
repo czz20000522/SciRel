@@ -3257,9 +3257,9 @@
   },
   {
    "asset_id": "scirel.kinetic.dielectric-tensor-diagnostic",
-   "source_sha256": "4ad45398198d0aa460e683fa7d7950a2e7d87c2771e56cfa63f9ed61b4d3064f",
+   "source_sha256": "9dd9b0e0afb58e00f8e8838a3d27e2eb8caf3a2452f86b9e0b37754f358f5124",
    "summary": "按默认 lmx=15 的谐波截断计算介电张量和色散张量的全部九个分量。",
-   "definition": "对 l=-lmx..lmx 的 Maxwellian 谐波贡献求和，通过 Maxwell 旋度项形成 D，保留显式六项行列式。xx/xy/yy 保留 N64 Weideman Z；xz/yz/zz 使用实参解析 A=1+zZ、有限 Gamma 导数端点和遗漏尾项。复数或负 b 的尾项按复数求和，由 |I_n(b)|≤I_n(|b|) 和 DLMF 10.35.1 建立精确遗漏项绝对界。",
+   "definition": "对 l=-lmx..lmx 的 Maxwellian 谐波贡献求和，通过 Maxwell 旋度项形成 D，保留显式六项行列式。xx/xy/yy 保留 N64 Weideman Z；xz/yz/zz 使用实参解析 A=1+zZ、有限 Gamma 导数端点和遗漏尾项。复数或负 b 的尾项按复数求和，由 |I_n(b)|≤I_n(|b|) 和 DLMF 10.35.1 建立精确遗漏项绝对界。 各物种全部谐波 |z_n|≤1 时，xz/yz/zz 改用直接 z_n Z(z_n) 和原有 zz 加项，保住小响应；b=0 的遗漏 Gamma 尾项精确为零。",
    "model": "均匀磁化多组分 Maxwellian 等离子体",
    "boundary": "默认 lmx=15；静态无漂移各向同性 Maxwellian 对有符号 kz 使用因果坐标反射，近零 kz 仍不钳位。",
    "assumptions": [
@@ -3430,14 +3430,14 @@
    },
    "verification": {
     "scope": [
-     "用公开输入独立计算原有限 N 和式，对照所选实数/复数 kx、正负近零及普通 kz、lmx=0/1/15/30/60、A 分支边界和物种广播下的完整复数 K/D；另测控制量、诊断字段和尾项拒绝。"
+     "用公开输入独立计算原有限 N 和式，对照所选实数/复数 kx、正负近零及普通 kz、lmx=0/1/15/30/60、A 分支边界和物种广播下的完整复数 K/D；另测控制量、诊断字段和尾项拒绝。 包括评审发现的小 z 回归、|z_n|≤1 表示切换邻点，以及 kx=0 每个有限/奇异分量。"
     ],
     "evidence_ceiling": "独立 mpmath 参照从公开输入重算尺度、exp(-b)I_n(b) 和 erfc 定义的 Z，计算原有限 N 和式，不复用生产 A/尾项核。完整复数 K/D 保持 2e-12；140/180 位自核保留未舍入数值。补充有界复数尾项相位/大小和公开拒绝验证。这是数值方法纠正，不是与冻结 N64 有理式精确一致，也不是连续全域定理、谐波收敛或行列式/求根认证。",
     "known_limitations": [
      "保留默认 lmx=15、近零 kz 不钳位、标量广播、有符号 z0s、复数 kx 和六项行列式；kx=0 仍返回非有限诊断。",
      "尾项恒等式保留调用者指定的同一有限 N 模型；大尾项是截断本身的结果，不能据此默增 lmx。",
      "复数尾界只约束精确遗漏项，不包含 Bessel 后端、表示、求和及乘回大系数的误差；测得严重尾项相消、下溢、非有限项或预算耗尽时抛 ValueError。样本不建立全复数域保证。",
-     "xx/xy/yy 保留 N64 Weideman Z；xz/yz/zz 复用实参解析 A。完整张量对照不认证行列式/求根精度或极端尺度可表示性；SciPy 惰性加载是独立导入边界验证。"
+     "xx/xy/yy 保留 N64 Weideman Z；xz/yz/zz 在全部谐波 |z|≤1 时使用直接 zZ，否则复用实参解析 A。每物种切换是经过所选邻点核验的数值选择，不是全域误差定理。张量对照不认证行列式/求根精度或极端尺度可表示性；SciPy 惰性加载是独立导入边界验证。"
     ],
     "tests": [
      "tests/kinetic/test_dielectric_tensor_diagnostic_stability.py",

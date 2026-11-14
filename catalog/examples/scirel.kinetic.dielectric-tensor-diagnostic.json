@@ -28,7 +28,7 @@
  "identity": {
   "relation": "SI species and wavepoint to full K, D and six-term determinant",
   "direction": "SI species and wavepoint to full K, D and six-term determinant",
-  "definition": "Sum l=-lmx..lmx Maxwellian contributions, form D with Maxwell curl terms, and retain the explicit six-term determinant. xx/xy/yy retain N64 Weideman Z; xz/yz/zz use analytic real A=1+z*Z, finite Gamma derivative endpoints and the omitted Gamma tail. Complex/negative b uses a complex tail sum with an absolute exact-remainder bound from |I_n(b)|<=I_n(|b|) and DLMF 10.35.1.",
+  "definition": "Sum l=-lmx..lmx Maxwellian contributions, form D with Maxwell curl terms, and retain the explicit six-term determinant. xx/xy/yy retain N64 Weideman Z; xz/yz/zz use analytic real A=1+z*Z, finite Gamma derivative endpoints and the omitted Gamma tail. Complex/negative b uses a complex tail sum with an absolute exact-remainder bound from |I_n(b)|<=I_n(|b|) and DLMF 10.35.1. Per species, if every harmonic |z_n|<=1, xz/yz/zz instead use direct z_n*Z(z_n) and the original additive zz term to retain small responses. At b=0 the omitted Gamma tail is exactly zero.",
   "model": "homogeneous magnetized Maxwellian multi-species plasma",
   "geometry": "homogeneous plasma",
   "coordinates": "wavevector x-z plane; complex kx permitted, z parallel to B0",
@@ -286,7 +286,7 @@
  },
  "verification": {
   "scope": [
-   "Complete complex K/D from public-input independent original finite-N sums at selected real/complex kx, positive/negative near-zero and ordinary kz, lmx=0/1/15/30/60, A dispatch boundaries, and species broadcasting; controls, diagnostic fields and tail rejection checked separately."
+   "Complete complex K/D from public-input independent original finite-N sums at selected real/complex kx, positive/negative near-zero and ordinary kz, lmx=0/1/15/30/60, A dispatch boundaries, and species broadcasting; controls, diagnostic fields and tail rejection checked separately. Small-z reviewer regressions, neighbors of the |z_n|<=1 representation switch and each finite/singular kx=0 component are included."
   ],
   "tests": [
    "tests/kinetic/test_dielectric_tensor_diagnostic_stability.py",
@@ -298,7 +298,7 @@
    "Default lmx=15, no near-zero kz clamp, scalar broadcasting, signed z0s, complex kx and six-term determinant are retained; kx=0 remains a nonfinite diagnostic.",
    "Tail identities preserve the caller's exact finite-N model. A large omitted finite-N tail is real truncation behavior, not permission to increase lmx silently.",
    "The complex tail bound controls only omitted exact terms. Bessel backend, representation, summation and amplified-coefficient errors are not bounded by it; severe measured tail cancellation, underflow, nonfinite terms or budget exhaustion raise ValueError. Samples do not establish the entire complex domain.",
-   "xx/xy/yy retain N64 Weideman Z; xz/yz/zz share the real analytic A evaluator. Full tensor comparisons do not certify determinant/root accuracy or extreme-scale representability. Lazy SciPy loading is a separate import-boundary check."
+   "xx/xy/yy retain N64 Weideman Z; xz/yz/zz use direct z*Z when all harmonic |z|<=1, otherwise shared real analytic A. The per-species switch is a numerical choice checked at selected neighbors, not a global error theorem. Full tensor comparisons do not certify determinant/root accuracy or extreme-scale representability. Lazy SciPy loading is a separate import-boundary check."
   ]
  }
 }
