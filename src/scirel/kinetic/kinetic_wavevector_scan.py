@@ -165,7 +165,7 @@ def scan_kinetic_wavevectors(
         Angular-frequency sequence actually used in this scan [rad/s] Shape: (F,) one-dimensional frequency
         axis. The returned value follows the stated shape and physical normalization.
     kx_start : complex128 array
-        Starting complex initial value for continuation root finding [1/m] Shape: scalar complex. The
+        Fixed complex initial value reused independently at each frequency point [1/m] Shape: scalar complex. The
         returned value follows the stated shape and physical normalization.
     roots : complex128 array
         Complex perpendicular-wavenumber root obtained at each frequency point [1/m] Shape: (F,) one-

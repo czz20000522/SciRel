@@ -162,11 +162,14 @@ def poly_fit(x, y, order=3):
 
     Parameters
     ----------
-    x : float64
+    x : array_like
         Sample coordinates [coordinate units] Shape: ``(M,)``. Finite matched
+        coordinates are converted to float64 for the design matrix.
 
-    y : float64
+    y : array_like
         Sample values [value units] Shape: ``(M,)``. Finite matched
+        real, complex or numeric object values use the existing matrix arithmetic;
+        unsupported object arithmetic still raises its underlying exception.
 
     order : int, optional
         Highest polynomial power [dimensionless] Shape: ``scalar``. Nonnegative integer
@@ -174,12 +177,14 @@ def poly_fit(x, y, order=3):
 
     Returns
     -------
-    basis_fns : float64
+    basis_fns : list of callables
         Ascending power evaluators [coordinate**power] Shape: ``list(order+1)``. Functions
         retain exponent
-    coefficients : float64
+    coefficients : ndarray
         Minimum-norm coefficients [value/coordinate**power] Shape: ``(order+1,)``. Singular
-        values below1e-10 discarded
+        values below1e-10 discarded. The dtype follows NumPy matrix arithmetic with
+        y; complex and supported numeric object inputs can yield complex or object
+        coefficient arrays.
 
     Raises
     ------
@@ -513,8 +518,9 @@ def locs_to_vals(X, Y, Q, coord_list):
         Point y coordinates [coordinate units] Shape: ``same as X``. For rectangular nearest
         Y[:,0] is y axis
 
-    Q : float64
-        Sample field [field units] Shape: ``same as X``. Finite
+    Q : ndarray
+        Sample field [field units] Shape: ``same as X``. Finite; selected element types
+        are retained without a uniform float64 conversion.
 
     coord_list : float64
         Desired coordinate pairs [coordinate units] Shape: ``list of (x,y)``. Finite queries;
@@ -522,16 +528,16 @@ def locs_to_vals(X, Y, Q, coord_list):
 
     Returns
     -------
-    values : float64
-        Sampled values [field units] Shape: ``query-count list or array``. Source list/array
-        return preserved
+    values : list
+        Selected Q[iy, ix] samples [field units] Shape: ``query-count list``.
+        Elements retain their selected sample types.
 
     Raises
     ------
     ValueError
-        Raises ValueError or the underlying NumPy/SciPy exception for nonfinite, mismatched, unsorted, out-of-domain, or malformed inputs;
-        nonfinite sample coordinates, Q data or query coordinates reject the whole request
-        with ValueError.
+        Nonfinite sample coordinates, Q data or query coordinates reject the whole
+        request. Other conversion, indexing or arithmetic errors propagate; there
+        is no sorting or domain-membership rejection.
 
     See Also
     --------
@@ -547,7 +553,8 @@ def locs_to_vals(X, Y, Q, coord_list):
 
     **Coordinates.** X column coordinate, Y row coordinate or matched scattered point arrays
 
-    **Boundary.** No out-of-support interpolation synthesis
+    **Boundary.** Nearest-sample selection only; physical support is the caller's
+    responsibility, with no sorting or domain-membership rejection.
 
     **Preconditions.**
 
@@ -558,7 +565,8 @@ def locs_to_vals(X, Y, Q, coord_list):
 
     * Rectangular and geometric nearest schemes are not asserted equivalent on irregular
       input
-    * Outside-support and nonfinite-field cases are unqualified
+    * Physical interpretation outside caller-declared support is unqualified;
+      nonfinite field values are rejected
 
     Examples
     --------
@@ -685,8 +693,9 @@ def locs_to_vals1D(X, Y, Q, coord_list):
         Point y coordinates [coordinate units] Shape: ``same as X``. For rectangular nearest
         Y[:,0] is y axis
 
-    Q : float64
-        Sample field [field units] Shape: ``same as X``. Finite
+    Q : array_like
+        Sample field [field units] Shape: ``same as X``. Finite; selected element types
+        are retained without a uniform float64 conversion.
 
     coord_list : float64
         Desired coordinate pairs [coordinate units] Shape: ``list of (x,y)``. Finite queries;
@@ -694,16 +703,16 @@ def locs_to_vals1D(X, Y, Q, coord_list):
 
     Returns
     -------
-    values : float64
-        Sampled values [field units] Shape: ``query-count list or array``. Source list/array
-        return preserved
+    values : list
+        Selected np.asarray(Q).ravel() samples [field units] Shape: ``query-count list``.
+        Elements retain their selected sample types.
 
     Raises
     ------
     ValueError
-        Raises ValueError or the underlying NumPy/SciPy exception for nonfinite, mismatched, unsorted, out-of-domain, or malformed inputs;
-        nonfinite sample coordinates, Q data or query coordinates reject the whole request
-        with ValueError.
+        Nonfinite sample coordinates, Q data or query coordinates reject the whole
+        request. Other conversion, indexing or arithmetic errors propagate; there
+        is no sorting or domain-membership rejection.
 
     See Also
     --------
@@ -719,7 +728,8 @@ def locs_to_vals1D(X, Y, Q, coord_list):
 
     **Coordinates.** X column coordinate, Y row coordinate or matched scattered point arrays
 
-    **Boundary.** No out-of-support interpolation synthesis
+    **Boundary.** Nearest-sample selection only; physical support is the caller's
+    responsibility, with no sorting or domain-membership rejection.
 
     **Preconditions.**
 
@@ -730,7 +740,8 @@ def locs_to_vals1D(X, Y, Q, coord_list):
 
     * Rectangular and geometric nearest schemes are not asserted equivalent on irregular
       input
-    * Outside-support and nonfinite-field cases are unqualified
+    * Physical interpretation outside caller-declared support is unqualified;
+      nonfinite field values are rejected
 
     Examples
     --------

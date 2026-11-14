@@ -1482,11 +1482,11 @@
   },
   {
    "asset_id": "scirel.sampling.point-nearest",
-   "source_sha256": "4dcaec5ead62a411cd1c263d636c0d388587637141ba4f69836dcbaebe1c01bb",
+   "source_sha256": "b8d66e7b19dea26101747d74fa64a8f86c47d0794e2750150dbc122f00373fbe",
    "summary": "选择展平后坐标距离平方最小的点。",
    "definition": "选择展平后坐标距离平方最小的点。",
    "model": "在任意匹配的平面数组上选取几何最近样本。X 为列坐标、Y 为行坐标，或二者为匹配的散点数组。",
-   "boundary": "不合成支持范围外的插值。",
+   "boundary": "只做最近样本选择；物理支持区由调用者判断，不做排序或域内检查。",
    "assumptions": [
     "平面采样数组和场有限且匹配。",
     "请求的网格/查询点位于凸包/插值支持范围内。"
@@ -1506,9 +1506,9 @@
     },
     {
      "name": "Q",
-     "description": "采样场。",
+     "description": "有限数值场样本；保留被选元素的实际类型。",
      "constraints": "有限。",
-     "dtype": "float64"
+     "dtype": "数值类数组"
     },
     {
      "name": "coord_list",
@@ -1520,9 +1520,10 @@
    "outputs": [
     {
      "name": "values",
-     "description": "采样值。",
-     "constraints": "保持原列表/数组返回形式。",
-     "dtype": "float64"
+     "description": "按查询顺序选取 np.asarray(Q).ravel() 中的样本。",
+     "constraints": "保留选中元素的类型，不统一转为 float64。",
+     "dtype": "Python 列表",
+     "shape": "查询数长度的列表"
     }
    ],
    "applicability": {
@@ -1535,11 +1536,11 @@
     ],
     "excluded": [
      "不宣称矩形网格与几何最近点两种方案在非规则输入上等价。",
-     "支持范围外及非有限场案例未经验证。"
+     "调用者声明支持区之外的物理解释未经资格验证；非有限场值会被拒绝。"
     ]
    },
    "failure_semantics": {
-    "invalid_input": "对非有限、不匹配、未排序、域外或格式错误的输入抛出 ValueError 或底层 NumPy/SciPy 异常；不推断输入修复。 样本坐标、Q 数据或查询坐标含非有限值时，整次请求抛出 ValueError。数值 object 容器按元素检查有限性，不改变实际计算输入；原计算不支持的 object 表示仍不支持。",
+    "invalid_input": "样本坐标、Q 数据或查询坐标含非有限值时，整次请求抛 ValueError；其他转换、索引或算术错误继续传播。实现不检查排序或查询是否域外，物理支持区由调用者判断。数值 object 元素按原表示检查有限性，原运算不支持的 object 表示仍不支持。",
     "runtime_failure": "数值、插值或可选依赖异常从直接计算向上传播。",
     "nonconvergence": "不适用；该关系使用直接有限差分、插值、选择或求积操作。",
     "partial_results": "输入校验或底层数值操作失败时不承诺部分结果。"
@@ -1557,13 +1558,13 @@
     "evidence_ceiling": "直接示例和具名回归样例只在这些输入上建立文档所述关系；不代表任意输入正确性、实验验证或发行批准。",
     "known_limitations": [
      "不宣称矩形网格与几何最近点两种方案在非规则输入上等价。",
-     "支持范围外及非有限场案例未经验证。"
+     "调用者声明支持区之外的物理解释未经资格验证；非有限场值会被拒绝。"
     ]
    }
   },
   {
    "asset_id": "scirel.sampling.polynomial-fit",
-   "source_sha256": "1d2b318c6812deb7254d96c183fceac403833efd62767e428013795804bbd974",
+   "source_sha256": "3cb8517d4d7a9cd08b9a2ec8c476b89fea60359598553a2db668143f42b6fdb0",
    "summary": "采用绝对奇异值截断 1e-10，计算升幂排列的最小范数系数。",
    "definition": "采用绝对奇异值截断 1e-10，计算升幂排列的最小范数系数。",
    "model": "显式 SVD 伪逆。x、y 为通用样本单位，系数单位为 y 除以 x 的幂。",
@@ -1575,15 +1576,15 @@
    "inputs": [
     {
      "name": "x",
-     "description": "采样坐标。",
+     "description": "采样坐标；构造设计矩阵时转换为 float64。",
      "constraints": "有限且匹配。",
-     "dtype": "float64"
+     "dtype": "数值类数组"
     },
     {
      "name": "y",
-     "description": "采样值。",
+     "description": "有限且匹配的实数、复数或数值 object 采样值；仍须能用于既有矩阵运算。",
      "constraints": "有限且匹配。",
-     "dtype": "float64"
+     "dtype": "数值类数组"
     },
     {
      "name": "order",
@@ -1597,13 +1598,13 @@
      "name": "basis_fns",
      "description": "升幂求值函数。",
      "constraints": "函数保留各自的指数。",
-     "dtype": "float64"
+     "dtype": "可调用函数列表"
     },
     {
      "name": "coefficients",
-     "description": "最小范数系数。",
+     "description": "最小范数系数；dtype 由与 y 的矩阵运算决定，也可能为复数或 object。",
      "constraints": "丢弃低于 1e-10 的奇异值。",
-     "dtype": "float64"
+     "dtype": "NumPy 数组"
     }
    ],
    "applicability": {
@@ -1644,11 +1645,11 @@
   },
   {
    "asset_id": "scirel.sampling.rectangular-nearest",
-   "source_sha256": "d94379b7abcbfcfb9c7fcabafea8f19946d2887d906d4079cfb8d97477cbb01f",
+   "source_sha256": "dad877189e1f499638d4d679b11f2d24d3d3855471a3557a1eb088873077b2d7",
    "summary": "分别选择距每个查询最近的 x 列及 y 行。",
    "definition": "分别选择距每个查询最近的 x 列及 y 行。",
    "model": "可分离 xy 网格按轴最近邻采样。X 为列坐标、Y 为行坐标，或二者为匹配的散点数组。",
-   "boundary": "不合成支持范围外的插值。",
+   "boundary": "只做最近样本选择；物理支持区由调用者判断，不做排序或域内检查。",
    "assumptions": [
     "平面采样数组和场有限且匹配。",
     "请求的网格/查询点位于凸包/插值支持范围内。"
@@ -1668,9 +1669,9 @@
     },
     {
      "name": "Q",
-     "description": "采样场。",
+     "description": "有限数值场样本；保留被选元素的实际类型。",
      "constraints": "有限。",
-     "dtype": "float64"
+     "dtype": "数值数组"
     },
     {
      "name": "coord_list",
@@ -1682,9 +1683,10 @@
    "outputs": [
     {
      "name": "values",
-     "description": "采样值。",
-     "constraints": "保持原列表/数组返回形式。",
-     "dtype": "float64"
+     "description": "按查询顺序选取 Q[iy, ix] 中的样本。",
+     "constraints": "保留选中元素的类型，不统一转为 float64。",
+     "dtype": "Python 列表",
+     "shape": "查询数长度的列表"
     }
    ],
    "applicability": {
@@ -1697,11 +1699,11 @@
     ],
     "excluded": [
      "不宣称矩形网格与几何最近点两种方案在非规则输入上等价。",
-     "支持范围外及非有限场案例未经验证。"
+     "调用者声明支持区之外的物理解释未经资格验证；非有限场值会被拒绝。"
     ]
    },
    "failure_semantics": {
-    "invalid_input": "对非有限、不匹配、未排序、域外或格式错误的输入抛出 ValueError 或底层 NumPy/SciPy 异常；不推断输入修复。 样本坐标、Q 数据或查询坐标含非有限值时，整次请求抛出 ValueError。数值 object 容器按元素检查有限性，不改变实际计算输入；原计算不支持的 object 表示仍不支持。",
+    "invalid_input": "样本坐标、Q 数据或查询坐标含非有限值时，整次请求抛 ValueError；其他转换、索引或算术错误继续传播。实现不检查排序或查询是否域外，物理支持区由调用者判断。数值 object 元素按原表示检查有限性，原运算不支持的 object 表示仍不支持。",
     "runtime_failure": "数值、插值或可选依赖异常从直接计算向上传播。",
     "nonconvergence": "不适用；该关系使用直接有限差分、插值、选择或求积操作。",
     "partial_results": "输入校验或底层数值操作失败时不承诺部分结果。"
@@ -1719,7 +1721,7 @@
     "evidence_ceiling": "直接示例和具名回归样例只在这些输入上建立文档所述关系；不代表任意输入正确性、实验验证或发行批准。",
     "known_limitations": [
      "不宣称矩形网格与几何最近点两种方案在非规则输入上等价。",
-     "支持范围外及非有限场案例未经验证。"
+     "调用者声明支持区之外的物理解释未经资格验证；非有限场值会被拒绝。"
     ]
    }
   },

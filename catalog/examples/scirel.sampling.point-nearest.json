@@ -34,7 +34,7 @@
   "model": "Geometric nearest sample on any matching planar arrays",
   "geometry": "planar matched sample points",
   "coordinates": "X column coordinate, Y row coordinate or matched scattered point arrays",
-  "boundary": "No out-of-support interpolation synthesis",
+  "boundary": "Nearest-sample selection only; physical support is the caller's responsibility, with no sorting or domain-membership rejection",
   "assumptions": [
    "Finite matched planar sample arrays and fields",
    "Requested grid/query points lie inside convex/interpolation support"
@@ -61,10 +61,10 @@
   },
   {
    "name": "Q",
-   "description": "Sample field",
+   "description": "Finite numeric field samples; selected element types are retained",
    "units": "field units",
    "shape": "same as X",
-   "dtype": "float64",
+   "dtype": "array_like",
    "required": true,
    "constraints": "Finite"
   },
@@ -81,12 +81,12 @@
  "outputs": [
   {
    "name": "values",
-   "description": "Sampled values",
+   "description": "Selected np.asarray(Q).ravel() samples in query order",
    "units": "field units",
-   "shape": "query-count list or array",
-   "dtype": "float64",
+   "shape": "query-count list",
+   "dtype": "list",
    "required": true,
-   "constraints": "Source list/array return preserved"
+   "constraints": "Selected element types are retained; no uniform float64 conversion is applied"
   }
  ],
  "applicability": {
@@ -99,11 +99,11 @@
   ],
   "excluded": [
    "Rectangular and geometric nearest schemes are not asserted equivalent on irregular input",
-   "Outside-support and nonfinite-field cases are unqualified"
+   "Physical interpretation outside caller-declared support is unqualified; nonfinite field values are rejected"
   ]
  },
  "failure_semantics": {
-  "invalid_input": "Raises ValueError or the underlying NumPy/SciPy exception for nonfinite, mismatched, unsorted, out-of-domain, or malformed inputs; no input repair is inferred. Nonfinite sample coordinates, Q data or query coordinates reject the whole request with ValueError. Finite numeric object elements are checked without changing the calculation inputs; object representations unsupported by the existing calculation remain unsupported.",
+  "invalid_input": "Nonfinite sample coordinates, Q data or query coordinates reject the whole request with ValueError. Other conversion, indexing or arithmetic errors propagate. The implementation does not reject unsorted or outside-support queries; the caller determines physical support. Finite numeric object elements are checked without changing calculation inputs, and unsupported object arithmetic remains unsupported.",
   "runtime_failure": "Numerical, interpolation, or optional-dependency exceptions propagate from the direct calculation.",
   "nonconvergence": "Not applicable; the relation uses direct finite-difference, interpolation, selection, or quadrature operations.",
   "partial_results": "No partial result is promised when input validation or the underlying numerical operation fails."
@@ -139,7 +139,7 @@
   "evidence_ceiling": "Direct examples and named regression fixtures establish the documented relation on those inputs; they do not establish arbitrary-input correctness, experimental validation, or release approval.",
   "known_limitations": [
    "Rectangular and geometric nearest schemes are not asserted equivalent on irregular input",
-   "Outside-support and nonfinite-field cases are unqualified"
+   "Physical interpretation outside caller-declared support is unqualified; nonfinite field values are rejected"
   ]
  }
 }

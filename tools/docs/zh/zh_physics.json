@@ -2750,7 +2750,7 @@
   },
   {
    "asset_id": "scirel.kinetic.ronnmark-r-function",
-   "source_sha256": "8790d5fd3f64abc53926a121450791e00bd29ff8fb73a216fb5729cde9e37992",
+   "source_sha256": "dbb7efa2fae54e7e1078fce7c262336727a405b5143f0d52fb914195d0f907b7",
    "summary": "计算 Taylor、渐近或积分 R 函数分支及 2×2 伴随矩阵。",
    "definition": "RYLA 按顺序检查三个 Taylor 条件，再检查渐近条件，否则回退到 16 点 Gauss-Legendre 积分；RC[0,1]=d(lambda*R)/d lambda。",
    "model": "磁化 Maxwell 色散的 Ronnmark 有理响应。",
@@ -2767,8 +2767,8 @@
     },
     {
      "name": "lambda_",
-     "description": "AL=lambda=(k_perp*rho_c)^2，Ronnmark 展开参数。形状/轴序：标量（实数或复数；复 kx 平面上带非零虚部）。单位：无量纲。有效性约束：须有限；实 kx 时为非负实数，复 kx 时为复数；lambda=0 会使 RINT 的 C=YR/AL 与 XO 发散，属于未定义域。",
-     "constraints": "须有限；实 kx 时为非负实数，复 kx 时为复数；lambda=0 会使 RINT 的 C=YR/AL 与 XO 发散，属于未定义域。",
+     "description": "AL=lambda=(k_perp*rho_c)^2，Ronnmark 展开参数。形状/轴序：标量（实数或复数；复 kx 平面上带非零虚部）。单位：无量纲。有效性约束：须有限；实 kx 时为非负实数，复 kx 时为复数；实数 lambda=0 时公开选择器走 Taylor 分支，不进入私有 RINT 的除 lambda 运算；Taylor 共振和非有限算术保留原行为。",
+     "constraints": "须有限；实 kx 时为非负实数，复 kx 时为复数；实数 lambda=0 时公开选择器走 Taylor 分支，不进入私有 RINT 的除 lambda 运算；Taylor 共振和非有限算术保留原行为。",
      "dtype": "实数或复数"
     }
    ],
@@ -2826,7 +2826,8 @@
     "evidence_ceiling": "直接 Python 测试仅支持所列有限案例和容差；数值一致性、任意参数精度和发行批准不属于这些证据。",
     "known_limitations": [
      "仅接受有限标量；实数与复数的分支比较和算术沿用既有约定。",
-     "公开分发许可与专家审查仍待完成。"
+     "公开分发许可与专家审查仍待完成。",
+     "UNKNOWN：此处未绑定实数 lambda=0 Taylor 分支的专门独立精度断言；入口接受该分支不等于精度认证。"
     ],
     "tests": [
      "tests/kinetic/test_fluid_spectrum_r43_kinetic.py"
@@ -5225,7 +5226,7 @@
   },
   {
    "asset_id": "scirel.equilibrium.anisotropic-force-balance",
-   "source_sha256": "8e918e9b0da4459bf6535ff9557c58b1c61dda37a91b0bc2c7fbf99b5bf6e32b",
+   "source_sha256": "f154eac974492f22456bbbcf28e15d6f0f81da3409d79695cb5e4d7cdbf369a4",
    "summary": "在给定 R–Z 磁场网格上计算旋磁压力张量的柱坐标散度、垂直力对应的环向电流、平行力诊断和 firehose 裕度。",
    "definition": "P=p_perpendicular I+(p_parallel−p_perpendicular)bb。用差值形式二次模板求柱坐标散度；R=0 处光滑奇函数 P_RZ 给 force_Z 额外一个 ∂R P_RZ，规则轴上 force_R=J_phi=0；离轴 J_phi=(B_Z force_R−B_R force_Z)/B²。",
    "model": "轴对称旋磁压力张量及垂直力平衡电流投影。",
@@ -5395,7 +5396,7 @@
     "scope": [
      "含 R=0 的三次加密网格上的精确各向异性真空张量平衡。",
      "16 个常压网格保持零力，不误判兼容失败。",
-     "可分辨的平行力不平衡仍被拒绝。"
+     "本诊断入口报告可分辨的平行力残差；test_true_parallel_imbalance_still_rejected 验证的是上层消费者 solve_axisymmetric_anisotropic_picard 的拒绝，不是本叶函数的拒绝。"
     ],
     "evidence_ceiling": "tests/cross_domain/test_anisotropic_core_scientific_correction.py 将本维护实现直接导入为 force；test_exact_vacuum_tensor_equilibrium_axis, test_zero_force_not_rejected 断言制造张量平衡及参数化常压零力。这些是有界制造/解析离散用例，不是整文件覆盖，也不验证任意外供压力、Green 或壁模型的物理正确性。",
     "known_limitations": [
@@ -6825,7 +6826,7 @@
   },
   {
    "asset_id": "scirel.kinetic.kinetic-wavevector-scan",
-   "source_sha256": "e590553e2144126665a538b907a8e4d230d49c276e7632b67fcde464950f6767",
+   "source_sha256": "c2888053bc928cba58d45797ebbd3fe62d7318cf658c358872adcf4612dcc31a",
    "summary": "导出频率阶梯与固定初值，然后逐频点求解保留符号的 Ronnmark 复数 kx 根。",
    "definition": "任务图由 wn 导出有序频率阶梯，并确定唯一初值 kx_start=kx_scale*kn；有界求根器在每个频点独立重复使用该初值。",
    "model": "均匀磁化多组分 Maxwellian 等离子体",
@@ -6958,7 +6959,7 @@
     },
     {
      "name": "kx_start",
-     "description": "延续求根的起始复初值",
+     "description": "在每个频点独立重复使用的固定复初值。",
      "constraints": "返回值遵循所列形状与物理归一化约定。",
      "dtype": "complex128 数组"
     },
@@ -7002,7 +7003,7 @@
      "name": "converged",
      "description": "各频点退出标志是否为正，即 Octave 是否判定收敛",
      "constraints": "返回值遵循所列形状与物理归一化约定。",
-     "dtype": "实数"
+     "dtype": "布尔数组"
     },
     {
      "name": "solver",
@@ -7035,17 +7036,17 @@
     "partial_results": "根图抛出异常时不返回部分扫描映射；已完成的扫描仍可能包含逐频未收敛项。"
    },
    "example": {
-    "description": "计算一个有界任务图案例；示例已在本机运行。",
-    "expected": "示例返回 count=1、根约为 -0.17247987 - 0.12372616j，且该有界点 converged=False（退出标志 0）。"
+    "description": "执行一个有界单频 Python 扫描；不据此建立原生或参考运行时对照。",
+    "expected": "有界 Python 示例返回 count=1、根约 -0.17247987 - 0.12372616j，且 converged=False。"
    },
    "verification": {
     "scope": [
      "声明的数值案例及相关失败边界。",
      "示例只执行一个有界代表性案例，不扩展声明的适用前提。",
-     "Python 示例已在本机运行；本地执行覆盖本资产。",
+     "test_kinetic_scan_keeps_absolute_zero_kz_and_fixed_seed 直接调用本入口检查单频点数、绝对零 kz、固定初值和有界复根；这不是原生或参考运行时对照。",
      "近整数 colon 阶梯端点会被保留，见 tests/kinetic/test_dispersion_scan_axes.py。"
     ],
-    "evidence_ceiling": "限于单一平衡快照上的确定冒号频率阶梯与带符号复 Ronnmark kx 根。证据：`test_fluid_spectrum_r43_compositions.py` 含 4 个测试函数，其中 1 个引用 `scan_kinetic_wavevectors`，由 3 个资产共享; `test_dispersion_scan_axes.py` 含 1 个测试函数，其中没有函数引用 `scan_kinetic_wavevectors`，由 2 个资产共享；仅绑定共享文件覆盖，因此通过是文件级事实、而非资产隔离证据；本审计已执行有界示例。真值来源：仅自洽/回归。不建立：未请求的模身份或精度保证。",
+    "evidence_ceiling": "具名单频测试直接调用本扫描。test_dispersion_scan_axes 以 kinetic_scan_frequencies 别名调用其阶梯辅助函数，只验端点，不是完整复根扫描。该有界示例可以返回 converged=False；这些检查不认证全部频率、全局选根或原生/参考运行时一致性。",
     "known_limitations": [
      "允许零 kz；根保留符号，非正退出标志保持可见。",
      "冒号阶梯点数按 `floor((stop-start)/step + 1e-12*max(1,|ratio|)) + 1` 计算；终点相对精确步长倍数偏差超过该相对容差时不会成为阶梯点。",
@@ -7055,11 +7056,7 @@
      "tests/cross_domain/test_fluid_spectrum_r43_compositions.py",
      "tests/kinetic/test_dispersion_scan_axes.py"
     ]
-   },
-   "source_conflicts": [
-    "kx_start 输出描述使用“延续求根”，而定义与 kx_scale 描述明确为各频点独立重复同一初值；应核对合同措辞。",
-    "converged 的描述与形状为布尔数组，但 dtype 仍写 real numeric；类型字段待合同修订核对。"
-   ]
+   }
   },
   {
    "asset_id": "scirel.mirror.mirror-total-pressure",

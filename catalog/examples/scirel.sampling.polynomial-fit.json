@@ -43,19 +43,19 @@
  "inputs": [
   {
    "name": "x",
-   "description": "Sample coordinates",
+   "description": "Sample coordinates converted to float64 for the design matrix",
    "units": "coordinate units",
    "shape": "(M,)",
-   "dtype": "float64",
+   "dtype": "array_like",
    "required": true,
    "constraints": "Finite matched"
   },
   {
    "name": "y",
-   "description": "Sample values",
+   "description": "Finite matched real, complex or numeric object sample values, when supported by the existing matrix arithmetic",
    "units": "value units",
    "shape": "(M,)",
-   "dtype": "float64",
+   "dtype": "array_like",
    "required": true,
    "constraints": "Finite matched"
   },
@@ -76,16 +76,16 @@
    "description": "Ascending power evaluators",
    "units": "coordinate**power",
    "shape": "list(order+1)",
-   "dtype": "float64",
+   "dtype": "list of callables",
    "required": true,
    "constraints": "Functions retain exponent"
   },
   {
    "name": "coefficients",
-   "description": "Minimum-norm coefficients",
+   "description": "Minimum-norm coefficients; dtype follows matrix arithmetic with y and can be complex or object",
    "units": "value/coordinate**power",
    "shape": "(order+1,)",
-   "dtype": "float64",
+   "dtype": "ndarray",
    "required": true,
    "constraints": "Singular values below1e-10 discarded"
   }
