@@ -268,10 +268,9 @@
     {
      "id": "dispersion-response-functions",
      "title": "选择色散特殊函数与极点表示",
-     "introduction": "查看解析等离子体色散函数、固定阶 Weideman 近似、贝塞尔谐波项、Ronnmark 响应及固定极点表。方法的参数域、截断和分支不同，不应在要求精确复现某一方法时静默替换。",
+     "introduction": "同一 Maxwellian w/Z 关系可选 scipy、rational、固定 64 的 weideman 或表列 jpole。各方法只返回同样两项科学量，近似阶数、延拓限制及证据分别声明；Bessel 项、Ronnmark 响应和极点表是相关能力。",
      "assets": [
       "scirel.kinetic.plasma-dispersion-function",
-      "scirel.kinetic.plasma-dispersion-weideman",
       "scirel.kinetic.bessel-gamma",
       "scirel.kinetic.ronnmark-r-function",
       "scirel.kinetic.z-pole-coefficients",
@@ -336,17 +335,6 @@
       "scirel.kinetic.gpdf-cauchy-transform",
       "scirel.kinetic.maxwellian-electrostatic-mode",
       "scirel.kinetic.maxwellian-electrostatic-solver"
-     ]
-    },
-    {
-     "id": "complex-special-function-evaluators",
-     "title": "复误差函数与 Maxwell 分布响应",
-     "introduction": "针对复平面选择定义积分、FFT或有限阶极点近似。有限阶极点有自己的适用域和误差；最终缩放结果无法表示时整次拒绝，不用有限的中间值掩盖溢出。",
-     "assets": [
-      "scirel.kinetic.evaluate-faddeeva-dr",
-      "scirel.kinetic.evaluate-faddeeva-gpdf",
-      "scirel.kinetic.evaluate-maxwellian-fft",
-      "scirel.kinetic.evaluate-maxwellian-jpole"
      ]
     },
     {
@@ -862,6 +850,14 @@
       "scirel.numerics.orthonormal-modal-basis",
       "scirel.numerics.modal-projection",
       "scirel.numerics.truncated-svd-inverse"
+     ]
+    },
+    {
+     "id": "complex-special-function-evaluators",
+     "title": "可调阶数的复误差函数",
+     "introduction": "用既有有理展开求数学 Faddeeva w。默认 32 与显式 16 保留各自采样精度，阶数控制近似；只要求 w 可表示，不按物理 Z 的缩放范围拒绝输入。",
+     "assets": [
+      "scirel.numerics.faddeeva"
      ]
     }
    ]

@@ -231,7 +231,7 @@ def evaluate_kinetic_dispersion_sum(*, B0, qs, ms, ns0, Ts0, f, kz, kx, lmx=5):
     See Also
     --------
     scirel.kinetic.bessel_gamma.evaluate_bessel_gamma : Related contract dependency.
-    scirel.kinetic.plasma_dispersion.evaluate_plasma_dispersion : Related contract dependency.
+    scirel.kinetic.evaluate_plasma_dispersion : Related contract dependency.
 
     Notes
     -----

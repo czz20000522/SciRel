@@ -50,7 +50,7 @@ def evaluate_bessel_gamma(n, x):
     See Also
     --------
     scirel.kinetic.evaluate_generalized_dispersion : Density-family transform.
-    scirel.kinetic.evaluate_plasma_dispersion : Maxwellian Z function.
+    scirel.kinetic.evaluate_plasma_dispersion : Maxwellian Z family with the SciPy default.
 
     Notes
     -----

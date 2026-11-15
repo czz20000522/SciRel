@@ -7,7 +7,7 @@ from scipy.special import ive
 from scirel.kinetic import (
     evaluate_fluid_kinetic_dispersion_sum,
     evaluate_kinetic_dispersion_sum,
-    evaluate_plasma_dispersion_weideman,
+    evaluate_plasma_dispersion,
 )
 from scirel.kinetic.kinetic_dispersion_sum_fluid import _gamma_and_prime
 
@@ -21,7 +21,7 @@ def test_fluidbw_gamma_pair_preserves_scalar_ive_contract(n, b):
 
 
 def test_weideman_source_values_and_branch():
-    result = evaluate_plasma_dispersion_weideman([0j, 0.5 + 0.5j, 8.0])
+    result = evaluate_plasma_dispersion([0j, 0.5 + 0.5j, 8.0], method="weideman")
     np.testing.assert_allclose(
         result["Z"],
         [
@@ -32,13 +32,13 @@ def test_weideman_source_values_and_branch():
         rtol=1e-12,
         atol=1e-13,
     )
-    assert list(result["method"]) == ["erfc", "rational", "rational"]
+    assert set(result) == {"w", "Z"}  # Input-derived labels explicitly retired.
 
 
 @pytest.mark.parametrize("z", [np.nan, np.inf + 1j])
 def test_weideman_rejects_nonfinite_argument(z):
     with pytest.raises(ValueError, match="finite"):
-        evaluate_plasma_dispersion_weideman(z)
+        evaluate_plasma_dispersion(z, method="weideman")
 
 
 def test_sum_n_source_clamp_preserves_existing_failure_contract():

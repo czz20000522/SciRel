@@ -379,13 +379,13 @@ to preserve the analytic continuation. Compare the approximation with the exact 
 
 .. code-block:: python
 
-   from scirel.kinetic import evaluate_maxwellian_jpole, evaluate_plasma_dispersion
+   from scirel.kinetic import evaluate_plasma_dispersion
 
    z = np.array([0.2 + 0.7j, 1.0 + 0.5j, 2.0 + 0.5j, -0.5 - 0.3j])
    exact = evaluate_plasma_dispersion(z)["Z"]
    print("z       =", z)
    for order in (8, 16, 24):
-       approx = evaluate_maxwellian_jpole(z, order=order)["Z"]
+       approx = evaluate_plasma_dispersion(z, method="jpole", order=order)["Z"]
        err = np.abs(approx - exact) / np.abs(exact)
        print(f"J={order:2d}  " + "  ".join(f"{e:.2e}" for e in err))
 
@@ -519,7 +519,7 @@ Which layer to use
 - You already have a frequency seed and want one root with a residual check: use :doc:`../reference/generated/scirel.kinetic.maxwellian-electrostatic-solver`.
 - You want to scan several wavenumbers along the same branch: use :doc:`../reference/generated/scirel.kinetic.generalized-root-scans`.
 - You want to use the small-wavenumber asymptotics as an independent check: use :doc:`../reference/generated/scirel.kinetic.generalized-small-k`.
-- You want to evaluate the dispersion function repeatedly with a fixed-pole approximation: use :doc:`../reference/generated/scirel.kinetic.evaluate-maxwellian-jpole`; when you need an exact reference, use :doc:`../reference/generated/scirel.kinetic.plasma-dispersion-function`.
+- You want to evaluate the dispersion function repeatedly with a fixed-pole approximation: use :doc:`../reference/generated/scirel.kinetic.plasma-dispersion-function` with ``method="jpole"``; use the default ``method="scipy"`` for the direct reference.
 - You want to compare the finite-harmonic and Ronnmark paths on the same magnetized equilibrium snapshot: use :doc:`../reference/generated/scirel.kinetic.kinetic-dispersion-relation`.
 
 This chapter does not cover ion-acoustic waves, beams, arbitrary velocity distributions, Vlasov initial-value problems, multi-fluid spectral methods or complex-wavenumber root scans. These topics have their own entry points and normalizations; do not carry the same seeds, the same units or the same "root equals mode" assumption over to them because the ``langmuir`` scan in this chapter runs.

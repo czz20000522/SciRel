@@ -3,332 +3,78 @@
  "language": "zh-CN",
  "records": [
   {
-   "asset_id": "scirel.kinetic.evaluate-faddeeva-dr",
-   "source_sha256": "1683d789dbd8558fcc217d2dcf2109b952268b2ac80c591a5169dafb5fa677ed",
-   "summary": "按默认阶数求值 16 阶 Faddeeva 变体，并遵循所声明的失败语义。",
-   "definition": "采用 Weideman 有理 FFT 展开，在虚轴使用 erfcx 求值。",
-   "model": "一维 Maxwellian 等离子体响应。",
-   "boundary": "接受实轴输入；指数延拓发生溢出时报错。",
+   "asset_id": "scirel.numerics.faddeeva",
+   "source_sha256": "b8d28927c22ccac4513d32c0113da0a798cbd6a2739251e962b927c90714f55f",
+   "summary": "直接求既有有理近似数学 w，默认 32、显式 16，并保留只按 w 判断的有限成功域。",
+   "definition": "既有 FFT 系数生成的有理展开，虚轴用 erfcx，下半平面保留原高斯反射。",
+   "model": "数学函数 exp(-z²)erfc(-iz) 的有理近似，不选择物理归一化。",
+   "boundary": "接受实轴和可表示的下半平面延拓；只要求 w 能由 complex128 表示，不计算或检查 Z。",
    "assumptions": [
-    "输入为无量纲、已归一化的 Maxwellian 自变量。"
+    "自变量为无量纲数学复数，不推断物理归一化。"
    ],
    "inputs": [
     {
      "name": "z",
-     "description": "无量纲复相位点。",
-     "constraints": "必须有限。",
-     "dtype": "复数数值",
-     "shape": "标量或非空数组",
-     "units": "无量纲"
+     "description": "无量纲数学复自变量，逐点求值。",
+     "constraints": "标量或非空任意形状数组，转换 complex128 后有限；拒绝掩码、布尔、字符串和非数值。",
+     "dtype": "实数或复数数组",
+     "units": "无量纲",
+     "shape": "标量或任意非空数组形状"
     },
     {
      "name": "order",
-     "description": "有理近似的截断阶数或极点数；None 选择 16 阶。",
-     "constraints": "允许任意正整数阶数；拒绝布尔值。",
-     "dtype": "整数或 None",
-     "shape": "标量",
-     "units": "计数"
+     "description": "有理截断阶数；None 取 32，显式 16 保留较低阶近似。",
+     "constraints": "允许任意正整数；拒绝布尔及非整数，不设置阶数上限，也不保证全域误差。",
+     "dtype": "正整数或 None",
+     "units": "计数",
+     "shape": "标量"
     }
    ],
    "outputs": [
     {
      "name": "w",
-     "description": "复数响应值。",
-     "constraints": "必须为有限的 complex128 值。",
-     "dtype": "复数数组",
-     "shape": "与 z 同形",
-     "units": "无量纲"
-    },
-    {
-     "name": "order",
-     "description": "实际采用的截断阶数或极点数。",
-     "constraints": "允许任意正整数阶数。",
-     "dtype": "整数",
-     "shape": "标量",
-     "units": "计数"
+     "description": "直接返回近似 Faddeeva 数组，不带阶数或方法元数据。",
+     "constraints": "无量纲，与 z 同形，标量为零维；只检查 w 有限，不计算或检查 Z 缩放。",
+     "dtype": "complex128 复数数组",
+     "units": "无量纲",
+     "shape": "与 z 同形；标量输入返回零维数组"
     }
    ],
    "applicability": {
     "preconditions": [
-     "所有相位输入及计算结果都必须在 complex128 的可表示范围内。"
+     "输入为转换 complex128 后有限的非空数值，order 为正整数或 None。"
     ],
     "supported": [
-     "允许任意正整数阶数。",
-     "支持有限、非空的标量或数组输入，并保持形状。"
+     "任意正整数阶数；None/默认 32 与显式 16 各自保留原精度预算。",
+     "标量或数组、原下半平面延拓及只按 w 判断的成功域。"
     ],
     "excluded": [
-     "不提供有保证的全局误差界。",
-     "不提供任意分布的响应。"
+     "不保证全域误差、任意大阶数的有限资源开销或实验验证。",
+     "不处理物理归一化、Z 的可表示性或任意分布响应。"
     ]
    },
    "failure_semantics": {
-    "invalid_input": "相位点非有限/为空、整数 order 非正或越界，或 pole 数不受支持时抛出 ValueError。",
-    "runtime_failure": "连分式或极点求和超出 float64 范围时抛出 FloatingPointError；不静默钳制。",
-    "nonconvergence": "固定阶近似没有迭代收敛主张；截断误差仅在受测包络上有界。",
-    "partial_results": "调用失败后不返回部分值。"
+    "invalid_input": "z 为掩码、布尔、字符串、非数值或 order 不可用时抛 TypeError；z 为空、不规则或转换 complex128 后非有限时抛 ValueError。",
+    "runtime_failure": "有理 w 或延拓非有限时抛 FloatingPointError；不求 Z，也不按 Z 拒绝输入。",
+    "nonconvergence": "固定阶近似，无迭代收敛主张或全域截断误差证明。",
+    "partial_results": "不返回部分数组，任一 w 元素非有限就使整次调用失败。"
    },
    "example": {
-    "description": "在上半平面取有限点求值。",
-    "expected": "PASS：返回有限复数响应，并给出实际采用的阶数。"
+    "description": "计算默认 32 与显式 16 阶数学 w。",
+    "expected": "两个有限采样直接返回有限零维数组。"
    },
    "verification": {
     "scope": [
-     "test_defaults_and_independent_complex_error_function 直接参数化 DR，检查默认阶数、矩阵形状及与 scipy.special.wofz 的比较（含 40j）；test_explicit_empty_and_overflow 检查其 None 默认；test_invalid_truncation 直接参数化其非法阶数。",
-     "test_high_precision_equation_grid 直接用 80 位 mpmath 方程比较 DR，容差见该断言的 DR 分支；Gaussian Cauchy 积分及 GPDF 反射断言调用的是其他入口。"
+     "默认 32 与显式 16 保留原矩阵采样及 80 位方程网格。原预算为 32 阶 rtol/atol=5e-13；16 阶 SciPy 网格 rtol=1e-6、atol=3e-7，80 位网格 rtol=3e-6、atol=4e-7。",
+     "16/32/64 阶保留反射；40j 稳定求值及大实部至 1.79e308 保留原预算（大实部 rtol=3e-15、atol=0）。非法阶数、空输入、下半平面 -40j 及整数组失败均明确检验。",
+     "在 -26.625j 及数学缩放阈值处，物理 rational Z 失败而数学 w 仍成功。命名空间、拒绝输入及非轴有理调用不加载 SciPy，轴稳定路径才延迟加载。"
     ],
+    "evidence_ceiling": "只覆盖原容差下的采样点和阶数；J-pole 积分和固定 64 轴断言不认证此可调内核，不提供连续全域界或实验验证。",
     "known_limitations": [
-     "下半平面指数项可能超出 float64。",
-     "固定截断误差取决于相位点和阶数。",
-     "DR 有直接非法阶数及 None 默认断言；GPDF 的显式下半平面溢出、反射和大实部断言不能记作 DR 专属测试。"
-    ],
-    "evidence_ceiling": "直接与依赖证据按上述 scope 分开，具名断言见 tests/kinetic/test_generalized_dispersion_faddeeva_variants.py 及 tests/kinetic/test_generalized_dispersion_faddeeva_independent.py。各入口比较保留原断言容差，只适用于采样相位点与阶数；共享文件不使各入口继承其中全部断言。不建立全域误差界、任意分布响应或实验验证。"
-   }
-  },
-  {
-   "asset_id": "scirel.kinetic.evaluate-faddeeva-gpdf",
-   "source_sha256": "0e20f276b5e3b4129e9cc89297ce049685be6f895f55e17b8f80be3f28cd1435",
-   "summary": "按默认阶数求值 32 阶 Faddeeva 变体，并遵循所声明的失败语义。",
-   "definition": "采用 Weideman 有理 FFT 展开，在虚轴使用 erfcx 求值。",
-   "model": "一维 Maxwellian 等离子体响应。",
-   "boundary": "接受实轴输入；指数延拓发生溢出时报错。",
-   "assumptions": [
-    "输入为无量纲、已归一化的 Maxwellian 自变量。"
-   ],
-   "inputs": [
-    {
-     "name": "z",
-     "description": "无量纲复相位点。",
-     "constraints": "必须有限。",
-     "dtype": "复数数值",
-     "shape": "标量或非空数组",
-     "units": "无量纲"
-    },
-    {
-     "name": "order",
-     "description": "有理近似的截断阶数或极点数；None 选择 32 阶。",
-     "constraints": "允许任意正整数阶数；拒绝布尔值。",
-     "dtype": "整数或 None",
-     "shape": "标量",
-     "units": "计数"
-    }
-   ],
-   "outputs": [
-    {
-     "name": "w",
-     "description": "复数响应值。",
-     "constraints": "必须为有限的 complex128 值。",
-     "dtype": "复数数组",
-     "shape": "与 z 同形",
-     "units": "无量纲"
-    },
-    {
-     "name": "order",
-     "description": "实际采用的截断阶数或极点数。",
-     "constraints": "允许任意正整数阶数。",
-     "dtype": "整数",
-     "shape": "标量",
-     "units": "计数"
-    }
-   ],
-   "applicability": {
-    "preconditions": [
-     "所有相位输入及计算结果都必须在 complex128 的可表示范围内。"
-    ],
-    "supported": [
-     "允许任意正整数阶数。",
-     "支持有限、非空的标量或数组输入，并保持形状。"
-    ],
-    "excluded": [
-     "不提供有保证的全局误差界。",
-     "不提供任意分布的响应。"
+     "下半平面高斯延拓可能超出 float64。",
+     "误差依赖自变量和阶数；接受任意正整数不表示统一精度或有界资源开销。",
+     "只输出近似数学 w；物理 Z 可表示性和调用者归一化不属于此函数。"
     ]
-   },
-   "failure_semantics": {
-    "invalid_input": "相位点非有限/为空、整数 order 非正或越界，或 pole 数不受支持时抛出 ValueError。",
-    "runtime_failure": "连分式或极点求和超出 float64 范围时抛出 FloatingPointError；不静默钳制。",
-    "nonconvergence": "固定阶近似没有迭代收敛主张；截断误差仅在受测包络上有界。",
-    "partial_results": "调用失败后不返回部分值。"
-   },
-   "example": {
-    "description": "在上半平面取有限点求值。",
-    "expected": "PASS：返回有限复数响应，并给出实际采用的阶数。"
-   },
-   "verification": {
-    "scope": [
-     "test_defaults_and_independent_complex_error_function、test_imaginary_axis_overflow_regression 与 test_fft_normalization_and_reflection 直接检查 GPDF 默认、矩阵形状、具名正虚轴回归和反射；test_invalid_truncation、test_explicit_empty_and_overflow 与 test_large_real_finite_response 直接覆盖非法阶数、None 默认、下半平面溢出拒绝和大有限相位点。",
-     "test_high_precision_equation_grid 直接用 80 位 mpmath 方程比较 GPDF，使用该入口对应的断言容差；70 位 Gaussian Cauchy 积分调用的是 J-pole。"
-    ],
-    "known_limitations": [
-     "下半平面指数项可能超出 float64。",
-     "固定截断误差取决于相位点和阶数。",
-     "GPDF 存在直接失败及边界断言；所采样的相位点与阶数不构成全域误差或可表示性保证。"
-    ],
-    "evidence_ceiling": "直接与依赖证据按上述 scope 分开，具名断言见 tests/kinetic/test_generalized_dispersion_faddeeva_variants.py 及 tests/kinetic/test_generalized_dispersion_faddeeva_independent.py。各入口比较保留原断言容差，只适用于采样相位点与阶数；共享文件不使各入口继承其中全部断言。不建立全域误差界、任意分布响应或实验验证。"
-   }
-  },
-  {
-   "asset_id": "scirel.kinetic.evaluate-maxwellian-fft",
-   "source_sha256": "6aa48e20ecbca1db5d33aaf9641256a2d72b7e01067a63425d8ac9ff11b2ce4e",
-   "summary": "按默认阶数求值 FFT Maxwellian 色散近似，并遵循所声明的失败语义。",
-   "definition": "采用 Weideman 有理 FFT 展开，在虚轴使用 erfcx 求值。",
-   "model": "一维 Maxwellian 等离子体响应。",
-   "boundary": "接受实轴输入；指数延拓发生溢出时报错。",
-   "assumptions": [
-    "输入为无量纲、已归一化的 Maxwellian 自变量。"
-   ],
-   "inputs": [
-    {
-     "name": "z",
-     "description": "无量纲复相位点。",
-     "constraints": "必须有限。",
-     "dtype": "复数数值",
-     "shape": "标量或非空数组",
-     "units": "无量纲"
-    },
-    {
-     "name": "order",
-     "description": "有理近似的截断阶数或极点数；显式传入 None 无效。",
-     "constraints": "允许任意正整数阶数；拒绝布尔值。",
-     "dtype": "整数",
-     "shape": "标量",
-     "units": "计数"
-    }
-   ],
-   "outputs": [
-    {
-     "name": "Z",
-     "description": "复数响应值。",
-     "constraints": "必须为有限的 complex128 值。",
-     "dtype": "复数数组",
-     "shape": "与 z 同形",
-     "units": "无量纲"
-    },
-    {
-     "name": "order",
-     "description": "实际采用的截断阶数或极点数。",
-     "constraints": "允许任意正整数阶数。",
-     "dtype": "整数",
-     "shape": "标量",
-     "units": "计数"
-    }
-   ],
-   "applicability": {
-    "preconditions": [
-     "所有相位输入及计算结果都必须在 complex128 的可表示范围内。"
-    ],
-    "supported": [
-     "允许任意正整数阶数。",
-     "支持有限、非空的标量或数组输入，并保持形状。"
-    ],
-    "excluded": [
-     "不提供有保证的全局误差界。",
-     "不提供任意分布的响应。"
-    ]
-   },
-   "failure_semantics": {
-    "invalid_input": "非有限或空相位点、无效整数阶数或不支持的极点数引发 ValueError。",
-    "runtime_failure": "w 或最终缩放后的 Z 超出 float64 有限范围时抛出 FloatingPointError；仅 w 有限不能证明 Z 可表示。",
-    "nonconvergence": "采用固定近似，不声称迭代收敛。",
-    "partial_results": "调用失败后不返回部分结果。"
-   },
-   "example": {
-    "description": "在上半平面取有限点求值。",
-    "expected": "PASS：返回有限复数响应，并给出实际采用的阶数。"
-   },
-   "verification": {
-    "scope": [
-     "test_fft_normalization_and_reflection 在参数化阶数下直接检查 FFT 的 Z=i*sqrt(pi)*w 与 GPDF 一致；反射部分直接检查 GPDF。test_invalid_truncation 与 test_explicit_empty_and_overflow 直接拒绝非法 FFT 阶数和 None。",
-     "80 位方程网格直接检查 GPDF 依赖及 DR，70 位 Gaussian Cauchy 积分检查 J-pole；这些属于依赖或相邻入口证据，不能写成 FFT 自身的高精度网格直接覆盖。",
-     "test_generalized_dispersion_fft_scaling.py 直接检查 w 有限而 Z 溢出、可表示邻点、混合矩阵失败及数学缩放阈值两侧；有界比较和拒绝门限见其中具名断言。"
-    ],
-    "known_limitations": [
-     "下半平面指数项可能超出 float64。",
-     "固定截断误差取决于相位点和阶数。",
-     "独立解析对照不能替代外部实验参考。"
-    ],
-    "evidence_ceiling": "直接与依赖证据按上述 scope 分开，具名断言见 tests/kinetic/test_generalized_dispersion_faddeeva_variants.py 及 tests/kinetic/test_generalized_dispersion_faddeeva_independent.py 和 tests/kinetic/test_generalized_dispersion_fft_scaling.py。各入口比较保留原断言容差，只适用于采样相位点与阶数；共享文件不使各入口继承其中全部断言。不建立全域误差界、任意分布响应或实验验证。"
-   }
-  },
-  {
-   "asset_id": "scirel.kinetic.evaluate-maxwellian-jpole",
-   "source_sha256": "185d99f7820deb97b10df1182d20c6c34c5d9bc949704b5a2121fe729b419523",
-   "summary": "按默认阶数求值固定极点 Maxwellian 色散近似，并遵循所声明的失败语义。",
-   "definition": "采用固定数表的部分分式近似；先在上半平面求值，再用 Gaussian 反射关系取得下半平面值。",
-   "model": "一维 Maxwellian 等离子体响应。",
-   "boundary": "接受实轴输入；指数延拓发生溢出时报错。",
-   "assumptions": [
-    "输入为无量纲、已归一化的 Maxwellian 自变量。"
-   ],
-   "inputs": [
-    {
-     "name": "z",
-     "description": "无量纲复相位点。",
-     "constraints": "必须有限。",
-     "dtype": "复数数值",
-     "shape": "标量或非空数组",
-     "units": "无量纲"
-    },
-    {
-     "name": "order",
-     "description": "有理近似的截断阶数或极点数；显式传入 None 无效。",
-     "constraints": "仅允许 8、12、16 或 24 个极点；拒绝布尔值。",
-     "dtype": "整数",
-     "shape": "标量",
-     "units": "计数"
-    }
-   ],
-   "outputs": [
-    {
-     "name": "Z",
-     "description": "复数响应值。",
-     "constraints": "必须为有限的 complex128 值。",
-     "dtype": "复数数组",
-     "shape": "与 z 同形",
-     "units": "无量纲"
-    },
-    {
-     "name": "order",
-     "description": "实际采用的截断阶数或极点数。",
-     "constraints": "仅允许 8、12、16 或 24 个极点。",
-     "dtype": "整数",
-     "shape": "标量",
-     "units": "计数"
-    }
-   ],
-   "applicability": {
-    "preconditions": [
-     "所有相位输入及计算结果都必须在 complex128 的可表示范围内。"
-    ],
-    "supported": [
-     "仅允许 8、12、16 或 24 个极点。",
-     "支持有限、非空的标量或数组输入，并保持形状。"
-    ],
-    "excluded": [
-     "不提供有保证的全局误差界。",
-     "不提供任意分布的响应。"
-    ]
-   },
-   "failure_semantics": {
-    "invalid_input": "相位点非有限/为空，或 order 低于支持的 pole 数时抛出 ValueError。",
-    "runtime_failure": "极点求和超出有限 float64 范围时抛出 FloatingPointError；不回退到低阶求和。",
-    "nonconvergence": "固定 J-pole 近似没有迭代收敛主张；省略尾项界不是经过认证的全局误差。",
-    "partial_results": "调用失败后不返回部分值。"
-   },
-   "example": {
-    "description": "在上半平面取有限点求值。",
-    "expected": "PASS：返回有限复数响应，并给出实际采用的阶数。"
-   },
-   "verification": {
-    "scope": [
-     "test_jpole_all_matrix_entries_and_scalar_reference 直接检查各受支持数表阶数、标量/矩阵一致性及与 scipy.special.wofz 的比较；test_explicit_empty_and_overflow 直接拒绝 order=10；test_large_real_finite_response 直接检查 order=8 的大实部渐近值。",
-     "test_jpole_gaussian_cauchy_integral 在受支持阶数下直接用 70 位独立 Gaussian Cauchy 积分比较 J-pole，容差见该断言；80 位方程网格、GPDF 反射与正虚轴回归调用的是其他入口。"
-    ],
-    "known_limitations": [
-     "下半平面指数项可能超出 float64。",
-     "固定截断误差取决于相位点和阶数。",
-     "J-pole 存在直接不支持阶数及大实部断言；GPDF 专属下半平面溢出与反射断言不认证 J-pole 的全部延拓点。"
-    ],
-    "evidence_ceiling": "直接与依赖证据按上述 scope 分开，具名断言见 tests/kinetic/test_generalized_dispersion_faddeeva_variants.py 及 tests/kinetic/test_generalized_dispersion_faddeeva_independent.py。各入口比较保留原断言容差，只适用于采样相位点与阶数；共享文件不使各入口继承其中全部断言。不建立全域误差界、任意分布响应或实验验证。"
    }
   },
   {

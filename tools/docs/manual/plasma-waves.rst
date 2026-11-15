@@ -377,13 +377,13 @@ Hall 项则为 ``i H [B]_x``，无需先舍入场模；完整矩阵元最后舍�
 
 .. code-block:: python
 
-   from scirel.kinetic import evaluate_maxwellian_jpole, evaluate_plasma_dispersion
+   from scirel.kinetic import evaluate_plasma_dispersion
 
    z = np.array([0.2 + 0.7j, 1.0 + 0.5j, 2.0 + 0.5j, -0.5 - 0.3j])
    exact = evaluate_plasma_dispersion(z)["Z"]
    print("z       =", z)
    for order in (8, 16, 24):
-       approx = evaluate_maxwellian_jpole(z, order=order)["Z"]
+       approx = evaluate_plasma_dispersion(z, method="jpole", order=order)["Z"]
        err = np.abs(approx - exact) / np.abs(exact)
        print(f"J={order:2d}  " + "  ".join(f"{e:.2e}" for e in err))
 
@@ -517,7 +517,7 @@ Hall 项则为 ``i H [B]_x``，无需先舍入场模；完整矩阵元最后舍�
 - 已有频率种子，想求一条根并检查残差：用 :doc:`../reference/generated/scirel.kinetic.maxwellian-electrostatic-solver`。
 - 想沿同一分支扫多个波数：用 :doc:`../reference/generated/scirel.kinetic.generalized-root-scans`。
 - 想用小波数渐近式做独立检查：用 :doc:`../reference/generated/scirel.kinetic.generalized-small-k`。
-- 想用固定极点近似反复评估色散函数：用 :doc:`../reference/generated/scirel.kinetic.evaluate-maxwellian-jpole`；需要精确参考值时用 :doc:`../reference/generated/scirel.kinetic.plasma-dispersion-function`。
+- 想用固定极点近似反复评估色散函数：在 :doc:`../reference/generated/scirel.kinetic.plasma-dispersion-function` 选择 ``method="jpole"``；直接参考值使用默认 ``method="scipy"``。
 - 想在同一个磁化平衡快照上比较有限谐波和 Ronnmark 两条路径：用 :doc:`../reference/generated/scirel.kinetic.kinetic-dispersion-relation`。
 
 本章没有覆盖离子声波、束流、任意速度分布、Vlasov 初值问题、多流体谱方法和复波数根扫描。这些主题各有自己的入口和归一化；不要因为本章的 ``langmuir`` 扫描能跑通，就把同样的种子、同样的单位或同样的“根即模式”假设搬到那些入口。

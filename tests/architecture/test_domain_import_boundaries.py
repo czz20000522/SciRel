@@ -186,7 +186,7 @@ assert "scipy" not in sys.modules
 try:
     evaluate_plasma_dispersion([])
 except ValueError as error:
-    assert str(error) == "z must contain finite numeric values"
+    assert "z" in str(error) and "scirel.kinetic.plasma-dispersion-function" in str(error)
 else:
     raise AssertionError("empty plasma-dispersion input unexpectedly succeeded")
 assert "scipy" not in sys.modules
