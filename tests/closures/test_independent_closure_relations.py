@@ -109,6 +109,8 @@ plant dynamics, saturation, stability and calibration remain unestablished.
 import copy
 from decimal import Decimal as D, localcontext
 from fractions import Fraction as F
+import subprocess
+import sys
 
 import numpy as np
 import pytest
@@ -610,3 +612,32 @@ def test_omitted_ion_components_determine_ion_only_thermal_diagnostics_and_cap(c
         assert out["velocity_cap_fraction"] == 1.0
     else:
         assert out["velocity_cap_fraction"] == 0.0
+
+
+def test_feedback_docstring_example_runs_without_repository_fixtures(tmp_path):
+    """Execute the public example from an empty cwd using the installed package.
+
+    Isolated Python ignores the working directory and PYTHONPATH for imports.
+    Doctest executes every example assertion; missing fixtures and wrong numeric
+    expectations must fail the child process and this test.
+    """
+    program = """
+import doctest
+from scirel.closures import simulate_discrete_vector_feedback
+
+example = doctest.DocTestParser().get_doctest(
+    simulate_discrete_vector_feedback.__doc__, {}, "feedback public example", None, 0
+)
+result = doctest.DocTestRunner().run(example)
+assert result.attempted > 0, "the public docstring must contain executable examples"
+raise SystemExit(1 if result.failed else 0)
+"""
+    completed = subprocess.run(
+        [sys.executable, "-I", "-c", program],
+        cwd=tmp_path,
+        capture_output=True,
+        text=True,
+        timeout=30,
+        check=False,
+    )
+    assert completed.returncode == 0, completed.stdout + completed.stderr
