@@ -26,7 +26,7 @@
   ],
   "model": "the boundary source normalization",
   "geometry": "one radial dimension times the axial velocity axis",
-  "boundary": "finite nonnegative (nvr,nvx) shape and volume, finite positive thermal speed, finite target flux, at least one positive vx node, strictly positive positive-half flux; evaluated outputs must be finite",
+  "boundary": "finite nonnegative (nvr,nvx) shape and volume, finite positive thermal speed, finite target flux, at least one positive vx node, strictly positive positive-half flux; evaluated outputs must be finite; a nonzero target requires at least one positive returned cell with positive volume on the positive-vx half",
   "device_scope": "generic"
  },
  "identity": {
@@ -36,7 +36,7 @@
   "model": "the boundary source normalization",
   "geometry": "one radial dimension times the axial velocity axis",
   "coordinates": "shape and volume in the source's normalized units, vx in normalized axial speed, thermal speed m/s, target flux m^-2 s^-1",
-  "boundary": "finite nonnegative (nvr,nvx) shape and volume, finite positive thermal speed, finite target flux, at least one positive vx node, strictly positive positive-half flux; evaluated outputs must be finite",
+  "boundary": "finite nonnegative (nvr,nvx) shape and volume, finite positive thermal speed, finite target flux, at least one positive vx node, strictly positive positive-half flux; evaluated outputs must be finite; a nonzero target requires at least one positive returned cell with positive volume on the positive-vx half",
   "assumptions": [
    "The caller owns the boundary shape and the quadrature; this asset normalizes, it does not construct a distribution.",
    "The sign convention of the requested flux is the caller's (the scale uses abs); this function does not preserve target sign in its returned distribution."
@@ -97,7 +97,7 @@
    "shape": "[nvr,nvx]",
    "dtype": "float64 array",
    "required": true,
-   "constraints": "Finite; zero on the nonpositive-vx half; the scaled shape on the positive half."
+   "constraints": "Finite; zero on the nonpositive-vx half; the scaled shape on the positive half. For a nonzero target at least one positive-volume, positive-vx cell remains positive."
   },
   {
    "name": "scale",
@@ -131,7 +131,7 @@
  },
  "failure_semantics": {
   "invalid_input": "Raises ValueError for boolean, string, complex or nonscalar values outside the declared shapes, non-finite or negative shape/volume, non-finite vx or scalars, nonpositive thermal speed, no positive vx node, or nonpositive positive-half flux.",
-  "runtime_failure": "Raises ValueError when the evaluated flux, scale or boundary is non-finite, or a nonzero target's scale underflows to zero; no fallback is selected.",
+  "runtime_failure": "Raises ValueError when the evaluated flux, scale or boundary is non-finite, or a nonzero target's scale or every flux-carrying boundary cell underflows to zero; no fallback is selected.",
   "nonconvergence": "Not applicable.",
   "partial_results": "Never returned; a rejected call produces no result."
  },
@@ -155,17 +155,18 @@
  },
  "verification": {
   "scope": [
-   "That the returned positive-half flux integral after scaling equals the absolute value of the requested target on finite valid inputs.",
+   "On the tested finite carriers, the returned positive-half flux integral after scaling equals the absolute requested target.",
    "That the negative half is exactly zero and the scale matches the abs(target)/flux form.",
-   "The fail-closed contracts, including real finite inputs, nonnegative volume and finite derived outputs; zero target remains a valid zero boundary."
+   "The fail-closed contracts, including real finite inputs, nonnegative volume and finite derived outputs; zero target remains a valid zero boundary.",
+   "A nonzero target with every flux-carrying returned cell rounded to zero is rejected, even if a zero-volume cell stays positive. Controls retain a representable subnormal distribution and allow unrelated small cells to round to zero; an exact binary-rational flux oracle avoids a false rejection from reintegration underflow."
   ],
   "tests": [
    "tests/kinetic/test_neutral_normalizations.py"
   ],
-  "evidence_ceiling": "Bounded to scaling of a positive-half-space neutral boundary shape to a requested incoming flux. Evidence: `test_neutral_normalizations.py` contains 11 test functions, 8 of which reference `normalize_incoming_neutral_boundary`, and is shared by 2 assets; only shared-file coverage is bound, so a pass is file-level rather than asset-isolated; the bounded example was executed by this audit. Oracle: self-consistency/regression against the declared flux integral in the bound file. It does not establish shapes with nonpositive positive-half flux, meshes without a positive-vx node, or non-finite scalars.",
+  "evidence_ceiling": "Bounded to positive-half boundary scaling on the carriers in test_neutral_normalizations.py, shared by two assets. The direct boundary tests bind the declared integral and rejection semantics; exact binary-rational controls establish the representable subnormal cases. They do not establish arbitrary-range correctly rounded flux integrals, caller-owned shape physics, or full transport validity.",
   "known_limitations": [
    "The historical function accepts some coercible non-real inputs and does not fully enforce finite quadrature or derived outputs; SciRel rejects them. A zero target is valid and produces zero scale, contrary to the intake document's positive-scale wording.",
-   "The bound file is shared by two assets and has eight direct functions covering positive-half scaling, zero target, invalid/coerced/nonfinite fields, zero nonzero-target scale and nonfinite scaled distribution."
+   "The finite nonzero-target guard rejects complete loss of positive-volume incoming cells, not every individual cell rounding to zero. The returned distribution is not re-integrated as an acceptance check because that evaluation order can itself underflow even when the exact flux is representable; arbitrary-scale flux accuracy is not guaranteed."
   ]
  }
 }

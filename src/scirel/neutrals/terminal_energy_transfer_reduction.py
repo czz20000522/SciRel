@@ -78,7 +78,7 @@ def reduce_terminal_molecular_energy_transfer(
     momentum_transfer_rate_profile_n_m2 : ndarray, shape (nx,)
         Centered axial momentum moment of the signed RHS. [source-labeled N/m^2; dimensional interpretation unresolved]
     total_energy_transfer_rate_profile_w_m3 : ndarray, shape (nx,)
-        Total transfer reconstructed from thermal, momentum and loss terms.
+        Total transfer reconstructed from thermal, momentum and the retained RHS integral.
         [source-labeled W/m^3]
 
     Raises
@@ -99,9 +99,11 @@ def reduce_terminal_molecular_energy_transfer(
     matrix-vector and radial summation order, then centers the RHS about the mean
     flow. The loss, thermal, momentum and total profiles are signed diagnostic
     outputs; the RHS and external source are caller-owned. Total transfer is
-    reconstructed algebraically and is independent of the external source only in
-    finite exact arithmetic. The physical normalization of the RHS and the
-    reported N/m^2 convention remain unresolved and are not established here.
+    reconstructed using the RHS integral directly, without recovering it by
+    subtracting the external source from the rounded loss. The total-energy
+    calculation therefore does not depend on the external source. The physical
+    normalization of the RHS and the reported N/m^2 convention remain unresolved
+    and are not established here.
 
     Examples
     --------
@@ -209,12 +211,13 @@ def reduce_terminal_molecular_energy_transfer(
             axis=1,
         )
     )
-    loss_rate = -np.sum(np.matmul(rhs_slices, widths) * weight[None, :], axis=1) + external_source
+    rhs_integral = np.sum(np.matmul(rhs_slices, widths) * weight[None, :], axis=1)
+    loss_rate = -rhs_integral + external_source
 
     total_energy_transfer = (
         thermal_energy_transfer
         + momentum_transfer * mean_velocity
-        - 0.5 * molecule_mass * (loss_rate - external_source) * mean_velocity * mean_velocity
+        + 0.5 * molecule_mass * rhs_integral * mean_velocity * mean_velocity
     )
     outputs = (loss_rate, thermal_energy_transfer, momentum_transfer, total_energy_transfer)
     if not all(np.all(np.isfinite(value)) for value in outputs):

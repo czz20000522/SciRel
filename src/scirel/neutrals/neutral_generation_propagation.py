@@ -56,7 +56,7 @@ def propagate_neutral_generation(
     ----------
     vx : real array-like, shape [nvx]
         Velocity axis. [dimensionless (u=v/Vth)].
-        Constraints: Finite one-dimensional with both positive and negative branches.
+        Constraints: Finite one-dimensional with both positive and negative branches; no zero nodes.
     Ak : real array-like, shape [nvr,nvx,nx]
         Forward diagonal coefficient. [dimensionless].
         Constraints: Finite 3-D.
@@ -96,7 +96,7 @@ def propagate_neutral_generation(
     Raises
     ------
     ValueError
-        Raises ValueError when vx lacks branches, coefficient fields are not finite aligned 3-D, generation_kind is invalid, or the wrong source/boundary is supplied. Raises ValueError if finite inputs overflow to a non-finite generation. Not applicable. Never returned; a rejected call produces no result.
+        Raises ValueError when vx lacks branches or has a zero node, coefficient fields are not finite aligned 3-D, generation_kind is invalid, or the wrong source/boundary is supplied. Raises ValueError if finite inputs overflow to a non-finite generation. Not applicable. Never returned; a rejected call produces no result.
 
     See Also
     --------
@@ -105,7 +105,7 @@ def propagate_neutral_generation(
     Notes
     -----
         first_flight: forward from boundary on positive vx using Fk as source term, backward on negative vx using Gk as source term; scattered: forward on positive vx using Bk as source coefficient, backward on negative vx using Dk as source coefficient.
-    vx one-dimensional with both positive and negative branches; six coefficient fields finite aligned 3-D; generation_kind in {first_flight, scattered}; first_flight requires incoming_boundary; scattered requires scattered_source_distribution; nx must be at least one (a zero-node spatial axis fails closed with a named ValueError rather than a raw IndexError)
+    vx one-dimensional with both positive and negative branches and no zero nodes; six coefficient fields finite aligned 3-D; generation_kind in {first_flight, scattered}; first_flight requires incoming_boundary; scattered requires scattered_source_distribution; nx must be at least one (a zero-node spatial axis fails closed with a named ValueError rather than a raw IndexError). Zero axial velocity requires a separate local source/loss balance that these recurrence inputs do not determine, so it is rejected.
 
     Examples
     --------
@@ -137,10 +137,11 @@ def propagate_neutral_generation(
     if (
         not np.any(positive)
         or not np.any(negative)
+        or np.any(axial == 0.0)
         or not isinstance(generation_kind, str)
         or generation_kind not in ("first_flight", "scattered")
     ):
-        raise ValueError("vx branches or generation_kind are invalid")
+        raise ValueError("vx branches must be nonzero and generation_kind must be valid")
     if a.shape[2] < 1:
         raise ValueError("nx must be at least one for generation propagation")
     generation = np.zeros_like(a)

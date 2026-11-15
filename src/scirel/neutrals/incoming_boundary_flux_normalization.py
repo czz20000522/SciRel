@@ -91,7 +91,7 @@ def normalize_incoming_neutral_boundary(
     -------
     incoming_boundary : float64 array, shape [nvr,nvx]
         The scaled boundary distribution. [source-normalized].
-        Constraints: Finite; zero on the nonpositive-vx half; the scaled shape on the positive half.
+        Constraints: Finite; zero on the nonpositive-vx half; the scaled shape on the positive half. For a nonzero target at least one positive-volume, positive-vx cell remains positive.
     scale : float scalar, shape scalar
         The applied scalar scale. [dimensionless].
         Constraints: Finite and nonnegative; positive for a nonzero target flux and exactly zero for a zero target.
@@ -102,7 +102,7 @@ def normalize_incoming_neutral_boundary(
     Raises
     ------
     ValueError
-        Raises ValueError for boolean, string, complex or nonscalar values outside the declared shapes, non-finite or negative shape/volume, non-finite vx or scalars, nonpositive thermal speed, no positive vx node, or nonpositive positive-half flux. Raises ValueError when the evaluated flux, scale or boundary is non-finite, or a nonzero target's scale underflows to zero; no fallback is selected. Not applicable. Never returned; a rejected call produces no result.
+        Raises ValueError for boolean, string, complex or nonscalar values outside the declared shapes, non-finite or negative shape/volume, non-finite vx or scalars, nonpositive thermal speed, no positive vx node, or nonpositive positive-half flux. Raises ValueError when the evaluated flux, scale or boundary is non-finite, or a nonzero target's scale or every flux-carrying boundary cell underflows to zero; no fallback is selected. Not applicable. Never returned; a rejected call produces no result.
 
     See Also
     --------
@@ -112,6 +112,10 @@ def normalize_incoming_neutral_boundary(
     -----
         Only the positive-vx half enters the integral; the returned distribution is exactly zero on the nonpositive half; the scale is the abs(target)/flux form, so negative and positive targets of equal magnitude yield the same scale and a zero target yields zero scale and boundary
     finite nonnegative (nvr,nvx) shape and volume, finite positive thermal speed, finite target flux, at least one positive vx node, strictly positive positive-half flux; evaluated outputs must be finite
+    For a nonzero target, the returned positive-vx distribution must retain at
+    least one positive cell with positive volume. Other tiny cells may round
+    to zero. The check does not re-integrate the rounded distribution, which
+    could itself lose a representable flux through an intermediate underflow.
 
     Examples
     --------
@@ -168,4 +172,8 @@ def normalize_incoming_neutral_boundary(
         incoming_boundary[:, positive] = shape[:, positive] * scale
     if not np.all(np.isfinite(incoming_boundary)):
         raise ValueError("incoming boundary must be finite")
+    if target != 0.0 and not np.any(
+        (incoming_boundary[:, positive] > 0.0) & (volume[:, positive] > 0.0)
+    ):
+        raise ValueError("every flux-carrying incoming boundary cell underflows to zero")
     return incoming_boundary, float(scale), float(incoming_flux)

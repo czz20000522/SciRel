@@ -1,9 +1,26 @@
 """Contract tests for terminal H2 loss, momentum and energy-transfer rates."""
 
+from fractions import Fraction
+
 import numpy as np
 import pytest
 
 from scirel.neutrals import reduce_terminal_molecular_energy_transfer
+
+
+@pytest.mark.parametrize("rhs_value", [-1.0, 1.0])
+@pytest.mark.parametrize("external_source", [0.0, -1e20, 1e20])
+def test_large_external_source_cannot_erase_the_lab_frame_energy(rhs_value, external_source):
+    # A unit-speed monokinetic stream has lab energy source m/2 * RHS,
+    # independently of the external-source bookkeeping and mean-flow split.
+    f = np.ones((1, 1, 1))
+    result = reduce_terminal_molecular_energy_transfer(
+        [0.0], [1.0], 1.0, 1.0, f, rhs_value * f, [1.0], [1.0], [external_source]
+    )
+    expected = float(Fraction.from_float(1.6726231e-27) * Fraction.from_float(rhs_value))
+    np.testing.assert_allclose(
+        result["total_energy_transfer_rate_profile_w_m3"], [expected], rtol=1e-14, atol=1e-28
+    )
 
 
 def _case():

@@ -2053,7 +2053,7 @@
   },
   {
    "asset_id": "scirel.neutrals.incoming-boundary-flux-normalization",
-   "source_sha256": "f641ce4e5c1452b05e7a59099496c6940a092a76fc0e6a38383d791804be2c8e",
+   "source_sha256": "6eb04f7829368e902aae024079ac1d79f9531467a95e75d9bb0fd72b8f8e396d",
    "summary": "将 H 或 H₂ 边界形状在正轴向速度半空间缩放到请求入射中性粒子通量，并返回缩放后的边界、缩放因子和缩放前通量积分。",
    "definition": "只有正 vx 半空间进入积分；返回分布在非正半空间精确为零；缩放取 abs(target)/flux 形式，因此等幅的正负目标得到相同缩放，零目标给出零缩放和零边界。",
    "model": "边界源归一化关系。",
@@ -2061,7 +2061,7 @@
     "调用者拥有形状和求积，算子只归一。",
     "请求通量的符号由调用者负责（缩放使用 abs）；该函数不在返回分布中保留目标符号。"
    ],
-   "boundary": "非负有限形状/体积，正有限热速，有限目标，至少一个正vx且正半通量>0；输出有限。",
+   "boundary": "非负有限形状/体积，正有限热速，有限目标，至少一个正vx且正半通量>0；输出有限。 非零目标还要求正 vx 半空间内至少一个正体积返回格保持正值。",
    "inputs": [
     {
      "name": "boundary_shape",
@@ -2098,7 +2098,7 @@
     {
      "name": "incoming_boundary",
      "description": "缩放后的入射边界分布。",
-     "constraints": "有限；非正vx半空间精确零。",
+     "constraints": "有限；非正vx半空间精确零。 非零目标时至少一个正体积、正 vx 格保持正值。",
      "dtype": "float64 数组"
     },
     {
@@ -2127,7 +2127,7 @@
    },
    "failure_semantics": {
     "invalid_input": "非法类型或形状、非有限或负的形状/体积、非正热速、无正 vx 节点或正半通量非正时引发 ValueError。",
-    "runtime_failure": "通量/缩放/边界非有限，或非零目标缩放下溢零时 ValueError。",
+    "runtime_failure": "通量/缩放/边界非有限，或非零目标的缩放或全部承载通量的返回格下溢为零时抛 ValueError；不选择备用算法。",
     "nonconvergence": "不适用；没有迭代。",
     "partial_results": "不返回部分结果。"
    },
@@ -2137,14 +2137,15 @@
    },
    "verification": {
     "scope": [
-     "有限合法输入下，缩放后返回的正半轴通量积分等于请求目标的绝对值。",
+     "在已测有限网格上，缩放后返回的正半轴通量积分等于请求目标的绝对值。",
      "负半轴精确为零，缩放系数符合 abs(target)/flux 形式。",
-     "核验失败时拒绝返回的合同，包括实数有限输入、非负体积及有限派生输出；零目标仍给合法的零边界。"
+     "核验失败时拒绝返回的合同，包括实数有限输入、非负体积及有限派生输出；零目标仍给合法的零边界。",
+     "非零目标下全部承载通量的返回格舍入零时拒绝，即使零体积格仍为正。控制例保留可表示的极小分布，允许无关小格舍入零；用精确二进制有理数通量对照，避免再次积分的中间下溢造成误拒绝。"
     ],
-    "evidence_ceiling": "限于将正半空间中性边界形状缩放到请求的入射通量。证据：`test_neutral_normalizations.py` 含 11 个测试函数，其中 8 个引用 `normalize_incoming_neutral_boundary`，由 2 个资产共享；仅绑定共享文件覆盖，因此通过是文件级事实、而非资产隔离证据；本审计已执行有界示例。真值来源：绑定文件中针对声明通量积分的自洽/回归。不建立：正半空间通量非正的形状、无正 vx 节点的网格，或非有限标量。",
+    "evidence_ceiling": "限于 test_neutral_normalizations.py 中已测网格上的正半空间边界缩放；该文件由两个资产共享。直接边界测试绑定声明积分与拒绝语义，精确二进制有理数控制例验证可表示的极小结果。不建立任意数值范围内正确舍入的通量积分、调用者形状的物理有效性或完整输运资格。",
     "known_limitations": [
      "可强制转换的非实数输入会被拒绝，求积与派生输出也强制有限。零目标是合法的，会产生零缩放，这与某些文档中“缩放为正”的措辞不同。",
-     "绑定文件由两个资产共享，含八个直接函数，覆盖正半空间缩放、零目标、非法/强制转换/非有限场、非零目标零缩放与非有限缩放分布。"
+     "非零目标检查拒绝所有正体积入射格丢失，不拒绝每个单独格的舍入零。不以再次积分作验收，因为该运算顺序可能在精确通量可表示时仍中间下溢；不保证任意尺度下的通量精度。"
     ]
    }
   },
@@ -2651,7 +2652,7 @@
   },
   {
    "asset_id": "scirel.neutrals.neutral-generation-propagation",
-   "source_sha256": "b71698487c3dce42ed19522616f56e0b37415d90ac8df843c7ad57c98465ae90",
+   "source_sha256": "b06d4f4d7d0d6b68c8d33a908f16fc9da07283e4948f301e675f1a7540ce2b43",
    "summary": "用无量纲轴向节点和归一化输运/源系数，在空间中推进一代中性分布。",
    "definition": "首次飞行使用正向边界、Fk 和反向 Gk；散射代使用正向 Bk 和反向 Dk 的源递推。负速度支右端起值为零。",
    "model": "使用调用者输运系数的双向递推。",
@@ -2666,12 +2667,12 @@
     "当 nx=0 时，generation[:, positive, 0] 对空轴索引会抛出原始 IndexError；本资产改为以要求 nx >= 1 的具名 ValueError 失败关闭。",
     "公开输运约定使用调用者选定的同一个 Vth：速度 u=v/Vth 无量纲，碰撞系数 alpha=nu/Vth 为 m^-1；分布 F 对归一化速度体积积分后给出 m^-3 数密度，空间源 Q/Vth 为 F/m。物理频率 s^-1 必须先除以同一个 Vth；纯空间算子不自动换算。"
    ],
-   "boundary": "vx 为一维且同时含正、负分支；六个系数场是有限且同形的三维数组；generation_kind 为 {first_flight, scattered}；first_flight 需要 incoming_boundary，scattered 需要 scattered_source_distribution；nx 至少为 1（零节点空间轴会以具名 ValueError 失败关闭，而不是抛出原始 IndexError）。",
+   "boundary": "vx 为一维且同时含正、负分支，且无零速度节点；六个系数场是有限且同形的三维数组；generation_kind 为 {first_flight, scattered}；first_flight 需要 incoming_boundary，scattered 需要 scattered_source_distribution；nx 至少为 1（零节点空间轴会以具名 ValueError 失败关闭，而不是抛出原始 IndexError）。",
    "inputs": [
     {
      "name": "vx",
      "description": "无量纲轴向速度 u_x=v_x/Vth。",
-     "constraints": "有限一维，含正负支。",
+     "constraints": "有限一维，含正负支，且无零速度节点。",
      "dtype": "转为 float64 的实数类数组"
     },
     {
@@ -2739,7 +2740,7 @@
    ],
    "applicability": {
     "preconditions": [
-     "六系数对齐、速度含双支，源参数满足互斥和类型要求。",
+     "六系数对齐、速度含双支，源参数满足互斥和类型要求。 所有轴向速度节点必须非零；零流速需要本递推未提供的局部源/损失解。",
      "无量纲速度节点、逆长度碰撞系数和空间源必须共用一个 Vth；纯空间算子不隐式换算单位。"
     ],
     "supported": [
@@ -2750,7 +2751,7 @@
     ]
    },
    "failure_semantics": {
-    "invalid_input": "速度支缺失、系数形状、代类型或源输入不匹配时 ValueError。",
+    "invalid_input": "速度支缺失、含零速度节点、系数形状、代类型或源输入不匹配时 ValueError。",
     "runtime_failure": "递推溢出产生非有限结果时 ValueError。",
     "nonconvergence": "不适用；没有迭代。",
     "partial_results": "不返回部分结果。"
@@ -2761,11 +2762,12 @@
    },
    "verification": {
     "scope": [
-     "直接测试绑定两种代类型、Fk/Gk 与 Bk/Dk 的源用法、仅正支入射边界、有符号边界、零节点拒绝及有限输出失败语义。",
+     "直接测试绑定两种代类型、Fk/Gk 与 Bk/Dk 的源用法、仅正支入射边界、有符号边界、空空间轴及零轴向速度拒绝及有限输出失败语义。",
      "跨域测试将传播的物理衰减与解析特征线比较，并在共同 Vth 归一化下保持指定源/损失平衡。",
-     "合同示例只覆盖一个有界代表性调用；数值检查不建立外部物理验证或全参数域适用性。"
+     "合同示例只覆盖一个有界代表性调用；数值检查不建立外部物理验证或全参数域适用性。",
+     "first_flight 和 scattered 均拒绝正零与负零轴向速度节点，不再默默把对应分布列留零。"
     ],
-    "evidence_ceiling": "限于所声明的归一化输运关系。直接测试绑定两种代类型、Fk/Gk 与 Bk/Dk 的源用法、仅正支入射边界、有符号边界、零节点拒绝及有限输出失败语义。跨域测试将传播的物理衰减与解析特征线比较，并在共同 Vth 归一化下保持指定源/损失平衡。列出的直接及跨域测试是当前可复现证据，示例演练一个有界调用。独立解析和 SI 单位对照仅限这些夹具；未绑定的历史来源/一致性回执仍为 UNKNOWN，本次不重新建立其资格。",
+    "evidence_ceiling": "限于所声明的归一化输运关系。直接测试绑定两种代类型、Fk/Gk 与 Bk/Dk 的源用法、仅正支入射边界、有符号边界、空空间轴及零轴向速度拒绝及有限输出失败语义。跨域测试将传播的物理衰减与解析特征线比较，并在共同 Vth 归一化下保持指定源/损失平衡。列出的直接及跨域测试是当前可复现证据，示例演练一个有界调用。独立解析和 SI 单位对照仅限这些夹具；未绑定的历史来源/一致性回执仍为 UNKNOWN，本次不重新建立其资格。",
     "known_limitations": [
      "这些测试不建立外部碰撞数据标定、来源项目一致性资格或装置特定物理验证。",
      "归一化测试采用有界对齐网格和指定速率，不认证完整分布的网格收敛、任意步长非负性或完整非线性输运模型。"
@@ -4784,9 +4786,9 @@
   },
   {
    "asset_id": "scirel.neutrals.terminal-energy-transfer-reduction",
-   "source_sha256": "360a8ad8584d1e7438dcf2d4f89e226fd9b7fee5ac0fc523375405e89c73e1ec",
+   "source_sha256": "f40ddc32aefe9f350d0ac0d44d44edc4bc2ff4c8a57a27b06ee86778c28db21e",
    "summary": "由终态H₂分布、有符号碰撞右端和外部源求损失、热能、动量及总能量传递剖面。",
-   "definition": "对每个空间格 k，density=sum_i weight[i]*sum_j f[i,j,k]*dvx[j]，particle_flux=Vth*sum_i weight[i]*sum_j vx[j]*f[i,j,k]*dvx[j]，遵循所声明的逐格矩阵–向量和径向顺序。令 u=particle_flux/density、c_x=vx-u/Vth、c_squared=vr^2+c_x^2、m=2*mass_ratio*1.6726231e-27 kg。损失为 external_source 减去加权 RHS 积分。热传递为 0.5*m*Vth^2 乘以 c_squared*RHS 的加权积分。动量传递为 m*Vth 乘以 c_x*RHS 的加权积分。总传递为 thermal_transfer+momentum_transfer*u-0.5*m*(loss-external_source)*u^2。在有限精确算术下，总传递等于 0.5*m*Vth^2 乘以 (vr^2+vx^2)*RHS 的加权积分，且与外部源输入无关。",
+   "definition": "对每个空间格 k，density=sum_i weight[i]*sum_j f[i,j,k]*dvx[j]，particle_flux=Vth*sum_i weight[i]*sum_j vx[j]*f[i,j,k]*dvx[j]，遵循所声明的逐格矩阵–向量和径向顺序。令 u=particle_flux/density、c_x=vx-u/Vth、c_squared=vr^2+c_x^2、m=2*mass_ratio*1.6726231e-27 kg。保留加权 RHS 积分 J；损失为 external_source 减去 J。热传递为 0.5*m*Vth^2 乘以 c_squared*RHS 的加权积分。动量传递为 m*Vth 乘以 c_x*RHS 的加权积分。总传递为 thermal_transfer+momentum_transfer*u+0.5*m*J*u^2，直接使用 J，不从舍入后的 loss 减 external_source 恢复。在有限精确算术下，总传递等于 0.5*m*Vth^2 乘以 (vr^2+vx^2)*RHS 的加权积分，且与外部源输入无关。",
    "model": "在显式碰撞 RHS 和外部分子源上的终态 H₂ 损失、动量与能量传递诊断。",
    "assumptions": [
     "此入口不组装Boltzmann右端、不推断终态代，也不绑定右端生成器依赖。",
@@ -4872,8 +4874,8 @@
     },
     {
      "name": "total_energy_transfer_rate_profile_w_m3",
-     "description": "由热、动量和损失矩重构的总能量传递率。",
-     "constraints": "有限有符号；精确算术下不依赖外部源。",
+     "description": "由热、动量矩和保留的 RHS 积分重构的总能量传递率。",
+     "constraints": "有限有符号；总能量计算不读取外部源输入。任一输出非有限时仍拒绝整个调用。",
      "dtype": "float64 数组"
     }
    ],
@@ -4902,7 +4904,7 @@
    "verification": {
     "scope": [
      "独立中心RHS矩及非中心能量矩核对有符号非均匀网格四输出。",
-     "改变外部源只改变损失；正密度下允许部分零求积格。",
+     "改变外源只影响损失；大正负外源与有符号单格 RHS 用实验室系能量独立定义对照。密度正时允许部分零求积格。",
      "UNKNOWN：历史声称的三个摘要固定参考例、双载体精确重放及布尔强制转换分歧，尚未绑定逐例输入、摘要、双方版本和比较断言；当前证据仍为上述直接测试。"
     ],
     "evidence_ceiling": "直接比较在受测载体上确立有限离散 RHS 归约与边界差异。它们不确立上游终态分布或 RHS、绝对物理归一化、整个闭合的资格或专家认可。",
@@ -8334,7 +8336,7 @@
   },
   {
    "asset_id": "scirel.neutrals.compensated-shifted-maxwellian",
-   "source_sha256": "a261195681a46e93ad4537a89fbee9cfcd07959b21d79da866c5f8f54cd6dd9e",
+   "source_sha256": "a67fd8d1ec9752f2018c9e0e66dcfffee105c9efece0dc4c65a9d9107b8b7e3f",
    "summary": "构造裁剪并按圆柱求积归一化的平移 Maxwell 分布切片，再应用有界离散漂移/能量补偿阶段。",
    "definition": "计算热速度和裁剪指数，按求积归一化每个切片，施加 compensate_velocity_slice 后再次归一化。",
    "model": "固定氢质量/电荷常数的离散平移 Maxwell 分布与源形状矩补偿。",
@@ -8390,7 +8392,7 @@
     {
      "name": "moment_rtol",
      "description": "返回矩允许的最大相对误差",
-     "constraints": "正数",
+     "constraints": "有限且严格正的实数数值标量；拒绝布尔、字符串、复数和非标量。",
      "dtype": "float64"
     }
    ],
@@ -8415,7 +8417,7 @@
     ]
    },
    "failure_semantics": {
-    "invalid_input": "求积、形状或索引异常向上传播，不选择备用网格/求解器。漂移绝对误差超过 moment_rtol*max(abs(目标漂移), sqrt(3*CHARGE*T/m))、温度绝对误差超过 moment_rtol*T，或 min(f)<-moment_rtol*max(f) 时抛 ValueError；T 为目标温度（eV），m=molecularity*mu*HYDROGEN_MASS。有限且形状正确的网格仍可能无法通过这些返回矩检查。",
+    "invalid_input": "moment_rtol 不是有限且严格正的实数数值标量时抛 ValueError；在不正温零切片分支前也执行此检查。求积、形状或索引异常向上传播，不选择备用网格/求解器。漂移绝对误差超过 moment_rtol*max(abs(目标漂移), sqrt(3*CHARGE*T/m))、温度绝对误差超过 moment_rtol*T，或 min(f)<-moment_rtol*max(f) 时抛 ValueError；T 为目标温度（eV），m=molecularity*mu*HYDROGEN_MASS。有限且形状正确的网格仍可能无法通过这些返回矩检查。",
     "runtime_failure": "溢出、NaN 和警告遵循 NumPy 算术及源形状修正。",
     "nonconvergence": "不适用；无迭代。",
     "partial_results": "异常后不返回部分分布。"
@@ -8424,7 +8426,8 @@
     "scope": [
      "直接检查形状与不正温零切片；test_adequate_mesh_returns_the_exact_maxwellian_moments、test_mesh_too_small_for_the_temperature_raises_instead_of_returning_wrong_moments 和 test_moment_tolerance_is_the_caller_s_choice 检查解析漂移/温度矩、网格不足拒绝及调用者显式容差。",
      "候选证据保留温度分支、裁剪、非均匀氘以及 NaN/负/零边界行。",
-     "test_internal_seed_keeps_peak_before_real_moment_compensation 对 molecularity=1/2、mu=1/2 观察真实修正前的归一化种子：以 rtol 1e-14 检查解析峰值比、rtol 3e-15 检查含尾部下限的解析剖面，随后执行真实修正和原默认 0.01 漂移/温度/负性检查；不正温切片仍为零。"
+     "test_internal_seed_keeps_peak_before_real_moment_compensation 对 molecularity=1/2、mu=1/2 观察真实修正前的归一化种子：以 rtol 1e-14 检查解析峰值比、rtol 3e-15 检查含尾部下限的解析剖面，随后执行真实修正和原默认 0.01 漂移/温度/负性检查；不正温切片仍为零。",
+     "拒绝 NaN、无穷、非正及非实数/非标量容差；覆盖不足以表示 50 eV 的网格和零温切片上的 NaN。合法 NumPy 标量容差不改变分布。"
     ],
     "known_limitations": [
      "扩展现有预补偿 shifted Maxwellian 叶，不替换它。",

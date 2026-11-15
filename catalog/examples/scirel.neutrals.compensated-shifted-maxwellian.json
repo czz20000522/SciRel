@@ -114,7 +114,7 @@
    "shape": "scalar",
    "dtype": "float64",
    "required": false,
-   "constraints": "Positive",
+   "constraints": "Finite strictly positive real numeric scalar; booleans, strings, complex values and nonscalars are rejected.",
    "default": 0.01
   }
  ],
@@ -142,7 +142,7 @@
   ]
  },
  "failure_semantics": {
-  "invalid_input": "Quadrature and array shape/index errors propagate; no alternate mesh or solver is selected. Raises ValueError if absolute drift error exceeds moment_rtol*max(abs(target drift), sqrt(3*CHARGE*T/m)), absolute temperature error exceeds moment_rtol*T, or min(f) < -moment_rtol*max(f), with target T in eV and m=molecularity*mu*HYDROGEN_MASS. A finite correctly shaped mesh can still fail these returned-moment checks.",
+  "invalid_input": "Raises ValueError if moment_rtol is not a finite strictly positive real numeric scalar; this check also precedes the nonpositive-temperature zero-slice branch. Quadrature and array shape/index errors propagate; no alternate mesh or solver is selected. Raises ValueError if absolute drift error exceeds moment_rtol*max(abs(target drift), sqrt(3*CHARGE*T/m)), absolute temperature error exceeds moment_rtol*T, or min(f) < -moment_rtol*max(f), with target T in eV and m=molecularity*mu*HYDROGEN_MASS. A finite correctly shaped mesh can still fail these returned-moment checks.",
   "runtime_failure": "Overflow, NaN and warning behavior follows NumPy arithmetic and the retained source-shaped correction.",
   "nonconvergence": "Not applicable; no iterative solver is exposed.",
   "partial_results": "No partial distribution mapping is returned after an exception."
@@ -176,7 +176,8 @@
   "scope": [
    "Direct shape and nonpositive-temperature zero-slice checks, plus test_adequate_mesh_returns_the_exact_maxwellian_moments, test_mesh_too_small_for_the_temperature_raises_instead_of_returning_wrong_moments and test_moment_tolerance_is_the_caller_s_choice for analytic drift/temperature moments, inadequate-mesh rejection and explicit caller tolerance.",
    "Retained candidate evidence covers temperature branches, clipping, nonuniform deuterium and NaN/negative/zero edge rows.",
-   "test_internal_seed_keeps_peak_before_real_moment_compensation observes the normalized seed before the real correction for molecularity 1/2 and mu 1/2: analytic peak ratio at rtol 1e-14 and analytic floored profile at rtol 3e-15, followed by the real correction and unchanged default 0.01 drift/temperature/negativity checks. Nonpositive-temperature slices remain zero."
+   "test_internal_seed_keeps_peak_before_real_moment_compensation observes the normalized seed before the real correction for molecularity 1/2 and mu 1/2: analytic peak ratio at rtol 1e-14 and analytic floored profile at rtol 3e-15, followed by the real correction and unchanged default 0.01 drift/temperature/negativity checks. Nonpositive-temperature slices remain zero.",
+   "Reject NaN, infinite, nonpositive and non-real/nonscalar tolerances, including NaN on the inadequate 50 eV mesh and on a zero-temperature slice; accepted NumPy scalar tolerances leave the distribution unchanged."
   ],
   "tests": [
    "tests/kinetic/test_moment_compensation.py"

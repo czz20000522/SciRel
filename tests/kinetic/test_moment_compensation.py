@@ -156,6 +156,31 @@ def test_internal_seed_keeps_peak_before_real_moment_compensation(monkeypatch, m
     np.testing.assert_array_equal(result[:, :, 1:], 0.0)
 
 
+@pytest.mark.parametrize(
+    "tolerance", [np.nan, np.inf, -np.inf, 0.0, -0.01, True, "0.01", 1j, [0.01], None]
+)
+def test_compensated_builder_rejects_invalid_moment_tolerance(tolerance):
+    with pytest.raises(ValueError, match="moment_rtol"):
+        _maxwellian(10.0, 0.0, moment_rtol=tolerance)
+
+
+def test_nan_moment_tolerance_cannot_accept_the_inadequate_mesh():
+    with pytest.raises(ValueError, match="moment_rtol"):
+        _maxwellian(50.0, 0.0, moment_rtol=np.nan)
+
+
+def test_invalid_moment_tolerance_is_checked_for_zero_temperature_too():
+    with pytest.raises(ValueError, match="moment_rtol"):
+        _maxwellian(0.0, 0.0, moment_rtol=np.nan)
+
+
+@pytest.mark.parametrize("tolerance", [np.float64(0.01), np.array(0.01), np.int64(1)])
+def test_valid_numpy_scalar_moment_tolerance_keeps_the_same_distribution(tolerance):
+    np.testing.assert_array_equal(
+        _maxwellian(10.0, 0.0, moment_rtol=tolerance), _maxwellian(10.0, 0.0)
+    )
+
+
 def test_slice_warns_when_the_correction_changes_the_density():
     from scirel.neutrals.cylindrical_velocity_quadrature import make_cylindrical_velocity_quadrature
 

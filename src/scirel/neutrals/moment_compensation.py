@@ -306,7 +306,8 @@ def build_compensated_shifted_maxwellian(
         Normalization temperature [eV] used to construct the thermal speed.
     moment_rtol : float, optional
         Largest accepted relative error of the returned moments [dimensionless] Shape: scalar.
-        Positive Default: 0.01.
+        Finite strictly positive real numeric scalar; booleans, strings, complex
+        values and nonscalars are rejected. Default: 0.01.
 
     Returns
     -------
@@ -319,6 +320,7 @@ def build_compensated_shifted_maxwellian(
     Raises
     ------
     ValueError
+        If moment_rtol is not a finite strictly positive real numeric scalar.
         Quadrature and array shape/index errors propagate; no alternate mesh or solver is
         selected. Raises ValueError if absolute drift error exceeds moment_rtol*max(abs(target
         drift), sqrt(3*CHARGE*T/m)), absolute temperature error exceeds moment_rtol*T, or
@@ -355,6 +357,15 @@ def build_compensated_shifted_maxwellian(
     >>> from scirel.neutrals import build_compensated_shifted_maxwellian
     >>> vr=np.array([.25,.75,1.5]); vx=np.array([-2.5,-1.5,-.5,.5,1.5,2.5]); out=build_compensated_shifted_maxwellian(vr=vr,vx=vx,temperatures_eV=np.array([5.,0.,-1.]),shifts_ms=np.array([0.,100.,-100.]),mu=1,molecularity=1,tnorm_eV=5., moment_rtol=0.1); assert out.shape==(3,6,3) and np.all(out[:,:,1:]==0)
     """
+    try:
+        tolerance = np.asarray(moment_rtol)
+        if tolerance.ndim != 0 or tolerance.dtype.kind not in "iuf":
+            raise ValueError
+        moment_rtol = float(tolerance)
+    except (TypeError, ValueError, OverflowError) as exc:
+        raise ValueError("moment_rtol must be a finite strictly positive real scalar") from exc
+    if not np.isfinite(moment_rtol) or moment_rtol <= 0.0:
+        raise ValueError("moment_rtol must be a finite strictly positive real scalar")
     vr, vx = np.asarray(vr), np.asarray(vx)
     temperatures_eV, shifts_ms = np.asarray(temperatures_eV), np.asarray(shifts_ms)
     out = np.zeros((vr.size, vx.size, shifts_ms.size), dtype=float)
