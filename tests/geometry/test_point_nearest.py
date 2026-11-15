@@ -6,6 +6,7 @@ from fractions import Fraction
 import numpy as np
 import pytest
 
+from scirel.geometry import sampling
 from scirel.geometry.sampling import locs_to_vals1D
 
 
@@ -137,3 +138,128 @@ def test_seeded_scattered_cloud_matches_independent_decimal_reference(scale):
     with np.errstate(all="raise"):
         actual = locs_to_vals1D(samples[:, 0], samples[:, 1], np.arange(32), iter(queries))
     assert actual == expected
+
+
+@pytest.mark.parametrize("position", ["X", "Y", "query_x", "query_y"])
+@pytest.mark.parametrize("dtype", [np.complex128, object])
+@pytest.mark.parametrize("imaginary", [0.0, 1.0])
+def test_complex_coordinates_rejected_even_with_zero_imaginary_part(position, dtype, imaginary):
+    arrays = {"X": np.array([0.0, 1.0]), "Y": np.array([0.0, 0.0])}
+    queries = [[0.0, 0.0], [1.0, 0.0]]
+    if position in arrays:
+        arrays[position] = arrays[position].astype(dtype)
+        arrays[position][0] = complex(0.0, imaginary)
+    else:
+        queries[0] = np.array(queries[0], dtype=dtype)
+        queries[0][0 if position == "query_x" else 1] = complex(0.0, imaginary)
+    with pytest.raises(ValueError, match="real"):
+        locs_to_vals1D(arrays["X"], arrays["Y"], np.array([10, 20]), iter(queries))
+
+
+@pytest.mark.parametrize("position", ["X", "Y"])
+def test_complex_sample_coordinates_rejected_even_without_queries(position):
+    arrays = {"X": np.array([0.0, 1.0]), "Y": np.array([0.0, 0.0])}
+    arrays[position] = arrays[position].astype(complex)
+    with pytest.raises(ValueError, match="real"):
+        locs_to_vals1D(arrays["X"], arrays["Y"], np.array([10, 20]), [])
+
+
+@pytest.mark.parametrize("dtype", [np.complex128, object])
+def test_real_coordinates_still_preserve_complex_quantity_values(dtype):
+    q = np.array([1 + 2j, 3 - 4j], dtype=dtype)
+    actual = locs_to_vals1D(np.array([0.0, 1.0]), np.zeros(2), q, [(1.0, 0.0)])
+    assert actual == [q[1]]
+    assert type(actual[0]) is type(q[1])
+
+
+def test_nearest_does_not_depend_on_hypot_rounding(monkeypatch):
+    # A distorted library norm must not affect a selector using basic operations.
+    monkeypatch.setattr(np, "hypot", lambda *args: np.array([0.0, 1.0]))
+    actual = locs_to_vals1D(np.array([1.0, 0.0]), np.zeros(2), np.array([10, 20]), [(0.0, 0.0)])
+    assert actual == [20]
+
+
+@pytest.mark.parametrize(
+    "samples,query",
+    [
+        (([0.0, 1.0, -1.0, 10.0], [0.0, 1.0, -1.0, 10.0]), (0.1, 0.2)),
+        (([1.0, 1.0], [2.0**-26, 0.0]), (0.0, 0.0)),
+        (([0.0, 1.0], [0.0, 0.0]), (1e16, 0.0)),
+        (([1e308, 9e307, -1.7e308, -1.7e308], [0.0, 0.0, 1.79e308, -1.79e308]), (-1e308, 0.0)),
+        (([1e155, 2e155, -3e155], [2e155, 0.0, 1e155]), (0.0, 0.0)),
+        (([1e154, 1e154], [1e154, 0.0]), (0.0, 0.0)),
+        (([5e-324, 5e-324, 1.0], [5e-324, 0.0, 1.0]), (0.0, 0.0)),
+        (([1.0, 0.0, -1.0], [0.0, 1.0, 0.0]), (0.0, 0.0)),
+    ],
+    ids=[
+        "normal",
+        "rounded-norm",
+        "rounded-subtraction",
+        "subtraction-overflow",
+        "square-overflow",
+        "sum-overflow",
+        "underflow",
+        "ties",
+    ],
+)
+def test_intervals_enclose_exact_distances_and_retain_every_true_minimizer(samples, query):
+    x, y = map(np.array, samples)
+    px, py = map(Fraction, query)
+    squared = [(Fraction(sx) - px) ** 2 + (Fraction(sy) - py) ** 2 for sx, sy in zip(x, y)]
+    with np.errstate(all="raise"):
+        lower, upper = sampling._squared_distance_bounds(x, y, *query)
+    assert lower.shape == upper.shape == x.shape
+    for lo, distance, hi in zip(lower, squared, upper):
+        assert np.isfinite(lo) and 0 <= Fraction(lo) <= distance
+        assert hi == np.inf or distance <= Fraction(hi)
+    retained = lower <= upper.min()
+    for index, distance in enumerate(squared):
+        if distance == min(squared):
+            assert retained[index]
+
+
+def test_normal_interval_filter_can_exclude_provably_far_samples():
+    lower, upper = sampling._squared_distance_bounds(
+        np.array([0.0, 10.0, 20.0]), np.zeros(3), 0.1, 0.0
+    )
+    np.testing.assert_array_equal(lower <= upper.min(), [True, False, False])
+
+
+def test_overlapping_intervals_are_resolved_by_exact_distances(monkeypatch):
+    monkeypatch.setattr(
+        sampling, "_squared_distance_bounds", lambda *args: (np.zeros(3), np.full(3, np.inf))
+    )
+    actual = locs_to_vals1D(
+        np.array([1.0, 0.0, 0.0]), np.zeros(3), np.array([10, 20, 30]), [(0.0, 0.0)]
+    )
+    assert actual == [20]
+
+
+@pytest.mark.parametrize(
+    "case",
+    [
+        "integer-samples",
+        "object-samples",
+        "fraction-query",
+        "decimal-query",
+        "inexact-integer-query",
+    ],
+)
+def test_nonfloat_or_inexact_conversions_bypass_the_interval_filter(monkeypatch, case):
+    def forbidden_filter(*args):
+        raise AssertionError("an inexact or nonfloat conversion entered the interval filter")
+
+    monkeypatch.setattr(sampling, "_squared_distance_bounds", forbidden_filter)
+    expected = 20
+    if case == "integer-samples":
+        x, y, query = np.array([2**62, 2**62 + 1]), np.zeros(2, dtype=int), (2**62 + 1, 0)
+    elif case == "object-samples":
+        x = np.array([1 + Fraction(1, 10**400), Fraction(1)], dtype=object)
+        y, query = np.zeros(2, dtype=object), (Fraction(0), Fraction(0))
+    elif case in ("fraction-query", "decimal-query"):
+        x, y = np.array([-1.0, 1.0]), np.zeros(2)
+        query = (Fraction(1, 10**400) if case == "fraction-query" else Decimal("1e-400"), 0)
+    else:
+        x, y, query = np.array([2**53 + 2.0, 2**53], dtype=float), np.zeros(2), (2**53 + 1, 0)
+        expected = 10  # Exact midpoint: retain the first sample, not a rounded query.
+    assert locs_to_vals1D(x, y, np.array([10, 20]), [query]) == [expected]
