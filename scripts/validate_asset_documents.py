@@ -420,7 +420,14 @@ def _validate_family(document: dict[str, Any]) -> None:
             _fail(location, str(error))
         if any(
             not any(
-                reference == scope or reference.startswith(scope + "::")
+                reference == scope
+                or reference.startswith(scope + "::")
+                or (
+                    "::" in scope
+                    and "[" not in scope.rsplit("::", 1)[-1]
+                    and reference.startswith(scope + "[")
+                    and reference.endswith("]")
+                )
                 for scope in document["verification"]["tests"]
             )
             for reference in member["verification"]["tests"]
@@ -430,7 +437,14 @@ def _validate_family(document: dict[str, Any]) -> None:
         _fail("family.default", "must name a declared method")
     symbol = document["public_api"]["python"]["symbol"]
     exercised = set()
-    for node in ast.walk(ast.parse(document["example"]["code"])):
+    pending = [ast.parse(document["example"]["code"])]
+    while pending:
+        node = pending.pop()
+        # Family examples visibly call each model. An uncalled helper, class
+        # or lambda is not evidence of that call; execution is checked below.
+        if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef, ast.Lambda)):
+            continue
+        pending.extend(ast.iter_child_nodes(node))
         if not isinstance(node, ast.Call):
             continue
         target = (
@@ -976,6 +990,43 @@ def _validate_runtime_inputs(
             _fail(document["asset_id"], f"default differs for input: {name}")
 
 
+_FAMILY_EXAMPLE_PROGRAM = """
+from functools import wraps
+import importlib
+import inspect
+import json
+import sys
+
+payload = json.loads(sys.argv[1])
+api = payload['api']
+module = importlib.import_module(api['module'])
+original = getattr(module, api['symbol'])
+signature = inspect.signature(original)
+bindings = [(module, api['symbol'])]
+if 'canonical_module' in api:
+    canonical = importlib.import_module(api['canonical_module'])
+    if getattr(canonical, api['canonical_symbol']) is not original:
+        raise ValueError('family example canonical binding differs')
+    bindings.append((canonical, api['canonical_symbol']))
+observed = set()
+
+@wraps(original)
+def observed_call(*args, **kwargs):
+    arguments = signature.bind(*args, **kwargs)
+    arguments.apply_defaults()
+    result = original(*args, **kwargs)
+    observed.add(arguments.arguments['method'])
+    return result
+
+for owner, name in bindings:
+    setattr(owner, name, observed_call)
+exec(compile(payload['code'], '<asset-example>', 'exec'), {'__name__': '__main__'})
+missing = set(payload['methods']) - observed
+if missing:
+    raise ValueError('family example has no successful calls for: ' + ', '.join(sorted(missing)))
+"""
+
+
 def execute_example(
     document: dict[str, Any],
     source_root: Path = ROOT,
@@ -984,6 +1035,16 @@ def execute_example(
 ) -> None:
     environment = os.environ.copy()
     command = [sys.executable, "-c", document["example"]["code"]]
+    if "family" in document:
+        # Observe the actual public callable in this existing isolated example
+        # process, not just AST mentions in dead branches. Only successful
+        # returns count; no wrapper or observation survives into the library.
+        payload = {
+            "api": document["public_api"]["python"],
+            "methods": [member["name"] for member in document["family"]["methods"]],
+            "code": document["example"]["code"],
+        }
+        command = [sys.executable, "-c", _FAMILY_EXAMPLE_PROGRAM, json.dumps(payload)]
     if installed_runtime:
         environment.pop("PYTHONPATH", None)
         command.insert(1, "-I")

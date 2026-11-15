@@ -209,8 +209,7 @@
      "summary": "由碰撞性、俘获分数和压力梯度计算自举电流及拟合系数。",
      "assets": [
       "scirel.neoclassical.bootstrap-current",
-      "scirel.neoclassical.redl-bootstrap-coefficients",
-      "scirel.neoclassical.sauter-bootstrap-coefficients"
+      "scirel.neoclassical.bootstrap-coefficients"
      ],
      "introduction": "这些入口计算 Sauter/Redl 经验拟合系数及平行自举电流；碰撞性、俘获分数、压力梯度和几何一致性由调用者负责。"
     },

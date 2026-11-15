@@ -722,30 +722,32 @@
   },
   {
    "applicability": {
-    "excluded": [
-     "这里不作经验系数的实验标定。调用者提供符合模型的碰撞度与俘获份额；不重建几何、边缘台基或完整输运物理。",
-     "电荷/碰撞度组合即使数值有限，只要量级很大，中间量或最终结果仍可能无法表示，此时会明确失败；float64 转换也无法恢复此前丢失的精度。"
-    ],
     "preconditions": [
-     "使用声明的形状、定义域和一致科学约定，不隐含广播。"
+     "所有面数组为有限实数一维数组、长度相等且至少为2；f_trap在[0,1]，nu_e_star和nu_i_star非负。",
+     "Sauter允许正Z_eff，Redl要求Z_eff>=1；完全电离准中性等离子体应满足Z_eff>=1。"
     ],
     "supported": [
-     "由显式面碰撞度计算 Redl 无量纲自举电流拟合系数。"
+     "按逐方法声明的适用范围和证据求值所选既有拟合。"
+    ],
+    "excluded": [
+     "不推导俘获份额、碰撞性、磁几何或剖面，也不组装自举电流。",
+     "不新增一般物理标定，也不宣称默认拟合对所有等离子体都更准。"
     ]
    },
-   "asset_id": "scirel.neoclassical.redl-bootstrap-coefficients",
+   "asset_id": "scirel.neoclassical.bootstrap-coefficients",
    "assumptions": [
     "输入转为 binary64 后须有限；调用者提供一致单位和归一化。",
-    "Result 映射的字段插入顺序为 L31、L32、L34、alpha；使用字段名或属性访问，不提供原 tuple 下标或数组解包兼容。"
+    "Result 映射的字段插入顺序为 L31、L32、L34、alpha；使用字段名或属性访问，不提供原 tuple 下标或数组解包兼容。",
+    "调用者提供符合所选拟合约定的俘获粒子份额和碰撞性；本入口不重建这些量。"
    ],
    "boundary": "无额外边界条件：系数只由各面的 f_trap、nu_e_star、Z_eff 和 nu_i_star 决定；本入口不组装电流，也没有磁轴面置零步骤。",
    "definition": "作为对照，Sauter 的 L31/L34 使用各自有效俘获份额和四次多项式，L32 由电子-电子与电子-离子有理多项式相加；本函数返回 Redl 的修订拟合，其中 L34=L31。alpha=(B+a*y)/(1+c*y)，y=nu_i_star^2*f_trap^6；Sauter 的 (a,c)=(.315,.15)，Redl 为 (-.002,.004)，B 随模型变化。二进制指数缩放选择 y 或 1/y，避免平方溢出和对数相消。",
    "example": {
-    "description": "检查零俘获份额的解析极限。",
-    "expected": "L31、L32、L34 均为零。"
+    "description": "相同显式物理输入分别求值两种既有拟合。",
+    "expected": "两种方法都返回L31、L32、L34和alpha面数组；选择方法不重建物理输入，也不标定装置。"
    },
    "failure_semantics": {
-    "invalid_input": "形状、定义域、非有限或掩码输入抛出 ValueError；不返回部分结果。",
+    "invalid_input": "method类型错误或传入未实现参数时抛TypeError，未知method或非法物理数组时抛ValueError；保留所选拟合的电荷和形状拒绝语义。",
     "nonconvergence": "不适用；这是直接解析拟合和算术映射。",
     "partial_results": "失败后不返回部分结果。",
     "runtime_failure": "系数算术产生非有限结果时抛出 FloatingPointError；不返回回退值。"
@@ -782,9 +784,15 @@
      "dtype": "实数数值，转换为 float64",
      "shape": "N+1",
      "units": "无量纲"
+    },
+    {
+     "name": "method",
+     "description": "封闭的拟合选择器。",
+     "dtype": "string",
+     "constraints": "仅为'redl'或'sauter'，必须写参数名；两种拟合使用相同物理输入。"
     }
    ],
-   "model": "有明确适用边界的轴对称托卡马克经验拟合。",
+   "model": "既有Redl与Sauter自举电流系数拟合组成的封闭方法族。",
    "outputs": [
     {
      "name": "L31",
@@ -804,7 +812,7 @@
     },
     {
      "name": "L34",
-     "description": "Result 映射字段：离子温度系数的无量纲面数组，等于 L31",
+     "description": "返回Result中的离子温度拟合系数；仅Redl分支等于L31。",
      "constraints": "有限、显式、一维，面形状须匹配，不广播。",
      "dtype": "实数数值，转换为 float64",
      "shape": "N+1",
@@ -819,138 +827,93 @@
      "units": "无量纲"
     }
    ],
-   "source_sha256": "7fc464e8da1ea4d908f7c750e9cef758542f0fbd4a3ca450f2d447540a7e36c7",
-   "summary": "由显式面碰撞度计算 Redl 无量纲自举电流拟合系数，以具名 Result 字段返回。",
+   "source_sha256": "49f90754e8341ce2d56579bd23a6b870e103b6c466f5ce5f91a97268d86ffb9f",
+   "summary": "使用显式method选择既有Redl或Sauter拟合，返回带名称的L31、L32、L34和alpha面数组。",
    "verification": {
-    "evidence_ceiling": "仅证明拟合代数与有限算术，不构成经验模型的全面物理资格。",
-    "known_limitations": [
-     "这里不作经验系数的实验标定。调用者提供符合模型的碰撞度与俘获份额；不重建几何、边缘台基或完整输运物理。",
-     "电荷/碰撞度组合即使数值有限，只要量级很大，中间量或最终结果仍可能无法表示，此时会明确失败；float64 转换也无法恢复此前丢失的精度。",
-     "UNKNOWN：历史独立 Decimal 拟合检查尚未逐资产绑定输入、精度、参考值与断言。binary64 基线数组以及注释中的精确十进制极限，不证明每个系数或电流驱动项都经过 Decimal 验证。"
-    ],
     "scope": [
-     "test_bootstrap.py 覆盖 Redl alpha 的大碰撞度极限及精确 L34=L31；精确选定的 test_named_result.py 用例另核对普通输入下四个系数的基线数组、Result 类型、字段顺序与属性访问。"
+     "保留每种拟合原有的数值、极端尺度、形状和失败回归，并分别显式选择方法。",
+     "直接检查两种具名方法、默认选择、封闭方法拒绝及旧公开入口撤换。"
     ],
-    "tests": [
-     "tests/tooling/test_bootstrap.py",
-     "tests/tooling/test_named_result.py::test_neoclassical_results_preserve_baseline_values_and_return_types[calculate_redl_coefficients]"
-    ]
-   }
-  },
-  {
-   "applicability": {
-    "excluded": [
-     "这里不作经验系数的实验标定。调用者提供符合模型的碰撞度与俘获份额；不重建几何、边缘台基或完整输运物理。",
-     "电荷/碰撞度组合即使数值有限，只要量级很大，中间量或最终结果仍可能无法表示，此时会明确失败；float64 转换也无法恢复此前丢失的精度。"
-    ],
-    "preconditions": [
-     "使用声明的形状、定义域和一致科学约定，不隐含广播。"
-    ],
-    "supported": [
-     "由显式面碰撞度计算 Sauter 无量纲自举电流拟合系数。"
+    "evidence_ceiling": "接口迁移保留各既有数学拟合及其有界回归证据。逐方法范围和限制分别记录；选中方法或示例通过不代表实验标定。",
+    "known_limitations": [
+     "调用者须提供一致的俘获份额与碰撞性约定。",
+     "原拟合证据和限制按方法保留；不新增一般等离子体或装置标定。",
+     "本函数不组装自举电流，也不重建几何与剖面。"
     ]
    },
-   "asset_id": "scirel.neoclassical.sauter-bootstrap-coefficients",
-   "assumptions": [
-    "输入转为 binary64 后须有限；调用者提供一致单位和归一化。",
-    "Result 映射的字段插入顺序为 L31、L32、L34、alpha；使用字段名或属性访问，不提供原 tuple 下标或数组解包兼容。"
-   ],
-   "boundary": "无额外边界条件：系数只由各面的 f_trap、nu_e_star、Z_eff 和 nu_i_star 决定；本入口不组装电流，也没有磁轴面置零步骤。",
-   "definition": "Sauter 的 L31/L34 使用各自有效俘获份额和四次多项式，L32 由电子-电子与电子-离子有理多项式相加；作为对照，Redl 使用其修订拟合且 L34=L31。alpha=(B+a*y)/(1+c*y)，y=nu_i_star^2*f_trap^6；Sauter 的 (a,c)=(.315,.15)，Redl 为 (-.002,.004)，B 随模型变化。二进制指数缩放选择 y 或 1/y，避免平方溢出和对数相消。",
-   "example": {
-    "description": "检查零俘获份额的解析极限。",
-    "expected": "L31、L32、L34 均为零。"
-   },
-   "failure_semantics": {
-    "invalid_input": "形状、定义域、非有限或掩码输入抛出 ValueError；不返回部分结果。",
-    "nonconvergence": "不适用；这是直接解析拟合和算术映射。",
-    "partial_results": "失败后不返回部分结果。",
-    "runtime_failure": "系数算术产生非有限结果时抛出 FloatingPointError；不返回回退值。"
-   },
-   "inputs": [
-    {
-     "name": "f_trap",
-     "description": "调用者给定俘获粒子份额，不是逆长宽比",
-     "constraints": "有限面数组，0<=f_trap<=1。",
-     "dtype": "实数数值，转换为 float64",
-     "shape": "N+1",
-     "units": "无量纲"
-    },
-    {
-     "name": "nu_e_star",
-     "description": "模型约定下电子碰撞频率与弹跳频率之比",
-     "constraints": "非负有限面数组。",
-     "dtype": "实数数值，转换为 float64",
-     "shape": "N+1",
-     "units": "无量纲"
-    },
-    {
-     "name": "Z_eff",
-     "description": "拟合使用的有效离子电荷",
-     "constraints": "Sauter 要求正值，Redl 要求至少 1；物理准中性全电离等离子体的 Z_eff>=1。",
-     "dtype": "实数数值，转换为 float64",
-     "shape": "N+1",
-     "units": "无量纲"
-    },
-    {
-     "name": "nu_i_star",
-     "description": "模型约定下离子碰撞频率与弹跳频率之比",
-     "constraints": "非负有限面数组。",
-     "dtype": "实数数值，转换为 float64",
-     "shape": "N+1",
-     "units": "无量纲"
-    }
-   ],
-   "model": "有明确适用边界的轴对称托卡马克经验拟合。",
-   "outputs": [
-    {
-     "name": "L31",
-     "description": "Result 映射字段：密度梯度拟合系数的无量纲面数组",
-     "constraints": "有限、显式、一维，面形状须匹配，不广播。",
-     "dtype": "实数数值，转换为 float64",
-     "shape": "N+1",
-     "units": "无量纲"
-    },
-    {
-     "name": "L32",
-     "description": "Result 映射字段：电子温度系数修正的无量纲面数组",
-     "constraints": "有限、显式、一维，面形状须匹配，不广播。",
-     "dtype": "实数数值，转换为 float64",
-     "shape": "N+1",
-     "units": "无量纲"
-    },
-    {
-     "name": "L34",
-     "description": "Result 映射字段：离子温度系数的无量纲面数组",
-     "constraints": "有限、显式、一维，面形状须匹配，不广播。",
-     "dtype": "实数数值，转换为 float64",
-     "shape": "N+1",
-     "units": "无量纲"
-    },
-    {
-     "name": "alpha",
-     "description": "Result 映射字段：离子温度梯度拟合乘子的无量纲面数组",
-     "constraints": "有限、显式、一维，面形状须匹配，不广播。",
-     "dtype": "实数数值，转换为 float64",
-     "shape": "N+1",
-     "units": "无量纲"
-    }
-   ],
-   "source_sha256": "5a2d92bc37ef57316bb4500b63bc52454216fcbef92b76c7812aa627ced96ed3",
-   "summary": "由显式面碰撞度计算 Sauter 无量纲自举电流拟合系数，以具名 Result 字段返回。",
-   "verification": {
-    "evidence_ceiling": "仅证明拟合代数与有限算术，不构成经验模型的全面物理资格。",
-    "known_limitations": [
-     "这里不作经验系数的实验标定。调用者提供符合模型的碰撞度与俘获份额；不重建几何、边缘台基或完整输运物理。",
-     "电荷/碰撞度组合即使数值有限，只要量级很大，中间量或最终结果仍可能无法表示，此时会明确失败；float64 转换也无法恢复此前丢失的精度。",
-     "UNKNOWN：历史独立 Decimal 拟合检查尚未逐资产绑定输入、精度、参考值与断言。binary64 基线数组以及注释中的精确十进制极限，不证明每个系数或电流驱动项都经过 Decimal 验证。"
-    ],
-    "scope": [
-     "test_bootstrap.py 覆盖 Sauter alpha 的大碰撞度极限、普通 alpha 的 binary64 表达式及指数抵消见证；精确选定的 test_named_result.py 用例另核对普通输入下四个系数的基线数组、Result 类型、字段顺序与属性访问。"
-    ],
-    "tests": [
-     "tests/tooling/test_bootstrap.py",
-     "tests/tooling/test_named_result.py::test_neoclassical_results_preserve_baseline_values_and_return_types[calculate_sauter_coefficients]"
+   "family": {
+    "name": "bootstrap-coefficients",
+    "default": "redl",
+    "default_reason": "按已采纳决定默认采用较新的Redl拟合，不表示对所有等离子体都更准确；Sauter仍可显式选择。",
+    "methods": [
+     {
+      "name": "redl",
+      "model": "Redl（2021）的既有解析经验拟合。",
+      "numerical_controls": {},
+      "applicability": {
+       "excluded": [
+        "这里不作经验系数的实验标定。调用者提供符合模型的碰撞度与俘获份额；不重建几何、边缘台基或完整输运物理。",
+        "电荷/碰撞度组合即使数值有限，只要量级很大，中间量或最终结果仍可能无法表示，此时会明确失败；float64 转换也无法恢复此前丢失的精度。"
+       ],
+       "preconditions": [
+        "使用声明的形状、定义域和一致科学约定，不隐含广播。"
+       ],
+       "supported": [
+        "由显式面碰撞度计算 Redl 无量纲自举电流拟合系数。"
+       ]
+      },
+      "failure_semantics": {
+       "invalid_input": "形状、定义域、非有限或掩码输入抛出 ValueError；不返回部分结果。",
+       "nonconvergence": "不适用；这是直接解析拟合和算术映射。",
+       "partial_results": "失败后不返回部分结果。",
+       "runtime_failure": "系数算术产生非有限结果时抛出 FloatingPointError；不返回回退值。"
+      },
+      "verification": {
+       "evidence_ceiling": "仅证明拟合代数与有限算术，不构成经验模型的全面物理资格。",
+       "known_limitations": [
+        "这里不作经验系数的实验标定。调用者提供符合模型的碰撞度与俘获份额；不重建几何、边缘台基或完整输运物理。",
+        "电荷/碰撞度组合即使数值有限，只要量级很大，中间量或最终结果仍可能无法表示，此时会明确失败；float64 转换也无法恢复此前丢失的精度。",
+        "UNKNOWN：历史独立 Decimal 拟合检查尚未逐资产绑定输入、精度、参考值与断言。binary64 基线数组以及注释中的精确十进制极限，不证明每个系数或电流驱动项都经过 Decimal 验证。"
+       ],
+       "scope": [
+        "test_bootstrap.py 覆盖 Redl alpha 的大碰撞度极限及精确 L34=L31；精确选定的 test_named_result.py 用例另核对普通输入下四个系数的基线数组、Result 类型、字段顺序与属性访问。"
+       ]
+      }
+     },
+     {
+      "name": "sauter",
+      "model": "Sauter（1999）的既有解析经验拟合。",
+      "numerical_controls": {},
+      "applicability": {
+       "excluded": [
+        "这里不作经验系数的实验标定。调用者提供符合模型的碰撞度与俘获份额；不重建几何、边缘台基或完整输运物理。",
+        "电荷/碰撞度组合即使数值有限，只要量级很大，中间量或最终结果仍可能无法表示，此时会明确失败；float64 转换也无法恢复此前丢失的精度。"
+       ],
+       "preconditions": [
+        "使用声明的形状、定义域和一致科学约定，不隐含广播。"
+       ],
+       "supported": [
+        "由显式面碰撞度计算 Sauter 无量纲自举电流拟合系数。"
+       ]
+      },
+      "failure_semantics": {
+       "invalid_input": "形状、定义域、非有限或掩码输入抛出 ValueError；不返回部分结果。",
+       "nonconvergence": "不适用；这是直接解析拟合和算术映射。",
+       "partial_results": "失败后不返回部分结果。",
+       "runtime_failure": "系数算术产生非有限结果时抛出 FloatingPointError；不返回回退值。"
+      },
+      "verification": {
+       "evidence_ceiling": "仅证明拟合代数与有限算术，不构成经验模型的全面物理资格。",
+       "known_limitations": [
+        "这里不作经验系数的实验标定。调用者提供符合模型的碰撞度与俘获份额；不重建几何、边缘台基或完整输运物理。",
+        "电荷/碰撞度组合即使数值有限，只要量级很大，中间量或最终结果仍可能无法表示，此时会明确失败；float64 转换也无法恢复此前丢失的精度。",
+        "UNKNOWN：历史独立 Decimal 拟合检查尚未逐资产绑定输入、精度、参考值与断言。binary64 基线数组以及注释中的精确十进制极限，不证明每个系数或电流驱动项都经过 Decimal 验证。"
+       ],
+       "scope": [
+        "test_bootstrap.py 覆盖 Sauter alpha 的大碰撞度极限、普通 alpha 的 binary64 表达式及指数抵消见证；精确选定的 test_named_result.py 用例另核对普通输入下四个系数的基线数组、Result 类型、字段顺序与属性访问。"
+       ]
+      }
+     }
     ]
    }
   },

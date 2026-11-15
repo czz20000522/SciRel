@@ -61,7 +61,30 @@ A model family is one physical relation computed by several models or fits — f
 | Same physical inputs | Members use the same physical parameter names, units and axis order. A model-specific *numeric* control (truncation order, tolerance, iteration cap) may exist, but passing it to a model that does not use it raises `TypeError` naming the parameter, the violated condition, the legal values and the contract ID |
 | Same Result keys | Members return the same set of keys. A quantity a model cannot provide is absent, never `nan`. A single returned quantity is returned directly, without method or order metadata |
 | Range per model | Each `method` declares its own applicability, and out-of-range behaviour follows "Returns and errors" |
-| Ownership | A human decides family membership and records it in the contract `family` field (family name and method name). The family index is generated from contracts and never committed |
+| Ownership | Approved membership is recorded once in the callable's contract `family` field. One public callable has one contract; its named `methods` retain each fit's range, failures and evidence. The family index is generated from contracts and never committed |
+
+The `family` object contains `name`, `default`, `default_reason` and a nonempty
+`methods` list. Each method has `name`, `model`, `numerical_controls`,
+`applicability`, `failure_semantics` and `verification`. Common physical ports
+remain at the contract top level; methods do not define a second signature or
+silently substitute a different physical quantity. The explicit keyword-only
+`method` input, declared signature and live callable have the same default.
+
+Numerical controls name existing optional parameters; their method-specific
+settings carry a `default` and `constraints`. Passing a value to a method that
+does not implement that control is rejected, rather than ignored. Each method's
+tests must be covered by the existing top-level test scope, and the executable
+contract example explicitly calls every declared method. A whole-file test scope
+already covers its node selectors; do not add the file and the same nodes twice
+to the pytest command. Runtime test identities still establish what ran, not
+mere file registration.
+
+The Chinese reader preserves method names, order and defaults and translates
+their descriptions, ranges, failures and evidence limits. Discovery and pages
+derive that information from the one contract. Do not create one contract per
+method that all bind to the same default call. An approved migration may reduce
+contract count while retaining every original method; record each original
+contract's destination in its migration issue.
 
 Do not merge functions that answer different questions. When the physical inputs differ — one takes a temperature, the other a full distribution function — keep two functions and cross-reference them in See Also. Never introduce a physical parameter that only some models use just to fit a family. The frozen family table for the current migration is the one recorded in issue #154.
 

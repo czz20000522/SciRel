@@ -1424,12 +1424,13 @@ def _neoclassical_current_call():
 
 
 _NEOCLASSICAL_CASES = {
-    "calculate_sauter_coefficients": (
-        lambda: neoclassical.calculate_sauter_coefficients(
+    ("compute_bootstrap_coefficients", "sauter"): (
+        lambda: neoclassical.compute_bootstrap_coefficients(
             _NEOCLASSICAL_F,
             _NEOCLASSICAL_NU_E,
             _NEOCLASSICAL_Z,
             _NEOCLASSICAL_NU_I,
+            method="sauter",
         ),
         Result,
         {
@@ -1439,12 +1440,9 @@ _NEOCLASSICAL_CASES = {
             "alpha": np.array([-0.870010942879218, -0.22957797344199568]),
         },
     ),
-    "calculate_redl_coefficients": (
-        lambda: neoclassical.calculate_redl_coefficients(
-            _NEOCLASSICAL_F,
-            _NEOCLASSICAL_NU_E,
-            _NEOCLASSICAL_Z,
-            _NEOCLASSICAL_NU_I,
+    ("compute_bootstrap_coefficients", "redl"): (
+        lambda: neoclassical.compute_bootstrap_coefficients(
+            _NEOCLASSICAL_F, _NEOCLASSICAL_NU_E, _NEOCLASSICAL_Z, _NEOCLASSICAL_NU_I, method="redl"
         ),
         Result,
         {
@@ -1454,7 +1452,7 @@ _NEOCLASSICAL_CASES = {
             "alpha": np.array([-0.7951882184432387, 0.6440950155435712]),
         },
     ),
-    "calculate_bootstrap_current": (
+    ("calculate_bootstrap_current", None): (
         _neoclassical_current_call,
         Result,
         {
@@ -1465,25 +1463,25 @@ _NEOCLASSICAL_CASES = {
 }
 
 _NEOCLASSICAL_MIGRATED = {
-    "calculate_bootstrap_current",
-    "calculate_sauter_coefficients",
-    "calculate_redl_coefficients",
+    ("calculate_bootstrap_current", None),
+    ("compute_bootstrap_coefficients", "sauter"),
+    ("compute_bootstrap_coefficients", "redl"),
 }
 _NEOCLASSICAL_BARE_RETURN_CASES = set()
 
 _NEOCLASSICAL_FAILURE_CASES = [
     (
-        "calculate_sauter_coefficients",
-        lambda: neoclassical.calculate_sauter_coefficients(
-            [True, 0.5], [1.0, 1.0], [2.0, 2.0], [1.0, 1.0]
+        "compute_bootstrap_coefficients",
+        lambda: neoclassical.compute_bootstrap_coefficients(
+            [True, 0.5], [1.0, 1.0], [2.0, 2.0], [1.0, 1.0], method="sauter"
         ),
         ValueError,
         "f_trap must be a real numeric face array",
     ),
     (
-        "calculate_redl_coefficients",
-        lambda: neoclassical.calculate_redl_coefficients(
-            [True, 0.5], [1.0, 1.0], [2.0, 2.0], [1.0, 1.0]
+        "compute_bootstrap_coefficients",
+        lambda: neoclassical.compute_bootstrap_coefficients(
+            [True, 0.5], [1.0, 1.0], [2.0, 2.0], [1.0, 1.0], method="redl"
         ),
         ValueError,
         "f_trap must be a real numeric face array",
@@ -1500,7 +1498,7 @@ _NEOCLASSICAL_FAILURE_CASES = [
 
 
 def test_neoclassical_cases_cover_every_public_callable():
-    assert set(_NEOCLASSICAL_CASES) == set(neoclassical.__all__)
+    assert {name for name, method in _NEOCLASSICAL_CASES} == set(neoclassical.__all__)
     assert _NEOCLASSICAL_MIGRATED == {
         name for name, case in _NEOCLASSICAL_CASES.items() if case[1] is Result
     }
@@ -1509,7 +1507,9 @@ def test_neoclassical_cases_cover_every_public_callable():
     }
 
 
-@pytest.mark.parametrize("name", sorted(_NEOCLASSICAL_CASES))
+@pytest.mark.parametrize(
+    "name", sorted(_NEOCLASSICAL_CASES), ids=lambda key: "-".join(part for part in key if part)
+)
 def test_neoclassical_results_preserve_baseline_values_and_return_types(name):
     call, expected_type, expected = _NEOCLASSICAL_CASES[name]
     result = call()
@@ -1517,7 +1517,7 @@ def test_neoclassical_results_preserve_baseline_values_and_return_types(name):
     if expected_type is Result:
         assert isinstance(result, dict)
         assert list(result) == list(expected)
-        if name == "calculate_bootstrap_current":
+        if name[0] == "calculate_bootstrap_current":
             _assert_mapping_values_equal(result, expected, root=True)
         else:
             for key, expected_value in expected.items():
@@ -1528,7 +1528,11 @@ def test_neoclassical_results_preserve_baseline_values_and_return_types(name):
         _assert_value_equal(result, expected)
 
 
-@pytest.mark.parametrize("name", ["calculate_sauter_coefficients", "calculate_redl_coefficients"])
+@pytest.mark.parametrize(
+    "name",
+    [("compute_bootstrap_coefficients", "sauter"), ("compute_bootstrap_coefficients", "redl")],
+    ids=lambda key: key[1],
+)
 def test_bootstrap_coefficient_results_have_named_fields_without_positional_lookup(name):
     result = _NEOCLASSICAL_CASES[name][0]()
     assert type(result) is Result
