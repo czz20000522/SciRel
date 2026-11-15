@@ -514,11 +514,11 @@
      "assets": [
       "scirel.collisions.atomic-hydrogen-collision-matrices",
       "scirel.collisions.molecular-hydrogen-collision-matrices",
-      "scirel.kinetic.atomic-alpha-contraction",
-      "scirel.kinetic.molecular-alpha-contraction",
+      "scirel.neutrals.atomic-alpha-contraction",
+      "scirel.neutrals.molecular-alpha-contraction",
       "scirel.collisions.atomic-hydrogen-omega-frequencies",
       "scirel.collisions.molecular-hydrogen-omega-frequencies",
-      "scirel.kinetic.elastic-frequency-channels"
+      "scirel.neutrals.elastic-frequency-channels"
      ]
     }
    ]
@@ -538,7 +538,7 @@
      "title": "Distinguishing velocity, thermal-speed ratio and normalized momentum",
      "introduction": "Thermal speed has velocity units, the thermal-electron momentum entry point returns a dimensionless thermal-speed ratio, and grid-normalized momentum additionally requires a velocity scale with units. Passing the dimensionless ratio directly as a velocity input divides by the speed of light twice; check units before composing.",
      "assets": [
-      "scirel.kinetic.thermal-speed-scale",
+      "scirel.neutrals.thermal-speed-scale",
       "scirel.collisions.thermal-electron-momentum",
       "scirel.collisions.normalized-momentum"
      ]
@@ -548,8 +548,8 @@
      "title": "Building a cylindrical velocity grid and integration measure",
      "introduction": "Generate a velocity grid from temperatures and specified energies, then build the annular radial measure, cell volumes and difference coefficients from explicit axis nodes. Grid generation and integration weights are separate steps; these weights cannot be reused directly with other cell-face conventions.",
      "assets": [
-      "scirel.kinetic.adaptive-neutral-velocity-mesh",
-      "scirel.kinetic.cylindrical-velocity-quadrature"
+      "scirel.neutrals.adaptive-neutral-velocity-mesh",
+      "scirel.neutrals.cylindrical-velocity-quadrature"
      ]
     },
     {
@@ -557,8 +557,8 @@
      "title": "Constructing Maxwellian initial values and reducing distribution moments",
      "introduction": "A displaced discrete Maxwellian initial value, axisymmetric distribution moments and the scaled Bessel quantities needed by the relativistic background are different relations. The initial-value entry point does not include later moment compensation, and the special-function closure does not by itself establish a physical distribution; choose the appropriate reference for each problem.",
      "assets": [
-      "scirel.kinetic.shifted-maxwellian-seed",
-      "scirel.kinetic.axisymmetric-neutral-moments",
+      "scirel.neutrals.shifted-maxwellian-seed",
+      "scirel.neutrals.axisymmetric-neutral-moments",
       "scirel.collisions.relativistic-maxwellian-bessel-closure"
      ]
     },
@@ -567,8 +567,8 @@
      "title": "Compensating drift and energy moments on velocity slices",
      "introduction": "Build shifted Maxwellian slices on one cylindrical quadrature, then apply the bounded discrete drift and energy correction to a slice or every shift. The correction retains source finite-volume and sign branches; it is not a complete transport solve or stability proof.",
      "assets": [
-      "scirel.kinetic.velocity-slice-moment-compensation",
-      "scirel.kinetic.compensated-shifted-maxwellian"
+      "scirel.neutrals.velocity-slice-moment-compensation",
+      "scirel.neutrals.compensated-shifted-maxwellian"
      ]
     },
     {
@@ -588,12 +588,12 @@
      "title": "Preparing incident boundaries and scattering sources",
      "introduction": "Normalize spatial sources and incident half-space fluxes, construct simplified charge-exchange and elastic-regeneration sources, and then reduce the atomic or molecular source channels. The measure used for normalization, the positive/negative velocity branches and each entry point's signed-value policy must be consistent with downstream propagation.",
      "assets": [
-      "scirel.kinetic.spatial-source-shape-normalization",
-      "scirel.kinetic.incoming-boundary-flux-normalization",
-      "scirel.kinetic.simple-charge-exchange-source",
-      "scirel.kinetic.elastic-regeneration-aggregation",
-      "scirel.kinetic.atomic-scattered-sources-reduction",
-      "scirel.kinetic.molecular-scattered-sources-reduction"
+      "scirel.neutrals.spatial-source-shape-normalization",
+      "scirel.neutrals.incoming-boundary-flux-normalization",
+      "scirel.neutrals.simple-charge-exchange-source",
+      "scirel.neutrals.elastic-regeneration-aggregation",
+      "scirel.neutrals.atomic-scattered-sources-reduction",
+      "scirel.neutrals.molecular-scattered-sources-reduction"
      ]
     },
     {
@@ -601,10 +601,10 @@
      "title": "Assembling neutral loss and bidirectional spatial propagation",
      "introduction": "Construct spatial advance coefficients from the total loss frequency and source terms, then propagate the first flight or scattering generations; a separate entry point assembles the explicit Boltzmann right-hand side. This relation set uses a prescribed one-dimensional spatial discretization and implies neither higher-order corrections nor a complete nonlinear solver.",
      "assets": [
-      "scirel.kinetic.neutral-total-collision-frequency",
-      "scirel.kinetic.neutral-upwind-transport-coefficients",
-      "scirel.kinetic.neutral-generation-propagation",
-      "scirel.kinetic.neutral-boltzmann-rhs"
+      "scirel.neutrals.neutral-total-collision-frequency",
+      "scirel.neutrals.neutral-upwind-transport-coefficients",
+      "scirel.neutrals.neutral-generation-propagation",
+      "scirel.neutrals.neutral-boltzmann-rhs"
      ]
     },
     {
@@ -612,11 +612,11 @@
      "title": "Accumulating generations and deciding whether to continue",
      "introduction": "First reduce the density and accumulated complete state from generation distributions, then compute density-change criteria separately for generations, seed re-entry and the top-level outer loop. The three stopping relations have different thresholds and denominators and are not general physical-conservation or error proofs.",
      "assets": [
-      "scirel.kinetic.generation-density-reduction",
-      "scirel.kinetic.generation-accumulation-update",
-      "scirel.kinetic.neutral-generation-stopping",
-      "scirel.kinetic.outer-seed-convergence",
-      "scirel.kinetic.outer-convergence"
+      "scirel.neutrals.generation-density-reduction",
+      "scirel.neutrals.generation-accumulation-update",
+      "scirel.neutrals.neutral-generation-stopping",
+      "scirel.neutrals.outer-seed-convergence",
+      "scirel.neutrals.outer-convergence"
      ]
     },
     {
@@ -624,8 +624,8 @@
      "title": "Transferring profiles and distributions between species meshes",
      "introduction": "Scalar spatial interpolation and phase-space distribution transfer have different boundary and correction conventions. The distribution entry point's optional moment correction does not guarantee nonnegative results; the scalar entry point zeroes nodes outside the interval, which must not be read as general extrapolation.",
      "assets": [
-      "scirel.kinetic.cross-mesh-scalar-interpolation",
-      "scirel.kinetic.cross-mesh-distribution-interpolation"
+      "scirel.neutrals.cross-mesh-scalar-interpolation",
+      "scirel.neutrals.cross-mesh-distribution-interpolation"
      ]
     },
     {
@@ -633,12 +633,12 @@
      "title": "Computing flux, temperature and energy diagnostics from terminal distributions",
      "introduction": "For a caller-selected terminal distribution, compute molecular flux, flow speed, pressure, temperature and heat flux, and combine a given reaction rate or collision right-hand side to obtain ion states and energy transfer. The final adjacent-cell energy diagnostic is not a complete proof of transport conservation.",
      "assets": [
-      "scirel.kinetic.terminal-flux-velocity-reduction",
-      "scirel.kinetic.terminal-pressure-temperature-reduction",
-      "scirel.kinetic.terminal-heat-flux-reduction",
-      "scirel.kinetic.terminal-ion-state-reduction",
-      "scirel.kinetic.terminal-energy-transfer-reduction",
-      "scirel.kinetic.terminal-conservation-diagnostic"
+      "scirel.neutrals.terminal-flux-velocity-reduction",
+      "scirel.neutrals.terminal-pressure-temperature-reduction",
+      "scirel.neutrals.terminal-heat-flux-reduction",
+      "scirel.neutrals.terminal-ion-state-reduction",
+      "scirel.neutrals.terminal-energy-transfer-reduction",
+      "scirel.neutrals.terminal-conservation-diagnostic"
      ]
     }
    ]

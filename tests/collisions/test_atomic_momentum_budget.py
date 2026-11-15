@@ -26,7 +26,7 @@ from scirel.collisions import (
     assemble_atomic_hydrogen_collision_matrices,
     assemble_atomic_hydrogen_omega_frequencies,
 )
-from scirel.kinetic import contract_atomic_hydrogen_alpha_frequencies
+from scirel.neutrals import contract_atomic_hydrogen_alpha_frequencies
 
 
 def _distributions(*, reverse=False, equal=False):

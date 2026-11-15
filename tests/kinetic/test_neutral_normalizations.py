@@ -5,10 +5,10 @@ import math
 import numpy as np
 import pytest
 
-from scirel.kinetic.incoming_boundary_flux_normalization import (
+from scirel.neutrals.incoming_boundary_flux_normalization import (
     normalize_incoming_neutral_boundary,
 )
-from scirel.kinetic.spatial_source_shape_normalization import (
+from scirel.neutrals.spatial_source_shape_normalization import (
     normalize_spatial_source_shape,
 )
 

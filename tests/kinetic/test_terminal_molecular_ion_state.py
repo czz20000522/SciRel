@@ -5,7 +5,7 @@ import inspect
 import numpy as np
 import pytest
 
-from scirel.kinetic import reduce_terminal_molecular_ion_state
+from scirel.neutrals import reduce_terminal_molecular_ion_state
 
 
 def _case():

@@ -3,7 +3,7 @@
 import numpy as np
 import pytest
 
-from scirel.kinetic import (
+from scirel.neutrals import (
     aggregate_elastic_regeneration_source,
     assemble_simple_charge_exchange_source,
     reduce_atomic_scattered_sources,

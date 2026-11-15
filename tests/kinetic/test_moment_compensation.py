@@ -3,7 +3,7 @@ from __future__ import annotations
 import numpy as np
 import pytest
 
-from scirel.kinetic import (
+from scirel.neutrals import (
     build_compensated_shifted_maxwellian,
     compensate_velocity_slice,
     make_cylindrical_velocity_quadrature,
@@ -72,7 +72,7 @@ def _maxwellian(temperature, drift, **options):
 @pytest.mark.parametrize("temperature, drift", [(10.0, 0.0), (10.0, 3e4), (20.0, 3e4)])
 def test_adequate_mesh_returns_the_exact_maxwellian_moments(temperature, drift):
     """A Maxwellian has mean vx = U and mean speed squared U^2 + 3T/m exactly."""
-    from scirel.kinetic.cylindrical_velocity_quadrature import make_cylindrical_velocity_quadrature
+    from scirel.neutrals.cylindrical_velocity_quadrature import make_cylindrical_velocity_quadrature
 
     vr, vx = _mesh()
     f = _maxwellian(temperature, drift)[:, :, 0]
@@ -105,7 +105,7 @@ def test_moment_tolerance_is_the_caller_s_choice():
 
 
 def test_slice_warns_when_the_correction_changes_the_density():
-    from scirel.kinetic.cylindrical_velocity_quadrature import make_cylindrical_velocity_quadrature
+    from scirel.neutrals.cylindrical_velocity_quadrature import make_cylindrical_velocity_quadrature
 
     vr, vx = _mesh()
     cells = make_cylindrical_velocity_quadrature(vr=vr, vx=vx)

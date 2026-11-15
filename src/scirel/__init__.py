@@ -79,6 +79,7 @@ __all__ = [
     "kinetic",
     "mirror",
     "neoclassical",
+    "neutrals",
     "numerics",
     "physics",
     "plasma",

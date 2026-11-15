@@ -38,10 +38,8 @@ from scirel.collisions import (
     evaluate_janev_electron_impact_ionization_rate,
     evaluate_molecular_hydrogen_charge_exchange_cross_section,
 )
-from scirel.kinetic import (
-    evaluate_h_saha_equilibrium_population,
-    make_cylindrical_velocity_quadrature,
-)
+from scirel.kinetic import evaluate_h_saha_equilibrium_population
+from scirel.neutrals import make_cylindrical_velocity_quadrature
 
 
 def _codata_saha_population(density, temperature, level):

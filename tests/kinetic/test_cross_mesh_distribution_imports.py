@@ -27,7 +27,7 @@ def test_module_import_and_rejected_call_do_not_load_scipy() -> None:
     result = _run(
         """
 import sys
-import scirel.kinetic.cross_mesh_distribution_interpolation as module
+import scirel.neutrals.cross_mesh_distribution_interpolation as module
 
 assert "scipy" not in sys.modules
 try:
@@ -50,7 +50,7 @@ def test_valid_backends_load_only_at_their_numeric_boundaries() -> None:
         """
 import sys
 import numpy as np
-from scirel.kinetic.cross_mesh_distribution_interpolation import (
+from scirel.neutrals.cross_mesh_distribution_interpolation import (
     interp_distribution_across_mesh,
 )
 

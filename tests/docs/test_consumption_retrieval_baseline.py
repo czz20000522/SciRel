@@ -24,7 +24,7 @@ from scirel_docs import build_capability_index  # noqa: E402
 FIELD = "scirel.field.poloidal-field-from-flux"
 CURRENT = "scirel.equilibrium.anisotropic-toroidal-current"
 CX_RATE = "scirel.collisions.atomic-hydrogen-charge-exchange-rate-coefficient"
-LOSS = "scirel.kinetic.neutral-total-collision-frequency"
+LOSS = "scirel.neutrals.neutral-total-collision-frequency"
 THERMAL = "scirel.physics.thermal-energy"
 PROBES = [
     ("field_from_flux", {"q": "poloidal field flux"}, FIELD, "match"),

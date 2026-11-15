@@ -239,6 +239,62 @@ def test_packaged_discovery_cli_reads_real_contract(real_delivery):
     assert "required" in missing_pin.stderr
 
 
+def test_packaged_neutrals_discovery_and_installed_owner(real_delivery):
+    """Read the real catalog, then call only its installed canonical namespace."""
+    case = real_delivery
+    page = _query(case, "browse", *_pin_flags(case), "--taxonomy", "neutrals", "--limit", "100")
+    assert page["outcome"] == "match"
+    assets = {item["asset_id"] for item in page["result"]["items"]}
+    assert assets == {
+        path.stem for path in (ROOT / "catalog/examples").glob("scirel.neutrals.*.json")
+    }
+    assert len(assets) == 33
+    bindings = []
+    for asset in sorted(assets):
+        document = _query(case, "get", asset, *_pin_flags(case))["document"]
+        api = document["public_api"]["python"]
+        assert api["canonical_module"] == "scirel.neutrals"
+        bindings.append(api)
+    with ZipFile(case.wheel) as wheel:
+        members = set(wheel.namelist())
+    for api in bindings:
+        path = api["module"].replace(".", "/") + ".py"
+        assert path in members
+        assert path.replace("scirel/neutrals/", "scirel/kinetic/") not in members
+    driver = """
+import importlib, json, math, sys
+from pathlib import Path
+import scirel
+assert Path(scirel.__file__).is_relative_to(Path(sys.prefix))
+assert "neutrals" in scirel.__all__
+from scirel import kinetic, neutrals
+for api in json.loads(sys.argv[1]):
+    function = getattr(neutrals, api["symbol"])
+    assert function is getattr(importlib.import_module(api["module"]), api["symbol"])
+    assert not hasattr(kinetic, api["symbol"])
+    old = api["module"].replace("scirel.neutrals.", "scirel.kinetic.")
+    try:
+        importlib.import_module(old)
+    except ModuleNotFoundError as error:
+        assert error.name == old
+    else:
+        raise AssertionError(old)
+assert kinetic.derive_species_equilibrium_scales.__module__.startswith("scirel.kinetic.")
+assert kinetic.evaluate_h_saha_equilibrium_population.__module__.startswith("scirel.kinetic.")
+speed = neutrals.compute_thermal_speed_m_s(1.0, 2.0)["thermal_speed_m_s"]
+assert speed == math.sqrt(2.0 * 1.602177e-19 / (2.0 * 1.6726231e-27))
+try:
+    neutrals.compute_thermal_speed_m_s(0.0, 2.0)
+except ValueError:
+    pass
+else:
+    raise AssertionError("original failure semantics must remain")
+print(json.dumps({"contracts": 33, "modules": len({api["module"] for api in json.loads(sys.argv[1])}), "speed": speed}))
+"""
+    done = _run([case.python, "-I", "-B", "-c", driver, json.dumps(bindings)], cwd=case.work)
+    assert json.loads(done.stdout)["modules"] == 32
+
+
 @pytest.fixture
 def saved_result(real_delivery):
     with TemporaryDirectory(prefix="result-", dir=real_delivery.work) as temporary:

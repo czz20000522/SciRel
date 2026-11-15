@@ -1,4 +1,4 @@
-"""Direct contract tests for ``scirel.kinetic.interp_distribution_across_mesh``
+"""Direct contract tests for ``scirel.neutrals.interp_distribution_across_mesh``
 (the N5 H<->H2 cross-grid distribution interpolation, saved anchor
  as recorded by the saved bundle's provenance).
 
@@ -19,7 +19,7 @@ from __future__ import annotations
 import numpy as np
 import pytest
 
-from scirel.kinetic import interp_distribution_across_mesh
+from scirel.neutrals import interp_distribution_across_mesh
 
 
 def _meshes():
@@ -364,7 +364,7 @@ def test_correction_limit_exhaustion_returns_no_partial_distribution():
 def test_original_negative_output_witness_now_fails_as_infeasible():
     # Historical assertion of negative output is frozen with the original
     # failure receipt. It is not a physical correctness requirement.
-    from scirel.kinetic.cross_mesh_distribution_interpolation import InfeasibleMomentsError
+    from scirel.neutrals.cross_mesh_distribution_interpolation import InfeasibleMomentsError
 
     vr_a, vx_a, x_a, vr_b, vx_b, x_b = _meshes()
     fa = np.exp(np.random.default_rng(0).normal(size=(vr_a.size, vx_a.size, x_a.size)))

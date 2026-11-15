@@ -13,7 +13,7 @@ from __future__ import annotations
 import numpy as np
 import pytest
 
-from scirel.kinetic import (
+from scirel.neutrals import (
     contract_atomic_hydrogen_alpha_frequencies,
     contract_molecular_hydrogen_alpha_frequencies,
 )

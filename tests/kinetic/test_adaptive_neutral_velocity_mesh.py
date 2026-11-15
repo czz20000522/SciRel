@@ -5,7 +5,7 @@ from __future__ import annotations
 import numpy as np
 import pytest
 
-from scirel.kinetic import create_adaptive_neutral_velocity_mesh
+from scirel.neutrals import create_adaptive_neutral_velocity_mesh
 
 
 def test_nearly_uniform_temperatures_use_the_saved_uniform_mesh():
@@ -46,7 +46,7 @@ def test_negative_requested_energies_are_ignored_as_in_the_saved_formula():
 
 
 def test_generated_mesh_feeds_quadrature_seed_and_moment_reduction():
-    from scirel.kinetic import (
+    from scirel.neutrals import (
         build_shifted_maxwellian_seed,
         make_cylindrical_velocity_quadrature,
         reduce_axisymmetric_neutral_moments,

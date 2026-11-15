@@ -51,7 +51,7 @@ Mesh generation and integration weights are two separate steps. ``create_adaptiv
 .. code-block:: python
 
    import numpy as np
-   from scirel.kinetic import (
+   from scirel.neutrals import (
        create_adaptive_neutral_velocity_mesh,
        make_cylindrical_velocity_quadrature,
    )
@@ -109,7 +109,7 @@ The moment-reduction entry point accepts ``f``, the velocity axes and the same `
 
 .. code-block:: python
 
-   from scirel.kinetic import (
+   from scirel.neutrals import (
        build_shifted_maxwellian_seed,
        reduce_axisymmetric_neutral_moments,
    )
@@ -212,7 +212,7 @@ The upwind coefficients combine ``alpha``, metre coordinates ``x``, dimensionles
 
 .. code-block:: python
 
-   from scirel.kinetic import (
+   from scirel.neutrals import (
        assemble_neutral_total_collision_frequency,
        assemble_neutral_upwind_transport_coefficients,
    )
@@ -287,7 +287,7 @@ To make the picture "incident from ``x=0``" self-consistent, we zero the negativ
 
 .. code-block:: python
 
-   from scirel.kinetic import propagate_neutral_generation
+   from scirel.neutrals import propagate_neutral_generation
 
    boundary = f.copy()
    boundary[:, vx < 0.0] = 0.0
@@ -360,7 +360,7 @@ The preceding ``gen`` comes from a unit-integral seed, with density decreasing f
 
 .. code-block:: python
 
-   from scirel.kinetic import (
+   from scirel.neutrals import (
        reduce_terminal_molecular_flux_velocity,
        reduce_terminal_molecular_pressure_temperature,
        reduce_terminal_molecular_heat_flux,
@@ -469,15 +469,15 @@ Common pitfalls
 When to use which function
 --------------------------
 
-- To build a velocity mesh: use :doc:`../reference/generated/scirel.kinetic.adaptive-neutral-velocity-mesh`. Pay attention to the temperature-spread threshold, requested-energy insertion and the definition of ``Tnorm``.
-- To construct an integration measure from existing ``vr`` and ``vx``: use :doc:`../reference/generated/scirel.kinetic.cylindrical-velocity-quadrature`. It does not generate a mesh and does not convert units.
-- To build a shifted Maxwellian seed: use :doc:`../reference/generated/scirel.kinetic.shifted-maxwellian-seed`. It performs no moment compensation, and its normalization depends on the ``cylindrical_volume`` you supply.
-- To obtain density, flow velocity, temperature, stress and random heat flux from a distribution: use :doc:`../reference/generated/scirel.kinetic.axisymmetric-neutral-moments`. Note the empty-slice policy and the ``stress_zz`` alias convention.
-- To assemble the normalized total-loss coefficient ``nu/Vth``: use :doc:`../reference/generated/scirel.kinetic.neutral-total-collision-frequency`. When charge exchange is enabled, the inverse-length field must be supplied explicitly; An exact zero diameter ``D = 0`` is a declared wall-off sentinel, not the ``D -> 0+`` limit; closing or degenerate-geometry interpretation is a caller-side transport-boundary decision.
-- To assemble one-dimensional upwind coefficients: use :doc:`../reference/generated/scirel.kinetic.neutral-upwind-transport-coefficients`. The first-flight and scattered paths consume different coefficients, so choose ``generation_kind`` first.
-- To propagate one neutral generation: use :doc:`../reference/generated/scirel.kinetic.neutral-generation-propagation`. First flight uses only the positive-velocity boundary; the scattered path requires ``scattered_source_distribution``.
-- To read flux and flow velocity from a terminal distribution: use :doc:`../reference/generated/scirel.kinetic.terminal-flux-velocity-reduction`; for pressure and temperature use :doc:`../reference/generated/scirel.kinetic.terminal-pressure-temperature-reduction`; for random and total heat flux use :doc:`../reference/generated/scirel.kinetic.terminal-heat-flux-reduction`.
-- If the source has a spatial shape rather than entering from a boundary, first look at :doc:`../reference/generated/scirel.kinetic.spatial-source-shape-normalization`, then decide whether to use the scattered generation. This chapter does not cover that path.
+- To build a velocity mesh: use :doc:`../reference/generated/scirel.neutrals.adaptive-neutral-velocity-mesh`. Pay attention to the temperature-spread threshold, requested-energy insertion and the definition of ``Tnorm``.
+- To construct an integration measure from existing ``vr`` and ``vx``: use :doc:`../reference/generated/scirel.neutrals.cylindrical-velocity-quadrature`. It does not generate a mesh and does not convert units.
+- To build a shifted Maxwellian seed: use :doc:`../reference/generated/scirel.neutrals.shifted-maxwellian-seed`. It performs no moment compensation, and its normalization depends on the ``cylindrical_volume`` you supply.
+- To obtain density, flow velocity, temperature, stress and random heat flux from a distribution: use :doc:`../reference/generated/scirel.neutrals.axisymmetric-neutral-moments`. Note the empty-slice policy and the ``stress_zz`` alias convention.
+- To assemble the normalized total-loss coefficient ``nu/Vth``: use :doc:`../reference/generated/scirel.neutrals.neutral-total-collision-frequency`. When charge exchange is enabled, the inverse-length field must be supplied explicitly; An exact zero diameter ``D = 0`` is a declared wall-off sentinel, not the ``D -> 0+`` limit; closing or degenerate-geometry interpretation is a caller-side transport-boundary decision.
+- To assemble one-dimensional upwind coefficients: use :doc:`../reference/generated/scirel.neutrals.neutral-upwind-transport-coefficients`. The first-flight and scattered paths consume different coefficients, so choose ``generation_kind`` first.
+- To propagate one neutral generation: use :doc:`../reference/generated/scirel.neutrals.neutral-generation-propagation`. First flight uses only the positive-velocity boundary; the scattered path requires ``scattered_source_distribution``.
+- To read flux and flow velocity from a terminal distribution: use :doc:`../reference/generated/scirel.neutrals.terminal-flux-velocity-reduction`; for pressure and temperature use :doc:`../reference/generated/scirel.neutrals.terminal-pressure-temperature-reduction`; for random and total heat flux use :doc:`../reference/generated/scirel.neutrals.terminal-heat-flux-reduction`.
+- If the source has a spatial shape rather than entering from a boundary, first look at :doc:`../reference/generated/scirel.neutrals.spatial-source-shape-normalization`, then decide whether to use the scattered generation. This chapter does not cover that path.
 
 Applicability and validation boundaries
 ---------------------------------------

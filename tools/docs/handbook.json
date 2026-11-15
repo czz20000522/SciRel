@@ -521,11 +521,11 @@
      "assets": [
       "scirel.collisions.atomic-hydrogen-collision-matrices",
       "scirel.collisions.molecular-hydrogen-collision-matrices",
-      "scirel.kinetic.atomic-alpha-contraction",
-      "scirel.kinetic.molecular-alpha-contraction",
+      "scirel.neutrals.atomic-alpha-contraction",
+      "scirel.neutrals.molecular-alpha-contraction",
       "scirel.collisions.atomic-hydrogen-omega-frequencies",
       "scirel.collisions.molecular-hydrogen-omega-frequencies",
-      "scirel.kinetic.elastic-frequency-channels"
+      "scirel.neutrals.elastic-frequency-channels"
      ]
     }
    ]
@@ -545,7 +545,7 @@
      "title": "区分速度、热速度比与归一化动量",
      "introduction": "热速度有速度单位，热电子动量入口返回无量纲热速度比，而网格归一化动量还需要一个有单位的速度尺度。将无量纲比直接作为速度输入会重复除以光速；组合前须核对各自单位。",
      "assets": [
-      "scirel.kinetic.thermal-speed-scale",
+      "scirel.neutrals.thermal-speed-scale",
       "scirel.collisions.thermal-electron-momentum",
       "scirel.collisions.normalized-momentum"
      ]
@@ -555,8 +555,8 @@
      "title": "建立圆柱速度网格与积分测度",
      "introduction": "根据温度与指定能量生成速度网格，再由明确的轴节点构造环形径向测度、单元体积与差分系数。网格生成和积分权重是不同步骤；使用其他单元面约定时不能直接沿用这些权重。",
      "assets": [
-      "scirel.kinetic.adaptive-neutral-velocity-mesh",
-      "scirel.kinetic.cylindrical-velocity-quadrature"
+      "scirel.neutrals.adaptive-neutral-velocity-mesh",
+      "scirel.neutrals.cylindrical-velocity-quadrature"
      ]
     },
     {
@@ -564,8 +564,8 @@
      "title": "构造 Maxwellian 初值并归约分布矩",
      "introduction": "离散平移 Maxwellian 初值、轴对称分布矩及相对论背景所需的缩放 Bessel 量是不同关系。初值入口不包含后续矩补偿，特殊函数闭合也不自行建立物理分布；按具体问题选择相应参考。",
      "assets": [
-      "scirel.kinetic.shifted-maxwellian-seed",
-      "scirel.kinetic.axisymmetric-neutral-moments",
+      "scirel.neutrals.shifted-maxwellian-seed",
+      "scirel.neutrals.axisymmetric-neutral-moments",
       "scirel.collisions.relativistic-maxwellian-bessel-closure"
      ]
     },
@@ -574,8 +574,8 @@
      "title": "对速度切片做漂移与能量矩补偿",
      "introduction": "先用同一圆柱速度求积构造平移 Maxwell 分布，再对单个切片或每个平移应用有界的离散漂移/能量修正。该修正保留源的有限体积差分与符号分支，不是完整输运求解或物理稳定性证明。",
      "assets": [
-      "scirel.kinetic.velocity-slice-moment-compensation",
-      "scirel.kinetic.compensated-shifted-maxwellian"
+      "scirel.neutrals.velocity-slice-moment-compensation",
+      "scirel.neutrals.compensated-shifted-maxwellian"
      ]
     },
     {
@@ -595,12 +595,12 @@
      "title": "准备入射边界与散射源",
      "introduction": "归一化空间源和入射半空间通量，构造简化电荷交换与弹性重生源，再归约原子或分子的源通道。归一化所用测度、正负速度分支及各入口的有符号值策略必须与下游传播一致。",
      "assets": [
-      "scirel.kinetic.spatial-source-shape-normalization",
-      "scirel.kinetic.incoming-boundary-flux-normalization",
-      "scirel.kinetic.simple-charge-exchange-source",
-      "scirel.kinetic.elastic-regeneration-aggregation",
-      "scirel.kinetic.atomic-scattered-sources-reduction",
-      "scirel.kinetic.molecular-scattered-sources-reduction"
+      "scirel.neutrals.spatial-source-shape-normalization",
+      "scirel.neutrals.incoming-boundary-flux-normalization",
+      "scirel.neutrals.simple-charge-exchange-source",
+      "scirel.neutrals.elastic-regeneration-aggregation",
+      "scirel.neutrals.atomic-scattered-sources-reduction",
+      "scirel.neutrals.molecular-scattered-sources-reduction"
      ]
     },
     {
@@ -608,10 +608,10 @@
      "title": "组装中性损失与双向空间传播",
      "introduction": "从总损失频率和源项构造空间推进系数，再传播首飞或散射代际；另有显式 Boltzmann 右端组装入口。该组关系采用规定的一维空间离散，不隐含高阶修正或完整非线性求解器。",
      "assets": [
-      "scirel.kinetic.neutral-total-collision-frequency",
-      "scirel.kinetic.neutral-upwind-transport-coefficients",
-      "scirel.kinetic.neutral-generation-propagation",
-      "scirel.kinetic.neutral-boltzmann-rhs"
+      "scirel.neutrals.neutral-total-collision-frequency",
+      "scirel.neutrals.neutral-upwind-transport-coefficients",
+      "scirel.neutrals.neutral-generation-propagation",
+      "scirel.neutrals.neutral-boltzmann-rhs"
      ]
     },
     {
@@ -619,11 +619,11 @@
      "title": "累计代际并判断迭代是否继续",
      "introduction": "先由代际分布归约密度、累计完整状态，再分别计算代际、种子重入与顶层外循环的密度变化判据。三个停止关系的阈值与分母不同，不能把它们当作通用物理守恒或误差证明。",
      "assets": [
-      "scirel.kinetic.generation-density-reduction",
-      "scirel.kinetic.generation-accumulation-update",
-      "scirel.kinetic.neutral-generation-stopping",
-      "scirel.kinetic.outer-seed-convergence",
-      "scirel.kinetic.outer-convergence"
+      "scirel.neutrals.generation-density-reduction",
+      "scirel.neutrals.generation-accumulation-update",
+      "scirel.neutrals.neutral-generation-stopping",
+      "scirel.neutrals.outer-seed-convergence",
+      "scirel.neutrals.outer-convergence"
      ]
     },
     {
@@ -631,8 +631,8 @@
      "title": "在物种网格之间传递剖面与分布",
      "introduction": "标量空间插值和相空间分布传递具有不同边界与修正约定。分布入口的可选矩修正不保证非负结果；标量入口对区间外节点置零，不能理解为一般外推。",
      "assets": [
-      "scirel.kinetic.cross-mesh-scalar-interpolation",
-      "scirel.kinetic.cross-mesh-distribution-interpolation"
+      "scirel.neutrals.cross-mesh-scalar-interpolation",
+      "scirel.neutrals.cross-mesh-distribution-interpolation"
      ]
     },
     {
@@ -640,12 +640,12 @@
      "title": "由终态分布计算通量、温度与能量诊断",
      "introduction": "对调用者选定的终态分布计算分子通量、流速、压强、温度和热通量，并结合给定反应率或碰撞右端得到离子状态与能量转移。最后的相邻单元能量诊断不等于完整输运守恒证明。",
      "assets": [
-      "scirel.kinetic.terminal-flux-velocity-reduction",
-      "scirel.kinetic.terminal-pressure-temperature-reduction",
-      "scirel.kinetic.terminal-heat-flux-reduction",
-      "scirel.kinetic.terminal-ion-state-reduction",
-      "scirel.kinetic.terminal-energy-transfer-reduction",
-      "scirel.kinetic.terminal-conservation-diagnostic"
+      "scirel.neutrals.terminal-flux-velocity-reduction",
+      "scirel.neutrals.terminal-pressure-temperature-reduction",
+      "scirel.neutrals.terminal-heat-flux-reduction",
+      "scirel.neutrals.terminal-ion-state-reduction",
+      "scirel.neutrals.terminal-energy-transfer-reduction",
+      "scirel.neutrals.terminal-conservation-diagnostic"
      ]
     }
    ]

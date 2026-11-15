@@ -48,6 +48,7 @@ import scirel.fusion
 import scirel.inference
 import scirel.io
 import scirel.neoclassical
+import scirel.neutrals
 import scirel.physics
 import scirel.plasma
 import scirel.source
@@ -202,8 +203,8 @@ def test_kinetic_scalar_mesh_interpolation_defers_scipy_until_valid_call() -> No
         """
 import sys
 import numpy as np
-from scirel.kinetic import interpolate_scalar_across_mesh
-from scirel.kinetic.cross_mesh_scalar_interpolation import (
+from scirel.neutrals import interpolate_scalar_across_mesh
+from scirel.neutrals.cross_mesh_scalar_interpolation import (
     interpolate_scalar_across_mesh as direct,
 )
 
@@ -303,8 +304,8 @@ def test_kinetic_spatial_source_shape_defers_scipy_until_valid_call() -> None:
         """
 import sys
 import numpy as np
-from scirel.kinetic import normalize_spatial_source_shape
-from scirel.kinetic.spatial_source_shape_normalization import (
+from scirel.neutrals import normalize_spatial_source_shape
+from scirel.neutrals.spatial_source_shape_normalization import (
     normalize_spatial_source_shape as direct,
 )
 

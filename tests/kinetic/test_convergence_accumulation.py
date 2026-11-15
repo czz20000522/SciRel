@@ -11,7 +11,7 @@ from __future__ import annotations
 import numpy as np
 import pytest
 
-from scirel.kinetic import (
+from scirel.neutrals import (
     evaluate_neutral_generation_stopping,
     update_neutral_generation_accumulation,
     evaluate_neutral_outer_seed_convergence,

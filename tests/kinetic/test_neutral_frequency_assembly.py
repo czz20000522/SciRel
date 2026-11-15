@@ -3,7 +3,7 @@
 import numpy as np
 import pytest
 
-from scirel.kinetic import (
+from scirel.neutrals import (
     assemble_neutral_total_collision_frequency,
     sum_elastic_frequency_channels,
 )

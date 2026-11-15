@@ -8,8 +8,8 @@ the two normalization temperatures.
 
 import numpy as np
 import pytest
-from scirel.kinetic import interp_distribution_across_mesh as remap
-from scirel.kinetic.cross_mesh_distribution_interpolation import (
+from scirel.neutrals import interp_distribution_across_mesh as remap
+from scirel.neutrals.cross_mesh_distribution_interpolation import (
     InfeasibleMomentsError,
     MomentCorrectionConvergenceError,
 )
