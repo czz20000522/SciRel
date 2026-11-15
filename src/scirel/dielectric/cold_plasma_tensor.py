@@ -149,7 +149,11 @@ A species whose cyclotron frequency exactly equals the wave frequency drives
 ``den`` to exactly zero and the tensor is undefined there.  This module **fails
 closed** with :class:`ColdPlasmaResonanceError`, a subclass of ``ValueError``.
 The singularity test is exact equality on the computed denominator, not a
-tolerance, and the rejection is whole-call rather than per-point.  Both
+tolerance. A computed zero is rechecked with exact rational arithmetic over
+the represented omega, collision and cyclotron operands. If their exact
+denominator is nonzero, the zero was an arithmetic collapse and raises
+ColdPlasmaOverflowError; a confirmed pole raises ColdPlasmaResonanceError.
+The rejection is whole-call rather than per-point. Both
 decisions match the retained aorsa3d sibling operator's own contract -- the
 ``AORSA冷Stix电导张量`` route guards the identical denominator with an exact
 ``== 0.0`` test and raises ``ValueError``.  That sibling route is a source-project
@@ -178,13 +182,24 @@ square root/divisions use 80-digit Decimal arithmetic, followed by one
 binary64 rounding. A genuinely unrepresentable final component rejects the
 whole call with ``ColdPlasmaOverflowError``.
 
-The Stix coefficients and their conservative representability guards remain
-binary64 and unchanged. Final projection does not recover information already
-lost in those coefficients, and a rounded Cartesian matrix can remain
-ill-conditioned for a later consumer extracting a much smaller eigenresponse.
-This standard-library assembly is not an all-input high-precision plasma
-solver. Artificial extreme species establish arithmetic behavior, not physical
-applicability of the cold model.
+The conservative binary64 representability guards remain. With one contributing
+species, the represented Stix coefficients and the projection above are retained;
+that projection cannot restore information already lost in those coefficients.
+With two or more contributing species, the same model is summed as rational
+S, H=D/|B| and P over the original binary64 species and Cartesian field inputs,
+using Q=sum(B_i**2) and Omega**2=q**2*Q/m**2 without a rounded field norm.
+These coefficients remain rational through the defining tensor projection,
+whose Hall term is i*H*[B]_x; only complete Cartesian entries are rounded.
+At Q=0 the collective result is P*I. Inert species do not select a different
+route. No component of a previously assembled tensor is patched.
+
+The frequency still uses represented omega=2*pi_binary64*frequency_hz, and
+the preceding guards still use binary64 operands and caller-order accumulated
+values. They can conservatively refuse an exact finite relation and do not
+guarantee order-independent refusal for every extreme input. A rounded matrix
+can remain ill-conditioned for extracting a much smaller eigenresponse.
+This is not an all-input or experimentally qualified high-precision plasma
+solver. Artificial extreme species establish arithmetic, not cold-model validity.
 
 Evidence ceiling
 ----------------
@@ -342,6 +357,81 @@ def _species_terms(item):
             "species values must be finite; density/collision nonnegative and mass positive"
         )
     return density, charge, mass, collision
+
+
+def _collective_stix(omega, field, species):
+    """Sum collective corrections before rounding individual species terms.
+
+    A neutral low-frequency plasma has opposite leading Hall contributions.
+    Summing rounded terms, even exactly, cannot recover their small remainder:
+    the numerator and cyclotron arithmetic have already lost that information.
+    Use the original binary64 inputs as rational numbers for the whole sum.
+    Keep S, P and H=D/|B| as rational real/imaginary pairs until projection:
+    Omega**2=q**2*sum(B_i**2)/m**2 and H require no rounded norm or square root.
+    Rounding S and P separately would erase a small rotated S-P response.
+    This changes neither the model nor the preceding representability guards;
+    the isolated-species route retains its established binary64 arithmetic.
+    """
+    w = Fraction(omega)
+    eps0 = Fraction(VACUUM_PERMITTIVITY)
+    scalars = {}
+    for prefix in np.ndindex(field.shape[:-1]):
+        norm_squared = sum(Fraction(float(value)) ** 2 for value in field[prefix])
+        sr, si, hr, hi, pr, pi = map(Fraction, (1, 0, 0, 0, 1, 0))
+        for index, density, charge, mass, collision in species:
+            n, q, m, nu = map(Fraction, (density, charge, mass, collision))
+            wp2 = n * q * q / (eps0 * m)
+            cyclotron_squared = q * q * norm_squared / (m * m)
+            # shifted**2 - cyclotron**2 = a + i*b; retain both parts.
+            a = w * w - nu * nu - cyclotron_squared
+            b = 2 * w * nu
+            norm = a * a + b * b
+            if not norm:
+                raise ColdPlasmaResonanceError(f"{RESONANCE_MESSAGE} (species index {index})")
+            factor = wp2 / (w * norm)
+            sr -= factor * (w * a + nu * b)
+            si -= factor * (nu * a - w * b)
+            hr += factor * (q / m) * a
+            hi -= factor * (q / m) * b
+            shifted_norm = w * w + nu * nu
+            pr -= wp2 / shifted_norm
+            pi += wp2 * nu / (w * shifted_norm)
+        scalars[prefix] = sr, si, hr, hi, pr, pi
+    return scalars
+
+
+def _assemble_collective_tensor(field, scalars):
+    """Project unrounded collective S, D/|B|, P, then round each entry once.
+
+    This is the defining tensor identity, not a correction of an already
+    assembled tensor. The Hall coefficient H multiplies [B]_x directly.
+    """
+    tensor = np.empty(field.shape[:-1] + (3, 3), dtype=complex)
+    for prefix, (sr, si, hr, hi, pr, pi) in scalars.items():
+        components = [Fraction(float(value)) for value in field[prefix]]
+        squares = [value * value for value in components]
+        norm_squared = sum(squares)
+        cross = (
+            (0, -components[2], components[1]),
+            (components[2], 0, -components[0]),
+            (-components[1], components[0], 0),
+        )
+        try:
+            for i in range(3):
+                for j in range(3):
+                    if norm_squared:
+                        parallel = components[i] * components[j] / norm_squared
+                        perpendicular = Fraction(int(i == j)) - parallel
+                        real = sr * perpendicular + pr * parallel - hi * cross[i][j]
+                        imag = si * perpendicular + pi * parallel + hr * cross[i][j]
+                    else:
+                        real, imag = (pr, pi) if i == j else (Fraction(0), Fraction(0))
+                    tensor[prefix + (i, j)] = complex(float(real), float(imag))
+        except OverflowError as error:
+            raise ColdPlasmaOverflowError(f"{OVERFLOW_MESSAGE} (final tensor assembly)") from error
+    if not _is_finite(tensor):
+        raise ColdPlasmaOverflowError(f"{OVERFLOW_MESSAGE} (final tensor assembly)")
+    return tensor
 
 
 def _assemble_tensor(field, magnitude, stix_s, stix_d, stix_p):
@@ -505,12 +595,25 @@ def cold_plasma_dielectric_tensor(frequency_hz, magnetic_flux_density_t, species
     scientific domain: this function implements the local cold-plasma model and
     nothing about it validates that model for the supplied plasma.
 
+    Two or more contributing species use exact rational collective S, H=D/|B|
+    and P from the original binary64 species and Cartesian field inputs, with
+    Q=sum(B_i**2) and Omega**2=q**2*Q/m**2. The tensor identity is projected
+    without first rounding those coefficients or a field norm; complete real
+    and imaginary entries are rounded once. With one contributing species the
+    established binary64 coefficient and stable projection route is retained.
+    Inert species do not change routes. Earlier conservative operand/product
+    and caller-order accumulation guards remain, so this is not a promise of
+    arbitrary-input accuracy or the largest mathematically evaluable domain.
+
     Raises
     ------
     ColdPlasmaResonanceError
         If any **contributing** species makes the Stix denominator exactly zero
-        at any field point.  A near-resonant but non-zero denominator is not
-        rejected, and a non-contributing species never rejects.
+        at any field point and an exact recheck of the represented operands
+        confirms the pole, or the collective rational relation is singular.
+        A computed zero whose exact operands have a nonzero denominator raises
+        ColdPlasmaOverflowError instead. A near-resonant but non-zero denominator
+        is not rejected, and a non-contributing species never rejects.
     ColdPlasmaOverflowError
         If the input contract is satisfied but a guarded intermediate of the
         Stix arithmetic or a final tensor component cannot be represented.
@@ -660,6 +763,7 @@ def cold_plasma_dielectric_tensor(frequency_hz, magnetic_flux_density_t, species
     stix_s = np.ones(shape, dtype=complex)
     stix_d = np.zeros(shape, dtype=complex)
     stix_p = np.ones(shape, dtype=complex)
+    contributing = []
     for index, item in enumerate(species):
         density, charge, mass, collision = _species_terms(item)
         # The skip is decided on the *inputs*, not on a computed product.  A
@@ -762,6 +866,13 @@ def cold_plasma_dielectric_tensor(frequency_hz, magnetic_flux_density_t, species
         # test so an unrepresentable denominator is reported as an overflow
         # rather than as a resonance.
         if np.any(denominator == 0.0):
+            # A rounded zero can also be two underflowed squares, or a lost
+            # collisional imaginary term. Distinguish that arithmetic failure
+            # from a pole of the represented frequency/cyclotron operands.
+            for value in np.asarray(cyclotron)[np.asarray(denominator == 0.0)].flat:
+                w, nu, gyro = map(Fraction, (omega, collision, float(value)))
+                if w * w - nu * nu - gyro * gyro or 2 * w * nu:
+                    raise ColdPlasmaOverflowError(f"{OVERFLOW_MESSAGE} (species index {index})")
             raise ColdPlasmaResonanceError(f"{RESONANCE_MESSAGE} (species index {index})")
         # Every one of the three Stix scalars is a product divided by a product,
         # and the guards above cover the *factors* of the plasma contribution and
@@ -802,6 +913,12 @@ def cold_plasma_dielectric_tensor(frequency_hz, magnetic_flux_density_t, species
         # finite but wrong passes it.
         if not (_is_finite(stix_s) and _is_finite(stix_d) and _is_finite(stix_p)):
             raise ColdPlasmaOverflowError(f"{OVERFLOW_MESSAGE} (species index {index})")
+        contributing.append((index, density, charge, mass, collision))
+
+    # Resolve species cancellation in the coefficients, before projection.
+    # Inert species do not change the route or the isolated-species result.
+    if len(contributing) > 1:
+        return _assemble_collective_tensor(field, _collective_stix(omega, field, contributing))
 
     # A zero field has no direction; its response is isotropic and has no Hall
     # term.  A nonzero field whose norm collapsed was rejected above.
