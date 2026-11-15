@@ -56,15 +56,19 @@ def evaluate_plasma_dispersion_weideman(z):
     ------
     ValueError
         If ``z`` is empty or non-finite, if the returned ``Z`` or ``w`` is
-        non-finite, or if the pure-imaginary branch exceeds its float64
-        numerical range.
+        non-finite, or if a pure-imaginary value exceeds the final float64
+        output range.
 
     Notes
     -----
-    The pure-imaginary branch evaluates ``exp(-z**2) * erfc(imag(z))``
-    directly. It is finite for magnitudes of about ``26.6`` or less. A larger
-    pure-imaginary magnitude raises ``ValueError`` even when the asymptotic
-    limit itself would still be representable.
+    For ``z=i*y`` with ``y>0``, the pure-imaginary branch uses
+    ``w(i*y)=erfcx(y)=exp(y**2)*erfc(y)`` to avoid overflow in the exponential
+    before multiplication by a small complementary error function. The
+    nonpositive imaginary axis retains its direct exp/erfc evaluation. A
+    negative imaginary argument can exceed the final float64 range; both
+    ``w`` and the scaled ``Z`` must remain finite. The ``'erfc'`` branch label
+    is unchanged. Nonzero-real-part rational and reflection branches are
+    unchanged; this correction does not establish a global N=64 error bound.
 
     See Also
     --------
@@ -74,6 +78,7 @@ def evaluate_plasma_dispersion_weideman(z):
     References
     ----------
     H. S. Xie, Phys. Plasmas 32, 082110 (2025).
+    SciPy, scipy.special.erfcx, scaled complementary error function.
 
     Examples
     --------
@@ -85,11 +90,11 @@ def evaluate_plasma_dispersion_weideman(z):
         raise ValueError("z must be nonempty and finite")
 
     # Keep the scientific backend out of import-time and rejected-input paths.
-    # The rational branch below is unchanged; importing ``erfc`` only after
-    # the input contract is established preserves the source backend and
+    # The rational branch below is unchanged. Load the special functions only
+    # after the input contract is established to preserve the source backend and
     # numerical behavior for valid calls without making namespace discovery
     # pay the SciPy import cost.
-    from scipy.special import erfc as _erfc
+    from scipy.special import erfc as _erfc, erfcx as _erfcx
 
     shape = zeta.shape
     flat = zeta.reshape(-1)
@@ -99,8 +104,13 @@ def evaluate_plasma_dispersion_weideman(z):
 
     idx = _np.real(flat) == 0
     method[idx] = "erfc"
+    positive_axis = idx & (_np.imag(flat) > 0)
+    nonpositive_axis = idx & ~positive_axis
     with _np.errstate(over="ignore", invalid="ignore", under="ignore"):
-        w[idx] = _np.exp(-(flat[idx] ** 2)) * _erfc(_np.imag(flat[idx]))
+        w[positive_axis] = _erfcx(_np.imag(flat[positive_axis]))
+        w[nonpositive_axis] = _np.exp(-(flat[nonpositive_axis] ** 2)) * _erfc(
+            _np.imag(flat[nonpositive_axis])
+        )
 
     all_purely_imaginary = bool(_np.all(idx))
     if not all_purely_imaginary:

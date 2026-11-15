@@ -1351,20 +1351,20 @@
   },
   {
    "asset_id": "scirel.kinetic.plasma-dispersion-weideman",
-   "source_sha256": "de7e55be9ca90eda1bbe2874f3b2c56c401736fb0a800b052a50c8809fac52a4",
-   "summary": "计算 Weideman 方法的 N=64 有理 Faddeeva 近似、逐点分支标记，并声明纯虚分支的 float64 范围。",
-   "definition": "Z(z)=i*sqrt(pi)*w(z)；采用 N=64 Weideman FFT 系数，以及纯虚自变量 erfc 分支和下半平面反射分支。",
+   "source_sha256": "c52755b9d431ed40cbf973f84b2dc57524b8ef78a5c4978a448ae267b15d949a",
+   "summary": "计算固定 N=64 有理 Faddeeva 近似，稳定求取正虚轴值，并保留逐点分支标记。",
+   "definition": "Z(z)=i*sqrt(pi)*w(z)；采用 N=64 Weideman FFT 系数；当 y>0 时按 w(i*y)=erfcx(y)=exp(y²)*erfc(y) 求值。非正虚轴的 exp/erfc 计算及实部非零时的反射分支保持原样。",
    "model": "均匀 Maxwell 等离子体色散特殊函数。",
    "assumptions": [
     "输入单位和归一化遵循声明端口，不推断物理参数。",
-    "纯虚输入只用于已声明的 float64 erfc 分支范围。"
+    "w 与缩放后的 Z 都须为有限 complex128；负虚轴值可能超过这一输出范围。"
    ],
-   "boundary": "仅适用于可表示的有限自变量，并避开有理近似的数值极点；纯虚 erfc 分支仅适用于约 |Im(z)| <= 26.6，超出后报错关闭。",
+   "boundary": "仅适用于可表示的有限自变量，并避开有理近似的数值极点；正虚轴使用 erfcx 避免中间指数溢出，w 与最终 Z 都须有限。",
    "inputs": [
     {
      "name": "z",
-     "description": "待求的复变量取值。可为标量、任意形状的实数或复数 `array_like`；轴含义由调用方决定，本算子不解释物理轴。单位：无量纲（归一化相速度 z = omega/(k*vt)）。有效性约束：元素须为有限值（不含 `NaN`/`inf`），实部为 0 的元素走精确 erfc 分支且仅适用于约 |Im(z)| <= 26.6；实部非 0 且虚部为负的元素走共轭反射分支。",
-     "constraints": "元素须为有限值（不含 `NaN`/`inf`）；实部为 0 时限于约 |Im(z)| <= 26.6；实部非 0 且虚部为负时走共轭反射分支。",
+     "description": "待求的复变量取值。可为标量、任意形状的实数或复数 `array_like`；轴含义由调用方决定，本算子不解释物理轴。单位：无量纲（归一化相速度 z = omega/(k*vt)）。元素须有限，不含 `NaN`/`inf`。纯虚 z=i*y 在 y>0 时使用 erfcx(y)，其余仍用 exp(y²)*erfc(y)，均保留 erfc 分支标记；实部非零且虚部为负时仍走共轭反射。最终 w 与 Z 都须有限。",
+     "constraints": "元素须有限，不含 `NaN`/`inf`；正虚轴采用 erfcx，不设中间指数范围截断，最终 w 与 Z 都须有限；实部非零且虚部为负时保留共轭反射。",
      "dtype": "实数或复数"
     }
    ],
@@ -1372,7 +1372,7 @@
     {
      "name": "Z",
      "description": "等离子体色散函数值 Z(z)=1i*sqrt(pi)*w(z)。形状与 `z` 完全一致（标量输入得 0 维数组），复数值 `ndarray`（complex128）。单位：无量纲。有效性约束：仅在 `z` 各元素有限且未落在展开式极点附近时数值有效；实部为 0 的实参数点给出纯虚结果。",
-     "constraints": "仅在 `z` 各元素有限、纯虚输入处于声明范围且未落在展开式极点附近时数值有效；实部为 0 的输入给出纯虚结果。",
+     "constraints": "z 各元素及最终 w 与 Z 都须有限，并避开数值展开式极点；纯虚输入给出纯虚 Z。",
      "dtype": "complex128 复数"
     },
     {
@@ -1397,19 +1397,19 @@
    "applicability": {
     "preconditions": [
      "可表示有限自变量，避开有理近似数值极点。",
-     "纯虚自变量的幅值约为 26.6 或更小。"
+     "最终 w 与 Z 都须可表示为有限 complex128；仅 w 有限并不保证 Z 可表示。"
     ],
     "supported": [
-     "计算 Weideman 方法的 N=64 有理 Faddeeva 近似及分支标签。"
+     "计算固定 N=64 有理 Faddeeva 近似及分支标签，包括通过 erfcx 求得的可表示正虚轴值。"
     ],
     "excluded": [
      "不在所述数值方法之外推断模态身份或任意参数精度。",
-     "超过纯虚 erfc 分支 float64 范围的输入不在支持范围内。"
+     "不返回最终 w 或 Z 非有限的值，包括负虚轴上的最终输出溢出。"
     ]
    },
    "failure_semantics": {
-    "invalid_input": "所述无效输入抛 ValueError，包括超出声明范围的纯虚输入；不支持的 Python 对象可能传播数值转换异常。",
-    "runtime_failure": "算出的张量或函数值非有限时抛 ValueError。",
+    "invalid_input": "z 为空或非有限时抛 ValueError；不支持的 Python 对象可能传播数值转换异常。",
+    "runtime_failure": "w 或最终缩放后的 Z 任一非有限时抛 ValueError；保留原浮点警告策略及异常类型。",
     "nonconvergence": "不适用，未暴露迭代求根。",
     "partial_results": "异常后不返回部分映射。"
    },
@@ -1419,16 +1419,19 @@
    },
    "verification": {
     "scope": [
-     "声明的数值用例、纯虚范围边界及相关失败情形。"
+     "原 N=64 来源数值锚点与延迟导入；90/140 位独立虚轴参照覆盖所列有限点、正虚轴溢出反例与相邻浮点、极大正参数、矩阵形状及负向最终输出溢出。"
     ],
-    "evidence_ceiling": "直接 Python 测试仅支持所列有限案例和容差；数值一致性、任意参数精度和发行批准不属于这些证据。",
+    "evidence_ceiling": "独立参照在 90/140 位下按原 erfc 定义或其缩放后的正实积分构造 w(i*y)，在转为 binary64 前核对两档精度。所列虚轴点对 w 与 Z 分别采用相对误差 3e-15，包括不使用绝对误差下限掩盖零值的次正规输出；混合复数点保留 rtol=1e-12、atol=1e-13。这些有界测试不建立 N=64 连续域误差上界、任意复输入精度、来源运行时一致性或发行批准。",
     "known_limitations": [
-     "直接纯虚 erfc 分支在 float64 中仅适用于约 26.6 或更小的幅值。",
+     "只以 erfcx 稳定正虚轴求值；非正虚轴及普通复数分支保留现有算术。负虚轴输出仍可能超过 float64，最终 Z 的可表示性与 w 分别检查。",
      "仅支持可表示有限自变量，须避开有理近似的数值极点。",
-     "公开分发许可与专家审查仍待完成。"
+     "在 Linux amd64 上使用声明的本地 Python 运行时进行完整来源运行验收，在本次 macOS 工作树中仍为 NOT_RUN。"
     ],
     "tests": [
-     "tests/kinetic/test_fluid_spectrum_r43_variants.py"
+     "tests/kinetic/test_fluid_spectrum_r43_variants.py",
+     "tests/kinetic/test_weideman_imaginary_range.py",
+     "tests/kinetic/test_weideman_axis_independent.py",
+     "tests/kinetic/test_weideman_import_boundary.py"
     ]
    }
   },
