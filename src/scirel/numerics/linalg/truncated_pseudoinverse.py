@@ -6,7 +6,7 @@ import numbers
 
 import numpy as np
 
-__all__ = ["truncated_svd_inverse"]
+__all__ = ["compute_truncated_pseudoinverse"]
 
 _SINGULAR_NOT_REPRESENTABLE = (
     "SVD singular values derived from a finite input are not representable as finite float64"
@@ -19,7 +19,7 @@ _OUTPUT_NOT_REPRESENTABLE = (
 )
 
 
-def truncated_svd_inverse(mat, rcond=1e-10):
+def compute_truncated_pseudoinverse(mat, *, rcond=1e-10):
     """Compute the Moore-Penrose inverse with truncated singular values.
 
     Parameters
@@ -50,8 +50,8 @@ def truncated_svd_inverse(mat, rcond=1e-10):
 
     See Also
     --------
-    numpy.linalg.pinv : NumPy pseudo-inverse with the same relative-threshold
-        convention.
+    numpy.linalg.pinv : NumPy pseudo-inverse, which discards singular values
+        equal to its cutoff as well as those below it.
 
     Notes
     -----
@@ -60,16 +60,20 @@ def truncated_svd_inverse(mat, rcond=1e-10):
     threshold discards a singular value; a retained singular value whose
     reciprocal overflows is reported as a failure instead of being dropped.
 
+    References
+    ----------
+    .. [1] NumPy developers, "numpy.linalg.svd", NumPy reference manual.
+
     Examples
     --------
     >>> import numpy as np
-    >>> from scirel.geometry import truncated_svd_inverse
+    >>> from scirel.numerics import compute_truncated_pseudoinverse
     >>> m = np.array([[1.0, 2.0], [2.0, 4.0]])
-    >>> np.testing.assert_allclose(truncated_svd_inverse(m), np.linalg.pinv(m))
-    >>> truncated_svd_inverse(np.ones((5, 3))).shape
+    >>> np.testing.assert_allclose(compute_truncated_pseudoinverse(m), np.linalg.pinv(m))
+    >>> compute_truncated_pseudoinverse(np.ones((5, 3))).shape
     (3, 5)
     >>> try:
-    ...     truncated_svd_inverse(np.array([[1e-310]]))
+    ...     compute_truncated_pseudoinverse(np.array([[1e-310]]))
     ... except FloatingPointError:
     ...     print("finite input, unrepresentable derived result")
     finite input, unrepresentable derived result

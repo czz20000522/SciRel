@@ -97,11 +97,11 @@
  },
  "public_api": {
   "python": {
-   "module": "scirel.geometry.truncated_svd_inverse",
-   "symbol": "truncated_svd_inverse",
-   "signature": "truncated_svd_inverse(mat, rcond=1e-10)",
-   "canonical_module": "scirel.geometry",
-   "canonical_symbol": "truncated_svd_inverse"
+   "module": "scirel.numerics.linalg.truncated_pseudoinverse",
+   "symbol": "compute_truncated_pseudoinverse",
+   "signature": "compute_truncated_pseudoinverse(mat, *, rcond=1e-10)",
+   "canonical_module": "scirel.numerics",
+   "canonical_symbol": "compute_truncated_pseudoinverse"
   }
  },
  "version": {
@@ -110,7 +110,7 @@
  },
  "example": {
   "description": "Invert a rank-deficient two-by-two matrix and a rectangular matrix, and observe the finite-input fail-closed branch.",
-  "code": "import numpy as np\nfrom scirel.geometry import truncated_svd_inverse\n\nm = np.array([[1.0, 2.0], [2.0, 4.0]])\nnp.testing.assert_allclose(truncated_svd_inverse(m), np.linalg.pinv(m))\ntruncated_svd_inverse(np.ones((5, 3))).shape\ntry:\n    truncated_svd_inverse(np.array([[1e-310]]))\nexcept FloatingPointError:\n    print(\"finite input, unrepresentable derived result\")\n",
+  "code": "import numpy as np\nfrom scirel.numerics import compute_truncated_pseudoinverse\n\nm = np.array([[1.0, 2.0], [2.0, 4.0]])\nnp.testing.assert_allclose(compute_truncated_pseudoinverse(m), np.linalg.pinv(m))\ncompute_truncated_pseudoinverse(np.ones((5, 3))).shape\ntry:\n    compute_truncated_pseudoinverse(np.array([[1e-310]]))\nexcept FloatingPointError:\n    print(\"finite input, unrepresentable derived result\")\n",
   "expected": "The rank-deficient inverse matches numpy.linalg.pinv, the rectangular case returns shape (3, 5), and a finite 1e-310 entry raises FloatingPointError instead of returning inf."
  },
  "verification": {
@@ -118,12 +118,15 @@
    "Agreement with numpy.linalg.pinv on square, tall and wide full-rank matrices.",
    "Rank-deficient thresholding and the M M^+ M = M projection identity.",
    "Rejection of non-2-D and non-finite matrices and of non-positive or non-finite thresholds.",
-   "The zero matrix returns the zero pseudo-inverse, covered by tests/geometry/test_truncated_svd_inverse.py.",
+   "The zero matrix returns the zero pseudo-inverse, covered by tests/numerics/test_truncated_pseudoinverse.py.",
    "Finite-input fail-closed boundary: a 1e-310 entry and an underflowed relative threshold raise FloatingPointError, while a representable 1e-300 reciprocal keeps its value.",
-   "Finite-input fail-closed boundary of the decomposition: a 2x2 matrix filled with 1e308 raises FloatingPointError when its SVD singular values are not representable."
+   "Finite-input fail-closed boundary of the decomposition: a 2x2 matrix filled with 1e308 raises FloatingPointError when its SVD singular values are not representable.",
+   "A singular value exactly at the cutoff is retained; only the neighboring value below it is discarded. Empty matrices retain the transposed output shape.",
+   "The numerics domain and linalg topic expose one callable with keyword-only rcond, dependency-light discovery and no former geometry entry or module."
   ],
   "tests": [
-   "tests/geometry/test_truncated_svd_inverse.py"
+   "tests/numerics/test_truncated_pseudoinverse.py",
+   "tests/numerics/test_truncated_pseudoinverse_api.py"
   ],
   "evidence_ceiling": "Mathematical identity checks on bounded dense matrices plus a finite float64 representability boundary witness; no application-level diagnostic-fitting, statistical-error claim, or numeric magnitude bound for arbitrary finite inputs is established.",
   "known_limitations": [
