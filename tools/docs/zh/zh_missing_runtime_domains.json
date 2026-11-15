@@ -1229,7 +1229,7 @@
     "invalid_input": "布尔、字符串、复数、掩码、空数组、非有限值、形状不合、非正输入或杂质电荷等于主离子电荷时抛出 ValueError。",
     "nonconvergence": "不适用；直接代数计算。",
     "partial_results": "失败后不返回部分结果。",
-    "runtime_failure": "有限输入计算出不可表示结果时抛出 FloatingPointError，不返回替代值。"
+    "runtime_failure": "接受的有限输入若产生非有限输出，抛出 FloatingPointError。允许最终下溢为零；仅凭返回零，不能区分正份额舍零与纯杂质端点的精确零。"
    },
    "inputs": [
     {
@@ -1268,7 +1268,7 @@
      "units": "无量纲"
     }
    ],
-   "source_sha256": "2e227b788062b0ebc42bed31b3f363d1de7a842d297c024057e7b4dd1532a4e8",
+   "source_sha256": "4bb27e1fbc8a23d72b40eea88b352396f62c2f6bf0efb012e358ff9f605970ad",
    "summary": "由单一主离子与单一杂质电荷计算主离子稀释份额。",
    "verification": {
     "evidence_ceiling": "维护测试仅支持所列关系、形状和指定边界行为，不构成普遍物理标定。",
@@ -1279,10 +1279,12 @@
     "scope": [
      "独立构造物种电荷平衡、端点、奇异边界和大电荷可表示性。",
      "覆盖空、布尔、字符串、复数、掩码、非有限和不匹配输入的失败行为。",
-     "与本关系的规范 SciRel 调用者及依赖一致。"
+     "与本关系的规范 SciRel 调用者及依赖一致。",
+     "有限 binary64 电荷给出的精确正份额 2^-1075 最终舍入为零仍被接受；另行检查纯杂质端点的精确零。"
     ],
     "tests": [
-     "tests/cross_domain/test_algebra_grid.py"
+     "tests/cross_domain/test_algebra_grid.py",
+     "tests/physics/test_source_energy_boundaries.py"
     ]
    }
   },
@@ -1318,7 +1320,7 @@
     "invalid_input": "压强或网格输入不合、非有限、不匹配或权重非正时抛出 ValueError。",
     "nonconvergence": "不适用；直接有限计算。",
     "partial_results": "失败时不返回部分元组。",
-    "runtime_failure": "最终 float64 结果不可表示时抛出 FloatingPointError。"
+    "runtime_failure": "最终舍入前，若精确能量的绝对值大于 float64 最大有限值，即使最近舍入仍可为有限值，也抛出 FloatingPointError。精确非零能量最终舍零同样拒绝；精确零允许。"
    },
    "inputs": [
     {
@@ -1389,7 +1391,7 @@
      "units": "J"
     }
    ],
-   "source_sha256": "d2b4c8eb02f0153745650a58b4e28bcc6a49e1f53e478ad7a5bce9a4faf172b9",
+   "source_sha256": "8d947fa54cd1223933b2bfb1e851cd7b94842dd544e3c9e89838053d817b11d5",
    "summary": "分别积分电子、离子及总标量压强，得到储存热能。",
    "verification": {
     "evidence_ceiling": "独立数值探针支持所列数学关系、离散守恒、边界、形状和失败行为；不代表一般等离子体标定或完整边界模型有效性。",
@@ -1401,11 +1403,13 @@
     ],
     "scope": [
      "以精确有理数中间量和独立数值探针检查守恒、溢出/下溢、分量独立性与错误输入。",
-     "检查不同排列中的有符号相消以及中间乘积上溢/下溢；使用精确 binary64 乘积且仅最终舍入。"
+     "检查不同排列中的有符号相消以及中间乘积上溢/下溢；使用精确 binary64 乘积且仅最终舍入。",
+     "正负两侧均检查既有精确绝对值上界：max+2^968 即使舍入为 max 也拒绝，max-2^969 仍接受；区分精确相消零与非零最终舍零。"
     ],
     "tests": [
      "tests/kinetic/test_profile_energy.py",
-     "tests/kinetic/test_thermal_cancellation.py"
+     "tests/kinetic/test_thermal_cancellation.py",
+     "tests/physics/test_source_energy_boundaries.py"
     ]
    }
   },
@@ -1503,7 +1507,7 @@
      "units": "总量/m^3"
     }
    ],
-   "source_sha256": "d156d58efc5ac5acd2ac424a73c92cd83cf1b742703ee7304d619ca0fb7fd026",
+   "source_sha256": "6fd1af7fc87cf535d81ab0669a9430be7a14f637742d0ed36baeda7a01964af5",
    "summary": "在非均匀归一化半径网格上生成体积归一化指数源剖面。",
    "verification": {
     "evidence_ceiling": "独立数值探针支持所列数学关系、离散守恒、边界、形状和失败行为；不代表一般等离子体标定或完整边界模型有效性。",
@@ -1514,10 +1518,12 @@
      "不支持数组参数广播或批轴；网格为等长向量，源参数为标量。"
     ],
     "scope": [
-     "覆盖非均匀网格、守恒、有符号/整数/极小宽度、起始位置相消及错误输入。"
+     "覆盖非均匀网格、守恒、有符号/整数/极小宽度、起始位置相消及错误输入。",
+     "用独立 120/200 位参照检查非均匀体积网格逐点值、相邻比、正负极小宽度下限形状及共同正体积尺度；相对容差 2e-15、绝对容差零。"
     ],
     "tests": [
-     "tests/kinetic/test_profile_energy.py"
+     "tests/kinetic/test_profile_energy.py",
+     "tests/source/test_profile_shape_qualification.py"
     ]
    }
   },
@@ -1543,7 +1549,7 @@
     "宽度为标量；高斯对宽度是偶函数，因此接受有限有符号宽度。"
    ],
    "boundary": "离散单元体积求和；不外推或隐式重建端点。",
-   "definition": "取分母 D 为 2*width^2 与 float64 tiny 中的较大者。先减去所有单元中的最小平方距离，再用因式分解的平方差计算未归一化权重 S_i=exp(-((rho_i-center)^2-min_j((rho_j-center)^2))/D)，返回 total*S_i/Σ_j(S_j*vpr_j*drho_norm_j)。在次正规宽度下采用这一声明的分母下限，因此结果不等于未截断的连续高斯采样。",
+   "definition": "取分母 D 为 2*width^2 与 float64 tiny 中的较大者。先减去所有单元中的最小平方距离，计算未归一化权重 S_i=exp(-((rho_i-center)^2-min_j((rho_j-center)^2))/D)。相对最近参考格点的平方差按 (rho_i-ref)*((rho_i-center)+(ref-center)) 求值，先分别保留到中心的差再相加。返回 total*S_i/Σ_j(S_j*vpr_j*drho_norm_j)。在次正规宽度下采用这一声明的分母下限，因此结果不等于未截断的连续高斯采样。",
    "example": {
     "description": "计算离散体积归一化源剖面。",
     "expected": "离散积分等于给定总量 4。"
@@ -1615,7 +1621,7 @@
      "units": "总量/m^3"
     }
    ],
-   "source_sha256": "b5e364677e6f3fe7c1fb9f64e3af8c1723f3961c1f1d7bceb87935c55847e70b",
+   "source_sha256": "95c7e4028f767c7acb380217767d86e4826810457eb7f16e862173b0b7ca58ec",
    "summary": "在非均匀归一化半径网格上生成体积归一化高斯源剖面。",
    "verification": {
     "evidence_ceiling": "独立数值探针支持所列数学关系、离散守恒、边界、形状和失败行为；不代表一般等离子体标定或完整边界模型有效性。",
@@ -1626,10 +1632,12 @@
      "不支持数组参数广播或批轴；网格为等长向量，源参数为标量。"
     ],
     "scope": [
-     "覆盖非均匀网格、守恒、有符号/整数/极小宽度、远离网格的中心及错误输入。"
+     "覆盖非均匀网格、守恒、有符号/整数/极小宽度、远离网格的中心及错误输入。",
+     "用原 binary64 输入的精确距离平方及 120/200 位指数参照，检查相邻格点、有符号宽度与总量、分母下限、远中心形状及共同正体积尺度；逐点相对容差 2e-15、绝对容差零。"
     ],
     "tests": [
-     "tests/kinetic/test_profile_energy.py"
+     "tests/kinetic/test_profile_energy.py",
+     "tests/source/test_profile_shape_qualification.py"
     ]
    }
   }

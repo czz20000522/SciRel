@@ -133,7 +133,7 @@
  },
  "failure_semantics": {
   "invalid_input": "Raises ValueError for malformed, nonfinite, mismatched pressure/grid inputs or nonpositive weights.",
-  "runtime_failure": "Raises FloatingPointError for unrepresentable finite float64 results.",
+  "runtime_failure": "Raises FloatingPointError if an exact energy has magnitude greater than float64 max, before final rounding, even if nearest rounding would still be finite. A nonzero exact energy that rounds to zero also raises; an exact zero is accepted.",
   "nonconvergence": "Not applicable; direct finite relation.",
   "partial_results": "No partial tuple is returned."
  },
@@ -158,11 +158,13 @@
  "verification": {
   "scope": [
    "Independent Decimal/longdouble conservation and overflow/underflow checks, component independence and malformed inputs.",
-   "Signed cancellation across permutations and intermediate product overflow/underflow regression; exact binary64 products and a single final rounding."
+   "Signed cancellation across permutations and intermediate product overflow/underflow regression; exact binary64 products and a single final rounding.",
+   "Both signs of the conservative exact-magnitude upper boundary: max+2^968 is rejected although it rounds to max, while max-2^969 remains accepted. Exact cancellation zero and nonzero final round-to-zero are distinguished."
   ],
   "tests": [
    "tests/kinetic/test_profile_energy.py",
-   "tests/kinetic/test_thermal_cancellation.py"
+   "tests/kinetic/test_thermal_cancellation.py",
+   "tests/physics/test_source_energy_boundaries.py"
   ],
   "evidence_ceiling": "Independent numerical probes establish the named mathematical relation, discrete conservation, boundary and shape/failure behavior. They do not establish general plasma calibration or complete edge-model validity.",
   "known_limitations": [
