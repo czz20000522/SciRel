@@ -44,8 +44,9 @@ TOP_LEVEL_KEYS = {
     "verification",
     "composition",
     "references",
+    "family",
 }
-REQUIRED_TOP_LEVEL_KEYS = TOP_LEVEL_KEYS - {"composition", "references", "discovery"}
+REQUIRED_TOP_LEVEL_KEYS = TOP_LEVEL_KEYS - {"composition", "references", "discovery", "family"}
 PORT_KEYS = {
     "name",
     "description",
@@ -356,6 +357,96 @@ def _validate_verification(value: Any) -> None:
     )
 
 
+def _validate_family(document: dict[str, Any]) -> None:
+    """Keep model-specific claims under one callable and its existing consumers."""
+    family = _object(document["family"], "family")
+    keys = {"name", "default", "default_reason", "methods"}
+    _exact_keys(family, keys, keys, "family")
+    _text(family["name"], "family.name")
+    default = _text(family["default"], "family.default")
+    _text(family["default_reason"], "family.default_reason")
+    ports = {port["name"]: port for port in document["inputs"]}
+    selector = ports.get("method")
+    if selector is None or selector["required"] or selector.get("default") != default:
+        _fail("family.default", "must equal the explicit optional method input default")
+    signature = document["public_api"]["python"]["signature"]
+    declaration = ast.parse(f"def {signature}:\n    pass\n").body[0].args
+    keywords = dict(zip((arg.arg for arg in declaration.kwonlyargs), declaration.kw_defaults))
+    try:
+        declared_default = ast.literal_eval(keywords["method"])
+    except (KeyError, ValueError, TypeError):
+        _fail("family.default", "requires a keyword-only method with a literal default")
+    if declared_default != default:
+        _fail("family.default", "differs from the declared callable method default")
+    members = _list(family["methods"], "family.methods", nonempty=True)
+    names = set()
+    method_keys = {
+        "name",
+        "model",
+        "numerical_controls",
+        "applicability",
+        "failure_semantics",
+        "verification",
+    }
+    for index, member in enumerate(members):
+        location = f"family.methods[{index}]"
+        member = _object(member, location)
+        _exact_keys(member, method_keys, method_keys, location)
+        name = _text(member["name"], f"{location}.name")
+        if not re.fullmatch(r"[a-z][a-z0-9_-]*", name):
+            _fail(f"{location}.name", "must be a lowercase closed method name")
+        if name in names:
+            _fail("family.methods", f"duplicate method name: {name}")
+        names.add(name)
+        _text(member["model"], f"{location}.model")
+        controls = _object(member["numerical_controls"], f"{location}.numerical_controls")
+        for parameter, settings in controls.items():
+            control_location = f"{location}.numerical_controls.{parameter}"
+            if parameter == "method" or parameter not in ports:
+                _fail(control_location, "must name an explicit input other than method")
+            if ports[parameter]["required"]:
+                _fail(control_location, "must be an optional numerical control")
+            settings = _object(settings, control_location)
+            _exact_keys(
+                settings, {"default", "constraints"}, {"default", "constraints"}, control_location
+            )
+            _validate_json_value(settings["default"], f"{control_location}.default")
+            _text(settings["constraints"], f"{control_location}.constraints")
+        try:
+            _validate_applicability(member["applicability"])
+            _validate_failures(member["failure_semantics"])
+            _validate_verification(member["verification"])
+        except AssetDocumentError as error:
+            _fail(location, str(error))
+        if any(
+            not any(
+                reference == scope or reference.startswith(scope + "::")
+                for scope in document["verification"]["tests"]
+            )
+            for reference in member["verification"]["tests"]
+        ):
+            _fail(f"{location}.verification.tests", "must enter the contract's existing test scope")
+    if default not in names:
+        _fail("family.default", "must name a declared method")
+    symbol = document["public_api"]["python"]["symbol"]
+    exercised = set()
+    for node in ast.walk(ast.parse(document["example"]["code"])):
+        if not isinstance(node, ast.Call):
+            continue
+        target = (
+            node.func.id if isinstance(node.func, ast.Name) else getattr(node.func, "attr", None)
+        )
+        if target == symbol:
+            for keyword in node.keywords:
+                if keyword.arg == "method" and isinstance(keyword.value, ast.Constant):
+                    exercised.add(keyword.value.value)
+    if names - exercised:
+        _fail(
+            "family.example",
+            "must explicitly exercise methods: " + ", ".join(sorted(names - exercised)),
+        )
+
+
 def _has_cycle(nodes: set[str], edges: list[tuple[str, str]]) -> bool:
     outgoing = {node: set() for node in nodes}
     indegree = {node: 0 for node in nodes}
@@ -566,6 +657,8 @@ def validate_document(document: Any, *, location: str = "document") -> dict[str,
     dependency_ids = _validate_version(item["version"])
     _validate_example(item["example"])
     _validate_verification(item["verification"])
+    if "family" in item:
+        _validate_family(item)
     if "composition" in item:
         _validate_graph(item["composition"], input_ports, output_ports, dependency_ids)
     return item
