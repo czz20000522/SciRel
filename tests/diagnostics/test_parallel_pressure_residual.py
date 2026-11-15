@@ -234,3 +234,73 @@ def test_nonzero_required_output_below_float64_range_is_rejected(small_output):
         compute_parallel_pressure_residual(
             pp, perp, b, atol=floor, rtol=0.0, dp_parallel_dB=derivative
         )
+
+
+@pytest.mark.parametrize("sign", [-1.0, 1.0])
+@pytest.mark.parametrize("perp_exponent", [None, 968, 969, 970])
+def test_complete_error_overflow_midpoint_and_finite_neighbors(sign, perp_exponent):
+    # M+h rounds to M; the COMPLETE error reaches the overflow midpoint
+    # at pt=-sign*h even though two successive subtractions can stay finite.
+    maximum = float.fromhex("0x1.fffffffffffffp+1023")
+    h = 2.0**969
+    pp, derivative = sign * maximum, -sign * h
+    perp = 0.0 if perp_exponent is None else -sign * 2.0**perp_exponent
+    exact_rhs = Fraction.from_float(pp) - Fraction.from_float(derivative)
+    exact_error = Fraction.from_float(perp) - exact_rhs
+    assert float(exact_rhs) == sign * maximum
+    if perp_exponent in (969, 970):
+        if perp_exponent == 969:
+            assert exact_error == -int(sign) * ((1 << 1024) - (1 << 970))
+        with pytest.raises(OverflowError):
+            float(exact_error)
+        with pytest.raises(FloatingPointError, match="finite"):
+            compute_parallel_pressure_residual(pp, perp, 1.0, dp_parallel_dB=derivative)
+    else:
+        expected = _raw_pressure_reference(pp, perp, 1.0, derivative, 1e-6, 0.01)
+        result = compute_parallel_pressure_residual(pp, perp, 1.0, dp_parallel_dB=derivative)
+        assert result.rhs == float(exact_rhs)
+        assert result.error == float(exact_error)
+        for key in ("rhs", "error", "relative_error"):
+            np.testing.assert_allclose(result[key], expected[key], rtol=1e-13, atol=0)
+        assert result.passed is expected["passed"]
+
+
+@pytest.mark.parametrize("sign", [-1.0, 1.0])
+def test_complete_rhs_overflow_midpoint_is_rejected(sign):
+    maximum = float.fromhex("0x1.fffffffffffffp+1023")
+    derivative = -sign * 2.0**970
+    exact_rhs = Fraction.from_float(sign * maximum) - Fraction.from_float(derivative)
+    assert exact_rhs == int(sign) * ((1 << 1024) - (1 << 970))
+    with pytest.raises(OverflowError):
+        float(exact_rhs)
+    with pytest.raises(FloatingPointError, match="finite"):
+        compute_parallel_pressure_residual(sign * maximum, 0.0, 1.0, dp_parallel_dB=derivative)
+
+
+@pytest.mark.parametrize("sign", [-1.0, 1.0])
+def test_upper_range_recovery_keeps_finite_mixed_strided_samples(sign):
+    maximum = float.fromhex("0x1.fffffffffffffp+1023")
+    pp = np.array([[sign * maximum, 3.0, sign * maximum]])[:, ::-1]
+    perp = np.array([[0.0, 3.0, -sign * 2.0**968]])[:, ::-1]
+    derivative = np.array([[-sign * 2.0**969, 0.0, -sign * 2.0**969]])[:, ::-1]
+    field = np.ones_like(pp)
+    snapshots = [value.copy() for value in (pp, perp, field, derivative)]
+    expected_relative = np.empty_like(pp)
+    result = compute_parallel_pressure_residual(pp, perp, field, dp_parallel_dB=derivative)
+    for index in np.ndindex(pp.shape):
+        expected = _raw_pressure_reference(
+            pp[index], perp[index], field[index], derivative[index], 1e-6, 0.01
+        )
+        for key in ("rhs", "error", "relative_error"):
+            np.testing.assert_allclose(result[key][index], expected[key], rtol=1e-13, atol=0)
+        expected_relative[index] = expected["relative_error"]
+    np.testing.assert_allclose(
+        result.max_relative_error, np.max(expected_relative), rtol=1e-13, atol=0
+    )
+    np.testing.assert_allclose(
+        result.mean_relative_error, np.mean(expected_relative), rtol=1e-13, atol=0
+    )
+    assert result.passed is False
+    assert result.rhs is result["rhs"]
+    for value, snapshot in zip((pp, perp, field, derivative), snapshots):
+        np.testing.assert_array_equal(value, snapshot)
