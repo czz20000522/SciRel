@@ -207,7 +207,7 @@ def solve_kinetic_wavevector_roots(
     residuals : complex128
         Dispersion-determinant residual $\mathcal{D}$ at each root [dimensionless] Shape: `(F,)` one-
         dimensional frequency-axis complex array. Finite complex; the quality of the root must be judged
-        from residuals, determinant_scale, exit_flags and converged at the same frequency index.
+        from residuals, determinant_scale, status and success at the same frequency index.
     determinant_scale : real numeric
         Maximum modulus of the dielectric-tensor elements at each root, used as the cancellation scale of
         the determinant residual at that frequency point [dimensionless] Shape: `(F,)` one-dimensional
@@ -230,7 +230,7 @@ def solve_kinetic_wavevector_roots(
         Whether the exit flag is positive at each frequency point (that is, the reference runtime judged
         convergence) [not applicable] Shape: `(F,)` one-dimensional frequency-axis boolean array. When
         false, the root is only the final unaccepted candidate, possibly the initial seed; neither a zero
-        nor a stationary point is guaranteed. Inspect residuals, determinant_scale and exit_flags.
+        nor a stationary point is guaranteed. Inspect residuals, determinant_scale and status.
     omegas : real numeric
         Angular-frequency sequence actually used in this call, echoing the input [rad/s] Shape: `(F,)` one-
         dimensional frequency axis. Same length as `roots`.

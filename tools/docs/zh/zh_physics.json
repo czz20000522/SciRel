@@ -739,7 +739,7 @@
   },
   {
    "asset_id": "scirel.kinetic.dielectric-response",
-   "source_sha256": "7da1d56ccb0f97742bc18a699f0997cefbd5c1022ab8985563a97058d8e820b1",
+   "source_sha256": "169bd526721784c05cb7eb07c86903a54fe793db6725f6923d6e5ec43bd081dc",
    "summary": "显式选择 harmonic、harmonic_weideman 或固定 J8 的 ronnmark，计算均匀磁化 Maxwellian 介电响应。",
    "definition": "vts=sqrt(2*kB*Ts0/ms)，wcs=qs*B0/ms，wps2=ns0*qs**2/(ms*epsilon0)，a=kx*sqrt(kB*Ts0/ms)/wcs，b=a**2，不是 abs(a)**2。omega 直接以 rad/s 输入，不猜测单位，也不往返 Hz。K_ij = delta_ij - sigma_ij/(i*omega*epsilon0)；保留各方法原 Maxwell 旋度项、行列式算法和全部共同科学字段。a 直接取核已有的有符号或复数值，不用 sqrt(b) 反算。只有 diagnostics 存放各方法的算法记录。",
    "model": "均匀磁化 Maxwellian 等离子体；两个有限回旋谐波方法和固定 J=8 的 Ronnmark 有理极点模型，各方法方程与证据分别保留。",
@@ -752,7 +752,7 @@
     {
      "name": "B0",
      "description": "沿 z 方向的带符号均匀背景磁场。",
-     "constraints": "有限且非零；拒绝布尔和复数输入。",
+     "constraints": "有限且非零；传入单位为 T 的实数标量。",
      "dtype": "实数"
     },
     {
@@ -794,7 +794,7 @@
     {
      "name": "kx",
      "description": "垂直相位波数。",
-     "constraints": "有限谐波方法要求实数非零；ronnmark 允许有限实数或复数，零值也须完整响应可表示。",
+     "constraints": "有限谐波方法要得到完整结果须输入非零实 kx：harmonic 对零值抛 ValueError，harmonic_weideman 对不可用派生尺度保留 FloatingPointError。ronnmark 可接受有限实数或复数 kx，包括零，但完整响应仍须可表示。",
      "dtype": "实数或复数"
     },
     {
@@ -912,7 +912,7 @@
     ]
    },
    "failure_semantics": {
-    "invalid_input": "method 不是字符串、harmonics 种类错误（含 bool），或 ronnmark 收到非 None harmonics 时抛 TypeError。未知方法、负截断、非法或非有限物理输入、不支持的物种轴或不允许的零 B0、omega、kz、kx 抛 ValueError。公开选择/控制错误写明参数、收到值或种类、合法条件及 scirel.kinetic.dielectric-response；不支持的数值转换可传播 TypeError。",
+    "invalid_input": "非字符串 method、错误谐波控制类型（含 bool）或 ronnmark 的任何非 None harmonics 抛 TypeError。未知 method、负截断、非有限或非法物理输入、不支持的物种形状，以及不允许的零 B0、omega、kz 和 harmonic 的零 kx 抛 ValueError；harmonic_weideman 的零 kx 保留原派生尺度 FloatingPointError。公开 method/control 错误给出参数、收到值、合法条件与 scirel.kinetic.dielectric-response。未支持的数值转换可传播原生 TypeError。",
     "runtime_failure": "必要尺度非有限或不可表示、必要非零尺度下溢为零、谐波尾项不可靠或预算耗尽、真实 R/H/RC 极点、完整 K/D 或行列式非有限时抛 FloatingPointError。保留原正尾项 20000 项预算、严重相消政策和各方法全部失败行为；不回退、不钳位、不罚值、不返回不完整张量或自动换方法。",
     "nonconvergence": "不做求根迭代；有限和保留调用者指定的同一 N，ronnmark 保留 J8。尾项预算耗尽是 FloatingPointError，不是收敛结论；不自动认证精度或谐波收敛。",
     "partial_results": "无部分结果；全部固定科学字段在完整可表示时一起返回 Result。算法差异只按 diagnostics 的穷举清单记录，不填 None/NaN。"
@@ -1058,12 +1058,7 @@
      {
       "name": "ronnmark",
       "model": "模型：均匀磁化多组分 Maxwellian 等离子体 方程：用 J=8 共振极点和 Ronnmark R 函数替代 Z 与谐波响应，加入 Maxwell 旋度项后计算 det(D)。 边界：允许有限零 kz；常规与 fluid 有限谐波路径要求实际非零 kz。必要派生尺度和完整张量须可表示。 假设：输入单位和归一化遵循所列端口；不推断物理参数。 几何与坐标：背景场沿 z，波矢位于 x-z 平面，张量轴顺序为 x、y、z；B0、电荷及 kz 保留符号，omega 为 rad/s。",
-      "numerical_controls": {
-       "harmonics": {
-        "default": null,
-        "constraints": "只接受 None；极点阶数固定 J=8。任何其他对象，包括数字 5 与 bool，均抛 TypeError。"
-       }
-      },
+      "numerical_controls": {},
       "applicability": {
        "preconditions": [
         "允许有限零 kz；常规与 fluid 有限谐波路径要求实际非零 kz。必要派生尺度和完整张量须可表示。",
@@ -1079,7 +1074,7 @@
        ]
       },
       "failure_semantics": {
-       "invalid_input": "输入违反所列条件时抛出 ValueError；不受支持的 Python 对象可能直接传播数值转换异常。 method 种类错抛 TypeError，未知字符串抛 ValueError。有限和 harmonics 接受 None（N5）或非 bool 非负整数；种类错抛 TypeError，负数抛 ValueError。ronnmark 的 harmonics 只能为 None。公开选择/控制错误写明参数、收到值或种类、合法条件及 scirel.kinetic.dielectric-response。",
+       "invalid_input": "非法物理输入和所列物种向量约束抛 ValueError；不支持对象可传播原生数值转换错误。method 类型错误抛 TypeError，未知字符串抛 ValueError。固定 J8 没有谐波截断控制：只接受共享的未指定状态 harmonics=None，其他任何值均抛 TypeError，说明参数、收到值、合法条件与 scirel.kinetic.dielectric-response。",
        "runtime_failure": "必要派生尺度、R/H/RC 响应、完整 K/D 或行列式非有限/不可表示时抛 FloatingPointError。必要非零尺度下溢为零也显式失败；不返回部分张量、不换模型、不钳位。",
        "nonconvergence": "不适用；该入口不执行迭代求根。",
        "partial_results": "发生异常后不返回部分结果映射。"

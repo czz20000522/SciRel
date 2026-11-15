@@ -160,6 +160,11 @@ def evaluate_kinetic_dispersion_relation(
         (nonfinite fractions, nonpositive `wn`/`kn`) or nonfinite or zero `kz`; argument or `lmx` errors from
         the kinetic sum propagate.
 
+    FloatingPointError
+        If finite Hz cannot be converted to a representable nonzero kernel
+        angular frequency, or either selected tensor method fails numerically.
+        Zero derived f remains an invalid-input ValueError; no fallback is used.
+
     See Also
     --------
     scirel.kinetic.species_equilibrium_scales.derive_species_equilibrium_scales : Related contract dependency.
