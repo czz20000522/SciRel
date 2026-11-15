@@ -32,6 +32,125 @@ def _as_real_table(value, width, name):
     return table
 
 
+def _two_product(a, b):
+    """Return a bounded product and its rounding residual (Dekker split)."""
+    product = a * b
+    split_a, split_b = 134_217_729.0 * a, 134_217_729.0 * b
+    high_a, high_b = split_a - (split_a - a), split_b - (split_b - b)
+    low_a, low_b = a - high_a, b - high_b
+    error = ((high_a * high_b - product) + high_a * low_b + low_a * high_b) + low_a * low_b
+    return product, error
+
+
+def _product_parts(*factors, denominator=()):
+    """Keep compensated bounded mantissas and separate binary exponents."""
+    fraction = 1.0
+    correction = 0.0
+    exponent = 0
+    for factor in factors:
+        part, power = np.frexp(factor)
+        product, error = _two_product(fraction, part)
+        error = error + correction * part
+        fraction = product + error
+        correction = error - (fraction - product)
+        exponent = exponent + power
+    for factor in denominator:
+        part, power = np.frexp(factor)
+        quotient = fraction / part
+        product, error = _two_product(quotient, part)
+        remainder = ((fraction - product) - error + correction) / part
+        fraction = quotient + remainder
+        correction = remainder - (fraction - quotient)
+        exponent = exponent - power
+    return fraction, exponent
+
+
+def _materialize(fraction, exponent):
+    """Round a completed response, reporting genuine final overflow."""
+    try:
+        return np.ldexp(fraction, exponent)
+    except FloatingPointError as error:
+        raise FloatingPointError(
+            "overflow encountered in multiply: Green response is not representable"
+        ) from error
+
+
+def _scaled_product(*factors, denominator=()):
+    """Combine weights and geometry before rounding to a float64 response."""
+    return _materialize(*_product_parts(*factors, denominator=denominator))
+
+
+def _sum_products(*products):
+    """Sum scaled terms before materializing an axial-field response."""
+    normalized = []
+    for fraction, exponent in products:
+        fraction, adjustment = np.frexp(fraction)
+        normalized.append((fraction, exponent + adjustment))
+    common = np.maximum.reduce(
+        [np.where(fraction == 0, -100_000, exponent) for fraction, exponent in normalized]
+    )
+    common = np.where(common == -100_000, 0, common)
+    total = sum(np.ldexp(fraction, exponent - common) for fraction, exponent in normalized)
+    return _materialize(total, common)
+
+
+def _accumulate(total, correction, term):
+    """Retain low bits when signed source responses nearly cancel."""
+    updated = total + term
+    correction = correction + np.where(
+        np.abs(total) >= np.abs(term), (total - updated) + term, (term - updated) + total
+    )
+    return updated, correction
+
+
+def _elliptic_values(gap, d, special):
+    """Retain a positive separation even when its squared ratio underflows.
+
+    For q below the smallest normal float, K(1-q)=log(4/sqrt(q))
+    and E(1-q)=1 to relative corrections O(q*abs(log(q))), far below
+    binary64 rounding. Form the logarithm from lengths, not a lost q.
+    """
+    ellipkm1, ellipe, _ = special
+    q = (gap / d) ** 2
+    tiny = q < np.finfo(float).tiny
+    k_value, e_value = np.empty_like(q), np.empty_like(q)
+    k_value[tiny] = np.log(4.0) + np.log(d[tiny]) - np.log(gap[tiny])
+    e_value[tiny] = 1.0
+    k_value[~tiny] = ellipkm1(q[~tiny])
+    e_value[~tiny] = ellipe(1.0 - q[~tiny])
+    return q, k_value, e_value
+
+
+def _ring_flux(radius, r, d, m, gap, weight, special):
+    """Evaluate the same flux relation in scalar and blocked assemblies."""
+    a, r, d, m, gap, weight = np.broadcast_arrays(radius, r, d, m, gap, weight)
+    _, _, hyp2f1 = special
+    values = np.zeros_like(m)
+    small = m < 0.5
+    if np.any(small):
+        aa, rr, dd, mm, ww = (x[small] for x in (a, r, d, m, weight))
+        values[small] = _scaled_product(
+            np.pi * 1.0e-7,
+            ww,
+            aa,
+            aa,
+            rr,
+            rr,
+            hyp2f1(1.5, 1.5, 3.0, mm),
+            denominator=(dd, dd, dd),
+        )
+    if np.any(~small):
+        dd, mm, gg, ww = (x[~small] for x in (d, m, gap, weight))
+        _, k_value, e_value = _elliptic_values(gg, dd, special)
+        values[~small] = _scaled_product(
+            1.0e-7,
+            ww,
+            dd,
+            (2.0 - mm) * k_value - 2.0 * e_value,
+        )
+    return values
+
+
 def _one_ring_response(source, targets, special):
     """Evaluate one weighted ring on a target table.
 
@@ -47,15 +166,16 @@ def _one_ring_response(source, targets, special):
     if np.any((targets[:, 0] == radius) & (targets[:, 1] == height)):
         raise ValueError("target coincident with singular circular filament")
 
-    ellipkm1, ellipe, hyp2f1 = special
+    _, _, hyp2f1 = special
     target_r = targets[:, 0]
     separation_z = targets[:, 1] - height
     with np.errstate(over="raise", divide="raise", invalid="raise"):
         distance = np.hypot(target_r + radius, separation_z)
         modulus = 4.0 * (target_r / distance) * (radius / distance)
-        complement = (np.hypot(target_r - radius, separation_z) / distance) ** 2
+        separation = np.hypot(target_r - radius, separation_z)
         small = modulus < 0.5
         response = np.zeros((3, targets.shape[0]), dtype=float)
+        response[0] = _ring_flux(radius, target_r, distance, modulus, separation, weight, special)
 
         if np.any(small):
             r = target_r[small]
@@ -64,12 +184,24 @@ def _one_ring_response(source, targets, special):
             m = modulus[small]
             h0 = hyp2f1(1.5, 1.5, 3.0, m)
             h1 = 0.75 * hyp2f1(2.5, 2.5, 4.0, m)
-            scale = np.pi * 1.0e-7 * (radius / d) ** 2 / d
-            dm_dr = 4.0 * (radius / d) / d - 2.0 * m * ((r + radius) / d) / d
-            response[0, small] = scale * r**2 * h0
-            response[1, small] = scale * (r / d) * (h / d) * (3.0 * h0 + 2.0 * m * h1)
-            response[2, small] = scale * (
-                (2.0 - 3.0 * (r / d) * ((r + radius) / d)) * h0 + r * h1 * dm_dr
+            response[1, small] = _scaled_product(
+                np.pi * 1.0e-7,
+                weight,
+                radius,
+                radius,
+                r,
+                h,
+                3.0 * h0 + 2.0 * m * h1,
+                denominator=(d, d, d, d, d),
+            )
+            u = (r / d) * ((r + radius) / d)
+            response[2, small] = _scaled_product(
+                np.pi * 1.0e-7,
+                weight,
+                radius,
+                radius,
+                (2.0 - 3.0 * u) * h0 + m * h1 * (1.0 - 2.0 * u),
+                denominator=(d, d, d),
             )
 
         if np.any(~small):
@@ -77,22 +209,24 @@ def _one_ring_response(source, targets, special):
             h = separation_z[~small]
             d = distance[~small]
             m = modulus[~small]
-            q = complement[~small]
-            k_value, e_value = ellipkm1(q), ellipe(1.0 - q)
-            radial_gap2 = np.hypot(r - radius, h) ** 2
-            response[0, ~small] = 1.0e-7 * d * ((2.0 - m) * k_value - 2.0 * e_value)
-            response[1, ~small] = (
-                2.0e-7
-                * h
-                / (r * d)
-                * (-k_value + (radius * radius + r * r + h * h) / radial_gap2 * e_value)
+            gap = separation[~small]
+            q, k_value, e_value = _elliptic_values(gap, d, special)
+            response[1, ~small] = _scaled_product(
+                2.0e-7,
+                weight,
+                h,
+                d,
+                -q * k_value + ((radius / d) ** 2 + (r / d) ** 2 + (h / d) ** 2) * e_value,
+                denominator=(r, gap, gap),
             )
-            response[2, ~small] = (
-                2.0e-7
-                / d
-                * (k_value + ((radius - r) * (radius + r) - h * h) / radial_gap2 * e_value)
+            response[2, ~small] = _sum_products(
+                _product_parts(2.0e-7, weight, k_value, denominator=(d,)),
+                _product_parts(
+                    2.0e-7, weight, radius - r, radius + r, e_value, denominator=(d, gap, gap)
+                ),
+                _product_parts(-2.0e-7, weight, (h / gap) ** 2, e_value, denominator=(d,)),
             )
-    return weight * response
+    return response
 
 
 def compute_greens(rzw, rz_pts):
@@ -142,6 +276,11 @@ def compute_greens(rzw, rz_pts):
     target axis. The exact positive-radius self term is rejected rather than
     assigned a finite-wire value.
 
+    Products retain a separate binary exponent until source weights and all
+    geometric factors have been combined. This preserves representable fields
+    and fluxes when an unweighted intermediate would underflow, without
+    changing the hypergeometric or elliptic relations.
+
     Examples
     --------
     >>> import numpy as np
@@ -158,6 +297,7 @@ def compute_greens(rzw, rz_pts):
 
     sources = _as_real_table(rzw, 3, "rzw")
     result = np.zeros((3, len(targets)), dtype=float)
+    correction = np.zeros_like(result)
     special = None
     with np.errstate(over="raise", divide="raise", invalid="raise"):
         for source in sources:
@@ -167,7 +307,10 @@ def compute_greens(rzw, rz_pts):
                 raise ValueError("target coincident with singular circular filament")
             if special is None:
                 special = _load_special_functions()
-            result += _one_ring_response(source, targets, special)
+            result, correction = _accumulate(
+                result, correction, _one_ring_response(source, targets, special)
+            )
+        result = result + correction
     if not np.all(np.isfinite(result)):
         raise FloatingPointError("Green function output is not representable as finite float64")
     return tuple(result[index] for index in range(3))
@@ -178,11 +321,12 @@ def _weighted_psi(rzw, rz_pts, *, zero_self=False, max_pairs=1_000_000):
     sources = _as_real_table(rzw, 3, "rzw")
     targets = _as_real_table(rz_pts, 2, "rz_pts")
     result = np.zeros(len(targets), dtype=float)
+    correction = np.zeros_like(result)
     active = sources[(sources[:, 0] > 0.0) & (sources[:, 2] != 0.0)]
     if len(active) == 0 or len(targets) == 0:
         return result
 
-    ellipkm1, ellipe, hyp2f1 = _load_special_functions()
+    special = _load_special_functions()
     block_size = max(1, min(len(active), int(max_pairs) // max(1, len(targets))))
     r = targets[:, 0][None, :]
     z = targets[:, 1][None, :]
@@ -197,24 +341,13 @@ def _weighted_psi(rzw, rz_pts, *, zero_self=False, max_pairs=1_000_000):
                 h = np.where(self_mask, 1.0, h)
             d = np.hypot(r + a, h)
             m = 4.0 * (r / d) * (a / d)
-            q = (np.hypot(r - a, h) / d) ** 2
-            values = np.zeros_like(m)
-            small = m < 0.5
-            if np.any(small):
-                ds = d[small]
-                rs = np.broadcast_to(r, m.shape)[small]
-                ms = m[small]
-                aa = np.broadcast_to(a, m.shape)[small]
-                values[small] = (
-                    np.pi * 1.0e-7 * (aa / ds) ** 2 / ds * rs**2 * hyp2f1(1.5, 1.5, 3.0, ms)
-                )
-            if np.any(~small):
-                dl, ql, ml = d[~small], q[~small], m[~small]
-                k_value, e_value = ellipkm1(ql), ellipe(1.0 - ql)
-                values[~small] = 1.0e-7 * dl * ((2.0 - ml) * k_value - 2.0 * e_value)
+            gap = np.hypot(r - a, h)
+            values = _ring_flux(a, r, d, m, gap, block[:, 2, None], special)
             if zero_self:
                 values[self_mask] = 0.0
-            result += np.add.reduce(block[:, 2, None] * values, axis=0)
+            for row in values:
+                result, correction = _accumulate(result, correction, row)
+        result = result + correction
     if not np.all(np.isfinite(result)):
         raise FloatingPointError("weighted Green psi output is not representable as finite float64")
     return result
