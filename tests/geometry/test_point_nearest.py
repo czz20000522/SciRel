@@ -263,3 +263,63 @@ def test_nonfloat_or_inexact_conversions_bypass_the_interval_filter(monkeypatch,
         x, y, query = np.array([2**53 + 2.0, 2**53], dtype=float), np.zeros(2), (2**53 + 1, 0)
         expected = 10  # Exact midpoint: retain the first sample, not a rounded query.
     assert locs_to_vals1D(x, y, np.array([10, 20]), [query]) == [expected]
+
+
+def _scalar_squared_distance_reference(x, y, px, py):
+    """Independent scalar basic-operation reference for the vector interval pass."""
+    from math import inf, nextafter
+
+    def component(sample, query):
+        difference = abs(float(sample) - float(query))
+        lo, hi = nextafter(difference, 0.0), nextafter(difference, inf)
+        return nextafter(lo * lo, 0.0), nextafter(hi * hi, inf)
+
+    lower, upper = [], []
+    for sx, sy in zip(x, y):
+        lx, ux = component(sx, px)
+        ly, uy = component(sy, py)
+        lower.append(nextafter(lx + ly, 0.0))
+        upper.append(nextafter(ux + uy, inf))
+    return np.array(lower), np.array(upper)
+
+
+@pytest.mark.parametrize("query", [(0.0, 0.0), (1.0, -1.0), (-1e308, 1e308)])
+def test_vector_intervals_match_scalar_reference_at_range_endpoints(query):
+    x = np.array(
+        [
+            0.0,
+            -0.0,
+            5e-324,
+            -5e-324,
+            np.finfo(float).tiny,
+            -np.finfo(float).tiny,
+            1.0,
+            np.nextafter(1.0, np.inf),
+            1e155,
+            1e-170,
+            1e308,
+            -1e308,
+            np.finfo(float).max,
+            -np.finfo(float).max,
+        ]
+    )
+    y = np.roll(x, 3)
+    expected = _scalar_squared_distance_reference(x, y, *query)
+    with np.errstate(all="raise"):
+        before = np.geterr()
+        actual = sampling._squared_distance_bounds(x, y, *query)
+        assert np.geterr() == before
+    for vector, scalar in zip(actual, expected):
+        np.testing.assert_array_equal(vector, scalar)
+
+
+@pytest.mark.parametrize("dtype", [np.float16, np.float32, np.float64])
+def test_vector_intervals_promote_float_samples_before_subtraction(dtype):
+    x = np.array([0.0, 1.0, 2.0, 3.0], dtype=dtype)
+    y = x[::-1]
+    query = (1.0 + 2.0**-40, 2.0 - 2.0**-40)
+    expected = _scalar_squared_distance_reference(x, y, *query)
+    actual = sampling._squared_distance_bounds(x, y, *query)
+    for vector, scalar in zip(actual, expected):
+        assert vector.dtype == np.float64
+        np.testing.assert_array_equal(vector, scalar)

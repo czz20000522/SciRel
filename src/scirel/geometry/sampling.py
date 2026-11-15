@@ -707,24 +707,21 @@ def _squared_distance_bounds(flat_x, flat_y, x, y):
     This uses basic-operation rounding and adjacent floats, not a norm's ulp
     error bound. The caller checks conversion is exact before using this path.
     """
-    from math import inf, nextafter
 
-    # Scalar basic operations preserve inf/subnormal endpoints independently of
-    # NumPy's floating-error mode; no floating exceptions are suppressed.
-    def component_bounds(sample, query):
-        delta = abs(float(sample) - query)
-        lower = nextafter(delta, 0.0)
-        upper = nextafter(delta, inf)
-        return nextafter(lower * lower, 0.0), nextafter(upper * upper, inf)
+    def component_bounds(samples, query):
+        delta = np.abs(np.asarray(samples, dtype=np.float64) - query)
+        lower = np.nextafter(delta, 0.0)
+        upper = np.nextafter(delta, np.inf)
+        return np.nextafter(lower * lower, 0.0), np.nextafter(upper * upper, np.inf)
 
-    x, y = float(x), float(y)
-    lower, upper = [], []
-    for sx, sy in zip(flat_x, flat_y):
-        lx, ux = component_bounds(sx, x)
-        ly, uy = component_bounds(sy, y)
-        lower.append(nextafter(lx + ly, 0.0))
-        upper.append(nextafter(ux + uy, inf))
-    return np.asarray(lower), np.asarray(upper)
+    # Overflow/underflow intentionally produce inf, zero or subnormal interval
+    # endpoints. Outward nextafter keeps the enclosure; Fraction compares every
+    # retained candidate, so these range events never silently discard a sample.
+    # Suppression is local to interval arithmetic; invalid operations still raise.
+    with np.errstate(over="ignore", under="ignore", invalid="raise"):
+        lx, ux = component_bounds(flat_x, float(x))
+        ly, uy = component_bounds(flat_y, float(y))
+        return np.nextafter(lx + ly, 0.0), np.nextafter(ux + uy, np.inf)
 
 
 def _nearest_sample_index(X, Y, x, y):
