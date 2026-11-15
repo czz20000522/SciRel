@@ -1,5 +1,6 @@
 import numpy as np
 import pytest
+from fractions import Fraction
 
 from scirel.numerics.interpolate.bilinear_grid_sampling import (
     sample_rectilinear_field,
@@ -78,3 +79,80 @@ def test_nonseparable_field_matches_independent_four_corner_oracle():
 
     result = scientific_function(r_grid, z_grid, quantity, points)
     np.testing.assert_allclose(result["samples"], expected, rtol=0.0, atol=1e-14)
+
+
+@pytest.mark.parametrize("r_sign,z_sign", [(1.0, 1.0), (-1.0, 1.0), (1.0, -1.0)])
+def test_affine_center_survives_an_overflowing_coordinate_span(r_sign, z_sign):
+    """The center of a symmetric finite interval has exact half weights."""
+    r_axis = np.array([-1e308, 1e308])
+    z_axis = np.array([-1e308, 1e308])
+    r_grid, z_grid = np.meshgrid(r_axis, z_axis)
+    values = r_sign * np.array([[-1.0, 1.0], [-1.0, 1.0]])
+    values += z_sign * np.array([[-1.0, -1.0], [1.0, 1.0]])
+    with np.errstate(all="raise"):
+        result = scientific_function(r_grid, z_grid, values, [[0.0, 0.0]])
+    np.testing.assert_allclose(result["samples"], [0.0], rtol=0.0, atol=1e-14)
+
+
+def test_overflowing_z_span_preserves_original_center_witness():
+    r_grid, z_grid = np.meshgrid([1.0, 2.0], [-1e308, 1e308])
+    with np.errstate(all="raise"):
+        result = scientific_function(r_grid, z_grid, [[-1.0, -1.0], [1.0, 1.0]], [[1.5, 0.0]])
+    np.testing.assert_allclose(result["samples"], [0.0], rtol=0.0, atol=1e-14)
+
+
+def test_tiny_coordinate_fraction_keeps_its_representable_field_contribution():
+    large = float.fromhex("0x1p+1023")
+    small = float.fromhex("0x1p-1022")
+    r_grid, z_grid = np.meshgrid([0.0, large], [0.0, 1.0])
+    with np.errstate(all="raise"):
+        result = scientific_function(r_grid, z_grid, [[0.0, large], [0.0, large]], [[small, 0.5]])
+    np.testing.assert_allclose(result["samples"], [small], rtol=1e-14, atol=0.0)
+
+
+def test_tiny_tensor_product_weight_can_have_a_finite_contribution():
+    axis = [0.0, float.fromhex("0x1p+600")]
+    r_grid, z_grid = np.meshgrid(axis, axis)
+    # q(R,Z)=2^-200 R Z. Each coordinate fraction is 2^-600;
+    # their product underflows, but multiplying by q11=2^1000 gives 2^-200.
+    with np.errstate(all="raise"):
+        result = scientific_function(
+            r_grid,
+            z_grid,
+            [[0.0, 0.0], [0.0, float.fromhex("0x1p+1000")]],
+            [[1.0, 1.0]],
+        )
+    np.testing.assert_allclose(result["samples"], [float.fromhex("0x1p-200")], rtol=1e-14, atol=0.0)
+
+
+def test_constant_maximum_field_remains_finite_at_interior_and_nodes():
+    r_grid, z_grid = np.meshgrid([0.0, 1.0], [0.0, 1.0])
+    maximum = np.finfo(float).max
+    points = [[0.1, 0.1], [0.5, 0.5], [0.0, 0.0], [1.0, 1.0]]
+    with np.errstate(all="raise"):
+        result = scientific_function(r_grid, z_grid, np.full((2, 2), maximum), points)
+    np.testing.assert_allclose(result["samples"], maximum, rtol=1e-14, atol=0.0)
+
+
+def test_near_endpoint_keeps_the_small_complementary_weight():
+    left, right = 0.3, 1.1
+    query = np.nextafter(right, left)
+    height = 1e300
+    # This affine field falls to zero at the right endpoint. Form its value
+    # directly from the original coordinate differences, not 1-rounded_fraction.
+    expected = float(
+        (Fraction(right) - Fraction(float(query)))
+        * Fraction(height)
+        / (Fraction(right) - Fraction(left))
+    )
+    r_grid, z_grid = np.meshgrid([left, right], [0.0, 1.0])
+    result = scientific_function(r_grid, z_grid, [[height, 0.0], [height, 0.0]], [[query, 0.5]])
+    np.testing.assert_allclose(result["samples"], [expected], rtol=1e-14, atol=0.0)
+
+
+def test_large_opposite_corners_do_not_erase_the_small_net_sample():
+    r_grid, z_grid = np.meshgrid([0.0, 1.0], [0.0, 1.0])
+    # At the center each corner contributes one quarter, so cancellation leaves
+    # exactly 1/4 despite the two opposite 1e300 corner values.
+    result = scientific_function(r_grid, z_grid, [[1e300, 1.0], [-1e300, 0.0]], [[0.5, 0.5]])
+    np.testing.assert_allclose(result["samples"], [0.25], rtol=1e-14, atol=0.0)

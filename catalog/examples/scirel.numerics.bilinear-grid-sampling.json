@@ -106,7 +106,7 @@
  },
  "failure_semantics": {
   "invalid_input": "Raises ValueError for invalid grid rank/shape, nonfinite inputs, insufficient or nonmonotonic axes, nonrectilinear coordinates, invalid point shape, or any point outside the grid.",
-  "runtime_failure": "Unexpected NumPy arithmetic errors propagate. The implementation does not separately reject overflow in a computed sample.",
+  "runtime_failure": "The finite in-domain bilinear blend is bounded by its finite corner values. Overflowing coordinate spans, vanishing intermediate weights or terms, and strong cancellation use exact ratios of the original float64 inputs before final rounding.",
   "nonconvergence": "Not applicable; no iteration is performed.",
   "partial_results": "No partial samples dictionary is returned if any query point fails."
  },
@@ -133,12 +133,15 @@
    "Exact recovery of an affine R-Z field at interior and boundary points.",
    "Rejection of a query point outside the grid.",
    "Direct regression for a bilinear R*Z field and output order.",
-   "An empty [0,2] query returns an empty sample vector; an invalid later query rejects the whole call."
+   "An empty [0,2] query returns an empty sample vector; an invalid later query rejects the whole call.",
+   "Independent affine-center witnesses with overflowing finite coordinate spans, including both axes and signed fields.",
+   "Representable values rescued from underflowing coordinate or tensor-product weights, near-node complementary weights, and large cancelling corners.",
+   "A constant maximum-float field remains finite at selected interior and grid nodes."
   ],
   "tests": [
    "tests/geometry/test_bilinear_grid_sampling.py"
   ],
-  "evidence_ceiling": "Direct SciRel tests establish interpolation arithmetic and selected boundary behavior on small rectilinear grids, not the physical validity of any quantity supplied by a caller or expert recognition of this development record.",
+  "evidence_ceiling": "Direct tests establish selected interpolation identities, arithmetic-scale recovery and boundary behavior. They do not establish correctly rounded evaluation at every binary64 input, any physical validity of the caller-supplied field, or experimental calibration.",
   "known_limitations": [
    "Only one real scalar quantity is sampled per call.",
    "No coordinate-unit conversion or extrapolation is performed.",
