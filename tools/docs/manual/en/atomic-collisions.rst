@@ -87,7 +87,7 @@ Actual output (cross-section values are in units of 1e-20 m²):
    ValueError energy_ev must be nonnegative
    ValueError freeman must be a scalar branch selector, not an array
 
-At the five low-energy points the default remains the Janev value; at 30 and 100 keV it becomes ``3.316599e-20`` and ``1.170723e-21`` m² respectively instead of repeating the 20.1 keV endpoint. For H⁺–H, Lindsay–Stebbings §4.1[20] assess possible reliability at about 10% and record an unresolved almost 30% difference at 100 keV, with theory below measurements. The above-6-keV 11% statement in §4.1[23], continued on the next page, belongs to H⁺–O. Formula recomputation does not independently verify those author assessments.
+At the five low-energy points the default remains the Janev value; at 30 and 100 keV it becomes ``3.316599e-20`` and ``1.170723e-21`` m² respectively instead of repeating the 20.1 keV endpoint. For H⁺–H, Lindsay–Stebbings §4.1[20] assess possible reliability at about 10% and record an unresolved almost 30% difference between theory and measurements at 100 keV. The above-6-keV 11% statement in §4.1[23], continued on the next page, belongs to H⁺–O. Formula recomputation does not independently verify those author assessments.
 
 The Freeman branch is about 15% above the default at low energy, about 17% below it at 100 keV, and stops at 100 keV. ``freeman=True`` is therefore only for an explicit comparison with that older fit. Endpoint checks show that ``E=0.01`` and ``E=0.1`` are exactly equal; the default ``E=3.0e5`` and ``E=2.5e5`` values are exactly equal with one warning. Negative energy and array-valued ``freeman`` are rejected before evaluation.
 

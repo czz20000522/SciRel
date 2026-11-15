@@ -138,7 +138,7 @@
   "known_limitations": [
    "The default uses the Janev fit below 5 eV, while the Lindsay-Stebbings Table 1 begins at 5 eV; the composite is not validated below 5 eV by the published table.",
    "The Lindsay-Stebbings Table 1 ends at 250 keV; values above 250 keV warn and repeat the endpoint rather than extrapolate.",
-   "For H+-H, Lindsay and Stebbings (2005), section 4.1 [20], assess possible reliability at about 10% and record a still-unresolved almost 30% difference at 100 keV, with theory below measurements. The above-6-keV 11% statement in section 4.1 [23], continued on the next page, concerns H+-O, not H+-H. These author assessments are not a SciRel experimental validation or a uniform uncertainty bound for the composite.",
+   "For H+-H, Lindsay and Stebbings (2005), section 4.1 [20], assess possible reliability at about 10% and record a still-unresolved almost 30% difference between theory and measurements at 100 keV. The above-6-keV 11% statement in section 4.1 [23], continued on the next page, concerns H+-O, not H+-H. These author assessments are not a SciRel experimental validation or a uniform uncertainty bound for the composite.",
    "The Freeman-Jones branch is an independent comparison fit, not the default and not a correction to the composite.",
    "Public distribution licensing remains pending a human decision.",
    "no independent measured or independently computed cross-section source is available for 0.1-12 eV (the Red Book tabulation starts at 12 eV and the Khoma data only cover 1e-4 to 1e-3 eV), so the declared lower end of the fit domain has no external check"
