@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from .._result import Result
+
 import math
 from fractions import Fraction
 
@@ -178,7 +180,7 @@ def scan_kinetic_wavevectors(
         Maximum modulus of the dielectric-tensor elements at each root, used as the cancellation scale for
         the residual [dimensionless] Shape: (F,) one-dimensional frequency-axis floating-point array. The
         returned value follows the stated shape and physical normalization.
-    exit_flags : integer
+    status : integer
         The reference runtime fsolve exit flag at each frequency point, restricted to {1,2,3,0,-2,-3} [not
         applicable] Shape: (F,) one-dimensional frequency-axis integer array. The returned value follows the
         stated shape and physical normalization.
@@ -190,7 +192,9 @@ def scan_kinetic_wavevectors(
         Objective-evaluation count actually used at each frequency point [dimensionless] Shape: (F,) one-
         dimensional frequency-axis integer array. The returned value follows the stated shape and physical
         normalization.
-    converged : bool
+    message : sequence of str
+        Per-frequency explanation of the original solver status [dimensionless].
+    success : bool
         Whether the exit flag is positive at each frequency point, that is, whether the reference runtime
         judged convergence [not applicable] Shape: (F,) one-dimensional frequency-axis boolean array. The
         returned value follows the stated shape and physical normalization.
@@ -264,24 +268,27 @@ def scan_kinetic_wavevectors(
         max_iterations=max_iterations,
         max_function_evals=max_function_evals,
     )
-    return {
-        "scales": scales,
-        "kz": kz,
-        "count": grid["count"],
-        "omegas": omegas,
-        "kx_start": kx_start,
-        "roots": solved["roots"],
-        "residuals": solved["residuals"],
-        "determinant_scale": solved["determinant_scale"],
-        "exit_flags": solved["exit_flags"],
-        "iterations": solved["iterations"],
-        "function_evals": solved["function_evals"],
-        "converged": solved["converged"],
-        "solver": solved["solver"],
-        "graph_order": [
-            "species_equilibrium_scales",
-            "scan_frequencies",
-            "seed_wavenumber",
-            "kinetic_wavevector_roots",
-        ],
-    }
+    return Result(
+        {
+            "scales": scales,
+            "kz": kz,
+            "count": grid["count"],
+            "omegas": omegas,
+            "kx_start": kx_start,
+            "roots": solved["roots"],
+            "residuals": solved["residuals"],
+            "determinant_scale": solved["determinant_scale"],
+            "status": solved["status"],
+            "iterations": solved["iterations"],
+            "function_evals": solved["function_evals"],
+            "success": solved["success"],
+            "message": solved["message"],
+            "solver": solved["solver"],
+            "graph_order": [
+                "species_equilibrium_scales",
+                "scan_frequencies",
+                "seed_wavenumber",
+                "kinetic_wavevector_roots",
+            ],
+        }
+    )

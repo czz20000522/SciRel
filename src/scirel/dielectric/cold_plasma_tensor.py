@@ -526,7 +526,7 @@ def cold_plasma_dielectric_tensor(frequency_hz, magnetic_flux_density_t, species
 
     See Also
     --------
-    evaluate_kinetic_dielectric_tensor : Evaluate a kinetic dielectric tensor
+    evaluate_dielectric_response : Evaluate a kinetic dielectric tensor
         for comparison with the local cold-plasma model.
 
     Notes

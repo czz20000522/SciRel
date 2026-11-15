@@ -2,16 +2,27 @@
 
 from __future__ import annotations
 
+from .._result import Result
+
 import operator
 
 import numpy as np
 
-from .kinetic_dispersion_ronnmark import evaluate_kinetic_dispersion_ronnmark
+from .dielectric_response import evaluate_dielectric_response
 
 __all__ = ["solve_kinetic_wavevector_roots"]
 
 _KB = 1.38064852e-23
 _MACHINE_EPS = 2.220446049250313e-16
+
+_STATUS_MESSAGES = {
+    1: "Residual tolerance satisfied.",
+    2: "Step tolerance satisfied.",
+    3: "Residual decrease tolerance satisfied.",
+    0: "Iteration or function-evaluation budget exhausted; not converged.",
+    -2: "Jacobian became too small; not converged.",
+    -3: "Trust region became too small; not converged.",
+}
 
 
 def _dogleg(r, b, d, delta):
@@ -202,7 +213,7 @@ def solve_kinetic_wavevector_roots(
         the determinant residual at that frequency point [dimensionless] Shape: `(F,)` one-dimensional
         frequency-axis floating-point array. Nonnegative finite; `abs(residuals)/determinant_scale` is the
         relative zero quality of that root.
-    exit_flags : integer
+    status : integer
         The reference runtime `fsolve` exit flag at each frequency point (`1` residual met, `2` step met,
         `3` residual decrease met, `-2` Jacobian degenerate, `-3` trust region shrank to meaninglessness,
         `0` iteration or evaluation limit reached) [not applicable] Shape: `(F,)` one-dimensional frequency-
@@ -213,7 +224,9 @@ def solve_kinetic_wavevector_roots(
     function_evals : integer
         Objective-evaluation count actually used at each frequency point [dimensionless] Shape: `(F,)` one-
         dimensional frequency-axis integer array. Does not exceed `max_function_evals`.
-    converged : bool
+    message : sequence of str
+        Per-frequency explanation of the original solver status [dimensionless].
+    success : bool
         Whether the exit flag is positive at each frequency point (that is, the reference runtime judged
         convergence) [not applicable] Shape: `(F,)` one-dimensional frequency-axis boolean array. When
         false, the root is only the final unaccepted candidate, possibly the initial seed; neither a zero
@@ -254,7 +267,7 @@ def solve_kinetic_wavevector_roots(
 
     See Also
     --------
-    scirel.kinetic.kinetic_dispersion_ronnmark.evaluate_kinetic_dispersion_ronnmark : Related contract dependency.
+    scirel.kinetic.evaluate_dielectric_response : Related contract dependency.
 
     Notes
     -----
@@ -318,11 +331,12 @@ def solve_kinetic_wavevector_roots(
     if not np.isfinite(seed):
         raise ValueError("kx_start must be finite")
 
-    determinant = evaluate_kinetic_dispersion_ronnmark
+    determinant = evaluate_dielectric_response
 
     def residual(omega, kx):
         return complex(
             determinant(
+                method="ronnmark",
                 B0=B0,
                 qs=qs,
                 ms=ms,
@@ -355,6 +369,7 @@ def solve_kinetic_wavevector_roots(
         scales[index] = float(
             np.abs(
                 determinant(
+                    method="ronnmark",
                     B0=B0,
                     qs=qs,
                     ms=ms,
@@ -370,23 +385,26 @@ def solve_kinetic_wavevector_roots(
         iterations[index] = niter
         function_evals[index] = nfev
 
-    return {
-        "roots": roots,
-        "residuals": residuals,
-        "determinant_scale": scales,
-        "exit_flags": exit_flags,
-        "iterations": iterations,
-        "function_evals": function_evals,
-        "converged": exit_flags > 0,
-        "omegas": omegas,
-        "kz": kz,
-        "kx_start": seed,
-        "tol_fun": tol_fun,
-        "tol_x": tol_x,
-        "max_iterations": max_iterations,
-        "max_function_evals": max_function_evals,
-        "solver": "reference_fsolve_dogleg_on_fDR",
-    }
+    return Result(
+        {
+            "roots": roots,
+            "residuals": residuals,
+            "determinant_scale": scales,
+            "status": exit_flags,
+            "iterations": iterations,
+            "function_evals": function_evals,
+            "success": exit_flags > 0,
+            "message": [_STATUS_MESSAGES[int(flag)] for flag in exit_flags],
+            "omegas": omegas,
+            "kz": kz,
+            "kx_start": seed,
+            "tol_fun": tol_fun,
+            "tol_x": tol_x,
+            "max_iterations": max_iterations,
+            "max_function_evals": max_function_evals,
+            "solver": "reference_fsolve_dogleg_on_fDR",
+        }
+    )
 
 
 # --- r22fslv2 staged FMA-contracted the reference solver fsolve port (patch_solver_fma.py) ---

@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from .._result import Result
+
 import numpy as np
 
 __all__ = ["evaluate_kinetic_dispersion_relation"]
@@ -159,8 +161,7 @@ def evaluate_kinetic_dispersion_relation(
     See Also
     --------
     scirel.kinetic.species_equilibrium_scales.derive_species_equilibrium_scales : Related contract dependency.
-    scirel.kinetic.kinetic_dispersion_sum_fluid.evaluate_fluid_kinetic_dispersion_sum : Related contract dependency.
-    scirel.kinetic.kinetic_dispersion_ronnmark.evaluate_kinetic_dispersion_ronnmark : Related contract dependency.
+    scirel.kinetic.evaluate_dielectric_response : Related contract dependency.
 
     Notes
     -----
@@ -171,7 +172,7 @@ def evaluate_kinetic_dispersion_relation(
     replacement is withdrawn; explicit kz=+1e-10 reproduces that former wavepoint.
     Zero is rejected before any graph work because the fixed finite-N sum has no general
     finite zero endpoint. For the separately declared zero-kz model explicitly call
-    evaluate_kinetic_dispersion_ronnmark. The standalone wavevector roots and scan retain
+    evaluate_dielectric_response(method='ronnmark'). The standalone wavevector roots and scan retain
     their Ronnmark zero-kz domain. This composition never switches models automatically.
 
     Examples
@@ -186,7 +187,7 @@ def evaluate_kinetic_dispersion_relation(
         raise ValueError(
             f"kz must be nonzero; received {kz!r} 1/m. Legal range: finite kz < 0 or kz > 0. "
             "For the separate Ronnmark zero-kz model explicitly use "
-            "evaluate_kinetic_dispersion_ronnmark; see scirel.kinetic.kinetic-dispersion-relation"
+            "evaluate_dielectric_response(method='ronnmark'); see scirel.kinetic.kinetic-dispersion-relation"
         )
     # Reject the unsupported wavepoint before loading dependencies or computing scales.
     from .species_equilibrium_scales import derive_species_equilibrium_scales
@@ -196,33 +197,43 @@ def evaluate_kinetic_dispersion_relation(
     )
     # These are graph dependencies, not namespace dependencies.  Load them only at the
     # public call boundary after the shared equilibrium and scalar checks have succeeded.
-    from .kinetic_dispersion_ronnmark import evaluate_kinetic_dispersion_ronnmark
-    from .kinetic_dispersion_sum_fluid import evaluate_fluid_kinetic_dispersion_sum
+    from .dielectric_response import evaluate_dielectric_response
 
     omega = probe_frequency(omega_frac=omega_frac, wn=scales["wn"])["omega"]
     kx = probe_wavenumber(kx_frac=kx_frac, kn=scales["kn"])["kx"]
     f = omega_to_frequency(omega=omega)["f"]
-    shared = dict(B0=B0, qs=qs, ms=ms, ns0=scales["ns0"], Ts0=scales["Ts0"], f=f, kz=kz, kx=kx)
-    summed = evaluate_fluid_kinetic_dispersion_sum(**shared, lmx=lmx)
-    ronnmark = evaluate_kinetic_dispersion_ronnmark(**shared)
-    return {
-        "scales": scales,
-        "omega": omega,
-        "kx": kx,
-        "f": f,
-        "determinant_sum_n": summed["determinant"],
-        "determinant_ronnmark": ronnmark["determinant"],
-        "K_sum_n": summed["K"],
-        "D_sum_n": summed["D"],
-        "K_ronnmark": ronnmark["K"],
-        "D_ronnmark": ronnmark["D"],
-        "branches": ronnmark["branches"],
-        "graph_order": [
-            "species_equilibrium_scales",
-            "probe_frequency",
-            "probe_wavenumber",
-            "omega_to_frequency",
-            "kinetic_dispersion_sum_n",
-            "kinetic_dispersion_ronnmark",
-        ],
-    }
+    # Preserve the original omega -> Hz -> omega rounding at this real boundary.
+    kernel_omega = 2.0 * np.pi * float(f)
+    if not np.isfinite(kernel_omega) or kernel_omega == 0:
+        raise FloatingPointError(
+            "omega converted from derived f is not finite and nonzero; "
+            "see scirel.kinetic.kinetic-dispersion-relation"
+        )
+    shared = dict(
+        B0=B0, qs=qs, ms=ms, ns0=scales["ns0"], Ts0=scales["Ts0"], omega=kernel_omega, kz=kz, kx=kx
+    )
+    summed = evaluate_dielectric_response(**shared, method="harmonic_weideman", harmonics=lmx)
+    ronnmark = evaluate_dielectric_response(**shared, method="ronnmark")
+    return Result(
+        {
+            "scales": scales,
+            "omega": omega,
+            "kx": kx,
+            "f": f,
+            "determinant_sum_n": summed["determinant"],
+            "determinant_ronnmark": ronnmark["determinant"],
+            "K_sum_n": summed["K"],
+            "D_sum_n": summed["D"],
+            "K_ronnmark": ronnmark["K"],
+            "D_ronnmark": ronnmark["D"],
+            "branches": ronnmark["diagnostics"]["branches"],
+            "graph_order": [
+                "species_equilibrium_scales",
+                "probe_frequency",
+                "probe_wavenumber",
+                "omega_to_frequency",
+                "dielectric_response:harmonic_weideman",
+                "dielectric_response:ronnmark",
+            ],
+        }
+    )
