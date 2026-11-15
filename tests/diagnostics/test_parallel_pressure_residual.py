@@ -1,3 +1,5 @@
+from fractions import Fraction
+
 import numpy as np
 import pytest
 
@@ -79,3 +81,156 @@ def test_contract_rejects_an_empty_pressure_sample_set():
     empty = np.array([], dtype=float)
     with pytest.raises(ValueError, match="at least one sample"):
         compute_parallel_pressure_residual(empty, empty, empty)
+
+
+def _raw_pressure_reference(p_parallel, p_perp, field, derivative, atol, rtol):
+    """Complete rational relations from public inputs, never production intermediates."""
+    pp, pt, b, dp, floor = (
+        Fraction.from_float(float(value)) for value in (p_parallel, p_perp, field, derivative, atol)
+    )
+    rhs = pp - b * dp
+    error = pt - rhs
+    relative = abs(error) / max(abs(pt), abs(rhs), floor)
+    return {
+        "rhs": float(rhs),
+        "error": float(error),
+        "relative_error": float(relative),
+        "passed": relative <= Fraction.from_float(float(rtol)),
+    }
+
+
+@pytest.mark.parametrize("field", ["rhs", "error", "relative_error", "passed"])
+@pytest.mark.parametrize("compatible", [False, True])
+@pytest.mark.parametrize("default_controls", [False, True])
+def test_raw_product_cancellation_preserves_each_public_quantity(
+    field, compatible, default_controls
+):
+    scale = 2.0**54 if default_controls else 1.0
+    b = 1.0 + 2.0**-27
+    derivative = scale * (1.0 - 2.0**-27)
+    perp = scale * 2.0**-54 if compatible else 0.0
+    atol = 1e-6 if default_controls else 2.0**-100
+    rtol = 0.01 if default_controls else 1e-13
+    expected = _raw_pressure_reference(scale, perp, b, derivative, atol, rtol)
+    controls = {} if default_controls else {"atol": atol, "rtol": rtol}
+    result = compute_parallel_pressure_residual(
+        scale, perp, b, dp_parallel_dB=derivative, **controls
+    )
+    if field == "passed":
+        assert result[field] is expected[field]
+    else:
+        np.testing.assert_allclose(result[field], expected[field], rtol=1e-13, atol=0)
+
+
+@pytest.mark.parametrize("compatible", [False, True])
+def test_strict_uses_the_uncancelled_pressure_relation(compatible):
+    pp, b, derivative = 2.0**54, 1.0 + 2.0**-27, 2.0**54 - 2.0**27
+    perp = 1.0 if compatible else 0.0
+    if compatible:
+        result = compute_parallel_pressure_residual(
+            pp, perp, b, strict=True, dp_parallel_dB=derivative
+        )
+        assert result.passed
+        np.testing.assert_allclose(result.rhs, 1.0, rtol=1e-13, atol=0)
+        assert result.error == result.relative_error == 0.0
+    else:
+        with pytest.raises(ValueError, match="equilibrium check failed"):
+            compute_parallel_pressure_residual(pp, perp, b, strict=True, dp_parallel_dB=derivative)
+
+
+def test_independent_linear_pressure_law_with_broadcast_derivative():
+    field = np.array([[4.0, 0.5, 2.0], [1.0, 2.0, 0.5]])
+    pressure = 8.0 + 4.0 * field
+    perpendicular = np.full_like(field, 8.0)
+    snapshots = [value.copy() for value in (field, pressure, perpendicular)]
+    result = compute_parallel_pressure_residual(pressure, perpendicular, field, dp_parallel_dB=4.0)
+    np.testing.assert_allclose(result.rhs, 8.0, rtol=1e-13, atol=0)
+    np.testing.assert_array_equal(result.error, 0.0)
+    np.testing.assert_array_equal(result.relative_error, 0.0)
+    np.testing.assert_array_equal(result.dp_parallel_dB, 4.0)
+    assert result.passed
+    assert result.max_relative_error == result.mean_relative_error == 0.0
+    assert result.rhs is result["rhs"]
+    for value, snapshot in zip((field, pressure, perpendicular), snapshots):
+        np.testing.assert_array_equal(value, snapshot)
+
+
+@pytest.mark.parametrize("compatible", [False, True])
+def test_exactly_representable_subnormal_pressure_relation(compatible):
+    tiny = float.fromhex("0x0.0000000000001p-1022")
+    pp, b, derivative = 2.0 * tiny, 2.0**-500, 2.0**-574
+    perp = tiny if compatible else 0.0
+    expected = _raw_pressure_reference(pp, perp, b, derivative, tiny, 1e-13)
+    assert expected["rhs"] == tiny
+    result = compute_parallel_pressure_residual(
+        pp, perp, b, atol=tiny, rtol=1e-13, dp_parallel_dB=derivative
+    )
+    for field in ("rhs", "error", "relative_error"):
+        np.testing.assert_allclose(result[field], expected[field], rtol=1e-13, atol=0)
+    assert result.passed is expected["passed"]
+
+
+def test_intermediate_product_overflow_with_representable_public_quantities():
+    pp, perp, b, derivative = 2.0**1023, -(2.0**1023), 2.0**600, 2.0**424
+    expected = _raw_pressure_reference(pp, perp, b, derivative, 1e-6, 0.01)
+    result = compute_parallel_pressure_residual(pp, perp, b, dp_parallel_dB=derivative)
+    for field in ("rhs", "error", "relative_error"):
+        np.testing.assert_allclose(result[field], expected[field], rtol=1e-13, atol=0)
+    assert result.passed is expected["passed"]
+
+
+@pytest.mark.parametrize(
+    "pp,perp,b,derivative",
+    [
+        (-(2.0**1023), 0.0, 2.0, 2.0**1023),
+        (2.0**1023, -(2.0**1023), 1.0, 0.0),
+    ],
+)
+def test_genuinely_unrepresentable_required_pressure_output_is_rejected(pp, perp, b, derivative):
+    with pytest.raises(FloatingPointError, match="finite"):
+        compute_parallel_pressure_residual(pp, perp, b, dp_parallel_dB=derivative)
+
+
+@pytest.mark.parametrize("field", ["rhs", "error", "relative_error", "passed"])
+def test_second_subtraction_retains_the_complete_pressure_relation(field):
+    # rhs rounds to -1, but the complete error is -2^-54, not -1-(-1)=0.
+    pp, perp, b, derivative = 0.0, -1.0, 1.0 + 2.0**-27, 1.0 - 2.0**-27
+    expected = _raw_pressure_reference(pp, perp, b, derivative, 1e-6, 0.0)
+    result = compute_parallel_pressure_residual(pp, perp, b, rtol=0.0, dp_parallel_dB=derivative)
+    if field == "passed":
+        assert result[field] is expected[field]
+    else:
+        np.testing.assert_allclose(result[field], expected[field], rtol=1e-13, atol=0)
+
+
+def test_strided_mixed_samples_recover_only_the_affected_relations():
+    field = np.array([[1.0, 1.0 + 2.0**-27, 2.0]])[:, ::-1]
+    pressure = np.array([[3.0, 1.0, 10.0]])[:, ::-1]
+    derivative = np.array([[0.0, 1.0 - 2.0**-27, 1.0]])[:, ::-1]
+    perpendicular = np.array([[3.0, 2.0**-54, 8.0]])[:, ::-1]
+    snapshots = [value.copy() for value in (field, pressure, derivative, perpendicular)]
+    result = compute_parallel_pressure_residual(
+        pressure, perpendicular, field, dp_parallel_dB=derivative
+    )
+    for index in np.ndindex(field.shape):
+        expected = _raw_pressure_reference(
+            pressure[index], perpendicular[index], field[index], derivative[index], 1e-6, 0.01
+        )
+        for key in ("rhs", "error", "relative_error"):
+            np.testing.assert_allclose(result[key][index], expected[key], rtol=1e-13, atol=0)
+    assert result.passed
+    for value, snapshot in zip((field, pressure, derivative, perpendicular), snapshots):
+        np.testing.assert_array_equal(value, snapshot)
+
+
+@pytest.mark.parametrize("small_output", ["rhs", "relative_error"])
+def test_nonzero_required_output_below_float64_range_is_rejected(small_output):
+    if small_output == "rhs":
+        pp, perp, b, derivative, floor = 0.0, 1.0, 2.0**-600, 2.0**-600, 1e-6
+    else:
+        pp = float.fromhex("0x0.0000000000001p-1022")
+        perp, b, derivative, floor = 0.0, 1.0, 0.0, 2.0**1023
+    with pytest.raises(FloatingPointError, match="finite"):
+        compute_parallel_pressure_residual(
+            pp, perp, b, atol=floor, rtol=0.0, dp_parallel_dB=derivative
+        )
