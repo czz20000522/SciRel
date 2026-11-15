@@ -44,9 +44,21 @@ numerically. Converted to these units that expression is
 ``n_e`` in m^-3. The first ``ln 1000`` converts the density convention; the
 ``1000*T_e`` converts keV to eV. Its constant before ``ln(T_e[eV])`` is
 ``24 + ln 1000`` = 30.907755..., whereas the existing implementation keeps
-31.3. The difference is about 0.392 in the logarithm. The historical
-Wesson/Sauter attribution of 31.3 and the origin of that difference remain
-UNKNOWN; neither expression is substituted for the other.
+31.3. The difference is about 0.392 in the logarithm; its physical origin
+remains UNKNOWN, as does the historical Wesson attribution.
+
+The EPFL author manuscript by O. Sauter, C. Angioni and Y. R. Lin-Liu,
+LRP 630/99 (February 1999), has been read directly: printed p. 7 (PDF p. 8),
+Eq. (18d) gives ``ln Lambda_e = 31.3 - ln(sqrt(n_e)/T_e)`` and Eq. (18e)
+gives ``ln Lambda_ii = 30 - ln(Z^3 sqrt(n_i)/T_i^(3/2))``. The original
+labels the electron quantity ``Lambda_e``, not ``Lambda_ei``, and explicitly
+uses densities in m^-3 and temperatures in eV. These expressions agree with
+the existing e-i and i-i implementations after converting keV inputs to eV.
+This verifies occurrence in that institutional manuscript, not derivation,
+experimental calibration or arbitrary ion mixtures. The publisher's final
+typesetting and the 2002 erratum remain unverified; the source of the e-e
+constant 31.0 and its Wesson attribution remain UNKNOWN. See the individual
+e-i and i-i References for the manuscript record.
 """
 
 from __future__ import annotations
@@ -322,7 +334,7 @@ def calculate_log_lambda_ee(T_e, n_e):
 
     See Also
     --------
-    calculate_log_lambda_ei : Electron-ion estimate (31.3); Sauter (1999) attribution unverified.
+    calculate_log_lambda_ei : Electron-ion estimate (31.3); EPFL LRP 630/99, Eq. (18d).
     calculate_log_lambda_ii : Ion-ion form.
 
     Examples
@@ -401,8 +413,28 @@ def calculate_log_lambda_ei(T_e, n_e):
 
     See Also
     --------
-    calculate_log_lambda_ee : Wesson electron-electron form (31.0).
+    calculate_log_lambda_ee : Electron-electron estimate (31.0); Wesson attribution UNKNOWN.
     calculate_log_lambda_ii : Ion-ion form.
+
+    Notes
+    -----
+    The read EPFL author manuscript [1]_ gives
+    ``ln Lambda_e = 31.3 - ln(sqrt(n_e)/T_e)`` in Eq. (18d), with density
+    in m^-3 and temperature in eV. Its symbol is ``Lambda_e``, not
+    ``Lambda_ei``. This function converts its keV input to eV; its returned
+    expression agrees algebraically with that equation. Occurrence in this
+    manuscript does not establish derivation or physical calibration. The
+    publisher's final typesetting and the 2002 erratum remain unverified.
+    Wesson attribution, the e-e constant 31.0 provenance, and the physical
+    origin of the approximately 0.392 NRL difference remain UNKNOWN.
+
+    References
+    ----------
+    .. [1] O. Sauter, C. Angioni and Y. R. Lin-Liu, "Neoclassical Conductivity
+       and Bootstrap Current Formulae for General Axisymmetric Equilibria and
+       Arbitrary Collisionality Regime", EPFL report LRP 630/99, February 1999,
+       printed p. 7 (PDF p. 8), Eq. (18d). Institutional author manuscript,
+       submitted to Physics of Plasmas, https://infoscience.epfl.ch/handle/20.500.14299/23214
 
     Examples
     --------
@@ -465,6 +497,22 @@ def calculate_log_lambda_ii(T_i, n_i, Z_i):
     is the classical-cutoff form used for ion-ion collisions, so the
     ``T_e ~ 10 Z^2 eV`` boundary that applies to the electron forms does not
     trigger a warning here (issue #10 item 3).
+
+    The read EPFL author manuscript [1]_ gives
+    ``ln Lambda_ii = 30 - ln(Z^3 sqrt(n_i)/T_i^(3/2))`` in Eq. (18e), with
+    density in m^-3 and temperature in eV. Its charge symbol ``Z`` maps to
+    this function's ``Z_i``, giving the term ``-3 ln(Z_i)``. This function
+    converts its keV input to eV. This source comparison does not establish
+    experimental calibration or applicability to arbitrary ion mixtures.
+    The publisher's final typesetting and the 2002 erratum remain unverified.
+
+    References
+    ----------
+    .. [1] O. Sauter, C. Angioni and Y. R. Lin-Liu, "Neoclassical Conductivity
+       and Bootstrap Current Formulae for General Axisymmetric Equilibria and
+       Arbitrary Collisionality Regime", EPFL report LRP 630/99, February 1999,
+       printed p. 7 (PDF p. 8), Eq. (18e). Institutional author manuscript,
+       submitted to Physics of Plasmas, https://infoscience.epfl.ch/handle/20.500.14299/23214
 
     Examples
     --------

@@ -27,7 +27,28 @@ ALL GREEN
 
 `ALL GREEN` is the last line when everything passes. Any other ending means the tree is not green. The step count alone is not evidence: it says that ten steps exited zero, not what the tests did. A large skip would otherwise hide behind a passing exit code, so each skip reason gets its own `SKIP` line with its count and the first few test IDs.
 
-The test counts come from pytest itself. `skills/development/scirel-acceptance/scripts/scirel_pytest_counts.py` (relative to the repository root) observes the run and changes no outcome; `check_all.py` loads it with `-p scirel_pytest_counts` and has it write JSON into the run's temporary directory, which is removed with the run. Nothing is read from the human-readable summary. If that report is missing, unreadable, or its numbers disagree — every selected test must reach exactly one outcome, and `selected` must equal `passed + failed + error + skipped + xfailed + xpassed` — the `tests` step is red: a count nobody can check cannot support a green.
+The test counts come from pytest itself. `skills/development/scirel-acceptance/scripts/scirel_pytest_counts.py` (relative to the repository root) observes the run and changes no outcome; `check_all.py` loads it with `-p scirel_pytest_counts` and has it write JSON into the run's temporary directory. The standard result retains this record under `tests` before that directory is removed. Nothing is read from the human-readable summary. If that report is missing, unreadable, or its numbers disagree — every selected test must reach exactly one outcome, and `selected` must equal `passed + failed + error + skipped + xfailed + xpassed` — the `tests` step is red: a count nobody can check cannot support a green.
+
+The counts record uses schema `2`. It preserves the complete ordered `selected_nodeids` and
+one entry per selection in `results`, with its `nodeid`, final `outcome` and observed `phases`.
+Each phase records `when` (`setup`, `call`, `teardown`), pytest's raw `outcome`, `wasxfail`
+when present, and the existing skip reason for skipped phases. The reader checks identities,
+uniqueness, phase order/completeness, phase-derived final outcomes, every total and skip reason,
+and the pytest exit status against the subprocess result. Missing fields and old count schemas
+are rejected; a separate collect-only run cannot supply missing identities for this run.
+
+A setup or teardown failure gives the item final outcome `error`; otherwise a call failure
+gives `failed`, followed in priority by `xfailed`, `skipped`, `xpassed`, `passed`. A strict XPASS
+remains pytest's call failure. Each selected item counts once, so a passed/failed call followed
+by a teardown error counts as one `error`; both phase observations remain available. Setup
+skips and `xfail(run=False)` have no call phase and do not prove test-body execution. Even a
+call phase alone does not establish that a test body completed successfully.
+
+`collection_finished` and non-passing `collection_reports` retain collection state separately
+from selected-test outcomes. Incomplete items have final outcome `null` and keep the phases
+already observed. Collection failure, interruption, duplicate identities or phases, missing
+results and inconsistent records fail the step. Readable rejected records remain under `tests`
+for diagnosis, with the result marked invalid; they are never used to print a trusted summary.
 
 Full acceptance also requires `deselected 0`. `dev.py` clears the host's `PYTEST_ADDOPTS` so a
 personal test filter cannot reduce the suite. Pass filters explicitly to `dev.py pytest` for local work.

@@ -11,18 +11,63 @@ import numpy as np
 __all__ = ["fast_ion_fractional_heating"]
 
 
+def _preserve_real_values(value, name, active):
+    """Expand array protocols once, preserving metadata before combining containers."""
+    if np.ma.isMaskedArray(value) or isinstance(value, (complex, np.complexfloating)):
+        raise ValueError(f"{name} must contain real, unmasked numeric values")
+    if isinstance(value, np.ndarray):
+        if np.iscomplexobj(value):
+            raise ValueError(f"{name} must contain real, unmasked numeric values")
+        if value.dtype != object:
+            return value
+    elif not isinstance(value, (list, tuple)) and not hasattr(value, "__array__"):
+        return value
+
+    marker = id(value)
+    if marker in active:
+        raise ValueError(f"{name} must contain acyclic real, unmasked numeric values")
+    active.add(marker)
+    try:
+        if isinstance(value, np.ndarray):
+            result = np.empty(value.shape, dtype=object)
+            for index, item in enumerate(value.flat):
+                result.flat[index] = _preserve_real_values(item, name, active)
+            return result
+        if isinstance(value, (list, tuple)):
+            # Visible sequence members define the input even for subclasses
+            # providing __array__; that conversion could erase member masks.
+            return [_preserve_real_values(item, name, active) for item in value]
+        # Only opaque inputs reach their array protocol. Unlike asarray,
+        # asanyarray retains a returned MaskedArray; reuse the result once.
+        return _preserve_real_values(np.asanyarray(value), name, active)
+    finally:
+        active.remove(marker)
+
+
+def _real_unmasked_input(value, name):
+    """Validate before conversion can discard an imaginary part or a mask."""
+    try:
+        preserved = _preserve_real_values(value, name, set())
+        # Capture buffer/interface dtypes without requesting real conversion.
+        # Nested protocol results were already expanded without losing masks.
+        raw = _preserve_real_values(np.asanyarray(preserved), name, set())
+        return np.asarray(raw, dtype=float)
+    except (TypeError, ValueError, OverflowError) as exc:
+        raise ValueError(f"{name} must contain real, unmasked numeric values") from exc
+
+
 def fast_ion_fractional_heating(birth_energy, T_e, fast_ion_mass):
     """Return the ion fraction for fast-ion birth energy.
 
     Parameters
     ----------
     birth_energy : real scalar or array_like
-        Fast-ion birth energy [keV]. Finite and nonnegative.
+        Fast-ion birth energy [keV]. Finite, real, unmasked and nonnegative.
     T_e : real scalar or array_like
-        Electron temperature [keV]. Finite and strictly positive.
+        Electron temperature [keV]. Finite, real, unmasked and strictly positive.
     fast_ion_mass : real scalar or array_like
-        Fast-ion mass [amu]. Finite and strictly positive, broadcast-compatible
-        with the other inputs.
+        Fast-ion mass [amu]. Finite, real, unmasked and strictly positive,
+        broadcast-compatible with the other inputs.
 
     Returns
     -------
@@ -33,8 +78,8 @@ def fast_ion_fractional_heating(birth_energy, T_e, fast_ion_mass):
     Raises
     ------
     ValueError
-        If an input is nonfinite, outside its stated domain, or incompatible
-        for broadcasting.
+        If an input is complex, masked, not convertible to real numeric values,
+        nonfinite, outside its stated domain, or incompatible for broadcasting.
     FloatingPointError
         If the dimensionless ratio or the final fraction is nonfinite.
 
@@ -56,6 +101,11 @@ def fast_ion_fractional_heating(birth_energy, T_e, fast_ion_mass):
     collisional regime, or experimental calibration, and it does not simulate
     trajectories or transport.
 
+    Lists and tuples, including subclasses, use their visible sequence members
+    and shape rather than a custom array conversion. Other array-like objects
+    use their array representation, preserving masks and complex dtypes until
+    validation. A masked or complex value is rejected before conversion to real.
+
     Examples
     --------
     >>> from scirel.plasma.fast_ion_heating import fast_ion_fractional_heating
@@ -64,9 +114,9 @@ def fast_ion_fractional_heating(birth_energy, T_e, fast_ion_mass):
     >>> assert 0.0 < value < 1.0
     """
     E, Te, mass = np.broadcast_arrays(
-        np.asarray(birth_energy, dtype=float),
-        np.asarray(T_e, dtype=float),
-        np.asarray(fast_ion_mass, dtype=float),
+        _real_unmasked_input(birth_energy, "birth_energy"),
+        _real_unmasked_input(T_e, "T_e"),
+        _real_unmasked_input(fast_ion_mass, "fast_ion_mass"),
     )
     if not (np.all(np.isfinite(E)) and np.all(np.isfinite(Te)) and np.all(np.isfinite(mass))):
         raise ValueError("birth_energy, T_e, and fast_ion_mass must be finite")

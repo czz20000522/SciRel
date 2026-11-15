@@ -5,7 +5,7 @@
   "en": "Electron-ion Coulomb logarithm",
   "zh": "电子-离子库仑对数"
  },
- "summary": "Wesson Coulomb logarithm estimate for the declared collision pair.",
+ "summary": "Electron-ion Coulomb logarithm matching Eq. (18d) of the Sauter et al. EPFL author manuscript LRP 630/99.",
  "taxonomy": [
   "physics",
   "collisions",
@@ -17,13 +17,13 @@
  "discovery": {
   "capability": [
    "Electron-ion Coulomb logarithm",
-   "Wesson Coulomb logarithm ln Lambda for electron-ion collisions from temperature in keV and density in m^-3."
+   "Electron Coulomb logarithm from EPFL LRP 630/99 Eq. (18d), with temperature input in keV and density in m^-3."
   ],
   "operation": [
-   "Evaluate the Wesson electron-ion Coulomb logarithm",
+   "Evaluate the electron-ion Coulomb logarithm matching EPFL LRP 630/99 Eq. (18d)",
    "temperature and density -> dimensionless logarithm"
   ],
-  "model": "Wesson Coulomb-log relation ln Lambda = 31.3 - 0.5 ln(n_e) + ln(1000 T_e) with explicit numeric boundary checks.",
+  "model": "EPFL LRP 630/99 author-manuscript Eq. (18d), ln Lambda_e = 31.3 - ln(sqrt(n_e)/T_e) with n_e in m^-3 and T_e in eV; callable temperature is in keV, with explicit numeric boundary checks.",
   "geometry": "Homogeneous plasma point with broadcast T_e and n_e arrays; no spatial geometry is inferred.",
   "boundary": "T_e in keV and n_e in m^-3 must be finite and strictly positive.",
   "device_scope": "generic"
@@ -31,8 +31,8 @@
  "identity": {
   "relation": "lnΛ=31.3-0.5 ln(n_e)+ln(1000*T_e)",
   "direction": "temperature and density -> dimensionless logarithm",
-  "definition": "31.3-0.5*ln(n_e)+ln(1000*T_e); keV is converted to eV by the factor 1000. Evaluation uses ln(1000)+ln(T), avoiding intermediate overflow/underflow.",
-  "model": "Wesson Coulomb-log relation with explicit SciRel numeric boundary checks",
+  "definition": "31.3-0.5*ln(n_e)+ln(1000*T_e); matches lnLambda_e (not a manuscript symbol lnLambda_ei) in EPFL LRP 630/99 Eq. (18d), whose density is in m^-3 and temperature in eV. The callable converts keV to eV by the factor 1000. Evaluation uses ln(1000)+ln(T), avoiding intermediate overflow/underflow.",
+  "model": "Electron Coulomb-log relation from EPFL LRP 630/99 author-manuscript Eq. (18d), with explicit SciRel numeric boundary checks",
   "geometry": "homogeneous plasma point",
   "coordinates": "broadcast T_e and n_e arrays",
   "boundary": "strictly positive finite T_e in keV and n_e in m^-3",
@@ -115,21 +115,24 @@
   "scope": [
    "Independent 60-digit Decimal logarithms over temperature/density/charge scales including smallest subnormal and largest float64; transformation/scaling identities.",
    "Declared failure cases for empty, boolean/string/complex/masked, nonfinite and incompatible inputs.",
-   "Agreement with the canonical SciRel callers and dependencies of this relation."
+   "Agreement with the canonical SciRel callers and dependencies of this relation.",
+   "Fixed original constant 31.3 and the independent quotient in EPFL LRP 630/99 Eq. (18d), with density in m^-3 and temperature in eV, verify the callable's eV-to-keV input conversion on scalar grids and broadcast arrays."
   ],
   "tests": [
    "tests/cross_domain/test_algebra_grid.py",
-   "tests/physics/test_coulomb_logs_low_temperature.py"
+   "tests/physics/test_coulomb_logs_low_temperature.py",
+   "tests/physics/test_coulomb_logs_sauter_provenance.py"
   ],
-  "evidence_ceiling": "Maintained tests establish the named relation, shape and selected boundary behavior only; they do not establish global physical calibration.",
+  "evidence_ceiling": "Maintained tests establish the named relation, shape, selected boundary behavior and algebraic agreement with EPFL LRP 630/99 author-manuscript Eq. (18d) after unit conversion; they do not establish derivation, global physical calibration, the publisher's final text or the 2002 erratum.",
   "known_limitations": [
    "No external calibration or collision-frequency composition is claimed.",
-   "Only the Wesson algebra and declared numerical boundaries are covered.",
-   "The existing relation 31.3 - ln(sqrt(n_e)/T_e[eV]) was historically attributed to Sauter et al. (1999) as lnLambda_e in the electron collisionality nu*_e. That attribution and its original equation have not been verified and remain UNKNOWN, on the same footing as Wesson below. The 'ee' function (constant 31.0) is a different estimate.",
+   "Only the declared algebra, original-equation unit conversion and numerical boundaries are covered.",
+   "The original scan of Sauter, Angioni and Lin-Liu, EPFL LRP 630/99 (February 1999), printed p. 7 (PDF p. 8), Eq. (18d), was read directly: lnLambda_e = 31.3 - ln(sqrt(n_e)/T_e), densities in m^-3 and temperatures in eV; institutional author-manuscript record https://infoscience.epfl.ch/handle/20.500.14299/23214. The manuscript labels this Lambda_e, not Lambda_ei. The ee function with constant 31.0 is a different estimate whose provenance remains UNKNOWN.",
    "The e-i branches and their T_e > 10 Z^2 eV condition come from the NRL Plasma Formulary, 2016 printed p.34, transcribed from the original table and checked by the maintainer (see #197, #212). The table additionally conditions both branches on T_i*m_e/m_i and lists a T_e < T_i*m_e/m_i branch, and this interface cannot evaluate those (no T_i or ion mass, Z = 1). The ~16.2 eV intersection with the low-temperature branch is algebra on a formula extrapolated outside its own range; it is not a physical switching point and not an accuracy criterion.",
    "The gap to the low-temperature branch is an algebraic difference between two estimates, not an error against measured physics: at n_e = 1e19 m^-3 it is +55.54% at 0.1 eV and +17.33% at 1 eV, and it grows with density, so the warning computes it per sample.",
    "The Wesson attribution of constant 31.3, edition and section were not verified and remain UNKNOWN; the NRL transcription recorded above is a separate, maintainer-checked fact (see #197, #212), so the two provenance states are kept apart rather than combined.",
-   "The existing implementation keeps constant 31.3. The NRL high-temperature e-i expression, with density converted to m^-3 and temperature left in eV, has constant 24 + ln 1000 = 30.907755...; for this interface's keV input its temperature term is ln(1000*T_e). The constants differ by about 0.392 in the logarithm. This is a numerical comparison of the existing implementation and the maintainer-checked NRL transcription, not verification of a second published source. The original-source attribution of 31.3 and the origin of the difference remain UNKNOWN."
+   "The existing implementation keeps constant 31.3. The NRL high-temperature e-i expression, with density converted to m^-3 and temperature left in eV, has constant 24 + ln 1000 = 30.907755...; for this interface's keV input its temperature term is ln(1000*T_e). The constants differ by about 0.392 in the logarithm. This is an algebraic comparison with the maintainer-checked NRL transcription; the physical origin of the difference remains UNKNOWN. Finding Eq. (18d) in the author manuscript does not explain that difference.",
+   "Verification establishes occurrence in the EPFL institutional author manuscript only, not derivation or priority. The publisher's final typesetting and the 2002 erratum remain unverified (UNKNOWN); no experimental calibration or arbitrary ion-mixture applicability follows from this source comparison."
   ]
  }
 }

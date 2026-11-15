@@ -130,7 +130,10 @@ def test_solving_source_changes_select_the_projection_consumer(relative):
         ),
         (
             "skills/development/scirel-acceptance/scripts/scirel_pytest_counts.py",
-            {"tests/tooling/test_check_all.py"},
+            {
+                "tests/tooling/test_check_all.py",
+                "tests/tooling/test_validate_extraction_package.py",
+            },
         ),
         (
             "skills/development/usage/scirel-solving/scripts/delivery.py",
@@ -149,6 +152,15 @@ def test_solving_source_changes_select_the_projection_consumer(relative):
 def test_skill_scripts_select_direct_and_transitive_consumers(script, expected):
     targets, _ = test_scope.classify(Path(script))
     assert set(targets) == expected
+
+
+def test_plugin_only_change_prints_exactly_its_proven_consumers(capsys):
+    script = "skills/development/scirel-acceptance/scripts/scirel_pytest_counts.py"
+    assert test_scope.main(["--changed", script]) == 0
+    assert capsys.readouterr().out.splitlines()[-1] == (
+        f"  {sys.executable} -m pytest -q tests/tooling/test_check_all.py"
+        " tests/tooling/test_validate_extraction_package.py"
+    )
 
 
 def test_current_skill_script_inventory_has_an_explicit_bounded_scope():

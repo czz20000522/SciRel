@@ -5,7 +5,7 @@
   "en": "Field query Geometric nearest sample on any matching planar arrays",
   "zh": "平面样点几何最近值"
  },
- "summary": "Choose flattened point of minimum squared coordinate distance",
+ "summary": "Choose the flattened sample with minimum Euclidean distance; exact ties keep the first sample",
  "taxonomy": [
   "analysis",
   "sampling"
@@ -16,7 +16,7 @@
  "discovery": {
   "capability": [
    "Geometric nearest field query",
-   "Choose the flattened sample with minimum squared coordinate distance to each query point."
+   "Choose the flattened sample with minimum Euclidean distance to each query point; exact ties keep the first sample."
   ],
   "operation": [
    "geometric nearest-sample field query",
@@ -30,13 +30,13 @@
  "identity": {
   "relation": "Field query Geometric nearest sample on any matching planar arrays",
   "direction": "Declared inputs to Sampled values",
-  "definition": "Choose flattened point of minimum squared coordinate distance",
+  "definition": "Choose the flattened sample with minimum Euclidean distance; exact ties keep the first sample. Floating coordinates exactly representable as binary64 use outward-rounded squared-distance intervals: bound the absolute difference, each square and the sum by adjacent floats, with lower bounds clipped at zero. Retain lower <= min(upper), then compare every remaining candidate with exact rational squared distances. Integer and real numeric object coordinates always bypass the floating filter; wider floating formats and queries without exact binary64 conversion also use direct exact comparison.",
   "model": "Geometric nearest sample on any matching planar arrays",
   "geometry": "planar matched sample points",
   "coordinates": "X column coordinate, Y row coordinate or matched scattered point arrays",
   "boundary": "Nearest-sample selection only; physical support is the caller's responsibility, with no sorting or domain-membership rejection",
   "assumptions": [
-   "Finite matched planar sample arrays and fields",
+   "Finite matched real planar sample coordinates and numeric fields",
    "Requested grid/query points lie inside convex/interpolation support"
   ]
  },
@@ -48,7 +48,7 @@
    "shape": "matched grid/sample shape",
    "dtype": "float64",
    "required": true,
-   "constraints": "For rectangular nearest X[0,:] is x axis"
+   "constraints": "Real; for rectangular nearest X[0,:] is x axis"
   },
   {
    "name": "Y",
@@ -57,7 +57,7 @@
    "shape": "same as X",
    "dtype": "float64",
    "required": true,
-   "constraints": "For rectangular nearest Y[:,0] is y axis"
+   "constraints": "Real; for rectangular nearest Y[:,0] is y axis"
   },
   {
    "name": "Q",
@@ -75,7 +75,7 @@
    "shape": "list of (x,y)",
    "dtype": "float64",
    "required": true,
-   "constraints": "Finite queries; each pair is independently copied and checked as the iterable is consumed once"
+   "constraints": "Finite real queries; each pair is independently copied and checked as the iterable is consumed once"
   }
  ],
  "outputs": [
@@ -91,7 +91,7 @@
  ],
  "applicability": {
   "preconditions": [
-   "Finite matched planar sample arrays and fields",
+   "Finite matched real planar sample coordinates and numeric fields",
    "Requested grid/query points lie inside convex/interpolation support"
   ],
   "supported": [
@@ -103,7 +103,7 @@
   ]
  },
  "failure_semantics": {
-  "invalid_input": "Nonfinite sample coordinates, Q data or query coordinates reject the whole request with ValueError. Other conversion, indexing or arithmetic errors propagate. The implementation does not reject unsorted or outside-support queries; the caller determines physical support. Finite numeric object elements are checked without changing calculation inputs, and unsupported object arithmetic remains unsupported.",
+  "invalid_input": "Nonfinite sample coordinates, Q data or query coordinates reject the whole request with ValueError. Complex sample or query coordinate representations, including zero imaginary parts and complex object elements, also raise ValueError, even when the query batch is empty. Finite complex Q values remain supported. Other conversion, indexing or arithmetic errors propagate. The implementation does not reject unsorted or outside-support queries; the caller determines physical support. Finite numeric object elements are checked without float64 narrowing; real coordinates are compared using their represented numeric values. Unsupported numeric representations still propagate conversion or arithmetic errors.",
   "runtime_failure": "Numerical, interpolation, or optional-dependency exceptions propagate from the direct calculation.",
   "nonconvergence": "Not applicable; the relation uses direct finite-difference, interpolation, selection, or quadrature operations.",
   "partial_results": "No partial result is promised when input validation or the underlying numerical operation fails."
@@ -130,13 +130,18 @@
   "scope": [
    "Public callable signature and documented finite-input behavior",
    "The direct regression fixtures listed in verification.tests",
-   "The executable example stored in this contract"
+   "The executable example stored in this contract",
+   "Analytic unique-nearest fixtures at uniform coordinate scales 1, 1e155 and 1e-170, with an independent hypot reference",
+   "Independent 2200-digit Decimal squared-distance references for finite subtraction overflow, rounded distance collisions, subnormal coordinates and true ties; matching shapes, integer precision and real numeric object regressions",
+   "Executable interval-enclosure and all-minimizer retention checks against exact rational distances, including subtraction, square and sum overflow, subnormal underflow and ties; the conditional inclusion argument is in the interval helper",
+   "Complex coordinate rejection for sample/query arrays and object elements, empty-query validation, finite complex Q preservation, norm-library independence, and direct exact paths for nonfloat or inexact conversions"
   ],
   "tests": [
    "tests/equilibrium/test_analysis_families.py",
-   "tests/geometry/test_sampling_failures.py"
+   "tests/geometry/test_sampling_failures.py",
+   "tests/geometry/test_point_nearest.py"
   ],
-  "evidence_ceiling": "Direct examples and named regression fixtures establish the documented relation on those inputs; they do not establish arbitrary-input correctness, experimental validation, or release approval.",
+  "evidence_ceiling": "The candidate-containment argument assumes correctly rounded IEEE binary64 subtraction, multiplication and addition with gradual underflow, exact conversion of filtered inputs and adjacent-float nextafter semantics. It follows from 0 <= lower[i] <= d[i] <= upper[i] and lower[k] <= d[k] <= d[j] <= upper[j] for every true minimizer k and every j; it does not require an error bound for hypot. Named analytic, independent hypot, high-precision Decimal and exact-rational regressions exercise the represented inputs; they do not verify every platform or numeric representation, experimental validity or release approval. Input precision lost before the call cannot be recovered.",
   "known_limitations": [
    "Rectangular and geometric nearest schemes are not asserted equivalent on irregular input",
    "Physical interpretation outside caller-declared support is unqualified; nonfinite field values are rejected"

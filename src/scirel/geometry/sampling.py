@@ -680,17 +680,111 @@ def locs_to_vals_griddata(X, Y, Q, coord_list):
     return griddata((X.flatten(), Y.flatten()), Q.flatten(), (xi, yi))
 
 
+def _real_coordinate_array(value):
+    """Validate the real planar coordinate representation without narrowing it."""
+    data = np.asarray(value)
+    if np.iscomplexobj(data) or (
+        data.dtype == object and any(np.iscomplexobj(element) for element in data.flat)
+    ):
+        raise ValueError("sample and query coordinates must be real")
+    return data
+
+
+def _squared_distance_bounds(flat_x, flat_y, x, y):
+    """Enclose squared distances for inputs exactly representable as binary64.
+
+    Under correctly rounded IEEE binary64 arithmetic with gradual underflow,
+    the adjacent floats on either side of a rounded result enclose the exact
+    result. Absolute differences are nonnegative, so moving toward zero gives
+    a clipped lower bound; squaring and addition are monotone on these bounds.
+    Apply the same outward step after each square and the final sum. At range
+    limits, nextafter(inf, 0) is the largest finite float and nextafter(0, inf)
+    is the smallest positive subnormal. Thus 0 <= lower[i] <= d[i] <= upper[i],
+    where d is the exact squared distance of the represented inputs.
+
+    For any true minimizer k and every j, lower[k] <= d[k] <= d[j] <= upper[j].
+    Consequently lower[k] <= min(upper): that filter cannot remove a minimizer.
+    This uses basic-operation rounding and adjacent floats, not a norm's ulp
+    error bound. The caller checks conversion is exact before using this path.
+    """
+
+    def component_bounds(samples, query):
+        delta = np.abs(np.asarray(samples, dtype=np.float64) - query)
+        lower = np.nextafter(delta, 0.0)
+        upper = np.nextafter(delta, np.inf)
+        return np.nextafter(lower * lower, 0.0), np.nextafter(upper * upper, np.inf)
+
+    # Overflow/underflow intentionally produce inf, zero or subnormal interval
+    # endpoints. Outward nextafter keeps the enclosure; Fraction compares every
+    # retained candidate, so these range events never silently discard a sample.
+    # Suppression is local to interval arithmetic; invalid operations still raise.
+    with np.errstate(over="ignore", under="ignore", invalid="raise"):
+        lx, ux = component_bounds(flat_x, float(x))
+        ly, uy = component_bounds(flat_y, float(y))
+        return np.nextafter(lx + ly, 0.0), np.nextafter(ux + uy, np.inf)
+
+
+def _nearest_sample_index(X, Y, x, y):
+    """Retain every possible nearest sample, then compare exact squared distances."""
+    from fractions import Fraction
+
+    coordinates = [_real_coordinate_array(value) for value in (X, Y, x, y)]
+    # Use the checked scalar representation in both interval and exact paths;
+    # converting the original object could invoke a different __float__ value.
+    x, y = (data[()] for data in coordinates[2:])
+
+    flat_x, flat_y = (data.ravel() for data in coordinates[:2])
+    candidates = np.arange(flat_x.size)
+    if np.ma.isMaskedArray(X) or np.ma.isMaskedArray(Y):
+        mask = np.ma.getmaskarray(X).ravel() | np.ma.getmaskarray(Y).ravel()
+        candidates = candidates[~mask]
+        if not candidates.size and flat_x.size:
+            return 0  # Match masked-array argmin when every coordinate is masked.
+    dtype = np.result_type(*(data.dtype for data in coordinates), np.float64)
+    if (
+        dtype == np.dtype(np.float64)
+        and all(data.dtype.kind == "f" for data in coordinates[:2])
+        and all(
+            data.dtype.kind == "f"
+            or (data.dtype.kind in "iu" and int(data[()]) == int(dtype.type(data[()])))
+            for data in coordinates[2:]
+        )
+    ):
+        # Only exact binary64 conversions enter the interval filter. Wider float
+        # formats, integer/object samples and inexact query casts go straight to
+        # Fraction; their precision is never reduced for candidate selection.
+        lower, upper = _squared_distance_bounds(flat_x, flat_y, x, y)
+        candidates = candidates[lower[candidates] <= upper[candidates].min()]
+
+    def exact(value):
+        value = np.asarray(value)[()]
+        if isinstance(value, np.integer):
+            value = int(value)
+        if hasattr(value, "as_integer_ratio"):
+            return Fraction(*value.as_integer_ratio())
+        return Fraction(value)
+
+    px, py = exact(x), exact(y)
+
+    def squared_distance(index):
+        return (exact(flat_x[index]) - px) ** 2 + (exact(flat_y[index]) - py) ** 2
+
+    # Outward intervals can retain extra samples. Python's min retains the first
+    # flattened sample only when exact squared distances are equal.
+    return min(candidates, key=squared_distance)
+
+
 def locs_to_vals1D(X, Y, Q, coord_list):
     """Field query Geometric nearest sample on any matching planar arrays
 
     Parameters
     ----------
     X : float64
-        Point x coordinates [coordinate units] Shape: ``matched grid/sample shape``. For
+        Point x coordinates [coordinate units] Shape: ``matched grid/sample shape``. Real; for
         rectangular nearest X[0,:] is x axis
 
     Y : float64
-        Point y coordinates [coordinate units] Shape: ``same as X``. For rectangular nearest
+        Point y coordinates [coordinate units] Shape: ``same as X``. Real; for rectangular nearest
         Y[:,0] is y axis
 
     Q : array_like
@@ -698,7 +792,7 @@ def locs_to_vals1D(X, Y, Q, coord_list):
         are retained without a uniform float64 conversion.
 
     coord_list : float64
-        Desired coordinate pairs [coordinate units] Shape: ``list of (x,y)``. Finite queries;
+        Desired coordinate pairs [coordinate units] Shape: ``list of (x,y)``. Finite real queries;
         each pair is independently copied and checked as the iterable is consumed once
 
     Returns
@@ -710,9 +804,11 @@ def locs_to_vals1D(X, Y, Q, coord_list):
     Raises
     ------
     ValueError
-        Nonfinite sample coordinates, Q data or query coordinates reject the whole
-        request. Other conversion, indexing or arithmetic errors propagate; there
-        is no sorting or domain-membership rejection.
+        Nonfinite sample coordinates, Q data or query coordinates, or any complex
+        coordinate representation (including zero imaginary parts), reject the
+        whole request. Finite complex Q samples remain supported. Other conversion,
+        indexing or arithmetic errors propagate; there is no sorting or
+        domain-membership rejection.
 
     See Also
     --------
@@ -722,9 +818,17 @@ def locs_to_vals1D(X, Y, Q, coord_list):
 
     Notes
     -----
-    Choose flattened point of minimum squared coordinate distance
-    Finite numeric object elements are checked without changing the calculation inputs;
-    object representations unsupported by the existing calculation remain unsupported.
+    Choose the flattened sample with minimum Euclidean distance; exact ties keep
+    the first sample. Exactly representable binary64 floating coordinates use
+    outward-rounded squared-distance intervals: bound each absolute difference,
+    square and sum by adjacent floats, retaining lower <= min(upper). Under IEEE
+    correctly rounded basic operations with gradual underflow this cannot discard
+    a true nearest sample; the derivation is in the private interval helper.
+    Remaining candidates are compared as exact rational squared distances of the
+    represented inputs. Integer and real numeric object coordinates always use
+    exact comparison directly. Wider floating formats and queries without exact
+    binary64 conversion also bypass the filter. Finite numeric object elements
+    retain their representations.
 
     **Coordinates.** X column coordinate, Y row coordinate or matched scattered point arrays
 
@@ -733,7 +837,7 @@ def locs_to_vals1D(X, Y, Q, coord_list):
 
     **Preconditions.**
 
-    * Finite matched planar sample arrays and fields
+    * Finite matched real planar sample coordinates and numeric fields
     * Requested grid/query points lie inside convex/interpolation support
 
     **Limits.**
@@ -755,12 +859,12 @@ def locs_to_vals1D(X, Y, Q, coord_list):
     from itertools import chain
 
     queries = []
-    for sample, is_query in chain(
-        ((X, False), (Y, False), (Q, False)),
+    for sample, is_query, is_coordinate in chain(
+        ((X, False, True), (Y, False, True), (Q, False, False)),
         # Copy each yielded component before the producer can reuse its storage.
-        ((deepcopy(tuple(point)), True) for point in coord_list),
+        ((deepcopy(tuple(point)), True, True) for point in coord_list),
     ):
-        data = np.asarray(sample)
+        data = _real_coordinate_array(sample) if is_coordinate else np.asarray(sample)
         if data.dtype == object:
             finite = all(
                 value.is_finite()
@@ -781,7 +885,7 @@ def locs_to_vals1D(X, Y, Q, coord_list):
     values = []
     flat_q = np.asarray(Q).ravel()
     for x, y in coord_list:
-        index = ((X - x) ** 2 + (Y - y) ** 2).argmin()
+        index = _nearest_sample_index(X, Y, x, y)
         values.append(flat_q[index])
     return values
 

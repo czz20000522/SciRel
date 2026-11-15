@@ -737,6 +737,8 @@ def run_full_check(tree: Path, report: Report, *, exclusive_token: str | None = 
         counts_path = report.directory() / "tests-counts.json"
         counts_path.write_text(json.dumps(result["tests"]), encoding="utf-8")
         counts = read_counts(counts_path)
+        if counts["pytest_exitstatus"] != records[0]["returncode"]:
+            raise ValueError("pytest exit status disagrees with the tests step")
         incomplete = [
             step["name"] + ": " + step["status"] + " " + step.get("detail", "")
             for step in records

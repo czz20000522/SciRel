@@ -21,12 +21,108 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-import pytest
-
 COUNTS_OPTION = "--scirel-counts"
 
 OUTCOMES = ("passed", "failed", "error", "skipped", "xfailed", "xpassed")
 REASON_LIMIT = 160
+
+
+def final_outcome(phases: list[dict]) -> str | None:
+    """Reduce observed phases to one result; retain call results even after a teardown error."""
+    expected = (
+        ["setup", "call", "teardown"]
+        if phases and phases[0]["outcome"] == "passed"
+        else ["setup", "teardown"]
+    )
+    if [phase["when"] for phase in phases] != expected:
+        return None
+    outcomes = []
+    for phase in phases:
+        outcome, when = phase["outcome"], phase["when"]
+        if outcome == "failed":
+            outcomes.append("failed" if when == "call" else "error")
+        elif outcome == "skipped":
+            outcomes.append("xfailed" if "wasxfail" in phase else "skipped")
+        elif when == "call":
+            outcomes.append("xpassed" if "wasxfail" in phase else "passed")
+    for outcome in ("error", "failed", "xfailed", "skipped", "xpassed", "passed"):
+        if outcome in outcomes:
+            return outcome
+    return None
+
+
+def validate_execution_records(report: dict) -> None:
+    """Validate the single counts protocol, including identities and phase-derived totals."""
+    if type(report.get("schema")) is not int or report["schema"] != 2:
+        raise ValueError("execution records require counts schema 2")
+    if type(report.get("pytest_exitstatus")) is not int or report["pytest_exitstatus"] not in (
+        0,
+        1,
+    ):
+        raise ValueError("pytest collection or run did not finish normally")
+    if report.get("collection_finished") is not True:
+        raise ValueError("collection did not finish")
+    collection = report.get("collection_reports")
+    if not isinstance(collection, list):
+        raise ValueError("missing collection reports")
+    for item in collection:
+        if (
+            not isinstance(item, dict)
+            or not isinstance(item.get("nodeid"), str)
+            or item.get("outcome") not in ("failed", "skipped")
+            or not isinstance(item.get("reason"), str)
+        ):
+            raise ValueError("invalid collection report")
+        if item["outcome"] == "failed":
+            raise ValueError("collection failed")
+    selected = report.get("selected_nodeids")
+    if (
+        not isinstance(selected, list)
+        or any(not isinstance(node, str) or not node for node in selected)
+        or len(set(selected)) != len(selected)
+        or len(selected) != report["selected"]
+    ):
+        raise ValueError("missing, duplicate or mismatched selected nodeids")
+    results = report.get("results")
+    if not isinstance(results, list) or len(results) != len(selected):
+        raise ValueError("missing or duplicate per-test results")
+    totals = dict.fromkeys(OUTCOMES, 0)
+    skips: dict[str, list[str]] = {}
+    for nodeid, item in zip(selected, results, strict=True):
+        if not isinstance(item, dict) or item.get("nodeid") != nodeid:
+            raise ValueError("result identities do not match selected nodeids in order")
+        phases = item.get("phases")
+        if not isinstance(phases, list) or not phases:
+            raise ValueError(f"{nodeid}: missing phases")
+        for phase in phases:
+            if (
+                not isinstance(phase, dict)
+                or phase.get("when") not in ("setup", "call", "teardown")
+                or phase.get("outcome") not in ("passed", "failed", "skipped")
+                or ("wasxfail" in phase and not isinstance(phase["wasxfail"], str))
+                or (phase["outcome"] == "skipped" and not isinstance(phase.get("reason"), str))
+            ):
+                raise ValueError(f"{nodeid}: invalid phase")
+        expected = (
+            ["setup", "call", "teardown"]
+            if phases[0]["outcome"] == "passed"
+            else ["setup", "teardown"]
+        )
+        if [phase["when"] for phase in phases] != expected:
+            raise ValueError(f"{nodeid}: missing, duplicate or out-of-order phases")
+        outcome = final_outcome(phases)
+        if outcome is None or item.get("outcome") != outcome:
+            raise ValueError(f"{nodeid}: final outcome disagrees with phases")
+        totals[outcome] += 1
+        if outcome == "skipped":
+            reason = next(phase["reason"] for phase in phases if phase["outcome"] == "skipped")
+            skips.setdefault(reason, []).append(nodeid)
+    if any(report.get(name) != total for name, total in totals.items()):
+        raise ValueError("per-test outcomes disagree with counts")
+    if report.get("skip_reasons") != skips:
+        raise ValueError("skip reasons disagree with per-test results")
+    if report["pytest_exitstatus"] == 0 and (totals["failed"] or totals["error"]):
+        raise ValueError("pytest exit status disagrees with failed/error outcomes")
 
 
 def pytest_addoption(parser):
@@ -67,10 +163,11 @@ class CountsPlugin:
 
     def __init__(self) -> None:
         self.selected = 0
+        self.selected_nodeids: list[str] = []
+        self.collection_finished = False
+        self.collection_reports: list[dict] = []
         self.deselected = 0
-        self.outcomes: dict[str, str] = {}
-        self.skip_reasons: dict[str, list[str]] = {}
-        self.conflicts: list[str] = []
+        self.phases: dict[str, list[dict]] = {}
 
     def pytest_deselected(self, items) -> None:
         self.deselected += len(items)
@@ -78,57 +175,62 @@ class CountsPlugin:
     def pytest_collection_finish(self, session) -> None:
         # All collection filters have finished; modifyitems hook order is not fixed.
         self.selected = len(session.items)
+        self.selected_nodeids = [item.nodeid for item in session.items]
+        self.collection_finished = True
+
+    def pytest_collectreport(self, report) -> None:
+        if report.failed or report.skipped:
+            self.collection_reports.append(
+                {"nodeid": report.nodeid, "outcome": report.outcome, "reason": str(report.longrepr)}
+            )
 
     def pytest_runtest_logreport(self, report) -> None:
-        outcome = self._outcome(report)
-        if outcome is None:
-            return
-        previous = self.outcomes.get(report.nodeid)
-        if previous is not None:
-            if previous != outcome:
-                self.conflicts.append(f"{report.nodeid}: {previous} then {outcome}")
-            return
-        self.outcomes[report.nodeid] = outcome
-        if outcome == "skipped":
-            self.skip_reasons.setdefault(_skip_reason(report), []).append(report.nodeid)
-
-    def _outcome(self, report) -> str | None:
-        # pytest reports a test in up to three phases: a setup or teardown failure is an error, a
-        # call failure is a failure. An xfail marker shows up as a skip (the test failed as
-        # expected) or as a pass on the call phase (it passed unexpectedly); a strict xfail reports
-        # its unexpected pass as a failure, and pytest counts that as failed, so it stays failed.
-        xfail = getattr(report, "wasxfail", None)
+        phase = {"when": report.when, "outcome": report.outcome}
+        if hasattr(report, "wasxfail"):
+            phase["wasxfail"] = str(report.wasxfail)
         if report.skipped:
-            return "xfailed" if xfail is not None else "skipped"
-        if report.failed:
-            return "error" if report.when in ("setup", "teardown") else "failed"
-        if report.when == "call" and report.passed:
-            return "xpassed" if xfail is not None else "passed"
-        return None
+            phase["reason"] = _skip_reason(report)
+        self.phases.setdefault(report.nodeid, []).append(phase)
 
     def report(self, exitstatus: int) -> dict:
         totals = {name: 0 for name in OUTCOMES}
-        for outcome in self.outcomes.values():
-            totals[outcome] += 1
-        problems = list(self.conflicts)
-        if len(self.outcomes) != self.selected:
-            problems.append(
-                f"{self.selected} selected but {len(self.outcomes)} reached a terminal outcome"
-            )
-        return {
-            "schema": 1,
+        results = []
+        skips: dict[str, list[str]] = {}
+        # Keep unstarted selections and unexpected report identities too, even on interruption.
+        for nodeid in dict.fromkeys([*self.selected_nodeids, *self.phases]):
+            phases = self.phases.get(nodeid, [])
+            outcome = final_outcome(phases)
+            results.append({"nodeid": nodeid, "outcome": outcome, "phases": phases})
+            if outcome is not None:
+                totals[outcome] += 1
+            if outcome == "skipped":
+                reason = next(phase["reason"] for phase in phases if phase["outcome"] == "skipped")
+                skips.setdefault(reason, []).append(nodeid)
+        report = {
+            "schema": 2,
             "pytest_exitstatus": int(exitstatus),
+            "collection_finished": self.collection_finished,
+            "collection_reports": self.collection_reports,
+            "selected_nodeids": self.selected_nodeids,
+            "results": results,
             "collected": self.selected + self.deselected,
             "selected": self.selected,
             "deselected": self.deselected,
             **totals,
-            "skip_reasons": self.skip_reasons,
-            "consistent": not problems,
-            "inconsistency": "; ".join(problems),
+            "skip_reasons": skips,
         }
+        try:
+            validate_execution_records(report)
+        except ValueError as error:
+            report.update(consistent=False, inconsistency=str(error))
+        else:
+            report.update(consistent=True, inconsistency="")
+        return report
 
 
 def pytest_configure(config):
+    import pytest
+
     # Fail early and plainly when the caller forgot the report path: the plugin exists to be
     # consumed, and a run that silently produced nothing would look green.
     if not config.getoption(COUNTS_OPTION):

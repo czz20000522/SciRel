@@ -334,6 +334,70 @@ def _validator():
     return module
 
 
+def _isolated_validator_load(script, directory):
+    # -I starts without PYTHONPATH, the working directory or this pytest process's
+    # sys.path edits. Only the production validator establishes its import paths.
+    driver = """
+import importlib.util
+from pathlib import Path
+import sys
+
+script = Path(sys.argv[1]).resolve()
+acceptance = script.parents[1] / "skills/development/scirel-acceptance/scripts"
+assert str(acceptance) not in sys.path
+assert "check_all" not in sys.modules
+assert "scirel_pytest_counts" not in sys.modules
+spec = importlib.util.spec_from_file_location("isolated_validator", script)
+module = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(module)
+check_all = sys.modules["check_all"]
+counts = sys.modules["scirel_pytest_counts"]
+assert Path(check_all.__file__).resolve() == acceptance / "check_all.py"
+assert Path(counts.__file__).resolve() == acceptance / "scirel_pytest_counts.py"
+assert module.read_counts is check_all.read_counts
+assert check_all.validate_execution_records is counts.validate_execution_records
+print("production validator, check_all and counts imports verified")
+"""
+    return subprocess.run(
+        [sys.executable, "-I", "-B", "-c", driver, str(script)],
+        cwd=directory,
+        capture_output=True,
+        text=True,
+        timeout=10,
+    )
+
+
+def test_production_validator_loads_counts_without_pytest_path_injection(tmp_path):
+    done = _isolated_validator_load(SCRIPT, tmp_path)
+    assert done.returncode == 0, done.stdout + done.stderr
+    assert done.stdout.strip() == "production validator, check_all and counts imports verified"
+
+
+def test_production_validator_loading_fails_when_its_counts_dependency_is_missing(tmp_path):
+    # Copy the actual import closure, omitting only the dependency under test.
+    scripts = tmp_path / "candidate/scripts"
+    scripts.mkdir(parents=True)
+    for name in (
+        "validate_extraction_package.py",
+        "tickets.py",
+        "dev.py",
+        "validate_asset_documents.py",
+        "code_digest.py",
+        "public_api_binding.py",
+    ):
+        shutil.copyfile(ROOT / "scripts" / name, scripts / name)
+    acceptance = scripts.parent / "skills/development/scirel-acceptance/scripts"
+    acceptance.mkdir(parents=True)
+    for name in ("check_all.py", "precommit_check.py"):
+        shutil.copyfile(
+            ROOT / "skills/development/scirel-acceptance/scripts" / name, acceptance / name
+        )
+    done = _isolated_validator_load(scripts / "validate_extraction_package.py", tmp_path)
+    assert done.returncode != 0
+    assert "ModuleNotFoundError: No module named 'scirel_pytest_counts'" in done.stderr
+    assert "imports verified" not in done.stdout
+
+
 def _mock_lock_boundary(module, monkeypatch):
     """Report/environment protocol fixtures only; not real exclusive acceptance evidence."""
     monkeypatch.setattr(
@@ -518,6 +582,22 @@ def _acceptance_result(module, directory, tree):
         "steps": records,
         "exit_code": 0,
         "tests": {
+            "schema": 2,
+            "pytest_exitstatus": 0,
+            "collection_finished": True,
+            "collection_reports": [],
+            "selected_nodeids": ["test_fixture.py::test_a", "test_fixture.py::test_b"],
+            "results": [
+                {
+                    "nodeid": f"test_fixture.py::test_{name}",
+                    "outcome": "passed",
+                    "phases": [
+                        {"when": when, "outcome": "passed"}
+                        for when in ("setup", "call", "teardown")
+                    ],
+                }
+                for name in ("a", "b")
+            ],
             "collected": 2,
             "selected": 2,
             "deselected": 0,
@@ -534,7 +614,18 @@ def _acceptance_result(module, directory, tree):
 
 
 @pytest.mark.parametrize(
-    "defect", [None, "nonzero", "missing step", "missing counts", "NOT_RUN", "missing output"]
+    "defect",
+    [
+        None,
+        "nonzero",
+        "missing step",
+        "missing counts",
+        "NOT_RUN",
+        "missing output",
+        "missing selection",
+        "wrong result identity",
+        "wrong pytest exit",
+    ],
 )
 def test_full_result_protocol_preserves_the_actual_output(tmp_path, monkeypatch, defect):
     """Exercise the report consumer; this fixture is not a real package acceptance run."""
@@ -556,6 +647,12 @@ def test_full_result_protocol_preserves_the_actual_output(tmp_path, monkeypatch,
         result["steps"][0].update(status="NOT_RUN", returncode=None)
     elif defect == "missing output":
         Path(result["steps"][0]["log"]).unlink()
+    elif defect == "missing selection":
+        del result["tests"]["selected_nodeids"]
+    elif defect == "wrong result identity":
+        result["tests"]["results"][0]["nodeid"] = "test_fixture.py::unselected"
+    elif defect == "wrong pytest exit":
+        result["tests"]["pytest_exitstatus"] = 1
 
     def execute(tree, command):
         result["run_id"] = command[command.index("--run-id") + 1]
