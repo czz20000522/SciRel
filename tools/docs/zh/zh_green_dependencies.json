@@ -155,7 +155,7 @@
   },
   {
    "asset_id": "scirel.electromagnetism.circular-filament-green",
-   "source_sha256": "8bb744fb6fe0e3ae0aa2260e97dcbd443d43651d904e44c6ceef77f9ed4f470b",
+   "source_sha256": "8dbad29fb5203ef4dc57eaf48a9b96c148236ae51d3eef8d66f7e13ff49b21b4",
    "summary": "计算有序圆电流丝在柱坐标目标点的磁通和磁场响应。",
    "definition": "对每个源行 (R,Z,weight)，返回每安培加权响应 psi=R A_phi、BR 和 BZ。",
    "model": "使用小模数超几何分支和互补椭圆积分分支的轴对称理想圆电流丝核。",
@@ -215,7 +215,7 @@
      "轴极限及导数回归。",
      "显式奇点和生命周期测试。",
      "tests/cross_domain/test_field_green_correction.py 的 high_precision_loop 用 70 位 mpmath ellipk/ellipe 椭圆积分闭式值，对照 test_near_wire_radial_separation_is_not_lost_by_squared_subtraction 与 test_equivalent_formula_cutover_retains_psi_and_analytic_derivatives。调用经 field 的 aggregate/dense 包装层到达本核，包装层零自项约定不等于本核的奇点合同。普通 SciPy 角积分另见 tests/geometry/test_geometry_fields.py 的 loop_integrals；原容差及小半径、轴上场和算术失败检查保持原样。",
-     "tests/geometry/test_green_scales.py 用100位 Decimal 和公开输入独立求轴上 Biot–Savart 精确式，将远场磁通角积分余项的相对界限限定在1.8e-108以内，并核对互磁通互易性及两解析分支在长度和有符号权重缩放下与直接角积分的一致性。解析极限保留 rtol=1e-14，积分对照保留 rtol=1e-12；这些是有界数值证据，不宣称任意输入域资格。 另用400位椭圆积分参照核对正近导线间距的平方互补参数下溢；椭圆对数极限仍为同一个理想丝模型。 MagnetRing 和 BRB 的有符号源磁矩检查通过补偿乘积与按原序求和保持1e-14预算；它们核对返回几何，不认证实验标定。"
+     "tests/geometry/test_green_scales.py 用100位 Decimal 和公开输入独立求轴上 Biot–Savart 精确式，将远场磁通角积分余项的相对界限限定在1.8e-108以内，并核对互磁通互易性及两解析分支在长度和有符号权重缩放下与直接角积分的一致性。解析极限保留 rtol=1e-14，积分对照保留 rtol=1e-12；这些是有界数值证据，不宣称任意输入域资格。 另用400位椭圆积分参照核对正近导线间距的平方互补参数下溢；椭圆对数极限仍为同一个理想丝模型。 MagnetRing 和 BRB 的有符号源磁矩检查通过补偿乘积与按原序求和保持1e-14预算；它们核对返回几何，不认证实验标定。 另以700位公开坐标参照分别核对半径之和及有符号高度差超出float范围、但最终磁通和场仍可表示的两例；几何距离先保留独立二进制尺度。"
     ],
     "evidence_ceiling": "仅支持具名案例及所声明 API 行为，不宣称全连续域正确性或入口可互换。",
     "known_limitations": [

@@ -94,6 +94,36 @@ def test_near_wire_complement_square_does_not_create_a_false_singularity():
     )
 
 
+@pytest.mark.parametrize(
+    "source,target",
+    [
+        ([9e307, 0.0, 1e4], [np.nextafter(9e307, np.inf), 1e292]),
+        ([1e200, -1e308, 1e300], [5e199, 1e308]),
+    ],
+)
+def test_finite_response_does_not_require_a_representable_coordinate_sum(source, target):
+    with mp.workdps(700):
+        a, z0, w = map(mp.mpf, source)
+        r, z = map(mp.mpf, target)
+        h = z - z0
+        d2 = (a + r) ** 2 + h * h
+        gap2 = (a - r) ** 2 + h * h
+        d = mp.sqrt(d2)
+        m = 4 * a * r / d2
+        k, e = mp.ellipk(m), mp.ellipe(m)
+        expected = [
+            float(mp.mpf("1e-7") * w * d * ((2 - m) * k - 2 * e)),
+            float(2 * mp.mpf("1e-7") * w * h / (r * d) * (-k + (a * a + r * r + h * h) / gap2 * e)),
+            float(2 * mp.mpf("1e-7") * w / d * (k + (a * a - r * r - h * h) / gap2 * e)),
+        ]
+    assert np.isfinite(expected).all()
+    actual = np.asarray(compute_greens(np.array([source]), [target]))[:, 0]
+    np.testing.assert_allclose(actual, expected, rtol=1e-14, atol=0.0)
+    np.testing.assert_allclose(
+        _weighted_psi(np.array([source]), [target]), expected[:1], rtol=1e-14, atol=0.0
+    )
+
+
 def _angular_reference(a, r, h):
     # Direct Biot-Savart and vector-potential integrals in ordinary geometry.
     def integrand(phi, component):
