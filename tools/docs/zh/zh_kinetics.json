@@ -1806,7 +1806,7 @@
   },
   {
    "asset_id": "scirel.collisions.atomic-hydrogen-charge-exchange-cross-section",
-   "source_sha256": "aaa272343a853cf815d7d419fb76d73b3b96a2e39966eeaa8f5377bdba242838",
+   "source_sha256": "f87dfa66f205afc99492cc25aed286816ca45f0a9151c0d9ae12c81f922c2492",
    "summary": "以碰撞能量（eV）为自变量，给出 H + H⁺ 电荷交换截面（m²）。默认是连续复合：Janev 多项式用在 12.673175 keV 以下，Lindsay–Stebbings 2005 Table 1 用在交点至 250 keV；freeman=True 保留独立的 Freeman–Jones 比较分支至 100 keV。越过高能端点会裁剪并发出 RuntimeWarning；负能量和非标量分支选择器被拒绝。",
    "definition": "默认分支先将能量裁剪到 [0.1, 2.5e5] eV；E ≤ 1.267317514018116e4 eV 时返回九系数 Janev 多项式 exp(polyval(log(E),a))×1e-4 m²，E 高于交点时返回 (4.15−0.531 ln(E_keV))²(1−exp(−67.3/E_keV))^4.5×1e-20 m²。freeman=True 将能量裁剪到 [0.1,1e5] eV，返回独立 Freeman–Jones 解析式。超过所选上限时发出 RuntimeWarning 并返回端点。",
    "model": "连续的 Janev/Lindsay–Stebbings 默认复合截面，加上独立的 Freeman–Jones 比较分支；不做运行时外部数据插值，也不做速率积分。",
@@ -1878,7 +1878,7 @@
     "known_limitations": [
      "默认在 5 eV 以下使用 Janev；Lindsay–Stebbings Table 1 从 5 eV 才开始，因此该低能段不由该表验证。",
      "Lindsay–Stebbings Table 1 到 250 keV 为止；更高能量发出警告并重复端点，不外推。",
-     "Lindsay–Stebbings 2005 年论文 §4.1[20] 对 H⁺–H 的可能可靠度评价约为 10%，并记录 100 keV 处理论低于测量近 30% 的未决分歧。§4.1[23] 跨至下一页的“6 keV 以上约 11%”属于 H⁺–O，不属于 H⁺–H。这些作者评价不是 SciRel 的独立实验验证，也不是整个复合式的统一不确定度界。",
+     "Lindsay–Stebbings 2005 年论文 §4.1[20] 对 H⁺–H 的可能可靠度评价约为 10%，并记录 100 keV 处理论与测量存在近 30% 的未决差异。§4.1[23] 跨至下一页的“6 keV 以上约 11%”属于 H⁺–O，不属于 H⁺–H。这些作者评价不是 SciRel 的独立实验验证，也不是整个复合式的统一不确定度界。",
      "Freeman–Jones 是独立比较分支，不是默认，也不是对复合的修正。",
      "公开分发许可仍待人工决定。",
      "0.1–12 eV 没有任何独立的测量或独立计算截面源（Red Book 从 12 eV 起、Khoma 只覆盖 1e-4–1e-3 eV），因此拟合声明区间的低端没有外部对拍。"
