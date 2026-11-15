@@ -218,19 +218,24 @@
   "scope": [
    "Direct regressions cover a known-root monotone residual, bracket expansion, active/inactive and all-inactive behavior, and fixed inactive callback potentials.",
    "Selected callback mapping and control failures, failed bracketing, and iteration-budget nonconvergence are asserted.",
-   "tests/cross_domain/test_mirror_gauge_scientific_correction.py::test_local_quasineutral_midpoint_preserves_large_representable_root exercises this solver through the maintained mirror closure at its parametrized large common potentials, and asserts the returned root, density and charge residual."
+   "tests/cross_domain/test_mirror_gauge_scientific_correction.py::test_local_quasineutral_midpoint_preserves_large_representable_root exercises this solver through the maintained mirror closure at its parametrized large common potentials, and asserts the returned root, density and charge residual.",
+   "Independent decreasing residuals reach manufactured roots 6.375 and -1.625 V within 1e-10 V and the original 1e-10 residual gate, with inactive callback potentials fixed at 17 V; failed bracketing and an all-inactive nonfinite callback are rejected.",
+   "test_adjacent_float_exact_root_is_unattainable_and_rejected uses the exact rational root 1+2^-53 between adjacent binary64 potentials. Its minimum representable residual is 2^-53, above the unchanged 2^-55 residual tolerance; width tolerance 2^-50 V and 100 iterations must end in RuntimeError. The direct test module contains the representability argument."
   ],
   "tests": [
    "tests/closures/test_quasineutral_potential.py",
-   "tests/cross_domain/test_mirror_gauge_scientific_correction.py"
+   "tests/cross_domain/test_mirror_gauge_scientific_correction.py",
+   "tests/closures/test_independent_closure_relations.py::test_potential_fraction_roots_mixed_mask_and_gauge",
+   "tests/closures/test_independent_closure_relations.py::test_adjacent_float_exact_root_is_unattainable_and_rejected",
+   "tests/closures/test_independent_closure_relations.py::test_potential_no_bracket_and_bad_callback_fail"
   ],
-  "evidence_ceiling": "Selected manufactured roots, ordinary callback/bracketing/budget failure paths and the named mirror-closure composition with large representable common-potential roots are supported by the bound assertions. The adjacent-float midpoint-root witness remains UNKNOWN. An exact numerical callback zero is not independent proof of its physical model, all floating-point regimes or expert recognition.",
+  "evidence_ceiling": "Selected manufactured roots, ordinary callback/bracketing/budget failure paths and the named mirror-closure composition with large representable common-potential roots are supported by the bound assertions. The exact halfway adjacent-float root now has a direct failure witness at the original residual gate, proving rejection for that manufactured case only. An exact numerical callback zero is not independent proof of its physical model, all floating-point regimes or expert recognition.",
   "known_limitations": [
    "The solver cannot detect a numerically valid callback whose residual represents the wrong physics.",
    "Eight expansion rounds and max_iterations do not guarantee a bracket or convergence.",
    "Broadcasting alone does not establish physical coordinate alignment; extreme finite thermal scales may overflow bracket arithmetic.",
    "Public distribution licensing and expert recognition remain pending.",
-   "UNKNOWN: a manufactured root halfway between adjacent representable potentials was not located in the bound tests or the inspected local history. The original residual tolerance and adjacent-float failure contract remain in force; test_iteration_budget_has_no_hidden_convergence_evaluation in tests/closures/test_quasineutral_potential.py covers ordinary budget exhaustion, not this missing boundary witness."
+   "The exact rational root 1+2^-53 has no binary64 value satisfying residual tolerance 2^-55; test_adjacent_float_exact_root_is_unattainable_and_rejected directly asserts RuntimeError without relaxing the original tolerance. The ordinary iteration-budget test remains separate. These cases do not establish convergence for arbitrary callbacks or all floating-point regimes."
   ]
  }
 }

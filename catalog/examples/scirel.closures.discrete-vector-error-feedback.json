@@ -110,10 +110,12 @@
     "scope": [
       "Four direct tests cover fixture shapes, source/replay equality, independent reimplementation against the saved trace, disabled hold/rising reset and nonbinary enable rejection.",
       "The incoming supplement binds 12,463 source/replay numeric scalars, equal result/state files and complete member/license hashes.",
-      "The public test fixture preserves the source result and state trace bytes used by the direct comparison."
+      "The public test fixture preserves the source result and state trace bytes used by the direct comparison.",
+      "Independent exact rational seven-sample trajectories check PID components, mapped/total current, rising reset, disabled hold/feedforward and effective pre/post integrator/filter states without reading source/replay fixtures. Current uses the updated integrator I_+ while the filtered derivative uses pre-update f_-; inputs remain unchanged. A separate two-channel nondiagonal Fraction map checks axis order and one coefficient-scale application.",
+      "Six parameterized invalid-input nodes reject nonbinary enable, negative filter rate, nonzero internal reset, observation-time mismatch, a nonfinite measurement and a wrong gain shape. The sampled-state equations, first two rational steps, units and exact-equality budget are in the direct test module docstring."
     ],
-    "tests": ["tests/closures/test_discrete_vector_feedback.py"],
-    "evidence_ceiling": "Bounded source-fidelity partial for the declared sampled adapter path. Native Simulink, parameter-resolution discrimination, broader malformed inputs, physical calibration, closed-loop convergence/stability, human scientific acceptance, rights acceptance and release remain unestablished.",
+    "tests": ["tests/closures/test_discrete_vector_feedback.py", "tests/closures/test_independent_closure_relations.py::test_feedback_independent_rational_trace_and_hold_reset", "tests/closures/test_independent_closure_relations.py::test_feedback_non_diagonal_map_and_scale", "tests/closures/test_independent_closure_relations.py::test_feedback_declared_true_failures"],
+    "evidence_ceiling": "Bounded source-fidelity partial for the declared sampled adapter path, supplemented by independent exact rational state-timing and nondiagonal-map assertions and six specified invalid-input cases. The saved source/replay comparison remains transcription evidence. Native Simulink, parameter-resolution discrimination, malformed inputs beyond the named cases, physical calibration, closed-loop convergence/stability, human scientific acceptance, rights acceptance and release remain unestablished.",
     "known_limitations": [
       "The implementation reproduces the declared typed fixture path and does not model a plant, actuator saturation or magnetic geometry.",
       "Disabled and rising-enable behavior is explicit state semantics, not evidence of a stable controller.",

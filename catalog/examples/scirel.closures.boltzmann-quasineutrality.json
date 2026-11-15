@@ -189,14 +189,18 @@
    "Overflow-safe relative residual, underflow-safe positive-population log residual, joint-vacuum behaviour and pressure preserved despite density underflow.",
    "Ordinary analytic response, invalid-input and finite-output checks; the current regression preserves a strict no-clipping exp(701) witness and rejects an unrepresentable positive response. The no-clipping assertion is the discriminating witness: an unrepresentable positive response is rejected, not clamped.",
    "Adjacent binary64 potentials near +/-1e20 reproduce the exact-rational dimensionless exponent; opposite-sign potentials of magnitude 1e308 and subnormal thermal-energy cases preserve representable final responses.",
-   "The Result conversion preserves the five-key order, values, shapes, dtypes and mapping access, and exposes each field by attribute from the same mapping."
+   "The Result conversion preserves the five-key order, values, shapes, dtypes and mapping access, and exposes each field by attribute from the same mapping.",
+   "Independent 180-digit Decimal Maxwell-weight references from six original binary64 input tuples check electron density, pressure, number-density residual and relative residual at rtol=3e-13, atol=0; log-residual error is at most 3e-13*max(1,abs(reference)). Cases include large common potentials, compensated +/-800 exponents and opposite-sign 1e308 potentials. Exact absent-species diagnostics and true overflow/nonpositive-temperature rejection are separate assertions. The derivation and fixed budgets are in the direct test module docstring."
   ],
   "tests": [
    "tests/closures/test_boltzmann_quasineutrality.py",
    "tests/cross_domain/test_mirror_kinetic_scientific_correction.py",
-   "tests/cross_domain/test_mirror_gauge_scientific_correction.py"
+   "tests/cross_domain/test_mirror_gauge_scientific_correction.py",
+   "tests/closures/test_independent_closure_relations.py::test_boltzmann_from_raw_decimal_maxwell_weight",
+   "tests/closures/test_independent_closure_relations.py::test_exact_absence_is_diagnostic_not_a_false_root",
+   "tests/closures/test_independent_closure_relations.py::test_boltzmann_true_overflow_and_invalid_temperature_reject"
   ],
-  "evidence_ceiling": "The evaluated mathematical Boltzmann law, finite arithmetic behavior and declared residual conventions are tested. This does not establish a physical electron equilibrium or all plasma-model applicability.",
+  "evidence_ceiling": "The evaluated mathematical Boltzmann law, finite arithmetic behavior and declared residual conventions are tested. This does not establish a physical electron equilibrium or all plasma-model applicability. Independent references cover only these six input tuples and the named absence/failure cases; spatially varying prescribed temperature is not a demonstrated global thermal equilibrium.",
   "known_limitations": [
    "Exactly absent species have a finite signed diagnostic proxy, not the mathematically infinite logarithm; its magnitude is not a physical logarithmic ratio.",
    "Binary64 underflow can round densities or pressures to zero; positive-population log diagnostics still use analytic log density.",
