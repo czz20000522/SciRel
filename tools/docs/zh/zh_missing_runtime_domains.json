@@ -232,7 +232,7 @@
     "输入转为 binary64 后须有限；调用者提供一致单位和归一化。"
    ],
    "boundary": "两端各给一个标量 Dirichlet 值或沿坐标正向的 Neumann 导数；未提供度量时采用单位横截面。",
-   "definition": "内部面通量为 D_face*(u_right-u_left)/相邻单元中心距。Dirichlet 边界用半单元割线，Neumann 用正向梯度。单元残差为左右通量差除以宽度，因此宽度加权残差和等于净边界通量。原 Dirichlet 系数 2*D/h² 通过二进制尾数与指数求值，不在原尺度先形成 h² 或 2*D。有符号和零 D 保留原代数，不引入扩散系数下限；物理扩散要求 D>=0。",
+   "definition": "内部面通量为 D_face*(u_right-u_left)/相邻单元中心距。Dirichlet 边界用半单元割线，Neumann 用正向梯度。单元残差为左右通量差除以宽度，因此宽度加权残差和等于净边界通量。原 Dirichlet 系数 2*D/h² 通过二进制尾数与指数求值，不在原尺度先形成 h² 或 2*D。有符号和零 D 保留原代数，不引入扩散系数下限；物理扩散要求 D>=0。 完整边界强迫在乘入边界数据后才恢复二进制尺度：Dirichlet 值为 2*D*g/h²，Neumann 梯度为带方向符号的 D*g/h，最后才舍入为 float64。",
    "example": {
     "description": "组装单位扩散系数下的扩散项，并核对线性剖面满足离散平衡。",
     "expected": "三对角算子与边界强迫在单位梯度剖面下相互抵消，得到零残差向量。"
@@ -280,7 +280,7 @@
      "units": "Q/time"
     }
    ],
-   "source_sha256": "71902312e8aee37d591c8e4ac5d11d6384162a12c17ef198399974f056dadf3e",
+   "source_sha256": "ba376ae1b3bc6d07e9d0916fc447da203505c0c3374c4126e3850fdde6fa874c",
    "summary": "将扩散通量散度组装为三对角算子与边界强迫。",
    "verification": {
     "evidence_ceiling": "仅支持所列离散不变量与均匀网格制造解收敛；不声称任意网格稳定性、精度或完整输运模拟。",
@@ -291,11 +291,14 @@
     "scope": [
      "独立检查通量守恒、线性/常数精确态、均匀网格制造扩散解收敛和 theta 时间因果性。",
      "在 2^-540 至 2^520 的共同二进制尺度下精确核对半单元通量以及正、负、零扩散系数矩阵；非均匀网格残差另由独立 Fraction 面通量计算。",
-     "当中间 h² 或 2*D 无法表示而边界系数有限时仍保留该系数；真正非有限的系数或强迫在 warn/ignore/raise 策略下均抛出 FloatingPointError。"
+     "当中间 h² 或 2*D 无法表示而边界系数有限时仍保留该系数；真正非有限的系数或强迫在 warn/ignore/raise 策略下均抛出 FloatingPointError。",
+     "从原始输入构造 Fraction，覆盖左右端、正负和零 Dirichlet 乘积，包括 h=2^540、g=2^100、D=1 时，单独系数舍入为零而完整强迫仍为 2^-979；另覆盖次正规系数、边界值和强迫，以及误差不超过 4 ulp 的非二进制整幂商控制。",
+     "Neumann 强迫在中间 D*g 溢出或下溢、完整 D*g/h 仍可表示时保留最终范围；真正非有限的矩阵或强迫在 warn/ignore/raise 策略下仍抛出 FloatingPointError。"
     ],
     "tests": [
      "tests/fvm/test_fvm.py",
-     "tests/fvm/test_diffusion_boundary_scales.py"
+     "tests/fvm/test_diffusion_boundary_scales.py",
+     "tests/fvm/test_diffusion_forcing_products.py"
     ]
    }
   },
@@ -437,7 +440,7 @@
      "units": "Q"
     }
    ],
-   "source_sha256": "4cdc89823de687873316712722f0a309c0b1913eb9aafca0c4919556b955d6fd",
+   "source_sha256": "0a11b564427572ae4d5fdbdd60ee8385078415a55e4a3a127591cd9723d61577",
    "summary": "用分别给出的旧、新线性算子推进单个通道一步。",
    "verification": {
     "evidence_ceiling": "仅支持所列离散不变量与均匀网格制造解收敛；不声称任意网格稳定性、精度或完整输运模拟。",
@@ -449,13 +452,15 @@
      "独立检查通量守恒、线性/常数精确态、均匀网格制造扩散解收敛和 theta 时间因果性。",
      "在 NumPy warn/ignore/raise 三种策略下，有限输入导致的隐式矩阵或右端项溢出抛 FloatingPointError，显式分支保留原溢出异常类型；另有两个非有限输入样本在默认策略下抛 ValueError。隐式矩阵或右端项构造失败不改变调用者的变量值。",
      "共同尺度为 2^-540、1 和 2^520，旧、新扩散项均提供且 dt 等于网格尺度时，theta=0、.25、.5、1 均保留独立两格 Dirichlet 方程 (1+2*theta)*u=2。",
-     "组装算子前校验两种边界模式枚举，覆盖无对流、仅旧层、仅新层和两层对流；所有合法模式组合在对流缺省或为零时保留相同扩散方程。"
+     "组装算子前校验两种边界模式枚举，覆盖无对流、仅旧层、仅新层和两层对流；所有合法模式组合在对流缺省或为零时保留相同扩散方程。",
+     "由原始输入构造有理数端点方程，核对两端以及全部六种合法模式组合在 theta 解中保留完整 Dirichlet 和 Neumann 强迫，覆盖无对流或零对流；不修改对流公式或模式。"
     ],
     "tests": [
      "tests/fvm/test_fvm.py",
      "tests/fvm/test_theta_failure_semantics.py",
      "tests/fvm/test_diffusion_boundary_scales.py::test_theta_downstream_retains_the_exact_dimensionless_two_cell_system",
-     "tests/fvm/test_theta_boundary_modes.py"
+     "tests/fvm/test_theta_boundary_modes.py",
+     "tests/fvm/test_diffusion_forcing_products.py::test_six_legal_modes_keep_complete_forcing_in_the_theta_solution"
     ]
    }
   },
