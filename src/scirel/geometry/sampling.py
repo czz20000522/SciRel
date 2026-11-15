@@ -729,6 +729,9 @@ def _nearest_sample_index(X, Y, x, y):
     from fractions import Fraction
 
     coordinates = [_real_coordinate_array(value) for value in (X, Y, x, y)]
+    # Use the checked scalar representation in both interval and exact paths;
+    # converting the original object could invoke a different __float__ value.
+    x, y = (data[()] for data in coordinates[2:])
 
     flat_x, flat_y = (data.ravel() for data in coordinates[:2])
     candidates = np.arange(flat_x.size)

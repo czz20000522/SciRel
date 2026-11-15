@@ -323,3 +323,27 @@ def test_vector_intervals_promote_float_samples_before_subtraction(dtype):
     for vector, scalar in zip(actual, expected):
         assert vector.dtype == np.float64
         np.testing.assert_array_equal(vector, scalar)
+
+
+@pytest.mark.parametrize("coordinate", [0, 1])
+@pytest.mark.parametrize("object_query", [False, True])
+def test_integer_subclass_query_uses_checked_scalar_in_both_paths(coordinate, object_query):
+    class IntegerQuery(int):
+        def __float__(self):
+            return 0.0
+
+    query = IntegerQuery(1)
+    assert int(query) == np.asarray(query)[()] == 1
+    assert float(query) == 0.0
+    x, y = np.zeros(2), np.zeros(2)
+    (x if coordinate == 0 else y)[1] = 1.0
+    point = [0.0, 0.0]
+    point[coordinate] = query
+    if object_query:
+        point = np.array(point, dtype=object)
+    q = np.array([10, 20], dtype=np.int16)
+    exact = locs_to_vals1D(x.astype(object), y.astype(object), q, [point])
+    assert exact == [20]
+    filtered = locs_to_vals1D(x, y, q, [point])
+    assert filtered == exact
+    assert type(filtered[0]) is np.int16
