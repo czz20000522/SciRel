@@ -99,8 +99,8 @@ def solve_loss_cone_spectrum(xi_tp, mode_count, grid_points=256, backend="trunca
         value.
     See Also
     --------
-    evaluate_plasma_dispersion
-        Maxwellian plasma dispersion function used by related wave calculations.
+    scirel.kinetic.evaluate_plasma_dispersion
+        Maxwellian plasma dispersion family with the SciPy default used by related wave calculations.
     evaluate_generalized_dispersion
         Generalized density transform for broader velocity distributions.
     Notes

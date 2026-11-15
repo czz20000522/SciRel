@@ -45,7 +45,11 @@ def _evaluate_cauchy_transform(*args, **kwargs):
 def _evaluate_plasma_dispersion(*args, **kwargs):
     from .plasma_dispersion import evaluate_plasma_dispersion
 
-    return evaluate_plasma_dispersion(*args, **kwargs)
+    try:
+        return evaluate_plasma_dispersion(*args, **kwargs)
+    except FloatingPointError as error:
+        # This consumer keeps its declared ValueError for an unrepresentable Z.
+        raise ValueError("generalized dispersion is not representable") from error
 
 
 def _evaluate_maxwellian_electrostatic(*args, **kwargs):

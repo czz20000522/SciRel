@@ -25,7 +25,11 @@ def canonical_faddeeva(z):
     """
     from scirel.kinetic.plasma_dispersion import evaluate_plasma_dispersion
 
-    return evaluate_plasma_dispersion(z)
+    try:
+        return evaluate_plasma_dispersion(z)
+    except FloatingPointError as error:
+        # Preserve the existing consumers' declared output-range failure type.
+        raise ValueError("plasma dispersion value is not representable") from error
 
 
 def collision_velocity_generator(rho, exchange, bath_drag=None):
@@ -719,7 +723,7 @@ def em1d_parallel_residual(state, omega, k, *, pm=1):
 
     See Also
     --------
-    scirel.kinetic.plasma_dispersion.evaluate_plasma_dispersion : Related contract dependency.
+    scirel.kinetic.evaluate_plasma_dispersion : Related contract dependency.
 
     Notes
     -----

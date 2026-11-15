@@ -20,22 +20,20 @@ def test_weideman_defers_scipy_until_valid_call() -> None:
             "-c",
             """
 import sys
-from scirel.kinetic import evaluate_plasma_dispersion_weideman
-from scirel.kinetic.plasma_dispersion_weideman import (
-    evaluate_plasma_dispersion_weideman as direct,
-)
+from scirel.kinetic import evaluate_plasma_dispersion
+from scirel.kinetic.plasma_dispersion import evaluate_plasma_dispersion as direct
 
-assert evaluate_plasma_dispersion_weideman is direct
+assert evaluate_plasma_dispersion is direct
 assert "scipy" not in sys.modules
 try:
-    evaluate_plasma_dispersion_weideman([])
+    evaluate_plasma_dispersion([], method="weideman")
 except ValueError as error:
-    assert str(error) == "z must be nonempty and finite"
+    assert "z" in str(error) and "scirel.kinetic.plasma-dispersion-function" in str(error)
 else:
     raise AssertionError("empty Weideman input unexpectedly succeeded")
 assert "scipy" not in sys.modules
-output = evaluate_plasma_dispersion_weideman(0j)
-assert output["method"].tolist() == "erfc"
+output = evaluate_plasma_dispersion(0j, method="weideman")
+assert set(output) == {"w", "Z"}
 assert output["w"].tolist() == 1.0 + 0.0j
 assert "scipy" in sys.modules
 """,

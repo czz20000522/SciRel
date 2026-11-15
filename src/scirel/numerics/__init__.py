@@ -21,6 +21,7 @@ if _TYPE_CHECKING:
     )
     from .linalg import compute_truncated_pseudoinverse
     from .modal_basis import ModalBasis, modal_basis, modal_projection
+    from .special import evaluate_faddeeva
 
 __all__ = [
     "NaturalCubicSpline",
@@ -36,6 +37,7 @@ __all__ = [
     "ModalBasis",
     "modal_basis",
     "modal_projection",
+    "evaluate_faddeeva",
 ]
 
 _LAZY_EXPORTS = {
@@ -55,8 +57,9 @@ _LAZY_EXPORTS = {
     "ModalBasis": ("modal_basis", "ModalBasis"),
     "modal_basis": ("modal_basis", "modal_basis"),
     "modal_projection": ("modal_basis", "modal_projection"),
+    "evaluate_faddeeva": ("special", "evaluate_faddeeva"),
 }
-_LAZY_MODULES = frozenset({"basis", "interpolate", "linalg"})
+_LAZY_MODULES = frozenset({"basis", "interpolate", "linalg", "special"})
 
 
 def __getattr__(name):

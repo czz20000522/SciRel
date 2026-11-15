@@ -40,7 +40,18 @@ def test_large_positive_imaginary_argument_remains_representable():
     assert result["Z"].imag > 0
 
 
-@pytest.mark.parametrize("bad", [[], True, [1.0, False], "1", [1 + np.nan * 1j], [np.inf], [-30j]])
-def test_invalid_or_unrepresentable_values_fail_closed(bad):
+@pytest.mark.parametrize("bad", [[], [1 + np.nan * 1j], [np.inf]])
+def test_invalid_values_fail_closed(bad):
     with pytest.raises(ValueError):
         evaluate_plasma_dispersion(bad)
+
+
+@pytest.mark.parametrize("bad", [True, [1.0, False], "1"])
+def test_wrong_input_kinds_raise_type_error(bad):
+    with pytest.raises(TypeError):
+        evaluate_plasma_dispersion(bad)
+
+
+def test_unrepresentable_result_raises_floating_point_error():
+    with pytest.raises(FloatingPointError):
+        evaluate_plasma_dispersion([-30j])

@@ -1,0 +1,132 @@
+{
+ "schema": "scirel.asset-document",
+ "aliases": [],
+ "discovery": {
+  "capability": [
+   "Tunable rational Faddeeva function",
+   "Evaluate the existing rational approximation of mathematical w directly, with default order32, explicit16 and its own w-only finite domain."
+  ],
+  "operation": [
+   "evaluate the complex error function with an explicit rational order",
+   "z, order -> w(z)"
+  ],
+  "model": "Mathematical rational approximation of exp(-z^2) erfc(-i z), without a physical normalization convention.",
+  "geometry": "Complex plane; no physical or spatial axes.",
+  "boundary": "Real axis and representable lower-plane continuation accepted; only w must fit complex128, independently of any Z scaling.",
+  "device_scope": "generic"
+ },
+ "taxonomy": [
+  "numerics",
+  "special-function"
+ ],
+ "version": {
+  "implementation_version": "0.0.0",
+  "dependencies": []
+ },
+ "failure_semantics": {
+  "invalid_input": "TypeError for masked, boolean, string or nonnumeric z and unusable order; ValueError for empty, ragged or nonfinite z after complex128 conversion.",
+  "runtime_failure": "FloatingPointError for nonfinite rational w or continuation; no Z calculation or Z-based rejection.",
+  "nonconvergence": "Fixed-order approximation; no iterative convergence claim or certified global truncation bound.",
+  "partial_results": "No partial array; one nonfinite w element fails the entire call."
+ },
+ "verification": {
+  "scope": [
+   "Default32 and explicit16 retain the original matrix sample and 80-digit equation grid. Original budgets are default32 rtol/atol5e-13; explicit16 rtol1e-6/atol3e-7 on the original SciPy grid and rtol3e-6/atol4e-7 on the 80-digit grid.",
+   "Orders16/32/64 retain reflection; 40j stabilization and large-real inputs through1.79e308 retain original budgets (large-real rtol3e-15, atol0). Invalid orders, empty input, lower-plane -40j and whole-array failures remain explicit.",
+   "Finite w at -26.625j and the mathematical scaling threshold remains successful even where the physical rational Z entry fails. Namespace/rejected inputs/non-axis rational calls stay independent of SciPy; axis stabilization imports it lazily."
+  ],
+  "tests": [
+   "tests/kinetic/test_generalized_dispersion_faddeeva_variants.py",
+   "tests/kinetic/test_generalized_dispersion_faddeeva_independent.py",
+   "tests/kinetic/test_generalized_dispersion_fft_scaling.py",
+   "tests/kinetic/test_faddeeva_import_boundary.py"
+  ],
+  "evidence_ceiling": "Only sampled arguments and orders at unchanged budgets are covered. J-pole Cauchy-integral assertions and fixed64 axis assertions do not certify this tunable kernel; no continuous-domain bound or experimental validation.",
+  "known_limitations": [
+   "Lower-plane Gaussian continuation may exceed float64.",
+   "Truncation error depends on argument and order; arbitrary positive orders do not imply uniform accuracy or bounded resource use.",
+   "The output is approximate w only; physical Z representability and caller-specific normalization are outside this mathematical function."
+  ]
+ },
+ "asset_id": "scirel.numerics.faddeeva",
+ "title": {
+  "en": "Tunable rational Faddeeva function",
+  "zh": "可调阶数的有理 Faddeeva 函数"
+ },
+ "summary": "Evaluate the existing rational approximation of mathematical w directly, with default order32, explicit16 and its own w-only finite domain.",
+ "identity": {
+  "relation": "w(z)=exp(-z^2) erfc(-i z)",
+  "definition": "Existing FFT-generated rational expansion with erfcx on the imaginary axis and the original lower-plane Gaussian reflection.",
+  "direction": "z, order -> w(z)",
+  "model": "Mathematical rational approximation of exp(-z^2) erfc(-i z), without a physical normalization convention.",
+  "geometry": "Complex plane; no physical or spatial axes.",
+  "coordinates": "Complex argument plane; array axes belong to the caller.",
+  "boundary": "Real axis and representable lower-plane continuation accepted; only w must fit complex128, independently of any Z scaling.",
+  "assumptions": [
+   "Arguments are dimensionless mathematical complex numbers; no physical normalization is inferred."
+  ]
+ },
+ "applicability": {
+  "preconditions": [
+   "Nonempty finite numeric arguments after complex128 conversion and a positive integer order or None."
+  ],
+  "supported": [
+   "Any positive integer order; None/default32 and explicit16 preserve distinct numerical budgets.",
+   "Scalar or array input, original lower-plane continuation and the w-only finite success domain."
+  ],
+  "excluded": [
+   "A global error bound, arbitrarily large order within finite resources, or experimental validation.",
+   "Physical normalization, Z range checking and arbitrary-distribution response."
+  ]
+ },
+ "inputs": [
+  {
+   "name": "z",
+   "description": "Dimensionless complex mathematical arguments, evaluated elementwise.",
+   "units": "dimensionless",
+   "shape": "scalar or any nonempty array shape",
+   "dtype": "real or complex numeric array-like",
+   "required": true,
+   "constraints": "All elements finite after complex128 conversion; masked, boolean, string, nonnumeric and empty inputs are rejected."
+  },
+  {
+   "name": "order",
+   "description": "Rational truncation order; None selects32 and explicit16 retains the lower-order approximation.",
+   "dtype": "positive integer or None",
+   "shape": "scalar",
+   "units": "count",
+   "required": false,
+   "default": null,
+   "constraints": "Any positive integer; booleans and nonintegral controls rejected. No upper cutoff or global error guarantee is imposed."
+  }
+ ],
+ "outputs": [
+  {
+   "name": "w",
+   "description": "Faddeeva approximation returned directly as an array; no order or method metadata.",
+   "dtype": "complex128 ndarray",
+   "shape": "same as z; scalar input yields a zero-dimensional array",
+   "units": "dimensionless",
+   "required": true,
+   "constraints": "Finite w only; no plasma-dispersion scaling is computed or checked."
+  }
+ ],
+ "public_api": {
+  "python": {
+   "module": "scirel.numerics.special",
+   "symbol": "evaluate_faddeeva",
+   "signature": "evaluate_faddeeva(z, *, order=None)",
+   "canonical_module": "scirel.numerics",
+   "canonical_symbol": "evaluate_faddeeva"
+  }
+ },
+ "example": {
+  "description": "Evaluate default32 and explicit16 mathematical w.",
+  "code": "import numpy as np\nfrom scirel.numerics import evaluate_faddeeva\nw = evaluate_faddeeva(0.2+0.7j)\nw16 = evaluate_faddeeva(0.2+0.7j, order=16)\nassert np.isfinite(w) and np.isfinite(w16)\n",
+  "expected": "Both bounded samples produce finite zero-dimensional arrays directly."
+ },
+ "references": [
+  "Weideman (1994), Computation of the Complex Error Function, doi:10.1137/0731077",
+  "Xie (2013), Generalized Plasma Dispersion Function, arXiv:1305.6476"
+ ]
+}

@@ -79,7 +79,7 @@ def get_z_pole_coefficients(*, j_order):
     See Also
     --------
     scirel.kinetic.get_gamma_lpole_coefficients : Bessel-Gamma L-pole tables.
-    scirel.kinetic.evaluate_plasma_dispersion : Direct Maxwellian Z evaluation.
+    scirel.kinetic.evaluate_plasma_dispersion : Maxwellian Z family with the SciPy default.
 
     Notes
     -----

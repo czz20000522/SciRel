@@ -263,10 +263,9 @@
     {
      "id": "dispersion-response-functions",
      "title": "Choosing dispersion special functions and pole representations",
-     "introduction": "Inspect the analytic plasma dispersion function, fixed-order Weideman approximations, Bessel harmonic terms, the Ronnmark response and fixed pole tables. The parameter domains, truncations and branches differ by method; do not silently substitute one when exact reproduction of a method is required.",
+     "introduction": "Select scipy, rational, fixed64 weideman or tabulated jpole for the same Maxwellian w/Z relation. Every method returns the same two quantities; approximation orders, continuation limits and evidence remain method-specific. Bessel terms, Ronnmark response and pole tables answer related questions.",
      "assets": [
       "scirel.kinetic.plasma-dispersion-function",
-      "scirel.kinetic.plasma-dispersion-weideman",
       "scirel.kinetic.bessel-gamma",
       "scirel.kinetic.ronnmark-r-function",
       "scirel.kinetic.z-pole-coefficients",
@@ -331,17 +330,6 @@
       "scirel.kinetic.gpdf-cauchy-transform",
       "scirel.kinetic.maxwellian-electrostatic-mode",
       "scirel.kinetic.maxwellian-electrostatic-solver"
-     ]
-    },
-    {
-     "id": "complex-special-function-evaluators",
-     "title": "Complex error functions and Maxwellian response",
-     "introduction": "Choose the defining integral, FFT or finite-order pole approximation for the complex plane. Finite-order poles have their own applicability domain and error; when the final scaled result is unrepresentable, the whole evaluation is rejected rather than masked by finite intermediates.",
-     "assets": [
-      "scirel.kinetic.evaluate-faddeeva-dr",
-      "scirel.kinetic.evaluate-faddeeva-gpdf",
-      "scirel.kinetic.evaluate-maxwellian-fft",
-      "scirel.kinetic.evaluate-maxwellian-jpole"
      ]
     },
     {
@@ -855,6 +843,14 @@
       "scirel.numerics.orthonormal-modal-basis",
       "scirel.numerics.modal-projection",
       "scirel.numerics.truncated-svd-inverse"
+     ]
+    },
+    {
+     "id": "complex-special-function-evaluators",
+     "title": "Tunable complex error function",
+     "introduction": "Evaluate mathematical Faddeeva w with the existing rational expansion. Default32 and explicit16 retain distinct sampled accuracy; order controls the approximation. Only w must be representable, independently of physical Z scaling.",
+     "assets": [
+      "scirel.numerics.faddeeva"
      ]
     }
    ]

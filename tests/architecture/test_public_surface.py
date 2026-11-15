@@ -190,3 +190,20 @@ def test_pressure_flux_picard_zero_green_smoke():
     )
     assert result["converged"] and result["psi"].shape == r.shape
     assert result["closure_residual"] <= 1.0e-12
+
+
+def test_faddeeva_is_owned_by_numerics_without_old_variant_exports():
+    from scirel.numerics.special import evaluate_faddeeva
+
+    assert scirel.numerics.evaluate_faddeeva is evaluate_faddeeva
+    assert "evaluate_faddeeva" in scirel.numerics.__all__
+    for name in (
+        "evaluate_faddeeva_dr",
+        "evaluate_faddeeva_gpdf",
+        "evaluate_maxwellian_fft",
+        "evaluate_maxwellian_jpole",
+        "evaluate_plasma_dispersion_weideman",
+    ):
+        assert name not in scirel.kinetic.__all__
+        assert not hasattr(scirel.kinetic, name)
+    assert isinstance(evaluate_faddeeva(0.3 + 0.2j), np.ndarray)

@@ -107,7 +107,7 @@ def evaluate_maxwellian_electrostatic(omega, k):
 
     See Also
     --------
-    scirel.kinetic.plasma_dispersion.evaluate_plasma_dispersion : Related contract dependency.
+    scirel.kinetic.evaluate_plasma_dispersion : Related contract dependency.
 
     Notes
     -----

@@ -7,7 +7,7 @@ import mpmath as mp
 import numpy as np
 import pytest
 
-from scirel.kinetic import evaluate_plasma_dispersion_weideman
+from scirel.kinetic import evaluate_plasma_dispersion
 
 
 @lru_cache(maxsize=None)
@@ -68,36 +68,32 @@ def test_representable_positive_axis_matches_independent_integral(y):
     reference = _axis_reference(y)
     with warnings.catch_warnings():
         warnings.simplefilter("error", RuntimeWarning)
-        result = evaluate_plasma_dispersion_weideman(complex(0, y))
-    assert set(result) == {"Z", "w", "method", "all_purely_imaginary"}
-    assert result["w"].shape == result["Z"].shape == result["method"].shape == ()
+        result = evaluate_plasma_dispersion(complex(0, y), method="weideman")
+    assert set(result) == {"Z", "w"}
+    assert result["w"].shape == result["Z"].shape == ()
     assert result["w"].dtype == result["Z"].dtype == np.complex128
-    assert result["method"].item() == "erfc"
-    assert result["all_purely_imaginary"] is True
     _assert_axis_values(result, reference)
 
 
 @pytest.mark.parametrize("y", [-26.0, -1.0, -0.0])
 def test_existing_nonpositive_axis_matches_original_definition(y):
     reference = _axis_reference(y)
-    result = evaluate_plasma_dispersion_weideman(complex(0, y))
+    result = evaluate_plasma_dispersion(complex(0, y), method="weideman")
     _assert_axis_values(result, reference)
 
 
-def test_all_imaginary_matrix_preserves_shape_labels_and_inputs():
+def test_all_imaginary_matrix_preserves_shape_and_inputs():
     points = np.array([[0j, 27j], [-26j, 40j]])
     original = points.copy()
     references = [_axis_reference(value.imag) for value in points.flat]
-    result = evaluate_plasma_dispersion_weideman(points)
+    result = evaluate_plasma_dispersion(points, method="weideman")
     np.testing.assert_array_equal(points, original)
-    assert result["all_purely_imaginary"] is True
-    np.testing.assert_array_equal(result["method"], np.full(points.shape, "erfc"))
     assert result["w"].shape == result["Z"].shape == points.shape
     for index, reference in zip(np.ndindex(points.shape), references, strict=True):
         _assert_axis_values({key: result[key][index] for key in ("w", "Z")}, reference)
 
 
-def test_mixed_matrix_keeps_original_complex_branch_and_axis_labels():
+def test_mixed_matrix_keeps_original_complex_branch_and_axis_values():
     points = np.array([[27j, 0.5 + 0.5j], [2 - 1j, 40j]])
     original = points.copy()
     with mp.workdps(140):
@@ -110,23 +106,22 @@ def test_mixed_matrix_keeps_original_complex_branch_and_axis_labels():
                 for z in points.flat
             ]
         ).reshape(points.shape)
-    result = evaluate_plasma_dispersion_weideman(points)
-    assert result["all_purely_imaginary"] is False
-    np.testing.assert_array_equal(result["method"], [["erfc", "rational"], ["rational", "erfc"]])
+    result = evaluate_plasma_dispersion(points, method="weideman")
     np.testing.assert_array_equal(points, original)
     np.testing.assert_allclose(result["w"], expected_w, rtol=1e-12, atol=1e-13)
     np.testing.assert_allclose(result["Z"], expected_z, rtol=1e-12, atol=1e-13)
 
 
-def test_final_z_overflow_keeps_value_error_and_existing_warning():
+def test_final_z_overflow_raises_without_redundant_warning():
     w_reference, z_reference = _axis_reference(-26.625)
     with mp.workdps(140):
         maximum = mp.mpf(float(np.finfo(float).max))
         assert 0 < w_reference < maximum < z_reference
-    # The final Z multiplication is intentionally unchanged by this repair.
-    with pytest.warns(RuntimeWarning, match="overflow|invalid"):
-        with pytest.raises(ValueError, match="finite"):
-            evaluate_plasma_dispersion_weideman(-26.625j)
+    # The expression is unchanged; the authorized interface retires the warning.
+    with warnings.catch_warnings():
+        warnings.simplefilter("error", RuntimeWarning)
+        with pytest.raises(FloatingPointError, match="finite"):
+            evaluate_plasma_dispersion(-26.625j, method="weideman")
 
 
 @pytest.mark.parametrize("y", [-27.0, -40.0])
@@ -135,12 +130,18 @@ def test_truly_unrepresentable_negative_axis_still_rejects(y):
     with mp.workdps(140):
         assert w_reference > mp.mpf(float(np.finfo(float).max))
         assert z_reference > mp.mpf(float(np.finfo(float).max))
-    with np.errstate(over="ignore", invalid="ignore"), pytest.raises(ValueError, match="finite"):
-        evaluate_plasma_dispersion_weideman(complex(0, y))
+    with (
+        np.errstate(over="ignore", invalid="ignore"),
+        pytest.raises(FloatingPointError, match="finite"),
+    ):
+        evaluate_plasma_dispersion(complex(0, y), method="weideman")
 
 
 def test_one_unrepresentable_axis_element_rejects_the_whole_mapping():
     _axis_reference(40)
     _axis_reference(-27)
-    with np.errstate(over="ignore", invalid="ignore"), pytest.raises(ValueError, match="finite"):
-        evaluate_plasma_dispersion_weideman([[40j, 0.5 + 0.5j], [-27j, 27j]])
+    with (
+        np.errstate(over="ignore", invalid="ignore"),
+        pytest.raises(FloatingPointError, match="finite"),
+    ):
+        evaluate_plasma_dispersion([[40j, 0.5 + 0.5j], [-27j, 27j]], method="weideman")

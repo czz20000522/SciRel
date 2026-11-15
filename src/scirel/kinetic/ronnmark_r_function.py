@@ -338,7 +338,7 @@ def evaluate_ronnmark_r(x, lambda_):
     --------
     scirel.kinetic.evaluate_kinetic_dispersion_ronnmark : Ronnmark
         dispersion-tensor assembly.
-    scirel.kinetic.evaluate_plasma_dispersion : Maxwellian Z function.
+    scirel.kinetic.evaluate_plasma_dispersion : Maxwellian Z family with the SciPy default.
 
     Notes
     -----
