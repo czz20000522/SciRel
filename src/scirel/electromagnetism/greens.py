@@ -42,11 +42,11 @@ def _two_product(a, b):
     return product, error
 
 
-def _product_parts(*factors, denominator=()):
+def _product_parts(*factors, denominator=(), binary_power=0):
     """Keep compensated bounded mantissas and separate binary exponents."""
     fraction = 1.0
     correction = 0.0
-    exponent = 0
+    exponent = np.asarray(binary_power, dtype=np.int64)
     for factor in factors:
         part, power = np.frexp(factor)
         product, error = _two_product(fraction, part)
@@ -75,9 +75,11 @@ def _materialize(fraction, exponent):
         ) from error
 
 
-def _scaled_product(*factors, denominator=()):
+def _scaled_product(*factors, denominator=(), binary_power=0):
     """Combine weights and geometry before rounding to a float64 response."""
-    return _materialize(*_product_parts(*factors, denominator=denominator))
+    return _materialize(
+        *_product_parts(*factors, denominator=denominator, binary_power=binary_power)
+    )
 
 
 def _sum_products(*products):
@@ -103,7 +105,39 @@ def _accumulate(total, correction, term):
     return updated, correction
 
 
-def _elliptic_values(gap, d, special):
+def _add_parts(first, second):
+    """Add lengths at a shared binary scale, before any overflow can occur."""
+    x, xp = first
+    y, yp = second
+    common = np.maximum(np.where(x != 0, xp, yp), np.where(y != 0, yp, xp))
+    value, adjustment = np.frexp(np.ldexp(x, xp - common) + np.ldexp(y, yp - common))
+    return value, common + adjustment
+
+
+def _hypot_parts(first, second):
+    """Retain a distance whose physical magnitude need not fit in float64."""
+    x, xp = first
+    y, yp = second
+    common = np.maximum(np.where(x != 0, xp, yp), np.where(y != 0, yp, xp))
+    value, adjustment = np.frexp(np.hypot(np.ldexp(x, xp - common), np.ldexp(y, yp - common)))
+    return value, common + adjustment
+
+
+def _ring_geometry(a, z0, r, z, self_mask=None):
+    """Form lengths, differences and modulus without premature materialization."""
+    plus = _add_parts(np.frexp(r), np.frexp(a))
+    height = _add_parts(np.frexp(z), np.frexp(-z0))
+    if self_mask is not None:
+        height = (np.where(self_mask, 0.5, height[0]), np.where(self_mask, 1, height[1]))
+    distance = _hypot_parts(plus, height)
+    gap = _hypot_parts(np.frexp(r - a), height)
+    modulus = _scaled_product(
+        4.0, r, a, denominator=(distance[0], distance[0]), binary_power=-2 * distance[1]
+    )
+    return distance, gap, plus, height, modulus
+
+
+def _elliptic_values(gap, distance, special):
     """Retain a positive separation even when its squared ratio underflows.
 
     For q below the smallest normal float, K(1-q)=log(4/sqrt(q))
@@ -111,24 +145,30 @@ def _elliptic_values(gap, d, special):
     binary64 rounding. Form the logarithm from lengths, not a lost q.
     """
     ellipkm1, ellipe, _ = special
-    q = (gap / d) ** 2
+    g, gp = gap
+    d, dp = distance
+    q = _scaled_product(g, g, denominator=(d, d), binary_power=2 * (gp - dp))
     tiny = q < np.finfo(float).tiny
     k_value, e_value = np.empty_like(q), np.empty_like(q)
-    k_value[tiny] = np.log(4.0) + np.log(d[tiny]) - np.log(gap[tiny])
+    k_value[tiny] = (
+        np.log(4.0) + np.log(d[tiny]) - np.log(g[tiny]) + (dp[tiny] - gp[tiny]) * np.log(2.0)
+    )
     e_value[tiny] = 1.0
     k_value[~tiny] = ellipkm1(q[~tiny])
     e_value[~tiny] = ellipe(1.0 - q[~tiny])
     return q, k_value, e_value
 
 
-def _ring_flux(radius, r, d, m, gap, weight, special):
+def _ring_flux(radius, r, distance, m, gap, weight, special):
     """Evaluate the same flux relation in scalar and blocked assemblies."""
-    a, r, d, m, gap, weight = np.broadcast_arrays(radius, r, d, m, gap, weight)
+    a, r, d, dp, m, g, gp, weight = np.broadcast_arrays(
+        radius, r, distance[0], distance[1], m, gap[0], gap[1], weight
+    )
     _, _, hyp2f1 = special
     values = np.zeros_like(m)
     small = m < 0.5
     if np.any(small):
-        aa, rr, dd, mm, ww = (x[small] for x in (a, r, d, m, weight))
+        aa, rr, dd, power, mm, ww = (x[small] for x in (a, r, d, dp, m, weight))
         values[small] = _scaled_product(
             np.pi * 1.0e-7,
             ww,
@@ -138,15 +178,17 @@ def _ring_flux(radius, r, d, m, gap, weight, special):
             rr,
             hyp2f1(1.5, 1.5, 3.0, mm),
             denominator=(dd, dd, dd),
+            binary_power=-3 * power,
         )
     if np.any(~small):
-        dd, mm, gg, ww = (x[~small] for x in (d, m, gap, weight))
-        _, k_value, e_value = _elliptic_values(gg, dd, special)
+        dd, power, mm, gg, gpower, ww = (x[~small] for x in (d, dp, m, g, gp, weight))
+        _, k_value, e_value = _elliptic_values((gg, gpower), (dd, power), special)
         values[~small] = _scaled_product(
             1.0e-7,
             ww,
             dd,
             (2.0 - mm) * k_value - 2.0 * e_value,
+            binary_power=power,
         )
     return values
 
@@ -168,19 +210,19 @@ def _one_ring_response(source, targets, special):
 
     _, _, hyp2f1 = special
     target_r = targets[:, 0]
-    separation_z = targets[:, 1] - height
     with np.errstate(over="raise", divide="raise", invalid="raise"):
-        distance = np.hypot(target_r + radius, separation_z)
-        modulus = 4.0 * (target_r / distance) * (radius / distance)
-        separation = np.hypot(target_r - radius, separation_z)
+        distance, separation, plus, separation_z, modulus = _ring_geometry(
+            radius, height, target_r, targets[:, 1]
+        )
         small = modulus < 0.5
         response = np.zeros((3, targets.shape[0]), dtype=float)
         response[0] = _ring_flux(radius, target_r, distance, modulus, separation, weight, special)
 
         if np.any(small):
             r = target_r[small]
-            h = separation_z[small]
-            d = distance[small]
+            h, hp = (x[small] for x in separation_z)
+            d, dp = (x[small] for x in distance)
+            p, pp = (x[small] for x in plus)
             m = modulus[small]
             h0 = hyp2f1(1.5, 1.5, 3.0, m)
             h1 = 0.75 * hyp2f1(2.5, 2.5, 4.0, m)
@@ -193,8 +235,9 @@ def _one_ring_response(source, targets, special):
                 h,
                 3.0 * h0 + 2.0 * m * h1,
                 denominator=(d, d, d, d, d),
+                binary_power=hp - 5 * dp,
             )
-            u = (r / d) * ((r + radius) / d)
+            u = _scaled_product(r, p, denominator=(d, d), binary_power=pp - 2 * dp)
             response[2, small] = _scaled_product(
                 np.pi * 1.0e-7,
                 weight,
@@ -202,29 +245,48 @@ def _one_ring_response(source, targets, special):
                 radius,
                 (2.0 - 3.0 * u) * h0 + m * h1 * (1.0 - 2.0 * u),
                 denominator=(d, d, d),
+                binary_power=-3 * dp,
             )
 
         if np.any(~small):
             r = target_r[~small]
-            h = separation_z[~small]
-            d = distance[~small]
-            m = modulus[~small]
-            gap = separation[~small]
-            q, k_value, e_value = _elliptic_values(gap, d, special)
+            h, hp = (x[~small] for x in separation_z)
+            d, dp = (x[~small] for x in distance)
+            gap, gp = (x[~small] for x in separation)
+            p, pp = (x[~small] for x in plus)
+            q, k_value, e_value = _elliptic_values((gap, gp), (d, dp), special)
+            ar = _scaled_product(radius, denominator=(d,), binary_power=-dp)
+            rr = _scaled_product(r, denominator=(d,), binary_power=-dp)
+            hr = _scaled_product(h, denominator=(d,), binary_power=hp - dp)
             response[1, ~small] = _scaled_product(
                 2.0e-7,
                 weight,
                 h,
                 d,
-                -q * k_value + ((radius / d) ** 2 + (r / d) ** 2 + (h / d) ** 2) * e_value,
+                -q * k_value + (ar**2 + rr**2 + hr**2) * e_value,
                 denominator=(r, gap, gap),
+                binary_power=hp + dp - 2 * gp,
             )
             response[2, ~small] = _sum_products(
-                _product_parts(2.0e-7, weight, k_value, denominator=(d,)),
+                _product_parts(2.0e-7, weight, k_value, denominator=(d,), binary_power=-dp),
                 _product_parts(
-                    2.0e-7, weight, radius - r, radius + r, e_value, denominator=(d, gap, gap)
+                    2.0e-7,
+                    weight,
+                    radius - r,
+                    p,
+                    e_value,
+                    denominator=(d, gap, gap),
+                    binary_power=pp - dp - 2 * gp,
                 ),
-                _product_parts(-2.0e-7, weight, (h / gap) ** 2, e_value, denominator=(d,)),
+                _product_parts(
+                    -2.0e-7,
+                    weight,
+                    h,
+                    h,
+                    e_value,
+                    denominator=(d, gap, gap),
+                    binary_power=2 * hp - dp - 2 * gp,
+                ),
             )
     return response
 
@@ -335,13 +397,8 @@ def _weighted_psi(rzw, rz_pts, *, zero_self=False, max_pairs=1_000_000):
             block = active[start : start + block_size]
             a = block[:, 0, None]
             z0 = block[:, 1, None]
-            h = z - z0
             self_mask = (r == a) & (z == z0) if zero_self else None
-            if zero_self:
-                h = np.where(self_mask, 1.0, h)
-            d = np.hypot(r + a, h)
-            m = 4.0 * (r / d) * (a / d)
-            gap = np.hypot(r - a, h)
+            d, gap, _, _, m = _ring_geometry(a, z0, r, z, self_mask)
             values = _ring_flux(a, r, d, m, gap, block[:, 2, None], special)
             if zero_self:
                 values[self_mask] = 0.0
