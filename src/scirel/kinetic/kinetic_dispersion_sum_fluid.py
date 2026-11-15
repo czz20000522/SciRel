@@ -92,9 +92,13 @@ def evaluate_fluid_kinetic_dispersion_sum(*, B0, qs, ms, ns0, Ts0, f, kz, kx, lm
     ValueError
         Raises ValueError for declared invalid inputs; numeric conversion errors may propagate for
         unsupported Python objects. Zero kz is rejected before numerical work; use a finite nonzero
-        kz or explicitly select the separate Ronnmark zero-kz model. Raises ValueError if the calculated
-        tensor or function value is nonfinite, or if a positive harmonic tail cannot be represented reliably or bounded within
-        the evaluation budget. No partial tail or tensor is returned.
+        kz or explicitly select the separate Ronnmark zero-kz model.
+    FloatingPointError
+        If derived scales underflow to zero where nonzero is required or become nonfinite,
+        if special-function contributions, tensors or determinant are nonfinite or
+        unrepresentable, or if a positive harmonic tail cannot be represented reliably or
+        bounded within the evaluation budget. No partial tail or tensor is returned.
+        Other unexpected backend errors propagate.
 
     See Also
     --------
@@ -126,7 +130,7 @@ def evaluate_fluid_kinetic_dispersion_sum(*, B0, qs, ms, ns0, Ts0, f, kz, kx, lm
     selected automatically. Bounded tests compare full complex K/D against independent high-precision
     finite sums; they do not prove a continuous-domain error bound or harmonic convergence. An insufficient
     lmx can give a genuinely large tensor. An exhausted tail budget or unreliable positive tail
-    raises ValueError instead of returning a partial sum or changing lmx. Root and determinant
+    raises FloatingPointError instead of returning a partial sum or changing lmx. Root and determinant
     accuracy are not established by the tensor comparisons.
 
     Examples
@@ -191,11 +195,27 @@ def evaluate_fluid_kinetic_dispersion_sum(*, B0, qs, ms, ns0, Ts0, f, kz, kx, lm
     nz = np.sqrt(_C2) * kz / omega
     bs = (kx * np.sqrt(_KB * Ts0 / ms) / wcs) ** 2
     a_s = kx * np.sqrt(_KB * Ts0 / ms) / wcs
+    if (
+        not all(np.all(np.isfinite(values)) for values in (omega, vts, wcs, wps2, nx, nz, bs, a_s))
+        or omega == 0
+        or np.any(vts <= 0)
+        or np.any(wcs == 0)
+        or np.any(wps2 <= 0)
+        or np.any(bs <= 0)
+        or np.any(a_s == 0)
+    ):
+        raise FloatingPointError("derived kinetic scales must be finite and nonzero where divided")
+    if not np.isfinite(np.square(omega)) or np.square(omega) == 0:
+        raise FloatingPointError("squared kinetic frequency is not representable")
+    if not np.all(np.isfinite(response_kz * vts)) or np.any(response_kz * vts == 0):
+        raise FloatingPointError("kinetic resonance scale is not finite and nonzero")
 
     k_tensor = np.eye(3, dtype=complex)
     for s in range(n_species):
         z0 = omega / (response_kz * vts[s])
         alpha = wps2[s] / omega**2
+        if not np.isfinite(z0) or z0 == 0 or not np.isfinite(alpha) or alpha <= 0:
+            raise FloatingPointError("kinetic response scales are not representable")
         b = bs[s]
         a = a_s[s]
         # When all |z_n|<=1, keep the small z*Z response before multiplying
@@ -207,8 +227,13 @@ def evaluate_fluid_kinetic_dispersion_sum(*, B0, qs, ms, ns0, Ts0, f, kz, kx, lm
         sum_zz = 0.0j
         for l in range(-lmx, lmx + 1):
             zn = (omega - l * wcs[s]) / (response_kz * vts[s])
+            if not np.isfinite(zn):
+                raise FloatingPointError("kinetic harmonic argument is not finite")
             gam, gamp = _gamma_and_prime(l, b)
-            zn_value = _zfun(zn)
+            try:
+                zn_value = _zfun(zn)
+            except (OverflowError, ZeroDivisionError) as error:
+                raise FloatingPointError("kinetic Z evaluation is not representable") from error
             response = zn * zn_value if direct_response else complex(_a_function(np.asarray(zn)))
             sum_xz += l * gam * response
             sum_yz += gamp * response
@@ -260,7 +285,7 @@ def evaluate_fluid_kinetic_dispersion_sum(*, B0, qs, ms, ns0, Ts0, f, kz, kx, lm
         or not np.all(np.isfinite(d_tensor))
         or not np.isfinite(determinant)
     ):
-        raise ValueError("dispersion tensor and determinant must be finite")
+        raise FloatingPointError("dispersion tensor and determinant must be finite")
     return {
         "K": k_tensor,
         "D": d_tensor,

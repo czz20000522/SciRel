@@ -380,7 +380,7 @@ def test_reference_140_180_digits_agree_before_binary64_rounding(arguments):
 
 
 def test_unrepresentable_positive_tail_fails_without_returning_a_partial_tensor():
-    with pytest.raises(ValueError, match="positive harmonic tail.*reliable precision"):
+    with pytest.raises(FloatingPointError, match="positive harmonic tail.*reliable precision"):
         evaluate_fluid_kinetic_dispersion_sum(**_case(order=400))
 
 

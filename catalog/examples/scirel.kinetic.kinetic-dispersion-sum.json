@@ -253,8 +253,8 @@
  },
  "failure_semantics": {
   "invalid_input": "Raises ValueError for nonfinite, boolean, complex or zero scalar fields where prohibited; empty/mismatched/nonfinite species vectors, zero charge, nonpositive mass/density/temperature, or lmx that is not a non-negative integer.",
-  "runtime_failure": "Raises ValueError if derived scales become nonfinite or zero where positivity is required, or if special-function contributions, tensors or determinant become nonfinite or unrepresentable. A positive harmonic tail below reliable float64 range, or one whose remainder cannot be bounded within the evaluation budget, also raises ValueError; no partial tail or tensor is returned. Other unexpected NumPy/SciPy errors propagate.",
-  "nonconvergence": "No root iteration occurs. The caller-selected finite lmx is retained. Tail evaluation requires either a well-conditioned complement or a positive sum with an omitted-tail bound; exhaustion of the internal 20000-term cost budget raises ValueError. This does not certify adequacy of the caller's harmonic cutoff.",
+  "runtime_failure": "Raises FloatingPointError if derived scales become nonfinite or zero where positivity is required, or if special-function contributions, tensors or determinant become nonfinite or unrepresentable. A positive harmonic tail below reliable float64 range, or one whose remainder cannot be bounded within the evaluation budget, also raises FloatingPointError; no partial tail or tensor is returned. Other unexpected NumPy/SciPy errors propagate.",
+  "nonconvergence": "No root iteration occurs. The caller-selected finite lmx is retained. Tail evaluation requires either a well-conditioned complement or a positive sum with an omitted-tail bound; exhaustion of the internal 20000-term cost budget raises FloatingPointError. This does not certify adequacy of the caller's harmonic cutoff.",
   "partial_results": "None; tensors and determinant are returned together only after the final finite check."
  },
  "public_api": {
@@ -286,12 +286,14 @@
   "scope": [
    "Current implementation and listed tests cover the declared ports, near-zero-kz stability without a clamp, the small-z full K/D regression, four signed f/kz large-kz real-kx cases protecting xy/yx, per-species response switching around max-|z_n|=1 including adjacent floats, finite cutoffs and mixed-representation species in either order.",
    "The example exercises one bounded representative case; it does not extend applicability beyond the declared preconditions.",
-   "Python preflight ran, but local execution covers this asset."
+   "Python preflight ran, but local execution covers this asset.",
+   "Error-channel tests distinguish invalid shape/domain/cutoff inputs from numerical scale, tensor, tail and budget failures, preserve unrelated ValueError propagation, and protect the diagnostic kx=0 partial boundary without changing scientific tolerances."
   ],
   "tests": [
    "tests/kinetic/test_kinetic_signed_kz.py",
    "tests/kinetic/test_kinetic_dispersion_sum_n.py",
-   "tests/kinetic/test_kinetic_dispersion_sum_stability.py"
+   "tests/kinetic/test_kinetic_dispersion_sum_stability.py",
+   "tests/kinetic/test_finite_harmonic_failure_policy.py"
   ],
   "evidence_ceiling": "Bounded to the declared homogeneous magnetized Maxwellian finite-N equations. Direct tests include frozen fluid-BW values, analytic Z checks and independent 90-digit full-tensor references derived from public inputs, plus a 90/120-digit large-b Kzz reference. The small-z regression and response-switch cases compare full complex K/D componentwise at |error|/max(1,|reference|)<=2e-12 against an independent 180-digit original finite sum using Bessel I and the erfc definition of Z; the regression's 140/180-digit references are checked before binary64 rounding. No production scales, A response or tail algorithm is used in that original-expression reference. These check numerical evaluation of that finite N, not experimental model accuracy, automatic harmonic convergence, determinant/root accuracy, all species mixtures or all floating-point inputs.",
   "known_limitations": [
