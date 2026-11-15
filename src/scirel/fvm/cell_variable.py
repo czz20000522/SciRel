@@ -1,6 +1,7 @@
 """Finite-volume cell values and boundary constraints for one coordinate."""
 
 from dataclasses import dataclass
+from math import frexp, ldexp
 
 import numpy as np
 
@@ -39,6 +40,51 @@ def checked(value):
     if not np.isfinite(value).all():
         raise FloatingPointError("nonfinite finite-volume result")
     return value
+
+
+def _scaled_sum(first, second):
+    """Add two (mantissa, exponent) pairs without restoring physical scales."""
+    a, ea = first
+    b, eb = second
+    if a == 0.0:
+        return second
+    if b == 0.0:
+        return first
+    exponent = max(ea, eb)
+    # Only align toward smaller magnitudes; no intermediate can overflow.
+    # Underflow here drops a term far below one ulp of the larger operand.
+    mantissa, adjustment = frexp(ldexp(a, ea - exponent) + ldexp(b, eb - exponent))
+    return mantissa, exponent + adjustment
+
+
+def _scaled_difference(left, right):
+    """Retain the scale even when a difference exceeds the float64 range."""
+    return _scaled_sum(frexp(left), frexp(-right))
+
+
+def _quadratic_face_derivative(points, samples, face):
+    """Combine both weighted secants before restoring the derivative scale."""
+    # For coordinates a,b,c relative to the face, the derivative is
+    # ((b+c)*du01/dx01 - (a+b)*du12/dx12)/(c-a).
+    # Neither the complete secants nor the dimensionless weights are stored.
+    left, middle, right = [_scaled_difference(point, face) for point in points]
+    first_weight = _scaled_sum(middle, right)
+    last_weight = _scaled_sum(left, middle)
+    last_weight = (-last_weight[0], last_weight[1])
+    span, span_exp = _scaled_difference(points[2], points[0])
+    terms = []
+    for j, (weight, weight_exp) in enumerate((first_weight, last_weight)):
+        change, change_exp = _scaled_difference(samples[j + 1], samples[j])
+        spacing, spacing_exp = _scaled_difference(points[j + 1], points[j])
+        # weight/span times change/spacing: all four nonzero mantissas
+        # have magnitude in [0.5, 1), so their products/quotient are bounded.
+        # In particular a zero weight never multiplies an infinite secant.
+        mantissa = np.divide(weight * change, span * spacing)
+        terms.append((mantissa, weight_exp + change_exp - span_exp - spacing_exp))
+    mantissa, exponent = _scaled_sum(*terms)
+    # Only the completed derivative is restored; genuinely nonfinite output
+    # still follows the caller's NumPy policy and the final checked() call.
+    return np.ldexp(mantissa, exponent)
 
 
 @dataclass(frozen=True)
@@ -110,8 +156,10 @@ class CellVariable:
     boundary values or a half-cell gradient extrapolation at the endpoints.
     ``face_grad`` uses local quadratic stencils on interior faces; the final
     interior face uses the right boundary value or gradient when present.
-    Three-point derivatives combine adjacent secant slopes with a locally
-    normalized coordinate weight, avoiding squared coordinate lengths.
+    Three-point derivatives combine weighted adjacent secants without squared
+    coordinate lengths. Weights, value differences and spacings retain binary
+    mantissas and exponents until both contributions have been added; an
+    unweighted secant need not fit in float64.
     ``grad`` is the difference of reconstructed face values divided by each
     cell width.  The returned arrays are read-only and are not volume
     averages.
@@ -212,7 +260,7 @@ class CellVariable:
 
         for index in range(1, n):
             if index < n - 1:
-                coordinates = centers[index - 1 : index + 2] - faces[index]
+                points = centers[index - 1 : index + 2]
                 samples = self.value[index - 1 : index + 2]
             elif self.right_face_constraint is None:
                 widths = self.cell_widths[-2:]
@@ -224,20 +272,10 @@ class CellVariable:
                 ) * secant + weight * self.right_face_grad_constraint
                 continue
             else:
-                coordinates = np.concatenate(
-                    (centers[-2:] - faces[index], [faces[-1] - faces[index]])
-                )
+                points = np.concatenate((centers[-2:], [faces[-1]]))
                 samples = np.concatenate((self.value[-2:], [self.right_face_constraint]))
 
-            # Differentiate the same quadratic through its adjacent secants.
-            # Only the dimensionless weight uses normalized coordinates;
-            # no coordinate products or squared physical lengths are needed.
-            coordinate_scale = np.max(np.abs(coordinates))
-            left, middle, right = coordinates / coordinate_scale
-            weight = -(left + middle) / (right - left)
-            first_slope = (samples[1] - samples[0]) / (coordinates[1] - coordinates[0])
-            last_slope = (samples[2] - samples[1]) / (coordinates[2] - coordinates[1])
-            gradients[index] = (1.0 - weight) * first_slope + weight * last_slope
+            gradients[index] = _quadratic_face_derivative(points, samples, faces[index])
 
         if two_point_mask is not None:
             mask = np.asarray(two_point_mask)
