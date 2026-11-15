@@ -89,7 +89,7 @@ def _alpha_sauter(f, nu):
 
 
 def calculate_sauter_coefficients(f_trap, nu_e_star, Z_eff, nu_i_star):
-    """Return Sauter's ``(L31, L32, L34, alpha)`` arrays on faces.
+    """Return Sauter's face coefficients as named Result fields.
 
     Parameters
     ----------
@@ -108,8 +108,21 @@ def calculate_sauter_coefficients(f_trap, nu_e_star, Z_eff, nu_i_star):
 
     Returns
     -------
-    coefficients : real numeric converted to float64, shape 4-tuple of (N+1,)
-        Tuple in exact order (L31,L32,L34,alpha), each dimensionless face array.
+    L31 : real numeric converted to float64, shape N+1
+        Field of the returned Result mapping: dimensionless density-gradient
+        fit coefficient on faces. Finite; equal explicit one-dimensional face
+        shape; no broadcasting.
+    L32 : real numeric converted to float64, shape N+1
+        Field of the returned Result mapping: dimensionless electron-temperature
+        coefficient correction on faces. Finite; equal explicit one-dimensional
+        face shape; no broadcasting.
+    L34 : real numeric converted to float64, shape N+1
+        Field of the returned Result mapping: dimensionless ion-temperature
+        coefficient on faces. Finite; equal explicit one-dimensional face
+        shape; no broadcasting.
+    alpha : real numeric converted to float64, shape N+1
+        Field of the returned Result mapping: dimensionless ion
+        temperature-gradient fit multiplier on faces.
         Finite; equal explicit one-dimensional face shape; no broadcasting.
 
     Raises
@@ -126,11 +139,18 @@ def calculate_sauter_coefficients(f_trap, nu_e_star, Z_eff, nu_i_star):
     calculate_redl_coefficients : Redl et al. (2021) refit of the same coefficients.
     calculate_bootstrap_current : Assemble the current from these coefficients.
 
+    Notes
+    -----
+    The returned ``scirel._result.Result`` mapping has fields in insertion order
+    ``L31``, ``L32``, ``L34``, ``alpha``. Use field names or attribute access;
+    iteration yields field names, not coefficient arrays. Positional tuple
+    indexing and array unpacking are not provided.
+
     Examples
     --------
     >>> from scirel.neoclassical import calculate_sauter_coefficients
-    >>> L31,L32,L34,alpha=calculate_sauter_coefficients([0.,0.],[0.,0.],[1.,1.],[0.,0.])
-    >>> assert (L31==0).all() and (L32==0).all() and (L34==0).all()
+    >>> coefficients = calculate_sauter_coefficients([0.,0.],[0.,0.],[1.,1.],[0.,0.])
+    >>> assert (coefficients.L31==0).all() and (coefficients.L32==0).all() and (coefficients.L34==0).all()
     """
     f, nue, z = _common(f_trap, nu_e_star, Z_eff)
     nui = _face("nu_i_star", nu_i_star)
@@ -168,7 +188,7 @@ def calculate_sauter_coefficients(f_trap, nu_e_star, Z_eff, nu_i_star):
     result = (l31, l32, l34, _alpha_sauter(f, nui))
     if not all(np.all(np.isfinite(value)) for value in result):
         raise FloatingPointError("Sauter coefficients are not finite for the supplied faces")
-    return result
+    return Result(L31=result[0], L32=result[1], L34=result[2], alpha=result[3])
 
 
 def _alpha_redl(f, nu, z):
@@ -180,7 +200,7 @@ def _alpha_redl(f, nu, z):
 
 
 def calculate_redl_coefficients(f_trap, nu_e_star, Z_eff, nu_i_star):
-    """Return Redl's ``(L31, L32, L34, alpha)`` arrays on faces.
+    """Return Redl's face coefficients as named Result fields.
 
     Parameters
     ----------
@@ -199,8 +219,21 @@ def calculate_redl_coefficients(f_trap, nu_e_star, Z_eff, nu_i_star):
 
     Returns
     -------
-    coefficients : real numeric converted to float64, shape 4-tuple of (N+1,)
-        Tuple in exact order (L31,L32,L34,alpha), each dimensionless face array.
+    L31 : real numeric converted to float64, shape N+1
+        Field of the returned Result mapping: dimensionless density-gradient
+        fit coefficient on faces. Finite; equal explicit one-dimensional face
+        shape; no broadcasting.
+    L32 : real numeric converted to float64, shape N+1
+        Field of the returned Result mapping: dimensionless electron-temperature
+        coefficient correction on faces. Finite; equal explicit one-dimensional
+        face shape; no broadcasting.
+    L34 : real numeric converted to float64, shape N+1
+        Field of the returned Result mapping: dimensionless ion-temperature
+        coefficient on faces, equal to L31. Finite; equal explicit
+        one-dimensional face shape; no broadcasting.
+    alpha : real numeric converted to float64, shape N+1
+        Field of the returned Result mapping: dimensionless ion
+        temperature-gradient fit multiplier on faces.
         Finite; equal explicit one-dimensional face shape; no broadcasting.
 
     Raises
@@ -217,11 +250,18 @@ def calculate_redl_coefficients(f_trap, nu_e_star, Z_eff, nu_i_star):
     calculate_sauter_coefficients : Sauter et al. (1999) coefficients.
     calculate_bootstrap_current : Assemble the current from these coefficients.
 
+    Notes
+    -----
+    The returned ``scirel._result.Result`` mapping has fields in insertion order
+    ``L31``, ``L32``, ``L34``, ``alpha``. Use field names or attribute access;
+    iteration yields field names, not coefficient arrays. Positional tuple
+    indexing and array unpacking are not provided.
+
     Examples
     --------
     >>> from scirel.neoclassical import calculate_redl_coefficients
-    >>> L31,L32,L34,alpha=calculate_redl_coefficients([0.,0.],[0.,0.],[1.,1.],[0.,0.])
-    >>> assert (L31==0).all() and (L32==0).all() and (L34==0).all()
+    >>> coefficients = calculate_redl_coefficients([0.,0.],[0.,0.],[1.,1.],[0.,0.])
+    >>> assert (coefficients.L31==0).all() and (coefficients.L32==0).all() and (coefficients.L34==0).all()
     """
     f, nue, z = _common(f_trap, nu_e_star, Z_eff)
     nui = _face("nu_i_star", nu_i_star)
@@ -269,7 +309,7 @@ def calculate_redl_coefficients(f_trap, nu_e_star, Z_eff, nu_i_star):
     result = (l31, l32, l31.copy(), _alpha_redl(f, nui, z))
     if not all(np.all(np.isfinite(value)) for value in result):
         raise FloatingPointError("Redl coefficients are not finite for the supplied faces")
-    return result
+    return Result(L31=result[0], L32=result[1], L34=result[2], alpha=result[3])
 
 
 def calculate_bootstrap_current(

@@ -9,17 +9,15 @@ from scirel.neoclassical.bootstrap import (
 
 
 def test_sauter_alpha_finite_large_collisionality():
-    l31, l32, l34, alpha = calculate_sauter_coefficients(
-        [0.5, 0.5], [1.0, 1.0], [2.0, 2.0], [1e300, 1e300]
-    )
+    coefficients = calculate_sauter_coefficients([0.5, 0.5], [1.0, 1.0], [2.0, 2.0], [1e300, 1e300])
+    alpha = coefficients.alpha
     assert np.isfinite(alpha[0])
     np.testing.assert_allclose(alpha, [2.1, 2.1], rtol=0, atol=1e-14)
 
 
 def test_redl_alpha_and_l34_caller_convention():
-    l31, l32, l34, alpha = calculate_redl_coefficients(
-        [0.4, 0.4], [0.2, 0.2], [2.0, 2.0], [1e200, 1e200]
-    )
+    coefficients = calculate_redl_coefficients([0.4, 0.4], [0.2, 0.2], [2.0, 2.0], [1e200, 1e200])
+    l31, l34, alpha = coefficients.L31, coefficients.L34, coefficients.alpha
     np.testing.assert_array_equal(l34, l31)
     np.testing.assert_allclose(alpha, [-0.5, -0.5], rtol=0, atol=1e-14)
 
@@ -35,7 +33,7 @@ def test_coefficients_match_source_for_ordinary_case():
     y = nui**2 * f**6
     expected = (a0 + 0.25 * (1 - f * f) * t) / (1 + 0.5 * t)
     expected = (expected + 0.315 * y) / (1 + 0.15 * y)
-    np.testing.assert_allclose(got[3], expected, rtol=2e-15, atol=1e-15)
+    np.testing.assert_allclose(got.alpha, expected, rtol=2e-15, atol=1e-15)
 
 
 def test_current_axis_sign_and_midpoint():
@@ -82,7 +80,7 @@ def test_current_requires_nonzero_interior_flux_gradient():
 
 
 def test_alpha_binary_exponent_cancellation():
-    sa = calculate_sauter_coefficients([1e-100] * 2, [1.0] * 2, [2.0] * 2, [1e300] * 2)[3]
+    sa = calculate_sauter_coefficients([1e-100] * 2, [1.0] * 2, [2.0] * 2, [1e300] * 2).alpha
     # Exact decimal relation y=nu_i^2*f^6=1; B tends to .5.
     np.testing.assert_allclose(sa, (0.5 + 0.315) / (1 + 0.15), rtol=2e-14, atol=3e-15)
 

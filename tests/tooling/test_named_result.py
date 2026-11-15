@@ -1390,9 +1390,8 @@ def test_mirror_failures_match_baseline_type_and_message(name, call, exception_t
     assert str(error.value) == message
 
 
-# Baseline checks for the one plain-dict neoclassical return migrated in #2.
-# The coefficient fits intentionally remain tuples under the unchanged public
-# contract, so these cases distinguish the migrated mapping from bare returns.
+# These baseline arrays pin numerical behaviour across the named-result
+# migration; they do not independently validate the empirical fits.
 _NEOCLASSICAL_F = np.array([0.2, 0.5])
 _NEOCLASSICAL_NU_E = np.array([0.01, 10.0])
 _NEOCLASSICAL_Z = np.array([1.5, 2.0])
@@ -1432,13 +1431,13 @@ _NEOCLASSICAL_CASES = {
             _NEOCLASSICAL_Z,
             _NEOCLASSICAL_NU_I,
         ),
-        tuple,
-        (
-            np.array([0.25917819213065246, 0.13392807216870214]),
-            np.array([-0.11574116188410322, 0.0702213976355152]),
-            np.array([0.2591068046093363, 0.1202184934201009]),
-            np.array([-0.870010942879218, -0.22957797344199568]),
-        ),
+        Result,
+        {
+            "L31": np.array([0.25917819213065246, 0.13392807216870214]),
+            "L32": np.array([-0.11574116188410322, 0.0702213976355152]),
+            "L34": np.array([0.2591068046093363, 0.1202184934201009]),
+            "alpha": np.array([-0.870010942879218, -0.22957797344199568]),
+        },
     ),
     "calculate_redl_coefficients": (
         lambda: neoclassical.calculate_redl_coefficients(
@@ -1447,13 +1446,13 @@ _NEOCLASSICAL_CASES = {
             _NEOCLASSICAL_Z,
             _NEOCLASSICAL_NU_I,
         ),
-        tuple,
-        (
-            np.array([0.21296571828116218, 0.07440042135914428]),
-            np.array([-0.10833728380262302, 0.09740318582888735]),
-            np.array([0.21296571828116218, 0.07440042135914428]),
-            np.array([-0.7951882184432387, 0.6440950155435712]),
-        ),
+        Result,
+        {
+            "L31": np.array([0.21296571828116218, 0.07440042135914428]),
+            "L32": np.array([-0.10833728380262302, 0.09740318582888735]),
+            "L34": np.array([0.21296571828116218, 0.07440042135914428]),
+            "alpha": np.array([-0.7951882184432387, 0.6440950155435712]),
+        },
     ),
     "calculate_bootstrap_current": (
         _neoclassical_current_call,
@@ -1465,11 +1464,12 @@ _NEOCLASSICAL_CASES = {
     ),
 }
 
-_NEOCLASSICAL_MIGRATED = {"calculate_bootstrap_current"}
-_NEOCLASSICAL_BARE_RETURN_CASES = {
+_NEOCLASSICAL_MIGRATED = {
+    "calculate_bootstrap_current",
     "calculate_sauter_coefficients",
     "calculate_redl_coefficients",
 }
+_NEOCLASSICAL_BARE_RETURN_CASES = set()
 
 _NEOCLASSICAL_FAILURE_CASES = [
     (
@@ -1517,11 +1517,30 @@ def test_neoclassical_results_preserve_baseline_values_and_return_types(name):
     if expected_type is Result:
         assert isinstance(result, dict)
         assert list(result) == list(expected)
-        _assert_mapping_values_equal(result, expected, root=True)
+        if name == "calculate_bootstrap_current":
+            _assert_mapping_values_equal(result, expected, root=True)
+        else:
+            for key, expected_value in expected.items():
+                _assert_value_equal(result[key], expected_value)
         for key in expected:
             assert getattr(result, key) is result[key]
     else:
         _assert_value_equal(result, expected)
+
+
+@pytest.mark.parametrize("name", ["calculate_sauter_coefficients", "calculate_redl_coefficients"])
+def test_bootstrap_coefficient_results_have_named_fields_without_positional_lookup(name):
+    result = _NEOCLASSICAL_CASES[name][0]()
+    assert type(result) is Result
+    assert list(result) == ["L31", "L32", "L34", "alpha"]
+    for key in result:
+        assert getattr(result, key) is result[key]
+        assert result[key].shape == _NEOCLASSICAL_F.shape
+        assert result[key].dtype == np.float64
+    with pytest.raises(KeyError):
+        result[0]
+    # Iteration follows the existing mapping protocol; it does not unpack arrays.
+    assert all(isinstance(key, str) for key in result)
 
 
 def test_neoclassical_failure_cases_cover_every_public_callable():

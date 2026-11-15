@@ -735,7 +735,8 @@
    },
    "asset_id": "scirel.neoclassical.redl-bootstrap-coefficients",
    "assumptions": [
-    "输入转为 binary64 后须有限；调用者提供一致单位和归一化。"
+    "输入转为 binary64 后须有限；调用者提供一致单位和归一化。",
+    "Result 映射的字段插入顺序为 L31、L32、L34、alpha；使用字段名或属性访问，不提供原 tuple 下标或数组解包兼容。"
    ],
    "boundary": "无额外边界条件：系数只由各面的 f_trap、nu_e_star、Z_eff 和 nu_i_star 决定；本入口不组装电流，也没有磁轴面置零步骤。",
    "definition": "作为对照，Sauter 的 L31/L34 使用各自有效俘获份额和四次多项式，L32 由电子-电子与电子-离子有理多项式相加；本函数返回 Redl 的修订拟合，其中 L34=L31。alpha=(B+a*y)/(1+c*y)，y=nu_i_star^2*f_trap^6；Sauter 的 (a,c)=(.315,.15)，Redl 为 (-.002,.004)，B 随模型变化。二进制指数缩放选择 y 或 1/y，避免平方溢出和对数相消。",
@@ -786,16 +787,40 @@
    "model": "有明确适用边界的轴对称托卡马克经验拟合。",
    "outputs": [
     {
-     "name": "coefficients",
-     "description": "按 (L31,L32,L34,alpha) 排列的四个无量纲面数组",
+     "name": "L31",
+     "description": "Result 映射字段：密度梯度拟合系数的无量纲面数组",
      "constraints": "有限、显式、一维，面形状须匹配，不广播。",
      "dtype": "实数数值，转换为 float64",
-     "shape": "长度为 N+1 的四个数组",
+     "shape": "N+1",
+     "units": "无量纲"
+    },
+    {
+     "name": "L32",
+     "description": "Result 映射字段：电子温度系数修正的无量纲面数组",
+     "constraints": "有限、显式、一维，面形状须匹配，不广播。",
+     "dtype": "实数数值，转换为 float64",
+     "shape": "N+1",
+     "units": "无量纲"
+    },
+    {
+     "name": "L34",
+     "description": "Result 映射字段：离子温度系数的无量纲面数组，等于 L31",
+     "constraints": "有限、显式、一维，面形状须匹配，不广播。",
+     "dtype": "实数数值，转换为 float64",
+     "shape": "N+1",
+     "units": "无量纲"
+    },
+    {
+     "name": "alpha",
+     "description": "Result 映射字段：离子温度梯度拟合乘子的无量纲面数组",
+     "constraints": "有限、显式、一维，面形状须匹配，不广播。",
+     "dtype": "实数数值，转换为 float64",
+     "shape": "N+1",
      "units": "无量纲"
     }
    ],
-   "source_sha256": "007020d6cb2db8a27b374f133eeabe57f9479f419181ea67f6b8f894989a52ea",
-   "summary": "由显式面碰撞度计算 Redl 无量纲自举电流拟合系数。",
+   "source_sha256": "7fc464e8da1ea4d908f7c750e9cef758542f0fbd4a3ca450f2d447540a7e36c7",
+   "summary": "由显式面碰撞度计算 Redl 无量纲自举电流拟合系数，以具名 Result 字段返回。",
    "verification": {
     "evidence_ceiling": "仅证明拟合代数与有限算术，不构成经验模型的全面物理资格。",
     "known_limitations": [
@@ -804,7 +829,7 @@
      "UNKNOWN：历史独立 Decimal 拟合检查尚未逐资产绑定输入、精度、参考值与断言。binary64 基线数组以及注释中的精确十进制极限，不证明每个系数或电流驱动项都经过 Decimal 验证。"
     ],
     "scope": [
-     "test_bootstrap.py 覆盖 Redl alpha 的大碰撞度极限及精确 L34=L31；精确选定的 test_named_result.py 用例另核对普通输入下四个系数的基线数组与 tuple 返回类型。"
+     "test_bootstrap.py 覆盖 Redl alpha 的大碰撞度极限及精确 L34=L31；精确选定的 test_named_result.py 用例另核对普通输入下四个系数的基线数组、Result 类型、字段顺序与属性访问。"
     ],
     "tests": [
      "tests/tooling/test_bootstrap.py",
@@ -827,7 +852,8 @@
    },
    "asset_id": "scirel.neoclassical.sauter-bootstrap-coefficients",
    "assumptions": [
-    "输入转为 binary64 后须有限；调用者提供一致单位和归一化。"
+    "输入转为 binary64 后须有限；调用者提供一致单位和归一化。",
+    "Result 映射的字段插入顺序为 L31、L32、L34、alpha；使用字段名或属性访问，不提供原 tuple 下标或数组解包兼容。"
    ],
    "boundary": "无额外边界条件：系数只由各面的 f_trap、nu_e_star、Z_eff 和 nu_i_star 决定；本入口不组装电流，也没有磁轴面置零步骤。",
    "definition": "Sauter 的 L31/L34 使用各自有效俘获份额和四次多项式，L32 由电子-电子与电子-离子有理多项式相加；作为对照，Redl 使用其修订拟合且 L34=L31。alpha=(B+a*y)/(1+c*y)，y=nu_i_star^2*f_trap^6；Sauter 的 (a,c)=(.315,.15)，Redl 为 (-.002,.004)，B 随模型变化。二进制指数缩放选择 y 或 1/y，避免平方溢出和对数相消。",
@@ -878,16 +904,40 @@
    "model": "有明确适用边界的轴对称托卡马克经验拟合。",
    "outputs": [
     {
-     "name": "coefficients",
-     "description": "按 (L31,L32,L34,alpha) 排列的四个无量纲面数组",
+     "name": "L31",
+     "description": "Result 映射字段：密度梯度拟合系数的无量纲面数组",
      "constraints": "有限、显式、一维，面形状须匹配，不广播。",
      "dtype": "实数数值，转换为 float64",
-     "shape": "长度为 N+1 的四个数组",
+     "shape": "N+1",
+     "units": "无量纲"
+    },
+    {
+     "name": "L32",
+     "description": "Result 映射字段：电子温度系数修正的无量纲面数组",
+     "constraints": "有限、显式、一维，面形状须匹配，不广播。",
+     "dtype": "实数数值，转换为 float64",
+     "shape": "N+1",
+     "units": "无量纲"
+    },
+    {
+     "name": "L34",
+     "description": "Result 映射字段：离子温度系数的无量纲面数组",
+     "constraints": "有限、显式、一维，面形状须匹配，不广播。",
+     "dtype": "实数数值，转换为 float64",
+     "shape": "N+1",
+     "units": "无量纲"
+    },
+    {
+     "name": "alpha",
+     "description": "Result 映射字段：离子温度梯度拟合乘子的无量纲面数组",
+     "constraints": "有限、显式、一维，面形状须匹配，不广播。",
+     "dtype": "实数数值，转换为 float64",
+     "shape": "N+1",
      "units": "无量纲"
     }
    ],
-   "source_sha256": "2f4636592024461a89e012f354204218af10bd2251e724d5628558522d28e961",
-   "summary": "由显式面碰撞度计算 Sauter 无量纲自举电流拟合系数。",
+   "source_sha256": "5a2d92bc37ef57316bb4500b63bc52454216fcbef92b76c7812aa627ced96ed3",
+   "summary": "由显式面碰撞度计算 Sauter 无量纲自举电流拟合系数，以具名 Result 字段返回。",
    "verification": {
     "evidence_ceiling": "仅证明拟合代数与有限算术，不构成经验模型的全面物理资格。",
     "known_limitations": [
@@ -896,7 +946,7 @@
      "UNKNOWN：历史独立 Decimal 拟合检查尚未逐资产绑定输入、精度、参考值与断言。binary64 基线数组以及注释中的精确十进制极限，不证明每个系数或电流驱动项都经过 Decimal 验证。"
     ],
     "scope": [
-     "test_bootstrap.py 覆盖 Sauter alpha 的大碰撞度极限、普通 alpha 的 binary64 表达式及指数抵消见证；精确选定的 test_named_result.py 用例另核对普通输入下四个系数的基线数组与 tuple 返回类型。"
+     "test_bootstrap.py 覆盖 Sauter alpha 的大碰撞度极限、普通 alpha 的 binary64 表达式及指数抵消见证；精确选定的 test_named_result.py 用例另核对普通输入下四个系数的基线数组、Result 类型、字段顺序与属性访问。"
     ],
     "tests": [
      "tests/tooling/test_bootstrap.py",
