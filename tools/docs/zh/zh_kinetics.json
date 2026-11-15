@@ -3909,7 +3909,7 @@
   },
   {
    "asset_id": "scirel.diagnostics.observation-residuals",
-   "source_sha256": "8cbcf0dbbccb4647da8631aba078159b97886cafb0da3c70947dc7a38846a3cf",
+   "source_sha256": "95e5fe2531f69a686735f7ebec5cd6a7a0ab3c6beaf01f6ca89caded9ad582c9",
    "summary": "对预先声明的每个观测通道计算固定顺序、固定维数的归一化残差；缺预测或单位不符均拒绝。 以 scirel._result.Result 映射返回残差向量与 chi2。",
    "definition": "首先验证观测布局，依次取 flux_loops、thomson.density、electron_temperature、p_parallel、p_perp。每个请求通道均要求预测与 values 精确同形；计算 (prediction-values)/sigma，按 NumPy C 顺序展平拼接，chi2=r·r。sigma 默认 1，可广播；绝不跳过缺少预测的通道。 residual_vector 与 chi2 作为 scirel._result.Result 映射返回；按键和属性读取同一个值。",
    "model": "对角 sigma 加权最小二乘，无协方差、自由度校正或仪器模型",
@@ -3917,7 +3917,7 @@
    "assumptions": [
     "数值与 sigma 具有相同单位、相同采样对应关系。",
     "未声明 unit 的记录仍可用于纯归一化代数；不由此获得物理单位匹配证明。",
-    "普通有限运算保持原 float64 路径。归一化中间量非有限时，按完整二进制有理数减除关系重新求值。平方和处于表示范围边界时，先累加返回残差各项的完整平方、再最终舍入；正总量低于 float64 舍入阈值时仍可能舍为零。"
+    "每个原始输入的完整二进制有理数减除关系只在最终舍入为 float64，不单独舍入减法。chi2 对这些返回的 float64 残差项累加完整平方、再最终舍入一次；计算不依赖样本数或已舍入总量阈值。正结果低于最终 float64 舍入阈值时仍可能舍为零。"
    ],
    "inputs": [
     {
@@ -3962,7 +3962,7 @@
    },
    "failure_semantics": {
     "invalid_input": "空或未知观测、缺预测、空值、非有限值、形状错误、非正 sigma、显式单位不一致抛 ValueError。",
-    "runtime_failure": "最终归一化残差或平方和确实溢出时抛 ValueError。归一化中间范围丢失及平方和范围边界在最终舍入前重新求值；不删去失败通道。",
+    "runtime_failure": "最终归一化残差或平方和确实溢出时抛 ValueError。每个归一化减除关系和完整平方和都在最终舍入前求值；不删去失败通道或贡献。",
     "nonconvergence": "无迭代；前向有效性由 trial 层单独判定。",
     "partial_results": "不返回删掉错误通道后的部分 scirel._result.Result 映射。"
    },
@@ -3973,7 +3973,8 @@
      "固定维数 trial 与真实前向反演组合。",
      "Result 包装保持两个键、键顺序、残差向量数值/形状/dtype、chi2 与映射访问（基线 0f74255b）；属性读取到同一字段。",
      "原始输入 Fraction 参照使用固定 rtol=1e-13、atol=0，覆盖 prediction=2^1023、observation=-2^1023、sigma=2^1023 时可恢复的减除关系，以及残差为 2^-538 的四项平方和，并覆盖相邻尺度、符号、抵消和最终次正规舍入控制。",
-     "直接控制保留通道及 C 顺序、标量与数组形状、sigma 广播、声明单位严格匹配、输入不变、Result 访问和真正最终溢出拒绝；仅为有界代数检查，不是统计显著性或全域验证。"
+     "直接控制保留通道及 C 顺序、标量与数组形状、sigma 广播、声明单位严格匹配、输入不变、Result 访问和真正最终溢出拒绝；仅为有界代数检查，不是统计显著性或全域验证。",
+     "原始输入回归分别核有限次正规残差的舍入，以及各平方为次正规或不可单独表示但完整和为正规数的情形；包括混合微小尾项和重复非二次幂残差，不用最终总量或样本数特例定义算术。"
     ],
     "evidence_ceiling": "作者在指定环境中完成了回归、独立解析、独立离散参考比较，以及精选 wheel 的用户调用；仅支持所列合同与算例。根级独立接收、人工科学认可、再分发许可和公开发行分别决定，不据此扩张为任意闭合、装置或全局可辨识性证明。",
     "known_limitations": [

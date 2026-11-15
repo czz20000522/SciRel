@@ -16,8 +16,12 @@ def _exact_normalized_difference(prediction, observation, sigma):
     takes place only after sigma has entered the denominator. A genuinely
     overflowing final ratio raises OverflowError for the caller to label.
     """
-    pn, pd = float(prediction).as_integer_ratio()
-    on, od = float(observation).as_integer_ratio()
+    prediction, observation = float(prediction), float(observation)
+    if prediction == observation:
+        # Equal finite operands subtract safely; retain IEEE signed-zero rules.
+        return prediction - observation
+    pn, pd = prediction.as_integer_ratio()
+    on, od = observation.as_integer_ratio()
     sn, sd = float(sigma).as_integer_ratio()
     return ((pn * od - on * pd) * sd) / (pd * od * sn)
 
@@ -28,7 +32,7 @@ def _exact_squared_sum(vector):
     Each denominator is a power of two. Align the squared integer numerators
     at a common binary exponent, including terms smaller than the minimum
     subnormal, then convert the full sum to float in one division. No term is
-    squared or summed in floating point on this range-boundary path.
+    squared or summed in floating point.
     """
     total = 0
     denominator_bits = 0
@@ -149,17 +153,18 @@ def reduce_observation_residuals(*, predicted, observations):
     ``chi2`` is an algebraic diagonal-weight sum, not by itself a statistical
     significance result.
 
-    Ordinary finite arithmetic retains the existing float64 path. A
-    nonfinite intermediate normalization is recomputed from the complete
-    binary-rational difference divided by sigma, then rounded once. Near the
-    squared-sum range boundaries (below the minimum normal float64 value or
-    above half the maximum finite value, including nonfinite intermediates),
-    complete squares of the returned residual entries are accumulated as
-    binary integers before one final rounding. Thus individually
-    unrepresentable squares may have a representable sum. A genuinely
+    Each normalized residual is evaluated from the complete binary-rational
+    difference divided by sigma, then rounded once to float64. The subtraction
+    is not rounded separately, including when its ordinary result would be
+    finite. The complete squares of those returned float64 residual entries
+    are accumulated as binary integers before one final rounding of chi2.
+    Thus individually unrepresentable square contributions can be retained
+    even when their total is a normal value. No decision about preserving a
+    contribution depends on a rounded partial or total sum. A genuinely
     overflowing final normalized residual or squared sum raises ValueError;
-    a positive squared sum below the rounding threshold may still round to
-    zero. These are arithmetic range protections, not statistical tolerances.
+    a positive result below the final rounding threshold may still round to
+    zero. These are arithmetic rules, not statistical tolerances. Computing
+    chi2 from the returned vector is distinct from squaring unrounded ratios.
 
     Examples
     --------
@@ -196,29 +201,22 @@ def reduce_observation_residuals(*, predicted, observations):
                 actual_unit = actual_unit.get(key) if isinstance(actual_unit, Mapping) else None
             if actual_unit != unit:
                 raise ValueError(f"{label} prediction unit must match observation unit {unit!r}")
-        with np.errstate(over="ignore", invalid="ignore", divide="ignore"):
-            normalized = (values - observed) / sigma
-        if not np.all(np.isfinite(normalized)):
-            normalized = np.array(normalized, dtype=float, copy=True)
-            for index in np.flatnonzero(~np.isfinite(normalized)):
-                try:
-                    normalized.flat[index] = _exact_normalized_difference(
-                        values.flat[index], observed.flat[index], sigma.flat[index]
-                    )
-                except OverflowError as exc:
-                    raise ValueError(f"{label} normalized residual must be finite") from exc
+        normalized = np.empty_like(values)
+        for index in range(values.size):
+            try:
+                normalized.flat[index] = _exact_normalized_difference(
+                    values.flat[index], observed.flat[index], sigma.flat[index]
+                )
+            except OverflowError as exc:
+                raise ValueError(f"{label} normalized residual must be finite") from exc
         if not np.all(np.isfinite(normalized)):
             raise ValueError(f"{label} normalized residual must be finite")
         residuals.append(normalized.ravel())
     vector = np.concatenate(residuals)
-    with np.errstate(over="ignore"):
-        chi2 = float(vector @ vector)
-    limits = np.finfo(float)
-    if not np.isfinite(chi2) or chi2 < limits.tiny or chi2 > limits.max / 2.0:
-        try:
-            chi2 = _exact_squared_sum(vector)
-        except OverflowError as exc:
-            raise ValueError("chi2 must be finite") from exc
+    try:
+        chi2 = _exact_squared_sum(vector)
+    except OverflowError as exc:
+        raise ValueError("chi2 must be finite") from exc
     if not np.isfinite(chi2):
         raise ValueError("chi2 must be finite")
     return Result(residual_vector=vector, chi2=chi2)

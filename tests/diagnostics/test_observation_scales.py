@@ -238,3 +238,71 @@ def test_large_scale_does_not_relax_unit_or_exact_shape_matching():
                 "thomson": {"density": {"values": [0.0]}},
             },
         )
+
+
+@pytest.mark.parametrize("head_factor", [1.0, 2.0, 1.0 + 2.0**-10])
+@pytest.mark.parametrize("count", [1024, 4096, 8192])
+def test_complete_normal_squared_sum_retains_individually_unrepresentable_tail(head_factor, count):
+    prediction = [head_factor * 2.0**-511] + [2.0**-538] * count
+    exact = _fraction(prediction[0]) ** 2 + count * Fraction(1, 2**1076)
+    expected_chi2 = float(exact)
+    assert expected_chi2 >= np.finfo(float).tiny
+    result = _call(prediction, [0.0] * len(prediction))
+    np.testing.assert_array_equal(result.residual_vector, prediction)
+    _close(result.chi2, expected_chi2)
+
+
+@pytest.mark.parametrize("sign", [-1.0, 1.0])
+@pytest.mark.parametrize("observation_step", [-1, 0, 1])
+def test_finite_normalized_difference_is_rounded_only_after_complete_division(
+    sign, observation_step
+):
+    predecessor = np.nextafter(2.0**-52, 0.0)
+    if observation_step == -1:
+        magnitude = np.nextafter(predecessor, 0.0)
+    elif observation_step == 1:
+        magnitude = 2.0**-52
+    else:
+        magnitude = predecessor
+    prediction, observation, sigma = sign * 2.0**-51, -sign * magnitude, 2.0**1023
+    exact = (_fraction(prediction) - _fraction(observation)) / _fraction(sigma)
+    expected = float(exact)
+    if observation_step == 0:
+        assert abs(expected) == float.fromhex("0x0.0000000000001p-1022")
+    result = _call(prediction, observation, sigma)
+    np.testing.assert_array_equal(result.residual_vector, [expected])
+    # The public vector and its squared sum are separate obligations: chi2
+    # legitimately rounds to zero here, even when the vector was wrong.
+    assert result.chi2 == float(_fraction(expected) ** 2) == 0.0
+
+
+@pytest.mark.parametrize("sign", [-1.0, 1.0])
+@pytest.mark.parametrize("count", [1024, 4096, 8192])
+def test_complete_normal_sum_retains_low_bits_of_subnormal_products(sign, count):
+    residual = sign * (1.0 + 2.0**-21) * 2.0**-517
+    exact = count * _fraction(residual) ** 2
+    expected_chi2 = float(exact)
+    if count == 4096:
+        assert expected_chi2 == float.fromhex("0x1.0000100000400p-1022")
+    result = _call([residual] * count, [0.0] * count)
+    np.testing.assert_array_equal(result.residual_vector, [residual] * count)
+    _close(result.chi2, expected_chi2)
+
+
+def test_exact_zero_difference_keeps_the_existing_ieee_zero_signs():
+    prediction = np.array([-0.0, -0.0, 0.0, 0.0])
+    observation = np.array([0.0, -0.0, 0.0, -0.0])
+    expected_signs = np.signbit(prediction - observation)
+    result = _call(prediction, observation)
+    np.testing.assert_array_equal(np.signbit(result.residual_vector), expected_signs)
+    assert result.chi2 == 0.0
+
+
+def test_chi2_squares_the_returned_rounded_vector_not_the_unrounded_ratio():
+    exact_ratio = Fraction(1, 10)
+    expected_residual = float(exact_ratio)
+    expected_chi2 = float(_fraction(expected_residual) ** 2)
+    assert expected_chi2 != float(exact_ratio**2)
+    result = _call(1.0, 0.0, 10.0)
+    np.testing.assert_array_equal(result.residual_vector, [expected_residual])
+    assert result.chi2 == expected_chi2
