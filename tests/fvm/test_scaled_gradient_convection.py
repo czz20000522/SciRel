@@ -275,3 +275,148 @@ def test_genuinely_nonrepresentable_derivative_and_operator_raise(policy):
             var.face_grad()
         with pytest.raises(FloatingPointError):
             make_convection_terms([ldexp(1.0, 600)] * 3, [0.0] * 3, var)
+
+
+@pytest.mark.parametrize("policy", ("warn", "ignore", "raise"))
+@pytest.mark.parametrize("exponent", (0, 1023), ids=("ordinary", "secant-overflow"))
+@pytest.mark.parametrize("sign", (-1, 1))
+@pytest.mark.parametrize("ends", ("DD", "DN", "ND", "NN"))
+def test_weighted_secant_retains_finite_large_sample_gradient(policy, exponent, sign, ends):
+    amplitude = sign * ldexp(1.5, exponent)
+    kwargs = {}
+    for side, kind, value in zip(("left", "right"), ends, (0.0, amplitude)):
+        if kind == "D":
+            kwargs[f"{side}_face_constraint"] = value
+            kwargs[f"{side}_face_grad_constraint"] = None
+    var = CellVariable([0.0, amplitude, amplitude], [0.0, 1.0, 1.125, 1.25], **kwargs)
+    exact = _face_derivatives(var)
+    # Raw Lagrange differentiation gives 64*A/99, although the first
+    # unweighted secant is 16*A/9 and exceeds binary64 at the large amplitude.
+    assert exact == [F(0), F(64, 99) * _q(amplitude), F(0), F(0)]
+    with np.errstate(over=policy, invalid=policy, divide=policy):
+        observed = var.face_grad()
+    np.testing.assert_allclose(observed / amplitude, [0.0, 64 / 99, 0.0, 0.0], rtol=2e-14, atol=0)
+
+
+@pytest.mark.parametrize("policy", ("warn", "ignore", "raise"))
+@pytest.mark.parametrize("exponent", (0, 1023), ids=("ordinary", "unused-secant-overflow"))
+@pytest.mark.parametrize("sign", (-1, 1))
+@pytest.mark.parametrize("left_kind", ("D", "N"))
+def test_zero_weight_does_not_materialize_unused_secant(policy, exponent, sign, left_kind):
+    amplitude = sign * ldexp(1.5, exponent)
+    kwargs = {}
+    if left_kind == "D":
+        kwargs = {"left_face_constraint": 0.0, "left_face_grad_constraint": None}
+    var = CellVariable(
+        [0.0, 0.0, amplitude],
+        [0.0, 1.0, 2.0, 2.5],
+        right_face_constraint=amplitude,
+        right_face_grad_constraint=None,
+        **kwargs,
+    )
+    exact = _face_derivatives(var)
+    assert exact == [F(0), F(0), _q(amplitude), F(0)]
+    with np.errstate(over=policy, invalid=policy, divide=policy):
+        observed = var.face_grad()
+    np.testing.assert_array_equal(observed, list(map(float, exact)))
+
+
+@pytest.mark.parametrize("sign", (-1, 1))
+@pytest.mark.parametrize("coordinate_exponent", (2, 512))
+def test_weighted_gradient_retains_sample_difference_scale(sign, coordinate_exponent):
+    amplitude = sign * ldexp(1.5, 1023)
+    var = CellVariable(
+        [amplitude, -amplitude, -amplitude],
+        np.ldexp([0.0, 1.0, 1.125, 1.25], coordinate_exponent),
+        right_face_constraint=-amplitude,
+        right_face_grad_constraint=None,
+    )
+    exact = _face_derivatives(var)
+    with np.errstate(over="raise", invalid="raise", divide="raise"):
+        observed = var.face_grad()
+    np.testing.assert_allclose(observed, list(map(float, exact)), rtol=2e-14, atol=0)
+
+
+@pytest.mark.parametrize("sign", (-1, 1))
+def test_weighted_gradient_rounds_subnormal_only_after_weighting(sign):
+    tiny = sign * ldexp(1.0, -1074)
+    var = CellVariable(
+        [0.0, tiny],
+        [0.0, 1.0, 4.0],
+        right_face_constraint=tiny,
+        right_face_grad_constraint=None,
+    )
+    exact = _face_derivatives(var)
+    assert exact == [F(0), F(9, 14) * _q(tiny), F(0)]
+    # The first secant tiny/2 rounds to zero; its weight 9/7 rescues a subnormal.
+    np.testing.assert_array_equal(var.face_grad(), [0.0, tiny, 0.0])
+
+
+@pytest.mark.parametrize("sign", (-1, 1))
+def test_weighted_gradient_retains_underflowing_coordinate_weight(sign):
+    tiny, amplitude = ldexp(1.0, -1074), sign * ldexp(1.5, 1023)
+    var = CellVariable([0.0, 0.0, amplitude], [0.0, 4 * tiny, 6 * tiny, 8.0])
+    exact = _face_derivatives(var)
+    # The weight at face 1 is below the smallest subnormal, but multiplying
+    # the large last secant produces a finite nonzero derivative.
+    assert 0 < abs(exact[1]) < 1
+    with np.errstate(over="raise", invalid="raise", divide="raise"):
+        observed = var.face_grad()
+    np.testing.assert_allclose(observed, list(map(float, exact)), rtol=2e-14, atol=0)
+
+
+@pytest.mark.parametrize("sign", (-1, 1))
+def test_weighted_gradient_combines_opposing_unrepresentable_contributions(sign):
+    amplitude = sign * ldexp(1.5, 1023)
+    last = float(-F(171, 16384) * _q(amplitude))
+    var = CellVariable(
+        [0.0, amplitude, last],
+        [0.0, 1 / 8, 3 / 16, 385 / 2048],
+        right_face_constraint=last,
+        right_face_grad_constraint=None,
+    )
+    exact = _face_derivatives(var)
+    assert exact == [F(0), F(0), -F(77, 104) * _q(amplitude), F(0)]
+    with np.errstate(over="raise", invalid="raise", divide="raise"):
+        observed = var.face_grad()
+    # Each contribution at face 1 exceeds fmax; they must be added before
+    # restoring their scale. Absolute error is measured in units of amplitude.
+    np.testing.assert_allclose(
+        observed / amplitude,
+        [float(value / _q(amplitude)) for value in exact],
+        rtol=2e-14,
+        atol=2e-14,
+    )
+
+
+@pytest.mark.parametrize("sign", (-1, 1))
+def test_weighted_gradient_preserves_mask_and_endpoint_rules(sign):
+    amplitude = sign * ldexp(1.5, 1023)
+    var = CellVariable(
+        [0.0, amplitude, amplitude],
+        [0.0, 4.0, 4.5, 5.0],
+        left_face_constraint=amplitude / 4,
+        left_face_grad_constraint=None,
+        right_face_constraint=amplitude * (7 / 8),
+        right_face_grad_constraint=None,
+    )
+    exact = _face_derivatives(var)
+    exact[1] = (_q(amplitude) - 0) / F(9, 4)
+    mask = [True, True, False, True]
+    with np.errstate(over="raise", invalid="raise", divide="raise"):
+        observed = var.face_grad(two_point_mask=mask)
+    np.testing.assert_allclose(observed, list(map(float, exact)), rtol=2e-14, atol=0)
+
+
+@pytest.mark.parametrize("policy", ("warn", "ignore", "raise"))
+def test_scaled_quadratic_still_rejects_genuinely_unrepresentable_result(policy):
+    tiny = ldexp(1.0, -540)
+    var = CellVariable(
+        [0.0, ldexp(1.0, 600)],
+        [0.0, tiny, 2 * tiny],
+        right_face_constraint=ldexp(1.0, 600),
+        right_face_grad_constraint=None,
+    )
+    with np.errstate(over=policy, invalid=policy, divide=policy):
+        with pytest.raises(FloatingPointError):
+            var.face_grad()
