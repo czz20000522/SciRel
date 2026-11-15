@@ -1,40 +1,40 @@
 {
  "schema": "scirel.asset-document",
- "asset_id": "scirel.basis.natural-cubic-spline",
+ "asset_id": "scirel.numerics.clamped-cubic-spline",
  "title": {
-  "en": "Natural cubic spline",
-  "zh": "自然三次样条"
+  "en": "Clamped cubic spline",
+  "zh": "双端钳制三次样条"
  },
- "summary": "Callable piecewise-cubic Hermite interpolation with zero second derivatives at both endpoints.",
+ "summary": "Callable piecewise-cubic Hermite interpolation with prescribed first derivatives at both endpoints.",
  "taxonomy": [
   "analysis",
   "basis"
  ],
  "aliases": [
-  "NaturalCubicSpline"
+  "ClampedCubicSpline"
  ],
  "discovery": {
   "capability": [
-   "Natural cubic spline",
-   "Callable piecewise-cubic Hermite interpolation with zero second derivatives at both endpoints."
+   "Clamped cubic spline",
+   "Callable piecewise-cubic Hermite interpolation with prescribed first derivatives at both endpoints."
   ],
   "operation": [
-   "natural-boundary C2 cubic-spline interpolation",
-   "strictly increasing knots and matched values -> callable spline with deriv=0/1/2 evaluation"
+   "boundary-clamped C2 cubic-spline interpolation",
+   "strictly increasing knots, matched values and two endpoint slopes -> callable spline with deriv=0/1/2 evaluation"
   ],
-  "model": "C2 piecewise-cubic Hermite spline with vanishing second derivatives at both endpoints.",
+  "model": "C2 piecewise-cubic Hermite spline with a boundary-specific linear slope system for two prescribed endpoint first derivatives.",
   "geometry": "One-dimensional strictly increasing scalar knots and ordinate values in arbitrary coherent coordinate units; no spatial reconstruction is performed.",
-  "boundary": "Second derivatives vanish at both endpoints; finite queries outside the closed knot interval return zero, while nonfinite queries are zero-filled. Derivative selectors other than 0/1/2 remain compatibility conventions.",
+  "boundary": "Both endpoint first derivatives are prescribed; in-domain derivative selectors 0, 1 and 2 are qualified. Finite queries outside the closed knot interval return zero, while nonfinite queries are zero-filled; other derivative selectors remain compatibility conventions.",
   "device_scope": "generic"
  },
  "identity": {
-  "relation": "Natural cubic spline",
+  "relation": "Clamped cubic spline",
   "direction": "Declared inputs to Callable spline retaining x_data,y_data,k and deriv=0/1/2 evaluation",
   "definition": "Piecewise cubic Hermite interpolation with a boundary-specific linear slope system",
   "model": "C2 cubic spline; Clamped/FirstClamped use corrected unequal-knot continuity rows",
   "geometry": "one-dimensional scalar abscissa and ordinate samples",
   "coordinates": "Knots in arbitrary coherent coordinate units",
-  "boundary": "Second derivatives vanish at both ends",
+  "boundary": "Specified first derivatives at both ends",
   "assumptions": [
    "Finite strictly increasing matched one-dimensional knots and values with N>=3",
    "In-domain deriv=0/1/2 for the qualified numerical claim",
@@ -59,6 +59,19 @@
    "dtype": "float64",
    "required": true,
    "constraints": "Finite, same N as x_data"
+  },
+  {
+   "name": "yp",
+   "description": "Left/right endpoint slopes",
+   "units": "ordinate per coordinate",
+   "shape": "(2,)",
+   "dtype": "float64",
+   "required": false,
+   "constraints": "Finite two slopes",
+   "default": [
+    0,
+    0
+   ]
   }
  ],
  "outputs": [
@@ -79,7 +92,7 @@
    "Finite queries outside the closed knot interval and nonfinite query values use the zero-fill convention"
   ],
   "supported": [
-   "Finite polynomial and spline basis selections implemented by scirel.geometry.basis"
+   "Finite polynomial and spline basis selections implemented by scirel.numerics.basis"
   ],
   "excluded": [
    "Zero extrapolation and deriv selectors other than 1/2 returning values remain compatibility conventions",
@@ -96,11 +109,11 @@
  },
  "public_api": {
   "python": {
-   "module": "scirel.geometry.basis",
-   "symbol": "NaturalCubicSpline",
-   "signature": "NaturalCubicSpline(x_data, y_data)",
-   "canonical_module": "scirel.geometry",
-   "canonical_symbol": "NaturalCubicSpline"
+   "module": "scirel.numerics.basis",
+   "symbol": "ClampedCubicSpline",
+   "signature": "ClampedCubicSpline(x_data, y_data, yp=(0, 0))",
+   "canonical_module": "scirel.numerics",
+   "canonical_symbol": "ClampedCubicSpline"
   }
  },
  "version": {
@@ -108,9 +121,9 @@
   "dependencies": []
  },
  "example": {
-  "description": "Construct a natural cubic spline and evaluate the supplied interior knot.",
-  "code": "import numpy as np\nfrom scirel.geometry.basis import NaturalCubicSpline\n\nspline = NaturalCubicSpline(np.array([0.0, 0.3, 1.0]), np.array([0.0, 0.2, 1.0]))\nnp.testing.assert_allclose(spline(np.array([0.3])), [0.2])",
-  "expected": "The callable returns 0.2 at the interior knot with output shape (1,)."
+  "description": "Construct a two-endpoint-slope cubic spline and evaluate it at an interior knot.",
+  "code": "import numpy as np\nfrom scirel.numerics.basis import ClampedCubicSpline\n\nx = np.array([0.0, 0.3, 1.0])\ny = np.array([0.0, 0.2, 1.0])\nspline = ClampedCubicSpline(x, y)\nnp.testing.assert_allclose(spline(np.array([0.3])), [0.2])",
+  "expected": "The callable preserves the query shape (1,) and returns 0.2 at the supplied knot."
  },
  "verification": {
   "scope": [

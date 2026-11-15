@@ -3,7 +3,7 @@
 import numpy as np
 import pytest
 
-from scirel.geometry import basis
+from scirel.numerics import basis
 
 
 def test_finite_outside_and_nonfinite_queries_retain_zero_fill():

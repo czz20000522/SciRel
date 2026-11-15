@@ -846,12 +846,12 @@
      "introduction": "多项式系数及设计矩阵按升幂排列，SVD 拟合有明确截断；样条工厂连接自然、双端及单端钳制关系。柱坐标 Robin 方程和零原点限制不能仅凭名称解释为普遍物理闭合。",
      "assets": [
       "scirel.sampling.polynomial-fit",
-      "scirel.basis.build-basis",
-      "scirel.basis.basis-matrix",
-      "scirel.basis.natural-cubic-spline",
-      "scirel.basis.clamped-cubic-spline",
-      "scirel.basis.first-clamped-cubic-spline",
-      "scirel.basis.second-clamped-cubic-spline"
+      "scirel.numerics.build-basis",
+      "scirel.numerics.basis-matrix",
+      "scirel.numerics.natural-cubic-spline",
+      "scirel.numerics.clamped-cubic-spline",
+      "scirel.numerics.first-clamped-cubic-spline",
+      "scirel.numerics.second-clamped-cubic-spline"
      ]
     },
     {

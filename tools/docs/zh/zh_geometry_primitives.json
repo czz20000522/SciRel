@@ -3,8 +3,8 @@
  "language": "zh-CN",
  "records": [
   {
-   "asset_id": "scirel.basis.basis-matrix",
-   "source_sha256": "b3d8adaf1ea09003e2cd2123990263f8307a7b2c59132be5e73d7cde4b7b5af6",
+   "asset_id": "scirel.numerics.basis-matrix",
+   "source_sha256": "f21aad7828b19bd6ea07fa421e8fcb8cfcd3fb2a12005b8af0b03700bf682583",
    "summary": "将选定基函数求值为设计矩阵的列；矩阵行对应样本，列对应基函数。",
    "definition": "将选定基函数求值为设计矩阵的列。",
    "model": "构造委托给显式的基函数工厂。",
@@ -45,7 +45,7 @@
      "样条基构造要求 n_knots>=3"
     ],
     "supported": [
-     "scirel.geometry.basis 已实现的有限多项式和样条基函数选择。"
+     "scirel.numerics.basis 已实现的有限多项式和样条基函数选择。"
     ],
     "excluded": [
      "四次样条和特殊函数工厂选择被拒绝，不补造实现。",
@@ -80,8 +80,8 @@
    }
   },
   {
-   "asset_id": "scirel.basis.build-basis",
-   "source_sha256": "440e2c21e91454caee8822aac07a3e44eba1bc3569fc8d5d58b22cebb2b62748",
+   "asset_id": "scirel.numerics.build-basis",
+   "source_sha256": "c9384aec5ba63329ef0144c9cccee03fe7b4b15a8caea95eb129bab4c512c121",
    "summary": "构造可调用的升幂多项式或三次样条基函数。",
    "definition": "构造升幂多项式或三次样条求值器列表。",
    "model": "按映射选择升幂多项式或 C2 三次样条基函数；多项式默认有三个基函数（0、1、2 次幂），样条默认有五个节点、四个区间。",
@@ -122,7 +122,7 @@
      "样条基构造要求 n_knots>=3"
     ],
     "supported": [
-     "scirel.geometry.basis 已实现的有限多项式和样条基函数选择。"
+     "scirel.numerics.basis 已实现的有限多项式和样条基函数选择。"
     ],
     "excluded": [
      "四次样条和特殊函数工厂选择被拒绝，不补造实现。",
@@ -157,8 +157,8 @@
    }
   },
   {
-   "asset_id": "scirel.basis.clamped-cubic-spline",
-   "source_sha256": "17755d59378be0dd768487f38685a2b3a8454dd7409547413fee1fb36895c47a",
+   "asset_id": "scirel.numerics.clamped-cubic-spline",
+   "source_sha256": "d0e834ceee9a4c8764ee1ad082152fb6ba495b09610ad5b4fd401d418b83ef46",
    "summary": "使用两端指定一阶导数的分段三次 Hermite 插值。",
    "definition": "通过特定边界的斜率线性系统进行分段三次 Hermite 插值。",
    "model": "C² 连续的三次样条；Clamped/FirstClamped 使用修正后的非等距节点连续性方程。",
@@ -203,7 +203,7 @@
      "有限查询在闭合节点区间外返回零；非有限查询按零填充约定处理"
     ],
     "supported": [
-     "scirel.geometry.basis 已实现的有限多项式和样条基函数选择。"
+     "scirel.numerics.basis 已实现的有限多项式和样条基函数选择。"
     ],
     "excluded": [
      "域外置零，以及 deriv 取 1/2 之外时仍返回值，都属于兼容性约定。",
@@ -238,8 +238,8 @@
    }
   },
   {
-   "asset_id": "scirel.basis.first-clamped-cubic-spline",
-   "source_sha256": "61ff3620d7a0d8930ab5eeec3ca952de030eb8114d8b9d41cbcfc26e270cd127",
+   "asset_id": "scirel.numerics.first-clamped-cubic-spline",
+   "source_sha256": "92228f72173e8463498a4ab0167af608e2fd01c2bee7cf87afb2751b089e4f62",
    "summary": "使用左端指定一阶导数和柱坐标右端方程的分段三次 Hermite 插值。",
    "definition": "通过特定边界的斜率线性系统进行分段三次 Hermite 插值。",
    "model": "C² 连续的三次样条；Clamped/FirstClamped 使用修正后的非等距节点连续性方程。",
@@ -292,7 +292,7 @@
      "有限查询在闭合节点区间外返回零；非有限查询按零填充约定处理"
     ],
     "supported": [
-     "scirel.geometry.basis 已实现的有限多项式和样条基函数选择。"
+     "scirel.numerics.basis 已实现的有限多项式和样条基函数选择。"
     ],
     "excluded": [
      "域外置零，以及 deriv 取 1/2 之外时仍返回值，都属于兼容性约定。",
@@ -330,8 +330,8 @@
    }
   },
   {
-   "asset_id": "scirel.basis.natural-cubic-spline",
-   "source_sha256": "7e837620b102f7816078c6844ecd5569dfb0ecf48c9487791006f061c2021d19",
+   "asset_id": "scirel.numerics.natural-cubic-spline",
+   "source_sha256": "44918870e3cd25217f4fc4cb0059f09cbc476a12d563ce6c7fc63b6f93425290",
    "summary": "使用两端二阶导数为零的分段三次 Hermite 插值。",
    "definition": "通过特定边界的斜率线性系统进行分段三次 Hermite 插值。",
    "model": "C² 连续的三次样条；Clamped/FirstClamped 使用修正后的非等距节点连续性方程。",
@@ -370,7 +370,7 @@
      "有限查询在闭合节点区间外返回零；非有限查询按零填充约定处理"
     ],
     "supported": [
-     "scirel.geometry.basis 已实现的有限多项式和样条基函数选择。"
+     "scirel.numerics.basis 已实现的有限多项式和样条基函数选择。"
     ],
     "excluded": [
      "域外置零，以及 deriv 取 1/2 之外时仍返回值，都属于兼容性约定。",
@@ -405,8 +405,8 @@
    }
   },
   {
-   "asset_id": "scirel.basis.second-clamped-cubic-spline",
-   "source_sha256": "8700afcc3727f37c5ba24126024ec4986ab62978e90b8c6d405252933d8dbe93",
+   "asset_id": "scirel.numerics.second-clamped-cubic-spline",
+   "source_sha256": "f961dcd1bccc6e2a1e99a80c3cbe839ef996632a46d43801985df5ad89ed6e6f",
    "summary": "使用指定原点行和柱坐标右端方程的分段三次 Hermite 插值。",
    "definition": "通过特定边界的斜率线性系统进行分段三次 Hermite 插值。",
    "model": "C² 连续的三次样条；Clamped/FirstClamped 使用修正后的非等距节点连续性方程。",
@@ -455,7 +455,7 @@
      "有限查询在闭合节点区间外返回零；非有限查询按零填充约定处理"
     ],
     "supported": [
-     "scirel.geometry.basis 已实现的有限多项式和样条基函数选择。"
+     "scirel.numerics.basis 已实现的有限多项式和样条基函数选择。"
     ],
     "excluded": [
      "域外置零，以及 deriv 取 1/2 之外时仍返回值，都属于兼容性约定。",

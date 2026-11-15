@@ -6,6 +6,14 @@ import sys as _sys
 from typing import TYPE_CHECKING as _TYPE_CHECKING
 
 if _TYPE_CHECKING:
+    from .basis import (
+        NaturalCubicSpline,
+        ClampedCubicSpline,
+        FirstClampedCubicSpline,
+        SecondClampedCubicSpline,
+        build_basis,
+        BasisMatrix,
+    )
     from .interpolate import (
         face_to_cell,
         interpolate_complex_rectilinear_field,
@@ -15,6 +23,12 @@ if _TYPE_CHECKING:
     from .modal_basis import ModalBasis, modal_basis, modal_projection
 
 __all__ = [
+    "NaturalCubicSpline",
+    "ClampedCubicSpline",
+    "FirstClampedCubicSpline",
+    "SecondClampedCubicSpline",
+    "build_basis",
+    "BasisMatrix",
     "face_to_cell",
     "sample_rectilinear_field",
     "interpolate_complex_rectilinear_field",
@@ -25,6 +39,12 @@ __all__ = [
 ]
 
 _LAZY_EXPORTS = {
+    "NaturalCubicSpline": ("basis", "NaturalCubicSpline"),
+    "ClampedCubicSpline": ("basis", "ClampedCubicSpline"),
+    "FirstClampedCubicSpline": ("basis", "FirstClampedCubicSpline"),
+    "SecondClampedCubicSpline": ("basis", "SecondClampedCubicSpline"),
+    "build_basis": ("basis", "build_basis"),
+    "BasisMatrix": ("basis", "BasisMatrix"),
     "face_to_cell": ("interpolate", "face_to_cell"),
     "sample_rectilinear_field": ("interpolate", "sample_rectilinear_field"),
     "interpolate_complex_rectilinear_field": (
@@ -36,7 +56,7 @@ _LAZY_EXPORTS = {
     "modal_basis": ("modal_basis", "modal_basis"),
     "modal_projection": ("modal_basis", "modal_projection"),
 }
-_LAZY_MODULES = frozenset({"interpolate", "linalg"})
+_LAZY_MODULES = frozenset({"basis", "interpolate", "linalg"})
 
 
 def __getattr__(name):
