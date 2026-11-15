@@ -131,7 +131,7 @@ def classify_material_support(
     See Also
     --------
     scirel.geometry : Geometry namespace.
-    face_to_cell : Face-to-cell reduction for geometry consumers.
+    scirel.numerics.interpolate.face_to_cell : Face-to-cell reduction for geometry consumers.
 
     Notes
     -----
