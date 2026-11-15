@@ -4,6 +4,7 @@ from pathlib import Path
 from types import ModuleType
 
 import numpy as np
+import pytest
 
 import scirel
 
@@ -11,7 +12,6 @@ CATALOG_ROOT = Path(__file__).resolve().parents[2] / "catalog" / "examples"
 
 from scirel.kinetic.plasma_dispersion import evaluate_plasma_dispersion
 from scirel.kinetic.bessel_gamma import evaluate_bessel_gamma
-from scirel.kinetic.kinetic_dispersion_sum_n import evaluate_kinetic_dispersion_sum
 from scirel.kinetic.species_equilibrium_scales import derive_species_equilibrium_scales
 from scirel.neutrals.thermal_speed_scale import compute_thermal_speed_m_s
 from scirel.neutrals.generation_density_reduction import reduce_generation_density
@@ -126,9 +126,36 @@ def test_bessel_gamma_is_exported_from_the_kinetic_domain():
     assert "evaluate_bessel_gamma" in scirel.kinetic.__all__
 
 
-def test_kinetic_dispersion_sum_is_exported_from_the_kinetic_domain():
-    assert scirel.kinetic.evaluate_kinetic_dispersion_sum is evaluate_kinetic_dispersion_sum
-    assert "evaluate_kinetic_dispersion_sum" in scirel.kinetic.__all__
+@pytest.mark.parametrize(
+    "module,symbol",
+    [
+        ("dielectric_response", "evaluate_dielectric_response"),
+        ("dielectric_diagnostics", "evaluate_dielectric_diagnostics"),
+    ],
+)
+def test_dielectric_callables_are_exported_from_the_kinetic_domain(module, symbol):
+    direct = getattr(importlib.import_module(f"scirel.kinetic.{module}"), symbol)
+    assert getattr(scirel.kinetic, symbol) is direct
+    assert symbol in scirel.kinetic.__all__
+
+
+@pytest.mark.parametrize(
+    "module,symbol",
+    [
+        ("kinetic_dispersion_sum_n", "evaluate_kinetic_dispersion_sum"),
+        ("kinetic_dispersion_sum_fluid", "evaluate_fluid_kinetic_dispersion_sum"),
+        ("kinetic_dispersion_ronnmark", "evaluate_kinetic_dispersion_ronnmark"),
+        ("dielectric_tensor_diagnostic", "evaluate_kinetic_dielectric_tensor"),
+    ],
+)
+def test_retired_dielectric_names_are_not_public_or_importable(module, symbol):
+    assert symbol not in scirel.kinetic.__all__
+    assert symbol not in dir(scirel.kinetic)
+    assert module not in dir(scirel.kinetic)
+    assert not hasattr(scirel.kinetic, symbol)
+    with pytest.raises(ModuleNotFoundError) as error:
+        importlib.import_module(f"scirel.kinetic.{module}")
+    assert error.value.name == f"scirel.kinetic.{module}"
 
 
 def test_species_equilibrium_scales_is_exported_from_the_kinetic_domain():

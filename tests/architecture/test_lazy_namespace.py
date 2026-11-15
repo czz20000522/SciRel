@@ -210,6 +210,39 @@ assert not any(
     assert result.returncode == 0, result.stdout + result.stderr
 
 
+def test_dielectric_discovery_is_lazy_and_has_no_retired_bindings():
+    result = subprocess.run(
+        [
+            sys.executable,
+            "-I",
+            "-S",
+            "-c",
+            """
+import sys
+sys.path.insert(0, sys.argv[1])
+import scirel.kinetic as kinetic
+for symbol in ("evaluate_dielectric_response", "evaluate_dielectric_diagnostics"):
+    assert symbol in kinetic.__all__
+    assert symbol in dir(kinetic)
+for name in (
+    "evaluate_kinetic_dispersion_sum", "evaluate_fluid_kinetic_dispersion_sum",
+    "evaluate_kinetic_dispersion_ronnmark", "evaluate_kinetic_dielectric_tensor",
+    "kinetic_dispersion_sum_n", "kinetic_dispersion_sum_fluid",
+    "kinetic_dispersion_ronnmark", "dielectric_tensor_diagnostic",
+):
+    assert name not in dir(kinetic)
+    assert not hasattr(kinetic, name)
+assert not any(name.startswith("scirel.kinetic.") for name in sys.modules)
+assert not any(name in sys.modules for name in ("numpy", "scipy", "matplotlib"))
+""",
+            str(ROOT / "src"),
+        ],
+        capture_output=True,
+        text=True,
+    )
+    assert result.returncode == 0, result.stdout + result.stderr
+
+
 def test_kinetic_wavevector_scan_defers_graph_dependencies_until_call():
     result = subprocess.run(
         [
@@ -228,7 +261,8 @@ assert not any(
     name in sys.modules
     for name in (
         "scirel.kinetic.kinetic_wavevector_roots",
-        "scirel.kinetic.kinetic_dispersion_ronnmark",
+        "scirel.kinetic.dielectric_response",
+        "scirel.kinetic._dielectric_ronnmark",
         "scirel.kinetic.ronnmark_r_function",
         "scirel.kinetic.species_equilibrium_scales",
     )
@@ -259,9 +293,10 @@ assert "scirel.kinetic.kinetic_dispersion_relation" in sys.modules
 assert not any(
     name in sys.modules
     for name in (
-        "scirel.kinetic.kinetic_dispersion_ronnmark",
+        "scirel.kinetic.dielectric_response",
+        "scirel.kinetic._dielectric_ronnmark",
         "scirel.kinetic.ronnmark_r_function",
-        "scirel.kinetic.kinetic_dispersion_sum_fluid",
+        "scirel.kinetic._dielectric_weideman",
         "scirel.kinetic.species_equilibrium_scales",
     )
 )
