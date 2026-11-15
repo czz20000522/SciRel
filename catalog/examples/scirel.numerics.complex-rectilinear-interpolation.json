@@ -5,7 +5,7 @@
   "en": "Complex rectilinear field interpolation",
   "zh": "复值直角网格场插值"
  },
- "summary": "Trilinearly interpolate a complex-valued field sampled on three strictly increasing rectilinear axes at caller-owned target points, returning a per-point geometric validity mask and nan+nanj for points outside the tolerance-expanded source box. The complete result is returned as one scirel._result.Result mapping; mapping access is retained and non-colliding fields also support attribute access.",
+ "summary": "Trilinearly interpolate a complex-valued field sampled on three strictly increasing rectilinear axes at caller-owned target points, returning a per-point geometric validity mask and nan+nanj for points outside the tolerance-expanded source box. The complete result is returned as one scirel._result.Result mapping; mapping access is retained and non-colliding fields also support attribute access. Finite overflowing coordinate spans and representable small weighted contributions are evaluated without discarding finite input nodes.",
  "taxonomy": [
   "numerics",
   "interpolation",
@@ -33,7 +33,7 @@
  "identity": {
   "relation": "complex field samples on three rectilinear axes to interpolated values at arbitrary target points",
   "direction": "source axes plus complex values plus target points -> interpolated_values, valid_mask",
-  "definition": "Separable trilinear interpolation in [x, y, z] axis order with the source values indexed [N_x, N_y, N_z]; target points inside the closed source box expanded by tol are clamped onto the closed box and interpolated, and target points outside that expanded box return nan+nanj with valid_mask false. The complete result is returned as one scirel._result.Result mapping; mapping access is retained and non-colliding fields also support attribute access. No nested mapping is introduced.",
+  "definition": "Separable trilinear interpolation in [x, y, z] axis order with the source values indexed [N_x, N_y, N_z]; target points inside the closed source box expanded by tol are clamped onto the closed box and interpolated, and target points outside that expanded box return nan+nanj with valid_mask false. The complete result is returned as one scirel._result.Result mapping; mapping access is retained and non-colliding fields also support attribute access. No nested mapping is introduced. Finite stencils use independent endpoint-distance weights with original-input rational recomputation after vector arithmetic range failures or severe cancellation; non-finite corner values propagate even at zero weight.",
   "model": "piecewise-trilinear reconstruction of a band-limited complex field",
   "geometry": "tensor-product rectilinear grid; no assumption of uniform spacing on any axis",
   "coordinates": "caller-declared Cartesian axes in metres, indexed [x, y, z]",
@@ -110,7 +110,7 @@
  },
  "failure_semantics": {
   "invalid_input": "Raises ValueError for a missing or non-mapping source_axes_m, an axis that is not one-dimensional, has fewer than two points, is non-finite, or is not strictly increasing, for a source_values leading shape that does not match the axes, and for target points that are not a finite (N,3) array.",
-  "runtime_failure": "No exception is raised for out-of-domain points; they are reported through valid_mask with nan+nanj values. NumPy or SciPy errors for otherwise valid inputs propagate unchanged.",
+  "runtime_failure": "No exception is raised for out-of-domain points; they are reported through valid_mask with nan+nanj values. Non-finite touched source values retain IEEE propagation, including zero-weight corners, independently of the geometric mask. Other NumPy or SciPy errors propagate unchanged.",
   "nonconvergence": "Not applicable; this operator has no iteration or feedback.",
   "partial_results": "No scirel._result.Result mapping is returned; a rejected call produces no output mapping."
  },
@@ -142,17 +142,21 @@
    "Propagation of non-finite source values through the stencil while valid_mask stays true.",
    "Fail-closed validation of source axes, source shape, and target points.",
    "Empty target sets and preservation of trailing source axes.",
-   "The direct tests verify the top-level scirel._result.Result mapping and attribute access."
+   "The direct tests verify the top-level scirel._result.Result mapping and attribute access.",
+   "Overflowing finite spans preserve the controller affine witness and the mathematically finite tolerance box without overflow warnings.",
+   "Independent rational references cover one/multiple large spans, cross terms, near nodes, compensated tiny weights/products, signed cancellation, maximum finite samples, subnormal outputs and true final rounding to zero.",
+   "Zero-weight non-finite corner touches retain propagation, with right-interval selection at internal nodes, independent geometric validity, and multidimensional/empty trailing axes."
   ],
   "tests": [
    "tests/geometry/test_complex_rectilinear_interpolation.py"
   ],
-  "evidence_ceiling": "Bounded to the declared relation: Separable trilinear interpolation in [x, y, z] axis order with the source values indexed [N_x, N_y, N_z]; target points inside the closed source box expanded by tol are clamped onto the closed box and interpolated, and target points outside that expanded box…. Evidence: test_complex_rectilinear_interpolation.py (12 recorded test functions; bound-file coverage; independent analytic/high-precision oracle); the contract example ran. Excluded scope: Extrapolation beyond the tolerance-expanded source box; Curvilinear, cylindrical, or unstructured source grids.",
+  "evidence_ceiling": "Bounded independent analytic and original-input rational comparisons in the direct test file, at unchanged existing tolerances and frozen new budgets (rtol 1e-13, atol 1e-14; tiny contributions atol 0; explicit node/subnormal/rounding controls exact). Includes the two #281 controller witnesses, original ordinary-input tests, and non-finite stencil controls. This is not a continuous-domain accuracy, conservative-remapping or experimental calibration claim; independent scientific reviews and final integration acceptance remain separate.",
   "known_limitations": [
    "Only trilinear (first-order) reconstruction is offered; no higher-order or conservative scheme is included.",
    "valid_mask reports geometry only and must not be used as a finiteness test on the returned values.",
    "No extrapolation is performed outside the tolerance-expanded box, so callers with points beyond the shell receive nan rather than a clamped edge value.",
-   "The independent analytic comparison does not replace an external experimental reference."
+   "The independent analytic comparison does not replace an external experimental reference.",
+   "Exact rational recomputation can cost more for extreme or cancelling stencils; a range failure in one vector batch may send the finite columns of that batch to exact arithmetic. No whole-domain performance bound is established."
   ]
  }
 }

@@ -13,6 +13,8 @@ import importlib
 import importlib.util
 import math
 import os
+from fractions import Fraction
+from itertools import product
 from pathlib import Path
 
 import numpy as np
@@ -374,3 +376,177 @@ def test_u2_t12_declared_sibling_relation_is_structural_not_a_duplicate():
     assert not hasattr(MODULE, "sample_rectilinear_field")
     assert not hasattr(MODULE, "_axes")
     assert MODULE.__all__ == ["interpolate_complex_rectilinear_field"]
+
+
+def _rational_corners(axes, values, point):
+    """Exact tensor weights from original inputs, independent of production helpers."""
+    intervals = []
+    coordinates = []
+    for axis, target in zip(axes.values(), point):
+        cell = next((i for i in range(len(axis) - 1) if target < axis[i + 1]), len(axis) - 2)
+        intervals.append(cell)
+        lo, hi, query = map(Fraction, (float(axis[cell]), float(axis[cell + 1]), float(target)))
+        coordinates.append(((hi - query) / (hi - lo), (query - lo) / (hi - lo)))
+    output = np.empty(values.shape[3:], dtype=complex)
+    for component in np.ndindex(output.shape):
+        real = imaginary = Fraction(0)
+        for corner in product((0, 1), repeat=3):
+            volume = math.prod(coordinates[j][corner[j]] for j in range(3))
+            sample = values[tuple(i + offset for i, offset in zip(intervals, corner)) + component]
+            real += volume * Fraction(float(sample.real))
+            imaginary += volume * Fraction(float(sample.imag))
+        output[component] = complex(float(real), float(imaginary))
+    return output
+
+
+def _wide_affine():
+    axes = dict(x_m=[-1.0, 1.0], y_m=[-2.0, 2.0], z_m=[-1e308, 1e308])
+    x, y, z = np.meshgrid(*axes.values(), indexing="ij")
+    return axes, 1j * x + 1j * y + z / 1e308
+
+
+def test_overflowing_span_preserves_controller_affine_witness():
+    axes, values = _wide_affine()
+    result = INTERPOLATE(axes, values, [[0.25, 0.5, 0.0]])
+    assert result.valid_mask.tolist() == [True]
+    np.testing.assert_allclose(result.interpolated_values, [0.75j], rtol=1e-13, atol=1e-14)
+
+
+def test_overflowing_span_preserves_finite_tolerance_box():
+    axes, values = _wide_affine()
+    tolerance = float(Fraction(32 * np.finfo(float).eps) * (2 * Fraction(1e308)))
+    points = [
+        [0.0, 0.0, 0.0],
+        [1e307, 0.0, 0.0],
+        [tolerance / 2, 0.0, 0.0],
+        [2 * tolerance, 0.0, 0.0],
+    ]
+    result = INTERPOLATE(axes, values, points)
+    assert result.valid_mask.tolist() == [True, False, True, False]
+    assert np.isnan(result.interpolated_values[[1, 3]].real).all()
+    assert np.isnan(result.interpolated_values[[1, 3]].imag).all()
+    assert result.interpolated_values[2] == pytest.approx(1j, rel=1e-13, abs=1e-14)
+
+
+@pytest.mark.parametrize("wide_axes", [(0,), (1,), (2,), (0, 1, 2)])
+@pytest.mark.parametrize("node_count", [2, 3])
+def test_large_spans_reproduce_cross_terms_and_trailing_axes(wide_axes, node_count):
+    scales = [1e308 if i in wide_axes else 1.0 for i in range(3)]
+    nodes = [-1.0, 1.0] if node_count == 2 else [-1.0, 0.0, 1.0]
+    axes = {key: np.array(nodes) * scale for key, scale in zip(_AXIS_KEYS, scales)}
+    a, b, c = np.meshgrid(*[nodes] * 3, indexing="ij")
+    field = (1 + a * b + 2 * b * c - a * b * c) + 1j * (a - b + c + a * c)
+    values = np.stack([field, -2 * field, field.conjugate(), field * 0], axis=-1).reshape(
+        node_count, node_count, node_count, 2, 2
+    )
+    points = np.array(
+        [
+            [0.25 * scales[0], -0.5 * scales[1], 0.75 * scales[2]],
+            [scales[0], 0.0, -scales[2]],
+            [0.0, 0.0, 0.0],
+        ]
+    )
+    result = INTERPOLATE(axes, values, points)
+    assert result.valid_mask.all()
+    assert result.interpolated_values.shape == (3, 2, 2)
+    for i, point in enumerate(points):
+        np.testing.assert_allclose(
+            result.interpolated_values[i],
+            _rational_corners(axes, values, point),
+            rtol=1e-13,
+            atol=1e-14,
+        )
+    assert result.interpolated_values[0, 0, 0] == pytest.approx(
+        0.21875 + 1.6875j, rel=1e-13, abs=1e-14
+    )
+
+
+@pytest.mark.parametrize(
+    "kind", ["single-weight", "product-weight", "subnormal-output", "rounding-zero"]
+)
+def test_small_weights_retain_compensated_values(kind):
+    axes = dict(x_m=[0.0, 1.0], y_m=[0.0, 1.0], z_m=[0.0, 1.0])
+    values = np.zeros((2, 2, 2), complex)
+    if kind == "single-weight":
+        axes["x_m"] = [0.0, 1e200]
+        point = [1e-200, 0.5, 0.5]
+        values[1, :, :] = complex(1e300, -1e300)
+    elif kind == "product-weight":
+        point = [1e-200, 1e-200, 0.5]
+        values[1, 1, :] = complex(1e308, -1e308)
+    else:
+        tiny = float(np.nextafter(0.0, 1.0))
+        axes["x_m"] = [0.0, 1e308]
+        point = [tiny, 0.5, 0.5]
+        amplitude = 1e308 if kind == "subnormal-output" else 1.0
+        values[1, :, :] = complex(amplitude, -amplitude)
+    expected = _rational_corners(axes, values, point)
+    actual = INTERPOLATE(axes, values, [point])
+    assert actual.valid_mask.tolist() == [True]
+    if kind in ("subnormal-output", "rounding-zero"):
+        assert actual.interpolated_values[0] == expected
+    else:
+        assert expected.real != 0 and expected.imag != 0
+        np.testing.assert_allclose(actual.interpolated_values[0], expected, rtol=1e-13, atol=0)
+
+
+@pytest.mark.parametrize("case", ["maximum", "cancel", "near-node", "tiny-axis"])
+def test_finite_convex_values_and_node_precision(case):
+    axes = dict(x_m=[0.0, 1.0], y_m=[0.0, 1.0], z_m=[0.0, 1.0])
+    values = np.full((2, 2, 2), complex(1.0, -2.0))
+    point = [0.5, 0.5, 0.5]
+    if case == "maximum":
+        limit = float(np.finfo(float).max)
+        values.fill(complex(limit, -limit))
+    elif case == "cancel":
+        values.fill(0)
+        values[0, 0, 0] = complex(1e308, -1e308)
+        values[0, 0, 1] = complex(1.0, -2.0)
+        values[1, 0, 0] = complex(-1e308, 1e308)
+    elif case == "near-node":
+        axes["x_m"] = [1.0, np.nextafter(1.0, 2.0), 2.0]
+        values = np.arange(12).reshape(3, 2, 2).astype(complex) * (1 - 2j)
+        point[0] = np.nextafter(1.0, 2.0)
+    else:
+        unit = float(np.nextafter(0.0, 1.0))
+        axes["x_m"] = [0.0, 8 * unit]
+        point[0] = 3 * unit
+        values[1, :, :] = 9 - 4j
+    expected = _rational_corners(axes, values, point)
+    actual = INTERPOLATE(axes, values, [point]).interpolated_values[0]
+    assert np.isfinite(actual)
+    if case == "maximum":
+        # abs(complex(max, max)) overflows; assert each component directly.
+        assert actual.real == limit and actual.imag == -limit
+    np.testing.assert_allclose(actual, expected, rtol=1e-13, atol=1e-14)
+
+
+@pytest.mark.parametrize("poison", [complex(np.nan, 0), complex(np.inf, 0), complex(0, -np.inf)])
+@pytest.mark.parametrize("wide", [False, True])
+def test_nonfinite_zero_weight_corner_still_propagates(poison, wide):
+    axes = dict(x_m=[0.0, 1.0], y_m=[0.0, 1.0], z_m=[-1e308, 1e308] if wide else [0.0, 1.0])
+    values = np.ones((2, 2, 2, 2), complex)
+    values[1, 1, 1, 1] = poison
+    result = INTERPOLATE(axes, values, [[0.0, 0.0, axes["z_m"][0]]])
+    assert result.valid_mask.tolist() == [True]
+    assert result.interpolated_values[0, 0] == 1
+    assert not np.isfinite(result.interpolated_values[0, 1])
+
+
+def test_internal_node_uses_right_stencil_without_filtering_corners():
+    axes = dict(x_m=[0.0, 1.0, 2.0], y_m=[0.0, 1.0], z_m=[0.0, 1.0])
+    values = np.ones((3, 2, 2), complex)
+    values[0, :, :] = complex(np.nan, 0)
+    result = INTERPOLATE(axes, values, [[1.0, 0.0, 0.0]])
+    assert result.interpolated_values[0] == 1
+    values[2, :, :] = complex(np.nan, 0)
+    result = INTERPOLATE(axes, values, [[1.0, 0.0, 0.0]])
+    assert result.valid_mask.tolist() == [True]
+    assert not np.isfinite(result.interpolated_values[0])
+
+
+def test_zero_length_trailing_axis_is_preserved():
+    axes = dict(x_m=[0.0, 1.0], y_m=[0.0, 1.0], z_m=[0.0, 1.0])
+    result = INTERPOLATE(axes, np.empty((2, 2, 2, 0, 2), complex), [[0.5, 0.5, 0.5]])
+    assert result.interpolated_values.shape == (1, 0, 2)
+    assert result.valid_mask.tolist() == [True]
