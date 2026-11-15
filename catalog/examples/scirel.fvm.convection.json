@@ -28,7 +28,7 @@
  "identity": {
   "relation": "-d/dx(v u)=M u+b",
   "direction": "Explicit cell/face data to spatial operator or state update",
-  "definition": "Face Peclet p=distance*v/D with half-cell distance at boundaries, |D| floored to1e-20. Alpha=.5 for |p|<=.001; [(p-1)+(1-p/10)^5]/p for .001<p<=10; [(1+p/10)^5-1]/p for -10<=p<-.001; 1-1/p above10; -1/p below-10. Internal face flux uses complementary left/right alpha weights and identical flux in adjacent cells. Ghost boundaries reconstruct ghost cell from face data; direct uses imposed face value; semi-implicit weights current cell and face data. Neumann gradients are positive-coordinate at both ends.",
+  "definition": "Face Peclet p=distance*v/D with half-cell distance at boundaries, |D| floored to1e-20. Alpha=.5 for |p|<=.001; [(p-1)+(1-p/10)^5]/p for .001<p<=10; [(1+p/10)^5-1]/p for -10<=p<-.001; 1-1/p above10; -1/p below-10. Internal face flux uses complementary left/right alpha weights and identical flux in adjacent cells. Ghost boundaries reconstruct ghost cell from face data; direct uses imposed face value; semi-implicit weights current cell and face data. Neumann gradients are positive-coordinate at both ends. The Peclet multiply/divide is evaluated with binary mantissas and combined exponents, including boundary half-cell factors before final scaling; a representable finite ratio is not replaced by an overflowing intermediate product. True ratio overflow retains the existing limiting weights.",
   "model": "One-dimensional conservative finite-volume discretization",
   "geometry": "Explicit one-dimensional face grid, cell centers at arithmetic midpoints",
   "coordinates": "Caller coordinate X; positive increasing direction",
@@ -148,10 +148,12 @@
  },
  "verification": {
   "scope": [
-   "Independent flux conservation, exact linear/constant states, uniform manufactured diffusion convergence and theta causality checks"
+   "Independent flux conservation, exact linear/constant states, uniform manufactured diffusion convergence and theta causality checks",
+   "Independent exact rational face-flux references cover scaled two- and four-cell nonuniform grids, positive/negative/zero velocity, the finite-p=2 product-overflow witness, signed diffusion and its declared floor, and floats neighboring the .001 and 10 switches. True Peclet overflow retains the signed upwind limit; genuinely nonrepresentable operators still fail. These are bounded probes, not an all-input floating-point accuracy proof."
   ],
   "tests": [
-   "tests/fvm/test_fvm.py"
+   "tests/fvm/test_fvm.py",
+   "tests/fvm/test_scaled_gradient_convection.py"
   ],
   "evidence_ceiling": "Named discrete invariants and manufactured uniform-grid convergence; no arbitrary-grid stability/accuracy or full transport-simulation claim.",
   "known_limitations": [

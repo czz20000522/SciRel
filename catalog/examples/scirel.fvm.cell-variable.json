@@ -28,7 +28,7 @@
  "identity": {
   "relation": "Cell/face staggered reconstruction",
   "direction": "Explicit cell/face data to spatial operator or state update",
-  "definition": "Cell centers are arithmetic face midpoints. face_value linearly interpolates inner faces and uses prescribed values or half-cell gradient extrapolation at endpoints. face_grad fits three neighboring point values for internal faces. At the last internal face it uses the two adjacent cells with the actual right Dirichlet value or the prescribed positive-coordinate Neumann derivative. For the latter, let s=(u1-u0)/(x1-x0), b be the boundary, and f the internal face: q_prime(f)=s+(g-s)*(2*f-x0-x1)/(2*b-x0-x1). A boolean N+1 two_point_mask overrides internal gradients with adjacent secants. Endpoint Dirichlet gradients remain half-cell secants; Neumann gradients are prescribed. grad is the face_value difference divided by cell width.",
+  "definition": "Cell centers are arithmetic face midpoints. face_value linearly interpolates inner faces and uses prescribed values or half-cell gradient extrapolation at endpoints. face_grad fits three neighboring point values for internal faces. At the last internal face it uses the two adjacent cells with the actual right Dirichlet value or the prescribed positive-coordinate Neumann derivative. For the latter, let s=(u1-u0)/(x1-x0), b be the boundary, and f the internal face: q_prime(f)=s+(g-s)*(2*f-x0-x1)/(2*b-x0-x1). A boolean N+1 two_point_mask overrides internal gradients with adjacent secants. Endpoint Dirichlet gradients remain half-cell secants; Neumann gradients are prescribed. grad is the face_value difference divided by cell width. The three-value case evaluates the same quadratic through adjacent secant slopes and a locally normalized coordinate weight, without squared coordinate lengths.",
   "model": "One-dimensional conservative finite-volume discretization",
   "geometry": "Explicit one-dimensional face grid, cell centers at arithmetic midpoints",
   "coordinates": "Caller coordinate X; positive increasing direction",
@@ -147,10 +147,12 @@
  "verification": {
   "scope": [
    "Independent flux conservation, exact linear/constant states, uniform manufactured diffusion convergence and theta causality checks",
-   "Quadratic, linear and constant face derivatives with matching Neumann data on unequal terminal widths and N=2; the derivative-constrained reconstruction replaces the inaccurate linearly extrapolated boundary value. Explicit two-point masks, Dirichlet endpoint half-cell secants and linear face values retain their definitions."
+   "Quadratic, linear and constant face derivatives with matching Neumann data on unequal terminal widths and N=2; the derivative-constrained reconstruction replaces the inaccurate linearly extrapolated boundary value. Explicit two-point masks, Dirichlet endpoint half-cell secants and linear face values retain their definitions.",
+   "Independent exact Lagrange-derivative references for affine and quadratic samples on two- and four-cell nonuniform grids at coordinate scales 2**-540, 1 and 2**512, with right Dirichlet or Neumann data; the two-cell u=x overflow witness returns unit derivatives. These are bounded binary64 observations, not a proof over all finite inputs."
   ],
   "tests": [
-   "tests/fvm/test_fvm.py"
+   "tests/fvm/test_fvm.py",
+   "tests/fvm/test_scaled_gradient_convection.py"
   ],
   "evidence_ceiling": "Named discrete invariants and manufactured uniform-grid convergence; no arbitrary-grid stability/accuracy or full transport-simulation claim.",
   "known_limitations": [

@@ -110,6 +110,8 @@ class CellVariable:
     boundary values or a half-cell gradient extrapolation at the endpoints.
     ``face_grad`` uses local quadratic stencils on interior faces; the final
     interior face uses the right boundary value or gradient when present.
+    Three-point derivatives combine adjacent secant slopes with a locally
+    normalized coordinate weight, avoiding squared coordinate lengths.
     ``grad`` is the difference of reconstructed face values divided by each
     cell width.  The returned arrays are read-only and are not volume
     averages.
@@ -227,14 +229,15 @@ class CellVariable:
                 )
                 samples = np.concatenate((self.value[-2:], [self.right_face_constraint]))
 
-            left, middle, right = coordinates
-            first = (middle + right) / (
-                -left * left + left * middle + left * right - middle * right
-            )
-            last = (-left - middle) / (
-                left * middle - left * right - middle * right + right * right
-            )
-            gradients[index] = first * (samples[0] - samples[1]) + last * (samples[2] - samples[1])
+            # Differentiate the same quadratic through its adjacent secants.
+            # Only the dimensionless weight uses normalized coordinates;
+            # no coordinate products or squared physical lengths are needed.
+            coordinate_scale = np.max(np.abs(coordinates))
+            left, middle, right = coordinates / coordinate_scale
+            weight = -(left + middle) / (right - left)
+            first_slope = (samples[1] - samples[0]) / (coordinates[1] - coordinates[0])
+            last_slope = (samples[2] - samples[1]) / (coordinates[2] - coordinates[1])
+            gradients[index] = (1.0 - weight) * first_slope + weight * last_slope
 
         if two_point_mask is not None:
             mask = np.asarray(two_point_mask)
