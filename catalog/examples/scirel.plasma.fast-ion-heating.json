@@ -25,7 +25,7 @@
   ],
   "model": "Specified local Mikkelsen approximation with fixed x^2 = E_birth/(10 m_fast T_e) scaling.",
   "geometry": "Local homogeneous plasma; scalar or broadcast array values with no spatial geometry.",
-  "boundary": "E_birth >= 0, T_e > 0 and fast-ion mass > 0, all finite.",
+  "boundary": "Real, unmasked E_birth >= 0, T_e > 0 and fast-ion mass > 0, all finite.",
   "device_scope": "generic"
  },
  "identity": {
@@ -35,7 +35,7 @@
   "model": "Specified local Mikkelsen approximation with fixed x²=E_birth/(10 m_fast T_e) scaling",
   "geometry": "local homogeneous plasma; no spatial geometry input",
   "coordinates": "scalar or broadcast array values",
-  "boundary": "E_birth >= 0, T_e > 0, fast-ion mass > 0; all finite",
+  "boundary": "Real, unmasked E_birth >= 0, T_e > 0, fast-ion mass > 0; all finite",
   "assumptions": [
    "T_e is in keV and fast-ion mass is in atomic mass units.",
    "The relation is a local partition and does not model slowing-down trajectories.",
@@ -50,7 +50,7 @@
    "shape": "scalar or broadcast array",
    "dtype": "real",
    "required": true,
-   "constraints": "Finite and nonnegative."
+   "constraints": "Finite, real, unmasked and nonnegative."
   },
   {
    "name": "T_e",
@@ -59,7 +59,7 @@
    "shape": "scalar or broadcast array",
    "dtype": "real",
    "required": true,
-   "constraints": "Finite and strictly positive."
+   "constraints": "Finite, real, unmasked and strictly positive."
   },
   {
    "name": "fast_ion_mass",
@@ -68,7 +68,7 @@
    "shape": "scalar or broadcast array",
    "dtype": "real",
    "required": true,
-   "constraints": "Finite and strictly positive; broadcast-compatible with the other inputs."
+   "constraints": "Finite, real, unmasked and strictly positive; broadcast-compatible with the other inputs."
   }
  ],
  "outputs": [
@@ -84,18 +84,18 @@
  ],
  "applicability": {
   "preconditions": [
-   "All declared inputs satisfy the finite domain and broadcast compatibility."
+   "All declared inputs are real, unmasked and satisfy the finite domain and broadcast compatibility."
   ],
   "supported": [
    "Numerical evaluation of the exact dimensionless integral and fixed energy/temperature/mass scaling stated in this document."
   ],
   "excluded": [
-   "Negative birth energy, nonpositive temperature or mass, nonfinite values, and full transport or trajectory evolution.",
+   "Complex or masked inputs, negative birth energy, nonpositive temperature or mass, nonfinite values, and full transport or trajectory evolution.",
    "Claims of experimental calibration or suitability for arbitrary plasma compositions and collisional regimes."
   ]
  },
  "failure_semantics": {
-  "invalid_input": "Raises ValueError for nonfinite, out-of-domain or broadcast-incompatible inputs; raises FloatingPointError when the computed dimensionless ratio or result is nonfinite, including ratio overflow from finite dimensional inputs.",
+  "invalid_input": "Raises ValueError for complex, masked, non-real-convertible, nonfinite, out-of-domain or broadcast-incompatible inputs; raises FloatingPointError when the computed dimensionless ratio or result is nonfinite, including ratio overflow from finite dimensional inputs.",
   "runtime_failure": "Propagates numerical failures; no fallback or clipping is applied.",
   "nonconvergence": "Not applicable; the small-x series has fixed 12-term order.",
   "partial_results": "Never returned."
@@ -120,19 +120,18 @@
  },
  "verification": {
   "scope": [
-   "An asserted zero-energy limit and scalar/array regression; the historical independent integral-quadrature claim is currently unbound (UNKNOWN).",
-   "Closed-form agreement at a held-out finite energy.",
-   "Finite and out-of-domain input behavior."
+   "Exact zero-energy limit and scalar/array regression.",
+   "Independent adaptive quadrature of the defining integral on bounded intervals at twelve x^2 points from 1e-16 to 1e24, including both sides of the x^2=0.01 branch switch; fraction bounds and monotonicity at 162 zero/logarithmically spaced points.",
+   "Complex and masked values rejected for each of the three inputs, alongside finite and out-of-domain behavior."
   ],
   "tests": [
    "tests/plasma/test_fast_ion_heating.py"
   ],
-  "evidence_ceiling": "Bound direct tests cover the exact zero-energy limit, a same-form binary64 closed-expression comparison at one finite energy, scalar/array consistency and declared domain rejection. The historical independent integral-quadrature claim has no bound inputs, numerical references or comparison assertions in the current repository evidence located for this asset (UNKNOWN). These tests do not establish experimental calibration or wider physical applicability.",
+  "evidence_ceiling": "Direct tests bind a new independent integral reference: t=x*u for x<=1, and the split [0,1] plus u=1/t for x>1, using adaptive quadrature with epsabs=epsrel=2e-13. The reported quadrature error must consume at most one quarter of the fixed 2e-12 relative comparison budget (atol=0), and IntegrationWarning fails the reference. The twelve sampled x^2 values, zero limit, 162-point fraction invariants and input rejection are executable regression evidence, not continuous-domain error bounds, experimental calibration or a reconstruction of the historical unbound quadrature claim.",
   "known_limitations": [
-   "Numerical verification establishes evaluation of the specified mathematical approximation, not experimental calibration or applicability to a particular plasma composition or collisional regime.",
+   "Numerical verification supports evaluation of the specified mathematical approximation on the bound test matrix, not experimental calibration or applicability to a particular plasma composition or collisional regime.",
    "Finite input values can produce a nonfinite dimensionless ratio and then raise FloatingPointError.",
-   "Full slowing-down trajectories, spatial transport evolution and coupling to other plasma models are outside this operator.",
-   "UNKNOWN: the historical independent quadrature is not presently bound; a same-form closed expression or agreement with the implementation is not an independent integration reference."
+   "Full slowing-down trajectories, spatial transport evolution and coupling to other plasma models are outside this operator."
   ]
  },
  "references": [
