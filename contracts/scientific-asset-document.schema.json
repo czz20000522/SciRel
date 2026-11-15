@@ -280,6 +280,9 @@
     "type": "string",
     "minLength": 1
    }
+  },
+  "family": {
+   "$ref": "#/$defs/family"
   }
  },
  "$defs": {
@@ -698,6 +701,86 @@
        }
       }
      }
+    }
+   }
+  },
+  "family": {
+   "type": "object",
+   "additionalProperties": false,
+   "required": [
+    "name",
+    "default",
+    "default_reason",
+    "methods"
+   ],
+   "properties": {
+    "name": {
+     "type": "string",
+     "minLength": 1
+    },
+    "default": {
+     "type": "string",
+     "minLength": 1
+    },
+    "default_reason": {
+     "type": "string",
+     "minLength": 1
+    },
+    "methods": {
+     "type": "array",
+     "minItems": 1,
+     "items": {
+      "$ref": "#/$defs/familyMethod"
+     }
+    }
+   }
+  },
+  "familyMethod": {
+   "type": "object",
+   "additionalProperties": false,
+   "required": [
+    "name",
+    "model",
+    "numerical_controls",
+    "applicability",
+    "failure_semantics",
+    "verification"
+   ],
+   "properties": {
+    "name": {
+     "type": "string",
+     "pattern": "^[a-z][a-z0-9_-]*$"
+    },
+    "model": {
+     "type": "string",
+     "minLength": 1
+    },
+    "numerical_controls": {
+     "type": "object",
+     "additionalProperties": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+       "default",
+       "constraints"
+      ],
+      "properties": {
+       "default": {},
+       "constraints": {
+        "type": "string",
+        "minLength": 1
+       }
+      }
+     }
+    },
+    "applicability": {
+     "$ref": "#/properties/applicability"
+    },
+    "failure_semantics": {
+     "$ref": "#/properties/failure_semantics"
+    },
+    "verification": {
+     "$ref": "#/properties/verification"
     }
    }
   }
