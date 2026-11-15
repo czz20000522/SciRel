@@ -1,41 +1,131 @@
 """Interpolate isotropic or anisotropic pressure tables on ``(B, psi)``."""
 
+from fractions import Fraction
+import math
+
 import numpy as np
 
 from scirel._result import Result
 
 
 def _bracket(axis, query):
-    """Return lower indices and interpolation fractions, allowing extrapolation."""
-    index = np.searchsorted(axis, query, side="right") - 1
-    index = np.clip(index, 0, axis.size - 2)
-    left = axis[index]
-    fraction = (query - left) / (axis[index + 1] - left)
-    return index, fraction
+    """Select a cell without first forming its potentially overflowing width."""
+    return np.clip(np.searchsorted(axis, query, side="right") - 1, 0, axis.size - 2)
 
 
-def _linear(axis, table, query):
-    index, fraction = _bracket(axis, query)
-    return table[index] + fraction * (table[index + 1] - table[index])
+def _ordinary_range(*values):
+    """Select an arithmetic optimization envelope, never a public input limit.
+
+    Nonzero inputs in [2**-128, 2**128] have gaps at least 2**-180.
+    In-cell weights are at least about 2**-309, so even two weights times
+    a table value stay above 2**-746. All nonzero fast-path operations are
+    normal and finite; the nonnegative sum has a gamma_10 rounding bound.
+    """
+    return np.logical_and.reduce(
+        [
+            (value == 0.0) | ((abs(value) >= 2.0**-128) & (abs(value) <= 2.0**128))
+            for value in values
+        ]
+    )
 
 
-def _bilinear(b_axis, psi_axis, table, field, flux):
-    b_index, b_fraction = _bracket(b_axis, field)
-    psi_index, psi_fraction = _bracket(psi_axis, flux)
-    lower = table[b_index, psi_index]
-    along_psi = lower + psi_fraction * (table[b_index, psi_index + 1] - lower)
-    upper = table[b_index + 1, psi_index]
-    upper_along_psi = upper + psi_fraction * (table[b_index + 1, psi_index + 1] - upper)
-    return along_psi + b_fraction * (upper_along_psi - along_psi)
+def _represented_pressure(value):
+    """Round only the complete exact interpolant, rejecting genuine range loss."""
+    try:
+        result = float(value)
+    except OverflowError as exc:
+        raise ValueError("interpolated pressure must be finite and nonnegative") from exc
+    if value < 0 or not math.isfinite(result) or (value > 0 and result == 0.0):
+        raise ValueError(
+            "interpolated pressure must be finite and nonnegative; "
+            "a nonzero pressure must be representable"
+        )
+    return result
 
 
-def _apply_domain(values, field, flux, *, b_grid, psi_grid, bounds_error, fill_value):
-    """Apply the public out-of-domain policy to an interpolated array."""
+def _linear(axis, table, query, selected):
+    query = np.asarray(query)
+    x = query.reshape(-1)
+    index = _bracket(axis, x)
+    left, right = axis[index], axis[index + 1]
+    low, high = table[index], table[index + 1]
+    selected = selected.reshape(-1)
+    ordinary = selected & (left <= x) & (x <= right) & _ordinary_range(left, right, x, low, high)
+    result = np.zeros(x.shape)
+    a, b, q = left[ordinary], right[ordinary], x[ordinary]
+    result[ordinary] = ((b - q) / (b - a)) * low[ordinary] + ((q - a) / (b - a)) * high[ordinary]
+    for k in np.flatnonzero(selected & ~ordinary):
+        a, b, q, lo, hi = (Fraction(float(v)) for v in (left[k], right[k], x[k], low[k], high[k]))
+        result[k] = _represented_pressure(((b - q) * lo + (q - a) * hi) / (b - a))
+    result = result.reshape(query.shape)
+    return result[()] if result.ndim == 0 else result
+
+
+def _bilinear(b_axis, psi_axis, table, field, flux, selected):
+    b_query, psi_query = field.reshape(-1), flux.reshape(-1)
+    bi, pi = _bracket(b_axis, b_query), _bracket(psi_axis, psi_query)
+    b0, b1 = b_axis[bi], b_axis[bi + 1]
+    p0, p1 = psi_axis[pi], psi_axis[pi + 1]
+    v00, v01 = table[bi, pi], table[bi, pi + 1]
+    v10, v11 = table[bi + 1, pi], table[bi + 1, pi + 1]
+    selected = selected.reshape(-1)
+    ordinary = (
+        selected
+        & (b0 <= b_query)
+        & (b_query <= b1)
+        & (p0 <= psi_query)
+        & (psi_query <= p1)
+        & _ordinary_range(b0, b1, p0, p1, b_query, psi_query, v00, v01, v10, v11)
+    )
+    wb0 = (b1[ordinary] - b_query[ordinary]) / (b1[ordinary] - b0[ordinary])
+    wb1 = (b_query[ordinary] - b0[ordinary]) / (b1[ordinary] - b0[ordinary])
+    wp0 = (p1[ordinary] - psi_query[ordinary]) / (p1[ordinary] - p0[ordinary])
+    wp1 = (psi_query[ordinary] - p0[ordinary]) / (p1[ordinary] - p0[ordinary])
+    result = np.zeros(b_query.shape)
+    result[ordinary] = (wb0 * wp0 * v00[ordinary] + wb0 * wp1 * v01[ordinary]) + (
+        wb1 * wp0 * v10[ordinary] + wb1 * wp1 * v11[ordinary]
+    )
+    for k in np.flatnonzero(selected & ~ordinary):
+        a, b, c, d, x, y, t00, t01, t10, t11 = (
+            Fraction(float(v))
+            for v in (
+                b0[k],
+                b1[k],
+                p0[k],
+                p1[k],
+                b_query[k],
+                psi_query[k],
+                v00[k],
+                v01[k],
+                v10[k],
+                v11[k],
+            )
+        )
+        # One full four-corner numerator: no separately rounded row value or
+        # tiny weight can disappear before a compensating contribution.
+        numerator = (
+            (b - x) * (d - y) * t00
+            + (b - x) * (y - c) * t01
+            + (x - a) * (d - y) * t10
+            + (x - a) * (y - c) * t11
+        )
+        result[k] = _represented_pressure(numerator / ((b - a) * (d - c)))
+    result = result.reshape(field.shape)
+    return result[()] if result.ndim == 0 else result
+
+
+def _query_selection(field, flux, *, b_grid, psi_grid, bounds_error, fill_value):
     outside = (flux < psi_grid[0]) | (flux > psi_grid[-1])
     if b_grid is not None:
         outside |= (field < b_grid[0]) | (field > b_grid[-1])
     if bounds_error and np.any(outside):
         raise ValueError("query point is outside the interpolation domain")
+    # A fixed fill must not evaluate an irrelevant overflowing extrapolant.
+    selected = ~outside if fill_value is not None else np.ones(flux.shape, dtype=bool)
+    return outside, selected
+
+
+def _apply_domain(values, outside, *, bounds_error, fill_value):
     if not bounds_error and fill_value is not None:
         values = np.array(values, copy=True)
         values[outside] = fill_value
@@ -123,7 +213,8 @@ def evaluate_tabulated_pressure(
         has invalid shape, nonfinite values or negative values; ``bounds_error``
         is not boolean; ``fill_value`` is invalid; queries are nonfinite or
         cannot broadcast; an out-of-domain query is rejected; or interpolation
-        returns a nonfinite or negative pressure.
+        returns a nonfinite or negative pressure, or a positive complete
+        interpolant is too small to retain a nonzero float64 value.
 
     See Also
     --------
@@ -141,6 +232,15 @@ def evaluate_tabulated_pressure(
     linear/bilinear extrapolation while a finite nonnegative scalar fills
     outside points. The operation interpolates caller-supplied tables only; it
     does not infer a pressure law, find flux surfaces or certify force balance.
+
+    In-cell arithmetic uses separate nonnegative Lagrange weights in a bounded
+    optimization envelope. Other queries combine the original float64 inputs
+    as exact rational contributions before one final conversion; the full
+    two-dimensional interpolant is combined before any row is rounded. This
+    preserves representable nodes, wide axes and compensating small weights.
+    A truly negative, overflowing or nonzero underflowing final pressure raises
+    ValueError. An exact mathematical zero remains valid. This changes no
+    interpolation model or input range.
 
     Examples
     --------
@@ -166,7 +266,7 @@ def evaluate_tabulated_pressure(
         psi_axis.ndim != 1
         or psi_axis.size < 2
         or not np.all(np.isfinite(psi_axis))
-        or np.any(np.diff(psi_axis) <= 0.0)
+        or np.any(psi_axis[1:] <= psi_axis[:-1])
     ):
         raise ValueError("psi_grid must be one-dimensional, finite, and strictly increasing")
     if not np.all(np.isfinite(parallel_table)) or np.any(parallel_table < 0.0):
@@ -206,13 +306,18 @@ def evaluate_tabulated_pressure(
                 raise ValueError(
                     "b_grid=None requires equal parallel and perpendicular pressure tables"
                 )
-        pressure = _linear(psi_axis, parallel_table, flux)
-        pressure = _apply_domain(
-            pressure,
+        outside, selected = _query_selection(
             field,
             flux,
             b_grid=None,
             psi_grid=psi_axis,
+            bounds_error=bool(bounds_error),
+            fill_value=fill_value,
+        )
+        pressure = _linear(psi_axis, parallel_table, flux, selected)
+        pressure = _apply_domain(
+            pressure,
+            outside,
             bounds_error=bool(bounds_error),
             fill_value=fill_value,
         )
@@ -240,7 +345,7 @@ def evaluate_tabulated_pressure(
         b_axis.ndim != 1
         or b_axis.size < 2
         or not np.all(np.isfinite(b_axis))
-        or np.any(np.diff(b_axis) <= 0.0)
+        or np.any(b_axis[1:] <= b_axis[:-1])
     ):
         raise ValueError("b_grid must be one-dimensional, finite, and strictly increasing")
     if (
@@ -253,10 +358,7 @@ def evaluate_tabulated_pressure(
             "anisotropic pressure tables must be finite nonnegative arrays with shape (len(b_grid), len(psi_grid))"
         )
 
-    parallel = _bilinear(b_axis, psi_axis, parallel_table, field, flux)
-    perpendicular = _bilinear(b_axis, psi_axis, perpendicular_table, field, flux)
-    parallel = _apply_domain(
-        parallel,
+    outside, selected = _query_selection(
         field,
         flux,
         b_grid=b_axis,
@@ -264,12 +366,17 @@ def evaluate_tabulated_pressure(
         bounds_error=bool(bounds_error),
         fill_value=fill_value,
     )
+    parallel = _bilinear(b_axis, psi_axis, parallel_table, field, flux, selected)
+    perpendicular = _bilinear(b_axis, psi_axis, perpendicular_table, field, flux, selected)
+    parallel = _apply_domain(
+        parallel,
+        outside,
+        bounds_error=bool(bounds_error),
+        fill_value=fill_value,
+    )
     perpendicular = _apply_domain(
         perpendicular,
-        field,
-        flux,
-        b_grid=b_axis,
-        psi_grid=psi_axis,
+        outside,
         bounds_error=bool(bounds_error),
         fill_value=fill_value,
     )
