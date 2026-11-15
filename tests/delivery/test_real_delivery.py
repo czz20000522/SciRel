@@ -242,9 +242,26 @@ def test_packaged_discovery_cli_reads_real_contract(real_delivery):
 def test_packaged_neutrals_discovery_and_installed_owner(real_delivery):
     """Read the real catalog, then call only its installed canonical namespace."""
     case = real_delivery
-    page = _query(case, "browse", *_pin_flags(case), "--taxonomy", "neutrals", "--limit", "100")
-    assert page["outcome"] == "match"
-    assets = {item["asset_id"] for item in page["result"]["items"]}
+    assets = set()
+    cursor = None
+    seen_cursors = set()
+    for _ in range(33):
+        arguments = ["browse", *_pin_flags(case), "--taxonomy", "neutrals", "--limit", "100"]
+        if cursor is not None:
+            arguments.extend(["--cursor", cursor])
+        page = _query(case, *arguments)
+        assert page["outcome"] == "match"
+        assert page["result"]["total"] == 33
+        current = {item["asset_id"] for item in page["result"]["items"]}
+        assert current and assets.isdisjoint(current)
+        assets.update(current)
+        cursor = page["next_cursor"]
+        if cursor is None:
+            break
+        assert cursor not in seen_cursors
+        seen_cursors.add(cursor)
+    else:
+        pytest.fail("neutral catalog pagination did not terminate")
     assert assets == {
         path.stem for path in (ROOT / "catalog/examples").glob("scirel.neutrals.*.json")
     }
