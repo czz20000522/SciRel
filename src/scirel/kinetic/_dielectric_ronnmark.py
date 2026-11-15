@@ -8,7 +8,6 @@ import numpy as np
 
 from .ronnmark_r_function import evaluate_ronnmark_r
 
-__all__ = ["evaluate_kinetic_dispersion_ronnmark"]
 
 _C2 = (2.99792458e8) ** 2
 _EPSILON0 = 8.854187817e-12
@@ -109,144 +108,15 @@ def _require_finite(name, value, *, nonzero=False):
         )
 
 
-def evaluate_kinetic_dispersion_ronnmark(*, B0, qs, ms, ns0, Ts0, f=None, kz, kx, omega=None):
-    r"""Evaluate the J=8 rational-pole kinetic 3x3 tensor and dispersion determinant, including complex kx and zero kz.
+def _evaluate(*, B0, qs, ms, ns0, Ts0, omega, kz, kx):
+    """Evaluate the original numerical path at the caller angular frequency."""
 
-    Parameters
-    ----------
-    B0 : real numeric
-        Background magnetic-field strength, setting the cyclotron frequency and entering the pole-resonance
-        argument [T] Shape: scalar. Finite and nonzero; the cyclotron frequency is proportional to B0.
-    qs : real numeric
-        Species charges, setting the signs of the cyclotron frequency and the coupling terms [C] Shape:
-        `(S,)` one-dimensional species axis. Finite; element count matches the other species arrays.
-    ms : real numeric
-        Species masses, entering the thermal speed and the cyclotron frequency [kg] Shape: `(S,)` one-
-        dimensional species axis. Finite and strictly positive.
-    ns0 : real numeric
-        Species absolute number densities, entering the plasma frequency [m^-3] Shape: `(S,)` one-
-        dimensional species axis. Finite and strictly positive.
-    Ts0 : real numeric
-        Species temperatures, already converted to kelvin under the source convention [K] Shape: `(S,)` one-
-        dimensional species axis. Finite and strictly positive.
-    f : real numeric
-        Electromagnetic-wave frequency, converted to angular frequency and then entering the resonance
-        argument [Hz] Shape: scalar. Default: None. Finite and nonzero.
-    kz : real numeric
-        Wavevector component parallel to the magnetic field, entering the resonance argument and multiplying
-        the thermal speed [1/m] Shape: scalar. Finite; zero is allowed (source case 2 uses `kz=0.0`), in
-        which case $n_z=0$ and the parallel resonance argument reduces to $\omega/\omega_{cs}$.
-    kx : complex128
-        Wavevector component perpendicular to the magnetic field, giving $b=(k_\perp\rho_{cs})^2$ and the
-        refractive index [1/m] Shape: scalar (real or complex). Finite; complex values correspond to the
-        source fsolve solving in the complex kx plane, where $b$ has an imaginary part.
-    omega : real numeric
-        Directly supplied angular frequency that can replace `f` in the resonance argument (preserving the
-        source runtime's original angular-frequency token and avoiding the round trip through `2*pi*f`)
-        [rad/s] Shape: scalar. Default: None. Optional keyword argument, default `None`; exactly one of
-        `omega` and `f` must be supplied; when `omega` is given its value is used directly as $\omega$; `f`
-        is mutually exclusive and is not accepted.
-
-    Returns
-    -------
-    K : complex128
-        Dielectric tensor, with the convention
-        $K_{ij}=\delta_{ij}-\sigma_{ij}/(\mathrm{i}\omega\varepsilon_0)$ [dimensionless] Shape: `(3, 3)`
-        complex matrix with component-axis order x, y, z. Finite complex; antisymmetric pairs satisfy
-        $K_{yx}=-K_{xy}$ and $K_{zy}=-K_{yz}$.
-    D : complex128
-        Dispersion tensor including the Maxwell curl term [dimensionless] Shape: `(3, 3)` complex matrix
-        with component-axis order x, y, z. Finite complex; $D_{xx}=K_{xx}-n_z^2$,
-        $D_{yy}=K_{yy}-(n_x^2+n_z^2)$, $D_{zz}=K_{zz}-n_x^2$, $D_{xz}=D_{zx}=K_{xz}+n_xn_z$.
-    determinant : complex128
-        Dispersion determinant $\mathcal{D}=\det D$, whose zeros give the eigenmodes [dimensionless] Shape:
-        scalar complex. Finite complex.
-    omega : real numeric
-        Angular frequency converted from the input frequency [rad/s] Shape: scalar. Finite and nonzero.
-    nx : complex128
-        Perpendicular refractive index $c k_\perp/\omega$ [dimensionless] Shape: scalar. Finite.
-    nz : real numeric
-        Parallel refractive index $c k_\parallel/\omega$ [dimensionless] Shape: scalar. Finite.
-    vts : real numeric
-        Species thermal speeds $\sqrt{2k_BT_s/m_s}$ [m/s] Shape: `(S,)`. Strictly positive.
-    wcs : real numeric
-        Species signed cyclotron frequencies [rad/s] Shape: `(S,)`. Nonzero; sign follows qs.
-    wps2 : real numeric
-        Squared species plasma frequencies [rad^2/s^2] Shape: `(S,)`. Strictly positive.
-    as : complex128
-        Species $a_s=k_\perp\rho_{cs}$, the scale of the pole-coupling term $\sqrt2 a_s c_j/x_{sj}$
-        [dimensionless] Shape: `(S,)`. Finite; can be positive or negative for real kx, and is complex for
-        complex kx with no sign order defined.
-    b : complex128
-        Species Ronnmark parameter $\lambda_s=(k_\perp\rho_{cs})^2$ [dimensionless] Shape: `(S,)`.
-        Nonnegative real for real kx; complex for complex kx, with no nonnegativity order defined.
-    bzj : complex128
-        $J=8$ pole residues weighting the resonance term of each pole [dimensionless] Shape: `(8,)` one-
-        dimensional pole axis. Finite complex; the second half is the conjugate of the first half.
-    czj : complex128
-        $J=8$ pole positions giving the complex resonance offsets [dimensionless] Shape: `(8,)` one-
-        dimensional pole axis. Finite complex; the second half is the negative conjugate of the first half.
-    j_order : integer
-        Pole order, echoed so the resonance-block size can be checked [dimensionless] Shape: scalar integer.
-        Fixed at 8.
-    branches : string
-        Ronnmark branch label taken by each (species, pole) combination, used to check method-selector
-        coverage [not applicable] Shape: `(S*J,)` string sequence. Each element belongs to `RTAY(AL<4)`,
-        `RTAY(|Y|^2>75*AL)`, `RTAY(|Y|>40+AL/3)`, `RASY`, `RINT`.
-    tensor_convention : string
-        Text label for the tensor convention [not applicable] Shape: string. Fixed at `K_ij = delta_ij -
-        sigma_ij/(i*omega*epsilon0)`.
-
-    Raises
-    ------
-    ValueError
-        Raises ValueError for declared invalid inputs; numeric conversion errors may propagate for
-        unsupported Python objects.
-    FloatingPointError
-        If a required derived scale, R response, K/D tensor or determinant is
-        nonfinite or unrepresentable. A finite caller frequency whose conversion
-        overflows is a numerical failure. No partial tensor or fallback is returned.
-
-    See Also
-    --------
-    scirel.kinetic.ronnmark_r_function.evaluate_ronnmark_r : Related contract dependency.
-
-    Notes
-    -----
-    Replace the Z and harmonic response by J=8 resonance poles and the Ronnmark R function, add Maxwell
-    curl terms, and compute det(D). homogeneous magnetized Maxwellian multi-species plasma Assumptions:
-    Input units and normalization follow the declared ports; no physical parameters are inferred.
-
-    Independent Eq.(8) references at sixteen fixed inputs compare every complex
-    K/D entry and returned determinant with the actual binary64 pole table at
-    abs(product-B)/max(1,abs(B)) <= 2e-7. This finite-grid numerical diagnostic
-    does not establish Maxwellian Eq.(3) accuracy, a global bound, roots or damping.
-    B retains rounded-table moments and differs from inserting a pole Z directly
-    into Eq.(3). Its zero-kz cross-z residuals are not idealized to zero.
-    The table's source appearance is located; generation constraints and global
-    physical accuracy remain UNKNOWN. See tests/fixtures/kinetic_tensor/README.md
-    for independent regeneration, separate A/B identities and the original A
-    15/16 block with its separate small-kz successor. Omitted-tail bounds use an
-    exact finite center, not a total numerical-error enclosure.
-
-    Examples
-    --------
-    >>> from scirel.kinetic import evaluate_kinetic_dispersion_ronnmark
-    >>> r=evaluate_kinetic_dispersion_ronnmark(B0=1.0, qs=[-1.60217662e-19], ms=[9.1094e-31], ns0=[6.075e19], Ts0=[11604941.036704937],omega=1e11,kz=0,kx=1e4); assert r['D'].shape==(3,3)
-    """
-
-    if (f is None) == (omega is None):
-        raise ValueError("provide exactly one of f or omega")
     B0 = float(B0)
-    if omega is None:
-        f = float(f)
     kz = float(kz)
     response_kz = kz if kz >= 0.0 else -kz
     kx = complex(kx)
     if not np.isfinite(B0) or not np.isfinite(kz) or not np.isfinite(kx):
         raise ValueError("B0, kz and kx must be finite")
-    if f is not None and not np.isfinite(f):
-        raise ValueError("f must be finite")
     qs = np.asarray(qs, dtype=float)
     ms = np.asarray(ms, dtype=float)
     ns0 = np.asarray(ns0, dtype=float)
@@ -266,17 +136,9 @@ def evaluate_kinetic_dispersion_ronnmark(*, B0, qs, ms, ns0, Ts0, f=None, kz, kx
         raise ValueError("qs must be non-zero")
     if B0 == 0.0:
         raise ValueError("B0 must be non-zero: the gyrofrequency is proportional to B0")
-    if omega is not None:
-        omega = float(omega)
-        if not np.isfinite(omega) or omega == 0.0:
-            raise ValueError(
-                "omega must be finite and non-zero: it appears in the resonance argument"
-            )
-    else:
-        if f == 0.0:
-            raise ValueError("f must be non-zero: it sets the resonance frequency")
-        omega = 2.0 * np.pi * f
-        _require_finite("angular frequency converted from f", omega, nonzero=True)
+    omega = float(omega)
+    if not np.isfinite(omega) or omega == 0.0:
+        raise ValueError("omega must be finite and non-zero: it appears in the resonance argument")
 
     ronnmark = evaluate_ronnmark_r
     n_species = qs.size
@@ -317,7 +179,7 @@ def evaluate_kinetic_dispersion_ronnmark(*, B0, qs, ms, ns0, Ts0, f=None, kz, kx
             _require_finite(f"resonance argument species={s}, pole={j}", xsj)
             rc = ronnmark(xsj, b)
             rsj = rc["R"]
-            drsj = rc["dR_dlambda"]
+            drsj = rc["H"]
             branches.append(rc["branch"])
 
             x_xx = rsj

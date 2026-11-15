@@ -10,146 +10,21 @@ _C2 = (2.99792458e8) ** 2
 _EPSILON0 = 8.854187817e-12
 _KB = 1.38064852e-23
 
-__all__ = ["evaluate_fluid_kinetic_dispersion_sum"]
 
-
-def evaluate_fluid_kinetic_dispersion_sum(*, B0, qs, ms, ns0, Ts0, f, kz, kx, lmx=5):
-    r"""Assemble the Maxwellian 3x3 kinetic tensor by finite cyclotron-harmonic sum at the actual signed nonzero kz.
-
-    Parameters
-    ----------
-    B0 : real numeric
-        Background magnetic-field strength, setting the cyclotron frequency [T] Shape: scalar. Finite and
-        nonzero; the cyclotron frequency is proportional to B0.
-    qs : real numeric
-        Charge of each species, setting the sign of the cyclotron frequency [C] Shape: `(S,)` one-
-        dimensional species axis. Finite; element count matches the other species arrays.
-    ms : real numeric
-        Mass of each species, entering the thermal speed and cyclotron frequency [kg] Shape: `(S,)` one-
-        dimensional species axis. Finite and strictly positive.
-    ns0 : real numeric
-        Absolute number density of each species, entering the plasma frequency [m^-3] Shape: `(S,)` one-
-        dimensional species axis. Finite and strictly positive.
-    Ts0 : real numeric
-        Temperature of each species, already converted to kelvin under the source convention [K] Shape:
-        `(S,)` one-dimensional species axis. Finite and strictly positive.
-    f : real numeric
-        Electromagnetic wave frequency, converted to angular frequency and then entering the resonance
-        denominators and normalized refractive index [Hz] Shape: scalar. Finite and nonzero; omega is used
-        as a divisor.
-    kz : real numeric
-        Wavevector component parallel to the magnetic field, entering the parallel-resonance argument and
-        the Maxwell curl term [1/m] Shape: scalar. Finite and nonzero; the actual signed value is used
-        without a near-zero replacement. Zero is rejected before numerical work.
-    kx : real numeric
-        Wavevector component perpendicular to the magnetic field, giving the Bessel argument and the
-        refractive index [1/m] Shape: scalar. Finite.
-    lmx : integer
-        Bessel harmonic truncation order; the sum range is $|n|\le$ `lmx` [dimensionless] Shape: integer
-        scalar. Default: 5. Optional, default 5 (matching the frozen source implementation); must be a
-        nonnegative integer.
-
-    Returns
-    -------
-    K : complex128
-        Dielectric tensor under the convention
-        $K_{ij}=\delta_{ij}-\sigma_{ij}/(\mathrm{i}\omega\varepsilon_0)$ [dimensionless] Shape: `(3, 3)`
-        complex matrix with component axis order x, y, z. Finite complex numbers; the off-diagonal
-        antisymmetric pairs satisfy $K_{yx}=-K_{xy}$ and $K_{zy}=-K_{yz}$.
-    D : complex128
-        Dispersion tensor including the Maxwell curl term, that is, the matrix in which the dispersion
-        relation is expressed [dimensionless] Shape: `(3, 3)` complex matrix with component axis order x, y,
-        z. Finite complex numbers; $D_{xx}=K_{xx}-n_z^2$, $D_{yy}=K_{yy}-(n_x^2+n_z^2)$,
-        $D_{zz}=K_{zz}-n_x^2$, $D_{xz}=D_{zx}=K_{xz}+n_xn_z$.
-    determinant : complex128
-        Dispersion determinant $\mathcal{D}=\det D$; its zeros give the eigenmodes [dimensionless] Shape:
-        complex scalar. Finite complex numbers.
-    omega : real numeric
-        Angular frequency converted from the input frequency [rad/s] Shape: scalar. Finite and nonzero.
-    nx : real numeric
-        Perpendicular refractive index $c k_\perp/\omega$ [dimensionless] Shape: scalar. Finite.
-    nz : real numeric
-        Parallel refractive index $c k_\parallel/\omega$ [dimensionless] Shape: scalar. Finite.
-    vts : real numeric
-        Thermal speed of each species $\sqrt{2k_BT_s/m_s}$ [m/s] Shape: `(S,)`. Strictly positive.
-    wcs : real numeric
-        Signed cyclotron frequency of each species [rad/s] Shape: `(S,)`. Nonzero, with the sign following
-        qs*B0.
-    wps2 : real numeric
-        Plasma-frequency squared of each species [rad^2/s^2] Shape: `(S,)`. Strictly positive.
-    b : real numeric
-        Bessel argument of each species $b_s=(k_\perp\rho_{cs})^2$ [dimensionless] Shape: `(S,)`.
-        Nonnegative.
-    lmx : integer
-        Harmonic truncation order actually used, echoing the input [dimensionless] Shape: integer scalar.
-        Nonnegative integer.
-    tensor_convention : string
-        Text label of the tensor convention, for the caller to check the sign convention [not applicable]
-        Shape: string. Fixed to `K_ij = delta_ij - sigma_ij/(i*omega*epsilon0)`.
-
-    Raises
-    ------
-    ValueError
-        Raises ValueError for declared invalid inputs; numeric conversion errors may propagate for
-        unsupported Python objects. Zero kz is rejected before numerical work; use a finite nonzero
-        kz or explicitly select the separate Ronnmark zero-kz model.
-    FloatingPointError
-        If derived scales underflow to zero where nonzero is required or become nonfinite,
-        if special-function contributions, tensors or determinant are nonfinite or
-        unrepresentable, or if a positive harmonic tail cannot be represented reliably or
-        bounded within the evaluation budget. No partial tail or tensor is returned.
-        Other unexpected backend errors propagate.
-
-    See Also
-    --------
-    scirel.kinetic : Public kinetic-domain operators.
-
-    Notes
-    -----
-    Sum harmonics -lmx..lmx using scaled Bessel Gamma terms. The xx/xy/yy components retain N=64
-    Weideman Z. For each species with (abs(omega)+lmx*abs(wcs))/(abs(kz)*vts)<=1,
-    xz/yz/zz use z*Z(z) directly with the same Weideman Z, retaining the original +2*alpha*z0**2
-    in zz. Otherwise they use the analytic real-argument response A(z)=1+z*Z(z), evaluated
-    directly without subtracting two nearly equal terms. In that branch symmetric finite-sum
-    identities retain the endpoint Gamma_(N+1)-Gamma_N and the tail 1-sum(Gamma_n); the tail is
-    formed from positive terms when its complement is ill-conditioned. Every nonzero kz uses
-    its actual value and sign. D adds Maxwell curl terms to K and
-    determinant=det(D). Homogeneous magnetized Maxwellian plasma. Assumptions: Input units and
-    normalization follow the declared ports; no physical parameters are inferred.
-
-    This is a numerical-method correction of the same finite-harmonic model, not parity with
-    the frozen N=64 rational expression. The real-argument A and positive-tail evaluators are
-    shared with the conventional sum; the caller's lmx stays unchanged. The former implicit
-    abs(kz)<1e-10 replacement by +1e-10 is withdrawn because it breaks SI similarity and loses
-    the input sign. Its old values remain reproducible by explicitly passing kz=+1e-10.
-    At real b>0 and fixed finite N the zz expression retains
-    2*alpha*z0**2*(1-sum(Gamma_n)); its positive omitted tail prevents a general finite zero-kz
-    limit. The complete Maxwellian zero endpoint is a different limit, not a value supplied
-    here. Zero raises ValueError; callers may explicitly choose
-    evaluate_kinetic_dispersion_ronnmark under its separate zero-kz contract. No model is
-    selected automatically. Bounded tests compare full complex K/D against independent high-precision
-    finite sums; they do not prove a continuous-domain error bound or harmonic convergence. An insufficient
-    lmx can give a genuinely large tensor. An exhausted tail budget or unreliable positive tail
-    raises FloatingPointError instead of returning a partial sum or changing lmx. Root and determinant
-    accuracy are not established by the tensor comparisons.
-
-    Examples
-    --------
-    >>> from scirel.kinetic import evaluate_fluid_kinetic_dispersion_sum
-    >>> r=evaluate_fluid_kinetic_dispersion_sum(B0=1.0, qs=[-1.60217662e-19], ms=[9.1094e-31], ns0=[6.075e19], Ts0=[11604941.036704937], f=1e10, kz=1.0, kx=1.0); assert r['D'].shape==(3,3)
-    """
+def _evaluate(*, B0, qs, ms, ns0, Ts0, omega, kz, kx, lmx=5):
+    """Evaluate the original numerical path at the caller angular frequency."""
 
     B0 = float(B0)
-    f = float(f)
+    omega = float(omega)
     kz = float(kz)
     kx = float(kx)
-    if not np.isfinite([B0, f, kz, kx]).all():
-        raise ValueError("B0, f, kz and kx must be finite")
+    if not np.isfinite([B0, omega, kz, kx]).all():
+        raise ValueError("B0, omega, kz and kx must be finite")
     if kz == 0.0:
         raise ValueError(
             f"kz must be nonzero; received {kz!r} 1/m. Legal range: finite kz < 0 or kz > 0. "
             "For the separate Ronnmark zero-kz model explicitly use "
-            "evaluate_kinetic_dispersion_ronnmark; see scirel.kinetic.kinetic-dispersion-sum-fluid"
+            "evaluate_dielectric_response(method='ronnmark'); see scirel.kinetic.dielectric-response"
         )
     if isinstance(lmx, (bool, np.bool_)):
         raise ValueError("lmx must be a non-negative integer")
@@ -179,14 +54,13 @@ def evaluate_fluid_kinetic_dispersion_sum(*, B0, qs, ms, ns0, Ts0, f, kz, kx, lm
         raise ValueError("ns0 and Ts0 must be strictly positive")
     if B0 == 0.0:
         raise ValueError("B0 must be non-zero: the gyrofrequency is proportional to B0")
-    if f == 0.0:
-        raise ValueError("f must be non-zero: omega appears in the resonance denominators")
+    if omega == 0.0:
+        raise ValueError("omega must be non-zero: it appears in the resonance denominators")
     # Loading the shared numerical helpers imports SciPy; reject invalid inputs first.
-    from .kinetic_dispersion_sum_n import _a_function, _gamma_positive_tail
+    from ._dielectric_harmonic import _a_function, _gamma_positive_tail
 
     response_kz = kz if kz > 0.0 else -kz
 
-    omega = 2.0 * np.pi * f
     n_species = qs.size
     vts = np.sqrt(2.0 * _KB * Ts0 / ms)
     wcs = qs * B0 / ms
@@ -296,6 +170,7 @@ def evaluate_fluid_kinetic_dispersion_sum(*, B0, qs, ms, ns0, Ts0, f, kz, kx, lm
         "vts": vts,
         "wcs": wcs,
         "wps2": wps2,
+        "a": a_s,
         "b": bs,
         "lmx": lmx,
         "tensor_convention": "K_ij = delta_ij - sigma_ij/(i*omega*epsilon0)",

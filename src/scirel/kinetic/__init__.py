@@ -6,16 +6,14 @@ from importlib import import_module as _import_module
 __all__ = [
     "evaluate_plasma_dispersion",
     "evaluate_bessel_gamma",
-    "evaluate_kinetic_dispersion_sum",
+    "evaluate_dielectric_response",
+    "evaluate_dielectric_diagnostics",
     "derive_species_equilibrium_scales",
-    "evaluate_fluid_kinetic_dispersion_sum",
     "get_z_pole_coefficients",
     "get_gamma_lpole_coefficients",
     "assemble_fluid_dispersion_matrix",
     "solve_fluid_wavevector_eigenproblem",
     "evaluate_ronnmark_r",
-    "evaluate_kinetic_dispersion_ronnmark",
-    "evaluate_kinetic_dielectric_tensor",
     "solve_kinetic_wavevector_roots",
     "scan_fluid_wavevectors",
     "evaluate_kinetic_dispersion_relation",
@@ -53,19 +51,16 @@ __all__ = [
 ]
 
 _LAZY_EXPORTS = {
+    "evaluate_dielectric_response": ("dielectric_response", "evaluate_dielectric_response"),
+    "evaluate_dielectric_diagnostics": (
+        "dielectric_diagnostics",
+        "evaluate_dielectric_diagnostics",
+    ),
     "evaluate_plasma_dispersion": ("plasma_dispersion", "evaluate_plasma_dispersion"),
     "evaluate_bessel_gamma": ("bessel_gamma", "evaluate_bessel_gamma"),
-    "evaluate_kinetic_dispersion_sum": (
-        "kinetic_dispersion_sum_n",
-        "evaluate_kinetic_dispersion_sum",
-    ),
     "derive_species_equilibrium_scales": (
         "species_equilibrium_scales",
         "derive_species_equilibrium_scales",
-    ),
-    "evaluate_fluid_kinetic_dispersion_sum": (
-        "kinetic_dispersion_sum_fluid",
-        "evaluate_fluid_kinetic_dispersion_sum",
     ),
     "get_z_pole_coefficients": ("z_pole_coefficients", "get_z_pole_coefficients"),
     "get_gamma_lpole_coefficients": ("gamma_lpole_coefficients", "get_gamma_lpole_coefficients"),
@@ -78,14 +73,6 @@ _LAZY_EXPORTS = {
         "solve_fluid_wavevector_eigenproblem",
     ),
     "evaluate_ronnmark_r": ("ronnmark_r_function", "evaluate_ronnmark_r"),
-    "evaluate_kinetic_dispersion_ronnmark": (
-        "kinetic_dispersion_ronnmark",
-        "evaluate_kinetic_dispersion_ronnmark",
-    ),
-    "evaluate_kinetic_dielectric_tensor": (
-        "dielectric_tensor_diagnostic",
-        "evaluate_kinetic_dielectric_tensor",
-    ),
     "solve_kinetic_wavevector_roots": (
         "kinetic_wavevector_roots",
         "solve_kinetic_wavevector_roots",

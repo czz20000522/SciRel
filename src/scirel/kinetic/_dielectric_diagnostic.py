@@ -5,7 +5,6 @@ import operator as _operator
 
 import numpy as _np
 
-__all__ = ["evaluate_kinetic_dielectric_tensor"]
 
 _SPECIAL = None
 
@@ -178,7 +177,7 @@ def _gamma_complex_tail(b, start, limit=20000):
 def _gamma_tail(b, start):
     # The real positive kernel's positivity premise must not leak into complex b.
     if b.imag == 0 and b.real > 0:
-        from .kinetic_dispersion_sum_n import _gamma_positive_tail
+        from ._dielectric_harmonic import _gamma_positive_tail
 
         return _gamma_positive_tail(b.real, start)
     return _gamma_complex_tail(b, start)
@@ -239,175 +238,8 @@ def _complex_scalar(value, name):
     return out
 
 
-def evaluate_kinetic_dielectric_tensor(B0, qs, ms, ns0, Ts0, f, kz, kx, lmx=_LMX_DEFAULT):
-    r"""Evaluate all nine dielectric and dispersion tensor components using the source's default 15 harmonics.
-
-    Parameters
-    ----------
-    B0 : real numeric
-        Background magnetic-field strength; scalar; unit T (tesla); must be a finite nonzero real number
-        (`B0=0` degenerates `wcs` and `rhocs` and raises directly). [T] Shape: scalar. Must be a finite
-        nonzero real number (`B0=0` degenerates `wcs` and `rhocs` and raises directly).
-    qs : real numeric
-        Charge of each species; scalar or one-dimensional array of length `S`; unit C (coulomb); must be
-        finite and nonzero (zero charge gives `wps2=0` and `wcs=0`); the sign sets the gyration direction.
-        [C] Shape: scalar or (S,) species array. Finite and nonzero (zero charge gives `wps2=0` and
-        `wcs=0`); the sign sets the gyration direction.
-    ms : real numeric
-        Mass of each species; scalar or one-dimensional array of length `S`; unit kg; must be strictly
-        positive and finite. [kg] Shape: scalar or (S,) species array. Strictly positive and finite.
-    ns0 : real numeric
-        Number density of each species; scalar or one-dimensional array of length `S`; unit m^-3; must be
-        strictly positive and finite. [m^-3] Shape: scalar or (S,) species array. Strictly positive and
-        finite.
-    Ts0 : real numeric
-        Temperature of each species; scalar or one-dimensional array of length `S`; unit K (kelvin, **not**
-        eV); must be strictly positive and finite; the caller converts eV by multiplying by `1.6022e-19/kB`
-        (the frozen source comment states this convention). [K] Shape: scalar or (S,) species array.
-        Strictly positive and finite; the caller converts eV by multiplying by `1.6022e-19/kB` (the frozen
-        source comment states this convention).
-    f : real numeric
-        Electromagnetic wave frequency; scalar; unit Hz; must be a finite nonzero real number (`w=2*pi*f=0`
-        divides by zero); internally uses `w=2*pi*f` (frozen source). [Hz] Shape: scalar. Finite nonzero
-        real number (`w=2*pi*f=0` divides by zero); internally uses `w=2*pi*f` (frozen source).
-    kz : real numeric
-        Signed parallel wavenumber; the response uses abs(kz), while z0s retains its sign. No near-zero
-        clamp is applied. [rad/m] Shape: scalar. Finite and nonzero.
-    kx : complex128
-        Perpendicular wavenumber; finite real or complex scalar. At kx=0, as and bs are zero.
-        test_zero_wavevector_boundaries_are_preserved checks K and D entry by entry: xx, yy, xz
-        and zx are nonfinite; xy, yx, yz, zy and zz are finite for its regular endpoint sample,
-        with zz also checked against an independent analytic expression. This does not
-        regularize the singular entries or certify extreme-scale representability. [rad/m]
-        Shape: scalar. Finite real or complex scalar. At kx=0, as and bs are zero.
-        test_zero_wavevector_boundaries_are_preserved checks K and D entry by entry: xx, yy, xz
-        and zx are nonfinite; xy, yx, yz, zy and zz are finite for its regular endpoint sample,
-        with zz also checked against an independent analytic expression. This does not
-        regularize the singular entries or certify extreme-scale representability.
-
-    lmx : integer
-        Bessel harmonic-sum truncation limit; integer scalar; dimensionless; must be a nonnegative integer,
-        default `15` (frozen source); increase it to check convergence. [dimensionless] Shape: scalar.
-        Default: 15. Nonnegative integer, default `15` (frozen source); increase it to check convergence.
-
-    Returns
-    -------
-    K : complex128 array
-        Kinetic dielectric tensor with x-y-z row/column axes, initialized to the identity. At
-        kx=0, as and bs are zero. test_zero_wavevector_boundaries_are_preserved checks K and D
-        entry by entry: xx, yy, xz and zx are nonfinite; xy, yx, yz, zy and zz are finite for
-        its regular endpoint sample, with zz also checked against an independent analytic
-        expression. This does not regularize the singular entries or certify extreme-scale
-        representability. [dimensionless] Shape: (3,3). Finite-N tensor; At kx=0, as and bs are
-        zero. test_zero_wavevector_boundaries_are_preserved checks K and D entry by entry: xx,
-        yy, xz and zx are nonfinite; xy, yx, yz, zy and zz are finite for its regular endpoint
-        sample, with zz also checked against an independent analytic expression. This does not
-        regularize the singular entries or certify extreme-scale representability. No
-        continuous-domain accuracy guarantee.
-    D : complex128 array
-        Dispersion tensor `D_ij`; `(3,3)` complex `numpy.ndarray`; dimensionless; obtained from `K` by
-        adding `nx^2`, `nz^2` and `nx*nz`; when `K` is `NaN` the corresponding components are also `NaN`.
-        [dimensionless] Shape: (3,3). Dispersion tensor `D_ij`; `(3,3)` complex `numpy.ndarray`;
-        dimensionless; obtained from `K` by adding `nx^2`, `nz^2` and `nx*nz`; when `K` is `NaN` the
-        corresponding components are also `NaN`.
-    det_D : complex128
-        Dispersion determinant from the original explicit six-term expansion. Tensor comparisons do not
-        certify determinant or root accuracy. [dimensionless] Shape: scalar.
-    w : real numeric
-        Angular frequency; real scalar; unit rad/s; equal to `2*pi*f` and defined only when `f` is nonzero.
-        [rad/s] Shape: scalar. Angular frequency; real scalar; unit rad/s; equal to `2*pi*f` and defined
-        only when `f` is nonzero.
-    vts : float64 array
-        Thermal speed `sqrt(2*kB*Ts0/ms)` of each species; real array of shape `(S,)`; unit m/s; must be
-        strictly positive. [m/s] Shape: (S,) species array. Strictly positive.
-    wcs : float64 array
-        Cyclotron frequency `qs*B0/ms` of each species; real array of shape `(S,)`; unit rad/s; carries the
-        sign of qs*B0 and is nonzero when `B0` is nonzero. [rad/s] Shape: (S,) species array. Cyclotron
-        frequency `qs*B0/ms` of each species; real array of shape `(S,)`; unit rad/s; carries the charge
-        times B0 sign and is nonzero when `B0` is nonzero.
-    wps2 : float64 array
-        Plasma-frequency squared `ns0*qs^2/ms/epsilon0` of each species; real array of shape `(S,)`; unit
-        s^-2; nonnegative. [s^-2] Shape: (S,) species array. Plasma-frequency squared `ns0*qs^2/ms/epsilon0`
-        of each species; real array of shape `(S,)`; unit s^-2; nonnegative.
-    rhocs : float64 array
-        Gyroradius `sqrt(kB*Ts0/ms)/wcs` of each species; real array of shape `(S,)`; unit m; signed and
-        defined when `wcs` is nonzero. [m] Shape: (S,) species array. Gyroradius `sqrt(kB*Ts0/ms)/wcs` of
-        each species; real array of shape `(S,)`; unit m; signed and defined when `wcs` is nonzero.
-    nx : complex128
-        Perpendicular refractive index `sqrt(c2)*kx/w`; complex scalar; dimensionless; defined when `w` is
-        nonzero and complex whenever `kx` is complex. [dimensionless] Shape: scalar. Perpendicular
-        refractive index `sqrt(c2)*kx/w`; complex scalar; dimensionless; defined when `w` is nonzero and
-        complex whenever `kx` is complex.
-    nz : complex128
-        Parallel refractive index `sqrt(c2)*kz/w`; complex scalar; dimensionless; a real scalar when `w` is
-        nonzero. [dimensionless] Shape: scalar. Parallel refractive index `sqrt(c2)*kz/w`; complex scalar;
-        dimensionless; a real scalar when `w` is nonzero.
-    as : complex128 array
-        `kx*rhocs` of each species; complex array of shape `(S,)`; dimensionless; reduces to real when `kx`
-        is real. [dimensionless] Shape: (S,) species array. `kx*rhocs` of each species; complex array of
-        shape `(S,)`; dimensionless; reduces to real when `kx` is real.
-    bs : complex128 array
-        Per-species bs=as**2. At kx=0 this diagnostic array is zero; the singular Gamma_n(b)/b
-        factors in transverse entries do not imply a nonfinite zz component. [dimensionless]
-        Shape: (S,) species array. Equals as**2; shape (S,). kx=0 retains zero bs and the
-        component-specific tensor endpoint behavior.
-    z0s : complex128 array
-        `z0=w/(kz*vts)` of each species; complex array of shape `(S,)`; dimensionless; diagnostic only and
-        not accumulated downstream. [dimensionless] Shape: (S,) species array. `z0=w/(kz*vts)` of each
-        species; complex array of shape `(S,)`; dimensionless; diagnostic only and not accumulated
-        downstream.
-    lmx : integer
-        Harmonic truncation limit actually used; integer scalar; dimensionless; equals the supplied `lmx` so
-        the summation range can be reproduced. [dimensionless] Shape: scalar. Harmonic truncation limit
-        actually used; integer scalar; dimensionless; equals the supplied `lmx` so the summation range can
-        be reproduced.
-
-    Raises
-    ------
-    ValueError
-        For declared invalid inputs; numeric conversion errors may propagate for unsupported objects.
-    FloatingPointError
-        If derived scales underflow to zero where nonzero is required or become nonfinite,
-        required finite tensor components are unavailable, a tail cannot be represented
-        reliably or bounded within its term budget, or complex-tail cancellation is severe.
-        Only the original kx=0 nonfinite xx, yy, xz and zx entries and resulting determinant
-        are retained; xy, yx, yz, zy and zz in both K and D must remain finite.
-        No partial tail or mapping is returned after an exception. Other unexpected backend
-        errors propagate.
-
-    See Also
-    --------
-    scirel.kinetic : Public kinetic-domain operators.
-
-    Notes
-    -----
-    Sum l=-lmx..lmx Maxwellian contributions and form D with Maxwell curl terms. The xx/xy/yy entries
-    retain the N=64 Weideman Z backend. When every harmonic |z|<=1 for a species, xz/yz/zz use direct
-    z*Z and the original additive zz term, so A near 1 does not destroy a small response. Otherwise
-    they use analytic real A(z)=1+z*Z(z) without subtracting nearly equal terms. The real A and
-    positive-b tail kernels are shared with the conventional sum. Even for complex kx, z remains real;
-    only a, b and the Gamma weights are complex.
-    The antisymmetric xy/yx pair sums real and imaginary contributions separately with fsum,
-    reducing cancellation in the original sequential harmonic accumulation without changing Z.
-    Symmetric finite-sum identities keep the endpoint Gamma_(N+1)-Gamma_N and the full omitted Gamma
-    tail. For complex or negative b, sum the complex tail with a bound derived from
-    |I_n(b)|<=I_n(|b|) and the positive Bessel generating function (DLMF 10.25.2, 10.35.1).
-
-    This corrects the numerical method of the same finite-N model; it is not exact parity with the
-    frozen N=64 rational expression. The remainder bound covers omitted exact terms, not backend or
-    rounding errors. Complex accumulation uses separate compensated component sums and rejects severe
-    cancellation. Tail-budget exhaustion, underflow or nonfinite terms raise FloatingPointError; no partial
-    tail is returned. Bounded independent 140/180-digit references test complete complex K/D at 2e-12
-    for selected real/complex inputs. They do not prove a continuous-domain error bound, harmonic
-    convergence, or determinant/root accuracy. A genuinely large finite-N tail is retained. Default
-    lmx=15, scalar species broadcasting, signed diagnostics, kx=0 behavior and the six-term determinant
-    stay unchanged. Homogeneous magnetized Maxwellian plasma; no physical parameters are inferred.
-
-    Examples
-    --------
-    >>> from scirel.kinetic import evaluate_kinetic_dielectric_tensor
-    >>> r=evaluate_kinetic_dielectric_tensor(B0=1.0, qs=[-1.60217662e-19], ms=[9.1094e-31], ns0=[6.075e19], Ts0=[11604941.036704937],f=1e10,kz=1,kx=1e4); assert r['K'].shape==(3,3)
-    """
+def _evaluate(*, B0, qs, ms, ns0, Ts0, omega, kz, kx, lmx=_LMX_DEFAULT):
+    """Evaluate the original numerical path at the caller angular frequency."""
     try:
         lmx = _operator.index(lmx)
     except TypeError:
@@ -416,15 +248,15 @@ def evaluate_kinetic_dielectric_tensor(B0, qs, ms, ns0, Ts0, f, kz, kx, lmx=_LMX
         raise ValueError("lmx must be a non-negative integer, got %d" % lmx)
 
     b0 = _real_scalar(B0, "B0")
-    freq = _real_scalar(f, "f")
+    w = _real_scalar(omega, "omega")
     kz_c = _real_scalar(kz, "kz")
     response_kz = kz_c if kz_c > 0.0 else -kz_c
     kx_c = _complex_scalar(kx, "kx")
 
     if b0 == 0:
         raise ValueError("B0 must be non-zero: wcs and rhocs degenerate at B0=0")
-    if freq == 0:
-        raise ValueError("f must be non-zero: w=2*pi*f=0 divides by zero")
+    if w == 0:
+        raise ValueError("omega must be non-zero: it divides the response")
     if kz_c == 0:
         raise ValueError("kz must be non-zero: z0 and zn divide by kz")
 
@@ -438,7 +270,6 @@ def evaluate_kinetic_dielectric_tensor(B0, qs, ms, ns0, Ts0, f, kz, kx, lmx=_LMX
     if _np.any(ts0_a <= 0):
         raise ValueError("Ts0 must be strictly positive (Kelvin, not eV)")
 
-    w = 2.0 * _np.pi * freq
     c = _np.sqrt(_C2)
 
     with _np.errstate(invalid="ignore", divide="ignore", over="ignore"):
@@ -482,7 +313,7 @@ def evaluate_kinetic_dielectric_tensor(B0, qs, ms, ns0, Ts0, f, kz, kx, lmx=_LMX
         sqrt2 = _np.sqrt(2.0)
 
         # bonk/fDtensor.m:48-78
-        from .kinetic_dispersion_sum_n import _a_function
+        from ._dielectric_harmonic import _a_function
 
         for j in range(species_count):
             z0 = w / (response_kz * vts[j])

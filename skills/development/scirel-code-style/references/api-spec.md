@@ -59,7 +59,7 @@ A model family is one physical relation computed by several models or fits — f
 | --- | --- |
 | One entry per family | Select the model with a closed `method=` keyword, as in `scipy.optimize.minimize`. The default is stated in the contract with its reason; prefer the newer, better supported fit |
 | Same physical inputs | Members use the same physical parameter names, units and axis order. A model-specific *numeric* control (truncation order, tolerance, iteration cap) may exist, but passing it to a model that does not use it raises `TypeError` naming the parameter, the violated condition, the legal values and the contract ID |
-| Same Result keys | Members return the same set of keys. A quantity a model cannot provide is absent, never `nan`. A single returned quantity is returned directly, without method or order metadata |
+| Same Result keys | Members return the same common scientific keys, including inside nested results. Only method-specific algorithm records explicitly enumerated in the contract may differ or be absent; no `None`/`nan` placeholders stand in for an unavailable scientific quantity. Raw partial diagnostics require a separate diagnostic callable and contract. A single returned quantity is returned directly, without method or order metadata |
 | Range per model | Each `method` declares its own applicability, and out-of-range behaviour follows "Returns and errors" |
 | Ownership | Approved membership is recorded once in the callable's contract `family` field. One public callable has one contract; its named `methods` retain each fit's range, failures and evidence. The family index is generated from contracts and never committed |
 

@@ -5,6 +5,8 @@ from fractions import Fraction
 
 import numpy as _np
 
+from .._result import Result
+
 __all__ = ["evaluate_ronnmark_r"]
 
 _PI = _np.pi
@@ -341,7 +343,7 @@ def _complex_gt(lhs, rhs):
 
 
 def evaluate_ronnmark_r(x, lambda_):
-    """Evaluate R(x, lambda) and dR/dlambda(x, lambda) via the RYLA selector.
+    """Evaluate R(x, lambda) and H=d(lambda*R)/dlambda via the RYLA selector.
 
     Parameters
     ----------
@@ -358,7 +360,7 @@ def evaluate_ronnmark_r(x, lambda_):
     -------
     R : complex
         Value ``R(x, lambda) = RC(0, 0)`` [dimensionless].
-    dR_dlambda : complex
+    H : complex
         Value ``RC(0, 1)``, equal to ``d(lambda*R)/dlambda`` [dimensionless].
     branch : str
         Selected algorithm branch [dimensionless]: ``'RTAY(AL<4)'``,
@@ -379,7 +381,7 @@ def evaluate_ronnmark_r(x, lambda_):
 
     See Also
     --------
-    scirel.kinetic.evaluate_kinetic_dispersion_ronnmark : Ronnmark
+    scirel.kinetic.evaluate_dielectric_response : Ronnmark
         dispersion-tensor assembly.
     scirel.kinetic.evaluate_plasma_dispersion : Maxwellian Z family with the SciPy default.
 
@@ -463,9 +465,11 @@ def evaluate_ronnmark_r(x, lambda_):
             "see the ronnmark-r-function contract; no alternate branch was used"
         )
 
-    return {
-        "R": complex(rc[0, 0]),
-        "dR_dlambda": complex(rc[0, 1]),
-        "branch": branch,
-        "RC": rc,
-    }
+    return Result(
+        {
+            "R": complex(rc[0, 0]),
+            "H": complex(rc[0, 1]),
+            "branch": branch,
+            "RC": rc,
+        }
+    )
