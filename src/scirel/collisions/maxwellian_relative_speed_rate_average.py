@@ -64,6 +64,8 @@ nonnegative radial axis, and does not converge the quadrature for the caller.
 
 from __future__ import annotations
 
+from fractions import Fraction
+
 import numpy as np
 from scipy.special import logsumexp
 
@@ -169,29 +171,102 @@ def _mesh_log_probabilities(radial, axial, volume, tnorm_ev, target_temperature_
     return log_weight - logsumexp(log_weight)
 
 
-def _relative_kinematics(energies, radial, axial, thermal_speed, particle_mass_amu):
-    """Build relative speed and collision energy arrays for every beam energy."""
-    with np.errstate(over="ignore", invalid="ignore"):
-        particle_vx = (
-            np.sqrt(2.0 * ELEMENTARY_CHARGE_C * energies / (particle_mass_amu * AMU_KG))
-            / thermal_speed
+def _kinematic_scale(numerators, denominators=(), *, square_root=False, binary_power=0):
+    """Keep a nonnegative product/ratio as a mantissa and a separate binary scale."""
+    mantissa, power = 1.0, np.asarray(binary_power, dtype=np.int64)
+    for factor in numerators:
+        part, exponent = np.frexp(factor)
+        mantissa = mantissa * part
+        power = power + exponent
+    for factor in denominators:
+        part, exponent = np.frexp(factor)
+        mantissa = mantissa / part
+        power = power - exponent
+    if square_root:
+        mantissa = np.sqrt(np.ldexp(mantissa, power % 2))
+        power = power // 2
+    mantissa, adjustment = np.frexp(mantissa)
+    return mantissa, power + adjustment
+
+
+def _fraction_scale(value):
+    """Round a rational's significand, without rounding its magnitude to zero."""
+    if not value:
+        return 0.0, 0
+    power = abs(value.numerator).bit_length() - value.denominator.bit_length()
+    scaled = value / (1 << power) if power >= 0 else value * (1 << -power)
+    mantissa, adjustment = np.frexp(float(scaled))
+    return mantissa, power + adjustment
+
+
+def _relative_kinematics(energies, radial, axial, tnorm_ev, particle_mass_amu, target_mass_amu):
+    """Stable equivalent projectile-mass kinematics; no reduced-mass conversion."""
+    beam_mantissa, beam_power = _kinematic_scale(
+        (energies, target_mass_amu),
+        (tnorm_ev, particle_mass_amu),
+        square_root=True,
+    )
+    axial_mantissa, axial_power = np.frexp(axial)
+    # A zero's frexp exponent is arbitrary: it must not force a tiny nonzero
+    # component down to that exponent. All alignment arithmetic stays scaled.
+    common_power = np.maximum(
+        np.where(axial_mantissa != 0.0, axial_power, beam_power[:, None]),
+        np.where(beam_mantissa[:, None] != 0.0, beam_power[:, None], axial_power),
+    )
+    scaled_axial = np.ldexp(axial_mantissa, axial_power - common_power)
+    scaled_beam = np.ldexp(beam_mantissa[:, None], beam_power[:, None] - common_power)
+    delta_mantissa, delta_adjustment = np.frexp(scaled_axial - scaled_beam)
+    delta_power = common_power + delta_adjustment
+    close = (scaled_axial > 0.0) & (
+        np.abs(scaled_axial - scaled_beam) <= 0.0625 * np.maximum(scaled_axial, scaled_beam)
+    )
+    # x-sqrt(b) = (x*x-b)/(x+sqrt(b)). Only the potentially cancelling
+    # energy/axial pairs need exact binary-input numerators; the radial axis
+    # is not part of this loop. The branch limits cancellation in the direct
+    # subtraction; it is an arithmetic choice, not a physical speed cutoff.
+    axial_fractions = {}
+    for energy_index in np.flatnonzero(np.any(close, axis=1)):
+        beam_square = (
+            Fraction(float(energies[energy_index]))
+            * Fraction(target_mass_amu)
+            / (Fraction(tnorm_ev) * Fraction(particle_mass_amu))
         )
-        if np.any((energies > 0.0) & (particle_vx == 0.0)):
-            raise ValueError("the sampled particle speeds are not representable")
-        axial_difference = axial[None, None, :] - particle_vx[:, None, None]
-        relative_speed = np.sqrt(radial[None, :, None] ** 2 + axial_difference**2)
-        nonzero_separation = (radial[None, :, None] != 0.0) | (axial_difference != 0.0)
-        if np.any(nonzero_separation & (relative_speed == 0.0)):
-            raise ValueError("the sampled relative speeds are not representable")
-        collision_energy = (
-            0.5
-            * thermal_speed**2
-            * relative_speed**2
-            * particle_mass_amu
-            * AMU_KG
-            / ELEMENTARY_CHARGE_C
-        )
-    return relative_speed, collision_energy
+        power = int(beam_power[energy_index])
+        beam = Fraction(float(beam_mantissa[energy_index]))
+        beam = beam * (1 << power) if power >= 0 else beam / (1 << -power)
+        for axial_index in np.flatnonzero(close[energy_index]):
+            coordinate = axial_fractions.setdefault(
+                axial_index, Fraction(float(axial[axial_index]))
+            )
+            denominator = coordinate + beam
+            difference = (coordinate**2 - beam_square) / denominator
+            delta_mantissa[energy_index, axial_index], delta_power[energy_index, axial_index] = (
+                _fraction_scale(difference)
+            )
+    # Compute energy from the component square sum, not hypot(...)**2:
+    # rounding the norm and squaring again can cross a callback threshold.
+    radial_mantissa, radial_power = np.frexp(radial[None, :, None])
+    delta_mantissa = delta_mantissa[:, None, :]
+    delta_power = delta_power[:, None, :]
+    norm_power = np.maximum(
+        np.where(radial_mantissa != 0.0, radial_power, delta_power),
+        np.where(delta_mantissa != 0.0, delta_power, radial_power),
+    )
+    radial_fraction = np.ldexp(radial_mantissa, radial_power - norm_power)
+    axial_fraction = np.ldexp(delta_mantissa, delta_power - norm_power)
+    speed_mantissa, speed_adjustment = np.frexp(np.hypot(radial_fraction, axial_fraction))
+    square_sum = radial_fraction**2 + axial_fraction**2
+    energy_mantissa, energy_power = _kinematic_scale(
+        (tnorm_ev, particle_mass_amu, square_sum),
+        (target_mass_amu,),
+        binary_power=2 * norm_power,
+    )
+    collision_energy = np.ldexp(energy_mantissa, energy_power)
+    if np.any(~np.isfinite(collision_energy)) or np.any(
+        (energy_mantissa > 0.0) & (collision_energy == 0.0)
+    ):
+        raise ValueError("the sampled collision energies are not representable")
+    return (speed_mantissa, norm_power + speed_adjustment), collision_energy
 
 
 def average_cross_section_over_maxwellian(
@@ -258,7 +333,7 @@ def average_cross_section_over_maxwellian(
     ValueError
         If an input is not real numeric, finite, correctly shaped or within its
         stated sign or positivity domain; if the target mesh cannot be normalized,
-        sampled speeds, collision energies or the computed rate are not representable
+        sampled collision energies or the computed rate are not representable
         (including a positive rate rounded to zero); if ``cross_section_m2`` is not
         callable; or if the callable returns a wrong-shape, non-finite or negative
         array. Exceptions raised by the callable itself propagate unchanged.
@@ -302,11 +377,18 @@ def average_cross_section_over_maxwellian(
     raises ValueError; exact zero cross sections or relative speeds still give
     an exact zero rate.
 
-    The original speed and collision-energy arithmetic is retained. Near a
-    comoving beam, a tiny representational beam-speed offset can therefore give
-    a nonzero relative speed even when exact real arithmetic would give zero.
-    Subnormal thermal-speed intermediates can also lose relative precision.
-    Gaussian probability stabilization does not repair those kinematic errors.
+    Cancel the common constants before evaluating the normalized beam speed:
+    ``u = sqrt(E * m_target / (T_norm * m_particle))``. When positive ``vx``
+    and ``u`` differ by at most one sixteenth of their maximum, evaluate
+    ``vx-u = (vx**2-u**2)/(vx+u)`` with an exact binary-input rational numerator
+    and a rounded positive denominator. This branch avoids subtracting rounded
+    square roots; it runs only over close energy/axial-coordinate pairs. Other
+    pairs use scaled subtraction. Keep the thermal speed, normalized beam and
+    relative norm as binary mantissas and powers through the weighted sum.
+    Form ``E_rel = T_norm * (m_particle/m_target) * (vr**2 + (vx-u)**2)``
+    from scaled components, before rounding the norm. Only collision energies
+    passed to the callback and the final rate must be materialized as float64;
+    an unrepresentable intermediate speed alone does not require rejection.
 
     Examples
     --------
@@ -398,18 +480,22 @@ def average_cross_section_over_maxwellian(
     # the explicit non-finite checks below detect and report as ValueError, so
     # they are suppressed rather than reported twice.
     with np.errstate(over="ignore", invalid="ignore", divide="ignore", under="ignore"):
-        thermal_speed = np.sqrt(2.0 * ELEMENTARY_CHARGE_C * tnorm_ev / (target_mass_amu * AMU_KG))
+        thermal_mantissa, thermal_power = _kinematic_scale(
+            (2.0, ELEMENTARY_CHARGE_C, tnorm_ev),
+            (target_mass_amu, AMU_KG),
+            square_root=True,
+        )
         log_probability = _mesh_log_probabilities(
             radial, axial, volume, tnorm_ev, target_temperature_ev
         )
-        relative_speed, collision_energy = _relative_kinematics(
-            energies, radial, axial, thermal_speed, particle_mass_amu
+        (speed_mantissa, speed_power), collision_energy = _relative_kinematics(
+            energies, radial, axial, tnorm_ev, particle_mass_amu, target_mass_amu
         )
         # Extreme-but-finite inputs can overflow this intermediate array.  The
         # failure contract requires rejecting it here, before the caller's
         # cross-section callable observes a value the asset never declared.
         if not bool(np.all(np.isfinite(collision_energy))) or bool(
-            np.any((relative_speed > 0.0) & (collision_energy == 0.0))
+            np.any((speed_mantissa > 0.0) & (collision_energy == 0.0))
         ):
             raise ValueError(
                 "the sampled collision energies are not representable for these finite inputs"
@@ -424,11 +510,9 @@ def average_cross_section_over_maxwellian(
     with np.errstate(over="ignore", invalid="ignore", divide="ignore", under="ignore"):
         # Do not materialize p, sigma*v_rel or volume*sigma: any one may
         # underflow/overflow even when the complete positive average is finite.
-        positive_cell = (cross_section > 0.0) & (relative_speed > 0.0)
+        positive_cell = (cross_section > 0.0) & (speed_mantissa > 0.0)
         positive_rate = np.any(positive_cell, axis=(1, 2))
         sigma_mantissa, sigma_power = np.frexp(cross_section)
-        speed_mantissa, speed_power = np.frexp(relative_speed)
-        thermal_mantissa, thermal_power = np.frexp(thermal_speed)
         cell_power = sigma_power + speed_power + thermal_power
         common_power = np.max(
             np.where(positive_cell, cell_power, np.iinfo(np.int32).min), axis=(1, 2)

@@ -13,7 +13,6 @@ archived implementation when its root is supplied.
 from __future__ import annotations
 
 import inspect
-import math
 from decimal import Decimal, localcontext
 
 import numpy as np
@@ -405,15 +404,12 @@ def test_a_nonrepresentable_rate_is_rejected_rather_than_returned():
 
 
 def test_nonrepresentable_collision_energies_are_rejected_before_the_callback():
-    """An extreme-but-finite energy overflows the collision-energy arithmetic.
+    """A genuinely unrepresentable collision energy fails before the callback.
 
-    ``2 e E / (m amu)`` overflows for ``E = 1e308``, so the sampled
-    collision energies are infinite while every input satisfies the stated
-    finite domain.  The public failure contract requires the asset itself to
-    reject them *before* the cross-section callable is invoked: the saved
-    implementation handed the non-finite array to the callback first, so a
-    validating callback observed values the asset never declared, and the
-    asset's own failure surfaced only after the callback had run.
+    With unit masses/temperatures, the beam speed is 1e154, the target axial
+    speed is -1e154 and the projectile-mass collision energy is 4e308 eV.
+    The former small-mesh E=1e308 fixture had a representable mathematical
+    energy and now belongs to the independent successful-input matrix below.
     """
     observed = []
 
@@ -422,7 +418,17 @@ def test_nonrepresentable_collision_energies_are_rejected_before_the_callback():
         return np.full_like(energy, SIGMA_CONST)
 
     with pytest.raises(ValueError) as raised:
-        _call(energies=np.array([1.0e308]), sigma=recording_sigma)
+        _call(
+            energies=np.array([1.0e308]),
+            vx=np.array([-1e154]),
+            vr=np.array([0.0]),
+            volume=np.ones((1, 1)),
+            tnorm_ev=1.0,
+            target_mass_amu=1.0,
+            particle_mass_amu=1.0,
+            target_temperature_ev=1.0,
+            sigma=recording_sigma,
+        )
     assert "not representable" in str(raised.value)
     assert observed == [], "the callable must not observe non-finite collision energies"
 
@@ -595,7 +601,7 @@ def test_an_empty_mesh_has_no_normalizable_target_mass(vr, vx):
     assert observed == []
 
 
-@pytest.mark.parametrize("radius,energy", [(1e-200, 0.0), (1e-160, 0.0), (0.0, 5e-324)])
+@pytest.mark.parametrize("radius,energy", [(1e-200, 0.0)])
 def test_underflowing_kinematics_are_rejected_before_the_callback(radius, energy):
     observed = []
 
@@ -662,20 +668,10 @@ def test_compensating_weights_keep_readonly_inputs_and_callback_shape():
 
 def test_common_axial_exponent_keeps_radial_probability_for_comoving_beam():
     # Review A: the common exp(-1e16) cancels; it must not erase exp(-vr**2).
-    # The retained float64 kinematics give beam=100000000.00000001, not 1e8.
-    # Bind that original arithmetic independently, then use Decimal probabilities;
-    # do not absorb the tiny nonzero relative speed into a changed tolerance.
-    thermal = math.sqrt(2.0 * 1.602177e-19 / 1.6726231e-27)
-    beam = math.sqrt(2.0 * 1.602177e-19 * 1e16 / 1.6726231e-27) / thermal
-    assert beam == np.nextafter(1e8, np.inf)
     with localcontext() as context:
         context.prec = 100
-        d = Decimal.from_float
-        delta = abs(d(1e8) - d(beam))
-        tail = Decimal(-1).exp()
-        expected = float(
-            d(thermal) * d(1e-20) * (delta + tail * (1 + delta * delta).sqrt()) / (1 + tail)
-        )
+        vth = (2 * Decimal("1.602177e-19") / Decimal("1.6726231e-27")).sqrt()
+        expected = float(vth * Decimal.from_float(1e-20) / (1 + Decimal(1).exp()))
     actual = average_cross_section_over_maxwellian(
         particle_energy_ev=np.array([1e16]),
         particle_mass_amu=1.0,
@@ -747,10 +743,7 @@ def test_neighboring_large_coordinates_keep_the_scaled_square_difference():
         a, b = map(d, radial)
         delta = (b * b - a * a) * d(norm)
         p1 = (-delta).exp() / (1 + (-delta).exp())
-        # The original 2*e*T_norm intermediate is subnormal here. This test
-        # isolates Gaussian accuracy; its speed unit binds the unchanged scalar
-        # expression rather than claiming that expression is high precision.
-        vth = d(math.sqrt(2.0 * 1.602177e-19 * norm / 1.6726231e-27))
+        vth = (2 * Decimal("1.602177e-19") * d(norm) / Decimal("1.6726231e-27")).sqrt()
         expected = float(vth * b * d(1e-20) * p1)
     actual = average_cross_section_over_maxwellian(
         particle_energy_ev=np.array([0.0]),
@@ -828,3 +821,157 @@ def test_unrepresentable_combined_gaussian_difference_is_rejected_before_callbac
             sigma=sigma,
         )
     assert seen == []
+
+
+def _decimal_physical_kinematics(energies, radial, axial, volume, norm, mp, mt, temperature):
+    """200-digit public-input physics reference; no production arithmetic enters.
+
+    It independently evaluates physical velocities and projectile-mass collision
+    energy, then normalizes scalar Gaussian cell weights. The callback used in
+    these tests is a constant 1e-20 m2, independently frozen here too.
+    """
+    with localcontext() as context:
+        context.prec = 200
+        d = lambda value: Decimal.from_float(float(value))
+        charge, hydrogen = Decimal("1.602177e-19"), Decimal("1.6726231e-27")
+        norm, mp, mt, temperature = map(d, (norm, mp, mt, temperature))
+        thermal = (2 * charge * norm / (mt * hydrogen)).sqrt()
+        radial, axial = list(map(d, radial)), list(map(d, axial))
+        r0, x0 = min(map(abs, radial)), min(map(abs, axial))
+        cells = []
+        for i, r in enumerate(radial):
+            for j, x in enumerate(axial):
+                exponent = ((r * r - r0 * r0) + (x * x - x0 * x0)) * norm / temperature
+                cells.append((r * thermal, x * thermal, d(volume[i, j]) * (-exponent).exp()))
+        denominator = sum(w for _, _, w in cells)
+        rates, collision = [], []
+        for energy in energies:
+            beam = (2 * charge * d(energy) / (mp * hydrogen)).sqrt()
+            terms, sampled = [], []
+            for r, x, weight in cells:
+                speed2 = r * r + (x - beam) ** 2
+                terms.append(weight * d(1e-20) * speed2.sqrt())
+                sampled.append(float(mp * hydrogen * speed2 / (2 * charge)))
+            rates.append(float(sum(terms) / denominator))
+            collision.append(sampled)
+        return np.asarray(rates), np.asarray(collision).reshape(
+            len(energies), len(radial), len(axial)
+        )
+
+
+@pytest.mark.parametrize(
+    "energies,radial,axial,norm,mp,mt,temperature",
+    [
+        ([0.0], [1.0], [0.0], 1e-300, 1.0, 1.0, 1.0),
+        ([0.0], [1e154], [0.0], 1e-300, 1.0, 1.0, 1.0),
+        ([2.0], [0.0], [np.sqrt(2.0)], 1.0, 1.0, 1.0, 1.0),
+        ([2.0], [0.0], [np.nextafter(np.sqrt(2.0), 0.0)], 1.0, 1.0, 1.0, 1.0),
+        ([1e300], [1.0], [np.nextafter(1e150, np.inf)], 1.0, 1.0, 1.0, 1.0),
+        ([1e308], [0.5, 1.0], [-1.0, 0.0, 1.0], 1.0, 1.0, 1.0, 1.0),
+        ([0.0], [1e-160], [0.0], 1.0, 1.0, 1.0, 1.0),
+        ([5e-324], [0.0], [0.0], 1.0, 1.0, 1.0, 1.0),
+        ([0.0, 1.0, 17.0], [0.125, 2.0], [-3.0, 0.5, 5.0], 3.0, 1.5, 2.0, 7.0),
+        ([1.0], [0.0], [0.0], 5e-324, 1e308, 1e308, 1.0),
+        ([1e308], [0.0], [0.0], 5e-324, 5e-324, 1e308, 1.0),
+        ([5e-324], [0.0], [0.0], 1e308, 1e200, 5e-324, 1.0),
+        ([0.0], [5e-324], [5e-324], 1e308, 1e308, 5e-324, 1.0),
+        ([1.0], [0.0], [1e-150], 1e300, 1.0, 1.0, 1e300),
+        ([1.0], [0.0], [1e150], 1e-300, 1.0, 1.0, 1.0),
+    ],
+    ids=[
+        "subnormal-thermal-intermediate",
+        "large-radius-small-temperature",
+        "near-comoving-sqrt2",
+        "near-comoving-nextafter",
+        "near-comoving-large",
+        "large-representable-energy",
+        "subnormal-collision-energy",
+        "smallest-positive-beam-energy",
+        "unequal-masses",
+        "subnormal-thermal-result",
+        "large-normalized-beam-compensates",
+        "tiny-normalized-beam-compensates",
+        "subnormal-relative-norm",
+        "near-comoving-tiny-normalized-speed",
+        "near-comoving-large-normalized-speed",
+    ],
+)
+def test_stable_kinematics_match_independent_public_input_decimal(
+    energies, radial, axial, norm, mp, mt, temperature
+):
+    volume = np.ones((len(radial), len(axial)))
+    expected, collision = _decimal_physical_kinematics(
+        energies, radial, axial, volume, norm, mp, mt, temperature
+    )
+    seen = []
+
+    def sigma(sampled):
+        seen.append(sampled.copy())
+        return np.full_like(sampled, 1e-20)
+
+    actual = average_cross_section_over_maxwellian(
+        particle_energy_ev=energies,
+        particle_mass_amu=mp,
+        target_temperature_ev=temperature,
+        target_mass_amu=mt,
+        tnorm_ev=norm,
+        vr=radial,
+        vx=axial,
+        cylindrical_volume=volume,
+        cross_section_m2=sigma,
+    )
+    assert len(seen) == 1
+    assert np.all(np.isfinite(seen[0])) and np.all(np.isfinite(actual))
+    np.testing.assert_allclose(actual, expected, rtol=1e-14, atol=0.0)
+    np.testing.assert_allclose(seen[0], collision, rtol=1e-14, atol=0.0)
+
+
+def test_unrepresentable_final_rate_after_compensated_kinematics():
+    seen = []
+
+    def sigma(sampled):
+        seen.append(sampled.copy())
+        return np.full_like(sampled, 1e-20)
+
+    # E_collision is exactly the minimum positive energy. The physical speed
+    # is about 3e-312 m/s, whose product with 1e-20 m2 cannot be returned as a
+    # positive float64 rate. This is a final-output failure, after the callback.
+    with pytest.raises(ValueError, match="relative-speed average is not representable"):
+        average_cross_section_over_maxwellian(
+            particle_energy_ev=[5e-324],
+            particle_mass_amu=1e308,
+            target_temperature_ev=1.0,
+            target_mass_amu=5e-324,
+            tnorm_ev=1e308,
+            vr=[0.0],
+            vx=[0.0],
+            cylindrical_volume=[[1.0]],
+            cross_section_m2=sigma,
+        )
+    assert len(seen) == 1
+    np.testing.assert_array_equal(seen[0], [[[5e-324]]])
+
+
+def test_exact_nonzero_comoving_beam_has_zero_collision_energy_and_rate():
+    seen = []
+
+    def sigma(sampled):
+        seen.append(sampled.copy())
+        return np.full_like(sampled, 1e308)
+
+    # sqrt(1e16) is exactly 1e8 for unit mass/temperature ratios. This is
+    # exact cancellation, with no numerical floor and no positive residue.
+    actual = average_cross_section_over_maxwellian(
+        particle_energy_ev=[1e16],
+        particle_mass_amu=1.0,
+        target_temperature_ev=1.0,
+        target_mass_amu=1.0,
+        tnorm_ev=1.0,
+        vr=[0.0],
+        vx=[1e8],
+        cylindrical_volume=[[1.0]],
+        cross_section_m2=sigma,
+    )
+    np.testing.assert_array_equal(actual, [0.0])
+    assert len(seen) == 1
+    np.testing.assert_array_equal(seen[0], [[[0.0]]])
