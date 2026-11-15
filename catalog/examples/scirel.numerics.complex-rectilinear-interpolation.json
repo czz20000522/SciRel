@@ -1,13 +1,13 @@
 {
  "schema": "scirel.asset-document",
- "asset_id": "scirel.geometry.complex-rectilinear-interpolation",
+ "asset_id": "scirel.numerics.complex-rectilinear-interpolation",
  "title": {
   "en": "Complex rectilinear field interpolation",
   "zh": "复值直角网格场插值"
  },
  "summary": "Trilinearly interpolate a complex-valued field sampled on three strictly increasing rectilinear axes at caller-owned target points, returning a per-point geometric validity mask and nan+nanj for points outside the tolerance-expanded source box. The complete result is returned as one scirel._result.Result mapping; mapping access is retained and non-colliding fields also support attribute access.",
  "taxonomy": [
-  "geometry",
+  "numerics",
   "interpolation",
   "rectilinear-grid",
   "complex-field"
@@ -116,10 +116,10 @@
  },
  "public_api": {
   "python": {
-   "module": "scirel.geometry.complex_rectilinear_interpolation",
+   "module": "scirel.numerics.interpolate.complex_rectilinear_interpolation",
    "symbol": "interpolate_complex_rectilinear_field",
    "signature": "interpolate_complex_rectilinear_field(source_axes_m, source_values, target_points_m)",
-   "canonical_module": "scirel.geometry",
+   "canonical_module": "scirel.numerics.interpolate",
    "canonical_symbol": "interpolate_complex_rectilinear_field"
   }
  },
@@ -129,7 +129,7 @@
  },
  "example": {
   "description": "Interpolate a complex field at two geometrically valid points and one point outside the tolerance-expanded box.",
-  "code": "import numpy as np\nfrom scirel._result import Result\nfrom scirel.geometry import interpolate_complex_rectilinear_field\naxes = {'x_m': np.array([0.0, 1.0, 2.0]), 'y_m': np.array([0.0, 1.0, 2.0]), 'z_m': np.array([0.0, 1.0, 2.0])}\nvalues = np.zeros((3, 3, 3), dtype=complex)\nvalues[1, 1, 1] = 4.0 + 2.0j\npoints = np.array([[1.0, 1.0, 1.0], [1.0 + 1.0e-15, 1.0, 1.0], [1.0, 1.0, 3.0]])\nresult = interpolate_complex_rectilinear_field(axes, values, points)\nassert isinstance(result, Result)\nassert result['valid_mask'].tolist() == [True, True, False]\nassert np.isfinite(result['interpolated_values'][:2]).all()\nassert np.isnan(result['interpolated_values'][2].real) and np.isnan(result['interpolated_values'][2].imag)\n",
+  "code": "import numpy as np\nfrom scirel._result import Result\nfrom scirel.numerics.interpolate import interpolate_complex_rectilinear_field\naxes = {'x_m': np.array([0.0, 1.0, 2.0]), 'y_m': np.array([0.0, 1.0, 2.0]), 'z_m': np.array([0.0, 1.0, 2.0])}\nvalues = np.zeros((3, 3, 3), dtype=complex)\nvalues[1, 1, 1] = 4.0 + 2.0j\npoints = np.array([[1.0, 1.0, 1.0], [1.0 + 1.0e-15, 1.0, 1.0], [1.0, 1.0, 3.0]])\nresult = interpolate_complex_rectilinear_field(axes, values, points)\nassert isinstance(result, Result)\nassert result['valid_mask'].tolist() == [True, True, False]\nassert np.isfinite(result['interpolated_values'][:2]).all()\nassert np.isnan(result['interpolated_values'][2].real) and np.isnan(result['interpolated_values'][2].imag)\n",
   "expected": "The complex value array has length three; the first two entries are finite and valid_mask is [True, True, False], with nan+nanj for the invalid point. The returned object is a scirel._result.Result mapping; non-colliding fields also support attribute access."
  },
  "verification": {

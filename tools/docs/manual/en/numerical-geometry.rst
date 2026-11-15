@@ -38,7 +38,7 @@ First build a regular grid with ``R in [0.9, 2.1] m`` and ``Z in [-0.8, 0.9] m``
 .. code-block:: python
 
    import numpy as np
-   from scirel.geometry import sample_rectilinear_field
+   from scirel.numerics.interpolate import sample_rectilinear_field
 
    B0, R0, rs = 2.0, 1.5, 0.4
 
@@ -259,7 +259,7 @@ At ``(1.4, 0, 0.05)`` the analytic formula gives ``B_R = -2*0.05/(1.4*1.5) = -0.
 Which layer to use when
 -----------------------
 
-- Evaluate a two-dimensional real field at points inside a closed rectangular domain: :doc:`../reference/generated/scirel.geometry.bilinear-grid-sampling`.
+- Evaluate a two-dimensional real field at points inside a closed rectangular domain: :doc:`../reference/generated/scirel.numerics.bilinear-grid-sampling`.
 - Sort, deduplicate and linearly interpolate a one-dimensional flux profile: :doc:`../reference/generated/scirel.geometry.flux-surface-profile`.
 - Compute ``dl/B`` and a weighted average along an existing ``R-Z`` polyline: :doc:`../reference/generated/scirel.geometry.flux-surface-inverse-field-average`.
 - Select, orient and truncate a segment from a contour level: :doc:`../reference/generated/scirel.sampling.select-fieldline` and :doc:`../reference/generated/scirel.sampling.parse-segment`.

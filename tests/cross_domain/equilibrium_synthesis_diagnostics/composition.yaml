@@ -91,8 +91,8 @@ nodes:
 - id: flux_loop_sampling
   name: 磁通环双线性采样
   kind: scientific_function
-  callable: scirel.geometry.bilinear_grid_sampling::sample_rectilinear_field
-  asset_ref: scirel.geometry.bilinear_grid_sampling
+  callable: scirel.numerics.interpolate.bilinear_grid_sampling::sample_rectilinear_field
+  asset_ref: scirel.numerics.interpolate.bilinear_grid_sampling
   inputs:
   - R
   - Z
@@ -103,8 +103,8 @@ nodes:
 - id: thomson_sampling
   name: Thomson 型局域场采样
   kind: scientific_function
-  callable: scirel.geometry.bilinear_grid_sampling::sample_rectilinear_field
-  asset_ref: scirel.geometry.bilinear_grid_sampling
+  callable: scirel.numerics.interpolate.bilinear_grid_sampling::sample_rectilinear_field
+  asset_ref: scirel.numerics.interpolate.bilinear_grid_sampling
   inputs:
   - R
   - Z

@@ -143,7 +143,7 @@
   "implementation_version": "0.0.0",
   "dependencies": [
    {
-    "asset_id": "scirel.geometry.bilinear-grid-sampling"
+    "asset_id": "scirel.numerics.bilinear-grid-sampling"
    }
   ]
  },
@@ -191,7 +191,7 @@
    {
     "id": "sampling",
     "kind": "function",
-    "asset_id": "scirel.geometry.bilinear-grid-sampling",
+    "asset_id": "scirel.numerics.bilinear-grid-sampling",
     "description": "Call the same bilinear operator for each explicitly requested field; fail if a request is not satisfied.",
     "inputs": [
      "r_grid",

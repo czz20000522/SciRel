@@ -18,13 +18,11 @@ import sys as _sys
 # such as ``from scirel.geometry import sampling`` continue to resolve the
 # child module through the lazy module loader.
 __all__ = [
-    "sample_rectilinear_field",
     "evaluate_flux_surface_profile",
     "compute_flux_surface_inverse_field_average",
     "map_axisymmetric_equilibrium_to_cartesian_grid",
     "classify_material_support",
     "solve_axisymmetric_equilibrium_grid_mapping",
-    "interpolate_complex_rectilinear_field",
     "project_planar_wavevector",
     "Mesh",
     "PointsMesh",
@@ -68,7 +66,6 @@ __all__ = [
 
 
 _LAZY_EXPORTS = {
-    "sample_rectilinear_field": ("bilinear_grid_sampling", "sample_rectilinear_field"),
     "evaluate_flux_surface_profile": ("flux_surface_profile", "evaluate_flux_surface_profile"),
     "compute_flux_surface_inverse_field_average": (
         "flux_surface_inverse_field_average",
@@ -82,10 +79,6 @@ _LAZY_EXPORTS = {
     "solve_axisymmetric_equilibrium_grid_mapping": (
         "axisymmetric_equilibrium_grid_support",
         "solve_axisymmetric_equilibrium_grid_mapping",
-    ),
-    "interpolate_complex_rectilinear_field": (
-        "complex_rectilinear_interpolation",
-        "interpolate_complex_rectilinear_field",
     ),
     "project_planar_wavevector": ("planar_wavevector", "project_planar_wavevector"),
     "Mesh": ("mesh", "Mesh"),
@@ -135,8 +128,6 @@ _LAZY_MODULES = frozenset(
         "axisymmetric_equilibrium_grid_support",
         "axisymmetric_grid_mapping",
         "basis",
-        "bilinear_grid_sampling",
-        "complex_rectilinear_interpolation",
         "fieldline",
         "flux_surface_inverse_field_average",
         "flux_surface_profile",

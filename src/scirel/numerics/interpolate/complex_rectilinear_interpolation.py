@@ -77,8 +77,8 @@ def interpolate_complex_rectilinear_field(source_axes_m, source_values, target_p
 
     See Also
     --------
-    sample_rectilinear_field : Rectilinear R-Z bilinear sampling.
-    map_axisymmetric_equilibrium_to_cartesian_grid : Axisymmetric equilibrium map to Cartesian solver grid.
+    scirel.numerics.interpolate.sample_rectilinear_field : Rectilinear R-Z bilinear sampling.
+    scirel.geometry.map_axisymmetric_equilibrium_to_cartesian_grid : Axisymmetric equilibrium map to Cartesian solver grid.
 
     Notes
     -----
@@ -107,7 +107,7 @@ def interpolate_complex_rectilinear_field(source_axes_m, source_values, target_p
     --------
     >>> import numpy as np
     >>> from scirel._result import Result
-    >>> from scirel.geometry import interpolate_complex_rectilinear_field
+    >>> from scirel.numerics.interpolate import interpolate_complex_rectilinear_field
     >>> axes = {'x_m': np.array([0.0, 1.0, 2.0]), 'y_m': np.array([0.0, 1.0, 2.0]), 'z_m': np.array([0.0, 1.0, 2.0])}
     >>> values = np.zeros((3, 3, 3), dtype=complex)
     >>> values[1, 1, 1] = 4.0 + 2.0j

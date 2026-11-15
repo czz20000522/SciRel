@@ -40,7 +40,7 @@ def _run_composition(equilibrium, R, Z, observations, *, asset_loader):
     observations = _mapping(observations, "observations")
     if not observations or set(observations) - {"flux_loops", "thomson"}:
         raise ValueError("observations must request known nonempty flux_loops or thomson channels")
-    sampler = asset_loader("scirel.geometry.bilinear_grid_sampling")
+    sampler = asset_loader("scirel.numerics.interpolate.bilinear_grid_sampling")
 
     def sample(values, points):
         points = np.asarray(points, dtype=float)
@@ -169,7 +169,7 @@ def synthesize_equilibrium_diagnostics(equilibrium, R, Z, observations):
     --------
     scirel.diagnostics.reduce_observation_residuals
         Compare a prediction mapping with declared observations.
-    scirel.geometry.sample_rectilinear_field
+    scirel.numerics.interpolate.sample_rectilinear_field
         Bilinear scalar-field sampler used by this diagnostic.
 
     Notes
@@ -203,7 +203,7 @@ def synthesize_equilibrium_diagnostics(equilibrium, R, Z, observations):
     >>> np.testing.assert_allclose(r['flux_loops'],[2*np.pi],rtol=1e-14)
     >>> assert r['units']['flux_loops']=='Wb'
     """
-    from scirel.geometry.bilinear_grid_sampling import sample_rectilinear_field
+    from scirel.numerics.interpolate.bilinear_grid_sampling import sample_rectilinear_field
 
     return Result(
         _run_composition(

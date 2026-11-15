@@ -6,12 +6,18 @@ import sys as _sys
 from typing import TYPE_CHECKING as _TYPE_CHECKING
 
 if _TYPE_CHECKING:
-    from .interpolate import face_to_cell
+    from .interpolate import (
+        face_to_cell,
+        interpolate_complex_rectilinear_field,
+        sample_rectilinear_field,
+    )
     from .linalg import compute_truncated_pseudoinverse
     from .modal_basis import ModalBasis, modal_basis, modal_projection
 
 __all__ = [
     "face_to_cell",
+    "sample_rectilinear_field",
+    "interpolate_complex_rectilinear_field",
     "compute_truncated_pseudoinverse",
     "ModalBasis",
     "modal_basis",
@@ -20,6 +26,11 @@ __all__ = [
 
 _LAZY_EXPORTS = {
     "face_to_cell": ("interpolate", "face_to_cell"),
+    "sample_rectilinear_field": ("interpolate", "sample_rectilinear_field"),
+    "interpolate_complex_rectilinear_field": (
+        "interpolate",
+        "interpolate_complex_rectilinear_field",
+    ),
     "compute_truncated_pseudoinverse": ("linalg", "compute_truncated_pseudoinverse"),
     "ModalBasis": ("modal_basis", "ModalBasis"),
     "modal_basis": ("modal_basis", "modal_basis"),

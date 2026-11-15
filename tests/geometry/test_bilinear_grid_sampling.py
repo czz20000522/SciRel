@@ -1,7 +1,7 @@
 import numpy as np
 import pytest
 
-from scirel.geometry.bilinear_grid_sampling import (
+from scirel.numerics.interpolate.bilinear_grid_sampling import (
     sample_rectilinear_field,
     sample_rectilinear_field as scientific_function,
 )

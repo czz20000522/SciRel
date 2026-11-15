@@ -724,8 +724,8 @@
      "title": "在直角网格上查询实值与复值场",
      "introduction": "二维实值场使用闭合网格域内的双线性采样；三维复值场入口采用三线性插值并返回有效性掩码。二者的域外行为不同，不提供曲线坐标或非结构网格重建。",
      "assets": [
-      "scirel.geometry.bilinear-grid-sampling",
-      "scirel.geometry.complex-rectilinear-interpolation"
+      "scirel.numerics.bilinear-grid-sampling",
+      "scirel.numerics.complex-rectilinear-interpolation"
      ]
     },
     {

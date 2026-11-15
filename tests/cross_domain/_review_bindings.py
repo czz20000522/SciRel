@@ -119,8 +119,8 @@ _ASSETS = {
         "scirel.field.current_green_superposition",
         "superpose_current_green_field",
     ),
-    "scirel.geometry.bilinear_grid_sampling": (
-        "scirel.geometry.bilinear_grid_sampling",
+    "scirel.numerics.interpolate.bilinear_grid_sampling": (
+        "scirel.numerics.interpolate.bilinear_grid_sampling",
         "sample_rectilinear_field",
     ),
     "scirel.geometry.flux_surface_profile": (
