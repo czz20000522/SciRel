@@ -32,8 +32,10 @@ def integrate_filament_vacuum_field(r_grid, z_grid, filaments):
     -------
     psi : ndarray of float64, shape same as r_grid
         Field ``psi`` of the returned ``scirel._result.Result`` mapping:
-        ``R A_phi`` from radial trapezoidal integration [Wb/rad], referenced
-        to zero at the first radial grid point.
+        Radial relative flux from trapezoidal integration of ``R*B_Z``
+        [Wb/rad], zero at the first radial node R0 for each Z. Its continuous
+        counterpart is ``psi_global(R,Z)-psi_global(R0,Z)``, where
+        ``psi_global=R*A_phi``.
     b_r : ndarray of float64, shape same as r_grid
         Field ``b_r`` of the returned result mapping: superposed radial
         magnetic field [T].
@@ -60,6 +62,19 @@ def integrate_filament_vacuum_field(r_grid, z_grid, filaments):
     The three arrays are stored directly in one ``scirel._result.Result``
     mapping. No nested mapping is returned, and mapping access remains
     available alongside attribute access.
+
+    The integral is the same-height annular flux divided by ``2*pi``.
+    Referencing each Z row to its first radius is not generally a constant
+    change of the global flux reference: in the continuous limit,
+    ``-dpsi/dZ/R = B_R(R,Z) - (R0/R)*B_R(R0,Z)``. Thus the returned ``psi``
+    cannot unconditionally be differentiated to recover the direct ``b_r``
+    or used as a global pressure-flux coordinate. A regular included axis
+    (R0=0) removes this reference term, but not the quadrature error.
+
+    To reconstruct global ``R*A_phi``, supply the reference function
+    ``psi_global(R0,Z)`` from the same source model and account for radial
+    quadrature error. The direct ``b_r`` and ``b_z`` are unchanged by this
+    integral's reference choice; no extra ``2*pi`` factor is applied.
 
     Examples
     --------

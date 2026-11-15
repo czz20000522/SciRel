@@ -33,7 +33,9 @@ def poloidal_field_from_flux(r_grid, z_grid, psi):
     psi : real array-like, converted to float64, shape [N_Z,N_R]
         Axisymmetric poloidal flux function R A_phi sampled on the R-Z grid, not
         full linked flux [Wb/rad]. Finite values and exactly the same
-        two-dimensional shape as the coordinate grids.
+        two-dimensional shape as the coordinate grids. Physical field recovery
+        requires a consistent flux reference across Z; this is caller-owned
+        and is not inferred from the array.
 
     Returns
     -------
@@ -67,6 +69,15 @@ def poloidal_field_from_flux(r_grid, z_grid, psi):
     mapping. Mapping access remains available and each field can also be read
     as an attribute. Away from the axis the components follow
     ``B_R=-dpsi/dZ/R`` and ``B_Z=dpsi/dR/R`` on the supplied rectilinear grid.
+
+    Adding a constant reference leaves these derivatives unchanged. Subtracting
+    a different reference function at each Z generally changes ``B_R``.
+    In particular, ``integrate_filament_vacuum_field`` returns a radial
+    relative integral starting at R0: unless its reference term is constant,
+    restore ``psi_global(R0,Z)`` from the same source model before using it
+    here, and account for its radial quadrature error. A regular included
+    axis removes that reference term. This function does not perform a
+    flux-reference or ``2*pi`` conversion.
 
     Examples
     --------
