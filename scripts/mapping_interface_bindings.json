@@ -32,7 +32,7 @@
    ],
    "modules": {
     "scirel.kinetic.dispersion.multifluid": "d0611d80080e2e3d7e758b2d9c2326d3e3b9cf073eb6c9b0578775d9eee93120",
-    "scirel.kinetic.dispersion._fluid_parallel": "38512574ce4f4ce462d561aeb64d3d2d7f3e72f073363309c683f8c8d0dc35c9"
+    "scirel.kinetic.dispersion._fluid_parallel": "9c081efc5852b9094870eb0f2915d8b579501bb870622801dcbfaa3461984961"
    },
    "review_basis": "The adapter copies inputs, pops grid_controls with {}, forwards outer ports and unpacked grid to _fluid_parallel.scan_fluid_corrected. Grid entries are documented nested scientific controls, not additional top-level document ports. Duplicate/unrecognized keywords preserve Python TypeError."
   },
@@ -941,7 +941,7 @@
    ],
    "modules": {
     "scirel.kinetic.dispersion.parallel_continuation": "bb280435e41cd9b07492bb61ec87001214790a8cfd902a7bcf6b2dfd9bdf269b",
-    "scirel.kinetic.dispersion._fluid_parallel": "38512574ce4f4ce462d561aeb64d3d2d7f3e72f073363309c683f8c8d0dc35c9"
+    "scirel.kinetic.dispersion._fluid_parallel": "9c081efc5852b9094870eb0f2915d8b579501bb870622801dcbfaa3461984961"
    },
    "review_basis": "Transparent wrapper forwards the declared mapping to _continue_em1d. The binding records state plus the optional pm, k_grid, initial_guess, residual_tolerance and solver_options controls; the continuation and residual implementations remain source-bound and retain their fail-closed stopping policy."
   }

@@ -369,7 +369,7 @@ The Ronnmark path of the kinetic tensor replaces the plasma dispersion function 
 
    Z_J(z) = sum_{j=1}^{J} b_j / (z - c_j)
 
-The poles ``c_j`` and residues ``b_j`` come from a preset table. ``evaluate_maxwellian_jpole`` supports ``J = 8, 12, 16, 24``; the upper half-plane uses the direct sum, and the lower half-plane uses the reflection relation
+The poles ``c_j`` and residues ``b_j`` come from a preset table. ``evaluate_plasma_dispersion(..., method="jpole", order=...)`` supports ``J = 8, 12, 16, 24``; the upper half-plane uses the direct sum, and the lower half-plane uses the reflection relation
 
 .. code-block:: text
 

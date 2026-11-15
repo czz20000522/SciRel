@@ -1865,7 +1865,7 @@
   },
   {
    "asset_id": "scirel.closures.reduced-hall-drift",
-   "source_sha256": "6e9725173dfa4a24e03ced60f013a869b6456c7a742827b0ad4df91c2c110bda",
+   "source_sha256": "0923cdf100770969cdd2bf29ad6ec6d26972d3111bfa8777ae8048f11b12d787",
    "summary": "在 R-Z 网格把旋磁对称压强力投影为环向电流，可选求有限迭代的局部环向惯性修正，并给出物种漂移、广义欧姆及尺度诊断。 顶层返回值是 scirel._result.Result 映射；非冲突字段支持属性读取。",
    "definition": "用二阶网格导数计算柱坐标旋磁对称压强力，并取 J_phi=(B_Z*force_R-B_R*force_Z)/|B|²。在掩码内、非轴、密度超过峰值比例下限且磁场可解析的点，将 E=-grad(phi)、电子压强力和 Hall 乘子组合成环向漂移。可选欠松弛迭代径向离心修正，并以 maximum_inertial_mach 倍离子热速限制漂移。共享力核含正则轴向项和差分式导数；相容性诊断扣除有量纲的 64-epsilon 张量/差分舍入包络，同时保留原始绝对/相对残差与包络。这不是截断误差界，也不证明低于分辨率的物理力恰为零。未给离子压强时按总量减电子；独立拟合保留剩余应力，species_sum 拒绝不相容组分。惯性收敛检查返回 J 上重新求值的未松弛电流映射残差，不能以小松弛步代替。 完整结果作为同一个 scirel._result.Result 映射返回；嵌套 dict 字段保持普通 dict。",
    "model": "约化轴对称 Hall 漂移与旋磁对称压强，可选局部环向惯性修正，不是无限制的双流体解。",
@@ -2301,17 +2301,24 @@
      "轴/真空掩码、与既有实现一致的 hypot 极值以及无效物种/控制拒绝。",
      "Hall 乘子为零仍保留压强投影电流；无惯性分支计一次；单步惯性预算耗尽不返回状态。",
      "近 1 的 inertia_relax 不能把有限未松弛残差伪装为收敛，保持步数上限并抛 RuntimeError；解析 Bz=1、P=10+R²、n=mi=qi=1 的未限幅正不动点为 J=R。",
-     "掩码区分回归：非活动单元只置零，活动单元保留计算值；部分掩码不会把非有限输入或惯性不收敛变成成功的零结果。"
+     "掩码区分回归：非活动单元只置零，活动单元保留计算值；部分掩码不会把非有限输入或惯性不收敛变成成功的零结果。",
+     "在 3×4 网格、b=(3/5,4/5)、仿射各向异性总/电子压强及 phi=R−2Z 上，独立柱坐标张量推导给出两方向压强力、E、J=−1/5、v_i=3/2、v_e=8/5 和非零欧姆残差 (3/2,2)，rtol=atol=1e-12。完整/部分掩码保持力场并将规定的非活动电流/漂移/欧姆场置零；全非活动掩码仍不能隐藏非法状态。该倾斜场具有非零柱坐标 div(B)，只是张量算子的代数输入，不是 Maxwell 平衡。",
+     "两个可区分截速节点取 cap=10 和 1/4，省略离子分量且电子方向压强非零。独立 180 位 Decimal 计算 v_th²=(84+5R+10Z)/6，检查离子回旋半径和原始 Mach；第二节点必须实际截至 v_th/4、Mach=1/4、截速占比=1，第一节点保持不限幅。两者均保持 rtol=atol=1e-12。",
+     "另一个无散 B_Z=1、各向同性 P=20+3R²、m=n=q=1 的制造态，由 J=6R−J²/R 得正局部惯性根 J=2R；rtol=atol=1e-10、inertia_tolerance=1e-10。单次更新预算及 1e-30 门槛必须失败；全部推导和原数值预算在直接测试模块中自包含。"
     ],
-    "evidence_ceiling": "限于压力力到电流的投影及局部 Hall 惯性。tests/cross_domain/test_anisotropic_core_scientific_correction.py 以 hall 别名直接调用维护实现：test_hall_component_accounting_explicit 检查两种组分模式，test_hall_primary_negative_pressure_rejected 检查负主压拒绝，test_hall_near_unit_relaxation_cannot_fake_local_convergence 检查原步数上限，test_hall_analytic_local_fixed_point_uses_returned_current 检查 J=R 及终末残差。tests/closures/test_reduced_hall_drift.py 的 scientific_function 也是本函数，其 test_reviewed_relation_example 检查均匀极限。 这些制造/解析离散用例不证明完整平衡、双流体输运或低密度、近零场及不稳定区的自动有效性。",
+    "evidence_ceiling": "限于压力力到电流的投影及局部 Hall 惯性。tests/cross_domain/test_anisotropic_core_scientific_correction.py 以 hall 别名直接调用维护实现：test_hall_component_accounting_explicit 检查两种组分模式，test_hall_primary_negative_pressure_rejected 检查负主压拒绝，test_hall_near_unit_relaxation_cannot_fake_local_convergence 检查原步数上限，test_hall_analytic_local_fixed_point_uses_returned_current 检查 J=R 及终末残差。tests/closures/test_reduced_hall_drift.py 的 scientific_function 也是本函数，其 test_reviewed_relation_example 检查均匀极限。 这些制造/解析离散用例不证明完整平衡、双流体输运或低密度、近零场及不稳定区的自动有效性。 新增直接张量、J=2R 及离子热速/截速断言只覆盖具名网格和控制，参照不使用生产压强散度核或返回离子压强；它们不提供连续域误差界或实验标定。",
     "known_limitations": [
      "调用者物理闭合与 Green 响应须有独立依据，并一致采用 psi=R A_phi（Wb/rad）。",
      "浮点舍入包络不界定离散化误差或实验不确定度。",
-     "直接证据限于上述具名局部断言，不能把整个共享文件算给本资产。UNKNOWN：尚未定位“非零电子压且省略离子分量”的专门断言。"
+     "直接断言限于上述具名局部案例，不能把整个共享文件算给本资产。非零各向异性电子压强且省略离子分量现有专门的力/漂移断言，以及 test_independent_closure_relations.py 中两个可区分的离子专属热速/截速断言；不验证任意压强定律或网格。"
     ],
     "tests": [
      "tests/closures/test_reduced_hall_drift.py",
-     "tests/cross_domain/test_anisotropic_core_scientific_correction.py"
+     "tests/cross_domain/test_anisotropic_core_scientific_correction.py",
+     "tests/closures/test_independent_closure_relations.py::test_hall_tilted_anisotropic_tensor_and_omitted_ion_components",
+     "tests/closures/test_independent_closure_relations.py::test_hall_inertia_second_analytic_fixed_point_and_true_budget_failure",
+     "tests/closures/test_independent_closure_relations.py::test_hall_mask_never_swallow_invalid_state",
+     "tests/closures/test_independent_closure_relations.py::test_omitted_ion_components_determine_ion_only_thermal_diagnostics_and_cap"
     ]
    }
   },
@@ -3653,7 +3660,7 @@
   },
   {
    "asset_id": "scirel.closures.quasineutral-potential",
-   "source_sha256": "26df3a19da5814a05f8ce4688172d410e238ead98e554d6f2cd3b23d2b934f45",
+   "source_sha256": "ae4f2e3a4ee0ba992efca167ddce8aa5a3cd3ab346624b50119bacbb401c3cdf",
    "summary": "对调用者提供的对数电荷残差进行有界扩展括区与向量化二分，求激活磁面的电势。 顶层返回值是 scirel._result.Result 映射；非冲突字段支持属性读取。",
    "definition": "每个激活面求 R(phi)=log(Z n_i(phi))−log(n_e(phi))=0。初区间 phi_ref±k(T_parallel/q+T_e/e)，不满足端点符号时最多扩展八轮再二分；仅当全部激活面的最大区间宽度≤电势容差且最大中点残差≤准中性容差才返回。非激活势固定参考；中点避免先加大同号端点。回调精确零将该括区收缩至求值点，小非零不收缩且不改变容差。 完整结果作为同一个 scirel._result.Result 映射返回；嵌套 dict 字段保持普通 dict。",
    "model": "外供单调递减残差的括区和二分：根下正、根上负；不计算任一密度。",
@@ -3778,19 +3785,24 @@
     "scope": [
      "已知根单调残差、括区扩展、混合/全非激活及非激活回调势固定。",
      "所选回调映射/控制错误、括区失败及迭代上限不收敛。",
-     "tests/cross_domain/test_mirror_gauge_scientific_correction.py::test_local_quasineutral_midpoint_preserves_large_representable_root 经维护的镜闭合调用本求根器；按其参数化大公共势样本断言返回根、密度及电荷残差。"
+     "tests/cross_domain/test_mirror_gauge_scientific_correction.py::test_local_quasineutral_midpoint_preserves_large_representable_root 经维护的镜闭合调用本求根器；按其参数化大公共势样本断言返回根、密度及电荷残差。",
+     "独立递减残差求制造根 6.375、−1.625 V，误差不超过 1e-10 V，并满足原 1e-10 残差门槛；非激活回调势固定 17 V，括区失败和全非激活但回调非有限均被拒绝。",
+     "test_adjacent_float_exact_root_is_unattainable_and_rejected 使用相邻 binary64 势之间的精确有理根 1+2^-53；最小可表示残差为 2^-53，大于不变的 2^-55 残差容差。宽度容差 2^-50 V、100 次迭代必须以 RuntimeError 结束；直接测试模块给出可表示性论证。"
     ],
-    "evidence_ceiling": "绑定断言支持所选制造根、普通回调/括区/预算失败，以及具名镜闭合组合中的大公共势可表示根；相邻浮点中点根的见证仍为 UNKNOWN。数值回调精确为零不独立证明其物理模型、全部浮点域或专家认可。",
+    "evidence_ceiling": "绑定断言支持所选制造根、普通回调/括区/预算失败，以及具名镜闭合组合中的大公共势可表示根。精确的相邻浮点中点根现有直接失败见证，证明原残差门槛下该制造案例被拒绝；数值回调精确为零仍不独立证明物理模型、全部浮点域或专家认可。",
     "known_limitations": [
      "无法发现数值有效但物理错误的回调。",
      "八轮扩展和次数上限不保证能括根或收敛。",
      "广播不证明物理对齐；极端有限热尺度可使括区溢出。",
      "公开许可及专家认可待人工决定。",
-     "UNKNOWN：在绑定测试及查阅的本地历史中未定位相邻可表示势中点制造根的断言。原残差门槛及相邻浮点停滞须失败的合同保留；tests/closures/test_quasineutral_potential.py::test_iteration_budget_has_no_hidden_convergence_evaluation 只覆盖普通预算耗尽，不替代该边界见证。"
+     "精确有理根 1+2^-53 没有满足残差容差 2^-55 的 binary64 值；test_adjacent_float_exact_root_is_unattainable_and_rejected 不放宽原门槛并直接断言 RuntimeError。普通迭代预算测试另行保留；这些案例不证明任意回调或全部浮点范围都能收敛。"
     ],
     "tests": [
      "tests/closures/test_quasineutral_potential.py",
-     "tests/cross_domain/test_mirror_gauge_scientific_correction.py"
+     "tests/cross_domain/test_mirror_gauge_scientific_correction.py",
+     "tests/closures/test_independent_closure_relations.py::test_potential_fraction_roots_mixed_mask_and_gauge",
+     "tests/closures/test_independent_closure_relations.py::test_adjacent_float_exact_root_is_unattainable_and_rejected",
+     "tests/closures/test_independent_closure_relations.py::test_potential_no_bracket_and_bad_callback_fail"
     ]
    }
   },
@@ -4539,7 +4551,7 @@
   },
   {
    "asset_id": "scirel.closures.quasineutral-reference-density",
-   "source_sha256": "e45da6431c85e4c9965386b1b0fd60244a06a26df5f32a2d2b6b60367db38381",
+   "source_sha256": "ac3cce6c4f6871aca031bd0c196b92d1b5aaa2f800a85fd4b5dddeeda1fe0fcc",
    "summary": "将正离子参考数密度乘以荷态因子，得到参考电子数密度。",
    "definition": "输入转为 float64 并广播，计算 electron_density_ref_m3=ion_charge_state×density_ref_m3；返回带该命名字段的 Result 映射，并拒绝非有限乘积。",
    "model": "单种正离子的准中性参考关系，不含动力学矩或电势求解。",
@@ -4594,9 +4606,10 @@
    "verification": {
     "scope": [
      "标量/广播乘积、零密度、所选非法输入及有限输入溢出保护。",
-     "此叶关系是镜准中性闭合图的依赖；本文只描述叶关系。"
+     "此叶关系是镜准中性闭合图的依赖；本文只描述叶关系。",
+     "单离子电荷平衡给出 n_e=Z*n_i；从原始 binary64 输入构造精确 Fraction 乘积，只在最后舍入，逐值检查 3×4 广播，包含零、2^500、最小次正规数及允许的最终下溢，输入保持不变；真正最终乘积溢出及零荷态被拒绝。推导在直接测试模块说明中。"
     ],
-    "evidence_ceiling": "既有测试支持所选乘积与失败案例，不证明物理坐标对齐、全部下溢、多离子物理或专家认可。",
+    "evidence_ceiling": "既有测试支持所选乘积与失败案例，不证明物理坐标对齐、全部下溢、多离子物理或专家认可。 精确 Fraction 一致性只适用于所列 3×4 样本，不是全部 binary64 输入正确舍入或下溢行为的证明。",
     "known_limitations": [
      "允许正非整数荷态，物理意义由调用者负责。",
      "广播只证明形状兼容。",
@@ -4604,7 +4617,9 @@
      "公开许可及专家认可待人工决定。"
     ],
     "tests": [
-     "tests/closures/test_quasineutral_reference_density.py"
+     "tests/closures/test_quasineutral_reference_density.py",
+     "tests/closures/test_independent_closure_relations.py::test_reference_product_fraction_broadcast_and_input_immutability",
+     "tests/closures/test_independent_closure_relations.py::test_reference_true_failure"
     ]
    }
   },
@@ -5133,7 +5148,7 @@
   },
   {
    "asset_id": "scirel.closures.hall-two-fluid-pressure",
-   "source_sha256": "411ef8a1c35b2fcd0a926bd3ffaef9479953949ab4fec6a603d4f904a718947c",
+   "source_sha256": "96913a3a31cd0250d41094b8cff26e4cd066497a8ab579aa7d5efa8198ba5dee",
    "summary": "按默认离子代数压力拆分组装广播 Hall 状态。 顶层返回值是 scirel._result.Result 映射；非冲突字段支持属性读取。",
    "definition": "联合广播 B、psi 并求总压力，再广播各剖面；令电子密度等于离子密度。电子两分量缺省等于 electron_pressure，离子分量缺省为总压减电子压。默认 independent_fit 保留独立指定的总压与物种压，并显式报告两方向总压−离子压−电子压的残余应力；不是新物种。species_sum 要求两个残差在局部压力尺度的 64ε 内为零，否则拒绝。两种模式都报告数值组分一致性；不检查总压力正性。 完整结果作为同一个 scirel._result.Result 映射返回；嵌套 dict 字段保持普通 dict。",
    "model": "给定旋磁总应力和物种分解，可含独立拟合残余应力；不是自洽双流体平衡。下游总力已包含残余应力，离子矩仍仅属离子。",
@@ -5325,9 +5340,10 @@
     "scope": [
      "广播定律/剖面、默认压力拆分及密度相等。",
      "拒绝由拆分得到的负离子压。",
-     "独立拟合总压 10、离子 3、电子 2 保留残差 5；species_sum 拒绝它并接受默认零残差拆分。"
+     "独立拟合总压 10、离子 3、电子 2 保留残差 5；species_sum 拒绝它并接受默认零残差拆分。",
+     "独立二进制分数压强在 2×3 广播上给出不同的缺省离子平行/垂直分量；电子方向压强明确不等，两种组分模式均检查零剩余应力和 n_e=n_i。单位压强的 32*epsilon、128*epsilon 控制区分原 64*epsilon 组分和门槛；independent_fit 报告不一致，species_sum 拒绝，回调异常和负派生物种压强均不被吞掉。组分守恒推导及预算在直接测试模块中。"
     ],
-    "evidence_ceiling": "直接回归支持所选双单元值、函数剖面、默认拆分及负矩拒绝；不证明任意压力定律、所有广播形状、物理 Hall 力平衡或电流、专家认可。",
+    "evidence_ceiling": "直接回归支持所选双单元值、函数剖面、默认拆分及负矩拒绝；新增独立 2×3 方向剖面和 32/128-epsilon 控制支持原 64-epsilon 规则附近具名的组分总量与 species_sum 断言。不证明任意用户压强定律、这些案例之外的组分总量一致性、所有广播形状、物理 Hall 力平衡/电流或当前专家认可。",
     "known_limitations": [
      "定律、电势及对齐由调用者提供，广播成功不证明共同物理坐标系。",
      "独立总压/离子拟合是受支持的唯象合同；残余应力不是新物种证据，species_sum 仅强制数值组分和。",
@@ -5336,7 +5352,10 @@
     ],
     "tests": [
      "tests/closures/test_hall_two_fluid_pressure.py",
-     "tests/cross_domain/test_mirror_kinetic_scientific_correction.py"
+     "tests/cross_domain/test_mirror_kinetic_scientific_correction.py",
+     "tests/closures/test_independent_closure_relations.py::test_pressure_state_directional_defaults_and_bookkeeping",
+     "tests/closures/test_independent_closure_relations.py::test_pressure_sum_threshold_is_original_64eps",
+     "tests/closures/test_independent_closure_relations.py::test_pressure_callback_failure_and_negative_species_are_not_hidden"
     ]
    }
   },
@@ -6157,7 +6176,7 @@
   },
   {
    "asset_id": "scirel.closures.boltzmann-quasineutrality",
-   "source_sha256": "aee1fc4ffff6782dad877397799187197eaa316df04394d20c560b991be107f7",
+   "source_sha256": "08fa339d472c7614af7ba12f77b9818533ba5b2c951eed418f438a852fc4af93",
    "summary": "在对数空间计算不截断指数的 Boltzmann 电子响应，并与给定正离子密度比较，五个命名字段统一以 scirel._result.Result 映射返回。",
    "definition": "正参考电子密度时 L_e=log(n_ref)+e(phi−phi_ref)/T_e，正离子时 L_i=log(n_i)+log(Z_i)，e=1.602176634e-19 C。返回 exp(L_e)、exp(L_e+log T_e)、Z_i n_i−n_e、L_i−L_e 和 tanh((L_i−L_e)/2)。五个字段作为同一个 scirel._result.Result 映射返回；按键和属性读取同一个值。单一物种精确缺失时用绝对值至少 1 的有符号有限对数代理及精确 ±1 相对残差，双真空残差零。先形成势差，结合尾数/指数缩放和范围边缘精确回退，避免绝对能量分别舍入及过早溢出/下溢。",
    "model": "给定温度下逐点 Boltzmann 电子响应，不是自洽电势求解。",
@@ -6266,9 +6285,10 @@
      "相对残差抗溢出、正物种对数残差抗下溢、双真空及密度下溢仍保留压力。",
      "普通解析响应、非法输入及有限输出；严格验证不截断的 exp(701)，拒绝不可表示的正响应。不截断断言是判别性见证：不可表示的正响应被拒绝而非截断。",
      "±1e20 邻近 binary64 势差复现精确有理指数；±1e308 异号势及次正规热能保持可表示最终响应。",
-     "Result 改造后保持五键顺序、数值、形状、dtype 和映射兼容性，并支持属性读取同一字段。"
+     "Result 改造后保持五键顺序、数值、形状、dtype 和映射兼容性，并支持属性读取同一字段。",
+     "用六组原始 binary64 输入的 180 位 Decimal Maxwell 权重独立参照检查电子密度、压强、数密度残差和相对残差，rtol=3e-13、atol=0；对数残差误差不超过 3e-13*max(1,abs(reference))。包含大公共势、±800 指数与参考密度补偿、±1e308 异号势；精确缺失物种诊断、真正溢出和非正温度拒绝分开断言。推导及固定预算在直接测试模块说明中。"
     ],
-    "evidence_ceiling": "测试支持数学 Boltzmann 定律、有限算术及所述残差约定，不建立真实电子平衡或全部等离子体模型适用性。",
+    "evidence_ceiling": "测试支持数学 Boltzmann 定律、有限算术及所述残差约定，不建立真实电子平衡或全部等离子体模型适用性。 独立参照只覆盖这六组输入及具名缺失/失败案例；空间变化的指定温度不因此成为已证明的全局热平衡。",
     "known_limitations": [
      "精确缺失物种使用有限有符号诊断代理，不是数学无穷对数，其幅值无物理对数比意义。",
      "binary64 可将密度或压力下溢到零，但正物种对数诊断仍用解析对数密度。",
@@ -6277,7 +6297,10 @@
     "tests": [
      "tests/closures/test_boltzmann_quasineutrality.py",
      "tests/cross_domain/test_mirror_kinetic_scientific_correction.py",
-     "tests/cross_domain/test_mirror_gauge_scientific_correction.py"
+     "tests/cross_domain/test_mirror_gauge_scientific_correction.py",
+     "tests/closures/test_independent_closure_relations.py::test_boltzmann_from_raw_decimal_maxwell_weight",
+     "tests/closures/test_independent_closure_relations.py::test_exact_absence_is_diagnostic_not_a_false_root",
+     "tests/closures/test_independent_closure_relations.py::test_boltzmann_true_overflow_and_invalid_temperature_reject"
     ]
    }
   },
@@ -9851,7 +9874,7 @@
   },
   {
    "asset_id": "scirel.closures.discrete-vector-error-feedback",
-   "source_sha256": "745694957ec7396efcbff46453b279f0a2f395c74be84c632c7bae1ec0219a2a",
+   "source_sha256": "d83746b14f880692b28abeefc70d36486c7aba99c02e9dea9df76a15f92ef307",
    "summary": "在设备中立的十通道采样序列上计算离散 P/I/滤波 D 状态、十一路电流映射以及使能保持/复位分支。 顶层返回值是 scirel._result.Result 映射；非冲突字段支持属性读取。",
    "definition": "计算 error=reference-measurement；使能时求 P/I/滤波 D，应用 11×10 矩阵并叠加前馈；禁用时保持 PID/反馈状态并返回前馈电流；禁用到使能上升沿先复位积分器和滤波器。 完整结果作为同一个 scirel._result.Result 映射返回；嵌套 dict 字段保持普通 dict。",
    "model": "带前向 Euler 积分和一阶滤波导数的离散采样 PID/反馈原语。",
@@ -9908,7 +9931,10 @@
     "scope": [
      "四个直接测试覆盖形状、源/重放一致性、独立重实现、禁用保持、上升复位和非二值使能拒绝。",
      "入站补充绑定 12,463 个源/重放数值标量、相同结果/状态文件及完整成员/许可证哈希。",
-     "公共夹具保留直接比较使用的源结果和状态轨迹。"
+     "公共夹具保留直接比较使用的源结果和状态轨迹。",
+     "独立精确有理数七样本轨迹检查 PID 分量、映射/总电流、上升复位、禁用保持/前馈，以及积分器和滤波器的实际 pre/post 状态，不读取源/重放夹具。当前电流用已更新积分器 I_+，滤波导数用更新前 f_-，输入保持不变；另以两通道非对角 Fraction 矩阵核轴顺序及系数缩放只应用一次。",
+     "六个参数化非法输入节点分别拒绝非二值使能、负滤波率、非零内部复位、观测时间不匹配、非有限测量及错误增益形状；采样状态方程、前两步有理轨迹、单位和精确相等预算在直接测试模块说明中。",
+     "自包含三样本 P-only 公开示例给出十个误差通道、十一路输出和全部控制参数；独立线性运算得到第一路反馈 [3,6,−3] A、总电流 [4,7,−2] A，其余通道为零。直接测试在空临时工作目录的隔离 Python 中执行实际 docstring 断言，不读取仓库夹具。"
     ],
     "known_limitations": [
      "不建模装置、执行器饱和或磁场几何。",
@@ -9916,11 +9942,18 @@
      "源/重放比较是适配器转录证据；原生 Simulink 仍未运行。",
      "许可证文本保留于离散反馈目录，权利接受仍待决定。"
     ],
-    "evidence_ceiling": "限于声明采样适配器路径的源保真部分证据；原生 Simulink、参数解析、更广畸形输入、物理标定、闭环稳定/收敛、人工科学接受、权利接受和发布均未建立。"
+    "evidence_ceiling": "限于声明采样适配器路径的源保真部分证据，另有独立精确有理状态时序、非对角矩阵和六种指定非法输入断言；源/重放比较仍是转录证据。原生 Simulink、参数解析、具名案例之外的畸形输入、物理标定、闭环稳定/收敛、人工科学接受、权利接受和发布均未建立。",
+    "tests": [
+     "tests/closures/test_discrete_vector_feedback.py",
+     "tests/closures/test_independent_closure_relations.py::test_feedback_independent_rational_trace_and_hold_reset",
+     "tests/closures/test_independent_closure_relations.py::test_feedback_non_diagonal_map_and_scale",
+     "tests/closures/test_independent_closure_relations.py::test_feedback_declared_true_failures",
+     "tests/closures/test_independent_closure_relations.py::test_feedback_docstring_example_runs_without_repository_fixtures"
+    ]
    },
    "example": {
-    "description": "在 121 点类型化夹具上运行设备中立采样反馈状态。",
-    "expected": "返回 121 个样本及每个样本的十一路总电流；禁用样本返回前馈并保持状态。 顶层返回对象是 scirel._result.Result 映射。"
+    "description": "用完整给定参数的自包含三样本 P-only 小例子运行十通道/十一路反馈，不读取仓库夹具。",
+    "expected": "第一路反馈电流为 [3,6,−3] A，叠加前馈后总电流为 [4,7,−2] A；其余输出为零。顶层返回同一个 scirel._result.Result 映射。"
    }
   }
  ]
