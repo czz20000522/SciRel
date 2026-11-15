@@ -13,6 +13,7 @@ archived implementation when its root is supplied.
 from __future__ import annotations
 
 import inspect
+from decimal import Decimal, localcontext
 
 import numpy as np
 import pytest
@@ -461,3 +462,198 @@ def test_array_inputs_require_real_numeric_values(name, value):
 def test_cross_section_numeric_strings_are_rejected():
     with pytest.raises(ValueError, match="cross_section_m2"):
         _call(sigma=lambda energy: np.full(energy.shape, "1e-20"))
+
+
+def test_maxwellian_weight_scale_invariance_at_finite_large_weights():
+    # Original F1 witness: keep its inputs and 1e-14 assertion unchanged.
+    kwargs = dict(
+        particle_energy_ev=np.array([1.0]),
+        particle_mass_amu=1.0,
+        target_temperature_ev=1.0,
+        target_mass_amu=1.0,
+        vx=np.array([-1.0, 0.0, 1.0]),
+        vr=np.array([0.5, 1.0]),
+        tnorm_ev=1.0,
+        cross_section_m2=lambda e: np.full_like(e, 1.0e-20),
+    )
+    ordinary = average_cross_section_over_maxwellian(cylindrical_volume=np.ones((2, 3)), **kwargs)
+    scaled = average_cross_section_over_maxwellian(
+        cylindrical_volume=np.full((2, 3), 1.0e308), **kwargs
+    )
+    # Every weight is finite. A common multiplier cancels algebraically.
+    np.testing.assert_allclose(scaled, ordinary, rtol=1.0e-14, atol=0.0)
+
+
+def _decimal_mesh_average(vr, vx, volume, sigma, energy=1.0):
+    """90-digit scalar sum, with no production constants, weights or rates.
+
+    The frozen mass/charge values and unit temperatures/masses are explicit.
+    Decimal.from_float binds extreme weights and coordinates to the actual
+    binary64 inputs rather than silently replacing them by decimal roundings.
+    """
+    with localcontext() as ctx:
+        ctx.prec = 90
+        d = Decimal.from_float
+        thermal_speed = (2 * Decimal("1.602177e-19") / Decimal("1.6726231e-27")).sqrt()
+        beam_speed = d(float(energy)).sqrt()
+        numerator = denominator = Decimal(0)
+        for i, r in enumerate(vr):
+            for j, x in enumerate(vx):
+                radial, axial = d(float(r)), d(float(x))
+                weight = d(float(volume[i, j])) * (-(radial**2 + axial**2)).exp()
+                speed = (radial**2 + (axial - beam_speed) ** 2).sqrt()
+                denominator += weight
+                numerator += weight * d(float(sigma[i, j])) * speed
+        return float(thermal_speed * numerator / denominator)
+
+
+def _unit_temperature_average(vr, vx, volume, sigma, energy=1.0):
+    return average_cross_section_over_maxwellian(
+        particle_energy_ev=np.array([energy]),
+        particle_mass_amu=1.0,
+        target_temperature_ev=1.0,
+        target_mass_amu=1.0,
+        vr=np.asarray(vr),
+        vx=np.asarray(vx),
+        tnorm_ev=1.0,
+        cylindrical_volume=volume,
+        cross_section_m2=lambda sampled: np.broadcast_to(sigma, sampled.shape),
+    )
+
+
+@pytest.mark.parametrize("scale", [1.0, 7.5, 1e307, 1e308, 1e-307, 1e-308, 5e-324])
+def test_extreme_common_weight_scales_match_decimal(scale):
+    vr, vx = [0.5, 1.0], [-1.0, 0.0, 1.0]
+    volume, sigma = np.full((2, 3), scale), np.full((2, 3), 1e-20)
+    expected = _decimal_mesh_average(vr, vx, volume, sigma)
+    actual = _unit_temperature_average(vr, vx, volume, sigma)
+    assert expected > 0.0
+    np.testing.assert_allclose(actual, [expected], rtol=1e-14, atol=0.0)
+
+
+@pytest.mark.parametrize("small,large", [(1e-300, 1e300), (1e-308, 1e308)])
+def test_nonuniform_weights_and_gaussian_exponents_compensate(small, large):
+    vr, vx = [0.0, np.sqrt(1400.0)], [0.0]
+    volume, sigma = np.array([[small], [large]]), np.full((2, 1), 1e-20)
+    expected = _decimal_mesh_average(vr, vx, volume, sigma)
+    actual = _unit_temperature_average(vr, vx, volume, sigma)
+    # Budget fixed before running: exponent evaluation at ~1400 can lose ~1e-13.
+    np.testing.assert_allclose(actual, [expected], rtol=5e-13, atol=0.0)
+
+
+def test_a_common_underflowing_gaussian_factor_cancels():
+    vr, vx = [np.sqrt(1000.0)], [-1.0, 0.0, 1.0]
+    volume, sigma = np.ones((1, 3)), np.full((1, 3), 1e-20)
+    expected = _decimal_mesh_average(vr, vx, volume, sigma)
+    actual = _unit_temperature_average(vr, vx, volume, sigma)
+    np.testing.assert_allclose(actual, [expected], rtol=1e-14, atol=0.0)
+
+
+def test_tiny_probability_times_large_cross_section_is_not_lost():
+    vr, vx = [0.0, np.sqrt(1000.0)], [0.0]
+    volume, sigma = np.ones((2, 1)), np.array([[0.0], [1e300]])
+    expected = _decimal_mesh_average(vr, vx, volume, sigma)
+    actual = _unit_temperature_average(vr, vx, volume, sigma)
+    assert expected > 0.0
+    np.testing.assert_allclose(actual, [expected], rtol=5e-13, atol=0.0)
+
+
+def test_intermediate_weight_cross_section_overflow_does_not_reject_a_finite_rate():
+    vr, vx = [0.5, 1.0], [-1.0, 0.0, 1.0]
+    volume, sigma = np.full((2, 3), 1e300), np.full((2, 3), 1e20)
+    expected = _decimal_mesh_average(vr, vx, volume, sigma)
+    actual = _unit_temperature_average(vr, vx, volume, sigma)
+    np.testing.assert_allclose(actual, [expected], rtol=1e-14, atol=0.0)
+
+
+def test_a_positive_unrepresentable_rate_is_rejected_instead_of_zero():
+    with pytest.raises(ValueError, match="not representable"):
+        _unit_temperature_average(
+            [1e-150], [0.0], np.ones((1, 1)), np.full((1, 1), 5e-324), energy=0.0
+        )
+
+
+@pytest.mark.parametrize("zero_speed", [False, True])
+def test_exact_zero_rates_are_distinct_from_underflow(zero_speed):
+    vr = [0.0] if zero_speed else [1.0]
+    sigma = np.array([[1e308 if zero_speed else 0.0]])
+    actual = _unit_temperature_average(vr, [0.0], np.ones((1, 1)), sigma, energy=0.0)
+    np.testing.assert_array_equal(actual, [0.0])
+
+
+@pytest.mark.parametrize("vr,vx", [([], [0.0]), ([0.0], [])])
+def test_an_empty_mesh_has_no_normalizable_target_mass(vr, vx):
+    observed = []
+
+    def sigma(sampled):
+        observed.append(sampled.copy())
+        return np.ones_like(sampled)
+
+    with pytest.raises(ValueError, match="target Maxwellian"):
+        _call(vr=np.array(vr), vx=np.array(vx), volume=np.ones((len(vr), len(vx))), sigma=sigma)
+    assert observed == []
+
+
+@pytest.mark.parametrize("radius,energy", [(1e-200, 0.0), (1e-160, 0.0), (0.0, 5e-324)])
+def test_underflowing_kinematics_are_rejected_before_the_callback(radius, energy):
+    observed = []
+
+    def sigma(sampled):
+        observed.append(sampled.copy())
+        return np.full_like(sampled, 1e300)
+
+    with pytest.raises(ValueError, match="not representable"):
+        _call(
+            energies=np.array([energy]),
+            vr=np.array([radius]),
+            vx=np.array([0.0]),
+            volume=np.ones((1, 1)),
+            particle_mass_amu=1.0,
+            target_mass_amu=1.0,
+            tnorm_ev=1.0,
+            target_temperature_ev=1.0,
+            sigma=sigma,
+        )
+    assert observed == []
+
+
+def test_the_cross_section_callback_exception_is_propagated_unchanged():
+    error = RuntimeError("caller cross-section failure")
+
+    def sigma(energy):
+        raise error
+
+    with pytest.raises(RuntimeError) as raised:
+        _call(sigma=sigma)
+    assert raised.value is error
+
+
+def test_compensating_weights_keep_readonly_inputs_and_callback_shape():
+    vr, vx = np.array([0.0, np.sqrt(1400.0)]), np.array([0.0])
+    volume = np.array([[1e-308], [1e308]])
+    kept = [a.copy() for a in (vr, vx, volume)]
+    for array in (vr, vx, volume):
+        array.flags.writeable = False
+    observed = []
+
+    def sigma(energy):
+        observed.append(energy.copy())
+        return np.full_like(energy, 1e-20)
+
+    actual = _call(
+        energies=np.array([0.0, 1.0]),
+        vr=vr,
+        vx=vx,
+        volume=volume,
+        particle_mass_amu=1.0,
+        target_mass_amu=1.0,
+        tnorm_ev=1.0,
+        target_temperature_ev=1.0,
+        sigma=sigma,
+    )
+    assert actual.shape == (2,) and actual.dtype == np.float64
+    assert len(observed) == 1 and observed[0].shape == (2, 2, 1)
+    assert np.all(np.isfinite(observed[0]))
+    for array, before in zip((vr, vx, volume), kept, strict=True):
+        np.testing.assert_array_equal(array, before)
+        assert not array.flags.writeable
