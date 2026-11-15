@@ -334,6 +334,70 @@ def _validator():
     return module
 
 
+def _isolated_validator_load(script, directory):
+    # -I starts without PYTHONPATH, the working directory or this pytest process's
+    # sys.path edits. Only the production validator establishes its import paths.
+    driver = """
+import importlib.util
+from pathlib import Path
+import sys
+
+script = Path(sys.argv[1]).resolve()
+acceptance = script.parents[1] / "skills/development/scirel-acceptance/scripts"
+assert str(acceptance) not in sys.path
+assert "check_all" not in sys.modules
+assert "scirel_pytest_counts" not in sys.modules
+spec = importlib.util.spec_from_file_location("isolated_validator", script)
+module = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(module)
+check_all = sys.modules["check_all"]
+counts = sys.modules["scirel_pytest_counts"]
+assert Path(check_all.__file__).resolve() == acceptance / "check_all.py"
+assert Path(counts.__file__).resolve() == acceptance / "scirel_pytest_counts.py"
+assert module.read_counts is check_all.read_counts
+assert check_all.validate_execution_records is counts.validate_execution_records
+print("production validator, check_all and counts imports verified")
+"""
+    return subprocess.run(
+        [sys.executable, "-I", "-B", "-c", driver, str(script)],
+        cwd=directory,
+        capture_output=True,
+        text=True,
+        timeout=10,
+    )
+
+
+def test_production_validator_loads_counts_without_pytest_path_injection(tmp_path):
+    done = _isolated_validator_load(SCRIPT, tmp_path)
+    assert done.returncode == 0, done.stdout + done.stderr
+    assert done.stdout.strip() == "production validator, check_all and counts imports verified"
+
+
+def test_production_validator_loading_fails_when_its_counts_dependency_is_missing(tmp_path):
+    # Copy the actual import closure, omitting only the dependency under test.
+    scripts = tmp_path / "candidate/scripts"
+    scripts.mkdir(parents=True)
+    for name in (
+        "validate_extraction_package.py",
+        "tickets.py",
+        "dev.py",
+        "validate_asset_documents.py",
+        "code_digest.py",
+        "public_api_binding.py",
+    ):
+        shutil.copyfile(ROOT / "scripts" / name, scripts / name)
+    acceptance = scripts.parent / "skills/development/scirel-acceptance/scripts"
+    acceptance.mkdir(parents=True)
+    for name in ("check_all.py", "precommit_check.py"):
+        shutil.copyfile(
+            ROOT / "skills/development/scirel-acceptance/scripts" / name, acceptance / name
+        )
+    done = _isolated_validator_load(scripts / "validate_extraction_package.py", tmp_path)
+    assert done.returncode != 0
+    assert "ModuleNotFoundError: No module named 'scirel_pytest_counts'" in done.stderr
+    assert "imports verified" not in done.stdout
+
+
 def _mock_lock_boundary(module, monkeypatch):
     """Report/environment protocol fixtures only; not real exclusive acceptance evidence."""
     monkeypatch.setattr(

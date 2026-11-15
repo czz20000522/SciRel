@@ -97,6 +97,7 @@ SKILL_SCRIPT_TARGETS = {
     ),
     "skills/development/scirel-acceptance/scripts/scirel_pytest_counts.py": (
         "tests/tooling/test_check_all.py",  # Loads the real pytest plugin in subprocesses.
+        "tests/tooling/test_validate_extraction_package.py",  # Imports its validator via check_all.
     ),
     "skills/development/usage/scirel-solving/scripts/delivery.py": (
         "tests/delivery",
