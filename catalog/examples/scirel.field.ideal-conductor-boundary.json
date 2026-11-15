@@ -31,7 +31,7 @@
  "identity": {
   "relation": "Finite-dimensional ideal-conductor boundary correction",
   "direction": "uncorrected field flux and Green matrices to corrected flux and solve diagnostics",
-  "definition": "Sample the field flux at the boundary, solve Gbb currents=-sampled_flux with a relative singular-value cutoff, and apply Gbf currents. The documented fields are returned together in a scirel._result.Result mapping; mapping and attribute access expose the same values. No nested mapping is returned.",
+  "definition": "Sample the field flux at the boundary, solve Gbb currents=-sampled_flux with a relative singular-value cutoff, and apply Gbf currents. For Gbb=U diag(s) V.T, retain s>rcond*s[0] using the binary64 product and evaluate V @ ((U.T @ -sampled_flux)/s) in retained directions without forming singular-value reciprocals or the full pseudoinverse. Accumulate the residual norm with hypotenuse scaling. The documented fields are returned together in a scirel._result.Result mapping; mapping and attribute access expose the same values. No nested mapping is returned.",
   "model": "Reduced-SVD linear least-squares correction.",
   "geometry": "Finite field and boundary sample/source axes with explicit matrix shape compatibility.",
   "coordinates": "Flux Wb/rad; Green responses Wb/rad/A; currents A.",
@@ -178,7 +178,7 @@
  },
  "failure_semantics": {
   "invalid_input": "ValueError is raised for nonfinite, wrong-rank, incompatible, empty, or invalid-rcond inputs.",
-  "runtime_failure": "Linear-algebra or floating-point failures propagate from the SVD and matrix products.",
+  "runtime_failure": "numpy.linalg.LinAlgError propagates if SVD fails to converge. FloatingPointError is raised for nonfinite solve or correction arithmetic, including unrepresentable currents, fluxes, singular values or residual norm; no nonfinite Result is returned.",
   "nonconvergence": "Not applicable; the solve is a single truncated-SVD operation.",
   "partial_results": "No scirel._result.Result correction mapping is returned after validation or solve failure."
  },
@@ -206,12 +206,15 @@
    "Consistent 2*pi rescaling of the flux and both Green matrices preserves equivalent boundary currents.",
    "Relative singular-value cutoff and effective rank.",
    "Negative rcond rejection.",
-   "The named result preserves the captured key order, values, shapes, dtypes, mapping access and attribute access; failures retain their exception types and messages."
+   "The named result preserves the captured key order, values, shapes, dtypes, mapping access and attribute access; failures retain their exception types and messages.",
+   "A condition-one scalar system including 1e-310 and the smallest positive subnormal has current -1, zero corrected flux and residual, and rank one without forming an overflowing reciprocal.",
+   "Independent exact-rational two-by-two and minimum-norm row-system oracles cover common scales, a non-diagonal system and source nullspace; diagonal tests retain the rounded-product cutoff, strict equality, zero rank and left-nullspace residual.",
+   "Scaled residual norms remain finite when representable; truly nonfinite sampled flux, currents, corrections, singular values and residual norm raise FloatingPointError even when caller warnings are disabled."
   ],
   "tests": [
    "tests/field/test_ideal_conductor_boundary.py"
   ],
-  "evidence_ceiling": "Direct SciRel tests verify a small full-rank sampling-consistent system, one truncated-rank case and consistent 2*pi rescaling of all flux quantities. They do not verify arbitrary boundary Green data, conditioning guarantees, physical wall correctness or expert recognition of this development record.",
+  "evidence_ceiling": "Direct SciRel tests retain the original full-rank sampling-consistent system and 2*pi rescaling, and add exact scalar, rational two-by-two and minimum-norm row-system references across bounded binary64 scales, rank/cutoff boundaries and nonfinite failures. These tests do not establish arbitrary-matrix accuracy, conditioning guarantees, recovery of lost input precision, physical wall correctness or expert recognition of this development record.",
   "known_limitations": [
    "The implementation checks matrix dimensions but does not check S @ Gbf = Gbb; callers must establish that physical coupling separately.",
    "Truncation can leave a nonzero residual.",

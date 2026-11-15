@@ -77,6 +77,10 @@ def correct_ideal_conductor_boundary_flux(
     ValueError
         If inputs are nonfinite, have wrong rank, are incompatible or empty,
         or if ``rcond`` is invalid.
+    FloatingPointError
+        If the solve or correction arithmetic produces a nonfinite value,
+        including a current, flux, singular value or residual norm that is
+        not representable as finite float64.
     numpy.linalg.LinAlgError
         If the underlying SVD fails to converge.
 
@@ -90,6 +94,13 @@ def correct_ideal_conductor_boundary_flux(
     mapping. No nested mapping is returned, and mapping access remains
     available alongside attribute access. Rank truncation can leave a nonzero
     residual.
+
+    For ``Gbb = U diag(s) V.T``, retain exactly ``s > rcond*s[0]`` and
+    evaluate ``V @ ((U.T @ -sampled_flux) / s)`` in those directions.
+    Dividing the projected right-hand side directly avoids forming ``1/s``
+    or a full pseudoinverse that may overflow even when the currents are
+    finite. The residual norm uses scaled hypotenuse accumulation rather
+    than squaring the residual entries.
 
     Examples
     --------
@@ -132,18 +143,22 @@ def correct_ideal_conductor_boundary_flux(
     if boundary_green.size == 0:
         raise ValueError("green_boundary_to_boundary must not be empty")
 
-    boundary_flux = samples @ field_flux
-    left, singular_values, right_transpose = np.linalg.svd(boundary_green, full_matrices=False)
-    keep = singular_values > rcond * singular_values[0]
-    reciprocal = np.zeros_like(singular_values)
-    reciprocal[keep] = 1.0 / singular_values[keep]
-    pseudo_inverse = right_transpose.T @ (reciprocal[:, None] * left.T)
-    boundary_currents = pseudo_inverse @ -boundary_flux
-    boundary_correction = boundary_green @ boundary_currents
-    field_correction = field_green @ boundary_currents
-    residual = boundary_flux + boundary_correction
-    return Result(
-        {
+    with np.errstate(over="raise", invalid="raise", divide="raise", under="ignore"):
+        boundary_flux = samples @ field_flux
+        left, singular_values, right_transpose = np.linalg.svd(boundary_green, full_matrices=False)
+        if not np.all(np.isfinite(singular_values)):
+            raise FloatingPointError("boundary Green singular values are not finite float64")
+        # An overflowing nonnegative cutoff still excludes all singular values,
+        # just as in the original strict comparison (rcond may exceed one).
+        with np.errstate(over="ignore"):
+            keep = singular_values > rcond * singular_values[0]
+        projected_currents = np.zeros_like(singular_values)
+        projected_currents[keep] = (left[:, keep].T @ -boundary_flux) / singular_values[keep]
+        boundary_currents = right_transpose.T @ projected_currents
+        boundary_correction = boundary_green @ boundary_currents
+        field_correction = field_green @ boundary_currents
+        residual = boundary_flux + boundary_correction
+        result = {
             "corrected_field_flux": field_flux + field_correction,
             "boundary_currents": boundary_currents,
             "boundary_flux_correction": boundary_correction,
@@ -151,9 +166,11 @@ def correct_ideal_conductor_boundary_flux(
             "singular_values": singular_values,
             "effective_rank": int(np.count_nonzero(keep)),
             "residual": residual,
-            "residual_norm": float(np.linalg.norm(residual)),
+            "residual_norm": float(np.hypot.reduce(residual)),
         }
-    )
+    if any(not np.all(np.isfinite(value)) for value in result.values()):
+        raise FloatingPointError("boundary correction is not representable as finite float64")
+    return Result(result)
 
 
 __all__ = ["correct_ideal_conductor_boundary_flux"]
