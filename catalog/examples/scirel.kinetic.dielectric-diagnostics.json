@@ -1,0 +1,307 @@
+{
+ "schema": "scirel.asset-document",
+ "asset_id": "scirel.kinetic.dielectric-diagnostics",
+ "title": {
+  "en": "Raw finite-harmonic dielectric diagnostics",
+  "zh": "有限谐波介电原值诊断"
+ },
+ "summary": "Evaluate the original finite-harmonic diagnostic with species broadcasting, complex kx and explicit representability masks; default harmonics=15.",
+ "taxonomy": [
+  "kinetic",
+  "plasma-wave"
+ ],
+ "aliases": [],
+ "discovery": {
+  "capability": [
+   "Raw finite-harmonic dielectric diagnostics",
+   "Evaluate the original finite-harmonic diagnostic with species broadcasting, complex kx and explicit representability masks; default harmonics=15."
+  ],
+  "operation": [
+   "SI species and wavepoint to full K, D and six-term determinant",
+   "(B0, qs, ms, ns0, Ts0, omega, kz, kx, harmonics) -> Result(K_raw, D_raw, determinant_raw, omega, nx, nz, vts, wcs, wps2, a, b, rhocs, z0s, diagnostics)"
+  ],
+  "model": "homogeneous magnetized Maxwellian multi-species plasma",
+  "geometry": "homogeneous plasma",
+  "boundary": "Default harmonics=15; explicit None is rejected with TypeError. Finite nonzero omega and kz; actual signed near-zero kz, without a clamp. kx=0 preserves the original raw partial tensor, with exact masks; all other numerical failures raise FloatingPointError.",
+  "device_scope": "generic"
+ },
+ "identity": {
+  "relation": "SI species and wavepoint to full K, D and six-term determinant",
+  "direction": "(B0, qs, ms, ns0, Ts0, omega, kz, kx, harmonics) -> Result(K_raw, D_raw, determinant_raw, omega, nx, nz, vts, wcs, wps2, a, b, rhocs, z0s, diagnostics)",
+  "definition": "Sum l=-harmonics..harmonics Maxwellian contributions, form D with Maxwell curl terms, and retain the explicit six-term determinant. xx/xy/yy retain N64 Weideman Z; xz/yz/zz use analytic real A=1+z*Z, finite Gamma derivative endpoints and the omitted Gamma tail. Complex/negative b uses a complex tail sum with an absolute exact-remainder bound from |I_n(b)|<=I_n(|b|) and DLMF 10.35.1. Per species, if every harmonic |z_n|<=1, xz/yz/zz instead use direct z_n*Z(z_n) and the original additive zz term to retain small responses. At b=0 the omitted Gamma tail is exactly zero. xy/yx retain their Z backend but accumulate each real/imaginary harmonic sum with fsum. The returned raw tensor/determinant values are unchanged; isfinite masks and complete are observations, not corrections. a retains the kernel sign/complex phase, b=a**2, and z0s retains signed kz.",
+  "model": "homogeneous magnetized Maxwellian multi-species plasma",
+  "geometry": "homogeneous plasma",
+  "coordinates": "Wavevector x-z plane, complex kx permitted, z parallel to B0; omega in rad/s. Species scalars and singletons broadcast to one shared S axis; signed z0s=omega/(kz*vts) is diagnostic only.",
+  "boundary": "Default harmonics=15; explicit None is rejected with TypeError. Finite nonzero omega and kz; actual signed near-zero kz, without a clamp. kx=0 preserves the original raw partial tensor, with exact masks; all other numerical failures raise FloatingPointError.",
+  "assumptions": [
+   "Input units and normalization follow the declared ports; no physical parameters are inferred."
+  ]
+ },
+ "inputs": [
+  {
+   "name": "B0",
+   "description": "Background magnetic-field strength; scalar; unit T (tesla); must be a finite nonzero real number (`B0=0` degenerates `wcs` and `rhocs` and raises directly).",
+   "units": "T",
+   "shape": "scalar",
+   "dtype": "real numeric",
+   "required": true,
+   "constraints": "Must be a finite nonzero real number (`B0=0` degenerates `wcs` and `rhocs` and raises directly)."
+  },
+  {
+   "name": "qs",
+   "description": "Charge of each species; scalar or one-dimensional array of length `S`; unit C (coulomb); must be finite and nonzero (zero charge gives `wps2=0` and `wcs=0`); the sign sets the gyration direction.",
+   "units": "C",
+   "shape": "scalar or (S,) species array",
+   "dtype": "real numeric",
+   "required": true,
+   "constraints": "Finite and nonzero (zero charge gives `wps2=0` and `wcs=0`); the sign sets the gyration direction."
+  },
+  {
+   "name": "ms",
+   "description": "Mass of each species; scalar or one-dimensional array of length `S`; unit kg; must be strictly positive and finite.",
+   "units": "kg",
+   "shape": "scalar or (S,) species array",
+   "dtype": "real numeric",
+   "required": true,
+   "constraints": "Strictly positive and finite."
+  },
+  {
+   "name": "ns0",
+   "description": "Number density of each species; scalar or one-dimensional array of length `S`; unit m^-3; must be strictly positive and finite.",
+   "units": "m^-3",
+   "shape": "scalar or (S,) species array",
+   "dtype": "real numeric",
+   "required": true,
+   "constraints": "Strictly positive and finite."
+  },
+  {
+   "name": "Ts0",
+   "description": "Temperature of each species; scalar or one-dimensional array of length `S`; unit K (kelvin, **not** eV); must be strictly positive and finite; the caller converts eV by multiplying by `1.6022e-19/kB` (the frozen source comment states this convention).",
+   "units": "K",
+   "shape": "scalar or (S,) species array",
+   "dtype": "real numeric",
+   "required": true,
+   "constraints": "Strictly positive and finite; the caller converts eV by multiplying by `1.6022e-19/kB` (the frozen source comment states this convention)."
+  },
+  {
+   "name": "omega",
+   "description": "Real angular frequency used directly, without an Hz round trip.",
+   "units": "rad/s",
+   "shape": "scalar",
+   "dtype": "real numeric",
+   "required": true,
+   "constraints": "Finite and nonzero."
+  },
+  {
+   "name": "kz",
+   "description": "Signed parallel phase wavenumber; response uses abs(kz), while z0s retains its sign.",
+   "units": "1/m",
+   "shape": "scalar",
+   "dtype": "real numeric",
+   "required": true,
+   "constraints": "Finite and nonzero; no near-zero clamp."
+  },
+  {
+   "name": "kx",
+   "description": "Perpendicular wavenumber; finite real or complex scalar. At kx=0, a and b are zero. test_zero_wavevector_boundaries_are_preserved checks K and D entry by entry: xx, yy, xz and zx are nonfinite; xy, yx, yz, zy and zz are finite for its regular endpoint sample, with zz also checked against an independent analytic expression. This does not regularize the singular entries or certify extreme-scale representability.",
+   "units": "1/m",
+   "shape": "scalar",
+   "dtype": "complex128",
+   "required": true,
+   "constraints": "Finite real or complex scalar. At kx=0, a and b are zero. test_zero_wavevector_boundaries_are_preserved checks K and D entry by entry: xx, yy, xz and zx are nonfinite; xy, yx, yz, zy and zz are finite for its regular endpoint sample, with zz also checked against an independent analytic expression. This does not regularize the singular entries or certify extreme-scale representability."
+  },
+  {
+   "name": "harmonics",
+   "description": "Symmetric finite harmonic cutoff n=-N..N.",
+   "units": "dimensionless",
+   "shape": "scalar",
+   "dtype": "Python or NumPy integer",
+   "required": false,
+   "constraints": "A non-bool non-negative Python or NumPy integer; default 15. Explicit None or any other wrong kind raises TypeError; negative raises ValueError.",
+   "default": 15
+  }
+ ],
+ "outputs": [
+  {
+   "name": "K_raw",
+   "description": "Kinetic dielectric tensor with x-y-z row/column axes, initialized to the identity. At kx=0, a and b are zero. test_zero_wavevector_boundaries_are_preserved checks K and D entry by entry: xx, yy, xz and zx are nonfinite; xy, yx, yz, zy and zz are finite for its regular endpoint sample, with zz also checked against an independent analytic expression. This does not regularize the singular entries or certify extreme-scale representability.",
+   "units": "dimensionless",
+   "shape": "(3,3)",
+   "dtype": "complex128 array",
+   "required": true,
+   "constraints": "Finite-N tensor; At kx=0, a and b are zero. test_zero_wavevector_boundaries_are_preserved checks K and D entry by entry: xx, yy, xz and zx are nonfinite; xy, yx, yz, zy and zz are finite for its regular endpoint sample, with zz also checked against an independent analytic expression. This does not regularize the singular entries or certify extreme-scale representability. No continuous-domain accuracy guarantee."
+  },
+  {
+   "name": "D_raw",
+   "description": "Dispersion tensor `D_raw_ij`; `(3,3)` complex `numpy.ndarray`; dimensionless; obtained from `K_raw` by adding `nx^2`, `nz^2` and `nx*nz`; when `K_raw` is `NaN` the corresponding components are also `NaN`.",
+   "units": "dimensionless",
+   "shape": "(3,3)",
+   "dtype": "complex128 array",
+   "required": true,
+   "constraints": "Dispersion tensor `D_ij`; `(3,3)` complex `numpy.ndarray`; dimensionless; obtained from `K` by adding `nx^2`, `nz^2` and `nx*nz`; when `K` is `NaN` the corresponding components are also `NaN`."
+  },
+  {
+   "name": "determinant_raw",
+   "description": "Dispersion determinant from the original explicit six-term expansion. Tensor comparisons do not certify determinant or root accuracy.",
+   "units": "dimensionless",
+   "shape": "scalar",
+   "dtype": "complex128",
+   "required": true,
+   "constraints": "Original six-term expansion; no determinant/root accuracy guarantee is inferred."
+  },
+  {
+   "name": "omega",
+   "description": "Actual directly supplied angular frequency.",
+   "units": "rad/s",
+   "shape": "scalar",
+   "dtype": "real numeric",
+   "required": true,
+   "constraints": "Finite and nonzero."
+  },
+  {
+   "name": "nx",
+   "description": "Perpendicular refractive index `sqrt(c2)*kx/w`; complex scalar; dimensionless; defined when `w` is nonzero and complex whenever `kx` is complex.",
+   "units": "dimensionless",
+   "shape": "scalar",
+   "dtype": "complex128",
+   "required": true,
+   "constraints": "Perpendicular refractive index `sqrt(c2)*kx/w`; complex scalar; dimensionless; defined when `w` is nonzero and complex whenever `kx` is complex."
+  },
+  {
+   "name": "nz",
+   "description": "Parallel refractive index `sqrt(c2)*kz/w`; complex scalar; dimensionless; a real scalar when `w` is nonzero.",
+   "units": "dimensionless",
+   "shape": "scalar",
+   "dtype": "complex128",
+   "required": true,
+   "constraints": "Parallel refractive index `sqrt(c2)*kz/w`; complex scalar; dimensionless; a real scalar when `w` is nonzero."
+  },
+  {
+   "name": "vts",
+   "description": "Thermal speed `sqrt(2*kB*Ts0/ms)` of each species; real array of shape `(S,)`; unit m/s; must be strictly positive.",
+   "units": "m/s",
+   "shape": "(S,) species array",
+   "dtype": "float64 array",
+   "required": true,
+   "constraints": "Strictly positive."
+  },
+  {
+   "name": "wcs",
+   "description": "Cyclotron frequency qs*B0/ms, carrying the sign of qs*B0.",
+   "units": "rad/s",
+   "shape": "(S,) species array",
+   "dtype": "float64 array",
+   "required": true,
+   "constraints": "Signed by qs*B0 and nonzero when B0 and qs are nonzero."
+  },
+  {
+   "name": "wps2",
+   "description": "Plasma-frequency squared `ns0*qs^2/ms/epsilon0` of each species; real array of shape `(S,)`; unit s^-2; nonnegative.",
+   "units": "s^-2",
+   "shape": "(S,) species array",
+   "dtype": "float64 array",
+   "required": true,
+   "constraints": "Plasma-frequency squared `ns0*qs^2/ms/epsilon0` of each species; real array of shape `(S,)`; unit s^-2; nonnegative."
+  },
+  {
+   "name": "a",
+   "description": "Original signed or complex kx*rhocs returned directly from the kernel.",
+   "units": "dimensionless",
+   "shape": "(S,) species array",
+   "dtype": "complex128 array",
+   "required": true,
+   "constraints": "Finite species array; never reconstructed as sqrt(b)."
+  },
+  {
+   "name": "b",
+   "description": "Original per-species a**2, not abs(a)**2.",
+   "units": "dimensionless",
+   "shape": "(S,) species array",
+   "dtype": "complex128 array",
+   "required": true,
+   "constraints": "Finite complex species array; kx=0 retains exact zero b and the component-specific raw endpoint behavior."
+  },
+  {
+   "name": "rhocs",
+   "description": "Gyroradius `sqrt(kB*Ts0/ms)/wcs` of each species; real array of shape `(S,)`; unit m; signed and defined when `wcs` is nonzero.",
+   "units": "m",
+   "shape": "(S,) species array",
+   "dtype": "float64 array",
+   "required": true,
+   "constraints": "Gyroradius `sqrt(kB*Ts0/ms)/wcs` of each species; real array of shape `(S,)`; unit m; signed and defined when `wcs` is nonzero."
+  },
+  {
+   "name": "z0s",
+   "description": "`z0=omega/(kz*vts)` of each species; complex array of shape `(S,)`; dimensionless; diagnostic only and not accumulated downstream.",
+   "units": "dimensionless",
+   "shape": "(S,) species array",
+   "dtype": "complex128 array",
+   "required": true,
+   "constraints": "`z0=omega/(kz*vts)` of each species; complex array of shape `(S,)`; dimensionless; diagnostic only and not accumulated downstream."
+  },
+  {
+   "name": "diagnostics",
+   "description": "Nested Result with the actual cutoff, tensor convention and raw-value representability observations.",
+   "units": "dimensionless",
+   "shape": "Result",
+   "dtype": "Result",
+   "required": true,
+   "constraints": "Exactly harmonics (actual N, default 15), tensor_convention ('K_ij = delta_ij - sigma_ij/(i*omega*epsilon0)'), finite_K and finite_D (boolean (3,3) masks computed directly with isfinite on K_raw/D_raw), finite_determinant (bool from determinant_raw), complete (bool conjunction of those raw observations), and message (string). At kx=0 both masks are [[False,True,False],[True,False,True],[False,True,True]], finite_determinant=False and complete=False; required xy,yx,yz,zy,zz remain finite. complete denotes representability only, never harmonic convergence, physical accuracy or a root. No replacement, filling or repair of raw values."
+  }
+ ],
+ "applicability": {
+  "preconditions": [
+   "Default harmonics=15 (explicit None is TypeError); species scalars/singletons broadcast to a common nonempty S axis. Actual signed nonzero kz is used without a clamp."
+  ],
+  "supported": [
+   "Evaluate all nine dielectric and dispersion tensor components using the source's default 15 harmonics."
+  ],
+  "excluded": [
+   "No mode identity or arbitrary-parameter accuracy is inferred beyond the declared numerical method."
+  ]
+ },
+ "failure_semantics": {
+  "invalid_input": "Raises TypeError for wrong harmonics kind, including bool or explicit None; raises ValueError for negative harmonics or declared invalid physical input, inconsistent species axes or zero B0, omega or kz. Control errors identify the parameter, received value or kind, legal condition and scirel.kinetic.dielectric-diagnostics. Unsupported numeric conversion errors may propagate.",
+  "runtime_failure": "Raises FloatingPointError if derived scales underflow to zero where nonzero is required or become nonfinite, if tensor contributions or required finite components are unavailable, if a tail cannot be represented reliably or bounded within its term budget, or on severe complex-tail cancellation. Only the original kx=0 singular tensor entries and resulting determinant may remain nonfinite; xy, yx, yz, zy and zz in both K and D must remain finite. Other unexpected backend errors propagate.",
+  "nonconvergence": "Not applicable; no iterative root solve is exposed.",
+  "partial_results": "At kx=0 only, the original raw nonfinite xx, yy, xz and zx entries in K and D and the resulting nonfinite determinant are retained, with finite xy, yx, yz, zy and zz required. No partial tail or mapping is returned after an exception. Raw values, exact isfinite masks and complete=False expose only that original partial endpoint; complete does not certify convergence or scientific accuracy."
+ },
+ "public_api": {
+  "python": {
+   "module": "scirel.kinetic.dielectric_diagnostics",
+   "symbol": "evaluate_dielectric_diagnostics",
+   "signature": "evaluate_dielectric_diagnostics(*, B0, qs, ms, ns0, Ts0, omega, kz, kx, harmonics=15)",
+   "canonical_module": "scirel.kinetic",
+   "canonical_symbol": "evaluate_dielectric_diagnostics"
+  }
+ },
+ "version": {
+  "implementation_version": "0.0.0",
+  "dependencies": []
+ },
+ "example": {
+  "description": "Evaluate the bounded one-species raw tensor and check shape plus representability, without an accuracy or convergence claim.",
+  "code": "from scirel.kinetic import evaluate_dielectric_diagnostics\nr = evaluate_dielectric_diagnostics(B0=1.0, qs=[-1.60217662e-19], ms=[9.1094e-31], ns0=[6.075e19], Ts0=[11604941.036704937], omega=1e11, kz=1.0, kx=1e4)\nassert r.K_raw.shape == r.D_raw.shape == (3, 3) and r.diagnostics.complete\n",
+  "expected": "The declared point returns 3x3 K_raw and D_raw and diagnostics.complete=True at the original default N=15. The exact kx=0 partial endpoint remains a separate verified boundary."
+ },
+ "verification": {
+  "scope": [
+   "Complete complex K/D from public-input independent original finite-N sums at selected real/complex kx, positive/negative near-zero and ordinary kz, harmonics=0/1/15/30/60, A dispatch boundaries, and species broadcasting; controls, diagnostic fields and tail rejection checked separately. Small-z reviewer regressions, neighbors of the |z_n|<=1 representation switch and each finite/singular kx=0 component are included. Four signed low-frequency xy/yx cancellation regressions are checked independently.",
+   "Error-channel tests distinguish invalid shape/domain/cutoff inputs from numerical scale, tensor, tail and budget failures, preserve unrelated ValueError propagation, and protect the diagnostic kx=0 partial boundary without changing scientific tolerances.",
+   "Retained original example: B0=1.0, qs=[-1.60217662e-19], ms=[9.1094e-31], ns0=[6.075e19], Ts0=[11604941.036704937], omega=2*pi*float(1e10), kz=1, kx=1e4, default N=15; K_raw.shape==(3,3), with the original finite K/D, six-term determinant and species-scale obligations. The original Hz float conversion is retained."
+  ],
+  "tests": [
+   "tests/kinetic/test_dielectric_tensor_diagnostic_stability.py",
+   "tests/kinetic/test_kinetic_signed_kz.py",
+   "tests/kinetic/test_fluid_spectrum_r43_kinetic.py",
+   "tests/kinetic/test_finite_harmonic_failure_policy.py"
+  ],
+  "evidence_ceiling": "Independent mpmath references recompute scales, exp(-b)*I_n(b) and erfc-defined Z from public inputs, evaluating the original finite-N expression rather than production A/tail kernels. Full complex K/D comparisons retain 2e-12; 140/180-digit self-checks compare unrounded references. Bounded complex-tail phase/magnitude and public rejection checks supplement tensor samples. This is a numerical-method correction, not exact parity with the frozen N64 rational expression, a continuous-domain theorem, harmonic convergence, or determinant/root certification.",
+  "known_limitations": [
+   "Default harmonics=15, no near-zero kz clamp, scalar broadcasting, signed z0s, complex kx and six-term determinant are retained; kx=0 remains a nonfinite diagnostic.",
+   "Tail identities preserve the caller's exact finite-N model. A large omitted finite-N tail is real truncation behavior, not permission to increase harmonics silently.",
+   "The complex tail bound controls only omitted exact terms. Bessel backend, representation, summation and amplified-coefficient errors are not bounded by it; severe measured tail cancellation, underflow, nonfinite terms or budget exhaustion raise FloatingPointError. Samples do not establish the entire complex domain.",
+   "xx/xy/yy retain N64 Weideman Z; xz/yz/zz use direct z*Z when all harmonic |z|<=1, otherwise shared real analytic A. The per-species switch is a numerical choice checked at selected neighbors, not a global error theorem. Full tensor comparisons do not certify determinant/root accuracy or extreme-scale representability. Lazy SciPy loading is a separate import-boundary check."
+  ]
+ }
+}

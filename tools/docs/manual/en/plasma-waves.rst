@@ -427,7 +427,7 @@ Signed ``kz`` interpretation
 
 For a static, drift-free, isotropic Maxwellian, ``kz`` is a signed parallel wavenumber. The causal response obeys ``K(kx,-kz)=P K(kx,kz) P`` with ``P=diag(1,1,-1)``; ``D`` has the same reflection and the determinant is invariant. Internally the resonance denominators use ``|kz|`` and the four mixed components recover their signs; ``n_z`` still uses the caller's signed ``kz``. The fluid finite-harmonic path now evaluates every nonzero ``kz`` at its actual value and sign. Its former ``|kz|<1e-10`` replacement by ``+1e-10`` is withdrawn because it breaks SI similarity; explicitly passing ``kz=+1e-10`` reproduces the former surrogate values.
 
-For real ``b>0`` and fixed finite ``N``, the parallel expression retains ``2 alpha z0^2 (1-sum Gamma_n)``. Its positive omitted Bessel tail prevents a general finite zero-``kz`` endpoint; inserting the complete Maxwellian endpoint would change the finite model. Both ``evaluate_fluid_kinetic_dispersion_sum`` and the two-path relation therefore reject literal zero with ``ValueError`` before numerical work, without switching models. If the separately declared zero-``kz`` model is appropriate, explicitly use ``evaluate_kinetic_dispersion_ronnmark``; its standalone wavevector roots and scan keep their zero-``kz`` support. Passing SI similarity is necessary and does not prove absolute accuracy.
+For real ``b>0`` and fixed finite ``N``, the parallel expression retains ``2 alpha z0^2 (1-sum Gamma_n)``. Its positive omitted Bessel tail prevents a general finite zero-``kz`` endpoint; inserting the complete Maxwellian endpoint would change the finite model. The two harmonic methods of ``evaluate_dielectric_response`` and the two-path relation therefore reject literal zero with ``ValueError`` before numerical work, without switching models. If the separately declared zero-``kz`` model is appropriate, explicitly select ``method="ronnmark"``; its standalone wavevector roots and scan keep their zero-``kz`` support. Passing SI similarity is necessary and does not prove absolute accuracy.
 
 .. code-block:: python
 
@@ -440,7 +440,7 @@ For real ``b>0`` and fixed finite ``N``, the parallel expression retains ``2 alp
 
 This reflection is a coordinate symmetry. It does not write ``abs(kz)`` back to the returned ports and does not change charges, gyro signs, harmonic indices or ``kx``. It covers only the declared static Maxwellian condition; complex frequency, drift, anisotropy and other near-zero branches require separate validation.
 
-``evaluate_kinetic_dispersion_relation`` computes both paths on the same equilibrium snapshot: the finite-harmonic sum (``lmx = 5``) and the Ronnmark fixed-pole approximation with ``J = 8``. It accepts SI species parameters, ``T00`` in eV, the dimensionless frequency ratio ``omega_frac``, the dimensionless perpendicular wavenumber ratio ``kx_frac``, and the **absolute** parallel wavenumber ``kz``. ``omega`` and ``kx`` are derived internally from ``wn`` and ``kn``; the caller must not pass absolute values and ratios at the same time.
+``evaluate_kinetic_dispersion_relation`` computes both paths on the same equilibrium snapshot: the explicitly selected ``harmonic_weideman`` finite sum (the original ``lmx = 5`` is forwarded as ``harmonics``) and ``ronnmark`` with fixed ``J = 8``. It accepts SI species parameters, ``T00`` in eV, the dimensionless frequency ratio ``omega_frac``, the dimensionless perpendicular wavenumber ratio ``kx_frac``, and the **absolute** parallel wavenumber ``kz``. ``omega`` and ``kx`` are derived internally from ``wn`` and ``kn``; the caller must not pass absolute values and ratios at the same time. Internally it retains the original ``omega → f=omega/(2*pi) → float(f) → 2*pi*f`` kernel-input chain and its rounding; true finite-Hz conversion overflow raises ``FloatingPointError``, while derived ``f=0`` retains ``ValueError``. Its original ``lmx`` must be a non-bool non-negative integer; None remains ``ValueError``.
 
 Take ``omega_frac = 1000``, ``kx_frac = 0.5`` and ``kz = 159 1/m``:
 
@@ -511,6 +511,29 @@ Actual output:
 As ``kx_frac`` grows from 0.25 to 0.5, the relative difference is only between ``1.8e-6`` and ``8.2e-6``; at ``kx_frac = 1`` it is already about 1.5%, and at ``kx_frac = 2`` the relative difference exceeds 300%, and the two paths may even differ in sign. The two paths are not "the same answer" that can be silently interchanged: the finite-harmonic sum is affected by the ``lmx = 5`` truncation, and the Ronnmark path is affected by the ``J = 8`` pole approximation, so their domains of validity differ. This function performs no convergence verification and does not judge which path is closer to reality; it returns the two results side by side for the caller to cross-check.
 
 **What this section cannot establish.** Evaluating a determinant is not finding a root; a nonzero ``det`` does not mean "there is no wave", it only means this wave point is not a root; a ``det`` close to zero does not automatically give a mode identity either. That the two paths agree at one small ``kx_frac`` cannot be extrapolated to larger wavenumbers, nor does it prove the absolute accuracy of either. Tensor components depend on the basis; both the finite-harmonic truncation and the pole order need independent convergence checks. This entry point provides no automatic mode identification, no global root enumeration, and no physical-validity certificate.
+
+Direct tensors and raw diagnostics
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+For absolute physical inputs, use ``evaluate_dielectric_response`` from :doc:`../reference/generated/scirel.kinetic.dielectric-response`, supplying only ``omega`` in rad/s, species temperatures in kelvin, and ``kz`` and ``kx`` in 1/m. The default ``method="harmonic"`` retains the analytic-Z finite sum; ``method="harmonic_weideman"`` retains the finite sum with fixed Z64 for ordinary components; ``method="ronnmark"`` retains the fixed J8 pole model. Both finite sums retain their checked mixed/parallel representations and never switch methods on failure. One contract records each method's equations, domain and evidence individually.
+
+For finite sums, omitted ``harmonics`` or ``harmonics=None`` selects the original N5; an explicit cutoff must be a non-bool non-negative integer, including zero. ronnmark accepts only ``harmonics=None``: even numeric 5 raises ``TypeError``, because fixed J8 has no harmonic-cutoff option. Both finite sums require real nonzero ``kx`` and ``kz``. Sharing an entry point does not give them complex-``kx`` or zero-``kz`` support.
+
+The return is a ``Result`` with attribute and item access. Every method returns all of ``K``, ``D``, ``determinant``, ``omega``, ``nx``, ``nz``, ``vts``, ``wcs``, ``wps2``, ``a``, ``b`` and ``diagnostics``. ``a`` retains the kernel's original sign or complex phase; ``b=a**2`` is not a squared modulus, and ``a`` is never reconstructed as ``sqrt(b)``. The nested ``diagnostics`` is also a Result: all methods contain ``method`` and ``tensor_convention``; finite sums add only the actual ``harmonics``; ronnmark adds only ``bzj``, ``czj``, ``j_order`` and ``branches``, without None or NaN placeholders.
+
+For the original diagnostic that permits declared nonfinite entries, use the separate :doc:`../reference/generated/scirel.kinetic.dielectric-diagnostics`. ``evaluate_dielectric_diagnostics`` retains default N15 (an explicit None cutoff raises TypeError), scalar/singleton species broadcasting, complex ``kx``, actual signed nonzero ``kz`` and the original six-term determinant. It returns raw values such as ``K_raw``, ``D_raw`` and ``determinant_raw`` and computes ``diagnostics.finite_K``, ``finite_D``, ``finite_determinant`` and ``complete`` directly from them. At the original ``kx=0`` endpoint both masks are:
+
+.. code-block:: text
+
+   [[False, True,  False],
+    [True,  False, True ],
+    [False, True,  True ]]
+
+Here ``zz`` must still be finite and ``complete=False``; singular entries are not filled in. Losing another required finite component, an unreliable tail or budget exhaustion still raises ``FloatingPointError``. ``complete`` reports complete representability of the raw output, without certifying harmonic convergence, physical accuracy or a root; ``message`` explains that observation.
+
+The independent ``evaluate_ronnmark_r(x, lambda_)`` returns ``R``, ``H``, ``branch`` and ``RC``, where ``H=RC[0,1]=d(lambda*R)/dlambda``, rather than the derivative of R alone. Its numerical algorithm and R/H error budgets are unchanged.
+
+Complex-wavenumber ``solve_kinetic_wavevector_roots`` and ``scan_kinetic_wavevectors`` also return Result objects. Read ``status``, ``success`` and ``message`` per frequency together with ``residuals`` and ``determinant_scale``. Original status numbers are unchanged: 1, 2 and 3 are successful; 0 is budget exhaustion, -2 a degenerate Jacobian and -3 a collapsed trust region, all with ``success=False``. ``message`` is an ordered list of strings; there is no aggregate success flag. Roots use the original direct ``omega``; scans retain the original frequency ladder, fixed seed, FMA operation order, thresholds and budgets. Renaming the status does not turn an unaccepted candidate into a root.
 
 Which layer to use
 --------------------
