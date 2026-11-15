@@ -338,6 +338,8 @@ def build_compensated_shifted_maxwellian(
     and the acceptance test. The correction follows LaBombard's shifted-Maxwellian
     construction, which compensates for velocity-mesh discretization error; it
     is not meant to represent a distribution the mesh cannot hold.
+    The initial exponential retains the analytic peak ``exp(0) = 1``;
+    exponents at or below -80 retain the existing ``exp(-80)`` tail floor.
     The small illustrative example explicitly uses moment_rtol=0.1; the default
     remains 0.01. This local example choice is not a general remedy for an
     inadequate velocity mesh.
@@ -367,7 +369,7 @@ def build_compensated_shifted_maxwellian(
             * tnorm_eV
             / temperatures_eV[k]
         )
-        argument = np.where((argument > -80) & (argument < 0.0), argument, -80)
+        argument = np.where((argument > -80) & (argument <= 0.0), argument, -80)
         out[:, :, k] = np.exp(argument)
         integral = np.sum(cells["radial_measure"] * np.matmul(out[:, :, k], cells["dvx"]))
         out[:, :, k] /= np.nansum(integral)
