@@ -104,7 +104,7 @@ def _require_finite(name, value, *, nonzero=False):
     if not np.all(np.isfinite(value)) or (nonzero and np.any(np.asarray(value) == 0)):
         raise FloatingPointError(
             f"Ronnmark {name} is nonfinite or has an unrepresentable required scale; "
-            "see the kinetic-dispersion-ronnmark contract"
+            "see scirel.kinetic.dielectric-response, method='ronnmark'"
         )
 
 
