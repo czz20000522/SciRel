@@ -53,6 +53,7 @@ ERROR = re.compile(r"\b([A-Z][A-Za-z]*(?:Error|Exception|Warning|Failure))\b")
 sys.path.insert(0, str(ROOT / "scripts"))
 from code_digest import source_digest  # noqa: E402
 from public_api_binding import contract_default, format_signature  # noqa: E402
+from capability_catalog import validate_family_translation  # noqa: E402
 
 
 def digest_error(record: dict, digest: str, filename: str) -> str | None:
@@ -80,6 +81,10 @@ def clause_errors(document: dict, record: dict) -> list[str]:
     without replacing capability_catalog.load_translations or judging semantics.
     """
     errors: list[str] = []
+    try:
+        validate_family_translation(document, record)
+    except ValueError as error:
+        errors.append(str(error))
     for section in ("applicability", "verification"):
         contract_section = document[section]
         reader_section = record.get(section)

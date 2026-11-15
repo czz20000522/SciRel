@@ -122,6 +122,9 @@ def consumer_index(full_index):
     )
     index = {key: full_index[key] for key in ("schema", "source_revision", "asset_count")}
     index["assets"] = [{key: record[key] for key in fields} for record in full_index["assets"]]
+    for source, target in zip(full_index["assets"], index["assets"], strict=True):
+        if "family" in source:
+            target["family"] = source["family"]
     index["search_text"] = full_index["search_text"]
     index["derivation"] = (
         "Read-only projection of exact public contracts and bound Chinese reader; selected ports/evidence are in get."

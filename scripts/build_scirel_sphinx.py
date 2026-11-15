@@ -24,6 +24,7 @@ import tempfile
 import xml.etree.ElementTree as ET
 
 from code_digest import contract_digest, source_digest
+from capability_catalog import validate_family_translation
 
 LANGUAGE_TAGS = {"zh": "zh-CN", "en": "en-US"}
 ENGLISH_GUIDE_PLACEHOLDER = (
@@ -491,6 +492,95 @@ def ports(doc, translated, side, *, language="zh"):
     )
 
 
+def render_family(doc, reader=None, *, language="en"):
+    """Render each canonical method on the same public callable's API page."""
+    if "family" not in doc:
+        if reader is not None:
+            validate_family_translation(doc, reader)
+        return ""
+    family = doc["family"] if language == "en" else validate_family_translation(doc, reader)
+    english = language == "en"
+    labels = (
+        (
+            "Model family and methods",
+            "Default",
+            "Default reason",
+            "Model",
+            "Numerical controls",
+            "Preconditions",
+            "Supported",
+            "Excluded",
+            "Invalid input",
+            "Runtime failure",
+            "Non-convergence",
+            "Partial results",
+            "Verified scope",
+            "Evidence ceiling",
+            "Known limitations",
+            "Executable test references",
+            "No method-specific numerical controls.",
+        )
+        if english
+        else (
+            "模型族与方法",
+            "默认方法",
+            "默认理由",
+            "模型",
+            "数值控制",
+            "使用前提",
+            "支持范围",
+            "不支持范围",
+            "无效输入",
+            "运行失败",
+            "不收敛",
+            "部分结果",
+            "已有验证范围",
+            "证据上限",
+            "已知限制",
+            "可执行测试引用",
+            "此方法没有专属数值控制项。",
+        )
+    )
+    out = ".. rubric:: " + labels[0] + "\n\n"
+    out += "``" + family["name"] + "``\n\n"
+    out += "**" + labels[1] + ":** ``" + family["default"] + "``\n\n"
+    out += "**" + labels[2] + ":** " + plain(family["default_reason"]) + "\n\n"
+    for index, member in enumerate(family["methods"]):
+        source = doc["family"]["methods"][index]
+        out += ".. rubric:: method=" + member["name"] + "\n\n"
+        out += "**" + labels[3] + ":** " + plain(member["model"]) + "\n\n"
+        out += "**" + labels[4] + "**\n\n"
+        for name, settings in member["numerical_controls"].items():
+            out += (
+                "* ``"
+                + name
+                + "`` ("
+                + ("Default" if english else "默认值")
+                + " ``"
+                + json.dumps(settings["default"], ensure_ascii=False)
+                + "``): "
+                + plain(settings["constraints"])
+                + "\n"
+            )
+        out += "\n" if member["numerical_controls"] else labels[16] + "\n\n"
+        for offset, key in enumerate(("preconditions", "supported", "excluded"), 5):
+            out += "**" + labels[offset] + "**\n\n" + bullets(member["applicability"][key])
+        for offset, key in enumerate(
+            ("invalid_input", "runtime_failure", "nonconvergence", "partial_results"), 8
+        ):
+            out += "**" + labels[offset] + ":** " + plain(member["failure_semantics"][key]) + "\n\n"
+        verification = member["verification"]
+        out += "**" + labels[12] + "**\n\n" + bullets(verification["scope"])
+        out += "**" + labels[13] + ":** " + plain(verification["evidence_ceiling"]) + "\n\n"
+        out += "**" + labels[14] + "**\n\n" + bullets(verification["known_limitations"])
+        out += "**" + labels[15] + "**\n\n"
+        out += (
+            "".join("* ``" + reference + "``\n" for reference in source["verification"]["tests"])
+            + "\n"
+        )
+    return out
+
+
 def render_api(doc, zh, related, *, language="zh"):
     if language == "en":
         return _render_english_api(doc, related)
@@ -519,6 +609,7 @@ def render_api(doc, zh, related, *, language="zh"):
     )
     out += "**支持的范围**\n\n" + bullets(zh["applicability"]["supported"])
     out += "**不支持的范围**\n\n" + bullets(zh["applicability"]["excluded"])
+    out += render_family(doc, zh, language="zh")
     out += title("相关函数", "-")
     if related:
         out += (
@@ -607,6 +698,7 @@ def _render_english_api(doc, related):
     out += "**Preconditions**\n\n" + bullets(doc["applicability"]["preconditions"])
     out += "**Supported**\n\n" + bullets(doc["applicability"]["supported"])
     out += "**Excluded**\n\n" + bullets(doc["applicability"]["excluded"])
+    out += render_family(doc, language="en")
     out += title("Related functions", "-")
     if related:
         out += (

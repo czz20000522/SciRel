@@ -29,6 +29,107 @@ def sha(data):
     return hashlib.sha256(data).hexdigest()
 
 
+def validate_family_translation(document, reader):
+    """Validate the bound Chinese method prose, deriving executable identities.
+
+    The contract validator owns the canonical family structure. This reader
+    check only compares that structure with its translation; it never selects
+    methods, interprets physics or duplicates canonical contract validation.
+    Method test references are derived here rather than authored in translations.
+    """
+    family = document.get("family")
+    translated = reader.get("family")
+    where = document.get("asset_id", "contract") + ":family"
+
+    def fail(detail):
+        raise ValueError(where + ": " + detail)
+
+    if family is None:
+        if "family" in reader:
+            fail("reader has a family absent from the contract")
+        return None
+
+    def keys(value, expected, location):
+        if not isinstance(value, dict) or set(value) != set(expected):
+            fail(location + " fields differ from the contract")
+
+    def prose(value, location):
+        if not isinstance(value, str) or not re.search(r"[\u3400-\u4dbf\u4e00-\u9fff]", value):
+            fail(location + " needs nonempty Chinese prose")
+
+    def clauses(source, target, location):
+        keys(target, source, location)
+        for key, values in source.items():
+            translated_values = target[key]
+            if not isinstance(translated_values, list) or len(values) != len(translated_values):
+                fail(location + "." + key + " dropped or added a contract clause")
+            for value in translated_values:
+                prose(value, location + "." + key)
+
+    keys(translated, family, "family")
+    for key in ("name", "default"):
+        if translated[key] != family[key]:
+            fail(key + " differs from the contract")
+    prose(translated["default_reason"], "default_reason")
+    methods = translated["methods"]
+    if not isinstance(methods, list) or any(not isinstance(m, dict) for m in methods):
+        fail("invalid methods")
+    if [m.get("name") for m in methods] != [m["name"] for m in family["methods"]]:
+        fail("method names/order differ from the contract")
+    result = json.loads(json.dumps(translated))
+    for source, target in zip(family["methods"], result["methods"], strict=True):
+        location = "methods." + source["name"]
+        keys(target, source, location)
+        prose(target["model"], location + ".model")
+        controls = target["numerical_controls"]
+        keys(controls, source["numerical_controls"], location + ".numerical_controls")
+        for name, settings in source["numerical_controls"].items():
+            translated_settings = controls[name]
+            keys(translated_settings, settings, location + "." + name)
+            if encode(translated_settings["default"]) != encode(settings["default"]):
+                fail(location + "." + name + " default differs from the contract")
+            prose(translated_settings["constraints"], location + "." + name + ".constraints")
+        clauses(source["applicability"], target["applicability"], location + ".applicability")
+        failures = target["failure_semantics"]
+        keys(failures, source["failure_semantics"], location + ".failure_semantics")
+        for key in source["failure_semantics"]:
+            prose(failures[key], location + ".failure_semantics." + key)
+        verification = target["verification"]
+        if not isinstance(verification, dict):
+            fail(location + ".verification must be an object")
+        # A derived reader can be consumed again. Any supplied tests must equal
+        # the contract exactly; the value returned always uses the contract.
+        if "tests" in verification and verification["tests"] != source["verification"]["tests"]:
+            fail(location + ".verification.tests are derived from the contract")
+        prose_fields = {k: v for k, v in verification.items() if k != "tests"}
+        source_fields = {k: v for k, v in source["verification"].items() if k != "tests"}
+        keys(prose_fields, source_fields, location + ".verification")
+        prose(verification["evidence_ceiling"], location + ".verification.evidence_ceiling")
+        clauses(
+            {k: source_fields[k] for k in ("scope", "known_limitations")},
+            {k: prose_fields[k] for k in ("scope", "known_limitations")},
+            location + ".verification",
+        )
+        verification["tests"] = list(source["verification"]["tests"])
+    return result
+
+
+def family_summary(document):
+    """Project one family's discovery paths, leaving detailed claims in get."""
+    if "family" not in document:
+        return None
+    family = document["family"]
+    python = document["public_api"]["python"]
+    domain = python.get("canonical_module", python["module"]).split(".")[1]
+    return {
+        "name": family["name"],
+        "default": family["default"],
+        "default_reason": family["default_reason"],
+        "methods": [{"name": m["name"], "model": m["model"]} for m in family["methods"]],
+        "paths": [[domain, family["name"], m["name"]] for m in family["methods"]],
+    }
+
+
 def load_translations(
     root, documents, docs, translation_paths=None, excluded_ids=(), *, read_bytes=None
 ):
@@ -83,6 +184,12 @@ def load_translations(
         digest = hashlib.sha256(contract_bytes).hexdigest()
         if item.get("source_sha256") != digest:
             raise ValueError("stale Chinese reader translation: " + asset)
+        family = validate_family_translation(doc, item)
+        if family is not None:
+            # Keep caller-owned reader dictionaries untouched; executable
+            # member-test identities come from the captured canonical contract.
+            item = {**item, "family": family}
+            records[asset] = item
         for side in ("inputs", "outputs"):
             ports = item.get(side)
             if not isinstance(ports, list) or any(not isinstance(port, dict) for port in ports):
@@ -219,7 +326,7 @@ def capability_record(document):
     capability_terms = _discovery_text(discovery, "capability")
     operation_terms = _discovery_text(discovery, "operation")
     scope, scope_source = _device_scope(document, discovery)
-    return {
+    record = {
         "asset_id": asset,
         "symbol": document["public_api"]["python"]["symbol"],
         "public_api": document["public_api"],
@@ -262,6 +369,10 @@ def capability_record(document):
             "known_limitations": list(verification["known_limitations"]),
         },
     }
+    family = family_summary(document)
+    if family is not None:
+        record["family"] = family
+    return record
 
 
 def capability_search_text(document, translation=None, *, language="zh"):
@@ -316,6 +427,8 @@ def capability_search_text(document, translation=None, *, language="zh"):
         document["applicability"],
         document["verification"],
     ]
+    if "family" in document:
+        payload.append(document["family"])
     if language == "zh":
         payload.insert(2, document["title"]["zh"])
     if translation is not None:
@@ -327,6 +440,8 @@ def capability_search_text(document, translation=None, *, language="zh"):
                 translation["boundary"],
             ]
         )
+        if "family" in translation:
+            payload.append(translation["family"])
     return json.dumps(payload, ensure_ascii=False).lower()
 
 
@@ -384,6 +499,11 @@ def build_capability_index(documents, *, source_revision, translations=None, lan
             "paths": (
                 "contract_path is repository-relative; record_path is the "
                 "served exact contract; docs_path is the snapshot web route"
+            ),
+            "family": (
+                "optional canonical family name/default/default_reason and ordered method "
+                "names/models; paths are canonical domain -> family -> method, "
+                "all referring to the same asset's exact contract"
             ),
         },
         "assets": records,

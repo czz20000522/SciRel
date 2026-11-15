@@ -209,6 +209,43 @@ def validate_capability_index(index, *, expected_source_revision=None, expected_
         for key in ("summary", "title_zh", "symbol"):
             if key in record and not isinstance(record[key], str):
                 raise ValueError("invalid capability index " + key)
+        if "family" in record:
+            family = record["family"]
+            if (
+                not isinstance(family, dict)
+                or set(family) != {"name", "default", "default_reason", "methods", "paths"}
+                or any(
+                    not isinstance(family.get(k), str) or not family[k].strip()
+                    for k in ("name", "default", "default_reason")
+                )
+                or not isinstance(family.get("methods"), list)
+                or not family["methods"]
+            ):
+                raise ValueError("invalid capability index family summary")
+            methods = family["methods"]
+            if any(
+                not isinstance(m, dict)
+                or set(m) != {"name", "model"}
+                or any(not isinstance(m[k], str) or not m[k].strip() for k in ("name", "model"))
+                for m in methods
+            ):
+                raise ValueError("invalid capability index family methods")
+            names = [m["name"] for m in methods]
+            paths = family["paths"]
+            if (
+                len(set(names)) != len(names)
+                or family["default"] not in names
+                or not isinstance(paths, list)
+                or len(paths) != len(names)
+                or any(
+                    not isinstance(p, list)
+                    or len(p) != 3
+                    or any(not isinstance(v, str) or not v for v in p)
+                    or p[1:] != [family["name"], name]
+                    for p, name in zip(paths, names)
+                )
+            ):
+                raise ValueError("invalid capability index family paths/default")
         ids.append(record["asset_id"])
     if len(set(ids)) != len(ids) or (expected_ids is not None and set(ids) != set(expected_ids)):
         raise ValueError("capability index differs from the document set")
@@ -245,7 +282,7 @@ def _request(request):
 
 
 def _field_text(record):
-    return {
+    text = {
         "asset_id": record["asset_id"],
         "capability": record["capability"] + "\n" + record["capability_summary"],
         "operation": record["operation"] + "\n" + record["operation_direction"],
@@ -257,6 +294,15 @@ def _field_text(record):
         "title_zh": record.get("title_zh", ""),
         "symbol": record.get("symbol", ""),
     }
+    if "family" in record:
+        family = record["family"]
+        text["model"] += (
+            "\n"
+            + family["name"]
+            + "\n"
+            + "\n".join(member["name"] + " " + member["model"] for member in family["methods"])
+        )
+    return text
 
 
 def _relevance(text, haystack, terms, phrase):

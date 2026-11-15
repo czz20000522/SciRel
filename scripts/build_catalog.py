@@ -19,6 +19,7 @@ from public_api_binding import (
     qualified_name,
 )
 from validate_asset_documents import load_document_set
+from capability_catalog import family_summary
 
 
 CATALOG_SCHEMA = "scirel.catalog-release"
@@ -203,6 +204,10 @@ def build_catalog(
                 summary["implementation_callable"] = qualified_name(
                     python_api["module"], python_api["symbol"]
                 )
+            family = family_summary(document)
+            if family is not None:
+                routes[-1]["family"] = family
+                summary["family"] = family
             summaries.append(summary)
 
         route_path = root / "routes" / "all.jsonl"
