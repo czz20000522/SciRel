@@ -41,6 +41,8 @@ def _a_asymptotic(zeta):
     """
     zeta = np.asarray(zeta, dtype=float)
     inv_square = 1.0 / (zeta * zeta)
+    if not np.all(np.isfinite(inv_square)) or np.any(inv_square == 0):
+        raise FloatingPointError("asymptotic response scale is not representable")
     term = -0.5 * inv_square
     total = term.copy()
     for k in range(1, 24):
@@ -68,9 +70,14 @@ def _gamma_partial_sum(b, nmax):
     pieces = []
     for first in range(0, nmax + 1, 256):
         orders = np.arange(first, min(first + 256, nmax + 1))
-        values = np.real(evaluate_bessel_gamma(orders, b)["Gamma_n"])
+        try:
+            values = np.real(evaluate_bessel_gamma(orders, b)["Gamma_n"])
+        except ValueError as error:
+            if str(error) != "Bessel-Gamma value is not representable":
+                raise
+            raise FloatingPointError(str(error)) from error
         if np.any(values < 0) or not np.all(np.isfinite(values)):
-            raise ValueError("harmonic tail terms must be finite and nonnegative")
+            raise FloatingPointError("harmonic tail terms must be finite and nonnegative")
         weights = np.where(orders == 0, 1.0, 2.0)
         pieces.append(math.fsum(weights * values))
     return math.fsum(pieces)
@@ -88,7 +95,7 @@ def _gamma_positive_tail(b, start, limit=20000):
     t=asinh(m/b), and compare the bound in log space to 1e-18 times the accumulated one-sided
     sum. This bounds omitted exact terms; it does not bound Bessel-backend or rounding errors.
     The finite term budget is only a cost bound: exhaustion, underflow or an unusable bound
-    raises ValueError rather than returning zero, a partial sum or a cancelling complement.
+    raises FloatingPointError rather than returning zero, a partial sum or a cancelling complement.
     """
     start = max(start, 1)
     if not np.isfinite(b) or b <= 0:
@@ -99,13 +106,20 @@ def _gamma_positive_tail(b, start, limit=20000):
     pieces = []
     for first in range(start, start + limit, 256):
         stop = min(first + 256, start + limit)
-        values = np.real(evaluate_bessel_gamma(np.arange(first, stop), b)["Gamma_n"])
+        try:
+            values = np.real(evaluate_bessel_gamma(np.arange(first, stop), b)["Gamma_n"])
+        except ValueError as error:
+            if str(error) != "Bessel-Gamma value is not representable":
+                raise
+            raise FloatingPointError(str(error)) from error
         if np.any(values < 0) or not np.all(np.isfinite(values)):
-            raise ValueError("harmonic tail terms must be finite and nonnegative")
+            raise FloatingPointError("harmonic tail terms must be finite and nonnegative")
         pieces.append(math.fsum(values))
         total = math.fsum(pieces)
         if total < np.finfo(float).tiny:
-            raise ValueError("positive harmonic tail is not representable with reliable precision")
+            raise FloatingPointError(
+                "positive harmonic tail is not representable with reliable precision"
+            )
         m = float(stop)
         radius = math.hypot(m, b)
         ratio = m / b
@@ -115,7 +129,7 @@ def _gamma_positive_tail(b, start, limit=20000):
         log_bound = m * ((m / radius) / (1.0 + b / radius) - tilt)
         if math.isfinite(log_bound) and log_bound <= math.log(total) + math.log(1e-18):
             return 2.0 * total
-    raise ValueError("harmonic tail remainder could not be bounded within the term budget")
+    raise FloatingPointError("harmonic tail remainder could not be bounded within the term budget")
 
 
 def _finite_scalar(name, value, *, nonzero=False):
@@ -221,9 +235,11 @@ def evaluate_kinetic_dispersion_sum(*, B0, qs, ms, ns0, Ts0, f, kz, kx, lmx=5):
     ValueError
         Raises ValueError for nonfinite, boolean, complex or zero scalar fields where prohibited;
         empty/mismatched/nonfinite species vectors, zero charge, nonpositive mass/density/temperature,
-        or lmx that is not a non-negative integer. Raises ValueError if derived scales become nonfinite
-        or zero where positivity is required, or if special-function contributions, tensors or
-        determinant become nonfinite or unrepresentable. Raises ValueError if a positive harmonic
+        or lmx that is not a non-negative integer.
+    FloatingPointError
+        If derived scales become nonfinite or zero where nonzero is required, or if
+        special-function contributions, tensors or determinant become nonfinite or
+        unrepresentable. Also raised if a positive harmonic
         tail is below reliable float64 range or its omitted remainder cannot be bounded within
         the evaluation budget; no partial tail or tensor is returned. Other unexpected NumPy/SciPy
         errors propagate.
@@ -256,7 +272,7 @@ def evaluate_kinetic_dispersion_sum(*, B0, qs, ms, ns0, Ts0, f, kz, kx, lmx=5):
     ``xz``/``yz`` sums use the exact symmetric-truncation identities, and the truncation tail is
     formed through ``1 - sum_{|n|<=N}Gamma_n`` only when the finite head is at most one half.
     Otherwise positive terms are summed with a generating-function bound on the omitted tail.
-    An insufficient evaluation budget or unrepresentable positive tail raises ValueError. The
+    An insufficient evaluation budget or unrepresentable positive tail raises FloatingPointError. The
     budget does not change the caller's finite ``N``. The truncation tail still scales with
     ``z0**2``: avoiding catastrophic cancellation is not a global bound on rounding errors.
     Insufficient ``N`` can return a large tensor; this is truncation, not harmonic convergence.
@@ -302,13 +318,22 @@ def evaluate_kinetic_dispersion_sum(*, B0, qs, ms, ns0, Ts0, f, kz, kx, lmx=5):
         or np.any(a == 0)
         or np.any(b <= 0)
         or np.any(wps2 <= 0)
+        or omega == 0
+        or np.any(vts <= 0)
+        or np.any(wcs == 0)
     ):
-        raise ValueError("derived kinetic scales must be finite and nonzero where divided")
+        raise FloatingPointError("derived kinetic scales must be finite and nonzero where divided")
+    if not np.isfinite(np.square(omega)) or np.square(omega) == 0:
+        raise FloatingPointError("squared kinetic frequency is not representable")
+    if not np.all(np.isfinite(response_kz * vts)) or np.any(response_kz * vts == 0):
+        raise FloatingPointError("kinetic resonance scale is not finite and nonzero")
 
     k_tensor = np.eye(3, dtype=complex)
     for s in range(qs.size):
         z0 = omega / (response_kz * vts[s])
         alpha = wps2[s] / omega**2
+        if not np.isfinite(z0) or z0 == 0 or not np.isfinite(alpha) or alpha <= 0:
+            raise FloatingPointError("kinetic response scales are not representable")
         # For small arguments keep z*Z itself, rather than losing that small
         # response by removing the O(1) part of A after summation (issue #232).
         direct_response = (abs(omega) + lmx * abs(wcs[s])) / (response_kz * vts[s]) <= 1.0
@@ -322,7 +347,14 @@ def evaluate_kinetic_dispersion_sum(*, B0, qs, ms, ns0, Ts0, f, kz, kx, lmx=5):
         sum_zz = 0.0j
         for n in range(-lmx, lmx + 1):
             zn = (omega - n * wcs[s]) / (response_kz * vts[s])
-            gamma = evaluate_bessel_gamma(n, b[s])
+            if not np.isfinite(zn):
+                raise FloatingPointError("kinetic harmonic argument is not finite")
+            try:
+                gamma = evaluate_bessel_gamma(n, b[s])
+            except ValueError as error:
+                if str(error) != "Bessel-Gamma value is not representable":
+                    raise
+                raise FloatingPointError(str(error)) from error
             g = complex(gamma["Gamma_n"])
             gp = complex(gamma["Gamma_prime_n"])
             z_value = complex(evaluate_plasma_dispersion(zn)["Z"])
@@ -343,12 +375,17 @@ def evaluate_kinetic_dispersion_sum(*, B0, qs, ms, ns0, Ts0, f, kz, kx, lmx=5):
         # Direct z*Z needs no endpoint subtraction and retains the original
         # +2*alpha*z0**2. The A branch keeps its finite-N endpoint and tail.
         tail = 1.0 if direct_response else _gamma_positive_tail(b[s], lmx + 1)
-        edge = (
-            0.0
-            if direct_response
-            else complex(evaluate_bessel_gamma(lmx + 1, b[s])["Gamma_n"])
-            - complex(evaluate_bessel_gamma(lmx, b[s])["Gamma_n"])
-        )
+        try:
+            edge = (
+                0.0
+                if direct_response
+                else complex(evaluate_bessel_gamma(lmx + 1, b[s])["Gamma_n"])
+                - complex(evaluate_bessel_gamma(lmx, b[s])["Gamma_n"])
+            )
+        except ValueError as error:
+            if str(error) != "Bessel-Gamma value is not representable":
+                raise
+            raise FloatingPointError(str(error)) from error
         k_tensor[0, 2] += np.sqrt(2.0) * alpha * z0 / a[s] * sum_xz
         k_tensor[2, 0] += np.sqrt(2.0) * alpha * z0 / a[s] * sum_xz
         k_tensor[1, 2] += -1j * np.sqrt(2.0) * alpha * z0 * a[s] * (sum_yz - edge)
@@ -373,7 +410,7 @@ def evaluate_kinetic_dispersion_sum(*, B0, qs, ms, ns0, Ts0, f, kz, kx, lmx=5):
         or not np.all(np.isfinite(d_tensor))
         or not np.isfinite(determinant)
     ):
-        raise ValueError("kinetic dispersion tensor is not finite and representable")
+        raise FloatingPointError("kinetic dispersion tensor is not finite and representable")
     return {
         "K": k_tensor,
         "D": d_tensor,

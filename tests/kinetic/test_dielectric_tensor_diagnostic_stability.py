@@ -354,7 +354,7 @@ def test_public_diagnostic_rejects_an_exhausted_complex_tail(monkeypatch):
 
     original = module._gamma_complex_tail
     monkeypatch.setattr(module, "_gamma_complex_tail", lambda b, start: original(b, start, limit=0))
-    with pytest.raises(ValueError, match="remainder could not be bounded"):
+    with pytest.raises(FloatingPointError, match="remainder could not be bounded"):
         evaluate_kinetic_dielectric_tensor(**_case(b=1 + 0.5j))
 
 
@@ -362,5 +362,5 @@ def test_complex_tail_rejects_nonfinite_bessel_backend(monkeypatch):
     from scirel.kinetic import dielectric_tensor_diagnostic as module
 
     monkeypatch.setattr(module, "_gamman", lambda orders, b: np.full(len(orders), np.nan))
-    with pytest.raises(ValueError, match="terms must be finite"):
+    with pytest.raises(FloatingPointError, match="terms must be finite"):
         module._gamma_complex_tail(1 + 0.5j, 16)

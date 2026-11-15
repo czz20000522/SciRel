@@ -539,12 +539,12 @@ def test_tiny_positive_tail_does_not_fall_back_to_cancelling_complement():
 
 def test_tail_budget_exhaustion_cannot_return_an_unbounded_partial_sum():
     # A budget is a cost bound. It cannot certify either representation.
-    with pytest.raises(ValueError, match="tail"):
+    with pytest.raises(FloatingPointError, match="tail"):
         _gamma_positive_tail(4e6, 20001, limit=1)
 
 
 def test_unrepresentable_positive_tail_is_rejected_instead_of_returned_as_zero():
-    with pytest.raises(ValueError, match="tail"):
+    with pytest.raises(FloatingPointError, match="tail"):
         _gamma_positive_tail(1.0, 501)
 
 

@@ -262,9 +262,9 @@
  },
  "failure_semantics": {
   "invalid_input": "Raises ValueError for declared invalid inputs; numeric conversion errors may propagate for unsupported Python objects.",
-  "runtime_failure": "Raises ValueError on an exhausted tail term budget, an unrepresentable tail, nonfinite tail terms, or severe complex-tail cancellation. No partial tail is returned. The original kx=0 nonfinite diagnostic is retained; extreme scale arithmetic may still be nonfinite.",
+  "runtime_failure": "Raises FloatingPointError if derived scales underflow to zero where nonzero is required or become nonfinite, if tensor contributions or required finite components are unavailable, if a tail cannot be represented reliably or bounded within its term budget, or on severe complex-tail cancellation. Only the original kx=0 singular tensor entries and resulting determinant may remain nonfinite; xy, yx, yz, zy and zz in both K and D must remain finite. Other unexpected backend errors propagate.",
   "nonconvergence": "Not applicable; no iterative root solve is exposed.",
-  "partial_results": "No partial mapping is returned after an exception."
+  "partial_results": "At kx=0 only, the original raw nonfinite xx, yy, xz and zx entries in K and D and the resulting nonfinite determinant are retained, with finite xy, yx, yz, zy and zz required. No partial tail or mapping is returned after an exception."
  },
  "public_api": {
   "python": {
@@ -286,18 +286,20 @@
  },
  "verification": {
   "scope": [
-   "Complete complex K/D from public-input independent original finite-N sums at selected real/complex kx, positive/negative near-zero and ordinary kz, lmx=0/1/15/30/60, A dispatch boundaries, and species broadcasting; controls, diagnostic fields and tail rejection checked separately. Small-z reviewer regressions, neighbors of the |z_n|<=1 representation switch and each finite/singular kx=0 component are included. Four signed low-frequency xy/yx cancellation regressions are checked independently."
+   "Complete complex K/D from public-input independent original finite-N sums at selected real/complex kx, positive/negative near-zero and ordinary kz, lmx=0/1/15/30/60, A dispatch boundaries, and species broadcasting; controls, diagnostic fields and tail rejection checked separately. Small-z reviewer regressions, neighbors of the |z_n|<=1 representation switch and each finite/singular kx=0 component are included. Four signed low-frequency xy/yx cancellation regressions are checked independently.",
+   "Error-channel tests distinguish invalid shape/domain/cutoff inputs from numerical scale, tensor, tail and budget failures, preserve unrelated ValueError propagation, and protect the diagnostic kx=0 partial boundary without changing scientific tolerances."
   ],
   "tests": [
    "tests/kinetic/test_dielectric_tensor_diagnostic_stability.py",
    "tests/kinetic/test_kinetic_signed_kz.py",
-   "tests/kinetic/test_fluid_spectrum_r43_kinetic.py"
+   "tests/kinetic/test_fluid_spectrum_r43_kinetic.py",
+   "tests/kinetic/test_finite_harmonic_failure_policy.py"
   ],
   "evidence_ceiling": "Independent mpmath references recompute scales, exp(-b)*I_n(b) and erfc-defined Z from public inputs, evaluating the original finite-N expression rather than production A/tail kernels. Full complex K/D comparisons retain 2e-12; 140/180-digit self-checks compare unrounded references. Bounded complex-tail phase/magnitude and public rejection checks supplement tensor samples. This is a numerical-method correction, not exact parity with the frozen N64 rational expression, a continuous-domain theorem, harmonic convergence, or determinant/root certification.",
   "known_limitations": [
    "Default lmx=15, no near-zero kz clamp, scalar broadcasting, signed z0s, complex kx and six-term determinant are retained; kx=0 remains a nonfinite diagnostic.",
    "Tail identities preserve the caller's exact finite-N model. A large omitted finite-N tail is real truncation behavior, not permission to increase lmx silently.",
-   "The complex tail bound controls only omitted exact terms. Bessel backend, representation, summation and amplified-coefficient errors are not bounded by it; severe measured tail cancellation, underflow, nonfinite terms or budget exhaustion raise ValueError. Samples do not establish the entire complex domain.",
+   "The complex tail bound controls only omitted exact terms. Bessel backend, representation, summation and amplified-coefficient errors are not bounded by it; severe measured tail cancellation, underflow, nonfinite terms or budget exhaustion raise FloatingPointError. Samples do not establish the entire complex domain.",
    "xx/xy/yy retain N64 Weideman Z; xz/yz/zz use direct z*Z when all harmonic |z|<=1, otherwise shared real analytic A. The per-species switch is a numerical choice checked at selected neighbors, not a global error theorem. Full tensor comparisons do not certify determinant/root accuracy or extreme-scale representability. Lazy SciPy loading is a separate import-boundary check."
   ]
  }

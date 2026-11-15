@@ -99,9 +99,14 @@ def _gammapn(n, x):
 
 def _complex_sum(values):
     """Sum the two components separately, including cancelling harmonics."""
-    return complex(
-        _math.fsum(value.real for value in values), _math.fsum(value.imag for value in values)
-    )
+    if not _np.all(_np.isfinite(values)):
+        raise FloatingPointError("complex harmonic contributions must be finite")
+    try:
+        return complex(
+            _math.fsum(value.real for value in values), _math.fsum(value.imag for value in values)
+        )
+    except OverflowError as error:
+        raise FloatingPointError("complex harmonic sum is not representable") from error
 
 
 def _gamma_complex_tail(b, start, limit=20000):
@@ -114,7 +119,7 @@ def _gamma_complex_tail(b, start, limit=20000):
     terms only, not backend or rounding error. fsum reduces accumulation
     error; the absolute-sum check rejects severe cancellation, without claiming
     a global Bessel-backend error bound. Exhaustion, underflow and nonfinite
-    terms raise rather than returning zero or an unbounded partial sum.
+    terms raise FloatingPointError rather than returning zero or an unbounded partial sum.
     """
     b = complex(b)
     radius_b = abs(b)
@@ -127,13 +132,22 @@ def _gamma_complex_tail(b, start, limit=20000):
         stop = min(first + 64, start + limit)
         values = _gamman(_np.arange(first, stop), b)
         if not _np.all(_np.isfinite(values)):
-            raise ValueError("complex harmonic tail terms must be finite")
+            raise FloatingPointError("complex harmonic tail terms must be finite")
         pieces.append(_complex_sum(values))
-        magnitudes.append(_math.fsum(abs(value) for value in values))
-        total = _complex_sum(pieces)
-        magnitude = abs(total)
+        try:
+            magnitudes.append(_math.fsum(abs(value) for value in values))
+            total = _complex_sum(pieces)
+            magnitude = abs(total)
+        except OverflowError as error:
+            raise FloatingPointError(
+                "complex harmonic tail magnitude is not representable"
+            ) from error
+        if not _math.isfinite(magnitudes[-1]) or not _math.isfinite(magnitude):
+            raise FloatingPointError("complex harmonic tail magnitude must be finite")
         if magnitude < _np.finfo(float).tiny:
-            raise ValueError("complex harmonic tail is not representable with reliable precision")
+            raise FloatingPointError(
+                "complex harmonic tail is not representable with reliable precision"
+            )
         m = float(stop)
         radius = _math.hypot(m, radius_b)
         ratio = m / radius_b
@@ -144,12 +158,21 @@ def _gamma_complex_tail(b, start, limit=20000):
         )
         log_bound = radius_b - b.real + m * ((m / radius) / (1 + radius_b / radius) - tilt)
         if _math.isfinite(log_bound) and log_bound <= _math.log(magnitude) + _math.log(1e-18):
-            if _np.finfo(float).eps * _math.fsum(magnitudes) > 1e-14 * magnitude:
-                raise ValueError(
-                    "complex harmonic tail is too ill-conditioned to evaluate reliably"
-                )
+            try:
+                if _np.finfo(float).eps * _math.fsum(magnitudes) > 1e-14 * magnitude:
+                    raise FloatingPointError(
+                        "complex harmonic tail is too ill-conditioned to evaluate reliably"
+                    )
+            except OverflowError as error:
+                raise FloatingPointError(
+                    "complex harmonic tail magnitude is not representable"
+                ) from error
+            if not _np.isfinite(2 * total):
+                raise FloatingPointError("complex harmonic tail is not representable")
             return 2 * total
-    raise ValueError("complex harmonic tail remainder could not be bounded within the term budget")
+    raise FloatingPointError(
+        "complex harmonic tail remainder could not be bounded within the term budget"
+    )
 
 
 def _gamma_tail(b, start):
@@ -342,10 +365,15 @@ def evaluate_kinetic_dielectric_tensor(B0, qs, ms, ns0, Ts0, f, kz, kx, lmx=_LMX
     Raises
     ------
     ValueError
-        Raises ValueError for declared invalid inputs, a tail whose remainder cannot be bounded within
-        its term budget, nonfinite tail terms, an unrepresentable tail, or severe complex-tail
-        cancellation. No partial mapping is returned. Numeric conversion errors may propagate for
-        unsupported Python objects.
+        For declared invalid inputs; numeric conversion errors may propagate for unsupported objects.
+    FloatingPointError
+        If derived scales underflow to zero where nonzero is required or become nonfinite,
+        required finite tensor components are unavailable, a tail cannot be represented
+        reliably or bounded within its term budget, or complex-tail cancellation is severe.
+        Only the original kx=0 nonfinite xx, yy, xz and zx entries and resulting determinant
+        are retained; xy, yx, yz, zy and zz in both K and D must remain finite.
+        No partial tail or mapping is returned after an exception. Other unexpected backend
+        errors propagate.
 
     See Also
     --------
@@ -368,7 +396,7 @@ def evaluate_kinetic_dielectric_tensor(B0, qs, ms, ns0, Ts0, f, kz, kx, lmx=_LMX
     This corrects the numerical method of the same finite-N model; it is not exact parity with the
     frozen N=64 rational expression. The remainder bound covers omitted exact terms, not backend or
     rounding errors. Complex accumulation uses separate compensated component sums and rejects severe
-    cancellation. Tail-budget exhaustion, underflow or nonfinite terms raise ValueError; no partial
+    cancellation. Tail-budget exhaustion, underflow or nonfinite terms raise FloatingPointError; no partial
     tail is returned. Bounded independent 140/180-digit references test complete complex K/D at 2e-12
     for selected real/complex inputs. They do not prove a continuous-domain error bound, harmonic
     convergence, or determinant/root accuracy. A genuinely large finite-N tail is retained. Default
@@ -424,6 +452,25 @@ def evaluate_kinetic_dielectric_tensor(B0, qs, ms, ns0, Ts0, f, kz, kx, lmx=_LMX
         nz = c * kz_c / w
         as_ = kx_c * rhocs
         bs = as_**2
+        if (
+            not all(
+                _np.all(_np.isfinite(values))
+                for values in (w, vts, wcs, wps2, rhocs, nx, nz, as_, bs)
+            )
+            or w == 0
+            or _np.any(vts <= 0)
+            or _np.any(wcs == 0)
+            or _np.any(wps2 <= 0)
+            or _np.any(rhocs == 0)
+            or (kx_c != 0 and (_np.any(as_ == 0) or _np.any(bs == 0)))
+        ):
+            raise FloatingPointError(
+                "derived kinetic scales must be finite and nonzero where divided"
+            )
+        if not _np.isfinite(_np.square(w)) or _np.square(w) == 0:
+            raise FloatingPointError("squared kinetic frequency is not representable")
+        if not _np.all(_np.isfinite(response_kz * vts)) or _np.any(response_kz * vts == 0):
+            raise FloatingPointError("kinetic resonance scale is not finite and nonzero")
 
         # bonk/fDtensor.m:45-47
         K = _np.zeros((3, 3), dtype=_np.complex128)
@@ -440,6 +487,8 @@ def evaluate_kinetic_dielectric_tensor(B0, qs, ms, ns0, Ts0, f, kz, kx, lmx=_LMX
         for j in range(species_count):
             z0 = w / (response_kz * vts[j])
             z0s[j] = w / (kz_c * vts[j])
+            if not _np.isfinite(z0) or z0 == 0 or not _np.isfinite(z0s[j]):
+                raise FloatingPointError("kinetic response scales are not representable")
             b = bs[j]
             a = as_[j]
             # Here A is close to 1, so subtracting its constant loses the
@@ -449,6 +498,8 @@ def evaluate_kinetic_dielectric_tensor(B0, qs, ms, ns0, Ts0, f, kz, kx, lmx=_LMX
             xy_terms, xz_terms, yz_terms, zz_terms = [], [], [], []
             for l in range(-lmx, lmx + 1):
                 zn = (w - l * wcs[j]) / (response_kz * vts[j])
+                if not _np.isfinite(zn):
+                    raise FloatingPointError("kinetic harmonic argument is not finite")
 
                 gam = _gamman(l, b)
                 gamp = _gammapn(l, b)
@@ -470,6 +521,8 @@ def evaluate_kinetic_dielectric_tensor(B0, qs, ms, ns0, Ts0, f, kz, kx, lmx=_LMX
                 K[1, 1] = K[1, 1] + term1 * xsn_yy
 
             alpha = wps2[j] / w**2
+            if not _np.isfinite(alpha) or alpha <= 0:
+                raise FloatingPointError("kinetic response scales are not representable")
             cross_xy = _complex_sum(xy_terms)
             K[0, 1] += cross_xy
             K[1, 0] -= cross_xy
@@ -515,6 +568,16 @@ def evaluate_kinetic_dielectric_tensor(B0, qs, ms, ns0, Ts0, f, kz, kx, lmx=_LMX
             - D[1, 2] * D[2, 1] * D[0, 0]
             - D[2, 2] * D[1, 0] * D[0, 1]
         )
+
+    if kx_c == 0:
+        # Only these original singular entries may remain nonfinite; retain raw values.
+        finite_components = _np.array(
+            [[False, True, False], [True, False, True], [False, True, True]]
+        )
+        if not all(_np.array_equal(_np.isfinite(tensor), finite_components) for tensor in (K, D)):
+            raise FloatingPointError("kx=0 diagnostic lost its finite tensor components")
+    elif not _np.all(_np.isfinite(K)) or not _np.all(_np.isfinite(D)) or not _np.isfinite(det_d):
+        raise FloatingPointError("kinetic diagnostic tensor and determinant must be finite")
 
     return {
         "K": K,

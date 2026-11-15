@@ -119,5 +119,5 @@ def test_invalid_inputs_fail_closed(change):
 
 def test_underflowed_plasma_frequency_is_rejected():
     args = dict(CASE_SINGLE, ns0=[1e-320], f=175881684853.009 / (2 * np.pi), kx=13261.94247879565)
-    with pytest.raises(ValueError, match="derived kinetic scales"):
+    with pytest.raises(FloatingPointError, match="derived kinetic scales"):
         evaluate_kinetic_dispersion_sum(**args)
