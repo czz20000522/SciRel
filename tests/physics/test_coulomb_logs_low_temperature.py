@@ -6,8 +6,9 @@ high-temperature limit. The e-i reference is the formulary's low-temperature e-i
 e-i entries are also conditioned on ``T_i m_e/m_i`` (which this interface cannot evaluate), and the
 returned e-i relation keeps constant 31.3 rather than the formulary's converted ``24 + ln 1000``.
 Expected deviations compare the declared unchanged return relation with an independently written
-NRL reference, never with the implementation's warning helpers. The historical Wesson/Sauter
-attribution of constant 31.3 remains unverified.
+NRL reference, never with the implementation's warning helpers. Issue #254 verifies the 31.3
+expression in the EPFL Sauter author manuscript; Wesson attribution and the physical origin of
+its difference from the NRL expression remain UNKNOWN.
 """
 
 import json
@@ -201,8 +202,8 @@ def test_ei_provenance_keeps_the_nrl_transcription_apart_from_wesson():
     assert "T_i*m_e/m_i" in joined and "caller's judgement" in joined
 
 
-def test_ei_statements_give_both_bibliographic_attributions_the_same_status():
-    """#212 review: Sauter and Wesson were both written from memory; neither is verified."""
+def test_ei_statements_separate_the_read_manuscript_from_unknown_provenance():
+    """#254: read manuscript occurrence does not verify Wesson or explain the NRL gap."""
     contract = json.loads(EI_CONTRACT.read_text(encoding="utf-8"))
     reader = next(
         record
@@ -211,11 +212,20 @@ def test_ei_statements_give_both_bibliographic_attributions_the_same_status():
     )
     for side in (contract, reader):
         limitations = side["verification"]["known_limitations"]
-        for source in ("Sauter", "Wesson"):
-            assert any(source in clause and "UNKNOWN" in clause for clause in limitations), (
-                source,
-                side["asset_id"],
-            )
+        assert any(
+            "Sauter" in clause
+            and "LRP 630/99" in clause
+            and "18d" in clause
+            and "m^-3" in clause
+            and "eV" in clause
+            for clause in limitations
+        )
+        assert any("Wesson" in clause and "UNKNOWN" in clause for clause in limitations)
+        assert any("2002" in clause and "UNKNOWN" in clause for clause in limitations)
+        assert "attribution and its original equation have not been verified" not in " ".join(
+            limitations
+        )
+        assert "该归属及其原始公式尚未核验" not in " ".join(limitations)
     for side in (contract, reader):
         gap_clauses = [
             clause for clause in side["verification"]["known_limitations"] if "0.392" in clause

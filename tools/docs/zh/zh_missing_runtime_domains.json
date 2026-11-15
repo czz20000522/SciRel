@@ -1010,7 +1010,7 @@
     "调用者判断库仑对数的符号和大小是否适合所用物理模型。"
    ],
    "boundary": "T_e、n_e 均为正有限值，温度以 keV、密度以 m^-3 输入。",
-   "definition": "31.3-0.5*ln(n_e)+ln(1000*T_e)。用 ln(1000)+ln(T) 计算温度项，避免中间乘法上溢或下溢。",
+   "definition": "31.3-0.5*ln(n_e)+ln(1000*T_e)，对应 EPFL 作者原稿 LRP 630/99 式（18d）的 lnΛ_e（原稿未写作 lnΛ_ei）；原式密度用 m^-3、温度用 eV，本接口将 keV 乘 1000 换成 eV。用 ln(1000)+ln(T) 计算温度项，避免中间乘法上溢或下溢。",
    "example": {
     "description": "计算有限温度和密度下的库仑对数。",
     "expected": "得到有限无量纲对数。"
@@ -1039,7 +1039,7 @@
      "units": "m^-3"
     }
    ],
-   "model": "Wesson 库仑对数关系，并带有显式的数值边界检查。",
+   "model": "EPFL 作者原稿 LRP 630/99 式（18d）的电子库仑对数关系，带 SciRel 显式数值边界检查。",
    "outputs": [
     {
      "name": "result",
@@ -1050,26 +1050,30 @@
      "units": "无量纲"
     }
    ],
-   "source_sha256": "a6aebc08cfdedff9be27b59a2d4dca9a59dc2d87d8d5351e9085981937da97a8",
-   "summary": "电子-离子库仑对数估计。",
+   "source_sha256": "974fa34a533741dc7f4cd7a939f3dcb028c5462be26d054020341674170f9737",
+   "summary": "与 Sauter 等 EPFL 作者原稿 LRP 630/99 式（18d）一致的电子-离子库仑对数估计。",
    "verification": {
-    "evidence_ceiling": "维护测试仅支持所列关系、形状和指定边界行为，不构成普遍物理标定。",
+    "evidence_ceiling": "维护测试支持所列关系、形状、指定边界行为，以及单位换算后与 EPFL 作者原稿 LRP 630/99 式（18d）的代数一致性；不确认推导、普遍物理标定、期刊最终正文或 2002 勘误。",
     "known_limitations": [
      "不声称外部标定或完整碰撞频率组合。",
-     "仅覆盖 Wesson 代数和声明的数值边界。",
-     "现有关系 31.3 − ln(√n_e/T_e[eV]) 历史上被归于 Sauter 等（1999）中用于电子碰撞度 ν*_e 的 lnΛ_e；该归属及其原始公式尚未核验，保持 UNKNOWN，与下文 Wesson 同等对待。'ee' 函数（常数 31.0）是另一种估计。",
+     "仅覆盖声明的代数、原式单位换算和数值边界。",
+     "已直接读图核验 Sauter、Angioni 和 Lin-Liu 的 EPFL 作者原稿 LRP 630/99（1999 年 2 月），纸面第 7 页（PDF 第 8 页）式（18d）：lnΛ_e = 31.3 − ln(√n_e/T_e)，密度 m^-3、温度 eV；机构存档 https://infoscience.epfl.ch/handle/20.500.14299/23214。原稿符号为 Λ_e，未写作 Λ_ei。常数 31.0 的 ee 函数是另一估计，其出处仍为 UNKNOWN。",
      "e-i 两支及其 T_e > 10 Z² eV 条件来自 NRL Plasma Formulary 2016 印刷 p.34，转录自原表并由维护者核对（见 #197、#212）。原表还以 T_i*m_e/m_i 为条件，并另列 T_e < T_i*m_e/m_i 一支，本接口无法判断这些（没有 T_i 与离子质量输入，Z=1）。与低温柔式在约 16.2 eV 的交点是把它外推到自身适用范围之外的代数交点，不是物理切换点，也不作精度判据。",
      "相对低温柔式的差是两个估计式之间的代数差：n_e=1e19 m⁻³ 下 0.1 eV 为 +55.54%、1 eV 为 +17.33%，且随密度增大，所以告警按调用样本现算。",
      "常数 31.3 的 Wesson 归属、原书版次与节号尚未核验，保持 UNKNOWN；上文记录的 NRL 原表转录是另一条独立、经维护者核对的事实（见 #197、#212），两种出处状态分开记录，不相互合并。",
-     "现有实现保留常数 31.3。NRL 高温 e-i 式将密度换成 m^-3、温度仍用 eV 时，常数为 24 + ln 1000 = 30.907755…；本接口以 keV 输入温度，所以温度项为 ln(1000*T_e)。两常数在对数上相差约 0.392。这只是现有实现与经维护者核对的 NRL 转录式之间的数值比较，不表示已经核实第二份出版来源。31.3 的原文归属及差异成因仍为 UNKNOWN。"
+     "现有实现保留常数 31.3。NRL 高温 e-i 式将密度换成 m^-3、温度仍用 eV 时，常数为 24 + ln 1000 = 30.907755…；本接口以 keV 输入温度，所以温度项为 ln(1000*T_e)。两常数在对数上相差约 0.392。这是与维护者已核对 NRL 转录式的代数比较，差异的物理来源仍为 UNKNOWN；在作者原稿找到式（18d）不解释该差异。",
+     "本次只确认公式出现于 EPFL 机构作者原稿，不确认推导或最早出处。期刊最终排版和 2002 勘误正文仍未核验（UNKNOWN）；不能由出处一致推出实验标定或任意多离子混合物的适用性。"
     ],
     "scope": [
      "以独立 60 位 Decimal 对数覆盖温度、密度的最小次正规数至最大 float64，并检查尺度变换恒等式。",
      "覆盖空、布尔、字符串、复数、掩码、非有限和不匹配输入的失败行为。",
-     "与本关系的规范 SciRel 调用者及依赖一致。"
+     "与本关系的规范 SciRel 调用者及依赖一致。",
+     "固定原文常数 31.3，按 EPFL LRP 630/99 式（18d）的独立商式，以 m^-3 密度和 eV 温度核验接口的 eV→keV 输入换算，覆盖标量网格和广播数组。"
     ],
     "tests": [
-     "tests/cross_domain/test_algebra_grid.py"
+     "tests/cross_domain/test_algebra_grid.py",
+     "tests/physics/test_coulomb_logs_low_temperature.py",
+     "tests/physics/test_coulomb_logs_sauter_provenance.py"
     ]
    }
   },
@@ -1092,7 +1096,7 @@
     "电荷为正标量或可广播场，不代表多物种混合。"
    ],
    "boundary": "T_i、n_i、Z_i 均为正有限值，温度以 keV、密度以 m^-3 输入。",
-   "definition": "Sauter 1999 离子-离子弱耦合拟合 30-0.5*ln(n_i)+1.5*ln(1000*T_i)-3*ln(Z_i)，不是 NRL 2013 Eq. c；用 ln(1000)+ln(T) 避免中间溢出/下溢。",
+   "definition": "30-0.5*ln(n_i)+1.5*ln(1000*T_i)-3*ln(Z_i)，对应 EPFL 作者原稿 LRP 630/99 式（18e），不是 NRL 2013 Eq. c。原式密度用 m^-3、温度用 eV、电荷项为 Z^3；本接口用 keV，并把原稿 Z 对应到 Z_i。用 ln(1000)+ln(T) 避免中间溢出或下溢。",
    "example": {
     "description": "计算有限温度和密度下的库仑对数。",
     "expected": "得到有限无量纲对数。"
@@ -1129,7 +1133,7 @@
      "units": "无量纲"
     }
    ],
-   "model": "带 SciRel 数值边界检查的 Sauter 离子-离子库仑对数关系",
+   "model": "EPFL 作者原稿 LRP 630/99 式（18e）的离子-离子库仑对数关系，带 SciRel 显式数值边界检查。",
    "outputs": [
     {
      "name": "result",
@@ -1140,22 +1144,26 @@
      "units": "无量纲"
     }
    ],
-   "source_sha256": "91972e6c4c23fbfe1e5fcb286d007774bc9d95bacf0520879e2c37d7c479f4af",
-   "summary": "Sauter 离子-离子库仑对数估计。",
+   "source_sha256": "e4686834bbb2dd953220870afbb7b196c100b326941835392e2ef0c4aa9fff01",
+   "summary": "与 Sauter 等 EPFL 作者原稿 LRP 630/99 式（18e）一致的离子-离子库仑对数估计。",
    "verification": {
-    "evidence_ceiling": "维护测试只建立声明的 Sauter 1999 离子-离子拟合、形状和数值边界；不建立全局物理标定或 NRL 2013 Eq. c，独立 NRL 转写相差 +0.4388 ln Lambda。",
+    "evidence_ceiling": "维护测试只建立声明的离子-离子关系、形状、数值边界，以及单位换算后与 EPFL 作者原稿 LRP 630/99 式（18e）的代数一致性；不建立全局物理标定或 NRL 2013 Eq. c，独立 NRL 转写相差 +0.4388 ln Lambda。期刊最终正文和 2002 勘误仍未核验。",
     "known_limitations": [
      "不声称外部标定或完整碰撞频率组合。",
-     "只覆盖声明的 Sauter 1999 离子-离子拟合代数和数值边界；不是通用库仑对数模型。",
-     "本关系不是 NRL 2013 Eq. c。独立转写 NRL 2013 Eq. c 在探针上相差 ln Lambda 常数 +0.4388；保留 Sauter 公式，不得引用为 NRL 2013 Eq. c。"
+     "只覆盖声明的离子-离子关系代数、原式单位换算和数值边界；不是通用库仑对数模型。",
+     "本关系不是 NRL 2013 Eq. c。独立转写 NRL 2013 Eq. c 在探针上相差 ln Lambda 常数 +0.4388；保留 Sauter 公式，不得引用为 NRL 2013 Eq. c。",
+     "已直接读图核验 Sauter、Angioni 和 Lin-Liu 的 EPFL 作者原稿 LRP 630/99（1999 年 2 月），纸面第 7 页（PDF 第 8 页）式（18e）：lnΛ_ii = 30 − ln(Z^3 √n_i/T_i^(3/2))，密度 m^-3、温度 eV；机构存档 https://infoscience.epfl.ch/handle/20.500.14299/23214。原稿 Z 对应接口 Z_i，产生 −3 ln(Z_i) 项。",
+     "本次只确认公式出现于机构作者原稿，不确认推导、实验标定或任意多离子混合物的适用性。期刊最终排版和 2002 勘误正文仍未核验（UNKNOWN）；ee 常数 31.0、Wesson 归属和 e-i 与 NRL 差异的物理来源仍为 UNKNOWN。"
     ],
     "scope": [
-     "使用独立 60 位 Decimal 对数在温度/密度/电荷尺度（含最小次正规数和最大 float64）上核验声明的 Sauter 拟合；覆盖变换/缩放恒等式。",
+     "使用独立 60 位 Decimal 对数在温度/密度/电荷尺度（含最小次正规数和最大 float64）上核验声明的离子-离子关系；覆盖变换/缩放恒等式。",
      "覆盖空、布尔、字符串、复数、掩码、非有限和不匹配输入的失败行为。",
-     "与本关系的规范 SciRel 调用者及依赖一致。"
+     "与本关系的规范 SciRel 调用者及依赖一致。",
+     "固定原文常数 30，按 EPFL LRP 630/99 式（18e）的独立商式（含 Z^3），在温度、密度、电荷网格及广播数组上核验 eV→keV 输入换算。"
     ],
     "tests": [
-     "tests/cross_domain/test_algebra_grid.py"
+     "tests/cross_domain/test_algebra_grid.py",
+     "tests/physics/test_coulomb_logs_sauter_provenance.py"
     ]
    }
   },
