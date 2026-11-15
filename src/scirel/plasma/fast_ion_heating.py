@@ -33,7 +33,11 @@ def _real_unmasked_input(value, name):
     """Validate before conversion can discard an imaginary part or a mask."""
     _reject_lossy_values(value, name)
     try:
-        return np.asarray(value, dtype=float)
+        # Inspect the dtype exposed by any array protocol before requesting a
+        # real dtype; a memoryview need not be a list, tuple or ndarray itself.
+        raw = np.asarray(value)
+        _reject_lossy_values(raw, name)
+        return np.asarray(raw, dtype=float)
     except (TypeError, ValueError, OverflowError) as exc:
         raise ValueError(f"{name} must contain real, unmasked numeric values") from exc
 

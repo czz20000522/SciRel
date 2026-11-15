@@ -7,6 +7,15 @@ from scipy.integrate import IntegrationWarning, quad
 from scirel.plasma.fast_ion_heating import fast_ion_fractional_heating
 
 
+class _ArrayProtocolInput:
+    def __init__(self, values):
+        self.values = values
+
+    def __array__(self, dtype=None, copy=None):
+        array = np.asarray(self.values, dtype=dtype)
+        return array.copy() if copy else array
+
+
 def test_zero_birth_energy_is_finite_continuous_limit():
     assert fast_ion_fractional_heating(0.0, 10.0, 2.0) == 1.0
     np.testing.assert_array_equal(
@@ -82,6 +91,28 @@ def test_unrepresentable_input_conversion_uses_declared_value_error(parameter, v
     args[parameter] = value
     with pytest.raises(ValueError, match="numeric"):
         fast_ion_fractional_heating(*args)
+
+
+@pytest.mark.parametrize("parameter", range(3))
+@pytest.mark.parametrize("dtype", [np.complex64, np.complex128])
+@pytest.mark.parametrize("wrapper", [memoryview, _ArrayProtocolInput])
+def test_complex_array_protocol_inputs_are_rejected_before_conversion(parameter, dtype, wrapper):
+    args = [20.0, 4.0, 2.0]
+    args[parameter] = wrapper(np.array([20.0 + 7.0j], dtype=dtype))
+    with pytest.raises(ValueError, match="real"):
+        fast_ion_fractional_heating(*args)
+
+
+@pytest.mark.parametrize("parameter", range(3))
+@pytest.mark.parametrize("wrapper", [memoryview, _ArrayProtocolInput])
+def test_real_array_protocol_inputs_keep_their_values(parameter, wrapper):
+    ordinary = [20.0, 4.0, 2.0]
+    ordinary[parameter] = np.array([ordinary[parameter]])
+    buffered = ordinary.copy()
+    buffered[parameter] = wrapper(ordinary[parameter])
+    np.testing.assert_array_equal(
+        fast_ion_fractional_heating(*buffered), fast_ion_fractional_heating(*ordinary)
+    )
 
 
 def _bounded_integral_reference(x2):
