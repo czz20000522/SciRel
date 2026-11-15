@@ -1,12 +1,12 @@
 """Direct contract tests for ``scirel.neutrals.shifted_maxwellian_seed``.
 
-The relation is the saved the neutral-transport formulation ``create_shifted_maxwellian`` seed leaf: the
+The relation is the neutral-transport ``create_shifted_maxwellian`` seed leaf: the
 normalized exponential distribution on a cylindrical ``(vr, vx)`` mesh before
 any moment compensation, with per-shift temperatures, the molecule-count
-factor in the exponent, the strict-interior ``-80`` clamp and the cell-volume
-normalization.  The maintained tests re-derive every expected value from an
-in-file loop formulation of the same discrete relation plus the analytic
-uniform-floor limit. A separate intake replay compares the archived implementation.
+factor in the exponent, the ``-80`` tail floor and the cell-volume
+normalization. The tests combine an in-file loop of the same discrete relation
+with independent Maxwell–Boltzmann peak ratios and the analytic uniform-floor
+limit. The old zero-exponent floor expectation is intentionally corrected.
 """
 
 from __future__ import annotations
@@ -40,7 +40,7 @@ def _independent_seed(
             * tnorm_ev
             / temperature
         )
-        seed = np.exp(np.where((-80.0 < argument) & (argument < 0.0), argument, -80.0))
+        seed = np.exp(np.maximum(argument, -80.0))
         seed = seed / np.sum(cylindrical_volume * seed)
         layers.append(seed)
         exponents.append(argument)
@@ -145,10 +145,12 @@ def test_the_far_shift_floors_to_a_uniform_distribution():
     assert np.all(np.isfinite(result["distribution"]))
 
 
-def test_the_exact_zero_argument_uses_the_strict_interior_clamp():
-    """argument == 0 (mesh node exactly at the shifted peak) fails the strict
-    ``-80 < argument < 0`` interior test and is floored to ``-80`` like the
-    saved source; the exponent output still reports the raw zero."""
+def test_the_exact_zero_argument_preserves_the_analytic_peak():
+    """Maxwell–Boltzmann f=C exp(-m|v-U|²/(2eT)) gives exp(0)=1.
+
+    The former strict-interior assertion encoded a peak hole, not a tail
+    approximation; #279 intentionally corrects that scientific expectation.
+    """
     result = _call(
         vr=np.array([0.0, 1.0]),
         vx=np.array([-2.0, 0.0, 2.0]),
@@ -161,11 +163,56 @@ def test_the_exact_zero_argument_uses_the_strict_interior_clamp():
     )
     expected_exponent = np.array([[-4.0, 0.0, -4.0], [-5.0, -1.0, -5.0]])
     np.testing.assert_allclose(result["exponent"][:, :, 0], expected_exponent, rtol=0, atol=0)
-    expected_raw = np.exp(np.where(expected_exponent == 0.0, -80.0, expected_exponent))
+    expected_raw = np.exp(expected_exponent)
     expected_distribution = expected_raw / np.sum(expected_raw)
     np.testing.assert_allclose(
         result["distribution"][:, :, 0], expected_distribution, rtol=1e-15, atol=0.0
     )
+
+
+@pytest.mark.parametrize("molecule_count", [1, 2])
+@pytest.mark.parametrize("mass_amu", [1.0, 2.0])
+@pytest.mark.parametrize("shift_node", [0.0, 1.0])
+def test_peak_ratio_from_boltzmann_definition(molecule_count, mass_amu, shift_node):
+    from scirel.neutrals import make_cylindrical_velocity_quadrature
+
+    vr = np.array([0.0, 1.0])
+    vx = np.array([-1.0, 0.0, 1.0, 2.0])
+    volume = make_cylindrical_velocity_quadrature(vr=vr, vx=vx)["volume"]
+    vth = np.sqrt(2 * E_CH / (mass_amu * AMU))
+    result = _call(
+        vr=vr,
+        vx=vx,
+        tnorm_ev=1.0,
+        shifted_vx_m_s=[shift_node * vth],
+        temperature_ev=[1.0],
+        mass_amu=mass_amu,
+        molecule_count=molecule_count,
+        cylindrical_volume=volume,
+    )
+    f = result["distribution"][:, :, 0]
+    peak = int(shift_node) + 1
+    # A common normalization cancels; no production kernel supplies expected.
+    assert result["exponent"][0, peak, 0] == 0.0
+    np.testing.assert_allclose(
+        f[0, peak] / f[0, peak + 1], np.exp(molecule_count), rtol=1e-15, atol=0
+    )
+    np.testing.assert_allclose(np.sum(volume * f), 1.0, rtol=1e-15, atol=0)
+
+
+def test_peak_and_tail_floor_coexist_in_one_slice():
+    result = _call(
+        vr=[0.0],
+        vx=[0.0, 1.0, 8.0, 9.0],
+        tnorm_ev=1.0,
+        temperature_ev=[1.0],
+        mass_amu=1.0,
+        cylindrical_volume=np.ones((1, 4)),
+    )
+    f = result["distribution"][0, :, 0]
+    expected = np.exp([0.0, -1.0, -64.0, -80.0])
+    np.testing.assert_allclose(f, expected / np.sum(expected), rtol=1e-15, atol=0)
+    np.testing.assert_array_equal(result["exponent"][0, :, 0], [0.0, -1.0, -64.0, -81.0])
 
 
 def test_the_molecule_count_scales_the_exponent():

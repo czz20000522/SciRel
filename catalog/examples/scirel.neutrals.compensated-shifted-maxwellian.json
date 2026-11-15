@@ -26,7 +26,7 @@
   ],
   "model": "Clipped exponential shifted Maxwellian followed by the bounded discrete two-moment correction and per-slice renormalization.",
   "geometry": "Two-dimensional normalized cylindrical velocity mesh with one slice per shift.",
-  "boundary": "Temperatures at or below zero return zero slices; the exponent uses the strict interior -80 clamp and final normalization uses the caller mesh.",
+  "boundary": "Temperatures at or below zero return zero slices; the exponent retains -80 < argument <= 0, including the analytic peak, and uses the exp(-80) tail floor otherwise; final normalization uses the caller mesh.",
   "device_scope": "generic"
  },
  "identity": {
@@ -36,7 +36,7 @@
   "model": "Discrete shifted Maxwellian with fixed hydrogen mass/charge constants and source-shaped moment compensation.",
   "geometry": "Rows are normalized radial speed vr, columns normalized axial velocity vx, and the third axis indexes shifts.",
   "coordinates": "vr/vx use v/vth; shifts are m/s; temperatures and tnorm are eV.",
-  "boundary": "Nonpositive temperature follows the zero-slice branch; exponent values outside the strict (-80,0) interval are replaced by -80.",
+  "boundary": "Nonpositive temperature follows the zero-slice branch; the analytic peak keeps exp(0) = 1 before compensation, and exponents at or below -80 retain the exp(-80) tail floor.",
   "assumptions": [
    "The velocity mesh is accepted by cylindrical quadrature.",
    "mu and molecularity follow the source mass and molecule-count conventions.",
@@ -175,12 +175,13 @@
  "verification": {
   "scope": [
    "Direct shape and nonpositive-temperature zero-slice checks, plus test_adequate_mesh_returns_the_exact_maxwellian_moments, test_mesh_too_small_for_the_temperature_raises_instead_of_returning_wrong_moments and test_moment_tolerance_is_the_caller_s_choice for analytic drift/temperature moments, inadequate-mesh rejection and explicit caller tolerance.",
-   "Retained candidate evidence covers temperature branches, clipping, nonuniform deuterium and NaN/negative/zero edge rows."
+   "Retained candidate evidence covers temperature branches, clipping, nonuniform deuterium and NaN/negative/zero edge rows.",
+   "test_internal_seed_keeps_peak_before_real_moment_compensation observes the normalized seed before the real correction for molecularity 1/2 and mu 1/2: analytic peak ratio at rtol 1e-14 and analytic floored profile at rtol 3e-15, followed by the real correction and unchanged default 0.01 drift/temperature/negativity checks. Nonpositive-temperature slices remain zero."
   ],
   "tests": [
    "tests/kinetic/test_moment_compensation.py"
   ],
-  "evidence_ceiling": "The named direct tests in test_moment_compensation.py provide analytic returned-moment assertions and rejection regressions on their finite meshes. Broader source-fidelity evidence remains partial: the historical NaN payload/warning and integer/float differences, ADAS/JH validation, molecular/coupled transport, full solver and general scientific correctness remain unresolved.",
+  "evidence_ceiling": "The named direct tests in test_moment_compensation.py provide analytic pre-correction peak/profile assertions, including molecularity 1/2 and mu 1/2, and analytic returned-moment assertions and rejection regressions on their finite meshes. Broader source-fidelity evidence remains partial: the historical NaN payload/warning and integer/float differences, ADAS/JH validation, molecular/coupled transport, full solver and general scientific correctness remain unresolved.",
   "known_limitations": [
    "This extends the existing pre-compensation shifted Maxwellian leaf with a source-shaped correction stage; it does not replace that leaf.",
    "The fixed constants and clipped arithmetic are model conventions, not calibration evidence.",

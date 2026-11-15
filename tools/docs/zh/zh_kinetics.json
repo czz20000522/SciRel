@@ -460,9 +460,9 @@
   },
   {
    "asset_id": "scirel.neutrals.shifted-maxwellian-seed",
-   "source_sha256": "c2292e566be58bd1144b436dbe0990a0b8b643261c7b7cc76b68206461d3582b",
-   "summary": "在圆柱 (vr, vx) 速度网格上给出矩补偿之前的归一化指数分布种子：每个轴向漂移对应一个温度，指数中含分子数因子，采用严格内部 −80 截断，并按调用者提供的圆柱单元体积归一化。它与圆柱速度求积组合使用，止于任何矩补偿步骤之前。",
-   "definition": "取 m_H = 1.6726231e-27 kg（氢质量常数），vth = sqrt(2 e T_norm / (m m_H))。每个漂移的原始指数为 -(vr² + (vx - shift/vth)²) * molecule_count * T_norm / T_shift。原始种子在 -80 < argument < 0 时取 exp(argument)，其余情况（包括 argument = 0）一律取 exp(-80)：这是严格内部截断，因此恰好落在漂移峰上的网格节点也像远端尾部一样被压到下限，而返回的 exponent 仍报告原始值。分布按每个漂移和给定单元体积归一化：每个漂移满足 sum(volume * distribution) = 1。",
+   "source_sha256": "eb64d4bf74dd6bec2503a1213aa5d6875a75bd9cec42cfd05e249f52cedc466e",
+   "summary": "在圆柱 (vr, vx) 速度网格上给出矩补偿之前的归一化指数分布种子：每个轴向漂移对应一个温度，指数中含分子数因子，采用保留解析峰值的 −80 尾部下限，并按调用者提供的圆柱单元体积归一化。它与圆柱速度求积组合使用，止于任何矩补偿步骤之前。",
+   "definition": "取 m_H = 1.6726231e-27 kg（氢质量常数），vth = sqrt(2 e T_norm / (m m_H))。每个漂移的原始指数为 -(vr² + (vx - shift/vth)²) * molecule_count * T_norm / T_shift。原始种子在 -80 < argument <= 0 时取 exp(argument)，其余情况取 exp(-80)。特别是恰好落在漂移峰上的节点保留 exp(0)=1，符合 Maxwell–Boltzmann 定义 f=C exp[-mass*|v-U|²/(2 e T)]；返回的 exponent 始终报告原始指数，包括被截断的尾部。分布按每个漂移和给定单元体积归一化：每个漂移满足 sum(volume * distribution) = 1。",
    "model": "显式网格上的漂移 Maxwell 指数种子；任何下游矩补偿步骤都刻意留在此叶函数之外。",
    "assumptions": [
     "体积由调用者提供，可直接用圆柱求积输出。",
@@ -470,7 +470,7 @@
     "AMU_KG = 1.6726231e-27 kg 是氢质量常数，不是标准原子质量单位；该参数名为兼容而沿用。ELEMENTARY_CHARGE_C = 1.602177e-19 C 同样固定在既往数值上。两者都不是当前 CODATA 估计。",
     "molecule_count 是本关系的约定：相对原子氢，指数对分子氢多乘一个因子 2。"
    ],
-   "boundary": "argument=0 也降至 exp(−80)（严格内部钳制）；种子始终为正；molecule_count 只能为 1 或 2；合法输出有限。",
+   "boundary": "argument=0 在归一化前保留 exp(0)=1；指数不大于 −80 时仍取 exp(−80)；种子始终为正；molecule_count 只能为 1 或 2；合法输出有限。",
    "inputs": [
     {
      "name": "vr",
@@ -537,7 +537,7 @@
     {
      "name": "exponent",
      "description": "未钳制的原指数。",
-     "constraints": "有限非正；零标记精确峰值节点，但种子在该点用 exp(−80)。",
+     "constraints": "有限非正；零标记精确峰值节点，原始种子在该点于归一化前保留 exp(0)=1。",
      "dtype": "float64 数组"
     }
    ],
@@ -565,28 +565,28 @@
     "partial_results": "不返回部分结果。"
    },
    "example": {
-    "description": "构造单漂移小网格种子，检查归一化、严格内部钳制及与求积/速率平均组合。",
+    "description": "构造单漂移小网格种子，检查体积归一化及与求积/速率平均组合。",
     "expected": "形状 (2,4,1)，体积加权和为1，平均速率有限正；分子数3引发 ValueError。"
    },
    "verification": {
     "scope": [
      "公共可调用对象精确复现种子关系：分布、指数和热速度与文件内逐漂移的同离散关系循环实现比对，rtol 1e-15。",
      "每位移层满足Σvolume×distribution=1。",
-     "严格内部裁剪反例：恰位移峰值argument=0时分布取exp(−80)，指数输出仍为原零。",
+     "解析峰值回归有意更正旧的零指数压低断言：归一化前 exp(0)=1。按独立 Maxwell–Boltzmann 定义，对分子数 1/2、氢质量倍数 1/2 和零/非零对齐漂移，以 rtol 1e-15 检查峰/邻点比 exp(molecule_count)；同一切片兼含峰值和尾部时保留 −80 下限及原始指数输出。",
      "所有指数低于−80时种子精确为网格均匀分布。",
      "分子数因子：molecule_count=2 使指数加倍，分布与同一关系的文件内循环结果一致，并保持单位归一化。",
      "正位移使体积加权轴向矩为正。",
      "柱求积体积归一化种子，并在同不可变网格快照上接入Maxwell平均。",
-     "拒绝Tnorm=1e308热速度溢出、极小Tnorm配1e308位移的无限原指数、1e−320体积使分母下溢/分布溢出及近float64上限体积使加权和溢出后全零；普通输入不变。",
+     "拒绝Tnorm=1e308热速度溢出、极小Tnorm配1e308位移的无限原指数、1e−320体积使分母下溢/分布溢出及近float64上限体积使加权和溢出后全零；不含零指数的输入数值不变。",
      "非空位移层、形状一致、实数有限、正温度/质量/Tnorm、整数molecule_count精确1或2及严格正体积门禁。",
-     "historical-unbound UNKNOWN：在已检查证据中，尚不能绑定所称单独执行、SHA-256 固定的参考比较回执。现有文件内循环、归一化、严格指数区间和求积串接断言仍作为回归检查保留，不冒充该历史独立执行的证明。"
+     "historical-unbound UNKNOWN：在已检查证据中，尚不能绑定所称单独执行、SHA-256 固定的参考比较回执。现有文件内循环、归一化、尾部下限与解析峰值和求积串接断言仍作为回归检查保留，不冒充该历史独立执行的证明。"
     ],
-    "evidence_ceiling": "绑定直接测试将分布、指数和热速度与同一离散关系的文件内循环比较，并检查逐漂移层归一化、有符号漂移、分子数、严格指数区间、可表示性、失败及求积串接。这支持有界数学/回归行为。单独执行且摘要固定的参考比较为 historical-unbound UNKNOWN；文件内同式复算不能证明该历史回执，也不因此收缩已支持计算。",
+    "evidence_ceiling": "直接测试新增独立 Maxwell–Boltzmann 解析峰值比，并保留原归一化、有符号漂移、分子数、尾部下限、可表示性、失败及求积串接检查。文件内循环仍是同离散关系的回归复算。这些有限网格检查不建立完整 Maxwellian 矩、尾部精度或输运物理。单独执行且摘要固定的历史参考比较仍为 historical-unbound UNKNOWN；新增解析测试不能补出该历史回执。",
     "known_limitations": [
      "该种子明确处于矩补偿之前：任何矩补偿步骤都在本叶函数之外，因此该分布不是最终补偿结果。",
      "常数是固定的既往数值，不是当前最佳估计；AMU_KG 指氢质量而非标准 amu，且不做换算。",
      "指数下限是数值装置；截断区不再解析指数，均匀极限不能解释成物理Maxwell分布。",
-     "未记录独立或外部 oracle；证据仅为自洽/回归。",
+     "已有独立解析峰值比检查；未记录单独执行的外部数值 oracle，保留的尾部下限仍是近似。",
      "合同不建立：任何下游矩补偿步骤：本叶函数只返回补偿前的种子。。"
     ]
    }
@@ -8334,11 +8334,11 @@
   },
   {
    "asset_id": "scirel.neutrals.compensated-shifted-maxwellian",
-   "source_sha256": "adf7eae007f4a3c420e7ea75bbc04611ea7c5dfb0d9d052531261e372df49d8b",
+   "source_sha256": "a261195681a46e93ad4537a89fbee9cfcd07959b21d79da866c5f8f54cd6dd9e",
    "summary": "构造裁剪并按圆柱求积归一化的平移 Maxwell 分布切片，再应用有界离散漂移/能量补偿阶段。",
    "definition": "计算热速度和裁剪指数，按求积归一化每个切片，施加 compensate_velocity_slice 后再次归一化。",
    "model": "固定氢质量/电荷常数的离散平移 Maxwell 分布与源形状矩补偿。",
-   "boundary": "温度不正时返回零切片；指数仅在严格 (-80,0) 内保留，其余替换为 -80。",
+   "boundary": "温度不正时返回零切片；解析峰值在补偿前保留 exp(0)=1，指数不大于 −80 时仍取 exp(−80) 尾部下限。",
    "assumptions": [
     "速度网格可由圆柱求积接受。",
     "mu 和 molecularity 遵循源质量及分子数约定。",
@@ -8423,14 +8423,15 @@
    "verification": {
     "scope": [
      "直接检查形状与不正温零切片；test_adequate_mesh_returns_the_exact_maxwellian_moments、test_mesh_too_small_for_the_temperature_raises_instead_of_returning_wrong_moments 和 test_moment_tolerance_is_the_caller_s_choice 检查解析漂移/温度矩、网格不足拒绝及调用者显式容差。",
-     "候选证据保留温度分支、裁剪、非均匀氘以及 NaN/负/零边界行。"
+     "候选证据保留温度分支、裁剪、非均匀氘以及 NaN/负/零边界行。",
+     "test_internal_seed_keeps_peak_before_real_moment_compensation 对 molecularity=1/2、mu=1/2 观察真实修正前的归一化种子：以 rtol 1e-14 检查解析峰值比、rtol 3e-15 检查含尾部下限的解析剖面，随后执行真实修正和原默认 0.01 漂移/温度/负性检查；不正温切片仍为零。"
     ],
     "known_limitations": [
      "扩展现有预补偿 shifted Maxwellian 叶，不替换它。",
      "固定常数和裁剪算术是模型约定，不是标定证据。",
      "候选证据不覆盖分子耦合通道或完整输运求解器。"
     ],
-    "evidence_ceiling": "test_moment_compensation.py 中具名直接测试提供其有限网格上的解析返回矩断言及拒绝回归。更广源保真证据仍为部分：历史 NaN payload/警告及整数/浮点差异、ADAS/JH 验证、分子耦合输运、完整求解器和一般科学正确性仍未闭合。"
+    "evidence_ceiling": "test_moment_compensation.py 中具名直接测试提供其有限网格上修正前的解析峰值/剖面断言（包括 molecularity=1/2、mu=1/2）及解析返回矩断言及拒绝回归。更广源保真证据仍为部分：历史 NaN payload/警告及整数/浮点差异、ADAS/JH 验证、分子耦合输运、完整求解器和一般科学正确性仍未闭合。"
    },
    "example": {
     "description": "构造含不正温零切片的三个平移。这个刻意选小的演示网格显式使用 moment_rtol=0.1，默认值仍为 0.01；此选择只属于示例，不能作为网格不足时的通用处理。",

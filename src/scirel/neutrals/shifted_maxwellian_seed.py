@@ -74,8 +74,8 @@ def build_shifted_maxwellian_seed(
         Thermal speed ``sqrt(2 e T_norm / (m m_H))`` [m/s].
     exponent : ndarray of float64, shape [nvr,nvx,n_shifts]
         Raw exponent per mesh node and shift [dimensionless]. It is finite and
-        nonpositive for accepted inputs; a zero entry marks the peak that the
-        seed floors to ``exp(-80)``.
+        nonpositive for accepted inputs; a zero entry marks the peak where the
+        raw seed keeps ``exp(0) = 1`` before normalization.
 
     Raises
     ------
@@ -92,8 +92,9 @@ def build_shifted_maxwellian_seed(
     -----
     The mesh axes are normalized by the thermal speed
     ``sqrt(2 e T_norm / (m m_H))``. The seed is normalized by the supplied
-    cylindrical cell volumes; the strict-interior clamp ``exp(-80)`` is applied
-    before normalization. ``molecule_count`` is interpreted as the exponent
+    cylindrical cell volumes; the tail floor ``exp(-80)`` is applied before
+    normalization, while the analytic peak keeps ``exp(0) = 1``.
+    ``molecule_count`` is interpreted as the exponent
     multiplier, and no external distribution or collision model is inferred.
 
     Examples
@@ -195,7 +196,7 @@ def build_shifted_maxwellian_seed(
     if not bool(np.all(np.isfinite(argument))):
         raise ValueError("the seed exponent is not representable for these finite inputs")
     with np.errstate(over="ignore", invalid="ignore"):
-        seed = np.exp(np.where(np.logical_and(-80.0 < argument, argument < 0.0), argument, -80.0))
+        seed = np.exp(np.where(np.logical_and(-80.0 < argument, argument <= 0.0), argument, -80.0))
         seed /= np.sum(volume[:, :, None] * seed, axis=(0, 1), keepdims=True)
     # Extreme-but-finite volumes can make the normalization denominator
     # underflow (the divided distribution overflows to infinity) or overflow
