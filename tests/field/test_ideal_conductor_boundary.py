@@ -300,3 +300,76 @@ def test_residual_norm_is_formed_before_rounding_each_subnormal_component():
     np.testing.assert_array_equal(result.boundary_currents, [0.0])
     assert result.residual_norm == scale
     assert result.effective_rank == 0
+
+
+@pytest.mark.parametrize("policy", ["ignore", "warn", "raise"])
+def test_nonzero_current_lost_at_output_is_an_explicit_failure(policy):
+    exact_current = -Fraction(1e-20) / Fraction(1e308)
+    assert exact_current and float(exact_current) == 0.0
+    with np.errstate(all=policy), pytest.raises(FloatingPointError):
+        scientific_function([1e-20], [[1.0]], [[1e308]], [[1e308]])
+
+
+@pytest.mark.parametrize("current", [np.ldexp(1.0, -1000), np.nextafter(0.0, 1.0)])
+def test_representable_tiny_current_is_not_rejected(current):
+    result = scientific_function([current], [[1.0]], [[1.0]], [[1.0]])
+    np.testing.assert_array_equal(result.boundary_currents, [-current])
+    np.testing.assert_array_equal(result.field_flux_correction, [-current])
+    np.testing.assert_array_equal(result.residual, [0.0])
+
+
+def test_true_final_field_underflow_does_not_reject_a_reusable_current():
+    tiny = np.nextafter(0.0, 1.0)
+    result = scientific_function([tiny], [[0.25]], [[tiny]], [[tiny]])
+    np.testing.assert_array_equal(result.boundary_currents, [-0.25])
+    np.testing.assert_array_equal(result.field_flux_correction, [0.0])
+    np.testing.assert_array_equal(result.corrected_field_flux, [tiny])
+
+
+def test_exact_zero_current_is_not_an_underflow_failure():
+    result = scientific_function([0.0], [[1.0]], [[1e308]], [[1e308]])
+    np.testing.assert_array_equal(result.boundary_currents, [0.0])
+    assert result.residual_norm == 0.0
+
+
+def test_subnormal_current_corrections_use_the_returned_current():
+    flux, green = 1e-15, 1e308
+    current = float(-Fraction(flux) / Fraction(green))
+    assert current != 0.0 and abs(current) < np.finfo(float).tiny
+    expected_correction = float(Fraction(green) * Fraction(current))
+    expected_residual = float(Fraction(flux) + Fraction(expected_correction))
+    result = scientific_function([flux], [[1.0]], [[green]], [[green]])
+    np.testing.assert_array_equal(result.boundary_currents, [current])
+    np.testing.assert_array_equal(result.field_flux_correction, [expected_correction])
+    np.testing.assert_array_equal(result.boundary_flux_correction, [expected_correction])
+    np.testing.assert_array_equal(result.residual, [expected_residual])
+
+
+def test_ordinary_coupled_problem_does_not_use_integer_dot_products(monkeypatch):
+    import scirel.field.ideal_conductor_boundary as implementation
+
+    def unexpected_integer_sum(*args):
+        raise AssertionError("ordinary coupled arithmetic must use the vectorized path")
+
+    monkeypatch.setattr(implementation, "_scaled_sum", unexpected_integer_sum)
+    green = np.eye(16)
+    field = np.tile(green, (16, 1))
+    sample = np.zeros((16, 256))
+    sample[:, :16] = green
+    result = scientific_function(np.ones(256), sample, green, field)
+    np.testing.assert_array_equal(result.boundary_currents, -np.ones(16))
+    np.testing.assert_array_equal(result.corrected_field_flux, np.zeros(256))
+
+
+@pytest.mark.parametrize("bits", [27, 52])
+def test_cancelling_rounded_products_retain_the_exact_sampled_equation(bits):
+    a = 1.0 + 2.0**-bits
+    b = 1.0 + 2.0 ** (1 - bits)
+    # a*a-b = 2**(-2*bits), even when each rounded product erases that term.
+    sampled = Fraction(a) * Fraction(a) - Fraction(b)
+    assert sampled == Fraction(2) ** (-2 * bits)
+    expected = float(-sampled / Fraction(a))
+    result = scientific_function([a, b], [[a, -1.0]], [[a]], [[1.0], [0.0]])
+    np.testing.assert_allclose(
+        result.boundary_currents, [expected], rtol=64 * np.finfo(float).eps, atol=0.0
+    )
