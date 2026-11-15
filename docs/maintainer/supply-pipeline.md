@@ -81,7 +81,7 @@
 ```text
 <拆解包>/
   PACKAGE.md          任务、冻结版本（commit）、范围、完成状态、未完成项（续拆的入口）
-  patch/              基于冻结 commit 的 git format-patch 或 git bundle：
+  patch/              基于冻结 commit 的 git format-patch 补丁序列：
                       src/、tests/、catalog/ 都已按 api-spec 写成最终形态
   manifest.md         每项能力：合同 ID、领域、层、族、比对结论（第 4 节第 4 步的四类之一）
   evidence/<能力>.md   每条测试预期值的来源：解析 / 文献 / 守恒 / 来源输出；
