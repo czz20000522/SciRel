@@ -53,8 +53,9 @@ def evaluate_dielectric_response(
         Parallel phase wavenumber [1/m], with its actual sign. Nonzero for
         harmonic methods; zero is permitted by the fixed J8 model.
     kx : real or complex scalar
-        Perpendicular phase wavenumber [1/m]. Harmonic methods require real
-        nonzero kx; ronnmark accepts finite complex kx including zero, subject
+        Perpendicular phase wavenumber [1/m]. Harmonic methods need real nonzero kx for a complete response; zero
+        raises ValueError for harmonic and a derived-scale FloatingPointError
+        for harmonic_weideman. Ronnmark accepts finite complex kx including zero, subject
         to its complete-response representability requirements.
     method : {'harmonic', 'harmonic_weideman', 'ronnmark'}, optional
         Default 'harmonic': finite conventional sum with analytic Maxwellian Z.
@@ -144,9 +145,12 @@ def evaluate_dielectric_response(
     --------
     >>> from scirel.kinetic import evaluate_dielectric_response
     >>> p = dict(B0=1.0, qs=[-1.60217662e-19], ms=[9.1094e-31], ns0=[6.075e19], Ts0=[11604941.036704937], omega=1e11, kz=1.0, kx=1e4)
-    >>> for method in ('harmonic', 'harmonic_weideman', 'ronnmark'):
-    ...     r = evaluate_dielectric_response(**p, method=method)
-    ...     assert r.K.shape == r.D.shape == (3, 3)
+    >>> r = evaluate_dielectric_response(**p, method='harmonic')
+    >>> assert r.K.shape == r.D.shape == (3, 3)
+    >>> r = evaluate_dielectric_response(**p, method='harmonic_weideman')
+    >>> assert r.K.shape == r.D.shape == (3, 3)
+    >>> r = evaluate_dielectric_response(**p, method='ronnmark')
+    >>> assert r.K.shape == r.D.shape == (3, 3)
     """
     if not isinstance(method, str):
         raise TypeError(

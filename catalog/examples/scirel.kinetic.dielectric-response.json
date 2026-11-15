@@ -51,7 +51,7 @@
    "shape": "scalar",
    "dtype": "real numeric",
    "required": true,
-   "constraints": "Finite and nonzero; boolean and complex inputs are rejected."
+   "constraints": "Finite and nonzero; pass a real numeric scalar in T."
   },
   {
    "name": "qs",
@@ -114,7 +114,7 @@
    "shape": "scalar",
    "dtype": "real or complex numeric",
    "required": true,
-   "constraints": "Harmonic methods require finite real nonzero kx; ronnmark permits finite real or complex kx, including zero subject to complete-response representability."
+   "constraints": "Harmonic methods require real nonzero kx for a complete result: harmonic rejects zero with ValueError, harmonic_weideman reports its unavailable derived scale with FloatingPointError. ronnmark permits finite real or complex kx, including zero subject to complete-response representability."
   },
   {
    "name": "method",
@@ -275,7 +275,7 @@
   ]
  },
  "failure_semantics": {
-  "invalid_input": "Raises TypeError for a non-string method, a wrong harmonic-control kind (including bool), or any non-None harmonics for ronnmark. Raises ValueError for an unknown method string, negative cutoff, nonfinite or invalid physical input, unsupported species shape or disallowed zero B0, omega, kz or kx. Public method/control errors identify the parameter, received value or kind, legal condition and scirel.kinetic.dielectric-response. Unsupported numeric conversions may propagate TypeError.",
+  "invalid_input": "Raises TypeError for a non-string method, a wrong harmonic-control kind (including bool), or any non-None harmonics for ronnmark. Raises ValueError for an unknown method string, negative cutoff, nonfinite or invalid physical input, unsupported species shape or disallowed zero B0, omega or kz, and zero kx for harmonic. At zero kx harmonic_weideman retains its original derived-scale FloatingPointError. Public method/control errors identify the parameter, received value or kind, legal condition and scirel.kinetic.dielectric-response. Unsupported numeric conversions may propagate TypeError.",
   "runtime_failure": "Raises FloatingPointError for nonfinite or unrepresentable required scales, required nonzero scales underflowing to zero, unreliable or budget-exhausted harmonic tails, genuine R/H/RC poles, or nonfinite complete K, D or determinant. The positive-tail 20000-term budget, severe-cancellation policy and all original per-method failures remain in force; no fallback, clamp, penalty, incomplete tensor or automatic method switch.",
   "nonconvergence": "No root iteration. Finite harmonics retain the exact caller-selected N; ronnmark retains fixed J=8. Tail-budget exhaustion is FloatingPointError, not a convergence verdict. No automatic accuracy or harmonic-convergence certificate.",
   "partial_results": "None: all fixed scientific Result fields are returned together only when complete and representable. Algorithm differences are exhaustively enumerated in diagnostics; no None or NaN placeholders."
@@ -471,12 +471,7 @@
    {
     "name": "ronnmark",
     "model": "homogeneous magnetized Maxwellian multi-species plasma. Replace the Z and harmonic response by J=8 resonance poles and the Ronnmark R function, add Maxwell curl terms, and compute det(D). Geometry: homogeneous plasma. Coordinates: wavevector x-z plane; complex kx permitted, z parallel to B0. Boundary: Finite zero kz is allowed; conventional and fluid finite-harmonic paths require actual nonzero kz. Required derived scales and the complete tensor must be representable. Assumptions: Input units and normalization follow the declared ports; no physical parameters are inferred.",
-    "numerical_controls": {
-     "harmonics": {
-      "default": null,
-      "constraints": "Only None is accepted; the original pole order is fixed J=8. All non-None objects, including numeric 5 and bool, raise TypeError."
-     }
-    },
+    "numerical_controls": {},
     "applicability": {
      "preconditions": [
       "Finite zero kz is allowed; conventional and fluid finite-harmonic paths require actual nonzero kz. Required derived scales and the complete tensor must be representable.",
@@ -492,7 +487,7 @@
      ]
     },
     "failure_semantics": {
-     "invalid_input": "Raises ValueError for declared invalid inputs; numeric conversion errors may propagate for unsupported Python objects. Wrong method kind raises TypeError; unknown method string raises ValueError. Harmonic cutoffs accept None (N=5) or non-bool non-negative integers: wrong kind raises TypeError and negative raises ValueError; ronnmark rejects every non-None harmonics value with TypeError. Public method/control errors identify the parameter, received value or kind, legal condition and scirel.kinetic.dielectric-response.",
+     "invalid_input": "Raises ValueError for invalid physical inputs and declared species-vector violations; native numeric conversion errors may propagate. Wrong method kind raises TypeError and unknown method strings raise ValueError. Fixed J8 has no harmonic-cutoff control: only the shared unspecified state harmonics=None is accepted; every non-None value raises TypeError naming the parameter, received value, legal condition and scirel.kinetic.dielectric-response.",
      "runtime_failure": "Raises FloatingPointError for nonfinite/unrepresentable required derived scales, R/H/RC response, complete K/D tensor or determinant, Required nonzero scales underflowing to zero fail explicitly. No partial tensor, fallback or clamp is substituted.",
      "nonconvergence": "Not applicable; no iterative root solve is exposed.",
      "partial_results": "No partial mapping is returned after an exception."
