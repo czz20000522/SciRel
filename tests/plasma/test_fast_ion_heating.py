@@ -54,13 +54,33 @@ def test_invalid_domain_fails_closed(args):
         np.array([20.0 + 7.0j]),
         np.array([20.0 + 7.0j], dtype=object),
         np.ma.array([20.0], mask=[True]),
+        np.array([np.complex64(20.0 + 7.0j)], dtype=object),
+        np.array([np.complex128(20.0 + 7.0j)], dtype=object),
+        [np.ma.array([20.0], mask=[True])],
     ],
-    ids=["complex-scalar", "complex-array", "complex-object", "masked"],
+    ids=[
+        "complex-scalar",
+        "complex-array",
+        "complex-object",
+        "masked",
+        "complex64-in-object",
+        "complex128-in-object",
+        "nested-masked",
+    ],
 )
 def test_rejects_nonreal_or_masked_physical_inputs(parameter, value):
     args = [20.0, 4.0, 2.0]
     args[parameter] = value
     with pytest.raises(ValueError, match="real|masked"):
+        fast_ion_fractional_heating(*args)
+
+
+@pytest.mark.parametrize("parameter", range(3))
+@pytest.mark.parametrize("value", [10**400, np.array([10**400], dtype=object)])
+def test_unrepresentable_input_conversion_uses_declared_value_error(parameter, value):
+    args = [20.0, 4.0, 2.0]
+    args[parameter] = value
+    with pytest.raises(ValueError, match="numeric"):
         fast_ion_fractional_heating(*args)
 
 

@@ -11,13 +11,30 @@ import numpy as np
 __all__ = ["fast_ion_fractional_heating"]
 
 
+def _reject_lossy_values(value, name):
+    """Inspect nested containers before NumPy can erase masks or complex dtypes."""
+    if np.ma.isMaskedArray(value) or isinstance(value, (complex, np.complexfloating)):
+        raise ValueError(f"{name} must contain real, unmasked numeric values")
+    if isinstance(value, np.ndarray):
+        if np.iscomplexobj(value):
+            raise ValueError(f"{name} must contain real, unmasked numeric values")
+        if value.dtype != object:
+            return
+        children = value.flat
+    elif isinstance(value, (list, tuple)):
+        children = value
+    else:
+        return
+    for item in children:
+        _reject_lossy_values(item, name)
+
+
 def _real_unmasked_input(value, name):
     """Validate before conversion can discard an imaginary part or a mask."""
-    if np.ma.isMaskedArray(value) or np.iscomplexobj(value):
-        raise ValueError(f"{name} must contain real, unmasked numeric values")
+    _reject_lossy_values(value, name)
     try:
         return np.asarray(value, dtype=float)
-    except (TypeError, ValueError) as exc:
+    except (TypeError, ValueError, OverflowError) as exc:
         raise ValueError(f"{name} must contain real, unmasked numeric values") from exc
 
 
