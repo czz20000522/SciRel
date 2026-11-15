@@ -1,10 +1,58 @@
 """Fixed-flux gyrotropic parallel-pressure compatibility check."""
 
+from fractions import Fraction
+
 import numpy as np
 
 from scirel._result import Result
 
 from ._fixed_flux_derivative import fixed_flux_derivative
+
+
+def _exact_pressure_residuals(
+    p_parallel, p_perp, magnetic_field, derivative, atol, ordinary=None, mask=None
+):
+    """Round each complete relation, preserving both cancellation residuals.
+
+    A normal vector evaluation supplies only its affected elements. If NumPy
+    raises during that evaluation, recover the whole call from the original
+    inputs because no partially evaluated intermediate is trustworthy.
+    """
+    outputs = (
+        [np.empty_like(p_parallel) for _ in range(3)]
+        if ordinary is None
+        else [np.array(value, dtype=float, copy=True) for value in ordinary]
+    )
+    floor = Fraction.from_float(float(atol))
+    indexes = (
+        np.ndindex(p_parallel.shape)
+        if mask is None
+        else zip(*np.nonzero(mask))
+        if mask.ndim
+        else [()]
+    )
+    for index in indexes:
+        pp, pt, b, dp = (
+            Fraction.from_float(float(value[index]))
+            for value in (p_parallel, p_perp, magnetic_field, derivative)
+        )
+        exact_rhs = pp - b * dp
+        exact_error = pt - exact_rhs
+        exact_relative = abs(exact_error) / max(abs(pt), abs(exact_rhs), floor)
+        for destination, exact in zip(outputs, (exact_rhs, exact_error, exact_relative)):
+            try:
+                rounded = float(exact)
+            except OverflowError as exc:
+                raise FloatingPointError("parallel-pressure residual is not finite") from exc
+            if exact != 0 and rounded == 0.0:
+                raise FloatingPointError(
+                    "nonzero parallel-pressure residual is below the finite float64 range"
+                )
+            destination[index] = rounded
+    if not all(np.all(np.isfinite(value)) for value in outputs):
+        raise FloatingPointError("parallel-pressure residual is not finite")
+    # Retain the scalar/array behaviour of the ordinary arithmetic path.
+    return tuple(value[()] for value in outputs) if p_parallel.ndim == 0 else tuple(outputs)
 
 
 def compute_parallel_pressure_residual(
@@ -103,7 +151,8 @@ def compute_parallel_pressure_residual(
         ``rtol`` or ``atol`` violates its bounds, or ``strict`` detects a
         failure.
     FloatingPointError
-        If the derivative or a computed pressure residual is not finite.
+        If the sampled derivative is not finite, or a required final pressure
+        quantity exceeds finite float64 range or is nonzero but rounds to zero.
     TypeError
         If a numeric input cannot be converted to float64 or a derivative
         callable has an incompatible call signature.
@@ -121,8 +170,16 @@ def compute_parallel_pressure_residual(
 
     ``rhs = p_parallel - B * (partial p_parallel / partial B)_psi``
 
-    and ``error = p_perp - rhs``.  It does not flatten or globally sort spatial
-    samples to manufacture a derivative.  An explicit zero derivative is
+    and ``error = p_perp - rhs``. Ordinary well-conditioned samples retain
+    their float64 operation order. Cancellation or intermediate range loss
+    evaluates the complete relations from the original binary64 inputs as
+    exact rationals, rounding ``rhs``, ``error`` and ``relative_error``
+    separately at the end. In particular, ``error`` does not subtract an
+    already-rounded public ``rhs``. A required nonzero final value that rounds
+    to zero is rejected; exactly representable subnormal values are retained.
+    This changes neither ``rtol`` nor the pressure floor ``atol``.
+    It does not flatten or globally sort spatial samples to manufacture a
+    derivative.  An explicit zero derivative is
     required for constant-field isotropic data.  A sampled finite-difference
     derivative carries interpolation and sampling error, so a passing result is
     a local pressure-compatibility observation, not a spatial force-balance or
@@ -155,10 +212,60 @@ def compute_parallel_pressure_residual(
     derivative, method = fixed_flux_derivative(
         p_parallel, magnetic_field, derivative=dp_parallel_dB, field_axis=field_axis, psi=psi
     )
-    rhs = p_parallel - magnetic_field * derivative
-    error = p_perp - rhs
-    relative_error = np.abs(error) / np.maximum(np.maximum(np.abs(p_perp), np.abs(rhs)), atol)
-    if not all(np.all(np.isfinite(x)) for x in (rhs, error, relative_error)):
+    try:
+        with np.errstate(over="raise", invalid="raise", under="raise", divide="raise"):
+            product = magnetic_field * derivative
+            rhs = p_parallel - product
+            error = p_perp - rhs
+            relative_error = np.abs(error) / np.maximum(
+                np.maximum(np.abs(p_perp), np.abs(rhs)), atol
+            )
+            # Losing a leading magnitude bit in either subtraction can expose
+            # a product-rounding error. Compare both contributing terms
+            # directly; these comparisons select recovery, not a value clamp.
+            rhs_cancellation = (
+                (p_parallel != 0)
+                & (product != 0)
+                & (np.signbit(p_parallel) == np.signbit(product))
+                & (
+                    (np.abs(rhs) <= 0.5 * np.abs(p_parallel))
+                    | (np.abs(rhs) <= 0.5 * np.abs(product))
+                )
+            )
+            error_cancellation = (
+                (derivative != 0)
+                & (p_perp != 0)
+                & (rhs != 0)
+                & (np.signbit(p_perp) == np.signbit(rhs))
+                & ((np.abs(error) <= 0.5 * np.abs(p_perp)) | (np.abs(error) <= 0.5 * np.abs(rhs)))
+            )
+            # With zero derivative rhs is an input exactly; a close error
+            # subtraction is exact by Sterbenz's lemma and needs no recovery.
+            tiny = np.finfo(float).tiny
+            range_loss = (
+                ((derivative != 0) & (np.abs(product) < tiny))
+                | ((rhs != 0) & (np.abs(rhs) < tiny))
+                | ((error != 0) & (np.abs(error) < tiny))
+                | ((error != 0) & (np.abs(relative_error) < tiny))
+            )
+            exceptional = np.asarray(rhs_cancellation | error_cancellation | range_loss)
+    except FloatingPointError:
+        # A failed intermediate does not imply the complete relation fails.
+        rhs, error, relative_error = _exact_pressure_residuals(
+            p_parallel, p_perp, magnetic_field, derivative, atol
+        )
+    else:
+        if np.any(exceptional):
+            rhs, error, relative_error = _exact_pressure_residuals(
+                p_parallel,
+                p_perp,
+                magnetic_field,
+                derivative,
+                atol,
+                ordinary=(rhs, error, relative_error),
+                mask=exceptional,
+            )
+    if not all(np.all(np.isfinite(value)) for value in (rhs, error, relative_error)):
         raise FloatingPointError("parallel-pressure residual is not finite")
     maximum = float(np.max(relative_error))
     passed = bool(maximum <= rtol)

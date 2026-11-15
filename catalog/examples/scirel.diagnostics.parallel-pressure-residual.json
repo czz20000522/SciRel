@@ -31,7 +31,7 @@
  "identity": {
   "relation": "Parallel pressure and magnetic-field samples to an expected perpendicular pressure and residual",
   "direction": "(p_parallel, p_perp, B) -> rhs, error, relative_error, aggregate errors, passed",
-  "definition": "rhs=p_parallel-B*(partial p_parallel/partial B)_psi, algebraically equal to -B^2*partial(p_parallel/B)/partial B at fixed psi. error=p_perp-rhs; relative_error=abs(error)/max(abs(p_perp),abs(rhs),atol). passed means max(relative_error)<=rtol. All named fields are returned together in a scirel._result.Result mapping; mapping and attribute access expose the same values.",
+  "definition": "rhs=p_parallel-B*(partial p_parallel/partial B)_psi, algebraically equal to -B^2*partial(p_parallel/B)/partial B at fixed psi. error=p_perp-rhs; relative_error=abs(error)/max(abs(p_perp),abs(rhs),atol). passed means max(relative_error)<=rtol. All named fields are returned together in a scirel._result.Result mapping; mapping and attribute access expose the same values. Ordinary well-conditioned samples retain their float64 operation order. Cancellation or intermediate range loss evaluates the complete original-input binary-rational relations and rounds rhs, error and relative_error separately at the end; error does not subtract an already-rounded public rhs. A required nonzero final value that rounds to zero is rejected, while exactly representable subnormal values are retained. Neither rtol nor atol is changed.",
   "model": "Gyrotropic parallel-pressure compatibility for an explicitly specified fixed-flux law; not a spatial force-balance residual.",
   "geometry": "Explicit fixed-psi pressure law or caller-designated sample lines whose flux label is constant along field_axis.",
   "coordinates": "Magnetic-field magnitude B at fixed flux label psi; arrays are never flattened and globally sorted to infer this partial derivative.",
@@ -221,7 +221,7 @@
  },
  "failure_semantics": {
   "invalid_input": "ValueError for missing derivative information, conflicting derivative/axis inputs, nonfinite or nonpositive B, invalid shapes or nonmonotone/variable-psi derivative lines; other documented scalar controls are validated.",
-  "runtime_failure": "FloatingPointError for nonfinite computed residuals or margins; callable errors propagate.",
+  "runtime_failure": "FloatingPointError for a nonfinite sampled derivative, a required final quantity exceeding finite float64 range, or a required nonzero final value that rounds to zero; callable errors propagate. Representable complete relations are not rejected solely because an intermediate product overflows.",
   "nonconvergence": "No nonlinear solve; the caller is responsible for derivative sampling convergence.",
   "partial_results": "None; no scirel._result.Result mapping is returned on failure."
  },
@@ -246,12 +246,16 @@
  "verification": {
   "scope": [
    "tests/cross_domain/test_spectral_scientific_correction.py::test_uniform_isotropic_parallel_state_with_explicit_derivative asserts zero residual; tests/cross_domain/test_spectral_scientific_correction.py::test_fixed_flux_derivative_must_not_mix_flux_surfaces checks the two fixed-psi polynomial lines; tests/cross_domain/test_spectral_scientific_correction.py::test_missing_derivative_information_is_not_silently_zero checks missing-derivative rejection.",
-   "Result wrapping preserves every key, key order, value, shape, dtype and mapping access against baseline 0f74255b; attribute access reaches the same fields."
+   "Result wrapping preserves every key, key order, value, shape, dtype and mapping access against baseline 0f74255b; attribute access reaches the same fields.",
+   "Direct raw-input Fraction anchors independently check rhs, error, relative_error and passed for both the original cancellation and its 1 Pa default-control scaling; strict failure and success are checked separately.",
+   "The complete second subtraction, strided mixed samples, an independent linear pressure law, unchanged inputs and exact subnormal values are tested without using production intermediates as references.",
+   "A representable result after intermediate product overflow is retained; genuinely unrepresentable required final rhs/error and nonzero final underflow are rejected."
   ],
   "tests": [
+   "tests/diagnostics/test_parallel_pressure_residual.py",
    "tests/cross_domain/test_spectral_scientific_correction.py"
   ],
-  "evidence_ceiling": "tests/cross_domain/test_spectral_scientific_correction.py::test_uniform_isotropic_parallel_state_with_explicit_derivative asserts zero residual; tests/cross_domain/test_spectral_scientific_correction.py::test_fixed_flux_derivative_must_not_mix_flux_surfaces checks the two fixed-psi polynomial lines; tests/cross_domain/test_spectral_scientific_correction.py::test_missing_derivative_information_is_not_silently_zero checks missing-derivative rejection. The evidence is limited to those named samples and the remaining bound arithmetic regressions; the missing survey/refinement stays UNKNOWN. No measured-plasma validity or general stability theorem is established.",
+  "evidence_ceiling": "tests/cross_domain/test_spectral_scientific_correction.py::test_uniform_isotropic_parallel_state_with_explicit_derivative asserts zero residual; tests/cross_domain/test_spectral_scientific_correction.py::test_fixed_flux_derivative_must_not_mix_flux_surfaces checks the two fixed-psi polynomial lines; tests/cross_domain/test_spectral_scientific_correction.py::test_missing_derivative_information_is_not_silently_zero checks missing-derivative rejection. The evidence is limited to those named samples and the remaining bound arithmetic regressions; the missing survey/refinement stays UNKNOWN. No measured-plasma validity or general stability theorem is established. Direct raw-input exact-rational cancellation, default-control, strict, manufactured-law, strided-array and range regressions cover the complete arithmetic relations at their stated samples; they do not certify all pressure laws or continuous sampling error.",
   "known_limitations": [
    "The derivative/axis/psi keywords require callers to supply missing physical information; global-B sorting is not part of this contract.",
    "Sampled flags and residuals are local model diagnostics, not proof of global equilibrium or kinetic stability.",

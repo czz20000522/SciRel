@@ -353,9 +353,9 @@
   },
   {
    "asset_id": "scirel.diagnostics.parallel-pressure-residual",
-   "source_sha256": "b0d699cf8a561808421009b9e08b0ba4d05b730d2551ba4bb87da56d07b36b8c",
+   "source_sha256": "3162f680c2d0c6471bc2f832c56d6c3da89fe8e500e64075a719535bc8ab8431",
    "summary": "给定固定磁通导数，检查局部旋磁对称平行压强相容性。 以 scirel._result.Result 映射返回全部命名字段。",
-   "definition": "rhs=p_parallel-B*(partial p_parallel/partial B)|psi，等价于 -B²*partial(p_parallel/B)/partial B|psi。error=p_perp-rhs，relative_error=abs(error)/max(abs(p_perp),abs(rhs),atol)；最大相对误差 <=rtol 时 passed=True。 所有命名字段作为同一个 scirel._result.Result 映射返回；按键和属性读取同一个值。",
+   "definition": "rhs=p_parallel-B*(partial p_parallel/partial B)|psi，等价于 -B²*partial(p_parallel/B)/partial B|psi。error=p_perp-rhs，relative_error=abs(error)/max(abs(p_perp),abs(rhs),atol)；最大相对误差 <=rtol 时 passed=True。 所有命名字段作为同一个 scirel._result.Result 映射返回；按键和属性读取同一个值。 普通良态样本保留 float64 运算顺序；消减或中间范围损失时，从原始输入的完整二进制有理关系分别最终舍入 rhs、error 和 relative_error，不用已舍入的公开 rhs 再算 error。必需非零最终量若舍入成零则拒绝；精确可表示的次正规量保留，不改变 rtol 或 atol。",
    "model": "显式固定磁通压强定律的旋磁对称相容性，不是空间力平衡残差。",
    "assumptions": [
     "B 是 T 单位正磁场模，两个压强用 Pa。",
@@ -485,7 +485,7 @@
    },
    "failure_semantics": {
     "invalid_input": "缺导数信息、冲突的导数/轴、非有限或非正 B、错形、非单调/非恒 psi 采样线抛 ValueError；标量控制按合同验证。",
-    "runtime_failure": "残差或裕度非有限抛 FloatingPointError；回调错误传播。strict 为真且最大归一化残差超限时不返回结果。",
+    "runtime_failure": "采样差分导数非有限、必需最终量超过有限 float64 范围或必需非零最终量舍入成零时抛 FloatingPointError；回调错误传播。完整关系可表示时，不因中间乘积溢出而拒绝。strict 为真且最大归一化残差超限时不返回结果。",
     "nonconvergence": "不求非线性方程；调用者负责导数采样收敛。",
     "partial_results": "无部分结果；失败不返回 scirel._result.Result 映射。"
    },
@@ -496,15 +496,19 @@
    "verification": {
     "scope": [
      "tests/cross_domain/test_spectral_scientific_correction.py::test_uniform_isotropic_parallel_state_with_explicit_derivative 断言零残差；tests/cross_domain/test_spectral_scientific_correction.py::test_fixed_flux_derivative_must_not_mix_flux_surfaces 检查两条固定 psi 多项式线；tests/cross_domain/test_spectral_scientific_correction.py::test_missing_derivative_information_is_not_silently_zero 检查缺导数拒绝。",
-     "Result 包装保持全部键、键顺序、数值、形状、dtype 与映射访问（基线 0f74255b）；属性读取到同一字段。"
+     "Result 包装保持全部键、键顺序、数值、形状、dtype 与映射访问（基线 0f74255b）；属性读取到同一字段。",
+     "直接原始输入 Fraction 锚点分别核原始消减及 1 Pa 默认控制缩放的 rhs、error、relative_error、passed；strict 的失败与成功分别检查。",
+     "核完整第二次减法、带步长混合样本、独立线性压强律、输入不变和精确次正规量，不以生产中间量作参照。",
+     "保留中间乘积溢出后仍可表示的结果；必需最终 rhs/error 真正不可表示以及非零最终量下溢时明确拒绝。"
     ],
-    "evidence_ceiling": "tests/cross_domain/test_spectral_scientific_correction.py::test_uniform_isotropic_parallel_state_with_explicit_derivative 断言零残差；tests/cross_domain/test_spectral_scientific_correction.py::test_fixed_flux_derivative_must_not_mix_flux_surfaces 检查两条固定 psi 多项式线；tests/cross_domain/test_spectral_scientific_correction.py::test_missing_derivative_information_is_not_silently_zero 检查缺导数拒绝。 证据限于这些具名样本及其余绑定算术回归；缺少的扫描/加密证据保持 UNKNOWN，不证明实测等离子体有效性或一般稳定性定理。",
+    "evidence_ceiling": "tests/cross_domain/test_spectral_scientific_correction.py::test_uniform_isotropic_parallel_state_with_explicit_derivative 断言零残差；tests/cross_domain/test_spectral_scientific_correction.py::test_fixed_flux_derivative_must_not_mix_flux_surfaces 检查两条固定 psi 多项式线；tests/cross_domain/test_spectral_scientific_correction.py::test_missing_derivative_information_is_not_silently_zero 检查缺导数拒绝。 证据限于这些具名样本及其余绑定算术回归；缺少的扫描/加密证据保持 UNKNOWN，不证明实测等离子体有效性或一般稳定性定理。 直接原始输入有理消减、默认控制、strict、制造压强律、带步长数组和范围回归只支持所列离散样本的完整关系，不认证全部压强律或连续采样误差。",
     "known_limitations": [
      "导数/轴/psi 参数要求调用者提供缺失的物理信息；全局 B 排序不属于本合同。",
      "样本标志和残差只是局部模型诊断，不证明全局平衡或动力学稳定性。",
      "UNKNOWN：此前所述 63 个守恒量双 Maxwell 状态扫描及四级固定 psi 差分加密，均未在绑定断言及查阅的本地历史中定位；不声称这两项已有可重放覆盖，模型支持保持原样。"
     ],
     "tests": [
+     "tests/diagnostics/test_parallel_pressure_residual.py",
      "tests/cross_domain/test_spectral_scientific_correction.py"
     ]
    },
