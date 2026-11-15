@@ -14,7 +14,7 @@ import mpmath as mp
 import numpy as np
 import pytest
 
-from scirel.kinetic import evaluate_kinetic_dielectric_tensor
+from scirel.kinetic import evaluate_dielectric_diagnostics
 
 
 Q = -1.60217662e-19
@@ -239,9 +239,13 @@ _CASES = [
 @pytest.mark.parametrize("arguments", _CASES)
 def test_diagnostic_matches_independent_original_finite_sum(arguments):
     expected = _reference(arguments)
-    result = evaluate_kinetic_dielectric_tensor(**arguments)
+    result = evaluate_dielectric_diagnostics(
+        **{key: value for key, value in arguments.items() if key not in ("f", "lmx")},
+        omega=2.0 * np.pi * float(arguments["f"]),
+        harmonics=arguments.get("lmx", 15),
+    )
     for key, wanted in zip(("K", "D"), expected, strict=True):
-        _assert_close(result[key], wanted, "2e-12", key)
+        _assert_close(result[f"{key}_raw"], wanted, "2e-12", key)
 
 
 @pytest.mark.parametrize(
@@ -267,29 +271,46 @@ def test_unrounded_reference_is_stable_at_two_precisions(arguments):
 def test_default_and_diagnostics_keep_the_original_controls_and_signs():
     arguments = _case(kz=-1e-7)
     del arguments["lmx"]
-    result = evaluate_kinetic_dielectric_tensor(**arguments)
+    result = evaluate_dielectric_diagnostics(
+        **{key: value for key, value in arguments.items() if key not in ("f", "lmx")},
+        omega=2.0 * np.pi * float(arguments["f"]),
+    )
     assert set(result) == {
-        "K",
-        "D",
-        "det_D",
-        "w",
+        "K_raw",
+        "D_raw",
+        "determinant_raw",
+        "omega",
+        "nx",
+        "nz",
         "vts",
         "wcs",
         "wps2",
+        "a",
+        "b",
         "rhocs",
-        "nx",
-        "nz",
-        "as",
-        "bs",
         "z0s",
-        "lmx",
+        "diagnostics",
     }
-    assert result["lmx"] == 15, "the diagnostic default remains 15, not its siblings' 5"
-    np.testing.assert_array_equal(result["z0s"], result["w"] / (arguments["kz"] * result["vts"]))
-    np.testing.assert_array_equal(result["as"], arguments["kx"] * result["rhocs"])
-    np.testing.assert_array_equal(result["bs"], result["as"] ** 2)
-    _assert_close(result["K"], _reference(arguments)[0], "2e-12", "default K")
-    d = result["D"]
+    assert set(result["diagnostics"]) == {
+        "harmonics",
+        "tensor_convention",
+        "finite_K",
+        "finite_D",
+        "finite_determinant",
+        "complete",
+        "message",
+    }
+    assert result["diagnostics"]["complete"] is True
+    assert result["diagnostics"]["harmonics"] == 15, (
+        "the diagnostic default remains 15, not its siblings' 5"
+    )
+    np.testing.assert_array_equal(
+        result["z0s"], result["omega"] / (arguments["kz"] * result["vts"])
+    )
+    np.testing.assert_array_equal(result["a"], arguments["kx"] * result["rhocs"])
+    np.testing.assert_array_equal(result["b"], result["a"] ** 2)
+    _assert_close(result["K_raw"], _reference(arguments)[0], "2e-12", "default K")
+    d = result["D_raw"]
     determinant = (
         d[0, 0] * d[1, 1] * d[2, 2]
         + d[1, 0] * d[2, 1] * d[0, 2]
@@ -298,23 +319,38 @@ def test_default_and_diagnostics_keep_the_original_controls_and_signs():
         - d[1, 2] * d[2, 1] * d[0, 0]
         - d[2, 2] * d[1, 0] * d[0, 1]
     )
-    assert result["det_D"] == determinant, "the diagnostic retains its six-term determinant"
+    assert result["determinant_raw"] == determinant, (
+        "the diagnostic retains its six-term determinant"
+    )
 
 
 def test_zero_wavevector_boundaries_are_preserved():
     arguments = _case()
     arguments["kz"] = 0
     with pytest.raises(ValueError, match="kz must be non-zero"):
-        evaluate_kinetic_dielectric_tensor(**arguments)
+        evaluate_dielectric_diagnostics(
+            **{key: value for key, value in arguments.items() if key not in ("f", "lmx")},
+            omega=2.0 * np.pi * float(arguments["f"]),
+            harmonics=arguments.get("lmx", 15),
+        )
     arguments.update(kz=1e3, kx=0)
-    result = evaluate_kinetic_dielectric_tensor(**arguments)
+    result = evaluate_dielectric_diagnostics(
+        **{key: value for key, value in arguments.items() if key not in ("f", "lmx")},
+        omega=2.0 * np.pi * float(arguments["f"]),
+        harmonics=arguments.get("lmx", 15),
+    )
     expected_mask = np.array([[False, True, False], [True, False, True], [False, True, True]])
     for key in ("K", "D"):
         np.testing.assert_array_equal(
-            np.isfinite(result[key]),
+            np.isfinite(result[f"{key}_raw"]),
             expected_mask,
             err_msg="kx=0 must retain each finite/singular component",
         )
+    for key in ("K", "D"):
+        np.testing.assert_array_equal(result["diagnostics"][f"finite_{key}"], expected_mask)
+    assert not result["diagnostics"]["finite_determinant"]
+    assert result["diagnostics"]["complete"] is False
+    assert result["diagnostics"]["message"]
     with mp.workdps(180):
         omega = 2 * mp.pi * mp.mpf(arguments["f"])
         thermal = mp.sqrt(2 * mp.mpf(KB) * mp.mpf(TEMPERATURE) / mp.mpf(M))
@@ -323,7 +359,7 @@ def test_zero_wavevector_boundaries_are_preserved():
         plasma_z = 1j * mp.sqrt(mp.pi) * mp.exp(-z0 * z0) * mp.erfc(-1j * z0)
         expected = 1 + 2 * alpha * z0**2 * (1 + z0 * plasma_z)
         for key in ("K", "D"):
-            value = mp.mpc(complex(result[key][2, 2]))
+            value = mp.mpc(complex(result[f"{key}_raw"][2, 2]))
             assert abs(value - expected) / max(1, abs(expected)) < mp.mpf("2e-12"), (
                 "kx=0 has an independently finite zz component"
             )
@@ -334,7 +370,7 @@ def test_zero_wavevector_boundaries_are_preserved():
     [(1 + 0.5j, 16), (-1 + 0.5j, 31), (-8 + 0j, 31), (8 + 4j, 61), (1 + 1e-15j, 31)],
 )
 def test_complex_tail_matches_independent_high_precision_complement(b, start):
-    from scirel.kinetic.dielectric_tensor_diagnostic import _gamma_complex_tail
+    from scirel.kinetic._dielectric_diagnostic import _gamma_complex_tail
 
     with mp.workdps(180):
         argument = mp.mpc(b)
@@ -350,16 +386,21 @@ def test_complex_tail_matches_independent_high_precision_complement(b, start):
 
 
 def test_public_diagnostic_rejects_an_exhausted_complex_tail(monkeypatch):
-    from scirel.kinetic import dielectric_tensor_diagnostic as module
+    from scirel.kinetic import _dielectric_diagnostic as module
 
     original = module._gamma_complex_tail
     monkeypatch.setattr(module, "_gamma_complex_tail", lambda b, start: original(b, start, limit=0))
+    arguments = _case(b=1 + 0.5j)
     with pytest.raises(FloatingPointError, match="remainder could not be bounded"):
-        evaluate_kinetic_dielectric_tensor(**_case(b=1 + 0.5j))
+        evaluate_dielectric_diagnostics(
+            **{key: value for key, value in arguments.items() if key not in ("f", "lmx")},
+            omega=2.0 * np.pi * float(arguments["f"]),
+            harmonics=arguments["lmx"],
+        )
 
 
 def test_complex_tail_rejects_nonfinite_bessel_backend(monkeypatch):
-    from scirel.kinetic import dielectric_tensor_diagnostic as module
+    from scirel.kinetic import _dielectric_diagnostic as module
 
     monkeypatch.setattr(module, "_gamman", lambda orders, b: np.full(len(orders), np.nan))
     with pytest.raises(FloatingPointError, match="terms must be finite"):

@@ -8,12 +8,8 @@ import numpy as np
 import pytest
 from scipy.special import ive
 
-from scirel.kinetic import (
-    evaluate_fluid_kinetic_dispersion_sum,
-    evaluate_kinetic_dispersion_sum,
-    evaluate_plasma_dispersion,
-)
-from scirel.kinetic.kinetic_dispersion_sum_fluid import _gamma_and_prime
+from scirel.kinetic import evaluate_dielectric_response, evaluate_plasma_dispersion
+from scirel.kinetic._dielectric_weideman import _gamma_and_prime
 
 
 @pytest.mark.parametrize("n,b", [(-15, 0.0), (-3, 1e-12), (0, 2.5), (11, 100.0)])
@@ -52,20 +48,20 @@ def test_explicit_former_surrogate_preserves_source_value_and_default_order():
         ms=[9.1094e-31],
         ns0=[6.075e19],
         Ts0=[1000 * 1.6022e-19 / 1.38064852e-23],
-        f=175881684853.009 / (2 * np.pi),
+        omega=2.0 * np.pi * float(175881684853.009 / (2 * np.pi)),
         kx=13261.94247879565,
     )
     with pytest.raises(ValueError):
-        evaluate_kinetic_dispersion_sum(**args, kz=0.0)
+        evaluate_dielectric_response(method="harmonic", **args, kz=0.0)
     # Retire the implicit source policy, retain its numerical assertion at its
     # actual wavepoint. This is source parity, not a physical zero-kz limit.
     with pytest.raises(ValueError, match="kz.*nonzero"):
-        evaluate_fluid_kinetic_dispersion_sum(**args, kz=0.0)
-    source = evaluate_fluid_kinetic_dispersion_sum(**args, kz=1e-10, lmx=5)
-    explicit = evaluate_fluid_kinetic_dispersion_sum(**args, kz=1e-10)
+        evaluate_dielectric_response(method="harmonic_weideman", **args, kz=0.0)
+    source = evaluate_dielectric_response(method="harmonic_weideman", **args, kz=1e-10, harmonics=5)
+    explicit = evaluate_dielectric_response(method="harmonic_weideman", **args, kz=1e-10)
     for key in ("K", "D"):
         np.testing.assert_array_equal(source[key], explicit[key])
-    assert source["lmx"] == explicit["lmx"] == 5
+    assert source["diagnostics"]["harmonics"] == explicit["diagnostics"]["harmonics"] == 5
     assert source["determinant"] == explicit["determinant"]
     assert source["determinant"] == pytest.approx(
         -4.2165739181024277e52 - 3.1799139420426738e42j, rel=1e-8
@@ -73,21 +69,25 @@ def test_explicit_former_surrogate_preserves_source_value_and_default_order():
 
 
 def test_source_sum_rejects_fractional_harmonic_limit():
-    with pytest.raises(ValueError, match="lmx"):
-        evaluate_fluid_kinetic_dispersion_sum(
+    with pytest.raises(TypeError, match="harmonics"):
+        evaluate_dielectric_response(
+            method="harmonic_weideman",
             B0=1.0,
             qs=[-1.60217662e-19],
             ms=[9.1094e-31],
             ns0=[6.075e19],
             Ts0=[1e7],
-            f=1e10,
+            omega=2.0 * np.pi * float(1e10),
             kz=1.0,
             kx=1.0,
-            lmx=5.5,
+            harmonics=5.5,
         )
 
 
-@pytest.mark.parametrize("change", [{"B0": np.nan}, {"f": np.inf}, {"kx": np.nan}, {"qs": [0.0]}])
+@pytest.mark.parametrize(
+    "change",
+    [{"B0": np.nan}, {"omega": 2.0 * np.pi * float(np.inf)}, {"kx": np.nan}, {"qs": [0.0]}],
+)
 def test_source_sum_rejects_invalid_wavepoint(change):
     args = dict(
         B0=1.0,
@@ -95,13 +95,13 @@ def test_source_sum_rejects_invalid_wavepoint(change):
         ms=[9.1094e-31],
         ns0=[6.075e19],
         Ts0=[1e7],
-        f=1e10,
+        omega=2.0 * np.pi * float(1e10),
         kz=1.0,
         kx=1.0,
     )
     args.update(change)
     with pytest.raises(ValueError):
-        evaluate_fluid_kinetic_dispersion_sum(**args)
+        evaluate_dielectric_response(method="harmonic_weideman", **args)
 
 
 @pytest.mark.parametrize(
@@ -118,20 +118,30 @@ def test_source_sum_rejects_invalid_wavepoint(change):
         {"ns0": [np.nan]},
         {"Ts0": [np.inf]},
         {"B0": 0.0},
-        {"f": 0.0},
+        {"omega": 2.0 * np.pi * float(0.0)},
         {"kz": np.inf},
-        {"lmx": -1},
-        {"lmx": True},
+        {"harmonics": -1},
+        {"harmonics": True},
     ],
 )
 def test_fluid_shape_and_invalid_domain_still_fail_closed(change):
-    args = dict(B0=1.0, qs=[-1.0], ms=[1.0], ns0=[1.0], Ts0=[1.0], f=1.0, kz=1.0, kx=1.0)
-    with pytest.raises(ValueError):
-        evaluate_fluid_kinetic_dispersion_sum(**(args | change))
+    args = dict(
+        B0=1.0,
+        qs=[-1.0],
+        ms=[1.0],
+        ns0=[1.0],
+        Ts0=[1.0],
+        omega=2.0 * np.pi * float(1.0),
+        kz=1.0,
+        kx=1.0,
+    )
+    expected = TypeError if isinstance(change.get("harmonics"), bool) else ValueError
+    with pytest.raises(expected):
+        evaluate_dielectric_response(method="harmonic_weideman", **(args | change))
 
 
 @pytest.mark.parametrize(
-    "name", ["evaluate_fluid_kinetic_dispersion_sum", "evaluate_kinetic_dispersion_relation"]
+    "name", ["evaluate_dielectric_response", "evaluate_kinetic_dispersion_relation"]
 )
 def test_zero_kz_rejection_in_fresh_process_keeps_backends_lazy(name):
     result = subprocess.run(
@@ -146,8 +156,8 @@ import scirel.kinetic as kinetic
 name = sys.argv[2]
 call = getattr(kinetic, name)
 arguments = dict(B0=1., qs=[-1.], ms=[1.], kz=0.)
-if name == 'evaluate_fluid_kinetic_dispersion_sum':
-    arguments.update(ns0=[1.], Ts0=[1.], f=1., kx=1.)
+if name == 'evaluate_dielectric_response':
+    arguments.update(ns0=[1.], Ts0=[1.], omega=2.0 * 3.141592653589793 * float(1.), kx=1., method='harmonic_weideman')
 else:
     arguments.update(ns_unit=[1.], Ts_unit=[1.], n00=1., T00=1., omega_frac=1., kx_frac=1.)
 try:
@@ -157,7 +167,7 @@ except ValueError as error:
 else:
     raise AssertionError('zero kz was evaluated')
 assert not any(key == 'scipy' or key.startswith('scipy.') for key in sys.modules)
-assert 'scirel.kinetic.kinetic_dispersion_ronnmark' not in sys.modules
+assert 'scirel.kinetic._dielectric_ronnmark' not in sys.modules
 assert 'scirel.kinetic.species_equilibrium_scales' not in sys.modules
 """,
             str(Path(__file__).resolve().parents[2] / "src"),

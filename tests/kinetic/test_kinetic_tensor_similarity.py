@@ -15,23 +15,18 @@ import scirel.kinetic as kinetic
 
 _SCALE = 2.0**-52
 _PAIRS = [
-    pytest.param(name, sign, 10000.0, id=f"{name}-real-{label}-kz")
+    pytest.param(method, sign, 10000.0, id=f"{method}-real-{label}-kz")
     for sign, label in ((1, "positive"), (-1, "negative"))
-    for name in (
-        "evaluate_kinetic_dispersion_sum",
-        "evaluate_fluid_kinetic_dispersion_sum",
-        "evaluate_kinetic_dielectric_tensor",
-        "evaluate_kinetic_dispersion_ronnmark",
-    )
+    for method in ("harmonic", "harmonic_weideman", "diagnostic", "ronnmark")
 ] + [
-    pytest.param(name, sign, 10000.0 + 2000.0j, id=f"{name}-complex-{label}-kz")
+    pytest.param(method, sign, 10000.0 + 2000.0j, id=f"{method}-complex-{label}-kz")
     for sign, label in ((1, "positive"), (-1, "negative"))
-    for name in ("evaluate_kinetic_dielectric_tensor", "evaluate_kinetic_dispersion_ronnmark")
+    for method in ("diagnostic", "ronnmark")
 ]
 
 
-@pytest.mark.parametrize("name,sign,kx", _PAIRS)
-def test_full_tensor_and_determinant_preserve_si_similarity(name, sign, kx):
+@pytest.mark.parametrize("method,sign,kx", _PAIRS)
+def test_full_tensor_and_determinant_preserve_si_similarity(method, sign, kx):
     inputs = dict(
         B0=1.0,
         qs=[-1.60217662e-19],
@@ -44,13 +39,30 @@ def test_full_tensor_and_determinant_preserve_si_similarity(name, sign, kx):
     )
     scaled_inputs = inputs | {key: inputs[key] * _SCALE for key in ("B0", "f", "kx", "kz")}
     scaled_inputs["ns0"] = [value * _SCALE**2 for value in inputs["ns0"]]
-    call = getattr(kinetic, name)
-    base = call(**inputs)
-    scaled = call(**scaled_inputs)
-    # No frequency reconstruction or backend/order override in either call.
+    call = (
+        kinetic.evaluate_dielectric_diagnostics
+        if method == "diagnostic"
+        else kinetic.evaluate_dielectric_response
+    )
+    options = {} if method == "diagnostic" else {"method": method}
+    base = call(
+        **{key: value for key, value in inputs.items() if key != "f"},
+        omega=2.0 * np.pi * float(inputs["f"]),
+        **options,
+    )
+    scaled = call(
+        **{key: value for key, value in scaled_inputs.items() if key != "f"},
+        omega=2.0 * np.pi * float(scaled_inputs["f"]),
+        **options,
+    )
+    # Preserve the original Hz-to-omega arithmetic and each method's default order.
     comparisons = {}
     for field in ("K", "D", "determinant"):
-        key = "det_D" if field == "determinant" and "det_D" in base else field
+        key = (
+            ("determinant_raw" if field == "determinant" else f"{field}_raw")
+            if method == "diagnostic"
+            else field
+        )
         reference, actual = np.asarray(base[key]), np.asarray(scaled[key])
         assert reference.shape == actual.shape == ((3, 3) if field != "determinant" else ())
         assert np.isfinite(reference).all() and np.isfinite(actual).all()
