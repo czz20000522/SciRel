@@ -4787,14 +4787,14 @@
   },
   {
    "asset_id": "scirel.neutrals.terminal-energy-transfer-reduction",
-   "source_sha256": "f40ddc32aefe9f350d0ac0d44d44edc4bc2ff4c8a57a27b06ee86778c28db21e",
+   "source_sha256": "35c5677a05c938e664cc851ba5d06c9b36dabed1fccea182c42b1f90165931a9",
    "summary": "由终态H₂分布、有符号碰撞右端和外部源求损失、热能、动量及总能量传递剖面。",
    "definition": "对每个空间格 k，density=sum_i weight[i]*sum_j f[i,j,k]*dvx[j]，particle_flux=Vth*sum_i weight[i]*sum_j vx[j]*f[i,j,k]*dvx[j]，遵循所声明的逐格矩阵–向量和径向顺序。令 u=particle_flux/density、c_x=vx-u/Vth、c_squared=vr^2+c_x^2、m=2*mass_ratio*1.6726231e-27 kg。保留加权 RHS 积分 J；损失为 external_source 减去 J。热传递为 0.5*m*Vth^2 乘以 c_squared*RHS 的加权积分。动量传递为 m*Vth 乘以 c_x*RHS 的加权积分。总传递为 thermal_transfer+momentum_transfer*u+0.5*m*J*u^2，直接使用 J，不从舍入后的 loss 减 external_source 恢复。在有限精确算术下，总传递等于 0.5*m*Vth^2 乘以 (vr^2+vx^2)*RHS 的加权积分，且与外部源输入无关。",
    "model": "在显式碰撞 RHS 和外部分子源上的终态 H₂ 损失、动量与能量传递诊断。",
    "assumptions": [
     "此入口不组装Boltzmann右端、不推断终态代，也不绑定右端生成器依赖。",
     "质量比乘以所声明的氢质量常数 1.6726231e-27 kg，而不是标准原子质量单位；H₂ 质量使用该因子的两倍。",
-    "原动量输出标记为N/m²；若右端解释为体积率则可能量纲不同。作为绝对传递率前，单位和分布归一化需专家复核。",
+    "SI解释要求共同的无量纲速度测度d³(v/Vth)、分布积分为m⁻³、RHS为F/s且积分为m⁻³s⁻¹、外部源采用同一率单位，热速度与速度轴归一化一致。此时中心动量源为N/m³，两能量源为W/m³，损失为m⁻³s⁻¹；不从任意数组推断绝对单位，也不额外乘Vth³。",
     "维护的实数数值合同排除布尔、复数和数值字符串强制转换。"
    ],
    "boundary": "终态分布有限非负非空三维；RHS有限有符号同形，外部源有限有符号nx剖面；速度轴对齐、权重非负；质量比、热速度及各格积分密度正。",
@@ -4868,9 +4868,9 @@
      "dtype": "float64 数组"
     },
     {
-     "name": "momentum_transfer_rate_profile_n_m2",
-     "description": "有符号右端的中心轴向动量矩。",
-     "constraints": "有限有符号；量纲解释待复核。",
+     "name": "momentum_transfer_rate_profile_n_m3",
+     "description": "有符号右端的中心轴向动量源，不是未扣平均流速的实验室系动量源。",
+     "constraints": "有限有符号；N/m³以明确的物理RHS归一化为条件。",
      "dtype": "float64 数组"
     },
     {
@@ -4906,12 +4906,13 @@
     "scope": [
      "独立中心RHS矩及非中心能量矩核对有符号非均匀网格四输出。",
      "改变外源只影响损失；大正负外源与有符号单格 RHS 用实验室系能量独立定义对照。密度正时允许部分零求积格。",
-     "UNKNOWN：历史声称的三个摘要固定参考例、双载体精确重放及布尔强制转换分歧，尚未绑定逐例输入、摘要、双方版本和比较断言；当前证据仍为上述直接测试。"
+     "UNKNOWN：历史声称的三个摘要固定参考例、双载体精确重放及布尔强制转换分歧，尚未绑定逐例输入、摘要、双方版本和比较断言；当前证据仍为上述直接测试。",
+     "独立双速度格经实际F/s右端生成器与归约器组合，在两个密度尺度上核对中心动量N/m³和能量W/m³分解；不替任意输入数组认证物理归一化。"
     ],
     "evidence_ceiling": "直接比较在受测载体上确立有限离散 RHS 归约与边界差异。它们不确立上游终态分布或 RHS、绝对物理归一化、整个闭合的资格或专家认可。",
     "known_limitations": [
      "绑定的独立单元/矩比较只支持受测有限关系，不构成独立专家认可或与外部实现一致性的证明。历史三例重放仍未绑定，不把它变成新增强制验收门槛。",
-     "原动量单位及分布/RHS绝对归一化需专家复核。",
+     "绝对SI解释以明确的物理RHS及上述归一化速度测度为条件；其他调用者归一化仍只按其自身代数解释，不由此函数自动认证或转换。",
      "公开分发许可仍待人工决定。"
     ]
    }

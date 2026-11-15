@@ -5,7 +5,10 @@ from fractions import Fraction
 import numpy as np
 import pytest
 
-from scirel.neutrals import reduce_terminal_molecular_energy_transfer
+from scirel.neutrals import (
+    assemble_neutral_boltzmann_rhs,
+    reduce_terminal_molecular_energy_transfer,
+)
 
 
 @pytest.mark.parametrize("rhs_value", [-1.0, 1.0])
@@ -40,6 +43,42 @@ def _case():
         np.array([0.4, 0.9]),
         np.array([0.3, 0.5, 0.8]),
         np.array([0.05, -0.08]),
+    )
+
+
+@pytest.mark.parametrize("density_scale", [1.0, 2.0**40])
+def test_physical_rhs_carries_centered_force_per_volume(density_scale):
+    """F/s plus a density measure yields N/m^3, and velocity restores W/m^3."""
+    distribution = density_scale * np.array([[[1.0], [3.0]]])
+    zero = np.zeros_like(distribution)
+    rhs = assemble_neutral_boltzmann_rhs(
+        2.0,
+        zero,
+        zero,
+        np.array([[[1.0], [0.0]]]),
+        distribution,
+        zero,
+        zero,
+    )["rhs"]
+    np.testing.assert_array_equal(rhs, density_scale * np.array([[[-2.0], [0.0]]]))
+    result = reduce_terminal_molecular_energy_transfer(
+        [0.0], [-1.0, 1.0], 1.0, 2.0, distribution, rhs, [1.0], [1.0, 1.0], [0.0]
+    )
+    # Independent two-cell relation: density=4s, U=1 m/s, J=-2s.
+    # Momentum is centered: 6*m*s, rather than laboratory momentum 4*m*s.
+    molecule_mass = 2.0 * 1.6726231e-27
+    factor = molecule_mass * density_scale
+    np.testing.assert_allclose(
+        result["momentum_transfer_rate_profile_n_m3"], [6.0 * factor], rtol=1e-14, atol=0.0
+    )
+    np.testing.assert_allclose(
+        result["loss_rate_profile_m3_s"], [2.0 * density_scale], rtol=1e-14, atol=0.0
+    )
+    np.testing.assert_allclose(
+        result["thermal_energy_transfer_rate_profile_w_m3"], [-9.0 * factor], rtol=1e-14, atol=0.0
+    )
+    np.testing.assert_allclose(
+        result["total_energy_transfer_rate_profile_w_m3"], [-4.0 * factor], rtol=1e-14, atol=0.0
     )
 
 
@@ -94,7 +133,7 @@ def test_four_profiles_match_independent_centered_and_raw_rhs_moments():
     assert set(result) == {
         "loss_rate_profile_m3_s",
         "thermal_energy_transfer_rate_profile_w_m3",
-        "momentum_transfer_rate_profile_n_m2",
+        "momentum_transfer_rate_profile_n_m3",
         "total_energy_transfer_rate_profile_w_m3",
     }
     np.testing.assert_allclose(
@@ -102,7 +141,7 @@ def test_four_profiles_match_independent_centered_and_raw_rhs_moments():
     )
     for key, expected in (
         ("thermal_energy_transfer_rate_profile_w_m3", expected_thermal),
-        ("momentum_transfer_rate_profile_n_m2", expected_momentum),
+        ("momentum_transfer_rate_profile_n_m3", expected_momentum),
         ("total_energy_transfer_rate_profile_w_m3", expected_total),
     ):
         np.testing.assert_allclose(result[key], expected, rtol=1e-14, atol=1e-28)

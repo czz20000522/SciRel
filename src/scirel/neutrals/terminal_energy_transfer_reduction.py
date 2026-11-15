@@ -72,14 +72,17 @@ def reduce_terminal_molecular_energy_transfer(
     Returns
     -------
     loss_rate_profile_m3_s : ndarray, shape (nx,)
-        External source minus the weighted signed RHS integral. [source-labeled m^-3 s^-1]
+        External source minus the weighted signed RHS integral.
+        [m^-3 s^-1 under physical RHS normalization]
     thermal_energy_transfer_rate_profile_w_m3 : ndarray, shape (nx,)
-        Centered second-energy moment of the signed RHS. [source-labeled W/m^3]
-    momentum_transfer_rate_profile_n_m2 : ndarray, shape (nx,)
-        Centered axial momentum moment of the signed RHS. [source-labeled N/m^2; dimensional interpretation unresolved]
+        Centered second-energy moment of the signed RHS.
+        [W/m^3 under physical RHS normalization]
+    momentum_transfer_rate_profile_n_m3 : ndarray, shape (nx,)
+        Centered axial momentum source, rather than the uncentered laboratory source.
+        [N/m^3 under physical RHS normalization]
     total_energy_transfer_rate_profile_w_m3 : ndarray, shape (nx,)
         Total transfer reconstructed from thermal, momentum and the retained RHS integral.
-        [source-labeled W/m^3]
+        [W/m^3 under physical RHS normalization]
 
     Raises
     ------
@@ -101,9 +104,25 @@ def reduce_terminal_molecular_energy_transfer(
     outputs; the RHS and external source are caller-owned. Total transfer is
     reconstructed using the RHS integral directly, without recovering it by
     subtracting the external source from the rounded loss. The total-energy
-    calculation therefore does not depend on the external source. The physical
-    normalization of the RHS and the reported N/m^2 convention remain unresolved
-    and are not established here.
+    calculation therefore does not depend on the external source.
+
+    Physical SI interpretation requires a common normalized-velocity measure
+    d^3(v/Vth): the distribution integrates to density in m^-3, the RHS is in
+    distribution per second and integrates to m^-3 s^-1, and the external source
+    uses that same rate unit. The thermal speed must be the one defining the
+    normalized velocities; do not also insert a physical-velocity volume or an
+    extra Vth^3 factor. In this convention the momentum source has units
+    kg*(m/s)*(m^-3 s^-1) = N/m^3, and the two energy sources have W/m^3.
+    The RHS produced by assemble_neutral_boltzmann_rhs already includes the
+    speed multiplication converting the spatial F/m balance to F/s.
+
+    Writing J for the weighted RHS integral and U for the mean flow, the
+    centered momentum source is P_c=m*Vth*integral((vx-U/Vth)*RHS).
+    Laboratory momentum is P_c+m*U*J. The energy identity is
+    E_lab=E_centered+U*P_c+0.5*m*U^2*J, so U*P_c has W/m^3 as well.
+    Arbitrary source-normalized arrays remain supported algebraically; this
+    callable neither infers their absolute units nor performs a normalization
+    conversion. All four SI output labels are conditional on the stated measure.
 
     Examples
     --------
@@ -114,7 +133,7 @@ def reduce_terminal_molecular_energy_transfer(
     >>> f = np.ones((2, 2, 1))
     >>> rhs = np.array([[[0.2], [-0.1]], [[0.1], [-0.2]]])
     >>> r = reduce_terminal_molecular_energy_transfer(vr, vx, 1.0, 5000.0, f, rhs, np.array([1.0, 2.0]), np.array([0.5, 0.5]), np.array([0.1]))
-    >>> assert set(r) == {'loss_rate_profile_m3_s', 'thermal_energy_transfer_rate_profile_w_m3', 'momentum_transfer_rate_profile_n_m2', 'total_energy_transfer_rate_profile_w_m3'}
+    >>> assert set(r) == {'loss_rate_profile_m3_s', 'thermal_energy_transfer_rate_profile_w_m3', 'momentum_transfer_rate_profile_n_m3', 'total_energy_transfer_rate_profile_w_m3'}
     >>> assert all(value.shape == (1,) and np.isfinite(value).all() for value in r.values())
 
     """
@@ -225,6 +244,6 @@ def reduce_terminal_molecular_energy_transfer(
     return {
         "loss_rate_profile_m3_s": loss_rate,
         "thermal_energy_transfer_rate_profile_w_m3": thermal_energy_transfer,
-        "momentum_transfer_rate_profile_n_m2": momentum_transfer,
+        "momentum_transfer_rate_profile_n_m3": momentum_transfer,
         "total_energy_transfer_rate_profile_w_m3": total_energy_transfer,
     }
