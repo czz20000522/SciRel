@@ -28,7 +28,7 @@
  "identity": {
   "relation": "+d/dx(D du/dx)=M u+b",
   "direction": "Explicit cell/face data to spatial operator or state update",
-  "definition": "Inner face flux=D_face*(u_right-u_left)/center_spacing; boundary Dirichlet flux uses half-cell secants, Neumann flux uses positive-coordinate gradient. Row residual=(right_flux-left_flux)/cell_width. Sum(cell_width*residual)=right_boundary_flux-left_boundary_flux. Signed D preserves algebra; physical diffusion requires D>=0.",
+  "definition": "Inner face flux=D_face*(u_right-u_left)/center_spacing; boundary Dirichlet flux uses half-cell secants, Neumann flux uses positive-coordinate gradient. Row residual=(right_flux-left_flux)/cell_width. Sum(cell_width*residual)=right_boundary_flux-left_boundary_flux. The unchanged Dirichlet coefficient 2*D/h^2 is evaluated from binary mantissas and exponents without forming h^2 or 2*D at their original scales. Signed and zero D preserve algebra with no diffusivity floor; physical diffusion requires D>=0.",
   "model": "One-dimensional conservative finite-volume discretization",
   "geometry": "Explicit one-dimensional face grid, cell centers at arithmetic midpoints",
   "coordinates": "Caller coordinate X; positive increasing direction",
@@ -119,10 +119,13 @@
  },
  "verification": {
   "scope": [
-   "Independent flux conservation, exact linear/constant states, uniform manufactured diffusion convergence and theta causality checks"
+   "Independent flux conservation, exact linear/constant states, uniform manufactured diffusion convergence and theta causality checks",
+   "Exact half-cell fluxes and signed/zero coefficient matrices across common binary scales from 2^-540 to 2^520; independent Fraction face-flux residuals on a nonuniform grid.",
+   "Finite boundary coefficients remain available when h^2 or 2*D is unrepresentable as an intermediate; genuinely nonfinite coefficient/forcing outputs raise FloatingPointError under warn/ignore/raise policies."
   ],
   "tests": [
-   "tests/fvm/test_fvm.py"
+   "tests/fvm/test_fvm.py",
+   "tests/fvm/test_diffusion_boundary_scales.py"
   ],
   "evidence_ceiling": "Named discrete invariants and manufactured uniform-grid convergence; no arbitrary-grid stability/accuracy or full transport-simulation claim.",
   "known_limitations": [

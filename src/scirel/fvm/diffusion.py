@@ -99,6 +99,16 @@ class TriDiagonal:
         return result
 
 
+def _dirichlet_coefficient(diffusivity, width):
+    """Evaluate the same ``2*D/h**2`` without an overflowing/vanishing square."""
+    d_mantissa, d_exponent = np.frexp(diffusivity)
+    h_mantissa, h_exponent = np.frexp(width)
+    # Positive h has .5 <= m_h < 1; abs(m_D) < 1. The intermediate
+    # mantissa stays below 8. Only the final coefficient is rescaled.
+    mantissa = (2.0 * d_mantissa / h_mantissa) / h_mantissa
+    return np.ldexp(mantissa, d_exponent - 2 * h_exponent)
+
+
 def make_diffusion_terms(d_face, var):
     """Assemble two-point diffusion terms as a tridiagonal operator and forcing.
 
@@ -144,6 +154,11 @@ def make_diffusion_terms(d_face, var):
     cell-weighted sum.  The returned matrix and forcing are an ordinary pair;
     no fallback or clipping of a non-finite result is applied.
 
+    At each Dirichlet end, ``2*D/h**2`` is evaluated with binary mantissas
+    and exponents, avoiding an unrepresentable intermediate ``h**2`` or
+    ``2*D`` when the coefficient is finite. Signed and zero diffusivities
+    retain their original algebra; no diffusivity floor is introduced.
+
     Examples
     --------
     >>> import numpy as np
@@ -170,14 +185,14 @@ def make_diffusion_terms(d_face, var):
         lower += conductance / widths[1:]
 
         if var.left_face_constraint is not None:
-            coefficient = 2.0 * diffusivity[0] / widths[0] ** 2
+            coefficient = _dirichlet_coefficient(diffusivity[0], widths[0])
             diagonal[0] -= coefficient
             offset[0] += coefficient * var.left_face_constraint
         else:
             offset[0] -= diffusivity[0] * var.left_face_grad_constraint / widths[0]
 
         if var.right_face_constraint is not None:
-            coefficient = 2.0 * diffusivity[-1] / widths[-1] ** 2
+            coefficient = _dirichlet_coefficient(diffusivity[-1], widths[-1])
             diagonal[-1] -= coefficient
             offset[-1] += coefficient * var.right_face_constraint
         else:

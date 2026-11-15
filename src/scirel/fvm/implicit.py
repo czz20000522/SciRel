@@ -89,9 +89,11 @@ def theta_step(
         is Crank--Nicolson, and ``1`` is backward Euler; the value must lie in
         ``[0, 1]``.
     dirichlet_mode : {'ghost', 'direct', 'semi-implicit'}, default 'ghost'
-        Dirichlet boundary reconstruction strategy [1].
+        Dirichlet boundary reconstruction strategy [1]. Validated even when
+        old and new convection terms are absent.
     neumann_mode : {'ghost', 'semi-implicit'}, default 'ghost'
-        Neumann boundary reconstruction strategy [1].
+        Neumann boundary reconstruction strategy [1]. Validated even when
+        old and new convection terms are absent.
 
     Returns
     -------
@@ -149,6 +151,10 @@ def theta_step(
         var_old.face_centers, var_new.face_centers
     ):
         raise ValueError("old/new grids must match")
+    if dirichlet_mode not in ("ghost", "direct", "semi-implicit"):
+        raise ValueError("invalid convection boundary mode")
+    if neumann_mode not in ("ghost", "semi-implicit"):
+        raise ValueError("invalid convection boundary mode")
 
     old_matrix, old_offset = _assemble_operator(
         var_old, d_old, v_old, source_old, dirichlet_mode, neumann_mode
