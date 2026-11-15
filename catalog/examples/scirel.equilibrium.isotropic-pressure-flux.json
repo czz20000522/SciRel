@@ -276,7 +276,7 @@
  "verification": {
   "scope": [
    "Zero and nonzero Green-matrix paths.",
-   "UNKNOWN: the previously claimed real-graph one-cell off-source circular-filament normalization check has no located bound assertion; the available artificial-Green assertions are named below.",
+   "test_real_pressure_graph_first_update_matches_independent_loop_sum calls the public complete graph with real get_gpsi on a 3x5 grid, a linear P(psi) prefix, an exact zero-pressure boundary and an exterior radial column. With and without one clipped cell, analytic first-update currents and two off-source flux increments are checked against independent 80/120-digit vector-potential integrals. The zero-self entry is explicitly the discrete model convention. Current tolerances are rtol=2e-12, atol=1e-15 A; flux-increment tolerances are rtol=2e-12, atol=5e-16 Wb/rad, including vacuum-addition roundoff. maxiter=1 remains an unconverged terminal state.",
    "tests/cross_domain/isotropic_pressure_flux/test_composition_isotropic_pressure_flux.py executes the maintained solver through _run_composition, including test_contract_linear_pressure_flux_produces_analytic_cell_current and test_nonzero_green_changes_flux_through_sequential_feedback. tests/cross_domain/test_legacy_six_absorption.py::test_nonzero_green_manufactured_solution_and_both_histories directly checks the manufactured diagonal-Green solution and paired residual histories.",
    "Pressure-mask current suppression.",
    "Explicit public signature and keyword-only controls; removed mapping and **kwargs calls, wrong Green shape, missing controls, nonuniform grid and fractional maxiter failures.",
@@ -286,14 +286,15 @@
   ],
   "tests": [
    "tests/cross_domain/isotropic_pressure_flux/test_composition_isotropic_pressure_flux.py",
-   "tests/cross_domain/test_legacy_six_absorption.py"
+   "tests/cross_domain/test_legacy_six_absorption.py",
+   "tests/cross_domain/test_flux_reference_normalization.py::test_real_pressure_graph_first_update_matches_independent_loop_sum"
   ],
-  "evidence_ceiling": "tests/cross_domain/isotropic_pressure_flux/test_composition_isotropic_pressure_flux.py executes the maintained solver through _run_composition, including test_contract_linear_pressure_flux_produces_analytic_cell_current and test_nonzero_green_changes_flux_through_sequential_feedback. tests/cross_domain/test_legacy_six_absorption.py::test_nonzero_green_manufactured_solution_and_both_histories directly checks the manufactured diagonal-Green solution and paired residual histories. These bounded analytic/artificial-Green cases do not establish independent off-source circular-filament normalization, arbitrary physical pressure/Green validity or guaranteed convergence.",
+  "evidence_ceiling": "The maintained-wrapper cases cover linear pressure currents and sequential feedback; test_nonzero_green_manufactured_solution_and_both_histories covers the diagonal-Green solution and paired histories. test_real_pressure_graph_first_update_matches_independent_loop_sum adds independent off-source circular-filament amplitude on a 3x5 grid for two first-update cases, including edge clipping and an explicit mask. It uses original-input analytic currents and angle integrals rather than production Green values or returned currents as expected results. This establishes the named first-update normalization, not general nonlinear convergence or arbitrary physical pressure/Green validity.",
   "known_limitations": [
    "Uses a dense square Green matrix and a pressure spline defined by an exact midplane and exact zero-pressure sample.",
    "No adaptive damping or physical-model selection is performed.",
    "The composition file runs the real maintained solver through its wrapper; the named legacy test directly calls the public solver. No bare-name function count is used as a coverage claim.",
-   "UNKNOWN: the claimed off-source, single-cell circular-filament psi normalization witness was not located in this asset's bound tests or inspected local history. Artificial identity/diagonal Green regressions do not independently establish its no-2*pi physical normalization. The required Green units and function support are unchanged."
+   "Independent circular-filament normalization coverage is limited to the named 3x5 first-update cases, not a reinstatement of the unlocated historical single-cell graph claim. They retain maxiter=1 and do not establish general fixed-point convergence or finite-wire self-response."
   ]
  },
  "composition": {

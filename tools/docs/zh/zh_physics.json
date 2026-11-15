@@ -3453,7 +3453,7 @@
   },
   {
    "asset_id": "scirel.field.poloidal-field-from-flux",
-   "source_sha256": "5e8a776fac0ba9a5e93eb5b738337bc70a8db87da708e87ba20df1cc455d632a",
+   "source_sha256": "dbd95e9978c57794f090181e33b996b677d5361696d95888273fded3851c10f7",
    "summary": "在柱坐标 R–Z 直角网格上由 psi=R A_phi 恢复 BR、BZ 及其大小，并以 scirel._result.Result 映射返回三个命名字段。",
    "definition": "在直角网格上对 psi 求导并除以 R；包含 R=0 时使用偶对称磁通轴规则。三个数组作为同一个 scirel._result.Result 映射返回；按键和属性读取同一个值。",
    "model": "柱坐标 R-Z 网格上的稳定局部有限差分梯度。",
@@ -3479,7 +3479,7 @@
     {
      "name": "psi",
      "description": "R–Z 网格上的轴对称极向磁通函数 R A_phi，不是完整链磁通。",
-     "constraints": "有限二维数组，与坐标网格形状完全一致。",
+     "constraints": "有限，二维形状与坐标网格完全相同。恢复物理场要求沿 Z 使用一致磁通参考；此前提由调用者负责，函数不从数组推断。",
      "dtype": "实数数组，转换为 float64"
     }
    ],
@@ -3533,11 +3533,12 @@
      "hypot 的次正规和大幅值有限输入回归。",
      "三个不同网格中常量 psi=3.7 给出严格零场。",
      "可表示的强常量规范保持制造偶磁通的 BR/BZ，包括轴上。",
-     "Result 改造后保持既有键顺序、数值、形状、dtype 和映射兼容性，并支持属性读取同一字段。"
+     "Result 改造后保持既有键顺序、数值、形状、dtype 和映射兼容性，并支持属性读取同一字段。",
+     "test_nonzero_radial_reference_is_not_a_global_flux 对两种数组朝向所得的径向相对积分直接求场：非零首半径处得到 BR=0，独立 80/120 位 Biot–Savart 积分给出正直接 BR。这支持一致参考前提，不保证从相对输入恢复全局场。"
     ],
     "evidence_ceiling": "制造解与解析离散检查仅支持声明的极向模型和积分几何；不证明任意格林矩阵、压力闭合、实验等离子体适用性或公开发行。",
     "known_limitations": [
-     "调用者闭合和格林响应须自有证据，并一致使用 psi=R A_phi（Wb/rad）。",
+     "恢复物理场要求沿 Z 使用一致的 psi=R A_phi 参考。加常量不改变场，减去随 Z 变化的参考通常会改变 BR。integrate_filament_vacuum_field 的径向相对积分，除非参考项为常量，否则需先恢复同一源模型的 psi_global(R0,Z)；径向积分误差仍需计入。调用者闭合和格林响应须自有证据并使用一致约定。",
      "浮点舍入界不等于离散误差界或实验不确定度。",
      "此数值后继不自动获得专家认可或公开发行资格。",
      "psi 是每弧度磁通（Wb/rad）；以 Wb 计的总磁通大 2π 倍。使用下游算子时先核对它要哪种约定（例如 scirel.neoclassical.calculate_bootstrap_current 两种都接受，但参数名不同）。"
@@ -4070,7 +4071,7 @@
   },
   {
    "asset_id": "scirel.equilibrium.kinetic-mirror-hall-equilibrium",
-   "source_sha256": "db34b9cdeff8fafe6b2e23e73abbc13fea75e80b91e5f5b51b57aed445f4f307",
+   "source_sha256": "8bd45a1d6443b27e72ae8407e53c7a1a5ddbb2da0c06c254712f4027b1c4bf53",
    "summary": "将网格镜动力学闭合接入约化 Hall 各向异性 Picard 图的压强入口，在每次磁更新前用当前场和磁通求动力学状态。",
    "definition": "复制 kinetic_config，构造 pressure_closure(B,psi)，向网格镜动力学图传入当前 Hall 的 B、psi，并用外层 r_grid/z_grid 覆盖配置同名项。Hall 载荷中移除 kinetic_config，以新闭合覆盖原 pressure_closure，原样返回 Hall 图结果。此封装本身不更新磁场；嵌套 Hall 图负责有限 Picard/可选惯性迭代，并在终末动力学闭合前检查场下限，然后重算终末动力学状态。",
    "model": "轴对称网格镜端损失/准中性动力学闭合与约化 Hall 各向异性 Picard 反馈的组合。",
@@ -4419,7 +4420,7 @@
     "evidence_ceiling": "测试不证明与另一实现的同输入一致性、真实装置物理验证、任意 psi 相关剖面互操作或全参数域收敛。",
     "known_limitations": [
      "封装不检查 Hall 的 ion_mass_kg/ion_charge_c 是否匹配 kinetic_config 的质量/电荷。",
-     "动力学组合把磁通标为 Wb，此组合未经转换传 Wb/rad；所有 psi 相关剖面须匹配此坐标，封装不验证。",
+     "网格动力学组合接受调用者一致的磁通剖面坐标。本组合未经转换传入 Hall 的 psi=R A_phi（Wb/rad）；样本与 psi 相关回调须匹配其符号、参考函数和归一化，封装不推断或验证这些选择。",
      "近零力或电场会使归一化相容性误差对浮点抵消敏感；该探针不构成通用容差策略。",
      "封装允许替代子图和未知 Hall 载荷键；确切默认行为只适用于默认绑定。",
      "当前实现的许可仍待完成。"
@@ -4612,7 +4613,7 @@
   },
   {
    "asset_id": "scirel.equilibrium.isotropic-pressure-flux",
-   "source_sha256": "4c1669f52a9293378f3232477e49e8a4335ff36350618e1cbde28615f6a42e78",
+   "source_sha256": "0395448fe29bd78d003e7c923cdefb4ec88bea796751b4c81fd7712e12e59ecd",
    "summary": "通过唯一共享的轴对称压力电流求解器执行有界反馈，同时检查磁通更新和末态电流闭合残差，并序列化最终压力样条。",
    "definition": "委派给已维护的 compute_equilibrium：按物理半径向外构造压力样条，求目标电流、松弛电流及 Green 磁通，重建末态样条；同时检查归一化磁通变化和 ||I_new−I_target(psi_new)||₂/||I_target||₂。零目标且零误差取零，零目标而电流非零失败。只有实际更新后两项有限且不大于 tol 才收敛。适配入口不再维护第二迭代环，并返回精确拟合前缀。",
    "model": "复用共享双残差求解器的轴对称各向同性纯压力离散闭合。",
@@ -4774,7 +4775,7 @@
    "verification": {
     "scope": [
      "零与非零格林矩阵路径。",
-     "UNKNOWN：此前所称真实图单单元离源圆丝归一化检查尚未定位绑定断言；现有人工 Green 断言见下列具名用例。",
+     "test_real_pressure_graph_first_update_matches_independent_loop_sum 以真实 get_gpsi 在 3×5 网格调用公开完整图：包含线性 P(psi) 前缀、精确零压边界及边界外径向列。无掩码及单单元清零两种输入的解析首次电流、两个离源磁通增量与独立 80/120 位矢势方位积分比较；精确自项明确按离散约定置零。电流使用 rtol=2e-12、atol=1e-15 A，磁通增量使用 rtol=2e-12、atol=5e-16 Wb/rad，包含加真空值的舍入预算。maxiter=1 仍返回未收敛终态。",
      "tests/cross_domain/isotropic_pressure_flux/test_composition_isotropic_pressure_flux.py 经 _run_composition 实际执行维护求解器，包括 test_contract_linear_pressure_flux_produces_analytic_cell_current 与 test_nonzero_green_changes_flux_through_sequential_feedback；tests/cross_domain/test_legacy_six_absorption.py::test_nonzero_green_manufactured_solution_and_both_histories 直接检查人工对角 Green 解及双残差历史。",
      "压力掩码抑制电流。",
      "显式公开签名与仅关键字控制；删除 mapping 和 **kwargs 入口，覆盖错格林形状、缺控制、非均匀网格和非整数 maxiter 失败。",
@@ -4782,16 +4783,17 @@
      "零 Green 松弛电流与零次更新的假收敛均被拒绝。",
      "非零对角 Green 构造解满足独立二次方程，电流、磁通及两项记录得到核对。"
     ],
-    "evidence_ceiling": "tests/cross_domain/isotropic_pressure_flux/test_composition_isotropic_pressure_flux.py 经 _run_composition 实际执行维护求解器，包括 test_contract_linear_pressure_flux_produces_analytic_cell_current 与 test_nonzero_green_changes_flux_through_sequential_feedback；tests/cross_domain/test_legacy_six_absorption.py::test_nonzero_green_manufactured_solution_and_both_histories 直接检查人工对角 Green 解及双残差历史。 这些有界解析/人工 Green 用例不证明独立离源圆丝归一化、任意物理压力/Green 的有效性或必然收敛。",
+    "evidence_ceiling": "维护组合用例覆盖线性压力电流与连续反馈，test_nonzero_green_manufactured_solution_and_both_histories 覆盖对角 Green 解及双历史。test_real_pressure_graph_first_update_matches_independent_loop_sum 为 3×5 网格两种首次更新补入独立离源圆丝幅值证据，覆盖边界外清零和显式掩码。期望由原始输入的解析电流及方位积分构造，不使用生产 Green 或返回电流生成答案。这支持具名首次更新的归一化，不证明一般非线性收敛或任意压力/Green 的物理有效性。",
     "known_limitations": [
      "稠密方格林矩阵，压力样条要求精确中平面及精确零压样本。",
      "不做自适应阻尼或模型选择。",
      "组合文件通过包装入口运行真实维护求解器，具名 legacy 测试直接调用公共求解器；不以裸名称函数计数声明覆盖。",
-     "UNKNOWN：本资产绑定测试及查阅的本地历史中未定位离源单单元圆丝 psi 归一化见证；人工单位/对角 Green 回归不独立证明无 2*pi 的物理归一化。所需 Green 单位及功能支持不变。"
+     "独立圆丝归一化证据限于具名 3×5 首次更新，不追认未定位的历史单单元完整图声明。两例保留 maxiter=1，不证明一般不动点收敛或有限导线自响应。"
     ],
     "tests": [
      "tests/cross_domain/isotropic_pressure_flux/test_composition_isotropic_pressure_flux.py",
-     "tests/cross_domain/test_legacy_six_absorption.py"
+     "tests/cross_domain/test_legacy_six_absorption.py",
+     "tests/cross_domain/test_flux_reference_normalization.py::test_real_pressure_graph_first_update_matches_independent_loop_sum"
     ]
    }
   },
@@ -6697,7 +6699,7 @@
   },
   {
    "asset_id": "scirel.equilibrium.isotropic-picard-step",
-   "source_sha256": "f7838fa0c2a274fe0746598bf491b083f5d2040c52450be4ad0d99f350cab7e1",
+   "source_sha256": "01f683812ee044f60553631bff922ab0d18f8c8f02c58f70dc73f1431a5d78aa",
    "summary": "由压力导数构造松弛后的网格电流，用外供格林矩阵更新磁通，并计算一次 Picard 更新的磁通变化。 顶层返回值为 scirel._result.Result 映射；映射访问保留，字段也支持属性读取。 不引入嵌套映射。",
    "definition": "按 C 顺序计算 I_target=R(dP/dpsi)dR dZ、I_new=(1−relax)I_target+relax I_old，再计算 Green 磁通和真空磁通之和。relax=1 明确保留旧电流，不计算未使用的目标。电流、Green 收缩、总磁通及 ||psi_next−psi_state||₂/|psi_edge| 任一非有限均失败，不静默置零；此接口只执行一步。 完整结果作为同一个 scirel._result.Result 映射返回；仅包裹顶层，嵌套结构保持原类型。",
    "model": "轴对称各向同性压力—磁通 Picard 网格电流更新，采用外供格林响应。",
@@ -6814,21 +6816,23 @@
      "拒绝不完整调用。",
      "有限输入导致电流、Green 收缩或总磁通溢出的真实失败回归。",
      "返回类型回归检查顶层 scirel._result.Result、键顺序及属性读取；既有数值、状态和失败断言保持不变。",
-     "test_isotropic_rejects_too_small_grid_before_indexing 直接检查任一轴不足两点的网格在索引前被拒绝；这是输入错误证据，不是物理归一化或收敛核验。"
+     "test_isotropic_rejects_too_small_grid_before_indexing 直接检查任一轴不足两点的网格在索引前被拒绝；这是输入错误证据，不是物理归一化或收敛核验。",
+     "test_real_pressure_step_has_independent_off_source_flux_amplitude 在 R=(1,1.5)、Z=(-0.5,0.5) 上直接调用公开单步，仅一个压力导数非零，解析单元电流为 1 A。真实 get_gpsi 仅用于生产输入；离源点 (1.5,0.5) 的 psi 对照独立 80/120 位矢势方位积分，使用 rtol=2e-12、atol=1e-20 Wb/rad。"
     ],
-    "evidence_ceiling": "tests/equilibrium/test_isotropic_picard_step.py::test_reviewed_relation_example 直接调用四单元人工单位 Green 单步；tests/cross_domain/test_legacy_six_absorption.py::test_picard_nonfinite_state_fails_instead_of_vacuum_mask 检查其非有限算术拒绝。完整求解器组合用例不直接调用这个旧单步。 这是有界离散算术证据，不替代缺少的独立离源圆丝归一化核验或完整求解器收敛证据。",
+    "evidence_ceiling": "四单元直接例检查单位 Green 算术，test_picard_nonfinite_state_fails_instead_of_vacuum_mask 检查非有限拒绝。新增 test_real_pressure_step_has_independent_off_source_flux_amplitude 以独立离源矢势积分核对解析 1 A 单元更新。完整求解器组合用例不直接调用本单步。这些有界检查支持具名每弧度归一化和离散算术，不证明完整求解器收敛或任意输入有效性。",
     "known_limitations": [
      "压力导数、格林矩阵、真空磁通和迭代策略由调用者提供。",
      "有限磁通更新量不等于压力电流闭合；完整求解器另验闭合残差。",
      "不强制非负半径或 Z=0 平面。",
      "上述单步断言是直接调用（包括 scientific_function 别名）；完整求解器测试只覆盖其实际维护路径，不算额外的单步直接覆盖。",
-     "UNKNOWN：本资产绑定测试及查阅的本地历史中未定位离源单单元圆丝 psi 归一化见证；人工单位/对角 Green 回归不独立证明无 2*pi 的物理归一化。所需 Green 单位及功能支持不变。"
+     "独立离源归一化证据限于具名四单元中一个活跃 1 A 源的单步，不证明迭代收敛、有限导线自响应或任意压力/Green 有效性。"
     ],
     "tests": [
      "tests/equilibrium/test_isotropic_picard_step.py",
      "tests/cross_domain/isotropic_pressure_flux/test_composition_isotropic_pressure_flux.py",
      "tests/cross_domain/test_legacy_six_absorption.py",
-     "tests/equilibrium/test_picard_input_validation.py"
+     "tests/equilibrium/test_picard_input_validation.py",
+     "tests/cross_domain/test_flux_reference_normalization.py::test_real_pressure_step_has_independent_off_source_flux_amplitude"
     ]
    }
   },
@@ -7787,9 +7791,9 @@
   },
   {
    "asset_id": "scirel.field.filament-vacuum-field",
-   "source_sha256": "761c0f7f28224650ea6e775c16c216af4a50efe337cd9655cff2fcbbd9d5313b",
+   "source_sha256": "29a22d3d13a8d2b4ad705cc5c7845ec9153a47cd3739557a3eca8b3fa319c8ec",
    "summary": "在均匀 R–Z 直角网格上计算理想圆电流丝场，并从第一个径向节点起积分径向磁通。各命名字段作为同一个 scirel._result.Result 映射返回。",
-   "definition": "在网格点计算 Green 核，并用径向梯形递推积分 R*BZ。 各字段存于同一个 scirel._result.Result 映射；按键和属性读取同一值，不引入嵌套 Result。",
+   "definition": "在网格点计算 Green 核，用径向梯形递推积分 R*BZ，并在每个 Z 上以首半径 R0 置零。连续对应量为 psi_global(R,Z)-psi_global(R0,Z)，其中 psi_global=R*A_phi。各字段存于同一个 scirel._result.Result 映射；按键和属性读取同一值，不引入嵌套 Result。",
    "model": "不带近轴截断的理想圆电流丝真空场。",
    "assumptions": [
     "径向轴非负、严格递增且等间距。",
@@ -7820,7 +7824,7 @@
    "outputs": [
     {
      "name": "psi",
-     "description": "Result 字段：由 R 乘 B_Z 的径向梯形积分得到的 Psi=R A_phi，以第一个径向网格点为参考。",
+     "description": "Result 字段：R 乘 B_Z 的径向梯形积分，近似 psi_global(R,Z)-psi_global(R0,Z)；psi_global=R*A_phi，R0 为首径向节点。",
      "constraints": "第一个径向网格点为零；不应用 2π 因子。",
      "dtype": "float64 双精度浮点数"
     },
@@ -7867,11 +7871,12 @@
      "test_radial_flux_matches_psi_ra_phi_with_first_radius_reference 将径向积分与现有圆电流丝 psi=R A_phi 响应在远离源处比较；这是共享核对照，不是独立磁通真值参照。",
      "转置网格布局及非法径向网格。",
      "tests/cross_domain/test_field_green_correction.py 的 test_radial_quadrature_uses_correct_unclipped_filament_field 通过 integrate 别名直接调用本入口，在 (R,Z)=(1e-10,0.2) 和 (0.4,1e-8) 处将 b_r、b_z 与 70 位独立圆环公式比较，并检查首径向列零参考及下一列梯形积分。test_radial_quadrature_active_and_inactive_self_are_distinct 检查活跃源重合拒绝及零电流重合；test_public_field_interfaces_reject_complex_coordinates 包含 api=integrate。",
-     "命名字段改造保留改造前的键序、数值、形状、dtype、映射访问和属性访问，失败路径继续匹配原异常类型与消息。"
+     "命名字段改造保留改造前的键序、数值、形状、dtype、映射访问和属性访问，失败路径继续匹配原异常类型与消息。",
+     "test_nonzero_radial_reference_is_not_a_global_flux 用源 (2,0,1)、R=(1,1.5,2)、Z=(0.5,1,1.5) 覆盖两种数组朝向。80/120 位独立 Biot–Savart 方位积分核对首径向列的正直接 BR 和 BZ，而返回的零参考 psi 在该列恢复 BR=0；这项组合限制不归因于梯形误差。"
     ],
     "evidence_ceiling": "tests/field/test_filament_vacuum_field.py 通过 scientific_function 别名及原名调用 integrate_filament_vacuum_field。test_superposition_and_axis_boundary 与 test_axis_field_matches_circular_filament_analytic_limit 绑定叠加、首径向点参考及解析轴向场；test_radial_flux_preserves_left_to_right_trapezoid_recurrence 覆盖数组的两种方向。共享文件中直接调用 integrate 的具名近轴、近丝点检查为 b_r/b_z 提供独立高精度对照。psi 对比使用现有共享核。仅对 aggregate 执行的公式切换及径向分离近丝断言不直接覆盖本包装入口。不据此认证非直角网格、有限导线自场或连续收敛。",
     "known_limitations": [
-     "磁通以首径向点为参考，不含 2π 因子。",
+     "返回 psi 近似同高度环带磁通除以 2π。连续极限下由它恢复的径向场为 BR(R,Z)-(R0/R)*BR(R0,Z)。除非参考项沿 Z 不变，它不能作为与直接 BR 配套的全局 R*A_phi 或压力磁通坐标。重建全局磁通需由同一源模型提供 psi_global(R0,Z)，并计入积分误差；包含正则轴可消除参考项。",
      "活跃的非零电流理想源与目标重合时为奇异点并被拒绝；零电流重合源保持不活跃，见 test_radial_quadrature_active_and_inactive_self_are_distinct。",
      "绑定测试直接检查奇异点和复数输入拒绝，但没有直接断言最终积分输出的非有限检查。该路径已有实现，其直接样例覆盖仍为 UNKNOWN。",
      "psi 径向梯形误差需网格加密验证；解析磁场不意味着离散 psi 等于解析 R A_phi。"

@@ -172,7 +172,11 @@ def solve_kinetic_mirror_hall_equilibrium(
 
     The kinetic_config supplies all remaining required kinetic graph ports and is scientifically compatible with the outer Hall ion properties; every psi-dependent kinetic profile interprets psi=R A_phi in Wb/rad.
 
-    The two nested graphs interpret magnetic field, flux and pressure using compatible conventions; the wrapper does not verify this beyond their existing contracts.
+    The grid kinetic graph accepts a caller-consistent flux-profile coordinate.
+    This wrapper passes the Hall psi=R A_phi in Wb/rad without conversion.
+    Profile samples and psi-dependent callbacks must match that coordinate,
+    including its sign, reference function and normalization; the wrapper
+    does not infer or verify those choices.
 
     Dependency-injection hooks can replace the bound nested callables for testing, but such overrides are not evidence for the canonical scientific composition.
 
