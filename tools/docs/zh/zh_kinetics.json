@@ -286,9 +286,9 @@
   },
   {
    "asset_id": "scirel.numerics.complex-rectilinear-interpolation",
-   "source_sha256": "a5dccf22ab3f4e5e22f37ccbb1ecad18025c79250d2a4f40c80376a88cf8122b",
-   "summary": "在三个严格递增的直角坐标轴上三线性插值复数场，返回几何有效掩码；容差扩展盒外返回 nan+nanj。 顶层返回值是 scirel._result.Result 映射；非冲突字段支持属性读取。",
-   "definition": "源值按[Nx,Ny,Nz]排列，按[x,y,z]可分三线性插值。闭盒外扩tol内的点裁到闭盒采样；扩展盒外返回nan+nanj与False。 完整结果作为同一个 scirel._result.Result 映射返回；映射访问保留，非冲突字段也支持属性读取，不引入嵌套 Result。",
+   "source_sha256": "0cdff1b713ac426cd3cb11fa85a824b755f1cf512cdf03d715c5a5fe2974d9b7",
+   "summary": "在三个严格递增的直角坐标轴上三线性插值复数场，返回几何有效掩码；容差扩展盒外返回 nan+nanj。 顶层返回值是 scirel._result.Result 映射；非冲突字段支持属性读取。 有限坐标跨度超出双精度范围或微小权重仍有可表示贡献时，不丢弃有限输入节点。",
+   "definition": "源值按[Nx,Ny,Nz]排列，按[x,y,z]可分三线性插值。闭盒外扩tol内的点裁到闭盒采样；扩展盒外返回nan+nanj与False。 完整结果作为同一个 scirel._result.Result 映射返回；映射访问保留，非冲突字段也支持属性读取，不引入嵌套 Result。 有限模板用两侧端点距离分别求权重；批量算术越界或严重相消时，从原始输入作有理数重算。权重为零的非有限角点仍传播。",
    "model": "带限复场的分片三线性重构。",
    "assumptions": [
     "各源轴严格递增，至少两个有限点。",
@@ -347,7 +347,7 @@
    },
    "failure_semantics": {
     "invalid_input": "轴映射缺失/非映射、轴非一维/点不足/非有限/非递增、源前三维不匹配或目标非有限(N,3)时ValueError。",
-    "runtime_failure": "域外不抛错，而返回False和nan+nanj；其他NumPy/SciPy错误原样传播。",
+    "runtime_failure": "域外不抛错，而返回False和nan+nanj。所触及的非有限源保留IEEE传播，包括零权重角点；几何掩码独立。其他NumPy/SciPy错误原样传播。",
     "nonconvergence": "无迭代或反馈。",
     "partial_results": "失败时不返回 scirel._result.Result 部分映射。"
    },
@@ -365,14 +365,18 @@
      "非有限源经模板传播而掩码仍True。",
      "源轴、源形状与目标点的拒绝校验。",
      "空目标集合与源末尾轴保留。",
-     "直接测试验证顶层 scirel._result.Result 映射及属性读取。"
+     "直接测试验证顶层 scirel._result.Result 映射及属性读取。",
+     "有限但完整跨度溢出时，主控仿射反例与数学上有限的容差盒均正确，且无跨度溢出警告。",
+     "独立有理数参考覆盖单轴/多轴大跨度、交叉项、近节点、小权重及权重乘积补偿、有符号相消、最大有限源、最小非零结果和最终真实舍入为零。",
+     "零权重非有限角点仍传播；内部节点选择右侧单元，几何掩码独立，并保留多维或空尾轴。"
     ],
-    "evidence_ceiling": "限于所声明关系：源值按[Nx,Ny,Nz]排列，按[x,y,z]可分三线性插值。闭盒外扩tol内的点裁到闭盒采样；扩展盒外返回nan+nanj与False。证据：test_complex_rectilinear_interpolation.py（记录 12 个测试函数；绑定文件覆盖；独立解析/高精度对照）；合同 example 已运行。不建立的范围：不外推超出容差扩展盒的点；不支持曲线、柱坐标或非结构源网格。",
+    "evidence_ceiling": "限于直接测试中独立解析及原始输入有理数对照：原容差不变，新增预算事前冻结为rtol 1e-13、atol 1e-14，微小贡献atol 0，明确节点/最小非零/最终舍入控制按精确值检查。包括#281两条主控反例、原普通输入测试和非有限模板控制。不建立连续域精度、保守重映射或实验校准；独立科学评审和最终组合验收另行完成。",
     "known_limitations": [
      "仅三线性一阶重构，无高阶或保守方案。",
      "valid_mask只报告几何，不能当结果有限性检查。",
      "容差盒外返回nan，不提供裁边值或外推。",
-     "独立解析对照不能替代外部实验参考。"
+     "独立解析对照不能替代外部实验参考。",
+     "极端尺度或相消模板的有理数重算可能较慢；批量计算任一范围失败可使该批有限分量全部走精确算术，未建立全域性能保证。"
     ]
    }
   },
