@@ -127,12 +127,14 @@
   "verification": {
     "scope": [
       "Exact arithmetic for Boolean and numeric masks on the declared finite-grid relation.",
-      "NumPy broadcasting failure, zero spacing, non-finite arithmetic and float32 coordinate rows.",
-      "Input immutability and Python-float scalar projection.",
+      "Independent analytic six-cell volume for R shaped (2,1) and a Boolean mask shaped (2,3), plus reverse and mutual broadcasting, leading-axis expansion, scalar-shaped operands and empty common shapes.",
+      "Signed integer, float32 and float64 numeric weights, including negative sums and cancellation, without clipping.",
+      "Truly incompatible NumPy shapes, zero spacing, NaN and signed infinity propagation (including infinity times zero), and float32 coordinate rows.",
+      "Input immutability for accepted and rejected shapes, read-only broadcast inputs, and Python-float scalar projection.",
       "The complete twelve-row candidate source-fidelity denominator is retained in the incoming packet; state-only missing-profile rows are outside this explicit public port contract."
     ],
     "tests": ["tests/geometry/test_masked_toroidal_volume.py"],
-    "evidence_ceiling": "The incoming candidate's exact comparison establishes source behavior parity for its twelve declared rows, while the maintained direct tests establish this explicit source-free R/dR/dZ/core_mask relation. Neither establishes independent physical correctness, mesh convergence, boundary reconstruction or human scientific acceptance.",
+    "evidence_ceiling": "The incoming candidate's exact comparison establishes source behavior parity for its twelve declared rows. Maintained direct tests additionally check broadcast cell sums against independent analytic counts of weighted radii and preserve the declared arithmetic branches. These checks establish the exercised discrete R/dR/dZ/core_mask relation, not independent physical correctness, mesh convergence, boundary reconstruction or human scientific acceptance.",
     "known_limitations": [
       "The cell sum inherits the caller's grid and mask; it does not construct or validate an equilibrium boundary.",
       "Zero, negative, NaN and infinite inputs follow NumPy arithmetic and may produce non-finite output.",

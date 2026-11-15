@@ -90,5 +90,5 @@ def plasma_volume(
     >>> np.testing.assert_allclose(volume, 2.0 * np.pi * (1.0 + 2.0) * 0.5 * 0.25)
     """
     volume_element = 2.0 * pi * R * dR * dZ
-    volume_element *= core_mask
+    volume_element = volume_element * core_mask
     return float(np.sum(volume_element))
