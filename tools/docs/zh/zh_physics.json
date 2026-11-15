@@ -2871,9 +2871,9 @@
   },
   {
    "asset_id": "scirel.kinetic.ronnmark-r-function",
-   "source_sha256": "07e351813a4eb2666654c80a89bb244ce5915eb610cb9df45e28812b48353565",
+   "source_sha256": "31fe5e84939f349cec8e6489723e03e36608228dcc7d14ae675589d20e5f203b",
    "summary": "计算 Taylor、渐近或积分 R 函数分支及 2×2 伴随矩阵。",
-   "definition": "RYLA 按顺序检查三个 Taylor 条件，再检查渐近条件，否则回退到 16 点 Gauss-Legendre 积分；RC[0,1]=d(lambda*R)/d lambda。",
+   "definition": "RYLA 按顺序检查三个 Taylor 条件，再检查渐近条件，否则进入 16 点 Gauss-Legendre 积分；RC[0,1]=d(lambda*R)/d lambda。精确 lambda=0 时 R=H=x/(x*x-1)，两个按 x 缩放的伴随导数均为 -x*(x*x+1)/(x*x-1)**2；实虚部用精确分数计算，仅在输出时舍入。",
    "model": "磁化 Maxwell 色散的 Ronnmark 有理响应。",
    "assumptions": [
     "输入单位和归一化遵循声明端口，不推断物理参数。"
@@ -2888,16 +2888,16 @@
     },
     {
      "name": "lambda_",
-     "description": "AL=lambda=(k_perp*rho_c)^2，Ronnmark 展开参数。形状/轴序：标量（实数或复数；复 kx 平面上带非零虚部）。单位：无量纲。有效性约束：须有限；实 kx 时为非负实数，复 kx 时为复数；实数 lambda=0 时公开选择器走 Taylor 分支，不进入私有 RINT 的除 lambda 运算；Taylor 共振和非有限算术保留原行为。",
-     "constraints": "须有限；实 kx 时为非负实数，复 kx 时为复数；实数 lambda=0 时公开选择器走 Taylor 分支，不进入私有 RINT 的除 lambda 运算；Taylor 共振和非有限算术保留原行为。",
+     "description": "AL=lambda=(k_perp*rho_c)^2，标量展开参数，无量纲。有效性约束：须有限；实 kx 时为非负实数，复 kx 时为复数。精确 lambda=0 走 Taylor 常数项；x=+/-2 可去，x=+/-1 为真极点，完整 RC 不可表示时抛 FloatingPointError。",
+     "constraints": "须有限；实 kx 时为非负实数，复 kx 时为复数。精确 lambda=0 走 Taylor 常数项；x=+/-2 可去，x=+/-1 为真极点，完整 RC 不可表示时抛 FloatingPointError。",
      "dtype": "实数或复数"
     }
    ],
    "outputs": [
     {
      "name": "R",
-     "description": "R(x,lambda)=RC(1,1)，即 Ronnmark 的 R 函数值。复数标量。单位：无量纲。有效性约束：在 RTAY 的 Y^2=I^2 极点（如 x=12、lambda=9）上该分支返回 `NaN`；公共选择器对同一组参数走 RINT，故 `scientific_function` 在该点仍返回有限值。",
-     "constraints": "在 RTAY 的 Y^2=I^2 极点（如 x=12、lambda=9）上该分支返回 `NaN`；公共选择器对同一组参数走 RINT，故 `scientific_function` 在该点仍返回有限值。",
+     "description": "R(x,lambda)=RC[0,0]，所选 Ronnmark 响应，无量纲。返回有限复数；精确 lambda=0 使用 x/(x*x-1)；真极点或任一必要伴随分量不可表示时抛 FloatingPointError。",
+     "constraints": "有限复数。数值失败时不换分支、不静默置零、不返回部分响应。",
      "dtype": "complex128 复数"
     },
     {
@@ -2914,8 +2914,8 @@
     },
     {
      "name": "RC",
-     "description": "完整的 2x2 复矩阵（complex128，按 Octave 列主序理解）。单位：无量纲。有效性约束：`RC[0,0]==R` 且 `RC[0,1]==dR_dlambda`；`RC[1,0]`、`RC[1,1]` 为同一分支计算出的伴随列，未被使用。",
-     "constraints": "`RC[0,0]==R` 且 `RC[0,1]==dR_dlambda`；`RC[1,0]`、`RC[1,1]` 为同一分支计算出的伴随列，未被使用。",
+     "description": "完整的 2x2 复矩阵（complex128，按 Octave 列主序理解）。单位：无量纲。有效性约束：`RC[0,0]==R` 且 `RC[0,1]==dR_dlambda`；`RC[1,0]`、`RC[1,1]` 为同一分支计算出的伴随列，未被使用。 四项均须有限；lambda=0 时第二行两列均为 -x*(x*x+1)/(x*x-1)**2。",
+     "constraints": "`RC[0,0]==R` 且 `RC[0,1]==dR_dlambda`；`RC[1,0]`、`RC[1,1]` 为同一分支计算出的伴随列，未被使用。 即使调用方只用 R，四项也均须有限。",
      "dtype": "complex128 复数"
     }
    ],
@@ -2932,7 +2932,7 @@
    },
    "failure_semantics": {
     "invalid_input": "所述无效输入抛 ValueError；不支持的 Python 对象可能传播数值转换异常。",
-    "runtime_failure": "既有算术可在奇异波点返回非有限值。",
+    "runtime_failure": "真极点或必要 R/H/RC 分量非有限、不可表示时抛 FloatingPointError；不换分支、不返回部分响应。",
     "nonconvergence": "不适用，未暴露迭代求根。",
     "partial_results": "异常后不返回部分映射。"
    },
@@ -2942,17 +2942,19 @@
    },
    "verification": {
     "scope": [
-     "原分支选择案例及失败边界；b=0.2、1、4、8 与三个复 x 组成的十二个独立谐波 R/H 样本，使用 N80/160 核对。"
+     "原分支选择案例及失败边界；b=0.2、1、4、8 与三个复 x 组成的十二个独立谐波 R/H 样本，使用 N80/160 核对。",
+     "精确零 b 的有理 R/H/RC 端点、弱实虚部、极端幅值、可去端点及真极点/不可表示极点。"
     ],
-    "evidence_ceiling": "test_ronnmark_r_matches_its_independent_harmonic_representation 用独立 Bessel 和核对公开 R 及 dR_dlambda 列：R=sum n² Gamma_n/[b(x-n)]，H=sum n² Gamma'_n/(x-n)=d(bR)/db。原 N80/160 绝对差检查保持 1e-14；十二个固定样本的公开 R/H 对照保持 rtol=1e-7、atol=1e-9。这只支持 H 的定义和这些样本，不证明全部选择分支或连续域误差界。tests/fixtures/kinetic_tensor/README.md 中的独立 B 张量参考不调用产品 R，也不认证其全域误差传播。",
+    "evidence_ceiling": "test_ronnmark_r_matches_its_independent_harmonic_representation 用独立 Bessel 和核对公开 R 及 dR_dlambda 列：R=sum n² Gamma_n/[b(x-n)]，H=sum n² Gamma'_n/(x-n)=d(bR)/db。原 N80/160 绝对差检查保持 1e-14；十二个固定样本的公开 R/H 对照保持 rtol=1e-7、atol=1e-9。这只支持 H 的定义和这些样本，不证明全部选择分支或连续域误差界。tests/fixtures/kinetic_tensor/README.md 中的独立 B 张量参考不调用产品 R，也不认证其全域误差传播。 精确 b=0 测试先精确读入 binary64，再用 800 位独立有理式计算，实虚部各用修复前冻结的 16*eps*abs(reference)+8*min_subnormal 对照。该端点预算不替换原 R/H 或张量预算。见 tests/fixtures/kinetic_tensor/zero-endpoint.md。",
     "known_limitations": [
      "仅接受有限标量；实数与复数的分支比较和算术沿用既有约定。",
      "使用所声明本地 Python 环境在 Linux amd64 上进行完整来源运行资格验证，在本 macOS checkout 中仍为 NOT_RUN。",
-     "UNKNOWN：此处未绑定实数 lambda=0 Taylor 分支的专门独立精度断言；入口接受该分支不等于精度认证。"
+     "精确零 b 测试只支持有理端点，不证明非零 b 的 Taylor、渐近或积分分支的全域误差界。"
     ],
     "tests": [
      "tests/kinetic/test_fluid_spectrum_r43_kinetic.py",
-     "tests/kinetic/test_kinetic_tensor_family_evidence.py::test_ronnmark_r_matches_its_independent_harmonic_representation"
+     "tests/kinetic/test_kinetic_tensor_family_evidence.py::test_ronnmark_r_matches_its_independent_harmonic_representation",
+     "tests/kinetic/test_ronnmark_zero_endpoint.py"
     ]
    }
   },
@@ -3896,7 +3898,7 @@
   },
   {
    "asset_id": "scirel.kinetic.kinetic-wavevector-roots",
-   "source_sha256": "eb8e13a5215760bf29e40bcd3451b1df8a3a3d5d789a7cbeeaa37b1256b70d77",
+   "source_sha256": "9aba86ea81e8e12d4baf92c413f1fa4568421dd829bbd83f3a39fe43e5a8c654",
    "summary": "对输入的每个角频率，均从同一个固定初值求解 Ronnmark 行列式的复数 kx 零点。",
    "definition": "每个频点独立从 kx_start 开始，用复数信赖域 dogleg 算法求解 det(D)=0，并限制迭代和函数求值次数。",
    "model": "均匀磁化多组分 Maxwellian 等离子体",
@@ -4083,7 +4085,7 @@
    },
    "failure_semantics": {
     "invalid_input": "输入违反所列条件时抛出 ValueError；不受支持的 Python 对象可能直接传播数值转换异常。",
-    "runtime_failure": "数值后端异常直接传播，不替换为其他关系计算。",
+    "runtime_failure": "Ronnmark 张量求值非有限或不可表示时传播 FloatingPointError，初值亦然；不换根、不换关系。",
     "nonconvergence": "通过退出标志和残差保留达到有界求解上限后的不收敛状态。",
     "partial_results": "发生异常后不返回部分结果映射。"
    },
@@ -4104,7 +4106,8 @@
      "已审查示例是唯一绑定输出可表示性检查的测试；两个直接函数覆盖根符号/退出标志与非法控制。"
     ],
     "tests": [
-     "tests/kinetic/test_fluid_spectrum_r43_kinetic.py"
+     "tests/kinetic/test_fluid_spectrum_r43_kinetic.py",
+     "tests/kinetic/test_ronnmark_zero_endpoint.py::test_root_propagates_initial_numerical_failure_instead_of_zero_division"
     ]
    },
    "source_conflicts": [
@@ -6969,7 +6972,7 @@
   },
   {
    "asset_id": "scirel.kinetic.kinetic-wavevector-scan",
-   "source_sha256": "c2888053bc928cba58d45797ebbd3fe62d7318cf658c358872adcf4612dcc31a",
+   "source_sha256": "2001279a6ff3d168497f7e79c1cd277ed7a634b97e479d15167f028f2da79588",
    "summary": "导出频率阶梯与固定初值，然后逐频点求解保留符号的 Ronnmark 复数 kx 根。",
    "definition": "任务图由 wn 导出有序频率阶梯，并确定唯一初值 kx_start=kx_scale*kn；有界求根器在每个频点独立重复使用该初值。",
    "model": "均匀磁化多组分 Maxwellian 等离子体",
@@ -7174,7 +7177,7 @@
    },
    "failure_semantics": {
     "invalid_input": "`scan_frequencies`/`seed_wavenumber` 对非有限边界、非正 `wn`/`kn`/`omega_step`、`omega_stop < omega_scale`、空阶梯或非有限 `kz` 抛出 ValueError；非法平衡控制会在根图导入前由 `derive_species_equilibrium_scales` 失败。",
-    "runtime_failure": "根求解器的数值失败从 `solve_kinetic_wavevector_roots` 传播；不替换回退根、钳制或重试。",
+    "runtime_failure": "solve_kinetic_wavevector_roots 的求根图张量不可表示时传播 FloatingPointError；不返回部分扫描、不换根、不钳位、不重试。",
     "nonconvergence": "有界未收敛通过 roots、residuals、determinant_scale、exit_flags、iterations、function_evals、converged 等频率轴并列数组报告。第 i 个频点读取 result[\"exit_flags\"][i] 与 result[\"converged\"][i]；不返回逐频根字典，也不保证失败候选为驻点。",
     "partial_results": "根图抛出异常时不返回部分扫描映射；已完成的扫描仍可能包含逐频未收敛项。"
    },
@@ -7544,11 +7547,11 @@
   },
   {
    "asset_id": "scirel.kinetic.kinetic-dispersion-ronnmark",
-   "source_sha256": "4cdc64896cded180a8e98bee4fde0b8615c093a09a92a90c1864cb221e806bcd",
+   "source_sha256": "dde1c08eb535be14dfe88731a5dbefbfc68d4fdf1d8f0c5f7108c5800acd23f9",
    "summary": "计算 J=8 有理极点形式的 3×3 动力学张量和色散行列式，允许复数 kx 与零 kz。",
    "definition": "用 J=8 共振极点和 Ronnmark R 函数替代 Z 与谐波响应，加入 Maxwell 旋度项后计算 det(D)。",
    "model": "均匀磁化多组分 Maxwellian 等离子体",
-   "boundary": "允许 kz=0，不采用常规求和路径的正向钳位。",
+   "boundary": "允许有限零 kz；常规与 fluid 有限谐波路径要求实际非零 kz。必要派生尺度和完整张量须可表示。",
    "assumptions": [
     "输入单位和归一化遵循所列端口；不推断物理参数。"
    ],
@@ -7708,7 +7711,7 @@
    ],
    "applicability": {
     "preconditions": [
-     "物种数组有限、非空且形状兼容；质量、密度和温度为正，电荷和磁场非零。",
+     "允许有限零 kz；常规与 fluid 有限谐波路径要求实际非零 kz。必要派生尺度和完整张量须可表示。",
      "波点及派生频率/尺度有限，并满足所选数值路径的域。"
     ],
     "supported": [
@@ -7721,7 +7724,7 @@
    },
    "failure_semantics": {
     "invalid_input": "输入违反所列条件时抛出 ValueError；不受支持的 Python 对象可能直接传播数值转换异常。",
-    "runtime_failure": "数值后端异常直接传播，不替换为其他关系计算。",
+    "runtime_failure": "必要派生尺度、R/H/RC 响应、完整 K/D 或行列式非有限/不可表示时抛 FloatingPointError，包括有限 f 换算 omega 溢出。必要非零尺度下溢为零也显式失败；不返回部分张量、不换模型、不钳位。",
     "nonconvergence": "不适用；该入口不执行迭代求根。",
     "partial_results": "发生异常后不返回部分结果映射。"
    },
@@ -7732,11 +7735,12 @@
    "verification": {
     "scope": [
      "原来源方法案例及失败边界；十六个精确 binary64 输入，以独立 Eq.(8) 固定表模型 B 核对所有 K/D 复分量和返回的 det(D)。",
-     "分别保留 Maxwellian Eq.(3) 模型 A、舍入矩及零 kz 端点、冷 Hall 符号和复平方核对；B-A 观察没有物理可接受阈值。"
+     "分别保留 Maxwellian Eq.(3) 模型 A、舍入矩及零 kz 端点、冷 Hall 符号和复平方核对；B-A 观察没有物理可接受阈值。",
+     "制造的非共振双零控制保持有限；真极点、派生尺度失败和数值错误传播与调用者非法输入分别验证。"
     ],
     "evidence_ceiling": "tests/kinetic/test_ronnmark_tensor_reference.py 中的 test_product_matches_independent_B_16 直接将十八个 K/D 复分量和返回的 det(D) 与独立 Bessel 求和的 Eq.(8) 模型 B 比较；使用当前精确 binary64 表，判据为 abs(product-B)/max(1,abs(B)) <= 2e-7。这是预先冻结的新有限网格数值诊断，与物理 B-A 差异分开；原来源 1e-11/1e-9、有限 N 的 2e-12 及 R/H 预算均保留。自包含数据与 Eq.(3)/(8)/(13)/(14) 独立手动再生成入口见 tests/fixtures/kinetic_tensor/README.md。科学对象身份已获独立静态限定复核 ACK_STATIC；新候选的执行与发行需要各自证据。不能据此宣布连续域误差界、物理 A 精度通过、模态、根或阻尼保证。",
     "known_limitations": [
-     "允许 kz=0，不采用常规求和路径的正向钳位。",
+     "允许有限零 kz；常规与 fluid 有限谐波路径要求实际非零 kz。必要派生尺度和完整张量须可表示。",
      "原 Maxwellian A 收敛仍为 15/16、REFERENCE_BLOCK，进程退出码 2；新的 small-kz 观察选用另行冻结的 200/280 位、N96/128 后继。后继成功与 B 的 16/16 都不把原红改绿。打印 160 位不等于完整 160 位准确。",
      "B 是保留当前舍入矩的 Eq.(8)；直接把极点 Z 代入 Eq.(3) 得到的是另一对象 B_direct。零 kz 的非零跨 z 残差不能强制归零。B-A 是可复算的模型差异，没有可接受误差阈值。",
      "当前表在原始论文所链作者源码中的出现出处已经定位；原始生成约束、与已发表 WHAMP/PDRK 表不同的原因及全域物理近似精度仍为 UNKNOWN。",
@@ -7746,7 +7750,8 @@
      "tests/kinetic/test_kinetic_signed_kz.py",
      "tests/kinetic/test_fluid_spectrum_r43_kinetic.py",
      "tests/kinetic/test_ronnmark_tensor_reference.py",
-     "tests/kinetic/test_kinetic_tensor_family_evidence.py::test_ronnmark_r_matches_its_independent_harmonic_representation"
+     "tests/kinetic/test_kinetic_tensor_family_evidence.py::test_ronnmark_r_matches_its_independent_harmonic_representation",
+     "tests/kinetic/test_ronnmark_zero_endpoint.py"
     ]
    },
    "source_conflicts": []

@@ -101,6 +101,14 @@ def _rmul(s, z):
     return complex(s * z.real, s * z.imag)
 
 
+def _require_finite(name, value, *, nonzero=False):
+    if not np.all(np.isfinite(value)) or (nonzero and np.any(np.asarray(value) == 0)):
+        raise FloatingPointError(
+            f"Ronnmark {name} is nonfinite or has an unrepresentable required scale; "
+            "see the kinetic-dispersion-ronnmark contract"
+        )
+
+
 def evaluate_kinetic_dispersion_ronnmark(*, B0, qs, ms, ns0, Ts0, f=None, kz, kx, omega=None):
     r"""Evaluate the J=8 rational-pole kinetic 3x3 tensor and dispersion determinant, including complex kx and zero kz.
 
@@ -194,6 +202,10 @@ def evaluate_kinetic_dispersion_ronnmark(*, B0, qs, ms, ns0, Ts0, f=None, kz, kx
     ValueError
         Raises ValueError for declared invalid inputs; numeric conversion errors may propagate for
         unsupported Python objects.
+    FloatingPointError
+        If a required derived scale, R response, K/D tensor or determinant is
+        nonfinite or unrepresentable. A finite caller frequency whose conversion
+        overflows is a numerical failure. No partial tensor or fallback is returned.
 
     See Also
     --------
@@ -256,21 +268,33 @@ def evaluate_kinetic_dispersion_ronnmark(*, B0, qs, ms, ns0, Ts0, f=None, kz, kx
         raise ValueError("B0 must be non-zero: the gyrofrequency is proportional to B0")
     if omega is not None:
         omega = float(omega)
+        if not np.isfinite(omega) or omega == 0.0:
+            raise ValueError(
+                "omega must be finite and non-zero: it appears in the resonance argument"
+            )
     else:
+        if f == 0.0:
+            raise ValueError("f must be non-zero: it sets the resonance frequency")
         omega = 2.0 * np.pi * f
-    if not np.isfinite(omega) or omega == 0.0:
-        raise ValueError("omega must be non-zero: it appears in the resonance argument")
+        _require_finite("angular frequency converted from f", omega, nonzero=True)
 
     ronnmark = evaluate_ronnmark_r
     n_species = qs.size
     vts = np.sqrt(2.0 * _KB * Ts0 / ms)
     wcs = qs * B0 / ms
     wps2 = (np.sqrt(ns0 * qs**2 / ms / _EPSILON0)) ** 2
+    for name, scale in (("vts", vts), ("wcs", wcs), ("wps2", wps2)):
+        _require_finite(name, scale, nonzero=True)
     nx = _cdiv(_rmul(np.sqrt(_C2), kx), complex(omega, 0.0))
     nz = complex(np.sqrt(_C2) * kz / omega, 0.0)
     rhocs = np.sqrt(_KB * Ts0 / ms) / wcs
+    _require_finite("nx", nx, nonzero=kx != 0)
+    _require_finite("nz", nz, nonzero=kz != 0)
+    _require_finite("rhocs", rhocs, nonzero=True)
     as_ = np.array([_rmul(float(rhocs[s]), kx) for s in range(n_species)], dtype=complex)
     bs = np.array([_cmul(as_[s], as_[s]) for s in range(n_species)], dtype=complex)
+    _require_finite("as", as_, nonzero=kx != 0)
+    _require_finite("b", bs, nonzero=kx != 0)
 
     j_order = 2 * _BZJ.size
     bzj = np.zeros(j_order, dtype=complex)
@@ -290,6 +314,7 @@ def evaluate_kinetic_dispersion_ronnmark(*, B0, qs, ms, ns0, Ts0, f=None, kz, kx
                 complex(omega, 0.0) - _cmul(complex(response_kz * vts[s], 0.0), czj[j]),
                 complex(wcs[s], 0.0),
             )
+            _require_finite(f"resonance argument species={s}, pole={j}", xsj)
             rc = ronnmark(xsj, b)
             rsj = rc["R"]
             drsj = rc["dR_dlambda"]
@@ -306,7 +331,9 @@ def evaluate_kinetic_dispersion_ronnmark(*, B0, qs, ms, ns0, Ts0, f=None, kz, kx
                 _cdiv(_rmul(2.0, _cmul(czj[j], czj[j])), _cmul(xsj, xsj)), xsj + _cmul(b, rsj)
             )
 
+            _require_finite(f"omega*wcs species={s}", omega * wcs[s], nonzero=True)
             term = _rmul(wps2[s] / (omega * wcs[s]), bzj[j])
+            _require_finite(f"susceptibility scale species={s}, pole={j}", term)
             k_tensor[0, 0] = k_tensor[0, 0] + _cmul(term, x_xx)
             k_tensor[0, 1] = k_tensor[0, 1] + _cmul(term, x_xy)
             k_tensor[0, 2] = k_tensor[0, 2] + _cmul(term, x_xz)
@@ -323,6 +350,7 @@ def evaluate_kinetic_dispersion_ronnmark(*, B0, qs, ms, ns0, Ts0, f=None, kz, kx
         k_tensor[2, 0] = _rmul(-1.0, k_tensor[2, 0])
         k_tensor[2, 1] = _rmul(-1.0, k_tensor[2, 1])
 
+    _require_finite("K", k_tensor)
     nz2 = _cmul(nz, nz)
     nx2 = _cmul(nx, nx)
     nxnz = _cmul(nx, nz)
@@ -332,6 +360,7 @@ def evaluate_kinetic_dispersion_ronnmark(*, B0, qs, ms, ns0, Ts0, f=None, kz, kx
     d_tensor[1, 1] = k_tensor[1, 1] - (nx2 + nz2)
     d_tensor[2, 0] = k_tensor[2, 0] + nxnz
     d_tensor[2, 2] = k_tensor[2, 2] - nx2
+    _require_finite("D", d_tensor)
 
     Dxx, Dyy, Dzz = d_tensor[0, 0], d_tensor[1, 1], d_tensor[2, 2]
     Dyx, Dzy, Dxz = d_tensor[1, 0], d_tensor[2, 1], d_tensor[0, 2]
@@ -344,6 +373,7 @@ def evaluate_kinetic_dispersion_ronnmark(*, B0, qs, ms, ns0, Ts0, f=None, kz, kx
         - _cmul(_cmul(Dyz, Dzy), Dxx)
         - _cmul(_cmul(Dzz, Dyx), Dxy)
     )
+    _require_finite("determinant", cofactor)
 
     return {
         "K": k_tensor,

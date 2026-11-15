@@ -208,6 +208,9 @@ def scan_kinetic_wavevectors(
         `wn`/`kn`/`omega_step`, `omega_stop < omega_scale`, an empty ladder, or nonfinite `kz`; invalid
         equilibrium controls fail in `derive_species_equilibrium_scales` before the root graph is
         imported.
+    FloatingPointError
+        Propagates an unrepresentable root-graph tensor evaluation; no partial
+        scan, fallback root or retry is substituted.
 
     See Also
     --------
