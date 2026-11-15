@@ -152,7 +152,8 @@ def compute_parallel_pressure_residual(
         failure.
     FloatingPointError
         If the sampled derivative is not finite, or a required final pressure
-        quantity exceeds finite float64 range or is nonzero but rounds to zero.
+        quantity rounds outside finite float64 range or is nonzero but rounds
+        to zero.
     TypeError
         If a numeric input cannot be converted to float64 or a derivative
         callable has an incompatible call signature.
@@ -171,12 +172,15 @@ def compute_parallel_pressure_residual(
     ``rhs = p_parallel - B * (partial p_parallel / partial B)_psi``
 
     and ``error = p_perp - rhs``. Ordinary well-conditioned samples retain
-    their float64 operation order. Cancellation or intermediate range loss
-    evaluates the complete relations from the original binary64 inputs as
-    exact rationals, rounding ``rhs``, ``error`` and ``relative_error``
-    separately at the end. In particular, ``error`` does not subtract an
-    already-rounded public ``rhs``. A required nonzero final value that rounds
-    to zero is rejected; exactly representable subnormal values are retained.
+    their float64 operation order. Cancellation, intermediate range loss or
+    proximity to the upper range evaluates the complete relations from the
+    original binary64 inputs as exact rationals, rounding ``rhs``, ``error``
+    and ``relative_error`` separately at the end. In particular, ``error``
+    does not subtract an already-rounded public ``rhs``. The upper-range check
+    only selects recovery: a complete value slightly above the largest float
+    is retained if its final rounding is finite. A required nonzero final
+    value that rounds to zero is rejected; exactly representable subnormal
+    values are retained.
     This changes neither ``rtol`` nor the pressure floor ``atol``.
     It does not flatten or globally sort spatial samples to manufacture a
     derivative.  An explicit zero derivative is
@@ -248,7 +252,20 @@ def compute_parallel_pressure_residual(
                 | ((error != 0) & (np.abs(error) < tiny))
                 | ((error != 0) & (np.abs(relative_error) < tiny))
             )
-            exceptional = np.asarray(rhs_cancellation | error_cancellation | range_loss)
+            # Two finite roundings can conceal a complete error at the
+            # overflow midpoint. If these three magnitudes are all below
+            # 2^1022, the exact product is also below it, and the complete
+            # error has magnitude < 3*2^1022, safely below that midpoint.
+            # Select the remaining upper band for exact recovery, not rejection.
+            upper_band = 2.0**1022
+            upper_range = (
+                (np.abs(p_parallel) >= upper_band)
+                | (np.abs(p_perp) >= upper_band)
+                | (np.abs(product) >= upper_band)
+            )
+            exceptional = np.asarray(
+                rhs_cancellation | error_cancellation | range_loss | upper_range
+            )
     except FloatingPointError:
         # A failed intermediate does not imply the complete relation fails.
         rhs, error, relative_error = _exact_pressure_residuals(
