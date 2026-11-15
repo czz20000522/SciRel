@@ -222,3 +222,81 @@ def test_truly_nonfinite_arithmetic_raises_without_returning_a_partial_result(fa
     # A caller's warning policy must not turn an unrepresentable result green.
     with np.errstate(all="ignore"), pytest.raises(FloatingPointError):
         scientific_function(*args)
+
+
+@pytest.mark.parametrize("exponent", [-1060, -1050, -1020, 0, 1000])
+def test_conditioned_binary_equations_do_not_quantize_the_internal_solve(exponent):
+    scale = np.ldexp(1.0, exponent)
+    green = scale * np.array([[3.0, 1.0], [2.0, 4.0]])
+    flux = scale * np.array([2.0, -5.0])
+    expected = _exact_two_by_two_currents(green, flux)
+    result = scientific_function(flux, np.eye(2), green, green)
+    np.testing.assert_allclose(
+        result.boundary_currents, expected, rtol=64 * np.finfo(float).eps, atol=0.0
+    )
+    assert result.effective_rank == 2
+
+
+def test_finite_tall_solution_allows_an_unrepresentable_internal_projection():
+    scale = np.ldexp(1.0, 1023)
+    green = np.full((2, 1), scale)
+    flux = np.full(2, 1.5 * scale)
+    # Exact equation a*I=-3*a/2, without projecting onto the SVD basis.
+    expected = float(-Fraction(float(flux[0])) / Fraction(float(scale)))
+    result = scientific_function(flux, np.eye(2), green, green)
+    np.testing.assert_allclose(result.boundary_currents, [expected], rtol=5e-14, atol=0.0)
+    np.testing.assert_allclose(result.residual / scale, 0.0, rtol=0.0, atol=5e-14)
+    np.testing.assert_allclose(result.corrected_field_flux / scale, 0.0, rtol=0.0, atol=5e-14)
+
+
+def test_finite_wide_solution_allows_an_unrepresentable_internal_mode():
+    scale = np.ldexp(1.0, -1023)
+    green = np.full((1, 2), scale)
+    # Minimum norm for a*(I1+I2)=-3 is I1=I2=-3/(2*a).
+    expected = float(-Fraction(3) / (2 * Fraction(float(scale))))
+    result = scientific_function([3.0], [[1.0]], green, green)
+    np.testing.assert_allclose(result.boundary_currents, [expected, expected], rtol=5e-14, atol=0.0)
+    np.testing.assert_allclose(result.residual, 0.0, rtol=0.0, atol=5e-14)
+    np.testing.assert_allclose(result.corrected_field_flux, 0.0, rtol=0.0, atol=5e-14)
+
+
+def test_compensated_sampling_retains_a_current_below_the_flux_rounding_floor():
+    scale = np.nextafter(0.0, 1.0)
+    # Exact S*Gbf=Gbb; sampled flux=t/4 is internal, whereas I=-1/4 is finite.
+    result = scientific_function([scale], [[0.25]], [[scale]], [[4.0 * scale]])
+    np.testing.assert_array_equal(result.boundary_currents, [-0.25])
+    np.testing.assert_array_equal(result.field_flux_correction, [-scale])
+    np.testing.assert_array_equal(result.corrected_field_flux, [0.0])
+    np.testing.assert_array_equal(result.residual, [0.0])
+    assert result.residual_norm == 0.0
+    assert result.effective_rank == 1
+
+
+def test_zero_field_axis_remains_a_valid_empty_field_result():
+    result = scientific_function([], np.zeros((1, 0)), [[1.0]], np.zeros((0, 1)))
+    np.testing.assert_array_equal(result.corrected_field_flux, [])
+    np.testing.assert_array_equal(result.field_flux_correction, [])
+    np.testing.assert_array_equal(result.boundary_currents, [0.0])
+    np.testing.assert_array_equal(result.residual, [0.0])
+    assert result.residual_norm == 0.0
+    assert result.effective_rank == 1
+
+
+def test_exact_sampling_cancellation_does_not_overflow_partial_products():
+    largest = np.finfo(float).max
+    # S @ Gbf = Gbb = 2, but each of the two sampling products overflows.
+    result = scientific_function([largest, largest], [[2.0, -2.0]], [[2.0]], [[1.0], [0.0]])
+    np.testing.assert_array_equal(result.corrected_field_flux, [largest, largest])
+    np.testing.assert_array_equal(result.boundary_currents, [0.0])
+    np.testing.assert_array_equal(result.residual, [0.0])
+    assert result.residual_norm == 0.0
+
+
+def test_residual_norm_is_formed_before_rounding_each_subnormal_component():
+    scale = np.nextafter(0.0, 1.0)
+    # Sixteen residual components t/4 have Euclidean norm t, not zero.
+    result = scientific_function([scale], np.full((16, 1), 0.25), np.zeros((16, 1)), [[0.0]])
+    np.testing.assert_array_equal(result.residual, np.zeros(16))
+    np.testing.assert_array_equal(result.boundary_currents, [0.0])
+    assert result.residual_norm == scale
+    assert result.effective_rank == 0

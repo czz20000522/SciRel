@@ -1,5 +1,7 @@
 """Finite-dimensional ideal-conductor boundary correction."""
 
+import math
+
 import numpy as np
 
 from scirel._result import Result
@@ -12,6 +14,92 @@ def _finite_array(name, value, ndim):
     if not np.all(np.isfinite(array)):
         raise ValueError(f"{name} must contain only finite values")
     return array
+
+
+def _dyadic(value):
+    numerator, denominator = float(value).as_integer_ratio()
+    return numerator, 1 - denominator.bit_length()
+
+
+def _scaled_sum(terms):
+    """Round an exact dyadic sum to 53 bits, without bounding its exponent.
+
+    Each term is an integer times a power of two. Integer accumulation avoids
+    both overflowing partial sums and losing small terms before cancellation.
+    Only the final significand is rounded, to nearest with ties to even.
+    """
+    terms = [(n, e) for n, e in terms if n]
+    if not terms:
+        return 0.0, 0
+    exponent = min(e for _, e in terms)
+    total = sum(n << (e - exponent) for n, e in terms)
+    magnitude = abs(total)
+    shift = max(0, magnitude.bit_length() - 53)
+    rounded = magnitude >> shift
+    if shift:
+        remainder = magnitude - (rounded << shift)
+        halfway = 1 << (shift - 1)
+        if remainder > halfway or (remainder == halfway and rounded % 2):
+            rounded += 1
+    mantissa, adjustment = math.frexp(float(rounded if total >= 0 else -rounded))
+    return mantissa, exponent + shift + adjustment
+
+
+def _scaled_matvec(matrix, vector):
+    """Multiply finite float64 coefficients by (significand, exponent) pairs."""
+    dyadics = [(*_dyadic(m), e) for m, e in vector]
+    result = []
+    for row in matrix:
+        terms = []
+        for coefficient, (n, e, scale) in zip(row, dyadics, strict=True):
+            a, b = _dyadic(coefficient)
+            terms.append((a * n, b + e + scale))
+        result.append(_scaled_sum(terms))
+    return result
+
+
+def _scaled_add(first, second):
+    result = []
+    for (a, ea), (b, eb) in zip(first, second, strict=True):
+        na, qa = _dyadic(a)
+        nb, qb = _dyadic(b)
+        result.append(_scaled_sum([(na, qa + ea), (nb, qb + eb)]))
+    return result
+
+
+def _materialize(vector):
+    return np.ldexp(
+        np.array([m for m, _ in vector], dtype=float),
+        np.array([e for _, e in vector], dtype=np.int64),
+    )
+
+
+def _scaled_norm(vector):
+    exponent = max((e for m, e in vector if m), default=0)
+    normalized = np.ldexp([m for m, _ in vector], [e - exponent for _, e in vector])
+    return float(np.ldexp(np.hypot.reduce(normalized), exponent))
+
+
+def _svd_scale(matrix):
+    """Choose an exact power-of-two scaling without discarding any input bit.
+
+    The preferred exponent puts the largest entry in [1/2,1). Scaling down
+    cannot move any entry's lowest nonzero bit below 2**-1074, so constrain it
+    by that bit's exponent too. Scaling up cannot lose bits or overflow here.
+    Mixed-scale matrices may therefore remain larger than one; no entry is
+    silently dropped to obtain a normalized matrix. This protects the scaling
+    conversion, not the conditioning or accuracy of the underlying SVD.
+    """
+    nonzero = matrix[matrix != 0.0]
+    if not nonzero.size:
+        return matrix, 0
+    exponent = math.frexp(float(np.max(np.abs(nonzero))))[1]
+    for value in nonzero:
+        numerator, power = _dyadic(value)
+        magnitude = abs(numerator)
+        lowest_bit = (magnitude & -magnitude).bit_length() - 1 + power
+        exponent = min(exponent, lowest_bit + 1074)
+    return np.ldexp(matrix, -exponent), exponent
 
 
 def correct_ideal_conductor_boundary_flux(
@@ -78,9 +166,10 @@ def correct_ideal_conductor_boundary_flux(
         If inputs are nonfinite, have wrong rank, are incompatible or empty,
         or if ``rcond`` is invalid.
     FloatingPointError
-        If the solve or correction arithmetic produces a nonfinite value,
-        including a current, flux, singular value or residual norm that is
-        not representable as finite float64.
+        If SVD produces nonfinite singular values, or a required current,
+        flux, singular value or residual norm is not representable as finite
+        float64. Internal projections and mode coefficients may exceed that
+        range without making the final result unrepresentable.
     numpy.linalg.LinAlgError
         If the underlying SVD fails to converge.
 
@@ -97,10 +186,17 @@ def correct_ideal_conductor_boundary_flux(
 
     For ``Gbb = U diag(s) V.T``, retain exactly ``s > rcond*s[0]`` and
     evaluate ``V @ ((U.T @ -sampled_flux) / s)`` in those directions.
-    Dividing the projected right-hand side directly avoids forming ``1/s``
-    or a full pseudoinverse that may overflow even when the currents are
-    finite. The residual norm uses scaled hypotenuse accumulation rather
-    than squaring the residual entries.
+    Scale the Green matrix by an exact power of two before SVD, constrained
+    to preserve every input bit. Keep the internal singular values at that
+    scale; the strict cutoff still uses physical float64 singular values
+    and the rounded float64 product. Sampling, projection, modal division,
+    current reconstruction and corrections retain separate binary exponents
+    until each output is formed. Dot products accumulate exact binary
+    products before rounding their significands to float64 precision; no
+    reciprocal or full pseudoinverse is formed. The residual norm uses
+    scaled hypotenuse accumulation rather than squaring residual entries.
+    Residual entries and their norm are rounded independently at output;
+    the norm can be nonzero even if every entry rounds to subnormal zero.
 
     Examples
     --------
@@ -144,29 +240,38 @@ def correct_ideal_conductor_boundary_flux(
         raise ValueError("green_boundary_to_boundary must not be empty")
 
     with np.errstate(over="raise", invalid="raise", divide="raise", under="ignore"):
-        boundary_flux = samples @ field_flux
-        left, singular_values, right_transpose = np.linalg.svd(boundary_green, full_matrices=False)
+        flux = [(float(value), 0) for value in field_flux]
+        boundary_flux = _scaled_matvec(samples, flux)
+        scaled_green, green_exponent = _svd_scale(boundary_green)
+        left, internal_singular, right_transpose = np.linalg.svd(scaled_green, full_matrices=False)
+        singular_values = np.ldexp(internal_singular, green_exponent)
         if not np.all(np.isfinite(singular_values)):
             raise FloatingPointError("boundary Green singular values are not finite float64")
         # An overflowing nonnegative cutoff still excludes all singular values,
         # just as in the original strict comparison (rcond may exceed one).
         with np.errstate(over="ignore"):
             keep = singular_values > rcond * singular_values[0]
-        projected_currents = np.zeros_like(singular_values)
-        projected_currents[keep] = (left[:, keep].T @ -boundary_flux) / singular_values[keep]
-        boundary_currents = right_transpose.T @ projected_currents
-        boundary_correction = boundary_green @ boundary_currents
-        field_correction = field_green @ boundary_currents
-        residual = boundary_flux + boundary_correction
+        projection = _scaled_matvec(left[:, keep].T, [(-m, e) for m, e in boundary_flux])
+        modes = []
+        for (mantissa, exponent), singular in zip(projection, internal_singular[keep], strict=True):
+            divisor, divisor_exponent = math.frexp(float(singular))
+            quotient, quotient_exponent = math.frexp(mantissa / divisor)
+            modes.append(
+                (quotient, exponent - divisor_exponent - green_exponent + quotient_exponent)
+            )
+        currents = _scaled_matvec(right_transpose[keep].T, modes)
+        boundary_correction = _scaled_matvec(boundary_green, currents)
+        field_correction = _scaled_matvec(field_green, currents)
+        residual = _scaled_add(boundary_flux, boundary_correction)
         result = {
-            "corrected_field_flux": field_flux + field_correction,
-            "boundary_currents": boundary_currents,
-            "boundary_flux_correction": boundary_correction,
-            "field_flux_correction": field_correction,
+            "corrected_field_flux": _materialize(_scaled_add(flux, field_correction)),
+            "boundary_currents": _materialize(currents),
+            "boundary_flux_correction": _materialize(boundary_correction),
+            "field_flux_correction": _materialize(field_correction),
             "singular_values": singular_values,
             "effective_rank": int(np.count_nonzero(keep)),
-            "residual": residual,
-            "residual_norm": float(np.hypot.reduce(residual)),
+            "residual": _materialize(residual),
+            "residual_norm": _scaled_norm(residual),
         }
     if any(not np.all(np.isfinite(value)) for value in result.values()):
         raise FloatingPointError("boundary correction is not representable as finite float64")
