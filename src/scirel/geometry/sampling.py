@@ -680,6 +680,74 @@ def locs_to_vals_griddata(X, Y, Q, coord_list):
     return griddata((X.flatten(), Y.flatten()), Q.flatten(), (xi, yi))
 
 
+def _nearest_sample_index(X, Y, x, y):
+    """Filter real distances with hypot, then resolve rounding in input precision."""
+    from fractions import Fraction
+
+    coordinates = [np.asarray(value) for value in (X, Y, x, y)]
+    # Preserve existing arithmetic for non-real representations, which are outside
+    # the planar real-coordinate contract.
+    if any(
+        np.iscomplexobj(data)
+        or (data.dtype == object and any(np.iscomplexobj(value) for value in data.flat))
+        for data in coordinates
+    ):
+        return ((X - x) ** 2 + (Y - y) ** 2).argmin()
+
+    flat_x, flat_y = (data.ravel() for data in coordinates[:2])
+    candidates = np.arange(flat_x.size)
+    if np.ma.isMaskedArray(X) or np.ma.isMaskedArray(Y):
+        mask = np.ma.getmaskarray(X).ravel() | np.ma.getmaskarray(Y).ravel()
+        candidates = candidates[~mask]
+        if not candidates.size and flat_x.size:
+            return 0  # Match masked-array argmin when every coordinate is masked.
+    dtype = np.result_type(*(data.dtype for data in coordinates), np.float64)
+    if all(data.dtype.kind == "f" for data in coordinates[:2]) and all(
+        data.dtype.kind == "f"
+        or (data.dtype.kind in "iu" and int(data[()]) == int(dtype.type(data[()])))
+        for data in coordinates[2:]
+    ):
+        # Promote smaller floats without narrowing longdouble. Integer queries
+        # enter this path only if the conversion preserves their exact value.
+        try:
+            with np.errstate(over="raise", under="raise", invalid="raise"):
+                distances = np.hypot(
+                    flat_x.astype(dtype) - coordinates[2].astype(dtype),
+                    flat_y.astype(dtype) - coordinates[3].astype(dtype),
+                )
+                upper = distances[candidates].min()
+                # This is a rounding guard, not a tie tolerance. A computed zero
+                # needs no nextafter step: underflow is detected above.
+                if upper > 0:
+                    for _ in range(8):
+                        upper = np.nextafter(upper, dtype.type(np.inf))
+        except FloatingPointError:
+            # Keep every candidate for exact comparison when floating arithmetic
+            # or the rounding guard exceeds its representable range.
+            distances = None
+        if distances is not None:
+            candidates = candidates[distances[candidates] <= upper]
+            if candidates.size == 1:
+                return candidates[0]
+
+    def exact(value):
+        value = np.asarray(value)[()]
+        if isinstance(value, np.integer):
+            value = int(value)
+        if hasattr(value, "as_integer_ratio"):
+            return Fraction(*value.as_integer_ratio())
+        return Fraction(value)
+
+    px, py = exact(x), exact(y)
+
+    def squared_distance(index):
+        return (exact(flat_x[index]) - px) ** 2 + (exact(flat_y[index]) - py) ** 2
+
+    # If every distance overflowed, all samples remain candidates. Python's min
+    # retains the first flattened sample only when exact distances are equal.
+    return min(candidates, key=squared_distance)
+
+
 def locs_to_vals1D(X, Y, Q, coord_list):
     """Field query Geometric nearest sample on any matching planar arrays
 
@@ -722,9 +790,12 @@ def locs_to_vals1D(X, Y, Q, coord_list):
 
     Notes
     -----
-    Choose flattened point of minimum squared coordinate distance
-    Finite numeric object elements are checked without changing the calculation inputs;
-    object representations unsupported by the existing calculation remain unsupported.
+    Choose the flattened sample with minimum Euclidean distance; exact ties keep
+    the first sample. Floating distances use hypot with a rounding guard; ambiguous
+    or overflowing distances are compared as exact rational squared distances of
+    the represented coordinates. Integer and real numeric object coordinates use
+    that exact comparison directly, without narrowing to float64. Finite numeric
+    object elements are checked without changing the calculation inputs.
 
     **Coordinates.** X column coordinate, Y row coordinate or matched scattered point arrays
 
@@ -781,7 +852,7 @@ def locs_to_vals1D(X, Y, Q, coord_list):
     values = []
     flat_q = np.asarray(Q).ravel()
     for x, y in coord_list:
-        index = ((X - x) ** 2 + (Y - y) ** 2).argmin()
+        index = _nearest_sample_index(X, Y, x, y)
         values.append(flat_q[index])
     return values
 

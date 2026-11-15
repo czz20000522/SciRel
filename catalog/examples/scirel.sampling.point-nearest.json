@@ -5,7 +5,7 @@
   "en": "Field query Geometric nearest sample on any matching planar arrays",
   "zh": "平面样点几何最近值"
  },
- "summary": "Choose flattened point of minimum squared coordinate distance",
+ "summary": "Choose the flattened sample with minimum Euclidean distance; exact ties keep the first sample",
  "taxonomy": [
   "analysis",
   "sampling"
@@ -16,7 +16,7 @@
  "discovery": {
   "capability": [
    "Geometric nearest field query",
-   "Choose the flattened sample with minimum squared coordinate distance to each query point."
+   "Choose the flattened sample with minimum Euclidean distance to each query point; exact ties keep the first sample."
   ],
   "operation": [
    "geometric nearest-sample field query",
@@ -30,7 +30,7 @@
  "identity": {
   "relation": "Field query Geometric nearest sample on any matching planar arrays",
   "direction": "Declared inputs to Sampled values",
-  "definition": "Choose flattened point of minimum squared coordinate distance",
+  "definition": "Choose the flattened sample with minimum Euclidean distance; exact ties keep the first sample. Floating coordinates use hypot and an eight-representable-step rounding guard, followed by exact rational squared-distance comparisons for ambiguous or overflowing distances. Integer and real numeric object coordinates use exact comparisons directly without float64 narrowing.",
   "model": "Geometric nearest sample on any matching planar arrays",
   "geometry": "planar matched sample points",
   "coordinates": "X column coordinate, Y row coordinate or matched scattered point arrays",
@@ -103,7 +103,7 @@
   ]
  },
  "failure_semantics": {
-  "invalid_input": "Nonfinite sample coordinates, Q data or query coordinates reject the whole request with ValueError. Other conversion, indexing or arithmetic errors propagate. The implementation does not reject unsorted or outside-support queries; the caller determines physical support. Finite numeric object elements are checked without changing calculation inputs, and unsupported object arithmetic remains unsupported.",
+  "invalid_input": "Nonfinite sample coordinates, Q data or query coordinates reject the whole request with ValueError. Other conversion, indexing or arithmetic errors propagate. The implementation does not reject unsorted or outside-support queries; the caller determines physical support. Finite numeric object elements are checked without float64 narrowing; real coordinates are compared using their represented numeric values. Unsupported numeric representations still propagate conversion or arithmetic errors.",
   "runtime_failure": "Numerical, interpolation, or optional-dependency exceptions propagate from the direct calculation.",
   "nonconvergence": "Not applicable; the relation uses direct finite-difference, interpolation, selection, or quadrature operations.",
   "partial_results": "No partial result is promised when input validation or the underlying numerical operation fails."
@@ -130,13 +130,16 @@
   "scope": [
    "Public callable signature and documented finite-input behavior",
    "The direct regression fixtures listed in verification.tests",
-   "The executable example stored in this contract"
+   "The executable example stored in this contract",
+   "Analytic unique-nearest fixtures at uniform coordinate scales 1, 1e155 and 1e-170, with an independent hypot reference",
+   "Independent 2200-digit Decimal squared-distance references for finite subtraction overflow, rounded distance collisions, subnormal coordinates and true ties; matching shapes, integer precision and real numeric object regressions"
   ],
   "tests": [
    "tests/equilibrium/test_analysis_families.py",
-   "tests/geometry/test_sampling_failures.py"
+   "tests/geometry/test_sampling_failures.py",
+   "tests/geometry/test_point_nearest.py"
   ],
-  "evidence_ceiling": "Direct examples and named regression fixtures establish the documented relation on those inputs; they do not establish arbitrary-input correctness, experimental validation, or release approval.",
+  "evidence_ceiling": "Analytic, independent hypot and high-precision Decimal references establish nearest selection on the named fixtures for the represented input values. The floating rounding guard is exercised on these fixtures, not a mathematical proof over all finite coordinates, numeric representations or platforms. Input precision already lost before the call cannot be recovered; experimental validation and release approval are not established.",
   "known_limitations": [
    "Rectangular and geometric nearest schemes are not asserted equivalent on irregular input",
    "Physical interpretation outside caller-declared support is unqualified; nonfinite field values are rejected"
