@@ -1,0 +1,937 @@
+{
+  "threshold": "1e-70",
+  "A_original": {
+    "status": "REFERENCE_BLOCK",
+    "convergence_passed": 15,
+    "case_count": 16,
+    "expected_evaluations": 60,
+    "evaluations_succeeded": 60,
+    "comparisons": [
+      {
+        "case_id": "ordinary",
+        "status": "PASS",
+        "comparisons": [
+          {
+            "name": "harmonics-at-100",
+            "status": "PASS",
+            "max_scaled_diff": "0.0"
+          },
+          {
+            "name": "harmonics-at-160",
+            "status": "PASS",
+            "max_scaled_diff": "0.0"
+          },
+          {
+            "name": "precision-at-96",
+            "status": "PASS",
+            "max_scaled_diff": "4.321392328208336667591509343279181349338179026144371813717778492421578288501538473395266092286976531779399131226477424089589924796014246387308635922990596727354e-98"
+          },
+          {
+            "name": "precision-at-128",
+            "status": "PASS",
+            "max_scaled_diff": "4.321392328208336667591509343279181349338179026144371813717778492421578288501538473395266092286976531779399131226477424089589924796014246387308635922990596727354e-98"
+          }
+        ]
+      },
+      {
+        "case_id": "complex-kx",
+        "status": "PASS",
+        "comparisons": [
+          {
+            "name": "harmonics-at-100",
+            "status": "PASS",
+            "max_scaled_diff": "0.0"
+          },
+          {
+            "name": "harmonics-at-160",
+            "status": "PASS",
+            "max_scaled_diff": "0.0"
+          },
+          {
+            "name": "precision-at-96",
+            "status": "PASS",
+            "max_scaled_diff": "4.385039968210842830388850148981848830431804580956762230285764210674516942925753142063508276890450559111311973922644955759842097455558441999697661297375463389303e-98"
+          },
+          {
+            "name": "precision-at-128",
+            "status": "PASS",
+            "max_scaled_diff": "4.385039968210842830388850148981848830431804580956762230285764210674516942925753142063508276890450559111311973922644955759842097455558441999697661297375463389303e-98"
+          }
+        ]
+      },
+      {
+        "case_id": "complex-negative-kz",
+        "status": "PASS",
+        "comparisons": [
+          {
+            "name": "harmonics-at-100",
+            "status": "PASS",
+            "max_scaled_diff": "0.0"
+          },
+          {
+            "name": "harmonics-at-160",
+            "status": "PASS",
+            "max_scaled_diff": "0.0"
+          },
+          {
+            "name": "precision-at-96",
+            "status": "PASS",
+            "max_scaled_diff": "4.385039968210842830388850148981848830431804580956762230285764210674516942925753142063508276890450559111311973922644955759842097455558441999697661297375463389303e-98"
+          },
+          {
+            "name": "precision-at-128",
+            "status": "PASS",
+            "max_scaled_diff": "4.385039968210842830388850148981848830431804580956762230285764210674516942925753142063508276890450559111311973922644955759842097455558441999697661297375463389303e-98"
+          }
+        ]
+      },
+      {
+        "case_id": "negative-kx",
+        "status": "PASS",
+        "comparisons": [
+          {
+            "name": "harmonics-at-100",
+            "status": "PASS",
+            "max_scaled_diff": "0.0"
+          },
+          {
+            "name": "harmonics-at-160",
+            "status": "PASS",
+            "max_scaled_diff": "0.0"
+          },
+          {
+            "name": "precision-at-96",
+            "status": "PASS",
+            "max_scaled_diff": "4.385039968210842830388850148981848830431804580956762230285764210674516942925753142063508276890450559111311973922644955759842097455558441999697661297375463389303e-98"
+          },
+          {
+            "name": "precision-at-128",
+            "status": "PASS",
+            "max_scaled_diff": "4.385039968210842830388850148981848830431804580956762230285764210674516942925753142063508276890450559111311973922644955759842097455558441999697661297375463389303e-98"
+          }
+        ]
+      },
+      {
+        "case_id": "negative-B",
+        "status": "PASS",
+        "comparisons": [
+          {
+            "name": "harmonics-at-100",
+            "status": "PASS",
+            "max_scaled_diff": "0.0"
+          },
+          {
+            "name": "harmonics-at-160",
+            "status": "PASS",
+            "max_scaled_diff": "0.0"
+          },
+          {
+            "name": "precision-at-96",
+            "status": "PASS",
+            "max_scaled_diff": "4.385039968210842830388850148981848830431804580956762230285764210674516942925753142063508276890450559111311973922644955759842097455558441999697661297375463389303e-98"
+          },
+          {
+            "name": "precision-at-128",
+            "status": "PASS",
+            "max_scaled_diff": "4.385039968210842830388850148981848830431804580956762230285764210674516942925753142063508276890450559111311973922644955759842097455558441999697661297375463389303e-98"
+          }
+        ]
+      },
+      {
+        "case_id": "negative-omega",
+        "status": "PASS",
+        "comparisons": [
+          {
+            "name": "harmonics-at-100",
+            "status": "PASS",
+            "max_scaled_diff": "0.0"
+          },
+          {
+            "name": "harmonics-at-160",
+            "status": "PASS",
+            "max_scaled_diff": "0.0"
+          },
+          {
+            "name": "precision-at-96",
+            "status": "PASS",
+            "max_scaled_diff": "4.519470942722228999608905170171650846826466867761023091334517129487063680530986466679236516762733844116916808590163347636768691312505166169483199266414295732421e-98"
+          },
+          {
+            "name": "precision-at-128",
+            "status": "PASS",
+            "max_scaled_diff": "4.519470942722228999608905170171650846826466867761023091334517129487063680530986466679236516762733844116916808590163347636768691312505166169483199266414295732421e-98"
+          }
+        ]
+      },
+      {
+        "case_id": "zero-kz-real",
+        "status": "PASS",
+        "comparisons": [
+          {
+            "name": "harmonics-at-100",
+            "status": "PASS",
+            "max_scaled_diff": "0.0"
+          },
+          {
+            "name": "harmonics-at-160",
+            "status": "PASS",
+            "max_scaled_diff": "0.0"
+          },
+          {
+            "name": "precision-at-96",
+            "status": "PASS",
+            "max_scaled_diff": "3.313886490615944310669838065424502875485520816486959766899728592663041845726421237622076691373899696447515896802737013480200280430907396465730315805822532385705e-101"
+          },
+          {
+            "name": "precision-at-128",
+            "status": "PASS",
+            "max_scaled_diff": "3.313886490615944310669838065424502875485520816486959766899728592663041845726421237622076691373899696447515896802737013480200280430907396465730315805822532385705e-101"
+          }
+        ]
+      },
+      {
+        "case_id": "zero-kz-complex",
+        "status": "PASS",
+        "comparisons": [
+          {
+            "name": "harmonics-at-100",
+            "status": "PASS",
+            "max_scaled_diff": "0.0"
+          },
+          {
+            "name": "harmonics-at-160",
+            "status": "PASS",
+            "max_scaled_diff": "0.0"
+          },
+          {
+            "name": "precision-at-96",
+            "status": "PASS",
+            "max_scaled_diff": "6.143728628294389743418490640617955441145248031855372986887935077937980034919660767005831966854364311966688841727612453258359051163276975168624282644677530468645e-101"
+          },
+          {
+            "name": "precision-at-128",
+            "status": "PASS",
+            "max_scaled_diff": "6.143728628294389743418490640617955441145248031855372986887935077937980034919660767005831966854364311966688841727612453258359051163276975168624282644677530468645e-101"
+          }
+        ]
+      },
+      {
+        "case_id": "zero-kx",
+        "status": "PASS",
+        "comparisons": [
+          {
+            "name": "precision-endpoint",
+            "status": "PASS",
+            "max_scaled_diff": "2.310308530358343216723844409830578269935190353698835674341608221414335887399160784983727456857758924322191687853709288712612214371694976235733474517753440433237e-99"
+          }
+        ]
+      },
+      {
+        "case_id": "both-zero",
+        "status": "PASS",
+        "comparisons": [
+          {
+            "name": "precision-endpoint",
+            "status": "PASS",
+            "max_scaled_diff": "3.979734005948941228355686124140111301386938684282370015865635498457792693551792849328872420036442096986473010593899759998373444190877094463221298120951843601436e-101"
+          }
+        ]
+      },
+      {
+        "case_id": "small-kz",
+        "status": "REFERENCE_BLOCK",
+        "comparisons": [
+          {
+            "name": "harmonics-at-100",
+            "status": "PASS",
+            "max_scaled_diff": "0.0"
+          },
+          {
+            "name": "harmonics-at-160",
+            "status": "PASS",
+            "max_scaled_diff": "0.0"
+          },
+          {
+            "name": "precision-at-96",
+            "status": "REFERENCE_BLOCK",
+            "max_scaled_diff": "1.520403980380893256856535531130619815143765719464073680502829560514729752652530199129465544582037483079760633456289923353071981929553292623450701249208736481284e-58"
+          },
+          {
+            "name": "precision-at-128",
+            "status": "REFERENCE_BLOCK",
+            "max_scaled_diff": "1.520403980380893256856535531130619815143765719464073680502829560514729752652530199129465544582037483079760633456289923353071981929553292623450701249208736481284e-58"
+          }
+        ]
+      },
+      {
+        "case_id": "b8",
+        "status": "PASS",
+        "comparisons": [
+          {
+            "name": "harmonics-at-100",
+            "status": "PASS",
+            "max_scaled_diff": "9.899462122831421274659993122970709835010434291229727806240099430233999999999999999999999758090896395644313565848314883594282179544900196287806700553481821567444e-94"
+          },
+          {
+            "name": "harmonics-at-160",
+            "status": "PASS",
+            "max_scaled_diff": "9.899462123495861721407307100790539383552105147551833662749667013182000000000000000000000046209523827960200167160854995132105623546253329793265581354200481875867e-94"
+          },
+          {
+            "name": "precision-at-96",
+            "status": "PASS",
+            "max_scaled_diff": "4.607087141384389494308990643733366243107804663510445555506964149334904553240100910108213450394196856352616726101178088317356335740547307670519340207262279316593e-96"
+          },
+          {
+            "name": "precision-at-128",
+            "status": "PASS",
+            "max_scaled_diff": "4.602800389363674085187267800210146477244444643384155602986213102206466555825001661222009417828322599253448382334396422422506377555354469971925092574038464862298e-96"
+          }
+        ]
+      },
+      {
+        "case_id": "two-species",
+        "status": "PASS",
+        "comparisons": [
+          {
+            "name": "harmonics-at-100",
+            "status": "PASS",
+            "max_scaled_diff": "0.0"
+          },
+          {
+            "name": "harmonics-at-160",
+            "status": "PASS",
+            "max_scaled_diff": "0.0"
+          },
+          {
+            "name": "precision-at-96",
+            "status": "PASS",
+            "max_scaled_diff": "9.133799478037727397015243816849249047427424859821123304615469246515547876395801881799832805626748245445255744653947171054515550382715373834238908714702241858406e-100"
+          },
+          {
+            "name": "precision-at-128",
+            "status": "PASS",
+            "max_scaled_diff": "9.133799478037727397015243816849249047427424859821123304615469246515547876395801881799832805626748245445255744653947171054515550382715373834238908714702241858406e-100"
+          }
+        ]
+      },
+      {
+        "case_id": "two-species-complex-negative-kz",
+        "status": "PASS",
+        "comparisons": [
+          {
+            "name": "harmonics-at-100",
+            "status": "PASS",
+            "max_scaled_diff": "0.0"
+          },
+          {
+            "name": "harmonics-at-160",
+            "status": "PASS",
+            "max_scaled_diff": "0.0"
+          },
+          {
+            "name": "precision-at-96",
+            "status": "PASS",
+            "max_scaled_diff": "8.627763731507405694836974838878261843544372789496425868521434979397077758548188366677813656383113542365002470962904276319900346421597430170163809613552081111522e-100"
+          },
+          {
+            "name": "precision-at-128",
+            "status": "PASS",
+            "max_scaled_diff": "8.627763731507405694836974838878261843544372789496425868521434979397077758548188366677813656383113542365002470962904276319900346421597430170163809613552081111522e-100"
+          }
+        ]
+      },
+      {
+        "case_id": "ordinary-scale-2m52",
+        "status": "PASS",
+        "comparisons": [
+          {
+            "name": "harmonics-at-100",
+            "status": "PASS",
+            "max_scaled_diff": "0.0"
+          },
+          {
+            "name": "harmonics-at-160",
+            "status": "PASS",
+            "max_scaled_diff": "0.0"
+          },
+          {
+            "name": "precision-at-96",
+            "status": "PASS",
+            "max_scaled_diff": "4.321392328208336667591509343279181349338179026144371813717778492421578288501538473395266092286976531779399131226477424089589924796014246387308635922990596727354e-98"
+          },
+          {
+            "name": "precision-at-128",
+            "status": "PASS",
+            "max_scaled_diff": "4.321392328208336667591509343279181349338179026144371813717778492421578288501538473395266092286976531779399131226477424089589924796014246387308635922990596727354e-98"
+          }
+        ]
+      },
+      {
+        "case_id": "complex-negative-kz-scale-2m52",
+        "status": "PASS",
+        "comparisons": [
+          {
+            "name": "harmonics-at-100",
+            "status": "PASS",
+            "max_scaled_diff": "0.0"
+          },
+          {
+            "name": "harmonics-at-160",
+            "status": "PASS",
+            "max_scaled_diff": "0.0"
+          },
+          {
+            "name": "precision-at-96",
+            "status": "PASS",
+            "max_scaled_diff": "4.385039968210842830388850148981848830431804580956762230285764210674516942925753142063508276890450559111311973922644955759842097455558441999697661297375463389303e-98"
+          },
+          {
+            "name": "precision-at-128",
+            "status": "PASS",
+            "max_scaled_diff": "4.385039968210842830388850148981848830431804580956762230285764210674516942925753142063508276890450559111311973922644955759842097455558441999697661297375463389303e-98"
+          }
+        ]
+      }
+    ]
+  },
+  "A_small_kz_successor": {
+    "status": "REFINED_ORACLE_CONVERGENCE_PASS",
+    "original_evaluation_exit": 2,
+    "original_status_unchanged": "REFERENCE_BLOCK",
+    "expected_calculations": 4,
+    "successful_calculations": 4,
+    "other_case_reruns": 0,
+    "gate_comparisons": [
+      {
+        "name": "N96_vs_N128_at_200",
+        "status": "PASS",
+        "max_scaled_diff": "0.0"
+      },
+      {
+        "name": "N96_vs_N128_at_280",
+        "status": "PASS",
+        "max_scaled_diff": "0.0"
+      },
+      {
+        "name": "dps200_vs_dps280_at_N96",
+        "status": "PASS",
+        "max_scaled_diff": "3.518513270692648966199297670399629235533603144974543558872770817390838029616850648623100430538326365388165607466408668057653229766612068227159850062756554092679e-158"
+      },
+      {
+        "name": "dps200_vs_dps280_at_N128",
+        "status": "PASS",
+        "max_scaled_diff": "3.518513270692648966199297670399629235533603144974543558872770817390838029616850648623100430538326365388165607466408668057653229766612068227159850062756554092679e-158"
+      }
+    ]
+  },
+  "B": {
+    "threshold": "1e-70",
+    "parse_dps": 200,
+    "blocks": [],
+    "cases": [
+      {
+        "id": "ordinary",
+        "status": "CONVERGED",
+        "comparisons": [
+          {
+            "comparison": "N96_vs_N128_at_dps100",
+            "component_count": 20,
+            "max_scaled_difference": "0.0",
+            "worst_component": "K[0,0]",
+            "pass": true
+          },
+          {
+            "comparison": "N96_vs_N128_at_dps160",
+            "component_count": 20,
+            "max_scaled_difference": "0.0",
+            "worst_component": "K[0,0]",
+            "pass": true
+          },
+          {
+            "comparison": "dps100_vs_dps160_at_N96",
+            "component_count": 20,
+            "max_scaled_difference": "2.545303606152023138786403604738360047907045582128377000960977195932025671938735940662258424947456720775341951623048441286913241013792703530165033604345666540826e-99",
+            "worst_component": "K[1,2]",
+            "pass": true
+          },
+          {
+            "comparison": "dps100_vs_dps160_at_N128",
+            "component_count": 20,
+            "max_scaled_difference": "2.545303606152023138786403604738360047907045582128377000960977195932025671938735940662258424947456720775341951623048441286913241013792703530165033604345666540826e-99",
+            "worst_component": "K[1,2]",
+            "pass": true
+          }
+        ]
+      },
+      {
+        "id": "complex-kx",
+        "status": "CONVERGED",
+        "comparisons": [
+          {
+            "comparison": "N96_vs_N128_at_dps100",
+            "component_count": 20,
+            "max_scaled_difference": "0.0",
+            "worst_component": "K[0,0]",
+            "pass": true
+          },
+          {
+            "comparison": "N96_vs_N128_at_dps160",
+            "component_count": 20,
+            "max_scaled_difference": "0.0",
+            "worst_component": "K[0,0]",
+            "pass": true
+          },
+          {
+            "comparison": "dps100_vs_dps160_at_N96",
+            "component_count": 20,
+            "max_scaled_difference": "2.811156163437812582946602318889482013181129488769128840139486871261661714210414629470332726989618472914396859041261839884019949752234778471053057577270154092917e-99",
+            "worst_component": "K[0,2]",
+            "pass": true
+          },
+          {
+            "comparison": "dps100_vs_dps160_at_N128",
+            "component_count": 20,
+            "max_scaled_difference": "2.811156163437812582946602318889482013181129488769128840139486871261661714210414629470332726989618472914396859041261839884019949752234778471053057577270154092917e-99",
+            "worst_component": "K[0,2]",
+            "pass": true
+          }
+        ]
+      },
+      {
+        "id": "complex-negative-kz",
+        "status": "CONVERGED",
+        "comparisons": [
+          {
+            "comparison": "N96_vs_N128_at_dps100",
+            "component_count": 20,
+            "max_scaled_difference": "0.0",
+            "worst_component": "K[0,0]",
+            "pass": true
+          },
+          {
+            "comparison": "N96_vs_N128_at_dps160",
+            "component_count": 20,
+            "max_scaled_difference": "0.0",
+            "worst_component": "K[0,0]",
+            "pass": true
+          },
+          {
+            "comparison": "dps100_vs_dps160_at_N96",
+            "component_count": 20,
+            "max_scaled_difference": "2.811156163437812582946602318889482013181129488769128840139486871261661714210414629470332726989618472914396859041261839884019949752234778471053057577270154092917e-99",
+            "worst_component": "K[0,2]",
+            "pass": true
+          },
+          {
+            "comparison": "dps100_vs_dps160_at_N128",
+            "component_count": 20,
+            "max_scaled_difference": "2.811156163437812582946602318889482013181129488769128840139486871261661714210414629470332726989618472914396859041261839884019949752234778471053057577270154092917e-99",
+            "worst_component": "K[0,2]",
+            "pass": true
+          }
+        ]
+      },
+      {
+        "id": "negative-kx",
+        "status": "CONVERGED",
+        "comparisons": [
+          {
+            "comparison": "N96_vs_N128_at_dps100",
+            "component_count": 20,
+            "max_scaled_difference": "0.0",
+            "worst_component": "K[0,0]",
+            "pass": true
+          },
+          {
+            "comparison": "N96_vs_N128_at_dps160",
+            "component_count": 20,
+            "max_scaled_difference": "0.0",
+            "worst_component": "K[0,0]",
+            "pass": true
+          },
+          {
+            "comparison": "dps100_vs_dps160_at_N96",
+            "component_count": 20,
+            "max_scaled_difference": "2.811156163437812582946602318889482013181129488769128840139486871261661714210414629470332726989618472914396859041261839884019949752234778471053057577270154092917e-99",
+            "worst_component": "K[0,2]",
+            "pass": true
+          },
+          {
+            "comparison": "dps100_vs_dps160_at_N128",
+            "component_count": 20,
+            "max_scaled_difference": "2.811156163437812582946602318889482013181129488769128840139486871261661714210414629470332726989618472914396859041261839884019949752234778471053057577270154092917e-99",
+            "worst_component": "K[0,2]",
+            "pass": true
+          }
+        ]
+      },
+      {
+        "id": "negative-B",
+        "status": "CONVERGED",
+        "comparisons": [
+          {
+            "comparison": "N96_vs_N128_at_dps100",
+            "component_count": 20,
+            "max_scaled_difference": "0.0",
+            "worst_component": "K[0,0]",
+            "pass": true
+          },
+          {
+            "comparison": "N96_vs_N128_at_dps160",
+            "component_count": 20,
+            "max_scaled_difference": "0.0",
+            "worst_component": "K[0,0]",
+            "pass": true
+          },
+          {
+            "comparison": "dps100_vs_dps160_at_N96",
+            "component_count": 20,
+            "max_scaled_difference": "2.811156163437812582946602318889482013181129488769128840139486871261661714210414629470332726989618472914396859041261839884019949752234778471053057577270154092917e-99",
+            "worst_component": "K[0,2]",
+            "pass": true
+          },
+          {
+            "comparison": "dps100_vs_dps160_at_N128",
+            "component_count": 20,
+            "max_scaled_difference": "2.811156163437812582946602318889482013181129488769128840139486871261661714210414629470332726989618472914396859041261839884019949752234778471053057577270154092917e-99",
+            "worst_component": "K[0,2]",
+            "pass": true
+          }
+        ]
+      },
+      {
+        "id": "negative-omega",
+        "status": "CONVERGED",
+        "comparisons": [
+          {
+            "comparison": "N96_vs_N128_at_dps100",
+            "component_count": 20,
+            "max_scaled_difference": "0.0",
+            "worst_component": "K[0,0]",
+            "pass": true
+          },
+          {
+            "comparison": "N96_vs_N128_at_dps160",
+            "component_count": 20,
+            "max_scaled_difference": "0.0",
+            "worst_component": "K[0,0]",
+            "pass": true
+          },
+          {
+            "comparison": "dps100_vs_dps160_at_N96",
+            "component_count": 20,
+            "max_scaled_difference": "4.049035132048119473578176358241856412567746512388836942100802987339431226842645857270154341132355140942801959470774381268044468202857819296148913044209455118777e-99",
+            "worst_component": "K[1,2]",
+            "pass": true
+          },
+          {
+            "comparison": "dps100_vs_dps160_at_N128",
+            "component_count": 20,
+            "max_scaled_difference": "4.049035132048119473578176358241856412567746512388836942100802987339431226842645857270154341132355140942801959470774381268044468202857819296148913044209455118777e-99",
+            "worst_component": "K[1,2]",
+            "pass": true
+          }
+        ]
+      },
+      {
+        "id": "zero-kz-real",
+        "status": "CONVERGED",
+        "comparisons": [
+          {
+            "comparison": "N96_vs_N128_at_dps100",
+            "component_count": 20,
+            "max_scaled_difference": "0.0",
+            "worst_component": "K[0,0]",
+            "pass": true
+          },
+          {
+            "comparison": "N96_vs_N128_at_dps160",
+            "component_count": 20,
+            "max_scaled_difference": "0.0",
+            "worst_component": "K[0,0]",
+            "pass": true
+          },
+          {
+            "comparison": "dps100_vs_dps160_at_N96",
+            "component_count": 20,
+            "max_scaled_difference": "2.50358427177108802451072566396741174119671159788606939686832293765232120971499999999999999999999999999999999999999999563594639575757203466231740645666536325069e-99",
+            "worst_component": "K[1,2]",
+            "pass": true
+          },
+          {
+            "comparison": "dps100_vs_dps160_at_N128",
+            "component_count": 20,
+            "max_scaled_difference": "2.50358427177108802451072566396741174119671159788606939686832293765232120971499999999999999999999999999999999999999999563594639575757203466231740645666536325069e-99",
+            "worst_component": "K[1,2]",
+            "pass": true
+          }
+        ]
+      },
+      {
+        "id": "zero-kz-complex",
+        "status": "CONVERGED",
+        "comparisons": [
+          {
+            "comparison": "N96_vs_N128_at_dps100",
+            "component_count": 20,
+            "max_scaled_difference": "0.0",
+            "worst_component": "K[0,0]",
+            "pass": true
+          },
+          {
+            "comparison": "N96_vs_N128_at_dps160",
+            "component_count": 20,
+            "max_scaled_difference": "0.0",
+            "worst_component": "K[0,0]",
+            "pass": true
+          },
+          {
+            "comparison": "dps100_vs_dps160_at_N96",
+            "component_count": 20,
+            "max_scaled_difference": "3.877520134417161297302757434027007401543826262409172479905522725141005776084233622571252339953941298514822909898916165364393674935180277095589034798527514356504e-99",
+            "worst_component": "K[1,2]",
+            "pass": true
+          },
+          {
+            "comparison": "dps100_vs_dps160_at_N128",
+            "component_count": 20,
+            "max_scaled_difference": "3.877520134417161297302757434027007401543826262409172479905522725141005776084233622571252339953941298514822909898916165364393674935180277095589034798527514356504e-99",
+            "worst_component": "K[1,2]",
+            "pass": true
+          }
+        ]
+      },
+      {
+        "id": "zero-kx",
+        "status": "CONVERGED",
+        "comparisons": [
+          {
+            "comparison": "dps100_vs_dps160_harmonic_NA",
+            "component_count": 20,
+            "max_scaled_difference": "1.160584201502385449660161611661503930433368907364629540425170002562214490742886478573830489984507853428657111192014118456811807732694823203430254478149052966753e-99",
+            "worst_component": "K[2,2]",
+            "pass": true
+          }
+        ]
+      },
+      {
+        "id": "both-zero",
+        "status": "CONVERGED",
+        "comparisons": [
+          {
+            "comparison": "dps100_vs_dps160_harmonic_NA",
+            "component_count": 20,
+            "max_scaled_difference": "6.881283230574278275484330488196314522344148621886085698902918063522160944957659550838326388846602396051316715910915771602565558510792545381721972503390262794214e-100",
+            "worst_component": "detK",
+            "pass": true
+          }
+        ]
+      },
+      {
+        "id": "small-kz",
+        "status": "CONVERGED",
+        "comparisons": [
+          {
+            "comparison": "N96_vs_N128_at_dps100",
+            "component_count": 20,
+            "max_scaled_difference": "0.0",
+            "worst_component": "K[0,0]",
+            "pass": true
+          },
+          {
+            "comparison": "N96_vs_N128_at_dps160",
+            "component_count": 20,
+            "max_scaled_difference": "0.0",
+            "worst_component": "K[0,0]",
+            "pass": true
+          },
+          {
+            "comparison": "dps100_vs_dps160_at_N96",
+            "component_count": 20,
+            "max_scaled_difference": "3.417406480568078435287640040301372879011098266915178542330700217561299604028060606168894428499131210234629521982995538638315725476155366596424290210856207908641e-99",
+            "worst_component": "K[0,2]",
+            "pass": true
+          },
+          {
+            "comparison": "dps100_vs_dps160_at_N128",
+            "component_count": 20,
+            "max_scaled_difference": "3.417406480568078435287640040301372879011098266915178542330700217561299604028060606168894428499131210234629521982995538638315725476155366596424290210856207908641e-99",
+            "worst_component": "K[0,2]",
+            "pass": true
+          }
+        ]
+      },
+      {
+        "id": "b8",
+        "status": "CONVERGED",
+        "comparisons": [
+          {
+            "comparison": "N96_vs_N128_at_dps100",
+            "component_count": 20,
+            "max_scaled_difference": "6.247604019054926067992126370686016355612654180492760213087019701731248698771367016099877517175548913164960554717704761402440150124932366694536525854028112957297e-94",
+            "worst_component": "detK",
+            "pass": true
+          },
+          {
+            "comparison": "N96_vs_N128_at_dps160",
+            "component_count": 20,
+            "max_scaled_difference": "6.247593269430757647069727882432523590119554805056327267275081309878822249661444218072763071687023289127363442855770299845474471092962344268962850852980894452631e-94",
+            "worst_component": "detK",
+            "pass": true
+          },
+          {
+            "comparison": "dps100_vs_dps160_at_N96",
+            "component_count": 20,
+            "max_scaled_difference": "1.869798411047803115052942875242355716979188040238176966978369098425383612358236235428303572519195507118904510001044268383350594660587888922425844343610483675914e-98",
+            "worst_component": "detD",
+            "pass": true
+          },
+          {
+            "comparison": "dps100_vs_dps160_at_N128",
+            "component_count": 20,
+            "max_scaled_difference": "9.831283651984573214106777600419057748653847229618062689530795052486145970892889753880652349705388016419344864938098289902692604973469370929618799256225315982262e-99",
+            "worst_component": "K[2,2]",
+            "pass": true
+          }
+        ]
+      },
+      {
+        "id": "two-species",
+        "status": "CONVERGED",
+        "comparisons": [
+          {
+            "comparison": "N96_vs_N128_at_dps100",
+            "component_count": 20,
+            "max_scaled_difference": "0.0",
+            "worst_component": "K[0,0]",
+            "pass": true
+          },
+          {
+            "comparison": "N96_vs_N128_at_dps160",
+            "component_count": 20,
+            "max_scaled_difference": "0.0",
+            "worst_component": "K[0,0]",
+            "pass": true
+          },
+          {
+            "comparison": "dps100_vs_dps160_at_N96",
+            "component_count": 20,
+            "max_scaled_difference": "6.909543147527728498595605898826713237234628248697709185954489543579723159692078376220870228645722521512290451998591789761453076998430276564012800342461549060036e-98",
+            "worst_component": "K[2,2]",
+            "pass": true
+          },
+          {
+            "comparison": "dps100_vs_dps160_at_N128",
+            "component_count": 20,
+            "max_scaled_difference": "6.909543147527728498595605898826713237234628248697709185954489543579723159692078376220870228645722521512290451998591789761453076998430276564012800342461549060036e-98",
+            "worst_component": "K[2,2]",
+            "pass": true
+          }
+        ]
+      },
+      {
+        "id": "two-species-complex-negative-kz",
+        "status": "CONVERGED",
+        "comparisons": [
+          {
+            "comparison": "N96_vs_N128_at_dps100",
+            "component_count": 20,
+            "max_scaled_difference": "0.0",
+            "worst_component": "K[0,0]",
+            "pass": true
+          },
+          {
+            "comparison": "N96_vs_N128_at_dps160",
+            "component_count": 20,
+            "max_scaled_difference": "0.0",
+            "worst_component": "K[0,0]",
+            "pass": true
+          },
+          {
+            "comparison": "dps100_vs_dps160_at_N96",
+            "component_count": 20,
+            "max_scaled_difference": "4.412802795817887026044418672478952499590224483380797206227218718600641920154091039062858595054128795547614785598190091776054178304690065861209468120874635511041e-98",
+            "worst_component": "K[2,2]",
+            "pass": true
+          },
+          {
+            "comparison": "dps100_vs_dps160_at_N128",
+            "component_count": 20,
+            "max_scaled_difference": "4.412802795817887026044418672478952499590224483380797206227218718600641920154091039062858595054128795547614785598190091776054178304690065861209468120874635511041e-98",
+            "worst_component": "K[2,2]",
+            "pass": true
+          }
+        ]
+      },
+      {
+        "id": "ordinary-scale-2m52",
+        "status": "CONVERGED",
+        "comparisons": [
+          {
+            "comparison": "N96_vs_N128_at_dps100",
+            "component_count": 20,
+            "max_scaled_difference": "0.0",
+            "worst_component": "K[0,0]",
+            "pass": true
+          },
+          {
+            "comparison": "N96_vs_N128_at_dps160",
+            "component_count": 20,
+            "max_scaled_difference": "0.0",
+            "worst_component": "K[0,0]",
+            "pass": true
+          },
+          {
+            "comparison": "dps100_vs_dps160_at_N96",
+            "component_count": 20,
+            "max_scaled_difference": "2.545303606152023138786403604738360047907045582128377000960977195932025671938735940662258424947456720775341951623048441286913241013792703530165033604345666540826e-99",
+            "worst_component": "K[1,2]",
+            "pass": true
+          },
+          {
+            "comparison": "dps100_vs_dps160_at_N128",
+            "component_count": 20,
+            "max_scaled_difference": "2.545303606152023138786403604738360047907045582128377000960977195932025671938735940662258424947456720775341951623048441286913241013792703530165033604345666540826e-99",
+            "worst_component": "K[1,2]",
+            "pass": true
+          }
+        ]
+      },
+      {
+        "id": "complex-negative-kz-scale-2m52",
+        "status": "CONVERGED",
+        "comparisons": [
+          {
+            "comparison": "N96_vs_N128_at_dps100",
+            "component_count": 20,
+            "max_scaled_difference": "0.0",
+            "worst_component": "K[0,0]",
+            "pass": true
+          },
+          {
+            "comparison": "N96_vs_N128_at_dps160",
+            "component_count": 20,
+            "max_scaled_difference": "0.0",
+            "worst_component": "K[0,0]",
+            "pass": true
+          },
+          {
+            "comparison": "dps100_vs_dps160_at_N96",
+            "component_count": 20,
+            "max_scaled_difference": "2.811156163437812582946602318889482013181129488769128840139486871261661714210414629470332726989618472914396859041261839884019949752234778471053057577270154092917e-99",
+            "worst_component": "K[0,2]",
+            "pass": true
+          },
+          {
+            "comparison": "dps100_vs_dps160_at_N128",
+            "component_count": 20,
+            "max_scaled_difference": "2.811156163437812582946602318889482013181129488769128840139486871261661714210414629470332726989618472914396859041261839884019949752234778471053057577270154092917e-99",
+            "worst_component": "K[0,2]",
+            "pass": true
+          }
+        ]
+      }
+    ]
+  }
+}

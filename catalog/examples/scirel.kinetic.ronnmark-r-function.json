@@ -132,12 +132,13 @@
  },
  "verification": {
   "scope": [
-   "Declared source-method numerical case and relevant failure boundaries."
+   "Existing selector cases and failure boundaries; twelve independent harmonic R/H cases with b=0.2,1,4,8 and three complex x values, checked at N80/160."
   ],
   "tests": [
-   "tests/kinetic/test_fluid_spectrum_r43_kinetic.py"
+   "tests/kinetic/test_fluid_spectrum_r43_kinetic.py",
+   "tests/kinetic/test_kinetic_tensor_family_evidence.py::test_ronnmark_r_matches_its_independent_harmonic_representation"
   ],
-  "evidence_ceiling": "Direct Python tests establish only the listed finite cases and tolerances; source parity, arbitrary-parameter accuracy and release approval are outside that evidence.",
+  "evidence_ceiling": "test_ronnmark_r_matches_its_independent_harmonic_representation compares the public R and dR_dlambda column with independent Bessel sums R=sum n^2 Gamma_n/[b(x-n)] and H=sum n^2 Gamma'_n/(x-n)=d(bR)/db. The unchanged N80/160 absolute check is 1e-14; public R/H comparisons retain rtol=1e-7, atol=1e-9 at twelve fixed samples. This supports H's definition and those samples only, not all selector branches or a continuous-domain error bound. The independently summed B tensor reference in tests/fixtures/kinetic_tensor/README.md does not call the product R routine and does not certify its global error propagation.",
   "known_limitations": [
    "branch comparisons and arithmetic follow source real/complex behavior; scalar finite inputs only",
    "Full source/runtime qualification that uses the declared local Python runtime on Linux amd64 is NOT_RUN in this macOS checkout.",

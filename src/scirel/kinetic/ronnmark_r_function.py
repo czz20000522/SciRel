@@ -347,6 +347,12 @@ def evaluate_ronnmark_r(x, lambda_):
     non-real operands by magnitude. The returned derivative includes the
     response's ``lambda`` factor, so it is not the derivative of ``R`` alone.
 
+    Independently, R=sum_n n**2*Gamma_n/(lambda*(x-n)) and the reported
+    companion H=sum_n n**2*Gamma'_n/(x-n)=d(lambda*R)/d lambda, where
+    Gamma_n=exp(-lambda)*I_n(lambda). The existing N80/160 tests retain their
+    1e-14 truncation check and rtol=1e-7, atol=1e-9 R/H comparisons at twelve
+    fixed samples. They do not certify all branches or global tensor accuracy.
+
     References
     ----------
     H. S. Xie, Phys. Plasmas 32, 082110 (2025).
