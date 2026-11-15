@@ -257,10 +257,13 @@ def test_u1_b_t09_classification_relation_is_free_of_map_arrays(candidate):
         node.module for node in ast.walk(tree) if isinstance(node, ast.ImportFrom) and node.module
     }
     assert imported == {"__future__", "scirel._result"}, imported
-    # The docstring may name the mapping relation; the executable body may not
-    # depend on it, so the search runs over the body only.
-    body = source.replace(candidate["classification_module"].__doc__, "")
-    assert body != source
+    # See Also may name other domains. Remove every scope's docstring before
+    # checking executable dependencies, including the public function's docs.
+    for node in ast.walk(tree):
+        if isinstance(node, (ast.Module, ast.ClassDef, ast.FunctionDef, ast.AsyncFunctionDef)):
+            if ast.get_docstring(node) is not None:
+                node.body = node.body[1:]
+    body = ast.unparse(tree)
     assert "axisymmetric_grid_mapping" not in body
     assert "equilibrium" not in body
     assert "interp" not in body
