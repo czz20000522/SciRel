@@ -98,13 +98,42 @@ def simulate_feedback(inputs: Mapping[str, Any], controller: Mapping[str, Any]) 
 
     Examples
     --------
-    >>> from pathlib import Path
-    >>> import json
+    >>> import numpy as np
     >>> from scirel.closures import simulate_discrete_vector_feedback
-    >>> root = Path('tests/fixtures/closures/discrete_vector_feedback/evidence')
-    >>> result = simulate_discrete_vector_feedback(json.loads((root/'fixtures/feedback-input.json').read_text()), json.loads((root/'source-defaults.json').read_text()))
-    >>> assert result['values']['total_current_A'][40] == result['values']['total_current_A'][40]
-    >>> assert len(result['time_s']) == 121
+    >>> times = [0.0, 0.25, 0.5]
+    >>> inputs = {
+    ...     'input_time_s': times,
+    ...     'observation_time_s': times,
+    ...     'signals': {
+    ...         'reference_T': [[1.0]+[0.0]*9, [2.0]+[0.0]*9, [-1.0]+[0.0]*9],
+    ...         'measured_T': np.zeros((3, 10)),
+    ...         'feedforward_current_A': [[1.0]+[0.0]*10 for _ in times],
+    ...         'enable': [1, 1, 1],
+    ...     },
+    ... }
+    >>> matrix = np.zeros((11, 10))
+    >>> matrix[0, 0] = 3.0
+    >>> controller = {
+    ...     'sample_period_s': 0.25,
+    ...     'P': [2.0]+[0.0]*9,
+    ...     'I': [0.0]*10,
+    ...     'D': [0.0]*10,
+    ...     'N_per_s': [0.0]*10,
+    ...     'coefficient_matrix_unscaled': matrix,
+    ...     'coefficient_scale': 0.5,
+    ...     'integrator_initial_state': [0.0]*10,
+    ...     'filter_initial_state': [0.0]*10,
+    ...     'internal_integration_enable': [1.0]*10,
+    ...     'internal_reset': 0,
+    ... }
+    >>> result = simulate_discrete_vector_feedback(inputs, controller)
+    >>> expected_feedback = np.zeros((3, 11))
+    >>> expected_feedback[:, 0] = [3.0, 6.0, -3.0]
+    >>> expected_total = np.zeros((3, 11))
+    >>> expected_total[:, 0] = [4.0, 7.0, -2.0]
+    >>> np.testing.assert_array_equal(result['values']['feedback_current_A'], expected_feedback)
+    >>> np.testing.assert_array_equal(result['values']['total_current_A'], expected_total)
+    >>> np.testing.assert_array_equal(result['time_s'], times)
     """
     if not isinstance(inputs, Mapping) or not isinstance(controller, Mapping):
         raise TypeError("inputs and controller must be mappings")
