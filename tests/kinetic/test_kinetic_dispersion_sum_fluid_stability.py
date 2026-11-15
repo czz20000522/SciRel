@@ -1,4 +1,4 @@
-"""Issues #226/#232: bounded finite-N fluid accuracy, including small z and the kz clamp.
+"""Issues #226/#232/#299: bounded finite-N accuracy at actual nonzero kz.
 
 The reference evaluates the original finite harmonic expression in mpmath, not the
 production A-function rearrangement. Every scale comes from public inputs; Gamma is
@@ -30,7 +30,7 @@ TEMPERATURE = 1000.0 * 1.6022e-19 / KB
 DENSITY = 6.075e19
 KX_B1 = 13261.94247879565
 FREQUENCY = 0.7 * abs(Q / M) / (2.0 * np.pi)
-CLAMP = 1e-10
+FORMER_CUTOFF = 1e-10
 
 
 def _case(*, b=1.0, order=30, kz=1e-7, frequency=FREQUENCY):
@@ -146,10 +146,10 @@ def _adjacent_small_z_switch_case(kz):
 
 
 def _reference_tensors(arguments, digits=180):
-    # Apply the declared clamp to the public float before any division/sign use.
-    # Canonicalizing here lets all equivalent clamped inputs share one reference.
-    kz = arguments["kz"]
-    effective_kz = CLAMP if abs(kz) < CLAMP else kz
+    # The old surrogate policy is retired: evaluate the actual nonzero input.
+    # Zero has no general finite-N endpoint and must not get a fabricated oracle.
+    if arguments["kz"] == 0.0:
+        raise ValueError("the finite-N reference requires nonzero kz")
     return _finite_sum_at_precision(
         arguments["B0"],
         tuple(arguments["qs"]),
@@ -157,7 +157,7 @@ def _reference_tensors(arguments, digits=180):
         tuple(arguments["ns0"]),
         tuple(arguments["Ts0"]),
         arguments["f"],
-        effective_kz,
+        arguments["kz"],
         arguments["kx"],
         arguments["lmx"],
         digits,
@@ -258,18 +258,17 @@ _CORE_CASES = [
     pytest.param(_case(b=8, kz=1e-7), id="b8-N30-finite-tail"),
     pytest.param(_case(b=8, order=60, kz=1e-7), id="b8-N60-distinct-cutoff"),
 ]
-_CLAMP_CASES = [
-    pytest.param(_case(kz=kz), id=f"clamp-{name}")
+_NEAR_ZERO_CASES = [
+    pytest.param(_case(kz=kz), id=f"actual-kz-{name}")
     for name, kz in (
-        ("zero", 0.0),
         ("positive-interior", 1e-12),
         ("negative-interior", -1e-12),
-        ("positive-adjacent-inside", np.nextafter(CLAMP, 0.0)),
-        ("positive-endpoint", CLAMP),
-        ("positive-adjacent-outside", np.nextafter(CLAMP, np.inf)),
-        ("negative-adjacent-inside", np.nextafter(-CLAMP, 0.0)),
-        ("negative-endpoint", -CLAMP),
-        ("negative-adjacent-outside", np.nextafter(-CLAMP, -np.inf)),
+        ("positive-adjacent-inside", np.nextafter(FORMER_CUTOFF, 0.0)),
+        ("positive-endpoint", FORMER_CUTOFF),
+        ("positive-adjacent-outside", np.nextafter(FORMER_CUTOFF, np.inf)),
+        ("negative-adjacent-inside", np.nextafter(-FORMER_CUTOFF, 0.0)),
+        ("negative-endpoint", -FORMER_CUTOFF),
+        ("negative-adjacent-outside", np.nextafter(-FORMER_CUTOFF, -np.inf)),
     )
 ]
 _SWITCH_CASES = [
@@ -299,7 +298,7 @@ _SMALL_Z_SWITCH_CASES = [
 ]
 _TENSOR_CASES = (
     _CORE_CASES
-    + _CLAMP_CASES
+    + _NEAR_ZERO_CASES
     + _SWITCH_CASES
     + _RESONANCE_CASES
     + _SMALL_Z_CASES
@@ -367,7 +366,8 @@ def test_fluid_small_z_large_kz_xy_matches_original_sum(frequency_sign, kz_sign)
 @pytest.mark.parametrize(
     "arguments",
     [
-        pytest.param(_case(kz=1e-12), id="worst-positive-clamp-b1-N30"),
+        pytest.param(_case(kz=1e-12), id="actual-positive-small-kz-b1-N30"),
+        pytest.param(_case(kz=-1e-12), id="actual-negative-small-kz-b1-N30"),
         pytest.param(_case(b=8, kz=1e-7), id="large-finite-tail-b8-N30"),
         pytest.param(_small_z_issue232_case(), id="small-z-issue232"),
     ],
@@ -382,3 +382,30 @@ def test_reference_140_180_digits_agree_before_binary64_rounding(arguments):
 def test_unrepresentable_positive_tail_fails_without_returning_a_partial_tensor():
     with pytest.raises(ValueError, match="positive harmonic tail.*reliable precision"):
         evaluate_fluid_kinetic_dispersion_sum(**_case(order=400))
+
+
+@pytest.mark.parametrize("kz", [0.0, -0.0])
+def test_fluid_zero_kz_is_rejected_before_numerical_work(kz, monkeypatch):
+    def forbidden(*args, **kwargs):
+        pytest.fail("zero kz reached numerical work")
+
+    monkeypatch.setattr(np, "sqrt", forbidden)
+    arguments = dict(
+        B0=1.0,
+        qs=[Q],
+        ms=[M],
+        ns0=[DENSITY],
+        Ts0=[TEMPERATURE],
+        f=FREQUENCY,
+        kz=kz,
+        kx=KX_B1,
+    )
+    with pytest.raises(ValueError, match="kz.*nonzero.*Ronnmark") as error:
+        evaluate_fluid_kinetic_dispersion_sum(**arguments)
+    assert "scirel.kinetic.kinetic-dispersion-sum-fluid" in str(error.value)
+    assert "0" in str(error.value)
+
+
+def test_reference_does_not_manufacture_a_zero_kz_endpoint():
+    with pytest.raises(ValueError, match="nonzero kz"):
+        _reference_tensors(_case(kz=0.0))

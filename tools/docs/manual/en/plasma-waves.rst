@@ -425,7 +425,9 @@ Add the Maxwell curl terms:
 Signed ``kz`` interpretation
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-For a static, drift-free, isotropic Maxwellian, ``kz`` is a signed parallel wavenumber. The causal response obeys ``K(kx,-kz)=P K(kx,kz) P`` with ``P=diag(1,1,-1)``; ``D`` has the same reflection and the determinant is invariant. Internally the resonance denominators use ``|kz|`` and the four mixed components recover their signs; ``n_z`` still uses the caller's signed ``kz``. The conventional finite-harmonic path keeps its existing ``|kz|<1e-10`` clamp to ``+1e-10``, so zero and near-zero cases remain that path's numerical convention.
+For a static, drift-free, isotropic Maxwellian, ``kz`` is a signed parallel wavenumber. The causal response obeys ``K(kx,-kz)=P K(kx,kz) P`` with ``P=diag(1,1,-1)``; ``D`` has the same reflection and the determinant is invariant. Internally the resonance denominators use ``|kz|`` and the four mixed components recover their signs; ``n_z`` still uses the caller's signed ``kz``. The fluid finite-harmonic path now evaluates every nonzero ``kz`` at its actual value and sign. Its former ``|kz|<1e-10`` replacement by ``+1e-10`` is withdrawn because it breaks SI similarity; explicitly passing ``kz=+1e-10`` reproduces the former surrogate values.
+
+For real ``b>0`` and fixed finite ``N``, the parallel expression retains ``2 alpha z0^2 (1-sum Gamma_n)``. Its positive omitted Bessel tail prevents a general finite zero-``kz`` endpoint; inserting the complete Maxwellian endpoint would change the finite model. Both ``evaluate_fluid_kinetic_dispersion_sum`` and the two-path relation therefore reject literal zero with ``ValueError`` before numerical work, without switching models. If the separately declared zero-``kz`` model is appropriate, explicitly use ``evaluate_kinetic_dispersion_ronnmark``; its standalone wavevector roots and scan keep their zero-``kz`` support. Passing SI similarity is necessary and does not prove absolute accuracy.
 
 .. code-block:: python
 

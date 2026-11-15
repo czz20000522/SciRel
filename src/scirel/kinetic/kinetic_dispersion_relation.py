@@ -97,7 +97,8 @@ def evaluate_kinetic_dispersion_relation(
         frequency.
     kz : real numeric
         Wavevector component parallel to the magnetic field, entering the parallel-resonance argument [1/m]
-        Shape: scalar. Finite absolute parallel wavenumber; zero is supported by the kinetic paths.
+        Shape: scalar. Finite nonzero absolute parallel wavenumber, with its actual sign preserved.
+        Zero is rejected before loading graph dependencies or computing scales.
     kx_frac : real numeric
         Perpendicular wavenumber as a multiple of the kn derived internally by this graph (the source
         implementation writes kx=kxf(p)*kn); the caller supplies a dimensionless ratio and this graph
@@ -152,7 +153,7 @@ def evaluate_kinetic_dispersion_relation(
     ------
     ValueError
         Raises ValueError from `derive_species_equilibrium_scales`, `probe_frequency`/`probe_wavenumber`
-        (nonfinite fractions, nonpositive `wn`/`kn`) or nonfinite `kz`; argument or `lmx` errors from
+        (nonfinite fractions, nonpositive `wn`/`kn`) or nonfinite or zero `kz`; argument or `lmx` errors from
         the kinetic sum propagate.
 
     See Also
@@ -166,23 +167,33 @@ def evaluate_kinetic_dispersion_relation(
     The graph derives omega=omega_frac*wn, kx=kx_frac*kn and f=omega/(2*pi), then evaluates the Weideman
     sum and Ronnmark paths with shared SI species state. homogeneous magnetized Maxwellian multi-species
     plasma Assumptions: All species controls describe one shared equilibrium snapshot.
+    Both paths receive the actual signed nonzero kz. The former finite-sum near-zero
+    replacement is withdrawn; explicit kz=+1e-10 reproduces that former wavepoint.
+    Zero is rejected before any graph work because the fixed finite-N sum has no general
+    finite zero endpoint. For the separately declared zero-kz model explicitly call
+    evaluate_kinetic_dispersion_ronnmark. The standalone wavevector roots and scan retain
+    their Ronnmark zero-kz domain. This composition never switches models automatically.
 
     Examples
     --------
     >>> from scirel.kinetic import evaluate_kinetic_dispersion_relation
     >>> r=evaluate_kinetic_dispersion_relation(ms=[9.1094e-31],qs=[-1.60217662e-19],ns_unit=[1],Ts_unit=[1],B0=1,n00=6.075e19,T00=1000,omega_frac=1,kz=1326.1942478795652,kx_frac=1); assert 'determinant_sum_n' in r and 'determinant_ronnmark' in r
     """
-    # Resolve the scale operator first so its established input validation runs before
-    # loading the two determinant implementations and their numerical helpers.
+    kz = float(kz)
+    if not np.isfinite(kz):
+        raise ValueError("kz must be finite")
+    if kz == 0.0:
+        raise ValueError(
+            f"kz must be nonzero; received {kz!r} 1/m. Legal range: finite kz < 0 or kz > 0. "
+            "For the separate Ronnmark zero-kz model explicitly use "
+            "evaluate_kinetic_dispersion_ronnmark; see scirel.kinetic.kinetic-dispersion-relation"
+        )
+    # Reject the unsupported wavepoint before loading dependencies or computing scales.
     from .species_equilibrium_scales import derive_species_equilibrium_scales
 
     scales = derive_species_equilibrium_scales(
         ms=ms, qs=qs, ns_unit=ns_unit, Ts_unit=Ts_unit, B0=B0, n00=n00, T00=T00
     )
-    kz = float(kz)
-    if not np.isfinite(kz):
-        raise ValueError("kz must be finite")
-
     # These are graph dependencies, not namespace dependencies.  Load them only at the
     # public call boundary after the shared equilibrium and scalar checks have succeeded.
     from .kinetic_dispersion_ronnmark import evaluate_kinetic_dispersion_ronnmark

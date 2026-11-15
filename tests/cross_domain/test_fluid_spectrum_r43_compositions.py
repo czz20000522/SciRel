@@ -1,5 +1,7 @@
 """Composition contracts for the three fluid-dispersion paths."""
 
+import builtins
+
 import numpy as np
 import pytest
 
@@ -21,6 +23,27 @@ CASE = dict(
 )
 WN = 175881684853.009
 KN = 13261.94247879565
+
+
+@pytest.mark.parametrize("kz", [0.0, -0.0])
+def test_two_path_zero_kz_is_rejected_before_dependencies(kz, monkeypatch):
+    original_import = builtins.__import__
+
+    def guarded_import(name, *args, **kwargs):
+        assert not any(
+            part in name
+            for part in (
+                "species_equilibrium_scales",
+                "kinetic_dispersion_sum_fluid",
+                "kinetic_dispersion_ronnmark",
+            )
+        ), f"zero kz loaded a graph dependency: {name}"
+        return original_import(name, *args, **kwargs)
+
+    monkeypatch.setattr(builtins, "__import__", guarded_import)
+    with pytest.raises(ValueError, match="kz.*nonzero.*Ronnmark") as error:
+        evaluate_kinetic_dispersion_relation(**CASE, omega_frac=1.0, kz=kz, kx_frac=1.0)
+    assert "scirel.kinetic.kinetic-dispersion-relation" in str(error.value)
 
 
 def test_kinetic_relation_returns_both_source_paths():
