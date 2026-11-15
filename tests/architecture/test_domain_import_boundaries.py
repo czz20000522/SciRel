@@ -100,7 +100,7 @@ def test_geometry_complex_interpolation_defers_scipy_until_called() -> None:
         """
 import sys
 import numpy as np
-from scirel.geometry import interpolate_complex_rectilinear_field
+from scirel.numerics.interpolate import interpolate_complex_rectilinear_field
 
 assert "scipy" not in sys.modules
 axes = {"x_m": [0.0, 1.0], "y_m": [0.0, 1.0], "z_m": [0.0, 1.0]}

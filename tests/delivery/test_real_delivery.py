@@ -312,6 +312,129 @@ print(json.dumps({"contracts": 33, "modules": len({api["module"] for api in json
     assert json.loads(done.stdout)["modules"] == 32
 
 
+def test_packaged_interpolation_ownership_and_calls(real_delivery):
+    """Consume both migrated APIs from an actual package and isolated install."""
+    case = real_delivery
+    expected = {
+        "scirel.numerics.bilinear-grid-sampling": (
+            "bilinear_grid_sampling",
+            "sample_rectilinear_field",
+        ),
+        "scirel.numerics.complex-rectilinear-interpolation": (
+            "complex_rectilinear_interpolation",
+            "interpolate_complex_rectilinear_field",
+        ),
+    }
+    found = set()
+    cursor = None
+    for _ in range(case.identity["asset_count"]):
+        arguments = [
+            "browse",
+            *_pin_flags(case),
+            "--taxonomy",
+            "numerics",
+            "--q",
+            "rectilinear",
+            "--limit",
+            "100",
+        ]
+        if cursor is not None:
+            arguments.extend(["--cursor", cursor])
+        page = _query(case, *arguments)
+        assert page["outcome"] == "match"
+        current = {item["asset_id"] for item in page["result"]["items"]}
+        assert current and found.isdisjoint(current)
+        found.update(current)
+        cursor = page["next_cursor"]
+        if cursor is None:
+            break
+    else:
+        pytest.fail("rectilinear interpolation pagination did not terminate")
+    assert set(expected) <= found
+    with ZipFile(case.wheel) as wheel:
+        members = set(wheel.namelist())
+    for asset, (module, symbol) in expected.items():
+        document = _query(case, "get", asset, *_pin_flags(case))["document"]
+        api = document["public_api"]["python"]
+        assert api["canonical_module"] == "scirel.numerics.interpolate"
+        assert api["symbol"] == symbol
+        assert api["module"] == "scirel.numerics.interpolate." + module
+        assert "scirel/numerics/interpolate/" + module + ".py" in members
+        assert "scirel/geometry/" + module + ".py" not in members
+        assert (
+            "catalog/contracts/" + asset.replace("scirel.numerics.", "scirel.geometry.") + ".json"
+            not in case.identity["files"]
+        )
+    # Install the wheel's declared optional extra for the unchanged SciPy-backed
+    # callable; this does not add a source-checkout dependency to the consumer.
+    _run(
+        ["uv", "pip", "install", "--python", case.python, str(case.wheel) + "[scipy]"],
+        cwd=case.work,
+    )
+    driver = """
+import importlib, json, sys
+from pathlib import Path
+import numpy as np
+import scirel
+from scirel import geometry, numerics
+from scirel._result import Result
+from scirel.numerics import interpolate
+assert Path(scirel.__file__).is_relative_to(Path(sys.prefix))
+for module_name, symbol in json.loads(sys.argv[1]).values():
+    module = importlib.import_module("scirel.numerics.interpolate." + module_name)
+    assert getattr(numerics, symbol) is getattr(module, symbol)
+    assert getattr(interpolate, symbol) is getattr(module, symbol)
+    assert not hasattr(geometry, symbol) and not hasattr(geometry, module_name)
+    old = "scirel.geometry." + module_name
+    try:
+        importlib.import_module(old)
+    except ModuleNotFoundError as error:
+        assert error.name == old
+    else:
+        raise AssertionError(old)
+assert numerics.face_to_cell is interpolate.face_to_cell
+np.testing.assert_array_equal(interpolate.face_to_cell([0.,2.,8.,10.]), [1.,5.,9.])
+r, z = np.meshgrid([1.,2.,4.], [-1.,1.])
+q = 3*r - 2*z + 1
+real = interpolate.sample_rectilinear_field(r,z,q,[[1.5,0.],[4.,1.]])
+assert type(real) is dict
+np.testing.assert_array_equal(real["samples"], [5.5,11.])
+try:
+    interpolate.sample_rectilinear_field(r,z,q,[[1.5,0.],[4.1,0.]])
+except ValueError as error:
+    assert "outside the R-Z grid" in str(error)
+else:
+    raise AssertionError("out-of-grid real query accepted")
+axes = {"x_m": np.array([0.,2.]), "y_m": np.array([-1.,3.]), "z_m": np.array([1.,4.])}
+x,y,z = np.meshgrid(*axes.values(), indexing="ij")
+f = x+2*y+3*z + 1j*(2*x-y+z)
+values = np.stack([f,2*f], axis=-1)
+tol = 32*np.finfo(float).eps*4
+points = np.array([[1.,.5,2.5],[2.+tol/2,0.,2.],[2.+4*tol,0.,2.]])
+result = interpolate.interpolate_complex_rectilinear_field(axes,values,points)
+assert isinstance(result, Result) and result.valid_mask is result["valid_mask"]
+assert result.interpolated_values.dtype == np.complex128
+assert result.interpolated_values.shape == (3,2)
+assert result.valid_mask.tolist() == [True,True,False]
+np.testing.assert_array_equal(result.interpolated_values[0], [9.5+4j,19+8j])
+face = interpolate.interpolate_complex_rectilinear_field(axes,values,[[2.,0.,2.]])
+np.testing.assert_array_equal(result.interpolated_values[1], face.interpolated_values[0])
+assert np.isnan(result.interpolated_values[2].real).all()
+assert np.isnan(result.interpolated_values[2].imag).all()
+empty = interpolate.interpolate_complex_rectilinear_field(axes,values,np.empty((0,3)))
+assert empty.interpolated_values.shape == (0,2) and empty.valid_mask.shape == (0,)
+try:
+    interpolate.interpolate_complex_rectilinear_field(axes,values,[[1.,0.,np.nan]])
+except ValueError:
+    pass
+else:
+    raise AssertionError("nonfinite target accepted")
+print(json.dumps({"bindings": 2, "real_return": type(real).__name__, "complex_return": type(result).__name__, "valid_mask": result.valid_mask.tolist()}))
+"""
+    done = _run([case.python, "-I", "-B", "-c", driver, json.dumps(expected)], cwd=case.work)
+    assert json.loads(done.stdout)["bindings"] == 2
+
+
 @pytest.fixture
 def saved_result(real_delivery):
     with TemporaryDirectory(prefix="result-", dir=real_delivery.work) as temporary:

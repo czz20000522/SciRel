@@ -2,7 +2,7 @@
 
 These tests load the *isolated* candidate module by file path, so the frozen
 ``src/scirel`` tree is never on ``sys.path`` and never imported.  Every claim in
-``documents/scirel.geometry.complex-rectilinear-interpolation.json`` is bound to
+``documents/scirel.numerics.complex-rectilinear-interpolation.json`` is bound to
 a test ID below.
 """
 
@@ -22,12 +22,14 @@ from scirel._result import Result
 
 _CANDIDATE = (
     Path(
-        importlib.import_module("scirel.geometry.complex_rectilinear_interpolation").__file__
+        importlib.import_module(
+            "scirel.numerics.interpolate.complex_rectilinear_interpolation"
+        ).__file__
     ).resolve()
     if os.environ.get("SCIREL_INSTALLED_RUNTIME") == "1"
     else (
         Path(__file__).resolve().parents[2]
-        / "src/scirel/geometry/complex_rectilinear_interpolation.py"
+        / "src/scirel/numerics/interpolate/complex_rectilinear_interpolation.py"
     )
 )
 

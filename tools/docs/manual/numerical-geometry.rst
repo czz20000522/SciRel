@@ -38,7 +38,7 @@
 .. code-block:: python
 
    import numpy as np
-   from scirel.geometry import sample_rectilinear_field
+   from scirel.numerics.interpolate import sample_rectilinear_field
 
    B0, R0, rs = 2.0, 1.5, 0.4
 
@@ -259,7 +259,7 @@
 什么时候该用哪一层
 ------------------
 
-- 二维实值场在闭矩形域内取点：:doc:`../reference/generated/scirel.geometry.bilinear-grid-sampling`。
+- 二维实值场在闭矩形域内取点：:doc:`../reference/generated/scirel.numerics.bilinear-grid-sampling`。
 - 一维磁通剖面排序、去重和线性插值：:doc:`../reference/generated/scirel.geometry.flux-surface-profile`。
 - 沿已有 ``R-Z`` 折线做 ``dl/B`` 与加权平均：:doc:`../reference/generated/scirel.geometry.flux-surface-inverse-field-average`。
 - 从等值线级别选择一段并定向、截断：:doc:`../reference/generated/scirel.sampling.select-fieldline` 和 :doc:`../reference/generated/scirel.sampling.parse-segment`。

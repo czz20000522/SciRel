@@ -341,7 +341,7 @@ def test_u1_a_t09_public_signature_is_the_documented_one(candidate):
 def test_u1_a_t10_declared_sibling_relation_is_structural_not_a_duplicate(
     candidate, equilibrium, axes
 ):
-    """Record the relation to ``scirel.geometry.sample_rectilinear_field``.
+    """Record the relation to ``scirel.numerics.interpolate.sample_rectilinear_field``.
 
     The frozen baseline already samples real rectilinear R-Z fields.  This asset
     is a sibling, not a duplicate and not a successor: it takes a mapping of named

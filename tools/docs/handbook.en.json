@@ -717,8 +717,8 @@
      "title": "Querying real- and complex-valued fields on rectilinear grids",
      "introduction": "Two-dimensional real-valued fields use bilinear sampling inside a closed grid domain; the three-dimensional complex-valued entry point uses trilinear interpolation and returns a validity mask. Their out-of-domain behavior differs, and neither reconstructs curvilinear coordinates or unstructured grids.",
      "assets": [
-      "scirel.geometry.bilinear-grid-sampling",
-      "scirel.geometry.complex-rectilinear-interpolation"
+      "scirel.numerics.bilinear-grid-sampling",
+      "scirel.numerics.complex-rectilinear-interpolation"
      ]
     },
     {

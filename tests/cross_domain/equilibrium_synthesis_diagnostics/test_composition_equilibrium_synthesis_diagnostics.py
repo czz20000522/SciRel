@@ -98,7 +98,7 @@ def test_yaml_declares_observer_only_sampling_contract():
     assert "primary_pfm_node: N9" in contract
     assert "id: flux_loop_sampling" in contract
     assert "id: thomson_sampling" in contract
-    assert "scirel.geometry.bilinear_grid_sampling" in contract
+    assert "scirel.numerics.interpolate.bilinear_grid_sampling" in contract
 
 
 # 验证：flux 分支读取 psi，结果按 source 的 flux-first key 顺序出现。

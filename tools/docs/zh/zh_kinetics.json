@@ -285,8 +285,8 @@
    }
   },
   {
-   "asset_id": "scirel.geometry.complex-rectilinear-interpolation",
-   "source_sha256": "33b86da610ec70c70fda111f3fd97e4fbcf3dc9885801ea48c967c93d2000a78",
+   "asset_id": "scirel.numerics.complex-rectilinear-interpolation",
+   "source_sha256": "a5dccf22ab3f4e5e22f37ccbb1ecad18025c79250d2a4f40c80376a88cf8122b",
    "summary": "在三个严格递增的直角坐标轴上三线性插值复数场，返回几何有效掩码；容差扩展盒外返回 nan+nanj。 顶层返回值是 scirel._result.Result 映射；非冲突字段支持属性读取。",
    "definition": "源值按[Nx,Ny,Nz]排列，按[x,y,z]可分三线性插值。闭盒外扩tol内的点裁到闭盒采样；扩展盒外返回nan+nanj与False。 完整结果作为同一个 scirel._result.Result 映射返回；映射访问保留，非冲突字段也支持属性读取，不引入嵌套 Result。",
    "model": "带限复场的分片三线性重构。",
@@ -3718,7 +3718,7 @@
   },
   {
    "asset_id": "scirel.diagnostics.equilibrium-synthesis-diagnostics",
-   "source_sha256": "8a572bb8bfaa23589edb77059a854198da5e07da77f0772195c2210fa90921a7",
+   "source_sha256": "d18b1b60725fe3b875f4af5876e2b896f20e03496712bf3b361908ef9137208e",
    "summary": "在同一 R–Z 网格上按明确单位采样磁通与所请求的压强、密度或电子温度；区分原始 psi 样本与完整圆环磁通。 以 scirel._result.Result 映射返回顶层命名字段。",
    "definition": "使用既有双线性采样器。flux_loops.quantity=raw_psi 时保留 equilibrium.psi_unit；quantity=magnetic_flux 时输出 Wb，仅对明确声明为 Wb/rad 的 psi 乘以 2π，Wb 输入不变。thomson 只采样明确请求且具有相同单位声明的实际 profile，不推算缺失通道。所有结果附 units。 顶层 flux_loops、thomson 与 units 字段作为 scirel._result.Result 映射返回；嵌套 thomson 与 units 仍为普通 dict。",
    "model": "平衡场的只读点采样；thomson 是历史命名空间，不是 Thomson 散射仪器模型",
@@ -3814,8 +3814,8 @@
    }
   },
   {
-   "asset_id": "scirel.geometry.bilinear-grid-sampling",
-   "source_sha256": "2e654dd18db4e997a203785ad5fa21d77e9ade49fabd38461d066fb1e3b8db0d",
+   "asset_id": "scirel.numerics.bilinear-grid-sampling",
+   "source_sha256": "91d271008fa05ff7662082bfa46adcc4e93efb2b91eee8548c5393d7412b9c6a",
    "summary": "在规则的柱坐标 R–Z 网格内，对有限实数标量场进行逐单元双线性点采样。",
    "definition": "在包围查询点的单元内，按R和Z分数权重混合四个[Z,R]角点值；按查询顺序返回。",
    "model": "不包含场方程的分片双线性标量插值。",

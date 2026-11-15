@@ -130,8 +130,8 @@ def map_axisymmetric_equilibrium_to_cartesian_grid(equilibrium, x_m, y_m, z_m):
 
     See Also
     --------
-    sample_rectilinear_field : Sibling sampler with a fail-closed query boundary.
-    interpolate_complex_rectilinear_field : Interpolation of complex rectilinear fields.
+    scirel.numerics.interpolate.sample_rectilinear_field : Sibling sampler with a fail-closed query boundary.
+    scirel.numerics.interpolate.interpolate_complex_rectilinear_field : Interpolation of complex rectilinear fields.
 
     Notes
     -----

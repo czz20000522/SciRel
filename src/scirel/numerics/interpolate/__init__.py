@@ -3,10 +3,15 @@
 from importlib import import_module as _import_module
 
 
-__all__ = ["face_to_cell"]
+__all__ = ["face_to_cell", "sample_rectilinear_field", "interpolate_complex_rectilinear_field"]
 
 _LAZY_EXPORTS = {
     "face_to_cell": ("midpoint", "face_to_cell"),
+    "sample_rectilinear_field": ("bilinear_grid_sampling", "sample_rectilinear_field"),
+    "interpolate_complex_rectilinear_field": (
+        "complex_rectilinear_interpolation",
+        "interpolate_complex_rectilinear_field",
+    ),
 }
 
 

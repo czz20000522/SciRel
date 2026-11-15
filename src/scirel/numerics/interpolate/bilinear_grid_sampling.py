@@ -75,8 +75,8 @@ def sample_rectilinear_field(r_grid, z_grid, quantity, points):
 
     See Also
     --------
-    map_axisymmetric_equilibrium_to_cartesian_grid : Axisymmetric equilibrium map to Cartesian solver grid.
-    interpolate_complex_rectilinear_field : Complex rectilinear field interpolation.
+    scirel.geometry.map_axisymmetric_equilibrium_to_cartesian_grid : Axisymmetric equilibrium map to Cartesian solver grid.
+    scirel.numerics.interpolate.interpolate_complex_rectilinear_field : Complex rectilinear field interpolation.
 
     Notes
     -----
@@ -103,7 +103,7 @@ def sample_rectilinear_field(r_grid, z_grid, quantity, points):
     Examples
     --------
     >>> import numpy as np
-    >>> from scirel.geometry import sample_rectilinear_field
+    >>> from scirel.numerics.interpolate import sample_rectilinear_field
     >>> r_grid, z_grid = np.meshgrid([1.0, 2.0, 4.0], [-1.0, 1.0])
     >>> quantity = 3.0*r_grid - 2.0*z_grid + 1.0
     >>> result = sample_rectilinear_field(r_grid, z_grid, quantity, [[1.5, 0.0], [4.0, 1.0]])
