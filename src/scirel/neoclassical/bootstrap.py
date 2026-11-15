@@ -12,8 +12,7 @@ from scirel._result import Result
 from scirel.geometry.face_to_cell import face_to_cell
 
 __all__ = [
-    "calculate_sauter_coefficients",
-    "calculate_redl_coefficients",
+    "compute_bootstrap_coefficients",
     "calculate_bootstrap_current",
 ]
 
@@ -88,70 +87,8 @@ def _alpha_sauter(f, nu):
     return _weighted_alpha(first, f, nu, 0.315, 0.15)
 
 
-def calculate_sauter_coefficients(f_trap, nu_e_star, Z_eff, nu_i_star):
-    """Return Sauter's face coefficients as named Result fields.
-
-    Parameters
-    ----------
-    f_trap : real numeric converted to float64, shape N+1
-        Caller-supplied trapped-particle fraction, not inverse aspect ratio. 0
-        <= f_trap <= 1; finite faces.
-    nu_e_star : real numeric converted to float64, shape N+1
-        Caller-supplied electron collision/bounce frequency ratio under the
-        model convention. Nonnegative finite faces.
-    Z_eff : real numeric converted to float64, shape N+1
-        Effective ionic charge for the fit. Sauter positive; Redl >=1; physical
-        quasineutral fully ionized plasma Z_eff>=1.
-    nu_i_star : real numeric converted to float64, shape N+1
-        Caller-supplied ion collision/bounce frequency ratio under the model
-        convention. Nonnegative finite faces.
-
-    Returns
-    -------
-    L31 : real numeric converted to float64, shape N+1
-        Field of the returned Result mapping: dimensionless density-gradient
-        fit coefficient on faces. Finite; equal explicit one-dimensional face
-        shape; no broadcasting.
-    L32 : real numeric converted to float64, shape N+1
-        Field of the returned Result mapping: dimensionless electron-temperature
-        coefficient correction on faces. Finite; equal explicit one-dimensional
-        face shape; no broadcasting.
-    L34 : real numeric converted to float64, shape N+1
-        Field of the returned Result mapping: dimensionless ion-temperature
-        coefficient on faces. Finite; equal explicit one-dimensional face
-        shape; no broadcasting.
-    alpha : real numeric converted to float64, shape N+1
-        Field of the returned Result mapping: dimensionless ion
-        temperature-gradient fit multiplier on faces.
-        Finite; equal explicit one-dimensional face shape; no broadcasting.
-
-    Raises
-    ------
-    FloatingPointError
-        FloatingPointError for nonfinite coefficient/current arithmetic; no
-        fallback is returned.
-    ValueError
-        ValueError for malformed, nonfinite, masked, mismatched or out-of-domain
-        face inputs; no partial result.
-
-    See Also
-    --------
-    calculate_redl_coefficients : Redl et al. (2021) refit of the same coefficients.
-    calculate_bootstrap_current : Assemble the current from these coefficients.
-
-    Notes
-    -----
-    The returned ``scirel._result.Result`` mapping has fields in insertion order
-    ``L31``, ``L32``, ``L34``, ``alpha``. Use field names or attribute access;
-    iteration yields field names, not coefficient arrays. Positional tuple
-    indexing and array unpacking are not provided.
-
-    Examples
-    --------
-    >>> from scirel.neoclassical import calculate_sauter_coefficients
-    >>> coefficients = calculate_sauter_coefficients([0.,0.],[0.,0.],[1.,1.],[0.,0.])
-    >>> assert (coefficients.L31==0).all() and (coefficients.L32==0).all() and (coefficients.L34==0).all()
-    """
+def _sauter_coefficients(f_trap, nu_e_star, Z_eff, nu_i_star):
+    """Evaluate the existing Sauter coefficient fit."""
     f, nue, z = _common(f_trap, nu_e_star, Z_eff)
     nui = _face("nu_i_star", nu_i_star)
     if nui.shape != f.shape or np.any(nui < 0.0):
@@ -199,70 +136,8 @@ def _alpha_redl(f, nu, z):
     return _weighted_alpha(first, f, nu, -0.002, 0.004)
 
 
-def calculate_redl_coefficients(f_trap, nu_e_star, Z_eff, nu_i_star):
-    """Return Redl's face coefficients as named Result fields.
-
-    Parameters
-    ----------
-    f_trap : real numeric converted to float64, shape N+1
-        Caller-supplied trapped-particle fraction, not inverse aspect ratio. 0
-        <= f_trap <= 1; finite faces.
-    nu_e_star : real numeric converted to float64, shape N+1
-        Caller-supplied electron collision/bounce frequency ratio under the
-        model convention. Nonnegative finite faces.
-    Z_eff : real numeric converted to float64, shape N+1
-        Effective ionic charge for the fit. Sauter positive; Redl >=1; physical
-        quasineutral fully ionized plasma Z_eff>=1.
-    nu_i_star : real numeric converted to float64, shape N+1
-        Caller-supplied ion collision/bounce frequency ratio under the model
-        convention. Nonnegative finite faces.
-
-    Returns
-    -------
-    L31 : real numeric converted to float64, shape N+1
-        Field of the returned Result mapping: dimensionless density-gradient
-        fit coefficient on faces. Finite; equal explicit one-dimensional face
-        shape; no broadcasting.
-    L32 : real numeric converted to float64, shape N+1
-        Field of the returned Result mapping: dimensionless electron-temperature
-        coefficient correction on faces. Finite; equal explicit one-dimensional
-        face shape; no broadcasting.
-    L34 : real numeric converted to float64, shape N+1
-        Field of the returned Result mapping: dimensionless ion-temperature
-        coefficient on faces, equal to L31. Finite; equal explicit
-        one-dimensional face shape; no broadcasting.
-    alpha : real numeric converted to float64, shape N+1
-        Field of the returned Result mapping: dimensionless ion
-        temperature-gradient fit multiplier on faces.
-        Finite; equal explicit one-dimensional face shape; no broadcasting.
-
-    Raises
-    ------
-    FloatingPointError
-        FloatingPointError for nonfinite coefficient/current arithmetic; no
-        fallback is returned.
-    ValueError
-        ValueError for malformed, nonfinite, masked, mismatched or out-of-domain
-        face inputs; no partial result.
-
-    See Also
-    --------
-    calculate_sauter_coefficients : Sauter et al. (1999) coefficients.
-    calculate_bootstrap_current : Assemble the current from these coefficients.
-
-    Notes
-    -----
-    The returned ``scirel._result.Result`` mapping has fields in insertion order
-    ``L31``, ``L32``, ``L34``, ``alpha``. Use field names or attribute access;
-    iteration yields field names, not coefficient arrays. Positional tuple
-    indexing and array unpacking are not provided.
-
-    Examples
-    --------
-    >>> from scirel.neoclassical import calculate_redl_coefficients
-    >>> coefficients = calculate_redl_coefficients([0.,0.],[0.,0.],[1.,1.],[0.,0.])
-    >>> assert (coefficients.L31==0).all() and (coefficients.L32==0).all() and (coefficients.L34==0).all()
-    """
+def _redl_coefficients(f_trap, nu_e_star, Z_eff, nu_i_star):
+    """Evaluate the existing Redl coefficient fit."""
     f, nue, z = _common(f_trap, nu_e_star, Z_eff)
     nui = _face("nu_i_star", nu_i_star)
     if nui.shape != f.shape or np.any(nui < 0.0) or np.any(z < 1.0):
@@ -310,6 +185,92 @@ def calculate_redl_coefficients(f_trap, nu_e_star, Z_eff, nu_i_star):
     if not all(np.all(np.isfinite(value)) for value in result):
         raise FloatingPointError("Redl coefficients are not finite for the supplied faces")
     return Result(L31=result[0], L32=result[1], L34=result[2], alpha=result[3])
+
+
+def compute_bootstrap_coefficients(f_trap, nu_e_star, Z_eff, nu_i_star, *, method="redl"):
+    """Evaluate one of the existing bootstrap-current coefficient fits.
+
+    Parameters
+    ----------
+    f_trap : real array_like, shape (N+1,)
+        Trapped-particle fraction [1], not inverse aspect ratio. Finite values
+        in [0, 1]; at least two faces and the same shape as all other inputs.
+    nu_e_star : real array_like, shape (N+1,)
+        Electron collisionality [1] in the selected fit's normalization.
+        Finite and nonnegative; no broadcasting or normalization is inferred.
+    Z_eff : real array_like, shape (N+1,)
+        Effective charge [1]. Strictly positive for Sauter; at least one for
+        Redl. Values below one are not a fully ionized quasineutral plasma.
+    nu_i_star : real array_like, shape (N+1,)
+        Ion collisionality [1] in the selected fit's normalization. Finite and
+        nonnegative, with the same explicit face shape as f_trap.
+    method : {'redl', 'sauter'}, optional
+        Closed fit selector [1]. The default is the newer Redl refit; this does
+        not imply it is more accurate for every plasma. Read the selected
+        method's range and limitations in the family contract.
+
+    Returns
+    -------
+    L31 : float64 array, shape (N+1,)
+        Density-gradient fit coefficient [1] in the returned Result mapping.
+    L32 : float64 array, shape (N+1,)
+        Electron-temperature coefficient correction [1] in the same mapping.
+    L34 : float64 array, shape (N+1,)
+        Ion-temperature fit coefficient [1]; equal to L31 for Redl.
+    alpha : float64 array, shape (N+1,)
+        Ion-temperature-gradient multiplier [1]. All four fields are finite
+        and follow the explicit input face shape.
+
+    Raises
+    ------
+    TypeError
+        If method is not a string, or an unsupported parameter is supplied.
+    ValueError
+        If method is unknown or any physical input is masked, non-real,
+        nonfinite, incorrectly shaped or outside the selected fit's domain.
+    FloatingPointError
+        If the computed coefficients are not finite.
+
+    See Also
+    --------
+    calculate_bootstrap_current : Assemble current from explicit coefficients.
+
+    Notes
+    -----
+    Both methods accept the same physical quantities and return the Result
+    fields L31, L32, L34, alpha in that order. Each retains its existing fit,
+    charge domain and failure behavior. The caller supplies trapped fraction
+    and collisionality; this function derives no magnetic geometry or profiles.
+    Method-specific applicability and evidence remain separate in contract
+    scirel.neoclassical.bootstrap-coefficients. No numerical order option is
+    implemented. Finite coefficient evaluation alone is not physical calibration.
+
+    References
+    ----------
+    .. [1] O. Sauter, C. Angioni and Y. R. Lin-Liu, Physics of Plasmas 6,
+       2834 (1999), doi:10.1063/1.873240.
+    .. [2] A. Redl et al., Physics of Plasmas 28, 022502 (2021),
+       doi:10.1063/5.0012664.
+
+    Examples
+    --------
+    >>> from scirel.neoclassical import compute_bootstrap_coefficients
+    >>> redl = compute_bootstrap_coefficients([0.2, 0.4], [0.1, 1.0], [1.0, 2.0], [0.1, 1.0], method='redl')
+    >>> sauter = compute_bootstrap_coefficients([0.2, 0.4], [0.1, 1.0], [1.0, 2.0], [0.1, 1.0], method='sauter')
+    >>> assert list(redl) == list(sauter) == ['L31', 'L32', 'L34', 'alpha']
+    >>> assert redl.L31.shape == sauter.L31.shape == (2,)
+    """
+    asset = "scirel.neoclassical.bootstrap-coefficients"
+    if not isinstance(method, str):
+        raise TypeError(
+            f"method must be str selecting 'redl' or 'sauter'; received {type(method).__name__}; "
+            f"see {asset}"
+        )
+    if method == "redl":
+        return _redl_coefficients(f_trap, nu_e_star, Z_eff, nu_i_star)
+    if method == "sauter":
+        return _sauter_coefficients(f_trap, nu_e_star, Z_eff, nu_i_star)
+    raise ValueError(f"method={method[:64]!r} must be 'redl' or 'sauter'; see {asset}")
 
 
 def calculate_bootstrap_current(
@@ -415,8 +376,7 @@ def calculate_bootstrap_current(
 
     See Also
     --------
-    calculate_sauter_coefficients : Sauter et al. (1999) L31, L32, L34 and alpha.
-    calculate_redl_coefficients : Redl et al. (2021) L31, L32, L34 and alpha.
+    compute_bootstrap_coefficients : Select Sauter or Redl coefficients with method.
     scirel.io.read_geqdsk : G-EQDSK flux is per radian (Wb/rad).
 
     Examples

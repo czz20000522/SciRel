@@ -96,6 +96,36 @@ the [`scirel-acceptance` skill](../skills/development/scirel-acceptance/SKILL.md
 - `rcond` is relative to the largest singular value; non-finite rotate inputs
   are rejected; these implementation choices are contract truths with tests.
 
+## Model families: one callable, one contract
+
+When several existing fits compute the same quantity from the same physical
+inputs, the public function selects them with a keyword-only `method`. Its one
+contract keeps common ports and guarantees at the top level. Optional `family`
+metadata retains the differences needed to choose a method:
+
+- `name`, `default`, `default_reason`: the relation and its actual default,
+  with a reason rather than an unsupported universal accuracy claim.
+- `methods`: a nonempty list of uniquely named choices. Every member retains
+  its own `model`, `numerical_controls`, `applicability`, `failure_semantics`
+  and `verification`. It is not a separate public callable or contract.
+- A numerical control names an existing optional input and carries a `default`
+  and `constraints`; the callable rejects it for methods that do not use it.
+- Member tests enter the existing top-level consumer scope. A file scope may
+  cover its nodes without selecting them twice. The example explicitly calls
+  every method; default-only execution cannot verify the other choices.
+
+The reader carries the same family and method names, order, defaults and control
+names, with translated prose and complete method-specific clauses. Executable
+test identities stay in the English contract; do not create a translated test
+registry. Index cards and API pages are generated from these bound records.
+The complete contract is still needed before selecting a method.
+
+Schema/format checks establish structure and binding, not physical calibration
+or that a cited test covers every branch. Use the actual same-run test records
+and independent scientific review for those claims. A migration from two
+contracts to one family must preserve both fits and record the original IDs'
+method destinations in its issue; fewer contracts do not mean less review.
+
 ## Capability discovery metadata and intake ownership
 
 A contract must let a consumer **find and select** a capability, not only call it.

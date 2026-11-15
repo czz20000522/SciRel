@@ -3,8 +3,7 @@
 from importlib import import_module as _import_module
 
 __all__ = [
-    "calculate_redl_coefficients",
-    "calculate_sauter_coefficients",
+    "compute_bootstrap_coefficients",
     "calculate_bootstrap_current",
 ]
 _LAZY_EXPORTS = {name: ("bootstrap", name) for name in __all__}

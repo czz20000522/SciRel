@@ -3,28 +3,35 @@ import pytest
 
 from scirel.neoclassical.bootstrap import (
     calculate_bootstrap_current,
-    calculate_redl_coefficients,
-    calculate_sauter_coefficients,
+    compute_bootstrap_coefficients,
 )
 
 
 def test_sauter_alpha_finite_large_collisionality():
-    coefficients = calculate_sauter_coefficients([0.5, 0.5], [1.0, 1.0], [2.0, 2.0], [1e300, 1e300])
+    coefficients = compute_bootstrap_coefficients(
+        [0.5, 0.5], [1.0, 1.0], [2.0, 2.0], [1e300, 1e300], method="sauter"
+    )
     alpha = coefficients.alpha
     assert np.isfinite(alpha[0])
     np.testing.assert_allclose(alpha, [2.1, 2.1], rtol=0, atol=1e-14)
 
 
 def test_redl_alpha_and_l34_caller_convention():
-    coefficients = calculate_redl_coefficients([0.4, 0.4], [0.2, 0.2], [2.0, 2.0], [1e200, 1e200])
+    coefficients = compute_bootstrap_coefficients(
+        [0.4, 0.4], [0.2, 0.2], [2.0, 2.0], [1e200, 1e200], method="redl"
+    )
     l31, l34, alpha = coefficients.L31, coefficients.L34, coefficients.alpha
     np.testing.assert_array_equal(l34, l31)
     np.testing.assert_allclose(alpha, [-0.5, -0.5], rtol=0, atol=1e-14)
 
 
 def test_coefficients_match_source_for_ordinary_case():
-    got = calculate_sauter_coefficients(
-        np.array([0.2, 0.5]), np.array([0.01, 10.0]), np.array([1.5, 2.0]), np.array([0.03, 2.0])
+    got = compute_bootstrap_coefficients(
+        np.array([0.2, 0.5]),
+        np.array([0.01, 10.0]),
+        np.array([1.5, 2.0]),
+        np.array([0.03, 2.0]),
+        method="sauter",
     )
     f = np.array([0.2, 0.5])
     nui = np.array([0.03, 2.0])
@@ -80,7 +87,9 @@ def test_current_requires_nonzero_interior_flux_gradient():
 
 
 def test_alpha_binary_exponent_cancellation():
-    sa = calculate_sauter_coefficients([1e-100] * 2, [1.0] * 2, [2.0] * 2, [1e300] * 2).alpha
+    sa = compute_bootstrap_coefficients(
+        [1e-100] * 2, [1.0] * 2, [2.0] * 2, [1e300] * 2, method="sauter"
+    ).alpha
     # Exact decimal relation y=nu_i^2*f^6=1; B tends to .5.
     np.testing.assert_allclose(sa, (0.5 + 0.315) / (1 + 0.15), rtol=2e-14, atol=3e-15)
 
@@ -110,7 +119,9 @@ def test_current_finite_extreme_midpoints():
 
 def test_scalar_and_mixed_boolean_input_contract():
     with pytest.raises(ValueError):
-        calculate_sauter_coefficients([True, 0.5], [1.0, 1.0], [2.0, 2.0], [1.0, 1.0])
+        compute_bootstrap_coefficients(
+            [True, 0.5], [1.0, 1.0], [2.0, 2.0], [1.0, 1.0], method="sauter"
+        )
     one = np.ones(3)
     zero = np.zeros(3)
     for invalid in ("2.0", True, [2.0], 2j, np.ma.array(2.0, mask=True)):
