@@ -29,6 +29,18 @@ WN = 175881684853.009
 KN = 13261.94247879565
 
 
+@pytest.mark.parametrize("omega_frac", [0.0, -0.0])
+def test_relation_zero_frequency_remains_a_caller_error(omega_frac):
+    with pytest.raises(ValueError, match="non-?zero"):
+        evaluate_kinetic_dispersion_relation(**CASE, omega_frac=omega_frac, kz=1.0, kx_frac=1.0)
+
+
+@pytest.mark.parametrize("lmx", [None, True, 1.5, -1])
+def test_relation_integer_control_does_not_inherit_family_none_default(lmx):
+    with pytest.raises(ValueError, match="lmx"):
+        evaluate_kinetic_dispersion_relation(**CASE, omega_frac=1.0, kz=1.0, kx_frac=1.0, lmx=lmx)
+
+
 @pytest.mark.parametrize("kz", [0.0, -0.0])
 def test_two_path_zero_kz_is_rejected_before_dependencies(kz, monkeypatch):
     original_import = builtins.__import__

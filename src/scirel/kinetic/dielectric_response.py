@@ -23,7 +23,7 @@ def _harmonics(value, *, default, asset):
         number = operator.index(value)
     except TypeError:
         raise TypeError(
-            f"harmonics must be an integer; received type={type(value).__name__}; {legal}"
+            f"harmonics must be an integer; received {value!r}, type={type(value).__name__}; {legal}"
         ) from None
     if number < 0:
         raise ValueError(f"harmonics must be non-negative; received {number}; {legal}")
@@ -150,7 +150,7 @@ def evaluate_dielectric_response(
     """
     if not isinstance(method, str):
         raise TypeError(
-            f"method must be a string; received type={type(method).__name__}; "
+            f"method must be a string; received {method!r}, type={type(method).__name__}; "
             f"legal values: {_METHODS}; see {_ASSET}"
         )
     if method not in _METHODS:
