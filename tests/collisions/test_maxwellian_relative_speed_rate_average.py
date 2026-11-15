@@ -13,6 +13,7 @@ archived implementation when its root is supplied.
 from __future__ import annotations
 
 import inspect
+import math
 from decimal import Decimal, localcontext
 
 import numpy as np
@@ -657,3 +658,173 @@ def test_compensating_weights_keep_readonly_inputs_and_callback_shape():
     for array, before in zip((vr, vx, volume), kept, strict=True):
         np.testing.assert_array_equal(array, before)
         assert not array.flags.writeable
+
+
+def test_common_axial_exponent_keeps_radial_probability_for_comoving_beam():
+    # Review A: the common exp(-1e16) cancels; it must not erase exp(-vr**2).
+    # The retained float64 kinematics give beam=100000000.00000001, not 1e8.
+    # Bind that original arithmetic independently, then use Decimal probabilities;
+    # do not absorb the tiny nonzero relative speed into a changed tolerance.
+    thermal = math.sqrt(2.0 * 1.602177e-19 / 1.6726231e-27)
+    beam = math.sqrt(2.0 * 1.602177e-19 * 1e16 / 1.6726231e-27) / thermal
+    assert beam == np.nextafter(1e8, np.inf)
+    with localcontext() as context:
+        context.prec = 100
+        d = Decimal.from_float
+        delta = abs(d(1e8) - d(beam))
+        tail = Decimal(-1).exp()
+        expected = float(
+            d(thermal) * d(1e-20) * (delta + tail * (1 + delta * delta).sqrt()) / (1 + tail)
+        )
+    actual = average_cross_section_over_maxwellian(
+        particle_energy_ev=np.array([1e16]),
+        particle_mass_amu=1.0,
+        target_temperature_ev=1.0,
+        target_mass_amu=1.0,
+        tnorm_ev=1.0,
+        vr=np.array([0.0, 1.0]),
+        vx=np.array([1e8]),
+        cylindrical_volume=np.ones((2, 1)),
+        cross_section_m2=lambda energy: np.full(energy.shape, 1e-20),
+    )
+    np.testing.assert_allclose(actual, [expected], rtol=1e-14, atol=0.0)
+
+
+@pytest.mark.parametrize("radius", [1e8, 1e100])
+def test_common_radial_exponent_keeps_axial_probability(radius):
+    # Review A: P(vx=1)=1/(1+exp(1)), independent of the single radial row.
+    with localcontext() as context:
+        context.prec = 110
+        vth = (2 * Decimal("1.602177e-19") / Decimal("1.6726231e-27")).sqrt()
+        r = Decimal.from_float(radius)
+        expected = float(
+            vth * (r * r + 1).sqrt() * Decimal.from_float(1e-20) / (1 + Decimal(1).exp())
+        )
+    actual = _unit_temperature_average(
+        [radius], [0.0, 1.0], np.ones((1, 2)), np.array([[0.0, 1e-20]]), energy=0.0
+    )
+    np.testing.assert_allclose(actual, [expected], rtol=1e-14, atol=0.0)
+
+
+def test_large_common_radial_exponent_preserves_threshold_callback_average():
+    # Review B: the callback selects vx=-1, whose probability is e^-1/(1+2e^-1).
+    with localcontext() as context:
+        context.prec = 110
+        r = Decimal.from_float(1e8)
+        vth = (2 * Decimal("1.602177e-19") / Decimal("1.6726231e-27")).sqrt()
+        tail = Decimal(-1).exp()
+        expected = float(
+            vth * Decimal.from_float(1e-20) * (r * r + (r + 1) ** 2).sqrt() * tail / (1 + 2 * tail)
+        )
+    seen = []
+
+    def sigma(energy):
+        seen.append(energy.copy())
+        return np.where(energy > 2e16, 1e-20, 0.0)
+
+    actual = average_cross_section_over_maxwellian(
+        particle_energy_ev=np.array([1e16]),
+        particle_mass_amu=1.0,
+        target_temperature_ev=1.0,
+        target_mass_amu=1.0,
+        tnorm_ev=1.0,
+        vr=np.array([1e8]),
+        vx=np.array([-1.0, 0.0, 1.0]),
+        cylindrical_volume=np.ones((1, 3)),
+        cross_section_m2=sigma,
+    )
+    assert len(seen) == 1
+    np.testing.assert_array_equal(seen[0] > 2e16, [[[True, False, False]]])
+    np.testing.assert_allclose(actual, [expected], rtol=5e-13, atol=0.0)
+
+
+def test_neighboring_large_coordinates_keep_the_scaled_square_difference():
+    radial = np.array([1e154, np.nextafter(1e154, np.inf)])
+    norm = 1e-300
+    with localcontext() as context:
+        context.prec = 110
+        d = Decimal.from_float
+        a, b = map(d, radial)
+        delta = (b * b - a * a) * d(norm)
+        p1 = (-delta).exp() / (1 + (-delta).exp())
+        # The original 2*e*T_norm intermediate is subnormal here. This test
+        # isolates Gaussian accuracy; its speed unit binds the unchanged scalar
+        # expression rather than claiming that expression is high precision.
+        vth = d(math.sqrt(2.0 * 1.602177e-19 * norm / 1.6726231e-27))
+        expected = float(vth * b * d(1e-20) * p1)
+    actual = average_cross_section_over_maxwellian(
+        particle_energy_ev=np.array([0.0]),
+        particle_mass_amu=1.0,
+        target_temperature_ev=1.0,
+        target_mass_amu=1.0,
+        tnorm_ev=norm,
+        vr=radial,
+        vx=np.array([0.0]),
+        cylindrical_volume=np.ones((2, 1)),
+        cross_section_m2=lambda energy: np.broadcast_to([[0.0], [1e-20]], energy.shape),
+    )
+    np.testing.assert_allclose(actual, [expected], rtol=1e-14, atol=0.0)
+
+
+@pytest.mark.parametrize("kind", ["divide", "under", "over", "invalid"])
+def test_callback_retains_the_callers_numpy_error_policy(kind):
+    observed = []
+
+    def sigma(energy):
+        observed.append(np.geterr())
+        if kind == "divide":
+            np.divide(np.float64(1.0), np.float64(0.0))
+        elif kind == "under":
+            np.multiply(np.float64(1e-300), np.float64(1e-300))
+        elif kind == "over":
+            np.multiply(np.float64(1e300), np.float64(1e300))
+        else:
+            np.sqrt(np.float64(-1.0))
+        return np.full_like(energy, 1e-20)
+
+    with np.errstate(all="raise"):
+        with pytest.raises(FloatingPointError):
+            _call(sigma=sigma)
+        assert np.geterr() == dict(divide="raise", over="raise", under="raise", invalid="raise")
+    assert observed == [dict(divide="raise", over="raise", under="raise", invalid="raise")]
+
+
+@pytest.mark.parametrize("norm,temperature", [(1.0, 5e-324), (5e-324, 1e308)])
+def test_unrepresentable_gaussian_differences_are_rejected_before_callback(norm, temperature):
+    seen = []
+
+    def sigma(energy):
+        seen.append(energy.copy())
+        return np.full_like(energy, 1e-20)
+
+    with pytest.raises(ValueError, match="not representable"):
+        _call(
+            energies=np.array([1.0]),
+            vr=np.array([0.0, 1.0]),
+            vx=np.array([0.0]),
+            volume=np.ones((2, 1)),
+            tnorm_ev=norm,
+            target_temperature_ev=temperature,
+            sigma=sigma,
+        )
+    assert seen == []
+
+
+def test_unrepresentable_combined_gaussian_difference_is_rejected_before_callback():
+    seen = []
+
+    def sigma(energy):
+        seen.append(energy.copy())
+        return np.full_like(energy, 1e-20)
+
+    with pytest.raises(ValueError, match="target Maxwellian.*not representable"):
+        _call(
+            energies=np.array([1.0]),
+            vr=np.array([0.0, 1e154]),
+            vx=np.array([0.0, 1e154]),
+            volume=np.ones((2, 2)),
+            tnorm_ev=1.0,
+            target_temperature_ev=1.0,
+            sigma=sigma,
+        )
+    assert seen == []
