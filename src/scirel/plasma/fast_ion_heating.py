@@ -11,32 +11,44 @@ import numpy as np
 __all__ = ["fast_ion_fractional_heating"]
 
 
-def _reject_lossy_values(value, name):
-    """Inspect nested containers before NumPy can erase masks or complex dtypes."""
+def _preserve_real_values(value, name, active):
+    """Expand array protocols once, preserving metadata before combining containers."""
     if np.ma.isMaskedArray(value) or isinstance(value, (complex, np.complexfloating)):
         raise ValueError(f"{name} must contain real, unmasked numeric values")
     if isinstance(value, np.ndarray):
         if np.iscomplexobj(value):
             raise ValueError(f"{name} must contain real, unmasked numeric values")
         if value.dtype != object:
-            return
-        children = value.flat
-    elif isinstance(value, (list, tuple)):
-        children = value
-    else:
-        return
-    for item in children:
-        _reject_lossy_values(item, name)
+            return value
+    elif not hasattr(value, "__array__") and not isinstance(value, (list, tuple)):
+        return value
+
+    marker = id(value)
+    if marker in active:
+        raise ValueError(f"{name} must contain acyclic real, unmasked numeric values")
+    active.add(marker)
+    try:
+        if isinstance(value, np.ndarray):
+            result = np.empty(value.shape, dtype=object)
+            for index, item in enumerate(value.flat):
+                result.flat[index] = _preserve_real_values(item, name, active)
+            return result
+        if hasattr(value, "__array__"):
+            # Unlike asarray, asanyarray retains a MaskedArray returned by an
+            # array protocol. Reuse this result instead of invoking it twice.
+            return _preserve_real_values(np.asanyarray(value), name, active)
+        return [_preserve_real_values(item, name, active) for item in value]
+    finally:
+        active.remove(marker)
 
 
 def _real_unmasked_input(value, name):
     """Validate before conversion can discard an imaginary part or a mask."""
-    _reject_lossy_values(value, name)
     try:
-        # Inspect the dtype exposed by any array protocol before requesting a
-        # real dtype; a memoryview need not be a list, tuple or ndarray itself.
-        raw = np.asarray(value)
-        _reject_lossy_values(raw, name)
+        preserved = _preserve_real_values(value, name, set())
+        # Capture buffer/interface dtypes without requesting real conversion.
+        # Nested protocol results were already expanded without losing masks.
+        raw = _preserve_real_values(np.asanyarray(preserved), name, set())
         return np.asarray(raw, dtype=float)
     except (TypeError, ValueError, OverflowError) as exc:
         raise ValueError(f"{name} must contain real, unmasked numeric values") from exc
