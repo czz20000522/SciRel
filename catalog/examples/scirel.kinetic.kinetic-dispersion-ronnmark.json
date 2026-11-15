@@ -22,7 +22,7 @@
   ],
   "model": "homogeneous magnetized Maxwellian multi-species plasma",
   "geometry": "homogeneous plasma",
-  "boundary": "zero kz is allowed without the conventional sum's positive clamp",
+  "boundary": "Finite zero kz is allowed; conventional and fluid finite-harmonic paths require actual nonzero kz. Required derived scales and the complete tensor must be representable.",
   "device_scope": "generic"
  },
  "identity": {
@@ -32,7 +32,7 @@
   "model": "homogeneous magnetized Maxwellian multi-species plasma",
   "geometry": "homogeneous plasma",
   "coordinates": "wavevector x-z plane; complex kx permitted, z parallel to B0",
-  "boundary": "zero kz is allowed without the conventional sum's positive clamp",
+  "boundary": "Finite zero kz is allowed; conventional and fluid finite-harmonic paths require actual nonzero kz. Required derived scales and the complete tensor must be representable.",
   "assumptions": [
    "Input units and normalization follow the declared ports; no physical parameters are inferred."
   ]
@@ -270,7 +270,7 @@
  ],
  "applicability": {
   "preconditions": [
-   "Species arrays are finite, non-empty and shape-compatible; masses, densities and temperatures are positive, with nonzero charge and magnetic field.",
+   "Finite zero kz is allowed; conventional and fluid finite-harmonic paths require actual nonzero kz. Required derived scales and the complete tensor must be representable.",
    "The wavepoint and derived frequency/scales are finite and satisfy the selected numerical path domain."
   ],
   "supported": [
@@ -283,7 +283,7 @@
  },
  "failure_semantics": {
   "invalid_input": "Raises ValueError for declared invalid inputs; numeric conversion errors may propagate for unsupported Python objects.",
-  "runtime_failure": "Numerical backend errors propagate; no fallback relation is substituted.",
+  "runtime_failure": "Raises FloatingPointError for nonfinite/unrepresentable required derived scales, R/H/RC response, complete K/D tensor or determinant, including overflow converting finite f to omega. Required nonzero scales underflowing to zero fail explicitly. No partial tensor, fallback or clamp is substituted.",
   "nonconvergence": "Not applicable; no iterative root solve is exposed.",
   "partial_results": "No partial mapping is returned after an exception."
  },
@@ -312,17 +312,19 @@
  "verification": {
   "scope": [
    "Existing source-method cases and failure boundaries; sixteen exact binary64 inputs with independent Eq.(8) fixed-table B references for every complex K/D entry and returned det(D).",
-   "Separate Maxwellian Eq.(3) A references, rounded-table moment and zero-kz endpoint checks, cold Hall sign and complex-square conventions; B-A observations have no physical acceptance threshold."
+   "Separate Maxwellian Eq.(3) A references, rounded-table moment and zero-kz endpoint checks, cold Hall sign and complex-square conventions; B-A observations have no physical acceptance threshold.",
+   "A manufactured nonresonant double-zero control remains finite; exact poles, derived-scale failures and numerical error propagation are separate from invalid caller inputs."
   ],
   "tests": [
    "tests/kinetic/test_kinetic_signed_kz.py",
    "tests/kinetic/test_fluid_spectrum_r43_kinetic.py",
    "tests/kinetic/test_ronnmark_tensor_reference.py",
-   "tests/kinetic/test_kinetic_tensor_family_evidence.py::test_ronnmark_r_matches_its_independent_harmonic_representation"
+   "tests/kinetic/test_kinetic_tensor_family_evidence.py::test_ronnmark_r_matches_its_independent_harmonic_representation",
+   "tests/kinetic/test_ronnmark_zero_endpoint.py"
   ],
   "evidence_ceiling": "test_product_matches_independent_B_16 in tests/kinetic/test_ronnmark_tensor_reference.py directly compares eighteen complex K/D entries and returned det(D) with independently Bessel-summed Eq.(8) B using the actual binary64 table: abs(product-B)/max(1,abs(B)) <= 2e-7. This pre-frozen new finite-grid numerical diagnostic is separate from physical B-A discrepancy and preserves existing source 1e-11/1e-9, finite-N 2e-12 and R/H budgets. Self-contained data and manual independent Eq.(3)/(8)/(13)/(14) regeneration are in tests/fixtures/kinetic_tensor/README.md. Independent scientific-identity review was ACK_STATIC; candidate execution and release need their own evidence. No continuous-domain error bound, physical-A accuracy pass, mode/root or damping guarantee follows.",
   "known_limitations": [
-   "zero kz is allowed without the conventional sum's positive clamp",
+   "Finite zero kz is allowed; conventional and fluid finite-harmonic paths require actual nonzero kz. Required derived scales and the complete tensor must be representable.",
    "Original Maxwellian A convergence remains 15/16 REFERENCE_BLOCK (process exit 2); small-kz uses a separately frozen 200/280-dps N96/128 successor for new observations. Neither its success nor B 16/16 relabels the original block. Printed 160-digit values do not certify full 160-digit accuracy.",
    "B is Eq.(8) with the actual rounded-table moments; directly inserting a pole Z into Eq.(3) defines B_direct, a different object. Nonzero zero-kz cross-z residuals must not be forced to zero. B-A is a recomputable model discrepancy without an acceptable-error threshold.",
    "The current table's appearance in the author's source linked by the primary paper has been located; its original generation constraints, reason for differing from the published WHAMP/PDRK table and global physical approximation accuracy remain UNKNOWN.",

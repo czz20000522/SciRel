@@ -1,6 +1,7 @@
 """Local evaluation of the Ronnmark harmonic response and its lambda derivative. The implementation selects stable Taylor, asymptotic, or quadrature expansions from the requested point."""
 
 import math
+from fractions import Fraction
 
 import numpy as _np
 
@@ -115,9 +116,49 @@ def _rmul(s, z):
     return complex(s * z.real, s * z.imag)
 
 
+def _zero_lambda_response(y):
+    """Exact Taylor constant term, rounded only at the four returned components.
+
+    R=H=(1/(y-1)+1/(y+1))/2.  If u=1/(y-1), v=1/(y+1),
+    y*dR/dy=y*dH/dy=-(u+u*u+v-v*v)/2. Rational components avoid
+    overflowing y*y and retain weak components next to the complex poles.
+    This is only the exact lambda=0 endpoint, not a new expansion branch.
+    """
+    y = complex(y)
+    real, imag = Fraction(y.real), Fraction(y.imag)
+
+    def reciprocal(real):
+        denominator = real * real + imag * imag
+        if denominator == 0:
+            raise FloatingPointError(
+                f"Ronnmark RC has a genuine pole at x={y!r}, lambda_=0; "
+                "see the ronnmark-r-function contract"
+            )
+        return real / denominator, -imag / denominator
+
+    ur, ui = reciprocal(real - 1)
+    vr, vi = reciprocal(real + 1)
+    response = ((ur + vr) / 2, (ui + vi) / 2)
+    scaled_dx = (
+        -(ur + ur * ur - ui * ui + vr - vr * vr + vi * vi) / 2,
+        -(ui + 2 * ur * ui + vi - 2 * vr * vi) / 2,
+    )
+    try:
+        r = complex(float(response[0]), float(response[1]))
+        dx = complex(float(scaled_dx[0]), float(scaled_dx[1]))
+    except OverflowError as error:
+        raise FloatingPointError(
+            f"Ronnmark RC is not representable at x={y!r}, lambda_=0; "
+            "the complete companion matrix is required by the ronnmark-r-function contract"
+        ) from error
+    return _np.array([[r, r], [dx, dx]], dtype=_np.complex128)
+
+
 def _rtay_fma(y, al):
     y = complex(y)
     al = complex(al)
+    if al == 0:
+        return _zero_lambda_response(y)
     y2 = _cmul(y, y)
     pn = _cdiv(y, y2 - 1.0)
     pyn = _cdiv(_cmul(-y, y2 + 1.0), _cmul(y2 - 1.0, y2 - 1.0))
@@ -330,9 +371,11 @@ def evaluate_ronnmark_r(x, lambda_):
     Raises
     ------
     ValueError
-        If ``x`` or ``lambda_`` is not a finite numeric scalar. Source-
-        compatible arithmetic can return a nonfinite value at a singular
-        wavepoint; that case is not converted to an alternate branch.
+        If ``x`` or ``lambda_`` is not a finite numeric scalar.
+    FloatingPointError
+        If the selected response has a genuine pole or any required R/H/RC
+        component cannot be computed as a finite binary64 value. No alternate
+        branch or partial response is substituted.
 
     See Also
     --------
@@ -353,6 +396,12 @@ def evaluate_ronnmark_r(x, lambda_):
     1e-14 truncation check and rtol=1e-7, atol=1e-9 R/H comparisons at twelve
     fixed samples. They do not certify all branches or global tensor accuracy.
 
+    At exact lambda=0, R=H=x/(x*x-1) and RC[1,0]=RC[1,1]
+    =-x*(x*x+1)/(x*x-1)**2. The Taylor constant term is evaluated with
+    exact rational real/imaginary components before rounding to binary64;
+    x=+/-2 is removable in the old recurrence, while x=+/-1 is a genuine
+    pole. An overflowing companion is a failure even when R alone is finite.
+
     References
     ----------
     H. S. Xie, Phys. Plasmas 32, 082110 (2025).
@@ -366,8 +415,8 @@ def evaluate_ronnmark_r(x, lambda_):
     # real input stays real double, complex input uses complex double. That
     # distinction is load-bearing, because complex division rounds differently
     # from real division and RASY/RINT amplify it through cancellation. numpy
-    # scalars also give the source's IEEE division semantics, so the RTAY pole
-    # Y^2 == I^2 yields inf/NaN rather than a Python ZeroDivisionError.
+    # Internal nonzero-lambda arithmetic retains the source's IEEE policy;
+    # the public boundary below refuses nonfinite ordinary results.
     try:
         x_arr = _np.asarray(x)
         la = _np.asarray(lambda_)
@@ -381,7 +430,7 @@ def evaluate_ronnmark_r(x, lambda_):
         y = _np.float64(_np.real(x_arr.reshape(())))
     la = la.reshape(())
     al = _np.complex128(la) if _np.iscomplexobj(la) else _np.float64(_np.real(la))
-    ay = abs(y)
+    ay = abs(y) if al != 0 else 0.0
 
     if _complex_gt(4, al):
         rc, branch = _rtay_fma(y, al), "RTAY(AL<4)"
@@ -393,6 +442,12 @@ def evaluate_ronnmark_r(x, lambda_):
         rc, branch = _rasy(y, al), "RASY"
     else:
         rc, branch = _rint(y, al), "RINT"
+
+    if not _np.all(_np.isfinite(rc)):
+        raise FloatingPointError(
+            f"Ronnmark RC is nonfinite in {branch} at x={y!r}, lambda_={al!r}; "
+            "see the ronnmark-r-function contract; no alternate branch was used"
+        )
 
     return {
         "R": complex(rc[0, 0]),

@@ -248,6 +248,9 @@ def solve_kinetic_wavevector_roots(
     ValueError
         Raises ValueError for declared invalid inputs; numeric conversion errors may propagate for
         unsupported Python objects.
+    FloatingPointError
+        Propagates a nonfinite or unrepresentable Ronnmark tensor evaluation,
+        including at the initial point. No alternate root or model is substituted.
 
     See Also
     --------

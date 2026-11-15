@@ -301,7 +301,7 @@
  },
  "failure_semantics": {
   "invalid_input": "Raises ValueError for declared invalid inputs; numeric conversion errors may propagate for unsupported Python objects.",
-  "runtime_failure": "Numerical backend errors propagate; no fallback relation is substituted.",
+  "runtime_failure": "FloatingPointError propagates for a nonfinite or unrepresentable Ronnmark tensor evaluation, including at the initial point. No alternate root or relation is substituted.",
   "nonconvergence": "Exit flags and residuals expose bounded nonconvergence.",
   "partial_results": "No partial mapping is returned after an exception."
  },
@@ -334,7 +334,8 @@
    "Python preflight ran, but local execution covers this asset."
   ],
   "tests": [
-   "tests/kinetic/test_fluid_spectrum_r43_kinetic.py"
+   "tests/kinetic/test_fluid_spectrum_r43_kinetic.py",
+   "tests/kinetic/test_ronnmark_zero_endpoint.py::test_root_propagates_initial_numerical_failure_instead_of_zero_division"
   ],
   "evidence_ceiling": "Bounded to the Ronnmark determinant complex-kx root at each supplied frequency from one fixed seed. Evidence: `test_fluid_spectrum_r43_kinetic.py` contains 12 test functions, 2 of which reference `solve_kinetic_wavevector_roots`, and is shared by 4 assets; only shared-file coverage is bound, so a pass is file-level rather than asset-isolated; the bounded example was executed by this audit. Oracle: self-consistency/regression only. It does not establish mode identity or arbitrary-parameter accuracy beyond the declared numerical method.",
   "known_limitations": [
