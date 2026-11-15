@@ -38,7 +38,8 @@
   "boundary": "values must be nonempty and finite, sigma finite and positive, and residuals and chi2 representable; an explicit unit must match predicted.units.",
   "assumptions": [
    "Values and sigma share one unit and one sample correspondence.",
-   "Records without a declared unit remain usable as pure normalized algebra; this does not establish physical unit compatibility."
+   "Records without a declared unit remain usable as pure normalized algebra; this does not establish physical unit compatibility.",
+   "Ordinary finite arithmetic retains its float64 path. Nonfinite intermediate normalization is recomputed from the complete binary-rational difference divided by sigma. At squared-sum range boundaries, complete squares of the returned residual entries are accumulated before final rounding; a positive total below the float64 rounding threshold may still round to zero."
   ]
  },
  "inputs": [
@@ -96,7 +97,7 @@
  },
  "failure_semantics": {
   "invalid_input": "Raises ValueError for empty or unknown observations, missing predictions, empty or nonfinite values, wrong shapes, nonpositive sigma or inconsistent explicit units.",
-  "runtime_failure": "Normalization or squared-sum overflow is detected and reported as ValueError.",
+  "runtime_failure": "A genuinely overflowing final normalized residual or squared sum is reported as ValueError. Intermediate normalization range loss and squared-sum range boundaries are recomputed before final rounding; no failing channel is dropped.",
   "nonconvergence": "No iteration; forward validity is judged separately by the trial layer.",
   "partial_results": "No partial scirel._result.Result mapping is returned after dropping a failing channel."
  },
@@ -123,11 +124,15 @@
    "Retains the original normalization and sigma numerical assertions.",
    "Rejects a mixed flux and Thomson request when any channel is missing; rejects unit conflicts and empty values.",
    "Fixed-size trial composition with the real forward inversion.",
-   "Result wrapping preserves both keys, key order, residual vector value/shape/dtype, chi2 and mapping access against baseline 0f74255b; attribute access reaches the same fields."
+   "Result wrapping preserves both keys, key order, residual vector value/shape/dtype, chi2 and mapping access against baseline 0f74255b; attribute access reaches the same fields.",
+   "Raw-input Fraction references with fixed rtol=1e-13 and atol=0 cover the recoverable difference at prediction=2^1023, observation=-2^1023, sigma=2^1023 and the four-term squared sum at residual=2^-538, together with adjacent scales, signs, cancellation and final subnormal rounding controls.",
+   "Direct controls retain channel/C order, scalar and array shapes, broadcast sigma, strict declared-unit matching, input nonmutation, Result access and genuine final-overflow rejection; these are bounded algebraic checks, not statistical significance or complete-domain validation."
   ],
   "tests": [
    "tests/cross_domain/test_inference_physical_closure.py",
-   "tests/cross_domain/test_anisotropic_inference_independent.py"
+   "tests/cross_domain/test_anisotropic_inference_independent.py",
+   "tests/diagnostics/test_observation_residuals.py",
+   "tests/diagnostics/test_observation_scales.py"
   ],
   "evidence_ceiling": "Author regressions, independent analytic and independent discrete-reference comparisons, and selected installed-wheel user calls completed in the exact environment; they cover only the listed contract and examples. Root-level independent intake, human scientific recognition, redistribution permission and public release are separate decisions; they do not extend this to arbitrary closures, devices or global identifiability proofs.",
   "known_limitations": [

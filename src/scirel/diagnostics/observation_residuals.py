@@ -9,6 +9,39 @@ from scirel._result import Result
 _CHANNELS = ("density", "electron_temperature", "p_parallel", "p_perp")
 
 
+def _exact_normalized_difference(prediction, observation, sigma):
+    """Round the complete ratio of three finite binary64 inputs once.
+
+    Integer numerators retain an otherwise overflowing subtraction; division
+    takes place only after sigma has entered the denominator. A genuinely
+    overflowing final ratio raises OverflowError for the caller to label.
+    """
+    pn, pd = float(prediction).as_integer_ratio()
+    on, od = float(observation).as_integer_ratio()
+    sn, sd = float(sigma).as_integer_ratio()
+    return ((pn * od - on * pd) * sd) / (pd * od * sn)
+
+
+def _exact_squared_sum(vector):
+    """Accumulate complete squares of binary64 residuals before rounding.
+
+    Each denominator is a power of two. Align the squared integer numerators
+    at a common binary exponent, including terms smaller than the minimum
+    subnormal, then convert the full sum to float in one division. No term is
+    squared or summed in floating point on this range-boundary path.
+    """
+    total = 0
+    denominator_bits = 0
+    for value in vector:
+        numerator, denominator = float(value).as_integer_ratio()
+        square_bits = 2 * (denominator.bit_length() - 1)
+        if square_bits > denominator_bits:
+            total <<= square_bits - denominator_bits
+            denominator_bits = square_bits
+        total += (numerator * numerator) << (denominator_bits - square_bits)
+    return total / (1 << denominator_bits)
+
+
 def _observation_layout(observations):
     """Validate observations independently of predictions and freeze their order."""
     if not isinstance(observations, Mapping) or not observations:
@@ -116,6 +149,18 @@ def reduce_observation_residuals(*, predicted, observations):
     ``chi2`` is an algebraic diagonal-weight sum, not by itself a statistical
     significance result.
 
+    Ordinary finite arithmetic retains the existing float64 path. A
+    nonfinite intermediate normalization is recomputed from the complete
+    binary-rational difference divided by sigma, then rounded once. Near the
+    squared-sum range boundaries (below the minimum normal float64 value or
+    above half the maximum finite value, including nonfinite intermediates),
+    complete squares of the returned residual entries are accumulated as
+    binary integers before one final rounding. Thus individually
+    unrepresentable squares may have a representable sum. A genuinely
+    overflowing final normalized residual or squared sum raises ValueError;
+    a positive squared sum below the rounding threshold may still round to
+    zero. These are arithmetic range protections, not statistical tolerances.
+
     Examples
     --------
     >>> import numpy as np
@@ -154,11 +199,26 @@ def reduce_observation_residuals(*, predicted, observations):
         with np.errstate(over="ignore", invalid="ignore", divide="ignore"):
             normalized = (values - observed) / sigma
         if not np.all(np.isfinite(normalized)):
+            normalized = np.array(normalized, dtype=float, copy=True)
+            for index in np.flatnonzero(~np.isfinite(normalized)):
+                try:
+                    normalized.flat[index] = _exact_normalized_difference(
+                        values.flat[index], observed.flat[index], sigma.flat[index]
+                    )
+                except OverflowError as exc:
+                    raise ValueError(f"{label} normalized residual must be finite") from exc
+        if not np.all(np.isfinite(normalized)):
             raise ValueError(f"{label} normalized residual must be finite")
         residuals.append(normalized.ravel())
     vector = np.concatenate(residuals)
     with np.errstate(over="ignore"):
         chi2 = float(vector @ vector)
+    limits = np.finfo(float)
+    if not np.isfinite(chi2) or chi2 < limits.tiny or chi2 > limits.max / 2.0:
+        try:
+            chi2 = _exact_squared_sum(vector)
+        except OverflowError as exc:
+            raise ValueError("chi2 must be finite") from exc
     if not np.isfinite(chi2):
         raise ValueError("chi2 must be finite")
     return Result(residual_vector=vector, chi2=chi2)
