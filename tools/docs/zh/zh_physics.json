@@ -739,7 +739,7 @@
   },
   {
    "asset_id": "scirel.kinetic.kinetic-dispersion-sum",
-   "source_sha256": "0b4b2f20a7c5cf112395d0514a50117e5d79bc203864796ba1225b0ae7e2fc1d",
+   "source_sha256": "29ab892774307feb1b3d43b2742a3eca1a304b324c13deea27fa694cb673d70f",
    "summary": "使用有限回旋谐波求和，为磁化 Maxwellian 多组分等离子体组装 x-z 平面的动力学介电张量、Maxwell 色散张量及其行列式。",
    "definition": "omega=2*pi*f；vts=sqrt(2*kB*T_s/m_s)；wcs=q_s*B0/m_s；wps2=n_s*q_s^2/(m_s*epsilon0)；a_s=kx*sqrt(kB*T_s/m_s)/wcs；b_s=a_s^2；z_n=(omega-n*wcs)/(|kz|*vts)。使用 Gamma_n(b)、Gamma_prime_n(b) 和解析 Z(z_n)，在 n=-lmx..lmx 范围求和，各组分项的权重为 (wps2/omega^2)*z_0*Z(z_n)。按既有磁化率分量约定组装 K，再减去 Maxwell 旋度项得到 D 及其行列式。符号约定为 K_ij = delta_ij - sigma_ij/(i*omega*epsilon0)。 z_0 同样使用 |kz|，负 kz 在组装后反射 xz/yz/zx/zy。",
    "model": "均匀磁化 Maxwellian 多组分等离子体的截断常规回旋谐波求和；使用 SciRel 解析 Faddeeva Z，而非有限阶 Weideman 实现。",
@@ -895,8 +895,8 @@
    },
    "failure_semantics": {
     "invalid_input": "标量在不允许处为非有限、布尔、复数或零，组分向量为空、长度不匹配或非有限，电荷为零，质量、密度或温度非正，或 lmx 不是非负整数时，抛出 ValueError。",
-    "runtime_failure": "导出尺度非有限、应为正时变为零，或特殊函数贡献、张量、行列式非有限或不可表示时，抛出 ValueError。正谐波尾项低于可靠双精度范围，或在求值预算内无法给出遗漏余项界时，也抛出 ValueError；不返回部分尾和或张量。其他未预期的 NumPy/SciPy 异常直接传播。",
-    "nonconvergence": "不执行求根迭代，保留调用者指定的有限 lmx。尾项求值须使用条件良好的补集，或带遗漏余项界的正项和；内部 20000 项成本预算耗尽时抛出 ValueError。这不证明调用者选择的谐波阶数足够。",
+    "runtime_failure": "导出尺度非有限、应为正时变为零，或特殊函数贡献、张量、行列式非有限或不可表示时，抛出 FloatingPointError。正谐波尾项低于可靠双精度范围，或在求值预算内无法给出遗漏余项界时，也抛出 FloatingPointError；不返回部分尾和或张量。其他未预期的 NumPy/SciPy 异常直接传播。",
+    "nonconvergence": "不执行求根迭代，保留调用者指定的有限 lmx。尾项求值须使用条件良好的补集，或带遗漏余项界的正项和；内部 20000 项成本预算耗尽时抛出 FloatingPointError。这不证明调用者选择的谐波阶数足够。",
     "partial_results": "无部分结果；通过终末有限性检查后才一并返回张量与行列式。"
    },
    "example": {
@@ -907,7 +907,8 @@
     "scope": [
      "当前实现及所列测试覆盖声明端口、近零 kz 不钳位的稳定性、小 z 完整 K/D 回归、四组正负 f/kz 大 kz 实数 kx 的 xy/yx 保护、每物种 max|z_n|=1 两侧及相邻浮点数、有限截断和两种排列的混合表示物种。",
      "示例只运行一个有界代表案例，不把适用范围扩展到声明前提之外。",
-     "Python 示例已在本机运行；本地执行覆盖本资产。"
+     "Python 示例已在本机运行；本地执行覆盖本资产。",
+     "错误通路测试区分形状、定义域、截断等非法输入与派生尺度、张量、尾项或预算的数值失败，保留无关 ValueError 的原样传播；同时保护诊断的 kx=0 部分边界，不改变科学容差。"
     ],
     "evidence_ceiling": "限于所声明的均匀磁化 Maxwellian 有限 N 方程。直接测试包含冻结 fluid-BW 值、解析 Z 核对、由公开输入独立推尺度的 90 位完整张量参照及 90/120 位大 b 的 Kzz 参照。新增小 z 和表示切换样本按 |误差|/max(1,|参照|)≤2e-12 比较完整复数 K/D；180 位参照用 Bessel I 和 erfc 定义的 Z 计算原有限和，回归的 140/180 位自核保留未舍入数值，不用生产尺度、A 或尾项算法。它们不证明实验模型精度、自动谐波收敛、行列式/求根精度、任意物种或全部浮点输入。",
     "known_limitations": [
@@ -922,7 +923,8 @@
     "tests": [
      "tests/kinetic/test_kinetic_signed_kz.py",
      "tests/kinetic/test_kinetic_dispersion_sum_n.py",
-     "tests/kinetic/test_kinetic_dispersion_sum_stability.py"
+     "tests/kinetic/test_kinetic_dispersion_sum_stability.py",
+     "tests/kinetic/test_finite_harmonic_failure_policy.py"
     ]
    }
   },
@@ -3378,7 +3380,7 @@
   },
   {
    "asset_id": "scirel.kinetic.dielectric-tensor-diagnostic",
-   "source_sha256": "789d971fef84c565db02f4b7ac64db99fd63e5bfe743ccefc2a57649a6b2c4b6",
+   "source_sha256": "d35626cfea09dc6c8b408d3fad1e8dc3301c3692dad504614e81dd25f9bec881",
    "summary": "按默认 lmx=15 的谐波截断计算介电张量和色散张量的全部九个分量。",
    "definition": "对 l=-lmx..lmx 的 Maxwellian 谐波贡献求和，通过 Maxwell 旋度项形成 D，保留显式六项行列式。xx/xy/yy 保留 N64 Weideman Z；xz/yz/zz 使用实参解析 A=1+zZ、有限 Gamma 导数端点和遗漏尾项。复数或负 b 的尾项按复数求和，由 |I_n(b)|≤I_n(|b|) 和 DLMF 10.35.1 建立精确遗漏项绝对界。 各物种全部谐波 |z_n|≤1 时，xz/yz/zz 改用直接 z_n Z(z_n) 和原有 zz 加项，保住小响应；b=0 的遗漏 Gamma 尾项精确为零。 xy/yx 保留原 Z 后端，谐波贡献的实部和虚部分别用 fsum 累加。",
    "model": "均匀磁化多组分 Maxwellian 等离子体",
@@ -3541,9 +3543,9 @@
    },
    "failure_semantics": {
     "invalid_input": "输入违反所列条件时抛出 ValueError；不受支持的 Python 对象可能直接传播数值转换异常。",
-    "runtime_failure": "尾项预算耗尽、尾项不可可靠表示、出现非有限尾项或严重复数相消时抛 ValueError，不返回部分尾项。kx=0 保留原非有限诊断；极端尺度算术仍可能非有限。",
+    "runtime_failure": "必要非零派生尺度下溢为零或非有限、张量贡献或必要有限分量不可求、尾项无法可靠表示或在项数预算内界定，或复数尾项严重相消时，抛 FloatingPointError。只允许原 kx=0 奇异张量项及其行列式非有限；K/D 的 xy、yx、yz、zy、zz 仍须有限。其他未预期的后端异常传播。",
     "nonconvergence": "不适用；该入口不执行迭代求根。",
-    "partial_results": "发生异常后不返回部分结果映射。"
+    "partial_results": "仅在 kx=0 保留原 K/D 中非有限的 xx、yy、xz、zx 及其非有限行列式，xy、yx、yz、zy、zz 仍须有限。异常后不返回部分尾项或结果映射。"
    },
    "example": {
     "description": "计算一个有界的单物种介电张量案例并检查张量形状。",
@@ -3551,19 +3553,21 @@
    },
    "verification": {
     "scope": [
-     "用公开输入独立计算原有限 N 和式，对照所选实数/复数 kx、正负近零及普通 kz、lmx=0/1/15/30/60、A 分支边界和物种广播下的完整复数 K/D；另测控制量、诊断字段和尾项拒绝。 包括评审发现的小 z 回归、|z_n|≤1 表示切换邻点，以及 kx=0 每个有限/奇异分量。 另有四个低频正负频率/波数 xy/yx 相消回归独立核验。"
+     "用公开输入独立计算原有限 N 和式，对照所选实数/复数 kx、正负近零及普通 kz、lmx=0/1/15/30/60、A 分支边界和物种广播下的完整复数 K/D；另测控制量、诊断字段和尾项拒绝。 包括评审发现的小 z 回归、|z_n|≤1 表示切换邻点，以及 kx=0 每个有限/奇异分量。 另有四个低频正负频率/波数 xy/yx 相消回归独立核验。",
+     "错误通路测试区分形状、定义域、截断等非法输入与派生尺度、张量、尾项或预算的数值失败，保留无关 ValueError 的原样传播；同时保护诊断的 kx=0 部分边界，不改变科学容差。"
     ],
     "evidence_ceiling": "独立 mpmath 参照从公开输入重算尺度、exp(-b)I_n(b) 和 erfc 定义的 Z，计算原有限 N 和式，不复用生产 A/尾项核。完整复数 K/D 保持 2e-12；140/180 位自核保留未舍入数值。补充有界复数尾项相位/大小和公开拒绝验证。这是数值方法纠正，不是与冻结 N64 有理式精确一致，也不是连续全域定理、谐波收敛或行列式/求根认证。",
     "known_limitations": [
      "保留默认 lmx=15、近零 kz 不钳位、标量广播、有符号 z0s、复数 kx 和六项行列式；kx=0 仍返回非有限诊断。",
      "尾项恒等式保留调用者指定的同一有限 N 模型；大尾项是截断本身的结果，不能据此默增 lmx。",
-     "复数尾界只约束精确遗漏项，不包含 Bessel 后端、表示、求和及乘回大系数的误差；测得严重尾项相消、下溢、非有限项或预算耗尽时抛 ValueError。样本不建立全复数域保证。",
+     "复数尾界只约束精确遗漏项，不包含 Bessel 后端、表示、求和及乘回大系数的误差；测得严重尾项相消、下溢、非有限项或预算耗尽时抛 FloatingPointError。样本不建立全复数域保证。",
      "xx/xy/yy 保留 N64 Weideman Z；xz/yz/zz 在全部谐波 |z|≤1 时使用直接 zZ，否则复用实参解析 A。每物种切换是经过所选邻点核验的数值选择，不是全域误差定理。张量对照不认证行列式/求根精度或极端尺度可表示性；SciPy 惰性加载是独立导入边界验证。"
     ],
     "tests": [
      "tests/kinetic/test_dielectric_tensor_diagnostic_stability.py",
      "tests/kinetic/test_kinetic_signed_kz.py",
-     "tests/kinetic/test_fluid_spectrum_r43_kinetic.py"
+     "tests/kinetic/test_fluid_spectrum_r43_kinetic.py",
+     "tests/kinetic/test_finite_harmonic_failure_policy.py"
     ]
    }
   },
@@ -5551,7 +5555,7 @@
   },
   {
    "asset_id": "scirel.kinetic.kinetic-dispersion-sum-fluid",
-   "source_sha256": "acacd59f21ace5a24a862fee4920a366af16ca771b6c9d6dc7610ad7fd5821e7",
+   "source_sha256": "431a66120088bf846c295f022a0dccfe3ce3d5a01f2f59ad69bdd89b64cece3f",
    "summary": "使用有限回旋谐波求和，在实际有符号非零 kz 处组装 Maxwellian 等离子体的 3×3 动理学张量。",
    "definition": "使用缩放 Bessel Gamma 对 -lmx 至 lmx 求和。xx/xy/yy 保留 N64 Weideman Z。每物种 (|omega|+lmx|wcs|)/(|kz|vts)≤1 时，xz/yz/zz 用同一 Weideman Z 直接求 zZ，保留 zz 的原 +2alpha z0²；其他情形直接计算解析实参 A=1+zZ，以有限对称恒等式保留 Gamma_(N+1)-Gamma_N 端点和遗漏尾项；补集不稳定时累加正尾项。非零 kz 使用实际值和符号；零值明确拒绝，不替换波点。K 加 Maxwell 旋度项得到 D，再计算 determinant=det(D)。",
    "model": "均匀磁化 Maxwellian 等离子体",
@@ -5704,7 +5708,7 @@
    },
    "failure_semantics": {
     "invalid_input": "违反所列条件时抛出 ValueError；不支持的 Python 对象可能传播数值转换异常。零 kz 在数值工作前拒绝；可使用有限非零 kz，或按独立零 kz 合同显式选择 evaluate_kinetic_dispersion_ronnmark。",
-    "runtime_failure": "计算得到的张量或函数值非有限，或正谐波尾项无法可靠表示、无法在求值预算内界定余项时抛出 ValueError；不返回部分尾项或张量。",
+    "runtime_failure": "必要非零派生尺度下溢为零或非有限，特殊函数贡献、张量或行列式非有限/不可表示，或正谐波尾项无法可靠表示、无法在求值预算内界定余项时抛 FloatingPointError；不返回部分尾项或张量。其他未预期的后端异常传播。",
     "nonconvergence": "不适用；该入口不执行迭代求根。",
     "partial_results": "发生异常后不返回部分结果映射。"
    },
@@ -5714,20 +5718,22 @@
    },
    "verification": {
     "scope": [
-     "独立高精度原有限和对照完整复数 K/D，覆盖近零 kz、有限截断端点、A 分支、共振和有符号物种；补充小 z 回归、直接 zZ/A 切换两侧、逐物种混合表示及四个正负 f/kz 实数 kx 的 xy/yx 保护，并验证正尾项失败边界。 实际正负非零 kz 包括 ±1e-12 和原阈值相邻浮点数；零值在数值工作前拒绝；显式 +1e-10 保留原数值与默认 N5；12 对 SI 相似关系保留完整 K/D/行列式的 2e-12 门槛。"
+     "独立高精度原有限和对照完整复数 K/D，覆盖近零 kz、有限截断端点、A 分支、共振和有符号物种；补充小 z 回归、直接 zZ/A 切换两侧、逐物种混合表示及四个正负 f/kz 实数 kx 的 xy/yx 保护，并验证正尾项失败边界。 实际正负非零 kz 包括 ±1e-12 和原阈值相邻浮点数；零值在数值工作前拒绝；显式 +1e-10 保留原数值与默认 N5；12 对 SI 相似关系保留完整 K/D/行列式的 2e-12 门槛。",
+     "错误通路测试区分形状、定义域、截断等非法输入与派生尺度、张量、尾项或预算的数值失败，保留无关 ValueError 的原样传播；同时保护诊断的 kx=0 部分边界，不改变科学容差。"
     ],
     "evidence_ceiling": "独立 mpmath 参照从公开输入重算全部尺度，用 Bessel I 和 erfc 定义的 Z 计算原有限谐波式。test_kinetic_dispersion_sum_fluid_stability.py 所选样本完整复数 K/D 保持 |误差|/max(1,|参照|)≤2e-12；所选 140/180 位自核不先舍入成 binary64。它不构成连续域误差定理、谐波收敛保证、行列式/根精度声明或物理标定。普通 xx/xy/yy 保留 N64 Weideman Z；混合/平行项按各物种 max|z_n|≤1 使用直接 zZ，否则使用 A/有限和恒等式。不是冻结 N64 有理式的等价重排；包括小 z 反例、切换邻点、相邻浮点数和混合表示物种的独立原式核验。 独立参照去除替代规则，在实际非零 kz 处计算，正负小波数均保留 140/180 位自核。12 对、24 次调用的 SI 相似性只是同方法必须满足的关系，不证明四种方法的绝对精度。拒绝零值属于域政策，不是零极限数值参照。",
     "known_limitations": [
      "原 abs(kz)<1e-10 替换为 +1e-10 的政策已撤回，因其破坏 SI 相似关系并丢失输入符号。显式 kz=+1e-10 仍复现原替代波点数值。实数 b>0、固定有限 N 时，zz 保留 2alpha z0²(1-sum Gamma_n)，正的遗漏尾项使其一般没有有限零 kz 极限。完整 Maxwellian 的零端点是不同极限。本入口拒绝零值；适用时由调用者显式选择独立 Ronnmark 零 kz 模型，不自动切换。",
      "xx/xy/yy 保留固定 N64 Weideman Z；每物种全部谐波 |z_n|≤1 时 xz/yz/zz 直接求 zZ，否则使用稳定实参 A。所选切换邻点和样本不建立连续域误差界，仍保留调用者指定的有限 N，非零 kz 不作替换。",
      "有限谐波截断 lmx 由调用者给定；有限 Gamma 尾项保留，可能产生真实的大张量。实现不自动增加 lmx，也不保证谐波收敛。",
-     "正尾项无法可靠表示，或求值预算内不能界定余项时抛出 ValueError；不返回部分尾项，也不退回原来发生大项相消的算式。"
+     "正尾项无法可靠表示，或求值预算内不能界定余项时抛出 FloatingPointError；不返回部分尾项，也不退回原来发生大项相消的算式。"
     ],
     "tests": [
      "tests/kinetic/test_kinetic_dispersion_sum_fluid_stability.py",
      "tests/kinetic/test_kinetic_signed_kz.py",
      "tests/kinetic/test_fluid_spectrum_r43_variants.py",
-     "tests/kinetic/test_kinetic_tensor_similarity.py"
+     "tests/kinetic/test_kinetic_tensor_similarity.py",
+     "tests/kinetic/test_finite_harmonic_failure_policy.py"
     ]
    }
   },
