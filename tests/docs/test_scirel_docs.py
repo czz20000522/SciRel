@@ -414,7 +414,13 @@ def test_capability_matrix_is_published_with_the_handbook(snapshot):
     matrix = json.loads(docs.read("capability-matrix.json"))
     assert matrix["schema"] == "scirel.capability-matrix"
     assert matrix["total_assets"] == len(docs.ids)
-    assert matrix["total_domains"] == 20
+    owners = {}
+    for asset in docs.ids:
+        module = docs.asset(asset)["document"]["public_api"]["python"]["module"]
+        owners.setdefault(module.split(".")[1], set()).add(asset)
+    assert matrix["total_domains"] == len(owners)
+    assert {group["domain"]: set(group["assets"]) for group in matrix["domains"]} == owners
+    assert all(group["count"] == len(owners[group["domain"]]) for group in matrix["domains"])
     page = docs.read("web/user-guide/capability-matrix.html").decode()
     assert "能力矩阵" in page and "capability-matrix.json" in page
     assert docs.read("CAPABILITY_MATRIX.md").startswith(b"# SciRel capability matrix")

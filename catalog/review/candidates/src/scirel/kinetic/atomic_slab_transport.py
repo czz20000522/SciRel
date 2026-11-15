@@ -27,15 +27,15 @@ def solve_atomic_slab_transport(inputs: dict) -> dict:
     mapping. The returned arrays are task-ready scientific fields; serialization
     and visualization are caller-owned.
     """
-    from .adaptive_neutral_velocity_mesh import create_adaptive_neutral_velocity_mesh
-    from .axisymmetric_neutral_moments import reduce_axisymmetric_neutral_moments
-    from .incoming_boundary_flux_normalization import normalize_incoming_neutral_boundary
-    from .neutral_generation_propagation import propagate_neutral_generation
-    from .neutral_generation_stopping import evaluate_neutral_generation_stopping
-    from .neutral_total_collision_frequency import assemble_neutral_total_collision_frequency
-    from .simple_charge_exchange_source import assemble_simple_charge_exchange_source
-    from .shifted_maxwellian_seed import build_shifted_maxwellian_seed
-    from .upwind_transport_coefficients import assemble_neutral_upwind_transport_coefficients
+    from ..neutrals.adaptive_neutral_velocity_mesh import create_adaptive_neutral_velocity_mesh
+    from ..neutrals.axisymmetric_neutral_moments import reduce_axisymmetric_neutral_moments
+    from ..neutrals.incoming_boundary_flux_normalization import normalize_incoming_neutral_boundary
+    from ..neutrals.neutral_generation_propagation import propagate_neutral_generation
+    from ..neutrals.neutral_generation_stopping import evaluate_neutral_generation_stopping
+    from ..neutrals.neutral_total_collision_frequency import assemble_neutral_total_collision_frequency
+    from ..neutrals.simple_charge_exchange_source import assemble_simple_charge_exchange_source
+    from ..neutrals.shifted_maxwellian_seed import build_shifted_maxwellian_seed
+    from ..neutrals.upwind_transport_coefficients import assemble_neutral_upwind_transport_coefficients
     from ..collisions.janev_electron_impact_ionization_rate import evaluate_janev_electron_impact_ionization_rate
     from ..collisions.atomic_hydrogen_charge_exchange_rate import evaluate_atomic_hydrogen_charge_exchange_rate
     from ..collisions.atomic_hydrogen_1s_radiative_recombination_rate import evaluate_atomic_hydrogen_1s_radiative_recombination_rate
