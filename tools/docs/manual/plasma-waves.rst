@@ -367,7 +367,7 @@ Hall 项则为 ``i H [B]_x``，无需先舍入场模；完整矩阵元最后舍�
 
    Z_J(z) = sum_{j=1}^{J} b_j / (z - c_j)
 
-极点 ``c_j`` 和留数 ``b_j`` 来自预置表。``evaluate_maxwellian_jpole`` 支持 ``J = 8, 12, 16, 24``；上半平面直接求和，下半平面用反射关系
+极点 ``c_j`` 和留数 ``b_j`` 来自预置表。``evaluate_plasma_dispersion(..., method="jpole", order=...)`` 支持 ``J = 8, 12, 16, 24``；上半平面直接求和，下半平面用反射关系
 
 .. code-block:: text
 
