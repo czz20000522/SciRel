@@ -144,7 +144,7 @@
    ],
    "modules": {
     "scirel._composition": "ce7f22d7d0978065cb3c56384d49fccf73bf41635cd51b3a8755cca5453e1ca7",
-    "scirel._validation": "975d881f3b0115509aa13b5b50e9879762727f5a1d02d94043870a7ed1b63de8",
+    "scirel._validation": "2af2b7b6e250647376ebc82bc2811ec652a45383c70e40dae95f753569ecba89",
     "scirel.closures.boltzmann_quasineutrality": "1f55f66f81f84349f5f12bf289ce648c416adc0051b29bded3c66aa66ae34ab6",
     "scirel.mirror.mirror_quasineutral_closure": "0ffe26bfb3fc9708b1687a58e5c8b4c9b4d270395b5384bbabda9b14a2bd16e8",
     "scirel.closures.quasineutral_potential": "809ff6a621866b315426709bc4f282048395c542e41371d63e59ecfd7446393d",
@@ -226,7 +226,7 @@
    ],
    "modules": {
     "scirel._composition": "ce7f22d7d0978065cb3c56384d49fccf73bf41635cd51b3a8755cca5453e1ca7",
-    "scirel._validation": "975d881f3b0115509aa13b5b50e9879762727f5a1d02d94043870a7ed1b63de8",
+    "scirel._validation": "2af2b7b6e250647376ebc82bc2811ec652a45383c70e40dae95f753569ecba89",
     "scirel.equilibrium.anisotropic_force_balance": "7786d2f14b215180567973af30eb7c6e980dd27d82bd7ffbce51e2b150a210a7",
     "scirel.equilibrium.axisymmetric_anisotropic_picard": "51842f698710084d521ff887b01f84141a238616cf8440c1e88fdcd49fbfb5bb",
     "scirel.equilibrium.axisymmetric_picard_update": "34b28419a434f2782ae4506db63edbde3687fe1e7cb7d947e0dcf519bf1e10f7",
@@ -330,7 +330,7 @@
    ],
    "modules": {
     "scirel._composition": "ce7f22d7d0978065cb3c56384d49fccf73bf41635cd51b3a8755cca5453e1ca7",
-    "scirel._validation": "975d881f3b0115509aa13b5b50e9879762727f5a1d02d94043870a7ed1b63de8",
+    "scirel._validation": "2af2b7b6e250647376ebc82bc2811ec652a45383c70e40dae95f753569ecba89",
     "scirel.diagnostics.picard_flux_residual": "8fbee6e510b43bc4315fc39a53b912915d004ab6029a1b3fa3354030d1d5ba5b",
     "scirel.equilibrium.anisotropic_picard_feedback": "953f04df3d4f497cf205a08e4a1790aa040bb2d52d92509effbdfd63be93e1d7",
     "scirel.equilibrium.anisotropic_toroidal_current": "1de8cc059421396e62dd9248a24df596b0ac9b61d94d59bfcb40b914f36412e0",
@@ -591,7 +591,7 @@
    ],
    "modules": {
     "scirel._composition": "ce7f22d7d0978065cb3c56384d49fccf73bf41635cd51b3a8755cca5453e1ca7",
-    "scirel._validation": "975d881f3b0115509aa13b5b50e9879762727f5a1d02d94043870a7ed1b63de8",
+    "scirel._validation": "2af2b7b6e250647376ebc82bc2811ec652a45383c70e40dae95f753569ecba89",
     "scirel.closures.reduced_hall_drift": "e56b91441832d7c03519c6facd71149c756e798c42b8edd11fa714d720587288",
     "scirel.equilibrium.axisymmetric_picard_update": "34b28419a434f2782ae4506db63edbde3687fe1e7cb7d947e0dcf519bf1e10f7",
     "scirel.equilibrium.reduced_hall_anisotropic_picard": "87e7e23600534cb1ef6e6f3f7478493aea51720c4514787e24db1f067f41ce7d",
@@ -901,7 +901,7 @@
     }
    ],
    "modules": {
-    "scirel.kinetic.generalized_dispersion": "73a2b87ac78fea7928d75e37eb9d77fe1f439b7ce24bb1359aaa9d2380c30285"
+    "scirel.kinetic.generalized_dispersion": "ee0986c03f6ac43ae0730a042bc0337cc6ed9c77ee126873d1a5fc24e8039340"
    },
    "review_basis": "The entry validates kind, k_values, initial_guess, residual_tolerance and max_evaluations. The nested residual uses selector/expression for the Maxwellian fast path; otherwise it forwards parameters to evaluate_gpdf_residual in this same bound module, whose eight keyword defaults define the remaining scientific ports. Residual kind routes applicable ion/beam/distribution parameters; the fast path ignores unused extra parameters as in the unchanged implementation. This binding verifies the declared scientific contract, not a claim that every runtime branch rejects arbitrary kwargs."
   },
