@@ -923,9 +923,9 @@
   },
   {
    "asset_id": "scirel.field.ideal-conductor-boundary",
-   "source_sha256": "8a19934f9d5ad2edf741cb51927f2726cd325c268135f1cd1e2016e0a060398f",
+   "source_sha256": "a3d6a428a4b957df51252ea07a475d7bb099749330a34ffe7887075ed2855d8b",
    "summary": "求解截断 SVD 边界源系统，并将其 Green 修正加到场点磁通。各命名字段作为同一个 scirel._result.Result 映射返回。",
-   "definition": "在边界采样场磁通，按相对奇异值截断求解 Gbb 电流 = −采样磁通，再应用 Gbf 电流。 各字段存于同一个 scirel._result.Result 映射；按键和属性读取同一值，不引入嵌套 Result。",
+   "definition": "在边界采样场磁通，按相对奇异值截断求解 Gbb 电流 = −采样磁通，再应用 Gbf 电流。对 Gbb=U diag(s) V.T，以 binary64 乘积保留 s>rcond*s[0] 的方向，直接求 V@((U.T@−采样磁通)/s)，不生成奇异值倒数或完整伪逆。残差范数通过缩放的斜边累积求值。各字段存于同一个 scirel._result.Result 映射；按键和属性读取同一值，不引入嵌套 Result。",
    "model": "降维 SVD 线性最小二乘修正。",
    "assumptions": [
     "所有数组为有限实数。",
@@ -1029,7 +1029,7 @@
    },
    "failure_semantics": {
     "invalid_input": "输入非有限、秩错误、形状不兼容、为空或 rcond 非法时抛出 ValueError。",
-    "runtime_failure": "SVD 和矩阵乘法产生的线性代数或浮点失败会传播。",
+    "runtime_failure": "SVD 不收敛时传播 numpy.linalg.LinAlgError；求解或修正算术出现非有限值，包括无法表示的电流、磁通、奇异值或残差范数时抛出 FloatingPointError，不返回非有限 Result。",
     "nonconvergence": "不适用；求解是一次截断 SVD 运算。",
     "partial_results": "验证或求解失败后不返回 scirel._result.Result 映射。"
    },
@@ -1043,9 +1043,12 @@
      "所有磁通量一致乘 2π 后等效电流不变。",
      "相对奇异值截断与有效秩。",
      "拒绝负 rcond。",
-     "命名字段改造保留改造前的键序、数值、形状、dtype、映射访问和属性访问，失败路径继续匹配原异常类型与消息。"
+     "命名字段改造保留改造前的键序、数值、形状、dtype、映射访问和属性访问，失败路径继续匹配原异常类型与消息。",
+     "条件数为一的一元系统覆盖 1e-310 和最小正 subnormal，不生成溢出的倒数；电流为 −1、修正磁通和残差为零、秩为一。",
+     "独立精确有理数二元方程与最小范数行系统参照覆盖共同尺度、非对角矩阵和源零空间；对角测试保留舍入乘积阈值、严格等号、零秩和左零空间残差。",
+     "缩放残差范数在可表示时保持有限；真正非有限的采样磁通、电流、修正、奇异值和残差范数，即使调用者关闭警告也抛出 FloatingPointError。"
     ],
-    "evidence_ceiling": "直接测试覆盖一个小型满秩系统、一个截断秩案例和一致 2π 缩放；不验证任意格林数据、条件数保证、真实导体壁或专家认可。",
+    "evidence_ceiling": "直接测试保留原满秩采样一致系统和 2π 缩放，并增加有界 binary64 尺度下的精确一元、有理数二元及最小范数行系统参照、秩和阈值边界、非有限失败。这些测试不证明任意矩阵精度、条件数保证、已丢失输入精度的恢复、真实导体壁或专家认可。",
     "known_limitations": [
      "只检查矩阵维数，不检查 S@Gbf=Gbb，物理耦合由调用者证明。",
      "截断后可有非零残差。",
