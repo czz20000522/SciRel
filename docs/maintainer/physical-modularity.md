@@ -156,13 +156,13 @@ scirel.collisions.atomic-hydrogen-charge-exchange-cross-section.
 | 规则 | 放在哪 | 执行方式 |
 | --- | --- | --- |
 | 分层表、同层白名单、不能成环、函数体内导入也算 | [api-spec](../../skills/development/scirel-code-style/references/api-spec.md) 的 `Domains` 一节 + `tests/architecture/` 检查 | 检查失败就判红 |
-| 根级私有模块不得带物理含义；跨领域只能引用公开名字 | [api-spec](../../skills/development/scirel-code-style/references/api-spec.md) 的 `Domains` 一节 + `tests/architecture/` 检查 | 检查 |
+| 根级私有模块不得带物理含义；跨领域只能引用公开名字 | [api-spec](../../skills/development/scirel-code-style/references/api-spec.md) 的 `Domains` 一节 | 检查封闭根级私有模块清单；物理归属和公开引用范围仍须评审，不以清单检查代替 |
 | 合同 ID 领域与模块领域一致 | [api-spec](../../skills/development/scirel-code-style/references/api-spec.md) 的 `One truth` 一节 | 逐项迁移对账；全量约束尚待收敛，结构校验不是已完成的证明 |
 | 每层直接子项不超过上限（7.5） | 实测后再确定是否加入 `tests/architecture/` | 尚未设强制上限，遵循 D6 |
 | 每个 `method` 都有合同条目；`family` 字段齐全 | 合同校验 | 检查 |
 | 报错的五个要素、越界告警、不收敛状态 | [api-spec](../../skills/development/scirel-code-style/references/api-spec.md) 的 `Returns and errors` 一节 | skill（评审时对照） |
 | 判断哪些函数属于同一族 | [api-spec](../../skills/development/scirel-code-style/references/api-spec.md) 的 `Model families` 一节 | skill（需要人判断） |
-| 测试不导入私有模块（例外须写明原因） | 检查，附例外清单 | 检查 |
+| 测试不依赖私有实现（例外须写明原因） | 公开行为测试与相应评审 | 不能把现有组合 helper 检查外推为全库私有导入禁令 |
 
 ## 9. 迁移顺序
 
@@ -183,7 +183,7 @@ scirel.collisions.atomic-hydrogen-charge-exchange-cross-section.
 ## 10. 维护者决定（2026-11-11）
 
 - **D1 分层：采用。** 六层够用，因为扩展发生在层内，而不是靠增加层数：能力增长时，在层内增加领域、子领域和模型族，层数不变。关键是依赖像水流一样只往下走。将来如果出现跨越整个装置的集成建模（例如全装置的输运加平衡耦合），可以在 L5 之上加一层，但不能打破"只往下"这条规则。`closures/discrete_vector_feedback` 是控制律而不是物理闭合，迁移时移出 `closures`；它的去处在拆分 PR 里按实测依赖决定。
-- **D2 合同 ID：由代码决定。** 代码是唯一锚点，合同由代码派生，所以合同 ID 的领域段必须等于函数规范模块所在的领域。发布前直接改 ID，不留别名，也不维护 ID 到模块的映射表。由 7.6 的检查强制执行。
+- **D2 合同 ID：由代码决定。** 代码是唯一锚点，合同由代码派生，所以合同 ID 的领域段必须等于函数规范模块所在的领域。发布前直接改 ID，不留别名，也不维护 ID 到模块的映射表。按 7.6 逐项迁移对账，不能把现有候选校验当作全库已经对齐。
 - **D3 物理无关工具：集中放进一个共享位置。** 所有与物理无关的数值工具（插值、基函数、差分、拟合、线性代数）统一放进 `scirel.numerics`，供所有领域使用。为了避免它变成新的大杂烩，内部按数学主题分子包（例如 `numerics.interpolate`、`numerics.basis`、`numerics.differentiate`、`numerics.linalg`），子包结构在迁移时按实测确定。SciPy 已有等价功能的，直接调用 SciPy，不再包装一个公开函数，除非 SciReL 的版本在合同上确实有不同的约定。
 - **D4 模型族：一个入口加 `method=`**，与 SciPy 一致。现有的布尔选择器（例如电荷交换截面的 `freeman=`）也迁移成 `method=`。
 - **D5 `ApplicabilityWarning`：新增。** 按 7.2 的规则执行。
