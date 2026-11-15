@@ -205,6 +205,18 @@ def evaluate_kinetic_dispersion_ronnmark(*, B0, qs, ms, ns0, Ts0, f=None, kz, kx
     curl terms, and compute det(D). homogeneous magnetized Maxwellian multi-species plasma Assumptions:
     Input units and normalization follow the declared ports; no physical parameters are inferred.
 
+    Independent Eq.(8) references at sixteen fixed inputs compare every complex
+    K/D entry and returned determinant with the actual binary64 pole table at
+    abs(product-B)/max(1,abs(B)) <= 2e-7. This finite-grid numerical diagnostic
+    does not establish Maxwellian Eq.(3) accuracy, a global bound, roots or damping.
+    B retains rounded-table moments and differs from inserting a pole Z directly
+    into Eq.(3). Its zero-kz cross-z residuals are not idealized to zero.
+    The table's source appearance is located; generation constraints and global
+    physical accuracy remain UNKNOWN. See tests/fixtures/kinetic_tensor/README.md
+    for independent regeneration, separate A/B identities and the original A
+    15/16 block with its separate small-kz successor. Omitted-tail bounds use an
+    exact finite center, not a total numerical-error enclosure.
+
     Examples
     --------
     >>> from scirel.kinetic import evaluate_kinetic_dispersion_ronnmark

@@ -1,0 +1,56 @@
+{
+  "purpose": "Independent scientific fixture identity, not an approval registry; original files need not be available for tests or reproduction",
+  "original_study_commit": "4c79be1224447e7d68055769f42e276647720df3",
+  "original_runtime": {
+    "python": "3.14.7",
+    "mpmath": "1.4.1",
+    "uv_lock_sha256": "21c3d35d6fdee37064bf7aec328b65a92f0dccb6b447ba36fb069745d4559d19"
+  },
+  "A_original": {
+    "frozen_at": "2026-11-15T17:47:09.686386+00:00",
+    "input_sha256": "6a5b7165a02163df792cf4d67eb607c79ff73694447df94de94a91668dfbfcde",
+    "generator_sha256": "42043b10a7e91877703c7b78dcbe1a69941a82281721d039cb13a028c4e199d7",
+    "criterion_sha256": "096d2fd5c0a0cb0ff25e649dd8d9ff29d2cce4be2661e838f00939e156590252",
+    "reference_sha256": "1ce81effc54c0c0b088b68f40a527a296dd30ac812733ce1a66f4782d5ff4aa3",
+    "raw_evaluations_sha256": "3209f31ed29f936ac9aa42acf23c9333525577610a871fd8b12cc1c444dca46a",
+    "process_exit": 2
+  },
+  "A_small_kz_successor": {
+    "frozen_at": "2026-11-15T17:55:51.958170+00:00",
+    "original_calculate_sha256": "143f36364cb2b0ba1818618a0924ce651199070b72d7b14dbd19471176369950",
+    "reference_sha256": "c8eeb79b827dc02cbbcf6697c82f534a2f4662ac07ab58ecd443966391912bac",
+    "precision": [
+      200,
+      280
+    ],
+    "N": [
+      96,
+      128
+    ]
+  },
+  "B": {
+    "frozen_at": "2026-11-15T18:08:11.102936+00:00",
+    "freeze_sha256": "d8d3fcbb9e97dcb980d86d5f78a042f6757203caa14eebb75856c45546a74a80",
+    "reference_sha256": "46945c1082f1974a8f79550b48a40ff60355887ff91275a23593a53313954714"
+  },
+  "diagnostic": {
+    "frozen_at": "2026-11-15T18:13:09.265800+00:00",
+    "threshold": "2e-7",
+    "norm": "Every complex K/D entry and returned detD: abs(product-B)/max(1,abs(B)). Derived detK recorded separately.",
+    "existing_thresholds": "Keep C1e-11/1e-9,F_N2e-12 and reference1e-70 unchanged."
+  },
+  "public_math": {
+    "url": "https://arxiv.org/html/2502.06550v2",
+    "equations": [
+      "3 and X matrix",
+      "8",
+      "13",
+      "14"
+    ],
+    "original_html_sha256": "27f75ae34835217d1a36053ec891d75e87c8cf358671fd137504b02d6f39fd1d"
+  },
+  "review": {
+    "scientific_identity": "ACK_STATIC",
+    "scope": "Original definitions, saved study identities and limited conclusions only; new candidate execution and independent review required"
+  }
+}

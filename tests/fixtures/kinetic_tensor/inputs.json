@@ -1,0 +1,1272 @@
+{
+  "constants": {
+    "KB": 1.38064852E-23,
+    "eps0": 8.854187817E-12,
+    "C": 299792458
+  },
+  "cases": [
+    {
+      "id": "ordinary",
+      "kx": [
+        10000.0,
+        0.0
+      ],
+      "kz": 1000.0,
+      "B": 1.0,
+      "omega": 100000000000.0,
+      "species": [
+        {
+          "charge": -1.60217662E-19,
+          "mass": 9.1094E-31,
+          "density": 6.075E+19,
+          "temperature": 11604691.395316169
+        }
+      ]
+    },
+    {
+      "id": "complex-kx",
+      "kx": [
+        10000.0,
+        2000.0
+      ],
+      "kz": 1000.0,
+      "B": 1.0,
+      "omega": 100000000000.0,
+      "species": [
+        {
+          "charge": -1.60217662E-19,
+          "mass": 9.1094E-31,
+          "density": 6.075E+19,
+          "temperature": 11604691.395316169
+        }
+      ]
+    },
+    {
+      "id": "complex-negative-kz",
+      "kx": [
+        10000.0,
+        2000.0
+      ],
+      "kz": -1000.0,
+      "B": 1.0,
+      "omega": 100000000000.0,
+      "species": [
+        {
+          "charge": -1.60217662E-19,
+          "mass": 9.1094E-31,
+          "density": 6.075E+19,
+          "temperature": 11604691.395316169
+        }
+      ]
+    },
+    {
+      "id": "negative-kx",
+      "kx": [
+        -10000.0,
+        -2000.0
+      ],
+      "kz": 1000.0,
+      "B": 1.0,
+      "omega": 100000000000.0,
+      "species": [
+        {
+          "charge": -1.60217662E-19,
+          "mass": 9.1094E-31,
+          "density": 6.075E+19,
+          "temperature": 11604691.395316169
+        }
+      ]
+    },
+    {
+      "id": "negative-B",
+      "kx": [
+        10000.0,
+        2000.0
+      ],
+      "kz": 1000.0,
+      "B": -1.0,
+      "omega": 100000000000.0,
+      "species": [
+        {
+          "charge": -1.60217662E-19,
+          "mass": 9.1094E-31,
+          "density": 6.075E+19,
+          "temperature": 11604691.395316169
+        }
+      ]
+    },
+    {
+      "id": "negative-omega",
+      "kx": [
+        10000.0,
+        2000.0
+      ],
+      "kz": 1000.0,
+      "B": 1.0,
+      "omega": -100000000000.0,
+      "species": [
+        {
+          "charge": -1.60217662E-19,
+          "mass": 9.1094E-31,
+          "density": 6.075E+19,
+          "temperature": 11604691.395316169
+        }
+      ]
+    },
+    {
+      "id": "zero-kz-real",
+      "kx": [
+        10000.0,
+        0.0
+      ],
+      "kz": 0.0,
+      "B": 1.0,
+      "omega": 100000000000.0,
+      "species": [
+        {
+          "charge": -1.60217662E-19,
+          "mass": 9.1094E-31,
+          "density": 6.075E+19,
+          "temperature": 11604691.395316169
+        }
+      ]
+    },
+    {
+      "id": "zero-kz-complex",
+      "kx": [
+        10000.0,
+        2000.0
+      ],
+      "kz": 0.0,
+      "B": 1.0,
+      "omega": 100000000000.0,
+      "species": [
+        {
+          "charge": -1.60217662E-19,
+          "mass": 9.1094E-31,
+          "density": 6.075E+19,
+          "temperature": 11604691.395316169
+        }
+      ]
+    },
+    {
+      "id": "zero-kx",
+      "kx": [
+        0.0,
+        0.0
+      ],
+      "kz": 1000.0,
+      "B": 1.0,
+      "omega": 100000000000.0,
+      "species": [
+        {
+          "charge": -1.60217662E-19,
+          "mass": 9.1094E-31,
+          "density": 6.075E+19,
+          "temperature": 11604691.395316169
+        }
+      ]
+    },
+    {
+      "id": "both-zero",
+      "kx": [
+        0.0,
+        0.0
+      ],
+      "kz": 0.0,
+      "B": 1.0,
+      "omega": 100000000000.0,
+      "species": [
+        {
+          "charge": -1.60217662E-19,
+          "mass": 9.1094E-31,
+          "density": 6.075E+19,
+          "temperature": 11604691.395316169
+        }
+      ]
+    },
+    {
+      "id": "small-kz",
+      "kx": [
+        10000.0,
+        0.0
+      ],
+      "kz": 1E-7,
+      "B": 1.0,
+      "omega": 100000000000.0,
+      "species": [
+        {
+          "charge": -1.60217662E-19,
+          "mass": 9.1094E-31,
+          "density": 6.075E+19,
+          "temperature": 11604691.395316169
+        }
+      ]
+    },
+    {
+      "id": "b8",
+      "kx": [
+        37510.43783384935,
+        0.0
+      ],
+      "kz": 1000.0,
+      "B": 1.0,
+      "omega": 100000000000.0,
+      "species": [
+        {
+          "charge": -1.60217662E-19,
+          "mass": 9.1094E-31,
+          "density": 6.075E+19,
+          "temperature": 11604691.395316169
+        }
+      ]
+    },
+    {
+      "id": "two-species",
+      "kx": [
+        100.0,
+        0.0
+      ],
+      "kz": 1000.0,
+      "B": 1.0,
+      "omega": 300000000.0,
+      "species": [
+        {
+          "charge": -1.60217662E-19,
+          "mass": 9.1094E-31,
+          "density": 6.075E+19,
+          "temperature": 11604691.395316169
+        },
+        {
+          "charge": 1.60217662E-19,
+          "mass": 1.67262192369E-27,
+          "density": 6.075E+19,
+          "temperature": 1000000.0
+        }
+      ]
+    },
+    {
+      "id": "two-species-complex-negative-kz",
+      "kx": [
+        100.0,
+        30.0
+      ],
+      "kz": -1000.0,
+      "B": 1.0,
+      "omega": 300000000.0,
+      "species": [
+        {
+          "charge": -1.60217662E-19,
+          "mass": 9.1094E-31,
+          "density": 6.075E+19,
+          "temperature": 11604691.395316169
+        },
+        {
+          "charge": 1.60217662E-19,
+          "mass": 1.67262192369E-27,
+          "density": 6.075E+19,
+          "temperature": 1000000.0
+        }
+      ]
+    },
+    {
+      "id": "ordinary-scale-2m52",
+      "kx": [
+        2.220446049250313E-12,
+        0.0
+      ],
+      "kz": 2.220446049250313E-13,
+      "B": 2.220446049250313E-16,
+      "omega": 0.00002220446049250313,
+      "species": [
+        {
+          "charge": -1.60217662E-19,
+          "mass": 9.1094E-31,
+          "density": 2.995206249511029E-12,
+          "temperature": 11604691.395316169
+        }
+      ],
+      "similarity_parent": "ordinary",
+      "scale": 2.220446049250313E-16
+    },
+    {
+      "id": "complex-negative-kz-scale-2m52",
+      "kx": [
+        2.220446049250313E-12,
+        4.440892098500626E-13
+      ],
+      "kz": -2.220446049250313E-13,
+      "B": 2.220446049250313E-16,
+      "omega": 0.00002220446049250313,
+      "species": [
+        {
+          "charge": -1.60217662E-19,
+          "mass": 9.1094E-31,
+          "density": 2.995206249511029E-12,
+          "temperature": 11604691.395316169
+        }
+      ],
+      "similarity_parent": "complex-negative-kz",
+      "scale": 2.220446049250313E-16
+    }
+  ],
+  "binary64_exact_identity": {
+    "constants": {
+      "KB": {
+        "hex": "0x1.0b0e674035e1ap-76",
+        "numerator": "2349051731357453",
+        "denominator": "170141183460469231731687303715884105728"
+      },
+      "eps0": {
+        "hex": "0x1.37876f148112ep-37",
+        "numerator": "2740238403504279",
+        "denominator": "309485009821345068724781056"
+      },
+      "C": 299792458
+    },
+    "cases": [
+      {
+        "id": "ordinary",
+        "kx": [
+          {
+            "hex": "0x1.3880000000000p+13",
+            "numerator": "10000",
+            "denominator": "1"
+          },
+          {
+            "hex": "0x0.0p+0",
+            "numerator": "0",
+            "denominator": "1"
+          }
+        ],
+        "kz": {
+          "hex": "0x1.f400000000000p+9",
+          "numerator": "1000",
+          "denominator": "1"
+        },
+        "B": {
+          "hex": "0x1.0000000000000p+0",
+          "numerator": "1",
+          "denominator": "1"
+        },
+        "omega": {
+          "hex": "0x1.74876e8000000p+36",
+          "numerator": "100000000000",
+          "denominator": "1"
+        },
+        "species": [
+          {
+            "charge": {
+              "hex": "-0x1.7a4da2594bb57p-63",
+              "numerator": "-6655181304675159",
+              "denominator": "41538374868278621028243970633760768"
+            },
+            "mass": {
+              "hex": "0x1.279def352ad7cp-100",
+              "numerator": "1300137013193567",
+              "denominator": "1427247692705959881058285969449495136382746624"
+            },
+            "density": {
+              "hex": "0x1.a589ad90fc7d8p+65",
+              "numerator": "60750000000000000000",
+              "denominator": "1"
+            },
+            "temperature": {
+              "hex": "0x1.6225a6ca66e18p+23",
+              "numerator": "778777656610243",
+              "denominator": "67108864"
+            }
+          }
+        ]
+      },
+      {
+        "id": "complex-kx",
+        "kx": [
+          {
+            "hex": "0x1.3880000000000p+13",
+            "numerator": "10000",
+            "denominator": "1"
+          },
+          {
+            "hex": "0x1.f400000000000p+10",
+            "numerator": "2000",
+            "denominator": "1"
+          }
+        ],
+        "kz": {
+          "hex": "0x1.f400000000000p+9",
+          "numerator": "1000",
+          "denominator": "1"
+        },
+        "B": {
+          "hex": "0x1.0000000000000p+0",
+          "numerator": "1",
+          "denominator": "1"
+        },
+        "omega": {
+          "hex": "0x1.74876e8000000p+36",
+          "numerator": "100000000000",
+          "denominator": "1"
+        },
+        "species": [
+          {
+            "charge": {
+              "hex": "-0x1.7a4da2594bb57p-63",
+              "numerator": "-6655181304675159",
+              "denominator": "41538374868278621028243970633760768"
+            },
+            "mass": {
+              "hex": "0x1.279def352ad7cp-100",
+              "numerator": "1300137013193567",
+              "denominator": "1427247692705959881058285969449495136382746624"
+            },
+            "density": {
+              "hex": "0x1.a589ad90fc7d8p+65",
+              "numerator": "60750000000000000000",
+              "denominator": "1"
+            },
+            "temperature": {
+              "hex": "0x1.6225a6ca66e18p+23",
+              "numerator": "778777656610243",
+              "denominator": "67108864"
+            }
+          }
+        ]
+      },
+      {
+        "id": "complex-negative-kz",
+        "kx": [
+          {
+            "hex": "0x1.3880000000000p+13",
+            "numerator": "10000",
+            "denominator": "1"
+          },
+          {
+            "hex": "0x1.f400000000000p+10",
+            "numerator": "2000",
+            "denominator": "1"
+          }
+        ],
+        "kz": {
+          "hex": "-0x1.f400000000000p+9",
+          "numerator": "-1000",
+          "denominator": "1"
+        },
+        "B": {
+          "hex": "0x1.0000000000000p+0",
+          "numerator": "1",
+          "denominator": "1"
+        },
+        "omega": {
+          "hex": "0x1.74876e8000000p+36",
+          "numerator": "100000000000",
+          "denominator": "1"
+        },
+        "species": [
+          {
+            "charge": {
+              "hex": "-0x1.7a4da2594bb57p-63",
+              "numerator": "-6655181304675159",
+              "denominator": "41538374868278621028243970633760768"
+            },
+            "mass": {
+              "hex": "0x1.279def352ad7cp-100",
+              "numerator": "1300137013193567",
+              "denominator": "1427247692705959881058285969449495136382746624"
+            },
+            "density": {
+              "hex": "0x1.a589ad90fc7d8p+65",
+              "numerator": "60750000000000000000",
+              "denominator": "1"
+            },
+            "temperature": {
+              "hex": "0x1.6225a6ca66e18p+23",
+              "numerator": "778777656610243",
+              "denominator": "67108864"
+            }
+          }
+        ]
+      },
+      {
+        "id": "negative-kx",
+        "kx": [
+          {
+            "hex": "-0x1.3880000000000p+13",
+            "numerator": "-10000",
+            "denominator": "1"
+          },
+          {
+            "hex": "-0x1.f400000000000p+10",
+            "numerator": "-2000",
+            "denominator": "1"
+          }
+        ],
+        "kz": {
+          "hex": "0x1.f400000000000p+9",
+          "numerator": "1000",
+          "denominator": "1"
+        },
+        "B": {
+          "hex": "0x1.0000000000000p+0",
+          "numerator": "1",
+          "denominator": "1"
+        },
+        "omega": {
+          "hex": "0x1.74876e8000000p+36",
+          "numerator": "100000000000",
+          "denominator": "1"
+        },
+        "species": [
+          {
+            "charge": {
+              "hex": "-0x1.7a4da2594bb57p-63",
+              "numerator": "-6655181304675159",
+              "denominator": "41538374868278621028243970633760768"
+            },
+            "mass": {
+              "hex": "0x1.279def352ad7cp-100",
+              "numerator": "1300137013193567",
+              "denominator": "1427247692705959881058285969449495136382746624"
+            },
+            "density": {
+              "hex": "0x1.a589ad90fc7d8p+65",
+              "numerator": "60750000000000000000",
+              "denominator": "1"
+            },
+            "temperature": {
+              "hex": "0x1.6225a6ca66e18p+23",
+              "numerator": "778777656610243",
+              "denominator": "67108864"
+            }
+          }
+        ]
+      },
+      {
+        "id": "negative-B",
+        "kx": [
+          {
+            "hex": "0x1.3880000000000p+13",
+            "numerator": "10000",
+            "denominator": "1"
+          },
+          {
+            "hex": "0x1.f400000000000p+10",
+            "numerator": "2000",
+            "denominator": "1"
+          }
+        ],
+        "kz": {
+          "hex": "0x1.f400000000000p+9",
+          "numerator": "1000",
+          "denominator": "1"
+        },
+        "B": {
+          "hex": "-0x1.0000000000000p+0",
+          "numerator": "-1",
+          "denominator": "1"
+        },
+        "omega": {
+          "hex": "0x1.74876e8000000p+36",
+          "numerator": "100000000000",
+          "denominator": "1"
+        },
+        "species": [
+          {
+            "charge": {
+              "hex": "-0x1.7a4da2594bb57p-63",
+              "numerator": "-6655181304675159",
+              "denominator": "41538374868278621028243970633760768"
+            },
+            "mass": {
+              "hex": "0x1.279def352ad7cp-100",
+              "numerator": "1300137013193567",
+              "denominator": "1427247692705959881058285969449495136382746624"
+            },
+            "density": {
+              "hex": "0x1.a589ad90fc7d8p+65",
+              "numerator": "60750000000000000000",
+              "denominator": "1"
+            },
+            "temperature": {
+              "hex": "0x1.6225a6ca66e18p+23",
+              "numerator": "778777656610243",
+              "denominator": "67108864"
+            }
+          }
+        ]
+      },
+      {
+        "id": "negative-omega",
+        "kx": [
+          {
+            "hex": "0x1.3880000000000p+13",
+            "numerator": "10000",
+            "denominator": "1"
+          },
+          {
+            "hex": "0x1.f400000000000p+10",
+            "numerator": "2000",
+            "denominator": "1"
+          }
+        ],
+        "kz": {
+          "hex": "0x1.f400000000000p+9",
+          "numerator": "1000",
+          "denominator": "1"
+        },
+        "B": {
+          "hex": "0x1.0000000000000p+0",
+          "numerator": "1",
+          "denominator": "1"
+        },
+        "omega": {
+          "hex": "-0x1.74876e8000000p+36",
+          "numerator": "-100000000000",
+          "denominator": "1"
+        },
+        "species": [
+          {
+            "charge": {
+              "hex": "-0x1.7a4da2594bb57p-63",
+              "numerator": "-6655181304675159",
+              "denominator": "41538374868278621028243970633760768"
+            },
+            "mass": {
+              "hex": "0x1.279def352ad7cp-100",
+              "numerator": "1300137013193567",
+              "denominator": "1427247692705959881058285969449495136382746624"
+            },
+            "density": {
+              "hex": "0x1.a589ad90fc7d8p+65",
+              "numerator": "60750000000000000000",
+              "denominator": "1"
+            },
+            "temperature": {
+              "hex": "0x1.6225a6ca66e18p+23",
+              "numerator": "778777656610243",
+              "denominator": "67108864"
+            }
+          }
+        ]
+      },
+      {
+        "id": "zero-kz-real",
+        "kx": [
+          {
+            "hex": "0x1.3880000000000p+13",
+            "numerator": "10000",
+            "denominator": "1"
+          },
+          {
+            "hex": "0x0.0p+0",
+            "numerator": "0",
+            "denominator": "1"
+          }
+        ],
+        "kz": {
+          "hex": "0x0.0p+0",
+          "numerator": "0",
+          "denominator": "1"
+        },
+        "B": {
+          "hex": "0x1.0000000000000p+0",
+          "numerator": "1",
+          "denominator": "1"
+        },
+        "omega": {
+          "hex": "0x1.74876e8000000p+36",
+          "numerator": "100000000000",
+          "denominator": "1"
+        },
+        "species": [
+          {
+            "charge": {
+              "hex": "-0x1.7a4da2594bb57p-63",
+              "numerator": "-6655181304675159",
+              "denominator": "41538374868278621028243970633760768"
+            },
+            "mass": {
+              "hex": "0x1.279def352ad7cp-100",
+              "numerator": "1300137013193567",
+              "denominator": "1427247692705959881058285969449495136382746624"
+            },
+            "density": {
+              "hex": "0x1.a589ad90fc7d8p+65",
+              "numerator": "60750000000000000000",
+              "denominator": "1"
+            },
+            "temperature": {
+              "hex": "0x1.6225a6ca66e18p+23",
+              "numerator": "778777656610243",
+              "denominator": "67108864"
+            }
+          }
+        ]
+      },
+      {
+        "id": "zero-kz-complex",
+        "kx": [
+          {
+            "hex": "0x1.3880000000000p+13",
+            "numerator": "10000",
+            "denominator": "1"
+          },
+          {
+            "hex": "0x1.f400000000000p+10",
+            "numerator": "2000",
+            "denominator": "1"
+          }
+        ],
+        "kz": {
+          "hex": "0x0.0p+0",
+          "numerator": "0",
+          "denominator": "1"
+        },
+        "B": {
+          "hex": "0x1.0000000000000p+0",
+          "numerator": "1",
+          "denominator": "1"
+        },
+        "omega": {
+          "hex": "0x1.74876e8000000p+36",
+          "numerator": "100000000000",
+          "denominator": "1"
+        },
+        "species": [
+          {
+            "charge": {
+              "hex": "-0x1.7a4da2594bb57p-63",
+              "numerator": "-6655181304675159",
+              "denominator": "41538374868278621028243970633760768"
+            },
+            "mass": {
+              "hex": "0x1.279def352ad7cp-100",
+              "numerator": "1300137013193567",
+              "denominator": "1427247692705959881058285969449495136382746624"
+            },
+            "density": {
+              "hex": "0x1.a589ad90fc7d8p+65",
+              "numerator": "60750000000000000000",
+              "denominator": "1"
+            },
+            "temperature": {
+              "hex": "0x1.6225a6ca66e18p+23",
+              "numerator": "778777656610243",
+              "denominator": "67108864"
+            }
+          }
+        ]
+      },
+      {
+        "id": "zero-kx",
+        "kx": [
+          {
+            "hex": "0x0.0p+0",
+            "numerator": "0",
+            "denominator": "1"
+          },
+          {
+            "hex": "0x0.0p+0",
+            "numerator": "0",
+            "denominator": "1"
+          }
+        ],
+        "kz": {
+          "hex": "0x1.f400000000000p+9",
+          "numerator": "1000",
+          "denominator": "1"
+        },
+        "B": {
+          "hex": "0x1.0000000000000p+0",
+          "numerator": "1",
+          "denominator": "1"
+        },
+        "omega": {
+          "hex": "0x1.74876e8000000p+36",
+          "numerator": "100000000000",
+          "denominator": "1"
+        },
+        "species": [
+          {
+            "charge": {
+              "hex": "-0x1.7a4da2594bb57p-63",
+              "numerator": "-6655181304675159",
+              "denominator": "41538374868278621028243970633760768"
+            },
+            "mass": {
+              "hex": "0x1.279def352ad7cp-100",
+              "numerator": "1300137013193567",
+              "denominator": "1427247692705959881058285969449495136382746624"
+            },
+            "density": {
+              "hex": "0x1.a589ad90fc7d8p+65",
+              "numerator": "60750000000000000000",
+              "denominator": "1"
+            },
+            "temperature": {
+              "hex": "0x1.6225a6ca66e18p+23",
+              "numerator": "778777656610243",
+              "denominator": "67108864"
+            }
+          }
+        ]
+      },
+      {
+        "id": "both-zero",
+        "kx": [
+          {
+            "hex": "0x0.0p+0",
+            "numerator": "0",
+            "denominator": "1"
+          },
+          {
+            "hex": "0x0.0p+0",
+            "numerator": "0",
+            "denominator": "1"
+          }
+        ],
+        "kz": {
+          "hex": "0x0.0p+0",
+          "numerator": "0",
+          "denominator": "1"
+        },
+        "B": {
+          "hex": "0x1.0000000000000p+0",
+          "numerator": "1",
+          "denominator": "1"
+        },
+        "omega": {
+          "hex": "0x1.74876e8000000p+36",
+          "numerator": "100000000000",
+          "denominator": "1"
+        },
+        "species": [
+          {
+            "charge": {
+              "hex": "-0x1.7a4da2594bb57p-63",
+              "numerator": "-6655181304675159",
+              "denominator": "41538374868278621028243970633760768"
+            },
+            "mass": {
+              "hex": "0x1.279def352ad7cp-100",
+              "numerator": "1300137013193567",
+              "denominator": "1427247692705959881058285969449495136382746624"
+            },
+            "density": {
+              "hex": "0x1.a589ad90fc7d8p+65",
+              "numerator": "60750000000000000000",
+              "denominator": "1"
+            },
+            "temperature": {
+              "hex": "0x1.6225a6ca66e18p+23",
+              "numerator": "778777656610243",
+              "denominator": "67108864"
+            }
+          }
+        ]
+      },
+      {
+        "id": "small-kz",
+        "kx": [
+          {
+            "hex": "0x1.3880000000000p+13",
+            "numerator": "10000",
+            "denominator": "1"
+          },
+          {
+            "hex": "0x0.0p+0",
+            "numerator": "0",
+            "denominator": "1"
+          }
+        ],
+        "kz": {
+          "hex": "0x1.ad7f29abcaf48p-24",
+          "numerator": "944473296573929",
+          "denominator": "9444732965739290427392"
+        },
+        "B": {
+          "hex": "0x1.0000000000000p+0",
+          "numerator": "1",
+          "denominator": "1"
+        },
+        "omega": {
+          "hex": "0x1.74876e8000000p+36",
+          "numerator": "100000000000",
+          "denominator": "1"
+        },
+        "species": [
+          {
+            "charge": {
+              "hex": "-0x1.7a4da2594bb57p-63",
+              "numerator": "-6655181304675159",
+              "denominator": "41538374868278621028243970633760768"
+            },
+            "mass": {
+              "hex": "0x1.279def352ad7cp-100",
+              "numerator": "1300137013193567",
+              "denominator": "1427247692705959881058285969449495136382746624"
+            },
+            "density": {
+              "hex": "0x1.a589ad90fc7d8p+65",
+              "numerator": "60750000000000000000",
+              "denominator": "1"
+            },
+            "temperature": {
+              "hex": "0x1.6225a6ca66e18p+23",
+              "numerator": "778777656610243",
+              "denominator": "67108864"
+            }
+          }
+        ]
+      },
+      {
+        "id": "b8",
+        "kx": [
+          {
+            "hex": "0x1.250ce02bc2201p+15",
+            "numerator": "5155395320160769",
+            "denominator": "137438953472"
+          },
+          {
+            "hex": "0x0.0p+0",
+            "numerator": "0",
+            "denominator": "1"
+          }
+        ],
+        "kz": {
+          "hex": "0x1.f400000000000p+9",
+          "numerator": "1000",
+          "denominator": "1"
+        },
+        "B": {
+          "hex": "0x1.0000000000000p+0",
+          "numerator": "1",
+          "denominator": "1"
+        },
+        "omega": {
+          "hex": "0x1.74876e8000000p+36",
+          "numerator": "100000000000",
+          "denominator": "1"
+        },
+        "species": [
+          {
+            "charge": {
+              "hex": "-0x1.7a4da2594bb57p-63",
+              "numerator": "-6655181304675159",
+              "denominator": "41538374868278621028243970633760768"
+            },
+            "mass": {
+              "hex": "0x1.279def352ad7cp-100",
+              "numerator": "1300137013193567",
+              "denominator": "1427247692705959881058285969449495136382746624"
+            },
+            "density": {
+              "hex": "0x1.a589ad90fc7d8p+65",
+              "numerator": "60750000000000000000",
+              "denominator": "1"
+            },
+            "temperature": {
+              "hex": "0x1.6225a6ca66e18p+23",
+              "numerator": "778777656610243",
+              "denominator": "67108864"
+            }
+          }
+        ]
+      },
+      {
+        "id": "two-species",
+        "kx": [
+          {
+            "hex": "0x1.9000000000000p+6",
+            "numerator": "100",
+            "denominator": "1"
+          },
+          {
+            "hex": "0x0.0p+0",
+            "numerator": "0",
+            "denominator": "1"
+          }
+        ],
+        "kz": {
+          "hex": "0x1.f400000000000p+9",
+          "numerator": "1000",
+          "denominator": "1"
+        },
+        "B": {
+          "hex": "0x1.0000000000000p+0",
+          "numerator": "1",
+          "denominator": "1"
+        },
+        "omega": {
+          "hex": "0x1.1e1a300000000p+28",
+          "numerator": "300000000",
+          "denominator": "1"
+        },
+        "species": [
+          {
+            "charge": {
+              "hex": "-0x1.7a4da2594bb57p-63",
+              "numerator": "-6655181304675159",
+              "denominator": "41538374868278621028243970633760768"
+            },
+            "mass": {
+              "hex": "0x1.279def352ad7cp-100",
+              "numerator": "1300137013193567",
+              "denominator": "1427247692705959881058285969449495136382746624"
+            },
+            "density": {
+              "hex": "0x1.a589ad90fc7d8p+65",
+              "numerator": "60750000000000000000",
+              "denominator": "1"
+            },
+            "temperature": {
+              "hex": "0x1.6225a6ca66e18p+23",
+              "numerator": "778777656610243",
+              "denominator": "67108864"
+            }
+          },
+          {
+            "charge": {
+              "hex": "0x1.7a4da2594bb57p-63",
+              "numerator": "6655181304675159",
+              "denominator": "41538374868278621028243970633760768"
+            },
+            "mass": {
+              "hex": "0x1.09099b1eaa2c5p-89",
+              "numerator": "4662589416710853",
+              "denominator": "2787593149816327892691964784081045188247552"
+            },
+            "density": {
+              "hex": "0x1.a589ad90fc7d8p+65",
+              "numerator": "60750000000000000000",
+              "denominator": "1"
+            },
+            "temperature": {
+              "hex": "0x1.e848000000000p+19",
+              "numerator": "1000000",
+              "denominator": "1"
+            }
+          }
+        ]
+      },
+      {
+        "id": "two-species-complex-negative-kz",
+        "kx": [
+          {
+            "hex": "0x1.9000000000000p+6",
+            "numerator": "100",
+            "denominator": "1"
+          },
+          {
+            "hex": "0x1.e000000000000p+4",
+            "numerator": "30",
+            "denominator": "1"
+          }
+        ],
+        "kz": {
+          "hex": "-0x1.f400000000000p+9",
+          "numerator": "-1000",
+          "denominator": "1"
+        },
+        "B": {
+          "hex": "0x1.0000000000000p+0",
+          "numerator": "1",
+          "denominator": "1"
+        },
+        "omega": {
+          "hex": "0x1.1e1a300000000p+28",
+          "numerator": "300000000",
+          "denominator": "1"
+        },
+        "species": [
+          {
+            "charge": {
+              "hex": "-0x1.7a4da2594bb57p-63",
+              "numerator": "-6655181304675159",
+              "denominator": "41538374868278621028243970633760768"
+            },
+            "mass": {
+              "hex": "0x1.279def352ad7cp-100",
+              "numerator": "1300137013193567",
+              "denominator": "1427247692705959881058285969449495136382746624"
+            },
+            "density": {
+              "hex": "0x1.a589ad90fc7d8p+65",
+              "numerator": "60750000000000000000",
+              "denominator": "1"
+            },
+            "temperature": {
+              "hex": "0x1.6225a6ca66e18p+23",
+              "numerator": "778777656610243",
+              "denominator": "67108864"
+            }
+          },
+          {
+            "charge": {
+              "hex": "0x1.7a4da2594bb57p-63",
+              "numerator": "6655181304675159",
+              "denominator": "41538374868278621028243970633760768"
+            },
+            "mass": {
+              "hex": "0x1.09099b1eaa2c5p-89",
+              "numerator": "4662589416710853",
+              "denominator": "2787593149816327892691964784081045188247552"
+            },
+            "density": {
+              "hex": "0x1.a589ad90fc7d8p+65",
+              "numerator": "60750000000000000000",
+              "denominator": "1"
+            },
+            "temperature": {
+              "hex": "0x1.e848000000000p+19",
+              "numerator": "1000000",
+              "denominator": "1"
+            }
+          }
+        ]
+      },
+      {
+        "id": "ordinary-scale-2m52",
+        "kx": [
+          {
+            "hex": "0x1.3880000000000p-39",
+            "numerator": "625",
+            "denominator": "281474976710656"
+          },
+          {
+            "hex": "0x0.0p+0",
+            "numerator": "0",
+            "denominator": "1"
+          }
+        ],
+        "kz": {
+          "hex": "0x1.f400000000000p-43",
+          "numerator": "125",
+          "denominator": "562949953421312"
+        },
+        "B": {
+          "hex": "0x1.0000000000000p-52",
+          "numerator": "1",
+          "denominator": "4503599627370496"
+        },
+        "omega": {
+          "hex": "0x1.74876e8000000p-16",
+          "numerator": "48828125",
+          "denominator": "2199023255552"
+        },
+        "species": [
+          {
+            "charge": {
+              "hex": "-0x1.7a4da2594bb57p-63",
+              "numerator": "-6655181304675159",
+              "denominator": "41538374868278621028243970633760768"
+            },
+            "mass": {
+              "hex": "0x1.279def352ad7cp-100",
+              "numerator": "1300137013193567",
+              "denominator": "1427247692705959881058285969449495136382746624"
+            },
+            "density": {
+              "hex": "0x1.a589ad90fc7d8p-39",
+              "numerator": "926971435546875",
+              "denominator": "309485009821345068724781056"
+            },
+            "temperature": {
+              "hex": "0x1.6225a6ca66e18p+23",
+              "numerator": "778777656610243",
+              "denominator": "67108864"
+            }
+          }
+        ],
+        "similarity_parent": "ordinary",
+        "scale": {
+          "hex": "0x1.0000000000000p-52",
+          "numerator": "1",
+          "denominator": "4503599627370496"
+        }
+      },
+      {
+        "id": "complex-negative-kz-scale-2m52",
+        "kx": [
+          {
+            "hex": "0x1.3880000000000p-39",
+            "numerator": "625",
+            "denominator": "281474976710656"
+          },
+          {
+            "hex": "0x1.f400000000000p-42",
+            "numerator": "125",
+            "denominator": "281474976710656"
+          }
+        ],
+        "kz": {
+          "hex": "-0x1.f400000000000p-43",
+          "numerator": "-125",
+          "denominator": "562949953421312"
+        },
+        "B": {
+          "hex": "0x1.0000000000000p-52",
+          "numerator": "1",
+          "denominator": "4503599627370496"
+        },
+        "omega": {
+          "hex": "0x1.74876e8000000p-16",
+          "numerator": "48828125",
+          "denominator": "2199023255552"
+        },
+        "species": [
+          {
+            "charge": {
+              "hex": "-0x1.7a4da2594bb57p-63",
+              "numerator": "-6655181304675159",
+              "denominator": "41538374868278621028243970633760768"
+            },
+            "mass": {
+              "hex": "0x1.279def352ad7cp-100",
+              "numerator": "1300137013193567",
+              "denominator": "1427247692705959881058285969449495136382746624"
+            },
+            "density": {
+              "hex": "0x1.a589ad90fc7d8p-39",
+              "numerator": "926971435546875",
+              "denominator": "309485009821345068724781056"
+            },
+            "temperature": {
+              "hex": "0x1.6225a6ca66e18p+23",
+              "numerator": "778777656610243",
+              "denominator": "67108864"
+            }
+          }
+        ],
+        "similarity_parent": "complex-negative-kz",
+        "scale": {
+          "hex": "0x1.0000000000000p-52",
+          "numerator": "1",
+          "denominator": "4503599627370496"
+        }
+      }
+    ]
+  },
+  "conversion": "mp.mpf(float) exactly, including T computed by binary64 1000*1.6022e-19/KB; angular omega direct, no frequency roundtrip.",
+  "representation": "Complex values are always [real, imag]; numeric input components are final binary64.",
+  "original_14_ids": [
+    "ordinary",
+    "complex-kx",
+    "complex-negative-kz",
+    "negative-kx",
+    "negative-B",
+    "negative-omega",
+    "zero-kz-real",
+    "zero-kz-complex",
+    "zero-kx",
+    "both-zero",
+    "small-kz",
+    "b8",
+    "two-species",
+    "two-species-complex-negative-kz"
+  ],
+  "supplement_ids": [
+    "ordinary-scale-2m52",
+    "complex-negative-kz-scale-2m52"
+  ]
+}

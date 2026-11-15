@@ -311,17 +311,25 @@
  },
  "verification": {
   "scope": [
-   "Declared source-method numerical case and relevant failure boundaries."
+   "Existing source-method cases and failure boundaries; sixteen exact binary64 inputs with independent Eq.(8) fixed-table B references for every complex K/D entry and returned det(D).",
+   "Separate Maxwellian Eq.(3) A references, rounded-table moment and zero-kz endpoint checks, cold Hall sign and complex-square conventions; B-A observations have no physical acceptance threshold."
   ],
   "tests": [
    "tests/kinetic/test_kinetic_signed_kz.py",
-   "tests/kinetic/test_fluid_spectrum_r43_kinetic.py"
+   "tests/kinetic/test_fluid_spectrum_r43_kinetic.py",
+   "tests/kinetic/test_ronnmark_tensor_reference.py",
+   "tests/kinetic/test_kinetic_tensor_family_evidence.py::test_ronnmark_r_matches_its_independent_harmonic_representation"
   ],
-  "evidence_ceiling": "Bounded to the J=8 rational-pole kinetic 3x3 tensor and determinant, including complex kx and zero kz. Evidence: `test_fluid_spectrum_r43_kinetic.py` contains 12 test functions, 3 of which reference `evaluate_kinetic_dispersion_ronnmark`, and is shared by 4 assets; only shared-file coverage is bound, so a pass is file-level rather than asset-isolated; the bounded example was executed by this audit. Oracle: bounded source-method parity. It does not establish root finding or accuracy outside the tested rational-pole approximation.",
+  "evidence_ceiling": "test_product_matches_independent_B_16 in tests/kinetic/test_ronnmark_tensor_reference.py directly compares eighteen complex K/D entries and returned det(D) with independently Bessel-summed Eq.(8) B using the actual binary64 table: abs(product-B)/max(1,abs(B)) <= 2e-7. This pre-frozen new finite-grid numerical diagnostic is separate from physical B-A discrepancy and preserves existing source 1e-11/1e-9, finite-N 2e-12 and R/H budgets. Self-contained data and manual independent Eq.(3)/(8)/(13)/(14) regeneration are in tests/fixtures/kinetic_tensor/README.md. Independent scientific-identity review was ACK_STATIC; candidate execution and release need their own evidence. No continuous-domain error bound, physical-A accuracy pass, mode/root or damping guarantee follows.",
   "known_limitations": [
    "zero kz is allowed without the conventional sum's positive clamp",
-   "Three direct functions in the shared kinetic file cover complex wavepoint, zero `kz` and two-species frozen-source parity; no root finding or mode-identity claim is tested.",
-   "The finite J=8 rational-pole truncation is compared only with frozen source values; no independent full kinetic Bessel sum is bound."
+   "Original Maxwellian A convergence remains 15/16 REFERENCE_BLOCK (process exit 2); small-kz uses a separately frozen 200/280-dps N96/128 successor for new observations. Neither its success nor B 16/16 relabels the original block. Printed 160-digit values do not certify full 160-digit accuracy.",
+   "B is Eq.(8) with the actual rounded-table moments; directly inserting a pole Z into Eq.(3) defines B_direct, a different object. Nonzero zero-kz cross-z residuals must not be forced to zero. B-A is a recomputable model discrepancy without an acceptable-error threshold.",
+   "The current table's appearance in the author's source linked by the primary paper has been located; its original generation constraints, reason for differing from the published WHAMP/PDRK table and global physical approximation accuracy remain UNKNOWN.",
+   "Omitted-harmonic inequalities use the exact finite center M_N plus omitted-term radius E. High-precision evaluation using a saved numerical center is not a total-arithmetic-error certificate; rounding enclosure is NOT_ESTABLISHED, including at analytic zero-tail endpoints."
   ]
- }
+ },
+ "references": [
+  "H. S. Xie, Phys. Plasmas 32, 082110 (2025), arXiv:2502.06550v2, Eq.(3), (8), (13), (14); https://arxiv.org/html/2502.06550v2."
+ ]
 }
