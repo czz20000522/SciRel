@@ -124,7 +124,7 @@
  "verification": {
   "scope": [
    "The default composite matches independent evaluations of the Janev and Lindsay-Stebbings formulas on both sides of the join and is continuous there.",
-   "At 30, 50, 80 and 100 keV the default is compared with Lindsay-Stebbings values using the paper-stated 11% reliability above 6 keV; the old clipped endpoint fails this check.",
+   "At 30, 50, 80 and 100 keV the default is compared with a separate arithmetic evaluation of the same Table 1 parameterization. The legacy 0.11 tolerance remains an endpoint-regression check and is accompanied by a strict 1e-14 formula check; neither verifies experimental accuracy.",
    "The Freeman-Jones branch matches its independent analytic expression and differs from the default composite.",
    "Upper endpoint clipping and RuntimeWarning are covered for both the default and Freeman-Jones branches; the lower endpoint clips without a warning.",
    "Input tests reject nonfinite, negative, boolean, complex and numeric-string energies and array-valued branch selectors.",
@@ -134,11 +134,11 @@
    "tests/collisions/test_atomic_hydrogen_charge_exchange_cross_section.py",
    "tests/collisions/test_collision_cross_section_input_types.py"
   ],
-  "evidence_ceiling": "The tests establish formula evaluation, source-range agreement at the sampled high energies, the continuous join, clipping/warning semantics and input failures. Lindsay and Stebbings (2005) is read as the published parameterization and reliability statement; no independent experimental re-fit or rights decision is established.",
+  "evidence_ceiling": "The tests establish formula evaluation at the sampled energies, the continuous join, clipping/warning semantics and input failures. Table 1 formula recomputation is not independent experimental evidence. Lindsay and Stebbings (2005), section 4.1 [20], provide the H+-H reliability assessment; no independent experimental re-fit or rights decision is established.",
   "known_limitations": [
    "The default uses the Janev fit below 5 eV, while the Lindsay-Stebbings Table 1 begins at 5 eV; the composite is not validated below 5 eV by the published table.",
    "The Lindsay-Stebbings Table 1 ends at 250 keV; values above 250 keV warn and repeat the endpoint rather than extrapolate.",
-   "The paper states about 11% reliability above 6 keV, with a separate almost 30% theory-versus-measurement discrepancy at 100 keV. The fit difference and that discrepancy are not a newly derived uncertainty budget.",
+   "For H+-H, Lindsay and Stebbings (2005), section 4.1 [20], assess possible reliability at about 10% and record a still-unresolved almost 30% difference at 100 keV, with theory below measurements. The above-6-keV 11% statement in section 4.1 [23], continued on the next page, concerns H+-O, not H+-H. These author assessments are not a SciRel experimental validation or a uniform uncertainty bound for the composite.",
    "The Freeman-Jones branch is an independent comparison fit, not the default and not a correction to the composite.",
    "Public distribution licensing remains pending a human decision.",
    "no independent measured or independently computed cross-section source is available for 0.1-12 eV (the Red Book tabulation starts at 12 eV and the Khoma data only cover 1e-4 to 1e-3 eV), so the declared lower end of the fit domain has no external check"

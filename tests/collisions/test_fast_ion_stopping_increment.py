@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 import json
+from decimal import Decimal, localcontext
+from fractions import Fraction
 from pathlib import Path
 import struct
 import warnings
@@ -36,8 +38,12 @@ def _inputs(case):
 
 
 @pytest.mark.parametrize("case", _FIXTURE["cases"], ids=lambda case: case["id"])
-def test_frozen_independent_engine_observations(case):
-    """Keep all 56 cases and the original finite/nonfinite comparison rules."""
+def test_paper_coefficient_rebound_observations(case):
+    """Keep all 56 cases/rules; finite samples rebind the historical b_2 only.
+
+    The fixture records the algebraic pitch-factor transformation explicitly;
+    its corrected values are not claimed as a newly executed external engine.
+    """
     inputs = _inputs(case)
     with warnings.catch_warnings(record=True):
         warnings.simplefilter("always", RuntimeWarning)
@@ -46,7 +52,7 @@ def test_frozen_independent_engine_observations(case):
                 evaluate_fast_ion_stopping_increment(**inputs)
             return
         actual = evaluate_fast_ion_stopping_increment(**inputs)
-    expected = case["expected_output"]
+    expected = case["paper_aligned_expected_output"]
     assert list(actual.shape) == expected["shape"]
     assert actual.dtype in (np.dtype("float64"), np.dtype("complex128"))
     for channel in ("real", "imag"):
@@ -90,6 +96,58 @@ def _call(**changes):
     with warnings.catch_warnings():
         warnings.simplefilter("ignore", RuntimeWarning)
         return evaluate_fast_ion_stopping_increment(**parameters)
+
+
+@pytest.mark.parametrize("pitch", ["0.25", "0.5", "0.9", "1"])
+def test_okano_2001_printed_table_anchor(pitch):
+    """Bind Eq. (6), p. 811, to its printed table; no experimental error claim.
+
+    https://info.fusion.ciemat.es/OCS/EPS2001/pdfs/P2.088.pdf
+    The six b_m entries below are transcribed from the unnumbered table below
+    Eq. (6), including b_2=11.997. They are not read from implementation data
+    or the historical engine fixture. T_e=10 keV makes the temperature factor
+    one. The population factor retains the API's historical J/eV conversion.
+    """
+    with localcontext() as context:
+        context.prec = 100
+        d = Decimal
+        energy_coefficients = tuple(
+            map(d, ("0.57658", "1.6432", "-4.8886", "5.3932", "-2.9226", "0.77156", "-0.079095"))
+        )
+        pitch_coefficients = tuple(
+            map(d, ("0.30812", "11.997", "-68.971", "165.94", "-177.33", "69.833"))
+        )
+        energy_fit = sum(
+            coefficient * d("0.1") ** n for n, coefficient in enumerate(energy_coefficients)
+        )
+        pitch_fit = sum(
+            coefficient * d(pitch) ** m for m, coefficient in enumerate(pitch_coefficients, 1)
+        )
+        population = d("1000000") / (d("100000") * d("1.602176462e-19")) / d("1e18")
+        expected = float(population * energy_fit * pitch_fit * d("1e-19"))
+    np.testing.assert_allclose(
+        _call(birth_pitch_cosine=float(pitch)), [[expected]], rtol=5e-12, atol=1e-300
+    )
+
+
+@pytest.mark.parametrize(
+    "pitch,pitch_value",
+    [(Fraction(1, 2), Fraction(724421, 1600000)), (Fraction(1), Fraction(11107, 6250))],
+)
+def test_okano_printed_table_exact_fraction_anchor(pitch, pitch_value):
+    """Exact rational Eq. (6) anchors from p. 811; T_e/10keV is one.
+
+    Direct rational reduction of the printed table gives E(1/10)=
+    139424515301/200000000000, G(1/2)=724421/1600000 and G(1)=11107/6250.
+    These constants are not produced by SciRel or its historical observations.
+    """
+    population = Fraction(1000000) / (
+        Fraction(100000) * Fraction(1602176462, 10**28) * Fraction(10**18)
+    )
+    expected = population * Fraction(139424515301, 200000000000) * pitch_value / 10**19
+    np.testing.assert_allclose(
+        _call(birth_pitch_cosine=float(pitch)), [[float(expected)]], rtol=5e-12, atol=1e-300
+    )
 
 
 def test_pitch_absolute_value_and_cap():
@@ -154,7 +212,7 @@ def test_declared_expression_against_high_precision_evaluation(temperature):
             "0.77156",
             "-0.079095",
         )
-        pitch_coefficients = ("0.30812", "11.992", "-68.971", "165.94", "-177.33", "69.833")
+        pitch_coefficients = ("0.30812", "11.997", "-68.971", "165.94", "-177.33", "69.833")
         energy_fit = mp.fsum(
             mp.mpf(value) * ratio**power for power, value in enumerate(energy_coefficients)
         )

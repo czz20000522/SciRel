@@ -65,11 +65,15 @@ def test_default_composite_matches_independent_evaluation():
     assert np.all(np.isfinite(actual)) and np.all(actual > 0.0)
 
 
-def test_published_high_energy_values_are_inside_the_source_reliability():
+def test_high_energy_parameterization_regression_not_experimental_accuracy():
+    """Same Table 1 arithmetic, not independent measured cross-section data."""
     energy_kev = np.array([30.0, 50.0, 80.0, 100.0])
     expected = independent_lindsay_stebbings(energy_kev * 1000.0)
     actual = evaluate_atomic_hydrogen_charge_exchange_cross_section(energy_kev * 1000.0)
+    # Retain the old endpoint-regression budget without interpreting it as the
+    # H+-O reliability statement. The strict assertion checks formula evaluation.
     np.testing.assert_allclose(actual, expected, rtol=0.11, atol=0.0)
+    np.testing.assert_allclose(actual, expected, rtol=1e-14, atol=0.0)
 
 
 def test_default_is_continuous_at_the_fit_crossing():
