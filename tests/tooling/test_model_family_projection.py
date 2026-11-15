@@ -1,9 +1,9 @@
-"""Synthetic format fixtures exercise projection, never add public science assets.
+"""Project the real F02 family and reject damaged reader/index projections.
 
 The canonical schema/contract validator is the #257 implementation. These tests
 use it unchanged; no validator mock or alternative scientific implementation is
-substituted for it. Actual F02 invocation/package acceptance belongs to the
-controller's combined candidate.
+substituted for it. Synthetic controls cover format paths absent from F02;
+they never add public assets or establish scientific validation.
 """
 
 from copy import deepcopy
@@ -26,11 +26,24 @@ from consumer_tools import call_tool  # noqa: E402
 from validate_asset_documents import validate_document  # noqa: E402
 
 
+def real_family_fixture():
+    """Read the actual canonical F02 contract and its authored Chinese reader."""
+    document = json.loads(
+        (ROOT / "catalog/examples/scirel.neoclassical.bootstrap-coefficients.json").read_text()
+    )
+    readers = json.loads((ROOT / "tools/docs/zh/zh_missing_runtime_domains.json").read_text())
+    reader = next(
+        record for record in readers["records"] if record["asset_id"] == document["asset_id"]
+    )
+    validate_document(document)
+    return document, reader
+
+
 def family_fixture():
     """Use an existing port layout, with explicitly synthetic method claims."""
-    document = json.loads(
-        (ROOT / "catalog/examples/scirel.neoclassical.redl-bootstrap-coefficients.json").read_text()
-    )
+    document, reader = real_family_fixture()
+    document["inputs"] = [port for port in document["inputs"] if port["name"] != "method"]
+    reader["inputs"] = [port for port in reader["inputs"] if port["name"] != "method"]
     document["asset_id"] = "scirel.neoclassical.synthetic-family"
     document["summary"] = "Synthetic projection fixture only; no scientific validation."
     document["identity"]["model"] = "Synthetic model selection fixture"
@@ -99,14 +112,6 @@ def family_fixture():
         "default_reason": "Synthetic selected default, not a physical recommendation",
         "methods": members,
     }
-    zh_all = json.loads((ROOT / "tools/docs/zh/zh_missing_runtime_domains.json").read_text())
-    reader = deepcopy(
-        next(
-            r
-            for r in zh_all["records"]
-            if r["asset_id"] == "scirel.neoclassical.redl-bootstrap-coefficients"
-        )
-    )
     reader["asset_id"] = document["asset_id"]
     for port in document["inputs"][-2:]:
         reader["inputs"].append(
@@ -174,8 +179,9 @@ def write_inputs(tmp_path, document, reader):
     return documents, bundle
 
 
-def test_family_reader_loads_every_method_and_derives_test_identity(tmp_path):
-    document, reader = family_fixture()
+@pytest.mark.parametrize("fixture", [real_family_fixture, family_fixture], ids=["f02", "controls"])
+def test_family_reader_loads_every_method_and_derives_test_identity(tmp_path, fixture):
+    document, reader = fixture()
     before = deepcopy(reader)
     docs, bundle = write_inputs(tmp_path, document, reader)
     translated = catalog.load_translations(ROOT, docs, [document], translation_paths=[bundle])[
@@ -274,30 +280,32 @@ def test_nonfamily_contract_cannot_acquire_a_reader_family(tmp_path):
         catalog.load_translations(ROOT, docs, [document], translation_paths=[bundle])
 
 
-def test_discovery_and_lightweight_index_retain_both_methods_without_extra_assets():
-    document, reader = family_fixture()
+@pytest.mark.parametrize("fixture", [real_family_fixture, family_fixture], ids=["f02", "controls"])
+def test_discovery_and_lightweight_index_retain_both_methods_without_extra_assets(fixture):
+    document, reader = fixture()
+    names = [member["name"] for member in document["family"]["methods"]]
     full = catalog.build_capability_index(
         [document], source_revision="a" * 40, translations={document["asset_id"]: reader}
     )
     light = consumer_index(full)
     assert full["asset_count"] == light["asset_count"] == 1
     assert light["assets"][0]["family"] == full["assets"][0]["family"]
-    assert [m["name"] for m in light["assets"][0]["family"]["methods"]] == ["model_a", "model_b"]
+    assert [m["name"] for m in light["assets"][0]["family"]["methods"]] == names
     assert light["assets"][0]["family"]["paths"] == [
-        ["neoclassical", "synthetic-model-family", "model_a"],
-        ["neoclassical", "synthetic-model-family", "model_b"],
+        ["neoclassical", document["family"]["name"], name] for name in names
     ]
     for ranked in (False, True):
-        for name in ("model_a", "model_b"):
+        for name in names:
             page = query_capabilities(
                 light, {"schema": "scirel.capability-query", "q": name}, ranked=ranked
             )
             assert page["total"] == 1 and page["items"][0]["asset_id"] == document["asset_id"]
             assert page["items"][0]["family"] == light["assets"][0]["family"]
-    assert "此方法的专属局限" in full["search_text"][document["asset_id"]]
+    chinese_limit = reader["family"]["methods"][1]["verification"]["known_limitations"][0]
+    assert chinese_limit.lower() in full["search_text"][document["asset_id"]]
     english = catalog.build_capability_index([document], source_revision="a" * 40, language="en")
-    assert "model_b" in english["search_text"][document["asset_id"]]
-    assert "此方法的专属局限" not in english["search_text"][document["asset_id"]]
+    assert names[1] in english["search_text"][document["asset_id"]]
+    assert chinese_limit.lower() not in english["search_text"][document["asset_id"]]
 
 
 def test_family_without_numerical_controls_keeps_every_method(tmp_path):
@@ -315,8 +323,9 @@ def test_family_without_numerical_controls_keeps_every_method(tmp_path):
     assert page.count("此方法没有专属数值控制项") == 2
 
 
-def test_catalog_routes_and_summaries_preserve_one_contract(tmp_path):
-    document, reader = family_fixture()
+@pytest.mark.parametrize("fixture", [real_family_fixture, family_fixture], ids=["f02", "controls"])
+def test_catalog_routes_and_summaries_preserve_one_contract(tmp_path, fixture):
+    document, reader = fixture()
     docs, _ = write_inputs(tmp_path, document, reader)
     output = tmp_path / "catalog"
     build_catalog(
@@ -357,16 +366,17 @@ def test_light_index_rejects_broken_method_summaries(damage):
 
 
 @pytest.mark.parametrize("language", ["zh", "en"])
-def test_actual_bilingual_api_html_keeps_method_specific_text(tmp_path, language):
+@pytest.mark.parametrize("fixture", [real_family_fixture, family_fixture], ids=["f02", "controls"])
+def test_actual_bilingual_api_html_keeps_method_specific_text(tmp_path, language, fixture):
     from sphinx.application import Sphinx
 
-    document, reader = family_fixture()
+    document, reader = fixture()
     catalog.validate_family_translation(document, reader)
     rst = render_api(document, reader, [], language=language)
     source = tmp_path / "source"
     source.mkdir()
     (source / "conf.py").write_text(
-        "project='Synthetic family projection'\nmaster_doc='index'\nextensions=[]\n"
+        "project='Family projection'\nmaster_doc='index'\nextensions=[]\n"
     )
     (source / "index.rst").write_text(rst)
     from io import StringIO
@@ -389,15 +399,20 @@ def test_actual_bilingual_api_html_keeps_method_specific_text(tmp_path, language
     text = BeautifulSoup((tmp_path / "html/index.html").read_text(), "html.parser").get_text(
         " ", strip=True
     )
-    assert "model_a" in text and "model_b" in text and "16" in text and "32" in text
-    if language == "en":
-        assert "Unique model_b limitation" in text
-        assert "Synthetic selected default" in text
-        assert "此方法的专属局限" not in text
-    else:
-        assert "此方法的专属局限" in text and "默认选择" in text
-        assert "Unique model_b limitation" not in text
-        assert "Synthetic model_b model" not in text
+    assert all(member["name"] in text for member in document["family"]["methods"])
+    selected = document if language == "en" else reader
+    opposite = reader if language == "en" else document
+    assert selected["family"]["default_reason"] in text
+    for member, other in zip(
+        selected["family"]["methods"], opposite["family"]["methods"], strict=True
+    ):
+        assert member["model"] in text
+        assert other["model"] not in text
+        for key in ("scope", "known_limitations"):
+            assert all(clause in text for clause in member["verification"][key])
+        assert member["verification"]["evidence_ceiling"] in text
+    if fixture is family_fixture:
+        assert "16" in text and "32" in text
     assert document["family"]["methods"][1]["verification"]["tests"][0] in text
 
 
@@ -412,8 +427,12 @@ def test_sync_uses_the_same_family_reader_validation():
     assert any("family" in error for error in sync.clause_errors(document, reader))
 
 
-def test_sealed_runtime_browse_search_get_keeps_single_contract_and_member_limits(tmp_path):
-    document, reader = family_fixture()
+@pytest.mark.parametrize("fixture", [real_family_fixture, family_fixture], ids=["f02", "controls"])
+def test_sealed_runtime_browse_search_get_keeps_single_contract_and_member_limits(
+    tmp_path, fixture
+):
+    document, reader = fixture()
+    names = [member["name"] for member in document["family"]["methods"]]
     full = catalog.build_capability_index([document], source_revision="a" * 40)
     files = {
         "catalog/capability-index.json": catalog.encode(consumer_index(full)),
@@ -452,15 +471,34 @@ def test_sealed_runtime_browse_search_get_keeps_single_contract_and_member_limit
     }
     for tool in ("scirel_browse", "scirel_search"):
         result = call_tool(
-            root, tool, {**pins, ("model" if tool == "scirel_browse" else "q"): "model_b"}
+            root, tool, {**pins, ("model" if tool == "scirel_browse" else "q"): names[1]}
         )
         assert result["outcome"] == "match"
-        assert [m["name"] for m in result["result"]["items"][0]["family"]["methods"]] == [
-            "model_a",
-            "model_b",
-        ]
+        assert [m["name"] for m in result["result"]["items"][0]["family"]["methods"]] == names
     result = call_tool(root, "scirel_get", {**pins, "asset_id": document["asset_id"]})
     assert result["outcome"] == "ok" and result["document"] == document
-    assert result["document"]["family"]["methods"][1]["verification"]["known_limitations"] == [
-        "Unique model_b limitation"
-    ]
+    assert (
+        result["document"]["family"]["methods"][1]["verification"]["known_limitations"]
+        == document["family"]["methods"][1]["verification"]["known_limitations"]
+    )
+
+
+@pytest.mark.parametrize(
+    "damage", ["drop-method", "reverse-methods", "drop-scope", "drop-limit", "english-model"]
+)
+def test_real_family_reader_rejects_lost_or_untranslated_method_claims(tmp_path, damage):
+    document, reader = real_family_fixture()
+    methods = reader["family"]["methods"]
+    if damage == "drop-method":
+        methods.pop()
+    elif damage == "reverse-methods":
+        methods.reverse()
+    elif damage == "drop-scope":
+        methods[1]["verification"]["scope"].pop()
+    elif damage == "drop-limit":
+        methods[1]["verification"]["known_limitations"].pop()
+    else:
+        methods[1]["model"] = document["family"]["methods"][1]["model"]
+    docs, bundle = write_inputs(tmp_path, document, reader)
+    with pytest.raises(ValueError, match="family"):
+        catalog.load_translations(ROOT, docs, [document], translation_paths=[bundle])
