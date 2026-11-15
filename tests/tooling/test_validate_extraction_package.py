@@ -518,6 +518,22 @@ def _acceptance_result(module, directory, tree):
         "steps": records,
         "exit_code": 0,
         "tests": {
+            "schema": 2,
+            "pytest_exitstatus": 0,
+            "collection_finished": True,
+            "collection_reports": [],
+            "selected_nodeids": ["test_fixture.py::test_a", "test_fixture.py::test_b"],
+            "results": [
+                {
+                    "nodeid": f"test_fixture.py::test_{name}",
+                    "outcome": "passed",
+                    "phases": [
+                        {"when": when, "outcome": "passed"}
+                        for when in ("setup", "call", "teardown")
+                    ],
+                }
+                for name in ("a", "b")
+            ],
             "collected": 2,
             "selected": 2,
             "deselected": 0,
@@ -534,7 +550,18 @@ def _acceptance_result(module, directory, tree):
 
 
 @pytest.mark.parametrize(
-    "defect", [None, "nonzero", "missing step", "missing counts", "NOT_RUN", "missing output"]
+    "defect",
+    [
+        None,
+        "nonzero",
+        "missing step",
+        "missing counts",
+        "NOT_RUN",
+        "missing output",
+        "missing selection",
+        "wrong result identity",
+        "wrong pytest exit",
+    ],
 )
 def test_full_result_protocol_preserves_the_actual_output(tmp_path, monkeypatch, defect):
     """Exercise the report consumer; this fixture is not a real package acceptance run."""
@@ -556,6 +583,12 @@ def test_full_result_protocol_preserves_the_actual_output(tmp_path, monkeypatch,
         result["steps"][0].update(status="NOT_RUN", returncode=None)
     elif defect == "missing output":
         Path(result["steps"][0]["log"]).unlink()
+    elif defect == "missing selection":
+        del result["tests"]["selected_nodeids"]
+    elif defect == "wrong result identity":
+        result["tests"]["results"][0]["nodeid"] = "test_fixture.py::unselected"
+    elif defect == "wrong pytest exit":
+        result["tests"]["pytest_exitstatus"] = 1
 
     def execute(tree, command):
         result["run_id"] = command[command.index("--run-id") + 1]

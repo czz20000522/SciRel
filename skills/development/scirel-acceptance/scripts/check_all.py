@@ -18,6 +18,8 @@ import tempfile
 import time
 import uuid
 
+from scirel_pytest_counts import validate_execution_records
+
 ROOT = Path(__file__).resolve().parents[4]
 VALIDATE_REPORT = "skills/development/usage/scirel-solving/scripts/validate_report.py"
 WHEEL = "scirel-0.0.0-py3-none-any.whl"
@@ -290,6 +292,10 @@ def read_counts(path: Path, *, require_execution: bool = True) -> dict:
         raise CountsError(
             f"{path.name}: outcomes add up to {accounted} but {report['selected']} were selected"
         )
+    try:
+        validate_execution_records(report)
+    except ValueError as error:
+        raise CountsError(f"{path.name}: {error}") from error
     if require_execution and not sum(report[name] for name in ("passed", "failed", "xpassed")):
         raise CountsError(
             f"{path.name}: no tests executed with a passed, failed or xpassed outcome"
@@ -305,6 +311,8 @@ def step_status(step: Step, returncode: int) -> tuple[str, str, dict | None]:
         report = read_counts(step.counts, require_execution=False)
     except CountsError as error:
         return "FAIL", f"  (test counts unusable: {error})", None
+    if report["pytest_exitstatus"] != returncode:
+        return "FAIL", "  (pytest exit status disagrees with subprocess return code)", report
     if not sum(report[name] for name in ("passed", "failed", "xpassed")):
         return "FAIL", "  (no tests executed with a passed, failed or xpassed outcome)", report
     return ("FAIL" if returncode or report["failed"] or report["error"] else "PASS"), "", report
@@ -436,6 +444,7 @@ def main(report_path: Path | None = None, *, run_id: str | None = None) -> int:
     failed = []
     not_run = []
     counts_report = None
+    rejected_counts = None
     plan = []
     records = []
     interrupted = False
@@ -490,6 +499,13 @@ def main(report_path: Path | None = None, *, run_id: str | None = None) -> int:
             )
             if report is not None:
                 counts_report = report
+            elif step.counts is not None:
+                # Preserve readable observations from failed collection/interruption or a broken
+                # record without ever using those unvalidated fields for a summary or verdict.
+                try:
+                    rejected_counts = json.loads(step.counts.read_text(encoding="utf-8"))
+                except (OSError, ValueError):
+                    pass
             print(
                 f"{status}  {step.name}  ({time.perf_counter() - started:.0f} s){detail}",
                 flush=True,
@@ -528,7 +544,7 @@ def main(report_path: Path | None = None, *, run_id: str | None = None) -> int:
         "binding_errors": binding_errors,
         "evidence": evidence,
         "steps": records,
-        "tests": counts_report,
+        "tests": counts_report if counts_report is not None else rejected_counts,
         "exit_code": 1 if invalid else 0,
     }
     with result_stream:

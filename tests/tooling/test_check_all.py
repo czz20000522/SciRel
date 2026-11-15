@@ -12,6 +12,7 @@ import pytest
 
 ROOT = Path(__file__).resolve().parents[2]
 SCRIPTS = ROOT / "skills/development/scirel-acceptance/scripts"
+sys.path.insert(0, str(SCRIPTS))
 
 
 def _load(name: str):
@@ -124,6 +125,7 @@ def test_counts_cover_every_outcome(tmp_path):
 def test_plugin_changes_no_test_outcome(tmp_path):
     """Installing the plugin must not alter a single result, only observe them."""
     directory = _sample(tmp_path)
+    (directory / "test_sample.py").write_text(EXECUTION_SAMPLE, encoding="utf-8")
     plain = _run(directory, [f"--junitxml={directory / 'plain.xml'}"], with_plugin=False)
     watched = _run(directory, [f"--junitxml={directory / 'watched.xml'}"], with_plugin=True)
     assert watched.returncode == plain.returncode
@@ -200,8 +202,10 @@ def test_counts_that_do_not_add_up_are_refused(tmp_path):
 
 def _report(**overrides) -> dict:
     report = {
-        "schema": 1,
+        "schema": 2,
         "pytest_exitstatus": 0,
+        "collection_finished": True,
+        "collection_reports": [],
         "collected": 3,
         "selected": 3,
         "deselected": 0,
@@ -216,6 +220,35 @@ def _report(**overrides) -> dict:
         "inconsistency": "",
     }
     report.update(overrides)
+    if "pytest_exitstatus" not in overrides and (report["failed"] or report["error"]):
+        report["pytest_exitstatus"] = 1
+    results = []
+    skip_nodes = [
+        (node, reason) for reason, nodes in report["skip_reasons"].items() for node in nodes
+    ]
+    for outcome in ("passed", "failed", "error", "skipped", "xfailed", "xpassed"):
+        for index in range(report[outcome]):
+            node = f"tests/fixture.py::test_{len(results)}"
+            setup = {"when": "setup", "outcome": "passed"}
+            call = {"when": "call", "outcome": "failed" if outcome == "failed" else "passed"}
+            if outcome in ("skipped", "xfailed"):
+                setup.update(outcome="skipped", reason="known skip")
+                if outcome == "skipped" and index < len(skip_nodes):
+                    node, setup["reason"] = skip_nodes[index]
+                if outcome == "xfailed":
+                    setup["wasxfail"] = "known defect"
+            elif outcome == "error":
+                setup["outcome"] = "failed"
+            elif outcome == "xpassed":
+                call["wasxfail"] = "known defect"
+            phases = [
+                setup,
+                *([call] if setup["outcome"] == "passed" else []),
+                {"when": "teardown", "outcome": "passed"},
+            ]
+            results.append({"nodeid": node, "outcome": outcome, "phases": phases})
+    report["selected_nodeids"] = [item["nodeid"] for item in results]
+    report["results"] = results
     return report
 
 
@@ -623,3 +656,259 @@ def test_full_suite_discovery_cannot_be_replaced_by_smoke_testpaths(tmp_path, mo
     )
     assert done.returncode == 1, done.stdout + done.stderr
     assert "test_real_regression" in done.stdout
+
+
+EXECUTION_SAMPLE = (
+    SAMPLE
+    + """
+
+@pytest.mark.xfail(run=False, reason="body must not run")
+def test_xfail_without_call():
+    raise AssertionError("unreachable body")
+
+
+@pytest.fixture
+def broken_teardown():
+    yield
+    raise RuntimeError("teardown fails on purpose")
+
+
+def test_teardown_error(broken_teardown):
+    assert True
+"""
+)
+
+
+def test_same_run_records_selected_identities_final_outcomes_and_phases(tmp_path):
+    (tmp_path / "test_sample.py").write_text(EXECUTION_SAMPLE)
+    done = _run(tmp_path, [], with_plugin=True)
+    assert done.returncode == 1
+    report = check_all.read_counts(tmp_path / "counts.json")
+    assert report["schema"] == 2
+    selected = report["selected_nodeids"]
+    assert len(selected) == len(set(selected)) == report["selected"] == 9
+    results = {item["nodeid"]: item for item in report["results"]}
+    assert list(results) == selected
+    expected = {
+        "test_passes": "passed",
+        "test_skipped": "skipped",
+        "test_xfails": "xfailed",
+        "test_xpasses": "xpassed",
+        "test_strict_xpass_is_a_failure": "failed",
+        "test_errors": "error",
+        "test_fails": "failed",
+        "test_xfail_without_call": "xfailed",
+        "test_teardown_error": "error",
+    }
+    assert {node.split("::")[-1]: item["outcome"] for node, item in results.items()} == expected
+    by_name = {node.split("::")[-1]: item for node, item in results.items()}
+    for name in ("test_skipped", "test_errors", "test_xfail_without_call"):
+        assert "call" not in [p["when"] for p in by_name[name]["phases"]]
+    teardown = by_name["test_teardown_error"]
+    assert [(p["when"], p["outcome"]) for p in teardown["phases"]] == [
+        ("setup", "passed"),
+        ("call", "passed"),
+        ("teardown", "failed"),
+    ]
+    assert report["error"] == 2 and report["passed"] == 1
+    assert report["xfailed"] == 2 and report["collection_finished"] is True
+    assert report["collection_reports"] == []
+
+
+@pytest.mark.parametrize(
+    "mode", ["collection", "interrupt", "teardown interrupt", "maxfail", "duplicate"]
+)
+def test_incomplete_or_duplicate_real_runs_retain_observations_and_are_red(tmp_path, mode):
+    source = "def test_first():\n    assert True\n\ndef test_later():\n    assert True\n"
+    extra = []
+    if mode == "collection":
+        source = "raise RuntimeError('collection failed on purpose')\n"
+    elif mode == "interrupt":
+        source = source.replace("assert True", "raise KeyboardInterrupt", 1)
+    elif mode == "teardown interrupt":
+        source = (
+            "import pytest\n@pytest.fixture\ndef cleanup():\n    yield\n    raise KeyboardInterrupt\n"
+            "def test_first(cleanup):\n    assert True\n"
+        )
+    elif mode == "maxfail":
+        source = source.replace("assert True", "assert False", 1)
+        extra = ["-x"]
+    elif mode == "duplicate":
+        (tmp_path / "conftest.py").write_text(
+            "def pytest_collection_modifyitems(items):\n    items.append(items[0])\n"
+        )
+    (tmp_path / "test_sample.py").write_text(source)
+    done = _run(tmp_path, extra, with_plugin=True)
+    report = json.loads((tmp_path / "counts.json").read_text())
+    assert report["consistent"] is False
+    assert report["pytest_exitstatus"] == done.returncode
+    assert "selected_nodeids" in report and "results" in report
+    if mode == "collection":
+        assert report["collection_reports"][0]["outcome"] == "failed"
+    if mode in ("interrupt", "teardown interrupt", "maxfail"):
+        assert any(item["outcome"] is None for item in report["results"])
+    if mode == "teardown interrupt":
+        assert report["passed"] == 0
+        assert report["results"][0]["phases"][-1] == {"when": "call", "outcome": "passed"}
+    status, _, _ = check_all.step_status(
+        check_all.Step("tests", ["pytest"], counts=tmp_path / "counts.json"), done.returncode
+    )
+    assert status == "FAIL"
+
+
+def test_collection_skip_is_retained_separately_from_selected_test_outcomes(tmp_path):
+    (tmp_path / "test_sample.py").write_text(
+        "import pytest\npytest.skip('optional module unavailable', allow_module_level=True)\n"
+    )
+    (tmp_path / "test_other.py").write_text("def test_passes():\n    assert True\n")
+    done = _run(tmp_path, [str(tmp_path / "test_other.py")], with_plugin=True)
+    assert done.returncode == 0
+    counts = check_all.read_counts(tmp_path / "counts.json")
+    assert counts["selected"] == counts["passed"] == 1
+    assert counts["skipped"] == 0 and counts["skip_reasons"] == {}
+    (collection,) = counts["collection_reports"]
+    assert collection["outcome"] == "skipped"
+    assert "optional module unavailable" in collection["reason"]
+    assert collection["nodeid"].endswith("test_sample.py")
+
+
+def _real_passing_record(tmp_path):
+    (tmp_path / "test_sample.py").write_text(
+        "def test_a():\n    assert True\n\ndef test_b():\n    assert True\n"
+    )
+    assert _run(tmp_path, [], with_plugin=True).returncode == 0
+    return json.loads((tmp_path / "counts.json").read_text())
+
+
+@pytest.mark.parametrize(
+    "defect",
+    [
+        "missing selection",
+        "duplicate selection",
+        "missing result",
+        "duplicate result",
+        "wrong identity",
+        "wrong outcome",
+        "missing call",
+        "duplicate phase",
+        "wrong phase",
+        "missing teardown",
+        "wrong skip reasons",
+        "wrong exit",
+        "collection failure",
+        "unfinished collection",
+        "old schema",
+    ],
+)
+def test_forged_execution_records_make_the_standard_reporting_loop_red(
+    tmp_path, monkeypatch, capsys, defect
+):
+    counts = _real_passing_record(tmp_path)
+    if defect == "missing selection":
+        del counts["selected_nodeids"]
+    elif defect == "duplicate selection":
+        counts["selected_nodeids"][1] = counts["selected_nodeids"][0]
+    elif defect == "missing result":
+        counts["results"].pop()
+    elif defect == "duplicate result":
+        counts["results"][1] = counts["results"][0]
+    elif defect == "wrong identity":
+        counts["results"][0]["nodeid"] = "test_sample.py::unselected"
+    elif defect == "wrong outcome":
+        counts["results"][0]["outcome"] = "xfailed"
+    elif defect == "missing call":
+        counts["results"][0]["phases"].pop(1)
+    elif defect == "duplicate phase":
+        counts["results"][0]["phases"].append(counts["results"][0]["phases"][0])
+    elif defect == "wrong phase":
+        counts["results"][0]["phases"][0]["when"] = "unknown"
+    elif defect == "missing teardown":
+        counts["results"][0]["phases"].pop()
+    elif defect == "wrong skip reasons":
+        counts["skip_reasons"] = {"forged": [counts["selected_nodeids"][0]]}
+    elif defect == "wrong exit":
+        counts["pytest_exitstatus"] = 2
+    elif defect == "collection failure":
+        counts["collection_reports"] = [
+            {"nodeid": "bad.py", "outcome": "failed", "reason": "broken"}
+        ]
+    elif defect == "unfinished collection":
+        counts["collection_finished"] = False
+    elif defect == "old schema":
+        counts["schema"] = 1
+    path, _ = _mini_acceptance(tmp_path, monkeypatch, counts_report=counts)
+    assert check_all.main(path) == 1
+    result = json.loads(path.read_text())
+    assert result["steps"][0]["status"] == "FAIL"
+    assert result["exit_code"] == 1 and result["evidence"] == "invalid"
+    assert "ALL GREEN" not in capsys.readouterr().out
+
+
+@pytest.mark.parametrize("mode", ["passed", "collection", "interrupt", "call and teardown"])
+def test_standard_result_retains_the_real_run_records_after_temporary_counts_are_removed(
+    tmp_path, monkeypatch, mode
+):
+    source = "def test_a():\n    assert True\n\ndef test_b():\n    assert True\n"
+    if mode == "collection":
+        source = "raise RuntimeError('broken collection')\n"
+    elif mode == "interrupt":
+        source = source.replace("assert True", "raise KeyboardInterrupt", 1)
+    elif mode == "call and teardown":
+        source = (
+            "import pytest\n@pytest.fixture\ndef cleanup():\n    yield\n    assert False\n"
+            "def test_both_fail(cleanup):\n    assert False\n"
+        )
+    (tmp_path / "test_sample.py").write_text(source)
+    _candidate(tmp_path)
+    monkeypatch.setattr(check_all, "ROOT", tmp_path)
+    observations = []
+
+    def plan(output, **kwargs):
+        counts = output / "tests-counts.json"
+        observations.append(counts)
+        return [
+            check_all.Step(
+                "tests",
+                [
+                    sys.executable,
+                    "-B",
+                    "-m",
+                    "pytest",
+                    "test_sample.py",
+                    "-q",
+                    "-p",
+                    "no:cacheprovider",
+                    "-p",
+                    "scirel_pytest_counts",
+                    f"--scirel-counts={counts}",
+                ],
+                counts=counts,
+                env=_plugins_env(),
+            )
+        ]
+
+    monkeypatch.setattr(check_all, "steps", plan)
+    path = tmp_path / ".runtime/logs/result.json"
+    assert check_all.main(path) == (0 if mode == "passed" else 1)
+    result = json.loads(path.read_text())
+    assert not observations[0].exists()
+    counts = result["tests"]
+    assert counts["schema"] == 2
+    assert counts["pytest_exitstatus"] == result["steps"][0]["returncode"]
+    assert counts["consistent"] is (mode in ("passed", "call and teardown"))
+    assert Path(result["steps"][0]["log"]).is_file()
+    if mode == "passed":
+        assert counts["selected_nodeids"] == [item["nodeid"] for item in counts["results"]]
+        assert len(counts["results"]) == counts["passed"] == 2
+    elif mode == "collection":
+        assert counts["collection_reports"][0]["outcome"] == "failed"
+    elif mode == "interrupt":
+        assert all(item["outcome"] is None for item in counts["results"])
+    elif mode == "call and teardown":
+        (item,) = counts["results"]
+        assert item["outcome"] == "error" and counts["error"] == 1 and counts["failed"] == 0
+        assert [(p["when"], p["outcome"]) for p in item["phases"]] == [
+            ("setup", "passed"),
+            ("call", "failed"),
+            ("teardown", "failed"),
+        ]
