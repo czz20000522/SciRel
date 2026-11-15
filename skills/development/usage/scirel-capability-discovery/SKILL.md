@@ -32,6 +32,8 @@ Some contracts are long, mostly because of their `composition` section. Save eac
 
 Call `get` for every candidate you may use and read the contract before writing code, in this order: `identity` and `public_api` (definition and signature), `inputs` and `outputs` (units, shapes, sign and normalisation conventions), `applicability`, `failure_semantics`, `verification.known_limitations`, and `example`. Read `composition` when the asset couples several steps. Check that model, geometry, boundary conditions and range match what your physics needs.
 
+When a discovery card includes `family`, its domain → family → method paths all lead to the same asset and full contract. First select the physical relation, then read `family.default_reason` and each candidate method's model, numerical controls, applicability, failure semantics and verification limits in `get`. A method name in a search result is only a discovery hint. Choose within the method's stated range; pass `method='<name>'` explicitly when selecting a nondefault method. Read that method's controls rather than assuming every control applies to every method. A default is a declared choice, not a claim of universal accuracy.
+
 Watch for conventions that differ by a known factor: per element or total (a current per filament or per coil, a flux per radian or total), per unit length or area or integrated, and which reference a potential or energy is measured from. Convert at the call and check the call against a hand value that the factor would change.
 
 ## Presets and task geometry

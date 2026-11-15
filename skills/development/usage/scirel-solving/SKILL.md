@@ -32,6 +32,7 @@ Every task goes through the same stages, whatever plan or task template the host
 ## Using SciRel
 
 - Discover capabilities with the `scirel-capability-discovery` skill. Take the identity values from `describe` and use them consistently for the whole task. If an integrity or identity check fails, stop relying on that package and say so.
+- For a model family, choose the physical relation first, then read the full contract's method-specific model, applicability and evidence limits. Explain the chosen method in the physical method where it matters, pass a nondefault `method` explicitly, and validate the result against that method's limits. Discovery paths do not create separate callable assets or certify the default for every problem.
 - Install the wheel named by `describe` from the package's `wheel/` directory, in an environment that meets `runtime.requires_python`, and call the public Python API.
 - In the report, mention an operator in one short clause where a step uses it. Do not add operator lists or mapping tables.
 - Multi-step couplings: see [coupled dependencies](references/graph-model.md).

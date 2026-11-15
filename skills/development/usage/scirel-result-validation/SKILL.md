@@ -18,3 +18,5 @@ Use this after the calculation runs and before telling the user the task is done
 9. **Record** the entrypoint, the SciRel asset IDs used, the checks with pass, fail or not-run status, and what remains uncovered, in the report appendix.
 
 A result that merely parses proves only that the program reached its output. A step SciRel does not cover is done as tested ordinary code and stated as such in the report; it does not become a SciRel result.
+
+For a contract with `family`, record the method actually called and its numerical controls. Check against that method's applicability, failure semantics and evidence limits, including boundary failures; the family default or another method's tests do not establish this result. Keep the shared physical input/output conventions from the full contract and make any nondefault `method` argument explicit in the saved call.
