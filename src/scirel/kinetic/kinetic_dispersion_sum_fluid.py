@@ -6,8 +6,6 @@ import operator
 from functools import lru_cache
 import numpy as np
 
-from .kinetic_dispersion_sum_n import _a_function, _gamma_positive_tail
-
 _C2 = (2.99792458e8) ** 2
 _EPSILON0 = 8.854187817e-12
 _KB = 1.38064852e-23
@@ -179,6 +177,9 @@ def evaluate_fluid_kinetic_dispersion_sum(*, B0, qs, ms, ns0, Ts0, f, kz, kx, lm
         raise ValueError("B0 must be non-zero: the gyrofrequency is proportional to B0")
     if f == 0.0:
         raise ValueError("f must be non-zero: omega appears in the resonance denominators")
+    # Loading the shared numerical helpers imports SciPy; reject invalid inputs first.
+    from .kinetic_dispersion_sum_n import _a_function, _gamma_positive_tail
+
     response_kz = kz if kz > 0.0 else -kz
 
     omega = 2.0 * np.pi * f
