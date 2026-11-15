@@ -94,7 +94,7 @@
  },
  "failure_semantics": {
   "invalid_input": "Raises ValueError for boolean/string/complex/masked or empty input, non-finite values, malformed or incompatible shape, and the nonpositive or singular domains named by the callable contract.",
-  "runtime_failure": "Raises FloatingPointError if accepted finite inputs produce an unrepresentable output; no fallback is returned.",
+  "runtime_failure": "Raises FloatingPointError if accepted finite inputs produce a nonfinite output. Final underflow to zero is allowed; a returned zero alone does not distinguish a rounded positive fraction from the pure-impurity endpoint.",
   "nonconvergence": "Not applicable; this is a direct algebraic mapping.",
   "partial_results": "No output is returned after an exception."
  },
@@ -120,10 +120,12 @@
   "scope": [
    "Independent species charge-balance construction, endpoints, singular boundaries and large-charge representability.",
    "Declared failure cases for empty, boolean/string/complex/masked, nonfinite and incompatible inputs.",
-   "Agreement with the canonical SciRel callers and dependencies of this relation."
+   "Agreement with the canonical SciRel callers and dependencies of this relation.",
+   "An exact positive fraction 2^-1075 from finite binary64 charges rounds to zero and remains accepted; the exact pure-impurity zero is checked separately."
   ],
   "tests": [
-   "tests/cross_domain/test_algebra_grid.py"
+   "tests/cross_domain/test_algebra_grid.py",
+   "tests/physics/test_source_energy_boundaries.py"
   ],
   "evidence_ceiling": "Maintained tests establish the named relation, shape and selected boundary behavior only; they do not establish global physical calibration.",
   "known_limitations": [

@@ -147,10 +147,12 @@
  },
  "verification": {
   "scope": [
-   "Nonuniform grids, conservation, signed/integer/tiny widths, decay-start cancellation and malformed inputs."
+   "Nonuniform grids, conservation, signed/integer/tiny widths, decay-start cancellation and malformed inputs.",
+   "Independent 120/200-digit normalized point values on a nonuniform-volume grid, adjacent ratios, signed tiny-width-floor shapes and positive common-volume scaling; rtol 2e-15 and atol 0."
   ],
   "tests": [
-   "tests/kinetic/test_profile_energy.py"
+   "tests/kinetic/test_profile_energy.py",
+   "tests/source/test_profile_shape_qualification.py"
   ],
   "evidence_ceiling": "Independent numerical probes establish the named mathematical relation, discrete conservation, boundary and shape/failure behavior. They do not establish general plasma calibration or complete edge-model validity.",
   "known_limitations": [

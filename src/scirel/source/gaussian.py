@@ -99,11 +99,12 @@ def gaussian_profile(rho_norm, vpr, drho_norm, *, center, width, total):
     total_f = scalar(total, "total")
     if w == 0 or not np.isfinite(w):
         return np.full(rho.shape, np.nan, dtype=np.float64)
-    # Factor the difference of squares before subtraction. Squaring distances
-    # first loses all grid-scale information for a remote finite center.
+    # Factor the difference of squares before subtraction. Keep each centered
+    # distance separate: r + ref can lose adjacent-cell offsets before 2*c is
+    # subtracted. Squaring first loses grid-scale information at remote centers.
     r = np.asarray(rho, dtype=np.longdouble)
     ref = r[0] if c <= rho[0] else r[-1] if c >= rho[-1] else r[np.argmin(np.abs(r - c))]
-    delta_square = (r - ref) * (r + ref - 2 * np.longdouble(c))
+    delta_square = (r - ref) * ((r - np.longdouble(c)) + (ref - np.longdouble(c)))
     # Preserve the repaired source's float64 denominator floor for tiny widths.
     with np.errstate(over="ignore", invalid="ignore"):
         den = max(
