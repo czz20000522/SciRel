@@ -40,6 +40,18 @@ class _ProtocolTuple(_SequenceProtocol, tuple):
     pass
 
 
+class _UnreadableProtocolList(list):
+    @property
+    def __array__(self):
+        raise RuntimeError("a visible sequence must not inspect its array protocol")
+
+
+class _UnreadableProtocolTuple(tuple):
+    @property
+    def __array__(self):
+        raise RuntimeError("a visible sequence must not inspect its array protocol")
+
+
 def test_zero_birth_energy_is_finite_continuous_limit():
     assert fast_ion_fractional_heating(0.0, 10.0, 2.0) == 1.0
     np.testing.assert_array_equal(
@@ -170,7 +182,9 @@ def test_visible_sequence_mask_cannot_be_erased_by_its_array_protocol(parameter,
 
 
 @pytest.mark.parametrize("parameter", range(3))
-@pytest.mark.parametrize("container", [_ProtocolList, _ProtocolTuple])
+@pytest.mark.parametrize(
+    "container", [_ProtocolList, _ProtocolTuple, _UnreadableProtocolList, _UnreadableProtocolTuple]
+)
 def test_sequence_members_define_values_and_shape_before_custom_protocol(parameter, container):
     ordinary = [20.0, 4.0, 2.0]
     ordinary[parameter] = [ordinary[parameter], 2 * ordinary[parameter]]

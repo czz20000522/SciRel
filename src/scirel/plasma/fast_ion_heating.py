@@ -20,7 +20,7 @@ def _preserve_real_values(value, name, active):
             raise ValueError(f"{name} must contain real, unmasked numeric values")
         if value.dtype != object:
             return value
-    elif not hasattr(value, "__array__") and not isinstance(value, (list, tuple)):
+    elif not isinstance(value, (list, tuple)) and not hasattr(value, "__array__"):
         return value
 
     marker = id(value)
