@@ -251,18 +251,24 @@
   "scope": [
    "Current assembly witnesses cover the electron-density-gradient term, axis and midpoint behavior, extreme finite arithmetic, total/per-radian flux equivalence and rejection/off-axis rules; the selected test_named_result.py case checks existing current arrays and named-result behavior.",
    "The named-result migration preserves existing key order, values, shape and dtype while exposing the same fields by attribute.",
-   "Total-flux and per-radian flux derivatives agree; giving both or neither, a non-increasing or negative rho_face, or a zero flux derivative off the axis raise ValueError; an off-axis first face is not zeroed."
+   "Total-flux and per-radian flux derivatives agree; giving both or neither, a non-increasing or negative rho_face, or a zero flux derivative off the axis raise ValueError; an off-axis first face is not zeroed.",
+   "Six independently generated 80/120-digit manufactured pressure-differential cases check all four drive terms, signed reference field/multiplier, total and per-radian flux derivatives, explicit axis zeroing and adjacent face means. They are algebraic assembly witnesses, not physically calibrated plasma cases."
   ],
   "tests": [
    "tests/tooling/test_bootstrap.py",
-   "tests/tooling/test_named_result.py::test_neoclassical_results_preserve_baseline_values_and_return_types[calculate_bootstrap_current]"
+   "tests/tooling/test_named_result.py::test_neoclassical_results_preserve_baseline_values_and_return_types[calculate_bootstrap_current]",
+   "tests/tooling/test_bootstrap_primary.py::test_current_follows_pressure_differential_and_flux_convention"
   ],
   "evidence_ceiling": "Mathematical fit arithmetic and explicit assembly only; no empirical full-physics qualification.",
   "known_limitations": [
    "Empirical coefficients are not experimentally calibrated here. Caller must supply model-consistent collisionalities and trapped fraction; no geometry reconstruction, edge pedestal or full-transport physics qualification.",
    "Large finite charge/collisionality combinations may have nonrepresentable intermediate or final arithmetic and fail explicitly. Float64 conversion cannot recover prior lost precision.",
    "Physical interpretation assumes axisymmetric tokamak geometry, nonnegative scalar thermal pressures, positive density/temperature before forming their logarithms, and compatible poloidal-flux/field sign conventions. Signed inputs retain algebra only.",
-   "UNKNOWN: the historical independent Decimal fit checks are not bound to per-asset inputs, precision, reference values and assertions. Binary64 baseline arrays and an exact-decimal limit described in a comment do not establish Decimal verification of every coefficient or current drive term."
+   "The historical Decimal claim remains unlocated. New pressure-differential references bind six manufactured assembly cases and their exact inputs/precision; they do not validate empirical coefficient fitting, physical magnetic-axis regularity or complete transport behavior."
   ]
- }
+ },
+ "references": [
+  "O. Sauter, C. Angioni and Y. R. Lin-Liu, Physics of Plasmas 6, 2834 (1999), doi:10.1063/1.873240.",
+  "A. Redl et al., Physics of Plasmas 28, 022502 (2021), doi:10.1063/5.0012664."
+ ]
 }

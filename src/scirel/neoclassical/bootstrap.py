@@ -245,12 +245,22 @@ def compute_bootstrap_coefficients(f_trap, nu_e_star, Z_eff, nu_i_star, *, metho
     scirel.neoclassical.bootstrap-coefficients. No numerical order option is
     implemented. Finite coefficient evaluation alone is not physical calibration.
 
+    The Sauter choice retains the selected corrected positive 0.315 alpha
+    term. The 1999 author manuscript prints a negative term; the fixed
+    nonzero-trapped-fraction high-collisionality limit +2.1 in the 2021
+    author paper and OMFIT's corrected implementation corroborate the
+    positive choice. The original 2002 publisher erratum was not read here.
+    Independent 80/120-digit paper-expression anchors check eighteen
+    selected inputs per method; they do not estimate empirical fit error.
+
     References
     ----------
     .. [1] O. Sauter, C. Angioni and Y. R. Lin-Liu, Physics of Plasmas 6,
        2834 (1999), doi:10.1063/1.873240.
     .. [2] A. Redl et al., Physics of Plasmas 28, 022502 (2021),
        doi:10.1063/5.0012664.
+    .. [3] OMFIT utils_fusion, corrected Sauter implementation,
+       https://omfit.io/_modules/omfit_classes/utils_fusion.html.
 
     Examples
     --------
@@ -378,6 +388,23 @@ def calculate_bootstrap_current(
     --------
     compute_bootstrap_coefficients : Select Sauter or Redl coefficients with method.
     scirel.io.read_geqdsk : G-EQDSK flux is per radian (Wb/rad).
+
+    Notes
+    -----
+    The pressure form is L31*d(p_e+p_i)/drho + L32*p_e*dln(T_e)/drho
+    + alpha*L34*p_i*dln(T_i)/drho. Expanding each scalar thermal pressure
+    differential gives the four explicit drive terms above. Independent
+    manufactured references check six signed-field/scale and flux-convention
+    cases using this pressure form and 80/120-digit arithmetic. They validate
+    assembly and the explicit rho=0 policy, not a physical magnetic-axis
+    regularity theorem, transport calculation or coefficient calibration.
+
+    References
+    ----------
+    .. [1] O. Sauter, C. Angioni and Y. R. Lin-Liu, Physics of Plasmas 6,
+       2834 (1999), doi:10.1063/1.873240.
+    .. [2] A. Redl et al., Physics of Plasmas 28, 022502 (2021),
+       doi:10.1063/5.0012664.
 
     Examples
     --------
