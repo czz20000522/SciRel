@@ -49,7 +49,7 @@ A domain may import only from that list, and a module that nothing imports is no
 
 The one upward root dependency is the composition layer, `_framework_compositions/`: a package that wires public `equilibrium` and `mirror` names (currently the kinetic mirror-Hall equilibrium) with module-level imports. It is allowed to depend on L4/L5 because it only assembles public functions, and no domain may import it back. It is scheduled for dissolution into the highest domain it composes, after which this row disappears.
 
-The architecture checks enforce this section; until they land (tracked in GitHub issues labelled `agent-task`), reviewers apply it by hand. Their baseline is the code as it is, not the edge list this section once expected: already-removed cycles and never-existing edges are not reintroduced to match an old plan.
+Architecture tests enforce dependency direction, the same-layer whitelist, cycles and the allowed root-private module list, including imports inside functions. Those checks do not by themselves establish physical ownership or every public/private symbol boundary; reviewers still check those requirements. Derive actual edges from code rather than restoring already-removed cycles or never-existing edges to match an old plan.
 
 ## Model families
 
