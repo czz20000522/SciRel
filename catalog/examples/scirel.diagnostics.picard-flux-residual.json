@@ -123,7 +123,7 @@
   "evidence_ceiling": "Direct numerical tests cover selected finite extremes and the formula, but not physical equilibrium convergence, arbitrary underflow behavior or expert recognition.",
   "known_limitations": [
    "The denominator floor changes the relative ratio when the previous-state norm is below 1e-30 Wb.",
-   "At the smallest subnormal magnitudes, 1e-30/scale may overflow during scaling, so the returned zero need not equal the mathematical ratio.",
+   "A nonzero binary64 input scale is at least 2^-1074, so 1e-30/scale is finite (less than 2.025e293); this step cannot overflow solely because the input scale is subnormal. This bound alone does not establish accuracy for arbitrary mixed-scale arrays or every other scaled operation.",
    "The Wb floor does not scale invariantly when reinterpreting Wb/rad states; no conversion or direct graph wiring is approved here.",
    "The scalar does not test Maxwell or pressure-force equations.",
    "Public distribution licensing and expert recognition remain pending."
