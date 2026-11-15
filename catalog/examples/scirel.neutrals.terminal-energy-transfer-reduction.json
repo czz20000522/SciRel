@@ -32,7 +32,7 @@
  "identity": {
   "relation": "terminal H2 loss, momentum and energy-transfer reduction from an explicit RHS",
   "direction": "terminal (vr,vx,x) distribution, signed RHS and external source, normalized velocity nodes, mass, speed and quadrature -> four x profiles",
-  "definition": "For each spatial cell k, density=sum_i weight[i]*sum_j f[i,j,k]*dvx[j] and particle_flux=Vth*sum_i weight[i]*sum_j vx[j]*f[i,j,k]*dvx[j], with the declared per-cell matrix-vector and radial order. Let u=particle_flux/density, c_x=vx-u/Vth, c_squared=vr^2+c_x^2 and m=2*mass_ratio*1.6726231e-27 kg. Loss is external_source minus the weighted RHS integral. Thermal transfer is 0.5*m*Vth^2 times the weighted integral of c_squared*RHS. Momentum transfer is m*Vth times the weighted integral of c_x*RHS. Total transfer is thermal_transfer+momentum_transfer*u-0.5*m*(loss-external_source)*u^2. In finite exact arithmetic, total transfer equals 0.5*m*Vth^2 times the weighted integral of (vr^2+vx^2)*RHS and is independent of the external-source input.",
+  "definition": "For each spatial cell k, density=sum_i weight[i]*sum_j f[i,j,k]*dvx[j] and particle_flux=Vth*sum_i weight[i]*sum_j vx[j]*f[i,j,k]*dvx[j], with the declared per-cell matrix-vector and radial order. Let u=particle_flux/density, c_x=vx-u/Vth, c_squared=vr^2+c_x^2 and m=2*mass_ratio*1.6726231e-27 kg. Retain the weighted RHS integral J; loss is external_source minus J. Thermal transfer is 0.5*m*Vth^2 times the weighted integral of c_squared*RHS. Momentum transfer is m*Vth times the weighted integral of c_x*RHS. Total transfer is thermal_transfer+momentum_transfer*u+0.5*m*J*u^2, using J directly rather than recovering it from rounded loss minus external_source. In finite exact arithmetic, total transfer equals 0.5*m*Vth^2 times the weighted integral of (vr^2+vx^2)*RHS and is independent of the external-source input.",
   "model": "Terminal H2 loss, momentum and energy-transfer diagnostic on an explicit collision RHS with an external molecular source",
   "geometry": "one-dimensional x profile over cylindrical (vr,vx) velocity cells",
   "coordinates": "radial and axial velocity nodes are dimensionless speeds normalized by the supplied thermal speed; radial nodes are nonnegative and axial nodes may be signed",
@@ -157,12 +157,12 @@
   },
   {
    "name": "total_energy_transfer_rate_profile_w_m3",
-   "description": "Total axial energy-transfer rate reconstructed from thermal, momentum and loss moments.",
+   "description": "Total axial energy-transfer rate reconstructed from thermal and momentum moments and the retained RHS integral.",
    "units": "source-labeled W/m^3",
    "shape": "[nx]",
    "dtype": "float64 array",
    "required": true,
-   "constraints": "Finite and signed; independent of external source in finite exact arithmetic."
+   "constraints": "Finite and signed; the total-energy calculation does not read the external-source input. Non-finite outputs still reject the whole call."
   }
  ],
  "applicability": {
@@ -204,7 +204,7 @@
  "verification": {
   "scope": [
    "Independent centered RHS moments and a raw uncentered energy-moment oracle check all four outputs on a signed nonuniform carrier.",
-   "External-source variation changes only loss; some zero quadrature cells are accepted with positive density.",
+   "External-source variation changes only loss, including large positive and negative sources with signed one-cell RHS checked against the independent laboratory-frame energy definition; some zero quadrature cells are accepted with positive density.",
    "UNKNOWN: the historical claim of three digest-pinned reference cases, exact two-carrier replay and boolean-coercion divergence is not bound to case inputs, digests, counterpart versions and per-case comparisons; the direct tests above remain the current evidence."
   ],
   "tests": [

@@ -449,3 +449,29 @@ def test_upwind_rejects_unrepresentable_spatial_step():
             field,
             field,
         )
+
+
+@pytest.mark.parametrize("kind", ["first_flight", "scattered"])
+@pytest.mark.parametrize("zero_velocity", [0.0, -0.0])
+def test_propagation_rejects_an_unresolved_zero_velocity_branch(kind, zero_velocity):
+    # The zero-streaming branch needs its own local source/loss solution;
+    # the recurrence API cannot reconstruct that solution from these fields.
+    zeros = np.zeros((1, 3, 2))
+    ones = np.ones_like(zeros)
+    arguments = (
+        {"incoming_boundary": np.ones((1, 3))}
+        if kind == "first_flight"
+        else {"scattered_source_distribution": ones}
+    )
+    with pytest.raises(ValueError, match="nonzero"):
+        propagate_neutral_generation(
+            [-1.0, zero_velocity, 1.0],
+            zeros,
+            ones,
+            zeros,
+            zeros,
+            ones,
+            zeros,
+            generation_kind=kind,
+            **arguments,
+        )

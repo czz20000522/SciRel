@@ -26,7 +26,7 @@
   ],
   "model": "Bidirectional recurrence using caller-provided transport coefficients; normalized spatial transport with u=v/Vth and inverse-length collision coefficients",
   "geometry": "one spatial dimension, two velocity branches; velocity axes are dimensionless u=v/Vth on one common caller normalization",
-  "boundary": "vx one-dimensional with both positive and negative branches; six coefficient fields finite aligned 3-D; generation_kind in {first_flight, scattered}; first_flight requires incoming_boundary; scattered requires scattered_source_distribution; nx must be at least one (a zero-node spatial axis fails closed with a named ValueError rather than a raw IndexError)",
+  "boundary": "vx one-dimensional with both positive and negative branches and no zero nodes; six coefficient fields finite aligned 3-D; generation_kind in {first_flight, scattered}; first_flight requires incoming_boundary; scattered requires scattered_source_distribution; nx must be at least one (a zero-node spatial axis fails closed with a named ValueError rather than a raw IndexError)",
   "device_scope": "generic"
  },
  "identity": {
@@ -36,7 +36,7 @@
   "model": "Bidirectional recurrence using caller-provided transport coefficients",
   "geometry": "one spatial dimension, two velocity branches",
   "coordinates": "vx is dimensionless u_x=v_x/Vth; generation and incoming boundary are distribution densities F in m^-3; Ak/Ck are dimensionless, Bk/Dk are m, Fk/Gk are F and scattered_source_distribution is F/m.",
-  "boundary": "vx one-dimensional with both positive and negative branches; six coefficient fields finite aligned 3-D; generation_kind in {first_flight, scattered}; first_flight requires incoming_boundary; scattered requires scattered_source_distribution; nx must be at least one (a zero-node spatial axis fails closed with a named ValueError rather than a raw IndexError)",
+  "boundary": "vx one-dimensional with both positive and negative branches and no zero nodes; six coefficient fields finite aligned 3-D; generation_kind in {first_flight, scattered}; first_flight requires incoming_boundary; scattered requires scattered_source_distribution; nx must be at least one (a zero-node spatial axis fails closed with a named ValueError rather than a raw IndexError)",
   "assumptions": [
    "The supplied Ak/Bk/Fk/Ck/Dk/Gk fields define the recurrence; this callable does not choose a spatial discretization or enforce positivity.",
    "The two generation kinds are mutually exclusive: first_flight uses incoming_boundary, scattered uses scattered_source_distribution.",
@@ -57,7 +57,7 @@
    "shape": "[nvx]",
    "dtype": "real array-like",
    "required": true,
-   "constraints": "Finite one-dimensional with both positive and negative branches."
+   "constraints": "Finite one-dimensional with both positive and negative branches; no zero nodes."
   },
   {
    "name": "Ak",
@@ -156,7 +156,7 @@
  ],
  "applicability": {
   "preconditions": [
-   "Six finite aligned coefficient fields; vx with both branches; exactly one of incoming_boundary (first_flight) or scattered_source_distribution (scattered).",
+   "Six finite aligned coefficient fields; vx with both branches; exactly one of incoming_boundary (first_flight) or scattered_source_distribution (scattered). All axial velocity nodes must be nonzero; zero streaming would require a local source/loss solution outside this recurrence.",
    "Use one common Vth for normalized velocity nodes, inverse-length collision coefficients and spatial source coefficients; the callable performs no implicit unit conversion."
   ],
   "supported": [
@@ -167,7 +167,7 @@
   ]
  },
  "failure_semantics": {
-  "invalid_input": "Raises ValueError when vx lacks branches, coefficient fields are not finite aligned 3-D, generation_kind is invalid, or the wrong source/boundary is supplied.",
+  "invalid_input": "Raises ValueError when vx lacks branches or has a zero node, coefficient fields are not finite aligned 3-D, generation_kind is invalid, or the wrong source/boundary is supplied.",
   "runtime_failure": "Raises ValueError if finite inputs overflow to a non-finite generation.",
   "nonconvergence": "Not applicable.",
   "partial_results": "Never returned; a rejected call produces no result."
@@ -192,15 +192,16 @@
  },
  "verification": {
   "scope": [
-   "Direct tests bind both generation kinds, Fk/Gk versus Bk/Dk source use, positive-only incoming boundary, signed boundary cells, zero-node rejection and finite-output failure semantics.",
+   "Direct tests bind both generation kinds, Fk/Gk versus Bk/Dk source use, positive-only incoming boundary, signed boundary cells, empty spatial-axis and zero axial-velocity rejection and finite-output failure semantics.",
    "The cross-domain tests compare propagated physical attenuation against an analytic characteristic and preserve a prescribed source/loss equilibrium using one common Vth normalization.",
-   "The contract example covers one bounded representative call; numerical checks do not establish external physical validation or full-domain applicability."
+   "The contract example covers one bounded representative call; numerical checks do not establish external physical validation or full-domain applicability.",
+   "Both first_flight and scattered reject positive and negative zero axial-velocity nodes rather than silently leaving their distribution columns zero."
   ],
   "tests": [
    "tests/kinetic/test_transport_step.py",
    "tests/cross_domain/test_neutral_transport_normalization.py"
   ],
-  "evidence_ceiling": "Bounded to the stated normalized transport relation. Direct tests bind both generation kinds, Fk/Gk versus Bk/Dk source use, positive-only incoming boundary, signed boundary cells, zero-node rejection and finite-output failure semantics. The cross-domain tests compare propagated physical attenuation against an analytic characteristic and preserve a prescribed source/loss equilibrium using one common Vth normalization. The listed direct and cross-domain tests are the current reproducible evidence; the example exercises one bounded call. Independent analytic and SI-unit comparisons are limited to the stated fixtures. Unbound historical source/parity receipts remain UNKNOWN and are not re-established here.",
+  "evidence_ceiling": "Bounded to the stated normalized transport relation. Direct tests bind both generation kinds, Fk/Gk versus Bk/Dk source use, positive-only incoming boundary, signed boundary cells, empty spatial-axis and zero axial-velocity rejection and finite-output failure semantics. The cross-domain tests compare propagated physical attenuation against an analytic characteristic and preserve a prescribed source/loss equilibrium using one common Vth normalization. The listed direct and cross-domain tests are the current reproducible evidence; the example exercises one bounded call. Independent analytic and SI-unit comparisons are limited to the stated fixtures. Unbound historical source/parity receipts remain UNKNOWN and are not re-established here.",
   "known_limitations": [
    "No external collision-data calibration, source-project parity qualification or device-specific physical validation is established by these tests.",
    "The normalization tests use bounded aligned meshes and prescribed rates; they do not certify full-distribution grid convergence, arbitrary-step positivity or the complete nonlinear transport model."

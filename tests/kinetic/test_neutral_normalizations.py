@@ -1,6 +1,7 @@
 """Scientific and failure contracts for neutral boundary and source normalization."""
 
 import math
+from fractions import Fraction
 
 import numpy as np
 import pytest
@@ -112,6 +113,50 @@ def test_boundary_rejects_nonfinite_scaled_distribution():
             normalize_incoming_neutral_boundary(
                 np.full((1, 2), 1e308), [-1.0, 1.0], np.full((1, 2), 1e-300), 1.0, 1e308
             )
+
+
+@pytest.mark.parametrize("target_sign", [-1.0, 1.0])
+@pytest.mark.parametrize("zero_volume_cell", [False, True])
+def test_boundary_rejects_underflowed_flux_carrying_distribution(target_sign, zero_volume_cell):
+    # Initial flux=2^-54 and scale=2^-1016 are representable. The only
+    # flux-carrying returned cell would be 2^-1080, so it disappears.
+    shape = [[float.fromhex("0x1p-64"), 1.0]] if zero_volume_cell else [[float.fromhex("0x1p-64")]]
+    volume = [[1.0, 0.0]] if zero_volume_cell else [[1.0]]
+    vx = [1.0, 1.0] if zero_volume_cell else [1.0]
+    with pytest.raises(ValueError, match="underflow"):
+        normalize_incoming_neutral_boundary(
+            shape, vx, volume, 1024.0, target_sign * float.fromhex("0x1p-1070")
+        )
+
+
+def test_boundary_keeps_a_representable_subnormal_distribution():
+    target = float.fromhex("0x1p-1060")
+    incoming, _, _ = normalize_incoming_neutral_boundary(
+        [[float.fromhex("0x1p-64")]], [1.0], [[1.0]], 1024.0, target
+    )
+    assert incoming[0, 0] == float.fromhex("0x1p-1070")
+    assert Fraction.from_float(float(incoming[0, 0])) * 1024 == Fraction.from_float(target)
+
+
+def test_boundary_allows_an_unrelated_small_cell_to_round_to_zero():
+    target = float.fromhex("0x1p-1060")
+    incoming, _, _ = normalize_incoming_neutral_boundary(
+        [[float.fromhex("0x1p-64"), 1.0]], [1.0, 1.0], [[1.0, 1.0]], 1024.0, target
+    )
+    assert incoming[0, 0] == 0.0
+    assert incoming[0, 1] == float.fromhex("0x1p-1070")
+    assert Fraction.from_float(float(incoming[0, 1])) * 1024 == Fraction.from_float(target)
+
+
+def test_boundary_does_not_reject_a_representable_result_for_a_reintegration_underflow():
+    # Multiplying volume by the returned density first would underflow,
+    # despite both the density and the exact flux being representable.
+    volume, speed, target = (float.fromhex(value) for value in ("0x1p-400", "0x1p800", "0x1p-400"))
+    incoming, _, _ = normalize_incoming_neutral_boundary([[1.0]], [1.0], [[volume]], speed, target)
+    assert incoming[0, 0] == float.fromhex("0x1p-800")
+    assert Fraction.from_float(float(incoming[0, 0])) * Fraction.from_float(
+        volume
+    ) * Fraction.from_float(speed) == Fraction.from_float(target)
 
 
 def test_source_shape_uses_trapezoidal_spatial_measure():
