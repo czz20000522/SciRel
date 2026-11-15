@@ -4,7 +4,7 @@ import numpy as np
 import pytest
 from decimal import Decimal, localcontext
 
-from scirel.geometry import face_to_cell
+from scirel.numerics.interpolate import face_to_cell
 from scirel.physics import (
     calculate_log_lambda_ee,
     calculate_log_lambda_ei,

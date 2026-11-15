@@ -55,7 +55,7 @@ def face_to_cell(face):
     Examples
     --------
     >>> import numpy as np
-    >>> from scirel.geometry import face_to_cell
+    >>> from scirel.numerics.interpolate import face_to_cell
     >>> np.testing.assert_array_equal(face_to_cell([0.,2.,8.,10.]), [1.,5.,9.])
     """
     try:

@@ -464,7 +464,7 @@
      "一维相邻面值的中点插值，不广播。"
     ]
    },
-   "asset_id": "scirel.geometry.face-to-cell",
+   "asset_id": "scirel.numerics.face-to-cell",
    "assumptions": [
     "不推断外推或广播轴。",
     "仅传递数值；几何坐标由调用者提供。"
@@ -502,7 +502,7 @@
      "units": "与输入相同"
     }
    ],
-   "source_sha256": "44e8b9f2e1332111c9f3f7f01edccc0bb986b5dc252388d07cd643e1aef4a74f",
+   "source_sha256": "13cb131132a78bdff913687a0848c04342e922479bbc1b913866bac9a2b75321",
    "summary": "将一维网格上相邻的面值转换为单元中点值。",
    "verification": {
     "evidence_ceiling": "维护测试仅支持所列关系、形状和指定边界行为，不构成普遍物理标定。",
@@ -699,7 +699,7 @@
      "units": "A/m^2"
     }
    ],
-   "source_sha256": "8834e5db66aef84b58873ef1b214c6ea8ab4f39bf5bf224abf194e340697c58c",
+   "source_sha256": "97e28d8dcf4fc376308f657e1a784cace9320033c8d6247a49dadd2002cc40fa",
    "summary": "由压强、对数梯度及拟合系数组装平行自举电流，以 scirel._result.Result 映射返回两个命名字段。",
    "verification": {
     "evidence_ceiling": "仅证明拟合代数与显式组装，不构成经验模型的全面物理资格。",

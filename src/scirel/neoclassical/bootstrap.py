@@ -9,7 +9,7 @@ from __future__ import annotations
 import numpy as np
 
 from scirel._result import Result
-from scirel.geometry.face_to_cell import face_to_cell
+from scirel.numerics.interpolate import face_to_cell
 
 __all__ = [
     "compute_bootstrap_coefficients",

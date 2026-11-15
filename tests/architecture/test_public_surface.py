@@ -83,12 +83,19 @@ def test_all_documented_public_callables_are_importable_and_callable():
 
 
 def test_algebra_grid_exports_keep_domain_callables():
-    from scirel import geometry, physics
-    from scirel.geometry.face_to_cell import face_to_cell
+    from scirel import geometry, numerics, physics
+    from scirel.numerics import interpolate
+    from scirel.numerics.interpolate.midpoint import face_to_cell
+    from scirel.neoclassical import bootstrap
     from scirel.physics import coulomb_logs, dilution
 
-    assert geometry.face_to_cell is face_to_cell
-    assert "face_to_cell" in geometry.__all__
+    assert interpolate.face_to_cell is face_to_cell
+    assert numerics.face_to_cell is face_to_cell
+    assert bootstrap.face_to_cell is face_to_cell
+    assert "face_to_cell" in interpolate.__all__
+    assert "face_to_cell" in numerics.__all__
+    assert "face_to_cell" not in geometry.__all__
+    assert not hasattr(geometry, "face_to_cell")
     expected = {
         "calculate_stored_thermal_energy": physics.calculate_stored_thermal_energy,
         "calculate_main_ion_dilution_factor": dilution.calculate_main_ion_dilution_factor,
