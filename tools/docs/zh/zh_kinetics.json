@@ -5287,14 +5287,15 @@
   },
   {
    "asset_id": "scirel.plasma.fast-ion-heating",
-   "source_sha256": "7f2ba54bde6a71f7bfcee90365476fa50f41bceb3f45c7f709c38f5c63ee3df3",
+   "source_sha256": "bd5b328aa9ac6b0cd1dcd59742718b9cf21ed2cf9a0c6da9d46252f3f42931e7",
    "summary": "计算指定局部Mikkelsen加热分配近似，包括有限的零能量极限。",
    "definition": "f_i(x)=2/x²∫₀ˣ t/(1+t³)dt，x²=E_birth/(10m_fast T_e)；小x用收敛级数，其他区域用闭式，连续极限f_i(0)=1。",
    "model": "固定能量/温度/质量尺度的局部Mikkelsen近似。",
    "assumptions": [
     "T_e单位keV，快离子质量单位amu。",
     "仅局部分配，不模拟慢化轨迹。",
-    "固定尺度定义本近似；数值吻合不证明对特定成分或碰撞区间的适用性。"
+    "固定尺度定义本近似；数值吻合不证明对特定成分或碰撞区间的适用性。",
+    "列表和元组（含子类）按可见成员及形状处理，不调用其自定义数组转换；其他类数组对象先采用自身数组表示，再转成实数。"
    ],
    "boundary": "实数、无掩码，E_birth≥0、T_e>0、质量>0且都有限。",
    "inputs": [

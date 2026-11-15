@@ -26,6 +26,20 @@ class _MaskedArrayProtocolInput:
         return self.data if dtype is None else self.data.astype(dtype)
 
 
+class _SequenceProtocol:
+    def __array__(self, dtype=None, copy=None):
+        self.calls = getattr(self, "calls", 0) + 1
+        return np.asarray(list(self), dtype=dtype).reshape(1, -1)
+
+
+class _ProtocolList(_SequenceProtocol, list):
+    pass
+
+
+class _ProtocolTuple(_SequenceProtocol, tuple):
+    pass
+
+
 def test_zero_birth_energy_is_finite_continuous_limit():
     assert fast_ion_fractional_heating(0.0, 10.0, 2.0) == 1.0
     np.testing.assert_array_equal(
@@ -143,6 +157,31 @@ def test_array_protocol_mask_is_preserved_until_validation(parameter, container)
     with pytest.raises(ValueError, match="masked"):
         fast_ion_fractional_heating(*args)
     assert wrapped.calls == 1
+
+
+@pytest.mark.parametrize("parameter", range(3))
+@pytest.mark.parametrize("container", [_ProtocolList, _ProtocolTuple])
+def test_visible_sequence_mask_cannot_be_erased_by_its_array_protocol(parameter, container):
+    value = container([np.ma.array([20.0], mask=[True])])
+    args = [20.0, 4.0, 2.0]
+    args[parameter] = value
+    with pytest.raises(ValueError, match="masked"):
+        fast_ion_fractional_heating(*args)
+
+
+@pytest.mark.parametrize("parameter", range(3))
+@pytest.mark.parametrize("container", [_ProtocolList, _ProtocolTuple])
+def test_sequence_members_define_values_and_shape_before_custom_protocol(parameter, container):
+    ordinary = [20.0, 4.0, 2.0]
+    ordinary[parameter] = [ordinary[parameter], 2 * ordinary[parameter]]
+    wrapped = ordinary.copy()
+    value = container(ordinary[parameter])
+    wrapped[parameter] = value
+    actual = fast_ion_fractional_heating(*wrapped)
+    expected = fast_ion_fractional_heating(*ordinary)
+    np.testing.assert_array_equal(actual, expected)
+    assert actual.shape == (2,)
+    assert getattr(value, "calls", 0) == 0
 
 
 @pytest.mark.parametrize("container", ["list", "object-array"])

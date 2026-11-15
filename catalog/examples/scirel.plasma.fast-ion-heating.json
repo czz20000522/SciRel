@@ -39,7 +39,8 @@
   "assumptions": [
    "T_e is in keV and fast-ion mass is in atomic mass units.",
    "The relation is a local partition and does not model slowing-down trajectories.",
-   "The fixed scaling defines the evaluated approximation; suitability for a specific plasma composition or collisional regime is not established by numerical agreement with this relation."
+   "The fixed scaling defines the evaluated approximation; suitability for a specific plasma composition or collisional regime is not established by numerical agreement with this relation.",
+   "Lists and tuples, including subclasses, use their visible sequence members and shape rather than a custom array conversion; other array-like objects use their array representation before real conversion."
   ]
  },
  "inputs": [

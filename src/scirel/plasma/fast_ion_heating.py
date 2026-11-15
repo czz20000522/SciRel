@@ -33,11 +33,13 @@ def _preserve_real_values(value, name, active):
             for index, item in enumerate(value.flat):
                 result.flat[index] = _preserve_real_values(item, name, active)
             return result
-        if hasattr(value, "__array__"):
-            # Unlike asarray, asanyarray retains a MaskedArray returned by an
-            # array protocol. Reuse this result instead of invoking it twice.
-            return _preserve_real_values(np.asanyarray(value), name, active)
-        return [_preserve_real_values(item, name, active) for item in value]
+        if isinstance(value, (list, tuple)):
+            # Visible sequence members define the input even for subclasses
+            # providing __array__; that conversion could erase member masks.
+            return [_preserve_real_values(item, name, active) for item in value]
+        # Only opaque inputs reach their array protocol. Unlike asarray,
+        # asanyarray retains a returned MaskedArray; reuse the result once.
+        return _preserve_real_values(np.asanyarray(value), name, active)
     finally:
         active.remove(marker)
 
@@ -98,6 +100,11 @@ def fast_ion_fractional_heating(birth_energy, T_e, fast_ion_mass):
     result does not establish applicability to a particular plasma composition,
     collisional regime, or experimental calibration, and it does not simulate
     trajectories or transport.
+
+    Lists and tuples, including subclasses, use their visible sequence members
+    and shape rather than a custom array conversion. Other array-like objects
+    use their array representation, preserving masks and complex dtypes until
+    validation. A masked or complex value is rejected before conversion to real.
 
     Examples
     --------
