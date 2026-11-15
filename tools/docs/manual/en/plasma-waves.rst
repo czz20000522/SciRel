@@ -117,6 +117,15 @@ where ``Omega_cs = q_s |B| / m_s`` is the signed cyclotron frequency and ``nu_s`
 
 ``b`` is the unit direction of the magnetic field and ``[b]_x`` is the cross-product matrix. This expression says: the parallel direction is controlled by ``P``, the perpendicular diagonal by ``S``, and the perpendicular off-diagonal by ``D_H``.
 
+Several contributing species can have large opposite Hall terms whose rounded sum loses a small nonzero response.
+After retaining the existing arithmetic guards, this entry sums collective ``S``, ``P`` and ``H = D_H/|B|``
+as exact rational contributions over the original binary64 inputs. With ``Q = sum(B_i**2)``,
+``Omega_cs**2 = q_s**2*Q/m_s**2`` and the Hall term ``i H [B]_x`` require no rounded field norm;
+complete Cartesian entries are rounded last. One contributing species retains the established coefficient route,
+and inert entries do not change routes. Conservative guards, single-species near-pole conditioning and downstream
+extraction of small responses remain limitations, not arbitrary-input accuracy guarantees. A computed zero denominator
+is rechecked over its represented operands: an underflowed-square false zero is arithmetic refusal, not resonance.
+
 Take ``f = 50 GHz`` with the background field along the ``z`` axis:
 
 .. code-block:: python
