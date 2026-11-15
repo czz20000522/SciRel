@@ -3,7 +3,7 @@
 import numpy as np
 import pytest
 
-from scirel.geometry import truncated_svd_inverse
+from scirel.numerics import compute_truncated_pseudoinverse
 
 
 def test_matches_numpy_pinv_on_square_tall_and_wide_matrices():
@@ -11,53 +11,56 @@ def test_matches_numpy_pinv_on_square_tall_and_wide_matrices():
     for shape in ((4, 4), (5, 3), (3, 5)):
         matrix = rng.normal(size=shape)
         np.testing.assert_allclose(
-            truncated_svd_inverse(matrix), np.linalg.pinv(matrix), rtol=1e-12, atol=1e-14
+            compute_truncated_pseudoinverse(matrix), np.linalg.pinv(matrix), rtol=1e-12, atol=1e-14
         )
 
 
 def test_truncates_rank_deficient_spectrum():
     matrix = np.array([[1.0, 2.0], [2.0, 4.0]])
     np.testing.assert_allclose(
-        truncated_svd_inverse(matrix), np.linalg.pinv(matrix, rcond=1e-10), rtol=1e-12, atol=1e-14
+        compute_truncated_pseudoinverse(matrix),
+        np.linalg.pinv(matrix, rcond=1e-10),
+        rtol=1e-12,
+        atol=1e-14,
     )
 
 
 def test_projects_onto_range_and_nullspace():
     rng = np.random.default_rng(11)
     matrix = rng.normal(size=(6, 4))
-    inverse = truncated_svd_inverse(matrix)
+    inverse = compute_truncated_pseudoinverse(matrix)
     np.testing.assert_allclose(matrix @ inverse @ matrix, matrix, rtol=1e-12, atol=1e-12)
 
 
 @pytest.mark.parametrize("bad", [np.zeros(3), np.zeros((2, 2, 2))])
 def test_rejects_non_2d_input(bad):
     with pytest.raises(ValueError, match="2-D"):
-        truncated_svd_inverse(bad)
+        compute_truncated_pseudoinverse(bad)
 
 
 def test_rejects_nonfinite_matrix_and_bad_threshold():
     with pytest.raises(ValueError, match="finite"):
-        truncated_svd_inverse([[1.0, np.nan], [0.0, 1.0]])
+        compute_truncated_pseudoinverse([[1.0, np.nan], [0.0, 1.0]])
     with pytest.raises(ValueError, match="rcond"):
-        truncated_svd_inverse(np.eye(2), rcond=0.0)
+        compute_truncated_pseudoinverse(np.eye(2), rcond=0.0)
     with pytest.raises(ValueError, match="rcond"):
-        truncated_svd_inverse(np.eye(2), rcond=float("inf"))
+        compute_truncated_pseudoinverse(np.eye(2), rcond=float("inf"))
 
 
 @pytest.mark.parametrize("bad_rcond", [None, "1e-10", [1.0e-10], True])
 def test_rejects_non_real_threshold(bad_rcond):
     with pytest.raises(ValueError, match="rcond"):
-        truncated_svd_inverse(np.eye(2), rcond=bad_rcond)
+        compute_truncated_pseudoinverse(np.eye(2), rcond=bad_rcond)
 
 
 def test_rcond_is_relative_to_the_largest_singular_value():
     matrix = np.diag([1.0e-11, 1.0e-6])
-    inverse = truncated_svd_inverse(matrix, rcond=1.0e-10)
+    inverse = compute_truncated_pseudoinverse(matrix, rcond=1.0e-10)
     np.testing.assert_allclose(inverse, np.linalg.pinv(matrix, rcond=1.0e-10), rtol=1e-14, atol=0.0)
 
 
 def test_zero_matrix_returns_zero_pseudo_inverse():
-    inverse = truncated_svd_inverse(np.zeros((3, 2)))
+    inverse = compute_truncated_pseudoinverse(np.zeros((3, 2)))
     assert inverse.shape == (2, 3)
     assert np.all(inverse == 0.0)
     assert np.isfinite(inverse).all()
@@ -68,7 +71,7 @@ def test_threshold_still_discards_singular_values_below_rcond():
     # so its overflowing reciprocal is never formed.
     matrix = np.diag([1.0, 1.0e-310])
     np.testing.assert_allclose(
-        truncated_svd_inverse(matrix),
+        compute_truncated_pseudoinverse(matrix),
         np.linalg.pinv(matrix, rcond=1.0e-10),
         rtol=1e-14,
         atol=0.0,
@@ -77,22 +80,34 @@ def test_threshold_still_discards_singular_values_below_rcond():
 
 def test_finite_input_with_unrepresentable_retained_reciprocal_raises():
     with pytest.raises(FloatingPointError, match="not representable as finite float64"):
-        truncated_svd_inverse(np.array([[1.0e-310]]))
+        compute_truncated_pseudoinverse(np.array([[1.0e-310]]))
 
 
 def test_finite_input_retained_only_by_small_rcond_still_raises():
     matrix = np.diag([1.0, 1.0e-310])
     with pytest.raises(FloatingPointError, match="not representable as finite float64"):
-        truncated_svd_inverse(matrix, rcond=1.0e-320)
+        compute_truncated_pseudoinverse(matrix, rcond=1.0e-320)
 
 
 def test_representable_small_reciprocal_keeps_its_numeric_value():
     matrix = np.array([[1.0e-300]])
-    inverse = truncated_svd_inverse(matrix)
+    inverse = compute_truncated_pseudoinverse(matrix)
     np.testing.assert_allclose(inverse, np.linalg.pinv(matrix), rtol=1e-14, atol=0.0)
     assert np.isfinite(inverse).all()
 
 
 def test_finite_input_with_unrepresentable_singular_values_raises():
     with pytest.raises(FloatingPointError, match="singular values"):
-        truncated_svd_inverse(np.full((2, 2), 1.0e308))
+        compute_truncated_pseudoinverse(np.full((2, 2), 1.0e308))
+
+
+def test_retains_singular_value_at_cutoff_and_discards_only_below():
+    matrix = np.diag([4.0, 1.0, np.nextafter(1.0, 0.0)])
+    inverse = compute_truncated_pseudoinverse(matrix, rcond=0.25)
+    np.testing.assert_array_equal(inverse, np.diag([0.25, 1.0, 0.0]))
+
+
+@pytest.mark.parametrize("shape", [(0, 0), (0, 3), (4, 0)])
+def test_empty_matrices_return_transposed_empty_shape(shape):
+    inverse = compute_truncated_pseudoinverse(np.empty(shape))
+    np.testing.assert_array_equal(inverse, np.zeros(shape[::-1]))

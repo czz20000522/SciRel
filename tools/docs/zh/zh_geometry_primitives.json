@@ -2244,7 +2244,7 @@
   },
   {
    "asset_id": "scirel.numerics.truncated-svd-inverse",
-   "source_sha256": "1f503dea64dfd1683084fb7d0ef6d075e18d8ab95c7d82d8f6fa9b5b5562dddb",
+   "source_sha256": "b76a0f9f5f78011b1507d7ac31cfc9d5b1598479cd2a553814e89c963d64f2bb",
    "summary": "计算有限实矩阵的 Moore–Penrose 伪逆，只按相对阈值截断奇异值；有限输入若其保留倒数不可表示，则抛出 FloatingPointError。",
    "definition": "对 M = U diag(s) V^T，返回 V diag(s ≥ rcond·max(s) 时取 1/s，否则取 0) U^T。",
    "model": "稠密实矩阵的截断奇异值分解。",
@@ -2305,9 +2305,11 @@
      "方阵、长矩阵与宽矩阵上与 numpy.linalg.pinv 的一致性。",
      "秩亏谱的阈值截断及 M M^+ M = M 投影恒等式。",
      "二维形状、非有限元素与非正阈值的拒绝行为。",
-     "全零矩阵返回零伪逆，见 tests/geometry/test_truncated_svd_inverse.py。",
+     "全零矩阵返回零伪逆，见 tests/numerics/test_truncated_pseudoinverse.py。",
      "有限输入的 fail-closed 边界：1e-310 元素及相对阈值下溢时抛出 FloatingPointError，而可表示的 1e-300 倒数保持原数值。",
-     "分解本身的有限输入 fail-closed 边界：2×2 矩阵全为 1e308 时，若 SVD 奇异值不可表示，抛出 FloatingPointError。"
+     "分解本身的有限输入 fail-closed 边界：2×2 矩阵全为 1e308 时，若 SVD 奇异值不可表示，抛出 FloatingPointError。",
+     "恰好等于截断阈值的奇异值予以保留，仅丢弃紧邻且低于阈值的值；空矩阵保留转置后的输出形状。",
+     "numerics 域与 linalg 主题导出同一个函数，rcond 只能通过关键字传入；发现入口不加载数值后端，原 geometry 入口和模块均已撤除。"
     ],
     "known_limitations": [
      "不支持复矩阵与稀疏矩阵。",
