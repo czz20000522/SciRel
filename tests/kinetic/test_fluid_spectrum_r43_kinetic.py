@@ -9,8 +9,8 @@ import numpy as np
 import pytest
 
 from scirel.kinetic import (
-    evaluate_kinetic_dielectric_tensor,
-    evaluate_kinetic_dispersion_ronnmark,
+    evaluate_dielectric_diagnostics,
+    evaluate_dielectric_response,
     evaluate_ronnmark_r,
     solve_kinetic_wavevector_roots,
 )
@@ -60,14 +60,16 @@ def test_ronnmark_selector_rejects_nonfinite_inputs(x, lam):
 
 
 def test_ronnmark_complex_wavepoint_and_zero_kz():
-    out = evaluate_kinetic_dispersion_ronnmark(
+    out = evaluate_dielectric_response(
+        method="ronnmark",
         **CASE,
-        f=WN / (2 * np.pi),
+        omega=2.0 * np.pi * float(WN / (2 * np.pi)),
         kz=1326.1942478795652,
         kx=KN + 663.0971239397826j,
     )
     assert out["determinant"] == pytest.approx(651060.3902992245 + 4501393.276005662j, rel=1e-11)
-    zero = evaluate_kinetic_dispersion_ronnmark(
+    zero = evaluate_dielectric_response(
+        method="ronnmark",
         **CASE,
         omega=0.11 * WN,
         kz=0.0,
@@ -88,13 +90,14 @@ def test_ronnmark_complex_wavepoint_and_zero_kz():
     ],
 )
 def test_two_species_complex_kx_matches_frozen_source(omega_frac, kx, expected):
-    out = evaluate_kinetic_dispersion_ronnmark(
+    out = evaluate_dielectric_response(
+        method="ronnmark",
         B0=6.0,
         qs=[-1.60217662e-19, 1.60217662e-19],
         ms=[9.1094e-31, 2 * 1.6726219e-27],
         ns0=[2e20, 2e20],
         Ts0=[4000 * 1.6022e-19 / 1.38064852e-23] * 2,
-        f=omega_frac * 287364996.2373445 / (2 * np.pi),
+        omega=2.0 * np.pi * float(omega_frac * 287364996.2373445 / (2 * np.pi)),
         kz=65.65372832698084,
         kx=kx,
     )
@@ -112,49 +115,51 @@ def test_two_species_complex_kx_matches_frozen_source(omega_frac, kx, expected):
     ],
 )
 def test_ronnmark_invalid_controls_fail_closed(change):
-    args = dict(CASE, f=WN / (2 * np.pi), kz=0.0, kx=KN)
+    args = dict(CASE, omega=2.0 * np.pi * float(WN / (2 * np.pi)), kz=0.0, kx=KN)
     args.update(change)
-    with pytest.raises(ValueError):
-        evaluate_kinetic_dispersion_ronnmark(**args)
+    with pytest.raises(TypeError if "f" in change else ValueError):
+        evaluate_dielectric_response(method="ronnmark", **args)
 
 
 def test_full_tensor_diagnostic_keeps_15_harmonics_and_six_term_det():
-    out = evaluate_kinetic_dielectric_tensor(
-        **CASE, f=WN / (2 * np.pi), kz=1326.1942478795652, kx=KN
+    out = evaluate_dielectric_diagnostics(
+        **CASE, omega=2.0 * np.pi * float(WN / (2 * np.pi)), kz=1326.1942478795652, kx=KN
     )
-    assert out["lmx"] == 15
-    assert out["det_D"] == pytest.approx(1184259.0392493994 + 4322544.5590004744j, rel=1e-11)
-    assert out["K"][0, 0] == pytest.approx(1.323438756569723 + 16.286340462141965j)
+    assert out["diagnostics"]["harmonics"] == 15
+    assert out["determinant_raw"] == pytest.approx(
+        1184259.0392493994 + 4322544.5590004744j, rel=1e-11
+    )
+    assert out["K_raw"][0, 0] == pytest.approx(1.323438756569723 + 16.286340462141965j)
 
 
 @pytest.mark.parametrize("change", [{"B0": 1.0 + 0.1j}, {"qs": [0.0]}])
 def test_full_tensor_diagnostic_rejects_invalid_species_controls(change):
-    args = dict(CASE, f=WN / (2 * np.pi), kz=1326.1942478795652, kx=KN)
+    args = dict(CASE, omega=2.0 * np.pi * float(WN / (2 * np.pi)), kz=1326.1942478795652, kx=KN)
     args.update(change)
     with pytest.raises(ValueError):
-        evaluate_kinetic_dielectric_tensor(**args)
+        evaluate_dielectric_diagnostics(**args)
 
 
 def test_diagnostic_module_star_import_exports_public_callable():
     namespace = {}
-    exec("from scirel.kinetic.dielectric_tensor_diagnostic import *", namespace)
-    assert namespace["evaluate_kinetic_dielectric_tensor"] is evaluate_kinetic_dielectric_tensor
+    exec("from scirel.kinetic.dielectric_diagnostics import *", namespace)
+    assert namespace["evaluate_dielectric_diagnostics"] is evaluate_dielectric_diagnostics
 
 
 def test_full_tensor_diagnostic_import_and_rejected_call_defer_scipy():
     result = _run_import_probe(
         """
 import sys
-from scirel.kinetic import evaluate_kinetic_dielectric_tensor
-from scirel.kinetic.dielectric_tensor_diagnostic import (
-    evaluate_kinetic_dielectric_tensor as direct,
+from scirel.kinetic import evaluate_dielectric_diagnostics
+from scirel.kinetic.dielectric_diagnostics import (
+    evaluate_dielectric_diagnostics as direct,
 )
 
-assert evaluate_kinetic_dielectric_tensor is direct
+assert evaluate_dielectric_diagnostics is direct
 assert "scipy" not in sys.modules
 try:
-    evaluate_kinetic_dielectric_tensor(
-        0.0, [-1.0], [1.0], [1.0], [1.0], 1.0, 1.0, 1.0,
+    evaluate_dielectric_diagnostics(
+        B0=0.0, qs=[-1.0], ms=[1.0], ns0=[1.0], Ts0=[1.0], omega=2.0 * 3.141592653589793 * float(1.0), kz=1.0, kx=1.0,
     )
 except ValueError as error:
     assert str(error) == "B0 must be non-zero: wcs and rhocs degenerate at B0=0"
@@ -170,13 +175,13 @@ def test_full_tensor_diagnostic_valid_call_loads_special_backend():
     result = _run_import_probe(
         """
 import sys
-from scirel.kinetic import evaluate_kinetic_dielectric_tensor
+from scirel.kinetic import evaluate_dielectric_diagnostics
 
 assert "scipy" not in sys.modules
-output = evaluate_kinetic_dielectric_tensor(
-    1.0, [-1.0], [1.0], [1.0], [1.0], 1.0, 1.0, 1.0, lmx=0,
+output = evaluate_dielectric_diagnostics(
+    B0=1.0, qs=[-1.0], ms=[1.0], ns0=[1.0], Ts0=[1.0], omega=2.0 * 3.141592653589793 * float(1.0), kz=1.0, kx=1.0, harmonics=0,
 )
-assert output["K"].shape == (3, 3)
+assert output["K_raw"].shape == (3, 3)
 assert "scipy.special" in sys.modules
 """
     )
@@ -188,8 +193,9 @@ def test_complex_root_preserves_source_sign_and_exit_flag():
     assert out["roots"][0] == pytest.approx(
         -0.1724798740276431 - 0.12372615593987332j, rel=1e-9, abs=1e-9
     )
-    assert out["exit_flags"][0] == 0
-    assert out["converged"][0] == False
+    assert out["status"][0] == 0
+    assert out["success"][0] == False
+    assert isinstance(out["message"][0], str) and out["message"][0]
 
 
 @pytest.mark.parametrize(

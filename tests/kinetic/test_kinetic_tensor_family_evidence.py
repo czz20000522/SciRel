@@ -11,9 +11,8 @@ import pytest
 from scipy.special import ive
 
 from scirel.kinetic import (
-    evaluate_fluid_kinetic_dispersion_sum,
-    evaluate_kinetic_dielectric_tensor,
-    evaluate_kinetic_dispersion_sum,
+    evaluate_dielectric_response,
+    evaluate_dielectric_diagnostics,
     evaluate_ronnmark_r,
 )
 
@@ -58,13 +57,26 @@ def test_three_harmonic_paths_have_the_same_tensor_at_the_same_cutoff(
     b, frequency, parallel, pair, order
 ):
     arguments = _case(b, frequency, parallel, pair)
-    reference = evaluate_kinetic_dispersion_sum(**arguments, lmx=order)
-    for method in (evaluate_fluid_kinetic_dispersion_sum, evaluate_kinetic_dielectric_tensor):
-        actual = method(**arguments, lmx=order)
-        assert actual["lmx"] == order, "every harmonic path must actually use the supplied cutoff"
+    inputs = {key: value for key, value in arguments.items() if key != "f"}
+    inputs["omega"] = 2.0 * np.pi * float(arguments["f"])
+    reference = evaluate_dielectric_response(**inputs, method="harmonic", harmonics=order)
+    for method in ("harmonic_weideman", "diagnostic"):
+        actual = (
+            evaluate_dielectric_diagnostics(**inputs, harmonics=order)
+            if method == "diagnostic"
+            else evaluate_dielectric_response(**inputs, method=method, harmonics=order)
+        )
+        assert actual["diagnostics"]["harmonics"] == order, (
+            "every harmonic path must actually use the supplied cutoff"
+        )
         for key in ("K", "D"):
-            assert _scaled_error(actual[key], reference[key]) < 2e-12, (
-                f"{method.__name__}: {key} disagrees on the common real-input domain; "
+            assert (
+                _scaled_error(
+                    actual[f"{key}_raw"] if method == "diagnostic" else actual[key], reference[key]
+                )
+                < 2e-12
+            ), (
+                f"{method}: {key} disagrees on the common real-input domain; "
                 "compare conventions and algorithms before declaring a new model"
             )
 
@@ -72,16 +84,24 @@ def test_three_harmonic_paths_have_the_same_tensor_at_the_same_cutoff(
 @pytest.mark.parametrize(
     "method",
     [
-        evaluate_kinetic_dispersion_sum,
-        evaluate_fluid_kinetic_dispersion_sum,
-        evaluate_kinetic_dielectric_tensor,
+        "harmonic",
+        "harmonic_weideman",
+        "diagnostic",
     ],
 )
 def test_harmonic_cutoff_is_a_convergence_control_for_all_three_paths(method):
     arguments = _case(8.0, 1.4, 0.4)
-    reference = method(**arguments, lmx=80)["K"]
+    inputs = {key: value for key, value in arguments.items() if key != "f"}
+    inputs["omega"] = 2.0 * np.pi * float(arguments["f"])
+    call = (
+        evaluate_dielectric_diagnostics if method == "diagnostic" else evaluate_dielectric_response
+    )
+    options = {} if method == "diagnostic" else {"method": method}
+    key = "K_raw" if method == "diagnostic" else "K"
+    reference = call(**inputs, harmonics=80, **options)[key]
     errors = [
-        _scaled_error(method(**arguments, lmx=order)["K"], reference) for order in (5, 15, 30)
+        _scaled_error(call(**inputs, harmonics=order, **options)[key], reference)
+        for order in (5, 15, 30)
     ]
     assert errors[0] > 1e-2, "this case must exercise a visibly insufficient harmonic cutoff"
     assert errors[2] < errors[1] < errors[0], "increasing the cutoff must converge for this case"
@@ -111,7 +131,7 @@ def test_ronnmark_r_matches_its_independent_harmonic_representation(b, x):
     # The R routine stops its series at a relative 1e-8 term criterion.
     # This bound concerns these R samples, not the full J=8 tensor's accuracy.
     np.testing.assert_allclose(
-        [actual["R"], actual["dR_dlambda"]],
+        [actual["R"], actual["H"]],
         reference,
         rtol=1e-7,
         atol=1e-9,

@@ -13,7 +13,7 @@ import mpmath as mp
 import numpy as np
 import pytest
 
-from scirel.kinetic import evaluate_kinetic_dispersion_ronnmark
+from scirel.kinetic import evaluate_dielectric_response
 
 
 FIXTURES = Path(__file__).resolve().parents[1] / "fixtures" / "kinetic_tensor"
@@ -61,7 +61,7 @@ def _kwargs(case):
 
 @pytest.mark.parametrize("case_id", CASES)
 def test_product_matches_independent_B_16(case_id, record_property):
-    actual = evaluate_kinetic_dispersion_ronnmark(**_kwargs(CASES[case_id]))
+    actual = evaluate_dielectric_response(method="ronnmark", **_kwargs(CASES[case_id]))
     expected = B[case_id]
     for key in ("K", "D", "determinant"):
         reference = _complex(expected["detD"]) if key == "determinant" else _matrix(expected, key)
@@ -95,15 +95,15 @@ def _multiply(a, b):
 
 def test_current_binary64_table_retains_its_actual_moments():
     model = _load("poles.json")
-    actual = evaluate_kinetic_dispersion_ronnmark(**_kwargs(CASES["ordinary"]))
+    actual = evaluate_dielectric_response(method="ronnmark", **_kwargs(CASES["ordinary"]))
     beta, poles = [], []
     for j, row in enumerate(model["full8_binary64_identities"]):
         for component, identity in zip(
             (
-                actual["bzj"][j].real,
-                actual["bzj"][j].imag,
-                actual["czj"][j].real,
-                actual["czj"][j].imag,
+                actual["diagnostics"]["bzj"][j].real,
+                actual["diagnostics"]["bzj"][j].imag,
+                actual["diagnostics"]["czj"][j].real,
+                actual["diagnostics"]["czj"][j].imag,
             ),
             row,
             strict=True,

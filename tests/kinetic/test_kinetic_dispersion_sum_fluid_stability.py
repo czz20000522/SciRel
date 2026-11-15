@@ -17,7 +17,7 @@ import mpmath as mp
 import numpy as np
 import pytest
 
-from scirel.kinetic import evaluate_fluid_kinetic_dispersion_sum
+from scirel.kinetic import evaluate_dielectric_response
 
 
 Q = -1.60217662e-19
@@ -322,7 +322,12 @@ _TENSOR_CASES = (
 @pytest.mark.parametrize("arguments", _TENSOR_CASES)
 def test_fluid_tensor_matches_independent_original_finite_sum(arguments):
     reference = _reference_tensors(arguments)
-    result = evaluate_fluid_kinetic_dispersion_sum(**arguments)
+    result = evaluate_dielectric_response(
+        method="harmonic_weideman",
+        **{key: value for key, value in arguments.items() if key not in ("f", "lmx")},
+        omega=2.0 * np.pi * float(arguments["f"]),
+        harmonics=arguments.get("lmx", 5),
+    )
     for key, expected in zip(("K", "D"), reference, strict=True):
         # Promote each observed binary64 component exactly; never cast the oracle down.
         with mp.workdps(180):
@@ -337,7 +342,12 @@ def test_fluid_tensor_matches_independent_original_finite_sum(arguments):
 def test_fluid_small_z_issue232_matches_original_finite_sum(key):
     arguments = _small_z_issue232_case()
     reference = dict(zip(("K", "D"), _reference_tensors(arguments), strict=True))[key]
-    result = evaluate_fluid_kinetic_dispersion_sum(**arguments)
+    result = evaluate_dielectric_response(
+        method="harmonic_weideman",
+        **{key: value for key, value in arguments.items() if key not in ("f", "lmx")},
+        omega=2.0 * np.pi * float(arguments["f"]),
+        harmonics=arguments.get("lmx", 5),
+    )
     with mp.workdps(180):
         observed = tuple(
             tuple(mp.mpc(float(value.real), float(value.imag)) for value in row)
@@ -353,7 +363,12 @@ def test_fluid_small_z_large_kz_xy_matches_original_sum(frequency_sign, kz_sign)
     arguments["f"] *= frequency_sign
     arguments["kz"] = kz_sign * 1681258066.787961
     reference = _reference_tensors(arguments)
-    result = evaluate_fluid_kinetic_dispersion_sum(**arguments)
+    result = evaluate_dielectric_response(
+        method="harmonic_weideman",
+        **{key: value for key, value in arguments.items() if key not in ("f", "lmx")},
+        omega=2.0 * np.pi * float(arguments["f"]),
+        harmonics=arguments.get("lmx", 5),
+    )
     for key, expected in zip(("K", "D"), reference, strict=True):
         with mp.workdps(180):
             observed = tuple(
@@ -380,8 +395,14 @@ def test_reference_140_180_digits_agree_before_binary64_rounding(arguments):
 
 
 def test_unrepresentable_positive_tail_fails_without_returning_a_partial_tensor():
+    arguments = _case(order=400)
     with pytest.raises(FloatingPointError, match="positive harmonic tail.*reliable precision"):
-        evaluate_fluid_kinetic_dispersion_sum(**_case(order=400))
+        evaluate_dielectric_response(
+            method="harmonic_weideman",
+            **{key: value for key, value in arguments.items() if key not in ("f", "lmx")},
+            omega=2.0 * np.pi * float(arguments["f"]),
+            harmonics=arguments["lmx"],
+        )
 
 
 @pytest.mark.parametrize("kz", [0.0, -0.0])
@@ -401,8 +422,13 @@ def test_fluid_zero_kz_is_rejected_before_numerical_work(kz, monkeypatch):
         kx=KX_B1,
     )
     with pytest.raises(ValueError, match="kz.*nonzero.*Ronnmark") as error:
-        evaluate_fluid_kinetic_dispersion_sum(**arguments)
-    assert "scirel.kinetic.kinetic-dispersion-sum-fluid" in str(error.value)
+        evaluate_dielectric_response(
+            method="harmonic_weideman",
+            **{key: value for key, value in arguments.items() if key not in ("f", "lmx")},
+            omega=2.0 * np.pi * float(arguments["f"]),
+            harmonics=arguments.get("lmx", 5),
+        )
+    assert "scirel.kinetic.dielectric-response" in str(error.value)
     assert "0" in str(error.value)
 
 

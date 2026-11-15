@@ -14,8 +14,8 @@ import mpmath as mp
 import numpy as np
 import pytest
 
-from scirel.kinetic import evaluate_kinetic_dispersion_sum, kinetic_dispersion_sum_n
-from scirel.kinetic.kinetic_dispersion_sum_n import (
+from scirel.kinetic import evaluate_dielectric_response, _dielectric_harmonic
+from scirel.kinetic._dielectric_harmonic import (
     _a_asymptotic,
     _a_function,
     _a_series,
@@ -197,7 +197,12 @@ def _assert_original_tensor(actual, reference, label):
 def test_small_z_issue232_matches_original_finite_sum(key, index):
     arguments = _small_z_case()
     reference = _original_tensors_unrounded(arguments)[index]
-    result = evaluate_kinetic_dispersion_sum(**arguments)
+    result = evaluate_dielectric_response(
+        method="harmonic",
+        **{key: value for key, value in arguments.items() if key not in ("f", "lmx")},
+        omega=2.0 * np.pi * float(arguments["f"]),
+        harmonics=arguments.get("lmx", 5),
+    )
     _assert_original_tensor(result[key], reference, key)
 
 
@@ -218,7 +223,12 @@ def test_small_z_large_kz_xy_matches_original_sum(frequency_sign, kz_sign):
     arguments["f"] *= frequency_sign
     arguments["kz"] = kz_sign * 1681258066.787961
     reference = _original_tensors_unrounded(arguments)
-    result = evaluate_kinetic_dispersion_sum(**arguments)
+    result = evaluate_dielectric_response(
+        method="harmonic",
+        **{key: value for key, value in arguments.items() if key not in ("f", "lmx")},
+        omega=2.0 * np.pi * float(arguments["f"]),
+        harmonics=arguments.get("lmx", 5),
+    )
     for key, expected in zip(("K", "D"), reference, strict=True):
         _assert_original_tensor(result[key], expected, key)
 
@@ -291,7 +301,12 @@ _SMALL_Z_REPRESENTATION_CASES = (
 @pytest.mark.parametrize("arguments", _SMALL_Z_REPRESENTATION_CASES)
 def test_small_z_representation_matches_original_full_tensors(arguments):
     reference = _original_tensors_unrounded(arguments)
-    result = evaluate_kinetic_dispersion_sum(**arguments)
+    result = evaluate_dielectric_response(
+        method="harmonic",
+        **{key: value for key, value in arguments.items() if key not in ("f", "lmx")},
+        omega=2.0 * np.pi * float(arguments["f"]),
+        harmonics=arguments.get("lmx", 5),
+    )
     for key, expected in zip(("K", "D"), reference, strict=True):
         _assert_original_tensor(result[key], expected, key)
 
@@ -312,16 +327,17 @@ def test_small_z_representation_matches_original_full_tensors(arguments):
     ],
 )
 def test_tensor_matches_the_independent_high_precision_reference(b_target, lmx, kz):
-    result = evaluate_kinetic_dispersion_sum(
+    result = evaluate_dielectric_response(
+        method="harmonic",
         B0=B0,
         qs=[Q],
         ms=[M],
         ns0=[DENSITY],
         Ts0=[TEMPERATURE],
-        f=0.7 * abs(Q / M) / (2 * np.pi),
+        omega=2.0 * np.pi * float(0.7 * abs(Q / M) / (2 * np.pi)),
         kz=kz,
         kx=KX_B1 * np.sqrt(b_target),
-        lmx=lmx,
+        harmonics=lmx,
     )
     reference = _reference_tensor(b_target=b_target, lmx=lmx, kz=kz)
     assert _tensor_error(result["K"], reference) <= TOLERANCE
@@ -329,16 +345,17 @@ def test_tensor_matches_the_independent_high_precision_reference(b_target, lmx, 
 
 def test_truncation_tail_survives_and_is_not_smoothed_away():
     """b=8, N=30, kz=1e-7 is genuinely ~7.7e4 from this finite N; only rounding was broken."""
-    result = evaluate_kinetic_dispersion_sum(
+    result = evaluate_dielectric_response(
+        method="harmonic",
         B0=B0,
         qs=[Q],
         ms=[M],
         ns0=[DENSITY],
         Ts0=[TEMPERATURE],
-        f=0.7 * abs(Q / M) / (2 * np.pi),
+        omega=2.0 * np.pi * float(0.7 * abs(Q / M) / (2 * np.pi)),
         kz=1e-7,
         kx=KX_B1 * np.sqrt(8),
-        lmx=30,
+        harmonics=30,
     )
     reference = _reference_tensor(b_target=8, lmx=30, kz=1e-7)
     assert _tensor_error(result["K"], reference) <= TOLERANCE
@@ -358,8 +375,20 @@ def test_kz_sign_only_flips_the_cross_components():
         kx=KX_B1,
         lmx=30,
     )
-    positive = evaluate_kinetic_dispersion_sum(kz=1e-7, **common)["K"]
-    negative = evaluate_kinetic_dispersion_sum(kz=-1e-7, **common)["K"]
+    positive = evaluate_dielectric_response(
+        method="harmonic",
+        kz=1e-7,
+        **{key: value for key, value in common.items() if key not in ("f", "lmx")},
+        omega=2.0 * np.pi * float(common["f"]),
+        harmonics=common.get("lmx", 5),
+    )["K"]
+    negative = evaluate_dielectric_response(
+        method="harmonic",
+        kz=-1e-7,
+        **{key: value for key, value in common.items() if key not in ("f", "lmx")},
+        omega=2.0 * np.pi * float(common["f"]),
+        harmonics=common.get("lmx", 5),
+    )["K"]
     for row, column in ((0, 2), (1, 2), (2, 0), (2, 1)):
         assert negative[row, column] == pytest.approx(-positive[row, column], abs=1e-18)
     for row, column in ((0, 0), (0, 1), (1, 0), (1, 1), (2, 2)):
@@ -368,13 +397,14 @@ def test_kz_sign_only_flips_the_cross_components():
 
 def test_zero_kz_is_still_rejected():
     with pytest.raises(ValueError, match="kz"):
-        evaluate_kinetic_dispersion_sum(
+        evaluate_dielectric_response(
+            method="harmonic",
             B0=B0,
             qs=[Q],
             ms=[M],
             ns0=[DENSITY],
             Ts0=[TEMPERATURE],
-            f=0.7 * abs(Q / M) / (2 * np.pi),
+            omega=2.0 * np.pi * float(0.7 * abs(Q / M) / (2 * np.pi)),
             kz=0.0,
             kx=KX_B1,
         )
@@ -390,7 +420,7 @@ def _rel(value, reference):
     return abs(value - reference) / abs(reference)
 
 
-THRESHOLD = kinetic_dispersion_sum_n._A_SERIES_THRESHOLD
+THRESHOLD = _dielectric_harmonic._A_SERIES_THRESHOLD
 
 
 @pytest.mark.parametrize(
@@ -453,16 +483,17 @@ def test_large_tail_uses_a_well_conditioned_complement():
     tail = _gamma_positive_tail(b, lmx + 1)
     assert _rel(tail, _large_argument_tail(lmx, b)) <= 1e-12
     assert tail > 0.99  # the old budgeted partial sum returned 0.1585107 here
-    result = evaluate_kinetic_dispersion_sum(
+    result = evaluate_dielectric_response(
+        method="harmonic",
         B0=B0,
         qs=[Q],
         ms=[M],
         ns0=[DENSITY],
         Ts0=[TEMPERATURE],
-        f=0.7 * abs(Q / M) / (2 * np.pi),
+        omega=2.0 * np.pi * float(0.7 * abs(Q / M) / (2 * np.pi)),
         kz=1e-7,
         kx=KX_B1 * np.sqrt(b),
-        lmx=lmx,
+        harmonics=lmx,
     )
     assert np.all(np.isfinite(result["K"]))
 
@@ -574,16 +605,17 @@ def test_large_b_tiny_tail_remains_accurate_through_the_public_tensor(kz):
     It agrees with the independent coefficient-contour tail calculation; no output scale is read.
     The previous complement fallback gave Kzz about 1.12e19 instead of 1.67e10.
     """
-    result = evaluate_kinetic_dispersion_sum(
+    result = evaluate_dielectric_response(
+        method="harmonic",
         B0=B0,
         qs=[Q],
         ms=[M],
         ns0=[DENSITY],
         Ts0=[TEMPERATURE],
-        f=0.7 * abs(Q / M) / (2 * np.pi),
+        omega=2.0 * np.pi * float(0.7 * abs(Q / M) / (2 * np.pi)),
         kz=kz,
         kx=KX_B1 * 2000,
-        lmx=20000,
+        harmonics=20000,
     )
     reference = 16711893312.470150912933564567938666119593682469824351
     assert _rel(result["K"][2, 2], reference) <= TOLERANCE

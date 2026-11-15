@@ -39,12 +39,12 @@ CASES = (
         {"evaluate_kinetic_dispersion_relation"},
     ),
     (
-        "scirel.kinetic.kinetic-dispersion-ronnmark.json",
-        {"evaluate_kinetic_dispersion_ronnmark"},
+        "scirel.kinetic.dielectric-response.json",
+        {"evaluate_dielectric_response"},
     ),
     (
-        "scirel.kinetic.kinetic-dispersion-sum-fluid.json",
-        {"evaluate_fluid_kinetic_dispersion_sum"},
+        "scirel.kinetic.dielectric-diagnostics.json",
+        {"evaluate_dielectric_diagnostics"},
     ),
     ("scirel.kinetic.kinetic-wavevector-scan.json", {"scan_kinetic_wavevectors"}),
     ("scirel.neutrals.outer-convergence.json", {"evaluate_outer_convergence"}),

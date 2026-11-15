@@ -3,7 +3,7 @@
 import numpy as np
 import pytest
 
-from scirel.kinetic import evaluate_kinetic_dispersion_sum
+from scirel.kinetic import evaluate_dielectric_response
 
 
 KB = 1.38064852e-23
@@ -48,15 +48,21 @@ CASE_PAIR = dict(
 )
 def test_saved_fluidbw_source_determinants(case, omega, kx, expected):
     """Two source-oracle points cover one and two species at lmx=5."""
-    out = evaluate_kinetic_dispersion_sum(**case, f=omega / (2 * np.pi), kx=kx)
+    out = evaluate_dielectric_response(
+        method="harmonic", **case, omega=2.0 * np.pi * float(omega / (2 * np.pi)), kx=kx
+    )
     assert abs(out["determinant"] - expected) <= 1e-13 * abs(expected)
-    assert out["lmx"] == 5
+    assert out["diagnostics"]["harmonics"] == 5
     assert out["omega"] == pytest.approx(omega, rel=1e-15)
 
 
 def test_saved_fluidbw_tensor_and_maxwell_terms():
-    out = evaluate_kinetic_dispersion_sum(
-        **CASE_SINGLE, f=175881684853.009 / (2 * np.pi), kx=13261.94247879565, lmx=15
+    out = evaluate_dielectric_response(
+        method="harmonic",
+        **CASE_SINGLE,
+        omega=2.0 * np.pi * float(175881684853.009 / (2 * np.pi)),
+        kx=13261.94247879565,
+        harmonics=15,
     )
     expected = np.array(
         [
@@ -95,14 +101,14 @@ def test_saved_fluidbw_tensor_and_maxwell_terms():
     [
         {"B0": 0.0},
         {"B0": np.inf},
-        {"f": 0.0},
-        {"f": np.nan},
+        {"omega": 2.0 * np.pi * float(0.0)},
+        {"omega": 2.0 * np.pi * float(np.nan)},
         {"kz": 0.0},
         {"kx": 0.0},
         {"kx": np.inf},
-        {"lmx": -1},
-        {"lmx": 1.5},
-        {"lmx": True},
+        {"harmonics": -1},
+        {"harmonics": 1.5},
+        {"harmonics": True},
         {"qs": [0.0]},
         {"ms": [-1.0]},
         {"ns0": [0.0]},
@@ -111,13 +117,22 @@ def test_saved_fluidbw_tensor_and_maxwell_terms():
     ],
 )
 def test_invalid_inputs_fail_closed(change):
-    args = dict(CASE_SINGLE, f=175881684853.009 / (2 * np.pi), kx=13261.94247879565)
+    args = dict(
+        CASE_SINGLE, omega=2.0 * np.pi * float(175881684853.009 / (2 * np.pi)), kx=13261.94247879565
+    )
     args.update(change)
-    with pytest.raises(ValueError):
-        evaluate_kinetic_dispersion_sum(**args)
+    cutoff = change.get("harmonics")
+    expected = TypeError if isinstance(cutoff, (bool, float)) else ValueError
+    with pytest.raises(expected):
+        evaluate_dielectric_response(method="harmonic", **args)
 
 
 def test_underflowed_plasma_frequency_is_rejected():
-    args = dict(CASE_SINGLE, ns0=[1e-320], f=175881684853.009 / (2 * np.pi), kx=13261.94247879565)
+    args = dict(
+        CASE_SINGLE,
+        ns0=[1e-320],
+        omega=2.0 * np.pi * float(175881684853.009 / (2 * np.pi)),
+        kx=13261.94247879565,
+    )
     with pytest.raises(FloatingPointError, match="derived kinetic scales"):
-        evaluate_kinetic_dispersion_sum(**args)
+        evaluate_dielectric_response(method="harmonic", **args)

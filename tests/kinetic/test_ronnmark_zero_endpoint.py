@@ -13,8 +13,10 @@ import numpy as np
 import pytest
 
 from scirel.kinetic import (
-    evaluate_kinetic_dispersion_ronnmark,
+    evaluate_dielectric_response,
     evaluate_ronnmark_r,
+    evaluate_kinetic_dispersion_relation,
+    kinetic_dispersion_relation as relation,
     solve_kinetic_wavevector_roots,
 )
 
@@ -90,7 +92,7 @@ def test_zero_b_exact_limit_keeps_removable_and_extreme_components(x, b):
     result = evaluate_ronnmark_r(x, b)
     _assert_components(result["RC"], _zero_limit(x))
     assert result["R"] == result["RC"][0, 0]
-    assert result["dR_dlambda"] == result["RC"][0, 1]
+    assert result["H"] == result["RC"][0, 1]
     assert result["branch"] == "RTAY(AL<4)"
 
 
@@ -110,10 +112,10 @@ COLD = dict(B0=1.0, qs=[1.0], ms=[1.0], ns0=[1.0], Ts0=[1.0], kz=0.0, kx=0.0)
 
 
 def test_full_j8_nonresonant_cold_control_must_be_computed():
-    result = evaluate_kinetic_dispersion_ronnmark(**COLD, omega=2.0)
+    result = evaluate_dielectric_response(method="ronnmark", **COLD, omega=2.0)
     # This is model B with its actual rounded table, not an ideal-M0 cold
     # Maxwellian oracle. Independent B summation is in the existing fixture.
-    for name in ("K", "D", "determinant", "vts", "wcs", "wps2", "as", "b", "nx", "nz"):
+    for name in ("K", "D", "determinant", "vts", "wcs", "wps2", "a", "b", "nx", "nz"):
         assert np.isfinite(result[name]).all(), (
             f"supported omega=2 cold control must return finite {name}"
         )
@@ -124,7 +126,7 @@ def test_full_j8_nonresonant_cold_control_must_be_computed():
 
 def test_full_j8_exact_cold_pole_raises_numerical_failure():
     with pytest.raises(FloatingPointError):
-        evaluate_kinetic_dispersion_ronnmark(**COLD, omega=1.0)
+        evaluate_dielectric_response(method="ronnmark", **COLD, omega=1.0)
 
 
 @pytest.mark.parametrize(
@@ -140,12 +142,27 @@ def test_full_j8_exact_cold_pole_raises_numerical_failure():
         {"qs": [1e-200]},
     ],
 )
-def test_full_j8_unrepresentable_derived_scales_are_numerical_failures(change):
-    args = COLD | {"omega": 2.0} | change
+def test_full_j8_unrepresentable_derived_scales_are_numerical_failures(change, monkeypatch):
     if "f" in change:
-        del args["omega"]
-    with pytest.raises(FloatingPointError):
-        evaluate_kinetic_dispersion_ronnmark(**args)
+        # Preserve the original finite-Hz overflow on the real relation boundary.
+        monkeypatch.setattr(relation, "omega_to_frequency", lambda **kwargs: {"f": change["f"]})
+        with pytest.raises(FloatingPointError):
+            evaluate_kinetic_dispersion_relation(
+                B0=1.0,
+                qs=[1.0],
+                ms=[1.0],
+                ns_unit=[1.0],
+                Ts_unit=[1.0],
+                n00=1.0,
+                T00=1.0,
+                omega_frac=2.0,
+                kz=1.0,
+                kx_frac=1.0,
+            )
+    else:
+        args = COLD | {"omega": 2.0} | change
+        with pytest.raises(FloatingPointError):
+            evaluate_dielectric_response(method="ronnmark", **args)
 
 
 def test_root_propagates_initial_numerical_failure_instead_of_zero_division():
@@ -157,4 +174,4 @@ def test_root_propagates_initial_numerical_failure_instead_of_zero_division():
 @pytest.mark.parametrize("change", [{"B0": 0.0}, {"qs": [0.0]}, {"omega": 0.0}, {"omega": np.inf}])
 def test_invalid_tensor_inputs_remain_caller_errors(change):
     with pytest.raises(ValueError):
-        evaluate_kinetic_dispersion_ronnmark(**(COLD | {"omega": 2.0} | change))
+        evaluate_dielectric_response(method="ronnmark", **(COLD | {"omega": 2.0} | change))
