@@ -329,7 +329,7 @@ def test_packaged_interpolation_ownership_and_calls(real_delivery):
     cursor = None
     for _ in range(case.identity["asset_count"]):
         arguments = [
-            "browse",
+            "search",
             *_pin_flags(case),
             "--taxonomy",
             "numerics",
