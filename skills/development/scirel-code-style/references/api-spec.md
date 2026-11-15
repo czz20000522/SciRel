@@ -38,7 +38,7 @@ Root-level private modules are not domains and carry no domain API. The current 
 | Module | Used by | Role |
 | --- | --- | --- |
 | `_result` | all domains | `Result` mapping type |
-| `_numerics` | four domains | generic numeric kernels |
+| `_numerics` | `closures`, `mirror`, `equilibrium`, `field`, `diagnostics`, `inference` | generic numeric kernels |
 | `_validation` | three domains | input validation |
 | `_anisotropic_numerics` | `closures`, `equilibrium` | shared anisotropic discretisation kernels |
 | `_composition` | `equilibrium`, `mirror` — inside function bodies only | private composition helper |
