@@ -49,6 +49,7 @@ def evaluate_tabulated_pressure(
     p_parallel_table,
     p_perpendicular_table=None,
     b_grid=None,
+    *,
     bounds_error=True,
     fill_value=None,
 ):
@@ -89,12 +90,12 @@ def evaluate_tabulated_pressure(
         Default: None. Values must be finite and strictly increasing.
     bounds_error : bool, optional
         Whether out-of-domain queries raise. [dimensionless] Shape: scalar.
-        Default: True. Must be boolean.
+        Default: True. Must be boolean. Must be passed by keyword.
     fill_value : real scalar or None, optional
         Constant out-of-domain pressure when ``bounds_error`` is false.
         [Pa when not None] Shape: scalar or None. Default: None, which requests
         linear extrapolation in that mode. A supplied value must be finite and
-        nonnegative.
+        nonnegative. Must be passed by keyword.
 
     Returns
     -------
@@ -115,6 +116,8 @@ def evaluate_tabulated_pressure(
 
     Raises
     ------
+    TypeError
+        If ``bounds_error`` or ``fill_value`` is passed positionally.
     ValueError
         If an axis has invalid rank, length, ordering or finiteness; a table
         has invalid shape, nonfinite values or negative values; ``bounds_error``
@@ -128,6 +131,9 @@ def evaluate_tabulated_pressure(
 
     Notes
     -----
+    The first six physical arguments may be positional. The behavior options
+    ``bounds_error`` and ``fill_value`` must be passed by keyword.
+
     With ``b_grid=None`` the pressure is linear in ``psi`` and the result is
     isotropic. With ``b_grid`` present the pressure is bilinear on
     ``(B, psi)``. ``bounds_error=True`` rejects any query outside the selected
@@ -144,7 +150,7 @@ def evaluate_tabulated_pressure(
     >>> psi_axis = np.array([0.0, 1.0])
     >>> parallel = np.array([[2.0, 4.0], [4.0, 6.0]])
     >>> perpendicular = np.array([[3.0, 5.0], [5.0, 7.0]])
-    >>> a = evaluate_tabulated_pressure(1.5, 0.25, psi_axis, parallel, perpendicular, b_axis)
+    >>> a = evaluate_tabulated_pressure(1.5, 0.25, psi_axis, parallel, perpendicular, b_axis, bounds_error=True, fill_value=None)
     >>> np.testing.assert_allclose(a['p_parallel'], 3.5)
     >>> np.testing.assert_allclose(a['p_perpendicular'], 4.5)
     >>> assert a['is_isotropic'] is False

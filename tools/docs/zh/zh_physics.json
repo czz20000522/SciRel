@@ -7190,8 +7190,8 @@
   },
   {
    "asset_id": "scirel.closures.tabulated-pressure",
-   "source_sha256": "12ef3abfdaf968b2d219e79769740519ec78cf6a31ac33a15b9dbb2c6dca79aa",
-   "summary": "在广播后的磁场、磁通查询点插值平行与垂直压力表；一维磁通表返回各向同性压力，二维 (B,psi) 表分别插值两分量。 顶层返回值是 scirel._result.Result 映射；非冲突字段支持属性读取。",
+   "source_sha256": "960a597801b16cdd203267b8e34b3628b0196e1089bae384ca25be67c09ede61",
+   "summary": "在广播后的磁场、磁通查询点插值平行与垂直压力表；一维磁通表返回各向同性压力，二维 (B,psi) 表分别插值两分量。 顶层返回值是 scirel._result.Result 映射；非冲突字段支持属性读取。前六个参数可按位置传入；bounds_error 和 fill_value 必须写参数名。",
    "definition": "B 与 psi 联合广播。无 b_grid 时用一维线性插值；若给出垂直表，转换为 float64 后必须与平行表逐项完全相等，否则拒绝而不丢弃差异。有 b_grid 时分别双线性插值两个分量。is_isotropic 表示完整分量表是否严格相等；table_dimension 独立记录 1 或 2 维。结果须有限非负；分量表相等不构成热力学证明。 完整结果作为同一个 scirel._result.Result 映射返回；嵌套 dict 字段保持普通 dict。",
    "model": "给定各向同性/旋磁压力表的一维线性或二维双线性插值，不推导压力定律或求力平衡。",
    "assumptions": [
@@ -7239,13 +7239,13 @@
     {
      "name": "bounds_error",
      "description": "越出插值轴范围时是否抛异常。",
-     "constraints": "必须为布尔；默认拒绝越界。",
+     "constraints": "必须写参数名。必须为布尔；默认拒绝越界。",
      "dtype": "Python 或 NumPy 布尔值"
     },
     {
      "name": "fill_value",
      "description": "bounds_error=False 时的域外压力常数；None 请求外推。",
-     "constraints": "给定时须有限非负；bounds_error=True 时仍拒绝越界。",
+     "constraints": "必须写参数名。给定时须有限非负；bounds_error=True 时仍拒绝越界。",
      "dtype": "可转换为 float 的实标量或 None"
     }
    ],
@@ -7290,7 +7290,7 @@
     ]
    },
    "failure_semantics": {
-    "invalid_input": "轴维数/长度/顺序/有限性非法、表错形/非有限/负值、非布尔控制、非法填充值、非有限或不可广播查询、非有限或负插值结果时抛 ValueError；转换及 SciPy 错误可继续抛出。",
+    "invalid_input": "轴维数/长度/顺序/有限性非法、表错形/非有限/负值、非布尔控制、非法填充值、非有限或不可广播查询、非有限或负插值结果时抛 ValueError；按位置传入 bounds_error 或 fill_value 时抛 TypeError；转换及 SciPy 错误可继续抛出。",
     "runtime_failure": "默认越界抛异常；外推后非有限或负值拒绝，无物理备用或截断修复；SciPy/NumPy 错误继续抛出。",
     "nonconvergence": "不适用；无根或平衡迭代。",
     "partial_results": "失败不返回部分结果；成功时返回两压力分量、严格分量相等标志和表格维数。"
@@ -7303,9 +7303,10 @@
     "scope": [
      "所选二维双线性值与输入表比较。",
      "一维各向同性极限、已审二维仿射例及部分非法填充/外推。",
-     "拒绝近似相等却不同的一维分量表；二维完全相等表的标志与网格维数分离。"
+     "拒绝近似相等却不同的一维分量表；二维完全相等表的标志与网格维数分离。",
+     "直接回归拒绝按位置传入行为选项，并保留两种表维数下具名选项的 Result 字段、广播数值、越界异常、填充值和外推行为。"
     ],
-    "evidence_ceiling": "限于在广播磁场与磁通查询点上插值给定的平行/垂直压力表。证据：`test_tabulated_pressure_closure.py` 含 4 个测试函数，其中 2 个引用 `evaluate_tabulated_pressure`，仅由本资产绑定; `test_legacy_six_absorption.py` 含 18 个测试函数，其中 2 个引用 `evaluate_tabulated_pressure`，由 8 个资产共享；本审计已执行有界示例。真值来源：绑定文件中的独立解析夹具与选定安装轮/源回归。不建立：从测量反推压力表、寻找磁面，或证明外推压力律物理有效。",
+    "evidence_ceiling": "限于具名直接插值和行为选项回归，以及共享 test_legacy_six_absorption.py 中的近等表拒绝和严格相等断言；该共享文件中的其他断言不算本资产证据。真值来源：绑定文件中的独立解析夹具与选定源回归。不建立：从测量反推压力表、寻找磁面，或证明外推压力律物理有效。",
     "known_limitations": [
      "不检查正 B 或坐标对齐，Wb 标签不能推导到 Wb/rad 的转换。",
      "非负表不保证外推非负，非法外推直接抛异常。",
