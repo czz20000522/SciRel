@@ -86,3 +86,31 @@ that underflow to zero fail explicitly. Numerical failures raise
 FloatingPointError and propagate through roots and scans without a partial
 result, fallback model or fabricated successful state. This is still not a
 global J8 physics certificate or an accuracy claim about roots or damping.
+
+## Supplemental paired-harmonic poles and zero x
+
+An additional pre-merge review found that a finite computed cot(pi*n) in
+RINT/RASY could return a large finite pseudo-pole at integer n. At nonzero
+b the residue of R at any nonzero integer x=n is proportional to
+I_n(b)/b; that of H is proportional to I_n'(b)-I_n(b). They cannot both
+vanish. The modified Bessel ODE has analytic coefficients at every b!=0,
+and I_n=I_n'=0 there would, by uniqueness, force its nontrivial solution
+to vanish identically. Thus the complete R/H/RC has a genuine pole, even
+at a complex zero of I_n alone. Detect that exact point before choosing
+an expansion; floating sin(pi*n) is not a physical regularization.
+
+Conversely, at x=0 the paired +/-n terms are proportional to x/(x²-n²).
+The n=0 term has a zero n² coefficient. R and H are odd and analytic
+there, and both x-scaled derivatives vanish, for any finite b (including
+the already established b=0 limit). The integral/asymptotic formulas have
+removable internal divisions at this endpoint; return the analytic zero
+matrix within the same selector branch, rather than rejecting it.
+
+`test_ronnmark_harmonic_poles.py` freezes 24 true-pole and 10 zero-x
+controls before modified product calls. On the prior 384deaa6 candidate
+it reports 32 failed / 2 passed, exit 1: failures include both missing
+refusals and missing explicit pole messages, and eight rejected zero-x
+controls. The prior fullcheck PASS remains a historical result for its
+older coverage, not permission to ignore these additional counterexamples.
+The new zero identity uses the original 8-minimum-subnormal absolute floor;
+no scientific tolerance or nonzero endpoint arithmetic is changed.

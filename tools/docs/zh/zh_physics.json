@@ -2873,9 +2873,9 @@
   },
   {
    "asset_id": "scirel.kinetic.ronnmark-r-function",
-   "source_sha256": "31fe5e84939f349cec8e6489723e03e36608228dcc7d14ae675589d20e5f203b",
+   "source_sha256": "02a3d681720eeb91ebf2e079082da1283d0c3226f128b7b31d85523b10589468",
    "summary": "计算 Taylor、渐近或积分 R 函数分支及 2×2 伴随矩阵。",
-   "definition": "RYLA 按顺序检查三个 Taylor 条件，再检查渐近条件，否则进入 16 点 Gauss-Legendre 积分；RC[0,1]=d(lambda*R)/d lambda。精确 lambda=0 时 R=H=x/(x*x-1)，两个按 x 缩放的伴随导数均为 -x*(x*x+1)/(x*x-1)**2；实虚部用精确分数计算，仅在输出时舍入。",
+   "definition": "RYLA 按顺序检查三个 Taylor 条件，再检查渐近条件，否则进入 16 点 Gauss-Legendre 积分；RC[0,1]=d(lambda*R)/d lambda。精确 lambda=0 时 R=H=x/(x*x-1)，两个按 x 缩放的伴随导数均为 -x*(x*x+1)/(x*x-1)**2；实虚部用精确分数计算，仅在输出时舍入。 非零 lambda 下，每个精确非零整数 x 都有真正的 R/H 极点；精确 x=0 时，成对谐波响应及两个按 x 缩放的导数均解析为零，在原选择分支内直接计算。",
    "model": "磁化 Maxwell 色散的 Ronnmark 有理响应。",
    "assumptions": [
     "输入单位和归一化遵循声明端口，不推断物理参数。"
@@ -2945,9 +2945,10 @@
    "verification": {
     "scope": [
      "原分支选择案例及失败边界；b=0.2、1、4、8 与三个复 x 组成的十二个独立谐波 R/H 样本，使用 N80/160 核对。",
-     "精确零 b 的有理 R/H/RC 端点、弱实虚部、极端幅值、可去端点及真极点/不可表示极点。"
+     "精确零 b 的有理 R/H/RC 端点、弱实虚部、极端幅值、可去端点及真极点/不可表示极点。",
+     "24 个非零 b 的精确整数极点和 10 个解析零 x 控制，区分真正奇异点与展开式中可去的除法。"
     ],
-    "evidence_ceiling": "test_ronnmark_r_matches_its_independent_harmonic_representation 用独立 Bessel 和核对公开 R 及 dR_dlambda 列：R=sum n² Gamma_n/[b(x-n)]，H=sum n² Gamma'_n/(x-n)=d(bR)/db。原 N80/160 绝对差检查保持 1e-14；十二个固定样本的公开 R/H 对照保持 rtol=1e-7、atol=1e-9。这只支持 H 的定义和这些样本，不证明全部选择分支或连续域误差界。tests/fixtures/kinetic_tensor/README.md 中的独立 B 张量参考不调用产品 R，也不认证其全域误差传播。 精确 b=0 测试先精确读入 binary64，再用 800 位独立有理式计算，实虚部各用修复前冻结的 16*eps*abs(reference)+8*min_subnormal 对照。该端点预算不替换原 R/H 或张量预算。见 tests/fixtures/kinetic_tensor/zero-endpoint.md。",
+    "evidence_ceiling": "test_ronnmark_r_matches_its_independent_harmonic_representation 用独立 Bessel 和核对公开 R 及 dR_dlambda 列：R=sum n² Gamma_n/[b(x-n)]，H=sum n² Gamma'_n/(x-n)=d(bR)/db。原 N80/160 绝对差检查保持 1e-14；十二个固定样本的公开 R/H 对照保持 rtol=1e-7、atol=1e-9。这只支持 H 的定义和这些样本，不证明全部选择分支或连续域误差界。tests/fixtures/kinetic_tensor/README.md 中的独立 B 张量参考不调用产品 R，也不认证其全域误差传播。 精确 b=0 测试先精确读入 binary64，再用 800 位独立有理式计算，实虚部各用修复前冻结的 16*eps*abs(reference)+8*min_subnormal 对照。该端点预算不替换原 R/H 或张量预算。见 tests/fixtures/kinetic_tensor/zero-endpoint.md。 成对谐波推导还建立精确零 x 矩阵和非零 b 的整数极点检查；34 个补充直接控制均在修复调用前冻结。这些精确恒等式不提供非零 x 的近似误差界。",
     "known_limitations": [
      "仅接受有限标量；实数与复数的分支比较和算术沿用既有约定。",
      "使用所声明本地 Python 环境在 Linux amd64 上进行完整来源运行资格验证，在本 macOS checkout 中仍为 NOT_RUN。",
@@ -2956,7 +2957,8 @@
     "tests": [
      "tests/kinetic/test_fluid_spectrum_r43_kinetic.py",
      "tests/kinetic/test_kinetic_tensor_family_evidence.py::test_ronnmark_r_matches_its_independent_harmonic_representation",
-     "tests/kinetic/test_ronnmark_zero_endpoint.py"
+     "tests/kinetic/test_ronnmark_zero_endpoint.py",
+     "tests/kinetic/test_ronnmark_harmonic_poles.py"
     ]
    }
   },
