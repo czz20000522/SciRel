@@ -30,9 +30,9 @@ def evaluate_dielectric_diagnostics(*, B0, qs, ms, ns0, Ts0, omega, kz, kx, harm
     kx : real or complex scalar
         Finite perpendicular phase wavenumber [1/m]. Zero retains the original
         partial tensor diagnostic; nonzero values require complete finite output.
-    harmonics : int or None, optional
+    harmonics : int, optional
         Non-negative symmetric cutoff n=-N..N [dimensionless], default 15.
-        None also selects 15; bool is not an integer cutoff.
+        Bool and None are not integer cutoffs.
 
     Returns
     -------
@@ -107,6 +107,11 @@ def evaluate_dielectric_diagnostics(*, B0, qs, ms, ns0, Ts0, omega, kz, kx, harm
     >>> r = evaluate_dielectric_diagnostics(B0=1.0, qs=[-1.60217662e-19], ms=[9.1094e-31], ns0=[6.075e19], Ts0=[11604941.036704937], omega=1e11, kz=1.0, kx=1e4)
     >>> assert r.K_raw.shape == r.D_raw.shape == (3, 3) and r.diagnostics.complete
     """
+    if harmonics is None:
+        raise TypeError(
+            "harmonics must be a non-negative integer; received None; legal values: integers >= 0 "
+            "(default 15); see scirel.kinetic.dielectric-diagnostics"
+        )
     count = _harmonics(harmonics, default=15, asset="scirel.kinetic.dielectric-diagnostics")
     from ._dielectric_diagnostic import _evaluate
 

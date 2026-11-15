@@ -4,6 +4,8 @@ from __future__ import annotations
 
 from .._result import Result
 
+import operator
+
 import numpy as np
 
 __all__ = ["evaluate_kinetic_dispersion_relation"]
@@ -190,6 +192,23 @@ def evaluate_kinetic_dispersion_relation(
             "evaluate_dielectric_response(method='ronnmark'); see scirel.kinetic.kinetic-dispersion-relation"
         )
     # Reject the unsupported wavepoint before loading dependencies or computing scales.
+    if isinstance(lmx, (bool, np.bool_)):
+        raise ValueError(
+            f"lmx must be a non-negative integer; received {lmx!r}; legal values: integers >= 0; "
+            "see scirel.kinetic.kinetic-dispersion-relation"
+        )
+    try:
+        lmx = operator.index(lmx)
+    except TypeError:
+        raise ValueError(
+            f"lmx must be a non-negative integer; received {lmx!r}; legal values: integers >= 0; "
+            "see scirel.kinetic.kinetic-dispersion-relation"
+        ) from None
+    if lmx < 0:
+        raise ValueError(
+            f"lmx must be a non-negative integer; received {lmx}; legal values: integers >= 0; "
+            "see scirel.kinetic.kinetic-dispersion-relation"
+        )
     from .species_equilibrium_scales import derive_species_equilibrium_scales
 
     scales = derive_species_equilibrium_scales(
@@ -202,6 +221,11 @@ def evaluate_kinetic_dispersion_relation(
     omega = probe_frequency(omega_frac=omega_frac, wn=scales["wn"])["omega"]
     kx = probe_wavenumber(kx_frac=kx_frac, kn=scales["kn"])["kx"]
     f = omega_to_frequency(omega=omega)["f"]
+    if f == 0:
+        raise ValueError(
+            f"omega_frac must produce a nonzero frequency; received omega_frac={omega_frac!r}, f=0; "
+            "legal values produce finite nonzero f; see scirel.kinetic.kinetic-dispersion-relation"
+        )
     # Preserve the original omega -> Hz -> omega rounding at this real boundary.
     kernel_omega = 2.0 * np.pi * float(f)
     if not np.isfinite(kernel_omega) or kernel_omega == 0:
