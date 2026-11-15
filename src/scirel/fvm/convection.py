@@ -8,6 +8,23 @@ from .diffusion import TriDiagonal
 __all__ = ["make_convection_terms"]
 
 
+def _face_peclet(face_spacing, velocity, scale):
+    """Evaluate distance * velocity / signed D without overflowing the product."""
+    distance_mantissa, distance_exponent = np.frexp(face_spacing)
+    velocity_mantissa, velocity_exponent = np.frexp(velocity)
+    scale_mantissa, scale_exponent = np.frexp(scale)
+    # Nonzero binary mantissas have magnitude in [0.5, 1), so this
+    # multiply/divide stays in range before restoring the combined exponent.
+    mantissa = distance_mantissa * velocity_mantissa / scale_mantissa
+    exponent = distance_exponent + velocity_exponent - scale_exponent
+    exponent[[0, -1]] -= 1
+    # Only the completed ratio can overflow/underflow here. Its signed infinity
+    # or zero uses the existing upwind/central limits, never an overflowed
+    # intermediate product in place of a representable finite Peclet number.
+    # The caller's existing errstate covers this deliberate final range loss.
+    return np.ldexp(mantissa, exponent)
+
+
 def _power_weight(peclet):
     """Evaluate the bounded power-law interpolation weight elementwise."""
 
@@ -84,7 +101,11 @@ def make_convection_terms(v_face, d_face, var, dirichlet_mode="ghost", neumann_m
     ``1e-20`` and keeps the sign of ``d_face``.  The floor prevents division by zero
     for an exactly zero face diffusivity, and any nonzero magnitude below ``1e-20``
     is approximated by that floor, so such a face carries the floored Peclet number
-    rather than its own.  The resulting matrix and forcing are
+    rather than its own.  The distance, velocity and signed diffusion scale
+    are split into binary mantissas and exponents before forming the ratio;
+    boundary half-cell factors are included before the final scaling.  This
+    avoids product overflow when the complete Peclet number is finite.
+    The resulting matrix and forcing are
     returned as one ordinary ``(matrix, forcing)`` pair; no fallback or
     clipping of a non-finite result is applied.  The returned operator is
     valid for the supplied cell grid and must be rebuilt if that grid changes.
@@ -112,8 +133,7 @@ def make_convection_terms(v_face, d_face, var, dirichlet_mode="ghost", neumann_m
     scale = np.where(diffusivity < 0.0, -1.0, 1.0) * np.maximum(1.0e-20, np.abs(diffusivity))
 
     with np.errstate(all="ignore"):
-        peclet = face_spacing * velocity / scale
-        peclet[[0, -1]] /= 2.0
+        peclet = _face_peclet(face_spacing, velocity, scale)
         left_weight = _power_weight(-peclet[:-1])
         right_weight = _power_weight(peclet[1:])
         diagonal = (left_weight * velocity[:-1] - right_weight * velocity[1:]) / widths
