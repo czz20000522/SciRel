@@ -109,6 +109,22 @@ def _dirichlet_coefficient(diffusivity, width):
     return np.ldexp(mantissa, d_exponent - 2 * h_exponent)
 
 
+def _boundary_forcing(diffusivity, width, boundary, *, dirichlet):
+    """Restore the scale only after the complete boundary product is formed."""
+    d_mantissa, d_exponent = np.frexp(diffusivity)
+    h_mantissa, h_exponent = np.frexp(width)
+    b_mantissa, b_exponent = np.frexp(boundary)
+    if dirichlet:
+        mantissa = (2.0 * d_mantissa / h_mantissa) / h_mantissa
+        exponent = d_exponent - 2 * h_exponent
+    else:
+        mantissa = d_mantissa / h_mantissa
+        exponent = d_exponent - h_exponent
+    # Multiply bounded mantissas before restoring either product's range.
+    # The separate matrix coefficient may round to zero while this is finite.
+    return np.ldexp(mantissa * b_mantissa, exponent + b_exponent)
+
+
 def make_diffusion_terms(d_face, var):
     """Assemble two-point diffusion terms as a tridiagonal operator and forcing.
 
@@ -158,6 +174,11 @@ def make_diffusion_terms(d_face, var):
     and exponents, avoiding an unrepresentable intermediate ``h**2`` or
     ``2*D`` when the coefficient is finite. Signed and zero diffusivities
     retain their original algebra; no diffusivity floor is introduced.
+    Boundary forcing is rescaled after multiplying the boundary data:
+    ``2*D*g/h**2`` for a Dirichlet value and signed ``D*g/h`` for a
+    Neumann gradient. Thus a finite forcing is retained when the separate
+    Dirichlet coefficient rounds to zero or an intermediate product would
+    underflow or overflow. Non-finite matrix or forcing outputs still fail.
 
     Examples
     --------
@@ -187,15 +208,23 @@ def make_diffusion_terms(d_face, var):
         if var.left_face_constraint is not None:
             coefficient = _dirichlet_coefficient(diffusivity[0], widths[0])
             diagonal[0] -= coefficient
-            offset[0] += coefficient * var.left_face_constraint
+            offset[0] += _boundary_forcing(
+                diffusivity[0], widths[0], var.left_face_constraint, dirichlet=True
+            )
         else:
-            offset[0] -= diffusivity[0] * var.left_face_grad_constraint / widths[0]
+            offset[0] -= _boundary_forcing(
+                diffusivity[0], widths[0], var.left_face_grad_constraint, dirichlet=False
+            )
 
         if var.right_face_constraint is not None:
             coefficient = _dirichlet_coefficient(diffusivity[-1], widths[-1])
             diagonal[-1] -= coefficient
-            offset[-1] += coefficient * var.right_face_constraint
+            offset[-1] += _boundary_forcing(
+                diffusivity[-1], widths[-1], var.right_face_constraint, dirichlet=True
+            )
         else:
-            offset[-1] += diffusivity[-1] * var.right_face_grad_constraint / widths[-1]
+            offset[-1] += _boundary_forcing(
+                diffusivity[-1], widths[-1], var.right_face_grad_constraint, dirichlet=False
+            )
 
     return TriDiagonal(checked(diagonal), checked(upper), checked(lower)), checked(offset)
