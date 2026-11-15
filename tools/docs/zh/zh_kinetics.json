@@ -1806,7 +1806,7 @@
   },
   {
    "asset_id": "scirel.collisions.atomic-hydrogen-charge-exchange-cross-section",
-   "source_sha256": "0b80bbdeda9b89e5820ddf16e0042848633053e788b14e5f9b0d1a5d594a6f86",
+   "source_sha256": "aaa272343a853cf815d7d419fb76d73b3b96a2e39966eeaa8f5377bdba242838",
    "summary": "以碰撞能量（eV）为自变量，给出 H + H⁺ 电荷交换截面（m²）。默认是连续复合：Janev 多项式用在 12.673175 keV 以下，Lindsay–Stebbings 2005 Table 1 用在交点至 250 keV；freeman=True 保留独立的 Freeman–Jones 比较分支至 100 keV。越过高能端点会裁剪并发出 RuntimeWarning；负能量和非标量分支选择器被拒绝。",
    "definition": "默认分支先将能量裁剪到 [0.1, 2.5e5] eV；E ≤ 1.267317514018116e4 eV 时返回九系数 Janev 多项式 exp(polyval(log(E),a))×1e-4 m²，E 高于交点时返回 (4.15−0.531 ln(E_keV))²(1−exp(−67.3/E_keV))^4.5×1e-20 m²。freeman=True 将能量裁剪到 [0.1,1e5] eV，返回独立 Freeman–Jones 解析式。超过所选上限时发出 RuntimeWarning 并返回端点。",
    "model": "连续的 Janev/Lindsay–Stebbings 默认复合截面，加上独立的 Freeman–Jones 比较分支；不做运行时外部数据插值，也不做速率积分。",
@@ -1868,17 +1868,17 @@
    "verification": {
     "scope": [
      "默认复合在交点两侧与 Janev/Lindsay–Stebbings 独立公式相符，并在交点连续。",
-     "30、50、80、100 keV 使用论文 6 keV 以上约 ±11% 的可靠度与公开值比较；旧端点重复值会失败。",
+     "在 30、50、80、100 keV 与同一表 1 参数式的另一路算术求值比较。保留的 0.11 容差只是旧端点回归检查，另以 1e-14 严格核对公式；两者均不验证实验准确度。",
      "Freeman–Jones 分支与其独立解析式相符，并与默认复合不同。",
      "默认与 Freeman–Jones 的高端裁剪和 RuntimeWarning 均有测试；低端静默裁剪也有测试。",
      "输入测试拒绝非有限、负、布尔、复数、数字字符串能量以及数组分支选择器。",
      "默认调用仍可作为 maxwellian-relative-speed-rate-average 的 cross_section_m2 端口。"
     ],
-    "evidence_ceiling": "测试确立公式求值、样本高能点与公开拟合的一致性、连续交点、裁剪/警告和输入失败语义。Lindsay & Stebbings 2005 作为公开参数化与可靠度来源被直接阅读；本仓库不自称完成独立实验重拟合或权利接受。",
+    "evidence_ceiling": "测试确立样本能量上的公式求值、连续交点、裁剪/警告和输入失败语义。表 1 公式重算不是独立实验依据；H⁺–H 的可靠度评价来自 Lindsay–Stebbings 2005 年论文 §4.1[20]。本仓库没有据此完成独立实验重拟合或权利接受。",
     "known_limitations": [
      "默认在 5 eV 以下使用 Janev；Lindsay–Stebbings Table 1 从 5 eV 才开始，因此该低能段不由该表验证。",
      "Lindsay–Stebbings Table 1 到 250 keV 为止；更高能量发出警告并重复端点，不外推。",
-     "论文给出 6 keV 以上约 ±11% 的可靠度，同时记录 100 keV 处约 30% 的理论/实验分歧；不能把拟合差直接当作新的完整不确定度预算。",
+     "Lindsay–Stebbings 2005 年论文 §4.1[20] 对 H⁺–H 的可能可靠度评价约为 10%，并记录 100 keV 处理论低于测量近 30% 的未决分歧。§4.1[23] 跨至下一页的“6 keV 以上约 11%”属于 H⁺–O，不属于 H⁺–H。这些作者评价不是 SciRel 的独立实验验证，也不是整个复合式的统一不确定度界。",
      "Freeman–Jones 是独立比较分支，不是默认，也不是对复合的修正。",
      "公开分发许可仍待人工决定。",
      "0.1–12 eV 没有任何独立的测量或独立计算截面源（Red Book 从 12 eV 起、Khoma 只覆盖 1e-4–1e-3 eV），因此拟合声明区间的低端没有外部对拍。"
@@ -8032,9 +8032,9 @@
   },
   {
    "asset_id": "scirel.collisions.fast-ion-stopping-increment",
-   "source_sha256": "8ebe68fbda303086b2dcd00b7fcaaffc554a333b7fab288e03358719f72c5bdf",
+   "source_sha256": "e2571cfe3a9137776564b8b4f58a72e4d8eb4e071207453b457d52cb92db54dd",
    "summary": "由局部功率密度、外给电子减速时间及相对磁轴的出生方向余弦，求值固定经验快离子对中性束阻止截面的附加贡献；只返回单位 m² 的增量。",
-   "definition": "记 A=beam_mass_number、E=beam_energy_ev、c=birth_pitch_cosine、n=electron_density_m3、te=electron_temperature_ev、P=power_density_w_m3、tau=electron_slowing_time_s。取 e=1.602176462e-19 J/eV，S=P/(E*e)、T=(te/1e3)/10、Ehat=(E/A)/1e6、r=Ehat/T。按升幂顺序累计 F(r)=0.57658+1.6432*r-4.8886*r²+5.3932*r³-2.9226*r⁴+0.77156*r⁵-0.079095*r⁶，再只在 r>pi 处将 F 置零，等号不截断。令 p=fmin(1,abs(c))，因此 c 为 NaN 时 p=1；按升幂顺序累计 G(p)=0.30812*p+11.992*p²-68.971*p³+165.94*p⁴-177.33*p⁵+69.833*p⁶。俯仰扩散参数固定 y=0.6，先算 R=(((T^(-0.9027)*F(r))*G(p))*1e-19 m²，再返回 ((S*tau)/n)*R，保留此乘除顺序及负 T 的复数分数幂分支。S 的单位为 m^-3 s^-1，S*tau/n 无量纲，1e-19 m² 提供面积尺度。",
+   "definition": "记 A=beam_mass_number、E=beam_energy_ev、c=birth_pitch_cosine、n=electron_density_m3、te=electron_temperature_ev、P=power_density_w_m3、tau=electron_slowing_time_s。取 e=1.602176462e-19 J/eV，S=P/(E*e)、T=(te/1e3)/10、Ehat=(E/A)/1e6、r=Ehat/T。按升幂顺序累计 F(r)=0.57658+1.6432*r-4.8886*r²+5.3932*r³-2.9226*r⁴+0.77156*r⁵-0.079095*r⁶，再只在 r>pi 处将 F 置零，等号不截断。令 p=fmin(1,abs(c))，因此 c 为 NaN 时 p=1；按升幂顺序累计 G(p)=0.30812*p+11.997*p²-68.971*p³+165.94*p⁴-177.33*p⁵+69.833*p⁶。俯仰扩散参数固定 y=0.6，先算 R=(((T^(-0.9027)*F(r))*G(p))*1e-19 m²，再返回 ((S*tau)/n)*R，保留此乘除顺序及负 T 的复数分数幂分支。S 的单位为 m^-3 s^-1，S*tau/n 无量纲，1e-19 m² 提供面积尺度。",
    "model": "固定经验多项式与温度分数幂，俯仰扩散参数固定 y=0.6；没有已量化物理域上的标定预测保证。",
    "assumptions": [
     "系数表、升幂累计顺序、e=1.602176462e-19 J/eV 和固定 y=0.6 共同定义该表达式；不替换为重拟合系数或更新的换算常数。",
@@ -8119,13 +8119,14 @@
    },
    "example": {
     "description": "以外给磁轴出生俯仰余弦、局部功率密度和减速时间求值一个全标量算例。",
-    "expected": "依次输出 (1, 1)、float64 和 1.9645775636530587e-18 m^2。"
+    "expected": "依次输出 (1, 1)、float64 和 1.9700164353460225e-18 m^2。"
    },
    "verification": {
     "scope": [
-     "固定数值基线覆盖七个端口、严格能量比截断、俯仰绝对值上限、负数/零/非有限算术及复数温度结果；有限实部和虚部分别使用 rtol=5e-12、atol=1e-300。警告只作为诊断留存，不要求警告文字或数量相等。",
+     "保留原独立引擎的全部 56 个案例和 37 行分母、输入位模式及旧系数的真实观测。论文对齐后的预期值单独标为派生参照，有限分量按俯仰多项式系数变化重绑定；直接测试以该参照继续使用 rtol=5e-12、atol=1e-300 及原非有限分类、形状和失败判据。这不代表重新运行了外部引擎。",
      "直接测试检查标量、行、列、矩阵和 N 维轴、扩展、空输入、不相容轴失败及输入保持不变。",
-     "独立高精度表达式检查数值求值，并检查功率密度和外给减速时间的线性缩放及电子密度的反比缩放；示例检查一个有限标量算例。量纲闭合依据是声明的定义和引用的面积单位，不是数值测试对物理有效性的验证。"
+     "独立高精度表达式检查数值求值，并检查功率密度和外给减速时间的线性缩放及电子密度的反比缩放；示例检查一个有限标量算例。量纲闭合依据是声明的定义和引用的面积单位，不是数值测试对物理有效性的验证。",
+     "Okano 等 2001 年论文印刷第 811 页、式(6)下方未编号系数表独立固定 b₂=11.997。在 Te=10000 eV 时，以四个 100 位 Decimal 样本和两个精确 Fraction 化简核对原表表达式；这些是公式锚点，不是实验标定或拟合误差估计。"
     ],
     "evidence_ceiling": "数值基线及独立表达式/缩放检查支持所指定经验关系及其声明算术和轴行为的求值；不建立标定物理域、量化拟合误差、一般物种有效性或完整应用行为。引用的面积尺度、归一化和出生俯仰定义不能填补这些缺口，人工科学接受仍待完成。",
     "known_limitations": [

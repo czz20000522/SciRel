@@ -34,7 +34,7 @@
  "identity": {
   "relation": "a fixed empirical additive fast-ion contribution to the neutral-beam stopping cross section",
   "direction": "seven local beam/plasma inputs -> stopping_increment_m2 array",
-  "definition": "Let A=beam_mass_number, E=beam_energy_ev, c=birth_pitch_cosine, n=electron_density_m3, te=electron_temperature_ev, P=power_density_w_m3 and tau=electron_slowing_time_s. Use e=1.602176462e-19 J/eV, S=P/(E*e), T=(te/1e3)/10, Ehat=(E/A)/1e6 and r=Ehat/T. Accumulate F(r)=0.57658+1.6432*r-4.8886*r^2+5.3932*r^3-2.9226*r^4+0.77156*r^5-0.079095*r^6 in ascending power order, then overwrite F with zero where r>pi, leaving equality unchanged. Set p=fmin(1,abs(c)); NaN c therefore gives p=1. Accumulate G(p)=0.30812*p+11.992*p^2-68.971*p^3+165.94*p^4-177.33*p^5+69.833*p^6 in ascending power order. With fixed pitch-diffusion parameter y=0.6, form R=(((T^(-0.9027)*F(r))*G(p))*1e-19 m^2, then return ((S*tau)/n)*R, retaining this multiplication/division order and the complex fractional-power branch for negative T. S has units m^-3 s^-1, S*tau/n is dimensionless and 1e-19 m^2 supplies the area scale.",
+  "definition": "Let A=beam_mass_number, E=beam_energy_ev, c=birth_pitch_cosine, n=electron_density_m3, te=electron_temperature_ev, P=power_density_w_m3 and tau=electron_slowing_time_s. Use e=1.602176462e-19 J/eV, S=P/(E*e), T=(te/1e3)/10, Ehat=(E/A)/1e6 and r=Ehat/T. Accumulate F(r)=0.57658+1.6432*r-4.8886*r^2+5.3932*r^3-2.9226*r^4+0.77156*r^5-0.079095*r^6 in ascending power order, then overwrite F with zero where r>pi, leaving equality unchanged. Set p=fmin(1,abs(c)); NaN c therefore gives p=1. Accumulate G(p)=0.30812*p+11.997*p^2-68.971*p^3+165.94*p^4-177.33*p^5+69.833*p^6 in ascending power order. With fixed pitch-diffusion parameter y=0.6, form R=(((T^(-0.9027)*F(r))*G(p))*1e-19 m^2, then return ((S*tau)/n)*R, retaining this multiplication/division order and the complex fractional-power branch for negative T. S has units m^-3 s^-1, S*tau/n is dimensionless and 1e-19 m^2 supplies the area scale.",
   "model": "fixed empirical polynomials and temperature power with pitch diffusion fixed at y=0.6; no calibrated prediction over a quantified physical domain",
   "geometry": "local supplied quantities and a magnetic-axis birth-pitch cosine; no spatial or magnetic geometry solver",
   "coordinates": "E and te in eV, n in m^-3, P in W/m^3 and tau in s; A and the birth-pitch cosine are dimensionless. Scalar inputs become (1,1), one-dimensional inputs become (1,N), and implicit expansion aligns leading axes by appending singleton axes on the right.",
@@ -139,7 +139,7 @@
   ]
  },
  "failure_semantics": {
-   "invalid_input": "Raises TypeError for complex-valued inputs. Values that cannot be converted to float64 propagate their original conversion error, including TypeError, ValueError, or OverflowError; incompatible expanded axes raise ValueError.",
+  "invalid_input": "Raises TypeError for complex-valued inputs. Values that cannot be converted to float64 propagate their original conversion error, including TypeError, ValueError, or OverflowError; incompatible expanded axes raise ValueError.",
   "runtime_failure": "Numerical arithmetic may emit RuntimeWarning and return NaN, signed infinity or complex values. Zero, negative, nonfinite and extreme real values are not replaced with a fallback or rejected as unphysical; caller warning filters can turn warnings into exceptions.",
   "nonconvergence": "Not applicable; this is a direct stateless expression with no iteration.",
   "partial_results": "No partial array is returned after an exception. NaN/Inf/complex entries in a returned array are retained arithmetic outcomes, not a convergence or scientific-validity status."
@@ -159,14 +159,15 @@
  },
  "example": {
   "description": "Evaluate one all-scalar case with a supplied magnetic-axis birth-pitch cosine, local power density and slowing time.",
-  "code": "import numpy as np\nfrom scirel.collisions import evaluate_fast_ion_stopping_increment\nincrement = evaluate_fast_ion_stopping_increment(1.0, 100000.0, 0.5, 1e18, 10000.0, 1e6, 1.0)\nassert increment.shape == (1, 1)\nnp.testing.assert_allclose(increment, [[1.9645775636530587e-18]], rtol=5e-12, atol=1e-300)\nprint(increment.shape)\nprint(increment.dtype)\nprint(f'{increment[0, 0]:.17g} m^2')",
-  "expected": "(1, 1)\nfloat64\n1.9645775636530587e-18 m^2"
+  "code": "import numpy as np\nfrom scirel.collisions import evaluate_fast_ion_stopping_increment\nincrement = evaluate_fast_ion_stopping_increment(1.0, 100000.0, 0.5, 1e18, 10000.0, 1e6, 1.0)\nassert increment.shape == (1, 1)\nnp.testing.assert_allclose(increment, [[1.9700164353460298e-18]], rtol=5e-12, atol=1e-300)\nprint(increment.shape)\nprint(increment.dtype)\nprint(f'{increment[0, 0]:.17g} m^2')",
+  "expected": "(1, 1)\nfloat64\n1.9700164353460225e-18 m^2"
  },
  "verification": {
   "scope": [
-   "Fixed numerical baselines cover the seven ports, strict energy-ratio cutoff, absolute pitch cap, negative/zero/nonfinite arithmetic and complex-temperature results; finite real and imaginary components use rtol=5e-12 and atol=1e-300. Warnings are retained as diagnostics; equality of warning text or counts is not required.",
+   "All 56 historical independent-engine cases and 37 denominator rows retain their input bits and actual old-coefficient observations. Separately labelled paper-aligned expected values rebind finite components by the exact pitch-polynomial coefficient change; the direct tests use those derived references under unchanged rtol=5e-12 and atol=1e-300, including the original nonfinite, shape and failure comparisons. This is not a new external-engine run.",
    "Direct tests check scalar/row/column/matrix/N-dimensional axes, expansion, empty input and incompatible-axis failure, plus unchanged inputs.",
-   "An independent high-precision expression checks numerical evaluation, with linear scaling in power density and supplied slowing time and inverse scaling in electron density; the example checks one finite scalar case. Dimensional closure rests on the declared definitions and cited area unit, not numerical tests of physical validity."
+   "An independent high-precision expression checks numerical evaluation, with linear scaling in power density and supplied slowing time and inverse scaling in electron density; the example checks one finite scalar case. Dimensional closure rests on the declared definitions and cited area unit, not numerical tests of physical validity.",
+   "The unnumbered coefficient table below Eq. (6), p. 811 of Okano et al. (2001), independently anchors b_2=11.997. Four 100-digit Decimal samples and two exact Fraction reductions at T_e=10000 eV check the printed expression; these are formula anchors, not experimental calibration or a fit-error estimate."
   ],
   "tests": [
    "tests/collisions/test_fast_ion_stopping_increment.py"
@@ -181,6 +182,6 @@
   ]
  },
  "references": [
-  "K. Okano et al. (2001), ECA 25A, P2.088, pp. 809-812; birth-pitch definition on p. 810 and area scale/normalization in Eq. (6), p. 811. https://info.fusion.ciemat.es/OCS/EPS2001/pdfs/P2.088.pdf"
+  "K. Okano et al. (2001), ECA 25A, P2.088, pp. 809-812; birth-pitch definition on p. 810; area scale/normalization in Eq. (6), p. 811, and the unnumbered coefficient table immediately below it, including b_2=11.997. https://info.fusion.ciemat.es/OCS/EPS2001/pdfs/P2.088.pdf"
  ]
 }

@@ -14,7 +14,7 @@ import numpy as np
 __all__ = ["evaluate_fast_ion_stopping_increment"]
 
 _ENERGY_COEFFICIENTS = (0.57658, 1.6432, -4.8886, 5.3932, -2.9226, 0.77156, -0.079095)
-_PITCH_COEFFICIENTS = (0.30812, 11.992, -68.971, 165.94, -177.33, 69.833)
+_PITCH_COEFFICIENTS = (0.30812, 11.997, -68.971, 165.94, -177.33, 69.833)
 # The fitted expression retains this historical conversion, not the current SI value.
 _ENERGY_CONVERSION_J_PER_EV = 1.602176462e-19
 
@@ -135,7 +135,8 @@ def evaluate_fast_ion_stopping_increment(
     References
     ----------
     K. Okano et al. (2001), ECA 25A, P2.088, pp. 809-812; birth-pitch definition
-    on p. 810 and area scale/normalization in Eq. (6), p. 811.
+    on p. 810; area scale/normalization in Eq. (6), p. 811, and the unnumbered
+    coefficient table immediately below it, including b_2=11.997.
     https://info.fusion.ciemat.es/OCS/EPS2001/pdfs/P2.088.pdf
 
     Examples
@@ -144,13 +145,13 @@ def evaluate_fast_ion_stopping_increment(
     >>> from scirel.collisions import evaluate_fast_ion_stopping_increment
     >>> increment = evaluate_fast_ion_stopping_increment(1.0, 100000.0, 0.5, 1e18, 10000.0, 1e6, 1.0)
     >>> assert increment.shape == (1, 1)
-    >>> np.testing.assert_allclose(increment, [[1.9645775636530587e-18]], rtol=5e-12, atol=1e-300)
+    >>> np.testing.assert_allclose(increment, [[1.9700164353460298e-18]], rtol=5e-12, atol=1e-300)
     >>> print(increment.shape)
     (1, 1)
     >>> print(increment.dtype)
     float64
     >>> print(f'{increment[0, 0]:.17g} m^2')
-    1.9645775636530587e-18 m^2
+    1.9700164353460225e-18 m^2
     """
     mass, energy, cosine, density, temperature, power, slowing_time = (
         _shaped_real(value)

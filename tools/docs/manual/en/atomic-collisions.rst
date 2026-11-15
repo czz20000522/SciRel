@@ -87,7 +87,7 @@ Actual output (cross-section values are in units of 1e-20 m²):
    ValueError energy_ev must be nonnegative
    ValueError freeman must be a scalar branch selector, not an array
 
-At the five low-energy points the default remains the Janev value; at 30 and 100 keV it becomes ``3.316599e-20`` and ``1.170723e-21`` m² respectively instead of repeating the 20.1 keV endpoint. The paper states about ``±11%`` reliability above 6 keV and separately records an almost 30% theory-versus-measurement discrepancy at 100 keV; those are not one combined uncertainty budget.
+At the five low-energy points the default remains the Janev value; at 30 and 100 keV it becomes ``3.316599e-20`` and ``1.170723e-21`` m² respectively instead of repeating the 20.1 keV endpoint. For H⁺–H, Lindsay–Stebbings §4.1[20] assess possible reliability at about 10% and record an unresolved almost 30% difference at 100 keV, with theory below measurements. The above-6-keV 11% statement in §4.1[23], continued on the next page, belongs to H⁺–O. Formula recomputation does not independently verify those author assessments.
 
 The Freeman branch is about 15% above the default at low energy, about 17% below it at 100 keV, and stops at 100 keV. ``freeman=True`` is therefore only for an explicit comparison with that older fit. Endpoint checks show that ``E=0.01`` and ``E=0.1`` are exactly equal; the default ``E=3.0e5`` and ``E=2.5e5`` values are exactly equal with one warning. Negative energy and array-valued ``freeman`` are rejected before evaluation.
 
@@ -413,7 +413,7 @@ Power density is in W/m^3, so ``S`` is in m^-3 s^-1 and ``S*slowing_time/ne`` is
        electron_slowing_time_s=1.0,
    )
    np.testing.assert_allclose(
-       increment, [[1.9645775636530587e-18]], rtol=5e-12, atol=1e-300,
+       increment, [[1.9700164353460298e-18]], rtol=5e-12, atol=1e-300,
    )
    print(increment.shape)
    print(increment.dtype)
@@ -425,9 +425,9 @@ Actual output:
 
    (1, 1)
    float64
-   1.9645775636530587e-18 m^2
+   1.9700164353460225e-18 m^2
 
-This is an additional area, about ``1.96e-18`` m^2 for the seven supplied inputs; it does not supply the total cross section needed for attenuation. All-scalar calls still return a two-dimensional ``(1,1)`` array. One-dimensional inputs become rows; N-dimensional inputs align leading axes and append singleton axes on the right of lower-rank arrays.
+This is an additional area, about ``1.97e-18`` m^2 for the seven supplied inputs; it does not supply the total cross section needed for attenuation. All-scalar calls still return a two-dimensional ``(1,1)`` array. One-dimensional inputs become rows; N-dimensional inputs align leading axes and append singleton axes on the right of lower-rank arrays.
 
 The finite positive example is not a guarantee over the full input domain. Only the energy polynomial is overwritten with zero for ``r>pi``; equality is not cut off, and infinities or undefined values in other factors can still make the final result nonfinite. NaN pitch maps to one under the absolute-pitch cap, negative temperature can produce complex values, and zero power does not bypass division by energy. These arithmetic outcomes do not qualify physical plasma states.
 
