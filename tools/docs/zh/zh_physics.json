@@ -2515,7 +2515,7 @@
   },
   {
    "asset_id": "scirel.diagnostics.picard-flux-residual",
-   "source_sha256": "4e45aa9bdbb96d849ca99df4bb469ebf111b37386f2267826d062e48698548e9",
+   "source_sha256": "3e21144356e59b04ecd4977231d959c197992f1299d73ed01f5b0232ebc1bcfb",
    "summary": "用缩放算术及小分母下限，测量连续两个二维磁通状态相对前态的欧几里得变化。 以 scirel._result.Result 映射返回该残差。",
    "definition": "计算 ||psi_next−psi_previous||₂/max(||psi_previous||₂,1e-30 Wb)，以输入最大绝对值作算术尺度。全零对返回零；缩放分母为零或最终比值非有限时拒绝。极端次正规数不保证可表示。 residual 字段作为 scirel._result.Result 映射返回；按键和属性读取同一个值。",
    "model": "用于 Picard 停止判据的离散相对 L2 磁通变化。",
@@ -2580,7 +2580,7 @@
     "evidence_ceiling": "数值测试涵盖公式与所选极端值，不证明物理平衡收敛、任意下溢行为或专家认可。",
     "known_limitations": [
      "前态范数低于 1e-30 Wb 时下限改变相对比值。",
-     "最小次正规数使 1e-30/scale 可能溢出，返回零不一定等于数学比值。",
+     "非零binary64输入尺度至少为2^-1074，因此1e-30/scale有限，小于2.025e293；不能因为输入尺度是次正规数就断言这一步溢出。这个上界本身不证明任意混合尺度数组或其余缩放运算的完整准确性。",
      "Wb 下限在重新解释为 Wb/rad 时不具有缩放不变性，未批准转换或直接连接。",
      "此标量不检查 Maxwell 方程或压力力平衡。",
      "公开许可及专家认可待人工决定。"
