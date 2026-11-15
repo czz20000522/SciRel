@@ -16,7 +16,7 @@ __all__ = ["evaluate_fluid_kinetic_dispersion_sum"]
 
 
 def evaluate_fluid_kinetic_dispersion_sum(*, B0, qs, ms, ns0, Ts0, f, kz, kx, lmx=5):
-    r"""Assemble the Maxwellian 3x3 kinetic tensor by finite cyclotron-harmonic sum with the source's positive near-zero kz clamp.
+    r"""Assemble the Maxwellian 3x3 kinetic tensor by finite cyclotron-harmonic sum at the actual signed nonzero kz.
 
     Parameters
     ----------
@@ -41,8 +41,8 @@ def evaluate_fluid_kinetic_dispersion_sum(*, B0, qs, ms, ns0, Ts0, f, kz, kx, lm
         as a divisor.
     kz : real numeric
         Wavevector component parallel to the magnetic field, entering the parallel-resonance argument and
-        the Maxwell curl term [1/m] Shape: scalar. Finite; before division the frozen source implementation
-        clamps `abs(kz)<1e-10` (including `kz=0`) to `+1e-10`.
+        the Maxwell curl term [1/m] Shape: scalar. Finite and nonzero; the actual signed value is used
+        without a near-zero replacement. Zero is rejected before numerical work.
     kx : real numeric
         Wavevector component perpendicular to the magnetic field, giving the Bessel argument and the
         refractive index [1/m] Shape: scalar. Finite.
@@ -93,8 +93,9 @@ def evaluate_fluid_kinetic_dispersion_sum(*, B0, qs, ms, ns0, Ts0, f, kz, kx, lm
     ------
     ValueError
         Raises ValueError for declared invalid inputs; numeric conversion errors may propagate for
-        unsupported Python objects. Raises ValueError if the calculated tensor or function value is
-        nonfinite, or if a positive harmonic tail cannot be represented reliably or bounded within
+        unsupported Python objects. Zero kz is rejected before numerical work; use a finite nonzero
+        kz or explicitly select the separate Ronnmark zero-kz model. Raises ValueError if the calculated
+        tensor or function value is nonfinite, or if a positive harmonic tail cannot be represented reliably or bounded within
         the evaluation budget. No partial tail or tensor is returned.
 
     See Also
@@ -104,21 +105,28 @@ def evaluate_fluid_kinetic_dispersion_sum(*, B0, qs, ms, ns0, Ts0, f, kz, kx, lm
     Notes
     -----
     Sum harmonics -lmx..lmx using scaled Bessel Gamma terms. The xx/xy/yy components retain N=64
-    Weideman Z. For each species with (abs(omega)+lmx*abs(wcs))/(abs(effective_kz)*vts)<=1,
+    Weideman Z. For each species with (abs(omega)+lmx*abs(wcs))/(abs(kz)*vts)<=1,
     xz/yz/zz use z*Z(z) directly with the same Weideman Z, retaining the original +2*alpha*z0**2
     in zz. Otherwise they use the analytic real-argument response A(z)=1+z*Z(z), evaluated
     directly without subtracting two nearly equal terms. In that branch symmetric finite-sum
     identities retain the endpoint Gamma_(N+1)-Gamma_N and the tail 1-sum(Gamma_n); the tail is
-    formed from positive terms when its complement is ill-conditioned. effective_kz includes
-    the declared positive near-zero clamp. D adds Maxwell curl terms to K and
+    formed from positive terms when its complement is ill-conditioned. Every nonzero kz uses
+    its actual value and sign. D adds Maxwell curl terms to K and
     determinant=det(D). Homogeneous magnetized Maxwellian plasma. Assumptions: Input units and
     normalization follow the declared ports; no physical parameters are inferred.
 
     This is a numerical-method correction of the same finite-harmonic model, not parity with
     the frozen N=64 rational expression. The real-argument A and positive-tail evaluators are
-    shared with the conventional sum; the positive near-zero kz clamp and caller's lmx stay
-    unchanged. Bounded tests compare full complex K/D against independent high-precision finite
-    sums; they do not prove a continuous-domain error bound or harmonic convergence. An insufficient
+    shared with the conventional sum; the caller's lmx stays unchanged. The former implicit
+    abs(kz)<1e-10 replacement by +1e-10 is withdrawn because it breaks SI similarity and loses
+    the input sign. Its old values remain reproducible by explicitly passing kz=+1e-10.
+    At real b>0 and fixed finite N the zz expression retains
+    2*alpha*z0**2*(1-sum(Gamma_n)); its positive omitted tail prevents a general finite zero-kz
+    limit. The complete Maxwellian zero endpoint is a different limit, not a value supplied
+    here. Zero raises ValueError; callers may explicitly choose
+    evaluate_kinetic_dispersion_ronnmark under its separate zero-kz contract. No model is
+    selected automatically. Bounded tests compare full complex K/D against independent high-precision
+    finite sums; they do not prove a continuous-domain error bound or harmonic convergence. An insufficient
     lmx can give a genuinely large tensor. An exhausted tail budget or unreliable positive tail
     raises ValueError instead of returning a partial sum or changing lmx. Root and determinant
     accuracy are not established by the tensor comparisons.
@@ -135,6 +143,12 @@ def evaluate_fluid_kinetic_dispersion_sum(*, B0, qs, ms, ns0, Ts0, f, kz, kx, lm
     kx = float(kx)
     if not np.isfinite([B0, f, kz, kx]).all():
         raise ValueError("B0, f, kz and kx must be finite")
+    if kz == 0.0:
+        raise ValueError(
+            f"kz must be nonzero; received {kz!r} 1/m. Legal range: finite kz < 0 or kz > 0. "
+            "For the separate Ronnmark zero-kz model explicitly use "
+            "evaluate_kinetic_dispersion_ronnmark; see scirel.kinetic.kinetic-dispersion-sum-fluid"
+        )
     if isinstance(lmx, (bool, np.bool_)):
         raise ValueError("lmx must be a non-negative integer")
     try:
@@ -165,15 +179,6 @@ def evaluate_fluid_kinetic_dispersion_sum(*, B0, qs, ms, ns0, Ts0, f, kz, kx, lm
         raise ValueError("B0 must be non-zero: the gyrofrequency is proportional to B0")
     if f == 0.0:
         raise ValueError("f must be non-zero: omega appears in the resonance denominators")
-    if abs(kz) < 1e-10:
-        # Source fidelity: bonk/fD.m:16-18 clamps a near-zero parallel wavenumber with
-        # `if(abs(kz)<1e-10) kz=1e-10; end` before any divisor (z0=w/(kz*vts),
-        # zn=(w-l*wcs)/(kz*vts)). The clamp is sign-agnostic and observable: on the frozen
-        # source it replaces a 1/kz blow-up by the finite kz=+1e-10 evaluation. The sibling
-        # path bonk/fDR.m:22-23 has NO clamp, so this substitution is local to the
-        # conventional sum_n operator and must not be shared with the Ronnmark operator.
-        kz = 1e-10
-
     response_kz = kz if kz > 0.0 else -kz
 
     omega = 2.0 * np.pi * f

@@ -5547,11 +5547,11 @@
   },
   {
    "asset_id": "scirel.kinetic.kinetic-dispersion-sum-fluid",
-   "source_sha256": "e3f3dcb6975c3718fa9554f64e578393b45191b9fb6eb08089b197901814f5c1",
-   "summary": "使用有限回旋谐波求和组装 Maxwellian 等离子体的 3×3 动力学张量，并对近零 kz 施加正向钳位。",
-   "definition": "使用缩放 Bessel Gamma 对 -lmx 至 lmx 求和。xx/xy/yy 保留 N64 Weideman Z。每物种 (|omega|+lmx|wcs|)/(|effective_kz|vts)≤1 时，xz/yz/zz 用同一 Weideman Z 直接求 zZ，保留 zz 的原 +2alpha z0²；其他情形直接计算解析实参 A=1+zZ，以有限对称恒等式保留 Gamma_(N+1)-Gamma_N 端点和遗漏尾项；补集不稳定时累加正尾项。effective_kz 包含既有正向近零钳位。K 加 Maxwell 旋度项得到 D，再计算 determinant=det(D)。",
+   "source_sha256": "acacd59f21ace5a24a862fee4920a366af16ca771b6c9d6dc7610ad7fd5821e7",
+   "summary": "使用有限回旋谐波求和，在实际有符号非零 kz 处组装 Maxwellian 等离子体的 3×3 动理学张量。",
+   "definition": "使用缩放 Bessel Gamma 对 -lmx 至 lmx 求和。xx/xy/yy 保留 N64 Weideman Z。每物种 (|omega|+lmx|wcs|)/(|kz|vts)≤1 时，xz/yz/zz 用同一 Weideman Z 直接求 zZ，保留 zz 的原 +2alpha z0²；其他情形直接计算解析实参 A=1+zZ，以有限对称恒等式保留 Gamma_(N+1)-Gamma_N 端点和遗漏尾项；补集不稳定时累加正尾项。非零 kz 使用实际值和符号；零值明确拒绝，不替换波点。K 加 Maxwell 旋度项得到 D，再计算 determinant=det(D)。",
    "model": "均匀磁化 Maxwellian 等离子体",
-   "boundary": "先将 abs(kz)<1e-10 替换为 +1e-10；其余有符号 kz 使用 |kz| 因果共振并反射四个混合张量分量。",
+   "boundary": "有限非零 kz 按实际值和符号计算；kz=0 在数值工作前抛出 ValueError，不自动切换模型。",
    "assumptions": [
     "输入单位和归一化遵循所列端口；不推断物理参数。"
    ],
@@ -5595,7 +5595,7 @@
     {
      "name": "kz",
      "description": "波矢平行磁场分量，进入平行共振宗量与 Maxwell 旋度项",
-     "constraints": "有限；既有约定在除法前把 `abs(kz)<1e-10`（包括 `kz=0`）钳位到 `+1e-10`。",
+     "constraints": "有限且非零；使用实际有符号值，不再替换近零输入。零值在数值工作前拒绝。",
      "dtype": "实数"
     },
     {
@@ -5688,18 +5688,18 @@
    "applicability": {
     "preconditions": [
      "物种数组有限、非空且形状兼容；质量、密度和温度为正，电荷和磁场非零。",
-     "波点及派生频率/尺度有限，并满足所选数值路径的域。"
+     "波点及派生频率/尺度有限，kz 非零，并满足所选数值路径的域。"
     ],
     "supported": [
-     "使用有限回旋谐波求和组装 Maxwellian 等离子体的 3×3 动力学张量，并对近零 kz 施加正向钳位。"
+     "使用有限回旋谐波求和，在实际有符号非零 kz 处组装 Maxwellian 等离子体的 3×3 动理学张量。"
     ],
     "excluded": [
      "模态识别、求根，以及超出测试有限谐波或有理极点近似的精度。",
-     "违反数值域或要求不同张量约定的输入。"
+     "零 kz、违反数值域或要求不同张量约定的输入。"
     ]
    },
    "failure_semantics": {
-    "invalid_input": "输入违反所列条件时抛出 ValueError；不受支持的 Python 对象可能直接传播数值转换异常。",
+    "invalid_input": "违反所列条件时抛出 ValueError；不支持的 Python 对象可能传播数值转换异常。零 kz 在数值工作前拒绝；可使用有限非零 kz，或按独立零 kz 合同显式选择 evaluate_kinetic_dispersion_ronnmark。",
     "runtime_failure": "计算得到的张量或函数值非有限，或正谐波尾项无法可靠表示、无法在求值预算内界定余项时抛出 ValueError；不返回部分尾项或张量。",
     "nonconvergence": "不适用；该入口不执行迭代求根。",
     "partial_results": "发生异常后不返回部分结果映射。"
@@ -5710,19 +5710,20 @@
    },
    "verification": {
     "scope": [
-     "独立高精度原有限和对照完整复数 K/D，覆盖近零 kz、有限截断端点、A 分支、共振和有符号物种；补充小 z 回归、直接 zZ/A 切换两侧、逐物种混合表示及四个正负 f/kz 实数 kx 的 xy/yx 保护，并验证正尾项失败边界。"
+     "独立高精度原有限和对照完整复数 K/D，覆盖近零 kz、有限截断端点、A 分支、共振和有符号物种；补充小 z 回归、直接 zZ/A 切换两侧、逐物种混合表示及四个正负 f/kz 实数 kx 的 xy/yx 保护，并验证正尾项失败边界。 实际正负非零 kz 包括 ±1e-12 和原阈值相邻浮点数；零值在数值工作前拒绝；显式 +1e-10 保留原数值与默认 N5；12 对 SI 相似关系保留完整 K/D/行列式的 2e-12 门槛。"
     ],
-    "evidence_ceiling": "独立 mpmath 参照从公开输入重算全部尺度，用 Bessel I 和 erfc 定义的 Z 计算原有限谐波式。test_kinetic_dispersion_sum_fluid_stability.py 所选样本完整复数 K/D 保持 |误差|/max(1,|参照|)≤2e-12；所选 140/180 位自核不先舍入成 binary64。它不构成连续域误差定理、谐波收敛保证、行列式/根精度声明或物理标定。普通 xx/xy/yy 保留 N64 Weideman Z；混合/平行项按各物种 max|z_n|≤1 使用直接 zZ，否则使用 A/有限和恒等式。不是冻结 N64 有理式的等价重排；包括小 z 反例、切换邻点、相邻浮点数和混合表示物种的独立原式核验。",
+    "evidence_ceiling": "独立 mpmath 参照从公开输入重算全部尺度，用 Bessel I 和 erfc 定义的 Z 计算原有限谐波式。test_kinetic_dispersion_sum_fluid_stability.py 所选样本完整复数 K/D 保持 |误差|/max(1,|参照|)≤2e-12；所选 140/180 位自核不先舍入成 binary64。它不构成连续域误差定理、谐波收敛保证、行列式/根精度声明或物理标定。普通 xx/xy/yy 保留 N64 Weideman Z；混合/平行项按各物种 max|z_n|≤1 使用直接 zZ，否则使用 A/有限和恒等式。不是冻结 N64 有理式的等价重排；包括小 z 反例、切换邻点、相邻浮点数和混合表示物种的独立原式核验。 独立参照去除替代规则，在实际非零 kz 处计算，正负小波数均保留 140/180 位自核。12 对、24 次调用的 SI 相似性只是同方法必须满足的关系，不证明四种方法的绝对精度。拒绝零值属于域政策，不是零极限数值参照。",
     "known_limitations": [
-     "在所有共振除法前，将 abs(kz)<1e-10 替换为 +1e-10。",
-     "xx/xy/yy 保留固定 N64 Weideman Z；每物种全部谐波 |z_n|≤1 时 xz/yz/zz 直接求 zZ，否则使用稳定实参 A。所选切换邻点和样本不建立连续域误差界，仍保留原正向 kz 钳位和调用者指定有限 N。",
+     "原 abs(kz)<1e-10 替换为 +1e-10 的政策已撤回，因其破坏 SI 相似关系并丢失输入符号。显式 kz=+1e-10 仍复现原替代波点数值。实数 b>0、固定有限 N 时，zz 保留 2alpha z0²(1-sum Gamma_n)，正的遗漏尾项使其一般没有有限零 kz 极限。完整 Maxwellian 的零端点是不同极限。本入口拒绝零值；适用时由调用者显式选择独立 Ronnmark 零 kz 模型，不自动切换。",
+     "xx/xy/yy 保留固定 N64 Weideman Z；每物种全部谐波 |z_n|≤1 时 xz/yz/zz 直接求 zZ，否则使用稳定实参 A。所选切换邻点和样本不建立连续域误差界，仍保留调用者指定的有限 N，非零 kz 不作替换。",
      "有限谐波截断 lmx 由调用者给定；有限 Gamma 尾项保留，可能产生真实的大张量。实现不自动增加 lmx，也不保证谐波收敛。",
      "正尾项无法可靠表示，或求值预算内不能界定余项时抛出 ValueError；不返回部分尾项，也不退回原来发生大项相消的算式。"
     ],
     "tests": [
      "tests/kinetic/test_kinetic_dispersion_sum_fluid_stability.py",
      "tests/kinetic/test_kinetic_signed_kz.py",
-     "tests/kinetic/test_fluid_spectrum_r43_variants.py"
+     "tests/kinetic/test_fluid_spectrum_r43_variants.py",
+     "tests/kinetic/test_kinetic_tensor_similarity.py"
     ]
    }
   },
@@ -9122,11 +9123,11 @@
   },
   {
    "asset_id": "scirel.kinetic.kinetic-dispersion-relation",
-   "source_sha256": "c4edca0414663ffad44fffc9c6fba9c8db7859e20cccefabea7140688b490bba",
+   "source_sha256": "638ee23ca14fcf3d094e55d3a24ff57cc60376072d62b97c170770aa8492da60",
    "summary": "在同一个由平衡状态导出的波点，分别计算常规有限谐波求和与 Ronnmark 色散行列式。",
    "definition": "任务图导出 omega=omega_frac*wn、kx=kx_frac*kn 和 f=omega/(2*pi)，随后用同一 SI 组分状态计算 Weideman 求和路径与 Ronnmark 路径。",
    "model": "均匀磁化多组分 Maxwellian 等离子体",
-   "boundary": "常规求和将 |kz|<1e-10 钳位为 +1e-10；Ronnmark 保留零 kz。",
+   "boundary": "两条路径要求有限、有符号的非零 kz；零值在加载任务图依赖或计算尺度前抛出 ValueError。独立 Ronnmark 求根/扫描仍保留各自的零 kz 能力。",
    "assumptions": [
     "所有组分控制量描述同一个平衡状态快照。"
    ],
@@ -9182,7 +9183,7 @@
     {
      "name": "kz",
      "description": "波矢平行磁场分量，进入平行共振宗量",
-     "constraints": "须为有限的绝对平行波数；动力学路径允许零值。",
+     "constraints": "有限的绝对平行波数且非零，保留实际符号。零值在加载任务图依赖或计算尺度前拒绝。",
      "dtype": "实数"
     },
     {
@@ -9275,18 +9276,18 @@
    "applicability": {
     "preconditions": [
      "物种数组有限、非空且形状兼容；质量、密度和温度为正，电荷和磁场非零。",
-     "波点及派生频率/尺度有限，并满足所选数值路径的域。"
+     "波点及派生频率/尺度有限，kz 非零，并满足两条数值路径的域。"
     ],
     "supported": [
      "在同一个由平衡状态导出的波点，分别计算常规有限谐波求和与 Ronnmark 色散行列式。"
     ],
     "excluded": [
      "模态识别、求根，以及超出测试有限谐波或有理极点近似的精度。",
-     "违反数值域或要求不同张量约定的输入。"
+     "零 kz、违反任一路径数值域或要求不同张量约定的输入。"
     ]
    },
    "failure_semantics": {
-    "invalid_input": "`derive_species_equilibrium_scales`、`probe_frequency`/`probe_wavenumber`（非有限分数、非正 `wn`/`kn`）或非有限 `kz` 抛出 ValueError；动理学求和的参数或 `lmx` 错误传播。",
+    "invalid_input": "非有限或零 kz 在加载任务图依赖或计算尺度前抛出 ValueError。derive_species_equilibrium_scales、probe_frequency/probe_wavenumber 的错误（非有限比例、非正 wn/kn）以及动理学求和的参数或 lmx 错误继续传播。",
     "runtime_failure": "`evaluate_fluid_kinetic_dispersion_sum` 或 `evaluate_kinetic_dispersion_ronnmark` 的数值错误传播；不返回回退行列式。",
     "nonconvergence": "两条行列式路径都是直接求值、无迭代，因此不收敛不是返回状态。",
     "partial_results": "任一行列式路径失败时不返回部分映射。"
@@ -9297,15 +9298,16 @@
    },
    "verification": {
     "scope": [
-     "直接任务图组合与范围受限的数值案例。"
+     "直接任务图组合、有界原数值案例，以及依赖加载和数值工作前的零 kz 拒绝。"
     ],
-    "evidence_ceiling": "限于同一平衡快照上的两条动理学行列式路径。证据：`test_fluid_spectrum_r43_compositions.py` 含 4 个测试函数，其中 2 个引用 `evaluate_kinetic_dispersion_relation`，由 3 个资产共享；仅绑定共享文件覆盖，因此通过是文件级事实、而非资产隔离证据；本审计已执行有界示例。真值来源：有界源方法一致性（非独立真值）。不建立：模式识别、求根或超出已测有限谐波/有理极点近似的精度。",
+    "evidence_ceiling": "原单物种和双物种非零波点保留两条行列式路径、原频率换算和有界来源方法一致性。直接测试验证零值在加载任何任务图依赖前拒绝，并保留独立 Ronnmark 在零 kz 处求根/扫描的成功案例。这些是组合与域检查，不构成独立绝对动理学参照、模式识别、根精度认证或一般有限谐波/有理极点精度保证。",
     "known_limitations": [
-     "常规求和将 |kz|<1e-10 钳位为 +1e-10；Ronnmark 保留零 kz。",
-     "`probe_frequency`/`probe_wavenumber` 拒绝非有限分数与非正 `wn`/`kn`，且 `kz` 必须有限；零 `kz` 极限属于姊妹求和/Ronnmark 合同，而非本关系。",
+     "原有限和近零替代政策已撤回，两条路径都接收实际有符号非零 kz。显式 kz=+1e-10 保留原求和替代波点。固定有限 N 的 zz 一般没有有限零端点，因此组合入口拒绝零值，不切换模型；可按独立合同显式调用 evaluate_kinetic_dispersion_ronnmark。独立波矢求根/扫描保持不变。",
+     "probe_frequency/probe_wavenumber 拒绝非有限比例和非正 wn/kn；kz 必须有限且非零。原 omega/f 换算链与两种模型不变。",
      "两条行列式路径分别返回，不合并为单一物理分支；未绑定外部动理学参照。"
     ],
     "tests": [
+     "tests/kinetic/test_kinetic_signed_kz.py",
      "tests/cross_domain/test_fluid_spectrum_r43_compositions.py"
     ]
    }

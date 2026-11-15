@@ -39,10 +39,14 @@ def test_signed_kz_reflects_full_tensor_and_preserves_determinant(call, kwargs):
     assert minus["nz"] == -plus["nz"]
 
 
-def test_fluid_negative_near_zero_keeps_the_positive_clamp():
-    plus = evaluate_fluid_kinetic_dispersion_sum(**ARGS, kz=1e-12, lmx=5)
-    minus = evaluate_fluid_kinetic_dispersion_sum(**ARGS, kz=-1e-12, lmx=5)
-    endpoint = evaluate_fluid_kinetic_dispersion_sum(**ARGS, kz=1e-10, lmx=5)
-    np.testing.assert_array_equal(plus["D"], endpoint["D"])
-    np.testing.assert_array_equal(minus["D"], endpoint["D"])
-    assert plus["nz"] == minus["nz"] == endpoint["nz"]
+@pytest.mark.parametrize(
+    "kz", [1e-12, np.nextafter(1e-10, 0.0), 1e-10, np.nextafter(1e-10, np.inf)]
+)
+def test_fluid_near_zero_uses_actual_kz_and_signed_reflection(kz):
+    plus = evaluate_fluid_kinetic_dispersion_sum(**ARGS, kz=kz, lmx=5)
+    minus = evaluate_fluid_kinetic_dispersion_sum(**ARGS, kz=-kz, lmx=5)
+    for key in ("K", "D"):
+        np.testing.assert_allclose(minus[key], P @ plus[key] @ P, rtol=2e-12, atol=2e-12)
+    assert minus["determinant"] == pytest.approx(plus["determinant"], rel=2e-12, abs=2e-12)
+    assert plus["nz"] == np.sqrt((2.99792458e8) ** 2) * kz / (2.0 * np.pi * ARGS["f"])
+    assert minus["nz"] == -plus["nz"]
