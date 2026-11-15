@@ -80,7 +80,47 @@ def domain_exports(domain: str, root: Path = SOURCE_ROOT) -> tuple[str, ...]:
     return _declared_names(initializer)
 
 
-def _nested_module_initializer(package_dir: Path, name: str) -> Path:
+def _nested_module_initializer(package_dir: Path, name: str) -> Path | None:
+    """Return a module source, or None for a source-declared direct value."""
+    tree = ast.parse((package_dir / "__init__.py").read_text(encoding="utf-8"))
+    for node in tree.body:
+        if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)):
+            if node.name == name:
+                return None
+        if isinstance(node, ast.ImportFrom) and node.module is not None:
+            if any((alias.asname or alias.name.split(".")[0]) == name for alias in node.names):
+                return None
+        if isinstance(node, ast.AnnAssign) and isinstance(node.target, ast.Name):
+            if node.target.id == name and node.value is not None:
+                return None
+        if isinstance(node, ast.Assign):
+            if any(isinstance(target, ast.Name) and target.id == name for target in node.targets):
+                return None
+            if any(
+                isinstance(target, ast.Name) and target.id == "_LAZY_EXPORTS"
+                for target in node.targets
+            ):
+                try:
+                    mapping = ast.literal_eval(node.value)
+                except (ValueError, TypeError, SyntaxError) as exc:
+                    raise SurfaceInventoryError("non-literal nested lazy exports") from exc
+                binding = mapping.get(name) if isinstance(mapping, dict) else None
+                if binding is not None:
+                    if not (
+                        isinstance(binding, tuple)
+                        and len(binding) == 2
+                        and all(isinstance(part, str) and part for part in binding)
+                    ):
+                        raise SurfaceInventoryError(f"invalid lazy binding for {name!r}")
+                    module_name, symbol = binding
+                    module_path = package_dir.joinpath(*module_name.split("."))
+                    initializer = module_path / "__init__.py"
+                    source = (
+                        initializer if initializer.is_file() else module_path.with_suffix(".py")
+                    )
+                    if symbol not in _declared_names(source):
+                        raise SurfaceInventoryError(f"missing lazy export {name!r}")
+                    return None
     direct = package_dir / f"{name}.py"
     if direct.is_file():
         return direct
@@ -131,8 +171,10 @@ def surface_counts(root: Path = SOURCE_ROOT) -> dict[str, int]:
         counts["nested_package_count"] += 1
         package_dir = root.joinpath(*package_name.split("."))
         for name in modules:
+            source = _nested_module_initializer(package_dir, name)
+            if source is None:
+                counts["nested_export_count"] += 1
+                continue
             counts["nested_module_count"] += 1
-            counts["nested_export_count"] += len(
-                _declared_names(_nested_module_initializer(package_dir, name))
-            )
+            counts["nested_export_count"] += len(_declared_names(source))
     return counts
