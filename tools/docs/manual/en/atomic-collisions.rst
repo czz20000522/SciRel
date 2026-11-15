@@ -250,7 +250,7 @@ where ``F`` / ``F^-1`` are the Fortran-order (``order='F'``) flattening and rest
 
    import numpy as np
    from scirel.collisions import assemble_atomic_hydrogen_collision_matrices as assemble
-   from scirel.kinetic import contract_atomic_hydrogen_alpha_frequencies as contract
+   from scirel.neutrals import contract_atomic_hydrogen_alpha_frequencies as contract
 
    vr = np.array([0.5, 1.0])
    vx = np.array([-1.0, 0.0, 1.0])
@@ -319,7 +319,7 @@ The denominators are ``(U - U_background)/Vth`` for the mixed channels and ``W``
        assemble_atomic_hydrogen_collision_matrices as assemble,
        assemble_atomic_hydrogen_omega_frequencies as omega_reduce,
    )
-   from scirel.kinetic import contract_atomic_hydrogen_alpha_frequencies as contract
+   from scirel.neutrals import contract_atomic_hydrogen_alpha_frequencies as contract
 
    vr = np.array([0.5, 1.0])
    vx = np.array([-1.0, 0.0, 1.0])
@@ -441,7 +441,7 @@ Choosing functions along this path:
 - If you only need one H+H⁺ charge-exchange cross section: :doc:`../reference/generated/scirel.collisions.atomic-hydrogen-charge-exchange-cross-section`; for molecular hydrogen use :doc:`../reference/generated/scirel.collisions.molecular-hydrogen-charge-exchange-cross-section`.
 - If you want to project one cross section onto a discrete Maxwellian target: :doc:`../reference/generated/scirel.collisions.maxwellian-relative-speed-rate-average`.
 - If you want the four kernel matrices: :doc:`../reference/generated/scirel.collisions.atomic-hydrogen-collision-matrices`.
-- If you want Alpha from the matrices and distributions: :doc:`../reference/generated/scirel.kinetic.atomic-alpha-contraction`.
+- If you want Alpha from the matrices and distributions: :doc:`../reference/generated/scirel.neutrals.atomic-alpha-contraction`.
 - If you want the local ``Omega`` and ``nu``: :doc:`../reference/generated/scirel.collisions.atomic-hydrogen-omega-frequencies`.
 
 A few common pitfalls:
@@ -458,7 +458,7 @@ Entry points not covered in this chapter, and why:
 
 - The five elastic cross-section assets (:doc:`../reference/generated/scirel.collisions.atomic-hydrogen-elastic-cross-section`, :doc:`../reference/generated/scirel.collisions.atomic-molecular-hydrogen-elastic-cross-section`, :doc:`../reference/generated/scirel.collisions.molecular-hydrogen-elastic-cross-section`, :doc:`../reference/generated/scirel.collisions.proton-atomic-hydrogen-elastic-cross-section`, :doc:`../reference/generated/scirel.collisions.proton-molecular-hydrogen-elastic-cross-section`): their momentum-transfer/viscosity branches, output shape and piecewise breakpoints are defined by each asset contract; H-on-H2 and H+-on-H return the input shape. H+-on-H accepts laboratory energy, clips it, then sets E_cm=E_lab/2; it uses the low branch for E_cm<10 eV and the high branch for E_cm>=10 eV (laboratory E_lab>=20 eV, including exactly 20 eV). They serve the elastic matrices, but including them would turn this chapter from one continuous path into a catalog of cross sections.
 - The five rate and population assets (:doc:`../reference/generated/scirel.collisions.atomic-hydrogen-charge-exchange-rate-coefficient`, :doc:`../reference/generated/scirel.collisions.molecular-hydrogen-charge-exchange-rate-coefficient`, :doc:`../reference/generated/scirel.collisions.janev-electron-impact-ionization-rate`, :doc:`../reference/generated/scirel.collisions.atomic-hydrogen-1s-radiative-recombination-rate-coefficient`, :doc:`../reference/generated/scirel.kinetic.hydrogen-saha-equilibrium-population`): they are independent fits and Saha relations given directly in temperature/energy or density/temperature, and cannot be derived from this chapter's beam-target average or matrix contraction.
-- Molecular-hydrogen matrices, Alpha and Omega (:doc:`../reference/generated/scirel.collisions.molecular-hydrogen-collision-matrices`, :doc:`../reference/generated/scirel.kinetic.molecular-alpha-contraction`, :doc:`../reference/generated/scirel.collisions.molecular-hydrogen-omega-frequencies`): the structure parallels the atomic path, but the coefficient tables, species pairings and cross-section fits differ; repeating the code would add no new methodological information.
-- The three-channel sum entry point (:doc:`../reference/generated/scirel.kinetic.elastic-frequency-channels`): it is a pointwise sum of already normalized channels; this chapter's ``omega_reduce`` already returns ``Omega_EL``, so treating it separately would be repetitive.
+- Molecular-hydrogen matrices, Alpha and Omega (:doc:`../reference/generated/scirel.collisions.molecular-hydrogen-collision-matrices`, :doc:`../reference/generated/scirel.neutrals.molecular-alpha-contraction`, :doc:`../reference/generated/scirel.collisions.molecular-hydrogen-omega-frequencies`): the structure parallels the atomic path, but the coefficient tables, species pairings and cross-section fits differ; repeating the code would add no new methodological information.
+- The three-channel sum entry point (:doc:`../reference/generated/scirel.neutrals.elastic-frequency-channels`): it is a pointwise sum of already normalized channels; this chapter's ``omega_reduce`` already returns ``Omega_EL``, so treating it separately would be repetitive.
 
 Boundary: the numbers in this chapter correspond only to the declared normalized cylindrical mesh, the given cross-section fits, and this moment-matching reduction. Changing the distribution, species, ``Tnorm``/``mu``, angular nodes or spatial coupling means the ``Omega`` and ``nu`` here cannot be reused directly. Full signatures, parameter validation, failure behavior and the validation boundary for a larger parameter domain are in the API reference pages linked at the end of the chapter; this chapter is only responsible for explaining one computational path clearly.

@@ -1,4 +1,4 @@
-"""Direct contract tests for ``scirel.kinetic.cylindrical_velocity_quadrature``.
+"""Direct contract tests for ``scirel.neutrals.cylindrical_velocity_quadrature``.
 
 The relation is the saved the neutral-transport formulation ``make_dvr_dvx`` slice: from strictly
 increasing normalized ``vr``/``vx`` meshes it builds the ghost-extended cell
@@ -15,8 +15,8 @@ import numpy as np
 import pytest
 
 import scirel
-from scirel.kinetic import cylindrical_velocity_quadrature
-from scirel.kinetic.cylindrical_velocity_quadrature import (
+from scirel.neutrals import cylindrical_velocity_quadrature
+from scirel.neutrals.cylindrical_velocity_quadrature import (
     make_cylindrical_velocity_quadrature,
 )
 
@@ -39,7 +39,7 @@ def test_the_module_publishes_exactly_one_callable():
 
 def test_only_the_domain_namespace_exports_the_callable():
     assert not hasattr(scirel, "make_cylindrical_velocity_quadrature")
-    assert callable(scirel.kinetic.make_cylindrical_velocity_quadrature)
+    assert callable(scirel.neutrals.make_cylindrical_velocity_quadrature)
 
 
 def test_the_result_keys_are_exactly_the_saved_field_set():

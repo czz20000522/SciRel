@@ -5,7 +5,7 @@ from __future__ import annotations
 import numpy as np
 import pytest
 
-from scirel.kinetic import interpolate_scalar_across_mesh
+from scirel.neutrals import interpolate_scalar_across_mesh
 
 
 def test_linear_profile_and_exact_knots():

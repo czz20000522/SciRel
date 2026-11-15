@@ -81,8 +81,8 @@ def evaluate_h_saha_equilibrium_population(
 
     See Also
     --------
-    scirel.kinetic.make_cylindrical_velocity_quadrature : Build velocity-space cell measures.
-    scirel.kinetic.build_shifted_maxwellian_seed : Build a normalized velocity seed.
+    scirel.neutrals.make_cylindrical_velocity_quadrature : Build velocity-space cell measures.
+    scirel.neutrals.build_shifted_maxwellian_seed : Build a normalized velocity seed.
 
     Notes
     -----

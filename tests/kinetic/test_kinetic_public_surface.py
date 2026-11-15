@@ -14,21 +14,24 @@ ROOT = Path(__file__).resolve().parents[2]
 
 CASES = (
     (
-        "scirel.kinetic.atomic-alpha-contraction.json",
+        "scirel.neutrals.atomic-alpha-contraction.json",
         {"contract_atomic_hydrogen_alpha_frequencies"},
     ),
-    ("scirel.kinetic.atomic-scattered-sources-reduction.json", {"reduce_atomic_scattered_sources"}),
     (
-        "scirel.kinetic.cross-mesh-distribution-interpolation.json",
+        "scirel.neutrals.atomic-scattered-sources-reduction.json",
+        {"reduce_atomic_scattered_sources"},
+    ),
+    (
+        "scirel.neutrals.cross-mesh-distribution-interpolation.json",
         {
             "InfeasibleMomentsError",
             "MomentCorrectionConvergenceError",
             "interp_distribution_across_mesh",
         },
     ),
-    ("scirel.kinetic.elastic-frequency-channels.json", {"sum_elastic_frequency_channels"}),
+    ("scirel.neutrals.elastic-frequency-channels.json", {"sum_elastic_frequency_channels"}),
     (
-        "scirel.kinetic.elastic-regeneration-aggregation.json",
+        "scirel.neutrals.elastic-regeneration-aggregation.json",
         {"aggregate_elastic_regeneration_source"},
     ),
     (
@@ -44,17 +47,17 @@ CASES = (
         {"evaluate_fluid_kinetic_dispersion_sum"},
     ),
     ("scirel.kinetic.kinetic-wavevector-scan.json", {"scan_kinetic_wavevectors"}),
-    ("scirel.kinetic.outer-convergence.json", {"evaluate_outer_convergence"}),
+    ("scirel.neutrals.outer-convergence.json", {"evaluate_outer_convergence"}),
     (
-        "scirel.kinetic.molecular-alpha-contraction.json",
+        "scirel.neutrals.molecular-alpha-contraction.json",
         {"contract_molecular_hydrogen_alpha_frequencies"},
     ),
     (
-        "scirel.kinetic.molecular-scattered-sources-reduction.json",
+        "scirel.neutrals.molecular-scattered-sources-reduction.json",
         {"reduce_molecular_scattered_sources"},
     ),
     (
-        "scirel.kinetic.simple-charge-exchange-source.json",
+        "scirel.neutrals.simple-charge-exchange-source.json",
         {"assemble_simple_charge_exchange_source"},
     ),
 )
@@ -85,6 +88,6 @@ def test_catalog_callable_matches_explicit_module_exports(
 
 
 def test_cross_mesh_error_exports_remain_value_error_subclasses() -> None:
-    module = importlib.import_module("scirel.kinetic.cross_mesh_distribution_interpolation")
+    module = importlib.import_module("scirel.neutrals.cross_mesh_distribution_interpolation")
     assert issubclass(module.InfeasibleMomentsError, ValueError)
     assert issubclass(module.MomentCorrectionConvergenceError, ValueError)

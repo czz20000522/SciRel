@@ -5,7 +5,7 @@ from __future__ import annotations
 import numpy as np
 import pytest
 
-from scirel.kinetic import (
+from scirel.neutrals import (
     aggregate_elastic_regeneration_source,
     assemble_neutral_boltzmann_rhs,
     assemble_neutral_total_collision_frequency,

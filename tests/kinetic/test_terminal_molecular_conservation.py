@@ -3,7 +3,7 @@
 import numpy as np
 import pytest
 
-from scirel.kinetic import (
+from scirel.neutrals import (
     reduce_qh2_total_conservation_diagnostic,
     reduce_terminal_molecular_energy_transfer,
     reduce_terminal_molecular_heat_flux,

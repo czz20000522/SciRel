@@ -1,4 +1,4 @@
-"""Direct contract tests for ``scirel.kinetic.shifted_maxwellian_seed``.
+"""Direct contract tests for ``scirel.neutrals.shifted_maxwellian_seed``.
 
 The relation is the saved the neutral-transport formulation ``create_shifted_maxwellian`` seed leaf: the
 normalized exponential distribution on a cylindrical ``(vr, vx)`` mesh before
@@ -17,8 +17,8 @@ import numpy as np
 import pytest
 
 import scirel
-from scirel.kinetic import shifted_maxwellian_seed
-from scirel.kinetic.shifted_maxwellian_seed import build_shifted_maxwellian_seed
+from scirel.neutrals import shifted_maxwellian_seed
+from scirel.neutrals.shifted_maxwellian_seed import build_shifted_maxwellian_seed
 
 AMU = 1.6726231e-27
 E_CH = 1.602177e-19
@@ -77,7 +77,7 @@ def test_the_module_publishes_exactly_one_callable():
 
 def test_only_the_domain_namespace_exports_the_callable():
     assert not hasattr(scirel, "build_shifted_maxwellian_seed")
-    assert callable(scirel.kinetic.build_shifted_maxwellian_seed)
+    assert callable(scirel.neutrals.build_shifted_maxwellian_seed)
 
 
 def test_the_signature_is_keyword_only_with_eight_arguments():
@@ -195,7 +195,7 @@ def test_the_molecule_count_scales_the_exponent():
 
 def test_the_quadrature_volumes_normalize_the_seed_and_feed_the_rate_average():
     from scirel.collisions import average_cross_section_over_maxwellian
-    from scirel.kinetic import make_cylindrical_velocity_quadrature
+    from scirel.neutrals import make_cylindrical_velocity_quadrature
 
     vr = np.array([0.5, 1.5])
     vx = np.array([-1.5, -0.5, 0.5, 1.5])
@@ -298,7 +298,7 @@ def test_numpy_integer_molecule_count_is_accepted():
 
 
 def test_thermal_speed_uses_the_existing_saved_hydrogen_mass_convention():
-    from scirel.kinetic import compute_thermal_speed_m_s
+    from scirel.neutrals import compute_thermal_speed_m_s
 
     seed = _call(tnorm_ev=20.0, mass_amu=2.0)
     scale = compute_thermal_speed_m_s(20.0, 2.0)

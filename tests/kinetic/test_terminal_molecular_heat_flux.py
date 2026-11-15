@@ -3,8 +3,8 @@
 import numpy as np
 import pytest
 
-from scirel.kinetic import reduce_axisymmetric_neutral_moments
-from scirel.kinetic import reduce_terminal_molecular_heat_flux
+from scirel.neutrals import reduce_axisymmetric_neutral_moments
+from scirel.neutrals import reduce_terminal_molecular_heat_flux
 
 
 def _case():

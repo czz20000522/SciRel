@@ -3,7 +3,7 @@
 import numpy as np
 import pytest
 
-from scirel.kinetic import reduce_terminal_molecular_energy_transfer
+from scirel.neutrals import reduce_terminal_molecular_energy_transfer
 
 
 def _case():

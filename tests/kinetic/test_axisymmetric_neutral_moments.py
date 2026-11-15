@@ -1,4 +1,4 @@
-"""Direct contract tests for ``scirel.kinetic.reduce_axisymmetric_neutral_moments``.
+"""Direct contract tests for ``scirel.neutrals.reduce_axisymmetric_neutral_moments``.
 
 The saved the neutral-transport formulation package (anchor  /
 ``kinetic_h2.py:1612-1801`` as recorded by the saved bundle's provenance)
@@ -11,7 +11,7 @@ from __future__ import annotations
 import numpy as np
 import pytest
 
-from scirel.kinetic import (
+from scirel.neutrals import (
     compute_thermal_speed_m_s,
     reduce_axisymmetric_neutral_moments,
 )
@@ -96,7 +96,7 @@ def test_moments_match_an_independent_maxwellian_witness():
 
 
 def test_cylindrical_quadrature_and_shifted_seed_feed_the_moment_reduction():
-    from scirel.kinetic import (
+    from scirel.neutrals import (
         build_shifted_maxwellian_seed,
         make_cylindrical_velocity_quadrature,
     )

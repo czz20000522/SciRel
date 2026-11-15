@@ -11,7 +11,7 @@ from __future__ import annotations
 import numpy as np
 import pytest
 
-from scirel.kinetic import (
+from scirel.neutrals import (
     assemble_neutral_boltzmann_rhs,
     assemble_neutral_upwind_transport_coefficients,
     propagate_neutral_generation,

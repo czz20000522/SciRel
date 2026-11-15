@@ -250,7 +250,7 @@ Freeman 分支在低能端比默认值高约 15%，到 100 keV 又低约 17%，�
 
    import numpy as np
    from scirel.collisions import assemble_atomic_hydrogen_collision_matrices as assemble
-   from scirel.kinetic import contract_atomic_hydrogen_alpha_frequencies as contract
+   from scirel.neutrals import contract_atomic_hydrogen_alpha_frequencies as contract
 
    vr = np.array([0.5, 1.0])
    vx = np.array([-1.0, 0.0, 1.0])
@@ -319,7 +319,7 @@ Freeman 分支在低能端比默认值高约 15%，到 100 keV 又低约 17%，�
        assemble_atomic_hydrogen_collision_matrices as assemble,
        assemble_atomic_hydrogen_omega_frequencies as omega_reduce,
    )
-   from scirel.kinetic import contract_atomic_hydrogen_alpha_frequencies as contract
+   from scirel.neutrals import contract_atomic_hydrogen_alpha_frequencies as contract
 
    vr = np.array([0.5, 1.0])
    vx = np.array([-1.0, 0.0, 1.0])
@@ -441,7 +441,7 @@ Freeman 分支在低能端比默认值高约 15%，到 100 keV 又低约 17%，�
 - 只想要一条 H+H⁺ 电荷交换截面：:doc:`../reference/generated/scirel.collisions.atomic-hydrogen-charge-exchange-cross-section`；分子氢用 :doc:`../reference/generated/scirel.collisions.molecular-hydrogen-charge-exchange-cross-section`。
 - 想把一条截面投到离散 Maxwellian 靶上：:doc:`../reference/generated/scirel.collisions.maxwellian-relative-speed-rate-average`。
 - 想得到四族核矩阵：:doc:`../reference/generated/scirel.collisions.atomic-hydrogen-collision-matrices`。
-- 想从矩阵和分布得到 Alpha：:doc:`../reference/generated/scirel.kinetic.atomic-alpha-contraction`。
+- 想从矩阵和分布得到 Alpha：:doc:`../reference/generated/scirel.neutrals.atomic-alpha-contraction`。
 - 想归约出局部 ``Omega`` 与 ``nu``：:doc:`../reference/generated/scirel.collisions.atomic-hydrogen-omega-frequencies`。
 
 几个容易踩的坑：
@@ -458,7 +458,7 @@ Freeman 分支在低能端比默认值高约 15%，到 100 keV 又低约 17%，�
 
 - 五个弹性截面资产（:doc:`../reference/generated/scirel.collisions.atomic-hydrogen-elastic-cross-section`、:doc:`../reference/generated/scirel.collisions.atomic-molecular-hydrogen-elastic-cross-section`、:doc:`../reference/generated/scirel.collisions.molecular-hydrogen-elastic-cross-section`、:doc:`../reference/generated/scirel.collisions.proton-atomic-hydrogen-elastic-cross-section`、:doc:`../reference/generated/scirel.collisions.proton-molecular-hydrogen-elastic-cross-section`）：动量传递/黏性分支、输出形状和分段断点由各资产合同规定；H–H₂ 与 H⁺–H 返回与输入相同的形状。H⁺–H 接收实验室能量，先裁剪再令 E_cm=E_lab/2；质心 E_cm<10 eV 使用低能分支，E_cm≥10 eV（实验室 E_lab≥20 eV，含恰好 20 eV）使用高能分支。它们服务于弹性矩阵，但会把本章从一条连续路径变成截面清单。
 - 五个速率与人口资产（:doc:`../reference/generated/scirel.collisions.atomic-hydrogen-charge-exchange-rate-coefficient`、:doc:`../reference/generated/scirel.collisions.molecular-hydrogen-charge-exchange-rate-coefficient`、:doc:`../reference/generated/scirel.collisions.janev-electron-impact-ionization-rate`、:doc:`../reference/generated/scirel.collisions.atomic-hydrogen-1s-radiative-recombination-rate-coefficient`、:doc:`../reference/generated/scirel.kinetic.hydrogen-saha-equilibrium-population`）：它们是从温度/能量或密度/温度直接给出的独立拟合与 Saha 关系，不能由本章的束靶平均或矩阵收缩推出。
-- 分子氢的矩阵、Alpha 和 Omega（:doc:`../reference/generated/scirel.collisions.molecular-hydrogen-collision-matrices`、:doc:`../reference/generated/scirel.kinetic.molecular-alpha-contraction`、:doc:`../reference/generated/scirel.collisions.molecular-hydrogen-omega-frequencies`）：结构与原子路径平行，但系数表、物种配对和截面拟合不同；重复一遍代码不会增加新的方法信息。
-- 三通道求和入口（:doc:`../reference/generated/scirel.kinetic.elastic-frequency-channels`）：它是已归一化通道的逐点求和；本章的 ``omega_reduce`` 已经返回 ``Omega_EL``，单独再讲会重复。
+- 分子氢的矩阵、Alpha 和 Omega（:doc:`../reference/generated/scirel.collisions.molecular-hydrogen-collision-matrices`、:doc:`../reference/generated/scirel.neutrals.molecular-alpha-contraction`、:doc:`../reference/generated/scirel.collisions.molecular-hydrogen-omega-frequencies`）：结构与原子路径平行，但系数表、物种配对和截面拟合不同；重复一遍代码不会增加新的方法信息。
+- 三通道求和入口（:doc:`../reference/generated/scirel.neutrals.elastic-frequency-channels`）：它是已归一化通道的逐点求和；本章的 ``omega_reduce`` 已经返回 ``Omega_EL``，单独再讲会重复。
 
 边界：本章的数值只对应声明的归一化圆柱网格、给定的截面拟合和这套矩匹配归约。换分布、换物种、换 ``Tnorm``/``mu``、换角节点或换空间耦合，都不能直接套用这里的 ``Omega`` 和 ``nu``。完整签名、参数校验、失败行为和更大参数域的验证边界在章末链接的 API 参考页；本章只负责把一条计算路径讲清楚。

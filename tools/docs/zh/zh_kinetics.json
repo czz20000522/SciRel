@@ -3,8 +3,8 @@
  "language": "zh-CN",
  "records": [
   {
-   "asset_id": "scirel.kinetic.neutral-generation-stopping",
-   "source_sha256": "3116fa834bf9e4355d3fbf0db4a8a10aec1bf73f6022f8981db51e1c67674ce5",
+   "asset_id": "scirel.neutrals.neutral-generation-stopping",
+   "source_sha256": "825fc3bc3c9bcd1fc8c7fc5e0adc5b9701e9615d5dd6b215bd814f95d1bab3bd",
    "summary": "计算碰撞代的相对密度比 Δn，并判断是否还需下一代。",
    "definition": "先校验全部输入与种子控制，计算 delta=max(generation_density_m3)/max(accumulated_density_m3)。先判断 delta<truncate，成立返回 (delta, True, \"truncate\")；否则仅在 seed_iteration_enabled 且 delta<0.003*seed_error 时返回 (delta, True, \"seed_relative\")，其余返回 (delta, False, \"continue\")。两个比较均严格小于：等号不触发相应停止分支；0.003 是固定常数，不是参数。",
    "model": "逐代最大值比停止关系，并对非法输入域作显式失败关闭收紧。",
@@ -377,8 +377,8 @@
    }
   },
   {
-   "asset_id": "scirel.kinetic.cross-mesh-scalar-interpolation",
-   "source_sha256": "d23d8b5f4ea137cef1a1e1d0aecf799c20911932532c603d61edc078547aaf95",
+   "asset_id": "scirel.neutrals.cross-mesh-scalar-interpolation",
+   "source_sha256": "8beb1e23f1ae27c559a5208ae1800b1cfda8ece016f3cb7fe6e8c185da6e8954",
    "summary": "将一维空间标量剖面线性插值到另一网格：域内节点线性插值，域外严格为零，并可报告边界警告；域内节点必须形成连续索引块，否则以具名合同错误拒绝。",
    "definition": "选择xb∈[min(xa),max(xa)]的节点，用SciPy线性插值填入连续索引块；域外值为零。do_warn只改变警告，不改变输出。",
    "model": "N5 的 H↔H2 接缝插值。",
@@ -459,8 +459,8 @@
    }
   },
   {
-   "asset_id": "scirel.kinetic.shifted-maxwellian-seed",
-   "source_sha256": "aa64617318d1b065451c506be135a051c5e663d4c107247398a1575a94f4b84b",
+   "asset_id": "scirel.neutrals.shifted-maxwellian-seed",
+   "source_sha256": "c2292e566be58bd1144b436dbe0990a0b8b643261c7b7cc76b68206461d3582b",
    "summary": "在圆柱 (vr, vx) 速度网格上给出矩补偿之前的归一化指数分布种子：每个轴向漂移对应一个温度，指数中含分子数因子，采用严格内部 −80 截断，并按调用者提供的圆柱单元体积归一化。它与圆柱速度求积组合使用，止于任何矩补偿步骤之前。",
    "definition": "取 m_H = 1.6726231e-27 kg（氢质量常数），vth = sqrt(2 e T_norm / (m m_H))。每个漂移的原始指数为 -(vr² + (vx - shift/vth)²) * molecule_count * T_norm / T_shift。原始种子在 -80 < argument < 0 时取 exp(argument)，其余情况（包括 argument = 0）一律取 exp(-80)：这是严格内部截断，因此恰好落在漂移峰上的网格节点也像远端尾部一样被压到下限，而返回的 exponent 仍报告原始值。分布按每个漂移和给定单元体积归一化：每个漂移满足 sum(volume * distribution) = 1。",
    "model": "显式网格上的漂移 Maxwell 指数种子；任何下游矩补偿步骤都刻意留在此叶函数之外。",
@@ -592,8 +592,8 @@
    }
   },
   {
-   "asset_id": "scirel.kinetic.neutral-boltzmann-rhs",
-   "source_sha256": "180ca32b59d06d19c8b76277bb927c891f49a7dff25677128c80809713dc71cc",
+   "asset_id": "scirel.neutrals.neutral-boltzmann-rhs",
+   "source_sha256": "f24e58682ff37dff1641834e0be215c8aba3d7ea0665f028c96dd823a5f1b846",
    "summary": "将 S+Beta_CX-alpha*F+OmegaM+Swall 的归一化空间平衡 F/m 显式乘一次 Vth，返回物理 Boltzmann 右端 F/s。",
    "definition": "带符号求和：rhs = Vth * (coeff_source + charge_exchange_source_sum - collision_frequency * total_distribution + elastic_source_sum + wall_source_sum)。",
    "model": "显式 Boltzmann 右端项装配与空间到时间单位换算。",
@@ -692,8 +692,8 @@
    }
   },
   {
-   "asset_id": "scirel.kinetic.elastic-regeneration-aggregation",
-   "source_sha256": "55a754e969f99ae84ea3e785467340a6ac23d2987cd2ebff9f9351092174062c",
+   "asset_id": "scirel.neutrals.elastic-regeneration-aggregation",
+   "source_sha256": "95de9396f090063db373fa6f923a8013f5676e84e4717737629bc04e43c6b08b",
    "summary": "聚合归一化弹性再生源 Σ_q Omega_q[x]*M_q(u_r,u_x,x)，其中 Omega_q=nu_q/Vth 为 m^-1，分布 M_q 为 m^-3。",
    "definition": "频率与分布的键集合必须完全一致；每一项把 (nx,) 剖面乘入最后一轴；字典迭代顺序决定浮点求和顺序。",
    "model": "逆长度弹性系数与分布密度的通道加权汇合。",
@@ -763,7 +763,7 @@
   },
   {
    "asset_id": "scirel.collisions.atomic-hydrogen-omega-frequencies",
-   "source_sha256": "0191ecd92bcef28b1a13b20f74cbcc4169d87ab6412da31b21b9044c3f6bd256",
+   "source_sha256": "6d59d4abdaa20823e90f9e624291490e23e220828ad3b51977cc04c5d12f4161",
    "summary": "在每个空间单元独立归约原子氢弹性碰撞动量与应力矩，返回归一化系数 Omega（m⁻¹）、物理频率 nu（s⁻¹）及可定义性。零分母保留碰撞矩并显式返回未定义频率，不用人为下限或截正掩盖。顶层结果为 scirel._result.Result 映射；键访问保持可用，不冲突字段也支持属性访问。",
    "definition": "令 w_ij=Vr2pidVr_i*dVx_j，n=Σwf，u=Σwf vx/n，U=Vth*u，K=vr²−2(vx−u)²。central 状态取 W=ΣwfK/n；target 状态取 W=Σw(f−M)K/n，M 必须保持本单元粒子数、平均速度与总动能。两混合通道 N=Σwf Alpha/n、d=(U−U_background)/Vth；自碰撞 Alpha=SIG_self@F(f)，N=Σwf Alpha/n、d=W。Omega=N/d，nu=Vth*Omega，不截负、不加下限。混合物理加速度 moment_rate=−β Vth² N，自碰撞应力变化率=−Vth³ N；原子 β=(1/2,2/3)，分子 β=(1/3,1/3)。d=0 时 Omega/nu=NaN、defined=False；有限 N 与 moment_rate 仍返回。关闭通道为精确零且状态 disabled。总频率为三通道之和，传播启用通道的未定义值。",
    "model": "动量/应力矩匹配的 BGK 近似；不是完整 Boltzmann 碰撞算子，也不由单点 0/0 推断唯一线性化率。",
@@ -1071,8 +1071,8 @@
    }
   },
   {
-   "asset_id": "scirel.kinetic.molecular-alpha-contraction",
-   "source_sha256": "fa6fe02878e0e73097469d9b57ee505ab61f6c3f69b1b03f499e4dacf1064237",
+   "asset_id": "scirel.neutrals.molecular-alpha-contraction",
+   "source_sha256": "cce41a5d0ebce9290e0b695cff410756a5174ba2245778fd210843deae349151",
    "summary": "逐空间单元将分子三类 SIG 碰撞矩阵与 Fortran 顺序展平的前态分布收缩为三个 Alpha 碰撞频率场；ni_correct 可按逐点 max(n−nHP,0) 修正离子密度。",
    "definition": "逐 k 的矩阵–向量收缩：每个家族用一个装配好的 (N,N) SIG 矩阵乘以某个前驱分布按 Fortran 顺序展平后的向量，并把乘积还原到 (nvr,nvx) 切片。CX 家族携带 fHp_hat（以漂移 vxi 和温度 THP 为参数的 H2+ Maxwell 种子），按单元乘以 nHP[k]；H2-H 家族携带裸原子分布 fH；H2-P 家族携带质子种子 fi_hat，按 ni 缩放，其中 ni = n，或在设置 ni_correct 时按单元取 ni = max(n - nHP, 0)。",
    "model": "Fortran 顺序收缩，并包含保持顺序的最小 reshape 修复；维护回归测试在所声明的合法域内逐位复现。",
@@ -1280,8 +1280,8 @@
    }
   },
   {
-   "asset_id": "scirel.kinetic.outer-convergence",
-   "source_sha256": "d8daeee29fbe0f4473102bcc898a35b549c7e61321055f87eabe6f78716fa3a3",
+   "asset_id": "scirel.neutrals.outer-convergence",
+   "source_sha256": "cf0e1e3244a9a1e5a23576e5a4b591f604a1cfa9f9665af2dfa6ecd364f3d2db",
    "summary": "评估顶层外循环收敛：比较一次外循环前后的分子密度，相对变化超过 truncate 时重新进入。",
    "definition": "评估顶层外循环收敛：比较一次外循环前后的分子密度，相对变化超过 truncate 时重新进入。",
    "model": "带 truncate 阈值的顶层外循环最大值比关系，并显式收紧非法输入域。",
@@ -1575,8 +1575,8 @@
    }
   },
   {
-   "asset_id": "scirel.kinetic.adaptive-neutral-velocity-mesh",
-   "source_sha256": "959f9c1231b7d7bad6758f9e252e546ca51a58342596c1ff88f83e2ed3deee3b",
+   "asset_id": "scirel.neutrals.adaptive-neutral-velocity-mesh",
+   "source_sha256": "6bff4e154f420b7cfdcc3fe329ffdfda9149871d00eae13da4d86e20d56ee94e",
    "summary": "由离子温度和请求的放电能量构造中性物种的对称圆柱速度网格 (vx, vr)：温差小时用 vmax=3.5 的均匀网格，否则用二次拉伸；请求的正能量作为精确节点插入，并返回归一化温度。",
    "definition": "选取温度及正请求能量，cap>0 时从归一化总体排除≥cap 的条目。基网格 vmax=3.5；均匀分支用 nv+1 等距节点，拉伸分支用 g b i+b i²。随后插入所有正请求能量，包括超过 cap 的能量，因此最终可超过 3.5。vr=v[1:]，vx 镜像对称；ix/ir 指向最后请求能量节点。",
    "model": "对称圆柱速度网格构造。",
@@ -1732,8 +1732,8 @@
    }
   },
   {
-   "asset_id": "scirel.kinetic.outer-seed-convergence",
-   "source_sha256": "eccb7974b3caef44c66f7a3107bdbe673384946057b331f88ac9036ee5070175",
+   "asset_id": "scirel.neutrals.outer-seed-convergence",
+   "source_sha256": "e2bd7f4c601d4616d70bf25f64e49b68fa323e32a417af97ed7da2e7764ebb6c",
    "summary": "计算种子轮次的相对密度变化与 10×truncate 阈值，判断是否再次进入种子迭代。",
    "definition": "计算 seed_error 与 reentry_threshold=10×truncate；误差严格超过阈值时重新迭代。",
    "model": "带 10*truncate 阈值的内层种子轮次最大值比关系，并收紧非法输入与派生非有限值的拒绝。",
@@ -2052,8 +2052,8 @@
    }
   },
   {
-   "asset_id": "scirel.kinetic.incoming-boundary-flux-normalization",
-   "source_sha256": "a57a70c5eef3ca82658a08b03ec65355a9ea9b3939042401f1b8e2328e255958",
+   "asset_id": "scirel.neutrals.incoming-boundary-flux-normalization",
+   "source_sha256": "f641ce4e5c1452b05e7a59099496c6940a092a76fc0e6a38383d791804be2c8e",
    "summary": "将 H 或 H₂ 边界形状在正轴向速度半空间缩放到请求入射中性粒子通量，并返回缩放后的边界、缩放因子和缩放前通量积分。",
    "definition": "只有正 vx 半空间进入积分；返回分布在非正半空间精确为零；缩放取 abs(target)/flux 形式，因此等幅的正负目标得到相同缩放，零目标给出零缩放和零边界。",
    "model": "边界源归一化关系。",
@@ -2471,8 +2471,8 @@
    }
   },
   {
-   "asset_id": "scirel.kinetic.molecular-scattered-sources-reduction",
-   "source_sha256": "2f4b2179b5f44240597a126f4475e6b285f7fb1056970177e6de75e7d5b92925",
+   "asset_id": "scirel.neutrals.molecular-scattered-sources-reduction",
+   "source_sha256": "28339d03fb03a50c9b6c5a10dd5cb1e8ec8ffc1e269f5ab5da79315c8e7add15",
    "summary": "按壁面、CX、弹性顺序汇合分子归一化空间源 Swall+Beta_CX+OmegaM（Q/Vth，F/m），保留带符号值。",
    "definition": "按壁面、CX、弹性顺序做普通逐点相加；不对带符号值做钳制。",
    "model": "归一化散射源的顺序聚合。",
@@ -2650,8 +2650,8 @@
    }
   },
   {
-   "asset_id": "scirel.kinetic.neutral-generation-propagation",
-   "source_sha256": "3bd89b01901219cc3a550a2b2c1a27fddac264eeab1d3239a47e221622210549",
+   "asset_id": "scirel.neutrals.neutral-generation-propagation",
+   "source_sha256": "b71698487c3dce42ed19522616f56e0b37415d90ac8df843c7ad57c98465ae90",
    "summary": "用无量纲轴向节点和归一化输运/源系数，在空间中推进一代中性分布。",
    "definition": "首次飞行使用正向边界、Fk 和反向 Gk；散射代使用正向 Bk 和反向 Dk 的源递推。负速度支右端起值为零。",
    "model": "使用调用者输运系数的双向递推。",
@@ -2773,8 +2773,8 @@
    }
   },
   {
-   "asset_id": "scirel.kinetic.terminal-ion-state-reduction",
-   "source_sha256": "5b1d070815082cadfad9938b7f5651b05615dad7864df34dcc69c3578b957b0b",
+   "asset_id": "scirel.neutrals.terminal-ion-state-reduction",
+   "source_sha256": "384abc0760991a29d63216287aa5315a72ab8fee78e0db9346bb94f4a7304bd8",
    "summary": "由显式 H₂ 密度、电子密度、离子温度、R1 二体电离速率系数与 11 列二体速率表，求终态 H₂⁺ 密度、温度、电子碰撞损失频率与能量交换剖面。",
    "definition": "对每个空间格 k，electron_loss_frequency=electron_density[k]*sum(reaction_rate_table_m3_s[k,7:11])，energy_exchange_frequency=(7.7e-7*electron_density[k]*1e-6)/(sqrt(mass_ratio)*ion_temperature_ev[k]^1.5)，并保持所声明的算术顺序。H2+ 密度分母是 electron_loss_frequency+loss_frequency_s_inv，必须有限且严格为正。分子离子密度等于 molecular_density_m3*electron_density_m3*ionization_rate_coefficient_m3_s 除以该分母。分子离子温度等于 ion_temperature_ev*energy_exchange_frequency 除以 energy_exchange_frequency 加密度分母；其分母也必须有限且严格为正。",
    "model": "终态分子离子代数状态归约，速率表由调用者以二体速率系数提供。",
@@ -2897,8 +2897,8 @@
    }
   },
   {
-   "asset_id": "scirel.kinetic.elastic-frequency-channels",
-   "source_sha256": "1f6dd427dfdc61a1807f6d6ea2c054b0c7ddef42ce42b08aad55f02ed870acb4",
+   "asset_id": "scirel.neutrals.elastic-frequency-channels",
+   "source_sha256": "64058887f80711b2b5e73448ac77b3f2f2b3fc734f50913024aa86761c5cb6c8",
    "summary": "按调用者顺序逐点相加恰好三个已归一化的逆长度弹性碰撞系数 Omega=nu/Vth。",
    "definition": "三个通道按调用者顺序从左到右相加（保持浮点求和顺序）；只接受恰好三个通道。",
    "model": "逆长度弹性通道汇合关系。",
@@ -2961,13 +2961,13 @@
    }
   },
   {
-   "asset_id": "scirel.kinetic.terminal-pressure-temperature-reduction",
-   "source_sha256": "113a66713216a26775866357ba0d9a48dc50e30225c275b813dc17084a0a77cd",
+   "asset_id": "scirel.neutrals.terminal-pressure-temperature-reduction",
+   "source_sha256": "8f1f66df4cc55ab4ae952bdce89648fc723ec89da6134b2eb6c4905e193ea712",
    "summary": "用显式热速度、质量比和柱坐标求积计算终态H₂中心压力与温度。",
    "definition": "对每个空间格 k，density=sum_i weight[i]*sum_j f[i,j,k]*dvx[j]，flux=Vth*sum_i weight[i]*sum_j vx[j]*f[i,j,k]*dvx[j]，并遵循所声明的逐格矩阵–向量和径向归约顺序。中心化归一化速度平方为 vr[i]^2+(vx[j]-flux/(density*Vth))^2。压力为其加权分布积分乘以 2*mass_ratio*1.6726231e-27*Vth^2/(3*1.602177e-19)；温度为压力/密度。每个空间格的密度必须严格为正，但单个权重可以为零。",
    "model": "终态 H₂ 中心矩诊断，质量比和热速度由调用者提供。",
    "assumptions": [
-    "权重为正、热速度与 scirel.kinetic.axisymmetric-neutral-moments 导出的热速度相同且 molecularity=2 时，本关系的压力与温度与其对应字段相符；本关系允许零权重且不计算应力或热流。",
+    "权重为正、热速度与 scirel.neutrals.axisymmetric-neutral-moments 导出的热速度相同且 molecularity=2 时，本关系的压力与温度与其对应字段相符；本关系允许零权重且不计算应力或热流。",
     "质量比乘以固定的氢质量常数，而不是标准原子质量单位；H₂ 压力使用该质量的两倍。",
     "该可调用对象既不确立上游终态分布，也不验证完整终态闭合。维护的实数数值合同排除布尔、复数和数值字符串强制转换。"
    ],
@@ -3217,13 +3217,13 @@
    }
   },
   {
-   "asset_id": "scirel.kinetic.terminal-flux-velocity-reduction",
-   "source_sha256": "ce97525a6ff9e73b9908eb7f572059698a3849582f86db33f17d59f8098e2e25",
+   "asset_id": "scirel.neutrals.terminal-flux-velocity-reduction",
+   "source_sha256": "5e9b7dc6defb159c388e9ffc165e274bd8cd5dda32a359d275dc8f34b606f322",
    "summary": "用调用者热速度及径向/轴向求积将终态 H₂ 分布归约为轴向通量和平均速度；允许零权重单元，只要求每个空间格积分密度为正，且不计算高阶矩。",
    "definition": "每空间格按矩阵向量乘及径向加和顺序计算 n=Σ_i w_iΣ_j f_ijk dvx_j，Γ=VthΣ_i w_iΣ_j vx_j f_ijk dvx_j，u=Γ/n。单元权重可零，但每格积分密度必须正。",
    "model": "终态 H₂ 诊断，热速度由调用者提供。",
    "assumptions": [
-    "求积权重为正且热速度与 scirel.kinetic.axisymmetric-neutral-moments 导出的热速度一致时，本关系的通量与平均速度与其对应字段相符；九矩算子还要求 vr、温度、质量、严格正体积权重及高阶矩，因此两者的输入/失败合同不同。",
+    "求积权重为正且热速度与 scirel.neutrals.axisymmetric-neutral-moments 导出的热速度一致时，本关系的通量与平均速度与其对应字段相符；九矩算子还要求 vr、温度、质量、严格正体积权重及高阶矩，因此两者的输入/失败合同不同。",
     "该可调用对象不推断终态代、不推进状态、不验证上游分布的生成者，也不宣称完整终态闭合。",
     "把布尔或数值字符串输入强制转换为浮点，不属于当前维护的实数数值合同。"
    ],
@@ -3311,8 +3311,8 @@
    }
   },
   {
-   "asset_id": "scirel.kinetic.neutral-total-collision-frequency",
-   "source_sha256": "bd43e7da2d75c20241381cfa0503040f524d855ce18b865b58c69362dffa2360",
+   "asset_id": "scirel.neutrals.neutral-total-collision-frequency",
+   "source_sha256": "d26d6aa844b62d37ddb15f83f7d2f1cbe9a2e235c7dfccd95e79d76a77cacc8d",
    "summary": "把可选 CX、基础及弹性损失和壁面项 2*u_r/D 组装为逆长度总损失系数 alpha=nu/Vth。",
    "definition": "按基础 + 弹性 + 壁面，再在启用时加 CX 的顺序装配；每个空间单元只在其直径为正时应用壁面损失 2*u_r/D；精确零直径是显式关闭壁面的哨兵值，不是 D -> 0+ 的极限，也不代表封闭或退化几何；封闭、反射或解释缺失管道是调用方的输运边界决策，不属于本系数装配；启用电荷交换却缺少对应场时失败关闭。",
    "model": "总损失系数装配。",
@@ -3412,7 +3412,7 @@
   },
   {
    "asset_id": "scirel.collisions.molecular-hydrogen-omega-frequencies",
-   "source_sha256": "d42fd79bf25a932471e84ffd7c83d5ddb4ed0a6484c8b5e2b58b207cf4756f94",
+   "source_sha256": "22bcf4ddfa85669e1a215949e4d49a79cd91f4b26560e853bf1fa1fa4f89a05c",
    "summary": "在每个空间单元独立归约分子氢弹性碰撞动量与应力矩，返回归一化系数 Omega（m⁻¹）、物理频率 nu（s⁻¹）及可定义性。精确零和分子病态分母都保留碰撞矩并显式未定义，不用人为下限、截正或绝对值掩盖。顶层结果为 scirel._result.Result 映射；键访问保持可用，不冲突字段也支持属性访问。",
    "definition": "令 w_ij=Vr2pidVr_i*dVx_j，n=Σwf，u=Σwf vx/n，U=Vth*u，K=vr²−2(vx−u)²。central 状态取 W=ΣwfK/n；target 状态取 W=Σw(f−M)K/n，M 必须保持本单元粒子数、平均速度与总动能。两混合通道 N=Σwf Alpha/n、d=(U−U_background)/Vth；自碰撞 Alpha=SIG_self@F(f)，N=Σwf Alpha/n、d=W。Omega=N/d，nu=Vth*Omega，不截负、不加下限。混合物理加速度 moment_rate=−β Vth² N，自碰撞应力变化率=−Vth³ N；原子 β=(1/2,2/3)，分子 β=(1/3,1/3)。d=0 时 Omega/nu=NaN、defined=False，状态 undefined_zero_denominator；有限 N 与 moment_rate 仍返回。本分子资产中，非零 d 满足 abs(d)<=8*eps*max(vx.max()-vx.min(),1) 时标为 ill_conditioned_denominator，并进入同样的 NaN/defined=False 商边界。关闭通道为精确零且状态 disabled。总频率为三通道之和，传播启用通道的未定义值。",
    "model": "动量/应力矩匹配的 BGK 近似；不是完整 Boltzmann 碰撞算子，也不由单点 0/0 推断唯一线性化率。",
@@ -4040,8 +4040,8 @@
    }
   },
   {
-   "asset_id": "scirel.kinetic.thermal-speed-scale",
-   "source_sha256": "00b99b7ac4b478a3ad63d8d82e6856e70d04ff208aa0b4821fcc1ec5189e6235",
+   "asset_id": "scirel.neutrals.thermal-speed-scale",
+   "source_sha256": "58067acbc6a1969f98dbf0437a7248341bce8dd47665214cfa692ee0be4d3609",
    "summary": "由中性物种的温度（eV）和相对氢质量的质量倍数，用固定常数（氢质量 1.6726231e-27 kg、基本电荷 1.602177e-19 J/eV）计算二阶矩热速度 sqrt(2 e T / m)。",
    "definition": "v = sqrt(2 * 1.602177e-19 * T_ev / (m_amu * 1.6726231e-27))；矩归约和边界通量关系使用同一 Vth 归一化。",
    "model": "显式标量关系。",
@@ -4543,8 +4543,8 @@
    }
   },
   {
-   "asset_id": "scirel.kinetic.spatial-source-shape-normalization",
-   "source_sha256": "5934f19ee36d9012e5f77568e38b1e91aa54b361b361c52f16e64836ac634cd8",
+   "asset_id": "scirel.neutrals.spatial-source-shape-normalization",
+   "source_sha256": "30f52591a411b0c46da9cbe55bc8fe4599239b99900c1317488e2de2b579e606",
    "summary": "以梯形积分把非负一维空间源归一为单位积分，同时返回原积分。",
    "definition": "在调用者坐标上使用 NumPy 梯形规则归一，并以 rtol=1e-12、atol=1e-14 复核单位积分；零剖面明确拒绝，绝不静默替换。",
    "model": "在梯形测度下对一维非负空间剖面做单位积分归一化。",
@@ -4780,8 +4780,8 @@
    }
   },
   {
-   "asset_id": "scirel.kinetic.terminal-energy-transfer-reduction",
-   "source_sha256": "8374e948a350e58baff37bd3af29d9fd7066892dbc59100af7ff890efd2a0d3b",
+   "asset_id": "scirel.neutrals.terminal-energy-transfer-reduction",
+   "source_sha256": "360a8ad8584d1e7438dcf2d4f89e226fd9b7fee5ac0fc523375405e89c73e1ec",
    "summary": "由终态H₂分布、有符号碰撞右端和外部源求损失、热能、动量及总能量传递剖面。",
    "definition": "对每个空间格 k，density=sum_i weight[i]*sum_j f[i,j,k]*dvx[j]，particle_flux=Vth*sum_i weight[i]*sum_j vx[j]*f[i,j,k]*dvx[j]，遵循所声明的逐格矩阵–向量和径向顺序。令 u=particle_flux/density、c_x=vx-u/Vth、c_squared=vr^2+c_x^2、m=2*mass_ratio*1.6726231e-27 kg。损失为 external_source 减去加权 RHS 积分。热传递为 0.5*m*Vth^2 乘以 c_squared*RHS 的加权积分。动量传递为 m*Vth 乘以 c_x*RHS 的加权积分。总传递为 thermal_transfer+momentum_transfer*u-0.5*m*(loss-external_source)*u^2。在有限精确算术下，总传递等于 0.5*m*Vth^2 乘以 (vr^2+vx^2)*RHS 的加权积分，且与外部源输入无关。",
    "model": "在显式碰撞 RHS 和外部分子源上的终态 H₂ 损失、动量与能量传递诊断。",
@@ -5169,8 +5169,8 @@
    }
   },
   {
-   "asset_id": "scirel.kinetic.axisymmetric-neutral-moments",
-   "source_sha256": "0ed5f76986a59ad3c1d374212870f748e8b94bd7950739f76ad319931e20b9b7",
+   "asset_id": "scirel.neutrals.axisymmetric-neutral-moments",
+   "source_sha256": "ef6d2b607458fd5e1070d933426207e72e2b96bd4c3e0b138dfda281f196e8a8",
    "summary": "从 H/H₂ 的一维空间、轴对称二维速度分布恢复密度、通量、流速、压力、温度、对角应力和随机热通量。",
    "definition": "密度为 f 对速度的积分；axial_flux = Vth * integral(vx f)；flow = flux/density；压力与应力由围绕流速的中心二阶矩给出，单位 eV m⁻³；热通量由中心三阶矩给出，单位 W m⁻²；sigma_zz 作为 sigma_yy 的独立副本返回（所声明的柱对称识别）；可选的显式求积对必须精确重构 cylindrical_volume，并切换到所声明的逐切片求和顺序。",
    "model": "热速度归一化下，对单个分布做离散圆柱速度空间矩归约。",
@@ -5368,8 +5368,8 @@
    }
   },
   {
-   "asset_id": "scirel.kinetic.cross-mesh-distribution-interpolation",
-   "source_sha256": "6ac936ce4f5b78732c7910baaca475401983ac59a2b465e0162ff062288a09b1",
+   "asset_id": "scirel.neutrals.cross-mesh-distribution-interpolation",
+   "source_sha256": "7b9ae2eeee2173c00dd697788ee4ca4e0c02d4382e1219aaafd0e785f976350d",
    "summary": "在两个相空间网格之间转移柱坐标速度分布。默认分支通过带约束的相对熵投影保持分布非负，并保持经过空间插值的离散密度、轴向动量密度和速度平方能量密度；目标网格无法实现所需矩时明确报错。",
    "definition": "单元体积为 w_ij = pi*(r_right^2-r_left^2)*dvx，速度尺度为 fV = sqrt(Tnorm_b/Tnorm_a)。先在源网格计算 M_a = sum w_a*fa*(1, vx_a/fV, (vr_a/fV)^2+(vx_a/fV)^2)，再对这三个广延矩进行空间线性插值。对 n=M_0>0 的目标位置，求满足 p>=0、sum p=1、E_p[vx_b]=M_1/n 和 E_p[vr_b^2+vx_b^2]=M_2/n 的单元概率，并最小化 sum p*log(p/q)。参考概率 q 在可行面上把归一化重叠质量与 1e-12 的单元体积概率混合。最后返回 fb=n*p/w_b。零密度返回零；相同速度网格和归一化温度直接采用凸空间插值。",
    "model": "无状态的二维速度、一维空间轴单元重叠重映射，随后执行非负相对熵投影；这是修正后的 AN/BN 投影，不是对缺陷分支的复现。",
@@ -5986,13 +5986,13 @@
    }
   },
   {
-   "asset_id": "scirel.kinetic.terminal-heat-flux-reduction",
-   "source_sha256": "f76efa86dcc5083aa62906bda3d91395ccd2c93b6e933bd46f342ce4f55b1cde",
+   "asset_id": "scirel.neutrals.terminal-heat-flux-reduction",
+   "source_sha256": "0e9b67a38b14c0125cd5a2d11a23e9492aa8afee3c4911cbd3efb4d90c7d8508",
    "summary": "用显式质量、热速度和柱坐标求积计算终态H₂随机能流与总轴向能流。",
    "definition": "对每个空间格 k，density=sum_i weight[i]*sum_j f[i,j,k]*dvx[j]，particle_flux=Vth*sum_i weight[i]*sum_j vx[j]*f[i,j,k]*dvx[j]，使用所声明的逐格矩阵–向量和径向顺序。令 u=particle_flux/density、c_x=vx-u/Vth、c_squared=vr^2+c_x^2、m=2*mass_ratio*1.6726231e-27 kg。随机通量为 0.5*m*Vth^3 乘以 c_squared*c_x*f 的加权积分。压力为 m*Vth^2/(3*1.602177e-19) 乘以 c_squared*f 的加权积分，轴向应力为 m*Vth^2/1.602177e-19 乘以 c_x^2*f 的加权积分再减去压力。总通量为 (0.5*density*m*u^2+2.5*pressure*1.602177e-19)*u+1.602177e-19*axial_stress*u+random_flux。在有限精确算术下，它等于原始动能通量 0.5*m*Vth^3 乘以 (vr^2+vx^2)*vx*f 的加权积分。",
    "model": "终态 H₂ 能量矩热通量诊断，质量比和热速度由调用者提供。",
    "assumptions": [
-    "权重为正、热速度与 scirel.kinetic.axisymmetric-neutral-moments 导出的热速度相同且 molecularity=2 时，随机能流与其对应字段相符；总能流是额外字段，本关系允许零权重、不暴露中间压力或应力。",
+    "权重为正、热速度与 scirel.neutrals.axisymmetric-neutral-moments 导出的热速度相同且 molecularity=2 时，随机能流与其对应字段相符；总能流是额外字段，本关系允许零权重、不暴露中间压力或应力。",
     "质量比乘以所声明的氢质量常数，而不是标准原子质量单位；H₂ 质量使用该因子的两倍。",
     "该可调用对象既不确立上游终态分布，也不验证完整终态闭合。维护的实数数值合同排除布尔、复数和数值字符串强制转换。"
    ],
@@ -6247,8 +6247,8 @@
    }
   },
   {
-   "asset_id": "scirel.kinetic.terminal-conservation-diagnostic",
-   "source_sha256": "d006d5f987bbd19308f1625169b10c0eaaf41f428aebfd08ea3270da6c8b6bc1",
+   "asset_id": "scirel.neutrals.terminal-conservation-diagnostic",
+   "source_sha256": "7aa3fcd68a71305b293d4847e210d618c7d055bbab5d96c0c1eeb90afd4de01f",
    "summary": "比较总H₂热流的轴向差分与相邻单元总能量传递率的均值，给出全局归一化残差。",
    "definition": "区间k取q1=(flux[k+1]−flux[k])/(x[k+1]−x[k])，q2=(transfer[k+1]+transfer[k])/2；末节点两者置零。N为两整数组绝对值的共同最大值，须正有限；返回abs(q1−q2)/N。末零是约定，不是边界方程核验；残差可超过1。",
    "model": "在调用者拥有的入射剖面上做终态 H₂ 总能量剖面诊断。",
@@ -6324,8 +6324,8 @@
    }
   },
   {
-   "asset_id": "scirel.kinetic.generation-accumulation-update",
-   "source_sha256": "4213af2183361b43a380a5f7d2d5b7c9b880c0995de7a824ea3c6004bdb4be7a",
+   "asset_id": "scirel.neutrals.generation-accumulation-update",
+   "source_sha256": "427cd987cff40ff42904cd0c2da1a0b891d63da3df25a34635d4c37550180ce7",
    "summary": "把一代分布和密度追加到累计状态，更新总量、逐代堆栈和完成代索引。",
    "definition": "向累计状态追加一代：累加分布、密度、逐代堆栈以及已完成代索引。",
    "model": "按所声明顺序做逐代累加，并显式校验调用者状态。",
@@ -6394,8 +6394,8 @@
    }
   },
   {
-   "asset_id": "scirel.kinetic.atomic-scattered-sources-reduction",
-   "source_sha256": "5f3056c07fbf3d7e3bd210e3ad61cf894af27195c7064ea730183bfd79e3508c",
+   "asset_id": "scirel.neutrals.atomic-scattered-sources-reduction",
+   "source_sha256": "c4b6dc9e88373ca78b81795774d9a7efb7fb23c29ff0f578c23a9298e4aeb8be",
    "summary": "在共同速度网格上逐点相加原子 CX 与弹性归一化空间源 Beta_CX+OmegaM（Q/Vth，F/m），保留带符号值。",
    "definition": "普通逐点相加；不对带符号值做钳制。",
    "model": "两个归一化散射源通道的逐点聚合。",
@@ -6610,8 +6610,8 @@
    }
   },
   {
-   "asset_id": "scirel.kinetic.generation-density-reduction",
-   "source_sha256": "46a5e066a9bc4e5fa4e572d4db8ec5b662d67f1f8f2790e9b960b415858d9f27",
+   "asset_id": "scirel.neutrals.generation-density-reduction",
+   "source_sha256": "625603fd4d93fd1f9ddf7380813e2ae01aaf6f519d628d382565002b0236cdb0",
    "summary": "将 (nvr, nvx, nx) 中性代分布按柱坐标求积归约为各空间格密度：对两个速度轴求 weight * distribution * dvx 之和，并支持一维径向权重投影路径和列均匀路由。",
    "definition": "使用完整的 (nvr,nvx) 权重时，同时对两个轴求和；使用一维径向权重时，径向投影计算 sum_r w[r] * (sum_x f[r,x,:]*dvx[x])；各列全等的完整权重会被路由到径向路径。",
    "model": "圆柱求积下的离散速度空间密度积分。",
@@ -6870,8 +6870,8 @@
    "source_conflicts": []
   },
   {
-   "asset_id": "scirel.kinetic.cylindrical-velocity-quadrature",
-   "source_sha256": "e39393fd8716587fbf455ee6a02b7b49df7e9689edb5a595cd566326ab93ecc6",
+   "asset_id": "scirel.neutrals.cylindrical-velocity-quadrature",
+   "source_sha256": "df46eade49244685827b9e0cba8957d34097689501c475d1eeb8302f897c566c",
    "summary": "由严格递增归一化径向和轴向速度网格构造幽灵扩展单元面、环测度、柱坐标体积、有限体积差分系数、速度平方及正负轴向索引；体积输出供 Maxwell 相对速率平均使用。",
    "definition": "径向外端镜像 2vr[-1]−vr[-2]，轴向两端镜像；相邻扩展节点中点为单元面，最内径向面固定 0。径向测度 π(r_right²−r_left²)，体积为径向测度×dvx，另输出 4π/3(r_right³−r_left³)。幽灵数组内部存 1/dvx、vx/dvx、vr/dvr，外壳精确零；索引只取严格正/负 vx。",
    "model": "按所声明的虚拟面约定构造离散有限体积量；不计算分布、碰撞模型或场模型。",
@@ -7055,8 +7055,8 @@
    }
   },
   {
-   "asset_id": "scirel.kinetic.neutral-upwind-transport-coefficients",
-   "source_sha256": "3782f006e8d443be1221b265e52e5dda9631cc67aded00bc5c0f57ada765515c",
+   "asset_id": "scirel.neutrals.neutral-upwind-transport-coefficients",
+   "source_sha256": "bfe88a6d5977b43d53093dabd777c46365dd7c6454859da6ac9b59f6b53da988",
    "summary": "由米制坐标、无量纲 u_x、逆长度 alpha=nu/Vth 和空间源 Q/Vth（F/m）组装双向梯形输运系数。",
    "definition": "正 vx 支：Ak=(2vx−dx α_k)/(2vx+dx α_{k+1})，Bk=dx/(2vx+dx α_{k+1})，Fk=dx(source_{k+1}+source_k)/(2vx+dx α_{k+1})；负 vx 支按对应的反向关系生成 Ck、Dk、Gk。",
    "model": "沿各速度特征线的双向梯形离散。",
@@ -7323,8 +7323,8 @@
    }
   },
   {
-   "asset_id": "scirel.kinetic.atomic-alpha-contraction",
-   "source_sha256": "aabc701f78b3db8ee4b4b00bb6a4dbcffa21b46bfc3d48cb5b67d4ee4fc56d5c",
+   "asset_id": "scirel.neutrals.atomic-alpha-contraction",
+   "source_sha256": "bd69cacb464d100eaa04b202e79433ee1c895c581f171b79bacad05b8995a2bc",
    "summary": "逐空间单元将原子氢四类已组装 SIG 矩阵与 Fortran 展平的输入分布收缩为 Alpha 碰撞频率。",
    "definition": "逐 k 的矩阵–向量收缩：每个族将一个已组装的 (N,N) SIG 矩阵乘以一个输入分布按 Fortran 顺序展平到 (nvr*nvx,) Work 缓冲后的向量，并把乘积还原到 (nvr,nvx) 切片。CX 和 H-P 族携带按单元以 ni[k] 缩放的 fi_hat；H-H2 和 H-H 族携带裸分布 fH2 和 fH。",
    "model": "所声明合法域上逐 k 的原子四族 SIG 矩阵收缩。",
@@ -7869,8 +7869,8 @@
    }
   },
   {
-   "asset_id": "scirel.kinetic.simple-charge-exchange-source",
-   "source_sha256": "011c17ff087fd9475443f2f6a39211199311eaed8483764f23a326b66abae4b6",
+   "asset_id": "scirel.neutrals.simple-charge-exchange-source",
+   "source_sha256": "e305e20a804bdfcc6e13f48992d8ec29f0a1686c299315f39a499c95411b4e38",
    "summary": "将调用者提供的无量纲目标形状 h，乘以 alpha_CX 与上一代分布的速度积分，得到单元局部 CX 空间源 Q_CX/Vth。",
    "definition": "单元局部的构造：速率收缩把上一代分布与 CX 场归约，目标形状按单元缩放；不发生跨单元输运。",
    "model": "归一化速度上的 Simple_CX 逐代单元局部散射。",
@@ -8206,8 +8206,8 @@
    }
   },
   {
-   "asset_id": "scirel.kinetic.velocity-slice-moment-compensation",
-   "source_sha256": "9c1debc9c0d0af2333451a6f7e52b17f024c3edf4b6374c6840433c45dd561ef",
+   "asset_id": "scirel.neutrals.velocity-slice-moment-compensation",
+   "source_sha256": "d10ad57a36fecea5ee5d4e7284ec5f09db2bfc6e077b556589fc2cc015f13c93",
    "summary": "对一个圆柱速度分布切片施加有界离散修正，使轴向漂移和能量矩接近目标。",
    "definition": "按源顺序计算矩、有限体积差分和四种符号组合，必要时施加带符号缩放，返回修正切片及缩放因子。",
    "model": "离散有限体积双分量矩补偿；没有非线性收敛循环。",
@@ -8330,8 +8330,8 @@
    }
   },
   {
-   "asset_id": "scirel.kinetic.compensated-shifted-maxwellian",
-   "source_sha256": "5ae7e39b49dec0d41589e6281dbce4c84e9068bb8409745c3a0103349d0f2ff9",
+   "asset_id": "scirel.neutrals.compensated-shifted-maxwellian",
+   "source_sha256": "adf7eae007f4a3c420e7ea75bbc04611ea7c5dfb0d9d052531261e372df49d8b",
    "summary": "构造裁剪并按圆柱求积归一化的平移 Maxwell 分布切片，再应用有界离散漂移/能量补偿阶段。",
    "definition": "计算热速度和裁剪指数，按求积归一化每个切片，施加 compensate_velocity_slice 后再次归一化。",
    "model": "固定氢质量/电荷常数的离散平移 Maxwell 分布与源形状矩补偿。",

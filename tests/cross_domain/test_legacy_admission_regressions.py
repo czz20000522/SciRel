@@ -7,7 +7,7 @@ import pytest
 
 from scirel.field.complete_elliptic_integrals_approx import evaluate_complete_elliptic_integrals
 from scirel.diagnostics.species_absorption_fraction import compute_species_absorption_fraction
-from scirel.kinetic.thermal_speed_scale import compute_thermal_speed_m_s
+from scirel.neutrals.thermal_speed_scale import compute_thermal_speed_m_s
 
 
 @pytest.mark.parametrize("m", [1.0, [1.0], [0.5, 1.0], [[1.0, 0.0], [0.2, 1.0]]])

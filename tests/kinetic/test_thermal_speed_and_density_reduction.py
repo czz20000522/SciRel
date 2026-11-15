@@ -1,5 +1,5 @@
-"""Direct contract tests for ``scirel.kinetic.compute_thermal_speed_m_s`` and
-``scirel.kinetic.reduce_generation_density``.
+"""Direct contract tests for ``scirel.neutrals.compute_thermal_speed_m_s`` and
+``scirel.neutrals.reduce_generation_density``.
 
 The saved the neutral-transport formulation packages cite  for the
 thermal-speed scale and  /
@@ -14,7 +14,7 @@ import math
 import numpy as np
 import pytest
 
-from scirel.kinetic import compute_thermal_speed_m_s, reduce_generation_density
+from scirel.neutrals import compute_thermal_speed_m_s, reduce_generation_density
 
 
 def test_thermal_speed_matches_independent_frozen_constant_relation():

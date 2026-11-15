@@ -11,13 +11,13 @@ import pytest
 
 ROOT = Path(__file__).resolve().parents[2]
 CATALOG_DOCUMENTS = (
-    "scirel.kinetic.neutral-boltzmann-rhs.json",
-    "scirel.kinetic.neutral-generation-propagation.json",
-    "scirel.kinetic.neutral-generation-stopping.json",
-    "scirel.kinetic.generation-accumulation-update.json",
-    "scirel.kinetic.neutral-total-collision-frequency.json",
-    "scirel.kinetic.outer-seed-convergence.json",
-    "scirel.kinetic.neutral-upwind-transport-coefficients.json",
+    "scirel.neutrals.neutral-boltzmann-rhs.json",
+    "scirel.neutrals.neutral-generation-propagation.json",
+    "scirel.neutrals.neutral-generation-stopping.json",
+    "scirel.neutrals.generation-accumulation-update.json",
+    "scirel.neutrals.neutral-total-collision-frequency.json",
+    "scirel.neutrals.outer-seed-convergence.json",
+    "scirel.neutrals.neutral-upwind-transport-coefficients.json",
 )
 
 
