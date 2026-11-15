@@ -39,9 +39,9 @@ OpenFOAM 曾经出现独立求解器越来越多、彼此重复的问题。它�
 | `foamToC` 列出可选模型 | 由合同生成的族索引和 `describe`/`search`（第 7.4 节） | 借 |
 | 配置文件语言、全局时间循环 `foamRun` | 属于用户程序 | **不借**：库只提供零件 |
 
-## 3. 现状中的结构问题
+## 3. 提案提出时的结构问题
 
-下面这些问题都能从仓库直接复算。数字不抄进本文，只写问题的性质和复算方法。本提案 PR 的描述里附有 `e7fa1bba` 当时的快照。
+下面保留提案提出时的问题及理由。本提案 PR 的描述里附有 `e7fa1bba` 当时的快照，不能把该快照当作当前待办：`mirror` 已拆出，领域依赖方向和环已有机器检查。当前代码入口见 [代码地图](codebase-map.md)，尚未完成的全量整理归 #249。
 
 1. **`closures` 和 `kinetic` 互相依赖。** 两个方向的导入都写在函数体内，所以绕过了模块顶层的导入检查：
    - `closures/mirror_quasineutral_closure.py` 导入 `kinetic.mirror_*`；
@@ -55,7 +55,7 @@ OpenFOAM 曾经出现独立求解器越来越多、彼此重复的问题。它�
 6. **有些根级私有模块带着物理含义。** `_mirror_numerics` 被 `closures` 和 `kinetic` 共用，它实际属于磁镜领域。`_framework_compositions` 不属于任何领域。
 7. **测试大量导入私有模块。** 判据：如果只改一个私有实现，就得同时改测试，说明测试依赖了实现而不是合同，边界在漏。测试应该通过公开 API 断言合同上的行为。
 
-复算方法：用 AST 遍历 `src/scirel/**/*.py` 的全部 `import` 和 `from ... import`，包括函数体内的，按 `scirel.<第一段>` 归到领域。这件事要做成第 9 节 P0 的检查脚本，**脚本目前还不存在**。
+复算方法已经落地：[`_domain_imports.py`](../../tests/architecture/_domain_imports.py) 用 AST 遍历全部导入，包括函数体内的相对导入和别名；[`test_domain_dependency_conformance.py`](../../tests/architecture/test_domain_dependency_conformance.py) 检查依赖方向与白名单，[`test_domain_import_cycles.py`](../../tests/architecture/test_domain_import_cycles.py) 检查环。它们随完整检查运行，新增违规会判红。规则仍由 api-spec 拥有，不在本文另存一张分层表。
 
 ## 4. 领域分层
 
@@ -121,7 +121,7 @@ scirel.collisions.atomic-hydrogen-charge-exchange-cross-section.
 
 ### 7.4 自描述
 
-agent 应当只靠安装好的包和分发包，就能从问题一路找到函数：
+设计目标是让 agent 只靠安装好的包和分发包，就能从问题一路找到函数；下表是目标入口，不能仅凭本文推断所有生成和检索工作已经完成。实际落地程度须核对当前分发包：
 
 | 问题 | 入口 |
 | --- | --- |
@@ -149,7 +149,7 @@ agent 应当只靠安装好的包和分发包，就能从问题一路找到函�
 
 ### 7.6 合同 ID 与包路径一一对应
 
-**规则正文已迁至 [api-spec](../../skills/development/scirel-code-style/references/api-spec.md) 的 `One truth` 一节末段**：合同 ID 的 `<domain>` 段必须等于规范模块所在领域，由合同校验强制执行。
+**规则正文已迁至 [api-spec](../../skills/development/scirel-code-style/references/api-spec.md) 的 `One truth` 一节末段**：合同 ID 的 `<domain>` 段必须等于规范模块所在领域。这是逐项迁移的验收要求；现有合同结构校验通过不等于全部旧 ID 已完成领域对齐。
 
 ## 8. 规则放在哪里
 
@@ -157,8 +157,8 @@ agent 应当只靠安装好的包和分发包，就能从问题一路找到函�
 | --- | --- | --- |
 | 分层表、同层白名单、不能成环、函数体内导入也算 | [api-spec](../../skills/development/scirel-code-style/references/api-spec.md) 的 `Domains` 一节 + `tests/architecture/` 检查 | 检查失败就判红 |
 | 根级私有模块不得带物理含义；跨领域只能引用公开名字 | [api-spec](../../skills/development/scirel-code-style/references/api-spec.md) 的 `Domains` 一节 + `tests/architecture/` 检查 | 检查 |
-| 合同 ID 领域与模块领域一致 | [api-spec](../../skills/development/scirel-code-style/references/api-spec.md) 的 `One truth` 一节 + 合同校验 | 检查 |
-| 每层直接子项不超过上限（7.5） | `tests/architecture/` 新检查 | 检查 |
+| 合同 ID 领域与模块领域一致 | [api-spec](../../skills/development/scirel-code-style/references/api-spec.md) 的 `One truth` 一节 | 逐项迁移对账；全量约束尚待收敛，结构校验不是已完成的证明 |
+| 每层直接子项不超过上限（7.5） | 实测后再确定是否加入 `tests/architecture/` | 尚未设强制上限，遵循 D6 |
 | 每个 `method` 都有合同条目；`family` 字段齐全 | 合同校验 | 检查 |
 | 报错的五个要素、越界告警、不收敛状态 | [api-spec](../../skills/development/scirel-code-style/references/api-spec.md) 的 `Returns and errors` 一节 | skill（评审时对照） |
 | 判断哪些函数属于同一族 | [api-spec](../../skills/development/scirel-code-style/references/api-spec.md) 的 `Model families` 一节 | skill（需要人判断） |
@@ -166,17 +166,17 @@ agent 应当只靠安装好的包和分发包，就能从问题一路找到函�
 
 ## 9. 迁移顺序
 
-先定结构，再统一接口，最后补文档。如果反过来做，#3、#2、#1 在旧位置做完之后，一拆分又得重做一遍。
+先确定归属，再同步接口、合同和文档，避免在旧位置反复返工。依赖已经稳定、没有共享文件冲突的叶子可以并行整理；不要求等全部领域拆分完成后才开始。
 
-| 阶段 | 内容 | 对应 issue | 完成判据 |
+| 阶段 | 内容 | 对应 issue | 完成判据与进展 |
 | --- | --- | --- | --- |
-| P0 | 写领域依赖检查，先只报告不判红，输出当前违规清单；维护者确认分层表 | 新开 | 检查在完整检查路径上实际运行，输出列出全部边 |
-| P1 | 拆出 `mirror`：磁镜代码从 `kinetic` 和 `closures` 移入；`_mirror_numerics` 移入 `mirror` | #8 | `closures ↔ kinetic` 的环消失 |
-| P2 | 拆出 `neutrals` | #8 | `kinetic` 只剩波与动理学理论 |
-| P3 | 把 `geometry` 中与物理无关的工具移入 `numerics`（见 D3）；对齐合同 ID（见 D2） | 新开 | 7.6 的检查通过 |
-| P4 | 依赖检查从"只报告"改为判红 | 新开 | 违规清单为空 |
-| P5 | 按族划分；然后按族逐个推进显式参数、命名 Result 和 numpydoc | #3 #2 #1 | 每做完一族，该族的合同、签名、Result 键一致 |
-| P6 | 报错与警告规范按族推进；新增 `ApplicabilityWarning` | 新开 | 族内所有报错都满足五要素 |
+| P0 | 领域依赖分析与分层表 | #145 | 已有 AST 分析及依赖方向检查，函数内导入同样计入 |
+| P1 | 拆出 `mirror`；迁入 `_mirror_numerics` | #8 | 已落地，原 `closures ↔ kinetic` 环已清除；不能重复当新任务 |
+| P2 | 拆出 `neutrals` | #8 | 未完成；中性输运簇与其它动理学关系按物理边界分别归属 |
+| P3 | 通用数值工具移入 `numerics`；合同 ID 对齐 | #155 | 逐项迁移中；保留各自计算和失败约定，核完公开消费者才收口 |
+| P4 | 依赖违规判红 | #145 | 已在完整检查中执行；方向、白名单和环均有检查 |
+| P5 | 合族、显式参数、Result 与 numpydoc | #154 #3 #2 #1 | 已有 family 格式和 bootstrap 族；其它既有能力仍须逐项收敛 |
+| P6 | 按族统一报错与适用范围警告 | #156 | `ApplicabilityWarning` 已存在；各入口的适用域与数值失败仍须分别核定 |
 
 每个阶段都是一个或多个独立 PR，接口工作不改变数值结果（#9 的规则）。如果迁移中发现结果疑似有误，停下来在 #10 记录，不要顺手修。
 
