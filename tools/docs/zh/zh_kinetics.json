@@ -6108,15 +6108,16 @@
   },
   {
    "asset_id": "scirel.inference.anisotropic-trial-evaluation",
-   "source_sha256": "20b3c817b992eaf64e696a1cc85541555497a7fc273d7498596345213f836122",
+   "source_sha256": "679eeadc3a9e328c6a18b70c0c23390c1c735858766dd2cfd132e4ae35bf6801",
    "summary": "以预先确定的残差维数评估一次前向平衡试探，区分有效、数值失败和不收敛；合同错误直接报告，所有结果作为 scirel._result.Result 映射返回。",
-   "definition": "在科学调用前由标准观测布局取得 N，或由自定义端口显式给定 residual_size。深复制调用输入，执行一次 equilibrium_solver；未收敛时立即返回 N 维正罚值，不执行诊断。收敛时执行诊断与 reducer，并检查残差形状/有限性和 chi2=r·r。ArithmeticError/RuntimeError 记录为数值失败；ValueError/TypeError/KeyError 等合同错误传播。每条结果记录都是 scirel._result.Result 映射；按键和属性读取同一个值。",
+   "definition": "在科学调用前由标准观测布局取得 N，或由自定义端口显式给定 residual_size。深复制调用输入，执行一次 equilibrium_solver；未收敛时立即返回 N 维正罚值，不执行诊断。收敛时执行诊断与 reducer，并检查残差形状/有限性和 chi2=r·r。ArithmeticError/RuntimeError 记录为数值失败；ValueError/TypeError/KeyError 等合同错误传播。每条结果记录都是 scirel._result.Result 映射；按键和属性读取同一个值。 chi2由返回的float64残差定义：保留完整平方和后仅最终舍入一次；罚向量同样对N乘完整罚值平方最终舍入。外部chi2匹配仍为rtol=1e-12、atol=0，以精确二进制比值比较，避免容差界自身下溢。",
    "model": "调用者前向模型、诊断与残差端口的受验证组合，不内置压强闭合",
    "boundary": "失败罚值是优化接口值，不是可接受的物理观测或可行性证明。参数范围由外层优化器与物理端口共同约束。",
    "assumptions": [
     "三个端口具有明确且相容的物理单位、网格和返回协议。",
     "equilibrium.converged 必为布尔值；成功态不能同时给出 failure_reason。",
-    "自定义布局的 residual_size 由调用者在第一次试探前声明，不能按成功/失败改变。"
+    "自定义布局的 residual_size 由调用者在第一次试探前声明，不能按成功/失败改变。",
+    "chi2由返回的float64残差定义：保留完整平方和后仅最终舍入一次；罚向量同样对N乘完整罚值平方最终舍入。外部chi2匹配仍为rtol=1e-12、atol=0，以精确二进制比值比较，避免容差界自身下溢。"
    ],
    "inputs": [
     {
@@ -6248,12 +6249,14 @@
      "成功/数值失败/再次成功的固定维数与端口记录。",
      "非收敛短路、错误残差形状/NaN/chi2 拒绝、调用方深层非修改。",
      "仓库测试使用 review-hold 模式：tests/conftest.py 设置 SCIREL_REVIEW_HOLD=1，并把 catalog/review/candidates/src/scirel/inference 加入 inference 导入路径。held direct_anisotropic_inversion 图显式导入公开 anisotropic_parameter_optimization.optimize_anisotropic_parameters 与 anisotropic_trial_evaluation.evaluate_anisotropic_trial；compose 按这些同一函数对象解析依赖，run_composition 把绑定物理端口的 partial(公开 trial) 交给公开优化器。test_real_picard_forward_recovers_two_physical_parameters_from_analytic_observations 执行 tests/fixtures/inference/anisotropic_recovery.py::run，检查制造双参数恢复、Picard 收敛状态、psi/J_phi、残差与 chi2、失败试探及保留试探有效性。test_independent_curved_field_biot_savart_tensor_observations 执行 independent_case，对独立构造的离散 Biot-Savart/张量观测检查双参数恢复和 psi/J_phi，并检查残差维数、chi2 及实际生效的各向异性响应。样本与容差由这些既有具名断言限定。",
-     "Result 改造后保持既有键顺序、数值、形状、dtype 和映射兼容性，并支持属性读取同一字段。"
+     "Result保留原有键、顺序、形状、dtype及映射/属性读取；数值平方和采用完整算术，不保留旧点积舍入结果。",
+     "完整残差尾项保留至公开trial与两种优化器，包括minimize标量目标、成功摘要/日志及失败罚向量；不一致的外部chi2仍按原匹配预算拒绝。参照来自原始二进制有理输入，不使用生产norm生成expected。"
     ],
     "evidence_ceiling": "直接叶入口证据：test_inference_physical_closure.py 将 evaluate_anisotropic_trial 导入为 trial。test_failed_trial_keeps_dimension_and_short_circuits_diagnostics、test_success_failure_success_keeps_shape_and_records_numerical_port、test_invalid_trial_contract_propagates_instead_of_becoming_physical_failure 和 test_inputs_are_deep_copied_before_injected_ports 直接检查不收敛、固定残差维数、失败归属、合同异常及输入副本。test_inference_named_result.py 直接检查成功/失败数值和 Result 映射/属性兼容性。仓库测试使用 review-hold 模式：tests/conftest.py 设置 SCIREL_REVIEW_HOLD=1，并把 catalog/review/candidates/src/scirel/inference 加入 inference 导入路径。held direct_anisotropic_inversion 图显式导入公开 anisotropic_parameter_optimization.optimize_anisotropic_parameters 与 anisotropic_trial_evaluation.evaluate_anisotropic_trial；compose 按这些同一函数对象解析依赖，run_composition 把绑定物理端口的 partial(公开 trial) 交给公开优化器。test_real_picard_forward_recovers_two_physical_parameters_from_analytic_observations 执行 tests/fixtures/inference/anisotropic_recovery.py::run，检查制造双参数恢复、Picard 收敛状态、psi/J_phi、残差与 chi2、失败试探及保留试探有效性。test_independent_curved_field_biot_savart_tensor_observations 执行 independent_case，对独立构造的离散 Biot-Savart/张量观测检查双参数恢复和 psi/J_phi，并检查残差维数、chi2 及实际生效的各向异性响应。样本与容差由这些既有具名断言限定。这些评审模式消费者为公开叶入口提供有界科学证据。graph 仍处于 HOLD 且不在公开导出中，普通模式导入隔离是有意设置。这些证据不代表 graph 已公开、新包已认证、装置已标定、连续网格收敛已证明，或全局最优与一般可辨识性已有保证。",
     "known_limitations": [
      "RuntimeError 的科学含义由调用者端口负责；错误状态不能替代原异常调查。",
-     "单次 trial 不判断参数可辨识性或最优性。"
+     "单次 trial 不判断参数可辨识性或最优性。",
+     "包装层算术不替代SciPy内部迭代与停止计算，不建立大规模性能保证，也不认证统计噪声模型或物理平衡。"
     ]
    },
    "example": {
@@ -7670,15 +7673,16 @@
   },
   {
    "asset_id": "scirel.inference.anisotropic-parameter-optimization",
-   "source_sha256": "bcef57c13fbe5dafdb0e8909401cb2f9e1db553f1ed483f4812f35a28881badf",
+   "source_sha256": "fea8279cccced8ccddbbe2b812db99c0412c9cc4d8f131b720ec2c278e710c17",
    "summary": "在有限合法边界与总科学调用预算内作局部拟合，失败试探不可成为最优，并以 scirel._result.Result 映射返回实际终点的重新验证状态。",
-   "definition": "全部静态控制先验证。可选 LHS 的完整设计先核边界与数量，再按顺序评估，取 chi2 最低的有效样本作优化起点；若没有有效样本则保留提交的初值。least_squares 使用残差，minimize 使用 L-BFGS-B 与平方和；无效 trial 对优化器提供 N 维罚值，但永不参与 best_valid_trial。预算计入 LHS、数值差分与终点调用，预留两次终点/有效 fallback 验证。正常返回的优化器 x 必须重新调用前向验证；如终点无效，仅可返回重新验证的历史有效候选，且 converged=False。全部十六个结果字段位于同一个 scirel._result.Result 映射中；按键和属性读取同一个值。",
+   "definition": "全部静态控制先验证。可选 LHS 的完整设计先核边界与数量，再按顺序评估，取 chi2 最低的有效样本作优化起点；若没有有效样本则保留提交的初值。least_squares 使用残差，minimize 使用 L-BFGS-B 与平方和；无效 trial 对优化器提供 N 维罚值，但永不参与 best_valid_trial。预算计入 LHS、数值差分与终点调用，预留两次终点/有效 fallback 验证。正常返回的优化器 x 必须重新调用前向验证；如终点无效，仅可返回重新验证的历史有效候选，且 converged=False。全部十六个结果字段位于同一个 scirel._result.Result 映射中；按键和属性读取同一个值。 chi2由返回的float64残差定义：保留完整平方和后仅最终舍入一次；罚向量同样对N乘完整罚值平方最终舍入。外部chi2匹配仍为rtol=1e-12、atol=0，以精确二进制比值比较，避免容差界自身下溢。",
    "model": "有界局部数值优化，不包含平衡方程、全球搜索或统计可辨识性证明",
    "boundary": "所有 bounds 均须有限严格递增，初值在边界内。错误方法、错误 LHS 或非法控制直接拒绝，不补做越界 fallback。",
    "assumptions": [
     "trial 返回固定 N 维有限残差、相符 chi2、前向状态及可选失败原因；失败状态须提供原因。",
     "有效 trial 必须有真实 converged=True 前向状态，无 failure_reason，且 valid 不为 False。",
-    "罚值只用于数值控制，不能作为物理解或可辨识性信息。"
+    "罚值只用于数值控制，不能作为物理解或可辨识性信息。",
+    "chi2由返回的float64残差定义：保留完整平方和后仅最终舍入一次；罚向量同样对N乘完整罚值平方最终舍入。外部chi2匹配仍为rtol=1e-12、atol=0，以精确二进制比值比较，避免容差界自身下溢。"
    ],
    "inputs": [
     {
@@ -7869,13 +7873,15 @@
      "原有效标量恢复、LHS 起点与残差数值断言保留。",
      "非法控制零科学调用、失败零 chi2 不可 best、固定维数、预算/终点状态同一性。",
      "仓库测试使用 review-hold 模式：tests/conftest.py 设置 SCIREL_REVIEW_HOLD=1，并把 catalog/review/candidates/src/scirel/inference 加入 inference 导入路径。held direct_anisotropic_inversion 图显式导入公开 anisotropic_parameter_optimization.optimize_anisotropic_parameters 与 anisotropic_trial_evaluation.evaluate_anisotropic_trial；compose 按这些同一函数对象解析依赖，run_composition 把绑定物理端口的 partial(公开 trial) 交给公开优化器。test_real_picard_forward_recovers_two_physical_parameters_from_analytic_observations 执行 tests/fixtures/inference/anisotropic_recovery.py::run，检查制造双参数恢复、Picard 收敛状态、psi/J_phi、残差与 chi2、失败试探及保留试探有效性。test_independent_curved_field_biot_savart_tensor_observations 执行 independent_case，对独立构造的离散 Biot-Savart/张量观测检查双参数恢复和 psi/J_phi，并检查残差维数、chi2 及实际生效的各向异性响应。样本与容差由这些既有具名断言限定。",
-     "Result 改造后保持既有键顺序、数值、形状、dtype 和映射兼容性，并支持属性读取同一字段。"
+     "Result保留原有键、顺序、形状、dtype及映射/属性读取；数值平方和采用完整算术，不保留旧点积舍入结果。",
+     "完整残差尾项保留至公开trial与两种优化器，包括minimize标量目标、成功摘要/日志及失败罚向量；不一致的外部chi2仍按原匹配预算拒绝。参照来自原始二进制有理输入，不使用生产norm生成expected。"
     ],
     "evidence_ceiling": "直接叶入口证据：test_inference_physical_closure.py 将 optimize_anisotropic_parameters 导入为 optimize。test_invalid_optimizer_controls_never_call_science、test_failed_zero_chi2_never_becomes_best、test_budget_includes_finite_differences_and_fresh_recheck、test_all_failed_states_never_produce_a_best_fit、test_minimize_valid_terminal_is_same_params_state_and_residual 和 test_numeric_callback_exceptions_are_counted_and_never_ranked 直接检查控制、有效最优排序、预算及终点。test_inference_named_result.py 直接检查局部拟合数值、fallback、失败和 Result 键/属性。仓库测试使用 review-hold 模式：tests/conftest.py 设置 SCIREL_REVIEW_HOLD=1，并把 catalog/review/candidates/src/scirel/inference 加入 inference 导入路径。held direct_anisotropic_inversion 图显式导入公开 anisotropic_parameter_optimization.optimize_anisotropic_parameters 与 anisotropic_trial_evaluation.evaluate_anisotropic_trial；compose 按这些同一函数对象解析依赖，run_composition 把绑定物理端口的 partial(公开 trial) 交给公开优化器。test_real_picard_forward_recovers_two_physical_parameters_from_analytic_observations 执行 tests/fixtures/inference/anisotropic_recovery.py::run，检查制造双参数恢复、Picard 收敛状态、psi/J_phi、残差与 chi2、失败试探及保留试探有效性。test_independent_curved_field_biot_savart_tensor_observations 执行 independent_case，对独立构造的离散 Biot-Savart/张量观测检查双参数恢复和 psi/J_phi，并检查残差维数、chi2 及实际生效的各向异性响应。样本与容差由这些既有具名断言限定。这些评审模式消费者为公开叶入口提供有界科学证据。graph 仍处于 HOLD 且不在公开导出中，普通模式导入隔离是有意设置。这些证据不代表 graph 已公开、新包已认证、装置已标定、连续网格收敛已证明，或全局最优与一般可辨识性已有保证。",
     "known_limitations": [
      "常量罚值附近可能停滞；有限 LHS 和局部优化不保证找出可行点。",
      "没有自动协方差、Fisher 秩或置信区间报告；需要额外科学设计。",
-     "完整试探状态保存在 best_valid_trial，内存开销随前向状态而变。"
+     "完整试探状态保存在 best_valid_trial，内存开销随前向状态而变。",
+     "包装层算术不替代SciPy内部迭代与停止计算，不建立大规模性能保证，也不认证统计噪声模型或物理平衡。"
     ]
    },
    "example": {

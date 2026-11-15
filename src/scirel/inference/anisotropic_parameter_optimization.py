@@ -5,9 +5,10 @@ from collections.abc import Mapping
 from copy import deepcopy
 import numpy as np
 
+from scirel._numerics import _exact_repeated_square, _exact_squared_sum
 from scirel._result import Result
 
-from .anisotropic_trial_evaluation import _size, _residual_record
+from .anisotropic_trial_evaluation import _size, _residual_record, _penalty_norm
 
 
 class _BudgetExhausted(RuntimeError):
@@ -186,7 +187,13 @@ def optimize_anisotropic_parameters(
     valid candidate, with ``converged=False``. The failure penalty is only an
     optimization control and is not a physical solution. All returns use one
     ``scirel._result.Result`` mapping; mapping and attribute access expose the
-    same values.
+    same values. Reported chi2, trial validation and the scalar ``minimize``
+    objective use the complete squares of returned float64 residuals, summed
+    before one final rounding. Penalty norms use the complete N times the
+    squared returned penalty. Reducer matching retains relative tolerance
+    1e-12 and zero absolute tolerance, compared as exact binary ratios. These
+    rules preserve tiny contributions in this wrapper; SciPy still owns its
+    internal iteration and stopping calculations, including ``least_squares``.
 
     Examples
     --------
@@ -240,10 +247,7 @@ def optimize_anisotropic_parameters(
         raise ValueError("max_evaluations must be an integer >= 3")
     n = None if residual_size is None else _size(residual_size)
     penalty = float(failure_penalty)
-    if not np.isfinite(penalty) or penalty <= 0 or not np.isfinite(penalty * penalty):
-        raise ValueError("failure_penalty must be positive with finite squared norm")
-    if n is not None and not np.isfinite(penalty * penalty * n):
-        raise ValueError("failure_penalty vector squared norm must be finite")
+    _penalty_norm(penalty, 1 if n is None else n)
     if n_initial_samples is not None:
         if (
             isinstance(n_initial_samples, (bool, np.bool_))
@@ -300,7 +304,7 @@ def optimize_anisotropic_parameters(
             failed_vector = np.full(n, penalty)
             raw = {
                 "residuals": failed_vector,
-                "chi2": float(failed_vector @ failed_vector),
+                "chi2": _exact_repeated_square(penalty, n),
                 "equilibrium": None,
                 "valid": False,
                 "failure_reason": f"trial numerical failure: {type(exc).__name__}: {exc}",
@@ -314,8 +318,7 @@ def optimize_anisotropic_parameters(
                     "first trial must provide a nonempty one-dimensional residual vector"
                 )
             n = vector.size
-            if not np.isfinite(penalty * penalty * n):
-                raise ValueError("failure_penalty vector squared norm must be finite")
+            _penalty_norm(penalty, n)
         vector, chi2 = _residual_record({"residual_vector": vector, "chi2": raw.get("chi2")}, n)
         equilibrium = raw.get("equilibrium")
         physical = (
@@ -377,7 +380,7 @@ def optimize_anisotropic_parameters(
 
             def objective(x):
                 r = evaluate(x)
-                return float(r @ r)
+                return _exact_squared_sum(r)
 
             result = minimize(
                 objective,
@@ -429,7 +432,7 @@ def optimize_anisotropic_parameters(
     return Result(
         {
             "best_parameters": None if selected is None else selected["params"],
-            "chi2": float(vector @ vector),
+            "chi2": _exact_squared_sum(vector),
             "residual_vector": vector,
             "converged": converged,
             "forward_converged": selected is not None,

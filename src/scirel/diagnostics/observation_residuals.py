@@ -4,6 +4,7 @@ from __future__ import annotations
 from collections.abc import Mapping
 import numpy as np
 
+from scirel._numerics import _exact_squared_sum
 from scirel._result import Result
 
 _CHANNELS = ("density", "electron_temperature", "p_parallel", "p_perp")
@@ -24,26 +25,6 @@ def _exact_normalized_difference(prediction, observation, sigma):
     on, od = observation.as_integer_ratio()
     sn, sd = float(sigma).as_integer_ratio()
     return ((pn * od - on * pd) * sd) / (pd * od * sn)
-
-
-def _exact_squared_sum(vector):
-    """Accumulate complete squares of binary64 residuals before rounding.
-
-    Each denominator is a power of two. Align the squared integer numerators
-    at a common binary exponent, including terms smaller than the minimum
-    subnormal, then convert the full sum to float in one division. No term is
-    squared or summed in floating point.
-    """
-    total = 0
-    denominator_bits = 0
-    for value in vector:
-        numerator, denominator = float(value).as_integer_ratio()
-        square_bits = 2 * (denominator.bit_length() - 1)
-        if square_bits > denominator_bits:
-            total <<= square_bits - denominator_bits
-            denominator_bits = square_bits
-        total += (numerator * numerator) << (denominator_bits - square_bits)
-    return total / (1 << denominator_bits)
 
 
 def _observation_layout(observations):
