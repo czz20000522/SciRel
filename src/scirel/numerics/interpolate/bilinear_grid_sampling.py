@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from fractions import Fraction
+
 import numpy as np
 
 __all__ = ["sample_rectilinear_field"]
@@ -23,7 +25,7 @@ def _axes(r_grid, z_grid):
         raise ValueError("Z must be constant along each grid row")
     r_axis = r_grid[0]
     z_axis = z_grid[:, 0]
-    if np.any(np.diff(r_axis) <= 0.0) or np.any(np.diff(z_axis) <= 0.0):
+    if np.any(r_axis[1:] <= r_axis[:-1]) or np.any(z_axis[1:] <= z_axis[:-1]):
         raise ValueError("R and Z axes must be strictly increasing")
     return r_grid, z_grid, r_axis, z_axis
 
@@ -37,6 +39,63 @@ def _cell_indices(axis, values):
     The clamp chooses a stencil, not a value.
     """
     return np.clip(np.searchsorted(axis, values, side="right") - 1, 0, axis.size - 2)
+
+
+def _exact_sample(r0, r1, z0, z1, r, z, corners):
+    """Round the original finite-input bilinear polynomial only at its result."""
+    r0, r1, z0, z1, r, z = (Fraction.from_float(float(value)) for value in (r0, r1, z0, z1, r, z))
+    q00, q10, q01, q11 = (Fraction.from_float(float(value)) for value in corners)
+    lower = ((r1 - r) * q00 + (r - r0) * q10) / (r1 - r0)
+    upper = ((r1 - r) * q01 + (r - r0) * q11) / (r1 - r0)
+    return float(((z1 - z) * lower + (z - z0) * upper) / (z1 - z0))
+
+
+def _samples(r0, r1, z0, z1, r, z, corners):
+    """Use vector weights normally and exact input ratios at arithmetic hazards."""
+    # Each complementary weight is formed from its own endpoint difference.
+    # Computing it as 1-t would lose a small, representable near-node contribution.
+    # Finite-input hazards are reevaluated below, not accepted as inf/NaN/zero.
+    with np.errstate(over="ignore", invalid="ignore", under="ignore", divide="ignore"):
+        dr, dz = r1 - r0, z1 - z0
+        fractions = np.asarray([(r1 - r) / dr, (r - r0) / dr, (z1 - z) / dz, (z - z0) / dz])
+        left, right, lower, upper = fractions
+        weights = np.asarray([left * lower, right * lower, left * upper, right * upper])
+        terms = weights * corners
+        samples = np.sum(terms, axis=0)
+        magnitude = np.sum(np.abs(terms), axis=0)
+        small = np.finfo(float).tiny
+        # A nonzero exact weight can underflow before a large corner value rescues
+        # it. Include zero and subnormal intermediate fractions/products.
+        nonzero_fractions = np.asarray([r1 != r, r != r0, z1 != z, z != z0])
+        nonzero_weights = np.asarray(
+            [
+                (r1 != r) & (z1 != z),
+                (r != r0) & (z1 != z),
+                (r1 != r) & (z != z0),
+                (r != r0) & (z != z0),
+            ]
+        )
+        hazard = (
+            ~np.isfinite(dr)
+            | ~np.isfinite(dz)
+            | ~np.isfinite(samples)
+            | ~np.isfinite(magnitude)
+            | np.any(nonzero_fractions & (np.abs(fractions) < small), axis=0)
+            | np.any(nonzero_weights & (np.abs(weights) < small), axis=0)
+            | np.any(nonzero_weights & (corners != 0.0) & (np.abs(terms) < small), axis=0)
+            | (np.abs(samples) < magnitude / 8.0)
+        )
+    for index in np.flatnonzero(hazard):
+        samples[index] = _exact_sample(
+            r0[index],
+            r1[index],
+            z0[index],
+            z1[index],
+            r[index],
+            z[index],
+            corners[:, index],
+        )
+    return samples
 
 
 def sample_rectilinear_field(r_grid, z_grid, quantity, points):
@@ -82,6 +141,9 @@ def sample_rectilinear_field(r_grid, z_grid, quantity, points):
     -----
     Within each enclosing cell, blend its four [Z,R]-indexed corner values with the bilinear
     weights from the point's R and Z fractions. Return one value per point in input order.
+    Complementary weights use independent endpoint differences. Overflowing spans,
+    vanishing intermediate contributions and strong cancellation are reevaluated
+    from exact ratios of the original float64 inputs before final rounding.
 
     **Coordinates.** grid arrays indexed [Z,R]; each query point ordered [R,Z]
 
@@ -128,16 +190,20 @@ def sample_rectilinear_field(r_grid, z_grid, quantity, points):
 
     ri = _cell_indices(r_axis, r_values)
     zi = _cell_indices(z_axis, z_values)
-    rf = (r_values - r_axis[ri]) / (r_axis[ri + 1] - r_axis[ri])
-    zf = (z_values - z_axis[zi]) / (z_axis[zi + 1] - z_axis[zi])
-    q00 = quantity[zi, ri]
-    q10 = quantity[zi, ri + 1]
-    q01 = quantity[zi + 1, ri]
-    q11 = quantity[zi + 1, ri + 1]
-    samples = (
-        (1.0 - rf) * (1.0 - zf) * q00
-        + rf * (1.0 - zf) * q10
-        + (1.0 - rf) * zf * q01
-        + rf * zf * q11
+    samples = _samples(
+        r_axis[ri],
+        r_axis[ri + 1],
+        z_axis[zi],
+        z_axis[zi + 1],
+        r_values,
+        z_values,
+        np.asarray(
+            [
+                quantity[zi, ri],
+                quantity[zi, ri + 1],
+                quantity[zi + 1, ri],
+                quantity[zi + 1, ri + 1],
+            ]
+        ),
     )
     return {"samples": samples}
