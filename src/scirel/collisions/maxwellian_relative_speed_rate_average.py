@@ -32,7 +32,7 @@ bounded historical replay reproduces the source arithmetic.  They are
 historical values, not the current best estimates; no conversion is
 performed and no other constant is stated.
 
-**Three repairs relative to the saved implementation, all documented.**  The
+**Numerical repairs relative to the saved implementation, all documented.**  The
 saved document declares non-finite inputs fail closed and the result finite,
 but its implementation checked neither: a ``NaN`` mesh point, mass or
 temperature propagated silently into the rate.  This module rejects non-finite
@@ -45,6 +45,10 @@ invoked.  Boolean, string and complex array inputs are additionally rejected
 as non-real, and numeric-string scalar masses or temperatures now raise a
 parameter-named ValueError.  The accepted real-valued shapes, signs and
 positivity conditions are preserved, with messages that name the quantity.
+The normalized mesh probabilities and the final positive sum are evaluated in
+logarithms, so overflowing normalization sums or individually underflowing
+probabilities do not silently erase representable rates.  An empty target mesh
+or a positive rate that rounds to zero is rejected rather than returned as zero.
 
 Evidence ceiling: this module establishes the discrete relation above, its
 agreement with an independent loop-per-energy formulation, its rest-beam and
@@ -61,6 +65,7 @@ nonnegative radial axis, and does not converge the quadrature for the caller.
 from __future__ import annotations
 
 import numpy as np
+from scipy.special import logsumexp
 
 from .._validation import required_finite_scalar
 
@@ -111,16 +116,22 @@ def _finite_1d_nonnegative(name, value):
     return array
 
 
-def _mesh_distribution(radial, axial, volume, tnorm_ev, target_temperature_ev):
-    """Return the normalized target Maxwellian on the supplied mesh."""
+def _mesh_log_probabilities(radial, axial, volume, tnorm_ev, target_temperature_ev):
+    """Return log(volume * shape / sum(volume * shape)), without materializing it."""
+    if volume.size == 0:
+        raise ValueError("target Maxwellian is not representable on an empty mesh")
     with np.errstate(over="ignore", invalid="ignore"):
-        shape = np.exp(
-            -(radial[:, None] ** 2 + axial[None, :] ** 2) * tnorm_ev / target_temperature_ev
-        )
-        distribution = shape / np.sum(volume * shape)
-    if not np.all(np.isfinite(distribution)):
+        exponent = (radial[:, None] ** 2 + axial[None, :] ** 2) * tnorm_ev / target_temperature_ev
+    if not np.all(np.isfinite(exponent)):
         raise ValueError("target Maxwellian is not representable")
-    return distribution
+    # volume = mantissa * 2**power. Remove a common binary scale before taking
+    # logarithms; volume / max(volume) could underflow a weight whose Gaussian
+    # factor compensates for its size. A common Gaussian factor cancels too.
+    mantissa, power = np.frexp(volume)
+    log_volume = np.log(mantissa) + (power - np.max(power)) * np.log(2.0)
+    log_weight = log_volume - (exponent - np.min(exponent))
+    log_weight -= np.max(log_weight)
+    return log_weight - logsumexp(log_weight)
 
 
 def _relative_kinematics(energies, radial, axial, thermal_speed, particle_mass_amu):
@@ -130,9 +141,13 @@ def _relative_kinematics(energies, radial, axial, thermal_speed, particle_mass_a
             np.sqrt(2.0 * ELEMENTARY_CHARGE_C * energies / (particle_mass_amu * AMU_KG))
             / thermal_speed
         )
-        relative_speed = np.sqrt(
-            radial[None, :, None] ** 2 + (axial[None, None, :] - particle_vx[:, None, None]) ** 2
-        )
+        if np.any((energies > 0.0) & (particle_vx == 0.0)):
+            raise ValueError("the sampled particle speeds are not representable")
+        axial_difference = axial[None, None, :] - particle_vx[:, None, None]
+        relative_speed = np.sqrt(radial[None, :, None] ** 2 + axial_difference**2)
+        nonzero_separation = (radial[None, :, None] != 0.0) | (axial_difference != 0.0)
+        if np.any(nonzero_separation & (relative_speed == 0.0)):
+            raise ValueError("the sampled relative speeds are not representable")
         collision_energy = (
             0.5
             * thermal_speed**2
@@ -207,8 +222,9 @@ def average_cross_section_over_maxwellian(
     ------
     ValueError
         If an input is not real numeric, finite, correctly shaped or within its
-        stated sign or positivity domain; if sampled collision energies or the
-        computed rate are not representable; if ``cross_section_m2`` is not
+        stated sign or positivity domain; if the target mesh cannot be normalized,
+        sampled speeds, collision energies or the computed rate are not representable
+        (including a positive rate rounded to zero); if ``cross_section_m2`` is not
         callable; or if the callable returns a wrong-shape, non-finite or negative
         array. Exceptions raised by the callable itself propagate unchanged.
 
@@ -233,6 +249,15 @@ def average_cross_section_over_maxwellian(
     constants. The function does not generate the mesh, validate its quadrature
     convergence, or supply a physical cross-section model; those remain caller
     responsibilities.
+
+    Numerically, use log probabilities ``log(p) = log(volume) - q - log(Z)``,
+    where ``q = (vr**2 + vx**2) * tnorm_ev / target_temperature_ev`` and
+    ``Z = sum(volume * exp(-q))``. Common volume and Gaussian scales cancel.
+    Evaluate ``vth * sum(p * sigma * v_rel)`` in logarithms through the final
+    sum, retaining contributions whose small probabilities are compensated by
+    large cross sections. An empty mesh or a positive result rounded to zero
+    raises ValueError; exact zero cross sections or relative speeds still give
+    an exact zero rate.
 
     Examples
     --------
@@ -323,9 +348,9 @@ def average_cross_section_over_maxwellian(
     # The overflow/invalid warnings NumPy would raise here are the conditions
     # the explicit non-finite checks below detect and report as ValueError, so
     # they are suppressed rather than reported twice.
-    with np.errstate(over="ignore", invalid="ignore"):
+    with np.errstate(over="ignore", invalid="ignore", divide="ignore", under="ignore"):
         thermal_speed = np.sqrt(2.0 * ELEMENTARY_CHARGE_C * tnorm_ev / (target_mass_amu * AMU_KG))
-        target_distribution = _mesh_distribution(
+        log_probability = _mesh_log_probabilities(
             radial, axial, volume, tnorm_ev, target_temperature_ev
         )
         relative_speed, collision_energy = _relative_kinematics(
@@ -334,7 +359,9 @@ def average_cross_section_over_maxwellian(
         # Extreme-but-finite inputs can overflow this intermediate array.  The
         # failure contract requires rejecting it here, before the caller's
         # cross-section callable observes a value the asset never declared.
-        if not bool(np.all(np.isfinite(collision_energy))):
+        if not bool(np.all(np.isfinite(collision_energy))) or bool(
+            np.any((relative_speed > 0.0) & (collision_energy == 0.0))
+        ):
             raise ValueError(
                 "the sampled collision energies are not representable for these finite inputs"
             )
@@ -345,11 +372,15 @@ def average_cross_section_over_maxwellian(
             )
         if not bool(np.all(np.isfinite(cross_section))) or bool(np.any(cross_section < 0.0)):
             raise ValueError("cross_section_m2 must return finite nonnegative values")
-        rate = thermal_speed * np.sum(
-            volume[None, :, :] * cross_section * relative_speed * target_distribution[None, :, :],
+        # Do not materialize p, sigma*v_rel or volume*sigma: any one may
+        # underflow/overflow even when the complete positive average is finite.
+        log_integrand = log_probability[None, :, :] + np.log(cross_section) + np.log(relative_speed)
+        rate = np.exp(np.log(thermal_speed) + logsumexp(log_integrand, axis=(1, 2)))
+        positive_rate = np.any(
+            (cross_section > 0.0) & (relative_speed > 0.0),
             axis=(1, 2),
         )
-    if not bool(np.all(np.isfinite(rate))):
+    if not bool(np.all(np.isfinite(rate))) or bool(np.any(positive_rate & (rate == 0.0))):
         raise ValueError(
             "the Maxwellian relative-speed average is not representable for these finite inputs"
         )
