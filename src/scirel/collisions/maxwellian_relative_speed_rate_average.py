@@ -116,20 +116,55 @@ def _finite_1d_nonnegative(name, value):
     return array
 
 
+def _shifted_square_exponent(axis, tnorm_ev, target_temperature_ev):
+    """Evaluate (v**2 - v0**2)*T_norm/T_target before forming a common offset.
+
+    v0 is the smallest absolute coordinate on this axis. Factor the square
+    difference as (abs(v)-v0)*(abs(v)+v0); accumulate binary exponents separately
+    so neither a square nor a temperature ratio has to be representable alone.
+    """
+    absolute = np.abs(axis)
+    reference = np.min(absolute)
+    difference = absolute - reference
+    nonzero = difference > 0.0
+    exponent = np.zeros_like(absolute)
+    if np.any(nonzero):
+        delta_mantissa, delta_power = np.frexp(difference[nonzero])
+        axis_mantissa, axis_power = np.frexp(absolute[nonzero])
+        reference_mantissa, reference_power = np.frexp(reference)
+        # Scale the sum by each coordinate's binary exponent before adding.
+        # reference <= abs(v), so a term too small for this sum is negligible;
+        # the separate difference above still retains neighboring coordinates.
+        sum_mantissa = axis_mantissa + np.ldexp(reference_mantissa, reference_power - axis_power)
+        norm_mantissa, norm_power = np.frexp(tnorm_ev)
+        temperature_mantissa, temperature_power = np.frexp(target_temperature_ev)
+        mantissa = delta_mantissa * sum_mantissa * norm_mantissa / temperature_mantissa
+        power = delta_power + axis_power + norm_power - temperature_power
+        with np.errstate(over="ignore", under="ignore", invalid="ignore"):
+            exponent[nonzero] = np.ldexp(mantissa, power)
+        if np.any(~np.isfinite(exponent[nonzero])) or np.any(exponent[nonzero] == 0.0):
+            raise ValueError("target Maxwellian exponent differences are not representable")
+    return exponent
+
+
 def _mesh_log_probabilities(radial, axial, volume, tnorm_ev, target_temperature_ev):
     """Return log(volume * shape / sum(volume * shape)), without materializing it."""
     if volume.size == 0:
         raise ValueError("target Maxwellian is not representable on an empty mesh")
+    radial_exponent = _shifted_square_exponent(radial, tnorm_ev, target_temperature_ev)
+    axial_exponent = _shifted_square_exponent(axial, tnorm_ev, target_temperature_ev)
     with np.errstate(over="ignore", invalid="ignore"):
-        exponent = (radial[:, None] ** 2 + axial[None, :] ** 2) * tnorm_ev / target_temperature_ev
+        exponent = radial_exponent[:, None] + axial_exponent[None, :]
     if not np.all(np.isfinite(exponent)):
         raise ValueError("target Maxwellian is not representable")
     # volume = mantissa * 2**power. Remove a common binary scale before taking
     # logarithms; volume / max(volume) could underflow a weight whose Gaussian
-    # factor compensates for its size. A common Gaussian factor cancels too.
+    # factor compensates for its size. Common Gaussian square terms have
+    # already canceled independently on both axes, before they can hide a
+    # probability difference belonging to the other axis.
     mantissa, power = np.frexp(volume)
     log_volume = np.log(mantissa) + (power - np.max(power)) * np.log(2.0)
-    log_weight = log_volume - (exponent - np.min(exponent))
+    log_weight = log_volume - exponent
     log_weight -= np.max(log_weight)
     return log_weight - logsumexp(log_weight)
 
@@ -252,12 +287,26 @@ def average_cross_section_over_maxwellian(
 
     Numerically, use log probabilities ``log(p) = log(volume) - q - log(Z)``,
     where ``q = (vr**2 + vx**2) * tnorm_ev / target_temperature_ev`` and
-    ``Z = sum(volume * exp(-q))``. Common volume and Gaussian scales cancel.
+    ``Z = sum(volume * exp(-q))``. Before combining axes, cancel the common
+    squared coordinate on each axis using ``(abs(v)-v0)*(abs(v)+v0)``, where
+    ``v0=min(abs(v))`` on that axis. Binary mantissas and exponents keep the
+    temperature-scaled differences from overflowing or underflowing silently.
+    Common volume and Gaussian scales cancel without first forming the large
+    total ``q``. Unrepresentable differences or their sum raise ValueError.
     Evaluate ``vth * sum(p * sigma * v_rel)`` in logarithms through the final
-    sum, retaining contributions whose small probabilities are compensated by
-    large cross sections. An empty mesh or a positive result rounded to zero
+    sum with separate binary powers for the cross section and speeds, retaining
+    contributions whose small probabilities are compensated by large cross
+    sections. Reconstruct the result with a binary scale rather than taking
+    the exponential of a large rate logarithm. An empty mesh or a positive
+    result rounded to zero
     raises ValueError; exact zero cross sections or relative speeds still give
     an exact zero rate.
+
+    The original speed and collision-energy arithmetic is retained. Near a
+    comoving beam, a tiny representational beam-speed offset can therefore give
+    a nonzero relative speed even when exact real arithmetic would give zero.
+    Subnormal thermal-speed intermediates can also lose relative precision.
+    Gaussian probability stabilization does not repair those kinematic errors.
 
     Examples
     --------
@@ -365,20 +414,48 @@ def average_cross_section_over_maxwellian(
             raise ValueError(
                 "the sampled collision energies are not representable for these finite inputs"
             )
-        cross_section = _real_array("cross_section_m2", cross_section_m2(collision_energy))
-        if cross_section.shape != collision_energy.shape:
-            raise ValueError(
-                "cross_section_m2 must return an array with the collision-energy shape"
-            )
-        if not bool(np.all(np.isfinite(cross_section))) or bool(np.any(cross_section < 0.0)):
-            raise ValueError("cross_section_m2 must return finite nonnegative values")
+    # A caller's arithmetic policy belongs to its callback. Restrict suppression
+    # to the internal calculations, so callback exceptions propagate unchanged.
+    cross_section = _real_array("cross_section_m2", cross_section_m2(collision_energy))
+    if cross_section.shape != collision_energy.shape:
+        raise ValueError("cross_section_m2 must return an array with the collision-energy shape")
+    if not bool(np.all(np.isfinite(cross_section))) or bool(np.any(cross_section < 0.0)):
+        raise ValueError("cross_section_m2 must return finite nonnegative values")
+    with np.errstate(over="ignore", invalid="ignore", divide="ignore", under="ignore"):
         # Do not materialize p, sigma*v_rel or volume*sigma: any one may
         # underflow/overflow even when the complete positive average is finite.
-        log_integrand = log_probability[None, :, :] + np.log(cross_section) + np.log(relative_speed)
-        rate = np.exp(np.log(thermal_speed) + logsumexp(log_integrand, axis=(1, 2)))
-        positive_rate = np.any(
-            (cross_section > 0.0) & (relative_speed > 0.0),
-            axis=(1, 2),
+        positive_cell = (cross_section > 0.0) & (relative_speed > 0.0)
+        positive_rate = np.any(positive_cell, axis=(1, 2))
+        sigma_mantissa, sigma_power = np.frexp(cross_section)
+        speed_mantissa, speed_power = np.frexp(relative_speed)
+        thermal_mantissa, thermal_power = np.frexp(thermal_speed)
+        cell_power = sigma_power + speed_power + thermal_power
+        common_power = np.max(
+            np.where(positive_cell, cell_power, np.iinfo(np.int32).min), axis=(1, 2)
+        )
+        common_power = np.where(positive_rate, common_power, 0)
+        log_integrand = (
+            log_probability[None, :, :]
+            + np.log(sigma_mantissa)
+            + np.log(speed_mantissa)
+            + np.log(thermal_mantissa)
+            + (cell_power - common_power[:, None, None]) * np.log(2.0)
+        )
+        log_sum = logsumexp(log_integrand, axis=(1, 2))
+        # Reconstruct with an exact binary scale. exp(log(rate)) would lose
+        # relative accuracy for a very large rate, while exp(log_sum) alone
+        # could underflow before a positive common_power restores its range.
+        shift = np.floor(log_sum[positive_rate] / np.log(2.0))
+        final_power = common_power[positive_rate] + shift
+        if np.any(~np.isfinite(final_power)) or np.any(
+            (final_power < -1075) | (final_power > 1024)
+        ):
+            raise ValueError(
+                "the Maxwellian relative-speed average is not representable for these finite inputs"
+            )
+        rate = np.zeros(energies.shape, dtype=float)
+        rate[positive_rate] = np.ldexp(
+            np.exp(log_sum[positive_rate] - shift * np.log(2.0)), final_power.astype(int)
         )
     if not bool(np.all(np.isfinite(rate))) or bool(np.any(positive_rate & (rate == 0.0))):
         raise ValueError(
