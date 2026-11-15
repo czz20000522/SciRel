@@ -401,6 +401,11 @@ def evaluate_ronnmark_r(x, lambda_):
     exact rational real/imaginary components before rounding to binary64;
     x=+/-2 is removable in the old recurrence, while x=+/-1 is a genuine
     pole. An overflowing companion is a failure even when R alone is finite.
+    For nonzero lambda, any exact nonzero integer x has a pole in R or H;
+    a finite cot(pi*x) caused by rounding does not regularize that pole.
+    At exact x=0 the paired harmonic responses are odd and analytic, so all
+    four RC entries are zero for every finite lambda. This endpoint is
+    evaluated analytically within the selected branch.
 
     References
     ----------
@@ -432,16 +437,25 @@ def evaluate_ronnmark_r(x, lambda_):
     al = _np.complex128(la) if _np.iscomplexobj(la) else _np.float64(_np.real(la))
     ay = abs(y) if al != 0 else 0.0
 
+    point = complex(y)
+    if al != 0 and point.imag == 0 and point.real != 0 and point.real.is_integer():
+        raise FloatingPointError(
+            f"Ronnmark R/H has a genuine harmonic pole at x={point!r}, lambda_={al!r}; "
+            "see the ronnmark-r-function contract; cotangent rounding does not remove the pole"
+        )
+
     if _complex_gt(4, al):
-        rc, branch = _rtay_fma(y, al), "RTAY(AL<4)"
+        evaluate, branch = _rtay_fma, "RTAY(AL<4)"
     elif _complex_gt(ay**2, 75 * al):
-        rc, branch = _rtay_fma(y, al), "RTAY(|Y|^2>75*AL)"
+        evaluate, branch = _rtay_fma, "RTAY(|Y|^2>75*AL)"
     elif _complex_gt(ay, 40 + al / 3):
-        rc, branch = _rtay_fma(y, al), "RTAY(|Y|>40+AL/3)"
+        evaluate, branch = _rtay_fma, "RTAY(|Y|>40+AL/3)"
     elif _complex_gt(3 * (al - 10), ay) and _complex_gt(15 * al, ay**2):
-        rc, branch = _rasy(y, al), "RASY"
+        evaluate, branch = _rasy, "RASY"
     else:
-        rc, branch = _rint(y, al), "RINT"
+        evaluate, branch = _rint, "RINT"
+
+    rc = _np.zeros((2, 2), dtype=_np.complex128) if y == 0 else evaluate(y, al)
 
     if not _np.all(_np.isfinite(rc)):
         raise FloatingPointError(

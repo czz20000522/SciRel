@@ -28,7 +28,7 @@
  "identity": {
   "relation": "dimensionless x and lambda to selected R branch and companion matrix",
   "direction": "dimensionless x and lambda to selected R branch and companion matrix",
-  "definition": "Ordered RYLA selector uses three Taylor tests, an asymptotic test, then a 16-point Gauss-Legendre integral fallback; RC[0,1]=d(lambda R)/d lambda. At exact lambda=0, R=H=x/(x*x-1) and both scaled-x companion derivatives equal -x*(x*x+1)/(x*x-1)**2; rational components are rounded only on output.",
+  "definition": "Ordered RYLA selector uses three Taylor tests, an asymptotic test, then a 16-point Gauss-Legendre integral fallback; RC[0,1]=d(lambda R)/d lambda. At exact lambda=0, R=H=x/(x*x-1) and both scaled-x companion derivatives equal -x*(x*x+1)/(x*x-1)**2; rational components are rounded only on output. For nonzero lambda every exact nonzero integer x has a genuine R/H pole. At exact x=0 the paired harmonic responses and both x-scaled derivatives vanish analytically within the selected branch.",
   "model": "Ronnmark rational response for magnetized Maxwellian dispersion",
   "geometry": "no physical spatial grid",
   "coordinates": "dimensionless complex x and lambda plane",
@@ -133,14 +133,16 @@
  "verification": {
   "scope": [
    "Existing selector cases and failure boundaries; twelve independent harmonic R/H cases with b=0.2,1,4,8 and three complex x values, checked at N80/160.",
-   "Exact zero-b rational R/H/RC endpoint, weak real/imaginary components, extreme magnitudes, removable endpoints and genuine/unrepresentable poles."
+   "Exact zero-b rational R/H/RC endpoint, weak real/imaginary components, extreme magnitudes, removable endpoints and genuine/unrepresentable poles.",
+   "Twenty-four nonzero-b exact integer poles and ten analytic zero-x controls preserve the distinction between genuine singularities and removable expansion divisions."
   ],
   "tests": [
    "tests/kinetic/test_fluid_spectrum_r43_kinetic.py",
    "tests/kinetic/test_kinetic_tensor_family_evidence.py::test_ronnmark_r_matches_its_independent_harmonic_representation",
-   "tests/kinetic/test_ronnmark_zero_endpoint.py"
+   "tests/kinetic/test_ronnmark_zero_endpoint.py",
+   "tests/kinetic/test_ronnmark_harmonic_poles.py"
   ],
-  "evidence_ceiling": "test_ronnmark_r_matches_its_independent_harmonic_representation compares the public R and dR_dlambda column with independent Bessel sums R=sum n^2 Gamma_n/[b(x-n)] and H=sum n^2 Gamma'_n/(x-n)=d(bR)/db. The unchanged N80/160 absolute check is 1e-14; public R/H comparisons retain rtol=1e-7, atol=1e-9 at twelve fixed samples. This supports H's definition and those samples only, not all selector branches or a continuous-domain error bound. The independently summed B tensor reference in tests/fixtures/kinetic_tensor/README.md does not call the product R routine and does not certify its global error propagation. The exact b=0 tests independently evaluate rational formulas at 800 decimal digits after exact binary64 conversion and compare each real/imaginary component with 16*eps*abs(reference)+8*min_subnormal, frozen before repair calls. This endpoint budget does not replace the original R/H or tensor budgets. See tests/fixtures/kinetic_tensor/zero-endpoint.md.",
+  "evidence_ceiling": "test_ronnmark_r_matches_its_independent_harmonic_representation compares the public R and dR_dlambda column with independent Bessel sums R=sum n^2 Gamma_n/[b(x-n)] and H=sum n^2 Gamma'_n/(x-n)=d(bR)/db. The unchanged N80/160 absolute check is 1e-14; public R/H comparisons retain rtol=1e-7, atol=1e-9 at twelve fixed samples. This supports H's definition and those samples only, not all selector branches or a continuous-domain error bound. The independently summed B tensor reference in tests/fixtures/kinetic_tensor/README.md does not call the product R routine and does not certify its global error propagation. The exact b=0 tests independently evaluate rational formulas at 800 decimal digits after exact binary64 conversion and compare each real/imaginary component with 16*eps*abs(reference)+8*min_subnormal, frozen before repair calls. This endpoint budget does not replace the original R/H or tensor budgets. See tests/fixtures/kinetic_tensor/zero-endpoint.md. The paired-harmonic argument also establishes the exact zero-x matrix and the nonzero-b integer-pole guard; 34 supplemental direct controls were frozen before repair calls. These exact identities do not give a nonzero-x approximation error bound.",
   "known_limitations": [
    "branch comparisons and arithmetic follow source real/complex behavior; scalar finite inputs only",
    "Full source/runtime qualification that uses the declared local Python runtime on Linux amd64 is NOT_RUN in this macOS checkout.",
