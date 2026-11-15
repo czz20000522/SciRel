@@ -1,43 +1,45 @@
 {
  "schema": "scirel.asset-document",
- "asset_id": "scirel.basis.clamped-cubic-spline",
+ "asset_id": "scirel.numerics.second-clamped-cubic-spline",
  "title": {
-  "en": "Clamped cubic spline",
-  "zh": "双端钳制三次样条"
+  "en": "Origin-natural cylindrical spline",
+  "zh": "零原点自然边界柱坐标样条"
  },
- "summary": "Callable piecewise-cubic Hermite interpolation with prescribed first derivatives at both endpoints.",
+ "summary": "Callable piecewise-cubic Hermite interpolation with the prescribed origin row and a cylindrical right boundary equation.",
  "taxonomy": [
   "analysis",
   "basis"
  ],
  "aliases": [
-  "ClampedCubicSpline"
+  "SecondClampedCubicSpline"
  ],
  "discovery": {
   "capability": [
-   "Clamped cubic spline",
-   "Callable piecewise-cubic Hermite interpolation with prescribed first derivatives at both endpoints."
+   "Origin-natural cylindrical spline",
+   "Callable piecewise-cubic Hermite interpolation with the prescribed origin row and a cylindrical right boundary equation."
   ],
   "operation": [
-   "boundary-clamped C2 cubic-spline interpolation",
-   "strictly increasing knots, matched values and two endpoint slopes -> callable spline with deriv=0/1/2 evaluation"
+   "origin-row cylindrical C2 cubic-spline interpolation",
+   "strictly increasing knots, matched values and cylindrical mode m -> callable spline with deriv=0/1/2 evaluation"
   ],
-  "model": "C2 piecewise-cubic Hermite spline with a boundary-specific linear slope system for two prescribed endpoint first derivatives.",
-  "geometry": "One-dimensional strictly increasing scalar knots and ordinate values in arbitrary coherent coordinate units; no spatial reconstruction is performed.",
-  "boundary": "Both endpoint first derivatives are prescribed; in-domain derivative selectors 0, 1 and 2 are qualified. Finite queries outside the closed knot interval return zero, while nonfinite queries are zero-filled; other derivative selectors remain compatibility conventions.",
+  "model": "C2 piecewise-cubic Hermite spline with the origin row x_data[0]=y_data[0]=0 and the right cylindrical equation fdd+fd/x-m^2 f/x^2=0.",
+  "geometry": "One-dimensional strictly increasing scalar knots and ordinate values with the origin row fixed and a positive last knot; coordinate units are caller-defined.",
+  "boundary": "The origin row x_data[0]=y_data[0]=0 and the right cylindrical equation are imposed; x_data[-1]>0 is required. Finite queries outside the closed knot interval return zero, while nonfinite queries are zero-filled. The physical magnetic-fitting interpretation remains unresolved.",
   "device_scope": "generic"
  },
  "identity": {
-  "relation": "Clamped cubic spline",
+  "relation": "Origin-natural cylindrical spline",
   "direction": "Declared inputs to Callable spline retaining x_data,y_data,k and deriv=0/1/2 evaluation",
   "definition": "Piecewise cubic Hermite interpolation with a boundary-specific linear slope system",
   "model": "C2 cubic spline; Clamped/FirstClamped use corrected unequal-knot continuity rows",
   "geometry": "one-dimensional scalar abscissa and ordinate samples",
   "coordinates": "Knots in arbitrary coherent coordinate units",
-  "boundary": "Specified first derivatives at both ends",
+  "boundary": "Origin row and right fdd+fd/x-m²f/x²=0",
   "assumptions": [
    "Finite strictly increasing matched one-dimensional knots and values with N>=3",
    "In-domain deriv=0/1/2 for the qualified numerical claim",
+   "x_data[0]=y_data[0]=0 and x_data[-1]>0",
+   "The origin ordinate y_data[0] must be exactly zero",
    "Finite queries outside the closed knot interval and nonfinite query values use the zero-fill convention"
   ]
  },
@@ -49,7 +51,7 @@
    "shape": "(N,)",
    "dtype": "float64",
    "required": true,
-   "constraints": "Finite strictly increasing N>=3"
+   "constraints": "Finite strictly increasing N>=3; x_data[0] must be 0 and x_data[-1] positive"
   },
   {
    "name": "y_data",
@@ -58,20 +60,17 @@
    "shape": "(N,)",
    "dtype": "float64",
    "required": true,
-   "constraints": "Finite, same N as x_data"
+   "constraints": "Finite, same N as x_data; y_data[0] must be 0"
   },
   {
-   "name": "yp",
-   "description": "Left/right endpoint slopes",
-   "units": "ordinate per coordinate",
-   "shape": "(2,)",
+   "name": "m",
+   "description": "Coefficient in the cylindrical Robin row",
+   "units": "dimensionless",
+   "shape": "scalar",
    "dtype": "float64",
    "required": false,
-   "constraints": "Finite two slopes",
-   "default": [
-    0,
-    0
-   ]
+   "constraints": "Finite; no physical mode interpretation asserted",
+   "default": 1
   }
  ],
  "outputs": [
@@ -89,16 +88,21 @@
   "preconditions": [
    "Finite strictly increasing matched one-dimensional knots and values with N>=3",
    "In-domain deriv=0/1/2 for the qualified numerical claim",
+   "x_data[0]=y_data[0]=0 and x_data[-1]>0",
+   "The origin ordinate y_data[0] must be exactly zero",
    "Finite queries outside the closed knot interval and nonfinite query values use the zero-fill convention"
   ],
   "supported": [
-   "Finite polynomial and spline basis selections implemented by scirel.geometry.basis"
+   "Finite polynomial and spline basis selections implemented by scirel.numerics.basis"
   ],
   "excluded": [
    "Zero extrapolation and deriv selectors other than 1/2 returning values remain compatibility conventions",
    "Duplicate, unsorted or nonfinite knots are outside numerical qualification",
+   "Physical cylindrical magnetic-fitting boundary interpretation remains unresolved",
    "Nonfinite query values are outside the numerical qualification; the implementation zero-fills them as a compatibility convention",
-   "Knot-interval membership is exact; a point one representable step outside returns zero"
+   "Knot-interval membership is exact; a point one representable step outside returns zero",
+   "Nonzero origin ordinates are rejected rather than silently ignored",
+   "The retained origin row is not a physical cylindrical fitting model"
   ]
  },
  "failure_semantics": {
@@ -109,11 +113,11 @@
  },
  "public_api": {
   "python": {
-   "module": "scirel.geometry.basis",
-   "symbol": "ClampedCubicSpline",
-   "signature": "ClampedCubicSpline(x_data, y_data, yp=(0, 0))",
-   "canonical_module": "scirel.geometry",
-   "canonical_symbol": "ClampedCubicSpline"
+   "module": "scirel.numerics.basis",
+   "symbol": "SecondClampedCubicSpline",
+   "signature": "SecondClampedCubicSpline(x_data, y_data, m=1)",
+   "canonical_module": "scirel.numerics",
+   "canonical_symbol": "SecondClampedCubicSpline"
   }
  },
  "version": {
@@ -121,9 +125,9 @@
   "dependencies": []
  },
  "example": {
-  "description": "Construct a two-endpoint-slope cubic spline and evaluate it at an interior knot.",
-  "code": "import numpy as np\nfrom scirel.geometry.basis import ClampedCubicSpline\n\nx = np.array([0.0, 0.3, 1.0])\ny = np.array([0.0, 0.2, 1.0])\nspline = ClampedCubicSpline(x, y)\nnp.testing.assert_allclose(spline(np.array([0.3])), [0.2])",
-  "expected": "The callable preserves the query shape (1,) and returns 0.2 at the supplied knot."
+  "description": "Construct the origin-natural cylindrical spline with its default right-boundary parameter.",
+  "code": "import numpy as np\nfrom scirel.numerics.basis import SecondClampedCubicSpline\n\nspline = SecondClampedCubicSpline(np.array([0.0, 0.3, 1.0]), np.array([0.0, 0.2, 1.0]))\nnp.testing.assert_allclose(spline(np.array([0.3])), [0.2])",
+  "expected": "The callable returns 0.2 at the interior knot and preserves the one-element query shape."
  },
  "verification": {
   "scope": [
@@ -135,12 +139,15 @@
    "tests/equilibrium/test_analysis_families.py",
    "tests/equilibrium/test_analysis_corrections.py"
   ],
-  "evidence_ceiling": "Direct examples and named regression fixtures establish the documented relation on those inputs; they do not establish arbitrary-input correctness, experimental validation, or release approval.",
+  "evidence_ceiling": "Direct examples and named regression fixtures establish the documented relation on those inputs; they do not establish arbitrary-input correctness or experimental validation.",
   "known_limitations": [
    "Zero extrapolation and deriv selectors other than 1/2 returning values remain compatibility conventions",
    "Duplicate, unsorted or nonfinite knots are outside numerical qualification",
+   "Physical cylindrical magnetic-fitting boundary interpretation remains unresolved",
    "Knot-interval membership is exact; a point one representable step outside returns zero",
-   "Nonfinite query values are outside the numerical qualification; the implementation zero-fills them as a compatibility convention"
+   "Nonfinite query values are outside the numerical qualification; the implementation zero-fills them as a compatibility convention",
+   "Nonzero y_data[0] is outside the implemented origin boundary",
+   "The retained origin row is not a physical cylindrical fitting model"
   ]
  }
 }

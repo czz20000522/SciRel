@@ -1,6 +1,6 @@
 {
  "schema": "scirel.asset-document",
- "asset_id": "scirel.basis.build-basis",
+ "asset_id": "scirel.numerics.build-basis",
  "title": {
   "en": "Basis evaluator factory",
   "zh": "基函数求值器构造"
@@ -79,7 +79,7 @@
    "For spline selections, finite queries outside the closed knot interval and nonfinite query values use the zero-fill convention; polynomial selections evaluate directly"
   ],
   "supported": [
-   "Finite polynomial and spline basis selections implemented by scirel.geometry.basis"
+   "Finite polynomial and spline basis selections implemented by scirel.numerics.basis"
   ],
   "excluded": [
    "Quartic and special-function factory selections are rejected; no invented implementations",
@@ -96,10 +96,10 @@
  },
  "public_api": {
   "python": {
-   "module": "scirel.geometry.basis",
+   "module": "scirel.numerics.basis",
    "symbol": "build_basis",
    "signature": "build_basis(basis='poly', **kwargs)",
-   "canonical_module": "scirel.geometry",
+   "canonical_module": "scirel.numerics",
    "canonical_symbol": "build_basis"
   }
  },
@@ -109,7 +109,7 @@
  },
  "example": {
   "description": "Build the default ascending-power polynomial evaluators and evaluate all three at x=0.5.",
-  "code": "import numpy as np\nfrom scirel.geometry.basis import build_basis\n\nevaluators = build_basis()\nassert len(evaluators) == 3\nnp.testing.assert_allclose([fn(0.5) for fn in evaluators], [1.0, 0.5, 0.25])",
+  "code": "import numpy as np\nfrom scirel.numerics.basis import build_basis\n\nevaluators = build_basis()\nassert len(evaluators) == 3\nnp.testing.assert_allclose([fn(0.5) for fn in evaluators], [1.0, 0.5, 0.25])",
   "expected": "Three evaluators are returned; their values at 0.5 are [1.0, 0.5, 0.25]."
  },
  "verification": {

@@ -3,7 +3,7 @@
 import numpy as np
 import pytest
 
-from scirel.geometry.basis import (
+from scirel.numerics.basis import (
     ClampedCubicSpline,
     FirstClampedCubicSpline,
     NaturalCubicSpline,

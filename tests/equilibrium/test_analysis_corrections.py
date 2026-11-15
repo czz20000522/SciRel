@@ -4,7 +4,7 @@ import inspect
 import numpy as np
 import pytest
 
-from scirel.geometry import basis
+from scirel.numerics import basis
 from scirel.geometry import fieldline as fl
 from scirel.geometry import sampling as helpers
 

@@ -76,11 +76,11 @@ assert "scipy" not in sys.modules
     assert result.returncode == 0, result.stdout + result.stderr
 
 
-def test_geometry_basis_core_export_does_not_import_scipy_special() -> None:
+def test_numerics_basis_core_export_does_not_import_scipy_special() -> None:
     result = _run(
         """
 import sys
-from scirel.geometry import build_basis
+from scirel.numerics import build_basis
 
 assert "scipy" not in sys.modules
 try:

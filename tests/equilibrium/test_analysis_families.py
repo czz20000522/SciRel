@@ -5,7 +5,8 @@ import inspect
 import numpy as np
 import pytest
 from scipy.interpolate import CubicSpline as ReferenceSpline
-from scirel.geometry import basis, fieldline, sampling
+from scirel.geometry import fieldline, sampling
+from scirel.numerics import basis
 from scirel.geometry.numerics import diff_12_central, NumericalContractError
 
 

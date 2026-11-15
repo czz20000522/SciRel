@@ -1,11 +1,11 @@
-"""Polynomial and cubic basis evaluators used by SciRel geometry operators.
+"""Polynomial and cubic basis evaluators for reusable numerical construction.
 
 The spline classes implement piecewise cubic Hermite interpolation.  Knot
 slopes are obtained from the declared natural, clamped, or retained
 cylindrical boundary equations.  Finite queries outside the closed knot
 interval are zero-filled exactly, and nonfinite query values use the same
 convention.  The module intentionally keeps the public selector and failure
-contracts of the geometry basis API, while all numerical assembly is local to
+contracts of the basis API, while all numerical assembly is local to
 SciRel and uses NumPy only.
 """
 
@@ -243,7 +243,7 @@ class NaturalCubicSpline(CubicSpline):
     Examples
     --------
     >>> import numpy as np
-    >>> from scirel.geometry.basis import NaturalCubicSpline
+    >>> from scirel.numerics.basis import NaturalCubicSpline
     >>> spline = NaturalCubicSpline(np.array([0.0, 0.3, 1.0]), np.array([0.0, 0.2, 1.0]))
     >>> np.testing.assert_allclose(spline(np.array([0.3])), [0.2])
     """
@@ -319,7 +319,7 @@ class ClampedCubicSpline(CubicSpline):
     Examples
     --------
     >>> import numpy as np
-    >>> from scirel.geometry.basis import ClampedCubicSpline
+    >>> from scirel.numerics.basis import ClampedCubicSpline
     >>> x = np.array([0.0, 0.3, 1.0])
     >>> y = np.array([0.0, 0.2, 1.0])
     >>> spline = ClampedCubicSpline(x, y)
@@ -414,7 +414,7 @@ class FirstClampedCubicSpline(CubicSpline):
     Examples
     --------
     >>> import numpy as np
-    >>> from scirel.geometry.basis import FirstClampedCubicSpline
+    >>> from scirel.numerics.basis import FirstClampedCubicSpline
     >>> spline = FirstClampedCubicSpline(np.array([0.0, 0.3, 1.0]), np.array([0.0, 0.2, 1.0]))
     >>> np.testing.assert_allclose(spline(np.array([0.3])), [0.2])
     """
@@ -520,7 +520,7 @@ class SecondClampedCubicSpline(CubicSpline):
     Examples
     --------
     >>> import numpy as np
-    >>> from scirel.geometry.basis import SecondClampedCubicSpline
+    >>> from scirel.numerics.basis import SecondClampedCubicSpline
     >>> spline = SecondClampedCubicSpline(np.array([0.0, 0.3, 1.0]), np.array([0.0, 0.2, 1.0]))
     >>> np.testing.assert_allclose(spline(np.array([0.3])), [0.2])
     """
@@ -657,7 +657,7 @@ def build_basis(basis="poly", **kwargs):
     Examples
     --------
     >>> import numpy as np
-    >>> from scirel.geometry.basis import build_basis
+    >>> from scirel.numerics.basis import build_basis
     >>> evaluators = build_basis()
     >>> assert len(evaluators) == 3
     >>> np.testing.assert_allclose([fn(0.5) for fn in evaluators], [1.0, 0.5, 0.25])
@@ -759,7 +759,7 @@ class BasisMatrix(object):
     See Also
     --------
     build_basis : Basis evaluator factory.
-    scirel.geometry : Geometry namespace
+    scirel.numerics : Numerical namespace
 
     Notes
     -----
@@ -798,7 +798,7 @@ class BasisMatrix(object):
     Examples
     --------
     >>> import numpy as np
-    >>> from scirel.geometry.basis import BasisMatrix
+    >>> from scirel.numerics.basis import BasisMatrix
     >>> samples = np.array([0.0, 1.0])
     >>> matrix = BasisMatrix("poly")(samples)
     >>> np.testing.assert_allclose(matrix, [[1.0, 0.0, 0.0], [1.0, 1.0, 1.0]])

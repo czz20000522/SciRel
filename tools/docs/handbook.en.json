@@ -839,12 +839,12 @@
      "introduction": "Polynomial coefficients and design matrices are ordered by ascending power, and the SVD fit has an explicit truncation; the spline factory connects natural, two-end and one-end clamped relations. Cylindrical Robin equations and zero-origin restrictions must not be read as universal physical closures merely from their names.",
      "assets": [
       "scirel.sampling.polynomial-fit",
-      "scirel.basis.build-basis",
-      "scirel.basis.basis-matrix",
-      "scirel.basis.natural-cubic-spline",
-      "scirel.basis.clamped-cubic-spline",
-      "scirel.basis.first-clamped-cubic-spline",
-      "scirel.basis.second-clamped-cubic-spline"
+      "scirel.numerics.build-basis",
+      "scirel.numerics.basis-matrix",
+      "scirel.numerics.natural-cubic-spline",
+      "scirel.numerics.clamped-cubic-spline",
+      "scirel.numerics.first-clamped-cubic-spline",
+      "scirel.numerics.second-clamped-cubic-spline"
      ]
     },
     {
