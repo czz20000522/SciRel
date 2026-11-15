@@ -28,7 +28,7 @@
  "identity": {
   "relation": "angular-frequency sequence and fixed kx seed to signed complex roots and exit diagnostics",
   "direction": "angular-frequency sequence and fixed kx seed to signed complex roots and exit diagnostics",
-  "definition": "Each frequency independently starts from kx_start and solves det(D)=0 with source-compatible complex trust-region dogleg arithmetic and bounded iteration/evaluation counts.",
+  "definition": "Each frequency independently starts from kx_start and solves det(D)=0 with source-compatible complex trust-region dogleg arithmetic and bounded iteration/evaluation counts. Each product tensor evaluation explicitly calls evaluate_dielectric_response(method='ronnmark') with the original direct omega, without an Hz round trip. The return is a Result with unchanged FMA solver arithmetic, thresholds and budgets.",
   "model": "homogeneous magnetized Maxwellian multi-species plasma",
   "geometry": "homogeneous plasma",
   "coordinates": "complex perpendicular wavenumber plane; frequencies remain in caller order",
@@ -108,7 +108,7 @@
    "shape": "scalar complex",
    "dtype": "complex128",
    "required": true,
-   "constraints": "Finite; it only affects which root is converged to, not the existence of the root itself."
+   "constraints": "Finite; it only affects which root is reached, not the existence of the root itself."
   },
   {
    "name": "tol_fun",
@@ -168,7 +168,7 @@
    "shape": "`(F,)` one-dimensional frequency-axis complex array",
    "dtype": "complex128",
    "required": true,
-   "constraints": "Finite complex; assess each final candidate using residuals, determinant_scale, exit_flags and converged at the same frequency index."
+   "constraints": "Finite complex; assess each final candidate using residuals, determinant_scale, status and success at the same frequency index."
   },
   {
    "name": "determinant_scale",
@@ -180,13 +180,13 @@
    "constraints": "Nonnegative finite; `abs(residuals)/determinant_scale` is the relative zero quality of that root."
   },
   {
-   "name": "exit_flags",
+   "name": "status",
    "description": "The reference runtime `fsolve` exit flag at each frequency point (`1` residual met, `2` step met, `3` residual decrease met, `-2` Jacobian degenerate, `-3` trust region shrank to meaninglessness, `0` iteration or evaluation limit reached)",
    "units": "not applicable",
    "shape": "`(F,)` one-dimensional frequency-axis integer array",
    "dtype": "integer",
    "required": true,
-   "constraints": "Restricted to `{1,2,3,0,-2,-3}`."
+   "constraints": "Restricted to {1,2,3,0,-2,-3}; 1=residual criterion, 2=step criterion, 3=residual decrease, 0=iteration/evaluation budget exhausted, -2=degenerate Jacobian, -3=collapsed trust region. Numeric codes and original decisions are unchanged."
   },
   {
    "name": "iterations",
@@ -207,13 +207,22 @@
    "constraints": "Does not exceed `max_function_evals`."
   },
   {
-   "name": "converged",
-   "description": "Whether the solver converged at each frequency point, following the SciPy `success` convention: the residual or step-size criterion was met (`exit_flags` of 1, 2 or 3)",
+   "name": "message",
+   "description": "Per-frequency explanation of the original solver status.",
+   "units": "dimensionless",
+   "shape": "(F,) list of strings",
+   "dtype": "list[str]",
+   "required": true,
+   "constraints": "One explanation per frequency, in caller order, consistent with status; status=0 remains budget exhaustion and success=False."
+  },
+  {
+   "name": "success",
+   "description": "Whether the solver succeeded at each frequency point, following the SciPy `success` convention: the residual or step-size criterion was met (`status` of 1, 2 or 3)",
    "units": "not applicable",
    "shape": "`(F,)` one-dimensional frequency-axis boolean array",
    "dtype": "bool",
    "required": true,
-   "constraints": "When false the exit flag is non-positive (0 budget exhausted, -2 degenerate Jacobian, -3 collapsed trust region). The returned root is only the final unaccepted candidate, possibly the initial seed; neither a zero nor a stationary point is guaranteed."
+   "constraints": "Exactly status>0, so only 1,2,3 are successful. status=0,-2,-3 are false. A false entry is the final unaccepted candidate, possibly the initial seed; neither a zero nor a stationary point is guaranteed."
   },
   {
    "name": "omegas",
@@ -302,7 +311,7 @@
  "failure_semantics": {
   "invalid_input": "Raises ValueError for declared invalid inputs; numeric conversion errors may propagate for unsupported Python objects.",
   "runtime_failure": "FloatingPointError propagates for a nonfinite or unrepresentable Ronnmark tensor evaluation, including at the initial point. No alternate root or relation is substituted.",
-  "nonconvergence": "Exit flags and residuals expose bounded nonconvergence.",
+  "nonconvergence": "Bounded nonconvergence remains observable in parallel frequency-axis roots, residuals, determinant_scale, status, iterations, function_evals, success and message. Only status>0 is success; status=0 remains failure. Completed calls retain final unaccepted candidates, with no root, stationary-point or mode guarantee.",
   "partial_results": "No partial mapping is returned after an exception."
  },
  "public_api": {
@@ -318,14 +327,14 @@
   "implementation_version": "0.0.0",
   "dependencies": [
    {
-    "asset_id": "scirel.kinetic.kinetic-dispersion-ronnmark"
+    "asset_id": "scirel.kinetic.dielectric-response"
    }
   ]
  },
  "example": {
   "description": "Evaluate one bounded case. Python preflight ran locally; local execution covers this asset.",
-  "code": "from scirel.kinetic import solve_kinetic_wavevector_roots\nr=solve_kinetic_wavevector_roots(B0=1.0, qs=[-1.60217662e-19], ms=[9.1094e-31], ns0=[6.075e19], Ts0=[11604941.036704937],omegas=[1e11],kz=0,kx_start=8000); assert len(r['roots'])==1",
-  "expected": "Python preflight returned one converged root 6.01073715e-13 + 1315.20499512j with residual about -1.14e-13 - 2.86e-17j and exit flag 1. local execution covers this asset."
+  "code": "from scirel.kinetic import solve_kinetic_wavevector_roots\nr=solve_kinetic_wavevector_roots(B0=1.0, qs=[-1.60217662e-19], ms=[9.1094e-31], ns0=[6.075e19], Ts0=[11604941.036704937],omegas=[1e11],kz=0,kx_start=8000); assert len(r['roots'])==1\n",
+  "expected": "Python preflight returned one accepted root 6.01073715e-13 + 1315.20499512j with residual about -1.14e-13 - 2.86e-17j and exit flag 1. local execution covers this asset."
  },
  "verification": {
   "scope": [

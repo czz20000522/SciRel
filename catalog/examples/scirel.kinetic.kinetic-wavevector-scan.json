@@ -28,7 +28,7 @@
  "identity": {
   "relation": "SI equilibrium controls and dimensionless ladder bounds to signed complex kx roots",
   "direction": "SI equilibrium controls and dimensionless ladder bounds to signed complex kx roots",
-  "definition": "The graph derives its ordered frequency ladder from wn and a single kx_start=kx_scale*kn; the bounded root solver repeats that seed independently at every frequency.",
+  "definition": "The graph derives its ordered frequency ladder from wn and a single kx_start=kx_scale*kn; the bounded root solver repeats that seed independently at every frequency. Frequency-ladder arithmetic, fixed seed, FMA root algorithm, thresholds and budgets are unchanged; the public return is a Result forwarding each frequency status, success and message.",
   "model": "homogeneous magnetized Maxwellian multi-species plasma",
   "geometry": "homogeneous magnetized plasma",
   "coordinates": "complex perpendicular wavenumber plane; kz is an absolute input",
@@ -262,13 +262,13 @@
    "constraints": "The returned value follows the stated shape and physical normalization."
   },
   {
-   "name": "exit_flags",
+   "name": "status",
    "description": "The reference runtime fsolve exit flag at each frequency point, restricted to {1,2,3,0,-2,-3}",
    "units": "not applicable",
    "shape": "(F,) one-dimensional frequency-axis integer array",
    "dtype": "integer",
    "required": true,
-   "constraints": "The returned value follows the stated shape and physical normalization."
+   "constraints": "Restricted to {1,2,3,0,-2,-3}; 1=residual criterion, 2=step criterion, 3=residual decrease, 0=iteration/evaluation budget exhausted, -2=degenerate Jacobian, -3=collapsed trust region. Numeric codes and original decisions are unchanged."
   },
   {
    "name": "iterations",
@@ -289,13 +289,22 @@
    "constraints": "The returned value follows the stated shape and physical normalization."
   },
   {
-   "name": "converged",
+   "name": "message",
+   "description": "Per-frequency explanation of the original solver status.",
+   "units": "dimensionless",
+   "shape": "(F,) list of strings",
+   "dtype": "list[str]",
+   "required": true,
+   "constraints": "One explanation per frequency, in caller order, consistent with status; status=0 remains budget exhaustion and success=False."
+  },
+  {
+   "name": "success",
    "description": "Whether the exit flag is positive at each frequency point, that is, whether the reference runtime judged convergence",
    "units": "not applicable",
    "shape": "(F,) one-dimensional frequency-axis boolean array",
    "dtype": "bool",
    "required": true,
-   "constraints": "The returned value follows the stated shape and physical normalization."
+   "constraints": "Exactly status>0, so only 1,2,3 are successful. status=0,-2,-3 are false. A false entry is the final unaccepted candidate, possibly the initial seed; neither a zero nor a stationary point is guaranteed."
   },
   {
    "name": "solver",
@@ -330,7 +339,7 @@
  "failure_semantics": {
   "invalid_input": "Raises ValueError from `scan_frequencies`/`seed_wavenumber` for nonfinite bounds, nonpositive `wn`/`kn`/`omega_step`, `omega_stop < omega_scale`, an empty ladder, or nonfinite `kz`; invalid equilibrium controls fail in `derive_species_equilibrium_scales` before the root graph is imported.",
   "runtime_failure": "FloatingPointError propagates from an unrepresentable root-graph tensor evaluation in solve_kinetic_wavevector_roots; no partial scan, fallback root, clamp or retry is substituted.",
-  "nonconvergence": "Bounded nonconvergence is reported in parallel frequency-axis arrays: roots, residuals, determinant_scale, exit_flags, iterations, function_evals and converged. Inspect result[\"exit_flags\"][i] and result[\"converged\"][i] for frequency i; no per-frequency root dictionary or stationary-point guarantee is returned.",
+  "nonconvergence": "Bounded nonconvergence remains observable in parallel frequency-axis roots, residuals, determinant_scale, status, iterations, function_evals, success and message. Only status>0 is success; status=0 remains failure. Completed calls retain final unaccepted candidates, with no root, stationary-point or mode guarantee.",
   "partial_results": "If the root graph raises, no partial scan mapping is returned; a completed scan may still contain nonconverged per-frequency entries."
  },
  "public_api": {
@@ -355,8 +364,8 @@
  },
  "example": {
   "description": "Execute one bounded single-frequency Python scan; this does not establish a native or reference-runtime comparison.",
-  "code": "from scirel.kinetic import scan_kinetic_wavevectors\nr=scan_kinetic_wavevectors(ms=[9.1094e-31],qs=[-1.60217662e-19],ns_unit=[1],Ts_unit=[1],B0=1,n00=6.075e19,T00=1000,kz=0,omega_scale=0.11,omega_step=0.05,omega_stop=0.11); assert r['count']==1",
-  "expected": "The bounded Python example returns count=1, a root about -0.17247987 - 0.12372616j, and converged=False."
+  "code": "from scirel.kinetic import scan_kinetic_wavevectors\nr=scan_kinetic_wavevectors(ms=[9.1094e-31],qs=[-1.60217662e-19],ns_unit=[1],Ts_unit=[1],B0=1,n00=6.075e19,T00=1000,kz=0,omega_scale=0.11,omega_step=0.05,omega_stop=0.11); assert r['count']==1\n",
+  "expected": "The bounded Python example returns count=1, a root about -0.17247987 - 0.12372616j, and success=False."
  },
  "verification": {
   "scope": [
@@ -369,11 +378,11 @@
    "tests/cross_domain/test_fluid_spectrum_r43_compositions.py",
    "tests/kinetic/test_dispersion_scan_axes.py"
   ],
-  "evidence_ceiling": "The named single-frequency test directly exercises this scan. test_dispersion_scan_axes calls its scan_frequencies helper as kinetic_scan_frequencies and tests ladder endpoints, not complete complex-root scans. The bounded example can return converged=False; these checks do not certify every frequency, global root selection or native/reference-runtime agreement.",
+  "evidence_ceiling": "The named single-frequency test directly exercises this scan. test_dispersion_scan_axes calls its scan_frequencies helper as kinetic_scan_frequencies and tests ladder endpoints, not complete complex-root scans. The bounded example can return success=False; these checks do not certify every frequency, global root selection or native/reference-runtime agreement.",
   "known_limitations": [
    "zero kz is allowed; roots retain sign and nonpositive exit flags remain observable",
    "The colon-ladder count uses `floor((stop-start)/step + 1e-12*max(1,|ratio|)) + 1`; a stop that misses an exact step multiple by more than that relative tolerance is not a ladder point.",
-   "The scan's root diagnostics (`exit_flag`, residual) are per-frequency; no aggregate convergence flag or native/reference-runtime parity is provided."
+   "The scan's root diagnostics (`status`, residual) are per-frequency; no aggregate convergence flag or native/reference-runtime parity is provided."
   ]
  },
  "composition": {
@@ -453,10 +462,11 @@
      "roots",
      "residuals",
      "determinant_scale",
-     "exit_flags",
+     "status",
      "iterations",
      "function_evals",
-     "converged",
+     "message",
+     "success",
      "omegas",
      "kz",
      "kx_start",
@@ -533,7 +543,7 @@
      "node": "kinetic_wavevector_roots",
      "port": "kx_start"
     },
-    "description": "The fixed initial value determines which root is converged to and must be given explicitly; the source uses the same initial value at all frequency points",
+    "description": "The fixed initial value determines which root is reached and must be given explicitly; the source uses the same initial value at all frequency points",
     "condition": "always",
     "transform": "identity",
     "kind": "data",
@@ -977,13 +987,13 @@
    {
     "from": {
      "node": "kinetic_wavevector_roots",
-     "port": "exit_flags"
+     "port": "status"
     },
     "to": {
      "node": "$output",
-     "port": "exit_flags"
+     "port": "status"
     },
-    "description": "Return the declared exit_flags terminal.",
+    "description": "Return the declared status terminal.",
     "condition": "always",
     "transform": "identity",
     "kind": "data",
@@ -1022,13 +1032,13 @@
    {
     "from": {
      "node": "kinetic_wavevector_roots",
-     "port": "converged"
+     "port": "success"
     },
     "to": {
      "node": "$output",
-     "port": "converged"
+     "port": "success"
     },
-    "description": "Return the declared converged terminal.",
+    "description": "Return the declared success terminal.",
     "condition": "always",
     "transform": "identity",
     "kind": "data",
@@ -1059,6 +1069,21 @@
      "port": "graph_order"
     },
     "description": "Return the declared graph_order terminal.",
+    "condition": "always",
+    "transform": "identity",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "kinetic_wavevector_roots",
+     "port": "message"
+    },
+    "to": {
+     "node": "$output",
+     "port": "message"
+    },
+    "description": "Forward the per-frequency root-status explanation unchanged.",
     "condition": "always",
     "transform": "identity",
     "kind": "data",

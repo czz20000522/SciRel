@@ -425,7 +425,7 @@ Hall 项则为 ``i H [B]_x``，无需先舍入场模；完整矩阵元最后舍�
 
 对静态、无漂移、各向同性 Maxwellian，``kz`` 是有符号的平行波数。因果响应满足 ``K(kx,-kz)=P K(kx,kz) P``，其中 ``P=diag(1,1,-1)``；``D`` 也满足同样反射，行列式保持不变。实现内部以 ``|kz|`` 评估共振分母，再恢复四个混合分量的符号；``n_z`` 仍使用调用者传入的有符号 ``kz``。fluid 有限谐波路径现在对所有非零 ``kz`` 使用实际值和符号。原 ``|kz|<1e-10`` 替换为 ``+1e-10`` 的政策因破坏 SI 相似关系而撤回；显式输入 ``kz=+1e-10`` 仍可复现原替代波点的数值。
 
-实数 ``b>0``、固定有限 ``N`` 时，平行分量保留 ``2 alpha z0^2 (1-sum Gamma_n)``。遗漏的正 Bessel 尾项使该有限模型一般没有有限的零 ``kz`` 端点；直接填入完整 Maxwellian 零端点会改变模型。因此 ``evaluate_fluid_kinetic_dispersion_sum`` 与双路径入口都在数值工作前以 ``ValueError`` 拒绝零值，不自动切换模型。如果独立声明的零 ``kz`` 模型适用，可显式调用 ``evaluate_kinetic_dispersion_ronnmark``；它的独立波矢求根和扫描继续支持零 ``kz``。满足 SI 相似关系是必要条件，不证明绝对精度。
+实数 ``b>0``、固定有限 ``N`` 时，平行分量保留 ``2 alpha z0^2 (1-sum Gamma_n)``。遗漏的正 Bessel 尾项使该有限模型一般没有有限的零 ``kz`` 端点；直接填入完整 Maxwellian 零端点会改变模型。因此 ``evaluate_dielectric_response`` 的两个有限谐波方法与双路径入口都在数值工作前以 ``ValueError`` 拒绝零值，不自动切换模型。如果独立声明的零 ``kz`` 模型适用，可显式选择 ``method="ronnmark"``；它的独立波矢求根和扫描继续支持零 ``kz``。满足 SI 相似关系是必要条件，不证明绝对精度。
 
 .. code-block:: python
 
@@ -438,7 +438,7 @@ Hall 项则为 ``i H [B]_x``，无需先舍入场模；完整矩阵元最后舍�
 
 该反射是坐标对称性，不是把 ``kz`` 绝对值写回返回端口，也不改变电荷、回旋符号、谐波索引或 ``kx``。它只覆盖声明的静态 Maxwellian 条件；复杂频率、漂移、各向异性和其他近零分支仍需各自验证。
 
-``evaluate_kinetic_dispersion_relation`` 在同一个平衡快照上同时计算两条路径：有限谐波求和（``lmx = 5``）和 Ronnmark 固定 ``J = 8`` 极点。它接受 SI 物种参数、以 eV 为单位的 ``T00``、无量纲频率比 ``omega_frac``、无量纲垂直波数比 ``kx_frac``，以及**绝对**平行波数 ``kz``。``omega`` 和 ``kx`` 由入口自己用 ``wn``、``kn`` 导出，调用者不要同时传绝对值和比例。
+``evaluate_kinetic_dispersion_relation`` 在同一个平衡快照上同时计算两条路径：显式选择 ``harmonic_weideman`` 的有限谐波求和（原 ``lmx = 5`` 转交为 ``harmonics``）和 ``ronnmark`` 固定 ``J = 8`` 极点。它接受 SI 物种参数、以 eV 为单位的 ``T00``、无量纲频率比 ``omega_frac``、无量纲垂直波数比 ``kx_frac``，以及**绝对**平行波数 ``kz``。``omega`` 和 ``kx`` 由入口自己用 ``wn``、``kn`` 导出，调用者不要同时传绝对值和比例。内部保留原 ``omega → f=omega/(2*pi) → float(f) → 2*pi*f`` 入核链及其舍入；真实有限 Hz 换算溢出抛 ``FloatingPointError``，派生 ``f=0`` 仍抛 ``ValueError``。原 ``lmx`` 须为非 bool 非负整数，None 仍是 ``ValueError``。
 
 取 ``omega_frac = 1000``、``kx_frac = 0.5``、``kz = 159 1/m``：
 
@@ -509,6 +509,29 @@ Hall 项则为 ``i H [B]_x``，无需先舍入场模；完整矩阵元最后舍�
 ``kx_frac`` 从 0.25 增到 0.5，相对差别只有 ``1.8e-6`` 到 ``8.2e-6``；到 ``kx_frac = 1`` 已经约 1.5%，到 ``kx_frac = 2`` 相对差别超过 300%，两条路径的符号都可能不同。两条路径不是可以静默互换的“同一个答案”：有限谐波求和受 ``lmx = 5`` 截断影响，Ronnmark 路径受 ``J = 8`` 极点近似影响，各自的适用域不同。这个函数不做收敛性验证，也不判断哪一条更接近真实；它只把两条路径的结果并排返回，供调用者做交叉检查。
 
 **这一节不能推出什么。** 行列式评估不是求根，``det`` 不为零不代表“没有波”，只代表这个波点不是根；``det`` 接近零也不自动给出模式身份。两条路径在某个小 ``kx_frac`` 上一致，不能外推到更大波数，也不能证明其中任何一条的绝对精度。张量分量依赖基底；有限谐波截断和极点阶数都需要独立的收敛检查。这个入口没有自动模式识别、没有全局根枚举，也没有物理有效性证书。
+
+直接张量与原值诊断
+~~~~~~~~~~~~~~~~~~
+
+已有绝对物理参数时，用 :doc:`../reference/generated/scirel.kinetic.dielectric-response` 的 ``evaluate_dielectric_response``，频率只传 ``omega``（rad/s），物种温度传开尔文，``kz`` 和 ``kx`` 传 1/m。默认 ``method="harmonic"`` 保留解析 Z 的有限和；``method="harmonic_weideman"`` 保留普通分量固定 Z64 的有限和；``method="ronnmark"`` 保留固定 J8 极点模型。两个有限和都保留已验证的混合/平行分量表示，不在失败时换方法。每个方法各自的方程、适用域和验证证据见同一份合同。
+
+有限和的 ``harmonics=None`` 或省略表示原默认 N5，也可显式给非 bool 的非负整数，包括零。ronnmark 只接受 ``harmonics=None``，连数字 5 也会抛 ``TypeError``，因为固定 J8 没有谐波截断选项。两个有限和要求实数非零 ``kx``、``kz``，不能因共用入口就推断它们支持复数 ``kx`` 或零 ``kz``。
+
+返回值是 ``Result``，可用字段或下标读取。三个方法都完整返回 ``K``、``D``、``determinant``、``omega``、``nx``、``nz``、``vts``、``wcs``、``wps2``、``a``、``b`` 和 ``diagnostics``。``a`` 直接保留核的符号或复相位，``b=a**2``，不是模平方，也不用 ``sqrt(b)`` 反算 ``a``。嵌套的 ``diagnostics`` 也是 Result：共同含 ``method``、``tensor_convention``；有限和仅再含实际 ``harmonics``；ronnmark 仅再含 ``bzj``、``czj``、``j_order``、``branches``，不填 None 或 NaN 占位。
+
+要查看允许部分非有限项的原诊断，用独立的 :doc:`../reference/generated/scirel.kinetic.dielectric-diagnostics`。``evaluate_dielectric_diagnostics`` 保留默认 N15（显式 None 截断抛 TypeError）、物种标量/单元素广播、复数 ``kx``、实际非零有符号 ``kz`` 和原六项行列式。它返回 ``K_raw``、``D_raw``、``determinant_raw`` 等原值，并从这些原值直接计算 ``diagnostics.finite_K``、``finite_D``、``finite_determinant`` 和 ``complete``。原 ``kx=0`` 边界的两个掩码都是：
+
+.. code-block:: text
+
+   [[False, True,  False],
+    [True,  False, True ],
+    [False, True,  True ]]
+
+其中 ``zz`` 仍须有限，``complete=False``；不填补奇异分量。其他必要分量丢失、尾项不可靠或预算耗尽仍抛 ``FloatingPointError``。``complete`` 只回答“原输出是否完整可表示”，不回答谐波是否收敛、物理是否准确或是否为根；``message`` 给出该观察的解释。
+
+独立的 ``evaluate_ronnmark_r(x, lambda_)`` 返回 ``R``、``H``、``branch``、``RC``，其中 ``H=RC[0,1]=d(lambda*R)/dlambda``，不是 R 本身的导数。原数值算法和 R/H 误差预算不变。
+
+复波数 ``solve_kinetic_wavevector_roots`` 与 ``scan_kinetic_wavevectors`` 也返回 Result，逐频读取 ``status``、``success``、``message``，并结合 ``residuals`` 和 ``determinant_scale`` 判断候选。``status`` 的原数值不变：1、2、3 成功；0 为预算耗尽，-2 为 Jacobian 退化，-3 为信赖域坍缩，后三者的 ``success`` 均为 False。``message`` 是按频率排列的字符串列表，没有汇总成功旗标。求根直接使用原 ``omega``，扫描保留原频率梯、固定种子、FMA 运算次序、阈值与预算；状态改名不把未接受候选变成根。
 
 什么时候用哪一层
 ----------------
