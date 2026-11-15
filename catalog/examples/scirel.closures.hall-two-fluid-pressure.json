@@ -319,13 +319,17 @@
   "scope": [
    "Broadcast law/profile evaluation, default electron and ion pressure decomposition and equal returned species densities.",
    "Rejection of a negative derived ion pressure component.",
-   "Independent total=10, ion=3, electron=2 preserves residual stress=5; species_sum rejects it and accepts the default zero-residual algebraic split."
+   "Independent total=10, ion=3, electron=2 preserves residual stress=5; species_sum rejects it and accepts the default zero-residual algebraic split.",
+   "Independent binary-fraction profiles on a 2-by-3 broadcast give distinct omitted-ion parallel/perpendicular values with explicitly unequal electron components, zero residual stress and n_e=n_i in both modes. Unit-pressure 32*epsilon and 128*epsilon controls distinguish the original 64*epsilon species-sum gate; independent_fit reports the inconsistency while species_sum rejects it. Callback exceptions and negative derived species pressures propagate. The component-balance derivation and budgets are in the direct test module."
   ],
   "tests": [
    "tests/closures/test_hall_two_fluid_pressure.py",
-   "tests/cross_domain/test_mirror_kinetic_scientific_correction.py"
+   "tests/cross_domain/test_mirror_kinetic_scientific_correction.py",
+   "tests/closures/test_independent_closure_relations.py::test_pressure_state_directional_defaults_and_bookkeeping",
+   "tests/closures/test_independent_closure_relations.py::test_pressure_sum_threshold_is_original_64eps",
+   "tests/closures/test_independent_closure_relations.py::test_pressure_callback_failure_and_negative_species_are_not_hidden"
   ],
-  "evidence_ceiling": "Direct SciRel regressions establish the selected two-cell values, callable profiles, default component split and one negative-moment rejection. They do not verify arbitrary user pressure laws, explicit component-total consistency, all broadcast shapes, a physical Hall force balance or current, or current expert recognition.",
+  "evidence_ceiling": "Direct SciRel regressions establish the selected two-cell values, callable profiles, default component split and negative-moment rejection. Independent 2-by-3 directional profiles and 32/128-epsilon controls additionally establish the named component-total and species_sum assertions around the original 64-epsilon rule. They do not verify arbitrary user pressure laws, component-total consistency beyond these cases, all broadcast shapes, a physical Hall force balance or current, or current expert recognition.",
   "known_limitations": [
    "The pressure law, electrostatic potential and profile alignment are caller supplied; successful broadcasting cannot establish one physical coordinate frame.",
    "Independent fitted total and ion pressures remain a supported phenomenological contract; residual stress is not evidence for a new physical species. species_sum imposes numerical composition only.",

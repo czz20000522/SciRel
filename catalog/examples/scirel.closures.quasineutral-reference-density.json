@@ -111,12 +111,15 @@
  "verification": {
   "scope": [
    "Direct regressions verify scalar and broadcast products, zero density, selected invalid inputs, and the finite-input product overflow guard.",
-   "The callable is a dependency of the maintained mirror quasineutral closure graph; this document describes its leaf relation only."
+   "The callable is a dependency of the maintained mirror quasineutral closure graph; this document describes its leaf relation only.",
+   "Single-ion charge balance gives n_e=Z*n_i; an independent Fraction product of each original binary64 pair, rounded once at the end, checks a 3-by-4 broadcast exactly, including zero, 2^500, the least subnormal and permitted underflow. Inputs remain unchanged. A true final-product overflow and zero charge multiplier are rejected. The derivation is in the direct test module docstring."
   ],
   "tests": [
-   "tests/closures/test_quasineutral_reference_density.py"
+   "tests/closures/test_quasineutral_reference_density.py",
+   "tests/closures/test_independent_closure_relations.py::test_reference_product_fraction_broadcast_and_input_immutability",
+   "tests/closures/test_independent_closure_relations.py::test_reference_true_failure"
   ],
-  "evidence_ceiling": "Maintained tests establish selected products and failure cases. They do not validate physical coordinate alignment, all floating-point underflow behavior, multi-ion physics or expert recognition.",
+  "evidence_ceiling": "Maintained tests establish selected products and failure cases. They do not validate physical coordinate alignment, all floating-point underflow behavior, multi-ion physics or expert recognition. Exact Fraction agreement applies to the stated 3-by-4 sample, not a proof of correct rounding or underflow behavior over all binary64 inputs.",
   "known_limitations": [
    "A positive nonintegral charge-state multiplier is accepted; physical charge-state meaning is caller-owned.",
    "Broadcasting proves shape compatibility, not coordinate alignment.",
