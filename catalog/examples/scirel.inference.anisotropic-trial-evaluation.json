@@ -31,7 +31,7 @@
  "identity": {
   "relation": "parameters and compatible physical ports to a fixed-size validity record",
   "direction": "params, observations, solver_config, three ports -> residuals, chi2, equilibrium, valid/status",
-  "definition": "Before any scientific call, obtain N from the standard observation layout or from an explicitly supplied residual_size on a custom port. Deep-copy the call inputs and execute one equilibrium_solver; if it is not converged, immediately return an N-vector positive penalty without running diagnostics. When converged, run the diagnostic and reducer, and check residual shape/finiteness and chi2=r·r. ArithmeticError/RuntimeError is recorded as a numerical failure; contract errors such as ValueError/TypeError/KeyError propagate. Every outcome record is a scirel._result.Result mapping; mapping and attribute access expose the same values.",
+  "definition": "Before any scientific call, obtain N from the standard observation layout or from an explicitly supplied residual_size on a custom port. Deep-copy the call inputs and execute one equilibrium_solver; if it is not converged, immediately return an N-vector positive penalty without running diagnostics. When converged, run the diagnostic and reducer, and check residual shape/finiteness and chi2=r·r. ArithmeticError/RuntimeError is recorded as a numerical failure; contract errors such as ValueError/TypeError/KeyError propagate. Every outcome record is a scirel._result.Result mapping; mapping and attribute access expose the same values. Returned float64 residual entries define chi2: their complete squares are summed before one final rounding; penalty norms likewise round N times the complete penalty square. External chi2 matching retains rtol=1e-12, atol=0 and compares exact binary ratios so that the tolerance bound cannot underflow.",
   "model": "validated composition of caller forward, diagnostic and residual ports with no built-in pressure closure",
   "geometry": "defined by solver_config and the scientific ports",
   "coordinates": "r_grid/z_grid are deep-copied unchanged as diagnostic R/Z; no unit conversion is performed",
@@ -39,7 +39,8 @@
   "assumptions": [
    "The three ports have explicit and compatible physical units, grids and return protocols.",
    "equilibrium.converged must be boolean; a successful state must not also carry failure_reason.",
-   "For a custom layout, the caller declares residual_size before the first trial; it must not change with success or failure."
+   "For a custom layout, the caller declares residual_size before the first trial; it must not change with success or failure.",
+   "Returned float64 residual entries define chi2: their complete squares are summed before one final rounding; penalty norms likewise round N times the complete penalty square. External chi2 matching retains rtol=1e-12, atol=0 and compares exact binary ratios so that the tolerance bound cannot underflow."
   ]
  },
  "inputs": [
@@ -247,17 +248,20 @@
    "Fixed dimension and port records across success/numerical failure/success.",
    "Nonconvergence short-circuit, rejection of wrong residual shape/NaN/chi2, and deep non-modification of the caller.",
    "Repository tests use review-hold mode: tests/conftest.py sets SCIREL_REVIEW_HOLD=1 and appends catalog/review/candidates/src/scirel/inference to the inference import path. The held direct_anisotropic_inversion graph explicitly imports the public anisotropic_parameter_optimization.optimize_anisotropic_parameters and anisotropic_trial_evaluation.evaluate_anisotropic_trial; compose resolves these same function dependencies, and run_composition supplies partial(public trial, physical ports) to the public optimizer. test_real_picard_forward_recovers_two_physical_parameters_from_analytic_observations executes tests/fixtures/inference/anisotropic_recovery.py::run, checking manufactured two-parameter recovery, converged Picard state, psi/J_phi, residual and chi2, failed trials and a valid retained trial. test_independent_curved_field_biot_savart_tensor_observations executes independent_case, checking two-parameter recovery and psi/J_phi against independently constructed discrete Biot-Savart/tensor observations, as well as residual size, chi2 and an active anisotropic response. The existing named assertions define the sampled cases and tolerances.",
-   "The converted public function returns scirel._result.Result with the same keys, order, values, shapes, dtypes and mapping compatibility, and attribute access resolves to the same fields."
+   "The result keeps its original keys, order, shapes, dtypes and mapping/attribute access. Numerical squared sums follow the complete-arithmetic rule; old dot-product rounding is not preserved.",
+   "Complete residual-tail contributions survive public trial and both optimizer methods, including the minimize scalar objective, successful summaries/logs and failed penalty vectors; inconsistent external chi2 is still rejected at the original matching budget. Independent expectations use original binary-rational inputs, not a production norm."
   ],
   "tests": [
    "tests/cross_domain/test_inference_physical_closure.py",
    "tests/cross_domain/test_anisotropic_inference_independent.py",
-   "tests/inference/test_inference_named_result.py"
+   "tests/inference/test_inference_named_result.py",
+   "tests/inference/test_complete_residual_norm.py"
   ],
   "evidence_ceiling": "Direct leaf evidence: test_inference_physical_closure.py imports evaluate_anisotropic_trial as trial. test_failed_trial_keeps_dimension_and_short_circuits_diagnostics, test_success_failure_success_keeps_shape_and_records_numerical_port, test_invalid_trial_contract_propagates_instead_of_becoming_physical_failure and test_inputs_are_deep_copied_before_injected_ports directly check nonconvergence, fixed residual dimension, failure attribution, contract exceptions and input copies. test_inference_named_result.py directly checks success/failure values and Result mapping/attribute compatibility. Repository tests use review-hold mode: tests/conftest.py sets SCIREL_REVIEW_HOLD=1 and appends catalog/review/candidates/src/scirel/inference to the inference import path. The held direct_anisotropic_inversion graph explicitly imports the public anisotropic_parameter_optimization.optimize_anisotropic_parameters and anisotropic_trial_evaluation.evaluate_anisotropic_trial; compose resolves these same function dependencies, and run_composition supplies partial(public trial, physical ports) to the public optimizer. test_real_picard_forward_recovers_two_physical_parameters_from_analytic_observations executes tests/fixtures/inference/anisotropic_recovery.py::run, checking manufactured two-parameter recovery, converged Picard state, psi/J_phi, residual and chi2, failed trials and a valid retained trial. test_independent_curved_field_biot_savart_tensor_observations executes independent_case, checking two-parameter recovery and psi/J_phi against independently constructed discrete Biot-Savart/tensor observations, as well as residual size, chi2 and an active anisotropic response. The existing named assertions define the sampled cases and tolerances. These review-mode consumers provide bounded scientific evidence for the public leaves. The graph remains held and absent from public exports; ordinary-mode import isolation is intentional. This evidence does not publish the graph, certify a new package, establish a calibrated device, prove continuous-grid convergence, or guarantee global optimality or general identifiability.",
   "known_limitations": [
    "The scientific meaning of RuntimeError belongs to the caller's port; the failure record does not replace investigation of the original exception.",
-   "A single trial does not judge parameter identifiability or optimality."
+   "A single trial does not judge parameter identifiability or optimality.",
+   "The wrapper arithmetic does not replace SciPy internal iteration or stopping calculations, qualify large-scale performance, or establish a statistical noise model or a physical equilibrium."
   ]
  }
 }

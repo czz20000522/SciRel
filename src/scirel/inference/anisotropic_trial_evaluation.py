@@ -3,8 +3,10 @@
 from __future__ import annotations
 from collections.abc import Mapping
 from copy import deepcopy
+from fractions import Fraction
 import numpy as np
 
+from scirel._numerics import _exact_repeated_square, _exact_squared_sum
 from scirel._result import Result
 from scirel.diagnostics.observation_residuals import _observation_layout
 
@@ -15,20 +17,32 @@ def _size(value):
     return int(value)
 
 
+def _penalty_norm(penalty, size):
+    if not np.isfinite(penalty) or penalty <= 0:
+        raise ValueError("failure_penalty must be positive with a finite squared vector norm")
+    try:
+        return _exact_repeated_square(penalty, size)
+    except OverflowError as exc:
+        raise ValueError("failure_penalty vector squared norm must be finite") from exc
+
+
 def _residual_record(reduced, size):
     if not isinstance(reduced, Mapping):
         raise ValueError("residual_reducer must return a mapping")
     vector = np.asarray(reduced.get("residual_vector"), dtype=float)
     if vector.shape != (size,) or not np.all(np.isfinite(vector)):
         raise ValueError(f"residual vector must be finite with fixed shape ({size},)")
-    with np.errstate(over="ignore", invalid="ignore"):
-        norm = float(vector @ vector)
+    try:
+        norm = _exact_squared_sum(vector)
+    except OverflowError as exc:
+        raise ValueError("chi2 must be finite and equal the squared residual norm") from exc
     chi2 = float(reduced.get("chi2", np.nan))
     if (
         not np.isfinite(norm)
         or not np.isfinite(chi2)
         or chi2 < 0
-        or not np.isclose(chi2, norm, rtol=1e-12, atol=0.0)
+        # Keep the original 1e-12/0 budget without rounding its tiny bound.
+        or abs(Fraction(chi2) - Fraction(norm)) > Fraction(1e-12) * Fraction(norm)
     ):
         raise ValueError("chi2 must be finite and equal the squared residual norm")
     return vector.copy(), norm
@@ -154,7 +168,13 @@ def evaluate_anisotropic_trial(
     infeasibility. The penalty is an optimizer-interface value, not an
     observation or a feasible solution. All outcome branches return one
     ``scirel._result.Result`` mapping; mapping and attribute access expose the
-    same values.
+    same values. Successful records independently recompute the complete
+    squares of the returned float64 residuals and round their sum once; a
+    reducer's chi2 is still checked with relative tolerance 1e-12 and zero
+    absolute tolerance. This comparison uses exact binary ratios so that its
+    bound cannot underflow. Penalty-vector norms use the complete N times
+    the square of the returned penalty, also rounded once. These arithmetic
+    rules neither infer a noise model nor certify a physical solution.
 
     Examples
     --------
@@ -182,8 +202,7 @@ def evaluate_anisotropic_trial(
         else _size(residual_size)
     )
     penalty = float(failure_penalty)
-    if not np.isfinite(penalty) or penalty <= 0 or not np.isfinite(penalty * penalty * n):
-        raise ValueError("failure_penalty must be positive with a finite squared N-vector norm")
+    penalty_norm = _penalty_norm(penalty, n)
     equilibrium = None
     port = "equilibrium_solver"
 
@@ -193,7 +212,7 @@ def evaluate_anisotropic_trial(
             {
                 "params": deepcopy(dict(params)),
                 "residuals": residuals,
-                "chi2": float(residuals @ residuals),
+                "chi2": penalty_norm,
                 "equilibrium": equilibrium,
                 "failure_reason": str(reason),
                 "valid": False,
