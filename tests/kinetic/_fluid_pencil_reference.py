@@ -53,6 +53,16 @@ def gyro_frequencies(state: dict) -> np.ndarray:
     )
 
 
+def per_species_mass_density(state: dict) -> np.ndarray:
+    """``rho_s = m_s n_s`` per species, at 40 digits."""
+    high_precision()
+    n = np.atleast_1d(np.asarray(state["n"], dtype=float)).ravel()
+    m = np.atleast_1d(np.asarray(state["m"], dtype=float)).ravel()
+    return np.array(
+        [float(mp.mpf(float(m[i])) * mp.mpf(float(n[i]))) for i in range(n.size)]
+    )
+
+
 def total_mass_density(state: dict) -> float:
     """``rho = sum_s m_s n_s`` at 40 digits."""
     high_precision()
