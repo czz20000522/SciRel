@@ -18,7 +18,7 @@
   "evidence_ceiling": "Named finite geometry cases only; no field-solver, experimental, or release claim is made. C1 evidence adds the axis and unit conventions, the Pythagoras identity over five angles and the declared sign rule; it does not establish that the chord represents any spherical surface completely.",
   "known_limitations": [
    "Mesh objects do not by themselves validate a physical field model or device geometry.",
-   "As with the theta chord this asset takes **degrees from +Z** while `Mesh.theta` returns **radians**; the radius sign is not checked before the transform, so a negative radius combined with a negative sine would not be caught here."
+   "As with the theta chord this asset takes **degrees from +Z** while `Mesh.theta` returns **radians**; the radius sign is not checked before the transform, so a negative radius combined with a negative sine would not be caught here. This constructor takes **degrees from +Z**, while the `Mesh.theta` property of the same family returns **radians**; the two cannot be interchanged (see ticket T-2026-0005)."
   ]
  },
  "asset_id": "scirel.geometry.spherical-r-chord",
