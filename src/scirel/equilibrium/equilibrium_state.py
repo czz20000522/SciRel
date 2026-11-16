@@ -38,9 +38,9 @@ class EquilibriumResult:
     p_psifit : object or None
         Pressure spline fitted at the terminal iterate [Object;
         source-unspecified]. Opaque to this record; :meth:`as_tuple` returns it
-        unchanged. It is ``None`` when the initial pressure fit failed or the
-        state never produced a fit, so ``None`` is a failure marker here, not an
-        absent optional.
+        unchanged. It is ``None`` when any fit raised, including a refit after
+        earlier iterations had succeeded, so ``None`` is a failure marker here,
+        not an absent optional.
     status : str
         Terminal outcome label [text]: ``"converged"``, ``"maxiter"`` or
         ``"nonfinite"``. The record does not re-derive it from the residuals.
@@ -48,15 +48,17 @@ class EquilibriumResult:
         Number of fixed-point iterations performed [dimensionless].
     residual : float
         Final flux residual ``||psi_new - psi_old||_2 / abs(psi_edge_new)``
-        [dimensionless]. ``NaN`` when the state failed before an update
-        residual was computed; a later failure keeps the last computed value.
-        A non-finite value here always means ``status="nonfinite"``.
+        [dimensionless]. ``NaN`` when the state failed before an update residual
+        was computed; ``+inf`` when ``maxiter`` is 0 and no update ran; otherwise
+        the last computed value, which can itself be non-finite when the update
+        was rejected.
     closure_residual : float
         Final closure residual ``||I_new - I_target||_2 / ||I_target||_2``
         [dimensionless], with a zero target and zero error mapped to ``0.0`` and
-        a zero target with nonzero current mapped to ``inf``. ``NaN`` when no
-        closure residual was computed. A non-finite value here always means
-        ``status="nonfinite"``.
+        a zero target with nonzero current mapped to ``inf``. ``NaN`` when the
+        state failed before a closure residual was computed; ``+inf`` when
+        ``maxiter`` is 0; otherwise the computed value, which can be ``inf`` for
+        a non-finite closure.
     reason : str
         Termination reason text [text].
     residual_history : tuple, optional
