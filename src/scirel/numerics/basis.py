@@ -606,13 +606,16 @@ def build_basis(
         lowercased.
 
     poly_deg : int, optional
-        Polynomial degree [dimensionless] Shape: ``scalar``. Polynomial selection only;
-        default ``3`` when omitted, which yields three basis functions.
+        Ascending-power coefficients per basis function, so every function has degree at
+        most ``poly_deg - 1`` [dimensionless] Shape: ``scalar``. Polynomial selection
+        only; default ``3`` when omitted, which yields three functions of degree at most
+        two.
 
     coeffs : float64, optional
         Ascending-power coefficient columns, one per basis function [caller units] Shape:
-        ``(poly_deg + 1, K)``. Polynomial selection only; default ``None`` builds the
-        identity columns of ``poly_deg + 1`` rows.
+        ``(poly_deg, K)``. Polynomial selection only; default ``None`` builds the
+        ``poly_deg``-row identity columns, which is the constant, linear and quadratic
+        triplet for the default.
 
     n_knots : int, optional
         Number of spline knots [dimensionless] Shape: ``scalar``. Spline selections only;
@@ -620,7 +623,8 @@ def build_basis(
 
     domain : float64, optional
         Closed knot interval used when ``xdata`` is omitted [coordinate units] Shape:
-        ``(2,)``; finite, increasing. Spline selections only; default ``(0, 1)``.
+        ``(2,)``; exactly two finite, increasing bounds. Spline selections only; default
+        ``(0, 1)``.
 
     xdata : float64, optional
         Knot samples [coordinate units] Shape: ``(N,)`` or ``(N, K)``; finite, strictly
@@ -653,8 +657,8 @@ def build_basis(
     Raises
     ------
     ValueError
-        If spline samples, knots, or boundary parameters are invalid, or if a
-        clamped basis requests nonzero endpoint slopes.
+        If spline samples, knots, or boundary parameters are invalid, if ``domain`` is not
+        exactly two finite bounds, or if a clamped basis requests nonzero endpoint slopes.
     TypeError
         If a control is supplied that the selected basis does not implement, if an
         unknown keyword is supplied, or if a control has an incompatible type.
@@ -685,8 +689,9 @@ def build_basis(
     **Preconditions.**
 
     * Finite constructor samples and boundary-specific assumptions
-    * Polynomial coefficients are ascending-power columns; poly_deg default3 means three
-      basis functions
+    * Polynomial coefficients are ascending-power columns; poly_deg counts each
+      function's coefficients, so poly_deg default3 means three functions of degree at
+      most 2
     * Spline controls default to n_knots=5 and domain=(0,1); supplied xdata/ydata arrays
       must match
     * Clamped spline bases require yp=0; nonzero slopes define an affine family, not a
@@ -802,7 +807,22 @@ def _spline_basis(spline_fn, *, n_knots, domain, xdata, ydata, yp, m):
             )
     if n_knots < 3:
         raise ValueError("n_knots must be at least 3 for spline basis construction")
-    domain = tuple(domain)
+    bounds = tuple(domain)
+    legal_domain = (
+        f"legal shape: (2,) finite, increasing coordinate bounds such as (0, 1); see {_ASSET}"
+    )
+    if len(bounds) != 2:
+        raise ValueError(
+            f"domain must be exactly two bounds; received {domain!r} with "
+            f"{len(bounds)} value(s); {legal_domain}"
+        )
+    try:
+        finite_bounds = all(bool(np.isfinite(bound)) for bound in bounds)
+    except (TypeError, ValueError):
+        finite_bounds = False
+    if not finite_bounds:
+        raise ValueError(f"domain must be two finite bounds; received {domain!r}; {legal_domain}")
+    domain = bounds
     if xdata is None:
         xdata = np.linspace(domain[0], domain[1], n_knots)
     if ydata is None:

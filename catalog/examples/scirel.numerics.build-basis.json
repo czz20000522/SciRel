@@ -37,7 +37,7 @@
   "boundary": "Spline evaluation is zero outside the finite knot interval; no extrapolation is performed.",
   "assumptions": [
    "Finite constructor samples and boundary-specific assumptions",
-   "Polynomial coefficients are ascending-power columns; poly_deg default3 means three basis functions",
+   "Polynomial coefficients are ascending-power columns; poly_deg counts each function's coefficients, so poly_deg default3 means three functions of degree at most 2",
    "Spline controls default to n_knots=5 and domain=(0,1); supplied xdata/ydata arrays must match",
    "Clamped spline bases require yp=0; nonzero slopes define an affine family, not a linear basis",
    "The second-clamped default basis omits the origin identity column and therefore has n_knots-1 columns",
@@ -58,22 +58,22 @@
   },
   {
    "name": "poly_deg",
-   "description": "Polynomial degree used by the polynomial selection",
+   "description": "Ascending-power coefficients per basis function; the polynomial degree is poly_deg - 1",
    "units": "dimensionless",
    "shape": "scalar",
    "dtype": "int",
    "required": false,
-   "constraints": "Polynomial selection only; an omitted value is 3, which yields three basis functions",
+   "constraints": "Polynomial selection only; an omitted value is 3, which yields three functions of degree at most 2",
    "default": null
   },
   {
    "name": "coeffs",
-   "description": "Ascending-power coefficient columns, one per basis function",
+   "description": "Ascending-power coefficient columns, one per basis function; row j holds the coefficient of x**j",
    "units": "caller units",
-   "shape": "(poly_deg + 1, K)",
+   "shape": "(poly_deg, K)",
    "dtype": "float64",
    "required": false,
-   "constraints": "Polynomial selection only; an omitted value builds the identity columns of poly_deg + 1 rows",
+   "constraints": "Polynomial selection only; an omitted value builds the poly_deg-row identity columns",
    "default": null
   },
   {
@@ -93,7 +93,7 @@
    "shape": "(2,)",
    "dtype": "float64",
    "required": false,
-   "constraints": "Spline selections only; finite and increasing; an omitted value is (0, 1)",
+   "constraints": "Spline selections only; exactly two finite, increasing bounds; an omitted value is (0, 1)",
    "default": null
   },
   {
@@ -151,7 +151,7 @@
  "applicability": {
   "preconditions": [
    "Finite constructor samples and boundary-specific assumptions",
-   "Polynomial coefficients are ascending-power columns; poly_deg default3 means three basis functions",
+   "Polynomial coefficients are ascending-power columns; poly_deg counts each function's coefficients, so poly_deg default3 means three functions of degree at most 2",
    "Spline controls default to n_knots=5 and domain=(0,1); supplied xdata/ydata arrays must match",
    "Clamped spline bases require yp=0; nonzero slopes define an affine family, not a linear basis",
    "The second-clamped default basis omits the origin identity column and therefore has n_knots-1 columns",
@@ -169,7 +169,7 @@
   ]
  },
  "failure_semantics": {
-  "invalid_input": "Raises TypeError when a control is supplied that the selected basis does not implement, when an unknown keyword is supplied, and for a control of incompatible type; KeyError for an unregistered selector; NotImplementedError for an unsupported retained selector; and ValueError for invalid spline samples/knots/boundary parameters. Linear-system failures propagate. Nonzero clamped endpoint slopes raise ValueError because they define an affine family. With assertions enabled, the retained clamped-spline constructor raises AssertionError when its endpoint-slope vector does not have length two.",
+  "invalid_input": "Raises TypeError when a control is supplied that the selected basis does not implement, when an unknown keyword is supplied, and for a control of incompatible type; KeyError for an unregistered selector; NotImplementedError for an unsupported retained selector; and ValueError for a domain that is not exactly two finite bounds or for invalid spline samples/knots/boundary parameters. Linear-system failures propagate. Nonzero clamped endpoint slopes raise ValueError because they define an affine family. With assertions enabled, the retained clamped-spline constructor raises AssertionError when its endpoint-slope vector does not have length two.",
   "runtime_failure": "Numerical linear-algebra or optional SciPy special-function exceptions propagate from evaluation.",
   "nonconvergence": "Not applicable; basis construction and evaluation are direct computations without an iterative convergence claim.",
   "partial_results": "A failed constructor returns no evaluator; for spline selections, finite values outside the knot interval and nonfinite query values follow the zero-fill convention, while polynomial selections evaluate directly."
