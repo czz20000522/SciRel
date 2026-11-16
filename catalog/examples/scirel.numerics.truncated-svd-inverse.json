@@ -122,13 +122,15 @@
    "Finite-input fail-closed boundary: a 1e-310 entry and an underflowed relative threshold raise FloatingPointError, while a representable 1e-300 reciprocal keeps its value.",
    "Finite-input fail-closed boundary of the decomposition: a 2x2 matrix filled with 1e308 raises FloatingPointError when its SVD singular values are not representable.",
    "A singular value exactly at the cutoff is retained; only the neighboring value below it is discarded. Empty matrices retain the transposed output shape.",
-   "The numerics domain and linalg topic expose one callable with keyword-only rcond, dependency-light discovery and no former geometry entry or module."
+   "The numerics domain and linalg topic expose one callable with keyword-only rcond, dependency-light discovery and no former geometry entry or module.",
+   "Independent evidence (test_linalg_and_derivative_evidence): the four Moore-Penrose axioms for matrices whose whole spectrum is retained, the analytic rank-one formula A+ = v u^T / (|u|^2 |v|^2) for a known deficiency, agreement with numpy.linalg.pinv where the two documented cutoff rules coincide, and the declared >= rule exercised by placing a singular value exactly on the threshold."
   ],
   "tests": [
    "tests/numerics/test_truncated_pseudoinverse.py",
-   "tests/numerics/test_truncated_pseudoinverse_api.py"
+   "tests/numerics/test_truncated_pseudoinverse_api.py",
+   "tests/numerics/test_linalg_and_derivative_evidence.py"
   ],
-  "evidence_ceiling": "Mathematical identity checks on bounded dense matrices plus a finite float64 representability boundary witness; no application-level diagnostic-fitting, statistical-error claim, or numeric magnitude bound for arbitrary finite inputs is established.",
+  "evidence_ceiling": "Mathematical identity checks on bounded dense matrices plus a finite float64 representability boundary witness; no application-level diagnostic-fitting, statistical-error claim, or numeric magnitude bound for arbitrary finite inputs is established. C1 evidence adds: Moore-Penrose axioms, an analytic rank-one case and the documented cutoff rule.",
   "known_limitations": [
    "Complex and sparse matrices are not supported.",
    "rcond follows NumPy singular-value conventions; it is not a statistical noise model.",

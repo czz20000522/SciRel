@@ -116,18 +116,21 @@
   "scope": [
    "Public callable signature and documented finite-input behavior",
    "The direct regression fixtures listed in verification.tests",
-   "The executable example stored in this contract"
+   "The executable example stored in this contract",
+   "Independent evidence (test_spline_boundary_evidence): analytic cubic-Hermite identities (exact nodal interpolation, C2 continuity recomputed from the public knot slopes and cross-checked against the evaluator inside one interval), the declared boundary rows evaluated on the produced spline rather than re-derived from the code, and agreement with SciPy CubicSpline - a different solve for different unknowns - to within 64 eps for the families that have a SciPy counterpart."
   ],
   "tests": [
    "tests/equilibrium/test_analysis_families.py",
-   "tests/equilibrium/test_analysis_corrections.py"
+   "tests/equilibrium/test_analysis_corrections.py",
+   "tests/numerics/test_spline_boundary_evidence.py"
   ],
-  "evidence_ceiling": "Direct examples and named regression fixtures establish the documented relation on those inputs; they do not establish arbitrary-input correctness, experimental validation, or release approval.",
+  "evidence_ceiling": "Direct examples and named regression fixtures establish the documented relation on those inputs; they do not establish arbitrary-input correctness, experimental validation, or release approval. C1 evidence adds: SciPy natural-boundary cross-check and analytic Hermite identities.",
   "known_limitations": [
    "Zero extrapolation and deriv selectors other than 1/2 returning values remain compatibility conventions",
    "Duplicate, unsorted or nonfinite knots are outside numerical qualification",
    "Knot-interval membership is exact; a point one representable step outside returns zero",
-   "Nonfinite query values are outside the numerical qualification; the implementation zero-fills them as a compatibility convention"
+   "Nonfinite query values are outside the numerical qualification; the implementation zero-fills them as a compatibility convention",
+   "Measured truncation behaviour: with boundary data the declared rows actually satisfy (natural ends on sin, exact end slopes on sin, log x with m=0 for the left-clamped family) the refinement ratio per halving is 10..22, consistent with O(h^4). Forcing yp=0 onto sin instead gives an observed ratio of 2.00, so a boundary value that disagrees with the sampled function destroys the interior rate; that is a property of the boundary condition, not of the interpolation core."
   ]
  }
 }

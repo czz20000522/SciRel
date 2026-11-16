@@ -145,12 +145,14 @@
    "The direct tests verify the top-level scirel._result.Result mapping and attribute access.",
    "Overflowing finite spans preserve the controller affine witness and the mathematically finite tolerance box without overflow warnings.",
    "Independent rational references cover one/multiple large spans, cross terms, near nodes, compensated tiny weights/products, signed cancellation, maximum finite samples, subnormal outputs and true final rounding to zero.",
-   "Zero-weight non-finite corner touches retain propagation, with right-interval selection at internal nodes, independent geometric validity, and multidimensional/empty trailing axes."
+   "Zero-weight non-finite corner touches retain propagation, with right-interval selection at internal nodes, independent geometric validity, and multidimensional/empty trailing axes.",
+   "Independent evidence (test_rectilinear_evidence): exact reproduction of a field affine in each axis for the bilinear asset and of an affine complex field for the trilinear asset, agreement with scipy.interpolate.RegularGridInterpolator(method='linear') after converting between the [Z, R] grid and [R, Z] point conventions at the call site, the declared tol = 32 eps max(1, span) box boundary probed just inside and 10 tol outside, and propagation of a non-finite corner at zero weight."
   ],
   "tests": [
-   "tests/geometry/test_complex_rectilinear_interpolation.py"
+   "tests/geometry/test_complex_rectilinear_interpolation.py",
+   "tests/numerics/test_rectilinear_evidence.py"
   ],
-  "evidence_ceiling": "Bounded independent analytic and original-input rational comparisons in the direct test file, at unchanged existing tolerances and frozen new budgets (rtol 1e-13, atol 1e-14; tiny contributions atol 0; explicit node/subnormal/rounding controls exact). Includes the two #281 controller witnesses, original ordinary-input tests, and non-finite stencil controls. This is not a continuous-domain accuracy, conservative-remapping or experimental calibration claim; independent scientific reviews and final integration acceptance remain separate.",
+  "evidence_ceiling": "Bounded independent analytic and original-input rational comparisons in the direct test file, at unchanged existing tolerances and frozen new budgets (rtol 1e-13, atol 1e-14; tiny contributions atol 0; explicit node/subnormal/rounding controls exact). Includes the two #281 controller witnesses, original ordinary-input tests, and non-finite stencil controls. This is not a continuous-domain accuracy, conservative-remapping or experimental calibration claim; independent scientific reviews and final integration acceptance remain separate. C1 evidence adds: Affine complex reproduction and the declared tolerance box, on bounded data.",
   "known_limitations": [
    "Only trilinear (first-order) reconstruction is offered; no higher-order or conservative scheme is included.",
    "valid_mask reports geometry only and must not be used as a finiteness test on the returned values.",
