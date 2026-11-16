@@ -19,12 +19,19 @@ and ``check_all.py`` refuses it rather than reporting a number nobody can check.
 from __future__ import annotations
 
 import json
+import re
 from pathlib import Path
 
 COUNTS_OPTION = "--scirel-counts"
 
 OUTCOMES = ("passed", "failed", "error", "skipped", "xfailed", "xpassed")
 REASON_LIMIT = 160
+REASON_TRUNCATION = "…"
+# A recorded reason is the audit trail for a test that never ran; a bare label is not one.
+PLACEHOLDER_REASONS = frozenset(
+    {"skip", "skipped", "skip.", "xfail", "xfailed", "n/a", "na", "none", "unknown", "todo", "tbd", "-", "?", "..."}
+)
+REASON_WORD = re.compile(r"[^\W_]{2,}")
 
 
 def final_outcome(phases: list[dict]) -> str | None:
@@ -49,6 +56,31 @@ def final_outcome(phases: list[dict]) -> str | None:
         if outcome in outcomes:
             return outcome
     return None
+
+
+def _require_reason(nodeid: str, kind: str, reason: str) -> None:
+    """A reason has to name something; a blank or bare label is not an audit trail.
+
+    ``pytest.skip()`` and ``@pytest.mark.xfail`` without a reason produce an empty or
+    placeholder string. Such a record says a test did not run but not why, so nobody can
+    check the claim; it is refused here instead of being summarised as a green skip line.
+    """
+    text = reason.strip()
+    if not text:
+        raise ValueError(f"{nodeid}: {kind} reason is blank")
+    if text.casefold() in PLACEHOLDER_REASONS:
+        raise ValueError(f"{nodeid}: {kind} reason is a bare placeholder, not a reason")
+    if REASON_WORD.search(text) is None:
+        raise ValueError(f"{nodeid}: {kind} reason carries no word to audit")
+    if text in nodeid:
+        raise ValueError(f"{nodeid}: {kind} reason only repeats the test identity")
+
+
+def _recorded_from_marker(recorded: str, marker: str) -> bool:
+    """The skip reason an xfail record keeps is the marker reason, cut at REASON_LIMIT."""
+    if recorded.endswith(REASON_TRUNCATION):
+        recorded = recorded[: -len(REASON_TRUNCATION)]
+    return bool(recorded) and marker.startswith(recorded)
 
 
 def validate_execution_records(report: dict) -> None:
@@ -110,6 +142,15 @@ def validate_execution_records(report: dict) -> None:
         )
         if [phase["when"] for phase in phases] != expected:
             raise ValueError(f"{nodeid}: missing, duplicate or out-of-order phases")
+        for phase in phases:
+            if phase["outcome"] == "skipped":
+                _require_reason(nodeid, "skip", phase["reason"])
+            if "wasxfail" in phase:
+                _require_reason(nodeid, "xfail", phase["wasxfail"])
+                if phase["outcome"] == "skipped" and not _recorded_from_marker(
+                    phase["reason"], phase["wasxfail"]
+                ):
+                    raise ValueError(f"{nodeid}: xfail reason disagrees with the marker reason")
         outcome = final_outcome(phases)
         if outcome is None or item.get("outcome") != outcome:
             raise ValueError(f"{nodeid}: final outcome disagrees with phases")
@@ -123,6 +164,11 @@ def validate_execution_records(report: dict) -> None:
         raise ValueError("skip reasons disagree with per-test results")
     if report["pytest_exitstatus"] == 0 and (totals["failed"] or totals["error"]):
         raise ValueError("pytest exit status disagrees with failed/error outcomes")
+    if report["pytest_exitstatus"] == 1 and not (totals["failed"] or totals["error"]):
+        raise ValueError(
+            "pytest exit status 1 without failed/error outcomes: the exit code and the"
+            " recorded outcomes disagree"
+        )
 
 
 def pytest_addoption(parser):
