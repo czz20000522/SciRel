@@ -266,18 +266,23 @@
  "verification": {
   "scope": [
    "The documented Taylor/asymptotic matching construction and its bounded contract example remain available; the shared rational test file does not directly call jpole_coefficients.",
-   "historical-unbound UNKNOWN: installed-package closure, all-12-API qualification, the full 50-point N10/J8 run and 80/120-digit independent comparison receipts are not bound here. Package metadata and construction capability do not prove those historical executions; supported calculation and the named direct assertions are retained."
+   "historical-unbound UNKNOWN: installed-package closure, all-12-API qualification, the full 50-point N10/J8 run and 80/120-digit independent comparison receipts are not bound here. Package metadata and construction capability do not prove those historical executions; supported calculation and the named direct assertions are retained.",
+   "The declared 80-digit construction residual, linear and per-pole, asserted below 1e-60 so a silent fallback to binary64 arithmetic is visible.",
+   "The three asymptotic moment identities of the produced table and a 40-digit definition comparison of its rational sum over six points with a pre-declared 1e-5 ceiling."
   ],
   "tests": [
-   "tests/kinetic/test_dispersion_rational.py"
+   "tests/kinetic/test_dispersion_rational.py",
+   "tests/kinetic/test_pole_table_evidence.py"
   ],
-  "evidence_ceiling": "The shared test file has ten test functions but no direct jpole_coefficients numerical comparison; its contract example is a bounded construction/shape check, not independent approximation certification. historical-unbound UNKNOWN: installed-package closure, all-12-API qualification, the full 50-point N10/J8 run and 80/120-digit independent comparison receipts are not bound here. Package metadata and construction capability do not prove those historical executions; supported calculation and the named direct assertions are retained.",
+  "evidence_ceiling": "test_pole_table_evidence.py reads the returned high_precision_linear_residual and high_precision_root_residual as decimal strings and holds them below 1e-60, twenty orders of magnitude under the declared 80-digit construction precision; a construction that fell back to binary64 could not pass. The produced binary64 table is then checked against the same moment identities and the 40-digit definition. A small residual proves the matching equations were solved, not that the rational family approximates Z everywhere, and the 1e-5 comparison is a six-point observation.",
   "known_limitations": [
    "Redistribution permission for the reference material is unverified; MATLAB execution NOT_RUN.",
    "Finite-J/finite-N physics must be qualified for a new requested regime.",
    "Earlier fixed-distance approach-to-axis ancillary assertions remain failed records; exact-axis/direct-response gates are separately qualified.",
    "Only shared-file coverage is bound (test_dispersion_rational.py); no asset-specific failure/limit probe is recorded.",
-   "No independent or external oracle is recorded; the evidence is self-consistency/regression only."
+   "No independent or external oracle is recorded; the evidence is self-consistency/regression only.",
+   "A small construction residual proves the matching equations were solved, not that the rational family approximates Z everywhere; the 1e-5 comparison is a six-point observation.",
+   "The declared precision is a decimal construction precision; the returned ports remain binary64 and carry their own rounding."
   ]
  },
  "references": [

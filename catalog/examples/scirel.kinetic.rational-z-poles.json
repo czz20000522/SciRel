@@ -100,18 +100,23 @@
  "verification": {
   "scope": [
    "test_regenerated_j12_preserves_asymptotic_moments directly checks sum b=-1, sum bc=0 and sum bc^2=-1/2 within 1e-10 for ES1D, ES3D and EM J12 tables.",
-   "historical-unbound UNKNOWN: installed-package closure, all-12-API qualification, the full 50-point N10/J8 run and 80/120-digit independent comparison receipts are not bound here. Package metadata and construction capability do not prove those historical executions; supported calculation and the named direct assertions are retained."
+   "historical-unbound UNKNOWN: installed-package closure, all-12-API qualification, the full 50-point N10/J8 run and 80/120-digit independent comparison receipts are not bound here. Package metadata and construction capability do not prove those historical executions; supported calculation and the named direct assertions are retained.",
+   "The same three asymptotic moment identities asserted at 1e-12 absolute for the J4, J8 and J12 tables returned by pole_coefficients.",
+   "A 40-digit definition comparison of the rational sum with a ceiling fixed from the pole count before measurement: 1e-1 for the four-pole table and 1e-5 for the eight- and twelve-pole tables."
   ],
   "tests": [
-   "tests/kinetic/test_dispersion_rational.py"
+   "tests/kinetic/test_dispersion_rational.py",
+   "tests/kinetic/test_pole_table_evidence.py"
   ],
-  "evidence_ceiling": "The 1e-10 moment assertions and bounded response tests remain scientific checks; the higher-precision table-comparison history has no bound receipt. historical-unbound UNKNOWN: installed-package closure, all-12-API qualification, the full 50-point N10/J8 run and 80/120-digit independent comparison receipts are not bound here. Package metadata and construction capability do not prove those historical executions; supported calculation and the named direct assertions are retained.",
+  "evidence_ceiling": "test_pole_table_evidence.py applies the moment identities to all three declared tables and compares each rational sum with the 40-digit Maxwellian Z on six upper-half-plane points. The per-table ceilings come from the retained pole count, not from the data: four poles are held to 1e-1 and eight or more to 1e-5. The J12 table is a regenerated high-precision reconstruction rounded to binary64; the historical 120-digit comparison remains unbound and is not used as evidence. No continuous-domain or lower-half-plane claim is established.",
   "known_limitations": [
    "Local technical development; human scientific endorsement and publication clearance remain pending.",
    "Finite harmonic N and rational-pole J approximations require independent convergence checks for a new physical regime.",
    "Passing bounded response, state and backward-error tests does not establish unique physical-mode tracking, all-root forward accuracy or visual acceptance.",
    "Lower-half-plane poles define a rational approximation; its global strong-damping accuracy is not established by bounded upper-half-plane response tests.",
-   "Historical qualification is unbound (UNKNOWN); current direct checks and bounded examples neither impose a new platform restriction nor certify arbitrary parameter regimes."
+   "Historical qualification is unbound (UNKNOWN); current direct checks and bounded examples neither impose a new platform restriction nor certify arbitrary parameter regimes.",
+   "The four-pole table cannot be held below 1e-1 relative on the sampled upper half plane; that is a property of a four-term rational approximation, not a defect of the reader.",
+   "The J12 table is a regenerated high-precision reconstruction rounded to binary64; the historical 120-digit comparison remains unbound and is not evidence here."
   ]
  },
  "references": [
