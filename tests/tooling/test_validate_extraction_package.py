@@ -560,13 +560,24 @@ def test_full_validation_refuses_another_clone_before_applying_patches(
     monkeypatch.setattr(dev, "ROOT", receiver)
     with dev.acceptance_lock(exclusive=True), dev.exclusive_credential() as token:
         env = dict(os.environ, **{dev.EXCLUSIVE_MARKER: token})
-        done = subprocess.run(
-            [sys.executable, "-B", str(SCRIPT), str(package), "--repo", str(candidate_repo)],
-            env=env,
-            capture_output=True,
-            text=True,
-            timeout=10,
-        )
+        try:
+            done = subprocess.run(
+                [sys.executable, "-B", str(SCRIPT), str(package), "--repo", str(candidate_repo)],
+                env=env,
+                capture_output=True,
+                text=True,
+                timeout=60,
+            )
+        except subprocess.TimeoutExpired as expired:
+            # A timeout used to surface as a bare pytest failure, which read like an
+            # assertion error; say what happened instead. 60s rather than 10s because
+            # this runs inside the release stage while the documentation build and the
+            # wheel build are also running, so a cold interpreter start plus the
+            # package import can take several times longer than on an idle machine.
+            raise AssertionError(
+                "the validator subprocess did not finish within 60s; "
+                f"stdout={expired.stdout!r} stderr={expired.stderr!r}"
+            ) from expired
     assert done.returncode == 1, done.stdout + done.stderr
     assert "exclusive lock required" in done.stdout
     assert "NOT_RUN  patch" in done.stdout
