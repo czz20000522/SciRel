@@ -26,9 +26,17 @@ GIT_ENV = {
 
 
 def _git(cwd, *args):
-    return subprocess.run(
-        ["git", *args], cwd=cwd, env=GIT_ENV, check=True, capture_output=True, text=True
-    ).stdout.strip()
+    try:
+        return subprocess.run(
+            ["git", *args], cwd=cwd, env=GIT_ENV, check=True, capture_output=True, text=True
+        ).stdout.strip()
+    except subprocess.CalledProcessError as failed:
+        # capture_output=True means the reason git refused lives only in stderr, so a
+        # bare CalledProcessError says nothing. It cost three release runs to learn that
+        # this test's clone failed with exit 128 for a reason nobody could see.
+        raise AssertionError(
+            f"git {' '.join(args)} failed with {failed.returncode}: {failed.stderr!r}"
+        ) from failed
 
 
 PACKAGE_MD = """# 演示拆解
