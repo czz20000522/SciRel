@@ -579,18 +579,69 @@ basis_map = {
 }
 
 
-def build_basis(basis="poly", **kwargs):
+_ASSET = "scirel.numerics.build-basis"
+_POLY_DEGREE_DEFAULT = 3
+_N_KNOTS_DEFAULT = 5
+_DOMAIN_DEFAULT = (0, 1)
+
+
+def build_basis(
+    basis="poly",
+    *,
+    poly_deg=None,
+    coeffs=None,
+    n_knots=None,
+    domain=None,
+    xdata=None,
+    ydata=None,
+    yp=None,
+    m=None,
+):
     """Basis evaluator factory
 
     Parameters
     ----------
-    basis : str, optional
+    basis : str, default ``'poly'``
         Basis selector [dimensionless] Shape: ``string``. poly or cubic-spline selector;
-        lowercased Optional; default ``'poly'``.
+        lowercased.
 
-    **kwargs : keyword arguments, optional
-        Basis-specific controls such as ``poly_deg``, ``n_knots``, ``domain``, ``xdata``,
-        ``ydata``, and ``yp``.
+    poly_deg : int, optional
+        Polynomial degree [dimensionless] Shape: ``scalar``. Polynomial selection only;
+        default ``3`` when omitted, which yields three basis functions.
+
+    coeffs : float64, optional
+        Ascending-power coefficient columns, one per basis function [caller units] Shape:
+        ``(poly_deg + 1, K)``. Polynomial selection only; default ``None`` builds the
+        identity columns of ``poly_deg + 1`` rows.
+
+    n_knots : int, optional
+        Number of spline knots [dimensionless] Shape: ``scalar``. Spline selections only;
+        default ``5`` when omitted and at least ``3``.
+
+    domain : float64, optional
+        Closed knot interval used when ``xdata`` is omitted [coordinate units] Shape:
+        ``(2,)``; finite, increasing. Spline selections only; default ``(0, 1)``.
+
+    xdata : float64, optional
+        Knot samples [coordinate units] Shape: ``(N,)`` or ``(N, K)``; finite, strictly
+        increasing, ``N >= 3``. Spline selections only; default ``None`` builds
+        ``n_knots`` equally spaced knots over ``domain``.
+
+    ydata : float64, optional
+        Ordinate sample columns [ordinate units] Shape: ``(N, K)``; finite, matching
+        ``xdata``. Spline selections only; default ``None`` builds the ``n_knots``
+        identity columns, without the first column for ``clamped_cubic_spline2``.
+
+    yp : float64, optional
+        Endpoint slopes used only to reject a nonhomogeneous basis [ordinate per
+        coordinate] Shape: ``(2,)`` for ``clamped_cubic_spline`` and ``scalar`` for
+        ``clamped_cubic_spline1``; zero only. Those two selections only; default ``None``
+        uses the spline class default, also zero.
+
+    m : float64, optional
+        Coefficient of the cylindrical Robin row [dimensionless] Shape: ``scalar``;
+        finite. ``clamped_cubic_spline1`` and ``clamped_cubic_spline2`` only; default
+        ``None`` uses the class default, ``0`` and ``1`` respectively.
 
     Returns
     -------
@@ -605,7 +656,8 @@ def build_basis(basis="poly", **kwargs):
         If spline samples, knots, or boundary parameters are invalid, or if a
         clamped basis requests nonzero endpoint slopes.
     TypeError
-        If an unknown keyword is supplied or a control has an incompatible type.
+        If a control is supplied that the selected basis does not implement, if an
+        unknown keyword is supplied, or if a control has an incompatible type.
     KeyError
         If the basis selector is not registered.
     NotImplementedError
@@ -635,7 +687,8 @@ def build_basis(basis="poly", **kwargs):
     * Finite constructor samples and boundary-specific assumptions
     * Polynomial coefficients are ascending-power columns; poly_deg default3 means three
       basis functions
-    * Spline keyword defaults n_knots=5,domain=(0,1); xdata/ydata supplied arrays must match
+    * Spline controls default to n_knots=5 and domain=(0,1); supplied xdata/ydata arrays
+      must match
     * Clamped spline bases require yp=0; nonzero slopes define an affine family, not a
       linear basis
     * The second-clamped default basis omits the origin identity column and therefore has
@@ -650,6 +703,8 @@ def build_basis(basis="poly", **kwargs):
       implementations
     * Physical special-spline closures and unsupported knot domains remain unresolved
     * Nonzero endpoint slopes for clamped basis construction are rejected
+    * A control supplied to a selection that does not implement it is rejected instead of
+      being ignored; an omitted control takes the default stated for its selection
     * For spline selections, nonfinite query values are outside the numerical
       qualification; the implementation zero-fills them as a compatibility
       convention. Polynomial selections do not zero-fill them.
@@ -666,44 +721,88 @@ def build_basis(basis="poly", **kwargs):
     basis = basis.lower()
     basis_fn = basis_map[basis]
     if basis == "poly":
-        return _poly_basis(**kwargs)
+        _reject_unused_controls(
+            basis,
+            (
+                ("n_knots", n_knots),
+                ("domain", domain),
+                ("xdata", xdata),
+                ("ydata", ydata),
+                ("yp", yp),
+                ("m", m),
+            ),
+            legal=("poly_deg", "coeffs"),
+        )
+        if poly_deg is None:
+            poly_deg = _POLY_DEGREE_DEFAULT
+        return _poly_basis(poly_deg=poly_deg, coeffs=coeffs)
     if "spline" in basis:
-        return _spline_basis(basis_fn, **kwargs)
+        legal = _spline_controls(basis_fn)
+        unused = [("poly_deg", poly_deg), ("coeffs", coeffs)]
+        if "yp" not in legal:
+            unused.append(("yp", yp))
+        if "m" not in legal:
+            unused.append(("m", m))
+        _reject_unused_controls(basis, tuple(unused), legal=legal)
+        return _spline_basis(
+            basis_fn,
+            n_knots=_N_KNOTS_DEFAULT if n_knots is None else n_knots,
+            domain=_DOMAIN_DEFAULT if domain is None else domain,
+            xdata=xdata,
+            ydata=ydata,
+            yp=yp,
+            m=m,
+        )
     raise NotImplementedError
 
 
-def _poly_basis(**kwargs):
-    """Build polynomial evaluators; an unknown keyword is rejected, not ignored."""
-    poly_deg = kwargs.pop("poly_deg", 3)
-    coeffs = kwargs.pop("coeffs", None)
-    if kwargs:
-        unknown = ", ".join(sorted(kwargs))
-        raise TypeError(f"build_basis() got unexpected keyword argument(s): {unknown}")
+def _reject_unused_controls(basis, controls, *, legal):
+    """Reject a supplied control that the selected basis does not implement."""
+    for name, value in controls:
+        if value is not None:
+            raise TypeError(
+                f"build_basis() received {name}={value!r} with basis={basis!r}, but that "
+                f"selection does not implement {name}; legal controls for basis={basis!r}: "
+                f"{', '.join(legal)}; see {_ASSET}"
+            )
+
+
+def _spline_controls(spline_fn):
+    """Return the construction controls the selected spline class declares."""
+    controls = ["n_knots", "domain", "xdata", "ydata"]
+    if spline_fn is ClampedCubicSpline:
+        controls.append("yp")
+    elif spline_fn is FirstClampedCubicSpline:
+        controls.extend(("yp", "m"))
+    elif spline_fn is SecondClampedCubicSpline:
+        controls.append("m")
+    return tuple(controls)
+
+
+def _poly_basis(*, poly_deg, coeffs):
+    """Build polynomial evaluators; the controls arrive explicitly, so none is ignored."""
     if coeffs is None:
         coeffs = np.eye(poly_deg)
     return [np.polynomial.polynomial.Polynomial(coeffs[:, i]) for i in range(coeffs.shape[1])]
 
 
-def _spline_basis(spline_fn, **kwargs):
-    """Build spline evaluators; leftover keywords go to the selected spline class."""
+def _spline_basis(spline_fn, *, n_knots, domain, xdata, ydata, yp, m):
+    """Build spline evaluators; only the selected class's declared controls are passed."""
     if spline_fn is ClampedCubicSpline:
-        yp = np.asarray(kwargs["yp"] if "yp" in kwargs else (0.0, 0.0), dtype=float)
-        if np.any(yp != 0.0):
+        slopes = np.asarray((0.0, 0.0) if yp is None else yp, dtype=float)
+        if np.any(slopes != 0.0):
             raise ValueError(
                 "clamped spline basis requires yp=0 (zero endpoint slopes); nonzero slopes make an affine family"
             )
     elif spline_fn is FirstClampedCubicSpline:
-        yp = np.asarray(kwargs["yp"] if "yp" in kwargs else 0.0, dtype=float)
-        if np.any(yp != 0.0):
+        slopes = np.asarray(0.0 if yp is None else yp, dtype=float)
+        if np.any(slopes != 0.0):
             raise ValueError(
                 "clamped spline basis requires yp=0 (zero endpoint slopes); nonzero slopes make an affine family"
             )
-    n_knots = kwargs.pop("n_knots", 5)
     if n_knots < 3:
         raise ValueError("n_knots must be at least 3 for spline basis construction")
-    domain = tuple(kwargs.pop("domain", (0, 1)))
-    xdata = kwargs.pop("xdata", None)
-    ydata = kwargs.pop("ydata", None)
+    domain = tuple(domain)
     if xdata is None:
         xdata = np.linspace(domain[0], domain[1], n_knots)
     if ydata is None:
@@ -713,9 +812,29 @@ def _spline_basis(spline_fn, **kwargs):
             # has y_data[0] == 1 and therefore cannot belong to this basis.
             ydata = ydata[:, 1:]
     if len(xdata.squeeze().shape) == 1:
-        xdata = xdata.squeeze()
-        return [spline_fn(xdata, ydata[:, i], **kwargs) for i in range(ydata.shape[1])]
-    return [spline_fn(xdata[:, i], ydata[:, i], **kwargs) for i in range(ydata.shape[1])]
+        knots = xdata.squeeze()
+        return [
+            _spline_column(spline_fn, knots, ydata[:, i], yp=yp, m=m) for i in range(ydata.shape[1])
+        ]
+    return [
+        _spline_column(spline_fn, xdata[:, i], ydata[:, i], yp=yp, m=m)
+        for i in range(ydata.shape[1])
+    ]
+
+
+def _spline_column(spline_fn, x_data, y_data, *, yp, m):
+    """Construct one column with only the keywords its spline class declares."""
+    if spline_fn is ClampedCubicSpline:
+        slopes = (0.0, 0.0) if yp is None else yp
+        return spline_fn(x_data, y_data, yp=slopes)
+    if spline_fn is FirstClampedCubicSpline:
+        left_slope = 0.0 if yp is None else yp
+        mode = 0.0 if m is None else m
+        return spline_fn(x_data, y_data, yp=left_slope, m=mode)
+    if spline_fn is SecondClampedCubicSpline:
+        mode = 1.0 if m is None else m
+        return spline_fn(x_data, y_data, m=mode)
+    return spline_fn(x_data, y_data)
 
 
 class BasisMatrix(object):

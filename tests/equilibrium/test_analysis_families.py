@@ -90,6 +90,22 @@ def test_basis_factory_shapes_defaults_custom_columns_and_rejections():
         basis.build_basis("poly", typo=1)
 
 
+def test_build_basis_rejects_a_control_the_selected_basis_does_not_implement():
+    with pytest.raises(TypeError, match="received n_knots=4 with basis='poly'") as poly:
+        basis.build_basis("poly", n_knots=4)
+    assert "legal controls for basis='poly': poly_deg, coeffs" in str(poly.value)
+    assert "scirel.numerics.build-basis" in str(poly.value)
+    with pytest.raises(TypeError, match="does not implement poly_deg"):
+        basis.build_basis("natural_cubic_spline", poly_deg=4)
+    with pytest.raises(TypeError, match="does not implement m"):
+        basis.build_basis("clamped_cubic_spline", m=1.0)
+    with pytest.raises(TypeError, match="does not implement yp"):
+        basis.build_basis("clamped_cubic_spline2", yp=0.0)
+    # An explicit default value is still a control the poly selection does not implement.
+    with pytest.raises(TypeError, match="received n_knots=5"):
+        basis.build_basis("poly", n_knots=5)
+
+
 def test_build_basis_public_docstring_declares_contract():
     doc = inspect.getdoc(basis.build_basis)
     assert doc is not None

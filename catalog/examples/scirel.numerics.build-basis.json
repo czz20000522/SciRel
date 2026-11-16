@@ -38,7 +38,7 @@
   "assumptions": [
    "Finite constructor samples and boundary-specific assumptions",
    "Polynomial coefficients are ascending-power columns; poly_deg default3 means three basis functions",
-   "Spline keyword defaults n_knots=5,domain=(0,1); xdata/ydata supplied arrays must match",
+   "Spline controls default to n_knots=5 and domain=(0,1); supplied xdata/ydata arrays must match",
    "Clamped spline bases require yp=0; nonzero slopes define an affine family, not a linear basis",
    "The second-clamped default basis omits the origin identity column and therefore has n_knots-1 columns",
    "Spline basis construction requires n_knots>=3",
@@ -55,6 +55,86 @@
    "required": false,
    "constraints": "poly or cubic-spline selector; lowercased",
    "default": "poly"
+  },
+  {
+   "name": "poly_deg",
+   "description": "Polynomial degree used by the polynomial selection",
+   "units": "dimensionless",
+   "shape": "scalar",
+   "dtype": "int",
+   "required": false,
+   "constraints": "Polynomial selection only; an omitted value is 3, which yields three basis functions",
+   "default": null
+  },
+  {
+   "name": "coeffs",
+   "description": "Ascending-power coefficient columns, one per basis function",
+   "units": "caller units",
+   "shape": "(poly_deg + 1, K)",
+   "dtype": "float64",
+   "required": false,
+   "constraints": "Polynomial selection only; an omitted value builds the identity columns of poly_deg + 1 rows",
+   "default": null
+  },
+  {
+   "name": "n_knots",
+   "description": "Number of spline knots",
+   "units": "dimensionless",
+   "shape": "scalar",
+   "dtype": "int",
+   "required": false,
+   "constraints": "Spline selections only; an omitted value is 5; at least 3",
+   "default": null
+  },
+  {
+   "name": "domain",
+   "description": "Closed knot interval used when xdata is omitted",
+   "units": "coordinate units",
+   "shape": "(2,)",
+   "dtype": "float64",
+   "required": false,
+   "constraints": "Spline selections only; finite and increasing; an omitted value is (0, 1)",
+   "default": null
+  },
+  {
+   "name": "xdata",
+   "description": "Knot samples",
+   "units": "coordinate units",
+   "shape": "(N,) or (N, K)",
+   "dtype": "float64",
+   "required": false,
+   "constraints": "Spline selections only; finite, strictly increasing N>=3; an omitted value builds n_knots equally spaced knots over domain",
+   "default": null
+  },
+  {
+   "name": "ydata",
+   "description": "Ordinate sample columns matching xdata",
+   "units": "ordinate units",
+   "shape": "(N, K)",
+   "dtype": "float64",
+   "required": false,
+   "constraints": "Spline selections only; finite, matching xdata; an omitted value builds the n_knots identity columns, without the first column for clamped_cubic_spline2",
+   "default": null
+  },
+  {
+   "name": "yp",
+   "description": "Endpoint slopes, accepted only at zero",
+   "units": "ordinate per coordinate",
+   "shape": "(2,) for clamped_cubic_spline and scalar for clamped_cubic_spline1",
+   "dtype": "float64",
+   "required": false,
+   "constraints": "clamped_cubic_spline and clamped_cubic_spline1 only; zero only, a nonzero slope is rejected; an omitted value uses the class default, also zero",
+   "default": null
+  },
+  {
+   "name": "m",
+   "description": "Coefficient of the cylindrical Robin row",
+   "units": "dimensionless",
+   "shape": "scalar",
+   "dtype": "float64",
+   "required": false,
+   "constraints": "clamped_cubic_spline1 and clamped_cubic_spline2 only; finite; an omitted value uses the class default 0 and 1 respectively",
+   "default": null
   }
  ],
  "outputs": [
@@ -72,7 +152,7 @@
   "preconditions": [
    "Finite constructor samples and boundary-specific assumptions",
    "Polynomial coefficients are ascending-power columns; poly_deg default3 means three basis functions",
-   "Spline keyword defaults n_knots=5,domain=(0,1); xdata/ydata supplied arrays must match",
+   "Spline controls default to n_knots=5 and domain=(0,1); supplied xdata/ydata arrays must match",
    "Clamped spline bases require yp=0; nonzero slopes define an affine family, not a linear basis",
    "The second-clamped default basis omits the origin identity column and therefore has n_knots-1 columns",
    "Spline basis construction requires n_knots>=3",
@@ -89,7 +169,7 @@
   ]
  },
  "failure_semantics": {
-  "invalid_input": "Raises KeyError for an unregistered selector, NotImplementedError for an unsupported retained selector, TypeError for an unknown keyword, and ValueError for invalid spline samples/knots/boundary parameters; linear-system failures propagate. Nonzero clamped endpoint slopes raise ValueError because they define an affine family. With assertions enabled, the retained clamped-spline constructor raises AssertionError when its endpoint-slope vector does not have length two.",
+  "invalid_input": "Raises TypeError when a control is supplied that the selected basis does not implement, when an unknown keyword is supplied, and for a control of incompatible type; KeyError for an unregistered selector; NotImplementedError for an unsupported retained selector; and ValueError for invalid spline samples/knots/boundary parameters. Linear-system failures propagate. Nonzero clamped endpoint slopes raise ValueError because they define an affine family. With assertions enabled, the retained clamped-spline constructor raises AssertionError when its endpoint-slope vector does not have length two.",
   "runtime_failure": "Numerical linear-algebra or optional SciPy special-function exceptions propagate from evaluation.",
   "nonconvergence": "Not applicable; basis construction and evaluation are direct computations without an iterative convergence claim.",
   "partial_results": "A failed constructor returns no evaluator; for spline selections, finite values outside the knot interval and nonfinite query values follow the zero-fill convention, while polynomial selections evaluate directly."
@@ -98,7 +178,7 @@
   "python": {
    "module": "scirel.numerics.basis",
    "symbol": "build_basis",
-   "signature": "build_basis(basis='poly', **kwargs)",
+   "signature": "build_basis(basis='poly', *, poly_deg=None, coeffs=None, n_knots=None, domain=None, xdata=None, ydata=None, yp=None, m=None)",
    "canonical_module": "scirel.numerics",
    "canonical_symbol": "build_basis"
   }
