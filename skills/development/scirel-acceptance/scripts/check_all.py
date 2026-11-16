@@ -401,19 +401,49 @@ def _digest(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
-def validate_provenance(result: dict, *, report_path: Path, check_all_path: Path) -> str:
+def validate_provenance(
+    result: dict,
+    *,
+    report_path: Path,
+    check_all_path: Path,
+    allow_legacy_receipts: bool = False,
+) -> str:
     """Check what a result claims about the run that produced it, never its science.
 
-    A v1 result predates this protocol and stays readable, tagged
-    ``legacy_unprovenanced``: a new rule must not retroactively delete old evidence.
-    A v2 result has to name the exclusive credential digest, the digest of every
-    retained step log, the digests of the two scripts that ran, and a sidecar digest
-    of its own bytes. This raises the bar from editing one JSON file to reproducing
-    the lock holder's credential digest and every log hash; it is not a signature,
-    so whoever can run code inside the clone can still fabricate a whole bundle.
+    A v2 result binds the file to the run that wrote it: every retained step log has a
+    recorded digest, and a sidecar holds the digest of the result file, so editing the
+    result alone, or the log alone, is visible. ``exclusive.token_sha256`` records that a
+    lock-holding run happened and with which credential; the credential itself retires
+    before the lock is released, so it is never compared. That is exactly why the
+    recorded digest is not proof of origin.
+
+    **This is not a signature.** Whoever can rewrite the result, the logs and the sidecar
+    together — anyone able to run code inside the clone — can fabricate a whole bundle.
+    What the checks stop is a hand edit of one file.
+
+    A digest over the scripts means any change to ``check_all.py`` or
+    ``scirel_pytest_counts.py`` makes every earlier v2 receipt disagree; an edited script
+    needs a new run, not a repaired receipt.
+
+    This function does not compare step count or step names against a plan: the caller
+    that knows the plan owns that comparison.
+
+    ``steps[].seconds`` is a wall-clock observation, recorded so the maintainer can see
+    where a long run goes before deciding to split or parallelize a step. It is not
+    compared here on purpose: duration is not a verdict, and a slow machine must not turn
+    a green run red.
+
+    A ``scirel.acceptance.v1`` receipt predates all of this and is refused by default,
+    because a fresh forgery and a genuine historical receipt are indistinguishable. Pass
+    ``allow_legacy_receipts=True`` to read one for archaeology, never as evidence.
     """
     schema = result.get("schema")
     if schema == LEGACY_RESULT_SCHEMA:
+        if not allow_legacy_receipts:
+            raise ValueError(
+                "a v1 receipt cannot serve as new evidence; historical receipts are for"
+                " archaeology only (pass --allow-legacy-receipts to read one)"
+            )
         return "legacy_unprovenanced"
     if schema != RESULT_SCHEMA:
         raise ValueError(f"unknown result schema: {schema!r}")
@@ -569,6 +599,7 @@ def main(report_path: Path | None = None, *, run_id: str | None = None) -> int:
                 completed = error.completed
                 interrupted = True
             record["started"] = True
+            elapsed = time.perf_counter() - started
             status, detail, report = step_status(step, completed.returncode)
             if interrupted:
                 status, detail = "FAIL", "interrupted"
@@ -582,6 +613,9 @@ def main(report_path: Path | None = None, *, run_id: str | None = None) -> int:
                     "detail": detail,
                     "log": str(log_path),
                     "log_sha256": _digest(log_path),
+                    # Wall-clock observation, not a verdict: it tells the maintainer where
+                    # a long run goes, so splitting or parallelizing can be decided on data.
+                    "seconds": round(elapsed, 1),
                 }
             )
             if report is not None:
@@ -594,7 +628,7 @@ def main(report_path: Path | None = None, *, run_id: str | None = None) -> int:
                 except (OSError, ValueError):
                     pass
             print(
-                f"{status}  {step.name}  ({time.perf_counter() - started:.0f} s){detail}",
+                f"{status}  {step.name}  ({elapsed:.0f} s){detail}",
                 flush=True,
             )
             if status == "FAIL":

@@ -698,31 +698,60 @@ def test_full_result_protocol_preserves_the_actual_output(tmp_path, monkeypatch,
         assert "selected 2" in report.sections[-1][2]
 
 
-def test_a_v1_result_stays_readable_and_is_tagged_legacy(tmp_path, monkeypatch, capsys):
-    """Evidence written before provenance v2 must not be refused retroactively."""
-    module = _validator()
-    _mock_lock_boundary(module, monkeypatch)
-    tree = _acceptance_candidate(tmp_path)
-    report = module.Report()
-    report.output_dir = tmp_path
+def _v1_result(module, tmp_path, tree):
+    """A historical v1 envelope: no exclusive block, no provenance, no sidecar."""
     result = _acceptance_result(module, tmp_path, tree)
     result["schema"] = "scirel.acceptance.v1"
     result.pop("exclusive")
     result.pop("provenance")
     for record in result["steps"]:
         record.pop("log_sha256")
+    return result
+
+
+def test_a_v1_receipt_cannot_be_delivered_as_evidence(tmp_path, monkeypatch):
+    """One legal shape for delivered evidence: a fresh forgery must not pass as history."""
+    module = _validator()
+    _mock_lock_boundary(module, monkeypatch)
+    tree = _acceptance_candidate(tmp_path)
+    report = module.Report()
+    report.output_dir = tmp_path
+    result = _v1_result(module, tmp_path, tree)
 
     def execute(candidate, command):
         result["run_id"] = command[command.index("--run-id") + 1]
-        # A v1 result predates the sidecar; writing one here would hide a real gap.
         Path(command[-1]).write_text(json.dumps(result), encoding="utf-8")
         return subprocess.CompletedProcess(command, 0, "fixture only\n", "")
 
     monkeypatch.setattr(module, "_run_in_candidate", execute)
     module.run_full_check(tree, report)
+    assert report.sections[-1][1] == "FAIL"
+    assert "archaeology" in " ".join(report.errors)
+
+
+def test_a_v1_receipt_is_readable_with_the_legacy_switch_and_says_so(
+    tmp_path, monkeypatch, capsys
+):
+    module = _validator()
+    _mock_lock_boundary(module, monkeypatch)
+    tree = _acceptance_candidate(tmp_path)
+    report = module.Report()
+    report.output_dir = tmp_path
+    result = _v1_result(module, tmp_path, tree)
+
+    def execute(candidate, command):
+        result["run_id"] = command[command.index("--run-id") + 1]
+        Path(command[-1]).write_text(json.dumps(result), encoding="utf-8")
+        return subprocess.CompletedProcess(command, 0, "fixture only\n", "")
+
+    monkeypatch.setattr(module, "_run_in_candidate", execute)
+    module.run_full_check(tree, report, allow_legacy_receipts=True)
     assert report.sections[-1][1] == "PASS", report.errors
     assert "legacy_unprovenanced" in report.sections[-1][2]
-    assert "legacy_unprovenanced" in capsys.readouterr().out
+    assert (
+        "legacy receipt accepted for archaeology only, not as evidence"
+        in capsys.readouterr().out
+    )
 
 
 def test_a_v2_result_without_its_sidecar_fails_the_full_check(tmp_path, monkeypatch):
