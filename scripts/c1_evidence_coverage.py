@@ -39,6 +39,7 @@ import glob
 import json
 import re
 import sys
+import textwrap
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -67,16 +68,65 @@ def verification_text(contract: dict) -> str:
     return " ".join(parts)
 
 
+NEGATION = re.compile(
+    r"(?:\bno\b|\bnot\b|\bnever\b|\bwithout\b|\bneither\b|\bnor\b|\blacks?\b|"
+    r"\babsent\b|\bisn't\b|\bdoesn't\b|\bdoes not\b|\bcannot\b|\bno longer\b)",
+    re.I,
+)
+CLAUSE_BREAK = re.compile(r"[.;:,]|\bbut\b|\bhowever\b|\balthough\b", re.I)
+
+
+POST_NEGATION = re.compile(
+    r"\b(?:is|are|was|were)\s+not\s+(?:used|available|present|performed|possible)\b|"
+    r"\b(?:does|do|did)\s+not\s+exist\b|\bcannot\s+be\s+used\b",
+    re.I,
+)
+
+
+def _is_negated(text: str, start: int, end: int = 0) -> bool:
+    """Negation may precede the match ("no independent X") or follow it
+    ("X is not used"), so both directions are checked inside the same clause."""
+    """Return True when the match starting at ``start`` sits under a negation.
+
+    A contract that says "no independent implementation exists" is recording a
+    gap, not a basis; counting it as evidence would inflate the very number this
+    report exists to keep honest. The window walks back to the nearest clause
+    break so a negation in an earlier clause is not borrowed.
+    """
+    window_start = 0
+    for break_match in CLAUSE_BREAK.finditer(text, 0, start):
+        window_start = break_match.end()
+    if NEGATION.search(text, window_start, start):
+        return True
+    if end:
+        following = CLAUSE_BREAK.search(text, end)
+        window_end = following.start() if following else min(len(text), end + 40)
+        return bool(POST_NEGATION.search(text, end, window_end))
+    return False
+
+
 def classify(text: str) -> tuple[bool, bool]:
-    basis = any(re.search(pattern, text, re.I) for pattern in BASIS_PATTERNS)
-    gap = bool(re.search(GAP_PATTERN, text, re.I))
-    return basis, gap
+    asserted = False
+    negated = False
+    for pattern in BASIS_PATTERNS:
+        for match in re.finditer(pattern, text, re.I):
+            if _is_negated(text, match.start(), match.end()):
+                negated = True
+            else:
+                asserted = True
+    gap = bool(re.search(GAP_PATTERN, text, re.I)) or (negated and not asserted)
+    return asserted, gap
 
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--domain", help="only report this asset-domain, e.g. kinetic")
     parser.add_argument("--format", choices=("table", "json"), default="table")
+    parser.add_argument(
+        "--fail-on-neither",
+        action="store_true",
+        help="exit 1 when any contract records neither a basis nor a gap (CI use)",
+    )
     arguments = parser.parse_args()
 
     rows = []
@@ -89,44 +139,58 @@ def main() -> int:
         basis, gap = classify(verification_text(contract))
         rows.append({"asset_id": asset_id, "domain": domain, "basis": basis, "gap": gap})
 
+    totals = {
+        "contracts": len(rows),
+        "basis": sum(1 for row in rows if row["basis"]),
+        "gap": sum(1 for row in rows if row["gap"]),
+        "either": sum(1 for row in rows if row["basis"] or row["gap"]),
+        "neither": sum(1 for row in rows if not row["basis"] and not row["gap"]),
+    }
+    neither = [row["asset_id"] for row in rows if not row["basis"] and not row["gap"]]
+    disclaimer = (
+        "Text match only, not a gate. 'basis' means the contract says where its "
+        "independent evidence comes from; it does not prove the claim. 'neither' "
+        "needs a human decision per contract: name the basis, or record that none "
+        "was established."
+    )
     if arguments.format == "json":
-        totals = {
-            "contracts": len(rows),
-            "basis": sum(1 for row in rows if row["basis"]),
-            "gap": sum(1 for row in rows if row["gap"]),
-            "either": sum(1 for row in rows if row["basis"] or row["gap"]),
-            "neither": sum(1 for row in rows if not row["basis"] and not row["gap"]),
-        }
-        print(json.dumps({"totals": totals, "rows": rows}, indent=1))
-        return 0
+        print(
+            json.dumps(
+                {
+                    "totals": totals,
+                    "gate": False,
+                    "note": disclaimer,
+                    "neither": neither,
+                    "rows": rows,
+                },
+                indent=1,
+            )
+        )
+        return 1 if (arguments.fail_on_neither and neither) else 0
 
     per_domain = collections.defaultdict(list)
     for row in rows:
         per_domain[row["domain"]].append(row)
     print(f"{'domain':18s} {'n':>4s} {'basis':>6s} {'gap':>5s} {'neither':>8s}")
     for domain, group in sorted(per_domain.items(), key=lambda item: -len(item[1])):
-        basis = sum(1 for row in group if row["basis"])
-        gap = sum(1 for row in group if row["gap"])
-        neither = sum(1 for row in group if not row["basis"] and not row["gap"])
-        print(f"{domain:18s} {len(group):4d} {basis:6d} {gap:5d} {neither:8d}")
+        basis_count = sum(1 for row in group if row["basis"])
+        gap_count = sum(1 for row in group if row["gap"])
+        neither_count = sum(1 for row in group if not row["basis"] and not row["gap"])
+        print(f"{domain:18s} {len(group):4d} {basis_count:6d} {gap_count:5d} {neither_count:8d}")
 
-    basis = sum(1 for row in rows if row["basis"])
-    gap = sum(1 for row in rows if row["gap"])
-    neither = [row["asset_id"] for row in rows if not row["basis"] and not row["gap"]]
     print(
-        f"\nTOTAL {len(rows)} | basis {basis} | gap {gap} "
-        f"| either {len(rows) - len(neither)} | neither {len(neither)}"
+        f"\nTOTAL {totals['contracts']} | basis {totals['basis']} | gap {totals['gap']} "
+        f"| either {totals['either']} | neither {totals['neither']}"
     )
-    print(
-        "NOTE: text match only. 'basis' means the contract says where its independent\n"
-        "evidence comes from; it does not prove the claim. 'neither' needs a human\n"
-        "decision per contract: name the basis, or record that none was established."
-    )
-    if neither and arguments.domain is None:
-        print("\nneither (first 40):")
+    for line in textwrap.wrap("NOTE: " + disclaimer, 88):
+        print(line)
+    if neither:
+        print(f"\nneither ({len(neither)}):")
         for asset_id in neither[:40]:
             print("  " + asset_id)
-    return 1 if neither else 0
+        if len(neither) > 40:
+            print(f"  ... and {len(neither) - 40} more")
+    return 1 if (arguments.fail_on_neither and neither) else 0
 
 
 if __name__ == "__main__":
