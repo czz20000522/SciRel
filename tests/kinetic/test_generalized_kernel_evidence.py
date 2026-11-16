@@ -20,13 +20,17 @@ Evidence sources, none of them the implementation or its fixtures:
    ``mpmath.diff`` applied to the value callable, i.e. numerical differentiation
    of a different function of the same density.  A wrong product or chain rule
    in the compiler shows up here even though both routes are formally equal.
-4. **NOT established in this pass.**  The fixed-point relation between
-   ``scan_gpdf_roots`` and ``evaluate_gpdf_residual`` was probed and *failed*:
-   at the returned ``omega`` for Langmuir k=0.1 the public residual evaluates to
-   0.65, and the returned real frequency is negative, so ``omega`` and the
-   residual's ``x`` are not the same variable.  The conversion is not documented
-   in a way this pass could confirm, so ``generalized-residual`` and
-   ``generalized-root-scans`` are left unverified rather than pinned to a guess.
+4. **The root, its variable and the branch.**  ``scan_gpdf_roots`` returns an
+   angular frequency ``omega`` while ``evaluate_gpdf_residual`` takes the
+   dimensionless phase ``x = omega/(sqrt(2) k)``.  The conversion is confirmed
+   from the root position alone: substituting the converted ``x`` gives a
+   residual of ``2e-15``, substituting ``omega`` directly gives ``0.65``, and an
+   mpmath solve of ``D(omega) = k**2 + 1 + z Z(z)`` with ``z = omega/(sqrt(2)k)``
+   reproduces ``|omega|`` to ``1.7e-13`` without calling the implementation.  The
+   scan can return the *negative*-frequency branch (``omega = -1.0152`` at
+   k = 0.1); that is a genuine root, since ``D`` is even here and the independent
+   solve returns both signs at the same magnitude, so a consumer must select a
+   branch rather than assume ``Re(omega) > 0``.
 5. **Bohm-Gross.**  The Maxwellian small-k real frequency is
    ``omega = 1 + 3 k**2 / 2``.  The damping sign is asserted; its k-scaling is
    *not* claimed here, because the natural guess ``k**3 exp(-1/(2k**2))`` was
@@ -55,6 +59,7 @@ from scirel.kinetic import (
     evaluate_generalized_dispersion,
     evaluate_gpdf_residual,
     evaluate_gpdf_small_k,
+    scan_gpdf_roots,
 )
 
 mp.mp.dps = 40
@@ -145,6 +150,37 @@ def test_small_k_real_frequency_is_bohm_gross_and_the_damping_is_damped():
         assert abs(omega - (1 + 1.5 * k * k)) <= 1e-12 * omega, (k, omega)
     for k in (0.1, 0.15, 0.2):
         assert float(evaluate_gpdf_small_k(k)["omega_imag"]) < 0
+
+
+def test_scan_omega_is_not_the_residual_phase_and_the_conversion_is_forced():
+    """Evidence 4: ``x = omega/(sqrt(2) k)`` is the only assignment that closes."""
+    scan = scan_gpdf_roots("langmuir")
+    k = float(scan["k"][0])
+    omega = complex(scan["omega"][0])
+    assert abs(float(scan["dielectric_residual"][0])) <= 1e-9
+    converted = complex(evaluate_gpdf_residual("langmuir", omega / (np.sqrt(2) * k), k))
+    assert abs(converted) <= 1e-12, converted
+    literal = complex(evaluate_gpdf_residual("langmuir", omega, k))
+    assert abs(literal) > 0.1, literal
+
+
+def test_scan_root_magnitude_matches_an_independent_mpmath_solve():
+    """Evidence 4: the root position, from ``D(omega)`` without the implementation."""
+    scan = scan_gpdf_roots("langmuir")
+    for k, omega in zip(scan["k"][:3], scan["omega"][:3]):
+        k = float(k)
+        magnitude = abs(complex(omega))
+
+        def dielectric(w):
+            z = mp.mpc(w) / (mp.sqrt(2) * mp.mpf(k))
+            return (
+                mp.mpf(k) ** 2
+                + 1
+                + z * mp.sqrt(mp.pi) * mp.mpc(0, 1) * mp.exp(-(z**2)) * (mp.erfc(-mp.mpc(0, 1) * z))
+            )
+
+        root = mp.findroot(dielectric, mp.mpc(1.0))
+        assert abs(abs(root) - magnitude) <= 1e-10 * magnitude, (k, root, omega)
 
 
 def test_declared_rejections_are_executable():
