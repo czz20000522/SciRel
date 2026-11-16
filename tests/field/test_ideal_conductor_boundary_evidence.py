@@ -92,25 +92,22 @@ def test_a_consistent_full_rank_system_cancels_the_boundary_flux_exactly():
     """Evidence 1 and 5: the exact solve, the zero residual and the pieces."""
     result = correct_ideal_conductor_boundary_flux(PSI, SAMPLE, GBB, GBF)
     boundary_flux = _exact_matvec(SAMPLE, PSI)
-    # Consistency, in exact rationals: the sampled field Green equals the
-    # boundary Green, so the boundary flux is exactly reachable.
-    assert _exact_matvec(SAMPLE, np.transpose(GBF).tolist()) == [
-        [Fraction(float(GBB[0][0])), Fraction(float(GBB[1][0]))],
-        [Fraction(float(GBB[0][1])), Fraction(float(GBB[1][1]))],
-    ] or [
-        sum(
+    # Consistency, in exact rationals: the composed sampled Green equals the
+    # boundary Green, so the sampled boundary flux is exactly reachable.
+    composed = [
+        [sum(
             (
                 Fraction(float(SAMPLE[row][column])) * Fraction(float(GBF[column][source]))
                 for column in range(len(SAMPLE[0]))
             ),
             start=Fraction(0),
         )
+        for source in range(len(GBB[0]))]
         for row in range(len(SAMPLE))
-        for source in range(len(GBB[0]))
-    ] == [
-        Fraction(float(GBB[row][source]))
+    ]
+    assert composed == [
+        [Fraction(float(GBB[row][source])) for source in range(len(GBB[0]))]
         for row in range(len(GBB))
-        for source in range(len(GBB[0]))
     ]
     currents = [-value / Fraction(float(GBB[index][index])) for index, value in enumerate(boundary_flux)]
     _assert_exact_columns("boundary_currents", result["boundary_currents"], currents, currents)
