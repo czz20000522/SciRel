@@ -161,17 +161,21 @@
  },
  "verification": {
   "scope": [
-   "Public callable signature and documented finite-input behavior",
-   "Explicit nx, ny, xi, yi and method parameters with removal of the values mapping alias",
-   "The direct regression fixtures and executable example stored in this contract"
+   "The generated axes are asserted to be the exact linspace(min,max) product in ij order: each coordinate depends on one index only, the endpoints equal the data extremes and the shape is (nx,ny).",
+   "An affine field is reproduced at supplied interior points within a 16*eps budget, and the fixture is asserted non-constant.",
+   "Positional fields preserve their order, and a call without fields returns only the two coordinate arrays.",
+   "Outside the convex hull the linear interpolant is asserted to return NaN rather than a synthesised value, and method='nearest' is asserted to return only stored sample values.",
+   "Failure matrix gives one executable assertion per rejecting channel: an unknown method raises ValueError, the removed values keyword raises TypeError, and no partial result is returned."
   ],
   "tests": [
    "tests/equilibrium/test_analysis_families.py",
-   "tests/equilibrium/test_keyword_sampling_ports.py"
+   "tests/equilibrium/test_keyword_sampling_ports.py",
+   "tests/sampling/test_analytic_sampling_evidence.py"
   ],
-  "evidence_ceiling": "Direct examples and named regression fixtures establish the documented relation on those inputs; they do not establish arbitrary-input correctness, experimental validation, or release approval.",
+  "evidence_ceiling": "Establishes grid generation, affine reproduction inside the hull and the no-synthesis boundary. It does not establish interpolation accuracy for nonlinear fields, and no behaviour outside the convex support is promised beyond the NaN convention.",
   "known_limitations": [
-   "No outside-hull value synthesis or nonlinear interpolation accuracy claim"
+   "No outside-hull value synthesis or nonlinear interpolation accuracy claim",
+   "cannot establish: accuracy of the linear or Clough-Tocher interpolants for non-affine fields"
   ]
  }
 }

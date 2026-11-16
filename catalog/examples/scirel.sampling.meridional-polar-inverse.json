@@ -129,16 +129,21 @@
  },
  "verification": {
   "scope": [
-   "Independent projection, signed quadrants, norm and inverse roundtrip",
-   "Origin/nonfinite rejection"
+   "The inverse is asserted to undo the forward basis on four inputs within eight correctly rounded operations per component; a sign error in either vector component breaks the round trip.",
+   "The theta=0 case is zero-tolerance exact, because sin(0)=0 and cos(0)=1 are exact.",
+   "The inverse's own preconditions are asserted separately from the forward's: non-positive radius and non-finite angle or components raise ValueError, so the two contracts do not share one rejection test.",
+   "Test matrix covers the axis case, off-axis round trips, broadcast inputs and both rejection reasons.",
+   "Failure matrix gives one executable assertion per rejecting channel and asserts that no partial tuple is returned."
   ],
   "tests": [
-   "tests/geometry/test_polar_projection_repair.py"
+   "tests/geometry/test_polar_projection_repair.py",
+   "tests/sampling/test_analytic_sampling_evidence.py"
   ],
-  "evidence_ceiling": "Coordinate/vector identity; not physical field qualification.",
+  "evidence_ceiling": "Establishes the inverse relation on the tested inputs only. It does not establish accuracy for large or wrapped angles beyond the sine/cosine parameterisation, and it makes no physical interpretation of the returned components.",
   "known_limitations": [
    "Coordinate origin undefined",
-   "Length and vector units remain caller supplied"
+   "Length and vector units remain caller supplied",
+   "cannot establish: an independent reference for a non-axis angle; the stated budget is a rounding budget for the composition, not an accuracy claim against an external oracle"
   ]
  }
 }
