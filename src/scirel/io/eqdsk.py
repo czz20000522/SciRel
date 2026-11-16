@@ -236,6 +236,15 @@ def read_eqdsk(filename: str | Path, *, strict: bool = True) -> dict[str, Any]:
     file whose ``rleft``/``zmid`` define the grid origin, use
     :func:`scirel.io.read_geqdsk` instead.
 
+    The precision budget of this format is ten significant decimal digits per
+    numeric field (``16.9E``). A value written with at most ten significant
+    digits is recovered bit for bit; a value needing more is recovered as its
+    ten-digit neighbour, which the tests assert as an equality with that
+    neighbour rather than as a tolerance. The lexical layout is fixed as well:
+    five fields per line, adjacent negative fields running together, four scalar
+    records first, then the four profiles, ``psi``, ``q_flux``, the ``2i5``
+    counts and the boundary pairs.
+
     The format does not assign units or a COCOS convention to the stored
     values. Coordinate records remain fixed-width; ``strict=False`` changes
     only the treatment of trailing records.
@@ -528,6 +537,13 @@ def write_eqdsk(data: Mapping[str, Any], filename: str | Path) -> None:
     Validation and formatting finish before the destination is opened or
     truncated. Later I/O failures may leave changed or partial file contents;
     there is no atomic replacement or rollback guarantee.
+
+    The precision budget of this format is ten significant decimal digits per
+    numeric field (``16.9E``). A value written with at most ten significant
+    digits is recovered bit for bit by :func:`scirel.io.read_eqdsk`; a value
+    needing more is written and read back as its ten-digit neighbour, which the
+    evidence tests assert as an equality with that neighbour rather than as a
+    tolerance.
 
     Examples
     --------

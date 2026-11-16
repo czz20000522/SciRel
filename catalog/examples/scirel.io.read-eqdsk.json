@@ -120,11 +120,13 @@
  },
  "verification": {
   "scope": [
-   "Roundtrip, lexical fixed-width, malformed input, class-state, and fixed-origin tests"
+   "Independent exact recovery of the extended dialect from an independently hand-written reference record whose fields follow the published 16.9E rule, plus fixed-origin tests."
   ],
   "tests": [
    "tests/io/test_eqdsk.py",
-   "tests/io/test_eqdsk_fixed_origin.py"
+   "tests/io/test_eqdsk_fixed_origin.py",
+   "tests/io/test_eqdsk_interchange_evidence.py",
+   "tests/io/test_io_declared_failure_channels.py"
   ],
   "evidence_ceiling": "Structural IO boundary only; no physical interpretation is claimed.",
   "known_limitations": [

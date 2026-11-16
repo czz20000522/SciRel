@@ -157,14 +157,16 @@
  },
  "verification": {
   "scope": [
-   "Independent Decimal/longdouble conservation and overflow/underflow checks, component independence and malformed inputs.",
+   "Independent exact rational recomputation in Fraction arithmetic reproduces the documented 3/2 weighted sum and its scaling law; component independence, the overflow and underflow boundaries and malformed inputs are checked beside it.",
    "Signed cancellation across permutations and intermediate product overflow/underflow regression; exact binary64 products and a single final rounding.",
    "Both signs of the conservative exact-magnitude upper boundary: max+2^968 is rejected although it rounds to max, while max-2^969 remains accepted. Exact cancellation zero and nonzero final round-to-zero are distinguished."
   ],
   "tests": [
    "tests/kinetic/test_profile_energy.py",
    "tests/kinetic/test_thermal_cancellation.py",
-   "tests/physics/test_source_energy_boundaries.py"
+   "tests/physics/test_source_energy_boundaries.py",
+   "tests/physics/test_thermal_energy_evidence.py",
+   "tests/physics/test_thermal_energy_channels.py"
   ],
   "evidence_ceiling": "Independent numerical probes establish the named mathematical relation, discrete conservation, boundary and shape/failure behavior. They do not establish general plasma calibration or complete edge-model validity.",
   "known_limitations": [

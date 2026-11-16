@@ -105,3 +105,18 @@ def test_exponential_nonuniform_point_values_and_adjacent_ratios(total):
 @pytest.mark.parametrize("sign", [1, -1])
 def test_exponential_tiny_signed_width_floor_preserves_resolved_shape(sign):
     _check_profile("exponential", [0, 2**-1022], [1, 1], [1, 1], 0.8, sign * 2**-1074, 1.0)
+
+
+@pytest.mark.parametrize("total", [2.0, -2.0])
+@pytest.mark.parametrize("kind", ["exponential", "gaussian"])
+def test_nonuniform_quadrature_widths_keep_each_cell_weight(kind, total):
+    """A non-uniform ``drho_norm`` separates the volume weight from ``vpr`` alone.
+
+    Every other pointwise case in this file uses unit grid widths, where the
+    ``vpr*drho_norm`` product differs from ``vpr`` by one common factor that the
+    normalization divides out. With unequal widths that factor is no longer
+    common, so a dropped or mispaired width changes the point values; the
+    reference sums the same exact rational weights independently.
+    """
+    parameter = 0.7 if kind == "exponential" else 0.5
+    _check_profile(kind, [0.2, 0.55, 0.9], [1.0, 2.0, 4.0], [0.5, 0.25, 1.0], parameter, 1.0, total)

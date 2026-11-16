@@ -133,6 +133,15 @@ def theta_step(
     iterative fallback.  A singular or non-finite system is reported as an
     error.
 
+    The precision budget is the assembly's single pass over the face arrays plus
+    one banded linear solve, and it is measured rather than assumed: the evidence
+    tests recover the two-cell Dirichlet equation ``(1+2*theta)*u = 2`` from exact
+    rational input data at every ``theta`` in ``0, .25, .5, 1`` and compare the
+    theta solutions against exact rational endpoint equations, so a changed
+    weight or a dropped forcing term shows up as an exact mismatch rather than a
+    tolerance drift. The reported runtime channel is a nonfinite result, not a
+    loss of accuracy.
+
     Examples
     --------
     >>> import numpy as np

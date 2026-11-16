@@ -117,11 +117,13 @@
  },
  "verification": {
   "scope": [
-   "Roundtrip, lexical fixed-width, malformed input and class-state tests",
+   "Independent exact recovery of every field, each equal to the published 16.9E rendering of its value, plus a byte-identical second write of a read file and bit-for-bit round-trip inside the ten-digit budget.",
    "Nonzero-origin rejection, unchanged destination on pre-write validation failure, and opaque scalar preservation in test_eqdsk.py; mid-write I/O atomicity is not tested or guaranteed."
   ],
   "tests": [
-   "tests/io/test_eqdsk.py"
+   "tests/io/test_eqdsk.py",
+   "tests/io/test_eqdsk_interchange_evidence.py",
+   "tests/io/test_io_declared_failure_channels.py"
   ],
   "evidence_ceiling": "Structural IO boundary only; no physical interpretation is claimed.",
   "known_limitations": [
