@@ -736,9 +736,7 @@ def test_a_v1_receipt_cannot_be_delivered_as_evidence(tmp_path, monkeypatch):
     assert "archaeology" in " ".join(report.errors)
 
 
-def test_a_v1_receipt_is_readable_with_the_legacy_switch_and_says_so(
-    tmp_path, monkeypatch, capsys
-):
+def test_a_v1_receipt_is_readable_with_the_legacy_switch_and_says_so(tmp_path, monkeypatch, capsys):
     module = _validator()
     _mock_lock_boundary(module, monkeypatch)
     tree = _acceptance_candidate(tmp_path)
@@ -756,8 +754,7 @@ def test_a_v1_receipt_is_readable_with_the_legacy_switch_and_says_so(
     assert report.sections[-1][1] == "PASS", report.errors
     assert "legacy_unprovenanced" in report.sections[-1][2]
     assert (
-        "legacy receipt accepted for archaeology only, not as evidence"
-        in capsys.readouterr().out
+        "legacy receipt accepted for archaeology only, not as evidence" in capsys.readouterr().out
     )
 
 

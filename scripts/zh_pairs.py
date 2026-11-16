@@ -210,9 +210,7 @@ def copy_errors(record: dict, document: dict, where: str) -> list[str]:
     return errors
 
 
-def verify_record(
-    document: dict, record: dict, fields: dict, where: str = ""
-) -> list[str]:
+def verify_record(document: dict, record: dict, fields: dict, where: str = "") -> list[str]:
     """Return every mismatch for one record against its recorded fields.
 
     Used by the gate and by the documentation snapshot reader, so the served
