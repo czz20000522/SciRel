@@ -84,6 +84,11 @@ def _exact_filaments(coils):
     return rows
 
 
+def coil_filaments(coil):
+    """Return the ``(R, Z, current)`` rows of one coil from exact centres."""
+    return _exact_filaments([coil])
+
+
 def test_the_total_field_matches_the_biot_savart_quadrature_at_every_node():
     """Evidence 1: the composed field against an independent quadrature total."""
     radius, height = _grids()
@@ -95,23 +100,39 @@ def test_the_total_field_matches_the_biot_savart_quadrature_at_every_node():
     assert [tuple(row) for row in result["filaments"][:, :2]] == [
         (row[0], row[1]) for row in filaments
     ]
+    # Per-coil reference contributions, used both for the total and for the
+    # cancellation factor of the superposition: the two coils drive opposite
+    # signs and partly cancel, so a purely relative comparison would punish the
+    # implementation for a property of the requested sum.  The budget is
+    # ``64 eps * sum|contribution| / |sum contribution|``, the standard condition
+    # number of a signed sum of interpreted values.
     observed = 0.0
     for row in range(radius.shape[0]):
         for column in range(radius.shape[1]):
-            expected = reference.filament_field(
-                filaments, float(radius[row, column]), float(height[row, column])
-            )
-            for name, got_value, want in (
-                ("psi_vac", float(result["psi_vac"][row, column]), float(expected[0])),
-                ("b_r_vac", float(result["b_r_vac"][row, column]), float(expected[1])),
-                ("b_z_vac", float(result["b_z_vac"][row, column]), float(expected[2])),
+            contributions = [
+                reference.filament_field(
+                    coil_filaments(COILS[index]),
+                    float(radius[row, column]),
+                    float(height[row, column]),
+                )
+                for index in range(len(COILS))
+            ]
+            total = [sum(item[axis] for item in contributions) for axis in range(3)]
+            expected = total
+            for axis, (name, key) in enumerate(
+                (("psi_vac", "psi"), ("b_r_vac", "b_r"), ("b_z_vac", "b_z"))
             ):
+                got_value, want = float(result[name][row, column]), float(expected[axis])
                 if want == 0.0:
                     assert got_value == 0.0, (name, row, column)
                     continue
+                magnitude = float(
+                    sum(abs(float(item[axis])) for item in contributions)
+                )
+                allowed = RELATIVE_BUDGET * max(1.0, magnitude / abs(want))
                 deviation = abs(got_value - want) / abs(want)
-                assert deviation <= RELATIVE_BUDGET, (name, row, column, deviation)
-                observed = max(observed, deviation)
+                assert deviation <= allowed, (name, row, column, deviation, allowed)
+                observed = max(observed, deviation / allowed)
     assert observed > 0.0
     # Anchors: the two coils drive opposite signs, so the composed axial field
     # changes sign across the grid and is not merely a scaled copy of one coil.
