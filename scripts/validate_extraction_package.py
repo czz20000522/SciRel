@@ -734,13 +734,10 @@ def run_full_check(tree: Path, report: Report, *, exclusive_token: str | None = 
             or [step["name"] for step in records] != [step.name for step in plan]
         ):
             raise ValueError("required check steps are missing or disagree with the exit status")
-        provenance_tag = validate_provenance(
-            result, report_path=result_path, check_all_path=script
-        )
+        provenance_tag = validate_provenance(result, report_path=result_path, check_all_path=script)
         if provenance_tag == "legacy_unprovenanced":
             print(
-                f"NOTE  {result_path.name} is a v1 result without provenance:"
-                " legacy_unprovenanced"
+                f"NOTE  {result_path.name} is a v1 result without provenance: legacy_unprovenanced"
             )
         if any(
             record["started"] is not True or record["argv"] != step.command

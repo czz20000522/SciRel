@@ -401,9 +401,7 @@ def _digest(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
-def validate_provenance(
-    result: dict, *, report_path: Path, check_all_path: Path
-) -> str:
+def validate_provenance(result: dict, *, report_path: Path, check_all_path: Path) -> str:
     """Check what a result claims about the run that produced it, never its science.
 
     A v1 result predates this protocol and stays readable, tagged
@@ -631,9 +629,7 @@ def main(report_path: Path | None = None, *, run_id: str | None = None) -> int:
         "exclusive": exclusive,
         "provenance": {
             "check_all_sha256": _digest(Path(__file__)),
-            "counts_plugin_sha256": _digest(
-                Path(__file__).with_name(f"{COUNTS_PLUGIN}.py")
-            ),
+            "counts_plugin_sha256": _digest(Path(__file__).with_name(f"{COUNTS_PLUGIN}.py")),
         },
         "candidate": {"before": before, "after": after},
         "environment": {"before": environment_before, "after": environment_after},
