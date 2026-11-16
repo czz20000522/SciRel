@@ -167,15 +167,22 @@ def test_seed_threshold_is_exactly_ten_times_the_outer_threshold():
     assert seed["reentry_threshold"] == 1.0
     assert seed["seed_error"] == outer["seed_error"] == 0.1
     assert seed["should_reiterate"] is False
-    # The max-norm relative change of two nonnegative profiles is at most one
-    # (ticket T-2026-0004 records the consequence for the tenfold threshold),
-    # so with truncate = 0.1 the seed threshold 1.0 can never be exceeded: the
-    # relation converges for every nonnegative pair. The re-iterating branch is
-    # therefore only reachable below truncate = 0.1, where threshold < 1.
-    never = N.evaluate_neutral_outer_seed_convergence(
-        np.array([1e-3]), np.array([1.0]), truncate=0.1
+    # The ratio is at most one only while max(previous) <= 2*max(current); when
+    # `previous` greatly exceeds `current` it is unbounded, so the branch does fire
+    # above truncate = 0.1. This counterexample guards against the earlier, wrong
+    # claim that the branch was unreachable (ticket T-2026-0004).
+    counterexample = N.evaluate_neutral_outer_seed_convergence(
+        np.array([4.0, 0.0]), np.array([1.0, 0.0]), truncate=0.2
     )
-    assert never["seed_error"] < 1.0 and never["should_reiterate"] is False
+    assert counterexample["seed_error"] == 3.0
+    assert counterexample["reentry_threshold"] == 2.0
+    assert counterexample["should_reiterate"] is True
+    assert counterexample["reason"] == "reiterate"
+    reseeded = N.evaluate_neutral_outer_seed_convergence(
+        np.array([10.0, 0.0]), np.array([1.0, 0.0]), truncate=0.2
+    )
+    assert reseeded["seed_error"] == 9.0 and reseeded["should_reiterate"] is True
+    # Below the bound the branch also fires; the threshold is exactly 10*truncate.
     above = N.evaluate_neutral_outer_seed_convergence(
         np.array([10.0]), np.array([20.0]), truncate=0.01
     )
