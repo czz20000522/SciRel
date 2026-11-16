@@ -168,16 +168,19 @@
   "scope": [
    "Independent per-cell centered and raw energy-flux integrals check both outputs on a nonuniform signed carrier.",
    "Positive-weight random-flux overlap agrees with the existing nine-moment relation; zero-weight acceptance distinguishes their contracts.",
-   "UNKNOWN: the historical claim of three digest-pinned reference cases, exact two-carrier replay and boolean-coercion divergence is not bound to case inputs, digests, counterpart versions and per-case comparisons; the direct tests above remain the current evidence."
+   "UNKNOWN: the historical claim of three digest-pinned reference cases, exact two-carrier replay and boolean-coercion divergence is not bound to case inputs, digests, counterpart versions and per-case comparisons; the direct tests above remain the current evidence.",
+   "Independent evidence (tests/neutrals/test_terminal_moment_evidence.py): the random heat flux is recomputed from exact rational inputs, a symmetric distribution at rest carries exactly zero heat flux, axial velocity reversal flips the random flux sign, doubling the thermal speed multiplies both profiles by exactly 8, and a mono-axial beam with sigma = -P matches the enthalpy closed form (m U^2/2 + 3 T/2) n U."
   ],
   "tests": [
-   "tests/kinetic/test_terminal_molecular_heat_flux.py"
+   "tests/kinetic/test_terminal_molecular_heat_flux.py",
+   "tests/neutrals/test_terminal_moment_evidence.py"
   ],
-  "evidence_ceiling": "Direct comparisons establish the finite discrete heat-flux relation and boundary differences on tested carriers. They do not establish the incoming terminal distribution, physical normalization, qualification of the whole closure or expert approval.",
+  "evidence_ceiling": "Direct comparisons establish the finite discrete heat-flux relation and boundary differences on tested carriers. They do not establish the incoming terminal distribution, physical normalization, qualification of the whole closure or expert approval. C1 evidence adds: an exact rational random-flux oracle, the zero-flow and reversal symmetries, the vth^3 scaling and one beam closed form; it does not reconstruct a general longitudinal stress state.",
   "known_limitations": [
    "The bound independent cell/moment comparisons establish the tested finite relation, not independent expert qualification or external-implementation parity. The historical three-case replay remains unbound; it is not a new mandatory acceptance gate.",
    "The physical normalization of the supplied distribution requires expert review.",
-   "Public distribution licensing remains pending."
+   "Public distribution licensing remains pending.",
+   "The total-flux decomposition is exercised at zero flow and on one mono-axial beam where the longitudinal stress equals -P; a general stress state is not independently reconstructed."
   ]
  }
 }

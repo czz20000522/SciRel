@@ -150,16 +150,19 @@
   "scope": [
    "Independent per-cell reduction checks both outputs on a nonuniform signed carrier.",
    "Positive-weight overlap agrees with the existing nine-moment relation; zero-weight acceptance distinguishes their contracts.",
-   "UNKNOWN: the historical claim of three digest-pinned reference cases, exact two-carrier replay and boolean-coercion divergence is not bound to case inputs, digests, counterpart versions and per-case comparisons; the direct tests above remain the current evidence."
+   "UNKNOWN: the historical claim of three digest-pinned reference cases, exact two-carrier replay and boolean-coercion divergence is not bound to case inputs, digests, counterpart versions and per-case comparisons; the direct tests above remain the current evidence.",
+   "Independent evidence (tests/neutrals/test_terminal_moment_evidence.py): density, flux and mean velocity are recomputed from the exact binary64 inputs as exact rational sums over weight * widths, a distribution symmetric in the axial velocity is required to carry exactly zero flux and zero mean velocity, shifting every axial node by one unit is required to shift the mean velocity by exactly vth, and doubling the distribution doubles the flux exactly."
   ],
   "tests": [
-   "tests/kinetic/test_terminal_molecular_flux_velocity.py"
+   "tests/kinetic/test_terminal_molecular_flux_velocity.py",
+   "tests/neutrals/test_terminal_moment_evidence.py"
   ],
-  "evidence_ceiling": "Direct numerical comparisons establish the stated finite discrete relation and boundary differences on tested carriers. They do not establish the incoming terminal distribution, physical normalization, complete qualification or expert approval.",
+  "evidence_ceiling": "Direct numerical comparisons establish the stated finite discrete relation and boundary differences on tested carriers. They do not establish the incoming terminal distribution, physical normalization, complete qualification or expert approval. C1 evidence adds: an exact rational reduction oracle and three exact moment identities on one nonuniform carrier; it does not establish the incoming terminal distribution or the physical normalization of the supplied arrays.",
   "known_limitations": [
    "The bound independent cell/moment comparisons establish the tested finite relation, not independent expert qualification or external-implementation parity. The historical three-case replay remains unbound; it is not a new mandatory acceptance gate.",
    "The physical normalization of the supplied distribution and source flux label requires expert review.",
-   "Public distribution licensing remains pending."
+   "Public distribution licensing remains pending.",
+   "The exact rational oracle fixes the discrete measure and the declared reduction order on one nonuniform carrier; it does not establish the quadrature accuracy of the caller-supplied weights and widths."
   ]
  }
 }

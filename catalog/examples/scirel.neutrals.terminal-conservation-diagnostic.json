@@ -123,17 +123,20 @@
   "scope": [
    "Independent interval slopes, adjacent transfer means and global normalization on signed nonuniform profiles; linear-balance and decreasing-grid witnesses.",
    "Direct rejection tests cover shape, spacing, non-real inputs, zero normalization and non-finite derived gradient.",
-   "UNKNOWN: the historical claim of three optional digest-pinned reference cases, exact two-carrier replay and boolean-coercion divergence is not bound to case inputs, digests, counterpart versions and per-case comparisons; the direct tests above remain the current evidence."
+   "UNKNOWN: the historical claim of three optional digest-pinned reference cases, exact two-carrier replay and boolean-coercion divergence is not bound to case inputs, digests, counterpart versions and per-case comparisons; the direct tests above remain the current evidence.",
+   "Independent evidence (tests/neutrals/test_terminal_conservation_evidence.py): the residual is zero on an interval whose transfer profile is the exact derivative of a quadratic flux (the trapezoid rule is exact for the resulting linear source), the residual times its normalization equals the exact rational |dq/dx - mean(S)| statement with the declared endpoint convention, translation invariance holds, and a mismatched source reports exactly one."
   ],
   "tests": [
-   "tests/kinetic/test_terminal_molecular_conservation.py"
+   "tests/kinetic/test_terminal_molecular_conservation.py",
+   "tests/neutrals/test_terminal_conservation_evidence.py"
   ],
-  "evidence_ceiling": "Direct tests establish this discrete diagnostic on tested profiles; they do not establish the incident total-profile normalization, the full boundary balance, qualification of the whole closure or expert approval.",
+  "evidence_ceiling": "Direct tests establish this discrete diagnostic on tested profiles; they do not establish the incident total-profile normalization, the full boundary balance, qualification of the whole closure or expert approval. C1 evidence adds: an exact-antiderivative cell-conservation witness, the exact rational residual statement and a unit-imbalance witness; it does not establish a physical energy-conservation law or the boundary equation at the end node.",
   "known_limitations": [
    "The bound independent cell/moment comparisons establish the tested finite relation, not independent expert qualification or external-implementation parity. The historical three-case replay remains unbound; it is not a new mandatory acceptance gate.",
    "Absolute physical meaning of the incident total profiles and their unit labels requires expert review.",
    "The final node is not independently checked and a zero error does not establish a complete conservation law.",
-   "Public distribution licensing remains pending."
+   "Public distribution licensing remains pending.",
+   "A zero residual proves the discrete trapezoid balance only: the diagnostic integrates the supplied transfer profile with the adjacent-node mean, so a source that differs from that quadrature on a coarse mesh is reported as a residual rather than resolved."
   ]
  }
 }
