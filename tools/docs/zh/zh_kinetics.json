@@ -3822,7 +3822,7 @@
   },
   {
    "asset_id": "scirel.numerics.bilinear-grid-sampling",
-   "source_sha256": "676dce464eabe24e9b16194032663ebdb1065342646b56a217cbd3c609de1982",
+   "source_sha256": "4e765b9ecec308e8c6207cb3bb3b6cc85ef7e628fbdad92f3a8b882d75fecdcc",
    "summary": "在规则的柱坐标 R–Z 网格内，对有限实数标量场进行逐单元双线性点采样。",
    "definition": "在包围查询点的单元内，按R和Z分数权重混合四个[Z,R]角点值；按查询顺序返回。",
    "model": "不包含场方程的分片双线性标量插值。",
@@ -3860,8 +3860,8 @@
    "outputs": [
     {
      "name": "samples",
-     "description": "按查询顺序的双线性样本。",
-     "constraints": "一维；零查询点时为空。",
+     "description": "按查询顺序的双线性样本；即返回的 scirel._result.Result 映射中的 samples 字段。",
+     "constraints": "一维；零查询点时为空。调用返回且仅返回一个 Result 映射，键只有 samples；按映射取值的行为不变，按属性取值返回同一个数组。",
      "dtype": "双精度浮点（float64）"
     }
    ],
@@ -3883,7 +3883,7 @@
     "invalid_input": "网格维度/形状非法、非有限、轴不足/非单调、网格非规则、点形状非法或任一点域外时引发 ValueError。",
     "runtime_failure": "有限域内的双线性混合受有限角点值约束。完整坐标跨度溢出、中间权重或贡献归零、严重抵消时，使用原始float64输入的精确比值重新求值，再作最终舍入。",
     "nonconvergence": "无迭代。",
-    "partial_results": "任一查询失败不返回部分样本字典。"
+    "partial_results": "任一查询点失败时不返回部分结果映射。"
    },
    "example": {
     "description": "在内部点和右上角采样仿射R–Z场。",

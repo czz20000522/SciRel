@@ -2,6 +2,8 @@ import numpy as np
 import pytest
 from fractions import Fraction
 
+from scirel._result import Result
+
 from scirel.numerics.interpolate.bilinear_grid_sampling import (
     sample_rectilinear_field,
     sample_rectilinear_field as scientific_function,
@@ -26,6 +28,18 @@ def test_rejects_outside_diagnostic_point():
     r_grid, z_grid, quantity = _grid()
     with pytest.raises(ValueError):
         scientific_function(r_grid, z_grid, quantity, np.array([[0.9, 0.0]]))
+
+
+# 验证：返回的是单键命名结果，映射取值与属性取值为同一数组。
+def test_returns_a_named_single_key_result_mapping():
+    r_grid, z_grid, quantity = _grid()
+    result = scientific_function(r_grid, z_grid, quantity, np.array([[1.5, 0.0]]))
+    assert type(result) is Result
+    assert isinstance(result, dict)
+    assert list(result) == ["samples"]
+    assert result.samples is result["samples"]
+    assert result.samples.shape == (1,)
+    assert result.samples.dtype == np.float64
 
 
 def test_empty_query_and_invalid_later_point():

@@ -82,12 +82,12 @@
  "outputs": [
   {
    "name": "samples",
-   "description": "Bilinearly interpolated scalar values in query order.",
+   "description": "Bilinearly interpolated scalar values in query order; the samples field of the returned scirel._result.Result mapping.",
    "units": "same as quantity",
    "shape": "[N_point]",
    "dtype": "float64",
    "required": true,
-   "constraints": "One-dimensional array; empty for zero query points."
+   "constraints": "One-dimensional array; empty for zero query points. The call returns exactly one Result mapping with the single key samples; mapping access is unchanged and attribute access returns the same array."
   }
  ],
  "applicability": {
@@ -108,7 +108,7 @@
   "invalid_input": "Raises ValueError for invalid grid rank/shape, nonfinite inputs, insufficient or nonmonotonic axes, nonrectilinear coordinates, invalid point shape, or any point outside the grid.",
   "runtime_failure": "The finite in-domain bilinear blend is bounded by its finite corner values. Overflowing coordinate spans, vanishing intermediate weights or terms, and strong cancellation use exact ratios of the original float64 inputs before final rounding.",
   "nonconvergence": "Not applicable; no iteration is performed.",
-  "partial_results": "No partial samples dictionary is returned if any query point fails."
+  "partial_results": "No partial result mapping is returned if any query point fails."
  },
  "public_api": {
   "python": {
@@ -124,9 +124,9 @@
   "dependencies": []
  },
  "example": {
-  "description": "Sample an affine R-Z scalar field at an interior point and at the upper grid corner.",
-  "code": "import numpy as np\nfrom scirel.numerics.interpolate import sample_rectilinear_field\nr_grid, z_grid = np.meshgrid([1.0, 2.0, 4.0], [-1.0, 1.0])\nquantity = 3.0*r_grid - 2.0*z_grid + 1.0\nresult = sample_rectilinear_field(r_grid, z_grid, quantity, [[1.5, 0.0], [4.0, 1.0]])\nnp.testing.assert_allclose(result['samples'], [5.5, 11.0])",
-  "expected": "The samples are the float64 vector [5.5, 11.0] in query order."
+  "description": "Sample an affine R-Z scalar field at an interior point and at the upper grid corner, and check the returned mapping type.",
+  "code": "import numpy as np\nfrom scirel._result import Result\nfrom scirel.numerics.interpolate import sample_rectilinear_field\nr_grid, z_grid = np.meshgrid([1.0, 2.0, 4.0], [-1.0, 1.0])\nquantity = 3.0*r_grid - 2.0*z_grid + 1.0\nresult = sample_rectilinear_field(r_grid, z_grid, quantity, [[1.5, 0.0], [4.0, 1.0]])\nassert isinstance(result, Result)\nnp.testing.assert_allclose(result['samples'], [5.5, 11.0])",
+  "expected": "The samples are the float64 vector [5.5, 11.0] in query order, inside a Result mapping."
  },
  "verification": {
   "scope": [
