@@ -203,13 +203,14 @@ def test_counts_that_do_not_add_up_are_refused(tmp_path):
 
 def _report(**overrides) -> dict:
     report = {
-        "schema": 2,
+        "schema": 3,
         "pytest_exitstatus": 0,
         "collection_finished": True,
         "collection_reports": [],
         "collected": 3,
         "selected": 3,
         "deselected": 0,
+        "deselected_nodeids": [],
         "passed": 3,
         "failed": 0,
         "error": 0,
@@ -906,7 +907,7 @@ def test_same_run_records_selected_identities_final_outcomes_and_phases(tmp_path
     done = _run(tmp_path, [], with_plugin=True)
     assert done.returncode == 1
     report = check_all.read_counts(tmp_path / "counts.json")
-    assert report["schema"] == 2
+    assert report["schema"] == 3
     selected = report["selected_nodeids"]
     assert len(selected) == len(set(selected)) == report["selected"] == 9
     results = {item["nodeid"]: item for item in report["results"]}
@@ -1115,7 +1116,7 @@ def test_standard_result_retains_the_real_run_records_after_temporary_counts_are
     result = json.loads(path.read_text())
     assert not observations[0].exists()
     counts = result["tests"]
-    assert counts["schema"] == 2
+    assert counts["schema"] == 3
     assert counts["pytest_exitstatus"] == result["steps"][0]["returncode"]
     assert counts["consistent"] is (mode in ("passed", "call and teardown"))
     assert Path(result["steps"][0]["log"]).is_file()
@@ -1134,3 +1135,173 @@ def test_standard_result_retains_the_real_run_records_after_temporary_counts_are
             ("call", "failed"),
             ("teardown", "failed"),
         ]
+
+
+def test_the_release_stage_is_the_plan_the_repository_already_had(tmp_path):
+    plan = check_all.steps(tmp_path, stage="release")
+    assert [step.name for step in plan] == [
+        "tests",
+        "contracts and examples",
+        "contract sync",
+        "new hazard patterns",
+        "documentation build",
+        "lint",
+        "format",
+        "lockfile",
+        "wheel build",
+        "wheel exposure",
+    ]
+    by_name = {step.name: step for step in plan}
+    assert by_name["contracts and examples"].command[-2:] == [
+        "--check-runtime",
+        "--execute-examples",
+    ]
+    assert not any(part.startswith("--deselect=") for part in by_name["tests"].command)
+    assert by_name["tests"].deselected == ()
+
+
+def test_the_development_stage_skips_only_the_artifact_steps_and_the_manifest(tmp_path):
+    plan = check_all.steps(tmp_path, stage="dev")
+    assert [step.name for step in plan] == [
+        "tests",
+        "contracts",
+        "contract sync",
+        "new hazard patterns",
+        "lint",
+        "format",
+        "lockfile",
+    ]
+    manifest = check_all.release_only_tests()
+    tests_step = plan[0]
+    assert tests_step.deselected == tuple(entry.target for entry in manifest)
+    assert [part for part in tests_step.command if part.startswith("--deselect=")] == [
+        f"--deselect={entry.target}" for entry in manifest
+    ]
+    contracts = plan[1].command
+    assert "--check-runtime" in contracts
+    assert "--execute-examples" not in contracts
+
+
+def test_every_release_only_entry_names_tests_and_a_reason():
+    manifest = check_all.release_only_tests()
+    assert manifest
+    for entry in manifest:
+        assert entry.target.startswith("tests/")
+        assert entry.why
+    assert len({entry.target for entry in manifest}) == len(manifest)
+
+
+def test_the_manifest_covers_the_artifact_and_example_boundaries():
+    targets = {entry.target for entry in check_all.release_only_tests()}
+    assert {
+        # Building or installing a wheel, or admitting an extraction package.
+        "tests/delivery/test_real_delivery.py",
+        "tests/delivery/test_validate_installed_wheel.py",
+        "tests/tooling/test_validate_extraction_package.py",
+        # Building a documentation site.
+        "tests/docs/test_scirel_docs.py",
+        "tests/docs/test_english_site.py",
+        # Executing documented examples.
+        "tests/tooling/test_asset_documentation.py"
+        "::test_runtime_signatures_tests_and_examples_are_executable",
+    } <= targets
+    # Synthetic-fixture delivery tests prove the change, not the artifact, so they stay in the
+    # development stage. A wholesale tests/delivery exclusion would be wrong.
+    assert "tests/delivery/test_pure_delivery.py" not in targets
+    assert "tests/delivery/test_runtime_export.py" not in targets
+
+
+def test_every_release_only_entry_still_matches_a_collected_test():
+    """A renamed or deleted test must not leave an exclusion behind that silently does nothing."""
+    manifest = check_all.release_only_tests()
+    done = subprocess.run(
+        [
+            sys.executable,
+            "-B",
+            "-m",
+            "pytest",
+            "--collect-only",
+            "-q",
+            "-p",
+            "no:cacheprovider",
+            *(entry.target for entry in manifest),
+        ],
+        cwd=ROOT,
+        capture_output=True,
+        text=True,
+    )
+    assert done.returncode == 0, done.stdout + done.stderr
+    collected = [line.strip() for line in done.stdout.splitlines() if "::" in line]
+    for entry in manifest:
+        assert any(node.startswith(entry.target) for node in collected), entry.target
+
+
+def _deselected_report(nodes, **overrides) -> dict:
+    return _report(
+        collected=3 + len(nodes),
+        selected=3,
+        deselected=len(nodes),
+        deselected_nodeids=list(nodes),
+        **overrides,
+    )
+
+
+def test_the_development_stage_accepts_exactly_the_manifest_selection(tmp_path):
+    path = tmp_path / "counts.json"
+    report = _deselected_report(["tests/docs/test_scirel_docs.py::test_a"])
+    path.write_text(json.dumps(report), encoding="utf-8")
+    assert (
+        check_all.read_counts(path, release_only=("tests/docs/test_scirel_docs.py",))["deselected"]
+        == 1
+    )
+
+
+def test_deselecting_outside_the_manifest_is_refused(tmp_path):
+    path = tmp_path / "counts.json"
+    report = _deselected_report(["tests/kinetic/test_dispersion.py::test_a"])
+    path.write_text(json.dumps(report), encoding="utf-8")
+    with pytest.raises(check_all.CountsError, match="outside the release-only list"):
+        check_all.read_counts(path, release_only=("tests/docs/test_scirel_docs.py",))
+
+
+def test_a_release_only_entry_that_deselects_nothing_is_refused(tmp_path):
+    path = tmp_path / "counts.json"
+    report = _deselected_report(["tests/docs/test_scirel_docs.py::test_a"])
+    path.write_text(json.dumps(report), encoding="utf-8")
+    with pytest.raises(check_all.CountsError, match="drifted"):
+        check_all.read_counts(
+            path,
+            release_only=("tests/docs/test_scirel_docs.py", "tests/delivery/test_real_delivery.py"),
+        )
+
+
+def test_the_release_stage_refuses_the_development_stage_selection(tmp_path):
+    path = tmp_path / "counts.json"
+    report = _deselected_report(["tests/docs/test_scirel_docs.py::test_a"])
+    path.write_text(json.dumps(report), encoding="utf-8")
+    with pytest.raises(check_all.CountsError, match="whole suite"):
+        check_all.read_counts(path)
+
+
+def test_the_counts_record_names_every_deselected_test(tmp_path):
+    directory = _sample(tmp_path)
+    _run(directory, ["-k", "test_passes"], with_plugin=True)
+    observed = json.loads((directory / "counts.json").read_text(encoding="utf-8"))
+    assert observed["schema"] == 3
+    assert observed["deselected"] == len(observed["deselected_nodeids"]) == 6
+    assert all(
+        node.split("::")[0].endswith("test_sample.py") for node in observed["deselected_nodeids"]
+    )
+
+
+def test_the_standard_result_records_the_stage(tmp_path, monkeypatch):
+    path, _ = _mini_acceptance(tmp_path, monkeypatch)
+    assert check_all.main(path, stage="dev") == 0
+    result = json.loads(path.read_text())
+    assert result["schema"] == "scirel.acceptance.v2"
+    assert result["stage"] == "dev"
+
+
+def test_an_unknown_stage_runs_nothing(tmp_path, capsys):
+    assert check_all.main(tmp_path / "result.json", stage="fast") == 2
+    assert "unknown acceptance stage" in capsys.readouterr().err

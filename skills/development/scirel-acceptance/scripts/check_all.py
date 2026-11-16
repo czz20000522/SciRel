@@ -1,5 +1,12 @@
 #!/usr/bin/env python3
-"""Run the complete local acceptance: everything must pass for the tree to be green."""
+"""Run the local acceptance for one stage; everything in that stage must pass.
+
+Two stages share one plan. The release stage is the plan this repository has always run and is
+the only evidence for merging or for any outward delivery claim: every step, every test, zero
+deselections. The development stage drops the steps that only a built artifact can fail
+(documentation build, wheel build, wheel exposure, example execution) and deselects the
+release-only tests listed in ``release_only_tests.txt``; it says nothing about packaging.
+"""
 
 from __future__ import annotations
 
@@ -32,6 +39,12 @@ EXCLUSIVE_RECORD = "acceptance-exclusive"
 RESULT_SCHEMA = "scirel.acceptance.v2"
 LEGACY_RESULT_SCHEMA = "scirel.acceptance.v1"
 SIDECAR_SUFFIX = ".sha256"
+
+# The release stage is what merging and any outward delivery claim needs; the development stage
+# is the same plan minus the steps and tests that only a packaged or published product can fail.
+STAGES = ("release", "dev")
+DEFAULT_STAGE = "release"
+RELEASE_ONLY_TESTS = "skills/development/scirel-acceptance/release_only_tests.txt"
 COUNT_FIELDS = (
     "collected",
     "selected",
@@ -151,6 +164,42 @@ def runtime_environment(root: Path) -> dict:
 
 
 @dataclass(frozen=True)
+class ReleaseOnly:
+    """One test entry the development stage deselects, with the reason it is release-only."""
+
+    target: str
+    why: str
+
+
+def release_only_tests(path: Path | None = None) -> list[ReleaseOnly]:
+    """Read the release-only manifest: one ``<path or nodeid> | <reason>`` line per entry.
+
+    The manifest is the only definition of which tests the development stage may skip, so a
+    malformed line, a non-``tests/`` target or a missing reason is an error rather than a
+    silently shorter exclusion list.
+    """
+    manifest = path or ROOT / RELEASE_ONLY_TESTS
+    entries = []
+    for number, raw in enumerate(manifest.read_text(encoding="utf-8").splitlines(), 1):
+        line = raw.strip()
+        if not line or line.startswith("#"):
+            continue
+        target, separator, why = line.partition(" | ")
+        target, why = target.strip(), why.strip()
+        if not separator or not target.startswith("tests/") or not why:
+            raise ValueError(
+                f"{manifest.name}:{number}: expected '<tests/... | nodeid> | <reason>'"
+            )
+        entries.append(ReleaseOnly(target, why))
+    if not entries:
+        raise ValueError(f"{manifest.name}: the release-only list is empty")
+    targets = [entry.target for entry in entries]
+    if len(targets) != len(set(targets)):
+        raise ValueError(f"{manifest.name}: a release-only test is listed twice")
+    return entries
+
+
+@dataclass(frozen=True)
 class Step:
     """One acceptance step. Without uv, a step marked ``requires_uv`` is NOT_RUN and fails."""
 
@@ -159,12 +208,44 @@ class Step:
     requires_uv: bool = False
     counts: Path | None = None
     env: dict[str, str] = field(default_factory=dict)
+    stages: tuple[str, ...] = STAGES
+    # Release-only targets this step must have deselected, or nothing in the release stage.
+    deselected: tuple[str, ...] = ()
 
 
-def steps(output: Path, *, root: Path = ROOT, executable: str | None = None) -> list[Step]:
+def steps(
+    output: Path,
+    *,
+    root: Path = ROOT,
+    executable: str | None = None,
+    stage: str = DEFAULT_STAGE,
+) -> list[Step]:
+    """The one step table, filtered by stage.
+
+    A step that only the release stage runs carries ``stages=("release",)``. The steps both
+    stages share keep one definition; only the arguments that differ are chosen by ``stage``,
+    so the release plan stays the plan the repository already had.
+    """
+    if stage not in STAGES:
+        raise ValueError(f"unknown acceptance stage: {stage}")
     python = [executable or sys.executable, "-B"]
     wheels = output / "wheel"
     counts = output / "tests-counts.json"
+    # The release stage runs every test and refuses to have deselected any, so it never reads the
+    # manifest: its plan stays the plan this repository already had. The development stage
+    # deselects exactly the manifest and passes those targets down so the counts can prove it.
+    if stage == "dev":
+        try:
+            deselected = tuple(
+                entry.target for entry in release_only_tests(root / RELEASE_ONLY_TESTS)
+            )
+        except FileNotFoundError as error:
+            raise ValueError(
+                f"{RELEASE_ONLY_TESTS} is missing, so the development stage cannot say what it"
+                " is allowed to skip"
+            ) from error
+    else:
+        deselected = ()
     # The plugin is loaded by name with ``-p`` from this directory only, never discovered, so a
     # third-party environment cannot inject a module that happens to share the name.
     plugin_dir = str(Path(__file__).resolve().parent)
@@ -182,6 +263,7 @@ def steps(output: Path, *, root: Path = ROOT, executable: str | None = None) -> 
                 "-p",
                 COUNTS_PLUGIN,
                 f"--scirel-counts={counts}",
+                *(f"--deselect={target}" for target in deselected),
             ],
             counts=counts,
             env={
@@ -189,15 +271,18 @@ def steps(output: Path, *, root: Path = ROOT, executable: str | None = None) -> 
                     filter(None, [plugin_dir, os.environ.get("PYTHONPATH")])
                 )
             },
+            deselected=deselected,
         ),
         Step(
-            "contracts and examples",
+            "contracts and examples" if stage == "release" else "contracts",
             [
                 *python,
                 "scripts/validate_asset_documents.py",
                 "catalog/examples",
                 "--check-runtime",
-                "--execute-examples",
+                # Executing the 249 documented examples is release evidence: it proves the
+                # published examples run, not that this change is correct.
+                *(["--execute-examples"] if stage == "release" else []),
             ],
         ),
         Step(
@@ -217,6 +302,7 @@ def steps(output: Path, *, root: Path = ROOT, executable: str | None = None) -> 
         Step(
             "documentation build",
             [*python, "scripts/scirel_docs.py", "build", "--output", str(output / "docs")],
+            stages=("release",),
         ),
     ]
     for report in sorted(root.glob("examples/*/REPORT.md")):
@@ -241,6 +327,7 @@ def steps(output: Path, *, root: Path = ROOT, executable: str | None = None) -> 
                 "wheel build",
                 ["uv", "build", "--wheel", "--out-dir", str(wheels), "."],
                 requires_uv=True,
+                stages=("release",),
             ),
             Step(
                 "wheel exposure",
@@ -253,14 +340,23 @@ def steps(output: Path, *, root: Path = ROOT, executable: str | None = None) -> 
                     str(wheels / WHEEL),
                 ],
                 requires_uv=True,
+                stages=("release",),
             ),
         ]
     )
-    return plan
+    return [step for step in plan if stage in step.stages]
 
 
-def read_counts(path: Path, *, require_execution: bool = True) -> dict:
-    """Read the pytest counts report, refusing anything whose numbers do not add up."""
+def read_counts(
+    path: Path, *, require_execution: bool = True, release_only: tuple[str, ...] = ()
+) -> dict:
+    """Read the pytest counts report, refusing anything whose numbers do not add up.
+
+    ``release_only`` is empty for the release stage, which must deselect nothing. The development
+    stage passes the manifest targets it handed to pytest: every deselected nodeid must belong to
+    one of them, and every target must have deselected something, so an exclusion cannot be
+    widened silently nor survive a renamed test.
+    """
     try:
         report = json.loads(path.read_text(encoding="utf-8"))
     except FileNotFoundError as error:
@@ -289,10 +385,39 @@ def read_counts(path: Path, *, require_execution: bool = True) -> dict:
             f" + deselected {report['deselected']}"
         )
     if report["deselected"]:
-        raise CountsError(
-            f"{path.name}: {report['deselected']} tests were deselected; full acceptance requires"
-            " the whole suite, so remove test filters and rerun"
-        )
+        if not release_only:
+            raise CountsError(
+                f"{path.name}: {report['deselected']} tests were deselected; full acceptance"
+                " requires the whole suite, so remove test filters and rerun"
+            )
+        deselected_nodes = report.get("deselected_nodeids")
+        if (
+            not isinstance(deselected_nodes, list)
+            or any(not isinstance(node, str) or not node for node in deselected_nodes)
+            or len(set(deselected_nodes)) != len(deselected_nodes)
+            or len(deselected_nodes) != report["deselected"]
+        ):
+            raise CountsError(f"{path.name}: the deselected nodeids are missing or do not add up")
+        outside = [
+            node
+            for node in deselected_nodes
+            if not any(node.startswith(target) for target in release_only)
+        ]
+        if outside:
+            raise CountsError(
+                f"{path.name}: {len(outside)} tests were deselected outside the release-only list,"
+                f" so the development stage skipped more than it may: {outside[:3]}"
+            )
+        stale = [
+            target
+            for target in release_only
+            if not any(node.startswith(target) for node in deselected_nodes)
+        ]
+        if stale:
+            raise CountsError(
+                f"{path.name}: release-only entries deselected no test, so the list has drifted"
+                f" away from the suite: {stale[:3]}"
+            )
     accounted = sum(
         report[name] for name in ("passed", "failed", "error", "skipped", "xfailed", "xpassed")
     )
@@ -316,7 +441,7 @@ def step_status(step: Step, returncode: int) -> tuple[str, str, dict | None]:
     if step.counts is None:
         return ("FAIL" if returncode else "PASS"), "", None
     try:
-        report = read_counts(step.counts, require_execution=False)
+        report = read_counts(step.counts, require_execution=False, release_only=step.deselected)
     except CountsError as error:
         return "FAIL", f"  (test counts unusable: {error})", None
     if report["pytest_exitstatus"] != returncode:
@@ -507,7 +632,12 @@ def validate_provenance(
     return "verified_v2"
 
 
-def main(report_path: Path | None = None, *, run_id: str | None = None) -> int:
+def main(
+    report_path: Path | None = None, *, run_id: str | None = None, stage: str = DEFAULT_STAGE
+) -> int:
+    if stage not in STAGES:
+        print(f"unknown acceptance stage: {stage}; choose one of {STAGES}", file=sys.stderr)
+        return 2
     # Two runs at once slow each other and share build directories, so allow one per checkout.
     temporary_root = ROOT / ".runtime" / "tmp"
     temporary_root.mkdir(parents=True, exist_ok=True)
@@ -578,7 +708,21 @@ def main(report_path: Path | None = None, *, run_id: str | None = None) -> int:
     interrupted = False
     with tempfile.TemporaryDirectory(prefix="scirel-check-", dir=temporary_root) as temporary:
         has_uv = shutil.which("uv") is not None
-        plan = steps(Path(temporary), root=ROOT)
+        try:
+            plan = steps(Path(temporary), root=ROOT, stage=stage)
+        except (OSError, ValueError) as error:
+            # A plan that cannot be built is a pre-flight failure: leave no reserved result that
+            # a later reader could mistake for a run.
+            result_stream.close()
+            report_path.unlink(missing_ok=True)
+            lock.close()
+            print(f"ERROR: cannot build the {stage} acceptance plan: {error}", file=sys.stderr)
+            return 2
+        print(
+            f"STAGE  {stage}  ({len(plan)} steps; release-only tests"
+            f" {'deselected' if stage == 'dev' else 'all run'})",
+            flush=True,
+        )
         for step in plan:
             record = {"name": step.name, "argv": list(step.command), "started": False}
             if interrupted or (step.requires_uv and not has_uv):
@@ -671,6 +815,7 @@ def main(report_path: Path | None = None, *, run_id: str | None = None) -> int:
     evidence = "invalid" if invalid else ("development" if before["dirty"] else "clean_candidate")
     result = {
         "schema": RESULT_SCHEMA,
+        "stage": stage,
         "run_id": run_id,
         "exclusive": exclusive,
         "provenance": {
@@ -707,5 +852,14 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--report", type=Path, help="write the structured result here")
     parser.add_argument("--run-id", help="bind the result to this caller's fresh invocation")
+    parser.add_argument(
+        "--stage",
+        choices=STAGES,
+        default=DEFAULT_STAGE,
+        help=(
+            "release runs every step and every test and is the only admission evidence;"
+            " dev skips the artifact steps and the release-only tests listed in the manifest"
+        ),
+    )
     args = parser.parse_args()
-    raise SystemExit(main(args.report, run_id=args.run_id))
+    raise SystemExit(main(args.report, run_id=args.run_id, stage=args.stage))

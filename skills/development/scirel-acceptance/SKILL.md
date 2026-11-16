@@ -9,12 +9,70 @@ A change is done only when the checks here pass. Run them yourself; do not assum
 
 ## When to run what
 
-| Moment | Command | What it covers | Time |
-| --- | --- | --- | --- |
-| While working | `python3 scripts/dev.py run python -B scripts/test_scope.py --changed <path>`, then run the command it prints through `python3 scripts/dev.py pytest ...` | The affected tests | Seconds to minutes |
+The levels differ in what they prove, not in how strictly they check. Only the last two are
+evidence, and they come from one step table filtered by `--stage`.
+
+| Level | Who runs it | Command | Covers | Typical time |
+| --- | --- | --- | --- | --- |
+| Domain loop | the implementer, constantly | `python3 scripts/dev.py run python -B scripts/test_scope.py --changed <path>`, then the command it prints through `python3 scripts/dev.py pytest ...` | Only the tests of the domain being changed | Seconds |
+| Development stage | whoever reviews a PR, before merging it | `python3 scripts/dev.py check --stage dev` | Every non-release test, contract schema and runtime signatures, contract sync, hazard scan, lint, format, lockfile | About 3-4 minutes (measured: 201 s) |
+| Release stage, the default | whoever merges into `main`, and every outward delivery claim | `python3 scripts/dev.py check` | The development stage plus example execution, the documentation build, the wheel build and wheel exposure, and every release-only test | About 8-9 minutes (measured: 512.6 s before the split) |
 | Before each commit | `git commit`; the hook runs `precommit_check.py` with the host `python3` | Private paths and secrets in staged text | Under a second |
-| Before asking for review, and before saying a change is done | `python3 scripts/dev.py check` | Full local acceptance and merge evidence | About 5 minutes |
-| Optional cross-device spot check | Manually dispatch the `Cross-device check` workflow | Same full acceptance on Linux/amd64 | About 5-15 minutes |
+| Optional cross-device spot check | Manually dispatch the `Cross-device check` workflow | The release stage on Linux/amd64 | About 5-15 minutes |
+
+**The domain loop is not evidence.** A targeted `pytest` run proves only what its author chose to
+run, so it never appears in a receipt and never stands in for either stage. Parallel or filtered
+runs stay development feedback.
+
+Measured on 2026-11-16 on the tree that shipped this split: the development stage takes 201 s
+(196.6 s of it the `tests` step) with 8136 tests selected and 227 deselected, and ends `ALL
+GREEN` on a clean commit. The release stage still costs the 512.6 s it cost before the split,
+because none of its steps changed: the split added a faster path, it did not shorten the slow one.
+
+The development stage was also measured while `python3 scripts/dev.py pytest tests/kinetic -q`
+ran concurrently in the same worktree. Both finished green — 2172 passed in the other run, 7/7
+steps and the same 8136/227 selection here — so the shared level does not block a developer's run
+and did not turn a failure into a pass. One measured overlap is not a proof for every pair of
+runs, which is why the release stage keeps the exclusive lock.
+
+The two stages take different lock levels of the same clone-wide lock. The release stage takes the
+exclusive lock and prints `EXCLUSIVE`; the development stage takes the shared lock an ordinary
+`pytest` run takes, so a developer's test run neither blocks it nor is blocked by it. A shared
+holder still blocks an exclusive one, so stop a development run before starting a release one. The
+development stage prints no `EXCLUSIVE` line, and that is one more reason its receipt cannot pass
+for release evidence.
+
+## What each stage proves
+
+- **Development stage (`--stage dev`)** proves that this change holds at the unit,
+  contract-consistency and static-check level, and that it did not break the parts of the suite it
+  never touched. It does **not** prove that the package installs, that the documentation site
+  builds, or that the documented examples run.
+- **Release stage (default)** is the evidence that can be delivered: the whole suite, the executed
+  examples, the built and inspected wheel, and the built documentation. Every batch merged into
+  `main`, and every outward delivery claim, needs a release-stage receipt.
+- **A development-stage receipt is not release evidence and must never be cited as one.** The
+  receipt records its `stage`, so this is checkable rather than a promise:
+  `scripts/validate_extraction_package.py` refuses a `stage: "dev"` result and tells the caller to
+  rerun the release stage on the same candidate.
+
+The development stage is faster because it proves less, not because the checks are looser: the steps
+it keeps are the same checks with the same failure criteria, and the release stage is still exactly
+the gate this repository already had.
+
+### Which tests may be skipped, and why the list is a document
+
+`release_only_tests.txt` next to this file lists the tests the development stage deselects, one
+`<path or nodeid> | <reason>` line each. The rule for the list: a test belongs there when a failure
+means the packaged or published product is wrong, and **not** when it means this change is wrong.
+Anything unclear stays in the development stage. An entry also needs its reason written down: if you
+cannot say why its failure does not mean "this change is wrong", it does not belong on the list.
+
+The development stage deselects exactly that list, and the counts prove it rather than assert it:
+the counts record carries `deselected_nodeids` (schema `3`), every deselected nodeid must belong to
+an entry, and every entry must have deselected something — so a renamed or deleted test cannot leave
+a stale exclusion behind. The release stage passes no `--deselect` at all and still requires
+`deselected 0`.
 
 `check_all.py` prints one line with both counts before its verdict, for example:
 
@@ -29,7 +87,8 @@ ALL GREEN
 
 The test counts come from pytest itself. `skills/development/scirel-acceptance/scripts/scirel_pytest_counts.py` (relative to the repository root) observes the run and changes no outcome; `check_all.py` loads it with `-p scirel_pytest_counts` and has it write JSON into the run's temporary directory. The standard result retains this record under `tests` before that directory is removed. Nothing is read from the human-readable summary. If that report is missing, unreadable, or its numbers disagree — every selected test must reach exactly one outcome, and `selected` must equal `passed + failed + error + skipped + xfailed + xpassed` — the `tests` step is red: a count nobody can check cannot support a green.
 
-The counts record uses schema `2`. It preserves the complete ordered `selected_nodeids` and
+The counts record uses schema `3`. It preserves the complete ordered `selected_nodeids` and the
+ordered `deselected_nodeids` of a run that deselected anything, and
 one entry per selection in `results`, with its `nodeid`, final `outcome` and observed `phases`.
 Each phase records `when` (`setup`, `call`, `teardown`), pytest's raw `outcome`, `wasxfail`
 when present, and the existing skip reason for skipped phases. The reader checks identities,
@@ -90,18 +149,22 @@ already observed. Collection failure, interruption, duplicate identities or phas
 results and inconsistent records fail the step. Readable rejected records remain under `tests`
 for diagnosis, with the result marked invalid; they are never used to print a trusted summary.
 
-Full acceptance also requires `deselected 0`. `dev.py` clears the host's `PYTEST_ADDOPTS` so a
-personal test filter cannot reduce the suite. Pass filters explicitly to `dev.py pytest` for local work.
+The release stage also requires `deselected 0`; the development stage instead requires the
+deselections to be exactly `release_only_tests.txt`. `dev.py` clears the host's `PYTEST_ADDOPTS` so a
+personal test filter cannot reduce either stage. Pass filters explicitly to `dev.py pytest` for local
+work, where they are development feedback and not evidence.
 
 The complete check explicitly selects `tests/`, rather than accepting a different `testpaths`
-from a candidate. It always retains each step's complete output and a `scirel.acceptance.v1`
-JSON result under `.runtime/logs/`; `RESULT` prints its location. The extraction validator passes
+from a candidate. It always retains each step's complete output and a `scirel.acceptance.v2`
+JSON result under `.runtime/logs/`; `RESULT` prints its location. That result records its `stage`,
+which is what lets a reader tell a development-stage receipt from a release-stage one. The extraction validator passes
 `--report <path>` to preserve those records after deleting its temporary candidate tree. A green
 exit without a complete result, or with zero executed tests, cannot support package admission.
 
-The current `scirel.acceptance.v1` result also binds the following fields; older results lacking
+The current `scirel.acceptance.v2` result also binds the following fields; older results lacking
 them are rejected, not upgraded or reused:
 
+- `stage` is `release` or `dev`. Admission requires `release`.
 - `run_id` identifies this invocation. The extraction validator supplies a fresh ID and a new
   result filename for each run, and checks both. `--report` refuses an existing file, so a
   failed or interrupted run cannot inherit a previous green result.
@@ -155,13 +218,18 @@ it. Do not nest `dev.py check` inside `dev.py run`; the locks conflict. A direct
 invocation alone is still not evidence of exclusivity. `--fast` skips admission and exits 2
 for an otherwise valid package.
 
-It prints the time of each step and takes about five minutes. Much longer means the machine is busy: look for other runs before suspecting the code. Only one run per checkout is allowed. Run it in the foreground, so that you see the result.
+It prints the time of each step. The release stage takes about 8-9 minutes and the development
+stage about 4; much longer means the machine is busy: look for other runs before suspecting the code. Only one run per checkout is allowed. Run it in the foreground, so that you see the result.
 
 A push runs nothing: there is no `pre-push` hook, so pushing is cheap and proves nothing. The
 complete check runs when you run it, on the commit you intend to merge. No result is reused: a tree is
 green only for the commit that was checked.
 
-It runs the full test suite, contract signatures and examples, the docstring and contract sync check, the scan for new hazard patterns, the documentation build, the report validator on every solved example, the lockfile check, and a wheel build with its exposure check.
+The release stage runs the full test suite, contract signatures and examples, the docstring and
+contract sync check, the scan for new hazard patterns, the documentation build, the report validator
+on every solved example, the lockfile check, and a wheel build with its exposure check. The
+development stage runs the same checks minus example execution and minus the three artifact steps
+(`documentation build`, `wheel build`, `wheel exposure`), with the release-only tests deselected.
 
 ## 让检查结果能被复核
 

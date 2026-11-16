@@ -63,8 +63,20 @@ python3 scripts/dev.py run --exclusive python -B scripts/validate_extraction_pac
 `.runtime/` 放同一 clone 共用的解释器、uv 缓存和检查锁，每个 worktree 自己的 `.runtime/` 放 venv、字节码、ruff 缓存和
 临时目录。这些位置由 `dev.py` 设置，所以命令都经它运行，不直接调用宿主机的 `python` 或 `uv run`。
 
-交付证据必须来自 `python3 scripts/dev.py check`。检查入口是
+交付证据必须来自 `python3 scripts/dev.py check`，它是发布档（默认 stage）。检查入口是
 [`scirel-acceptance` skill](skills/development/scirel-acceptance/SKILL.md)，改代码前先读它。
+
+`python3 scripts/dev.py check --stage dev` 是同一张计划表的开发档：跳过文档构建、wheel 构建、wheel 暴露和
+示例执行，并 deselect `skills/development/scirel-acceptance/release_only_tests.txt` 里列出的发布级测试。
+它证明"这批改动没破坏别处"，**不**证明打包产物可安装、文档站可构建、示例可执行。
+
+- 合并进 `main` 的批次、以及任何对外交付声明，只能用发布档回执。
+- **开发档回执不得当作发布证据引用。** `validate_extraction_package` 会拒绝 `stage=dev` 的回执，并要求
+  在同一个候选上重跑发布档。
+- 实现者自己跑的定向 `pytest`（域级、秒级）**不是任何一档的证据**，不进 PR 回执。
+- 开发档快是因为它不证明打包、文档站和示例，**不是因为门禁更松**：它保留的每一步都是同一份检查、
+  同一套失败判据。它持共享锁（与普通 `pytest` 同级），所以不挡别人、也不被别人挡；发布档持独占锁。
+  共享持有仍会挡住独占，跑发布档前先停掉开发档。
 
 提交前的门禁按风险分层，防的是自己和 agent 的失误，不是攻击者：所有防线都绕得过，拦的是无心之失在
 不可逆之前被喊停。`pre-commit` 在宿主机上用 `python3 -I` 运行

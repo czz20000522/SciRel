@@ -684,6 +684,16 @@ def run_full_check(
         after = candidate_identity(tree)
         environment_after = dependency_digests(tree)
         result = json.loads(result_path.read_text(encoding="utf-8"))
+        # The stage decides what the receipt can prove, so refuse a development-stage receipt
+        # before any schema or plan comparison can report a confusing argv mismatch instead.
+        if result.get("stage") != "release":
+            raise ValueError(
+                "the candidate's receipt is a development-stage run"
+                f" (stage={result.get('stage')!r}): it skips the documentation build, the wheel"
+                " build and wheel exposure, the documented examples and the release-only tests,"
+                " so it cannot support package admission; rerun `python3 scripts/dev.py check`"
+                " (release stage) on the same candidate"
+            )
         runtime = result["environment"]["before"]
         # A frozen candidate may pin a different interpreter from this receiver. Compare its
         # own two observations and independently checked file hashes, not our Python version.
@@ -733,7 +743,7 @@ def run_full_check(
         output = counts_location.parent
         if counts_location.name != "tests-counts.json" or output.parent != tree / ".runtime/tmp":
             raise ValueError("tests argv does not use the candidate temporary directory")
-        plan = acceptance_steps(output, root=tree, executable=str(executable))
+        plan = acceptance_steps(output, root=tree, executable=str(executable), stage="release")
         if (
             result.get("schema") not in RESULT_SCHEMAS
             or result.get("exit_code") != done.returncode

@@ -15,6 +15,12 @@ are installed into the user bin directory, and no Windows registry entries are c
 The acceptance check takes an exclusive lock shared by every worktree of the clone, and
 ``pytest`` takes a shared lock on the same file, so the check that serves as merge evidence
 never runs alongside another test run started through this script.
+
+``check`` runs the release stage by default: every step, every test, no deselection. It is the
+only evidence for merging or for an outward delivery claim. ``check --stage dev`` takes the same
+lock but skips the steps that only a built artifact can fail and the release-only tests listed in
+``skills/development/scirel-acceptance/release_only_tests.txt``; it says nothing about packaging,
+the documentation site or the documented examples.
 """
 
 from __future__ import annotations
@@ -35,6 +41,16 @@ import time
 ROOT = Path(__file__).resolve().parents[1]
 RUNTIME = ".runtime"
 CHECK_ALL = "skills/development/scirel-acceptance/scripts/check_all.py"
+# check_all.py owns the step plan and the release-only test manifest; this entry only names the
+# stages so the command line cannot invent one.
+STAGES = ("release", "dev")
+DEFAULT_STAGE = "release"
+# The release stage builds the wheel and two Sphinx sites, which is load sensitive, so it keeps
+# the exclusive lock. The development stage skips exactly those steps, so it takes the shared
+# lock every test run takes: a developer's pytest neither blocks it nor is blocked by it. The
+# asymmetry is honest: a shared holder still blocks an exclusive release run, so stop a
+# development run before starting one.
+EXCLUSIVE_STAGES = ("release",)
 SYNC = ["uv", "sync", "--locked", "--group", "test"]
 LOCK_NAME = "acceptance.lock"
 EXCLUSIVE_RECORD = "acceptance-exclusive"
@@ -379,8 +395,11 @@ def run_locked(command: list[str] | None, *, exclusive: bool) -> int:
         return 75
 
 
-def check() -> int:
-    return run_locked(["uv", "run", "--frozen", "python", "-B", CHECK_ALL], exclusive=True)
+def check(stage: str = DEFAULT_STAGE) -> int:
+    command = ["uv", "run", "--frozen", "python", "-B", CHECK_ALL]
+    if stage != DEFAULT_STAGE:
+        command += ["--stage", stage]
+    return run_locked(command, exclusive=stage in EXCLUSIVE_STAGES)
 
 
 def pytest(arguments: list[str]) -> int:
@@ -444,7 +463,18 @@ def main(argv: list[str] | None = None) -> int:
     subparsers = parser.add_subparsers(dest="command", required=True)
     subparsers.add_parser("doctor", help="show uv, the interpreter and every runtime directory")
     subparsers.add_parser("prepare", help="install the pinned Python and sync the locked env")
-    subparsers.add_parser("check", help="run the complete acceptance check (exclusive)")
+    check_parser = subparsers.add_parser(
+        "check", help="run the acceptance check for one stage (exclusive)"
+    )
+    check_parser.add_argument(
+        "--stage",
+        choices=STAGES,
+        default=DEFAULT_STAGE,
+        help=(
+            "release (default) runs every step and every test and is the only admission"
+            " evidence; dev skips artifact steps and release-only tests"
+        ),
+    )
     pytest_parser = subparsers.add_parser("pytest", help="run pytest with optional arguments")
     pytest_parser.add_argument("arguments", nargs=argparse.REMAINDER)
     run_parser = subparsers.add_parser("run", help="run one command in the project environment")
@@ -465,7 +495,7 @@ def main(argv: list[str] | None = None) -> int:
     if args.command == "prepare":
         return run_locked(None, exclusive=False)
     if args.command == "check":
-        return check()
+        return check(args.stage)
     if args.command == "pytest":
         return pytest(args.arguments)
     if args.command == "run":
