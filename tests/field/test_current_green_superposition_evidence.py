@@ -48,11 +48,13 @@ from scirel.field import superpose_current_green_field
 EPS = float(np.finfo(float).eps)
 FIELDS = ("psi", "BR", "BZ")
 
-# Deliberately non-symmetric, with entries that are exact binary64 fractions.
-GPSI = [[1.0, -2.0, 0.5], [3.0, 0.25, -1.5], [-0.5, 4.0, 2.0]]
-GBR = [[2.0, 0.0, -1.0], [1.0, -3.0, 0.25], [0.5, 1.5, -2.0]]
-GBZ = [[-1.0, 3.0, 1.5], [2.0, -0.5, 0.0], [0.25, -2.0, 1.0]]
-CURRENTS = [2.0, -1.0, 0.5]
+# Deliberately non-symmetric, and non-dyadic so the rounding the budget covers
+# actually occurs: a dyadic product and sum would be exact and the budget would
+# be exercised by nothing.
+GPSI = [[0.7, -2.0, 0.3], [3.1, 0.25, -1.5], [-0.5, 4.0, 2.0]]
+GBR = [[2.0, 0.0, -1.3], [1.0, -3.0, 0.25], [0.5, 1.5, -2.0]]
+GBZ = [[-1.0, 3.7, 1.5], [2.0, -0.5, 0.0], [0.25, -2.0, 1.0]]
+CURRENTS = [0.1, -0.3, 1.7]
 
 
 def _exact_contraction(green, currents):
@@ -98,8 +100,8 @@ def test_matrix_contraction_matches_exact_rational_arithmetic():
 
 def test_scalar_current_scales_each_element_exactly():
     """Evidence 1: the scalar branch, two roundings per element."""
-    current = 3.0
-    vectors = ([1.5, -2.25, 0.5], [-0.125, 4.0, 2.5], [8.0, -1.0, 0.75])
+    current = 0.3
+    vectors = ([1.5, -2.25, 0.7], [-0.125, 4.3, 2.5], [8.0, -1.1, 0.75])
     result = superpose_current_green_field(current, *vectors)
     observed = 0.0
     for name, vector in zip(FIELDS, vectors, strict=True):
