@@ -197,16 +197,19 @@
  "verification": {
   "scope": [
    "Input and failure contracts.",
-   "The declared equal-mass discrete momentum construction is checked through matrix assembly, Alpha contraction and moment reduction, including an explicitly constructed full-velocity CX gain-loss operator. This is algebraic and quadrature evidence, not a production combined transport solver or an independent cross-section accuracy oracle."
+   "The declared equal-mass discrete momentum construction is checked through matrix assembly, Alpha contraction and moment reduction, including an explicitly constructed full-velocity CX gain-loss operator. This is algebraic and quadrature evidence, not a production combined transport solver or an independent cross-section accuracy oracle.",
+   "Independent evidence (tests/neutrals/test_alpha_contraction_evidence.py): each of the four families is recomputed from the exact binary64 inputs as an exact rational matrix-vector product and rounded once, the Fortran-order carrier is separated from the C-order alternative on a case where the two differ by O(1), doubling a carrier is required to double its family exactly, and the families fed by the density profile are separated from the ones that are not."
   ],
   "tests": [
    "tests/kinetic/test_alpha_contraction.py",
-   "tests/collisions/test_atomic_momentum_budget.py"
+   "tests/collisions/test_atomic_momentum_budget.py",
+   "tests/neutrals/test_alpha_contraction_evidence.py"
   ],
-  "evidence_ceiling": "Input/failure regression covers the declared matrix-vector contraction. The bound discrete momentum test additionally follows SciRel-assembled matrices through Alpha and moment reduction for equal masses, with an explicitly assumed CX gain-loss operator. These checks do not validate arbitrary caller-supplied kernels, separated cross sections, a production combined transport solver or experimental accuracy.",
+  "evidence_ceiling": "Input/failure regression covers the declared matrix-vector contraction. The bound discrete momentum test additionally follows SciRel-assembled matrices through Alpha and moment reduction for equal masses, with an explicitly assumed CX gain-loss operator. These checks do not validate arbitrary caller-supplied kernels, separated cross sections, a production combined transport solver or experimental accuracy. C1 evidence adds: an exact rational contraction oracle, the declared Fortran carrier order decided by a discriminator, exact homogeneity, and the per-family density scaling; it does not establish the caller's SIG assembly, cross-section values or the equal-mass momentum construction.",
   "known_limitations": [
    "Negative cells in the elastic families and negative densities are reproduced or contracted as given; their physical acceptability is an open expert question, not a runtime gate.",
-   "Shared-file regression and the declared equal-mass momentum construction do not establish physical accuracy of arbitrary caller-supplied SIG kernels or of an unqualified combined transport model."
+   "Shared-file regression and the declared equal-mass momentum construction do not establish physical accuracy of arbitrary caller-supplied SIG kernels or of an unqualified combined transport model.",
+   "The exact rational oracle fixes the contraction arithmetic and the declared Fortran carrier order on one non-square carrier (nvr=2, nvx=3); a square carrier, on which the two index readings coincide, is not covered."
   ]
  }
 }

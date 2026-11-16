@@ -115,16 +115,19 @@
   "scope": [
    "Direct tests bind signed pointwise sums, cancellation, shape validation, implicit-real rejection and overflowing-total rejection.",
    "The cross-domain tests consume real CX and elastic source producers and compare their aggregated physical RHS and velocity-integrated number balance.",
-   "The contract example covers one bounded representative call; numerical checks do not establish external physical validation or full-domain applicability."
+   "The contract example covers one bounded representative call; numerical checks do not establish external physical validation or full-domain applicability.",
+   "Independent evidence (tests/neutrals/test_scattered_source_sum_evidence.py): the pointwise sum is recomputed exactly in rational arithmetic and rounded once, a channel split into two pieces that add back to it leaves the total in place, and doubling both channels is required to double the total exactly."
   ],
   "tests": [
    "tests/kinetic/test_neutral_scattered_sources.py",
-   "tests/cross_domain/test_neutral_transport_normalization.py"
+   "tests/cross_domain/test_neutral_transport_normalization.py",
+   "tests/neutrals/test_scattered_source_sum_evidence.py"
   ],
-  "evidence_ceiling": "Bounded to the stated normalized transport relation. Direct tests bind signed pointwise sums, cancellation, shape validation, implicit-real rejection and overflowing-total rejection. The cross-domain tests consume real CX and elastic source producers and compare their aggregated physical RHS and velocity-integrated number balance. The listed direct and cross-domain tests are the current reproducible evidence; the example exercises one bounded call. Independent analytic and SI-unit comparisons are limited to the stated fixtures. Unbound historical source/parity receipts remain UNKNOWN and are not re-established here.",
+  "evidence_ceiling": "Bounded to the stated normalized transport relation. Direct tests bind signed pointwise sums, cancellation, shape validation, implicit-real rejection and overflowing-total rejection. The cross-domain tests consume real CX and elastic source producers and compare their aggregated physical RHS and velocity-integrated number balance. The listed direct and cross-domain tests are the current reproducible evidence; the example exercises one bounded call. Independent analytic and SI-unit comparisons are limited to the stated fixtures. Unbound historical source/parity receipts remain UNKNOWN and are not re-established here. C1 evidence adds: an exact rational pointwise-sum oracle and a channel-splitting completeness probe; it does not establish the physics of the two channels or that the caller supplied already-normalized sources.",
   "known_limitations": [
    "No external collision-data calibration, source-project parity qualification or device-specific physical validation is established by these tests.",
-   "The normalization tests use bounded aligned meshes and prescribed rates; they do not certify full-distribution grid convergence, arbitrary-step positivity or the complete nonlinear transport model."
+   "The normalization tests use bounded aligned meshes and prescribed rates; they do not certify full-distribution grid convergence, arbitrary-step positivity or the complete nonlinear transport model.",
+   "The oracle covers the arithmetic of the declared pointwise sum only; channel completeness is probed by splitting one supplied channel, not by deriving the channels from cross sections."
   ]
  }
 }

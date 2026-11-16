@@ -162,16 +162,19 @@
   "scope": [
    "Direct tests bind wall/CX branches, zero-diameter disabling, required enabled CX, real-value and selector validation, and finite-output rejection.",
    "The cross-domain tests connect the D=2 m, u_r=1 wall coefficient to one real transport step and a 5000/s physical loss, and compare prescribed physical attenuation and a stationary source balance at two Vth values.",
-   "The contract example covers one bounded representative call; numerical checks do not establish external physical validation or full-domain applicability."
+   "The contract example covers one bounded representative call; numerical checks do not establish external physical validation or full-domain applicability.",
+   "Independent evidence (tests/neutrals/test_collision_balance_evidence.py): base + elastic + 2 u_r / D + CX is recomputed in exact rational arithmetic, the exact zero-diameter sentinel is contrasted with a 1e-300 diameter whose wall term exceeds 1e290, doubling u_r doubles the wall term exactly, and the disabled branch is required to ignore a supplied CX field bit for bit."
   ],
   "tests": [
    "tests/kinetic/test_neutral_frequency_assembly.py",
-   "tests/cross_domain/test_neutral_transport_normalization.py"
+   "tests/cross_domain/test_neutral_transport_normalization.py",
+   "tests/neutrals/test_collision_balance_evidence.py"
   ],
-  "evidence_ceiling": "Bounded to the stated normalized transport relation. Direct tests bind wall/CX branches, zero-diameter disabling, required enabled CX, real-value and selector validation, and finite-output rejection. The cross-domain tests connect the D=2 m, u_r=1 wall coefficient to one real transport step and a 5000/s physical loss, and compare prescribed physical attenuation and a stationary source balance at two Vth values. The listed direct and cross-domain tests are the current reproducible evidence; the example exercises one bounded call. Independent analytic and SI-unit comparisons are limited to the stated fixtures. Unbound historical source/parity receipts remain UNKNOWN and are not re-established here.",
+  "evidence_ceiling": "Bounded to the stated normalized transport relation. Direct tests bind wall/CX branches, zero-diameter disabling, required enabled CX, real-value and selector validation, and finite-output rejection. The cross-domain tests connect the D=2 m, u_r=1 wall coefficient to one real transport step and a 5000/s physical loss, and compare prescribed physical attenuation and a stationary source balance at two Vth values. The listed direct and cross-domain tests are the current reproducible evidence; the example exercises one bounded call. Independent analytic and SI-unit comparisons are limited to the stated fixtures. Unbound historical source/parity receipts remain UNKNOWN and are not re-established here. C1 evidence adds: an exact rational closed-form wall-loss oracle, the sentinel-versus-limit contrast and CX-switch independence; it does not establish a non-cylindrical wall model or a closed stream.",
   "known_limitations": [
    "No external collision-data calibration, source-project parity qualification or device-specific physical validation is established by these tests.",
-   "The normalization tests use bounded aligned meshes and prescribed rates; they do not certify full-distribution grid convergence, arbitrary-step positivity or the complete nonlinear transport model."
+   "The normalization tests use bounded aligned meshes and prescribed rates; they do not certify full-distribution grid convergence, arbitrary-step positivity or the complete nonlinear transport model.",
+   "The wall term is the declared cylindrical inverse diffusion length 2 u_r / D; an exact zero diameter is the declared wall-off sentinel and no closed or reflecting stream is modelled."
   ]
  }
 }

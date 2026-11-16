@@ -115,16 +115,19 @@
   "scope": [
    "Direct tests bind channel-weighted values and mapping summation order, matching nonempty key sets, common meshes, implicit-real rejection and finite-output rejection.",
    "The cross-domain tests consume the inverse-length elastic-channel sum, multiply it by a distribution density and compare Vth times the result against a prescribed physical elastic source.",
-   "The contract example covers one bounded representative call; numerical checks do not establish external physical validation or full-domain applicability."
+   "The contract example covers one bounded representative call; numerical checks do not establish external physical validation or full-domain applicability.",
+   "Independent evidence (tests/neutrals/test_scattered_source_sum_evidence.py): Omega_q M_q is recomputed exactly per channel, the last-axis broadcast is separated from a velocity-axis broadcast on a case where the two differ, a single-channel aggregation equals its own product exactly, and doubling every profile doubles the total exactly."
   ],
   "tests": [
    "tests/kinetic/test_neutral_scattered_sources.py",
-   "tests/cross_domain/test_neutral_transport_normalization.py"
+   "tests/cross_domain/test_neutral_transport_normalization.py",
+   "tests/neutrals/test_scattered_source_sum_evidence.py"
   ],
-  "evidence_ceiling": "Bounded to the stated normalized transport relation. Direct tests bind channel-weighted values and mapping summation order, matching nonempty key sets, common meshes, implicit-real rejection and finite-output rejection. The cross-domain tests consume the inverse-length elastic-channel sum, multiply it by a distribution density and compare Vth times the result against a prescribed physical elastic source. The listed direct and cross-domain tests are the current reproducible evidence; the example exercises one bounded call. Independent analytic and SI-unit comparisons are limited to the stated fixtures. Unbound historical source/parity receipts remain UNKNOWN and are not re-established here.",
+  "evidence_ceiling": "Bounded to the stated normalized transport relation. Direct tests bind channel-weighted values and mapping summation order, matching nonempty key sets, common meshes, implicit-real rejection and finite-output rejection. The cross-domain tests consume the inverse-length elastic-channel sum, multiply it by a distribution density and compare Vth times the result against a prescribed physical elastic source. The listed direct and cross-domain tests are the current reproducible evidence; the example exercises one bounded call. Independent analytic and SI-unit comparisons are limited to the stated fixtures. Unbound historical source/parity receipts remain UNKNOWN and are not re-established here. C1 evidence adds: an exact rational channel-sum oracle, the spatial-axis broadcast decision and exact homogeneity in the profiles; it does not establish the sampled regenerated distributions or their physical calibration.",
   "known_limitations": [
    "No external collision-data calibration, source-project parity qualification or device-specific physical validation is established by these tests.",
-   "The normalization tests use bounded aligned meshes and prescribed rates; they do not certify full-distribution grid convergence, arbitrary-step positivity or the complete nonlinear transport model."
+   "The normalization tests use bounded aligned meshes and prescribed rates; they do not certify full-distribution grid convergence, arbitrary-step positivity or the complete nonlinear transport model.",
+   "The float accumulation order is dict insertion order and is exercised on a three-channel mapping; reordering the mapping changes the sum by rounding and order-invariance is not claimed."
   ]
  }
 }

@@ -197,18 +197,21 @@
  "verification": {
   "scope": [
    "Current SciRel implementation and the repository tests listed in this contract cover the declared public ports and numerical relation.",
-   "The example exercises one bounded representative case; it does not extend applicability beyond the declared preconditions."
+   "The example exercises one bounded representative case; it does not extend applicability beyond the declared preconditions.",
+   "Independent evidence (tests/neutrals/test_alpha_contraction_evidence.py): the three families are recomputed from the exact binary64 inputs as exact rational matrix-vector products, the Fortran carrier order is separated from the C-order alternative on a case where the two differ by O(1), doubling nHP scales only the CX family exactly, and both ion-density branches ni = n and ni = max(n - nHP, 0) are checked against their own dense carriers including the clipping cell."
   ],
   "tests": [
-   "tests/kinetic/test_alpha_contraction.py"
+   "tests/kinetic/test_alpha_contraction.py",
+   "tests/neutrals/test_alpha_contraction_evidence.py"
   ],
-  "evidence_ceiling": "Bounded to the declared relation: The per-k matrix-vector contraction: each family multiplies one assembled (N,N) SIG matrix by the Fortran-order flattening of one predecessor distribution carried on the (nvr*nvx,) Work buffer and restores the product to the (nvr,nvx) slice…. Evidence: test_alpha_contraction.py (11 recorded test functions; shared-file coverage only; self-consistency/regression only); the contract example ran. Excluded scope: Atomic four-family contraction, the Omega_* downstream aggregation inside fH2_iterate, Do_Alpha_* gating, KH2.Internal cache lifecycle, and external physical validation; external physical validation.",
+  "evidence_ceiling": "Bounded to the declared relation: The per-k matrix-vector contraction: each family multiplies one assembled (N,N) SIG matrix by the Fortran-order flattening of one predecessor distribution carried on the (nvr*nvx,) Work buffer and restores the product to the (nvr,nvx) slice…. Evidence: test_alpha_contraction.py (11 recorded test functions; shared-file coverage only; self-consistency/regression only); the contract example ran. Excluded scope: Atomic four-family contraction, the Omega_* downstream aggregation inside fH2_iterate, Do_Alpha_* gating, KH2.Internal cache lifecycle, and external physical validation; external physical validation. C1 evidence adds: an exact rational contraction oracle, the declared Fortran carrier order, exact homogeneity, and both ni_correct branches; it does not establish the caller's SIG assembly, the registered Alpha_CX reshape repair or cross-section values.",
   "known_limitations": [
    "Only shared-file coverage is bound (test_alpha_contraction.py); no asset-specific failure/limit probe is recorded.",
    "The Alpha_CX reshape repair relative to the raw kinetic_h2.py source is registered, not silently absorbed; its scientific framing remains an expert-review item.",
    "Negative cells in the elastic families and negative densities are reproduced or contracted as given; their physical acceptability is an open expert question, not a runtime gate.",
    "No independent or external oracle is recorded; the evidence is self-consistency/regression only.",
-   "The contract does not establish: Atomic four-family contraction, the Omega_* downstream aggregation inside fH2_iterate, Do_Alpha_* gating, KH2.Internal cache lifecycle, and external physical validation.."
+   "The contract does not establish: Atomic four-family contraction, the Omega_* downstream aggregation inside fH2_iterate, Do_Alpha_* gating, KH2.Internal cache lifecycle, and external physical validation..",
+   "The exact rational oracle and the branch probe cover one non-square carrier (nvr=2, nvx=3); a square carrier, on which the Fortran and C flattenings coincide, is not covered."
   ]
  }
 }
