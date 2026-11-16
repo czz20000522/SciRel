@@ -150,7 +150,7 @@
    "Nonfinite query values are outside the numerical qualification; the implementation zero-fills them as a compatibility convention",
    "Nonzero y_data[0] is outside the implemented origin boundary",
    "The retained origin row is not a physical cylindrical fitting model",
-   "cannot establish the physical justification of the cylindrical Robin row: no published source is cited that makes it a cylindrical boundary condition, and the docstring itself calls it a numerical convention. What is established is its algebraic satisfaction, not that it is the right physics."
+   "cannot establish the physical justification of the cylindrical Robin row: no published source is cited that makes it a cylindrical boundary condition, and the docstring itself calls it a numerical convention. What is established is its algebraic satisfaction, not that it is the right physics. The O(h^4) interior rate is not asserted for the cylindrical families: it holds only for data whose boundary rows the sampled function satisfies (log x with m = 0; x^3 with m = 3 for the origin-natural row), and the retained Robin row is otherwise a numerical convention."
   ]
  }
 }

@@ -146,7 +146,7 @@
    "Overflowing finite spans preserve the controller affine witness and the mathematically finite tolerance box without overflow warnings.",
    "Independent rational references cover one/multiple large spans, cross terms, near nodes, compensated tiny weights/products, signed cancellation, maximum finite samples, subnormal outputs and true final rounding to zero.",
    "Zero-weight non-finite corner touches retain propagation, with right-interval selection at internal nodes, independent geometric validity, and multidimensional/empty trailing axes.",
-   "Independent evidence (test_rectilinear_evidence): exact reproduction of a field affine in each axis for the bilinear asset and of an affine complex field for the trilinear asset, agreement with scipy.interpolate.RegularGridInterpolator(method='linear') after converting between the [Z, R] grid and [R, Z] point conventions at the call site, the declared tol = 32 eps max(1, span) box boundary probed just inside and 10 tol outside, and propagation of a non-finite corner at zero weight."
+   "Independent evidence (test_rectilinear_evidence): exact reproduction of a complex field affine in each coordinate (real and imaginary parts separately), an exact rational recomputation of the trilinear weights and corner sum from the original binary64 inputs that shares no arithmetic path with the implementation, the declared tol = 32 eps max(1, span) box boundary probed just inside and 10 tol outside, and propagation of a non-finite corner at zero weight. This asset's implementation imports and calls scipy.interpolate.RegularGridInterpolator in its own sample path, so SciPy is not an independent reference for it and none is claimed."
   ],
   "tests": [
    "tests/geometry/test_complex_rectilinear_interpolation.py",
@@ -158,7 +158,8 @@
    "valid_mask reports geometry only and must not be used as a finiteness test on the returned values.",
    "No extrapolation is performed outside the tolerance-expanded box, so callers with points beyond the shell receive nan rather than a clamped edge value.",
    "The independent analytic comparison does not replace an external experimental reference.",
-   "Exact rational recomputation can cost more for extreme or cancelling stencils; a range failure in one vector batch may send the finite columns of that batch to exact arithmetic. No whole-domain performance bound is established."
+   "Exact rational recomputation can cost more for extreme or cancelling stencils; a range failure in one vector batch may send the finite columns of that batch to exact arithmetic. No whole-domain performance bound is established.",
+   "cannot establish an independent-implementation comparison: the implementation calls scipy.interpolate.RegularGridInterpolator inside its own sample path, so a SciPy-based check would exercise the same backend rather than an independent one. The evidence is analytic (affine reproduction) plus an exact rational recomputation, which is independent of the arithmetic but not of the trilinear definition itself."
   ]
  }
 }
