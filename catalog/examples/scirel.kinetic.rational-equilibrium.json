@@ -127,12 +127,15 @@
  },
  "verification": {
   "scope": [
-   "Current SciRel implementation and the repository tests listed in this contract cover the declared public ports and numerical relation.",
-   "The example exercises one bounded representative case; it does not extend applicability beyond the declared preconditions.",
-   "The pure-Python implementation runs directly on macOS without the declared local Python runtime."
+   "Independent reference: the SI columns are the definitions they name, recomputed from the deck at 40 digits - v_t = sqrt(2 T/m), lambda_D = sqrt(T/(n q^2)), k_D = 1/lambda_D, omega_p = sqrt(n q^2/m) - and cross-checked by two relations that do not need the column semantics: omega_p = k_D v_t/sqrt(2), and scaling the density column by four scaling omega_p by two.",
+   "Implementation relation: the state carries row-shaped (1, species) arrays for qs, ms, ns0, Ts, vs0, vts, lambdaDs, kDs and wps, all finite and shape-consistent with the deck; the drift column is in thermal units and the density column is a partition of unity.",
+   "Test matrix: the four definitions per species, the two semantic-free relations, the density partition of unity, the drift/thermal ratio of the two species, row-shape consistency, and the rejection channels for a malformed deck and an unknown model.",
+   "Precision budget, declared before the comparison was run: 32 eps relative for each definition (a ratio of exact float inputs plus one square root or reciprocal), 4 eps absolute for the density sum, and 1e-5 relative for the drift/thermal ratio because the declared drift 7.071 carries four significant digits while 5 sqrt(2) = 7.0710678.",
+   "Cannot establish: the deck's own numerical values (see scirel.kinetic.rational-default-deck). The definitions above establish that the returned quantities follow from the columns, not that the columns are physically the right case."
   ],
   "tests": [
-   "tests/kinetic/test_dispersion_rational.py"
+   "tests/kinetic/test_dispersion_rational.py",
+   "tests/kinetic/test_rational_declarative_evidence.py"
   ],
   "evidence_ceiling": "Direct tests establish the declared contract where they run; the pure-Python example and bounded acceptance run on this macOS host. No release or human scientific approval is implied.",
   "known_limitations": [

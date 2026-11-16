@@ -99,11 +99,15 @@
  },
  "verification": {
   "scope": [
-   "Current SciRel implementation and the repository tests listed in this contract cover the declared public ports and numerical relation.",
-   "The example exercises one bounded representative case; it does not extend applicability beyond the declared preconditions."
+   "Independent reference: the deck is a declaration, so what is established here is its structure and its internal invariants, recomputed rather than read back - a 2x5 finite table whose density column is a partition of unity (0.9 + 0.1 = 1) whose two literals are exact decimals, whose second-species drift is nonzero while the first is zero, and whose unknown model name is rejected.",
+   "Implementation relation: the returned table is the rows in the declared column order with the declared literals; it is a NumPy array of shape (species, 5), not a mapping, and the response is produced without any caller-supplied scientific input.",
+   "Test matrix: the shape and finiteness, the exact density literals and their sum, the drift column's zero/nonzero pattern, and the unknown-model rejection with its own message.",
+   "Precision budget, declared before the comparison was run: the density sum is compared at 4 eps absolute (one addition of two exact decimals) and the literals themselves at zero tolerance, because they are the declared values and not derived quantities.",
+   "Cannot establish: the numerical values of the es1d case (charge signs, density fractions, drift) are copied from the source implementation's example deck. Nothing in this repository derives them, so this contract records them as a declaration and does not claim an independent source for the numbers themselves; the relations among the columns are established in scirel.kinetic.rational-equilibrium."
   ],
   "tests": [
-   "tests/kinetic/test_dispersion_rational.py"
+   "tests/kinetic/test_dispersion_rational.py",
+   "tests/kinetic/test_rational_declarative_evidence.py"
   ],
   "evidence_ceiling": "Bounded to the packaged legacy species deck returned as a fresh numeric array. Evidence: `test_dispersion_rational.py` contains 6 test functions, none of which references `default_deck`, and is shared by 10 assets; only shared-file coverage is bound, so a pass is file-level rather than asset-isolated; the bounded example was executed by this audit. Oracle: self-consistency/regression only; the bound rational file contains no direct call. It does not establish a claim that the default fixture matches a user experiment.",
   "known_limitations": [
