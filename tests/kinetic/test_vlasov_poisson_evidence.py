@@ -165,12 +165,12 @@ def _mp_stages(df, dE, vv, df0dv, k, dv, dt):
 
 
 def test_mass_moment_obeys_the_discrete_continuity_identity_in_one_rk4_step():
-    """One step satisfies ``d(rho)/dt = -i k j + E (dv sum f0')`` in the tableau's quadrature."""
+    """One step satisfies ``d(rho)/dt = -i k j + E (dv sum f0')`` for every stage input."""
     state = vp_init(nv=16, nt=1, dt=0.01, k=0.3)
     updated, closed_field = vp_rk4_step(
         state["df"], state["dE"], state["vv"], state["df0dv"], state["k"], state["dv"], state["dt"]
     )
-    start, stages, velocity, slope, closed, wavenumber, step = _mp_stages(
+    start, inputs, velocity, slope, closed, wavenumber, step = _mp_stages(
         state["df"], state["dE"], state["vv"], state["df0dv"], state["k"], state["dv"], state["dt"]
     )
     spacing = mp.mpf(float(state["dv"]))
@@ -182,29 +182,25 @@ def test_mass_moment_obeys_the_discrete_continuity_identity_in_one_rk4_step():
     def current(entries):
         return spacing * sum(v * f for v, f in zip(velocity, entries))
 
+    # The continuity statement is about the *stage inputs*: the derivative of the
+    # density at x is -i k times the current of x plus E(x) times the discrete
+    # mass of f0'.  That is the stated model, evaluated at each of the four RK4
+    # input states.
+    stage_rates = [(-mp.mpc(0, 1) * wavenumber * current(x) + closed(x) * source) for x in inputs]
     weights = [mp.mpf(1) / 6, mp.mpf(1) / 3, mp.mpf(1) / 3, mp.mpf(1) / 6]
-    predict = sum(
-        weight * (-mp.mpc(0, 1) * wavenumber * current(stage) + closed(stage) * source)
-        for weight, stage in zip(weights, stages)
-    )
-    observed = sum(
-        step * weight * term for weight, term in zip(weights, [1, 1, 1, 1])
-    ) * predict / step
+    predict = step * sum(weight * rate for weight, rate in zip(weights, stage_rates))
     left = density(
         [mp.mpc(float(np.real(entry)), float(np.imag(entry))) for entry in updated]
     ) - density(start)
 
-    scale = max(abs(step * term) for term in
-                [wavenumber * current(stage) for stage in stages] +
-                [abs(closed(stage) * source) for stage in stages])
-    budget = 64 * EPS * float(scale) * 10  # the stages themselves are float32-free but summed at 1e1
-    assert abs(left - observed) <= budget, (abs(left - observed), budget)
-    # Discrimination: a wrong final weight moves the quadrature by 1/30 of a
-    # stage term, which is far above the budget on this configuration.
-    wrong = observed - step * (mp.mpf(1) / 30) * (
-        -mp.mpc(0, 1) * wavenumber * current(stages[1]) + closed(stages[1]) * source
-    )
-    assert abs(left - wrong) > budget
+    scale = step * max(abs(rate) for rate in stage_rates)
+    budget = 64 * EPS * float(scale)
+    assert abs(left - predict) <= budget, (abs(left - predict), float(budget))
+    assert_allclose(closed_field, vp_field(updated, state["k"], state["dv"]), rtol=0, atol=8 * EPS * abs(closed_field))
+    # Discrimination: the cancelled sum is orders below each stage term, so a
+    # wrong final weight is still visible against the same budget.
+    wrong = predict - step * (mp.mpf(1) / 30) * stage_rates[1]
+    assert abs(left - wrong) > 100 * budget
 
 
 def test_field_and_rhs_satisfy_the_poisson_constraint_and_the_advection_identity():
