@@ -139,17 +139,22 @@
    "Weighted-source linearity.",
    "Midplane symmetry and analytic axis BZ check.",
    "Independent 70/80-digit ideal-loop relation checks cover very small positive radii, near-axis nonzero BR, near-wire cases and formula-evaluation branches while retaining the original numeric assertions and tolerances; the exact self term and arithmetic failure are handled separately.",
-   "The named result preserves the captured key order, values, shapes, dtypes, mapping access and attribute access; failures retain their exception types and messages."
+   "The named result preserves the captured key order, values, shapes, dtypes, mapping access and attribute access; failures retain their exception types and messages.",
+   "Independent evidence (tests/field/test_circular_filament_green_evidence.py): psi, BR and BZ agree with a direct Biot-Savart quadrature that uses no elliptic integral or hypergeometric series, within 64 eps on a target grid that crosses both kernel branches and the near-axis regime; the axis limits psi = BR = 0 with a nonzero BZ, the finite-Z mirror reflection with its BR sign flip, the exact zero-radius/zero-weight/coincidence skips, and the exact power-of-two and rational-additive weight laws are separate assertions."
   ],
   "tests": [
    "tests/field/test_circular_filament_green.py",
-   "tests/cross_domain/test_field_green_correction.py"
+   "tests/cross_domain/test_field_green_correction.py",
+   "tests/field/test_circular_filament_green_evidence.py"
   ],
-  "evidence_ceiling": "Bounded to axis-source-skipping circular-filament Green response with weighted-source linearity. Evidence: `test_circular_filament_green.py` contains 3 test functions, 1 of which references `circular_filament_green_response`, and is bound only by this asset; `test_field_green_correction.py` contains 9 test functions, none of which references `circular_filament_green_response`, and is shared by 5 assets; the bounded example was executed by this audit. Oracle: independent analytic recomputation and the axis-limit BZ check. It does not establish finite-wire self-fields, arbitrary-input qualification, or persistent field blocks.",
+  "evidence_ceiling": "Bounded to axis-source-skipping circular-filament Green response with weighted-source linearity. Evidence: `test_circular_filament_green.py` contains 3 test functions, 1 of which references `circular_filament_green_response`, and is bound only by this asset; `test_field_green_correction.py` contains 9 test functions, none of which references `circular_filament_green_response`, and is shared by 5 assets; the bounded example was executed by this audit. Oracle: independent analytic recomputation and the axis-limit BZ check. It does not establish finite-wire self-fields, arbitrary-input qualification, or persistent field blocks. C1 evidence adds a second source that integrates the Biot-Savart law instead of evaluating the elliptic or hypergeometric closed form, so a common-mode error in that closed form is no longer invisible; the observed maximum deviation on the sampled grid is 5.38e-15 relative against a 1.42e-14 budget. It does not establish a continuous error bound between the sampled targets, the regime inside 1e-2 of the wire distance, or a relative comparison below 1e-6 of the source radius.",
   "known_limitations": [
    "Targets exactly on a filament are not a resolved self-field model.",
    "The example covers axis-source skip and weighted-source linearity; no test binds the nonfinite summed-response `FloatingPointError`.",
-   "The aggregate-sum entry and the per-source matrix entry keep different shape and empty-source interfaces; shared-kernel reuse does not merge those public contracts."
+   "The aggregate-sum entry and the per-source matrix entry keep different shape and empty-source interfaces; shared-kernel reuse does not merge those public contracts.",
+   "The Biot-Savart reference is evaluated on a finite target grid; the 64-eps figure is an observed maximum on that grid, not a proven bound between grid points.",
+   "The quadrature reference refuses geometry inside 1e-2 of the wire distance and its relative comparisons stop below 1e-6 of the source radius, so neither regime is covered here.",
+   "The zero-weight guard exists both in this wrapper and in the Green kernel, so removing either one alone changes no observable behaviour; the skip is pinned behaviourally, and a mutation of the wrapper's own test survives as an equivalent mutant."
   ]
  }
 }

@@ -245,8 +245,13 @@ def test_each_declared_rejection_channel_is_executable():
     # partial_results: the failing path raises before a mapping exists, so a
     # caller cannot mistake a partly filled result for a usable one.
     assert not isinstance(
-        pytest.raises(FloatingPointError, circular_filament_green_response,
-                      [[0.3, 0.0, 1.0e308]], [[0.3, 1.0e-300]]).value, Result
+        pytest.raises(
+            FloatingPointError,
+            circular_filament_green_response,
+            [[0.3, 0.0, 1.0e308]],
+            [[0.3, 1.0e-300]],
+        ).value,
+        Result,
     )
 
 

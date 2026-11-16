@@ -68,8 +68,7 @@ def _quadrature(reference_radius, reference_z):
     """Return the quadrature response of the example coil set at one point."""
     return reference.filament_field(
         [
-            (float(COIL_RADIUS[index]), float(COIL_Z[index]),
-             float(CURRENT[index] * TURNS[index]))
+            (float(COIL_RADIUS[index]), float(COIL_Z[index]), float(CURRENT[index] * TURNS[index]))
             for index in range(len(COIL_RADIUS))
         ],
         reference_radius,
@@ -85,7 +84,9 @@ def test_response_matches_the_biot_savart_quadrature(raw_radius, height):
         radius, height, COIL_RADIUS, COIL_Z, CURRENT, TURNS
     )
     expected = _quadrature(float(radius), height)
-    for name, got, want in zip(("flux", "B_R", "B_Z"), (flux, radial, axial), expected, strict=True):
+    for name, got, want in zip(
+        ("flux", "B_R", "B_Z"), (flux, radial, axial), expected, strict=True
+    ):
         assert float(want) != 0.0, name
         deviation = abs(got - float(want)) / abs(float(want))
         assert deviation <= RELATIVE_BUDGET, (name, raw_radius, height, deviation)
@@ -103,8 +104,7 @@ def test_stream_function_identities_hold_for_the_returned_components(raw_radius,
         radius, height, COIL_RADIUS, COIL_Z, CURRENT, TURNS
     )
     filaments = [
-        (float(COIL_RADIUS[index]), float(COIL_Z[index]),
-         float(CURRENT[index] * TURNS[index]))
+        (float(COIL_RADIUS[index]), float(COIL_Z[index]), float(CURRENT[index] * TURNS[index]))
         for index in range(len(COIL_RADIUS))
     ]
     radial_from_flux = -float(reference.dpsi_dz(float(radius), height, filaments)) / float(radius)
@@ -146,18 +146,14 @@ def test_the_radius_offset_is_applied_exactly_once():
     )
     assert supplied != unshifted
     expected_unshifted = _quadrature(raw_radius, height)
-    for name, got, want in zip(
-        ("flux", "B_R", "B_Z"), unshifted, expected_unshifted, strict=True
-    ):
+    for name, got, want in zip(("flux", "B_R", "B_Z"), unshifted, expected_unshifted, strict=True):
         assert abs(got - float(want)) <= RELATIVE_BUDGET * abs(float(want)), name
 
 
 def test_current_and_turns_enter_as_one_exact_product():
     """Evidence 5: exact power-of-two linearity of current * turns."""
     radius, _, _ = compute_axisymmetric_coil_modulus(0.3, 0.05, COIL_RADIUS, COIL_Z)
-    base = evaluate_filament_coil_green_field(
-        radius, 0.05, COIL_RADIUS, COIL_Z, CURRENT, TURNS
-    )
+    base = evaluate_filament_coil_green_field(radius, 0.05, COIL_RADIUS, COIL_Z, CURRENT, TURNS)
     doubled = evaluate_filament_coil_green_field(
         radius, 0.05, COIL_RADIUS, COIL_Z, 2.0 * CURRENT, TURNS
     )
@@ -171,9 +167,7 @@ def test_each_declared_rejection_channel_is_executable():
     radius, _, _ = compute_axisymmetric_coil_modulus(0.3, 0.05, COIL_RADIUS, COIL_Z)
     # invalid_input: a target that coincides with a ring is a singular geometry.
     with pytest.raises(ValueError, match="singular coil geometry"):
-        evaluate_filament_coil_green_field(
-            0.25, -0.15, COIL_RADIUS, COIL_Z, CURRENT, TURNS
-        )
+        evaluate_filament_coil_green_field(0.25, -0.15, COIL_RADIUS, COIL_Z, CURRENT, TURNS)
     # invalid_input: observation coordinates and coil vectors.
     for arguments, message in [
         ((0.0, 0.05, COIL_RADIUS, COIL_Z, CURRENT, TURNS), "finite and positive"),
@@ -189,13 +183,21 @@ def test_each_declared_rejection_channel_is_executable():
     # rather than being converted into a non-finite scalar.
     with pytest.raises(FloatingPointError, match="overflow encountered in multiply"):
         evaluate_filament_coil_green_field(
-            1.2e-100, 0.0, np.array([1.0e-100]), np.array([0.1e-100]),
-            np.array([1.0e308]), np.array([1.0]),
+            1.2e-100,
+            0.0,
+            np.array([1.0e-100]),
+            np.array([0.1e-100]),
+            np.array([1.0e308]),
+            np.array([1.0]),
         )
     # partial_results: the tuple is only built after the kernel returns, so a
     # failing call cannot leave a partially filled tuple behind.
     with pytest.raises(FloatingPointError):
         evaluate_filament_coil_green_field(
-            1.2e-100, 0.0, np.array([1.0e-100]), np.array([0.1e-100]),
-            np.array([1.0e308]), np.array([1.0]),
+            1.2e-100,
+            0.0,
+            np.array([1.0e-100]),
+            np.array([0.1e-100]),
+            np.array([1.0e308]),
+            np.array([1.0]),
         )

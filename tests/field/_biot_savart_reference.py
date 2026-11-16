@@ -193,15 +193,17 @@ def _quadrature_at(dps, radius, coil_radius, dz):
         if radius_mp > 0:
             separation = mp.sqrt((radius_mp - coil_radius_mp) ** 2 + dz_mp**2)
             if separation < _MIN_SEPARATION_RATIO * coil_radius_mp:
-                raise ValueError(
-                    "target too close to the wire for a fixed-breakpoint quadrature"
-                )
+                raise ValueError("target too close to the wire for a fixed-breakpoint quadrature")
         scale = _integrand_scale(radius_mp, coil_radius_mp, dz_mp)
         if radius_mp == 0:
             # Closed limits on the axis, reached from the same integrands: A_phi
             # is an odd integrand there and B_R carries dz as a factor, so both
             # vanish identically, while B_Z stays an ordinary smooth integral.
-            return (mp.mpf(0), mp.mpf(0), _loop_integrals(radius_mp, coil_radius_mp, dz_mp)[2]), scale
+            return (
+                mp.mpf(0),
+                mp.mpf(0),
+                _loop_integrals(radius_mp, coil_radius_mp, dz_mp)[2],
+            ), scale
         return _loop_integrals(radius_mp, coil_radius_mp, dz_mp), scale
 
 
@@ -348,9 +350,10 @@ def psi_difference(radius, z, filaments, start_radius):
     identity on trust.
     """
     target, start = mp.mpf(radius), mp.mpf(start_radius)
-    return _single_field(filaments, target, z, _STRONG_DPS)[0] - _single_field(
-        filaments, start, z, _STRONG_DPS
-    )[0]
+    return (
+        _single_field(filaments, target, z, _STRONG_DPS)[0]
+        - _single_field(filaments, start, z, _STRONG_DPS)[0]
+    )
 
 
 __all__ = [

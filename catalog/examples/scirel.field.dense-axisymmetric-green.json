@@ -139,16 +139,20 @@
    "Columnwise equality with the maintained circular-filament response through the shared kernel; this is wrapper consistency, not an independent numerical oracle.",
    "Invalid radius and source-shape rejection.",
    "In tests/cross_domain/test_field_green_correction.py, test_every_positive_loop_radius_retains_analytic_axis_field with api=dense compares gBZ for a 1e-13 source radius at axial targets with a 70-digit ideal-loop reference and checks zero gBR; test_exact_self_rule_is_distinct_from_arithmetic_failure with api=dense separates zero exact-self entries from FloatingPointError at weight 1e308. test_public_field_interfaces_reject_complex_coordinates includes api=dense.",
-   "The named result preserves the captured key order, values, shapes, dtypes, mapping access and attribute access; failures retain their exception types and messages."
+   "The named result preserves the captured key order, values, shapes, dtypes, mapping access and attribute access; failures retain their exception types and messages.",
+   "Independent evidence (tests/field/test_dense_axisymmetric_green_evidence.py): every target/source entry of all three matrices agrees with the direct Biot-Savart quadrature of that single filament within 64 eps; the coincidence and zero-radius conventions, the exact power-of-two column scaling, and the preserved (N_target, 0) empty-source shape are separate assertions."
   ],
   "tests": [
    "tests/field/test_dense_axisymmetric_green.py",
-   "tests/cross_domain/test_field_green_correction.py"
+   "tests/cross_domain/test_field_green_correction.py",
+   "tests/field/test_dense_axisymmetric_green_evidence.py"
   ],
-  "evidence_ceiling": "tests/field/test_dense_axisymmetric_green.py directly invokes dense_axisymmetric_green_response as scientific_function and by its own name: test_source_weight_scales_each_column_and_zeroes_a_column, test_columns_match_individual_filament_flux_and_field_responses, test_axis_bz_matches_circular_filament_limit, and the shape/empty-source/rejection assertions bind separate source columns, scaling, the analytic axial limit and maintained-kernel agreement. The api=dense cases named in scope are direct public-entry assertions, not merely shared-file references. Formula-cutover and radially separated near-wire assertions in the shared file call aggregate only; they are dependency evidence, not direct dense-entry coverage. No finite-wire self-field, arbitrary extreme-scale accuracy or equilibrium claim follows.",
+  "evidence_ceiling": "tests/field/test_dense_axisymmetric_green.py directly invokes dense_axisymmetric_green_response as scientific_function and by its own name: test_source_weight_scales_each_column_and_zeroes_a_column, test_columns_match_individual_filament_flux_and_field_responses, test_axis_bz_matches_circular_filament_limit, and the shape/empty-source/rejection assertions bind separate source columns, scaling, the analytic axial limit and maintained-kernel agreement. The api=dense cases named in scope are direct public-entry assertions, not merely shared-file references. Formula-cutover and radially separated near-wire assertions in the shared file call aggregate only; they are dependency evidence, not direct dense-entry coverage. No finite-wire self-field, arbitrary extreme-scale accuracy or equilibrium claim follows. C1 evidence adds the Biot-Savart quadrature as the second source for every matrix entry, so agreement between two SciRel entry points is no longer the only cross-check; the observed maximum deviation on the sampled grid is 7.81e-15 relative against a 1.42e-14 budget. It does not establish a continuous error bound, the regime inside 1e-2 of the wire distance, or any statement about the discrete self convention as a finite-wire model.",
   "known_limitations": [
    "The result preserves separate source columns and does not sum them.",
-   "The direct arithmetic-failure fixture uses a tiny source and large weight; coverage of every other unrepresentable response and every shared-kernel branch through this wrapper is UNKNOWN."
+   "The direct arithmetic-failure fixture uses a tiny source and large weight; coverage of every other unrepresentable response and every shared-kernel branch through this wrapper is UNKNOWN.",
+   "The 64-eps figure is an observed maximum over the sampled target/source table, not a proven bound for other grids or for targets between the sampled points.",
+   "The quadrature reference refuses geometry inside 1e-2 of the wire distance, so the near-wire columns of the matrix are not covered."
   ]
  }
 }
