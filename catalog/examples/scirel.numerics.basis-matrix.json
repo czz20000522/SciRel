@@ -133,7 +133,7 @@
    "Physical special-spline closures and unsupported knot domains remain unresolved",
    "Nonzero clamped endpoint slopes are outside the linear-basis contract",
    "For spline selections, nonfinite query values are outside the numerical qualification and are zero-filled as a compatibility convention; polynomial selections evaluate them directly",
-   "Observed failure-channel deviations, reported and not fixed here: an unknown basis selector raises KeyError, a list coeffs control raises AttributeError and a 1-D coeffs array raises IndexError, while failure_semantics names ValueError. Which channel is correct is a contract decision, so the tests pin the observed types with these notes instead of assuming the declared one."
+   "Three failure channels of the basis factory differ from the api-spec convention (an unregistered selector raises KeyError, a list coeffs control raises AttributeError, and a 1-D coeffs array raises IndexError); this contract records only what is observed and promises none of those types. The correction is a behaviour change tracked in tickets/convention/T-2026-0002.md, which also covers whether an unsupported retained selector should raise NotImplementedError."
   ]
  }
 }

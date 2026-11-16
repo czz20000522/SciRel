@@ -143,7 +143,7 @@
    "Duplicate, unsorted or nonfinite knots are outside numerical qualification",
    "Knot-interval membership is exact; a point one representable step outside returns zero",
    "Nonfinite query values are outside the numerical qualification; the implementation zero-fills them as a compatibility convention",
-   "Measured truncation behaviour: with boundary data the declared rows actually satisfy (natural ends on sin, exact end slopes on sin, log x with m=0 for the left-clamped family) the refinement ratio per halving is 10..22, consistent with O(h^4). Forcing yp=0 onto sin instead gives an observed ratio of 2.00, so a boundary value that disagrees with the sampled function destroys the interior rate; that is a property of the boundary condition, not of the interpolation core."
+   "Measured truncation behaviour, restricted domain: the O(h^4) interior rate is asserted only where the declared boundary rows match the sampled data (sin with natural ends, sin with exact end slopes, and log x for the m = 0 cylindrical row), where the refinement ratio per halving is 10..22. Forcing yp = 0 onto sin gives an observed ratio of 2.00, so a boundary value inconsistent with the data destroys the interior rate; that is a property of the boundary condition, not of the interpolation core, and it is not absorbed by loosening a tolerance."
   ]
  }
 }

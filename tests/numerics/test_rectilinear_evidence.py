@@ -11,14 +11,18 @@ Evidence, all independent of the implementation and its regression fixtures:
    trilinear interpolation reproduces any field affine in each coordinate.
    These are properties of the interpolation weights and are checked against a
    field built from known coefficients.
-2. **Second independent implementation.**  ``scipy.interpolate.RegularGridInterpolator``
-   with ``method="linear"`` computes the same bilinear stencil through
-   different code.  The [Z, R] grid indexing and [R, Z] point order are handled
-   explicitly at the call site so an axis swap cannot hide behind a passing test.
-3. **Exact rational reference.**  For random data, the arithmetic midpoint and
-   the bilinear weights are recomputed in exact rational arithmetic
-   (``fractions.Fraction`` over the binary64 inputs) and rounded once, which
-   separates rounding error from any weight or index mistake.
+2. **Second independent implementation, bilinear only.**  For the *bilinear*
+   asset ``scipy.interpolate.RegularGridInterpolator(method="linear")`` computes
+   the same stencil through different code.  It is **not** an independent
+   reference for the *complex trilinear* asset, whose implementation imports and
+   calls that same SciPy class internally
+   (``complex_rectilinear_interpolation.py`` ``_samples``); for that asset the
+   independent evidence is item 3 below, not SciPy.
+3. **Exact rational reference.**  For random data, the arithmetic midpoint, the
+   bilinear weights and the complex trilinear weights are recomputed in exact
+   rational arithmetic (``fractions.Fraction`` over the binary64 inputs) and
+   rounded once, which separates rounding error from any weight or index
+   mistake and is independent of both the implementation and its SciPy backend.
 4. **Declared conventions.**  The complex variant clamps inside a box expanded by
    ``tol = 32 * eps * max(1, span)`` and returns ``nan + nanj`` with
    ``valid_mask`` false outside it; that boundary is tested at, just inside and
@@ -101,6 +105,67 @@ def test_complex_trilinear_reproduces_an_affine_complex_field():
     scale = max(1.0, float(np.max(np.abs(want))))
     assert np.all(np.asarray(result["valid_mask"]))
     assert np.max(np.abs(got - want)) <= 256.0 * EPS * scale
+
+
+def _exact_rational_trilinear(axes, values, point):
+    """Trilinear value at ``point`` in exact rational arithmetic, rounded once.
+
+    The three axis weights are rebuilt from the binary64 inputs as
+    ``Fraction`` ratios ``(b - q)/(b - a)`` and ``(q - a)/(b - a)``, the eight
+    corner contributions are summed exactly for the real and imaginary parts
+    separately, and the total is converted to ``complex`` at the end.  Nothing
+    is taken from the implementation or from SciPy.
+    """
+    per_axis = []
+    for axis, coordinate in zip(axes, point):
+        knots = [Fraction(float(value)) for value in axis]
+        query = Fraction(float(coordinate))
+        upper = next(index for index in range(1, len(knots)) if knots[index] >= query)
+        low, high = knots[upper - 1], knots[upper]
+        fraction = (query - low) / (high - low)
+        per_axis.append(((upper - 1, 1 - fraction), (upper, fraction)))
+
+    real = Fraction(0)
+    imaginary = Fraction(0)
+    for lower_x, weight_x in per_axis[0]:
+        for lower_y, weight_y in per_axis[1]:
+            for lower_z, weight_z in per_axis[2]:
+                corner = complex(values[lower_x, lower_y, lower_z])
+                weight = weight_x * weight_y * weight_z
+                real += weight * Fraction(corner.real)
+                imaginary += weight * Fraction(corner.imag)
+    return complex(float(real), float(imaginary))
+
+
+def test_complex_trilinear_matches_an_exact_rational_recomputation():
+    """Evidence 3 for the trilinear asset, whose own backend is SciPy.
+
+    The weights are recomputed here in exact rational arithmetic, so a shared
+    backend or a shared formula evaluation cannot make the test agree by
+    construction; only the arithmetic path differs, which is what a rounding
+    budget is meant to separate.
+    """
+    axes = {
+        "x_m": np.array([0.0, 1.0, 3.0]),
+        "y_m": np.array([0.0, 2.0]),
+        "z_m": np.array([0.0, 1.5, 4.0]),
+    }
+    values = np.array(
+        [
+            [[1.0 + 0.5j, -2.0 + 1.0j, 0.25 - 3.0j], [0.5 + 0.1j, 3.0 - 1.5j, -1.0 + 0.0j]],
+            [[2.0 - 0.25j, 0.0 + 2.0j, 1.5 + 1.25j], [-0.5 + 0.75j, 1.0 - 1.0j, 2.5 + 0.5j]],
+            [[0.125 + 0.0625j, -0.75 + 3.5j, 4.0 - 2.0j], [1.25 - 0.5j, -2.5 + 0.25j, 0.5 + 1.5j]],
+        ]
+    )
+    points = np.array(
+        [[0.5, 1.0, 0.75], [2.7, 0.3, 3.9], [0.0, 0.0, 0.0], [3.0, 2.0, 4.0], [1.0, 2.0, 1.5]]
+    )
+    got = np.asarray(N.interpolate_complex_rectilinear_field(axes, values, points)["interpolated_values"])
+    axis_tuple = (axes["x_m"], axes["y_m"], axes["z_m"])
+    for point, actual in zip(points, got):
+        expected = _exact_rational_trilinear(axis_tuple, values, point)
+        scale = max(1.0, abs(expected))
+        assert abs(actual - expected) <= 64.0 * EPS * scale, (point, actual, expected)
 
 
 def test_complex_trilinear_rejects_outside_its_tolerance_expanded_box():

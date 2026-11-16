@@ -26,10 +26,16 @@ and of its original regression fixtures:
    for the two families that have a SciPy equivalent (``bc_type='natural'`` and
    two first-derivative ends).  The two cylindrical families have no SciPy
    counterpart; they rest on 1 and 2 only.
-4. **Truncation budget, fixed before measurement.**  A cubic spline interpolating
-   a C4 function on a uniform grid has an O(h^4) error.  The test fixes the
-   expected refinement ratio at 16 and accepts 10..22 for a 4x error drop plus
-   floating-point floor; it never widens a tolerance after seeing the value.
+4. **Truncation budget, fixed before measurement, on a narrowed domain.**  A
+   cubic spline interpolating a C4 function on a uniform grid has an O(h^4) error
+   **only when the declared boundary rows are consistent with the sampled
+   function**.  The test fixes the expected refinement ratio at 16 and accepts
+   10..22 for a 4x error drop plus floating-point floor; it never widens a
+   tolerance after seeing the value.  The domain restriction is explicit: the
+   order assertion runs on ``sin`` with natural ends / exact end slopes and on
+   ``log x`` for the ``m = 0`` cylindrical row, and nowhere else; a boundary
+   value inconsistent with the data is measured separately and reported as the
+   loss of the interior rate, not as a loosened tolerance.
 
 Residual tolerances are expressed in units of ``eps * scale`` with the scale
 named at each assertion, so a failure reports how far the identity is violated
@@ -268,14 +274,16 @@ def _refinement_ratio(make_spline, exact, interval, coarse_points=11, fine_point
 def test_consistent_data_converges_at_the_declared_fourth_order(
     _label, make_spline, exact, interval
 ):
-    """Budget 4: with boundary data the declared rows actually satisfy, error is O(h^4).
+    """Budget 4, restricted domain: error is O(h^4) only for boundary-consistent data.
 
-    The boundary data matter: ``f(x) = log x`` satisfies ``f'' + f'/x = 0`` for
-    ``m = 0`` and has ``f'(1) = 1``, so the first-clamped family carries no
-    boundary inconsistency.  Forcing ``yp = 0`` onto ``sin`` instead gives an
-    O(1) boundary error and an observed ratio of about 2, which is why the
-    clamped families are not exercised that way here; that drop from the O(h^4)
-    interior rate is recorded as a limitation on the contract.
+    **The assertion holds only on the listed samples, where the declared boundary
+    rows match the data**: ``sin`` with natural ends, ``sin`` with exact end
+    slopes, and ``log x`` for the left-clamped ``m = 0`` row (``log`` satisfies
+    ``f'' + f'/x = 0`` and has ``f'(1) = 1``). It is not a claim about a spline
+    whose boundary data disagrees with the sampled function: forcing ``yp = 0``
+    onto ``sin`` gives an O(1) boundary error and an observed ratio of about 2.
+    That drop is recorded as a contract limitation, not absorbed by widening a
+    tolerance.
     """
     ratio, errors = _refinement_ratio(make_spline, exact, interval)
     assert errors[1] < errors[0]

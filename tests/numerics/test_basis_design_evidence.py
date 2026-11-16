@@ -106,13 +106,15 @@ def test_spline_selections_zero_fill_outside_the_knot_interval():
 
 
 def test_basis_matrix_rejects_an_unknown_selection():
-    """Failure matrix: the undeclared selector channel.
+    """Failure matrix: the unregistered-selector channel, pinned as observed.
 
-    The contract's ``failure_semantics`` names ``ValueError`` for unsupported
-    basis selectors, but the factory surfaces the mapping miss as a ``KeyError``,
-    which is not a ``ValueError``.  This test pins the observed type so the gap
-    cannot go unnoticed; it is reported for a maintainer decision (widen the
-    contract or raise ``ValueError``) and is not treated as the declared channel.
+    The contract already declares ``KeyError`` for an unregistered selector, so
+    the type matches the contract; what does not match
+    ``skills/development/scirel-code-style/references/api-spec.md`` (invalid
+    input -> ``ValueError``) is the contract itself.  The correction is tracked in
+    ``tickets/convention/T-2026-0002.md``; this test pins the observed type so a
+    silent change in either direction is visible, and must be updated together
+    with that ticket's resolution.
     """
     with pytest.raises(KeyError):
         N.build_basis("quartic")
@@ -132,10 +134,13 @@ def test_basis_matrix_rejects_nonzero_clamped_slopes_and_short_knots():
 def test_poly_coeff_control_shape_deviations_are_recorded():
     """A mis-shaped ``coeffs`` control fails outside the declared channel.
 
-    Recorded deviations, both reported rather than blessed: a plain list reaches
-    an attribute access and raises ``AttributeError``, and a 1-D array raises
-    ``IndexError``, while the contract's ``failure_semantics`` names
-    ``ValueError``.  The accepted form is a 2-D ``(poly_deg, k)`` array.
+    ``AttributeError`` (plain list) and ``IndexError`` (1-D array) are neither
+    ``ValueError`` nor ``TypeError``, so they are undocumented leaks rather than
+    promises; ``coeffs`` is array_like in the api-spec and a list should be
+    accepted or rejected with ``ValueError``.  The correction is tracked in
+    ``tickets/convention/T-2026-0002.md``; the accepted form today is a 2-D
+    ``(poly_deg, k)`` array.  This test pins the observed behaviour and must be
+    updated together with that ticket's resolution.
     """
     with pytest.raises(AttributeError):
         N.build_basis("poly", poly_deg=2, coeffs=[1.0, 0.0])

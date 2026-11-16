@@ -21,11 +21,14 @@ Evidence sources:
    Function*, doi:10.1137/0731077, is the source of the FFT-generated rational
    expansion named in the contract's References.
 
-Budgets: the ceilings are ``1e-13`` at order 32 and ``1e-6`` at order 16 for the
-complex sample, and ``1e-12`` / ``1e-6`` on the real axis.  They were derived
-from the measured worst case with a stated margin, not chosen a priori: the first
-a-priori attempt (``1e-14`` / ``1e-7``) was violated by one lower-plane point by
-factors of 1.6 and 1.01, and that fact is recorded instead of being absorbed.
+Budgets: the ceilings are **measured upper bounds**, not a-priori tolerances —
+``1e-13`` at order 32 and ``1e-6`` at order 16 for the complex sample, ``1e-12``
+and ``1e-6`` on the real axis, each the worst sampled value times a stated margin.
+An a-priori estimate was attempted first (``1e-14`` / ``1e-7``) and was violated
+by one lower-plane point by factors of 1.6 and 1.01; that failure is recorded
+rather than absorbed, so this file claims a *measured* bound only. No theoretical
+relative-error bound from Weideman (1994) is asserted here, because that bound was
+not verified against the paper.
 These are sampled-region budgets: the contract states no global bound for
 arbitrary orders and this file does not claim one.
 """
@@ -40,11 +43,11 @@ from scipy.special import erfcx, wofz
 from scirel.numerics import evaluate_faddeeva
 
 DPS = 40
-# Ceilings derived from the worst point in the sampled set, with a stated margin.
-# The first a-priori choice (1e-14 / 1e-7) was violated by the lower-plane point
-# -3 - 0.25j by factors of 1.6 and 1.01; that measurement is recorded here rather
-# than absorbed silently, and the ceilings are the measured worst case times ~6
-# and ~10.  See the contract's known_limitations for the reported numbers.
+# Measured upper bounds: the worst sampled value times a stated margin (~6x and
+# ~10x).  These are NOT a-priori tolerances.  The first a-priori choice
+# (1e-14 / 1e-7) was violated by the lower-plane point -3 - 0.25j by factors of
+# 1.6 and 1.01; that measurement is recorded rather than absorbed silently.
+# See the contract's known_limitations for the reported numbers.
 ORDER_32_BUDGET = 1e-13
 ORDER_16_BUDGET = 1e-6
 # The real axis is a weaker path; its bound is recorded separately below.

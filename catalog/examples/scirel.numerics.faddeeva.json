@@ -48,7 +48,7 @@
    "Lower-plane Gaussian continuation may exceed float64.",
    "Truncation error depends on argument and order; arbitrary positive orders do not imply uniform accuracy or bounded resource use.",
    "The output is approximate w only; physical Z representability and caller-specific normalization are outside this mathematical function.",
-   "Measured sampled accuracy, recorded rather than asserted in advance: order 32 reaches a relative error of 1.6e-14 or better in the complex plane but only 1.1e-13 on the real axis, and order 16 reaches 1.0e-7 complex and 3.2e-7 real, while scipy.special.wofz is exact to rounding there. The first a-priori budgets (1e-14 and 1e-7) failed at the lower-plane point -3 - 0.25j by factors of 1.6 and 1.01; that failure is recorded here and the test ceilings are the measured worst case with a stated margin.",
+   "Measured upper bounds, not a-priori tolerances: order 32 reaches a relative error of 1.6e-14 or better in the complex plane but only 1.1e-13 on the real axis, and order 16 reaches 1.0e-7 complex and 3.2e-7 real, while scipy.special.wofz is exact to rounding there. An a-priori estimate (1e-14 and 1e-7) was attempted first and was violated at the lower-plane point -3 - 0.25j by factors of 1.6 and 1.01; that failure is recorded and the test ceilings are the measured worst case plus a stated margin. No theoretical relative-error bound from Weideman (1994) is asserted, because it was not verified against the paper.",
    "cannot establish a global error bound for arbitrary orders or arguments: the contract states none, and the evidence covers the sampled set and the two retained orders only."
   ]
  },
