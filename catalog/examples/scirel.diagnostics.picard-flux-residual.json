@@ -115,18 +115,21 @@
    "Large and small finite numerical boundaries, including changes whose unscaled subtraction overflows.",
    "Unrepresentable relative ratio is rejected.",
    "Wrong-rank or mismatched shapes and nonfinite input entries are rejected.",
-   "Result wrapping preserves the residual key, value, scalar type, mapping access and both zero/nonzero success branches against baseline 0f74255b; attribute access reaches the same field."
+   "Result wrapping preserves the residual key, value, scalar type, mapping access and both zero/nonzero success branches against baseline 0f74255b; attribute access reaches the same field.",
+   "Independent evidence (test_reduction_evidence): the residual ||psi_next - psi_previous||_2 / max(||psi_previous||_2, 1e-30) is recomputed through the exact rational sums of squares (compared through the squared ratio, since binary64 cannot represent the square root exactly); scale invariance is asserted where both norms stay above the declared floor and the floor's own divergence is asserted below it; equal fields return exactly zero."
   ],
   "tests": [
-   "tests/diagnostics/test_picard_flux_residual.py"
+   "tests/diagnostics/test_picard_flux_residual.py",
+   "tests/diagnostics/test_reduction_evidence.py"
   ],
-  "evidence_ceiling": "Direct numerical tests cover selected finite extremes and the formula, but not physical equilibrium convergence, arbitrary underflow behavior or expert recognition.",
+  "evidence_ceiling": "Direct numerical tests cover selected finite extremes and the formula, but not physical equilibrium convergence, arbitrary underflow behavior or expert recognition. C1 evidence adds: Exact rational norm ratio, scale invariance and the declared denominator floor.",
   "known_limitations": [
    "The denominator floor changes the relative ratio when the previous-state norm is below 1e-30 Wb.",
    "A nonzero binary64 input scale is at least 2^-1074, so 1e-30/scale is finite (less than 2.025e293); this step cannot overflow solely because the input scale is subnormal. This bound alone does not establish accuracy for arbitrary mixed-scale arrays or every other scaled operation.",
    "The Wb floor does not scale invariantly when reinterpreting Wb/rad states; no conversion or direct graph wiring is approved here.",
    "The scalar does not test Maxwell or pressure-force equations.",
-   "Public distribution licensing and expert recognition remain pending."
+   "Public distribution licensing and expert recognition remain pending.",
+   "The 1e-30 Wb denominator floor is a declared convention rather than a derived physical scale: below it the residual is scale dependent by construction (measured: a pair scaled to 1e-200 returns the floored denominator value, about 1.4e-170, instead of the scale-free ratio 0.31)."
   ]
  }
 }

@@ -353,7 +353,7 @@
   },
   {
    "asset_id": "scirel.diagnostics.parallel-pressure-residual",
-   "source_sha256": "0b7739983d2bc79409abd4708fdaff361d930da673d1d268fffd3dcd1fa1211e",
+   "source_sha256": "91f5bf0302fc3b1e20bc258fbb720e5cf9063e2a855eb81a7eeb0c37d0195904",
    "summary": "给定固定磁通导数，检查局部旋磁对称平行压强相容性。 以 scirel._result.Result 映射返回全部命名字段。",
    "definition": "rhs=p_parallel-B*(partial p_parallel/partial B)|psi，等价于 -B²*partial(p_parallel/B)/partial B|psi。error=p_perp-rhs，relative_error=abs(error)/max(abs(p_perp),abs(rhs),atol)；最大相对误差 <=rtol 时 passed=True。 所有命名字段作为同一个 scirel._result.Result 映射返回；按键和属性读取同一个值。 普通良态样本保留 float64 运算顺序；消减、中间范围损失或接近上界时，从原始输入的完整二进制有理关系分别最终舍入 rhs、error 和 relative_error，不用已舍入的公开 rhs 再算 error。必需非零最终量若舍入成零则拒绝；精确可表示的次正规量保留，不改变 rtol 或 atol。 上界判断只选择精确重算而非拒绝：完整关系略超最大 float64、但最终仍舍入为有限值时保留；完整关系到达溢出舍入中点时拒绝，即使普通连续运算每一步都返回有限值。",
    "model": "显式固定磁通压强定律的旋磁对称相容性，不是空间力平衡残差。",
@@ -500,13 +500,15 @@
      "直接原始输入 Fraction 锚点分别核原始消减及 1 Pa 默认控制缩放的 rhs、error、relative_error、passed；strict 的失败与成功分别检查。",
      "核完整第二次减法、带步长混合样本、独立线性压强律、输入不变和精确次正规量，不以生产中间量作参照。",
      "保留中间乘积溢出后仍可表示的结果；必需最终 rhs/error 真正不可表示以及非零最终量下溢时明确拒绝。",
-     "原始输入有理上界锚点核两种符号下完整 error 的溢出中点、略超 maxfloat 仍可有限舍入的邻接值、rhs 溢出中点及带步长混合有限样本，数值预算不放宽。"
+     "原始输入有理上界锚点核两种符号下完整 error 的溢出中点、略超 maxfloat 仍可有限舍入的邻接值、rhs 溢出中点及带步长混合有限样本，数值预算不放宽。",
+     "独立依据（test_parallel_pressure_evidence），其首要来源是代数恒等式而非另一实现：rhs = p∥ − B·dp∥/dB 恒等于 −B²·d(p∥/B)/dB。两个结构不同的写法先在有有理系数的闭式压强律上验证互相一致，再以精确有理算术与实现对照；error = p⊥ − rhs 与 relative_error = |error|/max(|p⊥|,|rhs|,atol) 由解析值重算；passed 是 max_relative_error ≤ rtol 的严格不等式并在两侧试探，strict=True 在失败侧检验；三种显式导数来源（标量、数组、可调用）检验一致；采样的 field_axis 导数检验为每次减半的误差比 3.0..5.5。"
     ],
     "evidence_ceiling": "tests/cross_domain/test_spectral_scientific_correction.py::test_uniform_isotropic_parallel_state_with_explicit_derivative 断言零残差；tests/cross_domain/test_spectral_scientific_correction.py::test_fixed_flux_derivative_must_not_mix_flux_surfaces 检查两条固定 psi 多项式线；tests/cross_domain/test_spectral_scientific_correction.py::test_missing_derivative_information_is_not_silently_zero 检查缺导数拒绝。 证据限于这些具名样本及其余绑定算术回归；缺少的扫描/加密证据保持 UNKNOWN，不证明实测等离子体有效性或一般稳定性定理。 直接原始输入有理消减、默认控制、strict、制造压强律、带步长数组和范围回归只支持所列离散样本的完整关系，不认证全部压强律或连续采样误差。",
     "known_limitations": [
      "导数/轴/psi 参数要求调用者提供缺失的物理信息；全局 B 排序不属于本合同。",
      "样本标志和残差只是局部模型诊断，不证明全局平衡或动力学稳定性。",
-     "UNKNOWN：此前所述 63 个守恒量双 Maxwell 状态扫描及四级固定 psi 差分加密，均未在绑定断言及查阅的本地历史中定位；不声称这两项已有可重放覆盖，模型支持保持原样。"
+     "UNKNOWN：此前所述 63 个守恒量双 Maxwell 状态扫描及四级固定 psi 差分加密，均未在绑定断言及查阅的本地历史中定位；不声称这两项已有可重放覆盖，模型支持保持原样。",
+     "恒等式对解析压强律与任意有限输入的公式成立；某个平衡态是否满足该关系属于对等离子体的陈述而非对算术的陈述，本处未确立。"
     ],
     "tests": [
      "tests/diagnostics/test_parallel_pressure_residual.py",
@@ -2618,7 +2620,7 @@
   },
   {
    "asset_id": "scirel.diagnostics.picard-flux-residual",
-   "source_sha256": "3e21144356e59b04ecd4977231d959c197992f1299d73ed01f5b0232ebc1bcfb",
+   "source_sha256": "232d13d3801ad1cc05ff597943a6753ccf8636150f5ade7d20c87baa4090514c",
    "summary": "用缩放算术及小分母下限，测量连续两个二维磁通状态相对前态的欧几里得变化。 以 scirel._result.Result 映射返回该残差。",
    "definition": "计算 ||psi_next−psi_previous||₂/max(||psi_previous||₂,1e-30 Wb)，以输入最大绝对值作算术尺度。全零对返回零；缩放分母为零或最终比值非有限时拒绝。极端次正规数不保证可表示。 residual 字段作为 scirel._result.Result 映射返回；按键和属性读取同一个值。",
    "model": "用于 Picard 停止判据的离散相对 L2 磁通变化。",
@@ -2678,7 +2680,8 @@
      "极大/极小有限输入，包括未缩放相减会溢出的情况。",
      "拒绝不可表示比值。",
      "拒绝错维/错形和非有限元素。",
-     "Result 包装保持 residual 键、数值、标量类型与映射访问，并覆盖零/非零两个成功分支（基线 0f74255b）；属性读取到同一字段。"
+     "Result 包装保持 residual 键、数值、标量类型与映射访问，并覆盖零/非零两个成功分支（基线 0f74255b）；属性读取到同一字段。",
+     "独立依据（test_reduction_evidence）：残差 ||ψ_next − ψ_prev||₂ / max(||ψ_prev||₂, 1e-30) 通过精确有理平方和重算（binary64 无法精确表示平方根，故比较平方比）；在两范数均高于声明下限处检验尺度不变性，并在其下方检验下限本身造成的偏离；相等场返回精确零。"
     ],
     "evidence_ceiling": "数值测试涵盖公式与所选极端值，不证明物理平衡收敛、任意下溢行为或专家认可。",
     "known_limitations": [
@@ -2686,7 +2689,8 @@
      "非零binary64输入尺度至少为2^-1074，因此1e-30/scale有限，小于2.025e293；不能因为输入尺度是次正规数就断言这一步溢出。这个上界本身不证明任意混合尺度数组或其余缩放运算的完整准确性。",
      "Wb 下限在重新解释为 Wb/rad 时不具有缩放不变性，未批准转换或直接连接。",
      "此标量不检查 Maxwell 方程或压力力平衡。",
-     "公开许可及专家认可待人工决定。"
+     "公开许可及专家认可待人工决定。",
+     "1e-30 Wb 的分母下限是声明约定而非推导出的物理尺度：低于它时残差按构造依赖尺度（实测：缩放到 1e-200 的一对返回下限分母值约 1.4e-170，而不是与尺度无关的比值 0.31）。"
     ],
     "tests": [
      "tests/diagnostics/test_picard_flux_residual.py"
@@ -2951,7 +2955,7 @@
   },
   {
    "asset_id": "scirel.diagnostics.pointwise-firehose-margin",
-   "source_sha256": "ab1bd53e59fbec391b2b438f85cbd6832f60786c8488a474fe58ee7c1dad1614",
+   "source_sha256": "158f717b0e9054e0c4673b4e7e095d54dcae127b1018b1d751a7fef323467f93",
    "summary": "逐点计算 B²/mu0+p_perp-p_parallel（Pa），以 scirel._result.Result 映射返回唯一命名字段；不求导、不进入镜模分支，也不生成稳定性标志。",
    "definition": "firehose_margin=B²/mu0+p_perp-p_parallel，各样本独立求值。不排序、不求导、不取全局最小值，也不作汇总判定。单样本或所有 B 相同与其他同形输入同样有效。 与组合诊断共享同一算术内核；独立入口保留单点、重复及无序磁场，不构造任何压力导数。 普通非严重相消数值保留原 float64 运算顺序。异号贡献抵消后，若结果幅度不大于最大项的一半，或中间乘积/商丢失量级，则对完整关系使用精确二进制有理数求值，最后一次舍入到 float64。此算术分支不是物理容差，不把结果钳制为零，也不只特判相等压强；最终确实不可表示时仍失败。 唯一 firehose_margin 字段作为 scirel._result.Result 映射返回；按键和属性读取同一个值。",
    "model": "以压强单位表示的局部流体 CGL 序 firehose 判别量。正值只是算术观察；梯度、动力学、有限回旋半径修正及完整稳定性判定不在此关系内。",
@@ -3026,14 +3030,16 @@
      "共享内核保留独立单点、重复和无序样本，不臆造镜模导数。",
      "以独立高精度 Decimal 验证有限输入的中间平方上下溢及相消；最终不可表示的结果仍拒绝。",
      "在已安装 wheel 上，以独立 2000 位 Decimal 算术核对相等/不等压强抵消、不同量纲下相邻浮点输入、镜模余量正负号、非连续多维数组及精确零值标志。",
-     "改造后的公开函数返回 scirel._result.Result，保持原键、数值、形状、dtype 和映射兼容性，属性读取解析到同一字段。"
+     "改造后的公开函数返回 scirel._result.Result，保持原键、数值、形状、dtype 和映射兼容性，属性读取解析到同一字段。",
+     "独立依据（test_firehose_evidence）：以原始 binary64 输入在精确有理算术中重算 firehose_margin = B²/μ0 + p⊥ − p∥ 并单次舍入，因此普通浮点路径（64 eps 量级）与精确有理抵消切换（舍入后精确）都对照第二条算术路径而不是另一次调用；判据按理想 MHD 不等式 margin > 0 ⟺ p∥ − p⊥ < B²/μ0，在可精确表示的等号处与两侧符号上分别检验；量纲平衡用 B→√k·B、两压强→k·p 使 margin 按 k 缩放的对称性检验。"
     ],
     "evidence_ceiling": "有针对性的回归、明确解析构造例和所选 wheel 的安装运行覆盖本有限合同；不推断任意物理模型适用性、连续体收敛、人工科学认可或再分发许可。",
     "known_limitations": [
      "返回值为算术观察，此资产不给正值标签、准则断言或稳定性含义。",
      "关系仅为局部流体序判别量，不含梯度驱动、动力学及有限回旋半径修正。",
      "组合诊断的镜模分支要求明确的固定磁通导数；此入口独立支持单点和重复 B，不使用零导数回退。",
-     "公开分发许可与专家认可仍待完成。"
+     "公开分发许可与专家认可仍待完成。",
+     "无法确立 firehose 与 mirror 判据本身的原始文献引用：本证据确立的是算术等于所声明的闭式、以及每个判据就是其 margin 的符号，而不是这些判据对某台装置是否为正确物理。"
     ],
     "tests": [
      "tests/diagnostics/test_pointwise_firehose_margin.py",
@@ -7555,7 +7561,7 @@
   },
   {
    "asset_id": "scirel.diagnostics.firehose-mirror-margins",
-   "source_sha256": "ce203200c0f6b463eafa6546a3413a4693812c091757278219467d2a5af5d330",
+   "source_sha256": "d1c1e9de37332e622960f0cff2a030dd1e5e0f13d914ae0ecd82e38d10046bdc",
    "summary": "用显式固定磁通导数计算局部旋磁对称压强诊断。 以 scirel._result.Result 映射返回全部命名字段。",
    "definition": "firehose_margin=B²/mu0+p_perp-p_parallel；mirror_margin=B*d[p_perp+B²/(2*mu0)]/dB|psi=B²/mu0+B*dp_perp/dB。所有样本最小值严格为正时相应局部标志为 True。对守恒量双 Maxwell 分布，镜模条件为 1-beta_perp*(T_perp/T_parallel-1)>0。 普通非严重相消数值保留原 float64 运算顺序。异号贡献抵消后，若结果幅度不大于最大项的一半，或中间乘积/商丢失量级，则对完整关系使用精确二进制有理数求值，最后一次舍入到 float64。此算术分支不是物理容差，不把结果钳制为零，也不只特判相等压强；最终确实不可表示时仍失败。 所有命名字段作为同一个 scirel._result.Result 映射返回；按键和属性读取同一个值。",
    "model": "局部无流旋磁对称张力和长波总压强斜率准则。正导数号由此定义和双 Maxwell 阈值给出，与 Frank2509.17288v4 Eq6 的字面反号冲突；不声称作者确认勘误。",
@@ -7712,14 +7718,16 @@
      "tests/cross_domain/test_spectral_scientific_correction.py::test_invariant_bimaxwellian_mirror_threshold_has_positive_slope_sign 断言显式双 Maxwell 镜模/火管用例；tests/cross_domain/test_spectral_scientific_correction.py::test_missing_derivative_information_is_not_silently_zero 检查缺导数拒绝。另绑定的相消测试检查浮点算术，不构成物理状态扫描。",
      "以独立高精度 Decimal 验证有限输入的中间平方上下溢及相消；最终不可表示的结果仍拒绝。",
      "在已安装 wheel 上，以独立 2000 位 Decimal 算术核对相等/不等压强抵消、不同量纲下相邻浮点输入、镜模余量正负号、非连续多维数组及精确零值标志。",
-     "Result 包装保持全部键、键顺序、数值、形状、dtype 与映射访问（基线 0f74255b），包括零维标量裕度；属性读取到同一字段。"
+     "Result 包装保持全部键、键顺序、数值、形状、dtype 与映射访问（基线 0f74255b），包括零维标量裕度；属性读取到同一字段。",
+     "独立依据（test_firehose_evidence）针对合并诊断：mirror_margin = B²/μ0 + B·dp⊥/dB 在解析 p⊥(B) 律（仿射、三次、倒数）上手写导数后检验，覆盖两种允许的导数来源（显式数组与可调用）；firehose 字段检验为与逐点关系逐位相同（两者共用同一内核）；稳定性标志与最小值检验为等于 margin 的符号与最小值；采样的固定磁通导数（field_axis + psi）检验为每次网格减半的误差比 3.0..5.5，符合二阶梯度。"
     ],
     "evidence_ceiling": "tests/cross_domain/test_spectral_scientific_correction.py::test_invariant_bimaxwellian_mirror_threshold_has_positive_slope_sign 断言显式双 Maxwell 镜模/火管用例；tests/cross_domain/test_spectral_scientific_correction.py::test_missing_derivative_information_is_not_silently_zero 检查缺导数拒绝。另绑定的相消测试检查浮点算术，不构成物理状态扫描。 证据限于这些具名样本及其余绑定算术回归；缺少的扫描/加密证据保持 UNKNOWN，不证明实测等离子体有效性或一般稳定性定理。",
     "known_limitations": [
      "导数/轴/psi 参数要求调用者提供缺失的物理信息；全局 B 排序不属于本合同。",
      "样本标志和残差只是局部模型诊断，不证明全局平衡或动力学稳定性。",
      "已记录 Frank Eq6 的字面符号冲突；实现采用所述总压强导数及双 Maxwell 准则，不宣称作者勘误。",
-     "UNKNOWN：此前所述 63 个守恒量双 Maxwell 状态扫描及四级固定 psi 差分加密，均未在绑定断言及查阅的本地历史中定位；不声称这两项已有可重放覆盖，模型支持保持原样。"
+     "UNKNOWN：此前所述 63 个守恒量双 Maxwell 状态扫描及四级固定 psi 差分加密，均未在绑定断言及查阅的本地历史中定位；不声称这两项已有可重放覆盖，模型支持保持原样。",
+     "无法确立合同陈述的「不变双 Maxwell 分布下镜面判据化为 1 − β⊥(T⊥/T∥ − 1)」：验证它需要分布模型与固定 ψ 参数化，本处证据未覆盖。"
     ],
     "tests": [
      "tests/cross_domain/test_spectral_scientific_correction.py",

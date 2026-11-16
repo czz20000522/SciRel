@@ -127,18 +127,21 @@
    "Result wrapping preserves both keys, key order, residual vector value/shape/dtype, chi2 and mapping access against baseline 0f74255b; attribute access reaches the same fields.",
    "Raw-input Fraction references with fixed rtol=1e-13 and atol=0 cover the recoverable difference at prediction=2^1023, observation=-2^1023, sigma=2^1023 and the four-term squared sum at residual=2^-538, together with adjacent scales, signs, cancellation and final subnormal rounding controls.",
    "Direct controls retain channel/C order, scalar and array shapes, broadcast sigma, strict declared-unit matching, input nonmutation, Result access and genuine final-overflow rejection; these are bounded algebraic checks, not statistical significance or complete-domain validation.",
-   "Raw-input regressions separately check finite subnormal residual rounding and normal complete squared sums with individually subnormal or unrepresentable square contributions, including a mixed tiny tail and repeated non-power-of-two residuals; no final-total or sample-count exception defines the arithmetic."
+   "Raw-input regressions separately check finite subnormal residual rounding and normal complete squared sums with individually subnormal or unrepresentable square contributions, including a mixed tiny tail and repeated non-power-of-two residuals; no final-total or sample-count exception defines the arithmetic.",
+   "Independent evidence (test_reduction_evidence): each normalized residual (prediction - observation) / sigma is rebuilt in exact rational arithmetic; the fixed channel order is checked against a mapping whose channels are inserted in reverse, so an implementation walking the input mapping fails; the vector is checked to be affine in the prediction with slope 1/sigma and exactly zero when prediction equals observation; chi2 is checked to be the sum of the returned residual squares; and the declared unit-label gating is checked as a rejection and as a pass-through."
   ],
   "tests": [
    "tests/cross_domain/test_inference_physical_closure.py",
    "tests/cross_domain/test_anisotropic_inference_independent.py",
    "tests/diagnostics/test_observation_residuals.py",
-   "tests/diagnostics/test_observation_scales.py"
+   "tests/diagnostics/test_observation_scales.py",
+   "tests/diagnostics/test_reduction_evidence.py"
   ],
-  "evidence_ceiling": "Author regressions, independent analytic and independent discrete-reference comparisons, and selected installed-wheel user calls completed in the exact environment; they cover only the listed contract and examples. Root-level independent intake, human scientific recognition, redistribution permission and public release are separate decisions; they do not extend this to arbitrary closures, devices or global identifiability proofs.",
+  "evidence_ceiling": "Author regressions, independent analytic and independent discrete-reference comparisons, and selected installed-wheel user calls completed in the exact environment; they cover only the listed contract and examples. Root-level independent intake, human scientific recognition, redistribution permission and public release are separate decisions; they do not extend this to arbitrary closures, devices or global identifiability proofs. C1 evidence adds: Exact rational normalized residuals and the fixed channel order.",
   "known_limitations": [
    "unit is a declared match only; units are not converted automatically and instrument calibration is not verified.",
-   "chi2 is only the algebraic squared sum under the stated diagonal weights; it cannot be interpreted alone as statistical significance."
+   "chi2 is only the algebraic squared sum under the stated diagonal weights; it cannot be interpreted alone as statistical significance.",
+   "cannot establish any statistical interpretation: chi2 is the declared algebraic diagonal-weight sum, and no goodness-of-fit, covariance, calibration or significance claim is made or verified here."
   ]
  }
 }
