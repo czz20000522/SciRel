@@ -142,12 +142,17 @@
  },
  "verification": {
   "scope": [
-   "External PDRF gate: test_multifluid_scan_point_matches_external_pdrf_truth checks scan_fluid_corrected at four (kx,kz) points against the same 14 independent real frequencies used by the solve gate.",
-   "The bounded example is a representative case only."
+   "Independent reference: the composition identity. Every scan point carries the full solution of the same pencil at that wavevector, so each scanned spectrum must be the point solve at the same kx, kz - a statement about the returned data that does not reuse the scan's own solver.",
+   "Implementation relation: the result names its axes (k, theta) for the wave-number family, carries axis_values for each and the corresponding kx/kz grid, and stores w1/w2 per point; a point-solver failure aborts the whole scan instead of presenting a partially filled grid.",
+   "Test matrix: the axis names and shapes of the declared grid, the per-point equality with the point solver, and the rejection of an unknown method selector.",
+   "Precision budget, declared before the comparison was run: 1024 eps relative on the largest frequency, because the scan and the point solve are two different floating-point paths through the same assembly.",
+   "Evidence ceiling: composition only. The scan does not track branches across points, so no root-to-root continuity claim is established here."
   ],
   "tests": [
    "tests/kinetic/test_dispersion_multifluid_oracle.py",
-   "tests/kinetic/test_dispersion_multifluid.py"
+   "tests/kinetic/test_dispersion_multifluid.py",
+   "tests/kinetic/test_multifluid_pencil_evidence.py",
+   "tests/kinetic/_fluid_pencil_reference.py"
   ],
   "evidence_ceiling": "Bounded to the declared multifluid scan over the tested point grid. The external PDRF gate checks scan_fluid_corrected at four (kx,kz) points against 14 independent real frequencies, and the underlying solve is gated separately. It does not establish arbitrary grid/parameter coverage, branch continuity (sorts are per point) or physical mode identity.",
   "known_limitations": [

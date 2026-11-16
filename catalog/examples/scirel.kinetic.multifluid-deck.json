@@ -84,11 +84,16 @@
  },
  "verification": {
   "scope": [
-   "Direct gate: test_packaged_fluid_deck_is_loaded_directly binds fluid_deck() shape, finite SI fields, the fixed electron/proton rows and independent arrays with equal values.",
-   "The contract example and direct test both load the packaged table; no external calibration is claimed."
+   "Independent reference: the deck is a declaration, so what is established is its shape and its internal consistency, recomputed rather than read back - a finite (species, columns) float table that the equilibrium layer accepts and that reproduces the SI fields it claims to carry.",
+   "Implementation relation: the packaged deck is returned as one array, not as a mapping, with no caller-supplied scientific input; the species count it declares is the species count every downstream state carries.",
+   "Test matrix: shape and finiteness, acceptance by fluid_equilibrium_si, the species-count chain into the state and the pencil, and the rejection channels of the downstream layers.",
+   "Precision budget, declared before the comparison was run: the deck is compared at zero tolerance because it is a declaration, not a derived quantity; only the counts and shapes are asserted.",
+   "Cannot establish: the numerical contents of the deck (charges, masses, densities, temperatures, drift, transport coefficients) are an external case declaration copied from the source implementation. Nothing in this repository derives them, so this contract records them as a declaration and claims no independent source for the numbers; the relations among them are established in scirel.kinetic.multifluid-equilibrium and scirel.kinetic.multifluid-frequency-pencil."
   ],
   "tests": [
-   "tests/kinetic/test_dispersion_multifluid.py"
+   "tests/kinetic/test_dispersion_multifluid.py",
+   "tests/kinetic/test_multifluid_pencil_evidence.py",
+   "tests/kinetic/_fluid_pencil_reference.py"
   ],
   "evidence_ceiling": "Bounded to the packaged ten-column two-species table: direct test checks shape, finite values, electron/proton rows and conversion into fluid_equilibrium_si. It does not establish arbitrary deck correctness or experimental calibration.",
   "known_limitations": [
