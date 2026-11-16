@@ -44,8 +44,8 @@ Budgets, fixed before the comparison was run:
 
 * pointwise relative deviation ``<= _RELATIVE_BUDGET = 64 eps = 1.42e-14``,
   derived in ``_biot_savart_reference`` from the operation count of the closed
-  form.  The observed maximum over the grid used here is ``1.26e-14``, i.e.
-  ``0.89`` of the budget; this is an **observed maximum on a sampled grid**, not
+  form.  The observed maximum over the grid used here is ``5.38e-15``, i.e.
+  ``0.38`` of the budget; this is an **observed maximum on a sampled grid**, not
   a proven bound over the continuous target set.
 * the quadrature itself is certified at ``1e-25`` of the integrand scale at two
   working precisions, so it contributes nothing at the ``1e-14`` level.

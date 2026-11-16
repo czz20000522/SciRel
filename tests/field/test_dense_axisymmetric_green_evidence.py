@@ -25,7 +25,7 @@ What the tests establish
 
 Budget: ``_RELATIVE_BUDGET = 64 eps`` from ``_biot_savart_reference``, derived
 there from the operation count of the closed form.  The observed maximum over
-the grid used here is ``9.3e-15`` (``0.65`` of the budget); it is an observed
+the grid used here is ``7.81e-15`` (``0.55`` of the budget); it is an observed
 maximum on a sampled grid, not a proven bound between grid points.  The
 power-of-two and coincidence assertions are exact equalities and carry no
 budget.

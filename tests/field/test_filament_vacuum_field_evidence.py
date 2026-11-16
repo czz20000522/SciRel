@@ -35,7 +35,8 @@ splits the operator into the two things it actually does:
 Budgets, fixed before the comparison was run:
 
 * field components: ``_RELATIVE_BUDGET = 64 eps`` from
-  ``_biot_savart_reference``; observed maximum ``1.7e-16`` on this grid.
+  ``_biot_savart_reference``; observed maximum ``1.96e-15`` (``0.14`` of the
+  budget) on this grid.
 * flux: the deviation is dominated by the **trapezoid truncation error**, not by
   binary64, so the budget cannot be an ``N eps`` figure.  The composite
   two-point rule over ``[0, 0.3]`` with ``h = 0.0125`` has truncation
