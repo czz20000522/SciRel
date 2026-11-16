@@ -160,7 +160,9 @@ def test_complex_trilinear_matches_an_exact_rational_recomputation():
     points = np.array(
         [[0.5, 1.0, 0.75], [2.7, 0.3, 3.9], [0.0, 0.0, 0.0], [3.0, 2.0, 4.0], [1.0, 2.0, 1.5]]
     )
-    got = np.asarray(N.interpolate_complex_rectilinear_field(axes, values, points)["interpolated_values"])
+    got = np.asarray(
+        N.interpolate_complex_rectilinear_field(axes, values, points)["interpolated_values"]
+    )
     axis_tuple = (axes["x_m"], axes["y_m"], axes["z_m"])
     for point, actual in zip(points, got):
         expected = _exact_rational_trilinear(axis_tuple, values, point)
