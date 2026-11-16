@@ -1,0 +1,230 @@
+"""Independent evidence for the poloidal field recovered from flux.
+
+Asset: ``scirel.field.poloidal-field-from-flux``.
+
+The maintained tests use a manufactured ``psi`` of one shape and check the two
+derivatives against hand-evaluated values.  This file uses a **manufactured
+solution whose analytic derivatives are known and which the stencil reproduces
+exactly**: a three-point rule of the form
+
+    (h1 * (f1 - f0)/h0 + h0 * (f2 - f1)/h1) / (h0 + h1)
+
+is exact for a quadratic in the differentiation variable on *any* rectilinear
+grid, including the endpoint formulas this operator uses.  So for
+
+    psi(R, Z) = R**2 * (a + e*Z + b*Z**2)
+
+the two components are
+
+    B_R = -(1/R) dpsi/dZ = -R * (e + 2 b Z)
+    B_Z =  (1/R) dpsi/dR = 2 * (a + e Z + b Z**2)
+
+with no discretisation error at all, and the axis rule
+``2*(psi[:,1] - psi[:,0])/R[1]**2`` returns ``2*(a + e Z + b Z**2)`` exactly
+because ``psi - psi(0, Z) = R**2 * (a + e Z + b Z**2)``.  The ``R**2`` factor is
+what makes this family admissible at the axis, and it is also why the operator's
+``B_R = 0`` axis assignment is the right limit rather than a special case.
+
+What the tests decide:
+
+1. **Both components against the analytic values**, on a non-uniform
+   rectilinear grid, including the first and last row and column where the
+   operator uses one-sided endpoint formulas.
+2. **The ``1/R`` division is the contract's**: a solution whose ``B_Z`` is
+   independent of ``R`` must come out independent of ``R``.  An operator that
+   returned ``dpsi/dR`` without dividing, or divided twice, fails with an
+   ``R``-dependent error.
+3. **The axis column**: ``B_R`` is exactly zero there, and the ``B_Z`` axis rule
+   agrees with the off-axis limit to the same budget.
+4. **A constant flux reference changes nothing, exactly**: adding a constant to
+   ``psi`` leaves both components bitwise identical, because the stencil is built
+   from differences.  That is the discrete form of the contract's "adding a
+   constant reference leaves these derivatives unchanged".
+5. **A Z-dependent reference changes ``B_R`` and not ``B_Z``**, which is the
+   discrete form of the warning that a per-``Z`` reference shift changes ``B_R``.
+6. **A power-of-two amplitude scaling scales both components exactly.**
+
+Budget: items 1 and 3 carry ``16 eps`` relative, derived from the roundings the
+path performs (the stored ``psi`` values are themselves rounded, the stencil
+forms two differences and one weighted sum, then one division by ``R`` and one
+multiply by ``-1``), and the ``hypot`` adds one more.  Items 4, 5 and 6 are exact
+equalities.  The observed maximum on this grid is bounded by that 16-eps figure;
+it is an observed maximum on a sampled grid, not a proven bound.
+
+Evidence ceiling: this is a manufactured polynomial, so it tests the discrete
+operator and its conventions, not the accuracy of a real equilibrium flux.  The
+operator's error on a general ``psi`` depends on the third derivative and is not
+bounded here.
+"""
+
+from __future__ import annotations
+
+import numpy as np
+import pytest
+
+from scirel._result import Result
+from scirel.field import poloidal_field_from_flux
+
+EPS = float(np.finfo(float).eps)
+BUDGET = 16.0 * EPS
+
+# Non-uniform rectilinear grids: the stencil is exact for quadratics on any
+# rectilinear grid, so a non-uniform grid does not weaken the manufactured test
+# but does exercise the endpoint formulas.
+RADIAL = np.array([0.0, 0.1, 0.25, 0.45])
+AXIAL = np.array([-0.6, -0.25, 0.0, 0.35, 0.8])
+
+A, E, B = 0.5, -1.25, 0.75
+
+
+def _grid():
+    return np.meshgrid(RADIAL, AXIAL)
+
+
+def _psi(extra_z=None, offset=0.0):
+    """Return the manufactured flux, optionally plus a Z-dependent reference."""
+    radius, height = _grid()
+    values = radius**2 * (A + E * height + B * height**2)
+    if extra_z is not None:
+        values = values + extra_z(height)
+    return values + offset
+
+
+def _analytic(radius, height):
+    """Return ``(B_R, B_Z)`` of the manufactured flux."""
+    return -radius * (E + 2.0 * B * height), 2.0 * (A + E * height + B * height**2)
+
+
+def test_both_components_match_the_analytic_derivatives():
+    """Evidence 1: the manufactured solution on a non-uniform grid."""
+    radius, height = _grid()
+    result = poloidal_field_from_flux(radius, height, _psi())
+    observed = 0.0
+    for row in range(radius.shape[0]):
+        for column in range(radius.shape[1]):
+            expected_r, expected_z = _analytic(float(radius[row, column]), float(height[row, column]))
+            for name, got, want in (
+                ("B_R", float(result["B_R"][row, column]), expected_r),
+                ("B_Z", float(result["B_Z"][row, column]), expected_z),
+                ("B", float(result["B"][row, column]), float(np.hypot(expected_r, expected_z))),
+            ):
+                if want == 0.0:
+                    assert got == 0.0, (name, row, column, got)
+                    continue
+                deviation = abs(got - want) / abs(want)
+                assert deviation <= BUDGET, (name, row, column, deviation)
+                observed = max(observed, deviation)
+    assert observed > 0.0
+    # Anchors: the components have both signs and are not equal to each other, so
+    # a zero or a duplicated component cannot pass.
+    assert result["B_R"][0, 1] > 0.0
+    assert result["B_R"][-1, 1] < 0.0
+    assert not np.allclose(result["B_R"], result["B_Z"])
+
+
+def test_the_one_over_r_division_is_the_contracted_one():
+    """Evidence 2: B_Z is R-independent for this family, so R-dependence is a bug."""
+    radius, height = _grid()
+    result = poloidal_field_from_flux(radius, height, _psi())
+    for row in range(radius.shape[0]):
+        expected = _analytic(0.0, float(height[row, 0]))[1]
+        assert abs(float(result["B_Z"][row, 0]) - expected) <= BUDGET * abs(expected), row
+        for column in range(1, radius.shape[1]):
+            value = float(result["B_Z"][row, column])
+            assert abs(value - expected) <= BUDGET * abs(expected), (row, column)
+    # A ``dpsi/dR`` without the division would grow like R; assert the ratio to
+    # the outermost column stays one rather than scaling with R.
+    ratios = result["B_Z"][:, 1:] / result["B_Z"][:, :1]
+    np.testing.assert_allclose(ratios, 1.0, rtol=BUDGET, atol=0.0)
+
+
+def test_the_axis_column_uses_the_even_flux_limit():
+    """Evidence 3: B_R = 0 on the axis and the axis B_Z matches the off-axis limit."""
+    radius, height = _grid()
+    result = poloidal_field_from_flux(radius, height, _psi())
+    np.testing.assert_array_equal(result["B_R"][:, 0], 0.0)
+    for row in range(radius.shape[0]):
+        axis_value = float(result["B_Z"][row, 0])
+        off_axis = float(result["B_Z"][row, 1])
+        assert abs(axis_value - off_axis) <= BUDGET * abs(off_axis), row
+        # The axis value is not accidentally the off-axis one reused: for this
+        # family they are analytically equal, so the anchor is the analytic value.
+        expected = _analytic(0.0, float(height[row, 0]))[1]
+        assert abs(axis_value - expected) <= BUDGET * abs(expected)
+
+
+def test_a_constant_flux_reference_changes_nothing_exactly():
+    """Evidence 4: adding a constant leaves both components bitwise identical."""
+    radius, height = _grid()
+    base = poloidal_field_from_flux(radius, height, _psi())
+    shifted = poloidal_field_from_flux(radius, height, _psi(offset=1.0e3))
+    for name in ("B_R", "B_Z", "B"):
+        np.testing.assert_array_equal(shifted[name], base[name]), name
+        assert np.any(base[name] != 0.0), name
+
+
+def test_a_z_dependent_reference_changes_b_r_and_not_b_z():
+    """Evidence 5: the per-Z reference shift the contract warns about."""
+    radius, height = _grid()
+    base = poloidal_field_from_flux(radius, height, _psi())
+    shifted = poloidal_field_from_flux(radius, height, _psi(extra_z=lambda z: 3.0 * z**2))
+    # dpsi/dR is untouched, so B_Z is bitwise identical.
+    np.testing.assert_array_equal(shifted["B_Z"], base["B_Z"])
+    # dpsi/dZ changes by 6 Z, so B_R changes off the axis.
+    assert not np.array_equal(shifted["B_R"][:, 1:], base["B_R"][:, 1:])
+    for row in range(radius.shape[0]):
+        column = 2
+        added = -6.0 * float(height[row, column]) / float(radius[row, column])
+        assert abs(
+            (float(shifted["B_R"][row, column]) - float(base["B_R"][row, column])) - added
+        ) <= BUDGET * max(abs(added), abs(float(base["B_R"][row, column])))
+
+
+def test_power_of_two_amplitude_scaling_is_exact():
+    """Evidence 6: linearity of the whole operator under an exact factor."""
+    radius, height = _grid()
+    base = poloidal_field_from_flux(radius, height, _psi())
+    scaled = poloidal_field_from_flux(radius, height, 8.0 * _psi())
+    for name in ("B_R", "B_Z", "B"):
+        np.testing.assert_array_equal(scaled[name], 8.0 * base[name]), name
+
+
+def test_the_named_result_keeps_its_shape_and_access():
+    """The mapping/attribute contract the asset promises."""
+    radius, height = _grid()
+    result = poloidal_field_from_flux(radius, height, _psi())
+    assert isinstance(result, Result)
+    assert list(result) == ["B_R", "B_Z", "B"]
+    for name in ("B_R", "B_Z", "B"):
+        assert getattr(result, name) is result[name]
+        assert result[name].shape == radius.shape
+        assert result[name].dtype == np.float64
+
+
+def test_each_declared_rejection_channel_is_executable():
+    """Every ``failure_semantics`` channel has one assertion."""
+    radius, height = _grid()
+    good = _psi()
+    with pytest.raises(ValueError, match="real-valued arrays"):
+        poloidal_field_from_flux(radius + 0j, height, good)
+    with pytest.raises(ValueError, match="equal-shape 2-D arrays"):
+        poloidal_field_from_flux(radius, height[1:], good)
+    with pytest.raises(ValueError, match="equal-shape 2-D arrays"):
+        poloidal_field_from_flux(radius, height, good[1:])
+    with pytest.raises(ValueError, match="coordinates must be finite"):
+        poloidal_field_from_flux(np.full_like(radius, np.nan), height, good)
+    with pytest.raises(ValueError, match="at least 3 points per axis"):
+        poloidal_field_from_flux(radius[:2], height[:2], good[:2, :2])
+    with pytest.raises(ValueError, match="strictly increasing rectilinear"):
+        poloidal_field_from_flux(
+            *np.meshgrid(RADIAL[::-1], AXIAL), _psi()
+        )
+    with pytest.raises(ValueError, match="grid axes and psi are invalid"):
+        poloidal_field_from_flux(radius, height, np.full_like(radius, np.nan))
+    # runtime_failure: accepted finite input whose reciprocal division overflows.
+    with pytest.raises(FloatingPointError, match="not representable"):
+        poloidal_field_from_flux(
+            *np.meshgrid(np.array([0.0, 1.0e-300, 2.0e-300]),
+                         np.array([-1.0, 0.0, 1.0])),
+            np.array([[0.0, 0.0, 0.0], [0.0, 1.0, 4.0], [0.0, 2.0, 8.0]]),
+        )
