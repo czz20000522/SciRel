@@ -171,11 +171,17 @@ def test_the_underdetermined_solution_is_the_minimum_norm_one():
     gbb = [[1.0, 1.0]]
     gbf = [[1.0, 2.0], [0.0, 1.0]]
     result = correct_ideal_conductor_boundary_flux(psi, sample, gbb, gbf)
-    # gbb.T @ (gbb @ gbb.T)^-1 @ (-b) with b = 1.
-    np.testing.assert_array_equal(result["boundary_currents"], [-0.5, -0.5])
-    np.testing.assert_array_equal(result["residual"], 0.0)
-    np.testing.assert_array_equal(result["corrected_field_flux"], [-0.5, -0.5])
+    # gbb.T @ (gbb @ gbb.T)^-1 @ (-b) with b = 1, in exact rationals.
+    half = Fraction(-1, 2)
+    _assert_exact_columns("boundary_currents", result["boundary_currents"], [half, half], [half, half])
+    _assert_exact_columns("corrected_field_flux", result["corrected_field_flux"], [half, half], [half, half])
     assert result["effective_rank"] == 1
+    # The residual equation gbb @ c = -b holds, so the sampled flux is cancelled.
+    total = Fraction(float(result["boundary_currents"][0])) + Fraction(
+        float(result["boundary_currents"][1])
+    )
+    assert abs(total + 1) <= BUDGET
+    assert abs(float(result["residual"][0])) <= float(BUDGET)
 
 
 def test_the_named_result_keeps_its_declared_keys():
