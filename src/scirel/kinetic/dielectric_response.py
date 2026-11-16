@@ -13,10 +13,11 @@ _METHODS = ("harmonic", "harmonic_weideman", "ronnmark")
 _CONVENTION = "K_ij = delta_ij - sigma_ij/(i*omega*epsilon0)"
 
 
-def _harmonics(value, *, default, asset):
-    if value is None:
+def _harmonics(value, *, default, asset, none_default=True):
+    if value is None and none_default:
         return default
-    legal = f"legal values: a non-negative integer, or None for {default}; see {asset}"
+    optional = f", or None for {default}" if none_default else ""
+    legal = f"legal values: a non-negative integer{optional}; see {asset}"
     if isinstance(value, (bool, np.bool_)):
         raise TypeError(f"harmonics must be an integer, not bool; received {value!r}; {legal}")
     try:

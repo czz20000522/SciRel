@@ -214,6 +214,14 @@ def test_diagnostic_none_is_not_a_default_cutoff(diagnostic):
     _error_context(error, "harmonics", None, "scirel.kinetic.dielectric-diagnostics")
 
 
+@pytest.mark.parametrize("harmonics", [None, True, 1.5])
+def test_diagnostic_errors_do_not_offer_none_as_a_legal_cutoff(diagnostic, harmonics):
+    with pytest.raises(TypeError) as error:
+        diagnostic(**_case(), harmonics=harmonics)
+    legal = str(error.value).split("legal values:", 1)[1]
+    assert "None" not in legal
+
+
 @pytest.mark.parametrize("harmonics", [0, 5, -1, True, np.bool_(False), 1.5, "5", [], {}])
 def test_ronnmark_refuses_every_unused_harmonic_control(response, harmonics):
     with pytest.raises(TypeError) as error:
