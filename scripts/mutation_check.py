@@ -100,7 +100,11 @@ def check_asset(root: Path, asset_id: str, *, log_dir: Path | None = None) -> di
     api = contract["public_api"]["python"]
     tests = list(contract["verification"]["tests"])
     report["tests"] = tests
-    missing = [t for t in tests if not (root / t).is_file()]
+    # verification.tests entries may be pytest node ids ("path::test_name"), which
+    # is the same syntax the suite itself accepts. Passing the whole id to is_file()
+    # made every such asset look like it had no tests at all, so the mutation check
+    # could not run for eighteen contracts whose entries name individual tests.
+    missing = [t for t in tests if not (root / t.split("::", 1)[0]).is_file()]
     if not tests or missing:
         report["state"] = "error"
         report["detail"] = f"verification.tests missing or not found: {missing or 'empty'}"
