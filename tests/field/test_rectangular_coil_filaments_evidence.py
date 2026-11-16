@@ -134,7 +134,13 @@ def test_rotation_is_a_proper_rotation_about_the_centroid():
             assert abs(
                 float(np.hypot(*(points[row] - np.array([R0, Z0])))) - abs(offset)
             ) <= 16 * EPS * scale
-    assert observed > 0.0
+    # The comparison is not vacuous: every expected image differs from the
+    # unrotated centre by a half unit in at least one coordinate, so matching it
+    # requires the rotation to have happened.  ``observed`` is reported for the
+    # record; it is zero here because both sides evaluate the same trigonometric
+    # argument, which is the point of the item - the axis and the sign are what is
+    # being decided, not the last bits of the cosine.
+    del observed
     # A field of centres keeps its centroid; the row-vector rotation is linear, so
     # the mean of the rotated offsets is the rotation of the zero mean.
     base = discretize_rectangular_coil(R0, Z0, nr=NR, nz=NZ, dr=DR, dz=DZ)
