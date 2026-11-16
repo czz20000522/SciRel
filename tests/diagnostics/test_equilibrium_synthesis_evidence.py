@@ -70,9 +70,7 @@ def test_magnetic_flux_from_wb_per_rad_multiplies_by_two_pi():
         equilibrium=equilibrium,
         R=R_GRID,
         Z=Z_GRID,
-        observations={
-            "flux_loops": {"points": POINTS, "quantity": "magnetic_flux", "unit": "Wb"}
-        },
+        observations={"flux_loops": {"points": POINTS, "quantity": "magnetic_flux", "unit": "Wb"}},
     )
     expected = 2.0 * np.pi * _affine_expectation(POINTS)
     got = np.asarray(result["flux_loops"])
@@ -87,9 +85,7 @@ def test_magnetic_flux_from_wb_is_unchanged():
         equilibrium=equilibrium,
         R=R_GRID,
         Z=Z_GRID,
-        observations={
-            "flux_loops": {"points": POINTS, "quantity": "magnetic_flux", "unit": "Wb"}
-        },
+        observations={"flux_loops": {"points": POINTS, "quantity": "magnetic_flux", "unit": "Wb"}},
     )
     expected = _affine_expectation(POINTS)
     got = np.asarray(result["flux_loops"])
@@ -104,9 +100,7 @@ def test_raw_psi_keeps_its_unit_and_value():
         equilibrium=equilibrium,
         R=R_GRID,
         Z=Z_GRID,
-        observations={
-            "flux_loops": {"points": POINTS, "quantity": "raw_psi", "unit": "Wb/rad"}
-        },
+        observations={"flux_loops": {"points": POINTS, "quantity": "raw_psi", "unit": "Wb/rad"}},
     )
     expected = _affine_expectation(POINTS)
     assert np.max(np.abs(np.asarray(result["flux_loops"]) - expected)) <= 64.0 * EPS
@@ -135,12 +129,16 @@ def test_profile_channels_are_sampled_bilinearly_and_keep_their_units():
     )
     expected_density = 1.0e19 + 2.0e18 * POINTS[:, 0] + 5.0e17 * POINTS[:, 1]
     expected_temperature = 300.0 + 10.0 * POINTS[:, 0]
-    assert np.max(
-        np.abs(np.asarray(result["thomson"]["density"]) - expected_density) / expected_density
-    ) <= 64.0 * EPS
-    assert np.max(
-        np.abs(np.asarray(result["thomson"]["electron_temperature"]) - expected_temperature)
-    ) <= 64.0 * EPS
+    assert (
+        np.max(
+            np.abs(np.asarray(result["thomson"]["density"]) - expected_density) / expected_density
+        )
+        <= 64.0 * EPS
+    )
+    assert (
+        np.max(np.abs(np.asarray(result["thomson"]["electron_temperature"]) - expected_temperature))
+        <= 64.0 * EPS
+    )
     assert result["units"]["thomson"] == {
         "density": "m^-3",
         "electron_temperature": "eV",
@@ -152,9 +150,7 @@ def test_only_requested_outputs_are_returned():
         equilibrium=_equilibrium("Wb"),
         R=R_GRID,
         Z=Z_GRID,
-        observations={
-            "flux_loops": {"points": POINTS, "quantity": "magnetic_flux", "unit": "Wb"}
-        },
+        observations={"flux_loops": {"points": POINTS, "quantity": "magnetic_flux", "unit": "Wb"}},
     )
     assert "flux_loops" in result
     assert "thomson" not in result
@@ -164,39 +160,57 @@ def test_rejection_channels_are_bound_to_their_contract():
     equilibrium = _equilibrium("Wb/rad")
     valid_flux = {"points": POINTS, "quantity": "magnetic_flux", "unit": "Wb"}
     for call, fragment in [
-        (lambda: synthesize_equilibrium_diagnostics(
-            equilibrium=equilibrium, R=R_GRID, Z=Z_GRID, observations={}
-        ), "nonempty"),
-        (lambda: synthesize_equilibrium_diagnostics(
-            equilibrium=equilibrium,
-            R=R_GRID,
-            Z=Z_GRID,
-            observations={"flux_loops": {"points": POINTS, "unit": "Wb"}},
-        ), "quantity"),
-        (lambda: synthesize_equilibrium_diagnostics(
-            equilibrium=equilibrium,
-            R=R_GRID,
-            Z=Z_GRID,
-            observations={"flux_loops": {**valid_flux, "unit": "Wb/rad"}},
-        ), "Wb"),
-        (lambda: synthesize_equilibrium_diagnostics(
-            equilibrium=equilibrium,
-            R=R_GRID,
-            Z=Z_GRID,
-            observations={"flux_loops": {**valid_flux, "turns": 2}},
-        ), "unsupported"),
-        (lambda: synthesize_equilibrium_diagnostics(
-            equilibrium=equilibrium,
-            R=R_GRID,
-            Z=Z_GRID,
-            observations={"flux_loops": {**valid_flux, "points": np.array([[9.0, 9.0]])}},
-        ), "outside"),
-        (lambda: synthesize_equilibrium_diagnostics(
-            equilibrium={**equilibrium, "psi_unit": "T*m^2"},
-            R=R_GRID,
-            Z=Z_GRID,
-            observations={"flux_loops": valid_flux},
-        ), "Wb/rad or Wb"),
+        (
+            lambda: synthesize_equilibrium_diagnostics(
+                equilibrium=equilibrium, R=R_GRID, Z=Z_GRID, observations={}
+            ),
+            "nonempty",
+        ),
+        (
+            lambda: synthesize_equilibrium_diagnostics(
+                equilibrium=equilibrium,
+                R=R_GRID,
+                Z=Z_GRID,
+                observations={"flux_loops": {"points": POINTS, "unit": "Wb"}},
+            ),
+            "quantity",
+        ),
+        (
+            lambda: synthesize_equilibrium_diagnostics(
+                equilibrium=equilibrium,
+                R=R_GRID,
+                Z=Z_GRID,
+                observations={"flux_loops": {**valid_flux, "unit": "Wb/rad"}},
+            ),
+            "Wb",
+        ),
+        (
+            lambda: synthesize_equilibrium_diagnostics(
+                equilibrium=equilibrium,
+                R=R_GRID,
+                Z=Z_GRID,
+                observations={"flux_loops": {**valid_flux, "turns": 2}},
+            ),
+            "unsupported",
+        ),
+        (
+            lambda: synthesize_equilibrium_diagnostics(
+                equilibrium=equilibrium,
+                R=R_GRID,
+                Z=Z_GRID,
+                observations={"flux_loops": {**valid_flux, "points": np.array([[9.0, 9.0]])}},
+            ),
+            "outside",
+        ),
+        (
+            lambda: synthesize_equilibrium_diagnostics(
+                equilibrium={**equilibrium, "psi_unit": "T*m^2"},
+                R=R_GRID,
+                Z=Z_GRID,
+                observations={"flux_loops": valid_flux},
+            ),
+            "Wb/rad or Wb",
+        ),
     ]:
         with pytest.raises(ValueError) as caught:
             call()

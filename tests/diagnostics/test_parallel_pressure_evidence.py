@@ -65,10 +65,10 @@ def _two_forms_of_rhs(coefficients, magnetic_field):
 @pytest.mark.parametrize(
     "coefficients",
     [
-        (0.0, 2.0, 0.0, 0.0),        # linear: rhs is not zero because c1 B cancels
+        (0.0, 2.0, 0.0, 0.0),  # linear: rhs is not zero because c1 B cancels
         (1.5, -2.0, 0.0, 0.0),
-        (0.0, 0.0, 3.0, 0.0),        # quadratic
-        (0.25, 0.5, -1.25, 2.0),     # mixed cubic
+        (0.0, 0.0, 3.0, 0.0),  # quadratic
+        (0.25, 0.5, -1.25, 2.0),  # mixed cubic
     ],
 )
 def test_the_two_algebraic_forms_agree_with_the_returned_rhs(coefficients):
@@ -81,7 +81,9 @@ def test_the_two_algebraic_forms_agree_with_the_returned_rhs(coefficients):
     expected = np.array([float(entry) for entry in left])
     result = D.compute_parallel_pressure_residual(
         np.array([float(v) for v in value]),
-        np.array([float(v) for v in value]),  # p_perp equal to p_parallel: error is -rhs only through rhs
+        np.array(
+            [float(v) for v in value]
+        ),  # p_perp equal to p_parallel: error is -rhs only through rhs
         field,
         dp_parallel_dB=np.array([float(s) for s in slope]),
     )
@@ -105,7 +107,9 @@ def test_the_residual_fields_follow_their_closed_form_definitions():
     error = perp - rhs
     relative = np.abs(error) / np.maximum(np.maximum(np.abs(perp), np.abs(rhs)), atol)
     assert np.max(np.abs(np.asarray(result["rhs"]) - rhs)) <= 128.0 * EPS * np.max(np.abs(rhs))
-    assert np.max(np.abs(np.asarray(result["error"]) - error)) <= 128.0 * EPS * np.max(np.abs(error))
+    assert np.max(np.abs(np.asarray(result["error"]) - error)) <= 128.0 * EPS * np.max(
+        np.abs(error)
+    )
     assert np.max(np.abs(np.asarray(result["relative_error"]) - relative)) <= 128.0 * EPS
     assert result["max_relative_error"] == pytest.approx(float(np.max(relative)), rel=1e-12)
     assert result["mean_relative_error"] == pytest.approx(float(np.mean(relative)), rel=1e-12)
@@ -119,7 +123,9 @@ def test_the_passed_flag_is_the_rtol_boundary_and_strict_raises_there():
     perp = np.array([0.0])
     slope = np.array([0.0])  # rhs = 1.0, error = -1.0, relative = 1.0
 
-    below = D.compute_parallel_pressure_residual(parallel, perp, field, rtol=1.0, dp_parallel_dB=slope)
+    below = D.compute_parallel_pressure_residual(
+        parallel, perp, field, rtol=1.0, dp_parallel_dB=slope
+    )
     assert below["passed"] is True
     above = D.compute_parallel_pressure_residual(
         parallel, perp, field, rtol=np.nextafter(1.0, 0.0), dp_parallel_dB=slope
@@ -162,13 +168,14 @@ def test_all_declared_derivative_sources_agree_on_the_same_law():
     assert np.array_equal(np.asarray(array_form["rhs"]), np.asarray(callable_form["rhs"]))
 
     constant = 3.0 * np.ones(3)
-    scalar_form = D.compute_parallel_pressure_residual(constant, constant, field, dp_parallel_dB=0.0)
+    scalar_form = D.compute_parallel_pressure_residual(
+        constant, constant, field, dp_parallel_dB=0.0
+    )
     assert np.all(np.asarray(scalar_form["rhs"]) == 3.0)
 
 
 def test_the_sampled_fixed_flux_derivative_refines_at_second_order():
     """The ``field_axis`` source: ``numpy.gradient`` with second-order edges."""
-    surface = np.zeros((1, 41))
 
     # A cubic, not a quadratic: the central and second-order one-sided formulas are
     # exact for quadratics, so only a cubic exposes the truncation order.
@@ -208,14 +215,43 @@ def test_rejection_channels_are_bound_to_their_contract():
             ),
             "not both",
         ),
-        (lambda: D.compute_parallel_pressure_residual(parallel, perp[:1], field, dp_parallel_dB=0.0), "shape"),
-        (lambda: D.compute_parallel_pressure_residual(parallel, perp, [1.0, 0.0], dp_parallel_dB=0.0), "positive"),
-        (lambda: D.compute_parallel_pressure_residual(parallel, perp, field, rtol=-1.0, dp_parallel_dB=0.0), "rtol"),
-        (lambda: D.compute_parallel_pressure_residual(parallel, perp, field, atol=0.0, dp_parallel_dB=0.0), "atol"),
-        (lambda: D.compute_parallel_pressure_residual([np.nan, 0.0], perp, field, dp_parallel_dB=0.0), "finite"),
         (
             lambda: D.compute_parallel_pressure_residual(
-                parallel[None, :], perp[None, :], field[None, :], field_axis=1, psi=np.array([[0.0, 1.0]])
+                parallel, perp[:1], field, dp_parallel_dB=0.0
+            ),
+            "shape",
+        ),
+        (
+            lambda: D.compute_parallel_pressure_residual(
+                parallel, perp, [1.0, 0.0], dp_parallel_dB=0.0
+            ),
+            "positive",
+        ),
+        (
+            lambda: D.compute_parallel_pressure_residual(
+                parallel, perp, field, rtol=-1.0, dp_parallel_dB=0.0
+            ),
+            "rtol",
+        ),
+        (
+            lambda: D.compute_parallel_pressure_residual(
+                parallel, perp, field, atol=0.0, dp_parallel_dB=0.0
+            ),
+            "atol",
+        ),
+        (
+            lambda: D.compute_parallel_pressure_residual(
+                [np.nan, 0.0], perp, field, dp_parallel_dB=0.0
+            ),
+            "finite",
+        ),
+        (
+            lambda: D.compute_parallel_pressure_residual(
+                parallel[None, :],
+                perp[None, :],
+                field[None, :],
+                field_axis=1,
+                psi=np.array([[0.0, 1.0]]),
             ),
             "constant",
         ),

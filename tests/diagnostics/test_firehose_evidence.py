@@ -103,10 +103,12 @@ def test_the_verdict_is_the_ideal_mhd_firehose_inequality():
     critical = 2.0**2 / mu0  # = 4.0, exactly representable
     perp = np.array([0.0, 0.0, 0.0])
     parallel = np.array([np.nextafter(critical, 0.0), critical, np.nextafter(critical, np.inf)])
-    got = np.asarray(D.compute_pointwise_firehose_margin(parallel, perp, field, mu0=mu0)["firehose_margin"])
-    assert got[0] > 0.0          # p_parallel just below B^2/mu0
-    assert got[1] == 0.0         # exactly at the boundary
-    assert got[2] < 0.0          # just above
+    got = np.asarray(
+        D.compute_pointwise_firehose_margin(parallel, perp, field, mu0=mu0)["firehose_margin"]
+    )
+    assert got[0] > 0.0  # p_parallel just below B^2/mu0
+    assert got[1] == 0.0  # exactly at the boundary
+    assert got[2] < 0.0  # just above
     assert [bool(value > 0.0) for value in got] == [True, False, False]
 
 
@@ -119,9 +121,9 @@ def test_margin_scales_with_pressure_when_the_field_scales_by_the_square_root():
     base = np.asarray(D.compute_pointwise_firehose_margin(parallel, perp, field)["firehose_margin"])
 
     scaled = np.asarray(
-        D.compute_pointwise_firehose_margin(factor * parallel, factor * perp, np.sqrt(factor) * field)[
-            "firehose_margin"
-        ]
+        D.compute_pointwise_firehose_margin(
+            factor * parallel, factor * perp, np.sqrt(factor) * field
+        )["firehose_margin"]
     )
     assert np.max(np.abs(scaled - factor * base)) <= 256.0 * EPS * np.max(np.abs(factor * base))
 
@@ -143,9 +145,7 @@ def test_mirror_margin_is_the_declared_total_pressure_slope(law, derivative):
 
     result = D.compute_firehose_mirror_margins(parallel, perp, field, dp_perp_dB=slope)
     got = np.asarray(result["mirror_margin"])
-    expected = np.array(
-        [b * b / MU0 + b * d for b, d in zip(field, slope)]
-    )
+    expected = np.array([b * b / MU0 + b * d for b, d in zip(field, slope)])
     assert np.max(np.abs(got - expected) / np.maximum(1.0, np.abs(expected))) <= 256.0 * EPS
     assert result["derivative_method"] == "explicit_fixed_flux_derivative"
 
@@ -155,7 +155,9 @@ def test_the_combined_firehose_margin_is_the_pointwise_relation():
     field = np.array([0.7, 1.3, 2.9])
     perp = np.array([4.0, -2.0, 0.0])
     parallel = np.array([1.0, 1.0, 6.0])
-    pointwise = np.asarray(D.compute_pointwise_firehose_margin(parallel, perp, field)["firehose_margin"])
+    pointwise = np.asarray(
+        D.compute_pointwise_firehose_margin(parallel, perp, field)["firehose_margin"]
+    )
     combined = np.asarray(
         D.compute_firehose_mirror_margins(parallel, perp, field, dp_perp_dB=np.zeros_like(field))[
             "firehose_margin"
@@ -190,7 +192,11 @@ def test_sampled_fixed_flux_derivative_refines_at_second_order():
         field = np.tile(np.linspace(0.5, 2.0, count), (4, 1))
         perp = law(field)
         result = D.compute_firehose_mirror_margins(
-            np.zeros_like(field), perp, field, field_axis=1, psi=psi if count == 21 else np.zeros((4, count))
+            np.zeros_like(field),
+            perp,
+            field,
+            field_axis=1,
+            psi=psi if count == 21 else np.zeros((4, count)),
         )
         used = np.asarray(result["dp_perp_dB"])
         errors.append(float(np.max(np.abs(used - slope(field)))))
@@ -208,7 +214,12 @@ def test_rejection_channels_are_bound_to_their_contract():
         (lambda: D.compute_pointwise_firehose_margin([], [], []), "nonempty"),
         (lambda: D.compute_pointwise_firehose_margin([np.nan, 0.0], perp, field), "finite"),
         (lambda: D.compute_pointwise_firehose_margin(parallel, perp, field, mu0=0.0), "positive"),
-        (lambda: D.compute_pointwise_firehose_margin(parallel, perp, field, mu0=np.array([1.0, 1.0])), "scalar"),
+        (
+            lambda: D.compute_pointwise_firehose_margin(
+                parallel, perp, field, mu0=np.array([1.0, 1.0])
+            ),
+            "scalar",
+        ),
         (lambda: D.compute_firehose_mirror_margins(parallel, perp, field), "derivative"),
         (
             lambda: D.compute_firehose_mirror_margins(
