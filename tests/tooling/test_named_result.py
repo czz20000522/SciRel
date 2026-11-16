@@ -4,7 +4,7 @@ import numpy as np
 import pytest
 
 from scirel._result import Result
-from scirel import closures, diagnostics, field, mirror, neoclassical
+from scirel import closures, diagnostics, field, mirror, neoclassical, numerics
 from scirel.field import compute_poloidal_field_magnitude
 from scirel.kinetic import evaluate_plasma_dispersion
 
@@ -1556,3 +1556,72 @@ def test_neoclassical_failures_match_baseline_type_and_message(name, call, excep
     with pytest.raises(exception_type) as error:
         call()
     assert str(error.value) == message
+
+
+# The numerics domain is finished: no public callable in it returns a plain dict.
+# Every public name is classified once, so adding an export to ``numerics`` fails
+# this file until its return type is declared. ``sample_rectilinear_field`` is the
+# last bare-dict return; ``interpolate_complex_rectilinear_field`` already returned
+# ``Result`` from an earlier migration in the same subpackage.
+_NUMERICS_GRID_R, _NUMERICS_GRID_Z = np.meshgrid([1.0, 2.0, 4.0], [-1.0, 1.0])
+_NUMERICS_MAPPING_CASES = {
+    "sample_rectilinear_field": (
+        lambda: numerics.sample_rectilinear_field(
+            _NUMERICS_GRID_R,
+            _NUMERICS_GRID_Z,
+            3.0 * _NUMERICS_GRID_R - 2.0 * _NUMERICS_GRID_Z + 1.0,
+            [[1.5, 0.0], [4.0, 1.0]],
+        ),
+        ("samples",),
+        # Analytic affine field: bilinear interpolation is exact, so these values are
+        # the field itself at the two query points, not an output of the sampler.
+        {"samples": np.array([5.5, 11.0])},
+    ),
+    "interpolate_complex_rectilinear_field": (
+        lambda: numerics.interpolate_complex_rectilinear_field(
+            {
+                "x_m": np.array([0.0, 1.0, 2.0]),
+                "y_m": np.array([0.0, 1.0, 2.0]),
+                "z_m": np.array([0.0, 1.0, 2.0]),
+            },
+            np.zeros((3, 3, 3), dtype=complex),
+            np.array([[1.0, 1.0, 1.0]]),
+        ),
+        ("interpolated_values", "valid_mask"),
+        {"interpolated_values": np.array([0.0 + 0.0j]), "valid_mask": np.array([True])},
+    ),
+}
+# Public numerics callable -> what it returns instead of a mapping.
+_NUMERICS_NON_MAPPING_CASES = {
+    "NaturalCubicSpline": "spline handle",
+    "ClampedCubicSpline": "spline handle",
+    "FirstClampedCubicSpline": "spline handle",
+    "SecondClampedCubicSpline": "spline handle",
+    "build_basis": "list of basis evaluators",
+    "BasisMatrix": "design-matrix evaluator",
+    "face_to_cell": "ndarray",
+    "compute_truncated_pseudoinverse": "ndarray",
+    "ModalBasis": "modal-basis handle",
+    "modal_basis": "modal-basis handle",
+    "modal_projection": "ndarray of coefficients",
+    "evaluate_faddeeva": "ndarray",
+}
+_NUMERICS_BARE_DICT_CASES = set()
+
+
+def test_numerics_every_public_callable_is_classified():
+    assert set(_NUMERICS_MAPPING_CASES) | set(_NUMERICS_NON_MAPPING_CASES) == set(numerics.__all__)
+    assert set(_NUMERICS_MAPPING_CASES).isdisjoint(_NUMERICS_NON_MAPPING_CASES)
+    assert _NUMERICS_BARE_DICT_CASES == set()
+
+
+@pytest.mark.parametrize("name", sorted(_NUMERICS_MAPPING_CASES))
+def test_numerics_results_are_named_mappings_with_unchanged_values(name):
+    call, expected_keys, expected = _NUMERICS_MAPPING_CASES[name]
+    result = call()
+    assert type(result) is Result
+    assert isinstance(result, dict)
+    assert list(result) == list(expected_keys)
+    for key, expected_value in expected.items():
+        _assert_value_equal(result[key], expected_value)
+        assert getattr(result, key) is result[key]

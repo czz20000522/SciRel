@@ -397,7 +397,8 @@ np.testing.assert_array_equal(interpolate.face_to_cell([0.,2.,8.,10.]), [1.,5.,9
 r, z = np.meshgrid([1.,2.,4.], [-1.,1.])
 q = 3*r - 2*z + 1
 real = interpolate.sample_rectilinear_field(r,z,q,[[1.5,0.],[4.,1.]])
-assert type(real) is dict
+assert type(real) is Result and isinstance(real, dict)
+assert real.samples is real["samples"]
 np.testing.assert_array_equal(real["samples"], [5.5,11.])
 try:
     interpolate.sample_rectilinear_field(r,z,q,[[1.5,0.],[4.1,0.]])

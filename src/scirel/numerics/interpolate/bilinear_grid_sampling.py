@@ -6,6 +6,8 @@ from fractions import Fraction
 
 import numpy as np
 
+from scirel._result import Result
+
 __all__ = ["sample_rectilinear_field"]
 
 
@@ -124,8 +126,13 @@ def sample_rectilinear_field(r_grid, z_grid, quantity, points):
     Returns
     -------
     samples : float64
-        Bilinearly interpolated scalar values in query order. [same as quantity] Shape:
+        Field ``samples`` of the returned ``scirel._result.Result`` mapping: bilinearly
+        interpolated scalar values in query order. [same as quantity] Shape:
         ``[N_point]``. One-dimensional array; empty for zero query points.
+
+    The complete result is returned as one ``scirel._result.Result`` mapping whose only
+    key is ``samples``. Mapping access is unchanged and attribute access returns the same
+    array; no nested mapping is introduced.
 
     Raises
     ------
@@ -165,10 +172,12 @@ def sample_rectilinear_field(r_grid, z_grid, quantity, points):
     Examples
     --------
     >>> import numpy as np
+    >>> from scirel._result import Result
     >>> from scirel.numerics.interpolate import sample_rectilinear_field
     >>> r_grid, z_grid = np.meshgrid([1.0, 2.0, 4.0], [-1.0, 1.0])
     >>> quantity = 3.0*r_grid - 2.0*z_grid + 1.0
     >>> result = sample_rectilinear_field(r_grid, z_grid, quantity, [[1.5, 0.0], [4.0, 1.0]])
+    >>> assert isinstance(result, Result)
     >>> np.testing.assert_allclose(result['samples'], [5.5, 11.0])
     """
     _, _, r_axis, z_axis = _axes(r_grid, z_grid)
@@ -206,4 +215,4 @@ def sample_rectilinear_field(r_grid, z_grid, quantity, points):
             ]
         ),
     )
-    return {"samples": samples}
+    return Result({"samples": samples})
