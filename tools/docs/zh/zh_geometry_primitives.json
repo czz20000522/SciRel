@@ -1073,12 +1073,14 @@
      "test_rotation_inverse_distance_and_nonmutation 在参数化角度下检查逆旋转、距离保持和输入不变。",
      "本合同所载可执行旋转示例。",
      "直接形状回归要求标量点抛 ValueError，并检查零角旋转对单点、空数组及批量 (...,2) 点保持形状和数值，且不修改调用者数组。",
-     "有限输入在平移、旋转和最终加回中心时溢出，在 NumPy 的 warn、ignore、raise 模式下均抛 FloatingPointError；非有限输入仍抛 ValueError，可表示结果保持 float64、原形状及调用者输入不变。"
+     "有限输入在平移、旋转和最终加回中心时溢出，在 NumPy 的 warn、ignore、raise 模式下均抛 FloatingPointError；非有限输入仍抛 ValueError，可表示结果保持 float64、原形状及调用者输入不变。",
+     "独立证据：+90 度把 (1, 0) 映到 (0, −1) 并用 Z 分量为负排除逆时针；30 度与精确余弦/正弦一致；绕 (1, 0) 转 180 度回到枢轴；360 度在 8 eps 内为恒等；保留前导批量维；一维长度 2 数组被视为单点；用 1.7e308 触发 FloatingPointError 溢出通道。"
     ],
     "known_limitations": [
-     "这个平面变换不验证物理场模型，也不强制柱半径 R 非负。"
+     "这个平面变换不验证物理场模型，也不强制柱半径 R 非负。",
+     "该旋转是 (R, Z) 平面内、以度为单位、顺时针为正；不约束 R 非负；按数学逆时针约定调用会得到镜像角度且无告警。"
     ],
-    "evidence_ceiling": "仅限具名有限几何案例；不主张场求解器、实验或发行结论。",
+    "evidence_ceiling": "仅限具名有限几何案例；不主张场求解器、实验或发行结论。 C1 证据补充朝向符号、单位、枢轴、整圈恒等与溢出通道；它是平面变换而非三维旋转，也不携带测度。 C1 证据补充朝向符号、单位、枢轴、整圈恒等与溢出通道；它是平面变换而非三维旋转，也不携带测度。",
     "tests": [
      "tests/geometry/test_geometry_qualification.py",
      "tests/geometry/test_runtime_lifecycle.py",
