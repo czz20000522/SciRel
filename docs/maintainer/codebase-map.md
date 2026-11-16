@@ -176,7 +176,21 @@ pass is not evidence that every possible user task is covered.
 - `catalog/review/` contains candidate contracts and candidate code; it is not
   installed.
 - `tools/docs/manual/` contains authored bilingual user guides.
-- `tools/docs/zh/*.json` contains Chinese reader records bound to contract bytes.
+- `tools/docs/zh/*.json` contains Chinese reader records paired with contract
+  fields. `scripts/zh_pairs.py` records and checks the pairing: each record
+  carries a `pairing.sections` entry with one `en`/`zh` hash pair per translated
+  field (`summary`, `identity.definition`, `inputs`, `outputs`, ...). The `en`
+  hash comes from the contract field, the `zh` hash from the translation, so a
+  contract edit and a translation edit both show up as a named field instead of
+  one whole-file digest.
+
+  Record after confirming a pair, never before: `python3 scripts/dev.py run
+  python -B scripts/zh_pairs.py --write` when a contract field or its Chinese
+  text changed together, and the no-argument form to check. A record without a
+  `pairing` block is accepted as v1 and reported as unmigrated, so the gate can
+  land before the data migration. A green run means these exact contents were
+  confirmed together; it does not mean the Chinese says the same thing well, so
+  review still owns meaning, terminology and tone.
 - `src/scirel/_result.py` defines the named `Result` mapping used by public
   multi-value returns.
 - `scripts/build_capability_matrix.py`, `scripts/capability_query.py` and
