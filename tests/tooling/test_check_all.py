@@ -1,6 +1,7 @@
 """check_all.py reports pytest counts, and refuses a report whose numbers do not add up."""
 
 import importlib.util
+import hashlib
 import json
 import os
 from pathlib import Path
@@ -407,6 +408,124 @@ def test_exit_status_one_without_any_failure_is_refused(tmp_path):
     path.write_text(json.dumps(report))
     with pytest.raises(check_all.CountsError, match="exit status 1 without failed/error"):
         check_all.read_counts(path)
+
+
+def _sha(path):
+    return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def _provenance_result(tmp_path):
+    """A v2 result envelope that binds the scripts, one step log and its own digest."""
+    log = tmp_path / "step-00.log"
+    log.write_text("complete fixture output\n", encoding="utf-8")
+    result = {
+        "schema": "scirel.acceptance.v2",
+        "exclusive": {
+            "token_sha256": "a" * 64,
+            "record": str(tmp_path / "acceptance-exclusive"),
+            "present": True,
+        },
+        "provenance": {
+            "check_all_sha256": _sha(SCRIPTS / "check_all.py"),
+            "counts_plugin_sha256": _sha(SCRIPTS / "scirel_pytest_counts.py"),
+        },
+        "steps": [{"name": "tests", "log": str(log), "log_sha256": _sha(log)}],
+    }
+    path = tmp_path / "result.json"
+    _write_result(path, result)
+    return path, result
+
+
+def _write_result(path, result):
+    path.write_text(json.dumps(result), encoding="utf-8")
+    path.with_name(path.name + ".sha256").write_text(_sha(path) + "\n", encoding="utf-8")
+
+
+def _provenance_status(path, result):
+    return check_all.validate_provenance(
+        result, report_path=path, check_all_path=SCRIPTS / "check_all.py"
+    )
+
+
+def test_a_v2_result_with_its_sidecar_is_accepted(tmp_path):
+    path, result = _provenance_result(tmp_path)
+    assert _provenance_status(path, result) == "verified_v2"
+
+
+def test_a_v2_result_without_a_credential_digest_is_refused(tmp_path):
+    path, result = _provenance_result(tmp_path)
+    result.pop("exclusive")
+    _write_result(path, result)
+    with pytest.raises(ValueError, match="no exclusive lock credential"):
+        _provenance_status(path, result)
+
+
+def test_a_v2_result_with_a_blank_credential_digest_is_refused(tmp_path):
+    path, result = _provenance_result(tmp_path)
+    result["exclusive"]["token_sha256"] = ""
+    _write_result(path, result)
+    with pytest.raises(ValueError, match="no exclusive lock credential"):
+        _provenance_status(path, result)
+
+
+def test_a_step_log_changed_after_the_run_is_refused(tmp_path):
+    path, result = _provenance_result(tmp_path)
+    Path(result["steps"][0]["log"]).write_text("rewritten after the run\n", encoding="utf-8")
+    with pytest.raises(ValueError, match="log_sha256 disagrees"):
+        _provenance_status(path, result)
+
+
+def test_a_v2_result_without_its_sidecar_is_refused(tmp_path):
+    path, result = _provenance_result(tmp_path)
+    path.with_name(path.name + ".sha256").unlink()
+    with pytest.raises(ValueError, match="no sidecar digest"):
+        _provenance_status(path, result)
+
+
+def test_a_sidecar_that_disagrees_with_the_result_is_refused(tmp_path):
+    path, result = _provenance_result(tmp_path)
+    path.with_name(path.name + ".sha256").write_text("0" * 64 + "\n", encoding="utf-8")
+    with pytest.raises(ValueError, match="sidecar digest disagrees"):
+        _provenance_status(path, result)
+
+
+def test_a_producer_digest_that_disagrees_with_the_script_is_refused(tmp_path):
+    path, result = _provenance_result(tmp_path)
+    result["provenance"]["check_all_sha256"] = "0" * 64
+    _write_result(path, result)
+    with pytest.raises(ValueError, match="check_all_sha256 disagrees"):
+        _provenance_status(path, result)
+
+
+def test_a_v1_result_stays_readable_as_legacy(tmp_path):
+    """A new rule must not retroactively delete evidence written before it existed."""
+    path = tmp_path / "result.json"
+    result = {"schema": "scirel.acceptance.v1", "steps": []}
+    path.write_text(json.dumps(result), encoding="utf-8")
+    assert _provenance_status(path, result) == "legacy_unprovenanced"
+
+
+def test_the_written_result_carries_v2_provenance_and_a_sidecar(
+    tmp_path, monkeypatch, capsys
+):
+    monkeypatch.setenv("SCIREL_EXCLUSIVE_TOKEN", "fixture-token")
+    path, _ = _mini_acceptance(tmp_path, monkeypatch)
+    assert check_all.main(path) == 0
+    result = json.loads(path.read_text())
+    assert result["schema"] == "scirel.acceptance.v2"
+    assert result["exclusive"]["present"] is True
+    assert result["exclusive"]["token_sha256"] == hashlib.sha256(b"fixture-token").hexdigest()
+    assert result["provenance"]["check_all_sha256"] == _sha(SCRIPTS / "check_all.py")
+    assert all(_sha(Path(step["log"])) == step["log_sha256"] for step in result["steps"])
+    sidecar = path.with_name(path.name + ".sha256")
+    assert sidecar.read_text().strip() == _sha(path)
+    assert f"RESULT SHA256 {_sha(path)}" in capsys.readouterr().out
+    assert (
+        check_all.validate_provenance(
+            result, report_path=path, check_all_path=SCRIPTS / "check_all.py"
+        )
+        == "verified_v2"
+    )
 
 
 def _git(root, *arguments):

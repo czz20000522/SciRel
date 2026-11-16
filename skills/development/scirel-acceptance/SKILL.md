@@ -37,6 +37,19 @@ uniqueness, phase order/completeness, phase-derived final outcomes, every total 
 and the pytest exit status against the subprocess result. Missing fields and old count schemas
 are rejected; a separate collect-only run cannot supply missing identities for this run.
 
+The result file carries schema `scirel.acceptance.v2` and records what produced it: the
+`sha256` of the exclusive credential token (never the token, which retires before the lock
+is released), one `log_sha256` per retained step log, the digests of `check_all.py` and
+`scirel_pytest_counts.py`, and a `<report>.sha256` sidecar holding the digest of the result
+file itself; the run prints `RESULT SHA256 <hex>`. A reader refuses a v2 result whose
+credential digest, log digest, script digest or sidecar is missing or disagrees. This raises
+the bar from editing one JSON file to reproducing the lock holder's credential digest and
+every log hash; it is **not a cryptographic proof**. Anyone able to run code inside the clone
+can still fabricate a whole bundle — making that impossible needs verification moved outside
+the clone, which is a separate decision and not part of this protocol. A v1 result written
+before this protocol stays readable and is tagged `legacy_unprovenanced`: a new rule must not
+retroactively delete old evidence.
+
 A setup or teardown failure gives the item final outcome `error`; otherwise a call failure
 gives `failed`, followed in priority by `xfailed`, `skipped`, `xpassed`, `passed`. A strict XPASS
 remains pytest's call failure. Each selected item counts once, so a passed/failed call followed
