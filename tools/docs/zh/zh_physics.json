@@ -353,7 +353,7 @@
   },
   {
    "asset_id": "scirel.diagnostics.parallel-pressure-residual",
-   "source_sha256": "91f5bf0302fc3b1e20bc258fbb720e5cf9063e2a855eb81a7eeb0c37d0195904",
+   "source_sha256": "4994bb91873b1c9b9200e98bde3e4e4eac6732b98023abaf2581bf1443eb15e9",
    "summary": "给定固定磁通导数，检查局部旋磁对称平行压强相容性。 以 scirel._result.Result 映射返回全部命名字段。",
    "definition": "rhs=p_parallel-B*(partial p_parallel/partial B)|psi，等价于 -B²*partial(p_parallel/B)/partial B|psi。error=p_perp-rhs，relative_error=abs(error)/max(abs(p_perp),abs(rhs),atol)；最大相对误差 <=rtol 时 passed=True。 所有命名字段作为同一个 scirel._result.Result 映射返回；按键和属性读取同一个值。 普通良态样本保留 float64 运算顺序；消减、中间范围损失或接近上界时，从原始输入的完整二进制有理关系分别最终舍入 rhs、error 和 relative_error，不用已舍入的公开 rhs 再算 error。必需非零最终量若舍入成零则拒绝；精确可表示的次正规量保留，不改变 rtol 或 atol。 上界判断只选择精确重算而非拒绝：完整关系略超最大 float64、但最终仍舍入为有限值时保留；完整关系到达溢出舍入中点时拒绝，即使普通连续运算每一步都返回有限值。",
    "model": "显式固定磁通压强定律的旋磁对称相容性，不是空间力平衡残差。",
@@ -501,9 +501,9 @@
      "核完整第二次减法、带步长混合样本、独立线性压强律、输入不变和精确次正规量，不以生产中间量作参照。",
      "保留中间乘积溢出后仍可表示的结果；必需最终 rhs/error 真正不可表示以及非零最终量下溢时明确拒绝。",
      "原始输入有理上界锚点核两种符号下完整 error 的溢出中点、略超 maxfloat 仍可有限舍入的邻接值、rhs 溢出中点及带步长混合有限样本，数值预算不放宽。",
-     "独立依据（test_parallel_pressure_evidence），其首要来源是代数恒等式而非另一实现：rhs = p∥ − B·dp∥/dB 恒等于 −B²·d(p∥/B)/dB。两个结构不同的写法先在有有理系数的闭式压强律上验证互相一致，再以精确有理算术与实现对照；error = p⊥ − rhs 与 relative_error = |error|/max(|p⊥|,|rhs|,atol) 由解析值重算；passed 是 max_relative_error ≤ rtol 的严格不等式并在两侧试探，strict=True 在失败侧检验；三种显式导数来源（标量、数组、可调用）检验一致；采样的 field_axis 导数检验为每次减半的误差比 3.0..5.5。"
+     "独立依据（test_parallel_pressure_evidence）：rhs = p∥ − B·dp∥/dB 由闭式压强律在精确有理算术中重算并单次舍入，返回值必须等于该值，因此该表达式若符号、幂次或尺度有误即失败。代数等价的改写 −B²·d(p∥/B)/dB 仅作为本文件自身展开的一致性检查记录：两式同出一个多项式，其相等无法作为关于实现的证据而失败。error = p⊥ − rhs 与 relative_error = |error|/max(|p⊥|,|rhs|,atol) 由解析值重算；passed 是 max_relative_error ≤ rtol 的严格不等式并在两侧试探，strict=True 在失败侧检验；三种显式导数来源检验一致；采样的 field_axis 导数检验为每次减半误差比 3.0..5.5；精确有理恢复分支用「朴素浮点值与精确值确实不同」的样本检验，因此静默回退到普通路径会失败。"
     ],
-    "evidence_ceiling": "tests/cross_domain/test_spectral_scientific_correction.py::test_uniform_isotropic_parallel_state_with_explicit_derivative 断言零残差；tests/cross_domain/test_spectral_scientific_correction.py::test_fixed_flux_derivative_must_not_mix_flux_surfaces 检查两条固定 psi 多项式线；tests/cross_domain/test_spectral_scientific_correction.py::test_missing_derivative_information_is_not_silently_zero 检查缺导数拒绝。 证据限于这些具名样本及其余绑定算术回归；缺少的扫描/加密证据保持 UNKNOWN，不证明实测等离子体有效性或一般稳定性定理。 直接原始输入有理消减、默认控制、strict、制造压强律、带步长数组和范围回归只支持所列离散样本的完整关系，不认证全部压强律或连续采样误差。",
+    "evidence_ceiling": "tests/cross_domain/test_spectral_scientific_correction.py::test_uniform_isotropic_parallel_state_with_explicit_derivative 断言零残差；tests/cross_domain/test_spectral_scientific_correction.py::test_fixed_flux_derivative_must_not_mix_flux_surfaces 检查两条固定 psi 多项式线；tests/cross_domain/test_spectral_scientific_correction.py::test_missing_derivative_information_is_not_silently_zero 检查缺导数拒绝。 证据限于这些具名样本及其余绑定算术回归；缺少的扫描/加密证据保持 UNKNOWN，不证明实测等离子体有效性或一般稳定性定理。 直接原始输入有理消减、默认控制、strict、制造压强律、带步长数组和范围回归只支持所列离散样本的完整关系，不认证全部压强律或连续采样误差。 C1 证据补充：对声明闭式的精确有理求值、朴素浮点值确有差异处同一闭式的恢复分支，以及严格 rtol 边界；等价改写只作一致性检查，不作来源。",
     "known_limitations": [
      "导数/轴/psi 参数要求调用者提供缺失的物理信息；全局 B 排序不属于本合同。",
      "样本标志和残差只是局部模型诊断，不证明全局平衡或动力学稳定性。",
@@ -7561,7 +7561,7 @@
   },
   {
    "asset_id": "scirel.diagnostics.firehose-mirror-margins",
-   "source_sha256": "d1c1e9de37332e622960f0cff2a030dd1e5e0f13d914ae0ecd82e38d10046bdc",
+   "source_sha256": "644ede3dcd4d9f5ca93811e82b528177e7064576747232bcc28177fd138c9489",
    "summary": "用显式固定磁通导数计算局部旋磁对称压强诊断。 以 scirel._result.Result 映射返回全部命名字段。",
    "definition": "firehose_margin=B²/mu0+p_perp-p_parallel；mirror_margin=B*d[p_perp+B²/(2*mu0)]/dB|psi=B²/mu0+B*dp_perp/dB。所有样本最小值严格为正时相应局部标志为 True。对守恒量双 Maxwell 分布，镜模条件为 1-beta_perp*(T_perp/T_parallel-1)>0。 普通非严重相消数值保留原 float64 运算顺序。异号贡献抵消后，若结果幅度不大于最大项的一半，或中间乘积/商丢失量级，则对完整关系使用精确二进制有理数求值，最后一次舍入到 float64。此算术分支不是物理容差，不把结果钳制为零，也不只特判相等压强；最终确实不可表示时仍失败。 所有命名字段作为同一个 scirel._result.Result 映射返回；按键和属性读取同一个值。",
    "model": "局部无流旋磁对称张力和长波总压强斜率准则。正导数号由此定义和双 Maxwell 阈值给出，与 Frank2509.17288v4 Eq6 的字面反号冲突；不声称作者确认勘误。",
@@ -7715,13 +7715,13 @@
    },
    "verification": {
     "scope": [
-     "tests/cross_domain/test_spectral_scientific_correction.py::test_invariant_bimaxwellian_mirror_threshold_has_positive_slope_sign 断言显式双 Maxwell 镜模/火管用例；tests/cross_domain/test_spectral_scientific_correction.py::test_missing_derivative_information_is_not_silently_zero 检查缺导数拒绝。另绑定的相消测试检查浮点算术，不构成物理状态扫描。",
+     "tests/cross_domain/test_spectral_scientific_correction.py::test_invariant_bimaxwellian_mirror_threshold_has_positive_slope_sign 断言单个采样的各向异性双 Maxwell 状态，而非分布层面的判据化简；tests/cross_domain/test_spectral_scientific_correction.py::test_missing_derivative_information_is_not_silently_zero 检查缺导数拒绝。另绑定的相消测试检查浮点算术，不构成物理状态扫描。",
      "以独立高精度 Decimal 验证有限输入的中间平方上下溢及相消；最终不可表示的结果仍拒绝。",
      "在已安装 wheel 上，以独立 2000 位 Decimal 算术核对相等/不等压强抵消、不同量纲下相邻浮点输入、镜模余量正负号、非连续多维数组及精确零值标志。",
      "Result 包装保持全部键、键顺序、数值、形状、dtype 与映射访问（基线 0f74255b），包括零维标量裕度；属性读取到同一字段。",
      "独立依据（test_firehose_evidence）针对合并诊断：mirror_margin = B²/μ0 + B·dp⊥/dB 在解析 p⊥(B) 律（仿射、三次、倒数）上手写导数后检验，覆盖两种允许的导数来源（显式数组与可调用）；firehose 字段检验为与逐点关系逐位相同（两者共用同一内核）；稳定性标志与最小值检验为等于 margin 的符号与最小值；采样的固定磁通导数（field_axis + psi）检验为每次网格减半的误差比 3.0..5.5，符合二阶梯度。"
     ],
-    "evidence_ceiling": "tests/cross_domain/test_spectral_scientific_correction.py::test_invariant_bimaxwellian_mirror_threshold_has_positive_slope_sign 断言显式双 Maxwell 镜模/火管用例；tests/cross_domain/test_spectral_scientific_correction.py::test_missing_derivative_information_is_not_silently_zero 检查缺导数拒绝。另绑定的相消测试检查浮点算术，不构成物理状态扫描。 证据限于这些具名样本及其余绑定算术回归；缺少的扫描/加密证据保持 UNKNOWN，不证明实测等离子体有效性或一般稳定性定理。",
+    "evidence_ceiling": "tests/cross_domain/test_spectral_scientific_correction.py::test_invariant_bimaxwellian_mirror_threshold_has_positive_slope_sign 断言单个采样的各向异性双 Maxwell 状态，而非分布层面的判据化简；tests/cross_domain/test_spectral_scientific_correction.py::test_missing_derivative_information_is_not_silently_zero 检查缺导数拒绝。另绑定的相消测试检查浮点算术，不构成物理状态扫描。 证据限于这些具名样本及其余绑定算术回归；缺少的扫描/加密证据保持 UNKNOWN，不证明实测等离子体有效性或一般稳定性定理。",
     "known_limitations": [
      "导数/轴/psi 参数要求调用者提供缺失的物理信息；全局 B 排序不属于本合同。",
      "样本标志和残差只是局部模型诊断，不证明全局平衡或动力学稳定性。",
