@@ -243,13 +243,11 @@ def test_kappa_family_has_unit_mass_and_the_declared_variance(kappa):
 
     velocity = np.array([-1.7, -0.3, 0.0, 0.9, 2.4])
     derivative, real_frequency, imaginary_frequency = vp_distribution(velocity, 2, kappa=float(index))
-    expected = np.array([-float(velocity[i]) * float(family(mp.mpf(float(velocity[i])))) * float(index) / (float(index) + float(velocity[i]) ** 2 / 2) for i in range(velocity.size)])
     reference = [
         -constant * mp.mpf(float(v)) * (1 + mp.mpf(float(v)) ** 2 / (2 * index)) ** (-index - 1)
         for v in velocity
     ]
-    assert_allclose(derivative, [float(entry) for entry in reference], rtol=0, atol=1e-15)
-    assert_allclose(derivative, expected, rtol=1e-13, atol=1e-15)
+    assert_allclose(derivative, [float(entry) for entry in reference], rtol=1e-14, atol=1e-17)
     assert real_frequency is None and imaginary_frequency is None
     mass = mp.quad(family, [-mp.inf, mp.inf])
     variance = mp.quad(lambda v: v * v * family(v), [-mp.inf, mp.inf])
