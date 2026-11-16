@@ -181,7 +181,10 @@ pass is not evidence that every possible user task is covered.
   contract fields it translates: one line per asset id, sorted, holding an
   `en`/`zh` hash pair per translated field (`summary`,
   `identity.definition/model/assumptions/boundary`, `inputs`, `outputs`,
-  `applicability`, `failure_semantics`, `example`, `verification`). The `en`
+  `applicability`, `failure_semantics`, `example`, `verification`, `family`).
+  `title` is not paired: it is a mechanical copy of the contract's own bilingual
+  title, so the gate requires the two values to be equal instead. `source_sha256`
+  is the superseded whole-file binding and is not paired. The `en`
   hash comes from the contract field, the `zh` hash from the record's
   translation, so a contract edit names the stale field and a translation edit
   without a re-record is rejected. It sits beside the reader directory, not
@@ -190,11 +193,16 @@ pass is not evidence that every possible user task is covered.
 - `scripts/zh_pairs.py` records and checks that sidecar: the no-argument form
   validates, `--list` reports per-record state, and `--write` recomputes and
   stores before re-reading. Record only after confirming a pair, and re-run
-  `--write` whenever a contract field or its Chinese text changed. A record with
-  no sidecar entry falls back to an in-record `pairing` block (the first format
-  this tool shipped) and then to v1, passing with an "unmigrated" note, so the
-  gate can land before the record files are migrated; the sidecar always wins.
-  `source_sha256` stays in the records until that migration removes it.
+  `--write` whenever a contract field or its Chinese text changed.
+
+  **A missing entry is a failure, not an unmigrated pass.** The sidecar must
+  cover every contract that has a Chinese record, and every contract must have
+  one; adding a contract or deleting a sidecar entry without re-running
+  `--write` turns the gate red. There is no v1 fallback: an in-record `pairing`
+  block left over from the first format of this tool is ignored rather than
+  trusted, so removing an entry cannot silently downgrade that asset to the
+  weaker whole-file check. `source_sha256` stays in the records until a separate
+  change removes it.
 
 Generated pages, indices and matrices are not reviewed science by themselves.
 
