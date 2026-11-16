@@ -93,8 +93,12 @@ def test_pencil_carries_the_si_plasma_and_gyro_frequencies():
     pencil = fluid_frequency_pencil(state, KX, KZ)
     expected_plasma = reference.plasma_frequencies(state)
     expected_gyro = reference.gyro_frequencies(state)
-    assert_allclose(pencil["wps"], expected_plasma, rtol=0, atol=32 * EPS * np.abs(expected_plasma).max())
-    assert_allclose(pencil["wcs"], expected_gyro, rtol=0, atol=32 * EPS * np.abs(expected_gyro).max())
+    assert_allclose(
+        pencil["wps"], expected_plasma, rtol=0, atol=32 * EPS * np.abs(expected_plasma).max()
+    )
+    assert_allclose(
+        pencil["wcs"], expected_gyro, rtol=0, atol=32 * EPS * np.abs(expected_gyro).max()
+    )
     # Discrimination: the mass and charge roles are not interchangeable and the
     # plasma frequency is not linear in the density.
     assert not np.allclose(expected_plasma, expected_gyro, rtol=1e-3, atol=0)
@@ -243,7 +247,10 @@ def test_relative_rate_equilibrium_is_a_consistent_state_for_the_pencil():
     solution = fluid_solve_state(state, KX, KZ)
     matrix = np.asarray(solution["M"])
     inertia = np.asarray(solution["A"])
-    worst = max(reference.generalized_residual(matrix, inertia, value) for value in np.asarray(solution["w1"]))
+    worst = max(
+        reference.generalized_residual(matrix, inertia, value)
+        for value in np.asarray(solution["w1"])
+    )
     assert worst <= BUDGET, worst
     # ``velocity_collision`` is a (species, species) rate table on this path.
     # Its layout is read, not assumed: an earlier draft treated it as a velocity

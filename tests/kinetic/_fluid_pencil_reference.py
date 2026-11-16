@@ -35,8 +35,13 @@ def plasma_frequencies(state: dict) -> np.ndarray:
     epsilon0 = float(np.asarray(state["epsilon0"]).ravel()[0])
     return np.array(
         [
-            float(mp.sqrt(mp.mpf(float(n[i])) * mp.mpf(float(q[i])) ** 2
-                          / (mp.mpf(epsilon0) * mp.mpf(float(m[i])))))
+            float(
+                mp.sqrt(
+                    mp.mpf(float(n[i]))
+                    * mp.mpf(float(q[i])) ** 2
+                    / (mp.mpf(epsilon0) * mp.mpf(float(m[i])))
+                )
+            )
             for i in range(n.size)
         ]
     )
@@ -58,9 +63,7 @@ def per_species_mass_density(state: dict) -> np.ndarray:
     high_precision()
     n = np.atleast_1d(np.asarray(state["n"], dtype=float)).ravel()
     m = np.atleast_1d(np.asarray(state["m"], dtype=float)).ravel()
-    return np.array(
-        [float(mp.mpf(float(m[i])) * mp.mpf(float(n[i]))) for i in range(n.size)]
-    )
+    return np.array([float(mp.mpf(float(m[i])) * mp.mpf(float(n[i]))) for i in range(n.size)])
 
 
 def total_mass_density(state: dict) -> float:
@@ -88,8 +91,12 @@ def current_density(state: dict) -> np.ndarray:
     velocity = v.reshape(n.size, -1) if v.size % n.size == 0 else v
     return np.array(
         [
-            float(sum(mp.mpf(float(q[i])) * mp.mpf(float(n[i])) * mp.mpf(float(velocity[i, k]))
-                      for i in range(n.size)))
+            float(
+                sum(
+                    mp.mpf(float(q[i])) * mp.mpf(float(n[i])) * mp.mpf(float(velocity[i, k]))
+                    for i in range(n.size)
+                )
+            )
             for k in range(velocity.shape[1])
         ]
     )
