@@ -259,17 +259,20 @@
    "The graph imports, and the absence of any file or configuration read at run time.",
    "The declared dependency closure against the graph's own nodes, and the connectivity of every declared input and output.",
    "Forwarding of the classification parameters from the equilibrium mapping verbatim, verified by moving the support mask while the mapping outputs stay fixed.",
-   "Agreement between the coordinate glue and the mapping relation's own coverage mask."
+   "Agreement between the coordinate glue and the mapping relation's own coverage mask.",
+   "Independent evidence (tests/geometry/test_axisymmetric_mapping_evidence.py): the composed call is exactly the **chain of its two steps** - the material-support mask equals `classify_material_support` applied to the mapped poloidal flux, covered mask and cylindrical coordinates on the same grid, while the magnetic field, covered mask and clamped counts pass through bitwise unchanged; and the empty-support error of the classification propagates through the composition."
   ],
   "tests": [
-   "tests/cross_domain/axisymmetric_equilibrium_grid_support/test_composition_axisymmetric_equilibrium_grid_support.py"
+   "tests/cross_domain/axisymmetric_equilibrium_grid_support/test_composition_axisymmetric_equilibrium_grid_support.py",
+   "tests/geometry/test_axisymmetric_mapping_evidence.py"
   ],
-  "evidence_ceiling": "Bounded to the declared relation: Reconstructs the static field and the poloidal flux on the solver grid, builds the cylindrical coordinates of that grid, reads the separatrix flux and the selected flux-surface side off the caller's equilibrium mapping, and classifies material support from…. Evidence: test_composition_axisymmetric_equilibrium_grid_support.py (8 recorded test functions; bound-file coverage; self-consistency/regression only); the contract example ran. Excluded scope: Field solves, wave propagation, and plasma response; Non-axisymmetric equilibria.",
+  "evidence_ceiling": "Bounded to the declared relation: Reconstructs the static field and the poloidal flux on the solver grid, builds the cylindrical coordinates of that grid, reads the separatrix flux and the selected flux-surface side off the caller's equilibrium mapping, and classifies material support from…. Evidence: test_composition_axisymmetric_equilibrium_grid_support.py (8 recorded test functions; bound-file coverage; self-consistency/regression only); the contract example ran. Excluded scope: Field solves, wave propagation, and plasma response; Non-axisymmetric equilibria. C1 evidence adds the composition identity: the two-stage result is the second stage applied to the first stage's outputs, with everything else passed through bitwise.",
   "known_limitations": [
    "The composition inherits both dependencies' limitations, including the clamped out-of-box policy and the innermost-radius proxy for the magnetic axis.",
    "The two diagnostic masks are additions beyond the six primary data outputs, so a caller comparing output key sets must account for them.",
    "The graph has no feedback loop by design, so an equilibrium that would need to be re-derived from the reconstructed field is out of scope.",
-   "No independent or external oracle is recorded; the evidence is self-consistency/regression only."
+   "No independent or external oracle is recorded; the evidence is self-consistency/regression only.",
+   "The composition adds no numerics of its own, so it inherits both stages' limits: the mapping's bilinear interpolation and clamping, and the classification's boolean set algebra. In particular a separatrix that leaves no supported point inside the PML frame raises the classification's empty-support error from inside the composition, and the caller must distinguish that from a mapping failure by the message."
   ]
  },
  "composition": {
