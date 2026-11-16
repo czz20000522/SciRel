@@ -121,7 +121,7 @@
    "Public callable signature and documented finite-input behavior",
    "The direct regression fixtures listed in verification.tests",
    "The executable example stored in this contract",
-   "Independent evidence (test_linalg_and_derivative_evidence): the interpolating quadratic through each interior triple is rebuilt in exact rational arithmetic with fractions.Fraction and differentiated exactly, which reproduces both returned arrays to 64 eps on any strictly increasing grid, and both outputs are exact for quadratic data. Measured order is grid dependent: d_one refines at a ratio of about 4 per halving on uniform and on non-uniform grids (O(h^2)), while d_two refines at about 16 per halving on a uniform grid and only about 2 per halving on a non-uniform grid. The O(h^2) claim is therefore restricted to d_one on any grid and to d_two on uniform grids only."
+   "Independent evidence (test_linalg_and_derivative_evidence): the interpolating quadratic through each interior triple is rebuilt in exact rational arithmetic with fractions.Fraction and differentiated exactly, which reproduces both returned arrays to 64 eps on any strictly increasing grid, and both outputs are exact for quadratic data. Measured order is grid dependent: d_one refines at a ratio of about 4 per halving on uniform and on non-uniform grids (O(h^2)), while d_two refines at about 4 per halving on a uniform grid and only about 2 per halving on a non-uniform grid. The O(h^2) claim is therefore restricted to d_one on any grid and to d_two on uniform grids only."
   ],
   "tests": [
    "tests/equilibrium/test_analysis_families.py",

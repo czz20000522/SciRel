@@ -186,6 +186,7 @@ def test_derivatives_are_exact_for_quadratic_data(coefficients):
 
 def test_first_derivative_error_refines_at_second_order_on_a_uniform_grid():
     """Evidence 4 for ``d_one``: the three-point central difference is O(h^2)."""
+
     def error(count):
         x = np.linspace(0.0, 2.0, count)
         d_one, _ = diff_12_central(x, np.sin(x))
@@ -198,6 +199,7 @@ def test_first_derivative_error_refines_at_second_order_on_a_uniform_grid():
 
 def test_first_derivative_error_refines_at_second_order_on_a_nonuniform_grid():
     """Evidence 4 for ``d_one`` away from uniform spacing."""
+
     def error(scale):
         x = np.array([0.0, 0.7 * scale, 1.9 * scale, 3.3 * scale, 5.0 * scale])
         d_one, _ = diff_12_central(x, np.sin(x))
@@ -238,6 +240,24 @@ def test_second_derivative_is_exact_for_cubics_on_a_uniform_grid():
     x = np.linspace(0.3, 1.3, 21)
     _, d_two = diff_12_central(x, x**3)
     assert np.max(np.abs(np.asarray(d_two) - 6.0 * x[1:-1])) <= 1e-10
+
+
+def test_second_derivative_refines_at_second_order_on_a_uniform_grid():
+    """The uniform grid keeps O(h^2) for d_two, which the contract states as "about 4".
+
+    Guarding the ratio, not only the cubic-exact case, is what stops the contract
+    from drifting back to a fourth-order claim that the implementation cannot meet.
+    """
+    ratios = []
+    previous = None
+    for count in (17, 33, 65):
+        x = np.linspace(0.0, np.pi, count)
+        _, d_two = diff_12_central(x, np.sin(x))
+        error = np.max(np.abs(np.asarray(d_two) - (-np.sin(x))[1:-1]))
+        if previous is not None:
+            ratios.append(previous / error)
+        previous = error
+    assert all(3.5 <= ratio <= 4.5 for ratio in ratios), ratios
 
 
 def test_derivative_rejection_channels_are_bound_to_their_contract():
