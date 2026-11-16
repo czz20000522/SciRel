@@ -65,7 +65,7 @@ DPS = 50
 
 GRID = (
     [0.0, 1.0e-12, 1.0e-8, 1.0e-4]
-    + [index / 20.0 for index in range(1, 20)]
+    + [index / 20.0 for index in range(1, 19)]  # 0.05 .. 0.90, no repeats
     + [0.95, 0.99, 0.999, 0.999999, 0.9999999999]
 )
 
