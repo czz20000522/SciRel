@@ -66,9 +66,7 @@ def test_magnitude_is_the_hypotenuse_above_the_floor_and_the_floor_below_it():
             assert magnitude[index] == FLOOR, index
             continue
         assert magnitude[index] >= max(abs(float(radial[index])), abs(float(axial[index])))
-        squared = (
-            Fraction(float(radial[index])) ** 2 + Fraction(float(axial[index])) ** 2
-        )
+        squared = Fraction(float(radial[index])) ** 2 + Fraction(float(axial[index])) ** 2
         deviation = abs(Fraction(float(magnitude[index])) ** 2 - squared) / squared
         assert deviation <= 2 * Fraction(EPS), (index, float(deviation))
         observed = max(observed, float(deviation))

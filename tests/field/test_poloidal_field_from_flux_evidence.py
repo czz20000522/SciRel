@@ -97,11 +97,10 @@ def _budget(flux_scale, derivative, spacing, neighbour_spacing=None):
     # A one-sided endpoint formula adds a fourth of the adjacent slope, so its
     # two input slopes enter with weights up to 1 + 2*spacing/(spacing+neighbour).
     extrapolation = (
-        1.0 + 2.0 * spacing / (spacing + neighbour_spacing)
-        if neighbour_spacing
-        else 1.0
+        1.0 + 2.0 * spacing / (spacing + neighbour_spacing) if neighbour_spacing else 1.0
     )
     return 8.0 * EPS * extrapolation * (1.0 + condition)
+
 
 # Non-uniform rectilinear grids: the stencil is exact for quadratics on any
 # rectilinear grid, so a non-uniform grid does not weaken the manufactured test
@@ -150,19 +149,42 @@ def test_both_components_match_the_analytic_derivatives():
             scale = _flux_term_scale(float(radius[row, column]), float(height[row, column]))
             radial_local = float(radial_steps[min(column, len(radial_steps) - 1)])
             radial_neighbour = (
-                float(radial_steps[column]) if column == 0 else
-                float(radial_steps[-1]) if column == radius.shape[1] - 1 else None
+                float(radial_steps[column])
+                if column == 0
+                else float(radial_steps[-1])
+                if column == radius.shape[1] - 1
+                else None
             )
             axial_local = float(axial_steps[min(row, len(axial_steps) - 1)])
             axial_neighbour = (
-                float(axial_steps[0]) if row == 0 else
-                float(axial_steps[-1]) if row == radius.shape[0] - 1 else None
+                float(axial_steps[0])
+                if row == 0
+                else float(axial_steps[-1])
+                if row == radius.shape[0] - 1
+                else None
             )
             for name, got, want, spacing, neighbour in (
-                ("B_R", float(result["B_R"][row, column]), expected_r, axial_local, axial_neighbour),
-                ("B_Z", float(result["B_Z"][row, column]), expected_z, radial_local, radial_neighbour),
-                ("B", float(result["B"][row, column]),
-                 float(np.hypot(expected_r, expected_z)), radial_local, radial_neighbour),
+                (
+                    "B_R",
+                    float(result["B_R"][row, column]),
+                    expected_r,
+                    axial_local,
+                    axial_neighbour,
+                ),
+                (
+                    "B_Z",
+                    float(result["B_Z"][row, column]),
+                    expected_z,
+                    radial_local,
+                    radial_neighbour,
+                ),
+                (
+                    "B",
+                    float(result["B"][row, column]),
+                    float(np.hypot(expected_r, expected_z)),
+                    radial_local,
+                    radial_neighbour,
+                ),
             ):
                 if want == 0.0:
                     assert got == 0.0, (name, row, column, got)
@@ -190,9 +212,10 @@ def test_the_one_over_r_division_is_the_contracted_one():
         for column in range(radius.shape[1]):
             value = float(result["B_Z"][row, column])
             scale = _flux_term_scale(float(radius[row, column]), float(height[row, column]))
-            assert abs(value - expected) <= _budget(
-                scale, expected, 1.0
-            ) * abs(expected), (row, column)
+            assert abs(value - expected) <= _budget(scale, expected, 1.0) * abs(expected), (
+                row,
+                column,
+            )
     # A ``dpsi/dR`` without the division would grow like R; assert the ratio to
     # the outermost column stays one rather than scaling with R.
     ratios = result["B_Z"][:, 1:] / result["B_Z"][:, :1]
@@ -209,9 +232,7 @@ def test_the_axis_column_uses_the_even_flux_limit():
         off_axis = float(result["B_Z"][row, 1])
         expected = _analytic(0.0, float(height[row, 0]))[1]
         scale = _flux_term_scale(float(radius[row, 1]), float(height[row, 0]))
-        assert abs(axis_value - off_axis) <= _budget(
-            scale, expected, 1.0
-        ) * abs(expected), row
+        assert abs(axis_value - off_axis) <= _budget(scale, expected, 1.0) * abs(expected), row
         # The axis rule is a different formula, so agreeing with the off-axis
         # limit is a statement about the limit, not about reusing a value.
         assert abs(axis_value - expected) <= _budget(
@@ -327,15 +348,12 @@ def test_each_declared_rejection_channel_is_executable():
     with pytest.raises(ValueError, match="at least 3 points per axis"):
         poloidal_field_from_flux(small_radius, small_height, good[:2, :2])
     with pytest.raises(ValueError, match="grid axes and psi are invalid"):
-        poloidal_field_from_flux(
-            *np.meshgrid(RADIAL[::-1], AXIAL), _psi()
-        )
+        poloidal_field_from_flux(*np.meshgrid(RADIAL[::-1], AXIAL), _psi())
     with pytest.raises(ValueError, match="grid axes and psi are invalid"):
         poloidal_field_from_flux(radius, height, np.full_like(radius, np.nan))
     # runtime_failure: accepted finite input whose reciprocal division overflows.
     with pytest.raises(FloatingPointError, match="not representable"):
         poloidal_field_from_flux(
-            *np.meshgrid(np.array([0.0, 1.0e-300, 2.0e-300]),
-                         np.array([-1.0, 0.0, 1.0])),
+            *np.meshgrid(np.array([0.0, 1.0e-300, 2.0e-300]), np.array([-1.0, 0.0, 1.0])),
             np.array([[0.0, 0.0, 0.0], [0.0, 1.0, 4.0], [0.0, 2.0, 8.0]]),
         )
