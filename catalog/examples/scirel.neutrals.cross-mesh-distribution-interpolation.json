@@ -246,7 +246,7 @@
    "Binary64 conditioning, very near hull faces and unrepresentable intermediates can cause explicit numerical failure; the iteration budget is not a universal convergence guarantee.",
    "correct=0 is algebraic compatibility only and does not carry the default branch physical guarantees.",
    "The correction stops on scaled moment residual `<=32 eps` and requires the actual output three-moment postcondition within `128 eps`; exhausting `max_correction_iterations` raises `MomentCorrectionConvergenceError` without a partial distribution.",
-   "The overlap weight scale, the relative-entropy projection's iteration behaviour and the MomentCorrectionConvergenceError branch are outside this evidence; and the contract names InfeasibleMomentsError while `scirel.neutrals` does not export it, so callers catch it through its ValueError base or import it from its module (recorded as an API-surface gap, behaviour unchanged)."
+   "The overlap weight scale, the relative-entropy projection's iteration behaviour and the MomentCorrectionConvergenceError branch are outside this evidence; and the contract names InfeasibleMomentsError while `scirel.neutrals` does not export it, so callers catch it through its ValueError base or import it from its module (an API-surface gap tracked as ticket T-2026-0003; behaviour unchanged)."
   ]
  },
  "references": [

@@ -50,6 +50,9 @@ import numpy as np
 import pytest
 
 import scirel.neutrals as N
+
+# The contract names this type but `scirel.neutrals` does not export it, so the
+# module path is the only way to assert the branch by type (ticket T-2026-0003).
 from scirel.neutrals.cross_mesh_distribution_interpolation import InfeasibleMomentsError
 
 EPS = np.finfo(float).eps
