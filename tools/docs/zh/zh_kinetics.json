@@ -6686,11 +6686,16 @@
    },
    "verification": {
     "scope": [
+     "独立依据是整数阶模的解析归一化：degree 2 的 u = 1 - 3 xi^2 与 degree 4 的 u = 1 - 10 xi^2 + (35/3) xi^4 都是 -[(1 - xi^2) u']' = nu(nu+1) u 的终止型偶解，因此 c_nu = u_nu(clip(cos theta, 0, xi_tp))/(4 pi integral_0^{xi_tp} u_nu^2) 可用精确 Fraction 系数与 50 位 xi_tp 直接求值，基准一侧不含任何求积（tests/mirror/test_frank_egedal_source_projection_evidence.py）。",
      "整数模的精确归一化和源系数。",
      "模值共用已独立核验的正则求值器。",
-     "显式签名、已删除 mapping/alias 拒绝、默认控制快照、空闲分支和激活失败路径。"
+     "显式签名、已删除 mapping/alias 拒绝、默认控制快照、空闲分支和激活失败路径。",
+     "转向边界为 xi_tp = sqrt(max(0, 1 - 1/max(mirror_ratio, 1e-12)))；当 mirror_ratio <= 1 时返回空数组，degree_source 为 inactive_loss_cone 且不含 backend 键。",
+     "显式度数绕过谱算子，degree_source 为 caller_supplied；显式给出的系数原样返回。",
+     "求值器在 1e-11 内复现 1 - 3 xi^2。系数的预算是相对 1e-10 加绝对 1e-11，因为在零俯仰角处系数本身为零，只用相对预算会拿舍入与零相比。",
+     "RuntimeError 归一化通道未被任何测试输入触发，记为 not-exercised。"
     ],
-    "evidence_ceiling": "限于所声明关系：由 mirror_ratio 得 ξ_tp=sqrt(max(0,1−1/max(R,1e-12)))。阶数显式给定或调用谱算子；计算系数 c_ν=u_ν(clip(cosθ_NBI,0,ξ_tp))/(4π∫u_ν²dξ)。正规偶初值解不排除整数阶、不截断多项式；Gauss–Legendre 节点逐次加倍，初始节点解析估计角振荡，归一积分相对一致性须达1e-10。证据：test_spectral_scientific_correction.py, test_frank_egedal_source_projection.py（记录31个测试案例；共享文件加直接组合/测试覆盖；独立解析/高精度对照）；合同 example 已运行。不建立的范围：不认证调用者本征值，不含有限宽源或任意有限模和的物理正性；外部物理验证。",
+    "evidence_ceiling": "限于所声明关系：由 mirror_ratio 得 ξ_tp=sqrt(max(0,1−1/max(R,1e-12)))。阶数显式给定或调用谱算子；计算系数 c_ν=u_ν(clip(cosθ_NBI,0,ξ_tp))/(4π∫u_ν²dξ)。正规偶初值解不排除整数阶、不截断多项式；Gauss–Legendre 节点逐次加倍，初始节点解析估计角振荡，归一积分相对一致性须达1e-10。证据：test_spectral_scientific_correction.py, test_frank_egedal_source_projection.py（记录31个测试案例；共享文件加直接组合/测试覆盖；独立解析/高精度对照）；合同 example 已运行。不建立的范围：不认证调用者本征值，不含有限宽源或任意有限模和的物理正性；外部物理验证。 C1 证据（tests/mirror/test_frank_egedal_source_projection_evidence.py）用 degree 2 与 4 的解析模平方积分取代共用的自适应归一化，并钉住转向边界、非激活分支、两条旁路与求值器契约。非整数度数在这里没有解析基准，RuntimeError 通道仍为 not-exercised。",
     "known_limitations": [
      "把点源俯仰角裁剪到锥内是所声明的投影约定，不是有限宽度注入模型。",
      "显式阶数用作损失锥模时需独立本征值依据。",

@@ -4066,10 +4066,14 @@
    },
    "verification": {
     "scope": [
+     "该包络是闭式定义，因此独立依据是在二进网格上用 fractions.Fraction 精确重算 u = clip((psi - psi_axis)/(psi_edge - psi_axis), 0, 1) 与 envelope = clip(1 - u, 0, inf)**alpha，并配合代数恒等式：u=0 得 1、u=1 得 0、alpha=0 处处为 1，以及交换参考水平后的反转律（tests/mirror/test_frank_egedal_radial_envelope_evidence.py）。",
      "两行网格的线性/二次闭式值、截断端点和反向磁通。",
-     "磁通仿射重标度、默认极值、零指数、输入不修改及所选无效网格/参考值。"
+     "磁通仿射重标度、默认极值、零指数、输入不修改及所选无效网格/参考值。",
+     "alpha = 1、2、3（含被裁剪端点）与 Fraction 基准逐位一致；在二进网格上 alpha = 1 与 1 - u 完全一致。",
+     "交换 psi_axis 与 psi_edge 后两个包络之和恰为 1；指数加倍时包络在一次 pow 舍入内等于原包络的平方。",
+     "包络在两个参考水平之间单调不增，轴上恰为 1、边界恰为 0；默认参考水平取网格极值。"
     ],
-    "evidence_ceiling": "限于所声明关系：令 u=clip((psi-psi_axis)/(psi_edge-psi_axis),0,1)，逐点返回 clip(1-u,0,infinity)^alpha。默认 psi_axis=min(psi)、psi_edge=max(psi)、alpha=1。允许有限非零磁通区间的两种方向。按 NumPy 零次幂约定，alpha=0 时整个网格均为 1，包括外侧端点。证据：test_frank_egedal_radial_envelope.py, test_frank_egedal_radial_envelope_admitted.py（记录 6 个测试函数；绑定文件覆盖；独立解析/高精度对照）；合同 example 已运行。不建立的范围：不从网格识别物理磁轴、边缘、磁通单位或压强归一化；不提供完整 Frank-Egedal 闭合、磁场计算、坐标转换或截断区间外的外推。",
+    "evidence_ceiling": "限于所声明关系：令 u=clip((psi-psi_axis)/(psi_edge-psi_axis),0,1)，逐点返回 clip(1-u,0,infinity)^alpha。默认 psi_axis=min(psi)、psi_edge=max(psi)、alpha=1。允许有限非零磁通区间的两种方向。按 NumPy 零次幂约定，alpha=0 时整个网格均为 1，包括外侧端点。证据：test_frank_egedal_radial_envelope.py, test_frank_egedal_radial_envelope_admitted.py（记录 6 个测试函数；绑定文件覆盖；独立解析/高精度对照）；合同 example 已运行。不建立的范围：不从网格识别物理磁轴、边缘、磁通单位或压强归一化；不提供完整 Frank-Egedal 闭合、磁场计算、坐标转换或截断区间外的外推。 C1 证据（tests/mirror/test_frank_egedal_radial_envelope_evidence.py）用 Fraction 算术重算闭式，钉住四个解析锚点、反转律、指数复合与单调性，并覆盖声明的输入拒绝。由于整个关系就是两行闭式，这项证据建立的是实现与其自身定义的一致性，而非与独立物理模型的一致性。",
     "known_limitations": [
      "参考磁通由调用者提供或取网格极值，此函数不作物理识别。",
      "Wb 与其他 SciRel Wb/rad 约定不自动转换；已测耦合要求轴/边缘参考值与当前 psi 坐标一致。",
@@ -5238,11 +5242,15 @@
    },
    "verification": {
     "scope": [
+     "独立依据是在二进输入上对四个声明乘积的精确有理重算：density = gas_density r + hot_density_scale r h_n，electron_pressure = density T_e，p_parallel/p_perp = gas + electron + hot_pressure_scale r h_parallel/perp；因此每个分量的比较都是逐位相等（tests/mirror/test_frank_egedal_pressure_state_evidence.py）。",
      "2×2 用例独立核对气体、热离子、电子对密度和两个压强的贡献。",
      "无密度尺度用例验证 density=None、电子能量网格不变且电子压强为零。",
-     "直接测试拒绝非有限 psi 与负气体压强；文档示例为两单元组装。"
+     "直接测试拒绝非有限 psi 与负气体压强；文档示例为两单元组装。",
+     "各向异性 p_parallel - p_perp 逐位等于 hot_pressure_scale r (h_parallel - h_perp)，与共用的气体项和电子项无关。",
+     "同时省略两个密度尺度时 density 为 None；显式零气体密度仍返回含热离子项的密度数组；省略电子温度时返回 None 且无电子压强；热压强尺度加倍时热离子增量精确加倍。",
+     "映射类型的尺度抛出原生 TypeError，畸形字符串在 float() 转换处抛出 ValueError；两个通道都被断言，且有限乘积越出有限范围时被拒绝。"
     ],
-    "evidence_ceiling": "限于所声明关系：设 r 为径向包络，h_parallel、h_perp、h_n 为热离子形状。p_hot=hot_pressure_scale（默认 1 Pa），p_gd=gas_dynamic_pressure（默认 0 Pa）。配置 gas_dynamic_density 或 hot_density_scale 时 n=r*gas_dynamic_density+r*h_n*hot_density_scale，只加入存在项；均无配置则 density=None，但电子压强内部使用零密度。配置 electron_temperature 时返回其常量网格并令 p_e=n*T_e，否则返回 None 且 p_e=0。最终…。证据：test_frank_egedal_pressure_state.py, test_frank_egedal_pressure_admitted.py（记录 9 个测试函数；绑定文件覆盖；独立解析/高精度对照）；合同 example 已运行。不建立的范围：不计算径向包络、热离子矩、电子温度、电势或平衡；不自动转换磁通约定、对齐坐标或空间插值，也不证明尺度的物理自洽性。",
+    "evidence_ceiling": "限于所声明关系：设 r 为径向包络，h_parallel、h_perp、h_n 为热离子形状。p_hot=hot_pressure_scale（默认 1 Pa），p_gd=gas_dynamic_pressure（默认 0 Pa）。配置 gas_dynamic_density 或 hot_density_scale 时 n=r*gas_dynamic_density+r*h_n*hot_density_scale，只加入存在项；均无配置则 density=None，但电子压强内部使用零密度。配置 electron_temperature 时返回其常量网格并令 p_e=n*T_e，否则返回 None 且 p_e=0。最终…。证据：test_frank_egedal_pressure_state.py, test_frank_egedal_pressure_admitted.py（记录 9 个测试函数；绑定文件覆盖；独立解析/高精度对照）；合同 example 已运行。不建立的范围：不计算径向包络、热离子矩、电子温度、电势或平衡；不自动转换磁通约定、对齐坐标或空间插值，也不证明尺度的物理自洽性。 C1 证据（tests/mirror/test_frank_egedal_pressure_state_evidence.py）用手写二乘二期望之外的 Fraction 精确组装覆盖全部四个输出，单独隔离各向异性恒等式，并钉住声明的省略约定。它不证明所给形状与尺度描述了一个物理磁镜状态。",
     "known_limitations": [
      "psi 数值只验证不参与计算；Wb 不是与 Wb/rad 资产之间经验证的连接约定。",
      "只配置电子温度而无密度尺度时，电子能量网格存在，但 density=None 且电子压强为零。",
