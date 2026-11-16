@@ -74,27 +74,20 @@ from scirel.kinetic.dispersion.multifluid import (
     scan_fluid_corrected,
 )
 
-from ._fluid_pencil_reference import (
-    EPS,
-    current_density,
-    eigenvector_residual,
-    generalized_residual,
-    gyro_frequencies,
-    plasma_frequencies,
-    total_charge_density,
-    total_mass_density,
-)
+import _fluid_pencil_reference as reference
+
+EPS = reference.EPS
 
 BUDGET = 1024 * EPS
 KX, KZ = 1e-5, 2e-5
 
 
-def test_pencil_carries_the_si_plasma_and_gyro_frequencies():
+def test_pencil_carries_the_si_plasma_and_reference.gyro_frequencies():
     """``wps`` and ``wcs`` are the 40-digit definitions of the state's own columns."""
     state = fluid_equilibrium_si()
     pencil = fluid_frequency_pencil(state, KX, KZ)
-    expected_plasma = plasma_frequencies(state)
-    expected_gyro = gyro_frequencies(state)
+    expected_plasma = reference.plasma_frequencies(state)
+    expected_gyro = reference.gyro_frequencies(state)
     assert_allclose(pencil["wps"], expected_plasma, rtol=0, atol=32 * EPS * np.abs(expected_plasma).max())
     assert_allclose(pencil["wcs"], expected_gyro, rtol=0, atol=32 * EPS * np.abs(expected_gyro).max())
     # Discrimination: the mass and charge roles are not interchangeable and the
@@ -138,11 +131,11 @@ def test_every_returned_frequency_is_an_eigenvalue_of_the_returned_pencil():
     matrix = np.asarray(solution["M"])
     inertia = np.asarray(solution["A"])
     omega = np.asarray(solution["w1"])
-    worst_value = max(generalized_residual(matrix, inertia, value) for value in omega)
+    worst_value = max(reference.generalized_residual(matrix, inertia, value) for value in omega)
     assert worst_value <= BUDGET, worst_value
     vectors = np.asarray(solution["X1"])
     worst_vector = max(
-        eigenvector_residual(matrix, inertia, omega[index], vectors[:, index])
+        reference.eigenvector_residual(matrix, inertia, omega[index], vectors[:, index])
         for index in range(omega.size)
     )
     assert worst_vector <= BUDGET, worst_vector
@@ -150,7 +143,7 @@ def test_every_returned_frequency_is_an_eigenvalue_of_the_returned_pencil():
     # singularity by many orders of magnitude.
     displaced = omega.copy()
     displaced[0] *= 1.01
-    assert generalized_residual(matrix, inertia, displaced[0]) > 1e6 * worst_value
+    assert reference.generalized_residual(matrix, inertia, displaced[0]) > 1e6 * worst_value
 
 
 def test_the_two_orderings_hold_the_same_spectrum():
@@ -200,17 +193,17 @@ def test_equilibrium_assembles_the_named_si_moments():
     state = fluid_equilibrium_si()
     assert_allclose(
         float(np.asarray(state["rho"]).ravel()[0]),
-        total_mass_density(state),
+        reference.total_mass_density(state),
         rtol=0,
-        atol=32 * EPS * abs(total_mass_density(state)),
+        atol=32 * EPS * abs(reference.total_mass_density(state)),
     )
     assert_allclose(
         float(np.asarray(state["charge_density"]).ravel()[0]),
-        total_charge_density(state),
+        reference.total_charge_density(state),
         rtol=0,
-        atol=32 * EPS * max(abs(total_charge_density(state)), 1e-300),
+        atol=32 * EPS * max(abs(reference.total_charge_density(state)), 1e-300),
     )
-    expected_current = current_density(state)
+    expected_current = reference.current_density(state)
     assert_allclose(
         np.asarray(state["current_density"], dtype=float).ravel(),
         expected_current,
@@ -235,7 +228,7 @@ def test_relative_rate_equilibrium_is_a_consistent_state_for_the_pencil():
     solution = fluid_solve_state(state, KX, KZ)
     matrix = np.asarray(solution["M"])
     inertia = np.asarray(solution["A"])
-    worst = max(generalized_residual(matrix, inertia, value) for value in np.asarray(solution["w1"]))
+    worst = max(reference.generalized_residual(matrix, inertia, value) for value in np.asarray(solution["w1"]))
     assert worst <= BUDGET, worst
     # The collision-velocity generator is documented to act on the velocity
     # difference of a pair, so a uniform velocity offset is a null direction.
