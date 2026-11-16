@@ -19,10 +19,16 @@ value itself performs.
 
 What that decides, which a float re-derivation cannot:
 
-1. **The modulus value.** ``m`` must be the correctly rounded double of the exact
-   rational ``4 R a / D``: ``|m - float(m_exact)| <= eps/2 * m_exact``.  A wrong
-   numerator factor, a wrong ``(R + a)`` sign, or a missing ``dz`` term is an
-   O(1) error, not an ulp.
+1. **The modulus value.** ``m`` must be within ``8 eps`` of the exact rational
+   ``4 R a / D``, relative.  The count is the rounding chain the expression
+   actually performs, not one: ``(R + a) ** 2`` is an add and a multiply,
+   ``(Z - z0) ** 2`` another add and another multiply, their sum is a third
+   rounding, ``4 * R * a`` is two more, and the quotient is the last - eight
+   roundings, each bounded by half an ulp, so ``4 eps`` is the derived maximum
+   and ``8 eps`` is that rounded up to a power of two.  A wrong numerator factor,
+   a wrong ``(R + a)`` sign, or a missing ``dz`` term is an O(1) error, not an
+   ulp.  The observed maximum over the sampled pairs is ``1.87e-16`` relative,
+   i.e. ``0.84`` of one ``eps``; observed on a sampled table, not a bound.
 2. **The complementary identity.** ``1 - m = ((R - a)**2 + (Z - z0)**2) / D``
    holds exactly in rationals.  This is the discriminator that separates the
    correct denominator from ``(R - a)**2``: the value of ``m`` alone can look
@@ -37,9 +43,12 @@ What that decides, which a float re-derivation cannot:
 5. **The once-only axis offset.** ``regularized_radius == raw + 1e-8`` exactly,
    and a raw radius of exactly zero still produces the positive offset.
 
-Budget: items 1-4 carry ``eps/2``, ``eps/2``, exact, and ``2 eps`` respectively,
+Budget: items 1-4 carry ``8 eps``, exact, exact, and ``2 eps`` respectively,
 each derived from the number of roundings the corresponding output performs - not
-from the observed difference.  Item 5 is exact because both operands are binary64
+from the observed difference.  The first budget was written as ``eps/2`` from a
+one-rounding assumption that does not match the eight-rounding chain above; that
+derivation was wrong and is corrected here, which is why the figure changed
+before any code did.  Item 5 is exact because both operands are binary64
 and their sum is exactly representable for the radii used.
 
 Evidence ceiling: this asset is pure geometry, so the evidence is complete for
@@ -88,9 +97,9 @@ def test_modulus_and_distance_squared_match_the_exact_rational_relation(raw_radi
     for index, (coil_r, coil_z) in enumerate(zip(COIL_RADIUS, COIL_Z, strict=True)):
         exact_m, exact_denominator = _exact(radius, height, float(coil_r), float(coil_z))
         got_m = float(modulus[index])
-        # Evidence 1: one rounding of a rational to float.
+        # Evidence 1: eight roundings of a rational expression to float.
         deviation = abs(Fraction(got_m) - exact_m) / exact_m
-        assert deviation <= EPS / 2, (raw_radius, height, index, float(deviation))
+        assert deviation <= 8 * EPS, (raw_radius, height, index, float(deviation))
         observed = max(observed, float(deviation))
         # Evidence 2: 1 - m equals the wire distance squared over D, exactly.
         wire_gap = (Fraction(radius) - Fraction(coil_r)) ** 2 + (
@@ -140,7 +149,7 @@ def test_the_axis_offset_is_applied_once_and_zero_radius_stays_positive():
     # m at the regularised axis point is small but nonzero, and its exact value
     # is the rational one for that same offset radius.
     exact_m, _ = _exact(radius, 0.0, 0.5, 0.0)
-    assert abs(Fraction(float(modulus[0])) - exact_m) <= Fraction(EPS) / 2 * exact_m
+    assert abs(Fraction(float(modulus[0])) - exact_m) <= 8 * Fraction(EPS) * exact_m
     assert float(modulus[0]) > 0.0
     # The returned distance uses the offset radius too, not the raw one.
     assert distance[0] == radius + 0.5
