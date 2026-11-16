@@ -120,21 +120,26 @@
   "zh": "特殊函数响应"
  },
  "verification": {
-  "evidence_ceiling": "Bounded to the declared relation: RC=[R,d(bR)/db;Y dR/dY,Y d/dY(d(bR)/db)]. R=2Y/b sum_n>=1 n² Gamma_n/(Y²−n²); true poles fail. Evidence: test_fluid_spectrum_full.py (9 recorded test functions; shared-file coverage only; independent analytic/high-precision oracle); the contract example ran. Excluded scope: No execution or fidelity claim for the Taylor/asymptotic/integral selector; No certified entire-complex-plane precision claim.",
+  "evidence_ceiling": "test_fluid_special_evidence.py rebuilds the R matrix from the contract's own harmonic sum with 40-digit Gamma_n and mp.diff, so a wrong harmonic weight, a wrong 2Y/b prefactor or a swapped derivative column is visible; the reference sums 400 terms, whose tail is below 1e-20 at b<=0.5, and the 1e-9 ceiling leaves six decades for the implementation's resonant-sum accumulation. The Gamman/Gammapn and zfun selectors are compared with their 40-digit definitions. The four R selector names are one code path and return bit-identical matrices; the contract records that instead of implying three further branches. Nothing is claimed for large b or for the excluded selector fidelity.",
   "known_limitations": [
    "Only shared-file coverage is bound (test_fluid_spectrum_full.py); no asset-specific failure/limit probe is recorded.",
    "No cross-thread/platform invariance, arbitrary precision, all physical-mode completeness or unconditional nonlinear convergence.",
    "J/L pole and finite-harmonic approximation errors remain distinct from relation consistency and numerical residual.",
    "The independent analytic comparison does not replace an external experimental reference.",
-   "Pure-Python execution is tested on this host; native parity is not claimed."
+   "Pure-Python execution is tested on this host; native parity is not claimed.",
+   "The four R selectors RTAY, RASY, RINT and RYLA are one code path: the returned matrices are bit-identical, so the selector name does not choose a Taylor, asymptotic or integral branch.",
+   "The 1e-9 R ceiling is a truncation-and-accumulation statement at b<=0.5; nothing is claimed for large b where the harmonic sum needs more than the reference's 400 terms."
   ],
   "scope": [
    "Gamma_n=e^-b I_n(b) and its neighbor-identity derivative for integer n; finite scalar/array b.",
    "Z(z)=i*sqrt(pi)*wofz(z) via scipy.special; explicit overflow failure.",
-   "Full scalar R response for complex Y,b with tail and floating cancellation checks, bounded at 65536 terms; b=0 and Y=0 analytic limits."
+   "Full scalar R response for complex Y,b with tail and floating cancellation checks, bounded at 65536 terms; b=0 and Y=0 analytic limits.",
+   "Independent 40-digit reconstruction of all four R-matrix entries from the declared sum R=2Y/b*sum n^2*Gamma_n/(Y^2-n^2) with mpmath Gamma_n and mp.diff for both derivative columns, at three (Y,b) pairs with a pre-declared 1e-9 ceiling.",
+   "Independent 40-digit comparison of the Gamman and Gammapn selectors and of zfun=Z, plus the declared rejection channels for missing parameters, unknown selectors and non-representable arguments."
   ],
   "tests": [
-   "tests/kinetic/test_fluid_spectrum_full.py"
+   "tests/kinetic/test_fluid_spectrum_full.py",
+   "tests/kinetic/test_fluid_special_evidence.py"
   ]
  },
  "version": {
