@@ -9,7 +9,7 @@ import pytest
 
 
 def _run(values):
-    return solve_axisymmetric_anisotropic_picard(values)
+    return solve_axisymmetric_anisotropic_picard(**values)
 
 
 def _closure(b, psi):
@@ -94,10 +94,19 @@ def test_non_grid_pressure_shape_fails_closed():
 def test_missing_closure_and_invalid_relax_fail_closed():
     values = _inputs()
     values.pop("pressure_closure")
-    with pytest.raises(ValueError, match="pressure_closure"):
+    with pytest.raises(TypeError, match="pressure_closure"):
         _run(values)
     with pytest.raises(ValueError, match="Picard controls"):
         _run(_inputs(relax=1.0))
+
+
+def test_mapping_inputs_and_unknown_keywords_are_rejected():
+    """The composition mapping is private now: the public boundary takes explicit ports."""
+    values = _inputs()
+    with pytest.raises(TypeError, match="inputs"):
+        solve_axisymmetric_anisotropic_picard(inputs=values)
+    with pytest.raises(TypeError, match="bogus"):
+        solve_axisymmetric_anisotropic_picard(**values, bogus=1)
 
 
 def test_contract_uniform_bz_linear_isotropic_pressure_has_analytic_current():

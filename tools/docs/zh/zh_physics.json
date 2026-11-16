@@ -8663,7 +8663,7 @@
   },
   {
    "asset_id": "scirel.equilibrium.axisymmetric-anisotropic-picard",
-   "source_sha256": "f62c406052d13d93ddd87b5277954d2b1fdaad206c7d75e707028e290314509b",
+   "source_sha256": "d7771fea146db6ce3e3e219be22f3570c6b71718ddb5f039b2dfb27b1172f143",
    "summary": "将外供各向异性压力闭合与当前极向场、柱坐标压力力和稠密格林磁通更新迭代耦合，最后重新求值并检查返回的末状态。",
    "definition": "从 psi_vac 副本重构场并执行迭代场门禁，调用 pressure_closure(B,psi)，广播或验证压力，求 div(P)、掩蔽非激活 J_phi，再做磁通松弛 Green 更新。以未松弛 step.fixed_point_residual<=tol 或次数上限判停，相对松弛磁通步幅仅作诊断；末 psi 上先重算场并检查 minimum_field，通过后才调用终末闭合、掩码回调和力核，再重算电流及未松弛映射，最后检查 firehose 裕度和可选严格平行力相容性。",
    "model": "有界轴对称旋磁压力 Picard 组合，压力闭合由调用者提供。",

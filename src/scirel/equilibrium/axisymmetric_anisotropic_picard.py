@@ -250,18 +250,27 @@ def _run_composition(inputs, *, asset_loader):
     }
 
 
-def solve_axisymmetric_anisotropic_picard(inputs=None, **kwargs):
+def solve_axisymmetric_anisotropic_picard(
+    r_grid,
+    z_grid,
+    psi_vac,
+    g_psi,
+    *,
+    pressure_closure,
+    tol=1e-08,
+    maxiter=200,
+    relax=0.5,
+    plasma_mask=None,
+    minimum_field=1e-08,
+    minimum_firehose_margin=0.0,
+    compatibility_tol=0.05,
+    strict_compatibility=True,
+    cell_edges=None,
+):
     """Run the axisymmetric anisotropic Picard field/pressure feedback loop.
 
     Parameters
     ----------
-    inputs : mapping, optional
-        Composition input mapping. Its declared keys are listed under Other Parameters.
-    kwargs : mapping, optional
-        Additional composition inputs merged at the public boundary.
-
-    Other Parameters
-    ----------------
     r_grid : finite real array-like
         Cylindrical radius mesh [m] Shape [N_Z,N_R]. Nonnegative rectilinear R, strictly increasing radial axis and at least three columns; same shape as z_grid and psi_vac.
     z_grid : finite real array-like
@@ -384,8 +393,23 @@ def solve_axisymmetric_anisotropic_picard(inputs=None, **kwargs):
 
     return compose(
         _run_composition,
-        inputs,
-        kwargs,
+        {
+            "r_grid": r_grid,
+            "z_grid": z_grid,
+            "psi_vac": psi_vac,
+            "g_psi": g_psi,
+            "pressure_closure": pressure_closure,
+            "tol": tol,
+            "maxiter": maxiter,
+            "relax": relax,
+            "plasma_mask": plasma_mask,
+            "minimum_field": minimum_field,
+            "minimum_firehose_margin": minimum_firehose_margin,
+            "compatibility_tol": compatibility_tol,
+            "strict_compatibility": strict_compatibility,
+            "cell_edges": cell_edges,
+        },
+        {},
         {
             "asset_loader": {
                 "scirel.equilibrium.anisotropic_force_balance": _dependency_0,
