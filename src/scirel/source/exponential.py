@@ -104,6 +104,21 @@ def exponential_profile(rho_norm, vpr, drho_norm, *, decay_start, width, total):
         return np.full(rho.shape, np.nan, dtype=np.float64)
     # Subtract a grid endpoint before exponentiation; this is algebraically
     # identical to the source normalization and avoids overflow in start/w.
+    # Which endpoint is chosen is semantically irrelevant: rho[0] and rho[-1]
+    # differ only by a constant added to log_shape, and normalize_log_shape
+    # subtracts the peak before exponentiating, so that constant cancels for
+    # every legal input. The sign-dependent choice is kept for readability (it
+    # keeps the exponent non-positive) and can be deleted without changing a
+    # returned value or an exception. No overflow argument for it holds:
+    # safe_width is floored at finfo(float64).tiny = 2**-1022 and every grid
+    # value lies in [0, 1], so |rho - reference| / safe_width <= 2**1022 for
+    # either endpoint, and the tiny/wide-width evidence cases return identical
+    # profiles both ways. The cancellation itself is pinned bit-exactly by
+    # tests/kinetic/test_profile_energy.py::test_exponential_start_cancels_and_negative_width_reverses,
+    # which compares decay_start = -1e300 with 1e300 for both width signs: that
+    # is the same constant-shift invariant. This makes the branch an equivalent
+    # mutation rather than a guard, so a surviving mutant here says nothing about
+    # test coverage.
     reference = rho[0] if np.signbit(w) else rho[-1]
     safe_width = np.copysign(max(abs(w), np.finfo(np.float64).tiny), w)
     log_shape = (np.asarray(rho, dtype=np.longdouble) - np.longdouble(reference)) / np.longdouble(
