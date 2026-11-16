@@ -1,138 +1,145 @@
 {
- "schema": "scirel.asset-document",
- "asset_id": "scirel.electromagnetism.circular-filament-green",
- "title": {
-  "en": "Circular-filament Green kernel",
-  "zh": "圆环丝电流格林核"
- },
- "summary": "Evaluate ordered circular-filament flux and magnetic-field responses at cylindrical target points.",
- "taxonomy": [
-  "electromagnetism",
-  "axisymmetric-fields",
-  "green-kernel"
- ],
- "aliases": [
-  "compute_greens",
-  "Biot-Savart circular loop",
-  "thin circular coil field"
- ],
- "discovery": {
-  "capability": [
-   "Circular-filament Green kernel",
-   "Evaluate ordered circular-filament flux and magnetic-field responses at cylindrical target points."
-  ],
-  "operation": [
-   "circular-filament Green response using small-modulus hypergeometric and complementary elliptic-integral branches",
-   "weighted source rings and target points -> psi, BR and BZ"
-  ],
-  "model": "Axisymmetric ideal circular-filament kernel using the small-modulus hypergeometric branch and complementary elliptic-integral branch.",
-  "geometry": "Cylindrical source rings and target points.",
-  "boundary": "Axis targets use the analytic limit; an active positive-radius source/target coincidence is rejected.",
-  "device_scope": "device-parameterized"
- },
- "identity": {
-  "relation": "Circular-filament Green response",
-  "direction": "weighted source rings and target points to psi, BR, and BZ",
-  "definition": "For each source row (R,Z,weight), return the weighted response psi=R A_phi, BR, and BZ per ampere.",
-  "model": "Axisymmetric ideal circular-filament kernel using the small-modulus hypergeometric branch and complementary elliptic-integral branch.",
-  "geometry": "Cylindrical source rings and target points.",
-  "coordinates": "R,Z in metres; source weight dimensionless; responses are Wb/rad/A and T/A.",
-  "boundary": "Axis targets use the analytic limit; an active positive-radius source/target coincidence is rejected.",
-  "assumptions": [
-   "Inputs are finite real arrays with nonnegative radii.",
-   "Zero-radius and zero-weight sources are inactive.",
-   "No finite-wire or permeability model is included."
-  ]
- },
- "inputs": [
-  {
-   "name": "rzw",
-   "description": "Source rows or a list of independent source sets.",
-   "units": "m, m, dimensionless weight",
-   "shape": "(Ns,3) or list of (Ns,3)",
-   "dtype": "finite float64",
-   "required": true,
-   "constraints": "Non-negative source radius; signed weights; list output preserves set dimension."
+  "schema": "scirel.asset-document",
+  "asset_id": "scirel.electromagnetism.circular-filament-green",
+  "title": {
+    "en": "Circular-filament Green kernel",
+    "zh": "圆环丝电流格林核"
   },
-  {
-   "name": "rz_pts",
-   "description": "Target cylindrical coordinates.",
-   "units": "m",
-   "shape": "(Nt,2)",
-   "dtype": "finite float64",
-   "required": true,
-   "constraints": "Non-negative target radius."
-  }
- ],
- "outputs": [
-  {
-   "name": "response",
-   "description": "Tuple psi, BR, BZ; list source input returns one target axis per set.",
-   "units": "Wb/rad per ampere; T per ampere",
-   "shape": "three arrays of (Nt,) or (Nset,Nt)",
-   "dtype": "float64",
-   "required": true,
-   "constraints": "Finite output or explicit FloatingPointError."
-  }
- ],
- "applicability": {
-  "preconditions": [
-   "Inputs are finite real arrays with nonnegative radii.",
-   "Zero-radius and zero-weight sources are inactive."
+  "summary": "Evaluate ordered circular-filament flux and magnetic-field responses at cylindrical target points.",
+  "taxonomy": [
+    "electromagnetism",
+    "axisymmetric-fields",
+    "green-kernel"
   ],
-  "supported": [
-   "Ordered source sets, signed weights, axis limits, and explicit singularity failures covered by the listed tests."
+  "aliases": [
+    "compute_greens",
+    "Biot-Savart circular loop",
+    "thin circular coil field"
   ],
-  "excluded": [
-   "Finite-wire self-field, arbitrary-domain scientific qualification, and persistent or multiprocessing evaluation."
+  "discovery": {
+    "capability": [
+      "Circular-filament Green kernel",
+      "Evaluate ordered circular-filament flux and magnetic-field responses at cylindrical target points."
+    ],
+    "operation": [
+      "circular-filament Green response using small-modulus hypergeometric and complementary elliptic-integral branches",
+      "weighted source rings and target points -> psi, BR and BZ"
+    ],
+    "model": "Axisymmetric ideal circular-filament kernel using the small-modulus hypergeometric branch and complementary elliptic-integral branch.",
+    "geometry": "Cylindrical source rings and target points.",
+    "boundary": "Axis targets use the analytic limit; an active positive-radius source/target coincidence is rejected.",
+    "device_scope": "device-parameterized"
+  },
+  "identity": {
+    "relation": "Circular-filament Green response",
+    "direction": "weighted source rings and target points to psi, BR, and BZ",
+    "definition": "For each source row (R,Z,weight), return the weighted response psi=R A_phi, BR, and BZ per ampere.",
+    "model": "Axisymmetric ideal circular-filament kernel using the small-modulus hypergeometric branch and complementary elliptic-integral branch.",
+    "geometry": "Cylindrical source rings and target points.",
+    "coordinates": "R,Z in metres; source weight dimensionless; responses are Wb/rad/A and T/A.",
+    "boundary": "Axis targets use the analytic limit; an active positive-radius source/target coincidence is rejected.",
+    "assumptions": [
+      "Inputs are finite real arrays with nonnegative radii.",
+      "Zero-radius and zero-weight sources are inactive.",
+      "No finite-wire or permeability model is included."
+    ]
+  },
+  "inputs": [
+    {
+      "name": "rzw",
+      "description": "Source rows or a list of independent source sets.",
+      "units": "m, m, dimensionless weight",
+      "shape": "(Ns,3) or list of (Ns,3)",
+      "dtype": "finite float64",
+      "required": true,
+      "constraints": "Non-negative source radius; signed weights; list output preserves set dimension."
+    },
+    {
+      "name": "rz_pts",
+      "description": "Target cylindrical coordinates.",
+      "units": "m",
+      "shape": "(Nt,2)",
+      "dtype": "finite float64",
+      "required": true,
+      "constraints": "Non-negative target radius."
+    }
+  ],
+  "outputs": [
+    {
+      "name": "response",
+      "description": "Tuple psi, BR, BZ; list source input returns one target axis per set.",
+      "units": "Wb/rad per ampere; T per ampere",
+      "shape": "three arrays of (Nt,) or (Nset,Nt)",
+      "dtype": "float64",
+      "required": true,
+      "constraints": "Finite output or explicit FloatingPointError."
+    }
+  ],
+  "applicability": {
+    "preconditions": [
+      "Inputs are finite real arrays with nonnegative radii.",
+      "Zero-radius and zero-weight sources are inactive."
+    ],
+    "supported": [
+      "Ordered source sets, signed weights, axis limits, and explicit singularity failures covered by the listed tests."
+    ],
+    "excluded": [
+      "Finite-wire self-field, arbitrary-domain scientific qualification, and persistent or multiprocessing evaluation."
+    ]
+  },
+  "failure_semantics": {
+    "invalid_input": "ValueError is raised for malformed, complex, nonfinite, negative-radius, or coincident active inputs.",
+    "runtime_failure": "FloatingPointError is raised when the finite response cannot be represented.",
+    "nonconvergence": "Not applicable; the kernel is evaluated directly.",
+    "partial_results": "A failed source evaluation returns no response tuple."
+  },
+  "public_api": {
+    "python": {
+      "module": "scirel.electromagnetism.greens",
+      "symbol": "compute_greens",
+      "signature": "compute_greens(rzw, rz_pts)",
+      "canonical_module": "scirel.electromagnetism",
+      "canonical_symbol": "compute_greens"
+    }
+  },
+  "version": {
+    "implementation_version": "0.0.0",
+    "dependencies": []
+  },
+  "example": {
+    "description": "Evaluate one weighted filament at two targets and contract its axial response with an independent current vector.",
+    "code": "import numpy as np\nfrom scirel.electromagnetism import compute_greens\npsi, br, bz = compute_greens(np.array([[1.0, 0.0, 1.0]]), np.array([[0.2, 0.3], [0.4, -0.2]]))\nassert psi.shape == br.shape == bz.shape == (2,)",
+    "expected": "The response arrays have shape (2,); the first target psi is about 1.113e-8 Wb/rad and the BZ values are finite; the example does not perform a BZ contraction."
+  },
+  "verification": {
+    "scope": [
+      "Bounded Green comparison fixtures",
+      "Axis and derivative regressions",
+      "Explicit singularity and lifecycle tests",
+      "tests/cross_domain/test_field_green_correction.py::high_precision_loop uses 70-digit mpmath ellipk/ellipe closed-form values for test_near_wire_radial_separation_is_not_lost_by_squared_subtraction and test_equivalent_formula_cutover_retains_psi_and_analytic_derivatives. These calls reach this kernel through the field aggregate/dense wrappers; their zero-self convention is not this kernel's singularity contract. Separate ordinary SciPy angular quadrature is loop_integrals in tests/geometry/test_geometry_fields.py. The original tolerances and small-radius/axis/arithmetic-failure checks are retained.",
+      "tests/geometry/test_green_scales.py independently evaluates the axial Biot-Savart expression with 100-digit Decimal inputs, bounds the far-flux angular-integral remainder below 1.8e-108, checks mutual-flux reciprocity, and compares both analytic branches against direct angular quadrature under length and signed-weight scaling. The assertions retain rtol 1e-14 for the analytic limits and 1e-12 for quadrature; this is bounded numerical evidence, not arbitrary-domain qualification. A separate 400-digit elliptic reference checks positive near-wire separation whose squared complement underflows; the limiting elliptic logarithm retains the same ideal-filament model. Signed-source moment checks for MagnetRing and BRB retain the 1e-14 budget using compensated products and ordered source accumulation; they check returned geometry, not experimental calibration. Two 700-digit public-coordinate references separately cover a super-range radius sum and signed-height difference whose final flux and fields remain representable; geometry retains independent binary scales before forming these lengths.",
+      "Independent reference (tests/electromagnetism/_ideal_ring_reference.py): the same relation is recomputed along three routes that share no algorithmic step with this kernel - psi by direct quadrature of its Biot-Savart definition, psi again by the AgM complete elliptic integrals evaluated in the parameter m itself rather than in the complement 1-m that the ellipkm1 branch forms here, and B_R/B_Z by fourth-order differentiation of that flux instead of by the analytic derivative combinations used here. The two psi routes are cross-certified against each other at 1e-22 relative and each derivative is Richardson-stabilised at 1e-17 relative before any value is used, so a half-converged reference raises instead of being compared against this kernel.",
+      "Implementation relation: psi = 1e-7 w d ((2-m) K(m) - 2 E(m)) with d = sqrt((R+a)^2 + (z-z0)^2) and m = 4 R a / d^2 on the m >= 0.5 branch, psi = pi 1e-7 w a^2 R^2 hyp2f1(1.5,1.5;3;m) / d^3 on the m < 0.5 branch, B_R = -(1/R) dpsi/dZ and B_Z = (1/R) dpsi/dR, with mu0/(4 pi) = 1e-7 exactly, a signed height difference z - z0, radius in metres, psi in Wb/rad per ampere, B in tesla per ampere, and the weight applied once to all three components. The cutover sits at m = 0.5, which for z = z0 is R/a = 3 - 2 sqrt(2) = 0.1716 and R/a = 3 + 2 sqrt(2) = 5.828; the evidence grid contains targets on both sides of both.",
+      "Test matrix (tests/electromagnetism/test_ring_kernel_evidence.py, 11 cases): three rings by thirteen targets crossing the axis, the cutover, both sides of the wire radius and three height regimes; the exact axis limit against the elementary loop field 1e-7 w 2 pi a^2 / (a^2 + (Z-z0)^2)^{3/2}; bitwise mirror symmetry at a zero ring height; div B = 0 and (curl B)_phi = 0 with measured refinement ratios above 3.0 per halving; the dpsi/dZ and dpsi/dR relations with the same measured ratios; exact power-of-two weight scaling, exact opposed-pair cancellation, the inactive rows and a subnormal weight; and every rejection channel. Boundary and degenerate cases are the axis, the cutover, the exact coincidence and the zero-radius/zero-weight rows; non-finite and unrepresentable inputs are in the failure matrix.",
+      "Precision budget, fixed before the comparison ran: 64 eps = 1.42e-14 relative for psi and 128 eps = 2.84e-14 for B_R/B_Z, derived from the operation count of each branch and from the partial cancellation in the elliptic branch's three-term difference -q K + (ar^2 + rr^2 + hr^2) E; the reference contributes at most 1e-22 relative and is negligible against both. These are observed maxima on the named grids, not continuous error bounds.",
+      "Failure matrix, one executable assertion per contract channel in failure_semantics: ValueError for a finite complex table, a nonfinite entry, a negative radius, a wrong source or target width, and an exact active coincidence; FloatingPointError when a representable geometry multiplied by a representable weight is not representable. No partial response tuple is returned on any of these paths."
+    ],
+    "tests": [
+      "tests/geometry/test_geometry_fields.py",
+      "tests/geometry/test_geometry_regressions.py",
+      "tests/cross_domain/test_field_green_correction.py",
+      "tests/geometry/test_green_scales.py",
+      "tests/electromagnetism/test_ring_kernel_evidence.py"
+    ],
+    "evidence_ceiling": "Independent numerical and analytic evidence in the named cases: pointwise psi/BR/BZ against a complement-free AgM elliptic recomputation cross-certified against Biot-Savart quadrature, the elementary on-axis loop field, bitwise mirror symmetry, vacuum divergence and curl residuals with measured refinement ratios, and exact superposition. Not experimental, finite-wire, or arbitrary-domain qualification, and not a continuous error bound.",
+    "known_limitations": [
+      "An exact active self-point of an ideal filament diverges and is rejected; other matrix entries declare their own discrete zero-self convention.",
+      "Interior self-fields of finite conductors, material permeability and error bounds on the full continuous domain are not established.",
+      "Independent scientific calculations and installation tasks do not constitute human or release approval.",
+      "The measured deviation maxima belong to the named grids; targets inside 1e-2 a of the wire are excluded because the ideal-filament response diverges there and the fixed-breakpoint reference cannot certify them, and relative statements about psi and B_R stop below 1e-8 a. The convergence ratios are measured on the three halvings the tests use, which is not a proof of the asymptotic order."
+    ]
+  },
+  "references": [
+    "NASA-20010038494"
   ]
- },
- "failure_semantics": {
-  "invalid_input": "ValueError is raised for malformed, complex, nonfinite, negative-radius, or coincident active inputs.",
-  "runtime_failure": "FloatingPointError is raised when the finite response cannot be represented.",
-  "nonconvergence": "Not applicable; the kernel is evaluated directly.",
-  "partial_results": "A failed source evaluation returns no response tuple."
- },
- "public_api": {
-  "python": {
-   "module": "scirel.electromagnetism.greens",
-   "symbol": "compute_greens",
-   "signature": "compute_greens(rzw, rz_pts)",
-   "canonical_module": "scirel.electromagnetism",
-   "canonical_symbol": "compute_greens"
-  }
- },
- "version": {
-  "implementation_version": "0.0.0",
-  "dependencies": []
- },
- "example": {
-  "description": "Evaluate one weighted filament at two targets and contract its axial response with an independent current vector.",
-  "code": "import numpy as np\nfrom scirel.electromagnetism import compute_greens\npsi, br, bz = compute_greens(np.array([[1.0, 0.0, 1.0]]), np.array([[0.2, 0.3], [0.4, -0.2]]))\nassert psi.shape == br.shape == bz.shape == (2,)",
-  "expected": "The response arrays have shape (2,); the first target psi is about 1.113e-8 Wb/rad and the BZ values are finite; the example does not perform a BZ contraction."
- },
- "verification": {
-  "scope": [
-   "Bounded Green comparison fixtures",
-   "Axis and derivative regressions",
-   "Explicit singularity and lifecycle tests",
-   "tests/cross_domain/test_field_green_correction.py::high_precision_loop uses 70-digit mpmath ellipk/ellipe closed-form values for test_near_wire_radial_separation_is_not_lost_by_squared_subtraction and test_equivalent_formula_cutover_retains_psi_and_analytic_derivatives. These calls reach this kernel through the field aggregate/dense wrappers; their zero-self convention is not this kernel's singularity contract. Separate ordinary SciPy angular quadrature is loop_integrals in tests/geometry/test_geometry_fields.py. The original tolerances and small-radius/axis/arithmetic-failure checks are retained.",
-   "tests/geometry/test_green_scales.py independently evaluates the axial Biot-Savart expression with 100-digit Decimal inputs, bounds the far-flux angular-integral remainder below 1.8e-108, checks mutual-flux reciprocity, and compares both analytic branches against direct angular quadrature under length and signed-weight scaling. The assertions retain rtol 1e-14 for the analytic limits and 1e-12 for quadrature; this is bounded numerical evidence, not arbitrary-domain qualification. A separate 400-digit elliptic reference checks positive near-wire separation whose squared complement underflows; the limiting elliptic logarithm retains the same ideal-filament model. Signed-source moment checks for MagnetRing and BRB retain the 1e-14 budget using compensated products and ordered source accumulation; they check returned geometry, not experimental calibration. Two 700-digit public-coordinate references separately cover a super-range radius sum and signed-height difference whose final flux and fields remain representable; geometry retains independent binary scales before forming these lengths."
-  ],
-  "tests": [
-   "tests/geometry/test_geometry_fields.py",
-   "tests/geometry/test_geometry_regressions.py",
-   "tests/cross_domain/test_field_green_correction.py",
-   "tests/geometry/test_green_scales.py"
-  ],
-  "evidence_ceiling": "Named fixtures and declared API behavior only; no complete scientific correctness or interchangeability claim.",
-  "known_limitations": [
-   "An exact active self-point of an ideal filament diverges and is rejected; other matrix entries declare their own discrete zero-self convention.",
-   "Interior self-fields of finite conductors, material permeability and error bounds on the full continuous domain are not established.",
-   "Independent scientific calculations and installation tasks do not constitute human or release approval."
-  ]
- },
- "references": [
-  "NASA-20010038494"
- ]
 }
