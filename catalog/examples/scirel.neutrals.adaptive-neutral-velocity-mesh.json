@@ -138,14 +138,17 @@
    "That the uniform and stretched branches match the stated formula exactly.",
    "That requested positive energies are inserted as exact nodes with axial symmetry preserved.",
    "That the cap truncates the selected population and the tnorm follows.",
-   "The input and failure contracts."
+   "The input and failure contracts.",
+   "Independent evidence (tests/neutrals/test_convergence_and_mesh_evidence.py): the uniform branch is asserted as the exact affine map k*3.5/nv with an exact mirror axial axis, the exact mean normalization temperature and the empty index sentinel when no energy is requested; the cap is decided by separating the two effects - a hot temperature at the cap is dropped from the normalization population (tnorm and the base mesh follow) while an energy at or above the cap is still inserted as an exact node whose index is reported."
   ],
   "tests": [
-   "tests/kinetic/test_adaptive_neutral_velocity_mesh.py"
+   "tests/kinetic/test_adaptive_neutral_velocity_mesh.py",
+   "tests/neutrals/test_convergence_and_mesh_evidence.py"
   ],
-  "evidence_ceiling": "Bounded to the deterministic uniform/stretched neutral velocity mesh with exact requested-energy insertion and cap truncation. Evidence: `test_adaptive_neutral_velocity_mesh.py` contains 11 test functions, 11 of which reference `create_adaptive_neutral_velocity_mesh`, and is bound only by this asset; the bounded example was executed by this audit. Oracle: analytic uniform/stretched mesh formulas and exact insertion checks. It does not establish charged-species gyrophase/3V meshes, or adaptation to a downstream solver.",
+  "evidence_ceiling": "Bounded to the deterministic uniform/stretched neutral velocity mesh with exact requested-energy insertion and cap truncation. Evidence: `test_adaptive_neutral_velocity_mesh.py` contains 11 test functions, 11 of which reference `create_adaptive_neutral_velocity_mesh`, and is bound only by this asset; the bounded example was executed by this audit. Oracle: analytic uniform/stretched mesh formulas and exact insertion checks. It does not establish charged-species gyrophase/3V meshes, or adaptation to a downstream solver. C1 evidence adds the exact uniform construction, the exact mean population and the insertion-versus-filter separation. The quadratic stretching arm is checked only for finiteness and strict increase; its closed form is not independently recomputed and no refinement order is claimed for either arm.",
   "known_limitations": [
-   "Eleven direct functions in the asset-private file cover uniform/quadratic meshes, cap/negative-energy handling, insertion order and invalid inputs; no charged-species/3V mesh or external mesh oracle is bound."
+   "Eleven direct functions in the asset-private file cover uniform/quadratic meshes, cap/negative-energy handling, insertion order and invalid inputs; no charged-species/3V mesh or external mesh oracle is bound.",
+   "The stretching formula g and b are exercised but not independently reproduced, and the mesh is not shown to resolve any particular distribution; the 3.5 top node and the 10 percent uniform/stretched switch are declared conventions, not derived thresholds."
   ]
  }
 }
