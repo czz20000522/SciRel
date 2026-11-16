@@ -106,10 +106,14 @@ def test_modulus_and_distance_squared_match_the_exact_rational_relation(raw_radi
             Fraction(height) - Fraction(coil_z)
         ) ** 2
         assert Fraction(1) - exact_m == wire_gap / exact_denominator
-        # The identity is what ties m to the returned modulus: the returned
-        # float must satisfy the same relation within two roundings.
-        assert abs((1.0 - got_m) - float(wire_gap / exact_denominator)) <= EPS * (
-            1.0 - got_m
+        # The identity is what ties m to the returned modulus.  The floating
+        # point version is not a pure relative comparison: forming 1 - m costs
+        # one subtraction whose absolute error is that of m itself, so the
+        # allowance is 9 eps measured against max(m, 1 - m) (eight roundings of
+        # m plus one for the subtraction), not 9 eps against 1 - m alone.
+        complement = 1.0 - got_m
+        assert abs(complement - float(wire_gap / exact_denominator)) <= 9 * EPS * max(
+            got_m, complement
         )
         # Evidence 4: d squared equals D, one sqrt and one square later.
         got_distance = Fraction(float(distance[index]))
