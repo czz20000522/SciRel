@@ -129,7 +129,7 @@
   },
   {
    "name": "moment_rtol",
-   "description": "Threshold for a RuntimeWarning about corrected moment errors; exceeding it does not reject the returned slice or guarantee moment accuracy.",
+   "description": "Threshold for a ApplicabilityWarning about corrected moment errors; exceeding it does not reject the returned slice or guarantee moment accuracy.",
    "units": "dimensionless",
    "shape": "scalar",
    "dtype": "float64",
@@ -173,7 +173,7 @@
  },
  "failure_semantics": {
   "invalid_input": "NumPy shape, indexing, conversion and arithmetic errors propagate; no new input repair is applied.",
-  "runtime_failure": "Nonfinite or singular arithmetic follows the source-shaped calculation; no fallback correction is selected. Emits RuntimeWarning when an evaluated error exceeds moment_rtol, then still returns the slice unless the caller makes warnings into errors. Density error is abs(density/nb-1); drift error is abs(mean_vx-target_vx)/sqrt(abs(target_energy)); energy error is abs(mean_energy/target_energy-1). When target_energy is zero, the drift and energy warning terms are set to zero. These warning diagnostics do not guarantee conservation or convergence.",
+  "runtime_failure": "Nonfinite or singular arithmetic follows the source-shaped calculation; no fallback correction is selected. Emits ApplicabilityWarning when an evaluated error exceeds moment_rtol, then still returns the slice unless the caller makes warnings into errors. Density error is abs(density/nb-1); drift error is abs(mean_vx-target_vx)/sqrt(abs(target_energy)); energy error is abs(mean_energy/target_energy-1). When target_energy is zero, the drift and energy warning terms are set to zero. These warning diagnostics do not guarantee conservation or convergence.",
   "nonconvergence": "Not applicable; no iteration is exposed.",
   "partial_results": "No partial mapping is returned after an exception."
  },

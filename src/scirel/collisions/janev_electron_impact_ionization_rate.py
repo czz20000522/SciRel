@@ -54,7 +54,7 @@ def evaluate_janev_electron_impact_ionization_rate(
         ``scalar or array``. The value must be finite and strictly positive.
         Values below ``0.1 eV`` are clipped to that endpoint silently. Values
         above ``2.01e4 eV`` are clipped to that endpoint and emit
-        ``RuntimeWarning``.
+        ``ApplicabilityWarning``.
     target_species : {'H', 'H2'}
         Target-species selector. [dimensionless enumeration] Shape: ``scalar``.
         The value must be the exact string ``'H'`` or ``'H2'``; there is no
@@ -76,7 +76,7 @@ def evaluate_janev_electron_impact_ionization_rate(
 
     Warns
     -----
-    RuntimeWarning
+    ApplicabilityWarning
         If a temperature is above ``2.01e4 eV``. The returned value is the
         endpoint value, not an extrapolation.
 
@@ -118,6 +118,7 @@ def evaluate_janev_electron_impact_ionization_rate(
         "evaluate_janev_electron_impact_ionization_rate",
         quantity="temperature",
         effect="returns the endpoint rate rather than extrapolating",
+        asset_id="scirel.collisions.janev-electron-impact-ionization-rate",
     )
     clipped = np.clip(temperature, _FIT_LOWER_EV, _FIT_UPPER_EV)
     rate = np.exp(log_polynomial(np.log(clipped), _COEFFICIENTS[target_species])) * 1.0e-6

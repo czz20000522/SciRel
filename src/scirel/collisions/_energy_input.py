@@ -6,6 +6,8 @@ import warnings
 
 import numpy as np
 
+from scirel import ApplicabilityWarning
+
 
 def finite_nonnegative_energy(value):
     try:
@@ -34,13 +36,22 @@ def warn_above_fit(
     quantity="energy",
     *,
     effect="overstates a cross section that keeps falling",
+    asset_id,
 ):
-    """Warn when a fit is asked for a value above the range it is held constant beyond."""
-    if np.any(np.asarray(value) > upper):
+    """Warn when a fit is asked for a value above the range it is held constant beyond.
+
+    The warning is a :class:`scirel.ApplicabilityWarning`: the result stays defined and finite,
+    only less accurate than inside the declared fit range. It names the quantity, the fit's upper
+    limit, the largest value received, the effect on the returned value and the contract asset id,
+    as the API specification requires.
+    """
+    values = np.asarray(value)
+    if np.any(values > upper):
+        highest = float(np.max(values))
         warnings.warn(
-            f"{name}: {quantity} above the fit's upper limit of {upper:g} eV returns the value at "
-            f"that limit, which {effect}",
-            RuntimeWarning,
+            f"{name}: {quantity} above the fit's upper limit of {upper:g} eV (received up to "
+            f"{highest:.6g} eV) returns the value at that limit, which {effect} ({asset_id})",
+            ApplicabilityWarning,
             stacklevel=3,
         )
 

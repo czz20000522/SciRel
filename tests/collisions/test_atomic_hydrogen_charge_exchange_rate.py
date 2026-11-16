@@ -3,6 +3,7 @@
 import math
 
 import numpy as np
+import scirel
 import pytest
 from scipy.special import roots_legendre
 
@@ -133,7 +134,7 @@ def test_high_energy_rate_replaces_the_clipped_endpoint():
 
 
 def test_clipping_and_scalar_shape():
-    with pytest.warns(RuntimeWarning, match="upper limit"):
+    with pytest.warns(scirel.ApplicabilityWarning, match="upper limit"):
         clipped = evaluate_atomic_hydrogen_charge_exchange_rate(
             np.array([0.01, 3.0e5]),
             np.array([0.0, 3.0e5]),

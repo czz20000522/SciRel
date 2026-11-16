@@ -221,7 +221,7 @@ def evaluate_atomic_hydrogen_charge_exchange_rate(temperature_ev, energy_ev):
         If either input is not real numeric, is non-finite, has the wrong shape,
         contains a nonpositive temperature or a negative energy, or produces a
         non-finite or nonpositive rate.
-    RuntimeWarning
+    ApplicabilityWarning
         If an input is above the declared 250 keV upper boundary. The upper
         quadrature limit is then used; no cross-section tail is extrapolated.
 
@@ -240,7 +240,7 @@ def evaluate_atomic_hydrogen_charge_exchange_rate(temperature_ev, energy_ev):
     domain, it instead integrates the continuous composite cross section against
     an equal-mass Maxwellian relative-speed distribution. The quadrature omits
     collision energies above the 250 keV cross-section limit. Low-domain clipping
-    to 0.1 eV is silent; upper-range clipping emits ``RuntimeWarning``. The
+    to 0.1 eV is silent; upper-range clipping emits ``ApplicabilityWarning``. The
     low-domain fit is not required to be monotone in impact energy. No independent
     experimental rate measurement is asserted here.
 
@@ -248,6 +248,7 @@ def evaluate_atomic_hydrogen_charge_exchange_rate(temperature_ev, energy_ev):
     --------
     >>> import warnings
     >>> import numpy as np
+    >>> import scirel
     >>> from scirel.collisions import evaluate_atomic_hydrogen_charge_exchange_rate
     >>> t = np.array([1.0, 5.0e4])
     >>> e = np.array([1.0, 1.0e5])
@@ -257,7 +258,7 @@ def evaluate_atomic_hydrogen_charge_exchange_rate(temperature_ev, energy_ev):
     >>> with warnings.catch_warnings(record=True) as caught:
     ...     warnings.simplefilter('always')
     ...     clipped = evaluate_atomic_hydrogen_charge_exchange_rate(np.array([3.0e5, 2.5e5]), np.array([1.0, 1.0]))
-    >>> assert len(caught) == 1 and issubclass(caught[0].category, RuntimeWarning)
+    >>> assert len(caught) == 1 and issubclass(caught[0].category, scirel.ApplicabilityWarning)
     >>> edge = evaluate_atomic_hydrogen_charge_exchange_rate(np.array([2.5e5, 2.5e5]), np.array([1.0, 1.0]))
     >>> np.testing.assert_allclose(clipped, edge, rtol=1e-12, atol=0.0)
     """
@@ -271,6 +272,7 @@ def evaluate_atomic_hydrogen_charge_exchange_rate(temperature_ev, energy_ev):
         _COMPOSITE_UPPER_EV,
         "evaluate_atomic_hydrogen_charge_exchange_rate",
         effect="uses the clipped upper edge for the Maxwellian integral",
+        asset_id="scirel.collisions.atomic-hydrogen-charge-exchange-rate-coefficient",
     )
     warn_above_fit(
         temperature,
@@ -278,6 +280,7 @@ def evaluate_atomic_hydrogen_charge_exchange_rate(temperature_ev, energy_ev):
         "evaluate_atomic_hydrogen_charge_exchange_rate",
         "temperature",
         effect="uses the clipped upper edge for the Maxwellian integral",
+        asset_id="scirel.collisions.atomic-hydrogen-charge-exchange-rate-coefficient",
     )
     low_temperature = np.minimum(np.maximum(temperature, 0.1), _BIVARIATE_UPPER_EV)
     low_energy = np.minimum(np.maximum(energy, 0.1), _BIVARIATE_UPPER_EV)

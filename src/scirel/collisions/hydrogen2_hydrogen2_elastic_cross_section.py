@@ -8,7 +8,7 @@ second parameterization, and emits no extra warning.
 
 A positive input below ``0.03 eV`` returns the lower endpoint silently. A
 positive input above ``1.01e4 eV`` returns the upper endpoint and emits one
-``RuntimeWarning``. Negative energies are rejected before evaluation. No
+``ApplicabilityWarning``. Negative energies are rejected before evaluation. No
 independent molecular-viscosity measurement or external experimental
 cross-section reference is bound.
 """
@@ -41,7 +41,7 @@ def evaluate_hydrogen2_hydrogen2_elastic_cross_section(energy_ev, viscosity=Fals
         Collision energy. [eV] Shape: ``scalar or array``. The value must be finite
         and nonnegative. Values below ``0.03 eV`` are clipped to that endpoint
         silently. Values above ``1.01e4 eV`` are clipped to that endpoint and emit
-        ``RuntimeWarning``.
+        ``ApplicabilityWarning``.
     viscosity : bool or integer, optional
         Same-fit fallback selector. [dimensionless] Shape: ``scalar``. The default
         ``False`` selects the momentum-transfer fit. ``True`` selects the retained
@@ -62,7 +62,7 @@ def evaluate_hydrogen2_hydrogen2_elastic_cross_section(energy_ev, viscosity=Fals
 
     Warns
     -----
-    RuntimeWarning
+    ApplicabilityWarning
         If a requested energy is above ``1.01e4 eV``. The returned value is the
         endpoint value, not an extrapolation. The fallback selector itself emits
         no warning.
@@ -120,6 +120,7 @@ def evaluate_hydrogen2_hydrogen2_elastic_cross_section(energy_ev, viscosity=Fals
         raw_energy,
         _FIT_UPPER_EV,
         "evaluate_hydrogen2_hydrogen2_elastic_cross_section",
+        asset_id="scirel.collisions.molecular-hydrogen-elastic-cross-section",
     )
     energy = clipped_energy(raw_energy, _FIT_LOWER_EV, _FIT_UPPER_EV)
     log_sigma = log_polynomial(np.log(energy), _COEFFICIENTS)

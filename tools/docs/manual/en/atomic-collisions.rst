@@ -34,7 +34,7 @@ The H + H+ charge-exchange cross section now defaults to a **continuous composit
    Freeman:   1e-4 * 0.6937e-14 * (1 - 0.155 log10(E))^2
               / (1 + 0.1112e-14 E^3.3)
 
-The default composite is evaluated on ``[0.1, 2.5e5]`` eV and joins the two fits continuously at 12.673175 keV. The Freeman branch clips to ``[0.1, 1e5]`` eV. A positive energy above the selected upper edge emits a ``RuntimeWarning`` and returns the endpoint; below 0.1 eV the lower endpoint is returned silently. Negative energies are rejected.
+The default composite is evaluated on ``[0.1, 2.5e5]`` eV and joins the two fits continuously at 12.673175 keV. The Freeman branch clips to ``[0.1, 1e5]`` eV. A positive energy above the selected upper edge emits an ``ApplicabilityWarning`` and returns the endpoint; below 0.1 eV the lower endpoint is returned silently. Negative energies are rejected.
 
 .. code-block:: python
 

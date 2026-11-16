@@ -6,7 +6,7 @@ collision energy in ``eV`` with one five-coefficient logarithmic polynomial,
 
 A positive input below ``0.03 eV`` returns the lower endpoint silently. A
 positive input above ``1.01e4 eV`` returns the upper endpoint and emits one
-``RuntimeWarning``. Negative energies are rejected before evaluation. No
+``ApplicabilityWarning``. Negative energies are rejected before evaluation. No
 external experimental cross-section reference is bound.
 """
 
@@ -38,7 +38,7 @@ def evaluate_hydrogen2_proton_elastic_cross_section(energy_ev):
         Collision energy. [eV] Shape: ``scalar or array``. The value must be finite
         and nonnegative. Values below ``0.03 eV`` are clipped to that endpoint
         silently. Values above ``1.01e4 eV`` are clipped to that endpoint and emit
-        ``RuntimeWarning``.
+        ``ApplicabilityWarning``.
 
     Returns
     -------
@@ -53,7 +53,7 @@ def evaluate_hydrogen2_proton_elastic_cross_section(energy_ev):
 
     Warns
     -----
-    RuntimeWarning
+    ApplicabilityWarning
         If a requested energy is above ``1.01e4 eV``. The returned value is the
         endpoint value, not an extrapolation.
 
@@ -89,6 +89,11 @@ def evaluate_hydrogen2_proton_elastic_cross_section(energy_ev):
     ...     raise AssertionError('a negative energy must be rejected')
     """
     raw_energy = clipped_energy(energy_ev, _FIT_LOWER_EV, np.inf)
-    warn_above_fit(raw_energy, _FIT_UPPER_EV, "evaluate_hydrogen2_proton_elastic_cross_section")
+    warn_above_fit(
+        raw_energy,
+        _FIT_UPPER_EV,
+        "evaluate_hydrogen2_proton_elastic_cross_section",
+        asset_id="scirel.collisions.proton-molecular-hydrogen-elastic-cross-section",
+    )
     energy = clipped_energy(raw_energy, _FIT_LOWER_EV, _FIT_UPPER_EV)
     return np.exp(log_polynomial(np.log(energy), _COEFFICIENTS)) * 1.0e-4
