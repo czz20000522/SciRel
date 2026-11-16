@@ -278,9 +278,21 @@ development stage runs the same checks minus example execution and minus the thr
 
 同样地，**合并后的验证要独立于合并输出**：PR 合了之后，对着 `origin/main` 的树数一遍关键文件与测试计数，不要以"合并成功"或"代理自述的测试数"为证据。
 
+## 证据测试自身的三个陷阱
+
+这三条都在本仓库真实发生过，共同点是：**测试通过并不表示它检验了它声称要检验的东西**。
+
+**陷阱一：判别算例暗中假设了它要检验的东西。** 有个批次要裁定"声明式 deck 的列布局"，于是自己构造一个 `m≠q` 的合成 deck 做判别——但构造那个 deck 就已经假定了列的含义，实测直接把候选公式全部推翻（某列按任何候选都对不上）。正确的判别用**不依赖列语义的关系**：`ω_p = k_D·v_t/√2` 这种只涉及彼此关系的等式，以及"密度列放大 4 倍 → `ω_p` 放大 2 倍"这类缩放律。写判别算例前先问：这个输入是不是已经预设了我要检验的约定？
+
+**陷阱二：把一个巧合写成物理结论。** 同一批次里"密度列之和为 1"没有写成"电荷中性"——两种子电荷都是 `-1`，本来就不是中性构型，和为 1 只是构造方式的副产品。测试里出现的规律，先问它为什么成立，再决定能不能当断言。
+
+**陷阱三：覆盖读数不是工作量。** `scripts/c1_evidence_coverage.py` 的 `neither` 表示"合同文本既没点名依据、也没记录缺口"，**不等于这份资产没有证据**。有个批次实测 `cannot establish` 为 0：physics/source/fvm 原本证据就强、只是措辞没命中扫描词表；`io` 那四份才真的新写了依据。所以 `neither` 是**合同文本缺口**，`basis` 是**下界**，两者都不能当"科学工作完成度"来报。
+
 ## 单文件多记录的合并：逐条并集
 
 `tools/docs/zh/*.json` 一个文件里有几十条资产记录，代码与合同的并行改动都落在同一个文件上，冲突几乎必然发生。解决这类冲突**不许整份取一侧**（`git checkout --theirs <file>`）：那样会把对方在这批里新增的记录整段退回旧文本，而且差异不会出现在任何代码里——只有 `check_contract_sync.py` 的"条款条数不符"能看出来。本仓库已因此静默退回两次（一次 45 条 reader 记录，一次 3 条）。
+
+**另一个同源陷阱：不要顺手格式化这些文件。** `tools/docs/zh/` 下的记录文件并非统一缩进——`zh_axisymmetric_models.json` 用 `indent=2`，`zh_missing_runtime_domains.json` 用 `indent=1`。用统一的 `indent=1` 重写前者会产生两千多行与内容无关的假 diff，审查时分不清真实改动。改写前先看该文件既有格式，按它自己的格式写。
 
 正确做法是**逐资产取并集**：按 `asset_id` 合并两侧记录，只让本批真正改过的资产采用本侧版本，其余保留对方的。合并后必须跑 `check_contract_sync.py`（它比对每条记录的条款条数），并用脚本逐条比对与 `origin/main` 的差异，确认"差异集合"恰好是本批改过的那些资产。
 
@@ -309,6 +321,15 @@ The `pre-commit` hook scans staged text on the host, with the host `python3 -I`,
 not run lint or format: those belong to the complete check, where they gate what is merged rather than what
 is saved. Hooks are a safety net, not a replacement for running the checks yourself. Do not bypass them with
 `--no-verify`. If a hook is wrong, fix the hook.
+
+## 校验哪个包，用哪条命令
+
+两个包不是同一种东西：
+
+- `scripts/build_extraction_kit.py` 产出的 **extraction kit** 由 `scripts/validate_extraction_package.py` 校验（持独占锁、比对同一 clone 的 Git common directory、要求 `stage=` 与 `RESULT SHA256`）。
+- `scripts/build_pure_delivery.py` 产出的 **交付包**（对外分发的那一个）**不要**拿上面那条命令校验：布局不同，会得到一批 `structure: ... missing`，且没有 `stage=` 与 `RESULT SHA256`。这种失败会被误读成包质量问题。交付包要在装好它的独立环境里用 `validate_installed_wheel` 校验，回执带 `artifact.sha256`，与包内 `runtime.json` 比对。
+
+用错命令得到的红，不是包的红。
 
 ## Ratchets
 
