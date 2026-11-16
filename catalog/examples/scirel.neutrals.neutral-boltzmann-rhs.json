@@ -160,16 +160,19 @@
   "scope": [
    "Direct tests bind the signed sum and one final Vth multiplication, shape/finiteness validation, implicit-real rejection and overflowing-output rejection.",
    "The cross-domain tests compare the assembled RHS with independently formed physical wall loss, stationary source balance and CX/elastic number balance at two Vth values.",
-   "The contract example covers one bounded representative call; numerical checks do not establish external physical validation or full-domain applicability."
+   "The contract example covers one bounded representative call; numerical checks do not establish external physical validation or full-domain applicability.",
+   "Independent evidence (tests/neutrals/test_collision_balance_evidence.py): the signed balance is recomputed exactly in rational arithmetic, the loss sign is separated from the gain sign on a case whose two candidate values are -100 Vth and +100 Vth, an exactly balancing cell is required to return exactly zero, and doubling Vth doubles the RHS exactly."
   ],
   "tests": [
    "tests/kinetic/test_transport_step.py",
-   "tests/cross_domain/test_neutral_transport_normalization.py"
+   "tests/cross_domain/test_neutral_transport_normalization.py",
+   "tests/neutrals/test_collision_balance_evidence.py"
   ],
-  "evidence_ceiling": "Bounded to the stated normalized transport relation. Direct tests bind the signed sum and one final Vth multiplication, shape/finiteness validation, implicit-real rejection and overflowing-output rejection. The cross-domain tests compare the assembled RHS with independently formed physical wall loss, stationary source balance and CX/elastic number balance at two Vth values. The listed direct and cross-domain tests are the current reproducible evidence; the example exercises one bounded call. Independent analytic and SI-unit comparisons are limited to the stated fixtures. Unbound historical source/parity receipts remain UNKNOWN and are not re-established here.",
+  "evidence_ceiling": "Bounded to the stated normalized transport relation. Direct tests bind the signed sum and one final Vth multiplication, shape/finiteness validation, implicit-real rejection and overflowing-output rejection. The cross-domain tests compare the assembled RHS with independently formed physical wall loss, stationary source balance and CX/elastic number balance at two Vth values. The listed direct and cross-domain tests are the current reproducible evidence; the example exercises one bounded call. Independent analytic and SI-unit comparisons are limited to the stated fixtures. Unbound historical source/parity receipts remain UNKNOWN and are not re-established here. C1 evidence adds: an exact rational signed-balance oracle, the loss-sign discriminator and exact homogeneity in Vth; it does not establish that the supplied fields come from a converged transport solve.",
   "known_limitations": [
    "No external collision-data calibration, source-project parity qualification or device-specific physical validation is established by these tests.",
-   "The normalization tests use bounded aligned meshes and prescribed rates; they do not certify full-distribution grid convergence, arbitrary-step positivity or the complete nonlinear transport model."
+   "The normalization tests use bounded aligned meshes and prescribed rates; they do not certify full-distribution grid convergence, arbitrary-step positivity or the complete nonlinear transport model.",
+   "The oracle covers the declared signed expression only; the loss sign is fixed by one crafted cell per check and the upstream fields' physical origin is not validated."
   ]
  }
 }
