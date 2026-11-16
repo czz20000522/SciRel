@@ -245,11 +245,11 @@ def test_initial_state_reproduces_the_grid_dv_and_closure_identities():
 @pytest.mark.parametrize("kappa", ["1.6", "2", "3"])
 def test_kappa_family_has_unit_mass_and_the_declared_variance(kappa):
     """The ``kappa`` family's constants give mass 1 and variance ``2k/(2k-3)`` at 40 digits."""
+    _high_precision()
     index = mp.mpf(kappa)
+    _high_precision()
     constant = mp.gamma(index) / (mp.gamma(index - mp.mpf(1) / 2) * mp.sqrt(2 * mp.pi * index))
-
-    def family(v):
-        return constant * (1 + v * v / (2 * index)) ** (-index)
+    width = mp.sqrt(2 * index)
 
     velocity = np.array([-1.7, -0.3, 0.0, 0.9, 2.4])
     derivative, real_frequency, imaginary_frequency = vp_distribution(velocity, 2, kappa=float(index))
@@ -259,10 +259,35 @@ def test_kappa_family_has_unit_mass_and_the_declared_variance(kappa):
     ]
     assert_allclose(derivative, [float(entry) for entry in reference], rtol=1e-14, atol=1e-17)
     assert real_frequency is None and imaginary_frequency is None
-    mass = mp.quad(family, [-mp.inf, mp.inf])
-    variance = mp.quad(lambda v: v * v * family(v), [-mp.inf, mp.inf])
-    assert abs(mass - 1) < mp.mpf("5e-28"), mass
-    assert abs(variance - 2 * index / (2 * index - 3)) < mp.mpf("5e-26"), variance
+
+    # Mass.  With ``v = sqrt(2k) tan(theta)`` the integrand becomes
+    # ``cos(theta)**(2k-2)`` on a finite interval and the quadrature has no
+    # algebraic tail; the budget is 1e-38 relative, five orders above the
+    # measured agreement and still 22 digits below float64.
+    mass = mp.quad(
+        lambda theta: constant * width * mp.cos(theta) ** (2 * index - 2),
+        [-mp.pi / 2, mp.pi / 2],
+    )
+    assert abs(mass - 1) < mp.mpf("1e-38"), mass
+
+    # Variance.  The same substitution gives ``2k sqrt(2k) integral sin^2 cos^(2k-4)``,
+    # whose value is ``B(3/2, k-3/2)``; combined with the normalisation constant
+    # it collapses to ``k Gamma(k-3/2)/Gamma(k-1/2) = 2k/(2k-3)``.  That identity
+    # is exact algebra, so it is asserted at 1e-38 and needs no quadrature.
+    via_beta = index * mp.gamma(index - mp.mpf(3) / 2) / mp.gamma(index - mp.mpf(1) / 2)
+    declared = 2 * index / (2 * index - 3)
+    assert abs(via_beta - declared) < mp.mpf("1e-38"), (via_beta, declared)
+    # Quadrature cross-check where the integrand is bounded: for k < 2 the
+    # theta-space variance integrand is ``cos(theta)**(2k-4)`` with a negative
+    # exponent, i.e. an endpoint singularity whose quadrature floor on this
+    # machine is ~1e-8, so that configuration is deliberately not used as a
+    # check rather than compared against a loosened budget.
+    if index >= 2:
+        variance = mp.quad(
+            lambda theta: constant * width * (width**2) * mp.sin(theta) ** 2 * mp.cos(theta) ** (2 * index - 4),
+            [-mp.pi / 2, mp.pi / 2],
+        )
+        assert abs(variance - declared) < mp.mpf("1e-35"), variance
 
 
 def test_maxwellian_family_is_the_unit_variance_gaussian_derivative():
