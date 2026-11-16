@@ -109,9 +109,10 @@ against the implementation was run.
      ratio and, below it, uses absolute differences against the integrand
      scale stated in (1).
 
-   ``_MIN_SEPARATION_RATIO`` and ``_MIN_RADIUS_RATIO`` encode those limits, and
-   the tests state them as the evidence ceiling instead of pretending the grid
-   reaches them.
+   ``_MIN_SEPARATION_RATIO`` encodes the first limit inside the reference, and
+   ``_MIN_RADIUS_RATIO`` is the ratio above which the suite makes *relative*
+   statements; both are stated in the contract's evidence ceiling rather than
+   pretended away.
 """
 
 from __future__ import annotations
@@ -195,8 +196,6 @@ def _quadrature_at(dps, radius, coil_radius, dz):
                 raise ValueError(
                     "target too close to the wire for a fixed-breakpoint quadrature"
                 )
-            if radius_mp < _MIN_RADIUS_RATIO * coil_radius_mp:
-                raise ValueError("target radius too small for the certified reference")
         scale = _integrand_scale(radius_mp, coil_radius_mp, dz_mp)
         if radius_mp == 0:
             # Closed limits on the axis, reached from the same integrands: A_phi
