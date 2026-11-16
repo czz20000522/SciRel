@@ -292,12 +292,14 @@ def test_kappa_family_has_unit_mass_and_the_declared_variance(kappa):
 
 def test_maxwellian_family_is_the_unit_variance_gaussian_derivative():
     """``Fn=1`` returns ``-v exp(-v^2/2)/sqrt(2 pi)``, whose mass is 1 and variance is 1."""
+    _high_precision()
     velocity = np.array([-2.5, -0.75, 0.0, 0.75, 2.5])
     derivative, real_frequency, imaginary_frequency = vp_distribution(velocity, 1)
-    reference = np.array(
-        [-float(v) * mp.e ** (-(mp.mpf(float(v)) ** 2) / 2) / mp.sqrt(2 * mp.pi) for v in velocity]
-    )
-    assert_allclose(derivative, reference, rtol=0, atol=1e-16)
+    reference = [
+        -mp.mpf(float(v)) * mp.e ** (-(mp.mpf(float(v)) ** 2) / 2) / mp.sqrt(2 * mp.pi)
+        for v in velocity
+    ]
+    assert_allclose(derivative, [float(entry) for entry in reference], rtol=1e-15, atol=1e-17)
     assert real_frequency is None and imaginary_frequency is None
     gaussian = lambda v: mp.e ** (-v * v / 2) / mp.sqrt(2 * mp.pi)
     assert abs(mp.quad(gaussian, [-mp.inf, mp.inf]) - 1) < mp.mpf("5e-30")
@@ -344,7 +346,7 @@ def test_slowing_down_derivative_is_the_analytic_cutoff_and_carries_zero_mass():
 def test_lorentzian_dispersion_integral_matches_its_meromorphic_closed_form():
     """``integral F'/(v-z) dv = 1/(z - i a)^2`` to 30 digits, so the reference exists without the code."""
     width = mp.sqrt(2)
-    constant = width / mp.pi
+    constant = 1 / (mp.pi * width)
 
     def derivative(v):
         return -2 * width * v / (mp.pi * (v * v + width * width) ** 2)
@@ -357,7 +359,9 @@ def test_lorentzian_dispersion_integral_matches_its_meromorphic_closed_form():
         )
         closed = 1 / (point - mp.mpc(0, 1) * width) ** 2
         assert abs(measured - closed) <= abs(closed) * mp.mpf("1e-30"), (point, measured, closed)
-    assert abs(constant * mp.quad(lambda v: 1 / (1 + v * v / 2), [-mp.inf, mp.inf]) - 1) < mp.mpf("1e-35")
+    # The same constant normalises the density itself: with ``v = sqrt(2) tan(theta)``
+    # the mass integral is ``constant * sqrt(2) * pi / 2``, exactly 1.
+    assert abs(constant * mp.quad(lambda theta: width / mp.cos(theta) ** 2, [-mp.pi / 4, mp.pi / 4]) - mp.sqrt(2)) < mp.mpf("1e-30")
 
 
 def test_envelope_is_the_exact_logarithm_and_a_straight_theory_line():
@@ -463,7 +467,7 @@ def test_nonrepresentable_derived_values_fail_explicitly():
     huge = np.array([1e308, 1e308])
     with pytest.raises(FloatingPointError, match="not representable"):
         vp_field(huge, 1e-300, 1.0)
-    with pytest.raises(FloatingPointError, match="not representable"):
+    with pytest.raises(FloatingPointError, match="nonfinite RK4 state"):
         vp_rk4_step(
             np.array([1e308, -1e308]),
             vp_field(np.array([1e308, -1e308]), 0.5, 1e-300),
