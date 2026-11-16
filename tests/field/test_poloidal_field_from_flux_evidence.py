@@ -68,7 +68,16 @@ from scirel.field import poloidal_field_from_flux
 EPS = float(np.finfo(float).eps)
 
 
-def _budget(flux_scale, derivative, spacing):
+def _flux_term_scale(radius, height):
+    """Return the sum of the magnitudes of the manufactured flux's terms.
+
+    The stored ``psi`` is rounded against this scale, not against its own much
+    smaller value, so this is the right input for the conditioning factor below.
+    """
+    return abs(radius) ** 2 * (abs(A) + abs(E * height) + abs(B * height**2))
+
+
+def _budget(flux_scale, derivative, spacing, neighbour_spacing=None):
     """Return the relative budget of one divided difference at one node.
 
     A divided difference of stored binary64 flux values is conditioned by
@@ -85,15 +94,26 @@ def _budget(flux_scale, derivative, spacing):
     cancellation causes.
     """
     condition = flux_scale / (abs(derivative) * spacing) if derivative else float("inf")
-    return 32.0 * EPS * (1.0 + condition)
+    # A one-sided endpoint formula adds a fourth of the adjacent slope, so its
+    # two input slopes enter with weights up to 1 + 2*spacing/(spacing+neighbour).
+    extrapolation = (
+        1.0 + 2.0 * spacing / (spacing + neighbour_spacing)
+        if neighbour_spacing
+        else 1.0
+    )
+    return 8.0 * EPS * extrapolation * (1.0 + condition)
 
 # Non-uniform rectilinear grids: the stencil is exact for quadratics on any
 # rectilinear grid, so a non-uniform grid does not weaken the manufactured test
 # but does exercise the endpoint formulas.
 RADIAL = np.array([0.0, 0.1, 0.25, 0.45])
-AXIAL = np.array([-0.6, -0.25, 0.0, 0.35, 0.8])
+AXIAL = np.array([-0.6, -0.35, -0.05, 0.3, 0.7])
 
-A, E, B = 0.5, -1.25, 0.75
+# Chosen so the bracket a + e Z + b Z**2 stays positive on the grid: a value that
+# nearly vanished would make the stored flux lose digits by cancellation inside
+# the manufactured function itself, which would be a property of the test data
+# rather than of the operator.
+A, E, B = 1.0, 0.5, 0.75
 
 
 def _grid():
@@ -119,26 +139,36 @@ def test_both_components_match_the_analytic_derivatives():
     radius, height = _grid()
     flux = _psi()
     result = poloidal_field_from_flux(radius, height, flux)
-    radial_spacing = float(np.min(np.diff(RADIAL)))
-    axial_spacing = float(np.min(np.diff(AXIAL)))
+    radial_steps = np.diff(RADIAL)
+    axial_steps = np.diff(AXIAL)
     observed = 0.0
     for row in range(radius.shape[0]):
         for column in range(radius.shape[1]):
             expected_r, expected_z = _analytic(
                 float(radius[row, column]), float(height[row, column])
             )
-            scale = abs(float(flux[row, column]))
-            for name, got, want, spacing in (
-                ("B_R", float(result["B_R"][row, column]), expected_r, axial_spacing),
-                ("B_Z", float(result["B_Z"][row, column]), expected_z, radial_spacing),
+            scale = _flux_term_scale(float(radius[row, column]), float(height[row, column]))
+            radial_local = float(radial_steps[min(column, len(radial_steps) - 1)])
+            radial_neighbour = (
+                float(radial_steps[column]) if column == 0 else
+                float(radial_steps[-1]) if column == radius.shape[1] - 1 else None
+            )
+            axial_local = float(axial_steps[min(row, len(axial_steps) - 1)])
+            axial_neighbour = (
+                float(axial_steps[0]) if row == 0 else
+                float(axial_steps[-1]) if row == radius.shape[0] - 1 else None
+            )
+            for name, got, want, spacing, neighbour in (
+                ("B_R", float(result["B_R"][row, column]), expected_r, axial_local, axial_neighbour),
+                ("B_Z", float(result["B_Z"][row, column]), expected_z, radial_local, radial_neighbour),
                 ("B", float(result["B"][row, column]),
-                 float(np.hypot(expected_r, expected_z)), radial_spacing),
+                 float(np.hypot(expected_r, expected_z)), radial_local, radial_neighbour),
             ):
                 if want == 0.0:
                     assert got == 0.0, (name, row, column, got)
                     continue
                 deviation = abs(got - want) / abs(want)
-                allowed = _budget(scale, want, spacing)
+                allowed = _budget(scale, want, spacing, neighbour)
                 assert deviation <= allowed, (name, row, column, deviation, allowed)
                 observed = max(observed, deviation / allowed)
     # The budget is tight enough to be meaningful: some node uses a measurable
@@ -157,14 +187,16 @@ def test_the_one_over_r_division_is_the_contracted_one():
     result = poloidal_field_from_flux(radius, height, _psi())
     for row in range(radius.shape[0]):
         expected = _analytic(0.0, float(height[row, 0]))[1]
-        assert abs(float(result["B_Z"][row, 0]) - expected) <= BUDGET * abs(expected), row
-        for column in range(1, radius.shape[1]):
+        for column in range(radius.shape[1]):
             value = float(result["B_Z"][row, column])
-            assert abs(value - expected) <= BUDGET * abs(expected), (row, column)
+            scale = _flux_term_scale(float(radius[row, column]), float(height[row, column]))
+            assert abs(value - expected) <= _budget(
+                scale, expected, 1.0
+            ) * abs(expected), (row, column)
     # A ``dpsi/dR`` without the division would grow like R; assert the ratio to
     # the outermost column stays one rather than scaling with R.
     ratios = result["B_Z"][:, 1:] / result["B_Z"][:, :1]
-    np.testing.assert_allclose(ratios, 1.0, rtol=BUDGET, atol=0.0)
+    np.testing.assert_allclose(ratios, 1.0, rtol=64.0 * EPS, atol=0.0)
 
 
 def test_the_axis_column_uses_the_even_flux_limit():
@@ -175,11 +207,16 @@ def test_the_axis_column_uses_the_even_flux_limit():
     for row in range(radius.shape[0]):
         axis_value = float(result["B_Z"][row, 0])
         off_axis = float(result["B_Z"][row, 1])
-        assert abs(axis_value - off_axis) <= BUDGET * abs(off_axis), row
-        # The axis value is not accidentally the off-axis one reused: for this
-        # family they are analytically equal, so the anchor is the analytic value.
         expected = _analytic(0.0, float(height[row, 0]))[1]
-        assert abs(axis_value - expected) <= BUDGET * abs(expected)
+        scale = _flux_term_scale(float(radius[row, 1]), float(height[row, 0]))
+        assert abs(axis_value - off_axis) <= _budget(
+            scale, expected, 1.0
+        ) * abs(expected), row
+        # The axis rule is a different formula, so agreeing with the off-axis
+        # limit is a statement about the limit, not about reusing a value.
+        assert abs(axis_value - expected) <= _budget(
+            _flux_term_scale(float(radius[row, 0]), float(height[row, 0])), expected, 1.0
+        ) * abs(expected)
 
 
 def test_a_constant_flux_reference_changes_the_derivative_only_by_cancellation():
@@ -289,7 +326,7 @@ def test_each_declared_rejection_channel_is_executable():
     small_radius, small_height = np.meshgrid(RADIAL[:2], AXIAL[:2])
     with pytest.raises(ValueError, match="at least 3 points per axis"):
         poloidal_field_from_flux(small_radius, small_height, good[:2, :2])
-    with pytest.raises(ValueError, match="strictly increasing rectilinear"):
+    with pytest.raises(ValueError, match="grid axes and psi are invalid"):
         poloidal_field_from_flux(
             *np.meshgrid(RADIAL[::-1], AXIAL), _psi()
         )
