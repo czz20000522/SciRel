@@ -60,8 +60,6 @@ def evaluate_hydrogen2_hydrogen2_elastic_cross_section(energy_ev, viscosity=Fals
         If ``energy_ev`` is not real numeric, is non-finite or is negative, or if
         ``viscosity`` is not a scalar boolean or integer.
 
-    Warns
-    -----
     ApplicabilityWarning
         If a requested energy is above ``1.01e4 eV``. The returned value is the
         endpoint value, not an extrapolation. The fallback selector itself emits
