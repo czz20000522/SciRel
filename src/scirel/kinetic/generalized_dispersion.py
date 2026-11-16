@@ -838,6 +838,8 @@ def scan_gpdf_roots(
     initial_guess=None,
     residual_tolerance=1e-9,
     max_evaluations=300,
+    selector=0,
+    expression="exp(-v.^2)/sqrt(pi)",
     **parameters,
 ):
     r"""Run all four seeded electrostatic root scans.
@@ -858,6 +860,13 @@ def scan_gpdf_roots(
     max_evaluations : positive integer
         Per-point MINPACK function-evaluation limit. [dimensionless] Shape: scalar. Default: 300. Finite and
         representable.
+    selector : integer
+        Generalized distribution selector. [dimensionless] Shape: scalar. Default: 0. 0 through 6.
+    expression : str
+        Analytic density in v using finite real constants, pi, arithmetic and
+        exp/log/sqrt/sin/cos/sinh/cosh/tanh; MATLAB point operators accepted. [dimensionless] Shape: scalar.
+        Default: 'exp(-v.^2)/sqrt(pi)'. Real integrable density with decaying derivative; no arbitrary code,
+        comparisons, attributes or indexing.
     **parameters : mapping
         Additional named scientific controls [dimensionless]; documented below.
 
@@ -875,13 +884,6 @@ def scan_gpdf_roots(
     beam_drift : real
         Beam drift divided by beam thermal speed. [dimensionless] Shape: scalar. Default: 5.0. Finite and
         representable.
-    selector : integer
-        Generalized distribution selector. [dimensionless] Shape: scalar. Default: 0. 0 through 6.
-    expression : str
-        Analytic density in v using finite real constants, pi, arithmetic and
-        exp/log/sqrt/sin/cos/sinh/cosh/tanh; MATLAB point operators accepted. [dimensionless] Shape: scalar.
-        Default: 'exp(-v.^2)/sqrt(pi)'. Real integrable density with decaying derivative; no arbitrary code,
-        comparisons, attributes or indexing.
     integration_mesh : real vector
         Feature-resolving finite increasing velocity mesh; infinite tails are also integrated.
         [dimensionless] Shape: one-dimensional at least two points. Default: None. All material features
@@ -979,11 +981,10 @@ def scan_gpdf_roots(
 
         def residual(parts):
             phase = complex(*parts)
-            default_expression = parameters.get("expression", "exp(-v.^2)/sqrt(pi)")
             if (
                 kind in ("langmuir", "generalized")
-                and parameters.get("selector", 0) == 0
-                and default_expression == "exp(-v.^2)/sqrt(pi)"
+                and selector == 0
+                and expression == "exp(-v.^2)/sqrt(pi)"
             ):
                 value = complex(
                     _evaluate_maxwellian_electrostatic(
@@ -992,7 +993,15 @@ def scan_gpdf_roots(
                 )
             else:
                 value = complex(
-                    evaluate_gpdf_residual(kind, phase, wave_number, **parameters) / wave_number**2
+                    evaluate_gpdf_residual(
+                        kind,
+                        phase,
+                        wave_number,
+                        selector=selector,
+                        expression=expression,
+                        **parameters,
+                    )
+                    / wave_number**2
                 )
             return [value.real, value.imag]
 
