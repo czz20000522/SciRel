@@ -257,7 +257,7 @@
  },
  "verification": {
   "scope": [
-   "independent geometry and fit comparisons retain the existing numerical tolerances",
+   "an independent reference from SciPy adaptive integration over 4096 angles establishes the geometry and fit comparisons, alongside the weighted exchange relations and a common-velocity boost identity, at the existing numerical tolerances",
    "H/D four-channel 4096-angle midpoint results are compared with independent SciPy adaptive integration; weighted exchange relations and a common boost are checked",
    "moments and Alpha from real normalized distributions verify H<->H2 momentum exchange, Maxwell equilibrium momentum and weak drift",
    "Top-level Result type and attribute/key equivalence are regression-tested; nested array fields remain plain NumPy arrays.",

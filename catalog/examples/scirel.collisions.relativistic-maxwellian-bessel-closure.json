@@ -131,7 +131,7 @@
  },
  "verification": {
   "scope": [
-   "How this evidence is organised. Every claim below is measured by the tests in this repository or stated as a property of the declared relation. The tests protect the self-contained claims: the relation's runtime behaviour, its input and failure contracts, and its regression values. They depend on no external checkout, candidate directory or fixture payload.",
+   "the analytic identity bk2 = bk0 + 2*bk1/x is recomputed from the same scipy.special.kve call that the closure uses, with bk0 and bk1 compared bit-exactly against that call; every clause below names the test that measures it",
    "How this evidence is organised (2/2). The maintained suite is tests/collisions/test_relativistic_maxwellian_bessel.py, and it is self-contained: it imports nothing outside SciRel, SciPy, NumPy and pytest, and it exercises the fail-closed contract by substituting the backend for the duration of a test rather than by probing where the installed SciPy stops being representable.",
    "That the closure returns exactly the three rescaled Bessel quantities. The tests assert the returned mapping's keys are exactly bk0, bk1 and bk2 for arguments spanning the removed boundary; branch labels, applied switches and per-branch accuracy bounds are not returned.",
    "That the signature takes a single positional argument. The tests assert the parameter list is exactly ('x',) and that a branch_switch keyword raises TypeError.",
