@@ -282,16 +282,21 @@
  },
  "verification": {
   "scope": [
+   "The independent basis is the closed-form bi-Maxwellian evaluated at 50-digit mpmath precision from the absolute invariants, f0 = n_ref (m/(2 pi))^(3/2) / (T_perp,ref sqrt(T_parallel)) exp[-(E - q phi_ref)/T_parallel - mu B_ref (1/T_perp,ref - 1/T_parallel)], which is algebraically equal to but numerically distinct from the implementation's C-coefficient path (tests/mirror/test_mirror_invariant_distribution_evidence.py).",
    "Current SciRel implementation and the repository tests listed in this contract cover the declared public ports and numerical relation.",
-   "The example exercises one bounded representative case; it does not extend applicability beyond the declared preconditions."
+   "The example exercises one bounded representative case; it does not extend applicability beyond the declared preconditions.",
+   "mu = m v_perp^2/(2B) and E = m v_parallel^2/2 + mu B + q phi equal their Fraction-exact values bitwise on dyadic inputs.",
+   "f0 is exactly invariant under v_parallel -> -v_parallel and under v_perp -> -v_perp; with phi_ref = 0 only the product q phi enters, so f0(q, phi) equals f0(-q, -phi) while reversing the charge alone changes it.",
+   "A particle whose parallel balance equals the lower barrier exactly receives the refill occupation (the trapped comparison is declared strict), and a deeply negative exponent underflows to 0.0 without raising. The observed maximum relative deviation from the 50-digit form is 8.05 eps against the 256-eps budget derived from the log-space operation count."
   ],
   "tests": [
    "tests/mirror/test_mirror_invariant_distribution.py",
    "tests/cross_domain/test_mirror_kinetic_scientific_correction.py",
    "tests/cross_domain/test_mirror_gauge_scientific_correction.py",
-   "tests/kinetic/test_independent_correction.py"
+   "tests/kinetic/test_independent_correction.py",
+   "tests/mirror/test_mirror_invariant_distribution_evidence.py"
   ],
-  "evidence_ceiling": "Bounded to the declared relation: mu=m*v_perpendicular^2/(2*B), E=m*v_parallel^2/2+mu*B+q*phi, C=(B-B_ref)/T_parallel+B_ref/T_perp,ref. The distribution is n_ref*(m/(2*pi))^(3/2)/(T_perp,ref*sqrt(T_parallel))*exp[-(E-q*phi_ref)/T_parallel-mu*B_ref*(1/T_perp,ref-1/T_parallel)]*occupation…. Evidence: test_mirror_invariant_distribution.py, test_mirror_kinetic_scientific_correction.py, test_mirror_gauge_scientific_correction.py, test_independent_correction.py (41 recorded test functions; bound-file coverage; self-consistency/regression only); the contract example ran. Excluded scope: Self-consistent potential, equilibrium, collision, transport or integrated moment solving; One-sided plugs, field-line geometry, automatic flux-unit conversion or proof of physical adequacy for a supplied source state.",
+  "evidence_ceiling": "Bounded to the declared relation: mu=m*v_perpendicular^2/(2*B), E=m*v_parallel^2/2+mu*B+q*phi, C=(B-B_ref)/T_parallel+B_ref/T_perp,ref. The distribution is n_ref*(m/(2*pi))^(3/2)/(T_perp,ref*sqrt(T_parallel))*exp[-(E-q*phi_ref)/T_parallel-mu*B_ref*(1/T_perp,ref-1/T_parallel)]*occupation…. Evidence: test_mirror_invariant_distribution.py, test_mirror_kinetic_scientific_correction.py, test_mirror_gauge_scientific_correction.py, test_independent_correction.py (41 recorded test functions; bound-file coverage; self-consistency/regression only); the contract example ran. Excluded scope: Self-consistent potential, equilibrium, collision, transport or integrated moment solving; One-sided plugs, field-line geometry, automatic flux-unit conversion or proof of physical adequacy for a supplied source state. C1 evidence (tests/mirror/test_mirror_invariant_distribution_evidence.py) adds the 50-digit closed form in absolute invariants, exact dyadic mu and E, the velocity-sign and charge-potential symmetries, the strict trapped comparison and the permitted underflow. The 8.05-eps figure is an observed maximum over the sampled fixtures, not a proven bound over the continuous argument set.",
   "known_limitations": [
    "An unrepresentable required invariant or output raises FloatingPointError. Finite binary64 output is not an all-domain physical validity certificate.",
    "The strict barrier comparison and zero-refill default are source-defined conventions; no trapped-orbit trajectory is computed.",

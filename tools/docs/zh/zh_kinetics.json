@@ -5759,10 +5759,14 @@
    },
    "verification": {
     "scope": [
+     "独立依据是用绝对不变量形式在 50 位 mpmath 精度下重算闭式双 Maxwell 分布：f0 = n_ref (m/(2 pi))^(3/2) / (T_perp,ref sqrt(T_parallel)) exp[-(E - q phi_ref)/T_parallel - mu B_ref (1/T_perp,ref - 1/T_parallel)]。该式与实现所用的 C 系数路径代数等价但数值路径不同（tests/mirror/test_mirror_invariant_distribution_evidence.py）。",
      "当前 SciRel 实现及本合同列出的仓库测试覆盖所声明的公共端口与数值关系。",
-     "示例只演练一个有界的代表性算例，不把适用范围扩展到声明前提之外。"
+     "示例只演练一个有界的代表性算例，不把适用范围扩展到声明前提之外。",
+     "在二进输入上，mu = m v_perp^2/(2B) 与 E = m v_parallel^2/2 + mu B + q phi 与 Fraction 精确值逐位相等。",
+     "f0 在 v_parallel -> -v_parallel 与 v_perp -> -v_perp 下精确不变；当 phi_ref = 0 时只有乘积 q phi 进入，因此 f0(q, phi) 等于 f0(-q, -phi)，而只翻转电荷会改变 f0。",
+     "当平行能量恰好等于下位垒时粒子取得回填占据（俘获判据声明为严格不等式）；深度负指数下溢为 0.0 而不抛出。与 50 位闭式的实测最大相对偏差为 8.05 eps，预算 256 eps 由对数空间的运算计数推得。"
     ],
-    "evidence_ceiling": "限于所声明关系：μ=mv_perp²/(2B)，E=mv_parallel²/2+μB+qφ，C=(B−B_ref)/T_parallel+B_ref/T_perp,ref。f=n_ref(m/2π)^1.5/(T_perp,ref sqrt(T_parallel))×exp[−(E−qφ_ref)/T_parallel−μB_ref(1/T_perp,ref−1/T_parallel)]×occupation。双塞时…。证据：test_mirror_invariant_distribution.py, test_mirror_kinetic_scientific_correction.py, test_mirror_gauge_scientific_correction.py, test_independent_correction.py（记录 41 个测试函数；绑定文件覆盖；仅自洽/回归）；合同 example 已运行。不建立的范围：不自洽求电势、平衡、碰撞、输运或积分矩；不支持单侧塞、磁力线几何、磁通自动换算或证明给定状态物理充分性。",
+    "evidence_ceiling": "限于所声明关系：μ=mv_perp²/(2B)，E=mv_parallel²/2+μB+qφ，C=(B−B_ref)/T_parallel+B_ref/T_perp,ref。f=n_ref(m/2π)^1.5/(T_perp,ref sqrt(T_parallel))×exp[−(E−qφ_ref)/T_parallel−μB_ref(1/T_perp,ref−1/T_parallel)]×occupation。双塞时…。证据：test_mirror_invariant_distribution.py, test_mirror_kinetic_scientific_correction.py, test_mirror_gauge_scientific_correction.py, test_independent_correction.py（记录 41 个测试函数；绑定文件覆盖；仅自洽/回归）；合同 example 已运行。不建立的范围：不自洽求电势、平衡、碰撞、输运或积分矩；不支持单侧塞、磁力线几何、磁通自动换算或证明给定状态物理充分性。 C1 证据（tests/mirror/test_mirror_invariant_distribution_evidence.py）补充了绝对不变量形式的 50 位闭式、二进 mu 与 E 的精确恒等式、速度符号与电荷-电势对称性、严格俘获判据与允许的下溢。8.05 eps 是抽样算例上的实测最大值，不是连续自变量集上的证明界。",
     "known_limitations": [
      "必需不变量或输出不可表示时FloatingPointError；有限binary64结果不认证全域物理有效。",
      "严格屏障比较和零回填默认是源约定，不求陷获轨道。",
@@ -5875,10 +5879,15 @@
    },
    "verification": {
     "scope": [
+     "独立依据是终止型偶解的精确有理递推：a_(k+1) = [2k(2k+1) - lambda] a_k / (2 (k+1) (2k+1)) 恰在 lambda = 2n(2n+1) 时于 k = n 处终止；因此把该多项式在 (0, 1) 内的最大根作为 xi_tp 传入时，索引 n-1 处的度数必须是 2n、本征值必须恰为 2n(2n+1)（tests/mirror/test_loss_cone_spectrum_evidence.py）。",
      "当前 SciRel 实现及本合同列出的仓库测试覆盖所声明的公共端口与数值关系。",
-     "示例只演练一个有界的代表性算例，不把适用范围扩展到声明前提之外。"
+     "示例只演练一个有界的代表性算例，不把适用范围扩展到声明前提之外。",
+     "采样的本征函数与其 Fraction 系数在 50 位下求值得到的精确多项式一致，绝对预算 1e-11 由声明的正则模 rtol = 3e-13 乘 32 推得。",
+     "度严格递增，每个本征值等于 degree*(degree+1)，首行恰为 1.0，采样点为 i*xi_tp/N 且不含 xi_tp 本身，样本数为 max(grid_points, mode_count + 8)。",
+     "对精确根，报告的边界残差低于声明的 2e-8，n = 1..5 上的实测最大值为 5.9e-12。",
+     "RuntimeError 与 FloatingPointError 通道未被任何测试输入触发，记为 not-exercised。"
     ],
-    "evidence_ceiling": "限于最低阶有序角向模，包括整数根与小损失锥情形。证据：`test_spectral_scientific_correction.py` 含 16 个测试函数，其中 2 个引用 `solve_loss_cone_spectrum`，由 6 个资产共享；仅绑定共享文件覆盖，因此通过是文件级事实、而非资产隔离证据；本审计已执行有界示例。真值来源：仅自洽/回归。不建立：物理布居验证、输运或全局平衡。",
+    "evidence_ceiling": "限于最低阶有序角向模，包括整数根与小损失锥情形。证据：`test_spectral_scientific_correction.py` 含 16 个测试函数，其中 2 个引用 `solve_loss_cone_spectrum`，由 6 个资产共享；仅绑定共享文件覆盖，因此通过是文件级事实、而非资产隔离证据；本审计已执行有界示例。真值来源：仅自洽/回归。不建立：物理布居验证、输运或全局平衡。 C1 证据（tests/mirror/test_loss_cone_spectrum_evidence.py）补充了精确有理多项式分支：精确 Dirichlet 点在索引 n-1 处恢复整数度数 2n，本征函数与精确多项式一致，网格、排序与边界约定均为精确判定。这些 Dirichlet 点复现 Gauss–Legendre 横坐标，是该分支的独立锚点。非整数度数在本文件中没有闭式基准。",
     "known_limitations": [
      "有限精度残差检查；奇异端点 ξ_tp=1 排除。",
      "旧 backend 名不再表示截断近似。",
@@ -7724,10 +7733,15 @@
    },
    "verification": {
     "scope": [
+     "独立依据是 50 位无截断闭式，加上俘获俯仰份额 I_k = integral_0^40 e^(-x) F_k(A(x)) dx 的分段 50 位求积，其中 A(x) = max(min(a_L x + b_L, a_R x + b_R), 0)，F_density = erf(sqrt A)，F_parallel = erf(sqrt A) - (2/sqrt pi) sqrt A e^(-A)，F_perp = x erf(sqrt A)；断点取位垒交点与两线性段的零点，因为在折点处单次积分在 1e-6 量级上就不准（tests/mirror/test_mirror_constrained_moments_evidence.py）。",
      "当前 SciRel 实现及本合同列出的仓库测试覆盖所声明的公共端口与数值关系。",
-     "示例只演练一个有界的代表性算例，不把适用范围扩展到声明前提之外。"
+     "示例只演练一个有界的代表性算例，不把适用范围扩展到声明前提之外。",
+     "纯磁位垒极限使用解析闭式 xi、xi^3、xi (3 - xi^2)/2，其中 xi = sqrt(alpha/(1 + alpha))；两侧都不出现求积。",
+     "C = (B - B_ref)/T_parallel + B_ref/T_perp,ref、T_perp,local = B/C 与无截断密度与 50 位闭式一致；refill = 1 逐位绕过插头积分。回填混合等于 refill + (1 - refill) f（以 refill = 0 的份额为基准），且交换两个位垒不改变任何份额。",
+     "经校验的最小工作预算 quadrature_order = 8 仍满足声明的精度目标。相对分段基准实测最大绝对偏差为 1.22e-15，声明的目标是绝对 2e-13、相对 2e-11。",
+     "求积的 RuntimeError 分支未被任何测试输入触发，记为 not-exercised，而不记为不可达。"
     ],
-    "evidence_ceiling": "限于所声明关系：C=(B−B_ref)/T_parallel+B_ref/T_perp,ref，T_perp,local=B/C；n_full=exp[log(n_ref)+log(T_perp,local/T_perp,ref)−q(φ−φ_ref)/T_parallel]。令 x=μC，y=max(min(a_left x+b_left,a_right x+b_right),0)，a=(B_end−B)/(CT_parallel)，b=q(φ_end−φ)/T_parallel，分别积分…。证据：test_mirror_constrained_moments.py, test_mirror_kinetic_scientific_correction.py, test_mirror_gauge_scientific_correction.py, test_independent_correction.py（记录 46 个测试函数；绑定文件覆盖；仅自洽/回归）；合同 example 已运行。不建立的范围：不单凭返回矩确定静电势、镜平衡或自洽分布；不提供单侧塞、磁通自动换算、任意磁力线几何或公开返回的有限俯仰求积误差估计字段。内部仍用 quad_vec 误差估计执行绝对 2e-13 / 相对 2e-11 目标，达标才返回。",
+    "evidence_ceiling": "限于所声明关系：C=(B−B_ref)/T_parallel+B_ref/T_perp,ref，T_perp,local=B/C；n_full=exp[log(n_ref)+log(T_perp,local/T_perp,ref)−q(φ−φ_ref)/T_parallel]。令 x=μC，y=max(min(a_left x+b_left,a_right x+b_right),0)，a=(B_end−B)/(CT_parallel)，b=q(φ_end−φ)/T_parallel，分别积分…。证据：test_mirror_constrained_moments.py, test_mirror_kinetic_scientific_correction.py, test_mirror_gauge_scientific_correction.py, test_independent_correction.py（记录 46 个测试函数；绑定文件覆盖；仅自洽/回归）；合同 example 已运行。不建立的范围：不单凭返回矩确定静电势、镜平衡或自洽分布；不提供单侧塞、磁通自动换算、任意磁力线几何或公开返回的有限俯仰求积误差估计字段。内部仍用 quad_vec 误差估计执行绝对 2e-13 / 相对 2e-11 目标，达标才返回。 C1 证据（tests/mirror/test_mirror_constrained_moments_evidence.py）提供了无截断 50 位闭式、分段俘获份额基准、纯磁解析极限、回填混合恒等式与位垒交换对称性，并表明最小工作预算仍达标。俘获份额的 RuntimeError 通道仍为 not-exercised；采样搜索无法证明该分支不可达。",
     "known_limitations": [
      "x>40尾界按声明处理；自适应误差估计非所有浮点组合的形式证明，近零比例采用绝对误差目标。",
      "回填是指定现象学；refill精确1时不求塞剖面；不可表示的小值下溢可变零。",

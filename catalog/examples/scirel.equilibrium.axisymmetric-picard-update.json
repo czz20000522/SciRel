@@ -215,16 +215,21 @@
  },
  "verification": {
   "scope": [
+   "The independent basis is exact rational recomputation of the composite-trapezoid cell currents: for j_phi = R the node-domain sum is exactly (Z_hi - Z_lo)(R_hi^2 - R_lo^2)/2 = 1.5 A on a dyadic grid, and a constant current gives the plain node-domain area (tests/equilibrium/test_axisymmetric_picard_update_evidence.py).",
    "Linear J=R integrates to 1.2 A on a nonuniform [1,2] by [-0.4,0.4] node domain.",
    "Compact polynomial current converges to 8/225 A on nonuniform grids.",
    "Explicit uniform cell edges reproduce the full-area center convention.",
-   "Return-type regression checks the top-level scirel._result.Result, key order and attribute access while retaining the existing numerical, state and failure assertions."
+   "Return-type regression checks the top-level scirel._result.Result, key order and attribute access while retaining the existing numerical, state and failure assertions.",
+   "Explicit cell_edges bind each centre to its own dR*dZ rectangle, so every cell current is exactly j*dR*dZ with no trapezoid half-width.",
+   "With g_psi = I the response is the exact affine map psi_next = relax*psi_state + (1 - relax)*(psi_vac + cell_currents); fixed_point_residual is identical for every relax on the same inputs while relative_psi_change is not, and previous_cell_currents change only relative_current_change.",
+   "The runtime_failure channel is declared as unguarded NumPy propagation, so the evidence records that an overflow is not converted into a validation error instead of claiming a finite-output guard."
   ],
   "tests": [
    "tests/equilibrium/test_axisymmetric_picard_update.py",
-   "tests/cross_domain/test_anisotropic_core_scientific_correction.py"
+   "tests/cross_domain/test_anisotropic_core_scientific_correction.py",
+   "tests/equilibrium/test_axisymmetric_picard_update_evidence.py"
   ],
-  "evidence_ceiling": "tests/cross_domain/test_anisotropic_core_scientific_correction.py directly imports this maintained function as update; test_nonuniform_compact_current_integral_converges, test_uniform_positive_radius_explicit_cells_preserved, test_linear_nodal_domain_integral_exact assert nonuniform integration, explicit cell areas and linear nodal integration. These are bounded manufactured/analytic discrete cases, not full-file coverage or physical validation of arbitrary caller pressure/Green/wall models.",
+  "evidence_ceiling": "tests/cross_domain/test_anisotropic_core_scientific_correction.py directly imports this maintained function as update; test_nonuniform_compact_current_integral_converges, test_uniform_positive_radius_explicit_cells_preserved, test_linear_nodal_domain_integral_exact assert nonuniform integration, explicit cell areas and linear nodal integration. These are bounded manufactured/analytic discrete cases, not full-file coverage or physical validation of arbitrary caller pressure/Green/wall models. C1 evidence (tests/equilibrium/test_axisymmetric_picard_update_evidence.py) replaces the hand-computed float sum with a Fraction-exact integral of the linear current, adds the constant-current area, the explicit cell-edge convention, the identity-Green affine map and the relax-independence of the fixed-point residual. It says nothing about the physical adequacy of the caller's j_phi or Green matrix.",
   "known_limitations": [
    "Caller-supplied physical closures and Green responses require their own evidence and coherent psi=R A_phi (Wb/rad) normalization.",
    "Floating-point rounding envelopes do not bound discretization error or experimental uncertainty.",

@@ -2596,14 +2596,19 @@
    },
    "verification": {
     "scope": [
+     "独立依据是精确有理 Lagrange 重建：在四个拟合点、三次度数下，not-a-knot 插值已无内部节点，因此它就是过这四点的唯一三次多项式；在 Fraction 算术下对其符号求导（tests/equilibrium/test_pressure_flux_state_evidence.py）。",
      "有限网格的精确中平面样条及导数截断。",
      "掩码、首零压索引及零电流向量。",
      "所选非法中平面和缺失零压边界案例。",
      "内部零压边界只序列化实际四个拟合点，独立重建压力和导数。",
      "降序存储保留物理边界及输出顺序；数字掩码和非有限拟合/导数失败。",
-     "返回类型回归检查顶层 scirel._result.Result、键顺序及属性读取；既有数值、状态和失败断言保持不变。"
+     "返回类型回归检查顶层 scirel._result.Result、键顺序及属性读取；既有数值、状态和失败断言保持不变。",
+     "导数在每个未被裁剪的节点上与上述三次多项式在 256 eps 内一致，这是拟合本身的性质而非样条求解器的性质。",
+     "对 psi > psi_edge 与真值掩膜项的裁剪是精确的，且未裁剪值逐位不变；径向降序存储给出升序结果按列反转后的同一结果。",
+     "序列化的前缀含 limiter_index + 1 个样本且度数为三，读者可由 psi_samples 与 pressure_samples 重建该三次多项式；由 knots 与 coefficients 重建需要 B 样条约定，此处刻意不做。",
+     "FloatingPointError 通道未被触发：在严格递增的有限通量与有限压力下，所试算例的系数均有限，故记为 not-exercised。"
     ],
-    "evidence_ceiling": "限于精确 Z=0 径向压力采样与递增磁通前缀样条状态。证据：`test_pressure_flux_state.py` 含 5 个测试函数，其中 1 个引用 `build_pressure_flux_state`，仅由本资产绑定; `test_legacy_six_absorption.py` 含 18 个测试函数，其中 4 个引用 `build_pressure_flux_state`，由 8 个资产共享；本审计已执行有界示例。真值来源：绑定文件中的独立解析夹具与选定安装轮/源回归。不建立：通用磁轴/限制器/磁面推断、各向异性压力闭合，或压力-电流平衡求解。",
+    "evidence_ceiling": "限于精确 Z=0 径向压力采样与递增磁通前缀样条状态。证据：`test_pressure_flux_state.py` 含 5 个测试函数，其中 1 个引用 `build_pressure_flux_state`，仅由本资产绑定; `test_legacy_six_absorption.py` 含 18 个测试函数，其中 4 个引用 `build_pressure_flux_state`，由 8 个资产共享；本审计已执行有界示例。真值来源：绑定文件中的独立解析夹具与选定安装轮/源回归。不建立：通用磁轴/限制器/磁面推断、各向异性压力闭合，或压力-电流平衡求解。 C1 证据（tests/equilibrium/test_pressure_flux_state_evidence.py）用唯一插值三次多项式性质判定拟合本身，而非手抄期望数组，并把裁剪、限制器记账与存储顺序约定同拟合分离。非有限系数守卫仍为 not-exercised。",
     "known_limitations": [
      "中平面和压力边界都要求精确零，近零值不被接受。",
      "前缀与样条是同一插值关系的精确表示，不证明压力定律或外推物理适用性。",
@@ -6949,15 +6954,19 @@
    },
    "verification": {
     "scope": [
+     "独立依据是在二进网格上对 R*dP/dpsi*dR*dZ 与松弛混合的精确有理重算，并配合两个边界权 relax = 0 与 relax = 1，二者走不同分支（tests/equilibrium/test_isotropic_picard_step_evidence.py）。",
      "四单元例的面积电流、单位格林磁通和归一化残差。",
      "tests/equilibrium/test_isotropic_picard_step.py::test_reviewed_relation_example 直接调用四单元人工单位 Green 单步；tests/cross_domain/test_legacy_six_absorption.py::test_picard_nonfinite_state_fails_instead_of_vacuum_mask 检查其非有限算术拒绝。完整求解器组合用例不直接调用这个旧单步。",
      "拒绝不完整调用。",
      "有限输入导致电流、Green 收缩或总磁通溢出的真实失败回归。",
      "返回类型回归检查顶层 scirel._result.Result、键顺序及属性读取；既有数值、状态和失败断言保持不变。",
      "test_isotropic_rejects_too_small_grid_before_indexing 直接检查任一轴不足两点的网格在索引前被拒绝；这是输入错误证据，不是物理归一化或收敛核验。",
-     "test_real_pressure_step_has_independent_off_source_flux_amplitude 在 R=(1,1.5)、Z=(-0.5,0.5) 上直接调用公开单步，仅一个压力导数非零，解析单元电流为 1 A。真实 get_gpsi 仅用于生产输入；离源点 (1.5,0.5) 的 psi 对照独立 80/120 位矢势方位积分，使用 rtol=2e-12、atol=1e-20 Wb/rad。"
+     "test_real_pressure_step_has_independent_off_source_flux_amplitude 在 R=(1,1.5)、Z=(-0.5,0.5) 上直接调用公开单步，仅一个压力导数非零，解析单元电流为 1 A。真实 get_gpsi 仅用于生产输入；离源点 (1.5,0.5) 的 psi 对照独立 80/120 位矢势方位积分，使用 rtol=2e-12、atol=1e-20 Wb/rad。",
+     "恒等与零 Green 响应分别把通量固定为电流向量加真空通量与纯真空通量；relax = 1 时即使导数非零也保持原有电流不变，而通量仍会移动，因此\"松弛通量而非电流\"的实现无法同时通过两个权重。",
+     "归一化残差等于在 40 位精度下重算的 ||psi_next - psi_state||/|psi_edge|，偏差在 8 eps 内。",
+     "2×2 网格是声明的最小规模并被接受；单行网格在索引前即被拒绝。"
     ],
-    "evidence_ceiling": "四单元直接例检查单位 Green 算术，test_picard_nonfinite_state_fails_instead_of_vacuum_mask 检查非有限拒绝。新增 test_real_pressure_step_has_independent_off_source_flux_amplitude 以独立离源矢势积分核对解析 1 A 单元更新。完整求解器组合用例不直接调用本单步。这些有界检查支持具名每弧度归一化和离散算术，不证明完整求解器收敛或任意输入有效性。",
+    "evidence_ceiling": "四单元直接例检查单位 Green 算术，test_picard_nonfinite_state_fails_instead_of_vacuum_mask 检查非有限拒绝。新增 test_real_pressure_step_has_independent_off_source_flux_amplitude 以独立离源矢势积分核对解析 1 A 单元更新。完整求解器组合用例不直接调用本单步。这些有界检查支持具名每弧度归一化和离散算术，不证明完整求解器收敛或任意输入有效性。 C1 证据（tests/equilibrium/test_isotropic_picard_step_evidence.py）用 Fraction 精确单元电流取代手算电流数组，通过两个边界权判定松弛约定，并在 40 位下重算归一化残差。它不校验压力导数与 Green 矩阵的物理来源。",
     "known_limitations": [
      "压力导数、格林矩阵、真空磁通和迭代策略由调用者提供。",
      "有限磁通更新量不等于压力电流闭合；完整求解器另验闭合残差。",
@@ -7326,10 +7335,14 @@
    },
    "verification": {
     "scope": [
+     "独立依据是在二进（dyadic）输入上用 fractions.Fraction 精确重算 p_parallel = p_parallel_ion + p_electron 与 p_perpendicular = p_perpendicular_ion + p_electron：此时二进制64 加法本身也是精确的，因此比较是逐位相等而非容差比较（tests/mirror/test_mirror_total_pressure_evidence.py）。",
      "双单元压力和标量电子压的和，额外字段及原字典引用保留。",
-     "缺字段 ValueError、指定势对象身份及缺势 None。"
+     "缺字段 ValueError、指定势对象身份及缺势 None。",
+     "零电子压强恒等式逐位返回离子分量；二进压强增量使两个分量精确移动同一增量，从而固定符号、分量配对以及 Pa 单位（可排除把 eV 或 keV 当作 Pa 的误读）。",
+     "透传字段保持对象身份（离子密度、电子密度、观测量残差、可选电势、kinetic_moments 映射），未识别的离子字段保留。",
+     "对非二进输入，唯一容差是每个分量一次半 ulp 舍入，由该次加法推得。"
     ],
-    "evidence_ceiling": "限于所声明关系：将压力、密度、残差及可选势共同广播，要求物种密度/压力有限非负、残差/势有限；两离子压力分别加电子压力并拒绝非有限和。返回浅拷贝，保留原 kinetic_moments 映射及验证后的原密度/残差/势对象。残差只作观测，不证明准中性。证据：test_mirror_total_pressure.py, test_mirror_kinetic_scientific_correction.py（记录 21 个测试函数；绑定文件覆盖；仅自洽/回归）；合同 example 已运行。不建立的范围：计算离子矩、Boltzmann 响应、势或准中性根；不证明电荷中性、势单位、数组坐标对齐或外供压力模型正确性；物种密度和压力仍必须有限非负。",
+    "evidence_ceiling": "限于所声明关系：将压力、密度、残差及可选势共同广播，要求物种密度/压力有限非负、残差/势有限；两离子压力分别加电子压力并拒绝非有限和。返回浅拷贝，保留原 kinetic_moments 映射及验证后的原密度/残差/势对象。残差只作观测，不证明准中性。证据：test_mirror_total_pressure.py, test_mirror_kinetic_scientific_correction.py（记录 21 个测试函数；绑定文件覆盖；仅自洽/回归）；合同 example 已运行。不建立的范围：计算离子矩、Boltzmann 响应、势或准中性根；不证明电荷中性、势单位、数组坐标对齐或外供压力模型正确性；物种密度和压力仍必须有限非负。 C1 证据（tests/mirror/test_mirror_total_pressure_evidence.py）在二进算例上用 Fraction 重算两个求和并断言逐位相等，钉住零压强恒等式与 1 Pa、8 Pa、1024 Pa 增量，检查透传对象身份，并把非二进偏差限制在半 ulp 内。它不证明调用者所给压强的物理正确性。",
     "known_limitations": [
      "浅态保留原矩映射，调用者后续修改可改变引用字段。",
      "广播不等于坐标对齐；允许有限非零观测电荷残差。",
@@ -7934,13 +7947,17 @@
    },
    "verification": {
     "scope": [
+     "独立依据是连续体的垂直电流关系 J_phi = (B_Z dR p - B_R dZ p)/|B|^2 = (B x grad p)_phi/|B|^2：对常数场与 R 二次、Z 一次的压力，离散格式精确复现该式；基准在 40 位下求值（tests/equilibrium/test_anisotropic_toroidal_current_evidence.py）。",
      "常压零电流极限。",
      "制造的径向垂直压力梯度及各向同性分解。",
      "旋转等幅场产生非零各向异性差。",
      "R=0 电流列为零并拒绝负压。",
-     "返回类型回归检查顶层 scirel._result.Result、键顺序及属性读取；既有数值、状态和失败断言保持不变。"
+     "返回类型回归检查顶层 scirel._result.Result、键顺序及属性读取；既有数值、状态和失败断言保持不变。",
+     "当两压强相等时，总电流逐位等于各向同性对照电流，且各向异性项恰为零，因为两次求值收到完全相同的参数。",
+     "均匀压强给出恰为零的电流，R = 0 列恰为零；分解在两次舍入内满足 j_phi = gradp_term + anisotropy_curvature_term。",
+     "各向异性曲率项本身在这里没有独立解析基准：它是两次力平衡求值的声明式离散差，独立的曲率闭式被排除。"
     ],
-    "evidence_ceiling": "限于各向同性垂直压力电流与各向异性环向电流余项的分离。证据：`test_anisotropic_toroidal_current.py` 含 4 个测试函数，其中 1 个引用 `compute_anisotropic_toroidal_current`，仅由本资产绑定; `test_anisotropic_core_scientific_correction.py` 含 17 个测试函数，其中没有函数引用 `compute_anisotropic_toroidal_current`，由 8 个资产共享；本审计已执行有界示例。真值来源：绑定私有文件与修正文件中的独立制造解/解析离散检查。不建立：独立曲率公式或平行力证明、非轴对称/环向场几何，或完整平衡求解器。",
+    "evidence_ceiling": "限于各向同性垂直压力电流与各向异性环向电流余项的分离。证据：`test_anisotropic_toroidal_current.py` 含 4 个测试函数，其中 1 个引用 `compute_anisotropic_toroidal_current`，仅由本资产绑定; `test_anisotropic_core_scientific_correction.py` 含 17 个测试函数，其中没有函数引用 `compute_anisotropic_toroidal_current`，由 8 个资产共享；本审计已执行有界示例。真值来源：绑定私有文件与修正文件中的独立制造解/解析离散检查。不建立：独立曲率公式或平行力证明、非轴对称/环向场几何，或完整平衡求解器。 C1 证据（tests/equilibrium/test_anisotropic_toroidal_current_evidence.py）用 (B x grad p)_phi/|B|^2 为轴向与斜向常数场下的各向同性对照提供锚点，并钉住等压强、均匀压强与轴列退化情形。它无法独立建立各向异性曲率项，因为该项被定义为同一算子两次求值的离散差。",
     "known_limitations": [
      "外供闭合和格林须自有证据及一致 Wb/rad 规范。",
      "舍入包络不约束离散误差或实验不确定度。",
@@ -9465,12 +9482,16 @@
    },
    "verification": {
     "scope": [
+     "独立依据是对复合梯形单元电流的精确有理重算：在二进网格上取 j_phi = R 时，节点域求和恰为 (Z_hi - Z_lo)(R_hi^2 - R_lo^2)/2 = 1.5 A；取常数电流时得到纯节点域面积（tests/equilibrium/test_axisymmetric_picard_update_evidence.py）。",
      "J=R 在非均匀 [1,2]×[−0.4,0.4] 节点域积分为 1.2 A。",
      "紧支撑多项式电流在非均匀网格收敛到 8/225 A。",
      "显式均匀单元边界复现完整中心面积约定。",
-     "返回类型回归检查顶层 scirel._result.Result、键顺序及属性读取；既有数值、状态和失败断言保持不变。"
+     "返回类型回归检查顶层 scirel._result.Result、键顺序及属性读取；既有数值、状态和失败断言保持不变。",
+     "显式 cell_edges 把每个采样绑定到各自的 dR*dZ 矩形，因此每个单元电流恰为 j*dR*dZ，不含梯形半宽。",
+     "当 g_psi = I 时响应是精确仿射映射 psi_next = relax*psi_state + (1 - relax)*(psi_vac + cell_currents)；同一输入下 fixed_point_residual 对所有 relax 相同而 relative_psi_change 不同，previous_cell_currents 只改变 relative_current_change。",
+     "runtime_failure 通道声明为未加保护的 NumPy 传播，因此证据记录的是溢出不会被转成校验错误，而不是宣称有有限输出守卫。"
     ],
-    "evidence_ceiling": "tests/cross_domain/test_anisotropic_core_scientific_correction.py 将本维护实现直接导入为 update；test_nonuniform_compact_current_integral_converges, test_uniform_positive_radius_explicit_cells_preserved, test_linear_nodal_domain_integral_exact 断言非均匀积分、显式单元面积及线性节点积分。这些是有界制造/解析离散用例，不是整文件覆盖，也不验证任意外供压力、Green 或壁模型的物理正确性。",
+    "evidence_ceiling": "tests/cross_domain/test_anisotropic_core_scientific_correction.py 将本维护实现直接导入为 update；test_nonuniform_compact_current_integral_converges, test_uniform_positive_radius_explicit_cells_preserved, test_linear_nodal_domain_integral_exact 断言非均匀积分、显式单元面积及线性节点积分。这些是有界制造/解析离散用例，不是整文件覆盖，也不验证任意外供压力、Green 或壁模型的物理正确性。 C1 证据（tests/equilibrium/test_axisymmetric_picard_update_evidence.py）用 Fraction 精确的线性电流积分取代手算浮点求和，并补充常数电流面积、显式单元边界约定、恒等 Green 仿射映射以及定点残差对 relax 的独立性。它对调用者所给 j_phi 与 Green 矩阵的物理适当性不作判断。",
     "known_limitations": [
      "外供物理闭合和格林响应须有独立证据，并一致使用 psi=R A_phi（Wb/rad）。",
      "浮点舍入包络不约束离散误差或实验不确定度。",
