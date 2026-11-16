@@ -239,20 +239,24 @@
  },
  "verification": {
   "tests": [
-   "tests/kinetic/test_generalized_dispersion_models.py"
+   "tests/kinetic/test_generalized_dispersion_models.py",
+   "tests/kinetic/test_generalized_kernel_evidence.py"
   ],
   "scope": [
    "All four complete grids: Langmuir19, IAW22, beam71, generalized18 points.",
    "Caller-selected grids and explicit seeds for branch selection.",
-   "Dielectric residual validation after explicit two-real-component MINPACK solves."
+   "Dielectric residual validation after explicit two-real-component MINPACK solves.",
+   "The returned omega magnitude reproduces an independent mpmath solve of the same dielectric function to 1.7e-13 at the first three k rows, and the scan's own reported dielectric residual is at or below 1e-9."
   ],
   "known_limitations": [
    "The default beam seed follows a damped high-frequency branch; an explicit frequency-informed phase seed can find an unstable branch.",
    "The default beam seed fails on the custom short grid [.3,.295]; this failure is preserved.",
    "Generic non-Maxwellian quadrature roots are not interval-certified; no estimated quadrature error is included in their acceptance gate.",
-   "The independent oracle covers three seeded cases (Langmuir/IAW/beam) against 50-digit `mpmath` equations; it does not certify every family/grid point or select the most unstable branch."
+   "The independent oracle covers three seeded cases (Langmuir/IAW/beam) against 50-digit `mpmath` equations; it does not certify every family/grid point or select the most unstable branch.",
+   "The scan can return the negative-frequency branch; a consumer must select a branch and must not assume Re(omega) > 0.",
+   "Only the first three rows of the default langmuir grid were cross-checked; no other kind, grid or seed is covered."
   ],
-  "evidence_ceiling": "Bounded to the four complete Langmuir/IAW/beam/generalized root-scan grids with explicit seeds. Evidence: `test_generalized_dispersion_models.py` contains 14 test functions, 6 of which reference `scan_gpdf_roots`, and is shared by 6 assets; only shared-file coverage is bound, so a pass is file-level rather than asset-isolated; the bounded example was executed by this audit. Oracle: independent 50-digit `mpmath` equations in `test_roots_against_independent_high_precision_equations`, plus frozen scan values. It does not establish root uniqueness, an exhaustive spectrum or automatic branch selection."
+  "evidence_ceiling": "test_generalized_kernel_evidence.py solves D(omega) = k**2 + 1 + z Z(z) with Z = i sqrt(pi) w at 40 digits without calling the scan, compares |omega| at the first three rows to 1e-10 relative, and checks the scan's reported residual against 1e-9. This establishes the root position for those rows, not branch selection: at k = 0.1 the scan returns the negative-frequency root omega = -1.0152, which is genuine because D is even there and the independent solve returns both signs at the same magnitude."
  },
  "example": {
   "description": "Scan two nearby beam wavenumbers and verify the returned roots by their residuals.",

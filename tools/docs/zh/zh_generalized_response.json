@@ -495,13 +495,16 @@
    "verification": {
     "scope": [
      "覆盖四类残差，并采用温度、质量及漂移归一化。",
-     "Maxwellian 的 Langmuir 和 generalized 分支复用经过验证、避免相消的小 k 实现。"
+     "Maxwellian 的 Langmuir 和 generalized 分支复用经过验证、避免相消的小 k 实现。",
+     "在 scan_gpdf_roots 返回的根所对应的相位处求公开残差得 2.0e-15，而直接代入角频率得 0.65；因此变量归属由根的位置确定，不依赖任何一方实现。"
     ],
     "known_limitations": [
      "离子声波与束流使用普通 Faddeeva 响应；极端相位或温度输入可能导致不可表示结果。",
-     "仅绑定共享文件覆盖（test_generalized_dispersion_models.py）；未记录资产专属失败/边界探针。"
+     "仅绑定共享文件覆盖（test_generalized_dispersion_models.py）；未记录资产专属失败/边界探针。",
+     "残差是归一化相位 x = omega/(sqrt(2) k) 的函数；误传角频率而非相位会静默给出错误答案，只有模长检查能暴露它。",
+     "只有 langmuir 分支与独立 mpmath 根做了交叉核对；iaw、beam 与 generalized 分支未做。"
     ],
-    "evidence_ceiling": "限于所声明关系：离子声波采用 D=k²+[1+xZ(x)]+[1+qZ(q)]/Ti，其中 q=x/sqrt(Ti/mi)。束流采用 D=k²+(1-nb)[1+xZ(x)]+nb/Tb[1+qZ(q)]，其中 q=x/sqrt(Tb)-vd。广义分布采用 D=k²-Zp/2。真空项与极化率归一化沿用既定约定。证据：test_generalized_dispersion_models.py（记录 14 个测试函数；仅共享文件覆盖；仅自洽/回归）；合同 example 已运行。不建立的范围：不能直接把很小的绝对 D 值当作小 k 模已成立的证据；外部物理验证。"
+    "evidence_ceiling": "test_generalized_kernel_evidence.py 在 scan_gpdf_roots 返回根换算出的相位处调用公开残差，要求 |residual| <= 1e-12，并单独断言未换算的 omega 不闭合。根本身用 mpmath 对 D(omega) = k**2 + 1 + z Z(z) 的 40 位解交叉核对。不建立连续域残差界、不建立所取根的唯一性，也不对已执行断言之外的 iaw、beam 或 generalized 分支作声明。"
    }
   },
   {
@@ -682,15 +685,18 @@
     "scope": [
      "覆盖四类完整网格：Langmuir 19 点、离子声波 22 点、束流 71 点及 generalized 18 点。",
      "支持调用者指定网格，并以显式种子选择分支。",
-     "把残差拆成两个实分量后显式调用 MINPACK 求解，再验证介电残差。"
+     "把残差拆成两个实分量后显式调用 MINPACK 求解，再验证介电残差。",
+     "前三个 k 行返回的 omega 模长与同一色散函数的独立 mpmath 解相符到 1.7e-13，且扫描自报的 dielectric 残差在 1e-9 或以下。"
     ],
     "known_limitations": [
      "默认束流种子跟随阻尼高频分支；基于频率信息显式设置的相位种子可以找到不稳定分支。",
      "默认束流种子在自定义短网格 [.3,.295] 上失败；这一失败行为保持不变。",
      "通用非 Maxwellian 求积根未经区间认证；其接受门禁未包含求积误差估计。",
-     "独立参照仅覆盖三个带种子情形（Langmuir/IAW/束）对 50 位 `mpmath` 方程的对照；不证明每个族/网格点，也不自动选择最不稳定分支。"
+     "独立参照仅覆盖三个带种子情形（Langmuir/IAW/束）对 50 位 `mpmath` 方程的对照；不证明每个族/网格点，也不自动选择最不稳定分支。",
+     "扫描可能返回负频支；消费者必须自行选支，不得假设 Re(omega) > 0。",
+     "只交叉核对了默认 langmuir 网格的前三行；其他 kind、网格或种子未覆盖。"
     ],
-    "evidence_ceiling": "限于四组完整 Langmuir/IAW/束/广义根扫描网格及显式种子。证据：`test_generalized_dispersion_models.py` 含 14 个测试函数，其中 6 个引用 `scan_gpdf_roots`，由 6 个资产共享；仅绑定共享文件覆盖，因此通过是文件级事实、而非资产隔离证据；本审计已执行有界示例。真值来源：`test_roots_against_independent_high_precision_equations` 中的独立 50 位 `mpmath` 方程，加上冻结扫描值。不建立：根唯一性、穷尽谱或自动分支选择。"
+    "evidence_ceiling": "test_generalized_kernel_evidence.py 用 40 位 Z = i sqrt(pi) w 解 D(omega) = k**2 + 1 + z Z(z)（不调用扫描），把前三个 k 行的 |omega| 按 1e-10 相对比较，并核对扫描自报残差与 1e-9。这建立的是这些行的根位置，不是选支：k = 0.1 处扫描返回负频根 omega = -1.0152，而 D 在此为偶函数、独立解同时给出同模长的正负两支，故该根为真。"
    }
   },
   {

@@ -140,12 +140,12 @@
    "tests/kinetic/test_fluid_spectrum_r43_fluid.py",
    "tests/kinetic/test_pole_table_evidence.py"
   ],
-  "evidence_ceiling": "cannot establish the numeric values of the frozen L-pole table. The generating formula is not in this repository, the referenced 2025 paper does not tabulate these coefficients, and using the frozen source table itself as the oracle is exactly what the independence rule forbids. What is established is indexing and pairing structure, the declared order coverage, the non-decreasing per-order pole count, and every declared rejection channel; the negative pointwise measurement above is recorded so that no contract text implies the table is exp(-b)I_n(b).",
+  "evidence_ceiling": "cannot establish the numeric values of the frozen L-pole table. The generating formula is not in this repository, the sources we checked do not tabulate these coefficients, and using the frozen source table itself as the oracle is exactly what the independence rule forbids. What is established is indexing and pairing structure, the declared order coverage, the non-decreasing per-order pole count, and every declared rejection channel; the negative pointwise measurement above is recorded so that no contract text implies the table is exp(-b)I_n(b).",
   "known_limitations": [
    "frozen tables cover |n|=0..7; requests beyond them fail",
    "Only shared-file coverage is bound (test_fluid_spectrum_r43_fluid.py); no asset-specific failure/limit probe is recorded.",
    "No independent or external oracle is recorded; the evidence is self-consistency/regression only.",
-   "cannot establish: the numeric values of the frozen L-pole table. The generating formula is not in this repository and no public source tabulates these coefficients; the frozen source table itself cannot serve as its own oracle.",
+   "cannot establish: the numeric values of the frozen L-pole table. The generating formula is not in this repository and the sources we checked do not tabulate these coefficients; the frozen source table itself cannot serve as its own oracle.",
    "The structural assertions constrain indexing and pairing, not the approximation's accuracy, and the measured deviation shows the table is not a pointwise scaled-Bessel representation at real argument."
   ]
  }
