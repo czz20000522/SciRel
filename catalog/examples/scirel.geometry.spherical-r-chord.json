@@ -7,15 +7,18 @@
  "verification": {
   "scope": [
    "Constructor and coordinate-shape invariants covered by the direct geometry tests",
-   "The executable constructor example stored in this contract"
+   "The executable constructor example stored in this contract",
+   "Independent evidence (tests/geometry/test_frame_convention_evidence.py): the radius passes through unchanged and the angle places the point at (r sin theta, r cos theta) with degrees from +Z; theta = 0 gives exactly (0, r), theta = 90 gives (r, about 6e-17 r), the rival radial-axis reading differs by the full radius in both components, and R^2 + Z^2 = r^2 holds to 8 eps r^2 across five angles."
   ],
   "tests": [
    "tests/geometry/test_geometry_qualification.py",
-   "tests/geometry/test_runtime_lifecycle.py"
+   "tests/geometry/test_runtime_lifecycle.py",
+   "tests/geometry/test_frame_convention_evidence.py"
   ],
-  "evidence_ceiling": "Named finite geometry cases only; no field-solver, experimental, or release claim is made.",
+  "evidence_ceiling": "Named finite geometry cases only; no field-solver, experimental, or release claim is made. C1 evidence adds the axis and unit conventions, the Pythagoras identity over five angles and the declared sign rule; it does not establish that the chord represents any spherical surface completely.",
   "known_limitations": [
-   "Mesh objects do not by themselves validate a physical field model or device geometry."
+   "Mesh objects do not by themselves validate a physical field model or device geometry.",
+   "As with the theta chord this asset takes **degrees from +Z** while `Mesh.theta` returns **radians**; the radius sign is not checked before the transform, so a negative radius combined with a negative sine would not be caught here."
   ]
  },
  "asset_id": "scirel.geometry.spherical-r-chord",

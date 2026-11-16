@@ -7,15 +7,18 @@
  "verification": {
   "scope": [
    "Constructor and coordinate-shape invariants covered by the direct geometry tests",
-   "The executable constructor example stored in this contract"
+   "The executable constructor example stored in this contract",
+   "Independent evidence (tests/geometry/test_frame_convention_evidence.py): the index order is (nz, nr) with R on the second axis and Z on the first, decided by nr != nz and by all four corners; the corner nodes are exact and the interior nodes meet the rational closed form rmin + k*(rmax-rmin)/(nr-1) to 4 eps; bounds, counts (including a boolean count) and finiteness are each rejected."
   ],
   "tests": [
    "tests/geometry/test_geometry_qualification.py",
-   "tests/geometry/test_runtime_lifecycle.py"
+   "tests/geometry/test_runtime_lifecycle.py",
+   "tests/geometry/test_frame_convention_evidence.py"
   ],
-  "evidence_ceiling": "Named finite geometry cases only; no field-solver, experimental, or release claim is made.",
+  "evidence_ceiling": "Named finite geometry cases only; no field-solver, experimental, or release claim is made. C1 evidence adds the index order, the exact corners, the rational interior form and the rejection channels; it attaches no Jacobian, measure or resolution study to the grid.",
   "known_limitations": [
-   "Mesh objects do not by themselves validate a physical field model or device geometry."
+   "Mesh objects do not by themselves validate a physical field model or device geometry.",
+   "The mesh is a tensor product of two uniform axes: it cannot represent stretched, masked or unstructured grids, and the (nz, nr) order means a caller indexing [r, z] silently transposes the grid without any detection here."
   ]
  },
  "asset_id": "scirel.geometry.rect-mesh",
