@@ -277,10 +277,8 @@
      "title": "Assembling kinetic dielectric tensors and dispersion determinants",
      "introduction": "Assemble tensors for uniform magnetized Maxwellian species or compare two dispersion computation paths. Entry points differ in support for complex wavenumbers, zero wavenumbers, near-zero replacements and harmonic counts; finite-sum computations do not include automatic truncation-convergence verification.",
      "assets": [
-      "scirel.kinetic.kinetic-dispersion-sum",
-      "scirel.kinetic.kinetic-dispersion-sum-fluid",
-      "scirel.kinetic.kinetic-dispersion-ronnmark",
-      "scirel.kinetic.dielectric-tensor-diagnostic",
+      "scirel.kinetic.dielectric-response",
+      "scirel.kinetic.dielectric-diagnostics",
       "scirel.kinetic.kinetic-dispersion-relation"
      ]
     },

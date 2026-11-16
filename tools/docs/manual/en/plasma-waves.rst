@@ -513,7 +513,7 @@ As ``kx_frac`` grows from 0.25 to 0.5, the relative difference is only between `
 **What this section cannot establish.** Evaluating a determinant is not finding a root; a nonzero ``det`` does not mean "there is no wave", it only means this wave point is not a root; a ``det`` close to zero does not automatically give a mode identity either. That the two paths agree at one small ``kx_frac`` cannot be extrapolated to larger wavenumbers, nor does it prove the absolute accuracy of either. Tensor components depend on the basis; both the finite-harmonic truncation and the pole order need independent convergence checks. This entry point provides no automatic mode identification, no global root enumeration, and no physical-validity certificate.
 
 Direct tensors and raw diagnostics
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 For absolute physical inputs, use ``evaluate_dielectric_response`` from :doc:`../reference/generated/scirel.kinetic.dielectric-response`, supplying only ``omega`` in rad/s, species temperatures in kelvin, and ``kz`` and ``kx`` in 1/m. The default ``method="harmonic"`` retains the analytic-Z finite sum; ``method="harmonic_weideman"`` retains the finite sum with fixed Z64 for ordinary components; ``method="ronnmark"`` retains the fixed J8 pole model. Both finite sums retain their checked mixed/parallel representations and never switch methods on failure. One contract records each method's equations, domain and evidence individually.
 

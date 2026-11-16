@@ -739,9 +739,9 @@
   },
   {
    "asset_id": "scirel.kinetic.dielectric-response",
-   "source_sha256": "169bd526721784c05cb7eb07c86903a54fe793db6725f6923d6e5ec43bd081dc",
+   "source_sha256": "9c3ca6481b32841b154f99ab4dda9720363e20aa80530c128d6ba2ea7a610ffc",
    "summary": "显式选择 harmonic、harmonic_weideman 或固定 J8 的 ronnmark，计算均匀磁化 Maxwellian 介电响应。",
-   "definition": "vts=sqrt(2*kB*Ts0/ms)，wcs=qs*B0/ms，wps2=ns0*qs**2/(ms*epsilon0)，a=kx*sqrt(kB*Ts0/ms)/wcs，b=a**2，不是 abs(a)**2。omega 直接以 rad/s 输入，不猜测单位，也不往返 Hz。K_ij = delta_ij - sigma_ij/(i*omega*epsilon0)；保留各方法原 Maxwell 旋度项、行列式算法和全部共同科学字段。a 直接取核已有的有符号或复数值，不用 sqrt(b) 反算。只有 diagnostics 存放各方法的算法记录。",
+   "definition": "介电约定 $K_{ij}=\\delta_{ij}-\\sigma_{ij}/(i\\omega\\epsilon_0)$。 vts=sqrt(2*kB*Ts0/ms)，wcs=qs*B0/ms，wps2=ns0*qs**2/(ms*epsilon0)，a=kx*sqrt(kB*Ts0/ms)/wcs，b=a**2，不是 abs(a)**2。omega 直接以 rad/s 输入，不猜测单位，也不往返 Hz。K_ij = delta_ij - sigma_ij/(i*omega*epsilon0)；保留各方法原 Maxwell 旋度项、行列式算法和全部共同科学字段。a 直接取核已有的有符号或复数值，不用 sqrt(b) 反算。只有 diagnostics 存放各方法的算法记录。",
    "model": "均匀磁化 Maxwellian 等离子体；两个有限回旋谐波方法和固定 J=8 的 Ronnmark 有理极点模型，各方法方程与证据分别保留。",
    "boundary": "B0 与 omega 须有限非零。有限谐波方法要求实数非零 kz、kx；ronnmark 允许零 kz 及有限复数 kx，含完整响应可表示时的零 kx。不自动换方法、钳位、返回部分值或省略科学字段。",
    "assumptions": [
