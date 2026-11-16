@@ -120,19 +120,23 @@
    "Square shape, finite output and axis-source zero-column convention.",
    "Rejection of an axially nonsymmetric grid and reflection-block relation.",
    "In tests/cross_domain/test_field_green_correction.py, test_mirror_small_positive_loops_are_not_removed_by_axis_tolerance checks the g_psi matrix on radii [1e-13,2e-13] and Z=[-1e-13,1e-13] against a 70-digit ideal-loop expression at rtol=2e-14 and atol=1e-300, retaining zero diagonal entries. test_public_field_interfaces_reject_complex_coordinates includes api=mirror.",
-   "The named result preserves the captured key order, values, shapes, dtypes, mapping access and attribute access; failures retain their exception types and messages."
+   "The named result preserves the captured key order, values, shapes, dtypes, mapping access and attribute access; failures retain their exception types and messages.",
+   "Independent evidence (tests/field/test_mirror_plasma_green_evidence.py): off-diagonal entries agree with the direct Biot-Savart quadrature of one unit ring within 64 eps; the zero diagonal, the exact bitwise Z-reflection G[i, j] = G[mirror(i), mirror(j)], and the exact mutual-flux symmetry of the unit-weight matrix are separate exact assertions, and the axis rows and columns are zero."
   ],
   "tests": [
    "tests/field/test_mirror_plasma_green.py",
-   "tests/cross_domain/test_field_green_correction.py"
+   "tests/cross_domain/test_field_green_correction.py",
+   "tests/field/test_mirror_plasma_green_evidence.py"
   ],
-  "evidence_ceiling": "The dedicated test file calls build_mirror_plasma_flux_green as scientific_function and by its own name. The named first-plane formula assertion is independent; test_reflected_matrix_matches_direct_filament_columns_on_symmetric_grid compares with the maintained dense response, and the shape/axis-source/reflected-block and nonsymmetric-grid assertions cover the stated fixtures. The shared file directly checks only the mirror cases named in scope. This entry returns flux only: aggregate-only BR/BZ, formula-cutover, near-wire and arithmetic-failure assertions are dependency evidence and cannot be assigned to this wrapper. Arbitrary-grid validity, finite-wire self-fields and experimental validation remain unqualified.",
+  "evidence_ceiling": "The dedicated test file calls build_mirror_plasma_flux_green as scientific_function and by its own name. The named first-plane formula assertion is independent; test_reflected_matrix_matches_direct_filament_columns_on_symmetric_grid compares with the maintained dense response, and the shape/axis-source/reflected-block and nonsymmetric-grid assertions cover the stated fixtures. The shared file directly checks only the mirror cases named in scope. This entry returns flux only: aggregate-only BR/BZ, formula-cutover, near-wire and arithmetic-failure assertions are dependency evidence and cannot be assigned to this wrapper. Arbitrary-grid validity, finite-wire self-fields and experimental validation remain unqualified. C1 evidence adds the Biot-Savart quadrature for individual entries and the exact mutual-flux symmetry, neither of which the maintained column comparison provides; the observed maximum deviation on the sampled entries is 6.55e-15 relative against a 1.42e-14 budget. It covers the flux matrix only, so it says nothing about radial or axial field matrices, and it does not establish a continuous error bound.",
   "known_limitations": [
    "The result is a dense O((N_Z*N_R)^2) matrix and may be costly on large grids.",
    "Current contraction and cell-area factors are caller responsibilities.",
    "Public distribution licensing and SciRel expert recognition remain pending.",
    "The dedicated mirror entry remains limited to uniform, symmetric Z tensor grids; for general irregular coordinates use the actual-coordinate matrix entry in the electromagnetism domain.",
-   "Direct overflow coverage through the mirror wrapper is UNKNOWN in the bound tests; failure propagation is established by the implementation, not by inheriting aggregate or dense failure assertions."
+   "Direct overflow coverage through the mirror wrapper is UNKNOWN in the bound tests; failure propagation is established by the implementation, not by inheriting aggregate or dense failure assertions.",
+   "The runtime_failure channel is not reachable from finite unit-weight coordinates: the entry is bounded by 1e-5 times the geometric scale, so no finite grid can overflow it. The test records that boundary instead of asserting a raise, and the propagation itself is exercised in the weighted assets.",
+   "The 64-eps figure is an observed maximum over the sampled entries, not a proven bound over the whole matrix."
   ]
  }
 }

@@ -141,9 +141,7 @@ def test_halving_the_radial_spacing_improves_the_flux_at_least_twofold():
         expected = reference.psi_difference(
             float(radial[-1]), -0.3, [tuple(row_value) for row_value in FILAMENTS], 0.0
         )
-        deviations.append(
-            abs(float(result["psi"][0, -1]) - float(expected)) / abs(float(expected))
-        )
+        deviations.append(abs(float(result["psi"][0, -1]) - float(expected)) / abs(float(expected)))
     assert deviations[0] > deviations[1] > deviations[2], deviations
     ratios = [deviations[index] / deviations[index + 1] for index in range(2)]
     # Measured ratios on this grid family, reported but not asserted as an order.
