@@ -177,16 +177,19 @@
    "Direct shape and nonpositive-temperature zero-slice checks, plus test_adequate_mesh_returns_the_exact_maxwellian_moments, test_mesh_too_small_for_the_temperature_raises_instead_of_returning_wrong_moments and test_moment_tolerance_is_the_caller_s_choice for analytic drift/temperature moments, inadequate-mesh rejection and explicit caller tolerance.",
    "Retained candidate evidence covers temperature branches, clipping, nonuniform deuterium and NaN/negative/zero edge rows.",
    "test_internal_seed_keeps_peak_before_real_moment_compensation observes the normalized seed before the real correction for molecularity 1/2 and mu 1/2: analytic peak ratio at rtol 1e-14 and analytic floored profile at rtol 3e-15, followed by the real correction and unchanged default 0.01 drift/temperature/negativity checks. Nonpositive-temperature slices remain zero.",
-   "Reject NaN, infinite, nonpositive and non-real/nonscalar tolerances, including NaN on the inadequate 50 eV mesh and on a zero-temperature slice; accepted NumPy scalar tolerances leave the distribution unchanged."
+   "Reject NaN, infinite, nonpositive and non-real/nonscalar tolerances, including NaN on the inadequate 50 eV mesh and on a zero-temperature slice; accepted NumPy scalar tolerances leave the distribution unchanged.",
+   "Independent evidence (tests/neutrals/test_moment_compensation_evidence.py): every returned slice is pushed through an independent exact-rational moment reduction - drift against the requested shift, temperature through T = (<v^2> - U^2) m / (3 q), the analytic Maxwellian identity <v^2> = U^2 + 3 q T / m, and normalization on the radial measure; zero and negative temperatures are required to return exact zeros without changing the positive slices, and a mesh that cannot hold the requested temperature must fail closed."
   ],
   "tests": [
-   "tests/kinetic/test_moment_compensation.py"
+   "tests/kinetic/test_moment_compensation.py",
+   "tests/neutrals/test_moment_compensation_evidence.py"
   ],
-  "evidence_ceiling": "The named direct tests in test_moment_compensation.py provide analytic pre-correction peak/profile assertions, including molecularity 1/2 and mu 1/2, and analytic returned-moment assertions and rejection regressions on their finite meshes. Broader source-fidelity evidence remains partial: the historical NaN payload/warning and integer/float differences, ADAS/JH validation, molecular/coupled transport, full solver and general scientific correctness remain unresolved.",
+  "evidence_ceiling": "The named direct tests in test_moment_compensation.py provide analytic pre-correction peak/profile assertions, including molecularity 1/2 and mu 1/2, and analytic returned-moment assertions and rejection regressions on their finite meshes. Broader source-fidelity evidence remains partial: the historical NaN payload/warning and integer/float differences, ADAS/JH validation, molecular/coupled transport, full solver and general scientific correctness remain unresolved. C1 evidence adds: an independent recomputation of the acceptance moments, the analytic Maxwellian identity and the exact zero-slice branch; it does not establish that the corrected slice is the source's distribution or that the added correction improves physical fidelity.",
   "known_limitations": [
    "This extends the existing pre-compensation shifted Maxwellian leaf with a source-shaped correction stage; it does not replace that leaf.",
    "The fixed constants and clipped arithmetic are model conventions, not calibration evidence.",
-   "Candidate evidence excludes molecular/coupled branches and complete transport solver parity."
+   "Candidate evidence excludes molecular/coupled branches and complete transport solver parity.",
+   "The acceptance moments are verified on a 3x6 mesh with the caller-supplied moment_rtol; the tests do not establish how the corrected slice compares with the uncorrected seed beyond the moment targets."
   ]
  }
 }

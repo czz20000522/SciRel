@@ -206,16 +206,19 @@
    "Independent centered RHS moments and a raw uncentered energy-moment oracle check all four outputs on a signed nonuniform carrier.",
    "External-source variation changes only loss, including large positive and negative sources with signed one-cell RHS checked against the independent laboratory-frame energy definition; some zero quadrature cells are accepted with positive density.",
    "UNKNOWN: the historical claim of three digest-pinned reference cases, exact two-carrier replay and boolean-coercion divergence is not bound to case inputs, digests, counterpart versions and per-case comparisons; the direct tests above remain the current evidence.",
-   "An independent two-cell physical F/s producer/reducer composition checks the centered N/m^3 momentum source and W/m^3 energy decomposition at two density scales; it does not infer physical normalization of arbitrary arrays."
+   "An independent two-cell physical F/s producer/reducer composition checks the centered N/m^3 momentum source and W/m^3 energy decomposition at two density scales; it does not infer physical normalization of arbitrary arrays.",
+   "Independent evidence (tests/neutrals/test_terminal_moment_evidence.py): a loss proportional to the distribution is required to have exactly zero centered momentum, to carry the thermal rate (3/2) lambda n T and to exceed it by exactly 0.5 m U^2 J of bulk kinetic energy; the loss rate equals the external source minus the exact weighted RHS integral; the total profile is independent of the external source; and doubling the thermal speed quadruples the thermal and doubles the momentum rate."
   ],
   "tests": [
-   "tests/kinetic/test_terminal_molecular_energy_transfer.py"
+   "tests/kinetic/test_terminal_molecular_energy_transfer.py",
+   "tests/neutrals/test_terminal_moment_evidence.py"
   ],
-  "evidence_ceiling": "Direct comparisons establish the finite discrete RHS reduction and boundary differences on tested carriers. They do not establish the incoming terminal distribution or RHS, absolute physical normalization, qualification of the whole closure or expert approval.",
+  "evidence_ceiling": "Direct comparisons establish the finite discrete RHS reduction and boundary differences on tested carriers. They do not establish the incoming terminal distribution or RHS, absolute physical normalization, qualification of the whole closure or expert approval. C1 evidence adds: the removed-bulk-energy identity, the exact loss-rate statement, source independence and two exact scaling laws; it does not establish the absolute SI normalization of arbitrary caller arrays or a general stress state.",
   "known_limitations": [
    "The bound independent cell/moment comparisons establish the tested finite relation, not independent expert qualification or external-implementation parity. The historical three-case replay remains unbound; it is not a new mandatory acceptance gate.",
    "Absolute SI units require the explicit physical RHS and normalized-velocity measure stated above. Other caller normalizations retain their algebraic interpretation and are not automatically certified or converted.",
-   "Public distribution licensing remains pending."
+   "Public distribution licensing remains pending.",
+   "The removed-bulk-energy identity is checked for a loss proportional to the distribution, where the centered momentum vanishes by construction; a general signed RHS is verified against the declared expression, not against a physical energy balance."
   ]
  }
 }

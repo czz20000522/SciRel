@@ -119,14 +119,17 @@
  },
  "verification": {
   "scope": [
-   "Input and failure contracts."
+   "Input and failure contracts.",
+   "Independent evidence (tests/neutrals/test_generation_accumulation_evidence.py): after five appends the totals are the exact rational ordered sum of the appended stacks, a zero generation leaves both totals bit-identical while advancing the index, the retained stacks stay bit-identical, and a state whose totals disagree with its own stacks is rejected instead of repaired."
   ],
   "tests": [
-   "tests/kinetic/test_convergence_accumulation.py"
+   "tests/kinetic/test_convergence_accumulation.py",
+   "tests/neutrals/test_generation_accumulation_evidence.py"
   ],
-  "evidence_ceiling": "Bounded to the declared relation: Append one generation to the accumulated state: accumulates distribution, density, per-generation stacks, and the completed generation index. Evidence: test_convergence_accumulation.py (18 recorded test functions; shared-file coverage only; self-consistency/regression only); the contract example ran. Excluded scope: Generation propagation, density reduction, stop decisions and external physical validation; external physical validation.",
+  "evidence_ceiling": "Bounded to the declared relation: Append one generation to the accumulated state: accumulates distribution, density, per-generation stacks, and the completed generation index. Evidence: test_convergence_accumulation.py (18 recorded test functions; shared-file coverage only; self-consistency/regression only); the contract example ran. Excluded scope: Generation propagation, density reduction, stop decisions and external physical validation; external physical validation. C1 evidence adds: an exact rational ordered-sum oracle over five appends, the zero-generation identity, stack immutability and the state-consistency rejection; it does not establish generation propagation, density reduction or stop decisions.",
   "known_limitations": [
-   "Only shared-file coverage is bound (test_convergence_accumulation.py); no asset-specific failure/limit probe is recorded."
+   "Only shared-file coverage is bound (test_convergence_accumulation.py); no asset-specific failure/limit probe is recorded.",
+   "The accumulation is append-only and order-dependent, so order-invariant totals are not claimed. A Python list or tuple that contains a boolean is rejected as non-real; a boolean inside an already-built float64 ndarray was promoted by the caller's own np.array call before this function is entered, so no boolean can reach the reduction and no silent acceptance happens here."
   ]
  }
 }

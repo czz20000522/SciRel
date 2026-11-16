@@ -106,16 +106,19 @@
   "scope": [
    "Direct tests bind caller addition order, a zero channel, channel-count/shape validation, implicit-real rejection and overflowing-total rejection.",
    "The cross-domain tests divide three prescribed physical elastic frequencies by the common Vth, aggregate their regenerated source and recover the physical source in the RHS.",
-   "The contract example covers one bounded representative call; numerical checks do not establish external physical validation or full-domain applicability."
+   "The contract example covers one bounded representative call; numerical checks do not establish external physical validation or full-domain applicability.",
+   "Independent evidence (tests/neutrals/test_scattered_source_sum_evidence.py): the three-channel sum is recomputed exactly in rational arithmetic, the declared left-to-right accumulation order is decided by the 1e16 / -1e16 / 1 witness whose two competing groupings both round to zero, a zero channel is inert, and doubling all channels doubles the total exactly."
   ],
   "tests": [
    "tests/kinetic/test_neutral_frequency_assembly.py",
-   "tests/cross_domain/test_neutral_transport_normalization.py"
+   "tests/cross_domain/test_neutral_transport_normalization.py",
+   "tests/neutrals/test_scattered_source_sum_evidence.py"
   ],
-  "evidence_ceiling": "Bounded to the stated normalized transport relation. Direct tests bind caller addition order, a zero channel, channel-count/shape validation, implicit-real rejection and overflowing-total rejection. The cross-domain tests divide three prescribed physical elastic frequencies by the common Vth, aggregate their regenerated source and recover the physical source in the RHS. The listed direct and cross-domain tests are the current reproducible evidence; the example exercises one bounded call. Independent analytic and SI-unit comparisons are limited to the stated fixtures. Unbound historical source/parity receipts remain UNKNOWN and are not re-established here.",
+  "evidence_ceiling": "Bounded to the stated normalized transport relation. Direct tests bind caller addition order, a zero channel, channel-count/shape validation, implicit-real rejection and overflowing-total rejection. The cross-domain tests divide three prescribed physical elastic frequencies by the common Vth, aggregate their regenerated source and recover the physical source in the RHS. The listed direct and cross-domain tests are the current reproducible evidence; the example exercises one bounded call. Independent analytic and SI-unit comparisons are limited to the stated fixtures. Unbound historical source/parity receipts remain UNKNOWN and are not re-established here. C1 evidence adds: an exact rational three-channel oracle, the declared caller-order witness and the zero-channel identity; it does not establish the physical origin of the three channels.",
   "known_limitations": [
    "No external collision-data calibration, source-project parity qualification or device-specific physical validation is established by these tests.",
-   "The normalization tests use bounded aligned meshes and prescribed rates; they do not certify full-distribution grid convergence, arbitrary-step positivity or the complete nonlinear transport model."
+   "The normalization tests use bounded aligned meshes and prescribed rates; they do not certify full-distribution grid convergence, arbitrary-step positivity or the complete nonlinear transport model.",
+   "The fixed channel count of three is a declared API constraint, not a three-channel physical claim, and the tests do not derive the channels from collision data."
   ]
  }
 }

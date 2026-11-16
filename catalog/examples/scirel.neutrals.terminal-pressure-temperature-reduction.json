@@ -168,16 +168,19 @@
   "scope": [
    "Independent centered per-cell second-moment reduction checks both outputs on a nonuniform signed carrier.",
    "Positive-weight overlap agrees with the existing nine-moment relation; zero-weight acceptance distinguishes their contracts.",
-   "UNKNOWN: the historical claim of three digest-pinned reference cases, exact two-carrier replay and boolean-coercion divergence is not bound to case inputs, digests, counterpart versions and per-case comparisons; the direct tests above remain the current evidence."
+   "UNKNOWN: the historical claim of three digest-pinned reference cases, exact two-carrier replay and boolean-coercion divergence is not bound to case inputs, digests, counterpart versions and per-case comparisons; the direct tests above remain the current evidence.",
+   "Independent evidence (tests/neutrals/test_terminal_moment_evidence.py): T is recovered as the second-moment closure (1/3) m <v_rand^2> / q with P = n T in exact rational arithmetic, an anisotropic single-shell distribution matches its closed form, doubling the thermal speed quadruples P and T exactly, and doubling the mass factor doubles them exactly."
   ],
   "tests": [
-   "tests/kinetic/test_terminal_molecular_pressure_temperature.py"
+   "tests/kinetic/test_terminal_molecular_pressure_temperature.py",
+   "tests/neutrals/test_terminal_moment_evidence.py"
   ],
-  "evidence_ceiling": "Direct numerical comparisons establish the finite discrete centered-moment relation and boundary differences on tested carriers. They do not establish the incoming terminal distribution, physical normalization, complete qualification or expert approval.",
+  "evidence_ceiling": "Direct numerical comparisons establish the finite discrete centered-moment relation and boundary differences on tested carriers. They do not establish the incoming terminal distribution, physical normalization, complete qualification or expert approval. C1 evidence adds: the exact second-moment closure, an anisotropic closed form and two exact scaling laws; it does not establish a thermodynamic temperature for a non-Maxwellian distribution or the physical normalization of the supplied arrays.",
   "known_limitations": [
    "The bound independent cell/moment comparisons establish the tested finite relation, not independent expert qualification or external-implementation parity. The historical three-case replay remains unbound; it is not a new mandatory acceptance gate.",
    "The physical normalization of the supplied distribution requires expert review.",
-   "Public distribution licensing remains pending."
+   "Public distribution licensing remains pending.",
+   "T is the second moment (1/3) m <v_rand^2> / q, not a fit to an equilibrium Maxwellian: for a non-Maxwellian distribution it is a pressure-per-particle definition, and no thermodynamic temperature or equilibration claim is made."
   ]
  }
 }

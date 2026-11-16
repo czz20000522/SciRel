@@ -113,17 +113,20 @@
    "That the speed equals the independent frozen-constant relation exactly.",
    "Temperature square-root scaling and inverse-square-root mass scaling.",
    "Input/type failures and high-precision recovery across intermediate underflow/overflow; true final overflow remains rejected.",
-   "Read-only digest-bound comparison at three finite positive scalar points."
+   "Read-only digest-bound comparison at three finite positive scalar points.",
+   "Independent evidence (tests/neutrals/test_thermal_speed_scale_evidence.py): v**2 m / (2 e T) recovers the frozen e/m_H ratio within 4 eps in exact rational arithmetic, v(4T) = 2 v(T), v(4m) = v(m)/2 and v(2T, 2m) = v(T, m) hold as exact equalities, the 100-digit recovery of an underflowing intermediate is checked, and the NRL 1.38e4 m/s proton anchor fixes the scale convention at its own 5e-3 precision."
   ],
   "tests": [
    "tests/kinetic/test_thermal_speed_and_density_reduction.py",
-   "tests/cross_domain/test_legacy_admission_regressions.py"
+   "tests/cross_domain/test_legacy_admission_regressions.py",
+   "tests/neutrals/test_thermal_speed_scale_evidence.py"
   ],
-  "evidence_ceiling": "Bounded to the explicit second-moment neutral thermal speed sqrt(2 e T/m) from eV temperature and hydrogen-mass multiples. Evidence: `test_thermal_speed_and_density_reduction.py` contains 11 test functions, 5 of which reference `compute_thermal_speed_m_s`, and is shared by 2 assets; `test_legacy_admission_regressions.py` contains 9 test functions, 2 of which reference `compute_thermal_speed_m_s`, and is shared by 3 assets; only shared-file coverage is bound, so a pass is file-level rather than asset-isolated; the bounded example was executed by this audit. Oracle: independent frozen-constant relation and Decimal-100 representability checks in the bound files. It does not establish non-finite/nonpositive inputs or a non-finite final speed.",
+  "evidence_ceiling": "Bounded to the explicit second-moment neutral thermal speed sqrt(2 e T/m) from eV temperature and hydrogen-mass multiples. Evidence: `test_thermal_speed_and_density_reduction.py` contains 11 test functions, 5 of which reference `compute_thermal_speed_m_s`, and is shared by 2 assets; `test_legacy_admission_regressions.py` contains 9 test functions, 2 of which reference `compute_thermal_speed_m_s`, and is shared by 3 assets; only shared-file coverage is bound, so a pass is file-level rather than asset-isolated; the bounded example was executed by this audit. Oracle: independent frozen-constant relation and Decimal-100 representability checks in the bound files. It does not establish non-finite/nonpositive inputs or a non-finite final speed. C1 evidence adds: the exact squared identity, three exact scaling laws, one subnormal-recovery point and a three-significant-digit physics anchor; it does not establish a published cross-section or CODATA-grade constant accuracy (the frozen m_H differs from CODATA 2018 by 7e-7).",
   "known_limitations": [
    "Two files bind the relation: `test_thermal_speed_and_density_reduction.py` has five direct functions covering the frozen formula, monotonicity, invalid/non-real inputs and underflow; `test_legacy_admission_regressions.py` adds representability/overflow checks.",
    "The historical mass_amu name denotes hydrogen-mass multiples, not standard amu. Non-real coercions are rejected; dangerous intermediate range is evaluated at higher precision.",
-   "The historical `mass_amu` name means hydrogen-mass multiples; the dangerous intermediate range is evaluated by 100-digit Decimal arithmetic, not a modern CODATA conversion."
+   "The historical `mass_amu` name means hydrogen-mass multiples; the dangerous intermediate range is evaluated by 100-digit Decimal arithmetic, not a modern CODATA conversion.",
+   "The scaling laws are exact for binary64 inputs in the normal range; the subnormal and overflow boundaries are covered at one recovery point and one rejected overflow point, not swept."
   ]
  }
 }

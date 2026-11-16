@@ -191,17 +191,20 @@
   "scope": [
    "An independent per-cell oracle checks all four fields with nonuniform reaction channels.",
    "Changing the first seven reaction-table columns and zeroing the molecular density preserve the stated boundaries.",
-   "The canonical parameter order and output names are pinned, mass ratios 1, 2 and 3 follow one algebraic form, and nonpositive mass, non-real inputs and zero denominators fail closed."
+   "The canonical parameter order and output names are pinned, mass ratios 1, 2 and 3 follow one algebraic form, and nonpositive mass, non-real inputs and zero denominators fail closed.",
+   "Independent evidence (tests/neutrals/test_terminal_moment_evidence.py): the returned state satisfies production = (electron + external) loss, the temperature satisfies T_ion/T_i + nu_den/(nu_ex + nu_den) = 1, the first seven rate-table columns are shown unread while the four read columns drive the loss frequency, the exchange frequency scales exactly with n_e, 1/sqrt(m) and T^-3/2, and a dominant exchange drives T_ion to T_i."
   ],
   "tests": [
-   "tests/kinetic/test_terminal_molecular_ion_state.py"
+   "tests/kinetic/test_terminal_molecular_ion_state.py",
+   "tests/neutrals/test_terminal_moment_evidence.py"
   ],
-  "evidence_ceiling": "Direct numerical comparisons establish the finite discrete algebraic relation and boundary differences on tested carriers. They do not establish rate-table provenance, an independent physical validation of the absolute coefficients, a complete H2+ energy-conservation closure, the unresolved R10 electron-product bookkeeping, complete qualification or expert approval.",
+  "evidence_ceiling": "Direct numerical comparisons establish the finite discrete algebraic relation and boundary differences on tested carriers. They do not establish rate-table provenance, an independent physical validation of the absolute coefficients, a complete H2+ energy-conservation closure, the unresolved R10 electron-product bookkeeping, complete qualification or expert approval. C1 evidence adds: the steady-state balance, the complementary blend identity, the rate-table index discriminator and exact scaling laws; it does not establish the provenance of the 7.7e-7 exchange calibration or the unresolved R10 electron-product bookkeeping.",
   "known_limitations": [
    "Numerical agreement with the reference cases is bounded evidence and does not establish full qualification.",
    "Pass-with-limits: the channel mapping and the two-body units follow the reviewed decision, but R10 electron-product bookkeeping, the energy-exchange calibration provenance and an independent recomputation of R7 through R9 remain unresolved.",
    "The relation performs no independent physical validation, and the exchange term is an algebraic coefficient rather than an energy balance.",
-   "Public distribution licensing remains pending."
+   "Public distribution licensing remains pending.",
+   "The exchange coefficient 7.7e-7 * 1e-6 / (sqrt(m) T^1.5) is a source-calibrated algebraic constant with no published derivation available here: its absolute value is cannot-establish, and only its scaling with n_e, sqrt(m) and T is evidenced."
   ]
  }
 }
