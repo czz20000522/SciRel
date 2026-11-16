@@ -953,14 +953,23 @@ def test_candidate_runtime_does_not_rebind_the_callers_environment(tmp_path, mon
     assert os.environ["UV_PROJECT_ENVIRONMENT"] == "caller-environment-must-not-change"
 
 
-def test_a_development_stage_receipt_is_refused_with_an_actionable_reason(tmp_path, monkeypatch):
+@pytest.mark.parametrize(
+    ("recorded", "expected"),
+    [("dev", "dev-stage run"), (None, "records no stage")],
+)
+def test_a_receipt_without_the_release_stage_is_refused_with_an_actionable_reason(
+    tmp_path, monkeypatch, recorded, expected
+):
     module = _validator()
     _mock_lock_boundary(module, monkeypatch)
     tree = _acceptance_candidate(tmp_path)
     report = module.Report()
     report.output_dir = tmp_path
     receipt = _acceptance_result(module, tmp_path, tree)
-    receipt["stage"] = "dev"
+    if recorded is None:
+        del receipt["stage"]
+    else:
+        receipt["stage"] = recorded
 
     def execute(candidate, command):
         Path(command[-1]).write_text(json.dumps(receipt), encoding="utf-8")
@@ -970,5 +979,5 @@ def test_a_development_stage_receipt_is_refused_with_an_actionable_reason(tmp_pa
     module.run_full_check(tree, report)
     assert report.sections[-1][1] == "FAIL"
     reason = " ".join(report.errors)
-    assert "development-stage" in reason
+    assert expected in reason, reason
     assert "dev.py check" in reason and "release stage" in reason

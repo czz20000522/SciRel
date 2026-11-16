@@ -1194,10 +1194,9 @@ def test_every_release_only_entry_names_tests_and_a_reason():
 def test_the_manifest_covers_the_artifact_and_example_boundaries():
     targets = {entry.target for entry in check_all.release_only_tests()}
     assert {
-        # Building or installing a wheel, or admitting an extraction package.
+        # Building or installing a wheel.
         "tests/delivery/test_real_delivery.py",
         "tests/delivery/test_validate_installed_wheel.py",
-        "tests/tooling/test_validate_extraction_package.py",
         # Building a documentation site.
         "tests/docs/test_scirel_docs.py",
         "tests/docs/test_english_site.py",
@@ -1205,6 +1204,20 @@ def test_the_manifest_covers_the_artifact_and_example_boundaries():
         "tests/tooling/test_asset_documentation.py"
         "::test_runtime_signatures_tests_and_examples_are_executable",
     } <= targets
+    # A file that holds the guard for this split must not be excluded, or the guard would only
+    # run in the stage it guards.
+    assert "tests/tooling/test_validate_extraction_package.py" not in targets
+    assert not any(
+        nodeid.startswith("tests/tooling/test_validate_extraction_package.py::")
+        for nodeid in targets
+    )
+    # Prefer nodeids over files: the documentation-inputs file is narrowed so its nine
+    # source-level checks keep running in the development stage.
+    assert "tests/docs/test_documentation_inputs.py" not in targets
+    assert (
+        "tests/docs/test_documentation_inputs.py"
+        "::test_real_snapshot_records_build_time_inputs" in targets
+    )
     # Synthetic-fixture delivery tests prove the change, not the artifact, so they stay in the
     # development stage. A wholesale tests/delivery exclusion would be wrong.
     assert "tests/delivery/test_pure_delivery.py" not in targets
