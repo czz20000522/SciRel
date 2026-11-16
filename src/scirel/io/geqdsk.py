@@ -187,6 +187,14 @@ def read_geqdsk(filename: str | Path, *, strict: bool = True) -> dict[str, Any]:
     are returned; the repeats are not compared because several writers store
     zeros there.  Sign conventions (COCOS) are not inferred.
 
+    The precision budget of the format is ten significant decimal digits per
+    numeric field (``5e16.9``). The reader parses the written decimal text, so a
+    value that was itself written with at most ten significant digits comes back
+    unchanged, while a value carrying more digits comes back as its ten-digit
+    neighbour; the tests pin both behaviours instead of assuming a tolerance.
+    Record positions are fixed by the published layout rather than inferred from
+    whitespace, which is why fields that run together still parse.
+
     Examples
     --------
     >>> from pathlib import Path

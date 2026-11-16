@@ -99,14 +99,15 @@
      "内部面的二次多项式精确性不等于任意边界数据和任意畸变网格的全局二阶精度。"
     ],
     "scope": [
-     "独立检查通量守恒、线性/常数精确态、均匀网格制造扩散解收敛和 theta 时间因果性。",
+     "以 Fraction 精确有理数独立 Lagrange 导数参考式确立面模板与端点规则；并据此检查通量守恒、线性和常数精确态与均匀网格制造扩散解收敛。",
      "在不等的末端宽度和双单元网格上检查匹配 Neumann 数据的二次、一次与常数导数；由导数约束的重构取代了不准确的线性外推边界值。显式两点掩码、Dirichlet 端点半单元割线和线性面值均维持原有定义。",
      "以独立精确拉格朗日导数为参照，在双单元和四单元非均匀网格上核对一次、二次样值，坐标尺度为 2**-540、1 和 2**512，右端分别采用 Dirichlet 或 Neumann 条件；双单元 u=x 的溢出反例恢复单位导数。这些是有界 binary64 观察，不是全体有限输入的证明。",
      "以独立精确拉格朗日求导核对幅值 1.5*2**1023 的正负样值，覆盖非均匀网格及 DD/DN/ND/NN 端点；回归检查样值差溢出、零权重或权重下溢、未加权割线下溢，以及各项超范围但相消后可表示的情况。显式掩码、端点规则和 warn/ignore/raise 下真正不可表示的输出继续检查。这些是有界观察，不是全域浮点精度保证。"
     ],
     "tests": [
      "tests/fvm/test_fvm.py",
-     "tests/fvm/test_scaled_gradient_convection.py"
+     "tests/fvm/test_scaled_gradient_convection.py",
+     "tests/fvm/test_fvm_declared_failure_channels.py"
     ]
    }
   },
@@ -450,7 +451,7 @@
      "显式和 Crank–Nicolson 格式的稳定性与振荡约束由调用者判断；不提供自适应步长或正性保证。隐式分支用带状线性求解器求解三对角系统；不声称全局稳定性界。"
     ],
     "scope": [
-     "独立检查通量守恒、线性/常数精确态、均匀网格制造扩散解收敛和 theta 时间因果性。",
+     "以 Fraction 精确有理数独立复原两格 Dirichlet 方程 (1+2*theta)*u=2，据此钉住 theta 时间因果性；另有独立的通量守恒、线性/常数精确态与均匀网格制造扩散解收敛检查。",
      "在 NumPy warn/ignore/raise 三种策略下，有限输入导致的隐式矩阵或右端项溢出抛 FloatingPointError，显式分支保留原溢出异常类型；另有两个非有限输入样本在默认策略下抛 ValueError。隐式矩阵或右端项构造失败不改变调用者的变量值。",
      "共同尺度为 2^-540、1 和 2^520，旧、新扩散项均提供且 dt 等于网格尺度时，theta=0、.25、.5、1 均保留独立两格 Dirichlet 方程 (1+2*theta)*u=2。",
      "组装算子前校验两种边界模式枚举，覆盖无对流、仅旧层、仅新层和两层对流；所有合法模式组合在对流缺省或为零时保留相同扩散方程。",
@@ -461,7 +462,8 @@
      "tests/fvm/test_theta_failure_semantics.py",
      "tests/fvm/test_diffusion_boundary_scales.py::test_theta_downstream_retains_the_exact_dimensionless_two_cell_system",
      "tests/fvm/test_theta_boundary_modes.py",
-     "tests/fvm/test_diffusion_forcing_products.py::test_six_legal_modes_keep_complete_forcing_in_the_theta_solution"
+     "tests/fvm/test_diffusion_forcing_products.py::test_six_legal_modes_keep_complete_forcing_in_the_theta_solution",
+     "tests/fvm/test_fvm_declared_failure_channels.py"
     ]
    }
   },
@@ -1391,14 +1393,16 @@
      "精确中间计算只保持转换后 binary64 输入的离散关系，不能恢复输入转换丢失精度或验证求积网格。"
     ],
     "scope": [
-     "以精确有理数中间量和独立数值探针检查守恒、溢出/下溢、分量独立性与错误输入。",
+     "以 Fraction 精确有理数独立重算复核文档所述 3/2 加权和及其缩放律；同时检查分量独立性、上溢/下溢边界与畸形输入。",
      "检查不同排列中的有符号相消以及中间乘积上溢/下溢；使用精确 binary64 乘积且仅最终舍入。",
      "正负两侧均检查既有精确绝对值上界：max+2^968 即使舍入为 max 也拒绝，max-2^969 仍接受；区分精确相消零与非零最终舍零。"
     ],
     "tests": [
      "tests/kinetic/test_profile_energy.py",
      "tests/kinetic/test_thermal_cancellation.py",
-     "tests/physics/test_source_energy_boundaries.py"
+     "tests/physics/test_source_energy_boundaries.py",
+     "tests/physics/test_thermal_energy_evidence.py",
+     "tests/physics/test_thermal_energy_channels.py"
     ]
    }
   },
@@ -1506,12 +1510,13 @@
      "不支持数组参数广播或批轴；网格为等长向量，源参数为标量。"
     ],
     "scope": [
-     "覆盖非均匀网格、守恒、有符号/整数/极小宽度、起始位置相消及错误输入。",
+     "以 binary64 输入距离的精确有理数配合 120/200 位 Decimal 指数与积分独立重算，确立归一化点值；并一并检查非均匀网格、守恒、带符号/整数/极小宽度、decay_start 相消与畸形输入。",
      "用独立 120/200 位参照检查非均匀体积网格逐点值、相邻比、正负极小宽度下限形状及共同正体积尺度；相对容差 2e-15、绝对容差零。"
     ],
     "tests": [
      "tests/kinetic/test_profile_energy.py",
-     "tests/source/test_profile_shape_qualification.py"
+     "tests/source/test_profile_shape_qualification.py",
+     "tests/source/test_source_declared_failure_channels.py"
     ]
    }
   },
@@ -1619,12 +1624,13 @@
      "不支持数组参数广播或批轴；网格为等长向量，源参数为标量。"
     ],
     "scope": [
-     "覆盖非均匀网格、守恒、有符号/整数/极小宽度、远离网格的中心及错误输入。",
+     "以 binary64 输入距离平方的精确有理数配合 120/200 位 Decimal 指数与积分独立重算，确立归一化点值；并一并检查非均匀网格、守恒、带符号/整数/极小宽度、远端中心与畸形输入。",
      "用原 binary64 输入的精确距离平方及 120/200 位指数参照，检查相邻格点、有符号宽度与总量、分母下限、远中心形状及共同正体积尺度；逐点相对容差 2e-15、绝对容差零。"
     ],
     "tests": [
      "tests/kinetic/test_profile_energy.py",
-     "tests/source/test_profile_shape_qualification.py"
+     "tests/source/test_profile_shape_qualification.py",
+     "tests/source/test_source_declared_failure_channels.py"
     ]
    }
   }

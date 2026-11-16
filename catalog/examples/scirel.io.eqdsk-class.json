@@ -108,11 +108,13 @@
  },
  "verification": {
   "scope": [
-   "Roundtrip, lexical fixed-width, malformed input and class-state tests",
+   "Independent exact recovery of every written value on read-back, with an independently hand-written reference record and a field-level layout reconstruction.",
    "Nonzero-origin rejection, unchanged destination on failure, opaque scalar preservation."
   ],
   "tests": [
-   "tests/io/test_eqdsk.py"
+   "tests/io/test_eqdsk.py",
+   "tests/io/test_eqdsk_interchange_evidence.py",
+   "tests/io/test_io_declared_failure_channels.py"
   ],
   "evidence_ceiling": "Structural IO boundary only; no physical interpretation is claimed.",
   "known_limitations": [

@@ -164,6 +164,16 @@ class CellVariable:
     cell width.  The returned arrays are read-only and are not volume
     averages.
 
+    The precision budget for a stencil derivative is one float64 rounding after
+    both weighted contributions have been added: each contribution is carried as
+    a mantissa and an exponent, so the budget does not depend on the coordinate
+    scale, and only the completed derivative is restored with ``ldexp``.
+    ``face_value`` costs one linear combination per interior face and is not
+    scale-reduced. The evidence tests compare against exact rational Lagrange
+    derivatives on the two- and four-cell nonuniform grids at coordinate scales
+    ``2**-540``, ``1`` and ``2**512``; a genuinely nonrepresentable derivative is
+    reported through the declared runtime channel instead of being rounded.
+
     Examples
     --------
     >>> import numpy as np
