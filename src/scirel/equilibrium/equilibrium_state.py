@@ -35,10 +35,12 @@ class EquilibriumResult:
     plas_currents : ndarray, shape (NR, NZ)
         Plasma current contribution at the terminal iterate
         [source-unspecified].
-    p_psifit : object
+    p_psifit : object or None
         Pressure spline fitted at the terminal iterate [Object;
         source-unspecified]. Opaque to this record; :meth:`as_tuple` returns it
-        unchanged.
+        unchanged. It is ``None`` when the initial pressure fit failed or the
+        state never produced a fit, so ``None`` is a failure marker here, not an
+        absent optional.
     status : str
         Terminal outcome label [text]: ``"converged"``, ``"maxiter"`` or
         ``"nonfinite"``. The record does not re-derive it from the residuals.
@@ -46,11 +48,15 @@ class EquilibriumResult:
         Number of fixed-point iterations performed [dimensionless].
     residual : float
         Final flux residual ``||psi_new - psi_old||_2 / abs(psi_edge_new)``
-        [dimensionless].
+        [dimensionless]. ``NaN`` when the state failed before an update
+        residual was computed; a later failure keeps the last computed value.
+        A non-finite value here always means ``status="nonfinite"``.
     closure_residual : float
         Final closure residual ``||I_new - I_target||_2 / ||I_target||_2``
         [dimensionless], with a zero target and zero error mapped to ``0.0`` and
-        a zero target with nonzero current mapped to ``inf``.
+        a zero target with nonzero current mapped to ``inf``. ``NaN`` when no
+        closure residual was computed. A non-finite value here always means
+        ``status="nonfinite"``.
     reason : str
         Termination reason text [text].
     residual_history : tuple, optional
@@ -83,7 +89,7 @@ class EquilibriumResult:
     >>> import numpy as np
     >>> from scirel.equilibrium import EquilibriumResult
     >>> result = EquilibriumResult(
-    ...     psi=np.zeros((2, 2)), plas_currents=np.zeros(1), p_psifit=None,
+    ...     psi=np.zeros((2, 2)), plas_currents=np.zeros((2, 2)), p_psifit=None,
     ...     status="converged", iterations=3, residual=1e-12,
     ...     closure_residual=2e-12, reason="tolerance reached")
     >>> result.as_tuple()[0].shape, result.status, result.iterations

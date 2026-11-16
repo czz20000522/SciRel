@@ -324,8 +324,9 @@ class ColdPlasmaOverflowError(ValueError):
     ----------
     message : str
         Diagnostic text [text], stored unchanged as the exception's
-        only argument. The raiser appends the contributing species index, so no
-        fixed wording beyond the module's stable message prefix is promised.
+        only argument. The raiser ends it with either ``(species index N)`` or
+        ``(final tensor assembly)``, so no fixed wording beyond the module's
+        stable message prefix is promised.
 
     Raises
     ------
