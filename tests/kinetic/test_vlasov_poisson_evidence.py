@@ -208,7 +208,12 @@ def test_mass_moment_obeys_the_discrete_continuity_identity_in_one_rk4_step():
     scale = step * max(abs(rate) for rate in stage_rates)
     budget = 64 * EPS * float(scale)
     assert abs(left - predict) <= budget, (abs(left - predict), float(budget))
-    assert_allclose(closed_field, vp_field(updated, state["k"], state["dv"]), rtol=0, atol=8 * EPS * abs(closed_field))
+    assert_allclose(
+        closed_field,
+        vp_field(updated, state["k"], state["dv"]),
+        rtol=0,
+        atol=8 * EPS * abs(closed_field),
+    )
     # Discrimination: the cancelled sum is orders below each stage term, so a
     # wrong final weight is still visible against the same budget.
     wrong = predict - step * (mp.mpf(1) / 30) * stage_rates[1]
@@ -222,7 +227,12 @@ def test_field_and_rhs_satisfy_the_poisson_constraint_and_the_advection_identity
     slope = np.array([0.2, 0.7, -0.5, -0.4])
     distribution = np.array([1.0 + 2.0j, 2.0, -1.0j, 3.0])
     field = vp_field(distribution, k, dv)
-    assert_allclose(1j * k * field, -dv * np.sum(distribution), rtol=0, atol=8 * EPS * abs(dv * np.sum(distribution)))
+    assert_allclose(
+        1j * k * field,
+        -dv * np.sum(distribution),
+        rtol=0,
+        atol=8 * EPS * abs(dv * np.sum(distribution)),
+    )
     rhs = vp_rhs(distribution, field, velocity, slope, k)
     expected = -1j * k * velocity * distribution + field * slope
     assert_allclose(rhs, expected, rtol=0, atol=8 * EPS * np.abs(expected).max())
@@ -234,11 +244,20 @@ def test_initial_state_reproduces_the_grid_dv_and_closure_identities():
     velocity = np.linspace(-8.0, 8.0, 65)
     assert_allclose(state["vv"], velocity, rtol=0, atol=0)
     assert_allclose(state["dv"], 2.0 * 8.0 / 64, rtol=0, atol=0)
-    assert_allclose(state["df"], (0.1 * np.exp(-velocity * velocity)).astype(complex), rtol=0, atol=8 * EPS)
-    assert_allclose(state["dE"], vp_field(state["df"], 0.25, state["dv"]), rtol=0, atol=8 * EPS * abs(state["dE"]))
+    assert_allclose(
+        state["df"], (0.1 * np.exp(-velocity * velocity)).astype(complex), rtol=0, atol=8 * EPS
+    )
+    assert_allclose(
+        state["dE"],
+        vp_field(state["df"], 0.25, state["dv"]),
+        rtol=0,
+        atol=8 * EPS * abs(state["dE"]),
+    )
     # TR = 2 pi / (k dv) is the period at which the free-streaming phase k v t
     # advances by 2 pi across one cell.
-    assert_allclose(state["TR"], 2.0 * np.pi / (0.25 * state["dv"]), rtol=0, atol=8 * EPS * state["TR"])
+    assert_allclose(
+        state["TR"], 2.0 * np.pi / (0.25 * state["dv"]), rtol=0, atol=8 * EPS * state["TR"]
+    )
     assert_allclose(state["tt"], np.arange(4) * 0.02, rtol=0, atol=0)
 
 
@@ -252,7 +271,9 @@ def test_kappa_family_has_unit_mass_and_the_declared_variance(kappa):
     width = mp.sqrt(2 * index)
 
     velocity = np.array([-1.7, -0.3, 0.0, 0.9, 2.4])
-    derivative, real_frequency, imaginary_frequency = vp_distribution(velocity, 2, kappa=float(index))
+    derivative, real_frequency, imaginary_frequency = vp_distribution(
+        velocity, 2, kappa=float(index)
+    )
     reference = [
         -constant * mp.mpf(float(v)) * (1 + mp.mpf(float(v)) ** 2 / (2 * index)) ** (-index - 1)
         for v in velocity
@@ -284,7 +305,13 @@ def test_kappa_family_has_unit_mass_and_the_declared_variance(kappa):
     # check rather than compared against a loosened budget.
     if index >= 2:
         variance = mp.quad(
-            lambda theta: constant * width * (width**2) * mp.sin(theta) ** 2 * mp.cos(theta) ** (2 * index - 4),
+            lambda theta: (
+                constant
+                * width
+                * (width**2)
+                * mp.sin(theta) ** 2
+                * mp.cos(theta) ** (2 * index - 4)
+            ),
             [-mp.pi / 2, mp.pi / 2],
         )
         assert abs(variance - declared) < mp.mpf("1e-35"), variance
@@ -390,7 +417,9 @@ def test_diagnostic_recovers_an_analytic_tone_whose_maxima_land_on_nodes():
     assert_allclose(diagnostic["gamma"], exponent, rtol=0, atol=256 * EPS)
     peaks = diagnostic["peak_times"]
     assert_allclose(np.diff(peaks), spacing * dt, rtol=0, atol=8 * EPS)
-    assert_allclose(diagnostic["peak_log_magnitudes"], exponent * peaks + np.log(1.7), rtol=0, atol=256 * EPS)
+    assert_allclose(
+        diagnostic["peak_log_magnitudes"], exponent * peaks + np.log(1.7), rtol=0, atol=256 * EPS
+    )
 
 
 def test_rk4_order_is_measured_on_the_default_configuration():
@@ -404,7 +433,9 @@ def test_rk4_order_is_measured_on_the_default_configuration():
     for steps in (2, 4):
         distribution, field = state["df"].copy(), state["dE"]
         for _ in range(steps):
-            distribution, field = vp_rk4_step(distribution, field, velocity, slope, k, dv, 0.4 / steps)
+            distribution, field = vp_rk4_step(
+                distribution, field, velocity, slope, k, dv, 0.4 / steps
+            )
         assert_allclose(field, vp_field(distribution, k, dv), rtol=0, atol=8 * EPS * abs(field))
         errors.append(float(np.linalg.norm(distribution - exact)))
     ratio = errors[0] / errors[1]
@@ -452,7 +483,10 @@ def test_composition_reports_the_declared_status_strings():
         (lambda: vp_init(Fn=None), "either a built-in Fn"),
         (lambda: vp_init(nv=4, df_initial=np.zeros(3)), "one value per velocity node"),
         (lambda: vp_init(nv=4, Fn=None, df0dv=np.zeros(5) + 1j), "df0dv must be real"),
-        (lambda: vp_rk4_step([1.0, 2.0], 0.5, [-1.0, 1.0], [0.0, 0.0], 0.5, 0.1, 0.01), "Poisson constraint"),
+        (
+            lambda: vp_rk4_step([1.0, 2.0], 0.5, [-1.0, 1.0], [0.0, 0.0], 0.5, 0.1, 0.01),
+            "Poisson constraint",
+        ),
         (lambda: vp_envelope([1.0, 2.0], [0.0, 0.0]), "strictly increasing"),
         (lambda: vp_diagnostic([1.0, 1.0, 1.0, 1.0], [0.0, 1.0, 2.0, 3.0]), "two isolated"),
     ],
