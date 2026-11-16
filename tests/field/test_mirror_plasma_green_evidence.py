@@ -82,11 +82,13 @@ def test_off_diagonal_entries_match_the_biot_savart_quadrature():
         assert deviation <= RELATIVE_BUDGET, (target_index, source_index, deviation)
         observed = max(observed, deviation)
     assert observed > 0.0
-    # Nonzero anchors: the flux of a unit ring is positive at a nearby target
-    # and negative across the mirror plane, so a matrix that collapsed to zero
-    # or to a single sign fails here.
+    # Nonzero anchors: the unit-weight flux response is positive for every
+    # off-axis pair (A_phi has a positive integrand), and the entries differ
+    # across the grid, so a zero matrix or a constant matrix fails here even
+    # though it would satisfy a purely relative comparison.
     assert matrix[4, 1] > 0.0
-    assert matrix[13, 11] < 0.0
+    assert matrix[13, 11] > 0.0
+    assert matrix[4, 1] != matrix[13, 11]
 
 
 def test_coincident_entries_are_exactly_zero_and_neighbours_are_not():
