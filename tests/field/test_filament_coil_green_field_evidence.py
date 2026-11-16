@@ -35,9 +35,8 @@ adds a route that shares none of that:
 
 Budget: ``_RELATIVE_BUDGET = 64 eps`` from ``_biot_savart_reference``, derived
 from the operation count of the closed form.  Observed maximum over the sampled
-configurations: ``2.6e-15`` for ``psi`` and below ``6e-16`` for the two field
-components (``0.04`` of the budget); observed on a finite grid, not a proven
-continuous bound.  The stream-function identity uses the same budget because it
+configurations: ``2.62e-15`` (``0.18`` of the budget); observed on a finite grid,
+not a proven continuous bound.  The stream-function identity uses the same budget because it
 compares two evaluations of the same physical point, and the finite-difference
 step contributes about ``1e-30`` relative there.  The linearity and rejection
 assertions are exact.

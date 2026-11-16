@@ -27,9 +27,9 @@ the two structural statements the "mirror" name is about:
    construction: non-rectilinear, non-uniform and non-symmetric Z.
 
 Budget: ``_RELATIVE_BUDGET = 64 eps`` from ``_biot_savart_reference``; observed
-maximum over the sampled entries ``1.1e-15`` (``0.08`` of the budget), on a
-finite grid and not a proven continuous bound.  Items 2, 3 and 4 are exact
-equalities.
+maximum over the sampled entries ``6.55e-15`` (``0.46`` of the budget), on a
+finite grid and not a proven continuous bound.  Items 2, 3 and 4, and the
+mutual-flux symmetry used as the anchor of item 3, are exact equalities.
 
 Evidence ceiling: this is a flux matrix only (``psi``); the asset exposes no
 radial or axial field matrix, so nothing here says anything about ``B_R`` or
