@@ -115,9 +115,11 @@ def test_rotation_is_a_proper_rotation_about_the_centroid():
     import math
 
     observed = 0.0
-    offsets = (-2.0, 0.0, 2.0)
+    # Half-unit offsets: large enough to be an O(1) discriminator, small enough
+    # that even the 180-degree image keeps every radius nonnegative.
+    offsets = (-0.5, 0.0, 0.5)
     for angle in (37.0, 90.0, 180.0, 270.0):
-        points = discretize_rectangular_coil(R0, Z0, nr=3, nz=1, dr=2.0, dz=DZ, angle_deg=angle)
+        points = discretize_rectangular_coil(R0, Z0, nr=3, nz=1, dr=0.5, dz=DZ, angle_deg=angle)
         radians = math.radians(angle)
         cosine, sine = math.cos(radians), math.sin(radians)
         scale = max(1.0, abs(R0), abs(Z0))
