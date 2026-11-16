@@ -359,9 +359,10 @@ def test_lorentzian_dispersion_integral_matches_its_meromorphic_closed_form():
         )
         closed = 1 / (point - mp.mpc(0, 1) * width) ** 2
         assert abs(measured - closed) <= abs(closed) * mp.mpf("1e-30"), (point, measured, closed)
-    # The same constant normalises the density itself: with ``v = sqrt(2) tan(theta)``
-    # the mass integral is ``constant * sqrt(2) * pi / 2``, exactly 1.
-    assert abs(constant * mp.quad(lambda theta: width / mp.cos(theta) ** 2, [-mp.pi / 4, mp.pi / 4]) - mp.sqrt(2)) < mp.mpf("1e-30")
+    # The same constant normalises the density: with ``v = a tan(theta)`` the mass
+    # integral is ``2 a c`` times ``pi/2`` per half line, i.e. ``pi a c``; with
+    # ``a = sqrt(2)`` and ``c = 1/(pi sqrt(2))`` that is exactly 1.
+    assert abs(mp.pi * width * constant - 1) < mp.mpf("1e-38")
 
 
 def test_envelope_is_the_exact_logarithm_and_a_straight_theory_line():
