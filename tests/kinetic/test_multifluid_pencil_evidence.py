@@ -42,8 +42,13 @@ Precision budgets, fixed before the comparison was run:
 * Eigenvalue residual: ``sigma_min(M - lambda A) / ||M - lambda A|| <= 1024 eps``.
   For an exact eigenvalue the numerator is at the rounding floor (measured
   ``2.5e-24`` on the default case, i.e. ``1e-8 eps``); 1024 eps is the
-  cancellation allowance of a 14x14 pencil whose entries span ~1e5, and a root
-  displaced by one per cent exceeds it by nine orders of magnitude.
+  cancellation allowance of a 14x14 pencil whose entries span ~1e5.  The
+  discrimination on this statistic is a **factor-10 floor**, not an
+  order-of-magnitude claim: displacing one root by one per cent raises the
+  smallest singular value by only ~40x, because at 14x14 with fourteen
+  eigenvalues the smallest singular value of a near-singular pencil is dominated
+  by its other near-null directions.  The floor still fails a value that is not
+  in the spectrum at all.
 * Eigenvector residual: the same 1024 eps, normalised by ``||M - lambda A||`` and
   ``||x||``.
 * Ordering multiset identity: zero tolerance on the values (the two arrays hold
