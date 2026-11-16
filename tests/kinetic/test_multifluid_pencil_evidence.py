@@ -29,7 +29,15 @@ Evidence sources, none of them the implementation or its fixtures:
    spectrum unchanged.
 5. **The scan is the point solve.**  Every scan point carries the full solution
    of the same pencil at that wavevector, so the two must agree.
-6. **The deck reaches the pencil.**  Scaling the state's density column scales
+6. **The Maxwell blocks are one curl operator up to ``c2``.**  The two
+   electromagnetic coupling blocks of the pencil are checked against each other:
+   the upper-right block must equal ``-c2`` times the lower-left one, with ``c2``
+   the state's own named field, and each block must be the ``-1j`` multiple of an
+   antisymmetric matrix.  This is an internal relation between two blocks of the
+   returned matrix plus one named state field, so it does not depend on the
+   solver; it is the anchor that sees a sign flip *inside* the field coupling,
+   which the residual tests cannot because they are self-consistent.
+7. **The deck reaches the pencil.**  Scaling the state's density column scales
    ``omega_p`` by the square root of the factor -- a relation that a hard-coded
    constant cannot reproduce.
 
@@ -201,6 +209,28 @@ def test_scan_points_are_the_point_solves():
         reference = np.sort_complex(np.asarray(point["w1"]))
         scanned = np.sort_complex(np.asarray(scan["w1"])[index, 0, :])
         assert_allclose(scanned, reference, rtol=0, atol=BUDGET * np.abs(reference).max())
+
+
+def test_maxwell_blocks_are_one_curl_operator_up_to_c2():
+    """``upper = -c2 * lower`` and both blocks are ``-1j`` times an antisymmetric matrix."""
+    state = fluid_equilibrium_si()
+    species = np.atleast_1d(np.asarray(state["n"], dtype=float)).size
+    c2 = float(np.asarray(state["c2"]).ravel()[0])
+    for kx, kz in ((KX, KZ), (-3.5e-5, 1.25e-5)):
+        matrix = np.asarray(fluid_frequency_pencil(state, kx, kz)["M"])
+        lower, upper = reference.maxwell_blocks(matrix, species)
+        scale = np.abs(upper).max()
+        assert scale > 0.0
+        # The Ampere block is the Faraday block scaled by -c2: the two curls are
+        # the same operator.  A sign flip on either block turns the sum below
+        # into twice the block instead of zero.
+        assert_allclose(upper + c2 * lower, 0.0, rtol=0, atol=32 * EPS * scale)
+        assert np.abs(upper + c2 * (-lower)).max() > 0.5 * scale
+        # Each block is -1j times a real antisymmetric matrix, i.e. a curl.
+        for block in (lower, upper):
+            scaled = block / (-1j)
+            assert np.allclose(scaled.real, 0.0, atol=32 * EPS * np.abs(block).max())
+            assert_allclose(scaled, -scaled.T, rtol=0, atol=32 * EPS * np.abs(block).max())
 
 
 def test_equilibrium_assembles_the_named_si_moments():

@@ -56,6 +56,14 @@ Precision budgets, fixed before the comparison was run:
   for the frequency and ``256 eps`` absolute for the exponent (the exponent is a
   difference of logarithms of order one).
 
+Mutation verdicts for this file, recorded where the next reader will find them:
+exchanging the two double-weighted RK4 stages is equivalent **under the
+tolerances used here** -- the mathematical value is identical and only the
+association of the floating-point additions differs.  It is not untestable: a
+bit-golden comparison, or an exact-rational comparison of the intermediate
+four-term combination, would break that equivalence.  No such comparison is made
+here, so the mutant survives these tests and would not survive a stricter one.
+
 One claim is deliberately *not* asserted here.  ``vp-distribution`` reports
 ``(wr, wi) = (1, -sqrt(2) k)`` as "the exact root" of the ``kappa = 1``
 (Lorentzian) family.  The closed form in item 3 decides that root as

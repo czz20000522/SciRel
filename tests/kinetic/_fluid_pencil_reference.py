@@ -102,6 +102,20 @@ def current_density(state: dict) -> np.ndarray:
     )
 
 
+def maxwell_blocks(matrix: np.ndarray, species: int) -> tuple[np.ndarray, np.ndarray]:
+    """Return the two electromagnetic coupling blocks of the pencil.
+
+    The layout is ``d = 4*S + 6`` with the six field components last: the lower
+    left block maps ``E`` into the ``B`` rows (Faraday) and the upper right block
+    the other way (Ampere).  Both indices are derived from the species count, not
+    hard-coded.
+    """
+    field = 4 * species
+    lower = np.asarray(matrix)[field + 3 : field + 6, field : field + 3]
+    upper = np.asarray(matrix)[field : field + 3, field + 3 : field + 6]
+    return lower, upper
+
+
 def generalized_residual(M: np.ndarray, A: np.ndarray, omega: complex) -> float:
     """``sigma_min(M - lambda A) / ||M - lambda A||`` with ``lambda = -i omega``."""
     pencil = np.asarray(M, complex) - (-1j * complex(omega)) * np.asarray(A, complex)
