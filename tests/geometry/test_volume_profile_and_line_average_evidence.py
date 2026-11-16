@@ -87,7 +87,8 @@ def test_a_rectangular_section_meets_its_closed_form_on_a_centred_grid():
     R0, half_r, half_z, cells = 3.0, 0.5, 0.25, 8
     dR, dZ = 2 * half_r / cells, 2 * half_z / cells
     centres_r = R0 - half_r + (np.arange(cells) + 0.5) * dR
-    centres_z = -half_z + (np.arange(cells) + 0.5) * dZ
+    # The integrand 2*pi*R depends on R only, so every Z row of the section is the
+    # same; Z enters through the number of rows and the cell width dZ.
     R = np.repeat(centres_r[None, :], cells, axis=0)
     volume = plasma_volume(R, dR=dR, dZ=dZ, core_mask=np.ones((cells, cells)))
     # Integral of 2*pi*R over R in [R0-a, R0+a] and Z in [-b, b]: 2*pi*R0*(2a)*(2b).
