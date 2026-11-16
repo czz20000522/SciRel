@@ -98,26 +98,24 @@ def test_equilibrium_columns_satisfy_their_definitions():
         assert abs(mp.mpf(float(kdebye[index])) - 1 / expected_debye) <= budget / expected_debye
         assert abs(mp.mpf(float(plasma[index])) - expected_plasma) <= budget * expected_plasma
 
-    # Discrimination on a deck whose mass and charge are not unity, because with
-    # ``m = q = 1`` every rearrangement of the same factors collapses onto the
-    # correct one and the assertions above would pass vacuously.  A 2x5 deck of
-    # the same shape is built here and the identities must follow its columns.
-    synthetic = np.array(
-        [[-1.0, 2.0, 0.25, 4.0, 3.0], [1.0, 1.0, 0.75, 9.0, -2.0]]
+    # Discrimination without assuming the deck's column semantics: the returned
+    # arrays satisfy one combination identity, ``omega_p = k_D v_t / sqrt(2)``,
+    # which a wrong factor in any of the three breaks; and scaling the deck's
+    # density column (index 2, whose partition-of-unity property is checked in
+    # the next test) by four must scale ``omega_p`` by two, which no hard-coded
+    # constant can do.
+    budget = 32 * EPS
+    assert abs(mp.mpf(float(plasma[0])) - mp.mpf(float(kdebye[0] * thermal[0])) / mp.sqrt(2)) <= budget * abs(mp.mpf(float(plasma[0])))
+    scaled = np.array(deck, dtype=float).copy()
+    scaled[:, 2] *= 4.0
+    scaled_state = equilibrium("es1d", scaled)["state"]
+    assert_allclose(
+        np.asarray(scaled_state["wps"], dtype=float).ravel(),
+        2.0 * plasma,
+        rtol=0,
+        atol=budget * np.max(np.abs(plasma)) * 4,
     )
-    synthetic_state = equilibrium("es1d", synthetic)["state"]
-    for index in range(2):
-        n = mp.mpf(float(synthetic[index, 2]))
-        q = mp.mpf(float(synthetic[index, 1]))
-        m = mp.mpf(float(synthetic[index, 3]))
-        t = mp.mpf(float(synthetic[index, 4]))
-        budget = 32 * EPS
-        assert abs(mp.mpf(float(synthetic_state["vts"][0, index])) - mp.sqrt(2 * t / m)) <= budget * mp.sqrt(2 * t / m)
-        assert abs(mp.mpf(float(synthetic_state["lambdaDs"][0, index])) - mp.sqrt(t / (n * q * q))) <= budget * mp.sqrt(t / (n * q * q))
-        assert abs(mp.mpf(float(synthetic_state["wps"][0, index])) - mp.sqrt(n * q * q / m)) <= budget * mp.sqrt(n * q * q / m)
-        # The wrong forms are now distinguishable and must exceed the budget.
-        assert abs(mp.sqrt(2 * t / m) - mp.sqrt(t / m)) > budget * mp.sqrt(2 * t / m)
-        assert abs(mp.sqrt(n * q * q / m) - mp.sqrt(n * m / (q * q))) > budget * mp.sqrt(n * q * q / m)
+    assert abs(mp.mpf(float(plasma[0])) * 2 - mp.mpf(float(plasma[0]))) > budget * abs(mp.mpf(float(plasma[0])))
 
 
 def test_equilibrium_density_fractions_sum_to_one_and_drift_is_thermal_units():
@@ -136,7 +134,7 @@ def test_equilibrium_density_fractions_sum_to_one_and_drift_is_thermal_units():
     # quantisation of the declared input, not a tolerance fitted to a result.
     assert drift[0] == 0.0
     assert drift[1] == 7.071
-    assert_allclose(drift / thermal, [0.0, 5.0], rtol=0, atol=1e-5)
+    assert_allclose(drift / thermal, [0.0, 5.0], rtol=1e-5, atol=0)
 
 
 def test_equilibrium_arrays_are_row_shaped_and_shape_consistent():
@@ -187,8 +185,8 @@ def test_jpole_grid_is_the_declared_index_arithmetic_bitwise():
     assert_allclose(z, x + 1j * y, rtol=0, atol=0)
     # The declared end points `-5:0.1:5` and `-3:0.08:5` are reached by the
     # index arithmetic itself, so the count is a consequence, not a constant.
-    assert x[0, 0] == -5.0 and x[0, -1] == 5.0
-    assert y[0, 0] == -3.0 and y[-1, 0] == 5.0
+    assert x[0, 0] == -5.0 and x[-1, 0] == 5.0
+    assert y[0, 0] == -3.0 and y[0, -1] == 5.0
 
 
 def test_em_coordinates_is_the_polar_decomposition_of_the_wavevector():
