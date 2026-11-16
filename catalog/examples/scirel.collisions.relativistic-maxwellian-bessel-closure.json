@@ -146,7 +146,9 @@
    "The input contract is a strict positive finite real scalar: non-positive or non-finite arguments raise the named message, and boolean, string, bytes, complex and higher-rank array inputs raise InvalidBesselArgumentError rather than being coerced. Protected here directly against the public callable; this strict guard is an audit repair, not the retained route's bare-float conversion.",
    "That every accepted call in a wide logarithmic sweep returns three finite Python floats. Protected by the maintained tests over 4000 arguments, which treat a backend rejection as a legitimate outcome rather than a failure.",
    "The rescaled-function identity and the asymptotic form, and the monotone decrease of bk0 and bk1 in x. Protected by the maintained tests directly, independently of either route.",
-   "Top-level Result type and attribute/key equivalence are regression-tested; bk0, bk1 and bk2 remain Python floats."
+   "Top-level Result type and attribute/key equivalence are regression-tested; bk0, bk1 and bk2 remain Python floats.",
+   "Precision budget: bk0 and bk1 are the values scipy.special.kve returns for the same argument, asserted bit-exactly; bk2 = bk0 + 2*bk1/x costs one multiply, one divide and one add on top of them, so its budget is five binary64 roundings of the recurrence term and the sum (N*eps*scale with N at most 5) and no assertion compares two independently rounded intermediate values; the seam measured between the two adjacent binary64 arguments around x = 2 is bounded by 4 eps relative (recorded 8.59e-16)",
+   "Failure matrix: each `failure_semantics` channel of this contract has exactly one executable assertion in tests/collisions/test_declared_failure_channels.py, covering InvalidBesselArgumentError, BesselBackendEvaluationError and the ValueError base class both subclass; a base-class channel is declared as a base and must really be a base of every channel it covers, so the mapping stays executable rather than documentary and a channel cannot be added, renamed or dropped silently"
   ],
   "tests": [
    "tests/collisions/test_relativistic_maxwellian_bessel.py"

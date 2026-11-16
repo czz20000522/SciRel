@@ -87,7 +87,7 @@
  },
  "failure_semantics": {
   "invalid_input": "Raises ValueError naming energy_ev for non-real, non-finite or negative energy inputs. There is no other failure mode.",
-  "runtime_failure": "Not reachable on the declared domain: the fit is evaluated only on its clipped positive range. No iteration, no state and no partial results.",
+  "runtime_failure": "Not reachable on the declared domain: the fit is evaluated only on its clipped positive range. Above 1.01e4 eV the call emits ApplicabilityWarning and returns the upper-endpoint value, which stays finite and strictly positive. No iteration, no state and no partial results.",
   "nonconvergence": "Not applicable.",
   "partial_results": "Never returned."
  },
@@ -114,7 +114,10 @@
    "That the fit equals an independent evaluation of the coefficient set on the clipped domain to a relative tolerance of 1e-15, on in-domain and holdout grids.",
    "The endpoint clipping: values below and above the fit range repeat the endpoint values exactly.",
    "The input contract: non-finite and negative energies are rejected with messages naming the quantity; a negative energy raises rather than being silently clipped.",
-   "No external implementation comparison is maintained or replayed by this repository; the maintained tests validate the declared relation against an in-repository independent formulation and cover the stated rejection and clipping behaviour only on their tested grids."
+   "No external implementation comparison is maintained or replayed by this repository; the maintained tests validate the declared relation against an in-repository independent formulation and cover the stated rejection and clipping behaviour only on their tested grids.",
+   "Structural evidence: the returned value is the frozen fit re-evaluated on another code path and multiplied by the exact 1e-4 cm^2->m^2 factor (agreement within four binary64 roundings), the single clipped fit is the declared polynomial on its whole interval, the 1.01e4 eV edge repeats the endpoint with ApplicabilityWarning, and the measured log-slope equals the analytic derivative; this establishes structure, not an absolute table value, because the published table the coefficients were regressed from is not reachable from this repository",
+   "Precision budget: the unit-factor comparison admits 8e-16 relative, four binary64 roundings between two evaluation orders of the same polynomial; the slope identity admits 1e-4 of max(1, |d ln sigma / d ln E|) measured by a central difference of h = 1e-3 in ln E, whose truncation term h^2/6 |d^3 ln sigma / d(ln E)^3| stays below 1e-6 on the declared intervals; no existing per-asset tolerance is loosened and no numeric value is changed",
+   "Failure matrix: each `failure_semantics` channel of this contract has exactly one executable assertion in tests/collisions/test_declared_failure_channels.py; that table's channel set is compared with the exception and warning classes this contract names, and every callable must produce its declared class, so a channel cannot be added, renamed or dropped silently"
   ],
   "tests": [
    "tests/collisions/test_hydrogen2_proton_elastic_cross_section.py",
@@ -127,7 +130,8 @@
    "Energies outside the fit range return the endpoint value; values above the upper edge emit ApplicabilityWarning. This remains the declared clipping convention, not an error.",
    "The negative-energy rejection is an explicit precondition of this contract: a negative energy raises ValueError rather than returning the clipped endpoint.",
    "No environment-gated external-implementation comparison exists in this repository; any earlier external comparison is not replayed by the maintained tests.",
-   "Public distribution licensing remains pending a human decision."
+   "Public distribution licensing remains pending a human decision.",
+   "Cannot establish: the absolute table values of this relation. They need the Janev (1995) chapter 11 H2-on-H+ momentum-transfer fit table, which are not in this repository and not available from a free source, so only the structural properties listed above are established; no coefficient or absolute cross section is asserted against a published number, and none was reconstructed from memory"
   ]
  }
 }
