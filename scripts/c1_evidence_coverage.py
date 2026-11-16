@@ -73,7 +73,7 @@ NEGATION = re.compile(
     r"\babsent\b|\bisn't\b|\bdoesn't\b|\bdoes not\b|\bcannot\b|\bno longer\b)",
     re.I,
 )
-CLAUSE_BREAK = re.compile(r"[.;:,]|\bbut\b|\bhowever\b|\balthough\b", re.I)
+CLAUSE_BREAK = re.compile(r"[.;:,]|\bbut\b|\bhowever\b|\balthough\b|\band\b|\bwhile\b", re.I)
 
 
 POST_NEGATION = re.compile(

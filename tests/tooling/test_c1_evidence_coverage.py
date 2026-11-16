@@ -44,6 +44,9 @@ def test_a_genuine_basis_claim_still_counts_as_evidence() -> None:
         "The exact rational recomputation matches.",
         "Fraction arithmetic gives the exact answer, not the rounded one.",
         "An analytic identity fixes the value.",
+        # A negation in an earlier clause must not swallow a later basis claim;
+        # "and"/"while" are clause boundaries for exactly this reason.
+        "The implementation does not model damping and an independent reference agrees.",
     ):
         basis, gap = coverage.classify(sentence)
         assert basis is True, sentence
