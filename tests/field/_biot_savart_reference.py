@@ -158,7 +158,26 @@ def _loop_integrals(radius, coil_radius, dz):
     return mp.quad(a_phi, points), mp.quad(b_r, points), mp.quad(b_z, points)
 
 
+def _integrand_scale(radius, coil_radius, dz):
+    """Return the three integrand bounds ``2 pi * max|integrand|`` of one loop.
+
+    ``|r - r'|`` is smallest at ``cos phi = 1``, so
+    ``d_min = sqrt((R - a)^2 + dz^2)`` bounds every ``1/|r-r'|`` factor from
+    above.  Multiplying the resulting pointwise bound by the ``2 pi`` measure
+    gives the scale a ``D``-digit quadrature rule controls, as opposed to the
+    (possibly much smaller) value of the cancellation-reduced integral.
+    """
+    a, r = mp.mpf(coil_radius), mp.mpf(radius)
+    d_min = mp.sqrt((r - a) ** 2 + dz**2)
+    return (
+        _TAU * a / d_min,
+        _TAU * a * abs(dz) / d_min**3,
+        _TAU * (a**2 + a * r) / d_min**3,
+    )
+
+
 def _quadrature_at(dps, radius, coil_radius, dz):
+    """Return the three raw loop integrals and their integrand scales at ``dps``."""
     with mp.workdps(dps):
         radius_mp, coil_radius_mp, dz_mp = (
             mp.mpf(radius),
@@ -173,42 +192,47 @@ def _quadrature_at(dps, radius, coil_radius, dz):
                 raise ValueError(
                     "target too close to the wire for a fixed-breakpoint quadrature"
                 )
+            if radius_mp < _MIN_RADIUS_RATIO * coil_radius_mp:
+                raise ValueError("target radius too small for the certified reference")
+        scale = _integrand_scale(radius_mp, coil_radius_mp, dz_mp)
         if radius_mp == 0:
-            # Closed limits on the axis, still from the same integrands: A_phi
-            # is an odd integrand and B_R carries dz as a factor, so both vanish
-            # identically, and B_Z reduces to an ordinary smooth integral.
-            return mp.mpf(0), mp.mpf(0), _loop_integrals(radius_mp, coil_radius_mp, dz_mp)[2]
-        if radius_mp < _MIN_RADIUS_RATIO * coil_radius_mp:
-            raise ValueError("target radius too small for a relative comparison")
-        return _loop_integrals(radius_mp, coil_radius_mp, dz_mp)
+            # Closed limits on the axis, reached from the same integrands: A_phi
+            # is an odd integrand there and B_R carries dz as a factor, so both
+            # vanish identically, while B_Z stays an ordinary smooth integral.
+            return (mp.mpf(0), mp.mpf(0), _loop_integrals(radius_mp, coil_radius_mp, dz_mp)[2]), scale
+        return _loop_integrals(radius_mp, coil_radius_mp, dz_mp), scale
 
 
 def ring_field(radius, z, coil_radius, coil_z, current=1.0):
     """Return ``(psi, B_R, B_Z)`` per drive of one ring as floats.
 
-    The result is the quadrature value at the weaker of the two working
-    precisions, after that weak result has been shown to agree with the strong
-    one to ``1e-25`` relative.  Comparing against the weak value therefore
-    leaves the full binary64 budget for the implementation under test.
+    The value returned is the 60-digit quadrature, after the 30-digit run has
+    been shown to agree with it to ``1e-25`` of the integrand scale.  The
+    certificate is what makes the returned value usable as a reference: a
+    half-converged integral fails here instead of being compared against the
+    implementation as if it were truth.
     """
     dz = mp.mpf(z) - mp.mpf(coil_z)
-    weak = _quadrature_at(_WEAK_DPS, radius, coil_radius, dz)
-    strong = _quadrature_at(_STRONG_DPS, radius, coil_radius, dz)
+    weak, scale = _quadrature_at(_WEAK_DPS, radius, coil_radius, dz)
+    strong, strong_scale = _quadrature_at(_STRONG_DPS, radius, coil_radius, dz)
     prefactor = MU0_OVER_4PI * mp.mpf(current)
-    psi, b_r, b_z = (prefactor * value for value in weak)
-    psi = mp.mpf(radius) * psi
-    for name, weak_value, strong_value in zip(
-        ("psi", "B_R", "B_Z"), (psi, prefactor * weak[1], prefactor * weak[2]),
-        (mp.mpf(radius) * prefactor * strong[0], prefactor * strong[1], prefactor * strong[2]),
+    radius_mp = mp.mpf(radius)
+    psi = radius_mp * prefactor * strong[0]
+    for name, weak_value, strong_value, integrand_scale in zip(
+        ("psi", "B_R", "B_Z"),
+        (radius_mp * prefactor * weak[0], prefactor * weak[1], prefactor * weak[2]),
+        (psi, prefactor * strong[1], prefactor * strong[2]),
+        (radius_mp * prefactor * scale[0], prefactor * scale[1], prefactor * scale[2]),
         strict=True,
     ):
-        scale = max(abs(strong_value), mp.mpf("1e-300"))
-        if abs(weak_value - strong_value) / scale > _CROSS_DPS_AGREEMENT:
+        if abs(weak_value - strong_value) > _CROSS_PRECISION * integrand_scale:
             raise QuadratureNotConverged(
-                f"the {_WEAK_DPS}- and {_STRONG_DPS}-digit {name} quadratures disagree: "
-                f"{mp.nstr(weak_value, 25)} vs {mp.nstr(strong_value, 25)}"
+                f"the {_WEAK_DPS}- and {_STRONG_DPS}-digit {name} quadratures disagree by "
+                f"{mp.nstr(abs(weak_value - strong_value), 5)} against an integrand scale of "
+                f"{mp.nstr(integrand_scale, 5)}"
             )
-    return psi, b_r, b_z
+    del strong_scale
+    return psi, prefactor * strong[1], prefactor * strong[2]
 
 
 def filament_field(filaments, radius, z):
