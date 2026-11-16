@@ -601,6 +601,7 @@ def _acceptance_result(module, directory, tree):
     scripts = tree / "skills/development/scirel-acceptance/scripts"
     return {
         "schema": "scirel.acceptance.v2",
+        "stage": "release",
         "exclusive": {
             "token_sha256": _digest_text(FIXTURE_TOKEN),
             "record": str(tree / ".runtime/locks/acceptance-exclusive"),
@@ -618,7 +619,8 @@ def _acceptance_result(module, directory, tree):
         "steps": records,
         "exit_code": 0,
         "tests": {
-            "schema": 2,
+            "schema": 3,
+            "deselected_nodeids": [],
             "pytest_exitstatus": 0,
             "collection_finished": True,
             "collection_reports": [],
@@ -793,6 +795,7 @@ def test_a_v2_result_without_its_sidecar_fails_the_full_check(tmp_path, monkeypa
         "missing lock digest",
         "dirty",
         "development",
+        "development stage",
         "missing report",
     ],
 )
@@ -824,6 +827,8 @@ def test_unbound_green_is_refused(tmp_path, monkeypatch, defect):
             del environment["uv_lock_sha256"]
     elif defect == "development":
         result["evidence"] = "development"
+    elif defect == "development stage":
+        result["stage"] = "dev"
 
     def execute(tree, command):
         if defect != "stale invocation":
@@ -946,3 +951,24 @@ def test_candidate_runtime_does_not_rebind_the_callers_environment(tmp_path, mon
     assert actual.returncode == 0, actual.stdout + actual.stderr
     assert actual.stdout.splitlines() == ["patched checkout", str(tmp_path / ".runtime/venv")]
     assert os.environ["UV_PROJECT_ENVIRONMENT"] == "caller-environment-must-not-change"
+
+
+def test_a_development_stage_receipt_is_refused_with_an_actionable_reason(tmp_path, monkeypatch):
+    module = _validator()
+    _mock_lock_boundary(module, monkeypatch)
+    tree = _acceptance_candidate(tmp_path)
+    report = module.Report()
+    report.output_dir = tmp_path
+    receipt = _acceptance_result(module, tmp_path, tree)
+    receipt["stage"] = "dev"
+
+    def execute(candidate, command):
+        Path(command[-1]).write_text(json.dumps(receipt), encoding="utf-8")
+        return subprocess.CompletedProcess(command, 0, "fixture only\n", "")
+
+    monkeypatch.setattr(module, "_run_in_candidate", execute)
+    module.run_full_check(tree, report)
+    assert report.sections[-1][1] == "FAIL"
+    reason = " ".join(report.errors)
+    assert "development-stage" in reason
+    assert "dev.py check" in reason and "release stage" in reason

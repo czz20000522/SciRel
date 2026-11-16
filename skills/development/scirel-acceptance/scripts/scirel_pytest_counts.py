@@ -10,7 +10,10 @@ to one branch and forgotten in another:
 
 * every selected test has exactly one terminal outcome;
 * ``selected == passed + failed + error + skipped + xfailed + xpassed``;
-* ``collected == selected + deselected``.
+* ``collected == selected + deselected``, and ``deselected`` names every deselected nodeid.
+
+The deselected identities exist so a stage that is allowed to skip tests can prove it skipped
+exactly the ones it meant to, instead of reporting a number nobody can attribute.
 
 A report that breaks any of them is written with ``consistent`` false and the reason spelled out,
 and ``check_all.py`` refuses it rather than reporting a number nobody can check.
@@ -100,8 +103,8 @@ def _recorded_from_marker(recorded: str, marker: str) -> bool:
 
 def validate_execution_records(report: dict) -> None:
     """Validate the single counts protocol, including identities and phase-derived totals."""
-    if type(report.get("schema")) is not int or report["schema"] != 2:
-        raise ValueError("execution records require counts schema 2")
+    if type(report.get("schema")) is not int or report["schema"] != 3:
+        raise ValueError("execution records require counts schema 3")
     if type(report.get("pytest_exitstatus")) is not int or report["pytest_exitstatus"] not in (
         0,
         1,
@@ -130,6 +133,14 @@ def validate_execution_records(report: dict) -> None:
         or len(selected) != report["selected"]
     ):
         raise ValueError("missing, duplicate or mismatched selected nodeids")
+    deselected = report.get("deselected_nodeids")
+    if (
+        not isinstance(deselected, list)
+        or any(not isinstance(node, str) or not node for node in deselected)
+        or len(set(deselected)) != len(deselected)
+        or len(deselected) != report["deselected"]
+    ):
+        raise ValueError("missing, duplicate or mismatched deselected nodeids")
     results = report.get("results")
     if not isinstance(results, list) or len(results) != len(selected):
         raise ValueError("missing or duplicate per-test results")
@@ -228,10 +239,12 @@ class CountsPlugin:
         self.collection_finished = False
         self.collection_reports: list[dict] = []
         self.deselected = 0
+        self.deselected_nodeids: list[str] = []
         self.phases: dict[str, list[dict]] = {}
 
     def pytest_deselected(self, items) -> None:
         self.deselected += len(items)
+        self.deselected_nodeids.extend(item.nodeid for item in items)
 
     def pytest_collection_finish(self, session) -> None:
         # All collection filters have finished; modifyitems hook order is not fixed.
@@ -268,11 +281,12 @@ class CountsPlugin:
                 reason = next(phase["reason"] for phase in phases if phase["outcome"] == "skipped")
                 skips.setdefault(reason, []).append(nodeid)
         report = {
-            "schema": 2,
+            "schema": 3,
             "pytest_exitstatus": int(exitstatus),
             "collection_finished": self.collection_finished,
             "collection_reports": self.collection_reports,
             "selected_nodeids": self.selected_nodeids,
+            "deselected_nodeids": self.deselected_nodeids,
             "results": results,
             "collected": self.selected + self.deselected,
             "selected": self.selected,

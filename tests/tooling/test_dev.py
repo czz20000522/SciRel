@@ -862,3 +862,32 @@ raise SystemExit(module.run_locked([sys.executable, '-c', *sys.argv[4:]], exclus
         except ProcessLookupError:
             pass
         wrapper.wait(timeout=5)
+
+
+def test_check_defaults_to_the_release_stage_without_extra_arguments(monkeypatch):
+    module = _load()
+    launched = []
+    monkeypatch.setattr(
+        module,
+        "run_locked",
+        lambda command, *, exclusive: launched.append((command, exclusive)) or 0,
+    )
+    assert module.check() == 0
+    command, exclusive = launched.pop()
+    assert exclusive is True
+    assert command[-1] == module.CHECK_ALL
+
+
+def test_check_forwards_the_development_stage(monkeypatch):
+    module = _load()
+    launched = []
+    monkeypatch.setattr(
+        module,
+        "run_locked",
+        lambda command, *, exclusive: launched.append((command, exclusive)) or 0,
+    )
+    assert module.check("dev") == 0
+    command, exclusive = launched.pop()
+    assert exclusive is False, "the development stage takes the shared lock a pytest run takes"
+    assert command[-2:] == ["--stage", "dev"]
+    assert command[-3] == module.CHECK_ALL
