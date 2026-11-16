@@ -478,3 +478,23 @@ def test_nonrepresentable_derived_values_fail_explicitly():
             1e-300,
             1e-3,
         )
+
+
+def test_diagnostic_default_window_starts_at_five_percent_of_the_record():
+    """The default lower bound is ``t0 + 0.05 T``: a peak near ``t0`` is dropped, not admitted."""
+    steps, spacing = 2400, 4
+    dt = 0.5 / (spacing * (steps // spacing))
+    times = np.arange(steps + 1) * dt
+    omega = np.pi / (spacing * dt)
+    field = np.cos(omega * times).astype(complex)
+    diagnostic = vp_diagnostic(field, times)
+    total = times[-1] - times[0]
+    # Maxima at t = m*spacing*dt with cos = +1; the first is at index 0 and is
+    # not an interior local maximum in the recorded sense, so the window decides
+    # whether the peak at 5% of the record is admitted.
+    admitted = diagnostic["peak_times"]
+    assert admitted[0] >= times[0] + 0.05 * total - 8 * EPS * total
+    assert admitted[0] < times[0] + 0.10 * total, (
+        "a 10% default lower window would exclude this peak, so the 5% constant is pinned"
+    )
+    assert admitted[-1] <= times[0] + 0.8 * total + 8 * EPS * total
