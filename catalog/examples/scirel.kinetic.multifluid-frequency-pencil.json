@@ -131,7 +131,7 @@
  },
  "verification": {
   "scope": [
-   "Independent reference: the pencil's own SI definitions. wps and wcs are recomputed at 40 digits from the state's n, q, m and B0 as sqrt(n q**2/(epsilon0 m)) and q B0/m, and the scaling law is checked independently - quadrupling the density column must double wps and must not quadruple it.",
+   "Independent reference: the pencil's own SI definitions. wps and wcs are recomputed at 40 digits from the state's n, q, m and B0 as sqrt(n q**2/(epsilon0 m)) and q B0/m, and the scaling law is checked independently - quadrupling the density column must double wps and must not quadruple it. The two electromagnetic coupling blocks are also checked against each other: the upper-right block must equal -c2 times the lower-left one, and each must be -1j times an antisymmetric matrix, which is an internal relation between two blocks of the returned matrix plus one named state field and therefore independent of the solver.",
    "Implementation relation: the time-generator pencil is M X = lambda A X with lambda = -i omega over d = 4S+6 unknowns (density and three velocity components per species, then six field components); M and A are (d,d) and complex-finite, wcs and wps are (S,), and a complex wavevector is accepted without silently taking its real part.",
    "Test matrix: wps/wcs against the definitions, the dimension and block shapes across a complex wavevector, the density-scaling law with its wrong-law control, and the rejection of a non-finite wavevector.",
    "Precision budget, declared before the comparison was run: 32 eps relative for wps and wcs (a quotient of exact float entries plus one square root), and zero tolerance on the assembled shapes.",
