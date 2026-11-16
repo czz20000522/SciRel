@@ -561,8 +561,9 @@ def test_the_written_result_carries_v2_provenance_and_a_sidecar(tmp_path, monkey
     assert result["provenance"]["check_all_sha256"] == _sha(SCRIPTS / "check_all.py")
     assert all(_sha(Path(step["log"])) == step["log_sha256"] for step in result["steps"])
     # Wall-clock observation only: recorded so a slow step can be found, never compared.
-    assert all(isinstance(step["seconds"], float) and step["seconds"] >= 0
-               for step in result["steps"])
+    assert all(
+        isinstance(step["seconds"], float) and step["seconds"] >= 0 for step in result["steps"]
+    )
     sidecar = path.with_name(path.name + ".sha256")
     assert sidecar.read_text().strip() == _sha(path)
     assert f"RESULT SHA256 {_sha(path)}" in capsys.readouterr().out
