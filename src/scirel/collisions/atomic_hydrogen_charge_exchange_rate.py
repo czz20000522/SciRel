@@ -204,7 +204,8 @@ def evaluate_atomic_hydrogen_charge_exchange_rate(temperature_ev, energy_ev):
         ``scalar or array``. The value must be finite and strictly positive.
         temperature_ev and energy_ev must have exactly the same shape.
     energy_ev : real scalar or array-like
-        Impact energy paired with each temperature. [eV] Shape: ``same as
+        Impact energy paired with each temperature; in the high-energy branch it
+        sets the beam speed of the shifted Maxwellian (see Notes). [eV] Shape: ``same as
         temperature_ev``. The value must be finite and nonnegative. Values below
         ``0.1`` eV are clipped to the lower fit endpoint.
 
@@ -240,9 +241,15 @@ def evaluate_atomic_hydrogen_charge_exchange_rate(temperature_ev, energy_ev):
     -----
     Through ``2.01e4`` eV in both dimensions, the relation evaluates the retained
     nine-by-nine bivariate logarithmic fit. If either paired sample is above that
-    domain, it instead integrates the continuous composite cross section against
-    an equal-mass Maxwellian relative-speed distribution. The quadrature omits
-    collision energies above the 250 keV cross-section limit. Low-domain clipping
+    domain, it instead evaluates the rate for a **beam-shifted** equal-mass
+    Maxwellian: the target distribution is centred on the beam speed
+    ``sqrt(energy_ev / temperature_ev)`` in units of the thermal speed, and the
+    continuous composite cross section is integrated against it. The quadrature
+    omits collision energies above the 250 keV cross-section limit. Because the
+    shift is set by ``energy_ev``, the high-energy branch depends strongly on the
+    impact energy at fixed temperature (a factor of about twenty between 2.1e4 eV
+    and 2.0e5 eV at 3.0e4 eV). The returned value is therefore a beam-target rate,
+    not a pure thermal rate coefficient. Low-domain clipping
     to 0.1 eV is silent; upper-range clipping emits ``ApplicabilityWarning``. The
     low-domain fit is not required to be monotone in impact energy. No independent
     experimental rate measurement is asserted here.

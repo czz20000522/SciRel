@@ -1,143 +1,145 @@
 {
- "schema": "scirel.asset-document",
- "asset_id": "scirel.collisions.atomic-hydrogen-charge-exchange-rate-coefficient",
- "title": {
-  "en": "Atomic-hydrogen charge-exchange Maxwellian rate coefficient",
-  "zh": "原子氢电荷交换Maxwellian速率系数"
- },
- "summary": "H + H+ charge-exchange rate coefficient in m^3/s for paired plasma temperature and impact energy in eV. The legacy bivariate fit is retained through 20.1 keV; above that range the rate is integrated from the continuous Janev/Lindsay-Stebbings cross section against an equal-mass Maxwellian target.",
- "taxonomy": [
-  "collisions",
-  "rate-coefficient",
-  "charge-exchange",
-  "hydrogen",
-  "tabulated-fit"
- ],
- "aliases": [
-  "sigmav_cx_h0",
-  "atomic-H CX Maxwellian rate"
- ],
- "discovery": {
-  "capability": [
-   "Atomic-hydrogen charge-exchange rate coefficient",
-   "Paired Maxwellian temperature and impact energy -> H + H+ charge-exchange rate coefficient in m^3/s."
-  ],
-  "operation": [
-   "Evaluate the atomic-H charge-exchange rate coefficient",
-   "paired plasma temperature and impact energy in eV -> rate coefficient in m^3/s"
-  ],
-  "model": "Nine-by-nine bivariate logarithmic fit through 20.1 keV, with a Maxwellian relative-speed quadrature of the continuous composite cross section above that domain.",
-  "geometry": "None; paired scalar or array material samples with no spatial or velocity axis inferred (coordinates: temperature and impact energy in eV).",
-  "boundary": "Finite real inputs with identical shape; temperature strictly positive and impact energy nonnegative. Low values clip to 0.1 eV; values above 250 keV clip with ApplicabilityWarning. The high-energy quadrature omits collision energies above 250 keV.",
-  "device_scope": "generic"
- },
- "identity": {
-  "relation": "H + H+ charge-exchange rate coefficient from a low-domain bivariate fit or a high-energy Maxwellian integral",
-  "direction": "paired plasma temperature and impact energy in eV -> rate coefficient in m^3/s",
-  "definition": "For each paired sample, if T <= 2.01e4 eV and E <= 2.01e4 eV, clip both to [0.1, 2.01e4] eV and evaluate the legacy nine-by-nine logarithmic polynomial with the declared term order, returning exp(log_rate)*1e-6 m^3/s. Otherwise clip T and E to [0.1, 2.5e5] eV and integrate the continuous composite cross section against the equal-mass Maxwellian relative-speed density; collision energies above 2.5e5 eV are omitted. Values above 2.5e5 eV emit ApplicabilityWarning.",
-  "model": "piecewise low-domain bivariate fit and high-energy Maxwellian quadrature of the published composite cross section",
-  "geometry": "none; paired scalar or array material samples",
-  "coordinates": "temperature and impact energy in eV; output rate coefficient in m^3/s",
-  "boundary": "finite real same-shape inputs; positive temperature; nonnegative energy; low-domain clipping to 0.1 eV and upper clipping at 250 keV with ApplicabilityWarning; finite positive result",
-  "assumptions": [
-   "The legacy 9x9 coefficient table and accumulation order define the fit used through 2.01e4 eV.",
-   "Above 2.01e4 eV the rate is defined by the equal-mass Maxwellian integral of the separately exposed composite cross section, not by extending the bivariate fit.",
-   "The cross-section integral uses the declared particle mass rather than reduced mass, matching the repository Maxwellian convention.",
-   "The cross-section table ends at 250 keV; the quadrature sets larger collision energies to zero and does not claim a cross-section extrapolation."
-  ]
- },
- "inputs": [
-  {
-   "name": "temperature_ev",
-   "description": "Plasma temperature for the low-domain fit or the high-energy Maxwellian integral.",
-   "units": "eV",
-   "shape": "scalar or array; exactly the shape of energy_ev",
-   "dtype": "real numeric array-like",
-   "required": true,
-   "constraints": "Finite and strictly positive real values. Values below 0.1 eV clip; values above 2.5e5 eV clip with ApplicabilityWarning."
+  "schema": "scirel.asset-document",
+  "asset_id": "scirel.collisions.atomic-hydrogen-charge-exchange-rate-coefficient",
+  "title": {
+    "en": "Atomic-hydrogen charge-exchange Maxwellian rate coefficient",
+    "zh": "原子氢电荷交换Maxwellian速率系数"
   },
-  {
-   "name": "energy_ev",
-   "description": "Impact energy paired with each temperature sample.",
-   "units": "eV",
-   "shape": "scalar or array; exactly the shape of temperature_ev",
-   "dtype": "real numeric array-like",
-   "required": true,
-   "constraints": "Finite nonnegative real values with the same shape as temperature. Values below 0.1 eV clip; values above 2.5e5 eV clip with ApplicabilityWarning."
+  "summary": "H + H+ charge-exchange rate coefficient in m^3/s for paired plasma temperature and impact energy in eV. The legacy bivariate fit is retained through 20.1 keV; above that range the rate is integrated from the continuous Janev/Lindsay-Stebbings cross section against an equal-mass Maxwellian target.",
+  "taxonomy": [
+    "collisions",
+    "rate-coefficient",
+    "charge-exchange",
+    "hydrogen",
+    "tabulated-fit"
+  ],
+  "aliases": [
+    "sigmav_cx_h0",
+    "atomic-H CX Maxwellian rate"
+  ],
+  "discovery": {
+    "capability": [
+      "Atomic-hydrogen charge-exchange rate coefficient",
+      "Paired Maxwellian temperature and impact energy -> H + H+ charge-exchange rate coefficient in m^3/s."
+    ],
+    "operation": [
+      "Evaluate the atomic-H charge-exchange rate coefficient",
+      "paired plasma temperature and impact energy in eV -> rate coefficient in m^3/s"
+    ],
+    "model": "Nine-by-nine bivariate logarithmic fit through 20.1 keV, with a Maxwellian relative-speed quadrature of the continuous composite cross section above that domain.",
+    "geometry": "None; paired scalar or array material samples with no spatial or velocity axis inferred (coordinates: temperature and impact energy in eV).",
+    "boundary": "Finite real inputs with identical shape; temperature strictly positive and impact energy nonnegative. Low values clip to 0.1 eV; values above 250 keV clip with ApplicabilityWarning. The high-energy quadrature omits collision energies above 250 keV.",
+    "device_scope": "generic"
+  },
+  "identity": {
+    "relation": "H + H+ charge-exchange rate coefficient from a low-domain bivariate fit or a high-energy Maxwellian integral",
+    "direction": "paired plasma temperature and impact energy in eV -> rate coefficient in m^3/s",
+    "definition": "For each paired sample, if T <= 2.01e4 eV and E <= 2.01e4 eV, clip both to [0.1, 2.01e4] eV and evaluate the legacy nine-by-nine logarithmic polynomial with the declared term order, returning exp(log_rate)*1e-6 m^3/s. Otherwise clip T and E to [0.1, 2.5e5] eV and integrate the continuous composite cross section against the equal-mass Maxwellian relative-speed density; collision energies above 2.5e5 eV are omitted. Values above 2.5e5 eV emit ApplicabilityWarning.",
+    "model": "piecewise low-domain bivariate fit and high-energy Maxwellian quadrature of the published composite cross section",
+    "geometry": "none; paired scalar or array material samples",
+    "coordinates": "temperature and impact energy in eV; output rate coefficient in m^3/s",
+    "boundary": "finite real same-shape inputs; positive temperature; nonnegative energy; low-domain clipping to 0.1 eV and upper clipping at 250 keV with ApplicabilityWarning; finite positive result",
+    "assumptions": [
+      "The legacy 9x9 coefficient table and accumulation order define the fit used through 2.01e4 eV.",
+      "Above 2.01e4 eV the rate is defined by the equal-mass Maxwellian integral of the separately exposed composite cross section, not by extending the bivariate fit.",
+      "The cross-section integral uses the declared particle mass rather than reduced mass, matching the repository Maxwellian convention.",
+      "The cross-section table ends at 250 keV; the quadrature sets larger collision energies to zero and does not claim a cross-section extrapolation."
+    ]
+  },
+  "inputs": [
+    {
+      "name": "temperature_ev",
+      "description": "Plasma temperature for the low-domain fit or the high-energy Maxwellian integral.",
+      "units": "eV",
+      "shape": "scalar or array; exactly the shape of energy_ev",
+      "dtype": "real numeric array-like",
+      "required": true,
+      "constraints": "Finite and strictly positive real values. Values below 0.1 eV clip; values above 2.5e5 eV clip with ApplicabilityWarning."
+    },
+    {
+      "name": "energy_ev",
+      "description": "Impact energy paired with each temperature sample.",
+      "units": "eV",
+      "shape": "scalar or array; exactly the shape of temperature_ev",
+      "dtype": "real numeric array-like",
+      "required": true,
+      "constraints": "Finite nonnegative real values with the same shape as temperature. Values below 0.1 eV clip; values above 2.5e5 eV clip with ApplicabilityWarning."
+    }
+  ],
+  "outputs": [
+    {
+      "name": "rate_m3_s",
+      "description": "H + H+ charge-exchange rate coefficient from the piecewise fit/quadrature relation.",
+      "units": "m^3/s",
+      "shape": "same as both inputs",
+      "dtype": "float64 array or scalar",
+      "required": true,
+      "constraints": "Finite and strictly positive on accepted inputs; the high-energy quadrature is a bounded model, not an unbounded extrapolation."
+    }
+  ],
+  "applicability": {
+    "preconditions": [
+      "The caller accepts the declared switch at 2.01e4 eV and supplies physically paired temperature and impact energy.",
+      "The caller accepts the high-energy quadrature convention that collision energies above 250 keV are omitted."
+    ],
+    "supported": [
+      "Scalar and equal-shape array evaluation through the low-domain fit.",
+      "High-energy rate evaluation from the composite cross-section Maxwellian integral."
+    ],
+    "excluded": [
+      "Molecular-hydrogen charge exchange, transport sources and collision-frequency assembly.",
+      "Cross-section values above 250 keV or extrapolation of the bivariate rate fit beyond 20.1 keV.",
+      "A claim of exact experimental rate validation beyond the published cross-section reliability."
+    ]
+  },
+  "failure_semantics": {
+    "invalid_input": "Non-real, non-finite, unequal-shape, nonpositive-temperature or negative-energy inputs raise ValueError; boolean, complex and numeric-string coercions are rejected.",
+    "runtime_failure": "A non-finite or nonpositive result raises ValueError. Temperature or energy above 2.5e5 eV emits ApplicabilityWarning and uses the clipped upper edge.",
+    "nonconvergence": "Not applicable; no iteration.",
+    "partial_results": "Never returned."
+  },
+  "public_api": {
+    "python": {
+      "module": "scirel.collisions.atomic_hydrogen_charge_exchange_rate",
+      "symbol": "evaluate_atomic_hydrogen_charge_exchange_rate",
+      "signature": "evaluate_atomic_hydrogen_charge_exchange_rate(temperature_ev, energy_ev)",
+      "canonical_module": "scirel.collisions",
+      "canonical_symbol": "evaluate_atomic_hydrogen_charge_exchange_rate"
+    }
+  },
+  "version": {
+    "implementation_version": "0.0.0",
+    "dependencies": []
+  },
+  "example": {
+    "description": "Mix a low-domain reference sample with the T=50 keV, E=100 keV high-energy quadrature case and verify upper clipping.",
+    "code": "import warnings\nimport numpy as np\nimport scirel\nfrom scirel.collisions import evaluate_atomic_hydrogen_charge_exchange_rate\n\nt = np.array([1.0, 5.0e4])\ne = np.array([1.0, 1.0e5])\nr = evaluate_atomic_hydrogen_charge_exchange_rate(t, e)\nassert r.shape == (2,) and np.all(np.isfinite(r)) and np.all(r > 0.0)\nnp.testing.assert_allclose(r[1], 1.2004964216070182e-14, rtol=1e-10, atol=0.0)\nwith warnings.catch_warnings(record=True) as caught:\n    warnings.simplefilter('always')\n    clipped = evaluate_atomic_hydrogen_charge_exchange_rate(np.array([3.0e5, 2.5e5]), np.array([1.0, 1.0]))\nassert len(caught) == 1 and issubclass(caught[0].category, scirel.ApplicabilityWarning)\nedge = evaluate_atomic_hydrogen_charge_exchange_rate(np.array([2.5e5, 2.5e5]), np.array([1.0, 1.0]))\nnp.testing.assert_allclose(clipped, edge, rtol=1e-12, atol=0.0)",
+    "expected": "The low sample follows the legacy fit, the high sample is about 1.2005e-14 m^3/s, and values above 250 keV clip to the endpoint under one ApplicabilityWarning."
+  },
+  "verification": {
+    "scope": [
+      "Legacy reference values and an independent polynomial evaluation verify the unchanged fit on samples at or below 20.1 keV.",
+      "At T=50 keV and E=100 keV the high-energy result is compared with independent 2D Gauss-Legendre Maxwellian quadrature using the composite cross section.",
+      "Two quadrature resolutions agree within 0.2% of the implementation, and the old clipped endpoint is at least four times larger.",
+      "Direct tests cover upper clipping, warning behavior, scalar and array shapes, invalid domain and non-real input rejection.",
+      "Beam shift in the high-energy branch: above 2.01e4 eV in either argument the target distribution is centred on the dimensionless beam speed sqrt(energy_ev/temperature_ev), so the returned value is a beam-target rate and depends strongly on energy_ev at fixed temperature (about 20x between 2.1e4 eV and 2.0e5 eV at 3.0e4 eV). The earlier text described a plain equilibrium Maxwellian average and did not state the shift; that description is corrected here.",
+      "The high-energy relation is defined by quadrature of the separately exposed cross-section asset; it does not relabel an extrapolated bivariate fit.",
+      "Structural evidence: above the 2.01e4 eV bivariate-fit domain the rate is an integral of the separately exposed composite cross section, and it agrees with an independent composite-Simpson quadrature of that contract to 1.6e-6 relative; the bivariate fit branch agrees with the same integral inside an order-of-magnitude band; this is unit, structural and cross-asset consistency, not an absolute table value, because the published rate tables are not reachable from this repository",
+      "Precision budget: the unit-factor comparison admits 8e-16 relative; the quadrature agreement admits 5e-5 relative with the reference's own two-grid error below 1e-7; the fit-to-integral band 0.8-1.2 is an observed fit-to-fit spread (sampled maximum 2.8 % atomic, 1.8 % molecular) and not a validated accuracy; the frozen constants differ from CODATA by 3.6e-3 in the thermal speed, so no tighter claim is made and no tolerance is loosened",
+      "Failure matrix: each `failure_semantics` channel of this contract has exactly one executable assertion in tests/collisions/test_declared_failure_channels.py; that table's channel set is compared with the exception and warning classes this contract names, and every callable must produce its declared class, so a channel cannot be added, renamed or dropped silently"
+    ],
+    "tests": [
+      "tests/collisions/test_atomic_hydrogen_charge_exchange_rate.py"
+    ],
+    "evidence_ceiling": "The tests establish the low-domain discrete polynomial, the high-energy Maxwellian integral against an independent 2D quadrature, clipping and failure semantics. They do not establish an experimental rate measurement, an unbounded cross-section tail above 250 keV, or public distribution rights.",
+    "known_limitations": [
+      "The low-domain bivariate fit remains nonmonotonic in impact energy at 1000 eV; this is a fit property, not a physical threshold.",
+      "The high-energy quadrature omits collision energies above 250 keV; this is a declared cross-section-range boundary, not an extrapolation.",
+      "Below 5 eV the composite cross section uses the Janev lower-domain fit; the Lindsay-Stebbings table does not validate that low-energy part.",
+      "The high-energy branch is a model of an equal-mass Maxwellian target and does not establish a broader distribution or transport closure.",
+      "No independent experimental rate measurement or public distribution licence is established.",
+      "Cannot establish: the absolute table values of this relation. They need the Janev (1995) chapter 11 charge-exchange rate tables, which are not in this repository and not available from a free source, so only units, the declared functional form and cross-asset consistency are established; no coefficient or absolute rate is asserted against a published number",
+      "The high-energy branch is a beam-target rate, not a pure thermal rate coefficient: energy_ev enters as the beam speed rather than only through the 250 keV quadrature cut. Whether exposing that dependence through this signature is the intended API is recorded in tickets/scope/T-2026-0800.md and is not decided here."
+    ]
   }
- ],
- "outputs": [
-  {
-   "name": "rate_m3_s",
-   "description": "H + H+ charge-exchange rate coefficient from the piecewise fit/quadrature relation.",
-   "units": "m^3/s",
-   "shape": "same as both inputs",
-   "dtype": "float64 array or scalar",
-   "required": true,
-   "constraints": "Finite and strictly positive on accepted inputs; the high-energy quadrature is a bounded model, not an unbounded extrapolation."
-  }
- ],
- "applicability": {
-  "preconditions": [
-   "The caller accepts the declared switch at 2.01e4 eV and supplies physically paired temperature and impact energy.",
-   "The caller accepts the high-energy quadrature convention that collision energies above 250 keV are omitted."
-  ],
-  "supported": [
-   "Scalar and equal-shape array evaluation through the low-domain fit.",
-   "High-energy rate evaluation from the composite cross-section Maxwellian integral."
-  ],
-  "excluded": [
-   "Molecular-hydrogen charge exchange, transport sources and collision-frequency assembly.",
-   "Cross-section values above 250 keV or extrapolation of the bivariate rate fit beyond 20.1 keV.",
-   "A claim of exact experimental rate validation beyond the published cross-section reliability."
-  ]
- },
- "failure_semantics": {
-  "invalid_input": "Non-real, non-finite, unequal-shape, nonpositive-temperature or negative-energy inputs raise ValueError; boolean, complex and numeric-string coercions are rejected.",
-  "runtime_failure": "A non-finite or nonpositive result raises ValueError. Temperature or energy above 2.5e5 eV emits ApplicabilityWarning and uses the clipped upper edge.",
-  "nonconvergence": "Not applicable; no iteration.",
-  "partial_results": "Never returned."
- },
- "public_api": {
-  "python": {
-   "module": "scirel.collisions.atomic_hydrogen_charge_exchange_rate",
-   "symbol": "evaluate_atomic_hydrogen_charge_exchange_rate",
-   "signature": "evaluate_atomic_hydrogen_charge_exchange_rate(temperature_ev, energy_ev)",
-   "canonical_module": "scirel.collisions",
-   "canonical_symbol": "evaluate_atomic_hydrogen_charge_exchange_rate"
-  }
- },
- "version": {
-  "implementation_version": "0.0.0",
-  "dependencies": []
- },
- "example": {
-  "description": "Mix a low-domain reference sample with the T=50 keV, E=100 keV high-energy quadrature case and verify upper clipping.",
-  "code": "import warnings\nimport numpy as np\nimport scirel\nfrom scirel.collisions import evaluate_atomic_hydrogen_charge_exchange_rate\n\nt = np.array([1.0, 5.0e4])\ne = np.array([1.0, 1.0e5])\nr = evaluate_atomic_hydrogen_charge_exchange_rate(t, e)\nassert r.shape == (2,) and np.all(np.isfinite(r)) and np.all(r > 0.0)\nnp.testing.assert_allclose(r[1], 1.2004964216070182e-14, rtol=1e-10, atol=0.0)\nwith warnings.catch_warnings(record=True) as caught:\n    warnings.simplefilter('always')\n    clipped = evaluate_atomic_hydrogen_charge_exchange_rate(np.array([3.0e5, 2.5e5]), np.array([1.0, 1.0]))\nassert len(caught) == 1 and issubclass(caught[0].category, scirel.ApplicabilityWarning)\nedge = evaluate_atomic_hydrogen_charge_exchange_rate(np.array([2.5e5, 2.5e5]), np.array([1.0, 1.0]))\nnp.testing.assert_allclose(clipped, edge, rtol=1e-12, atol=0.0)",
-  "expected": "The low sample follows the legacy fit, the high sample is about 1.2005e-14 m^3/s, and values above 250 keV clip to the endpoint under one ApplicabilityWarning."
- },
- "verification": {
-  "scope": [
-   "Legacy reference values and an independent polynomial evaluation verify the unchanged fit on samples at or below 20.1 keV.",
-   "At T=50 keV and E=100 keV the high-energy result is compared with independent 2D Gauss-Legendre Maxwellian quadrature using the composite cross section.",
-   "Two quadrature resolutions agree within 0.2% of the implementation, and the old clipped endpoint is at least four times larger.",
-   "Direct tests cover upper clipping, warning behavior, scalar and array shapes, invalid domain and non-real input rejection.",
-   "The high-energy relation is defined by quadrature of the separately exposed cross-section asset; it does not relabel an extrapolated bivariate fit.",
-   "Structural evidence: above the 2.01e4 eV bivariate-fit domain the rate is an integral of the separately exposed composite cross section, and it agrees with an independent composite-Simpson quadrature of that contract to 1.6e-6 relative; the bivariate fit branch agrees with the same integral inside an order-of-magnitude band; this is unit, structural and cross-asset consistency, not an absolute table value, because the published rate tables are not reachable from this repository",
-   "Precision budget: the unit-factor comparison admits 8e-16 relative; the quadrature agreement admits 5e-5 relative with the reference's own two-grid error below 1e-7; the fit-to-integral band 0.8-1.2 is an observed fit-to-fit spread (sampled maximum 2.8 % atomic, 1.8 % molecular) and not a validated accuracy; the frozen constants differ from CODATA by 3.6e-3 in the thermal speed, so no tighter claim is made and no tolerance is loosened",
-   "Failure matrix: each `failure_semantics` channel of this contract has exactly one executable assertion in tests/collisions/test_declared_failure_channels.py; that table's channel set is compared with the exception and warning classes this contract names, and every callable must produce its declared class, so a channel cannot be added, renamed or dropped silently"
-  ],
-  "tests": [
-   "tests/collisions/test_atomic_hydrogen_charge_exchange_rate.py"
-  ],
-  "evidence_ceiling": "The tests establish the low-domain discrete polynomial, the high-energy Maxwellian integral against an independent 2D quadrature, clipping and failure semantics. They do not establish an experimental rate measurement, an unbounded cross-section tail above 250 keV, or public distribution rights.",
-  "known_limitations": [
-   "The low-domain bivariate fit remains nonmonotonic in impact energy at 1000 eV; this is a fit property, not a physical threshold.",
-   "The high-energy quadrature omits collision energies above 250 keV; this is a declared cross-section-range boundary, not an extrapolation.",
-   "Below 5 eV the composite cross section uses the Janev lower-domain fit; the Lindsay-Stebbings table does not validate that low-energy part.",
-   "The high-energy branch is a model of an equal-mass Maxwellian target and does not establish a broader distribution or transport closure.",
-   "No independent experimental rate measurement or public distribution licence is established.",
-   "Cannot establish: the absolute table values of this relation. They need the Janev (1995) chapter 11 charge-exchange rate tables, which are not in this repository and not available from a free source, so only units, the declared functional form and cross-asset consistency are established; no coefficient or absolute rate is asserted against a published number"
-  ]
- }
 }
