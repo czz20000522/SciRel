@@ -201,18 +201,21 @@
    "The composition contract: the cylindrical quadrature's volumes normalize the seed and feed the Maxwellian relative-speed rate average on one immutable mesh snapshot.",
    "Output representability: a normalization temperature at 1e308 (thermal-speed overflow), a tiny normalization temperature with a 1e308 shift (infinite raw exponent), a 1e-320 cell volume (normalization denominator underflows, divided distribution overflows) and cell volumes near the float64 ceiling (weighted raw seed sums overflow, divided distribution collapses to zeros) are each rejected with a ValueError. Inputs without a zero exponent produce unchanged numbers.",
    "The input contract: nonempty shift layers, shape consistency, real numeric finite values, positive temperatures/masses/tnorm, integer molecule_count exactly 1 or 2, and strictly positive volumes; every out-of-domain value is rejected.",
-   "historical-unbound UNKNOWN: the claimed separately executed SHA-256-pinned reference comparison has no bindable comparison receipt in the inspected evidence. The direct in-file loop, normalization, tail floor and retained analytic peak and quadrature-composition assertions remain supported regression checks, not proof of that historical independent execution."
+   "historical-unbound UNKNOWN: the claimed separately executed SHA-256-pinned reference comparison has no bindable comparison receipt in the inspected evidence. The direct in-file loop, normalization, tail floor and retained analytic peak and quadrature-composition assertions remain supported regression checks, not proof of that historical independent execution.",
+   "Independent evidence (tests/neutrals/test_maxwellian_seed_evidence.py): the exponent is recomputed node by node as the exact rational quadratic form (fixing the sign, the s/vth shift conversion and the molecule-count factor), moving the shift by exactly one thermal speed is required to relabel the axial mesh by -1 with a bit-identical exponent, the peak and the tail floor are compared against 60-digit Decimal references, and molecule_count = 2 is required to double the exponent exactly."
   ],
   "tests": [
-   "tests/kinetic/test_shifted_maxwellian_seed.py"
+   "tests/kinetic/test_shifted_maxwellian_seed.py",
+   "tests/neutrals/test_maxwellian_seed_evidence.py"
   ],
-  "evidence_ceiling": "The direct tests include independent analytic Maxwell-Boltzmann peak ratios and preserve the existing normalization, signed shift, molecule count, tail floor, representability, failure and quadrature-composition checks. The in-file loop remains a regression formulation of the same discrete relation. These finite-grid checks do not establish full Maxwellian moments, tail accuracy or transport physics. historical-unbound UNKNOWN still applies to the separately executed digest-pinned historical reference comparison; the new analytic tests do not supply that receipt.",
+  "evidence_ceiling": "The direct tests include independent analytic Maxwell-Boltzmann peak ratios and preserve the existing normalization, signed shift, molecule count, tail floor, representability, failure and quadrature-composition checks. The in-file loop remains a regression formulation of the same discrete relation. These finite-grid checks do not establish full Maxwellian moments, tail accuracy or transport physics. historical-unbound UNKNOWN still applies to the separately executed digest-pinned historical reference comparison; the new analytic tests do not supply that receipt. C1 evidence adds: the exact rational quadratic form, the exact shift covariance, high-precision peak/floor values and the exact squaring of the molecule-count branch; it does not establish the continuum Maxwellian moments or the tail accuracy.",
   "known_limitations": [
    "The seed is explicitly the pre-compensation stage: any moment-compensation step is outside this leaf, so this distribution is not the final compensated result.",
    "The constants are fixed historical values, not current best estimates; AMU_KG names the hydrogen mass rather than standard amu, and no conversion is performed.",
    "The exponent floor is a numerical device: distribution values in the floored region carry no exponential resolution, and the uniform-limit regime must not be read as a physical Maxwellian.",
    "Independent analytic peak ratios are checked; no separately executed external numerical oracle is recorded, and the retained tail floor remains an approximation.",
-   "The contract does not establish: Any downstream moment-compensation step: this leaf returns the seed before compensation.."
+   "The contract does not establish: Any downstream moment-compensation step: this leaf returns the seed before compensation..",
+   "The exponent oracle and the covariance identity are exact for the discrete relation; the tail floor itself remains a numerical device, so the floored region carries no analytic exponential value and the uniform far-shift limit is not a physical Maxwellian."
   ]
  }
 }
