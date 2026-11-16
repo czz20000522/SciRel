@@ -316,36 +316,27 @@ def dpsi_dr(radius, z, filaments, step=None):
     return (up - down) / (2 * step)
 
 
-def psi_by_radial_integration(radius, z, filaments, start_radius):
-    """Return ``integral from start_radius to radius of R' B_Z(R', Z) dR'``.
+def psi_difference(radius, z, filaments, start_radius):
+    """Return ``psi(R, Z) - psi(start_radius, Z)`` from the quadrature psi.
 
-    This is the definition the implementation's cumulative trapezoid
-    approximates, not the approximation itself: ``dpsi/dR = R B_Z`` holds for
-    ``psi = R A_phi``, so the radial integral of ``R' B_Z`` recovers the flux up
-    to the reference value at ``start_radius``.  The outer integral is itself run
-    at two working precisions with the same certificate style as
-    :func:`ring_field`, so the reference does not silently carry a
-    half-converged nested quadrature.
+    This is the quantity the implementation's cumulative trapezoid of ``R B_Z``
+    approximates: for ``psi = R A_phi`` the identity ``dpsi/dR = R B_Z`` makes
+
+        psi(R, Z) - psi(R0, Z) = integral from R0 to R of R' B_Z(R', Z) dR'
+
+    exact, so the difference of two quadrant-evaluated stream functions is the
+    continuous integral itself rather than a second trapezoid.  Evaluating it by
+    two independent ``A_phi`` quadratures, instead of by integrating ``B_Z``,
+    keeps the reference off the route the implementation takes.
+
+    The ``dpsi/dR = R B_Z`` half of the identity is checked separately by
+    :func:`dpsi_dr` and :func:`axial_field`, so this function does not take the
+    identity on trust.
     """
     target, start = mp.mpf(radius), mp.mpf(start_radius)
-    if target == start:
-        return mp.mpf(0)
-
-    def integral(dps):
-        def integrand(radial):
-            return radial * _single_field(filaments, radial, z, dps)[2]
-
-        with mp.workdps(dps):
-            return mp.quad(integrand, [mp.mpf(start), mp.mpf(target)])
-
-    weak = integral(_WEAK_DPS)
-    strong = integral(_STRONG_DPS)
-    if abs(weak - strong) > _CROSS_PRECISION * max(abs(strong), mp.mpf("1e-300")):
-        raise QuadratureNotConverged(
-            f"the nested {_WEAK_DPS}- and {_STRONG_DPS}-digit radial integrals disagree: "
-            f"{mp.nstr(weak, 20)} vs {mp.nstr(strong, 20)}"
-        )
-    return strong
+    return _single_field(filaments, target, z, _STRONG_DPS)[0] - _single_field(
+        filaments, start, z, _STRONG_DPS
+    )[0]
 
 
 __all__ = [
@@ -355,6 +346,6 @@ __all__ = [
     "dpsi_dr",
     "dpsi_dz",
     "filament_field",
-    "psi_by_radial_integration",
+    "psi_difference",
     "ring_field",
 ]
