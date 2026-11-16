@@ -77,7 +77,9 @@ def test_u3_t05_zero_total_boundary_is_exact_and_signed_cancellation_is_rejected
         COMPUTE([1.0, -1.0, 2.0, -2.0])
     # Cancellation to a non-zero but tiny total is a legal ledger.
     result = COMPUTE([1.0, -1.0, 0.0, 1.0e-30])
-    assert result["total_power"] == pytest.approx(1.0e-30, rel=1e-9)
+    # abs=0 matters: pytest.approx defaults to a 1e-12 absolute tolerance, which
+    # would accept a zero total -- the branch this test distinguishes from.
+    assert result["total_power"] == pytest.approx(1.0e-30, rel=1e-9, abs=0)
 
 
 # --- Test U3-T06: negative ledgers are computed, not silently repaired. ------
