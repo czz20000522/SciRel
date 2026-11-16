@@ -232,7 +232,7 @@ def _report(**overrides) -> dict:
             setup = {"when": "setup", "outcome": "passed"}
             call = {"when": "call", "outcome": "failed" if outcome == "failed" else "passed"}
             if outcome in ("skipped", "xfailed"):
-                setup.update(outcome="skipped", reason="known skip")
+                setup.update(outcome="skipped", reason="known defect")
                 if outcome == "skipped" and index < len(skip_nodes):
                     node, setup["reason"] = skip_nodes[index]
                 if outcome == "xfailed":
@@ -353,6 +353,63 @@ def test_all_skipped_tests_do_not_support_a_green(tmp_path):
         json.dumps(_report(passed=0, skipped=3, skip_reasons={"absent": ["a", "b", "c"]}))
     )
     with pytest.raises(check_all.CountsError, match="no tests executed"):
+        check_all.read_counts(path)
+
+
+def test_a_blank_skip_reason_is_refused(tmp_path):
+    """A test that did not run needs a reason a reader can check, not an empty string."""
+    report = _report(
+        passed=0, skipped=1, collected=1, selected=1, skip_reasons={"": ["a"]}
+    )
+    path = tmp_path / "counts.json"
+    path.write_text(json.dumps(report))
+    with pytest.raises(check_all.CountsError, match="skip reason is blank"):
+        check_all.read_counts(path)
+
+
+def test_a_placeholder_skip_reason_is_refused(tmp_path):
+    """Bare labels such as ``skip`` or ``n/a`` name nothing that can be audited."""
+    report = _report(
+        passed=0, skipped=1, collected=1, selected=1, skip_reasons={"n/a": ["a"]}
+    )
+    path = tmp_path / "counts.json"
+    path.write_text(json.dumps(report))
+    with pytest.raises(check_all.CountsError, match="bare placeholder"):
+        check_all.read_counts(path)
+
+
+def test_a_blank_xfail_reason_is_refused(tmp_path):
+    report = _report(passed=0, xfailed=1, collected=1, selected=1)
+    for phase in report["results"][0]["phases"]:
+        if "wasxfail" in phase:
+            phase["wasxfail"] = ""
+    path = tmp_path / "counts.json"
+    path.write_text(json.dumps(report))
+    with pytest.raises(check_all.CountsError, match="xfail reason is blank"):
+        check_all.read_counts(path)
+
+
+def test_an_xfail_reason_that_is_not_the_marker_reason_is_refused(tmp_path):
+    """The recorded skip reason has to be the marker reason, so the two cannot drift apart."""
+    report = _report(passed=0, xfailed=1, collected=1, selected=1)
+    node = report["selected_nodeids"][0]
+    for phase in report["results"][0]["phases"]:
+        if phase["outcome"] == "skipped":
+            phase["reason"] = "a different story"
+    report["skip_reasons"] = {"a different story": [node]}
+    path = tmp_path / "counts.json"
+    path.write_text(json.dumps(report))
+    with pytest.raises(check_all.CountsError, match="xfail reason disagrees"):
+        check_all.read_counts(path)
+
+
+def test_exit_status_one_without_any_failure_is_refused(tmp_path):
+    """A non-zero pytest exit status must be explained by a failed or error outcome."""
+    report = _report()
+    report["pytest_exitstatus"] = 1
+    path = tmp_path / "counts.json"
+    path.write_text(json.dumps(report))
+    with pytest.raises(check_all.CountsError, match="exit status 1 without failed/error"):
         check_all.read_counts(path)
 
 
