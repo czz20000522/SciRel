@@ -12,6 +12,7 @@ implementation silently clipped them to the lower endpoint).
 from __future__ import annotations
 
 import numpy as np
+import scirel
 import pytest
 
 from scirel.collisions import (
@@ -65,7 +66,7 @@ def test_endpoint_clipping_is_preserved():
 
 
 def test_upper_clipping_emits_runtime_warning():
-    with pytest.warns(RuntimeWarning, match="upper limit"):
+    with pytest.warns(scirel.ApplicabilityWarning, match="upper limit"):
         above = evaluate_molecular_hydrogen_charge_exchange_cross_section(np.array([40_000.0]))
     edge = evaluate_molecular_hydrogen_charge_exchange_cross_section(np.array([20_100.0]))
     np.testing.assert_array_equal(above, edge)

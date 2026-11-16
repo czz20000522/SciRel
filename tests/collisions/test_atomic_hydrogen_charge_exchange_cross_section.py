@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import numpy as np
+import scirel
 import pytest
 
 from scirel.collisions import evaluate_atomic_hydrogen_charge_exchange_cross_section
@@ -97,13 +98,13 @@ def test_freeman_branch_matches_independent_evaluation_and_differs_from_default(
 
 
 def test_endpoint_clipping_is_preserved_and_warned():
-    with pytest.warns(RuntimeWarning, match="upper limit"):
+    with pytest.warns(scirel.ApplicabilityWarning, match="upper limit"):
         result = evaluate_atomic_hydrogen_charge_exchange_cross_section(
             np.array([0.01, 0.1, 2.5e5, 3.0e5])
         )
     assert result[0] == result[1]
     assert result[-1] == result[-2]
-    with pytest.warns(RuntimeWarning, match="upper limit"):
+    with pytest.warns(scirel.ApplicabilityWarning, match="upper limit"):
         freeman = evaluate_atomic_hydrogen_charge_exchange_cross_section(
             np.array([0.01, 0.1, 1.0e5, 2.0e5]), freeman=True
         )

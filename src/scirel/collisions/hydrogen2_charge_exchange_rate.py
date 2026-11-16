@@ -137,12 +137,12 @@ def evaluate_hydrogen2_charge_exchange_rate(temperature_ev, energy_ev):
         ``scalar or array``. The value must be finite and strictly positive.
         Values below ``0.1 eV`` are clipped to that endpoint silently. Values
         above ``2.01e4 eV`` are clipped to that endpoint and emit
-        ``RuntimeWarning``.
+        ``ApplicabilityWarning``.
     energy_ev : real scalar or array-like
         Impact energy paired with each temperature. [eV] Shape: ``same as
         temperature_ev``. The value must be finite and nonnegative. Values
         below ``0.1 eV`` are clipped to that endpoint silently. Values above
-        ``2.01e4 eV`` are clipped to that endpoint and emit ``RuntimeWarning``.
+        ``2.01e4 eV`` are clipped to that endpoint and emit ``ApplicabilityWarning``.
 
     Returns
     -------
@@ -160,7 +160,7 @@ def evaluate_hydrogen2_charge_exchange_rate(temperature_ev, energy_ev):
 
     Warns
     -----
-    RuntimeWarning
+    ApplicabilityWarning
         If either paired sample is above ``2.01e4 eV``. The fit uses the endpoint
         value in that dimension; it does not extrapolate.
 
@@ -203,6 +203,7 @@ def evaluate_hydrogen2_charge_exchange_rate(temperature_ev, energy_ev):
         _FIT_UPPER_EV,
         "evaluate_hydrogen2_charge_exchange_rate",
         effect="uses the clipped upper edge in that fit dimension",
+        asset_id="scirel.collisions.molecular-hydrogen-charge-exchange-rate-coefficient",
     )
     warn_above_fit(
         temperature,
@@ -210,6 +211,7 @@ def evaluate_hydrogen2_charge_exchange_rate(temperature_ev, energy_ev):
         "evaluate_hydrogen2_charge_exchange_rate",
         quantity="temperature",
         effect="uses the clipped upper edge in that fit dimension",
+        asset_id="scirel.collisions.molecular-hydrogen-charge-exchange-rate-coefficient",
     )
     clipped_temperature = np.clip(temperature, _FIT_LOWER_EV, _FIT_UPPER_EV)
     clipped_energy = np.clip(energy, _FIT_LOWER_EV, _FIT_UPPER_EV)

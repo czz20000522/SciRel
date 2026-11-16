@@ -6,7 +6,7 @@ energy in ``eV`` using one Janev nine-coefficient logarithmic polynomial,
 
 **Boundary semantics.**  A positive input below the lower fit endpoint returns
 the lower endpoint silently.  A positive input above the upper fit endpoint
-returns the upper endpoint and emits one ``RuntimeWarning``; it is a declared
+returns the upper endpoint and emits one ``ApplicabilityWarning``; it is a declared
 model limit, not an extrapolation.  Negative energies are rejected before
 evaluation.  The fit is non-monotonic between about 978 and 8291 eV, so
 monotonicity is not promised.
@@ -55,7 +55,7 @@ def evaluate_molecular_hydrogen_charge_exchange_cross_section(energy_ev):
         Collision energy. [eV] Shape: ``scalar or array``. The value must be finite
         and nonnegative. Values below ``0.1 eV`` are clipped to that endpoint
         silently. Values above ``2.01e4 eV`` are clipped to that endpoint and emit
-        ``RuntimeWarning``.
+        ``ApplicabilityWarning``.
 
     Returns
     -------
@@ -70,7 +70,7 @@ def evaluate_molecular_hydrogen_charge_exchange_cross_section(energy_ev):
 
     Warns
     -----
-    RuntimeWarning
+    ApplicabilityWarning
         If a requested energy is above ``2.01e4 eV``. The returned value is the
         endpoint value, not an extrapolation.
 
@@ -113,6 +113,7 @@ def evaluate_molecular_hydrogen_charge_exchange_cross_section(energy_ev):
         raw_energy,
         _FIT_UPPER_EV,
         "evaluate_molecular_hydrogen_charge_exchange_cross_section",
+        asset_id="scirel.collisions.molecular-hydrogen-charge-exchange-cross-section",
     )
     energy = clipped_energy(raw_energy, _FIT_LOWER_EV, _FIT_UPPER_EV)
     log_sigma = log_polynomial(np.log(energy), _COEFFICIENTS)

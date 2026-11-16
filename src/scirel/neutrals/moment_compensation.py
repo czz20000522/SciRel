@@ -6,6 +6,8 @@ import warnings
 
 import numpy as np
 
+from scirel import ApplicabilityWarning
+
 from .cylindrical_velocity_quadrature import make_cylindrical_velocity_quadrature
 
 __all__ = ["compensate_velocity_slice", "build_compensated_shifted_maxwellian"]
@@ -114,13 +116,13 @@ def compensate_velocity_slice(
     ValueError, TypeError, IndexError, KeyError, AttributeError
         Array conversion, incompatible shapes, indexing or missing quadrature
         fields propagate their native errors; inputs are not repaired.
-    RuntimeWarning
+    ApplicabilityWarning
         A moment-error warning is emitted as described below. If warnings are
         configured as errors, it propagates as an exception.
 
     Warns
     -----
-    RuntimeWarning
+    ApplicabilityWarning
         If the corrected slice misses the targets by more than ``moment_rtol``
         once normalized by its own density, or its density changed by more than
         that. The correction is linear in the targets and does not conserve
@@ -166,10 +168,13 @@ def compensate_velocity_slice(
     )
     if max(errors) > moment_rtol:
         warnings.warn(
-            "velocity slice missed its moment targets: relative density, drift and energy errors "
-            f"{errors[0]:.3g}, {errors[1]:.3g}, {errors[2]:.3g} exceed {moment_rtol:g}; "
-            "the velocity mesh may not represent this distribution",
-            RuntimeWarning,
+            "compensate_velocity_slice: velocity slice missed its moment targets: relative "
+            f"density, drift and energy errors {errors[0]:.3g}, {errors[1]:.3g}, {errors[2]:.3g} "
+            f"exceed the caller's tolerance moment_rtol={moment_rtol:g} (dimensionless); the "
+            "source-shaped correction is linear in the targets and does not conserve density, "
+            "so this slice can misrepresent the distribution it was built from "
+            "(scirel.neutrals.velocity-slice-moment-compensation)",
+            ApplicabilityWarning,
             stacklevel=2,
         )
     return result, scale

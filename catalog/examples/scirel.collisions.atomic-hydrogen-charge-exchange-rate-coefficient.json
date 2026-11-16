@@ -28,17 +28,17 @@
   ],
   "model": "Nine-by-nine bivariate logarithmic fit through 20.1 keV, with a Maxwellian relative-speed quadrature of the continuous composite cross section above that domain.",
   "geometry": "None; paired scalar or array material samples with no spatial or velocity axis inferred (coordinates: temperature and impact energy in eV).",
-  "boundary": "Finite real inputs with identical shape; temperature strictly positive and impact energy nonnegative. Low values clip to 0.1 eV; values above 250 keV clip with RuntimeWarning. The high-energy quadrature omits collision energies above 250 keV.",
+  "boundary": "Finite real inputs with identical shape; temperature strictly positive and impact energy nonnegative. Low values clip to 0.1 eV; values above 250 keV clip with ApplicabilityWarning. The high-energy quadrature omits collision energies above 250 keV.",
   "device_scope": "generic"
  },
  "identity": {
   "relation": "H + H+ charge-exchange rate coefficient from a low-domain bivariate fit or a high-energy Maxwellian integral",
   "direction": "paired plasma temperature and impact energy in eV -> rate coefficient in m^3/s",
-  "definition": "For each paired sample, if T <= 2.01e4 eV and E <= 2.01e4 eV, clip both to [0.1, 2.01e4] eV and evaluate the legacy nine-by-nine logarithmic polynomial with the declared term order, returning exp(log_rate)*1e-6 m^3/s. Otherwise clip T and E to [0.1, 2.5e5] eV and integrate the continuous composite cross section against the equal-mass Maxwellian relative-speed density; collision energies above 2.5e5 eV are omitted. Values above 2.5e5 eV emit RuntimeWarning.",
+  "definition": "For each paired sample, if T <= 2.01e4 eV and E <= 2.01e4 eV, clip both to [0.1, 2.01e4] eV and evaluate the legacy nine-by-nine logarithmic polynomial with the declared term order, returning exp(log_rate)*1e-6 m^3/s. Otherwise clip T and E to [0.1, 2.5e5] eV and integrate the continuous composite cross section against the equal-mass Maxwellian relative-speed density; collision energies above 2.5e5 eV are omitted. Values above 2.5e5 eV emit ApplicabilityWarning.",
   "model": "piecewise low-domain bivariate fit and high-energy Maxwellian quadrature of the published composite cross section",
   "geometry": "none; paired scalar or array material samples",
   "coordinates": "temperature and impact energy in eV; output rate coefficient in m^3/s",
-  "boundary": "finite real same-shape inputs; positive temperature; nonnegative energy; low-domain clipping to 0.1 eV and upper clipping at 250 keV with RuntimeWarning; finite positive result",
+  "boundary": "finite real same-shape inputs; positive temperature; nonnegative energy; low-domain clipping to 0.1 eV and upper clipping at 250 keV with ApplicabilityWarning; finite positive result",
   "assumptions": [
    "The legacy 9x9 coefficient table and accumulation order define the fit used through 2.01e4 eV.",
    "Above 2.01e4 eV the rate is defined by the equal-mass Maxwellian integral of the separately exposed composite cross section, not by extending the bivariate fit.",
@@ -54,7 +54,7 @@
    "shape": "scalar or array; exactly the shape of energy_ev",
    "dtype": "real numeric array-like",
    "required": true,
-   "constraints": "Finite and strictly positive real values. Values below 0.1 eV clip; values above 2.5e5 eV clip with RuntimeWarning."
+   "constraints": "Finite and strictly positive real values. Values below 0.1 eV clip; values above 2.5e5 eV clip with ApplicabilityWarning."
   },
   {
    "name": "energy_ev",
@@ -63,7 +63,7 @@
    "shape": "scalar or array; exactly the shape of temperature_ev",
    "dtype": "real numeric array-like",
    "required": true,
-   "constraints": "Finite nonnegative real values with the same shape as temperature. Values below 0.1 eV clip; values above 2.5e5 eV clip with RuntimeWarning."
+   "constraints": "Finite nonnegative real values with the same shape as temperature. Values below 0.1 eV clip; values above 2.5e5 eV clip with ApplicabilityWarning."
   }
  ],
  "outputs": [
@@ -94,7 +94,7 @@
  },
  "failure_semantics": {
   "invalid_input": "Non-real, non-finite, unequal-shape, nonpositive-temperature or negative-energy inputs raise ValueError; boolean, complex and numeric-string coercions are rejected.",
-  "runtime_failure": "A non-finite or nonpositive result raises ValueError. Temperature or energy above 2.5e5 eV emits RuntimeWarning and uses the clipped upper edge.",
+  "runtime_failure": "A non-finite or nonpositive result raises ValueError. Temperature or energy above 2.5e5 eV emits ApplicabilityWarning and uses the clipped upper edge.",
   "nonconvergence": "Not applicable; no iteration.",
   "partial_results": "Never returned."
  },
@@ -113,8 +113,8 @@
  },
  "example": {
   "description": "Mix a low-domain reference sample with the T=50 keV, E=100 keV high-energy quadrature case and verify upper clipping.",
-  "code": "import warnings\nimport numpy as np\nfrom scirel.collisions import evaluate_atomic_hydrogen_charge_exchange_rate\n\nt = np.array([1.0, 5.0e4])\ne = np.array([1.0, 1.0e5])\nr = evaluate_atomic_hydrogen_charge_exchange_rate(t, e)\nassert r.shape == (2,) and np.all(np.isfinite(r)) and np.all(r > 0.0)\nnp.testing.assert_allclose(r[1], 1.2004964216070182e-14, rtol=1e-10, atol=0.0)\nwith warnings.catch_warnings(record=True) as caught:\n    warnings.simplefilter('always')\n    clipped = evaluate_atomic_hydrogen_charge_exchange_rate(np.array([3.0e5, 2.5e5]), np.array([1.0, 1.0]))\nassert len(caught) == 1 and issubclass(caught[0].category, RuntimeWarning)\nedge = evaluate_atomic_hydrogen_charge_exchange_rate(np.array([2.5e5, 2.5e5]), np.array([1.0, 1.0]))\nnp.testing.assert_allclose(clipped, edge, rtol=1e-12, atol=0.0)",
-  "expected": "The low sample follows the legacy fit, the high sample is about 1.2005e-14 m^3/s, and values above 250 keV clip to the endpoint under one RuntimeWarning."
+  "code": "import warnings\nimport numpy as np\nimport scirel\nfrom scirel.collisions import evaluate_atomic_hydrogen_charge_exchange_rate\n\nt = np.array([1.0, 5.0e4])\ne = np.array([1.0, 1.0e5])\nr = evaluate_atomic_hydrogen_charge_exchange_rate(t, e)\nassert r.shape == (2,) and np.all(np.isfinite(r)) and np.all(r > 0.0)\nnp.testing.assert_allclose(r[1], 1.2004964216070182e-14, rtol=1e-10, atol=0.0)\nwith warnings.catch_warnings(record=True) as caught:\n    warnings.simplefilter('always')\n    clipped = evaluate_atomic_hydrogen_charge_exchange_rate(np.array([3.0e5, 2.5e5]), np.array([1.0, 1.0]))\nassert len(caught) == 1 and issubclass(caught[0].category, scirel.ApplicabilityWarning)\nedge = evaluate_atomic_hydrogen_charge_exchange_rate(np.array([2.5e5, 2.5e5]), np.array([1.0, 1.0]))\nnp.testing.assert_allclose(clipped, edge, rtol=1e-12, atol=0.0)",
+  "expected": "The low sample follows the legacy fit, the high sample is about 1.2005e-14 m^3/s, and values above 250 keV clip to the endpoint under one ApplicabilityWarning."
  },
  "verification": {
   "scope": [

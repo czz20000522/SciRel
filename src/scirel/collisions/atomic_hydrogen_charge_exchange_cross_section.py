@@ -86,7 +86,7 @@ def evaluate_atomic_hydrogen_charge_exchange_cross_section(energy_ev, freeman=Fa
     ValueError
         If ``energy_ev`` is not real numeric, is non-finite or is negative, or if
         ``freeman`` is not a scalar branch selector.
-    RuntimeWarning
+    ApplicabilityWarning
         If a requested energy is above the selected branch's upper limit. The
         returned value is the endpoint value and is not extrapolated.
 
@@ -108,7 +108,7 @@ def evaluate_atomic_hydrogen_charge_exchange_cross_section(energy_ev, freeman=Fa
     ``(4.15 - 0.531 * ln(E_keV))**2
     * (1 - exp(-67.3 / E_keV))**4.5 * 1e-20 m^2``.
 
-    The default high-energy endpoint is 250 keV and emits ``RuntimeWarning`` above
+    The default high-energy endpoint is 250 keV and emits ``ApplicabilityWarning`` above
     that range. The Freeman-Jones branch is an independent comparison fit through
     100 keV, not the default. The Lindsay-Stebbings table starts at 5 eV, so the
     low-energy Janev portion below 5 eV is not validated by that table.
@@ -123,6 +123,7 @@ def evaluate_atomic_hydrogen_charge_exchange_cross_section(energy_ev, freeman=Fa
     --------
     >>> import warnings
     >>> import numpy as np
+    >>> import scirel
     >>> from scirel.collisions import evaluate_atomic_hydrogen_charge_exchange_cross_section
     >>> energy = np.array([0.1, 1.0, 10.0, 1.0e4, 1.267317514018116e4, 3.0e4, 1.0e5])
     >>> composite = evaluate_atomic_hydrogen_charge_exchange_cross_section(energy)
@@ -133,7 +134,7 @@ def evaluate_atomic_hydrogen_charge_exchange_cross_section(energy_ev, freeman=Fa
     >>> with warnings.catch_warnings(record=True) as caught:
     ...     warnings.simplefilter('always')
     ...     clipped = evaluate_atomic_hydrogen_charge_exchange_cross_section(np.array([0.01, 0.1, 3.0e5, 2.5e5]))
-    >>> assert len(caught) == 1 and issubclass(caught[0].category, RuntimeWarning)
+    >>> assert len(caught) == 1 and issubclass(caught[0].category, scirel.ApplicabilityWarning)
     >>> assert clipped[0] == clipped[1] and clipped[-1] == clipped[-2]
     >>> try:
     ...     evaluate_atomic_hydrogen_charge_exchange_cross_section(np.array([1.0, -0.5]))
@@ -153,7 +154,12 @@ def evaluate_atomic_hydrogen_charge_exchange_cross_section(energy_ev, freeman=Fa
         raise ValueError("freeman must be a scalar branch selector, not an array")
     upper = _FREEMAN_UPPER_EV if bool(selector) else _COMPOSITE_UPPER_EV
     energy = clipped_energy(energy_ev, 0.1, upper)
-    warn_above_fit(energy_ev, upper, "evaluate_atomic_hydrogen_charge_exchange_cross_section")
+    warn_above_fit(
+        energy_ev,
+        upper,
+        "evaluate_atomic_hydrogen_charge_exchange_cross_section",
+        asset_id="scirel.collisions.atomic-hydrogen-charge-exchange-cross-section",
+    )
     if bool(selector):
         return (
             1.0e-4

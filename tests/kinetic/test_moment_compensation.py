@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import numpy as np
+import scirel
 import pytest
 
 from scirel.neutrals import (
@@ -191,7 +192,7 @@ def test_slice_warns_when_the_correction_changes_the_density():
     drift, temperature = 5e4, 50.0
     f = np.exp(-(vr[:, None] ** 2 + (vx[None, :] - drift / speed) ** 2) * 10.0 / temperature)
     f /= np.sum(cells["volume"] * f)
-    with pytest.warns(RuntimeWarning, match="missed its moment targets"):
+    with pytest.warns(scirel.ApplicabilityWarning, match="missed its moment targets"):
         compensate_velocity_slice(
             f, cells, vr, vx, speed, drift, drift**2 + 3 * charge * temperature / mass
         )

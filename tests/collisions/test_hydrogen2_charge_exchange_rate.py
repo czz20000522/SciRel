@@ -1,6 +1,7 @@
 """Contract tests for the H2 charge-exchange rate fit."""
 
 import numpy as np
+import scirel
 import pytest
 
 from scirel.collisions import (
@@ -80,7 +81,7 @@ def test_clipping_and_scalar_shape():
 
 
 def test_upper_clipping_emits_one_runtime_warning():
-    with pytest.warns(RuntimeWarning, match="upper limit"):
+    with pytest.warns(scirel.ApplicabilityWarning, match="upper limit"):
         above = evaluate_hydrogen2_charge_exchange_rate(np.array([50_000.0]), np.array([1.0]))
     edge = evaluate_hydrogen2_charge_exchange_rate(np.array([20_100.0]), np.array([1.0]))
     np.testing.assert_array_equal(above, edge)

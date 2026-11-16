@@ -21,6 +21,7 @@ cross-asset consistency evidence and are labelled as such in the report.
 from __future__ import annotations
 
 import numpy as np
+import scirel
 import pytest
 from scipy import constants
 
@@ -246,7 +247,7 @@ def test_cross_section_positive_out_of_range_clips_to_endpoints(label, call, low
     ],
 )
 def test_selected_upper_fit_limits_warn_before_endpoint_clipping(call, upper):
-    with pytest.warns(RuntimeWarning, match="upper limit"):
+    with pytest.warns(scirel.ApplicabilityWarning, match="upper limit"):
         above = call(np.asarray([2.0 * upper]))
     edge = call(np.asarray([upper]))
     np.testing.assert_array_equal(above, edge)
@@ -268,7 +269,7 @@ def test_selected_upper_fit_limits_warn_before_endpoint_clipping(call, upper):
     ],
 )
 def test_selected_upper_rate_limits_warn_before_endpoint_clipping(call, upper, args):
-    with pytest.warns(RuntimeWarning, match="upper limit"):
+    with pytest.warns(scirel.ApplicabilityWarning, match="upper limit"):
         above = call(*args)
     if call is evaluate_hydrogen2_charge_exchange_rate:
         edge = call(np.asarray([1.0]), np.asarray([upper]))

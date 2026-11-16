@@ -1,6 +1,7 @@
 """Contract tests for the Janev H/H2 electron-impact ionization fits."""
 
 import numpy as np
+import scirel
 import pytest
 
 from scirel.collisions import evaluate_janev_electron_impact_ionization_rate
@@ -59,7 +60,7 @@ def test_species_distinction_clipping_and_scalar_shape():
 
 
 def test_upper_clipping_emits_runtime_warning():
-    with pytest.warns(RuntimeWarning, match="upper limit"):
+    with pytest.warns(scirel.ApplicabilityWarning, match="upper limit"):
         above = evaluate_janev_electron_impact_ionization_rate(np.array([50_000.0]), "H")
     edge = evaluate_janev_electron_impact_ionization_rate(np.array([20_100.0]), "H")
     np.testing.assert_array_equal(above, edge)
