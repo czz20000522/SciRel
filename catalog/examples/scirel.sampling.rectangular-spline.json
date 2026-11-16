@@ -127,17 +127,20 @@
  },
  "verification": {
   "scope": [
-   "Public callable signature and documented finite-input behavior",
-   "The direct regression fixtures listed in verification.tests",
-   "The executable example stored in this contract",
-   "Closed-support rejection of out-of-grid and nonfinite query points."
+   "A polynomial of degree at most three in each variable is reproduced at four query points within a 16*eps budget, and the expected values are the polynomials themselves, not a re-evaluation of the same spline.",
+   "Radial quadratic, radial cubic, a separable product and an affine field are all asserted, so a wrong axis order or a linear-only interpolant is red.",
+   "The output is asserted to be ordered like the query list by reversing the queries, and the fixture is asserted discriminating.",
+   "Rejection covers out-of-support and non-finite queries, a malformed query shape and a mismatched grid, each with its own ValueError assertion.",
+   "A too-coarse grid, which cannot form a cubic spline, is asserted to propagate the underlying exception, and no partial result is returned on rejection."
   ],
   "tests": [
-   "tests/equilibrium/test_analysis_families.py"
+   "tests/equilibrium/test_analysis_families.py",
+   "tests/sampling/test_analytic_sampling_evidence.py"
   ],
-  "evidence_ceiling": "Direct examples and named regression fixtures establish the documented relation on those inputs; they do not establish arbitrary-input correctness, experimental validation, or release approval.",
+  "evidence_ceiling": "Establishes exact reproduction for polynomials of degree at most three in each variable. It does not establish an accuracy order for general smooth fields, and out-of-support queries are rejected rather than extrapolated.",
   "known_limitations": [
-   "Out-of-grid queries are rejected; arbitrary nonlinear interpolation errors remain unqualified"
+   "Out-of-grid queries are rejected; arbitrary nonlinear interpolation errors remain unqualified",
+   "cannot establish: an interpolation error bound for non-polynomial fields; only polynomial reproduction is established"
   ]
  }
 }

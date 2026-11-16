@@ -143,17 +143,20 @@
  },
  "verification": {
   "scope": [
-   "Public callable signature and documented finite-input behavior",
-   "The direct regression fixtures listed in verification.tests",
-   "The executable example stored in this contract",
-   "Unknown contour levels raise ValueError; direct regression test_select_fieldline_rejects_unknown_level_with_value_error binds this behavior."
+   "Level membership is asserted to be exact: a representable neighbour of a stored level raises ValueError while the stored level resolves, so a tolerant lookup is red.",
+   "The chosen level group is identified by disjoint coordinate ranges, so a wrong level index is red even when the wrong group holds more vertices.",
+   "The selected segment is compared with an independently computed maximum-by-vertex-count segment, and the first-listed tie rule is asserted as a recorded convention.",
+   "Delegation to the segment parser is asserted by direct equality with that parser applied to the same segment, so the two relations cannot drift apart silently.",
+   "Failure matrix gives one executable assertion for an unknown level, which raises ValueError and returns nothing."
   ],
   "tests": [
-   "tests/equilibrium/test_analysis_families.py"
+   "tests/equilibrium/test_analysis_families.py",
+   "tests/sampling/test_polyline_and_selection_evidence.py"
   ],
-  "evidence_ceiling": "Direct examples and named regression fixtures establish the documented relation on those inputs; they do not establish arbitrary-input correctness, experimental validation, or release approval.",
+  "evidence_ceiling": "Establishes level membership, group indexing and the delegation contract. It does not establish that the returned polyline is a unique physical flux surface, and it does not connect separate segments of the same level.",
   "known_limitations": [
-   "Does not establish unique physical flux surface or connect separate segments"
+   "Does not establish unique physical flux surface or connect separate segments",
+   "cannot establish: a physical flux-surface identity for the selected polyline; only the selection and parsing relation is established"
   ]
  }
 }

@@ -119,17 +119,20 @@
  },
  "verification": {
   "scope": [
-   "Public callable signature and documented finite-input behavior",
-   "The direct regression fixtures listed in verification.tests",
-   "The executable example stored in this contract",
-   "ValueError rejection of nonzero first-column, nonfinite and shape-invalid inputs."
+   "The mirrored grid is asserted bitwise against an array assembled without the operator, and the symmetry-plane column is asserted to appear exactly once per row.",
+   "An even field is asserted to satisfy F(-rho)=F(rho) bitwise, which a sign error or a wrong column order breaks.",
+   "Re-applying the operator is asserted to fail, because the mirrored grid is no longer centred; this pins the symmetry-plane precondition.",
+   "Degenerate and malformed inputs are each asserted: a single radial column, a non-zero first column, mismatched shapes, a one-dimensional input, a non-finite field and supplying both field channels all raise ValueError.",
+   "Repeated calls are asserted to be bitwise identical, which is the reproducibility statement for this relation."
   ],
   "tests": [
-   "tests/equilibrium/test_analysis_families.py"
+   "tests/equilibrium/test_analysis_families.py",
+   "tests/sampling/test_polyline_and_selection_evidence.py"
   ],
-  "evidence_ceiling": "Direct examples and named regression fixtures establish the documented relation on those inputs; they do not establish arbitrary-input correctness, experimental validation, or release approval.",
+  "evidence_ceiling": "Establishes the mirror and even-parity convention exactly. It does not establish odd-parity vector components or any signed-radius physical interpretation.",
   "known_limitations": [
-   "No vector-component parity or signed-radius physical field interpretation"
+   "No vector-component parity or signed-radius physical field interpretation",
+   "cannot establish: vector-component parity; the operator duplicates even scalars only"
   ]
  }
 }

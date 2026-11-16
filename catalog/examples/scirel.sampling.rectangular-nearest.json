@@ -128,18 +128,22 @@
  },
  "verification": {
   "scope": [
-   "Public callable signature and documented finite-input behavior",
-   "The direct regression fixtures listed in verification.tests",
-   "The executable example stored in this contract"
+   "The fixture stores 100*iy+ix, so the returned value is a lossless encoding of the selected cell; the assertion is on the choice, not on a floating value, and a constant response cannot satisfy the battery.",
+   "For six rational queries the chosen cell equals the exact axis-wise argmin pair computed independently from the stored axes.",
+   "An exact half-way tie resolves to the lower index and the choice flips just past the midpoint, so the tie rule is pinned by a discriminating pair rather than a single sample.",
+   "Queries outside the sampled range clamp to the end cell, and the answer order follows the query list including duplicates.",
+   "Failure matrix gives one executable assertion per rejecting channel: non-finite samples, field or queries raise ValueError, a malformed field shape propagates IndexError, and no partial result is returned."
   ],
   "tests": [
    "tests/equilibrium/test_analysis_families.py",
-   "tests/geometry/test_sampling_failures.py"
+   "tests/geometry/test_sampling_failures.py",
+   "tests/sampling/test_nearest_sampling_evidence.py"
   ],
-  "evidence_ceiling": "Direct examples and named regression fixtures establish the documented relation on those inputs; they do not establish arbitrary-input correctness, experimental validation, or release approval.",
+  "evidence_ceiling": "Establishes the separable nearest rule and its tie convention on sampled grids. It does not establish any interpolation accuracy, because the relation selects a stored sample and never interpolates, and it does not assert equivalence with the geometric scheme on non-separable input.",
   "known_limitations": [
    "Rectangular and geometric nearest schemes are not asserted equivalent on irregular input",
-   "Physical interpretation outside caller-declared support is unqualified; nonfinite field values are rejected"
+   "Physical interpretation outside caller-declared support is unqualified; nonfinite field values are rejected",
+   "cannot establish: any interpolation accuracy; the relation only selects a stored sample"
   ]
  }
 }

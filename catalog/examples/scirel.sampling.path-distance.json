@@ -98,15 +98,18 @@
  },
  "verification": {
   "scope": [
-   "Public callable signature and documented finite-input behavior",
-   "The direct regression fixtures listed in verification.tests",
-   "The executable example stored in this contract"
+   "Cumulative chord lengths are asserted with zero tolerance on Pythagorean legs (3, 0), (0, 4) and (3, 4), whose lengths 3, 4 and 5 are exact in binary64.",
+   "Additivity under refinement at a representable midpoint and prefix stability when vertices are appended are both asserted exactly, so a dropped or re-added vertex is red.",
+   "Rotation by an exact quarter turn leaves every cumulative value bitwise identical, which pins the Euclidean measure and the accumulation order.",
+   "Boundary cases: a single vertex returns exactly zero, a repeated vertex adds exactly zero, and the first-to-last gap is not accumulated, so no implicit closure exists.",
+   "Failure matrix gives one executable assertion for non-finite vertices, which raise ValueError, and no partial result is returned."
   ],
   "tests": [
    "tests/equilibrium/test_analysis_families.py",
-   "tests/geometry/test_sampling_failures.py"
+   "tests/geometry/test_sampling_failures.py",
+   "tests/sampling/test_polyline_and_selection_evidence.py"
   ],
-  "evidence_ceiling": "Direct examples and named regression fixtures establish the documented relation on those inputs; they do not establish arbitrary-input correctness, experimental validation, or release approval.",
+  "evidence_ceiling": "Establishes exact chord-length accumulation on the tested polylines. It does not establish smooth-curve arclength, geodesic length on a curved surface, or any closure of an open path.",
   "known_limitations": [
    "No true smooth-curve arclength or implicit closure"
   ]
