@@ -686,10 +686,18 @@ def run_full_check(
         result = json.loads(result_path.read_text(encoding="utf-8"))
         # The stage decides what the receipt can prove, so refuse a development-stage receipt
         # before any schema or plan comparison can report a confusing argv mismatch instead.
-        if result.get("stage") != "release":
+        recorded_stage = result.get("stage")
+        if recorded_stage is None:
             raise ValueError(
-                "the candidate's receipt is a development-stage run"
-                f" (stage={result.get('stage')!r}): it skips the documentation build, the wheel"
+                "the candidate's receipt records no stage, so it cannot say what it proves"
+                " (an older receipt, or one written before the result carried a stage); it"
+                " cannot support package admission; rerun `python3 scripts/dev.py check`"
+                " (release stage) on the same candidate"
+            )
+        if recorded_stage != "release":
+            raise ValueError(
+                f"the candidate's receipt is a {recorded_stage}-stage run"
+                f" (stage={recorded_stage!r}): it skips the documentation build, the wheel"
                 " build and wheel exposure, the documented examples and the release-only tests,"
                 " so it cannot support package admission; rerun `python3 scripts/dev.py check`"
                 " (release stage) on the same candidate"

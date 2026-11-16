@@ -9,15 +9,27 @@
 # deselects nothing (a renamed or deleted test cannot silently return to the fast path), and the
 # release stage runs the whole suite with zero deselections.
 #
+#
+# Two rules keep this list honest. FIRST, prefer a nodeid over a file: a file entry takes every
+# test in that file out of the development stage, including any correctness test someone adds to
+# it later, and nothing fails when that happens. A file entry is only right when *every* test in
+# the file needs the artifact. SECOND, never add a correctness test to a file that already appears
+# here without narrowing the entry to nodeids in the same commit: the stale-entry check covers
+# renamed and deleted tests, not added ones, so an added test would silently become release-only.
+#
+# `tests/tooling/test_validate_extraction_package.py` is deliberately absent even though it
+# validates an admission artifact: it also holds the test that refuses a development-stage
+# receipt, which is the guard for this very split, and a guard that only runs in the stage it
+# guards is not a guard.
+#
 # Manifest reader: skills/development/scirel-acceptance/scripts/check_all.py
 
 tests/delivery/test_real_delivery.py | Builds the wheel from the candidate commit, installs it into a separate virtual environment and consumes the exported catalog, index and three skills. It proves the artifact is installable and complete, which is release evidence; the development stage has not produced an artifact to consume yet.
 tests/delivery/test_validate_installed_wheel.py | Installs a wheel into an isolated prefix and validates the installed product. Same reason: the installed package is a release artifact, and its bytes are not produced by the change alone.
 tests/delivery/test_consumer_mcp.py | Spawns the official MCP SDK in a separate interpreter against the delivered consumer scripts. It proves the shipped consumer transport works with an external SDK and needs SCIREL_MCP_PYTHON, which the standard check does not provide; the development stage gains nothing from it.
 tests/tooling/test_asset_documentation.py::test_runtime_signatures_tests_and_examples_are_executable | Executes the documented examples of every asset. Example execution is release evidence and already runs once as the `--execute-examples` half of the contracts step; the development stage keeps the schema, signature and default checks of the same file and skips only this execution.
-tests/tooling/test_validate_extraction_package.py | Admission evidence for an extraction package: a fast run is never green, the lock and credential are rechecked, and the `git am` candidate is bound to the result. It proves a delivery package may enter the repository, not that this change is correct.
 tests/docs/test_scirel_docs.py | Builds the human and agent documentation site. The site is a published artifact, and the release stage already builds it as the `documentation build` step.
 tests/docs/test_english_site.py | Builds the English site, a second full Sphinx build over the same builder. Published-artifact evidence.
 tests/docs/test_capability_query.py | Checks capability recall over the generated, snapshot-bound capability index, which only exists as a build artifact of the documentation pipeline.
-tests/docs/test_documentation_inputs.py | Binds the documentation snapshot to the build-time source bytes, which requires actually rendering the site.
+tests/docs/test_documentation_inputs.py::test_real_snapshot_records_build_time_inputs | Binds the generated documentation snapshot to the build-time source bytes, which needs the real rendered site (a 10 s Sphinx build in its setup). The other nine tests in that file are source-level checks — including the digest list that must track the documentation build's own imports — and stay in the development stage.
 tests/docs/test_render_tutorial_execution.py | Regenerates and runs the tutorial execution proof, so it executes RST code blocks against the built documentation.

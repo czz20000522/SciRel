@@ -15,7 +15,7 @@ evidence, and they come from one step table filtered by `--stage`.
 | Level | Who runs it | Command | Covers | Typical time |
 | --- | --- | --- | --- | --- |
 | Domain loop | the implementer, constantly | `python3 scripts/dev.py run python -B scripts/test_scope.py --changed <path>`, then the command it prints through `python3 scripts/dev.py pytest ...` | Only the tests of the domain being changed | Seconds |
-| Development stage | whoever reviews a PR, before merging it | `python3 scripts/dev.py check --stage dev` | Every non-release test, contract schema and runtime signatures, contract sync, hazard scan, lint, format, lockfile | About 3-4 minutes (measured: 201 s) |
+| Development stage | whoever reviews a PR, before merging it | `python3 scripts/dev.py check --stage dev` | Every non-release test, contract schema and runtime signatures, contract sync, hazard scan, lint, format, lockfile | About 4 minutes (measured: 246 s) |
 | Release stage, the default | whoever merges into `main`, and every outward delivery claim | `python3 scripts/dev.py check` | The development stage plus example execution, the documentation build, the wheel build and wheel exposure, and every release-only test | About 8-9 minutes (measured: 512.6 s before the split) |
 | Before each commit | `git commit`; the hook runs `precommit_check.py` with the host `python3` | Private paths and secrets in staged text | Under a second |
 | Optional cross-device spot check | Manually dispatch the `Cross-device check` workflow | The release stage on Linux/amd64 | About 5-15 minutes |
@@ -24,15 +24,17 @@ evidence, and they come from one step table filtered by `--stage`.
 run, so it never appears in a receipt and never stands in for either stage. Parallel or filtered
 runs stay development feedback.
 
-Measured on 2026-11-16 on the tree that shipped this split: the development stage takes 201 s
-(196.6 s of it the `tests` step) with 8136 tests selected and 227 deselected, and ends `ALL
+Measured on 2026-11-16 on the tree that shipped this split: the development stage takes 246 s
+(241.4 s of it the `tests` step) with 8210 tests selected and 154 deselected, and ends `ALL
 GREEN` on a clean commit. The release stage still costs the 512.6 s it cost before the split,
 because none of its steps changed: the split added a faster path, it did not shorten the slow one.
+Keeping `tests/tooling/test_validate_extraction_package.py` in the development stage costs about
+33 s of that, which is the price of running the guard for this split in the stage it guards.
 
 The development stage was also measured while `python3 scripts/dev.py pytest tests/kinetic -q`
 ran concurrently in the same worktree. Both finished green — 2172 passed in the other run, 7/7
-steps and the same 8136/227 selection here — so the shared level does not block a developer's run
-and did not turn a failure into a pass. One measured overlap is not a proof for every pair of
+steps and the same selection here — so the shared level does not block a developer's run and did
+not turn a failure into a pass. One measured overlap is not a proof for every pair of
 runs, which is why the release stage keeps the exclusive lock.
 
 The two stages take different lock levels of the same clone-wide lock. The release stage takes the
@@ -67,6 +69,13 @@ the gate this repository already had.
 means the packaged or published product is wrong, and **not** when it means this change is wrong.
 Anything unclear stays in the development stage. An entry also needs its reason written down: if you
 cannot say why its failure does not mean "this change is wrong", it does not belong on the list.
+
+Prefer a nodeid to a file in that list: a file entry takes every test in the file out of the
+development stage, including a correctness test added later, and nothing fails when that happens.
+The stale-entry check covers renamed and deleted tests, not added ones, so narrowing an entry is
+the only safe way to add a correctness test to a file the list already names. A file that holds a
+guard for this split itself — like `tests/tooling/test_validate_extraction_package.py`, which
+holds the test that refuses a development-stage receipt — stays out of the list entirely.
 
 The development stage deselects exactly that list, and the counts prove it rather than assert it:
 the counts record carries `deselected_nodeids` (schema `3`), every deselected nodeid must belong to
@@ -164,7 +173,10 @@ exit without a complete result, or with zero executed tests, cannot support pack
 The current `scirel.acceptance.v2` result also binds the following fields; older results lacking
 them are rejected, not upgraded or reused:
 
-- `stage` is `release` or `dev`. Admission requires `release`.
+- `stage` is `release` or `dev`. Admission requires `release`, and a result that carries no
+  stage at all is refused as unusable rather than read as either. The field joined an existing
+  `scirel.acceptance.v2` result without a version bump — the only reader refuses a v2 result
+  without it, so an older v2 receipt fails loudly instead of being misread.
 - `run_id` identifies this invocation. The extraction validator supplies a fresh ID and a new
   result filename for each run, and checks both. `--report` refuses an existing file, so a
   failed or interrupted run cannot inherit a previous green result.

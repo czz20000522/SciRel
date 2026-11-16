@@ -36,6 +36,10 @@ COUNTS_PLUGIN = "scirel_pytest_counts"
 # holds the clone's exclusive lock, and the record names the retired credential.
 EXCLUSIVE_MARKER = "SCIREL_EXCLUSIVE_TOKEN"
 EXCLUSIVE_RECORD = "acceptance-exclusive"
+# ``stage`` joined an existing v2 result, so the version number did not move: the only reader is
+# ``validate_extraction_package.py``, and it refuses a v2 result that carries no stage, so an
+# older v2 receipt is unusable rather than silently misread. A bump would have implied two
+# supported v2 shapes.
 RESULT_SCHEMA = "scirel.acceptance.v2"
 LEGACY_RESULT_SCHEMA = "scirel.acceptance.v1"
 SIDECAR_SUFFIX = ".sha256"
