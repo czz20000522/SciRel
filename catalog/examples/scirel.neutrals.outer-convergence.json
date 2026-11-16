@@ -120,16 +120,19 @@
  "verification": {
   "scope": [
    "Current SciRel implementation and the repository tests listed in this contract cover the declared public ports and numerical relation.",
-   "The example exercises one bounded representative case; it does not extend applicability beyond the declared preconditions."
+   "The example exercises one bounded representative case; it does not extend applicability beyond the declared preconditions.",
+   "Independent evidence (tests/neutrals/test_convergence_and_mesh_evidence.py): seed_error is recomputed exactly in rational arithmetic as max|current - previous| / max(current), a common factor of two leaves it bit-identical, and the comparison is decided at the boundary - a relative change exactly equal to truncate converges while one ulp above re-iterates, which distinguishes '>' from '>='."
   ],
   "tests": [
-   "tests/kinetic/test_convergence_accumulation.py"
+   "tests/kinetic/test_convergence_accumulation.py",
+   "tests/neutrals/test_convergence_and_mesh_evidence.py"
   ],
-  "evidence_ceiling": "Bounded to the top-level outer-pass molecular-density re-entry decision. Evidence: `test_convergence_accumulation.py` contains 18 test functions, 1 of which references `evaluate_outer_convergence`, and is shared by 4 assets; only shared-file coverage is bound, so a pass is file-level rather than asset-isolated; the bounded example was executed by this audit. Oracle: self-consistency/regression against frozen outer-pass ratios in the bound file. It does not establish non-density convergence criteria or external physical validation.",
+  "evidence_ceiling": "Bounded to the top-level outer-pass molecular-density re-entry decision. Evidence: `test_convergence_accumulation.py` contains 18 test functions, 1 of which references `evaluate_outer_convergence`, and is shared by 4 assets; only shared-file coverage is bound, so a pass is file-level rather than asset-isolated; the bounded example was executed by this audit. Oracle: self-consistency/regression against frozen outer-pass ratios in the bound file. It does not establish non-density convergence criteria or external physical validation. C1 evidence adds the exact rational ratio, the exact scale invariance and the equality-versus-one-ulp discriminator. It establishes the decision rule, not the convergence of any iteration that feeds it: no iteration order, contraction rate or uniqueness of the fixed point is claimed.",
   "known_limitations": [
    "The bound file is shared by four assets and one direct function checks the dict/reentry contract (`test_outer_convergence_returns_dict_with_reentry_flag`).",
    "The relation reports a decision and does not iterate; no density-profile or external-physics validation is performed.",
-   "The example is the only documented runtime output; no test binds a non-density convergence criterion."
+   "The example is the only documented runtime output; no test binds a non-density convergence criterion.",
+   "The relation reports a max-norm relative change between two supplied profiles; it does not establish that any outer iteration converges, and the max norm weights the single worst node, not the profile as a whole. The companion seed relation inherits a 10*truncate threshold that is unreachable once truncate >= 0.1, because this relative change is at most 1 (ticket T-2026-0004)."
   ]
  }
 }

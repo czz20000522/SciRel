@@ -120,16 +120,19 @@
  "verification": {
   "scope": [
    "Current SciRel implementation and the repository tests listed in this contract cover the declared public ports and numerical relation.",
-   "The example exercises one bounded representative case; it does not extend applicability beyond the declared preconditions."
+   "The example exercises one bounded representative case; it does not extend applicability beyond the declared preconditions.",
+   "Independent evidence (tests/neutrals/test_convergence_and_mesh_evidence.py): the reentry threshold is exactly ten times the outer relation's threshold for the same truncate, the comparison is decided at that threshold (equality converges, a value above it re-iterates), and the max-norm bound of two nonnegative profiles (relative change < 1) is exercised: with truncate = 0.1 the seed threshold is 1.0 and the re-iterating branch is unreachable for any nonnegative pair, while truncate = 0.01 with a relative change of 0.5 does re-iterate."
   ],
   "tests": [
-   "tests/kinetic/test_convergence_accumulation.py"
+   "tests/kinetic/test_convergence_accumulation.py",
+   "tests/neutrals/test_convergence_and_mesh_evidence.py"
   ],
-  "evidence_ceiling": "Bounded to the inner seed-pass error ratio and 10*truncate re-entry decision. Evidence: `test_convergence_accumulation.py` contains 18 test functions, 3 of which reference `evaluate_neutral_outer_seed_convergence`, and is shared by 4 assets; only shared-file coverage is bound, so a pass is file-level rather than asset-isolated; the bounded example was executed by this audit. Oracle: self-consistency/regression against frozen seed ratios in the bound file. It does not establish non-density convergence criteria or external physical validation.",
+  "evidence_ceiling": "Bounded to the inner seed-pass error ratio and 10*truncate re-entry decision. Evidence: `test_convergence_accumulation.py` contains 18 test functions, 3 of which reference `evaluate_neutral_outer_seed_convergence`, and is shared by 4 assets; only shared-file coverage is bound, so a pass is file-level rather than asset-isolated; the bounded example was executed by this audit. Oracle: self-consistency/regression against frozen seed ratios in the bound file. It does not establish non-density convergence criteria or external physical validation. C1 evidence adds the exact factor-ten relation, the strict comparison and the structural consequence of the max-norm bound. It establishes when the relation re-enters, not that the seed iteration converges or that its threshold is the right numerical choice.",
   "known_limitations": [
    "Three direct functions in the four-asset-shared convergence file cover dict/reentry, ratio-of-maxima and overflowed-threshold rejection.",
    "The relation reports a seed-pass decision and does not iterate; no density-profile or external-physics validation is performed.",
-   "The example is the only documented runtime output; no test binds a non-density convergence criterion."
+   "The example is the only documented runtime output; no test binds a non-density convergence criterion.",
+   "Because the max-norm relative change of two nonnegative profiles is bounded by one, this relation converges unconditionally for truncate at or above 0.1; the factor ten is a declared heuristic, not a derived convergence criterion, and it is applied to the relative change rather than to a proven error estimate. Because that change is at most 1 for nonnegative profiles while the threshold is 10*truncate, no input can exceed the threshold once truncate >= 0.1; tracked as ticket T-2026-0004."
   ]
  }
 }
