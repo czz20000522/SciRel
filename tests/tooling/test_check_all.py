@@ -497,12 +497,40 @@ def test_a_producer_digest_that_disagrees_with_the_script_is_refused(tmp_path):
         _provenance_status(path, result)
 
 
-def test_a_v1_result_stays_readable_as_legacy(tmp_path):
-    """A new rule must not retroactively delete evidence written before it existed."""
+def test_a_v1_receipt_is_refused_by_default(tmp_path):
+    """A forged v1 and a genuine historical v1 are indistinguishable, so neither is evidence."""
     path = tmp_path / "result.json"
     result = {"schema": "scirel.acceptance.v1", "steps": []}
     path.write_text(json.dumps(result), encoding="utf-8")
-    assert _provenance_status(path, result) == "legacy_unprovenanced"
+    with pytest.raises(ValueError, match="v1 receipt cannot serve as new evidence"):
+        _provenance_status(path, result)
+
+
+def test_a_v1_receipt_is_readable_only_with_the_legacy_switch(tmp_path):
+    path = tmp_path / "result.json"
+    result = {"schema": "scirel.acceptance.v1", "steps": []}
+    path.write_text(json.dumps(result), encoding="utf-8")
+    tag = check_all.validate_provenance(
+        result,
+        report_path=path,
+        check_all_path=SCRIPTS / "check_all.py",
+        allow_legacy_receipts=True,
+    )
+    assert tag == "legacy_unprovenanced"
+
+
+def test_editing_a_field_and_resealing_the_sidecar_is_accepted(tmp_path):
+    """The documented boundary: this is not a signature, so a resealed forgery passes.
+
+    Encoded as a test so the SKILL.md matrix cell cannot drift into a claim the code
+    does not support.
+    """
+    path, result = _provenance_result(tmp_path)
+    result["exit_code"] = 0
+    result["steps"][0]["status"] = "PASS"
+    result["exclusive"]["token_sha256"] = "b" * 64
+    _write_result(path, result)
+    assert _provenance_status(path, result) == "verified_v2"
 
 
 def test_the_written_result_carries_v2_provenance_and_a_sidecar(tmp_path, monkeypatch, capsys):
@@ -515,6 +543,9 @@ def test_the_written_result_carries_v2_provenance_and_a_sidecar(tmp_path, monkey
     assert result["exclusive"]["token_sha256"] == hashlib.sha256(b"fixture-token").hexdigest()
     assert result["provenance"]["check_all_sha256"] == _sha(SCRIPTS / "check_all.py")
     assert all(_sha(Path(step["log"])) == step["log_sha256"] for step in result["steps"])
+    # Wall-clock observation only: recorded so a slow step can be found, never compared.
+    assert all(isinstance(step["seconds"], float) and step["seconds"] >= 0
+               for step in result["steps"])
     sidecar = path.with_name(path.name + ".sha256")
     assert sidecar.read_text().strip() == _sha(path)
     assert f"RESULT SHA256 {_sha(path)}" in capsys.readouterr().out

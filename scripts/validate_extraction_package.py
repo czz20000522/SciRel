@@ -657,7 +657,13 @@ def _run_in_candidate(tree: Path, command: list[str]) -> subprocess.CompletedPro
     )
 
 
-def run_full_check(tree: Path, report: Report, *, exclusive_token: str | None = None) -> None:
+def run_full_check(
+    tree: Path,
+    report: Report,
+    *,
+    exclusive_token: str | None = None,
+    allow_legacy_receipts: bool = False,
+) -> None:
     script = tree / "skills/development/scirel-acceptance/scripts/check_all.py"
     run_id = uuid.uuid4().hex
     result_path = report.directory() / f"acceptance-{run_id}.json"
@@ -734,10 +740,16 @@ def run_full_check(tree: Path, report: Report, *, exclusive_token: str | None = 
             or [step["name"] for step in records] != [step.name for step in plan]
         ):
             raise ValueError("required check steps are missing or disagree with the exit status")
-        provenance_tag = validate_provenance(result, report_path=result_path, check_all_path=script)
+        provenance_tag = validate_provenance(
+            result,
+            report_path=result_path,
+            check_all_path=script,
+            allow_legacy_receipts=allow_legacy_receipts,
+        )
         if provenance_tag == "legacy_unprovenanced":
             print(
-                f"NOTE  {result_path.name} is a v1 result without provenance: legacy_unprovenanced"
+                "NOTE  legacy receipt accepted for archaeology only, not as evidence"
+                f" ({result_path.name})"
             )
         if any(
             record["started"] is not True or record["argv"] != step.command
@@ -842,6 +854,11 @@ def main() -> int:
     parser.add_argument(
         "--fast", action="store_true", help="skip the full check and mutation (exit 2, never 0)"
     )
+    parser.add_argument(
+        "--allow-legacy-receipts",
+        action="store_true",
+        help="read a v1 result for archaeology only; it is never evidence",
+    )
     args = parser.parse_args()
     package, repo = args.package.resolve(), args.repo.resolve()
     report = Report()
@@ -871,7 +888,12 @@ def main() -> int:
                     report.section("full check", "NOT_RUN", reason)
                     report.section("mutation", "NOT_RUN", reason)
                 else:
-                    run_full_check(tree, report, exclusive_token=token)
+                    run_full_check(
+                        tree,
+                        report,
+                        exclusive_token=token,
+                        allow_legacy_receipts=args.allow_legacy_receipts,
+                    )
                     if report.errors:
                         report.section("mutation", "NOT_RUN", "fix the full check first")
                     else:

@@ -42,13 +42,32 @@ The result file carries schema `scirel.acceptance.v2` and records what produced 
 is released), one `log_sha256` per retained step log, the digests of `check_all.py` and
 `scirel_pytest_counts.py`, and a `<report>.sha256` sidecar holding the digest of the result
 file itself; the run prints `RESULT SHA256 <hex>`. A reader refuses a v2 result whose
-credential digest, log digest, script digest or sidecar is missing or disagrees. This raises
-the bar from editing one JSON file to reproducing the lock holder's credential digest and
-every log hash; it is **not a cryptographic proof**. Anyone able to run code inside the clone
-can still fabricate a whole bundle — making that impossible needs verification moved outside
-the clone, which is a separate decision and not part of this protocol. A v1 result written
-before this protocol stays readable and is tagged `legacy_unprovenanced`: a new rule must not
-retroactively delete old evidence.
+credential digest, log digest, script digest or sidecar is missing or disagrees.
+
+What that buys, stated exactly: v2 binds the result file to the run that wrote it. Every
+step log has a recorded digest and the sidecar covers the result bytes, so editing the
+result — or one log — is visible without redoing the run. `exclusive.token_sha256` records
+that a lock-holding run happened and with which credential digest; the credential itself has
+retired, so it is **never compared** against anything. **This is not a signature.** Anyone
+who can rewrite the result, every log and the sidecar together — anyone able to run code
+inside the clone — can fabricate a bundle. Making that impossible needs verification moved
+outside the clone, which is a separate decision and not part of this protocol.
+
+Three review consequences follow from that boundary:
+
+1. **An edited script invalidates its receipts.** Any change to `check_all.py` or
+   `scirel_pytest_counts.py` makes every earlier v2 receipt fail with
+   `check_all_sha256 disagrees`; the answer is a new run, never a repaired receipt.
+2. **`validate_provenance` does not compare step count or names.** Binding steps to a plan
+   is the caller's duty; `validate_extraction_package.py` does it against the candidate plan.
+3. **The measured matrix includes an ACCEPTED cell:** change a field and re-seal the
+   sidecar → `ACCEPTED`. That is what "not a signature" means — this stops editing the
+   result file alone, not someone who can run code.
+
+A `scirel.acceptance.v1` receipt predates all of this. It is **refused by default**: a fresh
+forgery and a genuine historical receipt are indistinguishable, and there is only one legal
+shape for delivered evidence. `--allow-legacy-receipts` reads one for archaeology only and
+prints `legacy receipt accepted for archaeology only, not as evidence`.
 
 A setup or teardown failure gives the item final outcome `error`; otherwise a call failure
 gives `failed`, followed in priority by `xfailed`, `skipped`, `xpassed`, `passed`. A strict XPASS
