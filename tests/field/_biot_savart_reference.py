@@ -61,15 +61,28 @@ against the implementation was run.
 1. **Is the quadrature itself converged?**  ``mp.quad`` defaults to tanh-sinh
    and refines until its own working precision is exhausted.  Rather than trust
    that, every call is made at two working precisions (30 and 60 decimal digits)
-   with the integrand split at twelve fixed breakpoints of ``[0, 2 pi]``.  The
-   two results must agree to a relative ``1e-25`` for well-separated geometry.
-   ``1e-25`` is chosen because the weaker of the two runs has 30 digits, so a
-   5-digit margin below its own working precision is the most one may claim for
-   it; the assertion is that the *weaker* run is already converged at that
-   level, which makes the stronger run irrelevant as a source of error in the
-   comparisons below.  If the two settings disagree, the quadrature is not
-   converged and the test fails rather than silently comparing against a
-   half-converged integral.
+   with the integrand split at twelve fixed breakpoints of ``[0, 2 pi]``.
+
+   The two runs are compared **against the integrand scale, not against the
+   answer**, because the ``A_phi`` and ``B_R`` integrals are themselves
+   cancellation-reduced: the ``O(1)`` part of the ``a cos phi / |r-r'|``
+   integrand is odd about ``phi = 0`` and integrates to zero, so their value
+   falls like ``R^2`` and ``R`` on the axis while the integrand stays ``O(1)``.
+   A relative certificate would therefore punish the reference for a property
+   of the integral rather than of the quadrature.  ``_integrand_scale`` bounds
+   ``integral |integrand| dphi`` from above by ``2 pi`` times the largest
+   integrand magnitude, which is at most ``a / d_min`` for ``A_phi`` and
+   ``(a^2 + a R) / d_min^3`` for ``B_Z`` with ``d_min = sqrt((R-a)^2 + dz^2)``;
+   a quadrature rule at ``D`` decimal digits has error at most about
+   ``10^-D * scale`` for these analytic integrands.  The certificate requires
+   ``|weak - strong| <= 1e-25 * scale``, which the 30-digit run can satisfy with
+   five digits of margin, and which then certifies the 60-digit value used as
+   the reference to ``1e-25 * scale`` absolute.  Even at ``R = 1e-12 a``, where
+   ``psi`` is ``~1e-24`` of the integrand scale, that leaves the reference
+   correct to better than ``1e-13`` relative — one order above the binary64
+   budget below, and the tests restrict relative comparisons to
+   ``R >= _MIN_RADIUS_RATIO * a`` where the reference keeps far more margin than
+   that.
 
 2. **How large a relative deviation from a binary64 closed form is expected?**
    ``_RELATIVE_BUDGET = 64 * eps`` with ``eps = 2**-52`` (``1.4e-14`` relative).
