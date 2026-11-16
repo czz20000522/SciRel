@@ -120,17 +120,20 @@
    "Member counts and one-dimensional member literals against the reference kernel",
    "Orthonormality, quadrature exactness and projection recovery on named fixtures",
    "The executable example stored in this contract",
-   "test_finite_projection_overflow_raises_without_mutating_samples explicitly exercises the returned handle.project method as well as both function entry points, checking computed-overflow rejection without changing input samples; constructing a handle alone is not that test."
+   "test_finite_projection_overflow_raises_without_mutating_samples explicitly exercises the returned handle.project method as well as both function entry points, checking computed-overflow rejection without changing input samples; constructing a handle alone is not that test.",
+   "Independent evidence (test_modal_legendre_evidence): members are compared with the closed-form orthonormal Legendre family sqrt((2n+1)/2) P_n(x) evaluated with mpmath at 40 decimal digits; the Gram matrix computed on the basis's own Gauss-Legendre rule is the identity to 5e-15 for orders 0 through 3 in one dimension and for the tensor and serendipity families in two dimensions; and for f(x) = x^k the discrete projection is verified to equal the continuous L2 coefficient computed by mpmath quadrature, which is legitimate because that rule integrates the required products exactly."
   ],
   "tests": [
-   "tests/numerics/test_modal_basis.py"
+   "tests/numerics/test_modal_basis.py",
+   "tests/numerics/test_modal_legendre_evidence.py"
   ],
-  "evidence_ceiling": "Member-count agreement, orthonormality and projection recovery establish the documented relation on the tested family, dimension and order combinations; they do not establish convergence-order claims on a physical mesh, arbitrary-order tie-breaking, or agreement with any specific discretization package. Higher dimensions and orders outside the tested bounded set are unqualified.",
+  "evidence_ceiling": "Member-count agreement, orthonormality and projection recovery establish the documented relation on the tested family, dimension and order combinations; they do not establish convergence-order claims on a physical mesh, arbitrary-order tie-breaking, or agreement with any specific discretization package. Higher dimensions and orders outside the tested bounded set are unqualified. C1 evidence adds: Closed-form Legendre comparison and Gram identity on the declared rule.",
   "known_limitations": [
    "Only dimensions one through six and orders zero through three are covered by the regression fixtures.",
    "Serendipity member selection is exercised for orders zero through three only; higher orders are unqualified.",
    "The projection is only exercised on the basis's own quadrature nodes, not on arbitrary sample locations.",
-   "The serendipity exponent rule is qualified only for orders zero through three; higher-order semantics are unqualified."
+   "The serendipity exponent rule is qualified only for orders zero through three; higher-order semantics are unqualified.",
+   "cannot establish L2 optimality for arbitrary non-polynomial samples: the discrete projection equals a continuous L2 projection only when the rule integrates each member times the sampled function exactly, which the tests demonstrate for polynomial data and do not claim beyond it. Nothing here qualifies ndim > 3 or order > 3."
   ]
  }
 }

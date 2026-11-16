@@ -196,18 +196,21 @@
   "scope": [
    "Public callable signature and documented finite-input behavior",
    "The direct regression fixtures listed in verification.tests",
-   "The executable example stored in this contract"
+   "The executable example stored in this contract",
+   "Independent evidence (test_basis_design_evidence): the polynomial design matrix is compared with the closed-form Vandermonde matrix A[i, j] = x_i ** j; the cardinal spline bases are checked for partition of unity, which follows analytically from the constant satisfying each family's boundary rows; the second-clamped default basis is checked to carry n_knots - 1 columns and to be affine rather than linear; and the declared zero-fill convention is probed one representable step outside the knot interval."
   ],
   "tests": [
    "tests/equilibrium/test_analysis_families.py",
-   "tests/geometry/test_basis_boundary_regressions.py"
+   "tests/geometry/test_basis_boundary_regressions.py",
+   "tests/numerics/test_basis_design_evidence.py"
   ],
-  "evidence_ceiling": "Direct examples and named regression fixtures establish the documented relation on those inputs; they do not establish arbitrary-input correctness or experimental validation.",
+  "evidence_ceiling": "Direct examples and named regression fixtures establish the documented relation on those inputs; they do not establish arbitrary-input correctness or experimental validation. C1 evidence adds: Factory members checked against closed-form powers and against the cardinal partition-of-unity identity.",
   "known_limitations": [
    "Quartic and special-function factory selections are rejected; no invented implementations",
    "Physical special-spline closures and unsupported knot domains remain unresolved",
    "Nonzero clamped endpoint slopes are outside the linear-basis contract",
-   "For spline selections, nonfinite query values are outside the numerical qualification and are zero-filled as a compatibility convention; polynomial selections evaluate directly"
+   "For spline selections, nonfinite query values are outside the numerical qualification and are zero-filled as a compatibility convention; polynomial selections evaluate directly",
+   "Observed failure-channel deviations, reported and not fixed here: an unknown basis selector raises KeyError, a list coeffs control raises AttributeError and a 1-D coeffs array raises IndexError, while failure_semantics names ValueError. Which channel is correct is a contract decision, so the tests pin the observed types with these notes instead of assuming the declared one."
   ]
  }
 }

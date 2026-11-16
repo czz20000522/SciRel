@@ -126,16 +126,19 @@
    "Exact coefficient recovery for tensor and serendipity samples",
    "Explicit parameter order and required flags, including rejection of the legacy mapping call",
    "The executable example stored in this contract",
-   "Finite-sample overflow raises FloatingPointError through ModalBasis.project, project_on_modal_basis and modal_projection for both families under NumPy warn, ignore and raise modes; non-finite samples still raise ValueError, and representable results preserve the float64 array type, shape and caller-owned samples."
+   "Finite-sample overflow raises FloatingPointError through ModalBasis.project, project_on_modal_basis and modal_projection for both families under NumPy warn, ignore and raise modes; non-finite samples still raise ValueError, and representable results preserve the float64 array type, shape and caller-owned samples.",
+   "Independent evidence (test_modal_legendre_evidence): members are compared with the closed-form orthonormal Legendre family sqrt((2n+1)/2) P_n(x) evaluated with mpmath at 40 decimal digits; the Gram matrix computed on the basis's own Gauss-Legendre rule is the identity to 5e-15 for orders 0 through 3 in one dimension and for the tensor and serendipity families in two dimensions; and for f(x) = x^k the discrete projection is verified to equal the continuous L2 coefficient computed by mpmath quadrature, which is legitimate because that rule integrates the required products exactly."
   ],
   "tests": [
-   "tests/numerics/test_modal_basis.py"
+   "tests/numerics/test_modal_basis.py",
+   "tests/numerics/test_modal_legendre_evidence.py"
   ],
-  "evidence_ceiling": "Exact recovery establishes the documented relation for samples produced by the same basis; it does not establish L2 optimality on arbitrary sampled data, physical-cell accuracy, or agreement with any specific discretization package. Higher dimensions and orders outside the tested bounded set are unqualified.",
+  "evidence_ceiling": "Exact recovery establishes the documented relation for samples produced by the same basis; it does not establish L2 optimality on arbitrary sampled data, physical-cell accuracy, or agreement with any specific discretization package. Higher dimensions and orders outside the tested bounded set are unqualified. C1 evidence adds: Discrete-to-continuous projection equivalence for polynomial data only.",
   "known_limitations": [
    "Only the basis's own quadrature nodes are accepted, so off-node sampled data is unqualified.",
    "Orders above three and dimensions above three are exercised only for member counts, not for projection accuracy.",
-   "Arbitrary node samples do not determine a continuous L2 projection. For one dimension and order zero, samples of x**2 at the sole node zero give coefficient zero, while the continuous normalized constant coefficient is sqrt(2)/3."
+   "Arbitrary node samples do not determine a continuous L2 projection. For one dimension and order zero, samples of x**2 at the sole node zero give coefficient zero, while the continuous normalized constant coefficient is sqrt(2)/3.",
+   "cannot establish L2 optimality for arbitrary non-polynomial samples: the discrete projection equals a continuous L2 projection only when the rule integrates each member times the sampled function exactly, which the tests demonstrate for polynomial data and do not claim beyond it. Nothing here qualifies ndim > 3 or order > 3."
   ]
  },
  "composition": {

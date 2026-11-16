@@ -133,13 +133,15 @@
   "scope": [
    "Public callable signature and documented finite-input behavior",
    "The direct regression fixtures listed in verification.tests",
-   "The executable example stored in this contract"
+   "The executable example stored in this contract",
+   "The cylindrical families have no SciPy counterpart, so their evidence is the declared rows themselves: the Robin row f'' + f'/x - m^2 f/x^2 = 0 is evaluated at the last knot on the produced spline, the left slope equals yp, and for the origin-natural family the origin row is pinned by f = x^3 with m = 3, which satisfies both rows exactly and is then reproduced to 256 eps."
   ],
   "tests": [
    "tests/equilibrium/test_analysis_families.py",
-   "tests/equilibrium/test_analysis_corrections.py"
+   "tests/equilibrium/test_analysis_corrections.py",
+   "tests/numerics/test_spline_boundary_evidence.py"
   ],
-  "evidence_ceiling": "Direct examples and named regression fixtures establish the documented relation on those inputs; they do not establish arbitrary-input correctness or experimental validation.",
+  "evidence_ceiling": "Direct examples and named regression fixtures establish the documented relation on those inputs; they do not establish arbitrary-input correctness or experimental validation. C1 evidence adds: Origin row pinned by an exactly consistent cubic plus the Robin row; no independent implementation exists.",
   "known_limitations": [
    "Zero extrapolation and deriv selectors other than 1/2 returning values remain compatibility conventions",
    "Duplicate, unsorted or nonfinite knots are outside numerical qualification",
@@ -147,7 +149,8 @@
    "Knot-interval membership is exact; a point one representable step outside returns zero",
    "Nonfinite query values are outside the numerical qualification; the implementation zero-fills them as a compatibility convention",
    "Nonzero y_data[0] is outside the implemented origin boundary",
-   "The retained origin row is not a physical cylindrical fitting model"
+   "The retained origin row is not a physical cylindrical fitting model",
+   "cannot establish the physical justification of the cylindrical Robin row: no published source is cited that makes it a cylindrical boundary condition, and the docstring itself calls it a numerical convention. What is established is its algebraic satisfaction, not that it is the right physics."
   ]
  }
 }

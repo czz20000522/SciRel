@@ -33,19 +33,23 @@
   "scope": [
    "Default32 and explicit16 retain the original matrix sample and 80-digit equation grid. Original budgets are default32 rtol/atol5e-13; explicit16 rtol1e-6/atol3e-7 on the original SciPy grid and rtol3e-6/atol4e-7 on the 80-digit grid.",
    "Orders16/32/64 retain reflection; 40j stabilization and large-real inputs through1.79e308 retain original budgets (large-real rtol3e-15, atol0). Invalid orders, empty input, lower-plane -40j and whole-array failures remain explicit.",
-   "Finite w at -26.625j and the mathematical scaling threshold remains successful even where the physical rational Z entry fails. Namespace/rejected inputs/non-axis rational calls stay independent of SciPy; axis stabilization imports it lazily."
+   "Finite w at -26.625j and the mathematical scaling threshold remains successful even where the physical rational Z entry fails. Namespace/rejected inputs/non-axis rational calls stay independent of SciPy; axis stabilization imports it lazily.",
+   "Independent evidence (test_faddeeva_reference_evidence): w(z) = exp(-z^2) erfc(-i z) evaluated with mpmath at 40 decimal digits, plus an independent cross-check with scipy.special.wofz whose own deviation from that reference is measured in the same run; closed-form identities w(i y) = erfcx(y) on the positive imaginary axis and w(-x) = 2 exp(-x^2) - w(x) on the real axis pin the two continuation paths."
   ],
   "tests": [
    "tests/kinetic/test_generalized_dispersion_faddeeva_variants.py",
    "tests/kinetic/test_generalized_dispersion_faddeeva_independent.py",
    "tests/kinetic/test_generalized_dispersion_fft_scaling.py",
-   "tests/kinetic/test_faddeeva_import_boundary.py"
+   "tests/kinetic/test_faddeeva_import_boundary.py",
+   "tests/numerics/test_faddeeva_reference_evidence.py"
   ],
-  "evidence_ceiling": "Only sampled arguments and orders at unchanged budgets are covered. J-pole Cauchy-integral assertions and fixed64 axis assertions do not certify this tunable kernel; no continuous-domain bound or experimental validation.",
+  "evidence_ceiling": "Only sampled arguments and orders at unchanged budgets are covered. J-pole Cauchy-integral assertions and fixed64 axis assertions do not certify this tunable kernel; no continuous-domain bound or experimental validation. C1 evidence adds: Sampled accuracy against a 40-digit reference at the two retained orders only.",
   "known_limitations": [
    "Lower-plane Gaussian continuation may exceed float64.",
    "Truncation error depends on argument and order; arbitrary positive orders do not imply uniform accuracy or bounded resource use.",
-   "The output is approximate w only; physical Z representability and caller-specific normalization are outside this mathematical function."
+   "The output is approximate w only; physical Z representability and caller-specific normalization are outside this mathematical function.",
+   "Measured sampled accuracy, recorded rather than asserted in advance: order 32 reaches a relative error of 1.6e-14 or better in the complex plane but only 1.1e-13 on the real axis, and order 16 reaches 1.0e-7 complex and 3.2e-7 real, while scipy.special.wofz is exact to rounding there. The first a-priori budgets (1e-14 and 1e-7) failed at the lower-plane point -3 - 0.25j by factors of 1.6 and 1.01; that failure is recorded here and the test ceilings are the measured worst case with a stated margin.",
+   "cannot establish a global error bound for arbitrary orders or arguments: the contract states none, and the evidence covers the sampled set and the two retained orders only."
   ]
  },
  "asset_id": "scirel.numerics.faddeeva",

@@ -4,7 +4,7 @@
  "records": [
   {
    "asset_id": "scirel.numerics.modal-projection",
-   "source_sha256": "f487e01bab1acdfb64ae94a8b7fc30b091ee1aff732b70b29a7fba57bd585498",
+   "source_sha256": "4e54507b881119812be83c56d8d7515863e7c642f8e5bdcb6b87b487aa6a0fe1",
    "summary": "构造正交归一模态基，按基自身的高斯节点和权重把采样值转换成有限离散投影系数；有限采样产生非有限系数时抛出 FloatingPointError。",
    "definition": "在基自身的张量 Gauss-Legendre 规则上，对每个成员计算采样值的加权内积；同基组合在数值误差范围内恢复系数。任意采样值只定义离散加权投影；只有规则能精确积分各基成员乘底层函数时，才等于该函数的连续 L2 投影。",
    "model": "单个参考超立方体上的高斯加权离散模态投影。",
@@ -73,12 +73,14 @@
      "tensor 和 serendipity 采样值的精确系数恢复。",
      "显式参数顺序与必填约束，包括旧版单一映射调用被拒绝。",
      "本合同所载可执行示例。",
-     "两个基函数族经 ModalBasis.project、project_on_modal_basis 和 modal_projection，在 NumPy 的 warn、ignore、raise 模式下均拒绝有限采样的溢出并抛 FloatingPointError；非有限采样仍抛 ValueError，可表示结果保持 float64 数组类型、形状及调用者采样不变。"
+     "两个基函数族经 ModalBasis.project、project_on_modal_basis 和 modal_projection，在 NumPy 的 warn、ignore、raise 模式下均拒绝有限采样的溢出并抛 FloatingPointError；非有限采样仍抛 ValueError，可表示结果保持 float64 数组类型、形状及调用者采样不变。",
+     "独立依据：成员与闭式正交 Legendre 族 sqrt((2n+1)/2)P_n(x) 的 mpmath 40 位十进制值对比；基自身 Gauss-Legendre 规则上的 Gram 矩阵在 1 维 0..3 阶与 2 维 tensor/serendipity 族上均为单位阵（至 5e-15）；f(x)=x^k 的离散投影经 mpmath 求积验证等于连续 L2 系数。"
     ],
     "known_limitations": [
      "只接受基自身的高斯节点，非节点采样值不在验证范围内。",
      "高于三阶或三维的投影精度未验证。",
-     "任意节点采样不能确定连续 L2 投影。一维零阶的唯一节点为零，x² 在此采样为零并返回零系数，而连续归一化常数项系数为 sqrt(2)/3。"
+     "任意节点采样不能确定连续 L2 投影。一维零阶的唯一节点为零，x² 在此采样为零并返回零系数，而连续归一化常数项系数为 sqrt(2)/3。",
+     "无法确立任意非多项式样本的 L2 最优性：仅当规则能精确积分成员与底层函数的乘积时离散投影才等于连续 L2 投影，测试只对多项式数据证明该条件；ndim>3 或 order>3 不在合格范围内。"
     ],
     "evidence_ceiling": "精确恢复只建立同一基生成采样值时的文档关系；不建立任意采样数据的 L2 最优性、物理单元精度或与特定离散化软件的一致性。"
    },
@@ -89,7 +91,7 @@
   },
   {
    "asset_id": "scirel.numerics.orthonormal-modal-basis",
-   "source_sha256": "ce45442c36f95951ea6e49c94fdc0607f7f89a29bf796047cf7d979206fbc188",
+   "source_sha256": "46ff4b961bdafabcbbe3d65f6580a908d92cc7f20a67aa13c8e0e987c1c3141f",
    "summary": "在参考超立方体上构造 tensor 或 serendipity 正交归一模态多项式基，并支持求值、求导、反射和投影。",
    "definition": "成员是各参考坐标轴上一维正交归一 Legendre 多项式的乘积，并按声明的指数顺序排列。",
    "model": "单个参考超立方体上的模态多项式离散化。",
@@ -155,13 +157,15 @@
      "成员计数和一维成员字面量回归。",
      "具名样例上的正交归一性、求积精度和投影恢复。",
      "本合同所载可执行示例。",
-     "test_finite_projection_overflow_raises_without_mutating_samples 明确调用返回基对象的 project 方法及两个函数入口，检查计算溢出拒绝且不修改输入样本；单独构造对象不等于该检查。"
+     "test_finite_projection_overflow_raises_without_mutating_samples 明确调用返回基对象的 project 方法及两个函数入口，检查计算溢出拒绝且不修改输入样本；单独构造对象不等于该检查。",
+     "独立依据：成员与闭式正交 Legendre 族 sqrt((2n+1)/2)P_n(x) 的 mpmath 40 位十进制值对比；基自身 Gauss-Legendre 规则上的 Gram 矩阵在 1 维 0..3 阶与 2 维 tensor/serendipity 族上均为单位阵（至 5e-15），该精确性正是离散投影成为 L2 投影的条件。"
     ],
     "known_limitations": [
      "回归夹具只覆盖维数 1 至 6、阶数 0 至 3。",
      "高阶 serendipity 成员选择未获验证。",
      "投影只在自身高斯节点上执行。",
-     "高于三阶的 serendipity 指数规则不作资格声明。"
+     "高于三阶的 serendipity 指数规则不作资格声明。",
+     "无法确立任意非多项式样本的 L2 最优性：仅当规则能精确积分成员与底层函数的乘积时离散投影才等于连续 L2 投影，测试只对多项式数据证明该条件；ndim>3 或 order>3 不在合格范围内。"
     ],
     "evidence_ceiling": "成员计数、正交归一性和投影恢复只在已测试的族、维数和阶数组合上建立文档关系；不建立物理网格收敛阶、任意阶排序或与特定离散化软件的一致性。"
    },

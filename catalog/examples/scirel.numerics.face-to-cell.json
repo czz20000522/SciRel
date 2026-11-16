@@ -102,12 +102,14 @@
   "scope": [
    "Manufactured midpoint values, subnormal rounding, finite endpoint overflow avoidance, shape and dtype boundary.",
    "Declared failure cases for empty, boolean/string/complex/masked, nonfinite and incompatible inputs.",
-   "Agreement with the canonical SciRel callers and dependencies of this relation."
+   "Agreement with the canonical SciRel callers and dependencies of this relation.",
+   "Independent evidence (test_rectilinear_evidence): the arithmetic midpoint is recomputed exactly with fractions.Fraction from the original binary64 inputs and rounded once, and the declared halved-endpoint branch is exercised on a non-representable sum (1.7e308 + 1.7e308)."
   ],
   "tests": [
-   "tests/cross_domain/test_algebra_grid.py"
+   "tests/cross_domain/test_algebra_grid.py",
+   "tests/numerics/test_rectilinear_evidence.py"
   ],
-  "evidence_ceiling": "Maintained tests establish the named relation, shape and selected boundary behavior only; they do not establish global physical calibration.",
+  "evidence_ceiling": "Maintained tests establish the named relation, shape and selected boundary behavior only; they do not establish global physical calibration. C1 evidence adds: Exact rational midpoint and the overflow branch, on bounded vectors.",
   "known_limitations": [
    "No nonuniform coordinate interpolation is provided.",
    "Agreement is bounded to the midpoint relation; SciRel adds explicit input checks."
