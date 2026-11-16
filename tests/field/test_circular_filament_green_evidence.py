@@ -103,6 +103,13 @@ def test_response_matches_the_biot_savart_quadrature(coil_radius, coil_z):
         expected = reference.ring_field(radius, height, coil_radius, coil_z, 1.0)
         for name, got, want in zip(FIELDS, (psi, br, bz), expected, strict=True):
             got_value, want_value = float(got[index]), float(want)
+            if want_value == 0.0:
+                # The quadrature integrates an integrand that is odd about
+                # phi = 0 to exact zero (dz = 0 in the radial integrand), and
+                # the closed form multiplies by that same factor, so this is an
+                # exact-equality statement rather than a tolerance.
+                assert got_value == 0.0, (name, radius, height, got_value)
+                continue
             deviation = abs(got_value - want_value) / abs(want_value)
             assert deviation <= RELATIVE_BUDGET, (
                 f"{name} at R={radius} Z={height} deviates by {deviation:.3e} "
@@ -132,8 +139,12 @@ def test_axis_targets_keep_zero_flux_zero_radial_field_and_nonzero_axial_field()
 
 def test_mirror_symmetry_in_z_holds_exactly_with_the_expected_signs():
     """Evidence 3: reflection about the ring plane, with magnitude anchors."""
+    # Every value here is a dyadic rational, so ``coil_z + offset`` and
+    # ``coil_z - offset`` are both exact and the reflected targets differ only
+    # in the sign of the rounded ``Z - z0``.  That is what makes bitwise
+    # equality the correct assertion instead of a tolerance.
     coil_radius, coil_z, weight = 0.4, 0.25, 2.0
-    offsets = [0.05, 0.3, 0.9, 2.1]
+    offsets = [0.0625, 0.25, 0.5, 2.0]
     up = [[0.3, coil_z + dz] for dz in offsets]
     down = [[0.3, coil_z - dz] for dz in offsets]
     psi_up, br_up, bz_up = _response([[coil_radius, coil_z, weight]], up)
@@ -195,11 +206,14 @@ def test_zero_self_zero_radius_and_zero_weight_rows_are_inactive():
     zero_weight = circular_filament_green_response([[coil_radius, coil_z, 0.0]], targets)
     for name in FIELDS:
         np.testing.assert_array_equal(zero_weight[name], 0.0), name
-    # A subnormal-but-positive radius is retained rather than skipped: its
-    # response is nonzero in the axial field even though the flux is ~R^2.
-    subnormal = circular_filament_green_response([[5e-324, 0.0, 1.0]], [[0.3, 0.0]])
-    assert subnormal["gBZ"][0] > 0.0
-    assert subnormal["gpsi"][0] == 0.0
+    # A tiny positive radius is not skipped by the discrete zero-radius test:
+    # its response obeys the exact small-loop a**2 scaling, which a skipped row
+    # (all zeros) and a zero-radius row (all zeros) both fail.
+    tiny = circular_filament_green_response([[1.0e-30, 0.0, 1.0]], [[0.3, 0.125]])
+    double = circular_filament_green_response([[2.0e-30, 0.0, 1.0]], [[0.3, 0.125]])
+    for name in FIELDS:
+        assert tiny[name][0] != 0.0, name
+        np.testing.assert_array_equal(double[name], 4.0 * tiny[name]), name
 
 
 def test_each_declared_rejection_channel_is_executable():
@@ -223,14 +237,17 @@ def test_each_declared_rejection_channel_is_executable():
         circular_filament_green_response([[-0.35, 0.0, 1.0]], good_targets)
     with pytest.raises(ValueError, match="nonnegative"):
         circular_filament_green_response(good_sources, [[-0.2, 0.0]])
-    # runtime_failure: a representable sum that overflows to a non-finite value.
-    huge = 1.7e308
+    # runtime_failure: an input the contract accepts (finite weight, finite
+    # nonnegative radius) whose response is not representable.  The near-wire
+    # radial field grows like 1/distance, so a 1e308 weight overflows it.
     with pytest.raises(FloatingPointError, match="not representable"):
-        circular_filament_green_response([[0.35, 0.0, huge], [0.62, 0.0, huge]], [[0.2, 0.0]])
-    # partial_results: nothing is returned on the failing path, so the caller
-    # cannot mistake a partially filled mapping for a result.
-    with pytest.raises(FloatingPointError):
-        circular_filament_green_response([[0.35, 0.0, huge], [0.62, 0.0, huge]], [[0.2, 0.0]])
+        circular_filament_green_response([[0.3, 0.0, 1.0e308]], [[0.3, 1.0e-300]])
+    # partial_results: the failing path raises before a mapping exists, so a
+    # caller cannot mistake a partly filled result for a usable one.
+    assert not isinstance(
+        pytest.raises(FloatingPointError, circular_filament_green_response,
+                      [[0.3, 0.0, 1.0e308]], [[0.3, 1.0e-300]]).value, Result
+    )
 
 
 def test_the_named_result_keeps_its_declared_shape_and_access():
@@ -239,6 +256,6 @@ def test_the_named_result_keeps_its_declared_shape_and_access():
     assert isinstance(result, Result)
     assert list(result) == list(FIELDS)
     for name in FIELDS:
-        assert result[name] is result.__getattribute__(name)
+        assert getattr(result, name) is result[name]
         assert result[name].dtype == np.float64
         assert result[name].shape == (len(TARGETS),)
