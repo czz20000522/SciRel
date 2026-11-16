@@ -29,7 +29,22 @@ REASON_LIMIT = 160
 REASON_TRUNCATION = "…"
 # A recorded reason is the audit trail for a test that never ran; a bare label is not one.
 PLACEHOLDER_REASONS = frozenset(
-    {"skip", "skipped", "skip.", "xfail", "xfailed", "n/a", "na", "none", "unknown", "todo", "tbd", "-", "?", "..."}
+    {
+        "skip",
+        "skipped",
+        "skip.",
+        "xfail",
+        "xfailed",
+        "n/a",
+        "na",
+        "none",
+        "unknown",
+        "todo",
+        "tbd",
+        "-",
+        "?",
+        "...",
+    }
 )
 REASON_WORD = re.compile(r"[^\W_]{2,}")
 

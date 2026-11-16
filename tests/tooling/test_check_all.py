@@ -358,9 +358,7 @@ def test_all_skipped_tests_do_not_support_a_green(tmp_path):
 
 def test_a_blank_skip_reason_is_refused(tmp_path):
     """A test that did not run needs a reason a reader can check, not an empty string."""
-    report = _report(
-        passed=0, skipped=1, collected=1, selected=1, skip_reasons={"": ["a"]}
-    )
+    report = _report(passed=0, skipped=1, collected=1, selected=1, skip_reasons={"": ["a"]})
     path = tmp_path / "counts.json"
     path.write_text(json.dumps(report))
     with pytest.raises(check_all.CountsError, match="skip reason is blank"):
@@ -369,9 +367,7 @@ def test_a_blank_skip_reason_is_refused(tmp_path):
 
 def test_a_placeholder_skip_reason_is_refused(tmp_path):
     """Bare labels such as ``skip`` or ``n/a`` name nothing that can be audited."""
-    report = _report(
-        passed=0, skipped=1, collected=1, selected=1, skip_reasons={"n/a": ["a"]}
-    )
+    report = _report(passed=0, skipped=1, collected=1, selected=1, skip_reasons={"n/a": ["a"]})
     path = tmp_path / "counts.json"
     path.write_text(json.dumps(report))
     with pytest.raises(check_all.CountsError, match="bare placeholder"):
