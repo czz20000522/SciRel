@@ -272,9 +272,10 @@ def evaluate_fluid_special(method, x, parameter=None):
         neighbor-identity derivative for integer n; finite scalar/array b;
         Z(z)=i*sqrt(pi)*wofz(z) via scipy.special; explicit overflow failure; Full
         scalar R response for complex Y,b with tail and floating cancellation checks,
-        bounded at 65536 terms; b=0 and Y=0 analytic limits. Excluded scope: No
-        execution or fidelity claim for the Taylor/asymptotic/integral selector; No
-        certified entire-complex-plane precision claim.
+        bounded at 65536 terms; b=0 and Y=0 analytic limits. The Taylor/asymptotic/integral
+        selector names all dispatch to one harmonic routine and return identical
+        values, so no branch-specific fidelity is claimed; No certified
+        entire-complex-plane precision claim.
 
     Examples
     --------
