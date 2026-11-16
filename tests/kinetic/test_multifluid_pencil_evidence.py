@@ -228,9 +228,10 @@ def test_maxwell_blocks_are_one_curl_operator_up_to_c2():
         assert np.abs(upper + c2 * (-lower)).max() > 0.5 * scale
         # Each block is -1j times a real antisymmetric matrix, i.e. a curl.
         for block in (lower, upper):
-            scaled = block / (-1j)
-            assert np.allclose(scaled.real, 0.0, atol=32 * EPS * np.abs(block).max())
-            assert_allclose(scaled, -scaled.T, rtol=0, atol=32 * EPS * np.abs(block).max())
+            scaled = block * 1j  # (-1j X) * 1j = X
+            cap = 32 * EPS * np.abs(block).max()
+            assert np.allclose(scaled.imag, 0.0, atol=cap)
+            assert_allclose(scaled, -scaled.T, rtol=0, atol=cap)
 
 
 def test_equilibrium_assembles_the_named_si_moments():
