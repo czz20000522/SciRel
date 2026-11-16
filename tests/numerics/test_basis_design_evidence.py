@@ -45,7 +45,9 @@ def test_polynomial_design_matrix_is_the_analytic_vandermonde_matrix(degree):
     matrix = np.asarray(N.BasisMatrix("poly", poly_deg=degree)(QUERY))
     assert matrix.shape == (QUERY.size, degree)
     vandermonde = np.vstack([QUERY**power for power in range(degree)]).T
-    assert np.max(np.abs(matrix - vandermonde)) <= 64.0 * EPS * max(1.0, float(np.max(np.abs(vandermonde))))
+    assert np.max(np.abs(matrix - vandermonde)) <= 64.0 * EPS * max(
+        1.0, float(np.max(np.abs(vandermonde)))
+    )
 
 
 @pytest.mark.parametrize("degree", [1, 2, 3, 4])
@@ -55,7 +57,9 @@ def test_build_basis_polynomial_members_are_the_ascending_powers(degree):
     assert len(members) == degree
     for power, member in enumerate(members):
         values = np.asarray(member(QUERY))
-        assert np.max(np.abs(values - QUERY**power)) <= 64.0 * EPS * max(1.0, float(np.max(np.abs(QUERY**power))))
+        assert np.max(np.abs(values - QUERY**power)) <= 64.0 * EPS * max(
+            1.0, float(np.max(np.abs(QUERY**power)))
+        )
 
 
 @pytest.mark.parametrize(
@@ -84,7 +88,10 @@ def test_spline_design_matrix_columns_follow_the_member_order():
     matrix = np.asarray(N.BasisMatrix("natural_cubic_spline", n_knots=5)(QUERY))
     assert matrix.shape == (QUERY.size, len(members))
     for index, member in enumerate(members):
-        assert np.max(np.abs(matrix[:, index] - np.asarray(member(QUERY), dtype=float))) <= 64.0 * EPS * 16.0
+        assert (
+            np.max(np.abs(matrix[:, index] - np.asarray(member(QUERY), dtype=float)))
+            <= 64.0 * EPS * 16.0
+        )
 
 
 def test_spline_selections_zero_fill_outside_the_knot_interval():

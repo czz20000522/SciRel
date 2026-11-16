@@ -55,13 +55,17 @@ EPS = np.finfo(float).eps
 def _hermite_second_derivative_at_left(x, y, k, index):
     """S'' at the left end of interval ``index``, from the Hermite form."""
     h = x[index + 1] - x[index]
-    return (-6.0 * y[index] - 4.0 * h * k[index] + 6.0 * y[index + 1] - 2.0 * h * k[index + 1]) / h**2
+    return (
+        -6.0 * y[index] - 4.0 * h * k[index] + 6.0 * y[index + 1] - 2.0 * h * k[index + 1]
+    ) / h**2
 
 
 def _hermite_second_derivative_at_right(x, y, k, index):
     """S'' at the right end of interval ``index``, from the Hermite form."""
     h = x[index + 1] - x[index]
-    return (6.0 * y[index] + 2.0 * h * k[index] - 6.0 * y[index + 1] + 4.0 * h * k[index + 1]) / h**2
+    return (
+        6.0 * y[index] + 2.0 * h * k[index] - 6.0 * y[index + 1] + 4.0 * h * k[index + 1]
+    ) / h**2
 
 
 # A nonuniform knot set keeps the tests off the uniform-spacing special case.
@@ -166,7 +170,9 @@ def test_clamped_family_reproduces_a_cubic_exactly():
     spline = ClampedCubicSpline(x, cubic(x), yp=(cubic_slope(0.0), cubic_slope(2.5)))
     query = np.linspace(0.0, 2.5, 53)
     scale = max(1.0, float(np.max(np.abs(cubic(query)))))
-    assert np.max(np.abs(np.asarray(spline(query), dtype=float) - cubic(query))) <= 64.0 * EPS * scale
+    assert (
+        np.max(np.abs(np.asarray(spline(query), dtype=float) - cubic(query))) <= 64.0 * EPS * scale
+    )
 
 
 def test_natural_family_reproduces_affine_samples():
@@ -174,7 +180,10 @@ def test_natural_family_reproduces_affine_samples():
     x = np.array([0.0, 0.4, 1.5, 2.2, 3.0])
     spline = NaturalCubicSpline(x, 2.5 * x - 1.0)
     query = np.linspace(0.0, 3.0, 31)
-    assert np.max(np.abs(np.asarray(spline(query), dtype=float) - (2.5 * query - 1.0))) <= 16.0 * EPS * 10.0
+    assert (
+        np.max(np.abs(np.asarray(spline(query), dtype=float) - (2.5 * query - 1.0)))
+        <= 16.0 * EPS * 10.0
+    )
     assert np.max(np.abs(np.asarray(spline(query, 2), dtype=float))) <= 64.0 * EPS * 10.0
 
 
@@ -256,7 +265,9 @@ def _refinement_ratio(make_spline, exact, interval, coarse_points=11, fine_point
         ),
     ],
 )
-def test_consistent_data_converges_at_the_declared_fourth_order(_label, make_spline, exact, interval):
+def test_consistent_data_converges_at_the_declared_fourth_order(
+    _label, make_spline, exact, interval
+):
     """Budget 4: with boundary data the declared rows actually satisfy, error is O(h^4).
 
     The boundary data matter: ``f(x) = log x`` satisfies ``f'' + f'/x = 0`` for
