@@ -91,6 +91,16 @@ from scirel.kinetic.vlasov_poisson import (
 EPS = np.finfo(float).eps
 
 
+def _high_precision():
+    """Set the reference working precision explicitly.
+
+    ``mpmath``'s precision is process-global, so a test that relies on an earlier
+    test having raised it would pass or fail depending on collection order.  The
+    budget statements below are quoted for 40 digits, so 40 digits are set here.
+    """
+    mp.mp.dps = 40
+
+
 def _exact_field(df, k, dv):
     """Return ``(i/k) dv sum(df)`` as a complex number, decided exactly.
 
