@@ -47,6 +47,12 @@ def contract(asset: str = ASSET) -> dict:
             "nonconvergence": "Not applicable.",
             "partial_results": "None.",
         },
+        "family": {
+            "name": "test-family",
+            "default": "a",
+            "default_reason": "declared",
+            "methods": [{"name": "a", "model": "Declared method."}],
+        },
         "example": {"description": "One case.", "code": "pass", "expected": "finite"},
         "verification": {"scope": ["Declared checks."], "tests": ["tests/x.py"]},
     }
@@ -69,6 +75,12 @@ def record(asset: str = ASSET) -> dict:
             "runtime_failure": "继续传播。",
             "nonconvergence": "不适用。",
             "partial_results": "无。",
+        },
+        "family": {
+            "name": "test-family",
+            "default": "a",
+            "default_reason": "已声明",
+            "methods": [{"name": "a", "model": "已声明方法。"}],
         },
         "example": {"description": "一个用例。", "expected": "有限"},
         "verification": {"scope": ["已声明检查。"], "tests": ["tests/x.py"]},
@@ -164,24 +176,78 @@ def test_a_translation_change_without_rerecording_is_rejected(repo, capsys):
     assert "Chinese text of field 'summary' changed" in out
 
 
-def test_a_missing_sidecar_is_accepted_as_v1_and_annotated(repo, capsys):
+def test_a_missing_sidecar_file_is_a_clear_failure(repo, capsys):
     code, out = run(repo, capsys)
-    assert code == 0, out
-    assert out.count("v1 record without a recorded pair") == 2
-    code, out = run(repo, capsys, "--list")
-    assert code == 0
-    assert "v1" in out
+    assert code == 1
+    assert "file is missing" in out
+    assert "run --write" in out
 
 
-def test_an_asset_missing_from_the_sidecar_falls_back_to_v1(repo, capsys):
+def test_an_asset_missing_from_the_sidecar_is_rejected(repo, capsys):
+    """Removing an entry must not silently downgrade that asset to a weaker check."""
     record_pairing(repo)
     document = sidecar(repo)
     document["records"] = [item for item in document["records"] if item["asset_id"] != OTHER]
     write_sidecar(repo, document)
     code, out = run(repo, capsys)
-    assert code == 0, out
-    assert OTHER in out and "v1 record without a recorded pair" in out
-    assert f"{ASSET}" not in out.split("OK:")[-1]
+    assert code == 1
+    assert OTHER in out
+    assert "no recorded pair" in out
+    assert "not an unmigrated pass" in out
+
+
+def test_an_in_record_block_does_not_rescue_a_missing_sidecar_entry(repo, capsys):
+    record_pairing(repo)
+    zh = read_zh(repo)
+    for item in zh["records"]:
+        item["pairing"] = {
+            "schema": "scirel.zh-pairing",
+            "version": 1,
+            "sections": {"summary": {"en": "0" * 16, "zh": "1" * 16}},
+        }
+    write_zh(repo, zh)
+    document = sidecar(repo)
+    document["records"] = [item for item in document["records"] if item["asset_id"] != OTHER]
+    write_sidecar(repo, document)
+    code, out = run(repo, capsys)
+    assert code == 1
+    assert "no recorded pair" in out
+
+
+def test_a_contract_without_a_chinese_record_is_rejected(repo, capsys):
+    record_pairing(repo)
+    zh = read_zh(repo)
+    zh["records"] = [item for item in zh["records"] if item["asset_id"] != OTHER]
+    write_zh(repo, zh)
+    code, out = run(repo, capsys)
+    assert code == 1
+    assert OTHER in out
+    assert "has no Chinese record" in out
+
+
+def test_changing_family_is_red_and_names_it(repo, capsys):
+    record_pairing(repo)
+    document = read_contract(repo)
+    document["family"] = {
+        "name": "changed-family",
+        "default": "a",
+        "default_reason": "changed",
+        "methods": [{"name": "a", "model": "changed"}],
+    }
+    write_contract(repo, document)
+    code, out = run(repo, capsys)
+    assert code == 1
+    assert "field 'family'" in out
+
+
+def test_a_title_that_stops_copying_the_contract_title_is_rejected(repo, capsys):
+    record_pairing(repo)
+    zh = read_zh(repo)
+    zh["records"][0]["title"] = {"en": "Renamed", "zh": "改名了"}
+    write_zh(repo, zh)
+    code, out = run(repo, capsys)
+    assert code == 1
+    assert "field 'title' must copy the contract value exactly" in out
 
 
 def test_a_drifted_asset_is_red_even_when_another_is_unmigrated(repo, capsys):

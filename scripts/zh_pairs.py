@@ -24,10 +24,12 @@ record is the reviewable act of confirming the pair: a green run means "these
 exact contents were confirmed together", never that the Chinese says the same
 thing well.
 
-A record with no sidecar entry falls back to an in-record `pairing` block (the
-format this tool shipped first) and then to v1, where it passes with an explicit
-"unmigrated" note. The sidecar always wins, so the migration can land before the
-switch and the old field can be removed separately.
+The sidecar must cover every contract that has a Chinese record, and every record
+must have a sidecar entry: a missing entry is a failure, not an "unmigrated" pass.
+An earlier in-record `pairing` block is ignored rather than trusted, so removing
+an entry cannot silently fall back to a weaker check. `title` is not paired: it is
+a mechanical copy of the contract's own bilingual title and is checked by equality
+instead; `source_sha256` is the superseded whole-file binding and is not paired.
 """
 
 from __future__ import annotations
@@ -57,7 +59,12 @@ SECTIONS: dict[str, tuple[str, ...]] = {
     "failure_semantics": ("failure_semantics",),
     "example": ("example",),
     "verification": ("verification",),
+    "family": ("family",),
 }
+
+# Fields the record copies verbatim from the contract's own bilingual value rather
+# than translating. They are checked for equality, not hashed as a pair.
+COPY_ONLY: dict[str, tuple[str, ...]] = {"title": ("title",)}
 
 
 class _Missing:
@@ -124,7 +131,7 @@ def load_sidecar(root: Path) -> tuple[dict[str, dict], list[str]]:
     """Return (fields by asset id, errors). A missing sidecar is not an error."""
     path = sidecar_path(root)
     if not path.is_file():
-        return {}, []
+        return {}, [f"{SIDECAR}: file is missing; run --write to record the pairs"]
     try:
         document = json.loads(path.read_text(encoding="utf-8"))
     except json.JSONDecodeError as error:
@@ -188,39 +195,63 @@ def validate_fields(where: str, recorded: dict, expected: dict) -> tuple[list[st
 
 
 def check(root: Path) -> tuple[list[str], list[str], dict[str, str]]:
-    """Return (errors, notes, state) where state maps asset id to a short status."""
+    """Return (errors, notes, state). Every record needs a sidecar entry; there is no fallback."""
     contracts = load_contracts(root)
     entries, errors = load_sidecar(root)
     notes: list[str] = []
     state: dict[str, str] = {}
-    seen: set[str] = set()
+    records: dict[str, tuple[Path, dict]] = {}
     for path, _document, index, record in iter_records(root):
         asset = record.get("asset_id") or f"<record {index}>"
-        relative = path.relative_to(root).as_posix()
-        where = f"{SIDECAR} [{asset}] (translation in {relative})"
-        seen.add(asset)
-        contract = contracts.get(asset)
-        if contract is None:
-            errors.append(f"{relative} [{asset}]: no contract in {' or '.join(CONTRACT_DIRS)}")
-            state[asset] = "missing-contract"
+        if asset in records:
+            errors.append(f"{path.name} [{asset}]: duplicate Chinese record")
+            state[asset] = "duplicate-record"
             continue
-        expected = expected_fields(record, contract)
-        recorded = entries.get(asset)
-        if recorded is None:
-            legacy = record.get("pairing")
-            if isinstance(legacy, dict) and isinstance(legacy.get("sections"), dict):
-                notes.append(f"{where}: using the in-record pairing block; the sidecar wins")
-                recorded = legacy["sections"]
-            else:
-                notes.append(f"{where}: v1 record without a recorded pair; accepted as unmigrated")
-                state[asset] = "v1"
-                continue
-        section_errors, drifted = validate_fields(where, recorded, expected)
-        errors.extend(section_errors)
-        state[asset] = "drift:" + ",".join(sorted(set(drifted))) if drifted else "ok"
-    for asset in sorted(set(entries) - seen):
+        records[asset] = (path, record)
+
+    for asset in sorted(set(contracts) - set(records)):
+        errors.append(f"{SIDECAR}: contract {asset} has no Chinese record to pair with")
+        state[asset] = "missing-record"
+    for asset in sorted(set(records) - set(contracts)):
+        errors.append(
+            f"{records[asset][0].name} [{asset}]: no contract in {' or '.join(CONTRACT_DIRS)}"
+        )
+        state[asset] = "missing-contract"
+    for asset in sorted(set(entries) - set(records)):
         errors.append(f"{SIDECAR}: pair for {asset} has no Chinese record")
         state[asset] = "orphaned"
+
+    for asset, (path, record) in sorted(records.items()):
+        contract = contracts.get(asset)
+        if contract is None:
+            continue
+        where = f"{SIDECAR} [{asset}] (translation in {path.name})"
+        recorded = entries.get(asset)
+        if recorded is None:
+            errors.append(
+                f"{where}: no recorded pair; a missing entry is a failure, not an unmigrated pass. "
+                f"Run --write after confirming the pair"
+            )
+            state[asset] = "unrecorded"
+            continue
+        for name, path_keys in COPY_ONLY.items():
+            if name not in record:
+                continue
+            english = contract_field(contract, path_keys)
+            if english is _MISSING:
+                continue
+            if record[name] != english:
+                errors.append(
+                    f"{where}: field '{name}' must copy the contract value exactly; it is a "
+                    "bilingual identifier, not a translation"
+                )
+        expected = expected_fields(record, contract)
+        section_errors, drifted = validate_fields(where, recorded, expected)
+        errors.extend(section_errors)
+        if drifted:
+            state[asset] = "drift:" + ",".join(sorted(set(drifted)))
+        elif state.get(asset) != "duplicate-record":
+            state[asset] = "ok"
     return errors, notes, state
 
 
@@ -253,6 +284,8 @@ def write(root: Path) -> tuple[list[str], bool]:
             errors.append(f"{path.name} [{asset or index}]: no contract to pair against")
             continue
         entries[asset] = expected_fields(record, contract)
+    for asset in sorted(set(contracts) - set(entries)):
+        errors.append(f"contract {asset} has no Chinese record, so it has no pair to record")
     if errors:
         return errors, False
     rendered = render_sidecar(entries)
