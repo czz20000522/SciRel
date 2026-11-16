@@ -112,7 +112,9 @@ def test_equilibrium_columns_satisfy_their_definitions():
     # the next test) by four must scale ``omega_p`` by two, which no hard-coded
     # constant can do.
     budget = 32 * EPS
-    assert abs(mp.mpf(float(plasma[0])) - mp.mpf(float(kdebye[0] * thermal[0])) / mp.sqrt(2)) <= budget * abs(mp.mpf(float(plasma[0])))
+    assert abs(
+        mp.mpf(float(plasma[0])) - mp.mpf(float(kdebye[0] * thermal[0])) / mp.sqrt(2)
+    ) <= budget * abs(mp.mpf(float(plasma[0])))
     scaled = np.array(deck, dtype=float).copy()
     scaled[:, 2] *= 4.0
     scaled_state = equilibrium("es1d", scaled)["state"]
@@ -122,7 +124,9 @@ def test_equilibrium_columns_satisfy_their_definitions():
         rtol=0,
         atol=budget * np.max(np.abs(plasma)) * 4,
     )
-    assert abs(mp.mpf(float(plasma[0])) * 2 - mp.mpf(float(plasma[0]))) > budget * abs(mp.mpf(float(plasma[0])))
+    assert abs(mp.mpf(float(plasma[0])) * 2 - mp.mpf(float(plasma[0]))) > budget * abs(
+        mp.mpf(float(plasma[0]))
+    )
 
 
 def test_equilibrium_density_fractions_sum_to_one_and_drift_is_thermal_units():
