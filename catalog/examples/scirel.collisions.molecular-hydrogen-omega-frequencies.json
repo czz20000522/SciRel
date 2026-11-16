@@ -474,7 +474,9 @@
    "the earlier global-state-sentinel, common-shift and finite-moment-retention failures, plus a molecular nonzero near-boundary witness, are covered by regressions for disabled, usable finite nonnegative, negative/no-BGK, exact-zero and molecular ill-conditioned states",
    "independent scalar double summation, conservation targets, spatial partitioning, a common velocity shift, negative-ratio status and undefined propagation",
    "Alpha generated from actual fit matrices and normalized Maxwell distributions; H/D adaptive angular integration, weighted exchange relations, equilibrium momentum and two-sided weak drift",
-   "Top-level Result type and attribute/key equivalence are regression-tested; fields preserve their original order, arrays, NaN, defined and status values."
+   "Top-level Result type and attribute/key equivalence are regression-tested; fields preserve their original order, arrays, NaN, defined and status values.",
+   "Precision budget: exact cell results compare bit-identically through the Fortran-order flatten; independent scalar reductions use rtol 1e-14, atol 1e-14; boost and conservation identities admit only the binary64 rounding of their arithmetic",
+   "Failure matrix: each failure_semantics channel has exactly one executable assertion in tests/collisions/test_declared_failure_channels.py; that table is compared with this contract's declared channel set and every callable must produce the declared class, so a channel cannot be added, renamed or dropped silently"
   ],
   "tests": [
    "tests/collisions/test_molecular_hydrogen_omega_frequencies.py",
