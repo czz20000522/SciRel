@@ -134,19 +134,24 @@
  "verification": {
   "tests": [
    "tests/kinetic/test_generalized_dispersion_models.py",
-   "tests/kinetic/test_generalized_dispersion_independent_corrections.py"
+   "tests/kinetic/test_generalized_dispersion_independent_corrections.py",
+   "tests/kinetic/test_generalized_hilbert_evidence.py"
   ],
   "scope": [
    "Safe AST algebra and analytic chain-rule derivative through DensityExpression.",
    "Off-axis qualified Cauchy quadrature and real-axis subtracted principal value.",
-   "Centered and shifted Gaussian explicit-Hilbert derivatives at large phase, both half-planes and the real boundary; independent high-precision equations with componentwise zero absolute tolerance."
+   "Centered and shifted Gaussian explicit-Hilbert derivatives at large phase, both half-planes and the real boundary; independent high-precision equations with componentwise zero absolute tolerance.",
+   "integration_mesh is established as a list of finite strictly increasing quadrature breakpoints, not nodes and not density samples: a two-point mesh, an uneven five-point mesh and a forty-one-point mesh reproduce the mpmath Cauchy transform of a Lorentzian and a Gaussian to 1e-12 relative at two phases, and moving a breakpoint does not move the answer.",
+   "The continuation identity (plain transform plus 2*pi*i*f(z) in the lower half plane, the plain transform above it) and the real-axis principal value (PV integral plus i*pi*f(x)) are checked against 40-digit mpmath quadrature that subtracts the singularity analytically."
   ],
   "known_limitations": [
    "Real-axis local removable-point evaluation of the derivative integrand uses a symmetric second-derivative estimate; no global error certificate is returned.",
    "Restricted parser supports finite real constants, pi, v, arithmetic, exp/log/sqrt/sin/cos/sinh/cosh/tanh.",
-   "Only shared-file coverage is bound (test_generalized_dispersion_models.py); no asset-specific failure/limit probe is recorded."
+   "Only shared-file coverage is bound (test_generalized_dispersion_models.py); no asset-specific failure/limit probe is recorded.",
+   "The declared requirement that integration_mesh resolve all material features is not enforced: a width-0.02 Gaussian is reproduced to 4.5e-16 with no breakpoint anywhere near its peak, so an unresolved mesh is not a detectable failure mode of this entry point.",
+   "Mutation verification is incomplete for this asset: only the i*pi*f(x) sign mutant is caught; the near-singular derivative branch, the 1e-7 offset threshold and the absolute-tolerance normalization are unexercised by the current probe set, so four of the entry point arithmetic decisions have no failing test."
   ],
-  "evidence_ceiling": "Bounded to the declared relation: DensityExpression interprets the restricted AST and propagates analytic first derivatives by chain rules without eval or SymPy. Real-axis integrands subtract f(x)*exp(-(v-x)²), whose whole-line odd PV vanishes…. Evidence: test_generalized_dispersion_models.py, test_generalized_dispersion_independent_corrections.py (25 recorded test functions; shared-file coverage only; independent analytic/high-precision oracle); the contract example ran. Excluded scope: Piecewise or nonanalytic expression syntax; use distribution selectors; Automatic discovery of unresolved callback features."
+  "evidence_ceiling": "test_generalized_hilbert_evidence.py compares the public transform with mpmath quadrature at 40 digits on three meshes, asserts the continuation identity as algebra, and pins the real-axis principal value at 1e-9 absolute. The breakpoint-invariance observation is what fixes the mesh semantics: a mesh carrying density samples could not reproduce the transform from two points. The same tests measure an over-claim instead of passing it: a Gaussian of width 0.02 is reproduced to 4.5e-16 by a mesh with no breakpoint near its peak, so the declared requirement that the mesh resolve all material features is a caller hint, not a condition this implementation enforces. Mutation verification for this asset is incomplete: of four mutants (i*pi*f(x) sign, near-singular derivative, offset threshold, absolute-tolerance normalization) only the sign mutant turns a case red. No continuous-domain error bound and no certified quadrature bound are established."
  },
  "example": {
   "description": "Evaluate the analytic Lorentzian Hilbert/Cauchy transform on an explicit feature mesh.",
