@@ -270,6 +270,11 @@ def _single_field(filaments, radius, z, dps):
         return psi, b_r, b_z
 
 
+def _single_field_span(centre, step):
+    """Return ``(centre + step) - (centre - step)`` at the ambient precision."""
+    return (centre + step) - (centre - step)
+
+
 def filament_field(filaments, radius, z):
     """Return the certified superposed ``(psi, B_R, B_Z)`` of weighted rings.
 
@@ -302,18 +307,27 @@ def dpsi_dz(radius, z, filaments, step=None):
     derivative of ``psi`` and the cancellation costs about fifteen digits, so the
     difference numerator is still good to roughly ``30`` digits.
     """
-    step = mp.mpf("1e-15") if step is None else mp.mpf(step)
-    up = _single_field(filaments, mp.mpf(radius), mp.mpf(z) + step, _STRONG_DPS)[0]
-    down = _single_field(filaments, mp.mpf(radius), mp.mpf(z) - step, _STRONG_DPS)[0]
-    return (up - down) / (2 * step)
+    with mp.workdps(_STRONG_DPS):
+        # Form the step and the perturbed coordinates inside the working
+        # precision.  Building them at the ambient 15 digits would round each
+        # coordinate and then divide by a step whose own relative error is
+        # roughly (ambient eps / step), which is the whole difference being
+        # measured.
+        step = mp.mpf("1e-15") if step is None else mp.mpf(step)
+        centre, radius_mp = mp.mpf(z), mp.mpf(radius)
+        up = _single_field(filaments, radius_mp, centre + step, _STRONG_DPS)[0]
+        down = _single_field(filaments, radius_mp, centre - step, _STRONG_DPS)[0]
+        return (up - down) / (_single_field_span(centre, step))
 
 
 def dpsi_dr(radius, z, filaments, step=None):
     """Return ``dpsi/dR`` of the quadrature stream function."""
-    step = mp.mpf("1e-15") if step is None else mp.mpf(step)
-    up = _single_field(filaments, mp.mpf(radius) + step, mp.mpf(z), _STRONG_DPS)[0]
-    down = _single_field(filaments, mp.mpf(radius) - step, mp.mpf(z), _STRONG_DPS)[0]
-    return (up - down) / (2 * step)
+    with mp.workdps(_STRONG_DPS):
+        step = mp.mpf("1e-15") if step is None else mp.mpf(step)
+        centre, height_mp = mp.mpf(radius), mp.mpf(z)
+        up = _single_field(filaments, centre + step, height_mp, _STRONG_DPS)[0]
+        down = _single_field(filaments, centre - step, height_mp, _STRONG_DPS)[0]
+        return (up - down) / (_single_field_span(centre, step))
 
 
 def psi_difference(radius, z, filaments, start_radius):
