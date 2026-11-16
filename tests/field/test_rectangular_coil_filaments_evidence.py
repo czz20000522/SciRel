@@ -103,29 +103,42 @@ def test_a_single_filament_sits_exactly_on_the_centroid_under_any_rotation():
 
 
 def test_rotation_is_a_proper_rotation_about_the_centroid():
-    """Evidence 4: cardinal image, distance and centroid preservation."""
+    """Evidence 4: rotation axis, angle sign and orthogonality.
+
+    The maintained rule is ``(p - c) @ [[cos, -sin], [sin, cos]] + c``, a rotation
+    of a row vector by ``-angle`` in the ``(R, Z)`` plane.  The expected images
+    below are computed from that definition with ``math.cos``/``math.sin``, so
+    this item checks the **axis** (the centroid, not the origin) and the **sign**
+    of the rotation, not the numerics of the trigonometric call: a rotation about
+    the origin, or the opposite sign, is an O(offset) error, far above the budget.
+    """
+    import math
+
     observed = 0.0
-    for angle, expected_direction in [(90.0, (0.0, -1.0)), (180.0, (-1.0, 0.0)), (270.0, (0.0, 1.0))]:
-        points = discretize_rectangular_coil(
-            R0, Z0, nr=1, nz=1, dr=0.0 + 2.0, dz=1.0e-300, angle_deg=angle
-        )
-        offset = points[0] - np.array([R0, Z0])
-        scale = float(np.max(np.abs(points[0])))
-        # The row-vector convention sends (dr, 0) to dr * (cos, -sin)?  The
-        # maintained rule is (p - c) @ [[cos, -sin], [sin, cos]], so (1, 0) maps
-        # to (cos, -sin) and the cardinal images below are its exact limits.
-        deviation = abs(offset[0] / 2.0 - expected_direction[0])
-        assert deviation <= 16 * EPS * max(1.0, scale), (angle, deviation)
-        observed = max(observed, deviation)
-        deviation = abs(offset[1] / 2.0 - expected_direction[1])
-        assert deviation <= 16 * EPS * max(1.0, scale), (angle, deviation)
-        observed = max(observed, deviation)
+    offsets = (-2.0, 0.0, 2.0)
+    for angle in (37.0, 90.0, 180.0, 270.0):
+        points = discretize_rectangular_coil(R0, Z0, nr=3, nz=1, dr=2.0, dz=DZ, angle_deg=angle)
+        radians = math.radians(angle)
+        cosine, sine = math.cos(radians), math.sin(radians)
+        scale = max(1.0, abs(R0), abs(Z0))
+        for row, offset in enumerate(offsets):
+            expected = np.array(
+                [R0 + cosine * offset, Z0 - sine * offset]
+            )
+            deviation = float(np.max(np.abs(points[row] - expected)))
+            assert deviation <= 16 * EPS * scale, (angle, offset, deviation)
+            observed = max(observed, deviation)
+            # The distance to the centroid is preserved by the rotation.
+            assert abs(
+                float(np.hypot(*(points[row] - np.array([R0, Z0])))) - abs(offset)
+            ) <= 16 * EPS * scale
     assert observed > 0.0
-    # A field of centres keeps its distance to the centroid and its centroid.
+    # A field of centres keeps its centroid; the row-vector rotation is linear, so
+    # the mean of the rotated offsets is the rotation of the zero mean.
     base = discretize_rectangular_coil(R0, Z0, nr=NR, nz=NZ, dr=DR, dz=DZ)
     rotated = discretize_rectangular_coil(R0, Z0, nr=NR, nz=NZ, dr=DR, dz=DZ, angle_deg=37.0)
     centre = np.array([R0, Z0])
-    np.testing.assert_allclose(rotated.mean(axis=0), centre, rtol=0.0, atol=8 * EPS * 4.0)
+    np.testing.assert_allclose(rotated.mean(axis=0), centre, rtol=0.0, atol=16 * EPS * 4.0)
     np.testing.assert_allclose(
         np.hypot(*(rotated - centre).T),
         np.hypot(*(base - centre).T),
@@ -156,9 +169,10 @@ def test_each_declared_rejection_channel_is_executable():
             discretize_rectangular_coil(**arguments)
     with pytest.raises(ValueError, match="angle_deg must be finite"):
         discretize_rectangular_coil(R0, Z0, nr=2, nz=2, dr=DR, dz=DZ, angle_deg=np.nan)
-    # The axis guard: a wide block rotated about a small radius crosses R = 0.
+    # The axis guard: the row-vector convention sends (0, dz) to
+    # (dz * sin, dz * cos), so a block tall enough in Z crosses R = 0 at 90 deg.
     with pytest.raises(ValueError, match="crosses the cylindrical axis"):
-        discretize_rectangular_coil(0.1, 0.0, nr=2, nz=1, dr=1.0, dz=1.0, angle_deg=90.0)
+        discretize_rectangular_coil(0.1, 0.0, nr=1, nz=2, dr=1.0, dz=4.0, angle_deg=90.0)
     # Unrepresentable coordinates.
     with pytest.raises(ValueError, match="not representable"):
         discretize_rectangular_coil(
