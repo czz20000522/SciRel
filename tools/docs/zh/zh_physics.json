@@ -1228,15 +1228,18 @@
      "精确满列及满行最小范数参照覆盖内部投影或模态系数不可表示、但要求的结果有限的系统；补偿极小采样保留可表示电流，并使修正场消为零。",
      "采样各乘积溢出但精确相消时仍能求解；空场轴继续有效，十六个低于逐项舍入下限的极小残差仍保留可表示的合并欧几里得范数。",
      "非零一元电流低于 float64 丢零下限时，在调用者 ignore、warn、raise 三种策略下均抛出 FloatingPointError；可表示的微小电流、真实最终场下溢和精确零电流继续有效。即使返回电流处于次正规尺度，修正也由该返回电流重建。",
-     "普通采样一致的 256×16 问题不走整数点积累加；独立有理数相消案例保留逐项乘积舍入会抹去的小量。原极端尺度、严格阈值及独立参照预算保持不变。"
+     "普通采样一致的 256×16 问题不走整数点积累加；独立有理数相消案例保留逐项乘积舍入会抹去的小量。原极端尺度、严格阈值及独立参照预算保持不变。",
+     "独立证据（tests/field/test_ideal_conductor_boundary_evidence.py）：在小整数矩阵上每个输出都用 Fraction 重算并须与精确有理值一致——一致满秩解伴随精确零残余、严格秩截断保留下来的方向（用电流向量而非仅秩数钉住）、全丢弃时校正场等于未校正场、以及欠定系统由闭式给出的最小范数电流向量。"
     ],
-    "evidence_ceiling": "直接测试保留原满秩采样一致系统、2π 缩放及原断言和容差。独立精确一元、有理数二元及矩形最小范数参照覆盖有界 binary64 尺度、次正规量化、内部投影或模态溢出、补偿采样、秩和阈值边界及要求输出的失败。这些测试不证明任意矩阵精度、条件数保证、已丢失输入精度的恢复、真实导体壁或专家认可。 普通范围向量化与极端、相消算术分别核对。本地固定规模计时只属于开发观测，不构成跨平台性能保证。",
+    "evidence_ceiling": "直接测试保留原满秩采样一致系统、2π 缩放及原断言和容差。独立精确一元、有理数二元及矩形最小范数参照覆盖有界 binary64 尺度、次正规量化、内部投影或模态溢出、补偿采样、秩和阈值边界及要求输出的失败。这些测试不证明任意矩阵精度、条件数保证、已丢失输入精度的恢复、真实导体壁或专家认可。 普通范围向量化与极端、相消算术分别核对。本地固定规模计时只属于开发观测，不构成跨平台性能保证。 C1 证据对小整数系统精确判定线性代数，含严格秩截断保留哪个方向、以及伪逆在欠定系统返回哪个电流向量。建立不了的是把这些矩阵读作理想导体壁的物理含义：那需要装置壁几何加上实测或线圈组场解，本仓库都没有。合同已将该点记为 cannot establish。",
     "known_limitations": [
      "只检查矩阵维数，不检查 S@Gbf=Gbb，物理耦合由调用者证明。",
      "截断后可有非零残差。",
      "只缩放部分磁通端口不是支持的单位转换；Wb 与 Wb/rad 跨资产命名仍待裁决。",
      "不含几何或源格林构建。",
-     "公开许可及专家认可仍待人工决定。"
+     "公开许可及专家认可仍待人工决定。",
+     "把这些矩阵读作理想导体壁的物理含义在本修订下为 cannot establish：本仓库没有装置壁几何，也没有壁电流实测或线圈组场解，因此只有线性代数获得证据。",
+     "精确有理算例使用小整数矩阵且奇异值分离良好；真实边界 Green 矩阵的条件数未覆盖，合同自身对极端量级的缩放处理由既有测试而非此处检验。"
     ]
    }
   },
@@ -3827,14 +3830,17 @@
      "三个不同网格中常量 psi=3.7 给出严格零场。",
      "可表示的强常量规范保持制造偶磁通的 BR/BZ，包括轴上。",
      "Result 改造后保持既有键顺序、数值、形状、dtype 和映射兼容性，并支持属性读取同一字段。",
-     "test_nonzero_radial_reference_is_not_a_global_flux 对两种数组朝向所得的径向相对积分直接求场：非零首半径处得到 BR=0，独立 80/120 位 Biot–Savart 积分给出正直接 BR。这支持一致参考前提，不保证从相对输入恢复全局场。"
+     "test_nonzero_radial_reference_is_not_a_global_flux 对两种数组朝向所得的径向相对积分直接求场：非零首半径处得到 BR=0，独立 80/120 位 Biot–Savart 积分给出正直接 BR。这支持一致参考前提，不保证从相对输入恢复全局场。",
+     "独立证据（tests/field/test_poloidal_field_from_flux_evidence.py）：用人造通量 psi = R**2*(a + e*Z + b*Z**2)（三点格式对其精确再现）在非均匀网格（含单侧端点公式）上校验 B_R = -R(e + 2bZ)、B_Z = 2(a + eZ + bZ**2) 与模值；1/R 除法由与 R 无关的 B_Z 钉住，轴规则由与离轴极限的一致钉住，常数通量参考被证明只在存储值相消范围内改变分量，Z 相关参考被证明使 B_R 恰变 -g'(Z)/R 而 B_Z 不变。"
     ],
-    "evidence_ceiling": "制造解与解析离散检查仅支持声明的极向模型和积分几何；不证明任意格林矩阵、压力闭合、实验等离子体适用性或公开发行。",
+    "evidence_ceiling": "制造解与解析离散检查仅支持声明的极向模型和积分几何；不证明任意格林矩阵、压力闭合、实验等离子体适用性或公开发行。 C1 证据使用格式可精确再现导数的人造多项式，因此无离散误差地检验离散算子、1/R 除法与轴规则。不建立算子对一般通量的误差界：该误差依赖三阶导数，此处未测。",
     "known_limitations": [
      "恢复物理场要求沿 Z 使用一致的 psi=R A_phi 参考。加常量不改变场，减去随 Z 变化的参考通常会改变 BR。integrate_filament_vacuum_field 的径向相对积分，除非参考项为常量，否则需先恢复同一源模型的 psi_global(R0,Z)；径向积分误差仍需计入。调用者闭合和格林响应须自有证据并使用一致约定。",
      "浮点舍入界不等于离散误差界或实验不确定度。",
      "此数值后继不自动获得专家认可或公开发行资格。",
-     "psi 是每弧度磁通（Wb/rad）；以 Wb 计的总磁通大 2π 倍。使用下游算子时先核对它要哪种约定（例如 scirel.neoclassical.calculate_bootstrap_current 两种都接受，但参数名不同）。"
+     "psi 是每弧度磁通（Wb/rad）；以 Wb 计的总磁通大 2π 倍。使用下游算子时先核对它要哪种约定（例如 scirel.neoclassical.calculate_bootstrap_current 两种都接受，但参数名不同）。",
+     "预算含差分的条件数 |psi|/(|d psi| h)，因此大常数通量参考被证明在 binary64 下损失精度，即使它不改变精确导数；这是合同参考警告的离散形式，不是缺陷。",
+     "所用人造族对求导变量是二次的，即格式能精确再现的最高阶；一般通量带三阶导数截断误差，此处未测。"
     ]
    }
   },
@@ -4360,13 +4366,15 @@
      "3–4–5 幅值、零下限及中位参考。",
      "形状不齐、空网格和不可表示幅值的拒绝。",
      "大有限分量及中位数算术回归。",
-     "命名字段改造保留改造前的键序、数值、形状、dtype、映射访问和属性访问，失败路径继续匹配原异常类型与消息。"
+     "命名字段改造保留改造前的键序、数值、形状、dtype、映射访问和属性访问，失败路径继续匹配原异常类型与消息。",
+     "独立证据（tests/field/test_poloidal_field_magnitude_evidence.py）：1e-30 下限与斜边分支在混合数组上逐元素断言，参考值按返回模值的精确有理中位数在奇偶两种长度下重算，并把差分在先形式存在的两种情形钉住——一对 1.7e308 其朴素平均会溢出、一对次正规值其差分下溢。"
     ],
-    "evidence_ceiling": "直接测试只覆盖既有算术和所选浮点边界，不建立参考中位数的模型物理解读或专家认可。",
+    "evidence_ceiling": "直接测试只覆盖既有算术和所选浮点边界，不建立参考中位数的模型物理解读或专家认可。 C1 证据精确判定下限与中位数，并钉住差分在先形式存在的溢出与下溢情形。参考值是采样数组的描述统计量；此处不把它当作归一化，合同同样不作此声明。",
     "known_limitations": [
      "中位数是默认数值参考，不是独立确定的物理尺度。",
      "固定下限替代了精确零。",
-     "公开许可及专家认可仍待人工决定。"
+     "公开许可及专家认可仍待人工决定。",
+     "中位数的数值是相对精确有理中点在采样数组上的实测偏差，不是对任意数组的界。"
     ]
    }
   },
@@ -9557,13 +9565,15 @@
      "向量源轴收缩。",
      "错误源轴及非有限输入的失败行为。",
      "标量或矩阵收缩不可表示时以 FloatingPointError 失败闭合。",
-     "命名字段改造保留改造前的键序、数值、形状、dtype、映射访问和属性访问，失败路径继续匹配原异常类型与消息。"
+     "命名字段改造保留改造前的键序、数值、形状、dtype、映射访问和属性访问，失败路径继续匹配原异常类型与消息。",
+     "独立证据（tests/field/test_current_green_superposition_evidence.py）：标量与矩阵收缩均由同一批 binary64 操作数在精确有理算术下重算，并按 (n + 2) eps（由乘积次数、求和与最终舍入推出）与返回值比较；非对称矩阵把源轴收缩与转置读取区分开，2 的幂缩放与行置换的精确性钉住目标轴，所有形状与溢出通道均被执行。"
     ],
-    "evidence_ceiling": "tests/field/test_current_green_superposition.py 以原名和 scientific_function 别名直接调用公开函数。test_scalar_current_scales_rank_one_green_responses 断言标量缩放；test_vector_current_contracts_green_source_columns 和 test_matrix_contraction_preserves_target_axis 断言有符号源列收缩及非方阵的目标轴保留；test_rejects_wrong_green_source_axis 断言源列数错误会被拒绝；test_unrepresentable_contraction_fails_closed 对标量和矩阵溢出分别要求 FloatingPointError。test_reviewed_relation_example 另检查源基向量选择。这些是收缩与失败回归，不独立认证输入的 Green 响应或平衡模型。",
+    "evidence_ceiling": "tests/field/test_current_green_superposition.py 以原名和 scientific_function 别名直接调用公开函数。test_scalar_current_scales_rank_one_green_responses 断言标量缩放；test_vector_current_contracts_green_source_columns 和 test_matrix_contraction_preserves_target_axis 断言有符号源列收缩及非方阵的目标轴保留；test_rejects_wrong_green_source_axis 断言源列数错误会被拒绝；test_unrepresentable_contraction_fails_closed 对标量和矩阵溢出分别要求 FloatingPointError。test_reviewed_relation_example 另检查源基向量选择。这些是收缩与失败回归，不独立认证输入的 Green 响应或平衡模型。 C1 证据以精确有理算术而非手写字面量判定收缩，因此转置读取、目标轴收缩或漏乘都会以 O(1) 误差失败而不是差到一个 ulp。它对算术关系是完整的；不建立调用方的 Green 数组或电流描述某个物理装置——那属于产生它们的资产。",
     "known_limitations": [
      "只支持标量或一维电流。",
      "不推断或重新排列源轴。",
-     "具名溢出断言针对有限输入收缩后不可表示的情况，不代表穷尽非有限输入或所有极端量级组合。"
+     "具名溢出断言针对有限输入收缩后不可表示的情况，不代表穷尽非有限输入或所有极端量级组合。",
+     "(n + 2) eps 预算按 n 次乘积、求和与最终舍入计数；非二进制可表示的操作数是为让它覆盖的舍入真正发生，而不是被精确二进制结果蒙过。"
     ]
    }
   },
@@ -9662,14 +9672,17 @@
      "scripts/build_pleiades_truth.py 只用调用者提供的外部 Pleiades source checkout 写入显式指定的候选输出；不会覆盖受跟踪 fixture，也不会携带 source。",
      "每根电流丝的 current_a 与线圈总安匝 ampere_turns_a：两种写法给出相同的场，单根电流丝与轴上圆环解析式一致，两者都给或都不给时抛出 ValueError。",
      "活动电流丝与目标点精确重合时拒绝，零权重重合保持非活动。",
-     "命名字段改造保留改造前的键序、数值、形状、dtype、映射访问和属性访问，失败路径继续匹配原异常类型与消息。"
+     "命名字段改造保留改造前的键序、数值、形状、dtype、映射访问和属性访问，失败路径继续匹配原异常类型与消息。",
+     "独立证据（tests/field/test_multi_coil_vacuum_field_evidence.py）：合成的 psi_vac、b_r_vac、b_z_vac 与由独立精确有理丝表构造的 Biot–Savart 求积总和比较，预算含带符号叠加的相消条件；current_a = J 与 ampere_turns_a = nr*nz*J 断言逐位一致，把线圈总安匝当作 current_a 实测使场恰为 nr*nz 倍，重合守卫被证明只对有驱动的源触发。"
     ],
-    "evidence_ceiling": "限于具有独立线圈电流的线性多线圈真空场与 Green 响应列。证据：`test_composition_multi_coil_vacuum_field.py` 检验独立线圈响应列、电流缩放、空网格拒绝与单点轴接受； `test_pleiades_two_coil_truth.py` 含 4 个测试函数，其中 2 个引用 `solve_multi_coil_vacuum_field`，仅由本资产绑定；本审计已执行有界示例。真值来源：受跟踪的 Pleiades simple-two-coil fixture（`tests/fixtures/multi_coil_vacuum_field/pleiades_simple_two_coil`）及其 provenance；每次都比较完整 9×9 数组。不建立：迭代线圈求解、非线性材料、有限线效应，或畸形/空线圈列表。 重合回归只覆盖精确的活动/非活动电流丝情形；有限导线自场行为仍不在范围内。",
+    "evidence_ceiling": "限于具有独立线圈电流的线性多线圈真空场与 Green 响应列。证据：`test_composition_multi_coil_vacuum_field.py` 检验独立线圈响应列、电流缩放、空网格拒绝与单点轴接受； `test_pleiades_two_coil_truth.py` 含 4 个测试函数，其中 2 个引用 `solve_multi_coil_vacuum_field`，仅由本资产绑定；本审计已执行有界示例。真值来源：受跟踪的 Pleiades simple-two-coil fixture（`tests/fixtures/multi_coil_vacuum_field/pleiades_simple_two_coil`）及其 provenance；每次都比较完整 9×9 数组。不建立：迭代线圈求解、非线性材料、有限线效应，或畸形/空线圈列表。 重合回归只覆盖精确的活动/非活动电流丝情形；有限导线自场行为仍不在范围内。 C1 证据用由独立重算丝表构造的 Biot–Savart 求积总和取代组合自身的自洽性，并把合同写明的电流键陷阱变成实测倍数。只覆盖真空丝场：未涉及有限导体截面、可渗透材料或经装置验证的线圈组。",
     "known_limitations": [
      "调用之间不保留场缓存或设备对象。",
      "不含反馈、优化或导体材料模型。",
      "固定 Pleiades 点值参照和完整数组比较每次都运行，畸形/空线圈列表仍被排除。",
-     "精确的活动电流丝/目标重合会直接拒绝，而不是按有限导线自场正则化。"
+     "精确的活动电流丝/目标重合会直接拒绝，而不是按有限导线自场正则化。",
+     "比较预算含带符号叠加的相消条件 sum|contribution|/|sum contribution|，因为所取两线圈部分相消；纯相对预算会因请求和的性质而非组合实现判红。",
+     "电流键等价只在丝数为整数且权重和可精确表示时成立；非整数权重和会使拆分不精确，此处未覆盖。"
     ],
     "tests": [
      "tests/cross_domain/multi_coil_vacuum_field/test_composition_multi_coil_vacuum_field.py",
