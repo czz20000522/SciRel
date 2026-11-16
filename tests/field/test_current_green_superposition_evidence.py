@@ -61,7 +61,10 @@ def _exact_contraction(green, currents):
     """Return the exact rational row-by-row contraction."""
     return [
         sum(
-            (Fraction(float(value)) * Fraction(float(current)) for value, current in zip(row, currents, strict=True)),
+            (
+                Fraction(float(value)) * Fraction(float(current))
+                for value, current in zip(row, currents, strict=True)
+            ),
             start=Fraction(0),
         )
         for row in green
@@ -119,9 +122,7 @@ def test_scalar_current_scales_each_element_exactly():
 def test_power_of_two_scaling_is_exact_and_the_target_axis_is_preserved():
     """Evidence 3 and 4: exact scaling, and row-local target ordering."""
     base = superpose_current_green_field(CURRENTS, GPSI, GBR, GBZ)
-    doubled = superpose_current_green_field(
-        [4.0 * value for value in CURRENTS], GPSI, GBR, GBZ
-    )
+    doubled = superpose_current_green_field([4.0 * value for value in CURRENTS], GPSI, GBR, GBZ)
     for name in FIELDS:
         np.testing.assert_array_equal(doubled[name], 4.0 * base[name]), name
         assert np.any(base[name] != 0.0), name
@@ -173,15 +174,9 @@ def test_each_declared_rejection_channel_is_executable():
         superpose_current_green_field(CURRENTS, GPSI, GBR, [row[:2] for row in GBZ])
     # runtime_failure: a representable operands pair whose product overflows.
     with pytest.raises(FloatingPointError, match="not representable"):
-        superpose_current_green_field(
-            2.0, [np.finfo(float).max], [1.0], [1.0]
-        )
+        superpose_current_green_field(2.0, [np.finfo(float).max], [1.0], [1.0])
     with pytest.raises(FloatingPointError, match="not representable"):
-        superpose_current_green_field(
-            [2.0], [[np.finfo(float).max]], [[1.0]], [[1.0]]
-        )
+        superpose_current_green_field([2.0], [[np.finfo(float).max]], [[1.0]], [[1.0]])
     # A representable contraction does not raise, so the guard is not blanket.
-    assert np.isfinite(
-        superpose_current_green_field([1.0], [[2.0]], [[3.0]], [[4.0]])["psi"][0]
-    )
+    assert np.isfinite(superpose_current_green_field([1.0], [[2.0]], [[3.0]], [[4.0]])["psi"][0])
     del good

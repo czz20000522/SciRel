@@ -126,9 +126,7 @@ def test_the_total_field_matches_the_biot_savart_quadrature_at_every_node():
                 if want == 0.0:
                     assert got_value == 0.0, (name, row, column)
                     continue
-                magnitude = float(
-                    sum(abs(float(item[axis])) for item in contributions)
-                )
+                magnitude = float(sum(abs(float(item[axis])) for item in contributions))
                 allowed = RELATIVE_BUDGET * max(1.0, magnitude / abs(want))
                 deviation = abs(got_value - want) / abs(want)
                 assert deviation <= allowed, (name, row, column, deviation, allowed)

@@ -71,7 +71,10 @@ def _exact_matvec(matrix, vector):
     """Return the exact rational matrix-vector product."""
     return [
         sum(
-            (Fraction(float(entry)) * Fraction(float(value)) for entry, value in zip(row, vector, strict=True)),
+            (
+                Fraction(float(entry)) * Fraction(float(value))
+                for entry, value in zip(row, vector, strict=True)
+            ),
             start=Fraction(0),
         )
         for row in matrix
@@ -95,29 +98,36 @@ def test_a_consistent_full_rank_system_cancels_the_boundary_flux_exactly():
     # Consistency, in exact rationals: the composed sampled Green equals the
     # boundary Green, so the sampled boundary flux is exactly reachable.
     composed = [
-        [sum(
-            (
-                Fraction(float(SAMPLE[row][column])) * Fraction(float(GBF[column][source]))
-                for column in range(len(SAMPLE[0]))
-            ),
-            start=Fraction(0),
-        )
-        for source in range(len(GBB[0]))]
+        [
+            sum(
+                (
+                    Fraction(float(SAMPLE[row][column])) * Fraction(float(GBF[column][source]))
+                    for column in range(len(SAMPLE[0]))
+                ),
+                start=Fraction(0),
+            )
+            for source in range(len(GBB[0]))
+        ]
         for row in range(len(SAMPLE))
     ]
     assert composed == [
         [Fraction(float(GBB[row][source])) for source in range(len(GBB[0]))]
         for row in range(len(GBB))
     ]
-    currents = [-value / Fraction(float(GBB[index][index])) for index, value in enumerate(boundary_flux)]
+    currents = [
+        -value / Fraction(float(GBB[index][index])) for index, value in enumerate(boundary_flux)
+    ]
     _assert_exact_columns("boundary_currents", result["boundary_currents"], currents, currents)
     # The residual is structurally zero for a consistent system.
     np.testing.assert_array_equal(result["residual"], 0.0)
     assert result["residual_norm"] == 0.0
     field_correction = _exact_matvec(GBF, currents)
-    _assert_exact_columns("field_flux_correction", result["field_flux_correction"], field_correction)
+    _assert_exact_columns(
+        "field_flux_correction", result["field_flux_correction"], field_correction
+    )
     corrected = [
-        Fraction(float(value)) + correction for value, correction in zip(PSI, field_correction, strict=True)
+        Fraction(float(value)) + correction
+        for value, correction in zip(PSI, field_correction, strict=True)
     ]
     _assert_exact_columns("corrected_field_flux", result["corrected_field_flux"], corrected)
     assert result["effective_rank"] == 2
@@ -141,7 +151,8 @@ def test_rank_truncation_is_pinned_by_the_surviving_direction():
         value
         + sum(
             (
-                Fraction(float(GBB[row][source])) * Fraction(float(truncated["boundary_currents"][source]))
+                Fraction(float(GBB[row][source]))
+                * Fraction(float(truncated["boundary_currents"][source]))
                 for source in range(len(GBB[0]))
             ),
             start=Fraction(0),
@@ -173,8 +184,12 @@ def test_the_underdetermined_solution_is_the_minimum_norm_one():
     result = correct_ideal_conductor_boundary_flux(psi, sample, gbb, gbf)
     # gbb.T @ (gbb @ gbb.T)^-1 @ (-b) with b = 1, in exact rationals.
     half = Fraction(-1, 2)
-    _assert_exact_columns("boundary_currents", result["boundary_currents"], [half, half], [half, half])
-    _assert_exact_columns("corrected_field_flux", result["corrected_field_flux"], [half, half], [half, half])
+    _assert_exact_columns(
+        "boundary_currents", result["boundary_currents"], [half, half], [half, half]
+    )
+    _assert_exact_columns(
+        "corrected_field_flux", result["corrected_field_flux"], [half, half], [half, half]
+    )
     assert result["effective_rank"] == 1
     # The residual equation gbb @ c = -b holds, so the sampled flux is cancelled.
     total = Fraction(float(result["boundary_currents"][0])) + Fraction(
