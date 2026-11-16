@@ -270,6 +270,14 @@ development stage runs the same checks minus example execution and minus the thr
 
 报告固定两栏：`mutants killed / total`，以及**每个存活变异**的覆盖判定。
 
+## 验证"内容在不在 main"：对着树，不对着工作树
+
+判断某份改动是否真的进了 `main`，**只能用 `main` 的树**：`git ls-tree -r --name-only origin/main -- <path>`、`git show origin/main:<path>`、`git cat-file -e origin/main:<path>`。**不能**用工作树里的 `ls`、`grep`、`pytest` 去判断——工作树可能停在一个落后若干提交的 HEAD 上，或者是别人正在改的工作副本。
+
+本仓库因此出过一次完整的错误链：用主 checkout 的工作树 `ls tests/sampling` 看到空，宣布"上一批合并丢了内容"，为此开了 PR #328，随后被对方指出 `origin/main` 的树里这些文件一直都在——只是主 checkout 落在 5 个提交之前。核查一份代码值几分钟，一次错误的"事故报告"要用几轮去撤。
+
+同样地，**合并后的验证要独立于合并输出**：PR 合了之后，对着 `origin/main` 的树数一遍关键文件与测试计数，不要以"合并成功"或"代理自述的测试数"为证据。
+
 ## 单文件多记录的合并：逐条并集
 
 `tools/docs/zh/*.json` 一个文件里有几十条资产记录，代码与合同的并行改动都落在同一个文件上，冲突几乎必然发生。解决这类冲突**不许整份取一侧**（`git checkout --theirs <file>`）：那样会把对方在这批里新增的记录整段退回旧文本，而且差异不会出现在任何代码里——只有 `check_contract_sync.py` 的"条款条数不符"能看出来。本仓库已因此静默退回两次（一次 45 条 reader 记录，一次 3 条）。
