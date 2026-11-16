@@ -152,16 +152,19 @@
    "Vector source-column contraction.",
    "Wrong source-column length and nonfinite failure behavior.",
    "An unrepresentable scalar or matrix contraction fails closed with FloatingPointError.",
-   "The named result preserves the captured key order, values, shapes, dtypes, mapping access and attribute access; failures retain their exception types and messages."
+   "The named result preserves the captured key order, values, shapes, dtypes, mapping access and attribute access; failures retain their exception types and messages.",
+   "Independent evidence (tests/field/test_current_green_superposition_evidence.py): the scalar and the matrix contraction are recomputed in exact rational arithmetic from the same binary64 operands and compared against the returned floats within (n + 2) eps, a bound derived from the number of products, the summation and the final rounding; a non-symmetric matrix separates the source-axis contraction from a transposed read, exact power-of-two scaling and an exact row permutation pin the target axis, and every shape and overflow channel is exercised."
   ],
   "tests": [
-   "tests/field/test_current_green_superposition.py"
+   "tests/field/test_current_green_superposition.py",
+   "tests/field/test_current_green_superposition_evidence.py"
   ],
-  "evidence_ceiling": "Direct assertions in tests/field/test_current_green_superposition.py call the public function both by its own name and as scientific_function. test_scalar_current_scales_rank_one_green_responses checks scalar scaling; test_vector_current_contracts_green_source_columns and test_matrix_contraction_preserves_target_axis check signed source-column contraction, including a non-square matrix; test_rejects_wrong_green_source_axis rejects the wrong source length; test_unrepresentable_contraction_fails_closed requires FloatingPointError for both scalar and matrix overflow. test_reviewed_relation_example also checks source-basis selection. These are contraction and failure regressions, not independent validation of the supplied Green responses or an equilibrium model.",
+  "evidence_ceiling": "Direct assertions in tests/field/test_current_green_superposition.py call the public function both by its own name and as scientific_function. test_scalar_current_scales_rank_one_green_responses checks scalar scaling; test_vector_current_contracts_green_source_columns and test_matrix_contraction_preserves_target_axis check signed source-column contraction, including a non-square matrix; test_rejects_wrong_green_source_axis rejects the wrong source length; test_unrepresentable_contraction_fails_closed requires FloatingPointError for both scalar and matrix overflow. test_reviewed_relation_example also checks source-basis selection. These are contraction and failure regressions, not independent validation of the supplied Green responses or an equilibrium model. C1 evidence decides the contraction in exact rationals instead of against hand-written literals, so a transposed read, a target-axis contraction or a missing product each fails with an O(1) error rather than an ulp. It is complete for the arithmetic relation; it does not establish that the caller's Green arrays or currents describe a physical device, which belongs to the assets that produce them.",
   "known_limitations": [
    "Only scalar and one-dimensional current inputs are supported.",
    "The operator contracts along the second (source) axis and does not infer, reorder, or transpose response axes.",
-   "The named overflow assertions bind finite inputs whose contraction is unrepresentable; they do not establish every nonfinite-input or extreme-magnitude combination."
+   "The named overflow assertions bind finite inputs whose contraction is unrepresentable; they do not establish every nonfinite-input or extreme-magnitude combination.",
+   "The (n + 2) eps budget counts n products, the summation and the final rounding; the non-dyadic operands are chosen so the rounding it covers actually occurs rather than being satisfied by an exact dyadic result."
   ]
  }
 }

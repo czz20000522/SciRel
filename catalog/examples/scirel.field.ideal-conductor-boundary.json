@@ -214,18 +214,22 @@
    "Exact tall and wide minimum-norm references cover unrepresentable internal projections and modal coefficients with finite required results; compensated subnormal sampling retains a representable current and cancels the corrected field.",
    "Exact sampling cancellation survives overflowing individual products; an empty field axis remains valid, and sixteen subnormal residual components below the individual rounding floor retain their representable combined Euclidean norm.",
    "A nonzero scalar current below the float64 zero-rounding floor raises FloatingPointError under ignore, warn and raise caller policies; representable tiny currents, true final field underflow and exact zero currents remain valid. Corrections reconstruct from the returned current even when that current is subnormal.",
-   "An ordinary sampling-consistent 256-by-16 problem avoids integer dot accumulation; independent rational cancellation cases retain terms erased by rounded individual products. Existing extreme-scale, strict-cutoff and independent-oracle budgets remain unchanged."
+   "An ordinary sampling-consistent 256-by-16 problem avoids integer dot accumulation; independent rational cancellation cases retain terms erased by rounded individual products. Existing extreme-scale, strict-cutoff and independent-oracle budgets remain unchanged.",
+   "Independent evidence (tests/field/test_ideal_conductor_boundary_evidence.py): on small integer matrices every output is recomputed with Fraction and required to match the exact rational value - the consistent full-rank solve with an exact zero residual, the surviving direction of a strict rank truncation (pinned by the current vector, not only the rank count), the nothing-retained case whose corrected field equals the uncorrected one, and the minimum-norm current vector of an underdetermined system by its closed form."
   ],
   "tests": [
-   "tests/field/test_ideal_conductor_boundary.py"
+   "tests/field/test_ideal_conductor_boundary.py",
+   "tests/field/test_ideal_conductor_boundary_evidence.py"
   ],
-  "evidence_ceiling": "Direct SciRel tests retain the original full-rank sampling-consistent system, 2*pi rescaling and prior assertions/tolerances. Independent exact scalar, rational two-by-two and rectangular minimum-norm references cover bounded binary64 scales, subnormal quantization, internal projection/mode overflow, compensated sampling, rank/cutoff boundaries and required-output failures. These tests do not establish arbitrary-matrix accuracy, conditioning guarantees, recovery of lost input precision, physical wall correctness or expert recognition of this development record. Ordinary-range vectorization is checked separately from extreme and cancelling arithmetic. Local fixed-size timing comparisons are development observations, not cross-platform performance guarantees.",
+  "evidence_ceiling": "Direct SciRel tests retain the original full-rank sampling-consistent system, 2*pi rescaling and prior assertions/tolerances. Independent exact scalar, rational two-by-two and rectangular minimum-norm references cover bounded binary64 scales, subnormal quantization, internal projection/mode overflow, compensated sampling, rank/cutoff boundaries and required-output failures. These tests do not establish arbitrary-matrix accuracy, conditioning guarantees, recovery of lost input precision, physical wall correctness or expert recognition of this development record. Ordinary-range vectorization is checked separately from extreme and cancelling arithmetic. Local fixed-size timing comparisons are development observations, not cross-platform performance guarantees. C1 evidence decides the linear algebra exactly on small integer systems, including which direction a strict rank truncation keeps and which current vector the pseudo-inverse returns in an underdetermined system. What it cannot establish is the physical reading of the matrices as an ideal-conducting wall: that needs the device wall geometry plus measurement or a coil-set field solution, which this repository does not hold. The contract records this as cannot establish.",
   "known_limitations": [
    "The implementation checks matrix dimensions but does not check S @ Gbf = Gbb; callers must establish that physical coupling separately.",
    "Truncation can leave a nonzero residual.",
    "Rescaling only some flux ports is not a supported unit conversion; existing vacuum-field Wb labels and equilibrium-side Wb/rad conventions still require science-owner adjudication.",
    "No geometric or source Green construction is included.",
-   "Public distribution licensing and SciRel expert recognition remain pending."
+   "Public distribution licensing and SciRel expert recognition remain pending.",
+   "The physical reading of the matrices as an ideal-conducting wall is cannot establish at this revision: no device wall geometry and no wall-current measurement or coil-set field solution are available in this repository, so only the linear algebra is evidenced.",
+   "The exact-rational cases use small integer matrices with well-separated singular values; the conditioning of a real boundary Green matrix is not covered, and the contract's own scale handling for extreme magnitudes is exercised by the maintained tests rather than here."
   ]
  }
 }

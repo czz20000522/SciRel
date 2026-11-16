@@ -174,19 +174,23 @@
    "scripts/build_pleiades_truth.py writes only an explicitly named candidate from a caller-supplied source checkout; it never overwrites the tracked fixture or vendors source.",
    "Per-filament current_a versus total ampere_turns_a: both forms give the same field, a single filament matches the on-axis loop formula, and both or neither raise ValueError.",
    "Active filament/target exact coincidences are rejected, while zero-weight coincidences remain inactive.",
-   "The named result preserves the captured key order, values, shapes, dtypes, mapping access and attribute access; failures retain their exception types and messages."
+   "The named result preserves the captured key order, values, shapes, dtypes, mapping access and attribute access; failures retain their exception types and messages.",
+   "Independent evidence (tests/field/test_multi_coil_vacuum_field_evidence.py): the composed psi_vac, b_r_vac and b_z_vac are compared with a Biot-Savart quadrature total built from an independently recomputed exact-rational filament table, with the cancellation condition of the signed superposition in the budget; current_a = J and ampere_turns_a = nr*nz*J are asserted to give bitwise identical arrays, passing the coil total as current_a is measured to multiply the field by exactly nr*nz, and the coincidence guard is shown to fire only for an active source."
   ],
   "tests": [
    "tests/cross_domain/multi_coil_vacuum_field/test_composition_multi_coil_vacuum_field.py",
    "tests/cross_domain/multi_coil_vacuum_field/test_pleiades_two_coil_truth.py",
-   "tests/field/test_multi_coil_filament_coincidence.py"
+   "tests/field/test_multi_coil_filament_coincidence.py",
+   "tests/field/test_multi_coil_vacuum_field_evidence.py"
   ],
-  "evidence_ceiling": "Bounded to linear multi-coil vacuum field and Green response columns with independent coil currents. Evidence: `test_composition_multi_coil_vacuum_field.py` exercises independent coil-column responses, current scaling, empty-grid rejection and singleton-axis acceptance; `test_pleiades_two_coil_truth.py` contains 4 test functions, 2 of which reference `solve_multi_coil_vacuum_field`, and is bound only by this asset; the bounded example was executed by this audit. Oracle: the tracked Pleiades simple-two-coil fixture (`tests/fixtures/multi_coil_vacuum_field/pleiades_simple_two_coil`) and its provenance; the full 9x9 arrays are compared on every run. It does not establish iterative coil solving, nonlinear materials, finite-wire effects, or malformed/empty coil lists. The coincidence regression covers exact active and inactive filament cases only; finite-wire self-field behavior remains outside scope.",
+  "evidence_ceiling": "Bounded to linear multi-coil vacuum field and Green response columns with independent coil currents. Evidence: `test_composition_multi_coil_vacuum_field.py` exercises independent coil-column responses, current scaling, empty-grid rejection and singleton-axis acceptance; `test_pleiades_two_coil_truth.py` contains 4 test functions, 2 of which reference `solve_multi_coil_vacuum_field`, and is bound only by this asset; the bounded example was executed by this audit. Oracle: the tracked Pleiades simple-two-coil fixture (`tests/fixtures/multi_coil_vacuum_field/pleiades_simple_two_coil`) and its provenance; the full 9x9 arrays are compared on every run. It does not establish iterative coil solving, nonlinear materials, finite-wire effects, or malformed/empty coil lists. The coincidence regression covers exact active and inactive filament cases only; finite-wire self-field behavior remains outside scope. C1 evidence replaces the composition's self-consistency with a Biot-Savart quadrature total built from an independently recomputed filament table, and turns the documented current-key trap into a measured factor. It covers vacuum filament fields only: no finite conductor cross-section, permeable material or device-verified coil set is exercised.",
   "known_limitations": [
    "No field cache or device object is kept between calls.",
    "No feedback, optimization, or conductor-material model is included.",
    "The fixed Pleiades spot references and full-array comparison run on every test invocation; malformed/empty coil lists remain excluded.",
-   "Exact active filament/target coincidences are rejected rather than regularized as finite-wire self fields."
+   "Exact active filament/target coincidences are rejected rather than regularized as finite-wire self fields.",
+   "The comparison budget carries the cancellation condition sum|contribution|/|sum contribution| of the signed superposition, because the two sampled coils partly cancel; a purely relative budget would fail on a property of the requested sum rather than of the composition.",
+   "The current-key equality is exact only for integer filament counts and weights that sum exactly; a non-integer weight sum would make the split inexact and is not covered here."
   ]
  },
  "composition": {
