@@ -147,8 +147,12 @@ def test_the_residual_fields_follow_their_closed_form_definitions():
         np.abs(error)
     )
     assert np.max(np.abs(np.asarray(result["relative_error"]) - relative)) <= 128.0 * EPS
-    assert result["max_relative_error"] == pytest.approx(float(np.max(relative)), rel=1e-12)
-    assert result["mean_relative_error"] == pytest.approx(float(np.mean(relative)), rel=1e-12)
+    assert abs(float(result["max_relative_error"]) - float(np.max(relative))) <= (
+        1e-12 * float(np.max(relative))
+    )
+    assert abs(float(result["mean_relative_error"]) - float(np.mean(relative))) <= (
+        1e-12 * float(np.mean(relative))
+    )
     assert result["passed"] is bool(np.max(relative) <= 0.01)
 
 

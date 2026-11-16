@@ -27,6 +27,16 @@ of the local scale; the Picard ratio is compared through its exact rational
 square (one square root cannot be compared exactly in binary64).  No tolerance
 replaces a property; every property is an equality or a sign.
 
+A note on what makes these assertions evidence. "The assertion passes" and "the
+assertion can fail" are different claims: mutation testing alone only proves the
+quantity you thought to change matters.  Every assertion below is therefore also
+asked three blunt questions -- would it fail if the implementation returned zero,
+returned its input unchanged, or returned a constant of the wrong magnitude? --
+and the comparisons are written with relative-only tolerances so that a value
+collapsing to zero cannot slip under `pytest.approx`'s default absolute floor of
+``1e-12``.  The floor test states its reference in decimal arithmetic for the
+same reason.
+
 Not established here: statistical significance.  ``chi2`` is the declared
 algebraic diagonal-weight sum; this file does not claim it is a goodness-of-fit
 statistic, and the contract says the same.
@@ -34,7 +44,7 @@ statistic, and the contract says the same.
 
 from __future__ import annotations
 
-import math
+from decimal import Decimal, localcontext
 from fractions import Fraction
 
 import numpy as np
@@ -43,6 +53,25 @@ import pytest
 from scirel import diagnostics as D
 
 EPS = np.finfo(float).eps
+
+
+def _exact_norm(values):
+    """``||values||_2`` evaluated entirely in decimal arithmetic.
+
+    The reference must not pass through binary64 on the way: squaring a value of
+    order ``1e-200`` gives ``1e-400``, which is representable as a ``Fraction`` but
+    underflows to zero as a float, so ``math.sqrt(float(total))`` would return
+    ``0.0`` and silently turn the expected residual into zero.  ``Decimal`` keeps
+    the full magnitude, and only the finished value becomes a float.
+    """
+    with localcontext() as context:
+        context.prec = 60
+        total = Decimal(0)
+        for value in np.asarray(values).ravel():
+            fraction = Fraction.from_float(float(value))
+            entry = Decimal(fraction.numerator) / Decimal(fraction.denominator)
+            total += entry * entry
+        return total.sqrt()
 
 
 def _exact_square_sum(values):
@@ -57,7 +86,7 @@ def test_picard_residual_equals_the_exact_rational_norm_ratio():
 
     delta = _exact_square_sum(following - previous)
     base = _exact_square_sum(previous)
-    assert got * got == pytest.approx(float(delta / base), rel=64.0 * EPS)
+    assert abs(got * got - float(delta / base)) <= 64.0 * EPS * float(delta / base)
 
 
 def test_picard_residual_is_scale_invariant_above_the_denominator_floor():
@@ -74,7 +103,7 @@ def test_picard_residual_is_scale_invariant_above_the_denominator_floor():
         scaled = float(
             D.compute_picard_flux_residual(scale * previous, scale * following)["residual"]
         )
-        assert scaled == pytest.approx(base, rel=1e-12), scale
+        assert abs(scaled - base) <= 1e-12 * base, scale
 
 
 def test_picard_residual_of_equal_fields_is_exactly_zero():
@@ -83,35 +112,53 @@ def test_picard_residual_of_equal_fields_is_exactly_zero():
 
 
 def test_picard_residual_uses_the_declared_denominator_floor():
-    """Evidence 2: with a zero previous field the ``1e-30`` floor is the denominator."""
+    """Evidence 2: with a zero previous field the ``1e-30`` floor is the denominator.
+
+    The reference is ``||delta||_2 / 1e-30`` with the norm taken in decimal
+    arithmetic; the tolerance is relative only, so a zero return cannot pass.
+    """
     previous = np.zeros((2, 2))
     following = np.full((2, 2), 0.3)
     got = float(D.compute_picard_flux_residual(previous, following)["residual"])
-    expected = math.sqrt(float(_exact_square_sum(following))) / 1e-30
-    assert got == pytest.approx(expected, rel=1e-12)
+    expected = float(_exact_norm(following) / Decimal("1e-30"))
+    assert expected > 0.0
+    assert got != 0.0
+    assert abs(got - expected) <= 1e-12 * expected
 
 
 def test_picard_residual_floor_makes_small_fields_scale_dependent():
     """The same floor, seen from the other side: below it the ratio is *not* invariant.
 
     Scaling a field pair down until the previous-state norm falls under ``1e-30``
-    replaces the denominator by the floor, so the residual grows by exactly the
-    ratio of the two denominators.  Recording this prevents the floor from being
-    mistaken for a numerical accident, and prevents a future "simplification" from
-    silently dropping it.
+    replaces the denominator by the floor, so the residual shrinks with ``||delta||``
+    rather than staying at the scale-free ratio.  The reference is computed in
+    decimal arithmetic to its final magnitude: the exact sum of squares of this
+    sample is about ``2e-400``, which underflows in binary64, so a float reference
+    would collapse to zero and let an implementation that returns zero pass.  The
+    tolerance is relative only and the value is checked to be nonzero, which is the
+    guard that an all-zero answer fails.
     """
     previous = np.array([[1.0, -2.0], [0.5, 4.0]])
     following = np.array([[1.25, -1.0], [0.5, 3.0]])
     scale = 1e-200
     got = float(D.compute_picard_flux_residual(scale * previous, scale * following)["residual"])
 
-    delta = _exact_square_sum(scale * (following - previous))
-    expected = math.sqrt(float(delta)) / 1e-30
-    assert got == pytest.approx(expected, rel=1e-12)
+    expected = float(_exact_norm(scale * (following - previous)) / Decimal("1e-30"))
+    assert expected > 0.0
+    assert 1e-200 < expected < 1e-100  # the magnitude the floor produces, not zero
+    assert got != 0.0
+    assert abs(got - expected) <= 1e-12 * expected
+
     # The unfloored formula would return the same ratio as at any other scale;
-    # the floor instead divides by 1e-30, which is a ~1e-169 relative change here.
+    # the floor instead divides by 1e-30, a ~1e-169 relative change here.
     unfloored = float(D.compute_picard_flux_residual(previous, following)["residual"])
     assert got < unfloored * 1e-100
+
+    # Negative protection: the answers we are guarding against must fail the very
+    # predicate used above, so the assertion is known to discriminate rather than
+    # to accept whatever the implementation returns.
+    for impostor in (0.0, unfloored, 1e-170):
+        assert not (abs(impostor - expected) <= 1e-12 * expected), impostor
 
 
 def test_observation_residuals_follow_the_declared_order_and_formula():
@@ -151,7 +198,9 @@ def test_observation_residuals_follow_the_declared_order_and_formula():
     got = np.asarray(result["residual_vector"])
     assert got.shape == expected.shape
     assert np.max(np.abs(got - expected)) <= 64.0 * EPS * np.max(np.abs(expected))
-    assert float(result["chi2"]) == pytest.approx(float(np.sum(expected**2)), rel=64.0 * EPS)
+    assert abs(float(result["chi2"]) - float(np.sum(expected**2))) <= (
+        64.0 * EPS * float(np.sum(expected**2))
+    )
 
 
 def test_observation_residuals_are_affine_in_the_prediction_and_zero_at_agreement():
