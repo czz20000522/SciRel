@@ -2,9 +2,13 @@
 
 The list is the frozen baseline a blind consumer runs against a delivered
 package, so it has to stay in step with `catalog/examples/`: every asset it
-names must exist, every declared parameter, output field and exception it
-expects must be stated by that asset's own contract, and every domain must
-carry the quota derived from the current asset distribution.
+names must exist, every declared parameter, output field, tolerance unit and
+rejection it relies on must be stated by that asset's own contract, and every
+domain must carry the quota derived from the current asset distribution.
+
+Changes to the tasks change `tasks_digest`, which is stored in the list itself.
+Editing a criterion or widening a tolerance therefore forces a new digest into
+the tracked file instead of passing silently.
 
 This script checks structure and agreement only. It never imports scirel, never
 runs a task and never writes outside stdout, so it can run before a task is
@@ -15,6 +19,7 @@ from __future__ import annotations
 
 import argparse
 from collections import defaultdict
+import hashlib
 import json
 import math
 from pathlib import Path
@@ -39,6 +44,7 @@ EXCEPTIONS = (
     "RuntimeWarning",
     "ApplicabilityWarning",
     "OSError",
+    "EQDSKFormatError",
 )
 PLACEHOLDER = ("tbd", "todo", "fixme", "待定", "xxx", "???", "placeholder")
 NOMINAL_REQUIRED_KINDS = ("contract_fields", "parameters", "invariant")
@@ -69,15 +75,15 @@ def output_names(document: dict) -> list[str]:
     return [item["name"] for item in document.get("outputs") or [] if "name" in item]
 
 
-def input_names(document: dict) -> set[str]:
-    return {item["name"] for item in document.get("inputs") or [] if "name" in item}
-
-
 def output_unit(document: dict, name: str) -> str:
     for item in document.get("outputs") or []:
         if item.get("name") == name:
             return str(item.get("units") or "")
     return ""
+
+
+def input_names(document: dict) -> list[str]:
+    return [item["name"] for item in document.get("inputs") or [] if "name" in item]
 
 
 def has_placeholder(value) -> bool:
@@ -89,6 +95,14 @@ def has_placeholder(value) -> bool:
     if isinstance(value, list):
         return any(has_placeholder(item) for item in value)
     return False
+
+
+def rejection_text(document: dict, key: str) -> str:
+    return str((document.get("failure_semantics") or {}).get(key) or "")
+
+
+def excluded_text(document: dict) -> str:
+    return " ".join(document.get("applicability", {}).get("excluded") or [])
 
 
 def check_criterion(
@@ -146,42 +160,43 @@ def check_criterion(
                 _fail(errors, where, "tolerance basis must state its error estimate in prose")
         if criterion.get("declared_before_run") is not True:
             _fail(errors, where, "tolerance must be marked declared_before_run: true")
+        quantity = str(criterion.get("quantity") or "")
         unit = str(criterion.get("unit") or "")
-        if criterion.get("quantity") == "@declared_outputs" or unit == "as declared":
+        if quantity == "@declared_outputs":
             if not any(output_names(assets[asset]) for asset in names):
                 _fail(errors, where, "contract declares no outputs to compare")
-        elif unit and unit != "dimensionless":
-            declared_units = {
-                output_unit(assets[asset], criterion.get("quantity") or "") for asset in names
-            }
-            if not any(unit in item for item in declared_units if item):
-                if criterion.get("quantity") not in set().union(
-                    *(output_names(assets[a]) for a in names)
-                ):
+        else:
+            owners = [asset for asset in names if quantity in output_names(assets[asset])]
+            if not owners:
+                _fail(
+                    errors,
+                    where,
+                    f"quantity {quantity!r} is not a declared output name of {names}, "
+                    "so its unit cannot be bound to the contract",
+                )
+            elif unit != "dimensionless":
+                declared_units = [output_unit(assets[asset], quantity) for asset in owners]
+                if not any(unit in item for item in declared_units if item):
                     _fail(
                         errors,
                         where,
-                        f"quantity {criterion.get('quantity')!r} is not a declared output name, "
-                        "so its unit cannot be bound to the contract",
+                        f"unit {unit!r} is not the declared unit of {quantity!r} "
+                        f"(declared: {[item for item in declared_units if item]})",
                     )
     elif kind == "exception":
         expected = criterion.get("expected")
         key = criterion.get("failure_key")
+        asset = criterion.get("asset")
         if expected not in EXCEPTIONS:
             _fail(errors, where, f"expected {expected!r} is not a known exception channel")
         if key not in FAILURE_KEYS:
             _fail(errors, where, f"failure_key {key!r} is not a declared failure channel")
+        if asset not in names:
+            _fail(errors, where, f"exception criterion must name one task asset, got {asset!r}")
+            return
         if expected in EXCEPTIONS and key in FAILURE_KEYS:
-            texts = [
-                str((assets[asset].get("failure_semantics") or {}).get(key) or "")
-                for asset in names
-            ]
-            if not any(expected in text for text in texts):
-                _fail(
-                    errors,
-                    where,
-                    f"{expected} is not stated by {key} of {names}",
-                )
+            if expected not in rejection_text(assets[asset], key):
+                _fail(errors, where, f"{expected} is not stated by {key} of {asset}")
     elif kind == "invariant":
         if len(str(criterion.get("statement") or "")) < 20:
             _fail(errors, where, "invariant needs a statement of the relation being checked")
@@ -191,9 +206,125 @@ def check_criterion(
                 where,
                 "invariant needs an independent_source explaining why it is not circular",
             )
+        quote = criterion.get("contract_quote")
+        if quote is not None:
+            haystacks = [
+                rejection_text(assets[asset], key) for asset in names for key in FAILURE_KEYS
+            ]
+            haystacks.extend(excluded_text(assets[asset]) for asset in names)
+            haystacks.extend(str(assets[asset].get("boundary") or "") for asset in names)
+            if not any(quote in text for text in haystacks):
+                _fail(errors, where, f"contract_quote {quote!r} is not verbatim in those contracts")
     elif kind == "readback":
         if len(str(criterion.get("statement") or "")) < 10:
             _fail(errors, where, "readback needs a statement of what to re-open")
+
+
+def check_stimulus(
+    errors: list[str],
+    where: str,
+    task: dict,
+    assets: dict[str, dict],
+) -> None:
+    """A failure task may vary exactly the declared stimuli, each quoted from the contract."""
+    stimulus = task.get("stimulus")
+    if not isinstance(stimulus, list) or not stimulus:
+        _fail(errors, where, "failure tasks need a nonempty stimulus list")
+        return
+    exceptions: list[tuple[str, str]] = []
+    for position, entry in enumerate(stimulus):
+        local = f"{where} stimulus[{position}]"
+        if not isinstance(entry, dict):
+            _fail(errors, local, "stimulus entry must be an object")
+            continue
+        asset = entry.get("asset")
+        field = entry.get("field")
+        key = entry.get("failure_key")
+        if asset not in task["assets"]:
+            _fail(errors, local, f"asset {asset!r} is not one of the task assets")
+            continue
+        if field not in input_names(assets[asset]):
+            _fail(
+                errors,
+                local,
+                f"field {field!r} is not a declared input of {asset} "
+                f"(declared: {input_names(assets[asset])})",
+            )
+        if "value" not in entry:
+            _fail(errors, local, "stimulus entry needs the frozen value it substitutes")
+        elif has_placeholder(entry["value"]):
+            _fail(errors, local, "stimulus value must be frozen, not a placeholder")
+        if key not in FAILURE_KEYS:
+            _fail(errors, local, f"failure_key {key!r} is not a declared failure channel")
+            continue
+        quote = str(entry.get("declared_rejection") or "")
+        if len(quote) < 8:
+            _fail(errors, local, "needs the contract wording of the rejection it relies on")
+        elif quote not in rejection_text(assets[asset], key):
+            _fail(
+                errors,
+                local,
+                f"declared_rejection {quote!r} is not verbatim in {key} of {asset}",
+            )
+        expected = entry.get("expected_exception")
+        if expected not in EXCEPTIONS:
+            _fail(errors, local, f"expected_exception {expected!r} is not a known channel")
+        elif expected not in rejection_text(assets[asset], key):
+            _fail(errors, local, f"{expected} is not stated by {key} of {asset}")
+        else:
+            exceptions.append((asset, key))
+    invariant_text = " ".join(
+        str(criterion.get("statement") or "")
+        for criterion in task.get("criteria") or []
+        if isinstance(criterion, dict) and criterion.get("kind") == "invariant"
+    )
+    readback_text = " ".join(
+        str(criterion.get("statement") or "")
+        for criterion in task.get("criteria") or []
+        if isinstance(criterion, dict) and criterion.get("kind") == "readback"
+    )
+    for entry in stimulus:
+        if not isinstance(entry, dict):
+            continue
+        field = str(entry.get("field") or "")
+        if field and field not in invariant_text:
+            _fail(
+                errors,
+                where,
+                f"an invariant must describe the {field} stimulus it is judged on, "
+                "not a different quantity",
+            )
+        if field and field not in readback_text:
+            _fail(
+                errors,
+                where,
+                f"the readback must confirm the {field} argument it was stimulated with",
+            )
+    seen = sorted(
+        (criterion.get("asset"), criterion.get("failure_key"))
+        for criterion in task.get("criteria") or []
+        if isinstance(criterion, dict) and criterion.get("kind") == "exception"
+    )
+    if _valid_exception_pairs(task):
+        if seen != sorted(exceptions):
+            _fail(
+                errors,
+                where,
+                f"exception criteria {seen} do not match the stimuli {sorted(exceptions)}",
+            )
+
+
+def _valid_exception_pairs(task: dict) -> bool:
+    return all(
+        isinstance(criterion, dict)
+        and isinstance(criterion.get("asset"), str)
+        and isinstance(criterion.get("failure_key"), str)
+        for criterion in task.get("criteria") or []
+        if isinstance(criterion, dict) and criterion.get("kind") == "exception"
+    ) and any(
+        isinstance(criterion, dict) and criterion.get("kind") == "exception"
+        for criterion in task.get("criteria") or []
+    )
 
 
 def check_task(
@@ -203,13 +334,8 @@ def check_task(
     assets: dict[str, dict],
     excluded: set[str],
 ) -> None:
-    where = f"task[{index}]"
     task_id = task.get("id")
-    if not isinstance(task_id, str) or not task_id:
-        _fail(errors, where, "missing id")
-        where = f"task[{index}]"
-    else:
-        where = f"task {task_id}"
+    where = f"task {task_id}" if isinstance(task_id, str) and task_id else f"task[{index}]"
     kind = task.get("kind")
     if kind not in KINDS:
         _fail(errors, where, f"kind {kind!r} not in {list(KINDS)}")
@@ -241,7 +367,8 @@ def check_task(
             _fail(
                 errors,
                 where,
-                f"declared domains {sorted(set(declared))} do not match asset domains {sorted(task_domains)}",
+                f"declared domains {sorted(set(declared))} do not match asset domains "
+                f"{sorted(task_domains)}",
             )
     else:
         domain = task.get("domain")
@@ -284,14 +411,37 @@ def check_task(
             values = binding.get("values")
             if not isinstance(values, dict) or not values:
                 _fail(errors, where, "literal binding needs a nonempty values object")
-            elif has_placeholder(values):
-                _fail(errors, where, "literal inputs must be frozen numbers, not placeholders")
+            else:
+                declared: set[str] = set()
+                for asset in names:
+                    declared.update(input_names(assets[asset]))
+                unknown_keys = sorted(set(values) - declared)
+                if unknown_keys:
+                    _fail(
+                        errors,
+                        where,
+                        f"literal keys {unknown_keys} are not declared inputs of {names} "
+                        f"(declared: {sorted(declared)})",
+                    )
+                if has_placeholder(values):
+                    _fail(errors, where, "literal inputs must be frozen numbers, not placeholders")
         else:
             _fail(errors, where, f"input_binding mode {mode!r} is not contract_example or literal")
+
+    if kind == "failure":
+        check_stimulus(errors, where, task, assets)
+    elif task.get("stimulus") is not None:
+        _fail(errors, where, f"only failure tasks carry a stimulus, {kind} does not")
 
     calls = task.get("min_calls")
     if not isinstance(calls, int) or isinstance(calls, bool) or calls < 1:
         _fail(errors, where, "min_calls must be a positive integer")
+    elif calls < len(names):
+        _fail(errors, where, f"min_calls {calls} cannot exercise {len(names)} named entries")
+    elif kind == "failure":
+        stimulus = task.get("stimulus")
+        if isinstance(stimulus, list) and calls < len(stimulus):
+            _fail(errors, where, f"min_calls {calls} cannot exercise {len(stimulus)} stimuli")
 
     criteria = task.get("criteria")
     if not isinstance(criteria, list) or not criteria:
@@ -331,11 +481,13 @@ def check_task(
             _fail(errors, where, "an inapplicable case returns no value, so it has no tolerance")
         if len(str(task.get("inapplicable_reason") or "")) < 20:
             _fail(errors, where, "inapplicable tasks must state why the model does not apply")
-        excluded_text = [
-            " ".join(assets[name].get("applicability", {}).get("excluded") or []) for name in names
-        ]
-        if not any(text.strip() for text in excluded_text):
-            _fail(errors, where, "no asset in the task declares an excluded domain")
+        quote = str(task.get("excluded_quote") or "")
+        if len(quote) < 8:
+            _fail(errors, where, "inapplicable tasks must quote the excluded clause they rely on")
+        elif not any(quote in excluded_text(assets[name]) for name in names):
+            _fail(
+                errors, where, f"excluded_quote {quote!r} is not verbatim in applicability.excluded"
+            )
     if kind == "cross" and "invariant" not in kinds:
         _fail(errors, where, "cross-domain tasks need an invariant stating the handoff relation")
 
@@ -402,9 +554,7 @@ def check_quota(
         table[domain] = row
         if row["nominal"] < required:
             _fail(
-                errors,
-                "quota",
-                f"{domain} has {row['nominal']} nominal tasks but needs {required}",
+                errors, "quota", f"{domain} has {row['nominal']} nominal tasks but needs {required}"
             )
         if row["rejected"] < failure_floor:
             _fail(
@@ -423,6 +573,14 @@ def check_quota(
     return table, cross
 
 
+def digest(document: dict) -> str:
+    """Canonical digest of the tasks, stored in the list so an edit is visible."""
+    payload = json.dumps(
+        document.get("tasks"), ensure_ascii=False, sort_keys=True, separators=(",", ":")
+    )
+    return hashlib.sha256(payload.encode("utf-8")).hexdigest()
+
+
 def check(
     document: dict, assets: dict[str, dict], excluded: set[str]
 ) -> tuple[list[str], dict[str, dict], int]:
@@ -432,7 +590,15 @@ def check(
     version = document.get("schema_version")
     if not isinstance(version, int) or isinstance(version, bool) or version < 1:
         _fail(errors, "root", "schema_version must be a positive integer")
-    for key in ("purpose", "freeze", "blind_consumer", "deliverables", "quota", "tasks"):
+    for key in (
+        "purpose",
+        "freeze",
+        "blind_consumer",
+        "deliverables",
+        "quota",
+        "tasks",
+        "tasks_digest",
+    ):
         if key not in document:
             _fail(errors, "root", f"missing {key}")
 
@@ -473,34 +639,34 @@ def check(
                 ids.add(task_id)
         check_task(errors, task if isinstance(task, dict) else {}, index, assets, excluded)
 
+    declared_digest = str(document.get("tasks_digest") or "")
+    actual = digest(document)
+    if declared_digest != actual:
+        _fail(
+            errors,
+            "root",
+            f"tasks_digest {declared_digest[:12]}… does not match the tasks ({actual[:12]}…); "
+            "a changed task must land with its new digest and a recorded reason",
+        )
+
     table, cross = check_quota(errors, document, assets)
     return errors, table, cross
 
 
-def digest(document: dict) -> str:
-    """Canonical digest a freeze record quotes, so an edit is visible."""
-    import hashlib
-
-    payload = json.dumps(
-        document.get("tasks"), ensure_ascii=False, sort_keys=True, separators=(",", ":")
-    )
-    return hashlib.sha256(payload.encode("utf-8")).hexdigest()
-
-
 def format_table(table: dict[str, dict]) -> str:
-    header = f"{'domain':16s}{'assets':>7s}{'need':>6s}{'nominal':>9s}{'reject':>7s}{'named':>7s}{'named_req':>10s}"
+    header = (
+        f"{'domain':16s}{'assets':>7s}{'need':>6s}{'nominal':>9s}"
+        f"{'reject':>7s}{'named':>7s}{'named_req':>10s}"
+    )
     lines = [header, "-" * len(header)]
     for domain, row in table.items():
         lines.append(
             f"{domain:16s}{row['assets']:7d}{row['required']:6d}{row['nominal']:9d}"
             f"{row['rejected']:7d}{row['named']:7d}{row['named_required']:10d}"
         )
-    total = (
-        {key: sum(row[key] for row in table.values()) for key in table[next(iter(table))]}
-        if table
-        else {}
-    )
-    if total:
+    if table:
+        keys = next(iter(table.values()))
+        total = {key: sum(row[key] for row in table.values()) for key in keys}
         lines.append("-" * len(header))
         lines.append(
             f"{'TOTAL':16s}{total['assets']:7d}{total['required']:6d}{total['nominal']:9d}"
@@ -553,6 +719,7 @@ def main(argv: list[str] | None = None) -> int:
         "tasks": len(document.get("tasks") or []),
         "cross_domain_tasks": cross,
         "digest": digest(document),
+        "declared_digest": document.get("tasks_digest"),
         "quota": table,
         "errors": errors,
         "ok": not errors,
@@ -570,7 +737,8 @@ def main(argv: list[str] | None = None) -> int:
                 print(f"  - {error}")
         else:
             print(
-                f"\nOK: {len(document['tasks'])} tasks satisfy every quota and bind to the current contracts"
+                f"\nOK: {len(document['tasks'])} tasks satisfy every quota and bind to the current "
+                "contracts"
             )
     return 1 if errors else 0
 
