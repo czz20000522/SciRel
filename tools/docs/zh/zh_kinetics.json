@@ -1366,7 +1366,7 @@
      "绑定文件由四个资产共享，一个直接函数检查字典/再入约定（`test_outer_convergence_returns_dict_with_reentry_flag`）。",
      "该关系报告决策而不迭代；不进行密度剖面或外部物理验证。",
      "示例是唯一记录的运行输出；没有测试绑定非密度收敛判据。",
-     "该关系只报告两份所给剖面之间的最大范数相对变化；不证明任何外层迭代会收敛，且最大范数只关注最差的那一个节点，不代表整个剖面。 配套的种子关系继承 10·truncate 阈值，而本相对变化至多为 1，故 truncate ≥ 0.1 时该阈值不可达（工单 T-2026-0004）。"
+     "重入判据是 `max|previous − current| > 10·truncate·max(current)`。对非负剖面，该比值仅当 `max(previous) ≤ 2·max(current)` 时不超过 1；当 previous 远大于 current（例如种子被大幅下调）时可以任意大，因此 `truncate ≥ 0.1` 时该分支**确实会触发**：`([4, 0], [1, 0], truncate=0.2)` 给出比值 3.0、阈值 2.0，判为重迭代。本合同中曾写有“truncate ≥ 0.1 时重入不可达”的说法；该论证是错的（它只界住了 `current − previous` 一侧），已撤回——见工单 T-2026-0004。"
     ]
    }
   },
@@ -1822,7 +1822,8 @@
      "四资产共享收敛文件中的三个直接函数覆盖字典/再入、最大值比与溢出阈值拒绝。",
      "该关系报告种子遍决策而不迭代；不进行密度剖面或外部物理验证。",
      "示例是唯一记录的运行输出；没有测试绑定非密度收敛判据。",
-     "由于两份非负剖面的最大范数相对变化以 1 为界，该关系在 truncate ≥ 0.1 时无条件收敛；十倍是所声明经验系数而非推导出的收敛判据，且它作用在相对变化上而不是已证明的误差估计上。 由于非负剖面的该相对变化至多为 1、而阈值为 10·truncate，truncate ≥ 0.1 时任何输入都无法超过阈值；已开单 T-2026-0004。"
+     "重入判据是 `max|previous − current| > 10·truncate·max(current)`。对非负剖面，该比值仅当 `max(previous) ≤ 2·max(current)` 时不超过 1；当 previous 远大于 current（例如种子被大幅下调）时可以任意大，因此 `truncate ≥ 0.1` 时该分支**确实会触发**：`([4, 0], [1, 0], truncate=0.2)` 给出比值 3.0、阈值 2.0，判为重迭代。本合同中曾写有“truncate ≥ 0.1 时重入不可达”的说法；该论证是错的（它只界住了 `current − previous` 一侧），已撤回——见工单 T-2026-0004。",
+     "The re-entry condition is `max|previous - current| > 10*truncate*max(current)`. For nonnegative profiles the ratio is at most 1 only while `max(previous) <= 2*max(current)`; when `previous` greatly exceeds `current` (for example after a large downward re-seed) it can be arbitrarily larger, so the branch does trigger for `truncate >= 0.1`: `([4, 0], [1, 0], truncate=0.2)` gives ratio 3.0 against threshold 2.0 and re-iterates. An earlier note in this contract claimed the branch was unreachable above 0.1; that claim was wrong (it bounded only the `current - previous` side) and is withdrawn - see ticket T-2026-0004."
     ]
    }
   },

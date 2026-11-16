@@ -132,7 +132,7 @@
    "The bound file is shared by four assets and one direct function checks the dict/reentry contract (`test_outer_convergence_returns_dict_with_reentry_flag`).",
    "The relation reports a decision and does not iterate; no density-profile or external-physics validation is performed.",
    "The example is the only documented runtime output; no test binds a non-density convergence criterion.",
-   "The relation reports a max-norm relative change between two supplied profiles; it does not establish that any outer iteration converges, and the max norm weights the single worst node, not the profile as a whole. The companion seed relation inherits a 10*truncate threshold that is unreachable once truncate >= 0.1, because this relative change is at most 1 (ticket T-2026-0004)."
+   "The re-entry condition is `max|previous - current| > 10*truncate*max(current)`. For nonnegative profiles the ratio is at most 1 only while `max(previous) <= 2*max(current)`; when `previous` greatly exceeds `current` (for example after a large downward re-seed) it can be arbitrarily larger, so the branch does trigger for `truncate >= 0.1`: `([4, 0], [1, 0], truncate=0.2)` gives ratio 3.0 against threshold 2.0 and re-iterates. An earlier note in this contract claimed the branch was unreachable above 0.1; that claim was wrong (it bounded only the `current - previous` side) and is withdrawn - see ticket T-2026-0004."
   ]
  }
 }
