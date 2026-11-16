@@ -213,18 +213,21 @@
    "The empty-support error naming the actual contributing causes.",
    "Fail-closed validation of every parameter.",
    "Exact agreement with the independently computed support mask for the same sampled flux and coordinates.",
-   "The direct tests verify the top-level scirel._result.Result mapping and attribute access."
+   "The direct tests verify the top-level scirel._result.Result mapping and attribute access.",
+   "Independent evidence (tests/geometry/test_wavevector_and_support_evidence.py): on a hand-built grid the returned mask is compared element by element with the contract's own formula ((covered & side_flux) | axis) & interior & ~pec, recomputed here, where interior is the grid with a pml_cells frame removed; flipping closed_flux_side gives masks whose union is the covered region **minus the strict-equality separatrix nodes** (both comparisons are strict, so a node exactly on the separatrix belongs to neither side); one PEC cell removes exactly one supported cell; shortening xpoint_half_length_m shrinks the axis segment; and the shape, pml_cells, side and empty-support channels are each rejected."
   ],
   "tests": [
-   "tests/geometry/test_material_support.py"
+   "tests/geometry/test_material_support.py",
+   "tests/geometry/test_wavevector_and_support_evidence.py"
   ],
-  "evidence_ceiling": "Bounded to the declared relation: Forms the closed-flux mask as the covered points on the selected side of the separatrix flux, forms the innermost-radius segment as the covered points at the grid's minimum radius within the poloidal half length, excludes the PML frame on all six faces of the…. Evidence: test_material_support.py (8 recorded test functions; bound-file coverage; independent analytic/high-precision oracle); the contract example ran. Excluded scope: Interpolation or reconstruction of the flux field; the flux must already be sampled; Inferring which side of the separatrix is confined.",
+  "evidence_ceiling": "Bounded to the declared relation: Forms the closed-flux mask as the covered points on the selected side of the separatrix flux, forms the innermost-radius segment as the covered points at the grid's minimum radius within the poloidal half length, excludes the PML frame on all six faces of the…. Evidence: test_material_support.py (8 recorded test functions; bound-file coverage; independent analytic/high-precision oracle); the contract example ran. Excluded scope: Interpolation or reconstruction of the flux field; the flux must already be sampled; Inferring which side of the separatrix is confined. C1 evidence adds an independent recomputation of the boolean formula, the strict-separatrix property, the PEC removal count and the axis length window; it fixes the mask algebra without establishing that the mask represents the physical material support of any device.",
   "known_limitations": [
    "The magnetic axis is identified with the grid's innermost radius, which is the grid's r = 0 only when the grid contains the origin. On a grid that does not, the axis term marks a thin column at the smallest sampled radius instead of the axis.",
    "The innermost-radius segment is intersected with the coverage mask, so it cannot add points when the equilibrium map's radial axis begins above the grid's minimum radius. This is part of the declared relation, not a defect repair.",
    "A solver grid with no PML frame is rejected rather than supported. A no-frame run is a different relation and would need its own asset.",
    "The relation is purely geometric in the sampled flux; it does not verify that the sampled flux is a physical equilibrium.",
-   "The independent analytic comparison does not replace an external experimental reference."
+   "The independent analytic comparison does not replace an external experimental reference.",
+   "The classification is a **boolean set algebra** on a caller-supplied grid: it cannot detect a mislabelled side, a flux array that is not monotone in R, or a PML frame that is too thin for the physics; and because both comparisons are strict, a grid node exactly on the separatrix flux is excluded from both closed masks - a discretization artifact that the caller must resolve."
   ]
  }
 }

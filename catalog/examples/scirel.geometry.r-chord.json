@@ -7,15 +7,18 @@
  "verification": {
   "scope": [
    "Constructor and coordinate-shape invariants covered by the direct geometry tests",
-   "The executable constructor example stored in this contract"
+   "The executable constructor example stored in this contract",
+   "Independent evidence (tests/geometry/test_frame_convention_evidence.py): the fixed Z is an exact broadcast of z0 while the R sequence passes through bitwise, and a negative R or nonfinite z0 is rejected through the shared points-mesh channel."
   ],
   "tests": [
    "tests/geometry/test_geometry_qualification.py",
-   "tests/geometry/test_runtime_lifecycle.py"
+   "tests/geometry/test_runtime_lifecycle.py",
+   "tests/geometry/test_frame_convention_evidence.py"
   ],
-  "evidence_ceiling": "Named finite geometry cases only; no field-solver, experimental, or release claim is made.",
+  "evidence_ceiling": "Named finite geometry cases only; no field-solver, experimental, or release claim is made. C1 evidence adds the exact broadcast and the inherited rejections; no sampling, interpolation, ordering or measure along the chord is established.",
   "known_limitations": [
-   "Mesh objects do not by themselves validate a physical field model or device geometry."
+   "Mesh objects do not by themselves validate a physical field model or device geometry.",
+   "The chord is the stored point set only: nothing samples or orders it or attaches an arclength, and it inherits every points-mesh limitation."
   ]
  },
  "asset_id": "scirel.geometry.r-chord",
