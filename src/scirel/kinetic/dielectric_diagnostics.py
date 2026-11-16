@@ -107,12 +107,9 @@ def evaluate_dielectric_diagnostics(*, B0, qs, ms, ns0, Ts0, omega, kz, kx, harm
     >>> r = evaluate_dielectric_diagnostics(B0=1.0, qs=[-1.60217662e-19], ms=[9.1094e-31], ns0=[6.075e19], Ts0=[11604941.036704937], omega=1e11, kz=1.0, kx=1e4)
     >>> assert r.K_raw.shape == r.D_raw.shape == (3, 3) and r.diagnostics.complete
     """
-    if harmonics is None:
-        raise TypeError(
-            "harmonics must be a non-negative integer; received None; legal values: integers >= 0 "
-            "(default 15); see scirel.kinetic.dielectric-diagnostics"
-        )
-    count = _harmonics(harmonics, default=15, asset="scirel.kinetic.dielectric-diagnostics")
+    count = _harmonics(
+        harmonics, default=15, asset="scirel.kinetic.dielectric-diagnostics", none_default=False
+    )
     from ._dielectric_diagnostic import _evaluate
 
     raw = _evaluate(B0=B0, qs=qs, ms=ms, ns0=ns0, Ts0=Ts0, omega=omega, kz=kz, kx=kx, lmx=count)
