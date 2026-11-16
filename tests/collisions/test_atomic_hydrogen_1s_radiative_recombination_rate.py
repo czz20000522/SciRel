@@ -244,3 +244,18 @@ def test_analytic_asymptotic_slopes_are_bound_to_this_test_file():
 
     assert -0.52 <= slope(0.15, 0.45) <= -0.49
     assert -1.52 <= slope(1.0e3, 1.8e4) <= -1.46
+
+
+def test_the_rate_is_returned_in_m3_s_not_cm3_s():
+    """The fit constant is printed in cm^3/s; the public unit is m^3/s.
+
+    The alpha_1 = 1.58e-13 cm^3/s commonly quoted at 1e4 K is therefore
+    1.58e-19 m^3/s. Asserting the SI magnitude, and its cm^3/s inverse, catches
+    a slipped cm^2/m^2 or cm^3/m^3 factor that any self-consistent formula
+    reproduction would carry along unnoticed.
+    """
+    rate_m3_s = float(
+        evaluate_atomic_hydrogen_1s_radiative_recombination_rate(8.617333262e-5 * 1.0e4)
+    )
+    assert 1.5e-19 < rate_m3_s < 1.7e-19  # 1e4 K, the quoted alpha_1 level
+    assert 1.5e-13 < rate_m3_s * 1.0e6 < 1.7e-13  # the same value in cm^3/s

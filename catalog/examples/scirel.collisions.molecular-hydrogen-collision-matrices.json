@@ -260,7 +260,9 @@
    "independent geometry and fit comparisons retain the existing numerical tolerances",
    "H/D four-channel 4096-angle midpoint results are compared with independent SciPy adaptive integration; weighted exchange relations and a common boost are checked",
    "moments and Alpha from real normalized distributions verify H<->H2 momentum exchange, Maxwell equilibrium momentum and weak drift",
-   "Top-level Result type and attribute/key equivalence are regression-tested; nested array fields remain plain NumPy arrays."
+   "Top-level Result type and attribute/key equivalence are regression-tested; nested array fields remain plain NumPy arrays.",
+   "Precision budget: oracle comparisons keep rtol 1e-14, atol 1e-14 as the test file states; frozen snapshots compare the bits the contract calls bit-identical; nonnegativity and bounded-cell claims are exact sign assertions, not tolerance tests",
+   "Failure matrix: each failure_semantics channel has exactly one executable assertion in tests/collisions/test_declared_failure_channels.py; that table is compared with this contract's declared channel set and every callable must produce the declared class, so a channel cannot be added, renamed or dropped silently"
   ],
   "tests": [
    "tests/collisions/test_molecular_hydrogen_collision_matrices.py",

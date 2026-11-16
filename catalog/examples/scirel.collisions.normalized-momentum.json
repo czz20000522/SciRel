@@ -106,7 +106,7 @@
   ]
  },
  "failure_semantics": {
-   "invalid_input": "Raises ValueError when x is not a finite one-dimensional array, when vnorm or clight is not scalar-shaped, or when vnorm is negative or non-finite or clight is non-positive or non-finite, with a message naming the offending parameter. Numeric conversion errors propagate unchanged from numpy.asarray(x, dtype=float) or float() on vnorm/clight, including TypeError for non-convertible values, ValueError for invalid strings, and OverflowError for oversized integers.",
+  "invalid_input": "Raises ValueError when x is not a finite one-dimensional array, when vnorm or clight is not scalar-shaped, or when vnorm is negative or non-finite or clight is non-positive or non-finite, with a message naming the offending parameter. Numeric conversion errors propagate unchanged from numpy.asarray(x, dtype=float) or float() on vnorm/clight, including TypeError for non-convertible values, ValueError for invalid strings, and OverflowError for oversized integers.",
   "runtime_failure": "raises ValueError only when the final value is still non-finite after the fallback computation. Intermediate product or quotient overflow, underflow or subnormal precision loss triggers the high-precision fallback rather than directly rejecting the input.",
   "nonconvergence": "Not applicable; this operator has no iteration or feedback.",
   "partial_results": "Never returned; a rejected call produces no profile."
@@ -134,7 +134,9 @@
    "the ordinary-domain numeric assertions, effective tolerances, input shapes and error messages are retained; ordinary results are bit-identical",
    "of the 13 added extreme-value checks, 7 failed before the correction; they cover false rejection of finite large values, intermediate underflow to zero and sign preservation",
    "independent 200-digit Decimal evaluation and genuine non-finite final-value rejection exercise the new behavior; the earlier rejection assertion for the thermal input 1e308/511 was empirically corrected and now supersedes the earlier record",
-   "the earlier external comparison is outside this contract's evidence scope; this contract binds only the two definitions and their independent scientific contracts"
+   "the earlier external comparison is outside this contract's evidence scope; this contract binds only the two definitions and their independent scientific contracts",
+   "Precision budget: ordinary-domain assertions keep the retained effective tolerances (rtol 1e-14 unless a case states otherwise); the extreme-value witnesses compare with 200-digit Decimal references and admit only the final binary64 rounding; no assertion compares two independently rounded intermediate values",
+   "Failure matrix: each failure_semantics channel has exactly one executable assertion in tests/collisions/test_declared_failure_channels.py; that table is compared with this contract's declared channel set and every callable must produce the declared class, so a channel cannot be added, renamed or dropped silently"
   ],
   "tests": [
    "tests/collisions/test_momentum_scales.py",

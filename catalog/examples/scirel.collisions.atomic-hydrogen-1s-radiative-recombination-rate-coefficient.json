@@ -113,7 +113,9 @@
    "Direct tests cover monotonic temperature dependence on the sampled grid, clipping, scalar shape, invalid domain and non-real input rejection.",
    "No external implementation comparison is maintained or replayed by this repository; the maintained tests validate the declared relation against an in-repository independent formulation and cover the stated rejection and clipping behaviour only on their tested grids.",
    "Low- and high-temperature logarithmic slopes converge to the analytic -1/2 and -3/2 asymptotic limits within the audited temperature windows.",
-   "Independent Stobbe-Milne comparison: test_fit_matches_the_independent_oracle_within_the_measured_bound, test_anchor_ratios_against_the_independent_oracle and test_the_oracle_reproduces_the_textbook_level_one_rate in tests/collisions/test_atomic_hydrogen_1s_radiative_recombination_rate.py. The textbook-rate assertion is not a fresh inspection of its printed source."
+   "Independent Stobbe-Milne comparison: test_fit_matches_the_independent_oracle_within_the_measured_bound, test_anchor_ratios_against_the_independent_oracle and test_the_oracle_reproduces_the_textbook_level_one_rate in tests/collisions/test_atomic_hydrogen_1s_radiative_recombination_rate.py. The textbook-rate assertion is not a fresh inspection of its printed source.",
+   "Precision budget: closed-form comparisons use rtol 1e-15; the Stobbe-Milne oracle comparison admits the declared 5.75% envelope (observed 5.72% near 19.5 eV) because the fit, not the oracle, is the approximation; the asymptotic-slope checks are windowed observations, not continuous limits",
+   "Failure matrix: each failure_semantics channel has exactly one executable assertion in tests/collisions/test_declared_failure_channels.py; that table is compared with this contract's declared channel set and every callable must produce the declared class, so a channel cannot be added, renamed or dropped silently"
   ],
   "tests": [
    "tests/collisions/test_atomic_hydrogen_1s_radiative_recombination_rate.py"
