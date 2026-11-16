@@ -98,11 +98,26 @@ def test_equilibrium_columns_satisfy_their_definitions():
         assert abs(mp.mpf(float(kdebye[index])) - 1 / expected_debye) <= budget / expected_debye
         assert abs(mp.mpf(float(plasma[index])) - expected_plasma) <= budget * expected_plasma
 
-        # Discrimination: the same comparison with the factor of two dropped,
-        # the ratio inverted and the mass/charge roles swapped must fail.
-        assert abs(expected_thermal - mp.sqrt(t / m)) > budget * expected_thermal
-        assert abs(1 / expected_debye - expected_debye) > budget * expected_debye
-        assert abs(expected_plasma - mp.sqrt(n * m / (q * q))) > budget * expected_plasma
+    # Discrimination on a deck whose mass and charge are not unity, because with
+    # ``m = q = 1`` every rearrangement of the same factors collapses onto the
+    # correct one and the assertions above would pass vacuously.  A 2x5 deck of
+    # the same shape is built here and the identities must follow its columns.
+    synthetic = np.array(
+        [[-1.0, 2.0, 0.25, 4.0, 3.0], [1.0, 1.0, 0.75, 9.0, -2.0]]
+    )
+    synthetic_state = equilibrium("es1d", synthetic)["state"]
+    for index in range(2):
+        n = mp.mpf(float(synthetic[index, 2]))
+        q = mp.mpf(float(synthetic[index, 1]))
+        m = mp.mpf(float(synthetic[index, 3]))
+        t = mp.mpf(float(synthetic[index, 4]))
+        budget = 32 * EPS
+        assert abs(mp.mpf(float(synthetic_state["vts"][0, index])) - mp.sqrt(2 * t / m)) <= budget * mp.sqrt(2 * t / m)
+        assert abs(mp.mpf(float(synthetic_state["lambdaDs"][0, index])) - mp.sqrt(t / (n * q * q))) <= budget * mp.sqrt(t / (n * q * q))
+        assert abs(mp.mpf(float(synthetic_state["wps"][0, index])) - mp.sqrt(n * q * q / m)) <= budget * mp.sqrt(n * q * q / m)
+        # The wrong forms are now distinguishable and must exceed the budget.
+        assert abs(mp.sqrt(2 * t / m) - mp.sqrt(t / m)) > budget * mp.sqrt(2 * t / m)
+        assert abs(mp.sqrt(n * q * q / m) - mp.sqrt(n * m / (q * q))) > budget * mp.sqrt(n * q * q / m)
 
 
 def test_equilibrium_density_fractions_sum_to_one_and_drift_is_thermal_units():
@@ -115,10 +130,13 @@ def test_equilibrium_density_fractions_sum_to_one_and_drift_is_thermal_units():
     assert_allclose(np.sort(density), [0.1, 0.9], rtol=0, atol=0)
     thermal = np.asarray(state["vts"], dtype=float).ravel()
     drift = np.asarray(state["vs0"], dtype=float).ravel()
-    # v_s0 = 5 v_t for the fast species, 0 for the cold one: the drift column is
-    # declared in thermal units, so the ratio is an exact small integer.
-    ratios = drift / thermal
-    assert_allclose(ratios, [0.0, 5.0], rtol=0, atol=32 * EPS)
+    # The deck stores the drift as the four-significant-digit decimal 7.071, so
+    # the drift/thermal ratio is 5 only within the input's own rounding
+    # (5*sqrt(2) = 7.0710678...); the budget below is that 1e-5 relative
+    # quantisation of the declared input, not a tolerance fitted to a result.
+    assert drift[0] == 0.0
+    assert drift[1] == 7.071
+    assert_allclose(drift / thermal, [0.0, 5.0], rtol=0, atol=1e-5)
 
 
 def test_equilibrium_arrays_are_row_shaped_and_shape_consistent():
@@ -158,13 +176,14 @@ def test_jpole_grid_is_the_declared_index_arithmetic_bitwise():
     index = np.arange(101, dtype=float)
     expected_x_row = -5.0 + 0.1 * index
     expected_y_column = -3.0 + 0.08 * index
-    # Orientation: the first index varies x, the second varies y.
+    # Orientation: the first index varies x (so x is constant along the second
+    # axis) and the second index varies y.
     for row in (0, 37, 100):
-        assert_allclose(x[row, :], expected_x_row, rtol=0, atol=0)
-        assert_allclose(x[:, row], np.full(101, expected_x_row[row]), rtol=0, atol=0)
+        assert_allclose(x[row, :], np.full(101, expected_x_row[row]), rtol=0, atol=0)
     for column in (0, 51, 100):
-        assert_allclose(y[:, column], expected_y_column, rtol=0, atol=0)
-        assert_allclose(y[column, :], np.full(101, expected_y_column[column]), rtol=0, atol=0)
+        assert_allclose(y[:, column], np.full(101, expected_y_column[column]), rtol=0, atol=0)
+    assert_allclose(x[:, 0], expected_x_row, rtol=0, atol=0)
+    assert_allclose(y[0, :], expected_y_column, rtol=0, atol=0)
     assert_allclose(z, x + 1j * y, rtol=0, atol=0)
     # The declared end points `-5:0.1:5` and `-3:0.08:5` are reached by the
     # index arithmetic itself, so the count is a consequence, not a constant.
