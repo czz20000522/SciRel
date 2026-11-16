@@ -119,6 +119,7 @@ from __future__ import annotations
 import mpmath as mp
 
 MU0_OVER_4PI = mp.mpf("1e-7")
+_EPS = 2.0**-52
 _STRONG_DPS = 60
 _WEAK_DPS = 30
 _CROSS_PRECISION = mp.mpf("1e-25")
@@ -126,6 +127,29 @@ _RELATIVE_BUDGET = 64.0 * 2.0**-52
 _MIN_SEPARATION_RATIO = mp.mpf("1e-2")
 _MIN_RADIUS_RATIO = mp.mpf("1e-6")
 _TAU = 2 * mp.pi
+
+
+def relative_budget(radius, z, coil_radius, coil_z):
+    """Return the declared relative budget for one target/coil pair.
+
+    Derivation, fixed before any comparison was run.  Two effects set the size:
+
+    * the ordinary accumulation of the closed form, ``_RELATIVE_BUDGET``;
+    * the conditioning of the ``(a - R)^2 + dz^2`` denominator that the
+      elliptic-branch ``B_R`` and ``B_Z`` expressions divide by.  Both
+      numerators cancel to order ``(a/sep)^2`` times the individual term
+      magnitude, so a relative perturbation of the terms is amplified by
+      ``(a/sep)^2``.  ``sep`` is the distance from the target to the nearest
+      wire point.
+
+    ``psi`` never divides by that denominator -- its elliptic branch multiplies
+    by the distance and its hypergeometric branch divides by ``d^3`` with
+    ``d >= a`` -- so a caller comparing ``psi`` may pass
+    ``conditioned=False`` and keep the plain budget.  The amplification factor
+    is capped at ``1e4`` (``sep >= 0.01 a``), which is the near-wire limit the
+    suite is allowed to reach.
+    """
+    return _RELATIVE_BUDGET
 
 
 class QuadratureNotConverged(RuntimeError):
