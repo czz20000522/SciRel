@@ -155,19 +155,22 @@
    "Optional quantity omission.",
    "Path reversal, repeated segments and undersized grid cases.",
    "Nonpositive field and outside-grid rejection.",
-   "The direct tests verify the top-level scirel._result.Result mapping and attribute access."
+   "The direct tests verify the top-level scirel._result.Result mapping and attribute access.",
+   "Independent evidence (tests/geometry/test_volume_profile_and_line_average_evidence.py): a constant field and quantity return that quantity with dl_B equal to the path length divided by the field (16 eps); doubling the field leaves the average unchanged, adding a constant to the quantity shifts it by that constant, and doubling the quantity doubles it; without a quantity only dl_B is returned; and the field-positivity, path-inside-grid, nondegenerate-polyline and four-points-per-axis channels are each rejected."
   ],
   "tests": [
-   "tests/geometry/test_flux_surface_inverse_field_average.py"
+   "tests/geometry/test_flux_surface_inverse_field_average.py",
+   "tests/geometry/test_volume_profile_and_line_average_evidence.py"
   ],
-  "evidence_ceiling": "Direct tests cover maintained cubic interpolation and discrete polyline quadrature on small grids; they do not validate the caller's path as a complete magnetic flux surface or prove external-reference completeness.",
+  "evidence_ceiling": "Direct tests cover maintained cubic interpolation and discrete polyline quadrature on small grids; they do not validate the caller's path as a complete magnetic flux surface or prove external-reference completeness. C1 evidence adds the constant-field identity, three affine/scaling identities of the weighted mean and the rejection channels. It establishes the discrete weighted mean along the supplied polyline, not the flux-surface average of a surface.",
   "known_limitations": [
    "The callable does not trace field lines or close a flux surface; its output name retains the historical relation name.",
    "Negative radius coordinates are not rejected by the implementation and are outside the physical cylindrical interpretation.",
    "Spline interpolation can fail the positivity precondition even when grid-node B values are positive.",
    "Public distribution licensing and expert recognition remain pending.",
    "Weight is dl/|B| along the supplied R-Z path: the field-line average when the path is a field line of a field with no toroidal component (vacuum or mirror fields). It is not the tokamak flux-surface average <X> = closed-integral X dl/|B_p| / closed-integral dl/|B_p|; with a toroidal field compute that quadrature directly. Accuracy is set by spline interpolation of B and by the path sampling: near a magnetic axis or on coarse grids the error can reach several percent, so confirm by refining grid and path.",
-   "Same relation as scirel.sampling.weighted-line-integral (flux_surface_avg); this asset validates its inputs and returns dl_B and the average together, and is the one to prefer."
+   "Same relation as scirel.sampling.weighted-line-integral (flux_surface_avg); this asset validates its inputs and returns dl_B and the average together, and is the one to prefer.",
+   "The returned average is the B^-1-weighted trapezoid average along the **caller-supplied polyline**, which need not be closed or lie on one surface; calling it a flux-surface average additionally requires that the path be a closed field line on that surface, which this asset neither checks nor can check. Field and quantity come from a cubic spline of the supplied grid, so the value inherits the spline's reproduction error near steep gradients."
   ]
  }
 }

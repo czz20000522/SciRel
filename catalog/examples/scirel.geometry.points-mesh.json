@@ -18,7 +18,7 @@
   "evidence_ceiling": "Named finite geometry cases only; no field-solver, experimental, or release claim is made. C1 evidence adds the shape rule, the bitwise pass-through and the three rejection channels; it does not establish that the stored points are consistent with any surface or grid.",
   "known_limitations": [
    "Mesh objects do not by themselves validate a physical field model or device geometry.",
-   "No geometric validation beyond finiteness and non-negative R: a repeated point, an unordered set, or a 2-D array a caller assumes is a tensor-product grid is accepted as given."
+   "No geometric validation beyond finiteness and non-negative R: a repeated point, an unordered set, or a 2-D array a caller assumes is a tensor-product grid is accepted as given. The `theta` property of this family returns **radians** (arctan2(R, Z)) while `ThetaChord` and `SphericalRChord` take **degrees**; the two cannot be interchanged (see ticket T-2026-0005)."
   ]
  },
  "asset_id": "scirel.geometry.points-mesh",

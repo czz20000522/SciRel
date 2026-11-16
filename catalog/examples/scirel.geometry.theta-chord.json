@@ -18,7 +18,7 @@
   "evidence_ceiling": "Named finite geometry cases only; no field-solver, experimental, or release claim is made. C1 evidence adds the axis, the unit, the Pythagoras identity, the cross-asset equality and the declared sign rule; it fixes the convention without establishing that any angular sampling is adequate for a surface or field.",
   "known_limitations": [
    "Mesh objects do not by themselves validate a physical field model or device geometry.",
-   "theta here is **degrees from the +Z symmetry axis** while the `Mesh.theta` property of the same family returns **radians** (arctan2(R, Z)); mixing them is off by 180/pi. Both behaviours are declared in their own assets, so the asymmetry is recorded rather than changed."
+   "theta here is **degrees from the +Z symmetry axis** while the `Mesh.theta` property of the same family returns **radians** (arctan2(R, Z)); mixing them is off by 180/pi. Both behaviours are declared in their own assets, so the asymmetry is recorded rather than changed. This constructor takes **degrees from +Z**, while the `Mesh.theta` property of the same family returns **radians**; the two cannot be interchanged (see ticket T-2026-0005)."
   ]
  },
  "asset_id": "scirel.geometry.theta-chord",

@@ -163,16 +163,19 @@
    "Linear interpolation and default/explicit endpoint extension.",
    "Nonfinite input and endpoint rejection, and fewer-than-two-unique-coordinate rejection.",
    "One selected caller-consistent positive coordinate rescaling preserves interpolated values.",
-   "The direct tests verify the top-level scirel._result.Result mapping and attribute access."
+   "The direct tests verify the top-level scirel._result.Result mapping and attribute access.",
+   "Independent evidence (tests/geometry/test_volume_profile_and_line_average_evidence.py): a linear profile is reproduced exactly inside the sample range (4 eps) and the knot values are exact; the sample order is irrelevant and a duplicated coordinate keeps the value of its first occurrence (2.5 rather than 4.5 at the midpoint); queries outside the range return the endpoint values, or the explicit left/right values when supplied; and the paired-length, unique-interval and finiteness channels are each rejected."
   ],
   "tests": [
-   "tests/geometry/test_flux_surface_profile.py"
+   "tests/geometry/test_flux_surface_profile.py",
+   "tests/geometry/test_volume_profile_and_line_average_evidence.py"
   ],
-  "evidence_ceiling": "Direct tests establish the maintained interpolation and endpoint contract on finite examples, not the physical validity of any caller-supplied flux-profile data or external-reference completeness.",
+  "evidence_ceiling": "Direct tests establish the maintained interpolation and endpoint contract on finite examples, not the physical validity of any caller-supplied flux-profile data or external-reference completeness. C1 evidence adds the exact linear reproduction, the duplicate-precedence discriminator, the endpoint convention and the rejection channels; it does not establish that the interpolation in the flux coordinate is adequate for a real equilibrium profile.",
   "known_limitations": [
    "Conflicting values at duplicate flux coordinates are reduced by the first occurrence after NumPy sorting; original-input tie order is not guaranteed and no physical reconciliation is performed.",
    "The callable does not construct a flux surface, choose a flux normalization or convert between Wb/rad and Wb.",
-   "Public distribution licensing and expert recognition remain pending."
+   "Public distribution licensing and expert recognition remain pending.",
+   "The profile is a piecewise-linear interpolant in the supplied coordinate; it carries no flux-surface geometry, no arithmetic in the physical radial coordinate and no smoothing, so a profile sampled too coarsely near a gradient is reproduced as flat segments - the asset cannot detect that."
   ]
  }
 }
