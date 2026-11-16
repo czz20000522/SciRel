@@ -1,0 +1,1834 @@
+{
+  "schema": "scirel.c4-usage-tasklist",
+  "schema_version": 1,
+  "purpose": "Frozen representative tasks for #249 C4 (public use consistency). A blind consumer that has only the delivered package (catalog, capability index, wheel, the three usage skills) must complete these tasks and report per-task results. The list is fixed before any candidate run so a passing subset cannot be widened after the fact.",
+  "freeze": {
+    "baseline": "Tolerances, inputs and pass conditions in this file were written from the contracts and from closed-form or scale relations that hold before any candidate result existed. No value here was copied from a run of the package under acceptance.",
+    "input_binding_rule": "A task input is frozen in exactly one of two ways. mode=contract_example binds the call arguments to the numeric arguments the named asset's own example block already declares; because catalog/examples travels with the delivered package under snapshot_sha256, that argument set is fixed at freeze time. mode=literal freezes the numbers in this file. Both modes are reproducible without reading src/, tests/ or any worktree.",
+    "edit_rule": "Changing a task, an input, or a tolerance after a candidate result exists requires a new frozen revision plus a recorded reason; it is never done to turn a red task green. Additions may raise coverage. Removals need the maintainer decision that owns #249.",
+    "tolerances_declared_before_any_candidate_run": true
+  },
+  "blind_consumer": {
+    "allowed_inputs": [
+      "the delivered package directory (catalog/contracts, capability-index.json, wheel/, skills/, runtime.json, requirements files)",
+      "a Python environment created only from the delivered requirement files plus the delivered wheel",
+      "this task list and the two task-local files it points at",
+      "the three delivered usage skills"
+    ],
+    "forbidden_inputs": [
+      "src/, tests/, catalog/review/, tools/ or any worktree of this repository",
+      "the maintainer's reference values, budgets or comparison scripts",
+      "the acceptance expectation of another consumer or a previous run of the same package",
+      "network lookups that would substitute for the delivered contracts"
+    ],
+    "must_record": [
+      "how the package was installed and the installed wheel, snapshot and index digests actually read",
+      "every public call with its arguments, entrypoint, return status and warnings",
+      "for each criterion its pass, fail or not-run status and the raw value it compared",
+      "the criteria that could not be evaluated, and why; an unevaluated criterion is never recorded as passed"
+    ]
+  },
+  "deliverables": {
+    "files": ["solve.py", "results.json", "calls.jsonl", "REPORT.md"],
+    "call_trace": "calls.jsonl records one JSON object per public call in execution order, including combined-scenario intermediate calls, with entrypoint, arguments, status (returned or raised), warning list and the returned field names.",
+    "status_enum": ["returned", "raised"],
+    "rules": [
+      "A raised status keeps the real exception type and message; the consumer never substitutes an exception the library did not raise.",
+      "A model that the contract excludes is reported as not-applicable with the excluded clause quoted; it is never replaced by a nearby model that happens to return.",
+      "A task whose criteria include a tolerance must report the compared quantity, the declared tolerance and the observed deviation.",
+      "results.json is written even when some tasks raise; a fully successful run that drops failing cases is not acceptable."
+    ]
+  },
+  "quota": {
+    "tasks_per_domain_divisor": 8,
+    "min_per_domain": 1,
+    "min_failure_or_inapplicable_per_domain": 1,
+    "min_cross_domain": 3
+  },
+  "tasks": [
+    {
+      "id": "kinetic-dielectric-finite-harmonic",
+      "kind": "nominal",
+      "domain": "kinetic",
+      "subdomain": "kinetic dielectric response and its raw diagnostic",
+      "assets": [
+        "scirel.kinetic.dielectric-response",
+        "scirel.kinetic.dielectric-diagnostics"
+      ],
+      "question": "For one hydrogen-like species at a declared nonzero frequency and wavevector, assemble the finite-harmonic kinetic tensor with the default cutoff, then read the separate raw diagnostic entry at the same point and state which harmonics each call actually used.",
+      "input_binding": {
+        "mode": "contract_example",
+        "assets": ["scirel.kinetic.dielectric-response"]
+      },
+      "min_calls": 2,
+      "criteria": [
+        {"id": "fields", "kind": "contract_fields", "expect": "all_declared_outputs"},
+        {"id": "params", "kind": "parameters", "expect": ["method", "harmonics"]},
+        {
+          "id": "silike",
+          "kind": "invariant",
+          "statement": "Scaling B0, omega, kx and kz by 2^-52, and every number density by 2^-104, with charge, mass and temperature unchanged, must leave K, D and determinant invariant componentwise within the declared budget. This is a necessary same-method relation, not an absolute-accuracy claim.",
+          "independent_source": "SI scale invariance of the declared equations; it holds before any candidate value is known and cannot be satisfied by a wrong unit exponent."
+        },
+        {
+          "id": "budget",
+          "kind": "tolerance",
+          "quantity": "@declared_outputs",
+          "unit": "as declared",
+          "tolerance": {"rel": 2e-12, "abs": 0, "basis": "Two float64 evaluations of the same equation at inputs related by an exact power-of-two scale differ only by rounding, so the deviation is bounded by accumulated binary64 rounding, not by model error."},
+          "declared_before_run": true
+        },
+        {"id": "readback", "kind": "readback", "statement": "Re-open results.json and confirm both calls are present with their actual harmonics and the declared field names."}
+      ]
+    },
+    {
+      "id": "kinetic-faddeeva-family",
+      "kind": "nominal",
+      "domain": "kinetic",
+      "subdomain": "plasma dispersion function across selectable backends",
+      "assets": [
+        "scirel.kinetic.plasma-dispersion-function",
+        "scirel.kinetic.fluid-special-functions"
+      ],
+      "question": "Evaluate the plasma dispersion function at one declared argument with its default backend and with one explicitly named alternative, record the numerical control each backend uses, and report whether the default method was stated as a choice rather than as the universally accurate one.",
+      "input_binding": {"mode": "contract_example", "assets": ["scirel.kinetic.plasma-dispersion-function"]},
+      "min_calls": 2,
+      "criteria": [
+        {"id": "fields", "kind": "contract_fields", "expect": "all_declared_outputs"},
+        {"id": "params", "kind": "parameters", "expect": ["method"]},
+        {
+          "id": "methodrecord",
+          "kind": "invariant",
+          "statement": "The reported method name must equal the method actually requested, and an explicitly requested order or pole count must appear in the returned record or arguments trace; the default must not be presented as a convergence certificate.",
+          "independent_source": "The declared per-method records are part of the contract; mixing them up is detectable without any reference value."
+        },
+        {"id": "readback", "kind": "readback", "statement": "Re-open calls.jsonl and confirm the requested method and control appear in both call records."}
+      ]
+    },
+    {
+      "id": "kinetic-generalized-dispersion",
+      "kind": "nominal",
+      "domain": "kinetic",
+      "subdomain": "generalized dispersion residual and root scan",
+      "assets": [
+        "scirel.kinetic.generalized-dispersion",
+        "scirel.kinetic.generalized-root-scans"
+      ],
+      "question": "Form the generalized dispersion residual at a declared complex point, then run the published root scan over a declared interval and report the roots with the residual each root returns.",
+      "input_binding": {"mode": "contract_example", "assets": ["scirel.kinetic.generalized-dispersion"]},
+      "min_calls": 2,
+      "criteria": [
+        {"id": "fields", "kind": "contract_fields", "expect": "all_declared_outputs"},
+        {
+          "id": "residual",
+          "kind": "invariant",
+          "statement": "Re-evaluating the residual entry at each root it returned must give a value consistent with the scan's own reported residual; a root whose recomputed residual disagrees is a failure, not a rounding detail.",
+          "independent_source": "Self-consistent recomputation through the same public entry is a real check of root bookkeeping; it is never claimed as a physical-accuracy oracle."
+        },
+        {"id": "readback", "kind": "readback", "statement": "Re-open results.json and confirm every reported root carries its own residual and the scan bounds actually used."}
+      ]
+    },
+    {
+      "id": "kinetic-fluid-two-path",
+      "kind": "nominal",
+      "domain": "kinetic",
+      "subdomain": "fluid two-path dispersion and its matrix form",
+      "assets": [
+        "scirel.kinetic.fluid-dispersion-response",
+        "scirel.kinetic.fluid-dispersion-matrix",
+        "scirel.kinetic.fluid-bonk-search"
+      ],
+      "question": "Compute the fluid dispersion response and the underlying dispersion matrix at one declared equilibrium state, then search the BonK branch and state which returned roots the matrix at that state supports.",
+      "input_binding": {"mode": "contract_example", "assets": ["scirel.kinetic.fluid-dispersion-response"]},
+      "min_calls": 3,
+      "criteria": [
+        {"id": "fields", "kind": "contract_fields", "expect": "all_declared_outputs"},
+        {
+          "id": "matrixagreement",
+          "kind": "invariant",
+          "statement": "The determinant of the returned matrix at the declared point must equal the determinant the response entry reports for the same state and inputs, within the declared budget; a mismatch means the two entries do not share the declared convention.",
+          "independent_source": "Both entries publish the same determinant quantity for the same state, so agreement is a convention check fixed by the contracts, not by a candidate value."
+        },
+        {
+          "id": "budget",
+          "kind": "tolerance",
+          "quantity": "@declared_outputs",
+          "unit": "as declared",
+          "tolerance": {"rel": 1e-12, "abs": 0, "basis": "Same-state determinant evaluation through two published entries differs only by summation order in binary64; the bound is accumulated rounding, not model error."},
+          "declared_before_run": true
+        },
+        {"id": "readback", "kind": "readback", "statement": "Re-open results.json and confirm the response, matrix and search outputs are all present with their own inputs."}
+      ]
+    },
+    {
+      "id": "kinetic-spectral-scan",
+      "kind": "nominal",
+      "domain": "kinetic",
+      "subdomain": "spectral state, scan and temporal spectrum",
+      "assets": [
+        "scirel.kinetic.spectral-plasma-state",
+        "scirel.kinetic.spectral-dispersion-scan",
+        "scirel.kinetic.spectral-temporal-spectrum"
+      ],
+      "question": "Build a declared spectral plasma state, scan the dispersion over its declared wavevector range, and report the temporal spectrum for the mode the scan selects, naming the state each call consumed.",
+      "input_binding": {"mode": "contract_example", "assets": ["scirel.kinetic.spectral-plasma-state"]},
+      "min_calls": 3,
+      "criteria": [
+        {"id": "fields", "kind": "contract_fields", "expect": "all_declared_outputs"},
+        {
+          "id": "statecarry",
+          "kind": "invariant",
+          "statement": "The state consumed by the scan and by the temporal spectrum must be the same declared state object values; changing the state between calls must change the outputs in the direction the contract declares, and an unchanged state must not change them.",
+          "independent_source": "State propagation is a declared interface property and is falsifiable without any reference spectrum."
+        },
+        {"id": "readback", "kind": "readback", "statement": "Re-open calls.jsonl and confirm the identical state values appear in all three call records."}
+      ]
+    },
+    {
+      "id": "kinetic-vp-initial-value",
+      "kind": "nominal",
+      "domain": "kinetic",
+      "subdomain": "Vlasov-Poisson initial value path",
+      "assets": [
+        "scirel.kinetic.vp-init",
+        "scirel.kinetic.vp-evolve",
+        "scirel.kinetic.vp-landau",
+        "scirel.kinetic.vp-rk4-step"
+      ],
+      "question": "Initialise a declared Vlasov-Poisson state, advance it with the declared stepper, and report the damping quantity the Landau entry exposes together with the conserved field energy across the steps taken.",
+      "input_binding": {"mode": "contract_example", "assets": ["scirel.kinetic.vp-init"]},
+      "min_calls": 4,
+      "criteria": [
+        {"id": "fields", "kind": "contract_fields", "expect": "all_declared_outputs"},
+        {
+          "id": "steplinearity",
+          "kind": "invariant",
+          "statement": "One call to the published step on the same state must reproduce the first step the evolve entry took; a disagreement means the two published entry points do not implement the same declared update.",
+          "independent_source": "The two entries declare the same update rule, so equality is a bookkeeping obligation fixed before any run."
+        },
+        {
+          "id": "energy",
+          "kind": "invariant",
+          "statement": "Field energy reported across a fixed number of steps must match the evolve entry's own reported conservation diagnostic within the declared budget; a monotone drift larger than the budget is a failure.",
+          "independent_source": "The contract publishes the conservation diagnostic; comparing an entry against its own declared invariant is not circular because the invariant is not derived from the returned values."
+        },
+        {"id": "readback", "kind": "readback", "statement": "Re-open results.json and confirm every step index present in the trace appears with its state and energy."}
+      ]
+    },
+    {
+      "id": "kinetic-multifluid-frequency",
+      "kind": "nominal",
+      "domain": "kinetic",
+      "subdomain": "multifluid deck, frequency solve and scan",
+      "assets": [
+        "scirel.kinetic.multifluid-deck",
+        "scirel.kinetic.multifluid-frequency-solve",
+        "scirel.kinetic.multifluid-scan"
+      ],
+      "question": "Assemble a declared multifluid deck, solve its frequency at one declared wavenumber, and scan the same deck, reporting whether the solved frequency agrees with the scan point at that wavenumber.",
+      "input_binding": {"mode": "contract_example", "assets": ["scirel.kinetic.multifluid-deck"]},
+      "min_calls": 3,
+      "criteria": [
+        {"id": "fields", "kind": "contract_fields", "expect": "all_declared_outputs"},
+        {
+          "id": "scanagreement",
+          "kind": "invariant",
+          "statement": "The solved frequency at a declared wavenumber must agree with the scan value at the same wavenumber within the declared budget when both use the same deck; disagreement must be reported rather than hidden by picking the nearer branch.",
+          "independent_source": "Two published entries solve the same declared relation at the same point; the agreement is a convention and bookkeeping check."
+        },
+        {
+          "id": "budget",
+          "kind": "tolerance",
+          "quantity": "@declared_outputs",
+          "unit": "as declared",
+          "tolerance": {"rel": 1e-10, "abs": 0, "basis": "A non-iterative and a scanned evaluation of the same relation differ by scan resolution and binary64 rounding; the bound is set from the declared scan step, not from an observed difference."},
+          "declared_before_run": true
+        },
+        {"id": "readback", "kind": "readback", "statement": "Re-open results.json and confirm the solved frequency and the matched scan point are both stored with their wavenumbers."}
+      ]
+    },
+    {
+      "id": "kinetic-rational-pole",
+      "kind": "nominal",
+      "domain": "kinetic",
+      "subdomain": "rational and J-pole coefficient entries",
+      "assets": [
+        "scirel.kinetic.rational-default-deck",
+        "scirel.kinetic.rational-z-poles",
+        "scirel.kinetic.rational-solve-matrix",
+        "scirel.kinetic.rational-jpole-grid-coordinates"
+      ],
+      "question": "Build the declared rational deck, obtain its pole table, solve the matrix at one declared point, and report the pole count and grid coordinates actually used.",
+      "input_binding": {"mode": "contract_example", "assets": ["scirel.kinetic.rational-default-deck"]},
+      "min_calls": 4,
+      "criteria": [
+        {"id": "fields", "kind": "contract_fields", "expect": "all_declared_outputs"},
+        {
+          "id": "polecount",
+          "kind": "invariant",
+          "statement": "The pole count reported by the deck must equal the number of poles in the returned pole table and must match the order used by the matrix solve; a silent default substitution is a failure.",
+          "independent_source": "Counts and orders are discrete bookkeeping the contract declares; they are checkable without any reference value."
+        },
+        {"id": "readback", "kind": "readback", "statement": "Re-open calls.jsonl and confirm the same order value appears in the deck, pole table and matrix call records."}
+      ]
+    },
+    {
+      "id": "kinetic-zero-kz-rejection",
+      "kind": "failure",
+      "domain": "kinetic",
+      "subdomain": "literal zero parallel wavenumber on a finite harmonic path",
+      "assets": ["scirel.kinetic.dielectric-response"],
+      "question": "Request the finite harmonic path at literally zero parallel wavenumber and report the exception the library raises, without substituting another method or a clamp.",
+      "input_binding": {"mode": "contract_example", "assets": ["scirel.kinetic.dielectric-response"]},
+      "min_calls": 1,
+      "criteria": [
+        {"id": "raise", "kind": "exception", "expected": "ValueError", "failure_key": "invalid_input"},
+        {
+          "id": "nosubstitute",
+          "kind": "invariant",
+          "statement": "The program must not catch the rejection and re-call another method, and must not pass a small positive value instead of zero; the trace must show exactly one call at the requested point and its raised status.",
+          "independent_source": "The contract declares no automatic method switch, so a fallback would contradict a stated interface property rather than a numeric reference."
+        },
+        {"id": "readback", "kind": "readback", "statement": "Re-open calls.jsonl and confirm one raised record with the real exception type and message."}
+      ]
+    },
+    {
+      "id": "kinetic-excluded-zero-kx",
+      "kind": "inapplicable",
+      "domain": "kinetic",
+      "subdomain": "declared excluded wavevector limits",
+      "assets": ["scirel.kinetic.dielectric-response"],
+      "question": "A user asks for the response at exactly zero perpendicular wavenumber. Report whether the declared model covers that limit and what the contract offers instead, without computing a substitute result.",
+      "inapplicable_reason": "The contract excludes the zero-perpendicular-wavenumber limit from this model; the honest deliverable is the excluded clause plus the separately declared entry that does cover related endpoints.",
+      "input_binding": {"mode": "contract_example", "assets": ["scirel.kinetic.dielectric-response"]},
+      "min_calls": 1,
+      "criteria": [
+        {
+          "id": "nocall",
+          "kind": "invariant",
+          "statement": "The report must quote the excluded clause and must not present a value computed at a nearby nonzero wavenumber as the requested limit.",
+          "independent_source": "The exclusion is stated by the contract before the question is asked, so compliance is checkable from the trace alone."
+        },
+        {"id": "readback", "kind": "readback", "statement": "Re-open REPORT.md and confirm the quoted excluded clause and the named alternative entry are present."}
+      ]
+    },
+    {
+      "id": "neutrals-boltzmann-rhs",
+      "kind": "nominal",
+      "domain": "neutrals",
+      "subdomain": "neutral Boltzmann right-hand side and collision frequency",
+      "assets": [
+        "scirel.neutrals.neutral-boltzmann-rhs",
+        "scirel.neutrals.neutral-total-collision-frequency"
+      ],
+      "question": "Evaluate the neutral Boltzmann right-hand side and the total collision frequency for one declared state, and report which species channels contributed.",
+      "input_binding": {"mode": "contract_example", "assets": ["scirel.neutrals.neutral-boltzmann-rhs"]},
+      "min_calls": 2,
+      "criteria": [
+        {"id": "fields", "kind": "contract_fields", "expect": "all_declared_outputs"},
+        {
+          "id": "zerostate",
+          "kind": "invariant",
+          "statement": "Heavy-particle-only trapping: with no neutral population declared, the right-hand side source term must vanish while the collision frequency returns a value consistent with zero density; a nonzero source with zero neutrals is a failure.",
+          "independent_source": "Source terms are proportional to the declared population, so the zero-population limit is fixed by the equations before any run."
+        },
+        {"id": "readback", "kind": "readback", "statement": "Re-open results.json and confirm both entries are present for the same declared state."}
+      ]
+    },
+    {
+      "id": "neutrals-velocity-mesh",
+      "kind": "nominal",
+      "domain": "neutrals",
+      "subdomain": "adaptive velocity mesh and cylindrical quadrature",
+      "assets": [
+        "scirel.neutrals.adaptive-neutral-velocity-mesh",
+        "scirel.neutrals.cylindrical-velocity-quadrature"
+      ],
+      "question": "Build the adaptive neutral velocity mesh for a declared temperature, then integrate a declared Maxwellian over it with the cylindrical quadrature entry and report the quadrature total against the declared normalization.",
+      "input_binding": {"mode": "contract_example", "assets": ["scirel.neutrals.adaptive-neutral-velocity-mesh"]},
+      "min_calls": 2,
+      "criteria": [
+        {"id": "fields", "kind": "contract_fields", "expect": "all_declared_outputs"},
+        {
+          "id": "normalization",
+          "kind": "invariant",
+          "statement": "Integrating a normalized distribution over the mesh must return the declared total within the quadrature budget, and refining the declared mesh resolution must not change the total beyond that budget.",
+          "independent_source": "A normalized distribution integrates to its declared total by definition of the model; refinement stability is a convergence check fixed before the run."
+        },
+        {
+          "id": "budget",
+          "kind": "tolerance",
+          "quantity": "@declared_outputs",
+          "unit": "as declared",
+          "tolerance": {"rel": 1e-8, "abs": 0, "basis": "Midpoint quadrature error scales with the declared mesh spacing squared; the bound follows from the declared resolution, not from an observed residual."},
+          "declared_before_run": true
+        },
+        {"id": "readback", "kind": "readback", "statement": "Re-open results.json and confirm the mesh resolution used and both quadrature totals at two resolutions."}
+      ]
+    },
+    {
+      "id": "neutrals-cross-mesh",
+      "kind": "nominal",
+      "domain": "neutrals",
+      "subdomain": "cross-mesh transfer of a distribution and of a scalar",
+      "assets": [
+        "scirel.neutrals.cross-mesh-distribution-interpolation",
+        "scirel.neutrals.cross-mesh-scalar-interpolation"
+      ],
+      "question": "Transfer a declared distribution and a declared scalar field between two declared meshes, then transfer the result back and report the round-trip deviation and the boundary handling actually applied.",
+      "input_binding": {"mode": "contract_example", "assets": ["scirel.neutrals.cross-mesh-distribution-interpolation"]},
+      "min_calls": 4,
+      "criteria": [
+        {"id": "fields", "kind": "contract_fields", "expect": "all_declared_outputs"},
+        {
+          "id": "roundtrip",
+          "kind": "invariant",
+          "statement": "For a field that is linear in the declared coordinates, a transfer to the second mesh and back must reproduce the original values within the interpolation budget; deviation beyond it means the two meshes were paired incorrectly.",
+          "independent_source": "Interpolation of a function that lies in its own basis is exact by construction; the property is fixed before any run."
+        },
+        {
+          "id": "budget",
+          "kind": "tolerance",
+          "quantity": "@declared_outputs",
+          "unit": "as declared",
+          "tolerance": {"rel": 1e-12, "abs": 1e-14, "basis": "Transferring a coordinate-linear field between two declared meshes involves only affine maps and binary64 rounding, so exactness holds up to round-off."},
+          "declared_before_run": true
+        },
+        {"id": "readback", "kind": "readback", "statement": "Re-open results.json and confirm the mesh pairs used and both round-trip deviations are stored."}
+      ]
+    },
+    {
+      "id": "neutrals-terminal-reductions",
+      "kind": "nominal",
+      "domain": "neutrals",
+      "subdomain": "terminal moment and conservation reductions",
+      "assets": [
+        "scirel.neutrals.terminal-energy-transfer-reduction",
+        "scirel.neutrals.terminal-flux-velocity-reduction",
+        "scirel.neutrals.terminal-heat-flux-reduction",
+        "scirel.neutrals.terminal-conservation-diagnostic"
+      ],
+      "question": "Reduce one declared terminal distribution to its energy transfer, flux-velocity and heat-flux moments, then read the conservation diagnostic and state which quantities it balances.",
+      "input_binding": {"mode": "contract_example", "assets": ["scirel.neutrals.terminal-energy-transfer-reduction"]},
+      "min_calls": 4,
+      "criteria": [
+        {"id": "fields", "kind": "contract_fields", "expect": "all_declared_outputs"},
+        {
+          "id": "momentscale",
+          "kind": "invariant",
+          "statement": "Multiplying the declared terminal distribution by a constant must scale every linear moment by that constant and leave the ratio-based diagnostic unchanged; a moment that does not scale as declared is mislabelled.",
+          "independent_source": "Moment definitions are linear in the distribution by construction, so the scaling law is fixed by the declared definitions."
+        },
+        {"id": "readback", "kind": "readback", "statement": "Re-open results.json and confirm all four reductions are present for the same declared distribution."}
+      ]
+    },
+    {
+      "id": "neutrals-upwind-transport",
+      "kind": "nominal",
+      "domain": "neutrals",
+      "subdomain": "upwind transport coefficients and generation propagation",
+      "assets": [
+        "scirel.neutrals.neutral-upwind-transport-coefficients",
+        "scirel.neutrals.neutral-generation-propagation"
+      ],
+      "question": "Build the declared upwind transport coefficients and propagate one declared generation source, reporting the propagation direction implied by the sign convention and where the source leaves the domain.",
+      "input_binding": {"mode": "contract_example", "assets": ["scirel.neutrals.neutral-upwind-transport-coefficients"]},
+      "min_calls": 2,
+      "criteria": [
+        {"id": "fields", "kind": "contract_fields", "expect": "all_declared_outputs"},
+        {
+          "id": "upwind",
+          "kind": "invariant",
+          "statement": "Reversing the declared flow direction must reverse which side the coefficients weight, and a source placed at the inflow boundary must be carried into the domain while one at the outflow boundary must leave it; an unchanged answer under reversal is a failure.",
+          "independent_source": "Upwinding is defined by the sign of the declared velocity, so the reversal test is fixed by the discretization definition, not by a reference solution."
+        },
+        {"id": "readback", "kind": "readback", "statement": "Re-open results.json and confirm both coefficient sets and both propagation outcomes are stored."}
+      ]
+    },
+    {
+      "id": "neutrals-rejects-invalid-shape",
+      "kind": "failure",
+      "domain": "neutrals",
+      "subdomain": "declared invalid input channel",
+      "assets": ["scirel.neutrals.neutral-boltzmann-rhs"],
+      "question": "Call the neutral Boltzmann entry with a declared invalid input and report the exception class the library raises without repairing the input first.",
+      "input_binding": {"mode": "contract_example", "assets": ["scirel.neutrals.neutral-boltzmann-rhs"]},
+      "min_calls": 1,
+      "criteria": [
+        {"id": "raise", "kind": "exception", "expected": "ValueError", "failure_key": "invalid_input"},
+        {
+          "id": "notpatched",
+          "kind": "invariant",
+          "statement": "The program must not pre-broadcast, cast or reshape the rejected argument to make it pass, and must show the rejected values in the trace exactly as requested.",
+          "independent_source": "The contract states the rejection; repairing the input would test a different call than the declared one."
+        },
+        {"id": "readback", "kind": "readback", "statement": "Re-open calls.jsonl and confirm the rejected arguments and the real exception message are present."}
+      ]
+    },
+    {
+      "id": "collisions-cross-sections",
+      "kind": "nominal",
+      "domain": "collisions",
+      "subdomain": "elastic cross sections for hydrogen and proton projectiles",
+      "assets": [
+        "scirel.collisions.atomic-hydrogen-elastic-cross-section",
+        "scirel.collisions.proton-atomic-hydrogen-elastic-cross-section"
+      ],
+      "question": "Evaluate both declared elastic cross sections over one declared energy grid and report where each model's declared valid range ends and what the entry returns outside it.",
+      "input_binding": {"mode": "contract_example", "assets": ["scirel.collisions.atomic-hydrogen-elastic-cross-section"]},
+      "min_calls": 3,
+      "criteria": [
+        {"id": "fields", "kind": "contract_fields", "expect": "all_declared_outputs"},
+        {
+          "id": "range",
+          "kind": "invariant",
+          "statement": "Outside the declared fit range the entry must behave exactly as the contract states (a stated warning, a stated clamp or a stated rejection); silently returning an unqualified value is a failure.",
+          "independent_source": "The declared range and its handling are written in the contract before the call, so compliance is checkable without a reference cross section."
+        },
+        {"id": "readback", "kind": "readback", "statement": "Re-open results.json and confirm the in-range and out-of-range samples are separated with their warnings."}
+      ]
+    },
+    {
+      "id": "collisions-rate-coefficients",
+      "kind": "nominal",
+      "domain": "collisions",
+      "subdomain": "rate coefficients and collision matrices",
+      "assets": [
+        "scirel.collisions.atomic-hydrogen-charge-exchange-rate-coefficient",
+        "scirel.collisions.molecular-hydrogen-collision-matrices",
+        "scirel.collisions.atomic-hydrogen-omega-frequencies"
+      ],
+      "question": "Compute one declared rate coefficient, assemble the declared molecular collision matrices and read the omega frequencies, reporting the temperature convention each entry declares.",
+      "input_binding": {"mode": "contract_example", "assets": ["scirel.collisions.atomic-hydrogen-charge-exchange-rate-coefficient"]},
+      "min_calls": 3,
+      "criteria": [
+        {"id": "fields", "kind": "contract_fields", "expect": "all_declared_outputs"},
+        {
+          "id": "tempconv",
+          "kind": "invariant",
+          "statement": "The temperature passed to each entry must use that entry's declared unit; a factor-of-kB unit slip must be visible when the same physical temperature is expressed in the two declared units, and the reported values must then agree.",
+          "independent_source": "Unit conversion is exact by definition, so expressing one temperature in both declared units is a falsifiable consistency test."
+        },
+        {"id": "readback", "kind": "readback", "statement": "Re-open calls.jsonl and confirm the unit used for each temperature argument."}
+      ]
+    },
+    {
+      "id": "collisions-rate-averages",
+      "kind": "nominal",
+      "domain": "collisions",
+      "subdomain": "Maxwellian rate averaging and ionization",
+      "assets": [
+        "scirel.collisions.maxwellian-relative-speed-rate-average",
+        "scirel.collisions.janev-electron-impact-ionization-rate"
+      ],
+      "question": "Average a declared cross section over the declared relative-speed distribution and evaluate the declared ionization rate, reporting the effective-velocity convention each uses.",
+      "input_binding": {"mode": "contract_example", "assets": ["scirel.collisions.maxwellian-relative-speed-rate-average"]},
+      "min_calls": 2,
+      "criteria": [
+        {"id": "fields", "kind": "contract_fields", "expect": "all_declared_outputs"},
+        {
+          "id": "average",
+          "kind": "invariant",
+          "statement": "Averaging a constant cross section must return that constant times the declared mean speed, independent of temperature shape; a temperature-dependent answer for a constant cross section is a failure.",
+          "independent_source": "The average of a constant is the constant; the declared mean speed is a closed-form moment, so the test is analytic and pre-fixed."
+        },
+        {"id": "readback", "kind": "readback", "statement": "Re-open results.json and confirm the constant-cross-section control and the declared ionization case are both stored."}
+      ]
+    },
+    {
+      "id": "collisions-rejects-out-of-domain",
+      "kind": "failure",
+      "domain": "collisions",
+      "subdomain": "declared invalid input channel",
+      "assets": ["scirel.collisions.janev-electron-impact-ionization-rate"],
+      "question": "Request the ionization rate with a declared invalid input and report the real exception rather than a substituted value.",
+      "input_binding": {"mode": "contract_example", "assets": ["scirel.collisions.janev-electron-impact-ionization-rate"]},
+      "min_calls": 1,
+      "criteria": [
+        {"id": "raise", "kind": "exception", "expected": "ValueError", "failure_key": "invalid_input"},
+        {
+          "id": "nosilent",
+          "kind": "invariant",
+          "statement": "No warning-suppression or try/except that converts the rejection into a default value is allowed; the trace must show the raised status.",
+          "independent_source": "The contract declares the rejection channel; a substituted default would be a different declared behaviour."
+        },
+        {"id": "readback", "kind": "readback", "statement": "Re-open calls.jsonl and confirm the raised record with its message."}
+      ]
+    },
+    {
+      "id": "field-filament-superposition",
+      "kind": "nominal",
+      "domain": "field",
+      "subdomain": "Green response, superposition and multi-coil vacuum field",
+      "assets": [
+        "scirel.field.circular-filament-green",
+        "scirel.field.current-green-superposition",
+        "scirel.field.multi-coil-vacuum-field"
+      ],
+      "question": "Evaluate the unit-weight filament Green response at declared targets, superimpose two declared coil currents, and compare the result with the published multi-coil vacuum field entry at the same targets.",
+      "input_binding": {"mode": "contract_example", "assets": ["scirel.field.circular-filament-green"]},
+      "min_calls": 3,
+      "criteria": [
+        {"id": "fields", "kind": "contract_fields", "expect": "all_declared_outputs"},
+        {
+          "id": "linearity",
+          "kind": "invariant",
+          "statement": "Scaling every declared source weight by a constant must scale the returned field quantities by the same constant, and the summed two-coil result must equal the sum of the separately evaluated coils at the same targets.",
+          "independent_source": "Green responses are linear in the declared weights by definition, so scaling and additivity follow from the declared interface before any run."
+        },
+        {
+          "id": "entryagreement",
+          "kind": "invariant",
+          "statement": "The composite entry and the manual superposition must agree componentwise within the declared budget at the same targets; disagreement means one of them uses a different weight or coordinate convention.",
+          "independent_source": "Both entries publish the same physical quantity for the same sources, so agreement is a convention check."
+        },
+        {
+          "id": "budget",
+          "kind": "tolerance",
+          "quantity": "@declared_outputs",
+          "unit": "as declared",
+          "tolerance": {"rel": 1e-12, "abs": 0, "basis": "Summing two published evaluations differs only by binary64 summation order, so the bound is rounding, not model error."},
+          "declared_before_run": true
+        },
+        {"id": "readback", "kind": "readback", "statement": "Re-open results.json and confirm the unit-weight, two-coil and composite results are stored for the same target list."}
+      ]
+    },
+    {
+      "id": "field-flux-to-poloidal",
+      "kind": "nominal",
+      "domain": "field",
+      "subdomain": "flux derivative to poloidal field and its magnitude",
+      "assets": [
+        "scirel.field.poloidal-field-from-flux",
+        "scirel.field.poloidal-field-magnitude"
+      ],
+      "question": "Differentiate a declared flux on a declared grid into poloidal field components, then compute the field magnitude and report the per-radian convention the flux carries.",
+      "input_binding": {"mode": "contract_example", "assets": ["scirel.field.poloidal-field-from-flux"]},
+      "min_calls": 2,
+      "criteria": [
+        {"id": "fields", "kind": "contract_fields", "expect": "all_declared_outputs"},
+        {
+          "id": "magnitude",
+          "kind": "invariant",
+          "statement": "The reported magnitude must equal the quadrature sum of the returned components at every point within the declared budget; a mismatch means the components and the magnitude use different conventions.",
+          "independent_source": "Magnitude from its own components is a definitional check that catches a swapped component or a missing factor, and it is fixed before the run."
+        },
+        {
+          "id": "budget",
+          "kind": "tolerance",
+          "quantity": "@declared_outputs",
+          "unit": "as declared",
+          "tolerance": {"rel": 1e-14, "abs": 0, "basis": "A square root of a binary64 sum of squares is exact to within one rounding per operation; the bound is the accumulated rounding bound."},
+          "declared_before_run": true
+        },
+        {"id": "readback", "kind": "readback", "statement": "Re-open results.json and confirm both components and the magnitude are stored on the same grid."}
+      ]
+    },
+    {
+      "id": "field-rejects-mismatched-targets",
+      "kind": "failure",
+      "domain": "field",
+      "subdomain": "declared invalid input channel",
+      "assets": ["scirel.field.current-green-superposition"],
+      "question": "Call the superposition entry with a declared invalid weight and target combination and report the raised exception.",
+      "input_binding": {"mode": "contract_example", "assets": ["scirel.field.current-green-superposition"]},
+      "min_calls": 1,
+      "criteria": [
+        {"id": "raise", "kind": "exception", "expected": "ValueError", "failure_key": "invalid_input"},
+        {
+          "id": "notrepaired",
+          "kind": "invariant",
+          "statement": "The trace must show the mismatched shapes exactly as requested; padding or trimming before the call is not allowed.",
+          "independent_source": "The rejection is declared for mismatched input, so repairing the shape changes the call under test."
+        },
+        {"id": "readback", "kind": "readback", "statement": "Re-open calls.jsonl and confirm the rejected shapes and the message."}
+      ]
+    },
+    {
+      "id": "geometry-equilibrium-grid",
+      "kind": "nominal",
+      "domain": "geometry",
+      "subdomain": "axisymmetric equilibrium grid support and surface averages",
+      "assets": [
+        "scirel.geometry.axisymmetric-equilibrium-grid-support",
+        "scirel.geometry.axisymmetric-equilibrium-grid-mapping",
+        "scirel.geometry.flux-surface-inverse-field-average"
+      ],
+      "question": "Build the declared equilibrium grid support, map a declared coordinate set into it, and take the declared inverse-field-average over one flux surface, reporting the surface identifier used.",
+      "input_binding": {"mode": "contract_example", "assets": ["scirel.geometry.axisymmetric-equilibrium-grid-support"]},
+      "min_calls": 3,
+      "criteria": [
+        {"id": "fields", "kind": "contract_fields", "expect": "all_declared_outputs"},
+        {
+          "id": "averageofone",
+          "kind": "invariant",
+          "statement": "Averaging a constant over a declared surface must return that constant, and swapping the declared coordinate order must either be rejected or change the result only through the declared convention; an order-insensitive silent result is a failure.",
+          "independent_source": "The average of a constant is the constant and coordinate order is part of the declared convention, so both halves are fixed before the run."
+        },
+        {"id": "readback", "kind": "readback", "statement": "Re-open results.json and confirm the support, mapping and average outputs are stored with the same surface identifier."}
+      ]
+    },
+    {
+      "id": "geometry-mesh-and-volume",
+      "kind": "nominal",
+      "domain": "geometry",
+      "subdomain": "meshes and toroidal volume integration",
+      "assets": [
+        "scirel.geometry.rect-mesh",
+        "scirel.geometry.points-mesh",
+        "scirel.geometry.masked-toroidal-volume"
+      ],
+      "question": "Construct a declared rectangular mesh and a declared points mesh, integrate a declared density over the masked toroidal volume, and report the mask the integration actually applied.",
+      "input_binding": {"mode": "contract_example", "assets": ["scirel.geometry.masked-toroidal-volume"]},
+      "min_calls": 3,
+      "criteria": [
+        {"id": "fields", "kind": "contract_fields", "expect": "all_declared_outputs"},
+        {
+          "id": "lineardensity",
+          "kind": "invariant",
+          "statement": "Doubling a uniform declared density must double the integrated volume quantity, and the reported volume of the full mask must equal the sum of the volumes of two complementary submasks within the declared budget.",
+          "independent_source": "The integral is linear and additive over a partition by definition, so the relations hold before any run."
+        },
+        {
+          "id": "budget",
+          "kind": "tolerance",
+          "quantity": "@declared_outputs",
+          "unit": "as declared",
+          "tolerance": {"rel": 1e-12, "abs": 0, "basis": "Partition additivity differs only by binary64 summation order over the declared cell count; the bound is accumulated rounding."},
+          "declared_before_run": true
+        },
+        {"id": "readback", "kind": "readback", "statement": "Re-open results.json and confirm the mask identifier and all three mesh-derived quantities are stored."}
+      ]
+    },
+    {
+      "id": "geometry-rejects-mixed-modes",
+      "kind": "failure",
+      "domain": "geometry",
+      "subdomain": "declared invalid input channel",
+      "assets": ["scirel.geometry.planar-wavevector-projection"],
+      "question": "Pass a declared mixed representation to the wavevector projection entry and report the raised exception instead of converting the input first.",
+      "input_binding": {"mode": "literal", "values": {"mixed_modes": true, "kx": 1.0, "kz": 0.5}},
+      "min_calls": 1,
+      "criteria": [
+        {"id": "raise", "kind": "exception", "expected": "ValueError", "failure_key": "invalid_input"},
+        {
+          "id": "noconvert",
+          "kind": "invariant",
+          "statement": "The consumer must not normalize the mixed input into a single representation before the call; the trace must show exactly the declared mixed call.",
+          "independent_source": "Mixed representations are declared invalid, so pre-converting tests a different call."
+        },
+        {"id": "readback", "kind": "readback", "statement": "Re-open calls.jsonl and confirm the mixed input and the raised status are recorded."}
+      ]
+    },
+    {
+      "id": "numerics-basis-projection",
+      "kind": "nominal",
+      "domain": "numerics",
+      "subdomain": "basis construction and modal projection",
+      "assets": [
+        "scirel.numerics.basis-matrix",
+        "scirel.numerics.build-basis",
+        "scirel.numerics.orthonormal-modal-basis",
+        "scirel.numerics.modal-projection"
+      ],
+      "question": "Build a declared orthonormal modal basis, project a declared field onto it, and report the residual after reconstruction and the basis dimension actually used.",
+      "input_binding": {"mode": "contract_example", "assets": ["scirel.numerics.orthonormal-modal-basis"]},
+      "min_calls": 4,
+      "criteria": [
+        {"id": "fields", "kind": "contract_fields", "expect": "all_declared_outputs"},
+        {
+          "id": "orthonormal",
+          "kind": "invariant",
+          "statement": "The declared orthonormal basis must have a Gram matrix equal to the identity within the declared budget; a diagonal entry off unity or a nonzero off-diagonal entry is a failure.",
+          "independent_source": "Orthonormality is the defining property the contract names, so the identity Gram matrix is fixed before the run."
+        },
+        {
+          "id": "exactspan",
+          "kind": "invariant",
+          "statement": "Projecting a field that lies in the declared basis span must reconstruct to the declared residual tolerance; projecting a field outside the span must report a residual above it.",
+          "independent_source": "Projection onto a span is exact for members of that span by definition, so the two-sided test needs no reference implementation."
+        },
+        {
+          "id": "budget",
+          "kind": "tolerance",
+          "quantity": "@declared_outputs",
+          "unit": "as declared",
+          "tolerance": {"rel": 1e-12, "abs": 0, "basis": "Finite sums of binary64 products accumulate rounding proportional to the declared dimension; the bound is set from that estimate."},
+          "declared_before_run": true
+        },
+        {"id": "readback", "kind": "readback", "statement": "Re-open results.json and confirm the Gram matrix, both residuals and the basis dimension are stored."}
+      ]
+    },
+    {
+      "id": "numerics-splines-and-inverse",
+      "kind": "nominal",
+      "domain": "numerics",
+      "subdomain": "clamped splines and truncated inverse",
+      "assets": [
+        "scirel.numerics.clamped-cubic-spline",
+        "scirel.numerics.first-clamped-cubic-spline",
+        "scirel.numerics.natural-cubic-spline",
+        "scirel.numerics.truncated-svd-inverse"
+      ],
+      "question": "Interpolate a declared function with the clamped and natural spline entries and invert a declared matrix with the truncated entry, reporting the rank actually kept and the residual of the reconstruction.",
+      "input_binding": {"mode": "contract_example", "assets": ["scirel.numerics.clamped-cubic-spline"]},
+      "min_calls": 4,
+      "criteria": [
+        {"id": "fields", "kind": "contract_fields", "expect": "all_declared_outputs"},
+        {
+          "id": "nodes",
+          "kind": "invariant",
+          "statement": "Every spline entry must reproduce the declared data values exactly at the node points; a node error above the declared budget means the boundary conditions were applied to the wrong end.",
+          "independent_source": "Any interpolant passes through its own nodes by definition, so node reproduction is a fixed property that still catches swapped boundary conditions when paired with the endpoint check."
+        },
+        {
+          "id": "rank",
+          "kind": "invariant",
+          "statement": "The retained rank reported by the truncated inverse must equal the number of singular values above the declared cutoff, and inverting a declared diagonal matrix must return its reciprocal diagonal within the declared budget.",
+          "independent_source": "The cutoff rule and the diagonal inverse are closed-form, so both are checkable without running the same code twice."
+        },
+        {"id": "readback", "kind": "readback", "statement": "Re-open results.json and confirm the node values, the singular-value cutoff and the reconstruction residual are stored."}
+      ]
+    },
+    {
+      "id": "numerics-rejects-nonfinite",
+      "kind": "failure",
+      "domain": "numerics",
+      "subdomain": "declared invalid input channel",
+      "assets": ["scirel.numerics.truncated-svd-inverse"],
+      "question": "Call the truncated inverse with a declared nonfinite entry and report the raised exception without sanitizing the matrix first.",
+      "input_binding": {"mode": "contract_example", "assets": ["scirel.numerics.truncated-svd-inverse"]},
+      "min_calls": 1,
+      "criteria": [
+        {"id": "raise", "kind": "exception", "expected": "ValueError", "failure_key": "invalid_input"},
+        {
+          "id": "nosanitize",
+          "kind": "invariant",
+          "statement": "The consumer must not replace nonfinite entries with zeros before the call; the raised record must show the original matrix.",
+          "independent_source": "Nonfinite input is declared invalid, so sanitizing would silently change the tested claim."
+        },
+        {"id": "readback", "kind": "readback", "statement": "Re-open calls.jsonl and confirm the nonfinite input and the raised status."}
+      ]
+    },
+    {
+      "id": "sampling-regular-grid",
+      "kind": "nominal",
+      "domain": "sampling",
+      "subdomain": "scattered to regular grid sampling",
+      "assets": [
+        "scirel.sampling.regular-grid",
+        "scirel.sampling.scattered-linear",
+        "scirel.sampling.rectangular-nearest"
+      ],
+      "question": "Interpolate a declared scattered planar field onto a generated regular grid and onto a supplied axis pair, and report which points fell outside the convex support and what the entries returned there.",
+      "input_binding": {"mode": "contract_example", "assets": ["scirel.sampling.regular-grid"]},
+      "min_calls": 3,
+      "criteria": [
+        {"id": "fields", "kind": "contract_fields", "expect": "all_declared_outputs"},
+        {
+          "id": "axisorder",
+          "kind": "invariant",
+          "statement": "For a field that is linear in the declared coordinates, interpolated values must reproduce that linear function inside the support within the declared budget, and the generated axes must be reported in the declared ij order.",
+          "independent_source": "A linear interpolant reproduces a linear field exactly, so the test is analytic and pre-fixed."
+        },
+        {
+          "id": "outsidesupport",
+          "kind": "invariant",
+          "statement": "Points outside the declared convex support must be excluded as the contract states, not silently filled with a synthesized value; the count and position of excluded points must be reported.",
+          "independent_source": "The exclusion policy is a declared interface property, so compliance is checkable from the returned mask alone."
+        },
+        {
+          "id": "budget",
+          "kind": "tolerance",
+          "quantity": "@declared_outputs",
+          "unit": "as declared",
+          "tolerance": {"rel": 1e-12, "abs": 0, "basis": "Barycentric evaluation of a linear function on a triangulation reproduces it to binary64 rounding; the bound is that rounding, not interpolation error."},
+          "declared_before_run": true
+        },
+        {"id": "readback", "kind": "readback", "statement": "Re-open results.json and confirm the generated axes, the supplied axes and the excluded-point mask are stored."}
+      ]
+    },
+    {
+      "id": "sampling-transform-and-derivative",
+      "kind": "nominal",
+      "domain": "sampling",
+      "subdomain": "coordinate transforms and nonuniform derivative",
+      "assets": [
+        "scirel.sampling.meridional-polar-forward",
+        "scirel.sampling.meridional-polar-inverse",
+        "scirel.sampling.nonuniform-first-derivative"
+      ],
+      "question": "Map a declared point set through the forward meridional transform and back, then differentiate a declared nonuniform grid, reporting the round-trip deviation and the grid spacing actually used.",
+      "input_binding": {"mode": "contract_example", "assets": ["scirel.sampling.meridional-polar-forward"]},
+      "min_calls": 3,
+      "criteria": [
+        {"id": "fields", "kind": "contract_fields", "expect": "all_declared_outputs"},
+        {
+          "id": "roundtrip",
+          "kind": "invariant",
+          "statement": "The inverse transform applied to the forward result must return the declared inputs within the declared budget, including at the declared symmetry axis; a round-trip failure marks a convention mismatch, not a precision limit.",
+          "independent_source": "A declared exact inverse is exact by definition, so the round trip is fixed before any run."
+        },
+        {
+          "id": "derivative",
+          "kind": "invariant",
+          "statement": "Differentiating a declared linear function on a nonuniform grid must return its exact slope at every interior point regardless of the spacing, which proves the spacing was used rather than a uniform assumption.",
+          "independent_source": "The derivative of a linear function is its slope on any grid, so a spacing error is detectable analytically."
+        },
+        {
+          "id": "budget",
+          "kind": "tolerance",
+          "quantity": "@declared_outputs",
+          "unit": "as declared",
+          "tolerance": {"rel": 1e-12, "abs": 0, "basis": "Exact inverse evaluation and a linear slope involve only binary64 arithmetic, so the bound is accumulated rounding."},
+          "declared_before_run": true
+        },
+        {"id": "readback", "kind": "readback", "statement": "Re-open results.json and confirm the round-trip points, the derivative samples and the spacing array are stored."}
+      ]
+    },
+    {
+      "id": "sampling-rejects-unknown-method",
+      "kind": "failure",
+      "domain": "sampling",
+      "subdomain": "declared invalid interpolation method",
+      "assets": ["scirel.sampling.regular-grid"],
+      "question": "Request the regular grid sampler with an interpolation method outside the declared set and report the raised exception.",
+      "input_binding": {"mode": "literal", "values": {"method": "akima", "nx": 8, "ny": 8}},
+      "min_calls": 1,
+      "criteria": [
+        {"id": "raise", "kind": "exception", "expected": "ValueError", "failure_key": "invalid_input"},
+        {
+          "id": "nofallback",
+          "kind": "invariant",
+          "statement": "The program must not retry with the declared default after the rejection; the trace must contain exactly one call for this task.",
+          "independent_source": "The declared method set is closed, so a retry would hide the rejection the contract specifies."
+        },
+        {"id": "readback", "kind": "readback", "statement": "Re-open calls.jsonl and confirm the unknown method string and the raised status."}
+      ]
+    },
+    {
+      "id": "equilibrium-isotropic-picard",
+      "kind": "nominal",
+      "domain": "equilibrium",
+      "subdomain": "isotropic pressure flux and Picard step",
+      "assets": [
+        "scirel.equilibrium.isotropic-picard-step",
+        "scirel.equilibrium.isotropic-pressure-flux",
+        "scirel.equilibrium.pressure-flux-state"
+      ],
+      "question": "Build a declared pressure-flux state, take one declared isotropic Picard step and report the step residual together with the flux it consumed and produced.",
+      "input_binding": {"mode": "contract_example", "assets": ["scirel.equilibrium.isotropic-picard-step"]},
+      "min_calls": 3,
+      "criteria": [
+        {"id": "fields", "kind": "contract_fields", "expect": "all_declared_outputs"},
+        {
+          "id": "fixedpoint",
+          "kind": "invariant",
+          "statement": "Applying the declared step to a state that already satisfies the declared residual tolerance must leave the flux unchanged within the declared budget; a drift larger than the budget means the step and the residual do not measure the same operator.",
+          "independent_source": "A fixed point of an iteration is unchanged by its own update by definition, so the test is analytic and pre-fixed."
+        },
+        {
+          "id": "residualmeaning",
+          "kind": "invariant",
+          "statement": "The reported residual must be the declared norm of the declared difference, recomputable from the stored pre- and post-step fluxes; it must not be reported as an error estimate on the physics.",
+          "independent_source": "The contract defines the residual as a discrete difference norm, so recomputation from stored arrays is a bookkeeping check."
+        },
+        {"id": "readback", "kind": "readback", "statement": "Re-open results.json and confirm the pre-step, post-step and residual arrays are all stored."}
+      ]
+    },
+    {
+      "id": "equilibrium-anisotropic-picard",
+      "kind": "nominal",
+      "domain": "equilibrium",
+      "subdomain": "anisotropic Picard iteration with feedback",
+      "assets": [
+        "scirel.equilibrium.axisymmetric-anisotropic-picard",
+        "scirel.equilibrium.anisotropic-picard-feedback",
+        "scirel.equilibrium.free-boundary-anisotropic-picard"
+      ],
+      "question": "Run the declared anisotropic Picard driver for a declared number of iterations, read the feedback entry at the same state, and report convergence status and the anisotropy actually used.",
+      "input_binding": {"mode": "contract_example", "assets": ["scirel.equilibrium.axisymmetric-anisotropic-picard"]},
+      "min_calls": 3,
+      "criteria": [
+        {"id": "fields", "kind": "contract_fields", "expect": "all_declared_outputs"},
+        {
+          "id": "isotropiclimit",
+          "kind": "invariant",
+          "statement": "With the declared anisotropy ratio set to unity the anisotropic driver must reproduce the declared isotropic result within the declared budget; a difference beyond it means the anisotropic branch adds an undocumented term.",
+          "independent_source": "The isotropic case is a stated limit of the anisotropic model, so it is fixed before the run and catches a spurious anisotropy term."
+        },
+        {
+          "id": "status",
+          "kind": "invariant",
+          "statement": "A reported converged status must come with a residual below the declared tolerance, and a non-converged status must be reported as such rather than relabelled as success.",
+          "independent_source": "The convergence criterion is declared, so status and residual can be cross-checked against each other."
+        },
+        {"id": "readback", "kind": "readback", "statement": "Re-open results.json and confirm iterations, residuals per iteration, status and anisotropy ratio are stored."}
+      ]
+    },
+    {
+      "id": "equilibrium-rejects-inconsistent-state",
+      "kind": "failure",
+      "domain": "equilibrium",
+      "subdomain": "declared invalid input channel",
+      "assets": ["scirel.equilibrium.isotropic-picard-step"],
+      "question": "Call the Picard step with a declared inconsistent state and report the raised exception without repairing the state first.",
+      "input_binding": {"mode": "contract_example", "assets": ["scirel.equilibrium.isotropic-picard-step"]},
+      "min_calls": 1,
+      "criteria": [
+        {"id": "raise", "kind": "exception", "expected": "ValueError", "failure_key": "invalid_input"},
+        {
+          "id": "norepair",
+          "kind": "invariant",
+          "statement": "The consumer must not match shapes or rescale the state before the call; the rejected state must appear unchanged in the trace.",
+          "independent_source": "Inconsistent state is declared invalid, so repair would test a different claim."
+        },
+        {"id": "readback", "kind": "readback", "statement": "Re-open calls.jsonl and confirm the rejected state and the message."}
+      ]
+    },
+    {
+      "id": "mirror-frank-egedal",
+      "kind": "nominal",
+      "domain": "mirror",
+      "subdomain": "Frank-Egedal pressure closure chain",
+      "assets": [
+        "scirel.mirror.frank-egedal-pressure-closure",
+        "scirel.mirror.frank-egedal-pressure-state",
+        "scirel.mirror.mirror-total-pressure"
+      ],
+      "question": "Build a declared Frank-Egedal pressure state, apply the declared closure, and report the total pressure as the declared combination of the anisotropic components.",
+      "input_binding": {"mode": "contract_example", "assets": ["scirel.mirror.frank-egedal-pressure-closure"]},
+      "min_calls": 3,
+      "criteria": [
+        {"id": "fields", "kind": "contract_fields", "expect": "all_declared_outputs"},
+        {
+          "id": "totalpressure",
+          "kind": "invariant",
+          "statement": "For the declared geometry the total pressure must equal the declared weighted combination of the parallel and perpendicular components; recomputing it from the stored components must match the returned total within the declared budget.",
+          "independent_source": "The combination rule is stated by the contract, so recomputation from stored components is a bookkeeping check that catches a swapped weight."
+        },
+        {
+          "id": "isotropiclimit",
+          "kind": "invariant",
+          "statement": "With equal parallel and perpendicular pressures the total pressure must reduce to that single value within the declared budget.",
+          "independent_source": "The isotropic case is a stated limit of the combination rule and is fixed analytically."
+        },
+        {
+          "id": "budget",
+          "kind": "tolerance",
+          "quantity": "@declared_outputs",
+          "unit": "as declared",
+          "tolerance": {"rel": 1e-13, "abs": 0, "basis": "A two-term weighted sum in binary64 rounds once per operation; the bound is that rounding, not model error."},
+          "declared_before_run": true
+        },
+        {"id": "readback", "kind": "readback", "statement": "Re-open results.json and confirm components, total and the declared weights are stored."}
+      ]
+    },
+    {
+      "id": "mirror-ambipolar-and-loss-cone",
+      "kind": "nominal",
+      "domain": "mirror",
+      "subdomain": "ambipolar potential and loss-cone distribution",
+      "assets": [
+        "scirel.mirror.mirror-ambipolar-potential",
+        "scirel.mirror.loss-cone-spectrum",
+        "scirel.mirror.mirror-invariant-distribution"
+      ],
+      "question": "Evaluate the declared ambipolar potential, build the declared loss-cone spectrum and the mirror-invariant distribution it implies, and report the pitch-angle boundary each used.",
+      "input_binding": {"mode": "contract_example", "assets": ["scirel.mirror.mirror-ambipolar-potential"]},
+      "min_calls": 3,
+      "criteria": [
+        {"id": "fields", "kind": "contract_fields", "expect": "all_declared_outputs"},
+        {
+          "id": "emptycone",
+          "kind": "invariant",
+          "statement": "With a declared mirror ratio of unity the loss cone must be empty and the invariant distribution must equal the declared source distribution within the declared budget; a nonzero trapped fraction at unit ratio is a failure.",
+          "independent_source": "At unit mirror ratio no pitch angle is lost, which follows from the declared loss-cone definition before any run."
+        },
+        {
+          "id": "monotone",
+          "kind": "invariant",
+          "statement": "Increasing the declared mirror ratio must not decrease the loss-cone fraction; a non-monotone answer means the ratio entered the boundary expression with the wrong sense.",
+          "independent_source": "The loss-cone fraction grows with mirror ratio by the declared geometry, so monotonicity is fixed analytically."
+        },
+        {"id": "readback", "kind": "readback", "statement": "Re-open results.json and confirm both mirror ratios, the cone fractions and the distributions are stored."}
+      ]
+    },
+    {
+      "id": "mirror-rejects-invalid-moment",
+      "kind": "failure",
+      "domain": "mirror",
+      "subdomain": "declared invalid input channel",
+      "assets": ["scirel.mirror.mirror-constrained-moments"],
+      "question": "Request the constrained mirror moments with a declared invalid anisotropy input and report the raised exception.",
+      "input_binding": {"mode": "contract_example", "assets": ["scirel.mirror.mirror-constrained-moments"]},
+      "min_calls": 1,
+      "criteria": [
+        {"id": "raise", "kind": "exception", "expected": "ValueError", "failure_key": "invalid_input"},
+        {
+          "id": "noclip",
+          "kind": "invariant",
+          "statement": "The consumer must not clip the invalid input into the declared domain before the call; the trace must show the original rejected value.",
+          "independent_source": "The domain is declared; clipping would silently answer a different question."
+        },
+        {"id": "readback", "kind": "readback", "statement": "Re-open calls.jsonl and confirm the rejected value and the raised status."}
+      ]
+    },
+    {
+      "id": "electromagnetism-device-composition",
+      "kind": "nominal",
+      "domain": "electromagnetism",
+      "subdomain": "device composition and flux matrix",
+      "assets": [
+        "scirel.electromagnetism.device",
+        "scirel.electromagnetism.circular-filament-green",
+        "scirel.electromagnetism.loop-flux-matrix"
+      ],
+      "question": "Register two declared sources on the declared device, evaluate the device response at declared targets, and compare it with the loop flux matrix built from the same sources.",
+      "input_binding": {"mode": "contract_example", "assets": ["scirel.electromagnetism.device"]},
+      "min_calls": 3,
+      "criteria": [
+        {"id": "fields", "kind": "contract_fields", "expect": "all_declared_outputs"},
+        {
+          "id": "registration",
+          "kind": "invariant",
+          "statement": "The device total must equal the sum over its registered sources evaluated separately at the same targets, and changing the registration order must not change the total within the declared budget.",
+          "independent_source": "Composition is declared as a sum over registered sources, so additivity and order invariance follow from the interface definition."
+        },
+        {
+          "id": "budget",
+          "kind": "tolerance",
+          "quantity": "@declared_outputs",
+          "unit": "as declared",
+          "tolerance": {"rel": 1e-12, "abs": 0, "basis": "Summation of published term evaluations differs by binary64 summation order, which is where the bound comes from."},
+          "declared_before_run": true
+        },
+        {"id": "readback", "kind": "readback", "statement": "Re-open results.json and confirm the registration order, the device total and the separately summed total are stored."}
+      ]
+    },
+    {
+      "id": "electromagnetism-retained-geometries",
+      "kind": "nominal",
+      "domain": "electromagnetism",
+      "subdomain": "retained device configuration constructors",
+      "assets": [
+        "scirel.electromagnetism.trex-coil",
+        "scirel.electromagnetism.brb",
+        "scirel.electromagnetism.wham"
+      ],
+      "question": "Construct the three declared retained device geometries and report the filament count, the declared default current and the units each constructor documents, without claiming any experimental calibration.",
+      "input_binding": {"mode": "contract_example", "assets": ["scirel.electromagnetism.wham"]},
+      "min_calls": 3,
+      "criteria": [
+        {"id": "fields", "kind": "contract_fields", "expect": "all_declared_outputs"},
+        {
+          "id": "counts",
+          "kind": "invariant",
+          "statement": "The declared filament count and default current of each constructor must appear unchanged in the returned record; a silent default substitution or a unit change must be visible as a mismatch.",
+          "independent_source": "Counts and defaults are discrete declared constants, so the comparison needs no reference field value."
+        },
+        {"id": "readback", "kind": "readback", "statement": "Re-open results.json and confirm all three constructors, their counts and their default currents are stored."}
+      ]
+    },
+    {
+      "id": "electromagnetism-rejects-unknown-source",
+      "kind": "failure",
+      "domain": "electromagnetism",
+      "subdomain": "declared invalid input channel",
+      "assets": ["scirel.electromagnetism.device"],
+      "question": "Ask the device for a source it never registered and report the raised exception rather than adding a default source.",
+      "input_binding": {"mode": "contract_example", "assets": ["scirel.electromagnetism.device"]},
+      "min_calls": 1,
+      "criteria": [
+        {"id": "raise", "kind": "exception", "expected": "ValueError", "failure_key": "invalid_input"},
+        {
+          "id": "noimplicit",
+          "kind": "invariant",
+          "statement": "The consumer must not register an extra source to satisfy the request; the trace must show the unregistered name exactly as requested.",
+          "independent_source": "The declared device composes only registered sources, so adding one changes the object under test."
+        },
+        {"id": "readback", "kind": "readback", "statement": "Re-open calls.jsonl and confirm the requested unknown name and the raised status."}
+      ]
+    },
+    {
+      "id": "closures-quasineutral",
+      "kind": "nominal",
+      "domain": "closures",
+      "subdomain": "quasineutral potential and reference density",
+      "assets": [
+        "scirel.closures.quasineutral-potential",
+        "scirel.closures.boltzmann-quasineutrality",
+        "scirel.closures.hall-two-fluid-pressure"
+      ],
+      "question": "Solve the declared quasineutral potential for a declared density profile, check it against the Boltzmann relation at the same state, and report the Hall two-fluid pressure closure term.",
+      "input_binding": {"mode": "contract_example", "assets": ["scirel.closures.quasineutral-potential"]},
+      "min_calls": 3,
+      "criteria": [
+        {"id": "fields", "kind": "contract_fields", "expect": "all_declared_outputs"},
+        {
+          "id": "flatpotential",
+          "kind": "invariant",
+          "statement": "A declared uniform density must give a uniform potential, and inverting the declared density perturbation must invert the sign of the potential perturbation while leaving its magnitude unchanged within the declared budget.",
+          "independent_source": "The Boltzmann relation is monotone and odd about the reference state, so both properties follow from the declared closure without a reference solution."
+        },
+        {"id": "readback", "kind": "readback", "statement": "Re-open results.json and confirm the potential, the Boltzmann cross-check and the Hall term are stored for the same state."}
+      ]
+    },
+    {
+      "id": "closures-rejects-invalid-fit",
+      "kind": "failure",
+      "domain": "closures",
+      "subdomain": "declared invalid input channel",
+      "assets": ["scirel.closures.boltzmann-quasineutrality"],
+      "question": "Call the Boltzmann closure with a declared invalid input and report the raised exception.",
+      "input_binding": {"mode": "contract_example", "assets": ["scirel.closures.boltzmann-quasineutrality"]},
+      "min_calls": 1,
+      "criteria": [
+        {"id": "raise", "kind": "exception", "expected": "ValueError", "failure_key": "invalid_input"},
+        {
+          "id": "nosubstitute",
+          "kind": "invariant",
+          "statement": "No substitute closure may be evaluated to produce a number for this task; the raised record is the deliverable.",
+          "independent_source": "The declared closure rejects the input, so a substitute answer belongs to a different model."
+        },
+        {"id": "readback", "kind": "readback", "statement": "Re-open calls.jsonl and confirm exactly one raised record for this task."}
+      ]
+    },
+    {
+      "id": "diagnostics-picard-residual",
+      "kind": "nominal",
+      "domain": "diagnostics",
+      "subdomain": "residual and observation diagnostics",
+      "assets": [
+        "scirel.diagnostics.picard-flux-residual",
+        "scirel.diagnostics.observation-residuals"
+      ],
+      "question": "Compute the declared Picard flux residual between two declared fluxes and the observation residuals for a declared observation set, reporting which norm and weights were used.",
+      "input_binding": {"mode": "contract_example", "assets": ["scirel.diagnostics.picard-flux-residual"]},
+      "min_calls": 2,
+      "criteria": [
+        {"id": "fields", "kind": "contract_fields", "expect": "all_declared_outputs"},
+        {
+          "id": "zero",
+          "kind": "invariant",
+          "statement": "The residual of a flux against itself must be exactly zero, and the residual must scale linearly with the declared difference amplitude.",
+          "independent_source": "A norm of a null difference is zero and norms are positively homogeneous by definition, so both properties are fixed analytically."
+        },
+        {"id": "readback", "kind": "readback", "statement": "Re-open results.json and confirm the self-residual, the scaled residual and the observation residuals are stored."}
+      ]
+    },
+    {
+      "id": "diagnostics-rejects-shape-mismatch",
+      "kind": "failure",
+      "domain": "diagnostics",
+      "subdomain": "declared invalid input channel",
+      "assets": ["scirel.diagnostics.picard-flux-residual"],
+      "question": "Pass two declared incompatible flux arrays to the residual entry and report the raised exception.",
+      "input_binding": {"mode": "contract_example", "assets": ["scirel.diagnostics.picard-flux-residual"]},
+      "min_calls": 1,
+      "criteria": [
+        {"id": "raise", "kind": "exception", "expected": "ValueError", "failure_key": "invalid_input"},
+        {
+          "id": "notrim",
+          "kind": "invariant",
+          "statement": "The consumer must not trim or pad the arrays before the call; the rejected shapes must appear in the trace.",
+          "independent_source": "Shape compatibility is declared, so trimming hides the condition under test."
+        },
+        {"id": "readback", "kind": "readback", "statement": "Re-open calls.jsonl and confirm both rejected shapes and the message."}
+      ]
+    },
+    {
+      "id": "fieldline-set-and-arclength",
+      "kind": "nominal",
+      "domain": "fieldline",
+      "subdomain": "fieldline set construction and arclength derivative",
+      "assets": [
+        "scirel.fieldline.fieldline-set",
+        "scirel.fieldline.arclength-derivative",
+        "scirel.fieldline.contour-points"
+      ],
+      "question": "Build a declared fieldline set, compute its arclength derivative and compare with the contour points entry on one declared contour, reporting the number of traces and their termination reason.",
+      "input_binding": {"mode": "contract_example", "assets": ["scirel.fieldline.fieldline-set"]},
+      "min_calls": 3,
+      "criteria": [
+        {"id": "fields", "kind": "contract_fields", "expect": "all_declared_outputs"},
+        {
+          "id": "arclength",
+          "kind": "invariant",
+          "statement": "The arclength derivative integrated along each returned trace must equal the declared total arclength of that trace within the declared budget; a mismatch means the derivative and the stored coordinates use different parameterizations.",
+          "independent_source": "Integrating the declared derivative over its own parameter equals the parameter length by definition, so the check needs no reference field."
+        },
+        {
+          "id": "budget",
+          "kind": "tolerance",
+          "quantity": "@declared_outputs",
+          "unit": "as declared",
+          "tolerance": {"rel": 1e-10, "abs": 0, "basis": "Discrete quadrature of a stored derivative over the declared step count leaves a truncation error set by the step size, not by an observed residual."},
+          "declared_before_run": true
+        },
+        {"id": "readback", "kind": "readback", "statement": "Re-open results.json and confirm traces, arclengths and termination reasons are stored."}
+      ]
+    },
+    {
+      "id": "fieldline-rejects-invalid-start",
+      "kind": "failure",
+      "domain": "fieldline",
+      "subdomain": "declared invalid input channel",
+      "assets": ["scirel.fieldline.fieldline"],
+      "question": "Trace one declared fieldline from an invalid seed and report the raised exception rather than relocating the seed.",
+      "input_binding": {"mode": "contract_example", "assets": ["scirel.fieldline.fieldline"]},
+      "min_calls": 1,
+      "criteria": [
+        {"id": "raise", "kind": "exception", "expected": "ValueError", "failure_key": "invalid_input"},
+        {
+          "id": "nomove",
+          "kind": "invariant",
+          "statement": "The consumer must not move the invalid seed into the declared domain before tracing; the original seed must appear in the trace.",
+          "independent_source": "The seed domain is declared, so relocating it changes the call."
+        },
+        {"id": "readback", "kind": "readback", "statement": "Re-open calls.jsonl and confirm the rejected seed and the raised status."}
+      ]
+    },
+    {
+      "id": "physics-coulomb-logarithms",
+      "kind": "nominal",
+      "domain": "physics",
+      "subdomain": "Coulomb logarithms and thermal energy",
+      "assets": [
+        "scirel.physics.coulomb-ee",
+        "scirel.physics.coulomb-ei",
+        "scirel.physics.thermal-energy"
+      ],
+      "question": "Evaluate the declared Coulomb logarithms for one declared temperature and density, read the declared thermal energy, and report which applicability warnings each call emitted.",
+      "input_binding": {"mode": "contract_example", "assets": ["scirel.physics.coulomb-ee"]},
+      "min_calls": 3,
+      "criteria": [
+        {"id": "fields", "kind": "contract_fields", "expect": "all_declared_outputs"},
+        {
+          "id": "warning",
+          "kind": "invariant",
+          "statement": "Below the declared validity threshold the entry must emit the declared applicability warning and still return its declared value; a silent return or a substituted model is a failure.",
+          "independent_source": "The threshold and the warning are declared behaviour, so the check is fixed by the contract."
+        },
+        {
+          "id": "linearity",
+          "kind": "invariant",
+          "statement": "Doubling the declared temperature must change the thermal energy by the declared linear factor, and the Coulomb logarithms must vary only through their declared temperature dependence.",
+          "independent_source": "Thermal energy is linear in temperature by its declared definition; the logarithm dependence is logarithmic, so the two scale differently and a swap is detectable."
+        },
+        {"id": "readback", "kind": "readback", "statement": "Re-open results.json and confirm both temperatures and all warnings are stored."}
+      ]
+    },
+    {
+      "id": "physics-rejects-nonfinite",
+      "kind": "failure",
+      "domain": "physics",
+      "subdomain": "declared invalid input channel",
+      "assets": ["scirel.physics.coulomb-ee"],
+      "question": "Pass a declared nonfinite temperature to a Coulomb logarithm and report the raised exception.",
+      "input_binding": {"mode": "literal", "values": {"temperature_eV": "inf", "density_m3": 1e19}},
+      "min_calls": 1,
+      "criteria": [
+        {"id": "raise", "kind": "exception", "expected": "ValueError", "failure_key": "invalid_input"},
+        {
+          "id": "noclean",
+          "kind": "invariant",
+          "statement": "The consumer must not replace the nonfinite value with a finite fallback before the call; the original value must appear in the trace.",
+          "independent_source": "Nonfinite input is declared invalid, so cleaning it changes the tested claim."
+        },
+        {"id": "readback", "kind": "readback", "statement": "Re-open calls.jsonl and confirm the nonfinite argument and the raised status."}
+      ]
+    },
+    {
+      "id": "fvm-convection-diffusion",
+      "kind": "nominal",
+      "domain": "fvm",
+      "subdomain": "cell variables, convection, diffusion and theta step",
+      "assets": [
+        "scirel.fvm.cell-variable",
+        "scirel.fvm.convection",
+        "scirel.fvm.diffusion",
+        "scirel.fvm.theta-step"
+      ],
+      "question": "Build a declared cell variable, assemble the declared convection and diffusion operators, and advance one declared theta step, reporting the implicit fraction and the operator signs.",
+      "input_binding": {"mode": "contract_example", "assets": ["scirel.fvm.theta-step"]},
+      "min_calls": 4,
+      "criteria": [
+        {"id": "fields", "kind": "contract_fields", "expect": "all_declared_outputs"},
+        {
+          "id": "steadystate",
+          "kind": "invariant",
+          "statement": "A declared uniform field must give zero convection and zero diffusion contributions, and the theta step on such a field must leave it unchanged within the declared budget.",
+          "independent_source": "Discrete gradient and Laplacian of a constant vanish by construction, so the test is analytic."
+        },
+        {
+          "id": "thetalimits",
+          "kind": "invariant",
+          "statement": "Theta equal to zero must reduce to the declared explicit update and theta equal to one to the declared implicit update; the reported operator must match whichever endpoint was requested.",
+          "independent_source": "The theta scheme is defined by those two endpoints, so the reduction is fixed by definition."
+        },
+        {
+          "id": "budget",
+          "kind": "tolerance",
+          "quantity": "@declared_outputs",
+          "unit": "as declared",
+          "tolerance": {"rel": 1e-13, "abs": 0, "basis": "A constant field through a linear stencil cancels exactly up to binary64 cancellation error, which is where the bound comes from."},
+          "declared_before_run": true
+        },
+        {"id": "readback", "kind": "readback", "statement": "Re-open results.json and confirm both operators, the theta value and the unchanged field are stored."}
+      ]
+    },
+    {
+      "id": "fvm-rejects-invalid-theta",
+      "kind": "failure",
+      "domain": "fvm",
+      "subdomain": "declared invalid control value",
+      "assets": ["scirel.fvm.theta-step"],
+      "question": "Request a theta step with a declared out-of-range implicit fraction and report the raised exception.",
+      "input_binding": {"mode": "literal", "values": {"theta": 1.5}},
+      "min_calls": 1,
+      "criteria": [
+        {"id": "raise", "kind": "exception", "expected": "ValueError", "failure_key": "invalid_input"},
+        {
+          "id": "noclamp",
+          "kind": "invariant",
+          "statement": "The consumer must not clamp theta into the declared interval and retry; the trace must show the rejected value and stop.",
+          "independent_source": "The declared interval is part of the control contract, so clamping answers an unasked question."
+        },
+        {"id": "readback", "kind": "readback", "statement": "Re-open calls.jsonl and confirm theta and the raised status."}
+      ]
+    },
+    {
+      "id": "io-eqdsk-roundtrip",
+      "kind": "nominal",
+      "domain": "io",
+      "subdomain": "EQDSK reading, writing and the retained class",
+      "assets": [
+        "scirel.io.read-eqdsk",
+        "scirel.io.write-eqdsk",
+        "scirel.io.read-geqdsk",
+        "scirel.io.eqdsk-class"
+      ],
+      "question": "Read one declared EQDSK file, write it back with the declared writer, re-read the written file and report the round-trip deviation together with the header quantities that changed.",
+      "input_binding": {"mode": "contract_example", "assets": ["scirel.io.read-eqdsk"]},
+      "min_calls": 4,
+      "criteria": [
+        {"id": "fields", "kind": "contract_fields", "expect": "all_declared_outputs"},
+        {
+          "id": "roundtrip",
+          "kind": "invariant",
+          "statement": "Reading the written file must reproduce the declared grid, flux and boundary quantities within the declared budget; any changed header quantity must be reported rather than silently accepted.",
+          "independent_source": "A declared round trip through the published reader and writer is self-contained and fixed before the run."
+        },
+        {
+          "id": "budget",
+          "kind": "tolerance",
+          "quantity": "@declared_outputs",
+          "unit": "as declared",
+          "tolerance": {"rel": 1e-9, "abs": 0, "basis": "The declared writer emits a fixed number of significant digits, so the round-trip error is set by that formatting precision rather than by an observed difference."},
+          "declared_before_run": true
+        },
+        {"id": "readback", "kind": "readback", "statement": "Re-open results.json and confirm the first read, the written path and the second read are all recorded."}
+      ]
+    },
+    {
+      "id": "io-rejects-missing-file",
+      "kind": "failure",
+      "domain": "io",
+      "subdomain": "declared missing input channel",
+      "assets": ["scirel.io.read-eqdsk"],
+      "question": "Read a declared nonexistent EQDSK path and report the raised exception instead of synthesizing a case.",
+      "input_binding": {"mode": "literal", "values": {"path": "declared-missing-case.eqdsk"}},
+      "min_calls": 1,
+      "criteria": [
+        {"id": "raise", "kind": "exception", "expected": "OSError", "failure_key": "runtime_failure"},
+        {
+          "id": "nocreate",
+          "kind": "invariant",
+          "statement": "The consumer must not create a placeholder file at the declared path to make the read succeed; the raised record is the deliverable.",
+          "independent_source": "A missing path is a declared input failure, so creating the file changes the case."
+        },
+        {"id": "readback", "kind": "readback", "statement": "Re-open calls.jsonl and confirm the missing path and the raised status."}
+      ]
+    },
+    {
+      "id": "inference-parameter-optimization",
+      "kind": "nominal",
+      "domain": "inference",
+      "subdomain": "anisotropic parameter optimization and trial evaluation",
+      "assets": [
+        "scirel.inference.anisotropic-parameter-optimization",
+        "scirel.inference.anisotropic-trial-evaluation",
+        "scirel.inference.latin-hypercube-sampling"
+      ],
+      "question": "Draw a declared Latin-hypercube design, evaluate the anisotropic trial objective on it, and report the best trial together with the declared iteration budget that was actually used.",
+      "input_binding": {"mode": "contract_example", "assets": ["scirel.inference.anisotropic-parameter-optimization"]},
+      "min_calls": 3,
+      "criteria": [
+        {"id": "fields", "kind": "contract_fields", "expect": "all_declared_outputs"},
+        {
+          "id": "besttrial",
+          "kind": "invariant",
+          "statement": "The reported best trial must be the design point with the extremal objective value among the evaluated points, recomputable from the stored design and values; a best trial that is not on the design is a failure.",
+          "independent_source": "Recomputing an extremum over stored values is a bookkeeping check that needs no reference objective."
+        },
+        {
+          "id": "seed",
+          "kind": "invariant",
+          "statement": "Repeating the declared design call with the same declared seed must reproduce the same design; a different design under the same seed must be reported rather than averaged away.",
+          "independent_source": "A declared seed fixes the design by definition, so reproducibility is checkable without a reference optimum."
+        },
+        {"id": "readback", "kind": "readback", "statement": "Re-open results.json and confirm the design matrix, the objective values, the best index and the iteration budget are stored."}
+      ]
+    },
+    {
+      "id": "inference-rejects-bad-bounds",
+      "kind": "failure",
+      "domain": "inference",
+      "subdomain": "declared invalid search bounds",
+      "assets": ["scirel.inference.anisotropic-parameter-optimization"],
+      "question": "Optimize with declared inverted parameter bounds and report the raised exception instead of swapping the bounds first.",
+      "input_binding": {"mode": "literal", "values": {"lower_bound": 2.0, "upper_bound": 1.0}},
+      "min_calls": 1,
+      "criteria": [
+        {"id": "raise", "kind": "exception", "expected": "ValueError", "failure_key": "invalid_input"},
+        {
+          "id": "noswap",
+          "kind": "invariant",
+          "statement": "The consumer must not reorder the bounds before the call; the inverted pair must appear unchanged in the trace.",
+          "independent_source": "The bound ordering is a declared precondition, so reordering tests a different claim."
+        },
+        {"id": "readback", "kind": "readback", "statement": "Re-open calls.jsonl and confirm the inverted bounds and the raised status."}
+      ]
+    },
+    {
+      "id": "neoclassical-bootstrap",
+      "kind": "nominal",
+      "domain": "neoclassical",
+      "subdomain": "bootstrap coefficients and current",
+      "assets": [
+        "scirel.neoclassical.bootstrap-coefficients",
+        "scirel.neoclassical.bootstrap-current"
+      ],
+      "question": "Evaluate the declared bootstrap coefficients with the declared default method and one explicitly named alternative, then compute the bootstrap current and report which method each call used.",
+      "input_binding": {"mode": "contract_example", "assets": ["scirel.neoclassical.bootstrap-coefficients"]},
+      "min_calls": 3,
+      "criteria": [
+        {"id": "fields", "kind": "contract_fields", "expect": "all_declared_outputs"},
+        {
+          "id": "methodrecord",
+          "kind": "invariant",
+          "statement": "Each call's record must name the method actually used, the default must be reported as a declared choice rather than as a universal fit, and requesting the same method twice must give identical coefficients.",
+          "independent_source": "Method records and determinism are declared interface properties, so they are checkable without any reference coefficient."
+        },
+        {
+          "id": "linearity",
+          "kind": "invariant",
+          "statement": "Scaling the declared current drive or density gradient by a constant must scale the returned current by that constant while leaving the dimensionless coefficients unchanged.",
+          "independent_source": "The declared current is a product of dimensionless coefficients and dimensional prefactors, so the split scaling is fixed by the definitions."
+        },
+        {"id": "readback", "kind": "readback", "statement": "Re-open results.json and confirm both method records and the scaled current are stored."}
+      ]
+    },
+    {
+      "id": "neoclassical-rejects-invalid-collisionality",
+      "kind": "failure",
+      "domain": "neoclassical",
+      "subdomain": "declared invalid input channel",
+      "assets": ["scirel.neoclassical.bootstrap-coefficients"],
+      "question": "Request the bootstrap coefficients with a declared out-of-domain face input and report the raised exception.",
+      "input_binding": {"mode": "contract_example", "assets": ["scirel.neoclassical.bootstrap-coefficients"]},
+      "min_calls": 1,
+      "criteria": [
+        {"id": "raise", "kind": "exception", "expected": "ValueError", "failure_key": "invalid_input"},
+        {
+          "id": "noextrapolate",
+          "kind": "invariant",
+          "statement": "The consumer must not extrapolate or clip the out-of-domain input into range before the call; the rejected values must appear in the trace.",
+          "independent_source": "The declared fit domain is part of the contract, so extrapolating answers a different question."
+        },
+        {"id": "readback", "kind": "readback", "statement": "Re-open calls.jsonl and confirm the rejected input and the raised status."}
+      ]
+    },
+    {
+      "id": "source-profile-integral",
+      "kind": "nominal",
+      "domain": "source",
+      "subdomain": "Gaussian and exponential source profiles",
+      "assets": [
+        "scirel.source.gaussian",
+        "scirel.source.exponential"
+      ],
+      "question": "Generate declared Gaussian and exponential source profiles on a declared grid with declared volume weights and report the discrete integral of each against its declared total.",
+      "input_binding": {"mode": "contract_example", "assets": ["scirel.source.gaussian"]},
+      "min_calls": 2,
+      "criteria": [
+        {"id": "fields", "kind": "contract_fields", "expect": "all_declared_outputs"},
+        {
+          "id": "integral",
+          "kind": "invariant",
+          "statement": "The declared discrete integral of each profile must equal its declared total within the declared budget, and scaling the declared total must scale the profile by the same factor.",
+          "independent_source": "The contract declares the profile total as the normalization, so the discrete sum must close on it by construction."
+        },
+        {
+          "id": "budget",
+          "kind": "tolerance",
+          "quantity": "@declared_outputs",
+          "unit": "as declared",
+          "tolerance": {"rel": 1e-12, "abs": 0, "basis": "The profile is normalized by its own discrete sum in binary64, so the closure holds up to that rounding rather than to discretization error."},
+          "declared_before_run": true
+        },
+        {"id": "readback", "kind": "readback", "statement": "Re-open results.json and confirm both profiles, both integrals and both declared totals are stored."}
+      ]
+    },
+    {
+      "id": "source-rejects-zero-width",
+      "kind": "failure",
+      "domain": "source",
+      "subdomain": "declared invalid control value",
+      "assets": ["scirel.source.gaussian"],
+      "question": "Generate a declared Gaussian profile with zero width and report the behaviour the contract declares.",
+      "input_binding": {"mode": "literal", "values": {"center": 0.5, "width": 0.0, "total": 4.0}},
+      "min_calls": 1,
+      "criteria": [
+        {"id": "raise", "kind": "exception", "expected": "ValueError", "failure_key": "invalid_input"},
+        {
+          "id": "no_narrow_peak",
+          "kind": "invariant",
+          "statement": "The consumer must not substitute a very narrow finite width for the zero-width request; the trace must show the zero value and the real outcome.",
+          "independent_source": "The declared width domain is part of the contract, so substituting a finite width answers a different question."
+        },
+        {"id": "readback", "kind": "readback", "statement": "Re-open calls.jsonl and confirm the zero width argument and the status."}
+      ]
+    },
+    {
+      "id": "dielectric-cold-tensor",
+      "kind": "nominal",
+      "domain": "dielectric",
+      "subdomain": "cold plasma dielectric tensor",
+      "assets": ["scirel.dielectric.cold-plasma-tensor"],
+      "question": "Assemble the declared cold plasma dielectric tensor for a declared species mixture at a declared frequency and report the basis dependence of the stored matrix elements.",
+      "input_binding": {"mode": "contract_example", "assets": ["scirel.dielectric.cold-plasma-tensor"]},
+      "min_calls": 2,
+      "criteria": [
+        {"id": "fields", "kind": "contract_fields", "expect": "all_declared_outputs"},
+        {
+          "id": "basisinvariance",
+          "kind": "invariant",
+          "statement": "Rotating the declared magnetic field direction and the basis together must leave the eigenvalues of the tensor unchanged; changing only one of them must change the matrix elements.",
+          "independent_source": "Eigenvalues of a similarity transform are invariant by linear algebra, so the test is analytic and catches a basis convention error."
+        },
+        {
+          "id": "resonance",
+          "kind": "invariant",
+          "statement": "At a declared exact cyclotron resonance the entry must reject the whole evaluation as the contract states, rather than returning a truncated finite tensor.",
+          "independent_source": "The declared failure policy is stated before the call, so compliance is checkable from the raised record."
+        },
+        {"id": "readback", "kind": "readback", "statement": "Re-open results.json and confirm both frequency cases and the eigenvalues are stored."}
+      ]
+    },
+    {
+      "id": "dielectric-rejects-zero-field",
+      "kind": "failure",
+      "domain": "dielectric",
+      "subdomain": "declared invalid background field",
+      "assets": ["scirel.dielectric.cold-plasma-tensor"],
+      "question": "Evaluate the cold tensor with a declared zero background field and report the raised exception.",
+      "input_binding": {"mode": "literal", "values": {"frequency_hz": 50e9, "b_hat": [0.0, 0.0, 0.0], "zero_field": true}},
+      "min_calls": 1,
+      "criteria": [
+        {"id": "raise", "kind": "exception", "expected": "ValueError", "failure_key": "invalid_input"},
+        {
+          "id": "nonormalize",
+          "kind": "invariant",
+          "statement": "The consumer must not normalize or perturb the zero field into a unit vector before the call; the zero vector must appear in the trace.",
+          "independent_source": "A zero background is declared invalid, so normalizing it changes the call."
+        },
+        {"id": "readback", "kind": "readback", "statement": "Re-open calls.jsonl and confirm the zero field argument and the raised status."}
+      ]
+    },
+    {
+      "id": "plasma-fast-ion-heating",
+      "kind": "nominal",
+      "domain": "plasma",
+      "subdomain": "fast ion heating combination",
+      "assets": ["scirel.plasma.fast-ion-heating"],
+      "question": "Evaluate the declared fast ion heating entry for one declared beam population and report the heating quantity together with the declared conservation or partition relation it satisfies.",
+      "input_binding": {"mode": "contract_example", "assets": ["scirel.plasma.fast-ion-heating"]},
+      "min_calls": 2,
+      "criteria": [
+        {"id": "fields", "kind": "contract_fields", "expect": "all_declared_outputs"},
+        {
+          "id": "partition",
+          "kind": "invariant",
+          "statement": "The declared electron and ion heating channels must sum to the declared total absorbed power within the declared budget; a partition that does not close is a failure.",
+          "independent_source": "The partition relation is declared by the contract, so closure is checkable from the returned channels alone."
+        },
+        {
+          "id": "budget",
+          "kind": "tolerance",
+          "quantity": "@declared_outputs",
+          "unit": "as declared",
+          "tolerance": {"rel": 1e-12, "abs": 0, "basis": "A two-channel sum in binary64 closes up to accumulated rounding, which sets the bound."},
+          "declared_before_run": true
+        },
+        {"id": "readback", "kind": "readback", "statement": "Re-open results.json and confirm both channels, the total and the density scaling case are stored."}
+      ]
+    },
+    {
+      "id": "plasma-rejects-invalid-beam",
+      "kind": "failure",
+      "domain": "plasma",
+      "subdomain": "declared invalid beam input",
+      "assets": ["scirel.plasma.fast-ion-heating"],
+      "question": "Request fast ion heating for a declared invalid beam population and report the raised exception.",
+      "input_binding": {"mode": "contract_example", "assets": ["scirel.plasma.fast-ion-heating"]},
+      "min_calls": 1,
+      "criteria": [
+        {"id": "raise", "kind": "exception", "expected": "ValueError", "failure_key": "invalid_input"},
+        {
+          "id": "norepair",
+          "kind": "invariant",
+          "statement": "The consumer must not alter the beam arrays to satisfy the declared preconditions; the rejected values must appear in the trace.",
+          "independent_source": "The declared preconditions are part of the contract, so repairing them changes the claim under test."
+        },
+        {"id": "readback", "kind": "readback", "statement": "Re-open calls.jsonl and confirm the rejected input and the raised status."}
+      ]
+    },
+    {
+      "id": "fusion-dd-neutron-energy",
+      "kind": "nominal",
+      "domain": "fusion",
+      "subdomain": "laboratory neutron energy for the D-D reaction",
+      "assets": ["scirel.fusion.dd-neutron-lab-energy"],
+      "question": "Evaluate the declared laboratory neutron energy for the D-D reaction over a declared incidence energy range and report the kinematic limits the contract declares.",
+      "input_binding": {"mode": "contract_example", "assets": ["scirel.fusion.dd-neutron-lab-energy"]},
+      "min_calls": 2,
+      "criteria": [
+        {"id": "fields", "kind": "contract_fields", "expect": "all_declared_outputs"},
+        {
+          "id": "zerolimit",
+          "kind": "invariant",
+          "statement": "At zero declared incidence energy the entry must return the declared reaction Q-value partition rather than an interpolation artefact, and the energy must increase monotonically with incidence energy over the declared range.",
+          "independent_source": "The zero-energy limit is the declared reaction kinematics and monotonicity follows from energy conservation, both fixed analytically."
+        },
+        {"id": "readback", "kind": "readback", "statement": "Re-open results.json and confirm the zero-energy limit, the range samples and the reported limits are stored."}
+      ]
+    },
+    {
+      "id": "fusion-rejects-invalid-energy",
+      "kind": "failure",
+      "domain": "fusion",
+      "subdomain": "declared invalid input channel",
+      "assets": ["scirel.fusion.dd-neutron-lab-energy"],
+      "question": "Evaluate the neutron energy with a declared invalid negative incidence energy and report the raised exception.",
+      "input_binding": {"mode": "literal", "values": {"incident_energy_keV": -1.0}},
+      "min_calls": 1,
+      "criteria": [
+        {"id": "raise", "kind": "exception", "expected": "ValueError", "failure_key": "invalid_input"},
+        {
+          "id": "noabs",
+          "kind": "invariant",
+          "statement": "The consumer must not take the absolute value of the negative energy before the call; the negative value must appear in the trace.",
+          "independent_source": "Negative kinetic energy is outside the declared domain, so folding it changes the question."
+        },
+        {"id": "readback", "kind": "readback", "statement": "Re-open calls.jsonl and confirm the negative argument and the raised status."}
+      ]
+    },
+    {
+      "id": "cross-field-to-equilibrium",
+      "kind": "cross",
+      "domain": "cross",
+      "domains": ["field", "equilibrium"],
+      "subdomain": "filament flux to poloidal field to one Picard step",
+      "assets": [
+        "scirel.field.circular-filament-green",
+        "scirel.field.poloidal-field-from-flux",
+        "scirel.equilibrium.isotropic-picard-step"
+      ],
+      "question": "Build the declared coil flux with the filament Green entry, differentiate it into a poloidal field, and take one declared Picard step driven by the resulting pressure-flux state, reporting the units handed over at each boundary.",
+      "input_binding": {"mode": "contract_example", "assets": ["scirel.field.circular-filament-green"]},
+      "min_calls": 3,
+      "criteria": [
+        {"id": "fields", "kind": "contract_fields", "expect": "all_declared_outputs"},
+        {
+          "id": "handoff",
+          "kind": "invariant",
+          "statement": "The per-radian flux convention declared by the coil entry must be preserved into the derivative entry, and the flux the Picard step consumes must equal the flux the derivative step produced at the same grid points; a factor-of-2π or an axis-order change at the boundary is a failure.",
+          "independent_source": "Both conventions are declared in the contracts, so the handoff is fixed before any candidate value exists."
+        },
+        {
+          "id": "budget",
+          "kind": "tolerance",
+          "quantity": "@declared_outputs",
+          "unit": "as declared",
+          "tolerance": {"rel": 1e-12, "abs": 0, "basis": "Handing a stored array between two published entries involves no resampling, so any deviation is binary64 rounding rather than interpolation error."},
+          "declared_before_run": true
+        },
+        {"id": "readback", "kind": "readback", "statement": "Re-open results.json and confirm the coil flux, the derived field and the consumed flux array are stored at identical coordinates."}
+      ]
+    },
+    {
+      "id": "cross-geometry-to-equilibrium",
+      "kind": "cross",
+      "domain": "cross",
+      "domains": ["geometry", "equilibrium"],
+      "subdomain": "equilibrium grid support into the pressure-flux state",
+      "assets": [
+        "scirel.geometry.axisymmetric-equilibrium-grid-support",
+        "scirel.geometry.axisymmetric-equilibrium-grid-mapping",
+        "scirel.equilibrium.pressure-flux-state"
+      ],
+      "question": "Build the declared equilibrium grid support, map a declared surface coordinate set onto it, and construct the declared pressure-flux state on exactly that grid, reporting the shape and indexing order each entry used.",
+      "input_binding": {"mode": "contract_example", "assets": ["scirel.geometry.axisymmetric-equilibrium-grid-support"]},
+      "min_calls": 3,
+      "criteria": [
+        {"id": "fields", "kind": "contract_fields", "expect": "all_declared_outputs"},
+        {
+          "id": "sameshape",
+          "kind": "invariant",
+          "statement": "The grid shape and index order produced by the geometry entries must equal the shape and order the equilibrium state accepts without any transposition by the consumer; a transpose inserted between them is a handoff failure.",
+          "independent_source": "Both contracts declare their grid convention, so agreement is a convention check that exists before the run."
+        },
+        {
+          "id": "coordmap",
+          "kind": "invariant",
+          "statement": "Mapping the declared node coordinates through the grid mapping and back must reproduce them within the declared budget, which proves the state was built on the intended coordinates.",
+          "independent_source": "A declared mapping and its inverse are exact by definition, so the round trip is analytic."
+        },
+        {"id": "readback", "kind": "readback", "statement": "Re-open results.json and confirm the grid shape, the mapped coordinates and the state arrays are all stored."}
+      ]
+    },
+    {
+      "id": "cross-mirror-to-diagnostics",
+      "kind": "cross",
+      "domain": "cross",
+      "domains": ["mirror", "diagnostics"],
+      "subdomain": "anisotropic pressure into the firehose and mirror margins",
+      "assets": [
+        "scirel.mirror.frank-egedal-pressure-closure",
+        "scirel.mirror.mirror-total-pressure",
+        "scirel.diagnostics.firehose-mirror-margins"
+      ],
+      "question": "Compute a declared anisotropic pressure state, form the total pressure, and feed the anisotropy into the declared firehose and mirror margin diagnostics, reporting the sign of each margin and the stability conclusion drawn from it.",
+      "input_binding": {"mode": "contract_example", "assets": ["scirel.mirror.frank-egedal-pressure-closure"]},
+      "min_calls": 3,
+      "criteria": [
+        {"id": "fields", "kind": "contract_fields", "expect": "all_declared_outputs"},
+        {
+          "id": "signflip",
+          "kind": "invariant",
+          "statement": "Reversing the declared anisotropy must reverse the sign of the margin the contract ties to that anisotropy while leaving the isotropic case at its declared neutral value; a margin that does not change sign under reversed anisotropy means the quantity was fed in backwards.",
+          "independent_source": "The margin definitions are monotone in the declared anisotropy and vanish in the isotropic limit, both stated by the contracts before the run."
+        },
+        {
+          "id": "no_verdict",
+          "kind": "invariant",
+          "statement": "A positive margin must be reported as the declared threshold comparison, not as a proof that the configuration is physically stable.",
+          "independent_source": "The contract limits what the margin establishes, so the reporting restriction is fixed independently of the numbers."
+        },
+        {"id": "readback", "kind": "readback", "statement": "Re-open results.json and confirm both anisotropy cases, both margins and the reported conclusion are stored."}
+      ]
+    }
+  ]
+}
