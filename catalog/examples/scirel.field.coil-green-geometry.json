@@ -150,19 +150,23 @@
   "scope": [
    "Source-regularized geometry quantities against an independent recomputation.",
    "Input and failure contracts.",
-   "A finite extreme geometry with an underflowed modulus is rejected before the Green response."
+   "A finite extreme geometry with an underflowed modulus is rejected before the Green response.",
+   "Independent evidence (tests/field/test_coil_green_geometry_evidence.py): the modulus m = 4*R*a/((R+a)**2 + (Z-z0)**2), the distance squared and the complementary identity 1 - m = ((R-a)**2 + (Z-z0)**2)/D are recomputed in exact rational arithmetic from the same binary64 inputs and compared against the returned floats within their own rounding chains (8 eps for the modulus expression, 2 eps for the squared distance); m <= 1 with equality exactly on the ring follows from D - 4*R*a = (R-a)**2 + (Z-z0)**2 >= 0 and is asserted as an exact rational inequality."
   ],
   "tests": [
-   "tests/field/test_filament_coil_green.py"
+   "tests/field/test_filament_coil_green.py",
+   "tests/field/test_coil_green_geometry_evidence.py"
   ],
-  "evidence_ceiling": "Bounded to regularized modulus and distance geometry. Direct assertions in test_geometry_returns_source_regularized_radius_modulus_and_distance, test_geometry_rejects_invalid_inputs, test_negative_raw_radius_within_offset_width_is_rejected and test_geometry_rejects_underflowed_modulus_before_green_response in tests/field/test_filament_coil_green.py check the analytic geometry, raw-radius rejection and modulus-underflow boundary. That file is shared; its other field-response and elliptic-integral tests are not geometry-asset evidence. This does not establish coil-field evaluation, finite-wire physics or arbitrary-scale accuracy.",
+  "evidence_ceiling": "Bounded to regularized modulus and distance geometry. Direct assertions in test_geometry_returns_source_regularized_radius_modulus_and_distance, test_geometry_rejects_invalid_inputs, test_negative_raw_radius_within_offset_width_is_rejected and test_geometry_rejects_underflowed_modulus_before_green_response in tests/field/test_filament_coil_green.py check the analytic geometry, raw-radius rejection and modulus-underflow boundary. That file is shared; its other field-response and elliptic-integral tests are not geometry-asset evidence. This does not establish coil-field evaluation, finite-wire physics or arbitrary-scale accuracy. C1 evidence adds an exact rational second source for every returned scalar, so the relation is decided without a floating-point re-derivation; the observed maximum relative deviation of the modulus is 1.87e-16, i.e. 0.84 eps, on the sampled table. It does not establish that this is the right observation geometry for a physical coil field; the Green kernel assets carry that, and their Biot-Savart evidence fixes the (2-m)K - 2E prefactor this modulus feeds.",
   "known_limitations": [
    "No external cross-implementation comparison is bound to this contract; only the tests in this repository establish its behaviour.",
    "Declared input hardening: raw observation radii in (-1e-8, 0) are rejected rather than silently regularized to positive values by the axis offset.",
    "Declared output hardening: finite but extreme input magnitudes (e.g. r0 = rl = 1e308) that overflow the squared geometry sums are rejected with ValueError instead of handing a non-finite modulus or distance to the response operator.",
    "A modulus of exactly 1 (observation point on a filament ring) is an admissible output; consumers must reject it (the response operator does).",
    "The independent oracle recomputes the regularized geometry but does not bind an external code comparison.",
-   "A zero modulus caused by floating-point underflow is rejected here, an explicit boundary of this contract."
+   "A zero modulus caused by floating-point underflow is rejected here, an explicit boundary of this contract.",
+   "The exact rational comparison uses exactly representable radii and heights so that the recomputation is the exact value of the intended expression; arbitrary binary64 inputs would need the same analysis plus an input-rounding term.",
+   "The 8-eps modulus budget counts the eight roundings of the expression; an earlier draft stated eps/2 from a one-rounding assumption that does not match the chain, and that derivation was corrected before any code changed."
   ]
  }
 }

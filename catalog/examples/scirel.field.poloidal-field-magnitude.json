@@ -123,16 +123,19 @@
    "3-4-5 magnitude, zero floor and median reference.",
    "Shape mismatch, empty grid and unrepresentable magnitude rejection.",
    "Large finite component and median arithmetic regressions.",
-   "The named result preserves the captured key order, values, shapes, dtypes, mapping access and attribute access; failures retain their exception types and messages."
+   "The named result preserves the captured key order, values, shapes, dtypes, mapping access and attribute access; failures retain their exception types and messages.",
+   "Independent evidence (tests/field/test_poloidal_field_magnitude_evidence.py): the 1e-30 floor and the hypotenuse branch are asserted elementwise on a mixed array, the reference is recomputed as the exact rational median of the returned magnitudes for both parities, and the two cases the difference-first form exists for are pinned - a pair of 1.7e308 values whose naive average overflows and a pair of subnormal values whose difference underflows."
   ],
   "tests": [
-   "tests/field/test_poloidal_field_magnitude.py"
+   "tests/field/test_poloidal_field_magnitude.py",
+   "tests/field/test_poloidal_field_magnitude_evidence.py"
   ],
-  "evidence_ceiling": "Direct SciRel tests cover the arithmetic and selected floating-point boundaries of this maintained relation; they do not establish a model-specific physical interpretation of the reference median or expert recognition of the development record.",
+  "evidence_ceiling": "Direct SciRel tests cover the arithmetic and selected floating-point boundaries of this maintained relation; they do not establish a model-specific physical interpretation of the reference median or expert recognition of the development record. C1 evidence decides the floor and the median exactly and pins the overflow and underflow cases the difference-first form exists for. The reference is a descriptive statistic of the sampled array; nothing here interprets it as a normalization, which the contract also declines to do.",
   "known_limitations": [
    "The returned median is a default numerical reference, not an independently determined physical scale.",
    "The fixed floor replaces exact zero in B.",
-   "Public distribution licensing and SciRel expert recognition remain pending."
+   "Public distribution licensing and SciRel expert recognition remain pending.",
+   "The median figures are observed deviations from the exact rational midpoint on the sampled arrays, not a bound for arbitrary arrays."
   ]
  }
 }
