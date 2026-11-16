@@ -407,19 +407,24 @@ def validate_provenance(
     report_path: Path,
     check_all_path: Path,
     allow_legacy_receipts: bool = False,
+    token: str | None = None,
 ) -> str:
     """Check what a result claims about the run that produced it, never its science.
 
     A v2 result binds the file to the run that wrote it: every retained step log has a
     recorded digest, and a sidecar holds the digest of the result file, so editing the
-    result alone, or the log alone, is visible. ``exclusive.token_sha256`` records that a
-    lock-holding run happened and with which credential; the credential itself retires
-    before the lock is released, so it is never compared. That is exactly why the
-    recorded digest is not proof of origin.
+    result alone, or the log alone, is visible.
 
-    **This is not a signature.** Whoever can rewrite the result, the logs and the sidecar
-    together — anyone able to run code inside the clone — can fabricate a whole bundle.
-    What the checks stop is a hand edit of one file.
+    The credential digest is a binding **only when the caller holds the live token**. Pass
+    ``token`` (the verified credential of this very run, as ``run_full_check`` does) and the
+    recorded digest must equal its sha256; a mismatch is refused. With ``token=None`` this
+    function cannot check that link and only validates the shape — a format-valid digest
+    from an unrelated run passes. Shape validation is not binding.
+
+    **This is still not a signature.** Whoever can rewrite the result, every log and the
+    sidecar together can fabricate a self-consistent bundle; what they cannot do is make the
+    recorded digest match a live token held by the verifier. What the checks stop is a hand
+    edit of one file, and — with a live token — a bundle from another run.
 
     A digest over the scripts means any change to ``check_all.py`` or
     ``scirel_pytest_counts.py`` makes every earlier v2 receipt disagree; an edited script
@@ -456,6 +461,13 @@ def validate_provenance(
         or re.fullmatch(r"[0-9a-f]{64}", token_digest) is None
     ):
         raise ValueError("result claims no exclusive lock credential for the run")
+    if token is not None:
+        expected = hashlib.sha256(str(token).encode("utf-8")).hexdigest()
+        if token_digest != expected:
+            raise ValueError(
+                "recorded credential digest does not match this run's live token:"
+                " the result was not produced by the lock holder now verifying it"
+            )
     provenance = result.get("provenance")
     if not isinstance(provenance, dict):
         raise ValueError("result lacks the producer script digests")

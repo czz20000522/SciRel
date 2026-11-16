@@ -745,6 +745,7 @@ def run_full_check(
             report_path=result_path,
             check_all_path=script,
             allow_legacy_receipts=allow_legacy_receipts,
+            token=token,
         )
         if provenance_tag == "legacy_unprovenanced":
             print(
