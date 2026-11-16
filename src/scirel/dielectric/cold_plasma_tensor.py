@@ -261,6 +261,49 @@ class ColdPlasmaResonanceError(ValueError):
     Subclasses ``ValueError`` so that callers already treating the operator's
     input rejections as ``ValueError`` keep working unchanged, while callers that
     need to distinguish a resonance from a malformed input can catch this type.
+
+    Parameters
+    ----------
+    message : str
+        Diagnostic text [text], stored unchanged as the exception's
+        only argument. The raiser appends the contributing species index, so no
+        fixed wording beyond the module's stable message prefix is promised.
+
+    Raises
+    ------
+    ValueError
+        Constructing the class never raises it. It is the type
+        :func:`scirel.dielectric.cold_plasma_dielectric_tensor` raises through
+        this subclass when a Stix denominator is exactly zero, so callers that
+        already catch ``ValueError`` keep working.
+
+    See Also
+    --------
+    ColdPlasmaOverflowError : Finite inputs whose guarded arithmetic is not
+        representable; the remedy is magnitude, not the resonance.
+    scirel.dielectric.cold_plasma_dielectric_tensor : The raising operator.
+
+    Notes
+    -----
+    The guard is an exact-zero test on the computed denominator, not a
+    tolerance: a field close to resonance is evaluated, and a nonzero collision
+    rate lifts the singularity.
+
+    Examples
+    --------
+    >>> import math
+    >>> import scirel.dielectric
+    >>> electron = {"density_m3": 1.0e19, "charge_c": -1.602176634e-19,
+    ...             "mass_kg": 9.1093837015e-31}
+    >>> frequency_hz = 60.0e6
+    >>> resonant_b_t = 2.0 * math.pi * frequency_hz * electron["mass_kg"]
+    >>> resonant_b_t /= abs(electron["charge_c"])
+    >>> try:
+    ...     scirel.dielectric.cold_plasma_dielectric_tensor(
+    ...         frequency_hz, [0.0, 0.0, resonant_b_t], [electron])
+    ... except scirel.dielectric.ColdPlasmaResonanceError as exc:
+    ...     print(str(exc))
+    cold-plasma dielectric tensor is singular at the supplied resonance (species index 0)
     """
 
 
@@ -276,6 +319,43 @@ class ColdPlasmaOverflowError(ValueError):
     represent.  The input contract is satisfied -- every value is finite -- so
     the caller's mistake, if any, is magnitude rather than type.  Subclasses
     ``ValueError`` for the same reason as the resonance class.
+
+    Parameters
+    ----------
+    message : str
+        Diagnostic text [text], stored unchanged as the exception's
+        only argument. The raiser appends the contributing species index, so no
+        fixed wording beyond the module's stable message prefix is promised.
+
+    Raises
+    ------
+    ValueError
+        Constructing the class never raises it. It is the type
+        :func:`scirel.dielectric.cold_plasma_dielectric_tensor` raises through
+        this subclass when a guarded product or the final tensor is not
+        representable, so callers that already catch ``ValueError`` keep working.
+
+    See Also
+    --------
+    ColdPlasmaResonanceError : The tensor is undefined at an exact resonance.
+    scirel.dielectric.cold_plasma_dielectric_tensor : The raising operator.
+
+    Notes
+    -----
+    The guarded arithmetic can emit NumPy overflow warnings before the value is
+    rejected; the rejection, not the warning, is the contract.
+
+    Examples
+    --------
+    >>> import scirel.dielectric
+    >>> electron = {"density_m3": 1.0e308, "charge_c": -1.602176634e-19,
+    ...             "mass_kg": 9.1093837015e-31}
+    >>> try:
+    ...     scirel.dielectric.cold_plasma_dielectric_tensor(
+    ...         1.0e6, [0.0, 0.0, 1.0], [electron])
+    ... except scirel.dielectric.ColdPlasmaOverflowError as exc:
+    ...     print(str(exc))
+    cold-plasma dielectric tensor arithmetic is not representable at the supplied inputs (species index 0)
     """
 
 

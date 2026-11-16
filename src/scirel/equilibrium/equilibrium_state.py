@@ -25,7 +25,70 @@ __all__ = ["EquilibriumResult", "compute_equilibrium"]
 
 @dataclass(frozen=True)
 class EquilibriumResult:
-    """Terminal state and both fixed-point residual histories."""
+    """Terminal state and both fixed-point residual histories.
+
+    Parameters
+    ----------
+    psi : ndarray, shape (NR, NZ)
+        Poloidal flux at the terminal iterate [source-unspecified]. Stored as
+        supplied, not copied.
+    plas_currents : ndarray, shape (NR, NZ)
+        Plasma current contribution at the terminal iterate
+        [source-unspecified].
+    p_psifit : object
+        Pressure spline fitted at the terminal iterate [Object;
+        source-unspecified]. Opaque to this record; :meth:`as_tuple` returns it
+        unchanged.
+    status : str
+        Terminal outcome label [text]: ``"converged"``, ``"maxiter"`` or
+        ``"nonfinite"``. The record does not re-derive it from the residuals.
+    iterations : int
+        Number of fixed-point iterations performed [dimensionless].
+    residual : float
+        Final flux residual ``||psi_new - psi_old||_2 / abs(psi_edge_new)``
+        [dimensionless].
+    closure_residual : float
+        Final closure residual ``||I_new - I_target||_2 / ||I_target||_2``
+        [dimensionless], with a zero target and zero error mapped to ``0.0`` and
+        a zero target with nonzero current mapped to ``inf``.
+    reason : str
+        Termination reason text [text].
+    residual_history : tuple, optional
+        Paired ``residual`` values [dimensionless], oldest first. The default is
+        ``()``.
+    closure_residual_history : tuple, optional
+        Paired ``closure_residual`` values [dimensionless], oldest first. The
+        default is ``()``.
+
+    Raises
+    ------
+    dataclasses.FrozenInstanceError
+        Not raised by construction. Raised when any attribute of a constructed
+        instance is reassigned, because the class is a frozen dataclass; build a
+        new record instead of mutating one.
+
+    See Also
+    --------
+    compute_equilibrium : Solver that produces this record.
+    as_tuple : Historical ``(psi, currents, pressure_fit)`` view.
+
+    Notes
+    -----
+    The record states what the iteration reached; it does not claim a continuum
+    force-balance solution. The two histories are recorded separately because
+    flux and closure can converge at different rates.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from scirel.equilibrium import EquilibriumResult
+    >>> result = EquilibriumResult(
+    ...     psi=np.zeros((2, 2)), plas_currents=np.zeros(1), p_psifit=None,
+    ...     status="converged", iterations=3, residual=1e-12,
+    ...     closure_residual=2e-12, reason="tolerance reached")
+    >>> result.as_tuple()[0].shape, result.status, result.iterations
+    ((2, 2), 'converged', 3)
+    """
 
     psi: np.ndarray
     plas_currents: np.ndarray
