@@ -282,10 +282,8 @@
      "title": "组装动理学介电张量与色散行列式",
      "introduction": "对均匀磁化 Maxwellian 物种组装张量或比较两个色散计算路径。各入口对复波数、零波数、近零替换和谐波数的支持不同；有限和计算不包含自动截断收敛验证。",
      "assets": [
-      "scirel.kinetic.kinetic-dispersion-sum",
-      "scirel.kinetic.kinetic-dispersion-sum-fluid",
-      "scirel.kinetic.kinetic-dispersion-ronnmark",
-      "scirel.kinetic.dielectric-tensor-diagnostic",
+      "scirel.kinetic.dielectric-response",
+      "scirel.kinetic.dielectric-diagnostics",
       "scirel.kinetic.kinetic-dispersion-relation"
      ]
     },

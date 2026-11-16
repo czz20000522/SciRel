@@ -403,9 +403,7 @@ def test_all_reference_pages_exist_and_use_bound_chinese_prose(snapshot):
         "web/reference/generated/scirel.equilibrium.free-boundary-anisotropic-picard.html"
     ).decode()
     assert 'href="scirel.field.poloidal-field-magnitude.html"' in graph
-    wave = docs.read(
-        "web/reference/generated/scirel.kinetic.kinetic-dispersion-ronnmark.html"
-    ).decode()
+    wave = docs.read("web/reference/generated/scirel.kinetic.dielectric-response.html").decode()
     assert "<math " in wave and "<msub>" in wave and "aria-label=" in wave
 
 
