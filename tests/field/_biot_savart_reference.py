@@ -240,8 +240,38 @@ def ring_field(radius, z, coil_radius, coil_z, current=1.0):
     return psi, prefactor * strong[1], prefactor * strong[2]
 
 
+def _single_field(filaments, radius, z, dps):
+    """Sum the quadrature response of a ring set at one working precision.
+
+    No cross-precision certificate is attached, because the caller needs this
+    inside an outer quadrature or a central difference where a second
+    quadrature per evaluation would multiply the cost.  The certificate for the
+    same geometry is supplied by :func:`ring_field`, and the 60-digit value used
+    here keeps at least 30 digits of margin over the ``1e-25 * scale`` bound
+    that certificate establishes.
+    """
+    with mp.workdps(dps):
+        radius_mp, height_mp = mp.mpf(radius), mp.mpf(z)
+        psi = b_r = b_z = mp.mpf(0)
+        for coil_radius, coil_z, weight in filaments:
+            weight_mp, coil_radius_mp = mp.mpf(weight), mp.mpf(coil_radius)
+            if weight_mp == 0 or coil_radius_mp == 0:
+                continue
+            dz = height_mp - mp.mpf(coil_z)
+            if radius_mp > 0:
+                separation = mp.sqrt((radius_mp - coil_radius_mp) ** 2 + dz**2)
+                if separation < _MIN_SEPARATION_RATIO * coil_radius_mp:
+                    raise ValueError("target too close to the wire for the reference")
+            a_phi, radial, axial = _loop_integrals(radius_mp, coil_radius_mp, dz)
+            prefactor = MU0_OVER_4PI * weight_mp
+            psi += radius_mp * prefactor * a_phi
+            b_r += prefactor * radial
+            b_z += prefactor * axial
+        return psi, b_r, b_z
+
+
 def filament_field(filaments, radius, z):
-    """Return the superposed ``(psi, B_R, B_Z)`` of weighted rings as floats.
+    """Return the certified superposed ``(psi, B_R, B_Z)`` of weighted rings.
 
     ``filaments`` is a sequence of ``(R_m, Z_m, weight)`` rows; the weight plays
     the role of the drive current, so the returned values are per unit of the
@@ -267,45 +297,55 @@ def dpsi_dz(radius, z, filaments, step=None):
     Differentiating the *quadrature* value, not the closed form, is what makes
     ``B_R = -(1/R) dpsi/dZ`` an independent statement: the implementation
     obtains ``B_R`` from an analytic derivative combination, while this route
-    only knows the integral definition of ``psi``.
+    only knows the integral definition of ``psi``.  With ``60`` digits and a
+    central step of ``1e-15`` the truncation error is ``h^2`` times the third
+    derivative of ``psi`` and the cancellation costs about fifteen digits, so the
+    difference numerator is still good to roughly ``30`` digits.
     """
     step = mp.mpf("1e-15") if step is None else mp.mpf(step)
-    with mp.workdps(_STRONG_DPS):
-        centre = mp.mpf(z)
-        up = filament_field(filaments, radius, centre + step)[0]
-        down = filament_field(filaments, radius, centre - step)[0]
-        return (up - down) / (2 * step)
+    up = _single_field(filaments, mp.mpf(radius), mp.mpf(z) + step, _STRONG_DPS)[0]
+    down = _single_field(filaments, mp.mpf(radius), mp.mpf(z) - step, _STRONG_DPS)[0]
+    return (up - down) / (2 * step)
 
 
 def dpsi_dr(radius, z, filaments, step=None):
     """Return ``dpsi/dR`` of the quadrature stream function."""
     step = mp.mpf("1e-15") if step is None else mp.mpf(step)
-    with mp.workdps(_STRONG_DPS):
-        centre = mp.mpf(radius)
-        up = filament_field(filaments, centre + step, z)[0]
-        down = filament_field(filaments, centre - step, z)[0]
-        return (up - down) / (2 * step)
+    up = _single_field(filaments, mp.mpf(radius) + step, mp.mpf(z), _STRONG_DPS)[0]
+    down = _single_field(filaments, mp.mpf(radius) - step, mp.mpf(z), _STRONG_DPS)[0]
+    return (up - down) / (2 * step)
 
 
 def psi_by_radial_integration(radius, z, filaments, start_radius):
     """Return ``integral from start_radius to radius of R' B_Z(R', Z) dR'``.
 
-    This is the definition the implementation's cumulative trapezoid is an
-    approximation to, not the approximation itself: ``dpsi/dR = R B_Z`` holds
-    for ``psi = R A_phi``, so the radial integral of ``R' B_Z`` recovers the
-    flux up to the reference value at ``start_radius``.
+    This is the definition the implementation's cumulative trapezoid
+    approximates, not the approximation itself: ``dpsi/dR = R B_Z`` holds for
+    ``psi = R A_phi``, so the radial integral of ``R' B_Z`` recovers the flux up
+    to the reference value at ``start_radius``.  The outer integral is itself run
+    at two working precisions with the same certificate style as
+    :func:`ring_field`, so the reference does not silently carry a
+    half-converged nested quadrature.
     """
-    with mp.workdps(_STRONG_DPS):
-        target = mp.mpf(radius)
-        start = mp.mpf(start_radius)
-        height = z
+    target, start = mp.mpf(radius), mp.mpf(start_radius)
+    if target == start:
+        return mp.mpf(0)
 
+    def integral(dps):
         def integrand(radial):
-            return radial * axial_field(radial, height, filaments)
+            return radial * _single_field(filaments, radial, z, dps)[2]
 
-        if target == start:
-            return mp.mpf(0)
-        return mp.quad(integrand, [start, target])
+        with mp.workdps(dps):
+            return mp.quad(integrand, [mp.mpf(start), mp.mpf(target)])
+
+    weak = integral(_WEAK_DPS)
+    strong = integral(_STRONG_DPS)
+    if abs(weak - strong) > _CROSS_PRECISION * max(abs(strong), mp.mpf("1e-300")):
+        raise QuadratureNotConverged(
+            f"the nested {_WEAK_DPS}- and {_STRONG_DPS}-digit radial integrals disagree: "
+            f"{mp.nstr(weak, 20)} vs {mp.nstr(strong, 20)}"
+        )
+    return strong
 
 
 __all__ = [
