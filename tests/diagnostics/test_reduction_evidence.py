@@ -160,13 +160,13 @@ def test_observation_residuals_are_affine_in_the_prediction_and_zero_at_agreemen
     second = np.array([1.5, 1.0])
 
     differed = np.asarray(
-        D.reduce_observation_residuals(
-            predicted={"flux_loops": first}, observations=observations
-        )["residual_vector"]
+        D.reduce_observation_residuals(predicted={"flux_loops": first}, observations=observations)[
+            "residual_vector"
+        ]
     ) - np.asarray(
-        D.reduce_observation_residuals(
-            predicted={"flux_loops": second}, observations=observations
-        )["residual_vector"]
+        D.reduce_observation_residuals(predicted={"flux_loops": second}, observations=observations)[
+            "residual_vector"
+        ]
     )
     expected = (first - second) / np.array([0.5, 4.0])
     assert np.max(np.abs(differed - expected)) <= 64.0 * EPS * np.max(np.abs(expected))
@@ -212,9 +212,10 @@ def test_species_shares_are_not_clipped_when_the_total_is_signed():
     result = D.compute_species_absorption_fraction(powers)
     total = sum(Fraction.from_float(float(value)) for value in powers)  # exactly 8
     expected = np.array([float(100 * Fraction.from_float(float(v)) / total) for v in powers])
-    assert np.max(
-        np.abs(np.asarray(result["species_fraction_percent"]) - expected)
-    ) <= 64.0 * EPS * 100.0
+    assert (
+        np.max(np.abs(np.asarray(result["species_fraction_percent"]) - expected))
+        <= 64.0 * EPS * 100.0
+    )
     assert float(np.asarray(result["species_fraction_percent"])[1]) < 0.0
     assert float(result["total_power"]) == 8.0
 
@@ -224,10 +225,22 @@ def test_reduction_rejection_channels_are_bound_to_their_contract():
     for call, expected_type, fragment in [
         (lambda: D.compute_picard_flux_residual(field[0], field[0]), ValueError, "two-dimensional"),
         (lambda: D.compute_picard_flux_residual(field, field[:1]), ValueError, "two-dimensional"),
-        (lambda: D.compute_picard_flux_residual(np.array([[1.0, np.nan]]), field[:1]), ValueError, "finite"),
+        (
+            lambda: D.compute_picard_flux_residual(np.array([[1.0, np.nan]]), field[:1]),
+            ValueError,
+            "finite",
+        ),
         (lambda: D.compute_species_absorption_fraction([1.0, 2.0, 3.0]), ValueError, "length-four"),
-        (lambda: D.compute_species_absorption_fraction([1.0, 2.0, 3.0, np.nan]), ValueError, "finite"),
-        (lambda: D.compute_species_absorption_fraction([0.0, 0.0, 0.0, 0.0]), ValueError, "zero total"),
+        (
+            lambda: D.compute_species_absorption_fraction([1.0, 2.0, 3.0, np.nan]),
+            ValueError,
+            "finite",
+        ),
+        (
+            lambda: D.compute_species_absorption_fraction([0.0, 0.0, 0.0, 0.0]),
+            ValueError,
+            "zero total",
+        ),
         (
             lambda: D.reduce_observation_residuals(predicted={}, observations={"unknown": {}}),
             ValueError,
