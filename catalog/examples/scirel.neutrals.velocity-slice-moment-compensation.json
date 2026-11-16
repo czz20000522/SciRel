@@ -202,16 +202,19 @@
  "verification": {
   "scope": [
    "Direct shape, finite arithmetic and signed-mode checks on the maintained six-point fixture.",
-   "Retained candidate evidence covers positive, signed, zero-slice, target and shape-mismatch rows."
+   "Retained candidate evidence covers positive, signed, zero-slice, target and shape-mismatch rows.",
+   "Independent evidence (tests/neutrals/test_moment_compensation_evidence.py): the correction is piecewise affine in the two targets, decided by the identity T(t1) + T(t2) - T(t1+t2) - T(0) = 0 within one sign branch and by its violation by more than 1e6 eps across the branch switch; the applicability warning is shown to track the measured relative errors; assume_pos=True returns scale exactly 1 while assume_pos=False limits the scale and restores a nonnegative slice."
   ],
   "tests": [
-   "tests/kinetic/test_moment_compensation.py"
+   "tests/kinetic/test_moment_compensation.py",
+   "tests/neutrals/test_moment_compensation_evidence.py"
   ],
-  "evidence_ceiling": "Bounded source-fidelity partial for the declared discrete correction; one NaN payload/warning difference, integer/float type differences, independent scientific correctness, full transport and acceptance remain unresolved.",
+  "evidence_ceiling": "Bounded source-fidelity partial for the declared discrete correction; one NaN payload/warning difference, integer/float type differences, independent scientific correctness, full transport and acceptance remain unresolved. C1 evidence adds: the piecewise-affineness identity with its branch discriminator, the warning-channel semantics and the scale-limiter branch; it does not establish moment convergence, density conservation or physical closure.",
   "known_limitations": [
    "The correction is a source-shaped finite-volume primitive and does not establish physical moment closure or convergence.",
    "Singular and malformed branches inherit raw arithmetic/index behavior.",
-   "Candidate evidence does not cover the complete solver or molecular/coupled transport."
+   "Candidate evidence does not cover the complete solver or molecular/coupled transport.",
+   "Measured: on the tested 3x6 mesh the primitive is not the identity at the slice's own moments - it applies an O(1) correction and still warns - so the disclosed non-convergence is observable even at a nominal fixed point, and only the within-branch affineness is established."
   ]
  }
 }

@@ -280,18 +280,21 @@
    "Nonuniform radial meshes: the annular measure stays exact for the ghost-face construction, including the mirrored outer face.",
    "The ghosted coefficient arrays are exactly zero on the boundary shell and carry 1/dvx, vx/dvx and vr/dvr in the interior.",
    "The composition contract: the volume feeds the Maxwellian relative-speed rate average to finite positive rates.",
-   "Output representability: meshes near the float64 ceiling (radial 1e308 with a mirrored ghost face, or an axial ghost beyond the ceiling) are rejected with a ValueError instead of returning non-finite measures or volumes, and meshes whose squared faces underflow to zero (radial 0 and 1e-200) are rejected instead of returning zero measures. Ordinary positive meshes produce unchanged numbers."
+   "Output representability: meshes near the float64 ceiling (radial 1e308 with a mirrored ghost face, or an axial ghost beyond the ceiling) are rejected with a ValueError instead of returning non-finite measures or volumes, and meshes whose squared faces underflow to zero (radial 0 and 1e-200) are rejected instead of returning zero measures. Ordinary positive meshes produce unchanged numbers.",
+   "Independent evidence (tests/neutrals/test_cylindrical_quadrature_evidence.py): the radial rings telescope to pi R^2 and the four-pi rings to 4/3 pi R^3 with R the outermost face, the axial widths telescope to the ghosted span, the cell volumes telescope to the product of the two, the midpoint faces and the annulus measures are recomputed exactly in rational arithmetic, and an added axial node at exactly zero belongs to neither sign block."
   ],
   "tests": [
-   "tests/kinetic/test_cylindrical_velocity_quadrature.py"
+   "tests/kinetic/test_cylindrical_velocity_quadrature.py",
+   "tests/neutrals/test_cylindrical_quadrature_evidence.py"
   ],
-  "evidence_ceiling": "Direct evidence: test_cylindrical_velocity_quadrature.py uses _call to invoke make_cylindrical_velocity_quadrature. test_the_result_keys_are_exactly_the_saved_field_set and test_the_hand_derived_oracle_on_a_four_point_axial_mesh check the named fields and analytic quadrature. test_a_negative_radial_mesh_is_rejected, test_nonrepresentable_quadrature_outputs_are_rejected, test_an_overflowing_axial_ghost_is_rejected and test_an_underflowing_radial_mesh_is_rejected directly assert rejection. These finite-mesh assertions do not establish mesh generation/adaptation or a distribution/collision model.",
+  "evidence_ceiling": "Direct evidence: test_cylindrical_velocity_quadrature.py uses _call to invoke make_cylindrical_velocity_quadrature. test_the_result_keys_are_exactly_the_saved_field_set and test_the_hand_derived_oracle_on_a_four_point_axial_mesh check the named fields and analytic quadrature. test_a_negative_radial_mesh_is_rejected, test_nonrepresentable_quadrature_outputs_are_rejected, test_an_overflowing_axial_ghost_is_rejected and test_an_underflowing_radial_mesh_is_rejected directly assert rejection. These finite-mesh assertions do not establish mesh generation/adaptation or a distribution/collision model. C1 evidence adds: four telescoping partition identities, an exact rational face/annulus oracle and the zero-node sign discriminator; it does not establish mesh generation or adaptation, or the distribution/collision model the measure feeds.",
   "known_limitations": [
    "The outer faces use the declared half-cell extrapolation (mirror the last node); schemes expecting different face placements must not reuse the measure unreviewed.",
    "The asset performs no unit conversion: the meshes and every output share the caller's normalized velocity unit, and the physical thermal-speed scale is the caller's.",
    "Non-finite and non-real mesh rejection are documented repairs beyond the original behavior: a caller who relied on the earlier behavior sees a ValueError where it previously saw coercion, an unrelated TypeError or a silently corrupted quadrature. The same holds for the nonnegative radial domain and the output representability check: a negative or float64-ceiling mesh that the earlier behavior accepted with negative or non-finite measures is rejected here.",
    "The nonnegative radial domain makes the positive-radial-speed convention explicit; a caller that believes a signed radial axis is meaningful is looking at a different relation.",
-   "Negative-radial, radial-overflow, axial-ghost-overflow and radial-underflow rejection are directly exercised through _call in the named tests; representability on every otherwise admissible mesh is not certified by those samples."
+   "Negative-radial, radial-overflow, axial-ghost-overflow and radial-underflow rejection are directly exercised through _call in the named tests; representability on every otherwise admissible mesh is not certified by those samples.",
+   "The telescoping sums certify that the rings partition the disc for the ghost-face construction on the tested meshes; they do not certify a different face convention, and the zero-node sign discriminator is exercised on one five-node axis."
   ]
  }
 }

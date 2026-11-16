@@ -194,16 +194,19 @@
    "That the explicit-quadrature density follows the declared per-slice summation order and fails closed on a volume mismatch.",
    "That a shifted-Maxwellian-like distribution recovers its flow speed and temperature within quadrature accuracy (independent physical witness).",
    "That sigma_zz aliases sigma_yy as an independent copy, and that the two empty-slice policies diverge exactly as declared.",
-   "That non-finite velocity axes and non-real coercions fail closed under the declared input contract."
+   "That non-finite velocity axes and non-real coercions fail closed under the declared input contract.",
+   "Independent evidence (tests/neutrals/test_axisymmetric_moment_evidence.py): all nine profiles are recomputed from exact rational arithmetic, the deviatoric stress is required to be trace free (stress_xx + 2 stress_yy = 0) on four very different distributions, the explicit quadrature pair is required to agree with the volume path, the molecularity and thermal-speed scalings are exact (mass x2 doubles the energy moments; T_norm x4 gives pressure/stress/temperature x4 and heat flux x8), and the zero-node sign or empty-slice branches are exercised."
   ],
   "tests": [
-   "tests/kinetic/test_axisymmetric_neutral_moments.py"
+   "tests/kinetic/test_axisymmetric_neutral_moments.py",
+   "tests/neutrals/test_axisymmetric_moment_evidence.py"
   ],
-  "evidence_ceiling": "Bounded to the declared relation: density = integral of f over velocity; axial_flux = Vth * integral(vx f); flow = flux/density; pressure and stresses from the centered second moments about the flow in eV m^-3; heat flux from the centered third moment in W m^-2; sigma_zz is returned as an…. Evidence: test_axisymmetric_neutral_moments.py (16 recorded test functions; bound-file coverage; independent analytic/high-precision oracle); the contract example ran. Excluded scope: Distributions on other quadrature geometries; renormalization of caller distributions; nonpositive-volume meshes; external physical validation.",
+  "evidence_ceiling": "Bounded to the declared relation: density = integral of f over velocity; axial_flux = Vth * integral(vx f); flow = flux/density; pressure and stresses from the centered second moments about the flow in eV m^-3; heat flux from the centered third moment in W m^-2; sigma_zz is returned as an…. Evidence: test_axisymmetric_neutral_moments.py (16 recorded test functions; bound-file coverage; independent analytic/high-precision oracle); the contract example ran. Excluded scope: Distributions on other quadrature geometries; renormalization of caller distributions; nonpositive-volume meshes; external physical validation. C1 evidence adds: the trace-free stress invariant, an exact rational nine-profile oracle, the two-order agreement and four exact scaling laws; it does not establish a physical stress closure for a non-Maxwellian distribution or a complete transport model.",
   "known_limitations": [
    "An independent zz stress is not provided: the sigma_zz = sigma_yy identification is part of the declared contract. Whether that identification is the intended published contract remains an open expert question.",
    "Under 'source_default', zero-density slices report the declared neutral values (flow 0 m/s, temperature 1 eV), which are not physical measurements.",
-   "The independent analytic comparison does not replace an external experimental reference."
+   "The independent analytic comparison does not replace an external experimental reference.",
+   "The trace-free identity holds by construction of the one-third-trace pressure, so it certifies the internal consistency of the three diagonal stresses, not that the saved cylindrical stress model is physically complete."
   ]
  }
 }
