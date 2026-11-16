@@ -66,7 +66,7 @@ FLUX_BUDGET = 2.0e-3
 FILAMENTS = [[0.45, -0.1, 1500.0]]
 
 RADIAL = np.linspace(0.0, 0.30, 25)
-AXIAL = np.array([-0.1, 0.1])
+AXIAL = np.array([-0.3, -0.1, 0.1])
 
 
 def _grids(radial=RADIAL, axial=AXIAL):
@@ -103,9 +103,11 @@ def test_field_components_match_the_biot_savart_quadrature_everywhere():
     assert observed > 0.0
     # Nonzero anchors that a zero or constant field would fail: the axial field
     # falls with radius away from the ring, and the radial field has opposite
-    # signs on the two sides of the ring plane.
-    assert abs(result["b_z"][1, 1]) > abs(result["b_z"][1, -1])
-    assert result["b_r"][1, -1] < 0.0 < result["b_r"][0, -1]
+    # signs on the two sides of the ring plane.  Row 1 is exactly the ring plane,
+    # where the radial field is exactly zero for the odd-integrand reason.
+    assert abs(result["b_z"][2, 1]) > abs(result["b_z"][2, -1])
+    assert result["b_r"][0, -1] < 0.0 < result["b_r"][2, -1]
+    np.testing.assert_array_equal(result["b_r"][1, :], 0.0)
 
 
 def test_flux_matches_the_stream_function_difference():
@@ -134,9 +136,9 @@ def test_halving_the_radial_spacing_improves_the_flux_at_least_twofold():
     deviations = []
     for nodes in (7, 13, 25):
         radial = np.linspace(0.0, 0.30, nodes)
-        result = _result(radial, np.array([-0.1, 0.1]))
+        result = _result(radial, np.array([-0.3, 0.1]))
         expected = reference.psi_difference(
-            float(radial[-1]), -0.1, [tuple(row_value) for row_value in FILAMENTS], 0.0
+            float(radial[-1]), -0.3, [tuple(row_value) for row_value in FILAMENTS], 0.0
         )
         deviations.append(
             abs(float(result["psi"][0, -1]) - float(expected)) / abs(float(expected))
@@ -157,8 +159,8 @@ def test_the_first_radial_column_is_exactly_zero():
     # radial field is zero for a different reason (odd integrand), so the anchor
     # uses the off-plane row.
     assert np.all(result["psi"][:, 1] != 0.0)
-    assert result["b_r"][0, 1] == 0.0
-    assert result["b_r"][1, 1] != 0.0
+    assert result["b_r"][0, 1] != 0.0
+    assert result["b_r"][2, 1] != 0.0
 
 
 def test_the_transposed_layout_returns_the_same_arrays():
