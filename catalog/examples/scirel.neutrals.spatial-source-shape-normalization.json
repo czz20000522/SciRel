@@ -120,16 +120,19 @@
   "scope": [
    "That the shape equals the independent trapezoidal normalization and re-integrates to exactly 1.",
    "The alignment, monotonicity, real-input and positivity failure contracts.",
-   "A read-only digest-pinned comparison on three finite valid profiles."
+   "A read-only digest-pinned comparison on three finite valid profiles.",
+   "Independent evidence (tests/neutrals/test_boundary_and_shape_normalization_evidence.py): the measure is decided by a discriminator - on a non-uniform grid with a linear profile the reported integral equals the exact trapezoid value and differs from the left-rectangle value by more than 1e6 eps; the shape and the reported integral are recomputed exactly; and doubling the source leaves the shape bit-identical."
   ],
   "tests": [
-   "tests/kinetic/test_neutral_normalizations.py"
+   "tests/kinetic/test_neutral_normalizations.py",
+   "tests/neutrals/test_boundary_and_shape_normalization_evidence.py"
   ],
-  "evidence_ceiling": "Bounded to unit-integral normalization of a nonnegative one-dimensional spatial source profile under the trapezoidal measure. Evidence: `test_neutral_normalizations.py` contains 11 test functions, 3 of which reference `normalize_spatial_source_shape`, and is shared by 2 assets; only shared-file coverage is bound, so a pass is file-level rather than asset-isolated; the bounded example was executed by this audit. Oracle: bounded source-method parity against the independent trapezoidal normalization in the bound file. It does not establish zero/negative profiles, non-monotonic coordinates, or fewer than two nodes.",
+  "evidence_ceiling": "Bounded to unit-integral normalization of a nonnegative one-dimensional spatial source profile under the trapezoidal measure. Evidence: `test_neutral_normalizations.py` contains 11 test functions, 3 of which reference `normalize_spatial_source_shape`, and is shared by 2 assets; only shared-file coverage is bound, so a pass is file-level rather than asset-isolated; the bounded example was executed by this audit. Oracle: bounded source-method parity against the independent trapezoidal normalization in the bound file. It does not establish zero/negative profiles, non-monotonic coordinates, or fewer than two nodes. C1 evidence adds: the trapezoid-versus-rectangle discriminator, the exact rational integral and shape, and the exact scale invariance; it does not establish that a trapezoid over the supplied nodes is the appropriate measure for the user's source physics.",
   "known_limitations": [
    "This contract carries no independently reviewed qualification of parity with any external implementation; no such qualification can be claimed without a fresh independent review.",
    "The earlier behavior accepts boolean and numeric-string coercions, and complex input may raise TypeError; SciRel consistently rejects these as invalid real-array inputs.",
-   "The bound file is shared by two assets and three direct functions cover trapezoidal normalization, invalid profiles and non-real coercion; exact agreement at three finite profiles is a regression check, not global parity."
+   "The bound file is shared by two assets and three direct functions cover trapezoidal normalization, invalid profiles and non-real coercion; exact agreement at three finite profiles is a regression check, not global parity.",
+   "The unit-integral check is a property of the declared trapezoid on the caller's coordinates; a source whose support the supplied nodes do not resolve is still normalized to unit integral, and no node-refinement or quadrature-error claim is made."
   ]
  }
 }

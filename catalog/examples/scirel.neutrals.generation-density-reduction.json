@@ -123,15 +123,18 @@
    "That the two-dimensional-weight result equals the independent per-cell quadrature sum in the declared operation order.",
    "That the one-dimensional radial weight reproduces the declared projection path.",
    "That the uniform-column routing identity holds (two paths agree on column-uniform weights).",
-   "The alignment, real-input, nonnegativity and finite-output failure contracts."
+   "The alignment, real-input, nonnegativity and finite-output failure contracts.",
+   "Independent evidence (tests/neutrals/test_generation_density_and_source_evidence.py): the three documented weight paths (radial profile, uniform-column 2-D, general 2-D) are required to agree, the first two exactly; one perturbed spatial cell changes exactly one output cell; powers-of-two scaling and sign reversal are exact; and the declared sum is recomputed exactly in rational arithmetic."
   ],
   "tests": [
-   "tests/kinetic/test_thermal_speed_and_density_reduction.py"
+   "tests/kinetic/test_thermal_speed_and_density_reduction.py",
+   "tests/neutrals/test_generation_density_and_source_evidence.py"
   ],
-  "evidence_ceiling": "Bounded to the declared relation: With a full (nvr,nvx) weight the sum runs over both axes at once; with a one-dimensional radial weight the radial projection computes sum_r w[r] * (sum_x f[r,x,:]*dvx[x]); a full weight whose columns are all equal is routed to the radial path. Evidence: test_thermal_speed_and_density_reduction.py (11 recorded test functions; shared-file coverage only; independent analytic/high-precision oracle); the contract example ran. Excluded scope: Negative weights or cell sizes; misaligned axes: rejected; external physical validation.",
+  "evidence_ceiling": "Bounded to the declared relation: With a full (nvr,nvx) weight the sum runs over both axes at once; with a one-dimensional radial weight the radial projection computes sum_r w[r] * (sum_x f[r,x,:]*dvx[x]); a full weight whose columns are all equal is routed to the radial path. Evidence: test_thermal_speed_and_density_reduction.py (11 recorded test functions; shared-file coverage only; independent analytic/high-precision oracle); the contract example ran. Excluded scope: Negative weights or cell sizes; misaligned axes: rejected; external physical validation. C1 evidence adds: the three-path agreement, an exact rational reduction oracle and the cell-locality probe; it does not establish the quadrature accuracy of the caller-supplied weight and widths.",
   "known_limitations": [
    "Real-input rejection and finite-output enforcement differ from the earlier coercion and overflow behavior.",
-   "Only shared-file coverage is bound (test_thermal_speed_and_density_reduction.py); no asset-specific failure/limit probe is recorded."
+   "Only shared-file coverage is bound (test_thermal_speed_and_density_reduction.py); no asset-specific failure/limit probe is recorded.",
+   "The three-path agreement is an algebraic identity of the declared measure order, not evidence that the supplied quadrature resolves the distributions of interest."
   ]
  }
 }
