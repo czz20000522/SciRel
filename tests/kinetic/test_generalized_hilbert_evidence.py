@@ -159,6 +159,39 @@ def test_real_axis_returns_the_principal_value_plus_i_pi_f():
     assert abs(got - complex(reference)) <= 1e-9, (got, complex(reference))
 
 
+def test_a_narrow_neighbour_panel_reaches_the_removable_limit_branch():
+    """The |offset| < 1e-7 replacement is reachable and correct.
+
+    The contract requires only a finite, strictly increasing mesh with the material
+    features resolved; it sets no minimum panel width.  Two panels of width 2e-9
+    around the phase put Gauss-Kronrod interior nodes inside the 1e-7 window, so the
+    integrand takes the removable limit f'(z) instead of the subtracted quotient.
+    84 such nodes were counted with an instrumented copy on this exact input.
+
+    The reference is the analytic removable limit evaluated at 40 digits, so this
+    also checks that the replacement value is the right one and not merely finite.
+    """
+    x = 0.3
+    mesh = [-8.0, x - 1e-9, x + 1e-9, 8.0]
+    got = complex(
+        evaluate_generalized_hilbert(x, LORENTZIAN, integration_mesh=mesh, continuation=False)["Z"]
+    )
+    f_x = _lorentzian(mp.mpf(x))
+    reference = (
+        mp.quad(
+            lambda v: (
+                (_lorentzian(v) - f_x) / (v - mp.mpf(x)) if v != x else mp.diff(_lorentzian, x)
+            ),
+            CONTOUR,
+        )
+        + 1j * mp.pi * f_x
+    )
+    assert abs(got - complex(reference)) <= 1e-12 * abs(complex(reference)), (
+        got,
+        complex(reference),
+    )
+
+
 def test_the_declared_feature_resolution_is_a_hint_not_a_condition():
     """A measured over-claim, recorded so no contract promises a rejection."""
     z = 0.3 - 0.2j
