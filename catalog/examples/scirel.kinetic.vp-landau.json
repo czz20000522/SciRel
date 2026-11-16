@@ -174,12 +174,15 @@
  },
  "verification": {
   "scope": [
-   "Discrete Poisson constraint and off-diagonal rank-one feedback.",
-   "Dense matrix-exponential RK4 order; analytic free-streaming and damped-cosine diagnostics.",
-   "Slowing-down weak derivative integration-by-parts and default 2049-node/2000-step execution."
+   "Independent reference: this asset is the composition, so its evidence is the composition itself - the status strings are decided by their literal values and by which branch produces them, and the composed numbers inherit the budgets of vp-init, vp-rk4-step, vp-evolve, vp-envelope and vp-diagnostic, each of which is established separately.",
+   "Implementation relation: nt = 0 returns envelope = None, diagnostic = None and the status 'insufficient samples'; a record the diagnostic rejects returns diagnostic = None with the rejection text in the status and does not raise; a successful record returns status 'available'.",
+   "Test matrix: the nt = 0 branch, a five-step record that must carry the two-peak rejection, and the full default run of all four selectors including shape, finiteness and the closure of the final field.",
+   "Precision budget, declared before the comparison was run: the status strings are compared exactly; the composed arrays are compared only for shape, finiteness and closure, because their accuracy budgets belong to the pieces named above.",
+   "Cannot establish: no continuum Landau root is established in this batch. The theory line this asset hands to vp-envelope for the kappa = 1 equilibrium inherits the unresolved sign recorded in scirel.kinetic.vp-distribution and ticket T-2026-0600, so the reported damping rate of that configuration is not evidence of damping."
   ],
   "tests": [
-   "tests/kinetic/test_vlasov_poisson_dispersion.py"
+   "tests/kinetic/test_vlasov_poisson_dispersion.py",
+   "tests/kinetic/test_vlasov_poisson_evidence.py"
   ],
   "evidence_ceiling": "Bounded to the Poisson-closed RK4 Vlasov step and the full-field envelope/peak diagnostic. Evidence: `test_vlasov_poisson_dispersion.py` contains 14 test functions, 1 of which references `solve_vlasov_poisson`, and is shared by 9 assets; only shared-file coverage is bound, so a pass is file-level rather than asset-isolated; the bounded example was executed by this audit. Oracle: independent semidiscrete mathematical checks and selected scenario regressions in the bound file. It does not establish nonlinear or multidimensional Vlasov-Poisson evolution, or post-recurrence continuum claims.",
   "known_limitations": [

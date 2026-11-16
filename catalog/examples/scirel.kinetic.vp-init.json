@@ -181,13 +181,15 @@
  },
  "verification": {
   "scope": [
-   "Discrete Poisson constraint and off-diagonal rank-one feedback.",
-   "Dense matrix-exponential RK4 order; analytic free-streaming and damped-cosine diagnostics.",
-   "Slowing-down weak derivative integration-by-parts and default 2049-node/2000-step execution.",
-   "A custom df0dv/df_initial pair equal to the built-in Maxwellian and default perturbation reproduces its field history; arrays off the grid, Fn given with df0dv, or Fn=None without it raise ValueError."
+   "Independent reference: the state is decided by its closed-form grid laws, recomputed here from the stated expressions rather than read back - vv = linspace(-vmax, vmax, nv+1), dv = 2 vmax/nv, the default perturbation 0.1 exp(-v^2), the recurrence time TR = 2 pi/(k dv) and tt = n dt - and the initial field is confronted with an exact Fraction recomputation of (i/k) dv sum(df).",
+   "Implementation relation: the default perturbation is 0.1 exp(-v^2) in the grid's own units and is not proportional to f0; df0dv is accepted only together with Fn = None and must be real; Fn with df0dv set, or Fn = None without it, is rejected; the returned history holds nt+1 entries with the initial field in slot zero.",
+   "Test matrix: the grid, dv, perturbation and recurrence identities at zero tolerance; a custom df0dv/df_initial pair equal to the built-in Maxwellian reproducing its field; nv = 2 and nt = 0 as the degenerate sizes; non-finite scalars, wrong-length arrays and a complex df0dv each asserted on their own channel.",
+   "Precision budget, declared before the comparison was run: zero tolerance for vv and dv (both are exact binary values of the stated expressions), 8 eps relative for the field (a single rounding), and 1e-15 absolute for the default perturbation.",
+   "Cannot establish: the theory-frequency slots wr, wi that this state carries for Fn = 2, kappa = 1 inherit the unresolved Lorentzian sign recorded in scirel.kinetic.vp-distribution and ticket T-2026-0600. The state itself, including its Poisson-consistent field, is fully decided by the identities above."
   ],
   "tests": [
-   "tests/kinetic/test_vlasov_poisson_dispersion.py"
+   "tests/kinetic/test_vlasov_poisson_dispersion.py",
+   "tests/kinetic/test_vlasov_poisson_evidence.py"
   ],
   "evidence_ceiling": "Independent semidiscrete mathematical and selected scenario regressions; actual run/installed-wheel receipts are recorded separately, not inferred from test existence.",
   "known_limitations": [
