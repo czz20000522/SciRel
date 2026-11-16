@@ -225,7 +225,11 @@ def ring_field(radius, z, coil_radius, coil_z, current=1.0):
         ("psi", "B_R", "B_Z"),
         (radius_mp * prefactor * weak[0], prefactor * weak[1], prefactor * weak[2]),
         (psi, prefactor * strong[1], prefactor * strong[2]),
-        (radius_mp * prefactor * scale[0], prefactor * scale[1], prefactor * scale[2]),
+        (
+            abs(radius_mp) * abs(prefactor) * scale[0],
+            abs(prefactor) * scale[1],
+            abs(prefactor) * scale[2],
+        ),
         strict=True,
     ):
         if abs(weak_value - strong_value) > _CROSS_PRECISION * integrand_scale:
