@@ -347,14 +347,18 @@
     "scope": [
      "通过 DensityExpression 进行安全 AST 代数与解析链式求导。",
      "离实轴采用经过验证的 Cauchy 求积，实轴采用减奇点主值积分。",
-     "覆盖大相位处中心及平移 Gaussian 的显式 Hilbert 导数、两个半平面及实轴边界，并以独立高精度方程按分量使用零绝对容差检验。"
+     "覆盖大相位处中心及平移 Gaussian 的显式 Hilbert 导数、两个半平面及实轴边界，并以独立高精度方程按分量使用零绝对容差检验。",
+     "integration_mesh 已确定为有限、严格递增的求积分段断点列表，既不是节点也不是密度采样：两点网格、不等距五点网格与四十一点网格在两个相位上都能把 Lorentzian 与 Gaussian 的 mpmath Cauchy 变换复现到 1e-12 相对，且移动断点不改变答案。",
+     "continuation 恒等式（下半平面为原变换加 2*pi*i*f(z)，上半平面为原变换）与实轴主值（PV 积分加 i*pi*f(x)）均已对 40 位 mpmath 求积（解析减去奇点）核对。"
     ],
     "known_limitations": [
      "导数被积函数在实轴局部可去点的求值使用对称二阶导数估计；不返回全局误差证书。",
      "受限解析器支持有限实常量、pi、v、算术及 exp/log/sqrt/sin/cos/sinh/cosh/tanh。",
-     "仅绑定共享文件覆盖（test_generalized_dispersion_models.py）；未记录资产专属失败/边界探针。"
+     "仅绑定共享文件覆盖（test_generalized_dispersion_models.py）；未记录资产专属失败/边界探针。",
+     "合同声明 integration_mesh 须解析全部特征，但该要求未被强制：宽度 0.02 的高斯在峰值附近无断点时仍复现到 4.5e-16，因此「网格未解析」不是本入口可检测的失败模式。",
+     "该资产变异验证不完整：只捕获 i*pi*f(x) 符号变异；近奇异导数分支、1e-7 偏移阈值与绝对容差归一化在现有探针下均未被执行。"
     ],
-    "evidence_ceiling": "限于所声明关系：DensityExpression 解释受限 AST，按链式法则传播解析一阶导数，不使用 eval 或 SymPy。实轴被积函数先减去 f(x)·exp(-(v-x)²)；该项与 1/(v-x) 相乘后为奇函数，其全实轴主值为零。边界值加上 i·pi·f(x)，可选下半平面延拓再加上 2·pi·i·f(z)。|z|≥12 时，利用端点值消失所给出的恒等式 Zp=Cauchy[v·fprime]/z，避免总质量为零的密度导数发生相消；绝对求积容差与相位模成反比。密度导数及其解析延拓不由已舍入的 Z 或…。证据：test_generalized_dispersion_models.py, test_generalized_dispersion_independent_corrections.py（记录 25 个测试函数；仅共享文件覆盖；独立解析/高精度对照）；合同 example 已运行。不建立的范围：不支持分段或非解析表达式语法；此类模型应使用分布选择器；不自动发现未分辨的回调特征。"
+    "evidence_ceiling": "test_generalized_hilbert_evidence.py 在三种网格上把公开变换与 40 位 mpmath 求积比较，把 continuation 恒等式作为代数恒等式断言，并把实轴主值钉在 1e-9 绝对值。确定网格语义的是断点不变性这一观测：携带密度采样的网格不可能用两个点复现该变换。同一组测试还把一条过度声明测量下来而非放过它：宽度 0.02 的高斯在峰值附近没有任何断点的网格上仍被复现到 4.5e-16，因此合同中「网格须解析全部特征」是对调用方的提示，不是本实现强制的条件。该资产的变异验证不完整：四个变异体中只有符号变异使用例变红。不建立连续域误差上界，也不建立已证的求积上界。"
    }
   },
   {
