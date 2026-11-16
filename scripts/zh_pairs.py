@@ -1,21 +1,33 @@
 """Check and record the Chinese reader records against the contracts they translate.
 
-`tools/docs/zh/*.json` holds Chinese translations of contract prose. Until now the
-only binding was one `source_sha256` per record: it proves *some* bytes were seen,
-cannot say which field drifted, and forces a whole-file rewrite for a one-word
-change. This tool records a per-field pair instead:
+`tools/docs/zh/*.json` holds Chinese translations of contract prose. Its only
+binding used to be one `source_sha256` per record: it proves some bytes were
+seen, cannot say which field drifted, and forces a whole-file rewrite for a
+one-word change. This tool keeps a per-field pair in one sidecar instead:
 
-    "pairing": {"version": 1, "sections": {"definition": {"en": "...", "zh": "..."}}}
+    tools/docs/zh-pairing.json
+    {"schema": "scirel.zh-pairing", "records": [
+      {"asset_id": "...", "fields": {"definition": {"en": "...", "zh": "..."}}},
+      ...
+    ]}
 
-Each section is one translated field of the record, hashed from its canonical JSON
-on both sides. A contract edit moves the `en` hash and a translation edit moves the
-`zh` hash, so a stale pair names the field instead of the file. The record is the
-reviewable act of confirming the pair: a green run means "these exact contents were
-confirmed together", never that the Chinese says the same thing well.
+One record per line, sorted by asset id, so the file reviews as a table and
+merges line by line. The sidecar sits beside the reader directory rather than
+inside it: `scripts/capability_catalog.py` consumes every `tools/docs/zh/*.json`
+as a reader bundle and rejects an unknown schema, so a file in there would break
+the documentation and delivery builds.
 
-Sections absent from a record are not expected; a record without a `pairing` block
-is treated as v1 and passes with an explicit note, so the switch can land before
-the data migration.
+Each section is one translated field of the record, hashed from its canonical
+JSON on both sides. A contract edit moves the `en` hash and a translation edit
+moves the `zh` hash, so a stale pair names the field instead of the file. The
+record is the reviewable act of confirming the pair: a green run means "these
+exact contents were confirmed together", never that the Chinese says the same
+thing well.
+
+A record with no sidecar entry falls back to an in-record `pairing` block (the
+format this tool shipped first) and then to v1, where it passes with an explicit
+"unmigrated" note. The sidecar always wins, so the migration can land before the
+switch and the old field can be removed separately.
 """
 
 from __future__ import annotations
@@ -27,6 +39,7 @@ from pathlib import Path
 
 PAIRING_SCHEMA = "scirel.zh-pairing"
 PAIRING_VERSION = 1
+SIDECAR = "tools/docs/zh-pairing.json"
 ZH_GLOB = "tools/docs/zh/*.json"
 CONTRACT_DIRS = ("catalog/examples", "catalog/review/examples")
 INDENT = 1
@@ -45,7 +58,14 @@ SECTIONS: dict[str, tuple[str, ...]] = {
     "example": ("example",),
     "verification": ("verification",),
 }
-RESERVED = {"asset_id", "source_sha256", "pairing"}
+
+
+class _Missing:
+    def __repr__(self) -> str:
+        return "<absent>"
+
+
+_MISSING = _Missing()
 
 
 def digest(value) -> str:
@@ -62,14 +82,6 @@ def contract_field(document: dict, path: tuple[str, ...]):
     return node
 
 
-class _Missing:
-    def __repr__(self) -> str:
-        return "<absent>"
-
-
-_MISSING = _Missing()
-
-
 def load_contracts(root: Path) -> dict[str, dict]:
     documents: dict[str, dict] = {}
     for directory in CONTRACT_DIRS:
@@ -79,17 +91,17 @@ def load_contracts(root: Path) -> dict[str, dict]:
     return documents
 
 
-def pairing_sections(record: dict, document: dict) -> dict[str, dict[str, str]]:
+def expected_fields(record: dict, document: dict) -> dict[str, dict[str, str]]:
     """Hashes for every section the record actually translates."""
-    sections: dict[str, dict[str, str]] = {}
+    fields: dict[str, dict[str, str]] = {}
     for name, path in SECTIONS.items():
         if name not in record:
             continue
         english = contract_field(document, path)
         if english is _MISSING:
             continue
-        sections[name] = {"en": digest(english), "zh": digest(record[name])}
-    return sections
+        fields[name] = {"en": digest(english), "zh": digest(record[name])}
+    return fields
 
 
 def zh_files(root: Path) -> list[Path]:
@@ -104,110 +116,158 @@ def iter_records(root: Path):
                 yield path, document, index, record
 
 
+def sidecar_path(root: Path) -> Path:
+    return root / SIDECAR
+
+
+def load_sidecar(root: Path) -> tuple[dict[str, dict], list[str]]:
+    """Return (fields by asset id, errors). A missing sidecar is not an error."""
+    path = sidecar_path(root)
+    if not path.is_file():
+        return {}, []
+    try:
+        document = json.loads(path.read_text(encoding="utf-8"))
+    except json.JSONDecodeError as error:
+        return {}, [f"{SIDECAR}: not valid JSON: {error}"]
+    if not isinstance(document, dict) or document.get("schema") != PAIRING_SCHEMA:
+        return {}, [f"{SIDECAR}: schema must be {PAIRING_SCHEMA!r}"]
+    if document.get("version") != PAIRING_VERSION:
+        return {}, [f"{SIDECAR}: version {document.get('version')!r} is not {PAIRING_VERSION}"]
+    entries: dict[str, dict] = {}
+    errors: list[str] = []
+    for position, entry in enumerate(document.get("records") or []):
+        if not isinstance(entry, dict):
+            errors.append(f"{SIDECAR}: records[{position}] must be an object")
+            continue
+        asset = entry.get("asset_id")
+        fields = entry.get("fields")
+        if not isinstance(asset, str) or not asset:
+            errors.append(f"{SIDECAR}: records[{position}] has no asset_id")
+            continue
+        if asset in entries:
+            errors.append(f"{SIDECAR}: duplicate asset_id {asset}")
+            continue
+        if not isinstance(fields, dict) or not fields:
+            errors.append(f"{SIDECAR} [{asset}]: fields must be a nonempty object")
+            continue
+        entries[asset] = fields
+    return entries, errors
+
+
+def validate_fields(where: str, recorded: dict, expected: dict) -> tuple[list[str], list[str]]:
+    errors: list[str] = []
+    drifted: list[str] = []
+    unknown = sorted(set(recorded) - set(expected))
+    if unknown:
+        errors.append(f"{where}: pairs name fields the record no longer translates: {unknown}")
+    for name, hashes in expected.items():
+        if name not in recorded:
+            errors.append(
+                f"{where}: field '{name}' has no recorded hash; re-run --write after confirming it"
+            )
+            drifted.append(name)
+            continue
+        entry = recorded[name]
+        if not isinstance(entry, dict) or set(entry) != {"en", "zh"}:
+            errors.append(f"{where}: field '{name}' entry must be an object with en and zh")
+            drifted.append(name)
+            continue
+        if entry["en"] != hashes["en"]:
+            errors.append(
+                f"{where}: contract field '{name}' changed since the pair was confirmed "
+                f"(recorded {entry['en']}, now {hashes['en']})"
+            )
+            drifted.append(name)
+        if entry["zh"] != hashes["zh"]:
+            errors.append(
+                f"{where}: Chinese text of field '{name}' changed without re-recording the pair "
+                f"(recorded {entry['zh']}, now {hashes['zh']})"
+            )
+            drifted.append(name)
+    return errors, drifted
+
+
 def check(root: Path) -> tuple[list[str], list[str], dict[str, str]]:
     """Return (errors, notes, state) where state maps asset id to a short status."""
     contracts = load_contracts(root)
-    errors: list[str] = []
+    entries, errors = load_sidecar(root)
     notes: list[str] = []
     state: dict[str, str] = {}
+    seen: set[str] = set()
     for path, _document, index, record in iter_records(root):
         asset = record.get("asset_id") or f"<record {index}>"
         relative = path.relative_to(root).as_posix()
-        where = f"{relative} [{asset}]"
+        where = f"{SIDECAR} [{asset}] (translation in {relative})"
+        seen.add(asset)
         contract = contracts.get(asset)
         if contract is None:
-            errors.append(f"{where}: no contract in {' or '.join(CONTRACT_DIRS)} for this record")
+            errors.append(f"{relative} [{asset}]: no contract in {' or '.join(CONTRACT_DIRS)}")
             state[asset] = "missing-contract"
             continue
-        pairing = record.get("pairing")
-        if pairing is None:
-            notes.append(f"{where}: v1 record without a pairing block; accepted as unmigrated")
-            state[asset] = "v1"
-            continue
-        if not isinstance(pairing, dict):
-            errors.append(f"{where}: pairing must be an object")
-            state[asset] = "malformed"
-            continue
-        if pairing.get("version") != PAIRING_VERSION:
-            errors.append(
-                f"{where}: pairing version {pairing.get('version')!r} is not {PAIRING_VERSION}"
-            )
-            state[asset] = "malformed"
-            continue
-        recorded = pairing.get("sections")
-        if not isinstance(recorded, dict) or not recorded:
-            errors.append(f"{where}: pairing has no sections")
-            state[asset] = "malformed"
-            continue
-        expected = pairing_sections(record, contract)
-        unknown = sorted(set(recorded) - set(expected))
-        if unknown:
-            errors.append(
-                f"{where}: pairing names sections the record no longer translates: {unknown}"
-            )
-        drifted: list[str] = []
-        for name, hashes in expected.items():
-            if name not in recorded:
-                errors.append(
-                    f"{where}: field '{name}' has no recorded hash; re-run --write after confirming it"
-                )
-                drifted.append(name)
+        expected = expected_fields(record, contract)
+        recorded = entries.get(asset)
+        if recorded is None:
+            legacy = record.get("pairing")
+            if isinstance(legacy, dict) and isinstance(legacy.get("sections"), dict):
+                notes.append(f"{where}: using the in-record pairing block; the sidecar wins")
+                recorded = legacy["sections"]
+            else:
+                notes.append(f"{where}: v1 record without a recorded pair; accepted as unmigrated")
+                state[asset] = "v1"
                 continue
-            entry = recorded[name]
-            if not isinstance(entry, dict) or set(entry) != {"en", "zh"}:
-                errors.append(f"{where}: field '{name}' entry must be an object with en and zh")
-                drifted.append(name)
-                continue
-            if entry["en"] != hashes["en"]:
-                errors.append(
-                    f"{where}: contract field '{name}' changed since the pair was confirmed "
-                    f"(recorded {entry['en']}, now {hashes['en']})"
-                )
-                drifted.append(name)
-            if entry["zh"] != hashes["zh"]:
-                errors.append(
-                    f"{where}: Chinese text of field '{name}' changed without re-recording the pair "
-                    f"(recorded {entry['zh']}, now {hashes['zh']})"
-                )
-                drifted.append(name)
+        section_errors, drifted = validate_fields(where, recorded, expected)
+        errors.extend(section_errors)
         state[asset] = "drift:" + ",".join(sorted(set(drifted))) if drifted else "ok"
+    for asset in sorted(set(entries) - seen):
+        errors.append(f"{SIDECAR}: pair for {asset} has no Chinese record")
+        state[asset] = "orphaned"
     return errors, notes, state
 
 
-def write(root: Path) -> tuple[list[str], list[str]]:
-    """Recompute and store every record's pairing block, preserving file formatting."""
+def render_sidecar(entries: dict[str, dict[str, dict[str, str]]]) -> str:
+    lines = [
+        "{",
+        f' "schema": "{PAIRING_SCHEMA}",',
+        f' "version": {PAIRING_VERSION},',
+        ' "language": "zh-CN",',
+        ' "records": [',
+    ]
+    assets = sorted(entries)
+    for position, asset in enumerate(assets):
+        entry = {"asset_id": asset, "fields": entries[asset]}
+        comma = "," if position < len(assets) - 1 else ""
+        lines.append("  " + json.dumps(entry, ensure_ascii=False) + comma)
+    lines.extend([" ]", "}", ""])
+    return "\n".join(lines)
+
+
+def write(root: Path) -> tuple[list[str], bool]:
+    """Recompute every record's pair and store the sidecar. Reader files are untouched."""
     contracts = load_contracts(root)
+    entries: dict[str, dict[str, dict[str, str]]] = {}
     errors: list[str] = []
-    changed: list[str] = []
-    for path in zh_files(root):
-        document = json.loads(path.read_text(encoding="utf-8"))
-        touched = False
-        for record in document.get("records") or []:
-            if not isinstance(record, dict):
-                continue
-            asset = record.get("asset_id")
-            contract = contracts.get(asset)
-            if contract is None:
-                errors.append(f"{path.name} [{asset}]: no contract to pair against")
-                continue
-            record["pairing"] = {
-                "schema": PAIRING_SCHEMA,
-                "version": PAIRING_VERSION,
-                "sections": pairing_sections(record, contract),
-            }
-            touched = True
-        if touched:
-            rendered = json.dumps(document, ensure_ascii=False, indent=INDENT) + "\n"
-            if rendered != path.read_text(encoding="utf-8"):
-                path.write_text(rendered, encoding="utf-8")
-                changed.append(path.relative_to(root).as_posix())
-    return errors, changed
+    for path, _document, index, record in iter_records(root):
+        asset = record.get("asset_id")
+        contract = contracts.get(asset)
+        if contract is None:
+            errors.append(f"{path.name} [{asset or index}]: no contract to pair against")
+            continue
+        entries[asset] = expected_fields(record, contract)
+    if errors:
+        return errors, False
+    rendered = render_sidecar(entries)
+    target = sidecar_path(root)
+    previous = target.read_text(encoding="utf-8") if target.is_file() else None
+    if previous != rendered:
+        target.write_text(rendered, encoding="utf-8")
+        return [], True
+    return [], False
 
 
 def format_list(states: dict[str, str]) -> str:
-    lines = [f"{'status':12s} asset"]
+    lines = [f"{'status':16s} asset"]
     for asset in sorted(states):
-        lines.append(f"{states[asset]:12s} {asset}")
+        lines.append(f"{states[asset]:16s} {asset}")
     return "\n".join(lines)
 
 
@@ -219,7 +279,7 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("--repo", default=".", help="repository root (default: current directory)")
     parser.add_argument(
-        "--write", action="store_true", help="recompute and store the pairing block of every record"
+        "--write", action="store_true", help="recompute and store the sidecar for every record"
     )
     parser.add_argument(
         "--list", action="store_true", help="print the pairing state of every record"
@@ -231,24 +291,21 @@ def main(argv: list[str] | None = None) -> int:
         print(f"FAIL: no Chinese reader records found under {root / ZH_GLOB}")
         return 2
 
-    errors, notes, state = check(root)
     if args.write:
         write_errors, changed = write(root)
-        for relative in changed:
-            print(f"recorded: {relative}")
-        if not changed:
-            print("recorded: nothing to change")
+        print(f"recorded: {SIDECAR}" if changed else "recorded: nothing to change")
         # Re-read what was written: the pre-write drift is not a failure of this run.
-        errors, notes, state = check(root)
+        errors, _notes, _state = check(root)
         errors = write_errors + errors
         if errors:
             print(f"\nFAIL: {len(errors)} problem(s)")
             for error in errors:
                 print(f"  - {error}")
             return 1
-        print(f"\nOK: {count_records(root)} records carry a fresh pairing block")
+        print(f"\nOK: {count_records(root)} records carry a fresh pair")
         return 0
 
+    errors, notes, state = check(root)
     if args.list:
         print(format_list(state))
         print()

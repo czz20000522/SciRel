@@ -176,26 +176,25 @@ pass is not evidence that every possible user task is covered.
 - `catalog/review/` contains candidate contracts and candidate code; it is not
   installed.
 - `tools/docs/manual/` contains authored bilingual user guides.
-- `tools/docs/zh/*.json` contains Chinese reader records paired with contract
-  fields. `scripts/zh_pairs.py` records and checks the pairing: each record
-  carries a `pairing.sections` entry with one `en`/`zh` hash pair per translated
-  field (`summary`, `identity.definition`, `inputs`, `outputs`, ...). The `en`
-  hash comes from the contract field, the `zh` hash from the translation, so a
-  contract edit and a translation edit both show up as a named field instead of
-  one whole-file digest.
-
-  Record after confirming a pair, never before: `python3 scripts/dev.py run
-  python -B scripts/zh_pairs.py --write` when a contract field or its Chinese
-  text changed together, and the no-argument form to check. A record without a
-  `pairing` block is accepted as v1 and reported as unmigrated, so the gate can
-  land before the data migration. A green run means these exact contents were
-  confirmed together; it does not mean the Chinese says the same thing well, so
-  review still owns meaning, terminology and tone.
-- `src/scirel/_result.py` defines the named `Result` mapping used by public
-  multi-value returns.
-- `scripts/build_capability_matrix.py`, `scripts/capability_query.py` and
-  `scripts/scirel_docs.py` derive discovery and documentation projections.
-- `skills/development/usage/` contains the three delivered consumer skills.
+- `tools/docs/zh/*.json` contains the Chinese reader records.
+- `tools/docs/zh-pairing.json` is the sidecar that pairs each record with the
+  contract fields it translates: one line per asset id, sorted, holding an
+  `en`/`zh` hash pair per translated field (`summary`,
+  `identity.definition/model/assumptions/boundary`, `inputs`, `outputs`,
+  `applicability`, `failure_semantics`, `example`, `verification`). The `en`
+  hash comes from the contract field, the `zh` hash from the record's
+  translation, so a contract edit names the stale field and a translation edit
+  without a re-record is rejected. It sits beside the reader directory, not
+  inside it, because `scripts/capability_catalog.py` consumes every
+  `tools/docs/zh/*.json` as a reader bundle and rejects an unknown schema.
+- `scripts/zh_pairs.py` records and checks that sidecar: the no-argument form
+  validates, `--list` reports per-record state, and `--write` recomputes and
+  stores before re-reading. Record only after confirming a pair, and re-run
+  `--write` whenever a contract field or its Chinese text changed. A record with
+  no sidecar entry falls back to an in-record `pairing` block (the first format
+  this tool shipped) and then to v1, passing with an "unmigrated" note, so the
+  gate can land before the record files are migrated; the sidecar always wins.
+  `source_sha256` stays in the records until that migration removes it.
 
 Generated pages, indices and matrices are not reviewed science by themselves.
 

@@ -1,4 +1,4 @@
-"""The Chinese pairing gate names the drifted field and cannot be satisfied by a blob hash."""
+"""The Chinese pairing sidecar names the drifted field and cannot be satisfied by a blob hash."""
 
 from __future__ import annotations
 
@@ -15,12 +15,14 @@ sys.path.insert(0, str(ROOT / "scripts"))
 import zh_pairs  # noqa: E402
 
 ASSET = "scirel.test.asset"
+OTHER = "scirel.test.other"
+SIDECAR = "tools/docs/zh-pairing.json"
 
 
-def contract() -> dict:
+def contract(asset: str = ASSET) -> dict:
     return {
         "schema": "scirel.asset-document",
-        "asset_id": ASSET,
+        "asset_id": asset,
         "title": {"en": "Test asset", "zh": "测试资产"},
         "summary": "Sums a declared profile.",
         "identity": {
@@ -50,9 +52,9 @@ def contract() -> dict:
     }
 
 
-def record() -> dict:
+def record(asset: str = ASSET) -> dict:
     return {
-        "asset_id": ASSET,
+        "asset_id": asset,
         "source_sha256": "0" * 64,
         "summary": "对声明剖面求和。",
         "definition": "S=sum(p*v)。",
@@ -77,10 +79,13 @@ def record() -> dict:
 def repo(tmp_path: Path) -> Path:
     (tmp_path / "catalog" / "examples").mkdir(parents=True)
     (tmp_path / "tools" / "docs" / "zh").mkdir(parents=True)
-    (tmp_path / "catalog" / "examples" / f"{ASSET}.json").write_text(
-        json.dumps(contract(), ensure_ascii=False, indent=1) + "\n", encoding="utf-8"
-    )
-    zh = {"schema": "scirel.reader-translation", "language": "zh-CN", "records": [record()]}
+    for asset in (ASSET, OTHER):
+        write_contract(tmp_path, contract(asset), asset)
+    zh = {
+        "schema": "scirel.reader-translation",
+        "language": "zh-CN",
+        "records": [record(ASSET), record(OTHER)],
+    }
     (tmp_path / "tools" / "docs" / "zh" / "zh_test.json").write_text(
         json.dumps(zh, ensure_ascii=False, indent=1) + "\n", encoding="utf-8"
     )
@@ -97,14 +102,28 @@ def write_zh(root: Path, document: dict) -> None:
     )
 
 
-def read_contract(root: Path) -> dict:
-    return json.loads((root / "catalog" / "examples" / f"{ASSET}.json").read_text(encoding="utf-8"))
+def read_contract(root: Path, asset: str = ASSET) -> dict:
+    return json.loads((root / "catalog" / "examples" / f"{asset}.json").read_text(encoding="utf-8"))
 
 
-def write_contract(root: Path, document: dict) -> None:
-    (root / "catalog" / "examples" / f"{ASSET}.json").write_text(
+def write_contract(root: Path, document: dict, asset: str = ASSET) -> None:
+    (root / "catalog" / "examples" / f"{asset}.json").write_text(
         json.dumps(document, ensure_ascii=False, indent=1) + "\n", encoding="utf-8"
     )
+
+
+def sidecar(root: Path) -> dict:
+    return json.loads((root / SIDECAR).read_text(encoding="utf-8"))
+
+
+def write_sidecar(root: Path, document: dict) -> None:
+    (root / SIDECAR).write_text(
+        json.dumps(document, ensure_ascii=False, indent=1) + "\n", encoding="utf-8"
+    )
+
+
+def entry(document: dict, asset: str = ASSET) -> dict:
+    return next(item for item in document["records"] if item["asset_id"] == asset)
 
 
 def run(root: Path, capsys, *args: str) -> tuple[int, str]:
@@ -121,6 +140,7 @@ def test_a_fresh_pair_passes(repo, capsys):
     code, out = run(repo, capsys)
     assert code == 0, out
     assert "pair with their contracts" in out
+    assert (repo / SIDECAR).is_file()
 
 
 def test_a_contract_field_change_names_that_field(repo, capsys):
@@ -144,43 +164,89 @@ def test_a_translation_change_without_rerecording_is_rejected(repo, capsys):
     assert "Chinese text of field 'summary' changed" in out
 
 
-def test_a_missing_pairing_block_is_accepted_as_v1_and_annotated(repo, capsys):
+def test_a_missing_sidecar_is_accepted_as_v1_and_annotated(repo, capsys):
     code, out = run(repo, capsys)
     assert code == 0, out
-    assert "v1 record without a pairing block" in out
+    assert out.count("v1 record without a recorded pair") == 2
     code, out = run(repo, capsys, "--list")
     assert code == 0
     assert "v1" in out
 
 
-def test_a_forged_hash_is_rejected(repo, capsys):
+def test_an_asset_missing_from_the_sidecar_falls_back_to_v1(repo, capsys):
     record_pairing(repo)
-    document = read_zh(repo)
-    document["records"][0]["pairing"]["sections"]["model"]["en"] = "f" * 16
-    write_zh(repo, document)
+    document = sidecar(repo)
+    document["records"] = [item for item in document["records"] if item["asset_id"] != OTHER]
+    write_sidecar(repo, document)
+    code, out = run(repo, capsys)
+    assert code == 0, out
+    assert OTHER in out and "v1 record without a recorded pair" in out
+    assert f"{ASSET}" not in out.split("OK:")[-1]
+
+
+def test_a_drifted_asset_is_red_even_when_another_is_unmigrated(repo, capsys):
+    record_pairing(repo)
+    document = sidecar(repo)
+    document["records"] = [item for item in document["records"] if item["asset_id"] != OTHER]
+    write_sidecar(repo, document)
+    readme = read_contract(repo)
+    readme["identity"]["model"] = "Different arithmetic."
+    write_contract(repo, readme)
     code, out = run(repo, capsys)
     assert code == 1
     assert "contract field 'model' changed" in out
 
 
-def test_an_unknown_section_is_rejected(repo, capsys):
+def test_a_field_the_record_no_longer_translates_is_rejected(repo, capsys):
     record_pairing(repo)
-    document = read_zh(repo)
-    document["records"][0]["pairing"]["sections"]["geometry"] = {"en": "a" * 16, "zh": "b" * 16}
-    write_zh(repo, document)
+    document = sidecar(repo)
+    entry(document)["fields"]["geometry"] = {"en": "a" * 16, "zh": "b" * 16}
+    write_sidecar(repo, document)
     code, out = run(repo, capsys)
     assert code == 1
-    assert "sections the record no longer translates" in out
+    assert "fields the record no longer translates" in out
 
 
-def test_a_section_missing_from_the_pairing_block_is_rejected(repo, capsys):
+def test_a_field_missing_from_the_sidecar_entry_is_rejected(repo, capsys):
     record_pairing(repo)
-    document = read_zh(repo)
-    del document["records"][0]["pairing"]["sections"]["verification"]
-    write_zh(repo, document)
+    document = sidecar(repo)
+    del entry(document)["fields"]["verification"]
+    write_sidecar(repo, document)
     code, out = run(repo, capsys)
     assert code == 1
     assert "field 'verification' has no recorded hash" in out
+
+
+def test_a_forged_hash_is_rejected(repo, capsys):
+    record_pairing(repo)
+    document = sidecar(repo)
+    entry(document)["fields"]["model"]["en"] = "f" * 16
+    write_sidecar(repo, document)
+    code, out = run(repo, capsys)
+    assert code == 1
+    assert "contract field 'model' changed" in out
+
+
+def test_a_pair_without_a_chinese_record_is_rejected(repo, capsys):
+    record_pairing(repo)
+    document = sidecar(repo)
+    document["records"].append(
+        {"asset_id": "scirel.absent.asset", "fields": {"summary": {"en": "a" * 16, "zh": "b" * 16}}}
+    )
+    write_sidecar(repo, document)
+    code, out = run(repo, capsys)
+    assert code == 1
+    assert "has no Chinese record" in out
+
+
+def test_a_duplicate_asset_in_the_sidecar_is_rejected(repo, capsys):
+    record_pairing(repo)
+    document = sidecar(repo)
+    document["records"].append(dict(entry(document)))
+    write_sidecar(repo, document)
+    code, out = run(repo, capsys)
+    assert code == 1
+    assert "duplicate asset_id" in out
 
 
 def test_a_record_without_a_contract_is_rejected(repo, capsys):
@@ -192,14 +258,49 @@ def test_a_record_without_a_contract_is_rejected(repo, capsys):
     assert "no contract" in out
 
 
-def test_write_is_idempotent_and_keeps_the_existing_layout(repo, capsys):
+def test_the_sidecar_wins_over_an_in_record_block(repo, capsys):
+    """A stale in-record block from the first format must not mask a correct sidecar."""
+    document = read_zh(repo)
+    for item in document["records"]:
+        item["pairing"] = {
+            "schema": "scirel.zh-pairing",
+            "version": 1,
+            "sections": {"summary": {"en": "0" * 16, "zh": "1" * 16}},
+        }
+    write_zh(repo, document)
     record_pairing(repo)
-    once = (repo / "tools" / "docs" / "zh" / "zh_test.json").read_text(encoding="utf-8")
+    code, out = run(repo, capsys)
+    assert code == 0, out
+
+
+def test_the_sidecar_is_not_masked_by_a_correct_in_record_block(repo, capsys):
+    document = read_zh(repo)
+    for item in document["records"]:
+        item["pairing"] = {
+            "schema": "scirel.zh-pairing",
+            "version": 1,
+            "sections": {"summary": {"en": "0" * 16, "zh": "1" * 16}},
+        }
+    write_zh(repo, document)
     record_pairing(repo)
-    twice = (repo / "tools" / "docs" / "zh" / "zh_test.json").read_text(encoding="utf-8")
-    assert once == twice
-    assert once.startswith('{\n "schema"')  # the repository's one-space layout survives
-    assert '"pairing"' in once
+    broken = sidecar(repo)
+    entry(broken)["fields"]["summary"]["zh"] = "e" * 16
+    write_sidecar(repo, broken)
+    code, out = run(repo, capsys)
+    assert code == 1
+    assert "Chinese text of field 'summary' changed" in out
+
+
+def test_the_sidecar_is_sorted_one_record_per_line_and_idempotent(repo):
+    record_pairing(repo)
+    text = (repo / SIDECAR).read_text(encoding="utf-8")
+    body = [line for line in text.splitlines() if line.startswith("  {")]
+    assert len(body) == 2
+    assert body[0].count('"asset_id"') == 1
+    assert ASSET in body[0] and OTHER in body[1]
+    assert text.startswith('{\n "schema": "scirel.zh-pairing"')
+    record_pairing(repo)
+    assert (repo / SIDECAR).read_text(encoding="utf-8") == text
 
 
 def test_write_refreshes_a_stale_pair(repo, capsys):
@@ -237,17 +338,18 @@ def test_the_legacy_blob_check_would_have_missed_the_drift(repo, capsys):
     document["identity"]["definition"] = "S=sum(p*v)*k."
     write_contract(repo, document)
     zh = read_zh(repo)
-    zh["records"][0]["source_sha256"] = hashlib.sha256(
-        (repo / "catalog" / "examples" / f"{ASSET}.json").read_bytes()
-    ).hexdigest()
+    for item in zh["records"]:
+        item["source_sha256"] = hashlib.sha256(
+            (repo / "catalog" / "examples" / f"{item['asset_id']}.json").read_bytes()
+        ).hexdigest()
     write_zh(repo, zh)
 
     legacy = [
-        record["asset_id"]
-        for record in zh["records"]
-        if record["source_sha256"]
+        item["asset_id"]
+        for item in zh["records"]
+        if item["source_sha256"]
         != hashlib.sha256(
-            (repo / "catalog" / "examples" / f"{record['asset_id']}.json").read_bytes()
+            (repo / "catalog" / "examples" / f"{item['asset_id']}.json").read_bytes()
         ).hexdigest()
     ]
     assert legacy == []  # the old whole-blob gate is satisfied
