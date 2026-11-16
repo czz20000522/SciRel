@@ -230,20 +230,23 @@
    "Exact zero-density and equal-grid identity/convex spatial interpolation are checked, including outside-source spatial zero fill.",
    "Lower/upper convex-hull edges, a vertex and a near-face interior target are checked without clipping or relaxing targets.",
    "Input rejection, distinct infeasibility versus bounded numerical exhaustion, input immutability, deterministic repetition and the correct=0/warning behavior are checked.",
-   "A disjoint destination velocity cell is checked to remain zero while overlapping cells preserve their constant algebraic value."
+   "A disjoint destination velocity cell is checked to remain zero while overlapping cells preserve their constant algebraic value.",
+   "Independent evidence (tests/neutrals/test_cross_mesh_distribution_evidence.py): identical meshes reproduce the source exactly through the corrected branch and to rounding through the overlap branch; a constant source stays spatially constant; the uncorrected branch renormalizes each slice to the exactly recomputed interpolated source total; the three corrected moments are recomputed from the returned floats with the verified quadrature measure and compared to the linearly interpolated targets (256 eps, i.e. the contract's 128 eps plus one factor for the independent accumulation); the exterior in x is exactly zero; and an infeasible slice is decided by a mean velocity outside the destination node range (the temperature ratio halves fV)."
   ],
   "tests": [
    "tests/kinetic/test_cross_mesh_distribution.py",
    "tests/kinetic/test_positive_conservative_remap.py",
-   "tests/kinetic/test_cylindrical_velocity_quadrature.py"
+   "tests/kinetic/test_cylindrical_velocity_quadrature.py",
+   "tests/neutrals/test_cross_mesh_distribution_evidence.py"
   ],
-  "evidence_ceiling": "Direct evidence: test_positive_conservative_remap.py imports interp_distribution_across_mesh as remap; its check helper directly calls the public leaf and independently integrates density, axial momentum density and squared-speed energy density. Named feasible-witness, nonuniform-unequal-mesh, zero-density, identity, hull-boundary, infeasible-moment, iteration-exhaustion and negative-input tests check those branches. test_cross_mesh_distribution.py directly checks the algebraic branch and validation. test_cylindrical_velocity_quadrature.py checks the shared quadrature dependency, not the remap entry point. These discrete three-moment assertions do not establish third-order or higher-moment conservation, shape preservation or entropy conservation.",
+  "evidence_ceiling": "Direct evidence: test_positive_conservative_remap.py imports interp_distribution_across_mesh as remap; its check helper directly calls the public leaf and independently integrates density, axial momentum density and squared-speed energy density. Named feasible-witness, nonuniform-unequal-mesh, zero-density, identity, hull-boundary, infeasible-moment, iteration-exhaustion and negative-input tests check those branches. test_cross_mesh_distribution.py directly checks the algebraic branch and validation. test_cylindrical_velocity_quadrature.py checks the shared quadrature dependency, not the remap entry point. These discrete three-moment assertions do not establish third-order or higher-moment conservation, shape preservation or entropy conservation. C1 evidence adds the exact same-mesh identity, the spatial invariance, the declared per-slice renormalization, an independently recomputed three-moment postcondition and a constructed infeasible slice. Two things remain **cannot establish**: the absolute scale of the geometric overlap weights is not observable through the public API (the uncorrected branch divides a global factor out per slice, and the corrected branch projects onto fixed moments), and the moment convergence-error branch is exercised only by the maintained tests, not by this evidence.",
   "known_limitations": [
    "Finite destination nodes can make requested moments unrealizable; the caller must provide a feasible grid or handle InfeasibleMomentsError.",
    "The entropy prior includes a 1e-12 cell-volume mixture and may populate zero-overlap cells. Higher moments and fine distribution shape are not conserved by the three-moment constraints.",
    "Binary64 conditioning, very near hull faces and unrepresentable intermediates can cause explicit numerical failure; the iteration budget is not a universal convergence guarantee.",
    "correct=0 is algebraic compatibility only and does not carry the default branch physical guarantees.",
-   "The correction stops on scaled moment residual `<=32 eps` and requires the actual output three-moment postcondition within `128 eps`; exhausting `max_correction_iterations` raises `MomentCorrectionConvergenceError` without a partial distribution."
+   "The correction stops on scaled moment residual `<=32 eps` and requires the actual output three-moment postcondition within `128 eps`; exhausting `max_correction_iterations` raises `MomentCorrectionConvergenceError` without a partial distribution.",
+   "The overlap weight scale, the relative-entropy projection's iteration behaviour and the MomentCorrectionConvergenceError branch are outside this evidence; and the contract names InfeasibleMomentsError while `scirel.neutrals` does not export it, so callers catch it through its ValueError base or import it from its module (recorded as an API-surface gap, behaviour unchanged)."
   ]
  },
  "references": [

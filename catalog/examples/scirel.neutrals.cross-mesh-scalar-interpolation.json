@@ -135,14 +135,17 @@
    "That a linear profile is reproduced to closed-form precision at every in-range node.",
    "That out-of-range mesh_b nodes are exactly zero and the interpolation is affine-invariant.",
    "That the do_warn mode changes warnings only, never the output.",
-   "The input and failure contracts."
+   "The input and failure contracts.",
+   "Independent evidence (tests/neutrals/test_cross_mesh_scalar_evidence.py): affine profiles are reproduced to rounding on a deliberately unsorted destination mesh, source nodes are reproduced and the exterior is exactly zero, every interpolated value stays between its bracketing nodes, and the in-range contiguity rule is decided by rejection. A refinement study on **uniform source meshes only** (8, 16, 32, 64 nodes, fixed evaluation points) measures the linear-interpolation error of a smooth profile and asserts a halving ratio in [3.0, 5.0] (exact second order = 4)."
   ],
   "tests": [
-   "tests/kinetic/test_cross_mesh_scalar_interpolation.py"
+   "tests/kinetic/test_cross_mesh_scalar_interpolation.py",
+   "tests/neutrals/test_cross_mesh_scalar_evidence.py"
   ],
-  "evidence_ceiling": "Bounded to the declared relation: okk selects xb in [min(xa), max(xa)]; the in-range block receives the scipy linear interpolation; out-of-range nodes are exactly zero; do_warn reproduces the source's boundary warnings without changing the output. Evidence: test_cross_mesh_scalar_interpolation.py (7 recorded test functions; bound-file coverage; independent analytic/high-precision oracle); the contract example ran. Excluded scope: Extrapolation outside the mesh_a range: out-of-range nodes are zero, never extrapolated; Two-dimensional or vector profiles.",
+  "evidence_ceiling": "Bounded to the declared relation: okk selects xb in [min(xa), max(xa)]; the in-range block receives the scipy linear interpolation; out-of-range nodes are exactly zero; do_warn reproduces the source's boundary warnings without changing the output. Evidence: test_cross_mesh_scalar_interpolation.py (7 recorded test functions; bound-file coverage; independent analytic/high-precision oracle); the contract example ran. Excluded scope: Extrapolation outside the mesh_a range: out-of-range nodes are zero, never extrapolated; Two-dimensional or vector profiles. C1 evidence adds the exact affine class, the node/exterior conventions, the convexity check, the contiguity discriminator and one measured ratio. The ratio is an observation on uniform source meshes at the tested evaluation points; no order is claimed for non-uniform, adaptive or stretched meshes, and the transfer remains a finite-mesh handoff rather than a physical model.",
   "known_limitations": [
-   "The independent analytic comparison does not replace an external experimental reference."
+   "The independent analytic comparison does not replace an external experimental reference.",
+   "The measured h^-2 ratio holds for uniform source meshes and the fixed probe set recorded in the test; a stretched or adaptive source mesh, or probes near a source node, are outside that observation and may show a different apparent rate."
   ]
  }
 }
