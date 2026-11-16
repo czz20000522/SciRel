@@ -74,6 +74,8 @@ def evaluate_janev_electron_impact_ionization_rate(
         nonpositive, if ``target_species`` is not exactly ``'H'`` or ``'H2'``, or
         if the evaluated rate is not finite and positive.
 
+    Warns
+    -----
     ApplicabilityWarning
         If a temperature is above ``2.01e4 eV``. The returned value is the
         endpoint value, not an extrapolation.

@@ -17,7 +17,9 @@ overlap the docstring are derived and must agree. This script checks, per asset:
   dimensional unit appears in that entry as ``[unit]`` exactly as written in
   the contract; contract inputs supplied through ``**kwargs`` may be described
   in ``Other Parameters``;
-- every exception named in ``failure_semantics`` is listed under Raises;
+- every exception named in ``failure_semantics`` is listed under Raises, and every
+  warning it names is listed under Warns: a warning is not an exception, so the two
+  sections are read separately and neither may carry the other's kind;
 - the docstring Examples run as doctests and are the same code as the
   contract example;
 - the Chinese reader record is bound to the current contract bytes;
@@ -259,11 +261,24 @@ def check(asset: dict, root: Path = ROOT) -> list[str]:
                 fail(
                     f"{section} entry {port['name']!r} does not state the contract unit [{port['units']}]"
                 )
-    if "Raises" in parts:
-        listed = set(ERROR.findall(parts["Raises"]))
-        named = set(ERROR.findall(json.dumps(document["failure_semantics"])))
-        for name in sorted(named - listed):
-            fail(f"failure_semantics names {name} but Raises does not")
+    # A warning is not an exception.  Both sections declare what a caller can see,
+    # so both are read, and each name has exactly one home: exception classes under
+    # Raises, Warning subclasses under Warns.  Reading only Raises used to force
+    # warnings into the exception list, which told callers and the generated pages
+    # that a warning would be raised.
+    raises_names = set(ERROR.findall(parts.get("Raises", "")))
+    warns_names = set(ERROR.findall(parts.get("Warns", "")))
+    named = set(ERROR.findall(json.dumps(document["failure_semantics"])))
+    for name in sorted(named - raises_names - warns_names):
+        fail(f"failure_semantics names {name} but neither Raises nor Warns lists it")
+    for name in sorted(raises_names | warns_names):
+        if name.endswith("Warning"):
+            if name in raises_names:
+                fail(f"{name} is a warning and belongs under Warns, not under Raises")
+            if name in named and name not in warns_names:
+                fail(f"failure_semantics names the warning {name} but Warns does not list it")
+        elif name in warns_names:
+            fail(f"{name} is not a Warning subclass and belongs under Raises, not under Warns")
 
     if "Examples" in parts:
         tests = doctest.DocTestFinder(recurse=False).find(obj, api["symbol"], globs={})

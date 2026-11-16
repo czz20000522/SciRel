@@ -51,6 +51,8 @@ def evaluate_hydrogen2_proton_elastic_cross_section(energy_ev):
     ValueError
         If ``energy_ev`` is not real numeric, is non-finite or is negative.
 
+    Warns
+    -----
     ApplicabilityWarning
         If a requested energy is above ``1.01e4 eV``. The returned value is the
         endpoint value, not an extrapolation.

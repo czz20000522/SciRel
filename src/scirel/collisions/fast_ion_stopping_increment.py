@@ -108,6 +108,9 @@ def evaluate_fast_ion_stopping_increment(
     OverflowError
         If ``float64`` conversion overflows, such as for an oversized integer;
         the converter error propagates unchanged.
+
+    Warns
+    -----
     RuntimeWarning
         If the retained direct arithmetic encounters invalid, divide-by-zero,
         overflow or complex fractional-power conditions. These outcomes are not

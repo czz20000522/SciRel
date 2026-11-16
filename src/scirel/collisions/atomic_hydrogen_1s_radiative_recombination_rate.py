@@ -53,11 +53,6 @@ def evaluate_atomic_hydrogen_1s_radiative_recombination_rate(electron_temperatur
     ValueError
         If ``electron_temperature_ev`` is not real numeric, is non-finite or is
         nonpositive, or if the evaluated fit is not finite and strictly positive.
-    ApplicabilityWarning
-        Emitted rather than raised, and listed here because the contract's
-        ``failure_semantics`` names it: any input temperature above ``30 eV``
-        returns the fit's own value at that temperature with this warning (see
-        Warns), never an exception.
 
     Warns
     -----
