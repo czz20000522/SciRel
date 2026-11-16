@@ -194,22 +194,27 @@
  },
  "verification": {
   "scope": [
+   "The independent basis is exact rational recomputation of R*dP/dpsi*dR*dZ and of the relaxation mixture on a dyadic grid, taken together with the two boundary weights relax = 0 and relax = 1, which select different branches (tests/equilibrium/test_isotropic_picard_step_evidence.py).",
    "Direct example checks the area-weighted current, identity-Green flux and normalized residual for one four-cell grid.",
    "tests/equilibrium/test_isotropic_picard_step.py::test_reviewed_relation_example directly calls the step with four cells and an artificial identity Green matrix. tests/cross_domain/test_legacy_six_absorption.py::test_picard_nonfinite_state_fails_instead_of_vacuum_mask covers its nonfinite arithmetic rejection. The full-solver composition cases do not directly call this legacy step.",
    "Direct test checks rejection of an incomplete call.",
    "Finite inputs that overflow current, Green contraction or total flux are independently reproduced as explicit failures.",
    "Return-type regression checks the top-level scirel._result.Result, key order and attribute access while retaining the existing numerical, state and failure assertions.",
    "test_isotropic_rejects_too_small_grid_before_indexing directly rejects grids with fewer than two points on either axis before indexing; this is input-error evidence, not a physical-normalization or convergence check.",
-   "test_real_pressure_step_has_independent_off_source_flux_amplitude directly calls the public step on R=(1,1.5), Z=(-0.5,0.5), with one nonzero derivative and analytic cell current 1 A. Its real get_gpsi input is not the oracle: off-source psi at (1.5,0.5) is compared with independent vector-potential angle integration at 80/120 digits, using rtol=2e-12 and atol=1e-20 Wb/rad."
+   "test_real_pressure_step_has_independent_off_source_flux_amplitude directly calls the public step on R=(1,1.5), Z=(-0.5,0.5), with one nonzero derivative and analytic cell current 1 A. Its real get_gpsi input is not the oracle: off-source psi at (1.5,0.5) is compared with independent vector-potential angle integration at 80/120 digits, using rtol=2e-12 and atol=1e-20 Wb/rad.",
+   "The identity and zero Green responses fix the flux as the current vector plus vacuum and as vacuum alone; relax = 1 keeps the previous currents unchanged even with a nonzero derivative while the flux still moves, so a flux-relaxation implementation cannot pass both weights.",
+   "The normalized residual equals ||psi_next - psi_state||/|psi_edge| recomputed at 40 digits within 8 eps.",
+   "A two-by-two grid is the declared minimum and is accepted; a one-row grid is rejected before indexing."
   ],
   "tests": [
    "tests/equilibrium/test_isotropic_picard_step.py",
    "tests/cross_domain/isotropic_pressure_flux/test_composition_isotropic_pressure_flux.py",
    "tests/cross_domain/test_legacy_six_absorption.py",
    "tests/equilibrium/test_picard_input_validation.py",
-   "tests/cross_domain/test_flux_reference_normalization.py::test_real_pressure_step_has_independent_off_source_flux_amplitude"
+   "tests/cross_domain/test_flux_reference_normalization.py::test_real_pressure_step_has_independent_off_source_flux_amplitude",
+   "tests/equilibrium/test_isotropic_picard_step_evidence.py"
   ],
-  "evidence_ceiling": "The direct four-cell example covers identity-Green arithmetic, and test_picard_nonfinite_state_fails_instead_of_vacuum_mask covers nonfinite rejection. The new test_real_pressure_step_has_independent_off_source_flux_amplitude adds independent off-source vector-potential integration for one analytic 1 A cell update. The full-solver composition cases do not directly call this step. These bounded checks establish the named per-radian normalization and discrete arithmetic, not complete-solver convergence or arbitrary input validity.",
+  "evidence_ceiling": "The direct four-cell example covers identity-Green arithmetic, and test_picard_nonfinite_state_fails_instead_of_vacuum_mask covers nonfinite rejection. The new test_real_pressure_step_has_independent_off_source_flux_amplitude adds independent off-source vector-potential integration for one analytic 1 A cell update. The full-solver composition cases do not directly call this step. These bounded checks establish the named per-radian normalization and discrete arithmetic, not complete-solver convergence or arbitrary input validity. C1 evidence (tests/equilibrium/test_isotropic_picard_step_evidence.py) replaces the hand-computed current array with Fraction-exact cell currents, decides the relaxation convention through both boundary weights, and recomputes the normalized residual at 40 digits. It does not validate the physical origin of the pressure derivative or of the Green matrix.",
   "known_limitations": [
    "The caller supplies pressure_derivative, g_psi, vacuum flux and the Picard iteration policy.",
    "A finite flux-update norm alone does not establish pressure-current closure; the full solver checks a second residual.",

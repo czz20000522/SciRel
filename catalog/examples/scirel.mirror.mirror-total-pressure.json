@@ -195,14 +195,19 @@
  },
  "verification": {
   "scope": [
+   "The independent basis is an exact rational (fractions.Fraction) recomputation of p_parallel = p_parallel_ion + p_electron and p_perpendicular = p_perpendicular_ion + p_electron on dyadic inputs, where each binary64 sum is also exact, so the comparison is bitwise rather than a tolerance (tests/mirror/test_mirror_total_pressure_evidence.py).",
    "Current SciRel implementation and the repository tests listed in this contract cover the declared public ports and numerical relation.",
-   "The example exercises one bounded representative case; it does not extend applicability beyond the declared preconditions."
+   "The example exercises one bounded representative case; it does not extend applicability beyond the declared preconditions.",
+   "The zero-electron-pressure identity returns the ion components bitwise, and a dyadic pressure increment moves both components by exactly that increment, which fixes the sign, the component pairing and the Pa unit against eV or keV misreadings.",
+   "Pass-through fields retain object identity (ion density, electron density, observational residual, optional potential, the kinetic_moments mapping) and unrecognised ion fields survive.",
+   "For non-dyadic inputs the only tolerance is one half-ulp rounding per component, derived from the single addition."
   ],
   "tests": [
    "tests/mirror/test_mirror_total_pressure.py",
-   "tests/cross_domain/test_mirror_kinetic_scientific_correction.py"
+   "tests/cross_domain/test_mirror_kinetic_scientific_correction.py",
+   "tests/mirror/test_mirror_total_pressure_evidence.py"
   ],
-  "evidence_ceiling": "Bounded to the declared relation: Broadcast ion/electron pressure fields together with density, residual and optional potential shapes…. Evidence: test_mirror_total_pressure.py, test_mirror_kinetic_scientific_correction.py (21 recorded test functions; bound-file coverage; self-consistency/regression only); the contract example ran. Excluded scope: Computing ion moments, Boltzmann electron response, electrostatic potential or a quasineutral root; Certifying charge neutrality, potential units, array-axis alignment or the physical correctness of the supplied pressure model; finite nonnegative species density and pressure are nevertheless mandatory numerical input checks.",
+  "evidence_ceiling": "Bounded to the declared relation: Broadcast ion/electron pressure fields together with density, residual and optional potential shapes…. Evidence: test_mirror_total_pressure.py, test_mirror_kinetic_scientific_correction.py (21 recorded test functions; bound-file coverage; self-consistency/regression only); the contract example ran. Excluded scope: Computing ion moments, Boltzmann electron response, electrostatic potential or a quasineutral root; Certifying charge neutrality, potential units, array-axis alignment or the physical correctness of the supplied pressure model; finite nonnegative species density and pressure are nevertheless mandatory numerical input checks. C1 evidence (tests/mirror/test_mirror_total_pressure_evidence.py) re-derives both sums in Fraction arithmetic on a dyadic fixture and asserts bitwise equality, pins the zero-pressure identity and 1 Pa, 8 Pa and 1024 Pa increments, checks pass-through object identity, and bounds the non-dyadic deviation by half an ulp. It does not establish the physical correctness of the supplied pressures, which remain caller input.",
   "known_limitations": [
    "The returned state is shallow and retains the caller kinetic mapping; later caller mutation can change referenced fields.",
    "Broadcasting is not coordinate alignment. A finite nonzero observational charge residual remains permitted.",

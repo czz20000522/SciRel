@@ -184,13 +184,19 @@
  },
  "verification": {
   "scope": [
+   "The independent basis is the exact rational recurrence of the terminating even solution: a_(k+1) = [2k(2k+1) - lambda] a_k / (2 (k+1) (2k+1)) terminates at k = n exactly when lambda = 2n(2n+1), so feeding the largest root of that polynomial inside (0, 1) as xi_tp must return degree 2n at index n-1 with eigenvalue exactly 2n(2n+1) (tests/mirror/test_loss_cone_spectrum_evidence.py).",
    "Current SciRel implementation and the repository tests listed in this contract cover the declared public ports and numerical relation.",
-   "The example exercises one bounded representative case; it does not extend applicability beyond the declared preconditions."
+   "The example exercises one bounded representative case; it does not extend applicability beyond the declared preconditions.",
+   "The sampled eigenfunctions equal the exact polynomial evaluated at 50 digits from its Fraction coefficients, with a 1e-11 absolute budget derived as 32 times the declared regular-mode rtol = 3e-13.",
+   "Degrees are strictly increasing, every eigenvalue equals degree*(degree+1), the first row is exactly 1.0, the positions follow i*xi_tp/N and exclude xi_tp itself, and the count is max(grid_points, mode_count + 8).",
+   "The reported boundary residuals stay below the declared 2e-8 for the exact roots, with an observed maximum of 5.9e-12 over n = 1..5.",
+   "The RuntimeError and FloatingPointError channels were not reached by any tested input and are recorded as not-exercised."
   ],
   "tests": [
-   "tests/cross_domain/test_spectral_scientific_correction.py"
+   "tests/cross_domain/test_spectral_scientific_correction.py",
+   "tests/mirror/test_loss_cone_spectrum_evidence.py"
   ],
-  "evidence_ceiling": "Bounded to the lowest ordered angular modes, including integer-root and small loss-cone cases. Evidence: `test_spectral_scientific_correction.py` contains 16 test functions, 2 of which reference `solve_loss_cone_spectrum`, and is shared by 6 assets; only shared-file coverage is bound, so a pass is file-level rather than asset-isolated; the bounded example was executed by this audit. Oracle: self-consistency/regression only. It does not establish physical population validation, transport, or global equilibrium.",
+  "evidence_ceiling": "Bounded to the lowest ordered angular modes, including integer-root and small loss-cone cases. Evidence: `test_spectral_scientific_correction.py` contains 16 test functions, 2 of which reference `solve_loss_cone_spectrum`, and is shared by 6 assets; only shared-file coverage is bound, so a pass is file-level rather than asset-isolated; the bounded example was executed by this audit. Oracle: self-consistency/regression only. It does not establish physical population validation, transport, or global equilibrium. C1 evidence (tests/mirror/test_loss_cone_spectrum_evidence.py) adds the exact rational polynomial branch: exact Dirichlet points recover the integer degrees 2n at index n-1, the eigenfunctions match the exact polynomials, and the grid, ordering and boundary conventions are decided exactly. The Dirichlet points reproduce the Gauss-Legendre abscissae, which is the independent anchor for that branch. Non-integer degrees have no closed-form oracle here.",
   "known_limitations": [
    "Numerical residual checks are finite precision; the endpoint xi_tp=1 is excluded by the singular differential operator.",
    "The legacy backend names no longer request a truncated approximation.",

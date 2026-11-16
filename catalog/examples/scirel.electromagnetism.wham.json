@@ -1,120 +1,128 @@
 {
- "schema": "scirel.asset-document",
- "version": {
-  "implementation_version": "0.0.0",
-  "dependencies": [
-   {
-    "asset_id": "scirel.electromagnetism.device"
-   },
-   {
-    "asset_id": "scirel.electromagnetism.rectangular-coil"
-   }
-  ]
- },
- "verification": {
-  "scope": [
-   "Bounded rigid-geometry and coordinate invariants",
-   "Ordered current projection and source lifecycle",
-   "Full BRB/WHAM configuration composition at finite targets"
+  "schema": "scirel.asset-document",
+  "version": {
+    "implementation_version": "0.0.0",
+    "dependencies": [
+      {
+        "asset_id": "scirel.electromagnetism.device"
+      },
+      {
+        "asset_id": "scirel.electromagnetism.rectangular-coil"
+      }
+    ]
+  },
+  "verification": {
+    "scope": [
+      "Bounded rigid-geometry and coordinate invariants",
+      "Ordered current projection and source lifecycle",
+      "Full BRB/WHAM configuration composition at finite targets",
+      "Independent reference (tests/electromagnetism/test_device_composition_evidence.py): the four coils are decided structurally - their point counts, a bitwise mirror pair for the two HTS coils and for the two central coils, and identical radii within each pair - and the device field is decided as the exact Fraction contraction of the stacked child matrices, so the composition and the geometry are checked by two independent laws.",
+      "Implementation relation: four rectangular coils in attribute order - hts1 at (0.25, 0.942) and hts2 at (0.25, -0.942) with nr=8, nz=4, dr=0.0475, dz=0.0275, and cc1 at (1.005, 0.205) and cc2 at (1.005, -0.205) with nr=2, nz=5, dr=0.025, dz=0.024 - giving 32, 32, 10 and 10 filaments. The constructor accepts no arguments and each child is a RectangularCoil with the documented product-sequence layout.",
+      "Test matrix (2 cases): the four point counts, the identical radii and the mirror-paired heights of both coil pairs; and the device contraction with a Fraction bound, including the check that scaling one child current changes the device field by exactly that child's response. Boundary cases are the fixed cardinality and the zero-argument constructor.",
+      "Precision budget, fixed before the comparison ran: (n + 2) eps for the four-child contraction; the mirror pairs are bounded by 2 np.spacing of the largest node magnitude and the point counts are exact.",
+      "Failure matrix, one executable assertion per channel: the zero-argument constructor is the only supported entry, so supplying an argument raises TypeError; child rejections and FloatingPointError propagate unchanged from the RectangularCoil contract.",
+      "Cannot establish: the repository holds no independent source for the WHAM coil radii, heights, turns or spacings. Only their internal consistency, ordering and mirror symmetry are established; that these constants describe the WHAM device is not, and no experimental calibration is claimed."
+    ],
+    "tests": [
+      "tests/geometry/test_geometry_qualification.py",
+      "tests/geometry/test_runtime_lifecycle.py",
+      "tests/electromagnetism/test_device_composition_evidence.py"
+    ],
+    "evidence_ceiling": "Independent exact geometry laws, the elementary on-axis loop field, and exact composition contractions for the named objects. The device constants themselves are not established. Not experimental qualification and not an arbitrary-domain bound.",
+    "known_limitations": [
+      "Set a child's current as coil.current (amperes in EACH filament) or coil.total_current (ampere-turns of the whole block, divided by the weight sum); for hts1 total_current = 32 * current. When a task specifies its own coil geometry or currents, build the coils from the task (for example with scirel.field.solve_multi_coil_vacuum_field) and use this preset only after checking that its geometry matches.",
+      "No experimental validation of source device constants, conductor area proxy or material magnetization is claimed.",
+      "Direct geometry/weight arrays can be mutated; cache content changes are detected, but mutation that desynchronizes parameterized geometry from its parameters is outside the supported contract.",
+      "Unrecognised **kwargs are permissive where inherited; no arbitrary keyword semantic claim.",
+      "Plotting/patch, simplify/clone, multiprocessing, electrodes and persistent sweeps are excluded or unresolved.",
+      "No scientific, experimental or licensing approval is claimed.",
+      "The evidence covers the declared parameters and the fixed configurations only; the field statements are made on named targets and are not an arbitrary-domain bound."
+    ]
+  },
+  "asset_id": "scirel.electromagnetism.wham",
+  "title": {
+    "en": "WHAM filament geometry",
+    "zh": "WHAM 圆丝设备"
+  },
+  "summary": "Construct the ordered WHAM device with four rectangular coils containing 32, 32, 10, and 10 filaments.",
+  "taxonomy": [
+    "electromagnetism",
+    "sources",
+    "configurations"
   ],
-  "tests": [
-   "tests/geometry/test_geometry_qualification.py",
-   "tests/geometry/test_runtime_lifecycle.py"
+  "aliases": [
+    "WHAM"
   ],
-  "evidence_ceiling": "Named geometry, lifecycle and configuration cases only; no arbitrary-input scientific correctness or release claim.",
-  "known_limitations": [
-   "Set a child's current as coil.current (amperes in EACH filament) or coil.total_current (ampere-turns of the whole block, divided by the weight sum); for hts1 total_current = 32 * current. When a task specifies its own coil geometry or currents, build the coils from the task (for example with scirel.field.solve_multi_coil_vacuum_field) and use this preset only after checking that its geometry matches.",
-   "No experimental validation of source device constants, conductor area proxy or material magnetization is claimed.",
-   "Direct geometry/weight arrays can be mutated; cache content changes are detected, but mutation that desynchronizes parameterized geometry from its parameters is outside the supported contract.",
-   "Unknown **kwargs are permissive where inherited; no arbitrary keyword semantic claim.",
-   "Plotting/patch, simplify/clone, multiprocessing, electrodes and persistent sweeps are excluded or unresolved.",
-   "No scientific, experimental or licensing approval is claimed."
-  ]
- },
- "asset_id": "scirel.electromagnetism.wham",
- "title": {
-  "en": "WHAM filament geometry",
-  "zh": "WHAM 圆丝设备"
- },
- "summary": "Construct the ordered WHAM device with four rectangular coils containing 32, 32, 10, and 10 filaments.",
- "taxonomy": [
-  "electromagnetism",
-  "sources",
-  "configurations"
- ],
- "aliases": [
-  "WHAM"
- ],
- "discovery": {
-  "capability": [
-   "WHAM filament geometry",
-   "Fixed WHAM device with four rectangular coils containing 32, 32, 10 and 10 filaments."
+  "discovery": {
+    "capability": [
+      "WHAM filament geometry",
+      "Fixed WHAM device with four rectangular coils containing 32, 32, 10 and 10 filaments."
+    ],
+    "operation": [
+      "Construct the fixed WHAM source composition",
+      "no caller inputs -> fixed ordered WHAM child sources"
+    ],
+    "model": "Axisymmetric ideal circular-filament geometry with declared constants.",
+    "geometry": "Four rectangular source lattices in cylindrical R,Z coordinates; R,Z in metres, currents in amperes and weights dimensionless.",
+    "boundary": "Fixed geometry only; it does not calibrate the experimental device.",
+    "device_scope": "device-bound"
+  },
+  "identity": {
+    "relation": "Fixed WHAM source composition",
+    "direction": "No caller inputs to fixed ordered WHAM child sources.",
+    "definition": "WHAM registers hts1, hts2, cc1, and cc2 rectangular coil children in that order. Fixed geometry (R0, Z0 of the block centre in m; nr x nz filaments; centre spacings dR, dZ in m): hts1 (0.25, +0.942; 8x4; 0.0475, 0.0275), hts2 (0.25, -0.942; 8x4; 0.0475, 0.0275), cc1 (1.005, +0.205; 2x5; 0.025, 0.024), cc2 (1.005, -0.205; 2x5; 0.025, 0.024). No operating currents are included: every child starts at current = 1 A per filament (unit weights), so fields are per-ampere responses until the caller sets currents.",
+    "model": "Axisymmetric ideal circular-filament geometry.",
+    "geometry": "Four rectangular source lattices in cylindrical R,Z coordinates.",
+    "coordinates": "R,Z in metres; current is amperes per filament and total_current is amperes per coil block; weights dimensionless.",
+    "boundary": "The object represents fixed geometry and does not calibrate the experimental device.",
+    "assumptions": [
+      "The zero-argument constructor fixes the WHAM geometry; it accepts no geometry, current or mesh parameters.",
+      "Field evaluation requires a target mesh and nonsingular target points.",
+      "Child order is preserved by Device."
+    ]
+  },
+  "inputs": [],
+  "outputs": [
+    {
+      "name": "source",
+      "description": "Constructed WHAM object with the fixed source geometry, unit per-filament currents, weights and optional target mesh. Fields are evaluated by its methods after the caller sets currents.",
+      "units": "geometry m; current A; weights dimensionless",
+      "shape": "one object",
+      "dtype": "WHAM",
+      "required": true,
+      "constraints": "Bounded source geometry and field-response methods"
+    }
   ],
-  "operation": [
-   "Construct the fixed WHAM source composition",
-   "no caller inputs -> fixed ordered WHAM child sources"
-  ],
-  "model": "Axisymmetric ideal circular-filament geometry with declared constants.",
-  "geometry": "Four rectangular source lattices in cylindrical R,Z coordinates; R,Z in metres, currents in amperes and weights dimensionless.",
-  "boundary": "Fixed geometry only; it does not calibrate the experimental device.",
-  "device_scope": "device-bound"
- },
- "identity": {
-  "relation": "Fixed WHAM source composition",
-  "direction": "No caller inputs to fixed ordered WHAM child sources.",
-  "definition": "WHAM registers hts1, hts2, cc1, and cc2 rectangular coil children in that order. Fixed geometry (R0, Z0 of the block centre in m; nr x nz filaments; centre spacings dR, dZ in m): hts1 (0.25, +0.942; 8x4; 0.0475, 0.0275), hts2 (0.25, -0.942; 8x4; 0.0475, 0.0275), cc1 (1.005, +0.205; 2x5; 0.025, 0.024), cc2 (1.005, -0.205; 2x5; 0.025, 0.024). No operating currents are included: every child starts at current = 1 A per filament (unit weights), so fields are per-ampere responses until the caller sets currents.",
-  "model": "Axisymmetric ideal circular-filament geometry.",
-  "geometry": "Four rectangular source lattices in cylindrical R,Z coordinates.",
-  "coordinates": "R,Z in metres; current is amperes per filament and total_current is amperes per coil block; weights dimensionless.",
-  "boundary": "The object represents fixed geometry and does not calibrate the experimental device.",
-  "assumptions": [
-   "The zero-argument constructor fixes the WHAM geometry; it accepts no geometry, current or mesh parameters.",
-   "Field evaluation requires a target mesh and nonsingular target points.",
-   "Child order is preserved by Device."
-  ]
- },
- "inputs": [],
- "outputs": [
-  {
-   "name": "source",
-   "description": "Constructed WHAM object with the fixed source geometry, unit per-filament currents, weights and optional target mesh. Fields are evaluated by its methods after the caller sets currents.",
-   "units": "geometry m; current A; weights dimensionless",
-   "shape": "one object",
-   "dtype": "WHAM",
-   "required": true,
-   "constraints": "Bounded source geometry and field-response methods"
+  "applicability": {
+    "preconditions": [
+      "The zero-argument constructor fixes the WHAM geometry; it accepts no geometry, current or mesh parameters.",
+      "Field evaluation requires a target mesh and nonsingular target points."
+    ],
+    "supported": [
+      "Child counts, reflection geometry, mesh propagation, current projection, and finite field evaluation."
+    ],
+    "excluded": [
+      "Experimental calibration, finite-wire or permeability physics, and persistent sweeps."
+    ]
+  },
+  "failure_semantics": {
+    "invalid_input": "Supplying constructor arguments raises TypeError. Child source ValueError and active-filament singularity failures propagate from construction or later field evaluation.",
+    "runtime_failure": "Child Green-kernel FloatingPointError propagates.",
+    "nonconvergence": "Not applicable; construction is a direct ordered composition.",
+    "partial_results": "A failed constructor returns no usable device object."
+  },
+  "public_api": {
+    "python": {
+      "module": "scirel.configurations",
+      "symbol": "WHAM",
+      "signature": "WHAM()",
+      "canonical_module": "scirel.configurations",
+      "canonical_symbol": "WHAM"
+    }
+  },
+  "example": {
+    "description": "Construct the fixed WHAM device and inspect child point counts.",
+    "code": "from scirel.configurations import WHAM\nd=WHAM()\nassert [c.npts for c in d.current_sets]==[32,32,10,10]",
+    "expected": "The four current sets contain [32, 32, 10, 10] points in order."
   }
- ],
- "applicability": {
-  "preconditions": [
-   "The zero-argument constructor fixes the WHAM geometry; it accepts no geometry, current or mesh parameters.",
-   "Field evaluation requires a target mesh and nonsingular target points."
-  ],
-  "supported": [
-   "Child counts, reflection geometry, mesh propagation, current projection, and finite field evaluation."
-  ],
-  "excluded": [
-   "Experimental calibration, finite-wire or permeability physics, and persistent sweeps."
-  ]
- },
- "failure_semantics": {
-  "invalid_input": "Supplying constructor arguments raises TypeError. Child source ValueError and active-filament singularity failures propagate from construction or later field evaluation.",
-  "runtime_failure": "Child Green-kernel FloatingPointError propagates.",
-  "nonconvergence": "Not applicable; construction is a direct ordered composition.",
-  "partial_results": "A failed constructor returns no usable device object."
- },
- "public_api": {
-  "python": {
-   "module": "scirel.configurations",
-   "symbol": "WHAM",
-   "signature": "WHAM()",
-   "canonical_module": "scirel.configurations",
-   "canonical_symbol": "WHAM"
-  }
- },
- "example": {
-  "description": "Construct the fixed WHAM device and inspect child point counts.",
-  "code": "from scirel.configurations import WHAM\nd=WHAM()\nassert [c.npts for c in d.current_sets]==[32,32,10,10]",
-  "expected": "The four current sets contain [32, 32, 10, 10] points in order."
- }
 }

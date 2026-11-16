@@ -1,114 +1,121 @@
 {
- "schema": "scirel.asset-document",
- "asset_id": "scirel.fieldline.boundary",
- "title": {
-  "en": "Parametric boundary interpolation",
-  "zh": "参数化边界插值"
- },
- "summary": "Fit a nonperiodic parametric spline to ordered planar boundary vertices.",
- "taxonomy": [
-  "analysis",
-  "fieldline"
- ],
- "aliases": [
-  "Boundary"
- ],
- "discovery": {
-  "capability": [
-   "Parametric boundary interpolation",
-   "Fit a nonperiodic parametric spline to ordered planar boundary vertices."
+  "schema": "scirel.asset-document",
+  "asset_id": "scirel.fieldline.boundary",
+  "title": {
+    "en": "Parametric boundary interpolation",
+    "zh": "参数化边界插值"
+  },
+  "summary": "Fit a nonperiodic parametric spline to ordered planar boundary vertices.",
+  "taxonomy": [
+    "analysis",
+    "fieldline"
   ],
-  "operation": [
-   "ordered boundary vertices to an interpolable boundary object",
-   "ordered planar boundary vertices -> boundary object with stored 200 fitted samples"
+  "aliases": [
+    "Boundary"
   ],
-  "model": "Nonperiodic quadratic splprep parametric spline with smoothing s=0; stored samples are 200 fitted points.",
-  "geometry": "Ordered planar boundary path; vertex coordinates are in caller length units.",
-  "boundary": "No periodic closure, polygon-interior test, crossing selection or intersection uniqueness is inferred.",
-  "device_scope": "generic"
- },
- "identity": {
-  "relation": "Parametric boundary spline",
-  "direction": "ordered boundary vertices to an interpolable boundary object",
-  "definition": "Fit a SciPy parametric spline with s=0 and sample it at 200 parameters.",
-  "model": "Nonperiodic quadratic default splprep fit.",
-  "geometry": "Ordered planar boundary path.",
-  "coordinates": "Vertex coordinates in caller length units.",
-  "boundary": "No periodic closure or intersection uniqueness is inferred.",
-  "assumptions": [
-   "The input is finite and contains enough distinct points for splprep.",
-   "Stored samples are 200 fitted points.",
-   "The object exposes tck, u, verts, and interpolate."
-  ]
- },
- "inputs": [
-  {
-   "name": "vertices",
-   "description": "Ordered boundary vertices",
-   "units": "length units",
-   "shape": "(N,2)",
-   "dtype": "float64",
-   "required": true,
-   "constraints": "Finite ordered points sufficient for the default quadratic splprep fit (at least three distinct points)."
+  "discovery": {
+    "capability": [
+      "Parametric boundary interpolation",
+      "Fit a nonperiodic parametric spline to ordered planar boundary vertices."
+    ],
+    "operation": [
+      "ordered boundary vertices to an interpolable boundary object",
+      "ordered planar boundary vertices -> boundary object with stored 200 fitted samples"
+    ],
+    "model": "Nonperiodic quadratic splprep parametric spline with smoothing s=0; stored samples are 200 fitted points.",
+    "geometry": "Ordered planar boundary path; vertex coordinates are in caller length units.",
+    "boundary": "No periodic closure, polygon-interior test, crossing selection or intersection uniqueness is inferred.",
+    "device_scope": "generic"
+  },
+  "identity": {
+    "relation": "Parametric boundary spline",
+    "direction": "ordered boundary vertices to an interpolable boundary object",
+    "definition": "Fit a SciPy parametric spline with s=0 and sample it at 200 parameters.",
+    "model": "Nonperiodic quadratic default splprep fit.",
+    "geometry": "Ordered planar boundary path.",
+    "coordinates": "Vertex coordinates in caller length units.",
+    "boundary": "No periodic closure or intersection uniqueness is inferred.",
+    "assumptions": [
+      "The input is finite and contains enough distinct points for splprep.",
+      "Stored samples are 200 fitted points.",
+      "The object exposes tck, u, verts, and interpolate."
+    ]
+  },
+  "inputs": [
+    {
+      "name": "vertices",
+      "description": "Ordered boundary vertices",
+      "units": "length units",
+      "shape": "(N,2)",
+      "dtype": "float64",
+      "required": true,
+      "constraints": "Finite ordered points sufficient for the default quadratic splprep fit (at least three distinct points)."
+    }
+  ],
+  "outputs": [
+    {
+      "name": "boundary",
+      "description": "Object with verts,tck,u and interpolation",
+      "units": "length units",
+      "shape": "Python object",
+      "dtype": "Python object",
+      "required": true,
+      "constraints": "Stored verts have (200,2); interpolation returns coordinate arrays"
+    }
+  ],
+  "applicability": {
+    "preconditions": [
+      "The input is finite and contains enough distinct points for splprep.",
+      "Stored samples are 200 fitted points."
+    ],
+    "supported": [
+      "Named finite boundary interpolation and endpoint behavior."
+    ],
+    "excluded": [
+      "Polygon interior tests, crossing selection, and uniqueness guarantees."
+    ]
+  },
+  "failure_semantics": {
+    "invalid_input": "Underlying array or SciPy spline validation errors propagate for unsupported vertices.",
+    "runtime_failure": "Interpolation exceptions propagate.",
+    "nonconvergence": "Not applicable; fitting is a direct spline construction.",
+    "partial_results": "A failed constructor returns no boundary object."
+  },
+  "public_api": {
+    "python": {
+      "module": "scirel.geometry.fieldline",
+      "symbol": "Boundary",
+      "signature": "Boundary(vertices)",
+      "canonical_module": "scirel.geometry",
+      "canonical_symbol": "Boundary"
+    }
+  },
+  "version": {
+    "implementation_version": "0.0.0",
+    "dependencies": []
+  },
+  "example": {
+    "description": "Fit a nonperiodic boundary spline to four ordered vertices.",
+    "code": "import numpy as np\nfrom scirel.geometry.fieldline import Boundary\nb=Boundary(np.array([[0.,0.],[.3,.3],[.7,.7],[1.,1.]]))\nassert b.verts.shape==(200,2)",
+    "expected": "The boundary stores 200 fitted vertices with shape (200,2)."
+  },
+  "verification": {
+    "scope": [
+      "Only the explicitly stated finite input domain and direct-test fixtures",
+      "Independent reference (tests/fieldline/test_fieldline_geometry_evidence.py): a Boundary fitted to a sampled circle is measured against that circle. The stored samples must return to radius a with a measured refinement ratio of at least eight per halving of the vertex spacing, which is what an O(h^3) quadratic interpolation of smooth data predicts, and the endpoint value must be the first vertex to rounding. The endpoints are also checked through ``interpolate``, so the fitted representation is used rather than a re-fit.",
+      "Implementation relation: the constructor fits a nonperiodic quadratic parametric spline with s=0, which interpolates the given vertices, and samples it at 200 equally spaced parameters; u is that spline parameter, not arclength, and no closure or crossing uniqueness is inferred.",
+      "Test matrix (3 statements): the 200-sample shape and the endpoint values; the measured radial error sequence of a circle over four vertex counts with the ratio bound; and the scalar-parameter call. Boundary and degenerate cases are the endpoints of the parameter interval.",
+      "Precision budget, fixed before the comparison ran: 8 eps for the endpoint identity, which is exact in exact arithmetic; a measured ratio of at least 8 per halving for the interpolation error of a circle (O(h^3) for a quadratic fit of smooth data); and a final relative radial error below 1e-6 at 129 vertices.",
+      "Failure matrix: the fitting and interpolation calls propagate the underlying SciPy validation errors unchanged, and the contract declares no repair or fallback, so the executable statement is that a segment too short for the quadratic fit raises rather than being silently replaced."
+    ],
+    "tests": [
+      "tests/equilibrium/test_retained_fieldline_primitives.py",
+      "tests/fieldline/test_fieldline_geometry_evidence.py"
+    ],
+    "evidence_ceiling": "Analytic circle geometry through an independently measured refinement sequence, plus the exact endpoint identity. Covers the named circle families only; no interior-point interpolation error bound and no claim about self-intersecting input.",
+    "known_limitations": [
+      "No reliable intersection, polygon interior or uniqueness guarantee",
+      "The refinement ratio is measured for a circle; a general error estimate for arbitrary boundaries is not established here."
+    ]
   }
- ],
- "outputs": [
-  {
-   "name": "boundary",
-   "description": "Object with verts,tck,u and interpolation",
-   "units": "length units",
-   "shape": "Python object",
-   "dtype": "Python object",
-   "required": true,
-   "constraints": "Stored verts have (200,2); interpolation returns coordinate arrays"
-  }
- ],
- "applicability": {
-  "preconditions": [
-   "The input is finite and contains enough distinct points for splprep.",
-   "Stored samples are 200 fitted points."
-  ],
-  "supported": [
-   "Named finite boundary interpolation and endpoint behavior."
-  ],
-  "excluded": [
-   "Polygon interior tests, crossing selection, and uniqueness guarantees."
-  ]
- },
- "failure_semantics": {
-  "invalid_input": "Underlying array or SciPy spline validation errors propagate for unsupported vertices.",
-  "runtime_failure": "Interpolation exceptions propagate.",
-  "nonconvergence": "Not applicable; fitting is a direct spline construction.",
-  "partial_results": "A failed constructor returns no boundary object."
- },
- "public_api": {
-  "python": {
-   "module": "scirel.geometry.fieldline",
-   "symbol": "Boundary",
-   "signature": "Boundary(vertices)",
-   "canonical_module": "scirel.geometry",
-   "canonical_symbol": "Boundary"
-  }
- },
- "version": {
-  "implementation_version": "0.0.0",
-  "dependencies": []
- },
- "example": {
-  "description": "Fit a nonperiodic boundary spline to four ordered vertices.",
-  "code": "import numpy as np\nfrom scirel.geometry.fieldline import Boundary\nb=Boundary(np.array([[0.,0.],[.3,.3],[.7,.7],[1.,1.]]))\nassert b.verts.shape==(200,2)",
-  "expected": "The boundary stores 200 fitted vertices with shape (200,2)."
- },
- "verification": {
-  "scope": [
-   "Only the explicitly stated finite input domain and direct-test fixtures"
-  ],
-  "tests": [
-   "tests/equilibrium/test_retained_fieldline_primitives.py"
-  ],
-  "evidence_ceiling": "Numerical evidence for the named fixtures only; it does not establish arbitrary-input correctness or experimental physical validation.",
-  "known_limitations": [
-   "No reliable intersection, polygon interior or uniqueness guarantee"
-  ]
- }
 }

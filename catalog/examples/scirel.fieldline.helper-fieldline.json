@@ -1,142 +1,149 @@
 {
- "schema": "scirel.asset-document",
- "asset_id": "scirel.fieldline.helper-fieldline",
- "title": {
-  "en": "HelperFieldLine geometry and diagnostics",
-  "zh": "辅助场线几何与诊断"
- },
- "summary": "Fit a contour path and provide helper interpolation, arclength, gradient, field-curvature, and bounded-intersection diagnostics.",
- "taxonomy": [
-  "analysis",
-  "fieldline"
- ],
- "aliases": [
-  "HelperFieldLine"
- ],
- "discovery": {
-  "capability": [
-   "Helper field-line geometry and diagnostics",
-   "Fit a contour path and provide helper interpolation, arclength, gradient, field-curvature and bounded-intersection diagnostics."
-  ],
-  "operation": [
-   "contour label and vertices to a fitted helper diagnostic line",
-   "psi contour label and ordered planar vertices -> fitted helper line object with geometry and field-based diagnostics"
-  ],
-  "model": "Fixed 1000-point quadratic default spline with selectable linear, nearest or cubic interpolation and a local polynomial field-curvature derivative; flux-gradient curvature is not provided.",
-  "geometry": "Open paths preserve order and closed paths use periodic splprep; planar R,Z in caller length units with psi as a contour label.",
-  "boundary": "Intersections search only fitted parameter intervals and reject zero or multiple crossings; arbitrary topology, magnetic-axis limits and universal error bounds are excluded.",
-  "device_scope": "generic"
- },
- "identity": {
-  "relation": "HelperFieldLine geometry and diagnostics",
-  "direction": "contour label and vertices to a fitted helper diagnostic object",
-  "definition": "Fit an ordered parametric line; helper interpolation passes all source field values, including nonfinite values, to SciPy while field curvature differentiates normalized interpolated BR,BZ along fitted geometry.",
-  "model": "Fixed 1000-point quadratic default spline with selectable linear/nearest/cubic interpolation and local polynomial curvature derivative.",
-  "geometry": "Open paths preserve order; closed paths use periodic splprep.",
-  "coordinates": "Planar R,Z in caller length units; psi is a contour label.",
-  "boundary": "Intersections search only fitted parameter intervals and reject zero or multiple crossings.",
-  "assumptions": [
-   "Finite vertices are sufficient for splprep and adjacent fitted samples remain distinct.",
-   "Field curvature needs finite nonzero B and nonzero tangent projection.",
-   "Queries should lie within the finite interpolation support of the supplied field."
-  ]
- },
- "inputs": [
-  {
-   "name": "psi",
-   "description": "Contour level label",
-   "units": "caller flux-label units",
-   "shape": "scalar",
-   "dtype": "float64",
-   "required": true,
-   "constraints": "Not a reconstructed flux field"
+  "schema": "scirel.asset-document",
+  "asset_id": "scirel.fieldline.helper-fieldline",
+  "title": {
+    "en": "HelperFieldLine geometry and diagnostics",
+    "zh": "辅助场线几何与诊断"
   },
-  {
-   "name": "verts",
-   "description": "Contour vertices",
-   "units": "length units",
-   "shape": "(M,2)",
-   "dtype": "float64",
-   "required": true,
-   "constraints": "Finite ordered points sufficient for the default quadratic splprep fit; adjacent fitted samples must remain distinct."
+  "summary": "Fit a contour path and provide helper interpolation, arclength, gradient, field-curvature, and bounded-intersection diagnostics.",
+  "taxonomy": [
+    "analysis",
+    "fieldline"
+  ],
+  "aliases": [
+    "HelperFieldLine"
+  ],
+  "discovery": {
+    "capability": [
+      "Helper field-line geometry and diagnostics",
+      "Fit a contour path and provide helper interpolation, arclength, gradient, field-curvature and bounded-intersection diagnostics."
+    ],
+    "operation": [
+      "contour label and vertices to a fitted helper diagnostic line",
+      "psi contour label and ordered planar vertices -> fitted helper line object with geometry and field-based diagnostics"
+    ],
+    "model": "Fixed 1000-point quadratic default spline with selectable linear, nearest or cubic interpolation and a local polynomial field-curvature derivative; flux-gradient curvature is not provided.",
+    "geometry": "Open paths preserve order and closed paths use periodic splprep; planar R,Z in caller length units with psi as a contour label.",
+    "boundary": "Intersections search only fitted parameter intervals and reject zero or multiple crossings; arbitrary topology, magnetic-axis limits and universal error bounds are excluded.",
+    "device_scope": "generic"
+  },
+  "identity": {
+    "relation": "HelperFieldLine geometry and diagnostics",
+    "direction": "contour label and vertices to a fitted helper diagnostic object",
+    "definition": "Fit an ordered parametric line; helper interpolation passes all source field values, including nonfinite values, to SciPy while field curvature differentiates normalized interpolated BR,BZ along fitted geometry.",
+    "model": "Fixed 1000-point quadratic default spline with selectable linear/nearest/cubic interpolation and local polynomial curvature derivative.",
+    "geometry": "Open paths preserve order; closed paths use periodic splprep.",
+    "coordinates": "Planar R,Z in caller length units; psi is a contour label.",
+    "boundary": "Intersections search only fitted parameter intervals and reject zero or multiple crossings.",
+    "assumptions": [
+      "Finite vertices are sufficient for splprep and adjacent fitted samples remain distinct.",
+      "Field curvature needs finite nonzero B and nonzero tangent projection.",
+      "Queries should lie within the finite interpolation support of the supplied field."
+    ]
+  },
+  "inputs": [
+    {
+      "name": "psi",
+      "description": "Contour level label",
+      "units": "caller flux-label units",
+      "shape": "scalar",
+      "dtype": "float64",
+      "required": true,
+      "constraints": "Not a reconstructed flux field"
+    },
+    {
+      "name": "verts",
+      "description": "Contour vertices",
+      "units": "length units",
+      "shape": "(M,2)",
+      "dtype": "float64",
+      "required": true,
+      "constraints": "Finite ordered points sufficient for the default quadratic splprep fit; adjacent fitted samples must remain distinct."
+    }
+  ],
+  "outputs": [
+    {
+      "name": "line",
+      "description": "Object exposing verts,tck,u and arclength/field diagnostics",
+      "units": "length; gradient caller flux per length; curvature inverse length",
+      "shape": "line object",
+      "dtype": "Python object",
+      "required": true,
+      "constraints": "get_ds returns first segment length, not a uniform-step guarantee"
+    }
+  ],
+  "applicability": {
+    "preconditions": [
+      "Finite vertices are sufficient for splprep and adjacent fitted samples remain distinct.",
+      "Field curvature needs finite nonzero B and nonzero tangent projection."
+    ],
+    "supported": [
+      "Named interpolation, curvature, derivative, boundary, and scale cases in the listed tests."
+    ],
+    "excluded": [
+      "Flux-gradient curvature, arbitrary contour topology, magnetic-axis limits, and universal error bounds."
+    ]
+  },
+  "failure_semantics": {
+    "invalid_input": "interpolate_onto and get_gradpsi can return NaN for unsupported or undefined interpolation; callers requiring finite values must check their results. get_kappa_n raises ValueError for nonfinite or zero interpolated field, duplicate adjacent vertices, or undefined tangent support. Other SciPy construction and interpolation errors propagate.",
+    "runtime_failure": "Underlying interpolation, linear-algebra, and floating-point exceptions propagate.",
+    "nonconvergence": "Intersection raises ValueError when no unique fitted-interval crossing is found; finite multistart search does not prove root completeness.",
+    "partial_results": "apply_boundary updates both bounds only after both intersections succeed; failed construction returns no helper line."
+  },
+  "public_api": {
+    "python": {
+      "module": "scirel.geometry.fieldline",
+      "symbol": "HelperFieldLine",
+      "signature": "HelperFieldLine(psi, verts)",
+      "canonical_module": "scirel.geometry",
+      "canonical_symbol": "HelperFieldLine"
+    }
+  },
+  "version": {
+    "implementation_version": "0.0.0",
+    "dependencies": [
+      {
+        "asset_id": "scirel.fieldline.arclength-derivative"
+      }
+    ]
+  },
+  "example": {
+    "description": "Fit one open HelperFieldLine from three ordered vertices.",
+    "code": "import numpy as np\nfrom scirel.geometry.fieldline import HelperFieldLine\nline=HelperFieldLine(.2,np.array([[.2,0.],[.6,0.],[1.,0.]]))\nassert line.verts.shape==(1000,2)",
+    "expected": "The default constructor produces a helper line with verts shape (1000,2)."
+  },
+  "verification": {
+    "scope": [
+      "test_fieldline_geometry_shapes_selection_and_gradient in tests/equilibrium/test_analysis_families.py checks both classes on a 13-by-9 affine-gradient grid at atol=4e-9, with FieldLine npts=73 and the default HelperFieldLine sampling. test_t7_default_cubic_affine_gradient in tests/equilibrium/test_fieldline_t7_precision.py separately binds both classes on its stated affine domain at the same absolute gate.",
+      "test_t7_field_curvature_spatial_refinement in tests/equilibrium/test_fieldline_t7_precision.py directly calls get_kappa_n(method=\"cubic\") for each class on the 401-point circular arc and 40/80/160 spatial grids. Its assertions require both error-reduction ratios >3.4, final vector error <0.004 and field-reversal agreement at atol=2e-13. These are field-based curvature checks, distinct from FieldLine.get_kappa_n_2.",
+      "test_actual_circular_field_curvature_consumer and test_heldout_elliptic_affine_field_curvature in tests/equilibrium/test_curvature_consumer.py call get_kappa_n for both classes, including field and vertex reversal: the circular arc has 257 vertices and 80/160 square grids; the ellipse has 321 vertices and 67 radial by 91 axial uniformly spaced nodes. Both compare components at rtol=0, atol=2.5e-3. test_curvature_refinement_and_null_outside_failure checks 65/129/257 vertices on a fixed 80-square grid with successive error reductions >3, zero-field rejection and outside-support rejection; test_exact_sampled_field_null_has_no_curvature rejects an actual sampled null.",
+      "test_curvature_constant_field_scale_does_not_create_a_null in tests/equilibrium/test_fieldline_t7_precision.py checks both classes only for positive constant fields 1e-180 and 1e180, BR=scale and BZ=0, and seven straight-line vertices on a 5-square grid; the returned curvature is compared with zero at atol=1e-13. This does not test signed extreme-scale nonconstant fields or the historical ellipse.",
+      "test_line_derivative_uses_actual_nonuniform_arclength in tests/equilibrium/test_analysis_corrections.py checks the public derivative on a nonuniform straight path at atol=3e-13. test_curvature_is_translation_and_field_reversal_invariant supplies exact interpolated field values and checks the isolated curvature derivative at atol=6e-5; it does not test interpolation. The class-parametrized tests in tests/equilibrium/test_fieldline_geometry_repair.py check open-path ordering, endpoint/interior/no/multiple intersections and atomic boundary updates.",
+      "HelperFieldLine only: test_helper_gradient_honors_linear_method in tests/equilibrium/test_fieldline_t7_precision.py asserts get_gradpsi(method=\"linear\") is exactly the pair of explicit linear interpolate_onto calls. HelperFieldLine has no get_kappa_n_2, so the FieldLine-only flux-gradient curvature assertions are not evidence for this class.",
+      "Independent reference (tests/fieldline/test_fieldline_geometry_evidence.py): the helper class is confronted with the same analytic objects as FieldLine. A closed circle gives a length within 1e-3 of 2 pi a at its own default sampling, the arclength derivative of a coordinate on a straight segment is exactly one, and on the circle it follows dR/ds = -sin(theta): that bound covers the polyline sampling of the fitted curve (spacing 2 pi/1000 gives a chord-slope error of about 6e-6) plus the quadratic fit of the 65-node circle.",
+      "Implementation relation: the same parametric spline fit and arclength definition as FieldLine, with two documented differences - the helper passes every source field value, including nonfinite ones, to SciPy instead of filtering them, and it has no flux-gradient curvature method. The helper's default sampling is 1000 points.",
+      "Test matrix (3 statements): closure on an exactly closed input and the 1000-point default shape; the exact unit derivative on a straight segment and the closed-form tangent on the circle; and the analytic circumference at the helper's own sampling. Boundary cases are the exact closed contour and the endpoints.",
+      "Precision budget, fixed before the comparison ran: 1e-12 absolute for the straight-segment derivative, which is exact in exact arithmetic and limited only by the polyline; 1e-3 absolute for the tangent compared with -sin(theta), derived from the sampling spacing and the fit error rather than fitted; 1e-3 relative for the circumference.",
+      "Failure matrix: the helper shares the line's rejection channels for shape, count, duplicate vertices and curvature support, and the no-filter path is visible as a propagated SciPy failure rather than a silent substitution; the contract lists both."
+    ],
+    "tests": [
+      "tests/equilibrium/test_analysis_families.py",
+      "tests/equilibrium/test_analysis_corrections.py",
+      "tests/equilibrium/test_curvature_consumer.py",
+      "tests/equilibrium/test_fieldline_geometry_repair.py",
+      "tests/equilibrium/test_fieldline_t7_precision.py",
+      "tests/fieldline/test_fieldline_geometry_evidence.py"
+    ],
+    "evidence_ceiling": "The same analytic facts as FieldLine, measured at the helper's own sampling, plus the two documented differences. No flux-gradient curvature and no general order statement.",
+    "known_limitations": [
+      "Intersection is bounded to fitted parameter intervals and rejects no-crossing/multiple-root cases; tangency/completeness remains unqualified",
+      "Arbitrary contour topology, magnetic-axis limit and physical stability are unqualified",
+      "Polar projection is supplied separately with explicit theta and origin failure; magnetic-axis limit remains unqualified.",
+      "HelperFieldLine has field-based curvature only; flux-gradient curvature belongs to the separate FieldLine variant. The explicit method selector is honored by interpolation and gradient/curvature consumers.",
+      "Refining path samples on a fixed interpolated field has no universal monotonic-error guarantee. Historical fixed-interpolant failures are not reclassified as passes; the current named regression asserts only its own fixture. The historical failure count and exact observations are UNKNOWN without a bound receipt.",
+      "Local quartic field-curvature derivatives assume a sufficiently smooth genuine field line. Public d_ds retains its polygonal three-point contract; neither implies a universal curvature-error bound.",
+      "Choosing a field-line route: in an axisymmetric field the field line through a point lies on the contour psi = R*A_phi = const through it. This class fits a smooth path to contour vertices you supply; it does not integrate the field-line equation. If you only need the points of a line, the contour of psi is enough; use this fit when you need arclength, fields interpolated along the line, curvature or intersections. For identical input vertices and default fit settings, FieldLine and HelperFieldLine use the same quadratic spline fit with 1000 samples. The FieldLine constructor additionally accepts the fit keywords u, s, k and npts; the HelperFieldLine constructor uses the defaults and does not accept these keywords. In interpolate_onto, FieldLine filters nonfinite source field values, whereas HelperFieldLine passes all source field values to SciPy. get_kappa_n returns an array with shape (npts, 2) for FieldLine and a tuple (kappa_r, kappa_z) of arrays with shape (npts,) for HelperFieldLine. Only FieldLine provides get_kappa_n_2 for flux-gradient curvature. An independent check of either is to integrate dR/ds = B_R/|B_p|, dZ/ds = B_Z/|B_p| from one vertex and confirm psi stays constant.",
+      "The tangent bound at 1e-3 is the sampling-and-fit budget of this configuration, not a bound for other vertex counts."
+    ]
   }
- ],
- "outputs": [
-  {
-   "name": "line",
-   "description": "Object exposing verts,tck,u and arclength/field diagnostics",
-   "units": "length; gradient caller flux per length; curvature inverse length",
-   "shape": "line object",
-   "dtype": "Python object",
-   "required": true,
-   "constraints": "get_ds returns first segment length, not a uniform-step guarantee"
-  }
- ],
- "applicability": {
-  "preconditions": [
-   "Finite vertices are sufficient for splprep and adjacent fitted samples remain distinct.",
-   "Field curvature needs finite nonzero B and nonzero tangent projection."
-  ],
-  "supported": [
-   "Named interpolation, curvature, derivative, boundary, and scale cases in the listed tests."
-  ],
-  "excluded": [
-   "Flux-gradient curvature, arbitrary contour topology, magnetic-axis limits, and universal error bounds."
-  ]
- },
- "failure_semantics": {
-  "invalid_input": "interpolate_onto and get_gradpsi can return NaN for unsupported or undefined interpolation; callers requiring finite values must check their results. get_kappa_n raises ValueError for nonfinite or zero interpolated field, duplicate adjacent vertices, or undefined tangent support. Other SciPy construction and interpolation errors propagate.",
-  "runtime_failure": "Underlying interpolation, linear-algebra, and floating-point exceptions propagate.",
-  "nonconvergence": "Intersection raises ValueError when no unique fitted-interval crossing is found; finite multistart search does not prove root completeness.",
-  "partial_results": "apply_boundary updates both bounds only after both intersections succeed; failed construction returns no helper line."
- },
- "public_api": {
-  "python": {
-   "module": "scirel.geometry.fieldline",
-   "symbol": "HelperFieldLine",
-   "signature": "HelperFieldLine(psi, verts)",
-   "canonical_module": "scirel.geometry",
-   "canonical_symbol": "HelperFieldLine"
-  }
- },
- "version": {
-  "implementation_version": "0.0.0",
-  "dependencies": [
-   {
-    "asset_id": "scirel.fieldline.arclength-derivative"
-   }
-  ]
- },
- "example": {
-  "description": "Fit one open HelperFieldLine from three ordered vertices.",
-  "code": "import numpy as np\nfrom scirel.geometry.fieldline import HelperFieldLine\nline=HelperFieldLine(.2,np.array([[.2,0.],[.6,0.],[1.,0.]]))\nassert line.verts.shape==(1000,2)",
-  "expected": "The default constructor produces a helper line with verts shape (1000,2)."
- },
- "verification": {
-  "scope": [
-   "test_fieldline_geometry_shapes_selection_and_gradient in tests/equilibrium/test_analysis_families.py checks both classes on a 13-by-9 affine-gradient grid at atol=4e-9, with FieldLine npts=73 and the default HelperFieldLine sampling. test_t7_default_cubic_affine_gradient in tests/equilibrium/test_fieldline_t7_precision.py separately binds both classes on its stated affine domain at the same absolute gate.",
-   "test_t7_field_curvature_spatial_refinement in tests/equilibrium/test_fieldline_t7_precision.py directly calls get_kappa_n(method=\"cubic\") for each class on the 401-point circular arc and 40/80/160 spatial grids. Its assertions require both error-reduction ratios >3.4, final vector error <0.004 and field-reversal agreement at atol=2e-13. These are field-based curvature checks, distinct from FieldLine.get_kappa_n_2.",
-   "test_actual_circular_field_curvature_consumer and test_heldout_elliptic_affine_field_curvature in tests/equilibrium/test_curvature_consumer.py call get_kappa_n for both classes, including field and vertex reversal: the circular arc has 257 vertices and 80/160 square grids; the ellipse has 321 vertices and 67 radial by 91 axial uniformly spaced nodes. Both compare components at rtol=0, atol=2.5e-3. test_curvature_refinement_and_null_outside_failure checks 65/129/257 vertices on a fixed 80-square grid with successive error reductions >3, zero-field rejection and outside-support rejection; test_exact_sampled_field_null_has_no_curvature rejects an actual sampled null.",
-   "test_curvature_constant_field_scale_does_not_create_a_null in tests/equilibrium/test_fieldline_t7_precision.py checks both classes only for positive constant fields 1e-180 and 1e180, BR=scale and BZ=0, and seven straight-line vertices on a 5-square grid; the returned curvature is compared with zero at atol=1e-13. This does not test signed extreme-scale nonconstant fields or the historical ellipse.",
-   "test_line_derivative_uses_actual_nonuniform_arclength in tests/equilibrium/test_analysis_corrections.py checks the public derivative on a nonuniform straight path at atol=3e-13. test_curvature_is_translation_and_field_reversal_invariant supplies exact interpolated field values and checks the isolated curvature derivative at atol=6e-5; it does not test interpolation. The class-parametrized tests in tests/equilibrium/test_fieldline_geometry_repair.py check open-path ordering, endpoint/interior/no/multiple intersections and atomic boundary updates.",
-   "HelperFieldLine only: test_helper_gradient_honors_linear_method in tests/equilibrium/test_fieldline_t7_precision.py asserts get_gradpsi(method=\"linear\") is exactly the pair of explicit linear interpolate_onto calls. HelperFieldLine has no get_kappa_n_2, so the FieldLine-only flux-gradient curvature assertions are not evidence for this class."
-  ],
-  "tests": [
-   "tests/equilibrium/test_analysis_families.py",
-   "tests/equilibrium/test_analysis_corrections.py",
-   "tests/equilibrium/test_curvature_consumer.py",
-   "tests/equilibrium/test_fieldline_geometry_repair.py",
-   "tests/equilibrium/test_fieldline_t7_precision.py"
-  ],
-  "evidence_ceiling": "The named tests bind the specific class, method, fixture and assertion stated in scope. A shared test file does not assign all its methods to both classes; the private _curve_curvature scalar-oracle test is dependency evidence. Historical exact observed maxima and the 71-by-83 nonuniform 257-point ellipse lack a reproducible receipt bound here to a frozen implementation, class, method and input; their current verification status is UNKNOWN. The bound tests establish neither arbitrary-input accuracy nor experimental validation or human endorsement.",
-  "known_limitations": [
-   "Intersection is bounded to fitted parameter intervals and rejects no-crossing/multiple-root cases; tangency/completeness remains unqualified",
-   "Arbitrary contour topology, magnetic-axis limit and physical stability are unqualified",
-   "Polar projection is supplied separately with explicit theta and origin failure; magnetic-axis limit remains unqualified.",
-   "HelperFieldLine has field-based curvature only; flux-gradient curvature belongs to the separate FieldLine variant. The explicit method selector is honored by interpolation and gradient/curvature consumers.",
-   "Refining path samples on a fixed interpolated field has no universal monotonic-error guarantee. Historical fixed-interpolant failures are not reclassified as passes; the current named regression asserts only its own fixture. The historical failure count and exact observations are UNKNOWN without a bound receipt.",
-   "Local quartic field-curvature derivatives assume a sufficiently smooth genuine field line. Public d_ds retains its polygonal three-point contract; neither implies a universal curvature-error bound.",
-   "Choosing a field-line route: in an axisymmetric field the field line through a point lies on the contour psi = R*A_phi = const through it. This class fits a smooth path to contour vertices you supply; it does not integrate the field-line equation. If you only need the points of a line, the contour of psi is enough; use this fit when you need arclength, fields interpolated along the line, curvature or intersections. For identical input vertices and default fit settings, FieldLine and HelperFieldLine use the same quadratic spline fit with 1000 samples. The FieldLine constructor additionally accepts the fit keywords u, s, k and npts; the HelperFieldLine constructor uses the defaults and does not accept these keywords. In interpolate_onto, FieldLine filters nonfinite source field values, whereas HelperFieldLine passes all source field values to SciPy. get_kappa_n returns an array with shape (npts, 2) for FieldLine and a tuple (kappa_r, kappa_z) of arrays with shape (npts,) for HelperFieldLine. Only FieldLine provides get_kappa_n_2 for flux-gradient curvature. An independent check of either is to integrate dR/ds = B_R/|B_p|, dZ/ds = B_Z/|B_p| from one vertex and confirm psi stays constant."
-  ]
- }
 }

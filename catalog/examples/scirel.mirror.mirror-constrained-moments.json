@@ -319,16 +319,22 @@
  },
  "verification": {
   "scope": [
+   "The independent basis is the untruncated closed form at 50 digits together with a piecewise 50-digit quadrature of the trapped pitch fractions I_k = integral_0^40 e^(-x) F_k(A(x)) dx with A(x) = max(min(a_L x + b_L, a_R x + b_R), 0), F_density = erf(sqrt A), F_parallel = erf(sqrt A) - (2/sqrt pi) sqrt A e^(-A) and F_perp = x erf(sqrt A), breakpointed at the barrier intersection and at the zeros of both linear pieces because a single pass over the kink is inaccurate at the 1e-6 level (tests/mirror/test_mirror_constrained_moments_evidence.py).",
    "Current SciRel implementation and the repository tests listed in this contract cover the declared public ports and numerical relation.",
-   "The example exercises one bounded representative case; it does not extend applicability beyond the declared preconditions."
+   "The example exercises one bounded representative case; it does not extend applicability beyond the declared preconditions.",
+   "The magnetic-only limit uses the analytic closed form xi, xi^3, xi (3 - xi^2)/2 with xi = sqrt(alpha/(1 + alpha)); no quadrature appears on either side.",
+   "C = (B - B_ref)/T_parallel + B_ref/T_perp,ref, T_perp,local = B/C and the untruncated density match the 50-digit form, and refill = 1 bypasses the plug integration bitwise. The refill mixture equals refill + (1 - refill) f against the refill = 0 fractions, and swapping the two barriers leaves every fraction unchanged.",
+   "The validated minimum work budget quadrature_order = 8 still meets the declared accuracy target. The observed maximum absolute deviation from the piecewise oracle is 1.22e-15 against the declared 2e-13 absolute and 2e-11 relative targets.",
+   "The quadrature RuntimeError branch was not reached by any tested input and is recorded as not-exercised, not as unreachable."
   ],
   "tests": [
    "tests/mirror/test_mirror_constrained_moments.py",
    "tests/cross_domain/test_mirror_kinetic_scientific_correction.py",
    "tests/cross_domain/test_mirror_gauge_scientific_correction.py",
-   "tests/kinetic/test_independent_correction.py"
+   "tests/kinetic/test_independent_correction.py",
+   "tests/mirror/test_mirror_constrained_moments_evidence.py"
   ],
-  "evidence_ceiling": "Bounded to the declared relation: Let C=(B-B_ref)/T_parallel+B_ref/T_perp,ref and T_perp,local=B/C. The untruncated density is exp(log(n_ref)+log(T_perp,local/T_perp,ref)-q*(phi-phi_ref)/T_parallel), without exponent clipping. With no plugs or refill=1 the three fractions are one…. Evidence: test_mirror_constrained_moments.py, test_mirror_kinetic_scientific_correction.py, test_mirror_gauge_scientific_correction.py, test_independent_correction.py (46 recorded test functions; bound-file coverage; self-consistency/regression only); the contract example ran. Excluded scope: Determining the electrostatic potential, mirror equilibrium or a self-consistent particle distribution from the returned moments alone; A one-sided plug model, automatic flux-unit conversion, arbitrary field-line geometry or a publicly returned error-estimate field for finite pitch quadrature. Internal quad_vec error estimates still enforce the absolute 2e-13 / relative 2e-11 targets before returning.",
+  "evidence_ceiling": "Bounded to the declared relation: Let C=(B-B_ref)/T_parallel+B_ref/T_perp,ref and T_perp,local=B/C. The untruncated density is exp(log(n_ref)+log(T_perp,local/T_perp,ref)-q*(phi-phi_ref)/T_parallel), without exponent clipping. With no plugs or refill=1 the three fractions are one…. Evidence: test_mirror_constrained_moments.py, test_mirror_kinetic_scientific_correction.py, test_mirror_gauge_scientific_correction.py, test_independent_correction.py (46 recorded test functions; bound-file coverage; self-consistency/regression only); the contract example ran. Excluded scope: Determining the electrostatic potential, mirror equilibrium or a self-consistent particle distribution from the returned moments alone; A one-sided plug model, automatic flux-unit conversion, arbitrary field-line geometry or a publicly returned error-estimate field for finite pitch quadrature. Internal quad_vec error estimates still enforce the absolute 2e-13 / relative 2e-11 targets before returning. C1 evidence (tests/mirror/test_mirror_constrained_moments_evidence.py) supplies the untruncated 50-digit closed form, the piecewise trapped-fraction oracle, the magnetic-only analytic limit, the refill mixing identity and the barrier-swap symmetry, and shows the minimum work budget still meets its target. The trapped-fraction RuntimeError channel remains not-exercised; a sampled search cannot establish that it is dead.",
   "known_limitations": [
    "The x>40 fraction tail is bounded as stated. Adaptive error estimates are not a formal proof for every floating-point parameter combination; fractions near zero have an absolute error target.",
    "Loss-cone refill is prescribed phenomenology. Plug profiles are not evaluated when refill is exactly one. Underflow may round an unrepresentable small result to zero.",

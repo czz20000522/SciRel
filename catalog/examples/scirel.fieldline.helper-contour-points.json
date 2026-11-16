@@ -1,121 +1,128 @@
 {
- "schema": "scirel.asset-document",
- "asset_id": "scirel.fieldline.helper-contour-points",
- "title": {
-  "en": "Contour field-line collection helper_contour_points",
-  "zh": "辅助等值场线集合"
- },
- "summary": "Map each contour level to a list of fitted HelperFieldLine objects.",
- "taxonomy": [
-  "analysis",
-  "fieldline"
- ],
- "aliases": [
-  "helper_contour_points"
- ],
- "discovery": {
-  "capability": [
-   "Helper contour field-line collection",
-   "Map each contour level to a list of fitted helper field-line objects."
+  "schema": "scirel.asset-document",
+  "asset_id": "scirel.fieldline.helper-contour-points",
+  "title": {
+    "en": "Contour field-line collection helper_contour_points",
+    "zh": "辅助等值场线集合"
+  },
+  "summary": "Map each contour level to a list of fitted HelperFieldLine objects.",
+  "taxonomy": [
+    "analysis",
+    "fieldline"
   ],
-  "operation": [
-   "contour levels and segments to a level-keyed helper line collection",
-   "contour object exposing levels and allsegs -> dictionary mapping each level to fitted helper field-line objects"
+  "aliases": [
+    "helper_contour_points"
   ],
-  "model": "Direct collection construction without field reconstruction; helper lines expose interpolation and field-based curvature only.",
-  "geometry": "Planar contour segments and level labels; segment vertices use caller length units and levels use caller flux-label units.",
-  "boundary": "Each segment must be accepted by the HelperFieldLine spline constructor; topology repair, flux-gradient curvature and physical field-line qualification are excluded.",
-  "device_scope": "generic"
- },
- "identity": {
-  "relation": "Contour segment to HelperFieldLine collection",
-  "direction": "contour levels and segments to a level-keyed helper dictionary",
-  "definition": "For each contour level, construct one HelperFieldLine per segment in allsegs.",
-  "model": "Direct collection construction without field reconstruction.",
-  "geometry": "Planar contour segments and level labels.",
-  "coordinates": "Segment vertices in caller length units; levels in caller flux-label units.",
-  "boundary": "Each segment must be accepted by the HelperFieldLine spline constructor.",
-  "assumptions": [
-   "The contour object exposes levels and allsegs.",
-   "Segment and level order is preserved.",
-   "HelperFieldLine diagnostics are evaluated later by the caller."
-  ]
- },
- "inputs": [
-  {
-   "name": "contourset",
-   "description": "Object exposing levels and allsegs",
-   "units": "levels in caller flux-label units; vertices length",
-   "shape": "contour object",
-   "dtype": "contour-like object",
-   "required": true,
-   "constraints": "Each allsegs entry contains finite planar segments"
+  "discovery": {
+    "capability": [
+      "Helper contour field-line collection",
+      "Map each contour level to a list of fitted helper field-line objects."
+    ],
+    "operation": [
+      "contour levels and segments to a level-keyed helper line collection",
+      "contour object exposing levels and allsegs -> dictionary mapping each level to fitted helper field-line objects"
+    ],
+    "model": "Direct collection construction without field reconstruction; helper lines expose interpolation and field-based curvature only.",
+    "geometry": "Planar contour segments and level labels; segment vertices use caller length units and levels use caller flux-label units.",
+    "boundary": "Each segment must be accepted by the HelperFieldLine spline constructor; topology repair, flux-gradient curvature and physical field-line qualification are excluded.",
+    "device_scope": "generic"
+  },
+  "identity": {
+    "relation": "Contour segment to HelperFieldLine collection",
+    "direction": "contour levels and segments to a level-keyed helper dictionary",
+    "definition": "For each contour level, construct one HelperFieldLine per segment in allsegs.",
+    "model": "Direct collection construction without field reconstruction.",
+    "geometry": "Planar contour segments and level labels.",
+    "coordinates": "Segment vertices in caller length units; levels in caller flux-label units.",
+    "boundary": "Each segment must be accepted by the HelperFieldLine spline constructor.",
+    "assumptions": [
+      "The contour object exposes levels and allsegs.",
+      "Segment and level order is preserved.",
+      "HelperFieldLine diagnostics are evaluated later by the caller."
+    ]
+  },
+  "inputs": [
+    {
+      "name": "contourset",
+      "description": "Object exposing levels and allsegs",
+      "units": "levels in caller flux-label units; vertices length",
+      "shape": "contour object",
+      "dtype": "contour-like object",
+      "required": true,
+      "constraints": "Each allsegs entry contains finite planar segments"
+    }
+  ],
+  "outputs": [
+    {
+      "name": "collection",
+      "description": "Per-level lists of target line objects",
+      "units": "same as target line",
+      "shape": "dict[level, list[line]]",
+      "dtype": "Python object",
+      "required": true,
+      "constraints": "Keys and segment lists follow contourset.levels/allsegs; each value is a constructed line list."
+    }
+  ],
+  "applicability": {
+    "preconditions": [
+      "The contour object exposes levels and allsegs.",
+      "Segment and level order is preserved."
+    ],
+    "supported": [
+      "Finite contour collections and named helper-line construction cases."
+    ],
+    "excluded": [
+      "Contour topology repair, flux reconstruction, and physical field-line qualification."
+    ]
+  },
+  "failure_semantics": {
+    "invalid_input": "Array or SciPy spline errors from malformed contour segments propagate.",
+    "runtime_failure": "Member HelperFieldLine construction or later diagnostic exceptions propagate.",
+    "nonconvergence": "Not applicable; collection construction is direct.",
+    "partial_results": "The function returns no collection when a segment constructor fails."
+  },
+  "public_api": {
+    "python": {
+      "module": "scirel.geometry.fieldline",
+      "symbol": "helper_contour_points",
+      "signature": "helper_contour_points(contourset)",
+      "canonical_module": "scirel.geometry",
+      "canonical_symbol": "helper_contour_points"
+    }
+  },
+  "version": {
+    "implementation_version": "0.0.0",
+    "dependencies": [
+      {
+        "asset_id": "scirel.fieldline.helper-fieldline"
+      }
+    ]
+  },
+  "example": {
+    "description": "Build a HelperFieldLine collection from one contour level and one segment.",
+    "code": "import numpy as np\nfrom types import SimpleNamespace\nfrom scirel.geometry.fieldline import helper_contour_points\nc=SimpleNamespace(levels=[.2],allsegs=[[np.array([[.2,0.],[.6,0.],[1.,0.]])]])\nr=helper_contour_points(c)\nassert len(r[.2])==1",
+    "expected": "The returned dict has key 0.2 and contains one HelperFieldLine with 1000 fitted vertices."
+  },
+  "verification": {
+    "scope": [
+      "Only the explicitly stated finite input domain and direct-test fixtures",
+      "Independent reference (tests/fieldline/test_contour_composition_evidence.py): the same independent flattening oracle is applied with HelperFieldLine as the factory, and every produced object is compared with a direct helper call on the same segment bitwise; the analytic circle statement is re-measured through the composition, so a dropped or reordered segment is visible.",
+      "Implementation relation: for every level, one HelperFieldLine per segment in the corresponding allsegs entry, keyed by level and in segment order; the level becomes the label and no topology is repaired.",
+      "Test matrix (3 statements): the oracle mapping for the helper factory; the analytic circle radius through the composition; and the empty contour set. Boundary cases are several segments on one level and an empty set.",
+      "Precision budget, fixed before the comparison ran: exact structural and bitwise comparison against the oracle; 1e-3 relative of the radius for the inherited circle statement.",
+      "Failure matrix: helper construction failures propagate unchanged; a segment too short for the spline raises through this callable with the same exception type as the direct helper call."
+    ],
+    "tests": [
+      "tests/equilibrium/test_analysis_families.py",
+      "tests/fieldline/test_contour_composition_evidence.py"
+    ],
+    "evidence_ceiling": "Composition transparency for the helper factory plus the inherited analytic circle statement. Not a topology or flux-surface qualification.",
+    "known_limitations": [
+      "Intersection is bounded to fitted parameter intervals and rejects no-crossing/multiple-root cases; tangency/completeness remains unqualified",
+      "Arbitrary contour topology, magnetic-axis limit and physical stability are unqualified",
+      "HelperFieldLine has no flux-gradient curvature entry; this collection inherits only its field-based curvature method",
+      "Choosing a field-line route: in an axisymmetric field the field line through a point lies on the contour psi = R*A_phi = const through it. This class fits a smooth path to contour vertices you supply; it does not integrate the field-line equation. If you only need the points of a line, the contour of psi is enough; use this fit when you need arclength, fields interpolated along the line, curvature or intersections. For identical input vertices and default fit settings, FieldLine and HelperFieldLine use the same quadratic spline fit with 1000 samples. The FieldLine constructor additionally accepts the fit keywords u, s, k and npts; the HelperFieldLine constructor uses the defaults and does not accept these keywords. In interpolate_onto, FieldLine filters nonfinite source field values, whereas HelperFieldLine passes all source field values to SciPy. get_kappa_n returns an array with shape (npts, 2) for FieldLine and a tuple (kappa_r, kappa_z) of arrays with shape (npts,) for HelperFieldLine. Only FieldLine provides get_kappa_n_2 for flux-gradient curvature. An independent check of either is to integrate dR/ds = B_R/|B_p|, dZ/ds = B_Z/|B_p| from one vertex and confirm psi stays constant.",
+      "The comparison establishes the mapping and the propagation of the helper's own evidence, not how a contour set is produced."
+    ]
   }
- ],
- "outputs": [
-  {
-   "name": "collection",
-   "description": "Per-level lists of target line objects",
-   "units": "same as target line",
-   "shape": "dict[level, list[line]]",
-   "dtype": "Python object",
-   "required": true,
-   "constraints": "Keys and segment lists follow contourset.levels/allsegs; each value is a constructed line list."
-  }
- ],
- "applicability": {
-  "preconditions": [
-   "The contour object exposes levels and allsegs.",
-   "Segment and level order is preserved."
-  ],
-  "supported": [
-   "Finite contour collections and named helper-line construction cases."
-  ],
-  "excluded": [
-   "Contour topology repair, flux reconstruction, and physical field-line qualification."
-  ]
- },
- "failure_semantics": {
-  "invalid_input": "Array or SciPy spline errors from malformed contour segments propagate.",
-  "runtime_failure": "Member HelperFieldLine construction or later diagnostic exceptions propagate.",
-  "nonconvergence": "Not applicable; collection construction is direct.",
-  "partial_results": "The function returns no collection when a segment constructor fails."
- },
- "public_api": {
-  "python": {
-   "module": "scirel.geometry.fieldline",
-   "symbol": "helper_contour_points",
-   "signature": "helper_contour_points(contourset)",
-   "canonical_module": "scirel.geometry",
-   "canonical_symbol": "helper_contour_points"
-  }
- },
- "version": {
-  "implementation_version": "0.0.0",
-  "dependencies": [
-   {
-    "asset_id": "scirel.fieldline.helper-fieldline"
-   }
-  ]
- },
- "example": {
-  "description": "Build a HelperFieldLine collection from one contour level and one segment.",
-  "code": "import numpy as np\nfrom types import SimpleNamespace\nfrom scirel.geometry.fieldline import helper_contour_points\nc=SimpleNamespace(levels=[.2],allsegs=[[np.array([[.2,0.],[.6,0.],[1.,0.]])]])\nr=helper_contour_points(c)\nassert len(r[.2])==1",
-  "expected": "The returned dict has key 0.2 and contains one HelperFieldLine with 1000 fitted vertices."
- },
- "verification": {
-  "scope": [
-   "Only the explicitly stated finite input domain and direct-test fixtures"
-  ],
-  "tests": [
-   "tests/equilibrium/test_analysis_families.py"
-  ],
-  "evidence_ceiling": "Numerical evidence for the named fixtures only; it does not establish arbitrary-input correctness or experimental physical validation.",
-  "known_limitations": [
-   "Intersection is bounded to fitted parameter intervals and rejects no-crossing/multiple-root cases; tangency/completeness remains unqualified",
-   "Arbitrary contour topology, magnetic-axis limit and physical stability are unqualified",
-   "HelperFieldLine has no flux-gradient curvature entry; this collection inherits only its field-based curvature method",
-   "Choosing a field-line route: in an axisymmetric field the field line through a point lies on the contour psi = R*A_phi = const through it. This class fits a smooth path to contour vertices you supply; it does not integrate the field-line equation. If you only need the points of a line, the contour of psi is enough; use this fit when you need arclength, fields interpolated along the line, curvature or intersections. For identical input vertices and default fit settings, FieldLine and HelperFieldLine use the same quadratic spline fit with 1000 samples. The FieldLine constructor additionally accepts the fit keywords u, s, k and npts; the HelperFieldLine constructor uses the defaults and does not accept these keywords. In interpolate_onto, FieldLine filters nonfinite source field values, whereas HelperFieldLine passes all source field values to SciPy. get_kappa_n returns an array with shape (npts, 2) for FieldLine and a tuple (kappa_r, kappa_z) of arrays with shape (npts,) for HelperFieldLine. Only FieldLine provides get_kappa_n_2 for flux-gradient curvature. An independent check of either is to integrate dR/ds = B_R/|B_p|, dZ/ds = B_Z/|B_p| from one vertex and confirm psi stays constant."
-  ]
- }
 }

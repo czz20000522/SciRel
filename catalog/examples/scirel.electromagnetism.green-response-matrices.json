@@ -1,148 +1,155 @@
 {
- "schema": "scirel.asset-document",
- "asset_id": "scirel.electromagnetism.green-response-matrices",
- "title": {
-  "en": "Ordered per-filament magnetic response matrices",
-  "zh": "有序逐电流丝磁响应矩阵"
- },
- "summary": "Build target-row/source-column matrices for ordered circular-filament psi, BR, and BZ responses.",
- "taxonomy": [
-  "electromagnetism",
-  "axisymmetric-fields",
-  "discrete-response"
- ],
- "aliases": [],
- "discovery": {
-  "capability": [
-   "Ordered per-filament response matrices",
-   "Build target-row/source-column matrices for ordered circular-filament psi, BR and BZ responses."
-  ],
-  "operation": [
-   "per-source Green response-matrix construction",
-   "target points and optional source rows -> response matrices"
-  ],
-  "model": "Axisymmetric ideal circular-filament response with explicit zero-self entries.",
-  "geometry": "Targets and sources may be different finite cylindrical point tables.",
-  "boundary": "Exact source-target coincidence is zeroed for each matrix entry; zero-radius or zero-weight sources contribute zero.",
-  "device_scope": "device-parameterized"
- },
- "identity": {
-  "relation": "Ordered per-source Green response matrices",
-  "direction": "target points and optional source rows to response matrices",
-  "definition": "Each source column is evaluated at every target in caller order; source weights are applied once.",
-  "model": "Axisymmetric ideal circular-filament response with explicit zero-self entries.",
-  "geometry": "Targets and sources may be different finite cylindrical point tables.",
-  "coordinates": "R,Z in metres; source weights dimensionless; psi Wb/rad/A and fields T/A.",
-  "boundary": "Exact source-target coincidence is zeroed for each matrix entry; zero-radius or zero-weight sources contribute zero.",
-  "assumptions": [
-   "Inputs are finite real arrays with nonnegative radii.",
-   "Omitting rzw makes targets the unit-weight source set.",
-   "Explicit source rows may repeat because columns remain independent."
-  ]
- },
- "inputs": [
-  {
-   "name": "rz_pts",
-   "description": "Target R,Z coordinates in caller order.",
-   "units": "m",
-   "shape": "(Ntarget,2)",
-   "dtype": "finite real",
-   "required": true,
-   "constraints": "Nonnegative radius; complex values are rejected."
+  "schema": "scirel.asset-document",
+  "asset_id": "scirel.electromagnetism.green-response-matrices",
+  "title": {
+    "en": "Ordered per-filament magnetic response matrices",
+    "zh": "有序逐电流丝磁响应矩阵"
   },
-  {
-   "name": "rzw",
-   "description": "Ordered source R,Z and optional signed weights; None uses the targets as unit-weight sources.",
-   "units": "m,m,dimensionless",
-   "shape": "(Nsource,2) or (Nsource,3) or None",
-   "dtype": "finite real or None",
-   "required": false,
-   "default": null,
-   "constraints": "Nonnegative source radius; the weight is 1 when the third column is omitted."
-  }
- ],
- "outputs": [
-  {
-   "name": "psi",
-   "description": "Flux response indexed by target row and source column.",
-   "units": "Wb/rad/A",
-   "shape": "(Ntarget,Nsource)",
-   "dtype": "float64",
-   "required": true,
-   "constraints": "Finite; an exact coincidence is set to zero by the discrete convention."
+  "summary": "Build target-row/source-column matrices for ordered circular-filament psi, BR, and BZ responses.",
+  "taxonomy": [
+    "electromagnetism",
+    "axisymmetric-fields",
+    "discrete-response"
+  ],
+  "aliases": [],
+  "discovery": {
+    "capability": [
+      "Ordered per-filament response matrices",
+      "Build target-row/source-column matrices for ordered circular-filament psi, BR and BZ responses."
+    ],
+    "operation": [
+      "per-source Green response-matrix construction",
+      "target points and optional source rows -> response matrices"
+    ],
+    "model": "Axisymmetric ideal circular-filament response with explicit zero-self entries.",
+    "geometry": "Targets and sources may be different finite cylindrical point tables.",
+    "boundary": "Exact source-target coincidence is zeroed for each matrix entry; zero-radius or zero-weight sources contribute zero.",
+    "device_scope": "device-parameterized"
   },
-  {
-   "name": "BR",
-   "description": "Radial-field response indexed by target row and source column.",
-   "units": "T/A",
-   "shape": "(Ntarget,Nsource)",
-   "dtype": "float64",
-   "required": true,
-   "constraints": "Signed weights and the actual height difference are retained."
+  "identity": {
+    "relation": "Ordered per-source Green response matrices",
+    "direction": "target points and optional source rows to response matrices",
+    "definition": "Each source column is evaluated at every target in caller order; source weights are applied once.",
+    "model": "Axisymmetric ideal circular-filament response with explicit zero-self entries.",
+    "geometry": "Targets and sources may be different finite cylindrical point tables.",
+    "coordinates": "R,Z in metres; source weights dimensionless; psi Wb/rad/A and fields T/A.",
+    "boundary": "Exact source-target coincidence is zeroed for each matrix entry; zero-radius or zero-weight sources contribute zero.",
+    "assumptions": [
+      "Inputs are finite real arrays with nonnegative radii.",
+      "Omitting rzw makes targets the unit-weight source set.",
+      "Explicit source rows may repeat because columns remain independent."
+    ]
   },
-  {
-   "name": "BZ",
-   "description": "Axial-field response indexed by target row and source column.",
-   "units": "T/A",
-   "shape": "(Ntarget,Nsource)",
-   "dtype": "float64",
-   "required": true,
-   "constraints": "Axis targets use the analytic limit."
+  "inputs": [
+    {
+      "name": "rz_pts",
+      "description": "Target R,Z coordinates in caller order.",
+      "units": "m",
+      "shape": "(Ntarget,2)",
+      "dtype": "finite real",
+      "required": true,
+      "constraints": "Nonnegative radius; complex values are rejected."
+    },
+    {
+      "name": "rzw",
+      "description": "Ordered source R,Z and optional signed weights; None uses the targets as unit-weight sources.",
+      "units": "m,m,dimensionless",
+      "shape": "(Nsource,2) or (Nsource,3) or None",
+      "dtype": "finite real or None",
+      "required": false,
+      "default": null,
+      "constraints": "Nonnegative source radius; the weight is 1 when the third column is omitted."
+    }
+  ],
+  "outputs": [
+    {
+      "name": "psi",
+      "description": "Flux response indexed by target row and source column.",
+      "units": "Wb/rad/A",
+      "shape": "(Ntarget,Nsource)",
+      "dtype": "float64",
+      "required": true,
+      "constraints": "Finite; an exact coincidence is set to zero by the discrete convention."
+    },
+    {
+      "name": "BR",
+      "description": "Radial-field response indexed by target row and source column.",
+      "units": "T/A",
+      "shape": "(Ntarget,Nsource)",
+      "dtype": "float64",
+      "required": true,
+      "constraints": "Signed weights and the actual height difference are retained."
+    },
+    {
+      "name": "BZ",
+      "description": "Axial-field response indexed by target row and source column.",
+      "units": "T/A",
+      "shape": "(Ntarget,Nsource)",
+      "dtype": "float64",
+      "required": true,
+      "constraints": "Axis targets use the analytic limit."
+    }
+  ],
+  "applicability": {
+    "preconditions": [
+      "Inputs are finite real arrays with nonnegative radii.",
+      "Omitting rzw makes targets the unit-weight source set."
+    ],
+    "supported": [
+      "Irregular ordering, signed weights, implicit unit sources, axis limits, and matrix current contraction."
+    ],
+    "excluded": [
+      "Finite-conductor self-fields, extreme-scale guarantees, and physical-equilibrium claims."
+    ]
+  },
+  "failure_semantics": {
+    "invalid_input": "ValueError is raised for malformed, complex, nonfinite, negative-radius, or duplicate positive-radius implicit sources.",
+    "runtime_failure": "FloatingPointError from an unrepresentable kernel response propagates.",
+    "nonconvergence": "Not applicable; each matrix entry is evaluated directly.",
+    "partial_results": "No partial matrix is returned after a failed source evaluation."
+  },
+  "public_api": {
+    "python": {
+      "module": "scirel.electromagnetism",
+      "symbol": "green_response_matrices",
+      "signature": "green_response_matrices(rz_pts, rzw=None)",
+      "canonical_module": "scirel.electromagnetism",
+      "canonical_symbol": "green_response_matrices"
+    }
+  },
+  "version": {
+    "implementation_version": "0.0.0",
+    "dependencies": [
+      {
+        "asset_id": "scirel.electromagnetism.circular-filament-green"
+      }
+    ]
+  },
+  "example": {
+    "description": "Build two-target, three-source response matrices and apply a separate current vector.",
+    "code": "import numpy as np\nfrom scirel.electromagnetism import green_response_matrices\ntargets=np.array([[0.,.2],[.8,-.3]])\nsources=np.array([[.4,.1,1.],[1.2,-.7,-2.],[.6,.9,.5]])\ngpsi,gbr,gbz=green_response_matrices(targets,sources)\nassert gpsi.shape==(2,3) and np.all(gpsi[0]==0.)\nfield_bz=gbz@np.array([3.,-4.,2.])\nassert np.all(np.isfinite(field_bz))",
+    "expected": "Each matrix has shape (2,3); the first target is on the axis so psi is zero there, and the contracted BZ is finite."
+  },
+  "verification": {
+    "scope": [
+      "Independent azimuthal integration at asymmetric coordinates.",
+      "Mixed signs, non-unit currents, and independent source/target reordering.",
+      "Default unit sources, the analytic axis limit, the exact self term, and invalid inputs.",
+      "Independent reference (tests/electromagnetism/_ideal_ring_reference.py): every matrix entry is recomputed from the complement-free AgM elliptic flux, which takes the parameter m directly instead of the complement 1-m this kernel forms, cross-certified at each call against direct Biot-Savart quadrature at 1e-22 relative; the field columns are differentiated from that flux rather than evaluated through the analytic derivative combinations used here. Together with exact rational arithmetic over the returned binary64 values for the source-axis contraction, this decides the row/column convention and the weight placement outside the implementation.",
+      "Implementation relation: the response is the stacked single-ring kernel with the weight applied once per source column and the exact source-target coincidence set to zero; psi is indexed [target, source] in Wb/rad per ampere and BR/BZ in tesla per ampere, with mu0/(4 pi) = 1e-7 exactly and a signed height difference Z - Z0. Omitting rzw builds the unit-weight source table from the targets themselves, and rows with zero radius or zero weight contribute exact zeros.",
+      "Test matrix (tests/electromagnetism/test_green_response_matrices_evidence.py, 6 cases): every entry of all three matrices against the reference on five targets by four sources including an inactive zero-radius row; the implicit unit-source table against the explicit one bitwise; the exact zero diagonal, zero-radius row and column; a repeated source row giving a bitwise identical column; exact power-of-two weight scaling of a column; the axis row against the elementary loop field; and the source-axis contraction decided with Fraction arithmetic. Boundary cases are the axis target and the inactive row; the failure matrix covers the malformed inputs.",
+      "Precision budget, fixed before the comparison ran: 64 eps for psi entries and 128 eps for the field entries, derived from the per-branch operation counts in _ideal_ring_reference; the reference contributes at most 1e-22 relative. The contraction is compared with 4 eps of the accumulated sum because it is a sum of four exact products of binary64 values with a single final rounding per term.",
+      "Failure matrix, one executable assertion per contract channel in failure_semantics: ValueError for a complex target or source, a nonfinite entry, a negative radius, a wrong source width, and duplicate positive-radius implicit nodes; FloatingPointError when a column is not representable. No partial matrix is returned on any of these paths."
+    ],
+    "tests": [
+      "tests/geometry/test_green_response_matrices.py",
+      "tests/electromagnetism/test_green_response_matrices_evidence.py"
+    ],
+    "evidence_ceiling": "Independent numerical evidence for the named targets and sources, plus exact structural laws (implicit equals explicit sources, zero self and inactive rows, power-of-two weight scaling) and a Fraction-decided source-axis contraction. Not experimental or finite-conductor qualification, and not an arbitrary-domain bound.",
+    "known_limitations": [
+      "Dense O(Ntarget*Nsource) work and storage.",
+      "The discrete zero-self entry does not describe a conductor self-field.",
+      "The pointwise comparison is a family of named target/source tables, so it does not bound the error between them; the axis statement is per-source and does not cover a general target. The zero diagonal is a discrete convention and is not a finite-conductor self-inductance."
+    ]
   }
- ],
- "applicability": {
-  "preconditions": [
-   "Inputs are finite real arrays with nonnegative radii.",
-   "Omitting rzw makes targets the unit-weight source set."
-  ],
-  "supported": [
-   "Irregular ordering, signed weights, implicit unit sources, axis limits, and matrix current contraction."
-  ],
-  "excluded": [
-   "Finite-conductor self-fields, extreme-scale guarantees, and physical-equilibrium claims."
-  ]
- },
- "failure_semantics": {
-  "invalid_input": "ValueError is raised for malformed, complex, nonfinite, negative-radius, or duplicate positive-radius implicit sources.",
-  "runtime_failure": "FloatingPointError from an unrepresentable kernel response propagates.",
-  "nonconvergence": "Not applicable; each matrix entry is evaluated directly.",
-  "partial_results": "No partial matrix is returned after a failed source evaluation."
- },
- "public_api": {
-  "python": {
-   "module": "scirel.electromagnetism",
-   "symbol": "green_response_matrices",
-   "signature": "green_response_matrices(rz_pts, rzw=None)",
-   "canonical_module": "scirel.electromagnetism",
-   "canonical_symbol": "green_response_matrices"
-  }
- },
- "version": {
-  "implementation_version": "0.0.0",
-  "dependencies": [
-   {
-    "asset_id": "scirel.electromagnetism.circular-filament-green"
-   }
-  ]
- },
- "example": {
-  "description": "Build two-target, three-source response matrices and apply a separate current vector.",
-  "code": "import numpy as np\nfrom scirel.electromagnetism import green_response_matrices\ntargets=np.array([[0.,.2],[.8,-.3]])\nsources=np.array([[.4,.1,1.],[1.2,-.7,-2.],[.6,.9,.5]])\ngpsi,gbr,gbz=green_response_matrices(targets,sources)\nassert gpsi.shape==(2,3) and np.all(gpsi[0]==0.)\nfield_bz=gbz@np.array([3.,-4.,2.])\nassert np.all(np.isfinite(field_bz))",
-  "expected": "Each matrix has shape (2,3); the first target is on the axis so psi is zero there, and the contracted BZ is finite."
- },
- "verification": {
-  "scope": [
-   "Independent azimuthal integration at asymmetric coordinates.",
-   "Mixed signs, non-unit currents, and independent source/target reordering.",
-   "Default unit sources, the analytic axis limit, the exact self term, and invalid inputs."
-  ],
-  "tests": [
-   "tests/geometry/test_green_response_matrices.py"
-  ],
-  "evidence_ceiling": "Independent numerical relations and composition checks for the named domain; not experimental or finite-conductor qualification.",
-  "known_limitations": [
-   "Dense O(Ntarget*Nsource) work and storage.",
-   "The discrete zero-self entry does not describe a conductor self-field."
-  ]
- }
 }

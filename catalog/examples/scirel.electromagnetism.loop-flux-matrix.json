@@ -1,132 +1,139 @@
 {
- "schema": "scirel.asset-document",
- "asset_id": "scirel.electromagnetism.loop-flux-matrix",
- "title": {
-  "en": "Actual-coordinate loop flux matrix",
-  "zh": "实际坐标圆环磁通矩阵"
- },
- "summary": "Build the dense actual-coordinate flux matrix for an R,Z node grid.",
- "taxonomy": [
-  "electromagnetism",
-  "axisymmetric-fields",
-  "discrete-response"
- ],
- "aliases": [
-  "get_gpsi"
- ],
- "discovery": {
-  "capability": [
-   "Actual-coordinate loop flux matrix",
-   "Build the dense actual-coordinate flux matrix for an R,Z node grid."
-  ],
-  "operation": [
-   "dense loop flux-matrix construction",
-   "matching R,Z grids -> target-row/source-column psi response"
-  ],
-  "model": "Axisymmetric ideal circular-filament flux with zero diagonal for active source nodes.",
-  "geometry": "Finite rectilinear or irregular two-dimensional coordinate arrays.",
-  "boundary": "Axis rows and zero-radius source columns are zero, and duplicate positive-radius nodes are rejected.",
-  "device_scope": "device-parameterized"
- },
- "identity": {
-  "relation": "Actual-coordinate loop flux matrix",
-  "direction": "matching R,Z grids to target-row/source-column psi response",
-  "definition": "Flatten matching R,Z arrays in C order and evaluate every actual target/source pair.",
-  "model": "Axisymmetric ideal circular-filament flux with zero diagonal for active source nodes.",
-  "geometry": "Finite rectilinear or irregular 2-D coordinate arrays.",
-  "coordinates": "R,Z in metres; matrix entries Wb/rad/A.",
-  "boundary": "Axis rows and zero-radius source columns are zero; duplicate positive-radius nodes are rejected.",
-  "assumptions": [
-   "Inputs are finite real matching 2-D arrays.",
-   "The matrix is dense and uses the explicit zero-self convention.",
-   "No finite-wire inductance is modeled."
-  ]
- },
- "inputs": [
-  {
-   "name": "R",
-   "description": "Cylindrical radius nodes",
-   "units": "m",
-   "shape": "2-D matching Z",
-   "dtype": "finite real",
-   "required": true,
-   "constraints": "Nonnegative; distinct positive-radius coordinate pairs"
+  "schema": "scirel.asset-document",
+  "asset_id": "scirel.electromagnetism.loop-flux-matrix",
+  "title": {
+    "en": "Actual-coordinate loop flux matrix",
+    "zh": "实际坐标圆环磁通矩阵"
   },
-  {
-   "name": "Z",
-   "description": "Axial node coordinates",
-   "units": "m",
-   "shape": "same as R",
-   "dtype": "finite real",
-   "required": true,
-   "constraints": "C-order flattening fixes order"
+  "summary": "Build the dense actual-coordinate flux matrix for an R,Z node grid.",
+  "taxonomy": [
+    "electromagnetism",
+    "axisymmetric-fields",
+    "discrete-response"
+  ],
+  "aliases": [
+    "get_gpsi"
+  ],
+  "discovery": {
+    "capability": [
+      "Actual-coordinate loop flux matrix",
+      "Build the dense actual-coordinate flux matrix for an R,Z node grid."
+    ],
+    "operation": [
+      "dense loop flux-matrix construction",
+      "matching R,Z grids -> target-row/source-column psi response"
+    ],
+    "model": "Axisymmetric ideal circular-filament flux with zero diagonal for active source nodes.",
+    "geometry": "Finite rectilinear or irregular two-dimensional coordinate arrays.",
+    "boundary": "Axis rows and zero-radius source columns are zero, and duplicate positive-radius nodes are rejected.",
+    "device_scope": "device-parameterized"
+  },
+  "identity": {
+    "relation": "Actual-coordinate loop flux matrix",
+    "direction": "matching R,Z grids to target-row/source-column psi response",
+    "definition": "Flatten matching R,Z arrays in C order and evaluate every actual target/source pair.",
+    "model": "Axisymmetric ideal circular-filament flux with zero diagonal for active source nodes.",
+    "geometry": "Finite rectilinear or irregular 2-D coordinate arrays.",
+    "coordinates": "R,Z in metres; matrix entries Wb/rad/A.",
+    "boundary": "Axis rows and zero-radius source columns are zero; duplicate positive-radius nodes are rejected.",
+    "assumptions": [
+      "Inputs are finite real matching 2-D arrays.",
+      "The matrix is dense and uses the explicit zero-self convention.",
+      "No finite-wire inductance is modeled."
+    ]
+  },
+  "inputs": [
+    {
+      "name": "R",
+      "description": "Cylindrical radius nodes",
+      "units": "m",
+      "shape": "2-D matching Z",
+      "dtype": "finite real",
+      "required": true,
+      "constraints": "Nonnegative; distinct positive-radius coordinate pairs"
+    },
+    {
+      "name": "Z",
+      "description": "Axial node coordinates",
+      "units": "m",
+      "shape": "same as R",
+      "dtype": "finite real",
+      "required": true,
+      "constraints": "C-order flattening fixes order"
+    }
+  ],
+  "outputs": [
+    {
+      "name": "G",
+      "description": "Flux response matrix with target rows/source columns",
+      "units": "Wb/rad/A",
+      "shape": "(R.size,R.size)",
+      "dtype": "float64",
+      "required": true,
+      "constraints": "Zero diagonal; finite; permutation covariance"
+    }
+  ],
+  "applicability": {
+    "preconditions": [
+      "Inputs are finite real matching 2-D arrays.",
+      "The matrix is dense and uses the explicit zero-self convention."
+    ],
+    "supported": [
+      "Irregular/asymmetric coordinates, permutation covariance, axis limits, and duplicate/complex failures."
+    ],
+    "excluded": [
+      "Finite-conductor self-inductance, extreme-scale qualification, and equilibrium claims."
+    ]
+  },
+  "failure_semantics": {
+    "invalid_input": "ValueError is raised for malformed, complex, nonfinite, negative-radius, or duplicate active nodes.",
+    "runtime_failure": "FloatingPointError from an unrepresentable kernel response propagates.",
+    "nonconvergence": "Not applicable; this is a direct matrix evaluation.",
+    "partial_results": "No matrix is returned after validation or kernel failure."
+  },
+  "public_api": {
+    "python": {
+      "module": "scirel.electromagnetism.greens",
+      "symbol": "get_gpsi",
+      "signature": "get_gpsi(R, Z)",
+      "canonical_module": "scirel.electromagnetism",
+      "canonical_symbol": "get_gpsi"
+    }
+  },
+  "version": {
+    "implementation_version": "0.0.0",
+    "dependencies": [
+      {
+        "asset_id": "scirel.electromagnetism.circular-filament-green"
+      }
+    ]
+  },
+  "example": {
+    "description": "Build a dense matrix from a 3x3 irregular R,Z mesh.",
+    "code": "import numpy as np\nfrom scirel.electromagnetism import get_gpsi\nR,Z=np.meshgrid([.4,.8,1.2],[-.5,0.,.9])\nG=get_gpsi(R,Z)\nassert G.shape==(9,9) and np.all(np.diag(G)==0)",
+    "expected": "The result is a finite (9,9) matrix with an exactly zero diagonal."
+  },
+  "verification": {
+    "scope": [
+      "Original irregular and unchanged uniform geometry",
+      "Independent asymmetric heldout integral and permutation oracle",
+      "Axis/singularity/complex failure semantics",
+      "Independent reference (tests/electromagnetism/_ideal_ring_reference.py): off-diagonal entries are recomputed from the complement-free AgM elliptic flux, which evaluates the parameter m directly rather than the complement 1-m used here, cross-certified against direct Biot-Savart quadrature at 1e-22 relative. A second, fully independent statement is the reciprocity of the mutual flux G[i, j] = G[j, i], which this code does not build in - each column is evaluated in one direction only - so a wrong modulus, a wrong distance sum or a swapped (2-m)K-2E pair breaks it while a single-direction quadrature comparison survives.",
+      "Implementation relation: G is the dense target-as-source matrix of the unit-weight ideal-filament flux, ordered by the C-order flattening of the 2-D (R, Z) inputs, with psi in Wb/rad per ampere, mu0/(4 pi) = 1e-7 exactly, the height difference Z - Z0, distinct positive-radius nodes required, and the diagonal set to zero by the discrete self convention.",
+      "Test matrix (tests/electromagnetism/test_loop_flux_matrix_evidence.py, 5 cases): reciprocity over every active pair of an irregular 5 by 4 grid that includes an on-axis node and targets on both sides of the branch cutover; every off-diagonal entry against the reference; the exact zero diagonal and the exact zero rows and columns of a zero-radius node; permutation covariance under a fixed node permutation together with the C-order flattening convention; and every rejection channel. Boundary cases are the axis node and the coincident-node rejection; non-finite and shape failures are in the failure matrix.",
+      "Precision budget, fixed before the comparison ran: 64 eps = 1.42e-14 relative per entry, and 2 x 64 eps for the reciprocity difference because the two entries are two independent evaluations of one mathematical quantity and each may carry the full per-entry budget. The reference contributes at most 1e-22 relative.",
+      "Failure matrix, one executable assertion per contract channel in failure_semantics: ValueError for a complex array, a non-2-D or mismatched shape, a negative radius, a nonfinite entry, and duplicate active nodes; an unrepresentable response is covered by the shared kernel contract that reports FloatingPointError. No matrix is returned on any of these paths."
+    ],
+    "tests": [
+      "tests/geometry/test_green_reflection_repair.py",
+      "tests/electromagnetism/test_loop_flux_matrix_evidence.py"
+    ],
+    "evidence_ceiling": "Independent numerical evidence for the named grid, the mutual-flux reciprocity law that the code does not build in, and exact structural facts (zero diagonal, inactive nodes, permutation covariance, C-order flattening). Not finite-conductor self-inductance and not an arbitrary-domain bound.",
+    "known_limitations": [
+      "Dense quadratic work/storage",
+      "Zero-self is a limited discrete model",
+      "No finite wire, singular pair or physical equilibrium solution claim",
+      "Reciprocity is asserted for the named grid with a two-budget bound rather than bitwise, because the two directions are evaluated separately; the matrix is dense and quadratic in the node count, so the evidence covers one 20-node grid and not larger assemblies."
+    ]
   }
- ],
- "outputs": [
-  {
-   "name": "G",
-   "description": "Flux response matrix with target rows/source columns",
-   "units": "Wb/rad/A",
-   "shape": "(R.size,R.size)",
-   "dtype": "float64",
-   "required": true,
-   "constraints": "Zero diagonal; finite; permutation covariance"
-  }
- ],
- "applicability": {
-  "preconditions": [
-   "Inputs are finite real matching 2-D arrays.",
-   "The matrix is dense and uses the explicit zero-self convention."
-  ],
-  "supported": [
-   "Irregular/asymmetric coordinates, permutation covariance, axis limits, and duplicate/complex failures."
-  ],
-  "excluded": [
-   "Finite-conductor self-inductance, extreme-scale qualification, and equilibrium claims."
-  ]
- },
- "failure_semantics": {
-  "invalid_input": "ValueError is raised for malformed, complex, nonfinite, negative-radius, or duplicate active nodes.",
-  "runtime_failure": "FloatingPointError from an unrepresentable kernel response propagates.",
-  "nonconvergence": "Not applicable; this is a direct matrix evaluation.",
-  "partial_results": "No matrix is returned after validation or kernel failure."
- },
- "public_api": {
-  "python": {
-   "module": "scirel.electromagnetism.greens",
-   "symbol": "get_gpsi",
-   "signature": "get_gpsi(R, Z)",
-   "canonical_module": "scirel.electromagnetism",
-   "canonical_symbol": "get_gpsi"
-  }
- },
- "version": {
-  "implementation_version": "0.0.0",
-  "dependencies": [
-   {
-    "asset_id": "scirel.electromagnetism.circular-filament-green"
-   }
-  ]
- },
- "example": {
-  "description": "Build a dense matrix from a 3x3 irregular R,Z mesh.",
-  "code": "import numpy as np\nfrom scirel.electromagnetism import get_gpsi\nR,Z=np.meshgrid([.4,.8,1.2],[-.5,0.,.9])\nG=get_gpsi(R,Z)\nassert G.shape==(9,9) and np.all(np.diag(G)==0)",
-  "expected": "The result is a finite (9,9) matrix with an exactly zero diagonal."
- },
- "verification": {
-  "scope": [
-   "Original irregular and unchanged uniform geometry",
-   "Independent asymmetric heldout integral and permutation oracle",
-   "Axis/singularity/complex failure semantics"
-  ],
-  "tests": [
-   "tests/geometry/test_green_reflection_repair.py"
-  ],
-  "evidence_ceiling": "Independent numerical relation/invariants in named cases; no general extreme-scale or conductor model qualification.",
-  "known_limitations": [
-   "Dense quadratic work/storage",
-   "Zero-self is a limited discrete model",
-   "No finite wire, singular pair or physical equilibrium solution claim"
-  ]
- }
 }
