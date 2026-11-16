@@ -213,6 +213,28 @@ pass is not evidence that every possible user task is covered.
 
 Generated pages, indices and matrices are not reviewed science by themselves.
 
+The kinetic tutorial is published only while
+`tools/docs/kinetic-tutorial/execution.json` still binds the current bytes: the
+documentation build rechecks the bound source files, the two contracts and the
+tutorial RST with `source_digest`/`contract_digest`, and refuses to publish a
+stale or failed record. Regenerate that record with the replay script rather
+than editing the JSON by hand:
+
+```sh
+python3 scripts/dev.py run python -B scripts/render_tutorial_execution.py --check
+python3 scripts/dev.py run python -B scripts/render_tutorial_execution.py --write
+```
+
+Run `--write` (and commit the regenerated `execution.json`) whenever a change
+touches one of its two bound implementation files
+(`src/scirel/kinetic/generalized_dispersion.py`, `src/scirel/kinetic/vlasov_poisson.py`),
+either bound contract (`scirel.kinetic.generalized-root-scans`,
+`scirel.kinetic.vp-landau`), the tutorial RST itself, or the interpreter and
+dependency versions recorded in `environment`. `--digests-only` reports the byte
+bindings without spending the tutorial replay. The generated narrative keeps the
+boundary: it is bounded source execution of one tutorial, not an installed-wheel,
+cross-platform or all-domain physics approval.
+
 ## Suggested work order
 
 The current open issues are not all equally urgent. Use this order unless new

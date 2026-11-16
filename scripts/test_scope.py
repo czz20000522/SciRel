@@ -59,6 +59,7 @@ SCRIPT_LAYERS = {
     "package_catalog_snapshot.py": ("tooling",),
     "public_api_binding.py": ("tooling", "architecture", "docs", "delivery"),
     "query.py": ("delivery",),
+    "render_tutorial_execution.py": ("docs",),
     "scirel_mutation_plugin.py": ("tooling",),
     "solving_skill.py": ("delivery",),
     "scirel_docs.py": ("docs", "delivery"),
