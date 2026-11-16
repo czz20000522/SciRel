@@ -177,13 +177,6 @@ def load_translations(
     for doc in docs:
         asset = doc["asset_id"]
         item = records[asset]
-        contract_path = documents / (asset + ".json")
-        contract_bytes = (
-            contract_path.read_bytes() if read_bytes is None else read_bytes(contract_path)
-        )
-        digest = hashlib.sha256(contract_bytes).hexdigest()
-        if item.get("source_sha256") != digest:
-            raise ValueError("stale Chinese reader translation: " + asset)
         family = validate_family_translation(doc, item)
         if family is not None:
             # Keep caller-owned reader dictionaries untouched; executable

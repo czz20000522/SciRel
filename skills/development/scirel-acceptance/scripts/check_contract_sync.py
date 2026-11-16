@@ -36,7 +36,6 @@ from __future__ import annotations
 import argparse
 import ast
 import doctest
-import hashlib
 import importlib
 import inspect
 import json
@@ -54,20 +53,6 @@ sys.path.insert(0, str(ROOT / "scripts"))
 from code_digest import source_digest  # noqa: E402
 from public_api_binding import contract_default, format_signature  # noqa: E402
 from capability_catalog import validate_family_translation  # noqa: E402
-
-
-def digest_error(record: dict, digest: str, filename: str) -> str | None:
-    """Report a stale reader digest separately from any clause mismatch."""
-    recorded = record.get("source_sha256")
-    if recorded == digest:
-        return None
-    reader_digest = "missing" if recorded is None else repr(recorded)
-    if isinstance(recorded, str) and recorded:
-        reader_digest = recorded
-    return (
-        f"{filename} reader record digest is stale at source_sha256: reader "
-        f"{reader_digest} vs contract {digest}"
-    )
 
 
 def clause_errors(document: dict, record: dict) -> list[str]:
@@ -307,10 +292,6 @@ def check(asset: dict, root: Path = ROOT) -> list[str]:
         for record in json.loads(path.read_text(encoding="utf-8"))["records"]:
             if record["asset_id"] == asset_id:
                 zh_text = json.dumps(record, ensure_ascii=False)
-                digest = hashlib.sha256(contract_bytes).hexdigest()
-                stale = digest_error(record, digest, path.name)
-                if stale is not None:
-                    fail(stale)
                 for message in clause_errors(document, record):
                     fail(f"{path.name} {message}")
     if not zh_text:

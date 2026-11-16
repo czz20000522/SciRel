@@ -91,7 +91,6 @@
      "units": "Q；导数 Q/X"
     }
    ],
-   "source_sha256": "ca2f9faf07162bf53c410987af49f0798179ddd57d7cf4208b36eeee3f10f5bc",
    "summary": "由显式面网格、单元点值和边界数据构造不可变变量。",
    "verification": {
     "evidence_ceiling": "仅支持所列离散不变量与均匀网格制造解收敛；不声称任意网格稳定性、精度或完整输运模拟。",
@@ -201,7 +200,6 @@
      "units": "Q/time"
     }
    ],
-   "source_sha256": "4484244d7d4791120f50e52b857c13851c30a6ed5371b1714034e20fb87061c8",
    "summary": "使用幂律面权重组装守恒对流算子及指定边界通量。",
    "verification": {
     "evidence_ceiling": "仅支持所列离散不变量与均匀网格制造解收敛；不声称任意网格稳定性、精度或完整输运模拟。",
@@ -285,7 +283,6 @@
      "units": "Q/time"
     }
    ],
-   "source_sha256": "ba376ae1b3bc6d07e9d0916fc447da203505c0c3374c4126e3850fdde6fa874c",
    "summary": "将扩散通量散度组装为三对角算子与边界强迫。",
    "verification": {
     "evidence_ceiling": "仅支持所列离散不变量与均匀网格制造解收敛；不声称任意网格稳定性、精度或完整输运模拟。",
@@ -445,7 +442,6 @@
      "units": "Q"
     }
    ],
-   "source_sha256": "0a11b564427572ae4d5fdbdd60ee8385078415a55e4a3a127591cd9723d61577",
    "summary": "用分别给出的旧、新线性算子推进单个通道一步。",
    "verification": {
     "evidence_ceiling": "仅支持所列离散不变量与均匀网格制造解收敛；不声称任意网格稳定性、精度或完整输运模拟。",
@@ -519,7 +515,6 @@
      "units": "与输入相同"
     }
    ],
-   "source_sha256": "50e56f3bcc469331f8fcf8f598aa27cc9c3ed13d00c5c12ec92df09b5b22dde4",
    "summary": "将一维网格上相邻的面值转换为单元中点值。",
    "verification": {
     "evidence_ceiling": "维护测试仅支持所列关系、形状和指定边界行为，不构成普遍物理标定。",
@@ -717,7 +712,6 @@
      "units": "A/m^2"
     }
    ],
-   "source_sha256": "4b4ad9d722e1a675c3ea693d89499e9e254c59f6ac3c4fa78d9b61b1d6bad3ac",
    "summary": "由压强、对数梯度及拟合系数组装平行自举电流，以 scirel._result.Result 映射返回两个命名字段。",
    "verification": {
     "evidence_ceiling": "仅证明拟合代数与显式组装，不构成经验模型的全面物理资格。",
@@ -846,7 +840,6 @@
      "units": "无量纲"
     }
    ],
-   "source_sha256": "bf5f8d4b654de0ac1e18c1caf0b69e36f4574ec4e573b273930f5d20485889f2",
    "summary": "使用显式method选择既有Redl或Sauter拟合，返回带名称的L31、L32、L34和alpha面数组。",
    "verification": {
     "scope": [
@@ -1002,7 +995,6 @@
      "units": "无量纲"
     }
    ],
-   "source_sha256": "e943d002b442c7763c3413e8a834d9c0eb8b188c74c2e494f1369369a4b65b95",
    "summary": "电子-电子库仑对数估计。",
    "verification": {
     "evidence_ceiling": "维护测试仅支持所列关系、形状和指定边界行为，不构成普遍物理标定。",
@@ -1086,7 +1078,6 @@
      "units": "无量纲"
     }
    ],
-   "source_sha256": "974fa34a533741dc7f4cd7a939f3dcb028c5462be26d054020341674170f9737",
    "summary": "与 Sauter 等 EPFL 作者原稿 LRP 630/99 式（18d）一致的电子-离子库仑对数估计。",
    "verification": {
     "evidence_ceiling": "维护测试支持所列关系、形状、指定边界行为，以及单位换算后与 EPFL 作者原稿 LRP 630/99 式（18d）的代数一致性；不确认推导、普遍物理标定、期刊最终正文或 2002 勘误。",
@@ -1180,7 +1171,6 @@
      "units": "无量纲"
     }
    ],
-   "source_sha256": "e4686834bbb2dd953220870afbb7b196c100b326941835392e2ef0c4aa9fff01",
    "summary": "与 Sauter 等 EPFL 作者原稿 LRP 630/99 式（18e）一致的离子-离子库仑对数估计。",
    "verification": {
     "evidence_ceiling": "维护测试只建立声明的离子-离子关系、形状、数值边界，以及单位换算后与 EPFL 作者原稿 LRP 630/99 式（18e）的代数一致性；不建立全局物理标定或 NRL 2013 Eq. c，独立 NRL 转写相差 +0.4388 ln Lambda。期刊最终正文和 2002 勘误仍未核验。",
@@ -1269,7 +1259,6 @@
      "units": "无量纲"
     }
    ],
-   "source_sha256": "4bb27e1fbc8a23d72b40eea88b352396f62c2f6bf0efb012e358ff9f605970ad",
    "summary": "由单一主离子与单一杂质电荷计算主离子稀释份额。",
    "verification": {
     "evidence_ceiling": "维护测试仅支持所列关系、形状和指定边界行为，不构成普遍物理标定。",
@@ -1392,7 +1381,6 @@
      "units": "J"
     }
    ],
-   "source_sha256": "8d947fa54cd1223933b2bfb1e851cd7b94842dd544e3c9e89838053d817b11d5",
    "summary": "分别积分电子、离子及总标量压强，得到储存热能。",
    "verification": {
     "evidence_ceiling": "独立数值探针支持所列数学关系、离散守恒、边界、形状和失败行为；不代表一般等离子体标定或完整边界模型有效性。",
@@ -1508,7 +1496,6 @@
      "units": "总量/m^3"
     }
    ],
-   "source_sha256": "6fd1af7fc87cf535d81ab0669a9430be7a14f637742d0ed36baeda7a01964af5",
    "summary": "在非均匀归一化半径网格上生成体积归一化指数源剖面。",
    "verification": {
     "evidence_ceiling": "独立数值探针支持所列数学关系、离散守恒、边界、形状和失败行为；不代表一般等离子体标定或完整边界模型有效性。",
@@ -1622,7 +1609,6 @@
      "units": "总量/m^3"
     }
    ],
-   "source_sha256": "95c7e4028f767c7acb380217767d86e4826810457eb7f16e862173b0b7ca58ec",
    "summary": "在非均匀归一化半径网格上生成体积归一化高斯源剖面。",
    "verification": {
     "evidence_ceiling": "独立数值探针支持所列数学关系、离散守恒、边界、形状和失败行为；不代表一般等离子体标定或完整边界模型有效性。",

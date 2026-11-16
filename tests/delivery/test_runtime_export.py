@@ -95,7 +95,6 @@ def _document():
 def _reader(document, contract):
     return {
         "asset_id": ASSET,
-        "source_sha256": sha(contract),
         "summary": "合成示例",
         "definition": "合成定义",
         "model": "合成模型",
@@ -473,7 +472,7 @@ def test_public_binding_and_membership_checks_fail_closed(export_case, monkeypat
     elif failure == "reader_binding":
         reader_path = case.source / "tools/docs/zh/synthetic.json"
         payload = json.loads(reader_path.read_bytes())
-        payload["records"][0]["source_sha256"] = "f" * 64
+        payload["records"][0]["summary"] = ""
         reader_path.write_bytes(encode(payload))
     elif failure == "dependency":
         document = _document()

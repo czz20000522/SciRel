@@ -38,6 +38,7 @@ from capability_catalog import (
     capability_search_text,
     load_translations,
 )
+from zh_pairs import PAIRING_SCHEMA, verify_record as verify_zh_pair
 from build_capability_matrix import build_matrix, render_markdown
 from code_digest import contract_digest, source_digest
 from capability_query import (
@@ -92,6 +93,7 @@ DOCUMENTATION_BUILD_SCRIPTS = (
     "validate_asset_documents.py",
     "public_api_binding.py",
     "exposure.py",
+    "zh_pairs.py",
 )
 
 
@@ -142,6 +144,9 @@ def documentation_input_digests(documents=None, *, outline=None, translation_pat
     if translation_paths is not None:
         for number, path in enumerate(translation_paths):
             include("build-inputs/translations/" + str(number).zfill(4) + ".json", Path(path))
+    pairing = ROOT / "tools/docs/zh-pairing.json"
+    if pairing.is_file():
+        include("build-inputs/zh-pairing.json", pairing)
     return dict(sorted(digests.items()))
 
 
@@ -621,6 +626,12 @@ def build(
             english_available_docs(ROOT, book, {d["asset_id"] for d in docs}, matrix=True),
         )
     files = {}
+    if language == "zh":
+        # Same source root as load_translations above: one tree supplies records and pairs.
+        pairing_path = ROOT / "tools/docs/zh-pairing.json"
+        if not pairing_path.is_file():
+            raise ValueError("Chinese build needs tools/docs/zh-pairing.json next to the records")
+        files["readers/pairing.json"] = pairing_path.read_bytes()
     index = []
     for doc in docs:
         asset = doc["asset_id"]
@@ -891,8 +902,19 @@ class Documentation:
             raise KeyError("snapshot has no Chinese reader layer")
         result = self.asset(asset_id)
         result["translation"] = json.loads(self.read(f"readers/{asset_id}.json"))
-        if result["translation"]["source_sha256"] != sha(self.read(f"records/{asset_id}.json")):
-            raise ValueError("Chinese reader is not bound to the served exact document")
+        pairs = json.loads(self.read("readers/pairing.json"))
+        if pairs.get("schema") != PAIRING_SCHEMA:
+            raise ValueError("snapshot pairing record has an unknown schema")
+        fields = next(
+            (item["fields"] for item in pairs["records"] if item["asset_id"] == asset_id), None
+        )
+        if fields is None:
+            raise KeyError("snapshot pairing record has no entry for this asset")
+        problems = verify_zh_pair(
+            result["document"], result["translation"], fields, f"readers/{asset_id}.json"
+        )
+        if problems:
+            raise ValueError("Chinese reader pairing is stale: " + "; ".join(problems))
         return result
 
     def chapter(self, chapter_id):
