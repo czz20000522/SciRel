@@ -127,7 +127,7 @@
    "J/L pole and finite-harmonic approximation errors remain distinct from relation consistency and numerical residual.",
    "The independent analytic comparison does not replace an external experimental reference.",
    "Pure-Python execution is tested on this host; native parity is not claimed.",
-   "The four R selectors RTAY, RASY, RINT and RYLA are one code path: the returned matrices are bit-identical, so the selector name does not choose a Taylor, asymptotic or integral branch.",
+   "The four selectors RTAY, RASY, RINT and RYLA were measured to return bit-identical matrices: the entry point runs one harmonic routine, so the selector name does not choose a Taylor, asymptotic or integral branch. Whether the four names should distinguish branches is an API design question that no evidence here settles and that this contract does not decide; the measurement is recorded so that no reader infers four independent numerical paths.",
    "The 1e-9 R ceiling is a truncation-and-accumulation statement at b<=0.5; nothing is claimed for large b where the harmonic sum needs more than the reference's 400 terms."
   ],
   "scope": [
