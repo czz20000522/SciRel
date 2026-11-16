@@ -197,9 +197,7 @@ def test_the_exact_recovery_branch_differs_from_the_naive_float_value():
     naive = 0.0  # p_parallel - B dp evaluated in binary64 on this sample
 
     assert float(exact) != naive
-    result = D.compute_parallel_pressure_residual(
-        parallel, parallel, field, dp_parallel_dB=slope
-    )
+    result = D.compute_parallel_pressure_residual(parallel, parallel, field, dp_parallel_dB=slope)
     got = float(np.asarray(result["rhs"])[0])
     assert got == float(exact)
     assert got != naive
