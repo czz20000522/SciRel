@@ -195,16 +195,19 @@
    "Direct tests bind both generation kinds, Fk/Gk versus Bk/Dk source use, positive-only incoming boundary, signed boundary cells, empty spatial-axis and zero axial-velocity rejection and finite-output failure semantics.",
    "The cross-domain tests compare propagated physical attenuation against an analytic characteristic and preserve a prescribed source/loss equilibrium using one common Vth normalization.",
    "The contract example covers one bounded representative call; numerical checks do not establish external physical validation or full-domain applicability.",
-   "Both first_flight and scattered reject positive and negative zero axial-velocity nodes rather than silently leaving their distribution columns zero."
+   "Both first_flight and scattered reject positive and negative zero axial-velocity nodes rather than silently leaving their distribution columns zero.",
+   "Independent evidence (tests/neutrals/test_upwind_transport_evidence.py): both recurrences are reproduced from independently drawn coefficient fields with exact rational cumulative products and sums, the first-flight boundary reaches only the positive half (directly observable at nx = 1, where the negative half stays exactly zero), the scattered branch is exactly linear in its source and a zero source gives exactly zero."
   ],
   "tests": [
    "tests/kinetic/test_transport_step.py",
-   "tests/cross_domain/test_neutral_transport_normalization.py"
+   "tests/cross_domain/test_neutral_transport_normalization.py",
+   "tests/neutrals/test_upwind_transport_evidence.py"
   ],
-  "evidence_ceiling": "Bounded to the stated normalized transport relation. Direct tests bind both generation kinds, Fk/Gk versus Bk/Dk source use, positive-only incoming boundary, signed boundary cells, empty spatial-axis and zero axial-velocity rejection and finite-output failure semantics. The cross-domain tests compare propagated physical attenuation against an analytic characteristic and preserve a prescribed source/loss equilibrium using one common Vth normalization. The listed direct and cross-domain tests are the current reproducible evidence; the example exercises one bounded call. Independent analytic and SI-unit comparisons are limited to the stated fixtures. Unbound historical source/parity receipts remain UNKNOWN and are not re-established here.",
+  "evidence_ceiling": "Bounded to the stated normalized transport relation. Direct tests bind both generation kinds, Fk/Gk versus Bk/Dk source use, positive-only incoming boundary, signed boundary cells, empty spatial-axis and zero axial-velocity rejection and finite-output failure semantics. The cross-domain tests compare propagated physical attenuation against an analytic characteristic and preserve a prescribed source/loss equilibrium using one common Vth normalization. The listed direct and cross-domain tests are the current reproducible evidence; the example exercises one bounded call. Independent analytic and SI-unit comparisons are limited to the stated fixtures. Unbound historical source/parity receipts remain UNKNOWN and are not re-established here. C1 evidence adds: an exact rational recurrence oracle on independently drawn coefficients and the boundary half-space branch at nx = 1; it does not establish the accuracy or stability of the sweep or the physical normalization of the supplied coefficients.",
   "known_limitations": [
    "No external collision-data calibration, source-project parity qualification or device-specific physical validation is established by these tests.",
-   "The normalization tests use bounded aligned meshes and prescribed rates; they do not certify full-distribution grid convergence, arbitrary-step positivity or the complete nonlinear transport model."
+   "The normalization tests use bounded aligned meshes and prescribed rates; they do not certify full-distribution grid convergence, arbitrary-step positivity or the complete nonlinear transport model.",
+   "The propagation is an explicit first-order upwind sweep with the caller's coefficients: no stability, positivity or accuracy is established, and the zero-velocity node (which needs a separate local balance) is rejected rather than handled."
   ]
  }
 }

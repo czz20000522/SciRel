@@ -142,16 +142,19 @@
   "scope": [
    "Direct tests bind the cell-local quadrature contraction with signed factors, alignment/nonnegativity validation, implicit-real rejection and finite-output rejection.",
    "The cross-domain tests consume the actual Alpha_CX producer, compare Vth times the source with a physical-rate contraction, verify linear scaling of the supplied target shape, and check number balance only when that shape has unit weighted integral.",
-   "The contract example covers one bounded representative call; numerical checks do not establish external physical validation or full-domain applicability."
+   "The contract example covers one bounded representative call; numerical checks do not establish external physical validation or full-domain applicability.",
+   "Independent evidence (tests/neutrals/test_generation_density_and_source_evidence.py): the rate is a single scalar per spatial cell shared by every velocity cell, perturbing the predecessor at one cell changes only that cell, the source is exactly linear in the target, the predecessor and the CX frequency, and a zero frequency gives an exactly zero source."
   ],
   "tests": [
    "tests/kinetic/test_neutral_scattered_sources.py",
-   "tests/cross_domain/test_neutral_transport_normalization.py"
+   "tests/cross_domain/test_neutral_transport_normalization.py",
+   "tests/neutrals/test_generation_density_and_source_evidence.py"
   ],
-  "evidence_ceiling": "Bounded to the stated normalized transport relation. Direct tests bind the cell-local quadrature contraction with signed factors, alignment/nonnegativity validation, implicit-real rejection and finite-output rejection. The cross-domain tests consume the actual Alpha_CX producer, compare Vth times the source with a physical-rate contraction, verify linear scaling of the supplied target shape, and check number balance only when that shape has unit weighted integral. The listed direct and cross-domain tests are the current reproducible evidence; the example exercises one bounded call. Independent analytic and SI-unit comparisons are limited to the stated fixtures. Unbound historical source/parity receipts remain UNKNOWN and are not re-established here.",
+  "evidence_ceiling": "Bounded to the stated normalized transport relation. Direct tests bind the cell-local quadrature contraction with signed factors, alignment/nonnegativity validation, implicit-real rejection and finite-output rejection. The cross-domain tests consume the actual Alpha_CX producer, compare Vth times the source with a physical-rate contraction, verify linear scaling of the supplied target shape, and check number balance only when that shape has unit weighted integral. The listed direct and cross-domain tests are the current reproducible evidence; the example exercises one bounded call. Independent analytic and SI-unit comparisons are limited to the stated fixtures. Unbound historical source/parity receipts remain UNKNOWN and are not re-established here. C1 evidence adds: the exact rational cell-local construction and the no-cross-cell-coupling discriminator; it does not establish the physical CX rate model or the normalization of the supplied target shape.",
   "known_limitations": [
    "No external collision-data calibration, source-project parity qualification or device-specific physical validation is established by these tests.",
-   "The normalization tests use bounded aligned meshes and prescribed rates; they do not certify full-distribution grid convergence, arbitrary-step positivity or the complete nonlinear transport model."
+   "The normalization tests use bounded aligned meshes and prescribed rates; they do not certify full-distribution grid convergence, arbitrary-step positivity or the complete nonlinear transport model.",
+   "The cell-local construction is verified as cell locality: no cross-cell transport is claimed, and the caller's unit weighted integral (number-conserving regeneration) remains a separate condition."
   ]
  }
 }
