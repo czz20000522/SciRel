@@ -25,10 +25,17 @@ Evidence sources, none of them the implementation or its fixtures:
 Precision budgets, fixed before the comparison was run:
 
 * Derived quantities: ``32 eps`` relative.  Each is a ratio of two exact float
-  inputs plus one square root or reciprocal, so the rounding floor is a few ulp;
-  32 eps is that allowance, and the same budget is used to *discriminate* -- the
-  test also evaluates each identity with the factor of two dropped or the ratio
-  inverted and requires the wrong form to exceed it.
+  inputs plus one square root or reciprocal, so the rounding floor is a few ulp
+  and 32 eps is that allowance.  Discrimination is done on relations that do
+  not need the deck's column semantics: the returned arrays must satisfy
+  ``omega_p = k_D v_t / sqrt(2)``, and scaling the density column by four must
+  scale ``omega_p`` by two.  An earlier draft discriminated by building a
+  synthetic deck with ``m != q``; that attempt was withdrawn because it silently
+  assumed which column is which, which nothing in this repository states.
+* The drift column: the deck stores it as the four-significant-digit decimal
+  ``7.071`` while ``5 sqrt(2) = 7.0710678...``, so the drift/thermal ratio is
+  pinned only to ``1e-5`` relative.  That budget is the quantisation of the
+  declared input, not a tolerance fitted to a measured difference.
 * Grid arithmetic: zero tolerance for ``x``, ``y`` and the ``z = x + 1i y``
   composition.  ``-5 + 0.1*i`` is the exact float64 expression the declaration
   names, so any difference is a real difference, not rounding.
