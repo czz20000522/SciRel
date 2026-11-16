@@ -478,9 +478,7 @@ def _write_result(path, result):
     """Write a result and the sidecar digest a v2 reader insists on."""
     path = Path(path)
     path.write_text(json.dumps(result), encoding="utf-8")
-    path.with_name(path.name + ".sha256").write_text(
-        _digest_file(path) + "\n", encoding="utf-8"
-    )
+    path.with_name(path.name + ".sha256").write_text(_digest_file(path) + "\n", encoding="utf-8")
 
 
 @pytest.mark.parametrize("stage", ["full check", "mutation"])

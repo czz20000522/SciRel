@@ -505,9 +505,7 @@ def test_a_v1_result_stays_readable_as_legacy(tmp_path):
     assert _provenance_status(path, result) == "legacy_unprovenanced"
 
 
-def test_the_written_result_carries_v2_provenance_and_a_sidecar(
-    tmp_path, monkeypatch, capsys
-):
+def test_the_written_result_carries_v2_provenance_and_a_sidecar(tmp_path, monkeypatch, capsys):
     monkeypatch.setenv("SCIREL_EXCLUSIVE_TOKEN", "fixture-token")
     path, _ = _mini_acceptance(tmp_path, monkeypatch)
     assert check_all.main(path) == 0
