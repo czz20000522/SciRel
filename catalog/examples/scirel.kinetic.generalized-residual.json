@@ -191,17 +191,21 @@
  },
  "verification": {
   "tests": [
-   "tests/kinetic/test_generalized_dispersion_models.py"
+   "tests/kinetic/test_generalized_dispersion_models.py",
+   "tests/kinetic/test_generalized_kernel_evidence.py"
   ],
   "scope": [
    "Four original residual families with original temperature/mass/drift normalization.",
-   "Maxwellian Langmuir/generalized reuse the qualified cancellation-free small-k implementation."
+   "Maxwellian Langmuir/generalized reuse the qualified cancellation-free small-k implementation.",
+   "The residual evaluated at the phase implied by a root returned from scan_gpdf_roots is 2.0e-15, while substituting the angular frequency directly gives 0.65; the variable assignment is therefore fixed by the root position and not by either implementation."
   ],
   "known_limitations": [
    "IAW and beam use the ordinary Faddeeva response; extreme phase/temperature inputs can be unrepresentable.",
-   "Only shared-file coverage is bound (test_generalized_dispersion_models.py); no asset-specific failure/limit probe is recorded."
+   "Only shared-file coverage is bound (test_generalized_dispersion_models.py); no asset-specific failure/limit probe is recorded.",
+   "The residual is a function of the normalized phase x = omega/(sqrt(2) k); passing an angular frequency instead of the phase is a silent-wrong-answer path that only the magnitude check exposes.",
+   "Only the langmuir branch is cross-checked against an independent mpmath root; the iaw, beam and generalized branches are not."
   ],
-  "evidence_ceiling": "Bounded to the declared relation: IAW D=k²+[1+xZ(x)]+[1+qZ(q)]/Ti with q=x/sqrt(Ti/mi). Beam D=k²+(1-nb)[1+xZ(x)]+nb/Tb[1+qZ(q)] with q=x/sqrt(Tb)-vd. Generalized D=k²-Zp/2. Vacuum and susceptibility normalization match the frozen scripts. Evidence: test_generalized_dispersion_models.py (14 recorded test functions; shared-file coverage only; self-consistency/regression only); the contract example ran. Excluded scope: Directly accepting a small absolute D as proof of a small-k mode; external physical validation."
+  "evidence_ceiling": "test_generalized_kernel_evidence.py evaluates the public residual at the phase obtained from the root returned by scan_gpdf_roots and requires |residual| <= 1e-12, and separately asserts that the unconverted omega does not close. The root itself is cross-checked with an mpmath solve of D(omega) = k**2 + 1 + z Z(z) at 40 digits. No continuous-domain residual bound, no uniqueness of the selected root and no claim about the iaw, beam or generalized branches beyond the executed assertion are established."
  },
  "example": {
   "description": "Evaluate one Langmuir residual at a finite complex frequency.",
