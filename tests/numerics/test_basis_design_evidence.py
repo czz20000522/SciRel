@@ -117,11 +117,15 @@ def test_clamped_family_is_linear_at_zero_slopes_and_affine_at_a_fixed_nonzero_s
     y = np.array([0.0, 0.2, 0.5])
     query = np.linspace(0.0, 1.0, 7)
 
-    zero_slope_scaled = np.asarray(ClampedCubicSpline(x, 2.0 * y, yp=(0.0, 0.0))(query), dtype=float)
+    zero_slope_scaled = np.asarray(
+        ClampedCubicSpline(x, 2.0 * y, yp=(0.0, 0.0))(query), dtype=float
+    )
     zero_slope_plain = np.asarray(ClampedCubicSpline(x, y, yp=(0.0, 0.0))(query), dtype=float)
     assert np.max(np.abs(zero_slope_scaled - 2.0 * zero_slope_plain)) <= 64.0 * EPS
 
-    fixed_slope_scaled = np.asarray(ClampedCubicSpline(x, 2.0 * y, yp=(1.0, 0.5))(query), dtype=float)
+    fixed_slope_scaled = np.asarray(
+        ClampedCubicSpline(x, 2.0 * y, yp=(1.0, 0.5))(query), dtype=float
+    )
     fixed_slope_plain = np.asarray(ClampedCubicSpline(x, y, yp=(1.0, 0.5))(query), dtype=float)
     assert np.max(np.abs(fixed_slope_scaled - 2.0 * fixed_slope_plain)) > 1e-3
 
