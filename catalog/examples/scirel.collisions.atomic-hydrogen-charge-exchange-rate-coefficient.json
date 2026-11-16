@@ -122,7 +122,10 @@
    "At T=50 keV and E=100 keV the high-energy result is compared with independent 2D Gauss-Legendre Maxwellian quadrature using the composite cross section.",
    "Two quadrature resolutions agree within 0.2% of the implementation, and the old clipped endpoint is at least four times larger.",
    "Direct tests cover upper clipping, warning behavior, scalar and array shapes, invalid domain and non-real input rejection.",
-   "The high-energy relation is defined by quadrature of the separately exposed cross-section asset; it does not relabel an extrapolated bivariate fit."
+   "The high-energy relation is defined by quadrature of the separately exposed cross-section asset; it does not relabel an extrapolated bivariate fit.",
+   "Structural evidence: above the 2.01e4 eV bivariate-fit domain the rate is an integral of the separately exposed composite cross section, and it agrees with an independent composite-Simpson quadrature of that contract to 1.6e-6 relative; the bivariate fit branch agrees with the same integral inside an order-of-magnitude band; this is unit, structural and cross-asset consistency, not an absolute table value, because the published rate tables are not reachable from this repository",
+   "Precision budget: the unit-factor comparison admits 8e-16 relative; the quadrature agreement admits 5e-5 relative with the reference's own two-grid error below 1e-7; the fit-to-integral band 0.8-1.2 is an observed fit-to-fit spread (sampled maximum 2.8 % atomic, 1.8 % molecular) and not a validated accuracy; the frozen constants differ from CODATA by 3.6e-3 in the thermal speed, so no tighter claim is made and no tolerance is loosened",
+   "Failure matrix: each `failure_semantics` channel of this contract has exactly one executable assertion in tests/collisions/test_declared_failure_channels.py; that table's channel set is compared with the exception and warning classes this contract names, and every callable must produce its declared class, so a channel cannot be added, renamed or dropped silently"
   ],
   "tests": [
    "tests/collisions/test_atomic_hydrogen_charge_exchange_rate.py"
@@ -133,7 +136,8 @@
    "The high-energy quadrature omits collision energies above 250 keV; this is a declared cross-section-range boundary, not an extrapolation.",
    "Below 5 eV the composite cross section uses the Janev lower-domain fit; the Lindsay-Stebbings table does not validate that low-energy part.",
    "The high-energy branch is a model of an equal-mass Maxwellian target and does not establish a broader distribution or transport closure.",
-   "No independent experimental rate measurement or public distribution licence is established."
+   "No independent experimental rate measurement or public distribution licence is established.",
+   "Cannot establish: the absolute table values of this relation. They need the Janev (1995) chapter 11 charge-exchange rate tables, which are not in this repository and not available from a free source, so only units, the declared functional form and cross-asset consistency are established; no coefficient or absolute rate is asserted against a published number"
   ]
  }
 }

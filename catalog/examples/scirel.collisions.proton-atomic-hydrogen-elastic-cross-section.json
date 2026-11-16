@@ -111,7 +111,10 @@
    "The 20 eV laboratory (10 eV center-of-mass) breakpoint is probed directly: E_lab<20 uses the low branch and E_lab>=20 uses the high branch, with immediate below/above inputs covered.",
    "input-shape output, input rejection and endpoint-clipping assertions are retained",
    "downstream atomic collision-matrix assembly and independent angular integration use the corrected piecewise definition",
-   "The declared equal-mass discrete momentum construction is checked through matrix assembly, Alpha contraction and moment reduction, including an explicitly constructed full-velocity CX gain-loss operator. This is algebraic and quadrature evidence, not a production combined transport solver or an independent cross-section accuracy oracle."
+   "The declared equal-mass discrete momentum construction is checked through matrix assembly, Alpha contraction and moment reduction, including an explicitly constructed full-velocity CX gain-loss operator. This is algebraic and quadrature evidence, not a production combined transport solver or an independent cross-section accuracy oracle.",
+   "Structural evidence: the returned value is the frozen fit re-evaluated on another code path and multiplied by the exact 1e-4 cm^2->m^2 factor (agreement within four binary64 roundings), the parameterized variable is the equal-mass center-of-mass energy E_cm = E_lab/2, the branch seam sits at E_cm = 10 eV (20 eV laboratory), the declared discontinuity across it measures 1.15e-2 relative, and each branch's log-slope equals its analytic derivative; this establishes structure, not an absolute table value, because the published table the coefficients were regressed from is not reachable from this repository",
+   "Precision budget: the unit-factor comparison admits 8e-16 relative, four binary64 roundings between two evaluation orders of the same polynomial; the slope identity admits 1e-4 of max(1, |d ln sigma / d ln E|) measured by a central difference of h = 1e-3 in ln E, whose truncation term h^2/6 |d^3 ln sigma / d(ln E)^3| stays below 1e-6 on the declared intervals; no existing per-asset tolerance is loosened and no numeric value is changed",
+   "Failure matrix: each `failure_semantics` channel of this contract has exactly one executable assertion in tests/collisions/test_declared_failure_channels.py; that table's channel set is compared with the exception and warning classes this contract names, and every callable must produce its declared class, so a channel cannot be added, renamed or dropped silently"
   ],
   "tests": [
    "tests/collisions/test_hydrogen_proton_elastic_cross_section.py",
@@ -124,7 +127,8 @@
    "endpoint clipping and the discontinuity between the low- and high-energy segments are inherited; no unsupported smoothing is applied",
    "a previous qualification withdrawal and pending licensing remain recorded; this correction does not rewrite that history",
    "the momentum-transfer cross section of this fit contains the momentum carried by resonant charge exchange (APID 8, 1999, section 1.2, p. 2-3); it is not a distinguishable-particle momentum-transfer cross section, and no distinguishable-particle parameterization exists in this repository",
-   "The resonant charge-exchange share of the total momentum transfer remains unquantified (UNKNOWN). Independent validation of separated channels over the underlying 0.1-100 eV center-of-mass table range has not been established here; this is a verification gap, not a claim that suitable literature or data do not exist."
+   "The resonant charge-exchange share of the total momentum transfer remains unquantified (UNKNOWN). Independent validation of separated channels over the underlying 0.1-100 eV center-of-mass table range has not been established here; this is a verification gap, not a claim that suitable literature or data do not exist.",
+   "Cannot establish: the absolute table values of this relation. They need the Janev (1995) chapter 11 p. 298 H+-on-H fit table and the APID 8 (1999) range, which are not in this repository and not available from a free source, so only the structural properties listed above are established; no coefficient or absolute cross section is asserted against a published number, and none was reconstructed from memory"
   ]
  }
 }

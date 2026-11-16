@@ -128,7 +128,10 @@
    "The Freeman-Jones branch matches its independent analytic expression and differs from the default composite.",
    "Upper endpoint clipping and ApplicabilityWarning are covered for both the default and Freeman-Jones branches; the lower endpoint clips without a warning.",
    "Input tests reject nonfinite, negative, boolean, complex and numeric-string energies and array-valued branch selectors.",
-   "The default callable remains a valid cross_section_m2 port for maxwellian-relative-speed-rate-average."
+   "The default callable remains a valid cross_section_m2 port for maxwellian-relative-speed-rate-average.",
+   "Structural evidence: the returned value is the frozen fit re-evaluated on another code path and multiplied by the exact 1e-4 cm^2->m^2 factor (agreement within four binary64 roundings), the composite joins the Janev branch and the Lindsay-Stebbings Table 1 branch at 1.267317514018116e4 eV with a measured relative gap of 5e-10, and the Freeman-Jones selector is a distinct comparison fit rather than an alias; this establishes structure, not an absolute table value, because the published table the coefficients were regressed from is not reachable from this repository",
+   "Precision budget: the unit-factor comparison admits 8e-16 relative, four binary64 roundings between two evaluation orders of the same polynomial; the slope identity admits 1e-4 of max(1, |d ln sigma / d ln E|) measured by a central difference of h = 1e-3 in ln E, whose truncation term h^2/6 |d^3 ln sigma / d(ln E)^3| stays below 1e-6 on the declared intervals; no existing per-asset tolerance is loosened and no numeric value is changed",
+   "Failure matrix: each `failure_semantics` channel of this contract has exactly one executable assertion in tests/collisions/test_declared_failure_channels.py; that table's channel set is compared with the exception and warning classes this contract names, and every callable must produce its declared class, so a channel cannot be added, renamed or dropped silently"
   ],
   "tests": [
    "tests/collisions/test_atomic_hydrogen_charge_exchange_cross_section.py",
@@ -141,7 +144,8 @@
    "For H+-H, Lindsay and Stebbings (2005), section 4.1 [20], assess possible reliability at about 10% and record a still-unresolved almost 30% difference between theory and measurements at 100 keV. The above-6-keV 11% statement in section 4.1 [23], continued on the next page, concerns H+-O, not H+-H. These author assessments are not a SciRel experimental validation or a uniform uncertainty bound for the composite.",
    "The Freeman-Jones branch is an independent comparison fit, not the default and not a correction to the composite.",
    "Public distribution licensing remains pending a human decision.",
-   "no independent measured or independently computed cross-section source is available for 0.1-12 eV (the Red Book tabulation starts at 12 eV and the Khoma data only cover 1e-4 to 1e-3 eV), so the declared lower end of the fit domain has no external check"
+   "no independent measured or independently computed cross-section source is available for 0.1-12 eV (the Red Book tabulation starts at 12 eV and the Khoma data only cover 1e-4 to 1e-3 eV), so the declared lower end of the fit domain has no external check",
+   "Cannot establish: the absolute table values of this relation. They need Lindsay and Stebbings (2005), JGR 110, A12213, Table 1, and the Janev (1995) chapter 11 tables, which are not in this repository and not available from a free source, so only the structural properties listed above are established; no coefficient or absolute cross section is asserted against a published number, and none was reconstructed from memory"
   ]
  }
 }

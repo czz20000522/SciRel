@@ -92,7 +92,7 @@
  },
  "failure_semantics": {
   "invalid_input": "Raises ValueError for non-real numeric or non-finite temperature, nonpositive temperature, or target species other than the scalar strings H and H2. Boolean, complex and numeric-string temperature coercions are rejected.",
-  "runtime_failure": "Raises ValueError if the derived rate is non-finite or nonpositive; no partial output is returned.",
+  "runtime_failure": "Raises ValueError if the derived rate is non-finite or nonpositive; no partial output is returned. Temperature above 2.01e4 eV emits ApplicabilityWarning and returns the endpoint rate instead of extrapolating.",
   "nonconvergence": "Not applicable; no iteration.",
   "partial_results": "Never returned."
  },
@@ -118,7 +118,10 @@
   "scope": [
    "Fixed reference values verify both species-specific coefficient tables at six temperatures, including both fit endpoints.",
    "Direct tests cover branch distinction, clipping, scalar shape, invalid target species, invalid temperature and non-real coercion rejection.",
-   "No external implementation comparison is maintained or replayed by this repository; the maintained tests validate the declared relation against an in-repository independent formulation and cover the stated rejection and clipping behaviour only on their tested grids."
+   "No external implementation comparison is maintained or replayed by this repository; the maintained tests validate the declared relation against an in-repository independent formulation and cover the stated rejection and clipping behaviour only on their tested grids.",
+   "Structural evidence: each species branch is re-evaluated on another code path in cm^3/s, and the measured log-slope equals the analytic derivative of its own nine-coefficient polynomial on both sides of the fitted temperature maximum; this is unit, structural and cross-asset consistency, not an absolute table value, because the published rate tables are not reachable from this repository",
+   "Precision budget: the unit-factor comparison admits 8e-16 relative; the quadrature agreement admits 5e-5 relative with the reference's own two-grid error below 1e-7; the fit-to-integral band 0.8-1.2 is an observed fit-to-fit spread (sampled maximum 2.8 % atomic, 1.8 % molecular) and not a validated accuracy; the frozen constants differ from CODATA by 3.6e-3 in the thermal speed, so no tighter claim is made and no tolerance is loosened",
+   "Failure matrix: each `failure_semantics` channel of this contract has exactly one executable assertion in tests/collisions/test_declared_failure_channels.py; that table's channel set is compared with the exception and warning classes this contract names, and every callable must produce its declared class, so a channel cannot be added, renamed or dropped silently"
   ],
   "tests": [
    "tests/collisions/test_janev_electron_impact_ionization_rate.py"
@@ -130,7 +133,8 @@
    "A rate coefficient is not a complete source or sink without caller-supplied density and state contracts.",
    "Public distribution licensing remains pending.",
    "No environment-gated external-implementation comparison exists in this repository; any earlier external comparison is not replayed by the maintained tests.",
-   "On the 2000-point tested temperature grid, each fit has one observed maximum (about 137 eV for H and 156 eV for H2), so it is not monotone over the whole tested interval. These sampled peak locations are fit properties, not independently validated physical thresholds or a proof of continuous-domain unimodality."
+   "On the 2000-point tested temperature grid, each fit has one observed maximum (about 137 eV for H and 156 eV for H2), so it is not monotone over the whole tested interval. These sampled peak locations are fit properties, not independently validated physical thresholds or a proof of continuous-domain unimodality.",
+   "Cannot establish: the absolute table values of this relation. They need the Janev electron-impact ionization rate tables, which are not in this repository and not available from a free source, so only units, the declared functional form and cross-asset consistency are established; no coefficient or absolute rate is asserted against a published number"
   ]
  }
 }

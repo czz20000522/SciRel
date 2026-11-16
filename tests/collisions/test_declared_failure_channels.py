@@ -10,11 +10,18 @@ this file carries one callable per declared channel and two checks:
 * every callable really produces its declared channel, so the mapping stays
   executable rather than documentary.
 
-`COVERED` records which contracts are bound here. It grows as the domain is
-finished; the final state names all twenty ``scirel.collisions.*`` assets, which
-is the domain-level claim of issue #2's companion evidence work. Channels are
-matched by exception class name only; the message text stays owned by the
-implementation and its own per-asset tests.
+`COVERED` records which contracts are bound here. It now names all twenty
+``scirel.collisions.*`` assets, which is the domain-level claim of issue #2's
+companion evidence work. Channels are matched by exception class name only; the
+message text stays owned by the implementation and its own per-asset tests.
+
+One contract names a **base** class as well as its two subclasses ("Raises
+InvalidBesselArgumentError, a subclass of ValueError"). ``BASE_CLASS_CHANNELS``
+declares that relation explicitly: the base is not a third call site, and forcing
+a call that raised a bare ``ValueError`` would be inventing an assertion the
+implementation does not have. The declaration is not a loophole — a separate
+check requires the named subclasses to really be subclasses of that base, so the
+base-class claim is exercised rather than assumed.
 """
 
 from __future__ import annotations
@@ -35,9 +42,21 @@ from scirel.collisions import (
     average_cross_section_over_maxwellian,
     evaluate_atomic_hydrogen_1s_radiative_recombination_rate,
     evaluate_fast_ion_stopping_increment,
+    evaluate_atomic_hydrogen_charge_exchange_cross_section,
+    evaluate_atomic_hydrogen_charge_exchange_rate,
+    evaluate_atomic_hydrogen_elastic_cross_section,
+    evaluate_hydrogen_h2_elastic_cross_section,
+    evaluate_hydrogen2_charge_exchange_rate,
+    evaluate_hydrogen2_hydrogen2_elastic_cross_section,
+    evaluate_hydrogen2_proton_elastic_cross_section,
+    evaluate_hydrogen_proton_elastic_cross_section,
+    evaluate_janev_electron_impact_ionization_rate,
+    evaluate_molecular_hydrogen_charge_exchange_cross_section,
     normalized_momentum,
+    relativistic_maxwellian_bessel,
     thermal_electron_momentum,
 )
+import sys
 
 ROOT = Path(__file__).resolve().parents[2]
 EXAMPLES = ROOT / "catalog" / "examples"
@@ -53,7 +72,46 @@ COVERED = (
     "scirel.collisions.molecular-hydrogen-collision-matrices",
     "scirel.collisions.atomic-hydrogen-omega-frequencies",
     "scirel.collisions.molecular-hydrogen-omega-frequencies",
+    "scirel.collisions.relativistic-maxwellian-bessel-closure",
+    "scirel.collisions.atomic-hydrogen-charge-exchange-cross-section",
+    "scirel.collisions.atomic-hydrogen-elastic-cross-section",
+    "scirel.collisions.atomic-molecular-hydrogen-elastic-cross-section",
+    "scirel.collisions.molecular-hydrogen-elastic-cross-section",
+    "scirel.collisions.proton-atomic-hydrogen-elastic-cross-section",
+    "scirel.collisions.proton-molecular-hydrogen-elastic-cross-section",
+    "scirel.collisions.molecular-hydrogen-charge-exchange-cross-section",
+    "scirel.collisions.atomic-hydrogen-charge-exchange-rate-coefficient",
+    "scirel.collisions.molecular-hydrogen-charge-exchange-rate-coefficient",
+    "scirel.collisions.janev-electron-impact-ionization-rate",
 )
+
+#: Contracts that name a base class in addition to the subclasses they raise.
+#: The value lists the covered channels that must be subclasses of that base.
+BASE_CLASS_CHANNELS = {
+    "scirel.collisions.relativistic-maxwellian-bessel-closure": {
+        "ValueError": ("InvalidBesselArgumentError", "BesselBackendEvaluationError"),
+    },
+}
+
+
+def _non_finite_bessel_backend():
+    """Call the relation with a backend that returns infinities.
+
+    The seam is the module-local ``kve`` name the relation resolves at call time,
+    so replacing it exercises the declared backend-failure channel without
+    reaching SciPy's own limits and without making the test depend on the
+    installed build's representable range.
+    """
+    # The package attribute of that name is the function, not the module, so the
+    # module is taken from the import cache to reach the seam.
+    module = sys.modules["scirel.collisions.relativistic_maxwellian_bessel"]
+    original = module.kve
+    module.kve = lambda order, argument: float("inf")
+    try:
+        return module.relativistic_maxwellian_bessel(1.0)
+    finally:
+        module.kve = original
+
 
 _ATOMIC_MATRIX = dict(
     vr=np.array([0.5, 1.0]),
@@ -181,6 +239,78 @@ CHANNELS = {
             }
         ),
     },
+    "scirel.collisions.relativistic-maxwellian-bessel-closure": {
+        "InvalidBesselArgumentError": lambda: relativistic_maxwellian_bessel(0.0),
+        "BesselBackendEvaluationError": _non_finite_bessel_backend,
+    },
+    "scirel.collisions.atomic-hydrogen-charge-exchange-cross-section": {
+        "ValueError": lambda: evaluate_atomic_hydrogen_charge_exchange_cross_section(
+            np.array([1.0, -0.5])
+        ),
+        "ApplicabilityWarning": lambda: evaluate_atomic_hydrogen_charge_exchange_cross_section(
+            np.array([3.0e5])
+        ),
+    },
+    "scirel.collisions.atomic-hydrogen-elastic-cross-section": {
+        "ValueError": lambda: evaluate_atomic_hydrogen_elastic_cross_section(
+            np.array([1.0]), viscosity=np.ones((2, 2))
+        ),
+    },
+    "scirel.collisions.atomic-molecular-hydrogen-elastic-cross-section": {
+        "ValueError": lambda: evaluate_hydrogen_h2_elastic_cross_section(np.array([1.0, -0.5])),
+        "ApplicabilityWarning": lambda: evaluate_hydrogen_h2_elastic_cross_section(
+            np.array([2.0e4])
+        ),
+    },
+    "scirel.collisions.molecular-hydrogen-elastic-cross-section": {
+        "ValueError": lambda: evaluate_hydrogen2_hydrogen2_elastic_cross_section(
+            np.array([1.0]), viscosity=np.ones((2, 2))
+        ),
+        "ApplicabilityWarning": lambda: evaluate_hydrogen2_hydrogen2_elastic_cross_section(
+            np.array([2.0e4])
+        ),
+    },
+    "scirel.collisions.proton-atomic-hydrogen-elastic-cross-section": {
+        "ValueError": lambda: evaluate_hydrogen_proton_elastic_cross_section(np.array([1.0, -0.5])),
+    },
+    "scirel.collisions.proton-molecular-hydrogen-elastic-cross-section": {
+        "ValueError": lambda: evaluate_hydrogen2_proton_elastic_cross_section(
+            np.array([1.0, -0.5])
+        ),
+        "ApplicabilityWarning": lambda: evaluate_hydrogen2_proton_elastic_cross_section(
+            np.array([2.0e4])
+        ),
+    },
+    "scirel.collisions.molecular-hydrogen-charge-exchange-cross-section": {
+        "ValueError": lambda: evaluate_molecular_hydrogen_charge_exchange_cross_section(
+            np.array([1.0, -0.5])
+        ),
+        "ApplicabilityWarning": lambda: evaluate_molecular_hydrogen_charge_exchange_cross_section(
+            np.array([4.0e4])
+        ),
+    },
+    "scirel.collisions.atomic-hydrogen-charge-exchange-rate-coefficient": {
+        "ValueError": lambda: evaluate_atomic_hydrogen_charge_exchange_rate(
+            np.array([1.0, 2.0]), np.array([1.0])
+        ),
+        "ApplicabilityWarning": lambda: evaluate_atomic_hydrogen_charge_exchange_rate(
+            np.array([1.0]), np.array([3.0e5])
+        ),
+    },
+    "scirel.collisions.molecular-hydrogen-charge-exchange-rate-coefficient": {
+        "ValueError": lambda: evaluate_hydrogen2_charge_exchange_rate(
+            np.array([1.0, 2.0]), np.array([1.0])
+        ),
+        "ApplicabilityWarning": lambda: evaluate_hydrogen2_charge_exchange_rate(
+            np.array([4.0e4]), np.array([1.0])
+        ),
+    },
+    "scirel.collisions.janev-electron-impact-ionization-rate": {
+        "ValueError": lambda: evaluate_janev_electron_impact_ionization_rate(np.array([0.0]), "H"),
+        "ApplicabilityWarning": lambda: evaluate_janev_electron_impact_ionization_rate(
+            np.array([4.0e4]), "H"
+        ),
+    },
 }
 
 
@@ -195,11 +325,41 @@ def _declared_channels(asset_id):
 
 def test_the_covered_set_is_explicit():
     assert set(CHANNELS) == set(COVERED)
+    assert set(BASE_CLASS_CHANNELS) <= set(COVERED)
 
 
 @pytest.mark.parametrize("asset_id", COVERED)
 def test_every_declared_channel_has_exactly_one_assertion(asset_id):
-    assert set(CHANNELS[asset_id]) == _declared_channels(asset_id)
+    declared = set(CHANNELS[asset_id]) | set(BASE_CLASS_CHANNELS.get(asset_id, {}))
+    assert declared == _declared_channels(asset_id)
+
+
+@pytest.mark.parametrize(
+    "asset_id,base,subclasses",
+    [
+        (asset_id, base, subclasses)
+        for asset_id, table in BASE_CLASS_CHANNELS.items()
+        for base, subclasses in table.items()
+    ],
+)
+def test_a_declared_base_class_channel_is_really_a_base_of_each_covered_channel(
+    asset_id, base, subclasses
+):
+    """A base-class declaration is a claim about inheritance, and it is checked.
+
+    Without this, naming a base class in the table could stand in for a channel
+    nobody exercises. Every covered subclass has to be a subclass of the declared
+    base, and each one also has to be reachable through the table.
+    """
+    import builtins
+    import scirel.collisions as collisions_package
+
+    base_class = getattr(builtins, base, None) or getattr(collisions_package, base)
+    assert subclasses, asset_id
+    for name in subclasses:
+        channel_class = getattr(collisions_package, name)
+        assert issubclass(channel_class, base_class), (name, base)
+        assert name in CHANNELS[asset_id], (asset_id, name)
 
 
 @pytest.mark.parametrize(
