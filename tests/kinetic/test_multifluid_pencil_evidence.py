@@ -82,7 +82,7 @@ BUDGET = 1024 * EPS
 KX, KZ = 1e-5, 2e-5
 
 
-def test_pencil_carries_the_si_plasma_and_reference.gyro_frequencies():
+def test_pencil_carries_the_si_plasma_and_gyro_frequencies():
     """``wps`` and ``wcs`` are the 40-digit definitions of the state's own columns."""
     state = fluid_equilibrium_si()
     pencil = fluid_frequency_pencil(state, KX, KZ)
