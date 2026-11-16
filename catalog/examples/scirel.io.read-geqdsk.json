@@ -122,10 +122,12 @@
  },
  "verification": {
   "scope": [
-   "Hand-written records following the published layout: scalar positions, profile and flux-map order, grids, boundary and limiter including adjacent full-width 2i5 counts and empty lists, joined fields, E/D exponents, free format, strict trailing policy and rejection of malformed numbers or unconsumed characters"
+   "Independent reference records hand-written from the published layout establish scalar positions, profile and flux-map order, grids, boundary and limiter including adjacent full-width 2i5 counts and empty lists, joined fields, E/D exponents, free format, strict trailing policy and rejection of malformed numbers or unconsumed characters."
   ],
   "tests": [
-   "tests/io/test_geqdsk.py"
+   "tests/io/test_geqdsk.py",
+   "tests/io/test_eqdsk_interchange_evidence.py",
+   "tests/io/test_io_declared_failure_channels.py"
   ],
   "evidence_ceiling": "Structural I/O only; no physical interpretation or sign convention is claimed.",
   "known_limitations": [

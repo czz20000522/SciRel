@@ -212,7 +212,7 @@
  },
  "verification": {
   "scope": [
-   "Independent flux conservation, exact linear/constant states, uniform manufactured diffusion convergence and theta causality checks",
+   "Independent exact rational recovery of the two-cell Dirichlet equation (1+2*theta)*u=2 in Fraction arithmetic pins theta causality, together with independent flux conservation, exact linear/constant states and uniform manufactured diffusion convergence checks.",
    "Under NumPy warn/ignore/raise policies, finite-input overflow in the implicit matrix or right-hand side raises FloatingPointError, and the explicit branch retains its existing overflow class. Separately, two nonfinite-input samples under the default policy raise ValueError. Failed implicit matrix/right-hand-side construction leaves the caller's variable values unchanged.",
    "At common scales 2^-540, 1 and 2^520, the independent two-cell Dirichlet equation (1+2*theta)*u=2 is retained for theta=0,.25,.5,1 when both old/new diffusion terms are supplied and dt equals the grid scale.",
    "Both documented boundary-mode enums are checked before operator assembly with absent, old-only, new-only or both convection terms; all legal mode pairs retain the same diffusion-only equation when convection is omitted or zero.",
@@ -223,7 +223,8 @@
    "tests/fvm/test_theta_failure_semantics.py",
    "tests/fvm/test_diffusion_boundary_scales.py::test_theta_downstream_retains_the_exact_dimensionless_two_cell_system",
    "tests/fvm/test_theta_boundary_modes.py",
-   "tests/fvm/test_diffusion_forcing_products.py::test_six_legal_modes_keep_complete_forcing_in_the_theta_solution"
+   "tests/fvm/test_diffusion_forcing_products.py::test_six_legal_modes_keep_complete_forcing_in_the_theta_solution",
+   "tests/fvm/test_fvm_declared_failure_channels.py"
   ],
   "evidence_ceiling": "Named discrete invariants and manufactured uniform-grid convergence; no arbitrary-grid stability/accuracy or full transport-simulation claim.",
   "known_limitations": [

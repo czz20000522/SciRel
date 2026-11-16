@@ -1,4 +1,5 @@
 import pathlib, sys
+from fractions import Fraction
 
 sys.path.insert(0, str(pathlib.Path(__file__).parents[1]))
 import numpy as np
@@ -256,3 +257,34 @@ def test_zero_face_diffusivity_keeps_the_upwind_limit_of_the_peclet_floor():
     )
     assert np.all(np.isfinite(floored.matvec(np.ones(3))))
     assert np.all(np.isfinite(floored_forcing))
+
+
+def test_face_value_uses_each_nonuniform_face_weight_exactly():
+    """Interior face values pair the two neighbouring cells with nonlinear weights.
+
+    On a uniform grid the interpolation weight is one half everywhere, so swapping
+    the two weights is invisible. Here the widths differ by a factor of four, the
+    exact rational weights are 1/4 and 3/4 at two different faces, and both cells
+    enter with a distinct coefficient. The expected values are formed as exact
+    rationals from the float64 inputs, not with a tolerance.
+    """
+    faces = np.array([0.0, 0.1, 0.4, 1.0])
+    centers = (faces[:-1] + faces[1:]) / 2
+    values = np.array([2.0, 3.0, 5.0])
+    var = CellVariable(
+        values,
+        faces,
+        left_face_grad_constraint=0.0,
+        right_face_grad_constraint=0.0,
+    )
+    expected = []
+    for x in faces[1:-1]:
+        j = int(np.searchsorted(centers, x)) - 1
+        weight = Fraction(float(x - centers[j])) / Fraction(float(centers[j + 1] - centers[j]))
+        assert weight not in (0, Fraction(1, 2), 1)
+        expected.append(
+            float(
+                (1 - weight) * Fraction(float(values[j])) + weight * Fraction(float(values[j + 1]))
+            )
+        )
+    np.testing.assert_array_equal(var.face_value()[1:-1], expected)
