@@ -84,7 +84,7 @@ def test_matrix_contraction_matches_exact_rational_arithmetic():
     # Nonzero anchors with both signs, so a zero output or a sign-flipped output
     # cannot pass the ratio comparison.
     assert result["psi"][0] > 0.0
-    assert result["BR"][1] < 0.0
+    assert result["BR"][2] < 0.0
     assert result["BZ"][2] != 0.0
     # The matrices are not symmetric and the contraction is not the transpose
     # contraction, so a transposed read is distinguishable.
