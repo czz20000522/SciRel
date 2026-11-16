@@ -152,18 +152,22 @@
    "Ninety-degree rotation about the centroid with the maintained sign convention.",
    "Nonpositive width/height rejection.",
    "Axis-crossing and nonfinite geometry rejection, exact tiny-angle rotation, and finite generation at a very large finite angle.",
-   "The named result preserves the captured key order, values, shapes, dtypes, mapping access and attribute access; failures retain their exception types and messages."
+   "The named result preserves the captured key order, values, shapes, dtypes, mapping access and attribute access; failures retain their exception types and messages.",
+   "Independent evidence (tests/field/test_permanent_ring_filaments_evidence.py): the two surface radii, the shared axial list, the exact section edges and the symmetric axial pair are pinned exactly; the signed weight law is pinned as three exact moments - zero total weight, zero weighted axial first moment and a weighted radial first moment of 8*width - which is the discrete statement of a pair of opposite surface currents."
   ],
   "tests": [
    "tests/field/test_permanent_ring_filaments.py",
-   "tests/cross_domain/test_legacy_six_absorption.py"
+   "tests/cross_domain/test_legacy_six_absorption.py",
+   "tests/field/test_permanent_ring_filaments_evidence.py"
   ],
-  "evidence_ceiling": "Targeted source regressions, explicit analytic fixtures and a selected no-source installed-wheel replay cover this finite contract. No arbitrary physical-model suitability, continuum convergence, human scientific endorsement or redistribution permission is inferred.",
+  "evidence_ceiling": "Targeted source regressions, explicit analytic fixtures and a selected no-source installed-wheel replay cover this finite contract. No arbitrary physical-model suitability, continuum convergence, human scientific endorsement or redistribution permission is inferred. C1 evidence adds exact rational and exact structural statements for the geometry and the weight law. It does not establish that these 16 filaments are a uniformly magnetised ring: that needs a magnetisation distribution plus a convergence study against a reference field or a magnet vendor section drawing, neither of which this repository holds.",
   "known_limitations": [
    "Exactly sixteen filament points and fixed relative weights are returned.",
    "The result does not encode absolute current or magnetization strength.",
    "Large-angle finiteness is checked, but float64 argument reduction does not certify arbitrary huge-angle phase accuracy.",
-   "Public distribution licensing and SciRel expert recognition remain pending."
+   "Public distribution licensing and SciRel expert recognition remain pending.",
+   "The physical equivalence between the signed filament pair and a uniformly magnetised section is cannot establish at this revision: no magnetisation reference, convergence study or section drawing is available in this repository, so only the discrete weight law and geometry are evidenced.",
+   "The axial node comparison carries an 8-eps budget because np.linspace accumulates a step division; the first and last node are exact because a linspace endpoint is assigned rather than accumulated."
   ]
  }
 }

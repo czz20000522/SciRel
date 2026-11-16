@@ -113,18 +113,22 @@
   "scope": [
    "Source polynomial-log evaluation against an independent recomputation.",
    "Elementwise analytic endpoint limits and unchanged invalid-input rejection.",
-   "Sampled accuracy against scipy's ellipk/ellipe."
+   "Sampled accuracy against scipy's ellipk/ellipe.",
+   "Independent evidence (tests/field/test_complete_elliptic_integrals_approx_evidence.py): K and E are compared with mpmath at 50 decimal digits against the tabulated absolute bound of 2e-8 published in Abramowitz and Stegun 17.3.34/17.3.36 rather than against a bound measured here, on a grid that reaches m = 1 - 1e-10; the endpoint limits are assigned elementwise; and the coefficient of ln(1/p) near m = 1 is localised to 1/2 by differencing two small-p values."
   ],
   "tests": [
    "tests/field/test_filament_coil_green.py",
-   "tests/cross_domain/test_legacy_admission_regressions.py"
+   "tests/cross_domain/test_legacy_admission_regressions.py",
+   "tests/field/test_complete_elliptic_integrals_approx_evidence.py"
   ],
-  "evidence_ceiling": "The direct tests in tests/field/test_filament_coil_green.py separately check fixed-polynomial evaluation, elementwise endpoint/invalid-input behavior, and a predetermined interior/near-one grid against independent scipy.special.ellipk/ellipe. The accuracy budget is the 2e-8 absolute approximation error printed for the matching coefficients in Abramowitz and Stegun 17.3.34/17.3.36, plus 128 binary64 eps times the reference magnitude for evaluation roundoff. tests/cross_domain/test_legacy_admission_regressions.py supplies an additional endpoint assertion. Shared-file Green-field tests are not elliptic-approximation evidence. Sampled success is not a new continuous-domain binary64 error proof or physical field validation.",
+  "evidence_ceiling": "The direct tests in tests/field/test_filament_coil_green.py separately check fixed-polynomial evaluation, elementwise endpoint/invalid-input behavior, and a predetermined interior/near-one grid against independent scipy.special.ellipk/ellipe. The accuracy budget is the 2e-8 absolute approximation error printed for the matching coefficients in Abramowitz and Stegun 17.3.34/17.3.36, plus 128 binary64 eps times the reference magnitude for evaluation roundoff. tests/cross_domain/test_legacy_admission_regressions.py supplies an additional endpoint assertion. Shared-file Green-field tests are not elliptic-approximation evidence. Sampled success is not a new continuous-domain binary64 error proof or physical field validation. C1 evidence replaces SciPy with a 50-digit second source and applies the published 2e-8 absolute bound as a declared threshold. The bound is verified on the sampled grid only, so no continuous error bound is proven; and nothing here establishes that this standalone approximation is suitable inside a field evaluation, which the Green kernel does not use it for.",
   "known_limitations": [
    "The independent SciPy comparison is limited to the predetermined test grid; it is numerical approximation evidence, not experimental or finite-wire validation.",
    "The fixed coefficients have a published real-arithmetic absolute approximation bound of 2e-8 for 0<=m<1, not a universal relative 1e-8 binary64 guarantee. Use scipy.special.ellipk and ellipe when higher accuracy is needed.",
    "The endpoint value is the analytic limit rather than a guarded surrogate; K(1) must not be treated as a finite magnetic field.",
-   "The approximation is evaluated only on real `m` in `[0,1]`; no analytic continuation or complex-modulus path is provided."
+   "The approximation is evaluated only on real `m` in `[0,1]`; no analytic continuation or complex-modulus path is provided.",
+   "The 2e-8 figure is verified as an observed maximum on the sampled grid; the interval between sampled m values is not covered by proof, and the published claim remains a tabulated real-arithmetic bound rather than a binary64 guarantee.",
+   "The logarithmic-coefficient check localises the coefficient to 0.5 within 1e-2; it distinguishes 1/2 from the other plausible coefficients and does not measure the tabulated digits."
   ]
  }
 }
