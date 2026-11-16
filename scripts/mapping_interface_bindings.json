@@ -821,9 +821,9 @@
     }
    ],
    "modules": {
-    "scirel.kinetic.generalized_dispersion": "ee0986c03f6ac43ae0730a042bc0337cc6ed9c77ee126873d1a5fc24e8039340"
+    "scirel.kinetic.generalized_dispersion": "dc47458e83abf3c8c2a4630bf6d38bfa00719be7a5ce879ad96ed2fa14f16b35"
    },
-   "review_basis": "The entry validates kind, k_values, initial_guess, residual_tolerance and max_evaluations. The nested residual uses selector/expression for the Maxwellian fast path; otherwise it forwards parameters to evaluate_gpdf_residual in this same bound module, whose eight keyword defaults define the remaining scientific ports. Residual kind routes applicable ion/beam/distribution parameters; the fast path ignores unused extra parameters as in the unchanged implementation. This binding verifies the declared scientific contract, not a claim that every runtime branch rejects arbitrary kwargs."
+   "review_basis": "The entry validates kind, k_values, initial_guess, residual_tolerance and max_evaluations. selector and expression are explicit keyword parameters with the documented defaults; the nested residual uses them for the Maxwellian fast path and otherwise forwards them to evaluate_gpdf_residual in this same bound module, whose remaining keyword defaults define the remaining scientific ports. Residual kind routes applicable ion/beam/distribution parameters; the fast path ignores unused extra parameters as in the unchanged implementation. This binding verifies the declared scientific contract, not a claim that every runtime branch rejects arbitrary kwargs."
   },
   {
    "asset_id": "scirel.kinetic.parallel-em-continuation",

@@ -212,7 +212,7 @@
   "python": {
    "module": "scirel.kinetic.generalized_dispersion",
    "symbol": "scan_gpdf_roots",
-   "signature": "scan_gpdf_roots(kind, *, k_values=None, initial_guess=None, residual_tolerance=1e-09, max_evaluations=300, **parameters)",
+   "signature": "scan_gpdf_roots(kind, *, k_values=None, initial_guess=None, residual_tolerance=1e-09, max_evaluations=300, selector=0, expression='exp(-v.^2)/sqrt(pi)', **parameters)",
    "canonical_module": "scirel.kinetic",
    "canonical_symbol": "scan_gpdf_roots"
   }
