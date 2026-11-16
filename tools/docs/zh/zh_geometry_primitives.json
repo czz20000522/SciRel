@@ -81,14 +81,14 @@
   },
   {
    "asset_id": "scirel.numerics.build-basis",
-   "source_sha256": "e2284fc06c7a34eebbf8728a106126059b83de40f21a8686a76f89783137a1d2",
+   "source_sha256": "ea3cce801d9adceea25c7fdbaa0aa3406fef9f6c6c48c5c7090fe95f076e3e8d",
    "summary": "构造可调用的升幂多项式或三次样条基函数。",
    "definition": "构造升幂多项式或三次样条求值器列表。",
    "model": "按映射选择升幂多项式或 C2 三次样条基函数；多项式默认有三个基函数（0、1、2 次幂），样条默认有五个节点、四个区间。",
    "boundary": "样条求值对有限查询在有限节点区间外返回零，非有限查询按兼容约定置零；多项式直接求值且不把非有限查询置零；非零端点斜率不构成齐次基，构造被拒绝；不补造不支持的工厂选择。",
    "assumptions": [
     "用于构造的样本有限，并满足各边界条件的特定假设。",
-    "多项式基的列按升幂排列；poly_deg 默认 3 表示三个基函数。",
+    "多项式基的列按升幂排列；poly_deg 是每个基函数的升幂系数个数，因此 poly_deg 默认 3 表示三个次数不超过 2 的基函数。",
     "样条控件默认 n_knots=5、domain=(0,1)；给定的 xdata/ydata 数组必须匹配。",
     "clamped 样条基要求 yp=0；非零斜率定义仿射函数族而不是线性基",
     "second-clamped 默认基省略原点恒等列，因此列数为 n_knots-1",
@@ -104,14 +104,14 @@
     },
     {
      "name": "poly_deg",
-     "description": "多项式选择使用的多项式次数。",
-     "constraints": "仅多项式选择使用；省略时取 3，即三个基函数。",
+     "description": "每个基函数的升幂系数个数；多项式次数为 poly_deg - 1。",
+     "constraints": "仅多项式选择使用；省略时取 3，即三个次数不超过 2 的基函数。",
      "dtype": "整数"
     },
     {
      "name": "coeffs",
-     "description": "升幂系数列，每列对应一个基函数。",
-     "constraints": "仅多项式选择使用；省略时按 poly_deg + 1 行构造恒等列。",
+     "description": "升幂系数列，每列对应一个基函数；第 j 行是 x**j 的系数。",
+     "constraints": "仅多项式选择使用；省略时按 poly_deg 行构造恒等列。",
      "dtype": "float64"
     },
     {
@@ -123,7 +123,7 @@
     {
      "name": "domain",
      "description": "省略 xdata 时使用的闭合节点区间。",
-     "constraints": "仅样条选择使用；有限且递增；省略时取 (0, 1)。",
+     "constraints": "仅样条选择使用；必须恰好两个有限、递增的边界；省略时取 (0, 1)。",
      "dtype": "float64"
     },
     {
@@ -180,7 +180,7 @@
     ]
    },
    "failure_semantics": {
-    "invalid_input": "选择器未实现的控件被显式传入时抛出 TypeError（写明参数名、收到的值、该选择器合法控件及合同 asset id）；未知关键字抛出 TypeError；控件类型不兼容抛出 TypeError；未注册选择器抛出 KeyError；保留但未实现的选择器抛出 NotImplementedError；非法样本、节点或边界参数抛出 ValueError。保留的 clamped 样条构造器在断言启用时，端点斜率向量长度不为二会抛出 AssertionError。非零端点斜率因不构成齐次基而被拒绝；线性系统失败向上传播。",
+    "invalid_input": "选择器未实现的控件被显式传入时抛出 TypeError（写明参数名、收到的值、该选择器合法控件及合同 asset id）；未知关键字抛出 TypeError；控件类型不兼容抛出 TypeError；未注册选择器抛出 KeyError；保留但未实现的选择器抛出 NotImplementedError；domain 不是恰好两个有限边界时抛出 ValueError；非法样本、节点或边界参数抛出 ValueError。保留的 clamped 样条构造器在断言启用时，端点斜率向量长度不为二会抛出 AssertionError。非零端点斜率因不构成齐次基而被拒绝；线性系统失败向上传播。",
     "runtime_failure": "数值线性代数或可选 SciPy 特殊函数异常从求值向上传播。",
     "nonconvergence": "不适用；基函数构造和求值是直接计算，不声明迭代收敛。",
     "partial_results": "构造失败时不返回求值器；样条选择下节点区间外的有限值和非有限查询值按零填充约定处理，多项式选择直接求值。"

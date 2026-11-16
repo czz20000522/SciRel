@@ -106,6 +106,32 @@ def test_build_basis_rejects_a_control_the_selected_basis_does_not_implement():
         basis.build_basis("poly", n_knots=5)
 
 
+def test_build_basis_poly_deg_counts_each_functions_coefficients():
+    """The documented meaning of poly_deg: coefficients per function, degree one lower."""
+    for poly_deg in (3, 5):
+        functions = basis.build_basis("poly", poly_deg=poly_deg)
+        assert len(functions) == poly_deg
+        assert {fn.coef.size for fn in functions} == {poly_deg}
+        assert [fn(np.array([1.0]))[0] for fn in functions] == [1.0] * poly_deg
+    quadratic = basis.build_basis("poly", poly_deg=3)
+    np.testing.assert_allclose([fn(2.0) for fn in quadratic], [1.0, 2.0, 4.0], rtol=0, atol=0)
+    identity = basis.build_basis("poly", coeffs=np.eye(4))
+    assert [fn.coef.size for fn in identity] == [4] * 4
+
+
+def test_build_basis_rejects_a_domain_that_is_not_two_finite_bounds():
+    with pytest.raises(ValueError, match="domain must be exactly two bounds") as extra:
+        basis.build_basis("natural_cubic_spline", domain=(0.0, 1.0, 2.0))
+    assert "with 3 value(s)" in str(extra.value)
+    assert "scirel.numerics.build-basis" in str(extra.value)
+    with pytest.raises(ValueError, match="domain must be exactly two bounds"):
+        basis.build_basis("natural_cubic_spline", domain=(0.0,))
+    with pytest.raises(ValueError, match="domain must be two finite bounds"):
+        basis.build_basis("clamped_cubic_spline", domain=(0.0, float("inf")))
+    valid = basis.build_basis("natural_cubic_spline", domain=[0.0, 1.0])
+    assert len(valid) == 5
+
+
 def test_build_basis_public_docstring_declares_contract():
     doc = inspect.getdoc(basis.build_basis)
     assert doc is not None
