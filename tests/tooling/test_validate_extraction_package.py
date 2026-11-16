@@ -11,6 +11,7 @@ import sys
 import pytest
 
 ROOT = Path(__file__).resolve().parents[2]
+FIXTURE_TOKEN = "fixture"
 SCRIPT = ROOT / "scripts/validate_extraction_package.py"
 TEMPLATE = "scirel.fusion.dd-neutron-lab-energy"
 NEW_ID = "scirel.fusion.demo-relation"
@@ -401,7 +402,7 @@ def test_production_validator_loading_fails_when_its_counts_dependency_is_missin
 def _mock_lock_boundary(module, monkeypatch):
     """Report/environment protocol fixtures only; not real exclusive acceptance evidence."""
     monkeypatch.setattr(
-        module, "require_exclusive", lambda tree, expected=None: expected or "fixture"
+        module, "require_exclusive", lambda tree, expected=None: expected or FIXTURE_TOKEN
     )
 
 
@@ -466,6 +467,12 @@ def _acceptance_candidate(directory):
     _git(tree, "add", ".")
     _git(tree, "commit", "-qm", "patched candidate fixture")
     return tree
+
+
+def _digest_text(text):
+    import hashlib
+
+    return hashlib.sha256(text.encode("utf-8")).hexdigest()
 
 
 def _digest_file(path):
@@ -595,7 +602,7 @@ def _acceptance_result(module, directory, tree):
     return {
         "schema": "scirel.acceptance.v2",
         "exclusive": {
-            "token_sha256": "a" * 64,
+            "token_sha256": _digest_text(FIXTURE_TOKEN),
             "record": str(tree / ".runtime/locks/acceptance-exclusive"),
             "present": True,
         },

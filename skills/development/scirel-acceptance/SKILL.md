@@ -46,12 +46,19 @@ credential digest, log digest, script digest or sidecar is missing or disagrees.
 
 What that buys, stated exactly: v2 binds the result file to the run that wrote it. Every
 step log has a recorded digest and the sidecar covers the result bytes, so editing the
-result — or one log — is visible without redoing the run. `exclusive.token_sha256` records
-that a lock-holding run happened and with which credential digest; the credential itself has
-retired, so it is **never compared** against anything. **This is not a signature.** Anyone
-who can rewrite the result, every log and the sidecar together — anyone able to run code
-inside the clone — can fabricate a bundle. Making that impossible needs verification moved
-outside the clone, which is a separate decision and not part of this protocol.
+result — or one log — is visible without redoing the run. **The credential digest binds too,
+but only when the verifier holds the live token:** `validate_provenance(..., token=…)`
+requires `sha256(token)` to equal the recorded `exclusive.token_sha256`, and
+`run_full_check()` passes the credential it already re-verified, so a result produced under
+another run — or by someone who never held the lock — is refused with *recorded credential
+digest does not match this run's live token*. Called without a token, the function can only
+check the shape: **format validation is not binding.**
+
+**This is still not a signature.** Anyone who can rewrite the result, every log and the
+sidecar together can build a self-consistent bundle; what they cannot do is make the
+recorded digest equal the live token held by the verifier. Removing that last gap needs
+verification moved outside the clone, which is a separate decision and not part of this
+protocol.
 
 Three review consequences follow from that boundary:
 
@@ -60,9 +67,10 @@ Three review consequences follow from that boundary:
    `check_all_sha256 disagrees`; the answer is a new run, never a repaired receipt.
 2. **`validate_provenance` does not compare step count or names.** Binding steps to a plan
    is the caller's duty; `validate_extraction_package.py` does it against the candidate plan.
-3. **The measured matrix includes an ACCEPTED cell:** change a field and re-seal the
-   sidecar → `ACCEPTED`. That is what "not a signature" means — this stops editing the
-   result file alone, not someone who can run code.
+3. **The measured matrix keeps its ACCEPTED cells, and they are not the same cell.** Re-seal
+   the sidecar after changing a field → `ACCEPTED` **only when no live token is supplied**;
+   the same forgery against the token of the run being verified → `REFUSED`. That is the
+   whole difference between shape validation and binding.
 
 A `scirel.acceptance.v1` receipt predates all of this. It is **refused by default**: a fresh
 forgery and a genuine historical receipt are indistinguishable, and there is only one legal

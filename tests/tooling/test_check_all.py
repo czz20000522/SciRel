@@ -441,9 +441,9 @@ def _write_result(path, result):
     path.with_name(path.name + ".sha256").write_text(_sha(path) + "\n", encoding="utf-8")
 
 
-def _provenance_status(path, result):
+def _provenance_status(path, result, token=None):
     return check_all.validate_provenance(
-        result, report_path=path, check_all_path=SCRIPTS / "check_all.py"
+        result, report_path=path, check_all_path=SCRIPTS / "check_all.py", token=token
     )
 
 
@@ -519,11 +519,28 @@ def test_a_v1_receipt_is_readable_only_with_the_legacy_switch(tmp_path):
     assert tag == "legacy_unprovenanced"
 
 
-def test_editing_a_field_and_resealing_the_sidecar_is_accepted(tmp_path):
-    """The documented boundary: this is not a signature, so a resealed forgery passes.
+def test_a_fabricated_credential_digest_is_refused_against_the_live_token(tmp_path):
+    """With the verifier holding the live token, a well-formed but unrelated digest fails."""
+    path, result = _provenance_result(tmp_path)
+    result["exclusive"]["token_sha256"] = "b" * 64
+    _write_result(path, result)
+    with pytest.raises(ValueError, match="does not match this run's live token"):
+        _provenance_status(path, result, token="the-live-run-token")
 
-    Encoded as a test so the SKILL.md matrix cell cannot drift into a claim the code
-    does not support.
+
+def test_the_recorded_digest_passes_against_the_token_that_produced_it(tmp_path):
+    path, result = _provenance_result(tmp_path)
+    token = "the-live-run-token"
+    result["exclusive"]["token_sha256"] = hashlib.sha256(token.encode()).hexdigest()
+    _write_result(path, result)
+    assert _provenance_status(path, result, token=token) == "verified_v2"
+
+
+def test_a_resealed_forgery_still_passes_without_a_live_token(tmp_path):
+    """The documented boundary: shape validation is not binding, so this cell stays ACCEPTED.
+
+    Encoded as a test so the SKILL.md matrix cannot drift into a claim the code cannot
+    support.
     """
     path, result = _provenance_result(tmp_path)
     result["exit_code"] = 0
@@ -551,7 +568,10 @@ def test_the_written_result_carries_v2_provenance_and_a_sidecar(tmp_path, monkey
     assert f"RESULT SHA256 {_sha(path)}" in capsys.readouterr().out
     assert (
         check_all.validate_provenance(
-            result, report_path=path, check_all_path=SCRIPTS / "check_all.py"
+            result,
+            report_path=path,
+            check_all_path=SCRIPTS / "check_all.py",
+            token="fixture-token",
         )
         == "verified_v2"
     )
