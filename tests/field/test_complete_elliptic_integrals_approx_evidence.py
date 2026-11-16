@@ -115,16 +115,12 @@ def test_the_logarithmic_coefficient_near_the_endpoint_is_one_half():
     """Evidence 3: the coefficient of ln(1/p) is 1/2, from differencing."""
     left, right = 1.0e-6, 1.0e-8
     k_values, _ = evaluate_complete_elliptic_integrals(np.array([1.0 - left, 1.0 - right]))
-    coefficient = (float(k_values[0]) - float(k_values[1])) / (
-        math.log(right) - math.log(left)
-    )
+    coefficient = (float(k_values[0]) - float(k_values[1])) / (math.log(right) - math.log(left))
     assert abs(coefficient - 0.5) <= LOG_COEFFICIENT_BUDGET, coefficient
     # The exact integrals show the same coefficient, so the statement is about
     # the relation and not about this particular polynomial.
     exact_left, exact_right = _reference(1.0 - left)[0], _reference(1.0 - right)[0]
-    exact_coefficient = float(exact_left - exact_right) / (
-        math.log(right) - math.log(left)
-    )
+    exact_coefficient = float(exact_left - exact_right) / (math.log(right) - math.log(left))
     assert abs(exact_coefficient - coefficient) <= LOG_COEFFICIENT_BUDGET
 
 

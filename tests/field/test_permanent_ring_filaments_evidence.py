@@ -125,13 +125,19 @@ def test_the_signed_weight_law_and_its_exact_moments():
     # Zero weighted axial first moment, exactly, because both groups share the
     # same axial list - this is the statement that the two surfaces are a pair.
     axial_moment = sum(
-        (Fraction(float(weight)) * Fraction(float(point[1])) for point, weight in zip(points, weights, strict=True)),
+        (
+            Fraction(float(weight)) * Fraction(float(point[1]))
+            for point, weight in zip(points, weights, strict=True)
+        ),
         start=Fraction(0),
     )
     assert axial_moment == 0
     # The weighted radial first moment is exactly the group count times the width.
     radial_moment = sum(
-        (Fraction(float(weight)) * Fraction(float(point[0])) for point, weight in zip(points, weights, strict=True)),
+        (
+            Fraction(float(weight)) * Fraction(float(point[0]))
+            for point, weight in zip(points, weights, strict=True)
+        ),
         start=Fraction(0),
     )
     assert radial_moment == NODES * Fraction(WIDTH)
@@ -186,6 +192,4 @@ def test_each_declared_rejection_channel_is_executable():
         discretize_permanent_ring(0.25, 0.0, 0.5, 4.0, mu_hat_deg=90.0)
     # Unrepresentable coordinates.
     with pytest.raises(ValueError, match="crosses the cylindrical axis or contains nonfinite"):
-        discretize_permanent_ring(
-            np.finfo(float).max, 0.0, np.finfo(float).max, 1.0
-        )
+        discretize_permanent_ring(np.finfo(float).max, 0.0, np.finfo(float).max, 1.0)

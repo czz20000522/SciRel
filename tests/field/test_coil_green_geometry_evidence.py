@@ -117,9 +117,10 @@ def test_modulus_and_distance_squared_match_the_exact_rational_relation(raw_radi
         )
         # Evidence 4: d squared equals D, one sqrt and one square later.
         got_distance = Fraction(float(distance[index]))
-        assert abs(got_distance * got_distance - exact_denominator) <= 2 * Fraction(
-            EPS
-        ) * exact_denominator
+        assert (
+            abs(got_distance * got_distance - exact_denominator)
+            <= 2 * Fraction(EPS) * exact_denominator
+        )
     assert observed > 0.0
 
 
@@ -181,9 +182,7 @@ def test_each_declared_rejection_channel_is_executable():
     # The modulus underflow guard: a subnormal observation radius times a normal
     # coil radius underflows the modulus to zero.
     with pytest.raises(ValueError, match="underflowed to zero"):
-        compute_axisymmetric_coil_modulus(
-            5.0e-324, 0.0, np.array([5.0e-324]), np.array([0.0])
-        )
+        compute_axisymmetric_coil_modulus(5.0e-324, 0.0, np.array([5.0e-324]), np.array([0.0]))
     # The overflow guard: a denominator that overflows to infinity.
     with pytest.raises(ValueError, match="overflowed to non-finite"):
         compute_axisymmetric_coil_modulus(1.0e308, 1.0e308, np.array([1.0e308]), np.array([0.0]))
