@@ -158,6 +158,8 @@ def evaluate_hydrogen2_charge_exchange_rate(temperature_ev, energy_ev):
         if temperature is nonpositive or energy is negative, or if the evaluated
         rate is not finite and positive.
 
+    Warns
+    -----
     ApplicabilityWarning
         If either paired sample is above ``2.01e4 eV``. The fit uses the endpoint
         value in that dimension; it does not extrapolate.

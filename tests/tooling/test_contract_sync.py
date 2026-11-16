@@ -227,6 +227,131 @@ def test_check_reports_independent_reader_failures_with_asset_and_file(reader_ca
         assert "verification.known_limitation:" in errors[0]
 
 
+def _sample_docstring(raises, warns=None):
+    """Build the sample docstring with the declaration sections a case needs."""
+    body = f"Raises\n------\n{raises}\n"
+    if warns:
+        body += f"\nWarns\n-----\n{warns}\n"
+    return (
+        "Return one.\n"
+        "\n"
+        "Returns\n"
+        "-------\n"
+        "result : int\n"
+        "    One.\n"
+        "\n"
+        f"{body}"
+        "\n"
+        "See Also\n"
+        "--------\n"
+        "int\n"
+        "\n"
+        "Examples\n"
+        "--------\n"
+        ">>> 1\n"
+        "1\n"
+    )
+
+
+@pytest.fixture
+def declaration_case(tmp_path, monkeypatch):
+    """Build one asset whose docstring declares exactly the sections a test needs."""
+    module = _load()
+    asset_id = "scirel.test.declaration"
+
+    def build(*, raises, warns=None, failure_semantics):
+        document, record = _contract_and_record()
+        document.update(
+            asset_id=asset_id,
+            public_api={
+                "python": {
+                    "module": "contract_sync_declaration",
+                    "symbol": "sampled",
+                    "signature": "sampled()",
+                }
+            },
+            inputs=[],
+            outputs=[],
+            failure_semantics=failure_semantics,
+            example={"code": "1\n"},
+        )
+
+        def sampled():
+            return 1
+
+        sampled.__doc__ = _sample_docstring(raises, warns)
+        monkeypatch.setitem(
+            sys.modules, "contract_sync_declaration", SimpleNamespace(sampled=sampled)
+        )
+        contract_path = tmp_path / "catalog/examples" / f"{asset_id}.json"
+        contract_path.parent.mkdir(parents=True, exist_ok=True)
+        contract_bytes = json.dumps(document).encode()
+        contract_path.write_bytes(contract_bytes)
+        record.update(asset_id=asset_id, source_sha256=hashlib.sha256(contract_bytes).hexdigest())
+        reader_path = tmp_path / "tools/docs/zh/zh_test.json"
+        reader_path.parent.mkdir(parents=True, exist_ok=True)
+        reader_path.write_text(json.dumps({"records": [record]}), encoding="utf-8")
+        return module.check({"asset_id": asset_id}, root=tmp_path)
+
+    return build
+
+
+def test_a_declared_warning_must_be_documented_under_warns(declaration_case):
+    """A warning is not an exception: Raises cannot carry it.
+
+    Reading only the Raises section used to make the check demand exactly that,
+    so this pins the corrected rule from both sides.
+    """
+    warning = "ApplicabilityWarning\n    Outside the fitted range."
+    errors = declaration_case(
+        raises=f"ValueError\n    Invalid input.\n{warning}",
+        failure_semantics={"runtime_failure": "Above the fitted range it warns."},
+    )
+    assert len(errors) == 1
+    assert "ApplicabilityWarning is a warning and belongs under Warns" in errors[0]
+
+    clean = declaration_case(
+        raises="ValueError\n    Invalid input.",
+        warns=warning,
+        failure_semantics={"runtime_failure": "Above the fitted range it warns."},
+    )
+    assert clean == []
+
+
+def test_a_warning_documented_only_under_warns_satisfies_failure_semantics(declaration_case):
+    """The declared set is the union of both sections, so a warning in Warns counts."""
+    errors = declaration_case(
+        raises="ValueError\n    Invalid input.",
+        warns="ApplicabilityWarning\n    Outside the fitted range.",
+        failure_semantics={
+            "invalid_input": "Raises ValueError.",
+            "runtime_failure": "Emits ApplicabilityWarning above the fitted range.",
+        },
+    )
+    assert errors == []
+
+
+def test_an_exception_documented_under_warns_is_rejected(declaration_case):
+    """The rule is symmetric: an exception belongs under Raises."""
+    errors = declaration_case(
+        raises="ValueError\n    Invalid input.",
+        warns="ApplicabilityWarning\n    Outside the fitted range.\nTypeError\n    Wrong kind.",
+        failure_semantics={"runtime_failure": "Emits ApplicabilityWarning."},
+    )
+    assert len(errors) == 1
+    assert "TypeError is not a Warning subclass and belongs under Raises" in errors[0]
+
+
+def test_a_declared_name_missing_from_both_sections_is_reported(declaration_case):
+    """A name in neither section is still an unverified declaration."""
+    errors = declaration_case(
+        raises="ValueError\n    Invalid input.",
+        failure_semantics={"runtime_failure": "Emits ApplicabilityWarning."},
+    )
+    assert len(errors) == 1
+    assert "neither Raises nor Warns lists it" in errors[0]
+
+
 @pytest.fixture
 def catalog_case(tmp_path, monkeypatch):
     module = _load()

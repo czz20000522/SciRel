@@ -221,6 +221,9 @@ def evaluate_atomic_hydrogen_charge_exchange_rate(temperature_ev, energy_ev):
         If either input is not real numeric, is non-finite, has the wrong shape,
         contains a nonpositive temperature or a negative energy, or produces a
         non-finite or nonpositive rate.
+
+    Warns
+    -----
     ApplicabilityWarning
         If an input is above the declared 250 keV upper boundary. The upper
         quadrature limit is then used; no cross-section tail is extrapolated.

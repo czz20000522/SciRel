@@ -86,6 +86,9 @@ def evaluate_atomic_hydrogen_charge_exchange_cross_section(energy_ev, freeman=Fa
     ValueError
         If ``energy_ev`` is not real numeric, is non-finite or is negative, or if
         ``freeman`` is not a scalar branch selector.
+
+    Warns
+    -----
     ApplicabilityWarning
         If a requested energy is above the selected branch's upper limit. The
         returned value is the endpoint value and is not extrapolated.

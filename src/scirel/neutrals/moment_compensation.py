@@ -116,9 +116,6 @@ def compensate_velocity_slice(
     ValueError, TypeError, IndexError, KeyError, AttributeError
         Array conversion, incompatible shapes, indexing or missing quadrature
         fields propagate their native errors; inputs are not repaired.
-    ApplicabilityWarning
-        A moment-error warning is emitted as described below. If warnings are
-        configured as errors, it propagates as an exception.
 
     Warns
     -----

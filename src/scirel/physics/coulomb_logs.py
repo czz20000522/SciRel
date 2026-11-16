@@ -306,11 +306,6 @@ def calculate_log_lambda_ee(T_e, n_e):
         Raises ValueError for boolean/string/complex/masked or empty input,
         non-finite values, malformed or incompatible shape, and the nonpositive
         or singular domains named by the callable contract.
-    ApplicabilityWarning
-        Emitted rather than raised, and listed here because the contract's
-        ``failure_semantics`` names it: any input temperature below ``10 eV``
-        returns the value below with this warning instead of raising (see
-        Warns).
 
     Warns
     -----
@@ -383,11 +378,6 @@ def calculate_log_lambda_ei(T_e, n_e):
         Raises ValueError for boolean/string/complex/masked or empty input,
         non-finite values, malformed or incompatible shape, and the nonpositive
         or singular domains named by the callable contract.
-    ApplicabilityWarning
-        Emitted rather than raised, and listed here because the contract's
-        ``failure_semantics`` names it: any input temperature below ``10 eV``
-        returns the value below with this warning instead of raising (see
-        Warns).
 
     Warns
     -----
