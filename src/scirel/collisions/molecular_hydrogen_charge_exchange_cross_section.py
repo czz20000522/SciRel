@@ -68,8 +68,6 @@ def evaluate_molecular_hydrogen_charge_exchange_cross_section(energy_ev):
     ValueError
         If ``energy_ev`` is not real numeric, is non-finite or is negative.
 
-    Warns
-    -----
     ApplicabilityWarning
         If a requested energy is above ``2.01e4 eV``. The returned value is the
         endpoint value, not an extrapolation.
