@@ -45,7 +45,10 @@ def _mp_orthonormal_legendre(order, x):
     mpmath.mp.dps = MP_DPS
     point = mpmath.mpf(float(x))
     return np.array(
-        [float(mpmath.sqrt(mpmath.mpf(2 * n + 1) / 2) * mpmath.legendre(n, point)) for n in range(order + 1)]
+        [
+            float(mpmath.sqrt(mpmath.mpf(2 * n + 1) / 2) * mpmath.legendre(n, point))
+            for n in range(order + 1)
+        ]
     )
 
 
@@ -106,22 +109,35 @@ def test_exponents_follow_the_declared_ordering():
     assert keys == sorted(keys)
     # And the concrete declared order for order=2, ndim=2.
     assert [list(row) for row in exponents] == [
-        [0, 0], [1, 0], [0, 1], [2, 0], [1, 1], [0, 2], [2, 1], [1, 2], [2, 2]
+        [0, 0],
+        [1, 0],
+        [0, 1],
+        [2, 0],
+        [1, 1],
+        [0, 2],
+        [2, 1],
+        [1, 2],
+        [2, 2],
     ]
 
 
-@pytest.mark.parametrize("order,coefficients", [
-    (1, np.array([0.4, -0.7])),
-    (2, np.array([0.3, -0.2, 0.5])),
-    (3, np.array([1.1, 0.0, -2.0, 0.25])),
-])
+@pytest.mark.parametrize(
+    "order,coefficients",
+    [
+        (1, np.array([0.4, -0.7])),
+        (2, np.array([0.3, -0.2, 0.5])),
+        (3, np.array([1.1, 0.0, -2.0, 0.25])),
+    ],
+)
 def test_projection_recovers_member_coefficients_on_the_basis_rule(order, coefficients):
     """Evidence 3: ``project(expand(c)) == c`` round trip."""
     basis = N.modal_basis("tensor", 1, order)
     nodes, _ = basis.quadrature()
     values = np.asarray(basis.expand(nodes, coefficients))
     recovered = np.asarray(basis.project(values))
-    assert np.max(np.abs(recovered - coefficients)) <= 1024.0 * EPS * max(1.0, float(np.max(np.abs(coefficients))))
+    assert np.max(np.abs(recovered - coefficients)) <= 1024.0 * EPS * max(
+        1.0, float(np.max(np.abs(coefficients)))
+    )
 
 
 def test_discrete_projection_equals_the_continuous_l2_projection_for_polynomials():
@@ -142,7 +158,16 @@ def test_discrete_projection_equals_the_continuous_l2_projection_for_polynomials
         got = np.asarray(basis.project(values))
         want = np.array(
             [
-                float(mpmath.quad(lambda t, m=m: t**degree * mpmath.sqrt(mpmath.mpf(2 * m + 1) / 2) * mpmath.legendre(m, t), [-1, 1]))
+                float(
+                    mpmath.quad(
+                        lambda t, m=m: (
+                            t**degree
+                            * mpmath.sqrt(mpmath.mpf(2 * m + 1) / 2)
+                            * mpmath.legendre(m, t)
+                        ),
+                        [-1, 1],
+                    )
+                )
                 for m in range(order + 1)
             ]
         )

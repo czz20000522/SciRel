@@ -116,7 +116,11 @@ def test_rejection_channels_are_bound_to_their_contract():
         (lambda: N.compute_truncated_pseudoinverse(np.array([[np.nan]])), ValueError, "finite"),
         (lambda: N.compute_truncated_pseudoinverse(np.eye(2), rcond=0.0), ValueError, "positive"),
         (lambda: N.compute_truncated_pseudoinverse(np.eye(2), rcond=-1.0), ValueError, "positive"),
-        (lambda: N.compute_truncated_pseudoinverse(np.eye(2), rcond=float("inf")), ValueError, "positive"),
+        (
+            lambda: N.compute_truncated_pseudoinverse(np.eye(2), rcond=float("inf")),
+            ValueError,
+            "positive",
+        ),
         (lambda: N.compute_truncated_pseudoinverse(np.eye(2), rcond=True), ValueError, "positive"),
     ]:
         with pytest.raises(expected) as caught:
@@ -174,12 +178,15 @@ def test_derivatives_are_exact_for_quadratic_data(coefficients):
     x = np.array([0.0, 0.11, 0.5, 1.4, 2.0, 3.3])
     y = a * x**2 + b * x + c
     d_one, d_two = diff_12_central(x, y)
-    assert np.max(np.abs(np.asarray(d_one) - (2.0 * a * x[1:-1] + b))) <= 64.0 * EPS * max(1.0, abs(b), abs(2 * a * x[-2]))
+    assert np.max(np.abs(np.asarray(d_one) - (2.0 * a * x[1:-1] + b))) <= 64.0 * EPS * max(
+        1.0, abs(b), abs(2 * a * x[-2])
+    )
     assert np.max(np.abs(np.asarray(d_two) - 2.0 * a)) <= 64.0 * EPS * max(1.0, abs(2 * a))
 
 
 def test_derivative_error_refines_at_second_order():
     """Evidence 4: O(h^2) on a uniformly refined grid."""
+
     def error(count):
         x = np.linspace(0.0, 2.0, count)
         d_one, _ = diff_12_central(x, np.sin(x))

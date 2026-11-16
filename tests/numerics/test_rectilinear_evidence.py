@@ -129,7 +129,9 @@ def test_complex_trilinear_propagates_a_nonfinite_corner_even_at_zero_weight():
     field = np.ones((2, 2, 2), dtype=complex)
     field[1, 0, 0] = complex(np.nan, 0.0)
 
-    at_the_corner = N.interpolate_complex_rectilinear_field(axes, field, np.array([[1.0, 0.0, 0.0]]))
+    at_the_corner = N.interpolate_complex_rectilinear_field(
+        axes, field, np.array([[1.0, 0.0, 0.0]])
+    )
     assert np.isnan(np.asarray(at_the_corner["interpolated_values"])[0])
 
     opposite = N.interpolate_complex_rectilinear_field(axes, field, np.array([[0.0, 1.0, 1.0]]))
@@ -149,7 +151,9 @@ def test_face_to_cell_uses_the_halved_endpoint_branch_on_overflow():
     huge = 1.7e308
     assert float(np.asarray(N.face_to_cell([huge, huge]))[0]) == huge
     # Sum first where it is representable.
-    assert np.array_equal(np.asarray(N.face_to_cell([0.0, 2.0, 8.0, 10.0])), np.array([1.0, 5.0, 9.0]))
+    assert np.array_equal(
+        np.asarray(N.face_to_cell([0.0, 2.0, 8.0, 10.0])), np.array([1.0, 5.0, 9.0])
+    )
 
 
 def test_face_to_cell_rejection_channels_are_bound_to_their_contract():

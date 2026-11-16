@@ -60,7 +60,10 @@ REAL_AXIS_SAMPLE = np.array([1.0 + 0.0j, -0.5 + 0.0j, 2.0 + 0.0j])
 def _mpmath_reference(z):
     mpmath.mp.dps = DPS
     return np.array(
-        [complex(mpmath.exp(-mpmath.mpc(value) ** 2) * mpmath.erfc(-1j * mpmath.mpc(value))) for value in z],
+        [
+            complex(mpmath.exp(-(mpmath.mpc(value) ** 2)) * mpmath.erfc(-1j * mpmath.mpc(value)))
+            for value in z
+        ],
         dtype=complex,
     )
 
@@ -74,14 +77,18 @@ def test_default_order_32_meets_its_sampled_relative_budget():
     reference = _mpmath_reference(SAMPLE)
     assert float(np.max(np.abs((wofz(SAMPLE) - reference) / reference))) <= 1e-13
     error = _relative_error(np.asarray(evaluate_faddeeva(SAMPLE)), reference)
-    assert error <= ORDER_32_BUDGET, f"order 32 relative error {error:.3e} exceeds {ORDER_32_BUDGET:.0e}"
+    assert error <= ORDER_32_BUDGET, (
+        f"order 32 relative error {error:.3e} exceeds {ORDER_32_BUDGET:.0e}"
+    )
 
 
 def test_order_16_meets_its_own_weaker_budget():
     """The retained lower order keeps its distinct, weaker accuracy."""
     reference = _mpmath_reference(SAMPLE)
     error = _relative_error(np.asarray(evaluate_faddeeva(SAMPLE, order=16)), reference)
-    assert error <= ORDER_16_BUDGET, f"order 16 relative error {error:.3e} exceeds {ORDER_16_BUDGET:.0e}"
+    assert error <= ORDER_16_BUDGET, (
+        f"order 16 relative error {error:.3e} exceeds {ORDER_16_BUDGET:.0e}"
+    )
     assert error > ORDER_32_BUDGET
 
 
@@ -128,7 +135,9 @@ def test_real_axis_reflection_identity():
 
 def test_w_at_zero_is_one():
     """A value fixed by the definition, not by the coefficients."""
-    assert complex(np.asarray(evaluate_faddeeva(0.0 + 0.0j))) == pytest.approx(1.0 + 0.0j, abs=1e-15)
+    assert complex(np.asarray(evaluate_faddeeva(0.0 + 0.0j))) == pytest.approx(
+        1.0 + 0.0j, abs=1e-15
+    )
 
 
 def test_shape_and_scalar_contract():
