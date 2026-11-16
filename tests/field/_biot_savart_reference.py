@@ -118,10 +118,10 @@ import mpmath as mp
 MU0_OVER_4PI = mp.mpf("1e-7")
 _STRONG_DPS = 60
 _WEAK_DPS = 30
-_CROSS_DPS_AGREEMENT = mp.mpf("1e-25")
+_CROSS_PRECISION = mp.mpf("1e-25")
 _RELATIVE_BUDGET = 64.0 * 2.0**-52
 _MIN_SEPARATION_RATIO = mp.mpf("1e-2")
-_MIN_RADIUS_RATIO = mp.mpf("1e-12")
+_MIN_RADIUS_RATIO = mp.mpf("1e-6")
 _TAU = 2 * mp.pi
 
 
@@ -214,7 +214,7 @@ def ring_field(radius, z, coil_radius, coil_z, current=1.0):
     """
     dz = mp.mpf(z) - mp.mpf(coil_z)
     weak, scale = _quadrature_at(_WEAK_DPS, radius, coil_radius, dz)
-    strong, strong_scale = _quadrature_at(_STRONG_DPS, radius, coil_radius, dz)
+    strong, _unused_strong_scale = _quadrature_at(_STRONG_DPS, radius, coil_radius, dz)
     prefactor = MU0_OVER_4PI * mp.mpf(current)
     radius_mp = mp.mpf(radius)
     psi = radius_mp * prefactor * strong[0]
