@@ -339,7 +339,7 @@
  },
  "verification": {
   "scope": [
-   "Retains the original valid scalar recovery, LHS starting point and residual numerical assertions.",
+   "Independent exact rational recomputation of the reported chi2 from the returned residual vector, with the recorded-evaluation ranking and the declared parameter bounds checked alongside it.",
    "Invalid controls make zero scientific calls, a failed zero chi2 cannot become best, the dimension is fixed, and budget/terminal states are identical.",
    "Repository tests use review-hold mode: tests/conftest.py sets SCIREL_REVIEW_HOLD=1 and appends catalog/review/candidates/src/scirel/inference to the inference import path. The held direct_anisotropic_inversion graph explicitly imports the public anisotropic_parameter_optimization.optimize_anisotropic_parameters and anisotropic_trial_evaluation.evaluate_anisotropic_trial; compose resolves these same function dependencies, and run_composition supplies partial(public trial, physical ports) to the public optimizer. test_real_picard_forward_recovers_two_physical_parameters_from_analytic_observations executes tests/fixtures/inference/anisotropic_recovery.py::run, checking manufactured two-parameter recovery, converged Picard state, psi/J_phi, residual and chi2, failed trials and a valid retained trial. test_independent_curved_field_biot_savart_tensor_observations executes independent_case, checking two-parameter recovery and psi/J_phi against independently constructed discrete Biot-Savart/tensor observations, as well as residual size, chi2 and an active anisotropic response. The existing named assertions define the sampled cases and tolerances.",
    "The result keeps its original keys, order, shapes, dtypes and mapping/attribute access. Numerical squared sums follow the complete-arithmetic rule; old dot-product rounding is not preserved.",
@@ -349,14 +349,16 @@
    "tests/cross_domain/test_inference_physical_closure.py",
    "tests/cross_domain/test_anisotropic_inference_independent.py",
    "tests/inference/test_inference_named_result.py",
-   "tests/inference/test_complete_residual_norm.py"
+   "tests/inference/test_complete_residual_norm.py",
+   "tests/inference/test_inference_exact_evidence.py"
   ],
   "evidence_ceiling": "Direct leaf evidence: test_inference_physical_closure.py imports optimize_anisotropic_parameters as optimize. test_invalid_optimizer_controls_never_call_science, test_failed_zero_chi2_never_becomes_best, test_budget_includes_finite_differences_and_fresh_recheck, test_all_failed_states_never_produce_a_best_fit, test_minimize_valid_terminal_is_same_params_state_and_residual and test_numeric_callback_exceptions_are_counted_and_never_ranked directly check controls, valid-best ranking, budgets and terminal states. test_inference_named_result.py directly checks local-fit values, fallback, failures and Result keys/attributes. Repository tests use review-hold mode: tests/conftest.py sets SCIREL_REVIEW_HOLD=1 and appends catalog/review/candidates/src/scirel/inference to the inference import path. The held direct_anisotropic_inversion graph explicitly imports the public anisotropic_parameter_optimization.optimize_anisotropic_parameters and anisotropic_trial_evaluation.evaluate_anisotropic_trial; compose resolves these same function dependencies, and run_composition supplies partial(public trial, physical ports) to the public optimizer. test_real_picard_forward_recovers_two_physical_parameters_from_analytic_observations executes tests/fixtures/inference/anisotropic_recovery.py::run, checking manufactured two-parameter recovery, converged Picard state, psi/J_phi, residual and chi2, failed trials and a valid retained trial. test_independent_curved_field_biot_savart_tensor_observations executes independent_case, checking two-parameter recovery and psi/J_phi against independently constructed discrete Biot-Savart/tensor observations, as well as residual size, chi2 and an active anisotropic response. The existing named assertions define the sampled cases and tolerances. These review-mode consumers provide bounded scientific evidence for the public leaves. The graph remains held and absent from public exports; ordinary-mode import isolation is intentional. This evidence does not publish the graph, certify a new package, establish a calibrated device, prove continuous-grid convergence, or guarantee global optimality or general identifiability.",
   "known_limitations": [
    "May stall near a constant penalty; finite LHS and local optimization do not guarantee finding a feasible point.",
    "No automatic covariance, Fisher-rank or confidence-interval report is provided; additional scientific design is required.",
    "The complete trial state is stored in best_valid_trial, and memory cost varies with the forward state.",
-   "The wrapper arithmetic does not replace SciPy internal iteration or stopping calculations, qualify large-scale performance, or establish a statistical noise model or a physical equilibrium."
+   "The wrapper arithmetic does not replace SciPy internal iteration or stopping calculations, qualify large-scale performance, or establish a statistical noise model or a physical equilibrium.",
+   "Global optimality cannot be established for a bounded local method on a non-convex objective; the reported state is a local fit and is ranked only against the evaluations actually recorded."
   ]
  }
 }

@@ -6317,7 +6317,7 @@
    },
    "verification": {
     "scope": [
-     "成功/数值失败/再次成功的固定维数与端口记录。",
+     "以精确有理数独立重算 chi2 等于所返回残差向量的平方和，并在两侧检验文档所述的 1e-12 相对接受预算。",
      "非收敛短路、错误残差形状/NaN/chi2 拒绝、调用方深层非修改。",
      "仓库测试使用 review-hold 模式：tests/conftest.py 设置 SCIREL_REVIEW_HOLD=1，并把 catalog/review/candidates/src/scirel/inference 加入 inference 导入路径。held direct_anisotropic_inversion 图显式导入公开 anisotropic_parameter_optimization.optimize_anisotropic_parameters 与 anisotropic_trial_evaluation.evaluate_anisotropic_trial；compose 按这些同一函数对象解析依赖，run_composition 把绑定物理端口的 partial(公开 trial) 交给公开优化器。test_real_picard_forward_recovers_two_physical_parameters_from_analytic_observations 执行 tests/fixtures/inference/anisotropic_recovery.py::run，检查制造双参数恢复、Picard 收敛状态、psi/J_phi、残差与 chi2、失败试探及保留试探有效性。test_independent_curved_field_biot_savart_tensor_observations 执行 independent_case，对独立构造的离散 Biot-Savart/张量观测检查双参数恢复和 psi/J_phi，并检查残差维数、chi2 及实际生效的各向异性响应。样本与容差由这些既有具名断言限定。",
      "Result保留原有键、顺序、形状、dtype及映射/属性读取；数值平方和采用完整算术，不保留旧点积舍入结果。",
@@ -7307,7 +7307,7 @@
    },
    "verification": {
     "scope": [
-     "两坐标固定种子复现及逐层单样本。",
+     "在二进边界下独立精确复原单位坐标，并给出闭式仿射映射与每坐标的整数分层置换恒等式。",
      "子集选择和非法样本数/边界拒绝。",
      "Result 改造后保持既有键顺序、数值、形状、dtype 和映射兼容性，并支持属性读取同一字段。"
     ],
@@ -7957,7 +7957,7 @@
    },
    "verification": {
     "scope": [
-     "原有效标量恢复、LHS 起点与残差数值断言保留。",
+     "以精确有理数从所返回残差向量独立重算 chi2，并一并检验已记录评估的排名与声明的参数边界。",
      "非法控制零科学调用、失败零 chi2 不可 best、固定维数、预算/终点状态同一性。",
      "仓库测试使用 review-hold 模式：tests/conftest.py 设置 SCIREL_REVIEW_HOLD=1，并把 catalog/review/candidates/src/scirel/inference 加入 inference 导入路径。held direct_anisotropic_inversion 图显式导入公开 anisotropic_parameter_optimization.optimize_anisotropic_parameters 与 anisotropic_trial_evaluation.evaluate_anisotropic_trial；compose 按这些同一函数对象解析依赖，run_composition 把绑定物理端口的 partial(公开 trial) 交给公开优化器。test_real_picard_forward_recovers_two_physical_parameters_from_analytic_observations 执行 tests/fixtures/inference/anisotropic_recovery.py::run，检查制造双参数恢复、Picard 收敛状态、psi/J_phi、残差与 chi2、失败试探及保留试探有效性。test_independent_curved_field_biot_savart_tensor_observations 执行 independent_case，对独立构造的离散 Biot-Savart/张量观测检查双参数恢复和 psi/J_phi，并检查残差维数、chi2 及实际生效的各向异性响应。样本与容差由这些既有具名断言限定。",
      "Result保留原有键、顺序、形状、dtype及映射/属性读取；数值平方和采用完整算术，不保留旧点积舍入结果。",
@@ -7968,7 +7968,8 @@
      "常量罚值附近可能停滞；有限 LHS 和局部优化不保证找出可行点。",
      "没有自动协方差、Fisher 秩或置信区间报告；需要额外科学设计。",
      "完整试探状态保存在 best_valid_trial，内存开销随前向状态而变。",
-     "包装层算术不替代SciPy内部迭代与停止计算，不建立大规模性能保证，也不认证统计噪声模型或物理平衡。"
+     "包装层算术不替代SciPy内部迭代与停止计算，不建立大规模性能保证，也不认证统计噪声模型或物理平衡。",
+     "有界局部方法在非凸目标上无法确立全局最优；所报告状态只是局部拟合，且仅在已记录的评估之间排名。"
     ]
    },
    "example": {
