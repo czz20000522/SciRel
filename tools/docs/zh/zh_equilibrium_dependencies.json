@@ -138,23 +138,28 @@
    },
    "verification": {
     "scope": [
-     "人造的更新/残差与终态用例。",
-     "输入边界拒绝回归。",
-     "压力平衡提案测试。",
-     "解析电流闭合与近单位松弛的假收敛回归。",
-     "升序/降序坐标下成对非零 G 的压力反馈，以及独立的导数/电流闭合。"
+     "独立依据是闭式算例而非制造更新：psi_vac = c R^2 配 P = 4 − R^2（负值截零）使中平面压力对通量线性，故 dP/dpsi = −1/c = −2 精确，一次不松弛更新给出精确电流目标 j_phi = R dP/dpsi dR dZ，且只在压力边界通量之外置零（tests/equilibrium/test_compute_equilibrium_evidence.py）。",
+     "同一算例钉住声明的压力边界规则：拟合止于首个精确零压中平面样本，恰在边界上的单元保留闭式电流，其外单元为零；比较错边或隐藏截断的实现无法通过。",
+     "两个残差门由一个算例分开：微弱格林响应配 relax = 0.9 时通量残差低于 tol 而闭合残差约 0.9，终态状态必须是 maxiter 而非 converged。",
+     "声明的通量残差 ||psi_new − psi_old||_2 / |psi_edge| 由返回数组独立重算，故范数不同、缺边界归一化或边界索引不同都会表现为一个因子；成对的历史被检查为与已完成更新数一致。",
+     "maxiter = 0 返回 maxiter、零次迭代、初始通量与两个 +inf 残差；两个非有限分支（初始压力律无法拟合、边界通量为零）返回 status nonfinite、NaN 残差且不抛异常。",
+     "精度预算在比对之前写入证据模块：闭式电流取 32 eps 相对值，因为插值三次式按 B 样条基求值而非按单项式 −1/c；重算的残差比取 8 eps。",
+     "每个声明的失败通道各有一条可执行断言，含非均匀与非直角网格、控制标量、掩膜 dtype 与形状、plotit、非有限或不含零压边的压力律，以及精确中平面点不足。"
     ],
     "tests": [
      "tests/equilibrium/test_equilibrium_proposals.py",
      "tests/equilibrium/test_equilibrium_boundaries.py",
      "tests/equilibrium/test_equilibrium_governing_residual.py",
      "tests/equilibrium/test_descending_pressure_equilibrium.py",
-     "tests/cross_domain/test_legacy_six_absorption.py"
+     "tests/cross_domain/test_legacy_six_absorption.py",
+     "tests/equilibrium/test_compute_equilibrium_evidence.py"
     ],
-    "evidence_ceiling": "仅限有界数值合同；不构成科学批准。",
+    "evidence_ceiling": "既有测试比对制造更新与终态状态标签。C1 证据（tests/equilibrium/test_compute_equilibrium_evidence.py）补入闭式算例（压力对通量线性、含压力边界规则的精确电流目标）、松弛混合律、maxiter = 0 恒等、两个非有限分支、掩膜，以及一个分离两个残差门的算例。它不与独立平衡求解器比对，故压力闭合的物理正确性仍由调用方负责。",
     "known_limitations": [
-     "不验证任意压力/Green 组合的物理闭合。",
-     "不提供独立的连续体力平衡残差；离散模型由调用者提供的 G 决定。"
+     "该求解器是离散格林映射不动点，不是连续力平衡或稳定性解，且未与独立平衡代码比对。",
+     "压力律由调用方给出，只用到首个零压之前的中平面值；拟合仅对至多三次的通量函数精确。",
+     "收敛是关于返回状态处两个归一化离散残差的陈述，不界定 psi 的离散误差或电流剖面的物理精度。",
+     "残差所记录的零目标闭合约定未被这些算例覆盖：达到它需要一个每单元压力导数都为零、而拟合前缀仍有四个严格递增样本的状态，本算例未构造。"
     ]
    }
   },

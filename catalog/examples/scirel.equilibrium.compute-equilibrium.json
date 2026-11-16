@@ -195,23 +195,28 @@
  },
  "verification": {
   "scope": [
-   "Manufactured update/residual and terminal status fixtures",
-   "Input boundary rejection regressions",
-   "Inherited equilibrium proposal tests",
-   "Analytic current closure and near-unit-relaxation false-convergence regression.",
-   "Ascending/descending paired nonzero-G pressure feedback and independent derivative/current closure."
+   "The independent basis is a closed-form fixture, not a manufactured update: psi_vac = c R^2 with P = 4 - R^2 clipped at zero makes the pressure linear in flux along the midplane, so dP/dpsi = -1/c = -2 exactly and one unrelaxed update has the exact current target j_phi = R dP/dpsi dR dZ, zeroed only beyond the pressure-edge flux (tests/equilibrium/test_compute_equilibrium_evidence.py).",
+   "The same fixture pins the declared pressure-edge rule: the fit stops at the first exact zero-pressure midplane sample, the cell exactly at the edge keeps its closed-form current and the cells beyond it are zero, so a rule that compared the wrong side or hid the clipping cannot pass.",
+   "The two residual gates are separated by one fixture: with a tiny Green response and relax = 0.9 the flux residual is below tol while the closure residual is about 0.9, and the terminal status must then be maxiter, not converged.",
+   "The declared flux residual ||psi_new - psi_old||_2 / |psi_edge| is recomputed from the returned arrays, so a different norm, a missing edge normalization or a different edge index shows up as a factor; the paired histories are checked to be as long as the completed updates.",
+   "maxiter = 0 returns maxiter, zero iterations, the initial flux and both residuals at +inf, while the two nonfinite branches (an unfittable initial pressure law and a zero edge flux) return status nonfinite with NaN residuals and no exception.",
+   "The precision budget is written into the evidence module before the comparison: 32 eps relative for the closed-form currents, because the interpolating cubic is evaluated in a B-spline basis instead of the monomial -1/c, and 8 eps for the recomputed residual ratio.",
+   "Each declared failure channel has one executable assertion, including the non-uniform and non-rectilinear grids, the control scalars, the mask dtype and shape, plotit, a nonfinite or zero-edge-free pressure law and too few exact midplane points."
   ],
   "tests": [
    "tests/equilibrium/test_equilibrium_proposals.py",
    "tests/equilibrium/test_equilibrium_boundaries.py",
    "tests/equilibrium/test_equilibrium_governing_residual.py",
    "tests/equilibrium/test_descending_pressure_equilibrium.py",
-   "tests/cross_domain/test_legacy_six_absorption.py"
+   "tests/cross_domain/test_legacy_six_absorption.py",
+   "tests/equilibrium/test_compute_equilibrium_evidence.py"
   ],
-  "evidence_ceiling": "Bounded numerical contract only; no scientific approval.",
+  "evidence_ceiling": "The maintained tests compare manufactured updates and terminal status labels. C1 evidence (tests/equilibrium/test_compute_equilibrium_evidence.py) adds a closed-form fixture (linear pressure in flux, exact current target with the pressure-edge rule), the relaxation mixing law, the maxiter = 0 identity, the two nonfinite branches, the mask, and one fixture that separates the two residual gates. It does not compare against an independent equilibrium solver, so physical correctness of the pressure closure remains caller responsibility.",
   "known_limitations": [
-   "No arbitrary pressure/Green physical closure validation",
-   "No independent continuum force-balance residual; supplied G controls the discrete model."
+   "The solver is a discrete Green-map fixed point, not a continuum force-balance or stability solution, and no independent equilibrium code is compared.",
+   "The pressure law is supplied by the caller and only its midplane values through the first zero are used; the fit is exact only for a pressure that is at most cubic in flux.",
+   "Convergence is a statement about two normalized discrete residuals at the returned state; it does not bound the discretization error of psi or the physical accuracy of the current profile.",
+   "The zero-target closure convention documented for the residual is not exercised by these fixtures: reaching it would need a state whose pressure derivative vanishes on every cell while the fitted prefix still has four strictly increasing samples, which these fixtures do not construct."
   ]
  }
 }

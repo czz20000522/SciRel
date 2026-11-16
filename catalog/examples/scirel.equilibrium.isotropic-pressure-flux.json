@@ -275,26 +275,26 @@
  },
  "verification": {
   "scope": [
-   "Zero and nonzero Green-matrix paths.",
-   "test_real_pressure_graph_first_update_matches_independent_loop_sum calls the public complete graph with real get_gpsi on a 3x5 grid, a linear P(psi) prefix, an exact zero-pressure boundary and an exterior radial column. With and without one clipped cell, analytic first-update currents and two off-source flux increments are checked against independent 80/120-digit vector-potential integrals. The zero-self entry is explicitly the discrete model convention. Current tolerances are rtol=2e-12, atol=1e-15 A; flux-increment tolerances are rtol=2e-12, atol=5e-16 Wb/rad, including vacuum-addition roundoff. maxiter=1 remains an unconverged terminal state.",
-   "tests/cross_domain/isotropic_pressure_flux/test_composition_isotropic_pressure_flux.py executes the maintained solver through _run_composition, including test_contract_linear_pressure_flux_produces_analytic_cell_current and test_nonzero_green_changes_flux_through_sequential_feedback. tests/cross_domain/test_legacy_six_absorption.py::test_nonzero_green_manufactured_solution_and_both_histories directly checks the manufactured diagonal-Green solution and paired residual histories.",
-   "Pressure-mask current suppression.",
-   "Explicit public signature and keyword-only controls; removed mapping and **kwargs calls, wrong Green shape, missing controls, nonuniform grid and fractional maxiter failures.",
-   "Zero-iteration return owns an independent flux array.",
-   "Zero-G relaxed-current and no-update false convergence are rejected.",
-   "Independent nonzero diagonal-G analytic fixed point and both residual histories agree with the quadratic defining equation."
+   "The independent basis is the closed-form fixture of the shared solver evaluated through this boundary: psi_vac = c R^2 with P = 4 - R^2 clipped at zero gives the exact current target j_phi = R dP/dpsi dR dZ with dP/dpsi = -2, so a boundary that rescaled the currents or added a toroidal factor would fail the comparison at 32 eps (tests/cross_domain/isotropic_pressure_flux/test_composition_isotropic_pressure_flux_evidence.py).",
+   "maxiter = 0 returns an independent copy of psi_vac (mutating the result does not touch the caller array), zero iterations, converged false, both residuals at +inf, and a terminal spline record that already reflects the initial fit.",
+   "The terminal spline record is compared bitwise with the fixture's first five midplane samples and its pressure samples, and carries degree 3, extrapolation zeros and finite knots and coefficients, so the declared representation is pinned rather than described.",
+   "The two residual gates are carried through unchanged: a tiny Green response with relax = 0.9 leaves the flux residual below tol and the closure residual about 0.9, and the boundary reports status maxiter with failure_reason maxiter_reached and converged false.",
+   "A non-uniform grid is rejected with this boundary's own wording about uniformly spaced tensor-product grids, so the port contract is not confused with the shared solver's internal one.",
+   "An unfittable pressure law returns status nonfinite and pressure_of_psi None rather than an empty mapping, and a raising pressure callback propagates its own exception unchanged.",
+   "The precision budget is written into the evidence module before the comparison: 32 eps relative for the closed-form currents, exact equality for the residual identities, and bitwise comparison for the spline record because it copies caller samples."
   ],
   "tests": [
    "tests/cross_domain/isotropic_pressure_flux/test_composition_isotropic_pressure_flux.py",
    "tests/cross_domain/test_legacy_six_absorption.py",
-   "tests/cross_domain/test_flux_reference_normalization.py::test_real_pressure_graph_first_update_matches_independent_loop_sum"
+   "tests/cross_domain/test_flux_reference_normalization.py",
+   "tests/cross_domain/isotropic_pressure_flux/test_composition_isotropic_pressure_flux_evidence.py"
   ],
-  "evidence_ceiling": "The maintained-wrapper cases cover linear pressure currents and sequential feedback; test_nonzero_green_manufactured_solution_and_both_histories covers the diagonal-Green solution and paired histories. test_real_pressure_graph_first_update_matches_independent_loop_sum adds independent off-source circular-filament amplitude on a 3x5 grid for two first-update cases, including edge clipping and an explicit mask. It uses original-input analytic currents and angle integrals rather than production Green values or returned currents as expected results. This establishes the named first-update normalization, not general nonlinear convergence or arbitrary physical pressure/Green validity.",
+  "evidence_ceiling": "The maintained cross-domain graph tests show that this composition runs end to end. C1 evidence (tests/cross_domain/isotropic_pressure_flux/test_composition_isotropic_pressure_flux_evidence.py) adds the closed-form current target through this boundary, the maxiter = 0 independent copy, a bitwise check of the terminal spline record, the carried-through closure gate, the reworded grid rejection, and one executable assertion per failure channel. It does not add independent evidence for the shared closure itself, which its own contract carries.",
   "known_limitations": [
-   "Uses a dense square Green matrix and a pressure spline defined by an exact midplane and exact zero-pressure sample.",
-   "No adaptive damping or physical-model selection is performed.",
-   "The composition file runs the real maintained solver through its wrapper; the named legacy test directly calls the public solver. No bare-name function count is used as a coverage claim.",
-   "Independent circular-filament normalization coverage is limited to the named 3x5 first-update cases, not a reinstatement of the unlocated historical single-cell graph claim. They retain maxiter=1 and do not establish general fixed-point convergence or finite-wire self-response."
+   "This boundary adds no physics of its own; the discrete Green-map closure and its accuracy limits are those of the shared solver.",
+   "The terminal spline is only a record of the fitted prefix; it does not extend the closure beyond the pressure edge and its extrapolation is declared zeros.",
+   "Convergence is reported from the two discrete normalized residuals at the returned state and does not certify a continuum equilibrium.",
+   "The returned mapping is a plain dictionary, so later mutation of its arrays is the caller's responsibility; only psi is proven to be an independent copy."
   ]
  },
  "composition": {

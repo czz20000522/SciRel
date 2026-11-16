@@ -2020,20 +2020,25 @@
    },
    "verification": {
     "scope": [
-     "显式单元均匀行为、非均匀节点域积分、双节点及降序轴支持。",
-     "缺少场格林对时，以新增等离子体磁通的导数产生磁场增量，保留真空参考。",
-     "部分掩码保留激活区 j_phi，仅在单元加权前将非激活单元置零。",
-     "返回类型回归检查顶层 scirel._result.Result、键顺序及属性读取；既有数值、状态和失败断言保持不变。"
+     "独立依据是在二进（dyadic）算例上用 fractions.Fraction 精确重算复合梯形单元权重、掩膜后的单元电流与松弛状态；该算例每个值都可精确表示，因此比对是逐位相等而非容差（tests/equilibrium/test_anisotropic_picard_feedback_evidence.py）。",
+     "权重由两条不指向实现的精确恒等式钉住：在节点矩形上求和等于 (R_max − R_min) * (Z_max − Z_min)，显式 cell_edges 给出声明的单元中心面积且总面积一致；两者都不含 2*pi*R 环向因子。",
+     "松弛在两个端点被钉住：relax = 0 返回掩膜后的原始电流，relax = 1 返回外供旧状态；而 plasma_currents 与 j_phi 不随 relax 和 currents_old 变化，因此「两次返回同一状态」的实现无法通过。",
+     "格林响应按结构检验：psi − psi_vac 对松弛后电流向量线性，秩一格林矩阵 u v^T 给出 u (v · currents)，且 psi_vac 偏置是被加上而不是被替换。",
+     "声明的自导出场分支用闭式检验：通量增量在 R 上线性时，无轴网格上 B_Z = 1/R 且 B_R = 0；规则轴规则 B_Z[:, 0] = 2 (psi[:, 1] − psi[:, 0]) / R_1^2 按声明断言，不作为物理极限。",
+     "精度预算在比对之前写入证据模块：二进算术取零（逐位相等），长度为 n 的格林内积相对 Fraction 精确值取 2n eps，自导出场闭式中那一次除法取 4 eps。",
+     "每个声明的失败通道各有一条可执行断言，且成功返回的映射恒含全部八个键，同时支持属性访问与下标访问。"
     ],
-    "evidence_ceiling": "tests/cross_domain/test_anisotropic_core_scientific_correction.py 将本维护实现直接导入为 feedback；test_feedback_without_field_greens_recovers_plasma_field, test_two_node_feedback_remains_supported_with_explicit_cells 断言无场 Green 的磁场恢复及显式两节点单元。这些是有界制造/解析离散用例，不是整文件覆盖，也不验证任意外供压力、Green 或壁模型的物理正确性。",
+    "evidence_ceiling": "tests/equilibrium/test_anisotropic_picard_feedback.py 与 tests/cross_domain/test_anisotropic_core_scientific_correction.py 在小型图上检验公开端口。C1 证据（tests/equilibrium/test_anisotropic_picard_feedback_evidence.py）在二进算例上以 Fraction 精确重算梯形权重、掩膜电流与松弛状态，钉住两个松弛端点，证明 plasma_currents 与 j_phi 未经松弛，证明节点权重与单元中心权重的总面积恒等式，检验仿射与秩一格林结构，并以闭式覆盖自导出场与规则轴分支。它不担保任何外供格林矩阵的物理一致性。",
     "known_limitations": [
-     "外供闭合和格林需要独立证据及一致 Wb/rad 归一化。",
-     "舍入包络不是离散误差或实验不确定度界。",
-     "上述共享文件中的具名断言实际调用本入口，包括其参数化样本；范围仅限所列用例，文件中其他资产的断言不计入本项。"
+     "格林矩阵由调用方提供，本步不验证其是否代表物理一致的响应，只检验其线性代数。",
+     "单元权重在所给节点区域上积分，不是曲线边界的有限体积离散，且不施加环向因子。",
+     "外供 psi_vac、br_vac 与 bz_vac 须已符合同一 psi = R A_phi 规范；本步只加增量，不做重新标定。",
+     "自导出场分支在制造通量增量上检验；其规则轴规则是声明的数值约定，不构成所给场在轴上光滑的证据。"
     ],
     "tests": [
      "tests/equilibrium/test_anisotropic_picard_feedback.py",
-     "tests/cross_domain/test_anisotropic_core_scientific_correction.py"
+     "tests/cross_domain/test_anisotropic_core_scientific_correction.py",
+     "tests/equilibrium/test_anisotropic_picard_feedback_evidence.py"
     ]
    }
   },
@@ -5094,26 +5099,26 @@
    },
    "verification": {
     "scope": [
-     "零与非零格林矩阵路径。",
-     "test_real_pressure_graph_first_update_matches_independent_loop_sum 以真实 get_gpsi 在 3×5 网格调用公开完整图：包含线性 P(psi) 前缀、精确零压边界及边界外径向列。无掩码及单单元清零两种输入的解析首次电流、两个离源磁通增量与独立 80/120 位矢势方位积分比较；精确自项明确按离散约定置零。电流使用 rtol=2e-12、atol=1e-15 A，磁通增量使用 rtol=2e-12、atol=5e-16 Wb/rad，包含加真空值的舍入预算。maxiter=1 仍返回未收敛终态。",
-     "tests/cross_domain/isotropic_pressure_flux/test_composition_isotropic_pressure_flux.py 经 _run_composition 实际执行维护求解器，包括 test_contract_linear_pressure_flux_produces_analytic_cell_current 与 test_nonzero_green_changes_flux_through_sequential_feedback；tests/cross_domain/test_legacy_six_absorption.py::test_nonzero_green_manufactured_solution_and_both_histories 直接检查人工对角 Green 解及双残差历史。",
-     "压力掩码抑制电流。",
-     "显式公开签名与仅关键字控制；删除 mapping 和 **kwargs 入口，覆盖错格林形状、缺控制、非均匀网格和非整数 maxiter 失败。",
-     "零步返回独立磁通数组。",
-     "零 Green 松弛电流与零次更新的假收敛均被拒绝。",
-     "非零对角 Green 构造解满足独立二次方程，电流、磁通及两项记录得到核对。"
+     "独立依据是把共享求解器的闭式算例在本边界上再求一次：psi_vac = c R^2 配 P = 4 − R^2（负值截零）给出精确电流目标 j_phi = R dP/dpsi dR dZ，其中 dP/dpsi = −2；因此重新缩放电流或加入环向因子的边界会在 32 eps 的比对下失败（tests/cross_domain/isotropic_pressure_flux/test_composition_isotropic_pressure_flux_evidence.py）。",
+     "maxiter = 0 返回 psi_vac 的独立副本（改写结果不影响调用方数组）、零次迭代、converged 为假、两个 +inf 残差，且终态样条记录已反映初始拟合。",
+     "终态样条记录与算例前五个中平面样本及其压力样本逐位比对，并载有 degree 3、extrapolation zeros 与有限的节点和系数，故声明的表示被钉住而非只是描述。",
+     "两个残差门原样传出：微弱格林响应配 relax = 0.9 时通量残差低于 tol、闭合残差约 0.9，边界报告 status maxiter、failure_reason maxiter_reached 与 converged 为假。",
+     "非均匀网格以本边界自己的措辞（均匀张量积网格）拒绝，故端口合同不会被误当作共享求解器的内部要求。",
+     "无法拟合的压力律返回 status nonfinite 且 pressure_of_psi 为 None 而非空映射；抛异常的压力回调原样传播其自身异常。",
+     "精度预算在比对之前写入证据模块：闭式电流取 32 eps 相对值，残差恒等式取精确相等，样条记录逐位比对，因为它复制的是调用方样本。"
     ],
-    "evidence_ceiling": "维护组合用例覆盖线性压力电流与连续反馈，test_nonzero_green_manufactured_solution_and_both_histories 覆盖对角 Green 解及双历史。test_real_pressure_graph_first_update_matches_independent_loop_sum 为 3×5 网格两种首次更新补入独立离源圆丝幅值证据，覆盖边界外清零和显式掩码。期望由原始输入的解析电流及方位积分构造，不使用生产 Green 或返回电流生成答案。这支持具名首次更新的归一化，不证明一般非线性收敛或任意压力/Green 的物理有效性。",
+    "evidence_ceiling": "既有跨域图测试表明该组合可端到端运行。C1 证据（tests/cross_domain/isotropic_pressure_flux/test_composition_isotropic_pressure_flux_evidence.py）补入经本边界的闭式电流目标、maxiter = 0 的独立副本、终态样条记录的逐位检验、传出的闭合门、改写后的网格拒绝措辞，以及每个失败通道各一条可执行断言。它不为共享闭合本身另立独立证据，后者由其自身合同承担。",
     "known_limitations": [
-     "稠密方格林矩阵，压力样条要求精确中平面及精确零压样本。",
-     "不做自适应阻尼或模型选择。",
-     "组合文件通过包装入口运行真实维护求解器，具名 legacy 测试直接调用公共求解器；不以裸名称函数计数声明覆盖。",
-     "独立圆丝归一化证据限于具名 3×5 首次更新，不追认未定位的历史单单元完整图声明。两例保留 maxiter=1，不证明一般不动点收敛或有限导线自响应。"
+     "本边界不引入自身物理；离散格林映射闭合及其精度限制属于共享求解器。",
+     "终态样条只是拟合前缀的记录，不把闭合外推到压力边界之外，其外推被声明为零。",
+     "收敛由返回状态处两个离散归一化残差报告，不构成连续平衡的证明。",
+     "返回的是普通字典，其后改写数组由调用方负责；只有 psi 被证明是独立副本。"
     ],
     "tests": [
      "tests/cross_domain/isotropic_pressure_flux/test_composition_isotropic_pressure_flux.py",
      "tests/cross_domain/test_legacy_six_absorption.py",
-     "tests/cross_domain/test_flux_reference_normalization.py::test_real_pressure_graph_first_update_matches_independent_loop_sum"
+     "tests/cross_domain/test_flux_reference_normalization.py",
+     "tests/cross_domain/isotropic_pressure_flux/test_composition_isotropic_pressure_flux_evidence.py"
     ]
    }
   },
@@ -5732,19 +5737,24 @@
    },
    "verification": {
     "scope": [
-     "含 R=0 的三次加密网格上的精确各向异性真空张量平衡。",
-     "16 个常压网格保持零力，不误判兼容失败。",
-     "本诊断入口报告可分辨的平行力残差；test_true_parallel_imbalance_still_rejected 验证的是上层消费者 solve_axisymmetric_anisotropic_picard 的拒绝，不是本叶函数的拒绝。"
+     "独立依据是三个解析闭式：极向场无散且压力至多二次时三点模板精确，其一为含磁轴网格上的均匀轴向场（force_R = 4R、force_Z = -1.25 Pa/m、J_phi = 8R），其二为由 psi = cZ 得到的无散径向场 B_R = -c/R 配各向异性线性压力（force_R = dp_parallel/dR + (p_parallel − p_perp)/R、force_Z = dp_perp/dZ、J_phi = R dp_perp/dZ / c），其三为由 psi = A R^2 + D R^2 Z 得到的弯曲无散场配各向同性线性压力，此时 delta = 0 使散度对任意场方向都等于 grad p（tests/equilibrium/test_anisotropic_force_balance_evidence.py）。",
+     "代数恒等式直接对返回数组检验，而非与第二份实现比对：平行力等于场方向投影 b · force，环向电流等于 (B_Z force_R − B_R force_Z)/|B|²。",
+     "散度对 (p_parallel, p_perp) 仿射、对压力一次齐次，而归一化兼容性指标在压力整体缩放下令不变；因此漏项、符号翻转或指标中的绝对容差都会打破无需 oracle 的断言。",
+     "一般场方向下，连续恒等式 b · div(P) = b · grad p_parallel + delta div(b) 按二阶收敛检验（三次加密、每次加倍残差比大于 3.4），而非按等式检验，因为该处张量分量非多项式。",
+     "精度预算在比对之前写入证据模块：代数输出取其解析量级的 16 eps，每个差商取 (8 + 4 max|p| / (h |slope|)) eps，即差商条件数加边界外推。",
+     "每个声明的失败通道与轴上、小分母分支各有一条可执行断言，且平行力残差在本叶函数保持观测性，不成为拒绝门。"
     ],
-    "evidence_ceiling": "tests/cross_domain/test_anisotropic_core_scientific_correction.py 将本维护实现直接导入为 force；test_exact_vacuum_tensor_equilibrium_axis, test_zero_force_not_rejected 断言制造张量平衡及参数化常压零力。这些是有界制造/解析离散用例，不是整文件覆盖，也不验证任意外供压力、Green 或壁模型的物理正确性。",
+    "evidence_ceiling": "tests/cross_domain/test_anisotropic_core_scientific_correction.py 将本维护实现直接导入为 force；test_exact_vacuum_tensor_equilibrium_axis, test_zero_force_not_rejected 断言制造张量平衡及参数化常压零力。这些是有界制造/解析离散用例，不是整文件覆盖，也不验证任意外供压力、Green 或壁模型的物理正确性。C1 证据（tests/equilibrium/test_anisotropic_force_balance_evidence.py）补入三个无散场上的解析闭式（含轴列的轴向场、含方位曲率项的径向场、delta = 0 的弯曲场）、b · force 与电流投影恒等式、仿射与缩放结构、子集掩膜下指标的重算，以及对 b · div(P) = b · grad p_parallel + delta div(b) 的二阶收敛研究。它不确立任意外供压力或场模型的物理正确性。",
     "known_limitations": [
      "外供物理闭合和格林响应须有独立证据及一致 Wb/rad 规范。",
      "浮点包络不是离散误差或实验不确定度界。",
-     "上述共享文件中的具名断言实际调用本入口，包括其参数化样本；范围仅限所列用例，文件中其他资产的断言不计入本项。"
+     "上述共享文件中的具名断言实际调用本入口，包括其参数化样本；范围仅限所列用例，文件中其他资产的断言不计入本项。",
+     "解析闭式只在模板精确时成立，即直角网格上至多二次的压力；一般场方向带二阶截断误差，超出浮点包络，且 1/R 曲率项不由所报告的包络界定。"
     ],
     "tests": [
      "tests/equilibrium/test_anisotropic_force_balance.py",
-     "tests/cross_domain/test_anisotropic_core_scientific_correction.py"
+     "tests/cross_domain/test_anisotropic_core_scientific_correction.py",
+     "tests/equilibrium/test_anisotropic_force_balance_evidence.py"
     ]
    }
   },
