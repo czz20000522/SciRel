@@ -4,7 +4,7 @@
  "records": [
   {
    "asset_id": "scirel.numerics.basis-matrix",
-   "source_sha256": "3e1247bddde3030cb18d484de150fc0bd619d9862b2a4b2576824726ed70d649",
+   "source_sha256": "d04e5faede8032185fdb5c4c7dba85650e7cc1ae96b0e3c50916614acd1fa642",
    "summary": "将选定基函数求值为设计矩阵的列；矩阵行对应样本，列对应基函数。",
    "definition": "将选定基函数求值为设计矩阵的列。",
    "model": "构造委托给显式的基函数工厂。",
@@ -65,14 +65,15 @@
      "公共可调用签名及已文档化的有限输入行为。",
      "verification.tests 列出的直接回归样例。",
      "本合同所载可执行示例。",
-     "独立依据：多项式设计矩阵与闭式 Vandermonde 矩阵 A[i,j]=x_i**j 逐元对比；cardinal 样条基检验单位分解（由常数满足各族边界行解析推出）；第二 clamped 默认基检验为 n_knots-1 列且属仿射族；零填充约定在结点区间外一个可表示步长处检验。"
+     "独立依据：多项式设计矩阵与闭式 Vandermonde 矩阵 A[i,j]=x_i**j 逐元对比；cardinal 样条基检验单位分解（由常数满足各族边界行解析推出）；第二 clamped 默认基检验为 n_knots-1 列，且是「仅缺少常数函数」的线性子空间；对第二 clamped 与零斜率 clamped 族直接检验齐次性与叠加性，并对端斜率固定非零的 clamped 族给出反例（该取值被构造器拒绝）；零填充约定在结点区间外一个可表示步长处检验。"
     ],
     "known_limitations": [
      "四次样条和特殊函数工厂选择被拒绝，不补造实现。",
      "物理特殊样条闭合及不支持的节点域仍未解决。",
      "样条选择下，非有限查询值不在数值验证范围内，实现按兼容性约定将其置零；多项式选择直接求值",
      "clamped 基的非零端点斜率不在线性基合同范围内",
-     "基工厂有三处失败通道与 api-spec 约定不一致（未注册选择器抛 KeyError、list 型 coeffs 抛 AttributeError、一维 coeffs 数组抛 IndexError）；本合同只记录实测行为，不承诺其中任何类型。纠正属于行为改动，由 tickets/convention/T-2026-0002.md 跟踪，该单同时裁定「已识别但未实现的选择器是否应抛 NotImplementedError」。"
+     "基工厂有三处失败通道与 api-spec 约定不一致（未注册选择器抛 KeyError、list 型 coeffs 抛 AttributeError、一维 coeffs 数组抛 IndexError）；本合同只记录实测行为，不承诺其中任何类型。纠正属于行为改动，由 tickets/convention/T-2026-0002.md 跟踪，该单同时裁定「已识别但未实现的选择器是否应抛 NotImplementedError」。",
+     "第二 clamped 默认基是线性子空间而非仿射族：固定 y_data[0]=0 只是去掉一个自由度，斜率方程组对纵坐标齐次，故 spline(2y)=2·spline(y) 与 spline(y1+y2)=spline(y1)+spline(y2) 均成立。它缺少常数函数，因此各列之和不等于 1，但「常数缺席」不构成仿射偏移的证据。普通 clamped 族仅在 yp=(0,0) 时为线性（构造器强制该值），固定非零 yp 时为仿射（构造器拒绝该值）：非零斜率提供常数项，而不随纵坐标缩放。"
     ],
     "evidence_ceiling": "直接示例和具名回归样例只在这些输入上建立文档所述关系；不代表任意输入正确性、实验验证或发行批准。"
    },
@@ -83,7 +84,7 @@
   },
   {
    "asset_id": "scirel.numerics.build-basis",
-   "source_sha256": "0bab355d9f76e4ff49fe014aaa4a9b963e19bc19c6a2775ea7f97d2fd8514bbf",
+   "source_sha256": "e598810aa31e44206c12ccadb1b21061384ef1f850e9ea2c900661aeb2c12196",
    "summary": "构造可调用的升幂多项式或三次样条基函数。",
    "definition": "构造升幂多项式或三次样条求值器列表。",
    "model": "按映射选择升幂多项式或 C2 三次样条基函数；多项式默认有三个基函数（0、1、2 次幂），样条默认有五个节点、四个区间。",
@@ -192,14 +193,15 @@
      "公共可调用签名及文档化的有限输入行为。",
      "verification.tests 列出的直接回归样例。",
      "本合同所载可执行示例。",
-     "独立依据：多项式成员与升幂闭式 x**j 对比；cardinal 样条族检验单位分解；第二 clamped 默认基检验列数 n_knots-1 且非单位分解；零填充约定在区间外一个可表示步长处检验。"
+     "独立依据：多项式设计矩阵与闭式 Vandermonde 矩阵 A[i,j]=x_i**j 逐元对比；cardinal 样条基检验单位分解（由常数满足各族边界行解析推出）；第二 clamped 默认基检验为 n_knots-1 列，且是「仅缺少常数函数」的线性子空间；对第二 clamped 与零斜率 clamped 族直接检验齐次性与叠加性，并对端斜率固定非零的 clamped 族给出反例（该取值被构造器拒绝）；零填充约定在结点区间外一个可表示步长处检验。"
     ],
     "known_limitations": [
      "四次样条和特殊函数工厂选择被拒绝，不补造实现。",
      "物理特殊样条闭合及不支持的节点域仍未解决。",
      "样条选择下，非有限查询值不在数值验证范围内，实现按兼容性约定将其置零；多项式选择直接求值",
      "clamped 基的非零端点斜率不在线性基合同范围内",
-     "基工厂有三处失败通道与 api-spec 约定不一致（未注册选择器抛 KeyError、list 型 coeffs 抛 AttributeError、一维 coeffs 数组抛 IndexError）；本合同只记录实测行为，不承诺其中任何类型。纠正属于行为改动，由 tickets/convention/T-2026-0002.md 跟踪，该单同时裁定「已识别但未实现的选择器是否应抛 NotImplementedError」。"
+     "基工厂有三处失败通道与 api-spec 约定不一致（未注册选择器抛 KeyError、list 型 coeffs 抛 AttributeError、一维 coeffs 数组抛 IndexError）；本合同只记录实测行为，不承诺其中任何类型。纠正属于行为改动，由 tickets/convention/T-2026-0002.md 跟踪，该单同时裁定「已识别但未实现的选择器是否应抛 NotImplementedError」。",
+     "第二 clamped 默认基是线性子空间而非仿射族：固定 y_data[0]=0 只是去掉一个自由度，斜率方程组对纵坐标齐次，故 spline(2y)=2·spline(y) 与 spline(y1+y2)=spline(y1)+spline(y2) 均成立。它缺少常数函数，因此各列之和不等于 1，但「常数缺席」不构成仿射偏移的证据。普通 clamped 族仅在 yp=(0,0) 时为线性（构造器强制该值），固定非零 yp 时为仿射（构造器拒绝该值）：非零斜率提供常数项，而不随纵坐标缩放。"
     ],
     "evidence_ceiling": "直接示例和具名回归样例只在这些输入上建立文档所述关系；不代表任意输入正确性或实验验证。"
    },
@@ -1104,7 +1106,7 @@
   },
   {
    "asset_id": "scirel.numerics.nonuniform-derivatives",
-   "source_sha256": "ecec903c80455fee34c2c85e3b65a978e208fdafaed81fb813ce112404ee09c7",
+   "source_sha256": "75ad06e27b0afc0cfbd407d6036866c8ec141e059aa025daf8dd89a8f615d286",
    "summary": "在每个内部横坐标处对局部二次多项式求导。",
    "definition": "在每个内部横坐标处对局部二次多项式求导。",
    "model": "三点不等间距多项式算子。采用 x 坐标单位及 y 值单位。",
@@ -1168,11 +1170,12 @@
      "公共可调用签名及文档化的有限输入行为。",
      "verification.tests 列出的直接回归样例。",
      "本合同所载可执行示例。",
-     "独立依据：对每个内点三元组用 fractions.Fraction 精确重建插值二次式并精确求导，两路返回值在 64 eps 内一致；在非均匀网格上检验声明的二次精确性；每次网格减半的误差比为 3.0..5.5，与三点中心差分的 O(h²) 一致。"
+     "独立依据：对每个内点三元组用 fractions.Fraction 精确重建插值二次式并精确求导，在任意严格递增网格上两路返回值在 64 eps 内一致，且对二次数据精确。实测阶数与网格有关：d_one 在均匀与非均匀网格上每次减半的误差比约 4（O(h²)），d_two 在均匀网格上约 16、在非均匀网格上仅约 2；因此 O(h²) 声明仅限 d_one（任意网格）与 d_two（均匀网格）。"
     ],
     "evidence_ceiling": "直接示例和具名回归样例只在这些输入上建立文档所述关系；不代表任意输入正确性、实验验证或发行批准。",
     "known_limitations": [
-     "周期端点、含噪数据推断及极端病态条件未经验证。"
+     "周期端点、含噪数据推断及极端病态条件未经验证。",
+     "二阶导的阶数并不统一：三点二阶差分对二次式精确、在均匀网格上是二阶，但在非均匀网格上截断误差为一阶。见证：x=[0,h,3h]、y=x³ 时返回 8h 而精确值为 6h，误差 2h 随 h 减半而减半。这是三点公式的内在性质（主误差项正比于局部间距比），不是实现缺陷；非均匀网格上达到二阶至少需要四点，属另一个资产。"
     ]
    }
   },

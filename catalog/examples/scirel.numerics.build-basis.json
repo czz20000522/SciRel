@@ -197,7 +197,7 @@
    "Public callable signature and documented finite-input behavior",
    "The direct regression fixtures listed in verification.tests",
    "The executable example stored in this contract",
-   "Independent evidence (test_basis_design_evidence): the polynomial design matrix is compared with the closed-form Vandermonde matrix A[i, j] = x_i ** j; the cardinal spline bases are checked for partition of unity, which follows analytically from the constant satisfying each family's boundary rows; the second-clamped default basis is checked to carry n_knots - 1 columns and to be affine rather than linear; and the declared zero-fill convention is probed one representable step outside the knot interval."
+   "Independent evidence (test_basis_design_evidence): the polynomial design matrix is compared with the closed-form Vandermonde matrix A[i, j] = x_i ** j; the cardinal spline bases are checked for partition of unity, which follows analytically from the constant satisfying each family's boundary rows; the second-clamped default basis is checked to carry n_knots - 1 columns and to be a linear subspace that merely omits the constant function; homogeneity and superposition are asserted directly for the second-clamped and the zero-slope clamped families, and refuted for the clamped family with a fixed nonzero endpoint slope, which the builder rejects; and the declared zero-fill convention is probed one representable step outside the knot interval."
   ],
   "tests": [
    "tests/equilibrium/test_analysis_families.py",
@@ -210,7 +210,8 @@
    "Physical special-spline closures and unsupported knot domains remain unresolved",
    "Nonzero clamped endpoint slopes are outside the linear-basis contract",
    "For spline selections, nonfinite query values are outside the numerical qualification and are zero-filled as a compatibility convention; polynomial selections evaluate directly",
-   "Three failure channels of the basis factory differ from the api-spec convention (an unregistered selector raises KeyError, a list coeffs control raises AttributeError, and a 1-D coeffs array raises IndexError); this contract records only what is observed and promises none of those types. The correction is a behaviour change tracked in tickets/convention/T-2026-0002.md, which also covers whether an unsupported retained selector should raise NotImplementedError."
+   "Three failure channels of the basis factory differ from the api-spec convention (an unregistered selector raises KeyError, a list coeffs control raises AttributeError, and a 1-D coeffs array raises IndexError); this contract records only what is observed and promises none of those types. The correction is a behaviour change tracked in tickets/convention/T-2026-0002.md, which also covers whether an unsupported retained selector should raise NotImplementedError.",
+   "The second-clamped default basis is a linear subspace, not an affine family: fixing y_data[0] = 0 removes one degree of freedom and the slope system is homogeneous in the ordinates, so spline(2 y) = 2 spline(y) and spline(y1 + y2) = spline(y1) + spline(y2) both hold. It omits the constant function, which is why its columns do not sum to one, but that absence is not evidence of an affine offset. The plain clamped family is linear only at yp = (0, 0), which the basis builder enforces, and affine with a fixed nonzero yp, which the builder rejects; a nonzero slope contributes a constant term rather than scaling with the ordinates."
   ]
  }
 }

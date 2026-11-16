@@ -33,6 +33,7 @@ import numpy as np
 import pytest
 
 import scirel.numerics as N
+from scirel.numerics import ClampedCubicSpline
 
 EPS = np.finfo(float).eps
 
@@ -73,13 +74,59 @@ def test_cardinal_spline_bases_partition_unity(selection):
     assert np.max(np.abs(total - 1.0)) <= 1024.0 * EPS * len(members)
 
 
-def test_second_clamped_default_basis_is_affine_not_linear():
-    """Evidence 3: the fixed origin ordinate removes one column and breaks unity."""
+def test_second_clamped_default_basis_is_a_linear_subspace():
+    """Evidence 3: linearity is homogeneity plus superposition, not partition of unity.
+
+    An earlier version of this file argued "the constant function is absent, so the
+    family is affine".  That inference is wrong: a subspace that omits the constant
+    function is still a subspace.  The criterion is checked directly on the spline
+    class, and the missing constant is reported only as the reason the columns do
+    not sum to one.
+    """
+    x = np.array([0.0, 0.3, 1.0])
+    first = np.array([0.0, 0.2, 0.5])
+    second = np.array([0.0, 0.3, 0.2])
+    query = np.linspace(0.0, 1.0, 7)
+
+    scaled = np.asarray(N.SecondClampedCubicSpline(x, 2.0 * first, m=1.0)(query), dtype=float)
+    plain = np.asarray(N.SecondClampedCubicSpline(x, first, m=1.0)(query), dtype=float)
+    assert np.max(np.abs(scaled - 2.0 * plain)) <= 64.0 * EPS
+
+    summed = np.asarray(N.SecondClampedCubicSpline(x, first + second, m=1.0)(query), dtype=float)
+    left = np.asarray(N.SecondClampedCubicSpline(x, first, m=1.0)(query), dtype=float)
+    right = np.asarray(N.SecondClampedCubicSpline(x, second, m=1.0)(query), dtype=float)
+    assert np.max(np.abs(summed - (left + right))) <= 64.0 * EPS
+
+    # The structural consequence of the fixed origin ordinate: one fewer column and
+    # no partition of unity, because the constant function is not in the span.
     members = N.build_basis("clamped_cubic_spline2", n_knots=5)
     assert len(members) == 4  # n_knots - 1
-
     total = sum(np.asarray(member(QUERY), dtype=float) for member in members)
-    assert np.max(np.abs(total - 1.0)) > 1e-2, "the affine family must not sum to the constant"
+    assert np.max(np.abs(total - 1.0)) > 1e-2
+
+
+def test_clamped_family_is_linear_at_zero_slopes_and_affine_at_a_fixed_nonzero_slope():
+    """The plain clamped family's linearity depends on the endpoint slope being zero.
+
+    With ``yp = (0, 0)`` the map from ordinates to spline is linear, which is why the
+    basis builder accepts only that value.  With a fixed nonzero ``yp`` the fixed
+    slope contributes a constant term, so the map is affine and doubling the
+    ordinates does not double the spline; the builder rejects that value.
+    """
+    x = np.array([0.0, 0.3, 1.0])
+    y = np.array([0.0, 0.2, 0.5])
+    query = np.linspace(0.0, 1.0, 7)
+
+    zero_slope_scaled = np.asarray(ClampedCubicSpline(x, 2.0 * y, yp=(0.0, 0.0))(query), dtype=float)
+    zero_slope_plain = np.asarray(ClampedCubicSpline(x, y, yp=(0.0, 0.0))(query), dtype=float)
+    assert np.max(np.abs(zero_slope_scaled - 2.0 * zero_slope_plain)) <= 64.0 * EPS
+
+    fixed_slope_scaled = np.asarray(ClampedCubicSpline(x, 2.0 * y, yp=(1.0, 0.5))(query), dtype=float)
+    fixed_slope_plain = np.asarray(ClampedCubicSpline(x, y, yp=(1.0, 0.5))(query), dtype=float)
+    assert np.max(np.abs(fixed_slope_scaled - 2.0 * fixed_slope_plain)) > 1e-3
+
+    with pytest.raises(ValueError):
+        N.build_basis("clamped_cubic_spline", yp=(1.0, 1.0))
 
 
 def test_spline_design_matrix_columns_follow_the_member_order():

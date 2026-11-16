@@ -184,9 +184,8 @@ def test_derivatives_are_exact_for_quadratic_data(coefficients):
     assert np.max(np.abs(np.asarray(d_two) - 2.0 * a)) <= 64.0 * EPS * max(1.0, abs(2 * a))
 
 
-def test_derivative_error_refines_at_second_order():
-    """Evidence 4: O(h^2) on a uniformly refined grid."""
-
+def test_first_derivative_error_refines_at_second_order_on_a_uniform_grid():
+    """Evidence 4 for ``d_one``: the three-point central difference is O(h^2)."""
     def error(count):
         x = np.linspace(0.0, 2.0, count)
         d_one, _ = diff_12_central(x, np.sin(x))
@@ -195,6 +194,50 @@ def test_derivative_error_refines_at_second_order():
     coarse, fine = error(21), error(41)
     ratio = coarse / fine
     assert 3.0 <= ratio <= 5.5, f"observed refinement ratio {ratio:.2f} is not O(h^2)"
+
+
+def test_first_derivative_error_refines_at_second_order_on_a_nonuniform_grid():
+    """Evidence 4 for ``d_one`` away from uniform spacing."""
+    def error(scale):
+        x = np.array([0.0, 0.7 * scale, 1.9 * scale, 3.3 * scale, 5.0 * scale])
+        d_one, _ = diff_12_central(x, np.sin(x))
+        return float(np.max(np.abs(np.asarray(d_one) - np.cos(x[1:-1]))))
+
+    coarse, fine = error(0.2), error(0.1)
+    ratio = coarse / fine
+    assert 3.0 <= ratio <= 5.5, f"observed non-uniform refinement ratio {ratio:.2f} is not O(h^2)"
+
+
+def test_second_derivative_is_only_first_order_on_a_nonuniform_grid():
+    """Measured order for ``d_two``, which is NOT second order off a uniform grid.
+
+    On ``x = [0, h, 3h]`` with ``y = x^3`` the three-point second difference returns
+    ``8h`` against the exact ``6h``, so the error is ``2h`` and halves when ``h``
+    halves: first order.  This is intrinsic to the three-point formula (its leading
+    error term is proportional to the local spacing ratio), not an implementation
+    defect, so the contract restricts the O(h^2) claim to uniform grids.  Reverting
+    that restriction -- asserting an O(h^2) ratio here -- makes this test fail with
+    the observed ratio of about 2.
+    """
+    errors = []
+    for h in (0.1, 0.05, 0.025):
+        x = np.array([0.0, h, 3.0 * h])
+        _, d_two = diff_12_central(x, x**3)
+        exact = 6.0 * h
+        observed = float(np.asarray(d_two)[0])
+        assert abs(observed - 8.0 * h) <= 64.0 * EPS * 8.0 * h
+        errors.append(abs(observed - exact))
+
+    ratio = errors[0] / errors[1]
+    assert 1.8 <= ratio <= 2.2, f"observed ratio {ratio:.2f} is not the first order of the witness"
+    assert errors[1] / errors[2] == pytest.approx(2.0, rel=0.05)
+
+
+def test_second_derivative_is_exact_for_cubics_on_a_uniform_grid():
+    """Why the two previous tests disagree: the error term vanishes at equal spacing."""
+    x = np.linspace(0.3, 1.3, 21)
+    _, d_two = diff_12_central(x, x**3)
+    assert np.max(np.abs(np.asarray(d_two) - 6.0 * x[1:-1])) <= 1e-10
 
 
 def test_derivative_rejection_channels_are_bound_to_their_contract():
