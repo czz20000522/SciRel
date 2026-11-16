@@ -415,23 +415,25 @@
  },
  "verification": {
   "scope": [
-   "Final field and closure are recomputed at the returned psi; the terminal minimum-field gate precedes terminal closure, mask and force evaluation.",
-   "Dynamic inactive mask is applied before Green feedback and scalar pressures broadcast unchanged.",
-   "Wrong pressure shape, missing closure and invalid controls fail closed.",
-   "Manufactured isotropic linear pressure produces analytic J_phi and terminal cell currents.",
-   "Terminal firehose, compatibility and minimum-field checks.",
-   "Strict boolean mask rejection and the terminal gate ordering are pinned by direct regressions; the assembly is the source-level artifact, not a claim of upstream anisotropic-formula parity."
+   "The independent basis is a call log plus a closed-form state: the fixture closure records every (B, psi) it is called with, the composition is declared to close once per iteration and once more at the returned state, and the log length equals iterations + 1 with the last recorded psi and B bitwise equal to the returned psi and B (tests/cross_domain/axisymmetric_anisotropic_picard/test_composition_axisymmetric_anisotropic_picard_evidence.py).",
+   "On the axial fixture psi_vac = 0.25 R^2 the derived field is B_Z = 0.5 T and B_R = 0 exactly, so a closure returning p_parallel = 3 + Z and p_perpendicular = 2 has the analytic parallel force b . grad p_parallel = 1 Pa/m and J_phi = 0; the returned B, parallel_force and J_phi are compared with those values, which fixes the field normalization and the pressure-to-force direction.",
+   "The field gate is ordered before the caller closure: with psi_vac = 0 the zero field raises FloatingPointError with an empty call log, so the singularity is detected before the closure is evaluated.",
+   "The firehose gate reads the declared terminal margin: a far super-firehose closure raises at the default minimum_firehose_margin = 0 and returns once the declared margin is lowered, and the returned margin equals the declared expression on the terminal state.",
+   "Scalar closure pressures are broadcast to the grid, grid pressures keep their values, extra caller keys survive in closure_state, and a fixed boolean mask zeroes J_phi and the integrated cell currents exactly where it is false while leaving the force arrays intact.",
+   "Convergence is the unrelaxed terminal residual rather than the loop's relaxed step: on the axial fixture the currents vanish, the flux does not move, fixed_point_residual is exactly zero and converged is true at iterations = 1.",
+   "The precision budget is written into the evidence module before the comparison: 8 eps relative on the exact axial field and the parallel force, bitwise equality for the call log, the mask and the unchanged flux."
   ],
   "tests": [
    "tests/cross_domain/axisymmetric_anisotropic_picard/test_composition_axisymmetric_anisotropic_picard.py",
-   "tests/cross_domain/test_anisotropic_core_scientific_correction.py"
+   "tests/cross_domain/test_anisotropic_core_scientific_correction.py",
+   "tests/cross_domain/axisymmetric_anisotropic_picard/test_composition_axisymmetric_anisotropic_picard_evidence.py"
   ],
-  "evidence_ceiling": "Manufactured and analytic discrete checks establish only the stated poloidal model and declared integration geometry. Arbitrary Green matrices, pressure closures, experimental plasma applicability and public release are not established by these tests. Mask policy and terminal gate order are API decisions, not independent physics evidence; no upstream anisotropic-pressure oracle is claimed.",
+  "evidence_ceiling": "The maintained cross-domain tests run the composition through a factory. C1 evidence (tests/cross_domain/axisymmetric_anisotropic_picard/test_composition_axisymmetric_anisotropic_picard_evidence.py) adds a closure call log proving the terminal recomputation, the axial closed-form field and parallel force, the field-gate ordering, the firehose gate on the declared threshold, the broadcast and mask identities, and the unrelaxed terminal convergence. It does not establish the physical correctness of any caller pressure closure.",
   "known_limitations": [
-   "Caller-supplied physical closures and Green responses require their own evidence and coherent psi=R A_phi (Wb/rad) normalization.",
-   "Floating-point rounding envelopes do not bound discretization error or experimental uncertainty.",
-   "No expert scientific endorsement or public release follows from this numerical successor.",
-   "Mask semantics are a caller/API policy (strict boolean only); they are not a physical formula claim. Terminal gate order is a SciRel API decision."
+   "The closure is caller-supplied, so the composition establishes the ordering and packaging around it, not the physical correctness of any pressure model.",
+   "The parallel-force and firehose gates are enforced only on the terminal active cell set; intermediate iterates are not gated and the returned diagnostics are observational when strict_compatibility is false.",
+   "Convergence is a discrete unrelaxed flux-map statement at the returned state; it does not certify a continuum equilibrium, and the relaxed relative_psi_change is diagnostic only.",
+   "The call-log identity fixes the number and order of closure evaluations for this implementation, so it would have to be re-derived if the composition changed its evaluation schedule."
   ]
  },
  "composition": {

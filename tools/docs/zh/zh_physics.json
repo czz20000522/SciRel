@@ -329,24 +329,25 @@
    },
    "verification": {
     "scope": [
-     "制造多项式壁响应给出一致的磁通和场。",
-     "真实平行压力不平衡不能被标为平衡收敛。",
-     "relax=1 的完全保留不能将非零固定点残差伪装为收敛。",
-     "解析秩一 Green 检查两步状态传递及 I²+I−K=0 终态；接近完全保留的松弛不能因小步幅提前退出。",
-     "磁通不变而场和电流仍变化时不声称收敛；空场在压力回调前拒绝。",
-     "部分掩码保留激活区末态 j_phi，仅将非激活单元置零。",
-     "直接输入回归检查映射及关键字调用缺少 r_grid/z_grid、网格不足声明尺寸时先于其他必需端口报错、其他缺失端口仍抛 ValueError，以及回调的 IndexError/KeyError 继续传播；这些失败检查不验证任意物理闭合。"
+     "独立依据是三个制造闭包上的精确状态恒等式：空间均匀压力按位返回所给真空 psi、BR、BZ，j_phi 为零、fixed_point_residual 精确为零且 iterations = 1 时 converged 为真；两个格林矩阵精确为零的 boundary_correction 返回逐位相同的状态、零通量修正、零残差范数且仍报告边界电流；全 1 的秩一 green_boundary_to_field 产生常数 1.375 Wb/rad 修正，使 psi 整整平移该常数而 BR、BZ 逐位不变，因为常数通量没有梯度（tests/cross_domain/free_boundary_anisotropic_picard/test_composition_free_boundary_anisotropic_picard_evidence.py）。",
+     "常数修正这一对把一个从总通量重导场的实现与从所加修正导场的实现分开，也把只把修正加到通量的实现与把修正同时加到通量及其磁导数的实现分开。",
+     "掩膜是声明的区域选择器：j_phi 与积分单元电流在布尔掩膜为假处精确为零，而同一带梯度闭包在无掩膜运行时电流非零。",
+     "门在 docstring 所述位置运行：全零真空场在闭包调用日志为空时抛出中间 minimum_field 错误，远超火管阈值的闭包抛出终态火管错误且消息点名终态裕度。",
+     "严格兼容门与收敛分开报告：平行压力梯度返回 equilibrium_compatible 为假、failure_reason 为 parallel_force_incompatible、converged 为假，严格运行则抛异常。",
+     "精度预算在比对之前写入证据模块：三个状态恒等式取逐位相等，因为真空态是二进值且零或空间常数修正精确；壁常数取 8 eps，因为它出自最小二乘求解。"
     ],
-    "evidence_ceiling": "tests/cross_domain/test_anisotropic_core_scientific_correction.py 将本维护实现直接导入为 free；test_free_boundary_flux_and_magnetic_correction_same_terminal_state, test_free_boundary_true_parallel_force_cannot_be_converged, test_retained_current_is_not_false_fixed_point 断言同态壁磁通/场、真实平行力拒绝及近 1 松弛。这些是有界制造/解析离散用例，不是整文件覆盖，也不验证任意外供压力、Green 或壁模型的物理正确性。",
+    "evidence_ceiling": "既有跨域测试通过工厂驱动该组合。C1 证据（tests/cross_domain/free_boundary_anisotropic_picard/test_composition_free_boundary_anisotropic_picard_evidence.py）补入均匀压力下的真空态恒等式、零壁与常数修正两个壁恒等式、掩膜恒等式、门顺序以及严格兼容诊断。它不担保任何外供闭包或壁格林响应的物理一致性。",
     "known_limitations": [
-     "外供物理闭合和格林响应须有独立证据，并一致使用 psi=R A_phi（Wb/rad）。",
-     "浮点舍入包络不约束离散误差或实验不确定度。",
-     "上述共享文件中的具名断言实际调用本入口，包括其参数化样本；范围仅限所列用例，文件中其他资产的断言不计入本项。"
+     "压力闭包与壁格林矩阵由调用方提供；本组合确立围绕它们的顺序、掩膜与传播，不确立任何闭包或壁模型的物理正确性。",
+     "全状态残差是终态处通量、场与电流分量的归一化离散陈述，不界定 psi 的离散误差，也不构成连续平衡证明。",
+     "中间火管穿越只记录不抛出，只有终态被门控；一次穿越后返回的运行不是该穿越物理成立的证据。",
+     "壁恒等式使用精确零与空间常数响应；真正弯曲的壁响应只由既有图测试覆盖，不由这些恒等式覆盖。"
     ],
     "tests": [
      "tests/cross_domain/free_boundary_anisotropic_picard/test_composition_free_boundary_anisotropic_picard.py",
      "tests/cross_domain/test_anisotropic_core_scientific_correction.py",
-     "tests/equilibrium/test_picard_input_validation.py"
+     "tests/equilibrium/test_picard_input_validation.py",
+     "tests/cross_domain/free_boundary_anisotropic_picard/test_composition_free_boundary_anisotropic_picard_evidence.py"
     ]
    }
   },
@@ -6184,24 +6185,24 @@
    },
    "verification": {
     "scope": [
-     "一个正离子镜例中的端映射和嵌套电荷闭合，相对电荷残差小于 1e-9。",
-     "固定剖面下 psi 乘 2*pi 后压强、密度与端电势不变；另一个未随坐标变换调整的密度回调则改变密度。",
-     "所选给定端电势用例中，端电流仍不平衡，但局部准中性可收敛。",
-     "最近面只遮罩指定顶层行，原矩、端诊断和三个俯仰因子保持全网格。",
-     "端或嵌套失败不返回状态；覆盖可调用密度及二维参考电势、非直角/非有限网格、数值布尔、过小或非整数积分阶数的拒绝。",
-     "注入仅求值却冒充已求端平衡的状态，在嵌套闭合前被拒绝。"
+     "独立依据是一条坐标不变性加两条精确装配，均可在返回状态上检验：把所给 psi 整体乘以 2*pi 后，p_parallel、p_perpendicular、density_m3 与两端电势在 1e-12 相对精度内不变，这正是合同所说『psi 是插值坐标』的含义；p_parallel 与 p_perpendicular 逐位等于离子分量加电子压强；电子压强逐位等于 n_e 乘以所给电子能量（tests/mirror/test_grid_mirror_kinetic_closure_evidence.py）。",
+     "带 *_pa 的别名是仅离子分量（逐位等于 ion_p_parallel 与 ion_p_perpendicular），总量与它们相差电子压强，故电子项被钉在它所属的分量上。",
+     "局部电荷闭合按声明界报告：相对电荷残差在每个样本上都低于 1e-9，且两端电流平衡均报告已求解。",
+     "算例是镜对称的，故映射后的左右端电势必须精确一致；这把端点映射钉在对称几何上，而不是只钉在一端。",
+     "嵌套闭合的物理正确性（截断损失锥密度、端损失电势根与投角权重）在此无法确立：组合没有给出它的闭式，本批次也没有已发表的高阶参照，因此只确立坐标不变性、两条精确装配与声明的残差界。",
+     "精度预算在比对之前写入证据模块：坐标不变性取 1e-12 相对值，两条装配与对称端点映射取逐位相等，电荷残差取合同自身的 1e-9。"
     ],
-    "evidence_ceiling": "限于单一正离子情形下相对电荷残差低于 1e-9 的网格镜像端点闭合。证据：`test_composition_grid_mirror_kinetic_closure.py` 含 13 个测试函数，其中 2 个引用 `solve_grid_mirror_kinetic_closure`，仅由本资产绑定; `test_mirror_kinetic_scientific_correction.py` 含 15 个测试函数，其中 1 个引用 `solve_grid_mirror_kinetic_closure`，由 8 个资产共享；本审计已执行有界示例。真值来源：独立解析/高精度端点平衡与冻结组合值。不建立：通用 R-Z 平衡求解、磁场构造或空间分辨动理学输运。",
+    "evidence_ceiling": "既有跨域测试通过工厂驱动该组合。C1 证据（tests/mirror/test_grid_mirror_kinetic_closure_evidence.py）补入每个定剖面输出的 2*pi 坐标不变性、逐位的离子加电子压强装配与电子压强恒等式、*_pa 仅离子别名、声明的电荷残差界与对称端点映射。嵌套闭合的物理精度仍记 cannot establish：本批次没有可用的已发表高阶参照或独立实现。",
     "known_limitations": [
-     "输入 YAML 对固定全网格参考剖面的描述宽于实际端算子加嵌套调用链；共享剖面须同时适用于一维和二维 psi。",
-     "仅指定顶层字段受限制；嵌套矩、原矩字段、温度、电势、俯仰积分和端诊断仍覆盖全网格。",
-     "最近面可能偏离请求坐标，剖面插值沿用排序、去重及常值端点延拓。",
-     "端点与嵌套非线性求解各自使用有限迭代预算，均不提供联合收敛证书；因此只覆盖声明相对电荷残差低于 `1e-9` 的正离子情形。",
-     "绑定组合文件为资产私有并含两个直接函数；共享修正文件增加一个端点平衡测试，但一维端点调用下的任意全网格参考剖面仍被排除。"
+     "嵌套动力学闭合在本批次没有独立高阶参照，其密度与压强的绝对量级记为 cannot establish，而非已验证。",
+     "不变性陈述固定了 psi 坐标的角色，但不担保任一外供 psi 就是其场在物理上正确的通量标签。",
+     "电荷残差界是声明的数值阈值，不是局部准中性根物理精确的证明。",
+     "端点映射恒等式使用镜对称算例；非对称 plug 几何只由既有图测试覆盖。"
     ],
     "tests": [
      "tests/cross_domain/grid_mirror_kinetic_closure/test_composition_grid_mirror_kinetic_closure.py",
-     "tests/cross_domain/test_mirror_kinetic_scientific_correction.py"
+     "tests/cross_domain/test_mirror_kinetic_scientific_correction.py",
+     "tests/mirror/test_grid_mirror_kinetic_closure_evidence.py"
     ]
    }
   },
@@ -8692,17 +8693,24 @@
    },
    "verification": {
     "scope": [
-     "组合保留修正后的统一粒子群速度域及原始矩收敛状态。",
-     "正式文档示例使用实际公共组合 API。"
+     "独立依据是声明的 b = 1 参照归一化：合同写明压力矩以 hot_parallel(b=1) 为参照，因此在径向包络等于一的通量参照样本上，热平行压强必须精确等于调用方的 hot_pressure_scale；算例取二进标度 8.0 并断言逐位相等，从而钉住归一化约定与标度的 Pa 单位（tests/mirror/test_frank_egedal_pressure_closure_evidence.py）。",
+     "自适应求积而非初始节点数决定结果：velocity_nodes = pitch_nodes = 6 与 24 在合同自身的 quadrature_rtol = 1e-7 下给出相同压力场，且返回的求积记录给出实际节点数、容差与 raw_moments_checked 为真。",
+     "共用population：velocity_domain 报告单一区间且 common_to_density_and_both_pressures 为真，外供 degrees 被如实报告为 degree_source caller_supplied 而非被替换。",
+     "组合精确返回声明的五个端口，并在缺失时把可选密度与电子温度原样置为 None。",
+     "p_parallel 与 p_perp 的绝对量级、以及二者之间的投角各向异性比无法确立：热离子压强是由自适应求积计算的非整数阶矩积分，本批次没有已发表的高阶参照，也没有可比的独立实现。",
+     "精度预算在比对之前写入证据模块：参照归一化恒等式取逐位相等，节点数比较取合同声明的 1e-7 求积容差，端口集合取精确相等。"
     ],
-    "evidence_ceiling": "限于所声明关系：径向算子计算 r(psi)=max(1-clip((psi-psi_axis)/(psi_edge-psi_axis),0,1),0)^alpha。源算子使用给定 Legendre 阶数，或由损失锥谱算子求阶数，再选取或投影源系数。热离子算子在 b=B/B0 处积分，平行和垂直压强都以 b=1 的平行矩归一化，密度以其自身 b=1 矩归一化。压强算子加入气体项、可选 n*T_e 和相应热压强；图另附 closure_state。密度和两个热压强分量共同使用 velocity_lower（历史别名…。证据：test_spectral_scientific_correction.py, test_composition_frank_egedal_pressure_closure.py（记录 25 个测试函数；共享文件加直接组合/测试覆盖；仅自洽/回归）；合同 example 已运行。不建立的范围：不提供精确动力学解、自洽力平衡、实测等离子体验证或作者确认的 Eq19b 冲突解释；外部物理验证。",
+    "evidence_ceiling": "既有跨域测试运行该组合。C1 证据（tests/mirror/test_frank_egedal_pressure_closure_evidence.py）补入 b = 1 参照归一化恒等式、按声明容差的自适应求积节点数无关性、共用速度域、精确端口集合与非收敛population的失败通道。矩积分的物理精度仍记 cannot establish：本批次没有可用的已发表高阶参照或独立实现，而用同一份求积制造参照不构成证据。",
     "known_limitations": [
-     "统一截断会同时改变旧版平行压强和密度，不仅改变垂直压强。",
-     "此图不能证明有限模态粒子群满足原物理动力学方程。",
-     "仅绑定共享文件覆盖（test_spectral_scientific_correction.py）；未记录资产专属失败/边界探针。"
+     "热离子矩积分在本批次没有独立高阶参照，故绝对压力量级与各向异性比记为 cannot establish，而非已验证。",
+     "b = 1 参照恒等式只在一个样本上钉住归一化，不验证该样本之外的径向包络或镜比依赖。",
+     "求积记录是实现自身的收敛自述；两个初始节点数一致说明细化与初始节点数无关，不说明该自适应规则能解析任意被积函数。",
+     "这些算例不触发气体动力学项与电子项，其装配只由既有图测试覆盖。"
     ],
     "tests": [
-     "tests/cross_domain/test_spectral_scientific_correction.py"
+     "tests/cross_domain/test_spectral_scientific_correction.py",
+     "tests/cross_domain/frank_egedal_pressure_closure/test_composition_frank_egedal_pressure_closure.py",
+     "tests/mirror/test_frank_egedal_pressure_closure_evidence.py"
     ]
    }
   },
@@ -8954,23 +8962,25 @@
    },
    "verification": {
     "scope": [
-     "在返回的 psi 上重算末态场与闭合；terminal 场下限检查先于 terminal closure、mask 和 force 求值。",
-     "动态掩码在反馈前生效，标量压力广播不变。",
-     "错压力形状、缺闭合及非法控制拒绝。",
-     "制造线性各向同性压力给解析电流和末单元电流。",
-     "末态 firehose、兼容性和最小场检查。",
-     "严格布尔掩码拒绝与 terminal gate 顺序由直接回归固定；该组装是源级产物，不声称上游各向异性公式一致性。"
+     "独立依据是调用日志加闭式状态：算例闭包记录每次收到的 (B, psi)，而组合按声明在每次迭代调用一次、并在返回状态再调用一次，故日志长度等于 iterations + 1，且最后记录的 psi 与 B 与返回的 psi、B 逐位相等（tests/cross_domain/axisymmetric_anisotropic_picard/test_composition_axisymmetric_anisotropic_picard_evidence.py）。",
+     "在轴向算例 psi_vac = 0.25 R^2 上，导出场精确为 B_Z = 0.5 T、B_R = 0，故返回 p_parallel = 3 + Z、p_perpendicular = 2 的闭包具有解析平行力 b · grad p_parallel = 1 Pa/m 与 J_phi = 0；返回的 B、parallel_force 与 J_phi 与这些值比对，钉住场归一化与压力到力的方向。",
+     "场门在调用方闭包之前：psi_vac = 0 时零场抛 FloatingPointError 且调用日志为空，说明奇点在外供闭包求值之前就被检出。",
+     "火管门读取声明的终态裕度：远超火管阈值的闭包在默认 minimum_firehose_margin = 0 下抛异常，降低声明的阈值后正常返回，且返回裕度等于终态上的声明表达式。",
+     "标量闭包压力被广播到网格，网格压力保持原值，闭包额外键保留在 closure_state；固定布尔掩膜在 False 处把 J_phi 与积分单元电流精确置零，力数组不受影响。",
+     "收敛是未松弛的终态残差而非循环中的松弛步：轴向算例电流为零、通量不动、fixed_point_residual 精确为零，故 iterations = 1 时 converged 为真。",
+     "精度预算在比对之前写入证据模块：精确轴向场与平行力取 8 eps 相对值，调用日志、掩膜与不动通量取逐位相等。"
     ],
-    "evidence_ceiling": "制造和解析离散检查仅支持所述极向模型及声明积分几何，不证明任意格林矩阵、压力闭合、实验等离子体适用性或公开发行。 掩码策略与 terminal gate 顺序是 API 决策，不是独立物理证据；不声称上游各向异性压力 oracle。",
+    "evidence_ceiling": "既有跨域测试通过工厂运行该组合。C1 证据（tests/cross_domain/axisymmetric_anisotropic_picard/test_composition_axisymmetric_anisotropic_picard_evidence.py）补入证明终态重算的闭包调用日志、轴向闭式场与平行力、场门顺序、按声明阈值的火管门、广播与掩膜恒等式，以及未松弛的终态收敛。它不确立任何外供压力闭包的物理正确性。",
     "known_limitations": [
-     "外供物理闭合和格林响应须有独立证据，并一致使用 psi=R A_phi（Wb/rad）。",
-     "浮点舍入包络不约束离散误差或实验不确定度。",
-     "此数值后继不自动获得专家认可或公开发行资格。",
-     "掩码语义是调用方/API 策略（仅严格布尔），不是物理公式声明。Terminal gate 顺序是 SciRel API 决策。"
+     "闭包由调用方提供，组合只确立围绕它的顺序与打包，不确立任何压力模型的物理正确性。",
+     "平行力与火管门只在终态活跃单元集上强制执行；中间迭代不被门控，且 strict_compatibility 为假时返回的诊断是观测性的。",
+     "收敛是返回状态处的离散未松弛通量映射陈述，不构成连续平衡证明，松弛后的 relative_psi_change 只是诊断量。",
+     "调用日志恒等式固定了本实现的闭包求值次数与顺序，若组合改变求值安排则须重新推导。"
     ],
     "tests": [
      "tests/cross_domain/axisymmetric_anisotropic_picard/test_composition_axisymmetric_anisotropic_picard.py",
-     "tests/cross_domain/test_anisotropic_core_scientific_correction.py"
+     "tests/cross_domain/test_anisotropic_core_scientific_correction.py",
+     "tests/cross_domain/axisymmetric_anisotropic_picard/test_composition_axisymmetric_anisotropic_picard_evidence.py"
     ]
    }
   },
