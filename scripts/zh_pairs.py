@@ -1,9 +1,8 @@
 """Check and record the Chinese reader records against the contracts they translate.
 
-`tools/docs/zh/*.json` holds Chinese translations of contract prose. Its only
-binding used to be one `source_sha256` per record: it proves some bytes were
-seen, cannot say which field drifted, and forces a whole-file rewrite for a
-one-word change. This tool keeps a per-field pair in one sidecar instead:
+`tools/docs/zh/*.json` holds Chinese translations of contract prose. The
+per-field pair in one sidecar is their only binding: the records carry no digest
+of their own, so `--write` is the single way to rebind a pair:
 
     tools/docs/zh-pairing.json
     {"schema": "scirel.zh-pairing", "records": [
@@ -29,7 +28,7 @@ must have a sidecar entry: a missing entry is a failure, not an "unmigrated" pas
 An earlier in-record `pairing` block is ignored rather than trusted, so removing
 an entry cannot silently fall back to a weaker check. `title` is not paired: it is
 a mechanical copy of the contract's own bilingual title and is checked by equality
-instead; `source_sha256` is the superseded whole-file binding and is not paired.
+instead.
 """
 
 from __future__ import annotations
@@ -192,6 +191,36 @@ def validate_fields(where: str, recorded: dict, expected: dict) -> tuple[list[st
             )
             drifted.append(name)
     return errors, drifted
+
+
+def copy_errors(record: dict, document: dict, where: str) -> list[str]:
+    """Fields the record must copy verbatim from the contract's bilingual value."""
+    errors: list[str] = []
+    for name, path_keys in COPY_ONLY.items():
+        if name not in record:
+            continue
+        english = contract_field(document, path_keys)
+        if english is _MISSING:
+            continue
+        if record[name] != english:
+            errors.append(
+                f"{where}: field '{name}' must copy the contract value exactly; it is a "
+                "bilingual identifier, not a translation"
+            )
+    return errors
+
+
+def verify_record(
+    document: dict, record: dict, fields: dict, where: str = ""
+) -> list[str]:
+    """Return every mismatch for one record against its recorded fields.
+
+    Used by the gate and by the documentation snapshot reader, so the served
+    Chinese layer is checked with the same rule as the working tree.
+    """
+    errors = copy_errors(record, document, where)
+    section_errors, _drifted = validate_fields(where, fields, expected_fields(record, document))
+    return errors + section_errors
 
 
 def check(root: Path) -> tuple[list[str], list[str], dict[str, str]]:

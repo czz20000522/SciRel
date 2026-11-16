@@ -4,7 +4,6 @@
  "records": [
   {
    "asset_id": "scirel.numerics.modal-projection",
-   "source_sha256": "4e54507b881119812be83c56d8d7515863e7c642f8e5bdcb6b87b487aa6a0fe1",
    "summary": "构造正交归一模态基，按基自身的高斯节点和权重把采样值转换成有限离散投影系数；有限采样产生非有限系数时抛出 FloatingPointError。",
    "definition": "在基自身的张量 Gauss-Legendre 规则上，对每个成员计算采样值的加权内积；同基组合在数值误差范围内恢复系数。任意采样值只定义离散加权投影；只有规则能精确积分各基成员乘底层函数时，才等于该函数的连续 L2 投影。",
    "model": "单个参考超立方体上的高斯加权离散模态投影。",
@@ -91,7 +90,6 @@
   },
   {
    "asset_id": "scirel.numerics.orthonormal-modal-basis",
-   "source_sha256": "46ff4b961bdafabcbbe3d65f6580a908d92cc7f20a67aa13c8e0e987c1c3141f",
    "summary": "在参考超立方体上构造 tensor 或 serendipity 正交归一模态多项式基，并支持求值、求导、反射和投影。",
    "definition": "成员是各参考坐标轴上一维正交归一 Legendre 多项式的乘积，并按声明的指数顺序排列。",
    "model": "单个参考超立方体上的模态多项式离散化。",

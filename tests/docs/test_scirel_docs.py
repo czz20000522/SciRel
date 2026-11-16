@@ -362,7 +362,7 @@ def test_reader_translation_cannot_drift_or_drop_contracts(tmp_path, change):
     elif change == "duplicate":
         data["records"].append(first)
     elif change == "stale":
-        first["source_sha256"] = "0" * 64
+        first["summary"] = ""
     elif change == "port":
         first["inputs"][0]["name"] = "invented"
     elif change == "clause":
@@ -394,7 +394,7 @@ def test_all_reference_pages_exist_and_use_bound_chinese_prose(snapshot):
     for asset in docs.ids:
         page = docs.read("web/reference/generated/" + asset + ".html").decode()
         assert all(label in page for label in ["参数", "返回值", "说明", "示例", "验证与限制"])
-        assert docs.reader(asset)["translation"]["source_sha256"] in page
+        assert "按字段配对" in page
     assert b"copybutton.js" in docs.read("web/index.html")
     renderer = json.loads(docs.read("renderer.json"))
     assert renderer["source_documents"] == len(docs.ids)
@@ -492,7 +492,7 @@ def test_explicit_reader_bundle_selects_exact_distribution_without_global_record
     selected = load_translations(ROOT, documents, [doc], translation_paths=[bundle])
     assert set(selected) == {asset}
     # Explicit selection still rejects missing, extra and stale records.
-    for changed in [[], records + [records[0]], [dict(records[0], source_sha256="0" * 64)]]:
+    for changed in [[], records + [records[0]], [dict(records[0], summary="")]]:
         bundle.write_text(
             json.dumps(
                 {"schema": "scirel.reader-translation", "language": "zh-CN", "records": changed}

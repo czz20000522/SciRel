@@ -169,7 +169,6 @@ def write_inputs(tmp_path, document, reader):
     data = catalog.encode(document)
     (documents / (document["asset_id"] + ".json")).write_bytes(data)
     reader = deepcopy(reader)
-    reader["source_sha256"] = catalog.sha(data)
     bundle = tmp_path / "zh.json"
     bundle.write_bytes(
         catalog.encode(

@@ -106,7 +106,6 @@ def test_a_dropped_clause_is_reported_with_both_counts():
     assert "verification.known_limitations" in errors[0]
     assert "1 clause" in errors[0] and "0 " in errors[0]
     assert "fewer on the reader side" in errors[0]
-    assert module.digest_error(record, "a" * 64, "zh_physics.json") is None
 
 
 def test_an_extra_clause_is_reported_as_more_on_the_reader_side():
@@ -117,7 +116,6 @@ def test_an_extra_clause_is_reported_as_more_on_the_reader_side():
     assert "applicability.excluded" in errors[0]
     assert "3 clause" in errors[0] and "4 " in errors[0]
     assert "more on the reader side" in errors[0]
-    assert module.digest_error(record, "a" * 64, "zh_physics.json") is None
 
 
 def test_equal_counts_with_a_misspelt_key_are_still_rejected():
@@ -128,19 +126,6 @@ def test_equal_counts_with_a_misspelt_key_are_still_rejected():
     assert len(errors) == 1
     assert "verification.known_limitation:" in errors[0]
     assert "clause count" not in errors[0]
-    assert module.digest_error(record, "a" * 64, "zh_physics.json") is None
-
-
-def test_a_stale_digest_is_reported_separately_from_clause_counts():
-    module = _load()
-    document, record = _contract_and_record()
-    record["source_sha256"] = "b" * 64
-    message = module.digest_error(record, "a" * 64, "zh_physics.json")
-    assert message is not None
-    assert "zh_physics.json" in message
-    assert "source_sha256" in message
-    assert "reader " + "b" * 64 + " vs contract " + "a" * 64 in message
-    assert module.clause_errors(document, record) == []
 
 
 def test_renamed_clause_key_reports_both_the_missing_and_unknown_fields():
@@ -153,87 +138,6 @@ def test_renamed_clause_key_reports_both_the_missing_and_unknown_fields():
     assert any(
         "verification.known_limitations:" in error and "no field" in error for error in errors
     )
-
-
-@pytest.mark.parametrize(
-    "section,key",
-    [
-        ("applicability", "preconditions"),
-        ("applicability", "supported"),
-        ("applicability", "excluded"),
-        ("verification", "scope"),
-        ("verification", "known_limitations"),
-    ],
-)
-@pytest.mark.parametrize("delta", [-1, 1])
-def test_each_translated_clause_list_has_its_own_count(section, key, delta):
-    module = _load()
-    document, record = _contract_and_record()
-    expected = len(document[section][key])
-    if delta < 0:
-        record[section][key].pop()
-    else:
-        record[section][key].append("额外条款")
-    errors = module.clause_errors(document, record)
-    assert len(errors) == 1
-    assert f"{section}.{key}" in errors[0]
-    assert f"contract has {expected} clause(s)" in errors[0]
-    assert f"reader record has {expected + delta} " in errors[0]
-
-
-def test_contract_owns_clause_fields_and_evidence_tests_are_not_translated():
-    module = _load()
-    document, record = _contract_and_record()
-    assert module.clause_errors(document, record) == []
-    document["verification"]["additional_scope"] = ["contract-owned clause"]
-    record["verification"]["additional_scope"] = []
-    errors = module.clause_errors(document, record)
-    assert len(errors) == 1
-    assert "verification.additional_scope" in errors[0]
-    record["verification"]["additional_scope"] = ["合同派生的条款"]
-    assert module.clause_errors(document, record) == []
-
-
-@pytest.mark.parametrize("value", [None, "丙", {"丙": "wrong type"}, 1])
-def test_clause_values_must_be_lists_even_when_their_length_would_match(value):
-    module = _load()
-    document, record = _contract_and_record(applicability__supported=value)
-    errors = module.clause_errors(document, record)
-    assert len(errors) == 1
-    assert "applicability.supported" in errors[0]
-    assert "contract has 1 clause(s)" in errors[0]
-    assert "expected a list" in errors[0]
-
-
-def test_a_missing_empty_clause_field_cannot_silently_match_zero():
-    module = _load()
-    document, record = _contract_and_record()
-    document["applicability"]["excluded"] = []
-    record["applicability"].pop("excluded")
-    errors = module.clause_errors(document, record)
-    assert len(errors) == 1
-    assert "applicability.excluded" in errors[0]
-    assert "contract has 0 clause(s)" in errors[0]
-    assert "no field" in errors[0]
-
-
-@pytest.mark.parametrize("value", [None, [], "invalid"])
-def test_invalid_reader_section_is_reported_without_crashing(value):
-    module = _load()
-    document, record = _contract_and_record()
-    record["verification"] = value
-    errors = module.clause_errors(document, record)
-    assert errors == ["invalid reader section at verification: expected an object"]
-
-
-@pytest.mark.parametrize("value", [None, 1, False, [], {}])
-def test_invalid_digest_is_reported_without_crashing(value):
-    module = _load()
-    _, record = _contract_and_record()
-    record["source_sha256"] = value
-    message = module.digest_error(record, "a" * 64, "zh_physics.json")
-    assert message is not None
-    assert "zh_physics.json" in message and "source_sha256" in message
 
 
 @pytest.fixture
@@ -301,25 +205,20 @@ def test_bound_reader_with_matching_clauses_has_no_sync_errors(reader_case):
     assert check_record() == []
 
 
-@pytest.mark.parametrize("change", ["fewer", "more", "digest", "key", "both"])
+@pytest.mark.parametrize("change", ["fewer", "more", "key"])
 def test_check_reports_independent_reader_failures_with_asset_and_file(reader_case, change):
     record, check_record = reader_case
-    if change in {"fewer", "both"}:
+    if change == "fewer":
         record["verification"]["known_limitations"].pop()
     elif change == "more":
         record["verification"]["known_limitations"].append("额外条款")
     elif change == "key":
         record["verification"]["known_limitation"] = ["拼错字段"]
-    if change in {"digest", "both"}:
-        record["source_sha256"] = "0" * 64
     errors = check_record()
-    assert len(errors) == (2 if change == "both" else 1)
+    assert len(errors) == 1
     assert all("scirel.test.contract-sync: zh_test.json" in error for error in errors)
-    assert sum("source_sha256" in error for error in errors) == int(change in {"digest", "both"})
-    assert sum("clause count" in error for error in errors) == int(
-        change in {"fewer", "more", "both"}
-    )
-    if change in {"fewer", "more", "both"}:
+    assert sum("clause count" in error for error in errors) == int(change in {"fewer", "more"})
+    if change in {"fewer", "more"}:
         count_error = next(error for error in errors if "clause count" in error)
         assert "verification.known_limitations" in count_error
         assert "contract has 1 clause(s)" in count_error

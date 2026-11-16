@@ -18,6 +18,8 @@ import tracemalloc
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "scripts"))
+from zh_pairs import verify_record  # noqa: E402
+sys.path.insert(0, str(ROOT / "scripts"))
 from capability_query import query_capabilities  # noqa: E402
 from scirel_docs import build_capability_index  # noqa: E402
 
@@ -119,15 +121,18 @@ def _public_index():
         document = json.loads(raw)
         documents.append(document)
         contract_hashes[document["asset_id"]] = _sha(raw)
+    by_asset = {document["asset_id"]: document for document in documents}
+    pairs = json.loads((ROOT / "tools/docs/zh-pairing.json").read_text(encoding="utf-8"))
+    pair_fields = {item["asset_id"]: item["fields"] for item in pairs["records"]}
     translations = {}
     for path in sorted((ROOT / "tools/docs/zh").glob("*.json")):
         for record in json.loads(path.read_bytes())["records"]:
             asset = record["asset_id"]
             if asset in contract_hashes:
                 assert asset not in translations, "duplicate public reader: " + asset
-                assert record["source_sha256"] == contract_hashes[asset], (
-                    "stale public reader: " + asset
-                )
+                assert (
+                    verify_record(by_asset[asset], record, pair_fields[asset]) == []
+                ), "stale public reader: " + asset
                 translations[asset] = record
     assert set(translations) == set(contract_hashes)
     index = build_capability_index(documents, source_revision=source, translations=translations)

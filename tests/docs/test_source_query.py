@@ -15,7 +15,7 @@ ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "scripts"))
 from capability_query import query_capabilities  # noqa: E402
 import capability_catalog  # noqa: E402
-from scirel_docs import SourceDocumentation, encode, sha  # noqa: E402
+from scirel_docs import Documentation, SourceDocumentation, encode, sha  # noqa: E402
 
 ASSET = "scirel.physics.coulomb-ee"
 HELD = "scirel.test.withheld"
@@ -120,7 +120,7 @@ def test_source_describe_search_and_exact_get_reuse_the_public_projection(source
     document = docs.asset(ASSET, reader=True)
     raw = (source / document["path"]).read_bytes()
     assert document["document"] == json.loads(raw)
-    assert document["sha256"] == document["translation"]["source_sha256"] == sha(raw)
+    assert document["sha256"] == sha(raw)
     assert (
         docs.asset(HELD)["outcome"]
         == docs.asset("../review/PRIVATE_NOTES")["outcome"]
@@ -148,7 +148,6 @@ def test_source_identity_binds_dirty_contract_reader_hold_and_head(source):
     contract_path.write_bytes(encode(document))
     reader_path = source / "tools/docs/zh/reader.json"
     readers = json.loads(reader_path.read_bytes())
-    readers["records"][0]["source_sha256"] = sha(contract_path.read_bytes())
     reader_path.write_bytes(encode(readers))
     changed = SourceDocumentation(source).describe()
     assert changed["source_revision"] == initial["source_revision"]
@@ -230,7 +229,7 @@ def test_corrupt_source_metadata_fails_instead_of_claiming_no_hit(source, fault,
         reader_path = source / "tools/docs/zh/reader.json"
         bundle = json.loads(reader_path.read_bytes())
         if fault == "reader":
-            bundle["records"][0]["source_sha256"] = "0" * 64
+            bundle["records"][0]["summary"] = ""
         elif fault == "reader_list":
             bundle = []
         elif fault == "reader_null_failure":
@@ -334,25 +333,10 @@ def test_reader_aba_cannot_return_unbound_text_under_the_same_source_identity(so
     assert queried.asset(ASSET, reader=True) == baseline.asset(ASSET, reader=True)
 
 
-def test_reader_binding_checks_captured_contract_bytes_during_contract_aba(source, monkeypatch):
-    contract_path = source / "catalog/examples" / (ASSET + ".json")
-    temporary = json.loads(contract_path.read_bytes())
-    temporary["summary"] += " Temporary contract B."
-    temporary_bytes = encode(temporary)
-    reader_path = source / "tools/docs/zh/reader.json"
-    bundle = json.loads(reader_path.read_bytes())
-    bundle["records"][0]["source_sha256"] = sha(temporary_bytes)
-    reader_path.write_bytes(encode(bundle))
-    original = capability_catalog.load_translations
-
-    def swap_during_binding(*args, **kwargs):
-        before = contract_path.read_bytes()
-        contract_path.write_bytes(temporary_bytes)
-        try:
-            return original(*args, **kwargs)
-        finally:
-            contract_path.write_bytes(before)
-
-    monkeypatch.setattr(capability_catalog, "load_translations", swap_during_binding)
-    with pytest.raises(ValueError, match="stale Chinese reader"):
-        SourceDocumentation(source)
+def test_snapshot_packages_the_pairing_record(snapshot):
+    """The Chinese layer ships with the pair that binds it, so a reader can be checked."""
+    docs = Documentation(snapshot)
+    pairs = json.loads(docs.read("readers/pairing.json"))
+    assert pairs["schema"] == "scirel.zh-pairing"
+    assert set(docs.ids) <= {item["asset_id"] for item in pairs["records"]}
+    assert docs.reader(ASSET)["translation"]["asset_id"] == ASSET

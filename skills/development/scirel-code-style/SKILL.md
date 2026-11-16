@@ -38,7 +38,7 @@ The method for reviewing an API is in the `api-design-method` skill. SciPy's sta
 1. Change the implementation and the domain's `__all__` and lazy exports.
 2. Update the contract's `public_api` and any examples.
 3. Update the tests and documents.
-4. Rebind the Chinese reader digest (`source_sha256`) for each changed contract, and any chapter execution binding that names it.
+4. Rebind the Chinese reader pair with `python3 scripts/dev.py run python -B scripts/zh_pairs.py --write` for each changed contract, and any chapter execution binding that names it.
 5. Run the `scirel-acceptance` checks.
 
 Do not leave an alias behind, and do not change physics in the same commit.
