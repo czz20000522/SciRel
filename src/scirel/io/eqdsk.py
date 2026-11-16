@@ -58,7 +58,40 @@ _PROFILE_KEYS = ("tor_flux", "p_flux", "rbphi_flux", "pprime_flux", "q_flux")
 
 
 class EQDSKFormatError(ValueError):
-    """Raised when a extended-dialect file violates its structure."""
+    """Raised when an extended-dialect file violates its structure.
+
+    Parameters
+    ----------
+    message : str
+        Diagnostic text [text], stored unchanged as the exception's
+        only argument and reported by ``str``. The raiser names the offending
+        record or section, so no fixed wording is part of this class.
+
+    Raises
+    ------
+    ValueError
+        Constructing the class never raises it. It is the type the readers
+        raise through this subclass when a record is malformed, truncated or
+        inconsistent, so callers that already catch ``ValueError`` keep working.
+
+    See Also
+    --------
+    scirel.io.read_eqdsk : Re-reader for the extended dialect this class guards.
+    scirel.io.read_geqdsk : Re-reader for the fixed-width GEQDSK variant.
+    scirel.io.EQDSK : File-backed mapping whose reader raises this class.
+
+    Notes
+    -----
+    A file system failure, such as a missing path, is not this error; this class
+    reports content that is present but structurally invalid.
+
+    Examples
+    --------
+    >>> import scirel.io
+    >>> exc = scirel.io.EQDSKFormatError("empty EQDSK file")
+    >>> str(exc), isinstance(exc, ValueError)
+    ('empty EQDSK file', True)
+    """
 
 
 def _float_fields(line: str, *, fixed: bool = False) -> list[float]:

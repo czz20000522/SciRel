@@ -8,7 +8,35 @@ __all__ = ["NumericalContractError", "diff_12_central"]
 
 
 class NumericalContractError(ValueError):
-    """Input violates the supported numerical contract."""
+    """Input violates the supported numerical contract.
+
+    Parameters
+    ----------
+    message : str
+        Diagnostic text [text], stored unchanged as the exception's
+        only argument and reported by ``str``. The raiser names the violated
+        rule, so no fixed wording is part of this class.
+
+    Raises
+    ------
+    ValueError
+        Constructing the class never raises it. It is the type the operators in
+        this module raise through this subclass on a rejected input, so callers
+        that already catch ``ValueError`` keep working.
+
+    See Also
+    --------
+    scirel.geometry.diff_12_central : The raising operator.
+
+    Examples
+    --------
+    >>> import scirel.geometry
+    >>> try:
+    ...     scirel.geometry.diff_12_central([0.0, 1.0], [0.0, 1.0])
+    ... except scirel.geometry.NumericalContractError as exc:
+    ...     print(str(exc))
+    x and y must be 1-D arrays of equal length >= 3
+    """
 
 
 def _validated_pair(x, y):

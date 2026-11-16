@@ -95,6 +95,28 @@ class CurrentFilamentSet:
     TypeError
         If an unknown keyword argument is supplied; a misspelt entry is not
         silently ignored.
+
+    See Also
+    --------
+    ArbitraryPoints : Source points supplied directly by the caller.
+    RectangularCoil : Filaments laid out on a rectangular coil.
+    MagnetRing : Filaments on a circular ring.
+    Device : Container that registers sources as children.
+
+    Notes
+    -----
+    This class carries the shared current, weight and mesh contract; the
+    filament positions come from a subclass, so construct a concrete geometry
+    rather than this base alone.
+
+    Examples
+    --------
+    >>> from scirel.electromagnetism import ArbitraryPoints, CurrentFilamentSet
+    >>> source = ArbitraryPoints(rz_pts=[[1.0, 0.0], [2.0, 0.0]], current=2.0)
+    >>> isinstance(source, CurrentFilamentSet)
+    True
+    >>> source.npts, source.current
+    (2, 2.0)
     """
 
     def __init__(self, current=1.0, weights=None, mesh=None):

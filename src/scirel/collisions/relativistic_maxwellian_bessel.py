@@ -111,7 +111,38 @@ def kve(order, argument):
 
 
 class InvalidBesselArgumentError(ValueError):
-    """``x`` is not a positive finite scalar.  The caller's input is wrong."""
+    """``x`` is not a positive finite scalar.  The caller's input is wrong.
+
+    Parameters
+    ----------
+    message : str
+        Diagnostic text [text], stored unchanged as the exception's
+        only argument and reported by ``str``. Naming the rejected value is left
+        to the raiser, so no fixed wording is part of this class.
+
+    Raises
+    ------
+    ValueError
+        Constructing the class never raises it. It is the type
+        :func:`scirel.collisions.relativistic_maxwellian_bessel` raises through
+        this subclass when ``x`` is non-positive or non-finite, so callers that
+        already catch ``ValueError`` keep working.
+
+    See Also
+    --------
+    BesselBackendEvaluationError : A valid ``x`` whose double-precision backend
+        returned a non-finite closure instead.
+    scirel.collisions.relativistic_maxwellian_bessel : The raising relation.
+
+    Examples
+    --------
+    >>> import scirel.collisions
+    >>> try:
+    ...     scirel.collisions.relativistic_maxwellian_bessel(-1.0)
+    ... except scirel.collisions.InvalidBesselArgumentError as exc:
+    ...     print(str(exc))
+    x must be positive and finite
+    """
 
 
 class BesselBackendEvaluationError(ValueError):
@@ -121,6 +152,41 @@ class BesselBackendEvaluationError(ValueError):
     backend's.  The message reports the input and the values produced, and states
     no domain bound, because the bound is a property of the installed SciPy rather
     than of the relation.
+
+    Parameters
+    ----------
+    message : str
+        Diagnostic text [text], stored unchanged as the exception's
+        only argument and reported by ``str``. The raiser embeds ``x`` and the
+        three values it received.
+
+    Raises
+    ------
+    ValueError
+        Constructing the class never raises it. It is the type
+        :func:`scirel.collisions.relativistic_maxwellian_bessel` raises through
+        this subclass when the backend's closure is not finite, so callers that
+        already catch ``ValueError`` keep working.
+
+    See Also
+    --------
+    InvalidBesselArgumentError : The argument itself is outside the domain.
+    scirel.collisions.relativistic_maxwellian_bessel : The raising relation.
+
+    Notes
+    -----
+    Which arguments reach this class depends on the installed SciPy's
+    ``scipy.special.kve``, so the trigger shown here is an observation of one
+    backend, not a domain bound of the relation.
+
+    Examples
+    --------
+    >>> import scirel.collisions
+    >>> try:
+    ...     scirel.collisions.relativistic_maxwellian_bessel(1e300)
+    ... except scirel.collisions.BesselBackendEvaluationError:
+    ...     print("backend closure not finite")
+    backend closure not finite
     """
 
 
