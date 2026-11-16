@@ -167,7 +167,8 @@ def test_seed_threshold_is_exactly_ten_times_the_outer_threshold():
     assert seed["reentry_threshold"] == 1.0
     assert seed["seed_error"] == outer["seed_error"] == 0.1
     assert seed["should_reiterate"] is False
-    # The max-norm relative change of two nonnegative profiles is bounded by one,
+    # The max-norm relative change of two nonnegative profiles is at most one
+    # (ticket T-2026-0004 records the consequence for the tenfold threshold),
     # so with truncate = 0.1 the seed threshold 1.0 can never be exceeded: the
     # relation converges for every nonnegative pair. The re-iterating branch is
     # therefore only reachable below truncate = 0.1, where threshold < 1.
