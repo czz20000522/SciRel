@@ -425,6 +425,20 @@ def test_the_legacy_blob_check_would_have_missed_the_drift(repo, capsys):
     assert "contract field 'definition' changed" in out
 
 
+def test_the_checked_in_records_pass_the_gate():
+    """Run the gate on this repository, so a stale checked-in pair cannot pass the default suite.
+
+    The other tests build temporary records; without this one the gate would only
+    protect itself. `check_all.py` collects `tests/` and refuses deselection, so
+    this assertion is what puts the pairing gate inside the acceptance run.
+    """
+    errors, _notes, state = zh_pairs.check(ROOT)
+    assert errors == [], "\n".join(errors)
+    offenders = {asset: status for asset, status in state.items() if status != "ok"}
+    assert offenders == {}, offenders
+    assert set(state) == set(zh_pairs.load_contracts(ROOT))
+
+
 def test_the_cli_reports_a_missing_record_directory(tmp_path, capsys):
     code = zh_pairs.main(["--repo", str(tmp_path)])
     assert code == 2

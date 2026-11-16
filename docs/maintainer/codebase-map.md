@@ -204,6 +204,13 @@ pass is not evidence that every possible user task is covered.
   weaker whole-file check. `source_sha256` stays in the records until a separate
   change removes it.
 
+  This gate runs on the checked-in records inside the default acceptance run:
+  `tests/docs/test_zh_pairing.py::test_the_checked_in_records_pass_the_gate`
+  calls the checker on the repository root. `check_all.py` collects `tests/` and
+  rejects a deselected run, so a stale recorded pair fails `dev.py check`
+  without a separate step; the other tests in that file use temporary records
+  and cannot substitute for this one.
+
 Generated pages, indices and matrices are not reviewed science by themselves.
 
 ## Suggested work order
