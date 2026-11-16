@@ -64,6 +64,7 @@ SCRIPT_LAYERS = {
     "scirel_docs.py": ("docs", "delivery"),
     "serve_consumer_mcp.py": ("delivery",),
     "test_scope.py": ("tooling",),
+    "zh_pairs.py": ("docs",),
     "tickets.py": ("tooling",),
     "validate_asset_documents.py": ("tooling", "architecture", "docs", "delivery"),
     "validate_capability_runtime_closure.py": ("architecture",),
