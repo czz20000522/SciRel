@@ -156,7 +156,7 @@
    "Numeric mask weights are intentional and are not interpreted as a Boolean core classification.",
    "The source packet's state-to-port adapter and missing-state warnings are not part of the public callable signature.",
    "Rights, human scientific acceptance and release remain separate decisions.",
-   "Two curved-mask constructions were measured and neither has a stable refinement ratio at 32 and 64 cells (hard mask 3.58 then 2.82, boundary cells dominate; smooth tent 3.66 then 63, kink discretization dominates), so **cannot establish** a convergence order for this cell sum: only the exact rule-exact case and the declared linear identities are established."
+   "Two curved-mask constructions were measured and neither has a stable refinement ratio at 32 and 64 cells (hard mask 3.58 then 2.82, boundary cells dominate; smooth tent 3.66 then 63, kink discretization dominates), so **cannot establish** a convergence order for this cell sum: only the exact rule-exact case and the declared linear identities are established. A stable refinement ratio would only be expected when the mask boundary is aligned with the cell faces; when the boundary sweeps across cells (as in the smooth-tent construction measured here) the residual is dominated by cell-crossing and the ratio is not informative."
   ]
  }
 }

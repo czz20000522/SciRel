@@ -172,18 +172,21 @@
    "Polar and Cartesian projection contract.",
    "Zero-magnitude angle and mode distinction.",
    "Non-real input rejection including string and boolean pseudo-numbers in pure and mixed containers, nonfinite magnitude rejection and large finite hypot behavior.",
-   "The direct tests verify the top-level scirel._result.Result mapping and attribute access."
+   "The direct tests verify the top-level scirel._result.Result mapping and attribute access.",
+   "Independent evidence (tests/geometry/test_wavevector_and_support_evidence.py): the polar mode places kz on the +Z axis (theta_rad = 0 gives (0, k)) and a reading from the +R axis would move both components by O(k); theta_rad = pi/2 gives (k, 0) to 8 eps, which also separates the radian reading from a degree reading (sin(90 rad) = 0.894); hypot(k sin t, k cos t) = k to 8 eps for four (k, t) pairs; a doubled magnitude doubles both components exactly; the cartesian mode reports theta_rad as None rather than inventing an angle; and the mode-selection, sign, pairing and finiteness channels are each rejected."
   ],
   "tests": [
-   "tests/geometry/test_planar_wavevector.py"
+   "tests/geometry/test_planar_wavevector.py",
+   "tests/geometry/test_wavevector_and_support_evidence.py"
   ],
-  "evidence_ceiling": "The direct tests establish this callable's declared bounded arithmetic, boolean-pseudo-number rejection and failure behaviour in this tree. No external cross-implementation comparison is re-runnable from this repository, and none is claimed as evidence here.",
+  "evidence_ceiling": "The direct tests establish this callable's declared bounded arithmetic, boolean-pseudo-number rejection and failure behaviour in this tree. No external cross-implementation comparison is re-runnable from this repository, and none is claimed as evidence here. C1 evidence adds the axis convention, the unit discriminator, the magnitude identity, the exact scaling and the None angle; it fixes the projection rule without establishing any dispersion physics.",
   "known_limitations": [
    "Wave numbers supplied in normalized input-card units lack a verified conversion to 1/m.",
    "The mapping is exercised only on real numeric inputs; string and boolean numeric surrogates are rejected by SciRel and lie outside every existing comparison.",
    "The Cartesian norm deliberately avoids the squared-sum overflow that a naive square-and-sum evaluation shows at large finite components.",
    "Scan-driver state semantics require a separate relation.",
-   "Distribution licensing remains pending."
+   "Distribution licensing remains pending.",
+   "theta_rad is in **radians** while the chord constructors of the same family take **degrees** (ticket T-2026-0005); the cartesian mode deliberately leaves theta_rad as None rather than recovering it, so a caller that needs the angle must compute arctan2 itself and must choose a unit."
   ]
  }
 }
