@@ -97,11 +97,20 @@ def test_coincident_entries_are_exactly_zero_and_neighbours_are_not():
     assert np.all(off_diagonal != 0.0)
 
 
-def test_reflected_blocks_match_bitwise():
-    """Evidence 3: G[target, source] == G[mirror(source), mirror(target)]."""
-    matrix = _matrix()
+def _reflected_indices():
+    """Return the flat node index after reflecting Z about zero, R unchanged."""
     nodes = len(RADIAL) * len(AXIAL)
-    mirror = (nodes - 1) - np.arange(nodes)  # Z reflection reverses the row index
+    return [
+        (len(AXIAL) - 1 - index // len(RADIAL)) * len(RADIAL) + index % len(RADIAL)
+        for index in range(nodes)
+    ]
+
+
+def test_reflected_blocks_match_bitwise():
+    """Evidence 3: G[target, source] == G[mirror(target), mirror(source)]."""
+    matrix = _matrix()
+    mirror = _reflected_indices()
+    assert mirror != list(range(len(mirror)))
     assert np.array_equal(matrix[np.ix_(mirror, mirror)], matrix)
     # Nonzero anchor for the equality: the matrix is not symmetric on its own,
     # so the assertion above is about the reflection and not about symmetry.
@@ -115,9 +124,14 @@ def test_axis_nodes_carry_no_source_and_receive_no_response():
     for row in axis_rows:
         np.testing.assert_array_equal(matrix[row, :], 0.0)
         np.testing.assert_array_equal(matrix[:, row], 0.0)
-    non_axis = [index for index in range(len(RADIAL) * len(AXIAL)) if index not in set(axis_rows)]
-    for index in non_axis:
-        assert matrix[index, index + 1 if index + 1 in non_axis else index - 1] != 0.0
+    axis = set(axis_rows)
+    for row in range(len(AXIAL)):
+        for column in range(len(RADIAL)):
+            index = row * len(RADIAL) + column
+            if index in axis:
+                continue
+            # A non-axis node responds to a different non-axis node.
+            assert matrix[index, index + 1 if column + 1 < len(RADIAL) else index - 1] != 0.0
 
 
 def test_each_declared_rejection_channel_is_executable():
@@ -142,8 +156,31 @@ def test_each_declared_rejection_channel_is_executable():
     # Non-uniform axial grid.
     with pytest.raises(ValueError, match="uniformly spaced Z"):
         build_mirror_plasma_flux_green(*np.meshgrid(RADIAL, np.array([-0.5, -0.25, 0.0, 0.25, 0.6])))
-    # runtime_failure: the kernel's FloatingPointError propagates.
-    with pytest.raises(FloatingPointError, match="not representable"):
-        build_mirror_plasma_flux_green(
-            *np.meshgrid(np.array([0.0, 0.3]), np.array([-1.0, 1.0]))
-        ) if False else (_ for _ in ()).throw(FloatingPointError("not representable"))
+    # runtime_failure: see
+    # ``test_no_finite_unit_weight_grid_can_make_an_entry_unrepresentable``.
+    # This asset has no weight input, so the channel is bounded by the geometry
+    # and is not exercisable; the assertion below records the boundary instead
+    # of fabricating a raise.
+
+
+def test_no_finite_unit_weight_grid_can_make_an_entry_unrepresentable():
+    """The ``runtime_failure`` channel is unreachable, and here is why.
+
+    With unit sources the entry is ``1e-7 * d * [(2-m)K - 2E]``.  The bracket is
+    bounded by ``2 K``, and ``K`` grows only like ``log(4 d / gap)``; the
+    smallest achievable ``gap`` for two distinct binary64 coordinates of size
+    ``d`` is one ulp of ``d``, so the bracket stays below about 80 and the entry
+    below ``1e-5 * a``.  A finite ``a`` therefore cannot push the entry past
+    ``1.8e308``.  The largest finite coordinates confirm it: the flux stays
+    finite, and only the *validation* rejects the unrepresentable geometry.
+    """
+    largest = np.finfo(float).max
+    radius, height = np.meshgrid(np.array([0.0, 0.1, 0.2]), np.array([-0.3, 0.0, 0.3]))
+    with np.errstate(all="ignore"):
+        matrix = build_mirror_plasma_flux_green(radius * largest, height)["g_psi"]
+    assert np.all(np.isfinite(matrix))
+    assert np.any(matrix != 0.0)
+    # The same coordinates at a scale that makes the squared distance overflow
+    # are rejected by validation rather than escaping as a non-finite entry.
+    with np.errstate(all="ignore"), pytest.raises(ValueError, match="finite"):
+        build_mirror_plasma_flux_green(radius * largest * 0.0 + largest, height)
