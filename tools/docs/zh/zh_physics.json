@@ -329,7 +329,7 @@
    },
    "verification": {
     "scope": [
-     "独立依据是三个制造闭包上的精确状态恒等式：空间均匀压力按位返回所给真空 psi、BR、BZ，j_phi 为零、fixed_point_residual 精确为零且 iterations = 1 时 converged 为真；两个格林矩阵精确为零的 boundary_correction 返回逐位相同的状态、零通量修正、零残差范数且仍报告边界电流；全 1 的秩一 green_boundary_to_field 产生常数 1.375 Wb/rad 修正，使 psi 整整平移该常数而 BR、BZ 逐位不变，因为常数通量没有梯度（tests/cross_domain/free_boundary_anisotropic_picard/test_composition_free_boundary_anisotropic_picard_evidence.py）。",
+     "独立依据是一组闭式的三条精确状态恒等式（制造闭包上）：空间均匀压力按位返回所给真空 psi、BR、BZ，j_phi 为零、fixed_point_residual 精确为零且 iterations = 1 时 converged 为真；两个格林矩阵精确为零的 boundary_correction 返回逐位相同的状态、零通量修正、零残差范数且仍报告边界电流；全 1 的秩一 green_boundary_to_field 产生常数 1.375 Wb/rad 修正，使 psi 整整平移该常数而 BR、BZ 逐位不变，因为常数通量没有梯度（tests/cross_domain/free_boundary_anisotropic_picard/test_composition_free_boundary_anisotropic_picard_evidence.py）。",
      "常数修正这一对把一个从总通量重导场的实现与从所加修正导场的实现分开，也把只把修正加到通量的实现与把修正同时加到通量及其磁导数的实现分开。",
      "掩膜是声明的区域选择器：j_phi 与积分单元电流在布尔掩膜为假处精确为零，而同一带梯度闭包在无掩膜运行时电流非零。",
      "门在 docstring 所述位置运行：全零真空场在闭包调用日志为空时抛出中间 minimum_field 错误，远超火管阈值的闭包抛出终态火管错误且消息点名终态裕度。",
