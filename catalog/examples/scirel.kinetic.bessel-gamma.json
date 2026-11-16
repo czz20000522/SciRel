@@ -123,17 +123,22 @@
  "verification": {
   "scope": [
    "Finite-grid comparison to the modified-Bessel definition, origin identities and complex broadcast behavior.",
-   "Invalid-order, invalid-argument and unrepresentable-output rejection."
+   "Invalid-order, invalid-argument and unrepresentable-output rejection.",
+   "Independent 40-digit reference Gamma_n(x)=exp(-x)I_n(x) with I_n from mpmath.besseli and the derivative from mp.diff of that definition, over |n|<=7 and x in [0.25,12].",
+   "Exact structural identities: Gamma_{-n}=Gamma_n, the Bessel recurrence Gamma_{n-1}-Gamma_{n+1}=(2n/x)Gamma_n, the endpoint Gamma_n(0)=delta_n0, and the two-term large-x asymptotic with a budget of twice the first neglected term."
   ],
   "tests": [
-   "tests/kinetic/test_bessel_gamma.py"
+   "tests/kinetic/test_bessel_gamma.py",
+   "tests/kinetic/test_bessel_gamma_evidence.py"
   ],
-  "evidence_ceiling": "test_analytic_definition_and_neighbour_derivative compares Gamma_n and Gamma_prime_n with the modified-Bessel definition using scipy.special.iv; test_origin_and_complex_broadcast_preserve_shape_and_inputs, test_large_positive_argument_remains_representable and test_invalid_or_unrepresentable_values_fail_closed add named identity, shape, representability and rejection cases. This is bounded self-consistency/regression evidence using the same special-function backend family, not an independent physical oracle. Harmonic truncation, tensor assembly and mode/root selection are outside these assertions.",
+  "evidence_ceiling": "test_bessel_gamma_evidence.py compares the value at 64*eps relative and the derivative at 64*eps of the larger of the value and derivative: for large order at small argument the scaled Bessel is an alternating series, so tens of ulp rather than one ulp is the floor of that regime, and the derivative is a difference of O(Gamma) terms whose error floor is eps*Gamma. The series-integral definition at 40 digits is the only reference; the implementation's SciPy backend is not on the reference path. Complex arguments are compared at four points only, and no analytic-continuation or branch claim is established.",
   "known_limitations": [
    "Floating-point underflow or a nonrepresentable result can bound extreme inputs; the callable raises rather than returning nonfinite outputs.",
    "The source implementation accepted some noninteger orders implicitly; SciRel intentionally restricts n to exactly representable integers.",
    "No independent or external oracle is recorded; the evidence is self-consistency/regression only.",
-   "Historical Chinese-only 98-point real-reference comparison: UNKNOWN, with no bound fixture or receipt in the current evidence set. The named direct assertions above remain available; they do not reconstruct that historical comparison."
+   "Historical Chinese-only 98-point real-reference comparison: UNKNOWN, with no bound fixture or receipt in the current evidence set. The named direct assertions above remain available; they do not reconstruct that historical comparison.",
+   "The value budget is 64*eps relative rather than one ulp: for large order and small argument the scaled Bessel is an alternating series, so the floor of the regime is tens of ulp.",
+   "Complex arguments are compared at four points only; no analytic-continuation or branch claim beyond those samples is established."
   ]
  }
 }

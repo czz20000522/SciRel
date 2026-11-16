@@ -150,15 +150,20 @@
  },
  "verification": {
   "scope": [
-   "Declared source-method numerical case and relevant failure boundaries."
+   "Declared source-method numerical case and relevant failure boundaries.",
+   "The three exact asymptotic moment identities sum(b)=-1, sum(b*c)=0 and sum(b*c^2)=-1/2 that any Z_J(z)=sum b_j/(z-c_j) table must satisfy for the target Maxwellian Z, asserted for J=8 and J=12 at 1e-12.",
+   "A 40-digit definition comparison of the rational sum over six upper-half-plane points with the 1e-5 ceiling declared for this family, plus the declared conjugate completion of the stored half table."
   ],
   "tests": [
-   "tests/kinetic/test_fluid_spectrum_r43_fluid.py"
+   "tests/kinetic/test_fluid_spectrum_r43_fluid.py",
+   "tests/kinetic/test_pole_table_evidence.py"
   ],
-  "evidence_ceiling": "Direct Python tests establish only the listed finite cases and tolerances; source parity, arbitrary-parameter accuracy and release approval are outside that evidence.",
+  "evidence_ceiling": "test_pole_table_evidence.py derives the moment identities from the large-|z| expansion of Z, so they constrain the table without calling the reader; they are asserted at 1e-12 absolute. The 40-digit comparison is a six-point model-error observation with a pre-declared 1e-5 ceiling, and the returned sum_bzj/sum_bzcj/sum_bzcj2 are checked to be those same sums. No continuous-domain error bound and no lower-half-plane claim are established.",
   "known_limitations": [
    "only the frozen J=8 and J=12 tables exist; no interpolation or extrapolation",
-   "Full source/runtime qualification that uses the declared local Python runtime on Linux amd64 is NOT_RUN in this macOS checkout."
+   "Full source/runtime qualification that uses the declared local Python runtime on Linux amd64 is NOT_RUN in this macOS checkout.",
+   "The 1e-5 ceiling is a model-error observation on six points, not a continuous-domain bound for the eight- and twelve-pole tables.",
+   "The table values are frozen data; the moment identities constrain them but do not by themselves reproduce the upstream derivation."
   ]
  },
  "references": [
