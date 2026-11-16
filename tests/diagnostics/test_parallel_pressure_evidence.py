@@ -2,32 +2,44 @@
 
 Asset: ``scirel.diagnostics.parallel-pressure-residual``.
 
-The primary evidence is an algebraic identity, not a comparison with another
-library:
+The independent reference is **exact rational arithmetic on the declared closed
+form**:
 
-    rhs = p_parallel - B (dp_parallel/dB)_psi  ==  -B**2 (d/dB)(p_parallel/B)_psi
+    rhs = p_parallel - B (dp_parallel/dB)_psi
 
-Both sides are evaluated here **by hand from closed-form pressure laws** and are
-structurally different — the left side has two terms that can cancel, the right
-side differentiates a quotient — so agreement is not a re-derivation of one
-expression from itself.  Exact rational arithmetic then removes rounding from
-the comparison, and the implementation's ``rhs`` must equal that value.
+``rhs`` is evaluated from closed-form pressure laws whose derivative is written
+out by hand, in ``fractions.Fraction``, and rounded once; the returned ``rhs``
+must equal that value.  This is a second arithmetic path over the same
+mathematics, so a wrong sign, a wrong power or a dropped factor in the
+implementation has nowhere to hide.
 
-Weaker but still independent checks, in the order the contract states them:
+The algebraically equivalent rearrangement
 
+    -B**2 (d/dB)(p_parallel/B)_psi
+
+is deliberately **not** counted as a second source.  Both expressions are derived
+from the same polynomial, so their equality is a tautology in the coefficients:
+it can catch a transcription error in this file and can never fail as evidence
+about the implementation.  The check is kept for that narrow purpose and labelled
+as such, rather than promoted to "primary evidence".
+
+Checks that do carry their own weight, in the order the contract states them:
+
+* the exact rational closed form above, plus the same form on the recovery branch
+  where the naive float value provably differs from the exact one;
 * ``error = p_perp - rhs`` and ``relative_error = |error| / max(|p_perp|,
-  |rhs|, atol)`` are recomputed from the analytic values.
+  |rhs|, atol)`` recomputed from the analytic values;
 * ``passed`` is exactly ``max(relative_error) <= rtol``; the boundary is probed
-  from both sides and ``strict=True`` is checked at the failing side.
-* The derivative can come from an explicit scalar, an explicit array, a callable,
+  from both sides and ``strict=True`` is checked at the failing side;
+* the derivative can come from an explicit scalar, an explicit array, a callable,
   or a declared fixed-flux sample axis.  The sampled source is ``numpy.gradient``
   with second-order edges, so its error must refine at about 4 per halving.
 
-Budgets, fixed before measurement: identity and formula comparisons use
-``128 * eps`` of the local pressure scale (three to four operations on binary64
-inputs); the sampled-derivative accuracy is asserted as a refinement ratio, never
-as an absolute tolerance.  Nothing here is a physical force-balance claim: the
-contract itself says a passing result is a local compatibility observation.
+Budgets, fixed before measurement: exact comparisons use ``128 * eps`` of the
+local pressure scale (three to four operations on binary64 inputs); the
+sampled-derivative accuracy is asserted as a refinement ratio, never as an
+absolute tolerance.  Nothing here is a physical force-balance claim: the contract
+itself says a passing result is a local compatibility observation.
 
 Not established here: whether any particular equilibrium state *should* satisfy
 the relation. That is a statement about the plasma, not about this arithmetic.
@@ -65,31 +77,55 @@ def _two_forms_of_rhs(coefficients, magnetic_field):
 @pytest.mark.parametrize(
     "coefficients",
     [
-        (0.0, 2.0, 0.0, 0.0),  # linear: rhs is not zero because c1 B cancels
+        (0.0, 2.0, 0.0, 0.0),  # linear
         (1.5, -2.0, 0.0, 0.0),
         (0.0, 0.0, 3.0, 0.0),  # quadratic
         (0.25, 0.5, -1.25, 2.0),  # mixed cubic
     ],
 )
-def test_the_two_algebraic_forms_agree_with_the_returned_rhs(coefficients):
-    """Primary evidence: two structurally different closed forms, one value."""
-    field = np.array([0.5, 1.0, 2.0, 3.5])
-    left, right, value, slope = zip(*[_two_forms_of_rhs(coefficients, b) for b in field])
-    # The identity itself, before the implementation is involved.
-    assert left == right
+def test_the_returned_rhs_matches_an_exact_rational_closed_form(coefficients):
+    """Primary evidence: the declared closed form in exact rational arithmetic.
 
+    The reference is ``p_parallel - B dp_parallel/dB`` evaluated by hand in
+    ``Fraction`` for a law with rational coefficients.  A sign flip in the
+    implementation's ``rhs = p_parallel - product`` makes this fail.
+    """
+    field = np.array([0.5, 1.0, 2.0, 3.5])
+    left, _right, value, slope = zip(*[_two_forms_of_rhs(coefficients, b) for b in field])
     expected = np.array([float(entry) for entry in left])
+
     result = D.compute_parallel_pressure_residual(
         np.array([float(v) for v in value]),
-        np.array(
-            [float(v) for v in value]
-        ),  # p_perp equal to p_parallel: error is -rhs only through rhs
+        np.array([float(v) for v in value]),
         field,
         dp_parallel_dB=np.array([float(s) for s in slope]),
     )
     got = np.asarray(result["rhs"])
     scale = np.maximum(1.0, np.abs(expected))
     assert np.max(np.abs(got - expected) / scale) <= 128.0 * EPS
+
+
+@pytest.mark.parametrize(
+    "coefficients",
+    [
+        (0.0, 2.0, 0.0, 0.0),
+        (1.5, -2.0, 0.0, 0.0),
+        (0.0, 0.0, 3.0, 0.0),
+        (0.25, 0.5, -1.25, 2.0),
+    ],
+)
+def test_the_equivalent_rearrangement_is_a_consistency_check_only(coefficients):
+    """Not evidence: both expressions come from the same polynomial.
+
+    ``p_parallel - B p'`` and ``-B**2 (p/B)'`` are the same quantity, so this
+    assertion holds for every coefficient set by construction.  It guards this
+    file's own algebra (an expansion error in the helper) and says nothing about
+    the implementation, which is why the contract does not cite it as a source.
+    """
+    field = np.array([0.5, 1.0, 2.0, 3.5])
+    for magnetic_field in field:
+        left, right, _value, _slope = _two_forms_of_rhs(coefficients, magnetic_field)
+        assert left == right
 
 
 def test_the_residual_fields_follow_their_closed_form_definitions():
@@ -138,18 +174,35 @@ def test_the_passed_flag_is_the_rtol_boundary_and_strict_raises_there():
         )
 
 
-def test_a_cancelling_rhs_matches_exact_rational_arithmetic():
-    """The exact-rational recovery branch, with the difference computed exactly."""
-    field = np.array([1.0])
-    parallel = np.array([1.0e300])
-    # rhs = 1e300 - 1.0 * 1e300*(1 - 2**-52) is ~1e284: the float subtraction loses
-    # the small remainder, so the exact branch is the only trustworthy value.
-    slope = np.array([1.0e300 * (1.0 - 2.0**-52)])
-    result = D.compute_parallel_pressure_residual(parallel, parallel, field, dp_parallel_dB=slope)
-    exact = Fraction.from_float(1.0e300) - Fraction.from_float(1.0) * Fraction.from_float(
-        float(slope[0])
+def test_the_exact_recovery_branch_differs_from_the_naive_float_value():
+    """The recovery branch is discriminating only when the product rounding survives.
+
+    A plain cancellation sample does not test it: if ``p_parallel`` and ``B dp``
+    are within a factor of two, their difference is exact by Sterbenz's lemma, so
+    the float path already keeps the small remainder.  What the branch recovers
+    is the rounding error of the product ``B dp`` itself.  Here ``p_parallel`` is
+    chosen as the *rounded* product, so the naive float residual is exactly zero
+    while the exact residual is that rounding error; the implementation must
+    return the latter, and the test asserts all three values so a silent fallback
+    to the float path fails instead of passing.
+    """
+    field = np.array([0.1])
+    slope = np.array([3.0])
+    product = float(np.float64(field[0]) * np.float64(slope[0]))
+    parallel = np.array([product])
+
+    exact = Fraction.from_float(product) - Fraction.from_float(field[0]) * Fraction.from_float(
+        slope[0]
     )
-    assert float(np.asarray(result["rhs"])[0]) == float(exact)
+    naive = 0.0  # p_parallel - B dp evaluated in binary64 on this sample
+
+    assert float(exact) != naive
+    result = D.compute_parallel_pressure_residual(
+        parallel, parallel, field, dp_parallel_dB=slope
+    )
+    got = float(np.asarray(result["rhs"])[0])
+    assert got == float(exact)
+    assert got != naive
 
 
 def test_all_declared_derivative_sources_agree_on_the_same_law():

@@ -86,14 +86,18 @@ def test_the_exact_rational_switch_agrees_with_the_independent_exact_value():
     )
     assert got[0] == _exact_margin(field[0], perp[0], parallel[0], 1.0)
 
-    # A cancelling pair whose exact remainder is not representable as a float sum.
+    # The discriminating case: the naive float evaluation rounds the small
+    # perpendicular term away, so only the exact branch keeps it.
     field = np.array([1.0e150])
     perp = np.array([3.0])
     parallel = np.array([1.0e300])
+    naive = (1.0e300 + 3.0) - 1.0e300  # 0.0 in binary64
+    exact = _exact_margin(1.0e150, 3.0, 1.0e300, 1.0)
     got = np.asarray(
         D.compute_pointwise_firehose_margin(parallel, perp, field, mu0=1.0)["firehose_margin"]
     )
-    assert got[0] == _exact_margin(1.0e150, 3.0, 1.0e300, 1.0)
+    assert got[0] == exact
+    assert got[0] != naive
 
 
 def test_the_verdict_is_the_ideal_mhd_firehose_inequality():
