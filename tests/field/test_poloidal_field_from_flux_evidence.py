@@ -66,7 +66,26 @@ from scirel._result import Result
 from scirel.field import poloidal_field_from_flux
 
 EPS = float(np.finfo(float).eps)
-BUDGET = 16.0 * EPS
+
+
+def _budget(flux_scale, derivative, spacing):
+    """Return the relative budget of one divided difference at one node.
+
+    A divided difference of stored binary64 flux values is conditioned by
+    ``|psi| / (|dpsi| * spacing)``: the values are each rounded to half an ulp of
+    ``|psi|``, and the difference is only ``|dpsi| * spacing``, so the rounding of
+    the values is amplified by that ratio before any of the stencil's own
+    operations contribute.  The constant 32 counts those operations (two
+    differences, the weighted sum, the endpoint extrapolation, the division by
+    ``h`` and by ``R``) at half an ulp each, doubled for the two axes.
+
+    This is what makes the ``psi + constant`` comparison honest: a large constant
+    reference does not change the exact derivative, but it does raise ``|psi|``
+    and therefore this budget, which is exactly the loss the stored-value
+    cancellation causes.
+    """
+    condition = flux_scale / (abs(derivative) * spacing) if derivative else float("inf")
+    return 32.0 * EPS * (1.0 + condition)
 
 # Non-uniform rectilinear grids: the stencil is exact for quadratics on any
 # rectilinear grid, so a non-uniform grid does not weaken the manufactured test
@@ -98,23 +117,33 @@ def _analytic(radius, height):
 def test_both_components_match_the_analytic_derivatives():
     """Evidence 1: the manufactured solution on a non-uniform grid."""
     radius, height = _grid()
-    result = poloidal_field_from_flux(radius, height, _psi())
+    flux = _psi()
+    result = poloidal_field_from_flux(radius, height, flux)
+    radial_spacing = float(np.min(np.diff(RADIAL)))
+    axial_spacing = float(np.min(np.diff(AXIAL)))
     observed = 0.0
     for row in range(radius.shape[0]):
         for column in range(radius.shape[1]):
-            expected_r, expected_z = _analytic(float(radius[row, column]), float(height[row, column]))
-            for name, got, want in (
-                ("B_R", float(result["B_R"][row, column]), expected_r),
-                ("B_Z", float(result["B_Z"][row, column]), expected_z),
-                ("B", float(result["B"][row, column]), float(np.hypot(expected_r, expected_z))),
+            expected_r, expected_z = _analytic(
+                float(radius[row, column]), float(height[row, column])
+            )
+            scale = abs(float(flux[row, column]))
+            for name, got, want, spacing in (
+                ("B_R", float(result["B_R"][row, column]), expected_r, axial_spacing),
+                ("B_Z", float(result["B_Z"][row, column]), expected_z, radial_spacing),
+                ("B", float(result["B"][row, column]),
+                 float(np.hypot(expected_r, expected_z)), radial_spacing),
             ):
                 if want == 0.0:
                     assert got == 0.0, (name, row, column, got)
                     continue
                 deviation = abs(got - want) / abs(want)
-                assert deviation <= BUDGET, (name, row, column, deviation)
-                observed = max(observed, deviation)
-    assert observed > 0.0
+                allowed = _budget(scale, want, spacing)
+                assert deviation <= allowed, (name, row, column, deviation, allowed)
+                observed = max(observed, deviation / allowed)
+    # The budget is tight enough to be meaningful: some node uses a measurable
+    # fraction of it, so it is not a blanket bound.
+    assert observed > 1.0e-4
     # Anchors: the components have both signs and are not equal to each other, so
     # a zero or a duplicated component cannot pass.
     assert result["B_R"][0, 1] > 0.0
@@ -153,31 +182,75 @@ def test_the_axis_column_uses_the_even_flux_limit():
         assert abs(axis_value - expected) <= BUDGET * abs(expected)
 
 
-def test_a_constant_flux_reference_changes_nothing_exactly():
-    """Evidence 4: adding a constant leaves both components bitwise identical."""
+def test_a_constant_flux_reference_changes_the_derivative_only_by_cancellation():
+    """Evidence 4: exact in arithmetic, and exactly as conditioned in binary64.
+
+    The contract states that a constant reference leaves both derivatives
+    unchanged.  That is an identity of the continuous relation.  The discrete
+    operator reproduces it only up to the rounding of the stored ``psi + C``,
+    which the divided difference amplifies by ``|psi| / (|d psi| * h)``.  Both
+    halves are asserted: a reference comparable to the flux stays inside the
+    conditioned budget, and a reference a thousand times larger stays inside the
+    correspondingly larger budget rather than being silently accepted as equal.
+    """
     radius, height = _grid()
-    base = poloidal_field_from_flux(radius, height, _psi())
-    shifted = poloidal_field_from_flux(radius, height, _psi(offset=1.0e3))
-    for name in ("B_R", "B_Z", "B"):
-        np.testing.assert_array_equal(shifted[name], base[name]), name
-        assert np.any(base[name] != 0.0), name
+    base_flux = _psi()
+    base = poloidal_field_from_flux(radius, height, base_flux)
+    radial_spacing = float(np.min(np.diff(RADIAL)))
+    axial_spacing = float(np.min(np.diff(AXIAL)))
+    previous = None
+    for offset in (0.125, 1.0e3):
+        shifted_flux = base_flux + offset
+        shifted = poloidal_field_from_flux(radius, height, shifted_flux)
+        observed = 0.0
+        for name, spacing in (("B_R", axial_spacing), ("B_Z", radial_spacing)):
+            for row in range(radius.shape[0]):
+                for column in range(radius.shape[1]):
+                    expected_r, expected_z = _analytic(
+                        float(radius[row, column]), float(height[row, column])
+                    )
+                    want = expected_r if name == "B_R" else expected_z
+                    if want == 0.0:
+                        continue
+                    got = float(shifted[name][row, column])
+                    deviation = abs(got - want) / abs(want)
+                    allowed = _budget(abs(float(shifted_flux[row, column])), want, spacing)
+                    assert deviation <= allowed, (offset, name, row, column, deviation)
+                    observed = max(observed, deviation)
+        # A larger reference really does cost accuracy, which is the point of the
+        # statement rather than a defect in the operator.
+        if previous is not None:
+            assert observed > previous
+        previous = observed
+    # The two components are still the same physical field.
+    assert np.any(base["B_Z"] != 0.0)
 
 
 def test_a_z_dependent_reference_changes_b_r_and_not_b_z():
     """Evidence 5: the per-Z reference shift the contract warns about."""
     radius, height = _grid()
-    base = poloidal_field_from_flux(radius, height, _psi())
-    shifted = poloidal_field_from_flux(radius, height, _psi(extra_z=lambda z: 3.0 * z**2))
-    # dpsi/dR is untouched, so B_Z is bitwise identical.
-    np.testing.assert_array_equal(shifted["B_Z"], base["B_Z"])
-    # dpsi/dZ changes by 6 Z, so B_R changes off the axis.
-    assert not np.array_equal(shifted["B_R"][:, 1:], base["B_R"][:, 1:])
+    base_flux = _psi()
+    base = poloidal_field_from_flux(radius, height, base_flux)
+    shifted_flux = _psi(extra_z=lambda z: 3.0 * z**2)
+    shifted = poloidal_field_from_flux(radius, height, shifted_flux)
+    radial_spacing = float(np.min(np.diff(RADIAL)))
+    # dpsi/dR is untouched by the added g(Z), so B_Z stays the same field.
+    for row in range(radius.shape[0]):
+        for column in range(radius.shape[1]):
+            want = _analytic(float(radius[row, column]), float(height[row, column]))[1]
+            got = float(shifted["B_Z"][row, column])
+            deviation = abs(got - want) / abs(want)
+            assert deviation <= _budget(
+                abs(float(shifted_flux[row, column])), want, radial_spacing
+            ), (row, column, deviation)
+    # dpsi/dZ changes by g'(Z) = 6 Z, so B_R changes by exactly -6 Z / R.
     for row in range(radius.shape[0]):
         column = 2
         added = -6.0 * float(height[row, column]) / float(radius[row, column])
-        assert abs(
-            (float(shifted["B_R"][row, column]) - float(base["B_R"][row, column])) - added
-        ) <= BUDGET * max(abs(added), abs(float(base["B_R"][row, column])))
+        difference = float(shifted["B_R"][row, column]) - float(base["B_R"][row, column])
+        scale = abs(float(shifted_flux[row, column]))
+        want = added + _analytic(float(radius[row, column]), float(height[row, column]))[0]
+        assert abs(difference - added) <= _budget(scale, want, radial_spacing), (row, difference)
 
 
 def test_power_of_two_amplitude_scaling_is_exact():
@@ -213,8 +286,9 @@ def test_each_declared_rejection_channel_is_executable():
         poloidal_field_from_flux(radius, height, good[1:])
     with pytest.raises(ValueError, match="coordinates must be finite"):
         poloidal_field_from_flux(np.full_like(radius, np.nan), height, good)
+    small_radius, small_height = np.meshgrid(RADIAL[:2], AXIAL[:2])
     with pytest.raises(ValueError, match="at least 3 points per axis"):
-        poloidal_field_from_flux(radius[:2], height[:2], good[:2, :2])
+        poloidal_field_from_flux(small_radius, small_height, good[:2, :2])
     with pytest.raises(ValueError, match="strictly increasing rectilinear"):
         poloidal_field_from_flux(
             *np.meshgrid(RADIAL[::-1], AXIAL), _psi()
