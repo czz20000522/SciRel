@@ -266,19 +266,22 @@
    "tests/cross_domain/test_spectral_scientific_correction.py::test_invariant_bimaxwellian_mirror_threshold_has_positive_slope_sign asserts the explicit bi-Maxwellian mirror/firehose case; tests/cross_domain/test_spectral_scientific_correction.py::test_missing_derivative_information_is_not_silently_zero checks missing-derivative rejection. Separate bound cancellation tests cover floating arithmetic, not a physical state survey.",
    "Finite-input intermediate square overflow/underflow and cancellation are checked against an independent high-precision Decimal evaluation; genuinely unrepresentable final results still fail.",
    "Finite equal and unequal-pressure cancellation, neighbouring binary64 inputs across dimensional scales, mirror residual signs, noncontiguous multidimensional arrays and exact-zero flags are checked against independent 2000-digit Decimal arithmetic in a no-source installed wheel.",
-   "Result wrapping preserves every key, key order, value, shape, dtype and mapping access against baseline 0f74255b, including scalar zero-dimensional margins; attribute access reaches the same fields."
+   "Result wrapping preserves every key, key order, value, shape, dtype and mapping access against baseline 0f74255b, including scalar zero-dimensional margins; attribute access reaches the same fields.",
+   "Independent evidence (test_firehose_evidence) for the combined diagnostic: mirror_margin = B**2/mu0 + B dp_perp/dB is checked on analytic p_perp(B) laws (affine, cubic, reciprocal) whose derivative is written out by hand, for both permitted derivative sources (explicit array and callable); the firehose field is checked to be bit-identical to the pointwise relation, since both consume one kernel; the stability flags and minima are checked to equal the sign and minimum of the margins; and the sampled fixed-flux derivative (field_axis + psi) is checked to refine at a ratio of 3.0..5.5 per halving, consistent with a second-order gradient."
   ],
   "tests": [
    "tests/cross_domain/test_spectral_scientific_correction.py",
    "tests/cross_domain/test_legacy_six_absorption.py",
-   "tests/diagnostics/test_pressure_margin_cancellation.py"
+   "tests/diagnostics/test_pressure_margin_cancellation.py",
+   "tests/diagnostics/test_firehose_evidence.py"
   ],
-  "evidence_ceiling": "tests/cross_domain/test_spectral_scientific_correction.py::test_invariant_bimaxwellian_mirror_threshold_has_positive_slope_sign asserts the explicit bi-Maxwellian mirror/firehose case; tests/cross_domain/test_spectral_scientific_correction.py::test_missing_derivative_information_is_not_silently_zero checks missing-derivative rejection. Separate bound cancellation tests cover floating arithmetic, not a physical state survey. The evidence is limited to those named samples and the remaining bound arithmetic regressions; the missing survey/refinement stays UNKNOWN. No measured-plasma validity or general stability theorem is established.",
+  "evidence_ceiling": "tests/cross_domain/test_spectral_scientific_correction.py::test_invariant_bimaxwellian_mirror_threshold_has_positive_slope_sign asserts the explicit bi-Maxwellian mirror/firehose case; tests/cross_domain/test_spectral_scientific_correction.py::test_missing_derivative_information_is_not_silently_zero checks missing-derivative rejection. Separate bound cancellation tests cover floating arithmetic, not a physical state survey. The evidence is limited to those named samples and the remaining bound arithmetic regressions; the missing survey/refinement stays UNKNOWN. No measured-plasma validity or general stability theorem is established. C1 evidence adds: Analytic mirror-slope laws, sign-consistent verdicts and a second-order sampled derivative.",
   "known_limitations": [
    "The derivative/axis/psi keywords require callers to supply missing physical information; global-B sorting is not part of this contract.",
    "Sampled flags and residuals are local model diagnostics, not proof of global equilibrium or kinetic stability.",
    "The literal Frank Eq6 sign conflict is recorded; this implementation follows the stated total-pressure derivative and bi-Maxwellian criterion rather than asserting an author erratum.",
-   "UNKNOWN: the previously stated 63-state invariant bi-Maxwellian survey and four-level fixed-psi finite-difference refinement were not located in the bound assertions or inspected local history. No claim of replayable coverage for those two checks is made; model support is unchanged."
+   "UNKNOWN: the previously stated 63-state invariant bi-Maxwellian survey and four-level fixed-psi finite-difference refinement were not located in the bound assertions or inspected local history. No claim of replayable coverage for those two checks is made; model support is unchanged.",
+   "cannot establish the reduction of the mirror criterion to 1 - beta_perp (T_perp/T_parallel - 1) for an invariant bi-Maxwellian, which this contract states: verifying it needs the distribution model and the fixed-psi parameterisation, and it is not covered by the evidence here."
   ]
  },
  "references": [

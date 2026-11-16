@@ -138,19 +138,22 @@
    "Shared arithmetic retains independent singleton, repeated and unsorted samples; no mirror derivative is inferred.",
    "Finite-input intermediate square overflow/underflow and cancellation are checked against an independent high-precision Decimal evaluation; genuinely unrepresentable final results still fail.",
    "Finite equal and unequal-pressure cancellation, neighbouring binary64 inputs across dimensional scales, mirror residual signs, noncontiguous multidimensional arrays and exact-zero flags are checked against independent 2000-digit Decimal arithmetic in a no-source installed wheel.",
-   "The converted public function returns scirel._result.Result with the same key, value, shape, dtype and mapping compatibility, and attribute access resolves to the same field."
+   "The converted public function returns scirel._result.Result with the same key, value, shape, dtype and mapping compatibility, and attribute access resolves to the same field.",
+   "Independent evidence (test_firehose_evidence): firehose_margin = B**2/mu0 + p_perp - p_parallel is recomputed here from the original binary64 inputs in exact rational arithmetic and rounded once, so both the ordinary float path (64 eps of scale) and the exact-rational cancellation switch (exact after rounding) are checked against a second arithmetic path rather than against another call. The verdict is the ideal-MHD inequality margin > 0 <=> p_parallel - p_perp < B**2/mu0, probed at exactly representable equalities and on both sign sides. The dimensional balance is checked by scaling B by sqrt(k) and both pressures by k, which must scale the margin by k."
   ],
   "tests": [
    "tests/diagnostics/test_pointwise_firehose_margin.py",
    "tests/cross_domain/test_legacy_six_absorption.py",
-   "tests/diagnostics/test_pressure_margin_cancellation.py"
+   "tests/diagnostics/test_pressure_margin_cancellation.py",
+   "tests/diagnostics/test_firehose_evidence.py"
   ],
-  "evidence_ceiling": "Targeted source regressions, explicit analytic fixtures and a selected no-source installed-wheel replay cover this finite contract. No arbitrary physical-model suitability, continuum convergence, human scientific endorsement or redistribution permission is inferred.",
+  "evidence_ceiling": "Targeted source regressions, explicit analytic fixtures and a selected no-source installed-wheel replay cover this finite contract. No arbitrary physical-model suitability, continuum convergence, human scientific endorsement or redistribution permission is inferred. C1 evidence adds: Exact-rational closed form, inequality verdict boundary and dimensional balance.",
   "known_limitations": [
    "The returned value is an arithmetic observation; no positivity label, criterion statement or stability meaning is provided by this asset.",
    "The relation is the local fluid-ordering firehose discriminant; gradient-driven, kinetic and finite-Larmor corrections are not represented.",
    "The combined diagnostic requires an explicit derivative at fixed flux for its mirror branch. This pointwise entry preserves singleton and repeated-field samples without supplying a false zero derivative.",
-   "Public distribution licensing and expert recognition remain pending."
+   "Public distribution licensing and expert recognition remain pending.",
+   "cannot establish a primary-source citation for the firehose and mirror stability criteria themselves: this evidence establishes that the arithmetic equals the declared closed forms and that each verdict is the sign of its margin, not that the criteria are the right physics for a given device."
   ]
  }
 }

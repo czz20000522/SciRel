@@ -158,18 +158,21 @@
    "Interior/boundary sampling of a linear manufactured profile, units and non-modification.",
    "Explicit signature and rejection of legacy mapping or missing arguments.",
    "Rejection of missing channels/unknown requests/unsupported turns and reference-loop fields; real Picard inversion consumer.",
-   "Result wrapping preserves top-level key order, values, array shape/dtype, nested plain mappings and mapping access against baseline 0f74255b; attribute access reaches the same fields."
+   "Result wrapping preserves top-level key order, values, array shape/dtype, nested plain mappings and mapping access against baseline 0f74255b; attribute access reaches the same fields.",
+   "Independent evidence (test_equilibrium_synthesis_evidence): the composition is checked against hand-computed bilinear values on fields affine in R and Z, so the expected sample is written out rather than taken from a sampler; the unit factor is checked on both branches (raw_psi multiplies by one, magnetic_flux multiplies by 2*pi when psi_unit is 'Wb/rad' and by one when it is 'Wb'), together with the reported unit labels; profile channels are checked against hand-computed affine samples with their declared units; and the declared unit-mismatch, unknown-request-field, missing-quantity and outside-grid rejections are checked."
   ],
   "tests": [
    "tests/cross_domain/equilibrium_synthesis_diagnostics/test_composition_equilibrium_synthesis_diagnostics.py",
    "tests/cross_domain/test_inference_physical_closure.py",
-   "tests/cross_domain/test_anisotropic_inference_independent.py"
+   "tests/cross_domain/test_anisotropic_inference_independent.py",
+   "tests/diagnostics/test_equilibrium_synthesis_evidence.py"
   ],
-  "evidence_ceiling": "Author regressions, independent analytic and independent discrete-reference comparisons, and selected installed-wheel user calls completed in the exact environment; they cover only the listed contract and examples. Root-level independent intake, human scientific recognition, redistribution permission and public release are separate decisions; they do not extend this to arbitrary closures, devices or global identifiability proofs.",
+  "evidence_ceiling": "Author regressions, independent analytic and independent discrete-reference comparisons, and selected installed-wheel user calls completed in the exact environment; they cover only the listed contract and examples. Root-level independent intake, human scientific recognition, redistribution permission and public release are separate decisions; they do not extend this to arbitrary closures, devices or global identifiability proofs. C1 evidence adds: Hand-computed bilinear samples and both declared unit branches.",
   "known_limitations": [
    "Bilinear interpolation has discrete interpolation error; values at node locations can be verified analytically.",
    "Unit labels cannot prove that the caller's actual data are correctly scaled.",
-   "Historical licensing status remains pending a final decision."
+   "Historical licensing status remains pending a final decision.",
+   "cannot establish whether converting Wb/rad to Wb by 2*pi is the physically correct convention for a given consumer: the repository settles only that the contract declares that factor and that the implementation applies it exactly on that branch, which was verified. Whether the caller's points are meaningful sampling locations is likewise not established."
   ]
  },
  "composition": {

@@ -150,18 +150,21 @@
    "Fail-closed validation of ledger length, dtype, and finiteness.",
    "Exposure of exactly one public callable after the merge.",
    "Return type, key order, mapping compatibility, and attribute access are unchanged after adding the named Result wrapper.",
-   "Exact zero despite overflowing partial sums; preservation of small terms in signed cancellation; finite final results despite partial sum overflow; subnormal shares; rejection of truly nonrepresentable percentages."
+   "Exact zero despite overflowing partial sums; preservation of small terms in signed cancellation; finite final results despite partial sum overflow; subnormal shares; rejection of truly nonrepresentable percentages.",
+   "Independent evidence (test_reduction_evidence): the shares are rebuilt as 100 p_i / sum p in exact rational arithmetic with one rounding, in caller order; a signed ledger is checked to keep negative shares without clipping or renormalisation; and the zero-total rejection is checked."
   ],
   "tests": [
    "tests/diagnostics/test_species_absorption_fraction.py",
-   "tests/cross_domain/test_legacy_admission_regressions.py"
+   "tests/cross_domain/test_legacy_admission_regressions.py",
+   "tests/diagnostics/test_reduction_evidence.py"
   ],
-  "evidence_ceiling": "Direct ledger arithmetic, ordering, validation and Result assertions are in tests/diagnostics/test_species_absorption_fraction.py (including the parametrized test_u3_t01_fraction_uses_the_derived_total). Named signed-cancellation, intermediate-overflow and subnormal-share regressions are in tests/cross_domain/test_legacy_admission_regressions.py. These assertions establish the listed finite ledger cases; no current optional external-comparison execution/skip mechanism or experimental validation is established.",
+  "evidence_ceiling": "Direct ledger arithmetic, ordering, validation and Result assertions are in tests/diagnostics/test_species_absorption_fraction.py (including the parametrized test_u3_t01_fraction_uses_the_derived_total). Named signed-cancellation, intermediate-overflow and subnormal-share regressions are in tests/cross_domain/test_legacy_admission_regressions.py. These assertions establish the listed finite ledger cases; no current optional external-comparison execution/skip mechanism or experimental validation is established. C1 evidence adds: Exact rational percentage shares including a signed ledger.",
   "known_limitations": [
    "The species count is fixed at four; no general-length ledger is supported.",
    "The zero-total branch is unavailable by design, so a physically zero-absorption run cannot be represented.",
    "UNKNOWN: no replayable external-implementation comparison was located in the bound tests or inspected local history; no environment-gated comparison/skip path is provided. Direct evidence is tests/diagnostics/test_species_absorption_fraction.py::test_u3_t01_fraction_uses_the_derived_total and the signed-cancellation/range assertions in tests/cross_domain/test_legacy_admission_regressions.py, including test_exact_signed_sum_survives_intermediate_overflow.",
-   "The independent analytic comparison does not replace an external experimental reference."
+   "The independent analytic comparison does not replace an external experimental reference.",
+   "cannot establish that a signed power ledger is physically meaningful: the arithmetic is established, while the interpretation of a negative species power belongs to the caller and the emitting model."
   ]
  }
 }
