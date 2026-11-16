@@ -121,7 +121,7 @@
    "Public callable signature and documented finite-input behavior",
    "The direct regression fixtures listed in verification.tests",
    "The executable example stored in this contract",
-   "Independent evidence (test_linalg_and_derivative_evidence): the interpolating quadratic through each interior triple is rebuilt in exact rational arithmetic with fractions.Fraction and differentiated exactly, which reproduces both returned arrays to 64 eps; declared quadratic exactness is checked on a deliberately nonuniform grid; and the refinement ratio per halving is 3.0..5.5, consistent with the O(h^2) of a three-point central difference."
+   "Independent evidence (test_linalg_and_derivative_evidence): the interpolating quadratic through each interior triple is rebuilt in exact rational arithmetic with fractions.Fraction and differentiated exactly, which reproduces both returned arrays to 64 eps on any strictly increasing grid, and both outputs are exact for quadratic data. Measured order is grid dependent: d_one refines at a ratio of about 4 per halving on uniform and on non-uniform grids (O(h^2)), while d_two refines at about 16 per halving on a uniform grid and only about 2 per halving on a non-uniform grid. The O(h^2) claim is therefore restricted to d_one on any grid and to d_two on uniform grids only."
   ],
   "tests": [
    "tests/equilibrium/test_analysis_families.py",
@@ -129,7 +129,8 @@
   ],
   "evidence_ceiling": "Direct examples and named regression fixtures establish the documented relation on those inputs; they do not establish arbitrary-input correctness, experimental validation, or release approval. C1 evidence adds: Exact rational differentiation plus the declared O(h^2) order.",
   "known_limitations": [
-   "Periodic endpoints, noisy-data inference and conditioning extremes are unqualified"
+   "Periodic endpoints, noisy-data inference and conditioning extremes are unqualified",
+   "Second-derivative order is not uniform across grids: the three-point second difference is exact for quadratics and second order on a uniform grid, but its truncation error is first order on a non-uniform grid. Witness x = [0, h, 3h] with y = x^3 returns 8h against the exact 6h, an error of 2h that halves when h halves. This is intrinsic to a three-point formula, whose leading error term is proportional to the local spacing ratio, not an implementation defect; a second-order non-uniform second derivative needs at least four points and would be a different asset."
   ]
  }
 }
