@@ -218,15 +218,20 @@
  },
  "verification": {
   "scope": [
+   "The independent basis is exact rational recomputation of the four declared products on dyadic inputs: density = gas_density r + hot_density_scale r h_n, electron_pressure = density T_e and p_parallel/p_perp = gas + electron + hot_pressure_scale r h_parallel/perp, which makes every component comparison bitwise (tests/mirror/test_frank_egedal_pressure_state_evidence.py).",
    "A two-by-two case checks independently assembled gas, hot-ion and electron contributions to density and both pressure components.",
    "The no-density-scale case checks density=None, the unchanged electron-energy grid and zero electron pressure.",
-   "Nonfinite psi and negative gas pressure are rejected in direct tests; the documented example checks a two-cell assembly."
+   "Nonfinite psi and negative gas pressure are rejected in direct tests; the documented example checks a two-cell assembly.",
+   "The anisotropy p_parallel - p_perp equals hot_pressure_scale r (h_parallel - h_perp) bit for bit, independent of the shared gas and electron contributions.",
+   "Omitting both density scales returns density None, an explicit zero gas density still returns a zero-plus-hot-ion density array, and omitting the electron temperature returns None with no electron pressure; doubling the hot scale doubles the hot increment exactly.",
+   "A mapping-valued scale raises the native TypeError while a malformed string raises ValueError from the float() conversion; both channels are asserted, and a finite product that leaves the finite range is rejected."
   ],
   "tests": [
    "tests/mirror/test_frank_egedal_pressure_state.py",
-   "tests/mirror/test_frank_egedal_pressure_admitted.py"
+   "tests/mirror/test_frank_egedal_pressure_admitted.py",
+   "tests/mirror/test_frank_egedal_pressure_state_evidence.py"
   ],
-  "evidence_ceiling": "Bounded to the declared relation: Let r=radial_shape, h_parallel=hot_parallel_shape, h_perp=hot_perpendicular_shape and h_n=hot_density_shape. Set p_hot=hot_pressure_scale (default 1 Pa) and p_gd=gas_dynamic_pressure (default 0 Pa)…. Evidence: test_frank_egedal_pressure_state.py, test_frank_egedal_pressure_admitted.py (9 recorded test functions; bound-file coverage; independent analytic/high-precision oracle); the contract example ran. Excluded scope: Computing a radial envelope, hot-ion moments, electron temperature, potential or equilibrium; Automatic flux-convention conversion, coordinate alignment, spatial interpolation, or proof that supplied scales describe a physically consistent plasma.",
+  "evidence_ceiling": "Bounded to the declared relation: Let r=radial_shape, h_parallel=hot_parallel_shape, h_perp=hot_perpendicular_shape and h_n=hot_density_shape. Set p_hot=hot_pressure_scale (default 1 Pa) and p_gd=gas_dynamic_pressure (default 0 Pa)…. Evidence: test_frank_egedal_pressure_state.py, test_frank_egedal_pressure_admitted.py (9 recorded test functions; bound-file coverage; independent analytic/high-precision oracle); the contract example ran. Excluded scope: Computing a radial envelope, hot-ion moments, electron temperature, potential or equilibrium; Automatic flux-convention conversion, coordinate alignment, spatial interpolation, or proof that supplied scales describe a physically consistent plasma. C1 evidence (tests/mirror/test_frank_egedal_pressure_state_evidence.py) replaces the hand-written two-by-two expectation with Fraction-exact assembly of all four outputs, isolates the anisotropy identity, and pins the declared omission conventions. It does not establish that the supplied shapes and scales describe a physical mirror state.",
   "known_limitations": [
    "psi values are validated but not used; the historical Wb label is not a checked connector to other SciRel Wb/rad flux assets.",
    "A configured electron temperature without either density scale returns an electron-energy grid but zero electron pressure and density=None.",

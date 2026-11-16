@@ -178,18 +178,24 @@
  },
  "verification": {
   "scope": [
+   "The independent basis is an exact rational Lagrange reconstruction: with four fit points and cubic degree the not-a-knot interpolant has no interior knot left, so it is the unique cubic through those points, differentiated symbolically in Fraction arithmetic (tests/equilibrium/test_pressure_flux_state_evidence.py).",
    "Exact-midplane pressure-spline construction and clipped derivative on a finite grid.",
    "Mask clipping, first-zero limiter index and zero-current vector.",
    "Selected invalid midplane and missing-zero-pressure boundary cases.",
    "An interior edge serializes exactly four fit points and independently reconstructs pressure and derivative.",
    "Descending radial storage preserves physical edge and original output order; numeric masks and nonfinite fit/derivative fail.",
-   "Return-type regression checks the top-level scirel._result.Result, key order and attribute access while retaining the existing numerical, state and failure assertions."
+   "Return-type regression checks the top-level scirel._result.Result, key order and attribute access while retaining the existing numerical, state and failure assertions.",
+   "The derivative matches that cubic at every unclipped node within 256 eps, which is a property of the fit rather than of the spline solver.",
+   "Clipping at psi > psi_edge and at true mask entries is exact and leaves the unclipped values bitwise unchanged; descending radial storage reproduces the ascending result column-reversed.",
+   "The serialized prefix carries limiter_index + 1 samples and degree three, so a reader can rebuild the cubic from psi_samples and pressure_samples; rebuilding from knots and coefficients needs the B-spline convention and is deliberately not attempted.",
+   "The FloatingPointError channel was not reached: a fit over strictly increasing finite flux and finite pressure produced finite coefficients in every fixture tried, so it is recorded as not-exercised."
   ],
   "tests": [
    "tests/equilibrium/test_pressure_flux_state.py",
-   "tests/cross_domain/test_legacy_six_absorption.py"
+   "tests/cross_domain/test_legacy_six_absorption.py",
+   "tests/equilibrium/test_pressure_flux_state_evidence.py"
   ],
-  "evidence_ceiling": "Bounded to the exact-Z=0 radial pressure sample and increasing-flux-prefix spline state. Evidence: `test_pressure_flux_state.py` contains 5 test functions, 1 of which references `build_pressure_flux_state`, and is bound only by this asset; `test_legacy_six_absorption.py` contains 18 test functions, 4 of which reference `build_pressure_flux_state`, and is shared by 8 assets; the bounded example was executed by this audit. Oracle: independent analytic fixtures and frozen source regressions in the bound files. It does not establish general magnetic-axis/limiter/flux-surface inference, anisotropic pressure closure, or a pressure-current equilibrium solve.",
+  "evidence_ceiling": "Bounded to the exact-Z=0 radial pressure sample and increasing-flux-prefix spline state. Evidence: `test_pressure_flux_state.py` contains 5 test functions, 1 of which references `build_pressure_flux_state`, and is bound only by this asset; `test_legacy_six_absorption.py` contains 18 test functions, 4 of which reference `build_pressure_flux_state`, and is shared by 8 assets; the bounded example was executed by this audit. Oracle: independent analytic fixtures and frozen source regressions in the bound files. It does not establish general magnetic-axis/limiter/flux-surface inference, anisotropic pressure closure, or a pressure-current equilibrium solve. C1 evidence (tests/equilibrium/test_pressure_flux_state_evidence.py) decides the fit itself through the unique-interpolating-cubic property instead of a hand-copied expected array, and separates the clipping, limiter bookkeeping and storage-order conventions from the fit. The nonfinite-coefficient guard remains not-exercised.",
   "known_limitations": [
    "Strict exact-zero tests for both midplane and pressure boundary do not tolerate near-zero samples.",
    "The prefix and spline are identical representations of the chosen interpolant; this does not prove the prescribed pressure law or extrapolation physically suitable.",

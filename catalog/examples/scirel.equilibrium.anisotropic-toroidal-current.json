@@ -189,17 +189,22 @@
  },
  "verification": {
   "scope": [
+   "The independent basis is the continuum perpendicular-current relation J_phi = (B_Z dR p - B_R dZ p)/|B|^2 = (B x grad p)_phi/|B|^2, which the discrete stencils reproduce exactly for a constant field and a pressure quadratic in R and linear in Z, evaluated at 40 digits (tests/equilibrium/test_anisotropic_toroidal_current_evidence.py).",
    "Constant-pressure zero-current limit.",
    "Manufactured radial perpendicular-pressure gradient and isotropic decomposition.",
    "Rotating constant-magnitude field produces a nonzero anisotropic difference.",
    "The R=0 axis column is zero, and invalid negative pressure is rejected.",
-   "Return-type regression checks the top-level scirel._result.Result, key order and attribute access while retaining the existing numerical, state and failure assertions."
+   "Return-type regression checks the top-level scirel._result.Result, key order and attribute access while retaining the existing numerical, state and failure assertions.",
+   "For equal pressures the total current is bitwise the comparison current and the anisotropic term is exactly zero, because both evaluations receive identical arguments.",
+   "Uniform pressure gives exactly zero current and the R = 0 column is exactly zero; the split satisfies j_phi = gradp_term + anisotropy_curvature_term within two roundings.",
+   "The anisotropic curvature term itself has no independent analytic oracle here: it is the declared discrete difference between two force-balance evaluations, and an independent curvature closed form is excluded."
   ],
   "tests": [
    "tests/equilibrium/test_anisotropic_toroidal_current.py",
-   "tests/cross_domain/test_anisotropic_core_scientific_correction.py"
+   "tests/cross_domain/test_anisotropic_core_scientific_correction.py",
+   "tests/equilibrium/test_anisotropic_toroidal_current_evidence.py"
   ],
-  "evidence_ceiling": "Bounded to separation of the isotropic perpendicular-pressure current from the anisotropic toroidal-current remainder. Evidence: `test_anisotropic_toroidal_current.py` contains 4 test functions, 1 of which references `compute_anisotropic_toroidal_current`, and is bound only by this asset; `test_anisotropic_core_scientific_correction.py` contains 17 test functions, none of which references `compute_anisotropic_toroidal_current`, and is shared by 8 assets; the bounded example was executed by this audit. Oracle: independent manufactured/analytic discrete checks in the bound private and correction files. It does not establish an independent curvature formula or parallel-force proof, non-axisymmetric/toroidal-field geometry, or a complete equilibrium solver.",
+  "evidence_ceiling": "Bounded to separation of the isotropic perpendicular-pressure current from the anisotropic toroidal-current remainder. Evidence: `test_anisotropic_toroidal_current.py` contains 4 test functions, 1 of which references `compute_anisotropic_toroidal_current`, and is bound only by this asset; `test_anisotropic_core_scientific_correction.py` contains 17 test functions, none of which references `compute_anisotropic_toroidal_current`, and is shared by 8 assets; the bounded example was executed by this audit. Oracle: independent manufactured/analytic discrete checks in the bound private and correction files. It does not establish an independent curvature formula or parallel-force proof, non-axisymmetric/toroidal-field geometry, or a complete equilibrium solver. C1 evidence (tests/equilibrium/test_anisotropic_toroidal_current_evidence.py) anchors the isotropic comparison against (B x grad p)_phi/|B|^2 for axial and oblique constant fields, and pins the equal-pressure, uniform-pressure and axis-column degeneracies. It cannot establish the anisotropic curvature term independently, because that term is defined as the discrete difference of two evaluations of the same operator.",
   "known_limitations": [
    "Caller-supplied physical closures and Green responses require their own evidence and coherent psi=R A_phi (Wb/rad) normalization.",
    "Floating-point rounding envelopes do not bound discretization error or experimental uncertainty.",
