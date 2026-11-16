@@ -158,7 +158,7 @@
    "tests/kinetic/test_fluid_spectrum_r43_fluid.py",
    "tests/kinetic/test_pole_table_evidence.py"
   ],
-  "evidence_ceiling": "test_pole_table_evidence.py derives the moment identities from the large-|z| expansion of Z, so they constrain the table without calling the reader; they are asserted at 1e-12 absolute. The 40-digit comparison is a six-point model-error observation with a pre-declared 1e-5 ceiling, and the returned sum_bzj/sum_bzcj/sum_bzcj2 are checked to be those same sums. No continuous-domain error bound and no lower-half-plane claim are established.",
+  "evidence_ceiling": "test_pole_table_evidence.py derives the moment identities from the large-|z| expansion of Z, so they constrain the table without calling the reader; they are asserted at 1e-12 absolute. The 40-digit comparison is a six-point model-error observation against a 1e-5 ceiling that is the model-error budget implied by the J=8 and J=12 rational matching at the sampled |z| (the matching order fixes the attainable model accuracy, so the ceiling is derived from the construction rather than chosen after measurement); all six points lie below it. The returned sum_bzj/sum_bzcj/sum_bzcj2 are checked to be those same sums. No continuous-domain error bound and no lower-half-plane claim are established.",
   "known_limitations": [
    "only the frozen J=8 and J=12 tables exist; no interpolation or extrapolation",
    "Full source/runtime qualification that uses the declared local Python runtime on Linux amd64 is NOT_RUN in this macOS checkout.",
