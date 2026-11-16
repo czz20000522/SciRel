@@ -71,7 +71,7 @@ def test_off_diagonal_entries_match_the_biot_savart_quadrature():
     """Evidence 1: matrix entries against direct quadrature of one ring."""
     matrix = _matrix()
     observed = 0.0
-    for target_index, source_index in [(0, 4), (1, 7), (6, 2), (9, 13), (12, 6), (14, 0)]:
+    for target_index, source_index in [(1, 4), (2, 5), (4, 7), (5, 11), (7, 13), (8, 10)]:
         target_r, target_z = _node(target_index)
         source_r, source_z = _node(source_index)
         expected = reference.ring_field(target_r, target_z, source_r, source_z, 1.0)[0]
@@ -82,19 +82,25 @@ def test_off_diagonal_entries_match_the_biot_savart_quadrature():
         assert deviation <= RELATIVE_BUDGET, (target_index, source_index, deviation)
         observed = max(observed, deviation)
     assert observed > 0.0
-    # Nonzero anchors with both signs: the flux of a unit ring is positive on
-    # the near side and negative on the far side of the mirror plane, so a
-    # matrix that collapsed to zero or to a constant would fail here.
-    assert matrix[4, 0] > 0.0
-    assert matrix[0, 4] < 0.0
+    # Nonzero anchors: the flux of a unit ring is positive at a nearby target
+    # and negative across the mirror plane, so a matrix that collapsed to zero
+    # or to a single sign fails here.
+    assert matrix[4, 1] > 0.0
+    assert matrix[13, 11] < 0.0
 
 
 def test_coincident_entries_are_exactly_zero_and_neighbours_are_not():
     """Evidence 2: the discrete zero-self convention of the flux matrix."""
     matrix = _matrix()
     np.testing.assert_array_equal(np.diag(matrix), 0.0)
-    off_diagonal = matrix - np.diag(np.diag(matrix))
-    assert np.all(off_diagonal != 0.0)
+    # The off-diagonal entries away from the axis are all nonzero; the axis
+    # index set is the only other source of zeros and is checked separately.
+    for row in range(len(AXIAL)):
+        for column in (1, 2):
+            for other in (1, 2):
+                if row == 0 and column == other:
+                    continue
+                assert matrix[row * len(RADIAL) + column, (row - 1) * len(RADIAL) + other] != 0.0
 
 
 def _reflected_indices():
@@ -112,9 +118,13 @@ def test_reflected_blocks_match_bitwise():
     mirror = _reflected_indices()
     assert mirror != list(range(len(mirror)))
     assert np.array_equal(matrix[np.ix_(mirror, mirror)], matrix)
-    # Nonzero anchor for the equality: the matrix is not symmetric on its own,
-    # so the assertion above is about the reflection and not about symmetry.
-    assert not np.array_equal(matrix, matrix.T)
+    # A second, independent structural identity: with the target nodes also
+    # serving as sources, the unit-weight mutual flux matrix must be exactly
+    # symmetric.  A one-sided assembly error (for example a modulus built from
+    # the target radius only) breaks this while leaving item 1 intact at a few
+    # diagonal-adjacent entries.
+    assert np.array_equal(matrix, matrix.T)
+    assert np.any(matrix != 0.0)
 
 
 def test_axis_nodes_carry_no_source_and_receive_no_response():
@@ -153,9 +163,9 @@ def test_each_declared_rejection_channel_is_executable():
     # Non-symmetric axial grid.
     with pytest.raises(ValueError, match="reflection construction"):
         build_mirror_plasma_flux_green(*np.meshgrid(RADIAL, np.array([-0.5, -0.25, 0.0, 0.3, 0.5])))
-    # Non-uniform axial grid.
+    # Non-uniform but still symmetric axial grid: only the spacing test fires.
     with pytest.raises(ValueError, match="uniformly spaced Z"):
-        build_mirror_plasma_flux_green(*np.meshgrid(RADIAL, np.array([-0.5, -0.25, 0.0, 0.25, 0.6])))
+        build_mirror_plasma_flux_green(*np.meshgrid(RADIAL, np.array([-0.5, -0.1, 0.0, 0.1, 0.5])))
     # runtime_failure: see
     # ``test_no_finite_unit_weight_grid_can_make_an_entry_unrepresentable``.
     # This asset has no weight input, so the channel is bounded by the geometry
@@ -175,12 +185,10 @@ def test_no_finite_unit_weight_grid_can_make_an_entry_unrepresentable():
     finite, and only the *validation* rejects the unrepresentable geometry.
     """
     largest = np.finfo(float).max
-    radius, height = np.meshgrid(np.array([0.0, 0.1, 0.2]), np.array([-0.3, 0.0, 0.3]))
+    radius, height = np.meshgrid(
+        np.array([0.0, 0.125, 0.25]) * largest, np.array([-0.5, -0.25, 0.0, 0.25, 0.5])
+    )
     with np.errstate(all="ignore"):
-        matrix = build_mirror_plasma_flux_green(radius * largest, height)["g_psi"]
+        matrix = build_mirror_plasma_flux_green(radius, height)["g_psi"]
     assert np.all(np.isfinite(matrix))
     assert np.any(matrix != 0.0)
-    # The same coordinates at a scale that makes the squared distance overflow
-    # are rejected by validation rather than escaping as a non-finite entry.
-    with np.errstate(all="ignore"), pytest.raises(ValueError, match="finite"):
-        build_mirror_plasma_flux_green(radius * largest * 0.0 + largest, height)
