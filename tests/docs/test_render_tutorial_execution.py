@@ -71,6 +71,23 @@ def _mutate_one_ast_digit(path):
     raise AssertionError("the bound source has no integer literal to mutate")
 
 
+def test_repository_tutorial_proof_bindings_are_current():
+    """A stale binding must fail the normal suite, not only a maintainer's memory.
+
+    ``build_scirel_sphinx`` refuses to publish the kinetic tutorial while the
+    proof disagrees with the bound bytes, but that only helps someone who runs a
+    documentation build. This test puts the same comparison in ``dev.py check``,
+    so a change to a bound source file, contract or the tutorial RST that forgets
+    to rebind the proof fails here with the stale file named. It runs
+    ``--digests-only`` (milliseconds, no tutorial replay); the replaying
+    ``--write`` stays a manual step because it executes the tutorial and rewrites
+    the record.
+    """
+    done = _run("--check", "--digests-only")
+    assert done.returncode == 0, done.stdout + done.stderr
+    assert "FRESH" in done.stdout
+
+
 def test_real_tutorial_proof_is_fresh():
     done = _run("--check")
     assert done.returncode == 0, done.stdout + done.stderr

@@ -192,6 +192,9 @@ def measured_environment(previous):
         except PackageNotFoundError:
             return None
 
+    # ``matplotlib`` states that a plotting library participated in this run,
+    # not that one is installed: the tutorial plots nothing, so a recorded null
+    # is preserved instead of being "fixed" to the maintainer's optional extra.
     optional = previous.get("matplotlib")
     return {
         "python": platform.python_version(),
