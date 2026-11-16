@@ -286,7 +286,7 @@
   },
   {
    "asset_id": "scirel.numerics.complex-rectilinear-interpolation",
-   "source_sha256": "675b5f1f0f13dc6a152b9c15f2106a33f0f2c759c86962f7abd8056de7ee3551",
+   "source_sha256": "b653ac9d71a41a1c19f50334f6277962b9f9b88e3e4d4adff8c7540256e0445b",
    "summary": "在三个严格递增的直角坐标轴上三线性插值复数场，返回几何有效掩码；容差扩展盒外返回 nan+nanj。 顶层返回值是 scirel._result.Result 映射；非冲突字段支持属性读取。 有限坐标跨度超出双精度范围或微小权重仍有可表示贡献时，不丢弃有限输入节点。",
    "definition": "源值按[Nx,Ny,Nz]排列，按[x,y,z]可分三线性插值。闭盒外扩tol内的点裁到闭盒采样；扩展盒外返回nan+nanj与False。 完整结果作为同一个 scirel._result.Result 映射返回；映射访问保留，非冲突字段也支持属性读取，不引入嵌套 Result。 有限模板用两侧端点距离分别求权重；批量算术越界或严重相消时，从原始输入作有理数重算。权重为零的非有限角点仍传播。",
    "model": "带限复场的分片三线性重构。",
