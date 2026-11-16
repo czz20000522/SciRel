@@ -102,9 +102,12 @@ against the implementation was run.
    - a target within ``1e-2 * a`` of the wire, where the ``|r-r'|^-3`` integrand
      is too sharply peaked for a fixed-breakpoint tanh-sinh rule to reach
      ``1e-25``;
-   - a target with ``R`` below about ``1e-12 * a``, where ``psi`` and ``B_R``
-     tend to zero like ``R^2`` and ``R``, so a *relative* comparison loses all
-     its resolution.
+   - a target with ``R`` below ``1e-6 * a``, where ``psi`` and ``B_R`` tend to
+     zero like ``R^2`` and ``R``, so a *relative* comparison of ``psi`` loses
+     resolution faster than the certified absolute error of the reference
+     grows.  The suite compares ``psi`` and ``B_R`` relatively only above that
+     ratio and, below it, uses absolute differences against the integrand
+     scale stated in (1).
 
    ``_MIN_SEPARATION_RATIO`` and ``_MIN_RADIUS_RATIO`` encode those limits, and
    the tests state them as the evidence ceiling instead of pretending the grid
@@ -231,7 +234,6 @@ def ring_field(radius, z, coil_radius, coil_z, current=1.0):
                 f"{mp.nstr(abs(weak_value - strong_value), 5)} against an integrand scale of "
                 f"{mp.nstr(integrand_scale, 5)}"
             )
-    del strong_scale
     return psi, prefactor * strong[1], prefactor * strong[2]
 
 
