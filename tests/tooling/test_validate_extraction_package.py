@@ -6,6 +6,7 @@ import os
 from pathlib import Path
 import shutil
 import subprocess
+import time
 import sys
 
 import pytest
@@ -560,6 +561,7 @@ def test_full_validation_refuses_another_clone_before_applying_patches(
     monkeypatch.setattr(dev, "ROOT", receiver)
     with dev.acceptance_lock(exclusive=True), dev.exclusive_credential() as token:
         env = dict(os.environ, **{dev.EXCLUSIVE_MARKER: token})
+        started = time.monotonic()
         try:
             done = subprocess.run(
                 [sys.executable, "-B", str(SCRIPT), str(package), "--repo", str(candidate_repo)],
@@ -568,6 +570,11 @@ def test_full_validation_refuses_another_clone_before_applying_patches(
                 text=True,
                 timeout=60,
             )
+            elapsed = time.monotonic() - started
+            if elapsed > 20:
+                # Keep a signal: 60s keeps the release stage stable, but a validator
+                # that suddenly takes 20s+ is a real slowdown worth seeing in the log.
+                print(f"note: the validator subprocess took {elapsed:.1f}s")
         except subprocess.TimeoutExpired as expired:
             # A timeout used to surface as a bare pytest failure, which read like an
             # assertion error; say what happened instead. 60s rather than 10s because
