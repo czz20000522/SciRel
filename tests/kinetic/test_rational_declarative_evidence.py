@@ -86,6 +86,7 @@ def test_equilibrium_columns_satisfy_their_definitions():
         np.asarray(state["Ts"], dtype=float).ravel(),
         np.asarray(state["vs0"], dtype=float).ravel(),
     )
+    assert np.isfinite(drift).all() and drift[0] == 0.0
     thermal = np.asarray(state["vts"], dtype=float).ravel()
     debye = np.asarray(state["lambdaDs"], dtype=float).ravel()
     kdebye = np.asarray(state["kDs"], dtype=float).ravel()
