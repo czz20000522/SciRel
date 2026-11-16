@@ -158,10 +158,12 @@ def _mp_stages(df, dE, vv, df0dv, k, dv, dt):
 
     start = [mp.mpc(float(np.real(entry)), float(np.imag(entry))) for entry in df]
     a = rhs(start)
-    b = rhs([f + step / 2 * s for f, s in zip(start, a)])
-    c = rhs([f + step / 2 * s for f, s in zip(start, b)])
-    d = rhs([f + step * s for f, s in zip(start, c)])
-    return start, [a, b, c, d], velocity, slope, closed, wavenumber, step
+    x1 = [f + step / 2 * s for f, s in zip(start, a)]
+    b = rhs(x1)
+    x2 = [f + step / 2 * s for f, s in zip(start, b)]
+    c = rhs(x2)
+    x3 = [f + step * s for f, s in zip(start, c)]
+    return start, [start, x1, x2, x3], velocity, slope, closed, wavenumber, step
 
 
 def test_mass_moment_obeys_the_discrete_continuity_identity_in_one_rk4_step():
