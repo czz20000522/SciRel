@@ -65,8 +65,12 @@ NR, NZ = 4, 5
 
 
 def _exact_centres(r0, z0, nr, nz, dr, dz):
-    radial = [Fraction(r0) + (Fraction(index) - Fraction(nr - 1, 2)) * Fraction(dr) for index in range(nr)]
-    axial = [Fraction(z0) + (Fraction(index) - Fraction(nz - 1, 2)) * Fraction(dz) for index in range(nz)]
+    radial = [
+        Fraction(r0) + (Fraction(index) - Fraction(nr - 1, 2)) * Fraction(dr) for index in range(nr)
+    ]
+    axial = [
+        Fraction(z0) + (Fraction(index) - Fraction(nz - 1, 2)) * Fraction(dz) for index in range(nz)
+    ]
     return radial, axial
 
 
@@ -94,9 +98,7 @@ def test_centre_table_matches_exact_rational_centres_in_the_declared_order():
 def test_a_single_filament_sits_exactly_on_the_centroid_under_any_rotation():
     """Evidence 3: one centre, exactly at (r0, z0), invariant under rotation."""
     for angle in (0.0, 90.0, -135.0, 271.5):
-        points = discretize_rectangular_coil(
-            R0, Z0, nr=1, nz=1, dr=DR, dz=DZ, angle_deg=angle
-        )
+        points = discretize_rectangular_coil(R0, Z0, nr=1, nz=1, dr=DR, dz=DZ, angle_deg=angle)
         assert points.shape == (1, 2)
         assert points[0, 0] == R0, angle
         assert points[0, 1] == Z0, angle
@@ -124,16 +126,15 @@ def test_rotation_is_a_proper_rotation_about_the_centroid():
         cosine, sine = math.cos(radians), math.sin(radians)
         scale = max(1.0, abs(R0), abs(Z0))
         for row, offset in enumerate(offsets):
-            expected = np.array(
-                [R0 + cosine * offset, Z0 - sine * offset]
-            )
+            expected = np.array([R0 + cosine * offset, Z0 - sine * offset])
             deviation = float(np.max(np.abs(points[row] - expected)))
             assert deviation <= 16 * EPS * scale, (angle, offset, deviation)
             observed = max(observed, deviation)
             # The distance to the centroid is preserved by the rotation.
-            assert abs(
-                float(np.hypot(*(points[row] - np.array([R0, Z0])))) - abs(offset)
-            ) <= 16 * EPS * scale
+            assert (
+                abs(float(np.hypot(*(points[row] - np.array([R0, Z0])))) - abs(offset))
+                <= 16 * EPS * scale
+            )
     # The comparison is not vacuous: every expected image differs from the
     # unrotated centre by a half unit in at least one coordinate, so matching it
     # requires the rotation to have happened.  ``observed`` is reported for the
