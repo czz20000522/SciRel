@@ -113,16 +113,20 @@
  },
  "verification": {
   "scope": [
-   "Public callable signature and documented finite-input behavior",
-   "The direct regression fixtures listed in verification.tests",
-   "The executable example stored in this contract"
+   "Local-quadratic exactness is asserted with zero tolerance on four non-uniform grids: the returned value equals the analytic 2*x at every interior node, so a wrong weight or a wrong node pairing is red.",
+   "Linear samples return the exact slope, which separates the three-point operator from a divided difference of the wrong order.",
+   "The output length is N-2 and value k sits at x[k+1]; the assertion pins the index convention, not only the length.",
+   "A second-order rate is declared only for the configuration it was measured on: for f=x**3 on n=20,40,80 uniform grids over [-1,1] the measured error ratio divided by the squared mesh-refinement ratio lies in [0.95,1.05], and no other configuration is claimed.",
+   "Failure matrix gives one executable assertion per rejecting channel: non-finite, unsorted, too-short and mismatched inputs raise ValueError, and no partial result is returned."
   ],
   "tests": [
-   "tests/equilibrium/test_analysis_families.py"
+   "tests/equilibrium/test_analysis_families.py",
+   "tests/sampling/test_analytic_sampling_evidence.py"
   ],
-  "evidence_ceiling": "Direct examples and named regression fixtures establish the documented relation on those inputs; they do not establish arbitrary-input correctness, experimental validation, or release approval.",
+  "evidence_ceiling": "Establishes local-quadratic exactness and a measured second-order rate on one uniform refinement series. It does not establish an error bound for noisy, periodic or strongly graded data, and no order is claimed for non-uniform refinement.",
   "known_limitations": [
-   "Periodic endpoints, noisy-data inference and conditioning extremes are unqualified"
+   "Periodic endpoints, noisy-data inference and conditioning extremes are unqualified",
+   "cannot establish: a general error bound; only local-quadratic exactness and the measured rate on the n=20,40,80 uniform configuration are established"
   ]
  }
 }

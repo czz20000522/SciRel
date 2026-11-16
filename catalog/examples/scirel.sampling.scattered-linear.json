@@ -128,17 +128,21 @@
  },
  "verification": {
   "scope": [
-   "Public callable signature and documented finite-input behavior",
-   "The direct regression fixtures listed in verification.tests",
-   "The executable example stored in this contract"
+   "An affine field is reproduced at five query points within a 16*eps budget, and a query at a node returns the stored sample exactly.",
+   "Outside the convex hull the result is asserted to be NaN, so no value is synthesised.",
+   "The returned sequence is asserted to follow the query list, duplicates included, and the fixture is asserted discriminating.",
+   "Non-finite sample coordinates and a mismatched field shape are each asserted to fail instead of being repaired.",
+   "Repeated calls are asserted to be bitwise identical, which is the reproducibility statement for the triangulation."
   ],
   "tests": [
-   "tests/equilibrium/test_analysis_families.py"
+   "tests/equilibrium/test_analysis_families.py",
+   "tests/sampling/test_reduction_and_fit_evidence.py"
   ],
-  "evidence_ceiling": "Direct examples and named regression fixtures establish the documented relation on those inputs; they do not establish arbitrary-input correctness, experimental validation, or release approval.",
+  "evidence_ceiling": "Establishes affine reproduction, node exactness and the no-extrapolation boundary. It does not establish interpolation error for nonlinear fields, and the non-finite rejection is delegated to the underlying triangulation rather than validated by this relation.",
   "known_limitations": [
    "Rectangular and geometric nearest schemes are not asserted equivalent on irregular input",
-   "Outside-support and nonfinite-field cases are unqualified"
+   "Outside-support and nonfinite-field cases are unqualified",
+   "cannot establish: accuracy for non-affine fields; only affine reproduction and node exactness are established"
   ]
  }
 }

@@ -131,19 +131,23 @@
  },
  "verification": {
   "scope": [
-   "Public callable signature and documented finite-input behavior",
-   "The direct regression fixtures listed in verification.tests",
-   "The executable example stored in this contract"
+   "The orientation flag is checked against the exact rational double area of the returned cycle: clockwise=True must return a negative double area and clockwise=False a positive one, for both input orders, so an inverted comparison is red.",
+   "The output is asserted to be a cyclic rotation of the input cycle or of its reverse, which forbids inventing, dropping or duplicating vertices.",
+   "An exact closure marker is asserted to survive exactly once as the terminal vertex, and an explicit end_coord is asserted to suppress that re-closing.",
+   "The start vertex equals the exhaustive rational nearest vertex and is asserted to be stable under every rotation of the input (permutation scan).",
+   "Failure matrix gives one executable assertion per rejecting channel: non-finite vertices, start or end coordinates raise ValueError, and no partial result is returned."
   ],
   "tests": [
    "tests/equilibrium/test_analysis_families.py",
    "tests/equilibrium/test_analysis_corrections.py",
    "tests/geometry/test_parse_segment_closure.py",
-   "tests/geometry/test_sampling_failures.py"
+   "tests/geometry/test_sampling_failures.py",
+   "tests/sampling/test_polyline_and_selection_evidence.py"
   ],
-  "evidence_ceiling": "Direct examples and named regression fixtures establish the documented relation on those inputs; they do not establish arbitrary-input correctness, experimental validation, or release approval.",
+  "evidence_ceiling": "Establishes orientation, roll, closure and endpoint selection as exact combinatorics on the tested cycles. It does not establish a topology policy for self-intersecting contours, and the orientation of a zero-area cycle is undefined; that case is asserted as recorded behaviour rather than as evidence.",
   "known_limitations": [
-   "Open-curve closure, non-exact repeated endpoints, and topology policies are not generalized"
+   "Open-curve closure, non-exact repeated endpoints, and topology policies are not generalized",
+   "cannot establish: orientation of a zero-area (collinear) cycle; the strict '> 0' test reports not-clockwise and that choice is behaviour, not evidence of a correct orientation"
   ]
  }
 }

@@ -147,21 +147,24 @@
  },
  "verification": {
   "scope": [
-   "Public callable signature and documented finite-input behavior",
-   "The direct regression fixtures listed in verification.tests",
-   "The executable example stored in this contract",
-   "Rejection of nonpositive or nonfinite B before quadrature."
+   "Constant-field scaling is asserted exactly on a unit-length path: the integral equals 1/B for B=1, 2, 4 and 1/2, and the same input separates 1/B from a B weight and from a 1/B**2 weight.",
+   "A constant quantity is asserted to average to exactly that constant, which fails when the 1/B normalisation is missing or applied twice.",
+   "The mean of rho over [0,1] is asserted to be exactly 1/2 and to be invariant under path refinement and path reversal, which pins the arclength measure and the accumulation direction.",
+   "A degenerate path is asserted to integrate to zero, while an average over it raises ValueError because the integral of 1/B vanishes.",
+   "Failure matrix gives one executable assertion per rejecting channel: non-positive B along the path and non-finite grid, field, path or quantity each raise ValueError, and no partial result is returned."
   ],
   "tests": [
    "tests/equilibrium/test_analysis_families.py",
-   "tests/geometry/test_sampling_failures.py"
+   "tests/geometry/test_sampling_failures.py",
+   "tests/sampling/test_reduction_and_fit_evidence.py"
   ],
-  "evidence_ceiling": "Direct examples and named regression fixtures establish the documented relation on those inputs; they do not establish arbitrary-input correctness, experimental validation, or release approval.",
+  "evidence_ceiling": "Establishes the weight law, the normalisation and the refinement/reversal invariances exactly for constant fields and affine quantities. It does not establish an error bound for a non-affine B: 1/B along a general path has no polynomial closed form, so the spline error in B is not separable from the quadrature error here.",
   "known_limitations": [
    "Physical flux-volume normalization/closed-surface interpretation remains unqualified",
    "Zero/nonfinite B and outside-support queries are outside claim",
    "Weight is dl/|B| along the supplied R-Z path: the field-line average when the path is a field line of a field with no toroidal component (vacuum or mirror fields). It is not the tokamak flux-surface average <X> = closed-integral X dl/|B_p| / closed-integral dl/|B_p|; with a toroidal field compute that quadrature directly. Accuracy is set by spline interpolation of B and by the path sampling: near a magnetic axis or on coarse grids the error can reach several percent, so confirm by refining grid and path.",
-   "Same relation as scirel.geometry.flux-surface-inverse-field-average (compute_flux_surface_inverse_field_average), which validates its inputs and returns dl_B and the average together; prefer that one for new code."
+   "Same relation as scirel.geometry.flux-surface-inverse-field-average (compute_flux_surface_inverse_field_average), which validates its inputs and returns dl_B and the average together; prefer that one for new code.",
+   "cannot establish: accuracy for a non-affine field; only the constant-field laws, the constant-quantity identity and the refinement/reversal invariances are established"
   ]
  }
 }

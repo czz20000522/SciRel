@@ -128,23 +128,23 @@
  },
  "verification": {
   "scope": [
-   "Public callable signature and documented finite-input behavior",
-   "The direct regression fixtures listed in verification.tests",
-   "The executable example stored in this contract",
-   "Analytic unique-nearest fixtures at uniform coordinate scales 1, 1e155 and 1e-170, with an independent hypot reference",
-   "Independent 2200-digit Decimal squared-distance references for finite subtraction overflow, rounded distance collisions, subnormal coordinates and true ties; matching shapes, integer precision and real numeric object regressions",
-   "Executable interval-enclosure and all-minimizer retention checks against exact rational distances, including subtraction, square and sum overflow, subnormal underflow and ties; the conditional inclusion argument is in the interval helper",
-   "Complex coordinate rejection for sample/query arrays and object elements, empty-query validation, finite complex Q preservation, norm-library independence, and direct exact paths for nonfloat or inexact conversions"
+   "The selected flattened sample equals an exhaustive rational (Fraction) minimiser over all samples, recomputed in the test with the documented first-sample tie rule; the comparison is exact, with no tolerance.",
+   "A constructed case where binary64 subtraction collapses two distances is asserted: the float argmin keeps the first sample while the exact rule keeps the second, and the operator returns the second.",
+   "Masked samples are asserted to be excluded, and the all-masked case returns the documented first index.",
+   "The axis-separable scheme is asserted to select a different sample on a non-separable cloud, which makes the stated non-equivalence executable.",
+   "Failure matrix gives one executable assertion per rejecting channel: non-finite and complex coordinates raise ValueError, no partial result is returned, and two identical calls agree while a permuted query list permutes the answers."
   ],
   "tests": [
    "tests/equilibrium/test_analysis_families.py",
    "tests/geometry/test_sampling_failures.py",
-   "tests/geometry/test_point_nearest.py"
+   "tests/geometry/test_point_nearest.py",
+   "tests/sampling/test_nearest_sampling_evidence.py"
   ],
-  "evidence_ceiling": "The candidate-containment argument assumes correctly rounded IEEE binary64 subtraction, multiplication and addition with gradual underflow, exact conversion of filtered inputs and adjacent-float nextafter semantics. It follows from 0 <= lower[i] <= d[i] <= upper[i] and lower[k] <= d[k] <= d[j] <= upper[j] for every true minimizer k and every j; it does not require an error bound for hypot. Named analytic, independent hypot, high-precision Decimal and exact-rational regressions exercise the represented inputs; they do not verify every platform or numeric representation, experimental validity or release approval. Input precision lost before the call cannot be recovered.",
+  "evidence_ceiling": "Establishes exact minimisation on the tested clouds, including constructed near-ties and ties. It does not prove that the private outward-interval pre-filter can never discard a true minimiser for arbitrary binary64 input; that universal soundness is a proof obligation.",
   "known_limitations": [
    "Rectangular and geometric nearest schemes are not asserted equivalent on irregular input",
-   "Physical interpretation outside caller-declared support is unqualified; nonfinite field values are rejected"
+   "Physical interpretation outside caller-declared support is unqualified; nonfinite field values are rejected",
+   "cannot establish: universal soundness of the outward-interval pre-filter (it can never discard a true minimiser); only constructed adversarial cases are checked"
   ]
  }
 }
