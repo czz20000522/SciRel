@@ -10,6 +10,7 @@ import json
 import os
 from pathlib import Path
 import platform
+import re
 import shutil
 import signal
 import subprocess
@@ -24,6 +25,13 @@ ROOT = Path(__file__).resolve().parents[4]
 VALIDATE_REPORT = "skills/development/usage/scirel-solving/scripts/validate_report.py"
 WHEEL = "scirel-0.0.0-py3-none-any.whl"
 COUNTS_PLUGIN = "scirel_pytest_counts"
+# Kept in step with scripts/dev.py: the marker is exported only while that process
+# holds the clone's exclusive lock, and the record names the retired credential.
+EXCLUSIVE_MARKER = "SCIREL_EXCLUSIVE_TOKEN"
+EXCLUSIVE_RECORD = "acceptance-exclusive"
+RESULT_SCHEMA = "scirel.acceptance.v2"
+LEGACY_RESULT_SCHEMA = "scirel.acceptance.v1"
+SIDECAR_SUFFIX = ".sha256"
 COUNT_FIELDS = (
     "collected",
     "selected",
@@ -389,6 +397,76 @@ def run_step(command: list[str], env: dict[str, str]) -> subprocess.CompletedPro
     return subprocess.CompletedProcess(command, process.returncode, stdout, stderr)
 
 
+def _digest(path: Path) -> str:
+    return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def validate_provenance(
+    result: dict, *, report_path: Path, check_all_path: Path
+) -> str:
+    """Check what a result claims about the run that produced it, never its science.
+
+    A v1 result predates this protocol and stays readable, tagged
+    ``legacy_unprovenanced``: a new rule must not retroactively delete old evidence.
+    A v2 result has to name the exclusive credential digest, the digest of every
+    retained step log, the digests of the two scripts that ran, and a sidecar digest
+    of its own bytes. This raises the bar from editing one JSON file to reproducing
+    the lock holder's credential digest and every log hash; it is not a signature,
+    so whoever can run code inside the clone can still fabricate a whole bundle.
+    """
+    schema = result.get("schema")
+    if schema == LEGACY_RESULT_SCHEMA:
+        return "legacy_unprovenanced"
+    if schema != RESULT_SCHEMA:
+        raise ValueError(f"unknown result schema: {schema!r}")
+    exclusive = result.get("exclusive")
+    token_digest = exclusive.get("token_sha256") if isinstance(exclusive, dict) else None
+    if (
+        not isinstance(exclusive, dict)
+        or exclusive.get("present") is not True
+        or not isinstance(token_digest, str)
+        or re.fullmatch(r"[0-9a-f]{64}", token_digest) is None
+    ):
+        raise ValueError("result claims no exclusive lock credential for the run")
+    provenance = result.get("provenance")
+    if not isinstance(provenance, dict):
+        raise ValueError("result lacks the producer script digests")
+    try:
+        expected_check_all = _digest(Path(check_all_path))
+        expected_plugin = _digest(Path(check_all_path).with_name(f"{COUNTS_PLUGIN}.py"))
+    except OSError as error:
+        raise ValueError(f"cannot read the acceptance scripts: {error}") from error
+    if provenance.get("check_all_sha256") != expected_check_all:
+        raise ValueError("check_all_sha256 disagrees with the script on disk")
+    if provenance.get("counts_plugin_sha256") != expected_plugin:
+        raise ValueError("counts_plugin_sha256 disagrees with the script on disk")
+    records = result.get("steps")
+    if not isinstance(records, list):
+        raise ValueError("result lacks the step records")
+    for record in records:
+        if not isinstance(record, dict):
+            raise ValueError("result has a malformed step record")
+        name = record.get("name", "?")
+        log, recorded = record.get("log"), record.get("log_sha256")
+        if not isinstance(log, str) or not isinstance(recorded, str):
+            raise ValueError(f"{name}: step log digest is missing")
+        try:
+            actual = _digest(Path(log))
+        except OSError as error:
+            raise ValueError(f"{name}: step log is missing: {error}") from error
+        if actual != recorded:
+            raise ValueError(f"{name}: log_sha256 disagrees with the retained log")
+    report_path = Path(report_path)
+    sidecar = report_path.with_name(report_path.name + SIDECAR_SUFFIX)
+    try:
+        recorded_sidecar = sidecar.read_text(encoding="utf-8").strip()
+    except OSError as error:
+        raise ValueError(f"result has no sidecar digest: {error}") from error
+    if recorded_sidecar != _digest(report_path):
+        raise ValueError("sidecar digest disagrees with the result file")
+    return "verified_v2"
+
+
 def main(report_path: Path | None = None, *, run_id: str | None = None) -> int:
     # Two runs at once slow each other and share build directories, so allow one per checkout.
     temporary_root = ROOT / ".runtime" / "tmp"
@@ -426,6 +504,16 @@ def main(report_path: Path | None = None, *, run_id: str | None = None) -> int:
         print("result must be a new writable file; refusing to reuse an earlier result")
         return 2
     run_id = run_id or uuid.uuid4().hex
+    # Only the credential digest is recorded: the token itself retires before the lock
+    # is released and must never be copied into an artifact that outlives the run.
+    marker = os.environ.get(EXCLUSIVE_MARKER, "")
+    exclusive = {
+        "token_sha256": hashlib.sha256(marker.encode("utf-8")).hexdigest() if marker else "",
+        "record": str(ROOT / ".runtime" / "locks" / EXCLUSIVE_RECORD),
+        "present": bool(marker),
+    }
+    if not marker:
+        print(f"NOTE  no {EXCLUSIVE_MARKER}: this result is not acceptable evidence")
     binding_errors = []
 
     def snapshot():
@@ -495,6 +583,7 @@ def main(report_path: Path | None = None, *, run_id: str | None = None) -> int:
                     "returncode": completed.returncode,
                     "detail": detail,
                     "log": str(log_path),
+                    "log_sha256": _digest(log_path),
                 }
             )
             if report is not None:
@@ -537,8 +626,15 @@ def main(report_path: Path | None = None, *, run_id: str | None = None) -> int:
     invalid = bool(failed or binding_errors)
     evidence = "invalid" if invalid else ("development" if before["dirty"] else "clean_candidate")
     result = {
-        "schema": "scirel.acceptance.v1",
+        "schema": RESULT_SCHEMA,
         "run_id": run_id,
+        "exclusive": exclusive,
+        "provenance": {
+            "check_all_sha256": _digest(Path(__file__)),
+            "counts_plugin_sha256": _digest(
+                Path(__file__).with_name(f"{COUNTS_PLUGIN}.py")
+            ),
+        },
         "candidate": {"before": before, "after": after},
         "environment": {"before": environment_before, "after": environment_after},
         "binding_errors": binding_errors,
@@ -550,6 +646,12 @@ def main(report_path: Path | None = None, *, run_id: str | None = None) -> int:
     with result_stream:
         json.dump(result, result_stream, ensure_ascii=False, indent=2)
         result_stream.write("\n")
+    # The digest cannot live inside the file it describes; the sidecar names it.
+    result_digest = _digest(report_path)
+    report_path.with_name(report_path.name + SIDECAR_SUFFIX).write_text(
+        result_digest + "\n", encoding="utf-8"
+    )
+    print(f"RESULT SHA256 {result_digest}")
     print(f"RESULT  {report_path}")
     if invalid:
         print(f"FAILED: {failed}" + (f"; binding: {binding_errors}" if binding_errors else ""))

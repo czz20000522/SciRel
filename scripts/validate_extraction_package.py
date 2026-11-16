@@ -52,6 +52,8 @@ from dev import EXCLUSIVE_MARKER, LockBusy, require_exclusive  # noqa: E402
 from precommit_check import FORBIDDEN  # noqa: E402
 from validate_asset_documents import ASSET_ID_RE, AssetDocumentError, load_document_set  # noqa: E402
 from check_all import (  # noqa: E402
+    LEGACY_RESULT_SCHEMA,
+    RESULT_SCHEMA,
     BindingError,
     CountsError,
     candidate_identity,
@@ -59,7 +61,10 @@ from check_all import (  # noqa: E402
     dependency_digests,
     read_counts,
     steps as acceptance_steps,
+    validate_provenance,
 )
+
+RESULT_SCHEMAS = (LEGACY_RESULT_SCHEMA, RESULT_SCHEMA)
 
 CONCLUSIONS = ("已有", "新 method", "全新", "不收")
 IMPLEMENTED = ("新 method", "全新")
@@ -724,11 +729,19 @@ def run_full_check(tree: Path, report: Report, *, exclusive_token: str | None = 
             raise ValueError("tests argv does not use the candidate temporary directory")
         plan = acceptance_steps(output, root=tree, executable=str(executable))
         if (
-            result.get("schema") != "scirel.acceptance.v1"
+            result.get("schema") not in RESULT_SCHEMAS
             or result.get("exit_code") != done.returncode
             or [step["name"] for step in records] != [step.name for step in plan]
         ):
             raise ValueError("required check steps are missing or disagree with the exit status")
+        provenance_tag = validate_provenance(
+            result, report_path=result_path, check_all_path=script
+        )
+        if provenance_tag == "legacy_unprovenanced":
+            print(
+                f"NOTE  {result_path.name} is a v1 result without provenance:"
+                " legacy_unprovenanced"
+            )
         if any(
             record["started"] is not True or record["argv"] != step.command
             for record, step in zip(records, plan, strict=True)
@@ -749,7 +762,7 @@ def run_full_check(tree: Path, report: Report, *, exclusive_token: str | None = 
         if done.returncode or incomplete or counts["failed"] or counts["error"]:
             raise ValueError("; ".join(incomplete) or f"check exited {done.returncode}")
         detail = counts_summary(len(records), len(records), counts)
-        report.section("full check", "PASS", f"{detail}; log {log}")
+        report.section("full check", "PASS", f"{detail}; log {log}; provenance {provenance_tag}")
     except (
         OSError,
         ValueError,

@@ -410,7 +410,7 @@ def test_an_empty_full_check_is_not_passed(tmp_path, monkeypatch):
     _mock_lock_boundary(module, monkeypatch)
     tree = _acceptance_candidate(tmp_path)
     script = tree / "skills/development/scirel-acceptance/scripts/check_all.py"
-    script.parent.mkdir(parents=True)
+    script.parent.mkdir(parents=True, exist_ok=True)
     script.write_text('def main():\n    raise AssertionError("gate never entered")\n')
     _git(tree, "add", ".")
     _git(tree, "commit", "-qm", "empty gate fixture")
@@ -454,6 +454,11 @@ def _acceptance_candidate(directory):
     (tree / ".gitignore").write_text(".runtime/\n")
     for name in ("uv.lock", ".python-version"):
         shutil.copy(ROOT / name, tree / name)
+    # A v2 result names the scripts that produced it, so the candidate carries them.
+    scripts = tree / "skills/development/scirel-acceptance/scripts"
+    scripts.mkdir(parents=True)
+    for name in ("check_all.py", "scirel_pytest_counts.py"):
+        shutil.copy(ROOT / "skills/development/scirel-acceptance/scripts" / name, scripts / name)
     # The plan must be based on the actual patched tree, including newly added reports.
     example = tree / "examples/patched/REPORT.md"
     example.parent.mkdir(parents=True)
@@ -461,6 +466,21 @@ def _acceptance_candidate(directory):
     _git(tree, "add", ".")
     _git(tree, "commit", "-qm", "patched candidate fixture")
     return tree
+
+
+def _digest_file(path):
+    import hashlib
+
+    return hashlib.sha256(Path(path).read_bytes()).hexdigest()
+
+
+def _write_result(path, result):
+    """Write a result and the sidecar digest a v2 reader insists on."""
+    path = Path(path)
+    path.write_text(json.dumps(result), encoding="utf-8")
+    path.with_name(path.name + ".sha256").write_text(
+        _digest_file(path) + "\n", encoding="utf-8"
+    )
 
 
 @pytest.mark.parametrize("stage", ["full check", "mutation"])
@@ -564,6 +584,7 @@ def _acceptance_result(module, directory, tree):
                 "status": "PASS",
                 "returncode": 0,
                 "log": str(log),
+                "log_sha256": _digest_file(log),
                 "argv": step.command,
                 "started": True,
             }
@@ -572,8 +593,18 @@ def _acceptance_result(module, directory, tree):
     import check_all
 
     environment = check_all.runtime_environment(tree)
+    scripts = tree / "skills/development/scirel-acceptance/scripts"
     return {
-        "schema": "scirel.acceptance.v1",
+        "schema": "scirel.acceptance.v2",
+        "exclusive": {
+            "token_sha256": "a" * 64,
+            "record": str(tree / ".runtime/locks/acceptance-exclusive"),
+            "present": True,
+        },
+        "provenance": {
+            "check_all_sha256": _digest_file(scripts / "check_all.py"),
+            "counts_plugin_sha256": _digest_file(scripts / "scirel_pytest_counts.py"),
+        },
         "candidate": {"before": dict(identity), "after": dict(identity)},
         "environment": {"before": dict(environment), "after": dict(environment)},
         "run_id": "stale fixture invocation",
@@ -656,7 +687,7 @@ def test_full_result_protocol_preserves_the_actual_output(tmp_path, monkeypatch,
 
     def execute(tree, command):
         result["run_id"] = command[command.index("--run-id") + 1]
-        Path(command[-1]).write_text(json.dumps(result), encoding="utf-8")
+        _write_result(Path(command[-1]), result)
         return subprocess.CompletedProcess(
             command, code, "earliest cause: fixture diagnostic\n", ""
         )
@@ -667,6 +698,53 @@ def test_full_result_protocol_preserves_the_actual_output(tmp_path, monkeypatch,
     assert "earliest cause" in (tmp_path / "full-check.log").read_text()
     if defect is None:
         assert "selected 2" in report.sections[-1][2]
+
+
+def test_a_v1_result_stays_readable_and_is_tagged_legacy(tmp_path, monkeypatch, capsys):
+    """Evidence written before provenance v2 must not be refused retroactively."""
+    module = _validator()
+    _mock_lock_boundary(module, monkeypatch)
+    tree = _acceptance_candidate(tmp_path)
+    report = module.Report()
+    report.output_dir = tmp_path
+    result = _acceptance_result(module, tmp_path, tree)
+    result["schema"] = "scirel.acceptance.v1"
+    result.pop("exclusive")
+    result.pop("provenance")
+    for record in result["steps"]:
+        record.pop("log_sha256")
+
+    def execute(candidate, command):
+        result["run_id"] = command[command.index("--run-id") + 1]
+        # A v1 result predates the sidecar; writing one here would hide a real gap.
+        Path(command[-1]).write_text(json.dumps(result), encoding="utf-8")
+        return subprocess.CompletedProcess(command, 0, "fixture only\n", "")
+
+    monkeypatch.setattr(module, "_run_in_candidate", execute)
+    module.run_full_check(tree, report)
+    assert report.sections[-1][1] == "PASS", report.errors
+    assert "legacy_unprovenanced" in report.sections[-1][2]
+    assert "legacy_unprovenanced" in capsys.readouterr().out
+
+
+def test_a_v2_result_without_its_sidecar_fails_the_full_check(tmp_path, monkeypatch):
+    """A green verdict needs provenance the reader can check, not only consistent numbers."""
+    module = _validator()
+    _mock_lock_boundary(module, monkeypatch)
+    tree = _acceptance_candidate(tmp_path)
+    report = module.Report()
+    report.output_dir = tmp_path
+    result = _acceptance_result(module, tmp_path, tree)
+
+    def execute(candidate, command):
+        result["run_id"] = command[command.index("--run-id") + 1]
+        Path(command[-1]).write_text(json.dumps(result), encoding="utf-8")
+        return subprocess.CompletedProcess(command, 0, "fixture only\n", "")
+
+    monkeypatch.setattr(module, "_run_in_candidate", execute)
+    module.run_full_check(tree, report)
+    assert report.sections[-1][1] == "FAIL"
+    assert "sidecar" in " ".join(report.errors)
 
 
 @pytest.mark.parametrize(
@@ -720,7 +798,7 @@ def test_unbound_green_is_refused(tmp_path, monkeypatch, defect):
         if defect != "stale invocation":
             result["run_id"] = command[command.index("--run-id") + 1]
         path = tmp_path / "acceptance.json" if defect == "missing report" else Path(command[-1])
-        path.write_text(json.dumps(result), encoding="utf-8")
+        _write_result(path, result)
         if defect == "identity drift":
             _git(tree, "commit", "--allow-empty", "-qm", "changed while running")
         elif defect == "environment drift":
@@ -760,7 +838,7 @@ def test_full_check_binds_the_git_am_candidate_not_its_frozen_base(
     def execute(candidate, command):
         assert candidate == tree
         result["run_id"] = command[command.index("--run-id") + 1]
-        Path(command[-1]).write_text(json.dumps(result), encoding="utf-8")
+        _write_result(Path(command[-1]), result)
         return subprocess.CompletedProcess(command, 0, "fixture output\n", "")
 
     monkeypatch.setattr(module, "_run_in_candidate", execute)
@@ -785,7 +863,7 @@ def test_candidate_interpreter_is_not_assumed_to_be_the_receivers(tmp_path, monk
 
     def execute(candidate, command):
         result["run_id"] = command[command.index("--run-id") + 1]
-        Path(command[-1]).write_text(json.dumps(result), encoding="utf-8")
+        _write_result(Path(command[-1]), result)
         return subprocess.CompletedProcess(command, 0, "fixture only\n", "")
 
     monkeypatch.setattr(module, "_run_in_candidate", execute)
