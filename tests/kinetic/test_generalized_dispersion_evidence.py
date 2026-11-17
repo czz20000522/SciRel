@@ -156,9 +156,13 @@ def test_saha_population_is_the_closed_form():
         n = mp.mpf(density[index])
         t = mp.mpf(temperature[index])
         level2 = mp.mpf(level) ** 2
-        expected = n * (mp.mpf("3.310e-28") * n) * level2 * mp.e ** (
-            mp.mpf("13.6057") / (level2 * t)
-        ) / t ** mp.mpf("1.5")
+        expected = (
+            n
+            * (mp.mpf("3.310e-28") * n)
+            * level2
+            * mp.e ** (mp.mpf("13.6057") / (level2 * t))
+            / t ** mp.mpf("1.5")
+        )
         assert _rel(result.ravel()[index], expected) <= BUDGET
 
 
@@ -190,7 +194,10 @@ def test_maxwellian_electrostatic_mode_root_zeroes_the_reported_dispersion():
     that ``D`` equals the textbook ``1 + (1 + z Z)/k**2``; that identification failed
     at 0.75 relative and is recorded as ``cannot establish``.
     """
-    from scirel.kinetic import evaluate_maxwellian_electrostatic, solve_maxwellian_electrostatic_mode
+    from scirel.kinetic import (
+        evaluate_maxwellian_electrostatic,
+        solve_maxwellian_electrostatic_mode,
+    )
 
     k = 0.5
     solution = solve_maxwellian_electrostatic_mode(k, 1.0)

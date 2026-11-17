@@ -61,7 +61,9 @@ def gamma_harmonic_derivative(order: int, lam) -> "mp.mpc":
     high_precision()
     lam = mp.mpmathify(lam)
     n = int(order)
-    return mp.e ** (-lam) * ((mp.besseli(n - 1, lam) + mp.besseli(n + 1, lam)) / 2 - mp.besseli(n, lam))
+    return mp.e ** (-lam) * (
+        (mp.besseli(n - 1, lam) + mp.besseli(n + 1, lam)) / 2 - mp.besseli(n, lam)
+    )
 
 
 def _harmonic_series(lam, x, weight, limit_min: int = 80) -> tuple:
