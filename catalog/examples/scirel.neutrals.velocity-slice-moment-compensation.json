@@ -203,13 +203,14 @@
   "scope": [
    "Direct shape, finite arithmetic and signed-mode checks on the maintained six-point fixture.",
    "Retained candidate evidence covers positive, signed, zero-slice, target and shape-mismatch rows.",
-   "Independent evidence (tests/neutrals/test_moment_compensation_evidence.py): the correction is piecewise affine in the two targets, decided by the identity T(t1) + T(t2) - T(t1+t2) - T(0) = 0 within one sign branch and by its violation by more than 1e6 eps across the branch switch; the applicability warning is shown to track the measured relative errors; assume_pos=True returns scale exactly 1 while assume_pos=False limits the scale and restores a nonnegative slice."
+   "Independent basis (tests/neutrals/test_convergence_and_correction_identities_evidence.py, tests/neutrals/test_moment_compensation_evidence.py): the analytic identity T(t1) + T(t2) - T(t1 + t2) - T(t0) = 0 holds within one sign branch, bounded by (2 n_cells + 16) eps of the slice magnitude for the two scalar solves over 18 cells, while a target pair that selects another branch deviates by 8.5e-3 - so the declared affineness is measured rather than assumed; assume_pos=True returns scale exactly 1, the signed path can limit it, and the zero-target-energy branch zeroes both energy diagnostics; the wider evidence file adds the independent exact-rational moment reduction, the composition's acceptance test and the warning channel."
   ],
   "tests": [
    "tests/kinetic/test_moment_compensation.py",
-   "tests/neutrals/test_moment_compensation_evidence.py"
+   "tests/neutrals/test_moment_compensation_evidence.py",
+   "tests/neutrals/test_convergence_and_correction_identities_evidence.py"
   ],
-  "evidence_ceiling": "Bounded source-fidelity partial for the declared discrete correction; one NaN payload/warning difference, integer/float type differences, independent scientific correctness, full transport and acceptance remain unresolved. C1 evidence adds: the piecewise-affineness identity with its branch discriminator, the warning-channel semantics and the scale-limiter branch; it does not establish moment convergence, density conservation or physical closure.",
+  "evidence_ceiling": "Bounded source-fidelity partial for the declared discrete correction; one NaN payload/warning difference, integer/float type differences, independent scientific correctness, full transport and acceptance remain unresolved. C1 evidence adds: the piecewise-affineness identity with its branch discriminator, the warning-channel semantics and the scale-limiter branch; it does not establish moment convergence, density conservation or physical closure. C1 evidence adds the counted-budget affineness identity with its branch discriminator and the exact scale-one branch.",
   "known_limitations": [
    "The correction is a source-shaped finite-volume primitive and does not establish physical moment closure or convergence.",
    "Singular and malformed branches inherit raw arithmetic/index behavior.",

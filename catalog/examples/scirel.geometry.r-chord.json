@@ -8,14 +8,15 @@
   "scope": [
    "Constructor and coordinate-shape invariants covered by the direct geometry tests",
    "The executable constructor example stored in this contract",
-   "Independent evidence (tests/geometry/test_frame_convention_evidence.py): the fixed Z is an exact broadcast of z0 while the R sequence passes through bitwise, and a negative R or nonfinite z0 is rejected through the shared points-mesh channel."
+   "Independent basis (tests/geometry/test_transform_roundtrip_evidence.py, tests/geometry/test_frame_convention_evidence.py): the analytic identity forward(inverse(R, Z)) = (R, Z) recovers the fixed Z from the chord's own theta up to 8 eps and rebuilds the radial coordinates from (hypot, theta) with the radius exact on the 3-4-5 triple; the fixed Z is an exact broadcast while the varying R passes through bitwise; the z0 = 0 boundary recovers a quarter turn and a constant chord round trips onto itself; a negative R or nonfinite z0 is rejected through the shared points-mesh channel."
   ],
   "tests": [
    "tests/geometry/test_geometry_qualification.py",
    "tests/geometry/test_runtime_lifecycle.py",
-   "tests/geometry/test_frame_convention_evidence.py"
+   "tests/geometry/test_frame_convention_evidence.py",
+   "tests/geometry/test_transform_roundtrip_evidence.py"
   ],
-  "evidence_ceiling": "Named finite geometry cases only; no field-solver, experimental, or release claim is made. C1 evidence adds the exact broadcast and the inherited rejections; no sampling, interpolation, ordering or measure along the chord is established.",
+  "evidence_ceiling": "Named finite geometry cases only; no field-solver, experimental, or release claim is made. C1 evidence adds the exact broadcast and the inherited rejections; no sampling, interpolation, ordering or measure along the chord is established. C1 evidence adds the round-trip recovery of the fixed coordinate, the exact broadcast and the z0 = 0 boundary.",
   "known_limitations": [
    "Mesh objects do not by themselves validate a physical field model or device geometry.",
    "The chord is the stored point set only: nothing samples or orders it or attaches an arclength, and it inherits every points-mesh limitation."

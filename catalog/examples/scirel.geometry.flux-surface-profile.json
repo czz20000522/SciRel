@@ -164,13 +164,14 @@
    "Nonfinite input and endpoint rejection, and fewer-than-two-unique-coordinate rejection.",
    "One selected caller-consistent positive coordinate rescaling preserves interpolated values.",
    "The direct tests verify the top-level scirel._result.Result mapping and attribute access.",
-   "Independent evidence (tests/geometry/test_volume_profile_and_line_average_evidence.py): a linear profile is reproduced exactly inside the sample range (4 eps) and the knot values are exact; the sample order is irrelevant and a duplicated coordinate keeps the value of its first occurrence (2.5 rather than 4.5 at the midpoint); queries outside the range return the endpoint values, or the explicit left/right values when supplied; and the paired-length, unique-interval and finiteness channels are each rejected."
+   "Independent basis (tests/geometry/test_closed_form_evidence.py, tests/geometry/test_volume_profile_and_line_average_evidence.py): the linear closed form y0 + (y1 - y0)(t - x0)/(x1 - x0) is recomputed exactly in Fraction and, on dyadic samples and targets, is reproduced bitwise - no tolerance is used; permuting the paired samples leaves the interpolant unchanged; the first and last knots are exact, a duplicated coordinate keeps the value of its first occurrence after sorting, the endpoint policy is asserted with and without explicit left/right, and both rejection channels carry one executable assertion."
   ],
   "tests": [
    "tests/geometry/test_flux_surface_profile.py",
-   "tests/geometry/test_volume_profile_and_line_average_evidence.py"
+   "tests/geometry/test_volume_profile_and_line_average_evidence.py",
+   "tests/geometry/test_closed_form_evidence.py"
   ],
-  "evidence_ceiling": "Direct tests establish the maintained interpolation and endpoint contract on finite examples, not the physical validity of any caller-supplied flux-profile data or external-reference completeness. C1 evidence adds the exact linear reproduction, the duplicate-precedence discriminator, the endpoint convention and the rejection channels; it does not establish that the interpolation in the flux coordinate is adequate for a real equilibrium profile.",
+  "evidence_ceiling": "Direct tests establish the maintained interpolation and endpoint contract on finite examples, not the physical validity of any caller-supplied flux-profile data or external-reference completeness. C1 evidence adds the exact linear reproduction, the duplicate-precedence discriminator, the endpoint convention and the rejection channels; it does not establish that the interpolation in the flux coordinate is adequate for a real equilibrium profile. C1 evidence adds the bitwise exact-rational reproduction of the linear closed form and the order-independence identity.",
   "known_limitations": [
    "Conflicting values at duplicate flux coordinates are reduced by the first occurrence after NumPy sorting; original-input tie order is not guaranteed and no physical reconciliation is performed.",
    "The callable does not construct a flux surface, choose a flux normalization or convert between Wb/rad and Wb.",

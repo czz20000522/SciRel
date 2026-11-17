@@ -156,13 +156,14 @@
    "Path reversal, repeated segments and undersized grid cases.",
    "Nonpositive field and outside-grid rejection.",
    "The direct tests verify the top-level scirel._result.Result mapping and attribute access.",
-   "Independent evidence (tests/geometry/test_volume_profile_and_line_average_evidence.py): a constant field and quantity return that quantity with dl_B equal to the path length divided by the field (16 eps); doubling the field leaves the average unchanged, adding a constant to the quantity shifts it by that constant, and doubling the quantity doubles it; without a quantity only dl_B is returned; and the field-positivity, path-inside-grid, nondegenerate-polyline and four-points-per-axis channels are each rejected."
+   "Independent basis (tests/geometry/test_closed_form_evidence.py, tests/geometry/test_volume_profile_and_line_average_evidence.py): the closed-form reduction of the ratio of trapezoidal integrals - for a constant field both integrals reduce to L/B and the mean of a constant quantity is that quantity, while a quantity linear along a straight radial path has the exact rational mean (R_first + R_last)/2 because the trapezoid rule reproduces a linear integrand exactly; the two affine scaling laws, q -> q + c and q -> a q, follow from linearity and B -> 2B halves dl_B from homogeneity, and all three are asserted; every declared rejection channel carries one executable assertion."
   ],
   "tests": [
    "tests/geometry/test_flux_surface_inverse_field_average.py",
-   "tests/geometry/test_volume_profile_and_line_average_evidence.py"
+   "tests/geometry/test_volume_profile_and_line_average_evidence.py",
+   "tests/geometry/test_closed_form_evidence.py"
   ],
-  "evidence_ceiling": "Direct tests cover maintained cubic interpolation and discrete polyline quadrature on small grids; they do not validate the caller's path as a complete magnetic flux surface or prove external-reference completeness. C1 evidence adds the constant-field identity, three affine/scaling identities of the weighted mean and the rejection channels. It establishes the discrete weighted mean along the supplied polyline, not the flux-surface average of a surface.",
+  "evidence_ceiling": "Direct tests cover maintained cubic interpolation and discrete polyline quadrature on small grids; they do not validate the caller's path as a complete magnetic flux surface or prove external-reference completeness. C1 evidence adds the constant-field identity, three affine/scaling identities of the weighted mean and the rejection channels. It establishes the discrete weighted mean along the supplied polyline, not the flux-surface average of a surface. C1 evidence adds the constant-field reduction, the exact linear-in-arclength mean and the affine scaling laws.",
   "known_limitations": [
    "The callable does not trace field lines or close a flux surface; its output name retains the historical relation name.",
    "Negative radius coordinates are not rejected by the implementation and are outside the physical cylindrical interpretation.",

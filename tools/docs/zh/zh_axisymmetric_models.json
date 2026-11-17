@@ -676,7 +676,7 @@
         "scope": [
           "test_device_ordered_current_matrix_override_and_mesh_lifecycle 与 test_complete_configuration_current_reversal_and_direct_child_state 消费向量 PointsMesh 坐标；这些测试未断言多维输入应被拒绝。",
           "运行合同内附带的构造器示例。",
-          "独立证据（tests/geometry/test_frame_convention_evidence.py）：构造器保留给入形状（(2,2) 仍是 (2,2)，标量对变 (1,)），坐标逐位透传，三条拒绝通道（squeeze 后形状不符、非有限坐标、负 R）各自有断言。"
+          "独立依据（tests/geometry/test_transform_roundtrip_evidence.py、tests/geometry/test_frame_convention_evidence.py）：库自身互逆对的解析恒等 forward(inverse(R, Z)) = (R, Z)——经 Mesh.r = hypot(R, Z) 与 Mesh.theta = arctan2(R, Z)——重建所存点，并在 3-4-5 三元组（hypot(3, 4) = 5 精确）上逐位恢复半径；存储本身对 (2, 2) 块、标量对与 R = 0 边界为精确直通；形状、有限性与负半径三个通道各有一条可执行断言。"
         ],
         "known_limitations": [
           "网格对象本身不能证明物理场模型或装置几何。",
@@ -741,7 +741,7 @@
         "scope": [
           "直接几何测试覆盖构造器及坐标形状不变量。",
           "运行合同内附带的构造器示例。",
-          "独立证据：固定 Z 是 z0 的精确广播、R 序列逐位透传；负 R 或非有限 z0 经共享 points-mesh 通道被拒绝。"
+          "独立依据（tests/geometry/test_transform_roundtrip_evidence.py、tests/geometry/test_frame_convention_evidence.py）：解析恒等 forward(inverse(R, Z)) = (R, Z) 经弦自身的 theta 在 8 eps 内恢复固定 Z，并由 (hypot, theta) 重建径向坐标，在 3-4-5 三元组上半径精确；固定 Z 为精确广播，变化的 R 逐位直通；z0 = 0 边界恢复四分之一转，常值弦往返回到自身；负 R 或非有限 z0 经共享 points-mesh 通道拒绝。"
         ],
         "known_limitations": [
           "网格对象本身不能证明物理场模型或装置几何。",
@@ -901,7 +901,7 @@
         "scope": [
           "直接几何测试覆盖构造器及坐标形状不变量。",
           "运行合同内附带的构造器示例。",
-          "独立证据：半径原样透传，角度把点放在 (r sin θ, r cos θ)，θ 为从 +Z 起量的度；θ = 0 精确给出 (0, r)，θ = 90 给出 (r, 约 6e-17·r)；竞争的 R 轴读法在两分量上都相差一个完整半径；五个角度上 R² + Z² = r² 均在 8 eps·r² 内。"
+          "独立依据（tests/geometry/test_closed_form_evidence.py、tests/geometry/test_frame_convention_evidence.py）：解析闭式 R^2 + Z^2 = r^2 在 3-4-5 三元组上要求精确，在另外五个角度上以 8 eps r^2 界定；对两个乘积 R = r s 与 Z = r c 的精确有理重算把公式与超越函数舍入分开；半径在三元组上经 hypot 逐位回代；轴、单位与符号规则由 frame-convention 文件中的判别算例裁定。"
         ],
         "known_limitations": [
           "网格对象本身不能证明物理场模型或装置几何。",
@@ -971,7 +971,7 @@
         "scope": [
           "直接几何测试覆盖构造器及坐标形状不变量。",
           "运行合同内附带的构造器示例。",
-          "独立证据：θ = 0 落在 +Z 轴、θ = 90 为四分之一圈后落 +R；若按 +R 轴起量读，两分量都相差一个完整半径（O(1) 判别先断言再定界）；θ = 90 时度读法与弧度读法在 R 上相差 0.106；R² + Z² = r² 在 8 eps·r² 内；同半径下与球面弦相等；产生负 R 的负半径被拒绝而 −0.0 按声明通过。"
+          "独立依据（tests/geometry/test_closed_form_evidence.py、tests/geometry/test_frame_convention_evidence.py）：解析闭式 R^2 + Z^2 = r^2 在含 0 度与 180 度的五个角度上成立，并在 3-4-5 三元组上精确——hypot(3, 4) = 5 给出逐位的 (R, Z, r) = (3, 4, 5)；精确有理重算显示 R = r s、Z = r c，R 的残差为半径的 1 ulp、Z 为 0，即乘积本身精确、只显出正弦的一次舍入；theta 弦与球弦在六个角度上逐位相等；轴、单位、对立轴判别与拒绝通道在 frame-convention 文件中裁定。"
         ],
         "evidence_ceiling": "仅建立具名有限几何案例；不涉及场求解器、实验验证或发行许可。 C1 证据补充轴向、单位、毕达哥拉斯恒等式、跨资产相等与符号规则；固定约定，不建立角度采样的充分性。",
         "known_limitations": [
@@ -1036,7 +1036,7 @@
         "scope": [
           "直接几何测试覆盖构造器及坐标形状不变量。",
           "运行合同内附带的构造器示例。",
-          "独立证据：固定 R 是 r0 的精确广播、Z 序列逐位透传；负 r0 或非有限坐标经共享 points-mesh 通道被拒绝。"
+          "独立依据（tests/geometry/test_transform_roundtrip_evidence.py、tests/geometry/test_frame_convention_evidence.py）：解析恒等 forward(inverse(R, Z)) = (R, Z) 经弦自身的 theta 在 8 eps 内恢复固定 R；r0 = 0 的退化行是精确的——朝 +Z 方向 theta 回到 0、朝 -Z 方向回到 pi，半径逐位等于 |Z|——因为 arctan2(0, Z) 在两个半轴上精确；固定 R 为精确广播，变化的 Z 逐位直通；负 r0 或非有限坐标经共享 points-mesh 通道拒绝。"
         ],
         "evidence_ceiling": "仅建立具名有限几何案例；不涉及场求解器、实验验证或发行许可。 C1 证据补充精确广播与被继承的拒绝；不建立弦上的采样、插值、排序或测度。",
         "known_limitations": [

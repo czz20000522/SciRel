@@ -8417,7 +8417,7 @@
      "零模长角度保留及模式区分。",
      "字符串/布尔及其混合容器等非实数拒绝，非有限模长拒绝，以及大有限值 hypot 行为。",
      "直接测试验证顶层 scirel._result.Result 映射及属性读取。",
-     "独立证据（tests/geometry/test_wavevector_and_support_evidence.py）：极坐标模式把 kz 放在 +Z 轴（theta_rad = 0 给出 (0, k)），若按 +R 轴起量读两分量都相差 O(k)；theta_rad = π/2 给出 (k, 0)（8 eps），这也把弧度读法与度读法分开（sin(90 rad) = 0.894）；对四组 (k, t) 有 hypot(k sin t, k cos t) = k（8 eps）；幅度加倍使两分量精确加倍；笛卡尔模式把 theta_rad 报为 None 而不凭空造角；模式选择、符号、配对与有限性各自被拒绝。"
+     "独立依据（tests/geometry/test_closed_form_evidence.py、tests/geometry/test_wavevector_and_support_evidence.py）：解析闭式 k = hypot(k sin t, k cos t) 把极坐标模式复合回模长本身，对 3-4-5 对精确返回 5，并在直到 1e6 的四个模长上保持 8 eps；极坐标模式中原样携带而非重算模长，因此该相等是逐位的；零模长保留其声明的角度，直角坐标模式不声明角度，非对称对保留符号；投影的每个拒绝通道各有一条可执行断言，含布尔伪数与 hypot 非有限算例。"
     ],
     "evidence_ceiling": "直接测试建立本树列明的有界算术、布尔伪数值拒绝及失败行为；本仓库无法重放任何外部跨实现比较，也不将其作为证据。 C1 证据补充：轴向约定、单位判别、幅度恒等式、精确标度与 None 角；固定投影规则，不建立任何色散物理。",
     "known_limitations": [
