@@ -1,181 +1,186 @@
 {
- "schema": "scirel.asset-document",
- "asset_id": "scirel.geometry.regular-grid",
- "title": {
-  "en": "Scattered-to-regular grid sampling",
-  "zh": "散点到规则网格采样"
- },
- "summary": "Interpolate scalar fields onto supplied grids or generated ij-indexed grids",
- "taxonomy": [
-  "analysis",
-  "sampling"
- ],
- "aliases": [
-  "regular_grid"
- ],
- "discovery": {
-  "capability": [
-   "Scattered-to-regular grid sampling",
-   "Interpolate scalar fields from scattered planar samples onto supplied or generated ij-indexed regular grids."
+  "schema": "scirel.asset-document",
+  "asset_id": "scirel.geometry.regular-grid",
+  "title": {
+    "en": "Scattered-to-regular grid sampling",
+    "zh": "散点到规则网格采样"
+  },
+  "summary": "Interpolate scalar fields onto supplied grids or generated ij-indexed grids",
+  "taxonomy": [
+    "analysis",
+    "sampling"
   ],
-  "operation": [
-   "scattered planar fields to regular-grid samples",
-   "scattered xx,yy and matching fields plus optional target grids -> generated or supplied grid coordinates and interpolated fields"
+  "aliases": [
+    "regular_grid"
   ],
-  "model": "SciPy scattered-data interpolation with method=linear by default and default nx=ny=200 when target grids are generated.",
-  "geometry": "Planar scattered samples and a generated regular grid; generated output axes use ij order and supplied xi,yi jointly override them.",
-  "boundary": "Queries beyond the convex support are excluded and no outside-hull values are synthesized; no nonlinear interpolation accuracy claim is made.",
-  "device_scope": "generic"
- },
- "identity": {
-  "relation": "Scattered-to-regular grid sampling",
-  "direction": "Declared inputs to Tuple xi,yi and interpolated scalar fields",
-  "definition": "Interpolate scalar fields onto supplied grids or generated ij-indexed grids",
-  "model": "SciPy scattered-data interpolation; default method=linear and nx=ny=200",
-  "geometry": "planar scattered samples and generated regular grid",
-  "coordinates": "xx,yy generic planar coordinates; generated output axes use ij order",
-  "boundary": "Explicit xi,yi are used together; if either is omitted, both supplied grid axes are replaced",
-  "assumptions": [
-   "Finite matched planar sample arrays and positional field arrays",
-   "Requested grid/query points lie inside convex/interpolation support",
-   "Fields are passed as separate positional arguments; no values mapping alias is accepted"
-  ]
- },
- "inputs": [
-  {
-   "name": "xx",
-   "description": "Sample x coordinates",
-   "units": "length or coordinate units",
-   "shape": "matching array shape",
-   "dtype": "float64",
-   "required": true,
-   "constraints": "Finite"
+  "discovery": {
+    "capability": [
+      "Scattered-to-regular grid sampling",
+      "Interpolate scalar fields from scattered planar samples onto supplied or generated ij-indexed regular grids."
+    ],
+    "operation": [
+      "scattered planar fields to regular-grid samples",
+      "scattered xx,yy and matching fields plus optional target grids -> generated or supplied grid coordinates and interpolated fields"
+    ],
+    "model": "SciPy scattered-data interpolation with method=linear by default and default nx=ny=200 when target grids are generated.",
+    "geometry": "Planar scattered samples and a generated regular grid; generated output axes use ij order and supplied xi,yi jointly override them.",
+    "boundary": "Queries beyond the convex support are excluded and no outside-hull values are synthesized; no nonlinear interpolation accuracy claim is made.",
+    "device_scope": "generic"
   },
-  {
-   "name": "yy",
-   "description": "Sample y coordinates",
-   "units": "length or coordinate units",
-   "shape": "same shape as xx",
-   "dtype": "float64",
-   "required": true,
-   "constraints": "Finite"
+  "identity": {
+    "relation": "Scattered-to-regular grid sampling",
+    "direction": "Declared inputs to Tuple xi,yi and interpolated scalar fields",
+    "definition": "Interpolate scalar fields onto supplied grids or generated ij-indexed grids",
+    "model": "SciPy scattered-data interpolation; default method=linear and nx=ny=200",
+    "geometry": "planar scattered samples and generated regular grid",
+    "coordinates": "xx,yy generic planar coordinates; generated output axes use ij order",
+    "boundary": "Explicit xi,yi are used together; if either is omitted, both supplied grid axes are replaced",
+    "assumptions": [
+      "Finite matched planar sample arrays and positional field arrays",
+      "Requested grid/query points lie inside convex/interpolation support",
+      "Fields are passed as separate positional arguments; no values mapping alias is accepted"
+    ]
   },
-  {
-   "name": "nx",
-   "description": "Number of generated x grid points",
-   "units": "1",
-   "shape": "scalar",
-   "dtype": "int",
-   "required": false,
-   "constraints": "Integer accepted by numpy.linspace; used when xi or yi is missing",
-   "default": 200
+  "inputs": [
+    {
+      "name": "xx",
+      "description": "Sample x coordinates",
+      "units": "length or coordinate units",
+      "shape": "matching array shape",
+      "dtype": "float64",
+      "required": true,
+      "constraints": "Finite"
+    },
+    {
+      "name": "yy",
+      "description": "Sample y coordinates",
+      "units": "length or coordinate units",
+      "shape": "same shape as xx",
+      "dtype": "float64",
+      "required": true,
+      "constraints": "Finite"
+    },
+    {
+      "name": "nx",
+      "description": "Number of generated x grid points",
+      "units": "1",
+      "shape": "scalar",
+      "dtype": "int",
+      "required": false,
+      "constraints": "Integer accepted by numpy.linspace; used when xi or yi is missing",
+      "default": 200
+    },
+    {
+      "name": "ny",
+      "description": "Number of generated y grid points",
+      "units": "1",
+      "shape": "scalar",
+      "dtype": "int",
+      "required": false,
+      "constraints": "Integer accepted by numpy.linspace; used when xi or yi is missing",
+      "default": 200
+    },
+    {
+      "name": "xi",
+      "description": "Query x coordinates",
+      "units": "length or coordinate units",
+      "shape": "array_like or None",
+      "dtype": "float64 array-like or None",
+      "required": false,
+      "constraints": "Used with yi only when both are supplied; if either is None, both axes are generated",
+      "default": null
+    },
+    {
+      "name": "yi",
+      "description": "Query y coordinates",
+      "units": "length or coordinate units",
+      "shape": "same shape as xi or None",
+      "dtype": "float64 array-like or None",
+      "required": false,
+      "constraints": "Used with xi only when both are supplied; if either is None, both axes are generated",
+      "default": null
+    },
+    {
+      "name": "method",
+      "description": "SciPy scattered-data interpolation method",
+      "units": "1",
+      "shape": "string",
+      "dtype": "str",
+      "required": false,
+      "constraints": "One of 'linear', 'nearest', or 'cubic'",
+      "default": "linear"
+    }
+  ],
+  "outputs": [
+    {
+      "name": "grid_and_fields",
+      "description": "Tuple xi,yi and interpolated scalar fields",
+      "units": "coordinate and field units",
+      "shape": "tuple of (nx,ny) arrays or supplied grid shape",
+      "dtype": "float64",
+      "required": true,
+      "constraints": "Original field order preserved"
+    }
+  ],
+  "applicability": {
+    "preconditions": [
+      "Finite matched planar sample arrays and positional field arrays",
+      "Requested grid/query points lie inside convex/interpolation support",
+      "Fields are passed as separate positional arguments; no values mapping alias is accepted"
+    ],
+    "supported": [
+      "Finite inputs satisfying the callable-specific shape, support, and boundary conditions"
+    ],
+    "excluded": [
+      "No outside-hull value synthesis or nonlinear interpolation accuracy claim"
+    ]
   },
-  {
-   "name": "ny",
-   "description": "Number of generated y grid points",
-   "units": "1",
-   "shape": "scalar",
-   "dtype": "int",
-   "required": false,
-   "constraints": "Integer accepted by numpy.linspace; used when xi or yi is missing",
-   "default": 200
+  "failure_semantics": {
+    "invalid_input": "Raises TypeError when required arguments are missing, the removed values mapping keyword is used, or an unknown keyword is supplied; raises ValueError when method is outside its documented set or the samples, fields, or query coordinates violate the SciPy interpolation contract; no input repair is inferred.",
+    "runtime_failure": "Numerical, interpolation, or optional-dependency exceptions propagate from the direct calculation.",
+    "nonconvergence": "Not applicable; the relation uses direct finite-difference, interpolation, selection, or quadrature operations.",
+    "partial_results": "No partial result is promised when input validation or the underlying numerical operation fails."
   },
-  {
-   "name": "xi",
-   "description": "Query x coordinates",
-   "units": "length or coordinate units",
-   "shape": "array_like or None",
-   "dtype": "float64 array-like or None",
-   "required": false,
-   "constraints": "Used with yi only when both are supplied; if either is None, both axes are generated",
-   "default": null
+  "public_api": {
+    "python": {
+      "module": "scirel.geometry.sampling",
+      "symbol": "regular_grid",
+      "signature": "regular_grid(xx, yy, *fields, nx=200, ny=200, xi=None, yi=None, method='linear')",
+      "canonical_module": "scirel.geometry",
+      "canonical_symbol": "regular_grid"
+    }
   },
-  {
-   "name": "yi",
-   "description": "Query y coordinates",
-   "units": "length or coordinate units",
-   "shape": "same shape as xi or None",
-   "dtype": "float64 array-like or None",
-   "required": false,
-   "constraints": "Used with xi only when both are supplied; if either is None, both axes are generated",
-   "default": null
+  "version": {
+    "implementation_version": "0.0.0",
+    "dependencies": []
   },
-  {
-   "name": "method",
-   "description": "SciPy scattered-data interpolation method",
-   "units": "1",
-   "shape": "string",
-   "dtype": "str",
-   "required": false,
-   "constraints": "One of 'linear', 'nearest', or 'cubic'",
-   "default": "linear"
+  "example": {
+    "description": "Interpolate one positional scattered scalar field onto a generated 4-by-5 regular grid.",
+    "code": "import numpy as np\nfrom scirel.geometry.sampling import regular_grid\n\nx, y = np.meshgrid([0.0, 0.5, 1.0], [0.0, 0.5, 1.0])\nresult = regular_grid(x, y, x + y, nx=4, ny=5)\nassert len(result) == 3\nassert result[2].shape == (4, 5)",
+    "expected": "The return tuple has three entries and the interpolated field has shape (4, 5)."
+  },
+  "verification": {
+    "scope": [
+      "The generated axes are asserted to be the exact linspace(min,max) product in ij order: each coordinate depends on one index only, the endpoints equal the data extremes and the shape is (nx,ny).",
+      "An affine field is reproduced at supplied interior points within a 16*eps budget, and the fixture is asserted non-constant.",
+      "Positional fields preserve their order, and a call without fields returns only the two coordinate arrays.",
+      "Outside the convex hull the linear interpolant is asserted to return NaN rather than a synthesised value, and method='nearest' is asserted to return only stored sample values.",
+      "Failure matrix gives one executable assertion per rejecting channel: an unknown method raises ValueError, the removed values keyword raises TypeError, and no partial result is returned."
+    ],
+    "tests": [
+      "tests/equilibrium/test_analysis_families.py",
+      "tests/equilibrium/test_keyword_sampling_ports.py",
+      "tests/sampling/test_analytic_sampling_evidence.py"
+    ],
+    "evidence_ceiling": "Establishes grid generation, affine reproduction inside the hull and the no-synthesis boundary. It does not establish interpolation accuracy for nonlinear fields, and no behaviour outside the convex support is promised beyond the NaN convention.",
+    "known_limitations": [
+      "No outside-hull value synthesis or nonlinear interpolation accuracy claim",
+      "cannot establish: accuracy of the linear or Clough-Tocher interpolants for non-affine fields"
+    ],
+    "basis": {
+      "kind": "specification",
+      "statement": "Grid generation, affine reproduction inside the hull and the no-synthesis boundary are established. Interpolation accuracy for nonlinear fields is not established, and no behaviour outside the convex support is promised beyond the NaN convention.",
+      "source": "tests/geometry/test_regular_grid.py"
+    }
   }
- ],
- "outputs": [
-  {
-   "name": "grid_and_fields",
-   "description": "Tuple xi,yi and interpolated scalar fields",
-   "units": "coordinate and field units",
-   "shape": "tuple of (nx,ny) arrays or supplied grid shape",
-   "dtype": "float64",
-   "required": true,
-   "constraints": "Original field order preserved"
-  }
- ],
- "applicability": {
-  "preconditions": [
-   "Finite matched planar sample arrays and positional field arrays",
-   "Requested grid/query points lie inside convex/interpolation support",
-   "Fields are passed as separate positional arguments; no values mapping alias is accepted"
-  ],
-  "supported": [
-   "Finite inputs satisfying the callable-specific shape, support, and boundary conditions"
-  ],
-  "excluded": [
-   "No outside-hull value synthesis or nonlinear interpolation accuracy claim"
-  ]
- },
- "failure_semantics": {
-  "invalid_input": "Raises TypeError when required arguments are missing, the removed values mapping keyword is used, or an unknown keyword is supplied; raises ValueError when method is outside its documented set or the samples, fields, or query coordinates violate the SciPy interpolation contract; no input repair is inferred.",
-  "runtime_failure": "Numerical, interpolation, or optional-dependency exceptions propagate from the direct calculation.",
-  "nonconvergence": "Not applicable; the relation uses direct finite-difference, interpolation, selection, or quadrature operations.",
-  "partial_results": "No partial result is promised when input validation or the underlying numerical operation fails."
- },
- "public_api": {
-  "python": {
-   "module": "scirel.geometry.sampling",
-   "symbol": "regular_grid",
-   "signature": "regular_grid(xx, yy, *fields, nx=200, ny=200, xi=None, yi=None, method='linear')",
-   "canonical_module": "scirel.geometry",
-   "canonical_symbol": "regular_grid"
-  }
- },
- "version": {
-  "implementation_version": "0.0.0",
-  "dependencies": []
- },
- "example": {
-  "description": "Interpolate one positional scattered scalar field onto a generated 4-by-5 regular grid.",
-  "code": "import numpy as np\nfrom scirel.geometry.sampling import regular_grid\n\nx, y = np.meshgrid([0.0, 0.5, 1.0], [0.0, 0.5, 1.0])\nresult = regular_grid(x, y, x + y, nx=4, ny=5)\nassert len(result) == 3\nassert result[2].shape == (4, 5)",
-  "expected": "The return tuple has three entries and the interpolated field has shape (4, 5)."
- },
- "verification": {
-  "scope": [
-   "The generated axes are asserted to be the exact linspace(min,max) product in ij order: each coordinate depends on one index only, the endpoints equal the data extremes and the shape is (nx,ny).",
-   "An affine field is reproduced at supplied interior points within a 16*eps budget, and the fixture is asserted non-constant.",
-   "Positional fields preserve their order, and a call without fields returns only the two coordinate arrays.",
-   "Outside the convex hull the linear interpolant is asserted to return NaN rather than a synthesised value, and method='nearest' is asserted to return only stored sample values.",
-   "Failure matrix gives one executable assertion per rejecting channel: an unknown method raises ValueError, the removed values keyword raises TypeError, and no partial result is returned."
-  ],
-  "tests": [
-   "tests/equilibrium/test_analysis_families.py",
-   "tests/equilibrium/test_keyword_sampling_ports.py",
-   "tests/sampling/test_analytic_sampling_evidence.py"
-  ],
-  "evidence_ceiling": "Establishes grid generation, affine reproduction inside the hull and the no-synthesis boundary. It does not establish interpolation accuracy for nonlinear fields, and no behaviour outside the convex support is promised beyond the NaN convention.",
-  "known_limitations": [
-   "No outside-hull value synthesis or nonlinear interpolation accuracy claim",
-   "cannot establish: accuracy of the linear or Clough-Tocher interpolants for non-affine fields"
-  ]
- }
 }

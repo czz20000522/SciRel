@@ -1,148 +1,153 @@
 {
- "schema": "scirel.asset-document",
- "asset_id": "scirel.geometry.scattered-linear",
- "title": {
-  "en": "Field query SciPy griddata with linear default",
-  "zh": "散点场插值"
- },
- "summary": "Interpolate field at query coordinate pairs",
- "taxonomy": [
-  "analysis",
-  "sampling"
- ],
- "aliases": [
-  "locs_to_vals_griddata"
- ],
- "discovery": {
-  "capability": [
-   "Linear scattered field query",
-   "Interpolate a planar scalar field at query coordinate pairs with SciPy griddata linear interpolation."
-  ],
-  "operation": [
-   "linear scattered-data field interpolation",
-   "scattered planar samples, field values and query points -> interpolated field values"
-  ],
-  "model": "SciPy griddata with the linear method; no uncertainty model.",
-  "geometry": "Planar scattered samples and query points; coordinates use x column and y row or matched scattered arrays.",
-  "boundary": "No out-of-support interpolation is synthesized; queries inside the convex/interpolation support are required, and equivalence with nearest schemes on irregular grids is not asserted.",
-  "device_scope": "generic"
- },
- "identity": {
-  "relation": "Field query SciPy griddata with linear default",
-  "direction": "Declared inputs to Sampled values",
-  "definition": "Interpolate field at query coordinate pairs",
-  "model": "SciPy griddata with linear default",
-  "geometry": "planar scattered samples and query points",
-  "coordinates": "X column coordinate, Y row coordinate or matched scattered point arrays",
-  "boundary": "No out-of-support interpolation synthesis",
-  "assumptions": [
-   "Finite matched planar sample arrays and fields",
-   "Requested grid/query points lie inside convex/interpolation support"
-  ]
- },
- "inputs": [
-  {
-   "name": "X",
-   "description": "Point x coordinates",
-   "units": "coordinate units",
-   "shape": "matched grid/sample shape",
-   "dtype": "float64",
-   "required": true,
-   "constraints": "For rectangular nearest X[0,:] is x axis"
+  "schema": "scirel.asset-document",
+  "asset_id": "scirel.geometry.scattered-linear",
+  "title": {
+    "en": "Field query SciPy griddata with linear default",
+    "zh": "散点场插值"
   },
-  {
-   "name": "Y",
-   "description": "Point y coordinates",
-   "units": "coordinate units",
-   "shape": "same as X",
-   "dtype": "float64",
-   "required": true,
-   "constraints": "For rectangular nearest Y[:,0] is y axis"
+  "summary": "Interpolate field at query coordinate pairs",
+  "taxonomy": [
+    "analysis",
+    "sampling"
+  ],
+  "aliases": [
+    "locs_to_vals_griddata"
+  ],
+  "discovery": {
+    "capability": [
+      "Linear scattered field query",
+      "Interpolate a planar scalar field at query coordinate pairs with SciPy griddata linear interpolation."
+    ],
+    "operation": [
+      "linear scattered-data field interpolation",
+      "scattered planar samples, field values and query points -> interpolated field values"
+    ],
+    "model": "SciPy griddata with the linear method; no uncertainty model.",
+    "geometry": "Planar scattered samples and query points; coordinates use x column and y row or matched scattered arrays.",
+    "boundary": "No out-of-support interpolation is synthesized; queries inside the convex/interpolation support are required, and equivalence with nearest schemes on irregular grids is not asserted.",
+    "device_scope": "generic"
   },
-  {
-   "name": "Q",
-   "description": "Sample field",
-   "units": "field units",
-   "shape": "same as X",
-   "dtype": "float64",
-   "required": true,
-   "constraints": "Finite"
+  "identity": {
+    "relation": "Field query SciPy griddata with linear default",
+    "direction": "Declared inputs to Sampled values",
+    "definition": "Interpolate field at query coordinate pairs",
+    "model": "SciPy griddata with linear default",
+    "geometry": "planar scattered samples and query points",
+    "coordinates": "X column coordinate, Y row coordinate or matched scattered point arrays",
+    "boundary": "No out-of-support interpolation synthesis",
+    "assumptions": [
+      "Finite matched planar sample arrays and fields",
+      "Requested grid/query points lie inside convex/interpolation support"
+    ]
   },
-  {
-   "name": "coord_list",
-   "description": "Desired coordinate pairs",
-   "units": "coordinate units",
-   "shape": "list of (x,y)",
-   "dtype": "float64",
-   "required": true,
-   "constraints": "Finite queries"
+  "inputs": [
+    {
+      "name": "X",
+      "description": "Point x coordinates",
+      "units": "coordinate units",
+      "shape": "matched grid/sample shape",
+      "dtype": "float64",
+      "required": true,
+      "constraints": "For rectangular nearest X[0,:] is x axis"
+    },
+    {
+      "name": "Y",
+      "description": "Point y coordinates",
+      "units": "coordinate units",
+      "shape": "same as X",
+      "dtype": "float64",
+      "required": true,
+      "constraints": "For rectangular nearest Y[:,0] is y axis"
+    },
+    {
+      "name": "Q",
+      "description": "Sample field",
+      "units": "field units",
+      "shape": "same as X",
+      "dtype": "float64",
+      "required": true,
+      "constraints": "Finite"
+    },
+    {
+      "name": "coord_list",
+      "description": "Desired coordinate pairs",
+      "units": "coordinate units",
+      "shape": "list of (x,y)",
+      "dtype": "float64",
+      "required": true,
+      "constraints": "Finite queries"
+    }
+  ],
+  "outputs": [
+    {
+      "name": "values",
+      "description": "Sampled values",
+      "units": "field units",
+      "shape": "query-count list or array",
+      "dtype": "float64",
+      "required": true,
+      "constraints": "Source list/array return preserved"
+    }
+  ],
+  "applicability": {
+    "preconditions": [
+      "Finite matched planar sample arrays and fields",
+      "Requested grid/query points lie inside convex/interpolation support"
+    ],
+    "supported": [
+      "Finite inputs satisfying the callable-specific shape, support, and boundary conditions"
+    ],
+    "excluded": [
+      "Rectangular and geometric nearest schemes are not asserted equivalent on irregular input",
+      "Outside-support and nonfinite-field cases are unqualified"
+    ]
+  },
+  "failure_semantics": {
+    "invalid_input": "Raises ValueError or the underlying NumPy/SciPy exception for nonfinite, mismatched, unsorted, out-of-domain, or malformed inputs; no input repair is inferred.",
+    "runtime_failure": "Numerical, interpolation, or optional-dependency exceptions propagate from the direct calculation.",
+    "nonconvergence": "Not applicable; the relation uses direct finite-difference, interpolation, selection, or quadrature operations.",
+    "partial_results": "No partial result is promised when input validation or the underlying numerical operation fails."
+  },
+  "public_api": {
+    "python": {
+      "module": "scirel.geometry.sampling",
+      "symbol": "locs_to_vals_griddata",
+      "signature": "locs_to_vals_griddata(X, Y, Q, coord_list)",
+      "canonical_module": "scirel.geometry",
+      "canonical_symbol": "locs_to_vals_griddata"
+    }
+  },
+  "version": {
+    "implementation_version": "0.0.0",
+    "dependencies": []
+  },
+  "example": {
+    "description": "Interpolate an affine field at an interior point with the linear griddata route.",
+    "code": "import numpy as np\nfrom scirel.geometry.sampling import locs_to_vals_griddata\n\nx, y = np.meshgrid([0.0, 0.5, 1.0], [0.0, 0.5, 1.0])\nvalues = locs_to_vals_griddata(x, y, x + 2.0 * y, [(0.5, 0.5)])\nnp.testing.assert_allclose(values, [1.5])",
+    "expected": "Linear interpolation returns [1.5] at the query point."
+  },
+  "verification": {
+    "scope": [
+      "An affine field is reproduced at five query points within a 16*eps budget, and a query at a node returns the stored sample exactly.",
+      "Outside the convex hull the result is asserted to be NaN, so no value is synthesised.",
+      "The returned sequence is asserted to follow the query list, duplicates included, and the fixture is asserted discriminating.",
+      "Non-finite sample coordinates and a mismatched field shape are each asserted to fail instead of being repaired.",
+      "Repeated calls are asserted to be bitwise identical, which is the reproducibility statement for the triangulation."
+    ],
+    "tests": [
+      "tests/equilibrium/test_analysis_families.py",
+      "tests/sampling/test_reduction_and_fit_evidence.py"
+    ],
+    "evidence_ceiling": "Establishes affine reproduction, node exactness and the no-extrapolation boundary. It does not establish interpolation error for nonlinear fields, and the non-finite rejection is delegated to the underlying triangulation rather than validated by this relation.",
+    "known_limitations": [
+      "Rectangular and geometric nearest schemes are not asserted equivalent on irregular input",
+      "Outside-support and nonfinite-field cases are unqualified",
+      "cannot establish: accuracy for non-affine fields; only affine reproduction and node exactness are established"
+    ],
+    "basis": {
+      "kind": "closed-form",
+      "statement": "Affine reproduction, node exactness and the no-extrapolation boundary are established. Interpolation error for nonlinear fields is not established, and non-finite rejection is delegated to the underlying triangulation rather than validated here.",
+      "source": "tests/geometry/test_scattered_linear.py"
+    }
   }
- ],
- "outputs": [
-  {
-   "name": "values",
-   "description": "Sampled values",
-   "units": "field units",
-   "shape": "query-count list or array",
-   "dtype": "float64",
-   "required": true,
-   "constraints": "Source list/array return preserved"
-  }
- ],
- "applicability": {
-  "preconditions": [
-   "Finite matched planar sample arrays and fields",
-   "Requested grid/query points lie inside convex/interpolation support"
-  ],
-  "supported": [
-   "Finite inputs satisfying the callable-specific shape, support, and boundary conditions"
-  ],
-  "excluded": [
-   "Rectangular and geometric nearest schemes are not asserted equivalent on irregular input",
-   "Outside-support and nonfinite-field cases are unqualified"
-  ]
- },
- "failure_semantics": {
-  "invalid_input": "Raises ValueError or the underlying NumPy/SciPy exception for nonfinite, mismatched, unsorted, out-of-domain, or malformed inputs; no input repair is inferred.",
-  "runtime_failure": "Numerical, interpolation, or optional-dependency exceptions propagate from the direct calculation.",
-  "nonconvergence": "Not applicable; the relation uses direct finite-difference, interpolation, selection, or quadrature operations.",
-  "partial_results": "No partial result is promised when input validation or the underlying numerical operation fails."
- },
- "public_api": {
-  "python": {
-   "module": "scirel.geometry.sampling",
-   "symbol": "locs_to_vals_griddata",
-   "signature": "locs_to_vals_griddata(X, Y, Q, coord_list)",
-   "canonical_module": "scirel.geometry",
-   "canonical_symbol": "locs_to_vals_griddata"
-  }
- },
- "version": {
-  "implementation_version": "0.0.0",
-  "dependencies": []
- },
- "example": {
-  "description": "Interpolate an affine field at an interior point with the linear griddata route.",
-  "code": "import numpy as np\nfrom scirel.geometry.sampling import locs_to_vals_griddata\n\nx, y = np.meshgrid([0.0, 0.5, 1.0], [0.0, 0.5, 1.0])\nvalues = locs_to_vals_griddata(x, y, x + 2.0 * y, [(0.5, 0.5)])\nnp.testing.assert_allclose(values, [1.5])",
-  "expected": "Linear interpolation returns [1.5] at the query point."
- },
- "verification": {
-  "scope": [
-   "An affine field is reproduced at five query points within a 16*eps budget, and a query at a node returns the stored sample exactly.",
-   "Outside the convex hull the result is asserted to be NaN, so no value is synthesised.",
-   "The returned sequence is asserted to follow the query list, duplicates included, and the fixture is asserted discriminating.",
-   "Non-finite sample coordinates and a mismatched field shape are each asserted to fail instead of being repaired.",
-   "Repeated calls are asserted to be bitwise identical, which is the reproducibility statement for the triangulation."
-  ],
-  "tests": [
-   "tests/equilibrium/test_analysis_families.py",
-   "tests/sampling/test_reduction_and_fit_evidence.py"
-  ],
-  "evidence_ceiling": "Establishes affine reproduction, node exactness and the no-extrapolation boundary. It does not establish interpolation error for nonlinear fields, and the non-finite rejection is delegated to the underlying triangulation rather than validated by this relation.",
-  "known_limitations": [
-   "Rectangular and geometric nearest schemes are not asserted equivalent on irregular input",
-   "Outside-support and nonfinite-field cases are unqualified",
-   "cannot establish: accuracy for non-affine fields; only affine reproduction and node exactness are established"
-  ]
- }
 }

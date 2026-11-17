@@ -8,42 +8,6 @@
       "reason": "not yet migrated: verification.basis absent"
     },
     {
-      "asset_id": "scirel.geometry.rect-mesh",
-      "reason": "not yet migrated: verification.basis absent"
-    },
-    {
-      "asset_id": "scirel.geometry.rectangular-spline",
-      "reason": "not yet migrated: verification.basis absent"
-    },
-    {
-      "asset_id": "scirel.geometry.regular-grid",
-      "reason": "not yet migrated: verification.basis absent"
-    },
-    {
-      "asset_id": "scirel.geometry.rotate",
-      "reason": "not yet migrated: verification.basis absent"
-    },
-    {
-      "asset_id": "scirel.geometry.scalar-reflection",
-      "reason": "not yet migrated: verification.basis absent"
-    },
-    {
-      "asset_id": "scirel.geometry.scattered-linear",
-      "reason": "not yet migrated: verification.basis absent"
-    },
-    {
-      "asset_id": "scirel.geometry.spherical-r-chord",
-      "reason": "not yet migrated: verification.basis absent"
-    },
-    {
-      "asset_id": "scirel.geometry.theta-chord",
-      "reason": "not yet migrated: verification.basis absent"
-    },
-    {
-      "asset_id": "scirel.geometry.z-chord",
-      "reason": "not yet migrated: verification.basis absent"
-    },
-    {
       "asset_id": "scirel.inference.anisotropic-parameter-optimization",
       "reason": "not yet migrated: verification.basis absent"
     },
@@ -604,9 +568,18 @@
     "scirel.geometry.points-mesh",
     "scirel.geometry.polynomial-fit",
     "scirel.geometry.r-chord",
+    "scirel.geometry.rect-mesh",
     "scirel.geometry.rectangular-nearest",
+    "scirel.geometry.rectangular-spline",
+    "scirel.geometry.regular-grid",
+    "scirel.geometry.rotate",
+    "scirel.geometry.scalar-reflection",
+    "scirel.geometry.scattered-linear",
     "scirel.geometry.select-fieldline",
+    "scirel.geometry.spherical-r-chord",
+    "scirel.geometry.theta-chord",
     "scirel.geometry.weighted-line-integral",
+    "scirel.geometry.z-chord",
     "scirel.kinetic.fluid-bonk-search",
     "scirel.kinetic.generalized-expression-differentiation",
     "scirel.kinetic.kinetic-wavevector-roots",
