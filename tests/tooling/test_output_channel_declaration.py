@@ -1,5 +1,10 @@
 """The output-channel check must fail, not warn, when a contract stays silent.
 
+**And it must actually run on this repository.** The cases below build synthetic catalogs, which
+proves the logic; they do not prove the check ever sees `catalog/examples/`. Written without the
+last test in this file, the gate would be present, self-tested, and enforcing nothing -- the
+"guard that never runs" shape this repository keeps collecting.
+
 The point of this gate is that 92 contracts are baselined. If the checker were
 permissive or the baseline were a blanket allow-list, those 92 would never be
 paid down and no new silent contract would be caught. These tests pin the three
@@ -14,6 +19,7 @@ things that make it a ratchet rather than a rubber stamp:
 from __future__ import annotations
 
 import json
+import subprocess
 import sys
 from pathlib import Path
 
@@ -151,3 +157,44 @@ def test_a_baseline_entry_without_a_reason_is_refused(tmp_path):
     _write(root, _contract("scirel.x.v", [{"name": "v"}]))
     # 未观测是退出码 2，不是异常、也不是通过
     assert check.main(["--root", str(root)]) == 2
+
+
+def test_the_repository_itself_passes_the_checker():
+    """Wire the checker to the real tree.
+
+    Without this, every other case in this file is a test of the script's logic and the script
+    itself is never called on the contracts it is supposed to guard.
+    """
+    result = subprocess.run(
+        [sys.executable, str(ROOT / "scripts" / "check_output_channel_declaration.py")],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert result.returncode == 0, result.stdout + result.stderr
+    assert "single-output contracts" in result.stdout
+
+
+def test_the_repository_checker_does_not_report_unobserved():
+    """Exit code 2 means the checker could not observe; that must not read as green."""
+    result = subprocess.run(
+        [sys.executable, str(ROOT / "scripts" / "check_output_channel_declaration.py")],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert result.returncode != 2, result.stdout + result.stderr
+
+
+def test_the_baseline_is_not_a_blanket_allow_list():
+    """Every baselined asset must carry a reason, and the entries must be real contracts."""
+    path = ROOT / check.BASELINE
+    document = json.loads(path.read_text(encoding="utf-8"))
+    entries = document["entries"]
+    assert entries, "an empty baseline would mean the debt is paid; it is not, so say so"
+    for entry in entries:
+        assert entry.get("reason"), f"{entry.get('asset_id')} has no reason"
+        assert entry.get("asset_id"), entry
+    on_disk = {p.name[: -len(".json")] for p in (ROOT / check.CATALOG).glob("scirel.*.json")}
+    missing = [entry["asset_id"] for entry in entries if entry["asset_id"] not in on_disk]
+    assert missing == [], f"baselined assets with no contract on disk: {missing}"

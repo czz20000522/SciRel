@@ -172,3 +172,27 @@ python3 scripts/check_observation_integrity.py .   # 新违规 → 非零退出
 
 可判别的做法：门禁在 `git add` **之后**跑；或先 `git add -A` 再 `check`。判据不是"我跑过了"，
 而是"跑的时候它看得见我的改动"。
+
+### 第八类：装了但没接线
+
+一个检查脚本可以有完整的自测、正确的三态退出码、干净的文档，而**从来没有在真实仓库上跑过**。
+它的测试都在 `tmp_path` 里造样例，于是证明的是"逻辑对"，不是"它在守这份仓库"。
+
+本项目实际发生过：`scripts/check_output_channel_declaration.py` 合入时带了 9 条测试，全部用合成
+目录；在真实 `catalog/examples/` 上**一次也没执行过**。它看起来是一条门禁，实际是一份遗体。
+
+判别方法：**每个检查脚本必须有一处测试，把它的 `main()` 跑在仓库根上**，并断言退出码为 0；
+再补一条断言"退出码不是 2"，防止把未观测读成绿。样板：
+
+```python
+def test_the_repository_itself_passes_the_checker():
+    result = subprocess.run([sys.executable, str(ROOT / "scripts" / "<checker>.py")],
+                            capture_output=True, text=True, check=False)
+    assert result.returncode == 0, result.stdout + result.stderr
+```
+
+同族但不同形：第七类是"守卫看不见新文件"，这一类是"守卫根本没被调用"。两者都不报错，
+都让读者以为"跑过了"。
+
+再加一位：**新建的门禁要用一次变异证明它会红**。把一份违规样本放进被检查的目录、看测试是否
+失败、再删掉。只证明"能绿"的门禁，无法区分"没有违规"和"没有检查"。
