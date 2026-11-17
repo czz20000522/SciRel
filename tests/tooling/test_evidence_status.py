@@ -120,3 +120,56 @@ def test_the_summary_keeps_none_and_not_declared_apart(tmp_path):
     assert counts["by_kind"]["not-declared"] == 1
     assert counts["pending"] == 1
     assert "not proof" in counts["note"]
+
+
+def test_the_scan_skips_assets_that_already_declare_a_basis(tmp_path):
+    """Once the field exists it is authoritative; the scan must not keep listing the asset."""
+    (tmp_path / evidence_status.BASELINE).parent.mkdir(parents=True, exist_ok=True)
+    (tmp_path / evidence_status.BASELINE).write_text(
+        json.dumps({"entries": [{"asset_id": "scirel.x.declared", "reason": "stale entry"}]}),
+        encoding="utf-8",
+    )
+    directory = tmp_path / evidence_status.CATALOG
+    directory.mkdir(parents=True, exist_ok=True)
+    (directory / "scirel.x.declared.json").write_text(
+        json.dumps(
+            {
+                "asset_id": "scirel.x.declared",
+                "verification": {
+                    "scope": ["compared with an independent quadrature"],
+                    "known_limitations": [],
+                    "evidence_ceiling": "bounded",
+                    "basis": {"kind": "literature", "statement": "published formula"},
+                },
+            }
+        ),
+        encoding="utf-8",
+    )
+    assert evidence_status.declared_kind(tmp_path, "scirel.x.declared") == "literature"
+    assert evidence_status.main(["--scan-weak-basis", "--root", str(tmp_path)]) == 0
+
+
+def test_the_scan_reports_nothing_when_a_basis_phrase_matched(tmp_path):
+    """A recorded gap alongside a basis phrase must not make the asset look un-basis-ed."""
+    (tmp_path / evidence_status.BASELINE).parent.mkdir(parents=True, exist_ok=True)
+    (tmp_path / evidence_status.BASELINE).write_text(
+        json.dumps({"entries": [{"asset_id": "scirel.x.both", "reason": "pending"}]}),
+        encoding="utf-8",
+    )
+    directory = tmp_path / evidence_status.CATALOG
+    directory.mkdir(parents=True, exist_ok=True)
+    (directory / "scirel.x.both.json").write_text(
+        json.dumps(
+            {
+                "asset_id": "scirel.x.both",
+                "verification": {
+                    "scope": ["Checked against an independent high-precision reference."],
+                    "known_limitations": ["cannot establish the far field"],
+                    "evidence_ceiling": "bounded",
+                },
+            }
+        ),
+        encoding="utf-8",
+    )
+    record = evidence_status.describe("scirel.x.both", tmp_path)
+    assert record["basis_asserted"] is True
