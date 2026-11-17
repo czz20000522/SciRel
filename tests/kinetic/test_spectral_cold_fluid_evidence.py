@@ -185,7 +185,14 @@ def test_spectral_temporal_spectrum_is_similarity_invariant():
     perturbed_scales = scales * np.geomspace(1.0, 7.0, scales.size)
     perturbed = solve_temporal_spectrum(result["M"], result["A"], scales=perturbed_scales)
     moved = sorted(abs(complex(value)) for value in np.asarray(perturbed["w1"]).ravel())
-    for before, after in zip(baseline, moved):
+    assert len(baseline) == len(moved)
+    # Only the structurally nonzero branches carry the physics; the pencil has exact
+    # zero modes whose binary64 residue is noise, and a relative comparison there
+    # would report an artefact of 1e-45 against 1e-46.
+    floor = 1e-6 * max(baseline)
+    significant = [(before, after) for before, after in zip(baseline, moved) if before > floor]
+    assert len(significant) >= 6  # two light polarizations plus the Langmuir pair
+    for before, after in significant:
         assert reference.relative(after, before) <= 1e-8
 
 
