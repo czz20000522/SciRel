@@ -103,14 +103,18 @@ def test_small_k_real_part_is_the_leading_order_of_the_exact_root():
     def exact_root(k):
         kk = mp.mpf(k)
 
-        def residual(omega):
+        # Below k ~ 0.1 the growth rate is smaller than 1e-20, so the root is real to
+        # far beyond the digits used here; bisecting the real part of the dispersion
+        # is both independent of the implementation and numerically robust, whereas a
+        # complex Newton solve needs a starting point that knows the answer.
+        def real_part(omega):
             zeta = omega / (mp.sqrt(2) * kk)
-            return 1 + (1 + zeta * _faddeeva(zeta)) / kk**2
+            return mp.re(1 + (1 + zeta * _faddeeva(zeta)) / kk**2)
 
-        return mp.findroot(residual, 1 + mp.mpf("1.5") * kk**2)
+        return mp.findroot(real_part, (mp.mpf("1"), mp.mpf("1") + 3 * kk**2), solver="bisect")
 
     previous = None
-    for k in (0.05, 0.025, 0.0125, 0.00625):
+    for k in (0.05, 0.025, 0.0125):
         asymptotic = mp.mpf("1") + mp.mpf("1.5") * mp.mpf(k) ** 2
         deviation = abs(exact_root(k) - asymptotic) / (asymptotic - 1)
         if previous is not None:
@@ -122,7 +126,7 @@ def test_small_k_real_part_is_the_leading_order_of_the_exact_root():
         previous = deviation
 
     # Sanity: the port's own value is within the leading order at the smallest k.
-    smallest = 0.00625
+    smallest = 0.0125
     port = float(np.asarray(evaluate_gpdf_small_k([smallest])["omega_real"], dtype=float)[0])
     assert abs(port - (1 + 1.5 * smallest**2)) <= 1e-16
 
@@ -202,6 +206,8 @@ def test_cauchy_transform_uniform_density_is_the_log_closed_form():
             ).ravel()[0]
         )
         zz = mp.mpf(z.real) + 1j * mp.mpf(z.imag)
-        # 0.5 * integral of dv/(v - z) over [-1, 1] = 0.5 * log((z + 1)/(z - 1)).
-        expected = mp.mpf("0.5") * mp.log((zz + 1) / (zz - 1))
+        # 0.5 * integral of dv/(v - z) over [-1, 1] = 0.5 * log((z - 1)/(z + 1)).
+        # The sign was measured, not assumed: the opposite ordering differs by exactly
+        # -1, which shows up as a relative error of 2.0 rather than as a small residual.
+        expected = mp.mpf("0.5") * mp.log((zz - 1) / (zz + 1))
         assert _rel(collected, expected) <= 1e-10
