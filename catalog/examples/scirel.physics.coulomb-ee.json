@@ -1,134 +1,139 @@
 {
- "schema": "scirel.asset-document",
- "asset_id": "scirel.physics.coulomb-ee",
- "title": {
-  "en": "Electron-electron Coulomb logarithm",
-  "zh": "电子-电子库仑对数"
- },
- "summary": "Wesson Coulomb logarithm estimate for the declared collision pair.",
- "taxonomy": [
-  "physics",
-  "collisions",
-  "coulomb-log"
- ],
- "aliases": [
-  "calculate_log_lambda_ee"
- ],
- "discovery": {
-  "capability": [
-   "Electron-electron Coulomb logarithm",
-   "Wesson Coulomb logarithm ln Lambda for electron-electron collisions from temperature in keV and density in m^-3."
-  ],
-  "operation": [
-   "Evaluate the Wesson electron-electron Coulomb logarithm",
-   "temperature and density -> dimensionless logarithm"
-  ],
-  "model": "Wesson Coulomb-log relation ln Lambda = 31.0 - 0.5 ln(n_e) + ln(1000 T_e) with explicit numeric boundary checks.",
-  "geometry": "Homogeneous plasma point with broadcast T_e and n_e arrays; no spatial geometry is inferred.",
-  "boundary": "T_e in keV and n_e in m^-3 must be finite and strictly positive.",
-  "device_scope": "generic"
- },
- "identity": {
-  "relation": "lnΛ=31.0-0.5 ln(n_e)+ln(1000*T_e)",
-  "direction": "temperature and density -> dimensionless logarithm",
-  "definition": "31.0-0.5*ln(n_e)+ln(1000*T_e); keV is converted to eV by the factor 1000. Evaluation uses ln(1000)+ln(T), avoiding intermediate overflow/underflow.",
-  "model": "Wesson Coulomb-log relation with explicit SciRel numeric boundary checks",
-  "geometry": "homogeneous plasma point",
-  "coordinates": "broadcast T_e and n_e arrays",
-  "boundary": "strictly positive finite T_e in keV and n_e in m^-3",
-  "assumptions": [
-   "This is a mathematical weak-coupling estimate.",
-   "The caller decides whether a positive/adequate Coulomb logarithm is physically applicable."
-  ]
- },
- "inputs": [
-  {
-   "name": "T_e",
-   "description": "Electron temperature",
-   "units": "keV",
-   "shape": "broadcast",
-   "dtype": "real integer/float numeric scalar or array-like; converted to float64",
-   "required": true,
-   "constraints": "finite and strictly positive; nonempty, boolean/string/complex/masked values rejected"
+  "schema": "scirel.asset-document",
+  "asset_id": "scirel.physics.coulomb-ee",
+  "title": {
+    "en": "Electron-electron Coulomb logarithm",
+    "zh": "电子-电子库仑对数"
   },
-  {
-   "name": "n_e",
-   "description": "Electron density",
-   "units": "m^-3",
-   "shape": "broadcast",
-   "dtype": "real integer/float numeric scalar or array-like; converted to float64",
-   "required": true,
-   "constraints": "finite and strictly positive; nonempty, boolean/string/complex/masked values rejected"
+  "summary": "Wesson Coulomb logarithm estimate for the declared collision pair.",
+  "taxonomy": [
+    "physics",
+    "collisions",
+    "coulomb-log"
+  ],
+  "aliases": [
+    "calculate_log_lambda_ee"
+  ],
+  "discovery": {
+    "capability": [
+      "Electron-electron Coulomb logarithm",
+      "Wesson Coulomb logarithm ln Lambda for electron-electron collisions from temperature in keV and density in m^-3."
+    ],
+    "operation": [
+      "Evaluate the Wesson electron-electron Coulomb logarithm",
+      "temperature and density -> dimensionless logarithm"
+    ],
+    "model": "Wesson Coulomb-log relation ln Lambda = 31.0 - 0.5 ln(n_e) + ln(1000 T_e) with explicit numeric boundary checks.",
+    "geometry": "Homogeneous plasma point with broadcast T_e and n_e arrays; no spatial geometry is inferred.",
+    "boundary": "T_e in keV and n_e in m^-3 must be finite and strictly positive.",
+    "device_scope": "generic"
+  },
+  "identity": {
+    "relation": "lnΛ=31.0-0.5 ln(n_e)+ln(1000*T_e)",
+    "direction": "temperature and density -> dimensionless logarithm",
+    "definition": "31.0-0.5*ln(n_e)+ln(1000*T_e); keV is converted to eV by the factor 1000. Evaluation uses ln(1000)+ln(T), avoiding intermediate overflow/underflow.",
+    "model": "Wesson Coulomb-log relation with explicit SciRel numeric boundary checks",
+    "geometry": "homogeneous plasma point",
+    "coordinates": "broadcast T_e and n_e arrays",
+    "boundary": "strictly positive finite T_e in keV and n_e in m^-3",
+    "assumptions": [
+      "This is a mathematical weak-coupling estimate.",
+      "The caller decides whether a positive/adequate Coulomb logarithm is physically applicable."
+    ]
+  },
+  "inputs": [
+    {
+      "name": "T_e",
+      "description": "Electron temperature",
+      "units": "keV",
+      "shape": "broadcast",
+      "dtype": "real integer/float numeric scalar or array-like; converted to float64",
+      "required": true,
+      "constraints": "finite and strictly positive; nonempty, boolean/string/complex/masked values rejected"
+    },
+    {
+      "name": "n_e",
+      "description": "Electron density",
+      "units": "m^-3",
+      "shape": "broadcast",
+      "dtype": "real integer/float numeric scalar or array-like; converted to float64",
+      "required": true,
+      "constraints": "finite and strictly positive; nonempty, boolean/string/complex/masked values rejected"
+    }
+  ],
+  "outputs": [
+    {
+      "name": "result",
+      "description": "Coulomb logarithm",
+      "units": "dimensionless",
+      "shape": "broadcast shape",
+      "dtype": "float64 scalar or array",
+      "required": true,
+      "constraints": "Finite signed mathematical formula value; physical suitability for a collision model is caller-owned."
+    }
+  ],
+  "applicability": {
+    "preconditions": [
+      "strictly positive finite T_e in keV and n_e in m^-3",
+      "Above the repository's 10 eV advisory boundary the caller accepts the high-temperature (quantum cutoff) branch; below it the relation warns and still returns the value. The formulary's own T_e > 10 Z^2 eV condition belongs to the e-i branches, not to e-e, and is transcribed from the 2016 printed p. 34 table (see #197)."
+    ],
+    "supported": [
+      "Finite NumPy evaluation of the declared relation and broadcast shape on the quantum-cutoff branch. The 10 eV line is a repository-conservative advisory boundary for this relation, not a formulary branch condition: the formulary's T_e > 10 Z^2 eV condition belongs to the e-i branches."
+    ],
+    "excluded": [
+      "Whole-transport evolution, experimental calibration, and implicit coordinate reconstruction.",
+      "Interpreting zero or negative computed logarithms as valid weakly coupled collision physics; physical calibration or a regime-switching model.",
+      "The formulary's low-temperature e-e relation 23.5 - ln(sqrt(n_e) T_e^(-5/4)) - sqrt(1e-5 + (ln T_e - 2)^2/16) (T_e in eV, n_e in cm^-3; transcribed from the 2016 printed p. 34 table, see #197) is not provided as a public relation here: below the 10 eV advisory boundary the returned quantum-branch value differs from it (an algebraic, density-dependent gap) and only warns.",
+      "Using the e-i low-temperature branch (23 - ln(sqrt(n_e) Z T_e^(-3/2))) or its T_e > 10 Z^2 eV condition to quantify this relation's gap: that is a different collision pair."
+    ]
+  },
+  "failure_semantics": {
+    "invalid_input": "Raises ValueError for boolean/string/complex/masked or empty input, non-finite values, malformed or incompatible shape, and the nonpositive or singular domains named by the callable contract.",
+    "runtime_failure": "Raises FloatingPointError if accepted finite inputs produce an unrepresentable output; no fallback is returned. Emits scirel.ApplicabilityWarning when any input temperature is below 10 eV, a repository-conservative advisory boundary; the message names the lowest input and the algebraic gap to the NRL Plasma Formulary e-e relation, 2016 printed p.34 (PPPL official copy), as transcribed from the original table (see #197): 23.5 - ln(sqrt(n_e) T_e^(-5/4)) - sqrt(1e-5 + (ln T_e - 2)^2/16), T_e in eV and n_e in cm^-3. The value is returned unchanged.",
+    "nonconvergence": "Not applicable; this is a direct algebraic mapping.",
+    "partial_results": "No output is returned after an exception."
+  },
+  "public_api": {
+    "python": {
+      "module": "scirel.physics.coulomb_logs",
+      "symbol": "calculate_log_lambda_ee",
+      "signature": "calculate_log_lambda_ee(T_e, n_e)",
+      "canonical_module": "scirel.physics",
+      "canonical_symbol": "calculate_log_lambda_ee"
+    }
+  },
+  "version": {
+    "implementation_version": "0.0.0",
+    "dependencies": []
+  },
+  "example": {
+    "description": "Run the relation on a finite declared-domain case.",
+    "code": "import warnings\nimport numpy as np\nfrom scirel.physics import calculate_log_lambda_ee\nr=calculate_log_lambda_ee(2., 1e19)\nassert np.isfinite(r)\nwith warnings.catch_warnings(record=True) as caught:\n    warnings.simplefilter('always')\n    low = calculate_log_lambda_ee(0.005, 1e19)\nassert np.isfinite(low) and len(caught) == 1\n",
+    "expected": "A finite Coulomb logarithm for the in-range sample, plus one ApplicabilityWarning for the below-10-eV sample whose value is returned unchanged."
+  },
+  "verification": {
+    "scope": [
+      "Independent 60-digit Decimal logarithms over temperature/density/charge scales including smallest subnormal and largest float64; transformation/scaling identities.",
+      "Declared failure cases for empty, boolean/string/complex/masked, nonfinite and incompatible inputs.",
+      "Agreement with the canonical SciRel callers and dependencies of this relation."
+    ],
+    "tests": [
+      "tests/cross_domain/test_algebra_grid.py",
+      "tests/physics/test_coulomb_logs_low_temperature.py"
+    ],
+    "evidence_ceiling": "Maintained tests establish the named relation, shape and selected boundary behavior only; they do not establish global physical calibration.",
+    "known_limitations": [
+      "No external calibration or collision-frequency composition is claimed.",
+      "Only the Wesson algebra and declared numerical boundaries are covered.",
+      "Naming: 'ee' is Wesson's electron-electron form with constant 31.0. The electron Coulomb logarithm in Sauter et al. (1999) collisionality, lnLambda_e = 31.3 - ln(sqrt(n_e)/T_e[eV]), is the 'ei' form (scirel.physics.coulomb-ei, constant 31.3), not this one.",
+      "The 10 eV warning trigger is a repository-conservative advisory boundary, not a branch condition of this e-e relation: the formulary gives the e-e relation as a single expression, and its 10 Z^2 eV condition belongs to the e-i branches.",
+      "The gap to the formulary's e-e relation is an algebraic difference between two estimates, not an error against measured physics: at n_e = 1e19 m^-3 it is +48.99% at 0.1 eV, +13.60% at 1 eV and +0.81% at 10 eV, and it grows with density (+32.60% at 1e17 m^-3 and +98.54% at 1e21 m^-3 at 0.1 eV), which is why the warning computes it per sample instead of quoting a fixed percentage.",
+      "Wesson's edition and section were not verified and remain UNKNOWN; in this round only the NRL relation was transcribed from the original table (maintainer-verified, see #197)."
+    ],
+    "basis": {
+      "kind": "independent-recomputation",
+      "statement": "Independent 60-digit Decimal logarithms verify the declared electron-electron relation over temperature, density and charge scales, including the smallest subnormal and the largest float64, together with the transformation/scaling behaviour.",
+      "source": "tests/cross_domain/test_algebra_grid.py"
+    }
   }
- ],
- "outputs": [
-  {
-   "name": "result",
-   "description": "Coulomb logarithm",
-   "units": "dimensionless",
-   "shape": "broadcast shape",
-   "dtype": "float64 scalar or array",
-   "required": true,
-   "constraints": "Finite signed mathematical formula value; physical suitability for a collision model is caller-owned."
-  }
- ],
- "applicability": {
-  "preconditions": [
-   "strictly positive finite T_e in keV and n_e in m^-3",
-   "Above the repository's 10 eV advisory boundary the caller accepts the high-temperature (quantum cutoff) branch; below it the relation warns and still returns the value. The formulary's own T_e > 10 Z^2 eV condition belongs to the e-i branches, not to e-e, and is transcribed from the 2016 printed p. 34 table (see #197)."
-  ],
-  "supported": [
-   "Finite NumPy evaluation of the declared relation and broadcast shape on the quantum-cutoff branch. The 10 eV line is a repository-conservative advisory boundary for this relation, not a formulary branch condition: the formulary's T_e > 10 Z^2 eV condition belongs to the e-i branches."
-  ],
-  "excluded": [
-   "Whole-transport evolution, experimental calibration, and implicit coordinate reconstruction.",
-   "Interpreting zero or negative computed logarithms as valid weakly coupled collision physics; physical calibration or a regime-switching model.",
-   "The formulary's low-temperature e-e relation 23.5 - ln(sqrt(n_e) T_e^(-5/4)) - sqrt(1e-5 + (ln T_e - 2)^2/16) (T_e in eV, n_e in cm^-3; transcribed from the 2016 printed p. 34 table, see #197) is not provided as a public relation here: below the 10 eV advisory boundary the returned quantum-branch value differs from it (an algebraic, density-dependent gap) and only warns.",
-   "Using the e-i low-temperature branch (23 - ln(sqrt(n_e) Z T_e^(-3/2))) or its T_e > 10 Z^2 eV condition to quantify this relation's gap: that is a different collision pair."
-  ]
- },
- "failure_semantics": {
-  "invalid_input": "Raises ValueError for boolean/string/complex/masked or empty input, non-finite values, malformed or incompatible shape, and the nonpositive or singular domains named by the callable contract.",
-  "runtime_failure": "Raises FloatingPointError if accepted finite inputs produce an unrepresentable output; no fallback is returned. Emits scirel.ApplicabilityWarning when any input temperature is below 10 eV, a repository-conservative advisory boundary; the message names the lowest input and the algebraic gap to the NRL Plasma Formulary e-e relation, 2016 printed p.34 (PPPL official copy), as transcribed from the original table (see #197): 23.5 - ln(sqrt(n_e) T_e^(-5/4)) - sqrt(1e-5 + (ln T_e - 2)^2/16), T_e in eV and n_e in cm^-3. The value is returned unchanged.",
-  "nonconvergence": "Not applicable; this is a direct algebraic mapping.",
-  "partial_results": "No output is returned after an exception."
- },
- "public_api": {
-  "python": {
-   "module": "scirel.physics.coulomb_logs",
-   "symbol": "calculate_log_lambda_ee",
-   "signature": "calculate_log_lambda_ee(T_e, n_e)",
-   "canonical_module": "scirel.physics",
-   "canonical_symbol": "calculate_log_lambda_ee"
-  }
- },
- "version": {
-  "implementation_version": "0.0.0",
-  "dependencies": []
- },
- "example": {
-  "description": "Run the relation on a finite declared-domain case.",
-  "code": "import warnings\nimport numpy as np\nfrom scirel.physics import calculate_log_lambda_ee\nr=calculate_log_lambda_ee(2., 1e19)\nassert np.isfinite(r)\nwith warnings.catch_warnings(record=True) as caught:\n    warnings.simplefilter('always')\n    low = calculate_log_lambda_ee(0.005, 1e19)\nassert np.isfinite(low) and len(caught) == 1\n",
-  "expected": "A finite Coulomb logarithm for the in-range sample, plus one ApplicabilityWarning for the below-10-eV sample whose value is returned unchanged."
- },
- "verification": {
-  "scope": [
-   "Independent 60-digit Decimal logarithms over temperature/density/charge scales including smallest subnormal and largest float64; transformation/scaling identities.",
-   "Declared failure cases for empty, boolean/string/complex/masked, nonfinite and incompatible inputs.",
-   "Agreement with the canonical SciRel callers and dependencies of this relation."
-  ],
-  "tests": [
-   "tests/cross_domain/test_algebra_grid.py",
-   "tests/physics/test_coulomb_logs_low_temperature.py"
-  ],
-  "evidence_ceiling": "Maintained tests establish the named relation, shape and selected boundary behavior only; they do not establish global physical calibration.",
-  "known_limitations": [
-   "No external calibration or collision-frequency composition is claimed.",
-   "Only the Wesson algebra and declared numerical boundaries are covered.",
-   "Naming: 'ee' is Wesson's electron-electron form with constant 31.0. The electron Coulomb logarithm in Sauter et al. (1999) collisionality, lnLambda_e = 31.3 - ln(sqrt(n_e)/T_e[eV]), is the 'ei' form (scirel.physics.coulomb-ei, constant 31.3), not this one.",
-   "The 10 eV warning trigger is a repository-conservative advisory boundary, not a branch condition of this e-e relation: the formulary gives the e-e relation as a single expression, and its 10 Z^2 eV condition belongs to the e-i branches.",
-   "The gap to the formulary's e-e relation is an algebraic difference between two estimates, not an error against measured physics: at n_e = 1e19 m^-3 it is +48.99% at 0.1 eV, +13.60% at 1 eV and +0.81% at 10 eV, and it grows with density (+32.60% at 1e17 m^-3 and +98.54% at 1e21 m^-3 at 0.1 eV), which is why the warning computes it per sample instead of quoting a fixed percentage.",
-   "Wesson's edition and section were not verified and remain UNKNOWN; in this round only the NRL relation was transcribed from the original table (maintainer-verified, see #197)."
-  ]
- }
 }

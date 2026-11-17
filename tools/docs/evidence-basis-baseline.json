@@ -452,14 +452,6 @@
       "reason": "not yet migrated: verification.basis absent"
     },
     {
-      "asset_id": "scirel.kinetic.rational-pole-table",
-      "reason": "not yet migrated: verification.basis absent"
-    },
-    {
-      "asset_id": "scirel.kinetic.rational-solve-matrix",
-      "reason": "not yet migrated: verification.basis absent"
-    },
-    {
       "asset_id": "scirel.kinetic.rational-z-poles",
       "reason": "not yet migrated: verification.basis absent"
     },
@@ -469,10 +461,6 @@
     },
     {
       "asset_id": "scirel.kinetic.ronnmark-r-function",
-      "reason": "not yet migrated: verification.basis absent"
-    },
-    {
-      "asset_id": "scirel.kinetic.species-equilibrium-scales",
       "reason": "not yet migrated: verification.basis absent"
     },
     {
@@ -532,14 +520,6 @@
       "reason": "not yet migrated: verification.basis absent"
     },
     {
-      "asset_id": "scirel.mirror.frank-egedal-hot-ion-moments",
-      "reason": "not yet migrated: verification.basis absent"
-    },
-    {
-      "asset_id": "scirel.mirror.frank-egedal-pressure-closure",
-      "reason": "not yet migrated: verification.basis absent"
-    },
-    {
       "asset_id": "scirel.mirror.frank-egedal-pressure-state",
       "reason": "not yet migrated: verification.basis absent"
     },
@@ -549,10 +529,6 @@
     },
     {
       "asset_id": "scirel.mirror.frank-egedal-source-projection",
-      "reason": "not yet migrated: verification.basis absent"
-    },
-    {
-      "asset_id": "scirel.mirror.grid-mirror-kinetic-closure",
       "reason": "not yet migrated: verification.basis absent"
     },
     {
@@ -692,10 +668,6 @@
       "reason": "not yet migrated: verification.basis absent"
     },
     {
-      "asset_id": "scirel.neutrals.terminal-energy-transfer-reduction",
-      "reason": "not yet migrated: verification.basis absent"
-    },
-    {
       "asset_id": "scirel.neutrals.terminal-flux-velocity-reduction",
       "reason": "not yet migrated: verification.basis absent"
     },
@@ -757,18 +729,6 @@
     },
     {
       "asset_id": "scirel.numerics.second-clamped-cubic-spline",
-      "reason": "not yet migrated: verification.basis absent"
-    },
-    {
-      "asset_id": "scirel.physics.coulomb-ee",
-      "reason": "not yet migrated: verification.basis absent"
-    },
-    {
-      "asset_id": "scirel.physics.coulomb-ei",
-      "reason": "not yet migrated: verification.basis absent"
-    },
-    {
-      "asset_id": "scirel.physics.coulomb-ii",
       "reason": "not yet migrated: verification.basis absent"
     },
     {
@@ -842,8 +802,18 @@
     "scirel.kinetic.parallel-em-continuation",
     "scirel.kinetic.parallel-em-residual",
     "scirel.kinetic.rational-point-matrix",
+    "scirel.kinetic.rational-pole-table",
+    "scirel.kinetic.rational-solve-matrix",
+    "scirel.kinetic.species-equilibrium-scales",
+    "scirel.mirror.frank-egedal-hot-ion-moments",
+    "scirel.mirror.frank-egedal-pressure-closure",
+    "scirel.mirror.grid-mirror-kinetic-closure",
+    "scirel.neutrals.terminal-energy-transfer-reduction",
     "scirel.numerics.clamped-cubic-spline",
     "scirel.numerics.natural-cubic-spline",
-    "scirel.numerics.truncated-svd-inverse"
+    "scirel.numerics.truncated-svd-inverse",
+    "scirel.physics.coulomb-ee",
+    "scirel.physics.coulomb-ei",
+    "scirel.physics.coulomb-ii"
   ]
 }
