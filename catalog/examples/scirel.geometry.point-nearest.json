@@ -1,150 +1,155 @@
 {
- "schema": "scirel.asset-document",
- "asset_id": "scirel.geometry.point-nearest",
- "title": {
-  "en": "Field query Geometric nearest sample on any matching planar arrays",
-  "zh": "平面样点几何最近值"
- },
- "summary": "Choose the flattened sample with minimum Euclidean distance; exact ties keep the first sample",
- "taxonomy": [
-  "analysis",
-  "sampling"
- ],
- "aliases": [
-  "locs_to_vals1D"
- ],
- "discovery": {
-  "capability": [
-   "Geometric nearest field query",
-   "Choose the flattened sample with minimum Euclidean distance to each query point; exact ties keep the first sample."
-  ],
-  "operation": [
-   "geometric nearest-sample field query",
-   "matched planar sample arrays, field values and query points -> sampled field values"
-  ],
-  "model": "Geometric nearest-neighbor selection in matched planar coordinates; no interpolation.",
-  "geometry": "Planar matched sample points with x column and y row coordinates, or matched scattered arrays; queries are ordered coordinate pairs.",
-  "boundary": "No out-of-support interpolation is synthesized; finite matched samples and queries inside the convex/interpolation support are required, and equivalence with the rectangular scheme on irregular grids is not asserted.",
-  "device_scope": "generic"
- },
- "identity": {
-  "relation": "Field query Geometric nearest sample on any matching planar arrays",
-  "direction": "Declared inputs to Sampled values",
-  "definition": "Choose the flattened sample with minimum Euclidean distance; exact ties keep the first sample. Floating coordinates exactly representable as binary64 use outward-rounded squared-distance intervals: bound the absolute difference, each square and the sum by adjacent floats, with lower bounds clipped at zero. Retain lower <= min(upper), then compare every remaining candidate with exact rational squared distances. Integer and real numeric object coordinates always bypass the floating filter; wider floating formats and queries without exact binary64 conversion also use direct exact comparison.",
-  "model": "Geometric nearest sample on any matching planar arrays",
-  "geometry": "planar matched sample points",
-  "coordinates": "X column coordinate, Y row coordinate or matched scattered point arrays",
-  "boundary": "Nearest-sample selection only; physical support is the caller's responsibility, with no sorting or domain-membership rejection",
-  "assumptions": [
-   "Finite matched real planar sample coordinates and numeric fields",
-   "Requested grid/query points lie inside convex/interpolation support"
-  ]
- },
- "inputs": [
-  {
-   "name": "X",
-   "description": "Point x coordinates",
-   "units": "coordinate units",
-   "shape": "matched grid/sample shape",
-   "dtype": "float64",
-   "required": true,
-   "constraints": "Real; for rectangular nearest X[0,:] is x axis"
+  "schema": "scirel.asset-document",
+  "asset_id": "scirel.geometry.point-nearest",
+  "title": {
+    "en": "Field query Geometric nearest sample on any matching planar arrays",
+    "zh": "平面样点几何最近值"
   },
-  {
-   "name": "Y",
-   "description": "Point y coordinates",
-   "units": "coordinate units",
-   "shape": "same as X",
-   "dtype": "float64",
-   "required": true,
-   "constraints": "Real; for rectangular nearest Y[:,0] is y axis"
+  "summary": "Choose the flattened sample with minimum Euclidean distance; exact ties keep the first sample",
+  "taxonomy": [
+    "analysis",
+    "sampling"
+  ],
+  "aliases": [
+    "locs_to_vals1D"
+  ],
+  "discovery": {
+    "capability": [
+      "Geometric nearest field query",
+      "Choose the flattened sample with minimum Euclidean distance to each query point; exact ties keep the first sample."
+    ],
+    "operation": [
+      "geometric nearest-sample field query",
+      "matched planar sample arrays, field values and query points -> sampled field values"
+    ],
+    "model": "Geometric nearest-neighbor selection in matched planar coordinates; no interpolation.",
+    "geometry": "Planar matched sample points with x column and y row coordinates, or matched scattered arrays; queries are ordered coordinate pairs.",
+    "boundary": "No out-of-support interpolation is synthesized; finite matched samples and queries inside the convex/interpolation support are required, and equivalence with the rectangular scheme on irregular grids is not asserted.",
+    "device_scope": "generic"
   },
-  {
-   "name": "Q",
-   "description": "Finite numeric field samples; selected element types are retained",
-   "units": "field units",
-   "shape": "same as X",
-   "dtype": "array_like",
-   "required": true,
-   "constraints": "Finite"
+  "identity": {
+    "relation": "Field query Geometric nearest sample on any matching planar arrays",
+    "direction": "Declared inputs to Sampled values",
+    "definition": "Choose the flattened sample with minimum Euclidean distance; exact ties keep the first sample. Floating coordinates exactly representable as binary64 use outward-rounded squared-distance intervals: bound the absolute difference, each square and the sum by adjacent floats, with lower bounds clipped at zero. Retain lower <= min(upper), then compare every remaining candidate with exact rational squared distances. Integer and real numeric object coordinates always bypass the floating filter; wider floating formats and queries without exact binary64 conversion also use direct exact comparison.",
+    "model": "Geometric nearest sample on any matching planar arrays",
+    "geometry": "planar matched sample points",
+    "coordinates": "X column coordinate, Y row coordinate or matched scattered point arrays",
+    "boundary": "Nearest-sample selection only; physical support is the caller's responsibility, with no sorting or domain-membership rejection",
+    "assumptions": [
+      "Finite matched real planar sample coordinates and numeric fields",
+      "Requested grid/query points lie inside convex/interpolation support"
+    ]
   },
-  {
-   "name": "coord_list",
-   "description": "Desired coordinate pairs",
-   "units": "coordinate units",
-   "shape": "list of (x,y)",
-   "dtype": "float64",
-   "required": true,
-   "constraints": "Finite real queries; each pair is independently copied and checked as the iterable is consumed once"
+  "inputs": [
+    {
+      "name": "X",
+      "description": "Point x coordinates",
+      "units": "coordinate units",
+      "shape": "matched grid/sample shape",
+      "dtype": "float64",
+      "required": true,
+      "constraints": "Real; for rectangular nearest X[0,:] is x axis"
+    },
+    {
+      "name": "Y",
+      "description": "Point y coordinates",
+      "units": "coordinate units",
+      "shape": "same as X",
+      "dtype": "float64",
+      "required": true,
+      "constraints": "Real; for rectangular nearest Y[:,0] is y axis"
+    },
+    {
+      "name": "Q",
+      "description": "Finite numeric field samples; selected element types are retained",
+      "units": "field units",
+      "shape": "same as X",
+      "dtype": "array_like",
+      "required": true,
+      "constraints": "Finite"
+    },
+    {
+      "name": "coord_list",
+      "description": "Desired coordinate pairs",
+      "units": "coordinate units",
+      "shape": "list of (x,y)",
+      "dtype": "float64",
+      "required": true,
+      "constraints": "Finite real queries; each pair is independently copied and checked as the iterable is consumed once"
+    }
+  ],
+  "outputs": [
+    {
+      "name": "values",
+      "description": "Selected np.asarray(Q).ravel() samples in query order",
+      "units": "field units",
+      "shape": "query-count list",
+      "dtype": "list",
+      "required": true,
+      "constraints": "Selected element types are retained; no uniform float64 conversion is applied"
+    }
+  ],
+  "applicability": {
+    "preconditions": [
+      "Finite matched real planar sample coordinates and numeric fields",
+      "Requested grid/query points lie inside convex/interpolation support"
+    ],
+    "supported": [
+      "Finite inputs satisfying the callable-specific shape, support, and boundary conditions"
+    ],
+    "excluded": [
+      "Rectangular and geometric nearest schemes are not asserted equivalent on irregular input",
+      "Physical interpretation outside caller-declared support is unqualified; nonfinite field values are rejected"
+    ]
+  },
+  "failure_semantics": {
+    "invalid_input": "Nonfinite sample coordinates, Q data or query coordinates reject the whole request with ValueError. Complex sample or query coordinate representations, including zero imaginary parts and complex object elements, also raise ValueError, even when the query batch is empty. Finite complex Q values remain supported. Other conversion, indexing or arithmetic errors propagate. The implementation does not reject unsorted or outside-support queries; the caller determines physical support. Finite numeric object elements are checked without float64 narrowing; real coordinates are compared using their represented numeric values. Unsupported numeric representations still propagate conversion or arithmetic errors.",
+    "runtime_failure": "Numerical, interpolation, or optional-dependency exceptions propagate from the direct calculation.",
+    "nonconvergence": "Not applicable; the relation uses direct finite-difference, interpolation, selection, or quadrature operations.",
+    "partial_results": "No partial result is promised when input validation or the underlying numerical operation fails."
+  },
+  "public_api": {
+    "python": {
+      "module": "scirel.geometry.sampling",
+      "symbol": "locs_to_vals1D",
+      "signature": "locs_to_vals1D(X, Y, Q, coord_list)",
+      "canonical_module": "scirel.geometry",
+      "canonical_symbol": "locs_to_vals1D"
+    }
+  },
+  "version": {
+    "implementation_version": "0.0.0",
+    "dependencies": []
+  },
+  "example": {
+    "description": "Query the value at the geometrically nearest point in a matched planar sample.",
+    "code": "import numpy as np\nfrom scirel.geometry.sampling import locs_to_vals1D\n\nx, y = np.meshgrid([0.0, 0.5, 1.0], [0.0, 0.5, 1.0])\nvalues = locs_to_vals1D(x, y, x + 2.0 * y, [(0.5, 0.5)])\nnp.testing.assert_allclose(values, [1.5])",
+    "expected": "The nearest sample value is [1.5]."
+  },
+  "verification": {
+    "scope": [
+      "The selected flattened sample equals an exhaustive rational (Fraction) minimiser over all samples, recomputed in the test with the documented first-sample tie rule; the comparison is exact, with no tolerance.",
+      "A constructed case where binary64 subtraction collapses two distances is asserted: the float argmin keeps the first sample while the exact rule keeps the second, and the operator returns the second.",
+      "Masked samples are asserted to be excluded, and the all-masked case returns the documented first index.",
+      "The axis-separable scheme is asserted to select a different sample on a non-separable cloud, which makes the stated non-equivalence executable.",
+      "Failure matrix gives one executable assertion per rejecting channel: non-finite and complex coordinates raise ValueError, no partial result is returned, and two identical calls agree while a permuted query list permutes the answers."
+    ],
+    "tests": [
+      "tests/equilibrium/test_analysis_families.py",
+      "tests/geometry/test_sampling_failures.py",
+      "tests/geometry/test_point_nearest.py",
+      "tests/sampling/test_nearest_sampling_evidence.py"
+    ],
+    "evidence_ceiling": "Establishes exact minimisation on the tested clouds, including constructed near-ties and ties. It does not prove that the private outward-interval pre-filter can never discard a true minimiser for arbitrary binary64 input; that universal soundness is a proof obligation.",
+    "known_limitations": [
+      "Rectangular and geometric nearest schemes are not asserted equivalent on irregular input",
+      "Physical interpretation outside caller-declared support is unqualified; nonfinite field values are rejected",
+      "cannot establish: universal soundness of the outward-interval pre-filter (it can never discard a true minimiser); only constructed adversarial cases are checked"
+    ],
+    "basis": {
+      "kind": "closed-form",
+      "statement": "Exact minimisation is established on the tested clouds, including constructed near-ties and ties. It is NOT proved that the private outward-interval pre-filter can never discard a true minimiser for arbitrary binary64 input; that universal soundness remains a proof obligation.",
+      "source": "tests/geometry/test_point_nearest.py"
+    }
   }
- ],
- "outputs": [
-  {
-   "name": "values",
-   "description": "Selected np.asarray(Q).ravel() samples in query order",
-   "units": "field units",
-   "shape": "query-count list",
-   "dtype": "list",
-   "required": true,
-   "constraints": "Selected element types are retained; no uniform float64 conversion is applied"
-  }
- ],
- "applicability": {
-  "preconditions": [
-   "Finite matched real planar sample coordinates and numeric fields",
-   "Requested grid/query points lie inside convex/interpolation support"
-  ],
-  "supported": [
-   "Finite inputs satisfying the callable-specific shape, support, and boundary conditions"
-  ],
-  "excluded": [
-   "Rectangular and geometric nearest schemes are not asserted equivalent on irregular input",
-   "Physical interpretation outside caller-declared support is unqualified; nonfinite field values are rejected"
-  ]
- },
- "failure_semantics": {
-  "invalid_input": "Nonfinite sample coordinates, Q data or query coordinates reject the whole request with ValueError. Complex sample or query coordinate representations, including zero imaginary parts and complex object elements, also raise ValueError, even when the query batch is empty. Finite complex Q values remain supported. Other conversion, indexing or arithmetic errors propagate. The implementation does not reject unsorted or outside-support queries; the caller determines physical support. Finite numeric object elements are checked without float64 narrowing; real coordinates are compared using their represented numeric values. Unsupported numeric representations still propagate conversion or arithmetic errors.",
-  "runtime_failure": "Numerical, interpolation, or optional-dependency exceptions propagate from the direct calculation.",
-  "nonconvergence": "Not applicable; the relation uses direct finite-difference, interpolation, selection, or quadrature operations.",
-  "partial_results": "No partial result is promised when input validation or the underlying numerical operation fails."
- },
- "public_api": {
-  "python": {
-   "module": "scirel.geometry.sampling",
-   "symbol": "locs_to_vals1D",
-   "signature": "locs_to_vals1D(X, Y, Q, coord_list)",
-   "canonical_module": "scirel.geometry",
-   "canonical_symbol": "locs_to_vals1D"
-  }
- },
- "version": {
-  "implementation_version": "0.0.0",
-  "dependencies": []
- },
- "example": {
-  "description": "Query the value at the geometrically nearest point in a matched planar sample.",
-  "code": "import numpy as np\nfrom scirel.geometry.sampling import locs_to_vals1D\n\nx, y = np.meshgrid([0.0, 0.5, 1.0], [0.0, 0.5, 1.0])\nvalues = locs_to_vals1D(x, y, x + 2.0 * y, [(0.5, 0.5)])\nnp.testing.assert_allclose(values, [1.5])",
-  "expected": "The nearest sample value is [1.5]."
- },
- "verification": {
-  "scope": [
-   "The selected flattened sample equals an exhaustive rational (Fraction) minimiser over all samples, recomputed in the test with the documented first-sample tie rule; the comparison is exact, with no tolerance.",
-   "A constructed case where binary64 subtraction collapses two distances is asserted: the float argmin keeps the first sample while the exact rule keeps the second, and the operator returns the second.",
-   "Masked samples are asserted to be excluded, and the all-masked case returns the documented first index.",
-   "The axis-separable scheme is asserted to select a different sample on a non-separable cloud, which makes the stated non-equivalence executable.",
-   "Failure matrix gives one executable assertion per rejecting channel: non-finite and complex coordinates raise ValueError, no partial result is returned, and two identical calls agree while a permuted query list permutes the answers."
-  ],
-  "tests": [
-   "tests/equilibrium/test_analysis_families.py",
-   "tests/geometry/test_sampling_failures.py",
-   "tests/geometry/test_point_nearest.py",
-   "tests/sampling/test_nearest_sampling_evidence.py"
-  ],
-  "evidence_ceiling": "Establishes exact minimisation on the tested clouds, including constructed near-ties and ties. It does not prove that the private outward-interval pre-filter can never discard a true minimiser for arbitrary binary64 input; that universal soundness is a proof obligation.",
-  "known_limitations": [
-   "Rectangular and geometric nearest schemes are not asserted equivalent on irregular input",
-   "Physical interpretation outside caller-declared support is unqualified; nonfinite field values are rejected",
-   "cannot establish: universal soundness of the outward-interval pre-filter (it can never discard a true minimiser); only constructed adversarial cases are checked"
-  ]
- }
 }
