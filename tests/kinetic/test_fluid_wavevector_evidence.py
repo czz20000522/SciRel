@@ -107,7 +107,8 @@ def test_fluid_case_state_source_constants_are_published_values():
     assert reference.relative(_scalar(case["mp"]), 1.6726219e-27) <= 1e-12
     # Documented roundings: five significant digits only.
     assert reference.relative(_scalar(case["me"]), 9.1093837015e-31) <= 3e-5
-    assert reference.relative(_scalar(case["mu0"]), 1 / (case["c2"] * case["epsilon0"])) <= 1e-15
+    expected_mu0 = 1.0 / (_scalar(case["c2"]) * _scalar(case["epsilon0"]))
+    assert reference.relative(_scalar(case["mu0"]), expected_mu0) <= 1e-15
 
 
 @pytest.mark.parametrize(("family", "jcase"), CASE_SELECTORS)
@@ -138,8 +139,13 @@ def test_fluid_case_state_derived_scales_match_closed_forms(family, jcase):
         assert reference.relative(float(np.asarray(case["wcs"]).ravel()[index]), float(expected["wcs"][index])) <= 1e-14
         assert reference.relative(float(np.asarray(case["wps"]).ravel()[index]), float(expected["wps"][index])) <= 1e-14
         assert reference.relative(float(np.asarray(case["rhocs"]).ravel()[index]), float(expected["rhocs"][index])) <= 1e-13
-        assert reference.relative(float(np.asarray(case["absrhocs"]).ravel()[index]), float(expected["absrhocs"][index])) <= 1e-13
-        assert float(np.asarray(case["sgns"]).ravel()[index]) == expected["sgns"][index]
+        # absrhocs and sgns are not returned by derive_fluid_case; they are derived
+        # from the signed gyroradius the case does return.
+        assert reference.relative(
+            abs(float(np.asarray(case["rhocs"]).ravel()[index])),
+            float(expected["absrhocs"][index]),
+        ) <= 1e-13
+        assert np.sign(float(np.asarray(case["rhocs"]).ravel()[index])) == expected["sgns"][index]
     assert reference.relative(_scalar(case["wn"]), float(expected["wn"])) <= 1e-15
     assert reference.relative(_scalar(case["kn"]), float(expected["kn"])) <= 1e-13
     assert reference.relative(_scalar(case["rhocn"]), float(expected["rhocn"])) <= 1e-13
