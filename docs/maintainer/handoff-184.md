@@ -64,16 +64,8 @@ python3 scripts/dev.py check     # 验收；默认就是发布档
 
 ## 3. 能力边界：明确不做什么
 
-下面四条是**消费者实测**出来的阻塞级缺口（证据：[C5 缺口清单](../../examples/c5-delivery-acceptance/GAPS.md)）。它们不是"我们选择不提供"，而是"包里没有，且包内没有任何机制能提醒你少了这一环"。
+这一节不重复罗列——边界已单列成持久页 [能力边界](capability-boundaries.md)，那里的四条带可复现命令与合同事实，并区分「我们选择不提供」与「包内根本没有」两类。
 
-| 缺口 | 具体到哪一步 |
-| --- | --- |
-| **安全因子 q 与磁剪切：完全没有合同** | `search --q 'safety factor'` / `--q 'magnetic shear'` 都是 `no_candidates`；249 条资产里 0 个 `symbol` 或 `capability` 名含 `safety`/`shear`。`scirel.io.read-geqdsk` 只是把 g-file 里附带的 q 表读进 `mapping`，没有任何算子从磁面几何算 `q(ψ)` 或 `s=(r/q)dq/dr`。 |
-| **镜比 / 损失锥角 / 镜点：没有算子** | 12 份 mirror 合同**全部**把损失锥边界当**输入**（`xi_tp`）；没有一份接收磁场剖面返回 `B_max/B_min`、`θ_loss` 或 `z_m`。风险不是"多写几行"，而是**纠错面消失**：`xi_tp` 错了，下游照样得到一个自洽、精确到 1e-15 的谱，没有任何东西能发现喂进去的边界是错的。 |
-| **没有三维 Cartesian ↔ 柱坐标** | 只有 `scirel.sampling.meridional-polar-forward/-inverse` 这一对**二维子午面**变换。任何带环向角的题目消费者得自己写那一腿。 |
-| **平衡 → 镜域：没有合同级交接** | `scirel.equilibrium.compute-equilibrium` 返回的 `EquilibriumResult`，其 `outputs.units` 字面是 **`source-unspecified`**；mirror 域要的 `psi` 单位（Wb 还是 Wb/rad）明说是调用者责任。两端之间没有任何合同声明字段、单位、符号约定的对应关系。 |
-
-消费者撞到这些时的正确行为是**说出来**："这个平衡的边界 q 和剪切，包内没有这个能力"——这句话必须由人说出来，不能让检索的 `no_candidates` 自己扮演结论。
 
 ## 4. 未决事项：全部 open 工单
 
