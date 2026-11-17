@@ -197,21 +197,26 @@ def test_maxwellian_electrostatic_mode_root_zeroes_the_reported_dispersion():
         solve_maxwellian_electrostatic_mode,
     )
 
+    def dispersion(value, wavenumber):
+        return abs(
+            complex(np.asarray(evaluate_maxwellian_electrostatic(value, wavenumber)["D"]).ravel()[0])
+        )
+
     # Two different wavenumbers: the mutation harness's "constant" kind needs the
     # callable exercised at least twice with different arguments, and a single call
-    # leaves that mutant unobserved rather than killed.
+    # leaves that mutant unobserved rather than killed.  A previous revision put the
+    # assertions inside the helper after its return, so they never ran and every
+    # mutant survived; the loop body below is where they belong.
     for k, guess in ((0.5, 1.0), (0.3, 1.2)):
         solution = solve_maxwellian_electrostatic_mode(k, guess)
         frequency = complex(np.asarray(solution["omega"]).ravel()[0])
 
-    def dispersion(value):
-        return abs(complex(np.asarray(evaluate_maxwellian_electrostatic(value, k)["D"]).ravel()[0]))
-
-        # Evaluate at the full complex frequency: passing only its real part selects the
-        # real-axis branch, which returns 0.045+0.064 here instead of 1.5e-14.  That is a
-        # branch difference of kind, not of value, and is recorded in the contract.
-        at_root = dispersion(frequency)
+        # Evaluate at the full complex frequency: passing only its real part selects
+        # the real-axis branch, which returns 0.045+0.064 at k = 0.5 instead of
+        # 1.5e-14.  That is a branch difference of kind, not of value, and is
+        # recorded in the contract.
+        at_root = dispersion(frequency, k)
         assert at_root <= 1e-10
-        assert dispersion(frequency * (1 + 1e-3)) > 1e6 * at_root
+        assert dispersion(frequency * (1 + 1e-3), k) > 1e6 * at_root
         # The solver's own normalised residual must agree that this is a root.
         assert abs(float(np.asarray(solution["normalized_residual"]).ravel()[0])) <= 1e-8
