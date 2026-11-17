@@ -202,3 +202,43 @@ git reflog show --date=iso <ref>
 - **不动任何 worktree 目录。** 本轮"可删"结果里没有一棵 worktree。
 - **不动容器卷、receipt、stash。** 那些在 #121 的资源账本里有独立处置线。
 - **不推 `main`、不合并、不 rebase 他人分支。**
+
+## 7. squash 合并之后，"分支还有没有独有工作"无法用 tip 比较回答
+
+### 7.1 实测（`main` @ `d429359d`，30 条本地分支，不含 main）
+
+按"两个 tip 的文件内容是否相同"判：
+
+| 判定 | 条数 | 分支 |
+| --- | --- | --- |
+| tip 与 `main` 完全相同 | **4** | `agent/c1-kinetic-c`、`agent/c4-closeout`、`integration/reland`、`rubicon/d0a5aef9-b55c` |
+| tip 有差异 | **26** | `agent/c1-*`（11）、`agent/c2-*`（2）、`agent/c3-receipt`、`agent/c4-round2`、`agent/c5-package`、`agent/c6-docs`、`agent/gate-policy`、`agent/observation-integrity`、`agent/ref-audit`、`agent/rules-inrepo`、`integration/batch4`、`integration/c4-channel`、`rubicon/*`（2） |
+
+### 7.2 那 26 条里绝大多数**没有**独有工作，但这个判据证明不了
+
+本仓库对 PR 用 **squash 合并**。后果是：
+
+- 分支的提交没有被 `main` 继承，`git branch --merged` 与 `git rev-list --count` 都不可信；
+- 分支 tip 与其 merge-base 的差异早已进了 `main`，但**`main` 随后又改过同一批文件**，于是 tip 比较必然显示"仍不同"。
+
+所以上表的"26 条有差异"**不等于**"26 条有独有工作"。它只说明"两棵树不同"，而 squash 之后两棵树本来就该不同。
+
+**这是一个判据盲区，不是回收依据。** 用它会得出两个都错的动作：把它们当垃圾删掉（可能丢工作），或全部保留（永远收不干净）。
+
+### 7.3 可操作的做法
+
+| 类别 | 判据 | 动作 |
+| --- | --- | --- |
+| tip 完全相同（4 条） | 上表实测；且未被任何 worktree 检出；且无未提交 | 可 `git branch -D`，但**受保护项与 `integration/reland` 除外**（见 §5 与结项决定） |
+| tip 有差异（26 条） | **不判"有没有独有工作"**——squash 让这条判据失效 | 归档而不是删除：`git update-ref refs/archive/<name> refs/heads/<name>`，然后删本地分支。归档保留指针，代价是几十字节 |
+| 任何仍有 worktree 检出的分支 | `git worktree list` | 先收 worktree，再谈分支 |
+
+`refs/archive/*` 的价值正在这里：**它把"我不敢判"变成"不必判"**。指针留着，历史可追，而分支名不再占位。
+
+### 7.4 一处仍然成立的具体结论
+
+`rubicon/521e25b2-c3d7` 曾经真的持有独有工作（75 提交、35 文件）而长期未合入 —— 那一次是**靠内容差异发现的**（它的 `tests/kinetic/` 有 10 个 `main` 上不存在的文件），不是靠提交数。所以：
+
+> 判断"有没有独有工作"，看**有没有 `main` 上根本不存在的文件或符号**，而不是看两边同名文件内容是否相同。
+
+上表 26 条里，若某条含有 `main` 中完全不存在的路径，那才是真信号。这个检查比 tip 比较可靠，且成本相同。
