@@ -5,30 +5,41 @@
 
 规范（判据、原则、流程）不在本文件，见 [持久规范与状态的分界](durable-vs-status.md)。
 
+## 0 测量块（自动生成，勿手改）
+
+本节由 `python3 scripts/status_report.py --write` 生成，`tests/tooling/test_status_report.py`
+会在提交的块与现场重新生成的结果不一致时判红。**手改这里的数字没有意义**——下一次生成会覆盖它，
+而测试会先一步告诉你忘了重新生成。
+
 ## 1 观察点
 
-| 项 | 值 |
+<!-- status-report:begin -->
+| 量 | 值 | 复算口径（在仓库根执行） |
+| --- | --- | --- |
+| 合同（`catalog/examples/`） | 249 | `ls catalog/examples/scirel.*.json | wc -l` |
+| `src/scirel` 下 `.py` 文件 | 230 | `find src/scirel -name '*.py' | wc -l` |
+| `src/scirel` 行数 | 56019 | `find src/scirel -name '*.py' -exec cat {} + | wc -l` |
+| 模块级公开函数（`def` 顶格、非下划线开头） | 294 | `grep -rh '^def [a-zA-Z]' src/scirel --include='*.py' | wc -l` |
+| 顶层子包（含 `__init__.py`） | 22 | `ls -d src/scirel/*/ | wc -l` 后按 `__init__.py` 过滤 |
+| 测试文件（`test_*.py`） | 416 | `find tests -name 'test_*.py' | wc -l` |
+
+口径：数字由本块上方的命令现场重算；本块不含提交号——引用时连同生成它的提交一起引用（`git log -1 -- docs/maintainer/status.md`）。
+
+| 证据覆盖 | 份数 |
 | --- | --- |
-| 分支 | `main` |
-| revision | `7f1eef8c` |
-| 观察日期 | 2026-11-17 |
+| `basis` | 180 |
+| `gap` | 104 |
+| `either` | 220 |
+| `neither` | 29 |
+
+口径：`python3 scripts/c1_evidence_coverage.py`；`neither` 是**合同文本缺口**，不是「没有证据」，也不是科学工作完成度。
+<!-- status-report:end -->
 
 ## 2 规模
 
 每一行都给出复算口径，任何人在任何 checkout 上都能重跑。数字放在表格里是**故意的**：
 [`test_repository_skeleton.py`](../../tests/architecture/test_repository_skeleton.py) 会判红"文档里手写目录规模"的写法，
 因为这正是会漂移的那类句子；表格只提供当次分母，不宣称规模。
-
-| 量 | 值 | 复算口径（在仓库根执行） |
-| --- | --- | --- |
-| 合同（`catalog/examples/`） | 249 | `ls catalog/examples/scirel.*.json \| wc -l` |
-| `src/scirel` 下 `.py` 文件 | 230 | `find src/scirel -name '*.py' \| wc -l` |
-| `src/scirel` 行数 | 56019 | `find src/scirel -name '*.py' -exec cat {} + \| wc -l` |
-| 模块级公开函数（`def` 顶格、非下划线开头） | 294 | `grep -rh '^def [a-zA-Z]' src/scirel --include='*.py' \| wc -l` |
-| 顶层子包（含 `__init__.py`） | 22 | 其中 21 个是公开领域包，`_framework_compositions` 是根级私有模块 |
-| 测试文件 | 412 | `find tests -name 'test_*.py' \| wc -l` |
-| 收集到的用例 | 9378 | `python -m pytest tests -q --collect-only` 尾行 |
-| `def test_` 字面数量 | 3865 | `grep -rhc 'def test_' tests --include='test_*.py' \| awk '{s+=$1} END {print s}'` |
 
 最后两行不是重复计数，而是**两种口径**：参数化会把一个 `def test_` 展开成多个用例。
 "用例数"随参数表变，"函数数"随文件变，两者不可互推。
@@ -112,12 +123,7 @@ C3（一次检查给出可对账的逐项测试身份）正是为这件事开的
 口径：`scripts/c1_evidence_coverage.py --format json`。它只做文本分类，脚本自身写明
 "Text match only, not a gate"——给分母，不判红。
 
-| 分类 | 数量 |
-| --- | --- |
-| 记录了证据来源（basis） | 180 |
-| 记录了缺口（gap） | 104 |
-| 两者之一（either） | 220 |
-| **两者都没有（neither）** | 29 |
+数字见上面的自动生成块（`basis` / `gap` / `either` / `neither`）。
 
 `neither` 的域分布：`kinetic` 24、`numerics` 3、`field` 1、`sampling` 1。
 每一项都需要人工裁决：要么指出证据来源，要么明确写成"未建立"。这是当前最大的单点债务。
