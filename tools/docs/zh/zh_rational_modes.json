@@ -627,17 +627,24 @@
    },
    "verification": {
     "scope": [
-     "test_vacuum_continuation_matches_analytic_branch_and_zero_residual 检查真空解析分支（两点网格上 omega=0.2,0.21，零 scaled residual）；test_parallel_rejects_complex_and_unrepresentable_wavevectors 覆盖非法 k 网格；残差本身在同一文件中有直接 Hermite 积分 gate。",
-     "有界示例覆盖一次代表延续；不扩展适用范围。",
-     "回归固定默认种子的 fail-closed 记录、显式种子的已接受延续以及非法网格拒绝；不声称非真空源轨迹一致性。"
+     "真空解析支：`tests/kinetic/test_parallel_em_continuation_evidence.py` 对零密度态（`wps2=0`）在 `k=[0.2,0.21,0.3,-0.15]` 上延续，要求 `abs(omega) = sqrt(c2)*abs(k)` 相对误差在 `1e-15` 内，且每个点的缩放残差恰为零；这是 `omega^2 = c2*k^2` 的闭式支，两个 k 符号都覆盖。",
+     "成功与残差界双向等价：每个被接受的记录都满足 `solver_success` 为真且 `scaled_residual <= residual_tolerance`；同一个可接受点（`k=0.01`、非真空态）在默认 `1e-10` 下被接受，而在 `1e-20`、`1e-25`、`1e-30` 下即使求解器仍报成功也抛 `ContinuationFailure`，且已接受前缀为空。",
+     "被拒绝的点不产生后继行：第二个网格点（`k=0.5`）发生求值失败时，运行停在该 k、已接受前缀长度为 1，而第三个点（由另一条两点运行证明可接受）从未被触及；第一个点上的求值预算耗尽（`maxfev=8`）则携带 `solver_success` 为假与空前缀。",
+     "`test_parallel_rejects_complex_and_unrepresentable_wavevectors` 覆盖畸形 `k` 网格；残差本身在其自己的合同中带有直接求积依据。",
+     "有界示例覆盖一个代表性延续。"
     ],
+    "evidence_ceiling": "限定于所声明延续在受测真空支、认证行为与失败合同上的表现。独立依据：闭式真空支 `omega = ±sqrt(c2)*abs(k)`、在不改写求解器的前提下拒绝假成功的双向等价检查，以及分别针对求解器失败与求值失败的两条“无后继行”构造。不证明非真空延续精度、跨网格的物理模身份、与种子无关的分支选择、唯一性或最大增长率。",
     "known_limitations": [
-     "解析延续检查仅为真空两点评例；不声明非真空精度。",
-     "延续根依赖种子；不作唯一性或最大增长率声明。",
-     "默认 50 点网格保留来源归一化，但需要调用方提供 cwp 与 wcs1。",
-     "默认 50 点网格/种子可能在可接受 k 点抛出 ContinuationFailure；fail-closed 停止而不是携带失败根，因此分支声明需要显式调用方种子（或接受失败）。"
+     "解析延续检查只是真空两点情形；不主张非真空精度。",
+     "延续根依赖种子；不主张唯一性或最大增长率。",
+     "默认 50 点网格保留源归一化，但需要调用方提供 cwp 与 wcs1。",
+     "默认 50 点网格/种子可能在某个允许的 k 点抛出 ContinuationFailure；程序按失败即停，不携带失败根，因此要主张某条分支必须由调用方给出显式种子（或接受一次失败）。",
+     "真空支是唯一的闭式依据；在非真空态上，被接受的值只是所声明残差的已认证零点，不是经独立验证的物理分支。"
     ],
-    "evidence_ceiling": "限定于所声明的延续，仅覆盖受测真空两点分支与失败契约。真空解析分支以零 scaled residual 复现；非法 k 网格被拒绝；底层残差有直接 Hermite 积分 gate。不证明非真空延续精度、与种子无关的分支选择、唯一性或最大增长行为。"
+    "tests": [
+     "tests/kinetic/test_parallel_em_continuation_evidence.py",
+     "tests/kinetic/test_dispersion_parallel.py"
+    ]
    },
    "example": {
     "description": "延续一个小型零密度真空分支。",
@@ -715,16 +722,24 @@
    },
    "verification": {
     "scope": [
-     "直接独立 gate：test_causal_signed_k_direct_velocity_integral 在 k=±0.3、pm=±1 处将 em1d_parallel_residual 与 96/160 节点 Gauss–Hermite 直接速度积分比较；相对一致 <=1e-12，并检查反射符号对称。",
-     "test_parallel_rejects_complex_and_unrepresentable_wavevectors 覆盖声明的失败路径。",
+     "独立直接速度积分：`tests/kinetic/test_parallel_em_residual_evidence.py` 用 96/160/224 节点 Gauss–Hermite 直接计算定义该残差的高斯速度积分，不调用等离子体色散函数；先证明积分本身已收敛到相对 `1e-14`，再要求公共残差在 `k=±0.3`、`pm=±1` 处与 224 节点积分满足 `abs(f-integral)/scale <= 1e-12`。",
+     "按复数相等验的对称恒等式：`(k, vds) -> (-k, -vds)` 与 `(pm, wcs) -> (-pm, -wcs)` 必须使 `f` 的实部、虚部与 `scale` 在 `1e-13` 相对量级内不变。实部与虚部分别比较，因此只错一个分量的实现无法通过。",
+     "冷极限归约并断言阶数：`vtzs` 从 `1e-3` 减半到 `1.25e-4` 时，与冷流体行列式的差距必须每步降到 1/4（实测比值 4.000、4.000、4.000），最终相对差距须 `<= 1e-9`；断言的是收敛阶，不只是量级。",
+     "`test_parallel_rejects_complex_and_unrepresentable_wavevectors` 覆盖声明的失败路径。",
      "有界示例仅为一个代表算例。"
     ],
     "known_limitations": [
      "直接积分比较只覆盖四个有符号 k/pm 点，不是任意状态或 k。",
      "近抵消尺度是残差归一化，不是根条件数估计。",
-     "拒绝下半平面中不可表示的特殊函数值。"
+     "拒绝下半平面中不可表示的特殊函数值。",
+     "冷极限依据是渐近的：`vtzs=1e-3` 时与冷流体行列式的相对差距为 5.4e-9，且每次减半按 4 倍缩小，因此冷流体行列式是极限而非等式。",
+     "对称恒等式是该模型分母的精确簿记事实：它约束符号与 `pm`/`wcs` 的配对，本身不是独立的物理依据；那一角色由速度积分承担。"
     ],
-    "evidence_ceiling": "限定于所声明的一维有符号波矢因果平行残差（受测状态）。直接 Gauss–Hermite gate 在四个有符号 k/pm 点以 96/160 节点比较公共残差（相对 <=1e-12），检查反射对称并拒绝复/不可表示 k。不证明任意状态/k 覆盖、根存在或前向误差界；近抵消尺度只是归一化，不是条件数估计。"
+    "evidence_ceiling": "限定于所声明的一维有符号波矢因果平行残差（受测状态）。独立依据：对定义该残差的高斯速度积分作直接的 Gauss–Hermite 计算（作为参照前先证明积分已收敛）、作为 `vt -> 0` 极限的闭式冷流体行列式（并断言二阶收敛率）、以及精确的复对称恒等式。不证明与外部 Bessel 求和或 Z 函数动理学介电实现的同一性，也不证明任意状态/k 覆盖、根存在或前向误差界；近抵消尺度只是归一化，不是条件数估计。",
+    "tests": [
+     "tests/kinetic/test_parallel_em_residual_evidence.py",
+     "tests/kinetic/test_dispersion_parallel.py"
+    ]
    },
    "example": {
     "description": "计算一个有符号 k 响应。",
