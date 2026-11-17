@@ -199,8 +199,11 @@ def test_maxwellian_electrostatic_mode_root_zeroes_the_reported_dispersion():
     def dispersion(value):
         return abs(complex(np.asarray(evaluate_maxwellian_electrostatic(value, k)["D"]).ravel()[0]))
 
-    at_root = dispersion(complex(frequency).real)
-    assert at_root <= 1e-6
-    assert dispersion(complex(frequency).real * (1 + 1e-3)) > 1e2 * at_root
+    # Evaluate at the full complex frequency: passing only its real part selects the
+    # real-axis branch, which returns 0.045+0.064 here instead of 1.5e-14.  That is a
+    # branch difference of kind, not of value, and is recorded in the contract.
+    at_root = dispersion(frequency)
+    assert at_root <= 1e-10
+    assert dispersion(frequency * (1 + 1e-3)) > 1e6 * at_root
     # The solver's own normalised residual must agree that this is a root.
     assert abs(float(np.asarray(solution["normalized_residual"]).ravel()[0])) <= 1e-8
