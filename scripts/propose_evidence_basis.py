@@ -14,6 +14,8 @@ For each pending asset it prints:
 * the sentences that mention any basis phrase (the candidate claims);
 * the sentences that mention an evidence ceiling or known limitation (the claims
   that must NOT be read as a basis);
+* when no basis phrase matches, **the whole verification block**, because 87 pending
+  assets phrase their basis in wording the recogniser does not know;
 * the tests the contract names, which is where the `source` should point;
 * the phrase that matched, as a hint for `kind` -- a hint, not an answer.
 
@@ -77,6 +79,7 @@ def worksheet(asset: str, root: Path) -> dict:
     return {
         "asset": asset,
         "claims": claims,
+        "all_sentences": parts,
         "limits": limits,
         "tests": verification.get("tests") or [],
         "matched_phrases": phrases,
@@ -96,8 +99,15 @@ def render(record: dict) -> str:
     if record["claims"]:
         lines.append("  claims (may support a basis):")
         lines.extend(f"    - {sentence}" for sentence in record["claims"])
+    elif record["all_sentences"]:
+        # Measured on this catalog: 87 pending assets phrase their basis in wording the
+        # recogniser does not know ("independent analytic and independent discrete-reference
+        # comparisons"), so an empty claim list would hide exactly what the reader needs.
+        # Print the whole block instead of a suggestion to go look elsewhere.
+        lines.append("  claims: none recognised -- full verification block follows:")
+        lines.extend(f"    - {sentence}" for sentence in record["all_sentences"])
     else:
-        lines.append("  claims: none recognised -- read the whole verification block")
+        lines.append("  claims: none recognised and the verification block is empty")
     if record["limits"]:
         lines.append("  limits (must NOT be read as a basis):")
         lines.extend(f"    - {sentence}" for sentence in record["limits"])

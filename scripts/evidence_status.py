@@ -22,13 +22,19 @@ that state and a pointer to the file:
 The classification is the same code the coverage report uses (``classify``), so the
 two can never disagree; this script only adds per-asset detail and provenance.
 
-**``gap`` means "no basis phrase was recognised", not "no evidence exists".** The
-recogniser is a fixed phrase list (``BASIS_PATTERNS``); a contract that says
-"compared with independent Gauss-Legendre quadrature" is not in it and lands in
-``gap`` even though it asserts a comparison. So this script also reports
-``weak_basis_phrases``: un-negated words that usually signal a basis but that the
-list does not recognise. That field is a **lead, not a verdict** -- it tells a reader
-where to look, and ``--scan-weak-basis`` aggregates it over the catalog.
+**``gap`` does NOT mean "no basis".** ``classify`` returns ``(asserted, gap)`` and the
+state is ``basis`` only when ``asserted and not gap``, so a contract that asserts a
+basis *and* records a limitation is labelled ``gap``. Measured 2026-11-18: of 116
+``gap``-labelled contracts, most matched a basis phrase -- an earlier reading of this
+script assumed "gap == the recogniser missed the wording" and reported 106 such
+assets; that reading was wrong. With the recorded-gap case separated out, **23**
+not-yet-declared assets have un-recognised basis wording, plus 19 that were already
+migrated.
+
+``weak_basis_phrases`` still exists as a **lead, not a verdict**: un-negated words that
+usually signal a basis but that the phrase list does not know. ``--scan-weak-basis``
+aggregates it, skips assets that already declare ``verification.basis`` (the field is
+authoritative once it exists) and skips assets whose basis phrase matched.
 
 Usage:
     PYTHONPATH=src python3 -B scripts/evidence_status.py --asset scirel.field.brb
@@ -104,6 +110,17 @@ def describe(asset: str, root: Path = ROOT) -> dict:
     }
 
 
+def declared_kind(root: Path, asset: str) -> str | None:
+    """The declared `verification.basis.kind`, or None when the contract has no basis."""
+    path = root / CATALOG / f"{asset}.json"
+    try:
+        document = json.loads(path.read_text(encoding="utf-8"))
+    except (FileNotFoundError, json.JSONDecodeError):
+        return None
+    basis = (document.get("verification") or {}).get("basis")
+    return basis.get("kind") if basis else None
+
+
 def summary(root: Path = ROOT) -> dict:
     """Count what each contract claims, without ever summing gaps into 'proven'."""
     baseline = json.loads((root / BASELINE).read_text(encoding="utf-8"))
@@ -167,11 +184,17 @@ def main(argv: list[str] | None = None) -> int:
             except (FileNotFoundError, KeyError, json.JSONDecodeError) as error:
                 print(f"unobservable: {error}", file=sys.stderr)
                 return 2
-            if record["state"] != "basis" and record["weak_basis_phrases"]:
+            if declared_kind(root, record["asset"]) is not None:
+                # The field is authoritative once it exists; a migrated asset must stop
+                # appearing here, or this scan would keep inviting the same work.
+                continue
+            # `state` folds a recorded gap into "gap" even when a basis phrase matched, so it is
+            # the wrong test here; what matters is whether any basis was asserted at all.
+            if not record["basis_asserted"] and record["weak_basis_phrases"]:
                 found.append(record)
         print(
-            f"{len(found)} asset(s) are not classified as basis but do contain "
-            f"un-recognised basis wording"
+            f"{len(found)} asset(s) declare no basis and do contain un-recognised basis "
+            f"wording (already-declared assets are skipped: the field is authoritative)"
         )
         for record in found:
             print(
