@@ -682,6 +682,37 @@ def test_report_binds_real_candidate_environment_and_started_argv(tmp_path, monk
     assert capsys.readouterr().out.rstrip().endswith("ALL GREEN")
 
 
+def test_a_stage_without_its_own_anchor_does_not_fail_the_other_stage(tmp_path):
+    """A release anchor must not make the development stage unrunnable.
+
+    The first version raised when the anchor directory held anchors for some other stage.
+    That read as "cannot exempt a stage by deleting its file", but the stages select
+    different test sets, so the moment a release anchor was committed every ordinary batch
+    failed its merge gate. The anti-exemption property comes from anchors being committed
+    files: removing one is a diff in the pull request that removes it.
+    """
+    anchors = tmp_path / "skills" / "development" / "scirel-acceptance" / "anchors"
+    anchors.mkdir(parents=True)
+    (anchors / "release-abc123.json").write_text(
+        json.dumps(
+            {
+                "schema": "scirel.acceptance.anchor.v1",
+                "stage": "release",
+                "checked_at": "2026-01-01T00:00:00Z",
+                "tests": {"selected": 9000},
+                "candidate": {"commit": "abc123"},
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    import check_all
+
+    assert check_all.selection_floor("dev", tmp_path) is None
+    floor = check_all.selection_floor("release", tmp_path)
+    assert floor is not None and floor.selected == 9000
+
+
 def test_a_planted_anchor_turns_a_shrunken_run_red(tmp_path, monkeypatch, capsys):
     """End to end: the floor is wired into the run, not only into `step_status`.
 
