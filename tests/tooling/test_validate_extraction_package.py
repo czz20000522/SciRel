@@ -632,6 +632,7 @@ def _acceptance_result(module, directory, tree):
     scripts = tree / "skills/development/scirel-acceptance/scripts"
     return {
         "schema": "scirel.acceptance.v2",
+        "status": "complete",
         "stage": "release",
         "exclusive": {
             "token_sha256": _digest_text(FIXTURE_TOKEN),

@@ -421,6 +421,8 @@ def _provenance_result(tmp_path):
     log.write_text("complete fixture output\n", encoding="utf-8")
     result = {
         "schema": "scirel.acceptance.v2",
+        "status": "complete",
+        "stage": "release",
         "exclusive": {
             "token_sha256": "a" * 64,
             "record": str(tmp_path / "acceptance-exclusive"),
@@ -646,10 +648,13 @@ def test_report_binds_real_candidate_environment_and_started_argv(tmp_path, monk
         "python",
         "platform",
         "architecture",
+        "dependencies",
         "uv_lock_sha256",
         "python_version_sha256",
     }
     assert set(environment["python"]) == {"implementation", "version"}
+    assert set(environment["dependencies"]) == {"numpy", "scipy", "mpmath"}
+    assert all(environment["dependencies"].values())
     assert (
         environment["uv_lock_sha256"]
         == hashlib.sha256((tmp_path / "uv.lock").read_bytes()).hexdigest()
@@ -664,7 +669,37 @@ def test_report_binds_real_candidate_environment_and_started_argv(tmp_path, monk
     assert record["argv"] == launched[0]
     assert Path(record["log"]).read_text() == "complete fixture output\n"
     assert result["tests"]["selected"] == 3
+    assert result["status"] == "complete"
+    assert result["floor"] is None, "a clone with no anchor records that it cannot be compared"
     assert capsys.readouterr().out.rstrip().endswith("ALL GREEN")
+
+
+def test_a_planted_anchor_turns_a_shrunken_run_red(tmp_path, monkeypatch, capsys):
+    """End to end: the floor is wired into the run, not only into `step_status`.
+
+    The fixture's counts report selects three tests; the anchor says the suite had five. That is
+    the "ran everything" / "ran almost nothing" defect in its smallest form.
+    """
+    path, _ = _mini_acceptance(tmp_path, monkeypatch)
+    directory = tmp_path / check_all.ANCHOR_DIRECTORY
+    directory.mkdir(parents=True)
+    anchor = {
+        "schema": check_all.ANCHOR_SCHEMA,
+        "stage": "release",
+        "checked_at": "2026-01-01T00:00:00Z",
+        "candidate": {"commit": "0" * 40},
+        "tests": {"selected": 5},
+    }
+    (directory / "release-earlier.json").write_text(json.dumps(anchor), encoding="utf-8")
+    assert check_all.main(path, run_id="fixture invocation") == 1
+    result = json.loads(path.read_text())
+    assert result["status"] == "complete", "a red run still leaves a complete receipt"
+    assert result["floor"] == {
+        "anchor": f"{check_all.ANCHOR_DIRECTORY}/release-earlier.json",
+        "selected": 5,
+        "anchor_commit": "0" * 40,
+    }
+    assert "FLOOR  at least 5 tests" in capsys.readouterr().out
 
 
 @pytest.mark.parametrize(

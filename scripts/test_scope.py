@@ -89,6 +89,10 @@ SKILL_SCRIPT_TARGETS = {
     ),
     "skills/development/scientific-runtime-dataset-construction/scripts/"
     "validate_dataset_manifest.py": ("tests/tooling/test_dataset_manifest.py",),
+    "skills/development/scirel-acceptance/scripts/acceptance_anchor.py": (
+        "tests/tooling/test_acceptance_anchor.py",
+        "tests/tooling/test_check_all.py",  # Shares the receipt schema and its validator.
+    ),
     "skills/development/scirel-acceptance/scripts/check_all.py": (
         "tests/tooling/test_check_all.py",
         "tests/tooling/test_validate_extraction_package.py",  # Imports acceptance helpers.

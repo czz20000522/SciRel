@@ -92,7 +92,9 @@ SKIP  got empty parameter set for (report)  (1): tests/tooling/test_solved_examp
 ALL GREEN
 ```
 
-`ALL GREEN` is the last line when everything passes. Any other ending means the tree is not green. The step count alone is not evidence: it says that ten steps exited zero, not what the tests did. A large skip would otherwise hide behind a passing exit code, so each skip reason gets its own `SKIP` line with its count and the first few test IDs.
+`ALL GREEN` is the last line when everything passes. Any other ending means the tree is not green. The step count alone is not evidence: it says that ten steps exited zero, not what the tests did. A large skip would otherwise hide behind a passing exit code, so each skip reason gets its own `SKIP` line with its count and the first few test IDs; an `xfail` gets the same treatment on an `XFAIL` line, because "one test did not run" without its reason is not an audit trail either.
+
+Before the step lines, `FLOOR` states the smallest selection that counts as the whole suite. It comes from the newest committed anchor under `skills/development/scirel-acceptance/anchors/` for the stage being run, and the tests step fails if the run selected fewer tests than it records. Without it, a run of two passing tests and a run of eight thousand passing tests produced the same verdict: the counts were checked for internal consistency and never against an expected value. Additions need no new anchor; a deliberate removal lowers the floor only by re-anchoring, which is visible in the diff. A clone with no anchor for the stage prints `FLOOR  no committed anchor ...` and says it cannot be compared with an earlier full run.
 
 The test counts come from pytest itself. `skills/development/scirel-acceptance/scripts/scirel_pytest_counts.py` (relative to the repository root) observes the run and changes no outcome; `check_all.py` loads it with `-p scirel_pytest_counts` and has it write JSON into the run's temporary directory. The standard result retains this record under `tests` before that directory is removed. Nothing is read from the human-readable summary. If that report is missing, unreadable, or its numbers disagree — every selected test must reach exactly one outcome, and `selected` must equal `passed + failed + error + skipped + xfailed + xpassed` — the `tests` step is red: a count nobody can check cannot support a green.
 
@@ -185,15 +187,26 @@ them are rejected, not upgraded or reused:
   and untracked file contents; those names and contents are not copied into the result.
   A change to any identity field fails the run, including a different commit with the same
   tree or a content change while the worktree stays dirty.
-- `environment.before` and `environment.after` contain only Python implementation/version,
-  platform, architecture, `uv_lock_sha256` and `python_version_sha256`. These SHA-256 digests
-  identify the exact bytes of `uv.lock` and `.python-version`. Missing identity or unreadable
+- `environment.before` and `environment.after` contain Python implementation/version,
+  platform, architecture, `dependencies` and the `uv_lock_sha256` / `python_version_sha256`
+  digests. `dependencies` names the version of each runtime dependency (`numpy`, `scipy`,
+  `mpmath`) that actually ran; a lockfile digest says "the same lock" and cannot be read back
+  as "which numpy". The extraction validator requires that exact key set — there is no branch
+  that accepts a receipt carrying only the digests, so an older receipt is unusable rather
+  than quietly weaker. The digests identify the exact bytes of `uv.lock` and
+  `.python-version`. Missing identity or unreadable
   dependency inputs fail the binding; changed environment inputs also fail the run. The
   result does not collect environment variables, hostnames, email addresses or credentials.
 - Each step retains its `argv` and `started` flag alongside its status, exit code and full
   output log. `argv` is the argument list passed to the subprocess, or the planned list when
   it could not start. Missing uv or a failed spawn means `started: false`, `NOT_RUN` and a
   null return code. A started, interrupted step fails; later steps are `NOT_RUN`.
+- `status` is `running` before the first step and `complete` after the last one. The file is
+  reserved in that state so an interrupted or crashed run leaves an explicit non-result
+  instead of an empty file that `ls` could read as "it ran"; every reader refuses anything
+  but `complete`. `floor` records the anchor this run was judged against (or `null` when the
+  clone has no anchor yet), so a reader can tell "the whole suite" from "whatever this tree
+  happened to collect".
 - `evidence` is `clean_candidate`, `development` or `invalid`, and `binding_errors` retains
   identification failures. Stable dirty runs can exit zero as development feedback, ending
   with `DEVELOPMENT PASS (dirty candidate)` rather than `ALL GREEN`; they cannot support
@@ -207,6 +220,31 @@ commits, dirty candidates and identity drift are rejected. Counts still retain e
 and skip reason: at least one `passed`, `failed` or `xpassed` outcome is required to demonstrate
 execution. All-skipped, all-error or solely `xfailed` results cannot establish it; pytest can
 record `xfailed` without calling a test body (`xfail(run=False)`).
+
+### Receipt anchors: the evidence that survives the worktree
+
+The full result lives under `.runtime/logs/`, which is gitignored, so the evidence for a green
+run disappears when the worktree is cleaned. `skills/development/scirel-acceptance/anchors/`
+holds the part that stays: one small JSON file per green run, recording the candidate identity,
+the environment (including dependency versions), the counts, the reason for every skip and
+`xfail`, and two digests over the per-test records — `nodeid_set_sha256` (which tests ran) and
+`per_test_sha256` (what each of them did). The eight thousand nodeids are not stored; the
+digests are, so a rerun on the same revision can be reconciled without committing megabytes.
+The normalisation rules are copied into every anchor and documented in that directory's
+`README.md`: nodeids keep their repository-relative form, backslashes become `/`, ordering is
+code-point `sorted()`, and the digest is over UTF-8 with one trailing newline.
+
+```sh
+python3 scripts/dev.py run python -B \
+    skills/development/scirel-acceptance/scripts/acceptance_anchor.py export <receipt> <anchor>
+python3 scripts/dev.py run python -B \
+    skills/development/scirel-acceptance/scripts/acceptance_anchor.py verify <anchor> <receipt>
+```
+
+`export` refuses a receipt that is not a complete, green run. `verify` compares a receipt with an
+anchor and reports agreement only: exit status `0` agree, `1` disagree, `2` cannot check. It
+starts no test, holds no lock and prints no verdict on the acceptance — it is not a second entry
+point, and its exit status must never be quoted as "the check passed".
 
 The result bindings alone do not establish clone-wide exclusivity. `dev.py check` and the
 explicit `dev.py run --exclusive <command>` entry acquire the existing clone-wide EX lock
@@ -251,7 +289,7 @@ development stage runs the same checks minus example execution and minus the thr
 
 这两条是同一个病根：为了看得方便，把判断依据裁掉了。而判断依据一裁掉就没有第二份能还原——这次运行同时会覆盖上一次的判定依据，重建的虚拟环境、wheel 和文档输出都已经是这一次的状态，事后只剩这一个退出码和这一份完整日志。收窄成几十行，等于把"这一次过没过"和"上一次是什么结论"一起丢掉；等到有人回头核对，既补不出当时的输出，也复现不出当时的结论。放行用的那次完整检查还必须独占本仓库的测试，见 `AGENTS.md` 的「环境和验收」段，这里不重复。
 
-证据里要同时写两个计数：`steps N/M passed` 的步骤数，和 pytest 的测试计数（collected、selected、passed、failed、skipped，跳过写原因与条数）。只写步骤数就是"缺分母的成功"——三千条测试里跳过了多少、为什么跳过，读者看不到；而 pytest 只要退出码是 0，这一步同样算过。照 `check_all.py` 最后那几行原样贴（汇总行加 `SKIP` 行再加强末行），不要只摘一句 `ALL GREEN`。
+证据里要同时写两个计数：`steps N/M passed` 的步骤数，和 pytest 的测试计数（collected、selected、passed、failed、skipped，跳过写原因与条数），并连同 `FLOOR` 行（这次运行被要求达到的最小选中数）一起贴。跑完之后用 `acceptance_anchor.py export` 把这次绿色回执压成 `anchors/` 下的一枚锚点进仓库——完整回执在 `.runtime/` 里，结项就没了；锚点才是能对账的那份。只写步骤数就是"缺分母的成功"——三千条测试里跳过了多少、为什么跳过，读者看不到；而 pytest 只要退出码是 0，这一步同样算过。照 `check_all.py` 最后那几行原样贴（汇总行加 `SKIP` 行再加强末行），不要只摘一句 `ALL GREEN`。
 
 ## 变异验证：先说清"走没走到"，再说"红不红"
 
