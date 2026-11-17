@@ -1,134 +1,139 @@
 {
- "schema": "scirel.asset-document",
- "asset_id": "scirel.collisions.proton-atomic-hydrogen-elastic-cross-section",
- "title": {
-  "en": "H+-on-H elastic momentum-transfer cross section",
-  "zh": "原子氢质子弹性动量转移截面"
- },
- "summary": "Compute the proton-on-stationary-hydrogen momentum-transfer cross section from laboratory energy. Clip the laboratory energy before converting to E_cm=E_lab/2; E_cm < 10 eV uses the low polynomial and E_cm >= 10 eV (laboratory energy >= 20 eV) uses the high polynomial, with the input shape preserved.",
- "taxonomy": [
-  "collisions",
-  "cross-section",
-  "elastic",
-  "momentum-transfer",
-  "hydrogen",
-  "proton",
-  "tabulated-fit"
- ],
- "aliases": [
-  "sigma_el_p_h",
-  "H+ -H elastic momentum-transfer cross section",
-  "proton-hydrogen elastic fit"
- ],
- "discovery": {
-  "capability": [
-   "H+-on-H elastic momentum-transfer cross section",
-   "H+-on-H momentum-transfer cross section in m^2 from laboratory energy in eV, with a 20 eV laboratory branch breakpoint."
+  "schema": "scirel.asset-document",
+  "asset_id": "scirel.collisions.proton-atomic-hydrogen-elastic-cross-section",
+  "title": {
+    "en": "H+-on-H elastic momentum-transfer cross section",
+    "zh": "原子氢质子弹性动量转移截面"
+  },
+  "summary": "Compute the proton-on-stationary-hydrogen momentum-transfer cross section from laboratory energy. Clip the laboratory energy before converting to E_cm=E_lab/2; E_cm < 10 eV uses the low polynomial and E_cm >= 10 eV (laboratory energy >= 20 eV) uses the high polynomial, with the input shape preserved.",
+  "taxonomy": [
+    "collisions",
+    "cross-section",
+    "elastic",
+    "momentum-transfer",
+    "hydrogen",
+    "proton",
+    "tabulated-fit"
   ],
-  "operation": [
-   "Evaluate the H+-on-H elastic momentum-transfer cross section",
-   "collision energies -> cross section per energy with the input shape preserved"
+  "aliases": [
+    "sigma_el_p_h",
+    "H+ -H elastic momentum-transfer cross section",
+    "proton-hydrogen elastic fit"
   ],
-  "model": "Empirical H+-on-H momentum-transfer fit. The input laboratory energy is clipped, then divided by two; the polynomial variable is center-of-mass energy, with a 10 eV center-of-mass (20 eV laboratory) breakpoint.",
-  "geometry": "None; scalar material function of collision energy with no spatial axis (coordinate: collision energy in eV; output in m^2).",
-  "boundary": "Finite nonnegative laboratory input, clipped to [0.001, 1.01e5] eV before E_cm=E_lab/2; exactly 20 eV laboratory uses the high branch; the output preserves the input shape.",
-  "device_scope": "generic"
- },
- "identity": {
-  "relation": "H+-on-H momentum-transfer cross section versus laboratory energy, with a 20 eV laboratory (10 eV center-of-mass) breakpoint",
-  "direction": "collision energies -> cross section per energy, with the input shape preserved",
-  "definition": "Clip the laboratory proton energy E_lab to [0.001, 1.01e5] eV, then set E_cm=E_lab/2. E_cm < 10 eV uses the seven-coefficient low-energy log polynomial and E_cm >= 10 eV uses the two-coefficient high-energy polynomial. The cross section is exp(poly(log(E_cm)))*1e-4 m^2. Exactly 20 eV laboratory belongs to the high branch; the segments are not forced continuous and the output preserves the input shape.",
-  "model": "Empirical H+-on-H momentum-transfer fit. The input laboratory energy is clipped, then divided by two; the polynomial variable is center-of-mass energy, with a 10 eV center-of-mass (20 eV laboratory) breakpoint.",
-  "geometry": "none; a scalar material function of collision energy",
-  "coordinates": "collision energy in eV; output cross section in m^2",
-  "boundary": "Finite nonnegative laboratory input, clipped to [0.001, 1.01e5] eV before E_cm=E_lab/2; exactly 20 eV laboratory uses the high branch; the output preserves the input shape.",
-  "assumptions": [
-   "The fixed low/high fit coefficients are evaluated at E_cm=E_lab/2 after laboratory-energy clipping. E_lab < 20 eV uses the low branch; E_lab >= 20 eV, including exactly 20 eV, uses the high branch.",
-   "endpoint clipping does not imply experimental accuracy outside the domain; the low and high segments may have a finite jump, and no unsupported smoothing is applied.",
-   "the output preserves the input shape without adding a leading singleton axis; negative energies, booleans, complex numbers and strings are rejected."
-  ]
- },
- "inputs": [
-  {
-   "name": "energy_ev",
-   "description": "laboratory energy of the projectile proton in the stationary-hydrogen-target frame",
-   "units": "eV",
-   "shape": "any (scalar or array)",
-   "dtype": "real scalar or array",
-   "required": true,
-   "constraints": "finite and nonnegative; values outside the range take the fit endpoints"
+  "discovery": {
+    "capability": [
+      "H+-on-H elastic momentum-transfer cross section",
+      "H+-on-H momentum-transfer cross section in m^2 from laboratory energy in eV, with a 20 eV laboratory branch breakpoint."
+    ],
+    "operation": [
+      "Evaluate the H+-on-H elastic momentum-transfer cross section",
+      "collision energies -> cross section per energy with the input shape preserved"
+    ],
+    "model": "Empirical H+-on-H momentum-transfer fit. The input laboratory energy is clipped, then divided by two; the polynomial variable is center-of-mass energy, with a 10 eV center-of-mass (20 eV laboratory) breakpoint.",
+    "geometry": "None; scalar material function of collision energy with no spatial axis (coordinate: collision energy in eV; output in m^2).",
+    "boundary": "Finite nonnegative laboratory input, clipped to [0.001, 1.01e5] eV before E_cm=E_lab/2; exactly 20 eV laboratory uses the high branch; the output preserves the input shape.",
+    "device_scope": "generic"
+  },
+  "identity": {
+    "relation": "H+-on-H momentum-transfer cross section versus laboratory energy, with a 20 eV laboratory (10 eV center-of-mass) breakpoint",
+    "direction": "collision energies -> cross section per energy, with the input shape preserved",
+    "definition": "Clip the laboratory proton energy E_lab to [0.001, 1.01e5] eV, then set E_cm=E_lab/2. E_cm < 10 eV uses the seven-coefficient low-energy log polynomial and E_cm >= 10 eV uses the two-coefficient high-energy polynomial. The cross section is exp(poly(log(E_cm)))*1e-4 m^2. Exactly 20 eV laboratory belongs to the high branch; the segments are not forced continuous and the output preserves the input shape.",
+    "model": "Empirical H+-on-H momentum-transfer fit. The input laboratory energy is clipped, then divided by two; the polynomial variable is center-of-mass energy, with a 10 eV center-of-mass (20 eV laboratory) breakpoint.",
+    "geometry": "none; a scalar material function of collision energy",
+    "coordinates": "collision energy in eV; output cross section in m^2",
+    "boundary": "Finite nonnegative laboratory input, clipped to [0.001, 1.01e5] eV before E_cm=E_lab/2; exactly 20 eV laboratory uses the high branch; the output preserves the input shape.",
+    "assumptions": [
+      "The fixed low/high fit coefficients are evaluated at E_cm=E_lab/2 after laboratory-energy clipping. E_lab < 20 eV uses the low branch; E_lab >= 20 eV, including exactly 20 eV, uses the high branch.",
+      "endpoint clipping does not imply experimental accuracy outside the domain; the low and high segments may have a finite jump, and no unsupported smoothing is applied.",
+      "the output preserves the input shape without adding a leading singleton axis; negative energies, booleans, complex numbers and strings are rejected."
+    ]
+  },
+  "inputs": [
+    {
+      "name": "energy_ev",
+      "description": "laboratory energy of the projectile proton in the stationary-hydrogen-target frame",
+      "units": "eV",
+      "shape": "any (scalar or array)",
+      "dtype": "real scalar or array",
+      "required": true,
+      "constraints": "finite and nonnegative; values outside the range take the fit endpoints"
+    }
+  ],
+  "outputs": [
+    {
+      "name": "cross_section_m2",
+      "description": "H+-H elastic momentum-transfer cross section with the input shape.",
+      "units": "m^2",
+      "shape": "input shape",
+      "dtype": "float64 array",
+      "required": true,
+      "constraints": "finite and positive; the output shape equals the input shape"
+    }
+  ],
+  "applicability": {
+    "preconditions": [
+      "use the declared laboratory projectile energy and endpoint clipping convention"
+    ],
+    "supported": [
+      "scalar or array H+-H momentum-transfer cross sections, including the 20 eV laboratory (10 eV center-of-mass) breakpoint"
+    ],
+    "excluded": [
+      "experimental extrapolation outside the domain, a full collision frequency or a Maxwellian average; this function returns only the cross section",
+      "Directly adding the H-P momentum moment from SciRel's atomic matrix assembly to the momentum moment of a full-velocity charge-exchange gain-loss operator built from SIG_CX is unsupported. Separate channel outputs do not qualify that combined transport model."
+    ]
+  },
+  "failure_semantics": {
+    "invalid_input": "raises ValueError for non-real, non-finite or negative energies",
+    "runtime_failure": "evaluation on a valid clipped interval returns a finite positive number",
+    "nonconvergence": "not applicable; no iteration",
+    "partial_results": "never returns partial results"
+  },
+  "public_api": {
+    "python": {
+      "module": "scirel.collisions.hydrogen_proton_elastic_cross_section",
+      "symbol": "evaluate_hydrogen_proton_elastic_cross_section",
+      "signature": "evaluate_hydrogen_proton_elastic_cross_section(energy_ev)",
+      "canonical_module": "scirel.collisions",
+      "canonical_symbol": "evaluate_hydrogen_proton_elastic_cross_section"
+    }
+  },
+  "version": {
+    "implementation_version": "0.0.0",
+    "dependencies": []
+  },
+  "example": {
+    "description": "Check the 20 eV laboratory (10 eV center-of-mass) breakpoint and finite positive cross sections on both sides.",
+    "code": "import numpy as np\nfrom scirel.collisions import evaluate_hydrogen_proton_elastic_cross_section\ny = evaluate_hydrogen_proton_elastic_cross_section(np.array([np.nextafter(20., 0.), 20., np.nextafter(20., np.inf)]))\nassert y.shape == (3,)\nassert np.isfinite(y).all() and (y > 0).all()\n# breakpoint: CM 10 eV == 20 eV laboratory; 20 eV lab is the high branch.\nhigh = np.exp(np.polynomial.polynomial.polyval(np.log(10.0), np.array([-3.231141e1, -1.386002e-1]))) * 1.0e-4\nnp.testing.assert_allclose(y[1], high, rtol=1e-15)",
+    "expected": "Three finite positive cross sections with input shape; exactly 20 eV laboratory (10 eV center-of-mass) belongs to the high-energy branch, and the empirical fit may jump across the breakpoint."
+  },
+  "verification": {
+    "scope": [
+      "The 20 eV laboratory (10 eV center-of-mass) breakpoint is probed directly: E_lab<20 uses the low branch and E_lab>=20 uses the high branch, with immediate below/above inputs covered.",
+      "input-shape output, input rejection and endpoint-clipping assertions are retained",
+      "downstream atomic collision-matrix assembly and independent angular integration use the corrected piecewise definition",
+      "The declared equal-mass discrete momentum construction is checked through matrix assembly, Alpha contraction and moment reduction, including an explicitly constructed full-velocity CX gain-loss operator. This is algebraic and quadrature evidence, not a production combined transport solver or an independent cross-section accuracy oracle.",
+      "Structural evidence: the returned value is the frozen fit re-evaluated on another code path and multiplied by the exact 1e-4 cm^2->m^2 factor (agreement within four binary64 roundings), the parameterized variable is the equal-mass center-of-mass energy E_cm = E_lab/2, the branch seam sits at E_cm = 10 eV (20 eV laboratory), the declared discontinuity across it measures 1.15e-2 relative, and each branch's log-slope equals its analytic derivative; this establishes structure, not an absolute table value, because the published table the coefficients were regressed from is not reachable from this repository",
+      "Precision budget: the unit-factor comparison admits 8e-16 relative, four binary64 roundings between two evaluation orders of the same polynomial; the slope identity admits 1e-4 of max(1, |d ln sigma / d ln E|) measured by a central difference of h = 1e-3 in ln E, whose truncation term h^2/6 |d^3 ln sigma / d(ln E)^3| stays below 1e-6 on the declared intervals; no existing per-asset tolerance is loosened and no numeric value is changed",
+      "Failure matrix: each `failure_semantics` channel of this contract has exactly one executable assertion in tests/collisions/test_declared_failure_channels.py; that table's channel set is compared with the exception and warning classes this contract names, and every callable must produce its declared class, so a channel cannot be added, renamed or dropped silently"
+    ],
+    "tests": [
+      "tests/collisions/test_hydrogen_proton_elastic_cross_section.py",
+      "tests/collisions/test_atomic_hydrogen_collision_matrices.py",
+      "tests/collisions/test_collision_physical_closure.py",
+      "tests/collisions/test_atomic_momentum_budget.py"
+    ],
+    "evidence_ceiling": "the declared piecewise fit and breakpoint behavior are established; no new universal experimental cross-section accuracy is established. Intake acceptance, human scientific approval and licensing are recorded separately",
+    "known_limitations": [
+      "endpoint clipping and the discontinuity between the low- and high-energy segments are inherited; no unsupported smoothing is applied",
+      "a previous qualification withdrawal and pending licensing remain recorded; this correction does not rewrite that history",
+      "the momentum-transfer cross section of this fit contains the momentum carried by resonant charge exchange (APID 8, 1999, section 1.2, p. 2-3); it is not a distinguishable-particle momentum-transfer cross section, and no distinguishable-particle parameterization exists in this repository",
+      "The resonant charge-exchange share of the total momentum transfer remains unquantified (UNKNOWN). Independent validation of separated channels over the underlying 0.1-100 eV center-of-mass table range has not been established here; this is a verification gap, not a claim that suitable literature or data do not exist.",
+      "Cannot establish: the absolute table values of this relation. They need the Janev (1995) chapter 11 p. 298 H+-on-H fit table and the APID 8 (1999) range, which are not in this repository and not available from a free source, so only the structural properties listed above are established; no coefficient or absolute cross section is asserted against a published number, and none was reconstructed from memory"
+    ],
+    "basis": {
+      "kind": "none",
+      "statement": "The absolute table values of this relation cannot be established, and this is not a distinguishable-particle momentum-transfer cross section: the resonant charge-exchange share of the total momentum transfer remains unquantified (UNKNOWN) and no distinguishable-particle parameterization exists in this repository.",
+      "source": "tests/collisions/test_hydrogen_proton_elastic_cross_section.py"
+    }
   }
- ],
- "outputs": [
-  {
-   "name": "cross_section_m2",
-   "description": "H+-H elastic momentum-transfer cross section with the input shape.",
-   "units": "m^2",
-   "shape": "input shape",
-   "dtype": "float64 array",
-   "required": true,
-   "constraints": "finite and positive; the output shape equals the input shape"
-  }
- ],
- "applicability": {
-  "preconditions": [
-   "use the declared laboratory projectile energy and endpoint clipping convention"
-  ],
-  "supported": [
-   "scalar or array H+-H momentum-transfer cross sections, including the 20 eV laboratory (10 eV center-of-mass) breakpoint"
-  ],
-  "excluded": [
-   "experimental extrapolation outside the domain, a full collision frequency or a Maxwellian average; this function returns only the cross section",
-   "Directly adding the H-P momentum moment from SciRel's atomic matrix assembly to the momentum moment of a full-velocity charge-exchange gain-loss operator built from SIG_CX is unsupported. Separate channel outputs do not qualify that combined transport model."
-  ]
- },
- "failure_semantics": {
-  "invalid_input": "raises ValueError for non-real, non-finite or negative energies",
-  "runtime_failure": "evaluation on a valid clipped interval returns a finite positive number",
-  "nonconvergence": "not applicable; no iteration",
-  "partial_results": "never returns partial results"
- },
- "public_api": {
-  "python": {
-   "module": "scirel.collisions.hydrogen_proton_elastic_cross_section",
-   "symbol": "evaluate_hydrogen_proton_elastic_cross_section",
-   "signature": "evaluate_hydrogen_proton_elastic_cross_section(energy_ev)",
-   "canonical_module": "scirel.collisions",
-   "canonical_symbol": "evaluate_hydrogen_proton_elastic_cross_section"
-  }
- },
- "version": {
-  "implementation_version": "0.0.0",
-  "dependencies": []
- },
- "example": {
-  "description": "Check the 20 eV laboratory (10 eV center-of-mass) breakpoint and finite positive cross sections on both sides.",
-  "code": "import numpy as np\nfrom scirel.collisions import evaluate_hydrogen_proton_elastic_cross_section\ny = evaluate_hydrogen_proton_elastic_cross_section(np.array([np.nextafter(20., 0.), 20., np.nextafter(20., np.inf)]))\nassert y.shape == (3,)\nassert np.isfinite(y).all() and (y > 0).all()\n# breakpoint: CM 10 eV == 20 eV laboratory; 20 eV lab is the high branch.\nhigh = np.exp(np.polynomial.polynomial.polyval(np.log(10.0), np.array([-3.231141e1, -1.386002e-1]))) * 1.0e-4\nnp.testing.assert_allclose(y[1], high, rtol=1e-15)",
-  "expected": "Three finite positive cross sections with input shape; exactly 20 eV laboratory (10 eV center-of-mass) belongs to the high-energy branch, and the empirical fit may jump across the breakpoint."
- },
- "verification": {
-  "scope": [
-   "The 20 eV laboratory (10 eV center-of-mass) breakpoint is probed directly: E_lab<20 uses the low branch and E_lab>=20 uses the high branch, with immediate below/above inputs covered.",
-   "input-shape output, input rejection and endpoint-clipping assertions are retained",
-   "downstream atomic collision-matrix assembly and independent angular integration use the corrected piecewise definition",
-   "The declared equal-mass discrete momentum construction is checked through matrix assembly, Alpha contraction and moment reduction, including an explicitly constructed full-velocity CX gain-loss operator. This is algebraic and quadrature evidence, not a production combined transport solver or an independent cross-section accuracy oracle.",
-   "Structural evidence: the returned value is the frozen fit re-evaluated on another code path and multiplied by the exact 1e-4 cm^2->m^2 factor (agreement within four binary64 roundings), the parameterized variable is the equal-mass center-of-mass energy E_cm = E_lab/2, the branch seam sits at E_cm = 10 eV (20 eV laboratory), the declared discontinuity across it measures 1.15e-2 relative, and each branch's log-slope equals its analytic derivative; this establishes structure, not an absolute table value, because the published table the coefficients were regressed from is not reachable from this repository",
-   "Precision budget: the unit-factor comparison admits 8e-16 relative, four binary64 roundings between two evaluation orders of the same polynomial; the slope identity admits 1e-4 of max(1, |d ln sigma / d ln E|) measured by a central difference of h = 1e-3 in ln E, whose truncation term h^2/6 |d^3 ln sigma / d(ln E)^3| stays below 1e-6 on the declared intervals; no existing per-asset tolerance is loosened and no numeric value is changed",
-   "Failure matrix: each `failure_semantics` channel of this contract has exactly one executable assertion in tests/collisions/test_declared_failure_channels.py; that table's channel set is compared with the exception and warning classes this contract names, and every callable must produce its declared class, so a channel cannot be added, renamed or dropped silently"
-  ],
-  "tests": [
-   "tests/collisions/test_hydrogen_proton_elastic_cross_section.py",
-   "tests/collisions/test_atomic_hydrogen_collision_matrices.py",
-   "tests/collisions/test_collision_physical_closure.py",
-   "tests/collisions/test_atomic_momentum_budget.py"
-  ],
-  "evidence_ceiling": "the declared piecewise fit and breakpoint behavior are established; no new universal experimental cross-section accuracy is established. Intake acceptance, human scientific approval and licensing are recorded separately",
-  "known_limitations": [
-   "endpoint clipping and the discontinuity between the low- and high-energy segments are inherited; no unsupported smoothing is applied",
-   "a previous qualification withdrawal and pending licensing remain recorded; this correction does not rewrite that history",
-   "the momentum-transfer cross section of this fit contains the momentum carried by resonant charge exchange (APID 8, 1999, section 1.2, p. 2-3); it is not a distinguishable-particle momentum-transfer cross section, and no distinguishable-particle parameterization exists in this repository",
-   "The resonant charge-exchange share of the total momentum transfer remains unquantified (UNKNOWN). Independent validation of separated channels over the underlying 0.1-100 eV center-of-mass table range has not been established here; this is a verification gap, not a claim that suitable literature or data do not exist.",
-   "Cannot establish: the absolute table values of this relation. They need the Janev (1995) chapter 11 p. 298 H+-on-H fit table and the APID 8 (1999) range, which are not in this repository and not available from a free source, so only the structural properties listed above are established; no coefficient or absolute cross section is asserted against a published number, and none was reconstructed from memory"
-  ]
- }
 }
