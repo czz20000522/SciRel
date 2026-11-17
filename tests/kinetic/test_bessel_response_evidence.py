@@ -195,6 +195,36 @@ def test_relativistic_codrift_spectrum_is_the_spectrum_of_its_matrix():
         assert real_order.size == 4 * len(case["species"]) + 6
 
 
+def test_relativistic_codrift_cold_limit_reaches_the_plasma_frequency():
+    """In the cold, drift-free limit the slowest branch is the total plasma frequency.
+
+    With ``q = +-1``, ``m`` = 1 and 4, ``n0 = 4`` and ``epsilon0 = 1``, the total
+    plasma frequency is ``sqrt(4*1/1 + 4*1/4) = sqrt(5)``.  The measured largest
+    ``|omega|`` is ``2.236068``, which is ``sqrt(5)`` to six digits, so this pins an
+    absolute scale: the branch-structure assertions in the tests above are invariant
+    under a common rescaling and would not catch one, and the mutation run confirmed
+    exactly that (`scale` survived before this test was added).
+    """
+    from scirel.kinetic import solve_relativistic_codrift_spectrum
+
+    case = _codrift_case(relativistic=False, kvec=[0.0, 0.0, 0.3])
+    for species in case["species"]:
+        species["v0"] = [0.0, 0.0, 0.0]
+        species["cs_parallel"] = 0.0
+        species["cs_perp"] = 0.0
+    result = solve_relativistic_codrift_spectrum(case)
+    modes = np.sort_complex(_modes(result["spectra"][0], "real_order"))
+    largest = float(np.max(np.abs(modes)))
+    bessel.high_precision()
+    total_plasma = mp.sqrt(
+        sum(
+            mp.mpf(species["n0"]) * mp.mpf(species["q"]) ** 2 / mp.mpf(species["m"])
+            for species in case["species"]
+        )
+    )
+    assert bessel.relative(largest, total_plasma) <= 1e-9
+
+
 def test_relativistic_codrift_inertia_branch_moves_the_spectrum():
     """The relativistic flag selects a different inertia and therefore a different spectrum.
 
