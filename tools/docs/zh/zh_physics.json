@@ -9166,20 +9166,24 @@
     "expected": "组合入口同时返回有限谐波与 Ronnmark 行列式、各自的 3×3 K/D 张量，以及派生的 omega、kx 和 f。"
    },
    "verification": {
-    "scope": [
-     "直接任务图组合、有界原数值案例，以及依赖加载和数值工作前的零 kz 拒绝。"
-    ],
-    "evidence_ceiling": "原单物种和双物种非零波点保留两条行列式路径、原频率换算和有界来源方法一致性。直接测试验证零值在加载任何任务图依赖前拒绝，并保留独立 Ronnmark 在零 kz 处求根/扫描的成功案例。这些是组合与域检查，不构成独立绝对动理学参照、模式识别、根精度认证或一般有限谐波/有理极点精度保证。",
-    "known_limitations": [
-     "原有限和近零替代政策已撤回，两条路径都接收实际有符号非零 kz。显式 kz=+1e-10 保留原求和替代波点。固定有限 N 的 zz 一般没有有限零端点，因此组合入口拒绝零值，不切换模型；可按独立合同显式调用 evaluate_dielectric_response(method='ronnmark')。独立波矢求根/扫描保持不变。",
-     "probe_frequency/probe_wavenumber 拒绝非有限比例和非正 wn/kn；kz 必须有限且非零。原 omega/f 换算链与两种模型不变。",
-     "两条行列式路径分别返回，不合并为单一物理分支；未绑定外部动理学参照。"
-    ],
-    "tests": [
-     "tests/kinetic/test_kinetic_signed_kz.py",
-     "tests/cross_domain/test_fluid_spectrum_r43_compositions.py"
-    ]
-   }
+  "scope": [
+   "独立的跨资产锚：冷极限下 determinant_ronnmark 在 omega/omega_n 上的零点，等于由 B5 流体参考助手按 omega_p**2 = sum n q**2/(eps0 m) 与声明常数重算的等离子体频率；该助手是独立的 mpmath 重实现，与本端口不共享任何代码。Ts_unit = 1e-4 时实测偏差 1.1e-11。",
+   "断言了括号方向——在锚下方 5% 处行列式为负、上方 5% 处为正——因为只断言“符号改变”对整体变号是盲的。",
+   "次要陈述：两条内部求值方法一致到 5.5e-7，且该差异在 lmx = 12 与 16 之间饱和于 1e-9 以内，这正是“谐波和已收敛”的操作性含义。",
+   "两法一致性被明确标为次要，因为 determinant_sum_n 与 determinant_ronnmark 由同一次调用返回：其比值对共同缩放或共同变号不变，对这两种变异只是 equivalent 级证据，仅约束谐波截断。",
+   "测试矩阵：单组分 q = m = n00 = T00 = B0 = 1，kz = 1，kx_frac = 1；Ts_unit = 1e-4 用于冷锚，Ts_unit = 1.0 用于两法与 lmx 陈述。",
+   "失败矩阵：每条通道一条断言——根位置对跨资产锚、括号上的行列式方向、lmx 饱和、声明的图结构，以及零 kx_frac 的拒绝。精度预算在测量前写入：根 1e-9、两法差 1e-6、lmx 饱和 1e-9。"
+  ],
+  "tests": [
+   "tests/kinetic/test_kinetic_relation_cold_anchor.py"
+  ],
+  "evidence_ceiling": "限于一个归一化单组分冷算例（kz = 1、kx_frac = 1），模态位置以独立跨资产助手重算的等离子体频率为锚，谐波截断由两条内部方法约束。依据为冷极限零点与 omega_p 的 1.1e-11 一致，以及随 lmx 饱和的 5.5e-7 两法一致。不建立：热等离子体谱、Langmuir 支之外的模态身份、行列式量级，以及平衡背后 deck 常数的任何主张。",
+  "known_limitations": [
+   "kx_frac = 0 会抛 FloatingPointError，因为谐波和要除以横向波数。这是参数错误，不是冷极限不可达；已按此断言，避免下一位调用者把它读成物理边界。",
+   "返回行列式的绝对量级未被锚定：本合同断言零点位置，不断言该处行列式的幅度。determinant_sum_n 与 determinant_ronnmark 的共同缩放不在其断言面内。",
+   "返回的 D_* 与 K_* 语义未从代码确认，因此不写涉及其的任何关系；曾猜 determinant = D * K，实测相对残差 1.0，说明不是这个分解。"
+  ]
+ }
   },
   {
    "asset_id": "scirel.kinetic.species-equilibrium-scales",
