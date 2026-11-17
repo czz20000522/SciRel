@@ -37,7 +37,12 @@
       "Plotting/patch, simplify/clone, multiprocessing, electrodes and persistent sweeps are excluded or unresolved.",
       "No scientific, experimental or licensing approval is claimed.",
       "The evidence covers the declared parameters and the fixed configurations only; the field statements are made on named targets and are not an arbitrary-domain bound."
-    ]
+    ],
+    "basis": {
+      "kind": "specification",
+      "statement": "The four coils are decided structurally (point counts, a bitwise mirror pair for each coil pair, identical radii within a pair) and the device field as the exact Fraction contraction of the stacked child matrices, so composition and geometry are checked by two independent laws. The repository holds no independent source for the WHAM coil radii, heights, turns or spacings; the device constants themselves are not established.",
+      "source": "tests/electromagnetism/test_device_composition_evidence.py"
+    }
   },
   "asset_id": "scirel.configurations.wham",
   "title": {
