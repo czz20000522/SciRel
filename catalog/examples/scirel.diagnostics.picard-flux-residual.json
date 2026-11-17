@@ -1,135 +1,140 @@
 {
- "schema": "scirel.asset-document",
- "asset_id": "scirel.diagnostics.picard-flux-residual",
- "title": {
-  "en": "Relative Picard flux-state residual",
-  "zh": "Picard 磁通状态相对残差"
- },
- "summary": "Measure the Euclidean change between successive two-dimensional flux states relative to the previous state, with scaled arithmetic and a small denominator floor. Return the residual as a scirel._result.Result mapping.",
- "taxonomy": [
-  "diagnostics",
-  "picard",
-  "relative-residual"
- ],
- "aliases": [
-  "relative psi Picard change"
- ],
- "discovery": {
-  "capability": [
-   "Relative Picard flux-state residual",
-   "Measure the Euclidean change between successive two-dimensional flux states relative to the previous state."
-  ],
-  "operation": [
-   "discrete relative L2 flux-state change for a Picard stopping criterion",
-   "previous and next flux states -> relative residual"
-  ],
-  "model": "Discrete relative L2 flux-state change for a Picard stopping criterion.",
-  "geometry": "Caller-defined co-located two-dimensional flux grid with no interpretation of physical spacings.",
-  "boundary": "All grid entries participate equally; no spatial boundary or active-cell mask is used.",
-  "device_scope": "generic"
- },
- "identity": {
-  "relation": "previous and next flux states to a relative Euclidean change diagnostic",
-  "direction": "psi_previous, psi_next -> residual",
-  "definition": "Compute ||psi_next-psi_previous||_2 / max(||psi_previous||_2, 1e-30 Wb) using the largest absolute input magnitude as an arithmetic scale. A zero-valued pair returns zero. Reject a zero scaled denominator or a nonfinite final ratio; representability at extreme subnormal magnitudes is not guaranteed. The residual field is returned in a scirel._result.Result mapping; mapping and attribute access expose the same value.",
-  "model": "discrete relative L2 flux-state change for a Picard stopping criterion",
-  "geometry": "caller-defined co-located two-dimensional flux grid",
-  "coordinates": "both arrays indexed [Z,R], with no interpretation of physical spacings by this Operator",
-  "boundary": "All grid entries participate equally; no spatial boundary or active-cell mask is used.",
-  "assumptions": [
-   "Both arrays represent the same flux quantity in Wb on matching [Z,R] samples.",
-   "The 1e-30 Wb norm floor is a numerical convention and not a physical reference scale; Wb/rad states cannot be assumed interchangeable with this Wb contract."
-  ]
- },
- "inputs": [
-  {
-   "name": "psi_previous",
-   "description": "Flux state before a Picard update.",
-   "units": "Wb",
-   "shape": "[N_Z,N_R]",
-   "dtype": "finite real array-like",
-   "required": true,
-   "constraints": "Two-dimensional and exactly same shape as psi_next; may be zero."
+  "schema": "scirel.asset-document",
+  "asset_id": "scirel.diagnostics.picard-flux-residual",
+  "title": {
+    "en": "Relative Picard flux-state residual",
+    "zh": "Picard 磁通状态相对残差"
   },
-  {
-   "name": "psi_next",
-   "description": "Flux state after a Picard update.",
-   "units": "Wb",
-   "shape": "[N_Z,N_R]",
-   "dtype": "finite real array-like",
-   "required": true,
-   "constraints": "Two-dimensional and exactly same shape as psi_previous; may be zero."
+  "summary": "Measure the Euclidean change between successive two-dimensional flux states relative to the previous state, with scaled arithmetic and a small denominator floor. Return the residual as a scirel._result.Result mapping.",
+  "taxonomy": [
+    "diagnostics",
+    "picard",
+    "relative-residual"
+  ],
+  "aliases": [
+    "relative psi Picard change"
+  ],
+  "discovery": {
+    "capability": [
+      "Relative Picard flux-state residual",
+      "Measure the Euclidean change between successive two-dimensional flux states relative to the previous state."
+    ],
+    "operation": [
+      "discrete relative L2 flux-state change for a Picard stopping criterion",
+      "previous and next flux states -> relative residual"
+    ],
+    "model": "Discrete relative L2 flux-state change for a Picard stopping criterion.",
+    "geometry": "Caller-defined co-located two-dimensional flux grid with no interpretation of physical spacings.",
+    "boundary": "All grid entries participate equally; no spatial boundary or active-cell mask is used.",
+    "device_scope": "generic"
+  },
+  "identity": {
+    "relation": "previous and next flux states to a relative Euclidean change diagnostic",
+    "direction": "psi_previous, psi_next -> residual",
+    "definition": "Compute ||psi_next-psi_previous||_2 / max(||psi_previous||_2, 1e-30 Wb) using the largest absolute input magnitude as an arithmetic scale. A zero-valued pair returns zero. Reject a zero scaled denominator or a nonfinite final ratio; representability at extreme subnormal magnitudes is not guaranteed. The residual field is returned in a scirel._result.Result mapping; mapping and attribute access expose the same value.",
+    "model": "discrete relative L2 flux-state change for a Picard stopping criterion",
+    "geometry": "caller-defined co-located two-dimensional flux grid",
+    "coordinates": "both arrays indexed [Z,R], with no interpretation of physical spacings by this Operator",
+    "boundary": "All grid entries participate equally; no spatial boundary or active-cell mask is used.",
+    "assumptions": [
+      "Both arrays represent the same flux quantity in Wb on matching [Z,R] samples.",
+      "The 1e-30 Wb norm floor is a numerical convention and not a physical reference scale; Wb/rad states cannot be assumed interchangeable with this Wb contract."
+    ]
+  },
+  "inputs": [
+    {
+      "name": "psi_previous",
+      "description": "Flux state before a Picard update.",
+      "units": "Wb",
+      "shape": "[N_Z,N_R]",
+      "dtype": "finite real array-like",
+      "required": true,
+      "constraints": "Two-dimensional and exactly same shape as psi_next; may be zero."
+    },
+    {
+      "name": "psi_next",
+      "description": "Flux state after a Picard update.",
+      "units": "Wb",
+      "shape": "[N_Z,N_R]",
+      "dtype": "finite real array-like",
+      "required": true,
+      "constraints": "Two-dimensional and exactly same shape as psi_previous; may be zero."
+    }
+  ],
+  "outputs": [
+    {
+      "name": "residual",
+      "description": "Field of the returned scirel._result.Result mapping: relative Euclidean flux change.",
+      "units": "dimensionless",
+      "shape": "scalar",
+      "dtype": "float",
+      "required": true,
+      "constraints": "Nonnegative finite result when representable; zero for two zero states or identical states."
+    }
+  ],
+  "applicability": {
+    "preconditions": [
+      "The two states use identical flux units, grid coordinates and shape."
+    ],
+    "supported": [
+      "A numerical Picard stopping diagnostic for finite two-dimensional arrays, including selected very large and very small magnitudes."
+    ],
+    "excluded": [
+      "A physical equilibrium residual or an error against an independent source oracle.",
+      "Area weighting, mask weighting or arbitrary tensor rank.",
+      "A guarantee that every finite input pair yields a representable finite relative ratio, or that a Wb/rad graph state can be passed without a science-approved convention."
+    ]
+  },
+  "failure_semantics": {
+    "invalid_input": "Raises ValueError for unequal shapes, non-two-dimensional arrays or nonfinite entries.",
+    "runtime_failure": "Raises ValueError for a zero scaled denominator or nonfinite final ratio; other NumPy conversion or arithmetic failures propagate. Extreme subnormal scaling is not guaranteed to preserve the mathematical ratio.",
+    "nonconvergence": "Not applicable; this Operator only measures one state change.",
+    "partial_results": "No partial scirel._result.Result mapping is returned on failure."
+  },
+  "public_api": {
+    "python": {
+      "module": "scirel.diagnostics.picard_flux_residual",
+      "symbol": "compute_picard_flux_residual",
+      "signature": "compute_picard_flux_residual(psi_previous, psi_next)",
+      "canonical_module": "scirel.diagnostics",
+      "canonical_symbol": "compute_picard_flux_residual"
+    }
+  },
+  "version": {
+    "implementation_version": "0.0.0",
+    "dependencies": []
+  },
+  "example": {
+    "description": "Doubling a 3-4 flux state produces a unit relative change; the unchanged state has zero residual, and both success branches return the named Result mapping.",
+    "code": "import numpy as np\nfrom scirel._result import Result\nfrom scirel.diagnostics import compute_picard_flux_residual\nprevious = np.array([[3.0, 4.0]])\nunchanged = compute_picard_flux_residual(previous, previous)\ndoubled = compute_picard_flux_residual(previous, 2*previous)\nassert isinstance(unchanged, Result)\nassert unchanged.residual == unchanged['residual'] == 0.0\nassert np.isclose(doubled.residual, 1.0)",
+    "expected": "The unchanged and doubled-state residuals remain 0 and 1, and both success branches expose the same value by key and attribute through scirel._result.Result."
+  },
+  "verification": {
+    "scope": [
+      "Identical and doubled flux states.",
+      "Large and small finite numerical boundaries, including changes whose unscaled subtraction overflows.",
+      "Unrepresentable relative ratio is rejected.",
+      "Wrong-rank or mismatched shapes and nonfinite input entries are rejected.",
+      "Result wrapping preserves the residual key, value, scalar type, mapping access and both zero/nonzero success branches against baseline 0f74255b; attribute access reaches the same field.",
+      "Independent evidence (test_reduction_evidence): the residual ||psi_next - psi_previous||_2 / max(||psi_previous||_2, 1e-30) is recomputed through the exact rational sums of squares (compared through the squared ratio, since binary64 cannot represent the square root exactly); scale invariance is asserted where both norms stay above the declared floor and the floor's own divergence is asserted below it; equal fields return exactly zero."
+    ],
+    "tests": [
+      "tests/diagnostics/test_picard_flux_residual.py",
+      "tests/diagnostics/test_reduction_evidence.py"
+    ],
+    "evidence_ceiling": "Direct numerical tests cover selected finite extremes and the formula, but not physical equilibrium convergence, arbitrary underflow behavior or expert recognition. C1 evidence adds: Exact rational norm ratio, scale invariance and the declared denominator floor.",
+    "known_limitations": [
+      "The denominator floor changes the relative ratio when the previous-state norm is below 1e-30 Wb.",
+      "A nonzero binary64 input scale is at least 2^-1074, so 1e-30/scale is finite (less than 2.025e293); this step cannot overflow solely because the input scale is subnormal. This bound alone does not establish accuracy for arbitrary mixed-scale arrays or every other scaled operation.",
+      "The Wb floor does not scale invariantly when reinterpreting Wb/rad states; no conversion or direct graph wiring is approved here.",
+      "The scalar does not test Maxwell or pressure-force equations.",
+      "Public distribution licensing and expert recognition remain pending.",
+      "The 1e-30 Wb denominator floor is a declared convention rather than a derived physical scale: below it the residual is scale dependent by construction (measured: a pair scaled to 1e-200 returns the floored denominator value, about 1.4e-170, instead of the scale-free ratio 0.31)."
+    ],
+    "basis": {
+      "kind": "closed-form",
+      "statement": "An exact rational norm ratio, scale invariance and the declared denominator floor pin the formula on values whose result is known exactly; physical equilibrium convergence, arbitrary underflow behaviour and expert recognition are not established.",
+      "source": "tests/diagnostics/test_picard_flux_residual.py"
+    }
   }
- ],
- "outputs": [
-  {
-   "name": "residual",
-   "description": "Field of the returned scirel._result.Result mapping: relative Euclidean flux change.",
-   "units": "dimensionless",
-   "shape": "scalar",
-   "dtype": "float",
-   "required": true,
-   "constraints": "Nonnegative finite result when representable; zero for two zero states or identical states."
-  }
- ],
- "applicability": {
-  "preconditions": [
-   "The two states use identical flux units, grid coordinates and shape."
-  ],
-  "supported": [
-   "A numerical Picard stopping diagnostic for finite two-dimensional arrays, including selected very large and very small magnitudes."
-  ],
-  "excluded": [
-   "A physical equilibrium residual or an error against an independent source oracle.",
-   "Area weighting, mask weighting or arbitrary tensor rank.",
-   "A guarantee that every finite input pair yields a representable finite relative ratio, or that a Wb/rad graph state can be passed without a science-approved convention."
-  ]
- },
- "failure_semantics": {
-  "invalid_input": "Raises ValueError for unequal shapes, non-two-dimensional arrays or nonfinite entries.",
-  "runtime_failure": "Raises ValueError for a zero scaled denominator or nonfinite final ratio; other NumPy conversion or arithmetic failures propagate. Extreme subnormal scaling is not guaranteed to preserve the mathematical ratio.",
-  "nonconvergence": "Not applicable; this Operator only measures one state change.",
-  "partial_results": "No partial scirel._result.Result mapping is returned on failure."
- },
- "public_api": {
-  "python": {
-   "module": "scirel.diagnostics.picard_flux_residual",
-   "symbol": "compute_picard_flux_residual",
-   "signature": "compute_picard_flux_residual(psi_previous, psi_next)",
-   "canonical_module": "scirel.diagnostics",
-   "canonical_symbol": "compute_picard_flux_residual"
-  }
- },
- "version": {
-  "implementation_version": "0.0.0",
-  "dependencies": []
- },
- "example": {
-  "description": "Doubling a 3-4 flux state produces a unit relative change; the unchanged state has zero residual, and both success branches return the named Result mapping.",
-  "code": "import numpy as np\nfrom scirel._result import Result\nfrom scirel.diagnostics import compute_picard_flux_residual\nprevious = np.array([[3.0, 4.0]])\nunchanged = compute_picard_flux_residual(previous, previous)\ndoubled = compute_picard_flux_residual(previous, 2*previous)\nassert isinstance(unchanged, Result)\nassert unchanged.residual == unchanged['residual'] == 0.0\nassert np.isclose(doubled.residual, 1.0)",
-  "expected": "The unchanged and doubled-state residuals remain 0 and 1, and both success branches expose the same value by key and attribute through scirel._result.Result."
- },
- "verification": {
-  "scope": [
-   "Identical and doubled flux states.",
-   "Large and small finite numerical boundaries, including changes whose unscaled subtraction overflows.",
-   "Unrepresentable relative ratio is rejected.",
-   "Wrong-rank or mismatched shapes and nonfinite input entries are rejected.",
-   "Result wrapping preserves the residual key, value, scalar type, mapping access and both zero/nonzero success branches against baseline 0f74255b; attribute access reaches the same field.",
-   "Independent evidence (test_reduction_evidence): the residual ||psi_next - psi_previous||_2 / max(||psi_previous||_2, 1e-30) is recomputed through the exact rational sums of squares (compared through the squared ratio, since binary64 cannot represent the square root exactly); scale invariance is asserted where both norms stay above the declared floor and the floor's own divergence is asserted below it; equal fields return exactly zero."
-  ],
-  "tests": [
-   "tests/diagnostics/test_picard_flux_residual.py",
-   "tests/diagnostics/test_reduction_evidence.py"
-  ],
-  "evidence_ceiling": "Direct numerical tests cover selected finite extremes and the formula, but not physical equilibrium convergence, arbitrary underflow behavior or expert recognition. C1 evidence adds: Exact rational norm ratio, scale invariance and the declared denominator floor.",
-  "known_limitations": [
-   "The denominator floor changes the relative ratio when the previous-state norm is below 1e-30 Wb.",
-   "A nonzero binary64 input scale is at least 2^-1074, so 1e-30/scale is finite (less than 2.025e293); this step cannot overflow solely because the input scale is subnormal. This bound alone does not establish accuracy for arbitrary mixed-scale arrays or every other scaled operation.",
-   "The Wb floor does not scale invariantly when reinterpreting Wb/rad states; no conversion or direct graph wiring is approved here.",
-   "The scalar does not test Maxwell or pressure-force equations.",
-   "Public distribution licensing and expert recognition remain pending.",
-   "The 1e-30 Wb denominator floor is a declared convention rather than a derived physical scale: below it the residual is scale dependent by construction (measured: a pair scaled to 1e-200 returns the floored denominator value, about 1.4e-170, instead of the scale-free ratio 0.31)."
-  ]
- }
 }
