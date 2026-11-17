@@ -41,6 +41,8 @@ OpenFOAM 曾经出现独立求解器越来越多、彼此重复的问题。它�
 
 ## 3. 提案提出时的结构问题
 
+**状态（2026-11-17）**：本节描述提案期的结构问题，不是当前待办。合同 ID 与规范模块域已经对齐：`scirel.sampling.*`、`scirel.fieldline.*` 与 `scirel.numerics.nonuniform-derivatives` 已是 `scirel.geometry.*`，三份装置合同已是 `scirel.configurations.*`，并由 `scripts/check_catalog_id_domain.py` 持续检查。下面第 5 条描述的现象已不存在；原文保留下来是因为它记录了提案时的判断依据。
+
 下面保留提案提出时的问题及理由。本提案 PR 的描述里附有 `e7fa1bba` 当时的快照，不能把该快照当作当前待办：`mirror` 已拆出，领域依赖方向和环已有机器检查。当前代码入口见 [代码地图](codebase-map.md)，尚未完成的全量整理归 #249。
 
 1. **`closures` 和 `kinetic` 互相依赖。** 两个方向的导入都写在函数体内，所以绕过了模块顶层的导入检查：
