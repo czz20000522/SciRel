@@ -3,16 +3,15 @@
 **状态页，不是规范页。** 这里每条都是「命令 → 当时的输出」，用来核对某一时点的主张是否成立。
 它会随 `main` 漂移，所以**不要引用本文的数字**——要引用就重跑命令，数字以重跑为准。
 
-- 测量时点：`main` @ `14aa664d4268158c565877b66d12d675aa646be3`
-- **同一提交上**的发布档：`steps 10/10 passed`、`tests collected 9541 / passed 9528 / failed 0`、
-  `RESULT SHA256 a963eaf5017b3d046c4c3d15005d21eb1c5b7ba3bb18f5b9e1d8b7e364b92407`、
-  `FLOOR  at least 9541 tests required by …/anchors/release-da4c039f44eb.json`、
+- 测量时点：`main` @ `96a9c6ab3f69ee9df1fef566392827a319d6c9f3`
+- **同一提交上**的发布档：`steps 10/10 passed`、`tests collected 9546 / passed 9533 / failed 0`、
+  `RESULT SHA256 ec962bb45d1161263056f4663c0254d568603d4efeaeef70bfb4680c2cca6bbc`、
+  `FLOOR  at least 9541 tests required by …/anchors/release-14aa664d4268.json`、
   `EXCLUSIVE  no other test run or check holds the clone lock`、`ALL GREEN`
-- 该次回执导出为 `anchors/release-14aa664d4268.json`，与回执 `verify` 得 `agree`
+- 该次回执导出为 `release-96a9c6ab3f69.json`；`verify` 与回执对账为 `agree`
 
-> **上一版这一行把出处写错了**：它把 `RESULT SHA256 42b45835…` 记在 `8b6c92c6` 名下，而那次发布档
-> 实际跑在 `da4c039f` 上。两棵树只差一个锚点文件（不参与测试），结论不变，但**出处记错就是错的**——
-> 现改为同一提交上的回执，并留下这次纠正。
+> 页首的 revision 与回执 SHA 会过时，但**不会悄悄错**：`tests/tooling/test_closeout_evidence_citations.py`
+> 要求正文提到的每个锚点文件真实存在、且当前提供 release 下限的锚点必须被正文提到。
 
 ## 0 能力边界
 
