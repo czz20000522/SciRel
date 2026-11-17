@@ -1,0 +1,381 @@
+{
+  "schema": "scirel.output-channel-baseline.v1",
+  "policy": "Each entry is a single-output contract that does not state how its value is obtained. The list may only shrink: an entry that no longer violates must be deleted in the same commit as the fix, so the removal appears in the diff. Adding an entry requires a new measurement and is not how a violation is silenced.",
+  "measured_on": {
+    "revision": "99f7f999",
+    "single_output_contracts": 138,
+    "declared_positional": 14,
+    "declared_mapping": 32,
+    "undeclared": 92
+  },
+  "entries": [
+    {
+      "asset_id": "scirel.collisions.atomic-hydrogen-1s-radiative-recombination-rate-coefficient",
+      "reason": "single declared output, channel not stated: the contract does not say whether the caller receives the value positionally or as a field of a Result mapping. Baselined from the C4 closeout measurement (examples/c4-usage-acceptance/closeout/GAPS.md B1/B3); stating the channel deletes this entry in the same commit."
+    },
+    {
+      "asset_id": "scirel.collisions.atomic-hydrogen-charge-exchange-cross-section",
+      "reason": "single declared output, channel not stated: the contract does not say whether the caller receives the value positionally or as a field of a Result mapping. Baselined from the C4 closeout measurement (examples/c4-usage-acceptance/closeout/GAPS.md B1/B3); stating the channel deletes this entry in the same commit."
+    },
+    {
+      "asset_id": "scirel.collisions.atomic-molecular-hydrogen-elastic-cross-section",
+      "reason": "single declared output, channel not stated: the contract does not say whether the caller receives the value positionally or as a field of a Result mapping. Baselined from the C4 closeout measurement (examples/c4-usage-acceptance/closeout/GAPS.md B1/B3); stating the channel deletes this entry in the same commit."
+    },
+    {
+      "asset_id": "scirel.collisions.fast-ion-stopping-increment",
+      "reason": "single declared output, channel not stated: the contract does not say whether the caller receives the value positionally or as a field of a Result mapping. Baselined from the C4 closeout measurement (examples/c4-usage-acceptance/closeout/GAPS.md B1/B3); stating the channel deletes this entry in the same commit."
+    },
+    {
+      "asset_id": "scirel.collisions.janev-electron-impact-ionization-rate",
+      "reason": "single declared output, channel not stated: the contract does not say whether the caller receives the value positionally or as a field of a Result mapping. Baselined from the C4 closeout measurement (examples/c4-usage-acceptance/closeout/GAPS.md B1/B3); stating the channel deletes this entry in the same commit."
+    },
+    {
+      "asset_id": "scirel.collisions.maxwellian-relative-speed-rate-average",
+      "reason": "single declared output, channel not stated: the contract does not say whether the caller receives the value positionally or as a field of a Result mapping. Baselined from the C4 closeout measurement (examples/c4-usage-acceptance/closeout/GAPS.md B1/B3); stating the channel deletes this entry in the same commit."
+    },
+    {
+      "asset_id": "scirel.collisions.molecular-hydrogen-charge-exchange-cross-section",
+      "reason": "single declared output, channel not stated: the contract does not say whether the caller receives the value positionally or as a field of a Result mapping. Baselined from the C4 closeout measurement (examples/c4-usage-acceptance/closeout/GAPS.md B1/B3); stating the channel deletes this entry in the same commit."
+    },
+    {
+      "asset_id": "scirel.collisions.molecular-hydrogen-elastic-cross-section",
+      "reason": "single declared output, channel not stated: the contract does not say whether the caller receives the value positionally or as a field of a Result mapping. Baselined from the C4 closeout measurement (examples/c4-usage-acceptance/closeout/GAPS.md B1/B3); stating the channel deletes this entry in the same commit."
+    },
+    {
+      "asset_id": "scirel.collisions.normalized-momentum",
+      "reason": "single declared output, channel not stated: the contract does not say whether the caller receives the value positionally or as a field of a Result mapping. Baselined from the C4 closeout measurement (examples/c4-usage-acceptance/closeout/GAPS.md B1/B3); stating the channel deletes this entry in the same commit."
+    },
+    {
+      "asset_id": "scirel.collisions.proton-atomic-hydrogen-elastic-cross-section",
+      "reason": "single declared output, channel not stated: the contract does not say whether the caller receives the value positionally or as a field of a Result mapping. Baselined from the C4 closeout measurement (examples/c4-usage-acceptance/closeout/GAPS.md B1/B3); stating the channel deletes this entry in the same commit."
+    },
+    {
+      "asset_id": "scirel.collisions.proton-molecular-hydrogen-elastic-cross-section",
+      "reason": "single declared output, channel not stated: the contract does not say whether the caller receives the value positionally or as a field of a Result mapping. Baselined from the C4 closeout measurement (examples/c4-usage-acceptance/closeout/GAPS.md B1/B3); stating the channel deletes this entry in the same commit."
+    },
+    {
+      "asset_id": "scirel.collisions.thermal-electron-momentum",
+      "reason": "single declared output, channel not stated: the contract does not say whether the caller receives the value positionally or as a field of a Result mapping. Baselined from the C4 closeout measurement (examples/c4-usage-acceptance/closeout/GAPS.md B1/B3); stating the channel deletes this entry in the same commit."
+    },
+    {
+      "asset_id": "scirel.configurations.brb",
+      "reason": "single declared output, channel not stated: the contract does not say whether the caller receives the value positionally or as a field of a Result mapping. Baselined from the C4 closeout measurement (examples/c4-usage-acceptance/closeout/GAPS.md B1/B3); stating the channel deletes this entry in the same commit."
+    },
+    {
+      "asset_id": "scirel.configurations.trex-coil",
+      "reason": "single declared output, channel not stated: the contract does not say whether the caller receives the value positionally or as a field of a Result mapping. Baselined from the C4 closeout measurement (examples/c4-usage-acceptance/closeout/GAPS.md B1/B3); stating the channel deletes this entry in the same commit."
+    },
+    {
+      "asset_id": "scirel.configurations.wham",
+      "reason": "single declared output, channel not stated: the contract does not say whether the caller receives the value positionally or as a field of a Result mapping. Baselined from the C4 closeout measurement (examples/c4-usage-acceptance/closeout/GAPS.md B1/B3); stating the channel deletes this entry in the same commit."
+    },
+    {
+      "asset_id": "scirel.electromagnetism.arbitrary-points",
+      "reason": "single declared output, channel not stated: the contract does not say whether the caller receives the value positionally or as a field of a Result mapping. Baselined from the C4 closeout measurement (examples/c4-usage-acceptance/closeout/GAPS.md B1/B3); stating the channel deletes this entry in the same commit."
+    },
+    {
+      "asset_id": "scirel.electromagnetism.circular-filament-green",
+      "reason": "single declared output, channel not stated: the contract does not say whether the caller receives the value positionally or as a field of a Result mapping. Baselined from the C4 closeout measurement (examples/c4-usage-acceptance/closeout/GAPS.md B1/B3); stating the channel deletes this entry in the same commit."
+    },
+    {
+      "asset_id": "scirel.electromagnetism.device",
+      "reason": "single declared output, channel not stated: the contract does not say whether the caller receives the value positionally or as a field of a Result mapping. Baselined from the C4 closeout measurement (examples/c4-usage-acceptance/closeout/GAPS.md B1/B3); stating the channel deletes this entry in the same commit."
+    },
+    {
+      "asset_id": "scirel.electromagnetism.magnet-ring",
+      "reason": "single declared output, channel not stated: the contract does not say whether the caller receives the value positionally or as a field of a Result mapping. Baselined from the C4 closeout measurement (examples/c4-usage-acceptance/closeout/GAPS.md B1/B3); stating the channel deletes this entry in the same commit."
+    },
+    {
+      "asset_id": "scirel.electromagnetism.rectangular-coil",
+      "reason": "single declared output, channel not stated: the contract does not say whether the caller receives the value positionally or as a field of a Result mapping. Baselined from the C4 closeout measurement (examples/c4-usage-acceptance/closeout/GAPS.md B1/B3); stating the channel deletes this entry in the same commit."
+    },
+    {
+      "asset_id": "scirel.equilibrium.compute-equilibrium",
+      "reason": "single declared output, channel not stated: the contract does not say whether the caller receives the value positionally or as a field of a Result mapping. Baselined from the C4 closeout measurement (examples/c4-usage-acceptance/closeout/GAPS.md B1/B3); stating the channel deletes this entry in the same commit."
+    },
+    {
+      "asset_id": "scirel.field.rectangular-coil-filaments",
+      "reason": "single declared output, channel not stated: the contract does not say whether the caller receives the value positionally or as a field of a Result mapping. Baselined from the C4 closeout measurement (examples/c4-usage-acceptance/closeout/GAPS.md B1/B3); stating the channel deletes this entry in the same commit."
+    },
+    {
+      "asset_id": "scirel.fusion.dd-neutron-lab-energy",
+      "reason": "single declared output, channel not stated: the contract does not say whether the caller receives the value positionally or as a field of a Result mapping. Baselined from the C4 closeout measurement (examples/c4-usage-acceptance/closeout/GAPS.md B1/B3); stating the channel deletes this entry in the same commit."
+    },
+    {
+      "asset_id": "scirel.fvm.cell-variable",
+      "reason": "single declared output, channel not stated: the contract does not say whether the caller receives the value positionally or as a field of a Result mapping. Baselined from the C4 closeout measurement (examples/c4-usage-acceptance/closeout/GAPS.md B1/B3); stating the channel deletes this entry in the same commit."
+    },
+    {
+      "asset_id": "scirel.fvm.theta-step",
+      "reason": "single declared output, channel not stated: the contract does not say whether the caller receives the value positionally or as a field of a Result mapping. Baselined from the C4 closeout measurement (examples/c4-usage-acceptance/closeout/GAPS.md B1/B3); stating the channel deletes this entry in the same commit."
+    },
+    {
+      "asset_id": "scirel.geometry.boundary",
+      "reason": "single declared output, channel not stated: the contract does not say whether the caller receives the value positionally or as a field of a Result mapping. Baselined from the C4 closeout measurement (examples/c4-usage-acceptance/closeout/GAPS.md B1/B3); stating the channel deletes this entry in the same commit."
+    },
+    {
+      "asset_id": "scirel.geometry.contour-points",
+      "reason": "single declared output, channel not stated: the contract does not say whether the caller receives the value positionally or as a field of a Result mapping. Baselined from the C4 closeout measurement (examples/c4-usage-acceptance/closeout/GAPS.md B1/B3); stating the channel deletes this entry in the same commit."
+    },
+    {
+      "asset_id": "scirel.geometry.fieldline-set",
+      "reason": "single declared output, channel not stated: the contract does not say whether the caller receives the value positionally or as a field of a Result mapping. Baselined from the C4 closeout measurement (examples/c4-usage-acceptance/closeout/GAPS.md B1/B3); stating the channel deletes this entry in the same commit."
+    },
+    {
+      "asset_id": "scirel.geometry.fieldline",
+      "reason": "single declared output, channel not stated: the contract does not say whether the caller receives the value positionally or as a field of a Result mapping. Baselined from the C4 closeout measurement (examples/c4-usage-acceptance/closeout/GAPS.md B1/B3); stating the channel deletes this entry in the same commit."
+    },
+    {
+      "asset_id": "scirel.geometry.helper-contour-points",
+      "reason": "single declared output, channel not stated: the contract does not say whether the caller receives the value positionally or as a field of a Result mapping. Baselined from the C4 closeout measurement (examples/c4-usage-acceptance/closeout/GAPS.md B1/B3); stating the channel deletes this entry in the same commit."
+    },
+    {
+      "asset_id": "scirel.geometry.helper-fieldline",
+      "reason": "single declared output, channel not stated: the contract does not say whether the caller receives the value positionally or as a field of a Result mapping. Baselined from the C4 closeout measurement (examples/c4-usage-acceptance/closeout/GAPS.md B1/B3); stating the channel deletes this entry in the same commit."
+    },
+    {
+      "asset_id": "scirel.geometry.masked-toroidal-volume",
+      "reason": "single declared output, channel not stated: the contract does not say whether the caller receives the value positionally or as a field of a Result mapping. Baselined from the C4 closeout measurement (examples/c4-usage-acceptance/closeout/GAPS.md B1/B3); stating the channel deletes this entry in the same commit."
+    },
+    {
+      "asset_id": "scirel.geometry.nonuniform-first-derivative",
+      "reason": "single declared output, channel not stated: the contract does not say whether the caller receives the value positionally or as a field of a Result mapping. Baselined from the C4 closeout measurement (examples/c4-usage-acceptance/closeout/GAPS.md B1/B3); stating the channel deletes this entry in the same commit."
+    },
+    {
+      "asset_id": "scirel.geometry.parse-segment",
+      "reason": "single declared output, channel not stated: the contract does not say whether the caller receives the value positionally or as a field of a Result mapping. Baselined from the C4 closeout measurement (examples/c4-usage-acceptance/closeout/GAPS.md B1/B3); stating the channel deletes this entry in the same commit."
+    },
+    {
+      "asset_id": "scirel.geometry.path-distance",
+      "reason": "single declared output, channel not stated: the contract does not say whether the caller receives the value positionally or as a field of a Result mapping. Baselined from the C4 closeout measurement (examples/c4-usage-acceptance/closeout/GAPS.md B1/B3); stating the channel deletes this entry in the same commit."
+    },
+    {
+      "asset_id": "scirel.geometry.point-nearest",
+      "reason": "single declared output, channel not stated: the contract does not say whether the caller receives the value positionally or as a field of a Result mapping. Baselined from the C4 closeout measurement (examples/c4-usage-acceptance/closeout/GAPS.md B1/B3); stating the channel deletes this entry in the same commit."
+    },
+    {
+      "asset_id": "scirel.geometry.points-mesh",
+      "reason": "single declared output, channel not stated: the contract does not say whether the caller receives the value positionally or as a field of a Result mapping. Baselined from the C4 closeout measurement (examples/c4-usage-acceptance/closeout/GAPS.md B1/B3); stating the channel deletes this entry in the same commit."
+    },
+    {
+      "asset_id": "scirel.geometry.r-chord",
+      "reason": "single declared output, channel not stated: the contract does not say whether the caller receives the value positionally or as a field of a Result mapping. Baselined from the C4 closeout measurement (examples/c4-usage-acceptance/closeout/GAPS.md B1/B3); stating the channel deletes this entry in the same commit."
+    },
+    {
+      "asset_id": "scirel.geometry.rect-mesh",
+      "reason": "single declared output, channel not stated: the contract does not say whether the caller receives the value positionally or as a field of a Result mapping. Baselined from the C4 closeout measurement (examples/c4-usage-acceptance/closeout/GAPS.md B1/B3); stating the channel deletes this entry in the same commit."
+    },
+    {
+      "asset_id": "scirel.geometry.rectangular-nearest",
+      "reason": "single declared output, channel not stated: the contract does not say whether the caller receives the value positionally or as a field of a Result mapping. Baselined from the C4 closeout measurement (examples/c4-usage-acceptance/closeout/GAPS.md B1/B3); stating the channel deletes this entry in the same commit."
+    },
+    {
+      "asset_id": "scirel.geometry.rectangular-spline",
+      "reason": "single declared output, channel not stated: the contract does not say whether the caller receives the value positionally or as a field of a Result mapping. Baselined from the C4 closeout measurement (examples/c4-usage-acceptance/closeout/GAPS.md B1/B3); stating the channel deletes this entry in the same commit."
+    },
+    {
+      "asset_id": "scirel.geometry.rotate",
+      "reason": "single declared output, channel not stated: the contract does not say whether the caller receives the value positionally or as a field of a Result mapping. Baselined from the C4 closeout measurement (examples/c4-usage-acceptance/closeout/GAPS.md B1/B3); stating the channel deletes this entry in the same commit."
+    },
+    {
+      "asset_id": "scirel.geometry.scalar-reflection",
+      "reason": "single declared output, channel not stated: the contract does not say whether the caller receives the value positionally or as a field of a Result mapping. Baselined from the C4 closeout measurement (examples/c4-usage-acceptance/closeout/GAPS.md B1/B3); stating the channel deletes this entry in the same commit."
+    },
+    {
+      "asset_id": "scirel.geometry.scattered-linear",
+      "reason": "single declared output, channel not stated: the contract does not say whether the caller receives the value positionally or as a field of a Result mapping. Baselined from the C4 closeout measurement (examples/c4-usage-acceptance/closeout/GAPS.md B1/B3); stating the channel deletes this entry in the same commit."
+    },
+    {
+      "asset_id": "scirel.geometry.select-fieldline",
+      "reason": "single declared output, channel not stated: the contract does not say whether the caller receives the value positionally or as a field of a Result mapping. Baselined from the C4 closeout measurement (examples/c4-usage-acceptance/closeout/GAPS.md B1/B3); stating the channel deletes this entry in the same commit."
+    },
+    {
+      "asset_id": "scirel.geometry.spherical-r-chord",
+      "reason": "single declared output, channel not stated: the contract does not say whether the caller receives the value positionally or as a field of a Result mapping. Baselined from the C4 closeout measurement (examples/c4-usage-acceptance/closeout/GAPS.md B1/B3); stating the channel deletes this entry in the same commit."
+    },
+    {
+      "asset_id": "scirel.geometry.theta-chord",
+      "reason": "single declared output, channel not stated: the contract does not say whether the caller receives the value positionally or as a field of a Result mapping. Baselined from the C4 closeout measurement (examples/c4-usage-acceptance/closeout/GAPS.md B1/B3); stating the channel deletes this entry in the same commit."
+    },
+    {
+      "asset_id": "scirel.geometry.weighted-line-integral",
+      "reason": "single declared output, channel not stated: the contract does not say whether the caller receives the value positionally or as a field of a Result mapping. Baselined from the C4 closeout measurement (examples/c4-usage-acceptance/closeout/GAPS.md B1/B3); stating the channel deletes this entry in the same commit."
+    },
+    {
+      "asset_id": "scirel.geometry.z-chord",
+      "reason": "single declared output, channel not stated: the contract does not say whether the caller receives the value positionally or as a field of a Result mapping. Baselined from the C4 closeout measurement (examples/c4-usage-acceptance/closeout/GAPS.md B1/B3); stating the channel deletes this entry in the same commit."
+    },
+    {
+      "asset_id": "scirel.io.eqdsk-class",
+      "reason": "single declared output, channel not stated: the contract does not say whether the caller receives the value positionally or as a field of a Result mapping. Baselined from the C4 closeout measurement (examples/c4-usage-acceptance/closeout/GAPS.md B1/B3); stating the channel deletes this entry in the same commit."
+    },
+    {
+      "asset_id": "scirel.io.write-eqdsk",
+      "reason": "single declared output, channel not stated: the contract does not say whether the caller receives the value positionally or as a field of a Result mapping. Baselined from the C4 closeout measurement (examples/c4-usage-acceptance/closeout/GAPS.md B1/B3); stating the channel deletes this entry in the same commit."
+    },
+    {
+      "asset_id": "scirel.kinetic.fluid-special-functions",
+      "reason": "single declared output, channel not stated: the contract does not say whether the caller receives the value positionally or as a field of a Result mapping. Baselined from the C4 closeout measurement (examples/c4-usage-acceptance/closeout/GAPS.md B1/B3); stating the channel deletes this entry in the same commit."
+    },
+    {
+      "asset_id": "scirel.kinetic.generalized-expression-differentiation",
+      "reason": "single declared output, channel not stated: the contract does not say whether the caller receives the value positionally or as a field of a Result mapping. Baselined from the C4 closeout measurement (examples/c4-usage-acceptance/closeout/GAPS.md B1/B3); stating the channel deletes this entry in the same commit."
+    },
+    {
+      "asset_id": "scirel.kinetic.generalized-residual",
+      "reason": "single declared output, channel not stated: the contract does not say whether the caller receives the value positionally or as a field of a Result mapping. Baselined from the C4 closeout measurement (examples/c4-usage-acceptance/closeout/GAPS.md B1/B3); stating the channel deletes this entry in the same commit."
+    },
+    {
+      "asset_id": "scirel.kinetic.hydrogen-saha-equilibrium-population",
+      "reason": "single declared output, channel not stated: the contract does not say whether the caller receives the value positionally or as a field of a Result mapping. Baselined from the C4 closeout measurement (examples/c4-usage-acceptance/closeout/GAPS.md B1/B3); stating the channel deletes this entry in the same commit."
+    },
+    {
+      "asset_id": "scirel.kinetic.multifluid-deck",
+      "reason": "single declared output, channel not stated: the contract does not say whether the caller receives the value positionally or as a field of a Result mapping. Baselined from the C4 closeout measurement (examples/c4-usage-acceptance/closeout/GAPS.md B1/B3); stating the channel deletes this entry in the same commit."
+    },
+    {
+      "asset_id": "scirel.kinetic.rational-default-deck",
+      "reason": "single declared output, channel not stated: the contract does not say whether the caller receives the value positionally or as a field of a Result mapping. Baselined from the C4 closeout measurement (examples/c4-usage-acceptance/closeout/GAPS.md B1/B3); stating the channel deletes this entry in the same commit."
+    },
+    {
+      "asset_id": "scirel.kinetic.rational-jpole-evaluate",
+      "reason": "single declared output, channel not stated: the contract does not say whether the caller receives the value positionally or as a field of a Result mapping. Baselined from the C4 closeout measurement (examples/c4-usage-acceptance/closeout/GAPS.md B1/B3); stating the channel deletes this entry in the same commit."
+    },
+    {
+      "asset_id": "scirel.kinetic.rational-z-poles",
+      "reason": "single declared output, channel not stated: the contract does not say whether the caller receives the value positionally or as a field of a Result mapping. Baselined from the C4 closeout measurement (examples/c4-usage-acceptance/closeout/GAPS.md B1/B3); stating the channel deletes this entry in the same commit."
+    },
+    {
+      "asset_id": "scirel.kinetic.relativistic-codrift-generalized-spectrum",
+      "reason": "single declared output, channel not stated: the contract does not say whether the caller receives the value positionally or as a field of a Result mapping. Baselined from the C4 closeout measurement (examples/c4-usage-acceptance/closeout/GAPS.md B1/B3); stating the channel deletes this entry in the same commit."
+    },
+    {
+      "asset_id": "scirel.kinetic.vp-distribution",
+      "reason": "single declared output, channel not stated: the contract does not say whether the caller receives the value positionally or as a field of a Result mapping. Baselined from the C4 closeout measurement (examples/c4-usage-acceptance/closeout/GAPS.md B1/B3); stating the channel deletes this entry in the same commit."
+    },
+    {
+      "asset_id": "scirel.kinetic.vp-field",
+      "reason": "single declared output, channel not stated: the contract does not say whether the caller receives the value positionally or as a field of a Result mapping. Baselined from the C4 closeout measurement (examples/c4-usage-acceptance/closeout/GAPS.md B1/B3); stating the channel deletes this entry in the same commit."
+    },
+    {
+      "asset_id": "scirel.kinetic.vp-rhs",
+      "reason": "single declared output, channel not stated: the contract does not say whether the caller receives the value positionally or as a field of a Result mapping. Baselined from the C4 closeout measurement (examples/c4-usage-acceptance/closeout/GAPS.md B1/B3); stating the channel deletes this entry in the same commit."
+    },
+    {
+      "asset_id": "scirel.kinetic.vp-rk4-step",
+      "reason": "single declared output, channel not stated: the contract does not say whether the caller receives the value positionally or as a field of a Result mapping. Baselined from the C4 closeout measurement (examples/c4-usage-acceptance/closeout/GAPS.md B1/B3); stating the channel deletes this entry in the same commit."
+    },
+    {
+      "asset_id": "scirel.neutrals.adaptive-neutral-velocity-mesh",
+      "reason": "single declared output, channel not stated: the contract does not say whether the caller receives the value positionally or as a field of a Result mapping. Baselined from the C4 closeout measurement (examples/c4-usage-acceptance/closeout/GAPS.md B1/B3); stating the channel deletes this entry in the same commit."
+    },
+    {
+      "asset_id": "scirel.neutrals.atomic-scattered-sources-reduction",
+      "reason": "single declared output, channel not stated: the contract does not say whether the caller receives the value positionally or as a field of a Result mapping. Baselined from the C4 closeout measurement (examples/c4-usage-acceptance/closeout/GAPS.md B1/B3); stating the channel deletes this entry in the same commit."
+    },
+    {
+      "asset_id": "scirel.neutrals.compensated-shifted-maxwellian",
+      "reason": "single declared output, channel not stated: the contract does not say whether the caller receives the value positionally or as a field of a Result mapping. Baselined from the C4 closeout measurement (examples/c4-usage-acceptance/closeout/GAPS.md B1/B3); stating the channel deletes this entry in the same commit."
+    },
+    {
+      "asset_id": "scirel.neutrals.cross-mesh-distribution-interpolation",
+      "reason": "single declared output, channel not stated: the contract does not say whether the caller receives the value positionally or as a field of a Result mapping. Baselined from the C4 closeout measurement (examples/c4-usage-acceptance/closeout/GAPS.md B1/B3); stating the channel deletes this entry in the same commit."
+    },
+    {
+      "asset_id": "scirel.neutrals.elastic-frequency-channels",
+      "reason": "single declared output, channel not stated: the contract does not say whether the caller receives the value positionally or as a field of a Result mapping. Baselined from the C4 closeout measurement (examples/c4-usage-acceptance/closeout/GAPS.md B1/B3); stating the channel deletes this entry in the same commit."
+    },
+    {
+      "asset_id": "scirel.neutrals.elastic-regeneration-aggregation",
+      "reason": "single declared output, channel not stated: the contract does not say whether the caller receives the value positionally or as a field of a Result mapping. Baselined from the C4 closeout measurement (examples/c4-usage-acceptance/closeout/GAPS.md B1/B3); stating the channel deletes this entry in the same commit."
+    },
+    {
+      "asset_id": "scirel.neutrals.generation-density-reduction",
+      "reason": "single declared output, channel not stated: the contract does not say whether the caller receives the value positionally or as a field of a Result mapping. Baselined from the C4 closeout measurement (examples/c4-usage-acceptance/closeout/GAPS.md B1/B3); stating the channel deletes this entry in the same commit."
+    },
+    {
+      "asset_id": "scirel.neutrals.molecular-scattered-sources-reduction",
+      "reason": "single declared output, channel not stated: the contract does not say whether the caller receives the value positionally or as a field of a Result mapping. Baselined from the C4 closeout measurement (examples/c4-usage-acceptance/closeout/GAPS.md B1/B3); stating the channel deletes this entry in the same commit."
+    },
+    {
+      "asset_id": "scirel.neutrals.neutral-boltzmann-rhs",
+      "reason": "single declared output, channel not stated: the contract does not say whether the caller receives the value positionally or as a field of a Result mapping. Baselined from the C4 closeout measurement (examples/c4-usage-acceptance/closeout/GAPS.md B1/B3); stating the channel deletes this entry in the same commit."
+    },
+    {
+      "asset_id": "scirel.neutrals.neutral-generation-stopping",
+      "reason": "single declared output, channel not stated: the contract does not say whether the caller receives the value positionally or as a field of a Result mapping. Baselined from the C4 closeout measurement (examples/c4-usage-acceptance/closeout/GAPS.md B1/B3); stating the channel deletes this entry in the same commit."
+    },
+    {
+      "asset_id": "scirel.neutrals.neutral-total-collision-frequency",
+      "reason": "single declared output, channel not stated: the contract does not say whether the caller receives the value positionally or as a field of a Result mapping. Baselined from the C4 closeout measurement (examples/c4-usage-acceptance/closeout/GAPS.md B1/B3); stating the channel deletes this entry in the same commit."
+    },
+    {
+      "asset_id": "scirel.neutrals.simple-charge-exchange-source",
+      "reason": "single declared output, channel not stated: the contract does not say whether the caller receives the value positionally or as a field of a Result mapping. Baselined from the C4 closeout measurement (examples/c4-usage-acceptance/closeout/GAPS.md B1/B3); stating the channel deletes this entry in the same commit."
+    },
+    {
+      "asset_id": "scirel.neutrals.terminal-conservation-diagnostic",
+      "reason": "single declared output, channel not stated: the contract does not say whether the caller receives the value positionally or as a field of a Result mapping. Baselined from the C4 closeout measurement (examples/c4-usage-acceptance/closeout/GAPS.md B1/B3); stating the channel deletes this entry in the same commit."
+    },
+    {
+      "asset_id": "scirel.numerics.basis-matrix",
+      "reason": "single declared output, channel not stated: the contract does not say whether the caller receives the value positionally or as a field of a Result mapping. Baselined from the C4 closeout measurement (examples/c4-usage-acceptance/closeout/GAPS.md B1/B3); stating the channel deletes this entry in the same commit."
+    },
+    {
+      "asset_id": "scirel.numerics.build-basis",
+      "reason": "single declared output, channel not stated: the contract does not say whether the caller receives the value positionally or as a field of a Result mapping. Baselined from the C4 closeout measurement (examples/c4-usage-acceptance/closeout/GAPS.md B1/B3); stating the channel deletes this entry in the same commit."
+    },
+    {
+      "asset_id": "scirel.numerics.clamped-cubic-spline",
+      "reason": "single declared output, channel not stated: the contract does not say whether the caller receives the value positionally or as a field of a Result mapping. Baselined from the C4 closeout measurement (examples/c4-usage-acceptance/closeout/GAPS.md B1/B3); stating the channel deletes this entry in the same commit."
+    },
+    {
+      "asset_id": "scirel.numerics.face-to-cell",
+      "reason": "single declared output, channel not stated: the contract does not say whether the caller receives the value positionally or as a field of a Result mapping. Baselined from the C4 closeout measurement (examples/c4-usage-acceptance/closeout/GAPS.md B1/B3); stating the channel deletes this entry in the same commit."
+    },
+    {
+      "asset_id": "scirel.numerics.faddeeva",
+      "reason": "single declared output, channel not stated: the contract does not say whether the caller receives the value positionally or as a field of a Result mapping. Baselined from the C4 closeout measurement (examples/c4-usage-acceptance/closeout/GAPS.md B1/B3); stating the channel deletes this entry in the same commit."
+    },
+    {
+      "asset_id": "scirel.numerics.first-clamped-cubic-spline",
+      "reason": "single declared output, channel not stated: the contract does not say whether the caller receives the value positionally or as a field of a Result mapping. Baselined from the C4 closeout measurement (examples/c4-usage-acceptance/closeout/GAPS.md B1/B3); stating the channel deletes this entry in the same commit."
+    },
+    {
+      "asset_id": "scirel.numerics.natural-cubic-spline",
+      "reason": "single declared output, channel not stated: the contract does not say whether the caller receives the value positionally or as a field of a Result mapping. Baselined from the C4 closeout measurement (examples/c4-usage-acceptance/closeout/GAPS.md B1/B3); stating the channel deletes this entry in the same commit."
+    },
+    {
+      "asset_id": "scirel.numerics.orthonormal-modal-basis",
+      "reason": "single declared output, channel not stated: the contract does not say whether the caller receives the value positionally or as a field of a Result mapping. Baselined from the C4 closeout measurement (examples/c4-usage-acceptance/closeout/GAPS.md B1/B3); stating the channel deletes this entry in the same commit."
+    },
+    {
+      "asset_id": "scirel.numerics.second-clamped-cubic-spline",
+      "reason": "single declared output, channel not stated: the contract does not say whether the caller receives the value positionally or as a field of a Result mapping. Baselined from the C4 closeout measurement (examples/c4-usage-acceptance/closeout/GAPS.md B1/B3); stating the channel deletes this entry in the same commit."
+    },
+    {
+      "asset_id": "scirel.numerics.truncated-svd-inverse",
+      "reason": "single declared output, channel not stated: the contract does not say whether the caller receives the value positionally or as a field of a Result mapping. Baselined from the C4 closeout measurement (examples/c4-usage-acceptance/closeout/GAPS.md B1/B3); stating the channel deletes this entry in the same commit."
+    },
+    {
+      "asset_id": "scirel.physics.coulomb-ee",
+      "reason": "single declared output, channel not stated: the contract does not say whether the caller receives the value positionally or as a field of a Result mapping. Baselined from the C4 closeout measurement (examples/c4-usage-acceptance/closeout/GAPS.md B1/B3); stating the channel deletes this entry in the same commit."
+    },
+    {
+      "asset_id": "scirel.physics.coulomb-ei",
+      "reason": "single declared output, channel not stated: the contract does not say whether the caller receives the value positionally or as a field of a Result mapping. Baselined from the C4 closeout measurement (examples/c4-usage-acceptance/closeout/GAPS.md B1/B3); stating the channel deletes this entry in the same commit."
+    },
+    {
+      "asset_id": "scirel.physics.coulomb-ii",
+      "reason": "single declared output, channel not stated: the contract does not say whether the caller receives the value positionally or as a field of a Result mapping. Baselined from the C4 closeout measurement (examples/c4-usage-acceptance/closeout/GAPS.md B1/B3); stating the channel deletes this entry in the same commit."
+    },
+    {
+      "asset_id": "scirel.physics.dilution",
+      "reason": "single declared output, channel not stated: the contract does not say whether the caller receives the value positionally or as a field of a Result mapping. Baselined from the C4 closeout measurement (examples/c4-usage-acceptance/closeout/GAPS.md B1/B3); stating the channel deletes this entry in the same commit."
+    },
+    {
+      "asset_id": "scirel.plasma.fast-ion-heating",
+      "reason": "single declared output, channel not stated: the contract does not say whether the caller receives the value positionally or as a field of a Result mapping. Baselined from the C4 closeout measurement (examples/c4-usage-acceptance/closeout/GAPS.md B1/B3); stating the channel deletes this entry in the same commit."
+    }
+  ]
+}
