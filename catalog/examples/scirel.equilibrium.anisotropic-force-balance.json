@@ -279,19 +279,24 @@
  },
  "verification": {
   "scope": [
-   "Exact anisotropic vacuum tensor equilibrium on three refinements including R=0.",
-   "Sixteen constant-pressure grids retain zero force without false compatibility rejection.",
-   "This diagnostic reports resolved parallel-force residuals; test_true_parallel_imbalance_still_rejected checks rejection in its upper-level solve_axisymmetric_anisotropic_picard consumer, not in this diagnostic leaf."
+   "The independent basis is three analytic closed forms for solenoidal poloidal fields with pressures of degree at most two, where the three-point stencils are exact: a uniform axial field on a grid containing the magnetic axis (force_R = 4R, force_Z = -1.25 Pa/m, J_phi = 8R), a solenoidal radial field B_R = -c/R from psi = cZ with anisotropic linear pressures (force_R = dp_parallel/dR + (p_parallel - p_perp)/R, force_Z = dp_perp/dZ, J_phi = R dp_perp/dZ / c), and a curved solenoidal field from psi = A R^2 + D R^2 Z with an isotropic linear pressure, where delta = 0 forces the divergence to equal grad p for any field direction (tests/equilibrium/test_anisotropic_force_balance_evidence.py).",
+   "Algebraic identities are checked against the returned arrays rather than against a second implementation: the parallel force equals the field projection b . force, and the toroidal current equals (B_Z force_R - B_R force_Z)/|B|^2.",
+   "The divergence is affine in (p_parallel, p_perp) and homogeneous of degree one in the pressures, while the normalized compatibility metric is invariant under a pressure rescaling; a dropped component, a sign flip or an absolute tolerance in the metric therefore breaks an assertion that needs no oracle.",
+   "For a general field direction the continuum identity b . div(P) = b . grad p_parallel + delta div(b) is tested as second-order convergence over three refinements (residual ratio above 3.4 per doubling), not as an equality, because the tensor components are non-polynomial there.",
+   "The precision budget is written into the evidence module before the comparison: an algebraic output gets 16 eps relative to its analytic magnitude, and every difference quotient gets (8 + 4 max|p| / (h |slope|)) eps, the condition number of the quotient plus the boundary extrapolation.",
+   "Each declared failure channel and each axis or small-denominator branch has one executable assertion, and the parallel-force residual stays observational at this leaf rather than becoming a rejection gate."
   ],
   "tests": [
    "tests/equilibrium/test_anisotropic_force_balance.py",
-   "tests/cross_domain/test_anisotropic_core_scientific_correction.py"
+   "tests/cross_domain/test_anisotropic_core_scientific_correction.py",
+   "tests/equilibrium/test_anisotropic_force_balance_evidence.py"
   ],
-  "evidence_ceiling": "tests/cross_domain/test_anisotropic_core_scientific_correction.py directly imports this maintained function as force; test_exact_vacuum_tensor_equilibrium_axis, test_zero_force_not_rejected assert manufactured tensor equilibrium and parametrized constant-pressure zero force. These are bounded manufactured/analytic discrete cases, not full-file coverage or physical validation of arbitrary caller pressure/Green/wall models.",
+  "evidence_ceiling": "tests/cross_domain/test_anisotropic_core_scientific_correction.py directly imports this maintained function as force; test_exact_vacuum_tensor_equilibrium_axis, test_zero_force_not_rejected assert manufactured tensor equilibrium and parametrized constant-pressure zero force. These are bounded manufactured/analytic discrete cases, not full-file coverage or physical validation of arbitrary caller pressure/Green/wall models. C1 evidence (tests/equilibrium/test_anisotropic_force_balance_evidence.py) adds three analytic closed forms on solenoidal fields (axial with the axis column, radial with the azimuthal curvature term, curved with delta = 0), the b . force and projected-current identities, the affine and scaling structure, the declared metric recomputation over a subset mask, and a second-order convergence study of b . div(P) = b . grad p_parallel + delta div(b). It does not establish the physical correctness of any caller pressure or field model.",
   "known_limitations": [
    "Caller-supplied physical closures and Green responses require their own evidence and coherent psi=R A_phi (Wb/rad) normalization.",
    "Floating-point rounding envelopes do not bound discretization error or experimental uncertainty.",
-   "The named shared-file assertions exercise the real entry point, including its parametrized samples. Their scope is limited to the listed cases; other assets in the file are not evidence for this one."
+   "The named shared-file assertions exercise the real entry point, including its parametrized samples. Their scope is limited to the listed cases; other assets in the file are not evidence for this one.",
+   "The analytic closed forms are exact only where the stencil is exact, that is for pressures of degree at most two on a rectilinear grid; a general field direction carries second-order truncation error outside the floating-point envelope, and the 1/R curvature term is not resolved by the reported envelope."
   ]
  }
 }

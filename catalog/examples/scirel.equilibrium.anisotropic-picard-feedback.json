@@ -267,20 +267,25 @@
  },
  "verification": {
   "scope": [
-   "Explicit-cell uniform behavior; node-domain nonuniform current quadrature; two-node and descending-axis support.",
-   "Missing field Green pair produces the magnetic derivative of the added plasma flux, preserving the vacuum reference.",
-   "A partial plasma mask preserves active j_phi values and zeros only inactive cells before cell weighting.",
-   "Return-type regression checks the top-level scirel._result.Result, key order and attribute access while retaining the existing numerical, state and failure assertions."
+   "The independent basis is an exact rational (fractions.Fraction) recomputation of the composite-trapezoid cell weights, the masked cell currents and the relaxed state on a dyadic fixture, where every value is exactly representable so the comparison is bitwise rather than a tolerance (tests/equilibrium/test_anisotropic_picard_feedback_evidence.py).",
+   "The weights are pinned by two exact identities that do not refer to the implementation: they sum to (R_max - R_min) * (Z_max - Z_min) over the node rectangle, and explicit cell_edges give the declared cell-centre areas with the same total; neither involves a 2*pi*R toroidal factor.",
+   "The relaxation is pinned at both endpoints: relax = 0 returns the raw masked currents and relax = 1 returns the supplied old state, while plasma_currents and j_phi stay unchanged by relax and currents_old, so a step that returned either state twice cannot pass.",
+   "The Green response is checked structurally: psi - psi_vac is linear in the relaxed current vector, a rank-one Green matrix u v^T produces u (v . currents), and an added psi_vac offset is added rather than replaced.",
+   "The declared derived-field branch is exercised in closed form: a flux increment linear in R gives B_Z = 1/R and B_R = 0 on an axis-free grid, and the declared regular-axis rule B_Z[:, 0] = 2 (psi[:, 1] - psi[:, 0]) / R_1^2 is asserted as declared, not as a physical limit.",
+   "The precision budget is written into the evidence module before the comparison: zero for the dyadic arithmetic (bitwise equality), 2n eps for a Green dot product of length n against the exact Fraction value, and 4 eps for the one division in the derived-field closed form.",
+   "Each declared failure channel has one executable assertion, and the successful mapping always carries all eight keys with attribute access as well as item access."
   ],
   "tests": [
    "tests/equilibrium/test_anisotropic_picard_feedback.py",
-   "tests/cross_domain/test_anisotropic_core_scientific_correction.py"
+   "tests/cross_domain/test_anisotropic_core_scientific_correction.py",
+   "tests/equilibrium/test_anisotropic_picard_feedback_evidence.py"
   ],
-  "evidence_ceiling": "tests/cross_domain/test_anisotropic_core_scientific_correction.py directly imports this maintained function as feedback; test_feedback_without_field_greens_recovers_plasma_field, test_two_node_feedback_remains_supported_with_explicit_cells assert field recovery without field Green matrices and explicit two-node cells. These are bounded manufactured/analytic discrete cases, not full-file coverage or physical validation of arbitrary caller pressure/Green/wall models.",
+  "evidence_ceiling": "tests/equilibrium/test_anisotropic_picard_feedback.py and tests/cross_domain/test_anisotropic_core_scientific_correction.py exercise the public ports on small graphs. C1 evidence (tests/equilibrium/test_anisotropic_picard_feedback_evidence.py) recomputes the trapezoid weights, masked currents and relaxed state exactly in Fraction arithmetic on a dyadic fixture, pins both relaxation endpoints, shows plasma_currents and j_phi are unrelaxed, proves the total-area identity for node and cell-centre weights, checks the affine and rank-one Green structure, and exercises the derived-field and regular-axis branches in closed form. It does not certify any caller Green matrix as physically consistent.",
   "known_limitations": [
-   "Caller-supplied physical closures and Green responses require their own evidence and coherent psi=R A_phi (Wb/rad) normalization.",
-   "Floating-point rounding envelopes do not bound discretization error or experimental uncertainty.",
-   "The named shared-file assertions exercise the real entry point, including its parametrized samples. Their scope is limited to the listed cases; other assets in the file are not evidence for this one."
+   "The Green matrices are caller-supplied and this step does not verify that they represent a physically consistent response; only their linear algebra is exercised.",
+   "Cell weights integrate over the supplied node domain and are not a finite-volume discretisation of a curved boundary, and no toroidal factor is applied.",
+   "The supplied psi_vac, br_vac and bz_vac must already be coherent with the same psi = R A_phi convention; this step adds increments without rescaling them.",
+   "The derived-field branch is exercised on manufactured flux increments; its regular-axis rule is a declared numerical convention and is not evidence that the supplied field is smooth at the axis."
   ]
  }
 }

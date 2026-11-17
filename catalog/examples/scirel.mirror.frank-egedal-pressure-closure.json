@@ -173,18 +173,24 @@
  },
  "verification": {
   "scope": [
-   "Composition retains the corrected common-population velocity domain and raw-moment convergence state.",
-   "The exact-document example exercises the real public composition API."
+   "The independent basis is the declared b = 1 reference normalization: the contract states that the pressure moments are referenced to hot_parallel(b=1), so at the flux reference sample where the radial envelope is unity the hot parallel pressure must equal the caller's hot_pressure_scale exactly; the fixture uses the dyadic scale 8.0 and asserts bitwise equality, which fixes the normalization convention and the Pa unit of the scale (tests/mirror/test_frank_egedal_pressure_closure_evidence.py).",
+   "The adaptive quadrature decides the answer, not the initial node count: velocity_nodes = pitch_nodes = 6 and 24 give the same pressure fields at the contract's own quadrature_rtol of 1e-7, and the returned quadrature record shows the node counts used, the tolerance and raw_moments_checked true.",
+   "The common population is shared: velocity_domain reports one interval with common_to_density_and_both_pressures true, and caller-supplied degrees are reported as degree_source caller_supplied rather than being replaced.",
+   "The composition returns exactly the five declared ports and passes the optional density and electron temperature through as None when they are absent.",
+   "The absolute magnitudes of p_parallel and p_perp, and therefore the pitch-angle anisotropy ratio between them, cannot be established: the hot-ion pressure is a non-integer-order moment integral evaluated by an adaptive quadrature, and this batch has no published high-order reference and no independent implementation to compare against.",
+   "Precision budgets are written into the evidence module before the comparison: the reference-normalization identity is bitwise, the node-count comparison uses the contract's declared 1e-7 quadrature tolerance, and the port set is exact."
   ],
   "tests": [
    "tests/cross_domain/test_spectral_scientific_correction.py",
-   "tests/cross_domain/frank_egedal_pressure_closure/test_composition_frank_egedal_pressure_closure.py"
+   "tests/cross_domain/frank_egedal_pressure_closure/test_composition_frank_egedal_pressure_closure.py",
+   "tests/mirror/test_frank_egedal_pressure_closure_evidence.py"
   ],
-  "evidence_ceiling": "Bounded to the declared relation: The radial operator forms r(psi)=max(1-clip((psi-psi_axis)/(psi_edge-psi_axis),0,1),0)^alpha…. Evidence: test_spectral_scientific_correction.py, test_composition_frank_egedal_pressure_closure.py (25 recorded test functions; shared-file plus direct composition/test coverage; self-consistency/regression only); the contract example ran. Excluded scope: An exact kinetic solution, self-consistent force balance, measured-plasma validation or an author-confirmed interpretation of the Eq19b conflict; external physical validation.",
+  "evidence_ceiling": "The maintained cross-domain tests run the composition. C1 evidence (tests/mirror/test_frank_egedal_pressure_closure_evidence.py) adds the b = 1 reference normalization identity, the node-count independence of the adaptive quadrature at the declared tolerance, the shared velocity domain, the exact port set and the non-convergent-population failure. The physical accuracy of the moment integrals remains cannot establish: no published high-order reference or independent implementation was available for this batch, and manufacturing one from the same quadrature would not be evidence.",
   "known_limitations": [
-   "A common cutoff changes legacy parallel/density results as well as perpendicular pressure.",
-   "This graph does not prove that a finite modal population solves the original physical kinetic equation.",
-   "Only shared-file coverage is bound (test_spectral_scientific_correction.py); no asset-specific failure/limit probe is recorded."
+   "The hot-ion moment integrals have no independent high-order reference in this batch, so the absolute pressure magnitudes and the anisotropy ratio are cannot establish, not validated.",
+   "The b = 1 reference identity pins the normalization at one sample; it does not validate the radial envelope or the mirror-ratio dependence away from that sample.",
+   "The quadrature record is the implementation's own convergence self-report; agreement between two initial node counts shows the refinement is node-count independent, not that the adaptive rule resolves every integrand.",
+   "The composition does not evaluate the gas-dynamic or electron terms in these fixtures, so their assembly is exercised only by the maintained graph tests."
   ]
  },
  "references": [
