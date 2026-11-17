@@ -11,7 +11,7 @@
 | 项 | 值 |
 | --- | --- |
 | 数字真源 | `docs/maintainer/status.md`（合同数、`main` revision、测试计数） |
-| 写作时快照 | `main` = `7f1eef8c`，`catalog/examples/*.json` 249 份（**快照，见 status.md**） |
+| 写作时的 `main` | 不写死：`git rev-parse --short HEAD`。本页不记录提交号——写进去就会过期，而过期的交接页比没有更糟 |
 | 解释器 | 由 `.python-version` 固定，依赖由 `uv.lock` 固定，装进项目目录内由 uv 管理 |
 
 ### 验收怎么跑
@@ -69,21 +69,34 @@ python3 scripts/dev.py check     # 验收；默认就是发布档
 
 ## 4. 未决事项：全部 open 工单
 
-`python3 scripts/tickets.py list tickets --status open` 实测 **9 张**（**快照，见 status.md**；数量会变，判定以命令输出为准），全部 `open`，`decisions` 均为空。**它们没有被裁决。** 每张单的 `reviewers_required` 与安全默认写在工单头，不要凭印象。
+判定以命令输出为准，**不要引用任何写死数量**——本页只保证"这里列出的是当时的全集"：
 
-| id | 类别 | 卡什么 | 需要谁裁决 |
+```sh
+python3 scripts/tickets.py list tickets --status open
+```
+
+每张单的 `reviewers_required` 与安全默认写在工单头，不要凭印象。**它们没有被裁决**；已执行的只是安全默认
+（行为不动、缺口入合同 `known_limitations` / `evidence_ceiling`）。
+
+| 工单 | kind | 要决定什么 | 谁 |
 | --- | --- | --- | --- |
-| [T-2026-0001](../../tickets/convention/T-2026-0001.md) | convention | 中性氢 p–H 动量交换该怎么组合两个碰撞项，才不重复计入共振电荷交换的动量 | 物理专业审核人 |
-| [T-2026-0002](../../tickets/convention/T-2026-0002.md) | convention | `build_basis`/`BasisMatrix` 的失败通道与 api-spec 不一致：改实现去对齐，还是把合同口径定为当前实现 | 评审方（2 名） |
-| [T-2026-0005](../../tickets/convention/T-2026-0005.md) | convention | `scirel.geometry` 同一点族存在两套角度单位（属性弧度、构造器度），相差 180/π 且不告警 | 维护者 |
-| [T-2026-0600](../../tickets/physics-dispute/T-2026-0600.md) | physics-dispute | `vp_distribution` 把 Lorentzian 平衡态的返回称作 "the exact root"，该措辞应撤回；按实现自己的线性化约定根不是这一对值 | 物理专业审核人 |
-| [T-2026-0003](../../tickets/scope/T-2026-0003.md) | scope | 合同点名的两个异常类型不在公开命名空间里：纳入导出面，还是把承诺降为"只承诺 `ValueError`" | 维护者 |
-| [T-2026-0004](../../tickets/scope/T-2026-0004.md) | scope | 初版不可达论证已被反例推翻，本单为说明性记录；两份中性粒子合同已撤回错误说法 | 2 名评审 |
-| [T-2026-0100](../../tickets/scope/T-2026-0100.md) | scope | 广义 Hilbert 近奇异替换的覆盖已补、变异已由存活转杀死，只剩行内标注问题待裁决 | 2 名评审 |
-| [T-2026-0800](../../tickets/scope/T-2026-0800.md) | scope | 电荷交换速率系数在高能支把 `energy_ev` 当束速度，但合同与 docstring 从未写明；语义要不要显式化 | 2 名评审 |
-| [T-2026-0905](../../tickets/scope/T-2026-0905.md) | scope | 变异插件改不动返回 frozen dataclass 的公开函数，这类资产的"变异存活"结论无效，此后怎么取得判定 | 维护者 |
+| [T-2026-0001](../../tickets/convention/T-2026-0001.md) | convention |  | 2 |
+| [T-2026-0002](../../tickets/convention/T-2026-0002.md) | convention |  | 2 |
+| [T-2026-0005](../../tickets/convention/T-2026-0005.md) | convention |  | 2 |
+| [T-2026-0600](../../tickets/physics-dispute/T-2026-0600.md) | physics-dispute |  | 2 |
+| [T-2026-0003](../../tickets/scope/T-2026-0003.md) | scope |  | 2 |
+| [T-2026-0004](../../tickets/scope/T-2026-0004.md) | scope |  | 2 |
+| [T-2026-0100](../../tickets/scope/T-2026-0100.md) | scope |  | 2 |
+| [T-2026-0800](../../tickets/scope/T-2026-0800.md) | scope |  | 2 |
+| [T-2026-0905](../../tickets/scope/T-2026-0905.md) | scope |  | 1 |
+| [T-2026-1200](../../tickets/scope/T-2026-1200.md) | scope |  | 2 |
+| [T-2026-1201](../../tickets/scope/T-2026-1201.md) | scope |  | 2 |
+| [T-2026-1202](../../tickets/scope/T-2026-1202.md) | scope |  | 2 |
+| [T-2026-1203](../../tickets/scope/T-2026-1203.md) | scope |  | 2 |
 
-工单协议见 [tickets/README.md](../../tickets/README.md) 与 [supply-pipeline.md](supply-pipeline.md) 第 7 节。
+**一处曾经漏掉的地方**：本表早先只列了 9 张，而后来新开的 `T-2026-1200` / `1201` / `1202` / `1203`
+没有补进来。交接文档漏一张单，接手的人就会以为那张单不存在。所以现在这张表由命令输出重排，
+数量不写死，增删靠重跑。
 
 ## 5. 能力冻结
 
@@ -153,3 +166,16 @@ C1 的目标是给公开合同补承重证据。kinetic 域还没做完，剩两
 2. 读 [资源回收计划](resource-recovery-plan.md)，把那份快照重跑一遍——它一定已经过期。
 3. 跑一次 `python3 scripts/tickets.py list tickets --status open`，挑出需要物理裁决的那几张排队，**不要**自己代填专家意见。
 4. 再读 [codebase-map.md](codebase-map.md) 建立代码地图，然后接 C1 剩余批次（份数以 status.md 为准）。
+
+## 6. 结项后先看哪里
+
+| 想知道什么 | 去看 | 怎么核 |
+| --- | --- | --- |
+| 每条 C0–C6 主张现在是否成立 | `closeout-evidence.md` | 里面每条都是「命令 → 当时的输出」，重跑命令即可 |
+| 还剩哪些人工裁决 | 本节上一张表 | `python3 scripts/tickets.py list tickets --status open` |
+| 合同/测试/`main` 的当前计数 | `status.md` 的生成块 | 由 `scripts/status_report.py` 生成，手改会被测试判红 |
+| 哪些合同已经交代了依据、哪些记的是缺口 | — | `PYTHONPATH=src python -B scripts/c1_evidence_coverage.py` |
+| 哪次发布档跑在哪个提交上 | `skills/development/scirel-acceptance/anchors/` | 每份锚点的 `candidate.commit`；`acceptance_anchor.py verify` 对账 |
+| 本地分支与工作树为什么只剩这么点 | `resource-recovery-plan.md` 第 7、8 节 | 第 7 节讲判据的盲区，第 8 节是执行记录 |
+
+**这一页不复制数字。** 数字会漂，交接页的职责是告诉你**去哪个命令拿**。
