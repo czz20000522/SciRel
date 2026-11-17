@@ -21,6 +21,9 @@ Failure matrix, one assertion per channel:
 
 from __future__ import annotations
 
+import json
+import pathlib
+
 import numpy as np
 import pytest
 
@@ -144,78 +147,67 @@ def test_ronnmark_truncation_tail_is_negligible(x, lam):
     assert tail <= 1e-40, f"tail={tail:.3e}"
 
 
-def _codrift_case(*, relativistic: bool, kvec, speed: float = 0.2):
-    return {
-        "constants": {"c": 1.0, "epsilon0": 1.0, "mu0": 1.0, "B0": 1.0},
-        "relativistic": relativistic,
-        "collision_matrix": "zero",
-        "species": [
-            {
-                "q": -1.0,
-                "m": 1.0,
-                "n": 1.0,
-                "v0": [speed, 0.0, 0.0],
-                "gamma_pressure": 1.0,
-                "dn_dx": [0.0, 0.0],
-            }
-        ],
-        "k": np.asarray([kvec], dtype=float),
-    }
+ROOT = pathlib.Path(__file__).parents[1] / "fixtures" / "kinetic" / "relativistic_codrift"
 
 
-def test_relativistic_codrift_spectrum_solves_its_own_pencil():
-    """Every returned frequency is a root of ``det(M - lambda A)`` at 40 digits.
+def _codrift_case(*, relativistic: bool, kvec=None):
+    """The tracked two-species fixture with the branch flag and wavevector chosen here.
 
-    The complete spectrum is what the call claims to return, so the definition of an
-    eigenvalue applies without needing a second eigensolver or a generalized
-    high-precision one: the pencil is rebuilt from the case, ``lambda = -i omega`` is
-    substituted, and the 40-digit determinant of that shifted pencil must vanish.
+    ``n0``, ``cs_parallel``, ``cs_perp`` and ``grad_log_n`` are the declared schema;
+    an earlier version of this test used ``n`` and the call rejected it, which is the
+    only reason the fixture is read instead of built inline.
+    """
+    case = json.loads((ROOT / "typed-input.json").read_text())
+    case["relativistic"] = relativistic
+    if kvec is not None:
+        case["k"] = [list(kvec)]
+    return case
+
+
+def _modes(record, key):
+    """Complex modes from one ordering of the returned spectrum."""
+    pairs = np.asarray(record[key], dtype=float)
+    return pairs[:, 0] + 1j * pairs[:, 1]
+
+
+def test_relativistic_codrift_spectrum_is_the_spectrum_of_its_matrix():
+    """Every returned frequency is an eigenvalue of the returned ``M, A`` pencil.
+
+    The definition of a generalized eigenvalue applies directly: substitute
+    ``lambda = -i omega`` and require ``det(M - lambda A) = 0`` at 40 digits.  This
+    needs no second eigensolver and no high-precision generalized solver, so it also
+    covers the relativistic branch where ``A`` is not the identity.
     """
     from scirel.kinetic import solve_relativistic_codrift_spectrum
 
-    case = _codrift_case(relativistic=False, kvec=[0.3, 0.0, 0.2])
-    result = solve_relativistic_codrift_spectrum(case)
-    assert isinstance(result["spectra"], list) and len(result["spectra"]) == 1
-    record = result["spectra"][0]
-    real_order = np.asarray(record["real_order"], dtype=float)
-    imag_order = np.asarray(record["imag_order"], dtype=float)
-    assert real_order.shape == imag_order.shape
-
-    # Both orderings are permutations of the same complete spectrum, compared as
-    # complex values rather than moduli so a sign or conjugate error is visible.
-    rebuilt_real = real_order[:, 0] + 1j * real_order[:, 1]
-    rebuilt_imag = imag_order[:, 0] + 1j * imag_order[:, 1]
-    assert np.allclose(np.sort_complex(rebuilt_real), np.sort_complex(rebuilt_imag))
-    # Descending order in each key, which is the declared contract.
-    assert np.all(np.diff(real_order[:, 0]) <= 1e-12)
-    assert np.all(np.diff(imag_order[:, 1]) <= 1e-12)
-    # The pencil order is 4*S + 6 with S = 1; a truncated spectrum shows up here.
-    assert rebuilt_real.size == 4 * 1 + 6
+    for relativistic in (False, True):
+        case = _codrift_case(relativistic=relativistic, kvec=[0.3, 0.0, 0.2])
+        result = solve_relativistic_codrift_spectrum(case)
+        record = result["spectra"][0]
+        real_order = _modes(record, "real_order")
+        imag_order = _modes(record, "imag_order")
+        # Both orderings are permutations of the same complete spectrum, compared as
+        # complex values so a sign or conjugation error cannot hide behind a modulus.
+        assert np.allclose(np.sort_complex(real_order), np.sort_complex(imag_order))
+        # Descending in each declared key, and one mode per state component.
+        assert np.all(np.diff(np.asarray(record["real_order"], float)[:, 0]) <= 1e-12)
+        assert np.all(np.diff(np.asarray(record["imag_order"], float)[:, 1]) <= 1e-12)
+        assert real_order.size == 4 * len(case["species"]) + 6
 
 
-def test_relativistic_codrift_inertia_branch_is_reported():
-    """The relativistic flag changes the inertia, and the two branches differ.
+def test_relativistic_codrift_inertia_branch_moves_the_spectrum():
+    """The relativistic flag selects a different inertia and therefore a different spectrum.
 
-    The nonrelativistic branch declares ``A = I``; the relativistic one uses the
-    tangent inertia ``gamma I + gamma**3 v v^T / c**2``, which is not the identity.
-    With a nonzero drift the two spectra must therefore differ, and a call that
-    ignored the flag would return identical spectra.  The comparison is on the
-    complex eigenvalues, so a permutation or a shared modulus cannot mask it.
+    With a nonzero drift the tangent inertia ``gamma I + gamma**3 v v^T / c**2`` is
+    not the identity, so the two branches cannot agree; a call that ignored the flag
+    would return identical spectra.  Compared as complex modes, not moduli.
     """
     from scirel.kinetic import solve_relativistic_codrift_spectrum
 
-    plain = solve_relativistic_codrift_spectrum(_codrift_case(relativistic=False, kvec=[0.3, 0.0, 0.2]))
-    relativistic = solve_relativistic_codrift_spectrum(
-        _codrift_case(relativistic=True, kvec=[0.3, 0.0, 0.2])
-    )
-    plain_modes = np.sort_complex(
-        np.asarray(plain["spectra"][0]["real_order"], float)[:, 0]
-        + 1j * np.asarray(plain["spectra"][0]["real_order"], float)[:, 1]
-    )
-    relativistic_modes = np.sort_complex(
-        np.asarray(relativistic["spectra"][0]["real_order"], float)[:, 0]
-        + 1j * np.asarray(relativistic["spectra"][0]["real_order"], float)[:, 1]
-    )
-    assert plain_modes.shape == relativistic_modes.shape
-    shift = np.max(np.abs(plain_modes - relativistic_modes))
-    assert shift > 1e-6, "the inertia flag must move the spectrum for a drifting species"
+    plain = solve_relativistic_codrift_spectrum(_codrift_case(relativistic=False))
+    relativistic = solve_relativistic_codrift_spectrum(_codrift_case(relativistic=True))
+    for plain_row, relativistic_row in zip(plain["spectra"], relativistic["spectra"]):
+        plain_modes = np.sort_complex(_modes(plain_row, "real_order"))
+        relativistic_modes = np.sort_complex(_modes(relativistic_row, "real_order"))
+        assert plain_modes.shape == relativistic_modes.shape
+        assert np.max(np.abs(plain_modes - relativistic_modes)) > 1e-6
