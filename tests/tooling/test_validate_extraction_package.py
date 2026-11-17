@@ -22,6 +22,19 @@ GIT_ENV = {
     "GIT_AUTHOR_EMAIL": "t@invalid",
     "GIT_COMMITTER_NAME": "t",
     "GIT_COMMITTER_EMAIL": "t@invalid",
+    # Every `git commit` here leaves a detached `git maintenance run --auto` behind. This
+    # fixture copies the whole catalog, so the repo passes the loose-objects task threshold
+    # (100 loose objects) and that background process repacks the repo and deletes the
+    # loose objects within milliseconds — while the test's next call copies that objects
+    # tree. The observed failure was `fatal: failed to copy file to <receiver>/.git/
+    # objects/..: No such file or directory`, exit 128, and `--no-hardlinks` never helped
+    # because copying is the point. Turning auto maintenance off is the class-level fix:
+    # it covers every git call the fixture makes, not just the clone.
+    "GIT_CONFIG_COUNT": "2",
+    "GIT_CONFIG_KEY_0": "gc.auto",
+    "GIT_CONFIG_VALUE_0": "0",
+    "GIT_CONFIG_KEY_1": "maintenance.auto",
+    "GIT_CONFIG_VALUE_1": "false",
 }
 
 
@@ -558,6 +571,36 @@ def test_admission_rechecks_the_same_live_credential(tmp_path, monkeypatch, stag
     )
 
 
+def test_the_clone_source_still_holds_loose_objects_after_the_fixture(setup):
+    """Pin the root cause of the clone ENOENT, not the symptom.
+
+    This fixture copies the whole catalog, which pushes the repository past the
+    loose-objects maintenance threshold. `git commit` leaves a detached
+    `git maintenance run --auto` behind, and on a repository this size that task repacks
+    it and deletes every loose object -- the same objects the local clone in the test
+    below copies. Measured before GIT_ENV disabled auto maintenance: 262 loose objects
+    became 0 within half a second, and 5 of 20 clone rounds died with
+    "failed to copy file to <receiver>/.git/objects/..".
+    """
+    _, repo = setup
+    objects = repo / ".git" / "objects"
+    deadline = time.monotonic() + 1.0
+    loose = [
+        path
+        for path in objects.rglob("*")
+        if path.is_file() and path.parent.name not in {"info", "pack"}
+    ]
+    while loose and time.monotonic() < deadline:
+        # Give a background maintenance process the same half second it used to take.
+        time.sleep(0.05)
+        loose = [
+            path
+            for path in objects.rglob("*")
+            if path.is_file() and path.parent.name not in {"info", "pack"}
+        ]
+    assert loose, "background maintenance repacked the objects the local clone copies"
+
+
 def test_full_validation_refuses_another_clone_before_applying_patches(
     setup, tmp_path, monkeypatch
 ):
@@ -566,11 +609,10 @@ def test_full_validation_refuses_another_clone_before_applying_patches(
 
     package, candidate_repo = setup
     receiver = tmp_path / "receiver"
-    # --no-hardlinks: a local clone hardlinks object files by default, and under the
-    # release stage that copy intermittently dies with "failed to copy file to
-    # <dest>/.git/objects/...: No such file or directory". The test only needs a
-    # second clone that is a different Git common directory, so a full copy is both
-    # sufficient and deterministic.
+    # --no-hardlinks only makes the copy a real copy: it does not stop the failure this
+    # test used to hit, because the objects being copied are deleted by the fixture's own
+    # background maintenance (see GIT_ENV). Keeping it makes the second clone a different
+    # Git common directory, which is all this test needs.
     _git(tmp_path, "clone", "--quiet", "--no-hardlinks", str(candidate_repo), str(receiver))
     monkeypatch.setattr(dev, "ROOT", receiver)
     with dev.acceptance_lock(exclusive=True), dev.exclusive_credential() as token:
