@@ -262,9 +262,9 @@ Which layer to use when
 - Evaluate a two-dimensional real field at points inside a closed rectangular domain: :doc:`../reference/generated/scirel.numerics.bilinear-grid-sampling`.
 - Sort, deduplicate and linearly interpolate a one-dimensional flux profile: :doc:`../reference/generated/scirel.geometry.flux-surface-profile`.
 - Compute ``dl/B`` and a weighted average along an existing ``R-Z`` polyline: :doc:`../reference/generated/scirel.geometry.flux-surface-inverse-field-average`.
-- Select, orient and truncate a segment from a contour level: :doc:`../reference/generated/scirel.sampling.select-fieldline` and :doc:`../reference/generated/scirel.sampling.parse-segment`.
-- Accumulate polyline arc length: :doc:`../reference/generated/scirel.sampling.path-distance`.
-- Reparameterize a field line with a spline and compute arc-length derivatives: :doc:`../reference/generated/scirel.fieldline.fieldline` and :doc:`../reference/generated/scirel.fieldline.arclength-derivative`.
+- Select, orient and truncate a segment from a contour level: :doc:`../reference/generated/scirel.geometry.select-fieldline` and :doc:`../reference/generated/scirel.geometry.parse-segment`.
+- Accumulate polyline arc length: :doc:`../reference/generated/scirel.geometry.path-distance`.
+- Reparameterize a field line with a spline and compute arc-length derivatives: :doc:`../reference/generated/scirel.geometry.fieldline` and :doc:`../reference/generated/scirel.geometry.arclength-derivative`.
 - Map an axisymmetric equilibrium onto an ``(x, y, z)`` solver grid: :doc:`../reference/generated/scirel.geometry.axisymmetric-equilibrium-grid-mapping`.
 - For three-dimensional complex-field interpolation masks, nearest-point/scattered sampling, material-support classification or polynomial/spline bases: see the coverage boundary at the end of this chapter.
 

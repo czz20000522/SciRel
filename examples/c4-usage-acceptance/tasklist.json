@@ -39,7 +39,7 @@
       "results.json is written even when some tasks raise; a fully successful run that drops failing cases is not acceptable."
     ]
   },
-  "tasks_digest": "0b42e4aeb937ba6e91972a57a8844cf67c4018d2ad1e27dc27fd33952619b681",
+  "tasks_digest": "2c55ae00de0f60e4930df508d87ae150416a006032809a5cf96890e3470198d3",
   "quota": {
     "tasks_per_domain_divisor": 8,
     "min_per_domain": 1,
@@ -821,15 +821,15 @@
     {
       "id": "sampling-regular-grid",
       "kind": "nominal",
-      "domain": "sampling",
+      "domain": "geometry",
       "subdomain": "scattered to regular grid sampling",
       "assets": [
-        "scirel.sampling.regular-grid",
-        "scirel.sampling.scattered-linear",
-        "scirel.sampling.rectangular-nearest"
+        "scirel.geometry.regular-grid",
+        "scirel.geometry.scattered-linear",
+        "scirel.geometry.rectangular-nearest"
       ],
       "question": "Interpolate a declared scattered planar field onto a generated regular grid and onto a supplied axis pair, and report which points fell outside the convex support and what the entries returned there.",
-      "input_binding": {"mode": "contract_example", "assets": ["scirel.sampling.regular-grid"]},
+      "input_binding": {"mode": "contract_example", "assets": ["scirel.geometry.regular-grid"]},
       "min_calls": 3,
       "criteria": [
         {"id": "fields", "kind": "contract_fields", "expect": "all_declared_outputs"},
@@ -859,15 +859,15 @@
     {
       "id": "sampling-transform-and-derivative",
       "kind": "nominal",
-      "domain": "sampling",
+      "domain": "geometry",
       "subdomain": "coordinate transforms and nonuniform derivative",
       "assets": [
-        "scirel.sampling.meridional-polar-forward",
-        "scirel.sampling.meridional-polar-inverse",
-        "scirel.sampling.nonuniform-first-derivative"
+        "scirel.geometry.meridional-polar-forward",
+        "scirel.geometry.meridional-polar-inverse",
+        "scirel.geometry.nonuniform-first-derivative"
       ],
       "question": "Map a declared point set through the forward meridional transform and back, then differentiate a declared nonuniform grid, reporting the round-trip deviation and the grid spacing actually used.",
-      "input_binding": {"mode": "contract_example", "assets": ["scirel.sampling.meridional-polar-forward"]},
+      "input_binding": {"mode": "contract_example", "assets": ["scirel.geometry.meridional-polar-forward"]},
       "min_calls": 3,
       "criteria": [
         {"id": "fields", "kind": "contract_fields", "expect": "all_declared_outputs"},
@@ -897,15 +897,15 @@
     {
       "id": "sampling-rejects-unknown-method",
       "kind": "failure",
-      "domain": "sampling",
+      "domain": "geometry",
       "subdomain": "declared invalid interpolation method",
-      "assets": ["scirel.sampling.regular-grid"],
+      "assets": ["scirel.geometry.regular-grid"],
       "question": "Request the regular grid sampler with an interpolation method outside the declared set and report the raised exception.",
-      "stimulus": [{"asset": "scirel.sampling.regular-grid", "field": "method", "value": "akima", "failure_key": "invalid_input", "declared_rejection": "method is outside its documented set", "expected_exception": "ValueError"}],
-      "input_binding": {"mode": "contract_example", "assets": ["scirel.sampling.regular-grid"]},
+      "stimulus": [{"asset": "scirel.geometry.regular-grid", "field": "method", "value": "akima", "failure_key": "invalid_input", "declared_rejection": "method is outside its documented set", "expected_exception": "ValueError"}],
+      "input_binding": {"mode": "contract_example", "assets": ["scirel.geometry.regular-grid"]},
       "min_calls": 1,
       "criteria": [
-        {"id": "raise", "kind": "exception", "asset": "scirel.sampling.regular-grid", "expected": "ValueError", "failure_key": "invalid_input"},
+        {"id": "raise", "kind": "exception", "asset": "scirel.geometry.regular-grid", "expected": "ValueError", "failure_key": "invalid_input"},
         {
           "id": "nofallback",
           "kind": "invariant",
@@ -1275,15 +1275,15 @@
     {
       "id": "fieldline-set-and-arclength",
       "kind": "nominal",
-      "domain": "fieldline",
+      "domain": "geometry",
       "subdomain": "fieldline set construction and arclength derivative",
       "assets": [
-        "scirel.fieldline.fieldline-set",
-        "scirel.fieldline.arclength-derivative",
-        "scirel.fieldline.contour-points"
+        "scirel.geometry.fieldline-set",
+        "scirel.geometry.arclength-derivative",
+        "scirel.geometry.contour-points"
       ],
       "question": "Build a declared fieldline set, compute its arclength derivative and compare with the contour points entry on one declared contour, reporting the number of traces and their termination reason.",
-      "input_binding": {"mode": "contract_example", "assets": ["scirel.fieldline.fieldline-set"]},
+      "input_binding": {"mode": "contract_example", "assets": ["scirel.geometry.fieldline-set"]},
       "min_calls": 3,
       "criteria": [
         {"id": "fields", "kind": "contract_fields", "expect": "all_declared_outputs"},
@@ -1307,15 +1307,15 @@
     {
       "id": "fieldline-rejects-duplicate-vertices",
       "kind": "failure",
-      "domain": "fieldline",
+      "domain": "geometry",
       "subdomain": "declared invalid input channel",
-      "assets": ["scirel.fieldline.fieldline"],
+      "assets": ["scirel.geometry.fieldline"],
       "question": "Construct a declared fieldline from a vertex list that repeats a vertex, then request the declared curvature diagnostic at that vertex and report the ValueError the contract assigns to duplicate adjacent vertices.",
-      "stimulus": [{"asset": "scirel.fieldline.fieldline", "field": "verts", "value": [[0.0, 0.0], [0.0, 0.0], [1.0, 1.0]], "failure_key": "invalid_input", "declared_rejection": "duplicate adjacent vertices", "expected_exception": "ValueError"}],
-      "input_binding": {"mode": "contract_example", "assets": ["scirel.fieldline.fieldline"]},
+      "stimulus": [{"asset": "scirel.geometry.fieldline", "field": "verts", "value": [[0.0, 0.0], [0.0, 0.0], [1.0, 1.0]], "failure_key": "invalid_input", "declared_rejection": "duplicate adjacent vertices", "expected_exception": "ValueError"}],
+      "input_binding": {"mode": "contract_example", "assets": ["scirel.geometry.fieldline"]},
       "min_calls": 1,
       "criteria": [
-        {"id": "raise", "kind": "exception", "asset": "scirel.fieldline.fieldline", "expected": "ValueError", "failure_key": "invalid_input"},
+        {"id": "raise", "kind": "exception", "asset": "scirel.geometry.fieldline", "expected": "ValueError", "failure_key": "invalid_input"},
         {
           "id": "nomove",
           "kind": "invariant",

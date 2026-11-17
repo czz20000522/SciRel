@@ -760,8 +760,8 @@
      "introduction": "Planar rotation uses a row-vector convention with clockwise positive; the polar-coordinate transform handles both positions and orthogonal vector components. The polar-angle origin and radius domain are restricted, and no magnetic-axis limit or three-dimensional physical rotation should be inferred from them.",
      "assets": [
       "scirel.geometry.rotate",
-      "scirel.sampling.meridional-polar-forward",
-      "scirel.sampling.meridional-polar-inverse"
+      "scirel.geometry.meridional-polar-forward",
+      "scirel.geometry.meridional-polar-inverse"
      ]
     },
     {
@@ -769,12 +769,12 @@
      "title": "Building field lines and boundaries from contour segments",
      "introduction": "FieldLine and HelperFieldLine retain different construction and return contracts; the collection factory preserves each segment by contour level. Boundary parameter splines are used for finite searches, and construction alone cannot infer whether intersections exist, are unique or are topologically complete.",
      "assets": [
-      "scirel.fieldline.fieldline",
-      "scirel.fieldline.helper-fieldline",
-      "scirel.fieldline.fieldline-set",
-      "scirel.fieldline.contour-points",
-      "scirel.fieldline.helper-contour-points",
-      "scirel.fieldline.boundary"
+      "scirel.geometry.fieldline",
+      "scirel.geometry.helper-fieldline",
+      "scirel.geometry.fieldline-set",
+      "scirel.geometry.contour-points",
+      "scirel.geometry.helper-contour-points",
+      "scirel.geometry.boundary"
      ]
     },
     {
@@ -782,10 +782,10 @@
      "title": "Selecting paths, accumulating distance and computing field-weighted reductions",
      "introduction": "Select segments by exact contour level, specify the direction and endpoints, then accumulate adjacent distances. The inverse-field line integral and the weighted average of Q are defined by the given path and do not automatically certify a complete flux surface; open paths cannot be treated as closed-loop adjacencies.",
      "assets": [
-      "scirel.sampling.select-fieldline",
-      "scirel.sampling.parse-segment",
-      "scirel.sampling.path-distance",
-      "scirel.sampling.weighted-line-integral"
+      "scirel.geometry.select-fieldline",
+      "scirel.geometry.parse-segment",
+      "scirel.geometry.path-distance",
+      "scirel.geometry.weighted-line-integral"
      ]
     },
     {
@@ -793,11 +793,11 @@
      "title": "Choosing nearest-point, scattered or rectangular-spline sampling",
      "introduction": "Per-axis nearest-point and flattened-plane nearest-point have different tie rules; scattered linear interpolation, scattered-to-regular-grid interpolation and rectangular bicubic splines also have their own support domains. A nearest out-of-domain node does not mean the physical field outside the domain is known.",
      "assets": [
-      "scirel.sampling.rectangular-nearest",
-      "scirel.sampling.point-nearest",
-      "scirel.sampling.scattered-linear",
-      "scirel.sampling.rectangular-spline",
-      "scirel.sampling.regular-grid",
+      "scirel.geometry.rectangular-nearest",
+      "scirel.geometry.point-nearest",
+      "scirel.geometry.scattered-linear",
+      "scirel.geometry.rectangular-spline",
+      "scirel.geometry.regular-grid",
       "scirel.numerics.face-to-cell"
      ]
     },
@@ -806,7 +806,7 @@
      "title": "Organizing flux profiles and scalar half-plane reflection",
      "introduction": "Flux profiles are sorted, de-duplicated and linearly interpolated with explicit endpoint values outside the domain; half-plane reflection copies even scalars without duplicating the zero column. This reflection is not an automatic rule for vector parity or arbitrary geometric fields.",
      "assets": [
-      "scirel.sampling.scalar-reflection"
+      "scirel.geometry.scalar-reflection"
      ]
     },
     {
@@ -815,8 +815,8 @@
      "introduction": "The nonuniform-coordinate entry point computes interior derivatives with a local quadratic; the arc-length entry point uses actual adjacent chord lengths and one-sided endpoint formulas. Descending coordinates should reverse inputs and outputs under the corresponding contract without additionally changing the sign of the physical derivative.",
      "assets": [
       "scirel.geometry.nonuniform-derivatives",
-      "scirel.sampling.nonuniform-first-derivative",
-      "scirel.fieldline.arclength-derivative"
+      "scirel.geometry.nonuniform-first-derivative",
+      "scirel.geometry.arclength-derivative"
      ]
     },
     {
@@ -824,7 +824,7 @@
      "title": "Constructing design matrices and splines with explicit boundaries",
      "introduction": "Polynomial coefficients and design matrices are ordered by ascending power, and the SVD fit has an explicit truncation; the spline factory connects natural, two-end and one-end clamped relations. Cylindrical Robin equations and zero-origin restrictions must not be read as universal physical closures merely from their names.",
      "assets": [
-      "scirel.sampling.polynomial-fit",
+      "scirel.geometry.polynomial-fit",
       "scirel.numerics.build-basis",
       "scirel.numerics.basis-matrix",
       "scirel.numerics.natural-cubic-spline",

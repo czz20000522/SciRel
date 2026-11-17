@@ -1,7 +1,7 @@
 """Independent evidence for the field-line geometry primitives.
 
-Assets: ``scirel.fieldline.arclength-derivative``, ``scirel.fieldline.boundary``,
-``scirel.fieldline.fieldline`` and ``scirel.fieldline.helper-fieldline``.
+Assets: ``scirel.geometry.arclength-derivative``, ``scirel.geometry.boundary``,
+``scirel.geometry.fieldline`` and ``scirel.geometry.helper-fieldline``.
 
 The maintained tests pin shapes, ordering, repair behaviour and refinement
 ratios against *the implementation's own* interpolated field.  They do not

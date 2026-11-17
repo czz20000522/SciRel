@@ -88,7 +88,7 @@ SCIREL_PACKAGE_ROOT=$PWD/.runtime/c5/scirel-delivery-435cc9a1 \
 | 任务 | 用到的资产 | `package_sufficient` | 一句话结论 |
 | --- | --- | --- | --- |
 | [mirror-ratio-mirror-point](tasks/mirror-ratio-mirror-point/solve.py) | `scirel.mirror.loss-cone-spectrum` | **false** | 损失锥角度谱算子本身精确到 1e-15，但镜比 R_m、损失锥角、镜点位置**包里没有算子**，是消费者自己写的 |
-| [geometry-coordinate-roundtrip](tasks/geometry-coordinate-roundtrip/solve.py) | `scirel.sampling.meridional-polar-forward`、`-inverse` | true | 位置与矢量往返误差 ≤ 4.5e-16，范数守恒，"θ 从 +Z 量向 +ρ"这个约定被判别算例确认 |
+| [geometry-coordinate-roundtrip](tasks/geometry-coordinate-roundtrip/solve.py) | `scirel.geometry.meridional-polar-forward`、`-inverse` | true | 位置与矢量往返误差 ≤ 4.5e-16，范数守恒，"θ 从 +Z 量向 +ρ"这个约定被判别算例确认 |
 | [transport-closure-dimensions](tasks/transport-closure-dimensions/solve.py) | `scirel.neoclassical.bootstrap-coefficients`、`scirel.neoclassical.bootstrap-current` | true | 量纲自洽（Pa/(T·m) = A/m²）、两个通量约定等价、四个标度指数全部命中 |
 
 每个任务的判据都在脚本顶部**先写死**，再运行；容差写在结果里，没有一条是看到结果后放宽的。`mirror-ratio-mirror-point` 的第一次运行里 C3/C4（我自己的 RK4 轨道积分）是红的，原因是步长取成了 `1e-6 s`，一次就越过了整个镜场——那是我的算例错，不是算子错；修正步长并让积分在塞面处停止后转绿。原始失败没有从记录里删除，说明写在脚本的 docstring 与该任务的 `solve.result.json` 的 note 里。

@@ -56,8 +56,8 @@ def record(entrypoint: str, args: dict, status: str, **extra) -> None:
 
 
 def main() -> dict:
-    forward_contract_path = CONTRACTS / "scirel.sampling.meridional-polar-forward.json"
-    inverse_contract_path = CONTRACTS / "scirel.sampling.meridional-polar-inverse.json"
+    forward_contract_path = CONTRACTS / "scirel.geometry.meridional-polar-forward.json"
+    inverse_contract_path = CONTRACTS / "scirel.geometry.meridional-polar-inverse.json"
     forward_contract = json.loads(forward_contract_path.read_text())
     inverse_contract = json.loads(inverse_contract_path.read_text())
     record(

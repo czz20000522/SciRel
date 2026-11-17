@@ -2,10 +2,10 @@
 
 Assets:
 
-* ``scirel.sampling.path-distance`` (``get_fieldline_distance``)
-* ``scirel.sampling.parse-segment`` (``parse_segment``)
-* ``scirel.sampling.select-fieldline`` (``get_fieldlines``)
-* ``scirel.sampling.scalar-reflection`` (``reflect_and_hstack``)
+* ``scirel.geometry.path-distance`` (``get_fieldline_distance``)
+* ``scirel.geometry.parse-segment`` (``parse_segment``)
+* ``scirel.geometry.select-fieldline`` (``get_fieldlines``)
+* ``scirel.geometry.scalar-reflection`` (``reflect_and_hstack``)
 
 These four relations are combinatorial: they choose, roll, reverse or mirror an
 already-given sequence of vertices, and nothing in them is an approximation.
