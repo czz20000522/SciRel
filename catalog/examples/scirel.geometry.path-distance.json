@@ -1,118 +1,123 @@
 {
- "schema": "scirel.asset-document",
- "asset_id": "scirel.geometry.path-distance",
- "title": {
-  "en": "Cumulative polyline distance",
-  "zh": "折线累积距离"
- },
- "summary": "Accumulate Euclidean adjacent-vertex distances from zero",
- "taxonomy": [
-  "analysis",
-  "sampling"
- ],
- "aliases": [
-  "get_fieldline_distance"
- ],
- "discovery": {
-  "capability": [
-   "Cumulative polyline distance",
-   "Accumulate Euclidean adjacent-vertex chord lengths from zero along an ordered planar polyline."
+  "schema": "scirel.asset-document",
+  "asset_id": "scirel.geometry.path-distance",
+  "title": {
+    "en": "Cumulative polyline distance",
+    "zh": "折线累积距离"
+  },
+  "summary": "Accumulate Euclidean adjacent-vertex distances from zero",
+  "taxonomy": [
+    "analysis",
+    "sampling"
   ],
-  "operation": [
-   "cumulative polyline distance accumulation",
-   "ordered planar vertices -> cumulative chord-length distance"
+  "aliases": [
+    "get_fieldline_distance"
   ],
-  "model": "Exact polygonal chord lengths, not a smooth-curve arclength.",
-  "geometry": "Planar ordered vertices in coherent length units; only adjacent-vertex distances are accumulated.",
-  "boundary": "Distance starts at zero and no implicit closing segment is added; finite ordered planar vertices are required.",
-  "device_scope": "generic"
- },
- "identity": {
-  "relation": "Cumulative polyline distance",
-  "direction": "Declared inputs to Cumulative path distance",
-  "definition": "Accumulate Euclidean adjacent-vertex distances from zero",
-  "model": "Exact polygonal chord lengths",
-  "geometry": "planar polyline vertices",
-  "coordinates": "Planar pairs in coherent length units",
-  "boundary": "Starts at zero; no implicit closing segment",
-  "assumptions": [
-   "Finite ordered planar vertices"
-  ]
- },
- "inputs": [
-  {
-   "name": "flpoints",
-   "description": "Ordered planar path vertices",
-   "units": "length units",
-   "shape": "(N,2)",
-   "dtype": "float64",
-   "required": true,
-   "constraints": "Finite supplied ordering"
+  "discovery": {
+    "capability": [
+      "Cumulative polyline distance",
+      "Accumulate Euclidean adjacent-vertex chord lengths from zero along an ordered planar polyline."
+    ],
+    "operation": [
+      "cumulative polyline distance accumulation",
+      "ordered planar vertices -> cumulative chord-length distance"
+    ],
+    "model": "Exact polygonal chord lengths, not a smooth-curve arclength.",
+    "geometry": "Planar ordered vertices in coherent length units; only adjacent-vertex distances are accumulated.",
+    "boundary": "Distance starts at zero and no implicit closing segment is added; finite ordered planar vertices are required.",
+    "device_scope": "generic"
+  },
+  "identity": {
+    "relation": "Cumulative polyline distance",
+    "direction": "Declared inputs to Cumulative path distance",
+    "definition": "Accumulate Euclidean adjacent-vertex distances from zero",
+    "model": "Exact polygonal chord lengths",
+    "geometry": "planar polyline vertices",
+    "coordinates": "Planar pairs in coherent length units",
+    "boundary": "Starts at zero; no implicit closing segment",
+    "assumptions": [
+      "Finite ordered planar vertices"
+    ]
+  },
+  "inputs": [
+    {
+      "name": "flpoints",
+      "description": "Ordered planar path vertices",
+      "units": "length units",
+      "shape": "(N,2)",
+      "dtype": "float64",
+      "required": true,
+      "constraints": "Finite supplied ordering"
+    }
+  ],
+  "outputs": [
+    {
+      "name": "distance",
+      "description": "Cumulative path distance",
+      "units": "length units",
+      "shape": "(N,)",
+      "dtype": "float64",
+      "required": true,
+      "constraints": "Nondecreasing; duplicate vertices give zero increments"
+    }
+  ],
+  "applicability": {
+    "preconditions": [
+      "Finite ordered planar vertices"
+    ],
+    "supported": [
+      "Finite inputs satisfying the callable-specific shape, support, and boundary conditions"
+    ],
+    "excluded": [
+      "No true smooth-curve arclength or implicit closure"
+    ]
+  },
+  "failure_semantics": {
+    "invalid_input": "Raises ValueError or the underlying NumPy/SciPy exception for nonfinite, mismatched, unsorted, out-of-domain, or malformed inputs; no input repair is inferred. Nonfinite vertices are rejected with ValueError before accumulating distance. Finite numeric object elements are checked without changing the calculation inputs; object representations unsupported by the existing calculation remain unsupported.",
+    "runtime_failure": "Numerical, interpolation, or optional-dependency exceptions propagate from the direct calculation.",
+    "nonconvergence": "Not applicable; the relation uses direct finite-difference, interpolation, selection, or quadrature operations.",
+    "partial_results": "No partial result is promised when input validation or the underlying numerical operation fails."
+  },
+  "public_api": {
+    "python": {
+      "module": "scirel.geometry.sampling",
+      "symbol": "get_fieldline_distance",
+      "signature": "get_fieldline_distance(flpoints)",
+      "canonical_module": "scirel.geometry",
+      "canonical_symbol": "get_fieldline_distance"
+    }
+  },
+  "version": {
+    "implementation_version": "0.0.0",
+    "dependencies": []
+  },
+  "example": {
+    "description": "Accumulate Euclidean distance along a two-segment polyline.",
+    "code": "import numpy as np\nfrom scirel.geometry.sampling import get_fieldline_distance\n\npoints = np.array([[0.0, 0.0], [3.0, 0.0], [3.0, 4.0]])\nnp.testing.assert_allclose(get_fieldline_distance(points), [0.0, 3.0, 7.0])",
+    "expected": "Cumulative distances are [0.0, 3.0, 7.0]."
+  },
+  "verification": {
+    "scope": [
+      "Cumulative chord lengths are asserted with zero tolerance on Pythagorean legs (3, 0), (0, 4) and (3, 4), whose lengths 3, 4 and 5 are exact in binary64.",
+      "Additivity under refinement at a representable midpoint and prefix stability when vertices are appended are both asserted exactly, so a dropped or re-added vertex is red.",
+      "Rotation by an exact quarter turn leaves every cumulative value bitwise identical, which pins the Euclidean measure and the accumulation order.",
+      "Boundary cases: a single vertex returns exactly zero, a repeated vertex adds exactly zero, and the first-to-last gap is not accumulated, so no implicit closure exists.",
+      "Failure matrix gives one executable assertion for non-finite vertices, which raise ValueError, and no partial result is returned.",
+      "Independent recomputation (tests/sampling/test_polyline_and_selection_evidence.py): chord lengths are recomputed with exact rational arithmetic (fractions.Fraction over the stored binary64 coordinates, square roots taken as exact integer square roots); a scaled dyadic Pythagorean polyline with legs 2.5, 3 and 3 is compared bitwise; three dyadic resamplings of one geometric path with 3, 5 and 6 vertices return the same total of 9, which is parametrisation invariance rather than additivity of one midpoint; and legs of irrational length, where no exact float exists, are compared with a 60-digit mpmath square root to 4 eps."
+    ],
+    "tests": [
+      "tests/equilibrium/test_analysis_families.py",
+      "tests/geometry/test_sampling_failures.py",
+      "tests/sampling/test_polyline_and_selection_evidence.py"
+    ],
+    "evidence_ceiling": "Establishes exact chord-length accumulation on the tested polylines. It does not establish smooth-curve arclength, geodesic length on a curved surface, or any closure of an open path. The irrational-length comparison is bounded at 4 eps of the exact value rather than bitwise; the bitwise claims hold only where every coordinate and every length is dyadic.",
+    "known_limitations": [
+      "No true smooth-curve arclength or implicit closure"
+    ],
+    "basis": {
+      "kind": "closed-form",
+      "statement": "Cumulative chord lengths on Pythagorean legs are exact in binary64 (3, 4, 5), so the expected total is a known number rather than a recomputation; refinement additivity and quarter-turn invariance are asserted bitwise.",
+      "source": "tests/sampling/test_polyline_and_selection_evidence.py"
+    }
   }
- ],
- "outputs": [
-  {
-   "name": "distance",
-   "description": "Cumulative path distance",
-   "units": "length units",
-   "shape": "(N,)",
-   "dtype": "float64",
-   "required": true,
-   "constraints": "Nondecreasing; duplicate vertices give zero increments"
-  }
- ],
- "applicability": {
-  "preconditions": [
-   "Finite ordered planar vertices"
-  ],
-  "supported": [
-   "Finite inputs satisfying the callable-specific shape, support, and boundary conditions"
-  ],
-  "excluded": [
-   "No true smooth-curve arclength or implicit closure"
-  ]
- },
- "failure_semantics": {
-  "invalid_input": "Raises ValueError or the underlying NumPy/SciPy exception for nonfinite, mismatched, unsorted, out-of-domain, or malformed inputs; no input repair is inferred. Nonfinite vertices are rejected with ValueError before accumulating distance. Finite numeric object elements are checked without changing the calculation inputs; object representations unsupported by the existing calculation remain unsupported.",
-  "runtime_failure": "Numerical, interpolation, or optional-dependency exceptions propagate from the direct calculation.",
-  "nonconvergence": "Not applicable; the relation uses direct finite-difference, interpolation, selection, or quadrature operations.",
-  "partial_results": "No partial result is promised when input validation or the underlying numerical operation fails."
- },
- "public_api": {
-  "python": {
-   "module": "scirel.geometry.sampling",
-   "symbol": "get_fieldline_distance",
-   "signature": "get_fieldline_distance(flpoints)",
-   "canonical_module": "scirel.geometry",
-   "canonical_symbol": "get_fieldline_distance"
-  }
- },
- "version": {
-  "implementation_version": "0.0.0",
-  "dependencies": []
- },
- "example": {
-  "description": "Accumulate Euclidean distance along a two-segment polyline.",
-  "code": "import numpy as np\nfrom scirel.geometry.sampling import get_fieldline_distance\n\npoints = np.array([[0.0, 0.0], [3.0, 0.0], [3.0, 4.0]])\nnp.testing.assert_allclose(get_fieldline_distance(points), [0.0, 3.0, 7.0])",
-  "expected": "Cumulative distances are [0.0, 3.0, 7.0]."
- },
- "verification": {
-  "scope": [
-   "Cumulative chord lengths are asserted with zero tolerance on Pythagorean legs (3, 0), (0, 4) and (3, 4), whose lengths 3, 4 and 5 are exact in binary64.",
-   "Additivity under refinement at a representable midpoint and prefix stability when vertices are appended are both asserted exactly, so a dropped or re-added vertex is red.",
-   "Rotation by an exact quarter turn leaves every cumulative value bitwise identical, which pins the Euclidean measure and the accumulation order.",
-   "Boundary cases: a single vertex returns exactly zero, a repeated vertex adds exactly zero, and the first-to-last gap is not accumulated, so no implicit closure exists.",
-   "Failure matrix gives one executable assertion for non-finite vertices, which raise ValueError, and no partial result is returned.",
-   "Independent recomputation (tests/sampling/test_polyline_and_selection_evidence.py): chord lengths are recomputed with exact rational arithmetic (fractions.Fraction over the stored binary64 coordinates, square roots taken as exact integer square roots); a scaled dyadic Pythagorean polyline with legs 2.5, 3 and 3 is compared bitwise; three dyadic resamplings of one geometric path with 3, 5 and 6 vertices return the same total of 9, which is parametrisation invariance rather than additivity of one midpoint; and legs of irrational length, where no exact float exists, are compared with a 60-digit mpmath square root to 4 eps."
-  ],
-  "tests": [
-   "tests/equilibrium/test_analysis_families.py",
-   "tests/geometry/test_sampling_failures.py",
-   "tests/sampling/test_polyline_and_selection_evidence.py"
-  ],
-  "evidence_ceiling": "Establishes exact chord-length accumulation on the tested polylines. It does not establish smooth-curve arclength, geodesic length on a curved surface, or any closure of an open path. The irrational-length comparison is bounded at 4 eps of the exact value rather than bitwise; the bitwise claims hold only where every coordinate and every length is dyadic.",
-  "known_limitations": [
-   "No true smooth-curve arclength or implicit closure"
-  ]
- }
 }
