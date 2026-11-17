@@ -22,12 +22,10 @@ Failure matrix, one assertion per channel:
 
 from __future__ import annotations
 
-import json
 import pathlib
 
 import mpmath as mp
 import numpy as np
-import pytest
 
 import _bessel_reference as bessel
 
