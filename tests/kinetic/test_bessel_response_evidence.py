@@ -108,7 +108,7 @@ def test_ronnmark_h_agrees_with_a_high_precision_difference_quotient():
     # disagreement about the relation; 1e-5 puts h**2 truncation near 1e-11 and the
     # 60-digit rounding far below that.
     step = 1e-5
-    at = bessel.ronnmark_r(x, lam)
+
     plus = bessel.ronnmark_r(x, lam + step)
     minus = bessel.ronnmark_r(x, lam - step)
     quotient = ((lam + step) * plus - (lam - step) * minus) / (2 * step)
