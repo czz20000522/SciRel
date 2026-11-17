@@ -2,7 +2,7 @@
   "schema": "scirel.rules-inventory.v1",
   "note": "每条规则现在由什么机器判据保证。state 三态：machine（有判据且覆盖面足够）/ machine-partial（有判据但只覆盖一部分，写明判什么不判什么）/ unjudged（无判据，写明为什么判不了、靠谁保证）。本文件由 tests/tooling/test_rules_inventory.py 盯着：判据路径必须存在，规则锚点必须在源文档里出现。",
   "verified_on": "2026-11-18",
-  "slice": "AGENTS.md 8 条 + api-spec 5 条（其余文档随后补）",
+  "slice": "AGENTS.md 8 条 + api-spec 5 条 + catalog/README 3 条（其余文档随后补）",
   "rules": [
     {
       "id": "agents-1",
@@ -122,10 +122,13 @@
       "anchor": "Physics-agnostic tools live only under `scirel.numerics`",
       "state": "machine-partial",
       "judged_by": [
+        "tests/architecture/test_domain_dependency_conformance.py::test_the_rule_section_parses_into_the_expected_tables",
+        "tests/architecture/test_domain_dependency_conformance.py::test_domain_edges_go_down_or_are_whitelisted",
         "tests/architecture/test_public_surface.py::test_algebra_grid_exports_keep_domain_callables"
       ],
-      "judges": "具体几个代数网格可调用名保持在域里可导入。",
-      "does_not_judge": "没有一个通用判据回答「某个函数是不是物理无关、因而必须住在 numerics」。目前靠逐案断言，新加的物理无关工具放在别处不会被拦。"
+      "judges": "分层表**从 api-spec 本文解析**，不另抄一份；向上依赖（如 numerics 依赖物理域）与同层未列白名单的边都会红。这条判据本身也有红例测试（test_direction_rule_reds_on_an_upward_an_unlisted_same_layer_edge），即它的分辨力被单独验过。",
+      "does_not_judge": "反向不判：一个物理无关的函数被放进某个物理域，是合法的**向下**依赖，不会被拦。所以「物理无关工具**只**住 numerics」里「只」这一半仍靠人审。",
+      "corrected_on": "2026-11-18 第二轮：上一轮把它记成「只有逐案断言」，那是错的——分层规则判据一直存在，只是我漏读了 test_domain_dependency_conformance.py。"
     },
     {
       "id": "api-5",
@@ -134,6 +137,37 @@
       "state": "unjudged",
       "why": "「无关的物理」没有可判定的谓词；拆不拆是结构判断，判断本身需要领域知识。",
       "who": "评审人按 domains 表的 L0–L3 分层与人审；拆分的后果由 import 闭包测试兜住（拆错了会红），但拆不拆本身不判。"
+    },
+    {
+      "id": "catalog-bilingual-1",
+      "source": "catalog/README.md",
+      "anchor": "must be English prose. Do not leave Chinese prose in an English page",
+      "state": "machine",
+      "judged_by": [
+        "tests/docs/test_english_site.py::test_english_api_page_is_contract_derived",
+        "tests/docs/test_english_site.py::test_english_guides_use_authored_files_or_explicit_placeholders"
+      ],
+      "judges": "英文站的页面必须由合同派生或用已作者的英文文件，占位另有显式机制；不是把中文页当英文页发出去。"
+    },
+    {
+      "id": "catalog-bilingual-2",
+      "source": "catalog/README.md",
+      "anchor": "must match the contract exactly",
+      "state": "machine",
+      "judged_by": [
+        "tests/docs/test_zh_pairing.py::test_a_contract_field_change_names_that_field",
+        "tests/docs/test_zh_pairing.py::test_a_translation_change_without_rerecording_is_rejected",
+        "tests/docs/test_zh_pairing.py::test_an_asset_missing_from_the_sidecar_is_rejected"
+      ],
+      "judges": "中文记录与合同逐字段配对：合同改字段会点名那个字段；翻译改了不复录会被拒；缺条目不放过。"
+    },
+    {
+      "id": "catalog-bilingual-3",
+      "source": "catalog/README.md",
+      "anchor": "generation + schema validation is not linguistic or scientific review",
+      "state": "unjudged",
+      "why": "语言与科学质量不能由机器判；这条规则本身就是在说「上面两条判据不等于评审」。",
+      "who": "翻译评审人；本条不产出判据，它是判据的**边界声明**——正是它阻止把 catalog-bilingual-1/2 读成语言已过关。"
     }
   ]
 }
