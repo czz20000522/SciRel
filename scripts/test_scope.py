@@ -49,6 +49,7 @@ SCRIPT_LAYERS = {
     "capability_catalog.py": ("docs", "delivery"),
     "capability_query.py": ("tooling", "docs", "delivery"),
     "check_c4_tasklist.py": ("tooling",),
+    "check_observation_integrity.py": ("tooling",),
     "check_wheel_exposure.py": ("delivery",),
     "code_digest.py": ("tooling", "docs", "delivery"),
     "consumer_tools.py": ("delivery",),

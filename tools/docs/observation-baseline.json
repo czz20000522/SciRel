@@ -1,0 +1,73 @@
+{
+  "schema": "scirel.observation-integrity-baseline",
+  "schema_version": 1,
+  "purpose": "Files that still start captured subprocesses whose failure keeps no reason. This is a ratchet: a file may only shrink or leave, and a file absent from this list may not appear with a violation. Clearing an entry means converting its call sites to carry stderr into the raised error.",
+  "why": "A captured subprocess that fails reports only an exit status. In this repository that cost six release runs of guessing before the real cause appeared. See docs/maintainer/observation-integrity.md.",
+  "entries": [
+    {
+      "path": "scripts/build_catalog.py",
+      "count": 1,
+      "reason": "build step; a capture failure is reported by the step's own exit status"
+    },
+    {
+      "path": "scripts/build_pleiades_truth.py",
+      "count": 1,
+      "reason": "build step; same, the caller checks the exit status"
+    },
+    {
+      "path": "tests/architecture/test_repository_skeleton.py",
+      "count": 1,
+      "reason": "skeleton test runs git through the shared helper"
+    },
+    {
+      "path": "tests/docs/test_english_site.py",
+      "count": 1,
+      "reason": "runs the site builder and asserts on generated files"
+    },
+    {
+      "path": "tests/docs/test_source_query.py",
+      "count": 1,
+      "reason": "runs the query tool and asserts on structured output"
+    },
+    {
+      "path": "tests/fs_links.py",
+      "count": 1,
+      "reason": "junction creation; a failure makes the following test fail loudly with the fixture path"
+    },
+    {
+      "path": "tests/tooling/test_build_extraction_kit.py",
+      "count": 2,
+      "reason": "fixture git plumbing; the assertions that follow read the work tree"
+    },
+    {
+      "path": "tests/tooling/test_c1_evidence_coverage.py",
+      "count": 1,
+      "reason": "runs the coverage script and asserts on exit code plus printed report"
+    },
+    {
+      "path": "tests/tooling/test_check_all.py",
+      "count": 1,
+      "reason": "helper shared by many fixture tests"
+    },
+    {
+      "path": "tests/tooling/test_dev.py",
+      "count": 1,
+      "reason": "helper shared by many fixture tests"
+    },
+    {
+      "path": "tests/tooling/test_portable_capability_query.py",
+      "count": 1,
+      "reason": "runs the query tool and asserts on structured output"
+    },
+    {
+      "path": "tests/tooling/test_tickets.py",
+      "count": 1,
+      "reason": "runs the ticket checker and asserts on its exit code"
+    },
+    {
+      "path": "tests/tooling/test_validate_extraction_package.py",
+      "count": 1,
+      "reason": "validator output assertions; the clone-refusal helper already carries stderr"
+    }
+  ]
+}
