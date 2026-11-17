@@ -281,10 +281,11 @@ def test_fluid_dispersion_response_zero_transverse_determinant_identity():
     from scirel.kinetic.fluid_spectrum import evaluate_fluid_dispersion
 
     # The BONK case-2 deck carries kz = 0, which selects the rational response
-    # branch.  The magnetised (nonzero-kz) branch is a separate code path; the same
-    # identity was checked there during the audit and disagreed at 1.4e-5 relative,
-    # so it is deliberately not asserted here and the contract records the gap.
-    for kz in (0.0,):
+    # branch; the magnetised branch is a separate code path, so both are exercised.
+    # The magnetised branch is reached by overriding the state's parallel
+    # wavenumber rather than by trusting the deck.
+    kn = _scalar(_wavevector_matrix(0.1)[1]["kn"])
+    for kz in (0.0, 0.1 * kn):
         state = _dispersion_state("bonk", 2)
         state["kz"] = kz
         result = evaluate_fluid_dispersion(0.0, state)
@@ -305,14 +306,37 @@ def test_fluid_dispersion_response_zero_transverse_determinant_identity():
         kz = mp.mpf(float(abs(_scalar(state["kz"]))))
         nz = mp.sqrt(c2) * kz / w
         nx = mp.mpf(0)
-        k00 = mp.mpf(float(np.real(tensor[0, 0])))
-        k01 = mp.mpf(float(np.real(tensor[0, 1]))) + mp.mpf(float(np.imag(tensor[0, 1]))) * 1j
-        k11 = mp.mpf(float(np.real(tensor[1, 1])))
-        k22 = mp.mpf(float(np.real(tensor[2, 2])))
+        def _c(value):
+            """Lift the complex entry exactly; truncating it to a real part is a
+            measured 7.2e-5 error at nonzero kz, where the tensor diagonal carries a
+            0.066 imaginary part, and zero error at kz = 0, where it does not."""
+            return mp.mpf(float(np.real(value))) + mp.mpf(float(np.imag(value))) * 1j
+
+        k00 = _c(tensor[0, 0])
+        k01 = _c(tensor[0, 1])
+        k11 = _c(tensor[1, 1])
+        k22 = _c(tensor[2, 2])
         assert nx == 0
         predicted = ((k00 - nz**2) * (k11 - nz**2) + k01**2) * k22
         measured = complex(np.asarray(result["determinant"]).ravel()[0])
         assert reference.relative(abs(measured), abs(complex(predicted))) <= 1e-14
+
+        if kz == 0.0:
+            # Zero parallel wavenumber selects the rational response
+            # p = -omega/(omega - n omega_c) instead of the plasma dispersion function.
+            # That branch has a closed form for the transverse off-diagonal entry,
+            #   K01 = (omega_p**2/omega**2) * (j/2) * (p(1) - p(-1)),
+            # which reduces to the small-argument Bessel limit gp(+-1, 0) = 1/2.  It is
+            # not transpose invariant (K10 = -K01), so it is also what makes an axis
+            # swap of the returned tensor observable at all.
+            w = mp.mpf(float(state["w"]))
+            omega_p2 = mp.mpf(float(_scalar(state["wps2"])))
+            omega_c = mp.mpf(float(_scalar(state["wcs"])))
+            p_plus = -w / (w - omega_c)
+            p_minus = -w / (w + omega_c)
+            predicted_k01 = (omega_p2 / w**2) * (mp.mpc(0, 0.5)) * (p_plus - p_minus)
+            assert reference.relative(abs(complex(tensor[0, 1])), abs(complex(predicted_k01))) <= 1e-13
+            assert reference.relative(abs(complex(tensor[1, 0])), abs(complex(-predicted_k01))) <= 1e-13
 
         # An external closed form for the transverse off-diagonal entry would also
         # make an axis swap observable here; it is derived in the audit notes but is
