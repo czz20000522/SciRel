@@ -7,9 +7,12 @@ reference constants below are copied from that independent truth so the field
 and Green paths retain an external numeric anchor.
 """
 
+import subprocess
+import sys
 from pathlib import Path
 
 import numpy as np
+import pytest
 
 from scirel.field.circular_filament_green import circular_filament_green_response
 from scirel.field.dense_axisymmetric_green import dense_axisymmetric_green_response
@@ -19,6 +22,10 @@ from scirel.field.rectangular_coil_filaments import discretize_rectangular_coil
 
 ROOT = Path(__file__).resolve().parents[3]
 TRUTH_DIR = ROOT / "tests" / "fixtures" / "multi_coil_vacuum_field" / "pleiades_simple_two_coil"
+
+sys.path.insert(0, str(ROOT / "scripts"))
+
+import build_pleiades_truth as truth_builder  # noqa: E402
 
 # Independent Pleiades source truth: TRUTH.json grid and rectangular-coil records.
 PLEIADES_SOURCE_COMMIT = "0161abb3e9a1d85143c650f068ec524d672fc9ab"
@@ -177,3 +184,19 @@ def test_multi_coil_matches_full_pleiades_truth_arrays():
     result = solve_multi_coil_vacuum_field(r_grid, z_grid, coils)
     for field in ("psi_vac", "b_r_vac", "b_z_vac"):
         np.testing.assert_allclose(result[field], arrays[field], rtol=1.0e-13, atol=1.0e-17)
+
+
+def test_a_source_root_without_git_metadata_reports_no_revision(tmp_path):
+    """An exported Pleiades archive is not a checkout: no revision, no error."""
+    plain = tmp_path / "plain"
+    plain.mkdir()
+    assert truth_builder._git_head(plain) is None
+
+
+def test_a_work_tree_that_cannot_name_head_aborts_instead_of_binding_nothing(tmp_path):
+    """A work tree that cannot name its commit must not fall back to --source-commit."""
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    subprocess.run(["git", "init", "-q"], cwd=repo, check=True)
+    with pytest.raises(SystemExit, match="HEAD is unreadable"):
+        truth_builder._git_head(repo)

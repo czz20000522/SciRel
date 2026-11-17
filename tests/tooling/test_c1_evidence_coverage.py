@@ -57,8 +57,11 @@ def test_the_reported_totals_are_derived_from_the_tracked_contracts() -> None:
         [sys.executable, "-B", str(SCRIPT), "--format", "json"],
         capture_output=True,
         text=True,
-        check=True,
+        check=False,
         cwd=ROOT,
+    )
+    assert completed.returncode == 0, (
+        f"coverage script failed with {completed.returncode}: {completed.stderr!r}"
     )
     payload = json.loads(completed.stdout)
     totals = payload["totals"]

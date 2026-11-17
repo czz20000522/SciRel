@@ -12,13 +12,19 @@ import build_extraction_kit as kit  # noqa: E402
 
 
 def _git(cwd, *args):
-    return subprocess.run(
-        ["git", "-c", "user.name=t", "-c", "user.email=t@example.invalid", *args],
-        cwd=cwd,
-        check=True,
-        capture_output=True,
-        text=True,
-    ).stdout.strip()
+    try:
+        return subprocess.run(
+            ["git", "-c", "user.name=t", "-c", "user.email=t@example.invalid", *args],
+            cwd=cwd,
+            check=True,
+            capture_output=True,
+            text=True,
+        ).stdout.strip()
+    except subprocess.CalledProcessError as failed:
+        # This helper backs every kit fixture here; a bare exit status hides git's reason.
+        raise AssertionError(
+            f"git {' '.join(args)} failed in {cwd} with {failed.returncode}: {failed.stderr!r}"
+        ) from failed
 
 
 @pytest.fixture
@@ -193,7 +199,8 @@ def test_documented_identity_step_makes_the_commit_work_in_a_clean_home(repo, tm
         ["git", "-C", "scirel", "config", "user.name", "extractor"],
         ["git", "-C", "scirel", "config", "user.email", "extractor@example.invalid"],
     ):
-        subprocess.run(command, cwd=output, env=env, check=True, capture_output=True)
+        done = subprocess.run(command, cwd=output, env=env, capture_output=True, text=True)
+        assert done.returncode == 0, f"{' '.join(command)} failed: {done.stderr!r}"
     committed = subprocess.run(
         ["git", "commit", "--quiet", "-m", "add relation"],
         cwd=clone,

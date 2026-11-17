@@ -186,7 +186,10 @@ print(json.dumps(SourceDocumentation(sys.argv[2]).describe()))
         text=True,
         capture_output=True,
         timeout=20,
-        check=True,
+        check=False,
+    )
+    assert result.returncode == 0, (
+        f"describe probe failed with {result.returncode}: {result.stderr!r}"
     )
     assert json.loads(result.stdout)["asset_count"] == 1
     described = cli(source, "--describe")

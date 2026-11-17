@@ -39,9 +39,16 @@ def _load():
 
 def _git(cwd, *arguments):
     env = {key: value for key, value in os.environ.items() if not key.startswith("GIT_")}
-    return subprocess.run(
-        ["git", *arguments], cwd=cwd, env=env, check=True, capture_output=True, text=True
-    )
+    try:
+        return subprocess.run(
+            ["git", *arguments], cwd=cwd, env=env, check=True, capture_output=True, text=True
+        )
+    except subprocess.CalledProcessError as failed:
+        # capture_output=True keeps git's refusal out of the traceback, so every caller of
+        # this fixture helper would report a bare exit status. Carry the reason instead.
+        raise AssertionError(
+            f"git {' '.join(arguments)} failed in {cwd} with {failed.returncode}: {failed.stderr!r}"
+        ) from failed
 
 
 def _repository_with_worktree(tmp_path):

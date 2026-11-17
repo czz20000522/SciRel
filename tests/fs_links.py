@@ -16,12 +16,14 @@ import subprocess
 def directory_link(link: Path, target: Path) -> Path:
     """Create a real directory junction on Windows, or a POSIX symlink."""
     if os.name == "nt":
-        subprocess.run(
+        made = subprocess.run(
             ["cmd", "/d", "/c", "mklink", "/J", str(link), str(target)],
-            check=True,
+            check=False,
             capture_output=True,
             timeout=10,
         )
+        # mklink's refusal (rights, existing path) is only in the captured stderr.
+        assert made.returncode == 0, f"junction creation failed at {link}: {made.stderr!r}"
         assert link.is_junction()
     else:
         link.symlink_to(target, target_is_directory=True)

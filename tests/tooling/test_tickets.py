@@ -208,12 +208,14 @@ def test_directory_file_name_and_id_must_agree(tmp_path):
 
 
 def _git(cwd, *args):
-    subprocess.run(
+    done = subprocess.run(
         ["git", "-c", "user.name=t", "-c", "user.email=t@example.invalid", *args],
         cwd=cwd,
-        check=True,
+        check=False,
         capture_output=True,
+        text=True,
     )
+    assert done.returncode == 0, f"git {' '.join(args)} failed in {cwd}: {done.stderr!r}"
 
 
 def test_base_revision_catches_a_skipped_step_and_a_deleted_ticket(tmp_path):

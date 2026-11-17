@@ -223,7 +223,7 @@ def test_english_build_cli_accepts_language(tmp_path):
     for asset in subset:
         (documents / (asset + ".json")).write_bytes(sources[asset].read_bytes())
     output = tmp_path / "docs-en"
-    subprocess.run(
+    built = subprocess.run(
         [
             sys.executable,
             str(ROOT / "scripts/scirel_docs.py"),
@@ -236,10 +236,11 @@ def test_english_build_cli_accepts_language(tmp_path):
             str(output),
         ],
         cwd=ROOT,
-        check=True,
+        check=False,
         capture_output=True,
         text=True,
     )
+    assert built.returncode == 0, f"english build failed: {built.stderr!r}"
     manifest = json.loads((output / "manifest.json").read_text(encoding="utf-8"))
     assert manifest["reader_language"] == "en-US"
     assert manifest["asset_count"] == len(subset)
