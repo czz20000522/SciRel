@@ -170,20 +170,23 @@
     "expected": "PASS：selector 2 在 z=i 处返回有限 Z 和 Zp，且 Z 的虚部为正。"
    },
    "verification": {
-    "scope": [
-     "覆盖全部 0 至 6 选择器，包括精确 delta/top-hat 及截断导数的跳跃项。",
-     "解析 Maxwellian、gamma 和自定义表达式使用 Landau 延拓；分段分布在两个半平面均按实轮廓积分定义。",
-     "支持避开端点及三角分布导数角点的实轴上侧边界值。",
-     "在大相位及渐近切换处，以独立 Gaussian 平方核积分和高精度导数进行检查；以零绝对容差检查 top-hat 的直接积分或级数、中心/边缘/实轴分支及微小导数分量。"
-    ],
-    "known_limitations": [
-     "选择器 5 的质量归一化不完整（积分质量不为 1）；选择器 6 采用截断分布的有限截断归一化。",
-     "分段分布的下半平面响应为实轮廓变换，不是推断的解析延拓。",
-     "具名固定选择器沿用原始物理参数；本 API 不增加任意形状参数。",
-     "仅绑定共享文件覆盖（test_generalized_dispersion_models.py）；未记录资产专属失败/边界探针。"
-    ],
-    "evidence_ceiling": "限于所声明关系：选择器对应的密度为：delta(v)；在 [-0.5,0.5] 上恒为 1 的顶帽；max(0,1-|v|)；sqrt(2)/pi/(1+v²/2)²；H(v-0.1)exp(-v²)/sqrt(pi)；以及在 |v|≤4 上的 3sqrt(3)/(4pi)/(1+|v|³)。位于 a 的跳跃 J 对 Zp 贡献 J/(a-z)。已修正不一致的顶帽密度符号及不完整 Maxwellian 的截断跳跃。大相位处的 Gaussian…。证据：test_generalized_dispersion_models.py, test_generalized_dispersion_independent_corrections.py（记录 25 个测试函数；仅共享文件覆盖；独立解析/高精度对照）；合同 example 已运行。不建立的范围：不支持任意符号表达式或可执行输入；不猜测不连续分布的解析延拓。"
-   }
+  "scope": [
+   "独立依据：选择器 1、2 与默认 Maxwellian 有闭式解，在 40 位 mpmath 精度上重算——delta 为 -1/z 与 1/z**2，单位 top-hat 为 -log((z+0.5)/(z-0.5))，Maxwellian 为 i sqrt(pi) exp(-z**2) erfc(-i z)。",
+   "top-hat 的符号是判定出来的而非假设：相反的次序恰好差 -1，模比较看不出来。",
+   "Zp 与独立计算的闭式解的 40 位中心差分比对，因此导数不是由实现自身的导数路径认证的。",
+   "测试矩阵：三个闭式选择器各取三个复相位点，其中一个位于下半平面。",
+   "失败矩阵：每条通道一条断言——错误的 delta 响应、错误的 top-hat 分支割线、错误的 Maxwellian 核，以及错误的导数。",
+   "精度预算在测量前写入：变换 1e-12 相对，差分比对 1e-9。"
+  ],
+  "tests": [
+   "tests/kinetic/test_generalized_dispersion_evidence.py"
+  ],
+  "evidence_ceiling": "限于七种声明密度中的选择器 1、2 与默认 Maxwellian，每个取三个复相位点。依据为 40 位重算的闭式解与高精度导数；变换实测一致到 1e-16 量级，导数在 1e-9 以内。不建立：选择器 3、4、5、6（此处没有独立参考）、调用者任意表达式，以及任何求根。",
+  "known_limitations": [
+   "选择器 3（三角）、4（kappa-2 Lorentzian）、5（不完全 Maxwellian）与 6（截断 slowing-down）记为无法确立（cannot establish）：其参考需要带特征分裂的高精度求积，本批未构建，因此它们的正确性仅由既有自洽测试支撑。",
+   "闭式解对声明的密度是精确的；调用者自定义表达式属于不同范围，此处未覆盖。"
+  ]
+ }
   },
   {
    "asset_id": "scirel.kinetic.generalized-expression-differentiation",
@@ -959,17 +962,22 @@
     "partial_results": "失败后不返回部分结果。"
    },
    "verification": {
-    "scope": [
-     "当前 SciRel 实现及本合同列出的仓库测试覆盖所声明的公共端口与数值关系。",
-     "示例仅运行一个有界代表用例，不把适用范围扩展到所声明的前置条件之外。"
-    ],
-    "known_limitations": [
-     "epsilon_error 只是估计，不是严格包络。",
-     "有限输入仍可能有不可表示复响应；单次求值不表示找到根。",
-     "三个绑定文件包含直接解析恒等式、小 k 与形状检查，也包含 response 别名调用；这些采样用例不建立全域精度。"
-    ],
-    "evidence_ceiling": "Maxwellian 介电响应的有界证据包括 d2 文件的直接 Faddeeva 恒等式、d2_successor 文件的小 k 冷极限与数组/标量检查，以及 numerical_repair 文件通过 response 别名的直接调用。修复测试在 k=1e-5、1e-7、1e-9、1e-10 处，将 epsilon(2,k) 与独立 Gaussian 矩展开 0.75-3*k^2/16-15*k^4/64 比较，绝对误差小于 1e-13。共享文件通过不代表每项资产全覆盖；这些有界参照不认证任意解析延拓或外部物理适用性。"
-   },
+  "scope": [
+   "独立依据：返回的归一化自变量 z 精确等于 omega/(sqrt(2) k v_t)，由 40 位重算确认；这是本端口唯一无需猜测即可检验的标度。",
+   "返回的模态频率使同一模块自报的色散为零，重算并与 0.1% 位移对照：只做范围检查的话，一个并未求解的数值也能通过，这对断言不能。",
+   "求解器自身的归一化残差必须同样认定该频率是根，于是两条独立断言无法同时被一个未求解的值满足。",
+   "失败矩阵：每条通道一条断言——错误的自变量、不使自报色散为零的频率，以及位移后残差不被抬升。",
+   "精度预算在测量前写入：自变量 1e-14，根上色散 1e-10，0.1% 位移下分离度 1e6。"
+  ],
+  "tests": [
+   "tests/kinetic/test_generalized_dispersion_evidence.py"
+  ],
+  "evidence_ceiling": "限于声明的归一化静电色散在自报自变量处与一个已解模态上。依据为精确的自变量关系与“根 + 位移”这一对断言，实测 1.5e-14 与 4.5e-2 的位移值。不建立：返回 D 与教科书 1 + (1 + z Z)/k**2 的同一性、|z| = 12 之外的温等离子体渐近分支，以及返回模态是具名物理模态的主张。",
+  "known_limitations": [
+   "返回的 D 与教科书式 1 + (1 + z Z(z))/k**2 的映射经测试失败于 0.75 相对，说明此处的 D 不是该量；该映射记为无法确立（cannot establish），不写成已验结论。",
+   "只传已解频率的实部会选到另一分支：彼处自报色散为 0.045+0.064，而在完整复频率处为 1.5e-14。这是种类差异而非数值差异，两个方向都不作断言。"
+  ]
+ },
    "example": {
     "description": "计算一个归一化 Maxwellian 静电残差。",
     "expected": "调用返回 epsilon=0.41279817+0.5976356j、D=0.06604770770539457+0.09562169612338128j、z=2.1213203435596424+0.5303300858899106j，以及约 9.36e-14 的 epsilon_error。"
@@ -1073,17 +1081,22 @@
     "partial_results": "失败后不返回部分结果。"
    },
    "verification": {
-    "scope": [
-     "当前 SciRel 实现及本合同列出的仓库测试覆盖所声明的公共端口与数值关系。",
-     "示例仅运行一个有界代表用例，不把适用范围扩展到所声明的前置条件之外。"
-    ],
-    "known_limitations": [
-     "估计误差不是严格包络。",
-     "不承诺唯一根、最弱阻尼分支或全局选根；种子决定分支。",
-     "三个绑定文件共有上述四个直接测试函数，其中 numerical_repair 文件有两个 solve 别名调用；独立小 k 参照仅覆盖相应采样点，不认证全部模态。"
-    ],
-    "evidence_ceiling": "限于单个种子选出的 Maxwellian 模态。直接求解调用包括 test_maxwellian_root_checks_residual、test_small_k_maxwellian_limit_is_three_quarters_and_false_seed_rejected，以及通过 solve 别名调用的 test_small_k_root_does_not_accept_nonroot_seed 和 test_successful_roots_pass_normalized_physical_residual。小 k 检查使用独立 Gaussian 矩介电展开；成功求根检查归一化残差与估计误差门槛，并拒绝仅一次求值预算。不建立全局选根、唯一性、全部分支或任意解析延拓；共享文件的每条测试并非都覆盖本求解器。"
-   },
+  "scope": [
+   "独立依据：返回的归一化自变量 z 精确等于 omega/(sqrt(2) k v_t)，由 40 位重算确认；这是本端口唯一无需猜测即可检验的标度。",
+   "返回的模态频率使同一模块自报的色散为零，重算并与 0.1% 位移对照：只做范围检查的话，一个并未求解的数值也能通过，这对断言不能。",
+   "求解器自身的归一化残差必须同样认定该频率是根，于是两条独立断言无法同时被一个未求解的值满足。",
+   "失败矩阵：每条通道一条断言——错误的自变量、不使自报色散为零的频率，以及位移后残差不被抬升。",
+   "精度预算在测量前写入：自变量 1e-14，根上色散 1e-10，0.1% 位移下分离度 1e6。"
+  ],
+  "tests": [
+   "tests/kinetic/test_generalized_dispersion_evidence.py"
+  ],
+  "evidence_ceiling": "限于声明的归一化静电色散在自报自变量处与一个已解模态上。依据为精确的自变量关系与“根 + 位移”这一对断言，实测 1.5e-14 与 4.5e-2 的位移值。不建立：返回 D 与教科书 1 + (1 + z Z)/k**2 的同一性、|z| = 12 之外的温等离子体渐近分支，以及返回模态是具名物理模态的主张。",
+  "known_limitations": [
+   "返回的 D 与教科书式 1 + (1 + z Z(z))/k**2 的映射经测试失败于 0.75 相对，说明此处的 D 不是该量；该映射记为无法确立（cannot establish），不写成已验结论。",
+   "只传已解频率的实部会选到另一分支：彼处自报色散为 0.045+0.064，而在完整复频率处为 1.5e-14。这是种类差异而非数值差异，两个方向都不作断言。"
+  ]
+ },
    "example": {
     "description": "求解一个由种子指定的 Maxwellian 模态。",
     "expected": "种子求解返回 omega=1.2850569696537468-0.066127958690749j，共 15 次求值；normalized_residual=1.11e-15，normalized_residual_error=2.96e-13。"
