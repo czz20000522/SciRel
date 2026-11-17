@@ -131,19 +131,8 @@ python scripts/scirel_docs.py serve --snapshot .runtime/docs-snapshot
 
 ## 仓库结构
 
-```
-src/scirel/            # 科学实现，按领域组织
-tests/                 # 功能测试（含证据测试）与架构、文档、交付、工具测试
-catalog/examples/      # 已公开功能的正式合同（由代码派生的记录）
-catalog/review/        # 评审期合同与候选代码（不进入安装包）
-contracts/             # 合同 schema 与准入规则
-skills/                # 求解、开发和提取方法
-tools/docs/            # 手写用户指南、API 参考构建器与中文阅读层
-scripts/               # 构建、catalog、文档与安装校验工具
-examples/              # 求解样例与待整理案例
-tickets/               # 需要人工裁决的工单（按 kind 分目录）
-licenses/              # 许可与来源署名
-```
+目录逐项说明见 [`docs/maintainer/codebase-map.md`](docs/maintainer/codebase-map.md)。本文件随 wheel 分发，
+因此不列举不随包分发的目录——那样在只装了 wheel 的机器上会指向不存在的位置。
 
 ## 开发与验收
 
@@ -171,10 +160,10 @@ python3 scripts/dev.py check               # 发布档：只在下面三种场�
 
 venv、uv 缓存和临时文件都放在项目内已被忽略的 `.runtime/` 下，不写到项目目录之外。
 
-**案例即回归。** `examples/` 下的验收案例是可执行资产，不是文档：`c5-delivery-acceptance` 记录 sha256
-与复跑命令，复跑即验证；`c4-usage-acceptance` 是消费者路径的验收；演示类案例（`negative-demo-*`）
-是给人看的，验收标准不同。这三类的分离参照 OpenFOAM 的 `tutorials` / `test` 分工，
-其中"演示与验收案例分开维护"仍是待改进项。
+**案例即回归。** 仓库里的验收固件是可执行资产，不是文档：`c5-delivery-acceptance` 记录 sha256 与复跑命令，
+复跑即验证；`c4-usage-acceptance` 是消费者路径的验收；演示类案例（`negative-demo-*`）是给人看的，验收标准
+不同。这三类的分离参照 OpenFOAM 的 `tutorials` / `test` 分工，其中"演示与验收案例分开维护"仍是待改进项。
+这些固件不随 wheel 分发，路径见 `docs/maintainer/codebase-map.md`。
 
 接手请先读 [`AGENTS.md`](AGENTS.md)。三条线边界与检索策略见 [`ARCHITECTURE.md`](ARCHITECTURE.md)，
 项目规则见 [`RULES.md`](RULES.md)，完整贡献流程见 [`CONTRIBUTING.md`](CONTRIBUTING.md)。
@@ -184,7 +173,7 @@ venv、uv 缓存和临时文件都放在项目内已被忽略的 `.runtime/` 下
 本文件不记进度与规模——它们会漂。看这三处：
 
 - 状态快照（规模、各域分布、证据覆盖、结构进度）：[`docs/maintainer/status.md`](docs/maintainer/status.md)
-- 待办与整理计划：[`examples/PLAN.md`](examples/PLAN.md)
+- 待办与整理计划：见仓库中的整理计划文件（不随 wheel 分发，路径见 `docs/maintainer/codebase-map.md`）
 - 等人工裁决的问题：`tickets/` 下 `status: open` 的工单
 
 **能力边界冻结中：** 暂停接收新资产，供给线的准入随之中止，先还债、先清理。解除条件由维护者另行决定。

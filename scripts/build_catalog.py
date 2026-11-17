@@ -79,13 +79,19 @@ def _source_head(source_root: Path) -> str | None:
 
     * no git, or git present but this is not a work tree (an exported tarball, a
       synthetic fixture) -- legitimate, answer ``None``;
-    * git present, inside a work tree, yet it cannot name HEAD (corrupt repository,
-      no commit yet) -- the sources came from somewhere unknown, so this raises
-      instead of producing a catalog bound to no revision.
+    * git present, this IS a work tree top level, yet it cannot name HEAD (corrupt
+      repository, no commit yet) -- the sources came from somewhere unknown, so this
+      raises instead of producing a catalog bound to no revision.
+
+    "Inside a work tree" is not the question: ``git rev-parse --is-inside-work-tree``
+    walks upward, so a scratch directory created inside this repository answers yes and
+    would inherit the enclosing checkout's HEAD. A source root is a checkout only when it
+    is that checkout's own top level, so the test is ``--show-toplevel`` equal to the
+    resolved source root.
     """
     try:
-        inside = subprocess.run(
-            ["git", "rev-parse", "--is-inside-work-tree"],
+        toplevel = subprocess.run(
+            ["git", "rev-parse", "--show-toplevel"],
             cwd=source_root,
             capture_output=True,
             text=True,
@@ -94,7 +100,12 @@ def _source_head(source_root: Path) -> str | None:
     except OSError:
         # No usable git binary: an exported tree, not a checkout.
         return None
-    if inside.returncode != 0 or inside.stdout.strip() != "true":
+    if toplevel.returncode != 0:
+        # Not inside any work tree: an exported tree or a synthetic fixture.
+        return None
+    if Path(toplevel.stdout.strip()).resolve() != Path(source_root).resolve():
+        # Inside some enclosing checkout, but not its top level: this directory is not
+        # itself a checkout, so it has no revision to report.
         return None
     head = subprocess.run(
         ["git", "rev-parse", "HEAD"],
