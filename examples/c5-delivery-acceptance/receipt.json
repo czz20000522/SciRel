@@ -171,7 +171,24 @@
         "checks_passed": 6,
         "checks_total": 6
       }
-    ]
+    ],
+    "rerun_after_id_alignment": {
+      "date": "2026-11-17",
+      "reason": "The C2 catalog alignment renamed both contracts this task reads (scirel.sampling.* -> scirel.geometry.*), and the task opens them by filename, so the recorded result could not come from any build that contains the new IDs.",
+      "tasks_rerun": [
+        "geometry-coordinate-roundtrip"
+      ],
+      "build": {
+        "source_revision": "0701810b0289adb8e0ad926f5a0cb899a300ae6c",
+        "package_root_relative_to_clone": ".runtime/c5/scirel-delivery-0701810b",
+        "wheel_sha256": "cc19ad6a6e154236a45654be4b0d892ce493742f6cf4e722f2df64dcece56e77",
+        "runtime_json_snapshot_sha256": "1aecba56f1d84843795fa23eff3cf375533027c3ee6c4a4d01fd2fafd26bfa4f",
+        "installed_wheel_validation": "status PASS, errors [], package.in_source_tree false, runtime.is_virtualenv true",
+        "manifest_self_check": "status PASS, 274 entries rehashed against disk, 249 contracts, no file on disk outside the manifest"
+      },
+      "result": "The rerun reproduces the committed solve.result.json exactly, with no diff: 6/6 checks pass at the same deviations 2.2e-16, 4.4e-16, 8.9e-16, 4.4e-16. Nothing else moved during the rename.",
+      "not_done": "The other two tasks were not re-run: neither names a renamed asset, so their results still come from the build described by the source, build and runtime_json blocks above. Those blocks still describe that original build, not this rerun."
+    }
   },
   "does_not_establish": [
     "Physics correctness of any operator. A green installed-wheel receipt proves the artifact installs, imports, and its public surface matches the catalog; scientific review lives in catalog/review/.",
