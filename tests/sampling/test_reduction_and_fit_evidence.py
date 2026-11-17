@@ -2,9 +2,9 @@
 
 Assets:
 
-* ``scirel.sampling.weighted-line-integral`` (``flux_surface_avg``)
-* ``scirel.sampling.polynomial-fit`` (``poly_fit``)
-* ``scirel.sampling.scattered-linear`` (``locs_to_vals_griddata``)
+* ``scirel.geometry.weighted-line-integral`` (``flux_surface_avg``)
+* ``scirel.geometry.polynomial-fit`` (``poly_fit``)
+* ``scirel.geometry.scattered-linear`` (``locs_to_vals_griddata``)
 
 The failure mode these three share is a wrong **constant**: the weight taken as
 ``|B|`` instead of ``1/|B|``, a missing normalisation of the weighted mean, or a

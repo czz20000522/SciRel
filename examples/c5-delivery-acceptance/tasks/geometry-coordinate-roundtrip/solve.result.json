@@ -1,22 +1,22 @@
 {
   "task_id": "geometry-coordinate-roundtrip",
   "assets_used": [
-    "scirel.sampling.meridional-polar-forward",
-    "scirel.sampling.meridional-polar-inverse"
+    "scirel.geometry.meridional-polar-forward",
+    "scirel.geometry.meridional-polar-inverse"
   ],
   "calls": [
     {
       "entrypoint": "catalog/contracts read",
       "arguments": {
         "paths": [
-          "catalog/contracts/scirel.sampling.meridional-polar-forward.json",
-          "catalog/contracts/scirel.sampling.meridional-polar-inverse.json"
+          "catalog/contracts/scirel.geometry.meridional-polar-forward.json",
+          "catalog/contracts/scirel.geometry.meridional-polar-inverse.json"
         ]
       },
       "status": "ok",
       "asset_ids": [
-        "scirel.sampling.meridional-polar-forward",
-        "scirel.sampling.meridional-polar-inverse"
+        "scirel.geometry.meridional-polar-forward",
+        "scirel.geometry.meridional-polar-inverse"
       ]
     },
     {

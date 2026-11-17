@@ -1,6 +1,6 @@
 {
  "schema": "scirel.asset-document",
- "asset_id": "scirel.sampling.select-fieldline",
+ "asset_id": "scirel.geometry.select-fieldline",
  "title": {
   "en": "Contour field-line selection",
   "zh": "等值场线选择"
@@ -132,7 +132,7 @@
   "implementation_version": "0.0.0",
   "dependencies": [
    {
-    "asset_id": "scirel.sampling.parse-segment"
+    "asset_id": "scirel.geometry.parse-segment"
    }
   ]
  },

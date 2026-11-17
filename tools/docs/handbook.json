@@ -767,8 +767,8 @@
      "introduction": "平面旋转采用顺时针为正的行向量约定；极坐标变换同时处理位置与正交矢量分量。极角原点和半径域受限，不据此推断磁轴极限或三维物理旋转。",
      "assets": [
       "scirel.geometry.rotate",
-      "scirel.sampling.meridional-polar-forward",
-      "scirel.sampling.meridional-polar-inverse"
+      "scirel.geometry.meridional-polar-forward",
+      "scirel.geometry.meridional-polar-inverse"
      ]
     },
     {
@@ -789,10 +789,10 @@
      "title": "选择路径、累计距离并计算磁场加权归约",
      "introduction": "按精确等值线级别选择分段，明确方向和端点后累计相邻距离。逆磁场线积分与 Q 的加权平均由给定路径定义，不自动认证完整磁通面；开放路径不能按闭合环邻接处理。",
      "assets": [
-      "scirel.sampling.select-fieldline",
-      "scirel.sampling.parse-segment",
-      "scirel.sampling.path-distance",
-      "scirel.sampling.weighted-line-integral"
+      "scirel.geometry.select-fieldline",
+      "scirel.geometry.parse-segment",
+      "scirel.geometry.path-distance",
+      "scirel.geometry.weighted-line-integral"
      ]
     },
     {
@@ -800,11 +800,11 @@
      "title": "选择最近点、散点或矩形样条采样",
      "introduction": "逐轴最近点和展平平面最近点具有不同平局规则；散点线性插值、散点到规则网格和矩形双三次样条也有各自支持域。最近域外节点并不代表域外物理场已知。",
      "assets": [
-      "scirel.sampling.rectangular-nearest",
-      "scirel.sampling.point-nearest",
-      "scirel.sampling.scattered-linear",
-      "scirel.sampling.rectangular-spline",
-      "scirel.sampling.regular-grid",
+      "scirel.geometry.rectangular-nearest",
+      "scirel.geometry.point-nearest",
+      "scirel.geometry.scattered-linear",
+      "scirel.geometry.rectangular-spline",
+      "scirel.geometry.regular-grid",
       "scirel.numerics.face-to-cell"
      ]
     },
@@ -813,7 +813,7 @@
      "title": "整理磁通剖面和标量半平面反射",
      "introduction": "磁通剖面排序去重后线性插值，域外使用明确端值；半平面反射复制偶标量而不重复零列。该反射不是矢量奇偶性或任意几何场的自动规则。",
      "assets": [
-      "scirel.sampling.scalar-reflection"
+      "scirel.geometry.scalar-reflection"
      ]
     },
     {
@@ -822,7 +822,7 @@
      "introduction": "非均匀坐标入口以局部二次式求内点导数；弧长入口按实际相邻弦长并使用单侧端点公式。下降坐标应按对应合同反转输入和输出，不额外改变物理导数符号。",
      "assets": [
       "scirel.geometry.nonuniform-derivatives",
-      "scirel.sampling.nonuniform-first-derivative",
+      "scirel.geometry.nonuniform-first-derivative",
       "scirel.geometry.arclength-derivative"
      ]
     },
@@ -831,7 +831,7 @@
      "title": "构造设计矩阵和明确边界的样条",
      "introduction": "多项式系数及设计矩阵按升幂排列，SVD 拟合有明确截断；样条工厂连接自然、双端及单端钳制关系。柱坐标 Robin 方程和零原点限制不能仅凭名称解释为普遍物理闭合。",
      "assets": [
-      "scirel.sampling.polynomial-fit",
+      "scirel.geometry.polynomial-fit",
       "scirel.numerics.build-basis",
       "scirel.numerics.basis-matrix",
       "scirel.numerics.natural-cubic-spline",

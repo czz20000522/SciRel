@@ -2,8 +2,8 @@
 
 Assets:
 
-* ``scirel.sampling.rectangular-nearest`` (``locs_to_vals``)
-* ``scirel.sampling.point-nearest`` (``locs_to_vals1D``)
+* ``scirel.geometry.rectangular-nearest`` (``locs_to_vals``)
+* ``scirel.geometry.point-nearest`` (``locs_to_vals1D``)
 
 Both relations answer the same question — *which stored sample is nearest?* —
 by different rules: the rectangular scheme chooses a column and a row

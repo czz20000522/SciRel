@@ -1209,7 +1209,7 @@
    }
   },
   {
-   "asset_id": "scirel.sampling.meridional-polar-forward",
+   "asset_id": "scirel.geometry.meridional-polar-forward",
    "summary": "将柱坐标子午面位置及矢量分量映射为 r、theta 及其正交单位基分量。",
    "definition": "正变换使用显式公式计算 r、theta、u_r、u_theta；theta 从 +Z 朝 +rho 方向以弧度计。修正后的角度和正交基保留位置、范数及逆映射。",
    "model": "欧几里得子午面坐标变换，无磁场模型。几何为距原点正距离的平面有符号 rho、Z 坐标；调用者提供一致的长度与矢量单位，theta 以弧度计。",
@@ -1292,7 +1292,7 @@
    }
   },
   {
-   "asset_id": "scirel.sampling.meridional-polar-inverse",
+   "asset_id": "scirel.geometry.meridional-polar-inverse",
    "summary": "将正 r、theta 及极坐标矢量分量映射到子午面 rho、Z 分量。",
    "definition": "逆变换使用显式公式计算 rho、z、u_rho、u_z；theta 从 +Z 朝 +rho 方向以弧度计。它确定正向约定并保留矢量范数。",
    "model": "欧几里得子午面坐标变换，无磁场模型。几何为距原点正距离的平面有符号 rho、Z 坐标；调用者提供一致的长度与矢量单位，theta 以弧度计。",
@@ -1375,7 +1375,7 @@
    }
   },
   {
-   "asset_id": "scirel.sampling.nonuniform-first-derivative",
+   "asset_id": "scirel.geometry.nonuniform-first-derivative",
    "summary": "用共享的非均匀二次多项式算子返回内点一阶导数。",
    "definition": "用共享的非均匀二次多项式算子返回内点一阶导数。",
    "model": "内置的有限差分实现。采用通用且一致的坐标/值单位。",
@@ -1444,7 +1444,7 @@
    }
   },
   {
-   "asset_id": "scirel.sampling.parse-segment",
+   "asset_id": "scirel.geometry.parse-segment",
    "summary": "循环移位至最近起点，按有符号多边形检验定向，规范化精确闭合标记，并保留所选终止顶点。",
    "definition": "循环移位至最近起点，按有符号多边形检验定向，规范化精确闭合标记，并保留所选终止顶点。",
    "model": "沿用原实现的轮廓解析，并修正闭合端点与端点包含规则。平面坐标采用长度单位。",
@@ -1526,7 +1526,7 @@
    }
   },
   {
-   "asset_id": "scirel.sampling.path-distance",
+   "asset_id": "scirel.geometry.path-distance",
    "summary": "从零开始累积相邻顶点间的欧几里得距离。",
    "definition": "从零开始累积相邻顶点间的欧几里得距离。",
    "model": "精确的多边形弦长。平面坐标对采用一致的长度单位。",
@@ -1586,7 +1586,7 @@
    }
   },
   {
-   "asset_id": "scirel.sampling.point-nearest",
+   "asset_id": "scirel.geometry.point-nearest",
    "summary": "选择展平后欧氏距离最小的样点；真正等距时保留首次命中。",
    "definition": "选择展平后欧氏距离最小的样点；真正等距时保留首次命中。能无损表示为 binary64 的浮点坐标先构造向外舍入的距离平方区间：相减取绝对值、平方和求和后分别用相邻浮点数包住结果，下界截到零。保留 lower <= min(upper) 的点，再按精确分数距离平方比较所有剩余候选。整数和实数型 object 坐标始终跳过浮点筛选；更宽的浮点格式及不能无损转为 binary64 的查询也直接精确比较。",
    "model": "在任意匹配的平面数组上选取几何最近样本。X 为列坐标、Y 为行坐标，或二者为匹配的散点数组。",
@@ -1670,7 +1670,7 @@
    }
   },
   {
-   "asset_id": "scirel.sampling.polynomial-fit",
+   "asset_id": "scirel.geometry.polynomial-fit",
    "summary": "采用绝对奇异值截断 1e-10，计算升幂排列的最小范数系数。",
    "definition": "采用绝对奇异值截断 1e-10，计算升幂排列的最小范数系数。",
    "model": "显式 SVD 伪逆。x、y 为通用样本单位，系数单位为 y 除以 x 的幂。",
@@ -1753,7 +1753,7 @@
    }
   },
   {
-   "asset_id": "scirel.sampling.rectangular-nearest",
+   "asset_id": "scirel.geometry.rectangular-nearest",
    "summary": "分别选择距每个查询最近的 x 列及 y 行。",
    "definition": "分别选择距每个查询最近的 x 列及 y 行。",
    "model": "可分离 xy 网格按轴最近邻采样。X 为列坐标、Y 为行坐标，或二者为匹配的散点数组。",
@@ -1837,7 +1837,7 @@
    }
   },
   {
-   "asset_id": "scirel.sampling.rectangular-spline",
+   "asset_id": "scirel.geometry.rectangular-spline",
    "summary": "在有序路径顶点处求双三次矩形场插值。",
    "definition": "在有序路径顶点处求双三次矩形场插值。",
    "model": "采用原实现默认次数和平滑度的矩形双三次样条；使用行列网格及平面路径。",
@@ -1918,7 +1918,7 @@
    }
   },
   {
-   "asset_id": "scirel.sampling.regular-grid",
+   "asset_id": "scirel.geometry.regular-grid",
    "summary": "将标量场插值到提供的网格或生成的 ij 索引网格。",
    "definition": "将标量场插值到提供的网格或生成的 ij 索引网格。",
    "model": "使用 SciPy 散点插值；method 默认为 linear，生成网格时默认 nx=ny=200。",
@@ -2019,7 +2019,7 @@
    }
   },
   {
-   "asset_id": "scirel.sampling.scalar-reflection",
+   "asset_id": "scirel.geometry.scalar-reflection",
    "summary": "将 R 关于 R=0 镜像，并复制 Z 与偶对称标量场，且不重复零列。",
    "definition": "将 R 关于 R=0 镜像，并复制 Z 与偶对称标量场，且不重复零列。",
    "model": "沿用原实现的 hstack 约定，并提供具名 quantities 替代方式。Rho、Z 为按径向列排列的平面网格。",
@@ -2094,7 +2094,7 @@
    }
   },
   {
-   "asset_id": "scirel.sampling.scattered-linear",
+   "asset_id": "scirel.geometry.scattered-linear",
    "summary": "在给定坐标对处插值求场值。",
    "definition": "在给定坐标对处插值求场值。",
    "model": "SciPy griddata，默认使用 linear 方法。X 为列坐标、Y 为行坐标，或二者为匹配的散点数组。",
@@ -2177,7 +2177,7 @@
    }
   },
   {
-   "asset_id": "scirel.sampling.select-fieldline",
+   "asset_id": "scirel.geometry.select-fieldline",
    "summary": "在精确等值级别处选择顶点数最多的轮廓线段，并解析其方向与端点。",
    "definition": "在精确等值级别处选择顶点数最多的轮廓线段，并解析其方向与端点。",
    "model": "沿用原实现的轮廓线段选择。采用平面线段顶点及精确等值标签。",
@@ -2264,7 +2264,7 @@
    }
   },
   {
-   "asset_id": "scirel.sampling.weighted-line-integral",
+   "asset_id": "scirel.geometry.weighted-line-integral",
    "summary": "计算 ∫ (1/B) ds，或在给定 Q 时计算 ∫ (Q/B) ds / ∫ (1/B) ds。",
    "definition": "计算 ∫ (1/B) ds，或在给定 Q 时计算 ∫ (Q/B) ds / ∫ (1/B) ds。",
    "model": "沿用原实现的矩形样条采样和折线梯形求积。采用 xy 矩形网格及具有显式弦长的平面路径。",

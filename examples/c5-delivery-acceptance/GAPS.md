@@ -31,7 +31,7 @@
 
 ### B3　没有三维坐标变换（环向角）
 
-**验证**：包里只有 `scirel.sampling.meridional-polar-forward` 与 `-inverse` 这一对**二维子午面**变换。`search --q 'cartesian cylindrical'` 命中的是 grid-mapping、矩形插值、flux-surface 平均，都不是 `(x,y,z)↔(R,φ,Z)`。
+**验证**：包里只有 `scirel.geometry.meridional-polar-forward` 与 `-inverse` 这一对**二维子午面**变换。`search --q 'cartesian cylindrical'` 命中的是 grid-mapping、矩形插值、flux-surface 平均，都不是 `(x,y,z)↔(R,φ,Z)`。
 
 **妥协**：任务 B 只在二维子午面内做往返。任何带环向角的题目（三点不共面、环向位移、场线沿 φ 缠绕、环向模数）消费者得自己写那一腿，我直接没做——所以这份清单对三维几何的结论是"未测"，不是"可用"。
 

@@ -2,11 +2,11 @@
 
 Assets:
 
-* ``scirel.sampling.meridional-polar-forward`` (``transform_to_rtheta``)
-* ``scirel.sampling.meridional-polar-inverse`` (``transform_to_rhoz``)
-* ``scirel.sampling.nonuniform-first-derivative`` (``diff_central``)
-* ``scirel.sampling.rectangular-spline`` (``interp``)
-* ``scirel.sampling.regular-grid`` (``regular_grid``)
+* ``scirel.geometry.meridional-polar-forward`` (``transform_to_rtheta``)
+* ``scirel.geometry.meridional-polar-inverse`` (``transform_to_rhoz``)
+* ``scirel.geometry.nonuniform-first-derivative`` (``diff_central``)
+* ``scirel.geometry.rectangular-spline`` (``interp``)
+* ``scirel.geometry.regular-grid`` (``regular_grid``)
 
 Each relation has an oracle that is written down independently of the code
 under test, so the comparison is a physical/mathematical identity rather than a

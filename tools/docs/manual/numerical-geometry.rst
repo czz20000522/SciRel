@@ -262,8 +262,8 @@
 - 二维实值场在闭矩形域内取点：:doc:`../reference/generated/scirel.numerics.bilinear-grid-sampling`。
 - 一维磁通剖面排序、去重和线性插值：:doc:`../reference/generated/scirel.geometry.flux-surface-profile`。
 - 沿已有 ``R-Z`` 折线做 ``dl/B`` 与加权平均：:doc:`../reference/generated/scirel.geometry.flux-surface-inverse-field-average`。
-- 从等值线级别选择一段并定向、截断：:doc:`../reference/generated/scirel.sampling.select-fieldline` 和 :doc:`../reference/generated/scirel.sampling.parse-segment`。
-- 累计折线弧长：:doc:`../reference/generated/scirel.sampling.path-distance`。
+- 从等值线级别选择一段并定向、截断：:doc:`../reference/generated/scirel.geometry.select-fieldline` 和 :doc:`../reference/generated/scirel.geometry.parse-segment`。
+- 累计折线弧长：:doc:`../reference/generated/scirel.geometry.path-distance`。
 - 用样条重参数化场线并计算弧长导数：:doc:`../reference/generated/scirel.geometry.fieldline` 和 :doc:`../reference/generated/scirel.geometry.arclength-derivative`。
 - 把轴对称平衡映射到 ``(x, y, z)`` 求解网格：:doc:`../reference/generated/scirel.geometry.axisymmetric-equilibrium-grid-mapping`。
 - 需要三维复值场插值掩码、最近点/散点采样、材料支撑分类或多项式/样条基：见本章末尾的覆盖边界。
