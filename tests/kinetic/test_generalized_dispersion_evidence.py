@@ -199,7 +199,9 @@ def test_maxwellian_electrostatic_mode_root_zeroes_the_reported_dispersion():
 
     def dispersion(value, wavenumber):
         return abs(
-            complex(np.asarray(evaluate_maxwellian_electrostatic(value, wavenumber)["D"]).ravel()[0])
+            complex(
+                np.asarray(evaluate_maxwellian_electrostatic(value, wavenumber)["D"]).ravel()[0]
+            )
         )
 
     # Two different wavenumbers: the mutation harness's "constant" kind needs the
