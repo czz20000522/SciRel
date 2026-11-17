@@ -185,7 +185,7 @@ def test_fluid_dispersion_matrix_determinant_equals_eigenvalue_product():
     from scirel.kinetic import solve_fluid_wavevector_eigenproblem
 
     for max_harmonic, budget in ((0, 1e-12), (1, 1e-10)):
-        result, scales = _wavevector_matrix(0.1 * _scalar({"wn": 1.0}) if False else 1.0, max_harmonic=max_harmonic)
+        result, scales = _wavevector_matrix(1.0, max_harmonic=max_harmonic)
         matrix = np.asarray(result["M"])
         solution = solve_fluid_wavevector_eigenproblem(matrix=matrix, kn=1000.0)
         values = np.asarray(solution["eigenvalues"])
@@ -237,7 +237,8 @@ def test_fluid_wavevector_eigensolve_selection_relations():
     assert solution["eigenvalue_count"] == values.size == matrix.shape[0]
     assert reference.relative(solution["real_floor"], 2e-5 * kn) <= 1e-15
     mask = np.real(values) > solution["real_floor"]
-    assert selection_count := int(np.count_nonzero(mask))
+    selection_count = int(np.count_nonzero(mask))
+    assert selection_count > 0
     assert solution["selected_count"] == selection_count == selected.size
     assert np.all(np.real(selected) > solution["real_floor"])
     # Ascending |Im| on the selected subset, and head is its prefix.
