@@ -1,0 +1,159 @@
+{
+ "task_id": "plasma-fast-ion-heating",
+ "kind": "nominal",
+ "domain": "plasma",
+ "subdomain": "fast ion heating combination",
+ "question": "Evaluate the declared fast ion heating entry for one declared beam population and report the heating quantity together with the declared conservation or partition relation it satisfies.",
+ "assets_declared": [
+  "scirel.plasma.fast-ion-heating"
+ ],
+ "min_calls": 2,
+ "package": {
+  "python": "3.14.7",
+  "numpy": "2.5.4",
+  "scipy": "1.18.1",
+  "mpmath": "1.4.1",
+  "wheel_sha256": "4fc9757a7b843cc3bce2dc96fd2280b27299cff93fbcf5b64a2321b58234f5d7",
+  "snapshot_sha256": "cf0269b61ba19d8b2e5e008a6a4a4d80f2cd701f78c34f2fcb3b16eed9a2593c",
+  "source_revision": "4b5b4aaa38650d8a902e4265f226175d166a426b",
+  "asset_count": 249,
+  "runtime": {
+   "dependencies_bundled": false,
+   "package_version": "0.0.0",
+   "requires_dist": [
+    "numpy==2.5.4",
+    "scipy==1.18.1",
+    "mpmath==1.4.1"
+   ],
+   "requires_python": ">=3.12",
+   "wheel": "scirel-0.0.0-py3-none-any.whl",
+   "wheel_sha256": "4fc9757a7b843cc3bce2dc96fd2280b27299cff93fbcf5b64a2321b58234f5d7"
+  }
+ },
+ "assets_used": [
+  "scirel.plasma.fast-ion-heating"
+ ],
+ "calls": [
+  {
+   "seq": 1,
+   "label": "declared fast-ion heating",
+   "asset": "scirel.plasma.fast-ion-heating",
+   "entrypoint": "scirel.plasma.fast_ion_heating:fast_ion_fractional_heating",
+   "arguments": {
+    "args": [],
+    "kwargs": {
+     "birth_energy": 0.0,
+     "T_e": 10.0,
+     "fast_ion_mass": 2.0
+    }
+   },
+   "status": "returned",
+   "returned_fields": null,
+   "exception": null,
+   "warnings": [],
+   "returned_type": "float"
+  },
+  {
+   "seq": 2,
+   "label": "same call with the birth energy set to zero",
+   "asset": "scirel.plasma.fast-ion-heating",
+   "entrypoint": "scirel.plasma.fast_ion_heating:fast_ion_fractional_heating",
+   "arguments": {
+    "args": [],
+    "kwargs": {
+     "birth_energy": 0.0,
+     "T_e": 10.0,
+     "fast_ion_mass": 2.0
+    }
+   },
+   "status": "returned",
+   "returned_fields": null,
+   "exception": null,
+   "warnings": [],
+   "returned_type": "float"
+  }
+ ],
+ "answer": {
+  "value": {
+   "zero_energy_key": "birth_energy",
+   "ion_fraction_at_zero": 1.0,
+   "declared_limit": 1.0,
+   "abs_deviation": 0.0
+  },
+  "unit": "dimensionless partition fraction"
+ },
+ "independent_check": {
+  "method": "the declared continuous limit f_i(0)=1 is requested directly",
+  "observed": {
+   "zero_energy_key": "birth_energy",
+   "ion_fraction_at_zero": 1.0,
+   "declared_limit": 1.0,
+   "abs_deviation": 0.0
+  },
+  "verdict": "pass"
+ },
+ "criteria": [
+  {
+   "id": "fields",
+   "kind": "contract_fields",
+   "status": "fail",
+   "detail": {
+    "declared": [
+     "ion_fraction"
+    ],
+    "returned": "a float value, not a mapping",
+    "note": "the contract declares named outputs; this return carries no field names, so the declared output set cannot be observed"
+   }
+  },
+  {
+   "id": "declared_limit",
+   "kind": "invariant",
+   "status": "pass",
+   "detail": {
+    "zero_energy_key": "birth_energy",
+    "ion_fraction_at_zero": 1.0,
+    "declared_limit": 1.0,
+    "abs_deviation": 0.0
+   }
+  },
+  {
+   "id": "budget",
+   "kind": "tolerance",
+   "status": "pass",
+   "detail": {
+    "zero_energy_key": "birth_energy",
+    "ion_fraction_at_zero": 1.0,
+    "declared_limit": 1.0,
+    "abs_deviation": 0.0,
+    "declared_tolerance": {
+     "rel": 1e-12,
+     "abs": 0.0
+    }
+   }
+  },
+  {
+   "id": "readback",
+   "kind": "readback",
+   "status": "pass",
+   "detail": {
+    "reopened": "plasma-fast-ion-heating.json",
+    "problems": [],
+    "stored_call_count": 2
+   }
+  }
+ ],
+ "package_sufficient": true,
+ "sufficient_reason": "the limit is a declared property of the entry and reachable by one argument change",
+ "gaps": [],
+ "bindings": {
+  "scirel.plasma.fast-ion-heating": {
+   "symbol": "fast_ion_fractional_heating",
+   "args": {
+    "birth_energy": 0.0,
+    "T_e": 10.0,
+    "fast_ion_mass": 2.0
+   },
+   "example_error": null
+  }
+ }
+}

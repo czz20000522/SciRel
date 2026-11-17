@@ -1,0 +1,383 @@
+{
+ "task_id": "cross-mirror-to-diagnostics",
+ "kind": "cross",
+ "domain": "cross",
+ "subdomain": "anisotropic pressure into the firehose and mirror margins",
+ "question": "Compute a declared anisotropic pressure state, form the total pressure, and feed the anisotropy into the declared firehose and mirror margin diagnostics, reporting the sign of each margin and the stability conclusion drawn from it.",
+ "assets_declared": [
+  "scirel.mirror.frank-egedal-pressure-closure",
+  "scirel.mirror.mirror-total-pressure",
+  "scirel.diagnostics.firehose-mirror-margins"
+ ],
+ "min_calls": 3,
+ "package": {
+  "python": "3.14.7",
+  "numpy": "2.5.4",
+  "scipy": "1.18.1",
+  "mpmath": "1.4.1",
+  "wheel_sha256": "4fc9757a7b843cc3bce2dc96fd2280b27299cff93fbcf5b64a2321b58234f5d7",
+  "snapshot_sha256": "cf0269b61ba19d8b2e5e008a6a4a4d80f2cd701f78c34f2fcb3b16eed9a2593c",
+  "source_revision": "4b5b4aaa38650d8a902e4265f226175d166a426b",
+  "asset_count": 249,
+  "runtime": {
+   "dependencies_bundled": false,
+   "package_version": "0.0.0",
+   "requires_dist": [
+    "numpy==2.5.4",
+    "scipy==1.18.1",
+    "mpmath==1.4.1"
+   ],
+   "requires_python": ">=3.12",
+   "wheel": "scirel-0.0.0-py3-none-any.whl",
+   "wheel_sha256": "4fc9757a7b843cc3bce2dc96fd2280b27299cff93fbcf5b64a2321b58234f5d7"
+  }
+ },
+ "assets_used": [
+  "scirel.diagnostics.firehose-mirror-margins",
+  "scirel.mirror.frank-egedal-pressure-closure"
+ ],
+ "calls": [
+  {
+   "seq": 1,
+   "label": "declared closure state",
+   "asset": "scirel.mirror.frank-egedal-pressure-closure",
+   "entrypoint": "scirel.mirror.frank_egedal_pressure_closure:solve_frank_egedal_pressure_closure",
+   "arguments": {
+    "args": [],
+    "kwargs": {
+     "inputs": {
+      "psi": {
+       "dtype": "float64",
+       "shape": [
+        2,
+        2
+       ],
+       "values": [
+        [
+         0.0,
+         0.5
+        ],
+        [
+         0.25,
+         1.0
+        ]
+       ]
+      },
+      "B": {
+       "dtype": "float64",
+       "shape": [
+        2,
+        2
+       ],
+       "values": [
+        [
+         1.0,
+         1.1
+        ],
+        [
+         1.2,
+         1.3
+        ]
+       ]
+      },
+      "params": {
+       "psi_axis": 0.0,
+       "psi_edge": 1.0,
+       "B0": 1.0,
+       "hot_pressure_scale": 8.0,
+       "mirror_ratio": 2.0,
+       "legendre_degrees": [
+        0.5
+       ],
+       "source_coefficients": [
+        1.0
+       ],
+       "velocity_nodes": 6,
+       "pitch_nodes": 6
+      }
+     }
+    }
+   },
+   "status": "returned",
+   "returned_fields": [
+    "closure_state",
+    "density",
+    "electron_temperature",
+    "p_parallel",
+    "p_perp"
+   ],
+   "exception": null,
+   "warnings": [],
+   "returned_type": "dict"
+  },
+  {
+   "seq": 2,
+   "label": "declared firehose and mirror margins",
+   "asset": "scirel.diagnostics.firehose-mirror-margins",
+   "entrypoint": "scirel.diagnostics.firehose_mirror_margins:compute_firehose_mirror_margins",
+   "arguments": {
+    "args": [],
+    "kwargs": {
+     "p_parallel": 1.0,
+     "p_perp": 2.0,
+     "magnetic_field": 1.0,
+     "mu0": 1.0,
+     "parallel_equilibrium": null,
+     "dp_perp_dB": -4.0,
+     "field_axis": null,
+     "psi": null
+    }
+   },
+   "status": "returned",
+   "returned_fields": [
+    "criterion",
+    "derivative_method",
+    "dp_perp_dB",
+    "firehose_margin",
+    "firehose_stable",
+    "max_parallel_equilibrium_error",
+    "min_firehose_margin",
+    "min_mirror_margin",
+    "mirror_margin",
+    "mirror_stable",
+    "parallel_equilibrium_error"
+   ],
+   "exception": null,
+   "warnings": [],
+   "returned_type": "Result"
+  }
+ ],
+ "answer": {
+  "value": {
+   "closure_fields": [
+    "degree_source",
+    "degrees",
+    "legendre_backend",
+    "legendre_terms",
+    "normalization",
+    "normalized_field",
+    "quadrature",
+    "quadrature_convergence",
+    "radial_shape",
+    "reference_raw_moments",
+    "source_coefficients",
+    "velocity_domain",
+    "xi_tp_mid"
+   ],
+   "firehose_formula_deviation": 0.9999974867290354,
+   "mirror_formula_deviation": 1.000003769930134,
+   "positive_margin_reported_as": "threshold comparison, not a stability proof",
+   "firehose_stable": true
+  },
+  "unit": "Pa"
+ },
+ "independent_check": {
+  "method": "both margins are recomputed from the printed expressions using the closure's own B, p_perp and p_parallel",
+  "observed": {
+   "closure_fields": [
+    "degree_source",
+    "degrees",
+    "legendre_backend",
+    "legendre_terms",
+    "normalization",
+    "normalized_field",
+    "quadrature",
+    "quadrature_convergence",
+    "radial_shape",
+    "reference_raw_moments",
+    "source_coefficients",
+    "velocity_domain",
+    "xi_tp_mid"
+   ],
+   "firehose_formula_deviation": 0.9999974867290354,
+   "mirror_formula_deviation": 1.000003769930134,
+   "positive_margin_reported_as": "threshold comparison, not a stability proof",
+   "firehose_stable": true
+  },
+  "verdict": "fail"
+ },
+ "criteria": [
+  {
+   "id": "fields",
+   "kind": "contract_fields",
+   "status": "pass",
+   "detail": {
+    "declared": [
+     "criterion",
+     "derivative_method",
+     "dp_perp_dB",
+     "firehose_margin",
+     "firehose_stable",
+     "max_parallel_equilibrium_error",
+     "min_firehose_margin",
+     "min_mirror_margin",
+     "mirror_margin",
+     "mirror_stable",
+     "parallel_equilibrium_error"
+    ],
+    "returned": [
+     "criterion",
+     "derivative_method",
+     "dp_perp_dB",
+     "firehose_margin",
+     "firehose_stable",
+     "max_parallel_equilibrium_error",
+     "min_firehose_margin",
+     "min_mirror_margin",
+     "mirror_margin",
+     "mirror_stable",
+     "parallel_equilibrium_error"
+    ]
+   }
+  },
+  {
+   "id": "formula",
+   "kind": "invariant",
+   "status": "fail",
+   "detail": {
+    "closure_fields": [
+     "degree_source",
+     "degrees",
+     "legendre_backend",
+     "legendre_terms",
+     "normalization",
+     "normalized_field",
+     "quadrature",
+     "quadrature_convergence",
+     "radial_shape",
+     "reference_raw_moments",
+     "source_coefficients",
+     "velocity_domain",
+     "xi_tp_mid"
+    ],
+    "firehose_formula_deviation": 0.9999974867290354,
+    "mirror_formula_deviation": 1.000003769930134,
+    "positive_margin_reported_as": "threshold comparison, not a stability proof",
+    "firehose_stable": true
+   }
+  },
+  {
+   "id": "no_verdict",
+   "kind": "invariant",
+   "status": "fail",
+   "detail": {
+    "closure_fields": [
+     "degree_source",
+     "degrees",
+     "legendre_backend",
+     "legendre_terms",
+     "normalization",
+     "normalized_field",
+     "quadrature",
+     "quadrature_convergence",
+     "radial_shape",
+     "reference_raw_moments",
+     "source_coefficients",
+     "velocity_domain",
+     "xi_tp_mid"
+    ],
+    "firehose_formula_deviation": 0.9999974867290354,
+    "mirror_formula_deviation": 1.000003769930134,
+    "positive_margin_reported_as": "threshold comparison, not a stability proof",
+    "firehose_stable": true,
+    "note": "the diagnostics entry returns threshold flags only; the consumer does not read a positive margin as a stability certificate"
+   }
+  },
+  {
+   "id": "readback",
+   "kind": "readback",
+   "status": "pass",
+   "detail": {
+    "reopened": "cross-mirror-to-diagnostics.json",
+    "problems": [],
+    "stored_call_count": 2
+   }
+  }
+ ],
+ "package_sufficient": false,
+ "sufficient_reason": "the closure state and the margin entry share plain arrays",
+ "gaps": [
+  {
+   "level": "confidence",
+   "text": "dp_perp_dB is not returned by the closure entry, so the consumer formed it by finite differences on the declared grid"
+  },
+  {
+   "level": "process",
+   "text": "task declares min_calls=3 but only 2 public call(s) were made"
+  }
+ ],
+ "bindings": {
+  "scirel.mirror.frank-egedal-pressure-closure": {
+   "symbol": "solve_frank_egedal_pressure_closure",
+   "args": {
+    "inputs": {
+     "psi": {
+      "dtype": "float64",
+      "shape": [
+       2,
+       2
+      ],
+      "values": [
+       [
+        0.0,
+        0.5
+       ],
+       [
+        0.25,
+        1.0
+       ]
+      ]
+     },
+     "B": {
+      "dtype": "float64",
+      "shape": [
+       2,
+       2
+      ],
+      "values": [
+       [
+        1.0,
+        1.1
+       ],
+       [
+        1.2,
+        1.3
+       ]
+      ]
+     },
+     "params": {
+      "psi_axis": 0.0,
+      "psi_edge": 1.0,
+      "B0": 1.0,
+      "hot_pressure_scale": 8.0,
+      "mirror_ratio": 2.0,
+      "legendre_degrees": [
+       0.5
+      ],
+      "source_coefficients": [
+       1.0
+      ],
+      "velocity_nodes": 6,
+      "pitch_nodes": 6
+     }
+    },
+    "kwargs": {}
+   },
+   "example_error": null
+  },
+  "scirel.diagnostics.firehose-mirror-margins": {
+   "symbol": "compute_firehose_mirror_margins",
+   "args": {
+    "p_parallel": 1.0,
+    "p_perp": 2.0,
+    "magnetic_field": 1.0,
+    "mu0": 1.0,
+    "parallel_equilibrium": null,
+    "dp_perp_dB": -4.0,
+    "field_axis": null,
+    "psi": null
+   },
+   "example_error": null
+  }
+ }
+}

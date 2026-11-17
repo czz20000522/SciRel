@@ -1,0 +1,545 @@
+{
+ "task_id": "mirror-frank-egedal",
+ "kind": "nominal",
+ "domain": "mirror",
+ "subdomain": "Frank-Egedal pressure closure chain",
+ "question": "Build a declared Frank-Egedal pressure state, apply the declared closure, and report the total pressure as the declared combination of the anisotropic components.",
+ "assets_declared": [
+  "scirel.mirror.frank-egedal-pressure-closure",
+  "scirel.mirror.frank-egedal-pressure-state",
+  "scirel.mirror.mirror-total-pressure"
+ ],
+ "min_calls": 3,
+ "package": {
+  "python": "3.14.7",
+  "numpy": "2.5.4",
+  "scipy": "1.18.1",
+  "mpmath": "1.4.1",
+  "wheel_sha256": "4fc9757a7b843cc3bce2dc96fd2280b27299cff93fbcf5b64a2321b58234f5d7",
+  "snapshot_sha256": "cf0269b61ba19d8b2e5e008a6a4a4d80f2cd701f78c34f2fcb3b16eed9a2593c",
+  "source_revision": "4b5b4aaa38650d8a902e4265f226175d166a426b",
+  "asset_count": 249,
+  "runtime": {
+   "dependencies_bundled": false,
+   "package_version": "0.0.0",
+   "requires_dist": [
+    "numpy==2.5.4",
+    "scipy==1.18.1",
+    "mpmath==1.4.1"
+   ],
+   "requires_python": ">=3.12",
+   "wheel": "scirel-0.0.0-py3-none-any.whl",
+   "wheel_sha256": "4fc9757a7b843cc3bce2dc96fd2280b27299cff93fbcf5b64a2321b58234f5d7"
+  }
+ },
+ "assets_used": [
+  "scirel.mirror.frank-egedal-pressure-closure",
+  "scirel.mirror.frank-egedal-pressure-state",
+  "scirel.mirror.mirror-total-pressure"
+ ],
+ "calls": [
+  {
+   "seq": 1,
+   "label": "declared closure state",
+   "asset": "scirel.mirror.frank-egedal-pressure-closure",
+   "entrypoint": "scirel.mirror.frank_egedal_pressure_closure:solve_frank_egedal_pressure_closure",
+   "arguments": {
+    "args": [],
+    "kwargs": {
+     "inputs": {
+      "psi": {
+       "dtype": "float64",
+       "shape": [
+        2,
+        2
+       ],
+       "values": [
+        [
+         0.0,
+         0.5
+        ],
+        [
+         0.25,
+         1.0
+        ]
+       ]
+      },
+      "B": {
+       "dtype": "float64",
+       "shape": [
+        2,
+        2
+       ],
+       "values": [
+        [
+         1.0,
+         1.1
+        ],
+        [
+         1.2,
+         1.3
+        ]
+       ]
+      },
+      "params": {
+       "psi_axis": 0.0,
+       "psi_edge": 1.0,
+       "B0": 1.0,
+       "hot_pressure_scale": 8.0,
+       "mirror_ratio": 2.0,
+       "legendre_degrees": [
+        0.5
+       ],
+       "source_coefficients": [
+        1.0
+       ],
+       "velocity_nodes": 6,
+       "pitch_nodes": 6
+      }
+     }
+    }
+   },
+   "status": "returned",
+   "returned_fields": [
+    "closure_state",
+    "density",
+    "electron_temperature",
+    "p_parallel",
+    "p_perp"
+   ],
+   "exception": null,
+   "warnings": [],
+   "returned_type": "dict"
+  },
+  {
+   "seq": 2,
+   "label": "declared Frank-Egedal pressure",
+   "asset": "scirel.mirror.frank-egedal-pressure-state",
+   "entrypoint": "scirel.mirror.frank_egedal_pressure_state:assemble_frank_egedal_pressure",
+   "arguments": {
+    "args": [],
+    "kwargs": {
+     "psi": {
+      "dtype": "float64",
+      "shape": [
+       1,
+       2
+      ],
+      "values": [
+       [
+        0.0,
+        0.0
+       ]
+      ]
+     },
+     "radial_shape": {
+      "dtype": "float64",
+      "shape": [
+       1,
+       2
+      ],
+      "values": [
+       [
+        1.0,
+        0.5
+       ]
+      ]
+     },
+     "hot_parallel_shape": {
+      "dtype": "float64",
+      "shape": [
+       1,
+       2
+      ],
+      "values": [
+       [
+        2.0,
+        2.0
+       ]
+      ]
+     },
+     "hot_perpendicular_shape": {
+      "dtype": "float64",
+      "shape": [
+       1,
+       2
+      ],
+      "values": [
+       [
+        3.0,
+        3.0
+       ]
+      ]
+     },
+     "hot_density_shape": {
+      "dtype": "float64",
+      "shape": [
+       1,
+       2
+      ],
+      "values": [
+       [
+        4.0,
+        4.0
+       ]
+      ]
+     },
+     "hot_pressure_scale": 5.0,
+     "gas_dynamic_pressure": 7.0,
+     "gas_dynamic_density": 11.0,
+     "hot_density_scale": 13.0,
+     "electron_temperature": 17.0
+    }
+   },
+   "status": "returned",
+   "returned_fields": [
+    "density",
+    "electron_temperature",
+    "p_parallel",
+    "p_perp"
+   ],
+   "exception": null,
+   "warnings": [],
+   "returned_type": "dict"
+  },
+  {
+   "seq": 3,
+   "label": "declared total pressure",
+   "asset": "scirel.mirror.mirror-total-pressure",
+   "entrypoint": "scirel.mirror.mirror_total_pressure:assemble_mirror_total_pressure",
+   "arguments": {
+    "args": [],
+    "kwargs": {
+     "kinetic_moments": {
+      "p_parallel_pa": [
+       2.0,
+       3.0
+      ],
+      "p_perpendicular_pa": [
+       4.0,
+       5.0
+      ],
+      "density_m3": [
+       1.0,
+       2.0
+      ],
+      "marker": "ion"
+     },
+     "electron_state": {
+      "electron_density_m3": [
+       6.0,
+       7.0
+      ],
+      "electron_pressure_pa": 1.5,
+      "relative_charge_residual": [
+       0.1,
+       0.2
+      ]
+     }
+    }
+   },
+   "status": "returned",
+   "returned_fields": [
+    "density_m3",
+    "electron_density",
+    "electron_pressure",
+    "electrostatic_potential",
+    "ion_density",
+    "ion_p_parallel",
+    "ion_p_perpendicular",
+    "kinetic_moments",
+    "marker",
+    "p_parallel",
+    "p_parallel_pa",
+    "p_perpendicular",
+    "p_perpendicular_pa",
+    "relative_charge_residual"
+   ],
+   "exception": null,
+   "warnings": [],
+   "returned_type": "dict"
+  }
+ ],
+ "answer": {
+  "value": {
+   "composition_relative_deviation": {
+    "p_parallel": 0.0,
+    "p_perpendicular": 0.0
+   },
+   "declared_budget": 1e-13,
+   "closure": {
+    "closure_state_present": true,
+    "p_parallel_finite": true,
+    "p_perp_finite": true
+   }
+  },
+  "unit": "Pa"
+ },
+ "independent_check": {
+  "method": "total pressure recomputed as ion component plus the electron pressure added to both directions",
+  "observed": {
+   "composition_relative_deviation": {
+    "p_parallel": 0.0,
+    "p_perpendicular": 0.0
+   },
+   "declared_budget": 1e-13
+  },
+  "verdict": "pass"
+ },
+ "criteria": [
+  {
+   "id": "fields",
+   "kind": "contract_fields",
+   "status": "fail",
+   "detail": {
+    "declared": [
+     "electron_density",
+     "electron_pressure",
+     "electrostatic_potential",
+     "ion_density",
+     "ion_p_parallel",
+     "ion_p_perpendicular",
+     "kinetic_moments",
+     "p_parallel",
+     "p_perpendicular",
+     "relative_charge_residual"
+    ],
+    "returned": [
+     "density_m3",
+     "electron_density",
+     "electron_pressure",
+     "electrostatic_potential",
+     "ion_density",
+     "ion_p_parallel",
+     "ion_p_perpendicular",
+     "kinetic_moments",
+     "marker",
+     "p_parallel",
+     "p_parallel_pa",
+     "p_perpendicular",
+     "p_perpendicular_pa",
+     "relative_charge_residual"
+    ]
+   }
+  },
+  {
+   "id": "declared_composition",
+   "kind": "invariant",
+   "status": "pass",
+   "detail": {
+    "composition_relative_deviation": {
+     "p_parallel": 0.0,
+     "p_perpendicular": 0.0
+    },
+    "declared_budget": 1e-13
+   }
+  },
+  {
+   "id": "closure_state",
+   "kind": "invariant",
+   "status": "pass",
+   "detail": {
+    "closure_state_present": true,
+    "p_parallel_finite": true,
+    "p_perp_finite": true
+   }
+  },
+  {
+   "id": "budget",
+   "kind": "tolerance",
+   "status": "pass",
+   "detail": {
+    "composition_relative_deviation": {
+     "p_parallel": 0.0,
+     "p_perpendicular": 0.0
+    },
+    "declared_budget": 1e-13,
+    "declared_tolerance": {
+     "rel": 1e-13,
+     "abs": 0.0
+    }
+   }
+  },
+  {
+   "id": "readback",
+   "kind": "readback",
+   "status": "pass",
+   "detail": {
+    "reopened": "mirror-frank-egedal.json",
+    "problems": [],
+    "stored_call_count": 3
+   }
+  }
+ ],
+ "package_sufficient": true,
+ "sufficient_reason": "both ion and electron components are in the same returned record",
+ "gaps": [],
+ "bindings": {
+  "scirel.mirror.frank-egedal-pressure-closure": {
+   "symbol": "solve_frank_egedal_pressure_closure",
+   "args": {
+    "inputs": {
+     "psi": {
+      "dtype": "float64",
+      "shape": [
+       2,
+       2
+      ],
+      "values": [
+       [
+        0.0,
+        0.5
+       ],
+       [
+        0.25,
+        1.0
+       ]
+      ]
+     },
+     "B": {
+      "dtype": "float64",
+      "shape": [
+       2,
+       2
+      ],
+      "values": [
+       [
+        1.0,
+        1.1
+       ],
+       [
+        1.2,
+        1.3
+       ]
+      ]
+     },
+     "params": {
+      "psi_axis": 0.0,
+      "psi_edge": 1.0,
+      "B0": 1.0,
+      "hot_pressure_scale": 8.0,
+      "mirror_ratio": 2.0,
+      "legendre_degrees": [
+       0.5
+      ],
+      "source_coefficients": [
+       1.0
+      ],
+      "velocity_nodes": 6,
+      "pitch_nodes": 6
+     }
+    },
+    "kwargs": {}
+   },
+   "example_error": null
+  },
+  "scirel.mirror.frank-egedal-pressure-state": {
+   "symbol": "assemble_frank_egedal_pressure",
+   "args": {
+    "psi": {
+     "dtype": "float64",
+     "shape": [
+      1,
+      2
+     ],
+     "values": [
+      [
+       0.0,
+       0.0
+      ]
+     ]
+    },
+    "radial_shape": {
+     "dtype": "float64",
+     "shape": [
+      1,
+      2
+     ],
+     "values": [
+      [
+       1.0,
+       0.5
+      ]
+     ]
+    },
+    "hot_parallel_shape": {
+     "dtype": "float64",
+     "shape": [
+      1,
+      2
+     ],
+     "values": [
+      [
+       2.0,
+       2.0
+      ]
+     ]
+    },
+    "hot_perpendicular_shape": {
+     "dtype": "float64",
+     "shape": [
+      1,
+      2
+     ],
+     "values": [
+      [
+       3.0,
+       3.0
+      ]
+     ]
+    },
+    "hot_density_shape": {
+     "dtype": "float64",
+     "shape": [
+      1,
+      2
+     ],
+     "values": [
+      [
+       4.0,
+       4.0
+      ]
+     ]
+    },
+    "hot_pressure_scale": 5.0,
+    "gas_dynamic_pressure": 7.0,
+    "gas_dynamic_density": 11.0,
+    "hot_density_scale": 13.0,
+    "electron_temperature": 17.0
+   },
+   "example_error": null
+  },
+  "scirel.mirror.mirror-total-pressure": {
+   "symbol": "assemble_mirror_total_pressure",
+   "args": {
+    "kinetic_moments": {
+     "p_parallel_pa": [
+      2.0,
+      3.0
+     ],
+     "p_perpendicular_pa": [
+      4.0,
+      5.0
+     ],
+     "density_m3": [
+      1.0,
+      2.0
+     ],
+     "marker": "ion"
+    },
+    "electron_state": {
+     "electron_density_m3": [
+      6.0,
+      7.0
+     ],
+     "electron_pressure_pa": 1.5,
+     "relative_charge_residual": [
+      0.1,
+      0.2
+     ]
+    }
+   },
+   "example_error": null
+  }
+ }
+}

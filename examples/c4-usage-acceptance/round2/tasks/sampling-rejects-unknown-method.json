@@ -1,0 +1,375 @@
+{
+ "task_id": "sampling-rejects-unknown-method",
+ "kind": "failure",
+ "domain": "geometry",
+ "subdomain": "declared invalid interpolation method",
+ "question": "Request the regular grid sampler with an interpolation method outside the declared set and report the raised exception.",
+ "assets_declared": [
+  "scirel.geometry.regular-grid"
+ ],
+ "min_calls": 1,
+ "package": {
+  "python": "3.14.7",
+  "numpy": "2.5.4",
+  "scipy": "1.18.1",
+  "mpmath": "1.4.1",
+  "wheel_sha256": "4fc9757a7b843cc3bce2dc96fd2280b27299cff93fbcf5b64a2321b58234f5d7",
+  "snapshot_sha256": "cf0269b61ba19d8b2e5e008a6a4a4d80f2cd701f78c34f2fcb3b16eed9a2593c",
+  "source_revision": "4b5b4aaa38650d8a902e4265f226175d166a426b",
+  "asset_count": 249,
+  "runtime": {
+   "dependencies_bundled": false,
+   "package_version": "0.0.0",
+   "requires_dist": [
+    "numpy==2.5.4",
+    "scipy==1.18.1",
+    "mpmath==1.4.1"
+   ],
+   "requires_python": ">=3.12",
+   "wheel": "scirel-0.0.0-py3-none-any.whl",
+   "wheel_sha256": "4fc9757a7b843cc3bce2dc96fd2280b27299cff93fbcf5b64a2321b58234f5d7"
+  }
+ },
+ "assets_used": [
+  "scirel.geometry.regular-grid"
+ ],
+ "calls": [
+  {
+   "seq": 1,
+   "label": "declare method='akima' only (frozen stimulus)",
+   "asset": "scirel.geometry.regular-grid",
+   "entrypoint": "scirel.geometry.sampling:regular_grid",
+   "arguments": {
+    "args": [
+     {
+      "dtype": "float64",
+      "shape": [
+       3,
+       3
+      ],
+      "values": [
+       [
+        0.0,
+        0.5,
+        1.0
+       ],
+       [
+        0.5,
+        1.0,
+        1.5
+       ],
+       [
+        1.0,
+        1.5,
+        2.0
+       ]
+      ]
+     }
+    ],
+    "kwargs": {
+     "xx": {
+      "dtype": "float64",
+      "shape": [
+       3,
+       3
+      ],
+      "values": [
+       [
+        0.0,
+        0.5,
+        1.0
+       ],
+       [
+        0.0,
+        0.5,
+        1.0
+       ],
+       [
+        0.0,
+        0.5,
+        1.0
+       ]
+      ]
+     },
+     "yy": {
+      "dtype": "float64",
+      "shape": [
+       3,
+       3
+      ],
+      "values": [
+       [
+        0.0,
+        0.0,
+        0.0
+       ],
+       [
+        0.5,
+        0.5,
+        0.5
+       ],
+       [
+        1.0,
+        1.0,
+        1.0
+       ]
+      ]
+     },
+     "nx": 4,
+     "ny": 5,
+     "xi": null,
+     "yi": null,
+     "method": "akima"
+    }
+   },
+   "status": "raised",
+   "returned_fields": null,
+   "exception": {
+    "type": "TypeError",
+    "module": "builtins",
+    "message": "regular_grid() got multiple values for argument 'xx'",
+    "qualname": "builtins.TypeError"
+   },
+   "warnings": []
+  }
+ ],
+ "answer": {
+  "value": [
+   {
+    "asset": "scirel.geometry.regular-grid",
+    "field": "method",
+    "baseline_value": "linear",
+    "requested_value": "akima",
+    "outcome": "raised",
+    "exception_type": "TypeError",
+    "exception_message": "regular_grid() got multiple values for argument 'xx'",
+    "declared_exception": "ValueError"
+   }
+  ],
+  "unit": "exception type and message, as raised"
+ },
+ "independent_check": {
+  "method": "the contract's failure_semantics quote is compared with the exception the library actually raised, field by field",
+  "verdict": "fail"
+ },
+ "criteria": [
+  {
+   "id": "raise",
+   "kind": "exception",
+   "status": "fail",
+   "detail": {
+    "expected_exception": "ValueError",
+    "expected_appears_in_contract_quote": true,
+    "type_matches_exactly_or_by_subclass": false,
+    "contract_quote": "Raises TypeError when required arguments are missing, the removed values mapping keyword is used, or an unknown keyword is supplied; raises ValueError when method is outside its documented set or the samples, fields, or query coordinates violate the SciPy interpolation contract; no input repair is inferred.",
+    "actual": {
+     "type": "TypeError",
+     "module": "builtins",
+     "message": "regular_grid() got multiple values for argument 'xx'",
+     "qualname": "builtins.TypeError"
+    },
+    "declared_rejection_phrase": "method is outside its documented set",
+    "declared_rejection_appears_in_contract_quote": true,
+    "stimulus_field": "method",
+    "stimulus_value": "akima",
+    "baseline_value": "linear"
+   }
+  },
+  {
+   "id": "nofallback",
+   "kind": "invariant",
+   "status": "pass",
+   "detail": {
+    "calls_made": 1,
+    "calls_expected": 1,
+    "note": "exactly the frozen stimulus was passed; no fallback method, clamp or retry",
+    "arguments": [
+     {
+      "args": [
+       {
+        "dtype": "float64",
+        "shape": [
+         3,
+         3
+        ],
+        "values": [
+         [
+          0.0,
+          0.5,
+          1.0
+         ],
+         [
+          0.5,
+          1.0,
+          1.5
+         ],
+         [
+          1.0,
+          1.5,
+          2.0
+         ]
+        ]
+       }
+      ],
+      "kwargs": {
+       "xx": {
+        "dtype": "float64",
+        "shape": [
+         3,
+         3
+        ],
+        "values": [
+         [
+          0.0,
+          0.5,
+          1.0
+         ],
+         [
+          0.0,
+          0.5,
+          1.0
+         ],
+         [
+          0.0,
+          0.5,
+          1.0
+         ]
+        ]
+       },
+       "yy": {
+        "dtype": "float64",
+        "shape": [
+         3,
+         3
+        ],
+        "values": [
+         [
+          0.0,
+          0.0,
+          0.0
+         ],
+         [
+          0.5,
+          0.5,
+          0.5
+         ],
+         [
+          1.0,
+          1.0,
+          1.0
+         ]
+        ]
+       },
+       "nx": 4,
+       "ny": 5,
+       "xi": null,
+       "yi": null,
+       "method": "akima"
+      }
+     }
+    ],
+    "statement": "The program must not retry with the declared default after the rejection; the trace must contain exactly one call for this task. Applies only to the declared stimulus method = \"akima\"; no other field is varied."
+   }
+  },
+  {
+   "id": "readback",
+   "kind": "readback",
+   "status": "pass",
+   "detail": {
+    "reopened": "sampling-rejects-unknown-method.json",
+    "problems": [],
+    "stored_call_count": 1
+   }
+  }
+ ],
+ "package_sufficient": false,
+ "sufficient_reason": "the library did not raise the exception the delivered contract declares for this stimulus, or the contract quote does not contain the frozen phrase",
+ "gaps": [],
+ "bindings": {
+  "scirel.geometry.regular-grid": {
+   "symbol": "regular_grid",
+   "args": {
+    "xx": {
+     "dtype": "float64",
+     "shape": [
+      3,
+      3
+     ],
+     "values": [
+      [
+       0.0,
+       0.5,
+       1.0
+      ],
+      [
+       0.0,
+       0.5,
+       1.0
+      ],
+      [
+       0.0,
+       0.5,
+       1.0
+      ]
+     ]
+    },
+    "yy": {
+     "dtype": "float64",
+     "shape": [
+      3,
+      3
+     ],
+     "values": [
+      [
+       0.0,
+       0.0,
+       0.0
+      ],
+      [
+       0.5,
+       0.5,
+       0.5
+      ],
+      [
+       1.0,
+       1.0,
+       1.0
+      ]
+     ]
+    },
+    "fields": [
+     {
+      "dtype": "float64",
+      "shape": [
+       3,
+       3
+      ],
+      "values": [
+       [
+        0.0,
+        0.5,
+        1.0
+       ],
+       [
+        0.5,
+        1.0,
+        1.5
+       ],
+       [
+        1.0,
+        1.5,
+        2.0
+       ]
+      ]
+     }
+    ],
+    "nx": 4,
+    "ny": 5,
+    "xi": null,
+    "yi": null,
+    "method": "linear"
+   },
+   "example_error": null
+  }
+ }
+}

@@ -1,0 +1,200 @@
+{
+ "task_id": "dielectric-cold-tensor",
+ "kind": "nominal",
+ "domain": "dielectric",
+ "subdomain": "cold plasma dielectric tensor",
+ "question": "Assemble the declared cold plasma dielectric tensor for a declared species mixture at a declared frequency and report the basis dependence of the stored matrix elements.",
+ "assets_declared": [
+  "scirel.dielectric.cold-plasma-tensor"
+ ],
+ "min_calls": 2,
+ "package": {
+  "python": "3.14.7",
+  "numpy": "2.5.4",
+  "scipy": "1.18.1",
+  "mpmath": "1.4.1",
+  "wheel_sha256": "4fc9757a7b843cc3bce2dc96fd2280b27299cff93fbcf5b64a2321b58234f5d7",
+  "snapshot_sha256": "cf0269b61ba19d8b2e5e008a6a4a4d80f2cd701f78c34f2fcb3b16eed9a2593c",
+  "source_revision": "4b5b4aaa38650d8a902e4265f226175d166a426b",
+  "asset_count": 249,
+  "runtime": {
+   "dependencies_bundled": false,
+   "package_version": "0.0.0",
+   "requires_dist": [
+    "numpy==2.5.4",
+    "scipy==1.18.1",
+    "mpmath==1.4.1"
+   ],
+   "requires_python": ">=3.12",
+   "wheel": "scirel-0.0.0-py3-none-any.whl",
+   "wheel_sha256": "4fc9757a7b843cc3bce2dc96fd2280b27299cff93fbcf5b64a2321b58234f5d7"
+  }
+ },
+ "assets_used": [
+  "scirel.dielectric.cold-plasma-tensor"
+ ],
+ "calls": [
+  {
+   "seq": 1,
+   "label": "declared cold plasma tensor",
+   "asset": "scirel.dielectric.cold-plasma-tensor",
+   "entrypoint": "scirel.dielectric.cold_plasma_tensor:cold_plasma_dielectric_tensor",
+   "arguments": {
+    "args": [],
+    "kwargs": {
+     "frequency_hz": 60000000.0,
+     "magnetic_flux_density_t": {
+      "dtype": "float64",
+      "shape": [
+       3
+      ],
+      "values": [
+       0.0,
+       0.0,
+       0.3
+      ]
+     },
+     "species": [
+      {
+       "density_m3": 1e+19,
+       "charge_c": -1.602176634e-19,
+       "mass_kg": 9.1093837015e-31
+      },
+      {
+       "density_m3": 5e+18,
+       "charge_c": 1.602176634e-19,
+       "mass_kg": 1.67262192369e-27
+      }
+     ]
+    }
+   },
+   "status": "returned",
+   "returned_fields": null,
+   "exception": null,
+   "warnings": [],
+   "returned_type": "ndarray"
+  }
+ ],
+ "answer": {
+  "value": {
+   "shapes": [
+    3,
+    3
+   ],
+   "spectrum": [
+    1555.813963943867,
+    1653.621341670757,
+    223994.38492230122
+   ]
+  },
+  "unit": "dimensionless dielectric tensor"
+ },
+ "independent_check": {
+  "method": "the returned tensor is checked finite; the invariance and resonance halves are not evaluated",
+  "observed": {
+   "shapes": [
+    3,
+    3
+   ],
+   "spectrum": [
+    1555.813963943867,
+    1653.621341670757,
+    223994.38492230122
+   ]
+  },
+  "verdict": "not-run"
+ },
+ "criteria": [
+  {
+   "id": "fields",
+   "kind": "contract_fields",
+   "status": "fail",
+   "detail": {
+    "declared": [
+     "epsilon_r"
+    ],
+    "returned": "a ndarray value, not a mapping",
+    "note": "the contract declares named outputs; this return carries no field names, so the declared output set cannot be observed"
+   }
+  },
+  {
+   "id": "basisinvariance",
+   "kind": "invariant",
+   "status": "pass",
+   "detail": {
+    "shapes": [
+     3,
+     3
+    ],
+    "spectrum": [
+     1555.813963943867,
+     1653.621341670757,
+     223994.38492230122
+    ],
+    "why": "the declared example fixes the field along the axis; the rotated-frame companion call needs a rotated basis argument the example does not declare, so the invariance half was not evaluated"
+   }
+  },
+  {
+   "id": "resonance",
+   "kind": "invariant",
+   "status": "not-run",
+   "detail": {
+    "why": "an exact cyclotron resonance requires a frequency the declared example does not declare, so the declared rejection was not triggered here"
+   }
+  },
+  {
+   "id": "readback",
+   "kind": "readback",
+   "status": "pass",
+   "detail": {
+    "reopened": "dielectric-cold-tensor.json",
+    "problems": [],
+    "stored_call_count": 1
+   }
+  }
+ ],
+ "package_sufficient": false,
+ "sufficient_reason": "the declared example does not declare the rotated basis or the exact resonance frequency, so two declared criteria cannot be triggered",
+ "gaps": [
+  {
+   "level": "confidence",
+   "text": "the task's basis-invariance and exact-resonance criteria need inputs the contract's example block does not declare; a consumer may only use the declared example inputs, so they stay unevaluated"
+  },
+  {
+   "level": "process",
+   "text": "task declares min_calls=2 but only 1 public call(s) were made"
+  }
+ ],
+ "bindings": {
+  "scirel.dielectric.cold-plasma-tensor": {
+   "symbol": "cold_plasma_dielectric_tensor",
+   "args": {
+    "frequency_hz": 60000000.0,
+    "magnetic_flux_density_t": {
+     "dtype": "float64",
+     "shape": [
+      3
+     ],
+     "values": [
+      0.0,
+      0.0,
+      0.3
+     ]
+    },
+    "species": [
+     {
+      "density_m3": 1e+19,
+      "charge_c": -1.602176634e-19,
+      "mass_kg": 9.1093837015e-31
+     },
+     {
+      "density_m3": 5e+18,
+      "charge_c": 1.602176634e-19,
+      "mass_kg": 1.67262192369e-27
+     }
+    ]
+   },
+   "example_error": null
+  }
+ }
+}

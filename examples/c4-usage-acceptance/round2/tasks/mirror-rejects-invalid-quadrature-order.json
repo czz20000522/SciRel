@@ -1,0 +1,242 @@
+{
+ "task_id": "mirror-rejects-invalid-quadrature-order",
+ "kind": "failure",
+ "domain": "mirror",
+ "subdomain": "declared invalid input channel",
+ "question": "Request the constrained mirror moments with a declared quadrature order below the declared minimum and report the raised exception.",
+ "assets_declared": [
+  "scirel.mirror.mirror-constrained-moments"
+ ],
+ "min_calls": 1,
+ "package": {
+  "python": "3.14.7",
+  "numpy": "2.5.4",
+  "scipy": "1.18.1",
+  "mpmath": "1.4.1",
+  "wheel_sha256": "4fc9757a7b843cc3bce2dc96fd2280b27299cff93fbcf5b64a2321b58234f5d7",
+  "snapshot_sha256": "cf0269b61ba19d8b2e5e008a6a4a4d80f2cd701f78c34f2fcb3b16eed9a2593c",
+  "source_revision": "4b5b4aaa38650d8a902e4265f226175d166a426b",
+  "asset_count": 249,
+  "runtime": {
+   "dependencies_bundled": false,
+   "package_version": "0.0.0",
+   "requires_dist": [
+    "numpy==2.5.4",
+    "scipy==1.18.1",
+    "mpmath==1.4.1"
+   ],
+   "requires_python": ">=3.12",
+   "wheel": "scirel-0.0.0-py3-none-any.whl",
+   "wheel_sha256": "4fc9757a7b843cc3bce2dc96fd2280b27299cff93fbcf5b64a2321b58234f5d7"
+  }
+ },
+ "assets_used": [
+  "scirel.mirror.mirror-constrained-moments"
+ ],
+ "calls": [
+  {
+   "seq": 1,
+   "label": "declare quadrature_order=-1 only (frozen stimulus)",
+   "asset": "scirel.mirror.mirror-constrained-moments",
+   "entrypoint": "scirel.mirror.mirror_constrained_moments:evaluate_mirror_constrained_moments",
+   "arguments": {
+    "args": [],
+    "kwargs": {
+     "b_t": {
+      "dtype": "float64",
+      "shape": [
+       2
+      ],
+      "values": [
+       1.0,
+       2.0
+      ]
+     },
+     "psi": {
+      "dtype": "float64",
+      "shape": [
+       2
+      ],
+      "values": [
+       0.0,
+       0.0
+      ]
+     },
+     "potential_v": 0.0,
+     "mass_kg": 1.67262192595e-27,
+     "charge_c": 1.602176634e-19,
+     "density_ref_m3": 2e+18,
+     "temperature_parallel_j": 1.9226119607999998e-16,
+     "temperature_perpendicular_ref_j": 3.8452239215999996e-16,
+     "b_ref_t": 1.0,
+     "phi_ref_v": 0.0,
+     "b_plug_left_t": null,
+     "b_plug_right_t": null,
+     "phi_plug_left_v": 0.0,
+     "phi_plug_right_v": 0.0,
+     "loss_cone_refill": 0.0,
+     "quadrature_order": -1
+    }
+   },
+   "status": "raised",
+   "returned_fields": null,
+   "exception": {
+    "type": "ValueError",
+    "module": "builtins",
+    "message": "loss_cone_refill must be finite in [0,1] and quadrature_order must be finite with int value at least 8",
+    "qualname": "builtins.ValueError"
+   },
+   "warnings": []
+  }
+ ],
+ "answer": {
+  "value": [
+   {
+    "asset": "scirel.mirror.mirror-constrained-moments",
+    "field": "quadrature_order",
+    "baseline_value": 32,
+    "requested_value": -1,
+    "outcome": "raised",
+    "exception_type": "ValueError",
+    "exception_message": "loss_cone_refill must be finite in [0,1] and quadrature_order must be finite with int value at least 8",
+    "declared_exception": "ValueError"
+   }
+  ],
+  "unit": "exception type and message, as raised"
+ },
+ "independent_check": {
+  "method": "the contract's failure_semantics quote is compared with the exception the library actually raised, field by field",
+  "verdict": "pass"
+ },
+ "criteria": [
+  {
+   "id": "raise",
+   "kind": "exception",
+   "status": "pass",
+   "detail": {
+    "expected_exception": "ValueError",
+    "expected_appears_in_contract_quote": true,
+    "type_matches_exactly_or_by_subclass": true,
+    "contract_quote": "Raises ValueError for invalid mass/charge, refill or quadrature control, one-sided plug fields, nonfinite or nonpositive local/reference field and temperatures, negative reference density, nonfinite potential/profile results, or nonbroadcastable shapes. Nonnumeric conversion/callable errors may propagate.",
+    "actual": {
+     "type": "ValueError",
+     "module": "builtins",
+     "message": "loss_cone_refill must be finite in [0,1] and quadrature_order must be finite with int value at least 8",
+     "qualname": "builtins.ValueError"
+    },
+    "declared_rejection_phrase": "invalid mass/charge, refill or quadrature control",
+    "declared_rejection_appears_in_contract_quote": true,
+    "stimulus_field": "quadrature_order",
+    "stimulus_value": -1,
+    "baseline_value": 32
+   }
+  },
+  {
+   "id": "noclip",
+   "kind": "invariant",
+   "status": "pass",
+   "detail": {
+    "calls_made": 1,
+    "calls_expected": 1,
+    "note": "exactly the frozen stimulus was passed; no fallback method, clamp or retry",
+    "arguments": [
+     {
+      "args": [],
+      "kwargs": {
+       "b_t": {
+        "dtype": "float64",
+        "shape": [
+         2
+        ],
+        "values": [
+         1.0,
+         2.0
+        ]
+       },
+       "psi": {
+        "dtype": "float64",
+        "shape": [
+         2
+        ],
+        "values": [
+         0.0,
+         0.0
+        ]
+       },
+       "potential_v": 0.0,
+       "mass_kg": 1.67262192595e-27,
+       "charge_c": 1.602176634e-19,
+       "density_ref_m3": 2e+18,
+       "temperature_parallel_j": 1.9226119607999998e-16,
+       "temperature_perpendicular_ref_j": 3.8452239215999996e-16,
+       "b_ref_t": 1.0,
+       "phi_ref_v": 0.0,
+       "b_plug_left_t": null,
+       "b_plug_right_t": null,
+       "phi_plug_left_v": 0.0,
+       "phi_plug_right_v": 0.0,
+       "loss_cone_refill": 0.0,
+       "quadrature_order": -1
+      }
+     }
+    ],
+    "statement": "The consumer must not raise the quadrature order to the declared minimum or drop the keyword; the trace must show the rejected order exactly as declared and the raised status for that call. Applies only to the declared stimulus quadrature_order = -1; no other field is varied."
+   }
+  },
+  {
+   "id": "readback",
+   "kind": "readback",
+   "status": "pass",
+   "detail": {
+    "reopened": "mirror-rejects-invalid-quadrature-order.json",
+    "problems": [],
+    "stored_call_count": 1
+   }
+  }
+ ],
+ "package_sufficient": true,
+ "sufficient_reason": "the declared rejection channel is reproducible from the delivered contract: the same field, the same value and the same exception type the contract names",
+ "gaps": [],
+ "bindings": {
+  "scirel.mirror.mirror-constrained-moments": {
+   "symbol": "evaluate_mirror_constrained_moments",
+   "args": {
+    "b_t": {
+     "dtype": "float64",
+     "shape": [
+      2
+     ],
+     "values": [
+      1.0,
+      2.0
+     ]
+    },
+    "psi": {
+     "dtype": "float64",
+     "shape": [
+      2
+     ],
+     "values": [
+      0.0,
+      0.0
+     ]
+    },
+    "potential_v": 0.0,
+    "mass_kg": 1.67262192595e-27,
+    "charge_c": 1.602176634e-19,
+    "density_ref_m3": 2e+18,
+    "temperature_parallel_j": 1.9226119607999998e-16,
+    "temperature_perpendicular_ref_j": 3.8452239215999996e-16,
+    "b_ref_t": 1.0,
+    "phi_ref_v": 0.0,
+    "b_plug_left_t": null,
+    "b_plug_right_t": null,
+    "phi_plug_left_v": 0.0,
+    "phi_plug_right_v": 0.0,
+    "loss_cone_refill": 0.0,
+    "quadrature_order": 32
+   },
+   "example_error": null
+  }
+ }
+}

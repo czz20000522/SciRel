@@ -1,0 +1,230 @@
+{
+ "task_id": "collisions-cross-sections",
+ "kind": "nominal",
+ "domain": "collisions",
+ "subdomain": "elastic cross sections for hydrogen and proton projectiles",
+ "question": "Evaluate both declared elastic cross sections over one declared energy grid and report where each model's declared valid range ends and what the entry returns outside it.",
+ "assets_declared": [
+  "scirel.collisions.atomic-hydrogen-elastic-cross-section",
+  "scirel.collisions.proton-atomic-hydrogen-elastic-cross-section"
+ ],
+ "min_calls": 3,
+ "package": {
+  "python": "3.14.7",
+  "numpy": "2.5.4",
+  "scipy": "1.18.1",
+  "mpmath": "1.4.1",
+  "wheel_sha256": "4fc9757a7b843cc3bce2dc96fd2280b27299cff93fbcf5b64a2321b58234f5d7",
+  "snapshot_sha256": "cf0269b61ba19d8b2e5e008a6a4a4d80f2cd701f78c34f2fcb3b16eed9a2593c",
+  "source_revision": "4b5b4aaa38650d8a902e4265f226175d166a426b",
+  "asset_count": 249,
+  "runtime": {
+   "dependencies_bundled": false,
+   "package_version": "0.0.0",
+   "requires_dist": [
+    "numpy==2.5.4",
+    "scipy==1.18.1",
+    "mpmath==1.4.1"
+   ],
+   "requires_python": ">=3.12",
+   "wheel": "scirel-0.0.0-py3-none-any.whl",
+   "wheel_sha256": "4fc9757a7b843cc3bce2dc96fd2280b27299cff93fbcf5b64a2321b58234f5d7"
+  }
+ },
+ "assets_used": [
+  "scirel.collisions.atomic-hydrogen-elastic-cross-section",
+  "scirel.collisions.proton-atomic-hydrogen-elastic-cross-section"
+ ],
+ "calls": [
+  {
+   "seq": 1,
+   "label": "declared atomic-hydrogen cross section",
+   "asset": "scirel.collisions.atomic-hydrogen-elastic-cross-section",
+   "entrypoint": "scirel.collisions.atomic_hydrogen_elastic_cross_section:evaluate_atomic_hydrogen_elastic_cross_section",
+   "arguments": {
+    "args": [],
+    "kwargs": {
+     "energy_ev": {
+      "dtype": "float64",
+      "shape": [
+       6
+      ],
+      "values": [
+       0.03,
+       1.0,
+       10.0,
+       100.0,
+       1000.0,
+       10100.0
+      ]
+     },
+     "viscosity": false
+    }
+   },
+   "status": "returned",
+   "returned_fields": null,
+   "exception": null,
+   "warnings": [],
+   "returned_type": "ndarray"
+  },
+  {
+   "seq": 2,
+   "label": "declared proton-hydrogen cross section",
+   "asset": "scirel.collisions.proton-atomic-hydrogen-elastic-cross-section",
+   "entrypoint": "scirel.collisions.hydrogen_proton_elastic_cross_section:evaluate_hydrogen_proton_elastic_cross_section",
+   "arguments": {
+    "args": [],
+    "kwargs": {
+     "energy_ev": {
+      "dtype": "float64",
+      "shape": [
+       3
+      ],
+      "values": [
+       19.999999999999996,
+       20.0,
+       20.000000000000004
+      ]
+     }
+    }
+   },
+   "status": "returned",
+   "returned_fields": null,
+   "exception": null,
+   "warnings": [],
+   "returned_type": "ndarray"
+  },
+  {
+   "seq": 3,
+   "label": "declared grid extended far beyond the fit range",
+   "asset": "scirel.collisions.atomic-hydrogen-elastic-cross-section",
+   "entrypoint": "scirel.collisions.atomic_hydrogen_elastic_cross_section:evaluate_atomic_hydrogen_elastic_cross_section",
+   "arguments": {
+    "args": [],
+    "kwargs": {
+     "energy_ev": {
+      "dtype": "float64",
+      "shape": [
+       7
+      ],
+      "values": [
+       0.03,
+       1.0,
+       10.0,
+       100.0,
+       1000.0,
+       10100.0,
+       10100000.0
+      ]
+     },
+     "viscosity": false
+    }
+   },
+   "status": "returned",
+   "returned_fields": null,
+   "exception": null,
+   "warnings": [],
+   "returned_type": "ndarray"
+  }
+ ],
+ "answer": {
+  "value": {
+   "inside_values_finite": true,
+   "far_energy_ev": 10100000.0,
+   "far_returned": 9.462393144352544e-25,
+   "clamped_to_last_inside": true,
+   "warnings": []
+  },
+  "unit": "m^2"
+ },
+ "independent_check": {
+  "method": "a call far above the declared grid is checked for the declared warning or clamp instead of a silent unqualified value",
+  "observed": {
+   "inside_values_finite": true,
+   "far_energy_ev": 10100000.0,
+   "far_returned": 9.462393144352544e-25,
+   "clamped_to_last_inside": true,
+   "warnings": []
+  },
+  "verdict": "pass"
+ },
+ "criteria": [
+  {
+   "id": "fields",
+   "kind": "contract_fields",
+   "status": "fail",
+   "detail": {
+    "declared": [
+     "cross_section_m2"
+    ],
+    "returned": "a ndarray value, not a mapping",
+    "note": "the contract declares named outputs; this return carries no field names, so the declared output set cannot be observed"
+   }
+  },
+  {
+   "id": "range",
+   "kind": "invariant",
+   "status": "pass",
+   "detail": {
+    "inside_values_finite": true,
+    "far_energy_ev": 10100000.0,
+    "far_returned": 9.462393144352544e-25,
+    "clamped_to_last_inside": true,
+    "warnings": []
+   }
+  },
+  {
+   "id": "readback",
+   "kind": "readback",
+   "status": "pass",
+   "detail": {
+    "reopened": "collisions-cross-sections.json",
+    "problems": [],
+    "stored_call_count": 3
+   }
+  }
+ ],
+ "package_sufficient": true,
+ "sufficient_reason": "the out-of-range behaviour is observable through warnings and values",
+ "gaps": [],
+ "bindings": {
+  "scirel.collisions.atomic-hydrogen-elastic-cross-section": {
+   "symbol": "evaluate_atomic_hydrogen_elastic_cross_section",
+   "args": {
+    "energy_ev": {
+     "dtype": "float64",
+     "shape": [
+      6
+     ],
+     "values": [
+      0.03,
+      1.0,
+      10.0,
+      100.0,
+      1000.0,
+      10100.0
+     ]
+    },
+    "viscosity": false
+   },
+   "example_error": null
+  },
+  "scirel.collisions.proton-atomic-hydrogen-elastic-cross-section": {
+   "symbol": "evaluate_hydrogen_proton_elastic_cross_section",
+   "args": {
+    "energy_ev": {
+     "dtype": "float64",
+     "shape": [
+      3
+     ],
+     "values": [
+      19.999999999999996,
+      20.0,
+      20.000000000000004
+     ]
+    }
+   },
+   "example_error": null
+  }
+ }
+}

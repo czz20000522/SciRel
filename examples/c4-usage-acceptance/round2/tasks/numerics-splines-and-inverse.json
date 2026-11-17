@@ -1,0 +1,34 @@
+{
+ "task_id": "numerics-splines-and-inverse",
+ "kind": "nominal",
+ "domain": "numerics",
+ "crashed": true,
+ "package_sufficient": false,
+ "sufficient_reason": "consumer check raised",
+ "gaps": [
+  {
+   "level": "blocking",
+   "text": "the consumer harness raised IndexError: only integers, slices (`:`), ellipsis (`...`), numpy.newaxis (`None`) and integer or boolean arrays are valid indices"
+  }
+ ],
+ "traceback": "Traceback (most recent call last):\n  File \"<repo>//examples/c4-usage-acceptance/round2/run.py\", line 188, in run_one\n    record = run_task(tid)\n  File \"<repo>//examples/c4-usage-acceptance/round2/run.py\", line 100, in run_task\n    body = fn(ctx, task)\n  File \"<repo>//examples/c4-usage-acceptance/round2/checks/batch1.py\", line 258, in numerics_splines_and_inverse\n    inv = np.asarray(_val(c4)[\"inverse\"])\n                     ~~~~~~~~^^^^^^^^^^^\nIndexError: only integers, slices (`:`), ellipsis (`...`), numpy.newaxis (`None`) and integer or boolean arrays are valid indices\n",
+ "calls": [],
+ "criteria": [
+  {
+   "id": "readback",
+   "kind": "readback",
+   "status": "fail",
+   "detail": {
+    "reopened": "numerics-splines-and-inverse.json",
+    "problems": [
+     "no calls stored",
+     "no answer stored",
+     "no independent check stored"
+    ],
+    "stored_call_count": 0
+   }
+  }
+ ],
+ "answer": null,
+ "independent_check": null
+}

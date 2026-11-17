@@ -1,0 +1,224 @@
+{
+ "task_id": "kinetic-generalized-dispersion",
+ "kind": "nominal",
+ "domain": "kinetic",
+ "subdomain": "generalized dispersion residual and root scan",
+ "question": "Form the generalized dispersion residual at a declared complex point, then run the published root scan over a declared interval and report the roots with the residual each root returns.",
+ "assets_declared": [
+  "scirel.kinetic.generalized-dispersion",
+  "scirel.kinetic.generalized-root-scans"
+ ],
+ "min_calls": 2,
+ "package": {
+  "python": "3.14.7",
+  "numpy": "2.5.4",
+  "scipy": "1.18.1",
+  "mpmath": "1.4.1",
+  "wheel_sha256": "4fc9757a7b843cc3bce2dc96fd2280b27299cff93fbcf5b64a2321b58234f5d7",
+  "snapshot_sha256": "cf0269b61ba19d8b2e5e008a6a4a4d80f2cd701f78c34f2fcb3b16eed9a2593c",
+  "source_revision": "4b5b4aaa38650d8a902e4265f226175d166a426b",
+  "asset_count": 249,
+  "runtime": {
+   "dependencies_bundled": false,
+   "package_version": "0.0.0",
+   "requires_dist": [
+    "numpy==2.5.4",
+    "scipy==1.18.1",
+    "mpmath==1.4.1"
+   ],
+   "requires_python": ">=3.12",
+   "wheel": "scirel-0.0.0-py3-none-any.whl",
+   "wheel_sha256": "4fc9757a7b843cc3bce2dc96fd2280b27299cff93fbcf5b64a2321b58234f5d7"
+  }
+ },
+ "assets_used": [
+  "scirel.kinetic.generalized-dispersion",
+  "scirel.kinetic.generalized-root-scans"
+ ],
+ "calls": [
+  {
+   "seq": 1,
+   "label": "generalized Z and Zp at the example point",
+   "asset": "scirel.kinetic.generalized-dispersion",
+   "entrypoint": "scirel.kinetic.generalized_dispersion:evaluate_generalized_dispersion",
+   "arguments": {
+    "args": [],
+    "kwargs": {
+     "z": {
+      "real": 0.0,
+      "imag": 1.0
+     },
+     "selector": 2,
+     "expression": "exp(-v.^2)/sqrt(pi)",
+     "integration_mesh": null
+    }
+   },
+   "status": "returned",
+   "returned_fields": [
+    "Z",
+    "Zp"
+   ],
+   "exception": null,
+   "warnings": [],
+   "returned_type": "dict"
+  },
+  {
+   "seq": 2,
+   "label": "declared beam root scan",
+   "asset": "scirel.kinetic.generalized-root-scans",
+   "entrypoint": "scirel.kinetic.generalized_dispersion:scan_gpdf_roots",
+   "arguments": {
+    "args": [],
+    "kwargs": {
+     "kind": "beam",
+     "k_values": [
+      0.3,
+      0.295
+     ],
+     "initial_guess": {
+      "real": 1.7677669529663684,
+      "imag": -0.017677669529663684
+     },
+     "residual_tolerance": 1e-09,
+     "max_evaluations": 300,
+     "selector": 0,
+     "expression": "exp(-v.^2)/sqrt(pi)"
+    }
+   },
+   "status": "returned",
+   "returned_fields": [
+    "dielectric_residual",
+    "evaluations",
+    "k",
+    "omega"
+   ],
+   "exception": null,
+   "warnings": [],
+   "returned_type": "dict"
+  }
+ ],
+ "answer": {
+  "value": {
+   "roots": {
+    "dtype": "complex128",
+    "shape": [
+     2
+    ],
+    "real": [
+     1.1965591842398682,
+     1.195903548611945
+    ],
+    "imag": [
+     0.014207211239651336,
+     0.02437826651772314
+    ]
+   },
+   "dielectric_residual": {
+    "dtype": "float64",
+    "shape": [
+     2
+    ],
+    "values": [
+     2.660917568977699e-14,
+     4.1055616668147426e-14
+    ]
+   },
+   "counts": {
+    "k": 2,
+    "omega": 2,
+    "dielectric_residual": 2,
+    "evaluations": 2
+   }
+  },
+  "unit": "dimensionless frequency and residual"
+ },
+ "independent_check": {
+  "method": "lengths of the returned k, omega, residual and evaluation arrays are compared with the requested grid, and every residual is checked finite",
+  "observed": {
+   "max_abs_residual": 4.1055616668147426e-14
+  },
+  "verdict": "pass"
+ },
+ "criteria": [
+  {
+   "id": "fields",
+   "kind": "contract_fields",
+   "status": "pass",
+   "detail": {
+    "declared": [
+     "Z",
+     "Zp"
+    ],
+    "returned": [
+     "Z",
+     "Zp"
+    ]
+   }
+  },
+  {
+   "id": "counts",
+   "kind": "invariant",
+   "status": "pass",
+   "detail": {
+    "lengths": {
+     "k": 2,
+     "omega": 2,
+     "dielectric_residual": 2,
+     "evaluations": 2
+    },
+    "roots_returned": 2,
+    "grid_points_requested": 2,
+    "residuals_finite": true,
+    "max_residual": 4.1055616668147426e-14
+   }
+  },
+  {
+   "id": "readback",
+   "kind": "readback",
+   "status": "pass",
+   "detail": {
+    "reopened": "kinetic-generalized-dispersion.json",
+    "problems": [],
+    "stored_call_count": 2
+   }
+  }
+ ],
+ "package_sufficient": true,
+ "sufficient_reason": "the scan returns one entry per declared grid point and the consumer can check that cardinality from the returned arrays",
+ "gaps": [],
+ "bindings": {
+  "scirel.kinetic.generalized-dispersion": {
+   "symbol": "evaluate_generalized_dispersion",
+   "args": {
+    "z": {
+     "real": 0.0,
+     "imag": 1.0
+    },
+    "selector": 2,
+    "expression": "exp(-v.^2)/sqrt(pi)",
+    "integration_mesh": null
+   },
+   "example_error": null
+  },
+  "scirel.kinetic.generalized-root-scans": {
+   "symbol": "scan_gpdf_roots",
+   "args": {
+    "kind": "beam",
+    "k_values": [
+     0.3,
+     0.295
+    ],
+    "initial_guess": {
+     "real": 1.7677669529663684,
+     "imag": -0.017677669529663684
+    },
+    "residual_tolerance": 1e-09,
+    "max_evaluations": 300,
+    "selector": 0,
+    "expression": "exp(-v.^2)/sqrt(pi)",
+    "parameters": {}
+   },
+   "example_error": null
+  }
+ }
+}

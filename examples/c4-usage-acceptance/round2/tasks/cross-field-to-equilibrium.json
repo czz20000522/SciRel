@@ -1,0 +1,726 @@
+{
+ "task_id": "cross-field-to-equilibrium",
+ "kind": "cross",
+ "domain": "cross",
+ "subdomain": "filament flux to poloidal field to one Picard step",
+ "question": "Build the declared coil flux with the filament Green entry, differentiate it into a poloidal field, and take one declared Picard step driven by the resulting pressure-flux state, reporting the units handed over at each boundary.",
+ "assets_declared": [
+  "scirel.field.circular-filament-green",
+  "scirel.field.poloidal-field-from-flux",
+  "scirel.equilibrium.isotropic-picard-step"
+ ],
+ "min_calls": 3,
+ "package": {
+  "python": "3.14.7",
+  "numpy": "2.5.4",
+  "scipy": "1.18.1",
+  "mpmath": "1.4.1",
+  "wheel_sha256": "4fc9757a7b843cc3bce2dc96fd2280b27299cff93fbcf5b64a2321b58234f5d7",
+  "snapshot_sha256": "cf0269b61ba19d8b2e5e008a6a4a4d80f2cd701f78c34f2fcb3b16eed9a2593c",
+  "source_revision": "4b5b4aaa38650d8a902e4265f226175d166a426b",
+  "asset_count": 249,
+  "runtime": {
+   "dependencies_bundled": false,
+   "package_version": "0.0.0",
+   "requires_dist": [
+    "numpy==2.5.4",
+    "scipy==1.18.1",
+    "mpmath==1.4.1"
+   ],
+   "requires_python": ">=3.12",
+   "wheel": "scirel-0.0.0-py3-none-any.whl",
+   "wheel_sha256": "4fc9757a7b843cc3bce2dc96fd2280b27299cff93fbcf5b64a2321b58234f5d7"
+  }
+ },
+ "assets_used": [
+  "scirel.equilibrium.isotropic-picard-step",
+  "scirel.field.circular-filament-green",
+  "scirel.field.poloidal-field-from-flux"
+ ],
+ "calls": [
+  {
+   "seq": 1,
+   "label": "coil flux per radian evaluated on the poloidal grid",
+   "asset": "scirel.field.circular-filament-green",
+   "entrypoint": "scirel.field.circular_filament_green:circular_filament_green_response",
+   "arguments": {
+    "args": [],
+    "kwargs": {
+     "rzw": [
+      [
+       0.35,
+       0.0,
+       1.0
+      ]
+     ],
+     "rz_pts": {
+      "dtype": "float64",
+      "shape": [
+       9,
+       2
+      ],
+      "values": [
+       [
+        0.0,
+        -0.5
+       ],
+       [
+        0.2,
+        -0.5
+       ],
+       [
+        0.4,
+        -0.5
+       ],
+       [
+        0.0,
+        0.0
+       ],
+       [
+        0.2,
+        0.0
+       ],
+       [
+        0.4,
+        0.0
+       ],
+       [
+        0.0,
+        0.5
+       ],
+       [
+        0.2,
+        0.5
+       ],
+       [
+        0.4,
+        0.5
+       ]
+      ]
+     }
+    }
+   },
+   "status": "returned",
+   "returned_fields": [
+    "gBR",
+    "gBZ",
+    "gpsi"
+   ],
+   "exception": null,
+   "warnings": [],
+   "returned_type": "Result"
+  },
+  {
+   "seq": 2,
+   "label": "flux differentiated into a poloidal field on the same grid",
+   "asset": "scirel.field.poloidal-field-from-flux",
+   "entrypoint": "scirel.field.poloidal_field_from_flux:poloidal_field_from_flux",
+   "arguments": {
+    "args": [],
+    "kwargs": {
+     "r_grid": {
+      "dtype": "float64",
+      "shape": [
+       3,
+       3
+      ],
+      "values": [
+       [
+        0.0,
+        0.2,
+        0.4
+       ],
+       [
+        0.0,
+        0.2,
+        0.4
+       ],
+       [
+        0.0,
+        0.2,
+        0.4
+       ]
+      ]
+     },
+     "z_grid": {
+      "dtype": "float64",
+      "shape": [
+       3,
+       3
+      ],
+      "values": [
+       [
+        -0.5,
+        -0.5,
+        -0.5
+       ],
+       [
+        0.0,
+        0.0,
+        0.0
+       ],
+       [
+        0.5,
+        0.5,
+        0.5
+       ]
+      ]
+     },
+     "psi": {
+      "dtype": "float64",
+      "shape": [
+       3,
+       3
+      ],
+      "values": [
+       [
+        0.0,
+        6.150142841727309e-09,
+        1.837137164602073e-08
+       ],
+       [
+        0.0,
+        4.148665387939705e-08,
+        1.5750045416660935e-07
+       ],
+       [
+        0.0,
+        6.150142841727309e-09,
+        1.837137164602073e-08
+       ]
+      ]
+     }
+    }
+   },
+   "status": "returned",
+   "returned_fields": [
+    "B",
+    "B_R",
+    "B_Z"
+   ],
+   "exception": null,
+   "warnings": [],
+   "returned_type": "Result"
+  },
+  {
+   "seq": 3,
+   "label": "one Picard step consuming the same flux array",
+   "asset": "scirel.equilibrium.isotropic-picard-step",
+   "entrypoint": "scirel.equilibrium.isotropic_picard_step:pressure_flux_picard_step",
+   "arguments": {
+    "args": [],
+    "kwargs": {
+     "r_grid": {
+      "dtype": "float64",
+      "shape": [
+       2,
+       2
+      ],
+      "values": [
+       [
+        1.0,
+        2.0
+       ],
+       [
+        1.0,
+        2.0
+       ]
+      ]
+     },
+     "z_grid": {
+      "dtype": "float64",
+      "shape": [
+       2,
+       2
+      ],
+      "values": [
+       [
+        -1.0,
+        -1.0
+       ],
+       [
+        1.0,
+        1.0
+       ]
+      ]
+     },
+     "psi_state": {
+      "dtype": "float64",
+      "shape": [
+       3,
+       3
+      ],
+      "values": [
+       [
+        0.0,
+        6.150142841727309e-09,
+        1.837137164602073e-08
+       ],
+       [
+        0.0,
+        4.148665387939705e-08,
+        1.5750045416660935e-07
+       ],
+       [
+        0.0,
+        6.150142841727309e-09,
+        1.837137164602073e-08
+       ]
+      ]
+     },
+     "psi_vac": {
+      "dtype": "float64",
+      "shape": [
+       3,
+       3
+      ],
+      "values": [
+       [
+        0.0,
+        6.150142841727309e-09,
+        1.837137164602073e-08
+       ],
+       [
+        0.0,
+        4.148665387939705e-08,
+        1.5750045416660935e-07
+       ],
+       [
+        0.0,
+        6.150142841727309e-09,
+        1.837137164602073e-08
+       ]
+      ]
+     },
+     "g_psi": {
+      "dtype": "float64",
+      "shape": [
+       4,
+       4
+      ],
+      "values": [
+       [
+        1.0,
+        0.0,
+        0.0,
+        0.0
+       ],
+       [
+        0.0,
+        1.0,
+        0.0,
+        0.0
+       ],
+       [
+        0.0,
+        0.0,
+        1.0,
+        0.0
+       ],
+       [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+       ]
+      ]
+     },
+     "pressure_derivative": [
+      1.0,
+      2.0,
+      3.0,
+      4.0
+     ],
+     "psi_edge": 2.0,
+     "currents_old": [
+      10.0,
+      20.0,
+      30.0,
+      40.0
+     ],
+     "relax": 0.25
+    }
+   },
+   "status": "raised",
+   "returned_fields": null,
+   "exception": {
+    "type": "ValueError",
+    "module": "builtins",
+    "message": "r_grid, z_grid, psi_state and psi_vac must be same-shape [Z,R] grids",
+    "qualname": "builtins.ValueError"
+   },
+   "warnings": []
+  }
+ ],
+ "answer": {
+  "value": {
+   "grid_shape": [
+    3,
+    3
+   ],
+   "B_R_vs_finite_difference_relative": 0.0,
+   "B_Z_vs_finite_difference_relative": 0.0,
+   "unit_in": "Wb/rad",
+   "unit_out": "T",
+   "convention": "B_R=-dpsi/dz/R, B_Z=dpsi/dr/R on the same grid",
+   "handoff_within_discretisation": true,
+   "picard_status": "raised"
+  },
+  "unit": "Wb/rad handed over as T"
+ },
+ "independent_check": {
+  "method": "the derivative's B_R/B_Z are compared with finite differences of the same flux on the same grid, and the identical array is handed to the Picard step",
+  "observed": {
+   "grid_shape": [
+    3,
+    3
+   ],
+   "B_R_vs_finite_difference_relative": 0.0,
+   "B_Z_vs_finite_difference_relative": 0.0,
+   "unit_in": "Wb/rad",
+   "unit_out": "T",
+   "convention": "B_R=-dpsi/dz/R, B_Z=dpsi/dr/R on the same grid",
+   "handoff_within_discretisation": true,
+   "picard_status": "raised"
+  },
+  "verdict": "fail"
+ },
+ "criteria": [
+  {
+   "id": "fields",
+   "kind": "contract_fields",
+   "status": "pass",
+   "detail": {
+    "declared": [
+     "gBR",
+     "gBZ",
+     "gpsi"
+    ],
+    "returned": [
+     "gBR",
+     "gBZ",
+     "gpsi"
+    ]
+   }
+  },
+  {
+   "id": "fields_poloidal",
+   "kind": "contract_fields",
+   "status": "pass",
+   "detail": {
+    "declared": [
+     "B",
+     "B_R",
+     "B_Z"
+    ],
+    "returned": [
+     "B",
+     "B_R",
+     "B_Z"
+    ]
+   }
+  },
+  {
+   "id": "fields_step",
+   "kind": "contract_fields",
+   "status": "fail",
+   "detail": {
+    "declared": [
+     "plasma_currents",
+     "psi_next",
+     "residual"
+    ],
+    "returned": "raised",
+    "exception": {
+     "type": "ValueError",
+     "module": "builtins",
+     "message": "r_grid, z_grid, psi_state and psi_vac must be same-shape [Z,R] grids",
+     "qualname": "builtins.ValueError"
+    }
+   }
+  },
+  {
+   "id": "handoff",
+   "kind": "invariant",
+   "status": "fail",
+   "detail": {
+    "grid_shape": [
+     3,
+     3
+    ],
+    "B_R_vs_finite_difference_relative": 0.0,
+    "B_Z_vs_finite_difference_relative": 0.0,
+    "unit_in": "Wb/rad",
+    "unit_out": "T",
+    "convention": "B_R=-dpsi/dz/R, B_Z=dpsi/dr/R on the same grid",
+    "handoff_within_discretisation": true,
+    "picard_status": "raised"
+   }
+  },
+  {
+   "id": "budget",
+   "kind": "tolerance",
+   "status": "fail",
+   "detail": {
+    "grid_shape": [
+     3,
+     3
+    ],
+    "B_R_vs_finite_difference_relative": 0.0,
+    "B_Z_vs_finite_difference_relative": 0.0,
+    "unit_in": "Wb/rad",
+    "unit_out": "T",
+    "convention": "B_R=-dpsi/dz/R, B_Z=dpsi/dr/R on the same grid",
+    "handoff_within_discretisation": true,
+    "picard_status": "raised",
+    "declared_tolerance": {
+     "rel": 1e-12,
+     "abs": 0.0
+    },
+    "note": "the flux is passed as an array, so 1e-12 applies to the handoff itself; the 1e-2 number above is the finite-difference discretisation of the derivative"
+   }
+  },
+  {
+   "id": "readback",
+   "kind": "readback",
+   "status": "pass",
+   "detail": {
+    "reopened": "cross-field-to-equilibrium.json",
+    "problems": [],
+    "stored_call_count": 3
+   }
+  }
+ ],
+ "package_sufficient": false,
+ "sufficient_reason": "both sides take plain arrays plus declared grids, so the handoff is observable end to end",
+ "gaps": [
+  {
+   "level": "confidence",
+   "text": "the derivative entry differentiates a supplied flux, so the comparison against finite differences carries discretisation error; the exact handoff (array identity) is what the 1e-12 budget covers"
+  }
+ ],
+ "bindings": {
+  "scirel.field.circular-filament-green": {
+   "symbol": "circular_filament_green_response",
+   "args": {
+    "rzw": [
+     [
+      0.35,
+      0.0,
+      1.0
+     ]
+    ],
+    "rz_pts": [
+     [
+      0.2,
+      -0.1
+     ],
+     [
+      0.2,
+      0.1
+     ]
+    ]
+   },
+   "example_error": null
+  },
+  "scirel.field.poloidal-field-from-flux": {
+   "symbol": "poloidal_field_from_flux",
+   "args": {
+    "r_grid": {
+     "dtype": "float64",
+     "shape": [
+      3,
+      3
+     ],
+     "values": [
+      [
+       0.0,
+       0.2,
+       0.4
+      ],
+      [
+       0.0,
+       0.2,
+       0.4
+      ],
+      [
+       0.0,
+       0.2,
+       0.4
+      ]
+     ]
+    },
+    "z_grid": {
+     "dtype": "float64",
+     "shape": [
+      3,
+      3
+     ],
+     "values": [
+      [
+       -0.5,
+       -0.5,
+       -0.5
+      ],
+      [
+       0.0,
+       0.0,
+       0.0
+      ],
+      [
+       0.5,
+       0.5,
+       0.5
+      ]
+     ]
+    },
+    "psi": {
+     "dtype": "float64",
+     "shape": [
+      3,
+      3
+     ],
+     "values": [
+      [
+       0.0,
+       0.04000000000000001,
+       0.16000000000000003
+      ],
+      [
+       0.0,
+       0.04000000000000001,
+       0.16000000000000003
+      ],
+      [
+       0.0,
+       0.04000000000000001,
+       0.16000000000000003
+      ]
+     ]
+    }
+   },
+   "example_error": null
+  },
+  "scirel.equilibrium.isotropic-picard-step": {
+   "symbol": "pressure_flux_picard_step",
+   "args": {
+    "r_grid": {
+     "dtype": "float64",
+     "shape": [
+      2,
+      2
+     ],
+     "values": [
+      [
+       1.0,
+       2.0
+      ],
+      [
+       1.0,
+       2.0
+      ]
+     ]
+    },
+    "z_grid": {
+     "dtype": "float64",
+     "shape": [
+      2,
+      2
+     ],
+     "values": [
+      [
+       -1.0,
+       -1.0
+      ],
+      [
+       1.0,
+       1.0
+      ]
+     ]
+    },
+    "psi_state": {
+     "dtype": "float64",
+     "shape": [
+      2,
+      2
+     ],
+     "values": [
+      [
+       0.0,
+       0.0
+      ],
+      [
+       0.0,
+       0.0
+      ]
+     ]
+    },
+    "psi_vac": {
+     "dtype": "float64",
+     "shape": [
+      2,
+      2
+     ],
+     "values": [
+      [
+       1.0,
+       1.0
+      ],
+      [
+       1.0,
+       1.0
+      ]
+     ]
+    },
+    "g_psi": {
+     "dtype": "float64",
+     "shape": [
+      4,
+      4
+     ],
+     "values": [
+      [
+       1.0,
+       0.0,
+       0.0,
+       0.0
+      ],
+      [
+       0.0,
+       1.0,
+       0.0,
+       0.0
+      ],
+      [
+       0.0,
+       0.0,
+       1.0,
+       0.0
+      ],
+      [
+       0.0,
+       0.0,
+       0.0,
+       1.0
+      ]
+     ]
+    },
+    "pressure_derivative": [
+     1.0,
+     2.0,
+     3.0,
+     4.0
+    ],
+    "psi_edge": 2.0,
+    "currents_old": [
+     10.0,
+     20.0,
+     30.0,
+     40.0
+    ],
+    "relax": 0.25
+   },
+   "example_error": null
+  }
+ }
+}

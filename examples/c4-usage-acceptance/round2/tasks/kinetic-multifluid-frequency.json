@@ -1,0 +1,1043 @@
+{
+ "task_id": "kinetic-multifluid-frequency",
+ "kind": "nominal",
+ "domain": "kinetic",
+ "subdomain": "multifluid deck, frequency solve and scan",
+ "question": "Assemble a declared multifluid deck, solve its frequency at one declared wavenumber, and scan the same deck, reporting whether the solved frequency agrees with the scan point at that wavenumber.",
+ "assets_declared": [
+  "scirel.kinetic.multifluid-deck",
+  "scirel.kinetic.multifluid-frequency-solve",
+  "scirel.kinetic.multifluid-scan"
+ ],
+ "min_calls": 3,
+ "package": {
+  "python": "3.14.7",
+  "numpy": "2.5.4",
+  "scipy": "1.18.1",
+  "mpmath": "1.4.1",
+  "wheel_sha256": "4fc9757a7b843cc3bce2dc96fd2280b27299cff93fbcf5b64a2321b58234f5d7",
+  "snapshot_sha256": "cf0269b61ba19d8b2e5e008a6a4a4d80f2cd701f78c34f2fcb3b16eed9a2593c",
+  "source_revision": "4b5b4aaa38650d8a902e4265f226175d166a426b",
+  "asset_count": 249,
+  "runtime": {
+   "dependencies_bundled": false,
+   "package_version": "0.0.0",
+   "requires_dist": [
+    "numpy==2.5.4",
+    "scipy==1.18.1",
+    "mpmath==1.4.1"
+   ],
+   "requires_python": ">=3.12",
+   "wheel": "scirel-0.0.0-py3-none-any.whl",
+   "wheel_sha256": "4fc9757a7b843cc3bce2dc96fd2280b27299cff93fbcf5b64a2321b58234f5d7"
+  }
+ },
+ "assets_used": [
+  "scirel.kinetic.multifluid-deck",
+  "scirel.kinetic.multifluid-frequency-solve",
+  "scirel.kinetic.multifluid-scan"
+ ],
+ "calls": [
+  {
+   "seq": 1,
+   "label": "declared deck",
+   "asset": "scirel.kinetic.multifluid-deck",
+   "entrypoint": "scirel.kinetic.dispersion.multifluid:fluid_deck",
+   "arguments": {
+    "args": [],
+    "kwargs": {}
+   },
+   "status": "returned",
+   "returned_fields": null,
+   "exception": null,
+   "warnings": [],
+   "returned_type": "ndarray"
+  },
+  {
+   "seq": 2,
+   "label": "single-point solve from the contract example",
+   "asset": "scirel.kinetic.multifluid-frequency-solve",
+   "entrypoint": "scirel.kinetic.dispersion.multifluid:fluid_solve_state",
+   "arguments": {
+    "args": [],
+    "kwargs": {
+     "state": {
+      "q": {
+       "dtype": "float64",
+       "shape": [
+        2
+       ],
+       "values": [
+        -1.602e-19,
+        1.602e-19
+       ]
+      },
+      "m": {
+       "dtype": "float64",
+       "shape": [
+        2
+       ],
+       "values": [
+        9.109e-31,
+        1.673e-27
+       ]
+      },
+      "n": {
+       "dtype": "float64",
+       "shape": [
+        2
+       ],
+       "values": [
+        8700000.0,
+        8700000.0
+       ]
+      },
+      "v": {
+       "dtype": "float64",
+       "shape": [
+        2,
+        3
+       ],
+       "values": [
+        [
+         0.0,
+         0.0,
+         0.0
+        ],
+        [
+         0.0,
+         0.0,
+         0.0
+        ]
+       ]
+      },
+      "csz2": {
+       "dtype": "float64",
+       "shape": [
+        2
+       ],
+       "values": [
+        836944900.0,
+        456570.49000000005
+       ]
+      },
+      "csp2": {
+       "dtype": "float64",
+       "shape": [
+        2
+       ],
+       "values": [
+        836944900.0,
+        456570.49000000005
+       ]
+      },
+      "epsnx": {
+       "dtype": "float64",
+       "shape": [
+        2
+       ],
+       "values": [
+        0.0,
+        0.0
+       ]
+      },
+      "epsny": {
+       "dtype": "float64",
+       "shape": [
+        2
+       ],
+       "values": [
+        0.0,
+        0.0
+       ]
+      },
+      "rho": {
+       "dtype": "float64",
+       "shape": [
+        2
+       ],
+       "values": [
+        7.924829999999999e-24,
+        1.4555100000000002e-20
+       ]
+      },
+      "B0": 1e-07,
+      "gamma": {
+       "dtype": "float64",
+       "shape": [
+        2
+       ],
+       "values": [
+        1.6666666666666667,
+        1.6666666666666667
+       ]
+      },
+      "c2": 8.98740441e+16,
+      "epsilon0": 8.854e-12,
+      "mu0": 1.256684325192884e-06,
+      "Pz": {
+       "dtype": "float64",
+       "shape": [
+        2
+       ],
+       "values": [
+        3.9795876311202e-15,
+        3.987257483399401e-15
+       ]
+      },
+      "Pp": {
+       "dtype": "float64",
+       "shape": [
+        2
+       ],
+       "values": [
+        3.9795876311202e-15,
+        3.987257483399401e-15
+       ]
+      },
+      "Delta": {
+       "dtype": "float64",
+       "shape": [
+        2
+       ],
+       "values": [
+        0.0,
+        0.0
+       ]
+      },
+      "pressure_frame": "field_following",
+      "beta_z": {
+       "dtype": "float64",
+       "shape": [
+        2
+       ],
+       "values": [
+        1.0002170793520474e-06,
+        1.0021447959792108e-06
+       ]
+      },
+      "beta_p": {
+       "dtype": "float64",
+       "shape": [
+        2
+       ],
+       "values": [
+        1.0002170793520474e-06,
+        1.0021447959792108e-06
+       ]
+      },
+      "vA_species": {
+       "dtype": "float64",
+       "shape": [
+        2
+       ],
+       "values": [
+        31687787.981641937,
+        739399.7581117335
+       ]
+      },
+      "velocity_collision": {
+       "dtype": "float64",
+       "shape": [
+        2,
+        2
+       ],
+       "values": [
+        [
+         -0.0,
+         0.0
+        ],
+        [
+         0.0,
+         -0.0
+        ]
+       ]
+      },
+      "charge_density": 0.0,
+      "current_density": {
+       "dtype": "float64",
+       "shape": [
+        3
+       ],
+       "values": [
+        0.0,
+        0.0,
+        0.0
+       ]
+      }
+     },
+     "kx": 1e-05,
+     "kz": 2e-05,
+     "relativistic": false,
+     "state_scales": null,
+     "backward_tolerance": 1e-10
+    }
+   },
+   "status": "returned",
+   "returned_fields": [
+    "A",
+    "M",
+    "X1",
+    "X2",
+    "componentwise_backward_errors",
+    "refinement",
+    "state_scales",
+    "w1",
+    "w2",
+    "wcs",
+    "wps",
+    "zero_structure"
+   ],
+   "exception": null,
+   "warnings": [],
+   "returned_type": "dict"
+  },
+  {
+   "seq": 3,
+   "label": "declared two-point scan",
+   "asset": "scirel.kinetic.multifluid-scan",
+   "entrypoint": "scirel.kinetic.dispersion.multifluid:scan_fluid_corrected",
+   "arguments": {
+    "args": [],
+    "kwargs": {
+     "inputs": {
+      "state": {
+       "q": {
+        "dtype": "float64",
+        "shape": [
+         2
+        ],
+        "values": [
+         -1.602e-19,
+         1.602e-19
+        ]
+       },
+       "m": {
+        "dtype": "float64",
+        "shape": [
+         2
+        ],
+        "values": [
+         9.109e-31,
+         1.673e-27
+        ]
+       },
+       "n": {
+        "dtype": "float64",
+        "shape": [
+         2
+        ],
+        "values": [
+         8700000.0,
+         8700000.0
+        ]
+       },
+       "v": {
+        "dtype": "float64",
+        "shape": [
+         2,
+         3
+        ],
+        "values": [
+         [
+          "<depth-limit>",
+          "<depth-limit>",
+          "<depth-limit>"
+         ],
+         [
+          "<depth-limit>",
+          "<depth-limit>",
+          "<depth-limit>"
+         ]
+        ]
+       },
+       "csz2": {
+        "dtype": "float64",
+        "shape": [
+         2
+        ],
+        "values": [
+         836944900.0,
+         456570.49000000005
+        ]
+       },
+       "csp2": {
+        "dtype": "float64",
+        "shape": [
+         2
+        ],
+        "values": [
+         836944900.0,
+         456570.49000000005
+        ]
+       },
+       "epsnx": {
+        "dtype": "float64",
+        "shape": [
+         2
+        ],
+        "values": [
+         0.0,
+         0.0
+        ]
+       },
+       "epsny": {
+        "dtype": "float64",
+        "shape": [
+         2
+        ],
+        "values": [
+         0.0,
+         0.0
+        ]
+       },
+       "rho": {
+        "dtype": "float64",
+        "shape": [
+         2
+        ],
+        "values": [
+         7.924829999999999e-24,
+         1.4555100000000002e-20
+        ]
+       },
+       "B0": 1e-07,
+       "gamma": {
+        "dtype": "float64",
+        "shape": [
+         2
+        ],
+        "values": [
+         1.6666666666666667,
+         1.6666666666666667
+        ]
+       },
+       "c2": 8.98740441e+16,
+       "epsilon0": 8.854e-12,
+       "mu0": 1.256684325192884e-06,
+       "Pz": {
+        "dtype": "float64",
+        "shape": [
+         2
+        ],
+        "values": [
+         3.9795876311202e-15,
+         3.987257483399401e-15
+        ]
+       },
+       "Pp": {
+        "dtype": "float64",
+        "shape": [
+         2
+        ],
+        "values": [
+         3.9795876311202e-15,
+         3.987257483399401e-15
+        ]
+       },
+       "Delta": {
+        "dtype": "float64",
+        "shape": [
+         2
+        ],
+        "values": [
+         0.0,
+         0.0
+        ]
+       },
+       "pressure_frame": "field_following",
+       "beta_z": {
+        "dtype": "float64",
+        "shape": [
+         2
+        ],
+        "values": [
+         1.0002170793520474e-06,
+         1.0021447959792108e-06
+        ]
+       },
+       "beta_p": {
+        "dtype": "float64",
+        "shape": [
+         2
+        ],
+        "values": [
+         1.0002170793520474e-06,
+         1.0021447959792108e-06
+        ]
+       },
+       "vA_species": {
+        "dtype": "float64",
+        "shape": [
+         2
+        ],
+        "values": [
+         31687787.981641937,
+         739399.7581117335
+        ]
+       },
+       "velocity_collision": {
+        "dtype": "float64",
+        "shape": [
+         2,
+         2
+        ],
+        "values": [
+         [
+          "<depth-limit>",
+          "<depth-limit>"
+         ],
+         [
+          "<depth-limit>",
+          "<depth-limit>"
+         ]
+        ]
+       },
+       "charge_density": 0.0,
+       "current_density": {
+        "dtype": "float64",
+        "shape": [
+         3
+        ],
+        "values": [
+         0.0,
+         0.0,
+         0.0
+        ]
+       }
+      },
+      "method": 2,
+      "grid_controls": {
+       "scan_k": [
+        1e-05,
+        2e-05
+       ]
+      }
+     }
+    }
+   },
+   "status": "returned",
+   "returned_fields": [
+    "axis_names",
+    "axis_values",
+    "kx",
+    "kz",
+    "points",
+    "w1",
+    "w2"
+   ],
+   "exception": null,
+   "warnings": [],
+   "returned_type": "dict"
+  }
+ ],
+ "answer": {
+  "value": {},
+  "unit": "k, kx, kz in m^-1; theta in rad; omega in rad/s"
+ },
+ "independent_check": {
+  "method": "kx and kz are recomputed from the returned k and the declared theta and compared with the returned components",
+  "observed": {},
+  "verdict": "fail"
+ },
+ "criteria": [
+  {
+   "id": "fields",
+   "kind": "contract_fields",
+   "status": "fail",
+   "detail": {
+    "declared": [
+     "result"
+    ],
+    "returned": [
+     "axis_names",
+     "axis_values",
+     "kx",
+     "kz",
+     "points",
+     "w1",
+     "w2"
+    ]
+   }
+  },
+  {
+   "id": "declared_grid",
+   "kind": "invariant",
+   "status": "fail",
+   "detail": {}
+  },
+  {
+   "id": "budget",
+   "kind": "tolerance",
+   "status": "not-run",
+   "detail": {
+    "why": "the declared budget relates a non-iterative evaluation to the scanned one, but the delivered records of the two entries do not share a named field for the same quantity",
+    "declared_tolerance": {
+     "rel": 1e-10,
+     "abs": 0.0
+    }
+   }
+  },
+  {
+   "id": "readback",
+   "kind": "readback",
+   "status": "pass",
+   "detail": {
+    "reopened": "kinetic-multifluid-frequency.json",
+    "problems": [],
+    "stored_call_count": 3
+   }
+  }
+ ],
+ "package_sufficient": false,
+ "sufficient_reason": "the grid relation is verified; the tolerance criterion's two paths do not expose a common named field",
+ "gaps": [
+  {
+   "level": "confidence",
+   "text": "the scan and the single-point solve report different payload shapes, so the declared 1e-10 agreement between them was not evaluated"
+  }
+ ],
+ "bindings": {
+  "scirel.kinetic.multifluid-deck": {
+   "symbol": "fluid_deck",
+   "args": {},
+   "example_error": null
+  },
+  "scirel.kinetic.multifluid-frequency-solve": {
+   "symbol": "fluid_solve_state",
+   "args": {
+    "state": {
+     "q": {
+      "dtype": "float64",
+      "shape": [
+       2
+      ],
+      "values": [
+       -1.602e-19,
+       1.602e-19
+      ]
+     },
+     "m": {
+      "dtype": "float64",
+      "shape": [
+       2
+      ],
+      "values": [
+       9.109e-31,
+       1.673e-27
+      ]
+     },
+     "n": {
+      "dtype": "float64",
+      "shape": [
+       2
+      ],
+      "values": [
+       8700000.0,
+       8700000.0
+      ]
+     },
+     "v": {
+      "dtype": "float64",
+      "shape": [
+       2,
+       3
+      ],
+      "values": [
+       [
+        0.0,
+        0.0,
+        0.0
+       ],
+       [
+        0.0,
+        0.0,
+        0.0
+       ]
+      ]
+     },
+     "csz2": {
+      "dtype": "float64",
+      "shape": [
+       2
+      ],
+      "values": [
+       836944900.0,
+       456570.49000000005
+      ]
+     },
+     "csp2": {
+      "dtype": "float64",
+      "shape": [
+       2
+      ],
+      "values": [
+       836944900.0,
+       456570.49000000005
+      ]
+     },
+     "epsnx": {
+      "dtype": "float64",
+      "shape": [
+       2
+      ],
+      "values": [
+       0.0,
+       0.0
+      ]
+     },
+     "epsny": {
+      "dtype": "float64",
+      "shape": [
+       2
+      ],
+      "values": [
+       0.0,
+       0.0
+      ]
+     },
+     "rho": {
+      "dtype": "float64",
+      "shape": [
+       2
+      ],
+      "values": [
+       7.924829999999999e-24,
+       1.4555100000000002e-20
+      ]
+     },
+     "B0": 1e-07,
+     "gamma": {
+      "dtype": "float64",
+      "shape": [
+       2
+      ],
+      "values": [
+       1.6666666666666667,
+       1.6666666666666667
+      ]
+     },
+     "c2": 8.98740441e+16,
+     "epsilon0": 8.854e-12,
+     "mu0": 1.256684325192884e-06,
+     "Pz": {
+      "dtype": "float64",
+      "shape": [
+       2
+      ],
+      "values": [
+       3.9795876311202e-15,
+       3.987257483399401e-15
+      ]
+     },
+     "Pp": {
+      "dtype": "float64",
+      "shape": [
+       2
+      ],
+      "values": [
+       3.9795876311202e-15,
+       3.987257483399401e-15
+      ]
+     },
+     "Delta": {
+      "dtype": "float64",
+      "shape": [
+       2
+      ],
+      "values": [
+       0.0,
+       0.0
+      ]
+     },
+     "pressure_frame": "field_following",
+     "beta_z": {
+      "dtype": "float64",
+      "shape": [
+       2
+      ],
+      "values": [
+       1.0002170793520474e-06,
+       1.0021447959792108e-06
+      ]
+     },
+     "beta_p": {
+      "dtype": "float64",
+      "shape": [
+       2
+      ],
+      "values": [
+       1.0002170793520474e-06,
+       1.0021447959792108e-06
+      ]
+     },
+     "vA_species": {
+      "dtype": "float64",
+      "shape": [
+       2
+      ],
+      "values": [
+       31687787.981641937,
+       739399.7581117335
+      ]
+     },
+     "velocity_collision": {
+      "dtype": "float64",
+      "shape": [
+       2,
+       2
+      ],
+      "values": [
+       [
+        -0.0,
+        0.0
+       ],
+       [
+        0.0,
+        -0.0
+       ]
+      ]
+     },
+     "charge_density": 0.0,
+     "current_density": {
+      "dtype": "float64",
+      "shape": [
+       3
+      ],
+      "values": [
+       0.0,
+       0.0,
+       0.0
+      ]
+     }
+    },
+    "kx": 1e-05,
+    "kz": 2e-05,
+    "relativistic": false,
+    "state_scales": null,
+    "backward_tolerance": 1e-10
+   },
+   "example_error": null
+  },
+  "scirel.kinetic.multifluid-scan": {
+   "symbol": "scan_fluid_corrected",
+   "args": {
+    "inputs": {
+     "state": {
+      "q": {
+       "dtype": "float64",
+       "shape": [
+        2
+       ],
+       "values": [
+        -1.602e-19,
+        1.602e-19
+       ]
+      },
+      "m": {
+       "dtype": "float64",
+       "shape": [
+        2
+       ],
+       "values": [
+        9.109e-31,
+        1.673e-27
+       ]
+      },
+      "n": {
+       "dtype": "float64",
+       "shape": [
+        2
+       ],
+       "values": [
+        8700000.0,
+        8700000.0
+       ]
+      },
+      "v": {
+       "dtype": "float64",
+       "shape": [
+        2,
+        3
+       ],
+       "values": [
+        [
+         0.0,
+         0.0,
+         0.0
+        ],
+        [
+         0.0,
+         0.0,
+         0.0
+        ]
+       ]
+      },
+      "csz2": {
+       "dtype": "float64",
+       "shape": [
+        2
+       ],
+       "values": [
+        836944900.0,
+        456570.49000000005
+       ]
+      },
+      "csp2": {
+       "dtype": "float64",
+       "shape": [
+        2
+       ],
+       "values": [
+        836944900.0,
+        456570.49000000005
+       ]
+      },
+      "epsnx": {
+       "dtype": "float64",
+       "shape": [
+        2
+       ],
+       "values": [
+        0.0,
+        0.0
+       ]
+      },
+      "epsny": {
+       "dtype": "float64",
+       "shape": [
+        2
+       ],
+       "values": [
+        0.0,
+        0.0
+       ]
+      },
+      "rho": {
+       "dtype": "float64",
+       "shape": [
+        2
+       ],
+       "values": [
+        7.924829999999999e-24,
+        1.4555100000000002e-20
+       ]
+      },
+      "B0": 1e-07,
+      "gamma": {
+       "dtype": "float64",
+       "shape": [
+        2
+       ],
+       "values": [
+        1.6666666666666667,
+        1.6666666666666667
+       ]
+      },
+      "c2": 8.98740441e+16,
+      "epsilon0": 8.854e-12,
+      "mu0": 1.256684325192884e-06,
+      "Pz": {
+       "dtype": "float64",
+       "shape": [
+        2
+       ],
+       "values": [
+        3.9795876311202e-15,
+        3.987257483399401e-15
+       ]
+      },
+      "Pp": {
+       "dtype": "float64",
+       "shape": [
+        2
+       ],
+       "values": [
+        3.9795876311202e-15,
+        3.987257483399401e-15
+       ]
+      },
+      "Delta": {
+       "dtype": "float64",
+       "shape": [
+        2
+       ],
+       "values": [
+        0.0,
+        0.0
+       ]
+      },
+      "pressure_frame": "field_following",
+      "beta_z": {
+       "dtype": "float64",
+       "shape": [
+        2
+       ],
+       "values": [
+        1.0002170793520474e-06,
+        1.0021447959792108e-06
+       ]
+      },
+      "beta_p": {
+       "dtype": "float64",
+       "shape": [
+        2
+       ],
+       "values": [
+        1.0002170793520474e-06,
+        1.0021447959792108e-06
+       ]
+      },
+      "vA_species": {
+       "dtype": "float64",
+       "shape": [
+        2
+       ],
+       "values": [
+        31687787.981641937,
+        739399.7581117335
+       ]
+      },
+      "velocity_collision": {
+       "dtype": "float64",
+       "shape": [
+        2,
+        2
+       ],
+       "values": [
+        [
+         -0.0,
+         0.0
+        ],
+        [
+         0.0,
+         -0.0
+        ]
+       ]
+      },
+      "charge_density": 0.0,
+      "current_density": {
+       "dtype": "float64",
+       "shape": [
+        3
+       ],
+       "values": [
+        0.0,
+        0.0,
+        0.0
+       ]
+      }
+     },
+     "method": 2,
+     "grid_controls": {
+      "scan_k": [
+       1e-05,
+       2e-05
+      ]
+     }
+    }
+   },
+   "example_error": null
+  }
+ }
+}

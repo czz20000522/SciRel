@@ -1,0 +1,254 @@
+{
+ "task_id": "source-zero-width-sentinel",
+ "kind": "nominal",
+ "domain": "source",
+ "subdomain": "declared sentinel behaviour for a degenerate width",
+ "question": "Generate a declared Gaussian profile with zero width and report what the entry returns, checking whether the declared all-NaN sentinel reached the caller instead of a narrow peak or a rejection.",
+ "assets_declared": [
+  "scirel.source.gaussian"
+ ],
+ "min_calls": 2,
+ "package": {
+  "python": "3.14.7",
+  "numpy": "2.5.4",
+  "scipy": "1.18.1",
+  "mpmath": "1.4.1",
+  "wheel_sha256": "4fc9757a7b843cc3bce2dc96fd2280b27299cff93fbcf5b64a2321b58234f5d7",
+  "snapshot_sha256": "cf0269b61ba19d8b2e5e008a6a4a4d80f2cd701f78c34f2fcb3b16eed9a2593c",
+  "source_revision": "4b5b4aaa38650d8a902e4265f226175d166a426b",
+  "asset_count": 249,
+  "runtime": {
+   "dependencies_bundled": false,
+   "package_version": "0.0.0",
+   "requires_dist": [
+    "numpy==2.5.4",
+    "scipy==1.18.1",
+    "mpmath==1.4.1"
+   ],
+   "requires_python": ">=3.12",
+   "wheel": "scirel-0.0.0-py3-none-any.whl",
+   "wheel_sha256": "4fc9757a7b843cc3bce2dc96fd2280b27299cff93fbcf5b64a2321b58234f5d7"
+  }
+ },
+ "assets_used": [
+  "scirel.source.gaussian"
+ ],
+ "calls": [
+  {
+   "seq": 1,
+   "label": "declared finite-width control",
+   "asset": "scirel.source.gaussian",
+   "entrypoint": "scirel.source.gaussian:gaussian_profile",
+   "arguments": {
+    "args": [],
+    "kwargs": {
+     "rho_norm": {
+      "dtype": "float64",
+      "shape": [
+       2
+      ],
+      "values": [
+       0.2,
+       0.6
+      ]
+     },
+     "vpr": {
+      "dtype": "float64",
+      "shape": [
+       2
+      ],
+      "values": [
+       2.0,
+       3.0
+      ]
+     },
+     "drho_norm": {
+      "dtype": "float64",
+      "shape": [
+       2
+      ],
+      "values": [
+       0.4,
+       0.6
+      ]
+     },
+     "center": 0.5,
+     "width": 0.2,
+     "total": 4.0
+    }
+   },
+   "status": "returned",
+   "returned_fields": null,
+   "exception": null,
+   "warnings": [],
+   "returned_type": "ndarray"
+  },
+  {
+   "seq": 2,
+   "label": "declared zero-width sentinel",
+   "asset": "scirel.source.gaussian",
+   "entrypoint": "scirel.source.gaussian:gaussian_profile",
+   "arguments": {
+    "args": [],
+    "kwargs": {
+     "rho_norm": {
+      "dtype": "float64",
+      "shape": [
+       2
+      ],
+      "values": [
+       0.2,
+       0.6
+      ]
+     },
+     "vpr": {
+      "dtype": "float64",
+      "shape": [
+       2
+      ],
+      "values": [
+       2.0,
+       3.0
+      ]
+     },
+     "drho_norm": {
+      "dtype": "float64",
+      "shape": [
+       2
+      ],
+      "values": [
+       0.4,
+       0.6
+      ]
+     },
+     "center": 0.5,
+     "width": 0.0,
+     "total": 4.0
+    }
+   },
+   "status": "returned",
+   "returned_fields": null,
+   "exception": null,
+   "warnings": [],
+   "returned_type": "ndarray"
+  }
+ ],
+ "answer": {
+  "value": {
+   "zero_width_all_nan": true,
+   "zero_width_shape": [
+    2
+   ],
+   "finite_width_control_finite": true,
+   "zero_width_exception": null
+  },
+  "unit": "NaN (declared sentinel) vs finite profile"
+ },
+ "independent_check": {
+  "method": "width is set to zero with every other argument held fixed",
+  "observed": {
+   "zero_width_all_nan": true,
+   "zero_width_shape": [
+    2
+   ],
+   "finite_width_control_finite": true,
+   "zero_width_exception": null
+  },
+  "verdict": "pass"
+ },
+ "criteria": [
+  {
+   "id": "fields",
+   "kind": "contract_fields",
+   "status": "fail",
+   "detail": {
+    "declared": [
+     "profile"
+    ],
+    "returned": "a ndarray value, not a mapping",
+    "note": "the contract declares named outputs; this return carries no field names, so the declared output set cannot be observed"
+   }
+  },
+  {
+   "id": "sentinel",
+   "kind": "invariant",
+   "status": "pass",
+   "detail": {
+    "zero_width_all_nan": true,
+    "zero_width_shape": [
+     2
+    ],
+    "finite_width_control_finite": true,
+    "zero_width_exception": null
+   }
+  },
+  {
+   "id": "noflight",
+   "kind": "invariant",
+   "status": "pass",
+   "detail": {
+    "zero_width_all_nan": true,
+    "zero_width_shape": [
+     2
+    ],
+    "finite_width_control_finite": true,
+    "zero_width_exception": null,
+    "note": "the NaN is the declared behaviour of the zero-width sentinel, not a failure of the task or a library defect"
+   }
+  },
+  {
+   "id": "readback",
+   "kind": "readback",
+   "status": "pass",
+   "detail": {
+    "reopened": "source-zero-width-sentinel.json",
+    "problems": [],
+    "stored_call_count": 2
+   }
+  }
+ ],
+ "package_sufficient": true,
+ "sufficient_reason": "the sentinel is reachable from the declared parameter set",
+ "gaps": [],
+ "bindings": {
+  "scirel.source.gaussian": {
+   "symbol": "gaussian_profile",
+   "args": {
+    "rho_norm": {
+     "dtype": "float64",
+     "shape": [
+      2
+     ],
+     "values": [
+      0.2,
+      0.6
+     ]
+    },
+    "vpr": {
+     "dtype": "float64",
+     "shape": [
+      2
+     ],
+     "values": [
+      2.0,
+      3.0
+     ]
+    },
+    "drho_norm": {
+     "dtype": "float64",
+     "shape": [
+      2
+     ],
+     "values": [
+      0.4,
+      0.6
+     ]
+    },
+    "center": 0.5,
+    "width": 0.2,
+    "total": 4.0
+   },
+   "example_error": null
+  }
+ }
+}
