@@ -215,7 +215,7 @@ def cross_geometry_to_equilibrium(ctx: H.Ctx, task: dict) -> dict:
 
 def cross_mirror_to_diagnostics(ctx: H.Ctx, task: dict) -> dict:
     closure = "scirel.mirror.frank-egedal-pressure-closure"
-    total = "scirel.mirror.mirror-total-pressure"
+    "scirel.mirror.mirror-total-pressure"
     diag = "scirel.diagnostics.firehose-mirror-margins"
     c1 = ctx.call(closure, ctx.named(closure), label="declared closure state")
     criteria = []

@@ -124,7 +124,7 @@ def faddeeva_family(ctx: H.Ctx, task: dict) -> dict:
                 label=f"backend {v['named'].get('method')!r} as declared in the example",
             )
         )
-    c_fsf = ctx.call(fsf, ctx.named(fsf), label="fluid special function at the example point")
+    ctx.call(fsf, ctx.named(fsf), label="fluid special function at the example point")
 
     criteria = [C.fields(ctx, calls[0], pdp, "fields")]
     worst = 0.0
@@ -277,7 +277,7 @@ def fluid_two_path(ctx: H.Ctx, task: dict) -> dict:
     bonk = "scirel.kinetic.fluid-bonk-search"
 
     s = derive_fluid_case("bonk", 2)
-    c1 = ctx.call(
+    ctx.call(
         resp,
         {"kx": 0, "state": s, "method": "fD"},
         label="fluid response fD through the scalar entry",
@@ -493,8 +493,8 @@ def multifluid_frequency(ctx: H.Ctx, task: dict) -> dict:
     deck = "scirel.kinetic.multifluid-deck"
     solve = "scirel.kinetic.multifluid-frequency-solve"
     scan = "scirel.kinetic.multifluid-scan"
-    c1 = ctx.call(deck, ctx.named(deck), label="declared deck")
-    c2 = ctx.call(solve, ctx.named(solve), label="single-point solve from the contract example")
+    ctx.call(deck, ctx.named(deck), label="declared deck")
+    ctx.call(solve, ctx.named(solve), label="single-point solve from the contract example")
     c3 = ctx.call(scan, ctx.named(scan), label="declared two-point scan")
     criteria = [C.fields(ctx, c3, scan, "fields")]
     ok, detail = False, {}
@@ -557,10 +557,10 @@ def rational_pole(ctx: H.Ctx, task: dict) -> dict:
     solve = "scirel.kinetic.rational-solve-matrix"
     grid = "scirel.kinetic.rational-jpole-grid-coordinates"
 
-    c1 = ctx.call(deck, ctx.named(deck), label="declared default deck")
-    c2 = ctx.call(poles, ctx.named(poles), label="declared 8-pole table")
+    ctx.call(deck, ctx.named(deck), label="declared default deck")
+    ctx.call(poles, ctx.named(poles), label="declared 8-pole table")
     c3 = ctx.call(solve, ctx.named(solve), label="solve at the declared order 4")
-    c4 = ctx.call(grid, ctx.named(grid), label="declared 101x101 pole grid")
+    ctx.call(grid, ctx.named(grid), label="declared 101x101 pole grid")
 
     criteria = [C.fields(ctx, c3, solve, "fields")]
     declared = set(H.output_names(solve))

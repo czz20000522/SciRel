@@ -527,7 +527,7 @@ def check_exception(ctx: Ctx, call: dict, asset: str, failure_key: str, expected
 def check_tolerance(
     observed: float, rel: float, abs_: float = 0.0, quantity: str = "", unit: str = ""
 ) -> dict:
-    limit = rel if observed == observed else math.inf
+    rel if observed == observed else math.inf
     ok = observed <= rel or observed <= abs_
     return {
         "status": "pass" if ok else "fail",

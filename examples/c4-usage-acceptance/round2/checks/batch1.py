@@ -24,13 +24,13 @@ def _max_rel(a, b):
 
 
 def field_filament_superposition(ctx: H.Ctx, task: dict) -> dict:
-    c1 = ctx.call(GREEN, ctx.named(GREEN), label="declared single-filament Green response")
+    ctx.call(GREEN, ctx.named(GREEN), label="declared single-filament Green response")
     base = ctx.named(SUPER)
     c2 = ctx.call(SUPER, base, label="declared superposed field")
     doubled = dict(base)
     doubled["currents"] = [2.0 * c for c in base["currents"]]
     c3 = ctx.call(SUPER, doubled, label="same sources with every weight doubled")
-    c4 = ctx.call(MULTI, ctx.named(MULTI), label="declared multi-coil vacuum field")
+    ctx.call(MULTI, ctx.named(MULTI), label="declared multi-coil vacuum field")
 
     criteria = [C.fields(ctx, c2, SUPER, "fields")]
     ok, detail = False, {}
@@ -138,7 +138,7 @@ def geometry_equilibrium_grid(ctx: H.Ctx, task: dict) -> dict:
     support = "scirel.geometry.axisymmetric-equilibrium-grid-support"
     mapping = "scirel.geometry.axisymmetric-equilibrium-grid-mapping"
     average = "scirel.geometry.flux-surface-inverse-field-average"
-    c1 = ctx.call(support, ctx.named(support), label="declared grid support")
+    ctx.call(support, ctx.named(support), label="declared grid support")
     c2 = ctx.call(mapping, ctx.named(mapping), label="declared cartesian mapping")
     c3 = ctx.call(average, ctx.named(average), label="declared inverse-field average")
     criteria = [C.fields(ctx, c3, average, "fields"), C.fields(ctx, c2, mapping, "fields_mapping")]
@@ -180,8 +180,8 @@ def geometry_mesh_and_volume(ctx: H.Ctx, task: dict) -> dict:
     rect = "scirel.geometry.rect-mesh"
     pts = "scirel.geometry.points-mesh"
     vol = "scirel.geometry.masked-toroidal-volume"
-    c1 = ctx.call(rect, ctx.named(rect), label="declared rectangular mesh")
-    c2 = ctx.call(pts, ctx.named(pts), label="declared points mesh")
+    ctx.call(rect, ctx.named(rect), label="declared rectangular mesh")
+    ctx.call(pts, ctx.named(pts), label="declared points mesh")
     c3 = ctx.call(vol, ctx.named(vol), label="declared masked toroidal volume")
     criteria = [C.fields(ctx, c3, vol, "fields")]
     ok, detail = False, {}
@@ -247,13 +247,12 @@ def geometry_mesh_and_volume(ctx: H.Ctx, task: dict) -> dict:
 def numerics_basis_projection(ctx: H.Ctx, task: dict) -> dict:
     modal = "scirel.numerics.orthonormal-modal-basis"
     proj = "scirel.numerics.modal-projection"
-    basis = modal_named = None
     c0 = ctx.call(modal, ctx.named(modal), label="declared modal basis")
     c1 = ctx.call(proj, ctx.named(proj), label="declared modal projection")
     criteria = [C.fields(ctx, c1, proj, "fields"), C.fields(ctx, c0, modal, "fields_basis")]
     ok, detail = False, {}
     try:
-        obj = ctx.named(modal)["kind"]
+        ctx.named(modal)["kind"]
         from scirel.numerics.modal_basis import modal_basis as _mb
 
         b = _mb(ctx.named(modal)["kind"], ctx.named(modal)["ndim"], ctx.named(modal)["order"])
@@ -391,7 +390,7 @@ def sampling_regular_grid(ctx: H.Ctx, task: dict) -> dict:
     near = "scirel.geometry.rectangular-nearest"
     c1 = ctx.call(reg, ctx.named(reg), label="declared regular-grid sampling")
     c2 = ctx.call(scat, ctx.named(scat), label="declared scattered linear sampling")
-    c3 = ctx.call(near, ctx.named(near), label="declared rectangular nearest sampling")
+    ctx.call(near, ctx.named(near), label="declared rectangular nearest sampling")
     criteria = [C.fields(ctx, c1, reg, "fields")]
     detail, ok = {}, False
     if "_value" in c2:
@@ -506,9 +505,9 @@ def fieldline_set_and_arclength(ctx: H.Ctx, task: dict) -> dict:
     fset = "scirel.geometry.fieldline-set"
     arcl = "scirel.geometry.arclength-derivative"
     cont = "scirel.geometry.contour-points"
-    c1 = ctx.call(fset, ctx.named(fset), label="declared field-line set")
+    ctx.call(fset, ctx.named(fset), label="declared field-line set")
     c2 = ctx.call(arcl, ctx.named(arcl), label="declared arclength derivative")
-    c3 = ctx.call(cont, ctx.named(cont), label="declared contour points")
+    ctx.call(cont, ctx.named(cont), label="declared contour points")
     criteria = [C.fields(ctx, c2, arcl, "fields")]
     detail, ok = {}, False
     if "_value" in c2:
@@ -574,8 +573,8 @@ def equilibrium_isotropic_picard(ctx: H.Ctx, task: dict) -> dict:
     solve = "scirel.equilibrium.isotropic-pressure-flux"
     state = "scirel.equilibrium.pressure-flux-state"
     c1 = ctx.call(step, ctx.named(step), label="declared Picard step")
-    c2 = ctx.call(solve, ctx.named(solve), label="declared iterated solve")
-    c3 = ctx.call(state, ctx.named(state), label="declared pressure-flux state")
+    ctx.call(solve, ctx.named(solve), label="declared iterated solve")
+    ctx.call(state, ctx.named(state), label="declared pressure-flux state")
     criteria = [C.fields(ctx, c1, step, "fields")]
     detail, ok = {}, False
     if "_value" in c1:
@@ -642,8 +641,8 @@ def equilibrium_anisotropic_picard(ctx: H.Ctx, task: dict) -> dict:
     feedback = "scirel.equilibrium.anisotropic-picard-feedback"
     free = "scirel.equilibrium.free-boundary-anisotropic-picard"
     c1 = ctx.call(solve, ctx.named(solve), label="declared axisymmetric anisotropic Picard")
-    c2 = ctx.call(feedback, ctx.named(feedback), label="declared feedback step")
-    c3 = ctx.call(free, ctx.named(free), label="declared free-boundary Picard")
+    ctx.call(feedback, ctx.named(feedback), label="declared feedback step")
+    ctx.call(free, ctx.named(free), label="declared free-boundary Picard")
     criteria = [C.fields(ctx, c1, solve, "fields")]
     detail, ok = {}, False
     if "_value" in c1:
@@ -721,7 +720,7 @@ def mirror_frank_egedal(ctx: H.Ctx, task: dict) -> dict:
     pressure = "scirel.mirror.frank-egedal-pressure-state"
     total = "scirel.mirror.mirror-total-pressure"
     c1 = ctx.call(closure, ctx.named(closure), label="declared closure state")
-    c2 = ctx.call(pressure, ctx.named(pressure), label="declared Frank-Egedal pressure")
+    ctx.call(pressure, ctx.named(pressure), label="declared Frank-Egedal pressure")
     c3 = ctx.call(total, ctx.named(total), label="declared total pressure")
     criteria = [C.fields(ctx, c3, total, "fields")]
     detail, ok = {}, False
@@ -777,7 +776,7 @@ def mirror_ambipolar_and_loss_cone(ctx: H.Ctx, task: dict) -> dict:
     amb = "scirel.mirror.mirror-ambipolar-potential"
     loss = "scirel.mirror.loss-cone-spectrum"
     dist = "scirel.mirror.mirror-invariant-distribution"
-    c1 = ctx.call(amb, ctx.named(amb), label="declared ambipolar potential")
+    ctx.call(amb, ctx.named(amb), label="declared ambipolar potential")
     c2 = ctx.call(loss, ctx.named(loss), label="declared loss-cone spectrum")
     c3 = ctx.call(dist, ctx.named(dist), label="declared invariant distribution")
     criteria = [C.fields(ctx, c2, loss, "fields")]
@@ -948,11 +947,11 @@ def closures_quasineutral(ctx: H.Ctx, task: dict) -> dict:
     hall = "scirel.closures.hall-two-fluid-pressure"
     c1 = ctx.call(qn, ctx.named(qn), label="declared quasineutral solve")
     c2 = ctx.call(boltz, ctx.named(boltz), label="declared Boltzmann state")
-    c3 = ctx.call(hall, ctx.named(hall), label="declared Hall two-fluid closure")
+    ctx.call(hall, ctx.named(hall), label="declared Hall two-fluid closure")
     criteria = [C.fields(ctx, c1, qn, "fields")]
     detail, ok = {}, False
     if "_value" in c2:
-        v = _val(c2)
+        _val(c2)
         named = ctx.named(boltz)
         e = 1.602176634e-19
         T = float(np.asarray(named["electron_temperature_j"]))
@@ -1028,7 +1027,7 @@ def diagnostics_picard_residual(ctx: H.Ctx, task: dict) -> dict:
     named = ctx.named(res)
     keys = sorted(named)
     if "_value" in c1:
-        zero = np.asarray(_val(c1)["residual"], dtype=float)
+        np.asarray(_val(c1)["residual"], dtype=float)
         r1 = ctx.call(res, ctx.named(res), label="residual of the declared flux against itself")
         prev_key = next((k for k in keys if "prev" in k), keys[0])
         next_key = next((k for k in keys if k != prev_key), keys[-1])

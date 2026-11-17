@@ -10,7 +10,6 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-import harness as H
 from . import batch1, batch2, batch3, generic, kinetic
 
 CHECKS: dict = {}
