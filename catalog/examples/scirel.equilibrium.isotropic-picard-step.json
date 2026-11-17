@@ -1,226 +1,231 @@
 {
- "schema": "scirel.asset-document",
- "asset_id": "scirel.equilibrium.isotropic-picard-step",
- "title": {
-  "en": "Isotropic pressure-flux Picard step",
-  "zh": "各向同性压力-磁通 Picard 单步"
- },
- "summary": "Form relaxed plasma-cell currents from a pressure derivative, apply a supplied flux Green matrix, and measure the resulting flux change in one Picard update. The complete result is returned as one scirel._result.Result mapping; mapping access is retained and every field also supports attribute access. No nested mapping is wrapped.",
- "taxonomy": [
-  "equilibrium",
-  "isotropic-pressure",
-  "picard-update"
- ],
- "aliases": [
-  "pressure-flux Picard step"
- ],
- "discovery": {
-  "capability": [
-   "Isotropic pressure-flux Picard step",
-   "Form relaxed cell currents from a pressure derivative and apply a supplied flux Green matrix in one Picard update."
+  "schema": "scirel.asset-document",
+  "asset_id": "scirel.equilibrium.isotropic-picard-step",
+  "title": {
+    "en": "Isotropic pressure-flux Picard step",
+    "zh": "各向同性压力-磁通 Picard 单步"
+  },
+  "summary": "Form relaxed plasma-cell currents from a pressure derivative, apply a supplied flux Green matrix, and measure the resulting flux change in one Picard update. The complete result is returned as one scirel._result.Result mapping; mapping access is retained and every field also supports attribute access. No nested mapping is wrapped.",
+  "taxonomy": [
+    "equilibrium",
+    "isotropic-pressure",
+    "picard-update"
   ],
-  "operation": [
-   "single isotropic pressure-flux Picard cell-current update",
-   "prior flux and current state, pressure derivative, Green matrix and old currents -> updated state and residual"
+  "aliases": [
+    "pressure-flux Picard step"
   ],
-  "model": "Historical axisymmetric isotropic pressure-flux Picard cell-current update using a caller-supplied Green response.",
-  "geometry": "Uniform rectilinear cylindrical R-Z tensor-product grid; R and Z in metres with [Z,R] arrays and C-order cell vectors.",
-  "boundary": "Caller supplies the fixed vacuum flux and a finite nonzero boundary flux for residual normalization; no boundary condition is imposed on the updated flux.",
-  "device_scope": "device-parameterized"
- },
- "identity": {
-  "relation": "isotropic pressure derivative and previous cell currents to relaxed cell currents, updated flux and normalized flux residual",
-  "direction": "current flux state, pressure derivative, Green matrix and old currents -> one updated current-flux state and residual",
-  "definition": "For each C-order flattened [Z,R] cell form I_target=R*(dp/dpsi)*dR*dZ and I_new=(1-relax)*I_target+relax*I_old. At relax=1 explicitly retain old currents without forming an unused target. Compute psi_plasma=g_psi@I_new, psi_next=psi_plasma+psi_vac and residual=||psi_next-psi_state||_2/abs(psi_edge). Reject any nonfinite current, Green contraction, total flux or residual; no value is silently replaced by zero. This single update does not establish iterative convergence.",
-  "model": "historical axisymmetric isotropic pressure-flux Picard cell-current update using a caller-supplied Green response",
-  "geometry": "uniform rectilinear cylindrical R-Z tensor-product grid",
-  "coordinates": "R and Z in metres; arrays indexed [Z,R] and cell vectors flattened in C order",
-  "boundary": "The caller supplies the fixed vacuum flux and a finite nonzero boundary flux for residual normalization; this function imposes no boundary condition on psi_next.",
-  "assumptions": [
-   "The caller's g_psi maps the same C-order cell-current vector to psi=R A_phi in Wb/rad on the supplied grid; R*dP/dpsi uses that same per-radian coordinate.",
-   "The intended cylindrical radius is nonnegative, but this implementation does not enforce that physical precondition."
-  ]
- },
- "inputs": [
-  {
-   "name": "r_grid",
-   "description": "Cylindrical radius at each grid cell.",
-   "units": "m",
-   "shape": "[N_Z,N_R]",
-   "dtype": "real array-like, converted to float64",
-   "required": true,
-   "constraints": "Finite two-dimensional tensor-product grid with at least two strictly increasing, uniformly spaced R points; same shape as z_grid, psi_state and psi_vac. Physical use requires nonnegative radii, which are not checked."
+  "discovery": {
+    "capability": [
+      "Isotropic pressure-flux Picard step",
+      "Form relaxed cell currents from a pressure derivative and apply a supplied flux Green matrix in one Picard update."
+    ],
+    "operation": [
+      "single isotropic pressure-flux Picard cell-current update",
+      "prior flux and current state, pressure derivative, Green matrix and old currents -> updated state and residual"
+    ],
+    "model": "Historical axisymmetric isotropic pressure-flux Picard cell-current update using a caller-supplied Green response.",
+    "geometry": "Uniform rectilinear cylindrical R-Z tensor-product grid; R and Z in metres with [Z,R] arrays and C-order cell vectors.",
+    "boundary": "Caller supplies the fixed vacuum flux and a finite nonzero boundary flux for residual normalization; no boundary condition is imposed on the updated flux.",
+    "device_scope": "device-parameterized"
   },
-  {
-   "name": "z_grid",
-   "description": "Axial coordinate at each grid cell.",
-   "units": "m",
-   "shape": "[N_Z,N_R]",
-   "dtype": "real array-like, converted to float64",
-   "required": true,
-   "constraints": "Finite tensor-product grid with at least two strictly increasing, uniformly spaced Z points; same shape as r_grid. A Z=0 plane is not required by this callable."
+  "identity": {
+    "relation": "isotropic pressure derivative and previous cell currents to relaxed cell currents, updated flux and normalized flux residual",
+    "direction": "current flux state, pressure derivative, Green matrix and old currents -> one updated current-flux state and residual",
+    "definition": "For each C-order flattened [Z,R] cell form I_target=R*(dp/dpsi)*dR*dZ and I_new=(1-relax)*I_target+relax*I_old. At relax=1 explicitly retain old currents without forming an unused target. Compute psi_plasma=g_psi@I_new, psi_next=psi_plasma+psi_vac and residual=||psi_next-psi_state||_2/abs(psi_edge). Reject any nonfinite current, Green contraction, total flux or residual; no value is silently replaced by zero. This single update does not establish iterative convergence.",
+    "model": "historical axisymmetric isotropic pressure-flux Picard cell-current update using a caller-supplied Green response",
+    "geometry": "uniform rectilinear cylindrical R-Z tensor-product grid",
+    "coordinates": "R and Z in metres; arrays indexed [Z,R] and cell vectors flattened in C order",
+    "boundary": "The caller supplies the fixed vacuum flux and a finite nonzero boundary flux for residual normalization; this function imposes no boundary condition on psi_next.",
+    "assumptions": [
+      "The caller's g_psi maps the same C-order cell-current vector to psi=R A_phi in Wb/rad on the supplied grid; R*dP/dpsi uses that same per-radian coordinate.",
+      "The intended cylindrical radius is nonnegative, but this implementation does not enforce that physical precondition."
+    ]
   },
-  {
-   "name": "psi_state",
-   "description": "Psi=R A_phi before this Picard update.",
-   "units": "Wb/rad",
-   "shape": "[N_Z,N_R]",
-   "dtype": "real array-like, converted to float64",
-   "required": true,
-   "constraints": "Finite and same shape as r_grid."
+  "inputs": [
+    {
+      "name": "r_grid",
+      "description": "Cylindrical radius at each grid cell.",
+      "units": "m",
+      "shape": "[N_Z,N_R]",
+      "dtype": "real array-like, converted to float64",
+      "required": true,
+      "constraints": "Finite two-dimensional tensor-product grid with at least two strictly increasing, uniformly spaced R points; same shape as z_grid, psi_state and psi_vac. Physical use requires nonnegative radii, which are not checked."
+    },
+    {
+      "name": "z_grid",
+      "description": "Axial coordinate at each grid cell.",
+      "units": "m",
+      "shape": "[N_Z,N_R]",
+      "dtype": "real array-like, converted to float64",
+      "required": true,
+      "constraints": "Finite tensor-product grid with at least two strictly increasing, uniformly spaced Z points; same shape as r_grid. A Z=0 plane is not required by this callable."
+    },
+    {
+      "name": "psi_state",
+      "description": "Psi=R A_phi before this Picard update.",
+      "units": "Wb/rad",
+      "shape": "[N_Z,N_R]",
+      "dtype": "real array-like, converted to float64",
+      "required": true,
+      "constraints": "Finite and same shape as r_grid."
+    },
+    {
+      "name": "psi_vac",
+      "description": "Fixed vacuum psi=R A_phi contribution added after Green-matrix contraction.",
+      "units": "Wb/rad",
+      "shape": "[N_Z,N_R]",
+      "dtype": "real array-like, converted to float64",
+      "required": true,
+      "constraints": "Finite and same shape as r_grid."
+    },
+    {
+      "name": "g_psi",
+      "description": "Psi=R A_phi response to cell current; target cells index rows and source cells index columns.",
+      "units": "Wb/rad/A",
+      "shape": "[N,N], N=N_Z*N_R",
+      "dtype": "real array-like, converted to float64",
+      "required": true,
+      "constraints": "Finite square matrix using the same C-order cell indexing on both axes."
+    },
+    {
+      "name": "pressure_derivative",
+      "description": "Pressure derivative with respect to psi=R A_phi at each source cell.",
+      "units": "Pa/(Wb/rad)",
+      "shape": "N elements after flattening",
+      "dtype": "real array-like, converted to float64",
+      "required": true,
+      "constraints": "Finite; one value per grid cell in C order."
+    },
+    {
+      "name": "psi_edge",
+      "description": "Boundary-flux scale for the residual denominator.",
+      "units": "Wb/rad",
+      "shape": "scalar",
+      "dtype": "real scalar, converted to float",
+      "required": true,
+      "constraints": "Finite and nonzero; the absolute value is used."
+    },
+    {
+      "name": "currents_old",
+      "description": "Cell currents from the preceding update; explicit None selects a zero vector.",
+      "units": "A",
+      "shape": "N elements after flattening, or None",
+      "dtype": "real array-like, converted to float64, or None",
+      "required": true,
+      "constraints": "Finite with one value per grid cell when not None. This argument has no signature default; explicit None is accepted."
+    },
+    {
+      "name": "relax",
+      "description": "Weight of old currents in the new current vector.",
+      "units": "1",
+      "shape": "scalar",
+      "dtype": "real scalar, converted to float",
+      "required": true,
+      "constraints": "Finite and in [0,1]."
+    }
+  ],
+  "outputs": [
+    {
+      "name": "plasma_currents",
+      "description": "Field of the returned scirel._result.Result mapping: Relaxed, area-integrated cell-current vector.",
+      "units": "A",
+      "shape": "[N]",
+      "dtype": "float64",
+      "required": true,
+      "constraints": "C-order cell indexing; relax=1 retains old currents."
+    },
+    {
+      "name": "psi_next",
+      "description": "Field of the returned scirel._result.Result mapping: Updated psi=R A_phi from Green plasma response plus fixed vacuum flux.",
+      "units": "Wb/rad",
+      "shape": "[N_Z,N_R]",
+      "dtype": "float64",
+      "required": true,
+      "constraints": "Finite and same grid shape on successful return; no silent nonfinite masking."
+    },
+    {
+      "name": "residual",
+      "description": "Field of the returned scirel._result.Result mapping: L2 norm of updated-minus-previous flux, divided by the absolute boundary flux.",
+      "units": "1",
+      "shape": "scalar",
+      "dtype": "Python float",
+      "required": true,
+      "constraints": "Finite normalized L2 update norm; no grid-size normalization; overflow raises FloatingPointError."
+    }
+  ],
+  "applicability": {
+    "preconditions": [
+      "All grid and cell-vector values use consistent SI units and the same C-order [Z,R] indexing.",
+      "The supplied Green matrix and pressure derivative describe the same axisymmetric isotropic model and grid as the caller's flux state.",
+      "Physical cylindrical use requires nonnegative radii even though the callable does not validate them."
+    ],
+    "supported": [
+      "One source-order, area-weighted isotropic pressure-current and Green-flux update on a uniform rectilinear R-Z grid."
+    ],
+    "excluded": [
+      "An anisotropic pressure closure or derivation of pressure_derivative and g_psi.",
+      "A complete Picard solver, convergence decision or boundary-condition solve.",
+      "Automatic verification that g_psi and the input flux state are physically compatible."
+    ]
   },
-  {
-   "name": "psi_vac",
-   "description": "Fixed vacuum psi=R A_phi contribution added after Green-matrix contraction.",
-   "units": "Wb/rad",
-   "shape": "[N_Z,N_R]",
-   "dtype": "real array-like, converted to float64",
-   "required": true,
-   "constraints": "Finite and same shape as r_grid."
+  "failure_semantics": {
+    "invalid_input": "Raises ValueError for mismatched or non-2D flux/grid shapes, nonfinite grid or vector entries, nonrectilinear/nonuniform/non-increasing grid axes, wrong Green-matrix size, relax outside [0,1], or zero/nonfinite psi_edge. Conversion and missing-argument failures may raise TypeError or ValueError.",
+    "runtime_failure": "FloatingPointError for nonfinite calculated current, Green contraction, total flux or update residual. Other NumPy errors propagate; no vacuum fallback.",
+    "nonconvergence": "Not applicable to this single step; an enclosing task graph owns the iteration limit and convergence decision.",
+    "partial_results": "No scirel._result.Result mapping is returned after validation or arithmetic failure; successful numerical fields remain finite."
   },
-  {
-   "name": "g_psi",
-   "description": "Psi=R A_phi response to cell current; target cells index rows and source cells index columns.",
-   "units": "Wb/rad/A",
-   "shape": "[N,N], N=N_Z*N_R",
-   "dtype": "real array-like, converted to float64",
-   "required": true,
-   "constraints": "Finite square matrix using the same C-order cell indexing on both axes."
+  "public_api": {
+    "python": {
+      "module": "scirel.equilibrium.isotropic_picard_step",
+      "symbol": "pressure_flux_picard_step",
+      "signature": "pressure_flux_picard_step(r_grid, z_grid, psi_state, psi_vac, g_psi, pressure_derivative, psi_edge, currents_old, relax)",
+      "canonical_module": "scirel.equilibrium",
+      "canonical_symbol": "pressure_flux_picard_step"
+    }
   },
-  {
-   "name": "pressure_derivative",
-   "description": "Pressure derivative with respect to psi=R A_phi at each source cell.",
-   "units": "Pa/(Wb/rad)",
-   "shape": "N elements after flattening",
-   "dtype": "real array-like, converted to float64",
-   "required": true,
-   "constraints": "Finite; one value per grid cell in C order."
+  "version": {
+    "implementation_version": "0.0.0",
+    "dependencies": []
   },
-  {
-   "name": "psi_edge",
-   "description": "Boundary-flux scale for the residual denominator.",
-   "units": "Wb/rad",
-   "shape": "scalar",
-   "dtype": "real scalar, converted to float",
-   "required": true,
-   "constraints": "Finite and nonzero; the absolute value is used."
+  "example": {
+    "description": "Update four grid cells with an identity flux response, confirm the named result, and verify the relaxed currents and residual.",
+    "code": "import numpy as np\nfrom scirel._result import Result\nfrom scirel.equilibrium.isotropic_picard_step import pressure_flux_picard_step\nr_grid, z_grid = np.meshgrid([1.0, 2.0], [-1.0, 1.0])\nresult = pressure_flux_picard_step(r_grid, z_grid, np.zeros((2, 2)), np.ones((2, 2)), np.eye(4), [1.0, 2.0, 3.0, 4.0], 2.0, [10.0, 20.0, 30.0, 40.0], 0.25)\nassert isinstance(result, Result)\nassert result.residual == result['residual']\nnp.testing.assert_allclose(result.plasma_currents, [4.0, 11.0, 12.0, 22.0])\nnp.testing.assert_allclose(result.psi_next, [[5.0, 12.0], [13.0, 23.0]])\nassert np.isclose(result.residual, np.sqrt(867.0)/2.0)\n",
+    "expected": "C-order currents [4,11,12,22] A, updated psi [[5,12],[13,23]] Wb/rad and residual sqrt(867)/2. The returned object is a scirel._result.Result mapping; every field is also readable as an attribute."
   },
-  {
-   "name": "currents_old",
-   "description": "Cell currents from the preceding update; explicit None selects a zero vector.",
-   "units": "A",
-   "shape": "N elements after flattening, or None",
-   "dtype": "real array-like, converted to float64, or None",
-   "required": true,
-   "constraints": "Finite with one value per grid cell when not None. This argument has no signature default; explicit None is accepted."
-  },
-  {
-   "name": "relax",
-   "description": "Weight of old currents in the new current vector.",
-   "units": "1",
-   "shape": "scalar",
-   "dtype": "real scalar, converted to float",
-   "required": true,
-   "constraints": "Finite and in [0,1]."
+  "verification": {
+    "scope": [
+      "The independent basis is exact rational recomputation of R*dP/dpsi*dR*dZ and of the relaxation mixture on a dyadic grid, taken together with the two boundary weights relax = 0 and relax = 1, which select different branches (tests/equilibrium/test_isotropic_picard_step_evidence.py).",
+      "Direct example checks the area-weighted current, identity-Green flux and normalized residual for one four-cell grid.",
+      "tests/equilibrium/test_isotropic_picard_step.py::test_reviewed_relation_example directly calls the step with four cells and an artificial identity Green matrix. tests/cross_domain/test_legacy_six_absorption.py::test_picard_nonfinite_state_fails_instead_of_vacuum_mask covers its nonfinite arithmetic rejection. The full-solver composition cases do not directly call this legacy step.",
+      "Direct test checks rejection of an incomplete call.",
+      "Finite inputs that overflow current, Green contraction or total flux are independently reproduced as explicit failures.",
+      "Return-type regression checks the top-level scirel._result.Result, key order and attribute access while retaining the existing numerical, state and failure assertions.",
+      "test_isotropic_rejects_too_small_grid_before_indexing directly rejects grids with fewer than two points on either axis before indexing; this is input-error evidence, not a physical-normalization or convergence check.",
+      "test_real_pressure_step_has_independent_off_source_flux_amplitude directly calls the public step on R=(1,1.5), Z=(-0.5,0.5), with one nonzero derivative and analytic cell current 1 A. Its real get_gpsi input is not the oracle: off-source psi at (1.5,0.5) is compared with independent vector-potential angle integration at 80/120 digits, using rtol=2e-12 and atol=1e-20 Wb/rad.",
+      "The identity and zero Green responses fix the flux as the current vector plus vacuum and as vacuum alone; relax = 1 keeps the previous currents unchanged even with a nonzero derivative while the flux still moves, so a flux-relaxation implementation cannot pass both weights.",
+      "The normalized residual equals ||psi_next - psi_state||/|psi_edge| recomputed at 40 digits within 8 eps.",
+      "A two-by-two grid is the declared minimum and is accepted; a one-row grid is rejected before indexing."
+    ],
+    "tests": [
+      "tests/equilibrium/test_isotropic_picard_step.py",
+      "tests/cross_domain/isotropic_pressure_flux/test_composition_isotropic_pressure_flux.py",
+      "tests/cross_domain/test_legacy_six_absorption.py",
+      "tests/equilibrium/test_picard_input_validation.py",
+      "tests/cross_domain/test_flux_reference_normalization.py::test_real_pressure_step_has_independent_off_source_flux_amplitude",
+      "tests/equilibrium/test_isotropic_picard_step_evidence.py"
+    ],
+    "evidence_ceiling": "The direct four-cell example covers identity-Green arithmetic, and test_picard_nonfinite_state_fails_instead_of_vacuum_mask covers nonfinite rejection. The new test_real_pressure_step_has_independent_off_source_flux_amplitude adds independent off-source vector-potential integration for one analytic 1 A cell update. The full-solver composition cases do not directly call this step. These bounded checks establish the named per-radian normalization and discrete arithmetic, not complete-solver convergence or arbitrary input validity. C1 evidence (tests/equilibrium/test_isotropic_picard_step_evidence.py) replaces the hand-computed current array with Fraction-exact cell currents, decides the relaxation convention through both boundary weights, and recomputes the normalized residual at 40 digits. It does not validate the physical origin of the pressure derivative or of the Green matrix.",
+    "known_limitations": [
+      "The caller supplies pressure_derivative, g_psi, vacuum flux and the Picard iteration policy.",
+      "A finite flux-update norm alone does not establish pressure-current closure; the full solver checks a second residual.",
+      "The implementation does not enforce nonnegative radii or a Z=0 plane.",
+      "The named step assertions are direct calls (including scientific_function aliases). Full-solver tests cover their own maintained computation path; they are not additional direct step coverage.",
+      "Independent off-source normalization coverage is limited to the named four-cell step with one active 1 A source. It does not establish iterative convergence, finite-wire self-response or arbitrary pressure/Green validity."
+    ],
+    "basis": {
+      "kind": "independent-recomputation",
+      "statement": "An independent off-source vector-potential integration checks one analytic 1 A cell update, alongside identity-Green arithmetic and nonfinite rejection; these bounded checks establish the named per-radian normalization and discrete arithmetic, not complete-solver convergence or arbitrary input validity.",
+      "source": "tests/equilibrium/test_isotropic_picard_step.py"
+    }
   }
- ],
- "outputs": [
-  {
-   "name": "plasma_currents",
-   "description": "Field of the returned scirel._result.Result mapping: Relaxed, area-integrated cell-current vector.",
-   "units": "A",
-   "shape": "[N]",
-   "dtype": "float64",
-   "required": true,
-   "constraints": "C-order cell indexing; relax=1 retains old currents."
-  },
-  {
-   "name": "psi_next",
-   "description": "Field of the returned scirel._result.Result mapping: Updated psi=R A_phi from Green plasma response plus fixed vacuum flux.",
-   "units": "Wb/rad",
-   "shape": "[N_Z,N_R]",
-   "dtype": "float64",
-   "required": true,
-   "constraints": "Finite and same grid shape on successful return; no silent nonfinite masking."
-  },
-  {
-   "name": "residual",
-   "description": "Field of the returned scirel._result.Result mapping: L2 norm of updated-minus-previous flux, divided by the absolute boundary flux.",
-   "units": "1",
-   "shape": "scalar",
-   "dtype": "Python float",
-   "required": true,
-   "constraints": "Finite normalized L2 update norm; no grid-size normalization; overflow raises FloatingPointError."
-  }
- ],
- "applicability": {
-  "preconditions": [
-   "All grid and cell-vector values use consistent SI units and the same C-order [Z,R] indexing.",
-   "The supplied Green matrix and pressure derivative describe the same axisymmetric isotropic model and grid as the caller's flux state.",
-   "Physical cylindrical use requires nonnegative radii even though the callable does not validate them."
-  ],
-  "supported": [
-   "One source-order, area-weighted isotropic pressure-current and Green-flux update on a uniform rectilinear R-Z grid."
-  ],
-  "excluded": [
-   "An anisotropic pressure closure or derivation of pressure_derivative and g_psi.",
-   "A complete Picard solver, convergence decision or boundary-condition solve.",
-   "Automatic verification that g_psi and the input flux state are physically compatible."
-  ]
- },
- "failure_semantics": {
-  "invalid_input": "Raises ValueError for mismatched or non-2D flux/grid shapes, nonfinite grid or vector entries, nonrectilinear/nonuniform/non-increasing grid axes, wrong Green-matrix size, relax outside [0,1], or zero/nonfinite psi_edge. Conversion and missing-argument failures may raise TypeError or ValueError.",
-  "runtime_failure": "FloatingPointError for nonfinite calculated current, Green contraction, total flux or update residual. Other NumPy errors propagate; no vacuum fallback.",
-  "nonconvergence": "Not applicable to this single step; an enclosing task graph owns the iteration limit and convergence decision.",
-  "partial_results": "No scirel._result.Result mapping is returned after validation or arithmetic failure; successful numerical fields remain finite."
- },
- "public_api": {
-  "python": {
-   "module": "scirel.equilibrium.isotropic_picard_step",
-   "symbol": "pressure_flux_picard_step",
-   "signature": "pressure_flux_picard_step(r_grid, z_grid, psi_state, psi_vac, g_psi, pressure_derivative, psi_edge, currents_old, relax)",
-   "canonical_module": "scirel.equilibrium",
-   "canonical_symbol": "pressure_flux_picard_step"
-  }
- },
- "version": {
-  "implementation_version": "0.0.0",
-  "dependencies": []
- },
- "example": {
-  "description": "Update four grid cells with an identity flux response, confirm the named result, and verify the relaxed currents and residual.",
-  "code": "import numpy as np\nfrom scirel._result import Result\nfrom scirel.equilibrium.isotropic_picard_step import pressure_flux_picard_step\nr_grid, z_grid = np.meshgrid([1.0, 2.0], [-1.0, 1.0])\nresult = pressure_flux_picard_step(r_grid, z_grid, np.zeros((2, 2)), np.ones((2, 2)), np.eye(4), [1.0, 2.0, 3.0, 4.0], 2.0, [10.0, 20.0, 30.0, 40.0], 0.25)\nassert isinstance(result, Result)\nassert result.residual == result['residual']\nnp.testing.assert_allclose(result.plasma_currents, [4.0, 11.0, 12.0, 22.0])\nnp.testing.assert_allclose(result.psi_next, [[5.0, 12.0], [13.0, 23.0]])\nassert np.isclose(result.residual, np.sqrt(867.0)/2.0)\n",
-  "expected": "C-order currents [4,11,12,22] A, updated psi [[5,12],[13,23]] Wb/rad and residual sqrt(867)/2. The returned object is a scirel._result.Result mapping; every field is also readable as an attribute."
- },
- "verification": {
-  "scope": [
-   "The independent basis is exact rational recomputation of R*dP/dpsi*dR*dZ and of the relaxation mixture on a dyadic grid, taken together with the two boundary weights relax = 0 and relax = 1, which select different branches (tests/equilibrium/test_isotropic_picard_step_evidence.py).",
-   "Direct example checks the area-weighted current, identity-Green flux and normalized residual for one four-cell grid.",
-   "tests/equilibrium/test_isotropic_picard_step.py::test_reviewed_relation_example directly calls the step with four cells and an artificial identity Green matrix. tests/cross_domain/test_legacy_six_absorption.py::test_picard_nonfinite_state_fails_instead_of_vacuum_mask covers its nonfinite arithmetic rejection. The full-solver composition cases do not directly call this legacy step.",
-   "Direct test checks rejection of an incomplete call.",
-   "Finite inputs that overflow current, Green contraction or total flux are independently reproduced as explicit failures.",
-   "Return-type regression checks the top-level scirel._result.Result, key order and attribute access while retaining the existing numerical, state and failure assertions.",
-   "test_isotropic_rejects_too_small_grid_before_indexing directly rejects grids with fewer than two points on either axis before indexing; this is input-error evidence, not a physical-normalization or convergence check.",
-   "test_real_pressure_step_has_independent_off_source_flux_amplitude directly calls the public step on R=(1,1.5), Z=(-0.5,0.5), with one nonzero derivative and analytic cell current 1 A. Its real get_gpsi input is not the oracle: off-source psi at (1.5,0.5) is compared with independent vector-potential angle integration at 80/120 digits, using rtol=2e-12 and atol=1e-20 Wb/rad.",
-   "The identity and zero Green responses fix the flux as the current vector plus vacuum and as vacuum alone; relax = 1 keeps the previous currents unchanged even with a nonzero derivative while the flux still moves, so a flux-relaxation implementation cannot pass both weights.",
-   "The normalized residual equals ||psi_next - psi_state||/|psi_edge| recomputed at 40 digits within 8 eps.",
-   "A two-by-two grid is the declared minimum and is accepted; a one-row grid is rejected before indexing."
-  ],
-  "tests": [
-   "tests/equilibrium/test_isotropic_picard_step.py",
-   "tests/cross_domain/isotropic_pressure_flux/test_composition_isotropic_pressure_flux.py",
-   "tests/cross_domain/test_legacy_six_absorption.py",
-   "tests/equilibrium/test_picard_input_validation.py",
-   "tests/cross_domain/test_flux_reference_normalization.py::test_real_pressure_step_has_independent_off_source_flux_amplitude",
-   "tests/equilibrium/test_isotropic_picard_step_evidence.py"
-  ],
-  "evidence_ceiling": "The direct four-cell example covers identity-Green arithmetic, and test_picard_nonfinite_state_fails_instead_of_vacuum_mask covers nonfinite rejection. The new test_real_pressure_step_has_independent_off_source_flux_amplitude adds independent off-source vector-potential integration for one analytic 1 A cell update. The full-solver composition cases do not directly call this step. These bounded checks establish the named per-radian normalization and discrete arithmetic, not complete-solver convergence or arbitrary input validity. C1 evidence (tests/equilibrium/test_isotropic_picard_step_evidence.py) replaces the hand-computed current array with Fraction-exact cell currents, decides the relaxation convention through both boundary weights, and recomputes the normalized residual at 40 digits. It does not validate the physical origin of the pressure derivative or of the Green matrix.",
-  "known_limitations": [
-   "The caller supplies pressure_derivative, g_psi, vacuum flux and the Picard iteration policy.",
-   "A finite flux-update norm alone does not establish pressure-current closure; the full solver checks a second residual.",
-   "The implementation does not enforce nonnegative radii or a Z=0 plane.",
-   "The named step assertions are direct calls (including scientific_function aliases). Full-solver tests cover their own maintained computation path; they are not additional direct step coverage.",
-   "Independent off-source normalization coverage is limited to the named four-cell step with one active 1 A source. It does not establish iterative convergence, finite-wire self-response or arbitrary pressure/Green validity."
-  ]
- }
 }
