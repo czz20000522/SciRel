@@ -1,524 +1,529 @@
 {
- "schema": "scirel.asset-document",
- "asset_id": "scirel.kinetic.dielectric-response",
- "title": {
-  "en": "Maxwellian dielectric response family",
-  "zh": "Maxwellian 介电响应方法族"
- },
- "summary": "Evaluate a homogeneous magnetized Maxwellian dielectric response with an explicit harmonic, harmonic_weideman or fixed-J8 ronnmark method.",
- "taxonomy": [
-  "kinetic",
-  "plasma-wave",
-  "dispersion"
- ],
- "aliases": [
-  "magnetized Maxwellian dielectric response",
-  "finite cyclotron-harmonic response",
-  "Ronnmark fixed-J8 tensor"
- ],
- "discovery": {
-  "capability": [
-   "Maxwellian dielectric response family",
-   "Evaluate a homogeneous magnetized Maxwellian dielectric response with an explicit harmonic, harmonic_weideman or fixed-J8 ronnmark method."
+  "schema": "scirel.asset-document",
+  "asset_id": "scirel.kinetic.dielectric-response",
+  "title": {
+    "en": "Maxwellian dielectric response family",
+    "zh": "Maxwellian 介电响应方法族"
+  },
+  "summary": "Evaluate a homogeneous magnetized Maxwellian dielectric response with an explicit harmonic, harmonic_weideman or fixed-J8 ronnmark method.",
+  "taxonomy": [
+    "kinetic",
+    "plasma-wave",
+    "dispersion"
   ],
-  "operation": [
-   "SI species equilibrium and an angular-frequency wavepoint to dielectric and Maxwell dispersion tensors",
-   "(B0, qs, ms, ns0, Ts0, omega, kz, kx, method, harmonics) -> Result(K, D, determinant, omega, nx, nz, vts, wcs, wps2, a, b, diagnostics)"
+  "aliases": [
+    "magnetized Maxwellian dielectric response",
+    "finite cyclotron-harmonic response",
+    "Ronnmark fixed-J8 tensor"
   ],
-  "model": "Homogeneous magnetized Maxwellian plasma; two finite cyclotron-harmonic methods and the fixed J=8 Ronnmark rational-pole model. Method-specific equations and evidence are recorded individually below.",
-  "geometry": "Uniform background magnetic field along z; tensor row and column axes x, y, z.",
-  "boundary": "Finite nonzero B0 and omega. Harmonic methods require real nonzero kz and kx; ronnmark permits zero kz and finite complex kx, including zero when the complete response is representable. No automatic method switch, clamp, partial result or missing scientific field.",
-  "device_scope": "generic"
- },
- "identity": {
-  "relation": "SI species equilibrium and an angular-frequency wavepoint to dielectric and Maxwell dispersion tensors",
-  "direction": "(B0, qs, ms, ns0, Ts0, omega, kz, kx, method, harmonics) -> Result(K, D, determinant, omega, nx, nz, vts, wcs, wps2, a, b, diagnostics)",
-  "definition": "Dielectric convention $K_{ij}=\\delta_{ij}-\\sigma_{ij}/(i\\omega\\epsilon_0)$. vts=sqrt(2*kB*Ts0/ms); wcs=qs*B0/ms; wps2=ns0*qs**2/(ms*epsilon0); a=kx*sqrt(kB*Ts0/ms)/wcs; b=a**2, not abs(a)**2. omega is supplied directly in rad/s, without a frequency-unit inference or Hz round trip. K_ij = delta_ij - sigma_ij/(i*omega*epsilon0). D adds the original Maxwell curl terms and retains the selected determinant algorithm. Each method retains its own numerical expression and complete scientific fields; only diagnostics contains algorithm-specific records. The signed a is returned from the kernel, never reconstructed from sqrt(b).",
-  "model": "Homogeneous magnetized Maxwellian plasma; two finite cyclotron-harmonic methods and the fixed J=8 Ronnmark rational-pole model. Method-specific equations and evidence are recorded individually below.",
-  "geometry": "Uniform background magnetic field along z; tensor row and column axes x, y, z.",
-  "coordinates": "Signed B0 and charges; kz parallel and kx perpendicular in the x-z plane. omega is real angular frequency in rad/s; temperatures are kelvin.",
-  "boundary": "Finite nonzero B0 and omega. Harmonic methods require real nonzero kz and kx; ronnmark permits zero kz and finite complex kx, including zero when the complete response is representable. No automatic method switch, clamp, partial result or missing scientific field.",
-  "assumptions": [
-   "Each species is Maxwellian with positive mass, density and temperature and nonzero charge; all species inputs share a nonempty one-dimensional axis without broadcasting.",
-   "The caller assesses finite-harmonic truncation and fixed-pole approximation limits; a determinant alone does not identify or certify a physical mode."
-  ]
- },
- "inputs": [
-  {
-   "name": "B0",
-   "description": "Signed homogeneous background magnetic field along z.",
-   "units": "T",
-   "shape": "scalar",
-   "dtype": "real numeric",
-   "required": true,
-   "constraints": "Finite and nonzero; pass a real numeric scalar in T."
+  "discovery": {
+    "capability": [
+      "Maxwellian dielectric response family",
+      "Evaluate a homogeneous magnetized Maxwellian dielectric response with an explicit harmonic, harmonic_weideman or fixed-J8 ronnmark method."
+    ],
+    "operation": [
+      "SI species equilibrium and an angular-frequency wavepoint to dielectric and Maxwell dispersion tensors",
+      "(B0, qs, ms, ns0, Ts0, omega, kz, kx, method, harmonics) -> Result(K, D, determinant, omega, nx, nz, vts, wcs, wps2, a, b, diagnostics)"
+    ],
+    "model": "Homogeneous magnetized Maxwellian plasma; two finite cyclotron-harmonic methods and the fixed J=8 Ronnmark rational-pole model. Method-specific equations and evidence are recorded individually below.",
+    "geometry": "Uniform background magnetic field along z; tensor row and column axes x, y, z.",
+    "boundary": "Finite nonzero B0 and omega. Harmonic methods require real nonzero kz and kx; ronnmark permits zero kz and finite complex kx, including zero when the complete response is representable. No automatic method switch, clamp, partial result or missing scientific field.",
+    "device_scope": "generic"
   },
-  {
-   "name": "qs",
-   "description": "Signed charges on the shared species axis.",
-   "units": "C",
-   "shape": "(S,), S >= 1",
-   "dtype": "real numeric",
-   "required": true,
-   "constraints": "Finite and nonzero, with the same S as ms, ns0 and Ts0."
+  "identity": {
+    "relation": "SI species equilibrium and an angular-frequency wavepoint to dielectric and Maxwell dispersion tensors",
+    "direction": "(B0, qs, ms, ns0, Ts0, omega, kz, kx, method, harmonics) -> Result(K, D, determinant, omega, nx, nz, vts, wcs, wps2, a, b, diagnostics)",
+    "definition": "Dielectric convention $K_{ij}=\\delta_{ij}-\\sigma_{ij}/(i\\omega\\epsilon_0)$. vts=sqrt(2*kB*Ts0/ms); wcs=qs*B0/ms; wps2=ns0*qs**2/(ms*epsilon0); a=kx*sqrt(kB*Ts0/ms)/wcs; b=a**2, not abs(a)**2. omega is supplied directly in rad/s, without a frequency-unit inference or Hz round trip. K_ij = delta_ij - sigma_ij/(i*omega*epsilon0). D adds the original Maxwell curl terms and retains the selected determinant algorithm. Each method retains its own numerical expression and complete scientific fields; only diagnostics contains algorithm-specific records. The signed a is returned from the kernel, never reconstructed from sqrt(b).",
+    "model": "Homogeneous magnetized Maxwellian plasma; two finite cyclotron-harmonic methods and the fixed J=8 Ronnmark rational-pole model. Method-specific equations and evidence are recorded individually below.",
+    "geometry": "Uniform background magnetic field along z; tensor row and column axes x, y, z.",
+    "coordinates": "Signed B0 and charges; kz parallel and kx perpendicular in the x-z plane. omega is real angular frequency in rad/s; temperatures are kelvin.",
+    "boundary": "Finite nonzero B0 and omega. Harmonic methods require real nonzero kz and kx; ronnmark permits zero kz and finite complex kx, including zero when the complete response is representable. No automatic method switch, clamp, partial result or missing scientific field.",
+    "assumptions": [
+      "Each species is Maxwellian with positive mass, density and temperature and nonzero charge; all species inputs share a nonempty one-dimensional axis without broadcasting.",
+      "The caller assesses finite-harmonic truncation and fixed-pole approximation limits; a determinant alone does not identify or certify a physical mode."
+    ]
   },
-  {
-   "name": "ms",
-   "description": "Species masses.",
-   "units": "kg",
-   "shape": "(S,), same S as qs",
-   "dtype": "real numeric",
-   "required": true,
-   "constraints": "Finite and strictly positive."
-  },
-  {
-   "name": "ns0",
-   "description": "Species absolute number densities.",
-   "units": "m^-3",
-   "shape": "(S,), same S as qs",
-   "dtype": "real numeric",
-   "required": true,
-   "constraints": "Finite and strictly positive."
-  },
-  {
-   "name": "Ts0",
-   "description": "Species equilibrium temperatures already converted to kelvin.",
-   "units": "K",
-   "shape": "(S,), same S as qs",
-   "dtype": "real numeric",
-   "required": true,
-   "constraints": "Finite and strictly positive."
-  },
-  {
-   "name": "omega",
-   "description": "Real angular frequency, used directly with no Hz conversion.",
-   "units": "rad/s",
-   "shape": "scalar",
-   "dtype": "real numeric",
-   "required": true,
-   "constraints": "Finite and nonzero."
-  },
-  {
-   "name": "kz",
-   "description": "Signed parallel phase wavenumber.",
-   "units": "1/m",
-   "shape": "scalar",
-   "dtype": "real numeric",
-   "required": true,
-   "constraints": "Finite; nonzero for harmonic and harmonic_weideman. Zero is allowed for ronnmark only."
-  },
-  {
-   "name": "kx",
-   "description": "Perpendicular phase wavenumber.",
-   "units": "1/m",
-   "shape": "scalar",
-   "dtype": "real or complex numeric",
-   "required": true,
-   "constraints": "Harmonic methods require real nonzero kx for a complete result: harmonic rejects zero with ValueError, harmonic_weideman reports its unavailable derived scale with FloatingPointError. ronnmark permits finite real or complex kx, including zero subject to complete-response representability."
-  },
-  {
-   "name": "method",
-   "description": "Explicit numerical method; no automatic routing on domain or numerical failure.",
-   "units": "dimensionless",
-   "shape": "scalar",
-   "dtype": "string",
-   "required": false,
-   "constraints": "Closed set: 'harmonic', 'harmonic_weideman', 'ronnmark'. Wrong kind raises TypeError; unknown string raises ValueError.",
-   "default": "harmonic"
-  },
-  {
-   "name": "harmonics",
-   "description": "Symmetric finite harmonic cutoff n=-N..N.",
-   "units": "dimensionless",
-   "shape": "scalar",
-   "dtype": "integer or None",
-   "required": false,
-   "constraints": "None or omission selects N=5 for the harmonic methods; otherwise a non-bool non-negative Python or NumPy integer. Wrong kind raises TypeError; negative raises ValueError. ronnmark accepts only None, rejecting every other object including 5 with TypeError.",
-   "default": null
-  }
- ],
- "outputs": [
-  {
-   "name": "K",
-   "description": "Kinetic dielectric tensor with source sign convention.",
-   "units": "dimensionless",
-   "shape": "(3, 3), x-y-z component axes",
-   "dtype": "complex128",
-   "required": true,
-   "constraints": "Finite; K_yx=-K_xy, K_zy=-K_yz and K_zx=K_xz by assembly."
-  },
-  {
-   "name": "D",
-   "description": "Dispersion tensor after Maxwell curl terms.",
-   "units": "dimensionless",
-   "shape": "(3, 3), x-y-z component axes",
-   "dtype": "complex128",
-   "required": true,
-   "constraints": "Finite; D_xx=K_xx-nz^2, D_yy=K_yy-nx^2-nz^2, D_zz=K_zz-nx^2 and D_xz=D_zx=K_xz+nx*nz."
-  },
-  {
-   "name": "determinant",
-   "description": "Complex determinant of D.",
-   "units": "dimensionless",
-   "shape": "scalar",
-   "dtype": "complex numeric",
-   "required": true,
-   "constraints": "Finite and representable; zero may indicate a candidate mode but no root selection occurs."
-  },
-  {
-   "name": "omega",
-   "description": "Actual directly supplied angular frequency, without an Hz round trip.",
-   "units": "rad/s",
-   "shape": "scalar",
-   "dtype": "float",
-   "required": true,
-   "constraints": "Finite and nonzero."
-  },
-  {
-   "name": "nx",
-   "description": "Perpendicular refractive-index component c*kx/omega.",
-   "units": "dimensionless",
-   "shape": "scalar",
-   "dtype": "real or complex numeric",
-   "required": true,
-   "constraints": "Finite."
-  },
-  {
-   "name": "nz",
-   "description": "Parallel refractive-index component c*kz/omega.",
-   "units": "dimensionless",
-   "shape": "scalar",
-   "dtype": "real or complex numeric",
-   "required": true,
-   "constraints": "Finite."
-  },
-  {
-   "name": "vts",
-   "description": "Species thermal speeds with sqrt(2) convention.",
-   "units": "m/s",
-   "shape": "(S,)",
-   "dtype": "float64",
-   "required": true,
-   "constraints": "Finite and positive."
-  },
-  {
-   "name": "wcs",
-   "description": "Signed species cyclotron angular frequencies.",
-   "units": "rad/s",
-   "shape": "(S,)",
-   "dtype": "float64",
-   "required": true,
-   "constraints": "Finite and nonzero."
-  },
-  {
-   "name": "wps2",
-   "description": "Species plasma angular-frequency squared.",
-   "units": "s^-2",
-   "shape": "(S,)",
-   "dtype": "float64",
-   "required": true,
-   "constraints": "Finite and positive."
-  },
-  {
-   "name": "a",
-   "description": "Original signed or complex kx*sqrt(kB*Ts0/ms)/wcs returned directly from the kernel.",
-   "units": "dimensionless",
-   "shape": "(S,)",
-   "dtype": "real or complex numeric",
-   "required": true,
-   "constraints": "Finite; not reconstructed using sqrt(b), so its sign/complex phase is retained."
-  },
-  {
-   "name": "b",
-   "description": "Squared Bessel or Ronnmark parameter a**2.",
-   "units": "dimensionless",
-   "shape": "(S,)",
-   "dtype": "real or complex numeric",
-   "required": true,
-   "constraints": "Finite a**2, not abs(a)**2; positive real for the finite harmonic methods and possibly zero or complex for ronnmark."
-  },
-  {
-   "name": "diagnostics",
-   "description": "Nested Result containing only the selected algorithm records.",
-   "units": "dimensionless",
-   "shape": "Result",
-   "dtype": "Result",
-   "required": true,
-   "constraints": "Exact common keys: method, tensor_convention. method echoes the selection; tensor_convention is 'K_ij = delta_ij - sigma_ij/(i*omega*epsilon0)'. harmonic and harmonic_weideman add only harmonics (the actual non-bool integer N, default 5). ronnmark adds only bzj, czj, j_order, branches: finite complex bzj/czj have shape (8,), with conjugate residues and negative-conjugate positions in their second halves; j_order=8; branches are species-major then pole order with length S*8 and values RTAY(AL<4), RTAY(|Y|^2>75*AL), RTAY(|Y|>40+AL/3), RASY or RINT. No None/NaN placeholders and no scientific quantity is hidden here."
-  }
- ],
- "applicability": {
-  "preconditions": [
-   "harmonic: All species arrays have a shared nonempty axis and SI units; the temperature input is kelvin, not eV.",
-   "harmonic: The real frequency and wavevector point are nonzero where required and the finite harmonic cutoff is adequate for the caller's target accuracy.",
-   "harmonic: omega is the sole physical frequency in rad/s; vectors share one nonempty species axis. Effective default harmonics=5; real nonzero kx and kz are required.",
-   "harmonic_weideman: Species arrays are finite, non-empty and shape-compatible; masses, densities and temperatures are positive, with nonzero charge and magnetic field.",
-   "harmonic_weideman: The wavepoint and derived frequency/scales are finite, kz is nonzero, and the selected numerical path domain is satisfied.",
-   "harmonic_weideman: omega is the sole physical frequency in rad/s; vectors share one nonempty species axis. Effective default harmonics=5; real nonzero kx and kz are required.",
-   "ronnmark: Finite zero kz is allowed; conventional and fluid finite-harmonic paths require actual nonzero kz. Required derived scales and the complete tensor must be representable.",
-   "ronnmark: The wavepoint and derived frequency/scales are finite and satisfy the selected numerical path domain.",
-   "ronnmark: omega is the sole physical frequency in rad/s; vectors share one nonempty species axis. J=8 and its binary64 tables are fixed; harmonics must be None."
-  ],
-  "supported": [
-   "harmonic: One or more homogeneous magnetized Maxwellian species at a real nonzero frequency and x-z-plane wavevector.",
-   "harmonic: Finite harmonic sums with an explicit non-negative integer cutoff and analytic SciRel Z values.",
-   "harmonic_weideman: Assemble the Maxwellian 3x3 kinetic tensor by finite cyclotron-harmonic sum at the actual signed nonzero kz.",
-   "ronnmark: Evaluate the J=8 rational-pole kinetic 3x3 tensor and dispersion determinant, including complex kx and zero kz."
-  ],
-  "excluded": [
-   "harmonic: kx=0 or kz=0 limits, complex frequency/wavevector, drift, loss-cone or arbitrary velocity distributions.",
-   "harmonic: Automatic harmonic-convergence assessment, source Weideman N=64 exact outputs, near-zero kz substitution, root finding or mode-branch selection.",
-   "harmonic_weideman: Mode identification, root finding and accuracy outside the tested finite-harmonic or rational-pole approximation.",
-   "harmonic_weideman: Zero kz, inputs that violate the numerical domain, or inputs requiring a different tensor convention.",
-   "ronnmark: Mode identification, root finding and accuracy outside the tested finite-harmonic or rational-pole approximation.",
-   "ronnmark: Inputs that violate the numerical domain or require a different tensor convention."
-  ]
- },
- "failure_semantics": {
-  "invalid_input": "Raises TypeError for a non-string method, a wrong harmonic-control kind (including bool), or any non-None harmonics for ronnmark. Raises ValueError for an unknown method string, negative cutoff, nonfinite or invalid physical input, unsupported species shape or disallowed zero B0, omega or kz, and zero kx for harmonic. At zero kx harmonic_weideman retains its original derived-scale FloatingPointError. Public method/control errors identify the parameter, received value or kind, legal condition and scirel.kinetic.dielectric-response. Unsupported numeric conversions may propagate TypeError.",
-  "runtime_failure": "Raises FloatingPointError for nonfinite or unrepresentable required scales, required nonzero scales underflowing to zero, unreliable or budget-exhausted harmonic tails, genuine R/H/RC poles, or nonfinite complete K, D or determinant. The positive-tail 20000-term budget, severe-cancellation policy and all original per-method failures remain in force; no fallback, clamp, penalty, incomplete tensor or automatic method switch.",
-  "nonconvergence": "No root iteration. Finite harmonics retain the exact caller-selected N; ronnmark retains fixed J=8. Tail-budget exhaustion is FloatingPointError, not a convergence verdict. No automatic accuracy or harmonic-convergence certificate.",
-  "partial_results": "None: all fixed scientific Result fields are returned together only when complete and representable. Algorithm differences are exhaustively enumerated in diagnostics; no None or NaN placeholders."
- },
- "public_api": {
-  "python": {
-   "module": "scirel.kinetic.dielectric_response",
-   "symbol": "evaluate_dielectric_response",
-   "signature": "evaluate_dielectric_response(*, B0, qs, ms, ns0, Ts0, omega, kz, kx, method='harmonic', harmonics=None)",
-   "canonical_module": "scirel.kinetic",
-   "canonical_symbol": "evaluate_dielectric_response"
-  }
- },
- "version": {
-  "implementation_version": "0.0.0",
-  "dependencies": [
-   {
-    "asset_id": "scirel.kinetic.bessel-gamma"
-   },
-   {
-    "asset_id": "scirel.kinetic.plasma-dispersion-function"
-   },
-   {
-    "asset_id": "scirel.kinetic.ronnmark-r-function"
-   }
-  ]
- },
- "example": {
-  "description": "Evaluate all three explicitly selected methods at the same bounded one-species point; check common tensor shapes without asserting model equivalence.",
-  "code": "from scirel.kinetic import evaluate_dielectric_response\np = dict(B0=1.0, qs=[-1.60217662e-19], ms=[9.1094e-31], ns0=[6.075e19], Ts0=[11604941.036704937], omega=1e11, kz=1.0, kx=1e4)\nr = evaluate_dielectric_response(**p, method='harmonic')\nassert r.K.shape == r.D.shape == (3, 3)\nr = evaluate_dielectric_response(**p, method='harmonic_weideman')\nassert r.K.shape == r.D.shape == (3, 3)\nr = evaluate_dielectric_response(**p, method='ronnmark')\nassert r.K.shape == r.D.shape == (3, 3)\n",
-  "expected": "Each selected method returns its complete Result with 3x3 K and D at the declared point. This shape check does not compare model errors or extend the method-specific verification ceilings."
- },
- "verification": {
-  "scope": [
-   "harmonic (retained kernel evidence): Current implementation and listed tests cover the declared ports, near-zero-kz stability without a clamp, the small-z full K/D regression, four signed omega/kz large-kz real-kx cases protecting xy/yx, per-species response switching around max-|z_n|=1 including adjacent floats, finite cutoffs and mixed-representation species in either order.",
-   "harmonic (retained kernel evidence): The example exercises one bounded representative case; it does not extend applicability beyond the declared preconditions.",
-   "harmonic (retained kernel evidence): Python preflight ran, but local execution covers this asset.",
-   "harmonic (retained kernel evidence): Error-channel tests distinguish invalid shape/domain/cutoff inputs from numerical scale, tensor, tail and budget failures, preserve unrelated ValueError propagation, and protect the diagnostic kx=0 partial boundary without changing scientific tolerances.",
-   "harmonic (retained kernel evidence): Retained original example: B0=1.0, qs=[-1.60217662e-19], ms=[9.1094e-31], ns0=[6.075e19], Ts0=[1000.0*1.6022e-19/1.38064852e-23], omega=2*pi*float(175881684853.009/(2*pi)), kz=1326.1942478795652, kx=13261.94247879565, effective N=5. K and D shapes are (3,3); abs(determinant-(1184249.3244493124+4322451.2861608062j))<1e-6. The original observed determinant was 1184249.3244493138+4322451.286160805j. The original Hz float conversion is retained when migrating this numerical case; this does not widen the existing error budget.",
-   "harmonic_weideman (retained kernel evidence): Bounded full-complex K/D comparisons against an independent high-precision original finite sum, including the small-z regression, four signed omega/kz large-kz real-kx cases protecting xy/yx, neighbors of the per-species maximum-|z_n|=1 representation switch, small-z finite cutoffs, mixed-representation species in either order, near-zero kz, finite-cutoff endpoints, the analytic real-response switch, resonance and signed multi-species cases; positive-tail failure boundaries. Actual signed nonzero kz, including +/-1e-12 and adjacent floats around the former cutoff; literal zero rejection before numerical work; explicit +1e-10 source value and default N5; 12-pair SI similarity at unchanged 2e-12 full K/D/determinant budgets.",
-   "harmonic_weideman (retained kernel evidence): Error-channel tests distinguish invalid shape/domain/cutoff inputs from numerical scale, tensor, tail and budget failures, preserve unrelated ValueError propagation, and protect the diagnostic kx=0 partial boundary without changing scientific tolerances.",
-   "harmonic_weideman (retained kernel evidence): Retained original example: B0=1.0, qs=[-1.60217662e-19], ms=[9.1094e-31], ns0=[6.075e19], Ts0=[11604941.036704937], omega=2*pi*float(1e10), kz=1.0, kx=1.0, effective N=5; D.shape==(3,3), with the original finite K/D/determinant and species-scale obligations. The original Hz float conversion is retained.",
-   "ronnmark (retained kernel evidence): Existing source-method cases and failure boundaries; sixteen exact binary64 inputs with independent Eq.(8) fixed-table B references for every complex K/D entry and returned det(D).",
-   "ronnmark (retained kernel evidence): Separate Maxwellian Eq.(3) A references, rounded-table moment and zero-kz endpoint checks, cold Hall sign and complex-square conventions; B-A observations have no physical acceptance threshold.",
-   "ronnmark (retained kernel evidence): A manufactured nonresonant double-zero control remains finite; exact poles, derived-scale failures and numerical error propagation are separate from invalid caller inputs.",
-   "ronnmark (retained kernel evidence): Retained original example: B0=1.0, qs=[-1.60217662e-19], ms=[9.1094e-31], ns0=[6.075e19], Ts0=[11604941.036704937], omega=1e11, kz=0, kx=1e4, fixed J=8; D.shape==(3,3), finite K/D/determinant, fixed pole tables and tensor convention. The original direct omega has no Hz round trip."
-  ],
-  "tests": [
-   "tests/kinetic/test_kinetic_signed_kz.py",
-   "tests/kinetic/test_kinetic_dispersion_sum_n.py",
-   "tests/kinetic/test_kinetic_dispersion_sum_stability.py",
-   "tests/kinetic/test_finite_harmonic_failure_policy.py",
-   "tests/kinetic/test_kinetic_dispersion_sum_fluid_stability.py",
-   "tests/kinetic/test_fluid_spectrum_r43_variants.py",
-   "tests/kinetic/test_kinetic_tensor_similarity.py",
-   "tests/kinetic/test_fluid_spectrum_r43_kinetic.py",
-   "tests/kinetic/test_ronnmark_tensor_reference.py",
-   "tests/kinetic/test_kinetic_tensor_family_evidence.py::test_ronnmark_r_matches_its_independent_harmonic_representation",
-   "tests/kinetic/test_ronnmark_zero_endpoint.py"
-  ],
-  "evidence_ceiling": "harmonic: Bounded to the declared homogeneous magnetized Maxwellian finite-N equations. Direct tests include frozen fluid-BW values, analytic Z checks and independent 90-digit full-tensor references derived from public inputs, plus a 90/120-digit large-b Kzz reference. The small-z regression and response-switch cases compare full complex K/D componentwise at |error|/max(1,|reference|)<=2e-12 against an independent 180-digit original finite sum using Bessel I and the erfc definition of Z; the regression's 140/180-digit references are checked before binary64 rounding. No production scales, A response or tail algorithm is used in that original-expression reference. These check numerical evaluation of that finite N, not experimental model accuracy, automatic harmonic convergence, determinant/root accuracy, all species mixtures or all floating-point inputs. harmonic_weideman: Independent mpmath evaluation derives every scale from the public inputs and evaluates the original finite harmonic expression through Bessel I and the erfc definition of Z. Full complex K/D are compared componentwise at |error|/max(1,|reference|)<=2e-12 on the cases enumerated in test_kinetic_dispersion_sum_fluid_stability.py; selected 140/180-digit references, including the small-z regression, are checked before binary64 rounding. This is bounded arithmetic evidence, not a continuous-domain error theorem, harmonic-convergence guarantee, determinant/root-accuracy claim or physical calibration. The ordinary xx/xy/yy components retain N=64 Weideman Z; for each species the mixed/parallel components use direct z*Z with that backend when every |z_n|<=1, retaining the original zz constant, and analytic A with finite-sum identities otherwise. This numerical-method correction is not parity with the frozen N=64 rational expression. The independent reference uses actual nonzero kz without a floor, with both signs checked at 140/180 digits. The 12-pair/24-call SI similarity test is a necessary same-method relation only; it is not absolute accuracy evidence for any of the four methods. Zero rejection is a domain policy, not an evaluated zero-limit oracle. ronnmark: test_product_matches_independent_B_16 in tests/kinetic/test_ronnmark_tensor_reference.py directly compares eighteen complex K/D entries and returned det(D) with independently Bessel-summed Eq.(8) B using the actual binary64 table: abs(product-B)/max(1,abs(B)) <= 2e-7. This pre-frozen new finite-grid numerical diagnostic is separate from physical B-A discrepancy and preserves existing source 1e-11/1e-9, finite-N 2e-12 and R/H budgets. Self-contained data and manual independent Eq.(3)/(8)/(13)/(14) regeneration are in tests/fixtures/kinetic_tensor/README.md. Independent scientific-identity review was ACK_STATIC; candidate execution and release need their own evidence. No continuous-domain error bound, physical-A accuracy pass, mode/root or damping guarantee follows.",
-  "known_limitations": [
-   "harmonic: The x-z-plane real-wavepoint contract excludes perpendicular/parallel zero-wavevector limits and complex root-search inputs.",
-   "harmonic: The finite-N truncation tail is retained. For each species with (abs(omega)+harmonics*abs(wcs))/(abs(kz)*vts)<=1, mixed/parallel terms use direct z*Z with the existing analytic Z backend and the original +2*alpha*z0^2 in zz. Otherwise large cancelling terms are rewritten through A(zeta)=1+zeta*Z(zeta) and exact symmetric-truncation identities. In that A branch a complement is used only when the computed finite head is at most 1/2; otherwise positive terms use math.fsum and a generating-function bound on the omitted remainder. The bound concerns exact omitted terms, not SciPy backend or rounding errors. The tail and its absolute arithmetic error still scale with z0^2. An insufficient N can produce a large tensor (b=8,N=30,kz=1e-7 gives Kzz about 7.7e4); it is not the harmonically converged value.",
-   "harmonic: The finite cutoff may be insufficient at larger kx*rho; callers must assess it independently.",
-   "harmonic: This relation's local tensor tests do not establish an end-to-end closure of the terminal matrix outputs through a full pipeline.",
-   "harmonic: The bound tests compare frozen fluid-BW determinants and analytic Z-based terms; no external kinetic code or full-parameter-space oracle is bound.",
-   "harmonic: The model uses analytic SciRel `Z` values rather than a finite-order Weideman special-function implementation, so cross-code absolute parity is not claimed.",
-   "harmonic: The original stability tests cover specified one-species tuples with b in {1,8,40}, N in {5,30,60} and signed kz from 1e-12 to 1e3 at one frequency ratio. A separate large-b,N=20000,Kzz test and 90/120-digit tail reference cover b=4e6; large-tail checks include b=1e8,N=5. Added original-expression full K/D samples cover the small-z regression, four signed omega/kz larger-kz real-kx cases, both sides and adjacent floats at the per-species max-|z_n|=1 switch, small-z N in {0,1,5,15}, and mixed-representation species. Positive/negative A dispatch seams, adjacent floats and the imaginary part near the real-part zero are checked independently. This is not a Cartesian grid or a global precision proof. The unit-scale resonance sample does not establish accuracy at all cyclotron resonances. Complex kx and extreme floating-point ranges remain outside the accuracy evidence; exactly zero kz is rejected.",
-   "harmonic_weideman: The former abs(kz)<1e-10 replacement by +1e-10 is withdrawn because it breaks SI similarity and discards the input sign. Explicit kz=+1e-10 reproduces the former surrogate values. For real b>0 at fixed finite N, zz retains 2*alpha*z0**2*(1-sum(Gamma_n)); the positive omitted tail prevents a general finite zero-kz limit. The complete Maxwellian zero endpoint is a different limit. Zero raises ValueError; explicitly select the separate Ronnmark zero-kz model if appropriate, with no automatic switch.",
-   "harmonic_weideman: The xx/xy/yy components retain fixed N=64 Weideman Z. The xz/yz/zz representation is selected per species: direct z*Z with that backend when (abs(omega)+harmonics*abs(wcs))/(abs(kz)*vts)<=1, otherwise a separate stable real-argument A evaluator. The sampled arithmetic checks do not establish a continuous-domain error bound.",
-   "harmonic_weideman: The finite harmonic cutoff harmonics is caller-supplied. Its finite Gamma tail is retained and can give a genuinely large tensor; no automatic increase of harmonics or harmonic-convergence guarantee is provided.",
-   "harmonic_weideman: In the analytic-A branch, an unrepresentable positive tail or an unbounded remainder within the evaluation budget raises FloatingPointError; no partial tail or fallback to a cancelling large-z expression is returned.",
-   "ronnmark: Finite zero kz is allowed; conventional and fluid finite-harmonic paths require actual nonzero kz. Required derived scales and the complete tensor must be representable.",
-   "ronnmark: Original Maxwellian A convergence remains 15/16 REFERENCE_BLOCK (process exit 2); small-kz uses a separately frozen 200/280-dps N96/128 successor for new observations. Neither its success nor B 16/16 relabels the original block. Printed 160-digit values do not certify full 160-digit accuracy.",
-   "ronnmark: B is Eq.(8) with the actual rounded-table moments; directly inserting a pole Z into Eq.(3) defines B_direct, a different object. Nonzero zero-kz cross-z residuals must not be forced to zero. B-A is a recomputable model discrepancy without an acceptable-error threshold.",
-   "ronnmark: The current table's appearance in the author's source linked by the primary paper has been located; its original generation constraints, reason for differing from the published WHAMP/PDRK table and global physical approximation accuracy remain UNKNOWN.",
-   "ronnmark: Omitted-harmonic inequalities use the exact finite center M_N plus omitted-term radius E. High-precision evaluation using a saved numerical center is not a total-arithmetic-error certificate; rounding enclosure is NOT_ESTABLISHED, including at analytic zero-tail endpoints."
-  ]
- },
- "family": {
-  "name": "dielectric_response",
-  "default": "harmonic",
-  "default_reason": "Retains the conventional analytic-Z finite-harmonic path and its original effective N=5 default. This is a stable interface default, not a claim of universal accuracy.",
-  "methods": [
-   {
-    "name": "harmonic",
-    "model": "Truncated conventional cyclotron-harmonic sum for a homogeneous magnetized Maxwellian species mixture; analytic SciRel Faddeeva Z rather than a finite Weideman implementation. vts=sqrt(2*kB*T_s/m_s); wcs=q_s*B0/m_s; wps2=n_s*q_s^2/(m_s*epsilon0); a_s=kx*sqrt(kB*T_s/m_s)/wcs; b_s=a_s^2; z_n=(omega-n*wcs)/(abs(kz)*vts). Sum n=-harmonics..harmonics with Gamma_n(b), Gamma_prime_n(b) and analytic Z(z_n), weighting each species term by (wps2/omega^2)*z_0*Z(z_n). Assemble the source-convention susceptibility components and K, then subtract the Maxwell curl terms to obtain D and its determinant. K_ij = delta_ij - sigma_ij/(i*omega*epsilon0). z_0 uses abs(kz) as well; negative kz reflects xz/yz/zx/zy after assembly. Geometry: Uniform background field along z with a real wavevector in the x-z plane; tensor axes are x, y, z. Coordinates: Signed B0 and charges; kx perpendicular, kz parallel; angular frequency omega is in rad/s. Boundary: Nonzero B0, omega, kz and kx are required; all derived terms and the final tensors/determinant must be finite and representable. The harmonic cutoff is finite and caller-selected. Assumptions: Each species has a Maxwellian equilibrium with positive mass, number density and temperature. The caller judges whether the chosen harmonics gives sufficient harmonic convergence for its case. A determinant value is not by itself a selected physical mode or a root.",
-    "numerical_controls": {
-     "harmonics": {
-      "default": 5,
-      "constraints": "None or omission uses the original N=5. An explicit cutoff is a non-bool non-negative integer for the unchanged symmetric n=-N..N sum; wrong kind raises TypeError, negative raises ValueError."
-     }
+  "inputs": [
+    {
+      "name": "B0",
+      "description": "Signed homogeneous background magnetic field along z.",
+      "units": "T",
+      "shape": "scalar",
+      "dtype": "real numeric",
+      "required": true,
+      "constraints": "Finite and nonzero; pass a real numeric scalar in T."
     },
-    "applicability": {
-     "preconditions": [
-      "All species arrays have a shared nonempty axis and SI units; the temperature input is kelvin, not eV.",
-      "The real frequency and wavevector point are nonzero where required and the finite harmonic cutoff is adequate for the caller's target accuracy.",
-      "omega is the sole physical frequency in rad/s; vectors share one nonempty species axis. Effective default harmonics=5; real nonzero kx and kz are required."
-     ],
-     "supported": [
-      "One or more homogeneous magnetized Maxwellian species at a real nonzero frequency and x-z-plane wavevector.",
-      "Finite harmonic sums with an explicit non-negative integer cutoff and analytic SciRel Z values."
-     ],
-     "excluded": [
-      "kx=0 or kz=0 limits, complex frequency/wavevector, drift, loss-cone or arbitrary velocity distributions.",
-      "Automatic harmonic-convergence assessment, source Weideman N=64 exact outputs, near-zero kz substitution, root finding or mode-branch selection."
-     ]
+    {
+      "name": "qs",
+      "description": "Signed charges on the shared species axis.",
+      "units": "C",
+      "shape": "(S,), S >= 1",
+      "dtype": "real numeric",
+      "required": true,
+      "constraints": "Finite and nonzero, with the same S as ms, ns0 and Ts0."
     },
-    "failure_semantics": {
-     "invalid_input": "Raises ValueError for nonfinite, boolean, complex or zero scalar fields where prohibited; empty/mismatched/nonfinite species vectors, zero charge, nonpositive mass/density/temperature. Wrong method kind raises TypeError; unknown method string raises ValueError. Harmonic cutoffs accept None (N=5) or non-bool non-negative integers: wrong kind raises TypeError and negative raises ValueError; ronnmark rejects every non-None harmonics value with TypeError. Public method/control errors identify the parameter, received value or kind, legal condition and scirel.kinetic.dielectric-response.",
-     "runtime_failure": "Raises FloatingPointError if derived scales become nonfinite or zero where positivity is required, or if special-function contributions, tensors or determinant become nonfinite or unrepresentable. A positive harmonic tail below reliable float64 range, or one whose remainder cannot be bounded within the evaluation budget, also raises FloatingPointError; no partial tail or tensor is returned. Other unexpected NumPy/SciPy errors propagate.",
-     "nonconvergence": "No root iteration occurs. The caller-selected finite harmonics is retained. Tail evaluation requires either a well-conditioned complement or a positive sum with an omitted-tail bound; exhaustion of the internal 20000-term cost budget raises FloatingPointError. This does not certify adequacy of the caller's harmonic cutoff.",
-     "partial_results": "None; tensors and determinant are returned together only after the final finite check."
+    {
+      "name": "ms",
+      "description": "Species masses.",
+      "units": "kg",
+      "shape": "(S,), same S as qs",
+      "dtype": "real numeric",
+      "required": true,
+      "constraints": "Finite and strictly positive."
     },
-    "verification": {
-     "scope": [
-      "Current implementation and listed tests cover the declared ports, near-zero-kz stability without a clamp, the small-z full K/D regression, four signed omega/kz large-kz real-kx cases protecting xy/yx, per-species response switching around max-|z_n|=1 including adjacent floats, finite cutoffs and mixed-representation species in either order.",
-      "The example exercises one bounded representative case; it does not extend applicability beyond the declared preconditions.",
-      "Python preflight ran, but local execution covers this asset.",
-      "Error-channel tests distinguish invalid shape/domain/cutoff inputs from numerical scale, tensor, tail and budget failures, preserve unrelated ValueError propagation, and protect the diagnostic kx=0 partial boundary without changing scientific tolerances.",
-      "Retained original example: B0=1.0, qs=[-1.60217662e-19], ms=[9.1094e-31], ns0=[6.075e19], Ts0=[1000.0*1.6022e-19/1.38064852e-23], omega=2*pi*float(175881684853.009/(2*pi)), kz=1326.1942478795652, kx=13261.94247879565, effective N=5. K and D shapes are (3,3); abs(determinant-(1184249.3244493124+4322451.2861608062j))<1e-6. The original observed determinant was 1184249.3244493138+4322451.286160805j. The original Hz float conversion is retained when migrating this numerical case; this does not widen the existing error budget."
-     ],
-     "tests": [
+    {
+      "name": "ns0",
+      "description": "Species absolute number densities.",
+      "units": "m^-3",
+      "shape": "(S,), same S as qs",
+      "dtype": "real numeric",
+      "required": true,
+      "constraints": "Finite and strictly positive."
+    },
+    {
+      "name": "Ts0",
+      "description": "Species equilibrium temperatures already converted to kelvin.",
+      "units": "K",
+      "shape": "(S,), same S as qs",
+      "dtype": "real numeric",
+      "required": true,
+      "constraints": "Finite and strictly positive."
+    },
+    {
+      "name": "omega",
+      "description": "Real angular frequency, used directly with no Hz conversion.",
+      "units": "rad/s",
+      "shape": "scalar",
+      "dtype": "real numeric",
+      "required": true,
+      "constraints": "Finite and nonzero."
+    },
+    {
+      "name": "kz",
+      "description": "Signed parallel phase wavenumber.",
+      "units": "1/m",
+      "shape": "scalar",
+      "dtype": "real numeric",
+      "required": true,
+      "constraints": "Finite; nonzero for harmonic and harmonic_weideman. Zero is allowed for ronnmark only."
+    },
+    {
+      "name": "kx",
+      "description": "Perpendicular phase wavenumber.",
+      "units": "1/m",
+      "shape": "scalar",
+      "dtype": "real or complex numeric",
+      "required": true,
+      "constraints": "Harmonic methods require real nonzero kx for a complete result: harmonic rejects zero with ValueError, harmonic_weideman reports its unavailable derived scale with FloatingPointError. ronnmark permits finite real or complex kx, including zero subject to complete-response representability."
+    },
+    {
+      "name": "method",
+      "description": "Explicit numerical method; no automatic routing on domain or numerical failure.",
+      "units": "dimensionless",
+      "shape": "scalar",
+      "dtype": "string",
+      "required": false,
+      "constraints": "Closed set: 'harmonic', 'harmonic_weideman', 'ronnmark'. Wrong kind raises TypeError; unknown string raises ValueError.",
+      "default": "harmonic"
+    },
+    {
+      "name": "harmonics",
+      "description": "Symmetric finite harmonic cutoff n=-N..N.",
+      "units": "dimensionless",
+      "shape": "scalar",
+      "dtype": "integer or None",
+      "required": false,
+      "constraints": "None or omission selects N=5 for the harmonic methods; otherwise a non-bool non-negative Python or NumPy integer. Wrong kind raises TypeError; negative raises ValueError. ronnmark accepts only None, rejecting every other object including 5 with TypeError.",
+      "default": null
+    }
+  ],
+  "outputs": [
+    {
+      "name": "K",
+      "description": "Kinetic dielectric tensor with source sign convention.",
+      "units": "dimensionless",
+      "shape": "(3, 3), x-y-z component axes",
+      "dtype": "complex128",
+      "required": true,
+      "constraints": "Finite; K_yx=-K_xy, K_zy=-K_yz and K_zx=K_xz by assembly."
+    },
+    {
+      "name": "D",
+      "description": "Dispersion tensor after Maxwell curl terms.",
+      "units": "dimensionless",
+      "shape": "(3, 3), x-y-z component axes",
+      "dtype": "complex128",
+      "required": true,
+      "constraints": "Finite; D_xx=K_xx-nz^2, D_yy=K_yy-nx^2-nz^2, D_zz=K_zz-nx^2 and D_xz=D_zx=K_xz+nx*nz."
+    },
+    {
+      "name": "determinant",
+      "description": "Complex determinant of D.",
+      "units": "dimensionless",
+      "shape": "scalar",
+      "dtype": "complex numeric",
+      "required": true,
+      "constraints": "Finite and representable; zero may indicate a candidate mode but no root selection occurs."
+    },
+    {
+      "name": "omega",
+      "description": "Actual directly supplied angular frequency, without an Hz round trip.",
+      "units": "rad/s",
+      "shape": "scalar",
+      "dtype": "float",
+      "required": true,
+      "constraints": "Finite and nonzero."
+    },
+    {
+      "name": "nx",
+      "description": "Perpendicular refractive-index component c*kx/omega.",
+      "units": "dimensionless",
+      "shape": "scalar",
+      "dtype": "real or complex numeric",
+      "required": true,
+      "constraints": "Finite."
+    },
+    {
+      "name": "nz",
+      "description": "Parallel refractive-index component c*kz/omega.",
+      "units": "dimensionless",
+      "shape": "scalar",
+      "dtype": "real or complex numeric",
+      "required": true,
+      "constraints": "Finite."
+    },
+    {
+      "name": "vts",
+      "description": "Species thermal speeds with sqrt(2) convention.",
+      "units": "m/s",
+      "shape": "(S,)",
+      "dtype": "float64",
+      "required": true,
+      "constraints": "Finite and positive."
+    },
+    {
+      "name": "wcs",
+      "description": "Signed species cyclotron angular frequencies.",
+      "units": "rad/s",
+      "shape": "(S,)",
+      "dtype": "float64",
+      "required": true,
+      "constraints": "Finite and nonzero."
+    },
+    {
+      "name": "wps2",
+      "description": "Species plasma angular-frequency squared.",
+      "units": "s^-2",
+      "shape": "(S,)",
+      "dtype": "float64",
+      "required": true,
+      "constraints": "Finite and positive."
+    },
+    {
+      "name": "a",
+      "description": "Original signed or complex kx*sqrt(kB*Ts0/ms)/wcs returned directly from the kernel.",
+      "units": "dimensionless",
+      "shape": "(S,)",
+      "dtype": "real or complex numeric",
+      "required": true,
+      "constraints": "Finite; not reconstructed using sqrt(b), so its sign/complex phase is retained."
+    },
+    {
+      "name": "b",
+      "description": "Squared Bessel or Ronnmark parameter a**2.",
+      "units": "dimensionless",
+      "shape": "(S,)",
+      "dtype": "real or complex numeric",
+      "required": true,
+      "constraints": "Finite a**2, not abs(a)**2; positive real for the finite harmonic methods and possibly zero or complex for ronnmark."
+    },
+    {
+      "name": "diagnostics",
+      "description": "Nested Result containing only the selected algorithm records.",
+      "units": "dimensionless",
+      "shape": "Result",
+      "dtype": "Result",
+      "required": true,
+      "constraints": "Exact common keys: method, tensor_convention. method echoes the selection; tensor_convention is 'K_ij = delta_ij - sigma_ij/(i*omega*epsilon0)'. harmonic and harmonic_weideman add only harmonics (the actual non-bool integer N, default 5). ronnmark adds only bzj, czj, j_order, branches: finite complex bzj/czj have shape (8,), with conjugate residues and negative-conjugate positions in their second halves; j_order=8; branches are species-major then pole order with length S*8 and values RTAY(AL<4), RTAY(|Y|^2>75*AL), RTAY(|Y|>40+AL/3), RASY or RINT. No None/NaN placeholders and no scientific quantity is hidden here."
+    }
+  ],
+  "applicability": {
+    "preconditions": [
+      "harmonic: All species arrays have a shared nonempty axis and SI units; the temperature input is kelvin, not eV.",
+      "harmonic: The real frequency and wavevector point are nonzero where required and the finite harmonic cutoff is adequate for the caller's target accuracy.",
+      "harmonic: omega is the sole physical frequency in rad/s; vectors share one nonempty species axis. Effective default harmonics=5; real nonzero kx and kz are required.",
+      "harmonic_weideman: Species arrays are finite, non-empty and shape-compatible; masses, densities and temperatures are positive, with nonzero charge and magnetic field.",
+      "harmonic_weideman: The wavepoint and derived frequency/scales are finite, kz is nonzero, and the selected numerical path domain is satisfied.",
+      "harmonic_weideman: omega is the sole physical frequency in rad/s; vectors share one nonempty species axis. Effective default harmonics=5; real nonzero kx and kz are required.",
+      "ronnmark: Finite zero kz is allowed; conventional and fluid finite-harmonic paths require actual nonzero kz. Required derived scales and the complete tensor must be representable.",
+      "ronnmark: The wavepoint and derived frequency/scales are finite and satisfy the selected numerical path domain.",
+      "ronnmark: omega is the sole physical frequency in rad/s; vectors share one nonempty species axis. J=8 and its binary64 tables are fixed; harmonics must be None."
+    ],
+    "supported": [
+      "harmonic: One or more homogeneous magnetized Maxwellian species at a real nonzero frequency and x-z-plane wavevector.",
+      "harmonic: Finite harmonic sums with an explicit non-negative integer cutoff and analytic SciRel Z values.",
+      "harmonic_weideman: Assemble the Maxwellian 3x3 kinetic tensor by finite cyclotron-harmonic sum at the actual signed nonzero kz.",
+      "ronnmark: Evaluate the J=8 rational-pole kinetic 3x3 tensor and dispersion determinant, including complex kx and zero kz."
+    ],
+    "excluded": [
+      "harmonic: kx=0 or kz=0 limits, complex frequency/wavevector, drift, loss-cone or arbitrary velocity distributions.",
+      "harmonic: Automatic harmonic-convergence assessment, source Weideman N=64 exact outputs, near-zero kz substitution, root finding or mode-branch selection.",
+      "harmonic_weideman: Mode identification, root finding and accuracy outside the tested finite-harmonic or rational-pole approximation.",
+      "harmonic_weideman: Zero kz, inputs that violate the numerical domain, or inputs requiring a different tensor convention.",
+      "ronnmark: Mode identification, root finding and accuracy outside the tested finite-harmonic or rational-pole approximation.",
+      "ronnmark: Inputs that violate the numerical domain or require a different tensor convention."
+    ]
+  },
+  "failure_semantics": {
+    "invalid_input": "Raises TypeError for a non-string method, a wrong harmonic-control kind (including bool), or any non-None harmonics for ronnmark. Raises ValueError for an unknown method string, negative cutoff, nonfinite or invalid physical input, unsupported species shape or disallowed zero B0, omega or kz, and zero kx for harmonic. At zero kx harmonic_weideman retains its original derived-scale FloatingPointError. Public method/control errors identify the parameter, received value or kind, legal condition and scirel.kinetic.dielectric-response. Unsupported numeric conversions may propagate TypeError.",
+    "runtime_failure": "Raises FloatingPointError for nonfinite or unrepresentable required scales, required nonzero scales underflowing to zero, unreliable or budget-exhausted harmonic tails, genuine R/H/RC poles, or nonfinite complete K, D or determinant. The positive-tail 20000-term budget, severe-cancellation policy and all original per-method failures remain in force; no fallback, clamp, penalty, incomplete tensor or automatic method switch.",
+    "nonconvergence": "No root iteration. Finite harmonics retain the exact caller-selected N; ronnmark retains fixed J=8. Tail-budget exhaustion is FloatingPointError, not a convergence verdict. No automatic accuracy or harmonic-convergence certificate.",
+    "partial_results": "None: all fixed scientific Result fields are returned together only when complete and representable. Algorithm differences are exhaustively enumerated in diagnostics; no None or NaN placeholders."
+  },
+  "public_api": {
+    "python": {
+      "module": "scirel.kinetic.dielectric_response",
+      "symbol": "evaluate_dielectric_response",
+      "signature": "evaluate_dielectric_response(*, B0, qs, ms, ns0, Ts0, omega, kz, kx, method='harmonic', harmonics=None)",
+      "canonical_module": "scirel.kinetic",
+      "canonical_symbol": "evaluate_dielectric_response"
+    }
+  },
+  "version": {
+    "implementation_version": "0.0.0",
+    "dependencies": [
+      {
+        "asset_id": "scirel.kinetic.bessel-gamma"
+      },
+      {
+        "asset_id": "scirel.kinetic.plasma-dispersion-function"
+      },
+      {
+        "asset_id": "scirel.kinetic.ronnmark-r-function"
+      }
+    ]
+  },
+  "example": {
+    "description": "Evaluate all three explicitly selected methods at the same bounded one-species point; check common tensor shapes without asserting model equivalence.",
+    "code": "from scirel.kinetic import evaluate_dielectric_response\np = dict(B0=1.0, qs=[-1.60217662e-19], ms=[9.1094e-31], ns0=[6.075e19], Ts0=[11604941.036704937], omega=1e11, kz=1.0, kx=1e4)\nr = evaluate_dielectric_response(**p, method='harmonic')\nassert r.K.shape == r.D.shape == (3, 3)\nr = evaluate_dielectric_response(**p, method='harmonic_weideman')\nassert r.K.shape == r.D.shape == (3, 3)\nr = evaluate_dielectric_response(**p, method='ronnmark')\nassert r.K.shape == r.D.shape == (3, 3)\n",
+    "expected": "Each selected method returns its complete Result with 3x3 K and D at the declared point. This shape check does not compare model errors or extend the method-specific verification ceilings."
+  },
+  "verification": {
+    "scope": [
+      "harmonic (retained kernel evidence): Current implementation and listed tests cover the declared ports, near-zero-kz stability without a clamp, the small-z full K/D regression, four signed omega/kz large-kz real-kx cases protecting xy/yx, per-species response switching around max-|z_n|=1 including adjacent floats, finite cutoffs and mixed-representation species in either order.",
+      "harmonic (retained kernel evidence): The example exercises one bounded representative case; it does not extend applicability beyond the declared preconditions.",
+      "harmonic (retained kernel evidence): Python preflight ran, but local execution covers this asset.",
+      "harmonic (retained kernel evidence): Error-channel tests distinguish invalid shape/domain/cutoff inputs from numerical scale, tensor, tail and budget failures, preserve unrelated ValueError propagation, and protect the diagnostic kx=0 partial boundary without changing scientific tolerances.",
+      "harmonic (retained kernel evidence): Retained original example: B0=1.0, qs=[-1.60217662e-19], ms=[9.1094e-31], ns0=[6.075e19], Ts0=[1000.0*1.6022e-19/1.38064852e-23], omega=2*pi*float(175881684853.009/(2*pi)), kz=1326.1942478795652, kx=13261.94247879565, effective N=5. K and D shapes are (3,3); abs(determinant-(1184249.3244493124+4322451.2861608062j))<1e-6. The original observed determinant was 1184249.3244493138+4322451.286160805j. The original Hz float conversion is retained when migrating this numerical case; this does not widen the existing error budget.",
+      "harmonic_weideman (retained kernel evidence): Bounded full-complex K/D comparisons against an independent high-precision original finite sum, including the small-z regression, four signed omega/kz large-kz real-kx cases protecting xy/yx, neighbors of the per-species maximum-|z_n|=1 representation switch, small-z finite cutoffs, mixed-representation species in either order, near-zero kz, finite-cutoff endpoints, the analytic real-response switch, resonance and signed multi-species cases; positive-tail failure boundaries. Actual signed nonzero kz, including +/-1e-12 and adjacent floats around the former cutoff; literal zero rejection before numerical work; explicit +1e-10 source value and default N5; 12-pair SI similarity at unchanged 2e-12 full K/D/determinant budgets.",
+      "harmonic_weideman (retained kernel evidence): Error-channel tests distinguish invalid shape/domain/cutoff inputs from numerical scale, tensor, tail and budget failures, preserve unrelated ValueError propagation, and protect the diagnostic kx=0 partial boundary without changing scientific tolerances.",
+      "harmonic_weideman (retained kernel evidence): Retained original example: B0=1.0, qs=[-1.60217662e-19], ms=[9.1094e-31], ns0=[6.075e19], Ts0=[11604941.036704937], omega=2*pi*float(1e10), kz=1.0, kx=1.0, effective N=5; D.shape==(3,3), with the original finite K/D/determinant and species-scale obligations. The original Hz float conversion is retained.",
+      "ronnmark (retained kernel evidence): Existing source-method cases and failure boundaries; sixteen exact binary64 inputs with independent Eq.(8) fixed-table B references for every complex K/D entry and returned det(D).",
+      "ronnmark (retained kernel evidence): Separate Maxwellian Eq.(3) A references, rounded-table moment and zero-kz endpoint checks, cold Hall sign and complex-square conventions; B-A observations have no physical acceptance threshold.",
+      "ronnmark (retained kernel evidence): A manufactured nonresonant double-zero control remains finite; exact poles, derived-scale failures and numerical error propagation are separate from invalid caller inputs.",
+      "ronnmark (retained kernel evidence): Retained original example: B0=1.0, qs=[-1.60217662e-19], ms=[9.1094e-31], ns0=[6.075e19], Ts0=[11604941.036704937], omega=1e11, kz=0, kx=1e4, fixed J=8; D.shape==(3,3), finite K/D/determinant, fixed pole tables and tensor convention. The original direct omega has no Hz round trip."
+    ],
+    "tests": [
       "tests/kinetic/test_kinetic_signed_kz.py",
       "tests/kinetic/test_kinetic_dispersion_sum_n.py",
       "tests/kinetic/test_kinetic_dispersion_sum_stability.py",
-      "tests/kinetic/test_finite_harmonic_failure_policy.py"
-     ],
-     "evidence_ceiling": "Bounded to the declared homogeneous magnetized Maxwellian finite-N equations. Direct tests include frozen fluid-BW values, analytic Z checks and independent 90-digit full-tensor references derived from public inputs, plus a 90/120-digit large-b Kzz reference. The small-z regression and response-switch cases compare full complex K/D componentwise at |error|/max(1,|reference|)<=2e-12 against an independent 180-digit original finite sum using Bessel I and the erfc definition of Z; the regression's 140/180-digit references are checked before binary64 rounding. No production scales, A response or tail algorithm is used in that original-expression reference. These check numerical evaluation of that finite N, not experimental model accuracy, automatic harmonic convergence, determinant/root accuracy, all species mixtures or all floating-point inputs.",
-     "known_limitations": [
-      "The x-z-plane real-wavepoint contract excludes perpendicular/parallel zero-wavevector limits and complex root-search inputs.",
-      "The finite-N truncation tail is retained. For each species with (abs(omega)+harmonics*abs(wcs))/(abs(kz)*vts)<=1, mixed/parallel terms use direct z*Z with the existing analytic Z backend and the original +2*alpha*z0^2 in zz. Otherwise large cancelling terms are rewritten through A(zeta)=1+zeta*Z(zeta) and exact symmetric-truncation identities. In that A branch a complement is used only when the computed finite head is at most 1/2; otherwise positive terms use math.fsum and a generating-function bound on the omitted remainder. The bound concerns exact omitted terms, not SciPy backend or rounding errors. The tail and its absolute arithmetic error still scale with z0^2. An insufficient N can produce a large tensor (b=8,N=30,kz=1e-7 gives Kzz about 7.7e4); it is not the harmonically converged value.",
-      "The finite cutoff may be insufficient at larger kx*rho; callers must assess it independently.",
-      "This relation's local tensor tests do not establish an end-to-end closure of the terminal matrix outputs through a full pipeline.",
-      "The bound tests compare frozen fluid-BW determinants and analytic Z-based terms; no external kinetic code or full-parameter-space oracle is bound.",
-      "The model uses analytic SciRel `Z` values rather than a finite-order Weideman special-function implementation, so cross-code absolute parity is not claimed.",
-      "The original stability tests cover specified one-species tuples with b in {1,8,40}, N in {5,30,60} and signed kz from 1e-12 to 1e3 at one frequency ratio. A separate large-b,N=20000,Kzz test and 90/120-digit tail reference cover b=4e6; large-tail checks include b=1e8,N=5. Added original-expression full K/D samples cover the small-z regression, four signed omega/kz larger-kz real-kx cases, both sides and adjacent floats at the per-species max-|z_n|=1 switch, small-z N in {0,1,5,15}, and mixed-representation species. Positive/negative A dispatch seams, adjacent floats and the imaginary part near the real-part zero are checked independently. This is not a Cartesian grid or a global precision proof. The unit-scale resonance sample does not establish accuracy at all cyclotron resonances. Complex kx and extreme floating-point ranges remain outside the accuracy evidence; exactly zero kz is rejected."
-     ]
-    }
-   },
-   {
-    "name": "harmonic_weideman",
-    "model": "homogeneous magnetized Maxwellian plasma. Sum harmonics -harmonics..harmonics using scaled Bessel Gamma terms. The xx/xy/yy components retain N=64 Weideman Z. For each species with (abs(omega)+harmonics*abs(wcs))/(abs(kz)*vts)<=1, xz/yz/zz use z*Z(z) directly with the same Weideman Z, retaining the original +2*alpha*z0**2 in zz. Otherwise they use the analytic real-argument response A(z)=1+z*Z(z), evaluated directly without subtracting two nearly equal terms. In that branch symmetric finite-sum identities retain the endpoint Gamma_(N+1)-Gamma_N and the tail 1-sum(Gamma_n); the tail is formed from positive terms when its complement is ill-conditioned. Every nonzero kz uses its actual value and sign; zero is rejected rather than replaced. D adds Maxwell curl terms to K and determinant=det(D). Geometry: homogeneous plasma. Coordinates: wavevector in the x-z plane, with z parallel to B0. Boundary: Finite nonzero kz is evaluated at its actual value and sign; kz=0 raises ValueError before numerical work. No model switch. Assumptions: Input units and normalization follow the declared ports; no physical parameters are inferred.",
-    "numerical_controls": {
-     "harmonics": {
-      "default": 5,
-      "constraints": "None or omission uses the original N=5. An explicit cutoff is a non-bool non-negative integer for the unchanged symmetric n=-N..N sum; wrong kind raises TypeError, negative raises ValueError."
-     }
-    },
-    "applicability": {
-     "preconditions": [
-      "Species arrays are finite, non-empty and shape-compatible; masses, densities and temperatures are positive, with nonzero charge and magnetic field.",
-      "The wavepoint and derived frequency/scales are finite, kz is nonzero, and the selected numerical path domain is satisfied.",
-      "omega is the sole physical frequency in rad/s; vectors share one nonempty species axis. Effective default harmonics=5; real nonzero kx and kz are required."
-     ],
-     "supported": [
-      "Assemble the Maxwellian 3x3 kinetic tensor by finite cyclotron-harmonic sum at the actual signed nonzero kz."
-     ],
-     "excluded": [
-      "Mode identification, root finding and accuracy outside the tested finite-harmonic or rational-pole approximation.",
-      "Zero kz, inputs that violate the numerical domain, or inputs requiring a different tensor convention."
-     ]
-    },
-    "failure_semantics": {
-     "invalid_input": "Raises ValueError for declared invalid inputs; numeric conversion errors may propagate for unsupported Python objects. Zero kz is rejected before numerical work; use finite nonzero kz or explicitly choose evaluate_dielectric_response(method='ronnmark') under its separate zero-kz contract. Wrong method kind raises TypeError; unknown method string raises ValueError. Harmonic cutoffs accept None (N=5) or non-bool non-negative integers: wrong kind raises TypeError and negative raises ValueError; ronnmark rejects every non-None harmonics value with TypeError. Public method/control errors identify the parameter, received value or kind, legal condition and scirel.kinetic.dielectric-response.",
-     "runtime_failure": "Raises FloatingPointError if derived scales underflow to zero where nonzero is required or become nonfinite, if special-function contributions, tensors or determinant are nonfinite or unrepresentable, or if a positive harmonic tail cannot be represented reliably or bounded within the evaluation budget. No partial tail or tensor is returned. Other unexpected backend errors propagate.",
-     "nonconvergence": "Not applicable; no iterative root solve is exposed.",
-     "partial_results": "No partial mapping is returned after an exception."
-    },
-    "verification": {
-     "scope": [
-      "Bounded full-complex K/D comparisons against an independent high-precision original finite sum, including the small-z regression, four signed omega/kz large-kz real-kx cases protecting xy/yx, neighbors of the per-species maximum-|z_n|=1 representation switch, small-z finite cutoffs, mixed-representation species in either order, near-zero kz, finite-cutoff endpoints, the analytic real-response switch, resonance and signed multi-species cases; positive-tail failure boundaries. Actual signed nonzero kz, including +/-1e-12 and adjacent floats around the former cutoff; literal zero rejection before numerical work; explicit +1e-10 source value and default N5; 12-pair SI similarity at unchanged 2e-12 full K/D/determinant budgets.",
-      "Error-channel tests distinguish invalid shape/domain/cutoff inputs from numerical scale, tensor, tail and budget failures, preserve unrelated ValueError propagation, and protect the diagnostic kx=0 partial boundary without changing scientific tolerances.",
-      "Retained original example: B0=1.0, qs=[-1.60217662e-19], ms=[9.1094e-31], ns0=[6.075e19], Ts0=[11604941.036704937], omega=2*pi*float(1e10), kz=1.0, kx=1.0, effective N=5; D.shape==(3,3), with the original finite K/D/determinant and species-scale obligations. The original Hz float conversion is retained."
-     ],
-     "tests": [
+      "tests/kinetic/test_finite_harmonic_failure_policy.py",
       "tests/kinetic/test_kinetic_dispersion_sum_fluid_stability.py",
-      "tests/kinetic/test_kinetic_signed_kz.py",
       "tests/kinetic/test_fluid_spectrum_r43_variants.py",
       "tests/kinetic/test_kinetic_tensor_similarity.py",
-      "tests/kinetic/test_finite_harmonic_failure_policy.py"
-     ],
-     "evidence_ceiling": "Independent mpmath evaluation derives every scale from the public inputs and evaluates the original finite harmonic expression through Bessel I and the erfc definition of Z. Full complex K/D are compared componentwise at |error|/max(1,|reference|)<=2e-12 on the cases enumerated in test_kinetic_dispersion_sum_fluid_stability.py; selected 140/180-digit references, including the small-z regression, are checked before binary64 rounding. This is bounded arithmetic evidence, not a continuous-domain error theorem, harmonic-convergence guarantee, determinant/root-accuracy claim or physical calibration. The ordinary xx/xy/yy components retain N=64 Weideman Z; for each species the mixed/parallel components use direct z*Z with that backend when every |z_n|<=1, retaining the original zz constant, and analytic A with finite-sum identities otherwise. This numerical-method correction is not parity with the frozen N=64 rational expression. The independent reference uses actual nonzero kz without a floor, with both signs checked at 140/180 digits. The 12-pair/24-call SI similarity test is a necessary same-method relation only; it is not absolute accuracy evidence for any of the four methods. Zero rejection is a domain policy, not an evaluated zero-limit oracle.",
-     "known_limitations": [
-      "The former abs(kz)<1e-10 replacement by +1e-10 is withdrawn because it breaks SI similarity and discards the input sign. Explicit kz=+1e-10 reproduces the former surrogate values. For real b>0 at fixed finite N, zz retains 2*alpha*z0**2*(1-sum(Gamma_n)); the positive omitted tail prevents a general finite zero-kz limit. The complete Maxwellian zero endpoint is a different limit. Zero raises ValueError; explicitly select the separate Ronnmark zero-kz model if appropriate, with no automatic switch.",
-      "The xx/xy/yy components retain fixed N=64 Weideman Z. The xz/yz/zz representation is selected per species: direct z*Z with that backend when (abs(omega)+harmonics*abs(wcs))/(abs(kz)*vts)<=1, otherwise a separate stable real-argument A evaluator. The sampled arithmetic checks do not establish a continuous-domain error bound.",
-      "The finite harmonic cutoff harmonics is caller-supplied. Its finite Gamma tail is retained and can give a genuinely large tensor; no automatic increase of harmonics or harmonic-convergence guarantee is provided.",
-      "In the analytic-A branch, an unrepresentable positive tail or an unbounded remainder within the evaluation budget raises FloatingPointError; no partial tail or fallback to a cancelling large-z expression is returned."
-     ]
-    }
-   },
-   {
-    "name": "ronnmark",
-    "model": "homogeneous magnetized Maxwellian multi-species plasma. Replace the Z and harmonic response by J=8 resonance poles and the Ronnmark R function, add Maxwell curl terms, and compute det(D). Geometry: homogeneous plasma. Coordinates: wavevector x-z plane; complex kx permitted, z parallel to B0. Boundary: Finite zero kz is allowed; conventional and fluid finite-harmonic paths require actual nonzero kz. Required derived scales and the complete tensor must be representable. Assumptions: Input units and normalization follow the declared ports; no physical parameters are inferred.",
-    "numerical_controls": {},
-    "applicability": {
-     "preconditions": [
-      "Finite zero kz is allowed; conventional and fluid finite-harmonic paths require actual nonzero kz. Required derived scales and the complete tensor must be representable.",
-      "The wavepoint and derived frequency/scales are finite and satisfy the selected numerical path domain.",
-      "omega is the sole physical frequency in rad/s; vectors share one nonempty species axis. J=8 and its binary64 tables are fixed; harmonics must be None."
-     ],
-     "supported": [
-      "Evaluate the J=8 rational-pole kinetic 3x3 tensor and dispersion determinant, including complex kx and zero kz."
-     ],
-     "excluded": [
-      "Mode identification, root finding and accuracy outside the tested finite-harmonic or rational-pole approximation.",
-      "Inputs that violate the numerical domain or require a different tensor convention."
-     ]
-    },
-    "failure_semantics": {
-     "invalid_input": "Raises ValueError for invalid physical inputs and declared species-vector violations; native numeric conversion errors may propagate. Wrong method kind raises TypeError and unknown method strings raise ValueError. Fixed J8 has no harmonic-cutoff control: only the shared unspecified state harmonics=None is accepted; every non-None value raises TypeError naming the parameter, received value, legal condition and scirel.kinetic.dielectric-response.",
-     "runtime_failure": "Raises FloatingPointError for nonfinite/unrepresentable required derived scales, R/H/RC response, complete K/D tensor or determinant, Required nonzero scales underflowing to zero fail explicitly. No partial tensor, fallback or clamp is substituted.",
-     "nonconvergence": "Not applicable; no iterative root solve is exposed.",
-     "partial_results": "No partial mapping is returned after an exception."
-    },
-    "verification": {
-     "scope": [
-      "Existing source-method cases and failure boundaries; sixteen exact binary64 inputs with independent Eq.(8) fixed-table B references for every complex K/D entry and returned det(D).",
-      "Separate Maxwellian Eq.(3) A references, rounded-table moment and zero-kz endpoint checks, cold Hall sign and complex-square conventions; B-A observations have no physical acceptance threshold.",
-      "A manufactured nonresonant double-zero control remains finite; exact poles, derived-scale failures and numerical error propagation are separate from invalid caller inputs.",
-      "Retained original example: B0=1.0, qs=[-1.60217662e-19], ms=[9.1094e-31], ns0=[6.075e19], Ts0=[11604941.036704937], omega=1e11, kz=0, kx=1e4, fixed J=8; D.shape==(3,3), finite K/D/determinant, fixed pole tables and tensor convention. The original direct omega has no Hz round trip."
-     ],
-     "tests": [
-      "tests/kinetic/test_kinetic_signed_kz.py",
       "tests/kinetic/test_fluid_spectrum_r43_kinetic.py",
       "tests/kinetic/test_ronnmark_tensor_reference.py",
       "tests/kinetic/test_kinetic_tensor_family_evidence.py::test_ronnmark_r_matches_its_independent_harmonic_representation",
       "tests/kinetic/test_ronnmark_zero_endpoint.py"
-     ],
-     "evidence_ceiling": "test_product_matches_independent_B_16 in tests/kinetic/test_ronnmark_tensor_reference.py directly compares eighteen complex K/D entries and returned det(D) with independently Bessel-summed Eq.(8) B using the actual binary64 table: abs(product-B)/max(1,abs(B)) <= 2e-7. This pre-frozen new finite-grid numerical diagnostic is separate from physical B-A discrepancy and preserves existing source 1e-11/1e-9, finite-N 2e-12 and R/H budgets. Self-contained data and manual independent Eq.(3)/(8)/(13)/(14) regeneration are in tests/fixtures/kinetic_tensor/README.md. Independent scientific-identity review was ACK_STATIC; candidate execution and release need their own evidence. No continuous-domain error bound, physical-A accuracy pass, mode/root or damping guarantee follows.",
-     "known_limitations": [
-      "Finite zero kz is allowed; conventional and fluid finite-harmonic paths require actual nonzero kz. Required derived scales and the complete tensor must be representable.",
-      "Original Maxwellian A convergence remains 15/16 REFERENCE_BLOCK (process exit 2); small-kz uses a separately frozen 200/280-dps N96/128 successor for new observations. Neither its success nor B 16/16 relabels the original block. Printed 160-digit values do not certify full 160-digit accuracy.",
-      "B is Eq.(8) with the actual rounded-table moments; directly inserting a pole Z into Eq.(3) defines B_direct, a different object. Nonzero zero-kz cross-z residuals must not be forced to zero. B-A is a recomputable model discrepancy without an acceptable-error threshold.",
-      "The current table's appearance in the author's source linked by the primary paper has been located; its original generation constraints, reason for differing from the published WHAMP/PDRK table and global physical approximation accuracy remain UNKNOWN.",
-      "Omitted-harmonic inequalities use the exact finite center M_N plus omitted-term radius E. High-precision evaluation using a saved numerical center is not a total-arithmetic-error certificate; rounding enclosure is NOT_ESTABLISHED, including at analytic zero-tail endpoints."
-     ]
+    ],
+    "evidence_ceiling": "harmonic: Bounded to the declared homogeneous magnetized Maxwellian finite-N equations. Direct tests include frozen fluid-BW values, analytic Z checks and independent 90-digit full-tensor references derived from public inputs, plus a 90/120-digit large-b Kzz reference. The small-z regression and response-switch cases compare full complex K/D componentwise at |error|/max(1,|reference|)<=2e-12 against an independent 180-digit original finite sum using Bessel I and the erfc definition of Z; the regression's 140/180-digit references are checked before binary64 rounding. No production scales, A response or tail algorithm is used in that original-expression reference. These check numerical evaluation of that finite N, not experimental model accuracy, automatic harmonic convergence, determinant/root accuracy, all species mixtures or all floating-point inputs. harmonic_weideman: Independent mpmath evaluation derives every scale from the public inputs and evaluates the original finite harmonic expression through Bessel I and the erfc definition of Z. Full complex K/D are compared componentwise at |error|/max(1,|reference|)<=2e-12 on the cases enumerated in test_kinetic_dispersion_sum_fluid_stability.py; selected 140/180-digit references, including the small-z regression, are checked before binary64 rounding. This is bounded arithmetic evidence, not a continuous-domain error theorem, harmonic-convergence guarantee, determinant/root-accuracy claim or physical calibration. The ordinary xx/xy/yy components retain N=64 Weideman Z; for each species the mixed/parallel components use direct z*Z with that backend when every |z_n|<=1, retaining the original zz constant, and analytic A with finite-sum identities otherwise. This numerical-method correction is not parity with the frozen N=64 rational expression. The independent reference uses actual nonzero kz without a floor, with both signs checked at 140/180 digits. The 12-pair/24-call SI similarity test is a necessary same-method relation only; it is not absolute accuracy evidence for any of the four methods. Zero rejection is a domain policy, not an evaluated zero-limit oracle. ronnmark: test_product_matches_independent_B_16 in tests/kinetic/test_ronnmark_tensor_reference.py directly compares eighteen complex K/D entries and returned det(D) with independently Bessel-summed Eq.(8) B using the actual binary64 table: abs(product-B)/max(1,abs(B)) <= 2e-7. This pre-frozen new finite-grid numerical diagnostic is separate from physical B-A discrepancy and preserves existing source 1e-11/1e-9, finite-N 2e-12 and R/H budgets. Self-contained data and manual independent Eq.(3)/(8)/(13)/(14) regeneration are in tests/fixtures/kinetic_tensor/README.md. Independent scientific-identity review was ACK_STATIC; candidate execution and release need their own evidence. No continuous-domain error bound, physical-A accuracy pass, mode/root or damping guarantee follows.",
+    "known_limitations": [
+      "harmonic: The x-z-plane real-wavepoint contract excludes perpendicular/parallel zero-wavevector limits and complex root-search inputs.",
+      "harmonic: The finite-N truncation tail is retained. For each species with (abs(omega)+harmonics*abs(wcs))/(abs(kz)*vts)<=1, mixed/parallel terms use direct z*Z with the existing analytic Z backend and the original +2*alpha*z0^2 in zz. Otherwise large cancelling terms are rewritten through A(zeta)=1+zeta*Z(zeta) and exact symmetric-truncation identities. In that A branch a complement is used only when the computed finite head is at most 1/2; otherwise positive terms use math.fsum and a generating-function bound on the omitted remainder. The bound concerns exact omitted terms, not SciPy backend or rounding errors. The tail and its absolute arithmetic error still scale with z0^2. An insufficient N can produce a large tensor (b=8,N=30,kz=1e-7 gives Kzz about 7.7e4); it is not the harmonically converged value.",
+      "harmonic: The finite cutoff may be insufficient at larger kx*rho; callers must assess it independently.",
+      "harmonic: This relation's local tensor tests do not establish an end-to-end closure of the terminal matrix outputs through a full pipeline.",
+      "harmonic: The bound tests compare frozen fluid-BW determinants and analytic Z-based terms; no external kinetic code or full-parameter-space oracle is bound.",
+      "harmonic: The model uses analytic SciRel `Z` values rather than a finite-order Weideman special-function implementation, so cross-code absolute parity is not claimed.",
+      "harmonic: The original stability tests cover specified one-species tuples with b in {1,8,40}, N in {5,30,60} and signed kz from 1e-12 to 1e3 at one frequency ratio. A separate large-b,N=20000,Kzz test and 90/120-digit tail reference cover b=4e6; large-tail checks include b=1e8,N=5. Added original-expression full K/D samples cover the small-z regression, four signed omega/kz larger-kz real-kx cases, both sides and adjacent floats at the per-species max-|z_n|=1 switch, small-z N in {0,1,5,15}, and mixed-representation species. Positive/negative A dispatch seams, adjacent floats and the imaginary part near the real-part zero are checked independently. This is not a Cartesian grid or a global precision proof. The unit-scale resonance sample does not establish accuracy at all cyclotron resonances. Complex kx and extreme floating-point ranges remain outside the accuracy evidence; exactly zero kz is rejected.",
+      "harmonic_weideman: The former abs(kz)<1e-10 replacement by +1e-10 is withdrawn because it breaks SI similarity and discards the input sign. Explicit kz=+1e-10 reproduces the former surrogate values. For real b>0 at fixed finite N, zz retains 2*alpha*z0**2*(1-sum(Gamma_n)); the positive omitted tail prevents a general finite zero-kz limit. The complete Maxwellian zero endpoint is a different limit. Zero raises ValueError; explicitly select the separate Ronnmark zero-kz model if appropriate, with no automatic switch.",
+      "harmonic_weideman: The xx/xy/yy components retain fixed N=64 Weideman Z. The xz/yz/zz representation is selected per species: direct z*Z with that backend when (abs(omega)+harmonics*abs(wcs))/(abs(kz)*vts)<=1, otherwise a separate stable real-argument A evaluator. The sampled arithmetic checks do not establish a continuous-domain error bound.",
+      "harmonic_weideman: The finite harmonic cutoff harmonics is caller-supplied. Its finite Gamma tail is retained and can give a genuinely large tensor; no automatic increase of harmonics or harmonic-convergence guarantee is provided.",
+      "harmonic_weideman: In the analytic-A branch, an unrepresentable positive tail or an unbounded remainder within the evaluation budget raises FloatingPointError; no partial tail or fallback to a cancelling large-z expression is returned.",
+      "ronnmark: Finite zero kz is allowed; conventional and fluid finite-harmonic paths require actual nonzero kz. Required derived scales and the complete tensor must be representable.",
+      "ronnmark: Original Maxwellian A convergence remains 15/16 REFERENCE_BLOCK (process exit 2); small-kz uses a separately frozen 200/280-dps N96/128 successor for new observations. Neither its success nor B 16/16 relabels the original block. Printed 160-digit values do not certify full 160-digit accuracy.",
+      "ronnmark: B is Eq.(8) with the actual rounded-table moments; directly inserting a pole Z into Eq.(3) defines B_direct, a different object. Nonzero zero-kz cross-z residuals must not be forced to zero. B-A is a recomputable model discrepancy without an acceptable-error threshold.",
+      "ronnmark: The current table's appearance in the author's source linked by the primary paper has been located; its original generation constraints, reason for differing from the published WHAMP/PDRK table and global physical approximation accuracy remain UNKNOWN.",
+      "ronnmark: Omitted-harmonic inequalities use the exact finite center M_N plus omitted-term radius E. High-precision evaluation using a saved numerical center is not a total-arithmetic-error certificate; rounding enclosure is NOT_ESTABLISHED, including at analytic zero-tail endpoints."
+    ],
+    "basis": {
+      "kind": "independent-recomputation",
+      "statement": "Independent 90-digit full-tensor references derived from public inputs, a 90/120-digit large-b Kzz reference and analytic Z checks decide the tensor, with componentwise |error|/max(1,|reference|) <= 2e-12 against an independent 180-digit evaluation. No continuous-domain error bound, physical-A accuracy pass, or mode/root guarantee follows.",
+      "source": "tests/kinetic/test_kinetic_signed_kz.py"
     }
-   }
+  },
+  "family": {
+    "name": "dielectric_response",
+    "default": "harmonic",
+    "default_reason": "Retains the conventional analytic-Z finite-harmonic path and its original effective N=5 default. This is a stable interface default, not a claim of universal accuracy.",
+    "methods": [
+      {
+        "name": "harmonic",
+        "model": "Truncated conventional cyclotron-harmonic sum for a homogeneous magnetized Maxwellian species mixture; analytic SciRel Faddeeva Z rather than a finite Weideman implementation. vts=sqrt(2*kB*T_s/m_s); wcs=q_s*B0/m_s; wps2=n_s*q_s^2/(m_s*epsilon0); a_s=kx*sqrt(kB*T_s/m_s)/wcs; b_s=a_s^2; z_n=(omega-n*wcs)/(abs(kz)*vts). Sum n=-harmonics..harmonics with Gamma_n(b), Gamma_prime_n(b) and analytic Z(z_n), weighting each species term by (wps2/omega^2)*z_0*Z(z_n). Assemble the source-convention susceptibility components and K, then subtract the Maxwell curl terms to obtain D and its determinant. K_ij = delta_ij - sigma_ij/(i*omega*epsilon0). z_0 uses abs(kz) as well; negative kz reflects xz/yz/zx/zy after assembly. Geometry: Uniform background field along z with a real wavevector in the x-z plane; tensor axes are x, y, z. Coordinates: Signed B0 and charges; kx perpendicular, kz parallel; angular frequency omega is in rad/s. Boundary: Nonzero B0, omega, kz and kx are required; all derived terms and the final tensors/determinant must be finite and representable. The harmonic cutoff is finite and caller-selected. Assumptions: Each species has a Maxwellian equilibrium with positive mass, number density and temperature. The caller judges whether the chosen harmonics gives sufficient harmonic convergence for its case. A determinant value is not by itself a selected physical mode or a root.",
+        "numerical_controls": {
+          "harmonics": {
+            "default": 5,
+            "constraints": "None or omission uses the original N=5. An explicit cutoff is a non-bool non-negative integer for the unchanged symmetric n=-N..N sum; wrong kind raises TypeError, negative raises ValueError."
+          }
+        },
+        "applicability": {
+          "preconditions": [
+            "All species arrays have a shared nonempty axis and SI units; the temperature input is kelvin, not eV.",
+            "The real frequency and wavevector point are nonzero where required and the finite harmonic cutoff is adequate for the caller's target accuracy.",
+            "omega is the sole physical frequency in rad/s; vectors share one nonempty species axis. Effective default harmonics=5; real nonzero kx and kz are required."
+          ],
+          "supported": [
+            "One or more homogeneous magnetized Maxwellian species at a real nonzero frequency and x-z-plane wavevector.",
+            "Finite harmonic sums with an explicit non-negative integer cutoff and analytic SciRel Z values."
+          ],
+          "excluded": [
+            "kx=0 or kz=0 limits, complex frequency/wavevector, drift, loss-cone or arbitrary velocity distributions.",
+            "Automatic harmonic-convergence assessment, source Weideman N=64 exact outputs, near-zero kz substitution, root finding or mode-branch selection."
+          ]
+        },
+        "failure_semantics": {
+          "invalid_input": "Raises ValueError for nonfinite, boolean, complex or zero scalar fields where prohibited; empty/mismatched/nonfinite species vectors, zero charge, nonpositive mass/density/temperature. Wrong method kind raises TypeError; unknown method string raises ValueError. Harmonic cutoffs accept None (N=5) or non-bool non-negative integers: wrong kind raises TypeError and negative raises ValueError; ronnmark rejects every non-None harmonics value with TypeError. Public method/control errors identify the parameter, received value or kind, legal condition and scirel.kinetic.dielectric-response.",
+          "runtime_failure": "Raises FloatingPointError if derived scales become nonfinite or zero where positivity is required, or if special-function contributions, tensors or determinant become nonfinite or unrepresentable. A positive harmonic tail below reliable float64 range, or one whose remainder cannot be bounded within the evaluation budget, also raises FloatingPointError; no partial tail or tensor is returned. Other unexpected NumPy/SciPy errors propagate.",
+          "nonconvergence": "No root iteration occurs. The caller-selected finite harmonics is retained. Tail evaluation requires either a well-conditioned complement or a positive sum with an omitted-tail bound; exhaustion of the internal 20000-term cost budget raises FloatingPointError. This does not certify adequacy of the caller's harmonic cutoff.",
+          "partial_results": "None; tensors and determinant are returned together only after the final finite check."
+        },
+        "verification": {
+          "scope": [
+            "Current implementation and listed tests cover the declared ports, near-zero-kz stability without a clamp, the small-z full K/D regression, four signed omega/kz large-kz real-kx cases protecting xy/yx, per-species response switching around max-|z_n|=1 including adjacent floats, finite cutoffs and mixed-representation species in either order.",
+            "The example exercises one bounded representative case; it does not extend applicability beyond the declared preconditions.",
+            "Python preflight ran, but local execution covers this asset.",
+            "Error-channel tests distinguish invalid shape/domain/cutoff inputs from numerical scale, tensor, tail and budget failures, preserve unrelated ValueError propagation, and protect the diagnostic kx=0 partial boundary without changing scientific tolerances.",
+            "Retained original example: B0=1.0, qs=[-1.60217662e-19], ms=[9.1094e-31], ns0=[6.075e19], Ts0=[1000.0*1.6022e-19/1.38064852e-23], omega=2*pi*float(175881684853.009/(2*pi)), kz=1326.1942478795652, kx=13261.94247879565, effective N=5. K and D shapes are (3,3); abs(determinant-(1184249.3244493124+4322451.2861608062j))<1e-6. The original observed determinant was 1184249.3244493138+4322451.286160805j. The original Hz float conversion is retained when migrating this numerical case; this does not widen the existing error budget."
+          ],
+          "tests": [
+            "tests/kinetic/test_kinetic_signed_kz.py",
+            "tests/kinetic/test_kinetic_dispersion_sum_n.py",
+            "tests/kinetic/test_kinetic_dispersion_sum_stability.py",
+            "tests/kinetic/test_finite_harmonic_failure_policy.py"
+          ],
+          "evidence_ceiling": "Bounded to the declared homogeneous magnetized Maxwellian finite-N equations. Direct tests include frozen fluid-BW values, analytic Z checks and independent 90-digit full-tensor references derived from public inputs, plus a 90/120-digit large-b Kzz reference. The small-z regression and response-switch cases compare full complex K/D componentwise at |error|/max(1,|reference|)<=2e-12 against an independent 180-digit original finite sum using Bessel I and the erfc definition of Z; the regression's 140/180-digit references are checked before binary64 rounding. No production scales, A response or tail algorithm is used in that original-expression reference. These check numerical evaluation of that finite N, not experimental model accuracy, automatic harmonic convergence, determinant/root accuracy, all species mixtures or all floating-point inputs.",
+          "known_limitations": [
+            "The x-z-plane real-wavepoint contract excludes perpendicular/parallel zero-wavevector limits and complex root-search inputs.",
+            "The finite-N truncation tail is retained. For each species with (abs(omega)+harmonics*abs(wcs))/(abs(kz)*vts)<=1, mixed/parallel terms use direct z*Z with the existing analytic Z backend and the original +2*alpha*z0^2 in zz. Otherwise large cancelling terms are rewritten through A(zeta)=1+zeta*Z(zeta) and exact symmetric-truncation identities. In that A branch a complement is used only when the computed finite head is at most 1/2; otherwise positive terms use math.fsum and a generating-function bound on the omitted remainder. The bound concerns exact omitted terms, not SciPy backend or rounding errors. The tail and its absolute arithmetic error still scale with z0^2. An insufficient N can produce a large tensor (b=8,N=30,kz=1e-7 gives Kzz about 7.7e4); it is not the harmonically converged value.",
+            "The finite cutoff may be insufficient at larger kx*rho; callers must assess it independently.",
+            "This relation's local tensor tests do not establish an end-to-end closure of the terminal matrix outputs through a full pipeline.",
+            "The bound tests compare frozen fluid-BW determinants and analytic Z-based terms; no external kinetic code or full-parameter-space oracle is bound.",
+            "The model uses analytic SciRel `Z` values rather than a finite-order Weideman special-function implementation, so cross-code absolute parity is not claimed.",
+            "The original stability tests cover specified one-species tuples with b in {1,8,40}, N in {5,30,60} and signed kz from 1e-12 to 1e3 at one frequency ratio. A separate large-b,N=20000,Kzz test and 90/120-digit tail reference cover b=4e6; large-tail checks include b=1e8,N=5. Added original-expression full K/D samples cover the small-z regression, four signed omega/kz larger-kz real-kx cases, both sides and adjacent floats at the per-species max-|z_n|=1 switch, small-z N in {0,1,5,15}, and mixed-representation species. Positive/negative A dispatch seams, adjacent floats and the imaginary part near the real-part zero are checked independently. This is not a Cartesian grid or a global precision proof. The unit-scale resonance sample does not establish accuracy at all cyclotron resonances. Complex kx and extreme floating-point ranges remain outside the accuracy evidence; exactly zero kz is rejected."
+          ]
+        }
+      },
+      {
+        "name": "harmonic_weideman",
+        "model": "homogeneous magnetized Maxwellian plasma. Sum harmonics -harmonics..harmonics using scaled Bessel Gamma terms. The xx/xy/yy components retain N=64 Weideman Z. For each species with (abs(omega)+harmonics*abs(wcs))/(abs(kz)*vts)<=1, xz/yz/zz use z*Z(z) directly with the same Weideman Z, retaining the original +2*alpha*z0**2 in zz. Otherwise they use the analytic real-argument response A(z)=1+z*Z(z), evaluated directly without subtracting two nearly equal terms. In that branch symmetric finite-sum identities retain the endpoint Gamma_(N+1)-Gamma_N and the tail 1-sum(Gamma_n); the tail is formed from positive terms when its complement is ill-conditioned. Every nonzero kz uses its actual value and sign; zero is rejected rather than replaced. D adds Maxwell curl terms to K and determinant=det(D). Geometry: homogeneous plasma. Coordinates: wavevector in the x-z plane, with z parallel to B0. Boundary: Finite nonzero kz is evaluated at its actual value and sign; kz=0 raises ValueError before numerical work. No model switch. Assumptions: Input units and normalization follow the declared ports; no physical parameters are inferred.",
+        "numerical_controls": {
+          "harmonics": {
+            "default": 5,
+            "constraints": "None or omission uses the original N=5. An explicit cutoff is a non-bool non-negative integer for the unchanged symmetric n=-N..N sum; wrong kind raises TypeError, negative raises ValueError."
+          }
+        },
+        "applicability": {
+          "preconditions": [
+            "Species arrays are finite, non-empty and shape-compatible; masses, densities and temperatures are positive, with nonzero charge and magnetic field.",
+            "The wavepoint and derived frequency/scales are finite, kz is nonzero, and the selected numerical path domain is satisfied.",
+            "omega is the sole physical frequency in rad/s; vectors share one nonempty species axis. Effective default harmonics=5; real nonzero kx and kz are required."
+          ],
+          "supported": [
+            "Assemble the Maxwellian 3x3 kinetic tensor by finite cyclotron-harmonic sum at the actual signed nonzero kz."
+          ],
+          "excluded": [
+            "Mode identification, root finding and accuracy outside the tested finite-harmonic or rational-pole approximation.",
+            "Zero kz, inputs that violate the numerical domain, or inputs requiring a different tensor convention."
+          ]
+        },
+        "failure_semantics": {
+          "invalid_input": "Raises ValueError for declared invalid inputs; numeric conversion errors may propagate for unsupported Python objects. Zero kz is rejected before numerical work; use finite nonzero kz or explicitly choose evaluate_dielectric_response(method='ronnmark') under its separate zero-kz contract. Wrong method kind raises TypeError; unknown method string raises ValueError. Harmonic cutoffs accept None (N=5) or non-bool non-negative integers: wrong kind raises TypeError and negative raises ValueError; ronnmark rejects every non-None harmonics value with TypeError. Public method/control errors identify the parameter, received value or kind, legal condition and scirel.kinetic.dielectric-response.",
+          "runtime_failure": "Raises FloatingPointError if derived scales underflow to zero where nonzero is required or become nonfinite, if special-function contributions, tensors or determinant are nonfinite or unrepresentable, or if a positive harmonic tail cannot be represented reliably or bounded within the evaluation budget. No partial tail or tensor is returned. Other unexpected backend errors propagate.",
+          "nonconvergence": "Not applicable; no iterative root solve is exposed.",
+          "partial_results": "No partial mapping is returned after an exception."
+        },
+        "verification": {
+          "scope": [
+            "Bounded full-complex K/D comparisons against an independent high-precision original finite sum, including the small-z regression, four signed omega/kz large-kz real-kx cases protecting xy/yx, neighbors of the per-species maximum-|z_n|=1 representation switch, small-z finite cutoffs, mixed-representation species in either order, near-zero kz, finite-cutoff endpoints, the analytic real-response switch, resonance and signed multi-species cases; positive-tail failure boundaries. Actual signed nonzero kz, including +/-1e-12 and adjacent floats around the former cutoff; literal zero rejection before numerical work; explicit +1e-10 source value and default N5; 12-pair SI similarity at unchanged 2e-12 full K/D/determinant budgets.",
+            "Error-channel tests distinguish invalid shape/domain/cutoff inputs from numerical scale, tensor, tail and budget failures, preserve unrelated ValueError propagation, and protect the diagnostic kx=0 partial boundary without changing scientific tolerances.",
+            "Retained original example: B0=1.0, qs=[-1.60217662e-19], ms=[9.1094e-31], ns0=[6.075e19], Ts0=[11604941.036704937], omega=2*pi*float(1e10), kz=1.0, kx=1.0, effective N=5; D.shape==(3,3), with the original finite K/D/determinant and species-scale obligations. The original Hz float conversion is retained."
+          ],
+          "tests": [
+            "tests/kinetic/test_kinetic_dispersion_sum_fluid_stability.py",
+            "tests/kinetic/test_kinetic_signed_kz.py",
+            "tests/kinetic/test_fluid_spectrum_r43_variants.py",
+            "tests/kinetic/test_kinetic_tensor_similarity.py",
+            "tests/kinetic/test_finite_harmonic_failure_policy.py"
+          ],
+          "evidence_ceiling": "Independent mpmath evaluation derives every scale from the public inputs and evaluates the original finite harmonic expression through Bessel I and the erfc definition of Z. Full complex K/D are compared componentwise at |error|/max(1,|reference|)<=2e-12 on the cases enumerated in test_kinetic_dispersion_sum_fluid_stability.py; selected 140/180-digit references, including the small-z regression, are checked before binary64 rounding. This is bounded arithmetic evidence, not a continuous-domain error theorem, harmonic-convergence guarantee, determinant/root-accuracy claim or physical calibration. The ordinary xx/xy/yy components retain N=64 Weideman Z; for each species the mixed/parallel components use direct z*Z with that backend when every |z_n|<=1, retaining the original zz constant, and analytic A with finite-sum identities otherwise. This numerical-method correction is not parity with the frozen N=64 rational expression. The independent reference uses actual nonzero kz without a floor, with both signs checked at 140/180 digits. The 12-pair/24-call SI similarity test is a necessary same-method relation only; it is not absolute accuracy evidence for any of the four methods. Zero rejection is a domain policy, not an evaluated zero-limit oracle.",
+          "known_limitations": [
+            "The former abs(kz)<1e-10 replacement by +1e-10 is withdrawn because it breaks SI similarity and discards the input sign. Explicit kz=+1e-10 reproduces the former surrogate values. For real b>0 at fixed finite N, zz retains 2*alpha*z0**2*(1-sum(Gamma_n)); the positive omitted tail prevents a general finite zero-kz limit. The complete Maxwellian zero endpoint is a different limit. Zero raises ValueError; explicitly select the separate Ronnmark zero-kz model if appropriate, with no automatic switch.",
+            "The xx/xy/yy components retain fixed N=64 Weideman Z. The xz/yz/zz representation is selected per species: direct z*Z with that backend when (abs(omega)+harmonics*abs(wcs))/(abs(kz)*vts)<=1, otherwise a separate stable real-argument A evaluator. The sampled arithmetic checks do not establish a continuous-domain error bound.",
+            "The finite harmonic cutoff harmonics is caller-supplied. Its finite Gamma tail is retained and can give a genuinely large tensor; no automatic increase of harmonics or harmonic-convergence guarantee is provided.",
+            "In the analytic-A branch, an unrepresentable positive tail or an unbounded remainder within the evaluation budget raises FloatingPointError; no partial tail or fallback to a cancelling large-z expression is returned."
+          ]
+        }
+      },
+      {
+        "name": "ronnmark",
+        "model": "homogeneous magnetized Maxwellian multi-species plasma. Replace the Z and harmonic response by J=8 resonance poles and the Ronnmark R function, add Maxwell curl terms, and compute det(D). Geometry: homogeneous plasma. Coordinates: wavevector x-z plane; complex kx permitted, z parallel to B0. Boundary: Finite zero kz is allowed; conventional and fluid finite-harmonic paths require actual nonzero kz. Required derived scales and the complete tensor must be representable. Assumptions: Input units and normalization follow the declared ports; no physical parameters are inferred.",
+        "numerical_controls": {},
+        "applicability": {
+          "preconditions": [
+            "Finite zero kz is allowed; conventional and fluid finite-harmonic paths require actual nonzero kz. Required derived scales and the complete tensor must be representable.",
+            "The wavepoint and derived frequency/scales are finite and satisfy the selected numerical path domain.",
+            "omega is the sole physical frequency in rad/s; vectors share one nonempty species axis. J=8 and its binary64 tables are fixed; harmonics must be None."
+          ],
+          "supported": [
+            "Evaluate the J=8 rational-pole kinetic 3x3 tensor and dispersion determinant, including complex kx and zero kz."
+          ],
+          "excluded": [
+            "Mode identification, root finding and accuracy outside the tested finite-harmonic or rational-pole approximation.",
+            "Inputs that violate the numerical domain or require a different tensor convention."
+          ]
+        },
+        "failure_semantics": {
+          "invalid_input": "Raises ValueError for invalid physical inputs and declared species-vector violations; native numeric conversion errors may propagate. Wrong method kind raises TypeError and unknown method strings raise ValueError. Fixed J8 has no harmonic-cutoff control: only the shared unspecified state harmonics=None is accepted; every non-None value raises TypeError naming the parameter, received value, legal condition and scirel.kinetic.dielectric-response.",
+          "runtime_failure": "Raises FloatingPointError for nonfinite/unrepresentable required derived scales, R/H/RC response, complete K/D tensor or determinant, Required nonzero scales underflowing to zero fail explicitly. No partial tensor, fallback or clamp is substituted.",
+          "nonconvergence": "Not applicable; no iterative root solve is exposed.",
+          "partial_results": "No partial mapping is returned after an exception."
+        },
+        "verification": {
+          "scope": [
+            "Existing source-method cases and failure boundaries; sixteen exact binary64 inputs with independent Eq.(8) fixed-table B references for every complex K/D entry and returned det(D).",
+            "Separate Maxwellian Eq.(3) A references, rounded-table moment and zero-kz endpoint checks, cold Hall sign and complex-square conventions; B-A observations have no physical acceptance threshold.",
+            "A manufactured nonresonant double-zero control remains finite; exact poles, derived-scale failures and numerical error propagation are separate from invalid caller inputs.",
+            "Retained original example: B0=1.0, qs=[-1.60217662e-19], ms=[9.1094e-31], ns0=[6.075e19], Ts0=[11604941.036704937], omega=1e11, kz=0, kx=1e4, fixed J=8; D.shape==(3,3), finite K/D/determinant, fixed pole tables and tensor convention. The original direct omega has no Hz round trip."
+          ],
+          "tests": [
+            "tests/kinetic/test_kinetic_signed_kz.py",
+            "tests/kinetic/test_fluid_spectrum_r43_kinetic.py",
+            "tests/kinetic/test_ronnmark_tensor_reference.py",
+            "tests/kinetic/test_kinetic_tensor_family_evidence.py::test_ronnmark_r_matches_its_independent_harmonic_representation",
+            "tests/kinetic/test_ronnmark_zero_endpoint.py"
+          ],
+          "evidence_ceiling": "test_product_matches_independent_B_16 in tests/kinetic/test_ronnmark_tensor_reference.py directly compares eighteen complex K/D entries and returned det(D) with independently Bessel-summed Eq.(8) B using the actual binary64 table: abs(product-B)/max(1,abs(B)) <= 2e-7. This pre-frozen new finite-grid numerical diagnostic is separate from physical B-A discrepancy and preserves existing source 1e-11/1e-9, finite-N 2e-12 and R/H budgets. Self-contained data and manual independent Eq.(3)/(8)/(13)/(14) regeneration are in tests/fixtures/kinetic_tensor/README.md. Independent scientific-identity review was ACK_STATIC; candidate execution and release need their own evidence. No continuous-domain error bound, physical-A accuracy pass, mode/root or damping guarantee follows.",
+          "known_limitations": [
+            "Finite zero kz is allowed; conventional and fluid finite-harmonic paths require actual nonzero kz. Required derived scales and the complete tensor must be representable.",
+            "Original Maxwellian A convergence remains 15/16 REFERENCE_BLOCK (process exit 2); small-kz uses a separately frozen 200/280-dps N96/128 successor for new observations. Neither its success nor B 16/16 relabels the original block. Printed 160-digit values do not certify full 160-digit accuracy.",
+            "B is Eq.(8) with the actual rounded-table moments; directly inserting a pole Z into Eq.(3) defines B_direct, a different object. Nonzero zero-kz cross-z residuals must not be forced to zero. B-A is a recomputable model discrepancy without an acceptable-error threshold.",
+            "The current table's appearance in the author's source linked by the primary paper has been located; its original generation constraints, reason for differing from the published WHAMP/PDRK table and global physical approximation accuracy remain UNKNOWN.",
+            "Omitted-harmonic inequalities use the exact finite center M_N plus omitted-term radius E. High-precision evaluation using a saved numerical center is not a total-arithmetic-error certificate; rounding enclosure is NOT_ESTABLISHED, including at analytic zero-tail endpoints."
+          ]
+        }
+      }
+    ]
+  },
+  "references": [
+    "H. S. Xie, Phys. Plasmas 32, 082110 (2025), arXiv:2502.06550v2, Eq.(3), (8), (13), (14); https://arxiv.org/html/2502.06550v2."
   ]
- },
- "references": [
-  "H. S. Xie, Phys. Plasmas 32, 082110 (2025), arXiv:2502.06550v2, Eq.(3), (8), (13), (14); https://arxiv.org/html/2502.06550v2."
- ]
 }
