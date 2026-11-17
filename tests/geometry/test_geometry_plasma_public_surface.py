@@ -14,7 +14,7 @@ ROOT = Path(__file__).resolve().parents[2]
 
 CASES = (
     (
-        "scirel.numerics.nonuniform-derivatives.json",
+        "scirel.geometry.nonuniform-derivatives.json",
         {"NumericalContractError", "diff_12_central"},
     ),
     (

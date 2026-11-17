@@ -93,7 +93,7 @@
       }
     },
     {
-      "asset_id": "scirel.electromagnetism.brb",
+      "asset_id": "scirel.configurations.brb",
       "summary": "构造固定的 BRB 源组合：两组 88 点 TREX 线圈、两组 130 点矩形线圈，以及 36 个带符号的 16 点磁环。",
       "definition": "BRB 按属性顺序注册两组 TREXCoil、两组 RectangularCoil 和 36 个 MagnetRing 子对象。",
       "model": "采用声明常数的轴对称理想圆电流丝几何。",
@@ -467,7 +467,7 @@
       }
     },
     {
-      "asset_id": "scirel.electromagnetism.trex-coil",
+      "asset_id": "scirel.configurations.trex-coil",
       "summary": "构造固定的 88 点 TREX 线圈几何，并继承电流、权重、网格和场方法。",
       "definition": "五个径向列各含 16 个轴向点，第六列含 8 个轴向中点。",
       "model": "采用声明几何常数的轴对称理想圆电流丝点云。",
@@ -557,7 +557,7 @@
       }
     },
     {
-      "asset_id": "scirel.electromagnetism.wham",
+      "asset_id": "scirel.configurations.wham",
       "summary": "构造有序 WHAM 装置：四个矩形线圈依次含 32、32、10、10 条电流丝。",
       "definition": "WHAM 按 hts1、hts2、cc1、cc2 顺序登记四个矩形线圈子源。固定几何（线圈块中心 R0、Z0，单位 m；nr×nz 根电流丝；中心间距 dR、dZ，单位 m）：hts1 (0.25, +0.942; 8×4; 0.0475, 0.0275)，hts2 (0.25, −0.942; 8×4; 0.0475, 0.0275)，cc1 (1.005, +0.205; 2×5; 0.025, 0.024)，cc2 (1.005, −0.205; 2×5; 0.025, 0.024)。不含运行电流：每个子线圈初始 current = 每根电流丝 1 A（权重为 1），调用者设定电流前得到的是每安培的响应。",
       "model": "轴对称理想圆电流丝几何。",

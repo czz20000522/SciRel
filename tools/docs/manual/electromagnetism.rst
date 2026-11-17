@@ -397,7 +397,7 @@
 - 想检查几何模数或独立的 ``K``、``E`` 近似：:doc:`../reference/generated/scirel.field.coil-green-geometry`、:doc:`../reference/generated/scirel.field.complete-elliptic-integrals-approx`。它们分别计算几何量和椭圆积分近似。
 - 想用已施加一次半径偏移的单个观测点、电流和匝数累加线圈响应：:doc:`../reference/generated/scirel.field.filament-coil-green-field`。这个入口内部调用统一圆丝核，不接收 ``K``、``E``，也不使用上述独立近似。
 - 想用径向积分得到以第一径向节点为零点的 ``psi``：:doc:`../reference/generated/scirel.field.filament-vacuum-field`。
-- 想用固定几何的磁环或装置：:doc:`../reference/generated/scirel.electromagnetism.magnet-ring`、:doc:`../reference/generated/scirel.field.permanent-ring-filaments`、:doc:`../reference/generated/scirel.electromagnetism.trex-coil`、:doc:`../reference/generated/scirel.electromagnetism.brb`、:doc:`../reference/generated/scirel.electromagnetism.wham`。这些是几何与丝排列，不是材料磁化或实验标定。
+- 想用固定几何的磁环或装置：:doc:`../reference/generated/scirel.electromagnetism.magnet-ring`、:doc:`../reference/generated/scirel.field.permanent-ring-filaments`、:doc:`../reference/generated/scirel.configurations.trex-coil`、:doc:`../reference/generated/scirel.configurations.brb`、:doc:`../reference/generated/scirel.configurations.wham`。这些是几何与丝排列，不是材料磁化或实验标定。
 
 常见误用与边界
 ----------------------------------------------------------------------
