@@ -2,7 +2,7 @@
   "schema": "scirel.rules-inventory.v1",
   "note": "每条规则现在由什么机器判据保证。state 三态：machine（有判据且覆盖面足够）/ machine-partial（有判据但只覆盖一部分，写明判什么不判什么）/ unjudged（无判据，写明为什么判不了、靠谁保证）。本文件由 tests/tooling/test_rules_inventory.py 盯着：判据路径必须存在，规则锚点必须在源文档里出现。",
   "verified_on": "2026-11-18",
-  "slice": "AGENTS.md 8 条 + api-spec 5 条 + catalog/README 3 条（其余文档随后补）",
+  "slice": "AGENTS.md 8 + api-spec 5 + catalog/README 3 + RULES.md 4 + supply-pipeline 4（其余随后补）",
   "rules": [
     {
       "id": "agents-1",
@@ -168,6 +168,91 @@
       "state": "unjudged",
       "why": "语言与科学质量不能由机器判；这条规则本身就是在说「上面两条判据不等于评审」。",
       "who": "翻译评审人；本条不产出判据，它是判据的**边界声明**——正是它阻止把 catalog-bilingual-1/2 读成语言已过关。"
+    },
+    {
+      "id": "rules-1",
+      "source": "RULES.md",
+      "anchor": "A change is not \"done\" until its rule/decision is recorded where the next owner will look",
+      "state": "unjudged",
+      "why": "「记录在下一个接手者会看的地方」没有可判定谓词：文件存在不等于内容足够，内容足够要人来读。",
+      "who": "评审人在 PR 里判断；本仓库用固定位置清单（AGENTS.md 的「当前状态」）缩小范围，但那条清单本身也靠人维护。"
+    },
+    {
+      "id": "rules-2",
+      "source": "RULES.md",
+      "anchor": "| Docs/API/bilingual/review/publish rules |",
+      "state": "machine-partial",
+      "judged_by": [
+        "tests/architecture/test_repository_skeleton.py"
+      ],
+      "judges": "仓库结构测试检查声明的目录与入口存在，所以「知识放错了地方」至少会在路径层面露出来。",
+      "does_not_judge": "不判某段知识是否真的写进了它该在的文件；把发布规则写进 README 而 canonical 文件未更新，这条判据不会红。"
+    },
+    {
+      "id": "rules-3",
+      "source": "RULES.md",
+      "anchor": "When contract and implementation disagree, the code wins and the contract changes",
+      "state": "machine-partial",
+      "judged_by": [
+        "scripts/validate_asset_documents.py",
+        "tests/docs/test_zh_pairing.py"
+      ],
+      "judges": "合同必须通过 schema 与记录一致性校验，示例代码会被执行；合同与代码在可执行示例这一面被绑在一起。",
+      "does_not_judge": "散文声明与实现是否一致只有被示例或测试覆盖的部分才判得出来；一句没被执行的正常性描述写错了不会红。"
+    },
+    {
+      "id": "rules-3b",
+      "source": "RULES.md",
+      "anchor": "**Do not rebuild it under another name.**",
+      "state": "machine",
+      "judged_by": [
+        "tests/architecture/test_no_verdict_layer.py::test_the_deleted_judgement_layer_is_still_gone",
+        "tests/architecture/test_no_verdict_layer.py::test_no_verdict_shaped_table_under_catalog_review",
+        "tests/architecture/test_no_verdict_layer.py::test_no_review_gate_script"
+      ],
+      "judges": "六个被删文件不存在；catalog/review/ 下没有含 verdict/hold 的表名；scripts/ 下没有 review 网关式脚本。判据自己有红例测试（合成一个改名副本必须被抓住）。",
+      "does_not_judge": "共享不到这些名字的判卷表抓不到——例如把 verdict 列加进一个已有文件。这条边界写在判据 docstring 里。"
+    },
+    {
+      "id": "sp-7-1",
+      "source": "docs/maintainer/supply-pipeline.md",
+      "anchor": "| A 机械 |",
+      "state": "unjudged",
+      "why": "某次改动该走 A/B/C 哪一级，取决于它是否改变数值结果、证据是否决定性、评审人之间是否有分歧——都是人判断。",
+      "who": "合并者分级、评审人执行；门禁只验证结果（证据门禁、两个评审签字在平台上），不验证分级是否选对。"
+    },
+    {
+      "id": "sp-7-2a",
+      "source": "docs/maintainer/supply-pipeline.md",
+      "anchor": "**状态只写在 frontmatter 里。**",
+      "state": "machine",
+      "judged_by": [
+        "scripts/tickets.py"
+      ],
+      "judges": "工单 frontmatter 必须含必需键、status 必须在枚举内，且每种状态转换只允许改它该改的键；状态不靠目录表达。",
+      "does_not_judge": "不判工单内容是否值得进（准入标准是散文），也不判裁决是否被正确执行。"
+    },
+    {
+      "id": "sp-7-2b",
+      "source": "docs/maintainer/supply-pipeline.md",
+      "anchor": "工单不能写来源项目的身份、私有路径或未公开的材料",
+      "state": "machine-partial",
+      "judged_by": [
+        "skills/development/scirel-acceptance/scripts/precommit_check.py"
+      ],
+      "judges": "pre-commit 扫描暂存文本里的凭据与本机私有路径形状，命中即拦。",
+      "does_not_judge": "不判「来源项目身份」这类语义泄漏：写一个项目代号而没有路径，扫描看不出来。"
+    },
+    {
+      "id": "sp-7-2c",
+      "source": "docs/maintainer/supply-pipeline.md",
+      "anchor": "**安全默认：** 按 [RULES.md](../../RULES.md) §6 的三级阶梯执行",
+      "state": "machine-partial",
+      "judged_by": [
+        "tests/architecture/test_applicability_warning.py"
+      ],
+      "judges": "域外告警机制（ApplicabilityWarning）必须按合同声明触发，拒绝输入的分支必须按声明失败。",
+      "does_not_judge": "不判某次未定的物理问题是否被正确归到三级阶梯的哪一级——那要读证据。"
     }
   ]
 }
