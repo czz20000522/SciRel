@@ -12,34 +12,6 @@
       "reason": "not yet migrated: verification.basis absent"
     },
     {
-      "asset_id": "scirel.equilibrium.axisymmetric-anisotropic-picard",
-      "reason": "not yet migrated: verification.basis absent"
-    },
-    {
-      "asset_id": "scirel.equilibrium.axisymmetric-picard-update",
-      "reason": "not yet migrated: verification.basis absent"
-    },
-    {
-      "asset_id": "scirel.equilibrium.compute-equilibrium",
-      "reason": "not yet migrated: verification.basis absent"
-    },
-    {
-      "asset_id": "scirel.equilibrium.free-boundary-anisotropic-picard",
-      "reason": "not yet migrated: verification.basis absent"
-    },
-    {
-      "asset_id": "scirel.equilibrium.isotropic-picard-step",
-      "reason": "not yet migrated: verification.basis absent"
-    },
-    {
-      "asset_id": "scirel.equilibrium.isotropic-pressure-flux",
-      "reason": "not yet migrated: verification.basis absent"
-    },
-    {
-      "asset_id": "scirel.equilibrium.pressure-flux-state",
-      "reason": "not yet migrated: verification.basis absent"
-    },
-    {
       "asset_id": "scirel.equilibrium.reduced-hall-anisotropic-picard",
       "reason": "not yet migrated: verification.basis absent"
     },
@@ -739,7 +711,14 @@
     "scirel.electromagnetism.magnet-ring",
     "scirel.electromagnetism.rectangular-coil",
     "scirel.equilibrium.anisotropic-force-balance",
+    "scirel.equilibrium.axisymmetric-anisotropic-picard",
+    "scirel.equilibrium.axisymmetric-picard-update",
+    "scirel.equilibrium.compute-equilibrium",
+    "scirel.equilibrium.free-boundary-anisotropic-picard",
+    "scirel.equilibrium.isotropic-picard-step",
+    "scirel.equilibrium.isotropic-pressure-flux",
     "scirel.equilibrium.kinetic-mirror-hall-equilibrium",
+    "scirel.equilibrium.pressure-flux-state",
     "scirel.field.mirror-plasma-green",
     "scirel.field.poloidal-field-from-flux",
     "scirel.geometry.axisymmetric-equilibrium-grid-support",
