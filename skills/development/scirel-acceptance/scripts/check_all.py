@@ -11,7 +11,7 @@ release-only tests listed in ``release_only_tests.txt``; it says nothing about p
 from __future__ import annotations
 
 import argparse
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 import hashlib
 import json
 import os
@@ -25,6 +25,7 @@ import sys
 import tempfile
 import time
 import uuid
+from importlib import metadata as importlib_metadata
 
 from scirel_pytest_counts import validate_execution_records
 
@@ -43,6 +44,20 @@ EXCLUSIVE_RECORD = "acceptance-exclusive"
 RESULT_SCHEMA = "scirel.acceptance.v2"
 LEGACY_RESULT_SCHEMA = "scirel.acceptance.v1"
 SIDECAR_SUFFIX = ".sha256"
+# The files a run is written as: reserved with ``status: running`` before the first step and
+# rewritten as ``status: complete`` after the last one, so an interrupted or crashed run leaves
+# an explicit non-pass instead of an empty file someone could mistake for "it ran".
+STATUS_RUNNING = "running"
+STATUS_COMPLETE = "complete"
+# The runtime dependencies a receipt has to name by version. A lockfile digest says "the same
+# lock", which cannot be read back as the versions that actually ran.
+DEPENDENCY_MODULES = ("numpy", "scipy", "mpmath")
+# Receipt anchors: a few kilobytes per green run, committed so the evidence survives the
+# gitignored ``.runtime/`` that holds the full receipt. ``acceptance_anchor.py`` writes and
+# checks them; this module only reads the floor one of them sets.
+ANCHOR_DIRECTORY = "skills/development/scirel-acceptance/anchors"
+ANCHOR_SCHEMA = "scirel.acceptance.anchor.v1"
+ANCHOR_SUFFIX = ".json"
 
 # The release stage is what merging and any outward delivery claim needs; the development stage
 # is the same plan minus the steps and tests that only a packaged or published product can fail.
@@ -149,8 +164,29 @@ def dependency_digests(root: Path) -> dict:
     return digests
 
 
+def dependency_versions() -> dict:
+    """Name the versions that actually ran, because a lockfile digest cannot be read back.
+
+    ``uv.lock`` is hashed as one more binding, but the hash answers "the same lock file" and
+    not "which numpy ran". A receipt that cannot be read without the lock file beside it is
+    not a receipt a reader can reconcile, so the three declared runtime dependencies are
+    recorded by version as well.
+    """
+    versions = {}
+    for module in DEPENDENCY_MODULES:
+        try:
+            versions[module] = importlib_metadata.version(module)
+        except importlib_metadata.PackageNotFoundError as error:
+            raise BindingError(
+                f"{module} is not installed in this interpreter, so its version cannot be recorded"
+            ) from error
+    if not all(isinstance(value, str) and value for value in versions.values()):
+        raise BindingError("a dependency version is blank")
+    return versions
+
+
 def runtime_environment(root: Path) -> dict:
-    """Record only the interpreter, platform, architecture and two dependency inputs."""
+    """Record the interpreter, platform, architecture, dependency versions and two digests."""
     environment = {
         "python": {
             "implementation": platform.python_implementation(),
@@ -158,6 +194,7 @@ def runtime_environment(root: Path) -> dict:
         },
         "platform": sys.platform,
         "architecture": platform.machine(),
+        "dependencies": dependency_versions(),
         **dependency_digests(root),
     }
     if not all(
@@ -204,6 +241,77 @@ def release_only_tests(path: Path | None = None) -> list[ReleaseOnly]:
 
 
 @dataclass(frozen=True)
+class SelectionFloor:
+    """The smallest selected-test count a run may report and still be the whole suite."""
+
+    anchor: str
+    selected: int
+    commit: str
+    checked_at: str
+
+
+def selection_floor(stage: str, root: Path = ROOT) -> SelectionFloor | None:
+    """Read the newest committed anchor for ``stage``: the floor no run may fall below.
+
+    Why this exists, stated as the observation that produced it: before the floor, a run of
+    two passing tests and a run of 8,347 passing tests produced the same verdict. ``read_counts``
+    rejected an empty run and a run with deselections, but nothing said how many tests should
+    have been there, so deleting a test file — or pointing the step at a directory that no longer
+    collects — was indistinguishable from a full run. "Ran everything" and "ran almost nothing"
+    are one output; a count with no expected value cannot tell them apart.
+
+    The floor is a count, not a set: additions keep the run green without re-anchoring, while a
+    removed test drops ``selected`` below the floor and fails. A deliberate removal therefore
+    has to be followed by a fresh anchor in the same commit, which is the audit trail for it.
+    The set digest in the anchor (``nodeid_set_sha256``) is what proves identity; this is the
+    cheap gate that does not need the list.
+
+    No anchor for this stage yet — the first full run of a clone — is not a failure: it is
+    recorded as ``None`` and the run prints that it cannot be compared with an earlier one.
+    A directory that holds anchors but none for this stage is an error, so a stage cannot be
+    exempted by deleting its file.
+    """
+    directory = root / ANCHOR_DIRECTORY
+    if not directory.is_dir():
+        return None
+    paths = sorted(directory.glob(f"*{ANCHOR_SUFFIX}"))
+    if not paths:
+        return None
+    floors: list[SelectionFloor] = []
+    for path in paths:
+        try:
+            anchor = json.loads(path.read_text(encoding="utf-8"))
+        except (OSError, ValueError) as error:
+            raise BindingError(f"anchor {path.name} is not readable JSON: {error}") from error
+        if anchor.get("schema") != ANCHOR_SCHEMA:
+            raise BindingError(f"anchor {path.name} has an unknown schema")
+        if anchor.get("stage") != stage:
+            continue
+        selected = anchor.get("tests", {}).get("selected")
+        if type(selected) is not int or selected <= 0:
+            raise BindingError(f"anchor {path.name} records no selected-test count")
+        checked_at = anchor.get("checked_at")
+        if not isinstance(checked_at, str) or not checked_at:
+            raise BindingError(f"anchor {path.name} records no checked_at, so it cannot be ordered")
+        floors.append(
+            SelectionFloor(
+                anchor=path.relative_to(root).as_posix(),
+                selected=selected,
+                commit=str(anchor.get("candidate", {}).get("commit", "")),
+                checked_at=checked_at,
+            )
+        )
+    if not floors:
+        raise BindingError(
+            f"{ANCHOR_DIRECTORY} holds anchors but none for the {stage} stage, so this run has"
+            " nothing to compare its selection against"
+        )
+    # The newest anchor wins: re-anchoring is how a deliberate removal lowers the floor. On a
+    # timestamp tie the larger count wins, so an ambiguous pair can never lower the gate.
+    return max(floors, key=lambda floor: (floor.checked_at, floor.selected, floor.anchor))
+
+
+@dataclass(frozen=True)
 class Step:
     """One acceptance step. Without uv, a step marked ``requires_uv`` is NOT_RUN and fails."""
 
@@ -215,6 +323,8 @@ class Step:
     stages: tuple[str, ...] = STAGES
     # Release-only targets this step must have deselected, or nothing in the release stage.
     deselected: tuple[str, ...] = ()
+    # Selected tests this step must reach to count as the whole suite; None means no anchor yet.
+    minimum_selected: int | None = None
 
 
 def steps(
@@ -452,6 +562,15 @@ def step_status(step: Step, returncode: int) -> tuple[str, str, dict | None]:
         return "FAIL", "  (pytest exit status disagrees with subprocess return code)", report
     if not sum(report[name] for name in ("passed", "failed", "xpassed")):
         return "FAIL", "  (no tests executed with a passed, failed or xpassed outcome)", report
+    # A count with no expected value cannot distinguish "ran everything" from "ran almost
+    # nothing"; the committed anchor supplies that expected value.
+    if step.minimum_selected is not None and report["selected"] < step.minimum_selected:
+        return (
+            "FAIL",
+            f"  (selected {report['selected']} tests but the committed anchor records"
+            f" {step.minimum_selected}: the suite shrank, so this run is not the whole suite)",
+            report,
+        )
     return ("FAIL" if returncode or report["failed"] or report["error"] else "PASS"), "", report
 
 
@@ -480,6 +599,29 @@ def skip_lines(report: dict) -> list[str]:
         shown = ", ".join(nodeids[:3])
         more = "" if len(nodeids) <= 3 else f", and {len(nodeids) - 3} more"
         lines.append(f"SKIP  {reason}  ({len(nodeids)}): {shown}{more}")
+    return lines
+
+
+def xfail_lines(report: dict) -> list[str]:
+    """One line per xfail reason, the way ``skip_lines`` does it for skips.
+
+    The reason is already in the receipt (``phases[].wasxfail``), but a reader who only sees
+    the summary line learns that one test was xfailed and not why. A test that did not run is
+    an audit trail, and the audit trail belongs on the console as well as in the JSON.
+    """
+    grouped: dict[str, list[str]] = {}
+    for item in report["results"]:
+        if item["outcome"] != "xfailed":
+            continue
+        reason = next(
+            phase["wasxfail"] for phase in item["phases"] if isinstance(phase.get("wasxfail"), str)
+        )
+        grouped.setdefault(reason, []).append(item["nodeid"])
+    lines = []
+    for reason, nodeids in sorted(grouped.items(), key=lambda item: (-len(item[1]), item[0])):
+        shown = ", ".join(nodeids[:3])
+        more = "" if len(nodeids) <= 3 else f", and {len(nodeids) - 3} more"
+        lines.append(f"XFAIL  {reason}  ({len(nodeids)}): {shown}{more}")
     return lines
 
 
@@ -581,6 +723,15 @@ def validate_provenance(
         return "legacy_unprovenanced"
     if schema != RESULT_SCHEMA:
         raise ValueError(f"unknown result schema: {schema!r}")
+    # The file is reserved as ``running`` before the first step and rewritten as ``complete``
+    # after the last one. Anything else — a crash mid-run, a hand-truncated file, a copy made
+    # while the run was going — is not a result, and reading it as one would turn "no answer"
+    # into a pass.
+    if result.get("status") != STATUS_COMPLETE:
+        raise ValueError(
+            f"result is not a completed run (status {result.get('status')!r}): an interrupted or"
+            " crashed run keeps the reserved file and never becomes a result"
+        )
     exclusive = result.get("exclusive")
     token_digest = exclusive.get("token_sha256") if isinstance(exclusive, dict) else None
     if (
@@ -677,6 +828,15 @@ def main(
         lock.close()
         print("result must be a new writable file; refusing to reuse an earlier result")
         return 2
+    # Write the running marker immediately and close the stream. A crash between here and the
+    # final write leaves a file that says it is not a result; an empty file told a reader the
+    # same thing only by accident of JSON parsing, and told `ls` nothing at all.
+    with result_stream:
+        json.dump(
+            {"schema": RESULT_SCHEMA, "stage": stage, "status": STATUS_RUNNING},
+            result_stream,
+        )
+        result_stream.write("\n")
     run_id = run_id or uuid.uuid4().hex
     # Only the credential digest is recorded: the token itself retires before the lock
     # is released and must never be copied into an artifact that outlives the run.
@@ -709,6 +869,7 @@ def main(
     rejected_counts = None
     plan = []
     records = []
+    floor = None
     interrupted = False
     with tempfile.TemporaryDirectory(prefix="scirel-check-", dir=temporary_root) as temporary:
         has_uv = shutil.which("uv") is not None
@@ -717,11 +878,29 @@ def main(
         except (OSError, ValueError) as error:
             # A plan that cannot be built is a pre-flight failure: leave no reserved result that
             # a later reader could mistake for a run.
-            result_stream.close()
             report_path.unlink(missing_ok=True)
             lock.close()
             print(f"ERROR: cannot build the {stage} acceptance plan: {error}", file=sys.stderr)
             return 2
+        try:
+            floor = selection_floor(stage, ROOT)
+        except BindingError as error:
+            binding_errors.append(str(error))
+        if floor is None:
+            print(
+                f"FLOOR  no committed anchor for the {stage} stage yet: this run cannot be"
+                f" compared with an earlier full run (see {ANCHOR_DIRECTORY})",
+                flush=True,
+            )
+        else:
+            print(
+                f"FLOOR  at least {floor.selected} tests required by {floor.anchor}",
+                flush=True,
+            )
+            plan = [
+                replace(step, minimum_selected=floor.selected) if step.counts else step
+                for step in plan
+            ]
         print(
             f"STAGE  {stage}  ({len(plan)} steps; release-only tests"
             f" {'deselected' if stage == 'dev' else 'all run'})",
@@ -812,6 +991,8 @@ def main(
     if counts_report is not None:
         for line in skip_lines(counts_report):
             print(line)
+        for line in xfail_lines(counts_report):
+            print(line)
         print(counts_summary(len(plan) - len(failed), len(plan), counts_report))
     for error in binding_errors:
         print(f"BINDING FAIL  {error}")
@@ -819,6 +1000,7 @@ def main(
     evidence = "invalid" if invalid else ("development" if before["dirty"] else "clean_candidate")
     result = {
         "schema": RESULT_SCHEMA,
+        "status": STATUS_COMPLETE,
         "stage": stage,
         "run_id": run_id,
         "exclusive": exclusive,
@@ -830,13 +1012,24 @@ def main(
         "environment": {"before": environment_before, "after": environment_after},
         "binding_errors": binding_errors,
         "evidence": evidence,
+        # The floor this run was judged against, so a reader can tell "the whole suite" from
+        # "whatever this tree happened to collect".
+        "floor": (
+            {
+                "anchor": floor.anchor,
+                "selected": floor.selected,
+                "anchor_commit": floor.commit,
+            }
+            if floor is not None
+            else None
+        ),
         "steps": records,
         "tests": counts_report if counts_report is not None else rejected_counts,
         "exit_code": 1 if invalid else 0,
     }
-    with result_stream:
-        json.dump(result, result_stream, ensure_ascii=False, indent=2)
-        result_stream.write("\n")
+    with report_path.open("w", encoding="utf-8") as stream:
+        json.dump(result, stream, ensure_ascii=False, indent=2)
+        stream.write("\n")
     # The digest cannot live inside the file it describes; the sidecar names it.
     result_digest = _digest(report_path)
     report_path.with_name(report_path.name + SIDECAR_SUFFIX).write_text(

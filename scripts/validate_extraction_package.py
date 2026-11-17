@@ -52,6 +52,7 @@ from dev import EXCLUSIVE_MARKER, LockBusy, require_exclusive  # noqa: E402
 from precommit_check import FORBIDDEN  # noqa: E402
 from validate_asset_documents import ASSET_ID_RE, AssetDocumentError, load_document_set  # noqa: E402
 from check_all import (  # noqa: E402
+    DEPENDENCY_MODULES,
     LEGACY_RESULT_SCHEMA,
     RESULT_SCHEMA,
     BindingError,
@@ -705,10 +706,20 @@ def run_full_check(
         runtime = result["environment"]["before"]
         # A frozen candidate may pin a different interpreter from this receiver. Compare its
         # own two observations and independently checked file hashes, not our Python version.
+        # ``dependencies`` is required by name and version: a receipt that only carries the
+        # lockfile digest cannot say which numpy ran, and there is deliberately no branch that
+        # accepts the older shape — two accepted shapes would make the older one green again.
+        dependencies = runtime.get("dependencies") if isinstance(runtime, dict) else None
         if (
             runtime != result["environment"]["after"]
-            or set(runtime) != {"python", "platform", "architecture", *environment_before}
+            or set(runtime)
+            != {"python", "platform", "architecture", "dependencies", *environment_before}
             or set(runtime["python"]) != {"implementation", "version"}
+            or set(dependencies or {}) != set(DEPENDENCY_MODULES)
+            or any(
+                not isinstance(dependencies.get(module), str) or not dependencies[module]
+                for module in DEPENDENCY_MODULES
+            )
             or not all(
                 isinstance(value, str) and value
                 for value in (
@@ -721,7 +732,8 @@ def run_full_check(
             or environment_before != environment_after
         ):
             raise ValueError(
-                "candidate runtime identity or dependency digests are missing or changed"
+                "candidate runtime identity or dependency versions and digests are missing or"
+                " changed"
             )
         if (
             result["run_id"] != run_id
