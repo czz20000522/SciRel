@@ -276,7 +276,7 @@
      "本合同所载可执行示例。",
      "独立依据：解析 Hermite 恒等式（节点精确插值、C2 连续性），两端一阶导与声明的 yp 一致，且与 SciPy CubicSpline 的两端一阶导独立解在 64 eps 内一致；端斜率取真值时精确复现三次多项式。",
      "独立重算（tests/numerics/test_spline_boundary_evidence.py）：按教科书弯矩方程 h[i-1] M[i-1] + 2(h[i-1]+h[i]) M[i] + h[i] M[i+1] = 6(delta[i]/h[i] - delta[i-1]/h[i-1]) 及钳制（一端一阶导）端行自行组装，用 numpy.linalg.solve 求解，未知量是节点二阶导，不同于实现求解的节点斜率；节点、区间中点与非对称域内点的取值吻合到 4.4e-16，手解二阶导与 deriv=2 在节点上吻合到 7.1e-15；端点斜率取真值时三次多项式被精确复现，而自然族边界行在相同数据上选出不同的插值函数。",
-     "变异账（scripts/mutation_check.py）：五个输出变异 scale、negate、zero、swap、constant 改变的是返回值中的数值叶子，而样条构造器返回的是可调用对象，没有数值叶子，因此五个变异对本合同都记为 not_exercised。这是装置的限制而不是无人约束的行为：可调用对象自身返回的数值，正是上面的独立弯矩方程比对、SciPy 交叉核对与精确复现测试所约束的。"
+     "变异账（scripts/mutation_check.py）：五个输出变异 scale、negate、zero、swap、constant 改变的是返回值中的数值叶子，而样条构造器返回的是可调用对象，没有数值叶子，因此五个变异对本合同都记为 not_exercised。这是装置的限制而不是无人约束的行为；tests/numerics/spline_value_mutant_check.py 把变异下移一层补上这一格：它把求值器改为返回零、再改为放大十倍，重跑 tests/numerics/test_spline_boundary_evidence.py，要求基线全绿、每个变异都有加载标记、且收集用例中至少 80% 判红——本修订实测收集 24 条，zero 变异 21 条判红、scale 变异 20 条判红——并由 tests/numerics/test_spline_value_mutant_check.py 把这一判定纳入门禁。复跑命令：python3 scripts/dev.py run python -B tests/numerics/spline_value_mutant_check.py。"
     ],
     "known_limitations": [
      "域外置零，以及 deriv 取 1/2 之外时仍返回值，都属于兼容性约定。",
@@ -447,7 +447,7 @@
      "本合同所载可执行示例。",
      "独立依据：解析 Hermite 恒等式（节点精确插值、由公开节点斜率重算的 C2 连续性），合同声明的边界行在生成的样条上直接求值，natural 与全 clamped 族另与 SciPy CubicSpline 的独立解在 64 eps 内一致。",
      "独立重算（tests/numerics/test_spline_boundary_evidence.py）：按教科书弯矩方程 h[i-1] M[i-1] + 2(h[i-1]+h[i]) M[i] + h[i] M[i+1] = 6(delta[i]/h[i] - delta[i-1]/h[i-1]) 及自然（M_0 = M_{n-1} = 0）端行自行组装，用 numpy.linalg.solve 求解，未知量是节点二阶导，不同于实现求解的节点斜率；节点、区间中点与非对称域内点的取值吻合到 2.2e-16，手解二阶导与 deriv=2 在节点上吻合到 8.3e-15；仿射样本被精确复现（这是自然样条能精确插值的最高多项式次数），而钳制端行在相同数据上选出不同的插值函数。",
-     "变异账（scripts/mutation_check.py）：五个输出变异 scale、negate、zero、swap、constant 改变的是返回值中的数值叶子，而样条构造器返回的是可调用对象，没有数值叶子，因此五个变异对本合同都记为 not_exercised。这是装置的限制而不是无人约束的行为：可调用对象自身返回的数值，正是上面的独立弯矩方程比对、SciPy 交叉核对与精确复现测试所约束的。"
+     "变异账（scripts/mutation_check.py）：五个输出变异 scale、negate、zero、swap、constant 改变的是返回值中的数值叶子，而样条构造器返回的是可调用对象，没有数值叶子，因此五个变异对本合同都记为 not_exercised。这是装置的限制而不是无人约束的行为；tests/numerics/spline_value_mutant_check.py 把变异下移一层补上这一格：它把求值器改为返回零、再改为放大十倍，重跑 tests/numerics/test_spline_boundary_evidence.py，要求基线全绿、每个变异都有加载标记、且收集用例中至少 80% 判红——本修订实测收集 24 条，zero 变异 21 条判红、scale 变异 20 条判红——并由 tests/numerics/test_spline_value_mutant_check.py 把这一判定纳入门禁。复跑命令：python3 scripts/dev.py run python -B tests/numerics/spline_value_mutant_check.py。"
     ],
     "known_limitations": [
      "域外置零，以及 deriv 取 1/2 之外时仍返回值，都属于兼容性约定。",
