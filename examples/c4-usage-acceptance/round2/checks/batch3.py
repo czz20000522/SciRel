@@ -57,6 +57,7 @@ def cross_field_to_equilibrium(ctx: H.Ctx, task: dict) -> dict:
         psi = np.asarray(psi, dtype=float).ravel()
         detail["psi_size"] = int(psi.size)
         psi_grid = psi.reshape(r_grid.shape) if psi.size == r_grid.size else psi
+        detail["psi_shaped_to_grid"] = list(np.asarray(psi_grid).shape) == list(r_grid.shape)
         c2 = ctx.call(
             pol,
             {"r_grid": r_grid, "z_grid": z_grid, "psi": psi_grid},
@@ -84,10 +85,22 @@ def cross_field_to_equilibrium(ctx: H.Ctx, task: dict) -> dict:
                 "handoff_within_discretisation": handoff_ok,
             }
             # the same flux is handed to one Picard step unchanged
-            sn = ctx.named(step)
-            named = dict(sn)
-            named["psi_state"] = psi_grid
-            named["psi_vac"] = psi_grid
+            n = int(np.asarray(psi_grid).size)
+            step_named = dict(ctx.named(step))
+            step_named.update(
+                {
+                    "r_grid": r_grid,
+                    "z_grid": z_grid,
+                    "psi_state": psi_grid,
+                    "psi_vac": psi_grid,
+                    "g_psi": np.eye(n),
+                    "pressure_derivative": np.linspace(1.0, 2.0, n),
+                    "currents_old": np.zeros(n),
+                    "relax": 0.25,
+                    "psi_edge": float(np.max(psi_grid)),
+                }
+            )
+            named = step_named
             c3 = ctx.call(step, named, label="one Picard step consuming the same flux array")
             criteria.append(C.fields(ctx, c3, step, "fields_step"))
             same_array = False
@@ -394,64 +407,64 @@ def cross_kinetic_to_diagnostics(ctx: H.Ctx, task: dict) -> dict:
     rn = ctx.named(roots)
     c1 = ctx.call(roots, rn, label="declared wavevector roots")
     criteria = [C.fields(ctx, c1, roots, "fields")]
-    detail, ok = {}, False
+    contract = H.contract(obs)
+    definition = contract["identity"]["definition"]
+    channels = ["flux_loops", "thomson.density", "electron_temperature", "p_parallel", "p_perp"]
+    detail = {
+        "contract_channels": channels,
+        "contract_sentence": definition[:220],
+        "roots_returned": None,
+    }
     if "_value" in c1:
         v = H.mapping(_val(c1), roots)
-        r = np.asarray(v["roots"], dtype=float).ravel()
-        predicted = {"roots": {"values": r.tolist(), "unit": "1/m"}}
-        observations = {
-            "roots": {"values": r.tolist(), "sigma": np.ones_like(r).tolist(), "unit": "1/m"}
-        }
-        c2 = ctx.call(
-            obs,
-            {"predicted": predicted, "observations": observations},
-            label="residual of the roots against themselves",
+        detail["roots_returned"] = int(np.asarray(v["roots"]).size)
+    # the declared observation entry has no channel for wavevector roots, so the premise
+    # "hand the roots over as predictions" is not expressible with the delivered contract
+    criteria.append(
+        C.not_run(
+            "cardinality",
+            "invariant",
+            "the observation entry accepts only the declared channels "
+            f"{channels}; feeding 'roots' raises ValueError('unknown observation "
+            "kinds'), so the handoff the task asks for has no declared expression",
+            detail,
         )
-        criteria.append(C.fields(ctx, c2, obs, "fields_residual"))
-        if "_value" in c2:
-            w = H.mapping(_val(c2), obs)
-            residual = np.asarray(w["residual_vector"], dtype=float).ravel()
-            zero_ok = float(np.max(np.abs(residual))) == 0.0 if residual.size else True
-            card_ok = residual.size == r.size
-            shifted = {"roots": {"values": r.tolist(), "unit": "1/m"}}
-            obs2 = {
-                "roots": {
-                    "values": (r + 0.5).tolist(),
-                    "sigma": np.ones_like(r).tolist(),
-                    "unit": "1/m",
-                }
-            }
-            c3 = ctx.call(
-                obs,
-                {"predicted": shifted, "observations": obs2},
-                label="residual with the observed set shifted by 0.5",
-            )
-            lin_ok = False
-            if "_value" in c3:
-                res2 = np.asarray(H.mapping(_val(c3), obs)["residual_vector"], dtype=float).ravel()
-                lin_ok = res2.size == r.size and np.allclose(res2, 0.5, rtol=1e-12, atol=1e-12)
-            ok = card_ok and zero_ok and lin_ok
-            detail = {
-                "roots_returned": int(r.size),
-                "predictions_reported": int(residual.size),
-                "self_residual_is_zero": zero_ok,
-                "shifted_residual_is_0_5": bool(lin_ok),
-                "status": H.plain(v.get("status")),
-            }
-    criteria.append(C.crit("cardinality", "invariant", "pass" if ok else "fail", detail))
-    criteria.append(C.crit("zeroresidual", "invariant", "pass" if ok else "fail", detail))
+    )
+    criteria.append(
+        C.not_run(
+            "zeroresidual",
+            "invariant",
+            "no declared channel can carry the roots, so a self-residual cannot "
+            "be formed without inventing an observation kind",
+            detail,
+        )
+    )
     return {
         "criteria": criteria,
-        "answer": {"value": detail, "unit": "1/m roots and residual"},
-        "independent_check": {
-            "method": "the roots are fed back as both predicted and observed sets, and "
-            "a 0.5 shift must give a residual of exactly 0.5",
-            "observed": detail,
-            "verdict": "pass" if ok else "fail",
+        "answer": {
+            "value": detail,
+            "unit": "1/m roots; observation channels are dimensionless flux/temperature channels",
         },
-        "package_sufficient": ok,
-        "sufficient_reason": "both entries accept plain arrays and the residual is analytic",
-        "gaps": [],
+        "independent_check": {
+            "method": "the task's handoff is attempted through the delivered entries and the "
+            "contract's declared channel list is compared with the values available",
+            "observed": detail,
+            "verdict": "not-run",
+        },
+        "package_sufficient": False,
+        "sufficient_reason": "the kinetic root values have no declared path into the observation "
+        "residual entry (its channels are flux_loops/thomson/...), so the "
+        "cross-domain task cannot be expressed with the delivered contracts",
+        "gaps": [
+            H.gap(
+                "blocking",
+                "task premise is not expressible: observation-residuals accepts only "
+                "flux_loops/thomson channels; there is no 'roots' channel and no declared "
+                "adapter, so 'use the roots as predictions' cannot be written. This is a "
+                "task-design/contract-coverage issue: the earlier round recorded it as a "
+                "package fault after feeding an invented channel name",
+            )
+        ],
     }
 
 

@@ -36,14 +36,20 @@ def field_filament_superposition(ctx: H.Ctx, task: dict) -> dict:
     ok, detail = False, {}
     if all("_value" in c for c in (c2, c3)):
         a, b = _val(c2), _val(c3)
+        # doubled must equal twice the base value: compare 2*base against doubled
         devs = {
-            k: _max_rel(a[k], 2.0 * np.asarray(b[k]))
+            k: _max_rel(2.0 * np.asarray(a[k], dtype=float), b[k])
             for k in ("psi", "BR", "BZ")
             if k in a and k in b
         }
-        # manual superposition straight from the returned Green columns
-        psi_manual = np.tensordot(
-            np.asarray(base["currents"]), np.asarray(base["gpsi"]), axes=([0], [0])
+        # manual superposition: the returned Green columns are [target, coil], so the
+        # contraction is gpsi @ currents (verified against the returned psi)
+        gpsi = np.asarray(base["gpsi"], dtype=float)
+        currents = np.asarray(base["currents"], dtype=float)
+        psi_manual = (
+            gpsi @ currents
+            if gpsi.shape[0] == np.asarray(a["psi"]).size
+            else (np.tensordot(currents, gpsi, axes=([0], [0])))
         )
         dev_manual = _max_rel(a["psi"], psi_manual)
         ok = max(list(devs.values()) + [dev_manual]) <= 2e-12
@@ -247,6 +253,7 @@ def geometry_mesh_and_volume(ctx: H.Ctx, task: dict) -> dict:
 def numerics_basis_projection(ctx: H.Ctx, task: dict) -> dict:
     modal = "scirel.numerics.orthonormal-modal-basis"
     proj = "scirel.numerics.modal-projection"
+    None
     c0 = ctx.call(modal, ctx.named(modal), label="declared modal basis")
     c1 = ctx.call(proj, ctx.named(proj), label="declared modal projection")
     criteria = [C.fields(ctx, c1, proj, "fields"), C.fields(ctx, c0, modal, "fields_basis")]

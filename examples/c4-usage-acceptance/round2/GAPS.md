@@ -1,8 +1,15 @@
 # C4 第二轮 · 分级缺口
 
-本轮结论的数字：73 条任务全部执行（每条的 `calls` 都非空或按合同不产生调用），
-`package_sufficient` 43 条为 true、30 条为 false；273 条判据里 191 pass、77 fail、
-5 not-run。`not-run` 不计入通过。
+> **本文件经过一次复核修订（2026-11-17）。** 初版（提交 `13cfaa00`）报的 8 类阻塞缺口里，
+> 有 5 类经维护者指出、并由我逐条最小复现后确认是**消费者侧的判据错误**，另 1 类是我的
+> 判据口径错误。修订后的结论：`package_sufficient` **47 true / 26 false**（初版 43/30），
+> 判据 269 条 **196 pass / 66 fail / 7 not-run**（初版 273 条 / 191 / 77 / 5）。
+> 被推翻的每一条在正文里保留"原判定"原文，并紧接"复核结论"；汇总见
+> [第六节「复核：以下判定是消费者侧的错」](#六复核以下判定是消费者侧的错)。
+
+本轮结论的数字（复核后）：73 条任务全部执行（每条的 `calls` 都非空或按合同不产生调用），
+`package_sufficient` 47 条为 true、26 条为 false；269 条判据里 196 pass、66 fail、
+7 not-run。`not-run` 不计入通过。
 
 下面按"阻塞 / 影响可信度 / 体验 / 流程"分级。每条写清**我做了什么妥协**——妥协不是
 "下次注意"，而是这次结论的适用边界。
@@ -11,7 +18,9 @@
 
 ## 一、阻塞（只看包的消费者做不完或有判据无法成立）
 
-### B1. 21 份资产的合同声明了命名输出，入口返回裸值（25 条判据因此 fail）
+### B1. 21 份资产的合同声明了命名输出，入口返回裸值（24 条判据因此 fail）
+
+> **复核后调整：严重度由「阻塞」下调为「影响可信度」。** 值都在，示例本身也按位置使用；问题是合同把概念名写成了字段名，`all_declared_outputs` 观察不到。仍属真缺口，但不阻塞计算。
 
 合同 `outputs[]` 写的是字段名，但入口实际返回 `ndarray` / `float` / `tuple` / 对象：
 
@@ -42,6 +51,8 @@
 
 ### B3. `kinetic.fluid-dispersion-matrix` 的 `matrix_size` 与实际矩阵不一致
 
+> **原判定（13cfaa00）保留在上面。复核结论：** **我的判据错了。** 实测 `matrix_size=40`、`M=(40,40)`、`state_layout` 与合同逐字一致；我读到 1 是因为用 `np.size` 对标量取了元素个数。详见第六节 6.2。
+
 `assemble_fluid_dispersion_matrix` 在声明参数（`max_harmonic=0, n_species=1`）下返回
 `matrix_size = 1`，而 `M` 的形状是 `(40, 40)`；`state_layout` 也不是合同声明的
 `[vx_snl, vy_snl, vz_snl, Ey, Ez, By, Bz]`。用声明的振荡计数重算应为
@@ -52,6 +63,8 @@
 
 ### B4. `collisions.atomic-hydrogen-charge-exchange-rate-coefficient` 的上钳位不成立
 
+> **原判定（13cfaa00）保留在上面。复核结论：** **我的判据错了。** 合同钳位在 2.5e5 eV，实测 2.5e5/5e5/1e6 三点同值 6.399350294468e-15 且带 ApplicabilityWarning；我当初比的 5e4 与 1e5 都在无钳位区。详见 6.3。
+
 合同声明温度钳位；把输入推到钳位之上（1e5 eV 对 2.5e4 eV 上限）后返回值与钳位点相差
 **78%**（判据 `declared_clip` fail，`clip_relative_deviation = 0.782`）。同时该入口返回
 `ndarray`（见 B1）。
@@ -60,6 +73,8 @@
 ——清单只允许一次冻结替换。
 
 ### B5. `field.current-green-superposition` 的线性叠加不成立
+
+> **原判定（13cfaa00）保留在上面。复核结论：** **我的判据错了（双重错）。** 权重加倍后 psi/BR/BZ 逐分量正好 2 倍、偏差 0.0；0.75 来自判据写成 `rel_dev(a, 2b)`，0.667 来自把 Green 列按 `[coil,target]` 做 tensordot。详见 6.1。
 
 把声明的 `currents` 全部乘 2 后，`psi`/`BR`/`BZ` 只放大了 1.25 倍（相对偏差 0.75）；
 用返回的 Green 列手工求和与 `psi` 的相对偏差是 0.667。判据 `linearity`、`entryagreement`、
@@ -71,6 +86,8 @@ weight。
 
 ### B6. 两条"声明拒绝"实际不可达
 
+> **原判定（13cfaa00）保留在上面。复核结论：** **一条是判据错误、一条是任务缺陷。** `Device(mesh=None)` 构造合法、拒绝在 `psi()`；残差形状的冻结 stimulus 与基线同形。两条都改为"冻结 stimulus 记录不变 + 自加探针证明拒绝存在"。详见 6.5、6.6。
+
 | 任务 | 声明 | 实际 |
 | --- | --- | --- |
 | `electromagnetism-rejects-missing-mesh` | `mesh` 缺失抛 `ValueError` | `Device(mesh=None)` 正常返回 |
@@ -81,6 +98,8 @@ README 的约定，这两条先按**任务缺陷**登记（stimulus 未触发声
 
 ### B7. `fieldline-rejects-duplicate-vertices` 抛 `TypeError` 而非声明的 `ValueError`
 
+> **原判定（13cfaa00）保留在上面。复核结论：** **`sampling` 那一半是我的判据错了**：`method=nope` 实测抛 `ValueError`；TypeError 来自我的失败驱动器对含 `*fields` 的签名重复传参，已修。详见 6.4。`fieldline` 那一半仍未定论。
+
 实际异常：`TypeError: list indices must be integers or slices, not tuple`——来自入口内部
 索引，而不是"重复顶点"的声明拒绝。`sampling-rejects-unknown-method` 同类：期望
 `ValueError`，实际 `TypeError`，而该资产合同原文写的恰是 `TypeError`（这条是**任务清单**
@@ -90,6 +109,8 @@ README 的约定，这两条先按**任务缺陷**登记（stimulus 未触发声
 一种输入格式去"拿到"声明的 `ValueError`。
 
 ### B8. 六条跨域任务全部未通过（`package_sufficient` 6/6 false）
+
+> **原判定（13cfaa00）保留在上面。复核结论：** **两条是我的判据错了**：`cross-field-to-equilibrium` 在 flux 按网格 reshape 后全绿（有限差分对照 0.0）；`cross-kinetic-to-diagnostics` 是我发明了合同没有的 `roots` 观测通道，已改记 `not-run`。其余四条仍成立。详见 6.7、6.8。
 
 | 任务 | 断点 |
 | --- | --- |
@@ -172,3 +193,146 @@ per-species 标量），并把转换逐条记进该任务的 `gaps`；没有为�
 
 它不判物理对错。B1/B2/B3/B4/B5 这几条是"合同声明的形状/不变量与实际行为对不上"，
 需要维护者按真值链裁决是合同错还是代码错；消费者只负责把差异写成可复算的记录。
+
+---
+
+## 六、复核：以下判定是消费者侧的错
+
+维护者用 `src/` 树复核后指出 B3、B5 两条无法复现。我按"最小复现调用 + 预期/实际 + 裁决"
+把 8 类逐条重做了一遍（消费者不读 `src/`，只靠调用结果与合同声明对照），结果如下。
+
+| 类 | 最小复现 | 预期（我当初的判定） | 实际 | 裁决 |
+| --- | --- | --- | --- | --- |
+| **B5** 绿色核叠加标度律 | 见 6.1 | 场不随权重成比例（0.75） | 严格 2 倍，偏差 0.0 | **我的判据错了** |
+| **B3** `matrix_size` | 见 6.2 | 返回 1，与 40×40 不符 | `matrix_size=40`，`M=(40,40)`，layout 与声明逐字一致 | **我的判据错了** |
+| **B4** 上钳位 | 见 6.3 | 钳位点与钳位之上差 78% | 2.5e5 eV 及以上恒为 `6.399350294468e-15`，并带 ApplicabilityWarning | **我的判据错了**（比错了区间） |
+| **B7** `sampling` 未知 method | 见 6.4 | 抛 `TypeError` | `method='nope'` → `ValueError: Unknown interpolation method 'nope'` | **我的判据错了**（调用构造坏了） |
+| **B6** `Device(mesh=None)` | 见 6.5 | 应当抛 `ValueError`，实际返回 | 构造合法；`psi()` 抛 `ValueError: a mesh is required for field evaluation` | **我的判据错了**（绑错了调用） |
+| **B6** 残差形状不匹配 | 见 6.6 | 冻结 stimulus 应触发 `ValueError` | stimulus 与基线同形 (1,2)，正常返回；真不匹配 (1,2) vs (3,2) 才抛 | **我的判据错了**（stimulus 本身无效，属任务缺陷） |
+| **B8** 跨域 flux→Picard | 见 6.7 | 网格约定不兼容 | 形状对齐后通过；`B_R/B_Z` 与 flux 有限差分偏差 0.0 | **我的判据错了**（1-D flux 没 reshape） |
+| **B8** roots→观测残差 | 见 6.8 | 两个域"观测"词汇不通用（记为库缺陷） | 观测入口只声明 `flux_loops/thomson/...` 五个通道，`roots` 是我**发明的**通道名 | **我的判据错了**；任务前提本身不可表达，应记 `not-run` |
+
+仍然成立的：**B1**（合同声明命名输出 vs 返回裸值，46 条声明/9 条返回的 B2 也属此类）、
+**B2**（`rational-solve-matrix` 46 个声明输出只返回 9 个）、**B8 的 geometry→equilibrium**
+（3-D 笛卡尔输出 vs 2-D `[N_Z,N_R]` 入口）、以及 `cross-mirror` / `cross-source` /
+`cross-collisions` 三条（断点见第五节表格）。B1 的**严重度从"阻塞"下调为"影响可信度"**：
+值都在，只是合同把概念名写成了字段名，`all_declared_outputs` 这一类判据观察不到。
+
+### 6.1 B5 `current-green-superposition`
+
+```python
+from scirel.field import superpose_current_green_field
+kw = dict(gpsi=[[1.,4.],[3.,5.]], gBR=[[2.,0.],[1.,6.]], gBZ=[[-1.,3.],[2.,4.]])
+a = superpose_current_green_field([2.0,-1.0], **kw)   # psi=[-2, 1]  BR=[4,-4]  BZ=[-5, 0]
+b = superpose_current_green_field([4.0,-2.0], **kw)   # psi=[-4, 2]  BR=[8,-8]  BZ=[-10,0]
+```
+
+预期（我当时）：`b == 2a` 不成立；实际：**逐分量正好 2 倍**，
+`max|2a − b| / max|2a| = 0.0`（psi/BR/BZ 三者皆是）。
+手算 `gpsi @ currents = [-2, 1]`，与返回值逐位相同。
+**错在哪：** 我把判据写成 `rel_dev(a, 2b)`——拿"基线"去比"两倍的双倍值"，
+差值恰好是 `3/4 = 0.75`；手算那一半把 `gpsi` 当成 `[coil, target]` 做了
+`tensordot(currents, gpsi)`，正确方向是 `[target, coil]` 的 `gpsi @ currents`，
+于是得到 0.667 的假偏差。**类型：量纲/转置 + 因子写反，双重错。**
+
+### 6.2 B3 `assembly_fluid_dispersion_matrix`
+
+```python
+r = assemble_fluid_dispersion_matrix(... , order_lengths={1: 12}, max_harmonic=0, n_species=1)
+r['matrix_size']      # 40
+r['M'].shape          # (40, 40)
+r['state_layout']     # ['vx_snl','vy_snl','vz_snl','Ey','Ez','By','Bz'] 与合同逐字一致
+3*1*sum(order_lengths.values())+4   # 40
+```
+
+**错在哪：** 我记录 `matrix_size_returned = int(np.size(v["matrix_size"]))`。
+`np.size` 对标量返回 **1**（元素个数），不是它的值 40；另外我用
+`np.asarray(order_lengths).ravel()` 处理一个 `{species: length}` 字典，得到 `[12]` 的长度
+而不是长度之和。**类型：读了错的字段/容器。**
+
+### 6.3 B4 电荷交换速率的"上钳位"
+
+```python
+from scirel.collisions import evaluate_atomic_hydrogen_charge_exchange_rate as f
+[np.asarray(f([t],[1.0]))[0] for t in (2.5e5, 5.0e5, 1.0e6)]
+# 6.399350294468e-15, 6.399350294468e-15, 6.399350294468e-15（后两者带 ApplicabilityWarning）
+```
+
+合同写的是"**above 2.5e5 eV** emits ApplicabilityWarning and uses the clipped upper edge"，
+实测完全吻合。**错在哪：** 我拿 5e4 与 1e5 两个都落在"无钳位区"的点相比，得出 78% 偏差；
+那不是钳位测试。**类型：比较区间选错。**
+
+### 6.4 B7 `regular_grid(method='nope')`
+
+```python
+from scirel.geometry.sampling import regular_grid
+regular_grid(x, y, x+y, nx=4, ny=5, method='nope')
+# ValueError: Unknown interpolation method 'nope' for 2 dimensional data
+```
+
+**错在哪：** 我的失败任务驱动器对含 `*fields` 的签名同时按位置和关键字传了 `xx`，
+Python 先报 `TypeError: got multiple values for argument 'xx'`，于是"期望 ValueError、
+实际 TypeError"。修法：签名含 `*args` 时，星号之前的参数一律按位置传。
+**类型：调用构造错误（不是库的错）。**
+
+### 6.5 B6 `Device(mesh=None)`
+
+```python
+from scirel.electromagnetism import Device
+d = Device(mesh=None)     # 合法
+d.psi()                   # ValueError: a mesh is required for field evaluation
+```
+
+**错在哪：** 合同说 ValueError 用于 "missing meshes"，我把"缺 mesh"绑到了**构造**调用；
+冻结 stimulus 恰好只是把 mesh 设成 None 去构造。**类型：把拒绝绑到了错的调用点。**
+（任务缺陷仍在：该 stimulus 无法触发声明拒绝。）
+
+### 6.6 B6 `compute_picard_flux_residual` 形状不匹配
+
+```python
+compute_picard_flux_residual(np.array([[3.,4.]]), np.array([[1.,2.]]))   # 正常返回 0.5657
+fn([[[3.,4.,5.]]], [[1.,2.],[3.,4.],[5.,6.]])                           # 真不匹配 -> ValueError
+```
+
+**错在哪：** 冻结 stimulus `[[1.0, 2.0]]` 与基线 `psi_previous` 同为 (1,2)，本来就不该抛。
+**类型：把"任务 stimulus 无效"当成了"库不抛"。** 现在记录保留"冻结 stimulus 未抛"这个事实，
+另记一条自加探针证明拒绝路径存在。
+
+### 6.7 B8 `cross-field-to-equilibrium`
+
+```python
+g = circular_filament_green_response([[0.35,0.0,1.0]], pts)   # pts = 3x3 网格散点
+psi = np.asarray(g['gpsi']).reshape(3,3)
+poloidal_field_from_flux(r_grid, z_grid, psi)                  # B_R/B_Z 齐备
+pressure_flux_picard_step(r_grid, z_grid, np.zeros((3,3)), psi, np.eye(9), ..., 0.25)  # OK
+```
+
+两端声明的 `r_grid` 形状都是 `[N_Z,N_R]`；flux 按同一网格 reshape 后，Picard 步接受它。
+`B_R/B_Z` 与 flux 的有限差分对照偏差 **0.0**（Wb/rad → T 的符号与 1/R 因子都对）。
+**错在哪：** 我传的是未 reshape 的 1-D flux，且沿用了各资产 example 的不同网格尺寸。
+**类型：消费者侧形状/网格错误。**
+
+### 6.8 B8 `cross-kinetic-to-diagnostics`
+
+```python
+reduce_observation_residuals(predicted={'roots': ...}, observations={'roots': ...})
+# ValueError: unknown observation kinds: ['roots']
+```
+
+合同（`identity.definition`）只声明 `flux_loops, thomson.density, electron_temperature,
+p_parallel, p_perp` 五个通道。`roots` 是我为了让"handoff"成立而**发明**的通道名。
+**类型：判据凭空造了一个合同不提供的接口。**
+现在的记录：这一条改记为 `not-run`（两个域之间没有声明的 roots→观测 通道），
+`package_sufficient=false` 的理由改成"任务前提不可表达"，而不是"库不通用"。
+
+### 6.9 这一节的意义
+
+`AGENTS.md` 第 7 条要的是"通过 / 失败 / 未观测"三态可判别。我这 6 条误判的共同形状是：
+**判据本身对"通过"和"失败"没有分辨力**——因子写反、`np.size` 读标量、转置方向错、
+调用构造坏了、比较区间选错、绑错调用点、凭空造接口。它们都会输出一个"看起来像失败"的
+数字，而不会报错。修订后的做法：
+
+1. 每条判据都在 `detail` 里写出**被比较的两个量**与**偏差**，而不是只写一个布尔；
+2. 失败任务驱动器修好了 `*args` 签名，且所有失败路径同时记录"冻结 stimulus 的结果"与
+   "自加探针的结果"，两者分开报告；
+3. 判据改错时，`review` 字段保留原判定（`original_12cfaa00`）与改判理由，不删痕迹。

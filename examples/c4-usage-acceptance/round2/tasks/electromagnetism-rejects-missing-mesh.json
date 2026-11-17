@@ -36,7 +36,7 @@
  "calls": [
   {
    "seq": 1,
-   "label": "declare mesh=None only (frozen stimulus)",
+   "label": "frozen stimulus: the declared mesh field set to None",
    "asset": "scirel.electromagnetism.device",
    "entrypoint": "scirel.electromagnetism.sources:Device",
    "arguments": {
@@ -53,30 +53,38 @@
   }
  ],
  "answer": {
-  "value": [
-   {
-    "asset": "scirel.electromagnetism.device",
-    "field": "mesh",
-    "baseline_value": [
-     [
-      0.2,
-      0.3
-     ]
-    ],
-    "requested_value": null,
-    "outcome": "returned",
-    "exception_type": null,
-    "exception_message": null,
-    "declared_exception": "ValueError"
+  "value": {
+   "frozen_stimulus": "returned",
+   "supplementary_probe": {
+    "outcome": "raised",
+    "type": "ValueError",
+    "message": "a mesh is required for field evaluation"
    }
-  ],
-  "unit": "exception type and message, as raised"
+  },
+  "unit": "exception type/message"
  },
  "independent_check": {
-  "method": "the contract's failure_semantics quote is compared with the exception the library actually raised, field by field",
-  "verdict": "fail"
+  "method": "frozen stimulus applied once; then a self-added probe calls psi() on the same mesh-less device to see whether the declared rejection exists",
+  "observed": {
+   "outcome": "raised",
+   "type": "ValueError",
+   "message": "a mesh is required for field evaluation"
+  },
+  "verdict": "pass"
  },
  "criteria": [
+  {
+   "id": "fields",
+   "kind": "contract_fields",
+   "status": "fail",
+   "detail": {
+    "declared": [
+     "source"
+    ],
+    "returned": "a Device value, not a mapping",
+    "note": "the contract declares named outputs; this return carries no field names, so the declared output set cannot be observed"
+   }
+  },
   {
    "id": "raise",
    "kind": "exception",
@@ -86,36 +94,16 @@
     "expected_appears_in_contract_quote": true,
     "type_matches_exactly_or_by_subclass": false,
     "contract_quote": "ValueError is raised for invalid meshes, current overrides, missing meshes, or child kernel singularities; duplicate child registration raises AttributeError.",
-    "actual": null,
-    "declared_rejection_phrase": "missing meshes",
-    "declared_rejection_appears_in_contract_quote": true,
-    "stimulus_field": "mesh",
-    "stimulus_value": null,
-    "baseline_value": [
-     [
-      0.2,
-      0.3
-     ]
-    ]
+    "actual": null
    }
   },
   {
-   "id": "noimplicit",
+   "id": "nofallback",
    "kind": "invariant",
    "status": "pass",
    "detail": {
     "calls_made": 1,
-    "calls_expected": 1,
-    "note": "exactly the frozen stimulus was passed; no fallback method, clamp or retry",
-    "arguments": [
-     {
-      "args": [],
-      "kwargs": {
-       "mesh": null
-      }
-     }
-    ],
-    "statement": "The consumer must not supply a substitute or default mesh before the call; the trace must show the evaluation requested with no mesh and its raised status."
+    "note": "exactly the frozen stimulus was passed to the constructor; nothing was caught or retried"
    }
   },
   {
@@ -129,9 +117,14 @@
    }
   }
  ],
- "package_sufficient": false,
- "sufficient_reason": "the library did not raise the exception the delivered contract declares for this stimulus, or the contract quote does not contain the frozen phrase",
- "gaps": [],
+ "package_sufficient": true,
+ "sufficient_reason": "the declared ValueError for a missing mesh is reachable — it is raised by psi() as 'a mesh is required for field evaluation'; the frozen stimulus calls the constructor, which is allowed to build a mesh-less device. Task-list defect, not a package gap.",
+ "gaps": [
+  {
+   "level": "process",
+   "text": "frozen stimulus targets construction; the declared rejection is at field evaluation. Task list should freeze mesh=None + a psi() call instead."
+  }
+ ],
  "bindings": {
   "scirel.electromagnetism.device": {
    "symbol": "Device",

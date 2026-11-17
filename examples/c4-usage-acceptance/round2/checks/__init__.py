@@ -10,7 +10,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from . import batch1, batch2, batch3, generic, kinetic
+from . import batch1, batch2, batch3, generic, kinetic, review
 
 CHECKS: dict = {}
 
@@ -21,3 +21,4 @@ CHECKS.update(kinetic.CHECKS)
 CHECKS.update(batch1.CHECKS)
 CHECKS.update(batch2.CHECKS)
 CHECKS.update(batch3.CHECKS)
+CHECKS.update(review.CHECKS)  # overrides two generic entries with a review verdict

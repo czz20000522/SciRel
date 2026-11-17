@@ -292,11 +292,11 @@ def fluid_two_path(ctx: H.Ctx, task: dict) -> dict:
     if "_value" in c2:
         v = c2["_value"]
         M = np.asarray(v["M"])
-        size = int(np.size(v["matrix_size"]))
+        size = int(np.asarray(v["matrix_size"]).ravel()[0])
         layout = list(v["state_layout"])
         raw = named["order_lengths"]
         order_lengths = np.asarray(
-            list(raw.values()) if hasattr(raw, "values") else raw, dtype=float
+            [np.sum(v) for v in raw.values()] if hasattr(raw, "values") else raw, dtype=float
         ).ravel()
         expected = int(3 * 1 * order_lengths.sum() + 4)
         declared_layout = ["vx_snl", "vy_snl", "vz_snl", "Ey", "Ez", "By", "Bz"]

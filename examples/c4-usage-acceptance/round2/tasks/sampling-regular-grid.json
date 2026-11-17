@@ -58,32 +58,6 @@
         1.0
        ],
        [
-        0.5,
-        1.0,
-        1.5
-       ],
-       [
-        1.0,
-        1.5,
-        2.0
-       ]
-      ]
-     }
-    ],
-    "kwargs": {
-     "xx": {
-      "dtype": "float64",
-      "shape": [
-       3,
-       3
-      ],
-      "values": [
-       [
-        0.0,
-        0.5,
-        1.0
-       ],
-       [
         0.0,
         0.5,
         1.0
@@ -95,7 +69,7 @@
        ]
       ]
      },
-     "yy": {
+     {
       "dtype": "float64",
       "shape": [
        3,
@@ -119,6 +93,32 @@
        ]
       ]
      },
+     {
+      "dtype": "float64",
+      "shape": [
+       3,
+       3
+      ],
+      "values": [
+       [
+        0.0,
+        0.5,
+        1.0
+       ],
+       [
+        0.5,
+        1.0,
+        1.5
+       ],
+       [
+        1.0,
+        1.5,
+        2.0
+       ]
+      ]
+     }
+    ],
+    "kwargs": {
      "nx": 4,
      "ny": 5,
      "xi": null,
@@ -126,15 +126,11 @@
      "method": "linear"
     }
    },
-   "status": "raised",
+   "status": "returned",
    "returned_fields": null,
-   "exception": {
-    "type": "TypeError",
-    "module": "builtins",
-    "message": "regular_grid() got multiple values for argument 'xx'",
-    "qualname": "builtins.TypeError"
-   },
-   "warnings": []
+   "exception": null,
+   "warnings": [],
+   "returned_type": "tuple"
   },
   {
    "seq": 2,
@@ -413,13 +409,8 @@
     "declared": [
      "grid_and_fields"
     ],
-    "returned": "raised",
-    "exception": {
-     "type": "TypeError",
-     "module": "builtins",
-     "message": "regular_grid() got multiple values for argument 'xx'",
-     "qualname": "builtins.TypeError"
-    }
+    "returned": "a tuple value, not a mapping",
+    "note": "the contract declares named outputs; this return carries no field names, so the declared output set cannot be observed"
    }
   },
   {

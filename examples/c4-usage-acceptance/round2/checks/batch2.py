@@ -27,12 +27,10 @@ def neutrals_boltzmann_rhs(ctx: H.Ctx, task: dict) -> dict:
     c1 = ctx.call(rhs_asset, named, label="declared Boltzmann RHS")
     ctx.call(freq_asset, ctx.named(freq_asset), label="declared total collision frequency")
     criteria = [C.fields(ctx, c1, rhs_asset, "fields")]
-    detail = {}
+    detail, _ok = {}, False
     if "_value" in c1:
-        (
-            float(np.asarray(named["vth"]))
-            if "vth" in named
-            else float(np.asarray(H.arg(named, rhs_asset, 0)))
+        float(np.asarray(named["vth"])) if "vth" in named else float(
+            np.asarray(H.arg(named, rhs_asset, 0))
         )
         keys = list(named)
         args = [np.asarray(named[k], dtype=float) for k in keys]
@@ -68,7 +66,7 @@ def neutrals_velocity_mesh(ctx: H.Ctx, task: dict) -> dict:
     ctx.call(mesh, ctx.named(mesh), label="declared adaptive velocity mesh")
     c2 = ctx.call(quad, ctx.named(quad), label="declared cylindrical quadrature")
     criteria = [C.fields(ctx, c2, quad, "fields")]
-    detail = {}
+    detail, _ok = {}, False
     if "_value" in c2:
         v = H.mapping(_val(c2), quad)
         vl = np.asarray(v["vr_left"], dtype=float)
@@ -121,7 +119,7 @@ def neutrals_cross_mesh(ctx: H.Ctx, task: dict) -> dict:
     named = ctx.named(scal)
     c2 = ctx.call(scal, named, label="declared scalar transfer")
     criteria = [C.fields(ctx, c2, scal, "fields")]
-    detail = {}
+    detail, _ok = {}, False
     fa = np.asarray(named["fa"], dtype=float)
     xa = np.asarray(named["xa"], dtype=float)
     xb = np.asarray(named["xb"], dtype=float)
@@ -233,7 +231,7 @@ def neutrals_upwind_transport(ctx: H.Ctx, task: dict) -> dict:
     c1 = ctx.call(coeff, named, label="declared upwind coefficients")
     ctx.call(prop, ctx.named(prop), label="declared generation propagation")
     criteria = [C.fields(ctx, c1, coeff, "fields")]
-    detail = {}
+    detail, _ok = {}, False
     if "_value" in c1:
         v = H.mapping(_val(c1), coeff)
         x = np.asarray(H.arg(named, coeff, 0), dtype=float)
@@ -293,7 +291,7 @@ def collisions_cross_sections(ctx: H.Ctx, task: dict) -> dict:
     far = float(np.max(energies)) * 1.0e3
     beyond[key] = np.r_[energies, far]
     c3 = ctx.call(a1, beyond, label="declared grid extended far beyond the fit range")
-    detail = {}
+    detail, _ok = {}, False
     if "_value" in c3:
         v = np.asarray(H.mapping(_val(c3), a1)["cross_section_m2"], dtype=float)
         inside = np.asarray(H.mapping(_val(c1), a1)["cross_section_m2"], dtype=float)
@@ -329,29 +327,43 @@ def collisions_rate_coefficients(ctx: H.Ctx, task: dict) -> dict:
     ctx.call(a2, ctx.named(a2), label="declared molecular collision matrices")
     ctx.call(a3, ctx.named(a3), label="declared omega frequencies")
     criteria = [C.fields(ctx, c1, a1, "fields")]
-    detail = {}
+    detail, _ok = {}, False
     named = ctx.named(a1)
     tkey = next((k for k in named if "t" == k.lower() or "temperature" in k.lower()), None)
     ekey = next((k for k in named if k != tkey), None)
+    # the contract declares the clip at 2.5e5 eV ("Temperature or energy above 2.5e5 eV emits
+    # ApplicabilityWarning and uses the clipped upper edge"), so compare at the edge and above it
+    EDGE = 2.5e5
     if tkey and ekey:
-        t = np.asarray(named[tkey], dtype=float)
-        e = np.asarray(named[ekey], dtype=float)
-        top = float(np.max(t))
-        above = dict(named)
-        above[tkey] = np.r_[t, top * 10.0]
-        above[ekey] = np.r_[e, float(np.max(e)) * 10.0]
-        c4 = ctx.call(a1, above, label="declared grid extended above the upper clip")
-        if "_value" in c4:
-            v = np.asarray(H.mapping(_val(c4), a1)["rate_m3_s"], dtype=float)
-            base = np.asarray(H.mapping(_val(c1), a1)["rate_m3_s"], dtype=float)
-            at_top = float(np.max(base))
-            dev = abs(float(v[-1]) - at_top) / max(abs(at_top), 1e-300)
-            ok = dev <= 1e-12
+        import warnings as _w
+
+        def _rate(t):
+            with _w.catch_warnings(record=True):
+                _w.simplefilter("always")
+                v = ctx.call(
+                    a1,
+                    {**named, tkey: np.array([t]), ekey: np.array([1.0])},
+                    label=f"declared rate at T={t:g} eV",
+                )
+            return (
+                float(np.asarray(H.mapping(_val(v), a1)["rate_m3_s"]).ravel()[0])
+                if "_value" in v
+                else None,
+                [str(x.message)[:60] for x in v.get("warnings", [])],
+            )
+
+        at_edge, w_edge = _rate(EDGE)
+        above, w_above = _rate(EDGE * 4.0)
+        if at_edge is not None and above is not None:
+            dev = abs(above - at_edge) / max(abs(at_edge), 1e-300)
+            ok = dev <= 1e-12 and bool(w_above)
             detail = {
-                "upper_clip_energy_ev": float(np.max(e)),
-                "value_at_or_above_clip": H.plain(v[-1]),
-                "clip_relative_deviation": dev,
-                "warnings": c4.get("warnings"),
+                "clip_edge_ev": EDGE,
+                "rate_at_edge": at_edge,
+                "rate_above_edge": above,
+                "relative_deviation": dev,
+                "warning_at_edge": w_edge,
+                "warning_above_edge": w_above,
             }
     criteria.append(C.crit("declared_clip", "invariant", "pass" if ok else "fail", detail))
     return {
@@ -376,7 +388,7 @@ def collisions_rate_averages(ctx: H.Ctx, task: dict) -> dict:
     c1 = ctx.call(avg, named, label="declared Maxwellian average")
     ctx.call(janev, ctx.named(janev), label="declared Janev ionization rate")
     criteria = [C.fields(ctx, c1, avg, "fields")]
-    detail = {}
+    detail, _ok = {}, False
     sigma_key = next((k for k in named if "sigma" in k.lower() or "cross" in k.lower()), None)
     if sigma_key and "_value" in c1:
         doubled = dict(named)
@@ -422,7 +434,7 @@ def fvm_convection_diffusion(ctx: H.Ctx, task: dict) -> dict:
     ctx.call(diff, ctx.named(diff), label="declared diffusion terms")
     c4 = ctx.call(step, ctx.named(step), label="declared theta step")
     criteria = [C.fields(ctx, c4, step, "fields")]
-    detail = {}
+    detail, _ok = {}, False
     named = ctx.named(step)
     theta = float(named["theta"]) if "theta" in named else None
     [named[k] for k in H.argnames(step) if k in named and k not in ("theta",)]
@@ -505,7 +517,7 @@ def io_eqdsk_roundtrip(ctx: H.Ctx, task: dict) -> dict:
     cls = "scirel.io.eqdsk-class"
     c0 = ctx.call(cls, ctx.named(cls), label="declared EQDSK state")
     criteria = [C.fields(ctx, c0, cls, "fields")]
-    detail = {}
+    detail, _ok = {}, False
     with tempfile.TemporaryDirectory() as tmp:
         tmpdir = Path(tmp)
         named = dict(ctx.named(write_eq))
@@ -579,7 +591,7 @@ def inference_parameter_optimization(ctx: H.Ctx, task: dict) -> dict:
     n1 = ctx.named(lhs)
     c3 = ctx.call(lhs, n1, label="declared design")
     criteria = [C.fields(ctx, c1, opt, "fields")]
-    detail = {}
+    detail, _ok = {}, False
     if "_value" in c1:
         v = H.mapping(_val(c1), opt)
         log = v.get("evaluation_log")
@@ -635,7 +647,7 @@ def neoclassical_bootstrap(ctx: H.Ctx, task: dict) -> dict:
     c2 = ctx.call(coeff, n1, label="same declared coefficients (repeat)")
     c3 = ctx.call(current, ctx.named(current), label="declared bootstrap current")
     criteria = [C.fields(ctx, c1, coeff, "fields")]
-    detail = {}
+    detail, _ok = {}, False
     if "_value" in c1 and "_value" in c2:
         a, b = H.mapping(_val(c1), coeff), H.mapping(_val(c2), coeff)
         same = all(
@@ -760,7 +772,7 @@ def source_zero_width_sentinel(ctx: H.Ctx, task: dict) -> dict:
     zero = dict(named)
     zero["width"] = 0.0
     sentinel = ctx.call(gauss, zero, label="declared zero-width sentinel")
-    detail = {}
+    detail, _ok = {}, False
     if "_value" in sentinel:
         p = np.asarray(H.mapping(_val(sentinel), gauss)["profile"], dtype=float)
         finite_control = (
@@ -806,7 +818,7 @@ def dielectric_cold_tensor(ctx: H.Ctx, task: dict) -> dict:
     named = ctx.named(tensor)
     c1 = ctx.call(tensor, named, label="declared cold plasma tensor")
     criteria = [C.fields(ctx, c1, tensor, "fields")]
-    detail = {}
+    detail, _ok = {}, False
     if "_value" in c1:
         v = H.mapping(_val(c1), tensor)
         eps = np.asarray(v["epsilon_r"], dtype=complex)
@@ -865,7 +877,7 @@ def plasma_fast_ion_heating(ctx: H.Ctx, task: dict) -> dict:
     named = ctx.named(asset)
     c1 = ctx.call(asset, named, label="declared fast-ion heating")
     criteria = [C.fields(ctx, c1, asset, "fields")]
-    detail = {}
+    detail, _ok = {}, False
     zero = dict(named)
     energy_key = next((k for k in named if "energy" in k.lower()), list(named)[0])
     zero[energy_key] = 0.0
