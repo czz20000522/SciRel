@@ -27,10 +27,10 @@
 
 | 证据覆盖 | 份数 |
 | --- | --- |
-| `basis` | 197 |
-| `gap` | 114 |
-| `either` | 240 |
-| `neither` | 9 |
+| `basis` | 202 |
+| `gap` | 116 |
+| `either` | 245 |
+| `neither` | 4 |
 
 口径：`python3 scripts/c1_evidence_coverage.py`；`neither` 是**合同文本缺口**，不是「没有证据」，也不是科学工作完成度。
 <!-- status-report:end -->

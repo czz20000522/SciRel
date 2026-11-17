@@ -316,7 +316,9 @@ def test_hand_svd_of_a_permuted_diagonal_matrix_is_reproduced_exactly():
     matrix, left, right = _constructed_svd_case()
     # The construction is checked, not assumed: the singular values of the
     # concrete matrix are the intended spectrum.
-    np.testing.assert_allclose(np.linalg.svd(matrix, compute_uv=False), sorted(THREE_BY_THREE_SPECTRUM)[::-1])
+    np.testing.assert_allclose(
+        np.linalg.svd(matrix, compute_uv=False), sorted(THREE_BY_THREE_SPECTRUM)[::-1]
+    )
     for rcond in (1.0e-10, 1.0e-4, 1.0e-2):
         got = N.compute_truncated_pseudoinverse(matrix, rcond=rcond)
         expected = _hand_pseudoinverse(matrix, left, right, THREE_BY_THREE_SPECTRUM, rcond)

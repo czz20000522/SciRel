@@ -424,9 +424,7 @@ def test_natural_family_matches_the_independent_second_derivative_solve():
         X, Y
     )
     # Interior queries: nodes, midpoints and off-centre points, all in-domain.
-    queries = np.concatenate(
-        [X, 0.5 * (X[:-1] + X[1:]), 0.25 * (3.0 * X[:-1] + X[1:])]
-    )
+    queries = np.concatenate([X, 0.5 * (X[:-1] + X[1:]), 0.25 * (3.0 * X[:-1] + X[1:])])
     expected = _independent_spline_value(X, Y, second, queries)
     got = np.asarray(spline(queries))
     scale = max(1.0, float(np.max(np.abs(Y))))
@@ -454,9 +452,7 @@ def test_clamped_family_matches_the_independent_second_derivative_solve():
     ends = np.asarray(spline(np.array([X[0], X[-1]]), 1))
     assert abs(float(ends[0]) - CLAMPED_YP[0]) <= 1e-12 * _first_scale(X, Y)
     assert abs(float(ends[1]) - CLAMPED_YP[1]) <= 1e-12 * _first_scale(X, Y)
-    queries = np.concatenate(
-        [X, 0.5 * (X[:-1] + X[1:]), 0.25 * (3.0 * X[:-1] + X[1:])]
-    )
+    queries = np.concatenate([X, 0.5 * (X[:-1] + X[1:]), 0.25 * (3.0 * X[:-1] + X[1:])])
     expected = _independent_spline_value(X, Y, second, queries)
     got = np.asarray(spline(queries))
     scale = max(1.0, float(np.max(np.abs(Y))))

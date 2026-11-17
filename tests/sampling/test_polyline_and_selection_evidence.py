@@ -253,9 +253,7 @@ def test_path_distance_is_invariant_under_dyadic_resampling():
             [3.0, 8.0],
         ]
     )
-    totals = [
-        get_fieldline_distance(points)[-1] for points in (coarse, halved, quartered)
-    ]
+    totals = [get_fieldline_distance(points)[-1] for points in (coarse, halved, quartered)]
     assert [len(points) for points in (coarse, halved, quartered)] == [3, 5, 6]
     assert totals[0] == 9.0
     assert totals[1] == totals[0]

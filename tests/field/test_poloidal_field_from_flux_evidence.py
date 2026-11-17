@@ -409,10 +409,16 @@ def _exact_monomial_components(radius, height, radial_power, axial_power):
     """Return ``(B_R, B_Z)`` as exact ``Fraction`` values of the stored inputs."""
     r = Fraction(float(radius))
     z = Fraction(float(height))
-    b_r = Fraction(0) if axial_power == 0 else -axial_power * r ** (radial_power - 1) * z ** (
-        axial_power - 1
+    b_r = (
+        Fraction(0)
+        if axial_power == 0
+        else -axial_power * r ** (radial_power - 1) * z ** (axial_power - 1)
     )
-    b_z = Fraction(0) if radial_power == 0 else radial_power * r ** (radial_power - 2) * z**axial_power
+    b_z = (
+        Fraction(0)
+        if radial_power == 0
+        else radial_power * r ** (radial_power - 2) * z**axial_power
+    )
     return b_r, b_z
 
 
@@ -429,9 +435,7 @@ def _quadratic_derivative(values, coordinates, axis):
     out = np.empty_like(f)
     out[..., 1:-1] = (h[1:] * slopes[..., :-1] + h[:-1] * slopes[..., 1:]) / (h[:-1] + h[1:])
     out[..., 0] = slopes[..., 0] - h[0] * (slopes[..., 1] - slopes[..., 0]) / (h[0] + h[1])
-    out[..., -1] = slopes[..., -1] + h[-1] * (slopes[..., -1] - slopes[..., -2]) / (
-        h[-2] + h[-1]
-    )
+    out[..., -1] = slopes[..., -1] + h[-1] * (slopes[..., -1] - slopes[..., -2]) / (h[-2] + h[-1])
     return np.moveaxis(out, -1, axis)
 
 
@@ -508,9 +512,9 @@ def test_the_returned_pair_satisfies_the_axisymmetric_divergence_identity(
     """Evidence 8: ``(1/R) d(R B_R)/dR + dB_Z/dZ = 0`` on the returned arrays."""
     radius, height = _monomial_grid()
     result = poloidal_field_from_flux(radius, height, radius**radial_power * height**axial_power)
-    radial_term = _quadratic_derivative(
-        radius * result["B_R"], MONOMIAL_GRID_RADIAL, axis=1
-    ) / radius
+    radial_term = (
+        _quadratic_derivative(radius * result["B_R"], MONOMIAL_GRID_RADIAL, axis=1) / radius
+    )
     axial_term = _quadratic_derivative(result["B_Z"], MONOMIAL_GRID_AXIAL, axis=0)
     scale = max(float(np.max(np.abs(radial_term))), float(np.max(np.abs(axial_term))))
     residual = float(np.max(np.abs(radial_term + axial_term)))
