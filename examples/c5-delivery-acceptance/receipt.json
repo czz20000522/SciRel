@@ -1,0 +1,181 @@
+{
+  "schema": "scirel.c5-delivery-receipt",
+  "schema_version": 1,
+  "purpose": "Real outward delivery package for C5: what was built, where, and the independent verification of the installed artifact. The package directory and the wheel are NOT committed; the digests plus the commands below let anyone rebuild them from source_revision and compare byte for byte.",
+  "source": {
+    "revision": "435cc9a1630fd001eb7d5bc34d1a4e85f6096c46",
+    "branch": "agent/c5-package",
+    "worktree": ".worktrees/c5 (temporary worktree; removed after the run)",
+    "worktree_clean_before_build": true,
+    "main_checkout_modified": false,
+    "main_checkout_pushed": false
+  },
+  "build": {
+    "wheel_command": "python3 scripts/dev.py run uv build --wheel --out-dir .runtime/c5/wheel",
+    "package_command": "python3 scripts/dev.py run python -B scripts/build_pure_delivery.py --wheel .runtime/c5/wheel/scirel-0.0.0-py3-none-any.whl --output .runtime/c5/scirel-delivery-435cc9a1",
+    "package_root_relative_to_clone": ".runtime/c5/scirel-delivery-435cc9a1",
+    "package_root_note": "The package lives under the gitignored .runtime/, so it is a run artifact rather than a repository file. Rebuild it with the command above; the binary is never committed.",
+    "wheel": {
+      "filename": "scirel-0.0.0-py3-none-any.whl",
+      "bytes": 925017,
+      "sha256": "4c64938e782db200775eaae92b35e883bc779d1e97b56ed108a894348ed4ed85"
+    },
+    "package": {
+      "file_count_including_runtime_json": 275,
+      "bytes_total": 6620138,
+      "runtime_json_bytes": 50656,
+      "capability_index_bytes": 2195731,
+      "contracts_in_catalog_contracts": 249,
+      "skill_files": {
+        "scirel-solving": 14,
+        "scirel-capability-discovery": 5,
+        "scirel-result-validation": 1
+      },
+      "top_level_entries": [
+        "catalog",
+        "mcp-connections.json",
+        "mcp-requirements.txt",
+        "runtime-requirements.txt",
+        "runtime.json",
+        "skills",
+        "wheel"
+      ]
+    },
+    "manifest_self_check": {
+      "manifest_entries": 274,
+      "entries_rehashed_against_disk": 274,
+      "digest_or_size_mismatches": 0,
+      "files_on_disk_absent_from_manifest": 0,
+      "note": "every contract, skill, wheel and requirements byte rehashed against runtime.json"
+    },
+    "asset_count_cross_check": {
+      "package_catalog_contracts": 249,
+      "runtime_json_asset_count": 249,
+      "source_catalog_examples": 249,
+      "note": "The delivered package renames source catalog/examples/ entries to catalog/contracts/. There is no catalog/examples/ directory inside the package. The source-tree count is listed separately and is not a package path.",
+      "all_three_agree": true
+    }
+  },
+  "runtime_json": {
+    "schema": "scirel.consumer-runtime",
+    "snapshot_sha256": "7a6268653983b92dadab6e714b48550657c4088d6d128b6bf398012efc8671bc",
+    "source_revision": "435cc9a1630fd001eb7d5bc34d1a4e85f6096c46",
+    "asset_count": 249,
+    "top_level_keys": [
+      "asset_count",
+      "files",
+      "retrieval",
+      "runtime",
+      "schema",
+      "snapshot_sha256",
+      "source_revision"
+    ],
+    "runtime": {
+      "dependencies_bundled": false,
+      "package_version": "0.0.0",
+      "requires_dist": [
+        "numpy==2.5.4",
+        "scipy==1.18.1",
+        "mpmath==1.4.1"
+      ],
+      "requires_python": ">=3.12",
+      "wheel": "scirel-0.0.0-py3-none-any.whl",
+      "wheel_sha256": "4c64938e782db200775eaae92b35e883bc779d1e97b56ed108a894348ed4ed85"
+    },
+    "retrieval": {
+      "backend": "lexical-and",
+      "completeness": "unknown",
+      "incomplete_status": "retrieval_incomplete",
+      "ranking_method": "weighted-lexical",
+      "scientific_applicability": "not_assessed"
+    }
+  },
+  "verification": {
+    "method": "The delivered wheel was installed into an isolated venv, and the installed-wheel validator was run with that interpreter. validate_extraction_package.py was NOT used: it validates the extraction kit layout (different member set) and would produce structure-missing errors that say nothing about this package.",
+    "venv": {
+      "path_relative_to_clone": ".runtime/c5/venv-consumer",
+      "create_command": "UV_PYTHON_INSTALL_DIR=.runtime/python UV_CACHE_DIR=.runtime/uv-cache uv venv --seed --python 3.14.7 .runtime/c5/venv-consumer",
+      "install_command": "UV_PYTHON_INSTALL_DIR=.runtime/python UV_CACHE_DIR=.runtime/uv-cache uv pip install --python .runtime/c5/venv-consumer/bin/python .runtime/c5/scirel-delivery-435cc9a1/wheel/scirel-0.0.0-py3-none-any.whl -r .runtime/c5/scirel-delivery-435cc9a1/runtime-requirements.txt",
+      "pip_freeze": [
+        "mpmath==1.4.1",
+        "numpy==2.5.4",
+        "scipy==1.18.1",
+        "scirel==0.0.0 (from the delivered wheel)"
+      ]
+    },
+    "validate_command": ".runtime/c5/venv-consumer/bin/python -I .worktrees/c5/scripts/validate_installed_wheel.py --expected-python 3.14 --wheel .runtime/c5/scirel-delivery-435cc9a1/wheel/scirel-0.0.0-py3-none-any.whl --catalog-root .worktrees/c5 --source-revision 435cc9a1630fd001eb7d5bc34d1a4e85f6096c46 --output .runtime/c5/installed-wheel-validation.json",
+    "receipt_file_relative_to_clone": ".runtime/c5/installed-wheel-validation.json",
+    "status": "PASS",
+    "errors": [],
+    "artifact": {
+      "bytes": 925017,
+      "path": "scirel-0.0.0-py3-none-any.whl",
+      "sha256": "4c64938e782db200775eaae92b35e883bc779d1e97b56ed108a894348ed4ed85"
+    },
+    "artifact_sha256_equals_runtime_json_wheel_sha256": true,
+    "package": {
+      "in_source_tree": false,
+      "metadata_within_sys_prefix": true
+    },
+    "runtime_identity": {
+      "implementation": "CPython",
+      "version": "3.14.7",
+      "is_virtualenv": true,
+      "external_site_paths": [],
+      "platform": "macosx-11.0-arm64"
+    },
+    "steps": {
+      "pip_check": "PASS",
+      "simple_operator": "PASS",
+      "cross_domain_task": "PASS",
+      "public_surface": "PASS",
+      "catalog_wheel_closure": {
+        "status": "PASS",
+        "document_count": 249,
+        "implementation_module_count": 170,
+        "missing_modules": [],
+        "missing_symbols": []
+      }
+    }
+  },
+  "consumer_tasks": {
+    "directory": "tasks/",
+    "runner": "SCIREL_PACKAGE_ROOT=<package> .runtime/c5/venv-consumer/bin/python -I examples/c5-delivery-acceptance/tasks/<task>/solve.py",
+    "allowed_inputs": [
+      "the delivered package (catalog/, the three usage skills, the wheel)",
+      "a Python environment built only from the package's requirements files and wheel",
+      "the task source in this directory"
+    ],
+    "forbidden_inputs": [
+      "src/",
+      "tests/",
+      "catalog/review/",
+      "any worktree of this repository"
+    ],
+    "results": [
+      {
+        "task_id": "mirror-ratio-mirror-point",
+        "package_sufficient": false,
+        "checks_passed": 7,
+        "checks_total": 7
+      },
+      {
+        "task_id": "geometry-coordinate-roundtrip",
+        "package_sufficient": true,
+        "checks_passed": 6,
+        "checks_total": 6
+      },
+      {
+        "task_id": "transport-closure-dimensions",
+        "package_sufficient": true,
+        "checks_passed": 6,
+        "checks_total": 6
+      }
+    ]
+  },
+  "does_not_establish": [
+    "Physics correctness of any operator. A green installed-wheel receipt proves the artifact installs, imports, and its public surface matches the catalog; scientific review lives in catalog/review/.",
+    "Retrieval completeness: runtime.json declares completeness=unknown and scientific_applicability=not_assessed.",
+    "That the consumer tasks generalise: they are three chosen tasks, not a coverage proof over 249 assets."
+  ]
+}
