@@ -1,0 +1,84 @@
+{
+  "schema": "scirel.rules-inventory.v1",
+  "note": "每条规则现在由什么机器判据保证。state 三态：machine（有判据且覆盖面足够）/ machine-partial（有判据但只覆盖一部分，写明判什么不判什么）/ unjudged（无判据，写明为什么判不了、靠谁保证）。本文件由 tests/tooling/test_rules_inventory.py 盯着：判据路径必须存在，规则锚点必须在源文档里出现。",
+  "verified_on": "2026-11-18",
+  "slice": "AGENTS.md 的 8 条规则（第一批；其余文档的规则随后补）",
+  "rules": [
+    {
+      "id": "agents-1",
+      "source": "AGENTS.md",
+      "anchor": "真值链：证据 → 代码 → 合同 → 文档",
+      "state": "machine-partial",
+      "judged_by": ["scripts/c1_evidence_coverage.py"],
+      "judges": "每份公开合同必须在文本里交代证据来源或缺口（neither 必须为 0）。",
+      "does_not_judge": "交代了不等于证明了：它不判断那条依据是否成立，也不区分 basis 与 gap 的质量。116 份记录的是缺口而非证据，这个脚本如实把它们算作 either，不会算成通过。"
+    },
+    {
+      "id": "agents-2",
+      "source": "AGENTS.md",
+      "anchor": "改物理必须带证据、走分级评审",
+      "state": "unjudged",
+      "why": "分级评审是人的流程：谁审了、审到哪一级，不在产物里留下机器可读的痕迹。",
+      "who": "合并者按 supply-pipeline 第 7 节执行；PR 回执里写清等级。"
+    },
+    {
+      "id": "agents-3",
+      "source": "AGENTS.md",
+      "anchor": "公开仓库自给自足",
+      "state": "machine",
+      "judged_by": [
+        "tests/architecture/test_repository_skeleton.py::test_no_private_machine_paths_in_the_tree",
+        "tests/architecture/test_repository_skeleton.py::test_no_dependency_on_private_records",
+        "skills/development/scirel-acceptance/scripts/precommit_check.py"
+      ],
+      "judges": "树内不出现本机路径、不依赖私有记录；提交前拦私有路径与凭据。"
+    },
+    {
+      "id": "agents-4",
+      "source": "AGENTS.md",
+      "anchor": "公开与否由实现决定",
+      "state": "machine",
+      "judged_by": [
+        "scripts/check_catalog_id_domain.py",
+        "tests/architecture/test_repository_skeleton.py::test_review_contract_code_is_outside_the_installed_package"
+      ],
+      "judges": "公开 catalog 的资产与实现同名对齐；评审期合同与候选代码不进安装包。"
+    },
+    {
+      "id": "agents-5",
+      "source": "AGENTS.md",
+      "anchor": "报告先回答问题",
+      "state": "unjudged",
+      "why": "「先回答问题」是行文质量，没有可判定的谓词。",
+      "who": "评审人；求解 skill 的 workflow 里有清单可对照。"
+    },
+    {
+      "id": "agents-6",
+      "source": "AGENTS.md",
+      "anchor": "如实写结果",
+      "state": "machine-partial",
+      "judged_by": ["scripts/check_observation_integrity.py"],
+      "judges": "带 capture_output 的子进程不得吞掉 stderr；机械扫得出的静默失败会被拦。",
+      "does_not_judge": "报告里把「未运行」写成「通过」这类文字失真，判不出来。"
+    },
+    {
+      "id": "agents-7",
+      "source": "AGENTS.md",
+      "anchor": "观测必须可判别：通过 / 失败 / 未观测是三态",
+      "state": "machine",
+      "judged_by": [
+        "scripts/check_observation_integrity.py",
+        "tests/tooling/test_observation_integrity.py"
+      ],
+      "judges": "stderr 必须随失败携带；未观测有独立退出码（dev.py 的 75、变异的 UNKNOWN、retrieval.completeness=unknown）。"
+    },
+    {
+      "id": "agents-8",
+      "source": "AGENTS.md",
+      "anchor": "约定问题先查上游，再定我们自己的标准",
+      "state": "unjudged",
+      "why": "「查没查上游」是过程，产物里看不出来。但产物侧有一个可判定的代理：合同声明的单位与默认值是否与上游一致——这条判据尚未建立。",
+      "who": "本批由 docs/maintainer/reference-projects.md 第 4 节的流程约束；下批把「合同里的单位必须能追溯到上游」做成判据。"
+    }
+  ]
+}
