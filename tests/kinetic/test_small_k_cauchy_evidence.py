@@ -62,27 +62,30 @@ def test_small_k_damping_is_the_published_closed_form():
     from scirel.kinetic import evaluate_gpdf_small_k
 
     bessel.high_precision()
-    wavenumbers = [1e-2, 0.05, 0.1, 0.2]
-    result = evaluate_gpdf_small_k(wavenumbers)
-    damping = np.asarray(result["omega_imag"], dtype=float)
-    for index, k in enumerate(wavenumbers):
-        expected = (
-            -mp.sqrt(mp.pi / 8)
-            * mp.e ** (-1 / (2 * mp.mpf(k) ** 2) - mp.mpf("1.5"))
-            / mp.mpf(k) ** 3
-        )
-        assert _rel(damping[index], expected) <= 1e-13
 
-    # Underflow is a declared behaviour, not a silent zero: it happens only when the
-    # closed form is far below the smallest normal binary64 number.
-    tiny = np.asarray(evaluate_gpdf_small_k([1e-3])["omega_imag"], dtype=float)
-    closed = (
-        -mp.sqrt(mp.pi / 8)
-        * mp.e ** (-1 / (2 * mp.mpf("1e-3") ** 2) - mp.mpf("1.5"))
-        / mp.mpf("1e-3") ** 3
-    )
-    assert closed < mp.mpf("1e-300")
-    assert tiny[0] == 0.0
+    def closed_form(k):
+        return -mp.sqrt(mp.pi / 8) * mp.e ** (-1 / (2 * mp.mpf(k) ** 2) - mp.mpf("1.5")) / mp.mpf(k) ** 3
+
+    # The exponential factor drops below the smallest normal binary64 number as k
+    # shrinks, so part of the ladder is *declared* to underflow.  Which side of the
+    # boundary each k sits on is computed here rather than assumed: the closed form is
+    # evaluated at 40 digits and the port must return exactly zero exactly where that
+    # value is below 1e-300.  Folding both regimes into one ladder keeps the test from
+    # silently measuring only the easy half.
+    ladder = [1e-3, 1e-2, 0.02, 0.05, 0.1, 0.2, 0.3]
+    damping = np.asarray(evaluate_gpdf_small_k(ladder)["omega_imag"], dtype=float)
+    underflowed = 0
+    for index, k in enumerate(ladder):
+        expected = closed_form(k)
+        if expected < mp.mpf("1e-300"):
+            underflowed += 1
+            assert damping[index] == 0.0, (k, mp.nstr(expected, 3), damping[index])
+        else:
+            assert _rel(damping[index], expected) <= 1e-13, (k, damping[index])
+
+    # Both regimes must actually appear in the ladder, otherwise this test would pass
+    # while only ever exercising one of them.
+    assert 0 < underflowed < len(ladder)
 
 
 def test_small_k_real_part_is_the_leading_order_of_the_exact_root():
