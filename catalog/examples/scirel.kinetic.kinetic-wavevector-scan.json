@@ -369,19 +369,23 @@
  },
  "verification": {
   "scope": [
-   "Current SciRel implementation and the repository tests listed in this contract cover the declared public ports and numerical relation.",
-   "The example exercises one bounded representative case; it does not extend applicability beyond the declared preconditions.",
-   "test_kinetic_scan_keeps_absolute_zero_kz_and_fixed_seed directly calls this entry for one frequency and checks count, absolute zero kz, fixed initial value and the bounded complex root; this is not a native/reference-runtime comparison.",
-   "Near-integer colon-ladder endpoints are retained and covered by tests/kinetic/test_dispersion_scan_axes.py."
+   "Independent ladder recomputation: `tests/kinetic/test_kinetic_wavevector_scan_evidence.py` rebuilds the colon ladder from exact `Fraction` arithmetic and the seed from `0.6*kn`, without the private `scan_frequencies`/`seed_wavenumber` helpers, and requires bitwise equality with the returned `omegas` and `kx_start`.",
+   "Entry identity: the scan's reported `omegas`, `kz`, `kx_start` and derived `ns0`/`Ts0` replayed through `solve_kinetic_wavevector_roots` reproduce `roots`, `residuals` and `status` exactly over the whole 13-point ladder, not only at its endpoint.",
+   "Per-point zero quality: every converged point's root is re-checked through the separate `scirel.kinetic.dielectric-response` asset and must satisfy `abs(det)/max|K| <= 1e-12`.",
+   "Jump discipline with both halves counted: on the `0.66:0.005:0.72` ladder a converged neighbouring pair keeps the root-modulus change within `1e-2` (3 such pairs measured), and every pair that breaks that bound has at least one nonconverged endpoint (2 such pairs measured, none unflagged); both counts are asserted, so neither half can hold vacuously.",
+   "`tests/kinetic/test_dispersion_scan_axes.py` covers the ladder constructor's endpoint rounding and `tests/cross_domain/test_fluid_spectrum_r43_compositions.py` covers the graph wiring."
   ],
   "tests": [
+   "tests/kinetic/test_kinetic_wavevector_scan_evidence.py",
    "tests/cross_domain/test_fluid_spectrum_r43_compositions.py",
    "tests/kinetic/test_dispersion_scan_axes.py"
   ],
-  "evidence_ceiling": "The named single-frequency test directly exercises this scan. test_dispersion_scan_axes calls its scan_frequencies helper as kinetic_scan_frequencies and tests ladder endpoints, not complete complex-root scans. The bounded example can return success=False; these checks do not certify every frequency, global root selection or native/reference-runtime agreement.",
+  "evidence_ceiling": "The named direct tests exercise this scan on one 13-point ladder plus the single-frequency contract example. Independent basis: an exact-rational recomputation of the ladder and seed, a cross-asset per-point determinant re-check through `scirel.kinetic.dielectric-response`, and an analytic structural fact -- the `kz=0` determinant is even in `kx`, so convergence does not imply sign continuity along the ladder. These checks do not certify every frequency, global root selection, the branch topology between ladder points, or native/reference-runtime agreement; a ladder window that raises `FloatingPointError` in the Ronnmark path is outside the tested scope.",
   "known_limitations": [
    "zero kz is allowed; roots retain sign and nonpositive exit flags remain observable",
    "The colon-ladder count uses `floor((stop-start)/step + 1e-12*max(1,|ratio|)) + 1`; a stop that misses an exact step multiple by more than that relative tolerance is not a ladder point.",
+   "The branch topology between ladder points is not claimed: an adjacent pair can be converged at both ends and still change sign, because the `kz=0` determinant is even in `kx`. Only modulus continuity and disclosed modulus jumps are asserted, not mode identity or branch labels.",
+   "The scan can raise `FloatingPointError` from the Ronnmark path at some frequencies (measured on the `1.0:0.005:1.2` ladder); no partial result is returned, so that window is outside the tested scope.",
    "The scan's root diagnostics (`status`, residual) are per-frequency; no aggregate convergence flag or native/reference-runtime parity is provided."
   ]
  },

@@ -4304,17 +4304,21 @@
    },
    "verification": {
     "scope": [
-     "声明的数值案例及相关失败边界。",
-     "示例只执行一个有界代表性案例，不扩展声明的适用前提。",
-     "Python 示例已在本机运行；本地执行覆盖本资产。"
+     "跨资产独立重算：`tests/kinetic/test_kinetic_wavevector_roots_evidence.py` 把返回的复根重新代入另一个已交付资产 `scirel.kinetic.dielectric-response`（`evaluate_dielectric_response`）重建 Ronnmark 行列式，要求 `abs(det)/max|K| <= 1e-12`（受审案例实测 6.1e-15）；被测求根器自报的 `residuals` 不作为判据，因此这是一次经由另一资产公共入口的独立重算。",
+     "位移分离度：同一文件要求在 `root*(1±1e-3)` 处重算的相对行列式至少达到根处取值的 `1e3` 倍（实测约 8.6e12）；该倍数是断言的下界，不是写死的固定倍数。",
+     "分支共轭：种子 `kx_start=8000` 与 `kx_start=16000` 给出的根之和在 `1e-12` 相对量级内为零（实测 9.8e-16），且虚部反号。这正是 `kz=0` 行列式的解析恒等式 `det(-kx) = det(kx)`，以成对方式检验，而不是对实部的断言。",
+     "`tests/kinetic/test_fluid_spectrum_r43_kinetic.py` 由四个资产共享，其覆盖是文件级而非资产隔离；`tests/kinetic/test_ronnmark_zero_endpoint.py::test_root_propagates_initial_numerical_failure_instead_of_zero_division` 钉住种子传播失败路径。",
+     "有界示例仅为一个代表性案例。"
     ],
-    "evidence_ceiling": "限于每个给定频率下由固定种子求解的 Ronnmark 行列式复 kx 根。证据：`test_fluid_spectrum_r43_kinetic.py` 含 12 个测试函数，其中 2 个引用 `solve_kinetic_wavevector_roots`，由 4 个资产共享；仅绑定共享文件覆盖，因此通过是文件级事实、而非资产隔离证据；本审计已执行有界示例。真值来源：仅自洽/回归。不建立：超出声明数值方法的模身份或任意参数精度。",
+    "evidence_ceiling": "限于每个给定频率下由固定种子求解的 Ronnmark 行列式复 kx 根。独立依据：`kz=0` 行列式的解析恒等式 `det(-kx) = det(kx)`（以两个种子下的共轭对断言），以及经由 `scirel.kinetic.dielectric-response` 的独立重算，两者都在求根器之外；位移倍数只是实测下界。不建立：模身份、`Re(kx)` 的解析值（实测约 6e-13，本质为零）、或任意参数精度。此处 `evaluate_kinetic_dispersion_relation` 不能充当跨资产判据：它的 `kx_frac` 端口是实数，无法表示实部约 1e-13、虚部约 1315 的根（只喂 `Re(root)` 时 `abs(det)/max|K|` 仍约 1.6e2）。",
     "known_limitations": [
      "可能存在多个带符号的根；保留退出标志和残差表示不收敛，不通过镜像变换根的符号。",
-     "四资产共享文件 `test_fluid_spectrum_r43_kinetic.py` 中的两个直接函数覆盖复根符号/退出标志与非法控制；未绑定延拓种子策略或全局根扫描。",
-     "已审查示例是唯一绑定输出可表示性检查的测试；两个直接函数覆盖根符号/退出标志与非法控制。"
+     "`Re(kx)` 没有断言任何解析值；受审案例实测约 6e-13，即数值零；对任何返回分支都不主张模身份。",
+     "种子决定收敛到哪个零点，且不收敛标志并不表示候选不是零点：受审案例中 `kx_start=8000` 与 `16000` 以 status 1 停在舍入下限，`4000` 以 status -3 退出而其余行列式仍为 2.5e-14，`1e5`、`1e6`、`1e7` 与 `0.5*kn ~ 1.25e11` 以 status 0 退出、相对行列式在 1.0e2 至 5.0e9 之间。每个 status<=0 的退出都有 `success` 为假，且自报残差与重新计算在 1e-12 相对量级内一致。",
+     "`evaluate_kinetic_dispersion_relation` 因 `kx_frac` 端口为实数而无法接受复根；因此跨资产判据经由 `scirel.kinetic.dielectric-response`，其 Ronnmark 路径正是本资产所求解的行列式。"
     ],
     "tests": [
+     "tests/kinetic/test_kinetic_wavevector_roots_evidence.py",
      "tests/kinetic/test_fluid_spectrum_r43_kinetic.py",
      "tests/kinetic/test_ronnmark_zero_endpoint.py::test_root_propagates_initial_numerical_failure_instead_of_zero_division"
     ]
@@ -7232,18 +7236,22 @@
    },
    "verification": {
     "scope": [
-     "声明的数值案例及相关失败边界。",
-     "示例只执行一个有界代表性案例，不扩展声明的适用前提。",
-     "test_kinetic_scan_keeps_absolute_zero_kz_and_fixed_seed 直接调用本入口检查单频点数、绝对零 kz、固定初值和有界复根；这不是原生或参考运行时对照。",
-     "近整数 colon 阶梯端点会被保留，见 tests/kinetic/test_dispersion_scan_axes.py。"
+     "独立频率梯重算：`tests/kinetic/test_kinetic_wavevector_scan_evidence.py` 用精确 `Fraction` 算术重建冒号阶梯、用 `0.6*kn` 重建初值，不调用私有 `scan_frequencies`/`seed_wavenumber` 助手，并要求与返回的 `omegas`、`kx_start` 逐位相等。",
+     "入口一致性：把扫描自报的 `omegas`、`kz`、`kx_start` 与导出的 `ns0`/`Ts0` 重新喂给 `solve_kinetic_wavevector_roots`，整条 13 点阶梯（不只是端点）的 `roots`、`residuals`、`status` 必须完全复现。",
+     "逐点零点质量：每个收敛点的根重新经过另一个资产 `scirel.kinetic.dielectric-response` 复核，要求满足 `abs(det)/max|K| <= 1e-12`。",
+     "跳变纪律，两半都计数：在 `0.66:0.005:0.72` 阶梯上，相邻两个收敛点之间的根模变化不超过 `1e-2`（实测 3 对）；凡超过该界的相邻对，至少有一个端点不收敛（实测 2 对，无一漏标）；两个计数都被断言，因此任何一半都无法空过。",
+     "`tests/kinetic/test_dispersion_scan_axes.py` 覆盖阶梯构造器的端点舍入，`tests/cross_domain/test_fluid_spectrum_r43_compositions.py` 覆盖图接线。"
     ],
-    "evidence_ceiling": "具名单频测试直接调用本扫描。test_dispersion_scan_axes 以 kinetic_scan_frequencies 别名调用其阶梯辅助函数，只验端点，不是完整复根扫描。该有界示例可以返回 success=False；这些检查不认证全部频率、全局选根或原生/参考运行时一致性。",
+    "evidence_ceiling": "点名的直接测试在一条 13 点阶梯和合同的单频示例上执行本扫描。独立依据：阶梯与初值的精确有理数重算、逐点经 `scirel.kinetic.dielectric-response` 的行列式跨资产复核，以及一项解析结构事实——`kz=0` 行列式关于 `kx` 为偶函数，故收敛并不意味着沿阶梯符号连续。这些检查不认证每个频点、全局选根、阶梯点之间的分支拓扑，也不认证与原生/参考运行时的一致性；在 Ronnmark 路径上抛 `FloatingPointError` 的阶梯窗口不在受测范围内。",
     "known_limitations": [
-     "允许零 kz；根保留符号，非正退出标志保持可见。",
-     "冒号阶梯点数按 `floor((stop-start)/step + 1e-12*max(1,|ratio|)) + 1` 计算；终点相对精确步长倍数偏差超过该相对容差时不会成为阶梯点。",
-     "扫描的根诊断（`status`、残差）是逐频的；不提供聚合收敛标志或原生/参考运行时一致性。"
+     "允许零 kz；根保留符号，非正退出标志仍可观测。",
+     "冒号阶梯长度用 `floor((stop-start)/step + 1e-12*max(1,|ratio|)) + 1`；若 stop 与精确步长整数倍之差超过该相对容差，则它不是阶梯点。",
+     "不主张阶梯点之间的分支拓扑：相邻两点可以都收敛却变号，因为 `kz=0` 行列式关于 `kx` 为偶函数。只断言模的连续性与被标记的模跳变，不主张模身份或分支标签。",
+     "扫描在某些频率上会从 Ronnmark 路径抛出 `FloatingPointError`（在 `1.0:0.005:1.2` 阶梯上实测），不返回部分结果，因此该窗口不在受测范围内。",
+     "扫描的根诊断（`status`、残差）是逐频点的；不提供聚合收敛标志，也不提供与原生/参考运行时的一致性。"
     ],
     "tests": [
+     "tests/kinetic/test_kinetic_wavevector_scan_evidence.py",
      "tests/cross_domain/test_fluid_spectrum_r43_compositions.py",
      "tests/kinetic/test_dispersion_scan_axes.py"
     ]

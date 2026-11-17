@@ -154,19 +154,23 @@
  },
  "verification": {
   "scope": [
-   "test_vacuum_continuation_matches_analytic_branch_and_zero_residual checks the vacuum analytic branch (omega=0.2,0.21 on the two-point grid with zero scaled residual); test_parallel_rejects_complex_and_unrepresentable_wavevectors covers malformed k grids; the residual itself has the direct Hermite-quadrature gate in the same file.",
-   "The bounded example covers one representative continuation; it does not extend applicability beyond the declared preconditions.",
-   "Regression pins the default-seed fail-closed record, an explicit-seed accepted continuation, and malformed-grid rejection; no non-vacuum source-trajectory parity is claimed."
+   "Analytic vacuum branch: `tests/kinetic/test_parallel_em_continuation_evidence.py` continues the zero-density state (`wps2=0`) over `k=[0.2,0.21,0.3,-0.15]` and requires `abs(omega) = sqrt(c2)*abs(k)` within `1e-15` relative with a scaled residual of exactly zero at every point, i.e. the closed-form branch of `omega^2 = c2*k^2` for both signs of `k`.",
+   "Success is equivalent to the residual bound in both directions: every accepted record has `solver_success` true and `scaled_residual <= residual_tolerance`, and the same admissible point (`k=0.01`, non-vacuum state) that the default `1e-10` accepts raises `ContinuationFailure` at `1e-20`, `1e-25` and `1e-30` while the solver still reports success, with an empty accepted prefix.",
+   "A rejected point produces no successor row: an evaluation failure at the second grid point (`k=0.5`) stops at that `k` with an accepted prefix of length 1 while the third point -- shown acceptable by a separate two-point run -- is never reached, and an exhausted evaluation budget (`maxfev=8`) at the first point carries `solver_success` false with an empty prefix.",
+   "`test_parallel_rejects_complex_and_unrepresentable_wavevectors` covers malformed `k` grids; the residual itself has the direct-quadrature anchor in its own contract.",
+   "The bounded example covers one representative continuation."
   ],
   "tests": [
+   "tests/kinetic/test_parallel_em_continuation_evidence.py",
    "tests/kinetic/test_dispersion_parallel.py"
   ],
-  "evidence_ceiling": "Bounded to the declared continuation on the tested vacuum two-point branch and failure contract. The vacuum analytic branch is reproduced with zero scaled residual, malformed k grids are rejected, and the underlying residual has a direct Hermite-quadrature gate. It does not establish non-vacuum continuation accuracy, seed-independent branch selection, uniqueness or largest-growth behavior.",
+  "evidence_ceiling": "Bounded to the declared continuation on the tested vacuum branch, its certification behaviour and its failure contract. Independent basis: the closed-form vacuum branch `omega = +-sqrt(c2)*abs(k)`, a bidirectional success/residual equivalence that rejects a false success without patching the solver, and explicit no-successor-row constructions for both a solver failure and an evaluation failure. It does not establish non-vacuum continuation accuracy, physical mode identity across the grid, seed-independent branch selection, uniqueness or largest-growth behaviour.",
   "known_limitations": [
    "The analytic continuation check is a vacuum two-point case only; no non-vacuum accuracy claim is made.",
    "A continued root is seed-dependent; no uniqueness or largest-growth claim.",
    "The default 50-point grid retains source normalization but requires caller-supplied cwp and wcs1.",
-   "The default 50-point grid/seed can raise ContinuationFailure at an admissible k point; fail-closed stops instead of carrying a failed root, so a branch claim requires an explicit caller seed (or an accepted failure)."
+   "The default 50-point grid/seed can raise ContinuationFailure at an admissible k point; fail-closed stops instead of carrying a failed root, so a branch claim requires an explicit caller seed (or an accepted failure).",
+   "The vacuum branch is the only closed-form anchor; on a non-vacuum state the accepted values are certified zeros of the declared residual, not independently verified physical branches."
   ]
  },
  "references": [

@@ -75,7 +75,9 @@ def test_the_reported_totals_are_derived_from_the_tracked_contracts() -> None:
     ]
 
 
-def test_the_report_does_not_fail_by_default_but_can_be_asked_to() -> None:
+def test_the_report_does_not_fail_by_default_but_can_be_asked_to(
+    tmp_path: Path, monkeypatch
+) -> None:
     # The report is not a gate: outstanding gaps must not turn unrelated runs red.
     default = subprocess.run(
         [sys.executable, "-B", str(SCRIPT)],
@@ -87,11 +89,27 @@ def test_the_report_does_not_fail_by_default_but_can_be_asked_to() -> None:
     assert default.returncode == 0
     assert "NOTE: Text match only, not a gate." in default.stdout
 
-    strict = subprocess.run(
-        [sys.executable, "-B", str(SCRIPT), "--fail-on-neither"],
-        capture_output=True,
-        text=True,
-        check=False,
-        cwd=ROOT,
+    # The strict flag is driven against a synthetic catalog, not against "the real catalog happens to
+    # contain a neither contract".  Pinning the real catalog's gap count here made this guard decay
+    # into an assertion about a data state: once the C1 batch named a basis for the last four
+    # contracts, `--fail-on-neither` correctly returned 0 and this test failed while the flag itself
+    # was still working.
+    catalog = tmp_path / "catalog" / "examples"
+    catalog.mkdir(parents=True)
+    silent = {
+        "asset_id": "scirel.test.silent",
+        "verification": {
+            "scope": ["Observed behaviour only."],
+            "evidence_ceiling": "Bounded to observed behaviour.",
+            "known_limitations": ["Nothing is claimed."],
+        },
+    }
+    (catalog / "scirel.test.silent.json").write_text(
+        json.dumps(silent, ensure_ascii=False), encoding="utf-8"
     )
-    assert strict.returncode == 1
+    monkeypatch.setattr(coverage, "ROOT", tmp_path)
+
+    monkeypatch.setattr(sys, "argv", ["c1_evidence_coverage.py", "--fail-on-neither"])
+    assert coverage.main() == 1
+    monkeypatch.setattr(sys, "argv", ["c1_evidence_coverage.py"])
+    assert coverage.main() == 0

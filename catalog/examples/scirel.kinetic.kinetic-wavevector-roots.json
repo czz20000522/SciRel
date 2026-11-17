@@ -338,19 +338,23 @@
  },
  "verification": {
   "scope": [
-   "Current SciRel implementation and the repository tests listed in this contract cover the declared public ports and numerical relation.",
-   "The example exercises one bounded representative case; it does not extend applicability beyond the declared preconditions.",
-   "Python preflight ran, but local execution covers this asset."
+   "Cross-asset independent recomputation: `tests/kinetic/test_kinetic_wavevector_roots_evidence.py` rebuilds the Ronnmark determinant at the returned complex root through the separate `scirel.kinetic.dielectric-response` asset (`evaluate_dielectric_response`) and requires `abs(det)/max|K| <= 1e-12` (measured 6.1e-15 on the reviewed case); the root finder's own `residuals` is not the oracle, so this is an independent recomputation of the same zero through another asset's public port.",
+   "Displacement separation: the same file requires the recomputed relative determinant at `root*(1+-1e-3)` to reach at least `1e3` times its value at the root (measured about 8.6e12); the factor is an assertion lower bound, not a pinned multiplier.",
+   "Conjugate branch: seeds `kx_start=8000` and `kx_start=16000` return roots whose sum is zero within `1e-12` relative (measured 9.8e-16) with opposite imaginary sign. That is the analytic identity `det(-kx) = det(kx)` of the `kz=0` determinant, checked as a pair, rather than a claim about the real part.",
+   "`tests/kinetic/test_fluid_spectrum_r43_kinetic.py` is shared by four assets, so its coverage is file-level rather than asset-isolated; `tests/kinetic/test_ronnmark_zero_endpoint.py::test_root_propagates_initial_numerical_failure_instead_of_zero_division` pins the seed-propagation failure path.",
+   "The bounded example is a representative case only."
   ],
   "tests": [
+   "tests/kinetic/test_kinetic_wavevector_roots_evidence.py",
    "tests/kinetic/test_fluid_spectrum_r43_kinetic.py",
    "tests/kinetic/test_ronnmark_zero_endpoint.py::test_root_propagates_initial_numerical_failure_instead_of_zero_division"
   ],
-  "evidence_ceiling": "Bounded to the Ronnmark determinant complex-kx root at each supplied frequency from one fixed seed. Evidence: `test_fluid_spectrum_r43_kinetic.py` contains 12 test functions, 2 of which reference `solve_kinetic_wavevector_roots`, and is shared by 4 assets; only shared-file coverage is bound, so a pass is file-level rather than asset-isolated; the bounded example was executed by this audit. Oracle: self-consistency/regression only. It does not establish mode identity or arbitrary-parameter accuracy beyond the declared numerical method.",
+  "evidence_ceiling": "Bounded to the Ronnmark determinant complex-kx root at each supplied frequency from one fixed seed. Independent basis: the analytic identity `det(-kx) = det(kx)` of the kz=0 determinant, asserted as a conjugate pair at two seeds, and an independent recomputation through `scirel.kinetic.dielectric-response`, both outside the root finder; the displacement factor is an empirical lower bound. It does not establish mode identity, an analytic value for Re(kx) (measured about 6e-13, i.e. numerically zero), or arbitrary-parameter accuracy. `evaluate_kinetic_dispersion_relation` is not the cross-asset oracle here: its `kx_frac` port is real, so it cannot represent a root whose real part is about 1e-13 and whose imaginary part is about 1315 (feeding `Re(root)` alone leaves `abs(det)/max|K|` at about 1.6e2).",
   "known_limitations": [
    "multiple signed roots may exist; exit flags and residuals expose nonconvergence without mirroring roots",
-   "Two direct functions in the four-asset-shared `test_fluid_spectrum_r43_kinetic.py` cover complex-root sign/exit-flag and invalid controls; no continuation seed policy or global root scan is bound.",
-   "The reviewed example is the only test that binds the output-representability check; the two direct functions cover root sign/exit-flag and invalid controls."
+   "`Re(kx)` carries no asserted analytic value; it measures about 6e-13 on the reviewed case, which is numerically zero, and no mode identity is claimed for any returned branch.",
+   "The seed selects which zero is reached, and a nonconverged flag does not mean the candidate is not a zero: on the reviewed case `kx_start=8000` and `16000` exit with status 1 at the roundoff floor, `4000` exits with status -3 while its candidate is still at 2.5e-14 relative, and `1e5`, `1e6`, `1e7` and `0.5*kn ~ 1.25e11` exit with status 0 at relative determinants from 1.0e2 to 5.0e9. `success` is false for every status<=0 exit, and the reported residuals agree with a fresh recomputation to 1e-12 relative.",
+   "`evaluate_kinetic_dispersion_relation` cannot consume a complex root because its `kx_frac` port is real; the cross-asset anchor therefore runs through `scirel.kinetic.dielectric-response`, whose Ronnmark path is the determinant this asset solves."
   ]
  }
 }
