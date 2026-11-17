@@ -211,3 +211,52 @@ def test_relativistic_codrift_inertia_branch_moves_the_spectrum():
         relativistic_modes = np.sort_complex(_modes(relativistic_row, "real_order"))
         assert plain_modes.shape == relativistic_modes.shape
         assert np.max(np.abs(plain_modes - relativistic_modes)) > 1e-6
+
+
+def test_relativistic_codrift_cold_parallel_limit_sits_at_the_plasma_frequency_ratio():
+    """In the cold, drift-free limit one branch sits exactly at ``|omega|/omega_p = 1``.
+
+    ``omega_p`` is recomputed from the case inputs (``q``, ``m``, ``n0`` with
+    ``epsilon0 = 1``), not read from the returned spectrum, so the ratio is *not*
+    invariant under a common rescaling of the returned frequencies: a scale mutation
+    turns the ratio into 10 and the assertion below fails by nine orders of magnitude
+    more than its tolerance.  That is what the earlier structural assertions were
+    blind to, and the mutation run confirmed it (`scale` survived before this test).
+
+    The relation is exact only when the wavevector is parallel to the background
+    field (or zero); at ``k`` perpendicular the same branch is shifted to 1.00896 and
+    that shift is asserted too, so the test is not just looking for a number that
+    happens to be near one.
+    """
+    from scirel.kinetic import solve_relativistic_codrift_spectrum
+
+    bessel.high_precision()
+    case = _codrift_case(relativistic=False, kvec=[0.0, 0.0, 0.3])
+    for species in case["species"]:
+        species["v0"] = [0.0, 0.0, 0.0]
+        species["cs_parallel"] = 0.0
+        species["cs_perp"] = 0.0
+    total_plasma = mp.sqrt(
+        sum(
+            mp.mpf(species["n0"]) * mp.mpf(species["q"]) ** 2 / mp.mpf(species["m"])
+            for species in case["species"]
+        )
+    )
+
+    def ratios(kvec):
+        variant = _codrift_case(relativistic=False, kvec=kvec)
+        for species in variant["species"]:
+            species["v0"] = [0.0, 0.0, 0.0]
+            species["cs_parallel"] = 0.0
+            species["cs_perp"] = 0.0
+        modes = _modes(solve_relativistic_codrift_spectrum(variant)["spectra"][0], "real_order")
+        return np.sort(np.abs(modes))[::-1] / float(total_plasma)
+
+    parallel = ratios([0.0, 0.0, 0.3])
+    closest = float(np.min(np.abs(parallel - 1.0)))
+    assert closest <= 1e-12, f"cold parallel spectrum has no branch at omega_p (dev {closest:.3e})"
+
+    perpendicular = ratios([0.3, 0.0, 0.0])
+    # The same branch is not at omega_p when k is perpendicular, so the assertion
+    # above is a relation and not a tolerance around an arbitrary number.
+    assert float(np.min(np.abs(perpendicular - 1.0))) > 1e-3
