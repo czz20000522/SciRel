@@ -75,7 +75,9 @@ def test_spectral_temporal_matrix_matches_cold_closed_form(kx, kz):
     assert np.all(result["state"]["vA"] == 0.0)
 
     omega_p = reference.state_plasma_frequency(result["state"])
-    omega_light = reference.light_branch(omega_p, abs(complex(kx) ** 2 + complex(kz) ** 2) ** 0.5, result["state"]["c2"])
+    omega_light = reference.light_branch(
+        omega_p, abs(complex(kx) ** 2 + complex(kz) ** 2) ** 0.5, result["state"]["c2"]
+    )
     spectrum = reference.pencil_spectrum(result["M"], result["A"])
     magnitudes = [abs(value) for value in spectrum]
 
@@ -226,27 +228,36 @@ def test_spectral_plasma_state_derived_scalars_match_closed_forms():
         rho = m * n
         assert reference.relative(float(state["rhos0"][index]), float(rho)) <= 1e-15
         assert reference.relative(float(state["ns0"][index]), float(n)) <= 1e-15
-        assert reference.relative(
-            float(state["wps"][index]), float(mp.sqrt(n * q * q / (epsilon0 * m)))
-        ) <= 1e-14
+        assert (
+            reference.relative(
+                float(state["wps"][index]), float(mp.sqrt(n * q * q / (epsilon0 * m)))
+            )
+            <= 1e-14
+        )
         assert reference.relative(float(state["wcs"][index]), float(q * B0 / m)) <= 1e-15
-        assert reference.relative(
-            float(state["Psz"][index]), float(rho * cs_par**2 / gamma)
-        ) <= 1e-14
-        assert reference.relative(
-            float(state["Psp"][index]), float(rho * cs_perp**2 / gamma)
-        ) <= 1e-14
-        assert reference.relative(
-            float(state["vA"][index]), float(B0 / mp.sqrt(mu0 * rho))
-        ) <= 1e-14
-        assert reference.relative(
-            float(state["Deltas"][index]),
-            float((rho * cs_par**2 - rho * cs_perp**2) / gamma / B0),
-        ) <= 1e-13
-        assert reference.relative(
-            float(state["betasz"][index]),
-            float(2 * mu0 * rho * cs_par**2 / gamma / B0**2),
-        ) <= 1e-13
+        assert (
+            reference.relative(float(state["Psz"][index]), float(rho * cs_par**2 / gamma)) <= 1e-14
+        )
+        assert (
+            reference.relative(float(state["Psp"][index]), float(rho * cs_perp**2 / gamma)) <= 1e-14
+        )
+        assert (
+            reference.relative(float(state["vA"][index]), float(B0 / mp.sqrt(mu0 * rho))) <= 1e-14
+        )
+        assert (
+            reference.relative(
+                float(state["Deltas"][index]),
+                float((rho * cs_par**2 - rho * cs_perp**2) / gamma / B0),
+            )
+            <= 1e-13
+        )
+        assert (
+            reference.relative(
+                float(state["betasz"][index]),
+                float(2 * mu0 * rho * cs_par**2 / gamma / B0**2),
+            )
+            <= 1e-13
+        )
 
     # Reported charge and current densities are sums over the declared rows.
     total_charge = mp.mpf(0)
@@ -280,7 +291,9 @@ def test_spectral_dispersion_scan_reproduces_cold_branches():
     from scirel.kinetic.spectral_evolution import evaluate_spectral_dispersion
 
     axis = np.array([1.0e-3, 2.0e-3, 5.0e-3])
-    result = evaluate_spectral_dispersion(COLD_ROWS, unit="si", method=2, k_grid=axis, cfg={"B0": 0.0})
+    result = evaluate_spectral_dispersion(
+        COLD_ROWS, unit="si", method=2, k_grid=axis, cfg={"B0": 0.0}
+    )
     state = reference.cold_state()
     omega_p = reference.state_plasma_frequency(state)
     c2 = float(state["c2"])

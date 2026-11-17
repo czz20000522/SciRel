@@ -146,7 +146,9 @@ def test_fluid_bonk_search_root_zeroes_the_independent_dispersion():
     at_root = complex(np.asarray(evaluate_fluid_dispersion(root, state)["determinant"]).ravel()[0])
     assert abs(at_root) <= BONK_RESIDUAL_GATE
 
-    displaced = complex(np.asarray(evaluate_fluid_dispersion(root * 1.001, state)["determinant"]).ravel()[0])
+    displaced = complex(
+        np.asarray(evaluate_fluid_dispersion(root * 1.001, state)["determinant"]).ravel()[0]
+    )
     assert abs(displaced) > 1e4 * abs(at_root)
     assert abs(displaced) > 1e-2
 

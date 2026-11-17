@@ -140,18 +140,51 @@ def test_fluid_case_state_derived_scales_match_closed_forms(family, jcase):
         assert np.asarray(case[key]).shape == (1, species), key
 
     for index in range(np.asarray(case["qs"]).size):
-        assert reference.relative(float(np.asarray(case["ns0"]).ravel()[index]), float(expected["ns0"][index])) <= 1e-14
-        assert reference.relative(float(np.asarray(case["Ts0"]).ravel()[index]), float(expected["Ts0"][index])) <= 1e-14
-        assert reference.relative(float(np.asarray(case["vts"]).ravel()[index]), float(expected["vts"][index])) <= 1e-14
-        assert reference.relative(float(np.asarray(case["wcs"]).ravel()[index]), float(expected["wcs"][index])) <= 1e-14
-        assert reference.relative(float(np.asarray(case["wps"]).ravel()[index]), float(expected["wps"][index])) <= 1e-14
-        assert reference.relative(float(np.asarray(case["rhocs"]).ravel()[index]), float(expected["rhocs"][index])) <= 1e-13
+        assert (
+            reference.relative(
+                float(np.asarray(case["ns0"]).ravel()[index]), float(expected["ns0"][index])
+            )
+            <= 1e-14
+        )
+        assert (
+            reference.relative(
+                float(np.asarray(case["Ts0"]).ravel()[index]), float(expected["Ts0"][index])
+            )
+            <= 1e-14
+        )
+        assert (
+            reference.relative(
+                float(np.asarray(case["vts"]).ravel()[index]), float(expected["vts"][index])
+            )
+            <= 1e-14
+        )
+        assert (
+            reference.relative(
+                float(np.asarray(case["wcs"]).ravel()[index]), float(expected["wcs"][index])
+            )
+            <= 1e-14
+        )
+        assert (
+            reference.relative(
+                float(np.asarray(case["wps"]).ravel()[index]), float(expected["wps"][index])
+            )
+            <= 1e-14
+        )
+        assert (
+            reference.relative(
+                float(np.asarray(case["rhocs"]).ravel()[index]), float(expected["rhocs"][index])
+            )
+            <= 1e-13
+        )
         # absrhocs and sgns are not returned by derive_fluid_case; they are derived
         # from the signed gyroradius the case does return.
-        assert reference.relative(
-            abs(float(np.asarray(case["rhocs"]).ravel()[index])),
-            float(expected["absrhocs"][index]),
-        ) <= 1e-13
+        assert (
+            reference.relative(
+                abs(float(np.asarray(case["rhocs"]).ravel()[index])),
+                float(expected["absrhocs"][index]),
+            )
+            <= 1e-13
+        )
         assert np.sign(float(np.asarray(case["rhocs"]).ravel()[index])) == expected["sgns"][index]
     assert reference.relative(_scalar(case["wn"]), float(expected["wn"])) <= 1e-15
     assert reference.relative(_scalar(case["kn"]), float(expected["kn"])) <= 1e-13
@@ -225,10 +258,14 @@ def test_fluid_dispersion_matrix_kz_sign_gives_identical_kx_spectrum():
     backward = _wavevector_matrix(-0.1 * _scalar(scales["kn"]))[0]
     assert not np.allclose(np.asarray(forward["M"]), np.asarray(backward["M"]))
     forward_values = np.sort_complex(
-        solve_fluid_wavevector_eigenproblem(matrix=np.asarray(forward["M"]), kn=_scalar(scales["kn"]))["eigenvalues"]
+        solve_fluid_wavevector_eigenproblem(
+            matrix=np.asarray(forward["M"]), kn=_scalar(scales["kn"])
+        )["eigenvalues"]
     )
     backward_values = np.sort_complex(
-        solve_fluid_wavevector_eigenproblem(matrix=np.asarray(backward["M"]), kn=_scalar(scales["kn"]))["eigenvalues"]
+        solve_fluid_wavevector_eigenproblem(
+            matrix=np.asarray(backward["M"]), kn=_scalar(scales["kn"])
+        )["eigenvalues"]
     )
     assert np.max(np.abs(forward_values - backward_values)) == 0.0
 
@@ -246,7 +283,9 @@ def test_fluid_wavevector_eigensolve_selection_relations():
     result, scales = _wavevector_matrix(0.1)
     matrix = np.asarray(result["M"])
     kn = _scalar(scales["kn"])
-    solution = solve_fluid_wavevector_eigenproblem(matrix=matrix, kn=kn, real_floor_scale=2e-5, keep=4)
+    solution = solve_fluid_wavevector_eigenproblem(
+        matrix=matrix, kn=kn, real_floor_scale=2e-5, keep=4
+    )
     values = np.asarray(solution["eigenvalues"])
     selected = np.asarray(solution["selected"])
     head = np.asarray(solution["head"])
@@ -306,6 +345,7 @@ def test_fluid_dispersion_response_zero_transverse_determinant_identity():
         kz = mp.mpf(float(abs(_scalar(state["kz"]))))
         nz = mp.sqrt(c2) * kz / w
         nx = mp.mpf(0)
+
         def _c(value):
             """Lift the complex entry exactly; truncating it to a real part is a
             measured 7.2e-5 error at nonzero kz, where the tensor diagonal carries a
@@ -346,4 +386,3 @@ def test_fluid_dispersion_response_zero_transverse_determinant_identity():
         # make an axis swap observable here; it is derived in the audit notes but is
         # not asserted, so the swap mutant survives on this asset and the contract
         # records that.
-

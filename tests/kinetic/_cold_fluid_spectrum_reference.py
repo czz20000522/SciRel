@@ -164,7 +164,7 @@ def bessel_gamma(order, argument):
     function instead of the SciPy scaled one.
     """
     high_precision()
-    return mp.besseli(int(order), mp.mpf(argument)) * mp.e**(-mp.mpf(argument))
+    return mp.besseli(int(order), mp.mpf(argument)) * mp.e ** (-mp.mpf(argument))
 
 
 def case_scales(ms, qs, ns_unit, Ts_unit, B0, n00, T00) -> dict:
