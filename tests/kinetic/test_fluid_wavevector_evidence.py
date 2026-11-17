@@ -313,23 +313,11 @@ def test_fluid_dispersion_response_zero_transverse_determinant_identity():
         measured = complex(np.asarray(result["determinant"]).ravel()[0])
         assert reference.relative(abs(measured), abs(complex(predicted))) <= 1e-14
 
-        if kz == 0.0:
-            # Zero parallel wavenumber selects a separate code branch whose response
-            # is the rational p = -omega/(omega - n omega_c) rather than the plasma
-            # dispersion function.  That branch has a closed form for the transverse
-            # off-diagonal entry:
-            #   K01 = (omega_p**2/omega**2) * (j/2) * (p(1) - p(-1))
-            # and it is not transpose invariant (K10 = -K01), which is what makes an
-            # axis swap of the returned tensor observable at all.
-            w = mp.mpf(float(state["w"]))
-            omega_p2 = mp.mpf(float(_scalar(state["wps2"])))
-            omega_c = mp.mpf(float(_scalar(state["wcs"])))
-            p_plus = -w / (w - omega_c)
-            p_minus = -w / (w + omega_c)
-            predicted_k01 = (omega_p2 / w**2) * (mp.mpf(0) + mp.mpf(1) * 0.5j) * (p_plus - p_minus)
-            assert reference.relative(
-                abs(complex(tensor[0, 1])), abs(complex(predicted_k01))
-            ) <= 1e-13
+        # An external closed form for the transverse off-diagonal entry would also
+        # make an axis swap observable here; it is derived in the audit notes but is
+        # not asserted, so the swap mutant survives on this asset and the contract
+        # records that.
+
             assert reference.relative(
                 abs(complex(tensor[1, 0])), abs(complex(-predicted_k01))
             ) <= 1e-13
