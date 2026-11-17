@@ -52,10 +52,11 @@ def test_exponential_start_cancels_and_negative_width_reverses():
 def test_thermal_independent_total_and_profile_composition():
     p = gaussian_profile(R, V, D, center=0.6, width=0.2, total=4.0)
     e = calculate_stored_thermal_energy(p, 2 * p, 7 * p, V, D)
-    np.testing.assert_allclose(e, [6.0, 12.0, 42.0], rtol=2e-15)
+    np.testing.assert_allclose([e["W_el"], e["W_ion"], e["W_tot"]], [6.0, 12.0, 42.0], rtol=2e-15)
     # No temperature/density conversion, closure, or forced total-pressure sum.
+    scaled = calculate_stored_thermal_energy(np.ones(4) * 2, np.ones(4) * 3, np.ones(4) * 5, V, D)
     np.testing.assert_allclose(
-        calculate_stored_thermal_energy(np.ones(4) * 2, np.ones(4) * 3, np.ones(4) * 5, V, D),
+        [scaled["W_el"], scaled["W_ion"], scaled["W_tot"]],
         np.array([3.0, 4.5, 7.5]) * sum(V * D),
         rtol=2e-15,
     )
@@ -89,7 +90,7 @@ def test_pressure_no_broadcast_and_signed_algebra():
     for p in [1.0, [1, 2], [1, np.inf, 3, 4]]:
         with pytest.raises(ValueError):
             calculate_stored_thermal_energy(p, V, V, V, D)
-    assert calculate_stored_thermal_energy([-1, 2, 3, 4], V, V, V, D)[0] == pytest.approx(
+    assert calculate_stored_thermal_energy([-1, 2, 3, 4], V, V, V, D)["W_el"] == pytest.approx(
         1.5 * np.dot([-1, 2, 3, 4], V * D)
     )
 

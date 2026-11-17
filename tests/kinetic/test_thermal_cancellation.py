@@ -8,20 +8,22 @@ from scirel.physics import calculate_stored_thermal_energy
 
 def test_all_signed_pressure_orders_retain_small_residual():
     for p in itertools.permutations([1e30, 1.0, -1e30]):
-        assert calculate_stored_thermal_energy(p, p, p, [1] * 3, [1] * 3) == (1.5,) * 3
+        result = calculate_stored_thermal_energy(p, p, p, [1] * 3, [1] * 3)
+        assert (result["W_el"], result["W_ion"], result["W_tot"]) == (1.5,) * 3
 
 
 def test_exact_product_cancellation_beyond_intermediate_float_range():
     p = [1e308, 1.0, -1e308]
-    assert calculate_stored_thermal_energy(p, p, p, [1e308, 1, 1e308], [1] * 3) == (1.5,) * 3
+    result = calculate_stored_thermal_energy(p, p, p, [1e308, 1, 1e308], [1] * 3)
+    assert (result["W_el"], result["W_ion"], result["W_tot"]) == (1.5,) * 3
 
 
 def test_subnormal_products_accumulate_before_rounding():
     tiny = np.nextafter(0.0, 1.0)
-    assert (
-        calculate_stored_thermal_energy([tiny] * 4, [tiny] * 4, [tiny] * 4, [0.25] * 4, [1] * 4)
-        == (2 * tiny,) * 3
+    result = calculate_stored_thermal_energy(
+        [tiny] * 4, [tiny] * 4, [tiny] * 4, [0.25] * 4, [1] * 4
     )
+    assert (result["W_el"], result["W_ion"], result["W_tot"]) == (2 * tiny,) * 3
 
 
 def test_final_overflow_and_zero_underflow_still_fail():

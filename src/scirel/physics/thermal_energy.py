@@ -4,6 +4,8 @@ from __future__ import annotations
 from fractions import Fraction
 import numpy as np
 
+from scirel._result import Result
+
 __all__ = ["calculate_stored_thermal_energy"]
 
 
@@ -21,7 +23,7 @@ def _profile(value, name, n=None):
 
 
 def calculate_stored_thermal_energy(p_el, p_ion, p_tot, vpr, drho_norm):
-    """Return ``(W_el, W_ion, W_tot)`` in joules.
+    """Return the three stored thermal energies in joules as a named result.
 
     Parameters
     ----------
@@ -41,11 +43,14 @@ def calculate_stored_thermal_energy(p_el, p_ion, p_tot, vpr, drho_norm):
     Returns
     -------
     W_el : float
-        Electron stored thermal energy [J].
+        Field ``W_el`` of the returned ``scirel._result.Result`` mapping:
+        electron stored thermal energy [J].
     W_ion : float
-        Ion stored thermal energy [J].
+        Field ``W_ion`` of the returned result mapping: ion stored thermal
+        energy [J].
     W_tot : float
-        Total stored thermal energy [J].
+        Field ``W_tot`` of the returned result mapping: total stored thermal
+        energy [J].
 
     Raises
     ------
@@ -81,13 +86,21 @@ def calculate_stored_thermal_energy(p_el, p_ion, p_tot, vpr, drho_norm):
     and a nonzero value that rounds to zero — and an exact zero is accepted
     rather than treated as underflow.
 
+    The three energies are stored directly in one ``scirel._result.Result``
+    mapping. No nested mapping is returned, and mapping access remains
+    available alongside attribute access.
+
     Examples
     --------
     >>> import numpy as np
+    >>> from scirel._result import Result
     >>> from scirel.physics import calculate_stored_thermal_energy
     >>> v=np.array([2.,3.]); d=np.array([.4,.6])
     >>> r=calculate_stored_thermal_energy([2,2],[3,3],[5,5],v,d)
-    >>> assert np.allclose(r,(7.8,11.7,19.5))
+    >>> assert isinstance(r, Result)
+    >>> assert list(r) == ['W_el', 'W_ion', 'W_tot']
+    >>> assert r.W_el is r['W_el']
+    >>> assert np.allclose([r.W_el, r.W_ion, r.W_tot], (7.8, 11.7, 19.5))
     """
     v = _profile(vpr, "vpr")
     d = _profile(drho_norm, "drho_norm", v.size)
@@ -114,4 +127,4 @@ def calculate_stored_thermal_energy(p_el, p_ion, p_tot, vpr, drho_norm):
     result = tuple(float(x) for x in out)
     if any(x != 0 and y == 0 for x, y in zip(out, result)):
         raise FloatingPointError("thermal energy underflows float64")
-    return result
+    return Result(zip(("W_el", "W_ion", "W_tot"), result))
