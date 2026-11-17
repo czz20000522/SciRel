@@ -1,196 +1,201 @@
 {
- "schema": "scirel.asset-document",
- "asset_id": "scirel.field.filament-coil-green-field",
- "title": {
-  "en": "Filament-coil Green field response",
-  "zh": "环形线圈 Green 场响应"
- },
- "summary": "Evaluate the summed psi, BR, and BZ response of aligned circular coils through the canonical circular-filament kernel, using observation geometry, currents and winding counts.",
- "taxonomy": [
-  "field",
-  "axisymmetric",
-  "green-response"
- ],
- "aliases": [
-  "evaluate_filament_coil_green_field"
- ],
- "discovery": {
-  "capability": [
-   "Filament-coil Green field response",
-   "Evaluate the summed psi, BR, and BZ response of aligned circular coils through the canonical circular-filament kernel, using observation geometry, currents and winding counts."
+  "schema": "scirel.asset-document",
+  "asset_id": "scirel.field.filament-coil-green-field",
+  "title": {
+    "en": "Filament-coil Green field response",
+    "zh": "环形线圈 Green 场响应"
+  },
+  "summary": "Evaluate the summed psi, BR, and BZ response of aligned circular coils through the canonical circular-filament kernel, using observation geometry, currents and winding counts.",
+  "taxonomy": [
+    "field",
+    "axisymmetric",
+    "green-response"
   ],
-  "operation": [
-   "closed-form filament-coil Green response",
-   "regularized observation geometry and coil vectors -> summed flux and fields"
+  "aliases": [
+    "evaluate_filament_coil_green_field"
   ],
-  "model": "Closed-form axisymmetric circular-coil response evaluated through the canonical circular-filament kernel (small-modulus hypergeometric branch below m=0.5, complementary elliptic form above it).",
-  "geometry": "One observation point paired with one-dimensional coil arrays.",
-  "boundary": "Observation on a source ring is singular and rejected; the observation-radius offset is not repeated.",
-  "device_scope": "device-parameterized"
- },
- "identity": {
-  "relation": "Closed-form filament-coil Green response",
-  "direction": "regularized observation geometry and coil vectors to summed flux and fields",
-  "definition": "Evaluate each weighted ring response with the canonical circular-filament kernel and sum the per-coil terms. The kernel switches to a small-modulus hypergeometric form below m = 0.5, which removes the (2-m)K-2E cancellation that the polynomial-log elliptic approximation suffered near the cylindrical axis (issue #10 item 4).",
-  "model": "Closed-form axisymmetric circular-coil response evaluated through the canonical circular-filament kernel (small-modulus hypergeometric branch below m=0.5, complementary elliptic form above it).",
-  "geometry": "One observation point paired with one-dimensional coil arrays.",
-  "coordinates": "R,Z in metres; current amperes; turns count; psi Wb/rad and fields tesla.",
-  "boundary": "Observation on a source ring is singular and rejected; the observation-radius offset is not repeated.",
-  "assumptions": [
-   "All coil vectors are finite one-dimensional arrays with matching shapes.",
-   "Coil radii are strictly positive; the observation radius is the geometry operator's regularized value.",
-   "The response uses the canonical kernel, so callers no longer supply elliptic values."
-  ]
- },
- "inputs": [
-  {
-   "name": "regularized_radius_m",
-   "description": "Observation radius after the source axis offset (from the coil Green geometry operator).",
-   "units": "m",
-   "shape": "scalar",
-   "dtype": "real",
-   "required": true,
-   "constraints": "Finite and strictly positive; the offset is applied once by the caller and is not repeated here."
+  "discovery": {
+    "capability": [
+      "Filament-coil Green field response",
+      "Evaluate the summed psi, BR, and BZ response of aligned circular coils through the canonical circular-filament kernel, using observation geometry, currents and winding counts."
+    ],
+    "operation": [
+      "closed-form filament-coil Green response",
+      "regularized observation geometry and coil vectors -> summed flux and fields"
+    ],
+    "model": "Closed-form axisymmetric circular-coil response evaluated through the canonical circular-filament kernel (small-modulus hypergeometric branch below m=0.5, complementary elliptic form above it).",
+    "geometry": "One observation point paired with one-dimensional coil arrays.",
+    "boundary": "Observation on a source ring is singular and rejected; the observation-radius offset is not repeated.",
+    "device_scope": "device-parameterized"
   },
-  {
-   "name": "observation_z_m",
-   "description": "Observation axial coordinate.",
-   "units": "m",
-   "shape": "scalar",
-   "dtype": "real",
-   "required": true,
-   "constraints": "Finite."
+  "identity": {
+    "relation": "Closed-form filament-coil Green response",
+    "direction": "regularized observation geometry and coil vectors to summed flux and fields",
+    "definition": "Evaluate each weighted ring response with the canonical circular-filament kernel and sum the per-coil terms. The kernel switches to a small-modulus hypergeometric form below m = 0.5, which removes the (2-m)K-2E cancellation that the polynomial-log elliptic approximation suffered near the cylindrical axis (issue #10 item 4).",
+    "model": "Closed-form axisymmetric circular-coil response evaluated through the canonical circular-filament kernel (small-modulus hypergeometric branch below m=0.5, complementary elliptic form above it).",
+    "geometry": "One observation point paired with one-dimensional coil arrays.",
+    "coordinates": "R,Z in metres; current amperes; turns count; psi Wb/rad and fields tesla.",
+    "boundary": "Observation on a source ring is singular and rejected; the observation-radius offset is not repeated.",
+    "assumptions": [
+      "All coil vectors are finite one-dimensional arrays with matching shapes.",
+      "Coil radii are strictly positive; the observation radius is the geometry operator's regularized value.",
+      "The response uses the canonical kernel, so callers no longer supply elliptic values."
+    ]
   },
-  {
-   "name": "coil_radius_m",
-   "description": "Ring-coil centre radii.",
-   "units": "m",
-   "shape": "[ncoil]",
-   "dtype": "real array-like",
-   "required": true,
-   "constraints": "Finite 1-D, strictly positive entries, shared shape with the other coil vectors."
+  "inputs": [
+    {
+      "name": "regularized_radius_m",
+      "description": "Observation radius after the source axis offset (from the coil Green geometry operator).",
+      "units": "m",
+      "shape": "scalar",
+      "dtype": "real",
+      "required": true,
+      "constraints": "Finite and strictly positive; the offset is applied once by the caller and is not repeated here."
+    },
+    {
+      "name": "observation_z_m",
+      "description": "Observation axial coordinate.",
+      "units": "m",
+      "shape": "scalar",
+      "dtype": "real",
+      "required": true,
+      "constraints": "Finite."
+    },
+    {
+      "name": "coil_radius_m",
+      "description": "Ring-coil centre radii.",
+      "units": "m",
+      "shape": "[ncoil]",
+      "dtype": "real array-like",
+      "required": true,
+      "constraints": "Finite 1-D, strictly positive entries, shared shape with the other coil vectors."
+    },
+    {
+      "name": "coil_z_m",
+      "description": "Ring-coil centre axial coordinates.",
+      "units": "m",
+      "shape": "[ncoil]",
+      "dtype": "real array-like",
+      "required": true,
+      "constraints": "Finite 1-D, shared shape."
+    },
+    {
+      "name": "current_a",
+      "description": "Per-coil current amplitude.",
+      "units": "A",
+      "shape": "[ncoil]",
+      "dtype": "real array-like",
+      "required": true,
+      "constraints": "Finite 1-D, shared shape."
+    },
+    {
+      "name": "turns",
+      "description": "Per-coil winding counts.",
+      "units": "count",
+      "shape": "[ncoil]",
+      "dtype": "real array-like",
+      "required": true,
+      "constraints": "Finite 1-D, shared shape."
+    }
+  ],
+  "outputs": [
+    {
+      "name": "flux_weber",
+      "description": "Total poloidal-flux response psi = R A_phi summed over coils.",
+      "units": "Wb/rad (per the psi = R A_phi convention; subject to the caller's current units)",
+      "shape": "scalar",
+      "dtype": "float",
+      "required": true,
+      "constraints": "Finite on accepted inputs; extreme finite currents/turns can raise ValueError for overflowed source weights or nonfinite wrapper output, or FloatingPointError from arithmetic inside the canonical kernel."
+    },
+    {
+      "name": "radial_field_t",
+      "description": "Total radial field response B_r summed over coils.",
+      "units": "T",
+      "shape": "scalar",
+      "dtype": "float",
+      "required": true,
+      "constraints": "Finite on accepted inputs; extreme finite currents/turns can raise ValueError for overflowed source weights or nonfinite wrapper output, or FloatingPointError from arithmetic inside the canonical kernel."
+    },
+    {
+      "name": "axial_field_t",
+      "description": "Total axial field response B_z summed over coils.",
+      "units": "T",
+      "shape": "scalar",
+      "dtype": "float",
+      "required": true,
+      "constraints": "Finite on accepted inputs; extreme finite currents/turns can raise ValueError for overflowed source weights or nonfinite wrapper output, or FloatingPointError from arithmetic inside the canonical kernel."
+    }
+  ],
+  "applicability": {
+    "preconditions": [
+      "All coil vectors are finite one-dimensional arrays with matching shapes.",
+      "Coil radii are strictly positive."
+    ],
+    "supported": [
+      "Finite aligned coil arrays, current linearity, mirrored-pair cancellation, and singular/overflow failures in direct tests."
+    ],
+    "excluded": [
+      "Misaligned coil geometry or guarantees for arbitrary extreme scales."
+    ]
   },
-  {
-   "name": "coil_z_m",
-   "description": "Ring-coil centre axial coordinates.",
-   "units": "m",
-   "shape": "[ncoil]",
-   "dtype": "real array-like",
-   "required": true,
-   "constraints": "Finite 1-D, shared shape."
+  "failure_semantics": {
+    "invalid_input": "ValueError is raised for invalid observation coordinates or coil vectors, singular geometry, or nonfinite output.",
+    "runtime_failure": "FloatingPointError from overflow or invalid arithmetic inside the canonical kernel propagates unchanged. Wrapper validation, including overflowed source weights or nonfinite returned scalar values, raises ValueError; no fallback or partial tuple is returned.",
+    "nonconvergence": "Not applicable; the response is a finite direct sum.",
+    "partial_results": "No scalar tuple is returned after validation or singularity failure."
   },
-  {
-   "name": "current_a",
-   "description": "Per-coil current amplitude.",
-   "units": "A",
-   "shape": "[ncoil]",
-   "dtype": "real array-like",
-   "required": true,
-   "constraints": "Finite 1-D, shared shape."
+  "public_api": {
+    "python": {
+      "module": "scirel.field.filament_coil_green_field",
+      "symbol": "evaluate_filament_coil_green_field",
+      "signature": "evaluate_filament_coil_green_field(regularized_radius_m, observation_z_m, coil_radius_m, coil_z_m, current_a, turns)",
+      "canonical_module": "scirel.field",
+      "canonical_symbol": "evaluate_filament_coil_green_field"
+    }
   },
-  {
-   "name": "turns",
-   "description": "Per-coil winding counts.",
-   "units": "count",
-   "shape": "[ncoil]",
-   "dtype": "real array-like",
-   "required": true,
-   "constraints": "Finite 1-D, shared shape."
+  "version": {
+    "implementation_version": "0.0.0",
+    "dependencies": [
+      {
+        "asset_id": "scirel.field.coil-green-geometry"
+      },
+      {
+        "asset_id": "scirel.electromagnetism.circular-filament-green"
+      }
+    ]
+  },
+  "example": {
+    "description": "Evaluate a mirrored pair of coils and repeat with doubled current.",
+    "code": "import numpy as np\nfrom scirel.field import compute_axisymmetric_coil_modulus, evaluate_filament_coil_green_field\nradius, modulus, _ = compute_axisymmetric_coil_modulus(\n    0.3, 0.0, np.array([0.2, 0.2]), np.array([-0.1, 0.1]))\nflux, br, bz = evaluate_filament_coil_green_field(\n    radius, 0.0, np.array([0.2, 0.2]), np.array([-0.1, 0.1]),\n    np.array([10.0, 10.0]), np.array([2.0, 2.0]))\nassert abs(br) < 1e-18\nflux2, br2, bz2 = evaluate_filament_coil_green_field(\n    radius, 0.0, np.array([0.2, 0.2]), np.array([-0.1, 0.1]),\n    np.array([20.0, 20.0]), np.array([2.0, 2.0]))\nassert flux2 == 2.0 * flux and bz2 == 2.0 * bz",
+    "expected": "The mirrored pair cancels BR on the midplane; doubling current doubles the flux and axial response. Elliptic values are no longer caller-supplied: the canonical kernel selects its own branch."
+  },
+  "verification": {
+    "scope": [
+      "Closed-form responses against an independent recomputation.",
+      "Near-axis accuracy against a 50-digit reference for r in [1e-8, 1e-2] (issue #10 item 4).",
+      "Singular-geometry rejection and input failure contracts.",
+      "Independent evidence (tests/field/test_filament_coil_green_field_evidence.py): the summed scalar tuple agrees with a direct Biot-Savart quadrature of the same ring set within 64 eps; the stream-function identities B_R = -(1/R) dpsi/dZ and B_Z = (1/R) dpsi/dR are checked against a 60-digit differentiation of the quadrature psi rather than against the analytic derivative combination; the once-only radius offset, the exact current*turns linearity and the singular-ring rejection are separate assertions."
+    ],
+    "tests": [
+      "tests/field/test_filament_coil_green.py",
+      "tests/field/test_filament_coil_green_field_evidence.py"
+    ],
+    "evidence_ceiling": "Bounded to the geometries in tests/field/test_filament_coil_green.py: independent 50-digit mpmath closed-form recomputations, near-axis accuracy for r in [1e-8, 1e-2], near-axis scaling, current linearity, mirrored-coil cancellation, and declared invalid/singular/overflow cases. Agreement with the other field Green response is an internal consistency check. Reusing the canonical kernel is implementation structure, not independent physical validation. These shared-file tests do not establish arbitrary extreme-scale accuracy, misaligned geometry, or experimental validity. C1 evidence adds a source that shares no elliptic or hypergeometric evaluation with the implementation, plus the stream-function identities as a derivative-level check that the maintained 50-digit closed-form oracle cannot provide; the observed maximum deviation on the sampled configurations is 2.62e-15 relative against a 1.42e-14 budget. It does not establish a continuous error bound, single-coil geometries outside the sampled set, or the regime inside 1e-2 of the wire distance.",
+    "known_limitations": [
+      "No external cross-implementation comparison is bound to this contract; only the tests in this repository establish its behaviour.",
+      "This wrapper uses the canonical circular-filament kernel; its single-target, caller-applied radius offset and singular-rejection boundaries remain explicit.",
+      "The geometry helper rejects raw negative observation radii. This response accepts an already positive regularized radius and rejects zero-separation singular geometry; it neither repeats the offset nor accepts modulus or K/E input ports.",
+      "Extreme finite currents/turns do not guarantee a finite response: overflowed source weights can raise ValueError, and arithmetic overflow inside the canonical kernel propagates FloatingPointError. No fallback response is selected.",
+      "The singular-geometry rejection (observation point on a filament ring) is an explicit contract: that configuration raises rather than returning NaN responses.",
+      "Elliptic values are evaluated inside the canonical kernel; the caller supplies no K/E values. The standalone polynomial-log approximation is not used by this response.",
+      "The 64-eps figure is an observed maximum over the sampled observation points, not a proven bound over the observation domain.",
+      "The stream-function check differentiates the quadrature psi at 60 digits with a 1e-15 central step; it establishes the identity at the sampled points, not a bound on the analytic derivative combination everywhere."
+    ],
+    "basis": {
+      "kind": "independent-recomputation",
+      "statement": "A second source that shares no elliptic or hypergeometric evaluation with the implementation is added, plus the stream-function identities as a derivative-level check that the maintained 50-digit closed-form oracle cannot provide; the observed maximum deviation on the sampled configurations stays within the declared relative budget.",
+      "source": "tests/field/test_filament_coil_green_field.py"
+    }
   }
- ],
- "outputs": [
-  {
-   "name": "flux_weber",
-   "description": "Total poloidal-flux response psi = R A_phi summed over coils.",
-   "units": "Wb/rad (per the psi = R A_phi convention; subject to the caller's current units)",
-   "shape": "scalar",
-   "dtype": "float",
-   "required": true,
-   "constraints": "Finite on accepted inputs; extreme finite currents/turns can raise ValueError for overflowed source weights or nonfinite wrapper output, or FloatingPointError from arithmetic inside the canonical kernel."
-  },
-  {
-   "name": "radial_field_t",
-   "description": "Total radial field response B_r summed over coils.",
-   "units": "T",
-   "shape": "scalar",
-   "dtype": "float",
-   "required": true,
-   "constraints": "Finite on accepted inputs; extreme finite currents/turns can raise ValueError for overflowed source weights or nonfinite wrapper output, or FloatingPointError from arithmetic inside the canonical kernel."
-  },
-  {
-   "name": "axial_field_t",
-   "description": "Total axial field response B_z summed over coils.",
-   "units": "T",
-   "shape": "scalar",
-   "dtype": "float",
-   "required": true,
-   "constraints": "Finite on accepted inputs; extreme finite currents/turns can raise ValueError for overflowed source weights or nonfinite wrapper output, or FloatingPointError from arithmetic inside the canonical kernel."
-  }
- ],
- "applicability": {
-  "preconditions": [
-   "All coil vectors are finite one-dimensional arrays with matching shapes.",
-   "Coil radii are strictly positive."
-  ],
-  "supported": [
-   "Finite aligned coil arrays, current linearity, mirrored-pair cancellation, and singular/overflow failures in direct tests."
-  ],
-  "excluded": [
-   "Misaligned coil geometry or guarantees for arbitrary extreme scales."
-  ]
- },
- "failure_semantics": {
-  "invalid_input": "ValueError is raised for invalid observation coordinates or coil vectors, singular geometry, or nonfinite output.",
-  "runtime_failure": "FloatingPointError from overflow or invalid arithmetic inside the canonical kernel propagates unchanged. Wrapper validation, including overflowed source weights or nonfinite returned scalar values, raises ValueError; no fallback or partial tuple is returned.",
-  "nonconvergence": "Not applicable; the response is a finite direct sum.",
-  "partial_results": "No scalar tuple is returned after validation or singularity failure."
- },
- "public_api": {
-  "python": {
-   "module": "scirel.field.filament_coil_green_field",
-   "symbol": "evaluate_filament_coil_green_field",
-   "signature": "evaluate_filament_coil_green_field(regularized_radius_m, observation_z_m, coil_radius_m, coil_z_m, current_a, turns)",
-   "canonical_module": "scirel.field",
-   "canonical_symbol": "evaluate_filament_coil_green_field"
-  }
- },
- "version": {
-  "implementation_version": "0.0.0",
-  "dependencies": [
-   {
-    "asset_id": "scirel.field.coil-green-geometry"
-   },
-   {
-    "asset_id": "scirel.electromagnetism.circular-filament-green"
-   }
-  ]
- },
- "example": {
-  "description": "Evaluate a mirrored pair of coils and repeat with doubled current.",
-  "code": "import numpy as np\nfrom scirel.field import compute_axisymmetric_coil_modulus, evaluate_filament_coil_green_field\nradius, modulus, _ = compute_axisymmetric_coil_modulus(\n    0.3, 0.0, np.array([0.2, 0.2]), np.array([-0.1, 0.1]))\nflux, br, bz = evaluate_filament_coil_green_field(\n    radius, 0.0, np.array([0.2, 0.2]), np.array([-0.1, 0.1]),\n    np.array([10.0, 10.0]), np.array([2.0, 2.0]))\nassert abs(br) < 1e-18\nflux2, br2, bz2 = evaluate_filament_coil_green_field(\n    radius, 0.0, np.array([0.2, 0.2]), np.array([-0.1, 0.1]),\n    np.array([20.0, 20.0]), np.array([2.0, 2.0]))\nassert flux2 == 2.0 * flux and bz2 == 2.0 * bz",
-  "expected": "The mirrored pair cancels BR on the midplane; doubling current doubles the flux and axial response. Elliptic values are no longer caller-supplied: the canonical kernel selects its own branch."
- },
- "verification": {
-  "scope": [
-   "Closed-form responses against an independent recomputation.",
-   "Near-axis accuracy against a 50-digit reference for r in [1e-8, 1e-2] (issue #10 item 4).",
-   "Singular-geometry rejection and input failure contracts.",
-   "Independent evidence (tests/field/test_filament_coil_green_field_evidence.py): the summed scalar tuple agrees with a direct Biot-Savart quadrature of the same ring set within 64 eps; the stream-function identities B_R = -(1/R) dpsi/dZ and B_Z = (1/R) dpsi/dR are checked against a 60-digit differentiation of the quadrature psi rather than against the analytic derivative combination; the once-only radius offset, the exact current*turns linearity and the singular-ring rejection are separate assertions."
-  ],
-  "tests": [
-   "tests/field/test_filament_coil_green.py",
-   "tests/field/test_filament_coil_green_field_evidence.py"
-  ],
-  "evidence_ceiling": "Bounded to the geometries in tests/field/test_filament_coil_green.py: independent 50-digit mpmath closed-form recomputations, near-axis accuracy for r in [1e-8, 1e-2], near-axis scaling, current linearity, mirrored-coil cancellation, and declared invalid/singular/overflow cases. Agreement with the other field Green response is an internal consistency check. Reusing the canonical kernel is implementation structure, not independent physical validation. These shared-file tests do not establish arbitrary extreme-scale accuracy, misaligned geometry, or experimental validity. C1 evidence adds a source that shares no elliptic or hypergeometric evaluation with the implementation, plus the stream-function identities as a derivative-level check that the maintained 50-digit closed-form oracle cannot provide; the observed maximum deviation on the sampled configurations is 2.62e-15 relative against a 1.42e-14 budget. It does not establish a continuous error bound, single-coil geometries outside the sampled set, or the regime inside 1e-2 of the wire distance.",
-  "known_limitations": [
-   "No external cross-implementation comparison is bound to this contract; only the tests in this repository establish its behaviour.",
-   "This wrapper uses the canonical circular-filament kernel; its single-target, caller-applied radius offset and singular-rejection boundaries remain explicit.",
-   "The geometry helper rejects raw negative observation radii. This response accepts an already positive regularized radius and rejects zero-separation singular geometry; it neither repeats the offset nor accepts modulus or K/E input ports.",
-   "Extreme finite currents/turns do not guarantee a finite response: overflowed source weights can raise ValueError, and arithmetic overflow inside the canonical kernel propagates FloatingPointError. No fallback response is selected.",
-   "The singular-geometry rejection (observation point on a filament ring) is an explicit contract: that configuration raises rather than returning NaN responses.",
-   "Elliptic values are evaluated inside the canonical kernel; the caller supplies no K/E values. The standalone polynomial-log approximation is not used by this response.",
-   "The 64-eps figure is an observed maximum over the sampled observation points, not a proven bound over the observation domain.",
-   "The stream-function check differentiates the quadrature psi at 60 digits with a 1e-15 central step; it establishes the identity at the sampled points, not a bound on the analytic derivative combination everywhere."
-  ]
- }
 }
