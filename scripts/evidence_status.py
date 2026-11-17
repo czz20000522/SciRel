@@ -49,6 +49,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 CATALOG = Path("catalog/examples")
+BASELINE = Path("tools/docs/evidence-basis-baseline.json")
 
 sys.path.insert(0, str(ROOT / "scripts"))
 from c1_evidence_coverage import NEGATION, classify, verification_text  # noqa: E402
@@ -103,6 +104,30 @@ def describe(asset: str, root: Path = ROOT) -> dict:
     }
 
 
+def summary(root: Path = ROOT) -> dict:
+    """Count what each contract claims, without ever summing gaps into 'proven'."""
+    baseline = json.loads((root / BASELINE).read_text(encoding="utf-8"))
+    pending = {entry["asset_id"] for entry in baseline["entries"]}
+    by_kind: dict[str, int] = {}
+    total = 0
+    for path in sorted((root / CATALOG).glob("scirel.*.json")):
+        document = json.loads(path.read_text(encoding="utf-8"))
+        total += 1
+        basis = (document.get("verification") or {}).get("basis")
+        kind = basis.get("kind") if basis else "not-declared"
+        by_kind[kind] = by_kind.get(kind, 0) + 1
+    return {
+        "contracts": total,
+        "declared": sum(count for kind, count in by_kind.items() if kind != "not-declared"),
+        "by_kind": dict(sorted(by_kind.items())),
+        "pending": len(pending),
+        "note": (
+            "kind=none records a gap; it is not proof. not-declared means the contract has no "
+            "verification.basis yet, so nothing is claimed either way."
+        ),
+    }
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--asset", help="asset id, e.g. scirel.field.brb")
@@ -111,10 +136,29 @@ def main(argv: list[str] | None = None) -> int:
         action="store_true",
         help="list assets that are not classified as basis but do contain un-recognised basis wording",
     )
+    parser.add_argument(
+        "--summary",
+        action="store_true",
+        help="count contracts by declared basis kind, keeping 'none' and 'not-declared' separate",
+    )
     parser.add_argument("--format", choices=("text", "json"), default="text")
     parser.add_argument("--root", default=str(ROOT))
     args = parser.parse_args(argv)
     root = Path(args.root).resolve()
+    if args.summary:
+        try:
+            counts = summary(root)
+        except (FileNotFoundError, json.JSONDecodeError) as error:
+            print(f"unobservable: {error}", file=sys.stderr)
+            return 2
+        if args.format == "json":
+            print(json.dumps(counts, ensure_ascii=False, indent=2))
+        else:
+            print(f"contracts: {counts['contracts']}")
+            for kind, count in counts["by_kind"].items():
+                print(f"  {kind:28s} {count}")
+            print(f"\n{counts['note']}")
+        return 0
     if args.scan_weak_basis:
         found = []
         for path in sorted((root / CATALOG).glob("scirel.*.json")):

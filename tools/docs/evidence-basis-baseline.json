@@ -4,26 +4,6 @@
   "why": "c1_evidence_coverage infers the basis from prose with a fixed phrase list; on this catalog 106 assets carry basis wording that list does not recognise, so the inference cannot answer 'does this capability stand on evidence'. The field replaces the inference.",
   "entries": [
     {
-      "asset_id": "scirel.collisions.atomic-hydrogen-1s-radiative-recombination-rate-coefficient",
-      "reason": "not yet migrated: verification.basis absent"
-    },
-    {
-      "asset_id": "scirel.collisions.atomic-hydrogen-charge-exchange-cross-section",
-      "reason": "not yet migrated: verification.basis absent"
-    },
-    {
-      "asset_id": "scirel.collisions.atomic-hydrogen-charge-exchange-rate-coefficient",
-      "reason": "not yet migrated: verification.basis absent"
-    },
-    {
-      "asset_id": "scirel.collisions.atomic-hydrogen-collision-matrices",
-      "reason": "not yet migrated: verification.basis absent"
-    },
-    {
-      "asset_id": "scirel.collisions.atomic-hydrogen-elastic-cross-section",
-      "reason": "not yet migrated: verification.basis absent"
-    },
-    {
       "asset_id": "scirel.collisions.atomic-hydrogen-omega-frequencies",
       "reason": "not yet migrated: verification.basis absent"
     },
@@ -944,6 +924,11 @@
     "scirel.closures.quasineutral-reference-density",
     "scirel.closures.reduced-hall-drift",
     "scirel.closures.tabulated-pressure",
+    "scirel.collisions.atomic-hydrogen-1s-radiative-recombination-rate-coefficient",
+    "scirel.collisions.atomic-hydrogen-charge-exchange-cross-section",
+    "scirel.collisions.atomic-hydrogen-charge-exchange-rate-coefficient",
+    "scirel.collisions.atomic-hydrogen-collision-matrices",
+    "scirel.collisions.atomic-hydrogen-elastic-cross-section",
     "scirel.field.poloidal-field-from-flux",
     "scirel.geometry.path-distance",
     "scirel.kinetic.kinetic-wavevector-roots",
