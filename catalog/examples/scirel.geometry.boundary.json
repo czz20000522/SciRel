@@ -116,6 +116,11 @@
     "known_limitations": [
       "No reliable intersection, polygon interior or uniqueness guarantee",
       "The refinement ratio is measured for a circle; a general error estimate for arbitrary boundaries is not established here."
-    ]
+    ],
+    "basis": {
+      "kind": "analytic-identity",
+      "statement": "Analytic circle geometry is checked through an independently measured refinement sequence, together with the exact endpoint identity. Only the named circle families are covered; no interior-point interpolation error bound and no claim about self-intersecting input.",
+      "source": "tests/geometry/test_boundary.py"
+    }
   }
 }

@@ -122,6 +122,11 @@
       "Arbitrary contour topology, magnetic-axis limit and physical stability are unqualified",
       "get_kappa_n_2 requires uniform xy grid and nonzero flux gradient",
       "The set class is a mapping builder; the evidence covers the mapping and the keyword forwarding, not any field reconstruction."
-    ]
+    ],
+    "basis": {
+      "kind": "specification",
+      "statement": "Composition transparency and keyword forwarding are checked, with the inherited line evidence. This is not a topology or flux-surface qualification.",
+      "source": "tests/geometry/test_fieldline_set.py"
+    }
   }
 }

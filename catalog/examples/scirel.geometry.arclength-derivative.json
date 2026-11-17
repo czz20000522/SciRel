@@ -127,6 +127,11 @@
       "Polyline chord lengths are used; no true smooth-curve arclength is inferred",
       "Periodic endpoint stencil and noise statistics are unqualified",
       "The order statement holds for the measured cubic fixture; a general error bound for arbitrary sampled curves is not claimed."
-    ]
+    ],
+    "basis": {
+      "kind": "analytic-identity",
+      "statement": "Exact polynomial reproduction, the measured second-order ratio on cubic data and the arclength (not index) differentiation variable are asserted on the named fixtures. No general error bound and no statement about noisy data.",
+      "source": "tests/geometry/test_arclength_derivative.py"
+    }
   }
 }
