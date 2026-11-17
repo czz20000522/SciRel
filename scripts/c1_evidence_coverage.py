@@ -44,6 +44,13 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 
+# NOTE (2026-11-18): this phrase list is NOT the long-term oracle. Measured on this
+# catalog, 106 assets carry basis wording the list does not recognise (independent
+# quadrature, compared with ..., published values), so a `gap` here means "no phrase
+# matched", not "no evidence". Contracts can now declare `verification.basis`
+# (kind + statement), gated by scripts/check_evidence_basis.py; once an asset is
+# migrated, trust the field over this inference. `evidence_status.py
+# --scan-weak-basis` lists the assets where the two disagree.
 BASIS_PATTERNS = (
     r"independent (engine|oracle|reference|implementation|recomputation|high[- ]precision|expression|check)",
     r"independently (recomput|derived|verified|evaluated)",
