@@ -77,7 +77,7 @@
     "scope": [
      "当前 SciRel 实现及本合同列出的仓库测试覆盖所声明的公共端口与数值关系。",
      "示例只演练一个有界的代表性算例，不把适用范围扩展到声明前提之外。",
-     "独立证据（tests/neutrals/test_convergence_and_mesh_evidence.py）：delta 按精确最大比值重算；零代际给出精确零比值并落在 truncate 分支；两个比较都在相等处由判别裁定——delta 恰等于 truncate 时继续，低于一个 ulp 时截断；种子分支用 seed_error = 100 使 0.003 * seed_error = 0.3 精确：delta = 0.1 进入种子分支，而 delta 恰为 0.3 时不进入。"
+     "独立依据（tests/neutrals/test_convergence_and_correction_identities_evidence.py、tests/neutrals/test_convergence_and_mesh_evidence.py）：delta 是两个精确极大值的一次正确舍入商，在 Fraction 中重算并逐位比较，同时显示决定它的是极大值而非求和读数；零生成在 truncate 分支给出精确的零比；两个比较都从两侧裁定——delta 恰等于 truncate 时继续、低一个 ulp 时截断；种子分支在可表示的乘积 0.003 * 100 == 0.3 上检验，delta = 0.1 进入种子分支而 delta 恰为 0.3 不进入；溢出的比值、种子控制的错位与所报决策的无状态性都被断言。"
     ],
     "evidence_ceiling": "限于逐碰撞代 Delta_n 收敛停止决策。证据：`test_convergence_accumulation.py` 含 18 个测试函数，其中 7 个引用 `evaluate_neutral_generation_stopping`，由 4 个资产共享；仅绑定共享文件覆盖，因此通过是文件级事实、而非资产隔离证据；本审计已执行有界示例。真值来源：绑定文件中针对冻结代比值序列的自洽/回归。不建立：非密度收敛判据或外部物理验证。 C1 证据补充：精确比值、严格分支判别与精确的 0.003 边界。它建立的是判决表，不是停止质量：0.003 系数和它所终止的迭代都没有经过收敛性证明。",
     "known_limitations": [
@@ -276,7 +276,7 @@
      "通过调用和导入检查确认此关系无分类参数。",
      "场、磁通、覆盖掩码和两个计数器都与独立重构精确一致。",
      "直接测试验证顶层 scirel._result.Result 映射及属性读取。",
-     "独立证据（tests/geometry/test_axisymmetric_mapping_evidence.py）：旋转后的横向场**没有方位角泄漏**（每个轴外点上 Bx·y − By·x = 0，16 eps），径向分量按所声明**正号**复原（Bx·x + By·y = r·|B_xy| > 0）；映射是轴对称的——半径逐位相等的两个位置（hypot(3,4) = hypot(5,0) = 5）给出相同极向磁通与相同 |B|，而矢量按方位角旋转而不同；r = 0 处两个横向分量精确为零、Bz 为插值轴向值；超出任一范围的点标为未覆盖并携带**钳制后的边界值**（不是零），两个钳制计数恰为各方向越界点数；缺条目、错形状、非有限与非 mapping 通道各自被拒绝。"
+     "独立依据（tests/geometry/test_equilibrium_map_closed_form_evidence.py、tests/geometry/test_axisymmetric_mapping_evidence.py）：张量积线性插值精确复现多重线性函数，故 psi = 2 r + 3 z 在非对称网格的每个内部查询点上逐位返回——这也证明轴向坐标未被缩放或调换；在毕达哥拉斯半径 hypot(3, 4) = 5 处横场分裂是精确有理运算 br * 3 / 5 与 br * 4 / 5，因此配对、正号与除以 r 都被逐位判定；方位角恒等 Bx y - By x = 0 与 Bx x + By y = r |Bxy| 在四个方位角成立；轴行、夹取而非补零的约定与两个夹取计数都被断言；无方位泄漏、轴上取零约定、等半径两点的旋转不变性与拒绝通道在 axisymmetric mapping 文件中裁定。"
     ],
     "evidence_ceiling": "限于所声明的张量积插值、有符号柱坐标到笛卡尔场分解、覆盖与裁剪计数。绑定测试文件检验独立双线性重构、有符号分量保留，以及不可表示插值磁通的拒绝；合同示例是另一个有界调用。不建立非轴对称或三维平衡、映射盒外推的正确性；本关系采用裁边。 C1 证据补充：旋转恒等式、方位角不变性、轴行为与“钳制而非补零”约定。它建立映射的坐标系代数；不建立所给平衡的物理正确性，也不建立样本之间的插值精度。",
     "known_limitations": [
@@ -1817,7 +1817,7 @@
     "scope": [
      "当前 SciRel 实现及本合同列出的仓库测试覆盖所声明的公共端口与数值关系。",
      "示例只演练一个有界的代表性算例，不把适用范围扩展到声明前提之外。",
-     "独立证据（tests/neutrals/test_convergence_and_mesh_evidence.py）：同一 truncate 下重入阈值恰为外层关系的十倍；比较在该阈值处由判别裁定（相等即收敛，高之则重新迭代）；并实测两份非负剖面的最大范数界（相对变化 < 1）：truncate = 0.1 时种子阈值为 1.0，任何非负剖面都无法进入重迭代分支，而 truncate = 0.01、相对变化 0.5 时会重迭代。"
+     "独立依据（tests/neutrals/test_convergence_and_correction_identities_evidence.py、tests/neutrals/test_convergence_and_mesh_evidence.py）：seed_error 是 max|previous - current| 与 max(current) 的一次正确舍入商，在 Fraction 中重算并逐位比较；对二进制有理 truncate，reentry_threshold 逐位等于 10 * truncate，且比较是严格的——相等即收敛、下一个可表示值重新迭代；一个反例推翻了已撤回的“不可达”论断——([4, 0], [1, 0], truncate=0.2) 给出比值 3.0 对阈值 2.0 并重新迭代，因为该比值仅在 max(previous) <= 2 max(current) 时被 1 界定；该界内的镜像对照收敛；溢出的阈值与错位配置通道都被断言。"
     ],
     "evidence_ceiling": "限于内层种子遍误差比与 10*truncate 再入决策。证据：`test_convergence_accumulation.py` 含 18 个测试函数，其中 3 个引用 `evaluate_neutral_outer_seed_convergence`，由 4 个资产共享；仅绑定共享文件覆盖，因此通过是文件级事实、而非资产隔离证据；本审计已执行有界示例。真值来源：绑定文件中针对冻结种子比值的自洽/回归。不建立：非密度收敛判据或外部物理验证。 C1 证据补充：精确十倍关系、严格比较，以及最大范数界的结构性后果。它建立的是“何时重入”，不是种子迭代的收敛性，也不是该阈值是合适的数值选择。",
     "known_limitations": [
@@ -5150,7 +5150,7 @@
      "路径反向、重复线段及过小网格。",
      "非正B及域外拒绝。",
      "直接测试验证顶层 scirel._result.Result 映射及属性读取。",
-     "独立证据（tests/geometry/test_volume_profile_and_line_average_evidence.py）：常场与常量分别返回该常量，dl_B 等于路径长除以场值（16 eps）；场加倍使平均值不变，量加常数使平均值平移该常数，量加倍使平均值加倍；不传量时只返回 dl_B；场正性、路径在网格内、折线非退化与每轴四点四条通道各自被拒绝。"
+     "独立依据（tests/geometry/test_closed_form_evidence.py、tests/geometry/test_volume_profile_and_line_average_evidence.py）：梯形积分之比的闭式归约——常值场下两个积分都化为 L/B，常值量的均值就是该量；沿直径向路径线性的量因其被积函数线性、梯形法则精确复现而有精确有理均值 (R_first + R_last)/2；两条仿射标定律 q -> q + c 与 q -> a q 由线性性给出、B -> 2B 使 dl_B 减半由齐次性给出，三者均被断言；每个声明的拒绝通道各有一条可执行断言。"
     ],
     "evidence_ceiling": "小网格上的直接测试覆盖维护中的三次插值和离散折线求积；不验证调用者路径是完整磁面，也不证明项目完整性。 C1 证据补充：常场恒等式、加权均值的三个仿射/标度恒等式与拒绝通道。它建立的是**沿所给折线**的离散加权均值，不是曲面的通量面平均。",
     "known_limitations": [
@@ -7412,7 +7412,7 @@
      "非有限输入/端点以及唯一点不足拒绝。",
      "一个调用者一致的正坐标缩放保持插值值。",
      "直接测试验证顶层 scirel._result.Result 映射及属性读取。",
-     "独立证据：线性剖面在样本区间内精确复现（4 eps），节点值精确；样本顺序无关，重复坐标取**首次出现**的值（中点得 2.5 而非 4.5）；区间外返回端点值，或显式 left/right；配对长度、唯一区间与有限性各自被拒绝。"
+     "独立依据（tests/geometry/test_closed_form_evidence.py、tests/geometry/test_volume_profile_and_line_average_evidence.py）：线性闭式 y0 + (y1 - y0)(t - x0)/(x1 - x0) 在 Fraction 中精确重算，并在二进制有理样本与目标上被逐位复现——不使用任何容差；置换成对样本不改变插值；首末结点精确；重复坐标保留排序后首次出现的值；端点策略在有/无显式 left、right 时都被断言；两个拒绝通道各有一条可执行断言。"
     ],
     "evidence_ceiling": "有限算例上的直接测试确立维护中的插值与端点合同，不验证任何调用者提供的通量剖面数据的物理有效性，也不证明项目完整性。 C1 证据补充：精确线性复现、重复取舍判别、端点约定与拒绝通道；不建立该通量坐标插值对真实平衡剖面的充分性。",
     "known_limitations": [
@@ -8426,7 +8426,7 @@
     "scope": [
      "维护的六点网格上检查形状、有限算术和有符号模式。",
      "候选证据保留正值、有符号、零切片、目标和形状错误行。",
-     "独立证据（tests/neutrals/test_moment_compensation_evidence.py）：修正对两个目标分段仿射——在同一符号分支内用恒等式 T(t1) + T(t2) - T(t1+t2) - T(0) = 0 判据，跨分支切换时该恒等式被超过 1e6 eps 地破坏；适用性警告被证明随实测相对误差出现；assume_pos=True 返回精确 scale=1，而 assume_pos=False 会限制 scale 并把切片恢复为非负。"
+     "独立依据（tests/neutrals/test_convergence_and_correction_identities_evidence.py、tests/neutrals/test_moment_compensation_evidence.py）：解析恒等 T(t1) + T(t2) - T(t1 + t2) - T(t0) = 0 在同一符号分支内成立，对 18 个网格元上的两次标量求解以 (2 n_cells + 16) eps 的切片量级为界；而选中另一分支的目标对偏差达 8.5e-3——因此所声明的仿射性是实测而非假定；assume_pos=True 精确返回 scale = 1，带符号路径可能压缩它，target_energy 为零的分支把两个能量诊断置零；更完整的证据文件补充独立精确有理矩归约、组合的验收测试与告警通道。"
     ],
     "known_limitations": [
      "不建立物理矩闭合或收敛。",

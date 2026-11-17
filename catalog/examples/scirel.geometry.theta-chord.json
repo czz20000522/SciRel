@@ -8,14 +8,15 @@
   "scope": [
    "Constructor and coordinate-shape invariants covered by the direct geometry tests",
    "The executable constructor example stored in this contract",
-   "Independent evidence (tests/geometry/test_frame_convention_evidence.py): theta = 0 places the point on +Z and theta = 90 a quarter turn later on +R, while a reading from the +R axis would move both components by the full radius (an O(1) discriminator asserted before the chosen reading is bounded); the degree reading is separated from a radian reading by 0.106 in R at theta = 90; R^2 + Z^2 = r^2 holds to 8 eps r^2; the chord equals the spherical chord at the same radius; a negative radius that generates a negative R is rejected while -0.0 passes as declared."
+   "Independent basis (tests/geometry/test_closed_form_evidence.py, tests/geometry/test_frame_convention_evidence.py): the analytic closed form R^2 + Z^2 = r^2 holds at five angles including 0 and 180 degrees and is exact on the 3-4-5 triple, where hypot(3, 4) = 5 gives (R, Z, r) = (3, 4, 5) bitwise; an exact rational recomputation shows R = r s and Z = r c with residual one ulp of the radius on R and zero on Z, so the products themselves are exact and only the one rounding of the sine shows; the theta chord equals the spherical chord bitwise at six angles; and the axis, unit, rival-axis discriminator and rejection channels are decided in the frame-convention file."
   ],
   "tests": [
    "tests/geometry/test_geometry_qualification.py",
    "tests/geometry/test_runtime_lifecycle.py",
-   "tests/geometry/test_frame_convention_evidence.py"
+   "tests/geometry/test_frame_convention_evidence.py",
+   "tests/geometry/test_closed_form_evidence.py"
   ],
-  "evidence_ceiling": "Named finite geometry cases only; no field-solver, experimental, or release claim is made. C1 evidence adds the axis, the unit, the Pythagoras identity, the cross-asset equality and the declared sign rule; it fixes the convention without establishing that any angular sampling is adequate for a surface or field.",
+  "evidence_ceiling": "Named finite geometry cases only; no field-solver, experimental, or release claim is made. C1 evidence adds the axis, the unit, the Pythagoras identity, the cross-asset equality and the declared sign rule; it fixes the convention without establishing that any angular sampling is adequate for a surface or field. C1 evidence adds the exact-rational product recomputation, the exact 3-4-5 case and the bitwise cross-asset equality.",
   "known_limitations": [
    "Mesh objects do not by themselves validate a physical field model or device geometry.",
    "theta here is **degrees from the +Z symmetry axis** while the `Mesh.theta` property of the same family returns **radians** (arctan2(R, Z)); mixing them is off by 180/pi. Both behaviours are declared in their own assets, so the asymmetry is recorded rather than changed. This constructor takes **degrees from +Z**, while the `Mesh.theta` property of the same family returns **radians**; the two cannot be interchanged (see ticket T-2026-0005)."
