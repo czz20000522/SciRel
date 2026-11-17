@@ -252,3 +252,55 @@ OpenFOAM 社区把 exact solution / manufactured solution 当作求解器验证�
 混用这两条线是本项目最容易犯的错，也是最难自察的错：两者都会伪装成"向优秀项目看齐"。
 判断办法只有一条：**这条建议改变的是库的形状（scipy 域），还是能力的生产流程（OpenFOAM 域）？**
 改错域的建议，一律不接。
+
+## 4 怎么用这两条参照线：先查上游，再定标准
+
+第 1、2 节是**结论**（scipy 的结构、OpenFOAM 的流程）。这一节是**动作**：遇到约定问题时怎么走，
+以及依据要长什么样。规则本身写在 `AGENTS.md` 第 8 条。
+
+### 4.1 哪些问题必须先查上游
+
+| 问题 | 先看谁 | 看什么 |
+| --- | --- | --- |
+| 角度、频率、波数等**单位** | `scipy.spatial.transform`、`numpy` | 默认单位是什么；要另一种单位靠开关还是靠参数名 |
+| 参数**开关**形状（`degrees=`、`method=`、`kind=`） | scipy | 布尔开关 vs 字符串枚举，默认值取哪个 |
+| **返回形状**（裸值 / 元组 / `Result` / 映射） | scipy 的同类函数 | 单值就返回单值，多值才打包 |
+| **异常类型**（`ValueError` vs 自定义） | scipy、numpy | 无效输入用什么；自定义异常是否进入公开命名空间 |
+| **命名**（`*_deg`、`helper` 前缀） | scipy、numpy | 有没有一致的前后缀习惯 |
+| **数值**方法的容差与收敛判据 | scipy、OpenFOAM | 默认容差量级、按什么量判收敛 |
+
+### 4.2 怎么测（必须真跑，不看印象）
+
+在项目解释器里跑，不要在脑内推断：
+
+```sh
+python3 scripts/dev.py run python -B -c "
+import scipy, inspect
+from scipy.spatial.transform import Rotation
+print(scipy.__version__)
+print(inspect.signature(Rotation.as_euler))"
+```
+
+### 4.3 依据要长什么样
+
+引用块里必须同时有**版本**和**输出**：
+
+```
+scipy 1.18.1  from_euler(seq, angles, degrees: bool = False)
+              as_euler(seq, degrees: bool = False)
+numpy         np.deg2rad / np.rad2deg —— 弧度是默认单位
+```
+
+一段真实的走法（2026-11-18，角度单位）：
+
+- 第一次调用写错了 `seq`（只有单个轴），scipy 抛 `ValueError: Expected 3 axes, got z`；
+- **如果停在这里，结论会是"scipy 没有约定"**——而实际是参数用错了；
+- 改成三轴再跑，才拿到 `degrees: bool = False` 这个默认值。
+
+**所以：一次跑失败不等于上游没有约定。** 先确认自己调对了，再下结论。这一条与
+[观测完整性](observation-integrity.md) 是同一条原则在"查上游"上的实例。
+
+### 4.4 上游没有约定时
+
+不要发明。按 `AGENTS.md` 第 8 条：**先不暴露**，并把"为什么没暴露"写进 `known_limitations`
+或工单（若属于需要人判断危害的那两类）。
