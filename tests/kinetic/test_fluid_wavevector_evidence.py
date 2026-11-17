@@ -123,23 +123,23 @@ def test_fluid_case_state_derived_scales_match_closed_forms(family, jcase):
 
     case = derive_fluid_case(family, jcase)
     expected = reference.case_scales(
-        ms=np.asarray(case["ms"], dtype=float),
-        qs=np.asarray(case["qs"], dtype=float),
-        ns_unit=np.asarray(case["ns_unit"], dtype=float),
-        Ts_unit=np.asarray(case["Ts_unit"], dtype=float),
+        ms=np.asarray(case["ms"], dtype=float).ravel(),
+        qs=np.asarray(case["qs"], dtype=float).ravel(),
+        ns_unit=np.asarray(case["ns_unit"], dtype=float).ravel(),
+        Ts_unit=np.asarray(case["Ts_unit"], dtype=float).ravel(),
         B0=_scalar(case["B0"]),
         n00=_scalar(case["n00"]),
         T00=_scalar(case["T00"]),
     )
-    for index in range(len(case["qs"])):
-        assert reference.relative(float(np.asarray(case["ns0"])[index]), float(expected["ns0"][index])) <= 1e-14
-        assert reference.relative(float(np.asarray(case["Ts0"])[index]), float(expected["Ts0"][index])) <= 1e-14
-        assert reference.relative(float(np.asarray(case["vts"])[index]), float(expected["vts"][index])) <= 1e-14
-        assert reference.relative(float(np.asarray(case["wcs"])[index]), float(expected["wcs"][index])) <= 1e-14
-        assert reference.relative(float(np.asarray(case["wps"])[index]), float(expected["wps"][index])) <= 1e-14
-        assert reference.relative(float(np.asarray(case["rhocs"])[index]), float(expected["rhocs"][index])) <= 1e-13
-        assert reference.relative(float(np.asarray(case["absrhocs"])[index]), float(expected["absrhocs"][index])) <= 1e-13
-        assert float(np.asarray(case["sgns"])[index]) == expected["sgns"][index]
+    for index in range(np.asarray(case["qs"]).size):
+        assert reference.relative(float(np.asarray(case["ns0"]).ravel()[index]), float(expected["ns0"][index])) <= 1e-14
+        assert reference.relative(float(np.asarray(case["Ts0"]).ravel()[index]), float(expected["Ts0"][index])) <= 1e-14
+        assert reference.relative(float(np.asarray(case["vts"]).ravel()[index]), float(expected["vts"][index])) <= 1e-14
+        assert reference.relative(float(np.asarray(case["wcs"]).ravel()[index]), float(expected["wcs"][index])) <= 1e-14
+        assert reference.relative(float(np.asarray(case["wps"]).ravel()[index]), float(expected["wps"][index])) <= 1e-14
+        assert reference.relative(float(np.asarray(case["rhocs"]).ravel()[index]), float(expected["rhocs"][index])) <= 1e-13
+        assert reference.relative(float(np.asarray(case["absrhocs"]).ravel()[index]), float(expected["absrhocs"][index])) <= 1e-13
+        assert float(np.asarray(case["sgns"]).ravel()[index]) == expected["sgns"][index]
     assert reference.relative(_scalar(case["wn"]), float(expected["wn"])) <= 1e-15
     assert reference.relative(_scalar(case["kn"]), float(expected["kn"])) <= 1e-13
     assert reference.relative(_scalar(case["rhocn"]), float(expected["rhocn"])) <= 1e-13
@@ -162,8 +162,9 @@ def test_fluid_dispersion_matrix_structural_identities():
     for max_harmonic in (0, 1):
         result, _scales = _wavevector_matrix(0.1 * 1.0, max_harmonic=max_harmonic)
         table = get_gamma_lpole_coefficients(max_harmonic=max_harmonic)
-        order_lengths = np.asarray(table["order_lengths"], dtype=int)
-        n_sl = int(order_lengths.sum())
+        n_sl = int(np.asarray(table["total_poles"]))
+        # The per-order lengths must add up to the same pole count.
+        assert sum(int(length) for length in table["order_lengths"].values()) == n_sl
         assert result["n_sl"] == n_sl
         assert result["n_sl3"] == 3 * n_sl
         assert np.asarray(result["M"]).shape == (3 * n_sl + 4, 3 * n_sl + 4)
@@ -204,8 +205,9 @@ def test_fluid_dispersion_matrix_kz_sign_gives_identical_kx_spectrum():
     """
     from scirel.kinetic import solve_fluid_wavevector_eigenproblem
 
-    forward, scales = _wavevector_matrix(0.1 * _scalar(_wavevector_matrix(0.0)[1]["kn"]))
-    backward, _ = _wavevector_matrix(-0.1 * _scalar(scales["kn"]))
+    _probe, scales = _wavevector_matrix(0.1)
+    forward = _wavevector_matrix(0.1 * _scalar(scales["kn"]))[0]
+    backward = _wavevector_matrix(-0.1 * _scalar(scales["kn"]))[0]
     assert not np.allclose(np.asarray(forward["M"]), np.asarray(backward["M"]))
     forward_values = np.sort_complex(
         solve_fluid_wavevector_eigenproblem(matrix=np.asarray(forward["M"]), kn=_scalar(scales["kn"]))["eigenvalues"]
@@ -226,7 +228,7 @@ def test_fluid_wavevector_eigensolve_selection_relations():
     """
     from scirel.kinetic import solve_fluid_wavevector_eigenproblem
 
-    result, scales = _wavevector_matrix(0.1 * 1.0)
+    result, scales = _wavevector_matrix(0.1)
     matrix = np.asarray(result["M"])
     kn = _scalar(scales["kn"])
     solution = solve_fluid_wavevector_eigenproblem(matrix=matrix, kn=kn, real_floor_scale=2e-5, keep=4)
