@@ -266,10 +266,16 @@ def selection_floor(stage: str, root: Path = ROOT) -> SelectionFloor | None:
     The set digest in the anchor (``nodeid_set_sha256``) is what proves identity; this is the
     cheap gate that does not need the list.
 
-    No anchor for this stage yet — the first full run of a clone — is not a failure: it is
-    recorded as ``None`` and the run prints that it cannot be compared with an earlier one.
-    A directory that holds anchors but none for this stage is an error, so a stage cannot be
-    exempted by deleting its file.
+    No anchor for this stage is not a failure, in either direction: the first run of a clone
+    has no anchor at all, and the development stage legitimately has none while a release
+    anchor exists — the two stages select different test sets, so one stage's anchor says
+    nothing about the other's. Raising here made every ordinary batch fail the moment a
+    release anchor was committed, which is the opposite of what a merge gate should do.
+
+    The anti-exemption property does not need an exception: anchors are committed files, so
+    removing one is a diff in the pull request that removes it, exactly like the deliberate
+    re-anchor that a removed test requires. The run also prints the floor it used, so a
+    receipt without a ``FLOOR`` line says on its face that nothing was compared.
     """
     directory = root / ANCHOR_DIRECTORY
     if not directory.is_dir():
@@ -302,10 +308,9 @@ def selection_floor(stage: str, root: Path = ROOT) -> SelectionFloor | None:
             )
         )
     if not floors:
-        raise BindingError(
-            f"{ANCHOR_DIRECTORY} holds anchors but none for the {stage} stage, so this run has"
-            " nothing to compare its selection against"
-        )
+        # Nothing to compare against: report it, do not fail. See the docstring for why an
+        # exception here broke the ordinary merge gate rather than protecting it.
+        return None
     # The newest anchor wins: re-anchoring is how a deliberate removal lowers the floor. On a
     # timestamp tie the larger count wins, so an ambiguous pair can never lower the gate.
     return max(floors, key=lambda floor: (floor.checked_at, floor.selected, floor.anchor))

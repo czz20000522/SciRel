@@ -211,15 +211,24 @@ def test_the_floor_is_the_newest_anchor_of_the_same_stage(tmp_path):
     assert floor.anchor.endswith("release-new.json")
 
 
-def test_no_anchor_yet_is_not_a_failure_but_a_directory_without_the_stage_is(tmp_path):
+def test_a_stage_without_its_own_anchor_has_no_floor_rather_than_an_error(tmp_path):
+    """Every "no anchor for this stage" case is informational, in both directions.
+
+    The first version raised when the directory held anchors for a different stage, to stop
+    a stage being exempted by deleting its file. That rule made the development stage
+    unrunnable the moment a release anchor was committed, because the two stages select
+    different test sets. Exemption is already visible: anchors are committed, so deleting one
+    is a diff in the pull request that deletes it, and the run prints the floor it used.
+    """
     assert check_all.selection_floor("release", tmp_path) is None
     directory = tmp_path / check_all.ANCHOR_DIRECTORY
     directory.mkdir(parents=True)
     (directory / "README.md").write_text("# none\n", encoding="utf-8")
     assert check_all.selection_floor("release", tmp_path) is None
     (directory / "dev.json").write_text(json.dumps(_anchor_document(10, stage="dev")), "utf-8")
-    with pytest.raises(check_all.BindingError, match="none for the release stage"):
-        check_all.selection_floor("release", tmp_path)
+    assert check_all.selection_floor("release", tmp_path) is None
+    floor = check_all.selection_floor("dev", tmp_path)
+    assert floor is not None and floor.selected == 10
 
 
 def test_a_malformed_anchor_is_a_binding_error_not_a_silent_skip(tmp_path):
