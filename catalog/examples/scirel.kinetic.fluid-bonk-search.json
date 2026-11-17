@@ -109,22 +109,23 @@
   "zh": "修正的 BONK 有界根搜索"
  },
  "verification": {
-  "evidence_ceiling": "The successful scientific regression is a bounded case2 single-frequency self-consistency/regression check, not an independent BONK physical reference. The direct failure tests cover axis ordering and exception propagation; controlled solver termination tests the candidate protocol rather than convergence. The shared test file also exercises other assets, which do not independently certify this search.",
-  "known_limitations": [
-   "BONK returns every attempted row and an unverified row with `root_valid=false` when no root passes the declared residual gate; that row is a search candidate, not a physical root.",
-   "No cross-thread/platform invariance, arbitrary precision, all physical-mode completeness or unconditional nonlinear convergence.",
-   "J/L pole and finite-harmonic approximation errors remain distinct from relation consistency and numerical residual.",
-   "Pure-Python execution is tested on this host; native parity is not claimed.",
-   "Successful default-axis, cases1/3 and broader frequency behavior are not certified by the direct single-frequency regression. No independent BONK physical oracle is bound."
-  ],
   "scope": [
-   "Direct successful case2 at omega=0.63*wn checks candidate shape, root_valid, the 1e-8 residual gate and the retained wavevector regression.",
-   "Genuine harmonic-pole failures at first, middle, last and only frequency propagate rather than returning a fabricated earlier row.",
-   "Injected operator exceptions retain their real identity; controlled finite solver termination preserves five real candidates and root_valid=false without weakening the residual gate."
+   "Independent basis: the searched root is fed back through evaluate_fluid_dispersion, a different public function with no knowledge of the search, and the determinant evaluated there must fall below the declared 1e-8 gate, while a 0.1% displacement of the root lifts it by more than eight orders of magnitude.",
+   "That pair of assertions is what distinguishes a root from a well-shaped number; a tolerance alone cannot make a non-root pass it.",
+   "The declared dual residual fields and the singular-value gap are checked against the same gate, so the reported near-null direction is corroborated rather than quoted.",
+   "Test matrix: BONK case 2 at omega = 0.63 wn, single frequency, with the displaced-root control at 1.001x.",
+   "Failure matrix: one assertion per channel -- a root that does not zero the dispersion, a fabricated valid flag, a residual field inconsistent with the recomputed determinant, and a missing singular-value gap.",
+   "Precision budget, written before measurement: the 1e-8 residual gate the search itself declares, with the 1e4 separation requirement against the displaced evaluation."
   ],
   "tests": [
+   "tests/kinetic/test_fluid_deck_solver_evidence.py",
    "tests/kinetic/test_fluid_spectrum_full.py",
    "tests/kinetic/test_bonk_failure_semantics.py"
+  ],
+  "evidence_ceiling": "Bounded to BONK case 2, J8, max_harmonic 0, at omega = 0.63 wn. Established by feeding the returned normalised root back through evaluate_fluid_dispersion and finding |det| = 2.5e-12 against a 1e-8 gate and 0.73 at a 0.1% displacement. Excluded scope: cases 1 and 3, the default frequency ladder, physical mode identity against an external BONK solver, and the convergence claim of the search.",
+  "known_limitations": [
+   "The BONK deck constants and the pole tables have no independent source in this repository and are recorded as cannot establish.",
+   "The root's physical identity as a named mode is not established; only that it zeroes the declared dispersion."
   ]
  },
  "version": {

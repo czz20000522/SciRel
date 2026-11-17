@@ -108,19 +108,21 @@
   "zh": "完整 SI 流体案例状态"
  },
  "verification": {
-  "evidence_ceiling": "Bounded to the declared relation: vthermal=sqrt(2 kB T/m), signed rho=sqrt(kB T/m)/Omega, wn=min abs(Omega), kn=1/max abs(rho); temperatures are converted from eV to K with 1.6022e-19/kB. Evidence: test_fluid_spectrum_full.py (9 recorded test functions; shared-file coverage only; self-consistency/regression only); the contract example ran. Excluded scope: No arbitrary species model construction through case controls; Global charge-neutral or self-consistent background equilibrium proof for electron-only case2.",
-  "known_limitations": [
-   "Only shared-file coverage is bound (test_fluid_spectrum_full.py); no asset-specific failure/limit probe is recorded.",
-   "No cross-thread/platform invariance, arbitrary precision, all physical-mode completeness or unconditional nonlinear convergence.",
-   "J/L pole and finite-harmonic approximation errors remain distinct from relation consistency and numerical residual.",
-   "No independent or external oracle is recorded; the evidence is self-consistency/regression only.",
-   "Pure-Python execution is tested on this host; native parity is not claimed."
-  ],
   "scope": [
-   "BONK cases1/2/3 and EM cases1/2; complete fixed source constants/state."
+   "Independent basis: the fixed source constants are compared against published values rather than copied -- c**2 is exact by the SI definition of the metre, and epsilon0, k_B, the elementary charge and the proton mass reproduce the CODATA-2014 literals.",
+   "Every derived scale is recomputed at 40 mpmath digits from the declared deck inputs through the published relations v_t = sqrt(2 k_B T/m), omega_c = qB0/m, omega_p**2 = n q**2/(eps0 m), rho = sqrt(k_B T/m)/omega_c, k_n = 1/max|rho|, omega_n = min|omega_c|, and vA and mu0 from c2 and epsilon0.",
+   "Test matrix: all five declared cases (BONK 1/2/3, EM 1/2), each checking every derived vector element, the normalisation scalars, and the EM parallel-wavenumber rule kz = 0.1 kn.",
+   "Failure matrix: one assertion per channel -- each derived scale, the sign pattern of the gyroradius, the eV-to-kelvin conversion, the normalisation selectors, and the published constants.",
+   "Precision budget, written before measurement: 1e-14 relative on the closed forms, 3e-5 on the two documented five-digit roundings (me, eV-to-joule)."
   ],
   "tests": [
+   "tests/kinetic/test_fluid_wavevector_evidence.py",
    "tests/kinetic/test_fluid_spectrum_full.py"
+  ],
+  "evidence_ceiling": "Bounded to the declared relation between the fixed deck inputs and the derived scales. Established by an independent 40-digit recomputation of every derived scalar and by comparison of the fixed constants against published values; measured deviations are at most 1e-15 relative on the derived scales. Excluded scope: any independent source for the case tables themselves (species masses beyond the published constants, densities, temperatures, B0, kz), arbitrary species model construction through case controls, and a global charge-neutral or self-consistent background equilibrium proof for the electron-only case.",
+  "known_limitations": [
+   "The BONK kz values (10.0, 0.0, 1.0) are bare deck numbers with no independent source, so only their finiteness is asserted; the EM rule kz = 0.1 kn is the one relation that is checkable.",
+   "me = 9.1094e-31 and the eV-to-joule factor 1.6022e-19 are five-significant-digit roundings of CODATA-2014, not exact; they are compared at 3e-5 and stated as roundings."
   ]
  },
  "version": {

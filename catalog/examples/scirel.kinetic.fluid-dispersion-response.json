@@ -117,20 +117,21 @@
   "zh": "Maxwell 色散响应"
  },
  "verification": {
-  "evidence_ceiling": "Bounded to coherent SI fluid dispersion at complex/zero kz, including kx=0 limits and J8/J15 selections. Evidence: `test_fluid_spectrum_full.py` contains 9 test functions, 2 of which reference `evaluate_fluid_dispersion`, and is shared by 6 assets; only shared-file coverage is bound, so a pass is file-level rather than asset-isolated; the bounded example was executed by this audit. Oracle: self-consistency/regression only. It does not establish genuine nonzero-residue cyclotron poles at zero kz, or unmagnetized/zero-temperature/density/static-frequency limits.",
-  "known_limitations": [
-   "The direct functions cover zero-wavenumber finite signed reflection and a zero-weight harmonic boundary inside the six-asset-shared `test_fluid_spectrum_full.py`; genuine nonzero-residue cyclotron poles at zero `kz` remain the declared excluded branch.",
-   "No cross-thread/platform invariance, arbitrary precision, all physical-mode completeness or unconditional nonlinear convergence.",
-   "J/L pole and finite-harmonic approximation errors remain distinct from relation consistency and numerical residual.",
-   "The response is a local algebraic SI evaluation using the declared historical constants; no unmagnetized/zero-temperature/density/static-frequency limit is certified.",
-   "Pure-Python execution is tested on this host; native parity is not claimed."
-  ],
   "scope": [
-   "Coherent SI state, complex kx, signed and zero kz; analytic nonresonant kx=0 limits.",
-   "Finite5/15 and full-harmonic J8 models, distinguished in output contract."
+   "Independent basis: at zero transverse wavenumber the dielectric tensor's (0,2) and (1,2) entries vanish identically, so D is block upper triangular and det(D) = ((K00 - nz^2)(K11 - nz^2) + K01^2) K22 holds as an algebraic identity; the right-hand side is recomputed at 40 mpmath digits from the returned tensor and the declared nx, nz.",
+   "The declared hermitian pairing of the tensor (K10 = -K01, K20 = K02) is checked at kx = 0 alongside the determinant identity.",
+   "Test matrix: the BONK case-2 state at a fixed frequency, evaluated both in the magnetized branch (nonzero kz) and in the separate kp = 0 branch.",
+   "Failure matrix: one assertion per channel -- wrong dielectric determinant, wrong tensor pairing, wrong kx = 0 block structure, and a kp = 0 branch that does not reduce the same way.",
+   "Precision budget, written before measurement: 1e-14 relative on the determinant identity, which is an algebraic statement rather than an accuracy claim."
   ],
   "tests": [
+   "tests/kinetic/test_fluid_wavevector_evidence.py",
    "tests/kinetic/test_fluid_spectrum_full.py"
+  ],
+  "evidence_ceiling": "Bounded to coherent SI fluid dispersion at complex or zero kz, the kx = 0 limits, and the J8/J15 harmonic selections. Established by an algebraic Schur identity on the returned tensor at 40 digits and by the declared tensor pairing. Excluded scope: genuine nonzero-residue cyclotron poles at zero kz, the unmagnetized/zero-temperature/density/static-frequency limits, and any independent derivation of the pole and harmonic tables.",
+  "known_limitations": [
+   "The p = -omega/(omega - n omega_c) zero-kz response is rational in omega, but the harmonic weights that multiply it come from the deck tables, which are recorded as cannot establish.",
+   "The tensor is only checked at kx = 0, where the off-diagonal field couplings vanish; the general-kx determinant has no independent reference here."
   ]
  },
  "version": {

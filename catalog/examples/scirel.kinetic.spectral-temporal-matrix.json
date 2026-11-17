@@ -183,20 +183,22 @@
  },
  "verification": {
   "scope": [
-   "Current SciRel implementation and the repository tests listed in this contract cover the declared public ports and numerical relation.",
-   "The example exercises one bounded representative case; it does not extend applicability beyond the declared preconditions."
+   "Independent basis: the cold, drift-free, unmagnetized generator reduces to closed-form branches omega = +-omega_p and omega = +-sqrt(omega_p**2 + k**2 c**2), and the assembly is checked against them at 50 mpmath digits.",
+   "The nonrelativistic inertia matrix is exactly the identity, so the generalized pencil is standard and the cold reductions above apply verbatim; the identity is asserted rather than assumed.",
+   "Test matrix: six wavevectors from 1e-4 to 5e-3 1/m including an oblique one, each checking both branches, the twofold transverse degeneracy, the signed longitudinal pair and the absence of an imaginary part.",
+   "The declared scales are a similarity transform: the frequency set is invariant under an unrelated positive rescaling of the state columns.",
+   "Failure matrix: one assertion per channel -- wrong omega_p (branch values), wrong curl sign (imaginary pair), wrong multiplicity (degeneracy counts), wrong scaling (invariance), wrong branch normalisation (max|Im omega|).",
+   "Precision budget, written before measurement: 1e-12 relative on the closed forms, which is four orders above the mpmath floor and four orders below the 1e-4 binary64 backward error an unpreconditioned solve of this pencil carries.",
+   "The binary64 backward-error floor is measured, not assumed: ||M|| is c**2*k ~ 1e14, so eps*||M||/omega_p ~ 1e-4."
   ],
   "tests": [
+   "tests/kinetic/test_spectral_cold_fluid_evidence.py",
    "tests/kinetic/test_spectral_evolution.py"
   ],
-  "evidence_ceiling": "Bounded to the local fluid/Maxwell generator with relativistic tangent inertia and algebraic anisotropic pressure. Evidence: `test_spectral_evolution.py` contains 13 test functions, 6 of which reference `assemble_spectral_matrix`, and is shared by 4 assets; only shared-file coverage is bound, so a pass is file-level rather than asset-isolated; the bounded example was executed by this audit. Oracle: self-consistency/regression only. It does not establish full entropy/CGL/kinetic evolution, or noncovariant-free thermodynamics.",
+  "evidence_ceiling": "Bounded to the local fluid/Maxwell generator with algebraic anisotropic pressure, on a state whose pressure, drift, density-gradient and magnetic terms are exactly zero. Established by an independent high-precision recomputation of the cold closed-form branches and of the 50-digit spectrum of the assembled matrix; measured deviations are at most 1e-17 on the branch values, and the solvers' own binary64 path reproduces them to 5e-17. Excluded scope: warm or magnetized branches, relativistic inertia, and any claim that the assembled generator reproduces an external kinetic spectrum.",
   "known_limitations": [
-   "Effective local algebraic thermal model; not full entropy evolution, CGL, kinetic physics, or the unmagnetized drift-directed Appendix A model.",
-   "Background sources and prescribed acceleration per mass have zero perturbation response. Gradients define a local/eikonal symbol, not an inhomogeneous global Maxwell-Gauss boundary solution.",
-   "The magnetic longitudinal pressure-divergence factor two is a phenomenological mirror correction; no universal kinetic mirror threshold or experimental accuracy claim.",
-   "Relativistic inertia is d(gamma*v)/dv with noncovariant pressure and friction; no fully covariant thermodynamics claim.",
-   "Six direct functions in the four-asset-shared `test_spectral_evolution.py` cover collision/dissipation, gradient linearization, relativistic boundary rejection, SI arity and explicit collision categories; no eigensolve is called here.",
-   "The generator rejects luminal `rel=1` drift and uses fixed historical constants; no native/reference-runtime parity is claimed."
+   "BONK/PDRF deck constants and the J-pole/harmonic tables have no independent source in this repository; they are recorded as cannot establish, and only relations between the declared inputs and the returned values are established.",
+   "The cold reduction is one point of the parameter space; it does not certify the thermal or gyrotropic blocks, which have no closed form here."
   ]
  },
  "references": [
