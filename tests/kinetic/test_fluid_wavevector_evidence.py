@@ -280,9 +280,12 @@ def test_fluid_dispersion_response_zero_transverse_determinant_identity():
     """
     from scirel.kinetic.fluid_spectrum import evaluate_fluid_dispersion
 
-    for kz_scale in (1.0, 0.0):
+    # The BONK case-2 deck carries kz = 0, so the magnetised branch is reached by
+    # overriding the state's parallel wavenumber rather than by trusting the deck.
+    kn = _scalar(_wavevector_matrix(0.1)[1]["kn"])
+    for kz in (0.1 * kn, 0.0):
         state = _dispersion_state("bonk", 2)
-        state["kz"] = kz_scale * _scalar(state["kz"])
+        state["kz"] = kz
         result = evaluate_fluid_dispersion(0.0, state)
         tensor = np.asarray(result["K"])
         assert abs(tensor[0, 2]) == 0.0 and abs(tensor[1, 2]) == 0.0
@@ -309,3 +312,24 @@ def test_fluid_dispersion_response_zero_transverse_determinant_identity():
         predicted = ((k00 - nz**2) * (k11 - nz**2) + k01**2) * k22
         measured = complex(np.asarray(result["determinant"]).ravel()[0])
         assert reference.relative(abs(measured), abs(complex(predicted))) <= 1e-14
+
+        if kz == 0.0:
+            # Zero parallel wavenumber selects a separate code branch whose response
+            # is the rational p = -omega/(omega - n omega_c) rather than the plasma
+            # dispersion function.  That branch has a closed form for the transverse
+            # off-diagonal entry:
+            #   K01 = (omega_p**2/omega**2) * (j/2) * (p(1) - p(-1))
+            # and it is not transpose invariant (K10 = -K01), which is what makes an
+            # axis swap of the returned tensor observable at all.
+            w = mp.mpf(float(state["w"]))
+            omega_p2 = mp.mpf(float(_scalar(state["wps2"])))
+            omega_c = mp.mpf(float(_scalar(state["wcs"])))
+            p_plus = -w / (w - omega_c)
+            p_minus = -w / (w + omega_c)
+            predicted_k01 = (omega_p2 / w**2) * (mp.mpf(0) + mp.mpf(1) * 0.5j) * (p_plus - p_minus)
+            assert reference.relative(
+                abs(complex(tensor[0, 1])), abs(complex(predicted_k01))
+            ) <= 1e-13
+            assert reference.relative(
+                abs(complex(tensor[1, 0])), abs(complex(-predicted_k01))
+            ) <= 1e-13
