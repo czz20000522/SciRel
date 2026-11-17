@@ -29,7 +29,6 @@ from __future__ import annotations
 
 import mpmath as mp
 import numpy as np
-import pytest
 
 import _bessel_reference as bessel
 
