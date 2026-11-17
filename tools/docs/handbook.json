@@ -821,7 +821,7 @@
      "title": "区分坐标内点差分与实际弧长导数",
      "introduction": "非均匀坐标入口以局部二次式求内点导数；弧长入口按实际相邻弦长并使用单侧端点公式。下降坐标应按对应合同反转输入和输出，不额外改变物理导数符号。",
      "assets": [
-      "scirel.numerics.nonuniform-derivatives",
+      "scirel.geometry.nonuniform-derivatives",
       "scirel.sampling.nonuniform-first-derivative",
       "scirel.fieldline.arclength-derivative"
      ]

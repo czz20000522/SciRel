@@ -814,7 +814,7 @@
      "title": "Distinguishing coordinate interior differences from true arc-length derivatives",
      "introduction": "The nonuniform-coordinate entry point computes interior derivatives with a local quadratic; the arc-length entry point uses actual adjacent chord lengths and one-sided endpoint formulas. Descending coordinates should reverse inputs and outputs under the corresponding contract without additionally changing the sign of the physical derivative.",
      "assets": [
-      "scirel.numerics.nonuniform-derivatives",
+      "scirel.geometry.nonuniform-derivatives",
       "scirel.sampling.nonuniform-first-derivative",
       "scirel.fieldline.arclength-derivative"
      ]

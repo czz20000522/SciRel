@@ -1,7 +1,7 @@
 """Independent evidence for the truncated pseudo-inverse and the nonuniform derivative.
 
 Assets: ``scirel.numerics.truncated-svd-inverse``,
-``scirel.numerics.nonuniform-derivatives``.
+``scirel.geometry.nonuniform-derivatives``.
 
 Evidence sources, independent of the implementations and their fixtures:
 
