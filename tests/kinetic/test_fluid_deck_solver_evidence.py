@@ -66,9 +66,10 @@ def test_fluid_em_matrix_determinant_equals_eigenvalue_product():
     product = reference.eigenproduct(np.linalg.eigvals(matrix))
     assert abs(determinant) > 0.0
     assert reference.relative(abs(product), abs(determinant)) <= DETERMINANT_BUDGET
-    # The returned poles are the J-pole table the assembly consumed, so their count
-    # is part of the declared structure rather than an incidental number.
-    assert np.asarray(result["poles"]).size >= 8
+    # The returned pole table is the one the assembly consumed, so its declared
+    # order is part of the structure rather than an incidental number.
+    assert int(np.asarray(result["poles"]["J"]).ravel()[0]) == 8
+    assert int(np.asarray(result["poles"]["n"]).ravel()[0]) == 8
 
 
 def test_fluid_em_spectrum_spectrum_matches_its_matrix():
@@ -85,11 +86,18 @@ def test_fluid_em_spectrum_spectrum_matches_its_matrix():
     state = _case_state("em", 2, 0.83)
     result = solve_fluid_em(2, max_harmonic=0, omegas=[state["w"]])
     matrix = np.asarray(result["matM"])
-    spectrum = np.asarray(result["kx"]).ravel()
+    # ``spectra`` holds the complete matrix spectrum; ``kx`` is the subset that
+    # passed the positive-real-part filter, and ``kxx``/``roots`` are its five
+    # leading candidates.
+    spectrum = np.asarray(result["spectra"]).ravel()
+    filtered = np.asarray(result["kx"]).ravel()
     candidates = np.asarray(result["kxx"]).ravel()
     roots = np.asarray(result["roots"]).ravel()
     assert matrix.shape == (40, 40)
-    assert spectrum.size == matrix.shape[0]
+    assert spectrum.size == matrix.shape[0] == 40
+    assert 5 <= filtered.size <= spectrum.size
+    for value in filtered:
+        assert np.min(np.abs(spectrum - value)) <= 1e-9 * max(1.0, abs(value))
 
     determinant = reference.determinant_high_precision(matrix)
     product = reference.eigenproduct(spectrum)
