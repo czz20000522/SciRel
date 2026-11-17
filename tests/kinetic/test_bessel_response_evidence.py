@@ -64,7 +64,7 @@ def test_ronnmark_r_matches_the_bessel_harmonic_sum(x, lam):
 
     result = evaluate_ronnmark_r(x, lam)
     reference = bessel.ronnmark_r(x, lam)
-    budget = _budget(result["branch"])
+    budget = _budget(result["branch"], 0)
     assert bessel.relative(result["R"], reference) <= budget, (
         f"branch {result['branch']} rel={bessel.relative(result['R'], reference):.3e}"
     )
