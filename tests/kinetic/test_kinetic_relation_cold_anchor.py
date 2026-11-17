@@ -124,9 +124,7 @@ def test_declared_graph_structure():
     """The returned graph carries the declared branch and ordering shapes."""
     from scirel.kinetic.kinetic_dispersion_relation import evaluate_kinetic_dispersion_relation
 
-    result = evaluate_kinetic_dispersion_relation(
-        Ts_unit=[1.0], omega_frac=2.0, **COLD_KWARGS
-    )
+    result = evaluate_kinetic_dispersion_relation(Ts_unit=[1.0], omega_frac=2.0, **COLD_KWARGS)
     assert np.shape(result["graph_order"]) == (6,)
     assert np.shape(result["branches"]) == (8,)
 
