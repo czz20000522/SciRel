@@ -129,20 +129,20 @@
   "zh": "Maxwellian 静电响应"
  },
  "verification": {
-  "evidence_ceiling": "Bounded Maxwellian dielectric evidence includes direct Faddeeva-identity checks in test_generalized_dispersion_d2.py, small-k cold-limit and array/scalar checks in test_generalized_dispersion_d2_successor.py, and response alias calls in test_generalized_dispersion_numerical_repair.py. The repair test compares epsilon(2,k) with the independent Gaussian-moment expansion 0.75-3*k^2/16-15*k^4/64 for k=1e-5,1e-7,1e-9,1e-10 at absolute error below 1e-13. Shared-file success is not per-asset full coverage; these bounded references do not certify arbitrary analytic continuation or external physical applicability.",
-  "known_limitations": [
-   "epsilon_error is an estimate rather than a rigorous enclosure.",
-   "Finite inputs can have unrepresentable complex response; no root is inferred from an evaluation.",
-   "Direct analytic-identity, small-k and shape checks are bound through the three named files, including the response alias; their sampled cases do not establish global accuracy."
-  ],
   "scope": [
-   "Current SciRel implementation and the repository tests listed in this contract cover the declared public ports and numerical relation.",
-   "The example exercises one bounded representative case; it does not extend applicability beyond the declared preconditions."
+   "Independent basis: the returned normalised argument z equals omega/(sqrt(2) k v_t) exactly, recomputed at 40 digits, which fixes the one scale this port could be checked against without guessing.",
+   "The returned mode frequency zeroes the dispersion the same module reports, recomputed and cross-checked with a 0.1% displacement control: a solver that returned a plausible number would pass a range check but not this pair.",
+   "The solver's own normalised residual is required to agree that the returned frequency is a root, so the two independent statements cannot both be satisfied by an unsolved value.",
+   "Failure matrix: one assertion per channel -- a wrong normalised argument, a frequency that does not zero the reported dispersion, and a displacement that does not lift the residual.",
+   "Precision budget, written before measurement: 1e-14 on the normalised argument, 1e-10 on the dispersion at the root, and a 1e6 separation under a 0.1% displacement."
   ],
   "tests": [
-   "tests/kinetic/test_generalized_dispersion_d2.py",
-   "tests/kinetic/test_generalized_dispersion_d2_successor.py",
-   "tests/kinetic/test_generalized_dispersion_numerical_repair.py"
+   "tests/kinetic/test_generalized_dispersion_evidence.py"
+  ],
+  "evidence_ceiling": "Bounded to the declared normalised electrostatic dispersion at the reported argument and at one solved mode. Established by the exact argument relation and by the root-plus-displacement pair, measured at 1.5e-14 and a 4.5e-2 displacement value. Excluded scope: the identification of the returned D with the textbook 1 + (1 + z Z)/k**2, the warm-plasma asymptotic branch beyond |z| = 12, and any claim that the returned mode is a named physical mode.",
+  "known_limitations": [
+   "The mapping from the returned D to the textbook dielectric form 1 + (1 + z Z(z))/k**2 was tested and failed at 0.75 relative, so D is not that quantity here; the mapping is recorded as cannot establish rather than asserted.",
+   "Passing only the real part of the solved frequency selects a different branch: the reported dispersion is 0.045+0.064 there against 1.5e-14 at the full complex frequency. That is a difference of kind, not of value, and is not asserted in either direction."
   ]
  },
  "version": {

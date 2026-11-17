@@ -177,20 +177,20 @@
   "zh": "种子 Maxwellian 静电模态"
  },
  "verification": {
-  "evidence_ceiling": "Bounded to one seeded Maxwellian mode. Direct solver calls occur in test_maxwellian_root_checks_residual, test_small_k_maxwellian_limit_is_three_quarters_and_false_seed_rejected, and the solve alias in test_small_k_root_does_not_accept_nonroot_seed and test_successful_roots_pass_normalized_physical_residual. The small-k checks use an independent Gaussian-moment dielectric expansion; the successful-root tests enforce normalized residual and estimated-error gates and reject a one-evaluation budget. They do not establish global root selection, uniqueness, all branches or arbitrary analytic continuation; not every test in the shared files covers this solver.",
-  "known_limitations": [
-   "The estimated error is not a rigorous enclosure.",
-   "No uniqueness, least-damped branch or global root selection claim; supplied seeds select branches.",
-   "Four named direct test functions across the three bound files include two solve-alias calls in the numerical-repair file; independent small-k references remain bounded to their sampled k values and do not certify all modes."
-  ],
   "scope": [
-   "Current SciRel implementation and the repository tests listed in this contract cover the declared public ports and numerical relation.",
-   "The example exercises one bounded representative case; it does not extend applicability beyond the declared preconditions."
+   "Independent basis: the returned normalised argument z equals omega/(sqrt(2) k v_t) exactly, recomputed at 40 digits, which fixes the one scale this port could be checked against without guessing.",
+   "The returned mode frequency zeroes the dispersion the same module reports, recomputed and cross-checked with a 0.1% displacement control: a solver that returned a plausible number would pass a range check but not this pair.",
+   "The solver's own normalised residual is required to agree that the returned frequency is a root, so the two independent statements cannot both be satisfied by an unsolved value.",
+   "Failure matrix: one assertion per channel -- a wrong normalised argument, a frequency that does not zero the reported dispersion, and a displacement that does not lift the residual.",
+   "Precision budget, written before measurement: 1e-14 on the normalised argument, 1e-10 on the dispersion at the root, and a 1e6 separation under a 0.1% displacement."
   ],
   "tests": [
-   "tests/kinetic/test_generalized_dispersion_d2.py",
-   "tests/kinetic/test_generalized_dispersion_d2_successor.py",
-   "tests/kinetic/test_generalized_dispersion_numerical_repair.py"
+   "tests/kinetic/test_generalized_dispersion_evidence.py"
+  ],
+  "evidence_ceiling": "Bounded to the declared normalised electrostatic dispersion at the reported argument and at one solved mode. Established by the exact argument relation and by the root-plus-displacement pair, measured at 1.5e-14 and a 4.5e-2 displacement value. Excluded scope: the identification of the returned D with the textbook 1 + (1 + z Z)/k**2, the warm-plasma asymptotic branch beyond |z| = 12, and any claim that the returned mode is a named physical mode.",
+  "known_limitations": [
+   "The mapping from the returned D to the textbook dielectric form 1 + (1 + z Z(z))/k**2 was tested and failed at 0.75 relative, so D is not that quantity here; the mapping is recorded as cannot establish rather than asserted.",
+   "Passing only the real part of the solved frequency selects a different branch: the reported dispersion is 0.045+0.064 there against 1.5e-14 at the full complex frequency. That is a difference of kind, not of value, and is not asserted in either direction."
   ]
  },
  "version": {

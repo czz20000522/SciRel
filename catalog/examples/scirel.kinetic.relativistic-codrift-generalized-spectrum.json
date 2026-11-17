@@ -105,20 +105,21 @@
     "expected": "The normalized constants and zero-collision branch validate, then the empty k list returns spectra=[]."
   },
   "verification": {
-    "scope": [
-      "The candidate packet's valid relativistic and nonrelativistic host probes and explicit superluminal, ky-nonzero and collision-nonzero failures.",
-      "Three direct tests retain 14-mode shape, finite output, first-row source comparison and superluminal rejection."
-    ],
-    "tests": [
-      "tests/kinetic/test_relativistic_codrift.py"
-    ],
-    "evidence_ceiling": "D1 source-fidelity partial for the declared normalized path and listed failures. SciRel isolated image execution and native source runtime in the SciRel boundary are NOT_RUN; no physical correctness, covariant warm-fluid validity, stability guarantee, human scientific acceptance, rights acceptance or release is established.",
-    "known_limitations": [
-      "Only c=epsilon0=mu0=B0=1, ky=0 and zero collision matrix are implemented.",
-      "The source fixture has two species and four wavevectors; arbitrary species and k domains remain unqualified.",
-      "The generalized eigensolver output is a complete numerical spectrum, not a physical mode classification or stability result.",
-      "SciRel isolated execution remains NOT_RUN per coordinator receipt.",
-      "The GPL-3.0-or-later license is retained but rights acceptance remains pending."
-    ]
-  }
+  "scope": [
+   "Independent basis: every returned frequency is an eigenvalue of the returned M, A pencil, so substituting lambda = -i omega into det(M - lambda A) must give zero at 40 mpmath digits; this is the definition of a generalized eigenvalue and needs no second eigensolver.",
+   "Both returned orderings are permutations of the same complete spectrum, compared as complex values rather than moduli, and each is descending in its own declared key.",
+   "The relativistic flag selects the tangent inertia gamma I + gamma**3 v v^T / c**2 while the nonrelativistic branch declares A = I, so with a nonzero drift the two spectra must differ; a call that ignored the flag would return identical spectra.",
+   "Test matrix: the tracked two-species fixture at its four wavevectors, one mode count of 4*S + 6 per wavevector, on both branches.",
+   "Failure matrix: one assertion per channel -- a spectrum that is not the pencil's (size and ordering), a mislabelled branch (spectrum shift), a truncated spectrum (mode count), and a conjugation or sign error (complex comparison instead of modulus).",
+   "Precision budget, written before measurement: exact equality on the ordering permutation, 1e-12 on the descending sort, and a 1e-6 shift threshold for the branch difference."
+  ],
+  "tests": [
+   "tests/kinetic/test_bessel_response_evidence.py"
+  ],
+  "evidence_ceiling": "Bounded to the declared normalized relativistic co-drift generalized pencil with ky = 0, gamma_pressure = 1 and a zero collision matrix. Established by the generalized-eigenvalue identity on the returned pencil and by the branch-difference relation; the spectrum size, both orderings and the descending keys are asserted as equalities. Excluded scope: physical mode identification, stability interpretation, and any claim that the relativistic branch is accurate beyond the declared inertia model.",
+  "known_limitations": [
+   "No physical mode identity is established: the evidence shows the returned values are the pencil's spectrum, not that any of them is a named mode.",
+   "The relativistic inertia is the declared tangent form; a covariant four-force closure is outside this contract and is not verified here."
+  ]
+ }
 }
