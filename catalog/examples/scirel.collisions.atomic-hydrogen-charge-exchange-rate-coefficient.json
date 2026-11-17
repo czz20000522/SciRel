@@ -140,6 +140,11 @@
       "No independent experimental rate measurement or public distribution licence is established.",
       "Cannot establish: the absolute table values of this relation. They need the Janev (1995) chapter 11 charge-exchange rate tables, which are not in this repository and not available from a free source, so only units, the declared functional form and cross-asset consistency are established; no coefficient or absolute rate is asserted against a published number",
       "The high-energy branch is a beam-target rate, not a pure thermal rate coefficient: energy_ev enters as the beam speed rather than only through the 250 keV quadrature cut. Whether exposing that dependence through this signature is the intended API is recorded in tickets/scope/T-2026-0800.md and is not decided here."
-    ]
+    ],
+    "basis": {
+      "kind": "none",
+      "statement": "No independent measured or computed rate is claimed: the high-energy branch is a model of an equal-mass Maxwellian target, the absolute table values cannot be established, and neither an unbounded cross-section tail above 250 keV nor a broader distribution or transport closure is covered.",
+      "source": "tests/collisions/test_atomic_hydrogen_charge_exchange_rate.py"
+    }
   }
 }

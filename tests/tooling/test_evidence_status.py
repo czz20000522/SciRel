@@ -85,3 +85,38 @@ def test_an_unknown_asset_is_unobserved_not_a_pass(tmp_path):
 def test_the_repository_scans_without_crashing():
     """The scan must run on the real catalog; its count is a lead, so it is not pinned."""
     assert evidence_status.main(["--scan-weak-basis", "--root", str(ROOT)]) == 0
+
+
+def test_the_summary_keeps_none_and_not_declared_apart(tmp_path):
+    """A gap count must never be presented as a proven count."""
+    root = tmp_path
+    (root / evidence_status.BASELINE).parent.mkdir(parents=True, exist_ok=True)
+    (root / evidence_status.BASELINE).write_text(
+        json.dumps({"entries": [{"asset_id": "scirel.x.pending", "reason": "not migrated"}]}),
+        encoding="utf-8",
+    )
+    directory = tmp_path / evidence_status.CATALOG
+    directory.mkdir(parents=True, exist_ok=True)
+    (directory / "scirel.x.proven.json").write_text(
+        json.dumps(
+            {
+                "asset_id": "scirel.x.proven",
+                "verification": {
+                    "scope": ["Checked against an independent high-precision reference."],
+                    "known_limitations": [],
+                    "evidence_ceiling": "bounded",
+                    "basis": {
+                        "kind": "independent-recomputation",
+                        "statement": "recomputed independently",
+                    },
+                },
+            }
+        ),
+        encoding="utf-8",
+    )
+    _contract(tmp_path, "scirel.x.pending", ["Fit reproduces the table."])
+    counts = evidence_status.summary(root)
+    assert counts["contracts"] == 2
+    assert counts["by_kind"]["not-declared"] == 1
+    assert counts["pending"] == 1
+    assert "not proof" in counts["note"]
