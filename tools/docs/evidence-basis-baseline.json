@@ -4,34 +4,6 @@
   "why": "c1_evidence_coverage infers the basis from prose with a fixed phrase list; on this catalog 106 assets carry basis wording that list does not recognise, so the inference cannot answer 'does this capability stand on evidence'. The field replaces the inference.",
   "entries": [
     {
-      "asset_id": "scirel.closures.boltzmann-quasineutrality",
-      "reason": "not yet migrated: verification.basis absent"
-    },
-    {
-      "asset_id": "scirel.closures.discrete-vector-error-feedback",
-      "reason": "not yet migrated: verification.basis absent"
-    },
-    {
-      "asset_id": "scirel.closures.hall-two-fluid-pressure",
-      "reason": "not yet migrated: verification.basis absent"
-    },
-    {
-      "asset_id": "scirel.closures.quasineutral-potential",
-      "reason": "not yet migrated: verification.basis absent"
-    },
-    {
-      "asset_id": "scirel.closures.quasineutral-reference-density",
-      "reason": "not yet migrated: verification.basis absent"
-    },
-    {
-      "asset_id": "scirel.closures.reduced-hall-drift",
-      "reason": "not yet migrated: verification.basis absent"
-    },
-    {
-      "asset_id": "scirel.closures.tabulated-pressure",
-      "reason": "not yet migrated: verification.basis absent"
-    },
-    {
       "asset_id": "scirel.collisions.atomic-hydrogen-1s-radiative-recombination-rate-coefficient",
       "reason": "not yet migrated: verification.basis absent"
     },
@@ -965,6 +937,13 @@
     }
   ],
   "migrated": [
+    "scirel.closures.boltzmann-quasineutrality",
+    "scirel.closures.discrete-vector-error-feedback",
+    "scirel.closures.hall-two-fluid-pressure",
+    "scirel.closures.quasineutral-potential",
+    "scirel.closures.quasineutral-reference-density",
+    "scirel.closures.reduced-hall-drift",
+    "scirel.closures.tabulated-pressure",
     "scirel.field.poloidal-field-from-flux",
     "scirel.geometry.path-distance",
     "scirel.kinetic.kinetic-wavevector-roots",
