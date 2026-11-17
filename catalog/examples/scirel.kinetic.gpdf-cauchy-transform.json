@@ -189,7 +189,8 @@
   "evidence_ceiling": "Bounded to two densities with closed forms (normalized Gaussian, uniform on a finite support) and to complex phases on both sides of the real axis, with the branch choice pinned by a conjugate-symmetry relation. Established by the plasma dispersion function recomputed at 40 digits from erfc, by a closed-form integral, and by a branch relation whose two sides differ by more than 1.0. Excluded scope: densities with unresolved features, the 2 pi i residue term that a different continuation would carry, and any statement about the transform exactly on the real axis.",
   "known_limitations": [
    "The returned value below the real axis is the conjugate-reflected branch, not the direct analytic continuation Z(z); the contract states the branch the port implements and does not claim the other one.",
-   "Densities whose features the quadrature cannot resolve are outside this evidence; the port's own resolution contract governs them."
+   "Densities whose features the quadrature cannot resolve are outside this evidence; the port's own resolution contract governs them.",
+   "The `swap` mutation is covered, not killed, and its surface has no owner: the only multi-element array the port returns is `quadrature_error`, and no contract in this repository declares any property of it. That is a capability boundary of the whole catalog, not merely something this contract does not look at."
   ]
  },
  "version": {

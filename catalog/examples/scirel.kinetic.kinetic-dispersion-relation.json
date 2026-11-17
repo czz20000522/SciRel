@@ -304,8 +304,9 @@
   ],
   "known_limitations": [
    "kx_frac = 0 raises FloatingPointError because the harmonic sum divides by the transverse wavenumber. That is a parameter error, not an unreachable cold limit, and it is asserted as such so the next caller does not read the failure as a physics boundary.",
-   "The absolute scale of the returned determinants is not anchored: this contract asserts where the zero sits, not the magnitude of the determinant there. A common rescaling of determinant_sum_n and determinant_ronnmark is outside its asserted surface.",
-   "The semantics of the returned D_* and K_* arrays were not confirmed from the code, so no relation involving them is asserted; the guessed decomposition determinant = D * K was measured at relative residual 1.0 and is therefore not the right relation."
+   "The absolute scale of the returned determinants is not anchored: this contract asserts where the zero sits, not the magnitude of the determinant there. The `scale` mutation is therefore covered rather than killed, and the magnitude has no owner -- no contract in this repository declares the scale of these determinants.",
+   "The semantics of the returned D_* and K_* arrays were not confirmed from the code, so no relation involving them is asserted; the guessed decomposition determinant = D * K was measured at relative residual 1.0 and is therefore not the right relation.",
+   "The `swap` mutation is covered rather than killed: it can only act on the multi-element `branches` and `graph_order` arrays, and this contract asserts their declared shapes, not their element order. That order has no owner -- no contract in this repository declares it."
   ],
   "evidence_ceiling": "Bounded to one normalized single-species cold case at kz = 1 and kx_frac = 1, with the mode location anchored against the plasma frequency recomputed by an independent cross-asset helper and the harmonic truncation constrained by the two internal methods. Established by the 1.1e-11 agreement of the cold-limit zero with omega_p and by the 5.5e-7 cross-method agreement that saturates in lmx. Excluded scope: the hot-plasma spectrum, mode identity beyond the Langmuir branch, the magnitude of the determinant, and any statement about the deck constants behind the equilibrium.",
   "tests": [
