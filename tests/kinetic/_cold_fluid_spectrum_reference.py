@@ -123,11 +123,6 @@ def pencil_spectrum(M, A=None) -> list:
     return sorted(values, key=lambda value: -abs(value))
 
 
-def pencil_solve(self_check: bool = False) -> None:  # pragma: no cover - placeholder guard
-    """Unused placeholder kept out of the public path."""
-    raise NotImplementedError(self_check)
-
-
 def determinant_high_precision(matrix):
     """``det(M)`` at high precision, independent of the LAPACK/LAPACK-free caller."""
     high_precision()
