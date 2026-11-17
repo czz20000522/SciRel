@@ -1,0 +1,1070 @@
+{
+ "schema": "scirel.c4-usage-closeout.index",
+ "tasklist_digest": "2c55ae00de0f60e4930df508d87ae150416a006032809a5cf96890e3470198d3",
+ "package": {
+  "python": "3.14.7",
+  "numpy": "2.5.4",
+  "scipy": "1.18.1",
+  "mpmath": "1.4.1",
+  "wheel_sha256": "f1501a3efbdaba7b18c9af7be06ff30d9a33caf2777534de71f6833b93938b2a",
+  "snapshot_sha256": "7572961c553ecca28c506a392297d514b714eb1fcdffccfff262618d75b60bf3",
+  "source_revision": "d429359dcfbf37aedf09aa64cfa78b89da3b3623",
+  "asset_count": 249,
+  "runtime": {
+   "dependencies_bundled": false,
+   "package_version": "0.0.0",
+   "requires_dist": [
+    "numpy==2.5.4",
+    "scipy==1.18.1",
+    "mpmath==1.4.1"
+   ],
+   "requires_python": ">=3.12",
+   "wheel": "scirel-0.0.0-py3-none-any.whl",
+   "wheel_sha256": "f1501a3efbdaba7b18c9af7be06ff30d9a33caf2777534de71f6833b93938b2a"
+  }
+ },
+ "tasks": [
+  {
+   "task_id": "kinetic-dielectric-finite-harmonic",
+   "kind": "nominal",
+   "domain": "kinetic",
+   "subdomain": "kinetic dielectric response and its raw diagnostic",
+   "package_sufficient": true,
+   "call_count": 3,
+   "criteria_total": 5,
+   "criteria_pass": 5,
+   "criteria_fail": 0,
+   "criteria_not_run": 0,
+   "gaps": [
+    "the entry does not return the harmonic cutoff it used; the record only reports the requested value, so the default cutoff is not observable"
+   ]
+  },
+  {
+   "task_id": "kinetic-faddeeva-family",
+   "kind": "nominal",
+   "domain": "kinetic",
+   "subdomain": "plasma dispersion function across selectable backends",
+   "package_sufficient": true,
+   "call_count": 5,
+   "criteria_total": 3,
+   "criteria_pass": 3,
+   "criteria_fail": 0,
+   "criteria_not_run": 0,
+   "gaps": [
+    "a call that requests an order does not return that order, so a consumer cannot read back which order produced the value from the record alone"
+   ]
+  },
+  {
+   "task_id": "kinetic-generalized-dispersion",
+   "kind": "nominal",
+   "domain": "kinetic",
+   "subdomain": "generalized dispersion residual and root scan",
+   "package_sufficient": true,
+   "call_count": 2,
+   "criteria_total": 3,
+   "criteria_pass": 3,
+   "criteria_fail": 0,
+   "criteria_not_run": 0,
+   "gaps": []
+  },
+  {
+   "task_id": "kinetic-fluid-two-path",
+   "kind": "nominal",
+   "domain": "kinetic",
+   "subdomain": "fluid two-path dispersion and its matrix form",
+   "package_sufficient": false,
+   "call_count": 3,
+   "criteria_total": 5,
+   "criteria_pass": 3,
+   "criteria_fail": 1,
+   "criteria_not_run": 1,
+   "gaps": [
+    "fluid-dispersion-response returns one 'result' field with mixed units; the contract does not name the determinant, so the second path could not be compared and the declared 1e-12 budget stays unevaluated"
+   ]
+  },
+  {
+   "task_id": "kinetic-spectral-scan",
+   "kind": "nominal",
+   "domain": "kinetic",
+   "subdomain": "spectral state, scan and temporal spectrum",
+   "package_sufficient": true,
+   "call_count": 3,
+   "criteria_total": 5,
+   "criteria_pass": 4,
+   "criteria_fail": 1,
+   "criteria_not_run": 0,
+   "gaps": []
+  },
+  {
+   "task_id": "kinetic-vp-initial-value",
+   "kind": "nominal",
+   "domain": "kinetic",
+   "subdomain": "Vlasov-Poisson initial value path",
+   "package_sufficient": false,
+   "call_count": 5,
+   "criteria_total": 5,
+   "criteria_pass": 2,
+   "criteria_fail": 3,
+   "criteria_not_run": 0,
+   "gaps": []
+  },
+  {
+   "task_id": "kinetic-multifluid-frequency",
+   "kind": "nominal",
+   "domain": "kinetic",
+   "subdomain": "multifluid deck, frequency solve and scan",
+   "package_sufficient": false,
+   "call_count": 3,
+   "criteria_total": 4,
+   "criteria_pass": 1,
+   "criteria_fail": 2,
+   "criteria_not_run": 1,
+   "gaps": [
+    "the scan and the single-point solve report different payload shapes, so the declared 1e-10 agreement between them was not evaluated"
+   ]
+  },
+  {
+   "task_id": "kinetic-rational-pole",
+   "kind": "nominal",
+   "domain": "kinetic",
+   "subdomain": "rational and J-pole coefficient entries",
+   "package_sufficient": false,
+   "call_count": 4,
+   "criteria_total": 3,
+   "criteria_pass": 1,
+   "criteria_fail": 1,
+   "criteria_not_run": 1,
+   "gaps": [
+    "scirel.kinetic.rational-solve-matrix returns 9 of 46 declared outputs for the declared es1d model; the record is missing 37 declared fields, including the pole count fields the task's criterion asks the consumer to read back"
+   ]
+  },
+  {
+   "task_id": "kinetic-zero-kz-rejection",
+   "kind": "failure",
+   "domain": "kinetic",
+   "subdomain": "literal zero parallel wavenumber on a finite harmonic path",
+   "package_sufficient": true,
+   "call_count": 1,
+   "criteria_total": 3,
+   "criteria_pass": 3,
+   "criteria_fail": 0,
+   "criteria_not_run": 0,
+   "gaps": []
+  },
+  {
+   "task_id": "kinetic-excluded-zero-kx",
+   "kind": "inapplicable",
+   "domain": "kinetic",
+   "subdomain": "declared excluded wavevector limits",
+   "package_sufficient": true,
+   "call_count": 0,
+   "criteria_total": 2,
+   "criteria_pass": 2,
+   "criteria_fail": 0,
+   "criteria_not_run": 0,
+   "gaps": [
+    "this task declares min_calls=1 (from its asset count) while its own invariant forbids computing a value at the excluded limit, so no public call is made; the honest deliverable is the quoted exclusion. Recorded as a task-list defect, not a package defect.",
+    "task declares min_calls=1 but only 0 public call(s) were made"
+   ]
+  },
+  {
+   "task_id": "neutrals-boltzmann-rhs",
+   "kind": "nominal",
+   "domain": "neutrals",
+   "subdomain": "neutral Boltzmann right-hand side and collision frequency",
+   "package_sufficient": true,
+   "call_count": 2,
+   "criteria_total": 3,
+   "criteria_pass": 3,
+   "criteria_fail": 0,
+   "criteria_not_run": 0,
+   "gaps": []
+  },
+  {
+   "task_id": "neutrals-velocity-mesh",
+   "kind": "nominal",
+   "domain": "neutrals",
+   "subdomain": null,
+   "package_sufficient": false,
+   "call_count": 0,
+   "criteria_total": 1,
+   "criteria_pass": 0,
+   "criteria_fail": 1,
+   "criteria_not_run": 0,
+   "gaps": [
+    "the consumer harness raised ValueError: operands could not be broadcast together with shapes (2,) (4,) "
+   ]
+  },
+  {
+   "task_id": "neutrals-cross-mesh",
+   "kind": "nominal",
+   "domain": "neutrals",
+   "subdomain": "cross-mesh transfer of a distribution and of a scalar",
+   "package_sufficient": true,
+   "call_count": 3,
+   "criteria_total": 4,
+   "criteria_pass": 4,
+   "criteria_fail": 0,
+   "criteria_not_run": 0,
+   "gaps": [
+    "task declares min_calls=4 but only 3 public call(s) were made"
+   ]
+  },
+  {
+   "task_id": "neutrals-terminal-reductions",
+   "kind": "nominal",
+   "domain": "neutrals",
+   "subdomain": "terminal moment and conservation reductions",
+   "package_sufficient": false,
+   "call_count": 7,
+   "criteria_total": 6,
+   "criteria_pass": 5,
+   "criteria_fail": 1,
+   "criteria_not_run": 0,
+   "gaps": []
+  },
+  {
+   "task_id": "neutrals-upwind-transport",
+   "kind": "nominal",
+   "domain": "neutrals",
+   "subdomain": "upwind transport coefficients and generation propagation",
+   "package_sufficient": false,
+   "call_count": 2,
+   "criteria_total": 3,
+   "criteria_pass": 1,
+   "criteria_fail": 2,
+   "criteria_not_run": 0,
+   "gaps": [
+    "the backward branch is the mirror of the checked formula but was not recomputed separately"
+   ]
+  },
+  {
+   "task_id": "neutrals-rejects-nonpositive-thermal-speed",
+   "kind": "failure",
+   "domain": "neutrals",
+   "subdomain": "declared invalid input channel",
+   "package_sufficient": true,
+   "call_count": 1,
+   "criteria_total": 3,
+   "criteria_pass": 3,
+   "criteria_fail": 0,
+   "criteria_not_run": 0,
+   "gaps": []
+  },
+  {
+   "task_id": "collisions-cross-sections",
+   "kind": "nominal",
+   "domain": "collisions",
+   "subdomain": "elastic cross sections for hydrogen and proton projectiles",
+   "package_sufficient": true,
+   "call_count": 3,
+   "criteria_total": 3,
+   "criteria_pass": 3,
+   "criteria_fail": 0,
+   "criteria_not_run": 0,
+   "gaps": []
+  },
+  {
+   "task_id": "collisions-rate-coefficients",
+   "kind": "nominal",
+   "domain": "collisions",
+   "subdomain": null,
+   "package_sufficient": false,
+   "call_count": 0,
+   "criteria_total": 1,
+   "criteria_pass": 0,
+   "criteria_fail": 1,
+   "criteria_not_run": 0,
+   "gaps": [
+    "the consumer harness raised AttributeError: 'str' object has no attribute 'message'"
+   ]
+  },
+  {
+   "task_id": "collisions-rate-averages",
+   "kind": "nominal",
+   "domain": "collisions",
+   "subdomain": null,
+   "package_sufficient": false,
+   "call_count": 0,
+   "criteria_total": 1,
+   "criteria_pass": 0,
+   "criteria_fail": 1,
+   "criteria_not_run": 0,
+   "gaps": [
+    "the consumer harness raised TypeError: float() argument must be a string or a real number, not 'function'"
+   ]
+  },
+  {
+   "task_id": "collisions-rejects-out-of-domain",
+   "kind": "failure",
+   "domain": "collisions",
+   "subdomain": "declared invalid input channel",
+   "package_sufficient": true,
+   "call_count": 1,
+   "criteria_total": 3,
+   "criteria_pass": 3,
+   "criteria_fail": 0,
+   "criteria_not_run": 0,
+   "gaps": []
+  },
+  {
+   "task_id": "field-filament-superposition",
+   "kind": "nominal",
+   "domain": "field",
+   "subdomain": "Green response, superposition and multi-coil vacuum field",
+   "package_sufficient": true,
+   "call_count": 4,
+   "criteria_total": 5,
+   "criteria_pass": 5,
+   "criteria_fail": 0,
+   "criteria_not_run": 0,
+   "gaps": []
+  },
+  {
+   "task_id": "field-flux-to-poloidal",
+   "kind": "nominal",
+   "domain": "field",
+   "subdomain": "flux derivative to poloidal field and its magnitude",
+   "package_sufficient": true,
+   "call_count": 2,
+   "criteria_total": 5,
+   "criteria_pass": 5,
+   "criteria_fail": 0,
+   "criteria_not_run": 0,
+   "gaps": []
+  },
+  {
+   "task_id": "field-rejects-unsupported-current-rank",
+   "kind": "failure",
+   "domain": "field",
+   "subdomain": "declared invalid input channel",
+   "package_sufficient": true,
+   "call_count": 1,
+   "criteria_total": 3,
+   "criteria_pass": 3,
+   "criteria_fail": 0,
+   "criteria_not_run": 0,
+   "gaps": []
+  },
+  {
+   "task_id": "geometry-equilibrium-grid",
+   "kind": "nominal",
+   "domain": "geometry",
+   "subdomain": "axisymmetric equilibrium grid support and surface averages",
+   "package_sufficient": false,
+   "call_count": 3,
+   "criteria_total": 4,
+   "criteria_pass": 3,
+   "criteria_fail": 1,
+   "criteria_not_run": 0,
+   "gaps": []
+  },
+  {
+   "task_id": "geometry-mesh-and-volume",
+   "kind": "nominal",
+   "domain": "geometry",
+   "subdomain": "meshes and toroidal volume integration",
+   "package_sufficient": true,
+   "call_count": 5,
+   "criteria_total": 4,
+   "criteria_pass": 4,
+   "criteria_fail": 0,
+   "criteria_not_run": 0,
+   "gaps": []
+  },
+  {
+   "task_id": "geometry-rejects-mixed-modes",
+   "kind": "failure",
+   "domain": "geometry",
+   "subdomain": "declared invalid input channel",
+   "package_sufficient": true,
+   "call_count": 1,
+   "criteria_total": 3,
+   "criteria_pass": 3,
+   "criteria_fail": 0,
+   "criteria_not_run": 0,
+   "gaps": []
+  },
+  {
+   "task_id": "numerics-basis-projection",
+   "kind": "nominal",
+   "domain": "numerics",
+   "subdomain": "basis construction and modal projection",
+   "package_sufficient": true,
+   "call_count": 2,
+   "criteria_total": 6,
+   "criteria_pass": 6,
+   "criteria_fail": 0,
+   "criteria_not_run": 0,
+   "gaps": [
+    "task declares min_calls=4 but only 2 public call(s) were made"
+   ]
+  },
+  {
+   "task_id": "numerics-splines-and-inverse",
+   "kind": "nominal",
+   "domain": "numerics",
+   "subdomain": null,
+   "package_sufficient": false,
+   "call_count": 0,
+   "criteria_total": 1,
+   "criteria_pass": 0,
+   "criteria_fail": 1,
+   "criteria_not_run": 0,
+   "gaps": [
+    "the consumer harness raised IndexError: only integers, slices (`:`), ellipsis (`...`), numpy.newaxis (`None`) and integer or boolean arrays are valid indices"
+   ]
+  },
+  {
+   "task_id": "numerics-rejects-invalid-rcond",
+   "kind": "failure",
+   "domain": "numerics",
+   "subdomain": "declared invalid input channel",
+   "package_sufficient": true,
+   "call_count": 1,
+   "criteria_total": 3,
+   "criteria_pass": 3,
+   "criteria_fail": 0,
+   "criteria_not_run": 0,
+   "gaps": []
+  },
+  {
+   "task_id": "sampling-regular-grid",
+   "kind": "nominal",
+   "domain": "geometry",
+   "subdomain": "scattered to regular grid sampling",
+   "package_sufficient": true,
+   "call_count": 3,
+   "criteria_total": 3,
+   "criteria_pass": 3,
+   "criteria_fail": 0,
+   "criteria_not_run": 0,
+   "gaps": [
+    "the outside-support exclusion count is not a returned field of the declared scattered entry, so that half of the criterion was not evaluated"
+   ]
+  },
+  {
+   "task_id": "sampling-transform-and-derivative",
+   "kind": "nominal",
+   "domain": "geometry",
+   "subdomain": "coordinate transforms and nonuniform derivative",
+   "package_sufficient": true,
+   "call_count": 3,
+   "criteria_total": 5,
+   "criteria_pass": 5,
+   "criteria_fail": 0,
+   "criteria_not_run": 0,
+   "gaps": []
+  },
+  {
+   "task_id": "sampling-rejects-unknown-method",
+   "kind": "failure",
+   "domain": "geometry",
+   "subdomain": "declared invalid interpolation method",
+   "package_sufficient": true,
+   "call_count": 1,
+   "criteria_total": 3,
+   "criteria_pass": 3,
+   "criteria_fail": 0,
+   "criteria_not_run": 0,
+   "gaps": []
+  },
+  {
+   "task_id": "equilibrium-isotropic-picard",
+   "kind": "nominal",
+   "domain": "equilibrium",
+   "subdomain": "isotropic pressure flux and Picard step",
+   "package_sufficient": false,
+   "call_count": 3,
+   "criteria_total": 4,
+   "criteria_pass": 3,
+   "criteria_fail": 0,
+   "criteria_not_run": 1,
+   "gaps": [
+    "the step record carries a residual but not the pre/post flux arrays the contract defines the residual against"
+   ]
+  },
+  {
+   "task_id": "equilibrium-anisotropic-picard",
+   "kind": "nominal",
+   "domain": "equilibrium",
+   "subdomain": "anisotropic Picard iteration with feedback",
+   "package_sufficient": true,
+   "call_count": 3,
+   "criteria_total": 4,
+   "criteria_pass": 4,
+   "criteria_fail": 0,
+   "criteria_not_run": 0,
+   "gaps": []
+  },
+  {
+   "task_id": "equilibrium-rejects-relax-out-of-range",
+   "kind": "failure",
+   "domain": "equilibrium",
+   "subdomain": "declared invalid input channel",
+   "package_sufficient": true,
+   "call_count": 1,
+   "criteria_total": 3,
+   "criteria_pass": 3,
+   "criteria_fail": 0,
+   "criteria_not_run": 0,
+   "gaps": []
+  },
+  {
+   "task_id": "mirror-frank-egedal",
+   "kind": "nominal",
+   "domain": "mirror",
+   "subdomain": "Frank-Egedal pressure closure chain",
+   "package_sufficient": true,
+   "call_count": 3,
+   "criteria_total": 5,
+   "criteria_pass": 4,
+   "criteria_fail": 1,
+   "criteria_not_run": 0,
+   "gaps": []
+  },
+  {
+   "task_id": "mirror-ambipolar-and-loss-cone",
+   "kind": "nominal",
+   "domain": "mirror",
+   "subdomain": "ambipolar potential and loss-cone distribution",
+   "package_sufficient": true,
+   "call_count": 3,
+   "criteria_total": 4,
+   "criteria_pass": 4,
+   "criteria_fail": 0,
+   "criteria_not_run": 0,
+   "gaps": []
+  },
+  {
+   "task_id": "mirror-rejects-invalid-quadrature-order",
+   "kind": "failure",
+   "domain": "mirror",
+   "subdomain": "declared invalid input channel",
+   "package_sufficient": true,
+   "call_count": 1,
+   "criteria_total": 3,
+   "criteria_pass": 3,
+   "criteria_fail": 0,
+   "criteria_not_run": 0,
+   "gaps": []
+  },
+  {
+   "task_id": "electromagnetism-device-composition",
+   "kind": "nominal",
+   "domain": "electromagnetism",
+   "subdomain": "device composition and flux matrix",
+   "package_sufficient": true,
+   "call_count": 2,
+   "criteria_total": 5,
+   "criteria_pass": 5,
+   "criteria_fail": 0,
+   "criteria_not_run": 0,
+   "gaps": [
+    "task declares min_calls=3 but only 2 public call(s) were made"
+   ]
+  },
+  {
+   "task_id": "configurations-retained-geometries",
+   "kind": "nominal",
+   "domain": "configurations",
+   "subdomain": "retained device configuration constructors",
+   "package_sufficient": true,
+   "call_count": 3,
+   "criteria_total": 5,
+   "criteria_pass": 5,
+   "criteria_fail": 0,
+   "criteria_not_run": 0,
+   "gaps": []
+  },
+  {
+   "task_id": "configurations-rejects-non-numeric-z0",
+   "kind": "failure",
+   "domain": "configurations",
+   "subdomain": "declared invalid input channel",
+   "package_sufficient": true,
+   "call_count": 1,
+   "criteria_total": 3,
+   "criteria_pass": 3,
+   "criteria_fail": 0,
+   "criteria_not_run": 0,
+   "gaps": []
+  },
+  {
+   "task_id": "electromagnetism-rejects-missing-mesh",
+   "kind": "failure",
+   "domain": "electromagnetism",
+   "subdomain": "declared invalid input channel",
+   "package_sufficient": true,
+   "call_count": 1,
+   "criteria_total": 4,
+   "criteria_pass": 3,
+   "criteria_fail": 1,
+   "criteria_not_run": 0,
+   "gaps": [
+    "frozen stimulus targets construction; the declared rejection is at field evaluation. Task list should freeze mesh=None + a psi() call instead."
+   ]
+  },
+  {
+   "task_id": "closures-quasineutral",
+   "kind": "nominal",
+   "domain": "closures",
+   "subdomain": "quasineutral potential and reference density",
+   "package_sufficient": true,
+   "call_count": 5,
+   "criteria_total": 3,
+   "criteria_pass": 3,
+   "criteria_fail": 0,
+   "criteria_not_run": 0,
+   "gaps": [
+    "the declared sign-inversion half of the criterion needs a root solve of the quasineutral entry with a consumer-supplied residual callback, which the example does not declare; only the uniform-density limit was evaluated"
+   ]
+  },
+  {
+   "task_id": "closures-rejects-nonpositive-temperature",
+   "kind": "failure",
+   "domain": "closures",
+   "subdomain": "declared invalid input channel",
+   "package_sufficient": true,
+   "call_count": 1,
+   "criteria_total": 3,
+   "criteria_pass": 3,
+   "criteria_fail": 0,
+   "criteria_not_run": 0,
+   "gaps": []
+  },
+  {
+   "task_id": "diagnostics-picard-residual",
+   "kind": "nominal",
+   "domain": "diagnostics",
+   "subdomain": "residual and observation diagnostics",
+   "package_sufficient": true,
+   "call_count": 4,
+   "criteria_total": 4,
+   "criteria_pass": 4,
+   "criteria_fail": 0,
+   "criteria_not_run": 0,
+   "gaps": []
+  },
+  {
+   "task_id": "diagnostics-rejects-shape-mismatch",
+   "kind": "failure",
+   "domain": "diagnostics",
+   "subdomain": "declared invalid input channel",
+   "package_sufficient": true,
+   "call_count": 1,
+   "criteria_total": 4,
+   "criteria_pass": 3,
+   "criteria_fail": 1,
+   "criteria_not_run": 0,
+   "gaps": [
+    "the frozen stimulus for this task does not produce the mismatch it names; the task record should freeze a genuinely incompatible shape"
+   ]
+  },
+  {
+   "task_id": "fieldline-set-and-arclength",
+   "kind": "nominal",
+   "domain": "geometry",
+   "subdomain": "fieldline set construction and arclength derivative",
+   "package_sufficient": true,
+   "call_count": 3,
+   "criteria_total": 4,
+   "criteria_pass": 4,
+   "criteria_fail": 0,
+   "criteria_not_run": 0,
+   "gaps": [
+    "the one-sided quadratic endpoint stencils are not described numerically in the delivered contract, so they were not reproduced"
+   ]
+  },
+  {
+   "task_id": "fieldline-rejects-duplicate-vertices",
+   "kind": "failure",
+   "domain": "geometry",
+   "subdomain": "declared invalid input channel",
+   "package_sufficient": false,
+   "call_count": 1,
+   "criteria_total": 3,
+   "criteria_pass": 2,
+   "criteria_fail": 1,
+   "criteria_not_run": 0,
+   "gaps": []
+  },
+  {
+   "task_id": "physics-coulomb-logarithms",
+   "kind": "nominal",
+   "domain": "physics",
+   "subdomain": "Coulomb logarithms and thermal energy",
+   "package_sufficient": false,
+   "call_count": 4,
+   "criteria_total": 4,
+   "criteria_pass": 3,
+   "criteria_fail": 1,
+   "criteria_not_run": 0,
+   "gaps": []
+  },
+  {
+   "task_id": "physics-rejects-boolean-temperature",
+   "kind": "failure",
+   "domain": "physics",
+   "subdomain": "declared invalid input channel",
+   "package_sufficient": true,
+   "call_count": 1,
+   "criteria_total": 3,
+   "criteria_pass": 3,
+   "criteria_fail": 0,
+   "criteria_not_run": 0,
+   "gaps": []
+  },
+  {
+   "task_id": "fvm-convection-diffusion",
+   "kind": "nominal",
+   "domain": "fvm",
+   "subdomain": "cell variables, convection, diffusion and theta step",
+   "package_sufficient": true,
+   "call_count": 4,
+   "criteria_total": 5,
+   "criteria_pass": 5,
+   "criteria_fail": 0,
+   "criteria_not_run": 0,
+   "gaps": [
+    "the convection/diffusion matrices were evaluated but the blended equation with them was not formed for a second theta"
+   ]
+  },
+  {
+   "task_id": "fvm-rejects-undocumented-mode",
+   "kind": "failure",
+   "domain": "fvm",
+   "subdomain": "declared invalid control value",
+   "package_sufficient": true,
+   "call_count": 1,
+   "criteria_total": 3,
+   "criteria_pass": 3,
+   "criteria_fail": 0,
+   "criteria_not_run": 0,
+   "gaps": []
+  },
+  {
+   "task_id": "io-eqdsk-roundtrip",
+   "kind": "nominal",
+   "domain": "io",
+   "subdomain": "EQDSK reading, writing and the retained class",
+   "package_sufficient": false,
+   "call_count": 3,
+   "criteria_total": 6,
+   "criteria_pass": 1,
+   "criteria_fail": 5,
+   "criteria_not_run": 0,
+   "gaps": [
+    "task declares min_calls=4 but only 3 public call(s) were made"
+   ]
+  },
+  {
+   "task_id": "io-rejects-bad-and-missing-input",
+   "kind": "failure",
+   "domain": "io",
+   "subdomain": "declared malformed-content and missing-file channels",
+   "package_sufficient": false,
+   "call_count": 2,
+   "criteria_total": 4,
+   "criteria_pass": 2,
+   "criteria_fail": 2,
+   "criteria_not_run": 0,
+   "gaps": []
+  },
+  {
+   "task_id": "inference-parameter-optimization",
+   "kind": "nominal",
+   "domain": "inference",
+   "subdomain": "anisotropic parameter optimization and trial evaluation",
+   "package_sufficient": false,
+   "call_count": 4,
+   "criteria_total": 4,
+   "criteria_pass": 3,
+   "criteria_fail": 1,
+   "criteria_not_run": 0,
+   "gaps": []
+  },
+  {
+   "task_id": "inference-rejects-bad-bounds",
+   "kind": "failure",
+   "domain": "inference",
+   "subdomain": "declared invalid search bounds",
+   "package_sufficient": true,
+   "call_count": 1,
+   "criteria_total": 3,
+   "criteria_pass": 3,
+   "criteria_fail": 0,
+   "criteria_not_run": 0,
+   "gaps": []
+  },
+  {
+   "task_id": "neoclassical-bootstrap",
+   "kind": "nominal",
+   "domain": "neoclassical",
+   "subdomain": "bootstrap coefficients and current",
+   "package_sufficient": false,
+   "call_count": 4,
+   "criteria_total": 4,
+   "criteria_pass": 3,
+   "criteria_fail": 1,
+   "criteria_not_run": 0,
+   "gaps": []
+  },
+  {
+   "task_id": "neoclassical-rejects-unknown-method",
+   "kind": "failure",
+   "domain": "neoclassical",
+   "subdomain": "declared invalid input channel",
+   "package_sufficient": true,
+   "call_count": 1,
+   "criteria_total": 3,
+   "criteria_pass": 3,
+   "criteria_fail": 0,
+   "criteria_not_run": 0,
+   "gaps": []
+  },
+  {
+   "task_id": "source-profile-integral",
+   "kind": "nominal",
+   "domain": "source",
+   "subdomain": "Gaussian and exponential source profiles",
+   "package_sufficient": true,
+   "call_count": 2,
+   "criteria_total": 5,
+   "criteria_pass": 5,
+   "criteria_fail": 0,
+   "criteria_not_run": 0,
+   "gaps": []
+  },
+  {
+   "task_id": "source-zero-width-sentinel",
+   "kind": "nominal",
+   "domain": "source",
+   "subdomain": "declared sentinel behaviour for a degenerate width",
+   "package_sufficient": true,
+   "call_count": 2,
+   "criteria_total": 4,
+   "criteria_pass": 4,
+   "criteria_fail": 0,
+   "criteria_not_run": 0,
+   "gaps": []
+  },
+  {
+   "task_id": "source-rejects-nonpositive-weights",
+   "kind": "failure",
+   "domain": "source",
+   "subdomain": "declared invalid control value",
+   "package_sufficient": true,
+   "call_count": 1,
+   "criteria_total": 3,
+   "criteria_pass": 3,
+   "criteria_fail": 0,
+   "criteria_not_run": 0,
+   "gaps": []
+  },
+  {
+   "task_id": "dielectric-cold-tensor",
+   "kind": "nominal",
+   "domain": "dielectric",
+   "subdomain": "cold plasma dielectric tensor",
+   "package_sufficient": false,
+   "call_count": 1,
+   "criteria_total": 4,
+   "criteria_pass": 3,
+   "criteria_fail": 0,
+   "criteria_not_run": 1,
+   "gaps": [
+    "the task's basis-invariance and exact-resonance criteria need inputs the contract's example block does not declare; a consumer may only use the declared example inputs, so they stay unevaluated",
+    "task declares min_calls=2 but only 1 public call(s) were made"
+   ]
+  },
+  {
+   "task_id": "dielectric-rejects-nonpositive-frequency",
+   "kind": "failure",
+   "domain": "dielectric",
+   "subdomain": "declared invalid frequency control",
+   "package_sufficient": true,
+   "call_count": 1,
+   "criteria_total": 3,
+   "criteria_pass": 3,
+   "criteria_fail": 0,
+   "criteria_not_run": 0,
+   "gaps": []
+  },
+  {
+   "task_id": "plasma-fast-ion-heating",
+   "kind": "nominal",
+   "domain": "plasma",
+   "subdomain": "fast ion heating combination",
+   "package_sufficient": true,
+   "call_count": 2,
+   "criteria_total": 4,
+   "criteria_pass": 4,
+   "criteria_fail": 0,
+   "criteria_not_run": 0,
+   "gaps": []
+  },
+  {
+   "task_id": "plasma-rejects-invalid-beam",
+   "kind": "failure",
+   "domain": "plasma",
+   "subdomain": "declared invalid beam input",
+   "package_sufficient": true,
+   "call_count": 1,
+   "criteria_total": 3,
+   "criteria_pass": 3,
+   "criteria_fail": 0,
+   "criteria_not_run": 0,
+   "gaps": []
+  },
+  {
+   "task_id": "fusion-dd-neutron-energy",
+   "kind": "nominal",
+   "domain": "fusion",
+   "subdomain": "laboratory neutron energy for the D-D reaction",
+   "package_sufficient": false,
+   "call_count": 2,
+   "criteria_total": 3,
+   "criteria_pass": 2,
+   "criteria_fail": 1,
+   "criteria_not_run": 0,
+   "gaps": [
+    "the recomputation uses CODATA masses the consumer supplied; the package does not return the mass constants it used"
+   ]
+  },
+  {
+   "task_id": "fusion-rejects-bad-detector-vector",
+   "kind": "failure",
+   "domain": "fusion",
+   "subdomain": "declared invalid input channel",
+   "package_sufficient": true,
+   "call_count": 1,
+   "criteria_total": 3,
+   "criteria_pass": 3,
+   "criteria_fail": 0,
+   "criteria_not_run": 0,
+   "gaps": []
+  },
+  {
+   "task_id": "cross-field-to-equilibrium",
+   "kind": "cross",
+   "domain": "cross",
+   "subdomain": "filament flux to poloidal field to one Picard step",
+   "package_sufficient": true,
+   "call_count": 3,
+   "criteria_total": 6,
+   "criteria_pass": 6,
+   "criteria_fail": 0,
+   "criteria_not_run": 0,
+   "gaps": [
+    "the derivative entry differentiates a supplied flux, so the comparison against finite differences carries discretisation error; the exact handoff (array identity) is what the 1e-12 budget covers"
+   ]
+  },
+  {
+   "task_id": "cross-geometry-to-equilibrium",
+   "kind": "cross",
+   "domain": "cross",
+   "subdomain": "equilibrium grid support into the pressure-flux state",
+   "package_sufficient": false,
+   "call_count": 3,
+   "criteria_total": 6,
+   "criteria_pass": 3,
+   "criteria_fail": 3,
+   "criteria_not_run": 0,
+   "gaps": []
+  },
+  {
+   "task_id": "cross-mirror-to-diagnostics",
+   "kind": "cross",
+   "domain": "cross",
+   "subdomain": "anisotropic pressure into the firehose and mirror margins",
+   "package_sufficient": false,
+   "call_count": 2,
+   "criteria_total": 4,
+   "criteria_pass": 2,
+   "criteria_fail": 2,
+   "criteria_not_run": 0,
+   "gaps": [
+    "dp_perp_dB is not returned by the closure entry, so the consumer formed it by finite differences on the declared grid",
+    "task declares min_calls=3 but only 2 public call(s) were made"
+   ]
+  },
+  {
+   "task_id": "cross-source-to-neutrals",
+   "kind": "cross",
+   "domain": "cross",
+   "subdomain": "declared source profile into the neutral generation term",
+   "package_sufficient": false,
+   "call_count": 3,
+   "criteria_total": 5,
+   "criteria_pass": 3,
+   "criteria_fail": 2,
+   "criteria_not_run": 0,
+   "gaps": [
+    "the consumer had to reshape the one-dimensional profile onto the declared vx/alpha grid itself; the package does not offer a declared profile-to-forcing adapter"
+   ]
+  },
+  {
+   "task_id": "cross-kinetic-to-diagnostics",
+   "kind": "cross",
+   "domain": "cross",
+   "subdomain": "root values into the observation residual diagnostic",
+   "package_sufficient": false,
+   "call_count": 1,
+   "criteria_total": 4,
+   "criteria_pass": 2,
+   "criteria_fail": 0,
+   "criteria_not_run": 2,
+   "gaps": [
+    "task premise is not expressible: observation-residuals accepts only flux_loops/thomson channels; there is no 'roots' channel and no declared adapter, so 'use the roots as predictions' cannot be written. This is a task-design/contract-coverage issue: the earlier round recorded it as a package fault after feeding an invented channel name",
+    "task declares min_calls=2 but only 1 public call(s) were made"
+   ]
+  },
+  {
+   "task_id": "cross-collisions-to-neutrals",
+   "kind": "cross",
+   "domain": "cross",
+   "subdomain": "charge-exchange rate into the total neutral collision frequency",
+   "package_sufficient": false,
+   "call_count": 3,
+   "criteria_total": 4,
+   "criteria_pass": 2,
+   "criteria_fail": 2,
+   "criteria_not_run": 0,
+   "gaps": [
+    "the rate is a three-dimensional array and the frequency entry takes a per-species list, so the consumer reduced it to its mean; the package does not declare that reduction"
+   ]
+  }
+ ],
+ "summary": {
+  "tasks": 73,
+  "package_sufficient": 48,
+  "package_insufficient": 25,
+  "criteria_total": 272,
+  "criteria_pass": 225,
+  "criteria_fail": 40,
+  "criteria_not_run": 7
+ },
+ "child_failures": [
+  {
+   "task": "neutrals-velocity-mesh",
+   "returncode": 1,
+   "stderr": ""
+  },
+  {
+   "task": "collisions-rate-coefficients",
+   "returncode": 1,
+   "stderr": ""
+  },
+  {
+   "task": "collisions-rate-averages",
+   "returncode": 1,
+   "stderr": "<repo>/examples/c4-usage-acceptance/closeout/harness.py:347: ApplicabilityWarning: evaluate_janev_electron_impact_ionization_rate: temperature above the fit's upper limit of 20100 eV (received up to 50000 eV) returns the value at that limit, which returns the endpoint rate rather than extrapolating (scirel.collisions.janev-electron-impact-ionization-rate)\n  return real(*a, **kw)\n"
+  },
+  {
+   "task": "numerics-splines-and-inverse",
+   "returncode": 1,
+   "stderr": ""
+  }
+ ]
+}

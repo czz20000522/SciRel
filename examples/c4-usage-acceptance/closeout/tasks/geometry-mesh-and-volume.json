@@ -1,0 +1,396 @@
+{
+ "task_id": "geometry-mesh-and-volume",
+ "kind": "nominal",
+ "domain": "geometry",
+ "subdomain": "meshes and toroidal volume integration",
+ "question": "Construct a declared rectangular mesh and a declared points mesh, integrate a declared density over the masked toroidal volume, and report the mask the integration actually applied.",
+ "assets_declared": [
+  "scirel.geometry.rect-mesh",
+  "scirel.geometry.points-mesh",
+  "scirel.geometry.masked-toroidal-volume"
+ ],
+ "min_calls": 3,
+ "package": {
+  "python": "3.14.7",
+  "numpy": "2.5.4",
+  "scipy": "1.18.1",
+  "mpmath": "1.4.1",
+  "wheel_sha256": "f1501a3efbdaba7b18c9af7be06ff30d9a33caf2777534de71f6833b93938b2a",
+  "snapshot_sha256": "7572961c553ecca28c506a392297d514b714eb1fcdffccfff262618d75b60bf3",
+  "source_revision": "d429359dcfbf37aedf09aa64cfa78b89da3b3623",
+  "asset_count": 249,
+  "runtime": {
+   "dependencies_bundled": false,
+   "package_version": "0.0.0",
+   "requires_dist": [
+    "numpy==2.5.4",
+    "scipy==1.18.1",
+    "mpmath==1.4.1"
+   ],
+   "requires_python": ">=3.12",
+   "wheel": "scirel-0.0.0-py3-none-any.whl",
+   "wheel_sha256": "f1501a3efbdaba7b18c9af7be06ff30d9a33caf2777534de71f6833b93938b2a"
+  }
+ },
+ "assets_used": [
+  "scirel.geometry.masked-toroidal-volume",
+  "scirel.geometry.points-mesh",
+  "scirel.geometry.rect-mesh"
+ ],
+ "calls": [
+  {
+   "seq": 1,
+   "label": "declared rectangular mesh",
+   "asset": "scirel.geometry.rect-mesh",
+   "entrypoint": "scirel.geometry:RectMesh",
+   "arguments": {
+    "args": [],
+    "kwargs": {
+     "rmin": 0.0,
+     "rmax": 1.0,
+     "nr": 2,
+     "zmin": -0.5,
+     "zmax": 0.5,
+     "nz": 2
+    }
+   },
+   "status": "returned",
+   "returned_fields": null,
+   "exception": null,
+   "warnings": [],
+   "returned_type": "RectMesh"
+  },
+  {
+   "seq": 2,
+   "label": "declared points mesh",
+   "asset": "scirel.geometry.points-mesh",
+   "entrypoint": "scirel.geometry:PointsMesh",
+   "arguments": {
+    "args": [],
+    "kwargs": {
+     "rpts": [
+      0.2
+     ],
+     "zpts": [
+      0.3
+     ]
+    }
+   },
+   "status": "returned",
+   "returned_fields": null,
+   "exception": null,
+   "warnings": [],
+   "returned_type": "PointsMesh"
+  },
+  {
+   "seq": 3,
+   "label": "declared masked toroidal volume",
+   "asset": "scirel.geometry.masked-toroidal-volume",
+   "entrypoint": "scirel.geometry.masked_toroidal_volume:plasma_volume",
+   "arguments": {
+    "args": [],
+    "kwargs": {
+     "R": {
+      "dtype": "float64",
+      "shape": [
+       2,
+       2
+      ],
+      "values": [
+       [
+        1.0,
+        1.0
+       ],
+       [
+        2.0,
+        2.0
+       ]
+      ]
+     },
+     "dR": 0.5,
+     "dZ": 0.25,
+     "core_mask": {
+      "dtype": "bool",
+      "shape": [
+       2,
+       2
+      ],
+      "values": [
+       [
+        true,
+        false
+       ],
+       [
+        true,
+        false
+       ]
+      ]
+     }
+    }
+   },
+   "status": "returned",
+   "returned_fields": null,
+   "exception": null,
+   "warnings": [],
+   "returned_type": "float"
+  },
+  {
+   "seq": 4,
+   "label": "first disjoint submask",
+   "asset": "scirel.geometry.masked-toroidal-volume",
+   "entrypoint": "scirel.geometry.masked_toroidal_volume:plasma_volume",
+   "arguments": {
+    "args": [],
+    "kwargs": {
+     "R": {
+      "dtype": "float64",
+      "shape": [
+       2,
+       2
+      ],
+      "values": [
+       [
+        1.0,
+        1.0
+       ],
+       [
+        2.0,
+        2.0
+       ]
+      ]
+     },
+     "dR": 0.5,
+     "dZ": 0.25,
+     "core_mask": {
+      "dtype": "bool",
+      "shape": [
+       2,
+       2
+      ],
+      "values": [
+       [
+        true,
+        false
+       ],
+       [
+        false,
+        false
+       ]
+      ]
+     }
+    }
+   },
+   "status": "returned",
+   "returned_fields": null,
+   "exception": null,
+   "warnings": [],
+   "returned_type": "float"
+  },
+  {
+   "seq": 5,
+   "label": "second disjoint submask",
+   "asset": "scirel.geometry.masked-toroidal-volume",
+   "entrypoint": "scirel.geometry.masked_toroidal_volume:plasma_volume",
+   "arguments": {
+    "args": [],
+    "kwargs": {
+     "R": {
+      "dtype": "float64",
+      "shape": [
+       2,
+       2
+      ],
+      "values": [
+       [
+        1.0,
+        1.0
+       ],
+       [
+        2.0,
+        2.0
+       ]
+      ]
+     },
+     "dR": 0.5,
+     "dZ": 0.25,
+     "core_mask": {
+      "dtype": "bool",
+      "shape": [
+       2,
+       2
+      ],
+      "values": [
+       [
+        false,
+        false
+       ],
+       [
+        true,
+        false
+       ]
+      ]
+     }
+    }
+   },
+   "status": "returned",
+   "returned_fields": null,
+   "exception": null,
+   "warnings": [],
+   "returned_type": "float"
+  }
+ ],
+ "answer": {
+  "value": {
+   "returned_volume": 2.356194490192345,
+   "recomputed_volume": 2.356194490192345,
+   "relative_deviation": 0.0,
+   "additivity_deviation": 0.0,
+   "cells_masked": 2
+  },
+  "unit": "m^3"
+ },
+ "independent_check": {
+  "method": "volume recomputed as 2*pi*sum(R*dR*dZ*mask) from the declared grid and checked additive over a split mask",
+  "observed": {
+   "returned_volume": 2.356194490192345,
+   "recomputed_volume": 2.356194490192345,
+   "relative_deviation": 0.0,
+   "additivity_deviation": 0.0,
+   "cells_masked": 2
+  },
+  "verdict": "pass"
+ },
+ "criteria": [
+  {
+   "id": "fields",
+   "kind": "contract_fields",
+   "status": "pass",
+   "detail": {
+    "channel": "single declared output returned positionally",
+    "declared": {
+     "name": "volume",
+     "dtype": "Python float",
+     "shape": "scalar"
+    },
+    "returned_type": "float",
+    "checks": {
+     "numeric_dtype": true,
+     "scalar_shape": true
+    },
+    "verdict": "compatible",
+    "all_declared_outputs": [
+     "volume"
+    ]
+   }
+  },
+  {
+   "id": "declared_measure",
+   "kind": "invariant",
+   "status": "pass",
+   "detail": {
+    "returned_volume": 2.356194490192345,
+    "recomputed_volume": 2.356194490192345,
+    "relative_deviation": 0.0,
+    "additivity_deviation": 0.0,
+    "cells_masked": 2
+   }
+  },
+  {
+   "id": "budget",
+   "kind": "tolerance",
+   "status": "pass",
+   "detail": {
+    "returned_volume": 2.356194490192345,
+    "recomputed_volume": 2.356194490192345,
+    "relative_deviation": 0.0,
+    "additivity_deviation": 0.0,
+    "cells_masked": 2,
+    "declared_tolerance": {
+     "rel": 1e-12,
+     "abs": 0.0
+    }
+   }
+  },
+  {
+   "id": "readback",
+   "kind": "readback",
+   "status": "pass",
+   "detail": {
+    "reopened": "geometry-mesh-and-volume.json",
+    "problems": [],
+    "stored_call_count": 5
+   }
+  }
+ ],
+ "package_sufficient": true,
+ "sufficient_reason": "the entry takes the mask as an argument, so the consumer can split it",
+ "gaps": [],
+ "bindings": {
+  "scirel.geometry.rect-mesh": {
+   "symbol": "RectMesh",
+   "args": {
+    "rmin": 0.0,
+    "rmax": 1.0,
+    "nr": 2,
+    "zmin": -0.5,
+    "zmax": 0.5,
+    "nz": 2
+   },
+   "example_error": null
+  },
+  "scirel.geometry.points-mesh": {
+   "symbol": "PointsMesh",
+   "args": {
+    "rpts": [
+     0.2
+    ],
+    "zpts": [
+     0.3
+    ]
+   },
+   "example_error": null
+  },
+  "scirel.geometry.masked-toroidal-volume": {
+   "symbol": "plasma_volume",
+   "args": {
+    "R": {
+     "dtype": "float64",
+     "shape": [
+      2,
+      2
+     ],
+     "values": [
+      [
+       1.0,
+       1.0
+      ],
+      [
+       2.0,
+       2.0
+      ]
+     ]
+    },
+    "dR": 0.5,
+    "dZ": 0.25,
+    "core_mask": {
+     "dtype": "bool",
+     "shape": [
+      2,
+      2
+     ],
+     "values": [
+      [
+       true,
+       false
+      ],
+      [
+       true,
+       false
+      ]
+     ]
+    }
+   },
+   "example_error": null
+  }
+ }
+}

@@ -1,0 +1,1821 @@
+{
+ "schema": "scirel.c4-usage-closeout.focus-audit",
+ "package": {
+  "wheel_sha256": "f1501a3efbdaba7b18c9af7be06ff30d9a33caf2777534de71f6833b93938b2a",
+  "snapshot_sha256": "7572961c553ecca28c506a392297d514b714eb1fcdffccfff262618d75b60bf3",
+  "source_revision": "d429359dcfbf37aedf09aa64cfa78b89da3b3623",
+  "asset_count": 249
+ },
+ "thermal_energy": {
+  "asset": "scirel.physics.thermal-energy",
+  "status": "pass",
+  "read_by_name": {
+   "W_el": 7.8,
+   "W_ion": 11.7,
+   "W_tot": 19.5
+  },
+  "exact": {
+   "W_el": 7.8,
+   "W_ion": 11.7,
+   "W_tot": 19.5
+  },
+  "deviations": {
+   "W_el": 0.0,
+   "W_ion": 0.0,
+   "W_tot": 0.0
+  },
+  "additivity": 0.0,
+  "scaling": 0.0
+ },
+ "evidence_clauses": [
+  {
+   "asset": "scirel.field.poloidal-field-from-flux",
+   "claims": [
+    {
+     "claim": "v6 Result with mapping+attribute parity",
+     "status": "pass",
+     "detail": {
+      "returned_type": "Result",
+      "keys": [
+       "B",
+       "B_R",
+       "B_Z"
+      ],
+      "attribute_is_item": {
+       "B_R": true,
+       "B_Z": true,
+       "B": true
+      },
+      "shapes": {
+       "B_R": [
+        3,
+        3
+       ],
+       "B_Z": [
+        3,
+        3
+       ],
+       "B": [
+        3,
+        3
+       ]
+      },
+      "dtypes": {
+       "B_R": "float64",
+       "B_Z": "float64",
+       "B": "float64"
+      },
+      "declared_shapes": {
+       "B_R": [
+        3,
+        3
+       ],
+       "B_Z": [
+        3,
+        3
+       ],
+       "B": [
+        3,
+        3
+       ]
+      }
+     }
+    },
+    {
+     "claim": "v8 quadratic-flux closed form B_R=-R(e+2bZ), B_Z=2(a+eZ+bZ^2)",
+     "status": "pass",
+     "detail": {
+      "literal_parameters": {
+       "a": 1.5,
+       "e": 2.0,
+       "b": 3.0,
+       "r_grid": [
+        0.25,
+        0.5,
+        0.75,
+        1.0,
+        1.4
+       ],
+       "z_grid": [
+        -0.6,
+        -0.2,
+        0.2,
+        0.6,
+        1.0
+       ]
+      },
+      "relative_deviation": {
+       "B_R": 4.440892098500626e-16,
+       "B_Z": 3.218037752536685e-16,
+       "B": 3.7480071915151237e-16
+      },
+      "tolerance_used": "3.553e-15"
+     }
+    },
+    {
+     "claim": "v9 monomial family matches closed form within the declared 2.8 eps",
+     "status": "pass",
+     "detail": {
+      "relative_deviation": {
+       "(2,0)": {
+        "B_R": 0.0,
+        "B_Z": 2.220446049250313e-16
+       },
+       "(2,1)": {
+        "B_R": 5.55111512312578e-16,
+        "B_Z": 5.551115123125783e-16
+       },
+       "(1,2)": {
+        "B_R": 3.7007434154171886e-16,
+        "B_Z": 5.55111512312578e-16
+       },
+       "(2,2)": {
+        "B_R": 3.3643121958338077e-16,
+        "B_Z": 3.4694469519536137e-16
+       }
+      },
+      "declared_tolerance": 6.217248937900876e-16
+     }
+    },
+    {
+     "claim": "v9 axisymmetric divergence identity closes at roundoff on the returned B_R/B_Z",
+     "status": "pass",
+     "detail": {
+      "max_abs_divergence_over_term_scale": 1.6979881553090593e-15,
+      "tolerance_used": 1e-12,
+      "stencil": "numpy.gradient with edge_order=2 (exact for quadratics), term scale = max(|dR term|, |dZ term|)"
+     }
+    },
+    {
+     "claim": "v9 the declared 6.0 eps bound itself",
+     "status": "not-observed",
+     "detail": {
+      "why": "the sentence states a bound 'to 6.0 eps of the term scale' without printing the stencil or the term scale it uses; an independent stencil gives 7.6 eps of its own term scale, which neither confirms nor contradicts the declared number",
+      "observed_with_my_stencil": 1.6979881553090593e-15,
+      "declared": 1.3322676295501878e-15,
+      "ratio_observed_over_declared": 1.2745098039215659
+     }
+    },
+    {
+     "claim": "v7 nonzero radial reference vs independent Biot-Savart integration",
+     "status": "not-observed",
+     "detail": {
+      "why": "the clause compares against an 80/120-digit Biot-Savart integral of the source; the package exposes no such callable and the clause does not print the integral, so a contract-only consumer cannot reproduce it",
+      "what_is_observable": "a constant flux reference changes neither component (checked by v8's reference probe below)"
+     }
+    },
+    {
+     "claim": "v5/v8 a constant flux reference leaves B_R and B_Z unchanged",
+     "status": "pass",
+     "detail": {
+      "relative_deviation": {
+       "B_R": 0.0,
+       "B_Z": 2.220446049250311e-15
+      },
+      "reference": 3.7
+     }
+    }
+   ]
+  },
+  {
+   "asset": "scirel.geometry.path-distance",
+   "claims": [
+    {
+     "claim": "Pythagorean legs accumulate exactly (0,3,7)",
+     "status": "pass",
+     "detail": {
+      "literal": [
+       [
+        0.0,
+        0.0
+       ],
+       [
+        3.0,
+        0.0
+       ],
+       [
+        3.0,
+        4.0
+       ]
+      ],
+      "observed": {
+       "dtype": "float64",
+       "shape": [
+        3
+       ],
+       "values": [
+        0.0,
+        3.0,
+        7.0
+       ]
+      }
+     }
+    },
+    {
+     "claim": "dyadic coordinates and lengths: quarter turn leaves values bitwise identical",
+     "status": "pass",
+     "detail": {
+      "bitwise_identical": true,
+      "rotation_matrix": [
+       [
+        0.0,
+        -1.0
+       ],
+       [
+        1.0,
+        0.0
+       ]
+      ]
+     }
+    },
+    {
+     "claim": "irrational length is within 4 eps of the exact value (not bitwise)",
+     "status": "pass",
+     "detail": {
+      "observed_segment_length": 1.4142135623730951,
+      "relative_deviation_vs_60_digit_sqrt2": 0.0,
+      "declared_bound": 8.881784197001252e-16
+     }
+    }
+   ]
+  },
+  {
+   "asset": "scirel.numerics.clamped-cubic-spline / natural-cubic-spline",
+   "claims": [
+    {
+     "claim": "clamped spline reproduces a cubic when the end slopes are consistent with it",
+     "status": "pass",
+     "detail": {
+      "relative_deviation": 2.1766411461833723e-16,
+      "tolerance": 1.4210854715202004e-14,
+      "x_data": [
+       0.0,
+       0.2,
+       0.4,
+       0.6000000000000001,
+       0.8,
+       1.0
+      ],
+      "yp": [
+       0.5,
+       -0.5
+      ],
+      "query_points": [
+       0.05,
+       0.1,
+       0.15,
+       "..."
+      ]
+     }
+    },
+    {
+     "claim": "with inconsistent end slopes the same cubic is NOT reproduced (clause is not vacuous)",
+     "status": "pass",
+     "detail": {
+      "relative_deviation": 0.02908918528733637,
+      "yp": [
+       0.0,
+       0.0
+      ]
+     }
+    },
+    {
+     "claim": "natural spline reproduces a linear function exactly (data consistent with M=0 ends)",
+     "status": "pass",
+     "detail": {
+      "relative_deviation": 1.1102230246251556e-15
+     }
+    },
+    {
+     "claim": "natural spline on a cubic is NOT exact (the O(h^4) claim is conditional)",
+     "status": "pass",
+     "detail": {
+      "relative_deviation": 0.00707725578826697
+     }
+    }
+   ]
+  },
+  {
+   "asset": "scirel.numerics.truncated-svd-inverse",
+   "claims": [
+    {
+     "claim": "a singular value exactly at the cutoff is retained; the neighbour below it is discarded",
+     "status": "pass",
+     "detail": {
+      "rcond_default": 1e-10,
+      "retained_entry": 10000000000.0,
+      "relative_deviation_of_retained_reciprocal": 0.0,
+      "below_cutoff_entry": 0.0
+     }
+    },
+    {
+     "claim": "the returned matrix has the transposed shape (n,m)",
+     "status": "pass",
+     "detail": {
+      "input_shape": [
+       5,
+       3
+      ],
+      "observed_shape": [
+       3,
+       5
+      ]
+     }
+    },
+    {
+     "claim": "the hand-SVD construction covers permutation-times-diagonal spectra only",
+     "status": "not-observed",
+     "detail": {
+      "why": "this sentence describes how the maintainer's evidence was constructed inside tests/; the delivered package exposes no artefact that shows the construction, so the claim cannot be checked from the package"
+     }
+    }
+   ]
+  }
+ ],
+ "criteria": [
+  {
+   "id": "B1",
+   "kind": "shape_change",
+   "status": "pass",
+   "detail": {
+    "question": "did changing the return shape from a bare tuple to a Result move any number?",
+    "argument_source": "contract example, frozen in the delivered package",
+    "literal_arguments": {
+     "p_el": [
+      2,
+      2
+     ],
+     "p_ion": [
+      3,
+      3
+     ],
+     "p_tot": [
+      5,
+      5
+     ],
+     "vpr": {
+      "dtype": "float64",
+      "shape": [
+       2
+      ],
+      "values": [
+       2.0,
+       3.0
+      ]
+     },
+     "drho_norm": {
+      "dtype": "float64",
+      "shape": [
+       2
+      ],
+      "values": [
+       0.4,
+       0.6
+      ]
+     }
+    },
+    "read_by_name": {
+     "W_el": 7.8,
+     "W_ion": 11.7,
+     "W_tot": 19.5
+    },
+    "attribute_vs_item": {
+     "W_el": {
+      "attribute": 7.8,
+      "item": 7.8,
+      "attribute_is_item": true
+     },
+     "W_ion": {
+      "attribute": 11.7,
+      "item": 11.7,
+      "attribute_is_item": true
+     },
+     "W_tot": {
+      "attribute": 19.5,
+      "item": 19.5,
+      "attribute_is_item": true
+     }
+    },
+    "independent_exact_recomputation": {
+     "W_el": 7.8,
+     "W_ion": 11.7,
+     "W_tot": 19.5
+    },
+    "relative_deviation_vs_exact": {
+     "W_el": 0.0,
+     "W_ion": 0.0,
+     "W_tot": 0.0
+    },
+    "tolerance_used": "8.881784e-16 (4 eps, consumer-chosen)",
+    "contract_example_numbers": [
+     7.8,
+     11.7,
+     19.5
+    ],
+    "relative_deviation_vs_example_numbers": 0.0,
+    "additivity_probe_relative_deviation": 0.0,
+    "scaling_probe_relative_deviation": 0.0
+   },
+   "task_hint": "physics-coulomb-logarithms"
+  },
+  {
+   "id": "B2",
+   "kind": "shape_change",
+   "status": "pass",
+   "detail": {
+    "question": "can the round-2 record serve as the numeric baseline for this entry?",
+    "round2_record": {
+     "source": "examples/c4-usage-acceptance/round2/tasks/physics-coulomb-logarithms.json",
+     "returned_type": "tuple",
+     "returned_fields": null,
+     "numeric_payload_recorded": false
+    },
+    "why_not": "the round-2 harness stored the returned type and no value, so the tuple's numbers are not in the historical record; the numeric baseline used here is the contract's own definition, recomputed in exact rational arithmetic",
+    "consequence": "the 'shape changed, numbers unchanged' claim rests on the exact recomputation above, not on a round-2 number"
+   },
+   "task_hint": "physics-coulomb-logarithms"
+  },
+  {
+   "id": "C1",
+   "kind": "evidence_clause",
+   "status": "pass",
+   "detail": {
+    "question": "does any new evidence clause contradict what the package publicly does?",
+    "claims_checked": 17,
+    "by_status": {
+     "pass": 14,
+     "not-observed": 3
+    },
+    "contradicted": []
+   }
+  },
+  {
+   "id": "C2",
+   "kind": "evidence_clause",
+   "status": "fail",
+   "detail": {
+    "question": "is every claim in those clauses checkable with the package alone?",
+    "not_checkable": [
+     {
+      "claim": "v9 the declared 6.0 eps bound itself",
+      "why": "the sentence states a bound 'to 6.0 eps of the term scale' without printing the stencil or the term scale it uses; an independent stencil gives 7.6 eps of its own term scale, which neither confirms nor contradicts the declared number"
+     },
+     {
+      "claim": "v7 nonzero radial reference vs independent Biot-Savart integration",
+      "why": "the clause compares against an 80/120-digit Biot-Savart integral of the source; the package exposes no such callable and the clause does not print the integral, so a contract-only consumer cannot reproduce it"
+     },
+     {
+      "claim": "the hand-SVD construction covers permutation-times-diagonal spectra only",
+      "why": "this sentence describes how the maintainer's evidence was constructed inside tests/; the delivered package exposes no artefact that shows the construction, so the claim cannot be checked from the package"
+     }
+    ],
+    "note": "these are not library defects; they are sentences whose subject is how the maintainer's evidence was built, or a numeric bound whose stencil is not printed"
+   }
+  }
+ ],
+ "calls": [
+  {
+   "seq": 1,
+   "label": "thermal energy, contract example arguments",
+   "asset": "scirel.physics.thermal-energy",
+   "entrypoint": "scirel.physics.thermal_energy:calculate_stored_thermal_energy",
+   "arguments": {
+    "args": [],
+    "kwargs": {
+     "p_el": [
+      2,
+      2
+     ],
+     "p_ion": [
+      3,
+      3
+     ],
+     "p_tot": [
+      5,
+      5
+     ],
+     "vpr": {
+      "dtype": "float64",
+      "shape": [
+       2
+      ],
+      "values": [
+       2.0,
+       3.0
+      ]
+     },
+     "drho_norm": {
+      "dtype": "float64",
+      "shape": [
+       2
+      ],
+      "values": [
+       0.4,
+       0.6
+      ]
+     }
+    }
+   },
+   "status": "returned",
+   "returned_fields": [
+    "W_el",
+    "W_ion",
+    "W_tot"
+   ],
+   "exception": null,
+   "warnings": [],
+   "returned_type": "Result"
+  },
+  {
+   "seq": 1,
+   "label": "thermal energy with p_tot = p_el + p_ion",
+   "asset": "scirel.physics.thermal-energy",
+   "entrypoint": "scirel.physics.thermal_energy:calculate_stored_thermal_energy",
+   "arguments": {
+    "args": [],
+    "kwargs": {
+     "p_el": [
+      2,
+      2
+     ],
+     "p_ion": [
+      3,
+      3
+     ],
+     "p_tot": [
+      5.0,
+      5.0
+     ],
+     "vpr": {
+      "dtype": "float64",
+      "shape": [
+       2
+      ],
+      "values": [
+       2.0,
+       3.0
+      ]
+     },
+     "drho_norm": {
+      "dtype": "float64",
+      "shape": [
+       2
+      ],
+      "values": [
+       0.4,
+       0.6
+      ]
+     }
+    }
+   },
+   "status": "returned",
+   "returned_fields": [
+    "W_el",
+    "W_ion",
+    "W_tot"
+   ],
+   "exception": null,
+   "warnings": [],
+   "returned_type": "Result"
+  },
+  {
+   "seq": 1,
+   "label": "thermal energy with vpr doubled",
+   "asset": "scirel.physics.thermal-energy",
+   "entrypoint": "scirel.physics.thermal_energy:calculate_stored_thermal_energy",
+   "arguments": {
+    "args": [],
+    "kwargs": {
+     "p_el": [
+      2,
+      2
+     ],
+     "p_ion": [
+      3,
+      3
+     ],
+     "p_tot": [
+      5,
+      5
+     ],
+     "vpr": [
+      4.0,
+      6.0
+     ],
+     "drho_norm": {
+      "dtype": "float64",
+      "shape": [
+       2
+      ],
+      "values": [
+       0.4,
+       0.6
+      ]
+     }
+    }
+   },
+   "status": "returned",
+   "returned_fields": [
+    "W_el",
+    "W_ion",
+    "W_tot"
+   ],
+   "exception": null,
+   "warnings": [],
+   "returned_type": "Result"
+  },
+  {
+   "seq": 1,
+   "label": "poloidal field, contract example",
+   "asset": "scirel.field.poloidal-field-from-flux",
+   "entrypoint": "scirel.field.poloidal_field_from_flux:poloidal_field_from_flux",
+   "arguments": {
+    "args": [],
+    "kwargs": {
+     "r_grid": {
+      "dtype": "float64",
+      "shape": [
+       3,
+       3
+      ],
+      "values": [
+       [
+        0.0,
+        0.2,
+        0.4
+       ],
+       [
+        0.0,
+        0.2,
+        0.4
+       ],
+       [
+        0.0,
+        0.2,
+        0.4
+       ]
+      ]
+     },
+     "z_grid": {
+      "dtype": "float64",
+      "shape": [
+       3,
+       3
+      ],
+      "values": [
+       [
+        -0.5,
+        -0.5,
+        -0.5
+       ],
+       [
+        0.0,
+        0.0,
+        0.0
+       ],
+       [
+        0.5,
+        0.5,
+        0.5
+       ]
+      ]
+     },
+     "psi": {
+      "dtype": "float64",
+      "shape": [
+       3,
+       3
+      ],
+      "values": [
+       [
+        0.0,
+        0.04000000000000001,
+        0.16000000000000003
+       ],
+       [
+        0.0,
+        0.04000000000000001,
+        0.16000000000000003
+       ],
+       [
+        0.0,
+        0.04000000000000001,
+        0.16000000000000003
+       ]
+      ]
+     }
+    }
+   },
+   "status": "returned",
+   "returned_fields": [
+    "B",
+    "B_R",
+    "B_Z"
+   ],
+   "exception": null,
+   "warnings": [],
+   "returned_type": "Result"
+  },
+  {
+   "seq": 1,
+   "label": "manufactured quadratic flux R^2(a+eZ+bZ^2)",
+   "asset": "scirel.field.poloidal-field-from-flux",
+   "entrypoint": "scirel.field.poloidal_field_from_flux:poloidal_field_from_flux",
+   "arguments": {
+    "args": [],
+    "kwargs": {
+     "r_grid": [
+      [
+       0.25,
+       0.5,
+       0.75,
+       1.0,
+       1.4
+      ],
+      [
+       0.25,
+       0.5,
+       0.75,
+       1.0,
+       1.4
+      ],
+      [
+       0.25,
+       0.5,
+       0.75,
+       1.0,
+       1.4
+      ],
+      [
+       0.25,
+       0.5,
+       0.75,
+       1.0,
+       1.4
+      ],
+      [
+       0.25,
+       0.5,
+       0.75,
+       1.0,
+       1.4
+      ]
+     ],
+     "z_grid": [
+      [
+       -0.6,
+       -0.6,
+       -0.6,
+       -0.6,
+       -0.6
+      ],
+      [
+       -0.2,
+       -0.2,
+       -0.2,
+       -0.2,
+       -0.2
+      ],
+      [
+       0.2,
+       0.2,
+       0.2,
+       0.2,
+       0.2
+      ],
+      [
+       0.6,
+       0.6,
+       0.6,
+       0.6,
+       0.6
+      ],
+      [
+       1.0,
+       1.0,
+       1.0,
+       1.0,
+       1.0
+      ]
+     ],
+     "psi": [
+      [
+       0.08625000000000001,
+       0.34500000000000003,
+       0.7762500000000001,
+       1.3800000000000001,
+       2.7047999999999996
+      ],
+      [
+       0.07625000000000001,
+       0.30500000000000005,
+       0.6862500000000001,
+       1.2200000000000002,
+       2.3912
+      ],
+      [
+       0.12625,
+       0.505,
+       1.13625,
+       2.02,
+       3.9591999999999996
+      ],
+      [
+       0.23625000000000002,
+       0.9450000000000001,
+       2.12625,
+       3.7800000000000002,
+       7.408799999999999
+      ],
+      [
+       0.40625,
+       1.625,
+       3.65625,
+       6.5,
+       12.739999999999998
+      ]
+     ]
+    }
+   },
+   "status": "returned",
+   "returned_fields": [
+    "B",
+    "B_R",
+    "B_Z"
+   ],
+   "exception": null,
+   "warnings": [],
+   "returned_type": "Result"
+  },
+  {
+   "seq": 1,
+   "label": "monomial flux R^2 Z^0",
+   "asset": "scirel.field.poloidal-field-from-flux",
+   "entrypoint": "scirel.field.poloidal_field_from_flux:poloidal_field_from_flux",
+   "arguments": {
+    "args": [],
+    "kwargs": {
+     "r_grid": [
+      [
+       0.3,
+       0.7,
+       1.1,
+       1.9
+      ],
+      [
+       0.3,
+       0.7,
+       1.1,
+       1.9
+      ],
+      [
+       0.3,
+       0.7,
+       1.1,
+       1.9
+      ],
+      [
+       0.3,
+       0.7,
+       1.1,
+       1.9
+      ]
+     ],
+     "z_grid": [
+      [
+       -0.9,
+       -0.9,
+       -0.9,
+       -0.9
+      ],
+      [
+       -0.3,
+       -0.3,
+       -0.3,
+       -0.3
+      ],
+      [
+       0.4,
+       0.4,
+       0.4,
+       0.4
+      ],
+      [
+       1.2,
+       1.2,
+       1.2,
+       1.2
+      ]
+     ],
+     "psi": [
+      [
+       0.09,
+       0.48999999999999994,
+       1.2100000000000002,
+       3.61
+      ],
+      [
+       0.09,
+       0.48999999999999994,
+       1.2100000000000002,
+       3.61
+      ],
+      [
+       0.09,
+       0.48999999999999994,
+       1.2100000000000002,
+       3.61
+      ],
+      [
+       0.09,
+       0.48999999999999994,
+       1.2100000000000002,
+       3.61
+      ]
+     ]
+    }
+   },
+   "status": "returned",
+   "returned_fields": [
+    "B",
+    "B_R",
+    "B_Z"
+   ],
+   "exception": null,
+   "warnings": [],
+   "returned_type": "Result"
+  },
+  {
+   "seq": 1,
+   "label": "monomial flux R^2 Z^1",
+   "asset": "scirel.field.poloidal-field-from-flux",
+   "entrypoint": "scirel.field.poloidal_field_from_flux:poloidal_field_from_flux",
+   "arguments": {
+    "args": [],
+    "kwargs": {
+     "r_grid": [
+      [
+       0.3,
+       0.7,
+       1.1,
+       1.9
+      ],
+      [
+       0.3,
+       0.7,
+       1.1,
+       1.9
+      ],
+      [
+       0.3,
+       0.7,
+       1.1,
+       1.9
+      ],
+      [
+       0.3,
+       0.7,
+       1.1,
+       1.9
+      ]
+     ],
+     "z_grid": [
+      [
+       -0.9,
+       -0.9,
+       -0.9,
+       -0.9
+      ],
+      [
+       -0.3,
+       -0.3,
+       -0.3,
+       -0.3
+      ],
+      [
+       0.4,
+       0.4,
+       0.4,
+       0.4
+      ],
+      [
+       1.2,
+       1.2,
+       1.2,
+       1.2
+      ]
+     ],
+     "psi": [
+      [
+       -0.081,
+       -0.44099999999999995,
+       -1.0890000000000002,
+       -3.249
+      ],
+      [
+       -0.027,
+       -0.14699999999999996,
+       -0.36300000000000004,
+       -1.083
+      ],
+      [
+       0.036,
+       0.19599999999999998,
+       0.4840000000000001,
+       1.444
+      ],
+      [
+       0.108,
+       0.5879999999999999,
+       1.4520000000000002,
+       4.332
+      ]
+     ]
+    }
+   },
+   "status": "returned",
+   "returned_fields": [
+    "B",
+    "B_R",
+    "B_Z"
+   ],
+   "exception": null,
+   "warnings": [],
+   "returned_type": "Result"
+  },
+  {
+   "seq": 1,
+   "label": "monomial flux R^1 Z^2",
+   "asset": "scirel.field.poloidal-field-from-flux",
+   "entrypoint": "scirel.field.poloidal_field_from_flux:poloidal_field_from_flux",
+   "arguments": {
+    "args": [],
+    "kwargs": {
+     "r_grid": [
+      [
+       0.3,
+       0.7,
+       1.1,
+       1.9
+      ],
+      [
+       0.3,
+       0.7,
+       1.1,
+       1.9
+      ],
+      [
+       0.3,
+       0.7,
+       1.1,
+       1.9
+      ],
+      [
+       0.3,
+       0.7,
+       1.1,
+       1.9
+      ]
+     ],
+     "z_grid": [
+      [
+       -0.9,
+       -0.9,
+       -0.9,
+       -0.9
+      ],
+      [
+       -0.3,
+       -0.3,
+       -0.3,
+       -0.3
+      ],
+      [
+       0.4,
+       0.4,
+       0.4,
+       0.4
+      ],
+      [
+       1.2,
+       1.2,
+       1.2,
+       1.2
+      ]
+     ],
+     "psi": [
+      [
+       0.243,
+       0.567,
+       0.8910000000000001,
+       1.539
+      ],
+      [
+       0.027,
+       0.063,
+       0.099,
+       0.17099999999999999
+      ],
+      [
+       0.04800000000000001,
+       0.11200000000000002,
+       0.17600000000000005,
+       0.30400000000000005
+      ],
+      [
+       0.432,
+       1.008,
+       1.584,
+       2.7359999999999998
+      ]
+     ]
+    }
+   },
+   "status": "returned",
+   "returned_fields": [
+    "B",
+    "B_R",
+    "B_Z"
+   ],
+   "exception": null,
+   "warnings": [],
+   "returned_type": "Result"
+  },
+  {
+   "seq": 1,
+   "label": "monomial flux R^2 Z^2",
+   "asset": "scirel.field.poloidal-field-from-flux",
+   "entrypoint": "scirel.field.poloidal_field_from_flux:poloidal_field_from_flux",
+   "arguments": {
+    "args": [],
+    "kwargs": {
+     "r_grid": [
+      [
+       0.3,
+       0.7,
+       1.1,
+       1.9
+      ],
+      [
+       0.3,
+       0.7,
+       1.1,
+       1.9
+      ],
+      [
+       0.3,
+       0.7,
+       1.1,
+       1.9
+      ],
+      [
+       0.3,
+       0.7,
+       1.1,
+       1.9
+      ]
+     ],
+     "z_grid": [
+      [
+       -0.9,
+       -0.9,
+       -0.9,
+       -0.9
+      ],
+      [
+       -0.3,
+       -0.3,
+       -0.3,
+       -0.3
+      ],
+      [
+       0.4,
+       0.4,
+       0.4,
+       0.4
+      ],
+      [
+       1.2,
+       1.2,
+       1.2,
+       1.2
+      ]
+     ],
+     "psi": [
+      [
+       0.0729,
+       0.3969,
+       0.9801000000000002,
+       2.9241
+      ],
+      [
+       0.0081,
+       0.04409999999999999,
+       0.10890000000000001,
+       0.32489999999999997
+      ],
+      [
+       0.014400000000000003,
+       0.07840000000000001,
+       0.19360000000000008,
+       0.5776000000000001
+      ],
+      [
+       0.1296,
+       0.7055999999999999,
+       1.7424000000000002,
+       5.1983999999999995
+      ]
+     ]
+    }
+   },
+   "status": "returned",
+   "returned_fields": [
+    "B",
+    "B_R",
+    "B_Z"
+   ],
+   "exception": null,
+   "warnings": [],
+   "returned_type": "Result"
+  },
+  {
+   "seq": 1,
+   "label": "divergence identity probe",
+   "asset": "scirel.field.poloidal-field-from-flux",
+   "entrypoint": "scirel.field.poloidal_field_from_flux:poloidal_field_from_flux",
+   "arguments": {
+    "args": [],
+    "kwargs": {
+     "r_grid": [
+      [
+       0.3,
+       0.7,
+       1.1,
+       1.9
+      ],
+      [
+       0.3,
+       0.7,
+       1.1,
+       1.9
+      ],
+      [
+       0.3,
+       0.7,
+       1.1,
+       1.9
+      ],
+      [
+       0.3,
+       0.7,
+       1.1,
+       1.9
+      ],
+      [
+       0.3,
+       0.7,
+       1.1,
+       1.9
+      ]
+     ],
+     "z_grid": [
+      [
+       -0.8,
+       -0.8,
+       -0.8,
+       -0.8
+      ],
+      [
+       -0.4,
+       -0.4,
+       -0.4,
+       -0.4
+      ],
+      [
+       0.0,
+       0.0,
+       0.0,
+       0.0
+      ],
+      [
+       0.4,
+       0.4,
+       0.4,
+       0.4
+      ],
+      [
+       0.8,
+       0.8,
+       0.8,
+       0.8
+      ]
+     ],
+     "psi": [
+      [
+       0.16380000000000003,
+       0.8918,
+       2.202200000000001,
+       6.570200000000001
+      ],
+      [
+       0.10620000000000002,
+       0.5782,
+       1.4278000000000004,
+       4.2598
+      ],
+      [
+       0.135,
+       0.7349999999999999,
+       1.8150000000000004,
+       5.415
+      ],
+      [
+       0.2502,
+       1.3621999999999996,
+       3.3638000000000003,
+       10.035799999999998
+      ],
+      [
+       0.45180000000000003,
+       2.4598,
+       6.074200000000001,
+       18.1222
+      ]
+     ]
+    }
+   },
+   "status": "returned",
+   "returned_fields": [
+    "B",
+    "B_R",
+    "B_Z"
+   ],
+   "exception": null,
+   "warnings": [],
+   "returned_type": "Result"
+  },
+  {
+   "seq": 1,
+   "label": "constant-reference baseline",
+   "asset": "scirel.field.poloidal-field-from-flux",
+   "entrypoint": "scirel.field.poloidal_field_from_flux:poloidal_field_from_flux",
+   "arguments": {
+    "args": [],
+    "kwargs": {
+     "r_grid": [
+      [
+       0.3,
+       0.8,
+       1.5
+      ],
+      [
+       0.3,
+       0.8,
+       1.5
+      ],
+      [
+       0.3,
+       0.8,
+       1.5
+      ]
+     ],
+     "z_grid": [
+      [
+       -0.5,
+       -0.5,
+       -0.5
+      ],
+      [
+       0.0,
+       0.0,
+       0.0
+      ],
+      [
+       0.5,
+       0.5,
+       0.5
+      ]
+     ],
+     "psi": [
+      [
+       0.09,
+       0.6400000000000001,
+       2.25
+      ],
+      [
+       0.09,
+       0.6400000000000001,
+       2.25
+      ],
+      [
+       0.09,
+       0.6400000000000001,
+       2.25
+      ]
+     ]
+    }
+   },
+   "status": "returned",
+   "returned_fields": [
+    "B",
+    "B_R",
+    "B_Z"
+   ],
+   "exception": null,
+   "warnings": [],
+   "returned_type": "Result"
+  },
+  {
+   "seq": 1,
+   "label": "constant psi reference +3.7",
+   "asset": "scirel.field.poloidal-field-from-flux",
+   "entrypoint": "scirel.field.poloidal_field_from_flux:poloidal_field_from_flux",
+   "arguments": {
+    "args": [],
+    "kwargs": {
+     "r_grid": [
+      [
+       0.3,
+       0.8,
+       1.5
+      ],
+      [
+       0.3,
+       0.8,
+       1.5
+      ],
+      [
+       0.3,
+       0.8,
+       1.5
+      ]
+     ],
+     "z_grid": [
+      [
+       -0.5,
+       -0.5,
+       -0.5
+      ],
+      [
+       0.0,
+       0.0,
+       0.0
+      ],
+      [
+       0.5,
+       0.5,
+       0.5
+      ]
+     ],
+     "psi": [
+      [
+       3.79,
+       4.34,
+       5.95
+      ],
+      [
+       3.79,
+       4.34,
+       5.95
+      ],
+      [
+       3.79,
+       4.34,
+       5.95
+      ]
+     ]
+    }
+   },
+   "status": "returned",
+   "returned_fields": [
+    "B",
+    "B_R",
+    "B_Z"
+   ],
+   "exception": null,
+   "warnings": [],
+   "returned_type": "Result"
+  },
+  {
+   "seq": 1,
+   "label": "3-4-5 polyline",
+   "asset": "scirel.geometry.path-distance",
+   "entrypoint": "scirel.geometry.sampling:get_fieldline_distance",
+   "arguments": {
+    "args": [],
+    "kwargs": {
+     "flpoints": [
+      [
+       0.0,
+       0.0
+      ],
+      [
+       3.0,
+       0.0
+      ],
+      [
+       3.0,
+       4.0
+      ]
+     ]
+    }
+   },
+   "status": "returned",
+   "returned_fields": null,
+   "exception": null,
+   "warnings": [],
+   "returned_type": "ndarray"
+  },
+  {
+   "seq": 1,
+   "label": "same polyline rotated by an exact quarter turn",
+   "asset": "scirel.geometry.path-distance",
+   "entrypoint": "scirel.geometry.sampling:get_fieldline_distance",
+   "arguments": {
+    "args": [],
+    "kwargs": {
+     "flpoints": [
+      [
+       0.0,
+       0.0
+      ],
+      [
+       0.0,
+       3.0
+      ],
+      [
+       -4.0,
+       3.0
+      ]
+     ]
+    }
+   },
+   "status": "returned",
+   "returned_fields": null,
+   "exception": null,
+   "warnings": [],
+   "returned_type": "ndarray"
+  },
+  {
+   "seq": 1,
+   "label": "irrational segment (1,1)",
+   "asset": "scirel.geometry.path-distance",
+   "entrypoint": "scirel.geometry.sampling:get_fieldline_distance",
+   "arguments": {
+    "args": [],
+    "kwargs": {
+     "flpoints": [
+      [
+       0.0,
+       0.0
+      ],
+      [
+       1.0,
+       1.0
+      ]
+     ]
+    }
+   },
+   "status": "returned",
+   "returned_fields": null,
+   "exception": null,
+   "warnings": [],
+   "returned_type": "ndarray"
+  },
+  {
+   "seq": 1,
+   "label": "clamped spline on a cubic with matching end slopes",
+   "asset": "scirel.numerics.clamped-cubic-spline",
+   "entrypoint": "scirel.numerics.basis:ClampedCubicSpline",
+   "arguments": {
+    "args": [],
+    "kwargs": {
+     "x_data": [
+      0.0,
+      0.2,
+      0.4,
+      0.6000000000000001,
+      0.8,
+      1.0
+     ],
+     "y_data": [
+      1.0,
+      1.028,
+      0.944,
+      0.7959999999999999,
+      0.6319999999999999,
+      0.5
+     ],
+     "yp": [
+      0.5,
+      -0.5
+     ]
+    }
+   },
+   "status": "returned",
+   "returned_fields": null,
+   "exception": null,
+   "warnings": [],
+   "returned_type": "ClampedCubicSpline"
+  },
+  {
+   "seq": 1,
+   "label": "clamped spline on the same cubic with yp=(0,0)",
+   "asset": "scirel.numerics.clamped-cubic-spline",
+   "entrypoint": "scirel.numerics.basis:ClampedCubicSpline",
+   "arguments": {
+    "args": [],
+    "kwargs": {
+     "x_data": [
+      0.0,
+      0.2,
+      0.4,
+      0.6000000000000001,
+      0.8,
+      1.0
+     ],
+     "y_data": [
+      1.0,
+      1.028,
+      0.944,
+      0.7959999999999999,
+      0.6319999999999999,
+      0.5
+     ],
+     "yp": [
+      0.0,
+      0.0
+     ]
+    }
+   },
+   "status": "returned",
+   "returned_fields": null,
+   "exception": null,
+   "warnings": [],
+   "returned_type": "ClampedCubicSpline"
+  },
+  {
+   "seq": 1,
+   "label": "natural spline on a linear function",
+   "asset": "scirel.numerics.natural-cubic-spline",
+   "entrypoint": "scirel.numerics.basis:NaturalCubicSpline",
+   "arguments": {
+    "args": [],
+    "kwargs": {
+     "x_data": [
+      0.3,
+      0.575,
+      0.8499999999999999,
+      1.125,
+      1.4
+     ],
+     "y_data": [
+      -0.4,
+      0.1499999999999999,
+      0.6999999999999997,
+      1.25,
+      1.7999999999999998
+     ]
+    }
+   },
+   "status": "returned",
+   "returned_fields": null,
+   "exception": null,
+   "warnings": [],
+   "returned_type": "NaturalCubicSpline"
+  },
+  {
+   "seq": 1,
+   "label": "natural spline on the same cubic",
+   "asset": "scirel.numerics.natural-cubic-spline",
+   "entrypoint": "scirel.numerics.basis:NaturalCubicSpline",
+   "arguments": {
+    "args": [],
+    "kwargs": {
+     "x_data": [
+      0.0,
+      0.2,
+      0.4,
+      0.6000000000000001,
+      0.8,
+      1.0
+     ],
+     "y_data": [
+      1.0,
+      1.028,
+      0.944,
+      0.7959999999999999,
+      0.6319999999999999,
+      0.5
+     ]
+    }
+   },
+   "status": "returned",
+   "returned_fields": null,
+   "exception": null,
+   "warnings": [],
+   "returned_type": "NaturalCubicSpline"
+  },
+  {
+   "seq": 1,
+   "label": "singular value exactly at the cutoff",
+   "asset": "scirel.numerics.truncated-svd-inverse",
+   "entrypoint": "scirel.numerics.linalg.truncated_pseudoinverse:compute_truncated_pseudoinverse",
+   "arguments": {
+    "args": [],
+    "kwargs": {
+     "mat": [
+      [
+       1.0,
+       0.0
+      ],
+      [
+       0.0,
+       1e-10
+      ]
+     ]
+    }
+   },
+   "status": "returned",
+   "returned_fields": null,
+   "exception": null,
+   "warnings": [],
+   "returned_type": "ndarray"
+  },
+  {
+   "seq": 1,
+   "label": "singular value just below the cutoff",
+   "asset": "scirel.numerics.truncated-svd-inverse",
+   "entrypoint": "scirel.numerics.linalg.truncated_pseudoinverse:compute_truncated_pseudoinverse",
+   "arguments": {
+    "args": [],
+    "kwargs": {
+     "mat": [
+      [
+       1.0,
+       0.0
+      ],
+      [
+       0.0,
+       1e-11
+      ]
+     ]
+    }
+   },
+   "status": "returned",
+   "returned_fields": null,
+   "exception": null,
+   "warnings": [],
+   "returned_type": "ndarray"
+  },
+  {
+   "seq": 1,
+   "label": "shape of a wide matrix",
+   "asset": "scirel.numerics.truncated-svd-inverse",
+   "entrypoint": "scirel.numerics.linalg.truncated_pseudoinverse:compute_truncated_pseudoinverse",
+   "arguments": {
+    "args": [],
+    "kwargs": {
+     "mat": [
+      [
+       1.0,
+       1.0,
+       1.0
+      ],
+      [
+       1.0,
+       1.0,
+       1.0
+      ],
+      [
+       1.0,
+       1.0,
+       1.0
+      ],
+      [
+       1.0,
+       1.0,
+       1.0
+      ],
+      [
+       1.0,
+       1.0,
+       1.0
+      ]
+     ]
+    }
+   },
+   "status": "returned",
+   "returned_fields": null,
+   "exception": null,
+   "warnings": [],
+   "returned_type": "ndarray"
+  }
+ ],
+ "elapsed_s": 0.5,
+ "status_counts": {
+  "pass": 5,
+  "fail": 2
+ }
+}

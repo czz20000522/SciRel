@@ -1,0 +1,210 @@
+{
+ "task_id": "fusion-dd-neutron-energy",
+ "kind": "nominal",
+ "domain": "fusion",
+ "subdomain": "laboratory neutron energy for the D-D reaction",
+ "question": "Evaluate the declared laboratory neutron energy for the D-D reaction over a declared incidence energy range and report the kinematic limits the contract declares.",
+ "assets_declared": [
+  "scirel.fusion.dd-neutron-lab-energy"
+ ],
+ "min_calls": 2,
+ "package": {
+  "python": "3.14.7",
+  "numpy": "2.5.4",
+  "scipy": "1.18.1",
+  "mpmath": "1.4.1",
+  "wheel_sha256": "f1501a3efbdaba7b18c9af7be06ff30d9a33caf2777534de71f6833b93938b2a",
+  "snapshot_sha256": "7572961c553ecca28c506a392297d514b714eb1fcdffccfff262618d75b60bf3",
+  "source_revision": "d429359dcfbf37aedf09aa64cfa78b89da3b3623",
+  "asset_count": 249,
+  "runtime": {
+   "dependencies_bundled": false,
+   "package_version": "0.0.0",
+   "requires_dist": [
+    "numpy==2.5.4",
+    "scipy==1.18.1",
+    "mpmath==1.4.1"
+   ],
+   "requires_python": ">=3.12",
+   "wheel": "scirel-0.0.0-py3-none-any.whl",
+   "wheel_sha256": "f1501a3efbdaba7b18c9af7be06ff30d9a33caf2777534de71f6833b93938b2a"
+  }
+ },
+ "assets_used": [
+  "scirel.fusion.dd-neutron-lab-energy"
+ ],
+ "calls": [
+  {
+   "seq": 1,
+   "label": "zero boost through the declared entry point",
+   "asset": "scirel.fusion.dd-neutron-lab-energy",
+   "entrypoint": "scirel.fusion.dd_neutron_lab_energy:calculate_dd_neutron_lab_energy_kev",
+   "arguments": {
+    "args": [],
+    "kwargs": {
+     "reactant1_velocity_cm_s": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "reactant2_velocity_cm_s": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "detector_unit_vector": [
+      1.0,
+      0.0,
+      0.0
+     ]
+    }
+   },
+   "status": "returned",
+   "returned_fields": null,
+   "exception": null,
+   "warnings": [],
+   "returned_type": "float"
+  },
+  {
+   "seq": 2,
+   "label": "declared example boost",
+   "asset": "scirel.fusion.dd-neutron-lab-energy",
+   "entrypoint": "scirel.fusion.dd_neutron_lab_energy:calculate_dd_neutron_lab_energy_kev",
+   "arguments": {
+    "args": [],
+    "kwargs": {
+     "reactant1_velocity_cm_s": [
+      0,
+      0,
+      0
+     ],
+     "reactant2_velocity_cm_s": [
+      0,
+      0,
+      0
+     ],
+     "detector_unit_vector": [
+      1.0,
+      0.0,
+      0.0
+     ]
+    }
+   },
+   "status": "returned",
+   "returned_fields": null,
+   "exception": null,
+   "warnings": [],
+   "returned_type": "float"
+  }
+ ],
+ "answer": {
+  "value": {
+   "zero_boost_returned_kev": 2450.47589941598,
+   "recomputed_kev": 2450.252265253471,
+   "relative_deviation": 9.126985236609334e-05,
+   "construction": "1000*Q*m_He3/(m_n+m_He3) at zero boost",
+   "declared_boost_returned_kev": {
+    "dtype": "float64",
+    "shape": [],
+    "values": 2450.47589941598
+   }
+  },
+  "unit": "keV"
+ },
+ "independent_check": {
+  "method": "the zero-boost energy is recomputed from the printed construction with standard CODATA masses supplied by the consumer (not from the package)",
+  "observed": {
+   "zero_boost_returned_kev": 2450.47589941598,
+   "recomputed_kev": 2450.252265253471,
+   "relative_deviation": 9.126985236609334e-05,
+   "construction": "1000*Q*m_He3/(m_n+m_He3) at zero boost",
+   "declared_boost_returned_kev": {
+    "dtype": "float64",
+    "shape": [],
+    "values": 2450.47589941598
+   }
+  },
+  "verdict": "fail"
+ },
+ "criteria": [
+  {
+   "id": "fields",
+   "kind": "contract_fields",
+   "status": "pass",
+   "detail": {
+    "channel": "single declared output returned positionally",
+    "declared": {
+     "name": "neutron_energy_kev",
+     "dtype": "float",
+     "shape": "scalar"
+    },
+    "returned_type": "float",
+    "checks": {
+     "numeric_dtype": true,
+     "scalar_shape": true
+    },
+    "verdict": "compatible",
+    "all_declared_outputs": [
+     "neutron_energy_kev"
+    ]
+   }
+  },
+  {
+   "id": "declared_construction",
+   "kind": "invariant",
+   "status": "fail",
+   "detail": {
+    "zero_boost_returned_kev": 2450.47589941598,
+    "recomputed_kev": 2450.252265253471,
+    "relative_deviation": 9.126985236609334e-05,
+    "construction": "1000*Q*m_He3/(m_n+m_He3) at zero boost",
+    "declared_boost_returned_kev": {
+     "dtype": "float64",
+     "shape": [],
+     "values": 2450.47589941598
+    }
+   }
+  },
+  {
+   "id": "readback",
+   "kind": "readback",
+   "status": "pass",
+   "detail": {
+    "reopened": "fusion-dd-neutron-energy.json",
+    "problems": [],
+    "stored_call_count": 2
+   }
+  }
+ ],
+ "package_sufficient": false,
+ "sufficient_reason": "the boost pair is an argument, so the zero-boost branch is reachable",
+ "gaps": [
+  {
+   "level": "confidence",
+   "text": "the recomputation uses CODATA masses the consumer supplied; the package does not return the mass constants it used"
+  }
+ ],
+ "bindings": {
+  "scirel.fusion.dd-neutron-lab-energy": {
+   "symbol": "calculate_dd_neutron_lab_energy_kev",
+   "args": {
+    "reactant1_velocity_cm_s": [
+     0,
+     0,
+     0
+    ],
+    "reactant2_velocity_cm_s": [
+     0,
+     0,
+     0
+    ],
+    "detector_unit_vector": [
+     1.0,
+     0.0,
+     0.0
+    ]
+   },
+   "example_error": null
+  }
+ }
+}
