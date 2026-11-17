@@ -1,144 +1,149 @@
 {
- "schema": "scirel.asset-document",
- "version": {
-  "implementation_version": "0.0.0",
-  "dependencies": []
- },
- "verification": {
-  "scope": [
-   "test_rotation_inverse_distance_and_nonmutation checks inverse rotation, distance preservation and unchanged inputs at its parametrized angles.",
-   "The executable rotation example stored in this contract.",
-   "Direct shape regressions require ValueError for scalar points and preserve the input shape and values for zero-angle single, empty and batched (..., 2) points without mutating the caller's array.",
-   "Finite-input translation, rotation and final-addition overflow raises FloatingPointError under NumPy warn, ignore and raise modes; non-finite inputs still raise ValueError, and representable results preserve float64, shape and caller-owned inputs.",
-   "Independent basis (tests/geometry/test_transform_roundtrip_evidence.py, tests/geometry/test_frame_convention_evidence.py): an exact rational recomputation of R' = x c + y s and Z' = -x s + y c in Fraction, from the same rounded c and s the implementation reads, bounds the formula to 2 eps (|x| + |y|) and so decides the sign pairing without touching the transcendental inputs; the round-trip pair rotate(-angle) after rotate(angle) is the identity to 8 eps for six angles, a pivot, a full turn, a leading batch axis and a single row; at 90 degrees the exact rational sum rounds bitwise onto each returned component, so the whole deviation from the ideal map is cos(radians(90)) = 6.12e-17; and the axis, unit, pivot and FloatingPointError channels are decided by discriminators in the same file."
-  ],
-  "tests": [
-   "tests/geometry/test_geometry_qualification.py",
-   "tests/geometry/test_runtime_lifecycle.py",
-   "tests/geometry/test_rotate_failures.py",
-   "tests/geometry/test_frame_convention_evidence.py",
-   "tests/geometry/test_transform_roundtrip_evidence.py"
-  ],
-  "evidence_ceiling": "Named finite geometry cases only; no field-solver, experimental, or release claim is made. C1 evidence adds the orientation sign, the degree unit, the pivot, the full-turn identity and the overflow path; it is a planar transform, not a 3-D rotation, and carries no measure. C1 evidence adds the exact rational recomputation of both components, the forward-inverse identity and the 90 degree rounding account.",
-  "known_limitations": [
-   "This planar transform does not validate a physical field model or enforce nonnegative cylindrical R.",
-   "The rotation is clockwise-positive in degrees and planar in (R, Z); it does not enforce non-negative R and a caller expecting the mathematical counter-clockwise convention gets the mirrored angle without any warning."
-  ]
- },
- "asset_id": "scirel.geometry.rotate",
- "title": {
-  "en": "Planar cylindrical rotation",
-  "zh": "柱面平面旋转"
- },
- "summary": "Rotate row-vectors in the cylindrical R,Z plane, returning finite points or raising FloatingPointError if finite-input arithmetic produces non-finite values.",
- "taxonomy": [
-  "geometry",
-  "coordinates",
-  "transform"
- ],
- "aliases": [
-  "rotate"
- ],
- "discovery": {
-  "capability": [
-   "Planar cylindrical rotation",
-   "Rotate row-vectors in the cylindrical R,Z plane about a pivot."
-  ],
-  "operation": [
-   "rigid planar rotation relation",
-   "points, angle and pivot -> rotated points"
-  ],
-  "model": "Two-dimensional rigid rotation in the R,Z plane.",
-  "geometry": "Two-dimensional R,Z plane.",
-  "boundary": "Finite 2-vector pivot and finite points.",
-  "device_scope": "generic"
- },
- "identity": {
-  "relation": "Rigid planar rotation relation",
-  "direction": "points and angle to rotated points",
-  "definition": "Clockwise-positive row-vector rotation in degrees",
-  "model": "Two-dimensional R,Z plane",
-  "geometry": "Two-dimensional R,Z plane",
-  "coordinates": "Cylindrical R,Z",
-  "boundary": "Finite 2-vector pivot and points",
-  "assumptions": [
-   "Finite final axis length 2"
-  ]
- },
- "inputs": [
-  {
-   "name": "pts",
-   "description": "Point rows",
-   "units": "m",
-   "shape": "(...,2)",
-   "dtype": "Finite float64",
-   "required": true,
-   "constraints": "Final dimension length 2"
+  "schema": "scirel.asset-document",
+  "version": {
+    "implementation_version": "0.0.0",
+    "dependencies": []
   },
-  {
-   "name": "angle",
-   "description": "Rotation angle",
-   "units": "degree",
-   "shape": "scalar",
-   "dtype": "float",
-   "required": true,
-   "constraints": "Finite degrees"
+  "verification": {
+    "scope": [
+      "test_rotation_inverse_distance_and_nonmutation checks inverse rotation, distance preservation and unchanged inputs at its parametrized angles.",
+      "The executable rotation example stored in this contract.",
+      "Direct shape regressions require ValueError for scalar points and preserve the input shape and values for zero-angle single, empty and batched (..., 2) points without mutating the caller's array.",
+      "Finite-input translation, rotation and final-addition overflow raises FloatingPointError under NumPy warn, ignore and raise modes; non-finite inputs still raise ValueError, and representable results preserve float64, shape and caller-owned inputs.",
+      "Independent basis (tests/geometry/test_transform_roundtrip_evidence.py, tests/geometry/test_frame_convention_evidence.py): an exact rational recomputation of R' = x c + y s and Z' = -x s + y c in Fraction, from the same rounded c and s the implementation reads, bounds the formula to 2 eps (|x| + |y|) and so decides the sign pairing without touching the transcendental inputs; the round-trip pair rotate(-angle) after rotate(angle) is the identity to 8 eps for six angles, a pivot, a full turn, a leading batch axis and a single row; at 90 degrees the exact rational sum rounds bitwise onto each returned component, so the whole deviation from the ideal map is cos(radians(90)) = 6.12e-17; and the axis, unit, pivot and FloatingPointError channels are decided by discriminators in the same file."
+    ],
+    "tests": [
+      "tests/geometry/test_geometry_qualification.py",
+      "tests/geometry/test_runtime_lifecycle.py",
+      "tests/geometry/test_rotate_failures.py",
+      "tests/geometry/test_frame_convention_evidence.py",
+      "tests/geometry/test_transform_roundtrip_evidence.py"
+    ],
+    "evidence_ceiling": "Named finite geometry cases only; no field-solver, experimental, or release claim is made. C1 evidence adds the orientation sign, the degree unit, the pivot, the full-turn identity and the overflow path; it is a planar transform, not a 3-D rotation, and carries no measure. C1 evidence adds the exact rational recomputation of both components, the forward-inverse identity and the 90 degree rounding account.",
+    "known_limitations": [
+      "This planar transform does not validate a physical field model or enforce nonnegative cylindrical R.",
+      "The rotation is clockwise-positive in degrees and planar in (R, Z); it does not enforce non-negative R and a caller expecting the mathematical counter-clockwise convention gets the mirrored angle without any warning."
+    ],
+    "basis": {
+      "kind": "closed-form",
+      "statement": "The orientation sign, the degree unit, the pivot, the full-turn identity and the overflow path are asserted, with an exact rational recomputation of both components. This is a planar transform, not a 3-D rotation, and it carries no measure.",
+      "source": "tests/geometry/test_rotate.py"
+    }
   },
-  {
-   "name": "pivot",
-   "description": "Rotation pivot",
-   "units": "m",
-   "shape": "(2,)",
-   "dtype": "Finite float64",
-   "required": false,
-   "constraints": "Finite R,Z pivot",
-   "default": [
-    0.0,
-    0.0
-   ]
-  }
- ],
- "outputs": [
-  {
-   "name": "rotated",
-   "description": "Rotated points",
-   "units": "m",
-   "shape": "(...,2)",
-   "dtype": "Finite float64",
-   "required": true,
-   "constraints": "Input shape preserved"
-  }
- ],
- "applicability": {
-  "preconditions": [
-   "Inputs satisfy the documented finite cylindrical coordinate and shape contract"
+  "asset_id": "scirel.geometry.rotate",
+  "title": {
+    "en": "Planar cylindrical rotation",
+    "zh": "柱面平面旋转"
+  },
+  "summary": "Rotate row-vectors in the cylindrical R,Z plane, returning finite points or raising FloatingPointError if finite-input arithmetic produces non-finite values.",
+  "taxonomy": [
+    "geometry",
+    "coordinates",
+    "transform"
   ],
-  "supported": [
-   "Rigid rotation and inverse/metric invariants"
+  "aliases": [
+    "rotate"
   ],
-  "excluded": [
-   "3-D physical rotation",
-   "Nonfinite points"
-  ]
- },
- "failure_semantics": {
-  "invalid_input": "Raises ValueError for scalar pts, points without a final axis of length 2, nonfinite point coordinates, a pivot not shaped (2,) or containing nonfinite values, or a nonfinite angle. Negative R is not rejected by this planar transform.",
-  "runtime_failure": "Raises FloatingPointError if finite inputs produce non-finite intermediate values or rotated points, independently of NumPy warn, ignore or raise settings. Python/NumPy conversion exceptions propagate.",
-  "nonconvergence": "Not applicable; rotation is a direct operation.",
-  "partial_results": "A failed call returns no rotated array."
- },
- "public_api": {
-  "python": {
-   "module": "scirel.geometry.transforms",
-   "symbol": "rotate",
-   "signature": "rotate(pts, angle, pivot=(0.0, 0.0))",
-   "canonical_module": "scirel.geometry",
-   "canonical_symbol": "rotate"
+  "discovery": {
+    "capability": [
+      "Planar cylindrical rotation",
+      "Rotate row-vectors in the cylindrical R,Z plane about a pivot."
+    ],
+    "operation": [
+      "rigid planar rotation relation",
+      "points, angle and pivot -> rotated points"
+    ],
+    "model": "Two-dimensional rigid rotation in the R,Z plane.",
+    "geometry": "Two-dimensional R,Z plane.",
+    "boundary": "Finite 2-vector pivot and finite points.",
+    "device_scope": "generic"
+  },
+  "identity": {
+    "relation": "Rigid planar rotation relation",
+    "direction": "points and angle to rotated points",
+    "definition": "Clockwise-positive row-vector rotation in degrees",
+    "model": "Two-dimensional R,Z plane",
+    "geometry": "Two-dimensional R,Z plane",
+    "coordinates": "Cylindrical R,Z",
+    "boundary": "Finite 2-vector pivot and points",
+    "assumptions": [
+      "Finite final axis length 2"
+    ]
+  },
+  "inputs": [
+    {
+      "name": "pts",
+      "description": "Point rows",
+      "units": "m",
+      "shape": "(...,2)",
+      "dtype": "Finite float64",
+      "required": true,
+      "constraints": "Final dimension length 2"
+    },
+    {
+      "name": "angle",
+      "description": "Rotation angle",
+      "units": "degree",
+      "shape": "scalar",
+      "dtype": "float",
+      "required": true,
+      "constraints": "Finite degrees"
+    },
+    {
+      "name": "pivot",
+      "description": "Rotation pivot",
+      "units": "m",
+      "shape": "(2,)",
+      "dtype": "Finite float64",
+      "required": false,
+      "constraints": "Finite R,Z pivot",
+      "default": [
+        0.0,
+        0.0
+      ]
+    }
+  ],
+  "outputs": [
+    {
+      "name": "rotated",
+      "description": "Rotated points",
+      "units": "m",
+      "shape": "(...,2)",
+      "dtype": "Finite float64",
+      "required": true,
+      "constraints": "Input shape preserved"
+    }
+  ],
+  "applicability": {
+    "preconditions": [
+      "Inputs satisfy the documented finite cylindrical coordinate and shape contract"
+    ],
+    "supported": [
+      "Rigid rotation and inverse/metric invariants"
+    ],
+    "excluded": [
+      "3-D physical rotation",
+      "Nonfinite points"
+    ]
+  },
+  "failure_semantics": {
+    "invalid_input": "Raises ValueError for scalar pts, points without a final axis of length 2, nonfinite point coordinates, a pivot not shaped (2,) or containing nonfinite values, or a nonfinite angle. Negative R is not rejected by this planar transform.",
+    "runtime_failure": "Raises FloatingPointError if finite inputs produce non-finite intermediate values or rotated points, independently of NumPy warn, ignore or raise settings. Python/NumPy conversion exceptions propagate.",
+    "nonconvergence": "Not applicable; rotation is a direct operation.",
+    "partial_results": "A failed call returns no rotated array."
+  },
+  "public_api": {
+    "python": {
+      "module": "scirel.geometry.transforms",
+      "symbol": "rotate",
+      "signature": "rotate(pts, angle, pivot=(0.0, 0.0))",
+      "canonical_module": "scirel.geometry",
+      "canonical_symbol": "rotate"
+    }
+  },
+  "example": {
+    "description": "Rotate one R-Z row vector by the documented clockwise-positive 90 degrees.",
+    "code": "import numpy as np\nfrom scirel.geometry import rotate\n\nrotated = rotate([[1.0, 0.0]], 90.0)\nnp.testing.assert_allclose(rotated, [[0.0, -1.0]], atol=1e-15)",
+    "expected": "The shape is preserved and the clockwise-positive result is [[0.0, -1.0]]."
   }
- },
- "example": {
-  "description": "Rotate one R-Z row vector by the documented clockwise-positive 90 degrees.",
-  "code": "import numpy as np\nfrom scirel.geometry import rotate\n\nrotated = rotate([[1.0, 0.0]], 90.0)\nnp.testing.assert_allclose(rotated, [[0.0, -1.0]], atol=1e-15)",
-  "expected": "The shape is preserved and the clockwise-positive result is [[0.0, -1.0]]."
- }
 }
