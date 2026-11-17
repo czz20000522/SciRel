@@ -623,19 +623,22 @@
     "expected": "对角样例给出两个本征值，恰好选出一个实部为正的分支。"
    },
    "verification": {
-    "scope": [
-     "声明的数值案例及相关失败边界。"
-    ],
-    "evidence_ceiling": "限于一般复流体本征矩阵与正实最小阻尼 kx 分支选择。证据：`test_fluid_spectrum_r43_fluid.py` 含 9 个测试函数，其中 3 个引用 `solve_fluid_wavevector_eigenproblem`，由 4 个资产共享；仅绑定共享文件覆盖，因此通过是文件级事实、而非资产隔离证据；本审计已执行有界示例。真值来源：有界源方法一致性（非独立真值）。不建立：模身份或任意参数精度。",
-    "known_limitations": [
-     "筛选排除非传播模，最多返回 keep 个分支。",
-     "三个直接函数覆盖本征选择、非传播模下限与整数分支数拒绝；`test_domain_import_boundaries.py` 只检查 LAPACK 惰性加载。",
-     "本征求解最多返回 `keep` 个最小阻尼正实分支；不证明模身份或任意参数精度。"
-    ],
-    "tests": [
-     "tests/kinetic/test_fluid_spectrum_r43_fluid.py"
-    ]
-   }
+  "scope": [
+   "独立依据：在 40 位 mpmath 精度上重算的 det(M) 等于返回的完整本征值集合之积，从而把返回谱绑定到它所声称求解的矩阵，且不重用求解器。",
+   "声明的选择关系按等式检验而非按观察习惯：real_floor = real_floor_scale*kn、每个被选值都超过它、计数字段与数组长度一致、head 是升序 |Im| 的前缀、sort_key 为固定标签。",
+   "测试矩阵：BONK case-2 尺度上的 max_harmonic 0，并显式使用非默认 real_floor_scale 与 keep，使该关系被真正执行而非走默认。",
+   "失败矩阵：每条通道一条断言——错误的阈值、错误的计数、错误的排序、错误的 head 截断，以及与矩阵不符的谱。",
+   "精度预算在测量前写入：行列式恒等式 1e-12 相对（实测 5.1e-15），计数与排序关系为精确相等。"
+  ],
+  "tests": [
+   "tests/kinetic/test_fluid_wavevector_evidence.py",
+   "tests/kinetic/test_fluid_spectrum_r43_fluid.py"
+  ],
+  "evidence_ceiling": "限于一般复流体本征矩阵、其完整 kx 谱，以及正实部最弱阻尼候选选择。依据为 40 位独立行列式恒等式与声明的阈值、计数、排序等式。不建立：模态身份、单个本征值的前向精度、本征向量残差（实现不计算），以及极点表的任何独立来源。",
+  "known_limitations": [
+   "迹恒等式 sum(kx) = tr(M) 经测试后被弃用：tr(M) 约 1.6e-10 而 ||M|| 约 4e14，该恒等式只能在 1.4e-10 绝对误差上成立，对谱没有任何约束。此处只用行列式恒等式。"
+  ]
+ }
   },
   {
    "asset_id": "scirel.field.rectangular-coil-filaments",
@@ -1712,19 +1715,23 @@
     "expected": "单物种零谐波示例返回有限的 40×40 复矩阵，以及 matrix_size=40、n_sl=12、n_sl3=36 等尺寸/布局元数据。"
    },
    "verification": {
-    "scope": [
-     "声明的数值案例及相关失败边界。"
-    ],
-    "evidence_ceiling": "限于固定角频率与平行波数下的稠密一阶流体本征矩阵。证据：`test_fluid_spectrum_r43_fluid.py` 含 9 个测试函数，其中 4 个引用 `assemble_fluid_dispersion_matrix`，由 4 个资产共享；仅绑定共享文件覆盖，因此通过是文件级事实、而非资产隔离证据；本审计已执行有界示例。真值来源：有界源方法一致性（非独立真值）。不建立：物理模身份或任意参数精度。",
-    "known_limitations": [
-     "omega 须有限且非零，回旋频率非零，极点半径为正且系数轴匹配；共振分母不得为零，组装矩阵须保持有限。",
-     "共享流体文件中的四个直接函数覆盖块/本征选择、非有限共振、分数维数与分数系数索引拒绝。",
-     "矩阵组装不是本征求解，也不识别物理模；其余输入有限但源共振奇异时由组装拒绝。"
-    ],
-    "tests": [
-     "tests/kinetic/test_fluid_spectrum_r43_fluid.py"
-    ]
-   }
+  "scope": [
+   "独立依据：由装配矩阵字节在 40 位 mpmath 精度上重算的 det(M) 必须等于返回求解器的完整 kx 谱之积——这是谱的定义式恒等式，不共享求解器代码。",
+   "装配矩阵对声明的平行波矢是偶的：+kz 与 -kz 的 kx 谱逐位相同，尽管两个矩阵最大元素相差约 4e14。",
+   "测试矩阵：极点阶 max_harmonic 0（40x40）与 1（94x94），均在 omega = wn、kz = 0.1 kn 下求解。",
+   "失败矩阵：每条通道一条断言——错误的矩阵元素（行列式恒等式）、丢失极点或状态块错位（矩阵阶数与非零数）、kz 奇性装配（符号对称性）。",
+   "精度预算在测量前写入：40x40 行列式 1e-12 相对，94x94 为 1e-10；实测为 5.1e-15 与 2.3e-13。"
+  ],
+  "tests": [
+   "tests/kinetic/test_fluid_wavevector_evidence.py",
+   "tests/kinetic/test_fluid_spectrum_r43_fluid.py"
+  ],
+  "evidence_ceiling": "限于固定角频率与平行波矢下的稠密一阶流体本征矩阵。依据为 40 位独立高精度行列式恒等式、声明的矩阵阶数与稀疏度恒等式，以及精确的 kz 符号不变性；行列式实测偏差为 5.1e-15 与 2.3e-13，预算为 1e-12 与 1e-10。不建立：物理模态身份、任意参数精度，以及 R43/R64 极点与谐波表的任何独立推导。",
+  "known_limitations": [
+   "R43/R64 有理系数与极点表在本仓库没有独立来源；复现它们的参考实现只是在复现实现本身，故系数记为无法确立（cannot establish）。",
+   "omega = wn 时 kz = 0 被判为共振而拒绝，因此“对 kz 为偶”的陈述在非零 kz 两侧检验，而不是在原点。"
+  ]
+ }
   },
   {
    "asset_id": "scirel.dielectric.cold-plasma-tensor",
