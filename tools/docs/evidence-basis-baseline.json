@@ -8,50 +8,6 @@
       "reason": "not yet migrated: verification.basis absent"
     },
     {
-      "asset_id": "scirel.geometry.masked-toroidal-volume",
-      "reason": "not yet migrated: verification.basis absent"
-    },
-    {
-      "asset_id": "scirel.geometry.material-support-classification",
-      "reason": "not yet migrated: verification.basis absent"
-    },
-    {
-      "asset_id": "scirel.geometry.meridional-polar-inverse",
-      "reason": "not yet migrated: verification.basis absent"
-    },
-    {
-      "asset_id": "scirel.geometry.nonuniform-derivatives",
-      "reason": "not yet migrated: verification.basis absent"
-    },
-    {
-      "asset_id": "scirel.geometry.nonuniform-first-derivative",
-      "reason": "not yet migrated: verification.basis absent"
-    },
-    {
-      "asset_id": "scirel.geometry.parse-segment",
-      "reason": "not yet migrated: verification.basis absent"
-    },
-    {
-      "asset_id": "scirel.geometry.planar-wavevector-projection",
-      "reason": "not yet migrated: verification.basis absent"
-    },
-    {
-      "asset_id": "scirel.geometry.point-nearest",
-      "reason": "not yet migrated: verification.basis absent"
-    },
-    {
-      "asset_id": "scirel.geometry.points-mesh",
-      "reason": "not yet migrated: verification.basis absent"
-    },
-    {
-      "asset_id": "scirel.geometry.polynomial-fit",
-      "reason": "not yet migrated: verification.basis absent"
-    },
-    {
-      "asset_id": "scirel.geometry.r-chord",
-      "reason": "not yet migrated: verification.basis absent"
-    },
-    {
       "asset_id": "scirel.geometry.rect-mesh",
       "reason": "not yet migrated: verification.basis absent"
     },
@@ -635,8 +591,19 @@
     "scirel.geometry.flux-surface-profile",
     "scirel.geometry.helper-contour-points",
     "scirel.geometry.helper-fieldline",
+    "scirel.geometry.masked-toroidal-volume",
+    "scirel.geometry.material-support-classification",
     "scirel.geometry.meridional-polar-forward",
+    "scirel.geometry.meridional-polar-inverse",
+    "scirel.geometry.nonuniform-derivatives",
+    "scirel.geometry.nonuniform-first-derivative",
+    "scirel.geometry.parse-segment",
     "scirel.geometry.path-distance",
+    "scirel.geometry.planar-wavevector-projection",
+    "scirel.geometry.point-nearest",
+    "scirel.geometry.points-mesh",
+    "scirel.geometry.polynomial-fit",
+    "scirel.geometry.r-chord",
     "scirel.geometry.rectangular-nearest",
     "scirel.geometry.select-fieldline",
     "scirel.geometry.weighted-line-integral",

@@ -1,136 +1,141 @@
 {
- "schema": "scirel.asset-document",
- "asset_id": "scirel.geometry.nonuniform-derivatives",
- "title": {
-  "en": "Nonuniform interior first and second derivatives",
-  "zh": "非均匀坐标内点一阶与二阶导数"
- },
- "summary": "Differentiate a local quadratic at each interior abscissa",
- "taxonomy": [
-  "analysis",
-  "numerics"
- ],
- "aliases": [
-  "diff_12_central"
- ],
- "discovery": {
-  "capability": [
-   "Nonuniform interior first and second derivatives",
-   "Differentiate a local quadratic at each interior abscissa of a nonuniform one-dimensional grid."
-  ],
-  "operation": [
-   "three-point unequal-spacing derivative operator",
-   "strictly increasing abscissa and matched values -> interior first and second derivatives"
-  ],
-  "model": "Three-point unequal-spacing local quadratic finite-difference operator.",
-  "geometry": "One-dimensional nonuniform abscissa and ordinate samples; only interior points are returned and no endpoint values are fabricated.",
-  "boundary": "N>=3 and strictly increasing finite x are required; endpoints, periodic stencils and noisy-data inference are excluded.",
-  "device_scope": "generic"
- },
- "identity": {
-  "relation": "Nonuniform interior first and second derivatives",
-  "direction": "Declared abscissae and sampled values to interior first and second derivatives",
-  "definition": "Differentiate a local quadratic at each interior abscissa",
-  "model": "Three-point unequal-spacing polynomial operator",
-  "geometry": "one-dimensional nonuniform abscissa and ordinate samples",
-  "coordinates": "x coordinate units and y value units",
-  "boundary": "No endpoint values are fabricated",
-  "assumptions": [
-   "Finite matched one-dimensional x,y with N>=3",
-   "x strictly increasing"
-  ]
- },
- "inputs": [
-  {
-   "name": "x",
-   "description": "Strictly increasing abscissae",
-   "units": "coordinate units",
-   "shape": "(N,)",
-   "dtype": "float64 array-like",
-   "required": true,
-   "constraints": "Finite N>=3; strictly increasing"
+  "schema": "scirel.asset-document",
+  "asset_id": "scirel.geometry.nonuniform-derivatives",
+  "title": {
+    "en": "Nonuniform interior first and second derivatives",
+    "zh": "非均匀坐标内点一阶与二阶导数"
   },
-  {
-   "name": "y",
-   "description": "Sampled values",
-   "units": "value units",
-   "shape": "(N,)",
-   "dtype": "float64 array-like",
-   "required": true,
-   "constraints": "Finite; same length N as x"
-  }
- ],
- "outputs": [
-  {
-   "name": "d_one",
-   "description": "Interior first derivative",
-   "units": "value per coordinate",
-   "shape": "(N-2,)",
-   "dtype": "float64",
-   "required": true,
-   "constraints": "Quadratic exactness"
+  "summary": "Differentiate a local quadratic at each interior abscissa",
+  "taxonomy": [
+    "analysis",
+    "numerics"
+  ],
+  "aliases": [
+    "diff_12_central"
+  ],
+  "discovery": {
+    "capability": [
+      "Nonuniform interior first and second derivatives",
+      "Differentiate a local quadratic at each interior abscissa of a nonuniform one-dimensional grid."
+    ],
+    "operation": [
+      "three-point unequal-spacing derivative operator",
+      "strictly increasing abscissa and matched values -> interior first and second derivatives"
+    ],
+    "model": "Three-point unequal-spacing local quadratic finite-difference operator.",
+    "geometry": "One-dimensional nonuniform abscissa and ordinate samples; only interior points are returned and no endpoint values are fabricated.",
+    "boundary": "N>=3 and strictly increasing finite x are required; endpoints, periodic stencils and noisy-data inference are excluded.",
+    "device_scope": "generic"
   },
-  {
-   "name": "d_two",
-   "description": "Interior second derivative",
-   "units": "value per coordinate squared",
-   "shape": "(N-2,)",
-   "dtype": "float64",
-   "required": true,
-   "constraints": "Quadratic exactness"
+  "identity": {
+    "relation": "Nonuniform interior first and second derivatives",
+    "direction": "Declared abscissae and sampled values to interior first and second derivatives",
+    "definition": "Differentiate a local quadratic at each interior abscissa",
+    "model": "Three-point unequal-spacing polynomial operator",
+    "geometry": "one-dimensional nonuniform abscissa and ordinate samples",
+    "coordinates": "x coordinate units and y value units",
+    "boundary": "No endpoint values are fabricated",
+    "assumptions": [
+      "Finite matched one-dimensional x,y with N>=3",
+      "x strictly increasing"
+    ]
+  },
+  "inputs": [
+    {
+      "name": "x",
+      "description": "Strictly increasing abscissae",
+      "units": "coordinate units",
+      "shape": "(N,)",
+      "dtype": "float64 array-like",
+      "required": true,
+      "constraints": "Finite N>=3; strictly increasing"
+    },
+    {
+      "name": "y",
+      "description": "Sampled values",
+      "units": "value units",
+      "shape": "(N,)",
+      "dtype": "float64 array-like",
+      "required": true,
+      "constraints": "Finite; same length N as x"
+    }
+  ],
+  "outputs": [
+    {
+      "name": "d_one",
+      "description": "Interior first derivative",
+      "units": "value per coordinate",
+      "shape": "(N-2,)",
+      "dtype": "float64",
+      "required": true,
+      "constraints": "Quadratic exactness"
+    },
+    {
+      "name": "d_two",
+      "description": "Interior second derivative",
+      "units": "value per coordinate squared",
+      "shape": "(N-2,)",
+      "dtype": "float64",
+      "required": true,
+      "constraints": "Quadratic exactness"
+    }
+  ],
+  "applicability": {
+    "preconditions": [
+      "Finite matched one-dimensional x,y with N>=3",
+      "x strictly increasing"
+    ],
+    "supported": [
+      "Finite strictly increasing one-dimensional arrays with at least one interior point"
+    ],
+    "excluded": [
+      "Periodic endpoints, noisy-data inference and conditioning extremes are unqualified"
+    ]
+  },
+  "failure_semantics": {
+    "invalid_input": "Raises ValueError or the underlying NumPy/SciPy exception for nonfinite, mismatched, unsorted, out-of-domain, or malformed inputs; no input repair is inferred.",
+    "runtime_failure": "Numerical, interpolation, or optional-dependency exceptions propagate from the direct calculation.",
+    "nonconvergence": "Not applicable; the relation uses direct finite-difference, interpolation, selection, or quadrature operations.",
+    "partial_results": "No partial result is promised when input validation or the underlying numerical operation fails."
+  },
+  "public_api": {
+    "python": {
+      "module": "scirel.geometry.numerics",
+      "symbol": "diff_12_central",
+      "signature": "diff_12_central(x, y)",
+      "canonical_module": "scirel.geometry",
+      "canonical_symbol": "diff_12_central"
+    }
+  },
+  "version": {
+    "implementation_version": "0.0.0",
+    "dependencies": []
+  },
+  "example": {
+    "description": "Compute first and second derivatives of y=x² at the interior point of a nonuniform grid.",
+    "code": "import numpy as np\nfrom scirel.geometry.numerics import diff_12_central\n\nx = np.array([0.0, 0.3, 1.0])\nfirst, second = diff_12_central(x, x * x)\nnp.testing.assert_allclose(first, [0.6])\nnp.testing.assert_allclose(second, [2.0])",
+    "expected": "The interior estimates are first derivative [0.6] and second derivative [2.0]."
+  },
+  "verification": {
+    "scope": [
+      "Public callable signature and documented finite-input behavior",
+      "The direct regression fixtures listed in verification.tests",
+      "The executable example stored in this contract",
+      "Independent evidence (test_linalg_and_derivative_evidence): the interpolating quadratic through each interior triple is rebuilt in exact rational arithmetic with fractions.Fraction and differentiated exactly, which reproduces both returned arrays to 64 eps on any strictly increasing grid, and both outputs are exact for quadratic data. Measured order is grid dependent: d_one refines at a ratio of about 4 per halving on uniform and on non-uniform grids (O(h^2)), while d_two refines at about 4 per halving on a uniform grid and only about 2 per halving on a non-uniform grid. The O(h^2) claim is therefore restricted to d_one on any grid and to d_two on uniform grids only."
+    ],
+    "tests": [
+      "tests/equilibrium/test_analysis_families.py",
+      "tests/numerics/test_linalg_and_derivative_evidence.py"
+    ],
+    "evidence_ceiling": "Direct examples and named regression fixtures establish the documented relation on those inputs; they do not establish arbitrary-input correctness, experimental validation, or release approval. C1 evidence adds: Exact rational differentiation plus the declared O(h^2) order.",
+    "known_limitations": [
+      "Periodic endpoints, noisy-data inference and conditioning extremes are unqualified",
+      "Second-derivative order is not uniform across grids: the three-point second difference is exact for quadratics and second order on a uniform grid, but its truncation error is first order on a non-uniform grid. Witness x = [0, h, 3h] with y = x^3 returns 8h against the exact 6h, an error of 2h that halves when h halves. This is intrinsic to a three-point formula, whose leading error term is proportional to the local spacing ratio, not an implementation defect; a second-order non-uniform second derivative needs at least four points and would be a different asset."
+    ],
+    "basis": {
+      "kind": "closed-form",
+      "statement": "Exact rational differentiation on the declared stencils plus the declared O(h^2) order decide the derivatives.",
+      "source": "tests/geometry/test_nonuniform_derivatives.py"
+    }
   }
- ],
- "applicability": {
-  "preconditions": [
-   "Finite matched one-dimensional x,y with N>=3",
-   "x strictly increasing"
-  ],
-  "supported": [
-   "Finite strictly increasing one-dimensional arrays with at least one interior point"
-  ],
-  "excluded": [
-   "Periodic endpoints, noisy-data inference and conditioning extremes are unqualified"
-  ]
- },
- "failure_semantics": {
-  "invalid_input": "Raises ValueError or the underlying NumPy/SciPy exception for nonfinite, mismatched, unsorted, out-of-domain, or malformed inputs; no input repair is inferred.",
-  "runtime_failure": "Numerical, interpolation, or optional-dependency exceptions propagate from the direct calculation.",
-  "nonconvergence": "Not applicable; the relation uses direct finite-difference, interpolation, selection, or quadrature operations.",
-  "partial_results": "No partial result is promised when input validation or the underlying numerical operation fails."
- },
- "public_api": {
-  "python": {
-   "module": "scirel.geometry.numerics",
-   "symbol": "diff_12_central",
-   "signature": "diff_12_central(x, y)",
-   "canonical_module": "scirel.geometry",
-   "canonical_symbol": "diff_12_central"
-  }
- },
- "version": {
-  "implementation_version": "0.0.0",
-  "dependencies": []
- },
- "example": {
-  "description": "Compute first and second derivatives of y=x² at the interior point of a nonuniform grid.",
-  "code": "import numpy as np\nfrom scirel.geometry.numerics import diff_12_central\n\nx = np.array([0.0, 0.3, 1.0])\nfirst, second = diff_12_central(x, x * x)\nnp.testing.assert_allclose(first, [0.6])\nnp.testing.assert_allclose(second, [2.0])",
-  "expected": "The interior estimates are first derivative [0.6] and second derivative [2.0]."
- },
- "verification": {
-  "scope": [
-   "Public callable signature and documented finite-input behavior",
-   "The direct regression fixtures listed in verification.tests",
-   "The executable example stored in this contract",
-   "Independent evidence (test_linalg_and_derivative_evidence): the interpolating quadratic through each interior triple is rebuilt in exact rational arithmetic with fractions.Fraction and differentiated exactly, which reproduces both returned arrays to 64 eps on any strictly increasing grid, and both outputs are exact for quadratic data. Measured order is grid dependent: d_one refines at a ratio of about 4 per halving on uniform and on non-uniform grids (O(h^2)), while d_two refines at about 4 per halving on a uniform grid and only about 2 per halving on a non-uniform grid. The O(h^2) claim is therefore restricted to d_one on any grid and to d_two on uniform grids only."
-  ],
-  "tests": [
-   "tests/equilibrium/test_analysis_families.py",
-   "tests/numerics/test_linalg_and_derivative_evidence.py"
-  ],
-  "evidence_ceiling": "Direct examples and named regression fixtures establish the documented relation on those inputs; they do not establish arbitrary-input correctness, experimental validation, or release approval. C1 evidence adds: Exact rational differentiation plus the declared O(h^2) order.",
-  "known_limitations": [
-   "Periodic endpoints, noisy-data inference and conditioning extremes are unqualified",
-   "Second-derivative order is not uniform across grids: the three-point second difference is exact for quadratics and second order on a uniform grid, but its truncation error is first order on a non-uniform grid. Witness x = [0, h, 3h] with y = x^3 returns 8h against the exact 6h, an error of 2h that halves when h halves. This is intrinsic to a three-point formula, whose leading error term is proportional to the local spacing ratio, not an implementation defect; a second-order non-uniform second derivative needs at least four points and would be a different asset."
-  ]
- }
 }

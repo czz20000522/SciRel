@@ -1,153 +1,158 @@
 {
- "schema": "scirel.asset-document",
- "asset_id": "scirel.geometry.parse-segment",
- "title": {
-  "en": "Contour segment orientation, closure, and endpoints",
-  "zh": "等值线段方向、闭合与端点"
- },
- "summary": "Roll to nearest start, orient by signed polygon test, normalize an exact closure marker, and retain selected terminal vertex",
- "taxonomy": [
-  "analysis",
-  "sampling"
- ],
- "aliases": [
-  "parse_segment"
- ],
- "discovery": {
-  "capability": [
-   "Contour segment orientation, endpoint parsing, and closure normalization",
-   "Roll a contour segment to the nearest start, orient it by a signed polygon test, remove and restore an exact repeated-start closure marker, and retain the selected terminal vertex."
-  ],
-  "operation": [
-   "contour segment orientation and endpoint parsing",
-   "ordered planar vertices plus optional start/end and clockwise choice -> oriented selected vertices"
-  ],
-  "model": "Discrete contour parsing with a signed polygon orientation test, exact closure normalization, and a corrected inclusive endpoint; no contour reconstruction.",
-  "geometry": "Planar contour vertices in caller length units; orientation is inferred from the polygon rather than from a field.",
-  "boundary": "Default retains all vertices after normalizing an exact first/last closure marker; the explicit nearest end is inclusive and suppresses automatic re-closing; non-exact repeated endpoints and general topology policies are excluded.",
-  "device_scope": "generic"
- },
- "identity": {
-  "relation": "Contour segment orientation, closure, and endpoints",
-  "direction": "Declared inputs to ordered selected vertices with exact closure normalization",
-  "definition": "Roll to nearest start, orient by signed polygon test, normalize an exact closure marker, and retain selected terminal vertex",
-  "model": "Source contour parsing with exact closure normalization and inclusive endpoint",
-  "geometry": "planar contour vertices",
-  "coordinates": "Planar coordinates in length units",
-  "boundary": "Default restores one exact closure edge; explicit nearest end is inclusive without automatic re-closing",
-  "assumptions": [
-   "Finite planar segment with meaningful polygon orientation",
-   "An exact first/last duplicate denotes a closure marker"
-  ]
- },
- "inputs": [
-  {
-   "name": "flpoints",
-   "description": "Ordered planar path vertices",
-   "units": "length units",
-   "shape": "(N,2)",
-   "dtype": "float64",
-   "required": true,
-   "constraints": "Finite supplied ordering; exact first/last duplicate denotes closure"
+  "schema": "scirel.asset-document",
+  "asset_id": "scirel.geometry.parse-segment",
+  "title": {
+    "en": "Contour segment orientation, closure, and endpoints",
+    "zh": "等值线段方向、闭合与端点"
   },
-  {
-   "name": "start_coord",
-   "description": "Nearest selected starting coordinate",
-   "units": "length units",
-   "shape": "(2,) or None",
-   "dtype": "float64",
-   "required": false,
-   "constraints": "Exact nearest-vertex selection",
-   "default": null
+  "summary": "Roll to nearest start, orient by signed polygon test, normalize an exact closure marker, and retain selected terminal vertex",
+  "taxonomy": [
+    "analysis",
+    "sampling"
+  ],
+  "aliases": [
+    "parse_segment"
+  ],
+  "discovery": {
+    "capability": [
+      "Contour segment orientation, endpoint parsing, and closure normalization",
+      "Roll a contour segment to the nearest start, orient it by a signed polygon test, remove and restore an exact repeated-start closure marker, and retain the selected terminal vertex."
+    ],
+    "operation": [
+      "contour segment orientation and endpoint parsing",
+      "ordered planar vertices plus optional start/end and clockwise choice -> oriented selected vertices"
+    ],
+    "model": "Discrete contour parsing with a signed polygon orientation test, exact closure normalization, and a corrected inclusive endpoint; no contour reconstruction.",
+    "geometry": "Planar contour vertices in caller length units; orientation is inferred from the polygon rather than from a field.",
+    "boundary": "Default retains all vertices after normalizing an exact first/last closure marker; the explicit nearest end is inclusive and suppresses automatic re-closing; non-exact repeated endpoints and general topology policies are excluded.",
+    "device_scope": "generic"
   },
-  {
-   "name": "end_coord",
-   "description": "Nearest terminal coordinate included in output",
-   "units": "length units",
-   "shape": "(2,) or None",
-   "dtype": "float64",
-   "required": false,
-   "constraints": "Terminal vertex retained; no interpolated crossing; presence suppresses automatic re-closing",
-   "default": null
+  "identity": {
+    "relation": "Contour segment orientation, closure, and endpoints",
+    "direction": "Declared inputs to ordered selected vertices with exact closure normalization",
+    "definition": "Roll to nearest start, orient by signed polygon test, normalize an exact closure marker, and retain selected terminal vertex",
+    "model": "Source contour parsing with exact closure normalization and inclusive endpoint",
+    "geometry": "planar contour vertices",
+    "coordinates": "Planar coordinates in length units",
+    "boundary": "Default restores one exact closure edge; explicit nearest end is inclusive without automatic re-closing",
+    "assumptions": [
+      "Finite planar segment with meaningful polygon orientation",
+      "An exact first/last duplicate denotes a closure marker"
+    ]
   },
-  {
-   "name": "clockwise",
-   "description": "Desired signed polygon orientation",
-   "units": "dimensionless",
-   "shape": "scalar",
-   "dtype": "bool",
-   "required": false,
-   "constraints": "Signed shoelace-like source test",
-   "default": true
+  "inputs": [
+    {
+      "name": "flpoints",
+      "description": "Ordered planar path vertices",
+      "units": "length units",
+      "shape": "(N,2)",
+      "dtype": "float64",
+      "required": true,
+      "constraints": "Finite supplied ordering; exact first/last duplicate denotes closure"
+    },
+    {
+      "name": "start_coord",
+      "description": "Nearest selected starting coordinate",
+      "units": "length units",
+      "shape": "(2,) or None",
+      "dtype": "float64",
+      "required": false,
+      "constraints": "Exact nearest-vertex selection",
+      "default": null
+    },
+    {
+      "name": "end_coord",
+      "description": "Nearest terminal coordinate included in output",
+      "units": "length units",
+      "shape": "(2,) or None",
+      "dtype": "float64",
+      "required": false,
+      "constraints": "Terminal vertex retained; no interpolated crossing; presence suppresses automatic re-closing",
+      "default": null
+    },
+    {
+      "name": "clockwise",
+      "description": "Desired signed polygon orientation",
+      "units": "dimensionless",
+      "shape": "scalar",
+      "dtype": "bool",
+      "required": false,
+      "constraints": "Signed shoelace-like source test",
+      "default": true
+    }
+  ],
+  "outputs": [
+    {
+      "name": "segment",
+      "description": "Ordered selected vertices",
+      "units": "length units",
+      "shape": "(M,2)",
+      "dtype": "float64",
+      "required": true,
+      "constraints": "No synthetic or omitted default endpoint; an exact input closure marker remains exactly once as the terminal vertex when end_coord is None"
+    }
+  ],
+  "applicability": {
+    "preconditions": [
+      "Finite planar segment with meaningful polygon orientation",
+      "Any repeated closure endpoint matches the first vertex exactly"
+    ],
+    "supported": [
+      "Closed contours with an exact repeated start are re-closed without zero-length steps",
+      "Open untrimmed paths and nearest-end trimming remain supported"
+    ],
+    "excluded": [
+      "Non-exact repeated endpoints and general topology policies are not generalized"
+    ]
+  },
+  "failure_semantics": {
+    "invalid_input": "Raises ValueError or the underlying NumPy/SciPy exception for nonfinite, mismatched, unsorted, out-of-domain, or malformed inputs; no input repair is inferred. Nonfinite vertices or supplied start/end coordinates are rejected with ValueError before orientation or endpoint selection. Finite numeric object elements are checked without changing the calculation inputs; object representations unsupported by the existing calculation remain unsupported.",
+    "runtime_failure": "Numerical, interpolation, or optional-dependency exceptions propagate from the direct calculation.",
+    "nonconvergence": "Not applicable; the relation uses direct finite-difference, interpolation, selection, or quadrature operations.",
+    "partial_results": "No partial result is promised when input validation or the underlying numerical operation fails."
+  },
+  "public_api": {
+    "python": {
+      "module": "scirel.geometry.sampling",
+      "symbol": "parse_segment",
+      "signature": "parse_segment(flpoints, start_coord=None, end_coord=None, clockwise=True)",
+      "canonical_module": "scirel.geometry",
+      "canonical_symbol": "parse_segment"
+    }
+  },
+  "version": {
+    "implementation_version": "0.0.0",
+    "dependencies": []
+  },
+  "example": {
+    "description": "Parse a four-vertex contour segment while retaining its clockwise vertex order.",
+    "code": "import numpy as np\nfrom scirel.geometry.sampling import parse_segment\n\nsegment = np.array([[0.0, 0.0], [0.0, 1.0], [1.0, 1.0], [1.0, 0.0]])\nnp.testing.assert_array_equal(parse_segment(segment), segment)",
+    "expected": "The four input vertices are returned in the same (4, 2) order."
+  },
+  "verification": {
+    "scope": [
+      "The orientation flag is checked against the exact rational double area of the returned cycle: clockwise=True must return a negative double area and clockwise=False a positive one, for both input orders, so an inverted comparison is red.",
+      "The output is asserted to be a cyclic rotation of the input cycle or of its reverse, which forbids inventing, dropping or duplicating vertices.",
+      "An exact closure marker is asserted to survive exactly once as the terminal vertex, and an explicit end_coord is asserted to suppress that re-closing.",
+      "The start vertex equals the exhaustive rational nearest vertex and is asserted to be stable under every rotation of the input (permutation scan).",
+      "Failure matrix gives one executable assertion per rejecting channel: non-finite vertices, start or end coordinates raise ValueError, and no partial result is returned."
+    ],
+    "tests": [
+      "tests/equilibrium/test_analysis_families.py",
+      "tests/equilibrium/test_analysis_corrections.py",
+      "tests/geometry/test_parse_segment_closure.py",
+      "tests/geometry/test_sampling_failures.py",
+      "tests/sampling/test_polyline_and_selection_evidence.py"
+    ],
+    "evidence_ceiling": "Establishes orientation, roll, closure and endpoint selection as exact combinatorics on the tested cycles. It does not establish a topology policy for self-intersecting contours, and the orientation of a zero-area cycle is undefined; that case is asserted as recorded behaviour rather than as evidence.",
+    "known_limitations": [
+      "Open-curve closure, non-exact repeated endpoints, and topology policies are not generalized",
+      "cannot establish: orientation of a zero-area (collinear) cycle; the strict '> 0' test reports not-clockwise and that choice is behaviour, not evidence of a correct orientation"
+    ],
+    "basis": {
+      "kind": "specification",
+      "statement": "Orientation, roll, closure and endpoint selection are decided as exact combinatorics on the tested cycles. No topology policy for self-intersecting contours is established, and the orientation of a zero-area cycle is undefined: that case is asserted as recorded behaviour rather than as evidence.",
+      "source": "tests/geometry/test_parse_segment.py"
+    }
   }
- ],
- "outputs": [
-  {
-   "name": "segment",
-   "description": "Ordered selected vertices",
-   "units": "length units",
-   "shape": "(M,2)",
-   "dtype": "float64",
-   "required": true,
-   "constraints": "No synthetic or omitted default endpoint; an exact input closure marker remains exactly once as the terminal vertex when end_coord is None"
-  }
- ],
- "applicability": {
-  "preconditions": [
-   "Finite planar segment with meaningful polygon orientation",
-   "Any repeated closure endpoint matches the first vertex exactly"
-  ],
-  "supported": [
-   "Closed contours with an exact repeated start are re-closed without zero-length steps",
-   "Open untrimmed paths and nearest-end trimming remain supported"
-  ],
-  "excluded": [
-   "Non-exact repeated endpoints and general topology policies are not generalized"
-  ]
- },
- "failure_semantics": {
-  "invalid_input": "Raises ValueError or the underlying NumPy/SciPy exception for nonfinite, mismatched, unsorted, out-of-domain, or malformed inputs; no input repair is inferred. Nonfinite vertices or supplied start/end coordinates are rejected with ValueError before orientation or endpoint selection. Finite numeric object elements are checked without changing the calculation inputs; object representations unsupported by the existing calculation remain unsupported.",
-  "runtime_failure": "Numerical, interpolation, or optional-dependency exceptions propagate from the direct calculation.",
-  "nonconvergence": "Not applicable; the relation uses direct finite-difference, interpolation, selection, or quadrature operations.",
-  "partial_results": "No partial result is promised when input validation or the underlying numerical operation fails."
- },
- "public_api": {
-  "python": {
-   "module": "scirel.geometry.sampling",
-   "symbol": "parse_segment",
-   "signature": "parse_segment(flpoints, start_coord=None, end_coord=None, clockwise=True)",
-   "canonical_module": "scirel.geometry",
-   "canonical_symbol": "parse_segment"
-  }
- },
- "version": {
-  "implementation_version": "0.0.0",
-  "dependencies": []
- },
- "example": {
-  "description": "Parse a four-vertex contour segment while retaining its clockwise vertex order.",
-  "code": "import numpy as np\nfrom scirel.geometry.sampling import parse_segment\n\nsegment = np.array([[0.0, 0.0], [0.0, 1.0], [1.0, 1.0], [1.0, 0.0]])\nnp.testing.assert_array_equal(parse_segment(segment), segment)",
-  "expected": "The four input vertices are returned in the same (4, 2) order."
- },
- "verification": {
-  "scope": [
-   "The orientation flag is checked against the exact rational double area of the returned cycle: clockwise=True must return a negative double area and clockwise=False a positive one, for both input orders, so an inverted comparison is red.",
-   "The output is asserted to be a cyclic rotation of the input cycle or of its reverse, which forbids inventing, dropping or duplicating vertices.",
-   "An exact closure marker is asserted to survive exactly once as the terminal vertex, and an explicit end_coord is asserted to suppress that re-closing.",
-   "The start vertex equals the exhaustive rational nearest vertex and is asserted to be stable under every rotation of the input (permutation scan).",
-   "Failure matrix gives one executable assertion per rejecting channel: non-finite vertices, start or end coordinates raise ValueError, and no partial result is returned."
-  ],
-  "tests": [
-   "tests/equilibrium/test_analysis_families.py",
-   "tests/equilibrium/test_analysis_corrections.py",
-   "tests/geometry/test_parse_segment_closure.py",
-   "tests/geometry/test_sampling_failures.py",
-   "tests/sampling/test_polyline_and_selection_evidence.py"
-  ],
-  "evidence_ceiling": "Establishes orientation, roll, closure and endpoint selection as exact combinatorics on the tested cycles. It does not establish a topology policy for self-intersecting contours, and the orientation of a zero-area cycle is undefined; that case is asserted as recorded behaviour rather than as evidence.",
-  "known_limitations": [
-   "Open-curve closure, non-exact repeated endpoints, and topology policies are not generalized",
-   "cannot establish: orientation of a zero-area (collinear) cycle; the strict '> 0' test reports not-clockwise and that choice is behaviour, not evidence of a correct orientation"
-  ]
- }
 }
