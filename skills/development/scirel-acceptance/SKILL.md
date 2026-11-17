@@ -322,6 +322,28 @@ not run lint or format: those belong to the complete check, where they gate what
 is saved. Hooks are a safety net, not a replacement for running the checks yourself. Do not bypass them with
 `--no-verify`. If a hook is wrong, fix the hook.
 
+## 测量之前先对齐：脚本读的是工作树
+
+本仓库的检查脚本（`scripts/c1_evidence_coverage.py`、`validate_asset_documents.py`、`check_contract_sync.py`）读的是**当前工作树里的文件**，不是 `origin/main` 的树。所以"对着 ref 树验证"这条规则在**读检查器输出时**要前移一步：先 `git reset --hard origin/main`（或在一个刚从 `origin/main` 开出的 worktree 里跑），再跑测量。
+
+代价实例：主 checkout 落后 5 个提交时跑覆盖工具，得到 `neither` 从 69 回到 85 的"回归"，一度被当成合并丢失内容——同一错误在同一会话里犯了三次。判据：**当测量结果与预期方向相反时，先怀疑测量起点，再怀疑改动。**
+
+## 变异装置的三种失效，分别对应不同的判定
+
+变异跑出"全存活"或"全空"时，先分清是哪一种失效，别一律记成 `not-exercised`：
+
+- **测试没走到分支** → `not-exercised`，补覆盖后重跑。
+- **装置无法改动返回值** → `UNKNOWN`。实例：`scirel_mutation_plugin.mutate()` 只递归 `dict/list/tuple/ndarray` 与数值标量，返回 frozen dataclass（如 `EquilibriumResult`）的函数走到末尾原样 `return value`，**任何 kind 都改不动它**，标记文件必然为空。这时的替代是**副本里手写代码变异**（带 `print(scirel.__file__)` 探针与未变异副本对照），并如实记 `UNKNOWN`。
+- **装置把合法条目判成缺失** → 修装置。实例：`mutation_check.py` 曾把整条 `verification.tests` 传给 `is_file()`，遇到 pytest node id（`path.py::test_name`）必然判"测试缺失"，**18 个资产的变异验证因此从未跑起来**——账面上的"空"不是全存活，而是没跑。修法是 exists 检查前按 `::` 切分；相应地，**不要为了跑通变异把 nodeid 改写成文件路径**。
+
+## 代理自述的 hash 不等于分支位置
+
+代理在报告里给的 commit hash 可能落在**它自己的 rubicon 分支**上，而不是 `agent/<topic>` 分支。合并前先 `git branch -a --contains <hash>` 确认它到底在哪条 ref 上；把 `agent/<topic>` 当成"代理的成果"去合，可能是一次空操作（`Already up to date`），而报告里说"已完成"。
+
+## 证据要放在被跟踪的目录里
+
+`.runtime/` 在 `.gitignore` 里（`/.runtime/`）。交付类证据——打包回执、校验 JSON、消费者任务结果——放进去等于**结项时不存在**。既有先例是 `examples/c4-usage-acceptance/`（`README.md` + `tasklist.json`，由 `scripts/check_c4_tasklist.py` 校验）；新的交付验证照此形状建目录，二进制（wheel、包本体）不进 git，回执里写 `sha256` 与复跑命令即可。
+
 ## 校验哪个包，用哪条命令
 
 两个包不是同一种东西：
