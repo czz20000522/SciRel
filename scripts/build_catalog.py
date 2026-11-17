@@ -74,18 +74,41 @@ def _source_head(source_root: Path) -> str | None:
     Synthetic catalog fixtures are intentionally allowed to use a temporary
     source directory without Git metadata.  A real checkout, however, must
     bind its catalog to the exact commit that supplied the source files.
+
+    Two outcomes used to share one ``None``, and they are not the same thing:
+
+    * no git, or git present but this is not a work tree (an exported tarball, a
+      synthetic fixture) -- legitimate, answer ``None``;
+    * git present, inside a work tree, yet it cannot name HEAD (corrupt repository,
+      no commit yet) -- the sources came from somewhere unknown, so this raises
+      instead of producing a catalog bound to no revision.
     """
     try:
-        result = subprocess.run(
-            ["git", "rev-parse", "HEAD"],
+        inside = subprocess.run(
+            ["git", "rev-parse", "--is-inside-work-tree"],
             cwd=source_root,
             capture_output=True,
             text=True,
-            check=True,
+            check=False,
         )
-    except (OSError, subprocess.CalledProcessError):
+    except OSError:
+        # No usable git binary: an exported tree, not a checkout.
         return None
-    revision = result.stdout.strip()
+    if inside.returncode != 0 or inside.stdout.strip() != "true":
+        return None
+    head = subprocess.run(
+        ["git", "rev-parse", "HEAD"],
+        cwd=source_root,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    if head.returncode != 0:
+        raise RuntimeError(
+            "source_root is a Git work tree but its HEAD is unreadable: "
+            f"git rev-parse HEAD exited {head.returncode}: {head.stderr!r}"
+        )
+    revision = head.stdout.strip()
     if _GIT_REVISION.fullmatch(revision) is None:
         raise ValueError("source_root Git HEAD is not an exact 40-character SHA")
     return revision

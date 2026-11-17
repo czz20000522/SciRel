@@ -57,16 +57,36 @@ def _sha256(path: Path) -> str:
 
 
 def _git_head(source_root: Path) -> str | None:
+    """Return the checkout HEAD, or ``None`` when this is simply not a work tree.
+
+    Two outcomes used to share one ``None``: "not a checkout" (an exported source
+    archive) and "a checkout that cannot name its commit" (corrupt repository, no
+    commit yet).  The first is legitimate and stays ``None``; the second aborts,
+    because the truth record must name the revision that produced it.
+    """
     try:
-        result = subprocess.run(
-            ["git", "-C", str(source_root), "rev-parse", "HEAD"],
-            check=True,
+        inside = subprocess.run(
+            ["git", "-C", str(source_root), "rev-parse", "--is-inside-work-tree"],
+            check=False,
             capture_output=True,
             text=True,
         )
-    except (OSError, subprocess.CalledProcessError):
+    except OSError:
         return None
-    return result.stdout.strip() or None
+    if inside.returncode != 0 or inside.stdout.strip() != "true":
+        return None
+    head = subprocess.run(
+        ["git", "-C", str(source_root), "rev-parse", "HEAD"],
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+    if head.returncode != 0:
+        raise SystemExit(
+            "source_root is a Git work tree but its HEAD is unreadable: "
+            f"git rev-parse HEAD exited {head.returncode}: {head.stderr!r}"
+        )
+    return head.stdout.strip() or None
 
 
 def _patch_collections() -> None:

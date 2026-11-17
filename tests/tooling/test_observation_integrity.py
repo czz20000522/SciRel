@@ -114,11 +114,11 @@ def test_an_unobservable_root_is_not_a_pass(tmp_path):
 
 
 def test_every_baseline_entry_states_a_reason():
+    """The ratchet may be empty; it may never hold an entry without a reason."""
     document = json.loads(
         (ROOT / "tools" / "docs" / "observation-baseline.json").read_text("utf-8")
     )
     entries = document["entries"]
-    assert entries
     for entry in entries:
         assert entry["count"] >= 1
         assert len(entry["reason"]) >= 20, entry

@@ -205,10 +205,13 @@ def main(argv: list[str] | None = None) -> int:
     problems = scan_tree(root)
     blocking, tolerated = apply_baseline(problems, load_baseline(root))
     if not blocking:
-        print(
-            "observation integrity: no new silent failure; "
-            f"{len(tolerated)} recorded site(s) still on the ratchet"
-        )
+        if tolerated:
+            print(
+                "observation integrity: no new silent failure; "
+                f"{len(tolerated)} recorded site(s) still on the ratchet"
+            )
+        else:
+            print("observation integrity: no silent failure anywhere; the ratchet is empty")
         return 0
     for problem in blocking:
         print(f"{problem['path']}:{problem['line']}: {problem['message']}")
