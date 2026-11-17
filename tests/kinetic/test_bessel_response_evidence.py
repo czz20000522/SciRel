@@ -100,14 +100,18 @@ def test_ronnmark_h_agrees_with_a_high_precision_difference_quotient():
 
     bessel.high_precision(60)
     x, lam = 5.0 + 0.5j, 4.0
-    step = 1e-12
+    # A 1e-12 step measured 8.9e-5 disagreement, which is differencing noise from
+    # the truncation-coarsened series at a nearby lambda rather than a
+    # disagreement about the relation; 1e-5 puts h**2 truncation near 1e-11 and the
+    # 60-digit rounding far below that.
+    step = 1e-5
     at = bessel.ronnmark_r(x, lam)
     plus = bessel.ronnmark_r(x, lam + step)
     minus = bessel.ronnmark_r(x, lam - step)
     quotient = ((lam + step) * plus - (lam - step) * minus) / (2 * step)
     analytic = bessel.ronnmark_h(x, lam)
-    assert bessel.relative(quotient, analytic) <= 1e-8
-    assert bessel.relative(evaluate_ronnmark_r(x, lam)["H"], quotient) <= 1e-7
+    assert bessel.relative(quotient, analytic) <= 1e-9
+    assert bessel.relative(evaluate_ronnmark_r(x, lam)["H"], quotient) <= 1e-8
 
 
 def test_ronnmark_zero_lambda_limit_is_the_closed_form():
