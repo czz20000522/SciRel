@@ -565,7 +565,12 @@ def test_full_validation_refuses_another_clone_before_applying_patches(
 
     package, candidate_repo = setup
     receiver = tmp_path / "receiver"
-    _git(tmp_path, "clone", "--quiet", str(candidate_repo), str(receiver))
+    # --no-hardlinks: a local clone hardlinks object files by default, and under the
+    # release stage that copy intermittently dies with "failed to copy file to
+    # <dest>/.git/objects/...: No such file or directory". The test only needs a
+    # second clone that is a different Git common directory, so a full copy is both
+    # sufficient and deterministic.
+    _git(tmp_path, "clone", "--quiet", "--no-hardlinks", str(candidate_repo), str(receiver))
     monkeypatch.setattr(dev, "ROOT", receiver)
     with dev.acceptance_lock(exclusive=True), dev.exclusive_credential() as token:
         env = dict(os.environ, **{dev.EXCLUSIVE_MARKER: token})

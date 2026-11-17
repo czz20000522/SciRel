@@ -172,6 +172,12 @@ def assemble_molecular_hydrogen_collision_matrices(
     report's different normalization. H (``mu=1``) and D (``mu=2``) are the
     physically checked cases; other positive mass factors are algebraic extensions.
 
+    Precision budget: the oracle comparisons keep ``rtol 1e-14`` and
+    ``atol 1e-14`` against independent SciPy adaptive integration over 4096
+    angles. Frozen snapshots compare the bits the contract calls bit-identical,
+    and the nonnegativity and bounded-cell claims are exact sign assertions
+    rather than tolerance tests.
+
     References
     ----------
     .. [1] B. LaBombard, "KN1D: A 1-D Space, 2-D Velocity, Kinetic Transport

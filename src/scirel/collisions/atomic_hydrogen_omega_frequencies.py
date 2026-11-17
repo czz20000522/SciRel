@@ -165,6 +165,12 @@ def assemble_atomic_hydrogen_omega_frequencies(
     ``negative_no_bgk_closure``. Grid convergence remains the caller's
     responsibility.
 
+    Precision budget: the moment reduction is an independent scalar double
+    summation compared at ``rtol 1e-14`` and ``atol 1e-14``, while the exact
+    cell results compare bit-identically through the Fortran-order flatten.
+    Conservation and common-velocity-boost identities admit only the binary64
+    rounding of their own arithmetic.
+
     If ``Alpha_H_P`` comes from SciRel's atomic collision-matrix assembly,
     ``moment_rate_H_P`` uses a momentum-transfer fit that already includes
     resonant charge-exchange momentum. Adding this moment to the momentum

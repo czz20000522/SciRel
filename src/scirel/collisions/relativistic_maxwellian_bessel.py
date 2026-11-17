@@ -281,6 +281,13 @@ def relativistic_maxwellian_bessel(x):
     backend-specific bound. No physical accuracy claim for a particular
     distribution is made.
 
+    Precision budget: ``bk0`` and ``bk1`` are compared bit-exactly with the
+    ``scipy.special.kve`` values for the same argument. ``bk2`` adds one
+    multiply, one divide and one add to them, so its budget is the rounding of
+    that recurrence term and the sum (at most five binary64 roundings of the
+    term's scale); no assertion compares two independently rounded
+    intermediate values.
+
     Examples
     --------
     >>> import numpy as np

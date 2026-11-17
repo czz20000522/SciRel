@@ -73,6 +73,14 @@ def calculate_stored_thermal_energy(p_el, p_ion, p_tot, vpr, drho_norm):
     without intermediate product overflow or underflow. Physical stored
     thermal energy requires nonnegative thermal pressures.
 
+    The precision budget is therefore one float64 rounding per returned
+    component: each energy is the nearest float64 to the exact rational value of
+    the stated sum, so the evidence tests compare against ``Fraction`` values
+    with no tolerance at all. The two rejection boundaries are exact predicates
+    on that same rational value — magnitude above float64 max before rounding,
+    and a nonzero value that rounds to zero — and an exact zero is accepted
+    rather than treated as underflow.
+
     Examples
     --------
     >>> import numpy as np

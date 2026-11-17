@@ -132,13 +132,14 @@
  },
  "verification": {
   "scope": [
-   "Fixed-seed repeatability and one draw per stratum on two coordinates.",
+   "Independent exact recovery of the unit coordinate under dyadic bounds, with a closed-form affine map and an integer stratum-permutation identity per coordinate.",
    "Subset selection and rejection of invalid sample count or selected bounds.",
    "The converted public function returns scirel._result.Result with the same keys, order, values, shapes, dtypes and mapping compatibility, and attribute access resolves to the same fields."
   ],
   "tests": [
    "tests/inference/test_latin_hypercube_sampling.py",
-   "tests/inference/test_inference_named_result.py"
+   "tests/inference/test_inference_named_result.py",
+   "tests/inference/test_inference_exact_evidence.py"
   ],
   "evidence_ceiling": "Direct tests establish selected deterministic stratification and input failures only; they do not certify statistical quality across RNG implementations, physical parameter validity or expert approval. The direct named-result test also checks the legacy values, key order and attribute access.",
   "known_limitations": [

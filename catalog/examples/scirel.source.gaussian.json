@@ -147,12 +147,13 @@
  },
  "verification": {
   "scope": [
-   "Nonuniform grids, conservation, signed/integer/tiny widths, remote centers and malformed inputs.",
+   "Independent exact rational recomputation from the binary64 input distance squares, with 120/200-digit Decimal exponentiation and integration, establishes the normalized point values; nonuniform grids, conservation, signed/integer/tiny widths, remote centers and malformed inputs are checked alongside them.",
    "Exact-binary64 distance-squared references with 120/200-digit exponentiation: adjacent cells, signed widths/totals, the denominator floor, remote-center shapes and positive common-volume scaling; pointwise rtol 2e-15 and atol 0."
   ],
   "tests": [
    "tests/kinetic/test_profile_energy.py",
-   "tests/source/test_profile_shape_qualification.py"
+   "tests/source/test_profile_shape_qualification.py",
+   "tests/source/test_source_declared_failure_channels.py"
   ],
   "evidence_ceiling": "Independent numerical probes establish the named mathematical relation, discrete conservation, boundary and shape/failure behavior. They do not establish general plasma calibration or complete edge-model validity.",
   "known_limitations": [
