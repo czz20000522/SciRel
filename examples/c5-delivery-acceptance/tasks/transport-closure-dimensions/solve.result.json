@@ -1,0 +1,554 @@
+{
+  "task_id": "transport-closure-dimensions",
+  "assets_used": [
+    "scirel.neoclassical.bootstrap-coefficients",
+    "scirel.neoclassical.bootstrap-current"
+  ],
+  "calls": [
+    {
+      "entrypoint": "catalog/contracts read",
+      "arguments": {
+        "paths": [
+          "catalog/contracts/scirel.neoclassical.bootstrap-current.json",
+          "catalog/contracts/scirel.neoclassical.bootstrap-coefficients.json"
+        ]
+      },
+      "status": "ok",
+      "asset_ids": [
+        "scirel.neoclassical.bootstrap-current",
+        "scirel.neoclassical.bootstrap-coefficients"
+      ]
+    },
+    {
+      "entrypoint": "scirel.neoclassical.compute_bootstrap_coefficients",
+      "arguments": {
+        "f_trap": [
+          0.0,
+          0.12,
+          0.28,
+          0.46,
+          0.62
+        ],
+        "nu_e_star": [
+          0.0,
+          0.05,
+          0.2,
+          0.6,
+          1.4
+        ],
+        "Z_eff": [
+          1.6,
+          1.6,
+          1.6,
+          1.6,
+          1.6
+        ],
+        "nu_i_star": [
+          0.0,
+          0.04,
+          0.15,
+          0.45,
+          1.1
+        ],
+        "method": "redl"
+      },
+      "status": "returned",
+      "returned_fields": [
+        "L31",
+        "L32",
+        "L34",
+        "alpha"
+      ]
+    },
+    {
+      "entrypoint": "scirel.neoclassical.calculate_bootstrap_current",
+      "arguments": {
+        "rho_face": [
+          0.0,
+          0.25,
+          0.5,
+          0.75,
+          1.0
+        ],
+        "F_face": [
+          6.0,
+          6.1,
+          6.2,
+          6.3,
+          6.4
+        ],
+        "B0": 5.3,
+        "dpsi_drho_face": [
+          -0.001,
+          -0.0012,
+          -0.0016,
+          -0.0022,
+          -0.003
+        ],
+        "p_e_face": [
+          10000.0,
+          9000.0,
+          6000.0,
+          3000.0,
+          500.0
+        ],
+        "p_i_face": [
+          8000.0,
+          7200.0,
+          4800.0,
+          2400.0,
+          400.0
+        ],
+        "dlnne_drho_face": [
+          0.0,
+          -0.9,
+          -1.4,
+          -2.2,
+          -3.4
+        ],
+        "dlnni_drho_face": [
+          0.0,
+          -0.8,
+          -1.3,
+          -2.0,
+          -3.2
+        ],
+        "dlnte_drho_face": [
+          0.0,
+          -1.1,
+          -1.8,
+          -2.7,
+          -4.0
+        ],
+        "dlnti_drho_face": [
+          0.0,
+          -1.0,
+          -1.7,
+          -2.5,
+          -3.8
+        ],
+        "L31": [
+          0.0,
+          0.11962566888125614,
+          0.24305022613524924,
+          0.32320755975464394,
+          0.3243484757685624
+        ],
+        "L32": [
+          0.0,
+          -0.05840123911922278,
+          -0.04111875613766963,
+          0.05093715390948805,
+          0.15474231330969385
+        ],
+        "L34": [
+          0.0,
+          0.11962566888125614,
+          0.24305022613524924,
+          0.32320755975464394,
+          0.3243484757685624
+        ],
+        "alpha": [
+          -1.0332278481012658,
+          -0.8356342612451435,
+          -0.5542791900825067,
+          -0.15064359764540386,
+          0.32900374482088446
+        ]
+      },
+      "status": "returned",
+      "returned": {
+        "j_parallel_bootstrap_face_A_m2": [
+          0.0,
+          -14497547.16405534,
+          -30425490.701523583,
+          -28388663.92068986,
+          -6524906.640828681
+        ]
+      }
+    },
+    {
+      "entrypoint": "scirel.neoclassical.calculate_bootstrap_current",
+      "arguments": {
+        "rho_face": [
+          0.0,
+          0.5,
+          1.0
+        ],
+        "F_face": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "B0": 2.0,
+        "dpsi_drho_face": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "p_e_face": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "p_i_face": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "dlnne_drho_face": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "dlnni_drho_face": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "dlnte_drho_face": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "dlnti_drho_face": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "L31": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "L32": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "L34": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "alpha": [
+          1.0,
+          1.0,
+          1.0
+        ]
+      },
+      "status": "returned",
+      "note": "hand-evaluated constant case",
+      "returned": {
+        "j_parallel_bootstrap_face_A_m2": [
+          0.0,
+          -3.141592653589793,
+          -3.141592653589793
+        ]
+      }
+    },
+    {
+      "entrypoint": "scirel.neoclassical.calculate_bootstrap_current",
+      "arguments": {
+        "rho_face": [
+          0.0,
+          0.25,
+          0.5,
+          0.75,
+          1.0
+        ],
+        "F_face": [
+          6.0,
+          6.1,
+          6.2,
+          6.3,
+          6.4
+        ],
+        "B0": 5.3,
+        "p_e_face": [
+          10000.0,
+          9000.0,
+          6000.0,
+          3000.0,
+          500.0
+        ],
+        "p_i_face": [
+          8000.0,
+          7200.0,
+          4800.0,
+          2400.0,
+          400.0
+        ],
+        "dlnne_drho_face": [
+          0.0,
+          -0.9,
+          -1.4,
+          -2.2,
+          -3.4
+        ],
+        "dlnni_drho_face": [
+          0.0,
+          -0.8,
+          -1.3,
+          -2.0,
+          -3.2
+        ],
+        "dlnte_drho_face": [
+          0.0,
+          -1.1,
+          -1.8,
+          -2.7,
+          -4.0
+        ],
+        "dlnti_drho_face": [
+          0.0,
+          -1.0,
+          -1.7,
+          -2.5,
+          -3.8
+        ],
+        "L31": [
+          0.0,
+          0.11962566888125614,
+          0.24305022613524924,
+          0.32320755975464394,
+          0.3243484757685624
+        ],
+        "L32": [
+          0.0,
+          -0.05840123911922278,
+          -0.04111875613766963,
+          0.05093715390948805,
+          0.15474231330969385
+        ],
+        "L34": [
+          0.0,
+          0.11962566888125614,
+          0.24305022613524924,
+          0.32320755975464394,
+          0.3243484757685624
+        ],
+        "alpha": [
+          -1.0332278481012658,
+          -0.8356342612451435,
+          -0.5542791900825067,
+          -0.15064359764540386,
+          0.32900374482088446
+        ],
+        "dpsi_per_radian_drho_face": [
+          -0.00015915494309189535,
+          -0.0001909859317102744,
+          -0.00025464790894703254,
+          -0.00035014087480216976,
+          -0.000477464829275686
+        ]
+      },
+      "status": "returned",
+      "note": "per-radian flux convention",
+      "returned": {
+        "j_parallel_bootstrap_face_A_m2": [
+          0.0,
+          -14497547.16405534,
+          -30425490.701523583,
+          -28388663.920689862,
+          -6524906.640828682
+        ]
+      }
+    },
+    {
+      "entrypoint": "scirel.neoclassical.calculate_bootstrap_current",
+      "arguments": {
+        "scaling_case": "pressure_x4_gives_j_x4",
+        "expected_scale": 4.0
+      },
+      "status": "returned"
+    },
+    {
+      "entrypoint": "scirel.neoclassical.calculate_bootstrap_current",
+      "arguments": {
+        "scaling_case": "B0_x2_gives_j_div_2",
+        "expected_scale": 0.5
+      },
+      "status": "returned"
+    },
+    {
+      "entrypoint": "scirel.neoclassical.calculate_bootstrap_current",
+      "arguments": {
+        "scaling_case": "dpsi_x2_gives_j_div_2",
+        "expected_scale": 0.5
+      },
+      "status": "returned"
+    },
+    {
+      "entrypoint": "scirel.neoclassical.calculate_bootstrap_current",
+      "arguments": {
+        "scaling_case": "F_x2_gives_j_x2",
+        "expected_scale": 2.0
+      },
+      "status": "returned"
+    },
+    {
+      "entrypoint": "scirel.neoclassical.calculate_bootstrap_current",
+      "arguments": {
+        "both_flux_conventions": true
+      },
+      "status": "raised",
+      "failure": {
+        "raised": true,
+        "exception": "ValueError",
+        "message": "give exactly one of dpsi_drho_face (total poloidal flux, Wb) or dpsi_per_radian_drho_face (flux per radian, Wb/rad)"
+      }
+    }
+  ],
+  "answer": {
+    "j_parallel_bootstrap_face": {
+      "value": [
+        0.0,
+        -14497547.16405534,
+        -30425490.701523583,
+        -28388663.92068986,
+        -6524906.640828681
+      ],
+      "units": "A/m^2"
+    },
+    "coefficients": {
+      "L31": [
+        0.0,
+        0.11962566888125614,
+        0.24305022613524924,
+        0.32320755975464394,
+        0.3243484757685624
+      ],
+      "L32": [
+        0.0,
+        -0.05840123911922278,
+        -0.04111875613766963,
+        0.05093715390948805,
+        0.15474231330969385
+      ],
+      "L34": [
+        0.0,
+        0.11962566888125614,
+        0.24305022613524924,
+        0.32320755975464394,
+        0.3243484757685624
+      ],
+      "alpha": [
+        -1.0332278481012658,
+        -0.8356342612451435,
+        -0.5542791900825067,
+        -0.15064359764540386,
+        0.32900374482088446
+      ],
+      "units": "dimensionless",
+      "method": "redl"
+    },
+    "declared_output_unit": {
+      "j_parallel_bootstrap_face": "A/m^2",
+      "j_parallel_bootstrap": "A/m^2"
+    },
+    "input_units": {
+      "bootstrap_multiplier": "1",
+      "rho_face": "1",
+      "F_face": "T m",
+      "B0": "T",
+      "dpsi_drho_face": "Wb",
+      "dpsi_per_radian_drho_face": "Wb/rad",
+      "p_e_face": "Pa",
+      "p_i_face": "Pa",
+      "dlnne_drho_face": "1",
+      "dlnni_drho_face": "1",
+      "dlnte_drho_face": "1",
+      "dlnti_drho_face": "1",
+      "L31": "1",
+      "L32": "1",
+      "L34": "1",
+      "alpha": "1"
+    }
+  },
+  "independent_check": {
+    "C1_hand_evaluated_constant_case": {
+      "criterion": "hand-evaluated j = -F/(B0*dpsi/2pi)*L31*p*dlnne gives [0,-pi,-pi]",
+      "hand_value": [
+        0.0,
+        -3.141592653589793,
+        -3.141592653589793
+      ],
+      "observed": [
+        0.0,
+        -3.141592653589793,
+        -3.141592653589793
+      ],
+      "max_abs_deviation": 0.0,
+      "declared_tolerance": 1e-12,
+      "passed": true
+    },
+    "C2_flux_convention_equivalence": {
+      "criterion": "dpsi_drho = 2*pi*dpsi_per_radian_drho leaves j unchanged, rel <= 1e-13",
+      "max_relative_deviation": 1.224397770608632e-16,
+      "declared_tolerance": 1e-13,
+      "passed": true
+    },
+    "C3_scaling_exponents": {
+      "criterion": "each scaling deviation <= 1e-13",
+      "declared_tolerance": 1e-13,
+      "cases": {
+        "pressure_x4_gives_j_x4": {
+          "observed_max_abs_deviation": 0.0,
+          "expected_scale": 4.0
+        },
+        "B0_x2_gives_j_div_2": {
+          "observed_max_abs_deviation": 0.0,
+          "expected_scale": 0.5
+        },
+        "dpsi_x2_gives_j_div_2": {
+          "observed_max_abs_deviation": 0.0,
+          "expected_scale": 0.5
+        },
+        "F_x2_gives_j_x2": {
+          "observed_max_abs_deviation": 0.0,
+          "expected_scale": 2.0
+        }
+      },
+      "passed": true
+    },
+    "C4_axis_face": {
+      "criterion": "rho_face==0 gives exactly 0.0 and no other face is zeroed",
+      "axis_face_value": 0.0,
+      "nonzero_face_count": 4,
+      "total_nonaxis_faces": 4,
+      "passed": true
+    },
+    "C5_declared_failure": {
+      "criterion": "declared invalid_input: ValueError when both flux conventions are supplied",
+      "observed": {
+        "raised": true,
+        "exception": "ValueError",
+        "message": "give exactly one of dpsi_drho_face (total poloidal flux, Wb) or dpsi_per_radian_drho_face (flux per radian, Wb/rad)"
+      },
+      "declared_exception": "ValueError",
+      "passed": true
+    },
+    "C6_unit_bookkeeping": {
+      "criterion": "coefficient outputs are dimensionless and the current output is A/m^2",
+      "coefficient_output_units": {
+        "L31": "1",
+        "L32": "1",
+        "L34": "1",
+        "alpha": "1"
+      },
+      "current_output_units": {
+        "j_parallel_bootstrap_face": "A/m^2",
+        "j_parallel_bootstrap": "A/m^2"
+      },
+      "unit_algebra": "[F]=T*m, [B0]=T, [dpsi_per_radian_drho]=Wb/rad=T*m^2 => prefactor 1/(T*m); [p]=Pa=kg*m^-1*s^-2; T=kg*A^-1*s^-2 => Pa/(T*m)=A*m^-2",
+      "passed": true
+    }
+  },
+  "package_sufficient": true,
+  "gaps": [
+    "Neither contract derives its own inputs: trapped fraction, collisionalities and the flux-surface profiles (F, dpsi/drho, p, logarithmic gradients) must come from a geometry/equilibrium step the package does not deliver, so this task fixed them by hand.",
+    "The current output is a local flux-surface quantity; no delivered asset relates it to a total current, a q profile or a magnetic shear, so the transport result cannot be closed against a tokamak discharge inside the package.",
+    "The two coefficient families (redl, sauter) return different L34/alpha; the package delivers no guidance on which method a given collisionality range supports, only that the default is a declared choice."
+  ]
+}
