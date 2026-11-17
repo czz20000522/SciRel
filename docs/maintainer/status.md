@@ -140,6 +140,24 @@ C3（一次检查给出可对账的逐项测试身份）正是为这件事开的
 - 待办计划：[`examples/PLAN.md`](../../examples/PLAN.md)；
 - 等人工裁决的问题：`tickets/` 下 `status: open` 的工单。
 
+## 7 派生链的当前生成入口
+
+[派生关系本身](why-and-how.md)是规范：合同由实现与 docstring 派生、wheel 从实现构建
+且导出须与合同一致、索引由合同集合生成、使用 skill 只引导本次接口、交付清单记录本次构建的版本绑定。
+**这些关系不变，但"用哪个命令实现它们"会变**——本节就是那部分会变的内容。
+
+| 部分 | 当前入口 | 校验入口 |
+| --- | --- | --- |
+| 合同 | 由实现与 docstring 派生（`catalog/README.md`、`catalog/AUDIT.md` 的规则） | [`validate_asset_documents.py`](../../scripts/validate_asset_documents.py) |
+| wheel 与导出面 | 从当前实现构建 | [`check_wheel_exposure.py`](../../scripts/check_wheel_exposure.py)、[`validate_installed_wheel.py`](../../scripts/validate_installed_wheel.py) |
+| 索引与检索 | [`capability_catalog.py`](../../scripts/capability_catalog.py)、[`capability_query.py`](../../scripts/capability_query.py)、[`query.py`](../../scripts/query.py) | 由合同集合生成，无独立手写清单 |
+| 文档站 | [`build_scirel_sphinx.py`](../../scripts/build_scirel_sphinx.py)、[`scirel_docs.py`](../../scripts/scirel_docs.py) | `tests/docs/` |
+| 使用 skill 与交付包 | [`build_pure_delivery.py`](../../scripts/build_pure_delivery.py)（含 `wheel_sha256`、`snapshot_sha256`） | [`validate_extraction_package.py`](../../scripts/validate_extraction_package.py) |
+| 拆解包（冻结版） | [`build_extraction_kit.py`](../../scripts/build_extraction_kit.py) | 同上 |
+
+注意：这些脚本名是**快照**。若某个脚本改名或合并，本节过期不影响上面那条派生规范——
+这正是为什么两者要分开写。
+
 ## 附录 A 复算脚本
 
 ```python
