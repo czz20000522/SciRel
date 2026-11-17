@@ -150,6 +150,11 @@
       "Dense O(Ntarget*Nsource) work and storage.",
       "The discrete zero-self entry does not describe a conductor self-field.",
       "The pointwise comparison is a family of named target/source tables, so it does not bound the error between them; the axis statement is per-source and does not cover a general target. The zero diagonal is a discrete convention and is not a finite-conductor self-inductance."
-    ]
+    ],
+    "basis": {
+      "kind": "independent-recomputation",
+      "statement": "Independent numerical evidence covers the named targets and sources, supplemented by exact structural laws (implicit equals explicit sources, zero self and inactive rows, power-of-two weight scaling) and a Fraction-decided source-axis contraction.",
+      "source": "tests/geometry/test_green_response_matrices.py"
+    }
   }
 }

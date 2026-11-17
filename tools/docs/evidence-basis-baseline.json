@@ -4,34 +4,6 @@
   "why": "c1_evidence_coverage infers the basis from prose with a fixed phrase list; on this catalog 106 assets carry basis wording that list does not recognise, so the inference cannot answer 'does this capability stand on evidence'. The field replaces the inference.",
   "entries": [
     {
-      "asset_id": "scirel.electromagnetism.arbitrary-points",
-      "reason": "not yet migrated: verification.basis absent"
-    },
-    {
-      "asset_id": "scirel.electromagnetism.device",
-      "reason": "not yet migrated: verification.basis absent"
-    },
-    {
-      "asset_id": "scirel.electromagnetism.green-response-matrices",
-      "reason": "not yet migrated: verification.basis absent"
-    },
-    {
-      "asset_id": "scirel.electromagnetism.loop-flux-matrix",
-      "reason": "not yet migrated: verification.basis absent"
-    },
-    {
-      "asset_id": "scirel.electromagnetism.magnet-ring",
-      "reason": "not yet migrated: verification.basis absent"
-    },
-    {
-      "asset_id": "scirel.electromagnetism.rectangular-coil",
-      "reason": "not yet migrated: verification.basis absent"
-    },
-    {
-      "asset_id": "scirel.equilibrium.anisotropic-force-balance",
-      "reason": "not yet migrated: verification.basis absent"
-    },
-    {
       "asset_id": "scirel.equilibrium.anisotropic-picard-feedback",
       "reason": "not yet migrated: verification.basis absent"
     },
@@ -759,7 +731,14 @@
     "scirel.diagnostics.pointwise-firehose-margin",
     "scirel.diagnostics.species-absorption-fraction",
     "scirel.dielectric.cold-plasma-tensor",
+    "scirel.electromagnetism.arbitrary-points",
     "scirel.electromagnetism.circular-filament-green",
+    "scirel.electromagnetism.device",
+    "scirel.electromagnetism.green-response-matrices",
+    "scirel.electromagnetism.loop-flux-matrix",
+    "scirel.electromagnetism.magnet-ring",
+    "scirel.electromagnetism.rectangular-coil",
+    "scirel.equilibrium.anisotropic-force-balance",
     "scirel.equilibrium.kinetic-mirror-hall-equilibrium",
     "scirel.field.mirror-plasma-green",
     "scirel.field.poloidal-field-from-flux",

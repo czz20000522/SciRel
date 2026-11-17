@@ -35,7 +35,12 @@
       "Plotting/patch, simplify/clone, multiprocessing, electrodes and persistent sweeps are excluded or unresolved.",
       "No scientific, experimental or licensing approval is claimed.",
       "The evidence covers the declared parameters and the fixed configurations only; the field statements are made on named targets and are not an arbitrary-domain bound."
-    ]
+    ],
+    "basis": {
+      "kind": "specification",
+      "statement": "Independent exact geometry laws, the elementary on-axis loop field and exact composition contractions decide the named objects; this is not experimental qualification and not an arbitrary-domain bound.",
+      "source": "tests/geometry/test_geometry_qualification.py"
+    }
   },
   "asset_id": "scirel.electromagnetism.rectangular-coil",
   "title": {
