@@ -1,149 +1,154 @@
 {
- "schema": "scirel.asset-document",
- "asset_id": "scirel.geometry.rectangular-nearest",
- "title": {
-  "en": "Field query Separable xy grid axis nearest-neighbor sampling",
-  "zh": "可分离网格逐轴最近点采样"
- },
- "summary": "Choose x-column and y-row independently nearest each query",
- "taxonomy": [
-  "analysis",
-  "sampling"
- ],
- "aliases": [
-  "locs_to_vals"
- ],
- "discovery": {
-  "capability": [
-   "Separable rectangular-grid nearest query",
-   "Choose the x column and y row independently nearest each query on a separable rectangular grid."
-  ],
-  "operation": [
-   "separable axis nearest-neighbor field query",
-   "separable planar grid, field values and query points -> sampled field values"
-  ],
-  "model": "Separable x/y axis nearest-neighbor selection; no interpolation.",
-  "geometry": "Planar separable rectangular grid with x column and y row coordinates; queries are ordered coordinate pairs.",
-  "boundary": "No out-of-support interpolation is synthesized; finite matched samples and in-support queries are required, and equivalence with geometric nearest on irregular grids is not asserted.",
-  "device_scope": "generic"
- },
- "identity": {
-  "relation": "Field query Separable xy grid axis nearest-neighbor sampling",
-  "direction": "Declared inputs to Sampled values",
-  "definition": "Choose x-column and y-row independently nearest each query",
-  "model": "Separable xy grid axis nearest-neighbor sampling",
-  "geometry": "planar separable rectangular grid and query points",
-  "coordinates": "X column coordinate, Y row coordinate or matched scattered point arrays",
-  "boundary": "Nearest-sample selection only; physical support is the caller's responsibility, with no sorting or domain-membership rejection",
-  "assumptions": [
-   "Finite matched planar sample arrays and fields",
-   "Requested grid/query points lie inside convex/interpolation support"
-  ]
- },
- "inputs": [
-  {
-   "name": "X",
-   "description": "Point x coordinates",
-   "units": "coordinate units",
-   "shape": "matched grid/sample shape",
-   "dtype": "float64",
-   "required": true,
-   "constraints": "For rectangular nearest X[0,:] is x axis"
+  "schema": "scirel.asset-document",
+  "asset_id": "scirel.geometry.rectangular-nearest",
+  "title": {
+    "en": "Field query Separable xy grid axis nearest-neighbor sampling",
+    "zh": "可分离网格逐轴最近点采样"
   },
-  {
-   "name": "Y",
-   "description": "Point y coordinates",
-   "units": "coordinate units",
-   "shape": "same as X",
-   "dtype": "float64",
-   "required": true,
-   "constraints": "For rectangular nearest Y[:,0] is y axis"
+  "summary": "Choose x-column and y-row independently nearest each query",
+  "taxonomy": [
+    "analysis",
+    "sampling"
+  ],
+  "aliases": [
+    "locs_to_vals"
+  ],
+  "discovery": {
+    "capability": [
+      "Separable rectangular-grid nearest query",
+      "Choose the x column and y row independently nearest each query on a separable rectangular grid."
+    ],
+    "operation": [
+      "separable axis nearest-neighbor field query",
+      "separable planar grid, field values and query points -> sampled field values"
+    ],
+    "model": "Separable x/y axis nearest-neighbor selection; no interpolation.",
+    "geometry": "Planar separable rectangular grid with x column and y row coordinates; queries are ordered coordinate pairs.",
+    "boundary": "No out-of-support interpolation is synthesized; finite matched samples and in-support queries are required, and equivalence with geometric nearest on irregular grids is not asserted.",
+    "device_scope": "generic"
   },
-  {
-   "name": "Q",
-   "description": "Finite numeric field samples; selected element types are retained",
-   "units": "field units",
-   "shape": "same as X",
-   "dtype": "ndarray",
-   "required": true,
-   "constraints": "Finite"
+  "identity": {
+    "relation": "Field query Separable xy grid axis nearest-neighbor sampling",
+    "direction": "Declared inputs to Sampled values",
+    "definition": "Choose x-column and y-row independently nearest each query",
+    "model": "Separable xy grid axis nearest-neighbor sampling",
+    "geometry": "planar separable rectangular grid and query points",
+    "coordinates": "X column coordinate, Y row coordinate or matched scattered point arrays",
+    "boundary": "Nearest-sample selection only; physical support is the caller's responsibility, with no sorting or domain-membership rejection",
+    "assumptions": [
+      "Finite matched planar sample arrays and fields",
+      "Requested grid/query points lie inside convex/interpolation support"
+    ]
   },
-  {
-   "name": "coord_list",
-   "description": "Desired coordinate pairs",
-   "units": "coordinate units",
-   "shape": "list of (x,y)",
-   "dtype": "float64",
-   "required": true,
-   "constraints": "Finite queries; each pair is independently copied and checked as the iterable is consumed once"
+  "inputs": [
+    {
+      "name": "X",
+      "description": "Point x coordinates",
+      "units": "coordinate units",
+      "shape": "matched grid/sample shape",
+      "dtype": "float64",
+      "required": true,
+      "constraints": "For rectangular nearest X[0,:] is x axis"
+    },
+    {
+      "name": "Y",
+      "description": "Point y coordinates",
+      "units": "coordinate units",
+      "shape": "same as X",
+      "dtype": "float64",
+      "required": true,
+      "constraints": "For rectangular nearest Y[:,0] is y axis"
+    },
+    {
+      "name": "Q",
+      "description": "Finite numeric field samples; selected element types are retained",
+      "units": "field units",
+      "shape": "same as X",
+      "dtype": "ndarray",
+      "required": true,
+      "constraints": "Finite"
+    },
+    {
+      "name": "coord_list",
+      "description": "Desired coordinate pairs",
+      "units": "coordinate units",
+      "shape": "list of (x,y)",
+      "dtype": "float64",
+      "required": true,
+      "constraints": "Finite queries; each pair is independently copied and checked as the iterable is consumed once"
+    }
+  ],
+  "outputs": [
+    {
+      "name": "values",
+      "description": "Selected Q[iy, ix] samples in query order",
+      "units": "field units",
+      "shape": "query-count list",
+      "dtype": "list",
+      "required": true,
+      "constraints": "Selected element types are retained; no uniform float64 conversion is applied"
+    }
+  ],
+  "applicability": {
+    "preconditions": [
+      "Finite matched planar sample arrays and fields",
+      "Requested grid/query points lie inside convex/interpolation support"
+    ],
+    "supported": [
+      "Finite inputs satisfying the callable-specific shape, support, and boundary conditions"
+    ],
+    "excluded": [
+      "Rectangular and geometric nearest schemes are not asserted equivalent on irregular input",
+      "Physical interpretation outside caller-declared support is unqualified; nonfinite field values are rejected"
+    ]
+  },
+  "failure_semantics": {
+    "invalid_input": "Nonfinite sample coordinates, Q data or query coordinates reject the whole request with ValueError. Other conversion, indexing or arithmetic errors propagate. The implementation does not reject unsorted or outside-support queries; the caller determines physical support. Finite numeric object elements are checked without changing calculation inputs, and unsupported object arithmetic remains unsupported.",
+    "runtime_failure": "Numerical, interpolation, or optional-dependency exceptions propagate from the direct calculation.",
+    "nonconvergence": "Not applicable; the relation uses direct finite-difference, interpolation, selection, or quadrature operations.",
+    "partial_results": "No partial result is promised when input validation or the underlying numerical operation fails."
+  },
+  "public_api": {
+    "python": {
+      "module": "scirel.geometry.sampling",
+      "symbol": "locs_to_vals",
+      "signature": "locs_to_vals(X, Y, Q, coord_list)",
+      "canonical_module": "scirel.geometry",
+      "canonical_symbol": "locs_to_vals"
+    }
+  },
+  "version": {
+    "implementation_version": "0.0.0",
+    "dependencies": []
+  },
+  "example": {
+    "description": "Query a separable rectangular grid by independently selecting the nearest x column and y row.",
+    "code": "import numpy as np\nfrom scirel.geometry.sampling import locs_to_vals\n\nx, y = np.meshgrid([0.0, 0.5, 1.0], [0.0, 0.5, 1.0])\nvalues = locs_to_vals(x, y, x + 2.0 * y, [(0.5, 0.5)])\nnp.testing.assert_allclose(values, [1.5])",
+    "expected": "The nearest rectangular-grid value is [1.5]."
+  },
+  "verification": {
+    "scope": [
+      "The fixture stores 100*iy+ix, so the returned value is a lossless encoding of the selected cell; the assertion is on the choice, not on a floating value, and a constant response cannot satisfy the battery.",
+      "For six rational queries the chosen cell equals the exact axis-wise argmin pair computed independently from the stored axes.",
+      "An exact half-way tie resolves to the lower index and the choice flips just past the midpoint, so the tie rule is pinned by a discriminating pair rather than a single sample.",
+      "Queries outside the sampled range clamp to the end cell, and the answer order follows the query list including duplicates.",
+      "Failure matrix gives one executable assertion per rejecting channel: non-finite samples, field or queries raise ValueError, a malformed field shape propagates IndexError, and no partial result is returned."
+    ],
+    "tests": [
+      "tests/equilibrium/test_analysis_families.py",
+      "tests/geometry/test_sampling_failures.py",
+      "tests/sampling/test_nearest_sampling_evidence.py"
+    ],
+    "evidence_ceiling": "Establishes the separable nearest rule and its tie convention on sampled grids. It does not establish any interpolation accuracy, because the relation selects a stored sample and never interpolates, and it does not assert equivalence with the geometric scheme on non-separable input.",
+    "known_limitations": [
+      "Rectangular and geometric nearest schemes are not asserted equivalent on irregular input",
+      "Physical interpretation outside caller-declared support is unqualified; nonfinite field values are rejected",
+      "cannot establish: any interpolation accuracy; the relation only selects a stored sample"
+    ],
+    "basis": {
+      "kind": "closed-form",
+      "statement": "The fixture stores 100*iy+ix, so the result is a lossless encoding of the chosen cell and the assertion is on the choice rather than a floating value; six rational queries must equal the exact axis-wise argmin pair computed independently from the stored axes.",
+      "source": "tests/equilibrium/test_analysis_families.py"
+    }
   }
- ],
- "outputs": [
-  {
-   "name": "values",
-   "description": "Selected Q[iy, ix] samples in query order",
-   "units": "field units",
-   "shape": "query-count list",
-   "dtype": "list",
-   "required": true,
-   "constraints": "Selected element types are retained; no uniform float64 conversion is applied"
-  }
- ],
- "applicability": {
-  "preconditions": [
-   "Finite matched planar sample arrays and fields",
-   "Requested grid/query points lie inside convex/interpolation support"
-  ],
-  "supported": [
-   "Finite inputs satisfying the callable-specific shape, support, and boundary conditions"
-  ],
-  "excluded": [
-   "Rectangular and geometric nearest schemes are not asserted equivalent on irregular input",
-   "Physical interpretation outside caller-declared support is unqualified; nonfinite field values are rejected"
-  ]
- },
- "failure_semantics": {
-  "invalid_input": "Nonfinite sample coordinates, Q data or query coordinates reject the whole request with ValueError. Other conversion, indexing or arithmetic errors propagate. The implementation does not reject unsorted or outside-support queries; the caller determines physical support. Finite numeric object elements are checked without changing calculation inputs, and unsupported object arithmetic remains unsupported.",
-  "runtime_failure": "Numerical, interpolation, or optional-dependency exceptions propagate from the direct calculation.",
-  "nonconvergence": "Not applicable; the relation uses direct finite-difference, interpolation, selection, or quadrature operations.",
-  "partial_results": "No partial result is promised when input validation or the underlying numerical operation fails."
- },
- "public_api": {
-  "python": {
-   "module": "scirel.geometry.sampling",
-   "symbol": "locs_to_vals",
-   "signature": "locs_to_vals(X, Y, Q, coord_list)",
-   "canonical_module": "scirel.geometry",
-   "canonical_symbol": "locs_to_vals"
-  }
- },
- "version": {
-  "implementation_version": "0.0.0",
-  "dependencies": []
- },
- "example": {
-  "description": "Query a separable rectangular grid by independently selecting the nearest x column and y row.",
-  "code": "import numpy as np\nfrom scirel.geometry.sampling import locs_to_vals\n\nx, y = np.meshgrid([0.0, 0.5, 1.0], [0.0, 0.5, 1.0])\nvalues = locs_to_vals(x, y, x + 2.0 * y, [(0.5, 0.5)])\nnp.testing.assert_allclose(values, [1.5])",
-  "expected": "The nearest rectangular-grid value is [1.5]."
- },
- "verification": {
-  "scope": [
-   "The fixture stores 100*iy+ix, so the returned value is a lossless encoding of the selected cell; the assertion is on the choice, not on a floating value, and a constant response cannot satisfy the battery.",
-   "For six rational queries the chosen cell equals the exact axis-wise argmin pair computed independently from the stored axes.",
-   "An exact half-way tie resolves to the lower index and the choice flips just past the midpoint, so the tie rule is pinned by a discriminating pair rather than a single sample.",
-   "Queries outside the sampled range clamp to the end cell, and the answer order follows the query list including duplicates.",
-   "Failure matrix gives one executable assertion per rejecting channel: non-finite samples, field or queries raise ValueError, a malformed field shape propagates IndexError, and no partial result is returned."
-  ],
-  "tests": [
-   "tests/equilibrium/test_analysis_families.py",
-   "tests/geometry/test_sampling_failures.py",
-   "tests/sampling/test_nearest_sampling_evidence.py"
-  ],
-  "evidence_ceiling": "Establishes the separable nearest rule and its tie convention on sampled grids. It does not establish any interpolation accuracy, because the relation selects a stored sample and never interpolates, and it does not assert equivalence with the geometric scheme on non-separable input.",
-  "known_limitations": [
-   "Rectangular and geometric nearest schemes are not asserted equivalent on irregular input",
-   "Physical interpretation outside caller-declared support is unqualified; nonfinite field values are rejected",
-   "cannot establish: any interpolation accuracy; the relation only selects a stored sample"
-  ]
- }
 }

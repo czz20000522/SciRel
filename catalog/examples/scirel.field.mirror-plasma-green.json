@@ -1,142 +1,147 @@
 {
- "schema": "scirel.asset-document",
- "asset_id": "scirel.field.mirror-plasma-green",
- "title": {
-  "en": "Reflection-symmetric plasma-cell flux Green matrix",
-  "zh": "镜像对称等离子体 Green 磁通矩阵"
- },
- "summary": "Build the dense flux-response matrix for a uniformly spaced, Z-reflection-symmetric cylindrical grid. The named fields are returned in one scirel._result.Result mapping.",
- "taxonomy": [
-  "field",
-  "green-function",
-  "axisymmetric"
- ],
- "aliases": [
-  "mirror plasma flux Green matrix"
- ],
- "discovery": {
-  "capability": [
-   "Reflection-symmetric plasma-cell flux Green matrix",
-   "Build the dense flux-response matrix for a uniformly spaced, Z-reflection-symmetric cylindrical grid."
-  ],
-  "operation": [
-   "mirror-symmetric plasma-grid flux-matrix construction",
-   "symmetric R-Z grid -> target-row/source-column flux response"
-  ],
-  "model": "Axisymmetric ideal circular-filament flux with symmetry-required grid validation.",
-  "geometry": "Rectilinear R-Z grid shared by target and source nodes.",
-  "boundary": "R is nonnegative and increasing; Z is increasing, uniform and symmetric about zero; axis-source columns and self entries are zero.",
-  "device_scope": "device-parameterized"
- },
- "identity": {
-  "relation": "Mirror-symmetric plasma-grid flux matrix",
-  "direction": "symmetric R,Z grid to target-row/source-column psi response",
-  "definition": "Use actual-coordinate circular-filament flux entries on the supplied grid and preserve C-order flattening. The documented fields are returned together in a scirel._result.Result mapping; mapping and attribute access expose the same values. No nested mapping is returned.",
-  "model": "Axisymmetric ideal circular-filament flux with symmetry-required grid validation.",
-  "geometry": "Rectilinear R-Z grid shared by target and source nodes.",
-  "coordinates": "R,Z in metres; matrix entries Wb/rad/A.",
-  "boundary": "R is nonnegative and increasing; Z is increasing, uniform, and symmetric about zero; axis-source columns and self entries are zero.",
-  "assumptions": [
-   "The input grid is finite and matching.",
-   "The source grid has at least two nodes per axis.",
-   "No cell-area or 2pi factor is included."
-  ]
- },
- "inputs": [
-  {
-   "name": "r_grid",
-   "description": "Cylindrical radius mesh shared by source and target cells.",
-   "units": "m",
-   "shape": "[N_Z,N_R]",
-   "dtype": "real array-like, converted to float64",
-   "required": true,
-   "constraints": "Finite, rectilinear, nonnegative and strictly increasing R axis; same shape as z_grid and at least two points per axis."
+  "schema": "scirel.asset-document",
+  "asset_id": "scirel.field.mirror-plasma-green",
+  "title": {
+    "en": "Reflection-symmetric plasma-cell flux Green matrix",
+    "zh": "镜像对称等离子体 Green 磁通矩阵"
   },
-  {
-   "name": "z_grid",
-   "description": "Axial coordinate mesh shared by source and target cells.",
-   "units": "m",
-   "shape": "[N_Z,N_R]",
-   "dtype": "real array-like, converted to float64",
-   "required": true,
-   "constraints": "Finite rectilinear grid with a strictly increasing, uniformly spaced and reflection-symmetric Z axis; same shape as r_grid and at least two points per axis."
+  "summary": "Build the dense flux-response matrix for a uniformly spaced, Z-reflection-symmetric cylindrical grid. The named fields are returned in one scirel._result.Result mapping.",
+  "taxonomy": [
+    "field",
+    "green-function",
+    "axisymmetric"
+  ],
+  "aliases": [
+    "mirror plasma flux Green matrix"
+  ],
+  "discovery": {
+    "capability": [
+      "Reflection-symmetric plasma-cell flux Green matrix",
+      "Build the dense flux-response matrix for a uniformly spaced, Z-reflection-symmetric cylindrical grid."
+    ],
+    "operation": [
+      "mirror-symmetric plasma-grid flux-matrix construction",
+      "symmetric R-Z grid -> target-row/source-column flux response"
+    ],
+    "model": "Axisymmetric ideal circular-filament flux with symmetry-required grid validation.",
+    "geometry": "Rectilinear R-Z grid shared by target and source nodes.",
+    "boundary": "R is nonnegative and increasing; Z is increasing, uniform and symmetric about zero; axis-source columns and self entries are zero.",
+    "device_scope": "device-parameterized"
+  },
+  "identity": {
+    "relation": "Mirror-symmetric plasma-grid flux matrix",
+    "direction": "symmetric R,Z grid to target-row/source-column psi response",
+    "definition": "Use actual-coordinate circular-filament flux entries on the supplied grid and preserve C-order flattening. The documented fields are returned together in a scirel._result.Result mapping; mapping and attribute access expose the same values. No nested mapping is returned.",
+    "model": "Axisymmetric ideal circular-filament flux with symmetry-required grid validation.",
+    "geometry": "Rectilinear R-Z grid shared by target and source nodes.",
+    "coordinates": "R,Z in metres; matrix entries Wb/rad/A.",
+    "boundary": "R is nonnegative and increasing; Z is increasing, uniform, and symmetric about zero; axis-source columns and self entries are zero.",
+    "assumptions": [
+      "The input grid is finite and matching.",
+      "The source grid has at least two nodes per axis.",
+      "No cell-area or 2pi factor is included."
+    ]
+  },
+  "inputs": [
+    {
+      "name": "r_grid",
+      "description": "Cylindrical radius mesh shared by source and target cells.",
+      "units": "m",
+      "shape": "[N_Z,N_R]",
+      "dtype": "real array-like, converted to float64",
+      "required": true,
+      "constraints": "Finite, rectilinear, nonnegative and strictly increasing R axis; same shape as z_grid and at least two points per axis."
+    },
+    {
+      "name": "z_grid",
+      "description": "Axial coordinate mesh shared by source and target cells.",
+      "units": "m",
+      "shape": "[N_Z,N_R]",
+      "dtype": "real array-like, converted to float64",
+      "required": true,
+      "constraints": "Finite rectilinear grid with a strictly increasing, uniformly spaced and reflection-symmetric Z axis; same shape as r_grid and at least two points per axis."
+    }
+  ],
+  "outputs": [
+    {
+      "name": "g_psi",
+      "description": "Field of the returned scirel._result.Result mapping: Psi=R A_phi response per source current for each target/source grid-cell pair.",
+      "units": "Wb/rad/A",
+      "shape": "[N_Z*N_R,N_Z*N_R]",
+      "dtype": "float64",
+      "required": true,
+      "constraints": "Both axes follow C-order [Z,R] flattening; zero-radius source columns and exact self entries use the discrete zero convention. Unrepresentable non-self responses raise FloatingPointError rather than being replaced by zero; no cell-area or 2*pi factor is included."
+    }
+  ],
+  "applicability": {
+    "preconditions": [
+      "The input grid is finite and matching.",
+      "The source grid has at least two nodes per axis."
+    ],
+    "supported": [
+      "Symmetric-grid shape/finiteness, axis-source convention, reflected blocks, and direct-kernel comparison."
+    ],
+    "excluded": [
+      "Nonsymmetric grids, finite-wire self-fields, and arbitrary physical plasma qualification."
+    ]
+  },
+  "failure_semantics": {
+    "invalid_input": "ValueError is raised for malformed, nonfinite, nonrectilinear, nonuniform, or nonsymmetric grids.",
+    "runtime_failure": "FloatingPointError from an unrepresentable Green matrix propagates.",
+    "nonconvergence": "Not applicable; matrix construction is direct.",
+    "partial_results": "No scirel._result.Result response mapping is returned after validation or kernel failure."
+  },
+  "public_api": {
+    "python": {
+      "module": "scirel.field.mirror_plasma_green",
+      "symbol": "build_mirror_plasma_flux_green",
+      "signature": "build_mirror_plasma_flux_green(r_grid, z_grid)",
+      "canonical_module": "scirel.field",
+      "canonical_symbol": "build_mirror_plasma_flux_green"
+    }
+  },
+  "version": {
+    "implementation_version": "0.0.0",
+    "dependencies": [
+      {
+        "asset_id": "scirel.electromagnetism.loop-flux-matrix"
+      }
+    ]
+  },
+  "example": {
+    "description": "Build a 3x4 reflection-symmetric grid response matrix.",
+    "code": "import numpy as np\nfrom scirel._result import Result\nfrom scirel.field import build_mirror_plasma_flux_green\nr_grid, z_grid = np.meshgrid(\n    np.linspace(0.0, 0.3, 4), np.linspace(-0.4, 0.4, 3)\n)\nresult = build_mirror_plasma_flux_green(r_grid, z_grid)\nassert isinstance(result, Result)\nassert list(result) == ['g_psi']\nassert result.g_psi is result['g_psi']\nassert result['g_psi'].shape == (r_grid.size, r_grid.size)\nassert np.isfinite(result['g_psi']).all()\nfor source_plane in range(3):\n    np.testing.assert_allclose(\n        result['g_psi'][:, source_plane * 4], 0.0\n    )\nnp.testing.assert_allclose(\n    result['g_psi'][0:4, 4:8], result['g_psi'][4:8, 0:4]\n)\n",
+    "expected": "The result is a finite float64 (12,12) matrix with zero axis-source columns and equal reflected blocks. The returned object is a scirel._result.Result mapping; each field is also readable as an attribute."
+  },
+  "verification": {
+    "scope": [
+      "test_first_source_plane_matches_independent_circular_filament_formula in tests/field/test_mirror_plasma_green.py compares g_psi source columns on a 3-by-4 grid with an independent 80-digit elliptic-integral expression at rtol=2e-14 and atol=1e-300.",
+      "Whole-matrix equality with direct dense filament columns on a symmetric grid.",
+      "Square shape, finite output and axis-source zero-column convention.",
+      "Rejection of an axially nonsymmetric grid and reflection-block relation.",
+      "In tests/cross_domain/test_field_green_correction.py, test_mirror_small_positive_loops_are_not_removed_by_axis_tolerance checks the g_psi matrix on radii [1e-13,2e-13] and Z=[-1e-13,1e-13] against a 70-digit ideal-loop expression at rtol=2e-14 and atol=1e-300, retaining zero diagonal entries. test_public_field_interfaces_reject_complex_coordinates includes api=mirror.",
+      "The named result preserves the captured key order, values, shapes, dtypes, mapping access and attribute access; failures retain their exception types and messages.",
+      "Independent evidence (tests/field/test_mirror_plasma_green_evidence.py): off-diagonal entries agree with the direct Biot-Savart quadrature of one unit ring within 64 eps; the zero diagonal, the exact bitwise Z-reflection G[i, j] = G[mirror(i), mirror(j)], and the exact mutual-flux symmetry of the unit-weight matrix are separate exact assertions, and the axis rows and columns are zero."
+    ],
+    "tests": [
+      "tests/field/test_mirror_plasma_green.py",
+      "tests/cross_domain/test_field_green_correction.py",
+      "tests/field/test_mirror_plasma_green_evidence.py"
+    ],
+    "evidence_ceiling": "The dedicated test file calls build_mirror_plasma_flux_green as scientific_function and by its own name. The named first-plane formula assertion is independent; test_reflected_matrix_matches_direct_filament_columns_on_symmetric_grid compares with the maintained dense response, and the shape/axis-source/reflected-block and nonsymmetric-grid assertions cover the stated fixtures. The shared file directly checks only the mirror cases named in scope. This entry returns flux only: aggregate-only BR/BZ, formula-cutover, near-wire and arithmetic-failure assertions are dependency evidence and cannot be assigned to this wrapper. Arbitrary-grid validity, finite-wire self-fields and experimental validation remain unqualified. C1 evidence adds the Biot-Savart quadrature for individual entries and the exact mutual-flux symmetry, neither of which the maintained column comparison provides; the observed maximum deviation on the sampled entries is 6.55e-15 relative against a 1.42e-14 budget. It covers the flux matrix only, so it says nothing about radial or axial field matrices, and it does not establish a continuous error bound.",
+    "known_limitations": [
+      "The result is a dense O((N_Z*N_R)^2) matrix and may be costly on large grids.",
+      "Current contraction and cell-area factors are caller responsibilities.",
+      "Public distribution licensing and SciRel expert recognition remain pending.",
+      "The dedicated mirror entry remains limited to uniform, symmetric Z tensor grids; for general irregular coordinates use the actual-coordinate matrix entry in the electromagnetism domain.",
+      "Direct overflow coverage through the mirror wrapper is UNKNOWN in the bound tests; failure propagation is established by the implementation, not by inheriting aggregate or dense failure assertions.",
+      "The runtime_failure channel is not reachable from finite unit-weight coordinates: the entry is bounded by 1e-5 times the geometric scale, so no finite grid can overflow it. The test records that boundary instead of asserting a raise, and the propagation itself is exercised in the weighted assets.",
+      "The 64-eps figure is an observed maximum over the sampled entries, not a proven bound over the whole matrix."
+    ],
+    "basis": {
+      "kind": "independent-recomputation",
+      "statement": "g_psi source columns on a 3-by-4 grid are compared with an independent circular-filament formula, and whole-matrix equality is required against direct dense filament columns on a symmetric grid.",
+      "source": "tests/field/test_mirror_plasma_green.py"
+    }
   }
- ],
- "outputs": [
-  {
-   "name": "g_psi",
-   "description": "Field of the returned scirel._result.Result mapping: Psi=R A_phi response per source current for each target/source grid-cell pair.",
-   "units": "Wb/rad/A",
-   "shape": "[N_Z*N_R,N_Z*N_R]",
-   "dtype": "float64",
-   "required": true,
-   "constraints": "Both axes follow C-order [Z,R] flattening; zero-radius source columns and exact self entries use the discrete zero convention. Unrepresentable non-self responses raise FloatingPointError rather than being replaced by zero; no cell-area or 2*pi factor is included."
-  }
- ],
- "applicability": {
-  "preconditions": [
-   "The input grid is finite and matching.",
-   "The source grid has at least two nodes per axis."
-  ],
-  "supported": [
-   "Symmetric-grid shape/finiteness, axis-source convention, reflected blocks, and direct-kernel comparison."
-  ],
-  "excluded": [
-   "Nonsymmetric grids, finite-wire self-fields, and arbitrary physical plasma qualification."
-  ]
- },
- "failure_semantics": {
-  "invalid_input": "ValueError is raised for malformed, nonfinite, nonrectilinear, nonuniform, or nonsymmetric grids.",
-  "runtime_failure": "FloatingPointError from an unrepresentable Green matrix propagates.",
-  "nonconvergence": "Not applicable; matrix construction is direct.",
-  "partial_results": "No scirel._result.Result response mapping is returned after validation or kernel failure."
- },
- "public_api": {
-  "python": {
-   "module": "scirel.field.mirror_plasma_green",
-   "symbol": "build_mirror_plasma_flux_green",
-   "signature": "build_mirror_plasma_flux_green(r_grid, z_grid)",
-   "canonical_module": "scirel.field",
-   "canonical_symbol": "build_mirror_plasma_flux_green"
-  }
- },
- "version": {
-  "implementation_version": "0.0.0",
-  "dependencies": [
-   {
-    "asset_id": "scirel.electromagnetism.loop-flux-matrix"
-   }
-  ]
- },
- "example": {
-  "description": "Build a 3x4 reflection-symmetric grid response matrix.",
-  "code": "import numpy as np\nfrom scirel._result import Result\nfrom scirel.field import build_mirror_plasma_flux_green\nr_grid, z_grid = np.meshgrid(\n    np.linspace(0.0, 0.3, 4), np.linspace(-0.4, 0.4, 3)\n)\nresult = build_mirror_plasma_flux_green(r_grid, z_grid)\nassert isinstance(result, Result)\nassert list(result) == ['g_psi']\nassert result.g_psi is result['g_psi']\nassert result['g_psi'].shape == (r_grid.size, r_grid.size)\nassert np.isfinite(result['g_psi']).all()\nfor source_plane in range(3):\n    np.testing.assert_allclose(\n        result['g_psi'][:, source_plane * 4], 0.0\n    )\nnp.testing.assert_allclose(\n    result['g_psi'][0:4, 4:8], result['g_psi'][4:8, 0:4]\n)\n",
-  "expected": "The result is a finite float64 (12,12) matrix with zero axis-source columns and equal reflected blocks. The returned object is a scirel._result.Result mapping; each field is also readable as an attribute."
- },
- "verification": {
-  "scope": [
-   "test_first_source_plane_matches_independent_circular_filament_formula in tests/field/test_mirror_plasma_green.py compares g_psi source columns on a 3-by-4 grid with an independent 80-digit elliptic-integral expression at rtol=2e-14 and atol=1e-300.",
-   "Whole-matrix equality with direct dense filament columns on a symmetric grid.",
-   "Square shape, finite output and axis-source zero-column convention.",
-   "Rejection of an axially nonsymmetric grid and reflection-block relation.",
-   "In tests/cross_domain/test_field_green_correction.py, test_mirror_small_positive_loops_are_not_removed_by_axis_tolerance checks the g_psi matrix on radii [1e-13,2e-13] and Z=[-1e-13,1e-13] against a 70-digit ideal-loop expression at rtol=2e-14 and atol=1e-300, retaining zero diagonal entries. test_public_field_interfaces_reject_complex_coordinates includes api=mirror.",
-   "The named result preserves the captured key order, values, shapes, dtypes, mapping access and attribute access; failures retain their exception types and messages.",
-   "Independent evidence (tests/field/test_mirror_plasma_green_evidence.py): off-diagonal entries agree with the direct Biot-Savart quadrature of one unit ring within 64 eps; the zero diagonal, the exact bitwise Z-reflection G[i, j] = G[mirror(i), mirror(j)], and the exact mutual-flux symmetry of the unit-weight matrix are separate exact assertions, and the axis rows and columns are zero."
-  ],
-  "tests": [
-   "tests/field/test_mirror_plasma_green.py",
-   "tests/cross_domain/test_field_green_correction.py",
-   "tests/field/test_mirror_plasma_green_evidence.py"
-  ],
-  "evidence_ceiling": "The dedicated test file calls build_mirror_plasma_flux_green as scientific_function and by its own name. The named first-plane formula assertion is independent; test_reflected_matrix_matches_direct_filament_columns_on_symmetric_grid compares with the maintained dense response, and the shape/axis-source/reflected-block and nonsymmetric-grid assertions cover the stated fixtures. The shared file directly checks only the mirror cases named in scope. This entry returns flux only: aggregate-only BR/BZ, formula-cutover, near-wire and arithmetic-failure assertions are dependency evidence and cannot be assigned to this wrapper. Arbitrary-grid validity, finite-wire self-fields and experimental validation remain unqualified. C1 evidence adds the Biot-Savart quadrature for individual entries and the exact mutual-flux symmetry, neither of which the maintained column comparison provides; the observed maximum deviation on the sampled entries is 6.55e-15 relative against a 1.42e-14 budget. It covers the flux matrix only, so it says nothing about radial or axial field matrices, and it does not establish a continuous error bound.",
-  "known_limitations": [
-   "The result is a dense O((N_Z*N_R)^2) matrix and may be costly on large grids.",
-   "Current contraction and cell-area factors are caller responsibilities.",
-   "Public distribution licensing and SciRel expert recognition remain pending.",
-   "The dedicated mirror entry remains limited to uniform, symmetric Z tensor grids; for general irregular coordinates use the actual-coordinate matrix entry in the electromagnetism domain.",
-   "Direct overflow coverage through the mirror wrapper is UNKNOWN in the bound tests; failure propagation is established by the implementation, not by inheriting aggregate or dense failure assertions.",
-   "The runtime_failure channel is not reachable from finite unit-weight coordinates: the entry is bounded by 1e-5 times the geometric scale, so no finite grid can overflow it. The test records that boundary instead of asserting a raise, and the propagation itself is exercised in the weighted assets.",
-   "The 64-eps figure is an observed maximum over the sampled entries, not a proven bound over the whole matrix."
-  ]
- }
 }

@@ -96,10 +96,6 @@
       "reason": "not yet migrated: verification.basis absent"
     },
     {
-      "asset_id": "scirel.equilibrium.kinetic-mirror-hall-equilibrium",
-      "reason": "not yet migrated: verification.basis absent"
-    },
-    {
       "asset_id": "scirel.equilibrium.pressure-flux-state",
       "reason": "not yet migrated: verification.basis absent"
     },
@@ -137,10 +133,6 @@
     },
     {
       "asset_id": "scirel.field.ideal-conductor-boundary",
-      "reason": "not yet migrated: verification.basis absent"
-    },
-    {
-      "asset_id": "scirel.field.mirror-plasma-green",
       "reason": "not yet migrated: verification.basis absent"
     },
     {
@@ -188,10 +180,6 @@
       "reason": "not yet migrated: verification.basis absent"
     },
     {
-      "asset_id": "scirel.geometry.axisymmetric-equilibrium-grid-support",
-      "reason": "not yet migrated: verification.basis absent"
-    },
-    {
       "asset_id": "scirel.geometry.boundary",
       "reason": "not yet migrated: verification.basis absent"
     },
@@ -232,10 +220,6 @@
       "reason": "not yet migrated: verification.basis absent"
     },
     {
-      "asset_id": "scirel.geometry.meridional-polar-forward",
-      "reason": "not yet migrated: verification.basis absent"
-    },
-    {
       "asset_id": "scirel.geometry.meridional-polar-inverse",
       "reason": "not yet migrated: verification.basis absent"
     },
@@ -273,10 +257,6 @@
     },
     {
       "asset_id": "scirel.geometry.rect-mesh",
-      "reason": "not yet migrated: verification.basis absent"
-    },
-    {
-      "asset_id": "scirel.geometry.rectangular-nearest",
       "reason": "not yet migrated: verification.basis absent"
     },
     {
@@ -872,8 +852,13 @@
     "scirel.configurations.trex-coil",
     "scirel.configurations.wham",
     "scirel.diagnostics.equilibrium-synthesis-diagnostics",
+    "scirel.equilibrium.kinetic-mirror-hall-equilibrium",
+    "scirel.field.mirror-plasma-green",
     "scirel.field.poloidal-field-from-flux",
+    "scirel.geometry.axisymmetric-equilibrium-grid-support",
+    "scirel.geometry.meridional-polar-forward",
     "scirel.geometry.path-distance",
+    "scirel.geometry.rectangular-nearest",
     "scirel.kinetic.kinetic-wavevector-roots",
     "scirel.kinetic.kinetic-wavevector-scan",
     "scirel.kinetic.parallel-em-continuation",
