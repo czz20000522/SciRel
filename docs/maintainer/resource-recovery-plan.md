@@ -242,3 +242,43 @@ git reflog show --date=iso <ref>
 > 判断"有没有独有工作"，看**有没有 `main` 上根本不存在的文件或符号**，而不是看两边同名文件内容是否相同。
 
 上表 26 条里，若某条含有 `main` 中完全不存在的路径，那才是真信号。这个检查比 tip 比较可靠，且成本相同。
+
+## 8. 执行记录（2026-11-17T21:2x，`main` @ `1cdc4024`）：归档代替判断
+
+第 7 节说清了"tip 比较无法回答分支是否还有独有工作"，因此按那一节的建议执行：**先归档所有指针，再删分支和工作树**。归档让"我不敢判"变成"不必判"。
+
+### 8.1 顺序与结果
+
+| 步骤 | 动作 | 结果 |
+| --- | --- | --- |
+| 1 | 逐棵检查工作树是否有未提交改动 | **28 棵全部干净**（脏的一棵都不动） |
+| 2 | 每条本地分支写入 `refs/archive/<name>` | 32 条，归档 ref 总数 110（含此前已有） |
+| 3 | `git worktree remove` + `prune` | 28 → **1**（只余主检出） |
+| 4 | `git branch -D`（squash 使 `-d` 不可用） | 删 31 条，余 `main` 与受保护保留项 `integration/reland` |
+| 5 | **验证每个归档指针可达** | **110 / 110 可达，0 不可达** |
+
+### 8.2 为什么这样删是安全的
+
+删除分支的唯一风险是丢提交。`refs/archive/*` 保留了全部指针，所以**提交仍然可达**：
+
+```sh
+git for-each-ref --format='%(refname)' refs/archive | wc -l     # 110
+for r in $(git for-each-ref --format='%(refname)' refs/archive); do
+  git cat-file -e "$(git rev-parse "$r")" || echo "不可达 $r"
+done                                                            # 无输出
+```
+
+抽样核对已删分支的 tip 仍可读：`ec0f2ada`（c1-em）、`fc9fe67f`（rubicon/521e25b2）、`5521e3cd`（c1-kinetic-final4）、`10638f32`（rubicon/501303ab）。
+
+### 8.3 没有动的东西
+
+| 项 | 状态 |
+| --- | --- |
+| `refs/remotes/origin/agent/hygiene-gate`（#142） | 未动 |
+| `refs/remotes/origin/agent/140-integration-and-cleanup-spec`（#144） | 未动 |
+| 本地分支 `integration/reland` | **保留**（§5 的保留项，尚未裁决） |
+| 主检出的 `.runtime/`（解释器、uv 缓存、锁） | 未动 |
+
+### 8.4 一处如实说明
+
+`refs/archive/*` 只有本地意义，**不随 `git push` 传播**。所以"归档"保护的是这个 clone；如果这个 clone 消失，归档也就没了。真正需要长期保留的分支应当推到远端的 `refs/archive/*`（`git push origin 'refs/archive/*:refs/archive/*'`），这一步**没有做**，因为它是共享状态变更、不属于单个 agent 的写入边界，留给维护者决定。
