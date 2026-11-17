@@ -106,7 +106,7 @@
  },
  "verification": {
   "scope": [
-   "Independent basis: the returned spectrum has exactly 4*S + 6 modes and its two orderings are permutations of the same complete spectrum, compared as complex values rather than moduli, each descending in its own declared key.",
+   "Independent reference: the returned spectrum has exactly 4*S + 6 modes and its two orderings are permutations of the same complete spectrum, compared as complex values rather than moduli, each descending in its own declared key.",
    "Both returned orderings are permutations of the same complete spectrum, compared as complex values rather than moduli, and each is descending in its own declared key.",
    "The relativistic flag selects the tangent inertia gamma I + gamma**3 v v^T / c**2 while the nonrelativistic branch declares A = I, so with a nonzero drift the two spectra must differ; a call that ignored the flag would return identical spectra.",
    "Test matrix: the tracked two-species fixture at four wavevectors on both branches, each returning 4*S + 6 modes.",
