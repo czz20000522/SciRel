@@ -20,50 +20,6 @@
       "reason": "not yet migrated: verification.basis absent"
     },
     {
-      "asset_id": "scirel.kinetic.fluid-dispersion-matrix",
-      "reason": "not yet migrated: verification.basis absent"
-    },
-    {
-      "asset_id": "scirel.kinetic.fluid-dispersion-response",
-      "reason": "not yet migrated: verification.basis absent"
-    },
-    {
-      "asset_id": "scirel.kinetic.fluid-em-matrix",
-      "reason": "not yet migrated: verification.basis absent"
-    },
-    {
-      "asset_id": "scirel.kinetic.fluid-em-spectrum",
-      "reason": "not yet migrated: verification.basis absent"
-    },
-    {
-      "asset_id": "scirel.kinetic.fluid-special-functions",
-      "reason": "not yet migrated: verification.basis absent"
-    },
-    {
-      "asset_id": "scirel.kinetic.fluid-wavevector-eigensolve",
-      "reason": "not yet migrated: verification.basis absent"
-    },
-    {
-      "asset_id": "scirel.kinetic.fluid-wavevector-scan",
-      "reason": "not yet migrated: verification.basis absent"
-    },
-    {
-      "asset_id": "scirel.kinetic.gamma-lpole-coefficients",
-      "reason": "not yet migrated: verification.basis absent"
-    },
-    {
-      "asset_id": "scirel.kinetic.generalized-dispersion",
-      "reason": "not yet migrated: verification.basis absent"
-    },
-    {
-      "asset_id": "scirel.kinetic.generalized-hilbert",
-      "reason": "not yet migrated: verification.basis absent"
-    },
-    {
-      "asset_id": "scirel.kinetic.generalized-residual",
-      "reason": "not yet migrated: verification.basis absent"
-    },
-    {
       "asset_id": "scirel.kinetic.generalized-root-scans",
       "reason": "not yet migrated: verification.basis absent"
     },
@@ -509,7 +465,18 @@
     "scirel.kinetic.dielectric-diagnostics",
     "scirel.kinetic.dielectric-response",
     "scirel.kinetic.fluid-bonk-search",
+    "scirel.kinetic.fluid-dispersion-matrix",
+    "scirel.kinetic.fluid-dispersion-response",
+    "scirel.kinetic.fluid-em-matrix",
+    "scirel.kinetic.fluid-em-spectrum",
+    "scirel.kinetic.fluid-special-functions",
+    "scirel.kinetic.fluid-wavevector-eigensolve",
+    "scirel.kinetic.fluid-wavevector-scan",
+    "scirel.kinetic.gamma-lpole-coefficients",
+    "scirel.kinetic.generalized-dispersion",
     "scirel.kinetic.generalized-expression-differentiation",
+    "scirel.kinetic.generalized-hilbert",
+    "scirel.kinetic.generalized-residual",
     "scirel.kinetic.kinetic-wavevector-roots",
     "scirel.kinetic.kinetic-wavevector-scan",
     "scirel.kinetic.maxwellian-electrostatic-mode",

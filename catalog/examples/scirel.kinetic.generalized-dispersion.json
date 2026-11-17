@@ -1,166 +1,171 @@
 {
- "schema": "scirel.asset-document",
- "asset_id": "scirel.kinetic.generalized-dispersion",
- "aliases": [],
- "discovery": {
-  "capability": [
-   "Generalized distribution selectors",
-   "Evaluate all seven original generalized distribution selectors."
+  "schema": "scirel.asset-document",
+  "asset_id": "scirel.kinetic.generalized-dispersion",
+  "aliases": [],
+  "discovery": {
+    "capability": [
+      "Generalized distribution selectors",
+      "Evaluate all seven original generalized distribution selectors."
+    ],
+    "operation": [
+      "evaluate the generalized distribution selectors",
+      "density expression, integration mesh and z -> Z(z) and Z'(z)"
+    ],
+    "model": "One-dimensional unmagnetized collisionless electrostatic plasma",
+    "geometry": "One-dimensional velocity space",
+    "boundary": "Infinite real velocity contour with stated continuation or finite support.",
+    "device_scope": "generic"
+  },
+  "taxonomy": [
+    "kinetic",
+    "plasma-wave",
+    "generalized-dispersion"
   ],
-  "operation": [
-   "evaluate the generalized distribution selectors",
-   "density expression, integration mesh and z -> Z(z) and Z'(z)"
+  "title": {
+    "zh": "广义等离子体色散函数七类分布",
+    "en": "Evaluate all seven original generalized distribution selectors."
+  },
+  "summary": "Evaluate all seven original generalized distribution selectors.",
+  "identity": {
+    "model": "One-dimensional unmagnetized collisionless electrostatic plasma",
+    "relation": "Z=integral f(v)/(v-z)dv; Zp=dZ/dz",
+    "definition": "Selector densities: delta(v); f=1 on [-.5,.5]; max(0,1-|v|); sqrt(2)/pi/(1+v²/2)²; H(v-.1)exp(-v²)/sqrt(pi); and 3sqrt(3)/(4pi)/(1+|v|³) on |v|<=4. For a jump J at a, Zp includes J/(a-z). Top-hat density sign and incomplete-Maxwellian cutoff jump are corrected from the inconsistent source. Gaussian derivative uses cancellation-free raw susceptibility/moments at large phase rather than subtracting a rounded unit term. Far top-hat values use a convergent inverse-power series; derivatives form real and imaginary denominator components separately before reciprocal evaluation, preserving representable small contour components. Near the center the real response uses real log1p, near edges log-hypot differences, and contour phase uses a single atan2; no complex log1p is used.",
+    "direction": "Declared inputs to declared scientific outputs",
+    "geometry": "One-dimensional velocity space",
+    "coordinates": "Dimensionless real velocity and complex phase or frequency",
+    "boundary": "Infinite real velocity contour with stated continuation or finite support.",
+    "assumptions": [
+      "Density is real and integrable on the real contour.",
+      "No collective-mode uniqueness or certified global quadrature bound is asserted.",
+      "Custom expression requires integration_mesh."
+    ]
+  },
+  "inputs": [
+    {
+      "name": "z",
+      "description": "Complex phase point z in the same velocity variable v as the selected density: Z(z)=integral f(v)/(v-z) dv. For the default Maxwellian exp(-v^2)/sqrt(pi), v is in units of sqrt(2) v_t, so z=omega/(sqrt(2) k v_t); for a custom expression z is omega/k in the units of v used in that expression.",
+      "dtype": "real or complex numeric",
+      "shape": "scalar or nonempty array",
+      "required": true,
+      "constraints": "Finite and representable.",
+      "units": "dimensionless"
+    },
+    {
+      "name": "selector",
+      "description": "Density family in the velocity variable v, of unit integral except selectors 5 (mass-incomplete) and 6 (truncated): 0 the expression argument (default exp(-v^2)/sqrt(pi), the Maxwellian with v in units of sqrt(2) v_t); 1 delta(v); 2 top-hat 1 on [-0.5,0.5]; 3 triangle max(0,1-|v|); 4 power law sqrt(2)/pi/(1+v^2/2)^2 (a kappa=2 Lorentzian-type density, not a gamma distribution); 5 incomplete Maxwellian H(v-0.1) exp(-v^2)/sqrt(pi), mass-incomplete; 6 truncated slowing-down 3sqrt(3)/(4pi)/(1+|v|^3) on |v|<=4.",
+      "dtype": "integer",
+      "shape": "scalar",
+      "required": false,
+      "constraints": "Integer 0 through 6; booleans rejected.",
+      "units": "dimensionless",
+      "default": 0
+    },
+    {
+      "name": "expression",
+      "description": "Analytic density in v using finite real constants, pi, + - * / and powers, and exp/log/sqrt/sin/cos/sinh/cosh/tanh. Powers may be written ** or ^, and MATLAB element-wise .^ .* ./ are accepted as the same operators.",
+      "dtype": "str",
+      "shape": "scalar",
+      "required": false,
+      "constraints": "Real integrable density with decaying derivative; no arbitrary code, comparisons, attributes or indexing.",
+      "units": "dimensionless",
+      "default": "exp(-v.^2)/sqrt(pi)"
+    },
+    {
+      "name": "integration_mesh",
+      "description": "Feature-resolving finite increasing velocity mesh; infinite tails are also integrated.",
+      "dtype": "real vector",
+      "shape": "one-dimensional at least two points",
+      "required": false,
+      "constraints": "All material features resolved; no unresolved tail features.",
+      "units": "dimensionless",
+      "default": null
+    }
   ],
-  "model": "One-dimensional unmagnetized collisionless electrostatic plasma",
-  "geometry": "One-dimensional velocity space",
-  "boundary": "Infinite real velocity contour with stated continuation or finite support.",
-  "device_scope": "generic"
- },
- "taxonomy": [
-  "kinetic",
-  "plasma-wave",
-  "generalized-dispersion"
- ],
- "title": {
-  "zh": "广义等离子体色散函数七类分布",
-  "en": "Evaluate all seven original generalized distribution selectors."
- },
- "summary": "Evaluate all seven original generalized distribution selectors.",
- "identity": {
-  "model": "One-dimensional unmagnetized collisionless electrostatic plasma",
-  "relation": "Z=integral f(v)/(v-z)dv; Zp=dZ/dz",
-  "definition": "Selector densities: delta(v); f=1 on [-.5,.5]; max(0,1-|v|); sqrt(2)/pi/(1+v²/2)²; H(v-.1)exp(-v²)/sqrt(pi); and 3sqrt(3)/(4pi)/(1+|v|³) on |v|<=4. For a jump J at a, Zp includes J/(a-z). Top-hat density sign and incomplete-Maxwellian cutoff jump are corrected from the inconsistent source. Gaussian derivative uses cancellation-free raw susceptibility/moments at large phase rather than subtracting a rounded unit term. Far top-hat values use a convergent inverse-power series; derivatives form real and imaginary denominator components separately before reciprocal evaluation, preserving representable small contour components. Near the center the real response uses real log1p, near edges log-hypot differences, and contour phase uses a single atan2; no complex log1p is used.",
-  "direction": "Declared inputs to declared scientific outputs",
-  "geometry": "One-dimensional velocity space",
-  "coordinates": "Dimensionless real velocity and complex phase or frequency",
-  "boundary": "Infinite real velocity contour with stated continuation or finite support.",
-  "assumptions": [
-   "Density is real and integrable on the real contour.",
-   "No collective-mode uniqueness or certified global quadrature bound is asserted.",
-   "Custom expression requires integration_mesh."
+  "outputs": [
+    {
+      "name": "Z",
+      "description": "Integral f(v)/(v-z) dv with the declared continuation.",
+      "dtype": "complex array",
+      "shape": "same as z",
+      "required": true,
+      "constraints": "Finite and representable.",
+      "units": "dimensionless"
+    },
+    {
+      "name": "Zp",
+      "description": "Derivative dZ/dz including distributional jumps.",
+      "dtype": "complex array",
+      "shape": "same as z",
+      "required": true,
+      "constraints": "Finite and representable.",
+      "units": "dimensionless"
+    }
+  ],
+  "public_api": {
+    "python": {
+      "module": "scirel.kinetic.generalized_dispersion",
+      "symbol": "evaluate_generalized_dispersion",
+      "signature": "evaluate_generalized_dispersion(z, selector=0, *, expression='exp(-v.^2)/sqrt(pi)', integration_mesh=None)",
+      "canonical_module": "scirel.kinetic",
+      "canonical_symbol": "evaluate_generalized_dispersion"
+    }
+  },
+  "applicability": {
+    "supported": [
+      "All original selectors 0 through 6, including exact delta/top-hat and cutoff derivative jumps.",
+      "Analytic Maxwellian, gamma and custom expressions with Landau continuation; real-contour piecewise distributions in either half plane.",
+      "Upper real-axis boundary values away from endpoints and triangular derivative corners."
+    ],
+    "excluded": [
+      "Arbitrary symbolic expressions or executable input.",
+      "Guessed analytic continuation of discontinuous distributions.",
+      "Silent fallback from unknown selector to Maxwellian."
+    ],
+    "preconditions": [
+      "Density is real and integrable on the real contour.",
+      "No collective-mode uniqueness or certified global quadrature bound is asserted.",
+      "Custom expression requires integration_mesh."
+    ]
+  },
+  "failure_semantics": {
+    "invalid_input": "ValueError for non-numeric or non-broadcastable z, selector outside 0..6, a nonpositive selector-grid endpoint, or an unsupported expression/integration mesh.",
+    "runtime_failure": "ValueError for a non-finite or otherwise unrepresentable Z/Zp and RuntimeError when the real-axis or exterior quadrature does not converge; no fallback branch is selected.",
+    "nonconvergence": "RuntimeError when the real-axis or exterior quadrature fails to converge; no unconverged value is returned.",
+    "partial_results": "No partial Z/Zp pair is returned after a failed call."
+  },
+  "verification": {
+    "scope": [
+      "Independent basis: selectors 1, 2 and the default Maxwellian have closed forms that are recomputed at 40 mpmath digits -- -1/z and 1/z**2 for the delta, -log((z+0.5)/(z-0.5)) for the unit top-hat, and i sqrt(pi) exp(-z**2) erfc(-i z) for the Maxwellian.",
+      "The top-hat sign was determined, not assumed: the opposite ordering differs by exactly -1, which a modulus comparison would not have seen.",
+      "Zp is checked against a 40-digit central difference of the independently computed closed form, so the derivative is not certified by the implementation's own derivative path.",
+      "Test matrix: three complex phase points on each of the three closed-form selectors, including one in the lower half plane.",
+      "Failure matrix: one assertion per channel -- wrong delta response, wrong top-hat branch cut, wrong Maxwellian kernel, and a wrong derivative.",
+      "Precision budget, written before measurement: 1e-12 relative on the transforms, 1e-9 on the differentiated comparison."
+    ],
+    "tests": [
+      "tests/kinetic/test_generalized_dispersion_evidence.py"
+    ],
+    "evidence_ceiling": "Bounded to selectors 1, 2 and the default Maxwellian of the seven declared densities, at three complex phase points each. Established by closed forms recomputed at 40 digits and by a high-precision derivative; measured agreement is at the 1e-16 level for the transforms and inside 1e-9 for the derivative. Excluded scope: selectors 3, 4, 5 and 6, whose transforms have no independent reference here, arbitrary caller expressions, and any root search.",
+    "known_limitations": [
+      "Selectors 3 (triangle), 4 (kappa-2 Lorentzian), 5 (incomplete Maxwellian) and 6 (truncated slowing-down) are recorded as cannot establish: their reference requires a high-precision quadrature with feature splitting that was not built, so their correctness rests on the existing self-consistency tests only.",
+      "The closed forms are exact for the declared densities; a custom caller expression is a different scope and is not covered."
+    ],
+    "basis": {
+      "kind": "independent-recomputation",
+      "statement": "Measured agreement is at the 1e-16 level for the transforms and inside 1e-9 for the derivative. Excluded scope: selectors 3, 4, 5 and 6, whose transforms have no independent reference here, arbitrary caller expressions, and any root search.",
+      "source": "tests/kinetic/test_generalized_dispersion_evidence.py"
+    }
+  },
+  "example": {
+    "description": "Evaluate one generalized dispersion selector at an upper-half-plane point.",
+    "code": "import numpy as np\nfrom scirel.kinetic.generalized_dispersion import evaluate_generalized_dispersion\nr=evaluate_generalized_dispersion(1j,2)\nassert r['Z'].imag>0\nassert np.isfinite(r['Zp'])\n",
+    "expected": "Observed PASS: selector 2 at z=i returns a finite Z and Zp with positive imaginary part for Z."
+  },
+  "version": {
+    "implementation_version": "0.0.0",
+    "dependencies": []
+  },
+  "references": [
+    "Hua-Sheng Xie, Generalized plasma dispersion function, Phys. Plasmas. 20 (2013), 092125 (scientific context)"
   ]
- },
- "inputs": [
-  {
-   "name": "z",
-   "description": "Complex phase point z in the same velocity variable v as the selected density: Z(z)=integral f(v)/(v-z) dv. For the default Maxwellian exp(-v^2)/sqrt(pi), v is in units of sqrt(2) v_t, so z=omega/(sqrt(2) k v_t); for a custom expression z is omega/k in the units of v used in that expression.",
-   "dtype": "real or complex numeric",
-   "shape": "scalar or nonempty array",
-   "required": true,
-   "constraints": "Finite and representable.",
-   "units": "dimensionless"
-  },
-  {
-   "name": "selector",
-   "description": "Density family in the velocity variable v, of unit integral except selectors 5 (mass-incomplete) and 6 (truncated): 0 the expression argument (default exp(-v^2)/sqrt(pi), the Maxwellian with v in units of sqrt(2) v_t); 1 delta(v); 2 top-hat 1 on [-0.5,0.5]; 3 triangle max(0,1-|v|); 4 power law sqrt(2)/pi/(1+v^2/2)^2 (a kappa=2 Lorentzian-type density, not a gamma distribution); 5 incomplete Maxwellian H(v-0.1) exp(-v^2)/sqrt(pi), mass-incomplete; 6 truncated slowing-down 3sqrt(3)/(4pi)/(1+|v|^3) on |v|<=4.",
-   "dtype": "integer",
-   "shape": "scalar",
-   "required": false,
-   "constraints": "Integer 0 through 6; booleans rejected.",
-   "units": "dimensionless",
-   "default": 0
-  },
-  {
-   "name": "expression",
-   "description": "Analytic density in v using finite real constants, pi, + - * / and powers, and exp/log/sqrt/sin/cos/sinh/cosh/tanh. Powers may be written ** or ^, and MATLAB element-wise .^ .* ./ are accepted as the same operators.",
-   "dtype": "str",
-   "shape": "scalar",
-   "required": false,
-   "constraints": "Real integrable density with decaying derivative; no arbitrary code, comparisons, attributes or indexing.",
-   "units": "dimensionless",
-   "default": "exp(-v.^2)/sqrt(pi)"
-  },
-  {
-   "name": "integration_mesh",
-   "description": "Feature-resolving finite increasing velocity mesh; infinite tails are also integrated.",
-   "dtype": "real vector",
-   "shape": "one-dimensional at least two points",
-   "required": false,
-   "constraints": "All material features resolved; no unresolved tail features.",
-   "units": "dimensionless",
-   "default": null
-  }
- ],
- "outputs": [
-  {
-   "name": "Z",
-   "description": "Integral f(v)/(v-z) dv with the declared continuation.",
-   "dtype": "complex array",
-   "shape": "same as z",
-   "required": true,
-   "constraints": "Finite and representable.",
-   "units": "dimensionless"
-  },
-  {
-   "name": "Zp",
-   "description": "Derivative dZ/dz including distributional jumps.",
-   "dtype": "complex array",
-   "shape": "same as z",
-   "required": true,
-   "constraints": "Finite and representable.",
-   "units": "dimensionless"
-  }
- ],
- "public_api": {
-  "python": {
-   "module": "scirel.kinetic.generalized_dispersion",
-   "symbol": "evaluate_generalized_dispersion",
-   "signature": "evaluate_generalized_dispersion(z, selector=0, *, expression='exp(-v.^2)/sqrt(pi)', integration_mesh=None)",
-   "canonical_module": "scirel.kinetic",
-   "canonical_symbol": "evaluate_generalized_dispersion"
-  }
- },
- "applicability": {
-  "supported": [
-   "All original selectors 0 through 6, including exact delta/top-hat and cutoff derivative jumps.",
-   "Analytic Maxwellian, gamma and custom expressions with Landau continuation; real-contour piecewise distributions in either half plane.",
-   "Upper real-axis boundary values away from endpoints and triangular derivative corners."
-  ],
-  "excluded": [
-   "Arbitrary symbolic expressions or executable input.",
-   "Guessed analytic continuation of discontinuous distributions.",
-   "Silent fallback from unknown selector to Maxwellian."
-  ],
-  "preconditions": [
-   "Density is real and integrable on the real contour.",
-   "No collective-mode uniqueness or certified global quadrature bound is asserted.",
-   "Custom expression requires integration_mesh."
-  ]
- },
- "failure_semantics": {
-  "invalid_input": "ValueError for non-numeric or non-broadcastable z, selector outside 0..6, a nonpositive selector-grid endpoint, or an unsupported expression/integration mesh.",
-  "runtime_failure": "ValueError for a non-finite or otherwise unrepresentable Z/Zp and RuntimeError when the real-axis or exterior quadrature does not converge; no fallback branch is selected.",
-  "nonconvergence": "RuntimeError when the real-axis or exterior quadrature fails to converge; no unconverged value is returned.",
-  "partial_results": "No partial Z/Zp pair is returned after a failed call."
- },
- "verification": {
-  "scope": [
-   "Independent basis: selectors 1, 2 and the default Maxwellian have closed forms that are recomputed at 40 mpmath digits -- -1/z and 1/z**2 for the delta, -log((z+0.5)/(z-0.5)) for the unit top-hat, and i sqrt(pi) exp(-z**2) erfc(-i z) for the Maxwellian.",
-   "The top-hat sign was determined, not assumed: the opposite ordering differs by exactly -1, which a modulus comparison would not have seen.",
-   "Zp is checked against a 40-digit central difference of the independently computed closed form, so the derivative is not certified by the implementation's own derivative path.",
-   "Test matrix: three complex phase points on each of the three closed-form selectors, including one in the lower half plane.",
-   "Failure matrix: one assertion per channel -- wrong delta response, wrong top-hat branch cut, wrong Maxwellian kernel, and a wrong derivative.",
-   "Precision budget, written before measurement: 1e-12 relative on the transforms, 1e-9 on the differentiated comparison."
-  ],
-  "tests": [
-   "tests/kinetic/test_generalized_dispersion_evidence.py"
-  ],
-  "evidence_ceiling": "Bounded to selectors 1, 2 and the default Maxwellian of the seven declared densities, at three complex phase points each. Established by closed forms recomputed at 40 digits and by a high-precision derivative; measured agreement is at the 1e-16 level for the transforms and inside 1e-9 for the derivative. Excluded scope: selectors 3, 4, 5 and 6, whose transforms have no independent reference here, arbitrary caller expressions, and any root search.",
-  "known_limitations": [
-   "Selectors 3 (triangle), 4 (kappa-2 Lorentzian), 5 (incomplete Maxwellian) and 6 (truncated slowing-down) are recorded as cannot establish: their reference requires a high-precision quadrature with feature splitting that was not built, so their correctness rests on the existing self-consistency tests only.",
-   "The closed forms are exact for the declared densities; a custom caller expression is a different scope and is not covered."
-  ]
- },
- "example": {
-  "description": "Evaluate one generalized dispersion selector at an upper-half-plane point.",
-  "code": "import numpy as np\nfrom scirel.kinetic.generalized_dispersion import evaluate_generalized_dispersion\nr=evaluate_generalized_dispersion(1j,2)\nassert r['Z'].imag>0\nassert np.isfinite(r['Zp'])\n",
-  "expected": "Observed PASS: selector 2 at z=i returns a finite Z and Zp with positive imaginary part for Z."
- },
- "version": {
-  "implementation_version": "0.0.0",
-  "dependencies": []
- },
- "references": [
-  "Hua-Sheng Xie, Generalized plasma dispersion function, Phys. Plasmas. 20 (2013), 092125 (scientific context)"
- ]
 }

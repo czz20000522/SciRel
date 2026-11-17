@@ -1,159 +1,164 @@
 {
- "aliases": [
-  "assemble_fluid_em"
- ],
- "discovery": {
-  "capability": [
-   "Corrected finite rational EM matrix",
-   "Assemble the complete finite L/J matrix with restored conductivity polynomials and measured source-table diagnostics."
+  "aliases": [
+    "assemble_fluid_em"
   ],
-  "operation": [
-   "assemble the finite rational EM matrix",
-   "state, omega, pole order and harmonic cutoff -> finite rational EM kx eigenmatrix"
+  "discovery": {
+    "capability": [
+      "Corrected finite rational EM matrix",
+      "Assemble the complete finite L/J matrix with restored conductivity polynomials and measured source-table diagnostics."
+    ],
+    "operation": [
+      "assemble the finite rational EM matrix",
+      "state, omega, pole order and harmonic cutoff -> finite rational EM kx eigenmatrix"
+    ],
+    "model": "static isotropic Maxwellian plasma or its declared numerical approximation",
+    "geometry": "uniform background B along z; wavevector (kx,0,kz)",
+    "boundary": "homogeneous linear response; explicit resonances and analytic removable limits",
+    "device_scope": "generic"
+  },
+  "applicability": {
+    "excluded": [
+      "No identity between finite fitted response and exact Bessel/Z kinetic dielectric."
+    ],
+    "preconditions": [
+      "Declared local Python runtime (Python 3.14, NumPy 2.5.4, SciPy 1.18.1); single-threaded BLAS environment.",
+      "Declared Python 3.14 runtime with NumPy 2.5.4 and SciPy 1.18.1; no external runtime is required."
+    ],
+    "supported": [
+      "J8/J12, every N0..7, complete matrix state and source tables.",
+      "Coherent SI state; signed/zero kz away from true rational resonance denominators."
+    ]
+  },
+  "asset_id": "scirel.kinetic.fluid-em-matrix",
+  "example": {
+    "code": "from scirel.kinetic.fluid_spectrum import derive_fluid_case,assemble_fluid_em\ns=derive_fluid_case('em',2)\nr=assemble_fluid_em(s,.83*s['wn'].item(),8,0)\n",
+    "description": "API-shape example with max_harmonic=0; N=0 does not demonstrate matrix convergence against the exact kinetic dielectric.",
+    "expected": "PASS: the example runs locally and returns the declared output structure."
+  },
+  "failure_semantics": {
+    "invalid_input": "Raises ValueError for undefined L-pole tables, invalid `j_order`/harmonic controls, nonfinite state, or singular source resonance denominators.",
+    "nonconvergence": "No iteration or eigensolve occurs; undefined tables or singular resonances raise instead of returning a partial matrix.",
+    "partial_results": "No matrix mapping is returned after an exception.",
+    "runtime_failure": "Assembly arithmetic errors propagate; no fitted-matrix fallback is returned."
+  },
+  "identity": {
+    "assumptions": [
+      "No flow or temperature anisotropy.",
+      "K=I−sigma/(i omega epsilon0); D=K+nnᵀ−(n·n)I.",
+      "Listed-species linear response; electron-only case2 does not establish global charge neutrality or a self-consistent background equilibrium."
+    ],
+    "boundary": "homogeneous linear response; explicit resonances and analytic removable limits",
+    "coordinates": "Cartesian SI; exp(i k·x−i ωt); signed gyrofrequency and radius",
+    "definition": "M acts on [Jx_snl,Jy_snl,Jz_snl,Ey,Ez,By,Bz]; polynomial conductivity restores four matrix entries; n>=1 inverse moments are reported from the sole stable-Gamma coefficient table; model targets are descriptive and no projection is applied.",
+    "direction": "forward",
+    "geometry": "uniform background B along z; wavevector (kx,0,kz)",
+    "model": "static isotropic Maxwellian plasma or its declared numerical approximation",
+    "relation": "finite rational Maxwell kx eigenmatrix"
+  },
+  "inputs": [
+    {
+      "constraints": "Finite numeric fields and coherent thermal/gyro scales; metadata cannot override explicit controls.",
+      "description": "Explicit isotropic Maxwellian SI state. S species; c2; signed wcs and rhocs; positive wps2 and vts; optional metadata w and signed kz. Matrix assembly additionally requires epsilon0. rho=vts/(sqrt(2)*wcs). Explicit omega is authoritative; state w is not required.",
+      "dtype": "mapping",
+      "name": "state",
+      "required": true,
+      "shape": "mapping; species vectors length S; numeric arrays retain MATLAB shapes",
+      "units": "c2 m²/s²; wcs,w rad/s; wps2 s^-2; rhocs m; vts m/s; kz m^-1; epsilon0 F/m"
+    },
+    {
+      "constraints": "Finite nonzero scalar.",
+      "description": "Explicit angular frequency, authoritative over state metadata.",
+      "dtype": "real",
+      "name": "omega",
+      "required": true,
+      "shape": "scalar",
+      "units": "rad/s"
+    },
+    {
+      "constraints": "Exactly 8 or 12.",
+      "default": 8,
+      "description": "Source J-pole approximation order.",
+      "dtype": "integer",
+      "name": "j_order",
+      "required": false,
+      "shape": "scalar",
+      "units": "dimensionless"
+    },
+    {
+      "constraints": "Integer 0..7.",
+      "default": 6,
+      "description": "Finite L-table maximum harmonic.",
+      "dtype": "integer",
+      "name": "max_harmonic",
+      "required": false,
+      "shape": "scalar",
+      "units": "dimensionless"
+    }
   ],
-  "model": "static isotropic Maxwellian plasma or its declared numerical approximation",
-  "geometry": "uniform background B along z; wavevector (kx,0,kz)",
-  "boundary": "homogeneous linear response; explicit resonances and analytic removable limits",
-  "device_scope": "generic"
- },
- "applicability": {
-  "excluded": [
-   "No identity between finite fitted response and exact Bessel/Z kinetic dielectric."
+  "outputs": [
+    {
+      "constraints": "State and terminal diagnostics retain scientific meaning; no caller state mutation.",
+      "description": "M entries carry mixed-state SI dimensions for kx X=M X; corrected poles, measured inverse_moment_diagnostics, state, omega and N.",
+      "dtype": "mapping",
+      "name": "result",
+      "required": true,
+      "shape": "mapping of MATLAB-shape arrays",
+      "units": "mixed SI and dimensionless as described"
+    }
   ],
-  "preconditions": [
-   "Declared local Python runtime (Python 3.14, NumPy 2.5.4, SciPy 1.18.1); single-threaded BLAS environment.",
-   "Declared Python 3.14 runtime with NumPy 2.5.4 and SciPy 1.18.1; no external runtime is required."
+  "public_api": {
+    "python": {
+      "module": "scirel.kinetic.fluid_spectrum",
+      "signature": "assemble_fluid_em(state, omega, j_order=8, max_harmonic=6)",
+      "canonical_module": "scirel.kinetic",
+      "canonical_symbol": "assemble_fluid_em",
+      "symbol": "assemble_fluid_em"
+    }
+  },
+  "schema": "scirel.asset-document",
+  "summary": "Assemble the complete finite L/J matrix with restored conductivity polynomials and measured source-table diagnostics.",
+  "taxonomy": [
+    "kinetic",
+    "plasma-waves",
+    "fluid-dispersion"
   ],
-  "supported": [
-   "J8/J12, every N0..7, complete matrix state and source tables.",
-   "Coherent SI state; signed/zero kz away from true rational resonance denominators."
+  "title": {
+    "en": "Corrected finite rational EM matrix",
+    "zh": "修正的有限有理 EM 矩阵"
+  },
+  "verification": {
+    "scope": [
+      "Independent basis: det(M) recomputed from the assembled matrix bytes at 40 mpmath digits equals the product of that matrix's eigenvalues -- an identity that shares no code with the assembly or the solver.",
+      "The declared structural identities are checked on the returned object: order 40 at max_harmonic 0, the exact nonzero count, and the pole-table order the assembly consumed.",
+      "Test matrix: EM case 2 at a fixed frequency with J8 and max_harmonic 0; the same identity was also measured at the default max_harmonic 6 (490x490, 77095 nonzeros) to confirm it survives the large case.",
+      "Failure matrix: one assertion per channel -- a wrong constitutive block (determinant identity), a dropped pole or misplaced field row (order and nonzero count), a substituted pole table (declared order).",
+      "Precision budget, written before measurement: 1e-12 relative on the determinant identity; the measured value is 2.6e-14 at max_harmonic 0 and 6.1e-12 at the 490x490 default."
+    ],
+    "tests": [
+      "tests/kinetic/test_fluid_deck_solver_evidence.py",
+      "tests/kinetic/test_fluid_spectrum_full.py",
+      "tests/kinetic/test_fluid_em_diagnostics.py"
+    ],
+    "evidence_ceiling": "Bounded to EM case 2, J8, at a fixed frequency. Established by an independent 40-digit determinant identity at two matrix orders, measured at 2.6e-14 and 6.1e-12 relative, plus the declared order, sparsity and pole-table identities. Excluded scope: the J12 witness, max_harmonic above 0 in the committed test, and any identity with the exact Bessel/Z kinetic dielectric.",
+    "known_limitations": [
+      "The J-pole and harmonic tables, and the EM deck constants, have no independent source in this repository and are recorded as cannot establish.",
+      "The 490x490 determinant check costs about a minute and is recorded in this contract as a measured value; the committed test uses max_harmonic 0 to stay fast."
+    ],
+    "basis": {
+      "kind": "independent-recomputation",
+      "statement": "Measured agreement is 2.6e-14 and 6.1e-12 relative, plus the declared order, sparsity and pole-table identities. Excluded scope: the J12 witness, max_harmonic above 0 in the committed test, and any identity with the exact Bessel/Z kinetic dielectric.",
+      "source": "tests/kinetic/test_fluid_deck_solver_evidence.py"
+    }
+  },
+  "version": {
+    "dependencies": [
+      {
+        "asset_id": "scirel.kinetic.fluid-case-state"
+      }
+    ],
+    "implementation_version": "0.0.0"
+  },
+  "references": [
+    "H. S. Xie, Phys. Plasmas 32, 082110 (2025)."
   ]
- },
- "asset_id": "scirel.kinetic.fluid-em-matrix",
- "example": {
-  "code": "from scirel.kinetic.fluid_spectrum import derive_fluid_case,assemble_fluid_em\ns=derive_fluid_case('em',2)\nr=assemble_fluid_em(s,.83*s['wn'].item(),8,0)\n",
-  "description": "API-shape example with max_harmonic=0; N=0 does not demonstrate matrix convergence against the exact kinetic dielectric.",
-  "expected": "PASS: the example runs locally and returns the declared output structure."
- },
- "failure_semantics": {
-  "invalid_input": "Raises ValueError for undefined L-pole tables, invalid `j_order`/harmonic controls, nonfinite state, or singular source resonance denominators.",
-  "nonconvergence": "No iteration or eigensolve occurs; undefined tables or singular resonances raise instead of returning a partial matrix.",
-  "partial_results": "No matrix mapping is returned after an exception.",
-  "runtime_failure": "Assembly arithmetic errors propagate; no fitted-matrix fallback is returned."
- },
- "identity": {
-  "assumptions": [
-   "No flow or temperature anisotropy.",
-   "K=I−sigma/(i omega epsilon0); D=K+nnᵀ−(n·n)I.",
-   "Listed-species linear response; electron-only case2 does not establish global charge neutrality or a self-consistent background equilibrium."
-  ],
-  "boundary": "homogeneous linear response; explicit resonances and analytic removable limits",
-  "coordinates": "Cartesian SI; exp(i k·x−i ωt); signed gyrofrequency and radius",
-  "definition": "M acts on [Jx_snl,Jy_snl,Jz_snl,Ey,Ez,By,Bz]; polynomial conductivity restores four matrix entries; n>=1 inverse moments are reported from the sole stable-Gamma coefficient table; model targets are descriptive and no projection is applied.",
-  "direction": "forward",
-  "geometry": "uniform background B along z; wavevector (kx,0,kz)",
-  "model": "static isotropic Maxwellian plasma or its declared numerical approximation",
-  "relation": "finite rational Maxwell kx eigenmatrix"
- },
- "inputs": [
-  {
-   "constraints": "Finite numeric fields and coherent thermal/gyro scales; metadata cannot override explicit controls.",
-   "description": "Explicit isotropic Maxwellian SI state. S species; c2; signed wcs and rhocs; positive wps2 and vts; optional metadata w and signed kz. Matrix assembly additionally requires epsilon0. rho=vts/(sqrt(2)*wcs). Explicit omega is authoritative; state w is not required.",
-   "dtype": "mapping",
-   "name": "state",
-   "required": true,
-   "shape": "mapping; species vectors length S; numeric arrays retain MATLAB shapes",
-   "units": "c2 m²/s²; wcs,w rad/s; wps2 s^-2; rhocs m; vts m/s; kz m^-1; epsilon0 F/m"
-  },
-  {
-   "constraints": "Finite nonzero scalar.",
-   "description": "Explicit angular frequency, authoritative over state metadata.",
-   "dtype": "real",
-   "name": "omega",
-   "required": true,
-   "shape": "scalar",
-   "units": "rad/s"
-  },
-  {
-   "constraints": "Exactly 8 or 12.",
-   "default": 8,
-   "description": "Source J-pole approximation order.",
-   "dtype": "integer",
-   "name": "j_order",
-   "required": false,
-   "shape": "scalar",
-   "units": "dimensionless"
-  },
-  {
-   "constraints": "Integer 0..7.",
-   "default": 6,
-   "description": "Finite L-table maximum harmonic.",
-   "dtype": "integer",
-   "name": "max_harmonic",
-   "required": false,
-   "shape": "scalar",
-   "units": "dimensionless"
-  }
- ],
- "outputs": [
-  {
-   "constraints": "State and terminal diagnostics retain scientific meaning; no caller state mutation.",
-   "description": "M entries carry mixed-state SI dimensions for kx X=M X; corrected poles, measured inverse_moment_diagnostics, state, omega and N.",
-   "dtype": "mapping",
-   "name": "result",
-   "required": true,
-   "shape": "mapping of MATLAB-shape arrays",
-   "units": "mixed SI and dimensionless as described"
-  }
- ],
- "public_api": {
-  "python": {
-   "module": "scirel.kinetic.fluid_spectrum",
-   "signature": "assemble_fluid_em(state, omega, j_order=8, max_harmonic=6)",
-   "canonical_module": "scirel.kinetic",
-   "canonical_symbol": "assemble_fluid_em",
-   "symbol": "assemble_fluid_em"
-  }
- },
- "schema": "scirel.asset-document",
- "summary": "Assemble the complete finite L/J matrix with restored conductivity polynomials and measured source-table diagnostics.",
- "taxonomy": [
-  "kinetic",
-  "plasma-waves",
-  "fluid-dispersion"
- ],
- "title": {
-  "en": "Corrected finite rational EM matrix",
-  "zh": "修正的有限有理 EM 矩阵"
- },
- "verification": {
-  "scope": [
-   "Independent basis: det(M) recomputed from the assembled matrix bytes at 40 mpmath digits equals the product of that matrix's eigenvalues -- an identity that shares no code with the assembly or the solver.",
-   "The declared structural identities are checked on the returned object: order 40 at max_harmonic 0, the exact nonzero count, and the pole-table order the assembly consumed.",
-   "Test matrix: EM case 2 at a fixed frequency with J8 and max_harmonic 0; the same identity was also measured at the default max_harmonic 6 (490x490, 77095 nonzeros) to confirm it survives the large case.",
-   "Failure matrix: one assertion per channel -- a wrong constitutive block (determinant identity), a dropped pole or misplaced field row (order and nonzero count), a substituted pole table (declared order).",
-   "Precision budget, written before measurement: 1e-12 relative on the determinant identity; the measured value is 2.6e-14 at max_harmonic 0 and 6.1e-12 at the 490x490 default."
-  ],
-  "tests": [
-   "tests/kinetic/test_fluid_deck_solver_evidence.py",
-   "tests/kinetic/test_fluid_spectrum_full.py",
-   "tests/kinetic/test_fluid_em_diagnostics.py"
-  ],
-  "evidence_ceiling": "Bounded to EM case 2, J8, at a fixed frequency. Established by an independent 40-digit determinant identity at two matrix orders, measured at 2.6e-14 and 6.1e-12 relative, plus the declared order, sparsity and pole-table identities. Excluded scope: the J12 witness, max_harmonic above 0 in the committed test, and any identity with the exact Bessel/Z kinetic dielectric.",
-  "known_limitations": [
-   "The J-pole and harmonic tables, and the EM deck constants, have no independent source in this repository and are recorded as cannot establish.",
-   "The 490x490 determinant check costs about a minute and is recorded in this contract as a measured value; the committed test uses max_harmonic 0 to stay fast."
-  ]
- },
- "version": {
-  "dependencies": [
-   {
-    "asset_id": "scirel.kinetic.fluid-case-state"
-   }
-  ],
-  "implementation_version": "0.0.0"
- },
- "references": [
-  "H. S. Xie, Phys. Plasmas 32, 082110 (2025)."
- ]
 }
