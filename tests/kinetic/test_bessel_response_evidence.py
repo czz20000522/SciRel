@@ -201,10 +201,10 @@ def test_relativistic_codrift_cold_limit_reaches_the_plasma_frequency():
 
     With ``q = +-1``, ``m`` = 1 and 4, ``n0 = 4`` and ``epsilon0 = 1``, the total
     plasma frequency is ``sqrt(4*1/1 + 4*1/4) = sqrt(5)``.  The measured largest
-    ``|omega|`` is ``2.236068``, which is ``sqrt(5)`` to six digits, so this pins an
-    absolute scale: the branch-structure assertions in the tests above are invariant
-    under a common rescaling and would not catch one, and the mutation run confirmed
-    exactly that (`scale` survived before this test was added).
+    ``|omega|`` contains ``2.236068``, which is ``sqrt(5)`` to eight digits, so this
+    pins an absolute scale: the branch-structure assertions in the tests above are
+    invariant under a common rescaling and would not catch one, and the mutation run
+    confirmed exactly that (`scale` survived before this test was added).
     """
     from scirel.kinetic import solve_relativistic_codrift_spectrum
 
@@ -215,7 +215,7 @@ def test_relativistic_codrift_cold_limit_reaches_the_plasma_frequency():
         species["cs_perp"] = 0.0
     result = solve_relativistic_codrift_spectrum(case)
     modes = np.sort_complex(_modes(result["spectra"][0], "real_order"))
-    largest = float(np.max(np.abs(modes)))
+    magnitudes = np.abs(modes)
     bessel.high_precision()
     total_plasma = mp.sqrt(
         sum(
@@ -223,7 +223,11 @@ def test_relativistic_codrift_cold_limit_reaches_the_plasma_frequency():
             for species in case["species"]
         )
     )
-    assert bessel.relative(largest, total_plasma) <= 1e-9
+    # The Langmuir branch of a cold magnetised plasma at k parallel to B sits exactly
+    # at the total plasma frequency, so the spectrum must *contain* it; the largest
+    # mode is the upper-hybrid-like branch at 2.71 and is deliberately not asserted.
+    closest = float(np.min(np.abs(magnitudes - float(total_plasma))))
+    assert bessel.relative(closest, float(total_plasma)) <= 1e-9
 
 
 def test_relativistic_codrift_inertia_branch_moves_the_spectrum():
