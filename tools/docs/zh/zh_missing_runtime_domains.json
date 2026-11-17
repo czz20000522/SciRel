@@ -1303,15 +1303,15 @@
     "单元体积权重为 vpr*drho_norm。"
    ],
    "boundary": "离散单元体积求和；不外推或隐式重建端点。",
-   "definition": "分别计算 1.5*sum(p*vpr*drho_norm)。先将输入转为 binary64，再精确计算有理数乘积与累加，保持有符号相消，只在最终结果舍入为 float64。",
+   "definition": "返回具名结果 W_el、W_ion、W_tot，分别等于 p_el、p_ion、p_tot 的 1.5*sum(p*vpr*drho_norm)。先将输入转为 binary64，再精确计算有理数乘积与累加，保持有符号相消，只在最终结果舍入为 float64。",
    "example": {
     "description": "分别计算三个压强通道的热能。",
-    "expected": "返回 (7.8, 11.7, 19.5)，允许浮点舍入误差。"
+    "expected": "返回 Result，字段 W_el、W_ion、W_tot 分别等于 7.8、11.7、19.5，允许浮点舍入误差。"
    },
    "failure_semantics": {
     "invalid_input": "压强或网格输入不合、非有限、不匹配或权重非正时抛出 ValueError。",
     "nonconvergence": "不适用；直接有限计算。",
-    "partial_results": "失败时不返回部分元组。",
+    "partial_results": "失败时不返回部分具名结果。",
     "runtime_failure": "最终舍入前，若精确能量的绝对值大于 float64 最大有限值，即使最近舍入仍可为有限值，也抛出 FloatingPointError。精确非零能量最终舍零同样拒绝；精确零允许。"
    },
    "inputs": [
@@ -1360,7 +1360,7 @@
    "outputs": [
     {
      "name": "W_el",
-     "description": "电子热能",
+     "description": "返回的 scirel._result.Result 映射中的字段：电子热能",
      "constraints": "成功时为有限有符号标量。",
      "dtype": "float",
      "shape": "标量",
@@ -1368,7 +1368,7 @@
     },
     {
      "name": "W_ion",
-     "description": "离子热能",
+     "description": "返回的 scirel._result.Result 映射中的字段：离子热能",
      "constraints": "成功时为有限有符号标量。",
      "dtype": "float",
      "shape": "标量",
@@ -1376,7 +1376,7 @@
     },
     {
      "name": "W_tot",
-     "description": "总热能",
+     "description": "返回的 scirel._result.Result 映射中的字段：总热能",
      "constraints": "成功时为有限有符号标量。",
      "dtype": "float",
      "shape": "标量",
@@ -1493,7 +1493,7 @@
    "outputs": [
     {
      "name": "profile",
-     "description": "归一化源剖面",
+     "description": "归一化源剖面。该值由入口按位置直接返回（一个与 rho_norm 同形的 float64 数组），不是映射里的字段。",
      "constraints": "有限非零宽度下成功返回有限结果；零或非有限宽度返回全 NaN。",
      "dtype": "float64 数组",
      "shape": "与 rho_norm 相同",
@@ -1607,7 +1607,7 @@
    "outputs": [
     {
      "name": "profile",
-     "description": "归一化源剖面",
+     "description": "归一化源剖面。该值由入口按位置直接返回（一个与 rho_norm 同形的 float64 数组），不是映射里的字段。",
      "constraints": "有限非零宽度下成功返回有限结果；零或非有限宽度返回全 NaN。",
      "dtype": "float64 数组",
      "shape": "与 rho_norm 相同",

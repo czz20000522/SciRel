@@ -1764,7 +1764,7 @@
    "outputs": [
     {
      "name": "epsilon_r",
-     "description": "调用者笛卡尔基底中的无量纲相对介电张量，形状为输入前导形状加 [3,3]。",
+     "description": "调用者笛卡尔基底中的无量纲相对介电张量，形状为输入前导形状加 [3,3]。该值由入口按位置直接返回（一个 complex128 数组），不是映射里的字段。",
      "constraints": "成功返回所有元素有限；S/D/P 累加非有限或列明坍缩整次抛 ColdPlasmaOverflowError，贡献物种精确无碰撞共振抛 ColdPlasmaResonanceError。真零场各向同性。无贡献碰撞时张量恰 Hermitian；贡献物种非零碰撞会使其非 Hermitian，无贡献物种碰撞不会。b^H epsilon b=P，但仅沿轴场的对应轴向矩阵元等于 P。证据只审计列明路径，不排除其他未防护路径。 有限 S/D/P 不能单独保证组装有限；后继增加上述逐元恢复和最终有限门禁。 近共振时横向响应虽大，仍保留可表示的小平行矩阵元，不让 P-S 的有限相消将其抹去。 计算分母为零时，按代表 omega、碰撞率和回旋项的精确有理表达式复核；精确分母非零而浮点为零时抛 ColdPlasmaOverflowError，不误称共振。确认的极点（包括多物种有理关系的真正奇点）抛 ColdPlasmaResonanceError。频率仍取 omega=2*pi_binary64*frequency_hz，没有改变容差或物理约定。",
      "dtype": "complex128 复数"
     }

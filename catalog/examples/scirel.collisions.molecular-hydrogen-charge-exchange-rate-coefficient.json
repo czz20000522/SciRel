@@ -70,7 +70,7 @@
  "outputs": [
   {
    "name": "rate_m3_s",
-   "description": "H2 + H2+ charge-exchange Maxwellian rate coefficient evaluated by the molecular fit.",
+   "description": "H2 + H2+ charge-exchange Maxwellian rate coefficient evaluated by the molecular fit. Returned directly as the callable's single positional value (one float64 array or Python float); it is not a field of a mapping.",
    "units": "m^3/s",
    "shape": "same as both inputs",
    "dtype": "float64 array or scalar",

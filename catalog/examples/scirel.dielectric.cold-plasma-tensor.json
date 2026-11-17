@@ -79,7 +79,7 @@
  "outputs": [
   {
    "name": "epsilon_r",
-   "description": "Relative dielectric tensor in the caller's supplied Cartesian basis, with the input leading shape plus two trailing tensor axes.",
+   "description": "Relative dielectric tensor in the caller's supplied Cartesian basis, with the input leading shape plus two trailing tensor axes. Returned directly as the callable's single positional value (one complex128 array); it is not a field of a mapping.",
    "units": "dimensionless",
    "shape": "[...,3,3]",
    "dtype": "complex128",

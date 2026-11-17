@@ -43,15 +43,12 @@ def test_thermal_finite_neighbor_below_conservative_maximum_is_retained(sign):
     assert exact == maximum - 2**969
     pressure = [sign * p1, sign * p2]
     actual = calculate_stored_thermal_energy(pressure, pressure, pressure, [1, 1], [1, 1])
-    assert actual == (float(sign * exact),) * 3
+    assert (actual["W_el"], actual["W_ion"], actual["W_tot"]) == (float(sign * exact),) * 3
 
 
 def test_thermal_true_zero_is_distinct_from_nonzero_energy_rounding_to_zero():
-    assert calculate_stored_thermal_energy([1, -1], [1, -1], [1, -1], [1, 1], [1, 1]) == (
-        0.0,
-        0.0,
-        0.0,
-    )
+    exact_zero = calculate_stored_thermal_energy([1, -1], [1, -1], [1, -1], [1, 1], [1, 1])
+    assert (exact_zero["W_el"], exact_zero["W_ion"], exact_zero["W_tot"]) == (0.0, 0.0, 0.0)
     minimum = 2.0**-1074
     exact = Fraction(3, 2) * Fraction(minimum) * Fraction(1, 4)
     assert exact > 0 and float(exact) == 0.0

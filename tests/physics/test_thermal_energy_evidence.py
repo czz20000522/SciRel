@@ -47,7 +47,7 @@ def test_the_documented_sum_is_reproduced_exactly():
     """Every component equals its exact rational value after a single rounding."""
     result = calculate_stored_thermal_energy(P_EL, P_ION, P_TOT, VPR, DRHO)
     expected = tuple(float(_exact(profile)) for profile in (P_EL, P_ION, P_TOT))
-    assert result == expected
+    assert (result["W_el"], result["W_ion"], result["W_tot"]) == expected
 
 
 def test_the_three_halves_factor_is_pinned_by_a_nonunit_case():
@@ -57,9 +57,7 @@ def test_the_three_halves_factor_is_pinned_by_a_nonunit_case():
     above if the expected value were derived the same way, so the factor is
     checked against a value this file computes without it.
     """
-    (energy_electron, _ions, _total) = calculate_stored_thermal_energy(
-        P_EL, P_ION, P_TOT, VPR, DRHO
-    )
+    energy_electron = calculate_stored_thermal_energy(P_EL, P_ION, P_TOT, VPR, DRHO)["W_el"]
     without_factor = float(_exact(P_EL) / Fraction(3, 2))
     assert energy_electron != pytest.approx(without_factor, rel=1e-3)
     assert energy_electron == pytest.approx(1.5 * without_factor, rel=0.0)
@@ -81,8 +79,8 @@ def test_the_relation_is_exactly_equidimensional(pressure_scale, volume_scale):
         [volume_scale * v for v in VPR],
         DRHO,
     )
-    for before, after in zip(base, scaled):
-        assert after == before * pressure_scale * volume_scale
+    for name in ("W_el", "W_ion", "W_tot"):
+        assert scaled[name] == base[name] * pressure_scale * volume_scale
 
 
 def test_the_components_are_independent_and_cancel_exactly():
@@ -95,13 +93,13 @@ def test_the_components_are_independent_and_cancel_exactly():
     pair would not.
     """
     cancel = [3.0, -1.0, 0.0]
-    _, _, zero = calculate_stored_thermal_energy(cancel, cancel, cancel, VPR, DRHO)
+    zero = calculate_stored_thermal_energy(cancel, cancel, cancel, VPR, DRHO)["W_tot"]
     assert zero == 0.0
 
     # An unrelated total profile does not disturb the component results.
     first = calculate_stored_thermal_energy(P_EL, P_ION, P_TOT, VPR, DRHO)
     second = calculate_stored_thermal_energy(P_EL, P_ION, [0.0, 0.0, 0.0], VPR, DRHO)
-    assert first[:2] == second[:2]
+    assert (first["W_el"], first["W_ion"]) == (second["W_el"], second["W_ion"])
 
 
 def test_a_unit_volume_and_unit_width_reduce_to_the_bare_pressure_sum():
@@ -113,6 +111,6 @@ def test_a_unit_volume_and_unit_width_reduce_to_the_bare_pressure_sum():
     """
     pressure = [1.0, 2.0, 4.0]
     ones = [1.0, 1.0, 1.0]
-    (energy, _, _) = calculate_stored_thermal_energy(pressure, pressure, pressure, ones, ones)
+    energy = calculate_stored_thermal_energy(pressure, pressure, pressure, ones, ones)["W_el"]
     assert energy == float(Fraction(3, 2) * Fraction(sum(Fraction(p) for p in pressure)))
     assert energy == 10.5

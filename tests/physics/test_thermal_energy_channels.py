@@ -101,7 +101,7 @@ def test_an_exact_zero_is_not_the_rejected_case():
     accepted side free to start raising.
     """
     zero = calculate_stored_thermal_energy([0.0], [0.0], [0.0], [1.0], [1.0])
-    assert zero == (0.0, 0.0, 0.0)
+    assert (zero["W_el"], zero["W_ion"], zero["W_tot"]) == (0.0, 0.0, 0.0)
 
     smallest = float(np.nextafter(0.0, 1.0))
     exact = Fraction(3, 2) * Fraction(smallest) * Fraction(1, 4)
