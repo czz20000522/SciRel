@@ -129,12 +129,15 @@
  },
  "verification": {
   "scope": [
-   "Discrete Poisson constraint and off-diagonal rank-one feedback.",
-   "Dense matrix-exponential RK4 order; analytic free-streaming and damped-cosine diagnostics.",
-   "Slowing-down weak derivative integration-by-parts and default 2049-node/2000-step execution."
+   "Independent reference: ln|E| is compared against 40-digit logarithms, and the theory line lndEe = ln|E0| + wi (t - t0) is checked to be exactly straight by fitting it and requiring the slope to return wi - both statements are algebraic and do not depend on a fit of the data.",
+   "Implementation relation: lndE is the natural logarithm of the magnitude with the divide-by-zero warning suppressed, so a zero sample yields -inf rather than an exception; lndEe is None when wi is None and the straight line otherwise; ttmp is a copy of tt.",
+   "Test matrix: a damped analytic tone, the |E| = 0 degenerate sample that must give -inf without raising, the wi = None branch that must give None, and a non-increasing time vector that must be rejected.",
+   "Precision budget, declared before the comparison was run: 64 eps absolute for the logarithm and the straight line, and 256 eps absolute for the fitted slope (a difference of logarithms of order one).",
+   "Evidence ceiling: the envelope is a pointwise logarithm; it neither smooths nor fits, and a record without isolated magnitude maxima cannot be turned into a rate."
   ],
   "tests": [
-   "tests/kinetic/test_vlasov_poisson_dispersion.py"
+   "tests/kinetic/test_vlasov_poisson_dispersion.py",
+   "tests/kinetic/test_vlasov_poisson_evidence.py"
   ],
   "evidence_ceiling": "Independent semidiscrete mathematical and selected scenario regressions; actual run/installed-wheel receipts are recorded separately, not inferred from test existence.",
   "known_limitations": [

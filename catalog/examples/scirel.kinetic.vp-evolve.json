@@ -100,12 +100,15 @@
  },
  "verification": {
   "scope": [
-   "Discrete Poisson constraint and off-diagonal rank-one feedback.",
-   "Dense matrix-exponential RK4 order; analytic free-streaming and damped-cosine diagnostics.",
-   "Slowing-down weak derivative integration-by-parts and default 2049-node/2000-step execution."
+   "Independent reference: with f0' = 0 the system reduces to free streaming, whose exact solution is df(t) = df(0) exp(-i k v t); that translation operator is the reference here, and it fixes the sign of the advection and the time grid without using the implementation as a source.",
+   "Implementation relation: the returned state is a deep copy, every step delegates to vp_rk4_step, the field history holds nt+1 entries with the initial closure in slot zero, tt = n dt, and a state whose stored dE disagrees with the closure is rejected before the loop.",
+   "Test matrix: the analytic free-streaming solution to 1e-9 relative, non-mutation of the input state, the history and time-grid identities, and a state whose dE was tampered with, which must be rejected with the Poisson message.",
+   "Precision budget, declared before the comparison was run: 1e-9 relative for the free-streaming comparison (fourth-order truncation with dt = 0.004 over 50 steps, not roundoff), 8 eps for the closure of the initial field.",
+   "Evidence ceiling: the evolution inherits vp_rk4_step's fourth order and the finite velocity window's recurrence time TR = 2 pi/(k dv); damping fitted beyond TR is not evidence about the continuum."
   ],
   "tests": [
-   "tests/kinetic/test_vlasov_poisson_dispersion.py"
+   "tests/kinetic/test_vlasov_poisson_dispersion.py",
+   "tests/kinetic/test_vlasov_poisson_evidence.py"
   ],
   "evidence_ceiling": "Bounded to exactly nt ordered RK4 steps with stage-wise field feedback and O(nv+nt) memory. Evidence: `test_vlasov_poisson_dispersion.py` contains 14 test functions, 1 of which references `vp_evolve`, and is shared by 9 assets; only shared-file coverage is bound, so a pass is file-level rather than asset-isolated; the bounded example was executed by this audit. Oracle: independent semidiscrete mathematical checks and selected scenario regressions in the bound file. It does not establish nonlinear or multidimensional evolution, or adaptive time stepping.",
   "known_limitations": [

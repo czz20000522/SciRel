@@ -129,12 +129,15 @@
  },
  "verification": {
   "scope": [
-   "Discrete Poisson constraint and off-diagonal rank-one feedback.",
-   "Dense matrix-exponential RK4 order; analytic free-streaming and damped-cosine diagnostics.",
-   "Slowing-down weak derivative integration-by-parts and default 2049-node/2000-step execution."
+   "Independent reference: an analytic tone whose angular frequency is pi/(m dt) has its maxima on grid nodes, so the peak spacing is exactly m dt and both estimators become algebraic - omega = pi/mean(diff(peak_times)) and gamma is the least-squares slope of ln|E| at those nodes. The recovered values are compared against the input frequency and exponent, not against a second fit of the same data.",
+   "Implementation relation: isolated strict maxima only, restricted to the default window [t0 + 0.05 T, t0 + 0.8 T] or the caller's [start, end], at least two of them, and peak_indices counted on the (1:-1) interior; gamma and gammas carry the same value.",
+   "Test matrix: the exact analytic tone; a damped cosine with the documented window; a non-increasing time vector; a constant record with no isolated maximum; and a record with fewer than two admissible peaks, all three rejections asserted on their own channel.",
+   "Precision budget, declared before the comparison was run: 256 eps relative for the recovered angular frequency and 256 eps absolute for the recovered exponent, both algebraic on the aligned grid; 8 eps for the peak spacing.",
+   "Evidence ceiling: the estimator assumes one standing oscillation. A rotating complex exponential has no magnitude maxima at all, and a record shorter than two periods cannot support the default window."
   ],
   "tests": [
-   "tests/kinetic/test_vlasov_poisson_dispersion.py"
+   "tests/kinetic/test_vlasov_poisson_dispersion.py",
+   "tests/kinetic/test_vlasov_poisson_evidence.py"
   ],
   "evidence_ceiling": "Independent semidiscrete mathematical and selected scenario regressions; actual run/installed-wheel receipts are recorded separately, not inferred from test existence.",
   "known_limitations": [

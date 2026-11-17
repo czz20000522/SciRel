@@ -539,24 +539,25 @@
  },
  "verification": {
   "scope": [
-   "A manufactured polynomial wall response gives matching returned flux and magnetic field.",
-   "True parallel-pressure imbalance cannot be reported as equilibrium convergence.",
-   "Full retention relax=1 cannot turn a nonzero fixed-point residual into convergence.",
-   "An analytic rank-one Green feedback checks two-step state propagation and the terminal I^2+I-K=0 relation; relaxation that nearly preserves the old state must not exit early on a small step.",
-   "Do not claim convergence when flux stays fixed while field and current still change; a zero magnetic field fails closed before the pressure callback.",
-   "A partial plasma mask preserves active terminal j_phi values and zeros only inactive cells.",
-   "Direct input regressions check missing r_grid/z_grid through mapping and keyword calls, reject grids below the declared minimum before checking other required ports, preserve ValueError for other missing ports, and propagate callback IndexError/KeyError. These failure checks do not validate arbitrary physical closures."
+   "The independent reference is a closed-form set of three exact state identities on manufactured closures: a spatially uniform pressure returns the supplied vacuum psi, BR and BZ bitwise with zero j_phi, an exactly zero fixed_point_residual and converged true at iterations = 1; a boundary_correction whose two Green matrices are exactly zero returns a bitwise identical state with a zero flux correction, zero residual norm and reported boundary currents; and a rank-one green_boundary_to_field of ones produces the constant 1.375 Wb/rad correction, which shifts psi by that constant while leaving BR and BZ bitwise unchanged because a constant flux has no gradient (tests/cross_domain/free_boundary_anisotropic_picard/test_composition_free_boundary_anisotropic_picard_evidence.py).",
+   "The constant-correction pair separates an implementation that re-derives the field from the total flux from one that derives it from the added correction, and it separates adding the correction to the flux only from adding it to the flux and its magnetic derivatives.",
+   "The mask is a declared domain selector: j_phi and the integrated cell currents are zero exactly where the boolean mask is false, and the unmasked run of the same graded closure has a nonzero current.",
+   "The gates run where the docstring puts them: an all-zero vacuum field raises the intermediate minimum_field error with an empty closure call log, and a far super-firehose closure raises the terminal firehose error whose message names the terminal margin.",
+   "The strict compatibility gate is reported separately from convergence: a parallel pressure gradient returns equilibrium_compatible false with failure_reason parallel_force_incompatible and converged false, and the strict run raises.",
+   "Precision budgets are written into the evidence module before the comparison: bitwise equality for the three state identities, because the vacuum state is dyadic and a zero or spatially constant correction is exact, and 8 eps for the wall constant, which comes out of a least-squares solve."
   ],
   "tests": [
    "tests/cross_domain/free_boundary_anisotropic_picard/test_composition_free_boundary_anisotropic_picard.py",
    "tests/cross_domain/test_anisotropic_core_scientific_correction.py",
-   "tests/equilibrium/test_picard_input_validation.py"
+   "tests/equilibrium/test_picard_input_validation.py",
+   "tests/cross_domain/free_boundary_anisotropic_picard/test_composition_free_boundary_anisotropic_picard_evidence.py"
   ],
-  "evidence_ceiling": "tests/cross_domain/test_anisotropic_core_scientific_correction.py directly imports this maintained function as free; test_free_boundary_flux_and_magnetic_correction_same_terminal_state, test_free_boundary_true_parallel_force_cannot_be_converged, test_retained_current_is_not_false_fixed_point assert same-state wall flux/field, true parallel-force rejection and near-unit relaxation. These are bounded manufactured/analytic discrete cases, not full-file coverage or physical validation of arbitrary caller pressure/Green/wall models.",
+  "evidence_ceiling": "The maintained cross-domain tests drive the composition through a factory. C1 evidence (tests/cross_domain/free_boundary_anisotropic_picard/test_composition_free_boundary_anisotropic_picard_evidence.py) adds the vacuum-state identity under uniform pressure, the zero-wall and constant-correction wall identities, the mask identity, the gate ordering and the strict compatibility diagnostic. It does not certify any caller closure or wall Green response as physically consistent.",
   "known_limitations": [
-   "Caller-supplied physical closures and Green responses require their own evidence and coherent psi=R A_phi (Wb/rad) normalization.",
-   "Floating-point rounding envelopes do not bound discretization error or experimental uncertainty.",
-   "The named shared-file assertions exercise the real entry point, including its parametrized samples. Their scope is limited to the listed cases; other assets in the file are not evidence for this one."
+   "The pressure closure and the wall Green matrices are caller-supplied; this composition establishes the ordering, masking and propagation around them, not the physical correctness of any closure or wall model.",
+   "The full-state residual is a normalized discrete statement over the flux, field and current components at the terminal state; it does not bound the discretization error of psi or certify a continuum equilibrium.",
+   "Intermediate firehose crossings are recorded rather than raised, so only the terminal state is gated; a run that crosses and returns is not evidence that the crossing was physical.",
+   "The wall identities use an exactly zero and a spatially constant response; a genuinely curved wall response is exercised only by the maintained graph tests, not by these identities."
   ]
  },
  "composition": {

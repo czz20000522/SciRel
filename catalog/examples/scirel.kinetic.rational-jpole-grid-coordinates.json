@@ -97,12 +97,15 @@
  },
  "verification": {
   "scope": [
-   "Direct gate: test_jpole_grid_coordinates_preserves_fixed_dimensionless_axes checks all coordinates, inclusive endpoints, shapes, dtypes and ndgrid orientation.",
-   "Repeated zero-argument calls return independent coordinate arrays with equal values.",
-   "The contract example constructs the grid and checks its declared shape; no dispersion function, harmonic expansion, pole evaluation or eigensolve is performed."
+   "Independent reference: the declared index arithmetic itself. Every node is recomputed as -5 + 0.1 i and -3 + 0.08 j from its index and compared bitwise, so the axis orientation, the stride and the 101-point count are decided by the declaration rather than by the returned shape.",
+   "Implementation relation: x varies along the first index and is constant along the second, y the other way round, z = x + 1i y exactly, each array is (101, 101), and the grid is a diagnostic ndgrid that does not imply approximation validity anywhere on it.",
+   "Test matrix: three rows and three columns of each axis, the exact end points -5 and 5 for x and -3 and 5 for y, the exact composition of z, and the argument rejection (supplying any argument raises TypeError).",
+   "Precision budget, declared before the comparison was run: zero tolerance for x, y and z, because -5 + 0.1 i is the exact float64 expression the declaration names; any difference is a real difference, not rounding.",
+   "Evidence ceiling: the coordinates of a diagnostic grid, not an approximation-validity domain. The contract does not claim the approximation holds at those points, only that the grid is the declared one."
   ],
   "tests": [
-   "tests/kinetic/test_dispersion_rational.py"
+   "tests/kinetic/test_dispersion_rational.py",
+   "tests/kinetic/test_rational_declarative_evidence.py"
   ],
   "evidence_ceiling": "Bounded to fixed 101x101 coordinate construction, dimensionless axis ranges, array orientation and execution-receipt identity. No approximation accuracy, physical mode, experimental calibration or release approval is established.",
   "known_limitations": [

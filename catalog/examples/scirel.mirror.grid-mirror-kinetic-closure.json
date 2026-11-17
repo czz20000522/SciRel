@@ -689,24 +689,24 @@
  },
  "verification": {
   "scope": [
-   "Grid-aware endpoint mapping and nested local charge closure for one positive-ion mirror case, with relative charge residual below 1e-9.",
-   "Fixed-profile pressure, density and endpoint-potential results are unchanged when the supplied psi interpolation coordinate is rescaled by 2*pi; a separate unadjusted psi-dependent density callback changes the returned density under the same rescaling.",
-   "Prescribed endpoint potentials return unbalanced end-current diagnostics while the nested local quasineutral solve converges on the selected case.",
-   "Nearest-plane confinement of selected top-level rows while original moment fields, endpoint diagnostics and three full-grid pitch factors remain unmasked.",
-   "Endpoint and nested graph failures propagate without a terminal state; callable reference-density evaluation and rejection of a 2-D reference-potential field, nonrectilinear/nonfinite grids, numeric confinement flag and quadrature order below eight or nonintegral.",
-   "Injected endpoint evaluation masquerading as a solved balance is rejected before the nested local closure."
+   "The independent basis is a coordinate-invariance statement plus two exact assemblies, all checkable on the returned state: rescaling the supplied psi by 2*pi leaves p_parallel, p_perpendicular, density_m3 and both endpoint potentials unchanged to 1e-12 relative, which is what the contract's 'psi is an interpolation coordinate' claim means; p_parallel and p_perpendicular are bitwise the ion components plus the electron pressure; and the electron pressure is bitwise n_e times the supplied electron energy (tests/mirror/test_grid_mirror_kinetic_closure_evidence.py).",
+   "The *_pa aliases are the ion-only components (bitwise equal to ion_p_parallel and ion_p_perpendicular), and the total differs from them by the electron pressure, so the electron term is pinned to the component it belongs to.",
+   "The local charge closure is reported with the declared bound: the relative charge residual is below 1e-9 on every sample and both endpoint current balances report solved.",
+   "The fixture is mirror-symmetric, so the mapped left and right end potentials must agree exactly; that pins the endpoint mapping to the symmetric geometry rather than to one end.",
+   "The physical correctness of the nested closure -- the truncated-loss-cone density, the end-loss potential root and the pitch-angle weighting -- cannot be established here: the composition exposes no closed form for it and this batch has no published high-order reference, so only the coordinate invariance, the two exact assemblies and the declared residual bound are established.",
+   "Precision budgets are written into the evidence module before the comparison: 1e-12 relative for the coordinate invariance, bitwise equality for the two assemblies and the symmetric endpoint mapping, and the contract's own 1e-9 for the charge residual."
   ],
   "tests": [
    "tests/cross_domain/grid_mirror_kinetic_closure/test_composition_grid_mirror_kinetic_closure.py",
-   "tests/cross_domain/test_mirror_kinetic_scientific_correction.py"
+   "tests/cross_domain/test_mirror_kinetic_scientific_correction.py",
+   "tests/mirror/test_grid_mirror_kinetic_closure_evidence.py"
   ],
-  "evidence_ceiling": "Bounded to the grid-aware mirror endpoint closure for one positive-ion case with relative charge residual below 1e-9. Evidence: `test_composition_grid_mirror_kinetic_closure.py` contains 13 test functions, 2 of which reference `solve_grid_mirror_kinetic_closure`, and is bound only by this asset; `test_mirror_kinetic_scientific_correction.py` contains 15 test functions, 1 of which references `solve_grid_mirror_kinetic_closure`, and is shared by 8 assets; the bounded example was executed by this audit. Oracle: independent analytic/high-precision endpoint balance and frozen composition values. It does not establish a general R-Z equilibrium solve, magnetic-field construction, or spatially resolved kinetic transport.",
+  "evidence_ceiling": "The maintained cross-domain tests drive the composition through a factory. C1 evidence (tests/mirror/test_grid_mirror_kinetic_closure_evidence.py) adds the 2*pi coordinate invariance of every fixed-profile output, the bitwise ion-plus-electron pressure assembly and electron pressure identity, the *_pa ion-only aliases, the declared charge-residual bound and the symmetric endpoint mapping. The nested closure's physical accuracy remains cannot establish: no published high-order reference or independent implementation was available.",
   "known_limitations": [
-   "Input YAML describes fixed full-grid reference profiles more broadly than the actual endpoint-plus-nested call chain supports; the shared profile must work on both one-dimensional and two-dimensional psi.",
-   "Confinement masks only selected top-level fields; the nested kinetic mapping, original moment-named values, temperatures, potentials, pitch integrals and endpoint diagnostics stay full-grid.",
-   "Nearest-plane selection can differ from the requested physical coordinate and the flux-profile operator uses source-defined sorting, deduplication and constant endpoint extension.",
-   "The endpoint and nested nonlinear solves each use their own finite iteration budget; neither exposes a combined convergence certificate, so only the declared positive-ion case with relative charge residual below `1e-9` is covered.",
-   "The bound composition file is asset-private with two direct functions; the shared correction file adds one endpoint-balance test, but arbitrary full-grid reference profiles at the one-dimensional endpoint call remain excluded."
+   "The nested kinetic closure has no independent high-order reference in this batch, so its absolute density and pressure magnitudes are cannot establish rather than validated.",
+   "The invariance statement fixes the role of the psi coordinate; it does not certify that any particular caller-supplied psi is the physically correct flux label for its field.",
+   "The charge residual bound is a declared numerical threshold, not a demonstration that the local quasineutral root is physically accurate.",
+   "The endpoint mapping identities use a mirror-symmetric fixture; an asymmetric plug geometry is exercised only by the maintained graph tests."
   ]
  },
  "composition": {

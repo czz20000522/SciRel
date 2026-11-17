@@ -144,11 +144,15 @@
  },
  "verification": {
   "scope": [
-   "Current SciRel implementation and the repository tests listed in this contract cover the declared public ports and numerical relation.",
-   "The example exercises one bounded representative case; it does not extend applicability beyond the declared preconditions."
+   "Independent reference: the polar decomposition is recomputed from 40-digit mpmath sines and cosines - k = kj/cwp, kx = k sin(theta), kz = k cos(theta), theta = degrees*pi/180 - together with the algebraic consequence hypot(kx, kz) = |k| and the two axis limits where one component vanishes identically.",
+   "Implementation relation: k is the signed ratio of the two scalars, theta is the input converted without wrapping, kx and kz carry the sign of kj, and no post-division finite-output guard is applied; cwp must be strictly positive.",
+   "Test matrix: four configurations including a negative kj and the two axis angles, the magnitude identity, the sign carried into both components, and five rejection channels (cwp = 0, negative cwp, a NaN wavevector, an infinite angle) each asserted with its own message.",
+   "Precision budget, declared before the comparison was run: 32 eps relative for k, theta, kx, kz and for the hypot identity; the vanishing component at theta = 0 is asserted at zero tolerance.",
+   "Evidence ceiling: a coordinate conversion, not a dispersion relation. Nothing here says the converted pair lies inside any approximation's validity domain, and the caller owns the choice of theta."
   ],
   "tests": [
-   "tests/kinetic/test_dispersion_rational.py"
+   "tests/kinetic/test_dispersion_rational.py",
+   "tests/kinetic/test_rational_declarative_evidence.py"
   ],
   "evidence_ceiling": "Bounded to the dimensionless k c/omega_pi and propagation-angle to SI perpendicular/parallel coordinate transform. Evidence: `test_dispersion_rational.py` contains 6 test functions, 1 of which references `em_coordinates`, and is shared by 10 assets; only shared-file coverage is bound, so a pass is file-level rather than asset-isolated; the bounded example was executed by this audit. Oracle: self-consistency/regression against frozen coordinate values in the bound file. It does not establish an implicit alternate reference species or an implicit radian convention.",
   "known_limitations": [

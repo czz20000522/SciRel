@@ -151,13 +151,17 @@
  },
  "verification": {
   "scope": [
-   "External PDRF gate: test_external_pdrf_two_species_spectrum_keeps_all_14_modes compares all 14 real frequencies of fluid_solve_state with independent PDRF reference values at four (kx,kz) points; rtol=2e-9, backward error <=1e-10, zero-structure multiplicities checked.",
-   "Analytic/manufactured gates cover zero-field cold modes, generalized nonidentity inertia and a complex-wavevector cold analytic holdout.",
-   "The bounded example is a representative case only."
+   "Independent reference: the definition of a generalized eigenvalue. For every returned frequency omega the pencil M - lambda A with lambda = -i omega must be singular, and the returned eigenvector must satisfy (M - lambda A) x = 0; both are checked directly against the returned matrices. A second solver is deliberately not used as the oracle: A is singular on the electrostatic support, so a naive dense eig(M, A) is ill-conditioned there - measured at ~1e-4 relative on the default case.",
+   "Implementation relation: w1 and w2 are one spectrum under two orderings - descending real part and descending imaginary part - and X1/X2 are the matching eigenvectors; state_scales is a conditioning device, so tripling it must not move the spectrum.",
+   "Test matrix: the singularity and eigenvector residuals for every returned root, the two-ordering multiset identity with both monotonicity claims, the scale-invariance check, a one-per-cent root displacement as the discriminating control, and the rejection channels for non-finite wavevectors, a zero or wrongly sized scale vector and a negative tolerance.",
+   "Precision budget, declared before the comparison was run: sigma_min(M - lambda A)/||M - lambda A|| and the normalised eigenvector residual at 1024 eps for a 14x14 pencil whose entries span ~1e5 (measured 2.5e-24, i.e. 1e-8 eps, at the exact roots); the discrimination on that statistic is a measured factor-10 floor, not an order-of-magnitude claim.",
+   "Evidence ceiling: a backward-error statement. Each returned frequency is a root of the returned pencil; that is not a forward-accuracy proof, not a branch-tracking claim across a scan, and not a statement that the physical mode is the one a consumer wants."
   ],
   "tests": [
    "tests/kinetic/test_dispersion_multifluid_oracle.py",
-   "tests/kinetic/test_dispersion_multifluid.py"
+   "tests/kinetic/test_dispersion_multifluid.py",
+   "tests/kinetic/test_multifluid_pencil_evidence.py",
+   "tests/kinetic/_fluid_pencil_reference.py"
   ],
   "evidence_ceiling": "Bounded to the declared fluid frequency solve on the tested two-species/PDRF decks. The primary gate compares all 14 real frequencies against independent PDRF values at four (kx,kz) points (rtol 2e-9) and requires backward errors <=1e-10; analytic/manufactured gates cover zero-field cold modes, nonidentity inertia and complex-wavevector holdouts. It does not establish arbitrary-parameter parity, branch uniqueness, imaginary growth rates (the PDRF imaginary floor is not physical), or a global model.",
   "known_limitations": [

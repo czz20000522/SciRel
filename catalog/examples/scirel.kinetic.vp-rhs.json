@@ -137,12 +137,15 @@
  },
  "verification": {
   "scope": [
-   "Discrete Poisson constraint and off-diagonal rank-one feedback.",
-   "Dense matrix-exponential RK4 order; analytic free-streaming and damped-cosine diagnostics.",
-   "Slowing-down weak derivative integration-by-parts and default 2049-node/2000-step execution."
+   "Independent reference: the right-hand side is recomputed term by term from the stated equation d(df)/dt = -i k v df + E f0'(v), using the velocity, the background derivative and the field as separate operands, so a missing term, a transposed factor or a wrong sign changes the re-derived value.",
+   "Implementation relation: the returned vector is -i k v df + dE f0dv elementwise on aligned arrays; dE must be a finite scalar and k finite and nonzero; the inputs are not mutated and the returned array has the distribution's shape.",
+   "Test matrix: term-by-term agreement on a four-node case; the Poisson identity i k E = -dv sum(df) that the field operand must satisfy; a scalar, non-finite or zero-k rejection; and non-aligned or non-finite vector inputs.",
+   "Precision budget, declared before the comparison was run: 8 eps times the largest term that enters the sum, because the two terms partly cancel and the floor is set by the larger one.",
+   "Evidence ceiling: linear one-dimensional Vlasov advection with one shared correction field. Nonlinear evolution, multidimensional modes and implicit Poisson correction are outside this relation and are not tested here."
   ],
   "tests": [
-   "tests/kinetic/test_vlasov_poisson_dispersion.py"
+   "tests/kinetic/test_vlasov_poisson_dispersion.py",
+   "tests/kinetic/test_vlasov_poisson_evidence.py"
   ],
   "evidence_ceiling": "Independent semidiscrete mathematical and selected scenario regressions; actual run/installed-wheel receipts are recorded separately, not inferred from test existence.",
   "known_limitations": [
