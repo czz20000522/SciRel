@@ -132,6 +132,13 @@ def test_fluid_case_state_derived_scales_match_closed_forms(family, jcase):
         n00=_scalar(case["n00"]),
         T00=_scalar(case["T00"]),
     )
+    # The declared MATLAB-shaped species vectors are row vectors of length S.  A
+    # transposed or reversed return would flatten to the same values, so the shape
+    # itself is asserted; that is what makes an axis swap visible.
+    species = np.asarray(case["qs"]).size
+    for key in ("ms", "qs", "ns0", "Ts0", "vts", "wcs", "wps", "rhocs", "ns_unit", "Ts_unit"):
+        assert np.asarray(case[key]).shape == (1, species), key
+
     for index in range(np.asarray(case["qs"]).size):
         assert reference.relative(float(np.asarray(case["ns0"]).ravel()[index]), float(expected["ns0"][index])) <= 1e-14
         assert reference.relative(float(np.asarray(case["Ts0"]).ravel()[index]), float(expected["Ts0"][index])) <= 1e-14
@@ -282,6 +289,11 @@ def test_fluid_dispersion_response_zero_transverse_determinant_identity():
         # The declared hermitian pairing of the tensor is part of the relation.
         assert np.allclose(tensor[1, 0], -tensor[0, 1])
         assert np.allclose(tensor[2, 0], tensor[0, 2])
+        # The tensor is manifestly not symmetric, so its transpose is a different
+        # object; stating that keeps an axis swap observable where the algebraic
+        # identities above happen to be transpose-invariant.
+        assert not np.allclose(tensor, np.asarray(tensor).T)
+        assert tensor.shape == (3, 3)
 
         reference.high_precision()
         w = mp.mpf(float(state["w"]))

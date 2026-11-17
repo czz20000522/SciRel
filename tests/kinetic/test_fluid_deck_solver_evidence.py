@@ -132,6 +132,17 @@ def test_fluid_bonk_search_root_zeroes_the_independent_dispersion():
 
     state = dict(case)
     state["w"] = frequency
+    # Declared shapes: a single-frequency call returns one root, one residual and a
+    # three-entry singular-value column.  A reversed or transposed return keeps the
+    # same values after flattening, so the shapes and the seed ladder order are what
+    # make such a mutation visible.
+    assert np.asarray(result["xx"]).shape == (1, 1)
+    assert np.asarray(result["sv"]).shape == (3, 1)
+    assert np.asarray(result["seeds"]).shape == (1, 5)
+    assert np.asarray(result["seeds"]).ravel()[0] == pytest.approx(0.6 + 0.0j)
+    assert np.asarray(result["seeds"]).ravel()[1] == pytest.approx(0.6 + 0.1j)
+    assert np.asarray(result["nf"]).shape == (1, 1)
+
     at_root = complex(np.asarray(evaluate_fluid_dispersion(root, state)["determinant"]).ravel()[0])
     assert abs(at_root) <= BONK_RESIDUAL_GATE
 
