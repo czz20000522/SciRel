@@ -335,8 +335,12 @@ def test_fluid_dispersion_response_zero_transverse_determinant_identity():
             p_plus = -w / (w - omega_c)
             p_minus = -w / (w + omega_c)
             predicted_k01 = (omega_p2 / w**2) * (mp.mpc(0, 0.5)) * (p_plus - p_minus)
-            assert reference.relative(abs(complex(tensor[0, 1])), abs(complex(predicted_k01))) <= 1e-13
-            assert reference.relative(abs(complex(tensor[1, 0])), abs(complex(-predicted_k01))) <= 1e-13
+            # Compare the complex entries themselves, not their moduli: |K10| equals
+            # |K01|, so a modulus comparison would be blind to an axis swap or a sign
+            # flip, which is exactly what this assertion exists to catch.
+            scale = abs(complex(predicted_k01))
+            assert abs(complex(tensor[0, 1]) - complex(predicted_k01)) / scale <= 1e-13
+            assert abs(complex(tensor[1, 0]) - complex(-predicted_k01)) / scale <= 1e-13
 
         # An external closed form for the transverse off-diagonal entry would also
         # make an axis swap observable here; it is derived in the audit notes but is
