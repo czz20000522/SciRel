@@ -131,6 +131,7 @@ python scripts/scirel_docs.py serve --snapshot .runtime/docs-snapshot
 | [`family-rule-audit.md`](docs/maintainer/family-rule-audit.md) | 族规则执行情况的一次性审计 |
 | [`durable-vs-status.md`](docs/maintainer/durable-vs-status.md) | 什么该留在总纲、什么该进仓库，以及怎么防止漂移 |
 | [`status.md`](docs/maintainer/status.md) | **会随版本变**的状态快照：规模、进度、证据覆盖 |
+| [`closeout-ledger.md`](docs/maintainer/closeout-ledger.md) | **结项对账**：`main` 上成立什么、还差什么，每行带命令 |
 | [`capability-boundaries.md`](docs/maintainer/capability-boundaries.md) | **包里没有的东西**：缺口的失败方式与证据 |
 
 ## 仓库结构
