@@ -1,142 +1,147 @@
 {
- "schema": "scirel.asset-document",
- "asset_id": "scirel.io.read-eqdsk",
- "title": {
-  "en": "Read extended EQDSK",
-  "zh": "读取扩展 EQDSK"
- },
- "summary": "Parse one validated extended EQDSK text file.",
- "taxonomy": [
-  "io",
-  "eqdsk",
-  "serialization"
- ],
- "aliases": [
-  "read_eqdsk"
- ],
- "discovery": {
-  "capability": [
-   "Read extended EQDSK",
-   "Parse one validated extended EQDSK text file into the class mapping."
-  ],
-  "operation": [
-   "Parse extended EQDSK text",
-   "extended EQDSK text -> validated dictionary/class state"
-  ],
-  "model": "Extended EQDSK text dialect with fixed-width record blocks and a declared grid-origin convention.",
-  "geometry": "nnr by nnz grid reconstructed as R = linspace(0, rbox) and Z = linspace(-zbox/2, zbox/2); header scalar slots are opaque and do not shift the grid; R/Z units and COCOS are unspecified.",
-  "boundary": "Unlike official EFIT G-EQDSK, this dialect has a 48-character title plus four integers, nnr/nnz/nnv, a fixed R=0 grid origin independent of header scalars, and no magnetic-axis scalar contract; strict/non-strict trailing-record handling applies.",
-  "device_scope": "generic"
- },
- "identity": {
-  "relation": "Deterministic text serialization/deserialization of extended EQDSK records",
-  "direction": "extended EQDSK text and validated dictionary/class state",
-  "definition": "48-character title, four integer fields, four 5-value scalar records, five profiles, C-order psi grid, q profile and fixed-width limiter/vessel coordinate pairs",
-  "model": "Extended EQDSK text dialect with fixed-width record blocks and the declared grid-origin convention.",
-  "geometry": "nnr by nnz grid reconstructed as R linspace(0,rbox) and Z linspace(-zbox/2,zbox/2); header scalar slots do not define the origin",
-  "coordinates": "R/Z coordinate values in source-defined convention; units and COCOS unspecified",
-  "boundary": "Unlike official EFIT G-EQDSK: 48-character title + four ints, nnr/nnz/nnv, fixed R origin 0, opaque header scalars, and no magnetic-axis scalar contract.",
-  "assumptions": [
-   "Exactly declared record dimensions",
-   "Finite real values and fixed-width coordinate fields",
-   "The radial grid origin is 0 and header scalar slots are opaque dialect values",
-   "This is not standard EFIT gEQDSK"
-  ]
- },
- "inputs": [
-  {
-   "name": "filename",
-   "description": "EQDSK path",
-   "units": "n/a",
-   "shape": "path",
-   "dtype": "filesystem path",
-   "required": true,
-   "constraints": "Readable text file"
+  "schema": "scirel.asset-document",
+  "asset_id": "scirel.io.read-eqdsk",
+  "title": {
+    "en": "Read extended EQDSK",
+    "zh": "读取扩展 EQDSK"
   },
-  {
-   "name": "strict",
-   "description": "Reject trailing records after declared section",
-   "units": "dimensionless",
-   "shape": "scalar",
-   "dtype": "bool",
-   "required": false,
-   "constraints": "False allows trailing only, not missing fields",
-   "default": true
-  }
- ],
- "outputs": [
-  {
-   "name": "mapping",
-   "description": "Parsed mapping including R,Z",
-   "units": "source-defined",
-   "shape": "dict",
-   "dtype": "dict[str,Any]",
-   "required": true,
-   "constraints": "Finite validated records; reconstructed R/Z use the fixed origin convention"
-  }
- ],
- "applicability": {
-  "preconditions": [
-   "Extended EQDSK dialect records"
+  "summary": "Parse one validated extended EQDSK text file.",
+  "taxonomy": [
+    "io",
+    "eqdsk",
+    "serialization"
   ],
-  "supported": [
-   "Roundtrip of finite validated dictionaries",
-   "Packed negative fixed-width coordinates",
-   "Strict/non-strict trailing record policy",
-   "Class read/write wrapper",
-   "Opaque preservation of reserved header scalar slots without shifting the grid origin"
+  "aliases": [
+    "read_eqdsk"
   ],
-  "excluded": [
-   "Standard EFIT gEQDSK semantics",
-   "Units or COCOS assignment",
-   "Raw contour or spline writing",
-   "Arbitrary malformed truncation recovery",
-   "Nonzero grid origins encoded in a standard EFIT header; use scirel.io.read_geqdsk for that dialect"
+  "discovery": {
+    "capability": [
+      "Read extended EQDSK",
+      "Parse one validated extended EQDSK text file into the class mapping."
+    ],
+    "operation": [
+      "Parse extended EQDSK text",
+      "extended EQDSK text -> validated dictionary/class state"
+    ],
+    "model": "Extended EQDSK text dialect with fixed-width record blocks and a declared grid-origin convention.",
+    "geometry": "nnr by nnz grid reconstructed as R = linspace(0, rbox) and Z = linspace(-zbox/2, zbox/2); header scalar slots are opaque and do not shift the grid; R/Z units and COCOS are unspecified.",
+    "boundary": "Unlike official EFIT G-EQDSK, this dialect has a 48-character title plus four integers, nnr/nnz/nnv, a fixed R=0 grid origin independent of header scalars, and no magnetic-axis scalar contract; strict/non-strict trailing-record handling applies.",
+    "device_scope": "generic"
+  },
+  "identity": {
+    "relation": "Deterministic text serialization/deserialization of extended EQDSK records",
+    "direction": "extended EQDSK text and validated dictionary/class state",
+    "definition": "48-character title, four integer fields, four 5-value scalar records, five profiles, C-order psi grid, q profile and fixed-width limiter/vessel coordinate pairs",
+    "model": "Extended EQDSK text dialect with fixed-width record blocks and the declared grid-origin convention.",
+    "geometry": "nnr by nnz grid reconstructed as R linspace(0,rbox) and Z linspace(-zbox/2,zbox/2); header scalar slots do not define the origin",
+    "coordinates": "R/Z coordinate values in source-defined convention; units and COCOS unspecified",
+    "boundary": "Unlike official EFIT G-EQDSK: 48-character title + four ints, nnr/nnz/nnv, fixed R origin 0, opaque header scalars, and no magnetic-axis scalar contract.",
+    "assumptions": [
+      "Exactly declared record dimensions",
+      "Finite real values and fixed-width coordinate fields",
+      "The radial grid origin is 0 and header scalar slots are opaque dialect values",
+      "This is not standard EFIT gEQDSK"
+    ]
+  },
+  "inputs": [
+    {
+      "name": "filename",
+      "description": "EQDSK path",
+      "units": "n/a",
+      "shape": "path",
+      "dtype": "filesystem path",
+      "required": true,
+      "constraints": "Readable text file"
+    },
+    {
+      "name": "strict",
+      "description": "Reject trailing records after declared section",
+      "units": "dimensionless",
+      "shape": "scalar",
+      "dtype": "bool",
+      "required": false,
+      "constraints": "False allows trailing only, not missing fields",
+      "default": true
+    }
+  ],
+  "outputs": [
+    {
+      "name": "mapping",
+      "description": "Parsed mapping including R,Z",
+      "units": "source-defined",
+      "shape": "dict",
+      "dtype": "dict[str,Any]",
+      "required": true,
+      "constraints": "Finite validated records; reconstructed R/Z use the fixed origin convention"
+    }
+  ],
+  "applicability": {
+    "preconditions": [
+      "Extended EQDSK dialect records"
+    ],
+    "supported": [
+      "Roundtrip of finite validated dictionaries",
+      "Packed negative fixed-width coordinates",
+      "Strict/non-strict trailing record policy",
+      "Class read/write wrapper",
+      "Opaque preservation of reserved header scalar slots without shifting the grid origin"
+    ],
+    "excluded": [
+      "Standard EFIT gEQDSK semantics",
+      "Units or COCOS assignment",
+      "Raw contour or spline writing",
+      "Arbitrary malformed truncation recovery",
+      "Nonzero grid origins encoded in a standard EFIT header; use scirel.io.read_geqdsk for that dialect"
+    ]
+  },
+  "failure_semantics": {
+    "invalid_input": "EQDSKFormatError for malformed, truncated, non-numeric, non-finite, dimensionally inconsistent, or unexpected extended-dialect records; strict=False permits only trailing records.",
+    "runtime_failure": "OSError from filesystem access and UnicodeError from decoding propagate.",
+    "nonconvergence": "Not applicable.",
+    "partial_results": "None; a failed read returns nothing."
+  },
+  "public_api": {
+    "python": {
+      "module": "scirel.io.eqdsk",
+      "symbol": "read_eqdsk",
+      "signature": "read_eqdsk(filename: 'str | Path', *, strict: 'bool' = True) -> 'dict[str, Any]'",
+      "canonical_module": "scirel.io",
+      "canonical_symbol": "read_eqdsk"
+    }
+  },
+  "version": {
+    "implementation_version": "0.0.0",
+    "dependencies": []
+  },
+  "example": {
+    "description": "Build a minimal fixed-width extended EQDSK text file and read its 2-by-2 psi records.",
+    "code": "from pathlib import Path\nfrom tempfile import TemporaryDirectory\nfrom scirel.io.eqdsk import read_eqdsk\nlines = ['MANUAL EXAMPLE'.ljust(48) + '   1   2   2   2']\nfor values in [[1., 2., 0., 0., 0.]] + [[0.]*5]*3 + [[1., 2.]]*4 + [[1., 2., 3., 4.], [0., 0.]]:\n    lines.append(''.join('%16.9E' % value for value in values))\nlines.append('    0    0')\nwith TemporaryDirectory() as directory:\n    path = Path(directory)/'example.eqdsk'\n    _ = path.write_text('\\n'.join(lines)+'\\n')\n    parsed = read_eqdsk(path)\n    assert parsed['psi'].tolist() == [[1., 2.], [3., 4.]]",
+    "expected": "The parser returns psi=[[1.0, 2.0], [3.0, 4.0]] in declared order."
+  },
+  "verification": {
+    "scope": [
+      "Independent exact recovery of the extended dialect from an independently hand-written reference record whose fields follow the published 16.9E rule, plus fixed-origin tests."
+    ],
+    "tests": [
+      "tests/io/test_eqdsk.py",
+      "tests/io/test_eqdsk_fixed_origin.py",
+      "tests/io/test_eqdsk_interchange_evidence.py",
+      "tests/io/test_io_declared_failure_channels.py"
+    ],
+    "evidence_ceiling": "Structural IO boundary only; no physical interpretation is claimed.",
+    "known_limitations": [
+      "This reader does not select raw contours or write them; that writer is a separate contract.",
+      "The extended dialect always reconstructs R from 0 and treats header scalar slots as opaque; use read_geqdsk for standard rleft/zmid semantics.",
+      "Not standard EFIT gEQDSK; read standard files with scirel.io.read_geqdsk",
+      "No units/COCOS"
+    ],
+    "basis": {
+      "kind": "specification",
+      "statement": "The evidence is the structural IO boundary: field parsing, ordering and rejection behaviour on the named files. No physical interpretation is claimed.",
+      "source": "tests/io/test_eqdsk.py"
+    }
+  },
+  "references": [
+    "L. L. Lao, G EQDSK FORMAT, 7 February 1997, EFIT format specification."
   ]
- },
- "failure_semantics": {
-  "invalid_input": "EQDSKFormatError for malformed, truncated, non-numeric, non-finite, dimensionally inconsistent, or unexpected extended-dialect records; strict=False permits only trailing records.",
-  "runtime_failure": "OSError from filesystem access and UnicodeError from decoding propagate.",
-  "nonconvergence": "Not applicable.",
-  "partial_results": "None; a failed read returns nothing."
- },
- "public_api": {
-  "python": {
-   "module": "scirel.io.eqdsk",
-   "symbol": "read_eqdsk",
-   "signature": "read_eqdsk(filename: 'str | Path', *, strict: 'bool' = True) -> 'dict[str, Any]'",
-   "canonical_module": "scirel.io",
-   "canonical_symbol": "read_eqdsk"
-  }
- },
- "version": {
-  "implementation_version": "0.0.0",
-  "dependencies": []
- },
- "example": {
-  "description": "Build a minimal fixed-width extended EQDSK text file and read its 2-by-2 psi records.",
-  "code": "from pathlib import Path\nfrom tempfile import TemporaryDirectory\nfrom scirel.io.eqdsk import read_eqdsk\nlines = ['MANUAL EXAMPLE'.ljust(48) + '   1   2   2   2']\nfor values in [[1., 2., 0., 0., 0.]] + [[0.]*5]*3 + [[1., 2.]]*4 + [[1., 2., 3., 4.], [0., 0.]]:\n    lines.append(''.join('%16.9E' % value for value in values))\nlines.append('    0    0')\nwith TemporaryDirectory() as directory:\n    path = Path(directory)/'example.eqdsk'\n    _ = path.write_text('\\n'.join(lines)+'\\n')\n    parsed = read_eqdsk(path)\n    assert parsed['psi'].tolist() == [[1., 2.], [3., 4.]]",
-  "expected": "The parser returns psi=[[1.0, 2.0], [3.0, 4.0]] in declared order."
- },
- "verification": {
-  "scope": [
-   "Independent exact recovery of the extended dialect from an independently hand-written reference record whose fields follow the published 16.9E rule, plus fixed-origin tests."
-  ],
-  "tests": [
-   "tests/io/test_eqdsk.py",
-   "tests/io/test_eqdsk_fixed_origin.py",
-   "tests/io/test_eqdsk_interchange_evidence.py",
-   "tests/io/test_io_declared_failure_channels.py"
-  ],
-  "evidence_ceiling": "Structural IO boundary only; no physical interpretation is claimed.",
-  "known_limitations": [
-   "This reader does not select raw contours or write them; that writer is a separate contract.",
-   "The extended dialect always reconstructs R from 0 and treats header scalar slots as opaque; use read_geqdsk for standard rleft/zmid semantics.",
-   "Not standard EFIT gEQDSK; read standard files with scirel.io.read_geqdsk",
-   "No units/COCOS"
-  ]
- },
- "references": [
-  "L. L. Lao, G EQDSK FORMAT, 7 February 1997, EFIT format specification."
- ]
 }

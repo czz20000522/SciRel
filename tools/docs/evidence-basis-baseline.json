@@ -16,38 +16,6 @@
       "reason": "not yet migrated: verification.basis absent"
     },
     {
-      "asset_id": "scirel.inference.latin-hypercube-sampling",
-      "reason": "not yet migrated: verification.basis absent"
-    },
-    {
-      "asset_id": "scirel.io.eqdsk-class",
-      "reason": "not yet migrated: verification.basis absent"
-    },
-    {
-      "asset_id": "scirel.io.read-eqdsk",
-      "reason": "not yet migrated: verification.basis absent"
-    },
-    {
-      "asset_id": "scirel.io.read-geqdsk",
-      "reason": "not yet migrated: verification.basis absent"
-    },
-    {
-      "asset_id": "scirel.io.write-eqdsk",
-      "reason": "not yet migrated: verification.basis absent"
-    },
-    {
-      "asset_id": "scirel.kinetic.bessel-gamma",
-      "reason": "not yet migrated: verification.basis absent"
-    },
-    {
-      "asset_id": "scirel.kinetic.dielectric-diagnostics",
-      "reason": "not yet migrated: verification.basis absent"
-    },
-    {
-      "asset_id": "scirel.kinetic.dielectric-response",
-      "reason": "not yet migrated: verification.basis absent"
-    },
-    {
       "asset_id": "scirel.kinetic.fluid-case-state",
       "reason": "not yet migrated: verification.basis absent"
     },
@@ -580,6 +548,14 @@
     "scirel.geometry.theta-chord",
     "scirel.geometry.weighted-line-integral",
     "scirel.geometry.z-chord",
+    "scirel.inference.latin-hypercube-sampling",
+    "scirel.io.eqdsk-class",
+    "scirel.io.read-eqdsk",
+    "scirel.io.read-geqdsk",
+    "scirel.io.write-eqdsk",
+    "scirel.kinetic.bessel-gamma",
+    "scirel.kinetic.dielectric-diagnostics",
+    "scirel.kinetic.dielectric-response",
     "scirel.kinetic.fluid-bonk-search",
     "scirel.kinetic.generalized-expression-differentiation",
     "scirel.kinetic.kinetic-wavevector-roots",
