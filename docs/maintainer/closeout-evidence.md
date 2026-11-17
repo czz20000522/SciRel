@@ -37,18 +37,18 @@ PYTHONPATH=src python -B scripts/c1_evidence_coverage.py --format json
 python -B scripts/check_catalog_id_domain.py
 python -B scripts/check_output_channel_declaration.py
 ```
-```
-catalog ID domain: 254 assets, 0 exceptions, 0 mismatches, 0 errors
-output channel: 138 single-output contracts, all state their channel (92 baselined)
-```
 
-合同总数与评审期合同：
+两条都必须以 `0 mismatches` / `0 errors` 与 `all state their channel` 结尾；**把资产数抄进文档是不允许的**
+（`test_catalog_size_is_not_hand_written_into_documents` 会拦，规模会漂），所以这里只写判据不写数字。
+
+合同总数同理，用命令查，不要抄：
+
 ```sh
-ls catalog/examples/scirel.*.json | wc -l     # 249
-ls catalog/review/examples/*.json | wc -l     # 5
+git ls-files 'catalog/examples/scirel.*.json' | wc -l
+git ls-files 'catalog/review/examples/*.json' | wc -l
 ```
 
-**`92 baselined` 是尚未偿还的债**，`tools/docs/output-channel-baseline.json` 里逐条带 `reason`，
+**基线内条目数 是尚未偿还的债**，`tools/docs/output-channel-baseline.json` 里逐条带 `reason`，
 只减不增（新出现的沉默合同判红；条目已修好但没删也判红）。
 
 ## 3 逐项测试身份（C3）

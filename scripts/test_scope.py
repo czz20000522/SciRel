@@ -51,6 +51,7 @@ SCRIPT_LAYERS = {
     "check_catalog_id_domain.py": ("architecture",),
     "status_report.py": ("tooling",),
     "check_output_channel_declaration.py": ("tooling",),
+    "probe_output_channel_returns.py": ("tooling",),
     "check_c4_tasklist.py": ("tooling",),
     "check_observation_integrity.py": ("tooling",),
     "check_wheel_exposure.py": ("delivery",),
