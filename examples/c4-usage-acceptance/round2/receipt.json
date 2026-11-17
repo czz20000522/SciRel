@@ -1,0 +1,2381 @@
+{
+ "schema": "scirel.c4-usage-round2.receipt",
+ "round": 2,
+ "issue": "#249 C4",
+ "package": {
+  "wheel": {
+   "name": "scirel-0.0.0-py3-none-any.whl",
+   "bytes": 929274,
+   "sha256": "4fc9757a7b843cc3bce2dc96fd2280b27299cff93fbcf5b64a2321b58234f5d7"
+  },
+  "snapshot_sha256": "cf0269b61ba19d8b2e5e008a6a4a4d80f2cd701f78c34f2fcb3b16eed9a2593c",
+  "source_revision": "4b5b4aaa38650d8a902e4265f226175d166a426b",
+  "asset_count": 249,
+  "catalog_contracts_delivered": 249,
+  "tasks_digest": "2c55ae00de0f60e4930df508d87ae150416a006032809a5cf96890e3470198d3",
+  "requirements": {
+   "numpy": "2.5.4",
+   "scipy": "1.18.1",
+   "mpmath": "1.4.1",
+   "python": ">=3.12"
+  }
+ },
+ "environment": {
+  "python": "3.14.7",
+  "numpy": "2.5.4",
+  "scipy": "1.18.1",
+  "mpmath": "1.4.1",
+  "wheel_sha256": "4fc9757a7b843cc3bce2dc96fd2280b27299cff93fbcf5b64a2321b58234f5d7",
+  "snapshot_sha256": "cf0269b61ba19d8b2e5e008a6a4a4d80f2cd701f78c34f2fcb3b16eed9a2593c",
+  "source_revision": "4b5b4aaa38650d8a902e4265f226175d166a426b",
+  "asset_count": 249,
+  "runtime": {
+   "dependencies_bundled": false,
+   "package_version": "0.0.0",
+   "requires_dist": [
+    "numpy==2.5.4",
+    "scipy==1.18.1",
+    "mpmath==1.4.1"
+   ],
+   "requires_python": ">=3.12",
+   "wheel": "scirel-0.0.0-py3-none-any.whl",
+   "wheel_sha256": "4fc9757a7b843cc3bce2dc96fd2280b27299cff93fbcf5b64a2321b58234f5d7"
+  }
+ },
+ "installed_wheel_validation": {
+  "status": "PASS",
+  "errors": [],
+  "artifact_sha256": "4fc9757a7b843cc3bce2dc96fd2280b27299cff93fbcf5b64a2321b58234f5d7",
+  "package_in_source_tree": false,
+  "runtime_is_virtualenv": true,
+  "runtime_python": "3.14.7",
+  "external_site_paths": [],
+  "wheel_payload_status": "PASS",
+  "note": "validate_installed_wheel.py; the extraction-kit validator does not apply to this package"
+ },
+ "coverage": {
+  "by_domain": {
+   "closures": {
+    "nominal": 1,
+    "failure": 1,
+    "inapplicable": 0,
+    "cross": 0,
+    "ran": 2,
+    "sufficient": 2,
+    "criteria": 6,
+    "pass": 6,
+    "fail": 0,
+    "not_run": 0,
+    "tasks": [
+     {
+      "task": "closures-quasineutral",
+      "kind": "nominal",
+      "ran": true,
+      "package_sufficient": true,
+      "criteria": [
+       3,
+       3
+      ]
+     },
+     {
+      "task": "closures-rejects-nonpositive-temperature",
+      "kind": "failure",
+      "ran": true,
+      "package_sufficient": true,
+      "criteria": [
+       3,
+       3
+      ]
+     }
+    ]
+   },
+   "collisions": {
+    "nominal": 3,
+    "failure": 1,
+    "inapplicable": 0,
+    "cross": 0,
+    "ran": 4,
+    "sufficient": 2,
+    "criteria": 10,
+    "pass": 6,
+    "fail": 4,
+    "not_run": 0,
+    "tasks": [
+     {
+      "task": "collisions-cross-sections",
+      "kind": "nominal",
+      "ran": true,
+      "package_sufficient": true,
+      "criteria": [
+       2,
+       3
+      ]
+     },
+     {
+      "task": "collisions-rate-coefficients",
+      "kind": "nominal",
+      "ran": true,
+      "package_sufficient": false,
+      "criteria": [
+       1,
+       3
+      ]
+     },
+     {
+      "task": "collisions-rate-averages",
+      "kind": "nominal",
+      "ran": true,
+      "package_sufficient": false,
+      "criteria": [
+       0,
+       1
+      ]
+     },
+     {
+      "task": "collisions-rejects-out-of-domain",
+      "kind": "failure",
+      "ran": true,
+      "package_sufficient": true,
+      "criteria": [
+       3,
+       3
+      ]
+     }
+    ]
+   },
+   "configurations": {
+    "nominal": 1,
+    "failure": 1,
+    "inapplicable": 0,
+    "cross": 0,
+    "ran": 2,
+    "sufficient": 2,
+    "criteria": 8,
+    "pass": 5,
+    "fail": 3,
+    "not_run": 0,
+    "tasks": [
+     {
+      "task": "configurations-retained-geometries",
+      "kind": "nominal",
+      "ran": true,
+      "package_sufficient": true,
+      "criteria": [
+       2,
+       5
+      ]
+     },
+     {
+      "task": "configurations-rejects-non-numeric-z0",
+      "kind": "failure",
+      "ran": true,
+      "package_sufficient": true,
+      "criteria": [
+       3,
+       3
+      ]
+     }
+    ]
+   },
+   "cross": {
+    "nominal": 0,
+    "failure": 0,
+    "inapplicable": 0,
+    "cross": 6,
+    "ran": 6,
+    "sufficient": 0,
+    "criteria": 30,
+    "pass": 12,
+    "fail": 18,
+    "not_run": 0,
+    "tasks": [
+     {
+      "task": "cross-field-to-equilibrium",
+      "kind": "cross",
+      "ran": true,
+      "package_sufficient": false,
+      "criteria": [
+       3,
+       6
+      ]
+     },
+     {
+      "task": "cross-geometry-to-equilibrium",
+      "kind": "cross",
+      "ran": true,
+      "package_sufficient": false,
+      "criteria": [
+       3,
+       6
+      ]
+     },
+     {
+      "task": "cross-mirror-to-diagnostics",
+      "kind": "cross",
+      "ran": true,
+      "package_sufficient": false,
+      "criteria": [
+       2,
+       4
+      ]
+     },
+     {
+      "task": "cross-source-to-neutrals",
+      "kind": "cross",
+      "ran": true,
+      "package_sufficient": false,
+      "criteria": [
+       1,
+       5
+      ]
+     },
+     {
+      "task": "cross-kinetic-to-diagnostics",
+      "kind": "cross",
+      "ran": true,
+      "package_sufficient": false,
+      "criteria": [
+       2,
+       5
+      ]
+     },
+     {
+      "task": "cross-collisions-to-neutrals",
+      "kind": "cross",
+      "ran": true,
+      "package_sufficient": false,
+      "criteria": [
+       1,
+       4
+      ]
+     }
+    ]
+   },
+   "diagnostics": {
+    "nominal": 1,
+    "failure": 1,
+    "inapplicable": 0,
+    "cross": 0,
+    "ran": 2,
+    "sufficient": 1,
+    "criteria": 7,
+    "pass": 6,
+    "fail": 1,
+    "not_run": 0,
+    "tasks": [
+     {
+      "task": "diagnostics-picard-residual",
+      "kind": "nominal",
+      "ran": true,
+      "package_sufficient": true,
+      "criteria": [
+       4,
+       4
+      ]
+     },
+     {
+      "task": "diagnostics-rejects-shape-mismatch",
+      "kind": "failure",
+      "ran": true,
+      "package_sufficient": false,
+      "criteria": [
+       2,
+       3
+      ]
+     }
+    ]
+   },
+   "dielectric": {
+    "nominal": 1,
+    "failure": 1,
+    "inapplicable": 0,
+    "cross": 0,
+    "ran": 2,
+    "sufficient": 1,
+    "criteria": 7,
+    "pass": 5,
+    "fail": 1,
+    "not_run": 1,
+    "tasks": [
+     {
+      "task": "dielectric-cold-tensor",
+      "kind": "nominal",
+      "ran": true,
+      "package_sufficient": false,
+      "criteria": [
+       2,
+       4
+      ]
+     },
+     {
+      "task": "dielectric-rejects-nonpositive-frequency",
+      "kind": "failure",
+      "ran": true,
+      "package_sufficient": true,
+      "criteria": [
+       3,
+       3
+      ]
+     }
+    ]
+   },
+   "electromagnetism": {
+    "nominal": 1,
+    "failure": 1,
+    "inapplicable": 0,
+    "cross": 0,
+    "ran": 2,
+    "sufficient": 1,
+    "criteria": 8,
+    "pass": 5,
+    "fail": 3,
+    "not_run": 0,
+    "tasks": [
+     {
+      "task": "electromagnetism-device-composition",
+      "kind": "nominal",
+      "ran": true,
+      "package_sufficient": true,
+      "criteria": [
+       3,
+       5
+      ]
+     },
+     {
+      "task": "electromagnetism-rejects-missing-mesh",
+      "kind": "failure",
+      "ran": true,
+      "package_sufficient": false,
+      "criteria": [
+       2,
+       3
+      ]
+     }
+    ]
+   },
+   "equilibrium": {
+    "nominal": 2,
+    "failure": 1,
+    "inapplicable": 0,
+    "cross": 0,
+    "ran": 3,
+    "sufficient": 2,
+    "criteria": 11,
+    "pass": 10,
+    "fail": 0,
+    "not_run": 1,
+    "tasks": [
+     {
+      "task": "equilibrium-isotropic-picard",
+      "kind": "nominal",
+      "ran": true,
+      "package_sufficient": false,
+      "criteria": [
+       3,
+       4
+      ]
+     },
+     {
+      "task": "equilibrium-anisotropic-picard",
+      "kind": "nominal",
+      "ran": true,
+      "package_sufficient": true,
+      "criteria": [
+       4,
+       4
+      ]
+     },
+     {
+      "task": "equilibrium-rejects-relax-out-of-range",
+      "kind": "failure",
+      "ran": true,
+      "package_sufficient": true,
+      "criteria": [
+       3,
+       3
+      ]
+     }
+    ]
+   },
+   "field": {
+    "nominal": 2,
+    "failure": 1,
+    "inapplicable": 0,
+    "cross": 0,
+    "ran": 3,
+    "sufficient": 2,
+    "criteria": 13,
+    "pass": 10,
+    "fail": 3,
+    "not_run": 0,
+    "tasks": [
+     {
+      "task": "field-filament-superposition",
+      "kind": "nominal",
+      "ran": true,
+      "package_sufficient": false,
+      "criteria": [
+       2,
+       5
+      ]
+     },
+     {
+      "task": "field-flux-to-poloidal",
+      "kind": "nominal",
+      "ran": true,
+      "package_sufficient": true,
+      "criteria": [
+       5,
+       5
+      ]
+     },
+     {
+      "task": "field-rejects-unsupported-current-rank",
+      "kind": "failure",
+      "ran": true,
+      "package_sufficient": true,
+      "criteria": [
+       3,
+       3
+      ]
+     }
+    ]
+   },
+   "fusion": {
+    "nominal": 1,
+    "failure": 1,
+    "inapplicable": 0,
+    "cross": 0,
+    "ran": 2,
+    "sufficient": 1,
+    "criteria": 6,
+    "pass": 4,
+    "fail": 2,
+    "not_run": 0,
+    "tasks": [
+     {
+      "task": "fusion-dd-neutron-energy",
+      "kind": "nominal",
+      "ran": true,
+      "package_sufficient": false,
+      "criteria": [
+       1,
+       3
+      ]
+     },
+     {
+      "task": "fusion-rejects-bad-detector-vector",
+      "kind": "failure",
+      "ran": true,
+      "package_sufficient": true,
+      "criteria": [
+       3,
+       3
+      ]
+     }
+    ]
+   },
+   "fvm": {
+    "nominal": 1,
+    "failure": 1,
+    "inapplicable": 0,
+    "cross": 0,
+    "ran": 2,
+    "sufficient": 2,
+    "criteria": 8,
+    "pass": 7,
+    "fail": 1,
+    "not_run": 0,
+    "tasks": [
+     {
+      "task": "fvm-convection-diffusion",
+      "kind": "nominal",
+      "ran": true,
+      "package_sufficient": true,
+      "criteria": [
+       4,
+       5
+      ]
+     },
+     {
+      "task": "fvm-rejects-undocumented-mode",
+      "kind": "failure",
+      "ran": true,
+      "package_sufficient": true,
+      "criteria": [
+       3,
+       3
+      ]
+     }
+    ]
+   },
+   "geometry": {
+    "nominal": 5,
+    "failure": 3,
+    "inapplicable": 0,
+    "cross": 0,
+    "ran": 8,
+    "sufficient": 5,
+    "criteria": 29,
+    "pass": 21,
+    "fail": 8,
+    "not_run": 0,
+    "tasks": [
+     {
+      "task": "geometry-equilibrium-grid",
+      "kind": "nominal",
+      "ran": true,
+      "package_sufficient": false,
+      "criteria": [
+       3,
+       4
+      ]
+     },
+     {
+      "task": "geometry-mesh-and-volume",
+      "kind": "nominal",
+      "ran": true,
+      "package_sufficient": true,
+      "criteria": [
+       3,
+       4
+      ]
+     },
+     {
+      "task": "geometry-rejects-mixed-modes",
+      "kind": "failure",
+      "ran": true,
+      "package_sufficient": true,
+      "criteria": [
+       3,
+       3
+      ]
+     },
+     {
+      "task": "sampling-regular-grid",
+      "kind": "nominal",
+      "ran": true,
+      "package_sufficient": true,
+      "criteria": [
+       2,
+       3
+      ]
+     },
+     {
+      "task": "sampling-transform-and-derivative",
+      "kind": "nominal",
+      "ran": true,
+      "package_sufficient": true,
+      "criteria": [
+       3,
+       5
+      ]
+     },
+     {
+      "task": "sampling-rejects-unknown-method",
+      "kind": "failure",
+      "ran": true,
+      "package_sufficient": false,
+      "criteria": [
+       2,
+       3
+      ]
+     },
+     {
+      "task": "fieldline-set-and-arclength",
+      "kind": "nominal",
+      "ran": true,
+      "package_sufficient": true,
+      "criteria": [
+       3,
+       4
+      ]
+     },
+     {
+      "task": "fieldline-rejects-duplicate-vertices",
+      "kind": "failure",
+      "ran": true,
+      "package_sufficient": false,
+      "criteria": [
+       2,
+       3
+      ]
+     }
+    ]
+   },
+   "inference": {
+    "nominal": 1,
+    "failure": 1,
+    "inapplicable": 0,
+    "cross": 0,
+    "ran": 2,
+    "sufficient": 1,
+    "criteria": 7,
+    "pass": 6,
+    "fail": 1,
+    "not_run": 0,
+    "tasks": [
+     {
+      "task": "inference-parameter-optimization",
+      "kind": "nominal",
+      "ran": true,
+      "package_sufficient": false,
+      "criteria": [
+       3,
+       4
+      ]
+     },
+     {
+      "task": "inference-rejects-bad-bounds",
+      "kind": "failure",
+      "ran": true,
+      "package_sufficient": true,
+      "criteria": [
+       3,
+       3
+      ]
+     }
+    ]
+   },
+   "io": {
+    "nominal": 1,
+    "failure": 1,
+    "inapplicable": 0,
+    "cross": 0,
+    "ran": 2,
+    "sufficient": 0,
+    "criteria": 10,
+    "pass": 3,
+    "fail": 7,
+    "not_run": 0,
+    "tasks": [
+     {
+      "task": "io-eqdsk-roundtrip",
+      "kind": "nominal",
+      "ran": true,
+      "package_sufficient": false,
+      "criteria": [
+       1,
+       6
+      ]
+     },
+     {
+      "task": "io-rejects-bad-and-missing-input",
+      "kind": "failure",
+      "ran": true,
+      "package_sufficient": false,
+      "criteria": [
+       2,
+       4
+      ]
+     }
+    ]
+   },
+   "kinetic": {
+    "nominal": 8,
+    "failure": 1,
+    "inapplicable": 1,
+    "cross": 0,
+    "ran": 10,
+    "sufficient": 6,
+    "criteria": 38,
+    "pass": 26,
+    "fail": 9,
+    "not_run": 3,
+    "tasks": [
+     {
+      "task": "kinetic-dielectric-finite-harmonic",
+      "kind": "nominal",
+      "ran": true,
+      "package_sufficient": true,
+      "criteria": [
+       5,
+       5
+      ]
+     },
+     {
+      "task": "kinetic-faddeeva-family",
+      "kind": "nominal",
+      "ran": true,
+      "package_sufficient": true,
+      "criteria": [
+       3,
+       3
+      ]
+     },
+     {
+      "task": "kinetic-generalized-dispersion",
+      "kind": "nominal",
+      "ran": true,
+      "package_sufficient": true,
+      "criteria": [
+       3,
+       3
+      ]
+     },
+     {
+      "task": "kinetic-fluid-two-path",
+      "kind": "nominal",
+      "ran": true,
+      "package_sufficient": false,
+      "criteria": [
+       2,
+       5
+      ]
+     },
+     {
+      "task": "kinetic-spectral-scan",
+      "kind": "nominal",
+      "ran": true,
+      "package_sufficient": true,
+      "criteria": [
+       4,
+       5
+      ]
+     },
+     {
+      "task": "kinetic-vp-initial-value",
+      "kind": "nominal",
+      "ran": true,
+      "package_sufficient": false,
+      "criteria": [
+       2,
+       5
+      ]
+     },
+     {
+      "task": "kinetic-multifluid-frequency",
+      "kind": "nominal",
+      "ran": true,
+      "package_sufficient": false,
+      "criteria": [
+       1,
+       4
+      ]
+     },
+     {
+      "task": "kinetic-rational-pole",
+      "kind": "nominal",
+      "ran": true,
+      "package_sufficient": false,
+      "criteria": [
+       1,
+       3
+      ]
+     },
+     {
+      "task": "kinetic-zero-kz-rejection",
+      "kind": "failure",
+      "ran": true,
+      "package_sufficient": true,
+      "criteria": [
+       3,
+       3
+      ]
+     },
+     {
+      "task": "kinetic-excluded-zero-kx",
+      "kind": "inapplicable",
+      "ran": true,
+      "package_sufficient": true,
+      "criteria": [
+       2,
+       2
+      ]
+     }
+    ]
+   },
+   "mirror": {
+    "nominal": 2,
+    "failure": 1,
+    "inapplicable": 0,
+    "cross": 0,
+    "ran": 3,
+    "sufficient": 3,
+    "criteria": 12,
+    "pass": 11,
+    "fail": 1,
+    "not_run": 0,
+    "tasks": [
+     {
+      "task": "mirror-frank-egedal",
+      "kind": "nominal",
+      "ran": true,
+      "package_sufficient": true,
+      "criteria": [
+       4,
+       5
+      ]
+     },
+     {
+      "task": "mirror-ambipolar-and-loss-cone",
+      "kind": "nominal",
+      "ran": true,
+      "package_sufficient": true,
+      "criteria": [
+       4,
+       4
+      ]
+     },
+     {
+      "task": "mirror-rejects-invalid-quadrature-order",
+      "kind": "failure",
+      "ran": true,
+      "package_sufficient": true,
+      "criteria": [
+       3,
+       3
+      ]
+     }
+    ]
+   },
+   "neoclassical": {
+    "nominal": 1,
+    "failure": 1,
+    "inapplicable": 0,
+    "cross": 0,
+    "ran": 2,
+    "sufficient": 1,
+    "criteria": 7,
+    "pass": 6,
+    "fail": 1,
+    "not_run": 0,
+    "tasks": [
+     {
+      "task": "neoclassical-bootstrap",
+      "kind": "nominal",
+      "ran": true,
+      "package_sufficient": false,
+      "criteria": [
+       3,
+       4
+      ]
+     },
+     {
+      "task": "neoclassical-rejects-unknown-method",
+      "kind": "failure",
+      "ran": true,
+      "package_sufficient": true,
+      "criteria": [
+       3,
+       3
+      ]
+     }
+    ]
+   },
+   "neutrals": {
+    "nominal": 5,
+    "failure": 1,
+    "inapplicable": 0,
+    "cross": 0,
+    "ran": 6,
+    "sufficient": 3,
+    "criteria": 20,
+    "pass": 15,
+    "fail": 5,
+    "not_run": 0,
+    "tasks": [
+     {
+      "task": "neutrals-boltzmann-rhs",
+      "kind": "nominal",
+      "ran": true,
+      "package_sufficient": true,
+      "criteria": [
+       3,
+       3
+      ]
+     },
+     {
+      "task": "neutrals-velocity-mesh",
+      "kind": "nominal",
+      "ran": true,
+      "package_sufficient": false,
+      "criteria": [
+       0,
+       1
+      ]
+     },
+     {
+      "task": "neutrals-cross-mesh",
+      "kind": "nominal",
+      "ran": true,
+      "package_sufficient": true,
+      "criteria": [
+       3,
+       4
+      ]
+     },
+     {
+      "task": "neutrals-terminal-reductions",
+      "kind": "nominal",
+      "ran": true,
+      "package_sufficient": false,
+      "criteria": [
+       5,
+       6
+      ]
+     },
+     {
+      "task": "neutrals-upwind-transport",
+      "kind": "nominal",
+      "ran": true,
+      "package_sufficient": false,
+      "criteria": [
+       1,
+       3
+      ]
+     },
+     {
+      "task": "neutrals-rejects-nonpositive-thermal-speed",
+      "kind": "failure",
+      "ran": true,
+      "package_sufficient": true,
+      "criteria": [
+       3,
+       3
+      ]
+     }
+    ]
+   },
+   "numerics": {
+    "nominal": 2,
+    "failure": 1,
+    "inapplicable": 0,
+    "cross": 0,
+    "ran": 3,
+    "sufficient": 2,
+    "criteria": 10,
+    "pass": 7,
+    "fail": 3,
+    "not_run": 0,
+    "tasks": [
+     {
+      "task": "numerics-basis-projection",
+      "kind": "nominal",
+      "ran": true,
+      "package_sufficient": true,
+      "criteria": [
+       4,
+       6
+      ]
+     },
+     {
+      "task": "numerics-splines-and-inverse",
+      "kind": "nominal",
+      "ran": true,
+      "package_sufficient": false,
+      "criteria": [
+       0,
+       1
+      ]
+     },
+     {
+      "task": "numerics-rejects-invalid-rcond",
+      "kind": "failure",
+      "ran": true,
+      "package_sufficient": true,
+      "criteria": [
+       3,
+       3
+      ]
+     }
+    ]
+   },
+   "physics": {
+    "nominal": 1,
+    "failure": 1,
+    "inapplicable": 0,
+    "cross": 0,
+    "ran": 2,
+    "sufficient": 1,
+    "criteria": 7,
+    "pass": 5,
+    "fail": 2,
+    "not_run": 0,
+    "tasks": [
+     {
+      "task": "physics-coulomb-logarithms",
+      "kind": "nominal",
+      "ran": true,
+      "package_sufficient": false,
+      "criteria": [
+       2,
+       4
+      ]
+     },
+     {
+      "task": "physics-rejects-boolean-temperature",
+      "kind": "failure",
+      "ran": true,
+      "package_sufficient": true,
+      "criteria": [
+       3,
+       3
+      ]
+     }
+    ]
+   },
+   "plasma": {
+    "nominal": 1,
+    "failure": 1,
+    "inapplicable": 0,
+    "cross": 0,
+    "ran": 2,
+    "sufficient": 2,
+    "criteria": 7,
+    "pass": 6,
+    "fail": 1,
+    "not_run": 0,
+    "tasks": [
+     {
+      "task": "plasma-fast-ion-heating",
+      "kind": "nominal",
+      "ran": true,
+      "package_sufficient": true,
+      "criteria": [
+       3,
+       4
+      ]
+     },
+     {
+      "task": "plasma-rejects-invalid-beam",
+      "kind": "failure",
+      "ran": true,
+      "package_sufficient": true,
+      "criteria": [
+       3,
+       3
+      ]
+     }
+    ]
+   },
+   "source": {
+    "nominal": 2,
+    "failure": 1,
+    "inapplicable": 0,
+    "cross": 0,
+    "ran": 3,
+    "sufficient": 3,
+    "criteria": 12,
+    "pass": 9,
+    "fail": 3,
+    "not_run": 0,
+    "tasks": [
+     {
+      "task": "source-profile-integral",
+      "kind": "nominal",
+      "ran": true,
+      "package_sufficient": true,
+      "criteria": [
+       3,
+       5
+      ]
+     },
+     {
+      "task": "source-zero-width-sentinel",
+      "kind": "nominal",
+      "ran": true,
+      "package_sufficient": true,
+      "criteria": [
+       3,
+       4
+      ]
+     },
+     {
+      "task": "source-rejects-nonpositive-weights",
+      "kind": "failure",
+      "ran": true,
+      "package_sufficient": true,
+      "criteria": [
+       3,
+       3
+      ]
+     }
+    ]
+   }
+  },
+  "by_kind": {
+   "nominal": {
+    "ran": 43,
+    "sufficient": 24
+   },
+   "failure": {
+    "ran": 23,
+    "sufficient": 18
+   },
+   "inapplicable": {
+    "ran": 1,
+    "sufficient": 1
+   },
+   "cross": {
+    "ran": 6,
+    "sufficient": 0
+   }
+  },
+  "totals": {
+   "tasks": 73,
+   "package_sufficient": 43,
+   "package_insufficient": 30,
+   "criteria_total": 273,
+   "criteria_pass": 191,
+   "criteria_fail": 77,
+   "criteria_not_run": 5
+  }
+ },
+ "task_index": [
+  {
+   "task_id": "kinetic-dielectric-finite-harmonic",
+   "kind": "nominal",
+   "domain": "kinetic",
+   "subdomain": "kinetic dielectric response and its raw diagnostic",
+   "package_sufficient": true,
+   "calls": 3,
+   "criteria": {
+    "total": 5,
+    "pass": 5,
+    "fail": 0,
+    "not_run": 0
+   },
+   "gap_count": 1,
+   "result_file": "tasks/kinetic-dielectric-finite-harmonic.json"
+  },
+  {
+   "task_id": "kinetic-faddeeva-family",
+   "kind": "nominal",
+   "domain": "kinetic",
+   "subdomain": "plasma dispersion function across selectable backends",
+   "package_sufficient": true,
+   "calls": 5,
+   "criteria": {
+    "total": 3,
+    "pass": 3,
+    "fail": 0,
+    "not_run": 0
+   },
+   "gap_count": 1,
+   "result_file": "tasks/kinetic-faddeeva-family.json"
+  },
+  {
+   "task_id": "kinetic-generalized-dispersion",
+   "kind": "nominal",
+   "domain": "kinetic",
+   "subdomain": "generalized dispersion residual and root scan",
+   "package_sufficient": true,
+   "calls": 2,
+   "criteria": {
+    "total": 3,
+    "pass": 3,
+    "fail": 0,
+    "not_run": 0
+   },
+   "gap_count": 0,
+   "result_file": "tasks/kinetic-generalized-dispersion.json"
+  },
+  {
+   "task_id": "kinetic-fluid-two-path",
+   "kind": "nominal",
+   "domain": "kinetic",
+   "subdomain": "fluid two-path dispersion and its matrix form",
+   "package_sufficient": false,
+   "calls": 3,
+   "criteria": {
+    "total": 5,
+    "pass": 2,
+    "fail": 2,
+    "not_run": 1
+   },
+   "gap_count": 1,
+   "result_file": "tasks/kinetic-fluid-two-path.json"
+  },
+  {
+   "task_id": "kinetic-spectral-scan",
+   "kind": "nominal",
+   "domain": "kinetic",
+   "subdomain": "spectral state, scan and temporal spectrum",
+   "package_sufficient": true,
+   "calls": 3,
+   "criteria": {
+    "total": 5,
+    "pass": 4,
+    "fail": 1,
+    "not_run": 0
+   },
+   "gap_count": 0,
+   "result_file": "tasks/kinetic-spectral-scan.json"
+  },
+  {
+   "task_id": "kinetic-vp-initial-value",
+   "kind": "nominal",
+   "domain": "kinetic",
+   "subdomain": "Vlasov-Poisson initial value path",
+   "package_sufficient": false,
+   "calls": 5,
+   "criteria": {
+    "total": 5,
+    "pass": 2,
+    "fail": 3,
+    "not_run": 0
+   },
+   "gap_count": 0,
+   "result_file": "tasks/kinetic-vp-initial-value.json"
+  },
+  {
+   "task_id": "kinetic-multifluid-frequency",
+   "kind": "nominal",
+   "domain": "kinetic",
+   "subdomain": "multifluid deck, frequency solve and scan",
+   "package_sufficient": false,
+   "calls": 3,
+   "criteria": {
+    "total": 4,
+    "pass": 1,
+    "fail": 2,
+    "not_run": 1
+   },
+   "gap_count": 1,
+   "result_file": "tasks/kinetic-multifluid-frequency.json"
+  },
+  {
+   "task_id": "kinetic-rational-pole",
+   "kind": "nominal",
+   "domain": "kinetic",
+   "subdomain": "rational and J-pole coefficient entries",
+   "package_sufficient": false,
+   "calls": 4,
+   "criteria": {
+    "total": 3,
+    "pass": 1,
+    "fail": 1,
+    "not_run": 1
+   },
+   "gap_count": 1,
+   "result_file": "tasks/kinetic-rational-pole.json"
+  },
+  {
+   "task_id": "kinetic-zero-kz-rejection",
+   "kind": "failure",
+   "domain": "kinetic",
+   "subdomain": "literal zero parallel wavenumber on a finite harmonic path",
+   "package_sufficient": true,
+   "calls": 1,
+   "criteria": {
+    "total": 3,
+    "pass": 3,
+    "fail": 0,
+    "not_run": 0
+   },
+   "gap_count": 0,
+   "result_file": "tasks/kinetic-zero-kz-rejection.json"
+  },
+  {
+   "task_id": "kinetic-excluded-zero-kx",
+   "kind": "inapplicable",
+   "domain": "kinetic",
+   "subdomain": "declared excluded wavevector limits",
+   "package_sufficient": true,
+   "calls": 0,
+   "criteria": {
+    "total": 2,
+    "pass": 2,
+    "fail": 0,
+    "not_run": 0
+   },
+   "gap_count": 2,
+   "result_file": "tasks/kinetic-excluded-zero-kx.json"
+  },
+  {
+   "task_id": "neutrals-boltzmann-rhs",
+   "kind": "nominal",
+   "domain": "neutrals",
+   "subdomain": "neutral Boltzmann right-hand side and collision frequency",
+   "package_sufficient": true,
+   "calls": 2,
+   "criteria": {
+    "total": 3,
+    "pass": 3,
+    "fail": 0,
+    "not_run": 0
+   },
+   "gap_count": 0,
+   "result_file": "tasks/neutrals-boltzmann-rhs.json"
+  },
+  {
+   "task_id": "neutrals-velocity-mesh",
+   "kind": "nominal",
+   "domain": "neutrals",
+   "subdomain": null,
+   "package_sufficient": false,
+   "calls": 0,
+   "criteria": {
+    "total": 1,
+    "pass": 0,
+    "fail": 1,
+    "not_run": 0
+   },
+   "gap_count": 1,
+   "result_file": "tasks/neutrals-velocity-mesh.json"
+  },
+  {
+   "task_id": "neutrals-cross-mesh",
+   "kind": "nominal",
+   "domain": "neutrals",
+   "subdomain": "cross-mesh transfer of a distribution and of a scalar",
+   "package_sufficient": true,
+   "calls": 3,
+   "criteria": {
+    "total": 4,
+    "pass": 3,
+    "fail": 1,
+    "not_run": 0
+   },
+   "gap_count": 1,
+   "result_file": "tasks/neutrals-cross-mesh.json"
+  },
+  {
+   "task_id": "neutrals-terminal-reductions",
+   "kind": "nominal",
+   "domain": "neutrals",
+   "subdomain": "terminal moment and conservation reductions",
+   "package_sufficient": false,
+   "calls": 7,
+   "criteria": {
+    "total": 6,
+    "pass": 5,
+    "fail": 1,
+    "not_run": 0
+   },
+   "gap_count": 0,
+   "result_file": "tasks/neutrals-terminal-reductions.json"
+  },
+  {
+   "task_id": "neutrals-upwind-transport",
+   "kind": "nominal",
+   "domain": "neutrals",
+   "subdomain": "upwind transport coefficients and generation propagation",
+   "package_sufficient": false,
+   "calls": 2,
+   "criteria": {
+    "total": 3,
+    "pass": 1,
+    "fail": 2,
+    "not_run": 0
+   },
+   "gap_count": 1,
+   "result_file": "tasks/neutrals-upwind-transport.json"
+  },
+  {
+   "task_id": "neutrals-rejects-nonpositive-thermal-speed",
+   "kind": "failure",
+   "domain": "neutrals",
+   "subdomain": "declared invalid input channel",
+   "package_sufficient": true,
+   "calls": 1,
+   "criteria": {
+    "total": 3,
+    "pass": 3,
+    "fail": 0,
+    "not_run": 0
+   },
+   "gap_count": 0,
+   "result_file": "tasks/neutrals-rejects-nonpositive-thermal-speed.json"
+  },
+  {
+   "task_id": "collisions-cross-sections",
+   "kind": "nominal",
+   "domain": "collisions",
+   "subdomain": "elastic cross sections for hydrogen and proton projectiles",
+   "package_sufficient": true,
+   "calls": 3,
+   "criteria": {
+    "total": 3,
+    "pass": 2,
+    "fail": 1,
+    "not_run": 0
+   },
+   "gap_count": 0,
+   "result_file": "tasks/collisions-cross-sections.json"
+  },
+  {
+   "task_id": "collisions-rate-coefficients",
+   "kind": "nominal",
+   "domain": "collisions",
+   "subdomain": "rate coefficients and collision matrices",
+   "package_sufficient": false,
+   "calls": 4,
+   "criteria": {
+    "total": 3,
+    "pass": 1,
+    "fail": 2,
+    "not_run": 0
+   },
+   "gap_count": 0,
+   "result_file": "tasks/collisions-rate-coefficients.json"
+  },
+  {
+   "task_id": "collisions-rate-averages",
+   "kind": "nominal",
+   "domain": "collisions",
+   "subdomain": null,
+   "package_sufficient": false,
+   "calls": 0,
+   "criteria": {
+    "total": 1,
+    "pass": 0,
+    "fail": 1,
+    "not_run": 0
+   },
+   "gap_count": 1,
+   "result_file": "tasks/collisions-rate-averages.json"
+  },
+  {
+   "task_id": "collisions-rejects-out-of-domain",
+   "kind": "failure",
+   "domain": "collisions",
+   "subdomain": "declared invalid input channel",
+   "package_sufficient": true,
+   "calls": 1,
+   "criteria": {
+    "total": 3,
+    "pass": 3,
+    "fail": 0,
+    "not_run": 0
+   },
+   "gap_count": 0,
+   "result_file": "tasks/collisions-rejects-out-of-domain.json"
+  },
+  {
+   "task_id": "field-filament-superposition",
+   "kind": "nominal",
+   "domain": "field",
+   "subdomain": "Green response, superposition and multi-coil vacuum field",
+   "package_sufficient": false,
+   "calls": 4,
+   "criteria": {
+    "total": 5,
+    "pass": 2,
+    "fail": 3,
+    "not_run": 0
+   },
+   "gap_count": 0,
+   "result_file": "tasks/field-filament-superposition.json"
+  },
+  {
+   "task_id": "field-flux-to-poloidal",
+   "kind": "nominal",
+   "domain": "field",
+   "subdomain": "flux derivative to poloidal field and its magnitude",
+   "package_sufficient": true,
+   "calls": 2,
+   "criteria": {
+    "total": 5,
+    "pass": 5,
+    "fail": 0,
+    "not_run": 0
+   },
+   "gap_count": 0,
+   "result_file": "tasks/field-flux-to-poloidal.json"
+  },
+  {
+   "task_id": "field-rejects-unsupported-current-rank",
+   "kind": "failure",
+   "domain": "field",
+   "subdomain": "declared invalid input channel",
+   "package_sufficient": true,
+   "calls": 1,
+   "criteria": {
+    "total": 3,
+    "pass": 3,
+    "fail": 0,
+    "not_run": 0
+   },
+   "gap_count": 0,
+   "result_file": "tasks/field-rejects-unsupported-current-rank.json"
+  },
+  {
+   "task_id": "geometry-equilibrium-grid",
+   "kind": "nominal",
+   "domain": "geometry",
+   "subdomain": "axisymmetric equilibrium grid support and surface averages",
+   "package_sufficient": false,
+   "calls": 3,
+   "criteria": {
+    "total": 4,
+    "pass": 3,
+    "fail": 1,
+    "not_run": 0
+   },
+   "gap_count": 0,
+   "result_file": "tasks/geometry-equilibrium-grid.json"
+  },
+  {
+   "task_id": "geometry-mesh-and-volume",
+   "kind": "nominal",
+   "domain": "geometry",
+   "subdomain": "meshes and toroidal volume integration",
+   "package_sufficient": true,
+   "calls": 5,
+   "criteria": {
+    "total": 4,
+    "pass": 3,
+    "fail": 1,
+    "not_run": 0
+   },
+   "gap_count": 0,
+   "result_file": "tasks/geometry-mesh-and-volume.json"
+  },
+  {
+   "task_id": "geometry-rejects-mixed-modes",
+   "kind": "failure",
+   "domain": "geometry",
+   "subdomain": "declared invalid input channel",
+   "package_sufficient": true,
+   "calls": 1,
+   "criteria": {
+    "total": 3,
+    "pass": 3,
+    "fail": 0,
+    "not_run": 0
+   },
+   "gap_count": 0,
+   "result_file": "tasks/geometry-rejects-mixed-modes.json"
+  },
+  {
+   "task_id": "numerics-basis-projection",
+   "kind": "nominal",
+   "domain": "numerics",
+   "subdomain": "basis construction and modal projection",
+   "package_sufficient": true,
+   "calls": 2,
+   "criteria": {
+    "total": 6,
+    "pass": 4,
+    "fail": 2,
+    "not_run": 0
+   },
+   "gap_count": 1,
+   "result_file": "tasks/numerics-basis-projection.json"
+  },
+  {
+   "task_id": "numerics-splines-and-inverse",
+   "kind": "nominal",
+   "domain": "numerics",
+   "subdomain": null,
+   "package_sufficient": false,
+   "calls": 0,
+   "criteria": {
+    "total": 1,
+    "pass": 0,
+    "fail": 1,
+    "not_run": 0
+   },
+   "gap_count": 1,
+   "result_file": "tasks/numerics-splines-and-inverse.json"
+  },
+  {
+   "task_id": "numerics-rejects-invalid-rcond",
+   "kind": "failure",
+   "domain": "numerics",
+   "subdomain": "declared invalid input channel",
+   "package_sufficient": true,
+   "calls": 1,
+   "criteria": {
+    "total": 3,
+    "pass": 3,
+    "fail": 0,
+    "not_run": 0
+   },
+   "gap_count": 0,
+   "result_file": "tasks/numerics-rejects-invalid-rcond.json"
+  },
+  {
+   "task_id": "sampling-regular-grid",
+   "kind": "nominal",
+   "domain": "geometry",
+   "subdomain": "scattered to regular grid sampling",
+   "package_sufficient": true,
+   "calls": 3,
+   "criteria": {
+    "total": 3,
+    "pass": 2,
+    "fail": 1,
+    "not_run": 0
+   },
+   "gap_count": 1,
+   "result_file": "tasks/sampling-regular-grid.json"
+  },
+  {
+   "task_id": "sampling-transform-and-derivative",
+   "kind": "nominal",
+   "domain": "geometry",
+   "subdomain": "coordinate transforms and nonuniform derivative",
+   "package_sufficient": true,
+   "calls": 3,
+   "criteria": {
+    "total": 5,
+    "pass": 3,
+    "fail": 2,
+    "not_run": 0
+   },
+   "gap_count": 0,
+   "result_file": "tasks/sampling-transform-and-derivative.json"
+  },
+  {
+   "task_id": "sampling-rejects-unknown-method",
+   "kind": "failure",
+   "domain": "geometry",
+   "subdomain": "declared invalid interpolation method",
+   "package_sufficient": false,
+   "calls": 1,
+   "criteria": {
+    "total": 3,
+    "pass": 2,
+    "fail": 1,
+    "not_run": 0
+   },
+   "gap_count": 0,
+   "result_file": "tasks/sampling-rejects-unknown-method.json"
+  },
+  {
+   "task_id": "equilibrium-isotropic-picard",
+   "kind": "nominal",
+   "domain": "equilibrium",
+   "subdomain": "isotropic pressure flux and Picard step",
+   "package_sufficient": false,
+   "calls": 3,
+   "criteria": {
+    "total": 4,
+    "pass": 3,
+    "fail": 0,
+    "not_run": 1
+   },
+   "gap_count": 1,
+   "result_file": "tasks/equilibrium-isotropic-picard.json"
+  },
+  {
+   "task_id": "equilibrium-anisotropic-picard",
+   "kind": "nominal",
+   "domain": "equilibrium",
+   "subdomain": "anisotropic Picard iteration with feedback",
+   "package_sufficient": true,
+   "calls": 3,
+   "criteria": {
+    "total": 4,
+    "pass": 4,
+    "fail": 0,
+    "not_run": 0
+   },
+   "gap_count": 0,
+   "result_file": "tasks/equilibrium-anisotropic-picard.json"
+  },
+  {
+   "task_id": "equilibrium-rejects-relax-out-of-range",
+   "kind": "failure",
+   "domain": "equilibrium",
+   "subdomain": "declared invalid input channel",
+   "package_sufficient": true,
+   "calls": 1,
+   "criteria": {
+    "total": 3,
+    "pass": 3,
+    "fail": 0,
+    "not_run": 0
+   },
+   "gap_count": 0,
+   "result_file": "tasks/equilibrium-rejects-relax-out-of-range.json"
+  },
+  {
+   "task_id": "mirror-frank-egedal",
+   "kind": "nominal",
+   "domain": "mirror",
+   "subdomain": "Frank-Egedal pressure closure chain",
+   "package_sufficient": true,
+   "calls": 3,
+   "criteria": {
+    "total": 5,
+    "pass": 4,
+    "fail": 1,
+    "not_run": 0
+   },
+   "gap_count": 0,
+   "result_file": "tasks/mirror-frank-egedal.json"
+  },
+  {
+   "task_id": "mirror-ambipolar-and-loss-cone",
+   "kind": "nominal",
+   "domain": "mirror",
+   "subdomain": "ambipolar potential and loss-cone distribution",
+   "package_sufficient": true,
+   "calls": 3,
+   "criteria": {
+    "total": 4,
+    "pass": 4,
+    "fail": 0,
+    "not_run": 0
+   },
+   "gap_count": 0,
+   "result_file": "tasks/mirror-ambipolar-and-loss-cone.json"
+  },
+  {
+   "task_id": "mirror-rejects-invalid-quadrature-order",
+   "kind": "failure",
+   "domain": "mirror",
+   "subdomain": "declared invalid input channel",
+   "package_sufficient": true,
+   "calls": 1,
+   "criteria": {
+    "total": 3,
+    "pass": 3,
+    "fail": 0,
+    "not_run": 0
+   },
+   "gap_count": 0,
+   "result_file": "tasks/mirror-rejects-invalid-quadrature-order.json"
+  },
+  {
+   "task_id": "electromagnetism-device-composition",
+   "kind": "nominal",
+   "domain": "electromagnetism",
+   "subdomain": "device composition and flux matrix",
+   "package_sufficient": true,
+   "calls": 2,
+   "criteria": {
+    "total": 5,
+    "pass": 3,
+    "fail": 2,
+    "not_run": 0
+   },
+   "gap_count": 1,
+   "result_file": "tasks/electromagnetism-device-composition.json"
+  },
+  {
+   "task_id": "configurations-retained-geometries",
+   "kind": "nominal",
+   "domain": "configurations",
+   "subdomain": "retained device configuration constructors",
+   "package_sufficient": true,
+   "calls": 3,
+   "criteria": {
+    "total": 5,
+    "pass": 2,
+    "fail": 3,
+    "not_run": 0
+   },
+   "gap_count": 0,
+   "result_file": "tasks/configurations-retained-geometries.json"
+  },
+  {
+   "task_id": "configurations-rejects-non-numeric-z0",
+   "kind": "failure",
+   "domain": "configurations",
+   "subdomain": "declared invalid input channel",
+   "package_sufficient": true,
+   "calls": 1,
+   "criteria": {
+    "total": 3,
+    "pass": 3,
+    "fail": 0,
+    "not_run": 0
+   },
+   "gap_count": 0,
+   "result_file": "tasks/configurations-rejects-non-numeric-z0.json"
+  },
+  {
+   "task_id": "electromagnetism-rejects-missing-mesh",
+   "kind": "failure",
+   "domain": "electromagnetism",
+   "subdomain": "declared invalid input channel",
+   "package_sufficient": false,
+   "calls": 1,
+   "criteria": {
+    "total": 3,
+    "pass": 2,
+    "fail": 1,
+    "not_run": 0
+   },
+   "gap_count": 0,
+   "result_file": "tasks/electromagnetism-rejects-missing-mesh.json"
+  },
+  {
+   "task_id": "closures-quasineutral",
+   "kind": "nominal",
+   "domain": "closures",
+   "subdomain": "quasineutral potential and reference density",
+   "package_sufficient": true,
+   "calls": 5,
+   "criteria": {
+    "total": 3,
+    "pass": 3,
+    "fail": 0,
+    "not_run": 0
+   },
+   "gap_count": 1,
+   "result_file": "tasks/closures-quasineutral.json"
+  },
+  {
+   "task_id": "closures-rejects-nonpositive-temperature",
+   "kind": "failure",
+   "domain": "closures",
+   "subdomain": "declared invalid input channel",
+   "package_sufficient": true,
+   "calls": 1,
+   "criteria": {
+    "total": 3,
+    "pass": 3,
+    "fail": 0,
+    "not_run": 0
+   },
+   "gap_count": 0,
+   "result_file": "tasks/closures-rejects-nonpositive-temperature.json"
+  },
+  {
+   "task_id": "diagnostics-picard-residual",
+   "kind": "nominal",
+   "domain": "diagnostics",
+   "subdomain": "residual and observation diagnostics",
+   "package_sufficient": true,
+   "calls": 4,
+   "criteria": {
+    "total": 4,
+    "pass": 4,
+    "fail": 0,
+    "not_run": 0
+   },
+   "gap_count": 0,
+   "result_file": "tasks/diagnostics-picard-residual.json"
+  },
+  {
+   "task_id": "diagnostics-rejects-shape-mismatch",
+   "kind": "failure",
+   "domain": "diagnostics",
+   "subdomain": "declared invalid input channel",
+   "package_sufficient": false,
+   "calls": 1,
+   "criteria": {
+    "total": 3,
+    "pass": 2,
+    "fail": 1,
+    "not_run": 0
+   },
+   "gap_count": 0,
+   "result_file": "tasks/diagnostics-rejects-shape-mismatch.json"
+  },
+  {
+   "task_id": "fieldline-set-and-arclength",
+   "kind": "nominal",
+   "domain": "geometry",
+   "subdomain": "fieldline set construction and arclength derivative",
+   "package_sufficient": true,
+   "calls": 3,
+   "criteria": {
+    "total": 4,
+    "pass": 3,
+    "fail": 1,
+    "not_run": 0
+   },
+   "gap_count": 1,
+   "result_file": "tasks/fieldline-set-and-arclength.json"
+  },
+  {
+   "task_id": "fieldline-rejects-duplicate-vertices",
+   "kind": "failure",
+   "domain": "geometry",
+   "subdomain": "declared invalid input channel",
+   "package_sufficient": false,
+   "calls": 1,
+   "criteria": {
+    "total": 3,
+    "pass": 2,
+    "fail": 1,
+    "not_run": 0
+   },
+   "gap_count": 0,
+   "result_file": "tasks/fieldline-rejects-duplicate-vertices.json"
+  },
+  {
+   "task_id": "physics-coulomb-logarithms",
+   "kind": "nominal",
+   "domain": "physics",
+   "subdomain": "Coulomb logarithms and thermal energy",
+   "package_sufficient": false,
+   "calls": 4,
+   "criteria": {
+    "total": 4,
+    "pass": 2,
+    "fail": 2,
+    "not_run": 0
+   },
+   "gap_count": 0,
+   "result_file": "tasks/physics-coulomb-logarithms.json"
+  },
+  {
+   "task_id": "physics-rejects-boolean-temperature",
+   "kind": "failure",
+   "domain": "physics",
+   "subdomain": "declared invalid input channel",
+   "package_sufficient": true,
+   "calls": 1,
+   "criteria": {
+    "total": 3,
+    "pass": 3,
+    "fail": 0,
+    "not_run": 0
+   },
+   "gap_count": 0,
+   "result_file": "tasks/physics-rejects-boolean-temperature.json"
+  },
+  {
+   "task_id": "fvm-convection-diffusion",
+   "kind": "nominal",
+   "domain": "fvm",
+   "subdomain": "cell variables, convection, diffusion and theta step",
+   "package_sufficient": true,
+   "calls": 4,
+   "criteria": {
+    "total": 5,
+    "pass": 4,
+    "fail": 1,
+    "not_run": 0
+   },
+   "gap_count": 1,
+   "result_file": "tasks/fvm-convection-diffusion.json"
+  },
+  {
+   "task_id": "fvm-rejects-undocumented-mode",
+   "kind": "failure",
+   "domain": "fvm",
+   "subdomain": "declared invalid control value",
+   "package_sufficient": true,
+   "calls": 1,
+   "criteria": {
+    "total": 3,
+    "pass": 3,
+    "fail": 0,
+    "not_run": 0
+   },
+   "gap_count": 0,
+   "result_file": "tasks/fvm-rejects-undocumented-mode.json"
+  },
+  {
+   "task_id": "io-eqdsk-roundtrip",
+   "kind": "nominal",
+   "domain": "io",
+   "subdomain": "EQDSK reading, writing and the retained class",
+   "package_sufficient": false,
+   "calls": 3,
+   "criteria": {
+    "total": 6,
+    "pass": 1,
+    "fail": 5,
+    "not_run": 0
+   },
+   "gap_count": 1,
+   "result_file": "tasks/io-eqdsk-roundtrip.json"
+  },
+  {
+   "task_id": "io-rejects-bad-and-missing-input",
+   "kind": "failure",
+   "domain": "io",
+   "subdomain": "declared malformed-content and missing-file channels",
+   "package_sufficient": false,
+   "calls": 2,
+   "criteria": {
+    "total": 4,
+    "pass": 2,
+    "fail": 2,
+    "not_run": 0
+   },
+   "gap_count": 0,
+   "result_file": "tasks/io-rejects-bad-and-missing-input.json"
+  },
+  {
+   "task_id": "inference-parameter-optimization",
+   "kind": "nominal",
+   "domain": "inference",
+   "subdomain": "anisotropic parameter optimization and trial evaluation",
+   "package_sufficient": false,
+   "calls": 4,
+   "criteria": {
+    "total": 4,
+    "pass": 3,
+    "fail": 1,
+    "not_run": 0
+   },
+   "gap_count": 0,
+   "result_file": "tasks/inference-parameter-optimization.json"
+  },
+  {
+   "task_id": "inference-rejects-bad-bounds",
+   "kind": "failure",
+   "domain": "inference",
+   "subdomain": "declared invalid search bounds",
+   "package_sufficient": true,
+   "calls": 1,
+   "criteria": {
+    "total": 3,
+    "pass": 3,
+    "fail": 0,
+    "not_run": 0
+   },
+   "gap_count": 0,
+   "result_file": "tasks/inference-rejects-bad-bounds.json"
+  },
+  {
+   "task_id": "neoclassical-bootstrap",
+   "kind": "nominal",
+   "domain": "neoclassical",
+   "subdomain": "bootstrap coefficients and current",
+   "package_sufficient": false,
+   "calls": 4,
+   "criteria": {
+    "total": 4,
+    "pass": 3,
+    "fail": 1,
+    "not_run": 0
+   },
+   "gap_count": 0,
+   "result_file": "tasks/neoclassical-bootstrap.json"
+  },
+  {
+   "task_id": "neoclassical-rejects-unknown-method",
+   "kind": "failure",
+   "domain": "neoclassical",
+   "subdomain": "declared invalid input channel",
+   "package_sufficient": true,
+   "calls": 1,
+   "criteria": {
+    "total": 3,
+    "pass": 3,
+    "fail": 0,
+    "not_run": 0
+   },
+   "gap_count": 0,
+   "result_file": "tasks/neoclassical-rejects-unknown-method.json"
+  },
+  {
+   "task_id": "source-profile-integral",
+   "kind": "nominal",
+   "domain": "source",
+   "subdomain": "Gaussian and exponential source profiles",
+   "package_sufficient": true,
+   "calls": 2,
+   "criteria": {
+    "total": 5,
+    "pass": 3,
+    "fail": 2,
+    "not_run": 0
+   },
+   "gap_count": 0,
+   "result_file": "tasks/source-profile-integral.json"
+  },
+  {
+   "task_id": "source-zero-width-sentinel",
+   "kind": "nominal",
+   "domain": "source",
+   "subdomain": "declared sentinel behaviour for a degenerate width",
+   "package_sufficient": true,
+   "calls": 2,
+   "criteria": {
+    "total": 4,
+    "pass": 3,
+    "fail": 1,
+    "not_run": 0
+   },
+   "gap_count": 0,
+   "result_file": "tasks/source-zero-width-sentinel.json"
+  },
+  {
+   "task_id": "source-rejects-nonpositive-weights",
+   "kind": "failure",
+   "domain": "source",
+   "subdomain": "declared invalid control value",
+   "package_sufficient": true,
+   "calls": 1,
+   "criteria": {
+    "total": 3,
+    "pass": 3,
+    "fail": 0,
+    "not_run": 0
+   },
+   "gap_count": 0,
+   "result_file": "tasks/source-rejects-nonpositive-weights.json"
+  },
+  {
+   "task_id": "dielectric-cold-tensor",
+   "kind": "nominal",
+   "domain": "dielectric",
+   "subdomain": "cold plasma dielectric tensor",
+   "package_sufficient": false,
+   "calls": 1,
+   "criteria": {
+    "total": 4,
+    "pass": 2,
+    "fail": 1,
+    "not_run": 1
+   },
+   "gap_count": 2,
+   "result_file": "tasks/dielectric-cold-tensor.json"
+  },
+  {
+   "task_id": "dielectric-rejects-nonpositive-frequency",
+   "kind": "failure",
+   "domain": "dielectric",
+   "subdomain": "declared invalid frequency control",
+   "package_sufficient": true,
+   "calls": 1,
+   "criteria": {
+    "total": 3,
+    "pass": 3,
+    "fail": 0,
+    "not_run": 0
+   },
+   "gap_count": 0,
+   "result_file": "tasks/dielectric-rejects-nonpositive-frequency.json"
+  },
+  {
+   "task_id": "plasma-fast-ion-heating",
+   "kind": "nominal",
+   "domain": "plasma",
+   "subdomain": "fast ion heating combination",
+   "package_sufficient": true,
+   "calls": 2,
+   "criteria": {
+    "total": 4,
+    "pass": 3,
+    "fail": 1,
+    "not_run": 0
+   },
+   "gap_count": 0,
+   "result_file": "tasks/plasma-fast-ion-heating.json"
+  },
+  {
+   "task_id": "plasma-rejects-invalid-beam",
+   "kind": "failure",
+   "domain": "plasma",
+   "subdomain": "declared invalid beam input",
+   "package_sufficient": true,
+   "calls": 1,
+   "criteria": {
+    "total": 3,
+    "pass": 3,
+    "fail": 0,
+    "not_run": 0
+   },
+   "gap_count": 0,
+   "result_file": "tasks/plasma-rejects-invalid-beam.json"
+  },
+  {
+   "task_id": "fusion-dd-neutron-energy",
+   "kind": "nominal",
+   "domain": "fusion",
+   "subdomain": "laboratory neutron energy for the D-D reaction",
+   "package_sufficient": false,
+   "calls": 2,
+   "criteria": {
+    "total": 3,
+    "pass": 1,
+    "fail": 2,
+    "not_run": 0
+   },
+   "gap_count": 1,
+   "result_file": "tasks/fusion-dd-neutron-energy.json"
+  },
+  {
+   "task_id": "fusion-rejects-bad-detector-vector",
+   "kind": "failure",
+   "domain": "fusion",
+   "subdomain": "declared invalid input channel",
+   "package_sufficient": true,
+   "calls": 1,
+   "criteria": {
+    "total": 3,
+    "pass": 3,
+    "fail": 0,
+    "not_run": 0
+   },
+   "gap_count": 0,
+   "result_file": "tasks/fusion-rejects-bad-detector-vector.json"
+  },
+  {
+   "task_id": "cross-field-to-equilibrium",
+   "kind": "cross",
+   "domain": "cross",
+   "subdomain": "filament flux to poloidal field to one Picard step",
+   "package_sufficient": false,
+   "calls": 3,
+   "criteria": {
+    "total": 6,
+    "pass": 3,
+    "fail": 3,
+    "not_run": 0
+   },
+   "gap_count": 1,
+   "result_file": "tasks/cross-field-to-equilibrium.json"
+  },
+  {
+   "task_id": "cross-geometry-to-equilibrium",
+   "kind": "cross",
+   "domain": "cross",
+   "subdomain": "equilibrium grid support into the pressure-flux state",
+   "package_sufficient": false,
+   "calls": 3,
+   "criteria": {
+    "total": 6,
+    "pass": 3,
+    "fail": 3,
+    "not_run": 0
+   },
+   "gap_count": 0,
+   "result_file": "tasks/cross-geometry-to-equilibrium.json"
+  },
+  {
+   "task_id": "cross-mirror-to-diagnostics",
+   "kind": "cross",
+   "domain": "cross",
+   "subdomain": "anisotropic pressure into the firehose and mirror margins",
+   "package_sufficient": false,
+   "calls": 2,
+   "criteria": {
+    "total": 4,
+    "pass": 2,
+    "fail": 2,
+    "not_run": 0
+   },
+   "gap_count": 2,
+   "result_file": "tasks/cross-mirror-to-diagnostics.json"
+  },
+  {
+   "task_id": "cross-source-to-neutrals",
+   "kind": "cross",
+   "domain": "cross",
+   "subdomain": "declared source profile into the neutral generation term",
+   "package_sufficient": false,
+   "calls": 3,
+   "criteria": {
+    "total": 5,
+    "pass": 1,
+    "fail": 4,
+    "not_run": 0
+   },
+   "gap_count": 1,
+   "result_file": "tasks/cross-source-to-neutrals.json"
+  },
+  {
+   "task_id": "cross-kinetic-to-diagnostics",
+   "kind": "cross",
+   "domain": "cross",
+   "subdomain": "root values into the observation residual diagnostic",
+   "package_sufficient": false,
+   "calls": 2,
+   "criteria": {
+    "total": 5,
+    "pass": 2,
+    "fail": 3,
+    "not_run": 0
+   },
+   "gap_count": 0,
+   "result_file": "tasks/cross-kinetic-to-diagnostics.json"
+  },
+  {
+   "task_id": "cross-collisions-to-neutrals",
+   "kind": "cross",
+   "domain": "cross",
+   "subdomain": "charge-exchange rate into the total neutral collision frequency",
+   "package_sufficient": false,
+   "calls": 3,
+   "criteria": {
+    "total": 4,
+    "pass": 1,
+    "fail": 3,
+    "not_run": 0
+   },
+   "gap_count": 1,
+   "result_file": "tasks/cross-collisions-to-neutrals.json"
+  }
+ ],
+ "reproduce": [
+  "python3 scripts/dev.py prepare",
+  "python3 scripts/dev.py run uv build --wheel --out-dir .runtime/c4r2/wheel",
+  "python3 scripts/dev.py run python -B scripts/build_pure_delivery.py --wheel .runtime/c4r2/wheel/scirel-0.0.0-py3-none-any.whl --output .runtime/c4r2/scirel-delivery-r2",
+  "uv venv --seed --python 3.14.7 .runtime/c4r2/venv-consumer",
+  "uv pip install --python .runtime/c4r2/venv-consumer/bin/python .runtime/c4r2/scirel-delivery-r2/wheel/scirel-0.0.0-py3-none-any.whl -r .runtime/c4r2/scirel-delivery-r2/runtime-requirements.txt",
+  ".runtime/c4r2/venv-consumer/bin/python -I scripts/validate_installed_wheel.py --expected-python 3.14 --wheel .runtime/c4r2/scirel-delivery-r2/wheel/scirel-0.0.0-py3-none-any.whl --catalog-root . --source-revision 4b5b4aaa38650d8a902e4265f226175d166a426b --output .runtime/c4r2/installed-wheel-validation.json",
+  "SCIREL_PACKAGE_ROOT=$PWD/.runtime/c4r2/scirel-delivery-r2 .runtime/c4r2/venv-consumer/bin/python -I examples/c4-usage-acceptance/round2/run.py",
+  "python3 examples/c4-usage-acceptance/round2/coverage.py"
+ ],
+ "artifacts": {},
+ "task_file_sha256": {
+  "closures-quasineutral.json": "8b4cfe8abd04304d6b7fea8d7fd36504940415b50492e73d74c4ba7056fc8104",
+  "closures-rejects-nonpositive-temperature.json": "c6eef71b43cc2d7d9c1f4d0ce32baa0ab0ab3e1171fb28f5d7c87001d8376d23",
+  "collisions-cross-sections.json": "8d2860d83b0a46ef53f05fd7c271ade870c7e0b8de3734edaa0cce26341901e5",
+  "collisions-rate-averages.json": "efdd29e85a03a4fae8ec0eb6a19fad3256380de55201f3a0bbae335ad9b6ec2e",
+  "collisions-rate-coefficients.json": "93c3e5a50a5e6d64d0464d65125ad30a62da56da90311974762548d164951d32",
+  "collisions-rejects-out-of-domain.json": "82d5a5ab1fa9332d27500aa43280741f5996d63f54cd34914918855fea45d3c7",
+  "configurations-rejects-non-numeric-z0.json": "dea2ea50979baee14029b4e0aafc4e1afa890aa301577d7b2d296e5a615ca460",
+  "configurations-retained-geometries.json": "09446138e807695b72dcc02a4239851a82707bac488b29d5e7bdcf648c3a18f1",
+  "cross-collisions-to-neutrals.json": "6fd0d466b4488c5ca9e3331bd8edf3d3e8923ee7e913ebb78e90bf86d752ada2",
+  "cross-field-to-equilibrium.json": "74fb3d145a976639ed27b01bc49d6aa868d1d31369e7adde97d513f35bb64845",
+  "cross-geometry-to-equilibrium.json": "506fcb527b2dbe5c8c1fa4acd3607e3e8b0823e7ce6e6fe404c4ba7f16c0552c",
+  "cross-kinetic-to-diagnostics.json": "69720e68180188fc0e3595e8341ecb886f13130d92ffb739131995aeb6d3aed4",
+  "cross-mirror-to-diagnostics.json": "a77ad789de06d014e6d614e8ffe9a06d5fdb1ea055d12ec71c1cee8380726851",
+  "cross-source-to-neutrals.json": "0d611b15fdfe407add9d24fccf4e665ea48eec5329767fc6196856e9cc8efabb",
+  "diagnostics-picard-residual.json": "2488fd7b4d49561db1666f92ab3e2448e1c0799b77ccd6a823c43e4ca1a9493d",
+  "diagnostics-rejects-shape-mismatch.json": "eef9929346067e2441c460033dae9afa02a4c0430cb01fffa3478d8ae6c74e7d",
+  "dielectric-cold-tensor.json": "1513eea461188558ee5e8bdb1161d5b0736360eb353bc737d31257b493a8a407",
+  "dielectric-rejects-nonpositive-frequency.json": "8f3a5afcccfb99020ff2b94e4941ce032494d15c369f52761e0b7fe7060c3679",
+  "electromagnetism-device-composition.json": "c89331e507722dfd9ec9f38496f43b581014a0bd12d3625516b1b466d8d5cb6d",
+  "electromagnetism-rejects-missing-mesh.json": "eadbe35dd609ddeb14d34d2475de8fc9a8b00c1e0559be1b61491d44bde3e53e",
+  "equilibrium-anisotropic-picard.json": "be0e22c99ae09a5b4a945396ecf0af34a44a8f508560daf353a42830a1c72a89",
+  "equilibrium-isotropic-picard.json": "541bd7f55ec5535bd4e90931a16a8f22fe1482f68ebaaacef355374334c0da35",
+  "equilibrium-rejects-relax-out-of-range.json": "850e870c58e45dd7e22ea362ef5dcc55edfe3559a3344d71bc9551949a2a0a49",
+  "field-filament-superposition.json": "4f0e22cec15594dab562311d3f2dbcdf21c852d19f9b2ca1a22815271ddde462",
+  "field-flux-to-poloidal.json": "af31ee2f11e21d00fcba0ed79bfcdb75c50f3519f8a8e58331f1a37bcbf339ee",
+  "field-rejects-unsupported-current-rank.json": "d4c07600e621674c835b15a2961bc6c50ddf0ed28a8ce1c1916c97823e441a60",
+  "fieldline-rejects-duplicate-vertices.json": "7792f07e9cea8d866231b9f4a379dd5a8984b59fdc155b96e6ea124448451d74",
+  "fieldline-set-and-arclength.json": "faabeddc49f0dbc218b10149ff7c634cc312689e59dbcbbf0071b495b2bf58be",
+  "fusion-dd-neutron-energy.json": "c3a250927fa2fc22390e4eeafa0affdac85aacb58a64220bf92e3852b56c41ca",
+  "fusion-rejects-bad-detector-vector.json": "3909e323c5b805516807e1d71317c7bba5534b8bae4619bf4905ef38e3776346",
+  "fvm-convection-diffusion.json": "e9761a835e46de27deb43eda02c3347863847d0bd5297a1b0e06e151125f13d8",
+  "fvm-rejects-undocumented-mode.json": "5f626337be983eb705e527afcc181f593174366cd33edd02d456e48bc7bb3be1",
+  "geometry-equilibrium-grid.json": "aacf2bfb76f4c060fe13d2737d8a6ee3bf1808711d785f3dc6276f230c76338a",
+  "geometry-mesh-and-volume.json": "cafcbc8c7f30550f23b32339dc0b496f10ae751458b99c2119abea9ccbc98970",
+  "geometry-rejects-mixed-modes.json": "99de800e1b3962b0e14b6d078f23a42c580f4ef5cb8832fb911fe9f964af0aaa",
+  "inference-parameter-optimization.json": "e6969224f6383048cb3ab3f44b2ca66d01a6ed1107dc048945fb6062cf23cc6b",
+  "inference-rejects-bad-bounds.json": "f6c6a3323e3b640643017a8b78e366b8ce668ba97856cb8aefe9694dfd5d563f",
+  "io-eqdsk-roundtrip.json": "a43d113b3b6121a424b66c4ea2b428de3b7bbf4e5824b1eec12354bf6686965e",
+  "io-rejects-bad-and-missing-input.json": "67a96f72049879d6c02705ccb5d374c3b22b7777d64c8770d6ff733152f3650b",
+  "kinetic-dielectric-finite-harmonic.json": "166f3b85aeb6a9531aa261d2e9846e1d4bfc074af6a0ec303ef611768b4eb5dc",
+  "kinetic-excluded-zero-kx.json": "68d289e659b365bbf536ede907e938edbda8698d5b40c355a12412db4651c28d",
+  "kinetic-faddeeva-family.json": "2b2747827b2e4956a0344658b0b908e3f4734571ace5d42eeb127590e1dd1d30",
+  "kinetic-fluid-two-path.json": "159c03d25c6acbc33133d282d5646edb780f896621ed7075ea2ea961df4331ec",
+  "kinetic-generalized-dispersion.json": "c5c01c3a33647ff6086de041823b2b5d9bdac30024b8ab5ffca887b989645746",
+  "kinetic-multifluid-frequency.json": "763e01fa1d333a5fd6de15caca7fdef71d7ba458c3bd4da87c1b6ca6a6e6e71d",
+  "kinetic-rational-pole.json": "d7d204fe478c722d6067a8ba3cfcaab3f71a0ff4477c6ddb442be88b91274835",
+  "kinetic-spectral-scan.json": "5d2ba244c381532e9fbfc979799d0260a45c5114b3c70cb27af5464f48f30806",
+  "kinetic-vp-initial-value.json": "ac8043d0647fa4fb4a9bb23c9403f2684e3a99a3e203f0970986e4b69d0eee70",
+  "kinetic-zero-kz-rejection.json": "8ca531552e1f625cb8a4b7a1bd35442aca39aa2e64ae4d2d7b1fd43c584cedca",
+  "mirror-ambipolar-and-loss-cone.json": "ddde3af0abc283b3e241f6163126c15cd4539fdd2560b0ff4fe2653c1dcd44fc",
+  "mirror-frank-egedal.json": "050853ed77b91ea0ca246843140a1e7c5042d43f777e2da20bdf20a6d9e423ca",
+  "mirror-rejects-invalid-quadrature-order.json": "68e0d98b0e654d9b1a6e3b50ed76efd6e795a28533b23c76ea4f072722215b97",
+  "neoclassical-bootstrap.json": "c6076e01ae97e0643eeadb9c35ea71afbe70cd461996f3425e070d6cdcffc06e",
+  "neoclassical-rejects-unknown-method.json": "e46428e5fe2eb42718c242a2ae7267b7118db82ca8e50bb406371f152625fda6",
+  "neutrals-boltzmann-rhs.json": "b34571cafde22098adc4a3023b58082f5694cfb11b82d5be426e40034ab60225",
+  "neutrals-cross-mesh.json": "1c53a4a2cdffdd33dfcab15082d702d5b485540bb1df4aa3d9b5037c4bd1bd7b",
+  "neutrals-rejects-nonpositive-thermal-speed.json": "7fabd24e274f4f42e76ef05f76099d25a09362c0acf744f3eb59135308ae4cdb",
+  "neutrals-terminal-reductions.json": "d046b943bea1eed4830071d4bc20be777ce2021c2504c9b6e540e6fd3f69ca6b",
+  "neutrals-upwind-transport.json": "8eb6dfa09381d58758a7c40da7d67207b0a5440506a6c93424062d1f61eda711",
+  "neutrals-velocity-mesh.json": "41331fe1279be60a340fc0fb4c30a3b9ab1d89218ec33e1f90520b114f6c286b",
+  "numerics-basis-projection.json": "3694c7d7b741ab304e83435f70623752f30324f9a524fee1bc771b231387c265",
+  "numerics-rejects-invalid-rcond.json": "06c8fd470bb5e228e2a8e0a3baa7135bf030daa0237aa5de7709acdf76532096",
+  "numerics-splines-and-inverse.json": "141456f9738f00473953a9e537b12f65414ddc72d26f45ce1f97a095b56a9877",
+  "physics-coulomb-logarithms.json": "0c95800209bd006bd82dbf2e328becefef1fad58d55574dbcd5a6680dbe5b67e",
+  "physics-rejects-boolean-temperature.json": "b4ed4d5ae1fb8f2eefe8c06659d428cb0f8b1a9153b752c47fa1dd1073fb89d7",
+  "plasma-fast-ion-heating.json": "314c622f165ffa6fd4434d6315770658c9ce7161e9d1734d32139bef7db80061",
+  "plasma-rejects-invalid-beam.json": "a81ab92e4726f69db043e738e6023069a15ef3912cc3f7ebc5648ac4da64c62c",
+  "sampling-regular-grid.json": "7a9152bd2772d6efb8de5bb09ba7968ef50275d04a387b3abe08bd1dd86e96f9",
+  "sampling-rejects-unknown-method.json": "889f3bc1401834b2074a7ae0d92c2155458deca61a05e95cb189a5e5005f666c",
+  "sampling-transform-and-derivative.json": "8279ef4a1f70a1209a5d401a56b40ab068c3fbef7badd03dd94aa796c71aef26",
+  "source-profile-integral.json": "aa6c7a84e469fbc91d15521cc965b6c30032ef4570ac136fe681a5673d4f4f32",
+  "source-rejects-nonpositive-weights.json": "341f1f95a8f318f217bec474986a2134663893189301dbd20e0301c5b052a35b",
+  "source-zero-width-sentinel.json": "8f159ef998e646ce7f4a3d3c3405f978abf19119254f14827d839abf338ab294"
+ }
+}

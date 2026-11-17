@@ -1,0 +1,234 @@
+{
+ "task_id": "numerics-basis-projection",
+ "kind": "nominal",
+ "domain": "numerics",
+ "subdomain": "basis construction and modal projection",
+ "question": "Build a declared orthonormal modal basis, project a declared field onto it, and report the residual after reconstruction and the basis dimension actually used.",
+ "assets_declared": [
+  "scirel.numerics.basis-matrix",
+  "scirel.numerics.build-basis",
+  "scirel.numerics.orthonormal-modal-basis",
+  "scirel.numerics.modal-projection"
+ ],
+ "min_calls": 4,
+ "package": {
+  "python": "3.14.7",
+  "numpy": "2.5.4",
+  "scipy": "1.18.1",
+  "mpmath": "1.4.1",
+  "wheel_sha256": "4fc9757a7b843cc3bce2dc96fd2280b27299cff93fbcf5b64a2321b58234f5d7",
+  "snapshot_sha256": "cf0269b61ba19d8b2e5e008a6a4a4d80f2cd701f78c34f2fcb3b16eed9a2593c",
+  "source_revision": "4b5b4aaa38650d8a902e4265f226175d166a426b",
+  "asset_count": 249,
+  "runtime": {
+   "dependencies_bundled": false,
+   "package_version": "0.0.0",
+   "requires_dist": [
+    "numpy==2.5.4",
+    "scipy==1.18.1",
+    "mpmath==1.4.1"
+   ],
+   "requires_python": ">=3.12",
+   "wheel": "scirel-0.0.0-py3-none-any.whl",
+   "wheel_sha256": "4fc9757a7b843cc3bce2dc96fd2280b27299cff93fbcf5b64a2321b58234f5d7"
+  }
+ },
+ "assets_used": [
+  "scirel.numerics.modal-projection",
+  "scirel.numerics.orthonormal-modal-basis"
+ ],
+ "calls": [
+  {
+   "seq": 1,
+   "label": "declared modal basis",
+   "asset": "scirel.numerics.orthonormal-modal-basis",
+   "entrypoint": "scirel.numerics.modal_basis:modal_basis",
+   "arguments": {
+    "args": [],
+    "kwargs": {
+     "kind": "serendipity",
+     "ndim": 2,
+     "order": 2
+    }
+   },
+   "status": "returned",
+   "returned_fields": null,
+   "exception": null,
+   "warnings": [],
+   "returned_type": "ModalBasis"
+  },
+  {
+   "seq": 2,
+   "label": "declared modal projection",
+   "asset": "scirel.numerics.modal-projection",
+   "entrypoint": "scirel.numerics.modal_basis:modal_projection",
+   "arguments": {
+    "args": [],
+    "kwargs": {
+     "kind": "tensor",
+     "ndim": 2,
+     "order": 2,
+     "values": {
+      "dtype": "float64",
+      "shape": [
+       9
+      ],
+      "values": [
+       -0.011474508437578856,
+       -0.18594235253127378,
+       -0.08229490168751558,
+       -0.038032155906305265,
+       0.12500000000000022,
+       -1.458852549156242,
+       -0.11770509831248394,
+       -2.317172942406179,
+       -0.18852549156242066
+      ]
+     }
+    }
+   },
+   "status": "returned",
+   "returned_fields": null,
+   "exception": null,
+   "warnings": [],
+   "returned_type": "ndarray"
+  }
+ ],
+ "answer": {
+  "value": {
+   "gram_identity_deviation": 1.0547118733938987e-14,
+   "in_span_reconstruction_deviation": 1.9539925233402755e-14,
+   "outside_span_reported_shift": 0.31176914536240785,
+   "num_basis": 8
+  },
+  "unit": "dimensionless coefficients"
+ },
+ "independent_check": {
+  "method": "Gram matrix recomputed from the returned quadrature and basis values, and an in-span expansion recovered",
+  "observed": {
+   "gram_identity_deviation": 1.0547118733938987e-14,
+   "in_span_reconstruction_deviation": 1.9539925233402755e-14,
+   "outside_span_reported_shift": 0.31176914536240785,
+   "num_basis": 8
+  },
+  "verdict": "pass"
+ },
+ "criteria": [
+  {
+   "id": "fields",
+   "kind": "contract_fields",
+   "status": "fail",
+   "detail": {
+    "declared": [
+     "coefficients"
+    ],
+    "returned": "a ndarray value, not a mapping",
+    "note": "the contract declares named outputs; this return carries no field names, so the declared output set cannot be observed"
+   }
+  },
+  {
+   "id": "fields_basis",
+   "kind": "contract_fields",
+   "status": "fail",
+   "detail": {
+    "declared": [
+     "basis"
+    ],
+    "returned": "a ModalBasis value, not a mapping",
+    "note": "the contract declares named outputs; this return carries no field names, so the declared output set cannot be observed"
+   }
+  },
+  {
+   "id": "orthonormal",
+   "kind": "invariant",
+   "status": "pass",
+   "detail": {
+    "gram_identity_deviation": 1.0547118733938987e-14,
+    "in_span_reconstruction_deviation": 1.9539925233402755e-14,
+    "outside_span_reported_shift": 0.31176914536240785,
+    "num_basis": 8
+   }
+  },
+  {
+   "id": "exactspan",
+   "kind": "invariant",
+   "status": "pass",
+   "detail": {
+    "gram_identity_deviation": 1.0547118733938987e-14,
+    "in_span_reconstruction_deviation": 1.9539925233402755e-14,
+    "outside_span_reported_shift": 0.31176914536240785,
+    "num_basis": 8
+   }
+  },
+  {
+   "id": "budget",
+   "kind": "tolerance",
+   "status": "pass",
+   "detail": {
+    "gram_identity_deviation": 1.0547118733938987e-14,
+    "in_span_reconstruction_deviation": 1.9539925233402755e-14,
+    "outside_span_reported_shift": 0.31176914536240785,
+    "num_basis": 8,
+    "declared_tolerance": {
+     "rel": 1e-12,
+     "abs": 0.0
+    }
+   }
+  },
+  {
+   "id": "readback",
+   "kind": "readback",
+   "status": "pass",
+   "detail": {
+    "reopened": "numerics-basis-projection.json",
+    "problems": [],
+    "stored_call_count": 2
+   }
+  }
+ ],
+ "package_sufficient": true,
+ "sufficient_reason": "the basis object exposes quadrature/evaluate/expand/project, so both criteria are checkable without private code",
+ "gaps": [
+  {
+   "level": "process",
+   "text": "task declares min_calls=4 but only 2 public call(s) were made"
+  }
+ ],
+ "bindings": {
+  "scirel.numerics.orthonormal-modal-basis": {
+   "symbol": "modal_basis",
+   "args": {
+    "kind": "serendipity",
+    "ndim": 2,
+    "order": 2
+   },
+   "example_error": null
+  },
+  "scirel.numerics.modal-projection": {
+   "symbol": "modal_projection",
+   "args": {
+    "kind": "tensor",
+    "ndim": 2,
+    "order": 2,
+    "values": {
+     "dtype": "float64",
+     "shape": [
+      9
+     ],
+     "values": [
+      -0.011474508437578856,
+      -0.18594235253127378,
+      -0.08229490168751558,
+      -0.038032155906305265,
+      0.12500000000000022,
+      -1.458852549156242,
+      -0.11770509831248394,
+      -2.317172942406179,
+      -0.18852549156242066
+     ]
+    }
+   },
+   "example_error": null
+  }
+ }
+}

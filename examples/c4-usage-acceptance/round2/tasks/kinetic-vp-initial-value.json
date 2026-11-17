@@ -1,0 +1,778 @@
+{
+ "task_id": "kinetic-vp-initial-value",
+ "kind": "nominal",
+ "domain": "kinetic",
+ "subdomain": "Vlasov-Poisson initial value path",
+ "question": "Initialise a declared Vlasov-Poisson state, advance it with the declared stepper, and report the damping quantity the Landau entry exposes together with the conserved field energy across the steps taken.",
+ "assets_declared": [
+  "scirel.kinetic.vp-init",
+  "scirel.kinetic.vp-evolve",
+  "scirel.kinetic.vp-landau",
+  "scirel.kinetic.vp-rk4-step"
+ ],
+ "min_calls": 4,
+ "package": {
+  "python": "3.14.7",
+  "numpy": "2.5.4",
+  "scipy": "1.18.1",
+  "mpmath": "1.4.1",
+  "wheel_sha256": "4fc9757a7b843cc3bce2dc96fd2280b27299cff93fbcf5b64a2321b58234f5d7",
+  "snapshot_sha256": "cf0269b61ba19d8b2e5e008a6a4a4d80f2cd701f78c34f2fcb3b16eed9a2593c",
+  "source_revision": "4b5b4aaa38650d8a902e4265f226175d166a426b",
+  "asset_count": 249,
+  "runtime": {
+   "dependencies_bundled": false,
+   "package_version": "0.0.0",
+   "requires_dist": [
+    "numpy==2.5.4",
+    "scipy==1.18.1",
+    "mpmath==1.4.1"
+   ],
+   "requires_python": ">=3.12",
+   "wheel": "scirel-0.0.0-py3-none-any.whl",
+   "wheel_sha256": "4fc9757a7b843cc3bce2dc96fd2280b27299cff93fbcf5b64a2321b58234f5d7"
+  }
+ },
+ "assets_used": [
+  "scirel.kinetic.vp-evolve",
+  "scirel.kinetic.vp-init",
+  "scirel.kinetic.vp-landau"
+ ],
+ "calls": [
+  {
+   "seq": 1,
+   "label": "declared initial state (nv=32, nt=5)",
+   "asset": "scirel.kinetic.vp-init",
+   "entrypoint": "scirel.kinetic.vlasov_poisson:vp_init",
+   "arguments": {
+    "args": [],
+    "kwargs": {
+     "Fn": 2,
+     "kappa": 1.0,
+     "nv": 32,
+     "dt": 0.01,
+     "nt": 5,
+     "k": 0.15,
+     "vmax": 20.0,
+     "df_initial": null,
+     "df0dv": null
+    }
+   },
+   "status": "returned",
+   "returned_fields": [
+    "Fn",
+    "TR",
+    "dE",
+    "dEt",
+    "df",
+    "df0dv",
+    "dt",
+    "dv",
+    "k",
+    "kappa",
+    "nt",
+    "nv",
+    "tt",
+    "vmax",
+    "vmin",
+    "vv",
+    "wi",
+    "wr"
+   ],
+   "exception": null,
+   "warnings": [],
+   "returned_type": "dict"
+  },
+  {
+   "seq": 2,
+   "label": "evolve the reported state",
+   "asset": "scirel.kinetic.vp-evolve",
+   "entrypoint": "scirel.kinetic.vlasov_poisson:vp_evolve",
+   "arguments": {
+    "args": [],
+    "kwargs": {
+     "state": {
+      "Fn": 2,
+      "kappa": 1.0,
+      "nv": 32,
+      "dt": 0.01,
+      "nt": 5,
+      "k": 0.15,
+      "vmax": 20.0,
+      "vmin": -20.0,
+      "dv": 1.25,
+      "TR": 33.510321638291124,
+      "vv": {
+       "dtype": "float64",
+       "shape": [
+        33
+       ],
+       "values": [
+        -20.0,
+        -18.75,
+        -17.5,
+        -16.25,
+        -15.0,
+        -13.75,
+        -12.5,
+        -11.25,
+        -10.0,
+        -8.75,
+        -7.5,
+        -6.25,
+        -5.0,
+        -3.75,
+        -2.5,
+        -1.25,
+        0.0,
+        1.25,
+        2.5,
+        3.75,
+        5.0,
+        6.25,
+        7.5,
+        8.75,
+        10.0,
+        11.25,
+        12.5,
+        13.75,
+        15.0,
+        16.25,
+        17.5,
+        18.75,
+        20.0
+       ]
+      },
+      "df": {
+       "dtype": "complex128",
+       "shape": [
+        33
+       ],
+       "real": [
+        1.9151695967140057e-175,
+        2.0813552168033217e-154,
+        9.938364413483684e-135,
+        2.0850351097450663e-116,
+        1.9219477278238493e-99,
+        7.783940636500697e-84,
+        1.3851193699226017e-69,
+        1.0829405954551967e-56,
+        3.720075976020836e-45,
+        5.614728092387935e-35,
+        3.723363121750511e-26,
+        1.0848552640429378e-18,
+        1.3887943864964022e-12,
+        7.811489408304492e-08,
+        0.00019304541362277094,
+        0.02096113871510978,
+        0.1,
+        0.02096113871510978,
+        0.00019304541362277094,
+        7.811489408304492e-08,
+        1.3887943864964022e-12,
+        1.0848552640429378e-18,
+        3.723363121750511e-26,
+        5.614728092387935e-35,
+        3.720075976020836e-45,
+        1.0829405954551967e-56,
+        1.3851193699226017e-69,
+        7.783940636500697e-84,
+        1.9219477278238493e-99,
+        2.0850351097450663e-116,
+        9.938364413483684e-135,
+        2.0813552168033217e-154,
+        1.9151695967140057e-175
+       ],
+       "imag": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+       ]
+      },
+      "df0dv": {
+       "dtype": "float64",
+       "shape": [
+        33
+       ],
+       "values": [
+        0.00011142252866972424,
+        0.00013504048861838675,
+        0.00016581621555111537,
+        0.00020667176626735533,
+        0.00026208047395362975,
+        0.00033911492704721005,
+        0.00044938409397667805,
+        0.0006128003789265214,
+        0.0008653559363293981,
+        0.001276358232049713,
+        0.001990052458856356,
+        0.003337216362950845,
+        0.0061750090271406426,
+        0.013085794841872271,
+        0.03306946983129865,
+        0.08867381384126619,
+        -0.0,
+        -0.08867381384126619,
+        -0.03306946983129865,
+        -0.013085794841872271,
+        -0.0061750090271406426,
+        -0.003337216362950845,
+        -0.001990052458856356,
+        -0.001276358232049713,
+        -0.0008653559363293981,
+        -0.0006128003789265214,
+        -0.00044938409397667805,
+        -0.00033911492704721005,
+        -0.00026208047395362975,
+        -0.00020667176626735533,
+        -0.00016581621555111537,
+        -0.00013504048861838675,
+        -0.00011142252866972424
+       ]
+      },
+      "dE": {
+       "real": 0.0,
+       "imag": 1.1859043707502572
+      },
+      "dEt": {
+       "dtype": "complex128",
+       "shape": [
+        6
+       ],
+       "real": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+       ],
+       "imag": [
+        1.1859043707502572,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+       ]
+      },
+      "tt": {
+       "dtype": "float64",
+       "shape": [
+        6
+       ],
+       "values": [
+        0.0,
+        0.01,
+        0.02,
+        0.03,
+        0.04,
+        0.05
+       ]
+      },
+      "wr": 1.0,
+      "wi": -0.21213203435596426
+     }
+    }
+   },
+   "status": "returned",
+   "returned_fields": [
+    "Fn",
+    "TR",
+    "dE",
+    "dEt",
+    "df",
+    "df0dv",
+    "dt",
+    "dv",
+    "k",
+    "kappa",
+    "nt",
+    "nv",
+    "tt",
+    "vmax",
+    "vmin",
+    "vv",
+    "wi",
+    "wr"
+   ],
+   "exception": null,
+   "warnings": [],
+   "returned_type": "dict"
+  },
+  {
+   "seq": 3,
+   "label": "declared Landau solve",
+   "asset": "scirel.kinetic.vp-landau",
+   "entrypoint": "scirel.kinetic.vlasov_poisson:solve_vlasov_poisson",
+   "arguments": {
+    "args": [],
+    "kwargs": {
+     "Fn": 2,
+     "kappa": 1.0,
+     "nv": 32,
+     "dt": 0.01,
+     "nt": 5,
+     "k": 0.15,
+     "vmax": 20.0
+    }
+   },
+   "status": "returned",
+   "returned_fields": [
+    "diagnostic",
+    "diagnostic_status",
+    "envelope",
+    "state"
+   ],
+   "exception": null,
+   "warnings": [],
+   "returned_type": "dict"
+  },
+  {
+   "seq": 4,
+   "label": "nt=1 initial state",
+   "asset": "scirel.kinetic.vp-init",
+   "entrypoint": "scirel.kinetic.vlasov_poisson:vp_init",
+   "arguments": {
+    "args": [],
+    "kwargs": {
+     "Fn": 2,
+     "kappa": 1.0,
+     "nv": 32,
+     "dt": 0.01,
+     "nt": 1,
+     "k": 0.15,
+     "vmax": 20.0,
+     "df_initial": null,
+     "df0dv": null
+    }
+   },
+   "status": "returned",
+   "returned_fields": [
+    "Fn",
+    "TR",
+    "dE",
+    "dEt",
+    "df",
+    "df0dv",
+    "dt",
+    "dv",
+    "k",
+    "kappa",
+    "nt",
+    "nv",
+    "tt",
+    "vmax",
+    "vmin",
+    "vv",
+    "wi",
+    "wr"
+   ],
+   "exception": null,
+   "warnings": [],
+   "returned_type": "dict"
+  },
+  {
+   "seq": 5,
+   "label": "exactly one RK4 step through evolve",
+   "asset": "scirel.kinetic.vp-evolve",
+   "entrypoint": "scirel.kinetic.vlasov_poisson:vp_evolve",
+   "arguments": {
+    "args": [],
+    "kwargs": {
+     "state": {
+      "Fn": 2,
+      "kappa": 1.0,
+      "nv": 32,
+      "dt": 0.01,
+      "nt": 1,
+      "k": 0.15,
+      "vmax": 20.0,
+      "vmin": -20.0,
+      "dv": 1.25,
+      "TR": 33.510321638291124,
+      "vv": {
+       "dtype": "float64",
+       "shape": [
+        33
+       ],
+       "values": [
+        -20.0,
+        -18.75,
+        -17.5,
+        -16.25,
+        -15.0,
+        -13.75,
+        -12.5,
+        -11.25,
+        -10.0,
+        -8.75,
+        -7.5,
+        -6.25,
+        -5.0,
+        -3.75,
+        -2.5,
+        -1.25,
+        0.0,
+        1.25,
+        2.5,
+        3.75,
+        5.0,
+        6.25,
+        7.5,
+        8.75,
+        10.0,
+        11.25,
+        12.5,
+        13.75,
+        15.0,
+        16.25,
+        17.5,
+        18.75,
+        20.0
+       ]
+      },
+      "df": {
+       "dtype": "complex128",
+       "shape": [
+        33
+       ],
+       "real": [
+        1.9151695967140057e-175,
+        2.0813552168033217e-154,
+        9.938364413483684e-135,
+        2.0850351097450663e-116,
+        1.9219477278238493e-99,
+        7.783940636500697e-84,
+        1.3851193699226017e-69,
+        1.0829405954551967e-56,
+        3.720075976020836e-45,
+        5.614728092387935e-35,
+        3.723363121750511e-26,
+        1.0848552640429378e-18,
+        1.3887943864964022e-12,
+        7.811489408304492e-08,
+        0.00019304541362277094,
+        0.02096113871510978,
+        0.1,
+        0.02096113871510978,
+        0.00019304541362277094,
+        7.811489408304492e-08,
+        1.3887943864964022e-12,
+        1.0848552640429378e-18,
+        3.723363121750511e-26,
+        5.614728092387935e-35,
+        3.720075976020836e-45,
+        1.0829405954551967e-56,
+        1.3851193699226017e-69,
+        7.783940636500697e-84,
+        1.9219477278238493e-99,
+        2.0850351097450663e-116,
+        9.938364413483684e-135,
+        2.0813552168033217e-154,
+        1.9151695967140057e-175
+       ],
+       "imag": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+       ]
+      },
+      "df0dv": {
+       "dtype": "float64",
+       "shape": [
+        33
+       ],
+       "values": [
+        0.00011142252866972424,
+        0.00013504048861838675,
+        0.00016581621555111537,
+        0.00020667176626735533,
+        0.00026208047395362975,
+        0.00033911492704721005,
+        0.00044938409397667805,
+        0.0006128003789265214,
+        0.0008653559363293981,
+        0.001276358232049713,
+        0.001990052458856356,
+        0.003337216362950845,
+        0.0061750090271406426,
+        0.013085794841872271,
+        0.03306946983129865,
+        0.08867381384126619,
+        -0.0,
+        -0.08867381384126619,
+        -0.03306946983129865,
+        -0.013085794841872271,
+        -0.0061750090271406426,
+        -0.003337216362950845,
+        -0.001990052458856356,
+        -0.001276358232049713,
+        -0.0008653559363293981,
+        -0.0006128003789265214,
+        -0.00044938409397667805,
+        -0.00033911492704721005,
+        -0.00026208047395362975,
+        -0.00020667176626735533,
+        -0.00016581621555111537,
+        -0.00013504048861838675,
+        -0.00011142252866972424
+       ]
+      },
+      "dE": {
+       "real": 0.0,
+       "imag": 1.1859043707502572
+      },
+      "dEt": {
+       "dtype": "complex128",
+       "shape": [
+        2
+       ],
+       "real": [
+        0.0,
+        0.0
+       ],
+       "imag": [
+        1.1859043707502572,
+        0.0
+       ]
+      },
+      "tt": {
+       "dtype": "float64",
+       "shape": [
+        2
+       ],
+       "values": [
+        0.0,
+        0.01
+       ]
+      },
+      "wr": 1.0,
+      "wi": -0.21213203435596426
+     }
+    }
+   },
+   "status": "returned",
+   "returned_fields": [
+    "Fn",
+    "TR",
+    "dE",
+    "dEt",
+    "df",
+    "df0dv",
+    "dt",
+    "dv",
+    "k",
+    "kappa",
+    "nt",
+    "nv",
+    "tt",
+    "vmax",
+    "vmin",
+    "vv",
+    "wi",
+    "wr"
+   ],
+   "exception": null,
+   "warnings": [],
+   "returned_type": "dict"
+  }
+ ],
+ "answer": {
+  "value": {
+   "one_step": {
+    "df_max_abs_diff": 0.0,
+    "dE_max_abs_diff": 0.0,
+    "evolve_step_count": 2
+   },
+   "diagnostics": {
+    "declared_nt": 1,
+    "returned_nt": 5,
+    "declared_dt": 0.01,
+    "returned_dt": 0.01
+   }
+  },
+  "unit": "dimensionless state fields; dt in the declared time unit"
+ },
+ "independent_check": {
+  "method": "one evolve step at nt=1 is compared with one direct call of the published RK4 step entry on the same declared state",
+  "observed": {
+   "df_max_abs_diff": 0.0,
+   "dE_max_abs_diff": 0.0,
+   "evolve_step_count": 2
+  },
+  "verdict": "pass"
+ },
+ "criteria": [
+  {
+   "id": "fields",
+   "kind": "contract_fields",
+   "status": "fail",
+   "detail": {
+    "declared": [
+     "result"
+    ],
+    "returned": [
+     "Fn",
+     "TR",
+     "dE",
+     "dEt",
+     "df",
+     "df0dv",
+     "dt",
+     "dv",
+     "k",
+     "kappa",
+     "nt",
+     "nv",
+     "tt",
+     "vmax",
+     "vmin",
+     "vv",
+     "wi",
+     "wr"
+    ]
+   }
+  },
+  {
+   "id": "fields_landau",
+   "kind": "contract_fields",
+   "status": "fail",
+   "detail": {
+    "declared": [
+     "result"
+    ],
+    "returned": [
+     "diagnostic",
+     "diagnostic_status",
+     "envelope",
+     "state"
+    ]
+   }
+  },
+  {
+   "id": "one_step",
+   "kind": "invariant",
+   "status": "pass",
+   "detail": {
+    "df_max_abs_diff": 0.0,
+    "dE_max_abs_diff": 0.0,
+    "evolve_step_count": 2
+   }
+  },
+  {
+   "id": "declared_diagnostics",
+   "kind": "invariant",
+   "status": "fail",
+   "detail": {
+    "declared_nt": 1,
+    "returned_nt": 5,
+    "declared_dt": 0.01,
+    "returned_dt": 0.01
+   }
+  },
+  {
+   "id": "readback",
+   "kind": "readback",
+   "status": "pass",
+   "detail": {
+    "reopened": "kinetic-vp-initial-value.json",
+    "problems": [],
+    "stored_call_count": 5
+   }
+  }
+ ],
+ "package_sufficient": false,
+ "sufficient_reason": "the published step entry is callable on the returned state, so the one-step path can be checked rather than taken on trust",
+ "gaps": [],
+ "bindings": {
+  "scirel.kinetic.vp-init": {
+   "symbol": "vp_init",
+   "args": {
+    "Fn": 2,
+    "kappa": 1.0,
+    "nv": 32,
+    "dt": 0.01,
+    "nt": 5,
+    "k": 0.15,
+    "vmax": 20.0,
+    "df_initial": null,
+    "df0dv": null
+   },
+   "example_error": null
+  },
+  "scirel.kinetic.vp-landau": {
+   "symbol": "solve_vlasov_poisson",
+   "args": {
+    "Fn": 2,
+    "kappa": 1.0,
+    "nv": 32,
+    "dt": 0.01,
+    "nt": 5,
+    "k": 0.15,
+    "vmax": 20.0
+   },
+   "example_error": null
+  }
+ }
+}

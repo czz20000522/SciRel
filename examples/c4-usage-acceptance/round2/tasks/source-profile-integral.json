@@ -1,0 +1,334 @@
+{
+ "task_id": "source-profile-integral",
+ "kind": "nominal",
+ "domain": "source",
+ "subdomain": "Gaussian and exponential source profiles",
+ "question": "Generate declared Gaussian and exponential source profiles on a declared grid with declared volume weights and report the discrete integral of each against its declared total.",
+ "assets_declared": [
+  "scirel.source.gaussian",
+  "scirel.source.exponential"
+ ],
+ "min_calls": 2,
+ "package": {
+  "python": "3.14.7",
+  "numpy": "2.5.4",
+  "scipy": "1.18.1",
+  "mpmath": "1.4.1",
+  "wheel_sha256": "4fc9757a7b843cc3bce2dc96fd2280b27299cff93fbcf5b64a2321b58234f5d7",
+  "snapshot_sha256": "cf0269b61ba19d8b2e5e008a6a4a4d80f2cd701f78c34f2fcb3b16eed9a2593c",
+  "source_revision": "4b5b4aaa38650d8a902e4265f226175d166a426b",
+  "asset_count": 249,
+  "runtime": {
+   "dependencies_bundled": false,
+   "package_version": "0.0.0",
+   "requires_dist": [
+    "numpy==2.5.4",
+    "scipy==1.18.1",
+    "mpmath==1.4.1"
+   ],
+   "requires_python": ">=3.12",
+   "wheel": "scirel-0.0.0-py3-none-any.whl",
+   "wheel_sha256": "4fc9757a7b843cc3bce2dc96fd2280b27299cff93fbcf5b64a2321b58234f5d7"
+  }
+ },
+ "assets_used": [
+  "scirel.source.exponential",
+  "scirel.source.gaussian"
+ ],
+ "calls": [
+  {
+   "seq": 1,
+   "label": "declared scirel.source.gaussian",
+   "asset": "scirel.source.gaussian",
+   "entrypoint": "scirel.source.gaussian:gaussian_profile",
+   "arguments": {
+    "args": [],
+    "kwargs": {
+     "rho_norm": {
+      "dtype": "float64",
+      "shape": [
+       2
+      ],
+      "values": [
+       0.2,
+       0.6
+      ]
+     },
+     "vpr": {
+      "dtype": "float64",
+      "shape": [
+       2
+      ],
+      "values": [
+       2.0,
+       3.0
+      ]
+     },
+     "drho_norm": {
+      "dtype": "float64",
+      "shape": [
+       2
+      ],
+      "values": [
+       0.4,
+       0.6
+      ]
+     },
+     "center": 0.5,
+     "width": 0.2,
+     "total": 4.0
+    }
+   },
+   "status": "returned",
+   "returned_fields": null,
+   "exception": null,
+   "warnings": [],
+   "returned_type": "ndarray"
+  },
+  {
+   "seq": 2,
+   "label": "declared scirel.source.exponential",
+   "asset": "scirel.source.exponential",
+   "entrypoint": "scirel.source.exponential:exponential_profile",
+   "arguments": {
+    "args": [],
+    "kwargs": {
+     "rho_norm": {
+      "dtype": "float64",
+      "shape": [
+       2
+      ],
+      "values": [
+       0.2,
+       0.6
+      ]
+     },
+     "vpr": {
+      "dtype": "float64",
+      "shape": [
+       2
+      ],
+      "values": [
+       2.0,
+       3.0
+      ]
+     },
+     "drho_norm": {
+      "dtype": "float64",
+      "shape": [
+       2
+      ],
+      "values": [
+       0.4,
+       0.6
+      ]
+     },
+     "decay_start": 0.8,
+     "width": 0.2,
+     "total": 4.0
+    }
+   },
+   "status": "returned",
+   "returned_fields": null,
+   "exception": null,
+   "warnings": [],
+   "returned_type": "ndarray"
+  }
+ ],
+ "answer": {
+  "value": {
+   "scirel.source.gaussian": {
+    "declared_total": 4.0,
+    "recomputed_integral": 4.0,
+    "relative_deviation": 0.0,
+    "profile_vs_normalized_shape_max_abs_diff": null
+   },
+   "scirel.source.exponential": {
+    "declared_total": 4.0,
+    "recomputed_integral": 4.0,
+    "relative_deviation": 0.0,
+    "profile_vs_normalized_shape_max_abs_diff": null
+   }
+  },
+  "unit": "profile density per unit rho, integral in 1/rho"
+ },
+ "independent_check": {
+  "method": "the declared discrete integral of each profile is recomputed and compared with the declared total",
+  "observed": {
+   "scirel.source.gaussian": {
+    "declared_total": 4.0,
+    "recomputed_integral": 4.0,
+    "relative_deviation": 0.0,
+    "profile_vs_normalized_shape_max_abs_diff": null
+   },
+   "scirel.source.exponential": {
+    "declared_total": 4.0,
+    "recomputed_integral": 4.0,
+    "relative_deviation": 0.0,
+    "profile_vs_normalized_shape_max_abs_diff": null
+   }
+  },
+  "verdict": "pass"
+ },
+ "criteria": [
+  {
+   "id": "fields@scirel.source.gaussian",
+   "kind": "contract_fields",
+   "status": "fail",
+   "detail": {
+    "declared": [
+     "profile"
+    ],
+    "returned": "a ndarray value, not a mapping",
+    "note": "the contract declares named outputs; this return carries no field names, so the declared output set cannot be observed"
+   }
+  },
+  {
+   "id": "fields@scirel.source.exponential",
+   "kind": "contract_fields",
+   "status": "fail",
+   "detail": {
+    "declared": [
+     "profile"
+    ],
+    "returned": "a ndarray value, not a mapping",
+    "note": "the contract declares named outputs; this return carries no field names, so the declared output set cannot be observed"
+   }
+  },
+  {
+   "id": "declared_normalization",
+   "kind": "invariant",
+   "status": "pass",
+   "detail": {
+    "scirel.source.gaussian": {
+     "declared_total": 4.0,
+     "recomputed_integral": 4.0,
+     "relative_deviation": 0.0,
+     "profile_vs_normalized_shape_max_abs_diff": null
+    },
+    "scirel.source.exponential": {
+     "declared_total": 4.0,
+     "recomputed_integral": 4.0,
+     "relative_deviation": 0.0,
+     "profile_vs_normalized_shape_max_abs_diff": null
+    }
+   }
+  },
+  {
+   "id": "budget",
+   "kind": "tolerance",
+   "status": "pass",
+   "detail": {
+    "scirel.source.gaussian": {
+     "declared_total": 4.0,
+     "recomputed_integral": 4.0,
+     "relative_deviation": 0.0,
+     "profile_vs_normalized_shape_max_abs_diff": null
+    },
+    "scirel.source.exponential": {
+     "declared_total": 4.0,
+     "recomputed_integral": 4.0,
+     "relative_deviation": 0.0,
+     "profile_vs_normalized_shape_max_abs_diff": null
+    },
+    "declared_tolerance": {
+     "rel": 1e-12,
+     "abs": 0.0
+    }
+   }
+  },
+  {
+   "id": "readback",
+   "kind": "readback",
+   "status": "pass",
+   "detail": {
+    "reopened": "source-profile-integral.json",
+    "problems": [],
+    "stored_call_count": 2
+   }
+  }
+ ],
+ "package_sufficient": true,
+ "sufficient_reason": "grid, width and total are arguments of the profile entries",
+ "gaps": [],
+ "bindings": {
+  "scirel.source.gaussian": {
+   "symbol": "gaussian_profile",
+   "args": {
+    "rho_norm": {
+     "dtype": "float64",
+     "shape": [
+      2
+     ],
+     "values": [
+      0.2,
+      0.6
+     ]
+    },
+    "vpr": {
+     "dtype": "float64",
+     "shape": [
+      2
+     ],
+     "values": [
+      2.0,
+      3.0
+     ]
+    },
+    "drho_norm": {
+     "dtype": "float64",
+     "shape": [
+      2
+     ],
+     "values": [
+      0.4,
+      0.6
+     ]
+    },
+    "center": 0.5,
+    "width": 0.2,
+    "total": 4.0
+   },
+   "example_error": null
+  },
+  "scirel.source.exponential": {
+   "symbol": "exponential_profile",
+   "args": {
+    "rho_norm": {
+     "dtype": "float64",
+     "shape": [
+      2
+     ],
+     "values": [
+      0.2,
+      0.6
+     ]
+    },
+    "vpr": {
+     "dtype": "float64",
+     "shape": [
+      2
+     ],
+     "values": [
+      2.0,
+      3.0
+     ]
+    },
+    "drho_norm": {
+     "dtype": "float64",
+     "shape": [
+      2
+     ],
+     "values": [
+      0.4,
+      0.6
+     ]
+    },
+    "decay_start": 0.8,
+    "width": 0.2,
+    "total": 4.0
+   },
+   "example_error": null
+  }
+ }
+}

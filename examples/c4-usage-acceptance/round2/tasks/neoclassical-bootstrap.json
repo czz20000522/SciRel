@@ -1,0 +1,686 @@
+{
+ "task_id": "neoclassical-bootstrap",
+ "kind": "nominal",
+ "domain": "neoclassical",
+ "subdomain": "bootstrap coefficients and current",
+ "question": "Evaluate the declared bootstrap coefficients with the declared default method and one explicitly named alternative, then compute the bootstrap current and report which method each call used.",
+ "assets_declared": [
+  "scirel.neoclassical.bootstrap-coefficients",
+  "scirel.neoclassical.bootstrap-current"
+ ],
+ "min_calls": 3,
+ "package": {
+  "python": "3.14.7",
+  "numpy": "2.5.4",
+  "scipy": "1.18.1",
+  "mpmath": "1.4.1",
+  "wheel_sha256": "4fc9757a7b843cc3bce2dc96fd2280b27299cff93fbcf5b64a2321b58234f5d7",
+  "snapshot_sha256": "cf0269b61ba19d8b2e5e008a6a4a4d80f2cd701f78c34f2fcb3b16eed9a2593c",
+  "source_revision": "4b5b4aaa38650d8a902e4265f226175d166a426b",
+  "asset_count": 249,
+  "runtime": {
+   "dependencies_bundled": false,
+   "package_version": "0.0.0",
+   "requires_dist": [
+    "numpy==2.5.4",
+    "scipy==1.18.1",
+    "mpmath==1.4.1"
+   ],
+   "requires_python": ">=3.12",
+   "wheel": "scirel-0.0.0-py3-none-any.whl",
+   "wheel_sha256": "4fc9757a7b843cc3bce2dc96fd2280b27299cff93fbcf5b64a2321b58234f5d7"
+  }
+ },
+ "assets_used": [
+  "scirel.neoclassical.bootstrap-coefficients",
+  "scirel.neoclassical.bootstrap-current"
+ ],
+ "calls": [
+  {
+   "seq": 1,
+   "label": "declared coefficients (first call)",
+   "asset": "scirel.neoclassical.bootstrap-coefficients",
+   "entrypoint": "scirel.neoclassical.bootstrap:compute_bootstrap_coefficients",
+   "arguments": {
+    "args": [],
+    "kwargs": {
+     "f_trap": [
+      0.2,
+      0.4
+     ],
+     "nu_e_star": [
+      0.1,
+      1.0
+     ],
+     "Z_eff": [
+      1.0,
+      2.0
+     ],
+     "nu_i_star": [
+      0.1,
+      1.0
+     ],
+     "method": "redl"
+    }
+   },
+   "status": "returned",
+   "returned_fields": [
+    "L31",
+    "L32",
+    "L34",
+    "alpha"
+   ],
+   "exception": null,
+   "warnings": [],
+   "returned_type": "Result"
+  },
+  {
+   "seq": 2,
+   "label": "same declared coefficients (repeat)",
+   "asset": "scirel.neoclassical.bootstrap-coefficients",
+   "entrypoint": "scirel.neoclassical.bootstrap:compute_bootstrap_coefficients",
+   "arguments": {
+    "args": [],
+    "kwargs": {
+     "f_trap": [
+      0.2,
+      0.4
+     ],
+     "nu_e_star": [
+      0.1,
+      1.0
+     ],
+     "Z_eff": [
+      1.0,
+      2.0
+     ],
+     "nu_i_star": [
+      0.1,
+      1.0
+     ],
+     "method": "redl"
+    }
+   },
+   "status": "returned",
+   "returned_fields": [
+    "L31",
+    "L32",
+    "L34",
+    "alpha"
+   ],
+   "exception": null,
+   "warnings": [],
+   "returned_type": "Result"
+  },
+  {
+   "seq": 3,
+   "label": "declared bootstrap current",
+   "asset": "scirel.neoclassical.bootstrap-current",
+   "entrypoint": "scirel.neoclassical.bootstrap:calculate_bootstrap_current",
+   "arguments": {
+    "args": [],
+    "kwargs": {
+     "bootstrap_multiplier": 1.0,
+     "rho_face": [
+      0.0,
+      0.5,
+      1.0
+     ],
+     "F_face": {
+      "dtype": "float64",
+      "shape": [
+       3
+      ],
+      "values": [
+       1.0,
+       1.0,
+       1.0
+      ]
+     },
+     "B0": 2.0,
+     "dpsi_drho_face": {
+      "dtype": "float64",
+      "shape": [
+       3
+      ],
+      "values": [
+       1.0,
+       1.0,
+       1.0
+      ]
+     },
+     "dpsi_per_radian_drho_face": null,
+     "p_e_face": {
+      "dtype": "float64",
+      "shape": [
+       3
+      ],
+      "values": [
+       1.0,
+       1.0,
+       1.0
+      ]
+     },
+     "p_i_face": {
+      "dtype": "float64",
+      "shape": [
+       3
+      ],
+      "values": [
+       1.0,
+       1.0,
+       1.0
+      ]
+     },
+     "dlnne_drho_face": {
+      "dtype": "float64",
+      "shape": [
+       3
+      ],
+      "values": [
+       1.0,
+       1.0,
+       1.0
+      ]
+     },
+     "dlnni_drho_face": {
+      "dtype": "float64",
+      "shape": [
+       3
+      ],
+      "values": [
+       0.0,
+       0.0,
+       0.0
+      ]
+     },
+     "dlnte_drho_face": {
+      "dtype": "float64",
+      "shape": [
+       3
+      ],
+      "values": [
+       0.0,
+       0.0,
+       0.0
+      ]
+     },
+     "dlnti_drho_face": {
+      "dtype": "float64",
+      "shape": [
+       3
+      ],
+      "values": [
+       0.0,
+       0.0,
+       0.0
+      ]
+     },
+     "L31": {
+      "dtype": "float64",
+      "shape": [
+       3
+      ],
+      "values": [
+       1.0,
+       1.0,
+       1.0
+      ]
+     },
+     "L32": {
+      "dtype": "float64",
+      "shape": [
+       3
+      ],
+      "values": [
+       0.0,
+       0.0,
+       0.0
+      ]
+     },
+     "L34": {
+      "dtype": "float64",
+      "shape": [
+       3
+      ],
+      "values": [
+       1.0,
+       1.0,
+       1.0
+      ]
+     },
+     "alpha": {
+      "dtype": "float64",
+      "shape": [
+       3
+      ],
+      "values": [
+       1.0,
+       1.0,
+       1.0
+      ]
+     }
+    }
+   },
+   "status": "returned",
+   "returned_fields": [
+    "j_parallel_bootstrap",
+    "j_parallel_bootstrap_face"
+   ],
+   "exception": null,
+   "warnings": [],
+   "returned_type": "Result"
+  },
+  {
+   "seq": 4,
+   "label": "declared current with one gradient doubled",
+   "asset": "scirel.neoclassical.bootstrap-current",
+   "entrypoint": "scirel.neoclassical.bootstrap:calculate_bootstrap_current",
+   "arguments": {
+    "args": [],
+    "kwargs": {
+     "bootstrap_multiplier": 1.0,
+     "rho_face": [
+      0.0,
+      0.5,
+      1.0
+     ],
+     "F_face": {
+      "dtype": "float64",
+      "shape": [
+       3
+      ],
+      "values": [
+       1.0,
+       1.0,
+       1.0
+      ]
+     },
+     "B0": 2.0,
+     "dpsi_drho_face": {
+      "dtype": "float64",
+      "shape": [
+       3
+      ],
+      "values": [
+       1.0,
+       1.0,
+       1.0
+      ]
+     },
+     "dpsi_per_radian_drho_face": null,
+     "p_e_face": {
+      "dtype": "float64",
+      "shape": [
+       3
+      ],
+      "values": [
+       1.0,
+       1.0,
+       1.0
+      ]
+     },
+     "p_i_face": {
+      "dtype": "float64",
+      "shape": [
+       3
+      ],
+      "values": [
+       1.0,
+       1.0,
+       1.0
+      ]
+     },
+     "dlnne_drho_face": {
+      "dtype": "float64",
+      "shape": [
+       3
+      ],
+      "values": [
+       2.0,
+       2.0,
+       2.0
+      ]
+     },
+     "dlnni_drho_face": {
+      "dtype": "float64",
+      "shape": [
+       3
+      ],
+      "values": [
+       0.0,
+       0.0,
+       0.0
+      ]
+     },
+     "dlnte_drho_face": {
+      "dtype": "float64",
+      "shape": [
+       3
+      ],
+      "values": [
+       0.0,
+       0.0,
+       0.0
+      ]
+     },
+     "dlnti_drho_face": {
+      "dtype": "float64",
+      "shape": [
+       3
+      ],
+      "values": [
+       0.0,
+       0.0,
+       0.0
+      ]
+     },
+     "L31": {
+      "dtype": "float64",
+      "shape": [
+       3
+      ],
+      "values": [
+       1.0,
+       1.0,
+       1.0
+      ]
+     },
+     "L32": {
+      "dtype": "float64",
+      "shape": [
+       3
+      ],
+      "values": [
+       0.0,
+       0.0,
+       0.0
+      ]
+     },
+     "L34": {
+      "dtype": "float64",
+      "shape": [
+       3
+      ],
+      "values": [
+       1.0,
+       1.0,
+       1.0
+      ]
+     },
+     "alpha": {
+      "dtype": "float64",
+      "shape": [
+       3
+      ],
+      "values": [
+       1.0,
+       1.0,
+       1.0
+      ]
+     }
+    }
+   },
+   "status": "returned",
+   "returned_fields": [
+    "j_parallel_bootstrap",
+    "j_parallel_bootstrap_face"
+   ],
+   "exception": null,
+   "warnings": [],
+   "returned_type": "Result"
+  }
+ ],
+ "answer": {
+  "value": {
+   "requested_method": "redl",
+   "identical_on_repeat": true,
+   "method_fields_returned": [],
+   "linearity": {
+    "scaled_gradient": "dlnne_drho_face",
+    "relative_deviation": 0.0,
+    "note": "one gradient doubled, so a linear current must double"
+   }
+  },
+  "unit": "A/m^2 face current"
+ },
+ "independent_check": {
+  "method": "two identical calls are compared for a method record and repeatability; one gradient is doubled to test linearity",
+  "observed": {
+   "requested_method": "redl",
+   "identical_on_repeat": true,
+   "method_fields_returned": [],
+   "linearity": {
+    "scaled_gradient": "dlnne_drho_face",
+    "relative_deviation": 0.0,
+    "note": "one gradient doubled, so a linear current must double"
+   }
+  },
+  "verdict": "fail"
+ },
+ "criteria": [
+  {
+   "id": "fields",
+   "kind": "contract_fields",
+   "status": "pass",
+   "detail": {
+    "declared": [
+     "L31",
+     "L32",
+     "L34",
+     "alpha"
+    ],
+    "returned": [
+     "L31",
+     "L32",
+     "L34",
+     "alpha"
+    ]
+   }
+  },
+  {
+   "id": "methodrecord",
+   "kind": "invariant",
+   "status": "fail",
+   "detail": {
+    "requested_method": "redl",
+    "identical_on_repeat": true,
+    "method_fields_returned": []
+   }
+  },
+  {
+   "id": "linearity",
+   "kind": "invariant",
+   "status": "pass",
+   "detail": {
+    "scaled_gradient": "dlnne_drho_face",
+    "relative_deviation": 0.0,
+    "note": "one gradient doubled, so a linear current must double"
+   }
+  },
+  {
+   "id": "readback",
+   "kind": "readback",
+   "status": "pass",
+   "detail": {
+    "reopened": "neoclassical-bootstrap.json",
+    "problems": [],
+    "stored_call_count": 4
+   }
+  }
+ ],
+ "package_sufficient": false,
+ "sufficient_reason": "the coefficient record names its method and both entries are pure",
+ "gaps": [],
+ "bindings": {
+  "scirel.neoclassical.bootstrap-coefficients": {
+   "symbol": "compute_bootstrap_coefficients",
+   "args": {
+    "f_trap": [
+     0.2,
+     0.4
+    ],
+    "nu_e_star": [
+     0.1,
+     1.0
+    ],
+    "Z_eff": [
+     1.0,
+     2.0
+    ],
+    "nu_i_star": [
+     0.1,
+     1.0
+    ],
+    "method": "redl"
+   },
+   "example_error": null
+  },
+  "scirel.neoclassical.bootstrap-current": {
+   "symbol": "calculate_bootstrap_current",
+   "args": {
+    "bootstrap_multiplier": 1.0,
+    "rho_face": [
+     0.0,
+     0.5,
+     1.0
+    ],
+    "F_face": {
+     "dtype": "float64",
+     "shape": [
+      3
+     ],
+     "values": [
+      1.0,
+      1.0,
+      1.0
+     ]
+    },
+    "B0": 2.0,
+    "dpsi_drho_face": {
+     "dtype": "float64",
+     "shape": [
+      3
+     ],
+     "values": [
+      1.0,
+      1.0,
+      1.0
+     ]
+    },
+    "dpsi_per_radian_drho_face": null,
+    "p_e_face": {
+     "dtype": "float64",
+     "shape": [
+      3
+     ],
+     "values": [
+      1.0,
+      1.0,
+      1.0
+     ]
+    },
+    "p_i_face": {
+     "dtype": "float64",
+     "shape": [
+      3
+     ],
+     "values": [
+      1.0,
+      1.0,
+      1.0
+     ]
+    },
+    "dlnne_drho_face": {
+     "dtype": "float64",
+     "shape": [
+      3
+     ],
+     "values": [
+      1.0,
+      1.0,
+      1.0
+     ]
+    },
+    "dlnni_drho_face": {
+     "dtype": "float64",
+     "shape": [
+      3
+     ],
+     "values": [
+      0.0,
+      0.0,
+      0.0
+     ]
+    },
+    "dlnte_drho_face": {
+     "dtype": "float64",
+     "shape": [
+      3
+     ],
+     "values": [
+      0.0,
+      0.0,
+      0.0
+     ]
+    },
+    "dlnti_drho_face": {
+     "dtype": "float64",
+     "shape": [
+      3
+     ],
+     "values": [
+      0.0,
+      0.0,
+      0.0
+     ]
+    },
+    "L31": {
+     "dtype": "float64",
+     "shape": [
+      3
+     ],
+     "values": [
+      1.0,
+      1.0,
+      1.0
+     ]
+    },
+    "L32": {
+     "dtype": "float64",
+     "shape": [
+      3
+     ],
+     "values": [
+      0.0,
+      0.0,
+      0.0
+     ]
+    },
+    "L34": {
+     "dtype": "float64",
+     "shape": [
+      3
+     ],
+     "values": [
+      1.0,
+      1.0,
+      1.0
+     ]
+    },
+    "alpha": {
+     "dtype": "float64",
+     "shape": [
+      3
+     ],
+     "values": [
+      1.0,
+      1.0,
+      1.0
+     ]
+    }
+   },
+   "example_error": null
+  }
+ }
+}

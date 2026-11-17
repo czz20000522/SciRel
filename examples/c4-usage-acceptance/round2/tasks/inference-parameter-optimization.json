@@ -1,0 +1,403 @@
+{
+ "task_id": "inference-parameter-optimization",
+ "kind": "nominal",
+ "domain": "inference",
+ "subdomain": "anisotropic parameter optimization and trial evaluation",
+ "question": "Draw a declared Latin-hypercube design, evaluate the anisotropic trial objective on it, and report the best trial together with the declared iteration budget that was actually used.",
+ "assets_declared": [
+  "scirel.inference.anisotropic-parameter-optimization",
+  "scirel.inference.anisotropic-trial-evaluation",
+  "scirel.inference.latin-hypercube-sampling"
+ ],
+ "min_calls": 3,
+ "package": {
+  "python": "3.14.7",
+  "numpy": "2.5.4",
+  "scipy": "1.18.1",
+  "mpmath": "1.4.1",
+  "wheel_sha256": "4fc9757a7b843cc3bce2dc96fd2280b27299cff93fbcf5b64a2321b58234f5d7",
+  "snapshot_sha256": "cf0269b61ba19d8b2e5e008a6a4a4d80f2cd701f78c34f2fcb3b16eed9a2593c",
+  "source_revision": "4b5b4aaa38650d8a902e4265f226175d166a426b",
+  "asset_count": 249,
+  "runtime": {
+   "dependencies_bundled": false,
+   "package_version": "0.0.0",
+   "requires_dist": [
+    "numpy==2.5.4",
+    "scipy==1.18.1",
+    "mpmath==1.4.1"
+   ],
+   "requires_python": ">=3.12",
+   "wheel": "scirel-0.0.0-py3-none-any.whl",
+   "wheel_sha256": "4fc9757a7b843cc3bce2dc96fd2280b27299cff93fbcf5b64a2321b58234f5d7"
+  }
+ },
+ "assets_used": [
+  "scirel.inference.anisotropic-parameter-optimization",
+  "scirel.inference.anisotropic-trial-evaluation",
+  "scirel.inference.latin-hypercube-sampling"
+ ],
+ "calls": [
+  {
+   "seq": 1,
+   "label": "declared parameter optimization",
+   "asset": "scirel.inference.anisotropic-parameter-optimization",
+   "entrypoint": "scirel.inference.anisotropic_parameter_optimization:optimize_anisotropic_parameters",
+   "arguments": {
+    "args": [],
+    "kwargs": {
+     "initial_params": {
+      "x": 0.0,
+      "fixed": 7.0
+     },
+     "bounds": {
+      "x": [
+       -5.0,
+       5.0
+      ]
+     },
+     "method": "least_squares",
+     "trial_evaluator": "<function trial at 0x109d73950>",
+     "fit_keys": [
+      "x"
+     ],
+     "lhs_sampler": null,
+     "n_initial_samples": null,
+     "seed": null,
+     "residual_size": null,
+     "failure_penalty": 1000000000000.0,
+     "max_evaluations": 200
+    }
+   },
+   "status": "returned",
+   "returned_fields": [
+    "best_parameters",
+    "best_valid_trial",
+    "chi2",
+    "converged",
+    "equilibrium",
+    "evaluation_log",
+    "failure_reason",
+    "forward_converged",
+    "identifiability",
+    "max_evaluations",
+    "optimizer_converged",
+    "optimizer_summary",
+    "residual_size",
+    "residual_vector",
+    "scientific_evaluations",
+    "valid_trial_count"
+   ],
+   "exception": null,
+   "warnings": [],
+   "returned_type": "Result"
+  },
+  {
+   "seq": 2,
+   "label": "declared trial evaluation",
+   "asset": "scirel.inference.anisotropic-trial-evaluation",
+   "entrypoint": "scirel.inference.anisotropic_trial_evaluation:evaluate_anisotropic_trial",
+   "arguments": {
+    "args": [],
+    "kwargs": {
+     "params": {
+      "p": 1.0
+     },
+     "observations": {
+      "flux_loops": {
+       "values": [
+        1.0,
+        2.0
+       ]
+      }
+     },
+     "solver_config": {
+      "r_grid": [
+       0.0
+      ],
+      "z_grid": [
+       0.0
+      ]
+     },
+     "equilibrium_solver": "<function <lambda> at 0x10c5bada0>",
+     "diagnostic_evaluator": "<function <lambda> at 0x10c5bae50>",
+     "residual_reducer": "<function reduce_observation_residuals at 0x109d73740>",
+     "residual_size": null,
+     "failure_penalty": 1000000000000.0
+    }
+   },
+   "status": "returned",
+   "returned_fields": [
+    "chi2",
+    "equilibrium",
+    "exception_type",
+    "failed_port",
+    "failure_reason",
+    "params",
+    "residuals",
+    "status",
+    "valid"
+   ],
+   "exception": null,
+   "warnings": [],
+   "returned_type": "Result"
+  },
+  {
+   "seq": 3,
+   "label": "declared design",
+   "asset": "scirel.inference.latin-hypercube-sampling",
+   "entrypoint": "scirel.inference.latin_hypercube_sampling:sample_latin_hypercube",
+   "arguments": {
+    "args": [],
+    "kwargs": {
+     "bounds": {
+      "a": [
+       0.0,
+       1.0
+      ],
+      "b": [
+       10.0,
+       20.0
+      ]
+     },
+     "n_samples": 5,
+     "seed": 4,
+     "fit_keys": null
+    }
+   },
+   "status": "returned",
+   "returned_fields": [
+    "initial_samples"
+   ],
+   "exception": null,
+   "warnings": [],
+   "returned_type": "Result"
+  },
+  {
+   "seq": 4,
+   "label": "same declared design call and seed",
+   "asset": "scirel.inference.latin-hypercube-sampling",
+   "entrypoint": "scirel.inference.latin_hypercube_sampling:sample_latin_hypercube",
+   "arguments": {
+    "args": [],
+    "kwargs": {
+     "bounds": {
+      "a": [
+       0.0,
+       1.0
+      ],
+      "b": [
+       10.0,
+       20.0
+      ]
+     },
+     "n_samples": 5,
+     "seed": 4,
+     "fit_keys": null
+    }
+   },
+   "status": "returned",
+   "returned_fields": [
+    "initial_samples"
+   ],
+   "exception": null,
+   "warnings": [],
+   "returned_type": "Result"
+  }
+ ],
+ "answer": {
+  "value": {
+   "log_entries": 15,
+   "best_parameters": {
+    "x": 2.999999999999987,
+    "fixed": 7.0
+   },
+   "reported_chi2": 1.6585800532271773e-28,
+   "logged_chi2_for_best": null,
+   "seed": {
+    "seed": 4,
+    "identical": true,
+    "samples": 5
+   }
+  },
+  "unit": "dimensionless chi2"
+ },
+ "independent_check": {
+  "method": "the reported chi2 is compared with the log entry for the reported best parameters, and the design is repeated under the same seed",
+  "observed": {
+   "log_entries": 15,
+   "best_parameters": {
+    "x": 2.999999999999987,
+    "fixed": 7.0
+   },
+   "reported_chi2": 1.6585800532271773e-28,
+   "logged_chi2_for_best": null,
+   "seed": {
+    "seed": 4,
+    "identical": true,
+    "samples": 5
+   }
+  },
+  "verdict": "fail"
+ },
+ "criteria": [
+  {
+   "id": "fields",
+   "kind": "contract_fields",
+   "status": "pass",
+   "detail": {
+    "declared": [
+     "best_parameters",
+     "best_valid_trial",
+     "chi2",
+     "converged",
+     "equilibrium",
+     "evaluation_log",
+     "failure_reason",
+     "forward_converged",
+     "identifiability",
+     "max_evaluations",
+     "optimizer_converged",
+     "optimizer_summary",
+     "residual_size",
+     "residual_vector",
+     "scientific_evaluations",
+     "valid_trial_count"
+    ],
+    "returned": [
+     "best_parameters",
+     "best_valid_trial",
+     "chi2",
+     "converged",
+     "equilibrium",
+     "evaluation_log",
+     "failure_reason",
+     "forward_converged",
+     "identifiability",
+     "max_evaluations",
+     "optimizer_converged",
+     "optimizer_summary",
+     "residual_size",
+     "residual_vector",
+     "scientific_evaluations",
+     "valid_trial_count"
+    ]
+   }
+  },
+  {
+   "id": "logged_value",
+   "kind": "invariant",
+   "status": "fail",
+   "detail": {
+    "log_entries": 15,
+    "best_parameters": {
+     "x": 2.999999999999987,
+     "fixed": 7.0
+    },
+    "reported_chi2": 1.6585800532271773e-28,
+    "logged_chi2_for_best": null
+   }
+  },
+  {
+   "id": "seed",
+   "kind": "invariant",
+   "status": "pass",
+   "detail": {
+    "seed": 4,
+    "identical": true,
+    "samples": 5
+   }
+  },
+  {
+   "id": "readback",
+   "kind": "readback",
+   "status": "pass",
+   "detail": {
+    "reopened": "inference-parameter-optimization.json",
+    "problems": [],
+    "stored_call_count": 4
+   }
+  }
+ ],
+ "package_sufficient": false,
+ "sufficient_reason": "the record carries the evaluation log and the design is reproducible",
+ "gaps": [],
+ "bindings": {
+  "scirel.inference.anisotropic-parameter-optimization": {
+   "symbol": "optimize_anisotropic_parameters",
+   "args": {
+    "initial_params": {
+     "x": 0.0,
+     "fixed": 7.0
+    },
+    "bounds": {
+     "x": [
+      -5.0,
+      5.0
+     ]
+    },
+    "method": "least_squares",
+    "trial_evaluator": "<function trial at 0x109d73950>",
+    "fit_keys": [
+     "x"
+    ],
+    "lhs_sampler": null,
+    "n_initial_samples": null,
+    "seed": null,
+    "residual_size": null,
+    "failure_penalty": 1000000000000.0,
+    "max_evaluations": 200
+   },
+   "example_error": null
+  },
+  "scirel.inference.anisotropic-trial-evaluation": {
+   "symbol": "evaluate_anisotropic_trial",
+   "args": {
+    "params": {
+     "p": 1.0
+    },
+    "observations": {
+     "flux_loops": {
+      "values": [
+       1.0,
+       2.0
+      ]
+     }
+    },
+    "solver_config": {
+     "r_grid": [
+      0.0
+     ],
+     "z_grid": [
+      0.0
+     ]
+    },
+    "equilibrium_solver": "<function <lambda> at 0x10c5bada0>",
+    "diagnostic_evaluator": "<function <lambda> at 0x10c5bae50>",
+    "residual_reducer": "<function reduce_observation_residuals at 0x109d73740>",
+    "residual_size": null,
+    "failure_penalty": 1000000000000.0
+   },
+   "example_error": null
+  },
+  "scirel.inference.latin-hypercube-sampling": {
+   "symbol": "sample_latin_hypercube",
+   "args": {
+    "bounds": {
+     "a": [
+      0.0,
+      1.0
+     ],
+     "b": [
+      10.0,
+      20.0
+     ]
+    },
+    "n_samples": 5,
+    "seed": 4,
+    "fit_keys": null
+   },
+   "example_error": null
+  }
+ }
+}

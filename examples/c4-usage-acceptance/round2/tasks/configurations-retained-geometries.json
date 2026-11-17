@@ -1,0 +1,238 @@
+{
+ "task_id": "configurations-retained-geometries",
+ "kind": "nominal",
+ "domain": "configurations",
+ "subdomain": "retained device configuration constructors",
+ "question": "Construct the three declared retained device geometries and report the filament count, the declared default current and the units each constructor documents, without claiming any experimental calibration.",
+ "assets_declared": [
+  "scirel.configurations.trex-coil",
+  "scirel.configurations.brb",
+  "scirel.configurations.wham"
+ ],
+ "min_calls": 3,
+ "package": {
+  "python": "3.14.7",
+  "numpy": "2.5.4",
+  "scipy": "1.18.1",
+  "mpmath": "1.4.1",
+  "wheel_sha256": "4fc9757a7b843cc3bce2dc96fd2280b27299cff93fbcf5b64a2321b58234f5d7",
+  "snapshot_sha256": "cf0269b61ba19d8b2e5e008a6a4a4d80f2cd701f78c34f2fcb3b16eed9a2593c",
+  "source_revision": "4b5b4aaa38650d8a902e4265f226175d166a426b",
+  "asset_count": 249,
+  "runtime": {
+   "dependencies_bundled": false,
+   "package_version": "0.0.0",
+   "requires_dist": [
+    "numpy==2.5.4",
+    "scipy==1.18.1",
+    "mpmath==1.4.1"
+   ],
+   "requires_python": ">=3.12",
+   "wheel": "scirel-0.0.0-py3-none-any.whl",
+   "wheel_sha256": "4fc9757a7b843cc3bce2dc96fd2280b27299cff93fbcf5b64a2321b58234f5d7"
+  }
+ },
+ "assets_used": [
+  "scirel.configurations.brb",
+  "scirel.configurations.trex-coil",
+  "scirel.configurations.wham"
+ ],
+ "calls": [
+  {
+   "seq": 1,
+   "label": "declared constructor scirel.configurations.trex-coil",
+   "asset": "scirel.configurations.trex-coil",
+   "entrypoint": "scirel.configurations:TREXCoil",
+   "arguments": {
+    "args": [],
+    "kwargs": {
+     "z0": 0.7
+    }
+   },
+   "status": "returned",
+   "returned_fields": null,
+   "exception": null,
+   "warnings": [],
+   "returned_type": "TREXCoil"
+  },
+  {
+   "seq": 2,
+   "label": "declared constructor scirel.configurations.brb",
+   "asset": "scirel.configurations.brb",
+   "entrypoint": "scirel.configurations:BRB",
+   "arguments": {
+    "args": [],
+    "kwargs": {}
+   },
+   "status": "returned",
+   "returned_fields": null,
+   "exception": null,
+   "warnings": [],
+   "returned_type": "BRB"
+  },
+  {
+   "seq": 3,
+   "label": "declared constructor scirel.configurations.wham",
+   "asset": "scirel.configurations.wham",
+   "entrypoint": "scirel.configurations:WHAM",
+   "arguments": {
+    "args": [],
+    "kwargs": {}
+   },
+   "status": "returned",
+   "returned_fields": null,
+   "exception": null,
+   "warnings": [],
+   "returned_type": "WHAM"
+  }
+ ],
+ "answer": {
+  "value": {
+   "scirel.configurations.trex-coil": {
+    "attribute": "npts",
+    "returned": 88,
+    "matches_declared": true
+   },
+   "scirel.configurations.brb": {
+    "attribute": "hh_n.npts",
+    "returned": 88,
+    "matches_declared": true
+   },
+   "scirel.configurations.wham": {
+    "attribute": "current_sets",
+    "returned": [
+     "<scirel.electromagnetism.sources.RectangularCoil object at 0x107506350>",
+     "<scirel.electromagnetism.sources.RectangularCoil object at 0x107506450>",
+     "<scirel.electromagnetism.sources.RectangularCoil object at 0x1075526c0>",
+     "<scirel.electromagnetism.sources.RectangularCoil object at 0x1075527b0>"
+    ],
+    "matches_declared": true
+   }
+  },
+  "unit": "filament counts and default currents"
+ },
+ "independent_check": {
+  "method": "each constructor's declared filament count is read back from the returned object and compared with the declared value",
+  "observed": {
+   "scirel.configurations.trex-coil": {
+    "attribute": "npts",
+    "returned": 88,
+    "matches_declared": true
+   },
+   "scirel.configurations.brb": {
+    "attribute": "hh_n.npts",
+    "returned": 88,
+    "matches_declared": true
+   },
+   "scirel.configurations.wham": {
+    "attribute": "current_sets",
+    "returned": [
+     "<scirel.electromagnetism.sources.RectangularCoil object at 0x107506350>",
+     "<scirel.electromagnetism.sources.RectangularCoil object at 0x107506450>",
+     "<scirel.electromagnetism.sources.RectangularCoil object at 0x1075526c0>",
+     "<scirel.electromagnetism.sources.RectangularCoil object at 0x1075527b0>"
+    ],
+    "matches_declared": true
+   }
+  },
+  "verdict": "pass"
+ },
+ "criteria": [
+  {
+   "id": "fields@scirel.configurations.trex-coil",
+   "kind": "contract_fields",
+   "status": "fail",
+   "detail": {
+    "declared": [
+     "source"
+    ],
+    "returned": "a TREXCoil value, not a mapping",
+    "note": "the contract declares named outputs; this return carries no field names, so the declared output set cannot be observed"
+   }
+  },
+  {
+   "id": "fields@scirel.configurations.brb",
+   "kind": "contract_fields",
+   "status": "fail",
+   "detail": {
+    "declared": [
+     "source"
+    ],
+    "returned": "a BRB value, not a mapping",
+    "note": "the contract declares named outputs; this return carries no field names, so the declared output set cannot be observed"
+   }
+  },
+  {
+   "id": "fields@scirel.configurations.wham",
+   "kind": "contract_fields",
+   "status": "fail",
+   "detail": {
+    "declared": [
+     "source"
+    ],
+    "returned": "a WHAM value, not a mapping",
+    "note": "the contract declares named outputs; this return carries no field names, so the declared output set cannot be observed"
+   }
+  },
+  {
+   "id": "counts",
+   "kind": "invariant",
+   "status": "pass",
+   "detail": {
+    "scirel.configurations.trex-coil": {
+     "attribute": "npts",
+     "returned": 88,
+     "matches_declared": true
+    },
+    "scirel.configurations.brb": {
+     "attribute": "hh_n.npts",
+     "returned": 88,
+     "matches_declared": true
+    },
+    "scirel.configurations.wham": {
+     "attribute": "current_sets",
+     "returned": [
+      "<scirel.electromagnetism.sources.RectangularCoil object at 0x107506350>",
+      "<scirel.electromagnetism.sources.RectangularCoil object at 0x107506450>",
+      "<scirel.electromagnetism.sources.RectangularCoil object at 0x1075526c0>",
+      "<scirel.electromagnetism.sources.RectangularCoil object at 0x1075527b0>"
+     ],
+     "matches_declared": true
+    }
+   }
+  },
+  {
+   "id": "readback",
+   "kind": "readback",
+   "status": "pass",
+   "detail": {
+    "reopened": "configurations-retained-geometries.json",
+    "problems": [],
+    "stored_call_count": 3
+   }
+  }
+ ],
+ "package_sufficient": true,
+ "sufficient_reason": "the constructors return objects whose counts are readable",
+ "gaps": [],
+ "bindings": {
+  "scirel.configurations.trex-coil": {
+   "symbol": "TREXCoil",
+   "args": {
+    "z0": 0.7,
+    "kwargs": {}
+   },
+   "example_error": null
+  },
+  "scirel.configurations.brb": {
+   "symbol": "BRB",
+   "args": {},
+   "example_error": null
+  },
+  "scirel.configurations.wham": {
+   "symbol": "WHAM",
+   "args": {},
+   "example_error": null
+  }
+ }
+}

@@ -1,0 +1,430 @@
+{
+ "task_id": "kinetic-dielectric-finite-harmonic",
+ "kind": "nominal",
+ "domain": "kinetic",
+ "subdomain": "kinetic dielectric response and its raw diagnostic",
+ "question": "For one hydrogen-like species at a declared nonzero frequency and wavevector, assemble the finite-harmonic kinetic tensor with the default cutoff, then read the separate raw diagnostic entry at the same point and state which harmonics each call actually used.",
+ "assets_declared": [
+  "scirel.kinetic.dielectric-response",
+  "scirel.kinetic.dielectric-diagnostics"
+ ],
+ "min_calls": 2,
+ "package": {
+  "python": "3.14.7",
+  "numpy": "2.5.4",
+  "scipy": "1.18.1",
+  "mpmath": "1.4.1",
+  "wheel_sha256": "4fc9757a7b843cc3bce2dc96fd2280b27299cff93fbcf5b64a2321b58234f5d7",
+  "snapshot_sha256": "cf0269b61ba19d8b2e5e008a6a4a4d80f2cd701f78c34f2fcb3b16eed9a2593c",
+  "source_revision": "4b5b4aaa38650d8a902e4265f226175d166a426b",
+  "asset_count": 249,
+  "runtime": {
+   "dependencies_bundled": false,
+   "package_version": "0.0.0",
+   "requires_dist": [
+    "numpy==2.5.4",
+    "scipy==1.18.1",
+    "mpmath==1.4.1"
+   ],
+   "requires_python": ">=3.12",
+   "wheel": "scirel-0.0.0-py3-none-any.whl",
+   "wheel_sha256": "4fc9757a7b843cc3bce2dc96fd2280b27299cff93fbcf5b64a2321b58234f5d7"
+  }
+ },
+ "assets_used": [
+  "scirel.kinetic.dielectric-diagnostics",
+  "scirel.kinetic.dielectric-response"
+ ],
+ "calls": [
+  {
+   "seq": 1,
+   "label": "finite-harmonic tensor at the contract example point",
+   "asset": "scirel.kinetic.dielectric-response",
+   "entrypoint": "scirel.kinetic.dielectric_response:evaluate_dielectric_response",
+   "arguments": {
+    "args": [],
+    "kwargs": {
+     "B0": 1.0,
+     "qs": [
+      -1.60217662e-19
+     ],
+     "ms": [
+      9.1094e-31
+     ],
+     "ns0": [
+      6.075e+19
+     ],
+     "Ts0": [
+      11604941.036704937
+     ],
+     "omega": 100000000000.0,
+     "kz": 1.0,
+     "kx": 10000.0,
+     "method": "harmonic",
+     "harmonics": null
+    }
+   },
+   "status": "returned",
+   "returned_fields": [
+    "D",
+    "K",
+    "a",
+    "b",
+    "determinant",
+    "diagnostics",
+    "nx",
+    "nz",
+    "omega",
+    "vts",
+    "wcs",
+    "wps2"
+   ],
+   "exception": null,
+   "warnings": [],
+   "returned_type": "Result"
+  },
+  {
+   "seq": 2,
+   "label": "same point, B0/omega/kx/kz x2^-52 and ns0 x2^-104",
+   "asset": "scirel.kinetic.dielectric-response",
+   "entrypoint": "scirel.kinetic.dielectric_response:evaluate_dielectric_response",
+   "arguments": {
+    "args": [],
+    "kwargs": {
+     "B0": 2.220446049250313e-16,
+     "qs": [
+      -1.60217662e-19
+     ],
+     "ms": [
+      9.1094e-31
+     ],
+     "ns0": [
+      2.995206249511029e-12
+     ],
+     "Ts0": [
+      11604941.036704937
+     ],
+     "omega": 2.220446049250313e-05,
+     "kz": 2.220446049250313e-16,
+     "kx": 2.220446049250313e-12,
+     "method": "harmonic",
+     "harmonics": null
+    }
+   },
+   "status": "returned",
+   "returned_fields": [
+    "D",
+    "K",
+    "a",
+    "b",
+    "determinant",
+    "diagnostics",
+    "nx",
+    "nz",
+    "omega",
+    "vts",
+    "wcs",
+    "wps2"
+   ],
+   "exception": null,
+   "warnings": [],
+   "returned_type": "Result"
+  },
+  {
+   "seq": 3,
+   "label": "raw diagnostic entry at the same declared point",
+   "asset": "scirel.kinetic.dielectric-diagnostics",
+   "entrypoint": "scirel.kinetic.dielectric_diagnostics:evaluate_dielectric_diagnostics",
+   "arguments": {
+    "args": [],
+    "kwargs": {
+     "B0": 1.0,
+     "qs": [
+      -1.60217662e-19
+     ],
+     "ms": [
+      9.1094e-31
+     ],
+     "ns0": [
+      6.075e+19
+     ],
+     "Ts0": [
+      11604941.036704937
+     ],
+     "omega": 100000000000.0,
+     "kz": 1.0,
+     "kx": 10000.0,
+     "harmonics": 15
+    }
+   },
+   "status": "returned",
+   "returned_fields": [
+    "D_raw",
+    "K_raw",
+    "a",
+    "b",
+    "determinant_raw",
+    "diagnostics",
+    "nx",
+    "nz",
+    "omega",
+    "rhocs",
+    "vts",
+    "wcs",
+    "wps2",
+    "z0s"
+   ],
+   "exception": null,
+   "warnings": [],
+   "returned_type": "Result"
+  }
+ ],
+ "answer": {
+  "value": {
+   "determinant": {
+    "real": -359889.96701585775,
+    "imag": 0.0
+   },
+   "harmonics_argument": null,
+   "response_diagnostics": {
+    "harmonics": 5,
+    "method": "harmonic",
+    "tensor_convention": "K_ij = delta_ij - sigma_ij/(i*omega*epsilon0)"
+   },
+   "raw_diagnostic_diagnostics": {
+    "harmonics": 15,
+    "tensor_convention": "K_ij = delta_ij - sigma_ij/(i*omega*epsilon0)",
+    "finite_K": {
+     "dtype": "bool",
+     "shape": [
+      3,
+      3
+     ],
+     "values": [
+      [
+       true,
+       true,
+       true
+      ],
+      [
+       true,
+       true,
+       true
+      ],
+      [
+       true,
+       true,
+       true
+      ]
+     ]
+    },
+    "finite_D": {
+     "dtype": "bool",
+     "shape": [
+      3,
+      3
+     ],
+     "values": [
+      [
+       true,
+       true,
+       true
+      ],
+      [
+       true,
+       true,
+       true
+      ],
+      [
+       true,
+       true,
+       true
+      ]
+     ]
+    },
+    "finite_determinant": true,
+    "complete": true,
+    "message": "Complete finite raw response; accuracy and convergence are separate."
+   }
+  },
+  "unit": "dimensionless tensor entries; determinant dimensionless",
+  "statement": "finite-harmonic tensor at the contract example point and the separate raw diagnostic at the same point"
+ },
+ "independent_check": {
+  "method": "same-method power-of-two scale invariance recomputed by the consumer: K, D and determinant must be invariant componentwise",
+  "observed": {
+   "relative_deviation": 0.0
+  },
+  "verdict": "pass"
+ },
+ "criteria": [
+  {
+   "id": "fields",
+   "kind": "contract_fields",
+   "status": "pass",
+   "detail": {
+    "declared": [
+     "D",
+     "K",
+     "a",
+     "b",
+     "determinant",
+     "diagnostics",
+     "nx",
+     "nz",
+     "omega",
+     "vts",
+     "wcs",
+     "wps2"
+    ],
+    "returned": [
+     "D",
+     "K",
+     "a",
+     "b",
+     "determinant",
+     "diagnostics",
+     "nx",
+     "nz",
+     "omega",
+     "vts",
+     "wcs",
+     "wps2"
+    ]
+   }
+  },
+  {
+   "id": "params",
+   "kind": "parameters",
+   "status": "pass",
+   "detail": {
+    "contract_inputs": [
+     "B0",
+     "qs",
+     "ms",
+     "ns0",
+     "Ts0",
+     "omega",
+     "kz",
+     "kx",
+     "method",
+     "harmonics"
+    ],
+    "args_used": [
+     "B0",
+     "Ts0",
+     "harmonics",
+     "kx",
+     "kz",
+     "method",
+     "ms",
+     "ns0",
+     "omega",
+     "qs"
+    ],
+    "expected_names": [
+     "method",
+     "harmonics"
+    ],
+    "expected_names_absent_from_contract": [],
+    "expected_names_left_at_default": [],
+    "undeclared_args": []
+   }
+  },
+  {
+   "id": "silike",
+   "kind": "invariant",
+   "status": "pass",
+   "detail": {
+    "per_output_relative_deviation": {
+     "K": 0.0,
+     "D": 0.0,
+     "determinant": 0.0
+    },
+    "declared_budget": 2e-12
+   }
+  },
+  {
+   "id": "budget",
+   "kind": "tolerance",
+   "status": "pass",
+   "detail": {
+    "quantity": "@declared_outputs (K, D, determinant)",
+    "unit": "dimensionless",
+    "observed_relative_deviation": 0.0,
+    "declared_tolerance": {
+     "rel": 2e-12,
+     "abs": 0.0
+    },
+    "basis": "two binary64 evaluations at inputs related by an exact power of two"
+   }
+  },
+  {
+   "id": "readback",
+   "kind": "readback",
+   "status": "pass",
+   "detail": {
+    "reopened": "kinetic-dielectric-finite-harmonic.json",
+    "problems": [],
+    "stored_call_count": 3
+   }
+  }
+ ],
+ "package_sufficient": true,
+ "sufficient_reason": "both entries are discoverable, callable and their declared outputs are returned with the harmonics actually requested",
+ "gaps": [
+  {
+   "level": "experience",
+   "text": "the entry does not return the harmonic cutoff it used; the record only reports the requested value, so the default cutoff is not observable"
+  }
+ ],
+ "bindings": {
+  "scirel.kinetic.dielectric-response": {
+   "symbol": "evaluate_dielectric_response",
+   "args": {
+    "B0": 1.0,
+    "qs": [
+     -1.60217662e-19
+    ],
+    "ms": [
+     9.1094e-31
+    ],
+    "ns0": [
+     6.075e+19
+    ],
+    "Ts0": [
+     11604941.036704937
+    ],
+    "omega": 100000000000.0,
+    "kz": 1.0,
+    "kx": 10000.0,
+    "method": "harmonic",
+    "harmonics": null
+   },
+   "example_error": null
+  },
+  "scirel.kinetic.dielectric-diagnostics": {
+   "symbol": "evaluate_dielectric_diagnostics",
+   "args": {
+    "B0": 1.0,
+    "qs": [
+     -1.60217662e-19
+    ],
+    "ms": [
+     9.1094e-31
+    ],
+    "ns0": [
+     6.075e+19
+    ],
+    "Ts0": [
+     11604941.036704937
+    ],
+    "omega": 100000000000.0,
+    "kz": 1.0,
+    "kx": 10000.0,
+    "harmonics": 15
+   },
+   "example_error": null
+  }
+ }
+}

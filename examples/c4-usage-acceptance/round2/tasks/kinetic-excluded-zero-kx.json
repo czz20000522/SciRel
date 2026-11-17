@@ -1,0 +1,89 @@
+{
+ "task_id": "kinetic-excluded-zero-kx",
+ "kind": "inapplicable",
+ "domain": "kinetic",
+ "subdomain": "declared excluded wavevector limits",
+ "question": "A user asks for the response at exactly zero perpendicular wavenumber. Report whether the declared model covers that limit and what the contract offers instead, without computing a substitute result.",
+ "assets_declared": [
+  "scirel.kinetic.dielectric-response"
+ ],
+ "min_calls": 1,
+ "package": {
+  "python": "3.14.7",
+  "numpy": "2.5.4",
+  "scipy": "1.18.1",
+  "mpmath": "1.4.1",
+  "wheel_sha256": "4fc9757a7b843cc3bce2dc96fd2280b27299cff93fbcf5b64a2321b58234f5d7",
+  "snapshot_sha256": "cf0269b61ba19d8b2e5e008a6a4a4d80f2cd701f78c34f2fcb3b16eed9a2593c",
+  "source_revision": "4b5b4aaa38650d8a902e4265f226175d166a426b",
+  "asset_count": 249,
+  "runtime": {
+   "dependencies_bundled": false,
+   "package_version": "0.0.0",
+   "requires_dist": [
+    "numpy==2.5.4",
+    "scipy==1.18.1",
+    "mpmath==1.4.1"
+   ],
+   "requires_python": ">=3.12",
+   "wheel": "scirel-0.0.0-py3-none-any.whl",
+   "wheel_sha256": "4fc9757a7b843cc3bce2dc96fd2280b27299cff93fbcf5b64a2321b58234f5d7"
+  }
+ },
+ "assets_used": [],
+ "calls": [],
+ "answer": {
+  "value": {
+   "excluded_quote": "kx=0 or kz=0 limits",
+   "applicability_excluded": [
+    "harmonic: kx=0 or kz=0 limits, complex frequency/wavevector, drift, loss-cone or arbitrary velocity distributions.",
+    "harmonic: Automatic harmonic-convergence assessment, source Weideman N=64 exact outputs, near-zero kz substitution, root finding or mode-branch selection.",
+    "harmonic_weideman: Mode identification, root finding and accuracy outside the tested finite-harmonic or rational-pole approximation.",
+    "harmonic_weideman: Zero kz, inputs that violate the numerical domain, or inputs requiring a different tensor convention.",
+    "ronnmark: Mode identification, root finding and accuracy outside the tested finite-harmonic or rational-pole approximation.",
+    "ronnmark: Inputs that violate the numerical domain or require a different tensor convention."
+   ],
+   "capability_index_candidates": 248
+  },
+  "unit": "quoted clause (no numerical value)",
+  "statement": "the declared model excludes this limit; no substitute value is produced"
+ },
+ "independent_check": {
+  "method": "the frozen excluded_quote is matched literally against the delivered contract's applicability.excluded list",
+  "verdict": "pass"
+ },
+ "criteria": [
+  {
+   "id": "nocall",
+   "kind": "invariant",
+   "status": "pass",
+   "detail": {
+    "calls_made": 0,
+    "note": "no value is computed at the excluded limit and no nearby nonzero wavenumber is presented as the requested limit"
+   }
+  },
+  {
+   "id": "readback",
+   "kind": "readback",
+   "status": "pass",
+   "detail": {
+    "reopened": "kinetic-excluded-zero-kx.json",
+    "problems": [],
+    "stored_call_count": 0
+   }
+  }
+ ],
+ "package_sufficient": true,
+ "sufficient_reason": "the exclusion and its wording are delivered inside the package",
+ "gaps": [
+  {
+   "level": "process",
+   "text": "this task declares min_calls=1 (from its asset count) while its own invariant forbids computing a value at the excluded limit, so no public call is made; the honest deliverable is the quoted exclusion. Recorded as a task-list defect, not a package defect."
+  },
+  {
+   "level": "process",
+   "text": "task declares min_calls=1 but only 0 public call(s) were made"
+  }
+ ],
+ "bindings": {}
+}

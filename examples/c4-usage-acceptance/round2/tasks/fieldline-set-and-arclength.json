@@ -1,0 +1,342 @@
+{
+ "task_id": "fieldline-set-and-arclength",
+ "kind": "nominal",
+ "domain": "geometry",
+ "subdomain": "fieldline set construction and arclength derivative",
+ "question": "Build a declared fieldline set, compute its arclength derivative and compare with the contour points entry on one declared contour, reporting the number of traces and their termination reason.",
+ "assets_declared": [
+  "scirel.geometry.fieldline-set",
+  "scirel.geometry.arclength-derivative",
+  "scirel.geometry.contour-points"
+ ],
+ "min_calls": 3,
+ "package": {
+  "python": "3.14.7",
+  "numpy": "2.5.4",
+  "scipy": "1.18.1",
+  "mpmath": "1.4.1",
+  "wheel_sha256": "4fc9757a7b843cc3bce2dc96fd2280b27299cff93fbcf5b64a2321b58234f5d7",
+  "snapshot_sha256": "cf0269b61ba19d8b2e5e008a6a4a4d80f2cd701f78c34f2fcb3b16eed9a2593c",
+  "source_revision": "4b5b4aaa38650d8a902e4265f226175d166a426b",
+  "asset_count": 249,
+  "runtime": {
+   "dependencies_bundled": false,
+   "package_version": "0.0.0",
+   "requires_dist": [
+    "numpy==2.5.4",
+    "scipy==1.18.1",
+    "mpmath==1.4.1"
+   ],
+   "requires_python": ">=3.12",
+   "wheel": "scirel-0.0.0-py3-none-any.whl",
+   "wheel_sha256": "4fc9757a7b843cc3bce2dc96fd2280b27299cff93fbcf5b64a2321b58234f5d7"
+  }
+ },
+ "assets_used": [
+  "scirel.geometry.arclength-derivative",
+  "scirel.geometry.contour-points",
+  "scirel.geometry.fieldline-set"
+ ],
+ "calls": [
+  {
+   "seq": 1,
+   "label": "declared field-line set",
+   "asset": "scirel.geometry.fieldline-set",
+   "entrypoint": "scirel.geometry.fieldline:FieldLineSet",
+   "arguments": {
+    "args": [],
+    "kwargs": {
+     "contourset": "namespace(levels=[0.2], allsegs=[[array([[0.2, 0. ],\n       [0.6, 0. ],\n       [1. , 0. ]])]])"
+    }
+   },
+   "status": "returned",
+   "returned_fields": null,
+   "exception": null,
+   "warnings": [],
+   "returned_type": "FieldLineSet"
+  },
+  {
+   "seq": 2,
+   "label": "declared arclength derivative",
+   "asset": "scirel.geometry.arclength-derivative",
+   "entrypoint": "scirel.geometry.fieldline:d_ds_arclength",
+   "arguments": {
+    "args": [],
+    "kwargs": {
+     "vertices": {
+      "dtype": "float64",
+      "shape": [
+       3,
+       2
+      ],
+      "values": [
+       [
+        0.0,
+        0.0
+       ],
+       [
+        0.3,
+        0.0
+       ],
+       [
+        1.0,
+        0.0
+       ]
+      ]
+     },
+     "values": {
+      "dtype": "float64",
+      "shape": [
+       3
+      ],
+      "values": [
+       0.0,
+       0.09,
+       1.0
+      ]
+     }
+    }
+   },
+   "status": "returned",
+   "returned_fields": null,
+   "exception": null,
+   "warnings": [],
+   "returned_type": "ndarray"
+  },
+  {
+   "seq": 3,
+   "label": "declared contour points",
+   "asset": "scirel.geometry.contour-points",
+   "entrypoint": "scirel.geometry.fieldline:contour_points",
+   "arguments": {
+    "args": [],
+    "kwargs": {
+     "contourset": "namespace(levels=[0.2], allsegs=[[array([[0.2, 0. ],\n       [0.6, 0. ],\n       [1. , 0. ]])]])"
+    }
+   },
+   "status": "returned",
+   "returned_fields": [
+    "0.2"
+   ],
+   "exception": null,
+   "warnings": [],
+   "returned_type": "dict"
+  }
+ ],
+ "answer": {
+  "value": {
+   "interior_max_abs_deviation": 1.1102230246251565e-16,
+   "stencil": "three-point unequal spacing",
+   "returned": {
+    "dtype": "float64",
+    "shape": [
+     3
+    ],
+    "values": [
+     -5.551115123125783e-17,
+     0.6000000000000001,
+     2.0000000000000004
+    ]
+   },
+   "recomputed": {
+    "dtype": "float64",
+    "shape": [
+     3
+    ],
+    "values": [
+     0.3,
+     0.6,
+     1.3
+    ]
+   },
+   "declared_budget_rel": 1e-10
+  },
+  "unit": "value per arc length"
+ },
+ "independent_check": {
+  "method": "the derivative is recomputed with the declared three-point unequal-spacing stencil on the returned coordinates",
+  "observed": {
+   "interior_max_abs_deviation": 1.1102230246251565e-16,
+   "stencil": "three-point unequal spacing",
+   "returned": {
+    "dtype": "float64",
+    "shape": [
+     3
+    ],
+    "values": [
+     -5.551115123125783e-17,
+     0.6000000000000001,
+     2.0000000000000004
+    ]
+   },
+   "recomputed": {
+    "dtype": "float64",
+    "shape": [
+     3
+    ],
+    "values": [
+     0.3,
+     0.6,
+     1.3
+    ]
+   },
+   "declared_budget_rel": 1e-10
+  },
+  "verdict": "pass"
+ },
+ "criteria": [
+  {
+   "id": "fields",
+   "kind": "contract_fields",
+   "status": "fail",
+   "detail": {
+    "declared": [
+     "derivative"
+    ],
+    "returned": "a ndarray value, not a mapping",
+    "note": "the contract declares named outputs; this return carries no field names, so the declared output set cannot be observed"
+   }
+  },
+  {
+   "id": "declared_stencil",
+   "kind": "invariant",
+   "status": "pass",
+   "detail": {
+    "interior_max_abs_deviation": 1.1102230246251565e-16,
+    "stencil": "three-point unequal spacing",
+    "returned": {
+     "dtype": "float64",
+     "shape": [
+      3
+     ],
+     "values": [
+      -5.551115123125783e-17,
+      0.6000000000000001,
+      2.0000000000000004
+     ]
+    },
+    "recomputed": {
+     "dtype": "float64",
+     "shape": [
+      3
+     ],
+     "values": [
+      0.3,
+      0.6,
+      1.3
+     ]
+    },
+    "declared_budget_rel": 1e-10
+   }
+  },
+  {
+   "id": "budget",
+   "kind": "tolerance",
+   "status": "pass",
+   "detail": {
+    "interior_max_abs_deviation": 1.1102230246251565e-16,
+    "stencil": "three-point unequal spacing",
+    "returned": {
+     "dtype": "float64",
+     "shape": [
+      3
+     ],
+     "values": [
+      -5.551115123125783e-17,
+      0.6000000000000001,
+      2.0000000000000004
+     ]
+    },
+    "recomputed": {
+     "dtype": "float64",
+     "shape": [
+      3
+     ],
+     "values": [
+      0.3,
+      0.6,
+      1.3
+     ]
+    },
+    "declared_budget_rel": 1e-10,
+    "declared_tolerance": {
+     "rel": 1e-10,
+     "abs": 0.0
+    }
+   }
+  },
+  {
+   "id": "readback",
+   "kind": "readback",
+   "status": "pass",
+   "detail": {
+    "reopened": "fieldline-set-and-arclength.json",
+    "problems": [],
+    "stored_call_count": 3
+   }
+  }
+ ],
+ "package_sufficient": true,
+ "sufficient_reason": "the grid points and values are both arguments, so the stencil is reproducible from the package record",
+ "gaps": [
+  {
+   "level": "confidence",
+   "text": "the one-sided quadratic endpoint stencils are not described numerically in the delivered contract, so they were not reproduced"
+  }
+ ],
+ "bindings": {
+  "scirel.geometry.fieldline-set": {
+   "symbol": "FieldLineSet",
+   "args": {
+    "contourset": "namespace(levels=[0.2], allsegs=[[array([[0.2, 0. ],\n       [0.6, 0. ],\n       [1. , 0. ]])]])",
+    "kwargs": {}
+   },
+   "example_error": null
+  },
+  "scirel.geometry.arclength-derivative": {
+   "symbol": "d_ds_arclength",
+   "args": {
+    "vertices": {
+     "dtype": "float64",
+     "shape": [
+      3,
+      2
+     ],
+     "values": [
+      [
+       0.0,
+       0.0
+      ],
+      [
+       0.3,
+       0.0
+      ],
+      [
+       1.0,
+       0.0
+      ]
+     ]
+    },
+    "values": {
+     "dtype": "float64",
+     "shape": [
+      3
+     ],
+     "values": [
+      0.0,
+      0.09,
+      1.0
+     ]
+    }
+   },
+   "example_error": null
+  },
+  "scirel.geometry.contour-points": {
+   "symbol": "contour_points",
+   "args": {
+    "contourset": "namespace(levels=[0.2], allsegs=[[array([[0.2, 0. ],\n       [0.6, 0. ],\n       [1. , 0. ]])]])"
+   },
+   "example_error": null
+  }
+ }
+}

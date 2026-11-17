@@ -1,0 +1,1189 @@
+{
+ "task_id": "kinetic-fluid-two-path",
+ "kind": "nominal",
+ "domain": "kinetic",
+ "subdomain": "fluid two-path dispersion and its matrix form",
+ "question": "Compute the fluid dispersion response and the underlying dispersion matrix at one declared equilibrium state, then search the BonK branch and state which returned roots the matrix at that state supports.",
+ "assets_declared": [
+  "scirel.kinetic.fluid-dispersion-response",
+  "scirel.kinetic.fluid-dispersion-matrix",
+  "scirel.kinetic.fluid-bonk-search"
+ ],
+ "min_calls": 3,
+ "package": {
+  "python": "3.14.7",
+  "numpy": "2.5.4",
+  "scipy": "1.18.1",
+  "mpmath": "1.4.1",
+  "wheel_sha256": "4fc9757a7b843cc3bce2dc96fd2280b27299cff93fbcf5b64a2321b58234f5d7",
+  "snapshot_sha256": "cf0269b61ba19d8b2e5e008a6a4a4d80f2cd701f78c34f2fcb3b16eed9a2593c",
+  "source_revision": "4b5b4aaa38650d8a902e4265f226175d166a426b",
+  "asset_count": 249,
+  "runtime": {
+   "dependencies_bundled": false,
+   "package_version": "0.0.0",
+   "requires_dist": [
+    "numpy==2.5.4",
+    "scipy==1.18.1",
+    "mpmath==1.4.1"
+   ],
+   "requires_python": ">=3.12",
+   "wheel": "scirel-0.0.0-py3-none-any.whl",
+   "wheel_sha256": "4fc9757a7b843cc3bce2dc96fd2280b27299cff93fbcf5b64a2321b58234f5d7"
+  }
+ },
+ "assets_used": [
+  "scirel.kinetic.fluid-bonk-search",
+  "scirel.kinetic.fluid-dispersion-matrix",
+  "scirel.kinetic.fluid-dispersion-response"
+ ],
+ "calls": [
+  {
+   "seq": 1,
+   "label": "fluid response fD through the scalar entry",
+   "asset": "scirel.kinetic.fluid-dispersion-response",
+   "entrypoint": "scirel.kinetic.fluid_spectrum:evaluate_fluid_dispersion",
+   "arguments": {
+    "args": [],
+    "kwargs": {
+     "kx": 0,
+     "state": {
+      "B0": {
+       "dtype": "float64",
+       "shape": [
+        1,
+        1
+       ],
+       "values": [
+        [
+         1.0
+        ]
+       ]
+      },
+      "S": {
+       "dtype": "int64",
+       "shape": [
+        1,
+        1
+       ],
+       "values": [
+        [
+         1
+        ]
+       ]
+      },
+      "T00": {
+       "dtype": "float64",
+       "shape": [
+        1,
+        1
+       ],
+       "values": [
+        [
+         1000.0
+        ]
+       ]
+      },
+      "Ts0": {
+       "dtype": "float64",
+       "shape": [
+        1,
+        1
+       ],
+       "values": [
+        [
+         11604691.395316169
+        ]
+       ]
+      },
+      "Ts_unit": {
+       "dtype": "float64",
+       "shape": [
+        1,
+        1
+       ],
+       "values": [
+        [
+         1.0
+        ]
+       ]
+      },
+      "c": {
+       "dtype": "float64",
+       "shape": [
+        1,
+        1
+       ],
+       "values": [
+        [
+         299792458.0
+        ]
+       ]
+      },
+      "c2": {
+       "dtype": "float64",
+       "shape": [
+        1,
+        1
+       ],
+       "values": [
+        [
+         8.987551787368176e+16
+        ]
+       ]
+      },
+      "epsilon0": {
+       "dtype": "float64",
+       "shape": [
+        1,
+        1
+       ],
+       "values": [
+        [
+         8.854187817e-12
+        ]
+       ]
+      },
+      "jcase": {
+       "dtype": "int64",
+       "shape": [
+        1,
+        1
+       ],
+       "values": [
+        [
+         2
+        ]
+       ]
+      },
+      "kB": {
+       "dtype": "float64",
+       "shape": [
+        1,
+        1
+       ],
+       "values": [
+        [
+         1.38064852e-23
+        ]
+       ]
+      },
+      "kn": {
+       "dtype": "float64",
+       "shape": [
+        1,
+        1
+       ],
+       "values": [
+        [
+         13261.94247879565
+        ]
+       ]
+      },
+      "kz": {
+       "dtype": "float64",
+       "shape": [
+        1,
+        1
+       ],
+       "values": [
+        [
+         0.0
+        ]
+       ]
+      },
+      "me": {
+       "dtype": "float64",
+       "shape": [
+        1,
+        1
+       ],
+       "values": [
+        [
+         9.1094e-31
+        ]
+       ]
+      },
+      "mp": {
+       "dtype": "float64",
+       "shape": [
+        1,
+        1
+       ],
+       "values": [
+        [
+         1.6726219e-27
+        ]
+       ]
+      },
+      "ms": {
+       "dtype": "float64",
+       "shape": [
+        1,
+        1
+       ],
+       "values": [
+        [
+         9.1094e-31
+        ]
+       ]
+      },
+      "mu0": {
+       "dtype": "float64",
+       "shape": [
+        1,
+        1
+       ],
+       "values": [
+        [
+         1.2566370615239666e-06
+        ]
+       ]
+      },
+      "n00": {
+       "dtype": "float64",
+       "shape": [
+        1,
+        1
+       ],
+       "values": [
+        [
+         6.075e+19
+        ]
+       ]
+      },
+      "ns0": {
+       "dtype": "float64",
+       "shape": [
+        1,
+        1
+       ],
+       "values": [
+        [
+         6.075e+19
+        ]
+       ]
+      },
+      "ns_unit": {
+       "dtype": "float64",
+       "shape": [
+        1,
+        1
+       ],
+       "values": [
+        [
+         1.0
+        ]
+       ]
+      },
+      "qe": {
+       "dtype": "float64",
+       "shape": [
+        1,
+        1
+       ],
+       "values": [
+        [
+         1.60217662e-19
+        ]
+       ]
+      },
+      "qs": {
+       "dtype": "float64",
+       "shape": [
+        1,
+        1
+       ],
+       "values": [
+        [
+         -1.60217662e-19
+        ]
+       ]
+      },
+      "rhocn": {
+       "dtype": "float64",
+       "shape": [
+        1,
+        1
+       ],
+       "values": [
+        [
+         7.540373528228517e-05
+        ]
+       ]
+      },
+      "rhocs": {
+       "dtype": "float64",
+       "shape": [
+        1,
+        1
+       ],
+       "values": [
+        [
+         -7.540373528228517e-05
+        ]
+       ]
+      },
+      "vts": {
+       "dtype": "float64",
+       "shape": [
+        1,
+        1
+       ],
+       "values": [
+        [
+         18755492.605238933
+        ]
+       ]
+      },
+      "wcn": {
+       "dtype": "float64",
+       "shape": [
+        1,
+        1
+       ],
+       "values": [
+        [
+         175881684853.009
+        ]
+       ]
+      },
+      "wcs": {
+       "dtype": "float64",
+       "shape": [
+        1,
+        1
+       ],
+       "values": [
+        [
+         -175881684853.009
+        ]
+       ]
+      },
+      "wcs2": {
+       "dtype": "float64",
+       "shape": [
+        1,
+        1
+       ],
+       "values": [
+        [
+         3.0934367066733177e+22
+        ]
+       ]
+      },
+      "wn": {
+       "dtype": "float64",
+       "shape": [
+        1,
+        1
+       ],
+       "values": [
+        [
+         175881684853.009
+        ]
+       ]
+      },
+      "wp2": {
+       "dtype": "float64",
+       "shape": [
+        1,
+        1
+       ],
+       "values": [
+        [
+         1.9334304735564685e+23
+        ]
+       ]
+      },
+      "wps": {
+       "dtype": "float64",
+       "shape": [
+        1,
+        1
+       ],
+       "values": [
+        [
+         439707911408.9794
+        ]
+       ]
+      },
+      "wps2": {
+       "dtype": "float64",
+       "shape": [
+        1,
+        1
+       ],
+       "values": [
+        [
+         1.9334304735564685e+23
+        ]
+       ]
+      }
+     },
+     "method": "fD"
+    }
+   },
+   "status": "raised",
+   "returned_fields": null,
+   "exception": {
+    "type": "ValueError",
+    "module": "builtins",
+    "message": "missing, empty or nonfinite state field",
+    "qualname": "builtins.ValueError"
+   },
+   "warnings": []
+  },
+  {
+   "seq": 2,
+   "label": "matrix form at the declared example scales",
+   "asset": "scirel.kinetic.fluid-dispersion-matrix",
+   "entrypoint": "scirel.kinetic.fluid_dispersion_matrix:assemble_fluid_dispersion_matrix",
+   "arguments": {
+    "args": [],
+    "kwargs": {
+     "omega": 175881684853.009,
+     "kz": 1326.1942478795652,
+     "c2": 8.987551787368176e+16,
+     "epsilon0": 8.854187817e-12,
+     "wps2": {
+      "dtype": "float64",
+      "shape": [
+       1
+      ],
+      "values": [
+       1.9334304735564685e+23
+      ]
+     },
+     "wcs": {
+      "dtype": "float64",
+      "shape": [
+       1
+      ],
+      "values": [
+       -175881684853.009
+      ]
+     },
+     "vts": {
+      "dtype": "float64",
+      "shape": [
+       1
+      ],
+      "values": [
+       18755492.605238933
+      ]
+     },
+     "rhocs": {
+      "dtype": "float64",
+      "shape": [
+       1
+      ],
+      "values": [
+       -7.540373528228517e-05
+      ]
+     },
+     "sgns": {
+      "dtype": "float64",
+      "shape": [
+       1
+      ],
+      "values": [
+       -1.0
+      ]
+     },
+     "absrhocs": {
+      "dtype": "float64",
+      "shape": [
+       1
+      ],
+      "values": [
+       7.540373528228517e-05
+      ]
+     },
+     "cn_residues": {
+      "1": {
+       "dtype": "complex128",
+       "shape": [
+        12
+       ],
+       "real": [
+        -0.0326560281967822,
+        -0.0326560281967822,
+        -0.000178407293843021,
+        -0.000178407293843021,
+        0.101508158612643,
+        0.101508158612643,
+        0.0407432015112937,
+        0.0407432015112937,
+        -0.210665457794143,
+        -0.210665457794143,
+        0.300719673361548,
+        0.300719673361548
+       ],
+       "imag": [
+        0.0312590495572379,
+        -0.0312590495572379,
+        -0.000966842020120462,
+        0.000966842020120463,
+        -0.000790257256424197,
+        0.000790257256424225,
+        0.111196889687134,
+        -0.111196889687134,
+        -0.127867736009404,
+        0.127867736009404,
+        -0.268390200228919,
+        0.268390200228918
+       ]
+      }
+     },
+     "cn_poles": {
+      "1": {
+       "dtype": "complex128",
+       "shape": [
+        12
+       ],
+       "real": [
+        0.798971222161112,
+        0.798971222161112,
+        1.09141498636478,
+        1.09141498636478,
+        -1.09141498636478,
+        -1.09141498636478,
+        -0.798971222161111,
+        -0.798971222161111,
+        0.292443764203668,
+        0.292443764203668,
+        -0.292443764203667,
+        -0.292443764203667
+       ],
+       "imag": [
+        0.798971222161112,
+        -0.798971222161112,
+        0.292443764203667,
+        -0.292443764203667,
+        0.292443764203667,
+        -0.292443764203667,
+        0.798971222161112,
+        -0.798971222161112,
+        1.09141498636478,
+        -1.09141498636478,
+        1.09141498636478,
+        -1.09141498636478
+       ]
+      }
+     },
+     "order_lengths": {
+      "1": 12
+     },
+     "bzj": {
+      "dtype": "complex128",
+      "shape": [
+       8
+      ],
+      "real": [
+       -0.017340112270401,
+       -0.739917811220052,
+       5.840632105105495,
+       -5.583374181615043,
+       -0.017340112270401,
+       -0.739917811220052,
+       5.840632105105495,
+       -5.583374181615043
+      ],
+      "imag": [
+       -0.046306439626294,
+       0.839518284620274,
+       0.95360275132204,
+       -11.208550459628098,
+       0.046306439626294,
+       -0.839518284620274,
+       -0.95360275132204,
+       11.208550459628098
+      ]
+     },
+     "czj": {
+      "dtype": "complex128",
+      "shape": [
+       8
+      ],
+      "real": [
+       2.237687725134293,
+       1.465234091939142,
+       0.839253966367922,
+       0.273936218055381,
+       -2.237687725134293,
+       -1.465234091939142,
+       -0.839253966367922,
+       -0.273936218055381
+      ],
+      "imag": [
+       -1.625941024120362,
+       -1.789620299603315,
+       -1.891995211531426,
+       -1.941787037576095,
+       -1.625941024120362,
+       -1.789620299603315,
+       -1.891995211531426,
+       -1.941787037576095
+      ]
+     },
+     "max_harmonic": 0,
+     "n_species": 1
+    }
+   },
+   "status": "returned",
+   "returned_fields": [
+    "M",
+    "matrix_size",
+    "n_l",
+    "n_sl",
+    "n_sl3",
+    "nonzero_entries",
+    "state_layout"
+   ],
+   "exception": null,
+   "warnings": [],
+   "returned_type": "dict"
+  },
+  {
+   "seq": 3,
+   "label": "Bonk search from the contract example",
+   "asset": "scirel.kinetic.fluid-bonk-search",
+   "entrypoint": "scirel.kinetic.fluid_spectrum:solve_fluid_bonk",
+   "arguments": {
+    "args": [],
+    "kwargs": {
+     "jcase": 2,
+     "omegas": [
+      110805461457.39568
+     ]
+    }
+   },
+   "status": "returned",
+   "returned_fields": [
+    "B0",
+    "D",
+    "D0",
+    "K",
+    "S",
+    "T00",
+    "Ts0",
+    "Ts_unit",
+    "attempt",
+    "attempt_rows",
+    "best",
+    "c",
+    "c2",
+    "candidate",
+    "complete_physical_modes",
+    "determinant_res",
+    "epsilon0",
+    "exit_status",
+    "fDr",
+    "function_evals",
+    "info",
+    "iterations",
+    "jcase",
+    "jx",
+    "kB",
+    "kn",
+    "kx1",
+    "kz",
+    "me",
+    "mp",
+    "ms",
+    "mu0",
+    "n00",
+    "nf",
+    "normalized_determinant",
+    "ns0",
+    "ns_unit",
+    "nx",
+    "options",
+    "out",
+    "physical_sv",
+    "q",
+    "qe",
+    "qs",
+    "raw_f",
+    "reference",
+    "residual",
+    "result",
+    "rhocn",
+    "rhocs",
+    "root_contract",
+    "root_valid",
+    "row_diagnostic",
+    "runtime",
+    "scale",
+    "scaled_fval",
+    "seed",
+    "seeds",
+    "solver_attempts",
+    "solver_residual",
+    "sv",
+    "valid",
+    "vts",
+    "w",
+    "wave_res",
+    "wcn",
+    "wcs",
+    "wcs2",
+    "wn",
+    "wp2",
+    "wps",
+    "wps2",
+    "xx"
+   ],
+   "exception": null,
+   "warnings": [],
+   "returned_type": "dict"
+  }
+ ],
+ "answer": {
+  "value": {
+   "matrix_size_returned": 1,
+   "matrix_shape": [
+    40,
+    40
+   ],
+   "recomputed_size": 40,
+   "order_lengths": [
+    12.0
+   ],
+   "state_layout": [
+    "vx_snl",
+    "vy_snl",
+    "vz_snl",
+    "Ey",
+    "Ez",
+    "By",
+    "Bz"
+   ],
+   "declared_layout": [
+    "vx_snl",
+    "vy_snl",
+    "vz_snl",
+    "Ey",
+    "Ez",
+    "By",
+    "Bz"
+   ]
+  },
+  "unit": "dimensionless size and layout names"
+ },
+ "independent_check": {
+  "method": "matrix dimension recomputed as 3*S*sum(order_lengths)+4 from the declared oscillation counts and compared with the returned square matrix",
+  "observed": {
+   "matrix_size_returned": 1,
+   "matrix_shape": [
+    40,
+    40
+   ],
+   "recomputed_size": 40,
+   "order_lengths": [
+    12.0
+   ],
+   "state_layout": [
+    "vx_snl",
+    "vy_snl",
+    "vz_snl",
+    "Ey",
+    "Ez",
+    "By",
+    "Bz"
+   ],
+   "declared_layout": [
+    "vx_snl",
+    "vy_snl",
+    "vz_snl",
+    "Ey",
+    "Ez",
+    "By",
+    "Bz"
+   ]
+  },
+  "verdict": "fail"
+ },
+ "criteria": [
+  {
+   "id": "fields",
+   "kind": "contract_fields",
+   "status": "pass",
+   "detail": {
+    "declared": [
+     "M",
+     "matrix_size",
+     "n_l",
+     "n_sl",
+     "n_sl3",
+     "nonzero_entries",
+     "state_layout"
+    ],
+    "returned": [
+     "M",
+     "matrix_size",
+     "n_l",
+     "n_sl",
+     "n_sl3",
+     "nonzero_entries",
+     "state_layout"
+    ]
+   }
+  },
+  {
+   "id": "declared_layout",
+   "kind": "invariant",
+   "status": "fail",
+   "detail": {
+    "matrix_size_returned": 1,
+    "matrix_shape": [
+     40,
+     40
+    ],
+    "recomputed_size": 40,
+    "order_lengths": [
+     12.0
+    ],
+    "state_layout": [
+     "vx_snl",
+     "vy_snl",
+     "vz_snl",
+     "Ey",
+     "Ez",
+     "By",
+     "Bz"
+    ],
+    "declared_layout": [
+     "vx_snl",
+     "vy_snl",
+     "vz_snl",
+     "Ey",
+     "Ez",
+     "By",
+     "Bz"
+    ]
+   }
+  },
+  {
+   "id": "budget",
+   "kind": "tolerance",
+   "status": "not-run",
+   "detail": {
+    "why": "the task's budget compares a determinant through two published entries, but the response entry returns a mixed payload whose determinant field the contract does not name; no field of the delivered record can be substituted without guessing",
+    "declared_tolerance": {
+     "rel": 1e-12,
+     "abs": 0.0
+    }
+   }
+  },
+  {
+   "id": "fields_bonk",
+   "kind": "contract_fields",
+   "status": "fail",
+   "detail": {
+    "declared": [
+     "result"
+    ],
+    "returned": [
+     "B0",
+     "D",
+     "D0",
+     "K",
+     "S",
+     "T00",
+     "Ts0",
+     "Ts_unit",
+     "attempt",
+     "attempt_rows",
+     "best",
+     "c",
+     "c2",
+     "candidate",
+     "complete_physical_modes",
+     "determinant_res",
+     "epsilon0",
+     "exit_status",
+     "fDr",
+     "function_evals",
+     "info",
+     "iterations",
+     "jcase",
+     "jx",
+     "kB",
+     "kn",
+     "kx1",
+     "kz",
+     "me",
+     "mp",
+     "ms",
+     "mu0",
+     "n00",
+     "nf",
+     "normalized_determinant",
+     "ns0",
+     "ns_unit",
+     "nx",
+     "options",
+     "out",
+     "physical_sv",
+     "q",
+     "qe",
+     "qs",
+     "raw_f",
+     "reference",
+     "residual",
+     "result",
+     "rhocn",
+     "rhocs",
+     "root_contract",
+     "root_valid",
+     "row_diagnostic",
+     "runtime",
+     "scale",
+     "scaled_fval",
+     "seed",
+     "seeds",
+     "solver_attempts",
+     "solver_residual",
+     "sv",
+     "valid",
+     "vts",
+     "w",
+     "wave_res",
+     "wcn",
+     "wcs",
+     "wcs2",
+     "wn",
+     "wp2",
+     "wps",
+     "wps2",
+     "xx"
+    ]
+   }
+  },
+  {
+   "id": "readback",
+   "kind": "readback",
+   "status": "pass",
+   "detail": {
+    "reopened": "kinetic-fluid-two-path.json",
+    "problems": [],
+    "stored_call_count": 3
+   }
+  }
+ ],
+ "package_sufficient": false,
+ "sufficient_reason": "the layout criterion is verified, but the tolerance criterion's two-path determinant cannot be evaluated from the delivered fields",
+ "gaps": [
+  {
+   "level": "confidence",
+   "text": "fluid-dispersion-response returns one 'result' field with mixed units; the contract does not name the determinant, so the second path could not be compared and the declared 1e-12 budget stays unevaluated"
+  }
+ ],
+ "bindings": {
+  "scirel.kinetic.fluid-dispersion-matrix": {
+   "symbol": "assemble_fluid_dispersion_matrix",
+   "args": {
+    "omega": 175881684853.009,
+    "kz": 1326.1942478795652,
+    "c2": 8.987551787368176e+16,
+    "epsilon0": 8.854187817e-12,
+    "wps2": {
+     "dtype": "float64",
+     "shape": [
+      1
+     ],
+     "values": [
+      1.9334304735564685e+23
+     ]
+    },
+    "wcs": {
+     "dtype": "float64",
+     "shape": [
+      1
+     ],
+     "values": [
+      -175881684853.009
+     ]
+    },
+    "vts": {
+     "dtype": "float64",
+     "shape": [
+      1
+     ],
+     "values": [
+      18755492.605238933
+     ]
+    },
+    "rhocs": {
+     "dtype": "float64",
+     "shape": [
+      1
+     ],
+     "values": [
+      -7.540373528228517e-05
+     ]
+    },
+    "sgns": {
+     "dtype": "float64",
+     "shape": [
+      1
+     ],
+     "values": [
+      -1.0
+     ]
+    },
+    "absrhocs": {
+     "dtype": "float64",
+     "shape": [
+      1
+     ],
+     "values": [
+      7.540373528228517e-05
+     ]
+    },
+    "cn_residues": {
+     "1": {
+      "dtype": "complex128",
+      "shape": [
+       12
+      ],
+      "real": [
+       -0.0326560281967822,
+       -0.0326560281967822,
+       -0.000178407293843021,
+       -0.000178407293843021,
+       0.101508158612643,
+       0.101508158612643,
+       0.0407432015112937,
+       0.0407432015112937,
+       -0.210665457794143,
+       -0.210665457794143,
+       0.300719673361548,
+       0.300719673361548
+      ],
+      "imag": [
+       0.0312590495572379,
+       -0.0312590495572379,
+       -0.000966842020120462,
+       0.000966842020120463,
+       -0.000790257256424197,
+       0.000790257256424225,
+       0.111196889687134,
+       -0.111196889687134,
+       -0.127867736009404,
+       0.127867736009404,
+       -0.268390200228919,
+       0.268390200228918
+      ]
+     }
+    },
+    "cn_poles": {
+     "1": {
+      "dtype": "complex128",
+      "shape": [
+       12
+      ],
+      "real": [
+       0.798971222161112,
+       0.798971222161112,
+       1.09141498636478,
+       1.09141498636478,
+       -1.09141498636478,
+       -1.09141498636478,
+       -0.798971222161111,
+       -0.798971222161111,
+       0.292443764203668,
+       0.292443764203668,
+       -0.292443764203667,
+       -0.292443764203667
+      ],
+      "imag": [
+       0.798971222161112,
+       -0.798971222161112,
+       0.292443764203667,
+       -0.292443764203667,
+       0.292443764203667,
+       -0.292443764203667,
+       0.798971222161112,
+       -0.798971222161112,
+       1.09141498636478,
+       -1.09141498636478,
+       1.09141498636478,
+       -1.09141498636478
+      ]
+     }
+    },
+    "order_lengths": {
+     "1": 12
+    },
+    "bzj": {
+     "dtype": "complex128",
+     "shape": [
+      8
+     ],
+     "real": [
+      -0.017340112270401,
+      -0.739917811220052,
+      5.840632105105495,
+      -5.583374181615043,
+      -0.017340112270401,
+      -0.739917811220052,
+      5.840632105105495,
+      -5.583374181615043
+     ],
+     "imag": [
+      -0.046306439626294,
+      0.839518284620274,
+      0.95360275132204,
+      -11.208550459628098,
+      0.046306439626294,
+      -0.839518284620274,
+      -0.95360275132204,
+      11.208550459628098
+     ]
+    },
+    "czj": {
+     "dtype": "complex128",
+     "shape": [
+      8
+     ],
+     "real": [
+      2.237687725134293,
+      1.465234091939142,
+      0.839253966367922,
+      0.273936218055381,
+      -2.237687725134293,
+      -1.465234091939142,
+      -0.839253966367922,
+      -0.273936218055381
+     ],
+     "imag": [
+      -1.625941024120362,
+      -1.789620299603315,
+      -1.891995211531426,
+      -1.941787037576095,
+      -1.625941024120362,
+      -1.789620299603315,
+      -1.891995211531426,
+      -1.941787037576095
+     ]
+    },
+    "max_harmonic": 0,
+    "n_species": 1
+   },
+   "example_error": null
+  },
+  "scirel.kinetic.fluid-bonk-search": {
+   "symbol": "solve_fluid_bonk",
+   "args": {
+    "jcase": 2,
+    "omegas": [
+     110805461457.39568
+    ]
+   },
+   "example_error": null
+  }
+ }
+}

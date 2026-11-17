@@ -1,0 +1,326 @@
+{
+ "task_id": "kinetic-faddeeva-family",
+ "kind": "nominal",
+ "domain": "kinetic",
+ "subdomain": "plasma dispersion function across selectable backends",
+ "question": "Evaluate the plasma dispersion function at one declared argument with its default backend and with one explicitly named alternative, record the numerical control each backend uses, and report whether the default method was stated as a choice rather than as the universally accurate one.",
+ "assets_declared": [
+  "scirel.kinetic.plasma-dispersion-function",
+  "scirel.kinetic.fluid-special-functions"
+ ],
+ "min_calls": 2,
+ "package": {
+  "python": "3.14.7",
+  "numpy": "2.5.4",
+  "scipy": "1.18.1",
+  "mpmath": "1.4.1",
+  "wheel_sha256": "4fc9757a7b843cc3bce2dc96fd2280b27299cff93fbcf5b64a2321b58234f5d7",
+  "snapshot_sha256": "cf0269b61ba19d8b2e5e008a6a4a4d80f2cd701f78c34f2fcb3b16eed9a2593c",
+  "source_revision": "4b5b4aaa38650d8a902e4265f226175d166a426b",
+  "asset_count": 249,
+  "runtime": {
+   "dependencies_bundled": false,
+   "package_version": "0.0.0",
+   "requires_dist": [
+    "numpy==2.5.4",
+    "scipy==1.18.1",
+    "mpmath==1.4.1"
+   ],
+   "requires_python": ">=3.12",
+   "wheel": "scirel-0.0.0-py3-none-any.whl",
+   "wheel_sha256": "4fc9757a7b843cc3bce2dc96fd2280b27299cff93fbcf5b64a2321b58234f5d7"
+  }
+ },
+ "assets_used": [
+  "scirel.kinetic.fluid-special-functions",
+  "scirel.kinetic.plasma-dispersion-function"
+ ],
+ "calls": [
+  {
+   "seq": 1,
+   "label": "backend 'scipy' as declared in the example",
+   "asset": "scirel.kinetic.plasma-dispersion-function",
+   "entrypoint": "scirel.kinetic.plasma_dispersion:evaluate_plasma_dispersion",
+   "arguments": {
+    "args": [],
+    "kwargs": {
+     "z": {
+      "real": 0.0,
+      "imag": 0.0
+     },
+     "method": "scipy",
+     "order": null
+    }
+   },
+   "status": "returned",
+   "returned_fields": [
+    "Z",
+    "w"
+   ],
+   "exception": null,
+   "warnings": [],
+   "returned_type": "Result"
+  },
+  {
+   "seq": 2,
+   "label": "backend 'rational' as declared in the example",
+   "asset": "scirel.kinetic.plasma-dispersion-function",
+   "entrypoint": "scirel.kinetic.plasma_dispersion:evaluate_plasma_dispersion",
+   "arguments": {
+    "args": [],
+    "kwargs": {
+     "z": {
+      "real": 0.2,
+      "imag": 0.7
+     },
+     "method": "rational",
+     "order": 16
+    }
+   },
+   "status": "returned",
+   "returned_fields": [
+    "Z",
+    "w"
+   ],
+   "exception": null,
+   "warnings": [],
+   "returned_type": "Result"
+  },
+  {
+   "seq": 3,
+   "label": "backend 'weideman' as declared in the example",
+   "asset": "scirel.kinetic.plasma-dispersion-function",
+   "entrypoint": "scirel.kinetic.plasma_dispersion:evaluate_plasma_dispersion",
+   "arguments": {
+    "args": [],
+    "kwargs": {
+     "z": {
+      "real": 0.2,
+      "imag": 0.7
+     },
+     "method": "weideman",
+     "order": null
+    }
+   },
+   "status": "returned",
+   "returned_fields": [
+    "Z",
+    "w"
+   ],
+   "exception": null,
+   "warnings": [],
+   "returned_type": "Result"
+  },
+  {
+   "seq": 4,
+   "label": "backend 'jpole' as declared in the example",
+   "asset": "scirel.kinetic.plasma-dispersion-function",
+   "entrypoint": "scirel.kinetic.plasma_dispersion:evaluate_plasma_dispersion",
+   "arguments": {
+    "args": [],
+    "kwargs": {
+     "z": {
+      "real": 0.2,
+      "imag": 0.7
+     },
+     "method": "jpole",
+     "order": 12
+    }
+   },
+   "status": "returned",
+   "returned_fields": [
+    "Z",
+    "w"
+   ],
+   "exception": null,
+   "warnings": [],
+   "returned_type": "Result"
+  },
+  {
+   "seq": 5,
+   "label": "fluid special function at the example point",
+   "asset": "scirel.kinetic.fluid-special-functions",
+   "entrypoint": "scirel.kinetic.fluid_spectrum:evaluate_fluid_special",
+   "arguments": {
+    "args": [],
+    "kwargs": {
+     "method": "RTAY",
+     "x": 2,
+     "parameter": 0
+    }
+   },
+   "status": "returned",
+   "returned_fields": null,
+   "exception": null,
+   "warnings": [],
+   "returned_type": "ndarray"
+  }
+ ],
+ "answer": {
+  "value": {
+   "scipy": {
+    "w": {
+     "dtype": "complex128",
+     "shape": [],
+     "real": 1.0,
+     "imag": 0.0
+    },
+    "Z": {
+     "dtype": "complex128",
+     "shape": [],
+     "real": 0.0,
+     "imag": 1.7724538509055159
+    }
+   },
+   "rational": {
+    "w": {
+     "dtype": "complex128",
+     "shape": [],
+     "real": 0.5159907422525318,
+     "imag": 0.07727470525262017
+    },
+    "Z": {
+     "real": -0.13696584890259533,
+     "imag": 0.9145697781370955
+    }
+   },
+   "weideman": {
+    "w": {
+     "dtype": "complex128",
+     "shape": [],
+     "real": 0.515990742303485,
+     "imag": 0.07727470516186759
+    },
+    "Z": {
+     "dtype": "complex128",
+     "shape": [],
+     "real": -0.13696584874174056,
+     "imag": 0.9145697782274076
+    }
+   },
+   "jpole": {
+    "w": {
+     "dtype": "complex128",
+     "shape": [],
+     "real": 0.5159907423034874,
+     "imag": 0.07727470516187178
+    },
+    "Z": {
+     "dtype": "complex128",
+     "shape": [],
+     "real": -0.136965848741748,
+     "imag": 0.914569778227412
+    }
+   }
+  },
+  "unit": "dimensionless w and Z",
+  "statement": "all four declared backends evaluated at the declared points"
+ },
+ "independent_check": {
+  "method": "the contract definition Z(z)=i*sqrt(pi)*w(z) is recomputed from each returned pair",
+  "observed": {
+   "max_relative_deviation": 1.2374893841896067e-16
+  },
+  "verdict": "pass"
+ },
+ "criteria": [
+  {
+   "id": "fields",
+   "kind": "contract_fields",
+   "status": "pass",
+   "detail": {
+    "declared": [
+     "Z",
+     "w"
+    ],
+    "returned": [
+     "Z",
+     "w"
+    ]
+   }
+  },
+  {
+   "id": "methodrecord",
+   "kind": "invariant",
+   "status": "pass",
+   "detail": {
+    "requested_backends": [
+     "scipy",
+     "rational",
+     "weideman",
+     "jpole"
+    ],
+    "requested_orders": [
+     null,
+     16,
+     null,
+     12
+    ],
+    "note": "the returned record has no method field; the requested method and order are carried by the arguments trace and the definition Z=i*sqrt(pi)*w is checked",
+    "per_call": [
+     {
+      "method": "scipy",
+      "order": null,
+      "Z_over_i_sqrt_pi_w_deviation": 0.0
+     },
+     {
+      "method": "rational",
+      "order": 16,
+      "Z_over_i_sqrt_pi_w_deviation": 0.0
+     },
+     {
+      "method": "weideman",
+      "order": null,
+      "Z_over_i_sqrt_pi_w_deviation": 0.0
+     },
+     {
+      "method": "jpole",
+      "order": 12,
+      "Z_over_i_sqrt_pi_w_deviation": 1.2374893841896067e-16
+     }
+    ]
+   }
+  },
+  {
+   "id": "readback",
+   "kind": "readback",
+   "status": "pass",
+   "detail": {
+    "reopened": "kinetic-faddeeva-family.json",
+    "problems": [],
+    "stored_call_count": 5
+   }
+  }
+ ],
+ "package_sufficient": true,
+ "sufficient_reason": "every declared backend is callable and satisfies the declared identity",
+ "gaps": [
+  {
+   "level": "experience",
+   "text": "a call that requests an order does not return that order, so a consumer cannot read back which order produced the value from the record alone"
+  }
+ ],
+ "bindings": {
+  "scirel.kinetic.plasma-dispersion-function": {
+   "symbol": "evaluate_plasma_dispersion",
+   "args": {
+    "z": {
+     "real": 0.0,
+     "imag": 0.0
+    },
+    "method": "scipy",
+    "order": null
+   },
+   "example_error": null
+  },
+  "scirel.kinetic.fluid-special-functions": {
+   "symbol": "evaluate_fluid_special",
+   "args": {
+    "method": "RTAY",
+    "x": 2,
+    "parameter": 0
+   },
+   "example_error": null
+  }
+ }
+}

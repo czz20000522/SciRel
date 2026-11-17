@@ -1,0 +1,520 @@
+{
+ "task_id": "kinetic-rational-pole",
+ "kind": "nominal",
+ "domain": "kinetic",
+ "subdomain": "rational and J-pole coefficient entries",
+ "question": "Build the declared rational deck, obtain its pole table, solve the matrix at one declared point, and report the pole count and grid coordinates actually used.",
+ "assets_declared": [
+  "scirel.kinetic.rational-default-deck",
+  "scirel.kinetic.rational-z-poles",
+  "scirel.kinetic.rational-solve-matrix",
+  "scirel.kinetic.rational-jpole-grid-coordinates"
+ ],
+ "min_calls": 4,
+ "package": {
+  "python": "3.14.7",
+  "numpy": "2.5.4",
+  "scipy": "1.18.1",
+  "mpmath": "1.4.1",
+  "wheel_sha256": "4fc9757a7b843cc3bce2dc96fd2280b27299cff93fbcf5b64a2321b58234f5d7",
+  "snapshot_sha256": "cf0269b61ba19d8b2e5e008a6a4a4d80f2cd701f78c34f2fcb3b16eed9a2593c",
+  "source_revision": "4b5b4aaa38650d8a902e4265f226175d166a426b",
+  "asset_count": 249,
+  "runtime": {
+   "dependencies_bundled": false,
+   "package_version": "0.0.0",
+   "requires_dist": [
+    "numpy==2.5.4",
+    "scipy==1.18.1",
+    "mpmath==1.4.1"
+   ],
+   "requires_python": ">=3.12",
+   "wheel": "scirel-0.0.0-py3-none-any.whl",
+   "wheel_sha256": "4fc9757a7b843cc3bce2dc96fd2280b27299cff93fbcf5b64a2321b58234f5d7"
+  }
+ },
+ "assets_used": [
+  "scirel.kinetic.rational-default-deck",
+  "scirel.kinetic.rational-jpole-grid-coordinates",
+  "scirel.kinetic.rational-solve-matrix",
+  "scirel.kinetic.rational-z-poles"
+ ],
+ "calls": [
+  {
+   "seq": 1,
+   "label": "declared default deck",
+   "asset": "scirel.kinetic.rational-default-deck",
+   "entrypoint": "scirel.kinetic.dispersion.rational:default_deck",
+   "arguments": {
+    "args": [],
+    "kwargs": {
+     "model": "es1d"
+    }
+   },
+   "status": "returned",
+   "returned_fields": null,
+   "exception": null,
+   "warnings": [],
+   "returned_type": "ndarray"
+  },
+  {
+   "seq": 2,
+   "label": "declared 8-pole table",
+   "asset": "scirel.kinetic.rational-z-poles",
+   "entrypoint": "scirel.kinetic.dispersion.magnetized:pole_coefficients",
+   "arguments": {
+    "args": [],
+    "kwargs": {
+     "J": 8
+    }
+   },
+   "status": "returned",
+   "returned_fields": null,
+   "exception": null,
+   "warnings": [],
+   "returned_type": "_State"
+  },
+  {
+   "seq": 3,
+   "label": "solve at the declared order 4",
+   "asset": "scirel.kinetic.rational-solve-matrix",
+   "entrypoint": "scirel.kinetic.dispersion.rational:solve_matrix",
+   "arguments": {
+    "args": [],
+    "kwargs": {
+     "matrix": {
+      "dtype": "complex128",
+      "shape": [
+       4,
+       4
+      ],
+      "real": [
+       [
+        -1.8498993597472042,
+        -11.440329018729683,
+        2.5490229921706193,
+        11.440329018729683
+       ],
+       [
+        -2.5490229921706193,
+        -11.65450408957313,
+        2.5490229921706193,
+        11.440329018729683
+       ],
+       [
+        -2.5490229921706193,
+        -11.440329018729683,
+        1.8498993597472042,
+        11.440329018729683
+       ],
+       [
+        -2.5490229921706193,
+        -11.440329018729683,
+        2.5490229921706193,
+        11.65450408957313
+       ]
+      ],
+      "imag": [
+       [
+        1.4989976879446112,
+        -2.186295371906014,
+        2.1862953719060245,
+        -2.186295371906014
+       ],
+       [
+        2.1862953719060245,
+        -2.950504468113975,
+        2.1862953719060245,
+        -2.186295371906014
+       ],
+       [
+        2.1862953719060245,
+        -2.186295371906014,
+        1.4989976879446112,
+        -2.186295371906014
+       ],
+       [
+        2.1862953719060245,
+        -2.186295371906014,
+        2.1862953719060245,
+        -2.950504468113975
+       ]
+      ]
+     },
+     "model": "es1d",
+     "sp": 0,
+     "nw": null,
+     "wg": 0
+    }
+   },
+   "status": "returned",
+   "returned_fields": [
+    "V",
+    "backward_residual",
+    "d",
+    "ind",
+    "indices",
+    "omega",
+    "w",
+    "wg",
+    "wi"
+   ],
+   "exception": null,
+   "warnings": [],
+   "returned_type": "dict"
+  },
+  {
+   "seq": 4,
+   "label": "declared 101x101 pole grid",
+   "asset": "scirel.kinetic.rational-jpole-grid-coordinates",
+   "entrypoint": "scirel.kinetic.dispersion.rational:jpole_grid_coordinates",
+   "arguments": {
+    "args": [],
+    "kwargs": {}
+   },
+   "status": "returned",
+   "returned_fields": [
+    "receipt",
+    "state"
+   ],
+   "exception": null,
+   "warnings": [],
+   "returned_type": "dict"
+  }
+ ],
+ "answer": {
+  "value": {
+   "declared_output_count": 46,
+   "returned_field_count": 9,
+   "missing_declared_fields": [
+    "A",
+    "H",
+    "N",
+    "accepted",
+    "all_finite",
+    "alpha",
+    "beta",
+    "canceled_poles",
+    "classification",
+    "constant",
+    "constant_decimal",
+    "frequency_base",
+    "frequency_base_decimal",
+    "frequency_offset",
+    "frequency_offset_decimal",
+    "frequency_scale_decimal",
+    "infinite_count",
+    "mode_classification",
+    "mode_count",
+    "pencil_residual",
+    "pole_square_decimal",
+    "poles",
+    "precision_digits",
+    "precision_limit",
+    "published_frequency_base_decimal",
+    "published_frequency_offset_decimal",
+    "published_omega",
+    "rational_residual",
+    "reference_pole_index",
+    "residues",
+    "root_brackets_delta_decimal",
+    "root_interval_index",
+    "root_sign",
+    "shift_chart_residual_decimal",
+    "source_pole_order",
+    "square_offset_decimal",
+    "weights_decimal"
+   ],
+   "absent_fields_the_criterion_needs": [
+    "N",
+    "source_pole_order",
+    "poles",
+    "residues"
+   ]
+  },
+  "unit": "counts and dimensionless frequencies"
+ },
+ "independent_check": {
+  "method": "the declared order 4 is compared with the returned N, source_pole_order and the pole/residue lengths",
+  "observed": {
+   "declared_output_count": 46,
+   "returned_field_count": 9,
+   "missing_declared_fields": [
+    "A",
+    "H",
+    "N",
+    "accepted",
+    "all_finite",
+    "alpha",
+    "beta",
+    "canceled_poles",
+    "classification",
+    "constant",
+    "constant_decimal",
+    "frequency_base",
+    "frequency_base_decimal",
+    "frequency_offset",
+    "frequency_offset_decimal",
+    "frequency_scale_decimal",
+    "infinite_count",
+    "mode_classification",
+    "mode_count",
+    "pencil_residual",
+    "pole_square_decimal",
+    "poles",
+    "precision_digits",
+    "precision_limit",
+    "published_frequency_base_decimal",
+    "published_frequency_offset_decimal",
+    "published_omega",
+    "rational_residual",
+    "reference_pole_index",
+    "residues",
+    "root_brackets_delta_decimal",
+    "root_interval_index",
+    "root_sign",
+    "shift_chart_residual_decimal",
+    "source_pole_order",
+    "square_offset_decimal",
+    "weights_decimal"
+   ],
+   "absent_fields_the_criterion_needs": [
+    "N",
+    "source_pole_order",
+    "poles",
+    "residues"
+   ]
+  },
+  "verdict": "not-run"
+ },
+ "criteria": [
+  {
+   "id": "fields",
+   "kind": "contract_fields",
+   "status": "fail",
+   "detail": {
+    "declared": [
+     "A",
+     "H",
+     "N",
+     "V",
+     "accepted",
+     "all_finite",
+     "alpha",
+     "backward_residual",
+     "beta",
+     "canceled_poles",
+     "classification",
+     "constant",
+     "constant_decimal",
+     "d",
+     "frequency_base",
+     "frequency_base_decimal",
+     "frequency_offset",
+     "frequency_offset_decimal",
+     "frequency_scale_decimal",
+     "ind",
+     "indices",
+     "infinite_count",
+     "mode_classification",
+     "mode_count",
+     "omega",
+     "pencil_residual",
+     "pole_square_decimal",
+     "poles",
+     "precision_digits",
+     "precision_limit",
+     "published_frequency_base_decimal",
+     "published_frequency_offset_decimal",
+     "published_omega",
+     "rational_residual",
+     "reference_pole_index",
+     "residues",
+     "root_brackets_delta_decimal",
+     "root_interval_index",
+     "root_sign",
+     "shift_chart_residual_decimal",
+     "source_pole_order",
+     "square_offset_decimal",
+     "w",
+     "weights_decimal",
+     "wg",
+     "wi"
+    ],
+    "returned": [
+     "V",
+     "backward_residual",
+     "d",
+     "ind",
+     "indices",
+     "omega",
+     "w",
+     "wg",
+     "wi"
+    ]
+   }
+  },
+  {
+   "id": "declared_counts",
+   "kind": "invariant",
+   "status": "not-run",
+   "detail": {
+    "declared_output_count": 46,
+    "returned_field_count": 9,
+    "missing_declared_fields": [
+     "A",
+     "H",
+     "N",
+     "accepted",
+     "all_finite",
+     "alpha",
+     "beta",
+     "canceled_poles",
+     "classification",
+     "constant",
+     "constant_decimal",
+     "frequency_base",
+     "frequency_base_decimal",
+     "frequency_offset",
+     "frequency_offset_decimal",
+     "frequency_scale_decimal",
+     "infinite_count",
+     "mode_classification",
+     "mode_count",
+     "pencil_residual",
+     "pole_square_decimal",
+     "poles",
+     "precision_digits",
+     "precision_limit",
+     "published_frequency_base_decimal",
+     "published_frequency_offset_decimal",
+     "published_omega",
+     "rational_residual",
+     "reference_pole_index",
+     "residues",
+     "root_brackets_delta_decimal",
+     "root_interval_index",
+     "root_sign",
+     "shift_chart_residual_decimal",
+     "source_pole_order",
+     "square_offset_decimal",
+     "weights_decimal"
+    ],
+    "absent_fields_the_criterion_needs": [
+     "N",
+     "source_pole_order",
+     "poles",
+     "residues"
+    ]
+   }
+  },
+  {
+   "id": "readback",
+   "kind": "readback",
+   "status": "pass",
+   "detail": {
+    "reopened": "kinetic-rational-pole.json",
+    "problems": [],
+    "stored_call_count": 4
+   }
+  }
+ ],
+ "package_sufficient": false,
+ "sufficient_reason": "the entry does not return the fields the criterion names, so the declared counts cannot be checked by a consumer",
+ "gaps": [
+  {
+   "level": "blocking",
+   "text": "scirel.kinetic.rational-solve-matrix returns 9 of 46 declared outputs for the declared es1d model; the record is missing 37 declared fields, including the pole count fields the task's criterion asks the consumer to read back"
+  }
+ ],
+ "bindings": {
+  "scirel.kinetic.rational-default-deck": {
+   "symbol": "default_deck",
+   "args": {
+    "model": "es1d"
+   },
+   "example_error": null
+  },
+  "scirel.kinetic.rational-z-poles": {
+   "symbol": "pole_coefficients",
+   "args": {
+    "J": 8
+   },
+   "example_error": null
+  },
+  "scirel.kinetic.rational-solve-matrix": {
+   "symbol": "solve_matrix",
+   "args": {
+    "matrix": {
+     "dtype": "complex128",
+     "shape": [
+      4,
+      4
+     ],
+     "real": [
+      [
+       -1.8498993597472042,
+       -11.440329018729683,
+       2.5490229921706193,
+       11.440329018729683
+      ],
+      [
+       -2.5490229921706193,
+       -11.65450408957313,
+       2.5490229921706193,
+       11.440329018729683
+      ],
+      [
+       -2.5490229921706193,
+       -11.440329018729683,
+       1.8498993597472042,
+       11.440329018729683
+      ],
+      [
+       -2.5490229921706193,
+       -11.440329018729683,
+       2.5490229921706193,
+       11.65450408957313
+      ]
+     ],
+     "imag": [
+      [
+       1.4989976879446112,
+       -2.186295371906014,
+       2.1862953719060245,
+       -2.186295371906014
+      ],
+      [
+       2.1862953719060245,
+       -2.950504468113975,
+       2.1862953719060245,
+       -2.186295371906014
+      ],
+      [
+       2.1862953719060245,
+       -2.186295371906014,
+       1.4989976879446112,
+       -2.186295371906014
+      ],
+      [
+       2.1862953719060245,
+       -2.186295371906014,
+       2.1862953719060245,
+       -2.950504468113975
+      ]
+     ]
+    },
+    "model": "es1d",
+    "sp": 0,
+    "nw": null,
+    "wg": 0
+   },
+   "example_error": null
+  },
+  "scirel.kinetic.rational-jpole-grid-coordinates": {
+   "symbol": "jpole_grid_coordinates",
+   "args": {},
+   "example_error": null
+  }
+ }
+}

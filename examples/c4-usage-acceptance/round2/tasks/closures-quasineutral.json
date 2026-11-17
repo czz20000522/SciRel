@@ -1,0 +1,371 @@
+{
+ "task_id": "closures-quasineutral",
+ "kind": "nominal",
+ "domain": "closures",
+ "subdomain": "quasineutral potential and reference density",
+ "question": "Solve the declared quasineutral potential for a declared density profile, check it against the Boltzmann relation at the same state, and report the Hall two-fluid pressure closure term.",
+ "assets_declared": [
+  "scirel.closures.quasineutral-potential",
+  "scirel.closures.boltzmann-quasineutrality",
+  "scirel.closures.hall-two-fluid-pressure"
+ ],
+ "min_calls": 3,
+ "package": {
+  "python": "3.14.7",
+  "numpy": "2.5.4",
+  "scipy": "1.18.1",
+  "mpmath": "1.4.1",
+  "wheel_sha256": "4fc9757a7b843cc3bce2dc96fd2280b27299cff93fbcf5b64a2321b58234f5d7",
+  "snapshot_sha256": "cf0269b61ba19d8b2e5e008a6a4a4d80f2cd701f78c34f2fcb3b16eed9a2593c",
+  "source_revision": "4b5b4aaa38650d8a902e4265f226175d166a426b",
+  "asset_count": 249,
+  "runtime": {
+   "dependencies_bundled": false,
+   "package_version": "0.0.0",
+   "requires_dist": [
+    "numpy==2.5.4",
+    "scipy==1.18.1",
+    "mpmath==1.4.1"
+   ],
+   "requires_python": ">=3.12",
+   "wheel": "scirel-0.0.0-py3-none-any.whl",
+   "wheel_sha256": "4fc9757a7b843cc3bce2dc96fd2280b27299cff93fbcf5b64a2321b58234f5d7"
+  }
+ },
+ "assets_used": [
+  "scirel.closures.boltzmann-quasineutrality",
+  "scirel.closures.hall-two-fluid-pressure",
+  "scirel.closures.quasineutral-potential"
+ ],
+ "calls": [
+  {
+   "seq": 1,
+   "label": "declared quasineutral solve",
+   "asset": "scirel.closures.quasineutral-potential",
+   "entrypoint": "scirel.closures.quasineutral_potential:solve_quasineutral_potential",
+   "arguments": {
+    "args": [],
+    "kwargs": {
+     "potential_reference_v": [
+      0.0,
+      17.0
+     ],
+     "temperature_parallel_j": 1.602176634e-20,
+     "electron_temperature_j": 1.602176634e-20,
+     "charge_c": 1.602176634e-19,
+     "active": [
+      true,
+      false
+     ],
+     "residual": "<function residual at 0x10b4eab90>",
+     "potential_tolerance_v": 1e-08,
+     "quasineutral_tolerance": 1e-10,
+     "max_iterations": 100,
+     "initial_bracket_thermal": 8.0
+    }
+   },
+   "status": "returned",
+   "returned_fields": [
+    "converged",
+    "iterations",
+    "logarithmic_charge_residual",
+    "potential_v"
+   ],
+   "exception": null,
+   "warnings": [],
+   "returned_type": "Result"
+  },
+  {
+   "seq": 2,
+   "label": "declared Boltzmann state",
+   "asset": "scirel.closures.boltzmann-quasineutrality",
+   "entrypoint": "scirel.closures.boltzmann_quasineutrality:compute_boltzmann_electron_state",
+   "arguments": {
+    "args": [],
+    "kwargs": {
+     "potential_v": 0.6931471805599453,
+     "electron_temperature_j": 1.602176634e-19,
+     "electron_density_ref_m3": 3.0,
+     "electron_phi_ref_v": 0.0,
+     "ion_density_m3": 3.0,
+     "ion_charge_state": 2.0
+    }
+   },
+   "status": "returned",
+   "returned_fields": [
+    "charge_residual_m3",
+    "electron_density_m3",
+    "electron_pressure_pa",
+    "logarithmic_charge_residual",
+    "relative_charge_residual"
+   ],
+   "exception": null,
+   "warnings": [],
+   "returned_type": "Result"
+  },
+  {
+   "seq": 3,
+   "label": "declared Hall two-fluid closure",
+   "asset": "scirel.closures.hall-two-fluid-pressure",
+   "entrypoint": "scirel.closures.hall_two_fluid_pressure:close_hall_two_fluid_pressure",
+   "arguments": {
+    "args": [],
+    "kwargs": {
+     "magnetic_field": [
+      [
+       1.0,
+       2.0
+      ]
+     ],
+     "psi": [
+      [
+       0.2,
+       0.4
+      ]
+     ],
+     "pressure_law": "<function law at 0x10b5d8a90>",
+     "ion_density_m3": 1e+18,
+     "electron_pressure_pa": 1.0,
+     "electrostatic_potential_v": 3.0,
+     "ion_p_parallel_pa": null,
+     "ion_p_perpendicular_pa": null,
+     "electron_p_parallel_pa": null,
+     "electron_p_perpendicular_pa": null,
+     "pressure_composition_mode": "independent_fit"
+    }
+   },
+   "status": "returned",
+   "returned_fields": [
+    "electron_density",
+    "electron_p_parallel",
+    "electron_p_perpendicular",
+    "electron_pressure",
+    "electrostatic_potential",
+    "ion_density",
+    "ion_p_parallel",
+    "ion_p_perpendicular",
+    "p_parallel",
+    "p_perpendicular",
+    "pressure_composition_mode",
+    "residual_stress_parallel_pa",
+    "residual_stress_perpendicular_pa",
+    "species_pressure_sum_consistent"
+   ],
+   "exception": null,
+   "warnings": [],
+   "returned_type": "Result"
+  },
+  {
+   "seq": 4,
+   "label": "uniform density at the reference potential",
+   "asset": "scirel.closures.boltzmann-quasineutrality",
+   "entrypoint": "scirel.closures.boltzmann_quasineutrality:compute_boltzmann_electron_state",
+   "arguments": {
+    "args": [],
+    "kwargs": {
+     "potential_v": 0.0,
+     "electron_temperature_j": 1.602176634e-19,
+     "electron_density_ref_m3": 3.0,
+     "electron_phi_ref_v": 0.0,
+     "ion_density_m3": 1.5,
+     "ion_charge_state": 2.0
+    }
+   },
+   "status": "returned",
+   "returned_fields": [
+    "charge_residual_m3",
+    "electron_density_m3",
+    "electron_pressure_pa",
+    "logarithmic_charge_residual",
+    "relative_charge_residual"
+   ],
+   "exception": null,
+   "warnings": [],
+   "returned_type": "Result"
+  },
+  {
+   "seq": 5,
+   "label": "perturbed state with the density moved by the Boltzmann factor",
+   "asset": "scirel.closures.boltzmann-quasineutrality",
+   "entrypoint": "scirel.closures.boltzmann_quasineutrality:compute_boltzmann_electron_state",
+   "arguments": {
+    "args": [],
+    "kwargs": {
+     "potential_v": 0.1,
+     "electron_temperature_j": 1.602176634e-19,
+     "electron_density_ref_m3": 3.0,
+     "electron_phi_ref_v": 0.0,
+     "ion_density_m3": 1.3572561270539394,
+     "ion_charge_state": 2.0
+    }
+   },
+   "status": "returned",
+   "returned_fields": [
+    "charge_residual_m3",
+    "electron_density_m3",
+    "electron_pressure_pa",
+    "logarithmic_charge_residual",
+    "relative_charge_residual"
+   ],
+   "exception": null,
+   "warnings": [],
+   "returned_type": "Result"
+  }
+ ],
+ "answer": {
+  "value": {
+   "uniform_density_residual_at_reference": {
+    "dtype": "float64",
+    "shape": [],
+    "values": -2.220446049250313e-16
+   },
+   "uniform_residual_zero": true,
+   "perturbed_residual": {
+    "dtype": "float64",
+    "shape": [],
+    "values": -0.20000000000000018
+   },
+   "declared_temperature_k": 1.602176634e-19
+  },
+  "unit": "m^-3 residual"
+ },
+ "independent_check": {
+  "method": "a uniform density placed at the reference potential must give a vanishing charge residual; the perturbed state is compared against the same residual",
+  "observed": {
+   "uniform_density_residual_at_reference": {
+    "dtype": "float64",
+    "shape": [],
+    "values": -2.220446049250313e-16
+   },
+   "uniform_residual_zero": true,
+   "perturbed_residual": {
+    "dtype": "float64",
+    "shape": [],
+    "values": -0.20000000000000018
+   },
+   "declared_temperature_k": 1.602176634e-19
+  },
+  "verdict": "pass"
+ },
+ "criteria": [
+  {
+   "id": "fields",
+   "kind": "contract_fields",
+   "status": "pass",
+   "detail": {
+    "declared": [
+     "converged",
+     "iterations",
+     "logarithmic_charge_residual",
+     "potential_v"
+    ],
+    "returned": [
+     "converged",
+     "iterations",
+     "logarithmic_charge_residual",
+     "potential_v"
+    ]
+   }
+  },
+  {
+   "id": "flatpotential",
+   "kind": "invariant",
+   "status": "pass",
+   "detail": {
+    "uniform_density_residual_at_reference": {
+     "dtype": "float64",
+     "shape": [],
+     "values": -2.220446049250313e-16
+    },
+    "uniform_residual_zero": true,
+    "perturbed_residual": {
+     "dtype": "float64",
+     "shape": [],
+     "values": -0.20000000000000018
+    },
+    "declared_temperature_k": 1.602176634e-19
+   }
+  },
+  {
+   "id": "readback",
+   "kind": "readback",
+   "status": "pass",
+   "detail": {
+    "reopened": "closures-quasineutral.json",
+    "problems": [],
+    "stored_call_count": 5
+   }
+  }
+ ],
+ "package_sufficient": true,
+ "sufficient_reason": "the Boltzmann state is a pointwise entry, so the uniform-density limit is reproducible from declared inputs",
+ "gaps": [
+  {
+   "level": "confidence",
+   "text": "the declared sign-inversion half of the criterion needs a root solve of the quasineutral entry with a consumer-supplied residual callback, which the example does not declare; only the uniform-density limit was evaluated"
+  }
+ ],
+ "bindings": {
+  "scirel.closures.quasineutral-potential": {
+   "symbol": "solve_quasineutral_potential",
+   "args": {
+    "potential_reference_v": [
+     0.0,
+     17.0
+    ],
+    "temperature_parallel_j": 1.602176634e-20,
+    "electron_temperature_j": 1.602176634e-20,
+    "charge_c": 1.602176634e-19,
+    "active": [
+     true,
+     false
+    ],
+    "residual": "<function residual at 0x10b4eab90>",
+    "potential_tolerance_v": 1e-08,
+    "quasineutral_tolerance": 1e-10,
+    "max_iterations": 100,
+    "initial_bracket_thermal": 8.0
+   },
+   "example_error": null
+  },
+  "scirel.closures.boltzmann-quasineutrality": {
+   "symbol": "compute_boltzmann_electron_state",
+   "args": {
+    "potential_v": 0.6931471805599453,
+    "electron_temperature_j": 1.602176634e-19,
+    "electron_density_ref_m3": 3.0,
+    "electron_phi_ref_v": 0.0,
+    "ion_density_m3": 3.0,
+    "ion_charge_state": 2.0
+   },
+   "example_error": null
+  },
+  "scirel.closures.hall-two-fluid-pressure": {
+   "symbol": "close_hall_two_fluid_pressure",
+   "args": {
+    "magnetic_field": [
+     [
+      1.0,
+      2.0
+     ]
+    ],
+    "psi": [
+     [
+      0.2,
+      0.4
+     ]
+    ],
+    "pressure_law": "<function law at 0x10b5d8a90>",
+    "ion_density_m3": 1e+18,
+    "electron_pressure_pa": 1.0,
+    "electrostatic_potential_v": 3.0,
+    "ion_p_parallel_pa": null,
+    "ion_p_perpendicular_pa": null,
+    "electron_p_parallel_pa": null,
+    "electron_p_perpendicular_pa": null,
+    "pressure_composition_mode": "independent_fit"
+   },
+   "example_error": null
+  }
+ }
+}
