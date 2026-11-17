@@ -101,7 +101,7 @@ def ronnmark_r(x, lam) -> "mp.mpc":
     is the reported limit and is returned directly instead of dividing by zero.
     """
     high_precision()
-    lam = mp.mathify = mp.mpmathify(lam)
+    lam = mp.mpmathify(lam)
     if lam == 0:
         xv = mp.mpmathify(x)
         return xv / (xv * xv - 1)
@@ -116,13 +116,12 @@ def ronnmark_h(x, lam) -> "mp.mpc":
     if lam == 0:
         xv = mp.mpmathify(x)
         return xv / (xv * xv - 1)
-    total, _tail = _harmonic_series(lam, x, lambda n: mp.mpf(n) ** 2, )
-    # The weight above supplies n**2 only; the derivative replaces Gamma by Gamma'.
     total = mp.mpc(0)
+    xv = mp.mpmathify(x)
     for n in range(-80, 81):
         if n == 0:
             continue
-        total += mp.mpf(n) ** 2 * gamma_harmonic_derivative(n, lam) / (mp.mpmathify(x) - n)
+        total += mp.mpf(n) ** 2 * gamma_harmonic_derivative(n, lam) / (xv - n)
     return total
 
 
