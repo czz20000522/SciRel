@@ -109,7 +109,7 @@
    "Independent basis: the returned spectrum has exactly 4*S + 6 modes and its two orderings are permutations of the same complete spectrum, compared as complex values rather than moduli, each descending in its own declared key.",
    "Both returned orderings are permutations of the same complete spectrum, compared as complex values rather than moduli, and each is descending in its own declared key.",
    "The relativistic flag selects the tangent inertia gamma I + gamma**3 v v^T / c**2 while the nonrelativistic branch declares A = I, so with a nonzero drift the two spectra must differ; a call that ignored the flag would return identical spectra.",
-   "Test matrix: the tracked two-species fixture at four wavevectors on both branches, plus the cold drift-free limit where the spectrum must contain the total plasma frequency sqrt(4 + 1) = sqrt(5) as an absolute anchor: measured 2.236068, i.e. sqrt(5) to eight digits.",
+   "Test matrix: the tracked two-species fixture at four wavevectors on both branches, each returning 4*S + 6 modes.",
    "Failure matrix: one assertion per channel -- a spectrum that is not the pencil's (size and ordering), a mislabelled branch (spectrum shift), a truncated spectrum (mode count), and a conjugation or sign error (complex comparison instead of modulus).",
    "Precision budget, written before measurement: exact equality on the ordering permutation, 1e-12 on the descending sort, and a 1e-6 shift threshold for the branch difference."
   ],
@@ -118,9 +118,9 @@
   ],
   "evidence_ceiling": "Bounded to the declared normalized relativistic co-drift generalized pencil with ky = 0, gamma_pressure = 1 and a zero collision matrix. Established by the generalized-eigenvalue identity on the returned pencil and by the branch-difference relation; the spectrum size, both orderings and the descending keys are asserted as equalities. Excluded scope: physical mode identification, stability interpretation, and any claim that the relativistic branch is accurate beyond the declared inertia model.",
   "known_limitations": [
-   "No physical mode identity is established: the evidence shows the returned values are the pencil's spectrum, not that any of them is a named mode.",
+   "No physical mode identity is established: the evidence shows the returned values are a complete spectrum of the declared size with consistent orderings, not that any of them is a named mode.",
    "The relativistic inertia is the declared tangent form; a covariant four-force closure is outside this contract and is not verified here.",
-   "The eigen-identity form of this evidence (det(M - lambda A) = 0 at 40 digits) was attempted but could not be completed: the call returns the spectrum, not the assembled M and A. The contract therefore rests on the mode count, the two orderings, the branch difference and the cold-limit absolute anchor, which is what the tests assert."
+   "The eigen-identity form of this evidence (det(M - lambda A) = 0 at 40 digits) could not be completed because the call returns the spectrum and not the assembled M and A. The mutation run then showed that a common rescaling of the returned frequencies survives: every assertion stated here is scale-invariant. An absolute anchor is still missing and is recorded as an open gap rather than papered over."
   ]
  }
 }
