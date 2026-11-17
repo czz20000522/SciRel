@@ -82,10 +82,14 @@ def test_cold_limit_root_is_the_published_plasma_frequency():
     assert below < 0.0, f"determinant is not negative below the root: {below:.3e}"
     assert above > 0.0, f"determinant is not positive above the root: {above:.3e}"
 
+    # Bisect on the *midpoint*: testing ``_determinant(a)`` instead would be true on
+    # every iteration and would walk ``a`` straight to the upper bracket, landing on
+    # 1.05 * omega_p -- a 2.5e-2 "agreement" that looks like physics and is only the
+    # bracket edge.
     a, b = low, high
     for _ in range(60):
         middle = (a + b) / 2
-        if _determinant(a).real < 0.0:
+        if _determinant(middle).real < 0.0:
             a = middle
         else:
             b = middle
