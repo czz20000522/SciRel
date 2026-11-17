@@ -80,9 +80,9 @@
      "title": "Using the TREX, BRB and WHAM source geometries",
      "introduction": "These constructors retain the source filament arrangements and constants and do not provide experimental device calibration. WHAM defaults to a common current of 1 A; in BRB, intended currents must explicitly distinguish per-filament current from total ampere-turns and must not be guessed from invalid old attribute assignments.",
      "assets": [
-      "scirel.electromagnetism.trex-coil",
-      "scirel.electromagnetism.brb",
-      "scirel.electromagnetism.wham"
+      "scirel.configurations.trex-coil",
+      "scirel.configurations.brb",
+      "scirel.configurations.wham"
      ]
     }
    ]
@@ -814,7 +814,7 @@
      "title": "Distinguishing coordinate interior differences from true arc-length derivatives",
      "introduction": "The nonuniform-coordinate entry point computes interior derivatives with a local quadratic; the arc-length entry point uses actual adjacent chord lengths and one-sided endpoint formulas. Descending coordinates should reverse inputs and outputs under the corresponding contract without additionally changing the sign of the physical derivative.",
      "assets": [
-      "scirel.numerics.nonuniform-derivatives",
+      "scirel.geometry.nonuniform-derivatives",
       "scirel.sampling.nonuniform-first-derivative",
       "scirel.fieldline.arclength-derivative"
      ]

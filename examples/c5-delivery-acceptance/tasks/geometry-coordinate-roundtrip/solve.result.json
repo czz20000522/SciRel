@@ -1,0 +1,242 @@
+{
+  "task_id": "geometry-coordinate-roundtrip",
+  "assets_used": [
+    "scirel.sampling.meridional-polar-forward",
+    "scirel.sampling.meridional-polar-inverse"
+  ],
+  "calls": [
+    {
+      "entrypoint": "catalog/contracts read",
+      "arguments": {
+        "paths": [
+          "catalog/contracts/scirel.sampling.meridional-polar-forward.json",
+          "catalog/contracts/scirel.sampling.meridional-polar-inverse.json"
+        ]
+      },
+      "status": "ok",
+      "asset_ids": [
+        "scirel.sampling.meridional-polar-forward",
+        "scirel.sampling.meridional-polar-inverse"
+      ]
+    },
+    {
+      "entrypoint": "scirel.geometry.sampling.transform_to_rtheta",
+      "arguments": {
+        "Rho": [
+          0.15,
+          0.4,
+          0.9,
+          1.5,
+          0.6,
+          1.1
+        ],
+        "Z": [
+          1.2,
+          -0.85,
+          0.35,
+          -1.1,
+          0.0,
+          0.55
+        ],
+        "rho_component": [
+          1.0,
+          -2.5,
+          0.75,
+          3.25,
+          -0.5,
+          2.0
+        ],
+        "z_component": [
+          0.5,
+          1.75,
+          -3.0,
+          0.25,
+          2.5,
+          -1.25
+        ]
+      },
+      "status": "returned",
+      "returned": {
+        "r": [
+          1.2093386622447824,
+          0.9394147114027968,
+          0.9656603957913983,
+          1.8601075237738276,
+          0.6,
+          1.2298373876248845
+        ],
+        "theta": [
+          0.12435499454676144,
+          2.701750070774057,
+          1.1999050379822342,
+          2.20354516179708,
+          1.5707963267948966,
+          1.1071487177940904
+        ]
+      }
+    },
+    {
+      "entrypoint": "scirel.geometry.sampling.transform_to_rhoz",
+      "arguments": {
+        "R": [
+          1.2093386622447824,
+          0.9394147114027968,
+          0.9656603957913983,
+          1.8601075237738276,
+          0.6,
+          1.2298373876248845
+        ],
+        "Theta": [
+          0.12435499454676144,
+          2.701750070774057,
+          1.1999050379822342,
+          2.20354516179708,
+          1.5707963267948966,
+          1.1071487177940904
+        ],
+        "r_component": [
+          0.6201736729460423,
+          -2.647925319676439,
+          -0.38833527980887317,
+          2.4729753206241636,
+          -0.5,
+          1.2298373876248843
+        ],
+        "theta_component": [
+          0.9302605094190634,
+          1.516901941925196,
+          3.0678487104900993,
+          -2.123533155753358,
+          -2.5,
+          2.0124611797498106
+        ]
+      },
+      "status": "returned",
+      "returned": {
+        "rho": [
+          0.15,
+          0.4000000000000001,
+          0.9,
+          1.5,
+          0.6,
+          1.1
+        ],
+        "z": [
+          1.2,
+          -0.8499999999999999,
+          0.35000000000000003,
+          -1.1000000000000003,
+          3.6739403974420595e-17,
+          0.5500000000000002
+        ]
+      }
+    }
+  ],
+  "answer": {
+    "positions": {
+      "Rho_m": [
+        0.15,
+        0.4,
+        0.9,
+        1.5,
+        0.6,
+        1.1
+      ],
+      "Z_m": [
+        1.2,
+        -0.85,
+        0.35,
+        -1.1,
+        0.0,
+        0.55
+      ],
+      "r_m": [
+        1.2093386622447824,
+        0.9394147114027968,
+        0.9656603957913983,
+        1.8601075237738276,
+        0.6,
+        1.2298373876248845
+      ],
+      "theta_rad": [
+        0.12435499454676144,
+        2.701750070774057,
+        1.1999050379822342,
+        2.20354516179708,
+        1.5707963267948966,
+        1.1071487177940904
+      ]
+    },
+    "position_roundtrip_max_abs_error_m": 2.220446049250313e-16,
+    "vector_roundtrip_max_abs_error": 4.440892098500626e-16,
+    "norm_preservation_max_abs_error": 8.881784197001252e-16,
+    "units": "m for positions, rad for theta, caller vector for components"
+  },
+  "independent_check": {
+    "C1_position_roundtrip": {
+      "criterion": "position round-trip |Rho'-Rho|,|Z'-Z| <= 1e-14",
+      "max_abs_deviation": 2.220446049250313e-16,
+      "declared_tolerance": 1e-14,
+      "passed": true
+    },
+    "C2_vector_roundtrip": {
+      "criterion": "vector round-trip |v'-v| <= 1e-14",
+      "max_abs_deviation": 4.440892098500626e-16,
+      "declared_tolerance": 1e-14,
+      "passed": true
+    },
+    "C3_norm_preservation": {
+      "criterion": "vector norm preserved both directions <= 1e-15",
+      "max_abs_deviation": 8.881784197001252e-16,
+      "declared_tolerance": 1e-15,
+      "passed": true
+    },
+    "C4_independent_closed_form": {
+      "criterion": "contract-text closed form reproduces the package output <= 1e-15",
+      "max_abs_deviation": 4.440892098500626e-16,
+      "declared_tolerance": 1e-15,
+      "passed": true
+    },
+    "C5_convention_discriminator": {
+      "criterion": "cos(theta) equals Z/r (declared) and not -Z/r (legacy) at Z<0",
+      "points_with_z_negative": 2,
+      "cos_theta_declared": [
+        -0.9048187022009941,
+        -0.5913636636275174
+      ],
+      "cos_theta_legacy": [
+        0.9048187022009941,
+        0.5913636636275174
+      ],
+      "cos_theta_observed": [
+        -0.904818702200994,
+        -0.5913636636275175
+      ],
+      "max_abs_deviation_from_declared": 1.1102230246251565e-16,
+      "min_abs_deviation_from_legacy": 1.182727327255035,
+      "declared_tolerance": 1e-15,
+      "passed": true
+    },
+    "C6_contract_example": {
+      "criterion": "contract example: transform_to_rtheta(0,2,3,4) == (2,0,4,3)",
+      "observed_forward": [
+        2.0,
+        0.0,
+        4.0,
+        3.0
+      ],
+      "observed_inverse": [
+        0.0,
+        2.0,
+        3.0,
+        4.0
+      ],
+      "passed": true
+    }
+  },
+  "package_sufficient": true,
+  "gaps": [
+    "Only the two-dimensional meridional (Rho,Z) <-> (r,theta) pair is delivered. There is no full three-dimensional Cartesian <-> cylindrical transform with the toroidal angle (a search for 'cartesian cylindrical' returns only grid-mapping/interpolation assets), so a toroidal-coordinate workflow has to supply that leg itself.",
+    "Both contracts exclude the polar basis at the origin; no asset supplies a regularised origin basis or a documented fallback there."
+  ]
+}

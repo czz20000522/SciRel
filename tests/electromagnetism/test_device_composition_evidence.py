@@ -1,8 +1,8 @@
 """Independent evidence for the ordered device compositions.
 
 Assets: ``scirel.electromagnetism.device``,
-``scirel.electromagnetism.trex-coil``, ``scirel.electromagnetism.brb`` and
-``scirel.electromagnetism.wham``.
+``scirel.configurations.trex-coil``, ``scirel.configurations.brb`` and
+``scirel.configurations.wham``.
 
 These assets are compositions: a device is an ordered container of source
 sets, and the two fixed configurations are hard-coded arrangements of the

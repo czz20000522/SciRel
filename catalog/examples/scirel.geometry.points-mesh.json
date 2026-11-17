@@ -8,14 +8,15 @@
   "scope": [
    "Vector PointsMesh coordinates consumed in test_device_ordered_current_matrix_override_and_mesh_lifecycle and test_complete_configuration_current_reversal_and_direct_child_state; these tests do not assert rejection of multidimensional input.",
    "The executable constructor example stored in this contract",
-   "Independent evidence (tests/geometry/test_frame_convention_evidence.py): the constructor keeps the shape it is given ((2,2) stays (2,2), a scalar pair becomes (1,)), passes coordinates through bitwise, and each of the three rejection channels (shapes differing after squeeze, nonfinite coordinates, negative R) is asserted."
+   "Independent basis (tests/geometry/test_transform_roundtrip_evidence.py, tests/geometry/test_frame_convention_evidence.py): an analytic identity of the library's own inverse pair - forward(inverse(R, Z)) = (R, Z) through Mesh.r = hypot(R, Z) and Mesh.theta = arctan2(R, Z) - rebuilds the stored point and recovers the radius bitwise on the 3-4-5 triple (hypot(3, 4) = 5 exactly); the store itself is an exact  pass-through for a (2, 2) block, a scalar pair and the R = 0 boundary; and the shape, finiteness and negative-R channels each carry one executable assertion."
   ],
   "tests": [
    "tests/geometry/test_geometry_qualification.py",
    "tests/geometry/test_runtime_lifecycle.py",
-   "tests/geometry/test_frame_convention_evidence.py"
+   "tests/geometry/test_frame_convention_evidence.py",
+   "tests/geometry/test_transform_roundtrip_evidence.py"
   ],
-  "evidence_ceiling": "Named finite geometry cases only; no field-solver, experimental, or release claim is made. C1 evidence adds the shape rule, the bitwise pass-through and the three rejection channels; it does not establish that the stored points are consistent with any surface or grid.",
+  "evidence_ceiling": "Named finite geometry cases only; no field-solver, experimental, or release claim is made. C1 evidence adds the shape rule, the bitwise pass-through and the three rejection channels; it does not establish that the stored points are consistent with any surface or grid. C1 evidence adds the round-trip identity through the derived radius and angle, the bitwise pass-through on an asymmetric block and the exact radius on the 3-4-5 triple.",
   "known_limitations": [
    "Mesh objects do not by themselves validate a physical field model or device geometry.",
    "No geometric validation beyond finiteness and non-negative R: a repeated point, an unordered set, or a 2-D array a caller assumes is a tensor-product grid is accepted as given. The `theta` property of this family returns **radians** (arctan2(R, Z)) while `ThetaChord` and `SphericalRChord` take **degrees**; the two cannot be interchanged (see ticket T-2026-0005)."

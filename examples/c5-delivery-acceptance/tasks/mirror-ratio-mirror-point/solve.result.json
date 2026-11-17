@@ -1,0 +1,173 @@
+{
+  "task_id": "mirror-ratio-mirror-point",
+  "assets_used": [
+    "scirel.mirror.loss-cone-spectrum"
+  ],
+  "calls": [
+    {
+      "entrypoint": "catalog/contracts read",
+      "arguments": {
+        "path": "catalog/contracts/scirel.mirror.loss-cone-spectrum.json"
+      },
+      "status": "ok",
+      "asset_id": "scirel.mirror.loss-cone-spectrum"
+    },
+    {
+      "entrypoint": "scirel.mirror.loss_cone_spectrum.solve_loss_cone_spectrum",
+      "arguments": {
+        "xi_tp": 0.5773502691896257,
+        "mode_count": 3,
+        "grid_points": 256
+      },
+      "status": "returned",
+      "returned_fields": [
+        "backend",
+        "boundary_residuals",
+        "degrees",
+        "eigenfunctions",
+        "eigenvalues",
+        "evaluation_method",
+        "xi"
+      ]
+    }
+  ],
+  "answer": {
+    "mirror_ratio": {
+      "value": 3.0,
+      "units": "dimensionless"
+    },
+    "loss_cone_pitch_cosine": {
+      "value": 0.5773502691896257,
+      "units": "dimensionless"
+    },
+    "loss_cone_pitch_angle": {
+      "value": 35.264389682754654,
+      "units": "degree"
+    },
+    "pitch_cosine_endpoint": {
+      "value": 0.5773502691896258,
+      "units": "dimensionless",
+      "note": "= sqrt(B_min/B_max) = 1/sqrt(3) exactly for R_m=3"
+    },
+    "angular_modes": {
+      "degrees": [
+        2.000000000000001,
+        7.1378972211233025,
+        12.249540221565423
+      ],
+      "eigenvalues": [
+        6.000000000000004,
+        58.08747396044307,
+        162.30077586131452
+      ],
+      "units": "dimensionless"
+    },
+    "particles": [
+      {
+        "pitch_angle_deg": 20.0,
+        "sin_pitch": 0.3420201433256687,
+        "trapped": false,
+        "mirror_field_t": 4.274316085206515,
+        "mirror_point_m": null,
+        "criterion_check": {
+          "criterion": "escaped: analytic mirror field exceeds B_max",
+          "analytic_mirror_field_t": 4.274316085206515,
+          "b_max_t": 1.5,
+          "integration_escaped": true,
+          "passed": true
+        },
+        "energy_check": {
+          "criterion": "RK4 energy drift <= 1e-10",
+          "max_relative_energy_drift": 2.7695714053636565e-15,
+          "declared_tolerance": 1e-10,
+          "passed": true
+        }
+      },
+      {
+        "pitch_angle_deg": 45.0,
+        "sin_pitch": 0.7071067811865475,
+        "trapped": true,
+        "mirror_field_t": 1.0000000000000002,
+        "mirror_point_m": 0.2121320343559643,
+        "criterion_check": {
+          "criterion": "integrated turning point equals analytic mirror point",
+          "analytic_mirror_point_m": 0.2121320343559643,
+          "integrated_turning_point_m": 0.2121320212793961,
+          "deviation_m": 1.307656821714076e-08,
+          "declared_tolerance_m": 1e-06,
+          "passed": true
+        },
+        "energy_check": {
+          "criterion": "RK4 energy drift <= 1e-10",
+          "max_relative_energy_drift": 2.7695714053636565e-15,
+          "declared_tolerance": 1e-10,
+          "passed": true
+        }
+      }
+    ]
+  },
+  "independent_check": {
+    "C1_exact_integer_mode": {
+      "criterion": "exact integer mode P_2 at xi_tp=1/sqrt(3)",
+      "degree_0": 2.000000000000001,
+      "eigenvalue_0": 6.000000000000004,
+      "degree_0_deviation": 8.881784197001252e-16,
+      "eigenvalue_0_deviation": 4.440892098500626e-15,
+      "eigenfunction_max_abs_deviation": 1.6930901125533637e-15,
+      "declared_tolerance": 2e-10,
+      "passed": true
+    },
+    "C2_endpoint_residual": {
+      "criterion": "contract endpoint residual |u(xi_tp)| <= 2e-8",
+      "max_abs_boundary_residual": 5.294237270803137e-13,
+      "declared_tolerance": 2e-08,
+      "passed": true
+    },
+    "C3_mirror_point_vs_integration": [
+      {
+        "criterion": "escaped: analytic mirror field exceeds B_max",
+        "analytic_mirror_field_t": 4.274316085206515,
+        "b_max_t": 1.5,
+        "integration_escaped": true,
+        "passed": true
+      },
+      {
+        "criterion": "integrated turning point equals analytic mirror point",
+        "analytic_mirror_point_m": 0.2121320343559643,
+        "integrated_turning_point_m": 0.2121320212793961,
+        "deviation_m": 1.307656821714076e-08,
+        "declared_tolerance_m": 1e-06,
+        "passed": true
+      }
+    ],
+    "C4_energy_conservation": [
+      {
+        "criterion": "RK4 energy drift <= 1e-10",
+        "max_relative_energy_drift": 2.7695714053636565e-15,
+        "declared_tolerance": 1e-10,
+        "passed": true
+      },
+      {
+        "criterion": "RK4 energy drift <= 1e-10",
+        "max_relative_energy_drift": 2.7695714053636565e-15,
+        "declared_tolerance": 1e-10,
+        "passed": true
+      }
+    ],
+    "C5_contract_declared_example": {
+      "criterion": "contract example declaration: eigenvalues at xi_tp=1/sqrt(3) are 6.0 and 58.08747396",
+      "declared_second_eigenvalue": "58.08747396",
+      "observed_second_eigenvalue": 58.08747396044307,
+      "deviation": 4.4307313373792567e-10,
+      "declared_tolerance": 1e-08,
+      "passed": true
+    },
+    "note": "C3 and C4 come from an independent route (RK4 orbit in the same analytic field); C1 comes from the closed-form Legendre polynomial, not from the operator."
+  },
+  "package_sufficient": false,
+  "gaps": [
+    "No asset computes the mirror ratio R_m = B_max/B_min: all 12 mirror-domain contracts take the loss-cone boundary as an input rather than deriving it.",
+    "No asset computes the loss-cone pitch angle or the mirror-point location from a field profile; both were written as ordinary code here.",
+    "No general magnetic-field constructor is delivered: scirel.mirror.grid-mirror-kinetic-closure interpolates a caller-supplied b_t grid at two named planes and is explicitly excluded as a field constructor, so the analytic B(z) used here is consumer code."
+  ]
+}

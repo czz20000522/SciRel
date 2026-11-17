@@ -1116,7 +1116,7 @@
      "本合同所载可执行旋转示例。",
      "直接形状回归要求标量点抛 ValueError，并检查零角旋转对单点、空数组及批量 (...,2) 点保持形状和数值，且不修改调用者数组。",
      "有限输入在平移、旋转和最终加回中心时溢出，在 NumPy 的 warn、ignore、raise 模式下均抛 FloatingPointError；非有限输入仍抛 ValueError，可表示结果保持 float64、原形状及调用者输入不变。",
-     "独立证据：+90 度把 (1, 0) 映到 (0, −1) 并用 Z 分量为负排除逆时针；30 度与精确余弦/正弦一致；绕 (1, 0) 转 180 度回到枢轴；360 度在 8 eps 内为恒等；保留前导批量维；一维长度 2 数组被视为单点；用 1.7e308 触发 FloatingPointError 溢出通道。"
+     "独立依据（tests/geometry/test_transform_roundtrip_evidence.py、tests/geometry/test_frame_convention_evidence.py）：用实现所读的同一对取整 c 与 s，在 Fraction 中精确重算 R' = x c + y s 与 Z' = -x s + y c，把公式限制在 2 eps (|x| + |y|) 内，从而在不触碰超越函数输入的前提下判定符号配对；rotate(-angle) 接在 rotate(angle) 之后在 8 eps 内为恒等，覆盖六个角度、枢轴、整圈、前导批量轴与单点行；90 度时精确有理和逐位舍入到返回分量上，故与理想映射的全部偏差就是 cos(radians(90)) = 6.12e-17；朝向、单位、枢轴与 FloatingPointError 通道由同一文件中的判别算例裁定。"
     ],
     "known_limitations": [
      "这个平面变换不验证物理场模型，也不强制柱半径 R 非负。",
@@ -1135,7 +1135,7 @@
    }
   },
   {
-   "asset_id": "scirel.numerics.nonuniform-derivatives",
+   "asset_id": "scirel.geometry.nonuniform-derivatives",
    "summary": "在每个内部横坐标处对局部二次多项式求导。",
    "definition": "在每个内部横坐标处对局部二次多项式求导。",
    "model": "三点不等间距多项式算子。采用 x 坐标单位及 y 值单位。",
