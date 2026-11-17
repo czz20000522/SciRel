@@ -196,3 +196,26 @@ def test_the_repository_itself_passes_the_checker():
 
 再加一位：**新建的门禁要用一次变异证明它会红**。把一份违规样本放进被检查的目录、看测试是否
 失败、再删掉。只证明"能绿"的门禁，无法区分"没有违规"和"没有检查"。
+
+#### 检查脚本接线审计（2026-11-17）
+
+对 `scripts/` 下全部检查脚本逐个人工读调用点，结论：**都接了线**。但这条审计本身值得记，
+因为**我用两种机械办法都判错了**：
+
+| 办法 | 误判 |
+| --- | --- |
+| 测试文件里出现脚本名且提到 `ROOT` | **假阳性**：`#359` 那个从不运行的检查器也会命中——它的测试 import 了模块、用 `ROOT` 指基线路径，但从没在真实 `catalog/examples/` 上执行过 |
+| 测试里出现 `subprocess.run([... <脚本名> ...])` 或 `main(["--root", ROOT])` | **假阴性**：`test_observation_integrity.py` 写的是 `SCRIPT = ROOT / "scripts" / ...` 再传 `str(SCRIPT)`，字面名不在那一行 |
+
+所以：**接线只能读出来，不能匹配出来。** 判据是"这个脚本的 `main()`（或等价入口）是否在某处收到仓库根"，
+而不是源码里出现了什么字符串。
+
+有效的读法有三种，都见过：
+- 子进程传 `ROOT`：`subprocess.run([sys.executable, str(SCRIPT), str(ROOT)])`；
+- 直接调入口：`validate(ROOT)`；
+- 作为 `check_all.py` 的一个步骤（`validate_asset_documents.py`、`check_wheel_exposure.py`、
+  `validate_extraction_package.py` 走这条）。
+
+有一处**未确认为仓库级**：`validate_installed_wheel.py` 目前由合成收据驱动的单元测试覆盖，
+真实产物的校验发生在发布档的 wheel 步骤里。它不属于"没接线"，但也不属于"在仓库上跑过"——
+如实记在这里，不要读成已覆盖。
