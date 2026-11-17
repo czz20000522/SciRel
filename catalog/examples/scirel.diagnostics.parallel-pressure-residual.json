@@ -1,272 +1,277 @@
 {
- "schema": "scirel.asset-document",
- "asset_id": "scirel.diagnostics.parallel-pressure-residual",
- "title": {
-  "en": "Parallel-pressure equilibrium residual",
-  "zh": "平行压强平衡残差"
- },
- "summary": "Evaluate a local gyrotropic pressure diagnostic with an explicitly supplied fixed-flux derivative. Return the named fields as a scirel._result.Result mapping.",
- "taxonomy": [
-  "diagnostics",
-  "anisotropic-pressure",
-  "equilibrium-residual"
- ],
- "aliases": [
-  "parallel pressure relation check"
- ],
- "discovery": {
-  "capability": [
-   "Parallel-pressure equilibrium residual",
-   "Evaluate local gyrotropic parallel-pressure compatibility from parallel pressure, perpendicular pressure and field samples."
+  "schema": "scirel.asset-document",
+  "asset_id": "scirel.diagnostics.parallel-pressure-residual",
+  "title": {
+    "en": "Parallel-pressure equilibrium residual",
+    "zh": "平行压强平衡残差"
+  },
+  "summary": "Evaluate a local gyrotropic pressure diagnostic with an explicitly supplied fixed-flux derivative. Return the named fields as a scirel._result.Result mapping.",
+  "taxonomy": [
+    "diagnostics",
+    "anisotropic-pressure",
+    "equilibrium-residual"
   ],
-  "operation": [
-   "gyrotropic parallel-pressure compatibility residual for an explicit fixed-flux law",
-   "parallel and perpendicular pressures plus field samples -> expected perpendicular pressure, error metrics and pass flag"
+  "aliases": [
+    "parallel pressure relation check"
   ],
-  "model": "Gyrotropic parallel-pressure compatibility for an explicitly specified fixed-flux law; not a spatial force-balance residual.",
-  "geometry": "Explicit fixed-psi pressure law or caller-designated sample lines whose flux label is constant along field_axis.",
-  "boundary": "An explicit derivative may be scalar, broadcastable or callable(B,psi); otherwise B must be strictly monotone along each constant-psi line, and constant-field data require explicit derivative information.",
-  "device_scope": "generic"
- },
- "identity": {
-  "relation": "Parallel pressure and magnetic-field samples to an expected perpendicular pressure and residual",
-  "direction": "(p_parallel, p_perp, B) -> rhs, error, relative_error, aggregate errors, passed",
-  "definition": "rhs=p_parallel-B*(partial p_parallel/partial B)_psi, algebraically equal to -B^2*partial(p_parallel/B)/partial B at fixed psi. error=p_perp-rhs; relative_error=abs(error)/max(abs(p_perp),abs(rhs),atol). passed means max(relative_error)<=rtol. All named fields are returned together in a scirel._result.Result mapping; mapping and attribute access expose the same values. Ordinary well-conditioned samples retain their float64 operation order. Cancellation, intermediate range loss or upper-range proximity evaluates the complete original-input binary-rational relations and rounds rhs, error and relative_error separately at the end; error does not subtract an already-rounded public rhs. A required nonzero final value that rounds to zero is rejected, while exactly representable subnormal values are retained. Neither rtol nor atol is changed. The upper-range guard selects exact recovery, not rejection: a complete relation slightly above the largest float64 is retained when its final rounding is finite; a complete relation at the overflow rounding midpoint is rejected even when successive ordinary operations each return finite values.",
-  "model": "Gyrotropic parallel-pressure compatibility for an explicitly specified fixed-flux law; not a spatial force-balance residual.",
-  "geometry": "Explicit fixed-psi pressure law or caller-designated sample lines whose flux label is constant along field_axis.",
-  "coordinates": "Magnetic-field magnitude B at fixed flux label psi; arrays are never flattened and globally sorted to infer this partial derivative.",
-  "boundary": "An explicit derivative may be scalar, broadcastable array, or callable(B,psi). Alternatively supply field_axis and psi: B must be strictly monotone along each line, with at least two samples, and psi exactly constant along that axis. Constant-field data require explicit derivative information; no zero-derivative fallback exists.",
-  "assumptions": [
-   "B is a positive magnitude in T and both pressures use Pa.",
-   "The caller supplies a true fixed-flux partial derivative or valid fixed-psi sampling geometry.",
-   "Finite differences have endpoint/sampling error; a successful numerical diagnostic is not a spatial force-balance or global-stability proof."
+  "discovery": {
+    "capability": [
+      "Parallel-pressure equilibrium residual",
+      "Evaluate local gyrotropic parallel-pressure compatibility from parallel pressure, perpendicular pressure and field samples."
+    ],
+    "operation": [
+      "gyrotropic parallel-pressure compatibility residual for an explicit fixed-flux law",
+      "parallel and perpendicular pressures plus field samples -> expected perpendicular pressure, error metrics and pass flag"
+    ],
+    "model": "Gyrotropic parallel-pressure compatibility for an explicitly specified fixed-flux law; not a spatial force-balance residual.",
+    "geometry": "Explicit fixed-psi pressure law or caller-designated sample lines whose flux label is constant along field_axis.",
+    "boundary": "An explicit derivative may be scalar, broadcastable or callable(B,psi); otherwise B must be strictly monotone along each constant-psi line, and constant-field data require explicit derivative information.",
+    "device_scope": "generic"
+  },
+  "identity": {
+    "relation": "Parallel pressure and magnetic-field samples to an expected perpendicular pressure and residual",
+    "direction": "(p_parallel, p_perp, B) -> rhs, error, relative_error, aggregate errors, passed",
+    "definition": "rhs=p_parallel-B*(partial p_parallel/partial B)_psi, algebraically equal to -B^2*partial(p_parallel/B)/partial B at fixed psi. error=p_perp-rhs; relative_error=abs(error)/max(abs(p_perp),abs(rhs),atol). passed means max(relative_error)<=rtol. All named fields are returned together in a scirel._result.Result mapping; mapping and attribute access expose the same values. Ordinary well-conditioned samples retain their float64 operation order. Cancellation, intermediate range loss or upper-range proximity evaluates the complete original-input binary-rational relations and rounds rhs, error and relative_error separately at the end; error does not subtract an already-rounded public rhs. A required nonzero final value that rounds to zero is rejected, while exactly representable subnormal values are retained. Neither rtol nor atol is changed. The upper-range guard selects exact recovery, not rejection: a complete relation slightly above the largest float64 is retained when its final rounding is finite; a complete relation at the overflow rounding midpoint is rejected even when successive ordinary operations each return finite values.",
+    "model": "Gyrotropic parallel-pressure compatibility for an explicitly specified fixed-flux law; not a spatial force-balance residual.",
+    "geometry": "Explicit fixed-psi pressure law or caller-designated sample lines whose flux label is constant along field_axis.",
+    "coordinates": "Magnetic-field magnitude B at fixed flux label psi; arrays are never flattened and globally sorted to infer this partial derivative.",
+    "boundary": "An explicit derivative may be scalar, broadcastable array, or callable(B,psi). Alternatively supply field_axis and psi: B must be strictly monotone along each line, with at least two samples, and psi exactly constant along that axis. Constant-field data require explicit derivative information; no zero-derivative fallback exists.",
+    "assumptions": [
+      "B is a positive magnitude in T and both pressures use Pa.",
+      "The caller supplies a true fixed-flux partial derivative or valid fixed-psi sampling geometry.",
+      "Finite differences have endpoint/sampling error; a successful numerical diagnostic is not a spatial force-balance or global-stability proof."
+    ]
+  },
+  "inputs": [
+    {
+      "name": "p_parallel",
+      "description": "Parallel pressure samples.",
+      "units": "Pa",
+      "shape": "nonempty scalar or array; exactly the same shape as p_perp and magnetic_field",
+      "dtype": "real numeric convertible to float64",
+      "required": true,
+      "constraints": "All values finite; negative values are not rejected."
+    },
+    {
+      "name": "p_perp",
+      "description": "Perpendicular pressure samples.",
+      "units": "Pa",
+      "shape": "exactly the same shape as p_parallel",
+      "dtype": "real numeric convertible to float64",
+      "required": true,
+      "constraints": "All values finite; negative values are not rejected."
+    },
+    {
+      "name": "magnetic_field",
+      "description": "Positive magnetic-field magnitude at the pressure samples.",
+      "units": "T",
+      "shape": "exactly the same shape as p_parallel",
+      "dtype": "real numeric convertible to float64",
+      "required": true,
+      "constraints": "Finite strictly positive values, same shape as pressures. Duplicate B values are allowed with an explicit derivative; sampled fixed-flux lines require strict monotonicity."
+    },
+    {
+      "name": "rtol",
+      "description": "Maximum allowed normalized residual for the passed flag.",
+      "units": "dimensionless",
+      "shape": "scalar",
+      "dtype": "real numeric",
+      "required": false,
+      "default": 0.01,
+      "constraints": "Finite and non-negative."
+    },
+    {
+      "name": "atol",
+      "description": "Absolute pressure scale flooring the normalized-residual denominator.",
+      "units": "Pa",
+      "shape": "scalar",
+      "dtype": "real numeric",
+      "required": false,
+      "default": 1e-06,
+      "constraints": "Finite and strictly positive."
+    },
+    {
+      "name": "strict",
+      "description": "When truthy, raise if the maximum normalized residual exceeds rtol.",
+      "units": "boolean flag",
+      "shape": "scalar",
+      "dtype": "truth-valued value",
+      "required": false,
+      "default": false,
+      "constraints": "Interpreted by Python truth value; the implementation does not enforce bool type."
+    },
+    {
+      "name": "dp_parallel_dB",
+      "description": "Explicit fixed-psi pressure derivative.",
+      "units": "Pa/T",
+      "shape": "scalar/array broadcastable to B, callable(B,psi), or None",
+      "dtype": "real numeric/callable/null",
+      "required": false,
+      "constraints": "Required unless field_axis and psi are supplied; finite on evaluation. Cannot be combined with field_axis.",
+      "default": null
+    },
+    {
+      "name": "field_axis",
+      "description": "Axis along which each sample line varies B while holding psi fixed.",
+      "units": "axis index",
+      "shape": "scalar or None",
+      "dtype": "integer or null",
+      "required": false,
+      "constraints": "With no explicit derivative, requires >=2 samples, strictly monotone B on every line, and constant psi along the axis.",
+      "default": null
+    },
+    {
+      "name": "psi",
+      "description": "Flux labels for fixed-flux sample lines or explicit derivative callable.",
+      "units": "consistent caller flux coordinate",
+      "shape": "broadcastable to B, or None",
+      "dtype": "real numeric/null",
+      "required": false,
+      "constraints": "Mandatory and finite for field_axis mode, exactly constant along that axis. Forwarded to a derivative callable otherwise.",
+      "default": null
+    }
+  ],
+  "outputs": [
+    {
+      "name": "rhs",
+      "description": "Field of the returned scirel._result.Result mapping: p_parallel-B*dp_parallel_dB at fixed psi.",
+      "units": "Pa",
+      "shape": "same shape as input samples",
+      "dtype": "float64 array",
+      "required": true,
+      "constraints": "Finite on successful return. Uniform isotropic pressure passes with explicit zero derivative."
+    },
+    {
+      "name": "error",
+      "description": "Field of the returned scirel._result.Result mapping: signed perpendicular-pressure residual p_perp-rhs.",
+      "units": "Pa",
+      "shape": "same shape as input samples",
+      "dtype": "float64 array",
+      "required": true,
+      "constraints": "Finite on successful return."
+    },
+    {
+      "name": "relative_error",
+      "description": "Field of the returned scirel._result.Result mapping: absolute residual divided by max(abs(p_perp),abs(rhs),atol).",
+      "units": "dimensionless",
+      "shape": "same shape as input samples",
+      "dtype": "float64 array",
+      "required": true,
+      "constraints": "Finite and non-negative on successful return."
+    },
+    {
+      "name": "max_relative_error",
+      "description": "Field of the returned scirel._result.Result mapping: maximum of all pointwise relative errors.",
+      "units": "dimensionless",
+      "shape": "scalar",
+      "dtype": "float",
+      "required": true,
+      "constraints": "Finite and non-negative."
+    },
+    {
+      "name": "mean_relative_error",
+      "description": "Field of the returned scirel._result.Result mapping: mean of all pointwise relative errors.",
+      "units": "dimensionless",
+      "shape": "scalar",
+      "dtype": "float",
+      "required": true,
+      "constraints": "Finite and non-negative."
+    },
+    {
+      "name": "passed",
+      "description": "Field of the returned scirel._result.Result mapping: whether max_relative_error is at most rtol.",
+      "units": "boolean",
+      "shape": "scalar",
+      "dtype": "bool",
+      "required": true,
+      "constraints": "No result is returned on failure when strict is truthy."
+    },
+    {
+      "name": "dp_parallel_dB",
+      "description": "Field of the returned scirel._result.Result mapping: fixed-psi derivative used by the diagnostic.",
+      "units": "Pa/T",
+      "shape": "same shape as pressure",
+      "dtype": "float64 array",
+      "required": true,
+      "constraints": "Finite."
+    },
+    {
+      "name": "derivative_method",
+      "description": "Field of the returned scirel._result.Result mapping: how the fixed-flux derivative was obtained.",
+      "units": "text",
+      "shape": "scalar",
+      "dtype": "str",
+      "required": true,
+      "constraints": "Explicit derivative or fixed-psi axis finite difference."
+    }
+  ],
+  "applicability": {
+    "preconditions": [
+      "Positive B with finite, shape-consistent pressure samples.",
+      "Explicit fixed-psi derivative or genuine constant-psi sample lines."
+    ],
+    "supported": [
+      "Scalars and arbitrary sample layouts with an explicit derivative.",
+      "Monotone B sampling independently along each fixed-psi line; at least two samples per line."
+    ],
+    "excluded": [
+      "Inferring a fixed-psi derivative from an unstructured spatial cloud or constant-B data alone.",
+      "General Hall-flow, finite-Larmor-radius, finite-wave-number or global stability conclusions."
+    ]
+  },
+  "failure_semantics": {
+    "invalid_input": "ValueError for missing derivative information, conflicting derivative/axis inputs, nonfinite or nonpositive B, invalid shapes or nonmonotone/variable-psi derivative lines; other documented scalar controls are validated.",
+    "runtime_failure": "FloatingPointError for a nonfinite sampled derivative, a required complete final quantity rounding outside finite float64 range, or a required nonzero final value that rounds to zero; callable errors propagate. Representable complete relations are not rejected solely because an intermediate product overflows.",
+    "nonconvergence": "No nonlinear solve; the caller is responsible for derivative sampling convergence.",
+    "partial_results": "None; no scirel._result.Result mapping is returned on failure."
+  },
+  "public_api": {
+    "python": {
+      "module": "scirel.diagnostics.parallel_pressure_residual",
+      "symbol": "compute_parallel_pressure_residual",
+      "signature": "compute_parallel_pressure_residual(p_parallel, p_perp, magnetic_field, rtol=0.01, atol=1e-06, strict=False, *, dp_parallel_dB=None, field_axis=None, psi=None)",
+      "canonical_module": "scirel.diagnostics",
+      "canonical_symbol": "compute_parallel_pressure_residual"
+    }
+  },
+  "version": {
+    "implementation_version": "0.0.0",
+    "dependencies": []
+  },
+  "example": {
+    "description": "Supply a zero derivative for uniform isotropic pressure, verify the fixed-flux relation and inspect the named result mapping.",
+    "code": "import numpy as np\nfrom scirel._result import Result\nfrom scirel.diagnostics.parallel_pressure_residual import compute_parallel_pressure_residual\nr=compute_parallel_pressure_residual([3.,3.],[3.,3.],[2.,2.],dp_parallel_dB=0.)\nassert isinstance(r, Result)\nassert r.error is r['error']\nnp.testing.assert_array_equal(r['error'],[0.,0.])\nassert r['passed']",
+    "expected": "The residual is zero with the original fields, order, values, shapes and dtypes, and the same field is available by mapping key and attribute through scirel._result.Result; no derivative is invented from constant-field samples."
+  },
+  "verification": {
+    "scope": [
+      "tests/cross_domain/test_spectral_scientific_correction.py::test_uniform_isotropic_parallel_state_with_explicit_derivative asserts zero residual; tests/cross_domain/test_spectral_scientific_correction.py::test_fixed_flux_derivative_must_not_mix_flux_surfaces checks the two fixed-psi polynomial lines; tests/cross_domain/test_spectral_scientific_correction.py::test_missing_derivative_information_is_not_silently_zero checks missing-derivative rejection.",
+      "Result wrapping preserves every key, key order, value, shape, dtype and mapping access against baseline 0f74255b; attribute access reaches the same fields.",
+      "Direct raw-input Fraction anchors independently check rhs, error, relative_error and passed for both the original cancellation and its 1 Pa default-control scaling; strict failure and success are checked separately.",
+      "The complete second subtraction, strided mixed samples, an independent linear pressure law, unchanged inputs and exact subnormal values are tested without using production intermediates as references.",
+      "A representable result after intermediate product overflow is retained; genuinely unrepresentable required final rhs/error and nonzero final underflow are rejected.",
+      "Raw-input rational upper-range anchors check both signs at the complete error overflow midpoint, finite neighboring complete values above maxfloat, the rhs overflow midpoint and mixed strided finite samples, without relaxing the numeric budget.",
+      "Independent evidence (test_parallel_pressure_evidence): rhs = p_parallel - B dp_parallel/dB is recomputed from closed-form pressure laws in exact rational arithmetic and rounded once, and the returned value must equal it, so a wrong sign, power or scale in that expression fails. The algebraically equivalent rearrangement -B**2 d(p_parallel/B)/dB is recorded only as a consistency check on this file's own expansion: both expressions follow from one polynomial, so their equality carries no load as evidence about the implementation. error = p_perp - rhs and relative_error = |error| / max(|p_perp|, |rhs|, atol) are recomputed from the analytic values; passed is the strict max_relative_error <= rtol inequality probed from both sides with strict=True checked at the failing side; the three explicit derivative sources are checked to agree; the sampled field_axis derivative is checked to refine at 3.0..5.5 per halving; and the exact-rational recovery branch is checked on a sample whose naive float value provably differs from the exact value, so a silent fallback to the ordinary path fails."
+    ],
+    "tests": [
+      "tests/diagnostics/test_parallel_pressure_residual.py",
+      "tests/cross_domain/test_spectral_scientific_correction.py",
+      "tests/diagnostics/test_parallel_pressure_evidence.py"
+    ],
+    "evidence_ceiling": "tests/cross_domain/test_spectral_scientific_correction.py::test_uniform_isotropic_parallel_state_with_explicit_derivative asserts zero residual; tests/cross_domain/test_spectral_scientific_correction.py::test_fixed_flux_derivative_must_not_mix_flux_surfaces checks the two fixed-psi polynomial lines; tests/cross_domain/test_spectral_scientific_correction.py::test_missing_derivative_information_is_not_silently_zero checks missing-derivative rejection. The evidence is limited to those named samples and the remaining bound arithmetic regressions; the missing survey/refinement stays UNKNOWN. No measured-plasma validity or general stability theorem is established. Direct raw-input exact-rational cancellation, default-control, strict, manufactured-law, strided-array and range regressions cover the complete arithmetic relations at their stated samples; they do not certify all pressure laws or continuous sampling error. C1 evidence adds: exact rational evaluation of the declared closed form, the same form on the recovery branch where the naive float value differs, and the strict rtol boundary; the equivalent rearrangement is a consistency check only, not a source.",
+    "known_limitations": [
+      "The derivative/axis/psi keywords require callers to supply missing physical information; global-B sorting is not part of this contract.",
+      "Sampled flags and residuals are local model diagnostics, not proof of global equilibrium or kinetic stability.",
+      "UNKNOWN: the previously stated 63-state invariant bi-Maxwellian survey and four-level fixed-psi finite-difference refinement were not located in the bound assertions or inspected local history. No claim of replayable coverage for those two checks is made; model support is unchanged.",
+      "The identity is established for analytic pressure laws and the formula for arbitrary finite inputs; whether a particular equilibrium state satisfies the relation is a statement about a plasma, not about this arithmetic, and is not established here."
+    ],
+    "basis": {
+      "kind": "analytic-identity",
+      "statement": "A uniform isotropic parallel state with an explicitly supplied derivative must give zero residual, and a fixed-flux derivative is required not to mix flux surfaces, so the residual's expected value is known in both cases.",
+      "source": "tests/diagnostics/test_parallel_pressure_residual.py"
+    }
+  },
+  "references": [
+    "https://arxiv.org/html/2509.17288v4"
   ]
- },
- "inputs": [
-  {
-   "name": "p_parallel",
-   "description": "Parallel pressure samples.",
-   "units": "Pa",
-   "shape": "nonempty scalar or array; exactly the same shape as p_perp and magnetic_field",
-   "dtype": "real numeric convertible to float64",
-   "required": true,
-   "constraints": "All values finite; negative values are not rejected."
-  },
-  {
-   "name": "p_perp",
-   "description": "Perpendicular pressure samples.",
-   "units": "Pa",
-   "shape": "exactly the same shape as p_parallel",
-   "dtype": "real numeric convertible to float64",
-   "required": true,
-   "constraints": "All values finite; negative values are not rejected."
-  },
-  {
-   "name": "magnetic_field",
-   "description": "Positive magnetic-field magnitude at the pressure samples.",
-   "units": "T",
-   "shape": "exactly the same shape as p_parallel",
-   "dtype": "real numeric convertible to float64",
-   "required": true,
-   "constraints": "Finite strictly positive values, same shape as pressures. Duplicate B values are allowed with an explicit derivative; sampled fixed-flux lines require strict monotonicity."
-  },
-  {
-   "name": "rtol",
-   "description": "Maximum allowed normalized residual for the passed flag.",
-   "units": "dimensionless",
-   "shape": "scalar",
-   "dtype": "real numeric",
-   "required": false,
-   "default": 0.01,
-   "constraints": "Finite and non-negative."
-  },
-  {
-   "name": "atol",
-   "description": "Absolute pressure scale flooring the normalized-residual denominator.",
-   "units": "Pa",
-   "shape": "scalar",
-   "dtype": "real numeric",
-   "required": false,
-   "default": 1e-06,
-   "constraints": "Finite and strictly positive."
-  },
-  {
-   "name": "strict",
-   "description": "When truthy, raise if the maximum normalized residual exceeds rtol.",
-   "units": "boolean flag",
-   "shape": "scalar",
-   "dtype": "truth-valued value",
-   "required": false,
-   "default": false,
-   "constraints": "Interpreted by Python truth value; the implementation does not enforce bool type."
-  },
-  {
-   "name": "dp_parallel_dB",
-   "description": "Explicit fixed-psi pressure derivative.",
-   "units": "Pa/T",
-   "shape": "scalar/array broadcastable to B, callable(B,psi), or None",
-   "dtype": "real numeric/callable/null",
-   "required": false,
-   "constraints": "Required unless field_axis and psi are supplied; finite on evaluation. Cannot be combined with field_axis.",
-   "default": null
-  },
-  {
-   "name": "field_axis",
-   "description": "Axis along which each sample line varies B while holding psi fixed.",
-   "units": "axis index",
-   "shape": "scalar or None",
-   "dtype": "integer or null",
-   "required": false,
-   "constraints": "With no explicit derivative, requires >=2 samples, strictly monotone B on every line, and constant psi along the axis.",
-   "default": null
-  },
-  {
-   "name": "psi",
-   "description": "Flux labels for fixed-flux sample lines or explicit derivative callable.",
-   "units": "consistent caller flux coordinate",
-   "shape": "broadcastable to B, or None",
-   "dtype": "real numeric/null",
-   "required": false,
-   "constraints": "Mandatory and finite for field_axis mode, exactly constant along that axis. Forwarded to a derivative callable otherwise.",
-   "default": null
-  }
- ],
- "outputs": [
-  {
-   "name": "rhs",
-   "description": "Field of the returned scirel._result.Result mapping: p_parallel-B*dp_parallel_dB at fixed psi.",
-   "units": "Pa",
-   "shape": "same shape as input samples",
-   "dtype": "float64 array",
-   "required": true,
-   "constraints": "Finite on successful return. Uniform isotropic pressure passes with explicit zero derivative."
-  },
-  {
-   "name": "error",
-   "description": "Field of the returned scirel._result.Result mapping: signed perpendicular-pressure residual p_perp-rhs.",
-   "units": "Pa",
-   "shape": "same shape as input samples",
-   "dtype": "float64 array",
-   "required": true,
-   "constraints": "Finite on successful return."
-  },
-  {
-   "name": "relative_error",
-   "description": "Field of the returned scirel._result.Result mapping: absolute residual divided by max(abs(p_perp),abs(rhs),atol).",
-   "units": "dimensionless",
-   "shape": "same shape as input samples",
-   "dtype": "float64 array",
-   "required": true,
-   "constraints": "Finite and non-negative on successful return."
-  },
-  {
-   "name": "max_relative_error",
-   "description": "Field of the returned scirel._result.Result mapping: maximum of all pointwise relative errors.",
-   "units": "dimensionless",
-   "shape": "scalar",
-   "dtype": "float",
-   "required": true,
-   "constraints": "Finite and non-negative."
-  },
-  {
-   "name": "mean_relative_error",
-   "description": "Field of the returned scirel._result.Result mapping: mean of all pointwise relative errors.",
-   "units": "dimensionless",
-   "shape": "scalar",
-   "dtype": "float",
-   "required": true,
-   "constraints": "Finite and non-negative."
-  },
-  {
-   "name": "passed",
-   "description": "Field of the returned scirel._result.Result mapping: whether max_relative_error is at most rtol.",
-   "units": "boolean",
-   "shape": "scalar",
-   "dtype": "bool",
-   "required": true,
-   "constraints": "No result is returned on failure when strict is truthy."
-  },
-  {
-   "name": "dp_parallel_dB",
-   "description": "Field of the returned scirel._result.Result mapping: fixed-psi derivative used by the diagnostic.",
-   "units": "Pa/T",
-   "shape": "same shape as pressure",
-   "dtype": "float64 array",
-   "required": true,
-   "constraints": "Finite."
-  },
-  {
-   "name": "derivative_method",
-   "description": "Field of the returned scirel._result.Result mapping: how the fixed-flux derivative was obtained.",
-   "units": "text",
-   "shape": "scalar",
-   "dtype": "str",
-   "required": true,
-   "constraints": "Explicit derivative or fixed-psi axis finite difference."
-  }
- ],
- "applicability": {
-  "preconditions": [
-   "Positive B with finite, shape-consistent pressure samples.",
-   "Explicit fixed-psi derivative or genuine constant-psi sample lines."
-  ],
-  "supported": [
-   "Scalars and arbitrary sample layouts with an explicit derivative.",
-   "Monotone B sampling independently along each fixed-psi line; at least two samples per line."
-  ],
-  "excluded": [
-   "Inferring a fixed-psi derivative from an unstructured spatial cloud or constant-B data alone.",
-   "General Hall-flow, finite-Larmor-radius, finite-wave-number or global stability conclusions."
-  ]
- },
- "failure_semantics": {
-  "invalid_input": "ValueError for missing derivative information, conflicting derivative/axis inputs, nonfinite or nonpositive B, invalid shapes or nonmonotone/variable-psi derivative lines; other documented scalar controls are validated.",
-  "runtime_failure": "FloatingPointError for a nonfinite sampled derivative, a required complete final quantity rounding outside finite float64 range, or a required nonzero final value that rounds to zero; callable errors propagate. Representable complete relations are not rejected solely because an intermediate product overflows.",
-  "nonconvergence": "No nonlinear solve; the caller is responsible for derivative sampling convergence.",
-  "partial_results": "None; no scirel._result.Result mapping is returned on failure."
- },
- "public_api": {
-  "python": {
-   "module": "scirel.diagnostics.parallel_pressure_residual",
-   "symbol": "compute_parallel_pressure_residual",
-   "signature": "compute_parallel_pressure_residual(p_parallel, p_perp, magnetic_field, rtol=0.01, atol=1e-06, strict=False, *, dp_parallel_dB=None, field_axis=None, psi=None)",
-   "canonical_module": "scirel.diagnostics",
-   "canonical_symbol": "compute_parallel_pressure_residual"
-  }
- },
- "version": {
-  "implementation_version": "0.0.0",
-  "dependencies": []
- },
- "example": {
-  "description": "Supply a zero derivative for uniform isotropic pressure, verify the fixed-flux relation and inspect the named result mapping.",
-  "code": "import numpy as np\nfrom scirel._result import Result\nfrom scirel.diagnostics.parallel_pressure_residual import compute_parallel_pressure_residual\nr=compute_parallel_pressure_residual([3.,3.],[3.,3.],[2.,2.],dp_parallel_dB=0.)\nassert isinstance(r, Result)\nassert r.error is r['error']\nnp.testing.assert_array_equal(r['error'],[0.,0.])\nassert r['passed']",
-  "expected": "The residual is zero with the original fields, order, values, shapes and dtypes, and the same field is available by mapping key and attribute through scirel._result.Result; no derivative is invented from constant-field samples."
- },
- "verification": {
-  "scope": [
-   "tests/cross_domain/test_spectral_scientific_correction.py::test_uniform_isotropic_parallel_state_with_explicit_derivative asserts zero residual; tests/cross_domain/test_spectral_scientific_correction.py::test_fixed_flux_derivative_must_not_mix_flux_surfaces checks the two fixed-psi polynomial lines; tests/cross_domain/test_spectral_scientific_correction.py::test_missing_derivative_information_is_not_silently_zero checks missing-derivative rejection.",
-   "Result wrapping preserves every key, key order, value, shape, dtype and mapping access against baseline 0f74255b; attribute access reaches the same fields.",
-   "Direct raw-input Fraction anchors independently check rhs, error, relative_error and passed for both the original cancellation and its 1 Pa default-control scaling; strict failure and success are checked separately.",
-   "The complete second subtraction, strided mixed samples, an independent linear pressure law, unchanged inputs and exact subnormal values are tested without using production intermediates as references.",
-   "A representable result after intermediate product overflow is retained; genuinely unrepresentable required final rhs/error and nonzero final underflow are rejected.",
-   "Raw-input rational upper-range anchors check both signs at the complete error overflow midpoint, finite neighboring complete values above maxfloat, the rhs overflow midpoint and mixed strided finite samples, without relaxing the numeric budget.",
-   "Independent evidence (test_parallel_pressure_evidence): rhs = p_parallel - B dp_parallel/dB is recomputed from closed-form pressure laws in exact rational arithmetic and rounded once, and the returned value must equal it, so a wrong sign, power or scale in that expression fails. The algebraically equivalent rearrangement -B**2 d(p_parallel/B)/dB is recorded only as a consistency check on this file's own expansion: both expressions follow from one polynomial, so their equality carries no load as evidence about the implementation. error = p_perp - rhs and relative_error = |error| / max(|p_perp|, |rhs|, atol) are recomputed from the analytic values; passed is the strict max_relative_error <= rtol inequality probed from both sides with strict=True checked at the failing side; the three explicit derivative sources are checked to agree; the sampled field_axis derivative is checked to refine at 3.0..5.5 per halving; and the exact-rational recovery branch is checked on a sample whose naive float value provably differs from the exact value, so a silent fallback to the ordinary path fails."
-  ],
-  "tests": [
-   "tests/diagnostics/test_parallel_pressure_residual.py",
-   "tests/cross_domain/test_spectral_scientific_correction.py",
-   "tests/diagnostics/test_parallel_pressure_evidence.py"
-  ],
-  "evidence_ceiling": "tests/cross_domain/test_spectral_scientific_correction.py::test_uniform_isotropic_parallel_state_with_explicit_derivative asserts zero residual; tests/cross_domain/test_spectral_scientific_correction.py::test_fixed_flux_derivative_must_not_mix_flux_surfaces checks the two fixed-psi polynomial lines; tests/cross_domain/test_spectral_scientific_correction.py::test_missing_derivative_information_is_not_silently_zero checks missing-derivative rejection. The evidence is limited to those named samples and the remaining bound arithmetic regressions; the missing survey/refinement stays UNKNOWN. No measured-plasma validity or general stability theorem is established. Direct raw-input exact-rational cancellation, default-control, strict, manufactured-law, strided-array and range regressions cover the complete arithmetic relations at their stated samples; they do not certify all pressure laws or continuous sampling error. C1 evidence adds: exact rational evaluation of the declared closed form, the same form on the recovery branch where the naive float value differs, and the strict rtol boundary; the equivalent rearrangement is a consistency check only, not a source.",
-  "known_limitations": [
-   "The derivative/axis/psi keywords require callers to supply missing physical information; global-B sorting is not part of this contract.",
-   "Sampled flags and residuals are local model diagnostics, not proof of global equilibrium or kinetic stability.",
-   "UNKNOWN: the previously stated 63-state invariant bi-Maxwellian survey and four-level fixed-psi finite-difference refinement were not located in the bound assertions or inspected local history. No claim of replayable coverage for those two checks is made; model support is unchanged.",
-   "The identity is established for analytic pressure laws and the formula for arbitrary finite inputs; whether a particular equilibrium state satisfies the relation is a statement about a plasma, not about this arithmetic, and is not established here."
-  ]
- },
- "references": [
-  "https://arxiv.org/html/2509.17288v4"
- ]
 }

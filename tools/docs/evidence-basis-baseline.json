@@ -4,39 +4,7 @@
   "why": "c1_evidence_coverage infers the basis from prose with a fixed phrase list; on this catalog 106 assets carry basis wording that list does not recognise, so the inference cannot answer 'does this capability stand on evidence'. The field replaces the inference.",
   "entries": [
     {
-      "asset_id": "scirel.diagnostics.firehose-mirror-margins",
-      "reason": "not yet migrated: verification.basis absent"
-    },
-    {
-      "asset_id": "scirel.diagnostics.observation-residuals",
-      "reason": "not yet migrated: verification.basis absent"
-    },
-    {
-      "asset_id": "scirel.diagnostics.parallel-pressure-residual",
-      "reason": "not yet migrated: verification.basis absent"
-    },
-    {
-      "asset_id": "scirel.diagnostics.picard-flux-residual",
-      "reason": "not yet migrated: verification.basis absent"
-    },
-    {
-      "asset_id": "scirel.diagnostics.pointwise-firehose-margin",
-      "reason": "not yet migrated: verification.basis absent"
-    },
-    {
-      "asset_id": "scirel.diagnostics.species-absorption-fraction",
-      "reason": "not yet migrated: verification.basis absent"
-    },
-    {
-      "asset_id": "scirel.dielectric.cold-plasma-tensor",
-      "reason": "not yet migrated: verification.basis absent"
-    },
-    {
       "asset_id": "scirel.electromagnetism.arbitrary-points",
-      "reason": "not yet migrated: verification.basis absent"
-    },
-    {
-      "asset_id": "scirel.electromagnetism.circular-filament-green",
       "reason": "not yet migrated: verification.basis absent"
     },
     {
@@ -784,6 +752,14 @@
     "scirel.configurations.trex-coil",
     "scirel.configurations.wham",
     "scirel.diagnostics.equilibrium-synthesis-diagnostics",
+    "scirel.diagnostics.firehose-mirror-margins",
+    "scirel.diagnostics.observation-residuals",
+    "scirel.diagnostics.parallel-pressure-residual",
+    "scirel.diagnostics.picard-flux-residual",
+    "scirel.diagnostics.pointwise-firehose-margin",
+    "scirel.diagnostics.species-absorption-fraction",
+    "scirel.dielectric.cold-plasma-tensor",
+    "scirel.electromagnetism.circular-filament-green",
     "scirel.equilibrium.kinetic-mirror-hall-equilibrium",
     "scirel.field.mirror-plasma-green",
     "scirel.field.poloidal-field-from-flux",

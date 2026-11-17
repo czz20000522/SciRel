@@ -137,7 +137,12 @@
       "Interior self-fields of finite conductors, material permeability and error bounds on the full continuous domain are not established.",
       "Independent scientific calculations and installation tasks do not constitute human or release approval.",
       "The measured deviation maxima belong to the named grids; targets inside 1e-2 a of the wire are excluded because the ideal-filament response diverges there and the fixed-breakpoint reference cannot certify them, and relative statements about psi and B_R stop below 1e-8 a. The convergence ratios are measured on the three halvings the tests use, which is not a proof of the asymptotic order."
-    ]
+    ],
+    "basis": {
+      "kind": "independent-recomputation",
+      "statement": "Pointwise psi/BR/BZ are checked against a complement-free AgM elliptic recomputation that is itself cross-certified against Biot-Savart quadrature, alongside the elementary on-axis loop field, bitwise mirror symmetry and vacuum divergence/curl residuals with measured refinement.",
+      "source": "tests/geometry/test_geometry_fields.py"
+    }
   },
   "references": [
     "NASA-20010038494"
