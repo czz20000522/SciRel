@@ -3,10 +3,16 @@
 **状态页，不是规范页。** 这里每条都是「命令 → 当时的输出」，用来核对某一时点的主张是否成立。
 它会随 `main` 漂移，所以**不要引用本文的数字**——要引用就重跑命令，数字以重跑为准。
 
-- 测量时点：`main` @ `8b6c92c6d40e8a09acf3002c18a49d46f0cac269`
-- 该点上的发布档：`steps 10/10 passed`、`tests collected 9541 / passed 9528 / failed 0`、
-  `RESULT SHA256 42b45835557d09f2cb5b4bd058ff5fcada22a53c5a236bd669ea75562f4638a7`、
+- 测量时点：`main` @ `14aa664d4268158c565877b66d12d675aa646be3`
+- **同一提交上**的发布档：`steps 10/10 passed`、`tests collected 9541 / passed 9528 / failed 0`、
+  `RESULT SHA256 a963eaf5017b3d046c4c3d15005d21eb1c5b7ba3bb18f5b9e1d8b7e364b92407`、
+  `FLOOR  at least 9541 tests required by …/anchors/release-da4c039f44eb.json`、
   `EXCLUSIVE  no other test run or check holds the clone lock`、`ALL GREEN`
+- 该次回执导出为 `anchors/release-14aa664d4268.json`，与回执 `verify` 得 `agree`
+
+> **上一版这一行把出处写错了**：它把 `RESULT SHA256 42b45835…` 记在 `8b6c92c6` 名下，而那次发布档
+> 实际跑在 `da4c039f` 上。两棵树只差一个锚点文件（不参与测试），结论不变，但**出处记错就是错的**——
+> 现改为同一提交上的回执，并留下这次纠正。
 
 ## 0 能力边界
 
