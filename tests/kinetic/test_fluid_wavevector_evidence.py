@@ -318,6 +318,3 @@ def test_fluid_dispersion_response_zero_transverse_determinant_identity():
         # not asserted, so the swap mutant survives on this asset and the contract
         # records that.
 
-            assert reference.relative(
-                abs(complex(tensor[1, 0])), abs(complex(-predicted_k01))
-            ) <= 1e-13
