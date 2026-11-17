@@ -1,186 +1,191 @@
 {
- "schema": "scirel.asset-document",
- "asset_id": "scirel.kinetic.rational-point-matrix",
- "title": {
-  "en": "Kinetic frequency relation assembly",
-  "zh": "动理学频率关系组装"
- },
- "summary": "Assemble ES1D frequency matrix, corrected ES3D finite-Harris descriptor coefficients, or EM Maxwell pencil with causal signed wavevectors and exact axes.",
- "taxonomy": [
-  "kinetic",
-  "plasma",
-  "frequency-dispersion"
- ],
- "aliases": [
-  "legacy.point_matrix"
- ],
- "discovery": {
-  "capability": [
-   "Kinetic frequency relation assembly",
-   "Assemble ES1D frequency matrix, corrected ES3D finite-Harris descriptor coefficients, or EM Maxwell pencil with causal signed wavevectors and exact axes."
+  "schema": "scirel.asset-document",
+  "asset_id": "scirel.kinetic.rational-point-matrix",
+  "title": {
+    "en": "Kinetic frequency relation assembly",
+    "zh": "动理学频率关系组装"
+  },
+  "summary": "Assemble ES1D frequency matrix, corrected ES3D finite-Harris descriptor coefficients, or EM Maxwell pencil with causal signed wavevectors and exact axes.",
+  "taxonomy": [
+    "kinetic",
+    "plasma",
+    "frequency-dispersion"
   ],
-  "operation": [
-   "assemble the kinetic frequency relation",
-   "model, state, wavevector and harmonic count -> frequency matrix state and receipt"
+  "aliases": [
+    "legacy.point_matrix"
   ],
-  "model": "Nonrelativistic Gaussian species; explicit finite-harmonic/rational approximation when applicable.",
-  "geometry": "Homogeneous plasma with background field along z; k=(kx,0,kz) where applicable.",
-  "boundary": "Periodic/infinite homogeneous plane-wave response; finite numerical harmonic/pole representation explicitly declared.",
-  "device_scope": "generic"
- },
- "identity": {
-  "relation": "Kinetic frequency relation assembly",
-  "direction": "Declared inputs to named scientific outputs.",
-  "definition": "ES3D D(omega)=a+sum B/(omega-C); source a*diag(C)-B*ones ordinary eigenvalues were scaled incorrectly. EM includes full Maxwell constant in exact perpendicular response; uniform zero-wavevector cold gyro response ignores harmonic cutoff analytically. Negative k/kz selects causal Z poles. Compressed pole pencils retain E/B observables; source auxiliary aliases are not physical waves.",
-  "model": "Nonrelativistic Gaussian species; explicit finite-harmonic/rational approximation when applicable.",
-  "geometry": "Homogeneous plasma with background field along z; k=(kx,0,kz) where applicable.",
-  "coordinates": "Explicit ES dimensionless normalization or EM SI; complex frequency follows exp(-i omega t).",
-  "boundary": "Periodic/infinite homogeneous plane-wave response; finite numerical harmonic/pole representation explicitly declared.",
-  "assumptions": [
-   "Model-specific deck conventions are explicit.",
-   "A numerical spectrum is not automatically a physically certified mode.",
-   "Fail-closed finiteness: finite constituent inputs are not a promise that every derived matrix, coefficient or auxiliary output is representable; such an output raises FloatingPointError before return, and no fixed numeric threshold is implied."
+  "discovery": {
+    "capability": [
+      "Kinetic frequency relation assembly",
+      "Assemble ES1D frequency matrix, corrected ES3D finite-Harris descriptor coefficients, or EM Maxwell pencil with causal signed wavevectors and exact axes."
+    ],
+    "operation": [
+      "assemble the kinetic frequency relation",
+      "model, state, wavevector and harmonic count -> frequency matrix state and receipt"
+    ],
+    "model": "Nonrelativistic Gaussian species; explicit finite-harmonic/rational approximation when applicable.",
+    "geometry": "Homogeneous plasma with background field along z; k=(kx,0,kz) where applicable.",
+    "boundary": "Periodic/infinite homogeneous plane-wave response; finite numerical harmonic/pole representation explicitly declared.",
+    "device_scope": "generic"
+  },
+  "identity": {
+    "relation": "Kinetic frequency relation assembly",
+    "direction": "Declared inputs to named scientific outputs.",
+    "definition": "ES3D D(omega)=a+sum B/(omega-C); source a*diag(C)-B*ones ordinary eigenvalues were scaled incorrectly. EM includes full Maxwell constant in exact perpendicular response; uniform zero-wavevector cold gyro response ignores harmonic cutoff analytically. Negative k/kz selects causal Z poles. Compressed pole pencils retain E/B observables; source auxiliary aliases are not physical waves.",
+    "model": "Nonrelativistic Gaussian species; explicit finite-harmonic/rational approximation when applicable.",
+    "geometry": "Homogeneous plasma with background field along z; k=(kx,0,kz) where applicable.",
+    "coordinates": "Explicit ES dimensionless normalization or EM SI; complex frequency follows exp(-i omega t).",
+    "boundary": "Periodic/infinite homogeneous plane-wave response; finite numerical harmonic/pole representation explicitly declared.",
+    "assumptions": [
+      "Model-specific deck conventions are explicit.",
+      "A numerical spectrum is not automatically a physically certified mode.",
+      "Fail-closed finiteness: finite constituent inputs are not a promise that every derived matrix, coefficient or auxiliary output is representable; such an output raises FloatingPointError before return, and no fixed numeric threshold is implied."
+    ]
+  },
+  "inputs": [
+    {
+      "name": "model",
+      "description": "Physical relation variant: es1d, es3d or em.",
+      "units": "not applicable",
+      "shape": "scalar",
+      "dtype": "str",
+      "required": true,
+      "constraints": "Select an explicitly supported model."
+    },
+    {
+      "name": "state",
+      "description": "Equilibrium and pole-table numeric state composed without renaming fields.",
+      "units": "Model-specific ES dimensionless or EM SI; named source scales.",
+      "shape": "mapping",
+      "dtype": "mapping",
+      "required": true,
+      "constraints": "Use the state returned by equilibrium and pole_table for the same model."
+    },
+    {
+      "name": "k",
+      "description": "ES1D signed nonzero wavevector.",
+      "units": "dimensionless",
+      "shape": "scalar",
+      "dtype": "numeric",
+      "required": false,
+      "constraints": "Required finite real nonzero scalar for ES1D; ignored for ES3D/EM.",
+      "default": null
+    },
+    {
+      "name": "kx",
+      "description": "Signed perpendicular wavevector.",
+      "units": "ES dimensionless or EM m^-1",
+      "shape": "scalar",
+      "dtype": "numeric",
+      "required": false,
+      "constraints": "Required finite real scalar for ES3D/EM; ignored for ES1D. ES3D excludes total zero wavevector; EM includes the uniform zero-wavevector limit.",
+      "default": null
+    },
+    {
+      "name": "kz",
+      "description": "Signed parallel wavevector.",
+      "units": "ES dimensionless or EM m^-1",
+      "shape": "scalar",
+      "dtype": "numeric",
+      "required": false,
+      "constraints": "Required finite real scalar for ES3D/EM; ignored for ES1D. ES3D excludes total zero wavevector; EM includes the uniform zero-wavevector limit.",
+      "default": null
+    },
+    {
+      "name": "N",
+      "description": "Cyclotron harmonic cutoff, fixed at its declared default; ES3D default10 and EM default2.",
+      "units": "dimensionless",
+      "shape": "scalar",
+      "dtype": "integer",
+      "required": false,
+      "constraints": "Integer >=0 for ES3D/EM; None selects 10/2 respectively. Ignored for ES1D. Uniform EM analytic gyro response is independent of harmonic cutoff, including N=0.",
+      "default": null
+    }
+  ],
+  "outputs": [
+    {
+      "name": "state",
+      "description": "Model-specific scientific numeric state with named physical scales or coefficient fields.",
+      "units": "Model-dependent ES dimensionless or EM SI.",
+      "shape": "mapping",
+      "dtype": "mapping",
+      "required": true,
+      "constraints": "Binary64 arrays preserve source row shapes; use named fields rather than inferred positional scales. Derived matrix, coefficient and auxiliary arrays are finite; a non-representable derived output raises FloatingPointError before return."
+    },
+    {
+      "name": "receipt",
+      "description": "Python execution receipt on pure-Python ES1D/ES3D and oblique EM paths; analytic exact-perpendicular or uniform EM dispatch returns a provenance mapping.",
+      "units": "not applicable",
+      "shape": "Python execution receipt object or mapping",
+      "dtype": "Python execution receipt | mapping",
+      "required": true,
+      "constraints": "Execution provenance does not certify scientific validity by itself."
+    }
+  ],
+  "applicability": {
+    "preconditions": [
+      "Constituent inputs finite and representable in declared numeric ports.",
+      "Every derived matrix, coefficient and auxiliary output must be representable as finite float64; finite inputs alone do not guarantee that."
+    ],
+    "supported": [
+      "Magnetized Gaussian kinetic response, finite harmonics and rational parallel response.",
+      "Parallel/perpendicular EM axes and uniform k0 including N0.",
+      "Representable finite-input assemblies across the declared ES1D, ES3D and EM branches."
+    ],
+    "excluded": [
+      "ES total zero wavevector requires a separate longitudinal limit.",
+      "Exact perpendicular interlacing is restricted to positive Gaussian ES species.",
+      "Finite inputs whose derived matrix, coefficient or auxiliary outputs are non-finite; these calls fail closed with FloatingPointError instead of returning or forwarding those values."
+    ]
+  },
+  "failure_semantics": {
+    "invalid_input": "ValueError for invalid model, missing branch-required scalar, nonfinite/unrepresentable coordinates, noninteger/negative N, ES1D k=0 or ES3D total zero wavevector; incomplete state can raise KeyError.",
+    "runtime_failure": "FloatingPointError when finite inputs produce a derived matrix, coefficient or auxiliary output that is not representable as finite float64; the check runs before return and no fixed numeric threshold is implied. Python numerical errors otherwise propagate with operation context; no source-runtime, checkout or network fallback.",
+    "nonconvergence": "Assembly/helper arithmetic errors propagate; this operation does not solve or certify roots.",
+    "partial_results": "No successful result is returned if this operation raises; no partial scientific return is promised and no non-finite matrix or auxiliary vector is forwarded to a downstream solver."
+  },
+  "public_api": {
+    "python": {
+      "module": "scirel.kinetic.dispersion.rational",
+      "symbol": "point_matrix",
+      "signature": "point_matrix(model, state, *, k=None, kx=None, kz=None, N=None)"
+    }
+  },
+  "version": {
+    "implementation_version": "0.0.0",
+    "dependencies": []
+  },
+  "example": {
+    "description": "Assemble a representative ES1D frequency matrix with the pure-Python operator.",
+    "code": "from scirel.kinetic.dispersion import rational\neq = rational.equilibrium('es1d', [[1, 1, 1, 1, .17]])['state']\ntab = rational.pole_table('es1d', 8)['state']\nr = rational.point_matrix('es1d', {**eq, **tab}, k=.4)\nassert r['state']['M'].shape == (8, 8)",
+    "expected": "PASS: .venv/bin/python assembles the bounded matrix on macOS without the declared local Python runtime."
+  },
+  "verification": {
+    "scope": [
+      "Direct point_matrix calls in test_uniform_k0_is_cold_gyro_response_including_N0 and test_signed_es1d_causal_response_against_independent_Z check cold-gyro Schur and signed ES1D responses. test_es1d_finite_inputs_with_unrepresentable_derived_outputs_fail_closed, test_es1d_invalid_wavevector_semantics_are_unchanged and test_es3d_zero_wavevector_semantics_are_unchanged check this entry's computed-overflow and invalid-wavevector failures. Hand-assembled solve_matrix descriptor tests and pole_table asymptotic moments are evidence for those other APIs, not for point_matrix assembly.",
+      "historical-unbound UNKNOWN: installed-package closure, all-12-API qualification, the full 50-point N10/J8 run and 80/120-digit independent comparison receipts are not bound here. Package metadata and construction capability do not prove those historical executions; supported calculation and the named direct assertions are retained.",
+      "The available direct file exercises bounded points and relations; it does not establish execution of the full 50-point default or the historical weak-coefficient/Decimal-offset qualification.",
+      "A direct regression pins ES1D k=1e308 to FloatingPointError before the matrix can reach solve_matrix, while the finite reference call keeps its coefficients and matrix unchanged.",
+      "Existing invalid-input ValueError semantics for non-finite and zero wavevectors remain unchanged."
+    ],
+    "tests": [
+      "tests/kinetic/test_dispersion_rational.py"
+    ],
+    "evidence_ceiling": "Direct tests exercise signed ES1D response, uniform cold-gyro Schur response and nonrepresentable/invalid wavevectors; they do not qualify all finite-N/J regimes. historical-unbound UNKNOWN: installed-package closure, all-12-API qualification, the full 50-point N10/J8 run and 80/120-digit independent comparison receipts are not bound here. Package metadata and construction capability do not prove those historical executions; supported calculation and the named direct assertions are retained.",
+    "known_limitations": [
+      "Redistribution permission for the reference material remains unresolved; this implementation does not execute the source runtime.",
+      "Finite-J/finite-N physics must be qualified for a new requested regime.",
+      "Earlier fixed-distance approach-to-axis ancillary assertions remain failed records; exact-axis/direct-response gates are separately qualified.",
+      "Human scientific and plot approval pending.",
+      "Historical qualification is unbound (UNKNOWN); current direct checks and bounded examples neither impose a new platform restriction nor certify arbitrary parameter regimes."
+    ],
+    "basis": {
+      "kind": "independent-recomputation",
+      "statement": "Point-matrix calls are compared with the cold-gyro Schur response and with an independent evaluation of the plasma dispersion function Z on the signed path, so the matrix is checked outside its own construction.",
+      "source": "tests/kinetic/test_dispersion_rational.py"
+    }
+  },
+  "references": [
+    "Xie and Xiao, PDRK: A General Kinetic Dispersion Relation Solver for Magnetized Plasma, Plasma Science and Technology 18 (2016)."
   ]
- },
- "inputs": [
-  {
-   "name": "model",
-   "description": "Physical relation variant: es1d, es3d or em.",
-   "units": "not applicable",
-   "shape": "scalar",
-   "dtype": "str",
-   "required": true,
-   "constraints": "Select an explicitly supported model."
-  },
-  {
-   "name": "state",
-   "description": "Equilibrium and pole-table numeric state composed without renaming fields.",
-   "units": "Model-specific ES dimensionless or EM SI; named source scales.",
-   "shape": "mapping",
-   "dtype": "mapping",
-   "required": true,
-   "constraints": "Use the state returned by equilibrium and pole_table for the same model."
-  },
-  {
-   "name": "k",
-   "description": "ES1D signed nonzero wavevector.",
-   "units": "dimensionless",
-   "shape": "scalar",
-   "dtype": "numeric",
-   "required": false,
-   "constraints": "Required finite real nonzero scalar for ES1D; ignored for ES3D/EM.",
-   "default": null
-  },
-  {
-   "name": "kx",
-   "description": "Signed perpendicular wavevector.",
-   "units": "ES dimensionless or EM m^-1",
-   "shape": "scalar",
-   "dtype": "numeric",
-   "required": false,
-   "constraints": "Required finite real scalar for ES3D/EM; ignored for ES1D. ES3D excludes total zero wavevector; EM includes the uniform zero-wavevector limit.",
-   "default": null
-  },
-  {
-   "name": "kz",
-   "description": "Signed parallel wavevector.",
-   "units": "ES dimensionless or EM m^-1",
-   "shape": "scalar",
-   "dtype": "numeric",
-   "required": false,
-   "constraints": "Required finite real scalar for ES3D/EM; ignored for ES1D. ES3D excludes total zero wavevector; EM includes the uniform zero-wavevector limit.",
-   "default": null
-  },
-  {
-   "name": "N",
-   "description": "Cyclotron harmonic cutoff, fixed at its declared default; ES3D default10 and EM default2.",
-   "units": "dimensionless",
-   "shape": "scalar",
-   "dtype": "integer",
-   "required": false,
-   "constraints": "Integer >=0 for ES3D/EM; None selects 10/2 respectively. Ignored for ES1D. Uniform EM analytic gyro response is independent of harmonic cutoff, including N=0.",
-   "default": null
-  }
- ],
- "outputs": [
-  {
-   "name": "state",
-   "description": "Model-specific scientific numeric state with named physical scales or coefficient fields.",
-   "units": "Model-dependent ES dimensionless or EM SI.",
-   "shape": "mapping",
-   "dtype": "mapping",
-   "required": true,
-   "constraints": "Binary64 arrays preserve source row shapes; use named fields rather than inferred positional scales. Derived matrix, coefficient and auxiliary arrays are finite; a non-representable derived output raises FloatingPointError before return."
-  },
-  {
-   "name": "receipt",
-   "description": "Python execution receipt on pure-Python ES1D/ES3D and oblique EM paths; analytic exact-perpendicular or uniform EM dispatch returns a provenance mapping.",
-   "units": "not applicable",
-   "shape": "Python execution receipt object or mapping",
-   "dtype": "Python execution receipt | mapping",
-   "required": true,
-   "constraints": "Execution provenance does not certify scientific validity by itself."
-  }
- ],
- "applicability": {
-  "preconditions": [
-   "Constituent inputs finite and representable in declared numeric ports.",
-   "Every derived matrix, coefficient and auxiliary output must be representable as finite float64; finite inputs alone do not guarantee that."
-  ],
-  "supported": [
-   "Magnetized Gaussian kinetic response, finite harmonics and rational parallel response.",
-   "Parallel/perpendicular EM axes and uniform k0 including N0.",
-   "Representable finite-input assemblies across the declared ES1D, ES3D and EM branches."
-  ],
-  "excluded": [
-   "ES total zero wavevector requires a separate longitudinal limit.",
-   "Exact perpendicular interlacing is restricted to positive Gaussian ES species.",
-   "Finite inputs whose derived matrix, coefficient or auxiliary outputs are non-finite; these calls fail closed with FloatingPointError instead of returning or forwarding those values."
-  ]
- },
- "failure_semantics": {
-  "invalid_input": "ValueError for invalid model, missing branch-required scalar, nonfinite/unrepresentable coordinates, noninteger/negative N, ES1D k=0 or ES3D total zero wavevector; incomplete state can raise KeyError.",
-  "runtime_failure": "FloatingPointError when finite inputs produce a derived matrix, coefficient or auxiliary output that is not representable as finite float64; the check runs before return and no fixed numeric threshold is implied. Python numerical errors otherwise propagate with operation context; no source-runtime, checkout or network fallback.",
-  "nonconvergence": "Assembly/helper arithmetic errors propagate; this operation does not solve or certify roots.",
-  "partial_results": "No successful result is returned if this operation raises; no partial scientific return is promised and no non-finite matrix or auxiliary vector is forwarded to a downstream solver."
- },
- "public_api": {
-  "python": {
-   "module": "scirel.kinetic.dispersion.rational",
-   "symbol": "point_matrix",
-   "signature": "point_matrix(model, state, *, k=None, kx=None, kz=None, N=None)"
-  }
- },
- "version": {
-  "implementation_version": "0.0.0",
-  "dependencies": []
- },
- "example": {
-  "description": "Assemble a representative ES1D frequency matrix with the pure-Python operator.",
-  "code": "from scirel.kinetic.dispersion import rational\neq = rational.equilibrium('es1d', [[1, 1, 1, 1, .17]])['state']\ntab = rational.pole_table('es1d', 8)['state']\nr = rational.point_matrix('es1d', {**eq, **tab}, k=.4)\nassert r['state']['M'].shape == (8, 8)",
-  "expected": "PASS: .venv/bin/python assembles the bounded matrix on macOS without the declared local Python runtime."
- },
- "verification": {
-  "scope": [
-   "Direct point_matrix calls in test_uniform_k0_is_cold_gyro_response_including_N0 and test_signed_es1d_causal_response_against_independent_Z check cold-gyro Schur and signed ES1D responses. test_es1d_finite_inputs_with_unrepresentable_derived_outputs_fail_closed, test_es1d_invalid_wavevector_semantics_are_unchanged and test_es3d_zero_wavevector_semantics_are_unchanged check this entry's computed-overflow and invalid-wavevector failures. Hand-assembled solve_matrix descriptor tests and pole_table asymptotic moments are evidence for those other APIs, not for point_matrix assembly.",
-   "historical-unbound UNKNOWN: installed-package closure, all-12-API qualification, the full 50-point N10/J8 run and 80/120-digit independent comparison receipts are not bound here. Package metadata and construction capability do not prove those historical executions; supported calculation and the named direct assertions are retained.",
-   "The available direct file exercises bounded points and relations; it does not establish execution of the full 50-point default or the historical weak-coefficient/Decimal-offset qualification.",
-   "A direct regression pins ES1D k=1e308 to FloatingPointError before the matrix can reach solve_matrix, while the finite reference call keeps its coefficients and matrix unchanged.",
-   "Existing invalid-input ValueError semantics for non-finite and zero wavevectors remain unchanged."
-  ],
-  "tests": [
-   "tests/kinetic/test_dispersion_rational.py"
-  ],
-  "evidence_ceiling": "Direct tests exercise signed ES1D response, uniform cold-gyro Schur response and nonrepresentable/invalid wavevectors; they do not qualify all finite-N/J regimes. historical-unbound UNKNOWN: installed-package closure, all-12-API qualification, the full 50-point N10/J8 run and 80/120-digit independent comparison receipts are not bound here. Package metadata and construction capability do not prove those historical executions; supported calculation and the named direct assertions are retained.",
-  "known_limitations": [
-   "Redistribution permission for the reference material remains unresolved; this implementation does not execute the source runtime.",
-   "Finite-J/finite-N physics must be qualified for a new requested regime.",
-   "Earlier fixed-distance approach-to-axis ancillary assertions remain failed records; exact-axis/direct-response gates are separately qualified.",
-   "Human scientific and plot approval pending.",
-   "Historical qualification is unbound (UNKNOWN); current direct checks and bounded examples neither impose a new platform restriction nor certify arbitrary parameter regimes."
-  ]
- },
- "references": [
-  "Xie and Xiao, PDRK: A General Kinetic Dispersion Relation Solver for Magnetized Plasma, Plasma Science and Technology 18 (2016)."
- ]
 }
