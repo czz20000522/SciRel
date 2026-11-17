@@ -65,8 +65,12 @@ import sys; sys.path.insert(0,'skills/development/scirel-acceptance/scripts')
 from check_all import selection_floor; f=selection_floor('release'); print(f.selected, f.anchor)"
 ```
 ```
-9541 skills/development/scirel-acceptance/anchors/release-da4c039f44eb.json
+<selected> skills/development/scirel-acceptance/anchors/<floor-anchor>.json
 ```
+
+**不要照抄这两个占位符**：`<selected>` 与 `<floor-anchor>` 都会随新锚点变化。判据是"输出里那三个阶段
+必须与命令一致"，不是"数字等于本文写的"。本文早先在这里写死过一份锚点名，新锚点落地后就变成了
+**数对、出处错**——所以现在留占位符，并有一条测试盯着正文提到的每个锚点文件必须真实存在。
 
 锚点与回执对账（必须 `agree`）：
 ```sh
