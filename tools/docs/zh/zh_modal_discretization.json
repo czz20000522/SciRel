@@ -41,7 +41,7 @@
    "outputs": [
     {
      "name": "coefficients",
-     "description": "按基成员顺序排列的高斯加权离散投影系数。",
+     "description": "按基成员顺序排列的高斯加权离散投影系数。该值由入口按位置直接返回（一个长度为 num_basis 的 float64 数组），不是映射里的字段。",
      "constraints": "有限；由同一基组合生成的采样值可精确恢复。",
      "dtype": "float64"
     }

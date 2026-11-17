@@ -69,7 +69,7 @@
   "outputs": [
     {
       "name": "rate_m3_s",
-      "description": "H + H+ charge-exchange rate coefficient from the piecewise fit/quadrature relation.",
+      "description": "H + H+ charge-exchange rate coefficient from the piecewise fit/quadrature relation. Returned directly as the callable's single positional value (one float64 array or Python float); it is not a field of a mapping.",
       "units": "m^3/s",
       "shape": "same as both inputs",
       "dtype": "float64 array or scalar",

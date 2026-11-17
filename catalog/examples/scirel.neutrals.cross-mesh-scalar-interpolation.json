@@ -86,7 +86,7 @@
  "outputs": [
   {
    "name": "fb",
-   "description": "The interpolated profile on mesh_b.",
+   "description": "The interpolated profile on mesh_b. Returned directly as the callable's single positional value (one float64 array of shape [nxb]); it is not a field of a mapping.",
    "units": "caller units",
    "shape": "[nxb]",
    "dtype": "float64 array",

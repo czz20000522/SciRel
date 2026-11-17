@@ -427,7 +427,7 @@
    "outputs": [
     {
      "name": "fb",
-     "description": "目标剖面。",
+     "description": "目标剖面。该值由入口按位置直接返回（一个形状为 [nxb] 的 float64 数组），不是映射里的字段。",
      "constraints": "有限；域内插值、域外严格为零。",
      "dtype": "float64 数组"
     }
@@ -1242,7 +1242,7 @@
    "outputs": [
     {
      "name": "cross_section_m2",
-     "description": "每个能量对应的截面，单位 m²。",
+     "description": "每个能量对应的截面，单位 m²。该值由入口按位置直接返回（一个 float64 数组），不是映射里的字段。",
      "constraints": "有限且严格为正。",
      "dtype": "float64 数组"
     }
@@ -2766,7 +2766,7 @@
    "outputs": [
     {
      "name": "generation",
-     "description": "本代分布密度 F，单位 m^-3。",
+     "description": "本代分布密度 F，单位 m^-3。该值由入口按位置直接返回（一个形状为 [nvr,nvx,nx] 的 float64 数组），不是映射里的字段。",
      "constraints": "有限且形状与系数一致。",
      "dtype": "float64 数组"
     }
@@ -4479,7 +4479,7 @@
    "outputs": [
     {
      "name": "rate_m3_s",
-     "description": "分段拟合/积分关系给出的 H + H⁺ 电荷交换速率。",
+     "description": "分段拟合/积分关系给出的 H + H⁺ 电荷交换速率。该值由入口按位置直接返回（一个 float64 数组或 Python float），不是映射里的字段。",
      "constraints": "合法输入上有限且严格为正；高能积分是有界模型，不是无限外推。",
      "dtype": "float64 数组或标量"
     }
@@ -5926,7 +5926,7 @@
    "outputs": [
     {
      "name": "rate_m3_s",
-     "description": "H₂ + H₂⁺ 拟合速率系数，单位 m³/s。",
+     "description": "H₂ + H₂⁺ 拟合速率系数，单位 m³/s。该值由入口按位置直接返回（一个 float64 数组或 Python float），不是映射里的字段。",
      "constraints": "有限正值；未宣称外部物理精度。",
      "dtype": "float64 数组或标量"
     }

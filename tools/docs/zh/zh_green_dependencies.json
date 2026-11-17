@@ -116,7 +116,7 @@
    "outputs": [
     {
      "name": "G",
-     "description": "目标行、源列磁通响应矩阵。",
+     "description": "目标行、源列磁通响应矩阵。该值由入口按位置直接返回（一个 float64 (R.size, R.size) 矩阵），不是映射里的字段。",
      "constraints": "对角零、有限；独立换序满足协变性。",
      "dtype": "float64（双精度浮点数）"
     }

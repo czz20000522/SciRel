@@ -579,7 +579,7 @@
    "outputs": [
     {
      "name": "derivative",
-     "description": "含端点的一阶导数，形状 (N,)。",
+     "description": "含端点的一阶导数，形状 (N,)。该值由入口按位置直接返回（一个形状为 (N,) 的 float64 数组），不是映射里的字段。",
      "constraints": "导数沿声明的顶点次序。",
      "dtype": "float64"
     }

@@ -146,7 +146,7 @@
  "outputs": [
   {
    "name": "generation",
-   "description": "The propagated generation distribution.",
+   "description": "The propagated generation distribution. Returned directly as the callable's single positional value (one float64 array of shape [nvr,nvx,nx]); it is not a field of a mapping.",
    "units": "m^-3",
    "shape": "[nvr,nvx,nx]",
    "dtype": "float64 array",

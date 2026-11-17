@@ -1493,7 +1493,7 @@
    "outputs": [
     {
      "name": "profile",
-     "description": "归一化源剖面",
+     "description": "归一化源剖面。该值由入口按位置直接返回（一个与 rho_norm 同形的 float64 数组），不是映射里的字段。",
      "constraints": "有限非零宽度下成功返回有限结果；零或非有限宽度返回全 NaN。",
      "dtype": "float64 数组",
      "shape": "与 rho_norm 相同",
@@ -1607,7 +1607,7 @@
    "outputs": [
     {
      "name": "profile",
-     "description": "归一化源剖面",
+     "description": "归一化源剖面。该值由入口按位置直接返回（一个与 rho_norm 同形的 float64 数组），不是映射里的字段。",
      "constraints": "有限非零宽度下成功返回有限结果；零或非有限宽度返回全 NaN。",
      "dtype": "float64 数组",
      "shape": "与 rho_norm 相同",

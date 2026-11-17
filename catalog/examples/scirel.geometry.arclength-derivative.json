@@ -64,7 +64,7 @@
   "outputs": [
     {
       "name": "derivative",
-      "description": "First derivative including endpoints",
+      "description": "First derivative including endpoints Returned directly as the callable's single positional value (one float64 array of shape (N,)); it is not a field of a mapping.",
       "units": "value per length",
       "shape": "(N,)",
       "dtype": "float64",
