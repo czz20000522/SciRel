@@ -64,7 +64,11 @@ def test_small_k_damping_is_the_published_closed_form():
     bessel.high_precision()
 
     def closed_form(k):
-        return -mp.sqrt(mp.pi / 8) * mp.e ** (-1 / (2 * mp.mpf(k) ** 2) - mp.mpf("1.5")) / mp.mpf(k) ** 3
+        return (
+            -mp.sqrt(mp.pi / 8)
+            * mp.e ** (-1 / (2 * mp.mpf(k) ** 2) - mp.mpf("1.5"))
+            / mp.mpf(k) ** 3
+        )
 
     # The exponential factor drops below the smallest normal binary64 number as k
     # shrinks, so part of the ladder is *declared* to underflow.  Which side of the
