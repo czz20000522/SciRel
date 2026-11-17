@@ -1,0 +1,6 @@
+{
+  "schema": "scirel.catalog-domain-exceptions",
+  "schema_version": 1,
+  "policy": "Empty by design. A contract ID scirel.<domain>.<name> takes <domain> from public_api.python.canonical_module, so an ID that stays in another domain is a defect, not a choice. Every one of the 25 mismatches the whole-catalog check found was a stale ID whose function already lived in the named module, and each was renamed rather than excused. Add an entry only when a maintainer decides an asset must stay in a domain that does not define it, and then fill reason (why the ID stays) and evidence (the decision or document that establishes it). An entry whose ID already matches, or that names no current mismatch, fails the check: an allowance that outlives its case hides the next one.",
+  "exceptions": []
+}
