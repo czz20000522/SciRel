@@ -66,13 +66,21 @@ def test_small_k_damping_is_the_published_closed_form():
     result = evaluate_gpdf_small_k(wavenumbers)
     damping = np.asarray(result["omega_imag"], dtype=float)
     for index, k in enumerate(wavenumbers):
-        expected = -mp.sqrt(mp.pi / 8) * mp.e ** (-1 / (2 * mp.mpf(k) ** 2) - mp.mpf("1.5")) / mp.mpf(k) ** 3
+        expected = (
+            -mp.sqrt(mp.pi / 8)
+            * mp.e ** (-1 / (2 * mp.mpf(k) ** 2) - mp.mpf("1.5"))
+            / mp.mpf(k) ** 3
+        )
         assert _rel(damping[index], expected) <= 1e-13
 
     # Underflow is a declared behaviour, not a silent zero: it happens only when the
     # closed form is far below the smallest normal binary64 number.
     tiny = np.asarray(evaluate_gpdf_small_k([1e-3])["omega_imag"], dtype=float)
-    closed = -mp.sqrt(mp.pi / 8) * mp.e ** (-1 / (2 * mp.mpf("1e-3") ** 2) - mp.mpf("1.5")) / mp.mpf("1e-3") ** 3
+    closed = (
+        -mp.sqrt(mp.pi / 8)
+        * mp.e ** (-1 / (2 * mp.mpf("1e-3") ** 2) - mp.mpf("1.5"))
+        / mp.mpf("1e-3") ** 3
+    )
     assert closed < mp.mpf("1e-300")
     assert tiny[0] == 0.0
 
@@ -134,7 +142,9 @@ def test_cauchy_transform_is_the_plasma_dispersion_function():
     density = lambda v: np.exp(-v * v) / np.sqrt(np.pi)
 
     for z in (0.4 + 0.7j, 2.0 + 0.3j, 0.0 + 1.0j):
-        collected = complex(np.asarray(evaluate_cauchy_transform(z, density, integration_mesh=mesh)["G"]).ravel()[0])
+        collected = complex(
+            np.asarray(evaluate_cauchy_transform(z, density, integration_mesh=mesh)["G"]).ravel()[0]
+        )
         zz = mp.mpf(z.real) + 1j * mp.mpf(z.imag)
         assert _rel(collected, _faddeeva(zz)) <= 1e-10
 
@@ -154,8 +164,14 @@ def test_cauchy_transform_is_conjugate_symmetric():
     density = lambda v: np.exp(-v * v) / np.sqrt(np.pi)
 
     below = 0.4 - 0.7j
-    collected = complex(np.asarray(evaluate_cauchy_transform(below, density, integration_mesh=mesh)["G"]).ravel()[0])
-    above = complex(np.asarray(evaluate_cauchy_transform(0.4 + 0.7j, density, integration_mesh=mesh)["G"]).ravel()[0])
+    collected = complex(
+        np.asarray(evaluate_cauchy_transform(below, density, integration_mesh=mesh)["G"]).ravel()[0]
+    )
+    above = complex(
+        np.asarray(
+            evaluate_cauchy_transform(0.4 + 0.7j, density, integration_mesh=mesh)["G"]
+        ).ravel()[0]
+    )
     assert abs(collected - np.conj(above)) <= 1e-12
 
     # And the direct analytic continuation Z(z) is *not* what the port returns, so
@@ -179,7 +195,11 @@ def test_cauchy_transform_uniform_density_is_the_log_closed_form():
 
     for z in (0.4 + 0.7j, 2.0 + 0.3j):
         collected = complex(
-            np.asarray(evaluate_cauchy_transform(z, density, bounds=(-1.0, 1.0), integration_mesh=mesh)["G"]).ravel()[0]
+            np.asarray(
+                evaluate_cauchy_transform(z, density, bounds=(-1.0, 1.0), integration_mesh=mesh)[
+                    "G"
+                ]
+            ).ravel()[0]
         )
         zz = mp.mpf(z.real) + 1j * mp.mpf(z.imag)
         # 0.5 * integral of dv/(v - z) over [-1, 1] = 0.5 * log((z + 1)/(z - 1)).
