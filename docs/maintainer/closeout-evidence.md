@@ -105,13 +105,35 @@ print(d['summary']);print(d['diff_vs_round2']['criteria_changed'])"
 
 ## 5 交付包一致（C5）
 
+**先分清两个「包」，它们的覆盖面不同：**
+
+| 包 | 装什么 | 谁验 |
+| --- | --- | --- |
+| **wheel** | **只有** `scirel` 包（`pyproject.toml` 的 `include = ["scirel", "scirel.*"]`）。**不含 catalog、不含 skill** | 发布档的 `wheel build` 与 `wheel exposure` 两个步骤 |
+| **交付包（delivery bundle）** | wheel + 合同 + `skills/development/usage/` 三个 skill + 检索运行时 | `scripts/build_pure_delivery.py`，产物见 `examples/c5-delivery-acceptance/receipt.json` |
+
+**"三个 skill 在实际新包里"说的是后者。** 说 wheel 里含 skill 是错的——wheel 只装 Python。
+
+交付包这条路的保障是**失败即中止**，不是"跑完再说"：
+
 ```sh
-python -B scripts/build_pure_delivery.py --help
+grep -n "missing delivery skill" scripts/build_pure_delivery.py
+# 161: raise ValueError("missing delivery skill: " + str(skill_root))
 ```
-发布档里覆盖这一步的是 `wheel build`、`wheel exposure`、`documentation build`、
-`contracts and examples` 四个步骤；`8b6c92c6` 上全部 PASS。安装后自检另见
-`examples/c5-delivery-acceptance/receipt.json`（`validate_installed_wheel` PASS、
-`in_source_tree:false`、`external_site_paths:[]`）。
+
+任何一个 `SKILL_NAMES` 目录不存在，构建直接抛错，不会产出一个少一个 skill 的包。
+
+### 一处必须写明的覆盖缺口
+
+**发布档不重建交付包。** 它构建 wheel、检查 wheel 暴露、构建文档站、跑合同与示例，但不跑
+`build_pure_delivery.py`。所以：
+
+- 改 `skills/development/usage/` 会按 `AGENTS.md` 的分档规则触发发布档（因为它们进交付包），
+- 但发布档本身**不验证**交付包内容与仓库一致；
+- 那条一致性只在 `examples/c5-delivery-acceptance/receipt.json` 里验过一次，**不会随每次改动重跑**。
+
+这不影响"这批改动没破坏别处"，但它意味着**交付包一致性是一个按需验证的结论，不是一个每次门禁都重新成立的结论**。
+把它读成后者，就是又一次"看起来存在"。
 
 ## 6 拆解与交接、资源回收（C6）
 
