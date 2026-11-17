@@ -8,50 +8,6 @@
       "reason": "not yet migrated: verification.basis absent"
     },
     {
-      "asset_id": "scirel.fvm.theta-step",
-      "reason": "not yet migrated: verification.basis absent"
-    },
-    {
-      "asset_id": "scirel.geometry.arclength-derivative",
-      "reason": "not yet migrated: verification.basis absent"
-    },
-    {
-      "asset_id": "scirel.geometry.axisymmetric-equilibrium-grid-mapping",
-      "reason": "not yet migrated: verification.basis absent"
-    },
-    {
-      "asset_id": "scirel.geometry.boundary",
-      "reason": "not yet migrated: verification.basis absent"
-    },
-    {
-      "asset_id": "scirel.geometry.contour-points",
-      "reason": "not yet migrated: verification.basis absent"
-    },
-    {
-      "asset_id": "scirel.geometry.fieldline-set",
-      "reason": "not yet migrated: verification.basis absent"
-    },
-    {
-      "asset_id": "scirel.geometry.fieldline",
-      "reason": "not yet migrated: verification.basis absent"
-    },
-    {
-      "asset_id": "scirel.geometry.flux-surface-inverse-field-average",
-      "reason": "not yet migrated: verification.basis absent"
-    },
-    {
-      "asset_id": "scirel.geometry.flux-surface-profile",
-      "reason": "not yet migrated: verification.basis absent"
-    },
-    {
-      "asset_id": "scirel.geometry.helper-contour-points",
-      "reason": "not yet migrated: verification.basis absent"
-    },
-    {
-      "asset_id": "scirel.geometry.helper-fieldline",
-      "reason": "not yet migrated: verification.basis absent"
-    },
-    {
       "asset_id": "scirel.geometry.masked-toroidal-volume",
       "reason": "not yet migrated: verification.basis absent"
     },
@@ -667,7 +623,18 @@
     "scirel.fvm.cell-variable",
     "scirel.fvm.convection",
     "scirel.fvm.diffusion",
+    "scirel.fvm.theta-step",
+    "scirel.geometry.arclength-derivative",
+    "scirel.geometry.axisymmetric-equilibrium-grid-mapping",
     "scirel.geometry.axisymmetric-equilibrium-grid-support",
+    "scirel.geometry.boundary",
+    "scirel.geometry.contour-points",
+    "scirel.geometry.fieldline",
+    "scirel.geometry.fieldline-set",
+    "scirel.geometry.flux-surface-inverse-field-average",
+    "scirel.geometry.flux-surface-profile",
+    "scirel.geometry.helper-contour-points",
+    "scirel.geometry.helper-fieldline",
     "scirel.geometry.meridional-polar-forward",
     "scirel.geometry.path-distance",
     "scirel.geometry.rectangular-nearest",
