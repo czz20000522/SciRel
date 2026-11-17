@@ -107,7 +107,12 @@ def as_high_precision(matrix) -> "mp.matrix":
 
 
 def pencil_spectrum(M, A=None) -> list:
-    """Eigenvalues of ``M x = lambda A x`` at high precision, sorted by decreasing modulus.
+    """Frequencies ``omega = i*lambda`` of ``M x = lambda A x``, sorted by decreasing modulus.
+
+    The caller's convention throughout the spectral module is ``lambda = -i omega``,
+    so the raw ``mpmath`` eigenvalues are rotated here rather than at every call
+    site; a reference that returned ``lambda`` would silently compare the wrong
+    quantity against a frequency anchored closed form.
 
     The generalized path is not taken here: the only caller that needs it is the
     relativistic inertia case, and ``mpmath`` has no generalized eigensolver.  An
@@ -119,7 +124,7 @@ def pencil_spectrum(M, A=None) -> list:
     inertia = np.eye(np.asarray(M).shape[0]) if A is None else np.asarray(A)
     if not np.array_equal(inertia, np.eye(inertia.shape[0])):
         raise ValueError("high-precision reference only covers identity inertia")
-    values = mp.eig(matrix, left=False, right=False)
+    values = [1j * value for value in mp.eig(matrix, left=False, right=False)]
     return sorted(values, key=lambda value: -abs(value))
 
 

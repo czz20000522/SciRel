@@ -278,9 +278,9 @@ def test_spectral_dispersion_scan_reproduces_cold_branches():
     omega_p = reference.state_plasma_frequency(state)
     c2 = float(state["c2"])
     matrix = np.asarray(result["ww1"])
-    assert matrix.shape[1] == axis.size
+    assert matrix.shape[0] == axis.size
     for column, k in enumerate(axis):
         omega_light = reference.light_branch(omega_p, float(k), c2)
-        column_values = [abs(complex(matrix[row, column])) for row in range(matrix.shape[0])]
+        column_values = [abs(complex(matrix[column, mode])) for mode in range(matrix.shape[1])]
         assert reference.relative(max(column_values), omega_light) <= 1e-12
         assert reference.relative(_nearest(column_values, omega_p), omega_p) <= 1e-12
