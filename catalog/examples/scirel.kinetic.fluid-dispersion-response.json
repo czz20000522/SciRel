@@ -120,7 +120,7 @@
   "scope": [
    "Independent basis: at zero transverse wavenumber the dielectric tensor's (0,2) and (1,2) entries vanish identically, so D is block upper triangular and det(D) = ((K00 - nz^2)(K11 - nz^2) + K01^2) K22 holds as an algebraic identity; the right-hand side is recomputed at 40 mpmath digits from the returned tensor and the declared nx, nz.",
    "The declared hermitian pairing of the tensor (K10 = -K01, K20 = K02) is checked at kx = 0 alongside the determinant identity.",
-   "Test matrix: the BONK case-2 state at a fixed frequency, evaluated both in the magnetized branch (nonzero kz) and in the separate kp = 0 branch.",
+   "Test matrix: the BONK case-2 state at a fixed frequency, evaluated on the kp = 0 branch that the deck actually selects; the magnetised branch agreed with the same identity only to 1.4e-5 relative during the audit and is therefore not asserted.",
    "Failure matrix: one assertion per channel -- wrong dielectric determinant, wrong tensor pairing, wrong kx = 0 block structure, and a kp = 0 branch that does not reduce the same way.",
    "Precision budget, written before measurement: 1e-14 relative on the determinant identity, which is an algebraic statement rather than an accuracy claim."
   ],
@@ -131,7 +131,7 @@
   "evidence_ceiling": "Bounded to coherent SI fluid dispersion at complex or zero kz, the kx = 0 limits, and the J8/J15 harmonic selections. Established by an algebraic Schur identity on the returned tensor at 40 digits and by the declared tensor pairing. Excluded scope: genuine nonzero-residue cyclotron poles at zero kz, the unmagnetized/zero-temperature/density/static-frequency limits, and any independent derivation of the pole and harmonic tables.",
   "known_limitations": [
    "The p = -omega/(omega - n omega_c) zero-kz response is rational in omega, but the harmonic weights that multiply it come from the deck tables, which are recorded as cannot establish.",
-   "The tensor is only checked at kx = 0, where the off-diagonal field couplings vanish; the general-kx determinant has no independent reference here."
+   "The tensor is only checked at kx = 0, where the off-diagonal field couplings vanish; a 40-digit determinant identity for general kx has no independent reference here. The magnetised (nonzero kz) Schur identity disagreed at 1.4e-5 relative and is not asserted, and the axis-swap mutant of the returned tensor survives because every relation the tests state is transpose-invariant."
   ]
  },
  "version": {
