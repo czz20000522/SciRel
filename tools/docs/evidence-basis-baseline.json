@@ -8,50 +8,6 @@
       "reason": "not yet migrated: verification.basis absent"
     },
     {
-      "asset_id": "scirel.field.filament-coil-green-field",
-      "reason": "not yet migrated: verification.basis absent"
-    },
-    {
-      "asset_id": "scirel.field.filament-vacuum-field",
-      "reason": "not yet migrated: verification.basis absent"
-    },
-    {
-      "asset_id": "scirel.field.ideal-conductor-boundary",
-      "reason": "not yet migrated: verification.basis absent"
-    },
-    {
-      "asset_id": "scirel.field.multi-coil-vacuum-field",
-      "reason": "not yet migrated: verification.basis absent"
-    },
-    {
-      "asset_id": "scirel.field.permanent-ring-filaments",
-      "reason": "not yet migrated: verification.basis absent"
-    },
-    {
-      "asset_id": "scirel.field.poloidal-field-magnitude",
-      "reason": "not yet migrated: verification.basis absent"
-    },
-    {
-      "asset_id": "scirel.field.rectangular-coil-filaments",
-      "reason": "not yet migrated: verification.basis absent"
-    },
-    {
-      "asset_id": "scirel.fusion.dd-neutron-lab-energy",
-      "reason": "not yet migrated: verification.basis absent"
-    },
-    {
-      "asset_id": "scirel.fvm.cell-variable",
-      "reason": "not yet migrated: verification.basis absent"
-    },
-    {
-      "asset_id": "scirel.fvm.convection",
-      "reason": "not yet migrated: verification.basis absent"
-    },
-    {
-      "asset_id": "scirel.fvm.diffusion",
-      "reason": "not yet migrated: verification.basis absent"
-    },
-    {
       "asset_id": "scirel.fvm.theta-step",
       "reason": "not yet migrated: verification.basis absent"
     },
@@ -698,8 +654,19 @@
     "scirel.field.complete-elliptic-integrals-approx",
     "scirel.field.current-green-superposition",
     "scirel.field.dense-axisymmetric-green",
+    "scirel.field.filament-coil-green-field",
+    "scirel.field.filament-vacuum-field",
+    "scirel.field.ideal-conductor-boundary",
     "scirel.field.mirror-plasma-green",
+    "scirel.field.multi-coil-vacuum-field",
+    "scirel.field.permanent-ring-filaments",
     "scirel.field.poloidal-field-from-flux",
+    "scirel.field.poloidal-field-magnitude",
+    "scirel.field.rectangular-coil-filaments",
+    "scirel.fusion.dd-neutron-lab-energy",
+    "scirel.fvm.cell-variable",
+    "scirel.fvm.convection",
+    "scirel.fvm.diffusion",
     "scirel.geometry.axisymmetric-equilibrium-grid-support",
     "scirel.geometry.meridional-polar-forward",
     "scirel.geometry.path-distance",
