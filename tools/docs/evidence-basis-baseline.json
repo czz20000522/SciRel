@@ -276,10 +276,6 @@
       "reason": "not yet migrated: verification.basis absent"
     },
     {
-      "asset_id": "scirel.field.poloidal-field-from-flux",
-      "reason": "not yet migrated: verification.basis absent"
-    },
-    {
       "asset_id": "scirel.field.poloidal-field-magnitude",
       "reason": "not yet migrated: verification.basis absent"
     },
@@ -377,10 +373,6 @@
     },
     {
       "asset_id": "scirel.geometry.parse-segment",
-      "reason": "not yet migrated: verification.basis absent"
-    },
-    {
-      "asset_id": "scirel.geometry.path-distance",
       "reason": "not yet migrated: verification.basis absent"
     },
     {
@@ -928,10 +920,6 @@
       "reason": "not yet migrated: verification.basis absent"
     },
     {
-      "asset_id": "scirel.numerics.clamped-cubic-spline",
-      "reason": "not yet migrated: verification.basis absent"
-    },
-    {
       "asset_id": "scirel.numerics.complex-rectilinear-interpolation",
       "reason": "not yet migrated: verification.basis absent"
     },
@@ -949,10 +937,6 @@
     },
     {
       "asset_id": "scirel.numerics.modal-projection",
-      "reason": "not yet migrated: verification.basis absent"
-    },
-    {
-      "asset_id": "scirel.numerics.natural-cubic-spline",
       "reason": "not yet migrated: verification.basis absent"
     },
     {
@@ -997,6 +981,10 @@
     }
   ],
   "migrated": [
+    "scirel.field.poloidal-field-from-flux",
+    "scirel.geometry.path-distance",
+    "scirel.numerics.clamped-cubic-spline",
+    "scirel.numerics.natural-cubic-spline",
     "scirel.numerics.truncated-svd-inverse"
   ]
 }
