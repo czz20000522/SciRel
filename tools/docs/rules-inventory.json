@@ -2,7 +2,7 @@
   "schema": "scirel.rules-inventory.v1",
   "note": "每条规则现在由什么机器判据保证。state 三态：machine（有判据且覆盖面足够）/ machine-partial（有判据但只覆盖一部分，写明判什么不判什么）/ unjudged（无判据，写明为什么判不了、靠谁保证）。本文件由 tests/tooling/test_rules_inventory.py 盯着：判据路径必须存在，规则锚点必须在源文档里出现。",
   "verified_on": "2026-11-18",
-  "slice": "AGENTS.md 8 + api-spec 5 + catalog/README 3 + RULES.md 4 + supply-pipeline 4（其余随后补）",
+  "slice": "AGENTS.md 8 + api-spec 5 + catalog/README 3 + RULES.md 4 + supply-pipeline 4 + scirel-code-style 4",
   "rules": [
     {
       "id": "agents-1",
@@ -253,6 +253,47 @@
       ],
       "judges": "域外告警机制（ApplicabilityWarning）必须按合同声明触发，拒绝输入的分支必须按声明失败。",
       "does_not_judge": "不判某次未定的物理问题是否被正确归到三级阶梯的哪一级——那要读证据。"
+    },
+    {
+      "id": "style-except",
+      "source": "skills/development/scirel-code-style/SKILL.md",
+      "anchor": "A broad `except Exception` needs a comment explaining why a narrower type cannot work",
+      "state": "machine-partial",
+      "judged_by": [
+        "tests/architecture/test_broad_except_is_explained.py::test_every_broad_handler_in_src_explains_itself"
+      ],
+      "judges": "src/ 里每个 except Exception / BaseException / 裸 except 必须在同线、上一行或 handler 体内首行带注释。判据自带红例（合成未注释的 handler 必须被抓）。",
+      "does_not_judge": "不判注释是否说了真话，也不判某个 handler 是否仍把编程错误当物理状态——那一半靠评审，本轮只在 kinetic 一处按实例收窄并加了测试。"
+    },
+    {
+      "id": "style-lint",
+      "source": "skills/development/scirel-code-style/SKILL.md",
+      "anchor": "## Style",
+      "state": "machine",
+      "judged_by": [
+        "scripts/dev.py"
+      ],
+      "judges": "ruff check 与 ruff format 是 check 的固定步骤，格式与基础 lint 不合规即红。",
+      "does_not_judge": "判不了命名品味、注释质量或类型标注是否表达意图；只判工具能判的那部分。"
+    },
+    {
+      "id": "style-alias",
+      "source": "skills/development/scirel-code-style/SKILL.md",
+      "anchor": "Do not leave an alias behind, and do not change physics in the same commit",
+      "state": "machine-partial",
+      "judged_by": [
+        "tests/architecture/test_public_surface.py::test_retired_dielectric_names_are_not_public_or_importable"
+      ],
+      "judges": "已退役的公开名不得仍可导入（逐案断言）。",
+      "does_not_judge": "只覆盖被写进测试的退役名；新加一个兼容别名不会被拦。「同一提交不改物理」完全靠评审。"
+    },
+    {
+      "id": "style-review",
+      "source": "skills/development/scirel-code-style/SKILL.md",
+      "anchor": "## Review",
+      "state": "unjudged",
+      "why": "评审问的是判断性问题（这段代码表达的是不是真实意图、证据是否够），没有可判定谓词。references/review-checklist.md 是给评审人的操作清单，本条目锚定 SKILL.md 的 Review 节。",
+      "who": "评审人按清单逐条走；清单本身是人的工具，不是门禁。"
     }
   ]
 }

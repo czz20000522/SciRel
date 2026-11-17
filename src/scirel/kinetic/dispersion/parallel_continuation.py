@@ -54,7 +54,12 @@ def _continue_em1d(
             result = solver(
                 fun, [seed.real, seed.imag], method="hybr", options=solver_options or {}
             )
-        except Exception as cause:
+        except (ArithmeticError, ValueError, np.linalg.LinAlgError) as cause:
+            # Only a genuine evaluation failure becomes a continuation record. Programming
+            # errors (AttributeError, NameError, TypeError, ...) are deliberately NOT caught:
+            # recording them as `evaluation_error` would present a bug as a physics status,
+            # which the code-style rule forbids. A broad `except Exception` here would do exactly
+            # that, so the tuple is narrow on purpose.
             raise ContinuationFailure(
                 dict(
                     k=float(point),

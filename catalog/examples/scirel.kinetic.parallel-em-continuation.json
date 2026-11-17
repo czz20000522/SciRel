@@ -128,7 +128,7 @@
   },
   "failure_semantics": {
     "invalid_input": "ValueError or a missing required mapping key rejects invalid inputs. A non-accepted continuation raises ContinuationFailure carrying attempted k, seed, solver success/status, scaled residual and the accepted prefix; no partial result is returned.",
-    "runtime_failure": "Dependency, numerical-library, or native-runtime errors propagate; no silent alternate provider. A declared ContinuationFailure (missing accepted root) is a scientific failure, not a dependency error.",
+    "runtime_failure": "Dependency and native-runtime errors (missing modules, I/O, subprocess) propagate. A numerical failure raised by the solver or by the residual at one grid point (arithmetic, value, or linear-algebra errors) becomes a ContinuationFailure record carrying evaluation_error. Programming errors (type, name, attribute errors) propagate unchanged, so a bug is never reported as a physics status. A declared ContinuationFailure is a scientific failure, not a dependency error.",
     "nonconvergence": "ContinuationFailure carries k, seed, attempted root/status/residual when available, and the accepted prefix.",
     "partial_results": "Failure exposes accepted_prefix diagnostically; it is not a successful complete continuation."
   },
