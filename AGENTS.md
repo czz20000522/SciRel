@@ -75,7 +75,9 @@ python3 scripts/dev.py run --exclusive python -B scripts/validate_extraction_pac
   批次数量选。
 - **发布档只在这三种场合跑：**
   1. 改动落在**只有发布档能验证**的面上：文档站构建、wheel 构建与暴露、示例执行、`release_only_tests.txt`
-     里的测试。典型触发是改合同（API 参考页由合同生成）、改打包脚本、改 `skills/`、改 `examples/`；
+     里的测试。典型触发是改合同（API 参考页由合同生成）、改打包脚本、改**三个消费 skill**
+     （`skills/development/usage/`，它们进交付包）、改 `examples/`。**开发期的验收与风格 skill 不进交付包**，
+     改它们不触发发布档；
   2. **对外交付声明**：发版、给出交付包、或某个校验器要求 `stage=release` 回执；
   3. **结项与最终干净提交**。
 - 每条 PR 回执写明**用的是哪一档**以及**为什么这一档够**。判据不是"跑得越重越保险"——发布档持独占锁，
