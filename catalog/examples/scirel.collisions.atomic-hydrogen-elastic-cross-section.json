@@ -72,7 +72,7 @@
  "outputs": [
   {
    "name": "cross_section_m2",
-   "description": "Elastic cross section of the selected branch, one value per energy.",
+   "description": "Elastic cross section of the selected branch, one value per energy. Returned directly as the callable's single positional value (one float64 array); it is not a field of a mapping.",
    "units": "m^2",
    "shape": "same as energy_ev",
    "dtype": "float64 array",

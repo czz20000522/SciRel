@@ -99,7 +99,7 @@
  "outputs": [
   {
    "name": "profile",
-   "description": "Normalized source profile values.",
+   "description": "Normalized source profile values. Returned directly as the callable's single positional value (one float64 array shaped like rho_norm); it is not a field of a mapping.",
    "units": "total quantity per m^3",
    "shape": "same as rho_norm",
    "dtype": "float64 array",

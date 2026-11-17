@@ -65,7 +65,7 @@
   "outputs": [
     {
       "name": "G",
-      "description": "Flux response matrix with target rows/source columns",
+      "description": "Flux response matrix with target rows/source columns Returned directly as the callable's single positional value (one float64 (R.size, R.size) matrix); it is not a field of a mapping.",
       "units": "Wb/rad/A",
       "shape": "(R.size,R.size)",
       "dtype": "float64",

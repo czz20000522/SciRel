@@ -70,7 +70,7 @@
  "outputs": [
   {
    "name": "coefficients",
-   "description": "Discrete Gauss-weighted projection coefficients, in the basis member order",
+   "description": "Discrete Gauss-weighted projection coefficients, in the basis member order Returned directly as the callable's single positional value (one float64 array of length num_basis); it is not a field of a mapping.",
    "units": "field",
    "shape": "num_basis",
    "dtype": "float64",

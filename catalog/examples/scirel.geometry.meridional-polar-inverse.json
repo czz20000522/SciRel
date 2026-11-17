@@ -82,7 +82,7 @@
  "outputs": [
   {
    "name": "position_and_vector",
-   "description": "Tuple rho,z,u_rho,u_z",
+   "description": "Tuple rho,z,u_rho,u_z. Returned directly as the callable's single positional value: one 4-tuple in that order; it is not a field of a mapping.",
    "units": "caller length,caller length,caller vector,caller vector",
    "shape": "four broadcasted arrays",
    "dtype": "float64 tuple",
