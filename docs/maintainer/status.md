@@ -18,7 +18,7 @@
 | --- | --- | --- |
 | 合同（`catalog/examples/`） | 249 | `ls catalog/examples/scirel.*.json | wc -l` |
 | `src/scirel` 下 `.py` 文件 | 230 | `find src/scirel -name '*.py' | wc -l` |
-| `src/scirel` 行数 | 56019 | `find src/scirel -name '*.py' -exec cat {} + | wc -l` |
+| `src/scirel` 行数 | 56032 | `find src/scirel -name '*.py' -exec cat {} + | wc -l` |
 | 模块级公开函数（`def` 顶格、非下划线开头） | 294 | `grep -rh '^def [a-zA-Z]' src/scirel --include='*.py' | wc -l` |
 | 顶层子包（含 `__init__.py`） | 22 | `ls -d src/scirel/*/ | wc -l` 后按 `__init__.py` 过滤 |
 | 测试文件（`test_*.py`） | 416 | `find tests -name 'test_*.py' | wc -l` |
