@@ -964,10 +964,6 @@
       "reason": "not yet migrated: verification.basis absent"
     },
     {
-      "asset_id": "scirel.numerics.truncated-svd-inverse",
-      "reason": "not yet migrated: verification.basis absent"
-    },
-    {
       "asset_id": "scirel.physics.coulomb-ee",
       "reason": "not yet migrated: verification.basis absent"
     },
@@ -999,5 +995,8 @@
       "asset_id": "scirel.source.gaussian",
       "reason": "not yet migrated: verification.basis absent"
     }
+  ],
+  "migrated": [
+    "scirel.numerics.truncated-svd-inverse"
   ]
 }

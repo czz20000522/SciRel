@@ -343,10 +343,46 @@ def _validate_example(value: Any) -> None:
         _fail("example.code", f"must compile: {error.msg}")
 
 
+# Kept as a module constant so tests can compare it against the JSON schema's
+# declared properties: the same contract must not have two field lists.
+VERIFICATION_KEYS = {"scope", "tests", "evidence_ceiling", "known_limitations", "basis"}
+VERIFICATION_BASIS_KINDS = {
+    "analytic-identity",
+    "closed-form",
+    "literature",
+    "upstream-behaviour",
+    "measured-comparison",
+    "independent-recomputation",
+    "specification",
+    "none",
+}
+
+
+def _validate_basis(value: Any, verification: dict[str, Any]) -> None:
+    basis = _object(value, "verification.basis")
+    _exact_keys(basis, {"kind", "statement"}, {"kind", "statement", "source"}, "verification.basis")
+    kind = basis["kind"]
+    if kind not in VERIFICATION_BASIS_KINDS:
+        _fail("verification.basis.kind", f"unknown kind {kind!r}")
+    _text(basis["statement"], "verification.basis.statement")
+    if not str(basis["statement"]).strip():
+        _fail("verification.basis.statement", "must not be empty")
+    if "source" in basis:
+        _text(basis["source"], "verification.basis.source")
+    if kind == "none":
+        ceiling = str(verification.get("evidence_ceiling") or "").strip()
+        limitations = verification.get("known_limitations") or []
+        if not ceiling and not limitations:
+            _fail(
+                "verification.basis",
+                "kind=none must record what is missing in evidence_ceiling or known_limitations",
+            )
+
+
 def _validate_verification(value: Any) -> None:
     verification = _object(value, "verification")
-    keys = {"scope", "tests", "evidence_ceiling", "known_limitations"}
-    _exact_keys(verification, keys, keys, "verification")
+    keys = VERIFICATION_KEYS
+    _exact_keys(verification, keys - {"basis"}, VERIFICATION_KEYS, "verification")
     _validate_string_list(verification["scope"], "verification.scope", nonempty=True)
     _validate_string_list(verification["tests"], "verification.tests", nonempty=True)
     _text(verification["evidence_ceiling"], "verification.evidence_ceiling")
@@ -355,6 +391,8 @@ def _validate_verification(value: Any) -> None:
         "verification.known_limitations",
         nonempty=True,
     )
+    if "basis" in verification:
+        _validate_basis(verification["basis"], verification)
 
 
 def _validate_family(document: dict[str, Any]) -> None:
