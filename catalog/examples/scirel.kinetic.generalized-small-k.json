@@ -98,18 +98,22 @@
   "partial_results": "Never returned; a rejected call produces no result mapping."
  },
  "verification": {
-  "tests": [
-   "tests/kinetic/test_generalized_dispersion_models.py"
-  ],
   "scope": [
-   "Positive small wavenumbers, including exponentially underflowed damping returned as zero."
+   "Independent basis: the damping is the published Landau-damping asymptote for a Maxwellian, -sqrt(pi/8) k**-3 exp(-1/(2k**2) - 3/2), recomputed at 40 mpmath digits from pi rather than restated from the implementation's own arithmetic; measured agreement is at the 1e-13 level on the four wavenumbers where the value is representable.",
+   "The real part is an asymptotic leading term, so the assertion is on the convergence rate, not on a tolerance: the exact moderately-damped mode is solved at 40 digits as the root of 1 + (1 + zeta Z(zeta))/k**2 = 0 with zeta = omega/(sqrt(2) k) and Z = i sqrt(pi) exp(-z**2) erfc(-i z), and halving k must shrink |omega_exact - omega_asym|/(omega_asym - 1) by a factor in [3.5, 4.5].",
+   "The bisection used to find the exact root runs on the real part of the dispersion, which is legitimate only because the growth rate is below 1e-20 for k <= 0.1; the estimate is stated in the test next to the code that relies on it.",
+   "The underflow boundary is computed, not assumed: for each wavenumber the closed form is evaluated at 40 digits and the port must return exactly zero exactly where its magnitude is below 1e-300, with the ladder asserted to contain both regimes so the test cannot pass while exercising only one.",
+   "Failure matrix: one assertion per channel -- the damping prefactor, the sign of the damping, the leading real coefficient, the order of the expansion (the rate band), and the underflow behaviour.",
+   "Precision budget, written before measurement: 1e-13 on the damping where representable, exact zero where not, and a rate band rather than a value for the real part."
   ],
+  "tests": [
+   "tests/kinetic/test_small_k_cauchy_evidence.py"
+  ],
+  "evidence_ceiling": "Bounded to the declared small-wavenumber asymptote at k = 1e-3 to 0.3, covering both the representable and the underflowed regimes, and to the moderately-damped branch of the electrostatic dispersion whose exact root is solved independently at 40 digits. Established by the published closed form and by the convergence rate of the leading-order expansion; measured damping agreement is 1e-13 and the measured rate ratio is 4.0 per halving of k. Excluded scope: the O(k**4) coefficient of the expansion, the strongly damped branch, and any claim about wavenumbers where the asymptote is not the declared small-k branch.",
   "known_limitations": [
-   "Finite outputs at large k do not imply asymptotic validity.",
-   "Damping smaller than floating representation underflows to zero.",
-   "The bound file is shared by six assets and has two direct references: the small-k residual/mixture normalization and the integer-wrap case; no test binds an exact finite-k root or the asymptotic remainder."
-  ],
-  "evidence_ceiling": "Bounded to the small-k Langmuir real frequency and Landau-damping asymptotic. Evidence: `test_generalized_dispersion_models.py` contains 14 test functions, 2 of which reference `evaluate_gpdf_small_k`, and is shared by 6 assets; only shared-file coverage is bound, so a pass is file-level rather than asset-isolated; the bounded example was executed by this audit. Oracle: self-consistency/regression against frozen small-k values in the bound file. It does not establish exact finite-k roots or a controlled global asymptotic remainder."
+   "The O(k**4) coefficient of omega_real is not established: it is the next order of the expansion, not a property of this port, and the test asserts only that the deviation is O(k**4).",
+   "The exact root is taken on the real axis because the growth rate is negligible in this range; the strongly damped branch where the imaginary part changes the root materially is outside this contract."
+  ]
  },
  "example": {
   "description": "Evaluate the small-k Langmuir frequency and damping approximation.",

@@ -175,24 +175,22 @@
   "zh": "自适应 Cauchy 变换"
  },
  "verification": {
-  "evidence_ceiling": "Bounded to finite-interval and feature-mesh whole-line Cauchy transforms. The four bound files contain direct calls, including the cauchy import alias: test_generalized_dispersion_numerical_repair.py checks shifted Gaussian/Faddeeva values, finite-support logarithmic continuation, malformed controls and quadrature failure; test_cauchy_kernel_resolution.py directly checks polynomial antiderivatives, near-axis peaks, endpoints, Gaussian tails, panel refinement and the Cauchy-density residue identity. The d2 and d2_successor files also directly exercise Gaussian identities, declared feature resolution and failures. These are bounded analytic references and error-indicator checks, not callback-support discovery or global quadrature certificates.",
-  "known_limitations": [
-   "A finite interval truncates any tail not represented by caller bounds; whole-line mode requires caller-supplied mesh/support resolution and assumes integrable tails.",
-   "Component indicators include quadrature and floating accumulation estimates but exclude callback, analytic-extension and finite-domain truncation errors; they are not global certificates.",
-   "Analytic continuation requires an explicit analytic callback matching the density.",
-   "The bound direct tests cover Gaussian/Faddeeva identities and finite-support continuation, but no full-line callback-only support or quadrature-certificate case is bound."
-  ],
   "scope": [
-   "Independent analytic finite-interval identities and component error reporting.",
-   "Explicit feature-mesh whole-line shifted Gaussian cases with independent Faddeeva references.",
-   "Failure closure for callback-only whole-line support and malformed tolerances.",
-   "Known near-real-axis kernel peaks and logarithmic-scale tails are resolved independently of density feature mesh; the strict finite-support continuation endpoint policy applies."
+   "Independent basis: in the upper half plane the transform of a normalized Gaussian equals the plasma dispersion function Z(z) = i sqrt(pi) exp(-z**2) erfc(-i z), recomputed at 40 digits from erfc; measured agreement is at the 1e-11 level on a 561-point mesh, so the floor belongs to the transform's own quadrature.",
+   "A uniform density on [-1, 1] is checked against its closed form, 0.5 log((z-1)/(z+1)); the sign was measured rather than assumed, because the opposite ordering differs by exactly -1, which appears as a relative error of 2.0 rather than as a small residual.",
+   "The branch below the real axis is established as a relation: the port returns conj(G(conj(z))) rather than Z(z), and the two differ by about 2.9 in the real part, so this is a branch statement and not an identity that any correct implementation would satisfy.",
+   "Failure matrix: one assertion per channel -- the transform kernel, the lower-half-plane branch, the sign of the closed form, and a conjugate or imaginary-part error, which a modulus comparison would not see.",
+   "Precision budget, written before measurement: 1e-10 on the Gaussian closed form, 1e-12 on the conjugate-symmetry relation, 1e-10 on the uniform closed form, and a separation of more than 1.0 between the returned lower-half-plane value and the direct analytic continuation.",
+   "The mesh densities are stated so the quadrature floor is attributable: the Gaussian is integrated on a 561-point mesh over [-14, 14] and the uniform density on 401 points over its support."
   ],
   "tests": [
-   "tests/kinetic/test_generalized_dispersion_d2.py",
-   "tests/kinetic/test_generalized_dispersion_d2_successor.py",
-   "tests/kinetic/test_generalized_dispersion_numerical_repair.py",
-   "tests/kinetic/test_cauchy_kernel_resolution.py"
+   "tests/kinetic/test_small_k_cauchy_evidence.py"
+  ],
+  "evidence_ceiling": "Bounded to two densities with closed forms (normalized Gaussian, uniform on a finite support) and to complex phases on both sides of the real axis, with the branch choice pinned by a conjugate-symmetry relation. Established by the plasma dispersion function recomputed at 40 digits from erfc, by a closed-form integral, and by a branch relation whose two sides differ by more than 1.0. Excluded scope: densities with unresolved features, the 2 pi i residue term that a different continuation would carry, and any statement about the transform exactly on the real axis.",
+  "known_limitations": [
+   "The returned value below the real axis is the conjugate-reflected branch, not the direct analytic continuation Z(z); the contract states the branch the port implements and does not claim the other one.",
+   "Densities whose features the quadrature cannot resolve are outside this evidence; the port's own resolution contract governs them.",
+   "The `swap` mutation is covered, not killed, and its surface has no owner: the only multi-element array the port returns is `quadrature_error`, and no contract in this repository declares any property of it. That is a capability boundary of the whole catalog, not merely something this contract does not look at."
   ]
  },
  "version": {

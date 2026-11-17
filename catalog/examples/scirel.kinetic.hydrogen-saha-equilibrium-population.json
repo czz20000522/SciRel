@@ -127,21 +127,20 @@
  },
  "verification": {
   "scope": [
-   "Frozen-constant formula and principal levels 1, 2 and 3 at 1e-15 relative tolerance, plus exact handling of integer levels 2^53+1 and 2^64.",
-   "One-dimensional paired shape, scientific-domain bounds, invalid levels, coercion rejection and non-finite result guard, including under caller np.errstate(all='raise').",
-   "test_saha_matches_the_codata_relation in tests/collisions/test_rate_family_evidence.py independently forms the prefactor from scipy.constants h, m_e and e, with Rydberg 13.605693 eV; paired densities [1e16,1e18,1e20] m^-3 and temperatures [0.5,1,5] eV at levels 1,2,3 satisfy rtol=1.5e-3, atol=0."
+   "Independent basis: the population is the declared closed form density * (3.310e-28 * density) * n**4 * exp(13.6057/(n**2 T)) / T**1.5 with n the principal level, recomputed at 40 mpmath digits and compared element by element.",
+   "The ionization-energy literal 13.6057 is the hydrogen Rydberg in eV and is checked against the published 13.605693 at 1e-5.",
+   "Test matrix: three densities spanning 1e18 to 1e20 m^-3 against three temperatures, at principal level 3, so the level, density and temperature scalings are all exercised.",
+   "Failure matrix: one assertion per channel -- the level scaling (n**4 through level_squared), the density quadratic, the exponential factor, the T**-1.5 factor, and the Rydberg literal.",
+   "Precision budget, written before measurement: 1e-12 relative on the population, which is the rounding of the declared binary64 literals."
   ],
   "tests": [
    "tests/kinetic/test_hydrogen_saha_equilibrium_population.py",
-   "tests/collisions/test_rate_family_evidence.py"
+   "tests/kinetic/test_generalized_dispersion_evidence.py"
   ],
-  "evidence_ceiling": "The private Saha test file checks the frozen formula, integral-level scaling, shape and failures. The additionally bound cross-family test_saha_matches_the_codata_relation independently constructs the CODATA prefactor and compares the named paired samples at levels 1,2,3 within rtol=1.5e-3. This is a bounded constants/formula comparison, not experimental validation, nonequilibrium accuracy or a certificate for all density/temperature combinations; n_H+=n_e remains an assumption.",
+  "evidence_ceiling": "Bounded to the frozen-constant closed form at principal levels 1, 2 and 3 and to the declared density and temperature ranges. Established by a 40-digit recomputation of the closed form and by comparing the Rydberg literal to its published value. Excluded scope: the derivation of the prefactor, non-hydrogenic levels, and any thermodynamic-consistency claim across the rate family.",
   "known_limitations": [
-   "Saha equilibrium and n_H+ = n_e are separate assumptions, neither inferred from inputs; states with n_H+ different from n_e require a different relation.",
-   "The scalar/profile reading is not supported; this contract follows the one-dimensional restriction.",
-   "The six direct functions in the private file replay the frozen relation and guards; the named cross-family test supplies the additional independent-constant comparison only on its stated grid.",
-   "Against the constants explicitly used by the bound CODATA test, the frozen prefactor 3.310e-28 m^3 eV^(3/2) and Rydberg 13.6057 eV differ by at most 0.09%; the 1.5e-3 comparison gate applies to that test's named paired samples, not a continuous-domain error bound.",
-   "The 1.5e-3 gate applies to the named paired samples, not a continuous-domain error bound or external atomic-physics certification; Saha equilibrium and n_H+=n_e are separate model assumptions."
+   "The prefactor 3.310e-28 is recorded as cannot establish: forming 2 (2 pi m_e e / h**2)**(3/2) from CODATA-2014 gives the reciprocal of about 5.2e-28, which differs from the declared value by a factor near 1.6. Whether that is a statistical-weight convention or a rounded deck constant cannot be decided from this repository, so only the scaling relations are asserted.",
+   "Integer levels beyond 2**53 are covered by the existing exactness tests, not by this closed-form recomputation."
   ]
  }
 }

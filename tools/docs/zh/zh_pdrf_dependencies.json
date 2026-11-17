@@ -124,23 +124,25 @@
     "expected": "默认归一化状态生成了形状为 (14,14) 的有限 M、A 矩阵。"
    },
    "verification": {
-    "scope": [
-     "本合同项下的 SciRel 实现与所列仓库测试覆盖声明的公共端口及数值关系。",
-     "示例只运行一个有界代表性算例，不把适用性扩展到声明的前置条件之外。"
-    ],
-    "evidence_ceiling": "限于含相对论切向惯性与代数各向异性压力的局部流体/麦克斯韦生成元。证据：`test_spectral_evolution.py` 含 13 个测试函数，其中 6 个引用 `assemble_spectral_matrix`，由 4 个资产共享；仅绑定共享文件覆盖，因此通过是文件级事实、而非资产隔离证据；本审计已执行有界示例。真值来源：仅自洽/回归。不建立：完整熵/CGL/动理学演化，或无协变修正的热力学。",
-    "known_limitations": [
-     "局域代数热模型为有效模型，并非完整熵演化、CGL、动理学或未磁化漂移导向的附录 A 模型。",
-     "背景源项与按质量给定的加速度对扰动响应为零。梯度定义局域/eikonal 符号，而不是非齐次全局 Maxwell-Gauss 边值解。",
-     "磁化纵向压强散度因子 2 是现象学镜面修正；不声称通用动理学镜面阈值或实验精度。",
-     "相对论惯性取 d(gamma*v)/dv，压强与摩擦为非协变形式；不声称完整协变热力学。",
-     "四资产共享文件 `test_spectral_evolution.py` 中的六个直接函数覆盖碰撞/耗散、梯度线性化、相对论边界拒绝、SI 参数个数与显式碰撞类别；此处不调用本征求解。",
-     "生成元拒绝达到光速的 `rel=1` 漂移并使用固定历史常数；不声称原生/参考运行时一致。"
-    ],
-    "tests": [
-     "tests/kinetic/test_spectral_evolution.py"
-    ]
-   }
+  "scope": [
+   "独立依据：冷、无漂移、未磁化的生成元退化为闭式分支 omega = +-omega_p 与 omega = +-sqrt(omega_p**2 + k**2 c**2)，并在 50 位 mpmath 精度上与之比对。",
+   "非相对论惯性矩阵严格为单位矩阵，因此广义本征问题退化为标准问题，上述冷极限逐字适用；该恒等式是断言项而非假设。",
+   "测试矩阵：1e-4 到 5e-3 1/m 的六个波矢（含一个斜向波矢），每个都检查两个分支、横波二重简并、纵波正负成对以及无虚部。",
+   "声明的 scales 是相似变换：频率集合在无关的正缩放下不变。",
+   "失败矩阵：每条通道一条断言——错误的 omega_p（分支值）、错误的旋度符号（虚对）、错误的重数（简并计数）、错误的缩放（不变性）、错误的分支归一（max|Im omega|）。",
+   "精度预算在测量前写入：闭式解上 1e-12 相对，比 mpmath 底噪高四个量级、比该 pencil 无预条件求解的 1e-4 二进制反向误差低四个量级。",
+   "该 1e-4 反向误差底噪是实测：||M|| 为 c**2 k 约 1e14，故 eps*||M||/omega_p 约 1e-4。"
+  ],
+  "tests": [
+   "tests/kinetic/test_spectral_cold_fluid_evidence.py",
+   "tests/kinetic/test_spectral_evolution.py"
+  ],
+  "evidence_ceiling": "限于压力、漂移、密度梯度与磁场项严格为零的状态上的局部流体/麦克斯韦生成元（含代数各向异性压力）。依据为冷流体闭式分支与装配矩阵 50 位谱的独立高精度重算；分支值实测偏差不超过 1e-17，求解器自身二进制路径不超过 5e-17。不建立：温态或磁化分支、相对论惯性，以及该生成元复现外部动理学谱的任何主张。",
+  "known_limitations": [
+   "BONK/PDRF 的 deck 常数与 J 极点、谐波表在本仓库没有独立来源，记为无法确立（cannot establish）；此处只确立声明输入与返回值之间的关系。",
+   "冷极限只是参数空间中的一点；它不认证热项与回旋项，此处没有它们的闭式解。"
+  ]
+ }
   },
   {
    "asset_id": "scirel.kinetic.spectral-dispersion-scan",
@@ -536,23 +538,22 @@
     "expected": "归一化两点扫描返回 ww1 形状(2,14)，图形元数据 axes_count=2、mode_count=5；plot_png=b''，不渲染图片，也不写文件。"
    },
    "verification": {
-    "scope": [
-     "本合同项下的 SciRel 实现与所列仓库测试覆盖声明的公共端口及数值关系。",
-     "示例只运行一个有界代表性算例，不把适用性扩展到声明的前置条件之外。"
-    ],
-    "evidence_ceiling": "限于局部归一化/SI 多流体色散映射及其扫描选择器。证据：`test_spectral_evolution.py` 含 13 个测试函数，其中 3 个引用 `evaluate_spectral_dispersion`，由 4 个资产共享；仅绑定共享文件覆盖，因此通过是文件级事实、而非资产隔离证据；本审计已执行有界示例。真值来源：仅自洽/回归。不建立：完整熵/CGL/动理学演化，或非均匀全局麦克斯韦-高斯边界求解。",
-    "known_limitations": [
-     "局域代数热模型为有效模型，并非完整熵演化、CGL、动理学或未磁化漂移导向的附录 A 模型。",
-     "背景源项与按质量给定的加速度对扰动响应为零。梯度定义局域/eikonal 符号，而不是非齐次全局 Maxwell-Gauss 边值解。",
-     "磁化纵向压强散度因子 2 是现象学镜面修正；不声称通用动理学镜面阈值或实验精度。",
-     "相对论惯性取 d(gamma*v)/dv，压强与摩擦为非协变形式；不声称完整协变热力学。",
-     "实现为其 SI 映射使用固定历史常数；不进行现代 CODATA 替换或单位换算层。",
-     "`rel=1` 达到或超过 `c` 时被拒绝，实现没有绘图或导出副作用；成功调用只返回数据。"
-    ],
-    "tests": [
-     "tests/kinetic/test_spectral_evolution.py"
-    ]
-   }
+  "scope": [
+   "独立依据：每个扫描点必须在其自身的 (kx, kz) 上复现冷闭式分支——omega = +-omega_p 与 omega = +-sqrt(omega_p**2 + k**2 c**2)，其中 k 取自请求的轴——在 50 位 mpmath 精度上重算。",
+   "这同时检验轴映射与逐点求解；与直接调用的比较做不到这点，因为那只是复述共享代码路径。",
+   "测试矩阵：冷态上的三点幅度扫描，逐格点检查两个分支。",
+   "失败矩阵：每条通道一条断言——错误的幅度轴映射、错误的角度到分量换算、错误的逐点求解。",
+   "精度预算在测量前写入：每个格点 1e-12 相对。"
+  ],
+  "tests": [
+   "tests/kinetic/test_spectral_cold_fluid_evidence.py",
+   "tests/kinetic/test_spectral_evolution.py"
+  ],
+  "evidence_ceiling": "限于局部归一化/SI 多流体色散映射及其扫描选择器，并在冷闭式退化上验证。依据为逐轴点分支的独立高精度重算；实测偏差不超过 1e-16。不建立：温态或磁化扫描、完整熵/CGL/动理学演化，以及非齐次全局 Maxwell-Gauss 边值解。",
+  "known_limitations": [
+   "角度与笛卡尔网格选择器只由既有共享文件测试覆盖；独立闭式检查使用幅度轴。"
+  ]
+ }
   },
   {
    "asset_id": "scirel.kinetic.spectral-temporal-spectrum",
@@ -715,25 +716,24 @@
     "expected": "对 M=diag(-i,2i) 和 A=I，两种返回顺序都是 [1+0j, -2+0j]，残差为零。"
    },
    "verification": {
-    "scope": [
-     "本合同项下的 SciRel 实现与所列仓库测试覆盖声明的公共端口及数值关系。",
-     "示例只运行一个有界代表性算例，不把适用性扩展到声明的前置条件之外。",
-     "外部 PDRF 实频参考点由 tests/kinetic/test_dispersion_multifluid_oracle.py 覆盖。",
-     "合成残差检查确认低尺度非活动行不会设置 worst 指标，而非活动行的非有限残差仍抛出 ArithmeticError。"
-    ],
-    "evidence_ceiling": "限于带实/虚部排序与后向残差的稠密广义时间本征问题。证据：`test_spectral_evolution.py` 含 13 个测试函数，其中 2 个引用 `solve_temporal_spectrum`，由 4 个资产共享; `test_dispersion_multifluid_oracle.py` 含 4 个测试函数，其中 1 个引用 `solve_temporal_spectrum`，由 3 个资产共享；仅绑定共享文件覆盖，因此通过是文件级事实、而非资产隔离证据；本审计已执行有界示例。真值来源：自洽/回归，外加一个固定外部 PDRF 真值情形。不建立：通用前向本征值精度、唯一简并极化或模追踪。",
-    "known_limitations": [
-     "后向残差界不能证明普遍的前向精度；已舍入的输入矩阵限制了可用信息。",
-     "不做分支追踪，也不给出唯一相位或退化基。",
-     "不从任意矩阵输入推断物理物种模型。",
-     "共享谱文件中的两个直接函数加一个固定外部 PDRF 真值测试覆盖该求解；真值文件由三个资产共享，只绑定一个参照情形。",
-     "除融合 PDRF 真值情形外未绑定外部矩阵级参照；数值底线是后向残差，而非前向本征值误差棒。"
-    ],
-    "tests": [
-     "tests/kinetic/test_spectral_evolution.py",
-     "tests/kinetic/test_dispersion_multifluid_oracle.py"
-    ]
-   }
+  "scope": [
+   "独立依据：在冷、未磁化极限下返回的频率必须等于 omega = +-omega_p 与 omega = +-sqrt(omega_p**2 + k**2 c**2)，由状态自身的 n、q、m、epsilon0 与 c2 在 50 位 mpmath 精度上重算。",
+   "两个声明的初始求解选择器都被覆盖，因此该关系不由单一代码路径认证。",
+   "声明的 scales 是相似变换，频率集合在无关正缩放下不变；只缩放行或只缩放列会移动分支并失败。",
+   "失败矩阵：每条通道一条断言——错误的分支值（闭式解）、错误的求解路径（两个选择器）、错误的缩放约定（不变性）、错误的时间归一（omega = i*lambda 约定）。",
+   "精度预算在测量前写入：分支值 1e-12 相对；实测偏差不超过 5e-17。"
+  ],
+  "tests": [
+   "tests/kinetic/test_spectral_cold_fluid_evidence.py",
+   "tests/kinetic/test_spectral_evolution.py",
+   "tests/kinetic/test_dispersion_multifluid_oracle.py"
+  ],
+  "evidence_ceiling": "限于稠密广义时间本征问题（按实部/虚部排序）以及同一 pencil 的冷闭式退化。依据为 50 位独立高精度重算与相似不变性恒等式；实测偏差不超过 5e-17 相对，预算为 1e-12。不建立：温态或磁化状态的普适前向本征值精度、简并偏振的唯一性以及模态追踪。",
+  "known_limitations": [
+   "BONK/PDRF 的 deck 常数与 J 极点、谐波表在本仓库没有独立来源，记为无法确立（cannot establish）；此处只确立声明输入与返回值之间的关系。",
+   "tests/kinetic/test_dispersion_multifluid_oracle.py 中的固定 PDRF 参考点仍是仓库外真值，仓库内没有推导。"
+  ]
+ }
   },
   {
    "asset_id": "scirel.kinetic.spectral-plasma-state",
@@ -1121,23 +1121,22 @@
     "expected": "默认归一化状态包含 s=2 个独立流体，且 Q0=0.0。"
    },
    "verification": {
-    "scope": [
-     "本合同项下的 SciRel 实现与所列仓库测试覆盖声明的公共端口及数值关系。",
-     "示例只运行一个有界代表性算例，不把适用性扩展到声明的前置条件之外。"
-    ],
-    "evidence_ceiling": "限于不计算本征谱的全新归一化/SI 等离子体态导出及诊断。证据：`test_spectral_evolution.py` 含 13 个测试函数，其中 10 个引用 `initialize_plasma_state`，由 4 个资产共享；仅绑定共享文件覆盖，因此通过是文件级事实、而非资产隔离证据；本审计已执行有界示例。真值来源：仅自洽/回归。不建立：完整熵/CGL/动理学演化，或非均匀全局麦克斯韦-高斯边界求解。",
-    "known_limitations": [
-     "局域代数热模型为有效模型，并非完整熵演化、CGL、动理学或未磁化漂移导向的附录 A 模型。",
-     "背景源项与按质量给定的加速度对扰动响应为零。梯度定义局域/eikonal 符号，而不是非齐次全局 Maxwell-Gauss 边值解。",
-     "磁化纵向压强散度因子 2 是现象学镜面修正；不声称通用动理学镜面阈值或实验精度。",
-     "相对论惯性取 d(gamma*v)/dv，压强与摩擦为非协变形式；不声称完整协变热力学。",
-     "四资产共享文件 `test_spectral_evolution.py` 中的十个直接函数覆盖初始化、碰撞耗散/动量守恒、重新初始化、质量/密度拒绝与下溢；该文件也测试矩阵/谱姊妹资产。",
-     "初始化是局部代数的：不导出背景平衡、不强制全局麦克斯韦-高斯边界，也不进行完整熵/CGL/动理学演化。"
-    ],
-    "tests": [
-     "tests/kinetic/test_spectral_evolution.py"
-    ]
-   }
+  "scope": [
+   "独立依据：每个派生标量都是声明组分行与 cfg 常数的闭式定义——rhos0 = m*n、Psz = rho*cs^2/gamma、Psp 同理、Deltas = (Psz-Psp)/B0、vA = B0/sqrt(mu0*rho)、wcs = q*B0/m、wps = sqrt(n q^2/(epsilon0 m))、mu0 = 1/(c2 epsilon0)，以及按行求和的 Q0 与 J0——全部在 40 位 mpmath 精度上重算。",
+   "两个 beta 数组在零场下被检查为未定义并返回 None，而不是臆造的零；Alfvén 尺度在零场下也断言严格为零。",
+   "测试矩阵：含非零 B0、漂移、密度梯度与不相等平行/垂直声速的二组分 SI 状态，覆盖全部回旋系数；另加零场分支检查未定义 beta 规则。",
+   "失败矩阵：每条通道一条断言——每个派生标量（40 位闭式解）、理想气体压力闭合、磁指向系数、Alfvén 速度、Q0/J0 求和以及未定义 beta 规则。",
+   "精度预算在测量前写入：1e-13 至 1e-15 相对（视运算次数），即二进制输入自身的舍入。"
+  ],
+  "tests": [
+   "tests/kinetic/test_spectral_cold_fluid_evidence.py",
+   "tests/kinetic/test_spectral_evolution.py"
+  ],
+  "evidence_ceiling": "限于新生成的归一化/SI 等离子体状态派生及其诊断（不含本征谱）。依据为对每个派生标量在 40 位精度上的独立高精度重算，不重用实现代数；实测偏差不超过 1e-15 相对。不建立：完整熵/CGL/动理学演化、非齐次全局 Maxwell-Gauss 边值解，以及固定模块常数为最新 CODATA 值的主张。",
+  "known_limitations": [
+   "模块的 SI 默认常数（c2 = (2.9979e8)^2，epsilon0 = 8.854e-12）与 fluid_spectrum 模块的 (2.99792458e8)^2 与 8.854187817e-12 分别相差 5.8e-6 与 2.1e-5 相对；各模块自洽，但跨模块常数恒等式未在此确立。"
+  ]
+ }
   }
  ]
 }

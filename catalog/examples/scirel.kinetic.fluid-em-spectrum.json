@@ -129,22 +129,22 @@
   "zh": "EM 有限有理模型谱与候选选取"
  },
  "verification": {
-  "evidence_ceiling": "Supported controls remain EM cases1/2, J8/J12, N0..7 and the 79-frequency default axis. Direct successful public-wrapper assertions are bounded to EM case2, J8/N0, with explicit omega=0.83*wn or [0.37,0.83,1.43]*wn. Evidence: test_fluid_spectrum_full.py contains 9 test functions, 2 referencing solve_fluid_em, and is shared by 6 assets; test_fluid_em_diagnostics.py also checks eigenvalue-only diagnostic nesting and retired fields. Shared-file coverage is not asset-isolated evidence. These assertions do not verify case1, successful J12, N1..7 or execution of the default axis. Oracle: self-consistency/regression only; neither physical mode identity nor infinite-mode completeness is established.",
-  "known_limitations": [
-   "The bound direct functions are `test_status_and_complete_finite_spectrum_are_explicit` and `test_multifrequency_em_preserves_each_nested_diagnostic_array` inside the six-asset-shared `test_fluid_spectrum_full.py`; the focused `test_fluid_em_diagnostics.py` also checks measured moments, retired fields and public nesting.",
-   "No cross-thread/platform invariance, arbitrary precision, all physical-mode completeness or unconditional nonlinear convergence.",
-   "J/L pole and finite-harmonic approximation errors remain distinct from relation consistency and numerical residual.",
-   "The EM branch uses the fixed historical constants `c2=2.99792458e8**2`, `epsilon0=8.854187817e-12` and `kB=1.38064852e-23`; no unit conversion or modern CODATA substitution is performed.",
-   "Pure-Python execution is tested on this host; native parity is not claimed.",
-   "The bound successful public-wrapper assertions do not verify case1, J12, N1..7 or the default 79-frequency sweep; these supported controls are retained without inventing successful witnesses."
-  ],
   "scope": [
-   "Direct successful solve_fluid_em assertions use EM case2, J8/N0, with explicit single frequency 0.83*wn or ordered frequencies [0.37,0.83,1.43]*wn.",
-   "Bound assertions cover 40-value finite spectra, five heuristic candidates per frequency, nested diagnostic arrays and eigenpair_residuals_computed=false."
+   "Independent basis: the returned candidate frequencies are the eigenvalues of the matrix the call itself returns -- det(matM) recomputed at 40 mpmath digits equals the product of the complete spectrum, and every selected candidate coincides with an element of that spectrum.",
+   "The declared selection structure is checked as an equality: five candidates per frequency, roots equal to kxx, and each candidate drawn from the spectrum rather than synthesised.",
+   "Test matrix: EM case 2 at a fixed frequency, J8, max_harmonic 0.",
+   "Failure matrix: one assertion per channel -- a fabricated or displaced candidate set, a matrix that is not the one solved, a wrong candidate count, and a wrong frequency normalisation.",
+   "Precision budget, written before measurement: 1e-12 relative on the determinant identity (measured 2.6e-14) and 1e-9 relative for candidate membership in the spectrum."
   ],
   "tests": [
+   "tests/kinetic/test_fluid_deck_solver_evidence.py",
    "tests/kinetic/test_fluid_spectrum_full.py",
    "tests/kinetic/test_fluid_em_diagnostics.py"
+  ],
+  "evidence_ceiling": "Bounded to EM case 2, J8, max_harmonic 0, at explicit single frequencies. Established by an independent 40-digit determinant identity between the returned matrix and the returned complete spectrum, plus the declared candidate-count and membership relations. Excluded scope: case 1, successful J12, max_harmonic 1..7, execution of the default 79-frequency axis, physical mode identity, and infinite-mode completeness.",
+  "known_limitations": [
+   "The candidate ranking rule beyond membership (the heuristic that picks five of the filtered values) has no independent basis; only membership and count are established.",
+   "The spectrum is not shown to be complete: the matrix has 40 eigenvalues and the five candidates are a selection from them."
   ]
  },
  "version": {

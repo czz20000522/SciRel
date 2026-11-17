@@ -228,22 +228,21 @@
  },
  "verification": {
   "scope": [
-   "Current SciRel implementation and the repository tests listed in this contract cover the declared public ports and numerical relation.",
-   "The example exercises one bounded representative case; it does not extend applicability beyond the declared preconditions.",
-   "External PDRF real-frequency reference points are covered by tests/kinetic/test_dispersion_multifluid_oracle.py.",
-   "A synthetic residual checks that an inactive low-scale row does not set the worst metric while a nonfinite inactive residual still raises ArithmeticError."
+   "Independent basis: on the cold, unmagnetized reduction the returned frequencies must equal omega = +-omega_p and omega = +-sqrt(omega_p**2 + k**2 c**2), recomputed at 50 mpmath digits from the state's own n, q, m, epsilon0 and c2.",
+   "Both declared initial-solver selectors are exercised, so the relation is not certified by one code path alone.",
+   "The declared scales are a similarity transform, so the frequency set is invariant under an unrelated positive rescaling; a row-only or column-only scaling error moves the branches and fails.",
+   "Failure matrix: one assertion per channel -- wrong branch value (closed form), wrong solver path (both selectors), wrong scaling convention (invariance), wrong time normalisation (omega = i*lambda convention).",
+   "Precision budget, written before measurement: 1e-12 relative on the branch values; the measured deviation is at most 5e-17."
   ],
   "tests": [
+   "tests/kinetic/test_spectral_cold_fluid_evidence.py",
    "tests/kinetic/test_spectral_evolution.py",
    "tests/kinetic/test_dispersion_multifluid_oracle.py"
   ],
-  "evidence_ceiling": "Bounded to the dense generalized temporal eigenproblem with ordered real/imaginary sorts and backward residuals. Evidence: `test_spectral_evolution.py` contains 13 test functions, 2 of which reference `solve_temporal_spectrum`, and is shared by 4 assets; `test_dispersion_multifluid_oracle.py` contains 4 test functions, 1 of which references `solve_temporal_spectrum`, and is shared by 3 assets; only shared-file coverage is bound, so a pass is file-level rather than asset-isolated; the bounded example was executed by this audit. Oracle: self-consistency/regression plus one fixed external PDRF truth case. It does not establish universal forward eigenvalue accuracy, unique degenerate polarizations, or mode tracking.",
+  "evidence_ceiling": "Bounded to the dense generalized temporal eigenproblem over ordered real/imaginary sorts, plus the cold closed-form reduction of the same pencil. Established by an independent high-precision recomputation at 50 digits and by a similarity-invariance identity; measured deviations are at most 5e-17 relative against a 1e-12 budget. Excluded scope: universal forward eigenvalue accuracy for warm or magnetized states, unique degenerate polarizations, and mode tracking.",
   "known_limitations": [
-   "Backward residual bounds do not certify universal forward accuracy; rounded input matrices limit available information.",
-   "No branch tracking or unique phase/degenerate basis.",
-   "No source/physical species model is inferred from arbitrary matrix inputs.",
-   "Two direct functions in the shared spectral file plus one fixed external PDRF truth test cover the solve; the truth file is shared by three assets and binds one oracle case.",
-   "No external matrix-level oracle beyond the fused PDRF truth case is bound; the numerical floor is the backward residual, not a forward eigenvalue error bar."
+   "BONK/PDRF deck constants and the J-pole/harmonic tables have no independent source in this repository; they are recorded as cannot establish, and only relations between the declared inputs and the returned values are established.",
+   "The fixed PDRF reference points in tests/kinetic/test_dispersion_multifluid_oracle.py remain external truth with no in-repo derivation."
   ]
  },
  "references": [
