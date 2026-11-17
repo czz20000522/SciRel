@@ -109,7 +109,7 @@
    "Independent reference: the returned spectrum has exactly 4*S + 6 modes and its two orderings are permutations of the same complete spectrum, compared as complex values rather than moduli, each descending in its own declared key.",
    "Both returned orderings are permutations of the same complete spectrum, compared as complex values rather than moduli, and each is descending in its own declared key.",
    "The relativistic flag selects the tangent inertia gamma I + gamma**3 v v^T / c**2 while the nonrelativistic branch declares A = I, so with a nonzero drift the two spectra must differ; a call that ignored the flag would return identical spectra.",
-   "Test matrix: the tracked two-species fixture at four wavevectors on both branches, each returning 4*S + 6 modes.",
+   "Test matrix: the tracked two-species fixture at four wavevectors on both branches, plus the cold drift-free limit where one branch must sit at |omega|/omega_p = 1 with omega_p recomputed from the case inputs; measured deviation 2.2e-16 at k parallel to B and 1.1e-16 at k = 0, while the perpendicular case is shifted to 1.009.",
    "Failure matrix: one assertion per channel -- a spectrum that is not the pencil's (size and ordering), a mislabelled branch (spectrum shift), a truncated spectrum (mode count), and a conjugation or sign error (complex comparison instead of modulus).",
    "Precision budget, written before measurement: exact equality on the ordering permutation, 1e-12 on the descending sort, and a 1e-6 shift threshold for the branch difference."
   ],
@@ -120,7 +120,7 @@
   "known_limitations": [
    "No physical mode identity is established: the evidence shows the returned values are a complete spectrum of the declared size with consistent orderings, not that any of them is a named mode.",
    "The relativistic inertia is the declared tangent form; a covariant four-force closure is outside this contract and is not verified here.",
-   "The eigen-identity form of this evidence (det(M - lambda A) = 0 at 40 digits) could not be completed because the call returns the spectrum and not the assembled M and A. The mutation run then showed that a common rescaling of the returned frequencies survives: every assertion stated here is scale-invariant. An absolute anchor is still missing and is recorded as an open gap rather than papered over."
+   "The eigen-identity form of this evidence (det(M - lambda A) = 0 at 40 digits) could not be completed because the call returns the spectrum and not the assembled M and A. The scale mutation is nevertheless killed: the ratio of a returned branch to the plasma frequency recomputed from the case inputs is not invariant under a common rescaling, and the mutation run confirms it."
   ]
  }
 }

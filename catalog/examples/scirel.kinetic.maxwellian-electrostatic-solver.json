@@ -191,7 +191,7 @@
   "known_limitations": [
    "The mapping from the returned D to the textbook dielectric form 1 + (1 + z Z(z))/k**2 was tested and failed at 0.75 relative, so D is not that quantity here; the mapping is recorded as cannot establish rather than asserted.",
    "Passing only the real part of the solved frequency selects a different branch: the reported dispersion is 0.045+0.064 there against 1.5e-14 at the full complex frequency. That is a difference of kind, not of value, and is not asserted in either direction.",
-   "The mutation run recorded the `constant` mutant as not_exercised because the test calls the solver once; a second call at a different wavenumber is needed to observe it, and is not yet in place."
+   "The mutation run exercises the solver at two different wavenumbers, which is what the `constant` mutant needs; a single call left it unobserved in an earlier revision."
   ]
  },
  "version": {
