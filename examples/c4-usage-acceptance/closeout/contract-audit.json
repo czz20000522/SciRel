@@ -1,0 +1,4551 @@
+{
+ "schema": "scirel.c4-usage-closeout.contract-audit",
+ "package": {
+  "wheel_sha256": "f1501a3efbdaba7b18c9af7be06ff30d9a33caf2777534de71f6833b93938b2a",
+  "snapshot_sha256": "7572961c553ecca28c506a392297d514b714eb1fcdffccfff262618d75b60bf3",
+  "source_revision": "d429359dcfbf37aedf09aa64cfa78b89da3b3623",
+  "asset_count": 249
+ },
+ "channels": {
+  "contracts_total": 249,
+  "single_output": 138,
+  "multi_output": 111,
+  "declared_channel_counts": {
+   "undeclared": 119,
+   "positional": 14,
+   "result-field": 5
+  },
+  "runtime_verdict_counts": {
+   "undeclared-keys-named-elsewhere": 19,
+   "undeclared-declared-name-is-key": 8,
+   "undeclared-unambiguous-positional": 84,
+   "consistent": 19,
+   "undeclared-keys-unstated": 2,
+   "undeclared-keys-dynamic": 1,
+   "not-observed": 3,
+   "undeclared-keys-partly-named": 2
+  },
+  "rows": [
+   {
+    "asset": "scirel.closures.discrete-vector-error-feedback",
+    "output": "result",
+    "dtype": "scirel._result.Result mapping; nested values and state_trace are plain dicts",
+    "shape": "mapping",
+    "constraints": "values contains total_current_A [n,11], feedback_current_A [n,11], pid_components [n,30] in P1,I1,D1 order and error_T [n,10]; state_trace records reset and pre/post integrator/filter states. The top-level key values collides with dict.values; read it as result[\"values\"], while dict.values(result) remains the mapping method.",
+    "declared_channel": "undeclared",
+    "declaration": "Top-level scirel._result.Result mapping containing schema, time_s, values and state_trace.",
+    "shape_is_informative": true,
+    "runtime": {
+     "returned_type": "Result",
+     "is_mapping": true,
+     "elapsed_s": 0.018,
+     "keys": [
+      "schema",
+      "state_trace",
+      "time_s",
+      "values"
+     ],
+     "declared_name_is_key": false,
+     "keys_named_in": {
+      "description": [
+       "schema",
+       "state_trace",
+       "time_s",
+       "values"
+      ],
+      "constraints": [
+       "state_trace",
+       "values"
+      ],
+      "dtype": [
+       "state_trace",
+       "values"
+      ]
+     },
+     "verdict": "undeclared-keys-named-elsewhere"
+    }
+   },
+   {
+    "asset": "scirel.closures.quasineutral-reference-density",
+    "output": "electron_density_ref_m3",
+    "dtype": "scirel._result.Result mapping; electron_density_ref_m3 is NumPy float64 scalar or array",
+    "shape": "common broadcast shape of both inputs, including scalar shape ()",
+    "constraints": "Finite and nonnegative if returned; non-finite multiplication raises FloatingPointError.",
+    "declared_channel": "undeclared",
+    "declaration": "Named result containing the charge-state-weighted reference electron number density.",
+    "shape_is_informative": true,
+    "runtime": {
+     "returned_type": "Result",
+     "is_mapping": true,
+     "elapsed_s": 0.0,
+     "keys": [
+      "electron_density_ref_m3"
+     ],
+     "declared_name_is_key": true,
+     "verdict": "undeclared-declared-name-is-key"
+    }
+   },
+   {
+    "asset": "scirel.collisions.atomic-hydrogen-1s-radiative-recombination-rate-coefficient",
+    "output": "rate_m3_s",
+    "dtype": "float64 array or scalar",
+    "shape": "same as electron_temperature_ev",
+    "constraints": "Finite and strictly positive on accepted inputs; no external physical accuracy is asserted.",
+    "declared_channel": "undeclared",
+    "declaration": "H(1s) radiative recombination rate coefficient.",
+    "shape_is_informative": true,
+    "runtime": {
+     "returned_type": "ndarray",
+     "is_mapping": false,
+     "elapsed_s": 0.001,
+     "verdict": "undeclared-unambiguous-positional"
+    }
+   },
+   {
+    "asset": "scirel.collisions.atomic-hydrogen-charge-exchange-cross-section",
+    "output": "cross_section_m2",
+    "dtype": "float64 array",
+    "shape": "same as energy_ev",
+    "constraints": "Finite and strictly positive on both clipped branches.",
+    "declared_channel": "undeclared",
+    "declaration": "Charge-exchange cross section, one value per energy.",
+    "shape_is_informative": true,
+    "runtime": {
+     "returned_type": "ndarray",
+     "is_mapping": false,
+     "elapsed_s": 0.002,
+     "verdict": "undeclared-unambiguous-positional"
+    }
+   },
+   {
+    "asset": "scirel.collisions.atomic-hydrogen-charge-exchange-rate-coefficient",
+    "output": "rate_m3_s",
+    "dtype": "float64 array or scalar",
+    "shape": "same as both inputs",
+    "constraints": "Finite and strictly positive on accepted inputs; the high-energy quadrature is a bounded model, not an unbounded extrapolation.",
+    "declared_channel": "positional",
+    "declaration": "H + H+ charge-exchange rate coefficient from the piecewise fit/quadrature relation. Returned directly as the callable's single positional value (one float64 array or Python float); it is not a field of a mapping.",
+    "shape_is_informative": true,
+    "runtime": {
+     "returned_type": "ndarray",
+     "is_mapping": false,
+     "elapsed_s": 0.137,
+     "verdict": "consistent"
+    }
+   },
+   {
+    "asset": "scirel.collisions.atomic-hydrogen-elastic-cross-section",
+    "output": "cross_section_m2",
+    "dtype": "float64 array",
+    "shape": "same as energy_ev",
+    "constraints": "Finite and strictly positive for every accepted input.",
+    "declared_channel": "positional",
+    "declaration": "Elastic cross section of the selected branch, one value per energy. Returned directly as the callable's single positional value (one float64 array); it is not a field of a mapping.",
+    "shape_is_informative": true,
+    "runtime": {
+     "returned_type": "ndarray",
+     "is_mapping": false,
+     "elapsed_s": 0.001,
+     "verdict": "consistent"
+    }
+   },
+   {
+    "asset": "scirel.collisions.atomic-molecular-hydrogen-elastic-cross-section",
+    "output": "cross_section_m2",
+    "dtype": "float64 array",
+    "shape": "input shape",
+    "constraints": "Finite and strictly positive for every accepted input.",
+    "declared_channel": "undeclared",
+    "declaration": "Elastic momentum-transfer cross section, one value per energy, with the input shape.",
+    "shape_is_informative": true,
+    "runtime": {
+     "returned_type": "ndarray",
+     "is_mapping": false,
+     "elapsed_s": 0.001,
+     "verdict": "undeclared-unambiguous-positional"
+    }
+   },
+   {
+    "asset": "scirel.collisions.fast-ion-stopping-increment",
+    "output": "stopping_increment_m2",
+    "dtype": "float64 or complex128 ndarray",
+    "shape": "(...), ndim >= 2",
+    "constraints": "May contain signed, NaN, infinite or complex values. Neither a finite nonnegative value nor a zero result for zero power is guaranteed.",
+    "declared_channel": "undeclared",
+    "declaration": "Only the empirical additive fast-ion contribution to the stopping cross section.",
+    "shape_is_informative": true,
+    "runtime": {
+     "returned_type": "ndarray",
+     "is_mapping": false,
+     "elapsed_s": 0.0,
+     "verdict": "undeclared-unambiguous-positional"
+    }
+   },
+   {
+    "asset": "scirel.collisions.janev-electron-impact-ionization-rate",
+    "output": "rate_m3_s",
+    "dtype": "float64 array or scalar",
+    "shape": "same as electron_temperature_ev",
+    "constraints": "Finite and strictly positive on accepted inputs; no external physical accuracy is asserted.",
+    "declared_channel": "undeclared",
+    "declaration": "Selected electron-impact ionization Maxwellian rate coefficient.",
+    "shape_is_informative": true,
+    "runtime": {
+     "returned_type": "ndarray",
+     "is_mapping": false,
+     "elapsed_s": 0.0,
+     "verdict": "undeclared-unambiguous-positional"
+    }
+   },
+   {
+    "asset": "scirel.collisions.maxwellian-relative-speed-rate-average",
+    "output": "rate_m3_s",
+    "dtype": "float64 array",
+    "shape": "[ne]",
+    "constraints": "Finite and nonnegative for accepted input; a non-representable rate is rejected rather than returned, including a positive rate rounded to zero. Exact zero cross sections or relative speeds can yield an exact zero rate.",
+    "declared_channel": "undeclared",
+    "declaration": "The Maxwellian relative-speed averaged rate coefficient, one value per particle energy.",
+    "shape_is_informative": true,
+    "runtime": {
+     "returned_type": "ndarray",
+     "is_mapping": false,
+     "elapsed_s": 0.002,
+     "verdict": "undeclared-unambiguous-positional"
+    }
+   },
+   {
+    "asset": "scirel.collisions.molecular-hydrogen-charge-exchange-cross-section",
+    "output": "cross_section_m2",
+    "dtype": "float64 array",
+    "shape": "same as energy_ev",
+    "constraints": "Finite and strictly positive for every accepted input, because the fit is evaluated only on its clipped positive domain.",
+    "declared_channel": "undeclared",
+    "declaration": "Charge-exchange cross section, one value per energy.",
+    "shape_is_informative": true,
+    "runtime": {
+     "returned_type": "ndarray",
+     "is_mapping": false,
+     "elapsed_s": 0.001,
+     "verdict": "undeclared-unambiguous-positional"
+    }
+   },
+   {
+    "asset": "scirel.collisions.molecular-hydrogen-charge-exchange-rate-coefficient",
+    "output": "rate_m3_s",
+    "dtype": "float64 array or scalar",
+    "shape": "same as both inputs",
+    "constraints": "Finite and strictly positive on accepted inputs; no physical reference accuracy is asserted.",
+    "declared_channel": "positional",
+    "declaration": "H2 + H2+ charge-exchange Maxwellian rate coefficient evaluated by the molecular fit. Returned directly as the callable's single positional value (one float64 array or Python float); it is not a field of a mapping.",
+    "shape_is_informative": true,
+    "runtime": {
+     "returned_type": "ndarray",
+     "is_mapping": false,
+     "elapsed_s": 0.001,
+     "verdict": "consistent"
+    }
+   },
+   {
+    "asset": "scirel.collisions.molecular-hydrogen-elastic-cross-section",
+    "output": "cross_section_m2",
+    "dtype": "float64 array",
+    "shape": "same as energy_ev",
+    "constraints": "Finite and strictly positive for every accepted input.",
+    "declared_channel": "undeclared",
+    "declaration": "Elastic momentum-transfer cross section, one value per energy.",
+    "shape_is_informative": true,
+    "runtime": {
+     "returned_type": "ndarray",
+     "is_mapping": false,
+     "elapsed_s": 0.001,
+     "verdict": "undeclared-unambiguous-positional"
+    }
+   },
+   {
+    "asset": "scirel.collisions.normalized-momentum",
+    "output": "p_n",
+    "dtype": "float",
+    "shape": "array",
+    "constraints": "a float64 array with the same shape as x; signed and finally finite, while a genuinely tiny value may round to zero under floating-point rules. Intermediate floating-point overflow must not be misread as final closed-form non-representability",
+    "declared_channel": "undeclared",
+    "declaration": "The normalized momentum profile x * vnorm / clight, dimensionless, with the grid's shape.",
+    "shape_is_informative": true,
+    "runtime": {
+     "returned_type": "ndarray",
+     "is_mapping": false,
+     "elapsed_s": 0.001,
+     "verdict": "undeclared-unambiguous-positional"
+    }
+   },
+   {
+    "asset": "scirel.collisions.proton-atomic-hydrogen-elastic-cross-section",
+    "output": "cross_section_m2",
+    "dtype": "float64 array",
+    "shape": "input shape",
+    "constraints": "finite and positive; the output shape equals the input shape",
+    "declared_channel": "undeclared",
+    "declaration": "H+-H elastic momentum-transfer cross section with the input shape.",
+    "shape_is_informative": true,
+    "runtime": {
+     "returned_type": "ndarray",
+     "is_mapping": false,
+     "elapsed_s": 0.0,
+     "verdict": "undeclared-unambiguous-positional"
+    }
+   },
+   {
+    "asset": "scirel.collisions.proton-molecular-hydrogen-elastic-cross-section",
+    "output": "cross_section_m2",
+    "dtype": "float64 array",
+    "shape": "same as energy_ev",
+    "constraints": "Finite and strictly positive for every accepted input.",
+    "declared_channel": "undeclared",
+    "declaration": "Elastic momentum-transfer cross section, one value per energy.",
+    "shape_is_informative": true,
+    "runtime": {
+     "returned_type": "ndarray",
+     "is_mapping": false,
+     "elapsed_s": 0.0,
+     "verdict": "undeclared-unambiguous-positional"
+    }
+   },
+   {
+    "asset": "scirel.collisions.thermal-electron-momentum",
+    "output": "p_te",
+    "dtype": "float",
+    "shape": "scalar",
+    "constraints": "a Python float, finally finite and positive; not a velocity in cm/s. Intermediate floating-point overflow must not be misread as final closed-form non-representability",
+    "declared_channel": "undeclared",
+    "declaration": "The thermal-electron normalized momentum sqrt(2*T/mc^2), dimensionless, a speed in units of c.",
+    "shape_is_informative": true,
+    "runtime": {
+     "returned_type": "float",
+     "is_mapping": false,
+     "elapsed_s": 0.0,
+     "verdict": "undeclared-unambiguous-positional"
+    }
+   },
+   {
+    "asset": "scirel.configurations.brb",
+    "output": "source",
+    "dtype": "BRB",
+    "shape": "one object",
+    "constraints": "Bounded source geometry and field-response methods",
+    "declared_channel": "undeclared",
+    "declaration": "Constructed BRB object with source geometry, common currents, weights and optional target mesh. Fields are evaluated by its methods.",
+    "shape_is_informative": true,
+    "runtime": {
+     "returned_type": "BRB",
+     "is_mapping": false,
+     "elapsed_s": 0.003,
+     "verdict": "undeclared-unambiguous-positional"
+    }
+   },
+   {
+    "asset": "scirel.configurations.trex-coil",
+    "output": "source",
+    "dtype": "TREXCoil",
+    "shape": "one object",
+    "constraints": "Bounded source geometry and field-response methods",
+    "declared_channel": "undeclared",
+    "declaration": "Constructed TREXCoil object with source geometry, common currents, weights and optional target mesh. Fields are evaluated by its methods.",
+    "shape_is_informative": true,
+    "runtime": {
+     "returned_type": "TREXCoil",
+     "is_mapping": false,
+     "elapsed_s": 0.0,
+     "verdict": "undeclared-unambiguous-positional"
+    }
+   },
+   {
+    "asset": "scirel.configurations.wham",
+    "output": "source",
+    "dtype": "WHAM",
+    "shape": "one object",
+    "constraints": "Bounded source geometry and field-response methods",
+    "declared_channel": "undeclared",
+    "declaration": "Constructed WHAM object with the fixed source geometry, unit per-filament currents, weights and optional target mesh. Fields are evaluated by its methods after the caller sets currents.",
+    "shape_is_informative": true,
+    "runtime": {
+     "returned_type": "WHAM",
+     "is_mapping": false,
+     "elapsed_s": 0.0,
+     "verdict": "undeclared-unambiguous-positional"
+    }
+   },
+   {
+    "asset": "scirel.diagnostics.picard-flux-residual",
+    "output": "residual",
+    "dtype": "float",
+    "shape": "scalar",
+    "constraints": "Nonnegative finite result when representable; zero for two zero states or identical states.",
+    "declared_channel": "result-field",
+    "declaration": "Field of the returned scirel._result.Result mapping: relative Euclidean flux change.",
+    "shape_is_informative": true,
+    "runtime": {
+     "returned_type": "Result",
+     "is_mapping": true,
+     "elapsed_s": 0.0,
+     "keys": [
+      "residual"
+     ],
+     "declared_name_is_key": true,
+     "verdict": "consistent"
+    }
+   },
+   {
+    "asset": "scirel.diagnostics.pointwise-firehose-margin",
+    "output": "firehose_margin",
+    "dtype": "float64 array",
+    "shape": "same shape as input samples",
+    "constraints": "Finite on successful return; no sign is interpreted, clamped or flagged.",
+    "declared_channel": "result-field",
+    "declaration": "Field of the returned scirel._result.Result mapping: pointwise B^2/mu0 + p_perp - p_parallel.",
+    "shape_is_informative": true,
+    "runtime": {
+     "returned_type": "Result",
+     "is_mapping": true,
+     "elapsed_s": 0.001,
+     "keys": [
+      "firehose_margin"
+     ],
+     "declared_name_is_key": true,
+     "verdict": "consistent"
+    }
+   },
+   {
+    "asset": "scirel.dielectric.cold-plasma-tensor",
+    "output": "epsilon_r",
+    "dtype": "complex128",
+    "shape": "[...,3,3]",
+    "constraints": "Every entry is finite on every accepted call: the accumulation check rejects non-finite S, D or P; the stable final projection and finite gate prevent finite coefficients from producing an accepted NaN/Inf matrix. The small parallel component is preserved across near-resonant finite transverse/parallel scale separation instead of being erased by P-S cancellation. The specifically documented failures reject the whole call with a named exception rather than being evaluated -- a collapsed operand, a zero quotient, a collapsed field magnitude, a collapsed cyclotron term and a collapsed product of two non-zero operands (the four products the three Stix divisions consume) each raise ColdPlasmaOverflowError, and an exact collisionless resonance in a contributing species raises ColdPlasmaResonanceError. A zero-field point is not one of those failures and is returned isotropically. Those named paths are what this asset's evidence audits; other unguarded paths in the function are not ruled out, as verification.evidence_ceiling states. Hermitian at any field strength whenever no species contributes a collision, because i*D*[b]x is then purely imaginary and antisymmetric. A nonzero collision rate on a species that contributes does make it non-Hermitian; a nonzero collision rate on a species with zero density or zero charge does not. The entries are basis-dependent: b^H epsilon b equals P, but the axial entry equals P only when the field lies along that axis. A computed zero denominator is rechecked as an exact rational expression of represented omega, collision and cyclotron operands: a nonzero exact denominator raises ColdPlasmaOverflowError, rather than falsely claiming resonance. A confirmed pole, including a singular collective rational relation, raises ColdPlasmaResonanceError. The frequency still uses omega=2*pi_binary64*frequency_hz; no tolerance or physical convention is changed.",
+    "declared_channel": "positional",
+    "declaration": "Relative dielectric tensor in the caller's supplied Cartesian basis, with the input leading shape plus two trailing tensor axes. Returned directly as the callable's single positional value (one complex128 array); it is not a field of a mapping.",
+    "shape_is_informative": true,
+    "runtime": {
+     "returned_type": "ndarray",
+     "is_mapping": false,
+     "elapsed_s": 0.002,
+     "verdict": "consistent"
+    }
+   },
+   {
+    "asset": "scirel.electromagnetism.arbitrary-points",
+    "output": "source",
+    "dtype": "ArbitraryPoints",
+    "shape": "one object",
+    "constraints": "Field methods require a configured or supplied target mesh; geometry and lifecycle properties are those of the constructed object.",
+    "declared_channel": "undeclared",
+    "declaration": "Constructed ArbitraryPoints object. Available properties/methods: psi: Flux response [Wb/rad], (Nt,); BR: Radial field response [T], (Nt,); BZ: Axial field response [T], (Nt,)",
+    "shape_is_informative": true,
+    "runtime": {
+     "returned_type": "ArbitraryPoints",
+     "is_mapping": false,
+     "elapsed_s": 0.001,
+     "verdict": "undeclared-unambiguous-positional"
+    }
+   },
+   {
+    "asset": "scirel.electromagnetism.circular-filament-green",
+    "output": "response",
+    "dtype": "float64",
+    "shape": "three arrays of (Nt,) or (Nset,Nt)",
+    "constraints": "Finite output or explicit FloatingPointError.",
+    "declared_channel": "undeclared",
+    "declaration": "Tuple psi, BR, BZ; list source input returns one target axis per set.",
+    "shape_is_informative": true,
+    "runtime": {
+     "returned_type": "tuple",
+     "is_mapping": false,
+     "elapsed_s": 0.001,
+     "verdict": "undeclared-unambiguous-positional"
+    }
+   },
+   {
+    "asset": "scirel.electromagnetism.device",
+    "output": "source",
+    "dtype": "Device",
+    "shape": "one object",
+    "constraints": "Field methods require a configured or supplied target mesh; geometry and lifecycle properties are those of the constructed object.",
+    "declared_channel": "undeclared",
+    "declaration": "Constructed Device object. Available properties/methods: psi: Summed flux [Wb/rad], (Nt,); BR: Summed radial field [T], (Nt,); BZ: Summed axial field [T], (Nt,) Ordered iteration/current/rzw properties and gpsi/gBR/gBZ per-child matrices; psi/BR/BZ methods accept current=None and mesh=None.",
+    "shape_is_informative": true,
+    "runtime": {
+     "returned_type": "Device",
+     "is_mapping": false,
+     "elapsed_s": 0.001,
+     "verdict": "undeclared-unambiguous-positional"
+    }
+   },
+   {
+    "asset": "scirel.electromagnetism.loop-flux-matrix",
+    "output": "G",
+    "dtype": "float64",
+    "shape": "(R.size,R.size)",
+    "constraints": "Zero diagonal; finite; permutation covariance",
+    "declared_channel": "positional",
+    "declaration": "Flux response matrix with target rows/source columns Returned directly as the callable's single positional value (one float64 (R.size, R.size) matrix); it is not a field of a mapping.",
+    "shape_is_informative": true,
+    "runtime": {
+     "returned_type": "ndarray",
+     "is_mapping": false,
+     "elapsed_s": 0.007,
+     "verdict": "consistent"
+    }
+   },
+   {
+    "asset": "scirel.electromagnetism.magnet-ring",
+    "output": "source",
+    "dtype": "MagnetRing",
+    "shape": "one object",
+    "constraints": "Field methods require a configured or supplied target mesh; geometry and lifecycle properties are those of the constructed object.",
+    "declared_channel": "undeclared",
+    "declaration": "Constructed MagnetRing object. Available properties/methods: rz_pts: Filament centers [m], (N,2); total_current: Weighted current [A], scalar",
+    "shape_is_informative": true,
+    "runtime": {
+     "returned_type": "MagnetRing",
+     "is_mapping": false,
+     "elapsed_s": 0.0,
+     "verdict": "undeclared-unambiguous-positional"
+    }
+   },
+   {
+    "asset": "scirel.electromagnetism.rectangular-coil",
+    "output": "source",
+    "dtype": "RectangularCoil",
+    "shape": "one object",
+    "constraints": "Field methods require a configured or supplied target mesh; geometry and lifecycle properties are those of the constructed object.",
+    "declared_channel": "undeclared",
+    "declaration": "Constructed RectangularCoil object. Available properties/methods: rz_pts: Filament centers [m], (nr*nz,2); area: Conductor area proxy [m2], scalar",
+    "shape_is_informative": true,
+    "runtime": {
+     "returned_type": "RectangularCoil",
+     "is_mapping": false,
+     "elapsed_s": 0.0,
+     "verdict": "undeclared-unambiguous-positional"
+    }
+   },
+   {
+    "asset": "scirel.equilibrium.compute-equilibrium",
+    "output": "EquilibriumResult",
+    "dtype": "dataclass",
+    "shape": "psi/plas_currents R.shape",
+    "constraints": "status is converged, maxiter or nonfinite; history length may be less than attempted iterations when an update fails before residual evaluation",
+    "declared_channel": "undeclared",
+    "declaration": "Flux, plasma currents, final pressure fit, status, iteration count, original update residual, closure_residual and reason; immutable residual_history and closure_residual_history tuples for completed paired residual evaluations",
+    "shape_is_informative": true,
+    "runtime": {
+     "returned_type": "EquilibriumResult",
+     "is_mapping": false,
+     "elapsed_s": 0.015,
+     "verdict": "undeclared-unambiguous-positional"
+    }
+   },
+   {
+    "asset": "scirel.field.mirror-plasma-green",
+    "output": "g_psi",
+    "dtype": "float64",
+    "shape": "[N_Z*N_R,N_Z*N_R]",
+    "constraints": "Both axes follow C-order [Z,R] flattening; zero-radius source columns and exact self entries use the discrete zero convention. Unrepresentable non-self responses raise FloatingPointError rather than being replaced by zero; no cell-area or 2*pi factor is included.",
+    "declared_channel": "result-field",
+    "declaration": "Field of the returned scirel._result.Result mapping: Psi=R A_phi response per source current for each target/source grid-cell pair.",
+    "shape_is_informative": true,
+    "runtime": {
+     "returned_type": "Result",
+     "is_mapping": true,
+     "elapsed_s": 0.008,
+     "keys": [
+      "g_psi"
+     ],
+     "declared_name_is_key": true,
+     "verdict": "consistent"
+    }
+   },
+   {
+    "asset": "scirel.field.rectangular-coil-filaments",
+    "output": "rz_pts",
+    "dtype": "float64",
+    "shape": "[nr*nz,2]",
+    "constraints": "Radii are nonnegative; unrotated ordering is radial outer loop and axial inner loop.",
+    "declared_channel": "undeclared",
+    "declaration": "Ordered filament center coordinates [R,Z].",
+    "shape_is_informative": true,
+    "runtime": {
+     "returned_type": "ndarray",
+     "is_mapping": false,
+     "elapsed_s": 0.001,
+     "verdict": "undeclared-unambiguous-positional"
+    }
+   },
+   {
+    "asset": "scirel.fusion.dd-neutron-lab-energy",
+    "output": "neutron_energy_kev",
+    "dtype": "float",
+    "shape": "scalar",
+    "constraints": "A Python float, finite and strictly positive, returned only for one distinct strictly positive laboratory neutron speed. A positive tangent root is accepted. Zero-speed-only, unreachable and two-positive-root rays produce no energy. Final overflow or positive-energy underflow to zero raises ValueError.",
+    "declared_channel": "undeclared",
+    "declaration": "Laboratory-frame neutron kinetic energy.",
+    "shape_is_informative": true,
+    "runtime": {
+     "returned_type": "float",
+     "is_mapping": false,
+     "elapsed_s": 0.002,
+     "verdict": "undeclared-unambiguous-positional"
+    }
+   },
+   {
+    "asset": "scirel.fvm.cell-variable",
+    "output": "variable",
+    "dtype": "CellVariable",
+    "shape": "CellVariable object",
+    "constraints": "Finite; equal explicit one-dimensional face shape; no broadcasting",
+    "declared_channel": "undeclared",
+    "declaration": "Immutable copied float64 CellVariable with face_value(), face_grad() and grad()",
+    "shape_is_informative": true,
+    "runtime": {
+     "returned_type": "CellVariable",
+     "is_mapping": false,
+     "elapsed_s": 0.001,
+     "verdict": "undeclared-unambiguous-positional"
+    }
+   },
+   {
+    "asset": "scirel.fvm.theta-step",
+    "output": "variable",
+    "dtype": "CellVariable",
+    "shape": "CellVariable",
+    "constraints": "Finite; equal explicit one-dimensional face shape; no broadcasting",
+    "declared_channel": "undeclared",
+    "declaration": "New float64 cell values and new boundary data",
+    "shape_is_informative": true,
+    "runtime": {
+     "returned_type": "CellVariable",
+     "is_mapping": false,
+     "elapsed_s": 0.001,
+     "verdict": "undeclared-unambiguous-positional"
+    }
+   },
+   {
+    "asset": "scirel.geometry.arclength-derivative",
+    "output": "derivative",
+    "dtype": "float64",
+    "shape": "(N,)",
+    "constraints": "Derivative along declared ordering",
+    "declared_channel": "positional",
+    "declaration": "First derivative including endpoints Returned directly as the callable's single positional value (one float64 array of shape (N,)); it is not a field of a mapping.",
+    "shape_is_informative": true,
+    "runtime": {
+     "returned_type": "ndarray",
+     "is_mapping": false,
+     "elapsed_s": 0.0,
+     "verdict": "consistent"
+    }
+   },
+   {
+    "asset": "scirel.geometry.boundary",
+    "output": "boundary",
+    "dtype": "Python object",
+    "shape": "Python object",
+    "constraints": "Stored verts have (200,2); interpolation returns coordinate arrays",
+    "declared_channel": "undeclared",
+    "declaration": "Object with verts,tck,u and interpolation",
+    "shape_is_informative": true,
+    "runtime": {
+     "returned_type": "Boundary",
+     "is_mapping": false,
+     "elapsed_s": 0.0,
+     "verdict": "undeclared-unambiguous-positional"
+    }
+   },
+   {
+    "asset": "scirel.geometry.contour-points",
+    "output": "collection",
+    "dtype": "Python object",
+    "shape": "dict[level, list[line]]",
+    "constraints": "Keys and segment lists follow contourset.levels/allsegs; each value is a constructed line list.",
+    "declared_channel": "undeclared",
+    "declaration": "Per-level lists of target line objects",
+    "shape_is_informative": true,
+    "runtime": {
+     "returned_type": "dict",
+     "is_mapping": true,
+     "elapsed_s": 0.0,
+     "keys": [
+      "0.2"
+     ],
+     "declared_name_is_key": false,
+     "keys_named_in": {},
+     "verdict": "undeclared-keys-unstated"
+    }
+   },
+   {
+    "asset": "scirel.geometry.fieldline-set",
+    "output": "collection",
+    "dtype": "Python object",
+    "shape": "FieldLineSet object",
+    "constraints": "The flset mapping is keyed by contour level and preserves segment order.",
+    "declared_channel": "undeclared",
+    "declaration": "Per-level lists of target line objects",
+    "shape_is_informative": true,
+    "runtime": {
+     "returned_type": "FieldLineSet",
+     "is_mapping": false,
+     "elapsed_s": 0.0,
+     "verdict": "undeclared-unambiguous-positional"
+    }
+   },
+   {
+    "asset": "scirel.geometry.fieldline",
+    "output": "line",
+    "dtype": "Python object",
+    "shape": "line object",
+    "constraints": "get_ds returns first segment length, not a uniform-step guarantee",
+    "declared_channel": "undeclared",
+    "declaration": "Object exposing verts,tck,u and arclength/field diagnostics",
+    "shape_is_informative": true,
+    "runtime": {
+     "returned_type": "FieldLine",
+     "is_mapping": false,
+     "elapsed_s": 0.0,
+     "verdict": "undeclared-unambiguous-positional"
+    }
+   },
+   {
+    "asset": "scirel.geometry.helper-contour-points",
+    "output": "collection",
+    "dtype": "Python object",
+    "shape": "dict[level, list[line]]",
+    "constraints": "Keys and segment lists follow contourset.levels/allsegs; each value is a constructed line list.",
+    "declared_channel": "undeclared",
+    "declaration": "Per-level lists of target line objects",
+    "shape_is_informative": true,
+    "runtime": {
+     "returned_type": "dict",
+     "is_mapping": true,
+     "elapsed_s": 0.0,
+     "keys": [
+      "0.2"
+     ],
+     "declared_name_is_key": false,
+     "keys_named_in": {},
+     "verdict": "undeclared-keys-unstated"
+    }
+   },
+   {
+    "asset": "scirel.geometry.helper-fieldline",
+    "output": "line",
+    "dtype": "Python object",
+    "shape": "line object",
+    "constraints": "get_ds returns first segment length, not a uniform-step guarantee",
+    "declared_channel": "undeclared",
+    "declaration": "Object exposing verts,tck,u and arclength/field diagnostics",
+    "shape_is_informative": true,
+    "runtime": {
+     "returned_type": "HelperFieldLine",
+     "is_mapping": false,
+     "elapsed_s": 0.0,
+     "verdict": "undeclared-unambiguous-positional"
+    }
+   },
+   {
+    "asset": "scirel.geometry.masked-toroidal-volume",
+    "output": "volume",
+    "dtype": "Python float",
+    "shape": "scalar",
+    "constraints": "Finite, NaN or infinite according to the supplied arithmetic; no physical validity filter is applied.",
+    "declared_channel": "undeclared",
+    "declaration": "Summed toroidally revolved finite-grid volume.",
+    "shape_is_informative": true,
+    "runtime": {
+     "returned_type": "float",
+     "is_mapping": false,
+     "elapsed_s": 0.0,
+     "verdict": "undeclared-unambiguous-positional"
+    }
+   },
+   {
+    "asset": "scirel.geometry.meridional-polar-forward",
+    "output": "position_and_vector",
+    "dtype": "float64 tuple",
+    "shape": "four broadcasted arrays",
+    "constraints": "Orthogonal vector projection",
+    "declared_channel": "positional",
+    "declaration": "Tuple r,theta,u_r,u_theta. Returned directly as the callable's single positional value: one 4-tuple in that order; it is not a field of a mapping.",
+    "shape_is_informative": true,
+    "runtime": {
+     "returned_type": "tuple",
+     "is_mapping": false,
+     "elapsed_s": 0.0,
+     "verdict": "consistent"
+    }
+   },
+   {
+    "asset": "scirel.geometry.meridional-polar-inverse",
+    "output": "position_and_vector",
+    "dtype": "float64 tuple",
+    "shape": "four broadcasted arrays",
+    "constraints": "Orthogonal vector projection",
+    "declared_channel": "positional",
+    "declaration": "Tuple rho,z,u_rho,u_z. Returned directly as the callable's single positional value: one 4-tuple in that order; it is not a field of a mapping.",
+    "shape_is_informative": true,
+    "runtime": {
+     "returned_type": "tuple",
+     "is_mapping": false,
+     "elapsed_s": 0.0,
+     "verdict": "consistent"
+    }
+   },
+   {
+    "asset": "scirel.geometry.nonuniform-first-derivative",
+    "output": "derivative",
+    "dtype": "float64",
+    "shape": "(N-2,)",
+    "constraints": "Quadratic exactness",
+    "declared_channel": "undeclared",
+    "declaration": "First interior derivative",
+    "shape_is_informative": true,
+    "runtime": {
+     "returned_type": "ndarray",
+     "is_mapping": false,
+     "elapsed_s": 0.0,
+     "verdict": "undeclared-unambiguous-positional"
+    }
+   },
+   {
+    "asset": "scirel.geometry.parse-segment",
+    "output": "segment",
+    "dtype": "float64",
+    "shape": "(M,2)",
+    "constraints": "No synthetic or omitted default endpoint; an exact input closure marker remains exactly once as the terminal vertex when end_coord is None",
+    "declared_channel": "undeclared",
+    "declaration": "Ordered selected vertices",
+    "shape_is_informative": true,
+    "runtime": {
+     "returned_type": "ndarray",
+     "is_mapping": false,
+     "elapsed_s": 0.0,
+     "verdict": "undeclared-unambiguous-positional"
+    }
+   },
+   {
+    "asset": "scirel.geometry.path-distance",
+    "output": "distance",
+    "dtype": "float64",
+    "shape": "(N,)",
+    "constraints": "Nondecreasing; duplicate vertices give zero increments",
+    "declared_channel": "undeclared",
+    "declaration": "Cumulative path distance",
+    "shape_is_informative": true,
+    "runtime": {
+     "returned_type": "ndarray",
+     "is_mapping": false,
+     "elapsed_s": 0.0,
+     "verdict": "undeclared-unambiguous-positional"
+    }
+   },
+   {
+    "asset": "scirel.geometry.point-nearest",
+    "output": "values",
+    "dtype": "list",
+    "shape": "query-count list",
+    "constraints": "Selected element types are retained; no uniform float64 conversion is applied",
+    "declared_channel": "undeclared",
+    "declaration": "Selected np.asarray(Q).ravel() samples in query order",
+    "shape_is_informative": true,
+    "runtime": {
+     "returned_type": "list",
+     "is_mapping": false,
+     "elapsed_s": 0.0,
+     "verdict": "undeclared-unambiguous-positional"
+    }
+   },
+   {
+    "asset": "scirel.geometry.points-mesh",
+    "output": "mesh",
+    "dtype": "PointsMesh",
+    "shape": "one object",
+    "constraints": "Properties expose generated coordinates; field methods require configured or supplied target mesh",
+    "declared_channel": "undeclared",
+    "declaration": "Constructed PointsMesh object. R and Z [m] retain the matching shape after squeeze, with scalar pairs stored as (1,); multidimensional arrays are not flattened.",
+    "shape_is_informative": true,
+    "runtime": {
+     "returned_type": "PointsMesh",
+     "is_mapping": false,
+     "elapsed_s": 0.0,
+     "verdict": "undeclared-unambiguous-positional"
+    }
+   },
+   {
+    "asset": "scirel.geometry.r-chord",
+    "output": "mesh",
+    "dtype": "RChord",
+    "shape": "one object",
+    "constraints": "Properties expose generated coordinates; field methods require configured or supplied target mesh",
+    "declared_channel": "undeclared",
+    "declaration": "Constructed RChord object. Available properties/methods: R: Radial coordinates [m], N; Z: Axial coordinates [m], N",
+    "shape_is_informative": true,
+    "runtime": {
+     "returned_type": "RChord",
+     "is_mapping": false,
+     "elapsed_s": 0.0,
+     "verdict": "undeclared-unambiguous-positional"
+    }
+   },
+   {
+    "asset": "scirel.geometry.rect-mesh",
+    "output": "mesh",
+    "dtype": "RectMesh",
+    "shape": "one object",
+    "constraints": "Properties expose generated coordinates; field methods require configured or supplied target mesh",
+    "declared_channel": "undeclared",
+    "declaration": "Constructed RectMesh object. Available properties/methods: R: Radial mesh [m], (nz,nr); Z: Axial mesh [m], (nz,nr)",
+    "shape_is_informative": true,
+    "runtime": {
+     "returned_type": "RectMesh",
+     "is_mapping": false,
+     "elapsed_s": 0.0,
+     "verdict": "undeclared-unambiguous-positional"
+    }
+   },
+   {
+    "asset": "scirel.geometry.rectangular-nearest",
+    "output": "values",
+    "dtype": "list",
+    "shape": "query-count list",
+    "constraints": "Selected element types are retained; no uniform float64 conversion is applied",
+    "declared_channel": "undeclared",
+    "declaration": "Selected Q[iy, ix] samples in query order",
+    "shape_is_informative": true,
+    "runtime": {
+     "returned_type": "list",
+     "is_mapping": false,
+     "elapsed_s": 0.0,
+     "verdict": "undeclared-unambiguous-positional"
+    }
+   },
+   {
+    "asset": "scirel.geometry.rectangular-spline",
+    "output": "values",
+    "dtype": "float64",
+    "shape": "(N,)",
+    "constraints": "Ordering follows flpoints",
+    "declared_channel": "undeclared",
+    "declaration": "Interpolated field along path",
+    "shape_is_informative": true,
+    "runtime": {
+     "returned_type": "ndarray",
+     "is_mapping": false,
+     "elapsed_s": 0.0,
+     "verdict": "undeclared-unambiguous-positional"
+    }
+   },
+   {
+    "asset": "scirel.geometry.regular-grid",
+    "output": "grid_and_fields",
+    "dtype": "float64",
+    "shape": "tuple of (nx,ny) arrays or supplied grid shape",
+    "constraints": "Original field order preserved",
+    "declared_channel": "undeclared",
+    "declaration": "Tuple xi,yi and interpolated scalar fields",
+    "shape_is_informative": true,
+    "runtime": {
+     "returned_type": "tuple",
+     "is_mapping": false,
+     "elapsed_s": 0.001,
+     "verdict": "undeclared-unambiguous-positional"
+    }
+   },
+   {
+    "asset": "scirel.geometry.rotate",
+    "output": "rotated",
+    "dtype": "Finite float64",
+    "shape": "(...,2)",
+    "constraints": "Input shape preserved",
+    "declared_channel": "undeclared",
+    "declaration": "Rotated points",
+    "shape_is_informative": true,
+    "runtime": {
+     "returned_type": "ndarray",
+     "is_mapping": false,
+     "elapsed_s": 0.0,
+     "verdict": "undeclared-unambiguous-positional"
+    }
+   },
+   {
+    "asset": "scirel.geometry.scalar-reflection",
+    "output": "reflected",
+    "dtype": "float64",
+    "shape": "(Nz,2*Nr-1) each",
+    "constraints": "Zero column represented once",
+    "declared_channel": "undeclared",
+    "declaration": "Tuple reflected Rho,Z and scalar fields",
+    "shape_is_informative": true,
+    "runtime": {
+     "returned_type": "tuple",
+     "is_mapping": false,
+     "elapsed_s": 0.0,
+     "verdict": "undeclared-unambiguous-positional"
+    }
+   },
+   {
+    "asset": "scirel.geometry.scattered-linear",
+    "output": "values",
+    "dtype": "float64",
+    "shape": "query-count list or array",
+    "constraints": "Source list/array return preserved",
+    "declared_channel": "undeclared",
+    "declaration": "Sampled values",
+    "shape_is_informative": true,
+    "runtime": {
+     "returned_type": "ndarray",
+     "is_mapping": false,
+     "elapsed_s": 0.0,
+     "verdict": "undeclared-unambiguous-positional"
+    }
+   },
+   {
+    "asset": "scirel.geometry.select-fieldline",
+    "output": "segment",
+    "dtype": "float64",
+    "shape": "(M,2)",
+    "constraints": "Largest segment selected by original point count",
+    "declared_channel": "undeclared",
+    "declaration": "Selected parsed vertices",
+    "shape_is_informative": true,
+    "runtime": {
+     "returned_type": "ndarray",
+     "is_mapping": false,
+     "elapsed_s": 0.0,
+     "verdict": "undeclared-unambiguous-positional"
+    }
+   },
+   {
+    "asset": "scirel.geometry.spherical-r-chord",
+    "output": "mesh",
+    "dtype": "SphericalRChord",
+    "shape": "one object",
+    "constraints": "Properties expose generated coordinates; field methods require configured or supplied target mesh",
+    "declared_channel": "undeclared",
+    "declaration": "Constructed SphericalRChord object. Available properties/methods: R: Cylindrical radius [m], N; Z: Axial coordinate [m], N",
+    "shape_is_informative": true,
+    "runtime": {
+     "returned_type": "SphericalRChord",
+     "is_mapping": false,
+     "elapsed_s": 0.0,
+     "verdict": "undeclared-unambiguous-positional"
+    }
+   },
+   {
+    "asset": "scirel.geometry.theta-chord",
+    "output": "mesh",
+    "dtype": "ThetaChord",
+    "shape": "one object",
+    "constraints": "Properties expose generated coordinates; field methods require configured or supplied target mesh",
+    "declared_channel": "undeclared",
+    "declaration": "Constructed ThetaChord object. Available properties/methods: R: Cylindrical radius [m], N; Z: Axial coordinate [m], N",
+    "shape_is_informative": true,
+    "runtime": {
+     "returned_type": "ThetaChord",
+     "is_mapping": false,
+     "elapsed_s": 0.0,
+     "verdict": "undeclared-unambiguous-positional"
+    }
+   },
+   {
+    "asset": "scirel.geometry.weighted-line-integral",
+    "output": "reduction",
+    "dtype": "float64",
+    "shape": "scalar",
+    "constraints": "No volume-per-flux interpretation without external closure",
+    "declared_channel": "undeclared",
+    "declaration": "Scalar weighted integral or average",
+    "shape_is_informative": true,
+    "runtime": {
+     "returned_type": "float64",
+     "is_mapping": false,
+     "elapsed_s": 0.0,
+     "verdict": "undeclared-unambiguous-positional"
+    }
+   },
+   {
+    "asset": "scirel.geometry.z-chord",
+    "output": "mesh",
+    "dtype": "ZChord",
+    "shape": "one object",
+    "constraints": "Properties expose generated coordinates; field methods require configured or supplied target mesh",
+    "declared_channel": "undeclared",
+    "declaration": "Constructed ZChord object. Available properties/methods: R: Radial coordinates [m], N; Z: Axial coordinates [m], N",
+    "shape_is_informative": true,
+    "runtime": {
+     "returned_type": "ZChord",
+     "is_mapping": false,
+     "elapsed_s": 0.0,
+     "verdict": "undeclared-unambiguous-positional"
+    }
+   },
+   {
+    "asset": "scirel.inference.latin-hypercube-sampling",
+    "output": "initial_samples",
+    "dtype": "list of dict of float",
+    "shape": "list[n_samples] of mapping[fit_key -> scalar]",
+    "constraints": "One draw in each stratum per selected coordinate; an empty fit_keys selection yields n_samples empty dictionaries.",
+    "declared_channel": "result-field",
+    "declaration": "Field of the returned scirel._result.Result mapping: Ordered sample dictionaries, each containing only selected parameter keys.",
+    "shape_is_informative": true,
+    "runtime": {
+     "returned_type": "Result",
+     "is_mapping": true,
+     "elapsed_s": 0.001,
+     "keys": [
+      "initial_samples"
+     ],
+     "declared_name_is_key": true,
+     "verdict": "consistent"
+    }
+   },
+   {
+    "asset": "scirel.io.eqdsk-class",
+    "output": "mapping",
+    "dtype": "EQDSK",
+    "shape": "dict subclass",
+    "constraints": "Failed reads preserve prior state",
+    "declared_channel": "undeclared",
+    "declaration": "Mutable EQDSK mapping state",
+    "shape_is_informative": true,
+    "runtime": {
+     "returned_type": "EQDSK",
+     "is_mapping": true,
+     "elapsed_s": 0.0,
+     "keys": [],
+     "declared_name_is_key": false,
+     "keys_named_in": {},
+     "verdict": "undeclared-keys-dynamic"
+    }
+   },
+   {
+    "asset": "scirel.io.read-eqdsk",
+    "output": "mapping",
+    "dtype": "dict[str,Any]",
+    "shape": "dict",
+    "constraints": "Finite validated records; reconstructed R/Z use the fixed origin convention",
+    "declared_channel": "undeclared",
+    "declaration": "Parsed mapping including R,Z",
+    "shape_is_informative": true,
+    "runtime": {
+     "status": "not-observed",
+     "why": "the declared call raised",
+     "exception": {
+      "type": "FileNotFoundError",
+      "module": "builtins",
+      "message": "[Errno 2] No such file or directory: '/var/folders/xs/087tqd_503sg17p24yb42k200000gn/T/tmpufrjd6pv/example.eqdsk'",
+      "qualname": "builtins.FileNotFoundError"
+     },
+     "elapsed_s": 0.001
+    }
+   },
+   {
+    "asset": "scirel.io.read-geqdsk",
+    "output": "mapping",
+    "dtype": "dict[str,Any]",
+    "shape": "dict",
+    "constraints": "Finite values; positive RDIM, ZDIM; SIMAG differs from SIBRY",
+    "declared_channel": "undeclared",
+    "declaration": "Specification-named scalars, profiles fpol/pres/ffprim/pprime/qpsi, psirz (nh, nw), r, z, psi, boundary rbbbs/zbbbs and limiter rlim/zlim",
+    "shape_is_informative": true,
+    "runtime": {
+     "status": "not-observed",
+     "why": "the declared call raised",
+     "exception": {
+      "type": "FileNotFoundError",
+      "module": "builtins",
+      "message": "[Errno 2] No such file or directory: '/var/folders/xs/087tqd_503sg17p24yb42k200000gn/T/tmpmwi_k9p3/g.eqdsk'",
+      "qualname": "builtins.FileNotFoundError"
+     },
+     "elapsed_s": 0.001
+    }
+   },
+   {
+    "asset": "scirel.io.write-eqdsk",
+    "output": "file",
+    "dtype": "UTF-8 text",
+    "shape": "text file",
+    "constraints": "Declared fixed-width records",
+    "declared_channel": "undeclared",
+    "declaration": "Serialized EQDSK file",
+    "shape_is_informative": true,
+    "runtime": {
+     "status": "not-observed",
+     "why": "the declared call raised",
+     "exception": {
+      "type": "FileNotFoundError",
+      "module": "builtins",
+      "message": "[Errno 2] No such file or directory: '/var/folders/xs/087tqd_503sg17p24yb42k200000gn/T/tmplxvzqolf/example.eqdsk'",
+      "qualname": "builtins.FileNotFoundError"
+     },
+     "elapsed_s": 0.001
+    }
+   },
+   {
+    "asset": "scirel.kinetic.fluid-bonk-search",
+    "output": "result",
+    "dtype": "mapping",
+    "shape": "mapping of MATLAB-shape arrays",
+    "constraints": "State and terminal diagnostics retain scientific meaning; no caller state mutation.",
+    "declared_channel": "undeclared",
+    "declaration": "nf[m^-1], ordered xx[rad/s], root_valid, dual residuals, raw solver flags, iterations/evaluations, all attempts and complete source material state.",
+    "shape_is_informative": true,
+    "runtime": {
+     "returned_type": "dict",
+     "is_mapping": true,
+     "elapsed_s": 0.073,
+     "keys": [
+      "B0",
+      "D",
+      "D0",
+      "K",
+      "S",
+      "T00",
+      "Ts0",
+      "Ts_unit",
+      "attempt",
+      "attempt_rows",
+      "best",
+      "c",
+      "c2",
+      "candidate",
+      "complete_physical_modes",
+      "determinant_res",
+      "epsilon0",
+      "exit_status",
+      "fDr",
+      "function_evals",
+      "info",
+      "iterations",
+      "jcase",
+      "jx",
+      "kB",
+      "kn",
+      "kx1",
+      "kz",
+      "me",
+      "mp",
+      "ms",
+      "mu0",
+      "n00",
+      "nf",
+      "normalized_determinant",
+      "ns0",
+      "ns_unit",
+      "nx",
+      "options",
+      "out",
+      "physical_sv",
+      "q",
+      "qe",
+      "qs",
+      "raw_f",
+      "reference",
+      "residual",
+      "result",
+      "rhocn",
+      "rhocs",
+      "root_contract",
+      "root_valid",
+      "row_diagnostic",
+      "runtime",
+      "scale",
+      "scaled_fval",
+      "seed",
+      "seeds",
+      "solver_attempts",
+      "solver_residual",
+      "sv",
+      "valid",
+      "vts",
+      "w",
+      "wave_res",
+      "wcn",
+      "wcs",
+      "wcs2",
+      "wn",
+      "wp2",
+      "wps",
+      "wps2",
+      "xx"
+     ],
+     "declared_name_is_key": true,
+     "verdict": "undeclared-declared-name-is-key"
+    }
+   },
+   {
+    "asset": "scirel.kinetic.fluid-case-state",
+    "output": "result",
+    "dtype": "mapping",
+    "shape": "mapping of MATLAB-shape arrays",
+    "constraints": "State and terminal diagnostics retain scientific meaning; no caller state mutation.",
+    "declared_channel": "undeclared",
+    "declaration": "Complete species scales and source material metadata; EM sets kz=0.1kn.",
+    "shape_is_informative": true,
+    "runtime": {
+     "returned_type": "dict",
+     "is_mapping": true,
+     "elapsed_s": 0.0,
+     "keys": [
+      "B0",
+      "S",
+      "T00",
+      "Ts0",
+      "Ts_unit",
+      "c",
+      "c2",
+      "epsilon0",
+      "jcase",
+      "kB",
+      "kn",
+      "kz",
+      "me",
+      "mp",
+      "ms",
+      "mu0",
+      "n00",
+      "ns0",
+      "ns_unit",
+      "qe",
+      "qs",
+      "rhocn",
+      "rhocs",
+      "vts",
+      "wcn",
+      "wcs",
+      "wcs2",
+      "wn",
+      "wp2",
+      "wps",
+      "wps2"
+     ],
+     "declared_name_is_key": false,
+     "keys_named_in": {
+      "description": [
+       "kz"
+      ]
+     },
+     "verdict": "undeclared-keys-partly-named"
+    }
+   },
+   {
+    "asset": "scirel.kinetic.fluid-dispersion-response",
+    "output": "result",
+    "dtype": "mapping",
+    "shape": "mapping of MATLAB-shape arrays",
+    "constraints": "State and terminal diagnostics retain scientific meaning; no caller state mutation.",
+    "declared_channel": "undeclared",
+    "declaration": "determinant, K[3x3], D[3x3] dimensionless; unchanged explicit state_after.",
+    "shape_is_informative": true,
+    "runtime": {
+     "returned_type": "dict",
+     "is_mapping": true,
+     "elapsed_s": 0.001,
+     "keys": [
+      "D",
+      "K",
+      "determinant",
+      "state_after"
+     ],
+     "declared_name_is_key": false,
+     "keys_named_in": {
+      "description": [
+       "D",
+       "K",
+       "determinant",
+       "state_after"
+      ]
+     },
+     "verdict": "undeclared-keys-named-elsewhere"
+    }
+   },
+   {
+    "asset": "scirel.kinetic.fluid-em-matrix",
+    "output": "result",
+    "dtype": "mapping",
+    "shape": "mapping of MATLAB-shape arrays",
+    "constraints": "State and terminal diagnostics retain scientific meaning; no caller state mutation.",
+    "declared_channel": "undeclared",
+    "declaration": "M entries carry mixed-state SI dimensions for kx X=M X; corrected poles, measured inverse_moment_diagnostics, state, omega and N.",
+    "shape_is_informative": true,
+    "runtime": {
+     "returned_type": "dict",
+     "is_mapping": true,
+     "elapsed_s": 0.001,
+     "keys": [
+      "M",
+      "N",
+      "omega",
+      "poles",
+      "state"
+     ],
+     "declared_name_is_key": false,
+     "keys_named_in": {
+      "description": [
+       "M",
+       "N",
+       "omega",
+       "poles",
+       "state"
+      ],
+      "constraints": [
+       "state"
+      ]
+     },
+     "verdict": "undeclared-keys-named-elsewhere"
+    }
+   },
+   {
+    "asset": "scirel.kinetic.fluid-em-spectrum",
+    "output": "result",
+    "dtype": "mapping",
+    "shape": "mapping of MATLAB-shape arrays",
+    "constraints": "State and terminal diagnostics retain scientific meaning; no caller state mutation.",
+    "declared_channel": "undeclared",
+    "declaration": "kxx[axis length,5] m^-1; all spectra and selection candidates per frequency, matrix, exact tables, source case state and eigenvalue/count diagnostics; eigenpair_residuals_computed=false.",
+    "shape_is_informative": true,
+    "runtime": {
+     "returned_type": "dict",
+     "is_mapping": true,
+     "elapsed_s": 0.003,
+     "keys": [
+      "B0",
+      "J",
+      "N",
+      "S",
+      "T00",
+      "Ts0",
+      "Ts_unit",
+      "absrhocs",
+      "bzj",
+      "c",
+      "c2",
+      "cn",
+      "czj",
+      "d",
+      "diagnostic_rows",
+      "eigen_diagnostics",
+      "epsilon0",
+      "inverse_moment_diagnostics",
+      "jcase",
+      "jx",
+      "kB",
+      "kDs",
+      "kn",
+      "kx",
+      "kxx",
+      "kz",
+      "lambdaDs",
+      "matM",
+      "me",
+      "mp",
+      "ms",
+      "mu0",
+      "n00",
+      "ns0",
+      "ns_unit",
+      "nx",
+      "qe",
+      "qs",
+      "result",
+      "rhocn",
+      "rhocs",
+      "roots",
+      "runtime",
+      "selected_candidates",
+      "sgns",
+      "spectra",
+      "vts",
+      "w",
+      "wcn",
+      "wcs",
+      "wcs2",
+      "wn",
+      "wp2",
+      "wps",
+      "wps2",
+      "xx"
+     ],
+     "declared_name_is_key": true,
+     "verdict": "undeclared-declared-name-is-key"
+    }
+   },
+   {
+    "asset": "scirel.kinetic.fluid-special-functions",
+    "output": "value",
+    "dtype": "complex numeric array",
+    "shape": "Gamma/Z: scalar -> (1,1), 1D (n,) -> (1,n), ndim>=2 retains broadcast shape; R: (2,2)",
+    "constraints": "Finite or explicit precision/pole failure.",
+    "declared_channel": "undeclared",
+    "declaration": "Gamma/Gamma derivative or Z array, or full R response matrix.",
+    "shape_is_informative": true,
+    "runtime": {
+     "returned_type": "ndarray",
+     "is_mapping": false,
+     "elapsed_s": 0.0,
+     "verdict": "undeclared-unambiguous-positional"
+    }
+   },
+   {
+    "asset": "scirel.kinetic.generalized-expression-differentiation",
+    "output": "return",
+    "dtype": "DensityExpression",
+    "shape": "callable object",
+    "constraints": "Arithmetic and domain constraints of the entered expression apply.",
+    "declared_channel": "undeclared",
+    "declaration": "DensityExpression instance. Calling instance(v) returns f(v); instance.derivative(v) returns analytic df/dv for scalar or NumPy-array real/complex v.",
+    "shape_is_informative": true,
+    "runtime": {
+     "returned_type": "DensityExpression",
+     "is_mapping": false,
+     "elapsed_s": 0.001,
+     "verdict": "undeclared-unambiguous-positional"
+    }
+   },
+   {
+    "asset": "scirel.kinetic.generalized-residual",
+    "output": "return",
+    "dtype": "complex array",
+    "shape": "same as x",
+    "constraints": "Finite and representable.",
+    "declared_channel": "undeclared",
+    "declaration": "Source-normalized D residual.",
+    "shape_is_informative": true,
+    "runtime": {
+     "returned_type": "complex128",
+     "is_mapping": false,
+     "elapsed_s": 0.0,
+     "verdict": "undeclared-unambiguous-positional"
+    }
+   },
+   {
+    "asset": "scirel.kinetic.hydrogen-saha-equilibrium-population",
+    "output": "population_m3",
+    "dtype": "float64 array",
+    "shape": "(N,), same as inputs",
+    "constraints": "Finite and strictly positive; no sentinel or partial output.",
+    "declared_channel": "undeclared",
+    "declaration": "Saha equilibrium population density per paired sample.",
+    "shape_is_informative": true,
+    "runtime": {
+     "returned_type": "ndarray",
+     "is_mapping": false,
+     "elapsed_s": 0.0,
+     "verdict": "undeclared-unambiguous-positional"
+    }
+   },
+   {
+    "asset": "scirel.kinetic.multifluid-deck",
+    "output": "deck",
+    "dtype": "float64 ndarray",
+    "shape": "(2,10)",
+    "constraints": "Literal table: density 8.7e6 m^-3 per species; the declared physical constants and sound speeds are used as given.",
+    "declared_channel": "undeclared",
+    "declaration": "Independent electron/proton SI deck copy.",
+    "shape_is_informative": true,
+    "runtime": {
+     "returned_type": "ndarray",
+     "is_mapping": false,
+     "elapsed_s": 0.001,
+     "verdict": "undeclared-unambiguous-positional"
+    }
+   },
+   {
+    "asset": "scirel.kinetic.multifluid-equilibrium",
+    "output": "state",
+    "dtype": "dict of float64 arrays/scalars, str, nullable beta arrays",
+    "shape": "species vectors; v(S,3); velocity_collision(S,S); current_density(3,)",
+    "constraints": "rho=m*n; P=rho*cs^2/gamma. At B0=0 both beta arrays are None and Alfven speeds vanish; neutrality/current balance are reported, not imposed.",
+    "declared_channel": "undeclared",
+    "declaration": "Independent equilibrium mapping: q,m,n,v,csz2,csp2,epsnx,epsny,rho,B0,gamma,c2,epsilon0,mu0,Pz,Pp,Delta,pressure_frame,beta_z,beta_p,vA_species,velocity_collision,charge_density,current_density.",
+    "shape_is_informative": true,
+    "runtime": {
+     "returned_type": "dict",
+     "is_mapping": true,
+     "elapsed_s": 0.0,
+     "keys": [
+      "B0",
+      "Delta",
+      "Pp",
+      "Pz",
+      "beta_p",
+      "beta_z",
+      "c2",
+      "charge_density",
+      "csp2",
+      "csz2",
+      "current_density",
+      "epsilon0",
+      "epsnx",
+      "epsny",
+      "gamma",
+      "m",
+      "mu0",
+      "n",
+      "pressure_frame",
+      "q",
+      "rho",
+      "v",
+      "vA_species",
+      "velocity_collision"
+     ],
+     "declared_name_is_key": false,
+     "keys_named_in": {
+      "description": [
+       "B0",
+       "Delta",
+       "Pp",
+       "Pz",
+       "beta_p",
+       "beta_z",
+       "c2",
+       "charge_density",
+       "csp2",
+       "csz2",
+       "current_density",
+       "epsilon0",
+       "epsnx",
+       "epsny",
+       "gamma",
+       "m",
+       "mu0",
+       "n",
+       "pressure_frame",
+       "q",
+       "rho",
+       "v",
+       "vA_species",
+       "velocity_collision"
+      ],
+      "constraints": [
+       "B0",
+       "gamma",
+       "m",
+       "n",
+       "rho"
+      ],
+      "shape": [
+       "current_density",
+       "v",
+       "velocity_collision"
+      ]
+     },
+     "verdict": "undeclared-keys-named-elsewhere"
+    }
+   },
+   {
+    "asset": "scirel.kinetic.multifluid-frequency-pencil",
+    "output": "pencil",
+    "dtype": "dict[str,complex128 or float64 arrays]",
+    "shape": "M,A:(d,d), d=4*S+6; wcs,wps:(S,)",
+    "constraints": "X=(dn,dvx,dvy,dvz) for each species, then Ex,Ey,Ez,Bx,By,Bz. M_ab has units (unit X_a)/(s*unit X_b), A_ab has units (unit X_a)/(unit X_b). Matrices retain original physical state units.",
+    "declared_channel": "undeclared",
+    "declaration": "Time-generator generalized pencil M X=lambda A X with lambda=-i omega, plus signed wcs and nonnegative wps.",
+    "shape_is_informative": true,
+    "runtime": {
+     "returned_type": "dict",
+     "is_mapping": true,
+     "elapsed_s": 0.001,
+     "keys": [
+      "A",
+      "M",
+      "wcs",
+      "wps"
+     ],
+     "declared_name_is_key": false,
+     "keys_named_in": {
+      "description": [
+       "A",
+       "M",
+       "wcs",
+       "wps"
+      ],
+      "shape": [
+       "A",
+       "M",
+       "wcs",
+       "wps"
+      ]
+     },
+     "verdict": "undeclared-keys-named-elsewhere"
+    }
+   },
+   {
+    "asset": "scirel.kinetic.multifluid-frequency-solve",
+    "output": "solution",
+    "dtype": "dict[str, numeric arrays or structured metadata]",
+    "shape": "M,A:(d,d); w1,w2:(d,); X1,X2:(d,d); errors:(d,d)",
+    "constraints": "w1 sorted by descending real part, w2 by descending imaginary part; X1/X2 columns correspond. Errors use original solver order. Repeated defective zeros do not imply a complete eigenbasis or Jordan chain.",
+    "declared_channel": "undeclared",
+    "declaration": "Pencil and sorted spectra/eigenvectors with full-original-unit backward-error and checked zero-structure metadata.",
+    "shape_is_informative": true,
+    "runtime": {
+     "returned_type": "dict",
+     "is_mapping": true,
+     "elapsed_s": 0.031,
+     "keys": [
+      "A",
+      "M",
+      "X1",
+      "X2",
+      "componentwise_backward_errors",
+      "refinement",
+      "state_scales",
+      "w1",
+      "w2",
+      "wcs",
+      "wps",
+      "zero_structure"
+     ],
+     "declared_name_is_key": false,
+     "keys_named_in": {
+      "constraints": [
+       "A",
+       "X1",
+       "X2",
+       "w1",
+       "w2"
+      ],
+      "shape": [
+       "A",
+       "M",
+       "X1",
+       "X2",
+       "w1",
+       "w2"
+      ]
+     },
+     "verdict": "undeclared-keys-partly-named"
+    }
+   },
+   {
+    "asset": "scirel.kinetic.multifluid-relative-rate-equilibrium",
+    "output": "state",
+    "dtype": "dict of float64 arrays/scalars, str, tuple[str], nullable beta arrays",
+    "shape": "species vectors; v(S,3); velocity_collision(S,S); current_density(3,); exchange(S,S); bath_drag(S,); species_classes tuple of length S; collision_contract scalar string",
+    "constraints": "rho=m*n; P=rho*cs^2/gamma. At B0=0 both beta arrays are None and Alfven speeds vanish; neutrality/current balance are reported, not imposed.",
+    "declared_channel": "undeclared",
+    "declaration": "Independent equilibrium mapping: q,m,n,v,csz2,csp2,epsnx,epsny,rho,B0,gamma,c2,epsilon0,mu0,Pz,Pp,Delta,pressure_frame,beta_z,beta_p,vA_species,velocity_collision,charge_density,current_density. Also includes exchange, bath_drag, species_classes, collision_contract.",
+    "shape_is_informative": true,
+    "runtime": {
+     "returned_type": "dict",
+     "is_mapping": true,
+     "elapsed_s": 0.001,
+     "keys": [
+      "B0",
+      "Delta",
+      "Pp",
+      "Pz",
+      "bath_drag",
+      "beta_p",
+      "beta_z",
+      "c2",
+      "charge_density",
+      "collision_contract",
+      "csp2",
+      "csz2",
+      "current_density",
+      "epsilon0",
+      "epsnx",
+      "epsny",
+      "exchange",
+      "gamma",
+      "m",
+      "mu0",
+      "n",
+      "pressure_frame",
+      "q",
+      "rho",
+      "species_classes",
+      "v",
+      "vA_species",
+      "velocity_collision"
+     ],
+     "declared_name_is_key": false,
+     "keys_named_in": {
+      "description": [
+       "B0",
+       "Delta",
+       "Pp",
+       "Pz",
+       "bath_drag",
+       "beta_p",
+       "beta_z",
+       "c2",
+       "charge_density",
+       "collision_contract",
+       "csp2",
+       "csz2",
+       "current_density",
+       "epsilon0",
+       "epsnx",
+       "epsny",
+       "exchange",
+       "gamma",
+       "m",
+       "mu0",
+       "n",
+       "pressure_frame",
+       "q",
+       "rho",
+       "species_classes",
+       "v",
+       "vA_species",
+       "velocity_collision"
+      ],
+      "constraints": [
+       "B0",
+       "gamma",
+       "m",
+       "n",
+       "rho"
+      ],
+      "shape": [
+       "bath_drag",
+       "collision_contract",
+       "current_density",
+       "exchange",
+       "species_classes",
+       "v",
+       "velocity_collision"
+      ]
+     },
+     "verdict": "undeclared-keys-named-elsewhere"
+    }
+   },
+   {
+    "asset": "scirel.kinetic.multifluid-scan",
+    "output": "result",
+    "dtype": "dict[str, numeric arrays or structured metadata]",
+    "shape": "kx,kz:(na,nb); w1,w2:(na,nb,d); points:length na*nb",
+    "constraints": "C-order point records include index and full original-unit solution. Canonical axis_names are (single,single) for method1, (k,theta) for methods2/3 and (kx,kz) for method4; method2 has singleton theta and method3 singleton k.",
+    "declared_channel": "undeclared",
+    "declaration": "Physical scan mapping with kx,kz,axis_names,axis_values,w1,w2 and point solution records.",
+    "shape_is_informative": true,
+    "runtime": {
+     "returned_type": "dict",
+     "is_mapping": true,
+     "elapsed_s": 0.064,
+     "keys": [
+      "axis_names",
+      "axis_values",
+      "kx",
+      "kz",
+      "points",
+      "w1",
+      "w2"
+     ],
+     "declared_name_is_key": false,
+     "keys_named_in": {
+      "description": [
+       "axis_names",
+       "axis_values",
+       "kx",
+       "kz",
+       "w1",
+       "w2"
+      ],
+      "constraints": [
+       "axis_names",
+       "kx",
+       "kz"
+      ],
+      "shape": [
+       "kx",
+       "kz",
+       "points",
+       "w1",
+       "w2"
+      ]
+     },
+     "verdict": "undeclared-keys-named-elsewhere"
+    }
+   },
+   {
+    "asset": "scirel.kinetic.parallel-em-continuation",
+    "output": "result",
+    "dtype": "dict[str,array or list[dict]]",
+    "shape": "k,omega:(K,); records:length K",
+    "constraints": "Only successful finite roots passing abs(f)/scale <= residual_tolerance are returned; order follows the supplied grid.",
+    "declared_channel": "undeclared",
+    "declaration": "Accepted continuation mapping with k, omega and per-point solver records.",
+    "shape_is_informative": true,
+    "runtime": {
+     "returned_type": "dict",
+     "is_mapping": true,
+     "elapsed_s": 0.001,
+     "keys": [
+      "k",
+      "omega",
+      "records"
+     ],
+     "declared_name_is_key": false,
+     "keys_named_in": {
+      "description": [
+       "k",
+       "omega",
+       "records"
+      ],
+      "shape": [
+       "k",
+       "omega",
+       "records"
+      ]
+     },
+     "verdict": "undeclared-keys-named-elsewhere"
+    }
+   },
+   {
+    "asset": "scirel.kinetic.rational-default-deck",
+    "output": "deck",
+    "dtype": "real array",
+    "shape": "Sx5 or Sx6",
+    "constraints": "Finite and representable in the declared numeric type.",
+    "declared_channel": "undeclared",
+    "declaration": "Fresh species array with explicit model-specific legacy unit convention.",
+    "shape_is_informative": true,
+    "runtime": {
+     "returned_type": "ndarray",
+     "is_mapping": false,
+     "elapsed_s": 0.001,
+     "verdict": "undeclared-unambiguous-positional"
+    }
+   },
+   {
+    "asset": "scirel.kinetic.rational-jpole-evaluate",
+    "output": "ZJ",
+    "dtype": "complex array",
+    "shape": "same shape as z",
+    "constraints": "Finite and representable in the declared numeric type.",
+    "declared_channel": "undeclared",
+    "declaration": "Rational dispersion approximation.",
+    "shape_is_informative": true,
+    "runtime": {
+     "returned_type": "dict",
+     "is_mapping": true,
+     "elapsed_s": 0.0,
+     "keys": [
+      "ZJ"
+     ],
+     "declared_name_is_key": true,
+     "verdict": "undeclared-declared-name-is-key"
+    }
+   },
+   {
+    "asset": "scirel.kinetic.rational-z-poles",
+    "output": "state",
+    "dtype": "object",
+    "shape": "object with a mapping state",
+    "constraints": "Accessible in returned operator result.state; scientific meaning applies only to a compatible completed predecessor. Empty inactive arrays are preserved.",
+    "declared_channel": "undeclared",
+    "declaration": "J-pole table object; access J, bzj and czj through result.state.",
+    "shape_is_informative": true,
+    "runtime": {
+     "returned_type": "_State",
+     "is_mapping": false,
+     "elapsed_s": 0.0,
+     "verdict": "undeclared-unambiguous-positional"
+    }
+   },
+   {
+    "asset": "scirel.kinetic.relativistic-codrift-generalized-spectrum",
+    "output": "spectra",
+    "dtype": "nested Python lists of float pairs",
+    "shape": "list of N mappings; each order is [4*S+6,2]",
+    "constraints": "Every returned pair is finite; real_order and imag_order are independent descending sorts of the same complete spectrum.",
+    "declared_channel": "undeclared",
+    "declaration": "One complete spectrum record per input wavevector, each carrying real_order and imag_order arrays of real/imaginary pairs.",
+    "shape_is_informative": true,
+    "runtime": {
+     "returned_type": "dict",
+     "is_mapping": true,
+     "elapsed_s": 0.0,
+     "keys": [
+      "spectra"
+     ],
+     "declared_name_is_key": true,
+     "verdict": "undeclared-declared-name-is-key"
+    }
+   },
+   {
+    "asset": "scirel.kinetic.vp-diagnostic",
+    "output": "result",
+    "dtype": "dict",
+    "shape": "As described in output mapping or tuple.",
+    "constraints": "Diagnostic mapping with finite fit when enough peaks are available; otherwise the declared status.",
+    "declared_channel": "undeclared",
+    "declaration": "Mapping peak_indices,peak_times,peak_log_magnitudes [P>=2], scalar omega,gamma,gammas; gammas aliases gamma.",
+    "shape_is_informative": false,
+    "runtime": {
+     "returned_type": "dict",
+     "is_mapping": true,
+     "elapsed_s": 0.001,
+     "keys": [
+      "gamma",
+      "gammas",
+      "omega",
+      "peak_indices",
+      "peak_log_magnitudes",
+      "peak_times"
+     ],
+     "declared_name_is_key": false,
+     "keys_named_in": {
+      "description": [
+       "gamma",
+       "gammas",
+       "omega",
+       "peak_indices",
+       "peak_log_magnitudes",
+       "peak_times"
+      ]
+     },
+     "verdict": "undeclared-keys-named-elsewhere"
+    }
+   },
+   {
+    "asset": "scirel.kinetic.vp-distribution",
+    "output": "result",
+    "dtype": "tuple",
+    "shape": "As described in output mapping or tuple.",
+    "constraints": "Tuple of finite derivative and optional theoretical frequencies; no hidden state.",
+    "declared_channel": "undeclared",
+    "declaration": "Tuple (g,wr,wi): g [N], theoretical wr=1 and wi=-k sqrt(2) only for Fn=2,kappa=1; otherwise theory is None.",
+    "shape_is_informative": false,
+    "runtime": {
+     "returned_type": "tuple",
+     "is_mapping": false,
+     "elapsed_s": 0.0,
+     "verdict": "undeclared-unambiguous-positional"
+    }
+   },
+   {
+    "asset": "scirel.kinetic.vp-envelope",
+    "output": "result",
+    "dtype": "dict",
+    "shape": "As described in output mapping or tuple.",
+    "constraints": "Finite logs except documented zero-field -inf; theory envelope only when wi is supplied.",
+    "declared_channel": "undeclared",
+    "declaration": "Mapping ttmp[T], lndE[T], lndEe[T] or None, wr,wi. Exact zero amplitude yields -inf; all samples retained.",
+    "shape_is_informative": false,
+    "runtime": {
+     "returned_type": "dict",
+     "is_mapping": true,
+     "elapsed_s": 0.0,
+     "keys": [
+      "lndE",
+      "lndEe",
+      "ttmp",
+      "wi",
+      "wr"
+     ],
+     "declared_name_is_key": false,
+     "keys_named_in": {
+      "description": [
+       "lndE",
+       "lndEe",
+       "ttmp",
+       "wi",
+       "wr"
+      ],
+      "constraints": [
+       "wi"
+      ]
+     },
+     "verdict": "undeclared-keys-named-elsewhere"
+    }
+   },
+   {
+    "asset": "scirel.kinetic.vp-evolve",
+    "output": "result",
+    "dtype": "dict",
+    "shape": "As described in output mapping or tuple.",
+    "constraints": "Copied state with finite field history and closed initial field.",
+    "declared_channel": "undeclared",
+    "declaration": "State mapping: Fn,kappa,nv,dt,nt,k,vmax,vmin,dv,TR; vv,df,df0dv [nv+1]; scalar dE; dEt,tt [nt+1]; wr,wi are kappa=1 theory or None. Fields and arrays are independently owned. Input is not mutated; repeated calls start a new local time trace from supplied df.",
+    "shape_is_informative": false,
+    "runtime": {
+     "returned_type": "dict",
+     "is_mapping": true,
+     "elapsed_s": 0.001,
+     "keys": [
+      "Fn",
+      "TR",
+      "dE",
+      "dEt",
+      "df",
+      "df0dv",
+      "dt",
+      "dv",
+      "k",
+      "kappa",
+      "nt",
+      "nv",
+      "tt",
+      "vmax",
+      "vmin",
+      "vv",
+      "wi",
+      "wr"
+     ],
+     "declared_name_is_key": false,
+     "keys_named_in": {
+      "description": [
+       "Fn",
+       "TR",
+       "dE",
+       "dEt",
+       "df",
+       "df0dv",
+       "dt",
+       "dv",
+       "k",
+       "kappa",
+       "nt",
+       "nv",
+       "tt",
+       "vmax",
+       "vmin",
+       "vv",
+       "wi",
+       "wr"
+      ]
+     },
+     "verdict": "undeclared-keys-named-elsewhere"
+    }
+   },
+   {
+    "asset": "scirel.kinetic.vp-field",
+    "output": "result",
+    "dtype": "complex scalar",
+    "shape": "As described in output mapping or tuple.",
+    "constraints": "Finite complex scalar equal to the discrete Poisson field.",
+    "declared_channel": "undeclared",
+    "declaration": "Complex scalar electric field satisfying ikE=-dv sum(df).",
+    "shape_is_informative": false,
+    "runtime": {
+     "returned_type": "complex128",
+     "is_mapping": false,
+     "elapsed_s": 0.0,
+     "verdict": "undeclared-unambiguous-positional"
+    }
+   },
+   {
+    "asset": "scirel.kinetic.vp-init",
+    "output": "result",
+    "dtype": "dict",
+    "shape": "As described in output mapping or tuple.",
+    "constraints": "State mapping with finite arrays and an initial field satisfying discrete Poisson closure.",
+    "declared_channel": "undeclared",
+    "declaration": "State mapping: Fn,kappa,nv,dt,nt,k,vmax,vmin,dv,TR; vv,df,df0dv [nv+1]; scalar dE; dEt,tt [nt+1]; wr,wi are kappa=1 theory or None. Fields and arrays are independently owned.",
+    "shape_is_informative": false,
+    "runtime": {
+     "returned_type": "dict",
+     "is_mapping": true,
+     "elapsed_s": 0.0,
+     "keys": [
+      "Fn",
+      "TR",
+      "dE",
+      "dEt",
+      "df",
+      "df0dv",
+      "dt",
+      "dv",
+      "k",
+      "kappa",
+      "nt",
+      "nv",
+      "tt",
+      "vmax",
+      "vmin",
+      "vv",
+      "wi",
+      "wr"
+     ],
+     "declared_name_is_key": false,
+     "keys_named_in": {
+      "description": [
+       "Fn",
+       "TR",
+       "dE",
+       "dEt",
+       "df",
+       "df0dv",
+       "dt",
+       "dv",
+       "k",
+       "kappa",
+       "nt",
+       "nv",
+       "tt",
+       "vmax",
+       "vmin",
+       "vv",
+       "wi",
+       "wr"
+      ]
+     },
+     "verdict": "undeclared-keys-named-elsewhere"
+    }
+   },
+   {
+    "asset": "scirel.kinetic.vp-landau",
+    "output": "result",
+    "dtype": "dict",
+    "shape": "As described in output mapping or tuple.",
+    "constraints": "Composed final state and diagnostics; no claim beyond the declared time window and grid.",
+    "declared_channel": "undeclared",
+    "declaration": "Mapping state (complete VP state), envelope, diagnostic, diagnostic_status. For nt=0 envelope and diagnostic are None; inadequate peaks give diagnostic=None and reason while retaining evolution.",
+    "shape_is_informative": false,
+    "runtime": {
+     "returned_type": "dict",
+     "is_mapping": true,
+     "elapsed_s": 0.001,
+     "keys": [
+      "diagnostic",
+      "diagnostic_status",
+      "envelope",
+      "state"
+     ],
+     "declared_name_is_key": false,
+     "keys_named_in": {
+      "description": [
+       "diagnostic",
+       "diagnostic_status",
+       "envelope",
+       "state"
+      ],
+      "constraints": [
+       "state"
+      ]
+     },
+     "verdict": "undeclared-keys-named-elsewhere"
+    }
+   },
+   {
+    "asset": "scirel.kinetic.vp-rhs",
+    "output": "result",
+    "dtype": "complex array",
+    "shape": "As described in output mapping or tuple.",
+    "constraints": "Finite complex array with the distribution shape.",
+    "declared_channel": "undeclared",
+    "declaration": "Complex vector [N] time derivative; no input mutation.",
+    "shape_is_informative": false,
+    "runtime": {
+     "returned_type": "ndarray",
+     "is_mapping": false,
+     "elapsed_s": 0.0,
+     "verdict": "undeclared-unambiguous-positional"
+    }
+   },
+   {
+    "asset": "scirel.kinetic.vp-rk4-step",
+    "output": "result",
+    "dtype": "tuple",
+    "shape": "As described in output mapping or tuple.",
+    "constraints": "Finite updated distribution and field preserving discrete Poisson closure.",
+    "declared_channel": "undeclared",
+    "declaration": "Tuple (new_df,new_dE), complex [N] vector and closed complex scalar; no input mutation.",
+    "shape_is_informative": false,
+    "runtime": {
+     "returned_type": "tuple",
+     "is_mapping": false,
+     "elapsed_s": 0.0,
+     "verdict": "undeclared-unambiguous-positional"
+    }
+   },
+   {
+    "asset": "scirel.mirror.frank-egedal-radial-envelope",
+    "output": "radial_envelope",
+    "dtype": "float64 ndarray",
+    "shape": "same [N_Z,N_R] shape as psi",
+    "constraints": "For successful finite arithmetic, values lie in [0,1]. An alpha of zero returns ones, even at u=1; there is no post-computation finite-output validation.",
+    "declared_channel": "undeclared",
+    "declaration": "Direct array return of the clipped source-order radial multiplier, not a key in a result mapping.",
+    "shape_is_informative": true,
+    "runtime": {
+     "returned_type": "ndarray",
+     "is_mapping": false,
+     "elapsed_s": 0.0,
+     "verdict": "undeclared-unambiguous-positional"
+    }
+   },
+   {
+    "asset": "scirel.neutrals.adaptive-neutral-velocity-mesh",
+    "output": "mesh",
+    "dtype": "tuple (vx, vr, tnorm, ix, ir)",
+    "shape": "tuple",
+    "constraints": "vx symmetric around zero, vr its finite strictly increasing positive half; tnorm the mean of the selected population; ix/ir the last requested-energy index positions.",
+    "declared_channel": "undeclared",
+    "declaration": "The constructed mesh and derived indices.",
+    "shape_is_informative": true,
+    "runtime": {
+     "returned_type": "tuple",
+     "is_mapping": false,
+     "elapsed_s": 0.001,
+     "verdict": "undeclared-unambiguous-positional"
+    }
+   },
+   {
+    "asset": "scirel.neutrals.atomic-scattered-sources-reduction",
+    "output": "total_source",
+    "dtype": "float64 array",
+    "shape": "[nvr,nvx,nx]",
+    "constraints": "The pointwise sum; finite; signed values preserved.",
+    "declared_channel": "undeclared",
+    "declaration": "The aggregated scattered source.",
+    "shape_is_informative": true,
+    "runtime": {
+     "returned_type": "ndarray",
+     "is_mapping": false,
+     "elapsed_s": 0.0,
+     "verdict": "undeclared-unambiguous-positional"
+    }
+   },
+   {
+    "asset": "scirel.neutrals.axisymmetric-neutral-moments",
+    "output": "moments",
+    "dtype": "mapping of [nx] float64 arrays",
+    "shape": "mapping",
+    "constraints": "Exactly density_m3, axial_flux_m2_s, axial_velocity_m_s, pressure_ev_m3, temperature_ev, stress_xx_ev_m3, stress_yy_ev_m3, stress_zz_ev_m3 (an independent copy of the y stress), random_heat_flux_w_m2; each finite with shape [nx].",
+    "declared_channel": "undeclared",
+    "declaration": "The nine moment fields.",
+    "shape_is_informative": true,
+    "runtime": {
+     "returned_type": "dict",
+     "is_mapping": true,
+     "elapsed_s": 0.015,
+     "keys": [
+      "axial_flux_m2_s",
+      "axial_velocity_m_s",
+      "density_m3",
+      "pressure_ev_m3",
+      "random_heat_flux_w_m2",
+      "stress_xx_ev_m3",
+      "stress_yy_ev_m3",
+      "stress_zz_ev_m3",
+      "temperature_ev"
+     ],
+     "declared_name_is_key": false,
+     "keys_named_in": {
+      "constraints": [
+       "axial_flux_m2_s",
+       "axial_velocity_m_s",
+       "density_m3",
+       "pressure_ev_m3",
+       "random_heat_flux_w_m2",
+       "stress_xx_ev_m3",
+       "stress_yy_ev_m3",
+       "stress_zz_ev_m3",
+       "temperature_ev"
+      ]
+     },
+     "verdict": "undeclared-keys-named-elsewhere"
+    }
+   },
+   {
+    "asset": "scirel.neutrals.compensated-shifted-maxwellian",
+    "output": "distribution",
+    "dtype": "float64 array",
+    "shape": "[nvr,nvx,nshift]",
+    "constraints": "Each positive-temperature slice is renormalized on the generated quadrature; zero/nonpositive branches return zero slices.",
+    "declared_channel": "undeclared",
+    "declaration": "Moment-compensated shifted Maxwellian slices.",
+    "shape_is_informative": true,
+    "runtime": {
+     "returned_type": "ndarray",
+     "is_mapping": false,
+     "elapsed_s": 0.001,
+     "verdict": "undeclared-unambiguous-positional"
+    }
+   },
+   {
+    "asset": "scirel.neutrals.cross-mesh-distribution-interpolation",
+    "output": "fb",
+    "dtype": "float64 array",
+    "shape": "[nvrb,nvxb,nxb]",
+    "constraints": "For correct=1: finite nonnegative distribution with discrete density, axial momentum density and squared-speed energy density matching the spatially interpolated source targets to scaled roundoff; zero outside the source x interval. correct=0 is a finite algebraic result without that physical guarantee.",
+    "declared_channel": "undeclared",
+    "declaration": "The interpolated distribution on mesh_b.",
+    "shape_is_informative": true,
+    "runtime": {
+     "returned_type": "ndarray",
+     "is_mapping": false,
+     "elapsed_s": 0.004,
+     "verdict": "undeclared-unambiguous-positional"
+    }
+   },
+   {
+    "asset": "scirel.neutrals.cross-mesh-scalar-interpolation",
+    "output": "fb",
+    "dtype": "float64 array",
+    "shape": "[nxb]",
+    "constraints": "Finite; in-range nodes interpolated, out-of-range nodes exactly zero.",
+    "declared_channel": "positional",
+    "declaration": "The interpolated profile on mesh_b. Returned directly as the callable's single positional value (one float64 array of shape [nxb]); it is not a field of a mapping.",
+    "shape_is_informative": true,
+    "runtime": {
+     "returned_type": "ndarray",
+     "is_mapping": false,
+     "elapsed_s": 0.001,
+     "verdict": "consistent"
+    }
+   },
+   {
+    "asset": "scirel.neutrals.elastic-frequency-channels",
+    "output": "elastic_frequency_m_inv",
+    "dtype": "float64 array",
+    "shape": "common shape",
+    "constraints": "Finite; equals the pointwise sum in the declared order.",
+    "declared_channel": "undeclared",
+    "declaration": "Summed inverse-length elastic coefficient for spatial transport.",
+    "shape_is_informative": true,
+    "runtime": {
+     "returned_type": "dict",
+     "is_mapping": true,
+     "elapsed_s": 0.0,
+     "keys": [
+      "elastic_frequency_m_inv"
+     ],
+     "declared_name_is_key": true,
+     "verdict": "undeclared-declared-name-is-key"
+    }
+   },
+   {
+    "asset": "scirel.neutrals.elastic-regeneration-aggregation",
+    "output": "regeneration_source",
+    "dtype": "float64 array",
+    "shape": "[nvr,nvx,nx]",
+    "constraints": "Finite and nonnegative; the channel sum in dict iteration order.",
+    "declared_channel": "undeclared",
+    "declaration": "The aggregated regeneration source.",
+    "shape_is_informative": true,
+    "runtime": {
+     "returned_type": "ndarray",
+     "is_mapping": false,
+     "elapsed_s": 0.0,
+     "verdict": "undeclared-unambiguous-positional"
+    }
+   },
+   {
+    "asset": "scirel.neutrals.generation-accumulation-update",
+    "output": "result",
+    "dtype": "mapping of arrays and an integer",
+    "shape": "mapping",
+    "constraints": "All arrays finite; total_distribution and total_density_m3 equal ordered sums of their generation stacks; density arrays nonnegative; completed_generation_index is the 0-based index of the last appended generation.",
+    "declared_channel": "undeclared",
+    "declaration": "A mapping with total_distribution, total_density_m3, generation_distributions (stacked), generation_density_m3 (stacked), and completed_generation_index.",
+    "shape_is_informative": true,
+    "runtime": {
+     "returned_type": "dict",
+     "is_mapping": true,
+     "elapsed_s": 0.0,
+     "keys": [
+      "completed_generation_index",
+      "generation_density_m3",
+      "generation_distributions",
+      "total_density_m3",
+      "total_distribution"
+     ],
+     "declared_name_is_key": false,
+     "keys_named_in": {
+      "description": [
+       "completed_generation_index",
+       "generation_density_m3",
+       "generation_distributions",
+       "total_density_m3",
+       "total_distribution"
+      ],
+      "constraints": [
+       "completed_generation_index",
+       "total_density_m3",
+       "total_distribution"
+      ]
+     },
+     "verdict": "undeclared-keys-named-elsewhere"
+    }
+   },
+   {
+    "asset": "scirel.neutrals.generation-density-reduction",
+    "output": "density",
+    "dtype": "float64 array",
+    "shape": "[nx]",
+    "constraints": "Finite; signed values are preserved (no clamp).",
+    "declared_channel": "undeclared",
+    "declaration": "Per-spatial-cell generation densities.",
+    "shape_is_informative": true,
+    "runtime": {
+     "returned_type": "ndarray",
+     "is_mapping": false,
+     "elapsed_s": 0.001,
+     "verdict": "undeclared-unambiguous-positional"
+    }
+   },
+   {
+    "asset": "scirel.neutrals.molecular-scattered-sources-reduction",
+    "output": "total_source",
+    "dtype": "float64 array",
+    "shape": "[nvr,nvx,nx]",
+    "constraints": "The pointwise sum in the declared order; finite; signed values preserved.",
+    "declared_channel": "undeclared",
+    "declaration": "The aggregated scattered source.",
+    "shape_is_informative": true,
+    "runtime": {
+     "returned_type": "ndarray",
+     "is_mapping": false,
+     "elapsed_s": 0.0,
+     "verdict": "undeclared-unambiguous-positional"
+    }
+   },
+   {
+    "asset": "scirel.neutrals.neutral-boltzmann-rhs",
+    "output": "rhs",
+    "dtype": "float64 array",
+    "shape": "[nvr,nvx,nx]",
+    "constraints": "Finite.",
+    "declared_channel": "undeclared",
+    "declaration": "Physical distribution-rate RHS; one Vth multiplication converts every normalized spatial balance term from F/m to F/s.",
+    "shape_is_informative": true,
+    "runtime": {
+     "returned_type": "dict",
+     "is_mapping": true,
+     "elapsed_s": 0.0,
+     "keys": [
+      "rhs"
+     ],
+     "declared_name_is_key": true,
+     "verdict": "undeclared-declared-name-is-key"
+    }
+   },
+   {
+    "asset": "scirel.neutrals.neutral-generation-propagation",
+    "output": "generation",
+    "dtype": "float64 array",
+    "shape": "[nvr,nvx,nx]",
+    "constraints": "Finite.",
+    "declared_channel": "positional",
+    "declaration": "The propagated generation distribution. Returned directly as the callable's single positional value (one float64 array of shape [nvr,nvx,nx]); it is not a field of a mapping.",
+    "shape_is_informative": true,
+    "runtime": {
+     "returned_type": "ndarray",
+     "is_mapping": false,
+     "elapsed_s": 0.001,
+     "verdict": "consistent"
+    }
+   },
+   {
+    "asset": "scirel.neutrals.neutral-generation-stopping",
+    "output": "result",
+    "dtype": "tuple(float, bool, str)",
+    "shape": "tuple of 3 scalars",
+    "constraints": "Finite delta; done is a Python bool; reason is a status string.",
+    "declared_channel": "undeclared",
+    "declaration": "A tuple (delta, done, reason): delta is the relative generation density ratio, done is whether the next generation is unnecessary, reason is 'truncate', 'seed_relative', or 'continue'.",
+    "shape_is_informative": true,
+    "runtime": {
+     "returned_type": "tuple",
+     "is_mapping": false,
+     "elapsed_s": 0.0,
+     "verdict": "undeclared-unambiguous-positional"
+    }
+   },
+   {
+    "asset": "scirel.neutrals.neutral-total-collision-frequency",
+    "output": "total_frequency_m_inv",
+    "dtype": "float64 array",
+    "shape": "[nvr,nvx,nx]",
+    "constraints": "Finite; nonnegative on the declared domain (all inputs nonnegative).",
+    "declared_channel": "undeclared",
+    "declaration": "Total inverse-length loss coefficient alpha=nu/Vth for the spatial advance; multiply by the caller Vth only when a physical frequency is needed.",
+    "shape_is_informative": true,
+    "runtime": {
+     "returned_type": "ndarray",
+     "is_mapping": false,
+     "elapsed_s": 0.001,
+     "verdict": "undeclared-unambiguous-positional"
+    }
+   },
+   {
+    "asset": "scirel.neutrals.neutral-upwind-transport-coefficients",
+    "output": "coefficients",
+    "dtype": "mapping of [nvr,nvx,nx] float64 arrays and two index arrays",
+    "shape": "mapping",
+    "constraints": "Exactly Ak, Bk, Fk, Ck, Dk, Gk (each [nvr,nvx,nx]), positive_vx_indices and negative_vx_indices. Ak/Ck are dimensionless, Bk/Dk are metres and Fk/Gk are in m^-3 (F).",
+    "declared_channel": "undeclared",
+    "declaration": "The transport coefficient mapping.",
+    "shape_is_informative": true,
+    "runtime": {
+     "returned_type": "dict",
+     "is_mapping": true,
+     "elapsed_s": 0.0,
+     "keys": [
+      "Ak",
+      "Bk",
+      "Ck",
+      "Dk",
+      "Fk",
+      "Gk",
+      "negative_vx_indices",
+      "positive_vx_indices"
+     ],
+     "declared_name_is_key": false,
+     "keys_named_in": {
+      "constraints": [
+       "Ak",
+       "Bk",
+       "Ck",
+       "Dk",
+       "Fk",
+       "Gk",
+       "negative_vx_indices",
+       "positive_vx_indices"
+      ]
+     },
+     "verdict": "undeclared-keys-named-elsewhere"
+    }
+   },
+   {
+    "asset": "scirel.neutrals.outer-convergence",
+    "output": "result",
+    "dtype": "mapping of scalars and a boolean",
+    "shape": "mapping",
+    "constraints": "Finite seed_error; reentry_threshold = truncate; should_reiterate is a Python bool.",
+    "declared_channel": "undeclared",
+    "declaration": "A mapping with seed_error (relative change), reentry_threshold (truncate), should_reiterate (bool), and reason ('reiterate' or 'converged').",
+    "shape_is_informative": true,
+    "runtime": {
+     "returned_type": "dict",
+     "is_mapping": true,
+     "elapsed_s": 0.0,
+     "keys": [
+      "reason",
+      "reentry_threshold",
+      "seed_error",
+      "should_reiterate"
+     ],
+     "declared_name_is_key": false,
+     "keys_named_in": {
+      "description": [
+       "reason",
+       "reentry_threshold",
+       "seed_error",
+       "should_reiterate"
+      ],
+      "constraints": [
+       "reentry_threshold",
+       "seed_error",
+       "should_reiterate"
+      ]
+     },
+     "verdict": "undeclared-keys-named-elsewhere"
+    }
+   },
+   {
+    "asset": "scirel.neutrals.outer-seed-convergence",
+    "output": "result",
+    "dtype": "mapping of scalars and a boolean",
+    "shape": "mapping",
+    "constraints": "Finite seed_error; reentry_threshold = 10*truncate; should_reiterate is a Python bool.",
+    "declared_channel": "undeclared",
+    "declaration": "A mapping with seed_error (relative change), reentry_threshold (10*truncate), should_reiterate (bool), and reason ('reiterate' or 'converged').",
+    "shape_is_informative": true,
+    "runtime": {
+     "returned_type": "dict",
+     "is_mapping": true,
+     "elapsed_s": 0.0,
+     "keys": [
+      "reason",
+      "reentry_threshold",
+      "seed_error",
+      "should_reiterate"
+     ],
+     "declared_name_is_key": false,
+     "keys_named_in": {
+      "description": [
+       "reason",
+       "reentry_threshold",
+       "seed_error",
+       "should_reiterate"
+      ],
+      "constraints": [
+       "reentry_threshold",
+       "seed_error",
+       "should_reiterate"
+      ]
+     },
+     "verdict": "undeclared-keys-named-elsewhere"
+    }
+   },
+   {
+    "asset": "scirel.neutrals.simple-charge-exchange-source",
+    "output": "scattered_source",
+    "dtype": "float64 array",
+    "shape": "[nvr,nvx,nx]",
+    "constraints": "Finite; the target scaled by the per-cell rate.",
+    "declared_channel": "undeclared",
+    "declaration": "Normalized spatial source h*integral(alpha_CX*F_previous*d^3u); the physical distribution-rate source is Vth times this field.",
+    "shape_is_informative": true,
+    "runtime": {
+     "returned_type": "ndarray",
+     "is_mapping": false,
+     "elapsed_s": 0.001,
+     "verdict": "undeclared-unambiguous-positional"
+    }
+   },
+   {
+    "asset": "scirel.neutrals.terminal-conservation-diagnostic",
+    "output": "total_energy_conservation_error_profile_dimensionless",
+    "dtype": "float64 array",
+    "shape": "[nx]",
+    "constraints": "Finite and nonnegative; last element is exactly zero; individual entries can exceed one.",
+    "declared_channel": "undeclared",
+    "declaration": "Globally normalized absolute difference of the interval flux gradient and adjacent transfer mean, with zero at the final node by convention.",
+    "shape_is_informative": true,
+    "runtime": {
+     "returned_type": "dict",
+     "is_mapping": true,
+     "elapsed_s": 0.0,
+     "keys": [
+      "total_energy_conservation_error_profile_dimensionless"
+     ],
+     "declared_name_is_key": true,
+     "verdict": "undeclared-declared-name-is-key"
+    }
+   },
+   {
+    "asset": "scirel.neutrals.thermal-speed-scale",
+    "output": "result",
+    "dtype": "mapping with one float64 scalar",
+    "shape": "mapping",
+    "constraints": "Carries exactly one field thermal_speed_m_s; finite and strictly positive.",
+    "declared_channel": "undeclared",
+    "declaration": "The thermal-speed mapping.",
+    "shape_is_informative": true,
+    "runtime": {
+     "returned_type": "dict",
+     "is_mapping": true,
+     "elapsed_s": 0.0,
+     "keys": [
+      "thermal_speed_m_s"
+     ],
+     "declared_name_is_key": false,
+     "keys_named_in": {
+      "constraints": [
+       "thermal_speed_m_s"
+      ]
+     },
+     "verdict": "undeclared-keys-named-elsewhere"
+    }
+   },
+   {
+    "asset": "scirel.numerics.basis-matrix",
+    "output": "matrix",
+    "dtype": "Python callable object",
+    "shape": "(M,K)",
+    "constraints": "Caller provides a one-dimensional domain; K follows the selected basis. Spline selections zero-fill finite domain-outside and nonfinite query rows; polynomial selections evaluate directly",
+    "declared_channel": "undeclared",
+    "declaration": "Evaluator yielding matrix of basis values",
+    "shape_is_informative": true,
+    "runtime": {
+     "returned_type": "BasisMatrix",
+     "is_mapping": false,
+     "elapsed_s": 0.001,
+     "verdict": "undeclared-unambiguous-positional"
+    }
+   },
+   {
+    "asset": "scirel.numerics.bilinear-grid-sampling",
+    "output": "samples",
+    "dtype": "float64",
+    "shape": "[N_point]",
+    "constraints": "One-dimensional array; empty for zero query points. The call returns exactly one Result mapping with the single key samples; mapping access is unchanged and attribute access returns the same array.",
+    "declared_channel": "result-field",
+    "declaration": "Bilinearly interpolated scalar values in query order; the samples field of the returned scirel._result.Result mapping.",
+    "shape_is_informative": true,
+    "runtime": {
+     "returned_type": "Result",
+     "is_mapping": true,
+     "elapsed_s": 0.001,
+     "keys": [
+      "samples"
+     ],
+     "declared_name_is_key": true,
+     "verdict": "consistent"
+    }
+   },
+   {
+    "asset": "scirel.numerics.build-basis",
+    "output": "basis_fns",
+    "dtype": "list",
+    "shape": "list(K)",
+    "constraints": "Polynomial or spline callables; spline callables zero-fill finite values outside the closed knot interval and nonfinite queries",
+    "declared_channel": "undeclared",
+    "declaration": "List of independent basis evaluators",
+    "shape_is_informative": true,
+    "runtime": {
+     "returned_type": "list",
+     "is_mapping": false,
+     "elapsed_s": 0.0,
+     "verdict": "undeclared-unambiguous-positional"
+    }
+   },
+   {
+    "asset": "scirel.numerics.clamped-cubic-spline",
+    "output": "spline",
+    "dtype": "Python callable object",
+    "shape": "object",
+    "constraints": "Query array shape preserved; finite values outside the closed knot interval return zero; nonfinite queries are zero-filled",
+    "declared_channel": "undeclared",
+    "declaration": "Callable spline retaining x_data,y_data,k and deriv=0/1/2 evaluation",
+    "shape_is_informative": true,
+    "runtime": {
+     "returned_type": "ClampedCubicSpline",
+     "is_mapping": false,
+     "elapsed_s": 0.0,
+     "verdict": "undeclared-unambiguous-positional"
+    }
+   },
+   {
+    "asset": "scirel.numerics.face-to-cell",
+    "output": "cell",
+    "dtype": "float64 array",
+    "shape": "[n-1]",
+    "constraints": "finite; one fewer entry than face",
+    "declared_channel": "undeclared",
+    "declaration": "Cell midpoint values",
+    "shape_is_informative": true,
+    "runtime": {
+     "returned_type": "ndarray",
+     "is_mapping": false,
+     "elapsed_s": 0.0,
+     "verdict": "undeclared-unambiguous-positional"
+    }
+   },
+   {
+    "asset": "scirel.numerics.faddeeva",
+    "output": "w",
+    "dtype": "complex128 ndarray",
+    "shape": "same as z; scalar input yields a zero-dimensional array",
+    "constraints": "Finite w only; no plasma-dispersion scaling is computed or checked.",
+    "declared_channel": "positional",
+    "declaration": "Faddeeva approximation returned directly as an array; no order or method metadata.",
+    "shape_is_informative": true,
+    "runtime": {
+     "returned_type": "ndarray",
+     "is_mapping": false,
+     "elapsed_s": 0.001,
+     "verdict": "consistent"
+    }
+   },
+   {
+    "asset": "scirel.numerics.first-clamped-cubic-spline",
+    "output": "spline",
+    "dtype": "Python callable object",
+    "shape": "object",
+    "constraints": "Query array shape preserved; finite values outside the closed knot interval return zero; nonfinite queries are zero-filled",
+    "declared_channel": "undeclared",
+    "declaration": "Callable spline retaining x_data,y_data,k and deriv=0/1/2 evaluation",
+    "shape_is_informative": true,
+    "runtime": {
+     "returned_type": "FirstClampedCubicSpline",
+     "is_mapping": false,
+     "elapsed_s": 0.0,
+     "verdict": "undeclared-unambiguous-positional"
+    }
+   },
+   {
+    "asset": "scirel.numerics.modal-projection",
+    "output": "coefficients",
+    "dtype": "float64",
+    "shape": "num_basis",
+    "constraints": "Finite; exact recovery when the samples come from the same basis",
+    "declared_channel": "positional",
+    "declaration": "Discrete Gauss-weighted projection coefficients, in the basis member order Returned directly as the callable's single positional value (one float64 array of length num_basis); it is not a field of a mapping.",
+    "shape_is_informative": true,
+    "runtime": {
+     "returned_type": "ndarray",
+     "is_mapping": false,
+     "elapsed_s": 0.001,
+     "verdict": "consistent"
+    }
+   },
+   {
+    "asset": "scirel.numerics.natural-cubic-spline",
+    "output": "spline",
+    "dtype": "Python callable object",
+    "shape": "object",
+    "constraints": "Query array shape preserved; finite values outside the closed knot interval return zero; nonfinite queries are zero-filled",
+    "declared_channel": "undeclared",
+    "declaration": "Callable spline retaining x_data,y_data,k and deriv=0/1/2 evaluation",
+    "shape_is_informative": true,
+    "runtime": {
+     "returned_type": "NaturalCubicSpline",
+     "is_mapping": false,
+     "elapsed_s": 0.0,
+     "verdict": "undeclared-unambiguous-positional"
+    }
+   },
+   {
+    "asset": "scirel.numerics.orthonormal-modal-basis",
+    "output": "basis",
+    "dtype": "ModalBasis",
+    "shape": "ModalBasis",
+    "constraints": "Members are orthonormal under the unweighted inner product on the reference cell; calling the returned basis.project method raises FloatingPointError if finite samples produce nonfinite coefficients. Constructing the basis does not itself project samples.",
+    "declared_channel": "undeclared",
+    "declaration": "Basis handle exposing kind, ndim, order, num_basis, exponents(), evaluate, expand, gradient, flip_sign, quadrature and project",
+    "shape_is_informative": true,
+    "runtime": {
+     "returned_type": "ModalBasis",
+     "is_mapping": false,
+     "elapsed_s": 0.0,
+     "verdict": "undeclared-unambiguous-positional"
+    }
+   },
+   {
+    "asset": "scirel.numerics.second-clamped-cubic-spline",
+    "output": "spline",
+    "dtype": "Python callable object",
+    "shape": "object",
+    "constraints": "Query array shape preserved; finite values outside the closed knot interval return zero; nonfinite queries are zero-filled",
+    "declared_channel": "undeclared",
+    "declaration": "Callable spline retaining x_data,y_data,k and deriv=0/1/2 evaluation",
+    "shape_is_informative": true,
+    "runtime": {
+     "returned_type": "SecondClampedCubicSpline",
+     "is_mapping": false,
+     "elapsed_s": 0.0,
+     "verdict": "undeclared-unambiguous-positional"
+    }
+   },
+   {
+    "asset": "scirel.numerics.truncated-svd-inverse",
+    "output": "inverse",
+    "dtype": "float64 array",
+    "shape": "(n,m)",
+    "constraints": "values below rcond * max(s) are truncated; finite whenever the SVD singular values, retained reciprocals and contracted result are representable as float64; otherwise FloatingPointError is raised",
+    "declared_channel": "undeclared",
+    "declaration": "truncated pseudo-inverse with shape (n,m)",
+    "shape_is_informative": true,
+    "runtime": {
+     "returned_type": "ndarray",
+     "is_mapping": false,
+     "elapsed_s": 0.001,
+     "verdict": "undeclared-unambiguous-positional"
+    }
+   },
+   {
+    "asset": "scirel.physics.coulomb-ee",
+    "output": "result",
+    "dtype": "float64 scalar or array",
+    "shape": "broadcast shape",
+    "constraints": "Finite signed mathematical formula value; physical suitability for a collision model is caller-owned.",
+    "declared_channel": "undeclared",
+    "declaration": "Coulomb logarithm",
+    "shape_is_informative": true,
+    "runtime": {
+     "returned_type": "float64",
+     "is_mapping": false,
+     "elapsed_s": 0.0,
+     "verdict": "undeclared-unambiguous-positional"
+    }
+   },
+   {
+    "asset": "scirel.physics.coulomb-ei",
+    "output": "result",
+    "dtype": "float64 scalar or array",
+    "shape": "broadcast shape",
+    "constraints": "Finite signed mathematical formula value; physical suitability for a collision model is caller-owned.",
+    "declared_channel": "undeclared",
+    "declaration": "Coulomb logarithm",
+    "shape_is_informative": true,
+    "runtime": {
+     "returned_type": "float64",
+     "is_mapping": false,
+     "elapsed_s": 0.0,
+     "verdict": "undeclared-unambiguous-positional"
+    }
+   },
+   {
+    "asset": "scirel.physics.coulomb-ii",
+    "output": "result",
+    "dtype": "float64 scalar or array",
+    "shape": "broadcast shape",
+    "constraints": "Finite signed mathematical formula value; physical suitability for a collision model is caller-owned.",
+    "declared_channel": "undeclared",
+    "declaration": "Coulomb logarithm",
+    "shape_is_informative": true,
+    "runtime": {
+     "returned_type": "float64",
+     "is_mapping": false,
+     "elapsed_s": 0.0,
+     "verdict": "undeclared-unambiguous-positional"
+    }
+   },
+   {
+    "asset": "scirel.physics.dilution",
+    "output": "result",
+    "dtype": "float64 scalar or array",
+    "shape": "broadcast shape",
+    "constraints": "finite and in the algebraic physical range",
+    "declared_channel": "undeclared",
+    "declaration": "Main-ion dilution n_i/n_e",
+    "shape_is_informative": true,
+    "runtime": {
+     "returned_type": "float64",
+     "is_mapping": false,
+     "elapsed_s": 0.0,
+     "verdict": "undeclared-unambiguous-positional"
+    }
+   },
+   {
+    "asset": "scirel.plasma.fast-ion-heating",
+    "output": "ion_fraction",
+    "dtype": "float64",
+    "shape": "broadcast input shape",
+    "constraints": "Finite.",
+    "declared_channel": "undeclared",
+    "declaration": "Fraction of fast-ion heating deposited into ions",
+    "shape_is_informative": true,
+    "runtime": {
+     "returned_type": "float",
+     "is_mapping": false,
+     "elapsed_s": 0.0,
+     "verdict": "undeclared-unambiguous-positional"
+    }
+   },
+   {
+    "asset": "scirel.source.exponential",
+    "output": "profile",
+    "dtype": "float64 array",
+    "shape": "same as rho_norm",
+    "constraints": "Finite on successful return for finite nonzero widths; zero/nonfinite width returns all NaN.",
+    "declared_channel": "positional",
+    "declaration": "Normalized source profile values. Returned directly as the callable's single positional value (one float64 array shaped like rho_norm); it is not a field of a mapping.",
+    "shape_is_informative": true,
+    "runtime": {
+     "returned_type": "ndarray",
+     "is_mapping": false,
+     "elapsed_s": 0.0,
+     "verdict": "consistent"
+    }
+   },
+   {
+    "asset": "scirel.source.gaussian",
+    "output": "profile",
+    "dtype": "float64 array",
+    "shape": "same as rho_norm",
+    "constraints": "Finite on successful return for finite nonzero widths; zero/nonfinite width returns all NaN.",
+    "declared_channel": "positional",
+    "declaration": "Normalized source profile values. Returned directly as the callable's single positional value (one float64 array shaped like rho_norm); it is not a field of a mapping.",
+    "shape_is_informative": true,
+    "runtime": {
+     "returned_type": "ndarray",
+     "is_mapping": false,
+     "elapsed_s": 0.0,
+     "verdict": "consistent"
+    }
+   }
+  ]
+ },
+ "criteria": [
+  {
+   "id": "A1",
+   "kind": "contract_readability",
+   "status": "pass",
+   "detail": {
+    "question": "do the single-output contracts that now declare positional return actually return positionally?",
+    "declared_positional": 14,
+    "runtime_consistent": 14,
+    "inconsistent": []
+   }
+  },
+  {
+   "id": "A2",
+   "kind": "contract_readability",
+   "status": "fail",
+   "detail": {
+    "question": "how many single-output contracts state no return channel at all?",
+    "single_output_contracts": 138,
+    "undeclared": 119,
+    "by_runtime_verdict": {
+     "undeclared-unambiguous-positional": [
+      "scirel.collisions.atomic-hydrogen-1s-radiative-recombination-rate-coefficient",
+      "scirel.collisions.atomic-hydrogen-charge-exchange-cross-section",
+      "scirel.collisions.atomic-molecular-hydrogen-elastic-cross-section",
+      "scirel.collisions.fast-ion-stopping-increment",
+      "scirel.collisions.janev-electron-impact-ionization-rate",
+      "scirel.collisions.maxwellian-relative-speed-rate-average",
+      "scirel.collisions.molecular-hydrogen-charge-exchange-cross-section",
+      "scirel.collisions.molecular-hydrogen-elastic-cross-section",
+      "scirel.collisions.normalized-momentum",
+      "scirel.collisions.proton-atomic-hydrogen-elastic-cross-section",
+      "scirel.collisions.proton-molecular-hydrogen-elastic-cross-section",
+      "scirel.collisions.thermal-electron-momentum",
+      "scirel.configurations.brb",
+      "scirel.configurations.trex-coil",
+      "scirel.configurations.wham",
+      "scirel.electromagnetism.arbitrary-points",
+      "scirel.electromagnetism.circular-filament-green",
+      "scirel.electromagnetism.device",
+      "scirel.electromagnetism.magnet-ring",
+      "scirel.electromagnetism.rectangular-coil",
+      "scirel.equilibrium.compute-equilibrium",
+      "scirel.field.rectangular-coil-filaments",
+      "scirel.fusion.dd-neutron-lab-energy",
+      "scirel.fvm.cell-variable",
+      "scirel.fvm.theta-step",
+      "scirel.geometry.boundary",
+      "scirel.geometry.fieldline",
+      "scirel.geometry.fieldline-set",
+      "scirel.geometry.helper-fieldline",
+      "scirel.geometry.masked-toroidal-volume",
+      "scirel.geometry.nonuniform-first-derivative",
+      "scirel.geometry.parse-segment",
+      "scirel.geometry.path-distance",
+      "scirel.geometry.point-nearest",
+      "scirel.geometry.points-mesh",
+      "scirel.geometry.r-chord",
+      "scirel.geometry.rect-mesh",
+      "scirel.geometry.rectangular-nearest",
+      "scirel.geometry.rectangular-spline",
+      "scirel.geometry.regular-grid",
+      "scirel.geometry.rotate",
+      "scirel.geometry.scalar-reflection",
+      "scirel.geometry.scattered-linear",
+      "scirel.geometry.select-fieldline",
+      "scirel.geometry.spherical-r-chord",
+      "scirel.geometry.theta-chord",
+      "scirel.geometry.weighted-line-integral",
+      "scirel.geometry.z-chord",
+      "scirel.kinetic.fluid-special-functions",
+      "scirel.kinetic.generalized-expression-differentiation",
+      "scirel.kinetic.generalized-residual",
+      "scirel.kinetic.hydrogen-saha-equilibrium-population",
+      "scirel.kinetic.multifluid-deck",
+      "scirel.kinetic.rational-default-deck",
+      "scirel.kinetic.rational-z-poles",
+      "scirel.kinetic.vp-distribution",
+      "scirel.kinetic.vp-field",
+      "scirel.kinetic.vp-rhs",
+      "scirel.kinetic.vp-rk4-step",
+      "scirel.mirror.frank-egedal-radial-envelope",
+      "scirel.neutrals.adaptive-neutral-velocity-mesh",
+      "scirel.neutrals.atomic-scattered-sources-reduction",
+      "scirel.neutrals.compensated-shifted-maxwellian",
+      "scirel.neutrals.cross-mesh-distribution-interpolation",
+      "scirel.neutrals.elastic-regeneration-aggregation",
+      "scirel.neutrals.generation-density-reduction",
+      "scirel.neutrals.molecular-scattered-sources-reduction",
+      "scirel.neutrals.neutral-generation-stopping",
+      "scirel.neutrals.neutral-total-collision-frequency",
+      "scirel.neutrals.simple-charge-exchange-source",
+      "scirel.numerics.basis-matrix",
+      "scirel.numerics.build-basis",
+      "scirel.numerics.clamped-cubic-spline",
+      "scirel.numerics.face-to-cell",
+      "scirel.numerics.first-clamped-cubic-spline",
+      "scirel.numerics.natural-cubic-spline",
+      "scirel.numerics.orthonormal-modal-basis",
+      "scirel.numerics.second-clamped-cubic-spline",
+      "scirel.numerics.truncated-svd-inverse",
+      "scirel.physics.coulomb-ee",
+      "scirel.physics.coulomb-ei",
+      "scirel.physics.coulomb-ii",
+      "scirel.physics.dilution",
+      "scirel.plasma.fast-ion-heating"
+     ],
+     "undeclared-declared-name-is-key": [
+      "scirel.closures.quasineutral-reference-density",
+      "scirel.kinetic.fluid-bonk-search",
+      "scirel.kinetic.fluid-em-spectrum",
+      "scirel.kinetic.rational-jpole-evaluate",
+      "scirel.kinetic.relativistic-codrift-generalized-spectrum",
+      "scirel.neutrals.elastic-frequency-channels",
+      "scirel.neutrals.neutral-boltzmann-rhs",
+      "scirel.neutrals.terminal-conservation-diagnostic"
+     ],
+     "undeclared-keys-named-elsewhere": [
+      "scirel.closures.discrete-vector-error-feedback",
+      "scirel.kinetic.fluid-dispersion-response",
+      "scirel.kinetic.fluid-em-matrix",
+      "scirel.kinetic.multifluid-equilibrium",
+      "scirel.kinetic.multifluid-frequency-pencil",
+      "scirel.kinetic.multifluid-relative-rate-equilibrium",
+      "scirel.kinetic.multifluid-scan",
+      "scirel.kinetic.parallel-em-continuation",
+      "scirel.kinetic.vp-diagnostic",
+      "scirel.kinetic.vp-envelope",
+      "scirel.kinetic.vp-evolve",
+      "scirel.kinetic.vp-init",
+      "scirel.kinetic.vp-landau",
+      "scirel.neutrals.axisymmetric-neutral-moments",
+      "scirel.neutrals.generation-accumulation-update",
+      "scirel.neutrals.neutral-upwind-transport-coefficients",
+      "scirel.neutrals.outer-convergence",
+      "scirel.neutrals.outer-seed-convergence",
+      "scirel.neutrals.thermal-speed-scale"
+     ],
+     "undeclared-keys-partly-named": [
+      "scirel.kinetic.fluid-case-state",
+      "scirel.kinetic.multifluid-frequency-solve"
+     ],
+     "undeclared-keys-dynamic": [
+      "scirel.io.eqdsk-class"
+     ],
+     "undeclared-keys-unstated": [
+      "scirel.geometry.contour-points",
+      "scirel.geometry.helper-contour-points"
+     ]
+    },
+    "not_observed": [
+     "scirel.io.read-eqdsk",
+     "scirel.io.read-geqdsk",
+     "scirel.io.write-eqdsk"
+    ],
+    "note": "a single declared output returned positionally cannot be misread.  The gap is the mapping returns: there the contract's own outputs[].name is not a key, and the key list lives in prose (description/constraints/dtype/shape) rather than in a structured field"
+   },
+   "task_hint": "affects every task that reads a single-output entry"
+  },
+  {
+   "id": "A3",
+   "kind": "contract_readability",
+   "status": "pass",
+   "detail": {
+    "question": "multi-output contracts: is the mapping channel declared?",
+    "multi_output_contracts": 111,
+    "every_output_declares_result_field": 30,
+    "not_declaring": [
+     "scirel.closures.hall-two-fluid-pressure",
+     "scirel.closures.quasineutral-potential",
+     "scirel.closures.reduced-hall-drift",
+     "scirel.closures.tabulated-pressure",
+     "scirel.collisions.atomic-hydrogen-collision-matrices",
+     "scirel.collisions.atomic-hydrogen-omega-frequencies",
+     "scirel.collisions.molecular-hydrogen-collision-matrices",
+     "scirel.collisions.molecular-hydrogen-omega-frequencies",
+     "scirel.collisions.relativistic-maxwellian-bessel-closure",
+     "scirel.electromagnetism.green-response-matrices",
+     "scirel.equilibrium.anisotropic-force-balance",
+     "scirel.equilibrium.axisymmetric-anisotropic-picard",
+     "scirel.equilibrium.free-boundary-anisotropic-picard",
+     "scirel.equilibrium.isotropic-pressure-flux",
+     "scirel.equilibrium.kinetic-mirror-hall-equilibrium",
+     "scirel.equilibrium.reduced-hall-anisotropic-picard",
+     "scirel.field.coil-green-geometry",
+     "scirel.field.complete-elliptic-integrals-approx",
+     "scirel.field.filament-coil-green-field",
+     "scirel.fvm.convection",
+     "scirel.fvm.diffusion",
+     "scirel.geometry.axisymmetric-equilibrium-grid-support",
+     "scirel.geometry.nonuniform-derivatives",
+     "scirel.geometry.polynomial-fit",
+     "scirel.kinetic.bessel-gamma",
+     "scirel.kinetic.dielectric-diagnostics",
+     "scirel.kinetic.dielectric-response",
+     "scirel.kinetic.fluid-dispersion-matrix",
+     "scirel.kinetic.fluid-wavevector-eigensolve",
+     "scirel.kinetic.fluid-wavevector-scan",
+     "scirel.kinetic.gamma-lpole-coefficients",
+     "scirel.kinetic.generalized-dispersion",
+     "scirel.kinetic.generalized-hilbert",
+     "scirel.kinetic.generalized-root-scans",
+     "scirel.kinetic.generalized-small-k",
+     "scirel.kinetic.gpdf-cauchy-transform",
+     "scirel.kinetic.kinetic-dispersion-relation",
+     "scirel.kinetic.kinetic-wavevector-roots",
+     "scirel.kinetic.kinetic-wavevector-scan",
+     "scirel.kinetic.maxwellian-electrostatic-mode",
+     "scirel.kinetic.maxwellian-electrostatic-solver",
+     "scirel.kinetic.parallel-em-residual",
+     "scirel.kinetic.plasma-dispersion-function",
+     "scirel.kinetic.rational-em-coordinates",
+     "scirel.kinetic.rational-equilibrium",
+     "scirel.kinetic.rational-jpole-coefficients",
+     "scirel.kinetic.rational-jpole-grid-coordinates",
+     "scirel.kinetic.rational-point-matrix",
+     "scirel.kinetic.rational-pole-table",
+     "scirel.kinetic.rational-solve-matrix",
+     "scirel.kinetic.ronnmark-r-function",
+     "scirel.kinetic.species-equilibrium-scales",
+     "scirel.kinetic.spectral-dispersion-scan",
+     "scirel.kinetic.spectral-plasma-state",
+     "scirel.kinetic.spectral-temporal-matrix",
+     "scirel.kinetic.spectral-temporal-spectrum",
+     "scirel.kinetic.z-pole-coefficients",
+     "scirel.mirror.frank-egedal-hot-ion-moments",
+     "scirel.mirror.frank-egedal-pressure-closure",
+     "scirel.mirror.frank-egedal-pressure-state",
+     "scirel.mirror.frank-egedal-source-projection",
+     "scirel.mirror.grid-mirror-kinetic-closure",
+     "scirel.mirror.loss-cone-spectrum",
+     "scirel.mirror.mirror-ambipolar-potential",
+     "scirel.mirror.mirror-constrained-moments",
+     "scirel.mirror.mirror-invariant-distribution",
+     "scirel.mirror.mirror-quasineutral-closure",
+     "scirel.mirror.mirror-total-pressure",
+     "scirel.neoclassical.bootstrap-coefficients",
+     "scirel.neutrals.atomic-alpha-contraction",
+     "scirel.neutrals.cylindrical-velocity-quadrature",
+     "scirel.neutrals.incoming-boundary-flux-normalization",
+     "scirel.neutrals.molecular-alpha-contraction",
+     "scirel.neutrals.shifted-maxwellian-seed",
+     "scirel.neutrals.spatial-source-shape-normalization",
+     "scirel.neutrals.terminal-energy-transfer-reduction",
+     "scirel.neutrals.terminal-flux-velocity-reduction",
+     "scirel.neutrals.terminal-heat-flux-reduction",
+     "scirel.neutrals.terminal-ion-state-reduction",
+     "scirel.neutrals.terminal-pressure-temperature-reduction",
+     "scirel.neutrals.velocity-slice-moment-compensation"
+    ]
+   }
+  }
+ ],
+ "calls": [
+  {
+   "asset": "scirel.closures.discrete-vector-error-feedback",
+   "entrypoint": "scirel.closures.discrete_vector_feedback:simulate_feedback",
+   "status": "returned",
+   "returned_type": "Result",
+   "returned_field_count": 4,
+   "exception_type": null,
+   "arguments_source": "contract example, see catalog/contracts/<asset>.json → example.code"
+  },
+  {
+   "asset": "scirel.closures.quasineutral-reference-density",
+   "entrypoint": "scirel.closures.quasineutral_reference_density:compute_reference_electron_density",
+   "status": "returned",
+   "returned_type": "Result",
+   "returned_field_count": 1,
+   "exception_type": null,
+   "arguments_source": "contract example, see catalog/contracts/<asset>.json → example.code"
+  },
+  {
+   "asset": "scirel.collisions.atomic-hydrogen-1s-radiative-recombination-rate-coefficient",
+   "entrypoint": "scirel.collisions.atomic_hydrogen_1s_radiative_recombination_rate:evaluate_atomic_hydrogen_1s_radiative_recombination_rate",
+   "status": "returned",
+   "returned_type": "ndarray",
+   "returned_field_count": 0,
+   "exception_type": null,
+   "arguments_source": "contract example, see catalog/contracts/<asset>.json → example.code"
+  },
+  {
+   "asset": "scirel.collisions.atomic-hydrogen-charge-exchange-cross-section",
+   "entrypoint": "scirel.collisions.atomic_hydrogen_charge_exchange_cross_section:evaluate_atomic_hydrogen_charge_exchange_cross_section",
+   "status": "returned",
+   "returned_type": "ndarray",
+   "returned_field_count": 0,
+   "exception_type": null,
+   "arguments_source": "contract example, see catalog/contracts/<asset>.json → example.code"
+  },
+  {
+   "asset": "scirel.collisions.atomic-hydrogen-charge-exchange-rate-coefficient",
+   "entrypoint": "scirel.collisions.atomic_hydrogen_charge_exchange_rate:evaluate_atomic_hydrogen_charge_exchange_rate",
+   "status": "returned",
+   "returned_type": "ndarray",
+   "returned_field_count": 0,
+   "exception_type": null,
+   "arguments_source": "contract example, see catalog/contracts/<asset>.json → example.code"
+  },
+  {
+   "asset": "scirel.collisions.atomic-hydrogen-elastic-cross-section",
+   "entrypoint": "scirel.collisions.atomic_hydrogen_elastic_cross_section:evaluate_atomic_hydrogen_elastic_cross_section",
+   "status": "returned",
+   "returned_type": "ndarray",
+   "returned_field_count": 0,
+   "exception_type": null,
+   "arguments_source": "contract example, see catalog/contracts/<asset>.json → example.code"
+  },
+  {
+   "asset": "scirel.collisions.atomic-molecular-hydrogen-elastic-cross-section",
+   "entrypoint": "scirel.collisions.hydrogen_h2_elastic_cross_section:evaluate_hydrogen_h2_elastic_cross_section",
+   "status": "returned",
+   "returned_type": "ndarray",
+   "returned_field_count": 0,
+   "exception_type": null,
+   "arguments_source": "contract example, see catalog/contracts/<asset>.json → example.code"
+  },
+  {
+   "asset": "scirel.collisions.fast-ion-stopping-increment",
+   "entrypoint": "scirel.collisions.fast_ion_stopping_increment:evaluate_fast_ion_stopping_increment",
+   "status": "returned",
+   "returned_type": "ndarray",
+   "returned_field_count": 0,
+   "exception_type": null,
+   "arguments_source": "contract example, see catalog/contracts/<asset>.json → example.code"
+  },
+  {
+   "asset": "scirel.collisions.janev-electron-impact-ionization-rate",
+   "entrypoint": "scirel.collisions.janev_electron_impact_ionization_rate:evaluate_janev_electron_impact_ionization_rate",
+   "status": "returned",
+   "returned_type": "ndarray",
+   "returned_field_count": 0,
+   "exception_type": null,
+   "arguments_source": "contract example, see catalog/contracts/<asset>.json → example.code"
+  },
+  {
+   "asset": "scirel.collisions.maxwellian-relative-speed-rate-average",
+   "entrypoint": "scirel.collisions.maxwellian_relative_speed_rate_average:average_cross_section_over_maxwellian",
+   "status": "returned",
+   "returned_type": "ndarray",
+   "returned_field_count": 0,
+   "exception_type": null,
+   "arguments_source": "contract example, see catalog/contracts/<asset>.json → example.code"
+  },
+  {
+   "asset": "scirel.collisions.molecular-hydrogen-charge-exchange-cross-section",
+   "entrypoint": "scirel.collisions.molecular_hydrogen_charge_exchange_cross_section:evaluate_molecular_hydrogen_charge_exchange_cross_section",
+   "status": "returned",
+   "returned_type": "ndarray",
+   "returned_field_count": 0,
+   "exception_type": null,
+   "arguments_source": "contract example, see catalog/contracts/<asset>.json → example.code"
+  },
+  {
+   "asset": "scirel.collisions.molecular-hydrogen-charge-exchange-rate-coefficient",
+   "entrypoint": "scirel.collisions.hydrogen2_charge_exchange_rate:evaluate_hydrogen2_charge_exchange_rate",
+   "status": "returned",
+   "returned_type": "ndarray",
+   "returned_field_count": 0,
+   "exception_type": null,
+   "arguments_source": "contract example, see catalog/contracts/<asset>.json → example.code"
+  },
+  {
+   "asset": "scirel.collisions.molecular-hydrogen-elastic-cross-section",
+   "entrypoint": "scirel.collisions.hydrogen2_hydrogen2_elastic_cross_section:evaluate_hydrogen2_hydrogen2_elastic_cross_section",
+   "status": "returned",
+   "returned_type": "ndarray",
+   "returned_field_count": 0,
+   "exception_type": null,
+   "arguments_source": "contract example, see catalog/contracts/<asset>.json → example.code"
+  },
+  {
+   "asset": "scirel.collisions.normalized-momentum",
+   "entrypoint": "scirel.collisions.momentum_scales:normalized_momentum",
+   "status": "returned",
+   "returned_type": "ndarray",
+   "returned_field_count": 0,
+   "exception_type": null,
+   "arguments_source": "contract example, see catalog/contracts/<asset>.json → example.code"
+  },
+  {
+   "asset": "scirel.collisions.proton-atomic-hydrogen-elastic-cross-section",
+   "entrypoint": "scirel.collisions.hydrogen_proton_elastic_cross_section:evaluate_hydrogen_proton_elastic_cross_section",
+   "status": "returned",
+   "returned_type": "ndarray",
+   "returned_field_count": 0,
+   "exception_type": null,
+   "arguments_source": "contract example, see catalog/contracts/<asset>.json → example.code"
+  },
+  {
+   "asset": "scirel.collisions.proton-molecular-hydrogen-elastic-cross-section",
+   "entrypoint": "scirel.collisions.hydrogen2_proton_elastic_cross_section:evaluate_hydrogen2_proton_elastic_cross_section",
+   "status": "returned",
+   "returned_type": "ndarray",
+   "returned_field_count": 0,
+   "exception_type": null,
+   "arguments_source": "contract example, see catalog/contracts/<asset>.json → example.code"
+  },
+  {
+   "asset": "scirel.collisions.thermal-electron-momentum",
+   "entrypoint": "scirel.collisions.momentum_scales:thermal_electron_momentum",
+   "status": "returned",
+   "returned_type": "float",
+   "returned_field_count": 0,
+   "exception_type": null,
+   "arguments_source": "contract example, see catalog/contracts/<asset>.json → example.code"
+  },
+  {
+   "asset": "scirel.configurations.brb",
+   "entrypoint": "scirel.configurations:BRB",
+   "status": "returned",
+   "returned_type": "BRB",
+   "returned_field_count": 0,
+   "exception_type": null,
+   "arguments_source": "contract example, see catalog/contracts/<asset>.json → example.code"
+  },
+  {
+   "asset": "scirel.configurations.trex-coil",
+   "entrypoint": "scirel.configurations:TREXCoil",
+   "status": "returned",
+   "returned_type": "TREXCoil",
+   "returned_field_count": 0,
+   "exception_type": null,
+   "arguments_source": "contract example, see catalog/contracts/<asset>.json → example.code"
+  },
+  {
+   "asset": "scirel.configurations.wham",
+   "entrypoint": "scirel.configurations:WHAM",
+   "status": "returned",
+   "returned_type": "WHAM",
+   "returned_field_count": 0,
+   "exception_type": null,
+   "arguments_source": "contract example, see catalog/contracts/<asset>.json → example.code"
+  },
+  {
+   "asset": "scirel.diagnostics.picard-flux-residual",
+   "entrypoint": "scirel.diagnostics.picard_flux_residual:compute_picard_flux_residual",
+   "status": "returned",
+   "returned_type": "Result",
+   "returned_field_count": 1,
+   "exception_type": null,
+   "arguments_source": "contract example, see catalog/contracts/<asset>.json → example.code"
+  },
+  {
+   "asset": "scirel.diagnostics.pointwise-firehose-margin",
+   "entrypoint": "scirel.diagnostics.pointwise_firehose_margin:compute_pointwise_firehose_margin",
+   "status": "returned",
+   "returned_type": "Result",
+   "returned_field_count": 1,
+   "exception_type": null,
+   "arguments_source": "contract example, see catalog/contracts/<asset>.json → example.code"
+  },
+  {
+   "asset": "scirel.dielectric.cold-plasma-tensor",
+   "entrypoint": "scirel.dielectric.cold_plasma_tensor:cold_plasma_dielectric_tensor",
+   "status": "returned",
+   "returned_type": "ndarray",
+   "returned_field_count": 0,
+   "exception_type": null,
+   "arguments_source": "contract example, see catalog/contracts/<asset>.json → example.code"
+  },
+  {
+   "asset": "scirel.electromagnetism.arbitrary-points",
+   "entrypoint": "scirel.electromagnetism.sources:ArbitraryPoints",
+   "status": "returned",
+   "returned_type": "ArbitraryPoints",
+   "returned_field_count": 0,
+   "exception_type": null,
+   "arguments_source": "contract example, see catalog/contracts/<asset>.json → example.code"
+  },
+  {
+   "asset": "scirel.electromagnetism.circular-filament-green",
+   "entrypoint": "scirel.electromagnetism.greens:compute_greens",
+   "status": "returned",
+   "returned_type": "tuple",
+   "returned_field_count": 0,
+   "exception_type": null,
+   "arguments_source": "contract example, see catalog/contracts/<asset>.json → example.code"
+  },
+  {
+   "asset": "scirel.electromagnetism.device",
+   "entrypoint": "scirel.electromagnetism.sources:Device",
+   "status": "returned",
+   "returned_type": "Device",
+   "returned_field_count": 0,
+   "exception_type": null,
+   "arguments_source": "contract example, see catalog/contracts/<asset>.json → example.code"
+  },
+  {
+   "asset": "scirel.electromagnetism.loop-flux-matrix",
+   "entrypoint": "scirel.electromagnetism.greens:get_gpsi",
+   "status": "returned",
+   "returned_type": "ndarray",
+   "returned_field_count": 0,
+   "exception_type": null,
+   "arguments_source": "contract example, see catalog/contracts/<asset>.json → example.code"
+  },
+  {
+   "asset": "scirel.electromagnetism.magnet-ring",
+   "entrypoint": "scirel.electromagnetism.sources:MagnetRing",
+   "status": "returned",
+   "returned_type": "MagnetRing",
+   "returned_field_count": 0,
+   "exception_type": null,
+   "arguments_source": "contract example, see catalog/contracts/<asset>.json → example.code"
+  },
+  {
+   "asset": "scirel.electromagnetism.rectangular-coil",
+   "entrypoint": "scirel.electromagnetism.sources:RectangularCoil",
+   "status": "returned",
+   "returned_type": "RectangularCoil",
+   "returned_field_count": 0,
+   "exception_type": null,
+   "arguments_source": "contract example, see catalog/contracts/<asset>.json → example.code"
+  },
+  {
+   "asset": "scirel.equilibrium.compute-equilibrium",
+   "entrypoint": "scirel.equilibrium:compute_equilibrium",
+   "status": "returned",
+   "returned_type": "EquilibriumResult",
+   "returned_field_count": 0,
+   "exception_type": null,
+   "arguments_source": "contract example, see catalog/contracts/<asset>.json → example.code"
+  },
+  {
+   "asset": "scirel.field.mirror-plasma-green",
+   "entrypoint": "scirel.field.mirror_plasma_green:build_mirror_plasma_flux_green",
+   "status": "returned",
+   "returned_type": "Result",
+   "returned_field_count": 1,
+   "exception_type": null,
+   "arguments_source": "contract example, see catalog/contracts/<asset>.json → example.code"
+  },
+  {
+   "asset": "scirel.field.rectangular-coil-filaments",
+   "entrypoint": "scirel.field.rectangular_coil_filaments:discretize_rectangular_coil",
+   "status": "returned",
+   "returned_type": "ndarray",
+   "returned_field_count": 0,
+   "exception_type": null,
+   "arguments_source": "contract example, see catalog/contracts/<asset>.json → example.code"
+  },
+  {
+   "asset": "scirel.fusion.dd-neutron-lab-energy",
+   "entrypoint": "scirel.fusion.dd_neutron_lab_energy:calculate_dd_neutron_lab_energy_kev",
+   "status": "returned",
+   "returned_type": "float",
+   "returned_field_count": 0,
+   "exception_type": null,
+   "arguments_source": "contract example, see catalog/contracts/<asset>.json → example.code"
+  },
+  {
+   "asset": "scirel.fvm.cell-variable",
+   "entrypoint": "scirel.fvm.cell_variable:CellVariable",
+   "status": "returned",
+   "returned_type": "CellVariable",
+   "returned_field_count": 0,
+   "exception_type": null,
+   "arguments_source": "contract example, see catalog/contracts/<asset>.json → example.code"
+  },
+  {
+   "asset": "scirel.fvm.theta-step",
+   "entrypoint": "scirel.fvm.implicit:theta_step",
+   "status": "returned",
+   "returned_type": "CellVariable",
+   "returned_field_count": 0,
+   "exception_type": null,
+   "arguments_source": "contract example, see catalog/contracts/<asset>.json → example.code"
+  },
+  {
+   "asset": "scirel.geometry.arclength-derivative",
+   "entrypoint": "scirel.geometry.fieldline:d_ds_arclength",
+   "status": "returned",
+   "returned_type": "ndarray",
+   "returned_field_count": 0,
+   "exception_type": null,
+   "arguments_source": "contract example, see catalog/contracts/<asset>.json → example.code"
+  },
+  {
+   "asset": "scirel.geometry.boundary",
+   "entrypoint": "scirel.geometry.fieldline:Boundary",
+   "status": "returned",
+   "returned_type": "Boundary",
+   "returned_field_count": 0,
+   "exception_type": null,
+   "arguments_source": "contract example, see catalog/contracts/<asset>.json → example.code"
+  },
+  {
+   "asset": "scirel.geometry.contour-points",
+   "entrypoint": "scirel.geometry.fieldline:contour_points",
+   "status": "returned",
+   "returned_type": "dict",
+   "returned_field_count": 1,
+   "exception_type": null,
+   "arguments_source": "contract example, see catalog/contracts/<asset>.json → example.code"
+  },
+  {
+   "asset": "scirel.geometry.fieldline-set",
+   "entrypoint": "scirel.geometry.fieldline:FieldLineSet",
+   "status": "returned",
+   "returned_type": "FieldLineSet",
+   "returned_field_count": 0,
+   "exception_type": null,
+   "arguments_source": "contract example, see catalog/contracts/<asset>.json → example.code"
+  },
+  {
+   "asset": "scirel.geometry.fieldline",
+   "entrypoint": "scirel.geometry.fieldline:FieldLine",
+   "status": "returned",
+   "returned_type": "FieldLine",
+   "returned_field_count": 0,
+   "exception_type": null,
+   "arguments_source": "contract example, see catalog/contracts/<asset>.json → example.code"
+  },
+  {
+   "asset": "scirel.geometry.helper-contour-points",
+   "entrypoint": "scirel.geometry.fieldline:helper_contour_points",
+   "status": "returned",
+   "returned_type": "dict",
+   "returned_field_count": 1,
+   "exception_type": null,
+   "arguments_source": "contract example, see catalog/contracts/<asset>.json → example.code"
+  },
+  {
+   "asset": "scirel.geometry.helper-fieldline",
+   "entrypoint": "scirel.geometry.fieldline:HelperFieldLine",
+   "status": "returned",
+   "returned_type": "HelperFieldLine",
+   "returned_field_count": 0,
+   "exception_type": null,
+   "arguments_source": "contract example, see catalog/contracts/<asset>.json → example.code"
+  },
+  {
+   "asset": "scirel.geometry.masked-toroidal-volume",
+   "entrypoint": "scirel.geometry.masked_toroidal_volume:plasma_volume",
+   "status": "returned",
+   "returned_type": "float",
+   "returned_field_count": 0,
+   "exception_type": null,
+   "arguments_source": "contract example, see catalog/contracts/<asset>.json → example.code"
+  },
+  {
+   "asset": "scirel.geometry.meridional-polar-forward",
+   "entrypoint": "scirel.geometry.sampling:transform_to_rtheta",
+   "status": "returned",
+   "returned_type": "tuple",
+   "returned_field_count": 0,
+   "exception_type": null,
+   "arguments_source": "contract example, see catalog/contracts/<asset>.json → example.code"
+  },
+  {
+   "asset": "scirel.geometry.meridional-polar-inverse",
+   "entrypoint": "scirel.geometry.sampling:transform_to_rhoz",
+   "status": "returned",
+   "returned_type": "tuple",
+   "returned_field_count": 0,
+   "exception_type": null,
+   "arguments_source": "contract example, see catalog/contracts/<asset>.json → example.code"
+  },
+  {
+   "asset": "scirel.geometry.nonuniform-first-derivative",
+   "entrypoint": "scirel.geometry.sampling:diff_central",
+   "status": "returned",
+   "returned_type": "ndarray",
+   "returned_field_count": 0,
+   "exception_type": null,
+   "arguments_source": "contract example, see catalog/contracts/<asset>.json → example.code"
+  },
+  {
+   "asset": "scirel.geometry.parse-segment",
+   "entrypoint": "scirel.geometry.sampling:parse_segment",
+   "status": "returned",
+   "returned_type": "ndarray",
+   "returned_field_count": 0,
+   "exception_type": null,
+   "arguments_source": "contract example, see catalog/contracts/<asset>.json → example.code"
+  },
+  {
+   "asset": "scirel.geometry.path-distance",
+   "entrypoint": "scirel.geometry.sampling:get_fieldline_distance",
+   "status": "returned",
+   "returned_type": "ndarray",
+   "returned_field_count": 0,
+   "exception_type": null,
+   "arguments_source": "contract example, see catalog/contracts/<asset>.json → example.code"
+  },
+  {
+   "asset": "scirel.geometry.point-nearest",
+   "entrypoint": "scirel.geometry.sampling:locs_to_vals1D",
+   "status": "returned",
+   "returned_type": "list",
+   "returned_field_count": 0,
+   "exception_type": null,
+   "arguments_source": "contract example, see catalog/contracts/<asset>.json → example.code"
+  },
+  {
+   "asset": "scirel.geometry.points-mesh",
+   "entrypoint": "scirel.geometry:PointsMesh",
+   "status": "returned",
+   "returned_type": "PointsMesh",
+   "returned_field_count": 0,
+   "exception_type": null,
+   "arguments_source": "contract example, see catalog/contracts/<asset>.json → example.code"
+  },
+  {
+   "asset": "scirel.geometry.r-chord",
+   "entrypoint": "scirel.geometry:RChord",
+   "status": "returned",
+   "returned_type": "RChord",
+   "returned_field_count": 0,
+   "exception_type": null,
+   "arguments_source": "contract example, see catalog/contracts/<asset>.json → example.code"
+  },
+  {
+   "asset": "scirel.geometry.rect-mesh",
+   "entrypoint": "scirel.geometry:RectMesh",
+   "status": "returned",
+   "returned_type": "RectMesh",
+   "returned_field_count": 0,
+   "exception_type": null,
+   "arguments_source": "contract example, see catalog/contracts/<asset>.json → example.code"
+  },
+  {
+   "asset": "scirel.geometry.rectangular-nearest",
+   "entrypoint": "scirel.geometry.sampling:locs_to_vals",
+   "status": "returned",
+   "returned_type": "list",
+   "returned_field_count": 0,
+   "exception_type": null,
+   "arguments_source": "contract example, see catalog/contracts/<asset>.json → example.code"
+  },
+  {
+   "asset": "scirel.geometry.rectangular-spline",
+   "entrypoint": "scirel.geometry.sampling:interp",
+   "status": "returned",
+   "returned_type": "ndarray",
+   "returned_field_count": 0,
+   "exception_type": null,
+   "arguments_source": "contract example, see catalog/contracts/<asset>.json → example.code"
+  },
+  {
+   "asset": "scirel.geometry.regular-grid",
+   "entrypoint": "scirel.geometry.sampling:regular_grid",
+   "status": "returned",
+   "returned_type": "tuple",
+   "returned_field_count": 0,
+   "exception_type": null,
+   "arguments_source": "contract example, see catalog/contracts/<asset>.json → example.code"
+  },
+  {
+   "asset": "scirel.geometry.rotate",
+   "entrypoint": "scirel.geometry.transforms:rotate",
+   "status": "returned",
+   "returned_type": "ndarray",
+   "returned_field_count": 0,
+   "exception_type": null,
+   "arguments_source": "contract example, see catalog/contracts/<asset>.json → example.code"
+  },
+  {
+   "asset": "scirel.geometry.scalar-reflection",
+   "entrypoint": "scirel.geometry.sampling:reflect_and_hstack",
+   "status": "returned",
+   "returned_type": "tuple",
+   "returned_field_count": 0,
+   "exception_type": null,
+   "arguments_source": "contract example, see catalog/contracts/<asset>.json → example.code"
+  },
+  {
+   "asset": "scirel.geometry.scattered-linear",
+   "entrypoint": "scirel.geometry.sampling:locs_to_vals_griddata",
+   "status": "returned",
+   "returned_type": "ndarray",
+   "returned_field_count": 0,
+   "exception_type": null,
+   "arguments_source": "contract example, see catalog/contracts/<asset>.json → example.code"
+  },
+  {
+   "asset": "scirel.geometry.select-fieldline",
+   "entrypoint": "scirel.geometry.sampling:get_fieldlines",
+   "status": "returned",
+   "returned_type": "ndarray",
+   "returned_field_count": 0,
+   "exception_type": null,
+   "arguments_source": "contract example, see catalog/contracts/<asset>.json → example.code"
+  },
+  {
+   "asset": "scirel.geometry.spherical-r-chord",
+   "entrypoint": "scirel.geometry:SphericalRChord",
+   "status": "returned",
+   "returned_type": "SphericalRChord",
+   "returned_field_count": 0,
+   "exception_type": null,
+   "arguments_source": "contract example, see catalog/contracts/<asset>.json → example.code"
+  },
+  {
+   "asset": "scirel.geometry.theta-chord",
+   "entrypoint": "scirel.geometry:ThetaChord",
+   "status": "returned",
+   "returned_type": "ThetaChord",
+   "returned_field_count": 0,
+   "exception_type": null,
+   "arguments_source": "contract example, see catalog/contracts/<asset>.json → example.code"
+  },
+  {
+   "asset": "scirel.geometry.weighted-line-integral",
+   "entrypoint": "scirel.geometry.sampling:flux_surface_avg",
+   "status": "returned",
+   "returned_type": "float64",
+   "returned_field_count": 0,
+   "exception_type": null,
+   "arguments_source": "contract example, see catalog/contracts/<asset>.json → example.code"
+  },
+  {
+   "asset": "scirel.geometry.z-chord",
+   "entrypoint": "scirel.geometry:ZChord",
+   "status": "returned",
+   "returned_type": "ZChord",
+   "returned_field_count": 0,
+   "exception_type": null,
+   "arguments_source": "contract example, see catalog/contracts/<asset>.json → example.code"
+  },
+  {
+   "asset": "scirel.inference.latin-hypercube-sampling",
+   "entrypoint": "scirel.inference.latin_hypercube_sampling:sample_latin_hypercube",
+   "status": "returned",
+   "returned_type": "Result",
+   "returned_field_count": 1,
+   "exception_type": null,
+   "arguments_source": "contract example, see catalog/contracts/<asset>.json → example.code"
+  },
+  {
+   "asset": "scirel.io.eqdsk-class",
+   "entrypoint": "scirel.io.eqdsk:EQDSK",
+   "status": "returned",
+   "returned_type": "EQDSK",
+   "returned_field_count": 0,
+   "exception_type": null,
+   "arguments_source": "contract example, see catalog/contracts/<asset>.json → example.code"
+  },
+  {
+   "asset": "scirel.io.read-eqdsk",
+   "entrypoint": "scirel.io.eqdsk:read_eqdsk",
+   "status": "raised",
+   "returned_type": null,
+   "returned_field_count": 0,
+   "exception_type": "FileNotFoundError",
+   "arguments_source": "contract example, see catalog/contracts/<asset>.json → example.code"
+  },
+  {
+   "asset": "scirel.io.read-geqdsk",
+   "entrypoint": "scirel.io.geqdsk:read_geqdsk",
+   "status": "raised",
+   "returned_type": null,
+   "returned_field_count": 0,
+   "exception_type": "FileNotFoundError",
+   "arguments_source": "contract example, see catalog/contracts/<asset>.json → example.code"
+  },
+  {
+   "asset": "scirel.io.write-eqdsk",
+   "entrypoint": "scirel.io.eqdsk:write_eqdsk",
+   "status": "raised",
+   "returned_type": null,
+   "returned_field_count": 0,
+   "exception_type": "FileNotFoundError",
+   "arguments_source": "contract example, see catalog/contracts/<asset>.json → example.code"
+  },
+  {
+   "asset": "scirel.kinetic.fluid-bonk-search",
+   "entrypoint": "scirel.kinetic.fluid_spectrum:solve_fluid_bonk",
+   "status": "returned",
+   "returned_type": "dict",
+   "returned_field_count": 73,
+   "exception_type": null,
+   "arguments_source": "contract example, see catalog/contracts/<asset>.json → example.code"
+  },
+  {
+   "asset": "scirel.kinetic.fluid-case-state",
+   "entrypoint": "scirel.kinetic.fluid_spectrum:derive_fluid_case",
+   "status": "returned",
+   "returned_type": "dict",
+   "returned_field_count": 31,
+   "exception_type": null,
+   "arguments_source": "contract example, see catalog/contracts/<asset>.json → example.code"
+  },
+  {
+   "asset": "scirel.kinetic.fluid-dispersion-response",
+   "entrypoint": "scirel.kinetic.fluid_spectrum:evaluate_fluid_dispersion",
+   "status": "returned",
+   "returned_type": "dict",
+   "returned_field_count": 4,
+   "exception_type": null,
+   "arguments_source": "contract example, see catalog/contracts/<asset>.json → example.code"
+  },
+  {
+   "asset": "scirel.kinetic.fluid-em-matrix",
+   "entrypoint": "scirel.kinetic.fluid_spectrum:assemble_fluid_em",
+   "status": "returned",
+   "returned_type": "dict",
+   "returned_field_count": 5,
+   "exception_type": null,
+   "arguments_source": "contract example, see catalog/contracts/<asset>.json → example.code"
+  },
+  {
+   "asset": "scirel.kinetic.fluid-em-spectrum",
+   "entrypoint": "scirel.kinetic.fluid_spectrum:solve_fluid_em",
+   "status": "returned",
+   "returned_type": "dict",
+   "returned_field_count": 56,
+   "exception_type": null,
+   "arguments_source": "contract example, see catalog/contracts/<asset>.json → example.code"
+  },
+  {
+   "asset": "scirel.kinetic.fluid-special-functions",
+   "entrypoint": "scirel.kinetic.fluid_spectrum:evaluate_fluid_special",
+   "status": "returned",
+   "returned_type": "ndarray",
+   "returned_field_count": 0,
+   "exception_type": null,
+   "arguments_source": "contract example, see catalog/contracts/<asset>.json → example.code"
+  },
+  {
+   "asset": "scirel.kinetic.generalized-expression-differentiation",
+   "entrypoint": "scirel.kinetic.generalized_dispersion:DensityExpression",
+   "status": "returned",
+   "returned_type": "DensityExpression",
+   "returned_field_count": 0,
+   "exception_type": null,
+   "arguments_source": "contract example, see catalog/contracts/<asset>.json → example.code"
+  },
+  {
+   "asset": "scirel.kinetic.generalized-residual",
+   "entrypoint": "scirel.kinetic.generalized_dispersion:evaluate_gpdf_residual",
+   "status": "returned",
+   "returned_type": "complex128",
+   "returned_field_count": 0,
+   "exception_type": null,
+   "arguments_source": "contract example, see catalog/contracts/<asset>.json → example.code"
+  },
+  {
+   "asset": "scirel.kinetic.hydrogen-saha-equilibrium-population",
+   "entrypoint": "scirel.kinetic.hydrogen_saha_equilibrium_population:evaluate_h_saha_equilibrium_population",
+   "status": "returned",
+   "returned_type": "ndarray",
+   "returned_field_count": 0,
+   "exception_type": null,
+   "arguments_source": "contract example, see catalog/contracts/<asset>.json → example.code"
+  },
+  {
+   "asset": "scirel.kinetic.multifluid-deck",
+   "entrypoint": "scirel.kinetic.dispersion.multifluid:fluid_deck",
+   "status": "returned",
+   "returned_type": "ndarray",
+   "returned_field_count": 0,
+   "exception_type": null,
+   "arguments_source": "contract example, see catalog/contracts/<asset>.json → example.code"
+  },
+  {
+   "asset": "scirel.kinetic.multifluid-equilibrium",
+   "entrypoint": "scirel.kinetic.dispersion.multifluid:fluid_equilibrium_si",
+   "status": "returned",
+   "returned_type": "dict",
+   "returned_field_count": 24,
+   "exception_type": null,
+   "arguments_source": "contract example, see catalog/contracts/<asset>.json → example.code"
+  },
+  {
+   "asset": "scirel.kinetic.multifluid-frequency-pencil",
+   "entrypoint": "scirel.kinetic.dispersion.multifluid:fluid_frequency_pencil",
+   "status": "returned",
+   "returned_type": "dict",
+   "returned_field_count": 4,
+   "exception_type": null,
+   "arguments_source": "contract example, see catalog/contracts/<asset>.json → example.code"
+  },
+  {
+   "asset": "scirel.kinetic.multifluid-frequency-solve",
+   "entrypoint": "scirel.kinetic.dispersion.multifluid:fluid_solve_state",
+   "status": "returned",
+   "returned_type": "dict",
+   "returned_field_count": 12,
+   "exception_type": null,
+   "arguments_source": "contract example, see catalog/contracts/<asset>.json → example.code"
+  },
+  {
+   "asset": "scirel.kinetic.multifluid-relative-rate-equilibrium",
+   "entrypoint": "scirel.kinetic.dispersion.multifluid:fluid_equilibrium_relative_rates",
+   "status": "returned",
+   "returned_type": "dict",
+   "returned_field_count": 28,
+   "exception_type": null,
+   "arguments_source": "contract example, see catalog/contracts/<asset>.json → example.code"
+  },
+  {
+   "asset": "scirel.kinetic.multifluid-scan",
+   "entrypoint": "scirel.kinetic.dispersion.multifluid:scan_fluid_corrected",
+   "status": "returned",
+   "returned_type": "dict",
+   "returned_field_count": 7,
+   "exception_type": null,
+   "arguments_source": "contract example, see catalog/contracts/<asset>.json → example.code"
+  },
+  {
+   "asset": "scirel.kinetic.parallel-em-continuation",
+   "entrypoint": "scirel.kinetic.dispersion.parallel:continue_em1d",
+   "status": "returned",
+   "returned_type": "dict",
+   "returned_field_count": 3,
+   "exception_type": null,
+   "arguments_source": "contract example, see catalog/contracts/<asset>.json → example.code"
+  },
+  {
+   "asset": "scirel.kinetic.rational-default-deck",
+   "entrypoint": "scirel.kinetic.dispersion.rational:default_deck",
+   "status": "returned",
+   "returned_type": "ndarray",
+   "returned_field_count": 0,
+   "exception_type": null,
+   "arguments_source": "contract example, see catalog/contracts/<asset>.json → example.code"
+  },
+  {
+   "asset": "scirel.kinetic.rational-jpole-evaluate",
+   "entrypoint": "scirel.kinetic.dispersion.rational:jpole_evaluate",
+   "status": "returned",
+   "returned_type": "dict",
+   "returned_field_count": 1,
+   "exception_type": null,
+   "arguments_source": "contract example, see catalog/contracts/<asset>.json → example.code"
+  },
+  {
+   "asset": "scirel.kinetic.rational-z-poles",
+   "entrypoint": "scirel.kinetic.dispersion.magnetized:pole_coefficients",
+   "status": "returned",
+   "returned_type": "_State",
+   "returned_field_count": 0,
+   "exception_type": null,
+   "arguments_source": "contract example, see catalog/contracts/<asset>.json → example.code"
+  },
+  {
+   "asset": "scirel.kinetic.relativistic-codrift-generalized-spectrum",
+   "entrypoint": "scirel.kinetic.relativistic_codrift:solve_relativistic_codrift_spectrum",
+   "status": "returned",
+   "returned_type": "dict",
+   "returned_field_count": 1,
+   "exception_type": null,
+   "arguments_source": "contract example, see catalog/contracts/<asset>.json → example.code"
+  },
+  {
+   "asset": "scirel.kinetic.vp-diagnostic",
+   "entrypoint": "scirel.kinetic.vlasov_poisson:vp_diagnostic",
+   "status": "returned",
+   "returned_type": "dict",
+   "returned_field_count": 6,
+   "exception_type": null,
+   "arguments_source": "contract example, see catalog/contracts/<asset>.json → example.code"
+  },
+  {
+   "asset": "scirel.kinetic.vp-distribution",
+   "entrypoint": "scirel.kinetic.vlasov_poisson:vp_distribution",
+   "status": "returned",
+   "returned_type": "tuple",
+   "returned_field_count": 0,
+   "exception_type": null,
+   "arguments_source": "contract example, see catalog/contracts/<asset>.json → example.code"
+  },
+  {
+   "asset": "scirel.kinetic.vp-envelope",
+   "entrypoint": "scirel.kinetic.vlasov_poisson:vp_envelope",
+   "status": "returned",
+   "returned_type": "dict",
+   "returned_field_count": 5,
+   "exception_type": null,
+   "arguments_source": "contract example, see catalog/contracts/<asset>.json → example.code"
+  },
+  {
+   "asset": "scirel.kinetic.vp-evolve",
+   "entrypoint": "scirel.kinetic.vlasov_poisson:vp_evolve",
+   "status": "returned",
+   "returned_type": "dict",
+   "returned_field_count": 18,
+   "exception_type": null,
+   "arguments_source": "contract example, see catalog/contracts/<asset>.json → example.code"
+  },
+  {
+   "asset": "scirel.kinetic.vp-field",
+   "entrypoint": "scirel.kinetic.vlasov_poisson:vp_field",
+   "status": "returned",
+   "returned_type": "complex128",
+   "returned_field_count": 0,
+   "exception_type": null,
+   "arguments_source": "contract example, see catalog/contracts/<asset>.json → example.code"
+  },
+  {
+   "asset": "scirel.kinetic.vp-init",
+   "entrypoint": "scirel.kinetic.vlasov_poisson:vp_init",
+   "status": "returned",
+   "returned_type": "dict",
+   "returned_field_count": 18,
+   "exception_type": null,
+   "arguments_source": "contract example, see catalog/contracts/<asset>.json → example.code"
+  },
+  {
+   "asset": "scirel.kinetic.vp-landau",
+   "entrypoint": "scirel.kinetic.vlasov_poisson:solve_vlasov_poisson",
+   "status": "returned",
+   "returned_type": "dict",
+   "returned_field_count": 4,
+   "exception_type": null,
+   "arguments_source": "contract example, see catalog/contracts/<asset>.json → example.code"
+  },
+  {
+   "asset": "scirel.kinetic.vp-rhs",
+   "entrypoint": "scirel.kinetic.vlasov_poisson:vp_rhs",
+   "status": "returned",
+   "returned_type": "ndarray",
+   "returned_field_count": 0,
+   "exception_type": null,
+   "arguments_source": "contract example, see catalog/contracts/<asset>.json → example.code"
+  },
+  {
+   "asset": "scirel.kinetic.vp-rk4-step",
+   "entrypoint": "scirel.kinetic.vlasov_poisson:vp_rk4_step",
+   "status": "returned",
+   "returned_type": "tuple",
+   "returned_field_count": 0,
+   "exception_type": null,
+   "arguments_source": "contract example, see catalog/contracts/<asset>.json → example.code"
+  },
+  {
+   "asset": "scirel.mirror.frank-egedal-radial-envelope",
+   "entrypoint": "scirel.mirror.frank_egedal_radial_envelope:evaluate_frank_egedal_radial_envelope",
+   "status": "returned",
+   "returned_type": "ndarray",
+   "returned_field_count": 0,
+   "exception_type": null,
+   "arguments_source": "contract example, see catalog/contracts/<asset>.json → example.code"
+  },
+  {
+   "asset": "scirel.neutrals.adaptive-neutral-velocity-mesh",
+   "entrypoint": "scirel.neutrals.adaptive_neutral_velocity_mesh:create_adaptive_neutral_velocity_mesh",
+   "status": "returned",
+   "returned_type": "tuple",
+   "returned_field_count": 0,
+   "exception_type": null,
+   "arguments_source": "contract example, see catalog/contracts/<asset>.json → example.code"
+  },
+  {
+   "asset": "scirel.neutrals.atomic-scattered-sources-reduction",
+   "entrypoint": "scirel.neutrals.atomic_scattered_sources_reduction:reduce_atomic_scattered_sources",
+   "status": "returned",
+   "returned_type": "ndarray",
+   "returned_field_count": 0,
+   "exception_type": null,
+   "arguments_source": "contract example, see catalog/contracts/<asset>.json → example.code"
+  },
+  {
+   "asset": "scirel.neutrals.axisymmetric-neutral-moments",
+   "entrypoint": "scirel.neutrals.axisymmetric_neutral_moments:reduce_axisymmetric_neutral_moments",
+   "status": "returned",
+   "returned_type": "dict",
+   "returned_field_count": 9,
+   "exception_type": null,
+   "arguments_source": "contract example, see catalog/contracts/<asset>.json → example.code"
+  },
+  {
+   "asset": "scirel.neutrals.compensated-shifted-maxwellian",
+   "entrypoint": "scirel.neutrals.moment_compensation:build_compensated_shifted_maxwellian",
+   "status": "returned",
+   "returned_type": "ndarray",
+   "returned_field_count": 0,
+   "exception_type": null,
+   "arguments_source": "contract example, see catalog/contracts/<asset>.json → example.code"
+  },
+  {
+   "asset": "scirel.neutrals.cross-mesh-distribution-interpolation",
+   "entrypoint": "scirel.neutrals.cross_mesh_distribution_interpolation:interp_distribution_across_mesh",
+   "status": "returned",
+   "returned_type": "ndarray",
+   "returned_field_count": 0,
+   "exception_type": null,
+   "arguments_source": "contract example, see catalog/contracts/<asset>.json → example.code"
+  },
+  {
+   "asset": "scirel.neutrals.cross-mesh-scalar-interpolation",
+   "entrypoint": "scirel.neutrals.cross_mesh_scalar_interpolation:interpolate_scalar_across_mesh",
+   "status": "returned",
+   "returned_type": "ndarray",
+   "returned_field_count": 0,
+   "exception_type": null,
+   "arguments_source": "contract example, see catalog/contracts/<asset>.json → example.code"
+  },
+  {
+   "asset": "scirel.neutrals.elastic-frequency-channels",
+   "entrypoint": "scirel.neutrals.elastic_frequency_channels:sum_elastic_frequency_channels",
+   "status": "returned",
+   "returned_type": "dict",
+   "returned_field_count": 1,
+   "exception_type": null,
+   "arguments_source": "contract example, see catalog/contracts/<asset>.json → example.code"
+  },
+  {
+   "asset": "scirel.neutrals.elastic-regeneration-aggregation",
+   "entrypoint": "scirel.neutrals.elastic_regeneration_aggregation:aggregate_elastic_regeneration_source",
+   "status": "returned",
+   "returned_type": "ndarray",
+   "returned_field_count": 0,
+   "exception_type": null,
+   "arguments_source": "contract example, see catalog/contracts/<asset>.json → example.code"
+  },
+  {
+   "asset": "scirel.neutrals.generation-accumulation-update",
+   "entrypoint": "scirel.neutrals.generation_accumulation_update:update_neutral_generation_accumulation",
+   "status": "returned",
+   "returned_type": "dict",
+   "returned_field_count": 5,
+   "exception_type": null,
+   "arguments_source": "contract example, see catalog/contracts/<asset>.json → example.code"
+  },
+  {
+   "asset": "scirel.neutrals.generation-density-reduction",
+   "entrypoint": "scirel.neutrals.generation_density_reduction:reduce_generation_density",
+   "status": "returned",
+   "returned_type": "ndarray",
+   "returned_field_count": 0,
+   "exception_type": null,
+   "arguments_source": "contract example, see catalog/contracts/<asset>.json → example.code"
+  },
+  {
+   "asset": "scirel.neutrals.molecular-scattered-sources-reduction",
+   "entrypoint": "scirel.neutrals.molecular_scattered_sources_reduction:reduce_molecular_scattered_sources",
+   "status": "returned",
+   "returned_type": "ndarray",
+   "returned_field_count": 0,
+   "exception_type": null,
+   "arguments_source": "contract example, see catalog/contracts/<asset>.json → example.code"
+  },
+  {
+   "asset": "scirel.neutrals.neutral-boltzmann-rhs",
+   "entrypoint": "scirel.neutrals.neutral_boltzmann_rhs:assemble_neutral_boltzmann_rhs",
+   "status": "returned",
+   "returned_type": "dict",
+   "returned_field_count": 1,
+   "exception_type": null,
+   "arguments_source": "contract example, see catalog/contracts/<asset>.json → example.code"
+  },
+  {
+   "asset": "scirel.neutrals.neutral-generation-propagation",
+   "entrypoint": "scirel.neutrals.neutral_generation_propagation:propagate_neutral_generation",
+   "status": "returned",
+   "returned_type": "ndarray",
+   "returned_field_count": 0,
+   "exception_type": null,
+   "arguments_source": "contract example, see catalog/contracts/<asset>.json → example.code"
+  },
+  {
+   "asset": "scirel.neutrals.neutral-generation-stopping",
+   "entrypoint": "scirel.neutrals.neutral_generation_stopping:evaluate_neutral_generation_stopping",
+   "status": "returned",
+   "returned_type": "tuple",
+   "returned_field_count": 0,
+   "exception_type": null,
+   "arguments_source": "contract example, see catalog/contracts/<asset>.json → example.code"
+  },
+  {
+   "asset": "scirel.neutrals.neutral-total-collision-frequency",
+   "entrypoint": "scirel.neutrals.neutral_total_collision_frequency:assemble_neutral_total_collision_frequency",
+   "status": "returned",
+   "returned_type": "ndarray",
+   "returned_field_count": 0,
+   "exception_type": null,
+   "arguments_source": "contract example, see catalog/contracts/<asset>.json → example.code"
+  },
+  {
+   "asset": "scirel.neutrals.neutral-upwind-transport-coefficients",
+   "entrypoint": "scirel.neutrals.upwind_transport_coefficients:assemble_neutral_upwind_transport_coefficients",
+   "status": "returned",
+   "returned_type": "dict",
+   "returned_field_count": 8,
+   "exception_type": null,
+   "arguments_source": "contract example, see catalog/contracts/<asset>.json → example.code"
+  },
+  {
+   "asset": "scirel.neutrals.outer-convergence",
+   "entrypoint": "scirel.neutrals.outer_convergence:evaluate_outer_convergence",
+   "status": "returned",
+   "returned_type": "dict",
+   "returned_field_count": 4,
+   "exception_type": null,
+   "arguments_source": "contract example, see catalog/contracts/<asset>.json → example.code"
+  },
+  {
+   "asset": "scirel.neutrals.outer-seed-convergence",
+   "entrypoint": "scirel.neutrals.outer_seed_convergence:evaluate_neutral_outer_seed_convergence",
+   "status": "returned",
+   "returned_type": "dict",
+   "returned_field_count": 4,
+   "exception_type": null,
+   "arguments_source": "contract example, see catalog/contracts/<asset>.json → example.code"
+  },
+  {
+   "asset": "scirel.neutrals.simple-charge-exchange-source",
+   "entrypoint": "scirel.neutrals.simple_charge_exchange_source:assemble_simple_charge_exchange_source",
+   "status": "returned",
+   "returned_type": "ndarray",
+   "returned_field_count": 0,
+   "exception_type": null,
+   "arguments_source": "contract example, see catalog/contracts/<asset>.json → example.code"
+  },
+  {
+   "asset": "scirel.neutrals.terminal-conservation-diagnostic",
+   "entrypoint": "scirel.neutrals.terminal_conservation_diagnostic:reduce_qh2_total_conservation_diagnostic",
+   "status": "returned",
+   "returned_type": "dict",
+   "returned_field_count": 1,
+   "exception_type": null,
+   "arguments_source": "contract example, see catalog/contracts/<asset>.json → example.code"
+  },
+  {
+   "asset": "scirel.neutrals.thermal-speed-scale",
+   "entrypoint": "scirel.neutrals.thermal_speed_scale:compute_thermal_speed_m_s",
+   "status": "returned",
+   "returned_type": "dict",
+   "returned_field_count": 1,
+   "exception_type": null,
+   "arguments_source": "contract example, see catalog/contracts/<asset>.json → example.code"
+  },
+  {
+   "asset": "scirel.numerics.basis-matrix",
+   "entrypoint": "scirel.numerics.basis:BasisMatrix",
+   "status": "returned",
+   "returned_type": "BasisMatrix",
+   "returned_field_count": 0,
+   "exception_type": null,
+   "arguments_source": "contract example, see catalog/contracts/<asset>.json → example.code"
+  },
+  {
+   "asset": "scirel.numerics.bilinear-grid-sampling",
+   "entrypoint": "scirel.numerics.interpolate.bilinear_grid_sampling:sample_rectilinear_field",
+   "status": "returned",
+   "returned_type": "Result",
+   "returned_field_count": 1,
+   "exception_type": null,
+   "arguments_source": "contract example, see catalog/contracts/<asset>.json → example.code"
+  },
+  {
+   "asset": "scirel.numerics.build-basis",
+   "entrypoint": "scirel.numerics.basis:build_basis",
+   "status": "returned",
+   "returned_type": "list",
+   "returned_field_count": 0,
+   "exception_type": null,
+   "arguments_source": "contract example, see catalog/contracts/<asset>.json → example.code"
+  },
+  {
+   "asset": "scirel.numerics.clamped-cubic-spline",
+   "entrypoint": "scirel.numerics.basis:ClampedCubicSpline",
+   "status": "returned",
+   "returned_type": "ClampedCubicSpline",
+   "returned_field_count": 0,
+   "exception_type": null,
+   "arguments_source": "contract example, see catalog/contracts/<asset>.json → example.code"
+  },
+  {
+   "asset": "scirel.numerics.face-to-cell",
+   "entrypoint": "scirel.numerics.interpolate.midpoint:face_to_cell",
+   "status": "returned",
+   "returned_type": "ndarray",
+   "returned_field_count": 0,
+   "exception_type": null,
+   "arguments_source": "contract example, see catalog/contracts/<asset>.json → example.code"
+  },
+  {
+   "asset": "scirel.numerics.faddeeva",
+   "entrypoint": "scirel.numerics.special:evaluate_faddeeva",
+   "status": "returned",
+   "returned_type": "ndarray",
+   "returned_field_count": 0,
+   "exception_type": null,
+   "arguments_source": "contract example, see catalog/contracts/<asset>.json → example.code"
+  },
+  {
+   "asset": "scirel.numerics.first-clamped-cubic-spline",
+   "entrypoint": "scirel.numerics.basis:FirstClampedCubicSpline",
+   "status": "returned",
+   "returned_type": "FirstClampedCubicSpline",
+   "returned_field_count": 0,
+   "exception_type": null,
+   "arguments_source": "contract example, see catalog/contracts/<asset>.json → example.code"
+  },
+  {
+   "asset": "scirel.numerics.modal-projection",
+   "entrypoint": "scirel.numerics.modal_basis:modal_projection",
+   "status": "returned",
+   "returned_type": "ndarray",
+   "returned_field_count": 0,
+   "exception_type": null,
+   "arguments_source": "contract example, see catalog/contracts/<asset>.json → example.code"
+  },
+  {
+   "asset": "scirel.numerics.natural-cubic-spline",
+   "entrypoint": "scirel.numerics.basis:NaturalCubicSpline",
+   "status": "returned",
+   "returned_type": "NaturalCubicSpline",
+   "returned_field_count": 0,
+   "exception_type": null,
+   "arguments_source": "contract example, see catalog/contracts/<asset>.json → example.code"
+  },
+  {
+   "asset": "scirel.numerics.orthonormal-modal-basis",
+   "entrypoint": "scirel.numerics.modal_basis:modal_basis",
+   "status": "returned",
+   "returned_type": "ModalBasis",
+   "returned_field_count": 0,
+   "exception_type": null,
+   "arguments_source": "contract example, see catalog/contracts/<asset>.json → example.code"
+  },
+  {
+   "asset": "scirel.numerics.second-clamped-cubic-spline",
+   "entrypoint": "scirel.numerics.basis:SecondClampedCubicSpline",
+   "status": "returned",
+   "returned_type": "SecondClampedCubicSpline",
+   "returned_field_count": 0,
+   "exception_type": null,
+   "arguments_source": "contract example, see catalog/contracts/<asset>.json → example.code"
+  },
+  {
+   "asset": "scirel.numerics.truncated-svd-inverse",
+   "entrypoint": "scirel.numerics.linalg.truncated_pseudoinverse:compute_truncated_pseudoinverse",
+   "status": "returned",
+   "returned_type": "ndarray",
+   "returned_field_count": 0,
+   "exception_type": null,
+   "arguments_source": "contract example, see catalog/contracts/<asset>.json → example.code"
+  },
+  {
+   "asset": "scirel.physics.coulomb-ee",
+   "entrypoint": "scirel.physics.coulomb_logs:calculate_log_lambda_ee",
+   "status": "returned",
+   "returned_type": "float64",
+   "returned_field_count": 0,
+   "exception_type": null,
+   "arguments_source": "contract example, see catalog/contracts/<asset>.json → example.code"
+  },
+  {
+   "asset": "scirel.physics.coulomb-ei",
+   "entrypoint": "scirel.physics.coulomb_logs:calculate_log_lambda_ei",
+   "status": "returned",
+   "returned_type": "float64",
+   "returned_field_count": 0,
+   "exception_type": null,
+   "arguments_source": "contract example, see catalog/contracts/<asset>.json → example.code"
+  },
+  {
+   "asset": "scirel.physics.coulomb-ii",
+   "entrypoint": "scirel.physics.coulomb_logs:calculate_log_lambda_ii",
+   "status": "returned",
+   "returned_type": "float64",
+   "returned_field_count": 0,
+   "exception_type": null,
+   "arguments_source": "contract example, see catalog/contracts/<asset>.json → example.code"
+  },
+  {
+   "asset": "scirel.physics.dilution",
+   "entrypoint": "scirel.physics.dilution:calculate_main_ion_dilution_factor",
+   "status": "returned",
+   "returned_type": "float64",
+   "returned_field_count": 0,
+   "exception_type": null,
+   "arguments_source": "contract example, see catalog/contracts/<asset>.json → example.code"
+  },
+  {
+   "asset": "scirel.plasma.fast-ion-heating",
+   "entrypoint": "scirel.plasma.fast_ion_heating:fast_ion_fractional_heating",
+   "status": "returned",
+   "returned_type": "float",
+   "returned_field_count": 0,
+   "exception_type": null,
+   "arguments_source": "contract example, see catalog/contracts/<asset>.json → example.code"
+  },
+  {
+   "asset": "scirel.source.exponential",
+   "entrypoint": "scirel.source.exponential:exponential_profile",
+   "status": "returned",
+   "returned_type": "ndarray",
+   "returned_field_count": 0,
+   "exception_type": null,
+   "arguments_source": "contract example, see catalog/contracts/<asset>.json → example.code"
+  },
+  {
+   "asset": "scirel.source.gaussian",
+   "entrypoint": "scirel.source.gaussian:gaussian_profile",
+   "status": "returned",
+   "returned_type": "ndarray",
+   "returned_field_count": 0,
+   "exception_type": null,
+   "arguments_source": "contract example, see catalog/contracts/<asset>.json → example.code"
+  }
+ ]
+}

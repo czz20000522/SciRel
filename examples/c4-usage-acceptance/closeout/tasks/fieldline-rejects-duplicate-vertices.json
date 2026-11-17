@@ -1,0 +1,259 @@
+{
+ "task_id": "fieldline-rejects-duplicate-vertices",
+ "kind": "failure",
+ "domain": "geometry",
+ "subdomain": "declared invalid input channel",
+ "question": "Construct a declared fieldline from a vertex list that repeats a vertex, then request the declared curvature diagnostic at that vertex and report the ValueError the contract assigns to duplicate adjacent vertices.",
+ "assets_declared": [
+  "scirel.geometry.fieldline"
+ ],
+ "min_calls": 1,
+ "package": {
+  "python": "3.14.7",
+  "numpy": "2.5.4",
+  "scipy": "1.18.1",
+  "mpmath": "1.4.1",
+  "wheel_sha256": "f1501a3efbdaba7b18c9af7be06ff30d9a33caf2777534de71f6833b93938b2a",
+  "snapshot_sha256": "7572961c553ecca28c506a392297d514b714eb1fcdffccfff262618d75b60bf3",
+  "source_revision": "d429359dcfbf37aedf09aa64cfa78b89da3b3623",
+  "asset_count": 249,
+  "runtime": {
+   "dependencies_bundled": false,
+   "package_version": "0.0.0",
+   "requires_dist": [
+    "numpy==2.5.4",
+    "scipy==1.18.1",
+    "mpmath==1.4.1"
+   ],
+   "requires_python": ">=3.12",
+   "wheel": "scirel-0.0.0-py3-none-any.whl",
+   "wheel_sha256": "f1501a3efbdaba7b18c9af7be06ff30d9a33caf2777534de71f6833b93938b2a"
+  }
+ },
+ "assets_used": [
+  "scirel.geometry.fieldline"
+ ],
+ "calls": [
+  {
+   "seq": 1,
+   "label": "declare verts=[[0.0, 0.0], [0.0, 0.0], [1.0, 1.0]] only (frozen stimulus)",
+   "asset": "scirel.geometry.fieldline",
+   "entrypoint": "scirel.geometry.fieldline:FieldLine",
+   "arguments": {
+    "args": [],
+    "kwargs": {
+     "psi": 0.2,
+     "verts": [
+      [
+       0.0,
+       0.0
+      ],
+      [
+       0.0,
+       0.0
+      ],
+      [
+       1.0,
+       1.0
+      ]
+     ]
+    }
+   },
+   "status": "raised",
+   "returned_fields": null,
+   "exception": {
+    "type": "TypeError",
+    "module": "builtins",
+    "message": "list indices must be integers or slices, not tuple",
+    "qualname": "builtins.TypeError"
+   },
+   "warnings": []
+  }
+ ],
+ "answer": {
+  "value": [
+   {
+    "asset": "scirel.geometry.fieldline",
+    "field": "verts",
+    "baseline_value": {
+     "dtype": "float64",
+     "shape": [
+      3,
+      2
+     ],
+     "values": [
+      [
+       0.2,
+       0.0
+      ],
+      [
+       0.6,
+       0.0
+      ],
+      [
+       1.0,
+       0.0
+      ]
+     ]
+    },
+    "requested_value": [
+     [
+      0.0,
+      0.0
+     ],
+     [
+      0.0,
+      0.0
+     ],
+     [
+      1.0,
+      1.0
+     ]
+    ],
+    "outcome": "raised",
+    "exception_type": "TypeError",
+    "exception_message": "list indices must be integers or slices, not tuple",
+    "declared_exception": "ValueError"
+   }
+  ],
+  "unit": "exception type and message, as raised"
+ },
+ "independent_check": {
+  "method": "the contract's failure_semantics quote is compared with the exception the library actually raised, field by field",
+  "verdict": "fail"
+ },
+ "criteria": [
+  {
+   "id": "raise",
+   "kind": "exception",
+   "status": "fail",
+   "detail": {
+    "expected_exception": "ValueError",
+    "expected_appears_in_contract_quote": true,
+    "type_matches_exactly_or_by_subclass": false,
+    "contract_quote": "interpolate_onto and get_gradpsi can return NaN for unsupported or undefined interpolation; callers requiring finite values must check their results. get_kappa_n raises ValueError for nonfinite or zero interpolated field, duplicate adjacent vertices, or undefined tangent support. get_kappa_n_2 additionally rejects invalid/nonfinite/nonuniform flux grids, zero flux-gradient support and nonfinite interpolated curvature. Other SciPy construction and interpolation errors propagate.",
+    "actual": {
+     "type": "TypeError",
+     "module": "builtins",
+     "message": "list indices must be integers or slices, not tuple",
+     "qualname": "builtins.TypeError"
+    },
+    "declared_rejection_phrase": "duplicate adjacent vertices",
+    "declared_rejection_appears_in_contract_quote": true,
+    "stimulus_field": "verts",
+    "stimulus_value": [
+     [
+      0.0,
+      0.0
+     ],
+     [
+      0.0,
+      0.0
+     ],
+     [
+      1.0,
+      1.0
+     ]
+    ],
+    "baseline_value": {
+     "dtype": "float64",
+     "shape": [
+      3,
+      2
+     ],
+     "values": [
+      [
+       0.2,
+       0.0
+      ],
+      [
+       0.6,
+       0.0
+      ],
+      [
+       1.0,
+       0.0
+      ]
+     ]
+    }
+   }
+  },
+  {
+   "id": "nomove",
+   "kind": "invariant",
+   "status": "pass",
+   "detail": {
+    "calls_made": 1,
+    "calls_expected": 1,
+    "note": "exactly the frozen stimulus was passed; no fallback method, clamp or retry",
+    "arguments": [
+     {
+      "args": [],
+      "kwargs": {
+       "psi": 0.2,
+       "verts": [
+        [
+         0.0,
+         0.0
+        ],
+        [
+         0.0,
+         0.0
+        ],
+        [
+         1.0,
+         1.0
+        ]
+       ]
+      }
+     }
+    ],
+    "statement": "The consumer must not deduplicate the repeated vertex before the call; the vertex list must appear unchanged in the trace and the raised status must come from the declared curvature request at that repeated vertex. Applies only to the declared stimulus verts = [[0.0, 0.0], [0.0, 0.0], [1.0, 1.0]]; no other field is varied."
+   }
+  },
+  {
+   "id": "readback",
+   "kind": "readback",
+   "status": "pass",
+   "detail": {
+    "reopened": "fieldline-rejects-duplicate-vertices.json",
+    "problems": [],
+    "stored_call_count": 1
+   }
+  }
+ ],
+ "package_sufficient": false,
+ "sufficient_reason": "the library did not raise the exception the delivered contract declares for this stimulus, or the contract quote does not contain the frozen phrase",
+ "gaps": [],
+ "bindings": {
+  "scirel.geometry.fieldline": {
+   "symbol": "FieldLine",
+   "args": {
+    "psi": 0.2,
+    "verts": {
+     "dtype": "float64",
+     "shape": [
+      3,
+      2
+     ],
+     "values": [
+      [
+       0.2,
+       0.0
+      ],
+      [
+       0.6,
+       0.0
+      ],
+      [
+       1.0,
+       0.0
+      ]
+     ]
+    },
+    "kwargs": {}
+   },
+   "example_error": null
+  }
+ }
+}

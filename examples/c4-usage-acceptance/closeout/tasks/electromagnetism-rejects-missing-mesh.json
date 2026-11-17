@@ -1,0 +1,155 @@
+{
+ "task_id": "electromagnetism-rejects-missing-mesh",
+ "kind": "failure",
+ "domain": "electromagnetism",
+ "subdomain": "declared invalid input channel",
+ "question": "Ask the device to evaluate with a declared missing mesh and report the raised exception rather than registering a default mesh.",
+ "assets_declared": [
+  "scirel.electromagnetism.device"
+ ],
+ "min_calls": 1,
+ "package": {
+  "python": "3.14.7",
+  "numpy": "2.5.4",
+  "scipy": "1.18.1",
+  "mpmath": "1.4.1",
+  "wheel_sha256": "f1501a3efbdaba7b18c9af7be06ff30d9a33caf2777534de71f6833b93938b2a",
+  "snapshot_sha256": "7572961c553ecca28c506a392297d514b714eb1fcdffccfff262618d75b60bf3",
+  "source_revision": "d429359dcfbf37aedf09aa64cfa78b89da3b3623",
+  "asset_count": 249,
+  "runtime": {
+   "dependencies_bundled": false,
+   "package_version": "0.0.0",
+   "requires_dist": [
+    "numpy==2.5.4",
+    "scipy==1.18.1",
+    "mpmath==1.4.1"
+   ],
+   "requires_python": ">=3.12",
+   "wheel": "scirel-0.0.0-py3-none-any.whl",
+   "wheel_sha256": "f1501a3efbdaba7b18c9af7be06ff30d9a33caf2777534de71f6833b93938b2a"
+  }
+ },
+ "assets_used": [
+  "scirel.electromagnetism.device"
+ ],
+ "calls": [
+  {
+   "seq": 1,
+   "label": "frozen stimulus: the declared mesh field set to None",
+   "asset": "scirel.electromagnetism.device",
+   "entrypoint": "scirel.electromagnetism.sources:Device",
+   "arguments": {
+    "args": [],
+    "kwargs": {
+     "mesh": null
+    }
+   },
+   "status": "returned",
+   "returned_fields": null,
+   "exception": null,
+   "warnings": [],
+   "returned_type": "Device"
+  }
+ ],
+ "answer": {
+  "value": {
+   "frozen_stimulus": "returned",
+   "supplementary_probe": {
+    "outcome": "raised",
+    "type": "ValueError",
+    "message": "a mesh is required for field evaluation"
+   }
+  },
+  "unit": "exception type/message"
+ },
+ "independent_check": {
+  "method": "frozen stimulus applied once; then a self-added probe calls psi() on the same mesh-less device to see whether the declared rejection exists",
+  "observed": {
+   "outcome": "raised",
+   "type": "ValueError",
+   "message": "a mesh is required for field evaluation"
+  },
+  "verdict": "pass"
+ },
+ "criteria": [
+  {
+   "id": "fields",
+   "kind": "contract_fields",
+   "status": "pass",
+   "detail": {
+    "channel": "single declared output returned positionally",
+    "declared": {
+     "name": "source",
+     "dtype": "Device",
+     "shape": "one object"
+    },
+    "returned_type": "Device",
+    "checks": {
+     "named_type": {
+      "declared_token": "device",
+      "matches": true
+     }
+    },
+    "verdict": "compatible",
+    "all_declared_outputs": [
+     "source"
+    ]
+   }
+  },
+  {
+   "id": "raise",
+   "kind": "exception",
+   "status": "fail",
+   "detail": {
+    "expected_exception": "ValueError",
+    "expected_appears_in_contract_quote": true,
+    "type_matches_exactly_or_by_subclass": false,
+    "contract_quote": "ValueError is raised for invalid meshes, current overrides, missing meshes, or child kernel singularities; duplicate child registration raises AttributeError.",
+    "actual": null
+   }
+  },
+  {
+   "id": "nofallback",
+   "kind": "invariant",
+   "status": "pass",
+   "detail": {
+    "calls_made": 1,
+    "note": "exactly the frozen stimulus was passed to the constructor; nothing was caught or retried"
+   }
+  },
+  {
+   "id": "readback",
+   "kind": "readback",
+   "status": "pass",
+   "detail": {
+    "reopened": "electromagnetism-rejects-missing-mesh.json",
+    "problems": [],
+    "stored_call_count": 1
+   }
+  }
+ ],
+ "package_sufficient": true,
+ "sufficient_reason": "the declared ValueError for a missing mesh is reachable — it is raised by psi() as 'a mesh is required for field evaluation'; the frozen stimulus calls the constructor, which is allowed to build a mesh-less device. Task-list defect, not a package gap.",
+ "gaps": [
+  {
+   "level": "process",
+   "text": "frozen stimulus targets construction; the declared rejection is at field evaluation. Task list should freeze mesh=None + a psi() call instead."
+  }
+ ],
+ "bindings": {
+  "scirel.electromagnetism.device": {
+   "symbol": "Device",
+   "args": {
+    "mesh": [
+     [
+      0.2,
+      0.3
+     ]
+    ],
+    "kwargs": {}
+   },
+   "example_error": null
+  }
+ }
+}

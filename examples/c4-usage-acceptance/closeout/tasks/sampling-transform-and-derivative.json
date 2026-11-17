@@ -1,0 +1,336 @@
+{
+ "task_id": "sampling-transform-and-derivative",
+ "kind": "nominal",
+ "domain": "geometry",
+ "subdomain": "coordinate transforms and nonuniform derivative",
+ "question": "Map a declared point set through the forward meridional transform and back, then differentiate a declared nonuniform grid, reporting the round-trip deviation and the grid spacing actually used.",
+ "assets_declared": [
+  "scirel.geometry.meridional-polar-forward",
+  "scirel.geometry.meridional-polar-inverse",
+  "scirel.geometry.nonuniform-first-derivative"
+ ],
+ "min_calls": 3,
+ "package": {
+  "python": "3.14.7",
+  "numpy": "2.5.4",
+  "scipy": "1.18.1",
+  "mpmath": "1.4.1",
+  "wheel_sha256": "f1501a3efbdaba7b18c9af7be06ff30d9a33caf2777534de71f6833b93938b2a",
+  "snapshot_sha256": "7572961c553ecca28c506a392297d514b714eb1fcdffccfff262618d75b60bf3",
+  "source_revision": "d429359dcfbf37aedf09aa64cfa78b89da3b3623",
+  "asset_count": 249,
+  "runtime": {
+   "dependencies_bundled": false,
+   "package_version": "0.0.0",
+   "requires_dist": [
+    "numpy==2.5.4",
+    "scipy==1.18.1",
+    "mpmath==1.4.1"
+   ],
+   "requires_python": ">=3.12",
+   "wheel": "scirel-0.0.0-py3-none-any.whl",
+   "wheel_sha256": "f1501a3efbdaba7b18c9af7be06ff30d9a33caf2777534de71f6833b93938b2a"
+  }
+ },
+ "assets_used": [
+  "scirel.geometry.meridional-polar-forward",
+  "scirel.geometry.meridional-polar-inverse",
+  "scirel.geometry.nonuniform-first-derivative"
+ ],
+ "calls": [
+  {
+   "seq": 1,
+   "label": "declared forward transform",
+   "asset": "scirel.geometry.meridional-polar-forward",
+   "entrypoint": "scirel.geometry.sampling:transform_to_rtheta",
+   "arguments": {
+    "args": [],
+    "kwargs": {
+     "Rho": 0.0,
+     "Z": 2.0,
+     "rho_component": 3.0,
+     "z_component": 4.0
+    }
+   },
+   "status": "returned",
+   "returned_fields": null,
+   "exception": null,
+   "warnings": [],
+   "returned_type": "tuple"
+  },
+  {
+   "seq": 2,
+   "label": "inverse applied to the forward result",
+   "asset": "scirel.geometry.meridional-polar-inverse",
+   "entrypoint": "scirel.geometry.sampling:transform_to_rhoz",
+   "arguments": {
+    "args": [],
+    "kwargs": {
+     "R": 2.0,
+     "Theta": 0.0,
+     "r_component": 4.0,
+     "theta_component": 3.0
+    }
+   },
+   "status": "returned",
+   "returned_fields": null,
+   "exception": null,
+   "warnings": [],
+   "returned_type": "tuple"
+  },
+  {
+   "seq": 3,
+   "label": "linear function on the same nonuniform grid",
+   "asset": "scirel.geometry.nonuniform-first-derivative",
+   "entrypoint": "scirel.geometry.sampling:diff_central",
+   "arguments": {
+    "args": [],
+    "kwargs": {
+     "x": {
+      "dtype": "float64",
+      "shape": [
+       3
+      ],
+      "values": [
+       0.0,
+       0.3,
+       1.0
+      ]
+     },
+     "y": {
+      "dtype": "float64",
+      "shape": [
+       3
+      ],
+      "values": [
+       4.0,
+       4.51,
+       5.7
+      ]
+     }
+    }
+   },
+   "status": "returned",
+   "returned_fields": null,
+   "exception": null,
+   "warnings": [],
+   "returned_type": "ndarray"
+  }
+ ],
+ "answer": {
+  "value": {
+   "forward": [
+    2.0,
+    0.0,
+    4.0,
+    3.0
+   ],
+   "roundtrip": [
+    0.0,
+    2.0,
+    3.0,
+    4.0
+   ],
+   "declared_inputs": [
+    0.0,
+    2.0,
+    3.0,
+    4.0
+   ],
+   "max_abs_deviation": 0.0,
+   "derivative": {
+    "expected_slope": 1.7,
+    "returned": {
+     "dtype": "float64",
+     "shape": [
+      1
+     ],
+     "values": [
+      1.6999999999999997
+     ]
+    },
+    "max_abs_deviation": 2.220446049250313e-16
+   }
+  },
+  "unit": "declared coordinates"
+ },
+ "independent_check": {
+  "method": "forward then inverse on the declared point, and a linear function differentiated on the declared nonuniform grid",
+  "observed": {
+   "forward": [
+    2.0,
+    0.0,
+    4.0,
+    3.0
+   ],
+   "roundtrip": [
+    0.0,
+    2.0,
+    3.0,
+    4.0
+   ],
+   "declared_inputs": [
+    0.0,
+    2.0,
+    3.0,
+    4.0
+   ],
+   "max_abs_deviation": 0.0,
+   "derivative": {
+    "expected_slope": 1.7,
+    "returned": {
+     "dtype": "float64",
+     "shape": [
+      1
+     ],
+     "values": [
+      1.6999999999999997
+     ]
+    },
+    "max_abs_deviation": 2.220446049250313e-16
+   }
+  },
+  "verdict": "pass"
+ },
+ "criteria": [
+  {
+   "id": "fields",
+   "kind": "contract_fields",
+   "status": "pass",
+   "detail": {
+    "channel": "single declared output returned positionally",
+    "declared": {
+     "name": "position_and_vector",
+     "dtype": "float64 tuple",
+     "shape": "four broadcasted arrays"
+    },
+    "returned_type": "tuple",
+    "checks": {
+     "tuple_dtype": true
+    },
+    "verdict": "compatible",
+    "all_declared_outputs": [
+     "position_and_vector"
+    ]
+   }
+  },
+  {
+   "id": "fields_inverse",
+   "kind": "contract_fields",
+   "status": "pass",
+   "detail": {
+    "channel": "single declared output returned positionally",
+    "declared": {
+     "name": "position_and_vector",
+     "dtype": "float64 tuple",
+     "shape": "four broadcasted arrays"
+    },
+    "returned_type": "tuple",
+    "checks": {
+     "tuple_dtype": true
+    },
+    "verdict": "compatible",
+    "all_declared_outputs": [
+     "position_and_vector"
+    ]
+   }
+  },
+  {
+   "id": "roundtrip",
+   "kind": "invariant",
+   "status": "pass",
+   "detail": {
+    "forward": [
+     2.0,
+     0.0,
+     4.0,
+     3.0
+    ],
+    "roundtrip": [
+     0.0,
+     2.0,
+     3.0,
+     4.0
+    ],
+    "declared_inputs": [
+     0.0,
+     2.0,
+     3.0,
+     4.0
+    ],
+    "max_abs_deviation": 0.0
+   }
+  },
+  {
+   "id": "derivative",
+   "kind": "invariant",
+   "status": "pass",
+   "detail": {
+    "expected_slope": 1.7,
+    "returned": {
+     "dtype": "float64",
+     "shape": [
+      1
+     ],
+     "values": [
+      1.6999999999999997
+     ]
+    },
+    "max_abs_deviation": 2.220446049250313e-16
+   }
+  },
+  {
+   "id": "readback",
+   "kind": "readback",
+   "status": "pass",
+   "detail": {
+    "reopened": "sampling-transform-and-derivative.json",
+    "problems": [],
+    "stored_call_count": 3
+   }
+  }
+ ],
+ "package_sufficient": true,
+ "sufficient_reason": "both entries are published and the inverse accepts the forward record",
+ "gaps": [],
+ "bindings": {
+  "scirel.geometry.meridional-polar-forward": {
+   "symbol": "transform_to_rtheta",
+   "args": {
+    "Rho": 0.0,
+    "Z": 2.0,
+    "rho_component": 3.0,
+    "z_component": 4.0
+   },
+   "example_error": null
+  },
+  "scirel.geometry.nonuniform-first-derivative": {
+   "symbol": "diff_central",
+   "args": {
+    "x": {
+     "dtype": "float64",
+     "shape": [
+      3
+     ],
+     "values": [
+      0.0,
+      0.3,
+      1.0
+     ]
+    },
+    "y": {
+     "dtype": "float64",
+     "shape": [
+      3
+     ],
+     "values": [
+      0.0,
+      0.09,
+      1.0
+     ]
+    }
+   },
+   "example_error": null
+  }
+ }
+}

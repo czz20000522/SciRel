@@ -1,0 +1,207 @@
+{
+ "task_id": "io-rejects-bad-and-missing-input",
+ "kind": "failure",
+ "domain": "io",
+ "subdomain": "declared malformed-content and missing-file channels",
+ "question": "Read declared malformed EQDSK content, then read a declared nonexistent path, and report the two exceptions the contract assigns to those two channels without repairing either input.",
+ "assets_declared": [
+  "scirel.io.read-eqdsk"
+ ],
+ "min_calls": 2,
+ "package": {
+  "python": "3.14.7",
+  "numpy": "2.5.4",
+  "scipy": "1.18.1",
+  "mpmath": "1.4.1",
+  "wheel_sha256": "f1501a3efbdaba7b18c9af7be06ff30d9a33caf2777534de71f6833b93938b2a",
+  "snapshot_sha256": "7572961c553ecca28c506a392297d514b714eb1fcdffccfff262618d75b60bf3",
+  "source_revision": "d429359dcfbf37aedf09aa64cfa78b89da3b3623",
+  "asset_count": 249,
+  "runtime": {
+   "dependencies_bundled": false,
+   "package_version": "0.0.0",
+   "requires_dist": [
+    "numpy==2.5.4",
+    "scipy==1.18.1",
+    "mpmath==1.4.1"
+   ],
+   "requires_python": ">=3.12",
+   "wheel": "scirel-0.0.0-py3-none-any.whl",
+   "wheel_sha256": "f1501a3efbdaba7b18c9af7be06ff30d9a33caf2777534de71f6833b93938b2a"
+  }
+ },
+ "assets_used": [
+  "scirel.io.read-eqdsk"
+ ],
+ "calls": [
+  {
+   "seq": 1,
+   "label": "declare filename='declared-malformed.eqdsk' only (frozen stimulus)",
+   "asset": "scirel.io.read-eqdsk",
+   "entrypoint": "scirel.io.eqdsk:read_eqdsk",
+   "arguments": {
+    "args": [],
+    "kwargs": {
+     "filename": "declared-malformed.eqdsk",
+     "strict": true
+    }
+   },
+   "status": "raised",
+   "returned_fields": null,
+   "exception": {
+    "type": "FileNotFoundError",
+    "module": "builtins",
+    "message": "[Errno 2] No such file or directory: 'declared-malformed.eqdsk'",
+    "qualname": "builtins.FileNotFoundError"
+   },
+   "warnings": []
+  },
+  {
+   "seq": 2,
+   "label": "declare filename='declared-missing-case.eqdsk' only (frozen stimulus)",
+   "asset": "scirel.io.read-eqdsk",
+   "entrypoint": "scirel.io.eqdsk:read_eqdsk",
+   "arguments": {
+    "args": [],
+    "kwargs": {
+     "filename": "declared-missing-case.eqdsk",
+     "strict": true
+    }
+   },
+   "status": "raised",
+   "returned_fields": null,
+   "exception": {
+    "type": "FileNotFoundError",
+    "module": "builtins",
+    "message": "[Errno 2] No such file or directory: 'declared-missing-case.eqdsk'",
+    "qualname": "builtins.FileNotFoundError"
+   },
+   "warnings": []
+  }
+ ],
+ "answer": {
+  "value": [
+   {
+    "asset": "scirel.io.read-eqdsk",
+    "field": "filename",
+    "baseline_value": "PosixPath('/var/folders/xs/087tqd_503sg17p24yb42k200000gn/T/tmpyr5y2nrh/example.eqdsk')",
+    "requested_value": "declared-malformed.eqdsk",
+    "outcome": "raised",
+    "exception_type": "FileNotFoundError",
+    "exception_message": "[Errno 2] No such file or directory: 'declared-malformed.eqdsk'",
+    "declared_exception": "EQDSKFormatError"
+   },
+   {
+    "asset": "scirel.io.read-eqdsk",
+    "field": "filename",
+    "baseline_value": "PosixPath('/var/folders/xs/087tqd_503sg17p24yb42k200000gn/T/tmpyr5y2nrh/example.eqdsk')",
+    "requested_value": "declared-missing-case.eqdsk",
+    "outcome": "raised",
+    "exception_type": "FileNotFoundError",
+    "exception_message": "[Errno 2] No such file or directory: 'declared-missing-case.eqdsk'",
+    "declared_exception": "OSError"
+   }
+  ],
+  "unit": "exception type and message, as raised"
+ },
+ "independent_check": {
+  "method": "the contract's failure_semantics quote is compared with the exception the library actually raised, field by field",
+  "verdict": "fail"
+ },
+ "criteria": [
+  {
+   "id": "malformed",
+   "kind": "exception",
+   "status": "fail",
+   "detail": {
+    "expected_exception": "EQDSKFormatError",
+    "expected_appears_in_contract_quote": true,
+    "type_matches_exactly_or_by_subclass": false,
+    "contract_quote": "EQDSKFormatError for malformed, truncated, non-numeric, non-finite, dimensionally inconsistent, or unexpected extended-dialect records; strict=False permits only trailing records.",
+    "actual": {
+     "type": "FileNotFoundError",
+     "module": "builtins",
+     "message": "[Errno 2] No such file or directory: 'declared-malformed.eqdsk'",
+     "qualname": "builtins.FileNotFoundError"
+    },
+    "declared_rejection_phrase": "malformed, truncated, non-numeric, non-finite, dimensionally inconsistent",
+    "declared_rejection_appears_in_contract_quote": true,
+    "stimulus_field": "filename",
+    "stimulus_value": "declared-malformed.eqdsk",
+    "baseline_value": "PosixPath('/var/folders/xs/087tqd_503sg17p24yb42k200000gn/T/tmpyr5y2nrh/example.eqdsk')"
+   }
+  },
+  {
+   "id": "missing",
+   "kind": "exception",
+   "status": "fail",
+   "detail": {
+    "expected_exception": "OSError",
+    "expected_appears_in_contract_quote": true,
+    "type_matches_exactly_or_by_subclass": false,
+    "contract_quote": "OSError from filesystem access and UnicodeError from decoding propagate.",
+    "actual": {
+     "type": "FileNotFoundError",
+     "module": "builtins",
+     "message": "[Errno 2] No such file or directory: 'declared-missing-case.eqdsk'",
+     "qualname": "builtins.FileNotFoundError"
+    },
+    "declared_rejection_phrase": "OSError from filesystem access",
+    "declared_rejection_appears_in_contract_quote": true,
+    "stimulus_field": "filename",
+    "stimulus_value": "declared-missing-case.eqdsk",
+    "baseline_value": "PosixPath('/var/folders/xs/087tqd_503sg17p24yb42k200000gn/T/tmpyr5y2nrh/example.eqdsk')"
+   }
+  },
+  {
+   "id": "norepair",
+   "kind": "invariant",
+   "status": "pass",
+   "detail": {
+    "calls_made": 2,
+    "calls_expected": 2,
+    "note": "exactly the frozen stimulus was passed; no fallback method, clamp or retry",
+    "arguments": [
+     {
+      "args": [],
+      "kwargs": {
+       "filename": "declared-malformed.eqdsk",
+       "strict": true
+      }
+     },
+     {
+      "args": [],
+      "kwargs": {
+       "filename": "declared-missing-case.eqdsk",
+       "strict": true
+      }
+     }
+    ],
+    "statement": "The consumer must not repair the malformed record set nor create a placeholder file at the missing path; both rejected inputs must appear unchanged in the trace, and the two cases must stay two cases rather than one retried call. Applies only to the declared stimulus filename = \"declared-malformed.eqdsk\", filename = \"declared-missing-case.eqdsk\"; no other field is varied."
+   }
+  },
+  {
+   "id": "readback",
+   "kind": "readback",
+   "status": "pass",
+   "detail": {
+    "reopened": "io-rejects-bad-and-missing-input.json",
+    "problems": [],
+    "stored_call_count": 2
+   }
+  }
+ ],
+ "package_sufficient": false,
+ "sufficient_reason": "the library did not raise the exception the delivered contract declares for this stimulus, or the contract quote does not contain the frozen phrase",
+ "gaps": [],
+ "bindings": {
+  "scirel.io.read-eqdsk": {
+   "symbol": "read_eqdsk",
+   "args": {
+    "filename": "PosixPath('/var/folders/xs/087tqd_503sg17p24yb42k200000gn/T/tmpyr5y2nrh/example.eqdsk')",
+    "strict": true
+   },
+   "example_error": null
+  }
+ }
+}

@@ -1,0 +1,291 @@
+{
+ "task_id": "mirror-ambipolar-and-loss-cone",
+ "kind": "nominal",
+ "domain": "mirror",
+ "subdomain": "ambipolar potential and loss-cone distribution",
+ "question": "Evaluate the declared ambipolar potential, build the declared loss-cone spectrum and the mirror-invariant distribution it implies, and report the pitch-angle boundary each used.",
+ "assets_declared": [
+  "scirel.mirror.mirror-ambipolar-potential",
+  "scirel.mirror.loss-cone-spectrum",
+  "scirel.mirror.mirror-invariant-distribution"
+ ],
+ "min_calls": 3,
+ "package": {
+  "python": "3.14.7",
+  "numpy": "2.5.4",
+  "scipy": "1.18.1",
+  "mpmath": "1.4.1",
+  "wheel_sha256": "f1501a3efbdaba7b18c9af7be06ff30d9a33caf2777534de71f6833b93938b2a",
+  "snapshot_sha256": "7572961c553ecca28c506a392297d514b714eb1fcdffccfff262618d75b60bf3",
+  "source_revision": "d429359dcfbf37aedf09aa64cfa78b89da3b3623",
+  "asset_count": 249,
+  "runtime": {
+   "dependencies_bundled": false,
+   "package_version": "0.0.0",
+   "requires_dist": [
+    "numpy==2.5.4",
+    "scipy==1.18.1",
+    "mpmath==1.4.1"
+   ],
+   "requires_python": ">=3.12",
+   "wheel": "scirel-0.0.0-py3-none-any.whl",
+   "wheel_sha256": "f1501a3efbdaba7b18c9af7be06ff30d9a33caf2777534de71f6833b93938b2a"
+  }
+ },
+ "assets_used": [
+  "scirel.mirror.loss-cone-spectrum",
+  "scirel.mirror.mirror-ambipolar-potential",
+  "scirel.mirror.mirror-invariant-distribution"
+ ],
+ "calls": [
+  {
+   "seq": 1,
+   "label": "declared ambipolar potential",
+   "asset": "scirel.mirror.mirror-ambipolar-potential",
+   "entrypoint": "scirel.mirror.mirror_ambipolar_potential:solve_mirror_ambipolar_potential",
+   "arguments": {
+    "args": [],
+    "kwargs": {
+     "b_reference_t": 1.0,
+     "b_plug_t": 1.0,
+     "psi": 0.0,
+     "ion_mass_kg": 1.67262192595e-27,
+     "ion_charge_c": 1.602176634e-19,
+     "ion_density_ref_m3": 2e+18,
+     "ion_temperature_parallel_j": 3.204353268e-19,
+     "ion_temperature_perpendicular_j": 4.806529901999999e-19,
+     "electron_temperature_j": 1.602176634e-19,
+     "phi_reference_v": 0.0,
+     "electron_density_ref_m3": 3e+18,
+     "ion_loss_refill": 0.25,
+     "electron_loss_refill": 0.5,
+     "potential_tolerance_v": 1e-06,
+     "current_tolerance": 1e-10,
+     "max_iterations": 100,
+     "initial_bracket_thermal": 8.0,
+     "mode": "evaluate",
+     "phi_plug_v": 1.0
+    }
+   },
+   "status": "returned",
+   "returned_fields": [
+    "converged",
+    "current_balance_solved",
+    "electron_particle_flux_m2_s",
+    "evaluation_complete",
+    "ion_particle_flux_m2_s",
+    "iterations",
+    "log_current_ratio",
+    "potential_v",
+    "relative_current_residual"
+   ],
+   "exception": null,
+   "warnings": [],
+   "returned_type": "Result"
+  },
+  {
+   "seq": 2,
+   "label": "declared loss-cone spectrum",
+   "asset": "scirel.mirror.loss-cone-spectrum",
+   "entrypoint": "scirel.mirror.loss_cone_spectrum:solve_loss_cone_spectrum",
+   "arguments": {
+    "args": [],
+    "kwargs": {
+     "xi_tp": 0.5773502691896258,
+     "mode_count": 2,
+     "grid_points": 40,
+     "backend": "truncated"
+    }
+   },
+   "status": "returned",
+   "returned_fields": [
+    "backend",
+    "boundary_residuals",
+    "degrees",
+    "eigenfunctions",
+    "eigenvalues",
+    "evaluation_method",
+    "xi"
+   ],
+   "exception": null,
+   "warnings": [],
+   "returned_type": "dict"
+  },
+  {
+   "seq": 3,
+   "label": "declared invariant distribution",
+   "asset": "scirel.mirror.mirror-invariant-distribution",
+   "entrypoint": "scirel.mirror.mirror_invariant_distribution:evaluate_mirror_invariant_distribution",
+   "arguments": {
+    "args": [],
+    "kwargs": {
+     "v_parallel_m_s": 0.0,
+     "v_perpendicular_m_s": 0.0,
+     "b_t": 1.0,
+     "psi": 0.0,
+     "potential_v": 0.0,
+     "mass_kg": 1.67262192595e-27,
+     "charge_c": 1.602176634e-19,
+     "density_ref_m3": 2e+18,
+     "temperature_parallel_j": 1.9226119607999998e-16,
+     "temperature_perpendicular_ref_j": 3.8452239215999996e-16,
+     "b_ref_t": 1.0,
+     "phi_ref_v": 0.0,
+     "b_plug_left_t": null,
+     "b_plug_right_t": null,
+     "phi_plug_left_v": 0.0,
+     "phi_plug_right_v": 0.0,
+     "loss_cone_refill": 0.0
+    }
+   },
+   "status": "returned",
+   "returned_fields": [
+    "energy_j",
+    "f0_s3_m6",
+    "magnetic_moment_j_t",
+    "occupation"
+   ],
+   "exception": null,
+   "warnings": [],
+   "returned_type": "dict"
+  }
+ ],
+ "answer": {
+  "value": {
+   "first_eigenfunction_deviation": 2.220446049250313e-16,
+   "first_eigenvalue": 6.0,
+   "boundary_residual_max": 7.201877982865312e-14,
+   "grid_points": 40
+  },
+  "unit": "dimensionless"
+ },
+ "independent_check": {
+  "method": "the first loss-cone eigenfunction is compared with 1-3*xi^2 and the fraction is checked inside [0,1]",
+  "observed": {
+   "first_eigenfunction_deviation": 2.220446049250313e-16,
+   "first_eigenvalue": 6.0,
+   "boundary_residual_max": 7.201877982865312e-14,
+   "grid_points": 40
+  },
+  "verdict": "pass"
+ },
+ "criteria": [
+  {
+   "id": "fields",
+   "kind": "contract_fields",
+   "status": "pass",
+   "detail": {
+    "declared": [
+     "backend",
+     "boundary_residuals",
+     "degrees",
+     "eigenfunctions",
+     "eigenvalues",
+     "evaluation_method",
+     "xi"
+    ],
+    "returned": [
+     "backend",
+     "boundary_residuals",
+     "degrees",
+     "eigenfunctions",
+     "eigenvalues",
+     "evaluation_method",
+     "xi"
+    ]
+   }
+  },
+  {
+   "id": "declared_record",
+   "kind": "invariant",
+   "status": "pass",
+   "detail": {
+    "first_eigenfunction_deviation": 2.220446049250313e-16,
+    "first_eigenvalue": 6.0,
+    "boundary_residual_max": 7.201877982865312e-14,
+    "grid_points": 40
+   }
+  },
+  {
+   "id": "finite_check",
+   "kind": "invariant",
+   "status": "pass",
+   "detail": {
+    "mirrored_distribution_finite": true
+   }
+  },
+  {
+   "id": "readback",
+   "kind": "readback",
+   "status": "pass",
+   "detail": {
+    "reopened": "mirror-ambipolar-and-loss-cone.json",
+    "problems": [],
+    "stored_call_count": 3
+   }
+  }
+ ],
+ "package_sufficient": true,
+ "sufficient_reason": "the spectrum returns the grid it was evaluated on, so the eigenfunction can be compared with its declared closed form",
+ "gaps": [],
+ "bindings": {
+  "scirel.mirror.mirror-ambipolar-potential": {
+   "symbol": "solve_mirror_ambipolar_potential",
+   "args": {
+    "b_reference_t": 1.0,
+    "b_plug_t": 1.0,
+    "psi": 0.0,
+    "ion_mass_kg": 1.67262192595e-27,
+    "ion_charge_c": 1.602176634e-19,
+    "ion_density_ref_m3": 2e+18,
+    "ion_temperature_parallel_j": 3.204353268e-19,
+    "ion_temperature_perpendicular_j": 4.806529901999999e-19,
+    "electron_temperature_j": 1.602176634e-19,
+    "phi_reference_v": 0.0,
+    "electron_density_ref_m3": 3e+18,
+    "ion_loss_refill": 0.25,
+    "electron_loss_refill": 0.5,
+    "potential_tolerance_v": 1e-06,
+    "current_tolerance": 1e-10,
+    "max_iterations": 100,
+    "initial_bracket_thermal": 8.0,
+    "mode": "evaluate",
+    "phi_plug_v": 1.0
+   },
+   "example_error": null
+  },
+  "scirel.mirror.loss-cone-spectrum": {
+   "symbol": "solve_loss_cone_spectrum",
+   "args": {
+    "xi_tp": 0.5773502691896258,
+    "mode_count": 2,
+    "grid_points": 40,
+    "backend": "truncated"
+   },
+   "example_error": null
+  },
+  "scirel.mirror.mirror-invariant-distribution": {
+   "symbol": "evaluate_mirror_invariant_distribution",
+   "args": {
+    "v_parallel_m_s": 0.0,
+    "v_perpendicular_m_s": 0.0,
+    "b_t": 1.0,
+    "psi": 0.0,
+    "potential_v": 0.0,
+    "mass_kg": 1.67262192595e-27,
+    "charge_c": 1.602176634e-19,
+    "density_ref_m3": 2e+18,
+    "temperature_parallel_j": 1.9226119607999998e-16,
+    "temperature_perpendicular_ref_j": 3.8452239215999996e-16,
+    "b_ref_t": 1.0,
+    "phi_ref_v": 0.0,
+    "b_plug_left_t": null,
+    "b_plug_right_t": null,
+    "phi_plug_left_v": 0.0,
+    "phi_plug_right_v": 0.0,
+    "loss_cone_refill": 0.0
+   },
+   "example_error": null
+  }
+ }
+}

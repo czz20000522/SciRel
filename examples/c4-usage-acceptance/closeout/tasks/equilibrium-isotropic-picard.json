@@ -1,0 +1,1253 @@
+{
+ "task_id": "equilibrium-isotropic-picard",
+ "kind": "nominal",
+ "domain": "equilibrium",
+ "subdomain": "isotropic pressure flux and Picard step",
+ "question": "Build a declared pressure-flux state, take one declared isotropic Picard step and report the step residual together with the flux it consumed and produced.",
+ "assets_declared": [
+  "scirel.equilibrium.isotropic-picard-step",
+  "scirel.equilibrium.isotropic-pressure-flux",
+  "scirel.equilibrium.pressure-flux-state"
+ ],
+ "min_calls": 3,
+ "package": {
+  "python": "3.14.7",
+  "numpy": "2.5.4",
+  "scipy": "1.18.1",
+  "mpmath": "1.4.1",
+  "wheel_sha256": "f1501a3efbdaba7b18c9af7be06ff30d9a33caf2777534de71f6833b93938b2a",
+  "snapshot_sha256": "7572961c553ecca28c506a392297d514b714eb1fcdffccfff262618d75b60bf3",
+  "source_revision": "d429359dcfbf37aedf09aa64cfa78b89da3b3623",
+  "asset_count": 249,
+  "runtime": {
+   "dependencies_bundled": false,
+   "package_version": "0.0.0",
+   "requires_dist": [
+    "numpy==2.5.4",
+    "scipy==1.18.1",
+    "mpmath==1.4.1"
+   ],
+   "requires_python": ">=3.12",
+   "wheel": "scirel-0.0.0-py3-none-any.whl",
+   "wheel_sha256": "f1501a3efbdaba7b18c9af7be06ff30d9a33caf2777534de71f6833b93938b2a"
+  }
+ },
+ "assets_used": [
+  "scirel.equilibrium.isotropic-picard-step",
+  "scirel.equilibrium.isotropic-pressure-flux",
+  "scirel.equilibrium.pressure-flux-state"
+ ],
+ "calls": [
+  {
+   "seq": 1,
+   "label": "declared Picard step",
+   "asset": "scirel.equilibrium.isotropic-picard-step",
+   "entrypoint": "scirel.equilibrium.isotropic_picard_step:pressure_flux_picard_step",
+   "arguments": {
+    "args": [],
+    "kwargs": {
+     "r_grid": {
+      "dtype": "float64",
+      "shape": [
+       2,
+       2
+      ],
+      "values": [
+       [
+        1.0,
+        2.0
+       ],
+       [
+        1.0,
+        2.0
+       ]
+      ]
+     },
+     "z_grid": {
+      "dtype": "float64",
+      "shape": [
+       2,
+       2
+      ],
+      "values": [
+       [
+        -1.0,
+        -1.0
+       ],
+       [
+        1.0,
+        1.0
+       ]
+      ]
+     },
+     "psi_state": {
+      "dtype": "float64",
+      "shape": [
+       2,
+       2
+      ],
+      "values": [
+       [
+        0.0,
+        0.0
+       ],
+       [
+        0.0,
+        0.0
+       ]
+      ]
+     },
+     "psi_vac": {
+      "dtype": "float64",
+      "shape": [
+       2,
+       2
+      ],
+      "values": [
+       [
+        1.0,
+        1.0
+       ],
+       [
+        1.0,
+        1.0
+       ]
+      ]
+     },
+     "g_psi": {
+      "dtype": "float64",
+      "shape": [
+       4,
+       4
+      ],
+      "values": [
+       [
+        1.0,
+        0.0,
+        0.0,
+        0.0
+       ],
+       [
+        0.0,
+        1.0,
+        0.0,
+        0.0
+       ],
+       [
+        0.0,
+        0.0,
+        1.0,
+        0.0
+       ],
+       [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+       ]
+      ]
+     },
+     "pressure_derivative": [
+      1.0,
+      2.0,
+      3.0,
+      4.0
+     ],
+     "psi_edge": 2.0,
+     "currents_old": [
+      10.0,
+      20.0,
+      30.0,
+      40.0
+     ],
+     "relax": 0.25
+    }
+   },
+   "status": "returned",
+   "returned_fields": [
+    "plasma_currents",
+    "psi_next",
+    "residual"
+   ],
+   "exception": null,
+   "warnings": [],
+   "returned_type": "Result"
+  },
+  {
+   "seq": 2,
+   "label": "declared iterated solve",
+   "asset": "scirel.equilibrium.isotropic-pressure-flux",
+   "entrypoint": "scirel.equilibrium.isotropic_pressure_flux:solve_isotropic_pressure_flux",
+   "arguments": {
+    "args": [],
+    "kwargs": {
+     "r_grid": {
+      "dtype": "float64",
+      "shape": [
+       3,
+       4
+      ],
+      "values": [
+       [
+        0.2,
+        0.4,
+        0.6000000000000001,
+        0.8
+       ],
+       [
+        0.2,
+        0.4,
+        0.6000000000000001,
+        0.8
+       ],
+       [
+        0.2,
+        0.4,
+        0.6000000000000001,
+        0.8
+       ]
+      ]
+     },
+     "z_grid": {
+      "dtype": "float64",
+      "shape": [
+       3,
+       4
+      ],
+      "values": [
+       [
+        -0.1,
+        -0.1,
+        -0.1,
+        -0.1
+       ],
+       [
+        0.0,
+        0.0,
+        0.0,
+        0.0
+       ],
+       [
+        0.1,
+        0.1,
+        0.1,
+        0.1
+       ]
+      ]
+     },
+     "psi_vac": {
+      "dtype": "float64",
+      "shape": [
+       3,
+       4
+      ],
+      "values": [
+       [
+        0.2,
+        0.4,
+        0.6000000000000001,
+        0.8
+       ],
+       [
+        0.2,
+        0.4,
+        0.6000000000000001,
+        0.8
+       ],
+       [
+        0.2,
+        0.4,
+        0.6000000000000001,
+        0.8
+       ]
+      ]
+     },
+     "g_psi": {
+      "dtype": "float64",
+      "shape": [
+       12,
+       12
+      ],
+      "values": [
+       [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+       ],
+       [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+       ],
+       [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+       ],
+       [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+       ],
+       [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+       ],
+       [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+       ],
+       [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+       ],
+       [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+       ],
+       [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+       ],
+       [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+       ],
+       [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+       ],
+       [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+       ]
+      ]
+     },
+     "pressure_of_radius": "<function <lambda> at 0x109df5e80>",
+     "tol": 1e-12,
+     "maxiter": 1,
+     "relax": 0.0,
+     "plasma_mask": null
+    }
+   },
+   "status": "returned",
+   "returned_fields": [
+    "closure_residual",
+    "closure_residual_history",
+    "converged",
+    "failure_reason",
+    "iterations",
+    "plasma_currents",
+    "pressure_of_psi",
+    "psi",
+    "residual",
+    "residual_history",
+    "status"
+   ],
+   "exception": null,
+   "warnings": [],
+   "returned_type": "dict"
+  },
+  {
+   "seq": 3,
+   "label": "declared pressure-flux state",
+   "asset": "scirel.equilibrium.pressure-flux-state",
+   "entrypoint": "scirel.equilibrium.pressure_flux_state:build_pressure_flux_state",
+   "arguments": {
+    "args": [],
+    "kwargs": {
+     "r_grid": {
+      "dtype": "float64",
+      "shape": [
+       3,
+       4
+      ],
+      "values": [
+       [
+        0.2,
+        0.4,
+        0.6000000000000001,
+        0.8
+       ],
+       [
+        0.2,
+        0.4,
+        0.6000000000000001,
+        0.8
+       ],
+       [
+        0.2,
+        0.4,
+        0.6000000000000001,
+        0.8
+       ]
+      ]
+     },
+     "z_grid": {
+      "dtype": "float64",
+      "shape": [
+       3,
+       4
+      ],
+      "values": [
+       [
+        -0.1,
+        -0.1,
+        -0.1,
+        -0.1
+       ],
+       [
+        0.0,
+        0.0,
+        0.0,
+        0.0
+       ],
+       [
+        0.1,
+        0.1,
+        0.1,
+        0.1
+       ]
+      ]
+     },
+     "psi": {
+      "dtype": "float64",
+      "shape": [
+       3,
+       4
+      ],
+      "values": [
+       [
+        0.2,
+        0.4,
+        0.6000000000000001,
+        0.8
+       ],
+       [
+        0.2,
+        0.4,
+        0.6000000000000001,
+        0.8
+       ],
+       [
+        0.2,
+        0.4,
+        0.6000000000000001,
+        0.8
+       ]
+      ]
+     },
+     "pressure_of_radius": "<function <lambda> at 0x10c5d6820>",
+     "plasma_mask": {
+      "dtype": "bool",
+      "shape": [
+       3,
+       4
+      ],
+      "values": [
+       [
+        false,
+        false,
+        false,
+        false
+       ],
+       [
+        false,
+        false,
+        true,
+        false
+       ],
+       [
+        false,
+        false,
+        false,
+        false
+       ]
+      ]
+     }
+    }
+   },
+   "status": "returned",
+   "returned_fields": [
+    "limiter_index",
+    "pressure_derivative",
+    "pressure_of_psi",
+    "psi_edge",
+    "zero_currents"
+   ],
+   "exception": null,
+   "warnings": [],
+   "returned_type": "Result"
+  }
+ ],
+ "answer": {
+  "value": {
+   "relax": 0.25,
+   "target_currents": {
+    "dtype": "float64",
+    "shape": [
+     4
+    ],
+    "values": [
+     2.0,
+     8.0,
+     6.0,
+     16.0
+    ]
+   },
+   "returned": {
+    "dtype": "float64",
+    "shape": [
+     4
+    ],
+    "values": [
+     4.0,
+     11.0,
+     12.0,
+     22.0
+    ]
+   },
+   "relative_deviation": 0.0,
+   "residual": 14.722431864335457,
+   "declared_budget_rel": 1e-12
+  },
+  "unit": "A/m^2 (plasma current density)"
+ },
+ "independent_check": {
+  "method": "currents recomputed as (1-relax)*I_target + relax*I_old with I_target from the declared grid and dp/dpsi",
+  "observed": {
+   "relax": 0.25,
+   "target_currents": {
+    "dtype": "float64",
+    "shape": [
+     4
+    ],
+    "values": [
+     2.0,
+     8.0,
+     6.0,
+     16.0
+    ]
+   },
+   "returned": {
+    "dtype": "float64",
+    "shape": [
+     4
+    ],
+    "values": [
+     4.0,
+     11.0,
+     12.0,
+     22.0
+    ]
+   },
+   "relative_deviation": 0.0,
+   "residual": 14.722431864335457,
+   "declared_budget_rel": 1e-12
+  },
+  "verdict": "pass"
+ },
+ "criteria": [
+  {
+   "id": "fields",
+   "kind": "contract_fields",
+   "status": "pass",
+   "detail": {
+    "declared": [
+     "plasma_currents",
+     "psi_next",
+     "residual"
+    ],
+    "returned": [
+     "plasma_currents",
+     "psi_next",
+     "residual"
+    ]
+   }
+  },
+  {
+   "id": "declared_update",
+   "kind": "invariant",
+   "status": "pass",
+   "detail": {
+    "relax": 0.25,
+    "target_currents": {
+     "dtype": "float64",
+     "shape": [
+      4
+     ],
+     "values": [
+      2.0,
+      8.0,
+      6.0,
+      16.0
+     ]
+    },
+    "returned": {
+     "dtype": "float64",
+     "shape": [
+      4
+     ],
+     "values": [
+      4.0,
+      11.0,
+      12.0,
+      22.0
+     ]
+    },
+    "relative_deviation": 0.0,
+    "residual": 14.722431864335457,
+    "declared_budget_rel": 1e-12
+   }
+  },
+  {
+   "id": "residualmeaning",
+   "kind": "invariant",
+   "status": "not-run",
+   "detail": {
+    "why": "the declared norm of the difference between pre- and post-step flux is not returned beside the step record, so the reported residual could not be recomputed from stored arrays"
+   }
+  },
+  {
+   "id": "readback",
+   "kind": "readback",
+   "status": "pass",
+   "detail": {
+    "reopened": "equilibrium-isotropic-picard.json",
+    "problems": [],
+    "stored_call_count": 3
+   }
+  }
+ ],
+ "package_sufficient": false,
+ "sufficient_reason": "the update law is verified, but the residual criterion cannot be recomputed from the delivered record",
+ "gaps": [
+  {
+   "level": "confidence",
+   "text": "the step record carries a residual but not the pre/post flux arrays the contract defines the residual against"
+  }
+ ],
+ "bindings": {
+  "scirel.equilibrium.isotropic-picard-step": {
+   "symbol": "pressure_flux_picard_step",
+   "args": {
+    "r_grid": {
+     "dtype": "float64",
+     "shape": [
+      2,
+      2
+     ],
+     "values": [
+      [
+       1.0,
+       2.0
+      ],
+      [
+       1.0,
+       2.0
+      ]
+     ]
+    },
+    "z_grid": {
+     "dtype": "float64",
+     "shape": [
+      2,
+      2
+     ],
+     "values": [
+      [
+       -1.0,
+       -1.0
+      ],
+      [
+       1.0,
+       1.0
+      ]
+     ]
+    },
+    "psi_state": {
+     "dtype": "float64",
+     "shape": [
+      2,
+      2
+     ],
+     "values": [
+      [
+       0.0,
+       0.0
+      ],
+      [
+       0.0,
+       0.0
+      ]
+     ]
+    },
+    "psi_vac": {
+     "dtype": "float64",
+     "shape": [
+      2,
+      2
+     ],
+     "values": [
+      [
+       1.0,
+       1.0
+      ],
+      [
+       1.0,
+       1.0
+      ]
+     ]
+    },
+    "g_psi": {
+     "dtype": "float64",
+     "shape": [
+      4,
+      4
+     ],
+     "values": [
+      [
+       1.0,
+       0.0,
+       0.0,
+       0.0
+      ],
+      [
+       0.0,
+       1.0,
+       0.0,
+       0.0
+      ],
+      [
+       0.0,
+       0.0,
+       1.0,
+       0.0
+      ],
+      [
+       0.0,
+       0.0,
+       0.0,
+       1.0
+      ]
+     ]
+    },
+    "pressure_derivative": [
+     1.0,
+     2.0,
+     3.0,
+     4.0
+    ],
+    "psi_edge": 2.0,
+    "currents_old": [
+     10.0,
+     20.0,
+     30.0,
+     40.0
+    ],
+    "relax": 0.25
+   },
+   "example_error": null
+  },
+  "scirel.equilibrium.isotropic-pressure-flux": {
+   "symbol": "solve_isotropic_pressure_flux",
+   "args": {
+    "r_grid": {
+     "dtype": "float64",
+     "shape": [
+      3,
+      4
+     ],
+     "values": [
+      [
+       0.2,
+       0.4,
+       0.6000000000000001,
+       0.8
+      ],
+      [
+       0.2,
+       0.4,
+       0.6000000000000001,
+       0.8
+      ],
+      [
+       0.2,
+       0.4,
+       0.6000000000000001,
+       0.8
+      ]
+     ]
+    },
+    "z_grid": {
+     "dtype": "float64",
+     "shape": [
+      3,
+      4
+     ],
+     "values": [
+      [
+       -0.1,
+       -0.1,
+       -0.1,
+       -0.1
+      ],
+      [
+       0.0,
+       0.0,
+       0.0,
+       0.0
+      ],
+      [
+       0.1,
+       0.1,
+       0.1,
+       0.1
+      ]
+     ]
+    },
+    "psi_vac": {
+     "dtype": "float64",
+     "shape": [
+      3,
+      4
+     ],
+     "values": [
+      [
+       0.2,
+       0.4,
+       0.6000000000000001,
+       0.8
+      ],
+      [
+       0.2,
+       0.4,
+       0.6000000000000001,
+       0.8
+      ],
+      [
+       0.2,
+       0.4,
+       0.6000000000000001,
+       0.8
+      ]
+     ]
+    },
+    "g_psi": {
+     "dtype": "float64",
+     "shape": [
+      12,
+      12
+     ],
+     "values": [
+      [
+       0.0,
+       0.0,
+       0.0,
+       0.0,
+       0.0,
+       0.0,
+       0.0,
+       0.0,
+       0.0,
+       0.0,
+       0.0,
+       0.0
+      ],
+      [
+       0.0,
+       0.0,
+       0.0,
+       0.0,
+       0.0,
+       0.0,
+       0.0,
+       0.0,
+       0.0,
+       0.0,
+       0.0,
+       0.0
+      ],
+      [
+       0.0,
+       0.0,
+       0.0,
+       0.0,
+       0.0,
+       0.0,
+       0.0,
+       0.0,
+       0.0,
+       0.0,
+       0.0,
+       0.0
+      ],
+      [
+       0.0,
+       0.0,
+       0.0,
+       0.0,
+       0.0,
+       0.0,
+       0.0,
+       0.0,
+       0.0,
+       0.0,
+       0.0,
+       0.0
+      ],
+      [
+       0.0,
+       0.0,
+       0.0,
+       0.0,
+       0.0,
+       0.0,
+       0.0,
+       0.0,
+       0.0,
+       0.0,
+       0.0,
+       0.0
+      ],
+      [
+       0.0,
+       0.0,
+       0.0,
+       0.0,
+       0.0,
+       0.0,
+       0.0,
+       0.0,
+       0.0,
+       0.0,
+       0.0,
+       0.0
+      ],
+      [
+       0.0,
+       0.0,
+       0.0,
+       0.0,
+       0.0,
+       0.0,
+       0.0,
+       0.0,
+       0.0,
+       0.0,
+       0.0,
+       0.0
+      ],
+      [
+       0.0,
+       0.0,
+       0.0,
+       0.0,
+       0.0,
+       0.0,
+       0.0,
+       0.0,
+       0.0,
+       0.0,
+       0.0,
+       0.0
+      ],
+      [
+       0.0,
+       0.0,
+       0.0,
+       0.0,
+       0.0,
+       0.0,
+       0.0,
+       0.0,
+       0.0,
+       0.0,
+       0.0,
+       0.0
+      ],
+      [
+       0.0,
+       0.0,
+       0.0,
+       0.0,
+       0.0,
+       0.0,
+       0.0,
+       0.0,
+       0.0,
+       0.0,
+       0.0,
+       0.0
+      ],
+      [
+       0.0,
+       0.0,
+       0.0,
+       0.0,
+       0.0,
+       0.0,
+       0.0,
+       0.0,
+       0.0,
+       0.0,
+       0.0,
+       0.0
+      ],
+      [
+       0.0,
+       0.0,
+       0.0,
+       0.0,
+       0.0,
+       0.0,
+       0.0,
+       0.0,
+       0.0,
+       0.0,
+       0.0,
+       0.0
+      ]
+     ]
+    },
+    "pressure_of_radius": "<function <lambda> at 0x109df5e80>",
+    "tol": 1e-12,
+    "maxiter": 1,
+    "relax": 0.0,
+    "plasma_mask": null
+   },
+   "example_error": null
+  },
+  "scirel.equilibrium.pressure-flux-state": {
+   "symbol": "build_pressure_flux_state",
+   "args": {
+    "r_grid": {
+     "dtype": "float64",
+     "shape": [
+      3,
+      4
+     ],
+     "values": [
+      [
+       0.2,
+       0.4,
+       0.6000000000000001,
+       0.8
+      ],
+      [
+       0.2,
+       0.4,
+       0.6000000000000001,
+       0.8
+      ],
+      [
+       0.2,
+       0.4,
+       0.6000000000000001,
+       0.8
+      ]
+     ]
+    },
+    "z_grid": {
+     "dtype": "float64",
+     "shape": [
+      3,
+      4
+     ],
+     "values": [
+      [
+       -0.1,
+       -0.1,
+       -0.1,
+       -0.1
+      ],
+      [
+       0.0,
+       0.0,
+       0.0,
+       0.0
+      ],
+      [
+       0.1,
+       0.1,
+       0.1,
+       0.1
+      ]
+     ]
+    },
+    "psi": {
+     "dtype": "float64",
+     "shape": [
+      3,
+      4
+     ],
+     "values": [
+      [
+       0.2,
+       0.4,
+       0.6000000000000001,
+       0.8
+      ],
+      [
+       0.2,
+       0.4,
+       0.6000000000000001,
+       0.8
+      ],
+      [
+       0.2,
+       0.4,
+       0.6000000000000001,
+       0.8
+      ]
+     ]
+    },
+    "pressure_of_radius": "<function <lambda> at 0x10c5d6820>",
+    "plasma_mask": {
+     "dtype": "bool",
+     "shape": [
+      3,
+      4
+     ],
+     "values": [
+      [
+       false,
+       false,
+       false,
+       false
+      ],
+      [
+       false,
+       false,
+       true,
+       false
+      ],
+      [
+       false,
+       false,
+       false,
+       false
+      ]
+     ]
+    }
+   },
+   "example_error": null
+  }
+ }
+}

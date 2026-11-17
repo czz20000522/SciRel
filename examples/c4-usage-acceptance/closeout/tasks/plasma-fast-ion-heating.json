@@ -1,0 +1,168 @@
+{
+ "task_id": "plasma-fast-ion-heating",
+ "kind": "nominal",
+ "domain": "plasma",
+ "subdomain": "fast ion heating combination",
+ "question": "Evaluate the declared fast ion heating entry for one declared beam population and report the heating quantity together with the declared conservation or partition relation it satisfies.",
+ "assets_declared": [
+  "scirel.plasma.fast-ion-heating"
+ ],
+ "min_calls": 2,
+ "package": {
+  "python": "3.14.7",
+  "numpy": "2.5.4",
+  "scipy": "1.18.1",
+  "mpmath": "1.4.1",
+  "wheel_sha256": "f1501a3efbdaba7b18c9af7be06ff30d9a33caf2777534de71f6833b93938b2a",
+  "snapshot_sha256": "7572961c553ecca28c506a392297d514b714eb1fcdffccfff262618d75b60bf3",
+  "source_revision": "d429359dcfbf37aedf09aa64cfa78b89da3b3623",
+  "asset_count": 249,
+  "runtime": {
+   "dependencies_bundled": false,
+   "package_version": "0.0.0",
+   "requires_dist": [
+    "numpy==2.5.4",
+    "scipy==1.18.1",
+    "mpmath==1.4.1"
+   ],
+   "requires_python": ">=3.12",
+   "wheel": "scirel-0.0.0-py3-none-any.whl",
+   "wheel_sha256": "f1501a3efbdaba7b18c9af7be06ff30d9a33caf2777534de71f6833b93938b2a"
+  }
+ },
+ "assets_used": [
+  "scirel.plasma.fast-ion-heating"
+ ],
+ "calls": [
+  {
+   "seq": 1,
+   "label": "declared fast-ion heating",
+   "asset": "scirel.plasma.fast-ion-heating",
+   "entrypoint": "scirel.plasma.fast_ion_heating:fast_ion_fractional_heating",
+   "arguments": {
+    "args": [],
+    "kwargs": {
+     "birth_energy": 0.0,
+     "T_e": 10.0,
+     "fast_ion_mass": 2.0
+    }
+   },
+   "status": "returned",
+   "returned_fields": null,
+   "exception": null,
+   "warnings": [],
+   "returned_type": "float"
+  },
+  {
+   "seq": 2,
+   "label": "same call with the birth energy set to zero",
+   "asset": "scirel.plasma.fast-ion-heating",
+   "entrypoint": "scirel.plasma.fast_ion_heating:fast_ion_fractional_heating",
+   "arguments": {
+    "args": [],
+    "kwargs": {
+     "birth_energy": 0.0,
+     "T_e": 10.0,
+     "fast_ion_mass": 2.0
+    }
+   },
+   "status": "returned",
+   "returned_fields": null,
+   "exception": null,
+   "warnings": [],
+   "returned_type": "float"
+  }
+ ],
+ "answer": {
+  "value": {
+   "zero_energy_key": "birth_energy",
+   "ion_fraction_at_zero": 1.0,
+   "declared_limit": 1.0,
+   "abs_deviation": 0.0
+  },
+  "unit": "dimensionless partition fraction"
+ },
+ "independent_check": {
+  "method": "the declared continuous limit f_i(0)=1 is requested directly",
+  "observed": {
+   "zero_energy_key": "birth_energy",
+   "ion_fraction_at_zero": 1.0,
+   "declared_limit": 1.0,
+   "abs_deviation": 0.0
+  },
+  "verdict": "pass"
+ },
+ "criteria": [
+  {
+   "id": "fields",
+   "kind": "contract_fields",
+   "status": "pass",
+   "detail": {
+    "channel": "single declared output returned positionally",
+    "declared": {
+     "name": "ion_fraction",
+     "dtype": "float64",
+     "shape": "broadcast input shape"
+    },
+    "returned_type": "float",
+    "checks": {
+     "array_dtype": true
+    },
+    "verdict": "compatible",
+    "all_declared_outputs": [
+     "ion_fraction"
+    ]
+   }
+  },
+  {
+   "id": "declared_limit",
+   "kind": "invariant",
+   "status": "pass",
+   "detail": {
+    "zero_energy_key": "birth_energy",
+    "ion_fraction_at_zero": 1.0,
+    "declared_limit": 1.0,
+    "abs_deviation": 0.0
+   }
+  },
+  {
+   "id": "budget",
+   "kind": "tolerance",
+   "status": "pass",
+   "detail": {
+    "zero_energy_key": "birth_energy",
+    "ion_fraction_at_zero": 1.0,
+    "declared_limit": 1.0,
+    "abs_deviation": 0.0,
+    "declared_tolerance": {
+     "rel": 1e-12,
+     "abs": 0.0
+    }
+   }
+  },
+  {
+   "id": "readback",
+   "kind": "readback",
+   "status": "pass",
+   "detail": {
+    "reopened": "plasma-fast-ion-heating.json",
+    "problems": [],
+    "stored_call_count": 2
+   }
+  }
+ ],
+ "package_sufficient": true,
+ "sufficient_reason": "the limit is a declared property of the entry and reachable by one argument change",
+ "gaps": [],
+ "bindings": {
+  "scirel.plasma.fast-ion-heating": {
+   "symbol": "fast_ion_fractional_heating",
+   "args": {
+    "birth_energy": 0.0,
+    "T_e": 10.0,
+    "fast_ion_mass": 2.0
+   },
+   "example_error": null
+  }
+ }
+}

@@ -1,0 +1,515 @@
+{
+ "task_id": "fvm-convection-diffusion",
+ "kind": "nominal",
+ "domain": "fvm",
+ "subdomain": "cell variables, convection, diffusion and theta step",
+ "question": "Build a declared cell variable, assemble the declared convection and diffusion operators, and advance one declared theta step, reporting the implicit fraction and the operator signs.",
+ "assets_declared": [
+  "scirel.fvm.cell-variable",
+  "scirel.fvm.convection",
+  "scirel.fvm.diffusion",
+  "scirel.fvm.theta-step"
+ ],
+ "min_calls": 4,
+ "package": {
+  "python": "3.14.7",
+  "numpy": "2.5.4",
+  "scipy": "1.18.1",
+  "mpmath": "1.4.1",
+  "wheel_sha256": "f1501a3efbdaba7b18c9af7be06ff30d9a33caf2777534de71f6833b93938b2a",
+  "snapshot_sha256": "7572961c553ecca28c506a392297d514b714eb1fcdffccfff262618d75b60bf3",
+  "source_revision": "d429359dcfbf37aedf09aa64cfa78b89da3b3623",
+  "asset_count": 249,
+  "runtime": {
+   "dependencies_bundled": false,
+   "package_version": "0.0.0",
+   "requires_dist": [
+    "numpy==2.5.4",
+    "scipy==1.18.1",
+    "mpmath==1.4.1"
+   ],
+   "requires_python": ">=3.12",
+   "wheel": "scirel-0.0.0-py3-none-any.whl",
+   "wheel_sha256": "f1501a3efbdaba7b18c9af7be06ff30d9a33caf2777534de71f6833b93938b2a"
+  }
+ },
+ "assets_used": [
+  "scirel.fvm.cell-variable",
+  "scirel.fvm.convection",
+  "scirel.fvm.diffusion",
+  "scirel.fvm.theta-step"
+ ],
+ "calls": [
+  {
+   "seq": 1,
+   "label": "declared cell variable",
+   "asset": "scirel.fvm.cell-variable",
+   "entrypoint": "scirel.fvm.cell_variable:CellVariable",
+   "arguments": {
+    "args": [],
+    "kwargs": {
+     "value": [
+      0.5,
+      1.5
+     ],
+     "face_centers": [
+      0.0,
+      1.0,
+      2.0
+     ],
+     "left_face_constraint": null,
+     "right_face_constraint": null,
+     "left_face_grad_constraint": 1.0,
+     "right_face_grad_constraint": 1.0
+    }
+   },
+   "status": "returned",
+   "returned_fields": null,
+   "exception": null,
+   "warnings": [],
+   "returned_type": "CellVariable"
+  },
+  {
+   "seq": 2,
+   "label": "declared convection terms",
+   "asset": "scirel.fvm.convection",
+   "entrypoint": "scirel.fvm.convection:make_convection_terms",
+   "arguments": {
+    "args": [],
+    "kwargs": {
+     "v_face": [
+      2.0,
+      2.0,
+      2.0
+     ],
+     "d_face": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "var": "CellVariable(value=array([1., 1.]), face_centers=array([0., 1., 2.]), left_face_constraint=None, right_face_constraint=None, left_face_grad_constraint=0.0, right_face_grad_constraint=0.0)",
+     "dirichlet_mode": "ghost",
+     "neumann_mode": "ghost"
+    }
+   },
+   "status": "returned",
+   "returned_fields": null,
+   "exception": null,
+   "warnings": [],
+   "returned_type": "tuple"
+  },
+  {
+   "seq": 3,
+   "label": "declared diffusion terms",
+   "asset": "scirel.fvm.diffusion",
+   "entrypoint": "scirel.fvm.diffusion:make_diffusion_terms",
+   "arguments": {
+    "args": [],
+    "kwargs": {
+     "d_face": [
+      1.0,
+      1.0,
+      1.0
+     ],
+     "var": "CellVariable(value=array([0.5, 1.5]), face_centers=array([0., 1., 2.]), left_face_constraint=None, right_face_constraint=None, left_face_grad_constraint=1.0, right_face_grad_constraint=1.0)"
+    }
+   },
+   "status": "returned",
+   "returned_fields": null,
+   "exception": null,
+   "warnings": [],
+   "returned_type": "tuple"
+  },
+  {
+   "seq": 4,
+   "label": "declared theta step",
+   "asset": "scirel.fvm.theta-step",
+   "entrypoint": "scirel.fvm.implicit:theta_step",
+   "arguments": {
+    "args": [],
+    "kwargs": {
+     "var_old": "CellVariable(value=array([0., 0.]), face_centers=array([0., 1., 2.]), left_face_constraint=None, right_face_constraint=None, left_face_grad_constraint=0.0, right_face_grad_constraint=0.0)",
+     "var_new": "CellVariable(value=array([0., 0.]), face_centers=array([0., 1., 2.]), left_face_constraint=None, right_face_constraint=None, left_face_grad_constraint=0.0, right_face_grad_constraint=0.0)",
+     "dt": 0.2,
+     "d_old": null,
+     "d_new": null,
+     "v_old": null,
+     "v_new": null,
+     "source_old": [
+      1.0,
+      1.0
+     ],
+     "source_new": [
+      1.0,
+      1.0
+     ],
+     "theta": 0.5,
+     "dirichlet_mode": "ghost",
+     "neumann_mode": "ghost"
+    }
+   },
+   "status": "returned",
+   "returned_fields": null,
+   "exception": null,
+   "warnings": [],
+   "returned_type": "CellVariable"
+  }
+ ],
+ "answer": {
+  "value": {
+   "theta": 0.5,
+   "returned_fields": [
+    "variable"
+   ],
+   "declared_arguments": [
+    "var_old",
+    "var_new",
+    "dt",
+    "d_old",
+    "d_new",
+    "v_old",
+    "v_new",
+    "source_old",
+    "source_new",
+    "theta",
+    "dirichlet_mode",
+    "neumann_mode"
+   ],
+   "theta0_equation_residual": 0.0,
+   "dt": 0.2,
+   "u_old": {
+    "dtype": "float64",
+    "shape": [
+     2
+    ],
+    "values": [
+     0.0,
+     0.0
+    ]
+   },
+   "u_new": {
+    "dtype": "float64",
+    "shape": [
+     2
+    ],
+    "values": [
+     0.2,
+     0.2
+    ]
+   }
+  },
+  "unit": "cell values"
+ },
+ "independent_check": {
+  "method": "the theta step is compared with the printed theta equation recomputed from the declared source and step size",
+  "observed": {
+   "theta": 0.5,
+   "returned_fields": [
+    "variable"
+   ],
+   "declared_arguments": [
+    "var_old",
+    "var_new",
+    "dt",
+    "d_old",
+    "d_new",
+    "v_old",
+    "v_new",
+    "source_old",
+    "source_new",
+    "theta",
+    "dirichlet_mode",
+    "neumann_mode"
+   ],
+   "theta0_equation_residual": 0.0,
+   "dt": 0.2,
+   "u_old": {
+    "dtype": "float64",
+    "shape": [
+     2
+    ],
+    "values": [
+     0.0,
+     0.0
+    ]
+   },
+   "u_new": {
+    "dtype": "float64",
+    "shape": [
+     2
+    ],
+    "values": [
+     0.2,
+     0.2
+    ]
+   }
+  },
+  "verdict": "pass"
+ },
+ "criteria": [
+  {
+   "id": "fields",
+   "kind": "contract_fields",
+   "status": "pass",
+   "detail": {
+    "channel": "single declared output returned positionally",
+    "declared": {
+     "name": "variable",
+     "dtype": "CellVariable",
+     "shape": "CellVariable"
+    },
+    "returned_type": "CellVariable",
+    "checks": {
+     "named_type": {
+      "declared_token": "cellvariable",
+      "matches": true
+     }
+    },
+    "verdict": "compatible",
+    "all_declared_outputs": [
+     "variable"
+    ]
+   }
+  },
+  {
+   "id": "declared_theta",
+   "kind": "invariant",
+   "status": "pass",
+   "detail": {
+    "theta": 0.5,
+    "returned_fields": [
+     "variable"
+    ],
+    "declared_arguments": [
+     "var_old",
+     "var_new",
+     "dt",
+     "d_old",
+     "d_new",
+     "v_old",
+     "v_new",
+     "source_old",
+     "source_new",
+     "theta",
+     "dirichlet_mode",
+     "neumann_mode"
+    ],
+    "theta0_equation_residual": 0.0,
+    "dt": 0.2,
+    "u_old": {
+     "dtype": "float64",
+     "shape": [
+      2
+     ],
+     "values": [
+      0.0,
+      0.0
+     ]
+    },
+    "u_new": {
+     "dtype": "float64",
+     "shape": [
+      2
+     ],
+     "values": [
+      0.2,
+      0.2
+     ]
+    }
+   }
+  },
+  {
+   "id": "operator_consistency",
+   "kind": "invariant",
+   "status": "pass",
+   "detail": {
+    "theta": 0.5,
+    "returned_fields": [
+     "variable"
+    ],
+    "declared_arguments": [
+     "var_old",
+     "var_new",
+     "dt",
+     "d_old",
+     "d_new",
+     "v_old",
+     "v_new",
+     "source_old",
+     "source_new",
+     "theta",
+     "dirichlet_mode",
+     "neumann_mode"
+    ],
+    "theta0_equation_residual": 0.0,
+    "dt": 0.2,
+    "u_old": {
+     "dtype": "float64",
+     "shape": [
+      2
+     ],
+     "values": [
+      0.0,
+      0.0
+     ]
+    },
+    "u_new": {
+     "dtype": "float64",
+     "shape": [
+      2
+     ],
+     "values": [
+      0.2,
+      0.2
+     ]
+    },
+    "note": "the operator matrices were called but the printed blended equation is only reproduced for the theta branch the declared step used"
+   }
+  },
+  {
+   "id": "budget",
+   "kind": "tolerance",
+   "status": "pass",
+   "detail": {
+    "theta": 0.5,
+    "returned_fields": [
+     "variable"
+    ],
+    "declared_arguments": [
+     "var_old",
+     "var_new",
+     "dt",
+     "d_old",
+     "d_new",
+     "v_old",
+     "v_new",
+     "source_old",
+     "source_new",
+     "theta",
+     "dirichlet_mode",
+     "neumann_mode"
+    ],
+    "theta0_equation_residual": 0.0,
+    "dt": 0.2,
+    "u_old": {
+     "dtype": "float64",
+     "shape": [
+      2
+     ],
+     "values": [
+      0.0,
+      0.0
+     ]
+    },
+    "u_new": {
+     "dtype": "float64",
+     "shape": [
+      2
+     ],
+     "values": [
+      0.2,
+      0.2
+     ]
+    },
+    "declared_tolerance": {
+     "rel": 1e-13,
+     "abs": 0.0
+    }
+   }
+  },
+  {
+   "id": "readback",
+   "kind": "readback",
+   "status": "pass",
+   "detail": {
+    "reopened": "fvm-convection-diffusion.json",
+    "problems": [],
+    "stored_call_count": 4
+   }
+  }
+ ],
+ "package_sufficient": true,
+ "sufficient_reason": "the step and the operator entries are both public and pure",
+ "gaps": [
+  {
+   "level": "confidence",
+   "text": "the convection/diffusion matrices were evaluated but the blended equation with them was not formed for a second theta"
+  }
+ ],
+ "bindings": {
+  "scirel.fvm.cell-variable": {
+   "symbol": "CellVariable",
+   "args": {
+    "value": [
+     0.5,
+     1.5
+    ],
+    "face_centers": [
+     0.0,
+     1.0,
+     2.0
+    ],
+    "left_face_constraint": null,
+    "right_face_constraint": null,
+    "left_face_grad_constraint": 1.0,
+    "right_face_grad_constraint": 1.0
+   },
+   "example_error": null
+  },
+  "scirel.fvm.convection": {
+   "symbol": "make_convection_terms",
+   "args": {
+    "v_face": [
+     2.0,
+     2.0,
+     2.0
+    ],
+    "d_face": [
+     0.0,
+     0.0,
+     0.0
+    ],
+    "var": "CellVariable(value=array([1., 1.]), face_centers=array([0., 1., 2.]), left_face_constraint=None, right_face_constraint=None, left_face_grad_constraint=0.0, right_face_grad_constraint=0.0)",
+    "dirichlet_mode": "ghost",
+    "neumann_mode": "ghost"
+   },
+   "example_error": null
+  },
+  "scirel.fvm.diffusion": {
+   "symbol": "make_diffusion_terms",
+   "args": {
+    "d_face": [
+     1.0,
+     1.0,
+     1.0
+    ],
+    "var": "CellVariable(value=array([0.5, 1.5]), face_centers=array([0., 1., 2.]), left_face_constraint=None, right_face_constraint=None, left_face_grad_constraint=1.0, right_face_grad_constraint=1.0)"
+   },
+   "example_error": null
+  },
+  "scirel.fvm.theta-step": {
+   "symbol": "theta_step",
+   "args": {
+    "var_old": "CellVariable(value=array([0., 0.]), face_centers=array([0., 1., 2.]), left_face_constraint=None, right_face_constraint=None, left_face_grad_constraint=0.0, right_face_grad_constraint=0.0)",
+    "var_new": "CellVariable(value=array([0., 0.]), face_centers=array([0., 1., 2.]), left_face_constraint=None, right_face_constraint=None, left_face_grad_constraint=0.0, right_face_grad_constraint=0.0)",
+    "dt": 0.2,
+    "d_old": null,
+    "d_new": null,
+    "v_old": null,
+    "v_new": null,
+    "source_old": [
+     1.0,
+     1.0
+    ],
+    "source_new": [
+     1.0,
+     1.0
+    ],
+    "theta": 0.5,
+    "dirichlet_mode": "ghost",
+    "neumann_mode": "ghost"
+   },
+   "example_error": null
+  }
+ }
+}

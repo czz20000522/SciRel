@@ -1,0 +1,311 @@
+{
+ "task_id": "physics-coulomb-logarithms",
+ "kind": "nominal",
+ "domain": "physics",
+ "subdomain": "Coulomb logarithms and thermal energy",
+ "question": "Evaluate the declared Coulomb logarithms for one declared temperature and density, read the declared thermal energy, and report which applicability warnings each call emitted.",
+ "assets_declared": [
+  "scirel.physics.coulomb-ee",
+  "scirel.physics.coulomb-ei",
+  "scirel.physics.thermal-energy"
+ ],
+ "min_calls": 3,
+ "package": {
+  "python": "3.14.7",
+  "numpy": "2.5.4",
+  "scipy": "1.18.1",
+  "mpmath": "1.4.1",
+  "wheel_sha256": "f1501a3efbdaba7b18c9af7be06ff30d9a33caf2777534de71f6833b93938b2a",
+  "snapshot_sha256": "7572961c553ecca28c506a392297d514b714eb1fcdffccfff262618d75b60bf3",
+  "source_revision": "d429359dcfbf37aedf09aa64cfa78b89da3b3623",
+  "asset_count": 249,
+  "runtime": {
+   "dependencies_bundled": false,
+   "package_version": "0.0.0",
+   "requires_dist": [
+    "numpy==2.5.4",
+    "scipy==1.18.1",
+    "mpmath==1.4.1"
+   ],
+   "requires_python": ">=3.12",
+   "wheel": "scirel-0.0.0-py3-none-any.whl",
+   "wheel_sha256": "f1501a3efbdaba7b18c9af7be06ff30d9a33caf2777534de71f6833b93938b2a"
+  }
+ },
+ "assets_used": [
+  "scirel.physics.coulomb-ee",
+  "scirel.physics.coulomb-ei",
+  "scirel.physics.thermal-energy"
+ ],
+ "calls": [
+  {
+   "seq": 1,
+   "label": "declared ee Coulomb logarithm",
+   "asset": "scirel.physics.coulomb-ee",
+   "entrypoint": "scirel.physics.coulomb_logs:calculate_log_lambda_ee",
+   "arguments": {
+    "args": [],
+    "kwargs": {
+     "T_e": 2.0,
+     "n_e": 1e+19
+    }
+   },
+   "status": "returned",
+   "returned_fields": null,
+   "exception": null,
+   "warnings": [],
+   "returned_type": "float64"
+  },
+  {
+   "seq": 2,
+   "label": "declared ei Coulomb logarithm",
+   "asset": "scirel.physics.coulomb-ei",
+   "entrypoint": "scirel.physics.coulomb_logs:calculate_log_lambda_ei",
+   "arguments": {
+    "args": [],
+    "kwargs": {
+     "T_e": 2.0,
+     "n_e": 1e+19
+    }
+   },
+   "status": "returned",
+   "returned_fields": null,
+   "exception": null,
+   "warnings": [],
+   "returned_type": "float64"
+  },
+  {
+   "seq": 3,
+   "label": "declared thermal energy",
+   "asset": "scirel.physics.thermal-energy",
+   "entrypoint": "scirel.physics.thermal_energy:calculate_stored_thermal_energy",
+   "arguments": {
+    "args": [],
+    "kwargs": {
+     "p_el": [
+      2,
+      2
+     ],
+     "p_ion": [
+      3,
+      3
+     ],
+     "p_tot": [
+      5,
+      5
+     ],
+     "vpr": {
+      "dtype": "float64",
+      "shape": [
+       2
+      ],
+      "values": [
+       2.0,
+       3.0
+      ]
+     },
+     "drho_norm": {
+      "dtype": "float64",
+      "shape": [
+       2
+      ],
+      "values": [
+       0.4,
+       0.6
+      ]
+     }
+    }
+   },
+   "status": "returned",
+   "returned_fields": [
+    "W_el",
+    "W_ion",
+    "W_tot"
+   ],
+   "exception": null,
+   "warnings": [],
+   "returned_type": "Result"
+  },
+  {
+   "seq": 4,
+   "label": "declared low-temperature call",
+   "asset": "scirel.physics.coulomb-ee",
+   "entrypoint": "scirel.physics.coulomb_logs:calculate_log_lambda_ee",
+   "arguments": {
+    "args": [],
+    "kwargs": {
+     "T_e": 0.005,
+     "n_e": 1e+19
+    }
+   },
+   "status": "returned",
+   "returned_fields": null,
+   "exception": null,
+   "warnings": [
+    "ApplicabilityWarning: calculate_log_lambda_ee: electron temperature is below this repository's conservative advisory boundary of 10 eV (lowest input 5 eV). Below it the classical cutoff b_cl = e^2/(4 pi eps0 k T) sets the minimum impact parameter, and the NRL e-e relation 23.5 - ln(sqrt(n_e) T_e^(-5/4)) - sqrt(1e-5 + (ln T_e - 2)^2/16) (T_e in eV, n_e in cm^-3; as transcribed from the formulary (see #197); the transcription was checked by the maintainer against the original table) reads this apart: at n_e = 1e+19 m^-3, T_e = 5 eV, the returned value is +2.75% above it. That is an algebraic difference between two estimates, not an error against measured physics, and it grows with density. The boundary is advisory: the formulary's 10 Z^2 eV condition belongs to the e-i branches, not to this relation. The returned value is unchanged; the classical forms are separate relations (scirel.physics.coulomb-ee)"
+   ],
+   "returned_type": "float64"
+  }
+ ],
+ "answer": {
+  "value": {
+   "formula_relative_deviation": {
+    "scirel.physics.coulomb-ee": 0.017619754344159716,
+    "scirel.physics.coulomb-ei": 0.017935778352705687
+   },
+   "warnings": {
+    "scirel.physics.coulomb-ee": [],
+    "scirel.physics.coulomb-ei": []
+   },
+   "low_temperature_warnings": [
+    "ApplicabilityWarning: calculate_log_lambda_ee: electron temperature is below this repository's conservative advisory boundary of 10 eV (lowest input 5 eV). Below it the classical cutoff b_cl = e^2/(4 pi eps0 k T) sets the minimum impact parameter, and the NRL e-e relation 23.5 - ln(sqrt(n_e) T_e^(-5/4)) - sqrt(1e-5 + (ln T_e - 2)^2/16) (T_e in eV, n_e in cm^-3; as transcribed from the formulary (see #197); the transcription was checked by the maintainer against the original table) reads this apart: at n_e = 1e+19 m^-3, T_e = 5 eV, the returned value is +2.75% above it. That is an algebraic difference between two estimates, not an error against measured physics, and it grows with density. The boundary is advisory: the formulary's 10 Z^2 eV condition belongs to the e-i branches, not to this relation. The returned value is unchanged; the classical forms are separate relations (scirel.physics.coulomb-ee)"
+   ],
+   "low_temperature_status": "returned"
+  },
+  "unit": "dimensionless Coulomb logarithm; J for thermal energy"
+ },
+ "independent_check": {
+  "method": "both logarithms recomputed from the printed formula and the low-temperature call checked for its declared warning",
+  "observed": {
+   "formula_relative_deviation": {
+    "scirel.physics.coulomb-ee": 0.017619754344159716,
+    "scirel.physics.coulomb-ei": 0.017935778352705687
+   },
+   "warnings": {
+    "scirel.physics.coulomb-ee": [],
+    "scirel.physics.coulomb-ei": []
+   },
+   "low_temperature_warnings": [
+    "ApplicabilityWarning: calculate_log_lambda_ee: electron temperature is below this repository's conservative advisory boundary of 10 eV (lowest input 5 eV). Below it the classical cutoff b_cl = e^2/(4 pi eps0 k T) sets the minimum impact parameter, and the NRL e-e relation 23.5 - ln(sqrt(n_e) T_e^(-5/4)) - sqrt(1e-5 + (ln T_e - 2)^2/16) (T_e in eV, n_e in cm^-3; as transcribed from the formulary (see #197); the transcription was checked by the maintainer against the original table) reads this apart: at n_e = 1e+19 m^-3, T_e = 5 eV, the returned value is +2.75% above it. That is an algebraic difference between two estimates, not an error against measured physics, and it grows with density. The boundary is advisory: the formulary's 10 Z^2 eV condition belongs to the e-i branches, not to this relation. The returned value is unchanged; the classical forms are separate relations (scirel.physics.coulomb-ee)"
+   ],
+   "low_temperature_status": "returned"
+  },
+  "verdict": "fail"
+ },
+ "criteria": [
+  {
+   "id": "fields",
+   "kind": "contract_fields",
+   "status": "pass",
+   "detail": {
+    "declared": [
+     "W_el",
+     "W_ion",
+     "W_tot"
+    ],
+    "returned": [
+     "W_el",
+     "W_ion",
+     "W_tot"
+    ]
+   }
+  },
+  {
+   "id": "declared_formula",
+   "kind": "invariant",
+   "status": "fail",
+   "detail": {
+    "formula_relative_deviation": {
+     "scirel.physics.coulomb-ee": 0.017619754344159716,
+     "scirel.physics.coulomb-ei": 0.017935778352705687
+    },
+    "warnings": {
+     "scirel.physics.coulomb-ee": [],
+     "scirel.physics.coulomb-ei": []
+    },
+    "low_temperature_warnings": [
+     "ApplicabilityWarning: calculate_log_lambda_ee: electron temperature is below this repository's conservative advisory boundary of 10 eV (lowest input 5 eV). Below it the classical cutoff b_cl = e^2/(4 pi eps0 k T) sets the minimum impact parameter, and the NRL e-e relation 23.5 - ln(sqrt(n_e) T_e^(-5/4)) - sqrt(1e-5 + (ln T_e - 2)^2/16) (T_e in eV, n_e in cm^-3; as transcribed from the formulary (see #197); the transcription was checked by the maintainer against the original table) reads this apart: at n_e = 1e+19 m^-3, T_e = 5 eV, the returned value is +2.75% above it. That is an algebraic difference between two estimates, not an error against measured physics, and it grows with density. The boundary is advisory: the formulary's 10 Z^2 eV condition belongs to the e-i branches, not to this relation. The returned value is unchanged; the classical forms are separate relations (scirel.physics.coulomb-ee)"
+    ],
+    "low_temperature_status": "returned"
+   }
+  },
+  {
+   "id": "warning",
+   "kind": "invariant",
+   "status": "pass",
+   "detail": {
+    "formula_relative_deviation": {
+     "scirel.physics.coulomb-ee": 0.017619754344159716,
+     "scirel.physics.coulomb-ei": 0.017935778352705687
+    },
+    "warnings": {
+     "scirel.physics.coulomb-ee": [],
+     "scirel.physics.coulomb-ei": []
+    },
+    "low_temperature_warnings": [
+     "ApplicabilityWarning: calculate_log_lambda_ee: electron temperature is below this repository's conservative advisory boundary of 10 eV (lowest input 5 eV). Below it the classical cutoff b_cl = e^2/(4 pi eps0 k T) sets the minimum impact parameter, and the NRL e-e relation 23.5 - ln(sqrt(n_e) T_e^(-5/4)) - sqrt(1e-5 + (ln T_e - 2)^2/16) (T_e in eV, n_e in cm^-3; as transcribed from the formulary (see #197); the transcription was checked by the maintainer against the original table) reads this apart: at n_e = 1e+19 m^-3, T_e = 5 eV, the returned value is +2.75% above it. That is an algebraic difference between two estimates, not an error against measured physics, and it grows with density. The boundary is advisory: the formulary's 10 Z^2 eV condition belongs to the e-i branches, not to this relation. The returned value is unchanged; the classical forms are separate relations (scirel.physics.coulomb-ee)"
+    ],
+    "low_temperature_status": "returned"
+   }
+  },
+  {
+   "id": "readback",
+   "kind": "readback",
+   "status": "pass",
+   "detail": {
+    "reopened": "physics-coulomb-logarithms.json",
+    "problems": [],
+    "stored_call_count": 4
+   }
+  }
+ ],
+ "package_sufficient": false,
+ "sufficient_reason": "the formula is printed in the contract and the warning is observable through the standard warnings mechanism",
+ "gaps": [],
+ "bindings": {
+  "scirel.physics.coulomb-ee": {
+   "symbol": "calculate_log_lambda_ee",
+   "args": {
+    "T_e": 2.0,
+    "n_e": 1e+19
+   },
+   "example_error": null
+  },
+  "scirel.physics.coulomb-ei": {
+   "symbol": "calculate_log_lambda_ei",
+   "args": {
+    "T_e": 2.0,
+    "n_e": 1e+19
+   },
+   "example_error": null
+  },
+  "scirel.physics.thermal-energy": {
+   "symbol": "calculate_stored_thermal_energy",
+   "args": {
+    "p_el": [
+     2,
+     2
+    ],
+    "p_ion": [
+     3,
+     3
+    ],
+    "p_tot": [
+     5,
+     5
+    ],
+    "vpr": {
+     "dtype": "float64",
+     "shape": [
+      2
+     ],
+     "values": [
+      2.0,
+      3.0
+     ]
+    },
+    "drho_norm": {
+     "dtype": "float64",
+     "shape": [
+      2
+     ],
+     "values": [
+      0.4,
+      0.6
+     ]
+    }
+   },
+   "example_error": null
+  }
+ }
+}

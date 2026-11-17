@@ -1,0 +1,410 @@
+{
+ "task_id": "io-eqdsk-roundtrip",
+ "kind": "nominal",
+ "domain": "io",
+ "subdomain": "EQDSK reading, writing and the retained class",
+ "question": "Read one declared EQDSK file, write it back with the declared writer, re-read the written file and report the round-trip deviation together with the header quantities that changed.",
+ "assets_declared": [
+  "scirel.io.read-eqdsk",
+  "scirel.io.write-eqdsk",
+  "scirel.io.read-geqdsk",
+  "scirel.io.eqdsk-class"
+ ],
+ "min_calls": 4,
+ "package": {
+  "python": "3.14.7",
+  "numpy": "2.5.4",
+  "scipy": "1.18.1",
+  "mpmath": "1.4.1",
+  "wheel_sha256": "f1501a3efbdaba7b18c9af7be06ff30d9a33caf2777534de71f6833b93938b2a",
+  "snapshot_sha256": "7572961c553ecca28c506a392297d514b714eb1fcdffccfff262618d75b60bf3",
+  "source_revision": "d429359dcfbf37aedf09aa64cfa78b89da3b3623",
+  "asset_count": 249,
+  "runtime": {
+   "dependencies_bundled": false,
+   "package_version": "0.0.0",
+   "requires_dist": [
+    "numpy==2.5.4",
+    "scipy==1.18.1",
+    "mpmath==1.4.1"
+   ],
+   "requires_python": ">=3.12",
+   "wheel": "scirel-0.0.0-py3-none-any.whl",
+   "wheel_sha256": "f1501a3efbdaba7b18c9af7be06ff30d9a33caf2777534de71f6833b93938b2a"
+  }
+ },
+ "assets_used": [
+  "scirel.io.eqdsk-class",
+  "scirel.io.read-geqdsk",
+  "scirel.io.write-eqdsk"
+ ],
+ "calls": [
+  {
+   "seq": 1,
+   "label": "declared EQDSK state",
+   "asset": "scirel.io.eqdsk-class",
+   "entrypoint": "scirel.io.eqdsk:EQDSK",
+   "arguments": {
+    "args": [],
+    "kwargs": {
+     "fname": null
+    }
+   },
+   "status": "returned",
+   "returned_fields": [],
+   "exception": null,
+   "warnings": [],
+   "returned_type": "EQDSK"
+  },
+  {
+   "seq": 2,
+   "label": "declared writer to a temporary file",
+   "asset": "scirel.io.write-eqdsk",
+   "entrypoint": "scirel.io.eqdsk:write_eqdsk",
+   "arguments": {
+    "args": [],
+    "kwargs": {
+     "data": {
+      "title": "EXAMPLE",
+      "cursign": 1,
+      "nnr": 2,
+      "nnz": 2,
+      "nnv": 2,
+      "rbox": 1.0,
+      "zbox": 2.0,
+      "psi_lim": 1.0,
+      "Ip": 0.0,
+      "psi": {
+       "dtype": "float64",
+       "shape": [
+        2,
+        2
+       ],
+       "values": [
+        [
+         0.0,
+         0.0
+        ],
+        [
+         0.0,
+         0.0
+        ]
+       ]
+      },
+      "nlim_pairs": 0,
+      "nves_pairs": 0,
+      "lim_pairs": {
+       "dtype": "float64",
+       "shape": [
+        0,
+        2
+       ],
+       "values": []
+      },
+      "ves_pairs": {
+       "dtype": "float64",
+       "shape": [
+        0,
+        2
+       ],
+       "values": []
+      },
+      "tor_flux": {
+       "dtype": "float64",
+       "shape": [
+        2
+       ],
+       "values": [
+        0.0,
+        0.0
+       ]
+      },
+      "p_flux": {
+       "dtype": "float64",
+       "shape": [
+        2
+       ],
+       "values": [
+        0.0,
+        0.0
+       ]
+      },
+      "rbphi_flux": {
+       "dtype": "float64",
+       "shape": [
+        2
+       ],
+       "values": [
+        0.0,
+        0.0
+       ]
+      },
+      "pprime_flux": {
+       "dtype": "float64",
+       "shape": [
+        2
+       ],
+       "values": [
+        0.0,
+        0.0
+       ]
+      },
+      "q_flux": {
+       "dtype": "float64",
+       "shape": [
+        2
+       ],
+       "values": [
+        0.0,
+        0.0
+       ]
+      }
+     },
+     "filename": "PosixPath('/var/folders/xs/087tqd_503sg17p24yb42k200000gn/T/tmpq35olwlz/example.eqdsk')"
+    }
+   },
+   "status": "raised",
+   "returned_fields": null,
+   "exception": {
+    "type": "FileNotFoundError",
+    "module": "builtins",
+    "message": "[Errno 2] No such file or directory: '/var/folders/xs/087tqd_503sg17p24yb42k200000gn/T/tmpq35olwlz/example.eqdsk'",
+    "qualname": "builtins.FileNotFoundError"
+   },
+   "warnings": []
+  },
+  {
+   "seq": 3,
+   "label": "declared geqdsk reader",
+   "asset": "scirel.io.read-geqdsk",
+   "entrypoint": "scirel.io.geqdsk:read_geqdsk",
+   "arguments": {
+    "args": [],
+    "kwargs": {
+     "filename": "PosixPath('/var/folders/xs/087tqd_503sg17p24yb42k200000gn/T/tmp7qkno_fy/g.eqdsk')",
+     "strict": true
+    }
+   },
+   "status": "raised",
+   "returned_fields": null,
+   "exception": {
+    "type": "FileNotFoundError",
+    "module": "builtins",
+    "message": "[Errno 2] No such file or directory: '/var/folders/xs/087tqd_503sg17p24yb42k200000gn/T/tmp7qkno_fy/g.eqdsk'",
+    "qualname": "builtins.FileNotFoundError"
+   },
+   "warnings": []
+  }
+ ],
+ "answer": {
+  "value": {},
+  "unit": "file fields as declared"
+ },
+ "independent_check": {
+  "method": "the declared mapping is written, read back and compared key by key within the declared fixed-width precision",
+  "observed": {},
+  "verdict": "fail"
+ },
+ "criteria": [
+  {
+   "id": "fields",
+   "kind": "contract_fields",
+   "status": "fail",
+   "detail": {
+    "declared": [
+     "mapping"
+    ],
+    "returned": []
+   }
+  },
+  {
+   "id": "fields_write",
+   "kind": "contract_fields",
+   "status": "fail",
+   "detail": {
+    "declared": [
+     "file"
+    ],
+    "returned": "raised",
+    "exception": {
+     "type": "FileNotFoundError",
+     "module": "builtins",
+     "message": "[Errno 2] No such file or directory: '/var/folders/xs/087tqd_503sg17p24yb42k200000gn/T/tmpq35olwlz/example.eqdsk'",
+     "qualname": "builtins.FileNotFoundError"
+    }
+   }
+  },
+  {
+   "id": "fields_geqdsk",
+   "kind": "contract_fields",
+   "status": "fail",
+   "detail": {
+    "declared": [
+     "mapping"
+    ],
+    "returned": "raised",
+    "exception": {
+     "type": "FileNotFoundError",
+     "module": "builtins",
+     "message": "[Errno 2] No such file or directory: '/var/folders/xs/087tqd_503sg17p24yb42k200000gn/T/tmp7qkno_fy/g.eqdsk'",
+     "qualname": "builtins.FileNotFoundError"
+    }
+   }
+  },
+  {
+   "id": "roundtrip",
+   "kind": "invariant",
+   "status": "fail",
+   "detail": {}
+  },
+  {
+   "id": "budget",
+   "kind": "tolerance",
+   "status": "fail",
+   "detail": {
+    "declared_tolerance": {
+     "rel": 1e-09,
+     "abs": 0.0
+    }
+   }
+  },
+  {
+   "id": "readback",
+   "kind": "readback",
+   "status": "pass",
+   "detail": {
+    "reopened": "io-eqdsk-roundtrip.json",
+    "problems": [],
+    "stored_call_count": 3
+   }
+  }
+ ],
+ "package_sufficient": false,
+ "sufficient_reason": "both writer and reader are published and a temporary directory is enough",
+ "gaps": [
+  {
+   "level": "process",
+   "text": "task declares min_calls=4 but only 3 public call(s) were made"
+  }
+ ],
+ "bindings": {
+  "scirel.io.eqdsk-class": {
+   "symbol": "EQDSK",
+   "args": {
+    "fname": null
+   },
+   "example_error": null
+  },
+  "scirel.io.write-eqdsk": {
+   "symbol": "write_eqdsk",
+   "args": {
+    "data": {
+     "title": "EXAMPLE",
+     "cursign": 1,
+     "nnr": 2,
+     "nnz": 2,
+     "nnv": 2,
+     "rbox": 1.0,
+     "zbox": 2.0,
+     "psi_lim": 1.0,
+     "Ip": 0.0,
+     "psi": {
+      "dtype": "float64",
+      "shape": [
+       2,
+       2
+      ],
+      "values": [
+       [
+        0.0,
+        0.0
+       ],
+       [
+        0.0,
+        0.0
+       ]
+      ]
+     },
+     "nlim_pairs": 0,
+     "nves_pairs": 0,
+     "lim_pairs": {
+      "dtype": "float64",
+      "shape": [
+       0,
+       2
+      ],
+      "values": []
+     },
+     "ves_pairs": {
+      "dtype": "float64",
+      "shape": [
+       0,
+       2
+      ],
+      "values": []
+     },
+     "tor_flux": {
+      "dtype": "float64",
+      "shape": [
+       2
+      ],
+      "values": [
+       0.0,
+       0.0
+      ]
+     },
+     "p_flux": {
+      "dtype": "float64",
+      "shape": [
+       2
+      ],
+      "values": [
+       0.0,
+       0.0
+      ]
+     },
+     "rbphi_flux": {
+      "dtype": "float64",
+      "shape": [
+       2
+      ],
+      "values": [
+       0.0,
+       0.0
+      ]
+     },
+     "pprime_flux": {
+      "dtype": "float64",
+      "shape": [
+       2
+      ],
+      "values": [
+       0.0,
+       0.0
+      ]
+     },
+     "q_flux": {
+      "dtype": "float64",
+      "shape": [
+       2
+      ],
+      "values": [
+       0.0,
+       0.0
+      ]
+     }
+    },
+    "filename": "PosixPath('/var/folders/xs/087tqd_503sg17p24yb42k200000gn/T/tmpq35olwlz/example.eqdsk')"
+   },
+   "example_error": null
+  },
+  "scirel.io.read-geqdsk": {
+   "symbol": "read_geqdsk",
+   "args": {
+    "filename": "PosixPath('/var/folders/xs/087tqd_503sg17p24yb42k200000gn/T/tmp7qkno_fy/g.eqdsk')",
+    "strict": true
+   },
+   "example_error": null
+  }
+ }
+}

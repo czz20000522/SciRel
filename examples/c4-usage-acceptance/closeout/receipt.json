@@ -1,0 +1,2473 @@
+{
+  "schema": "scirel.c4-usage-closeout.receipt",
+  "round": "C4 round 3 — closeout (independent consumer)",
+  "supersedes": "../round2/receipt.json",
+  "provenance": {
+    "this_tree": {
+      "worktree": "<repo>/.worktrees/c4co",
+      "branch": "rubicon/501303ab-84a2",
+      "head_at_run": "4de069d5ba5532f213e2045721171b92f85778e7"
+    },
+    "package_source_revision": "d429359dcfbf37aedf09aa64cfa78b89da3b3623",
+    "round2_package_source_revision": "4b5b4aaa38650d8a902e4265f226175d166a426b",
+    "distance": "round-2 package built at 4b5b4aaa; this package at d429359dcfbf37aedf09aa64cfa78b89da3b3623; the contracts changed in 8f52863b, a8f46606 and d429359d",
+    "path_convention": "absolute host paths are redacted to <repo>/ because the repository is public; the directory layout is preserved"
+  },
+  "package": {
+    "wheel": "scirel-0.0.0-py3-none-any.whl",
+    "wheel_sha256": "f1501a3efbdaba7b18c9af7be06ff30d9a33caf2777534de71f6833b93938b2a",
+    "snapshot_sha256": "7572961c553ecca28c506a392297d514b714eb1fcdffccfff262618d75b60bf3",
+    "asset_count": 249,
+    "contracts_in_package": 249,
+    "tasks_digest": "2c55ae00de0f60e4930df508d87ae150416a006032809a5cf96890e3470198d3",
+    "environment": {
+      "python": "3.14.7",
+      "numpy": "2.5.4",
+      "scipy": "1.18.1",
+      "mpmath": "1.4.1",
+      "wheel_sha256": "f1501a3efbdaba7b18c9af7be06ff30d9a33caf2777534de71f6833b93938b2a",
+      "snapshot_sha256": "7572961c553ecca28c506a392297d514b714eb1fcdffccfff262618d75b60bf3",
+      "source_revision": "d429359dcfbf37aedf09aa64cfa78b89da3b3623",
+      "asset_count": 249,
+      "runtime": {
+        "dependencies_bundled": false,
+        "package_version": "0.0.0",
+        "requires_dist": [
+          "numpy==2.5.4",
+          "scipy==1.18.1",
+          "mpmath==1.4.1"
+        ],
+        "requires_python": ">=3.12",
+        "wheel": "scirel-0.0.0-py3-none-any.whl",
+        "wheel_sha256": "f1501a3efbdaba7b18c9af7be06ff30d9a33caf2777534de71f6833b93938b2a"
+      }
+    },
+    "round2_wheel_sha256": "4fc9757a7b843cc3bce2dc96fd2280b27299cff93fbcf5b64a2321b58234f5d7",
+    "round2_snapshot_sha256": "cf0269b61ba19d8b2e5e008a6a4a4d80f2cd701f78c34f2fcb3b16eed9a2593c"
+  },
+  "installed_wheel_validation": {
+    "status": "PASS",
+    "errors": [],
+    "artifact_sha256": "f1501a3efbdaba7b18c9af7be06ff30d9a33caf2777534de71f6833b93938b2a",
+    "artifact_sha256_matches_package": true,
+    "package_in_source_tree": false,
+    "runtime_is_virtualenv": true,
+    "runtime_external_site_paths": [],
+    "source": "scripts/validate_installed_wheel.py, output in .runtime/c4close/installed-wheel-validation.json (not tracked; re-run to reproduce)"
+  },
+  "summary": {
+    "tasks": 73,
+    "package_sufficient": 48,
+    "package_insufficient": 25,
+    "criteria_total": 272,
+    "criteria_pass": 225,
+    "criteria_fail": 40,
+    "criteria_not_run": 7
+  },
+  "summary_round2": {
+    "tasks": 73,
+    "package_sufficient": 48,
+    "package_insufficient": 25,
+    "criteria_total": 272,
+    "criteria_pass": 224,
+    "criteria_fail": 41,
+    "criteria_not_run": 7
+  },
+  "tasks": [
+    {
+      "task": "kinetic-dielectric-finite-harmonic",
+      "kind": "nominal",
+      "domain": "kinetic",
+      "package_sufficient": true,
+      "round2_package_sufficient": true,
+      "criteria": 5,
+      "pass": 5,
+      "fail": 0,
+      "not_run": 0,
+      "round2_pass": 5,
+      "round2_fail": 0,
+      "round2_not_run": 0,
+      "calls": 3,
+      "round2_calls": 3,
+      "gaps": [
+        "the entry does not return the harmonic cutoff it used; the record only reports the requested value, so the default cutoff is not observable"
+      ]
+    },
+    {
+      "task": "kinetic-faddeeva-family",
+      "kind": "nominal",
+      "domain": "kinetic",
+      "package_sufficient": true,
+      "round2_package_sufficient": true,
+      "criteria": 3,
+      "pass": 3,
+      "fail": 0,
+      "not_run": 0,
+      "round2_pass": 3,
+      "round2_fail": 0,
+      "round2_not_run": 0,
+      "calls": 5,
+      "round2_calls": 5,
+      "gaps": [
+        "a call that requests an order does not return that order, so a consumer cannot read back which order produced the value from the record alone"
+      ]
+    },
+    {
+      "task": "kinetic-generalized-dispersion",
+      "kind": "nominal",
+      "domain": "kinetic",
+      "package_sufficient": true,
+      "round2_package_sufficient": true,
+      "criteria": 3,
+      "pass": 3,
+      "fail": 0,
+      "not_run": 0,
+      "round2_pass": 3,
+      "round2_fail": 0,
+      "round2_not_run": 0,
+      "calls": 2,
+      "round2_calls": 2,
+      "gaps": []
+    },
+    {
+      "task": "kinetic-fluid-two-path",
+      "kind": "nominal",
+      "domain": "kinetic",
+      "package_sufficient": false,
+      "round2_package_sufficient": false,
+      "criteria": 5,
+      "pass": 3,
+      "fail": 1,
+      "not_run": 1,
+      "round2_pass": 3,
+      "round2_fail": 1,
+      "round2_not_run": 1,
+      "calls": 3,
+      "round2_calls": 3,
+      "gaps": [
+        "fluid-dispersion-response returns one 'result' field with mixed units; the contract does not name the determinant, so the second path could not be compared and the declared 1e-12 budget stays unevaluated"
+      ]
+    },
+    {
+      "task": "kinetic-spectral-scan",
+      "kind": "nominal",
+      "domain": "kinetic",
+      "package_sufficient": true,
+      "round2_package_sufficient": true,
+      "criteria": 5,
+      "pass": 4,
+      "fail": 1,
+      "not_run": 0,
+      "round2_pass": 4,
+      "round2_fail": 1,
+      "round2_not_run": 0,
+      "calls": 3,
+      "round2_calls": 3,
+      "gaps": []
+    },
+    {
+      "task": "kinetic-vp-initial-value",
+      "kind": "nominal",
+      "domain": "kinetic",
+      "package_sufficient": false,
+      "round2_package_sufficient": false,
+      "criteria": 5,
+      "pass": 2,
+      "fail": 3,
+      "not_run": 0,
+      "round2_pass": 2,
+      "round2_fail": 3,
+      "round2_not_run": 0,
+      "calls": 5,
+      "round2_calls": 5,
+      "gaps": []
+    },
+    {
+      "task": "kinetic-multifluid-frequency",
+      "kind": "nominal",
+      "domain": "kinetic",
+      "package_sufficient": false,
+      "round2_package_sufficient": false,
+      "criteria": 4,
+      "pass": 1,
+      "fail": 2,
+      "not_run": 1,
+      "round2_pass": 1,
+      "round2_fail": 2,
+      "round2_not_run": 1,
+      "calls": 3,
+      "round2_calls": 3,
+      "gaps": [
+        "the scan and the single-point solve report different payload shapes, so the declared 1e-10 agreement between them was not evaluated"
+      ]
+    },
+    {
+      "task": "kinetic-rational-pole",
+      "kind": "nominal",
+      "domain": "kinetic",
+      "package_sufficient": false,
+      "round2_package_sufficient": false,
+      "criteria": 3,
+      "pass": 1,
+      "fail": 1,
+      "not_run": 1,
+      "round2_pass": 1,
+      "round2_fail": 1,
+      "round2_not_run": 1,
+      "calls": 4,
+      "round2_calls": 4,
+      "gaps": [
+        "scirel.kinetic.rational-solve-matrix returns 9 of 46 declared outputs for the declared es1d model; the record is missing 37 declared fields, including the pole count fields the task's criterion asks the consumer to read back"
+      ]
+    },
+    {
+      "task": "kinetic-zero-kz-rejection",
+      "kind": "failure",
+      "domain": "kinetic",
+      "package_sufficient": true,
+      "round2_package_sufficient": true,
+      "criteria": 3,
+      "pass": 3,
+      "fail": 0,
+      "not_run": 0,
+      "round2_pass": 3,
+      "round2_fail": 0,
+      "round2_not_run": 0,
+      "calls": 1,
+      "round2_calls": 1,
+      "gaps": []
+    },
+    {
+      "task": "kinetic-excluded-zero-kx",
+      "kind": "inapplicable",
+      "domain": "kinetic",
+      "package_sufficient": true,
+      "round2_package_sufficient": true,
+      "criteria": 2,
+      "pass": 2,
+      "fail": 0,
+      "not_run": 0,
+      "round2_pass": 2,
+      "round2_fail": 0,
+      "round2_not_run": 0,
+      "calls": 0,
+      "round2_calls": 0,
+      "gaps": [
+        "this task declares min_calls=1 (from its asset count) while its own invariant forbids computing a value at the excluded limit, so no public call is made; the honest deliverable is the quoted exclusion. Recorded as a task-list defect, not a package defect.",
+        "task declares min_calls=1 but only 0 public call(s) were made"
+      ]
+    },
+    {
+      "task": "neutrals-boltzmann-rhs",
+      "kind": "nominal",
+      "domain": "neutrals",
+      "package_sufficient": true,
+      "round2_package_sufficient": true,
+      "criteria": 3,
+      "pass": 3,
+      "fail": 0,
+      "not_run": 0,
+      "round2_pass": 3,
+      "round2_fail": 0,
+      "round2_not_run": 0,
+      "calls": 2,
+      "round2_calls": 2,
+      "gaps": []
+    },
+    {
+      "task": "neutrals-velocity-mesh",
+      "kind": "nominal",
+      "domain": "neutrals",
+      "package_sufficient": false,
+      "round2_package_sufficient": false,
+      "criteria": 1,
+      "pass": 0,
+      "fail": 1,
+      "not_run": 0,
+      "round2_pass": 0,
+      "round2_fail": 1,
+      "round2_not_run": 0,
+      "calls": 0,
+      "round2_calls": 0,
+      "gaps": [
+        "the consumer harness raised ValueError: operands could not be broadcast together with shapes (2,) (4,) "
+      ]
+    },
+    {
+      "task": "neutrals-cross-mesh",
+      "kind": "nominal",
+      "domain": "neutrals",
+      "package_sufficient": true,
+      "round2_package_sufficient": true,
+      "criteria": 4,
+      "pass": 4,
+      "fail": 0,
+      "not_run": 0,
+      "round2_pass": 4,
+      "round2_fail": 0,
+      "round2_not_run": 0,
+      "calls": 3,
+      "round2_calls": 3,
+      "gaps": [
+        "task declares min_calls=4 but only 3 public call(s) were made"
+      ]
+    },
+    {
+      "task": "neutrals-terminal-reductions",
+      "kind": "nominal",
+      "domain": "neutrals",
+      "package_sufficient": false,
+      "round2_package_sufficient": false,
+      "criteria": 6,
+      "pass": 5,
+      "fail": 1,
+      "not_run": 0,
+      "round2_pass": 5,
+      "round2_fail": 1,
+      "round2_not_run": 0,
+      "calls": 7,
+      "round2_calls": 7,
+      "gaps": []
+    },
+    {
+      "task": "neutrals-upwind-transport",
+      "kind": "nominal",
+      "domain": "neutrals",
+      "package_sufficient": false,
+      "round2_package_sufficient": false,
+      "criteria": 3,
+      "pass": 1,
+      "fail": 2,
+      "not_run": 0,
+      "round2_pass": 1,
+      "round2_fail": 2,
+      "round2_not_run": 0,
+      "calls": 2,
+      "round2_calls": 2,
+      "gaps": [
+        "the backward branch is the mirror of the checked formula but was not recomputed separately"
+      ]
+    },
+    {
+      "task": "neutrals-rejects-nonpositive-thermal-speed",
+      "kind": "failure",
+      "domain": "neutrals",
+      "package_sufficient": true,
+      "round2_package_sufficient": true,
+      "criteria": 3,
+      "pass": 3,
+      "fail": 0,
+      "not_run": 0,
+      "round2_pass": 3,
+      "round2_fail": 0,
+      "round2_not_run": 0,
+      "calls": 1,
+      "round2_calls": 1,
+      "gaps": []
+    },
+    {
+      "task": "collisions-cross-sections",
+      "kind": "nominal",
+      "domain": "collisions",
+      "package_sufficient": true,
+      "round2_package_sufficient": true,
+      "criteria": 3,
+      "pass": 3,
+      "fail": 0,
+      "not_run": 0,
+      "round2_pass": 3,
+      "round2_fail": 0,
+      "round2_not_run": 0,
+      "calls": 3,
+      "round2_calls": 3,
+      "gaps": []
+    },
+    {
+      "task": "collisions-rate-coefficients",
+      "kind": "nominal",
+      "domain": "collisions",
+      "package_sufficient": false,
+      "round2_package_sufficient": false,
+      "criteria": 1,
+      "pass": 0,
+      "fail": 1,
+      "not_run": 0,
+      "round2_pass": 0,
+      "round2_fail": 1,
+      "round2_not_run": 0,
+      "calls": 0,
+      "round2_calls": 0,
+      "gaps": [
+        "the consumer harness raised AttributeError: 'str' object has no attribute 'message'"
+      ]
+    },
+    {
+      "task": "collisions-rate-averages",
+      "kind": "nominal",
+      "domain": "collisions",
+      "package_sufficient": false,
+      "round2_package_sufficient": false,
+      "criteria": 1,
+      "pass": 0,
+      "fail": 1,
+      "not_run": 0,
+      "round2_pass": 0,
+      "round2_fail": 1,
+      "round2_not_run": 0,
+      "calls": 0,
+      "round2_calls": 0,
+      "gaps": [
+        "the consumer harness raised TypeError: float() argument must be a string or a real number, not 'function'"
+      ]
+    },
+    {
+      "task": "collisions-rejects-out-of-domain",
+      "kind": "failure",
+      "domain": "collisions",
+      "package_sufficient": true,
+      "round2_package_sufficient": true,
+      "criteria": 3,
+      "pass": 3,
+      "fail": 0,
+      "not_run": 0,
+      "round2_pass": 3,
+      "round2_fail": 0,
+      "round2_not_run": 0,
+      "calls": 1,
+      "round2_calls": 1,
+      "gaps": []
+    },
+    {
+      "task": "field-filament-superposition",
+      "kind": "nominal",
+      "domain": "field",
+      "package_sufficient": true,
+      "round2_package_sufficient": true,
+      "criteria": 5,
+      "pass": 5,
+      "fail": 0,
+      "not_run": 0,
+      "round2_pass": 5,
+      "round2_fail": 0,
+      "round2_not_run": 0,
+      "calls": 4,
+      "round2_calls": 4,
+      "gaps": []
+    },
+    {
+      "task": "field-flux-to-poloidal",
+      "kind": "nominal",
+      "domain": "field",
+      "package_sufficient": true,
+      "round2_package_sufficient": true,
+      "criteria": 5,
+      "pass": 5,
+      "fail": 0,
+      "not_run": 0,
+      "round2_pass": 5,
+      "round2_fail": 0,
+      "round2_not_run": 0,
+      "calls": 2,
+      "round2_calls": 2,
+      "gaps": []
+    },
+    {
+      "task": "field-rejects-unsupported-current-rank",
+      "kind": "failure",
+      "domain": "field",
+      "package_sufficient": true,
+      "round2_package_sufficient": true,
+      "criteria": 3,
+      "pass": 3,
+      "fail": 0,
+      "not_run": 0,
+      "round2_pass": 3,
+      "round2_fail": 0,
+      "round2_not_run": 0,
+      "calls": 1,
+      "round2_calls": 1,
+      "gaps": []
+    },
+    {
+      "task": "geometry-equilibrium-grid",
+      "kind": "nominal",
+      "domain": "geometry",
+      "package_sufficient": false,
+      "round2_package_sufficient": false,
+      "criteria": 4,
+      "pass": 3,
+      "fail": 1,
+      "not_run": 0,
+      "round2_pass": 3,
+      "round2_fail": 1,
+      "round2_not_run": 0,
+      "calls": 3,
+      "round2_calls": 3,
+      "gaps": []
+    },
+    {
+      "task": "geometry-mesh-and-volume",
+      "kind": "nominal",
+      "domain": "geometry",
+      "package_sufficient": true,
+      "round2_package_sufficient": true,
+      "criteria": 4,
+      "pass": 4,
+      "fail": 0,
+      "not_run": 0,
+      "round2_pass": 4,
+      "round2_fail": 0,
+      "round2_not_run": 0,
+      "calls": 5,
+      "round2_calls": 5,
+      "gaps": []
+    },
+    {
+      "task": "geometry-rejects-mixed-modes",
+      "kind": "failure",
+      "domain": "geometry",
+      "package_sufficient": true,
+      "round2_package_sufficient": true,
+      "criteria": 3,
+      "pass": 3,
+      "fail": 0,
+      "not_run": 0,
+      "round2_pass": 3,
+      "round2_fail": 0,
+      "round2_not_run": 0,
+      "calls": 1,
+      "round2_calls": 1,
+      "gaps": []
+    },
+    {
+      "task": "numerics-basis-projection",
+      "kind": "nominal",
+      "domain": "numerics",
+      "package_sufficient": true,
+      "round2_package_sufficient": true,
+      "criteria": 6,
+      "pass": 6,
+      "fail": 0,
+      "not_run": 0,
+      "round2_pass": 6,
+      "round2_fail": 0,
+      "round2_not_run": 0,
+      "calls": 2,
+      "round2_calls": 2,
+      "gaps": [
+        "task declares min_calls=4 but only 2 public call(s) were made"
+      ]
+    },
+    {
+      "task": "numerics-splines-and-inverse",
+      "kind": "nominal",
+      "domain": "numerics",
+      "package_sufficient": false,
+      "round2_package_sufficient": false,
+      "criteria": 1,
+      "pass": 0,
+      "fail": 1,
+      "not_run": 0,
+      "round2_pass": 0,
+      "round2_fail": 1,
+      "round2_not_run": 0,
+      "calls": 0,
+      "round2_calls": 0,
+      "gaps": [
+        "the consumer harness raised IndexError: only integers, slices (`:`), ellipsis (`...`), numpy.newaxis (`None`) and integer or boolean arrays are valid indices"
+      ]
+    },
+    {
+      "task": "numerics-rejects-invalid-rcond",
+      "kind": "failure",
+      "domain": "numerics",
+      "package_sufficient": true,
+      "round2_package_sufficient": true,
+      "criteria": 3,
+      "pass": 3,
+      "fail": 0,
+      "not_run": 0,
+      "round2_pass": 3,
+      "round2_fail": 0,
+      "round2_not_run": 0,
+      "calls": 1,
+      "round2_calls": 1,
+      "gaps": []
+    },
+    {
+      "task": "sampling-regular-grid",
+      "kind": "nominal",
+      "domain": "geometry",
+      "package_sufficient": true,
+      "round2_package_sufficient": true,
+      "criteria": 3,
+      "pass": 3,
+      "fail": 0,
+      "not_run": 0,
+      "round2_pass": 3,
+      "round2_fail": 0,
+      "round2_not_run": 0,
+      "calls": 3,
+      "round2_calls": 3,
+      "gaps": [
+        "the outside-support exclusion count is not a returned field of the declared scattered entry, so that half of the criterion was not evaluated"
+      ]
+    },
+    {
+      "task": "sampling-transform-and-derivative",
+      "kind": "nominal",
+      "domain": "geometry",
+      "package_sufficient": true,
+      "round2_package_sufficient": true,
+      "criteria": 5,
+      "pass": 5,
+      "fail": 0,
+      "not_run": 0,
+      "round2_pass": 5,
+      "round2_fail": 0,
+      "round2_not_run": 0,
+      "calls": 3,
+      "round2_calls": 3,
+      "gaps": []
+    },
+    {
+      "task": "sampling-rejects-unknown-method",
+      "kind": "failure",
+      "domain": "geometry",
+      "package_sufficient": true,
+      "round2_package_sufficient": true,
+      "criteria": 3,
+      "pass": 3,
+      "fail": 0,
+      "not_run": 0,
+      "round2_pass": 3,
+      "round2_fail": 0,
+      "round2_not_run": 0,
+      "calls": 1,
+      "round2_calls": 1,
+      "gaps": []
+    },
+    {
+      "task": "equilibrium-isotropic-picard",
+      "kind": "nominal",
+      "domain": "equilibrium",
+      "package_sufficient": false,
+      "round2_package_sufficient": false,
+      "criteria": 4,
+      "pass": 3,
+      "fail": 0,
+      "not_run": 1,
+      "round2_pass": 3,
+      "round2_fail": 0,
+      "round2_not_run": 1,
+      "calls": 3,
+      "round2_calls": 3,
+      "gaps": [
+        "the step record carries a residual but not the pre/post flux arrays the contract defines the residual against"
+      ]
+    },
+    {
+      "task": "equilibrium-anisotropic-picard",
+      "kind": "nominal",
+      "domain": "equilibrium",
+      "package_sufficient": true,
+      "round2_package_sufficient": true,
+      "criteria": 4,
+      "pass": 4,
+      "fail": 0,
+      "not_run": 0,
+      "round2_pass": 4,
+      "round2_fail": 0,
+      "round2_not_run": 0,
+      "calls": 3,
+      "round2_calls": 3,
+      "gaps": []
+    },
+    {
+      "task": "equilibrium-rejects-relax-out-of-range",
+      "kind": "failure",
+      "domain": "equilibrium",
+      "package_sufficient": true,
+      "round2_package_sufficient": true,
+      "criteria": 3,
+      "pass": 3,
+      "fail": 0,
+      "not_run": 0,
+      "round2_pass": 3,
+      "round2_fail": 0,
+      "round2_not_run": 0,
+      "calls": 1,
+      "round2_calls": 1,
+      "gaps": []
+    },
+    {
+      "task": "mirror-frank-egedal",
+      "kind": "nominal",
+      "domain": "mirror",
+      "package_sufficient": true,
+      "round2_package_sufficient": true,
+      "criteria": 5,
+      "pass": 4,
+      "fail": 1,
+      "not_run": 0,
+      "round2_pass": 4,
+      "round2_fail": 1,
+      "round2_not_run": 0,
+      "calls": 3,
+      "round2_calls": 3,
+      "gaps": []
+    },
+    {
+      "task": "mirror-ambipolar-and-loss-cone",
+      "kind": "nominal",
+      "domain": "mirror",
+      "package_sufficient": true,
+      "round2_package_sufficient": true,
+      "criteria": 4,
+      "pass": 4,
+      "fail": 0,
+      "not_run": 0,
+      "round2_pass": 4,
+      "round2_fail": 0,
+      "round2_not_run": 0,
+      "calls": 3,
+      "round2_calls": 3,
+      "gaps": []
+    },
+    {
+      "task": "mirror-rejects-invalid-quadrature-order",
+      "kind": "failure",
+      "domain": "mirror",
+      "package_sufficient": true,
+      "round2_package_sufficient": true,
+      "criteria": 3,
+      "pass": 3,
+      "fail": 0,
+      "not_run": 0,
+      "round2_pass": 3,
+      "round2_fail": 0,
+      "round2_not_run": 0,
+      "calls": 1,
+      "round2_calls": 1,
+      "gaps": []
+    },
+    {
+      "task": "electromagnetism-device-composition",
+      "kind": "nominal",
+      "domain": "electromagnetism",
+      "package_sufficient": true,
+      "round2_package_sufficient": true,
+      "criteria": 5,
+      "pass": 5,
+      "fail": 0,
+      "not_run": 0,
+      "round2_pass": 5,
+      "round2_fail": 0,
+      "round2_not_run": 0,
+      "calls": 2,
+      "round2_calls": 2,
+      "gaps": [
+        "task declares min_calls=3 but only 2 public call(s) were made"
+      ]
+    },
+    {
+      "task": "configurations-retained-geometries",
+      "kind": "nominal",
+      "domain": "configurations",
+      "package_sufficient": true,
+      "round2_package_sufficient": true,
+      "criteria": 5,
+      "pass": 5,
+      "fail": 0,
+      "not_run": 0,
+      "round2_pass": 5,
+      "round2_fail": 0,
+      "round2_not_run": 0,
+      "calls": 3,
+      "round2_calls": 3,
+      "gaps": []
+    },
+    {
+      "task": "configurations-rejects-non-numeric-z0",
+      "kind": "failure",
+      "domain": "configurations",
+      "package_sufficient": true,
+      "round2_package_sufficient": true,
+      "criteria": 3,
+      "pass": 3,
+      "fail": 0,
+      "not_run": 0,
+      "round2_pass": 3,
+      "round2_fail": 0,
+      "round2_not_run": 0,
+      "calls": 1,
+      "round2_calls": 1,
+      "gaps": []
+    },
+    {
+      "task": "electromagnetism-rejects-missing-mesh",
+      "kind": "failure",
+      "domain": "electromagnetism",
+      "package_sufficient": true,
+      "round2_package_sufficient": true,
+      "criteria": 4,
+      "pass": 3,
+      "fail": 1,
+      "not_run": 0,
+      "round2_pass": 3,
+      "round2_fail": 1,
+      "round2_not_run": 0,
+      "calls": 1,
+      "round2_calls": 1,
+      "gaps": [
+        "frozen stimulus targets construction; the declared rejection is at field evaluation. Task list should freeze mesh=None + a psi() call instead."
+      ]
+    },
+    {
+      "task": "closures-quasineutral",
+      "kind": "nominal",
+      "domain": "closures",
+      "package_sufficient": true,
+      "round2_package_sufficient": true,
+      "criteria": 3,
+      "pass": 3,
+      "fail": 0,
+      "not_run": 0,
+      "round2_pass": 3,
+      "round2_fail": 0,
+      "round2_not_run": 0,
+      "calls": 5,
+      "round2_calls": 5,
+      "gaps": [
+        "the declared sign-inversion half of the criterion needs a root solve of the quasineutral entry with a consumer-supplied residual callback, which the example does not declare; only the uniform-density limit was evaluated"
+      ]
+    },
+    {
+      "task": "closures-rejects-nonpositive-temperature",
+      "kind": "failure",
+      "domain": "closures",
+      "package_sufficient": true,
+      "round2_package_sufficient": true,
+      "criteria": 3,
+      "pass": 3,
+      "fail": 0,
+      "not_run": 0,
+      "round2_pass": 3,
+      "round2_fail": 0,
+      "round2_not_run": 0,
+      "calls": 1,
+      "round2_calls": 1,
+      "gaps": []
+    },
+    {
+      "task": "diagnostics-picard-residual",
+      "kind": "nominal",
+      "domain": "diagnostics",
+      "package_sufficient": true,
+      "round2_package_sufficient": true,
+      "criteria": 4,
+      "pass": 4,
+      "fail": 0,
+      "not_run": 0,
+      "round2_pass": 4,
+      "round2_fail": 0,
+      "round2_not_run": 0,
+      "calls": 4,
+      "round2_calls": 4,
+      "gaps": []
+    },
+    {
+      "task": "diagnostics-rejects-shape-mismatch",
+      "kind": "failure",
+      "domain": "diagnostics",
+      "package_sufficient": true,
+      "round2_package_sufficient": true,
+      "criteria": 4,
+      "pass": 3,
+      "fail": 1,
+      "not_run": 0,
+      "round2_pass": 3,
+      "round2_fail": 1,
+      "round2_not_run": 0,
+      "calls": 1,
+      "round2_calls": 1,
+      "gaps": [
+        "the frozen stimulus for this task does not produce the mismatch it names; the task record should freeze a genuinely incompatible shape"
+      ]
+    },
+    {
+      "task": "fieldline-set-and-arclength",
+      "kind": "nominal",
+      "domain": "geometry",
+      "package_sufficient": true,
+      "round2_package_sufficient": true,
+      "criteria": 4,
+      "pass": 4,
+      "fail": 0,
+      "not_run": 0,
+      "round2_pass": 4,
+      "round2_fail": 0,
+      "round2_not_run": 0,
+      "calls": 3,
+      "round2_calls": 3,
+      "gaps": [
+        "the one-sided quadratic endpoint stencils are not described numerically in the delivered contract, so they were not reproduced"
+      ]
+    },
+    {
+      "task": "fieldline-rejects-duplicate-vertices",
+      "kind": "failure",
+      "domain": "geometry",
+      "package_sufficient": false,
+      "round2_package_sufficient": false,
+      "criteria": 3,
+      "pass": 2,
+      "fail": 1,
+      "not_run": 0,
+      "round2_pass": 2,
+      "round2_fail": 1,
+      "round2_not_run": 0,
+      "calls": 1,
+      "round2_calls": 1,
+      "gaps": []
+    },
+    {
+      "task": "physics-coulomb-logarithms",
+      "kind": "nominal",
+      "domain": "physics",
+      "package_sufficient": false,
+      "round2_package_sufficient": false,
+      "criteria": 4,
+      "pass": 3,
+      "fail": 1,
+      "not_run": 0,
+      "round2_pass": 2,
+      "round2_fail": 2,
+      "round2_not_run": 0,
+      "calls": 4,
+      "round2_calls": 4,
+      "gaps": []
+    },
+    {
+      "task": "physics-rejects-boolean-temperature",
+      "kind": "failure",
+      "domain": "physics",
+      "package_sufficient": true,
+      "round2_package_sufficient": true,
+      "criteria": 3,
+      "pass": 3,
+      "fail": 0,
+      "not_run": 0,
+      "round2_pass": 3,
+      "round2_fail": 0,
+      "round2_not_run": 0,
+      "calls": 1,
+      "round2_calls": 1,
+      "gaps": []
+    },
+    {
+      "task": "fvm-convection-diffusion",
+      "kind": "nominal",
+      "domain": "fvm",
+      "package_sufficient": true,
+      "round2_package_sufficient": true,
+      "criteria": 5,
+      "pass": 5,
+      "fail": 0,
+      "not_run": 0,
+      "round2_pass": 5,
+      "round2_fail": 0,
+      "round2_not_run": 0,
+      "calls": 4,
+      "round2_calls": 4,
+      "gaps": [
+        "the convection/diffusion matrices were evaluated but the blended equation with them was not formed for a second theta"
+      ]
+    },
+    {
+      "task": "fvm-rejects-undocumented-mode",
+      "kind": "failure",
+      "domain": "fvm",
+      "package_sufficient": true,
+      "round2_package_sufficient": true,
+      "criteria": 3,
+      "pass": 3,
+      "fail": 0,
+      "not_run": 0,
+      "round2_pass": 3,
+      "round2_fail": 0,
+      "round2_not_run": 0,
+      "calls": 1,
+      "round2_calls": 1,
+      "gaps": []
+    },
+    {
+      "task": "io-eqdsk-roundtrip",
+      "kind": "nominal",
+      "domain": "io",
+      "package_sufficient": false,
+      "round2_package_sufficient": false,
+      "criteria": 6,
+      "pass": 1,
+      "fail": 5,
+      "not_run": 0,
+      "round2_pass": 1,
+      "round2_fail": 5,
+      "round2_not_run": 0,
+      "calls": 3,
+      "round2_calls": 3,
+      "gaps": [
+        "task declares min_calls=4 but only 3 public call(s) were made"
+      ]
+    },
+    {
+      "task": "io-rejects-bad-and-missing-input",
+      "kind": "failure",
+      "domain": "io",
+      "package_sufficient": false,
+      "round2_package_sufficient": false,
+      "criteria": 4,
+      "pass": 2,
+      "fail": 2,
+      "not_run": 0,
+      "round2_pass": 2,
+      "round2_fail": 2,
+      "round2_not_run": 0,
+      "calls": 2,
+      "round2_calls": 2,
+      "gaps": []
+    },
+    {
+      "task": "inference-parameter-optimization",
+      "kind": "nominal",
+      "domain": "inference",
+      "package_sufficient": false,
+      "round2_package_sufficient": false,
+      "criteria": 4,
+      "pass": 3,
+      "fail": 1,
+      "not_run": 0,
+      "round2_pass": 3,
+      "round2_fail": 1,
+      "round2_not_run": 0,
+      "calls": 4,
+      "round2_calls": 4,
+      "gaps": []
+    },
+    {
+      "task": "inference-rejects-bad-bounds",
+      "kind": "failure",
+      "domain": "inference",
+      "package_sufficient": true,
+      "round2_package_sufficient": true,
+      "criteria": 3,
+      "pass": 3,
+      "fail": 0,
+      "not_run": 0,
+      "round2_pass": 3,
+      "round2_fail": 0,
+      "round2_not_run": 0,
+      "calls": 1,
+      "round2_calls": 1,
+      "gaps": []
+    },
+    {
+      "task": "neoclassical-bootstrap",
+      "kind": "nominal",
+      "domain": "neoclassical",
+      "package_sufficient": false,
+      "round2_package_sufficient": false,
+      "criteria": 4,
+      "pass": 3,
+      "fail": 1,
+      "not_run": 0,
+      "round2_pass": 3,
+      "round2_fail": 1,
+      "round2_not_run": 0,
+      "calls": 4,
+      "round2_calls": 4,
+      "gaps": []
+    },
+    {
+      "task": "neoclassical-rejects-unknown-method",
+      "kind": "failure",
+      "domain": "neoclassical",
+      "package_sufficient": true,
+      "round2_package_sufficient": true,
+      "criteria": 3,
+      "pass": 3,
+      "fail": 0,
+      "not_run": 0,
+      "round2_pass": 3,
+      "round2_fail": 0,
+      "round2_not_run": 0,
+      "calls": 1,
+      "round2_calls": 1,
+      "gaps": []
+    },
+    {
+      "task": "source-profile-integral",
+      "kind": "nominal",
+      "domain": "source",
+      "package_sufficient": true,
+      "round2_package_sufficient": true,
+      "criteria": 5,
+      "pass": 5,
+      "fail": 0,
+      "not_run": 0,
+      "round2_pass": 5,
+      "round2_fail": 0,
+      "round2_not_run": 0,
+      "calls": 2,
+      "round2_calls": 2,
+      "gaps": []
+    },
+    {
+      "task": "source-zero-width-sentinel",
+      "kind": "nominal",
+      "domain": "source",
+      "package_sufficient": true,
+      "round2_package_sufficient": true,
+      "criteria": 4,
+      "pass": 4,
+      "fail": 0,
+      "not_run": 0,
+      "round2_pass": 4,
+      "round2_fail": 0,
+      "round2_not_run": 0,
+      "calls": 2,
+      "round2_calls": 2,
+      "gaps": []
+    },
+    {
+      "task": "source-rejects-nonpositive-weights",
+      "kind": "failure",
+      "domain": "source",
+      "package_sufficient": true,
+      "round2_package_sufficient": true,
+      "criteria": 3,
+      "pass": 3,
+      "fail": 0,
+      "not_run": 0,
+      "round2_pass": 3,
+      "round2_fail": 0,
+      "round2_not_run": 0,
+      "calls": 1,
+      "round2_calls": 1,
+      "gaps": []
+    },
+    {
+      "task": "dielectric-cold-tensor",
+      "kind": "nominal",
+      "domain": "dielectric",
+      "package_sufficient": false,
+      "round2_package_sufficient": false,
+      "criteria": 4,
+      "pass": 3,
+      "fail": 0,
+      "not_run": 1,
+      "round2_pass": 3,
+      "round2_fail": 0,
+      "round2_not_run": 1,
+      "calls": 1,
+      "round2_calls": 1,
+      "gaps": [
+        "the task's basis-invariance and exact-resonance criteria need inputs the contract's example block does not declare; a consumer may only use the declared example inputs, so they stay unevaluated",
+        "task declares min_calls=2 but only 1 public call(s) were made"
+      ]
+    },
+    {
+      "task": "dielectric-rejects-nonpositive-frequency",
+      "kind": "failure",
+      "domain": "dielectric",
+      "package_sufficient": true,
+      "round2_package_sufficient": true,
+      "criteria": 3,
+      "pass": 3,
+      "fail": 0,
+      "not_run": 0,
+      "round2_pass": 3,
+      "round2_fail": 0,
+      "round2_not_run": 0,
+      "calls": 1,
+      "round2_calls": 1,
+      "gaps": []
+    },
+    {
+      "task": "plasma-fast-ion-heating",
+      "kind": "nominal",
+      "domain": "plasma",
+      "package_sufficient": true,
+      "round2_package_sufficient": true,
+      "criteria": 4,
+      "pass": 4,
+      "fail": 0,
+      "not_run": 0,
+      "round2_pass": 4,
+      "round2_fail": 0,
+      "round2_not_run": 0,
+      "calls": 2,
+      "round2_calls": 2,
+      "gaps": []
+    },
+    {
+      "task": "plasma-rejects-invalid-beam",
+      "kind": "failure",
+      "domain": "plasma",
+      "package_sufficient": true,
+      "round2_package_sufficient": true,
+      "criteria": 3,
+      "pass": 3,
+      "fail": 0,
+      "not_run": 0,
+      "round2_pass": 3,
+      "round2_fail": 0,
+      "round2_not_run": 0,
+      "calls": 1,
+      "round2_calls": 1,
+      "gaps": []
+    },
+    {
+      "task": "fusion-dd-neutron-energy",
+      "kind": "nominal",
+      "domain": "fusion",
+      "package_sufficient": false,
+      "round2_package_sufficient": false,
+      "criteria": 3,
+      "pass": 2,
+      "fail": 1,
+      "not_run": 0,
+      "round2_pass": 2,
+      "round2_fail": 1,
+      "round2_not_run": 0,
+      "calls": 2,
+      "round2_calls": 2,
+      "gaps": [
+        "the recomputation uses CODATA masses the consumer supplied; the package does not return the mass constants it used"
+      ]
+    },
+    {
+      "task": "fusion-rejects-bad-detector-vector",
+      "kind": "failure",
+      "domain": "fusion",
+      "package_sufficient": true,
+      "round2_package_sufficient": true,
+      "criteria": 3,
+      "pass": 3,
+      "fail": 0,
+      "not_run": 0,
+      "round2_pass": 3,
+      "round2_fail": 0,
+      "round2_not_run": 0,
+      "calls": 1,
+      "round2_calls": 1,
+      "gaps": []
+    },
+    {
+      "task": "cross-field-to-equilibrium",
+      "kind": "cross",
+      "domain": "cross",
+      "package_sufficient": true,
+      "round2_package_sufficient": true,
+      "criteria": 6,
+      "pass": 6,
+      "fail": 0,
+      "not_run": 0,
+      "round2_pass": 6,
+      "round2_fail": 0,
+      "round2_not_run": 0,
+      "calls": 3,
+      "round2_calls": 3,
+      "gaps": [
+        "the derivative entry differentiates a supplied flux, so the comparison against finite differences carries discretisation error; the exact handoff (array identity) is what the 1e-12 budget covers"
+      ]
+    },
+    {
+      "task": "cross-geometry-to-equilibrium",
+      "kind": "cross",
+      "domain": "cross",
+      "package_sufficient": false,
+      "round2_package_sufficient": false,
+      "criteria": 6,
+      "pass": 3,
+      "fail": 3,
+      "not_run": 0,
+      "round2_pass": 3,
+      "round2_fail": 3,
+      "round2_not_run": 0,
+      "calls": 3,
+      "round2_calls": 3,
+      "gaps": []
+    },
+    {
+      "task": "cross-mirror-to-diagnostics",
+      "kind": "cross",
+      "domain": "cross",
+      "package_sufficient": false,
+      "round2_package_sufficient": false,
+      "criteria": 4,
+      "pass": 2,
+      "fail": 2,
+      "not_run": 0,
+      "round2_pass": 2,
+      "round2_fail": 2,
+      "round2_not_run": 0,
+      "calls": 2,
+      "round2_calls": 2,
+      "gaps": [
+        "dp_perp_dB is not returned by the closure entry, so the consumer formed it by finite differences on the declared grid",
+        "task declares min_calls=3 but only 2 public call(s) were made"
+      ]
+    },
+    {
+      "task": "cross-source-to-neutrals",
+      "kind": "cross",
+      "domain": "cross",
+      "package_sufficient": false,
+      "round2_package_sufficient": false,
+      "criteria": 5,
+      "pass": 3,
+      "fail": 2,
+      "not_run": 0,
+      "round2_pass": 3,
+      "round2_fail": 2,
+      "round2_not_run": 0,
+      "calls": 3,
+      "round2_calls": 3,
+      "gaps": [
+        "the consumer had to reshape the one-dimensional profile onto the declared vx/alpha grid itself; the package does not offer a declared profile-to-forcing adapter"
+      ]
+    },
+    {
+      "task": "cross-kinetic-to-diagnostics",
+      "kind": "cross",
+      "domain": "cross",
+      "package_sufficient": false,
+      "round2_package_sufficient": false,
+      "criteria": 4,
+      "pass": 2,
+      "fail": 0,
+      "not_run": 2,
+      "round2_pass": 2,
+      "round2_fail": 0,
+      "round2_not_run": 2,
+      "calls": 1,
+      "round2_calls": 1,
+      "gaps": [
+        "task premise is not expressible: observation-residuals accepts only flux_loops/thomson channels; there is no 'roots' channel and no declared adapter, so 'use the roots as predictions' cannot be written. This is a task-design/contract-coverage issue: the earlier round recorded it as a package fault after feeding an invented channel name",
+        "task declares min_calls=2 but only 1 public call(s) were made"
+      ]
+    },
+    {
+      "task": "cross-collisions-to-neutrals",
+      "kind": "cross",
+      "domain": "cross",
+      "package_sufficient": false,
+      "round2_package_sufficient": false,
+      "criteria": 4,
+      "pass": 2,
+      "fail": 2,
+      "not_run": 0,
+      "round2_pass": 2,
+      "round2_fail": 2,
+      "round2_not_run": 0,
+      "calls": 3,
+      "round2_calls": 3,
+      "gaps": [
+        "the rate is a three-dimensional array and the frequency entry takes a per-species list, so the consumer reduced it to its mean; the package does not declare that reduction"
+      ]
+    }
+  ],
+  "diff_vs_round2": {
+    "method": "every criterion id of every task, compared by status; then every answer value, compared as JSON.  Device unchanged: closeout/checks/ is a byte copy of round2/checks/, so a status change cannot come from a criteria edit.",
+    "criteria_changed": [
+      {
+        "task": "physics-coulomb-logarithms",
+        "criterion": "fields",
+        "round2": "fail",
+        "closeout": "pass"
+      }
+    ],
+    "improvements": [
+      {
+        "task": "physics-coulomb-logarithms",
+        "criterion": "fields",
+        "round2": "fail",
+        "closeout": "pass"
+      }
+    ],
+    "regressions": [],
+    "other_changes": [],
+    "answer_differences": {},
+    "answer_difference_note": "the two entries listed under answer_differences hold object reprs / temporary paths only; walk() strips those (see _repr_only)",
+    "verdict": "no reverse deterioration: no criterion moved from pass to fail, and no numeric answer moved"
+  },
+  "focus": {
+    "1_thermal_energy_result": {
+      "source": "focus-audit.json → thermal_energy",
+      "status": "pass",
+      "read_by_name": {
+        "W_el": 7.8,
+        "W_ion": 11.7,
+        "W_tot": 19.5
+      },
+      "independent_exact_recomputation": {
+        "W_el": 7.8,
+        "W_ion": 11.7,
+        "W_tot": 19.5
+      },
+      "relative_deviation": {
+        "W_el": 0.0,
+        "W_ion": 0.0,
+        "W_tot": 0.0
+      },
+      "additivity_probe": 0.0,
+      "scaling_probe": 0.0
+    },
+    "2_single_output_channels": {
+      "source": "contract-audit.json",
+      "contracts_total": 249,
+      "single_output": 138,
+      "declared_channel_counts": {
+        "undeclared": 119,
+        "positional": 14,
+        "result-field": 5
+      },
+      "runtime_verdict_counts": {
+        "undeclared-keys-named-elsewhere": 19,
+        "undeclared-declared-name-is-key": 8,
+        "undeclared-unambiguous-positional": 84,
+        "consistent": 19,
+        "undeclared-keys-unstated": 2,
+        "undeclared-keys-dynamic": 1,
+        "not-observed": 3,
+        "undeclared-keys-partly-named": 2
+      },
+      "note": "the brief says 21 contracts were adjudicated; the delivered package declares the positional channel on 13 single-output contracts plus the fumarole's pre-existing numerics.faddeeva wording, which the audit counts as 14 positional.  thermal-energy and circular-filament-green were the other two decisions in that adjudication (Result / no change needed).",
+      "criteria": [
+        {
+          "id": "A1",
+          "kind": "contract_readability",
+          "status": "pass",
+          "detail": {
+            "question": "do the single-output contracts that now declare positional return actually return positionally?",
+            "declared_positional": 14,
+            "runtime_consistent": 14,
+            "inconsistent": []
+          }
+        },
+        {
+          "id": "A2",
+          "kind": "contract_readability",
+          "status": "fail",
+          "detail": {
+            "question": "how many single-output contracts state no return channel at all?",
+            "single_output_contracts": 138,
+            "undeclared": 119,
+            "by_runtime_verdict": {
+              "undeclared-unambiguous-positional": [
+                "scirel.collisions.atomic-hydrogen-1s-radiative-recombination-rate-coefficient",
+                "scirel.collisions.atomic-hydrogen-charge-exchange-cross-section",
+                "scirel.collisions.atomic-molecular-hydrogen-elastic-cross-section",
+                "scirel.collisions.fast-ion-stopping-increment",
+                "scirel.collisions.janev-electron-impact-ionization-rate",
+                "scirel.collisions.maxwellian-relative-speed-rate-average",
+                "scirel.collisions.molecular-hydrogen-charge-exchange-cross-section",
+                "scirel.collisions.molecular-hydrogen-elastic-cross-section",
+                "scirel.collisions.normalized-momentum",
+                "scirel.collisions.proton-atomic-hydrogen-elastic-cross-section",
+                "scirel.collisions.proton-molecular-hydrogen-elastic-cross-section",
+                "scirel.collisions.thermal-electron-momentum",
+                "scirel.configurations.brb",
+                "scirel.configurations.trex-coil",
+                "scirel.configurations.wham",
+                "scirel.electromagnetism.arbitrary-points",
+                "scirel.electromagnetism.circular-filament-green",
+                "scirel.electromagnetism.device",
+                "scirel.electromagnetism.magnet-ring",
+                "scirel.electromagnetism.rectangular-coil",
+                "scirel.equilibrium.compute-equilibrium",
+                "scirel.field.rectangular-coil-filaments",
+                "scirel.fusion.dd-neutron-lab-energy",
+                "scirel.fvm.cell-variable",
+                "scirel.fvm.theta-step",
+                "scirel.geometry.boundary",
+                "scirel.geometry.fieldline",
+                "scirel.geometry.fieldline-set",
+                "scirel.geometry.helper-fieldline",
+                "scirel.geometry.masked-toroidal-volume",
+                "scirel.geometry.nonuniform-first-derivative",
+                "scirel.geometry.parse-segment",
+                "scirel.geometry.path-distance",
+                "scirel.geometry.point-nearest",
+                "scirel.geometry.points-mesh",
+                "scirel.geometry.r-chord",
+                "scirel.geometry.rect-mesh",
+                "scirel.geometry.rectangular-nearest",
+                "scirel.geometry.rectangular-spline",
+                "scirel.geometry.regular-grid",
+                "scirel.geometry.rotate",
+                "scirel.geometry.scalar-reflection",
+                "scirel.geometry.scattered-linear",
+                "scirel.geometry.select-fieldline",
+                "scirel.geometry.spherical-r-chord",
+                "scirel.geometry.theta-chord",
+                "scirel.geometry.weighted-line-integral",
+                "scirel.geometry.z-chord",
+                "scirel.kinetic.fluid-special-functions",
+                "scirel.kinetic.generalized-expression-differentiation",
+                "scirel.kinetic.generalized-residual",
+                "scirel.kinetic.hydrogen-saha-equilibrium-population",
+                "scirel.kinetic.multifluid-deck",
+                "scirel.kinetic.rational-default-deck",
+                "scirel.kinetic.rational-z-poles",
+                "scirel.kinetic.vp-distribution",
+                "scirel.kinetic.vp-field",
+                "scirel.kinetic.vp-rhs",
+                "scirel.kinetic.vp-rk4-step",
+                "scirel.mirror.frank-egedal-radial-envelope",
+                "scirel.neutrals.adaptive-neutral-velocity-mesh",
+                "scirel.neutrals.atomic-scattered-sources-reduction",
+                "scirel.neutrals.compensated-shifted-maxwellian",
+                "scirel.neutrals.cross-mesh-distribution-interpolation",
+                "scirel.neutrals.elastic-regeneration-aggregation",
+                "scirel.neutrals.generation-density-reduction",
+                "scirel.neutrals.molecular-scattered-sources-reduction",
+                "scirel.neutrals.neutral-generation-stopping",
+                "scirel.neutrals.neutral-total-collision-frequency",
+                "scirel.neutrals.simple-charge-exchange-source",
+                "scirel.numerics.basis-matrix",
+                "scirel.numerics.build-basis",
+                "scirel.numerics.clamped-cubic-spline",
+                "scirel.numerics.face-to-cell",
+                "scirel.numerics.first-clamped-cubic-spline",
+                "scirel.numerics.natural-cubic-spline",
+                "scirel.numerics.orthonormal-modal-basis",
+                "scirel.numerics.second-clamped-cubic-spline",
+                "scirel.numerics.truncated-svd-inverse",
+                "scirel.physics.coulomb-ee",
+                "scirel.physics.coulomb-ei",
+                "scirel.physics.coulomb-ii",
+                "scirel.physics.dilution",
+                "scirel.plasma.fast-ion-heating"
+              ],
+              "undeclared-declared-name-is-key": [
+                "scirel.closures.quasineutral-reference-density",
+                "scirel.kinetic.fluid-bonk-search",
+                "scirel.kinetic.fluid-em-spectrum",
+                "scirel.kinetic.rational-jpole-evaluate",
+                "scirel.kinetic.relativistic-codrift-generalized-spectrum",
+                "scirel.neutrals.elastic-frequency-channels",
+                "scirel.neutrals.neutral-boltzmann-rhs",
+                "scirel.neutrals.terminal-conservation-diagnostic"
+              ],
+              "undeclared-keys-named-elsewhere": [
+                "scirel.closures.discrete-vector-error-feedback",
+                "scirel.kinetic.fluid-dispersion-response",
+                "scirel.kinetic.fluid-em-matrix",
+                "scirel.kinetic.multifluid-equilibrium",
+                "scirel.kinetic.multifluid-frequency-pencil",
+                "scirel.kinetic.multifluid-relative-rate-equilibrium",
+                "scirel.kinetic.multifluid-scan",
+                "scirel.kinetic.parallel-em-continuation",
+                "scirel.kinetic.vp-diagnostic",
+                "scirel.kinetic.vp-envelope",
+                "scirel.kinetic.vp-evolve",
+                "scirel.kinetic.vp-init",
+                "scirel.kinetic.vp-landau",
+                "scirel.neutrals.axisymmetric-neutral-moments",
+                "scirel.neutrals.generation-accumulation-update",
+                "scirel.neutrals.neutral-upwind-transport-coefficients",
+                "scirel.neutrals.outer-convergence",
+                "scirel.neutrals.outer-seed-convergence",
+                "scirel.neutrals.thermal-speed-scale"
+              ],
+              "undeclared-keys-partly-named": [
+                "scirel.kinetic.fluid-case-state",
+                "scirel.kinetic.multifluid-frequency-solve"
+              ],
+              "undeclared-keys-dynamic": [
+                "scirel.io.eqdsk-class"
+              ],
+              "undeclared-keys-unstated": [
+                "scirel.geometry.contour-points",
+                "scirel.geometry.helper-contour-points"
+              ]
+            },
+            "not_observed": [
+              "scirel.io.read-eqdsk",
+              "scirel.io.read-geqdsk",
+              "scirel.io.write-eqdsk"
+            ],
+            "note": "a single declared output returned positionally cannot be misread.  The gap is the mapping returns: there the contract's own outputs[].name is not a key, and the key list lives in prose (description/constraints/dtype/shape) rather than in a structured field"
+          },
+          "task_hint": "affects every task that reads a single-output entry"
+        },
+        {
+          "id": "A3",
+          "kind": "contract_readability",
+          "status": "pass",
+          "detail": {
+            "question": "multi-output contracts: is the mapping channel declared?",
+            "multi_output_contracts": 111,
+            "every_output_declares_result_field": 30,
+            "not_declaring": [
+              "scirel.closures.hall-two-fluid-pressure",
+              "scirel.closures.quasineutral-potential",
+              "scirel.closures.reduced-hall-drift",
+              "scirel.closures.tabulated-pressure",
+              "scirel.collisions.atomic-hydrogen-collision-matrices",
+              "scirel.collisions.atomic-hydrogen-omega-frequencies",
+              "scirel.collisions.molecular-hydrogen-collision-matrices",
+              "scirel.collisions.molecular-hydrogen-omega-frequencies",
+              "scirel.collisions.relativistic-maxwellian-bessel-closure",
+              "scirel.electromagnetism.green-response-matrices",
+              "scirel.equilibrium.anisotropic-force-balance",
+              "scirel.equilibrium.axisymmetric-anisotropic-picard",
+              "scirel.equilibrium.free-boundary-anisotropic-picard",
+              "scirel.equilibrium.isotropic-pressure-flux",
+              "scirel.equilibrium.kinetic-mirror-hall-equilibrium",
+              "scirel.equilibrium.reduced-hall-anisotropic-picard",
+              "scirel.field.coil-green-geometry",
+              "scirel.field.complete-elliptic-integrals-approx",
+              "scirel.field.filament-coil-green-field",
+              "scirel.fvm.convection",
+              "scirel.fvm.diffusion",
+              "scirel.geometry.axisymmetric-equilibrium-grid-support",
+              "scirel.geometry.nonuniform-derivatives",
+              "scirel.geometry.polynomial-fit",
+              "scirel.kinetic.bessel-gamma",
+              "scirel.kinetic.dielectric-diagnostics",
+              "scirel.kinetic.dielectric-response",
+              "scirel.kinetic.fluid-dispersion-matrix",
+              "scirel.kinetic.fluid-wavevector-eigensolve",
+              "scirel.kinetic.fluid-wavevector-scan",
+              "scirel.kinetic.gamma-lpole-coefficients",
+              "scirel.kinetic.generalized-dispersion",
+              "scirel.kinetic.generalized-hilbert",
+              "scirel.kinetic.generalized-root-scans",
+              "scirel.kinetic.generalized-small-k",
+              "scirel.kinetic.gpdf-cauchy-transform",
+              "scirel.kinetic.kinetic-dispersion-relation",
+              "scirel.kinetic.kinetic-wavevector-roots",
+              "scirel.kinetic.kinetic-wavevector-scan",
+              "scirel.kinetic.maxwellian-electrostatic-mode",
+              "scirel.kinetic.maxwellian-electrostatic-solver",
+              "scirel.kinetic.parallel-em-residual",
+              "scirel.kinetic.plasma-dispersion-function",
+              "scirel.kinetic.rational-em-coordinates",
+              "scirel.kinetic.rational-equilibrium",
+              "scirel.kinetic.rational-jpole-coefficients",
+              "scirel.kinetic.rational-jpole-grid-coordinates",
+              "scirel.kinetic.rational-point-matrix",
+              "scirel.kinetic.rational-pole-table",
+              "scirel.kinetic.rational-solve-matrix",
+              "scirel.kinetic.ronnmark-r-function",
+              "scirel.kinetic.species-equilibrium-scales",
+              "scirel.kinetic.spectral-dispersion-scan",
+              "scirel.kinetic.spectral-plasma-state",
+              "scirel.kinetic.spectral-temporal-matrix",
+              "scirel.kinetic.spectral-temporal-spectrum",
+              "scirel.kinetic.z-pole-coefficients",
+              "scirel.mirror.frank-egedal-hot-ion-moments",
+              "scirel.mirror.frank-egedal-pressure-closure",
+              "scirel.mirror.frank-egedal-pressure-state",
+              "scirel.mirror.frank-egedal-source-projection",
+              "scirel.mirror.grid-mirror-kinetic-closure",
+              "scirel.mirror.loss-cone-spectrum",
+              "scirel.mirror.mirror-ambipolar-potential",
+              "scirel.mirror.mirror-constrained-moments",
+              "scirel.mirror.mirror-invariant-distribution",
+              "scirel.mirror.mirror-quasineutral-closure",
+              "scirel.mirror.mirror-total-pressure",
+              "scirel.neoclassical.bootstrap-coefficients",
+              "scirel.neutrals.atomic-alpha-contraction",
+              "scirel.neutrals.cylindrical-velocity-quadrature",
+              "scirel.neutrals.incoming-boundary-flux-normalization",
+              "scirel.neutrals.molecular-alpha-contraction",
+              "scirel.neutrals.shifted-maxwellian-seed",
+              "scirel.neutrals.spatial-source-shape-normalization",
+              "scirel.neutrals.terminal-energy-transfer-reduction",
+              "scirel.neutrals.terminal-flux-velocity-reduction",
+              "scirel.neutrals.terminal-heat-flux-reduction",
+              "scirel.neutrals.terminal-ion-state-reduction",
+              "scirel.neutrals.terminal-pressure-temperature-reduction",
+              "scirel.neutrals.velocity-slice-moment-compensation"
+            ]
+          }
+        }
+      ]
+    },
+    "3_evidence_clauses": {
+      "source": "focus-audit.json → evidence_clauses",
+      "claims": [
+        {
+          "asset": "scirel.field.poloidal-field-from-flux",
+          "claims": [
+            {
+              "claim": "v6 Result with mapping+attribute parity",
+              "status": "pass",
+              "detail": {
+                "returned_type": "Result",
+                "keys": [
+                  "B",
+                  "B_R",
+                  "B_Z"
+                ],
+                "attribute_is_item": {
+                  "B_R": true,
+                  "B_Z": true,
+                  "B": true
+                },
+                "shapes": {
+                  "B_R": [
+                    3,
+                    3
+                  ],
+                  "B_Z": [
+                    3,
+                    3
+                  ],
+                  "B": [
+                    3,
+                    3
+                  ]
+                },
+                "dtypes": {
+                  "B_R": "float64",
+                  "B_Z": "float64",
+                  "B": "float64"
+                },
+                "declared_shapes": {
+                  "B_R": [
+                    3,
+                    3
+                  ],
+                  "B_Z": [
+                    3,
+                    3
+                  ],
+                  "B": [
+                    3,
+                    3
+                  ]
+                }
+              }
+            },
+            {
+              "claim": "v8 quadratic-flux closed form B_R=-R(e+2bZ), B_Z=2(a+eZ+bZ^2)",
+              "status": "pass",
+              "detail": {
+                "literal_parameters": {
+                  "a": 1.5,
+                  "e": 2.0,
+                  "b": 3.0,
+                  "r_grid": [
+                    0.25,
+                    0.5,
+                    0.75,
+                    1.0,
+                    1.4
+                  ],
+                  "z_grid": [
+                    -0.6,
+                    -0.2,
+                    0.2,
+                    0.6,
+                    1.0
+                  ]
+                },
+                "relative_deviation": {
+                  "B_R": 4.440892098500626e-16,
+                  "B_Z": 3.218037752536685e-16,
+                  "B": 3.7480071915151237e-16
+                },
+                "tolerance_used": "3.553e-15"
+              }
+            },
+            {
+              "claim": "v9 monomial family matches closed form within the declared 2.8 eps",
+              "status": "pass",
+              "detail": {
+                "relative_deviation": {
+                  "(2,0)": {
+                    "B_R": 0.0,
+                    "B_Z": 2.220446049250313e-16
+                  },
+                  "(2,1)": {
+                    "B_R": 5.55111512312578e-16,
+                    "B_Z": 5.551115123125783e-16
+                  },
+                  "(1,2)": {
+                    "B_R": 3.7007434154171886e-16,
+                    "B_Z": 5.55111512312578e-16
+                  },
+                  "(2,2)": {
+                    "B_R": 3.3643121958338077e-16,
+                    "B_Z": 3.4694469519536137e-16
+                  }
+                },
+                "declared_tolerance": 6.217248937900876e-16
+              }
+            },
+            {
+              "claim": "v9 axisymmetric divergence identity closes at roundoff on the returned B_R/B_Z",
+              "status": "pass",
+              "detail": {
+                "max_abs_divergence_over_term_scale": 1.6979881553090593e-15,
+                "tolerance_used": 1e-12,
+                "stencil": "numpy.gradient with edge_order=2 (exact for quadratics), term scale = max(|dR term|, |dZ term|)"
+              }
+            },
+            {
+              "claim": "v9 the declared 6.0 eps bound itself",
+              "status": "not-observed",
+              "detail": {
+                "why": "the sentence states a bound 'to 6.0 eps of the term scale' without printing the stencil or the term scale it uses; an independent stencil gives 7.6 eps of its own term scale, which neither confirms nor contradicts the declared number",
+                "observed_with_my_stencil": 1.6979881553090593e-15,
+                "declared": 1.3322676295501878e-15,
+                "ratio_observed_over_declared": 1.2745098039215659
+              }
+            },
+            {
+              "claim": "v7 nonzero radial reference vs independent Biot-Savart integration",
+              "status": "not-observed",
+              "detail": {
+                "why": "the clause compares against an 80/120-digit Biot-Savart integral of the source; the package exposes no such callable and the clause does not print the integral, so a contract-only consumer cannot reproduce it",
+                "what_is_observable": "a constant flux reference changes neither component (checked by v8's reference probe below)"
+              }
+            },
+            {
+              "claim": "v5/v8 a constant flux reference leaves B_R and B_Z unchanged",
+              "status": "pass",
+              "detail": {
+                "relative_deviation": {
+                  "B_R": 0.0,
+                  "B_Z": 2.220446049250311e-15
+                },
+                "reference": 3.7
+              }
+            }
+          ]
+        },
+        {
+          "asset": "scirel.geometry.path-distance",
+          "claims": [
+            {
+              "claim": "Pythagorean legs accumulate exactly (0,3,7)",
+              "status": "pass",
+              "detail": {
+                "literal": [
+                  [
+                    0.0,
+                    0.0
+                  ],
+                  [
+                    3.0,
+                    0.0
+                  ],
+                  [
+                    3.0,
+                    4.0
+                  ]
+                ],
+                "observed": {
+                  "dtype": "float64",
+                  "shape": [
+                    3
+                  ],
+                  "values": [
+                    0.0,
+                    3.0,
+                    7.0
+                  ]
+                }
+              }
+            },
+            {
+              "claim": "dyadic coordinates and lengths: quarter turn leaves values bitwise identical",
+              "status": "pass",
+              "detail": {
+                "bitwise_identical": true,
+                "rotation_matrix": [
+                  [
+                    0.0,
+                    -1.0
+                  ],
+                  [
+                    1.0,
+                    0.0
+                  ]
+                ]
+              }
+            },
+            {
+              "claim": "irrational length is within 4 eps of the exact value (not bitwise)",
+              "status": "pass",
+              "detail": {
+                "observed_segment_length": 1.4142135623730951,
+                "relative_deviation_vs_60_digit_sqrt2": 0.0,
+                "declared_bound": 8.881784197001252e-16
+              }
+            }
+          ]
+        },
+        {
+          "asset": "scirel.numerics.clamped-cubic-spline / natural-cubic-spline",
+          "claims": [
+            {
+              "claim": "clamped spline reproduces a cubic when the end slopes are consistent with it",
+              "status": "pass",
+              "detail": {
+                "relative_deviation": 2.1766411461833723e-16,
+                "tolerance": 1.4210854715202004e-14,
+                "x_data": [
+                  0.0,
+                  0.2,
+                  0.4,
+                  0.6000000000000001,
+                  0.8,
+                  1.0
+                ],
+                "yp": [
+                  0.5,
+                  -0.5
+                ],
+                "query_points": [
+                  0.05,
+                  0.1,
+                  0.15,
+                  "..."
+                ]
+              }
+            },
+            {
+              "claim": "with inconsistent end slopes the same cubic is NOT reproduced (clause is not vacuous)",
+              "status": "pass",
+              "detail": {
+                "relative_deviation": 0.02908918528733637,
+                "yp": [
+                  0.0,
+                  0.0
+                ]
+              }
+            },
+            {
+              "claim": "natural spline reproduces a linear function exactly (data consistent with M=0 ends)",
+              "status": "pass",
+              "detail": {
+                "relative_deviation": 1.1102230246251556e-15
+              }
+            },
+            {
+              "claim": "natural spline on a cubic is NOT exact (the O(h^4) claim is conditional)",
+              "status": "pass",
+              "detail": {
+                "relative_deviation": 0.00707725578826697
+              }
+            }
+          ]
+        },
+        {
+          "asset": "scirel.numerics.truncated-svd-inverse",
+          "claims": [
+            {
+              "claim": "a singular value exactly at the cutoff is retained; the neighbour below it is discarded",
+              "status": "pass",
+              "detail": {
+                "rcond_default": 1e-10,
+                "retained_entry": 10000000000.0,
+                "relative_deviation_of_retained_reciprocal": 0.0,
+                "below_cutoff_entry": 0.0
+              }
+            },
+            {
+              "claim": "the returned matrix has the transposed shape (n,m)",
+              "status": "pass",
+              "detail": {
+                "input_shape": [
+                  5,
+                  3
+                ],
+                "observed_shape": [
+                  3,
+                  5
+                ]
+              }
+            },
+            {
+              "claim": "the hand-SVD construction covers permutation-times-diagonal spectra only",
+              "status": "not-observed",
+              "detail": {
+                "why": "this sentence describes how the maintainer's evidence was constructed inside tests/; the delivered package exposes no artefact that shows the construction, so the claim cannot be checked from the package"
+              }
+            }
+          ]
+        }
+      ],
+      "criteria": [
+        {
+          "id": "C1",
+          "kind": "evidence_clause",
+          "status": "pass",
+          "detail": {
+            "question": "does any new evidence clause contradict what the package publicly does?",
+            "claims_checked": 17,
+            "by_status": {
+              "pass": 14,
+              "not-observed": 3
+            },
+            "contradicted": []
+          }
+        },
+        {
+          "id": "C2",
+          "kind": "evidence_clause",
+          "status": "fail",
+          "detail": {
+            "question": "is every claim in those clauses checkable with the package alone?",
+            "not_checkable": [
+              {
+                "claim": "v9 the declared 6.0 eps bound itself",
+                "why": "the sentence states a bound 'to 6.0 eps of the term scale' without printing the stencil or the term scale it uses; an independent stencil gives 7.6 eps of its own term scale, which neither confirms nor contradicts the declared number"
+              },
+              {
+                "claim": "v7 nonzero radial reference vs independent Biot-Savart integration",
+                "why": "the clause compares against an 80/120-digit Biot-Savart integral of the source; the package exposes no such callable and the clause does not print the integral, so a contract-only consumer cannot reproduce it"
+              },
+              {
+                "claim": "the hand-SVD construction covers permutation-times-diagonal spectra only",
+                "why": "this sentence describes how the maintainer's evidence was constructed inside tests/; the delivered package exposes no artefact that shows the construction, so the claim cannot be checked from the package"
+              }
+            ],
+            "note": "these are not library defects; they are sentences whose subject is how the maintainer's evidence was built, or a numeric bound whose stencil is not printed"
+          }
+        }
+      ]
+    }
+  },
+  "audit_criteria": {
+    "contract_readability": [
+      {
+        "id": "A1",
+        "kind": "contract_readability",
+        "status": "pass",
+        "detail": {
+          "question": "do the single-output contracts that now declare positional return actually return positionally?",
+          "declared_positional": 14,
+          "runtime_consistent": 14,
+          "inconsistent": []
+        }
+      },
+      {
+        "id": "A2",
+        "kind": "contract_readability",
+        "status": "fail",
+        "detail": {
+          "question": "how many single-output contracts state no return channel at all?",
+          "single_output_contracts": 138,
+          "undeclared": 119,
+          "by_runtime_verdict": {
+            "undeclared-unambiguous-positional": [
+              "scirel.collisions.atomic-hydrogen-1s-radiative-recombination-rate-coefficient",
+              "scirel.collisions.atomic-hydrogen-charge-exchange-cross-section",
+              "scirel.collisions.atomic-molecular-hydrogen-elastic-cross-section",
+              "scirel.collisions.fast-ion-stopping-increment",
+              "scirel.collisions.janev-electron-impact-ionization-rate",
+              "scirel.collisions.maxwellian-relative-speed-rate-average",
+              "scirel.collisions.molecular-hydrogen-charge-exchange-cross-section",
+              "scirel.collisions.molecular-hydrogen-elastic-cross-section",
+              "scirel.collisions.normalized-momentum",
+              "scirel.collisions.proton-atomic-hydrogen-elastic-cross-section",
+              "scirel.collisions.proton-molecular-hydrogen-elastic-cross-section",
+              "scirel.collisions.thermal-electron-momentum",
+              "scirel.configurations.brb",
+              "scirel.configurations.trex-coil",
+              "scirel.configurations.wham",
+              "scirel.electromagnetism.arbitrary-points",
+              "scirel.electromagnetism.circular-filament-green",
+              "scirel.electromagnetism.device",
+              "scirel.electromagnetism.magnet-ring",
+              "scirel.electromagnetism.rectangular-coil",
+              "scirel.equilibrium.compute-equilibrium",
+              "scirel.field.rectangular-coil-filaments",
+              "scirel.fusion.dd-neutron-lab-energy",
+              "scirel.fvm.cell-variable",
+              "scirel.fvm.theta-step",
+              "scirel.geometry.boundary",
+              "scirel.geometry.fieldline",
+              "scirel.geometry.fieldline-set",
+              "scirel.geometry.helper-fieldline",
+              "scirel.geometry.masked-toroidal-volume",
+              "scirel.geometry.nonuniform-first-derivative",
+              "scirel.geometry.parse-segment",
+              "scirel.geometry.path-distance",
+              "scirel.geometry.point-nearest",
+              "scirel.geometry.points-mesh",
+              "scirel.geometry.r-chord",
+              "scirel.geometry.rect-mesh",
+              "scirel.geometry.rectangular-nearest",
+              "scirel.geometry.rectangular-spline",
+              "scirel.geometry.regular-grid",
+              "scirel.geometry.rotate",
+              "scirel.geometry.scalar-reflection",
+              "scirel.geometry.scattered-linear",
+              "scirel.geometry.select-fieldline",
+              "scirel.geometry.spherical-r-chord",
+              "scirel.geometry.theta-chord",
+              "scirel.geometry.weighted-line-integral",
+              "scirel.geometry.z-chord",
+              "scirel.kinetic.fluid-special-functions",
+              "scirel.kinetic.generalized-expression-differentiation",
+              "scirel.kinetic.generalized-residual",
+              "scirel.kinetic.hydrogen-saha-equilibrium-population",
+              "scirel.kinetic.multifluid-deck",
+              "scirel.kinetic.rational-default-deck",
+              "scirel.kinetic.rational-z-poles",
+              "scirel.kinetic.vp-distribution",
+              "scirel.kinetic.vp-field",
+              "scirel.kinetic.vp-rhs",
+              "scirel.kinetic.vp-rk4-step",
+              "scirel.mirror.frank-egedal-radial-envelope",
+              "scirel.neutrals.adaptive-neutral-velocity-mesh",
+              "scirel.neutrals.atomic-scattered-sources-reduction",
+              "scirel.neutrals.compensated-shifted-maxwellian",
+              "scirel.neutrals.cross-mesh-distribution-interpolation",
+              "scirel.neutrals.elastic-regeneration-aggregation",
+              "scirel.neutrals.generation-density-reduction",
+              "scirel.neutrals.molecular-scattered-sources-reduction",
+              "scirel.neutrals.neutral-generation-stopping",
+              "scirel.neutrals.neutral-total-collision-frequency",
+              "scirel.neutrals.simple-charge-exchange-source",
+              "scirel.numerics.basis-matrix",
+              "scirel.numerics.build-basis",
+              "scirel.numerics.clamped-cubic-spline",
+              "scirel.numerics.face-to-cell",
+              "scirel.numerics.first-clamped-cubic-spline",
+              "scirel.numerics.natural-cubic-spline",
+              "scirel.numerics.orthonormal-modal-basis",
+              "scirel.numerics.second-clamped-cubic-spline",
+              "scirel.numerics.truncated-svd-inverse",
+              "scirel.physics.coulomb-ee",
+              "scirel.physics.coulomb-ei",
+              "scirel.physics.coulomb-ii",
+              "scirel.physics.dilution",
+              "scirel.plasma.fast-ion-heating"
+            ],
+            "undeclared-declared-name-is-key": [
+              "scirel.closures.quasineutral-reference-density",
+              "scirel.kinetic.fluid-bonk-search",
+              "scirel.kinetic.fluid-em-spectrum",
+              "scirel.kinetic.rational-jpole-evaluate",
+              "scirel.kinetic.relativistic-codrift-generalized-spectrum",
+              "scirel.neutrals.elastic-frequency-channels",
+              "scirel.neutrals.neutral-boltzmann-rhs",
+              "scirel.neutrals.terminal-conservation-diagnostic"
+            ],
+            "undeclared-keys-named-elsewhere": [
+              "scirel.closures.discrete-vector-error-feedback",
+              "scirel.kinetic.fluid-dispersion-response",
+              "scirel.kinetic.fluid-em-matrix",
+              "scirel.kinetic.multifluid-equilibrium",
+              "scirel.kinetic.multifluid-frequency-pencil",
+              "scirel.kinetic.multifluid-relative-rate-equilibrium",
+              "scirel.kinetic.multifluid-scan",
+              "scirel.kinetic.parallel-em-continuation",
+              "scirel.kinetic.vp-diagnostic",
+              "scirel.kinetic.vp-envelope",
+              "scirel.kinetic.vp-evolve",
+              "scirel.kinetic.vp-init",
+              "scirel.kinetic.vp-landau",
+              "scirel.neutrals.axisymmetric-neutral-moments",
+              "scirel.neutrals.generation-accumulation-update",
+              "scirel.neutrals.neutral-upwind-transport-coefficients",
+              "scirel.neutrals.outer-convergence",
+              "scirel.neutrals.outer-seed-convergence",
+              "scirel.neutrals.thermal-speed-scale"
+            ],
+            "undeclared-keys-partly-named": [
+              "scirel.kinetic.fluid-case-state",
+              "scirel.kinetic.multifluid-frequency-solve"
+            ],
+            "undeclared-keys-dynamic": [
+              "scirel.io.eqdsk-class"
+            ],
+            "undeclared-keys-unstated": [
+              "scirel.geometry.contour-points",
+              "scirel.geometry.helper-contour-points"
+            ]
+          },
+          "not_observed": [
+            "scirel.io.read-eqdsk",
+            "scirel.io.read-geqdsk",
+            "scirel.io.write-eqdsk"
+          ],
+          "note": "a single declared output returned positionally cannot be misread.  The gap is the mapping returns: there the contract's own outputs[].name is not a key, and the key list lives in prose (description/constraints/dtype/shape) rather than in a structured field"
+        },
+        "task_hint": "affects every task that reads a single-output entry"
+      },
+      {
+        "id": "A3",
+        "kind": "contract_readability",
+        "status": "pass",
+        "detail": {
+          "question": "multi-output contracts: is the mapping channel declared?",
+          "multi_output_contracts": 111,
+          "every_output_declares_result_field": 30,
+          "not_declaring": [
+            "scirel.closures.hall-two-fluid-pressure",
+            "scirel.closures.quasineutral-potential",
+            "scirel.closures.reduced-hall-drift",
+            "scirel.closures.tabulated-pressure",
+            "scirel.collisions.atomic-hydrogen-collision-matrices",
+            "scirel.collisions.atomic-hydrogen-omega-frequencies",
+            "scirel.collisions.molecular-hydrogen-collision-matrices",
+            "scirel.collisions.molecular-hydrogen-omega-frequencies",
+            "scirel.collisions.relativistic-maxwellian-bessel-closure",
+            "scirel.electromagnetism.green-response-matrices",
+            "scirel.equilibrium.anisotropic-force-balance",
+            "scirel.equilibrium.axisymmetric-anisotropic-picard",
+            "scirel.equilibrium.free-boundary-anisotropic-picard",
+            "scirel.equilibrium.isotropic-pressure-flux",
+            "scirel.equilibrium.kinetic-mirror-hall-equilibrium",
+            "scirel.equilibrium.reduced-hall-anisotropic-picard",
+            "scirel.field.coil-green-geometry",
+            "scirel.field.complete-elliptic-integrals-approx",
+            "scirel.field.filament-coil-green-field",
+            "scirel.fvm.convection",
+            "scirel.fvm.diffusion",
+            "scirel.geometry.axisymmetric-equilibrium-grid-support",
+            "scirel.geometry.nonuniform-derivatives",
+            "scirel.geometry.polynomial-fit",
+            "scirel.kinetic.bessel-gamma",
+            "scirel.kinetic.dielectric-diagnostics",
+            "scirel.kinetic.dielectric-response",
+            "scirel.kinetic.fluid-dispersion-matrix",
+            "scirel.kinetic.fluid-wavevector-eigensolve",
+            "scirel.kinetic.fluid-wavevector-scan",
+            "scirel.kinetic.gamma-lpole-coefficients",
+            "scirel.kinetic.generalized-dispersion",
+            "scirel.kinetic.generalized-hilbert",
+            "scirel.kinetic.generalized-root-scans",
+            "scirel.kinetic.generalized-small-k",
+            "scirel.kinetic.gpdf-cauchy-transform",
+            "scirel.kinetic.kinetic-dispersion-relation",
+            "scirel.kinetic.kinetic-wavevector-roots",
+            "scirel.kinetic.kinetic-wavevector-scan",
+            "scirel.kinetic.maxwellian-electrostatic-mode",
+            "scirel.kinetic.maxwellian-electrostatic-solver",
+            "scirel.kinetic.parallel-em-residual",
+            "scirel.kinetic.plasma-dispersion-function",
+            "scirel.kinetic.rational-em-coordinates",
+            "scirel.kinetic.rational-equilibrium",
+            "scirel.kinetic.rational-jpole-coefficients",
+            "scirel.kinetic.rational-jpole-grid-coordinates",
+            "scirel.kinetic.rational-point-matrix",
+            "scirel.kinetic.rational-pole-table",
+            "scirel.kinetic.rational-solve-matrix",
+            "scirel.kinetic.ronnmark-r-function",
+            "scirel.kinetic.species-equilibrium-scales",
+            "scirel.kinetic.spectral-dispersion-scan",
+            "scirel.kinetic.spectral-plasma-state",
+            "scirel.kinetic.spectral-temporal-matrix",
+            "scirel.kinetic.spectral-temporal-spectrum",
+            "scirel.kinetic.z-pole-coefficients",
+            "scirel.mirror.frank-egedal-hot-ion-moments",
+            "scirel.mirror.frank-egedal-pressure-closure",
+            "scirel.mirror.frank-egedal-pressure-state",
+            "scirel.mirror.frank-egedal-source-projection",
+            "scirel.mirror.grid-mirror-kinetic-closure",
+            "scirel.mirror.loss-cone-spectrum",
+            "scirel.mirror.mirror-ambipolar-potential",
+            "scirel.mirror.mirror-constrained-moments",
+            "scirel.mirror.mirror-invariant-distribution",
+            "scirel.mirror.mirror-quasineutral-closure",
+            "scirel.mirror.mirror-total-pressure",
+            "scirel.neoclassical.bootstrap-coefficients",
+            "scirel.neutrals.atomic-alpha-contraction",
+            "scirel.neutrals.cylindrical-velocity-quadrature",
+            "scirel.neutrals.incoming-boundary-flux-normalization",
+            "scirel.neutrals.molecular-alpha-contraction",
+            "scirel.neutrals.shifted-maxwellian-seed",
+            "scirel.neutrals.spatial-source-shape-normalization",
+            "scirel.neutrals.terminal-energy-transfer-reduction",
+            "scirel.neutrals.terminal-flux-velocity-reduction",
+            "scirel.neutrals.terminal-heat-flux-reduction",
+            "scirel.neutrals.terminal-ion-state-reduction",
+            "scirel.neutrals.terminal-pressure-temperature-reduction",
+            "scirel.neutrals.velocity-slice-moment-compensation"
+          ]
+        }
+      }
+    ],
+    "focus": [
+      {
+        "id": "B1",
+        "kind": "shape_change",
+        "status": "pass",
+        "detail": {
+          "question": "did changing the return shape from a bare tuple to a Result move any number?",
+          "argument_source": "contract example, frozen in the delivered package",
+          "literal_arguments": {
+            "p_el": [
+              2,
+              2
+            ],
+            "p_ion": [
+              3,
+              3
+            ],
+            "p_tot": [
+              5,
+              5
+            ],
+            "vpr": {
+              "dtype": "float64",
+              "shape": [
+                2
+              ],
+              "values": [
+                2.0,
+                3.0
+              ]
+            },
+            "drho_norm": {
+              "dtype": "float64",
+              "shape": [
+                2
+              ],
+              "values": [
+                0.4,
+                0.6
+              ]
+            }
+          },
+          "read_by_name": {
+            "W_el": 7.8,
+            "W_ion": 11.7,
+            "W_tot": 19.5
+          },
+          "attribute_vs_item": {
+            "W_el": {
+              "attribute": 7.8,
+              "item": 7.8,
+              "attribute_is_item": true
+            },
+            "W_ion": {
+              "attribute": 11.7,
+              "item": 11.7,
+              "attribute_is_item": true
+            },
+            "W_tot": {
+              "attribute": 19.5,
+              "item": 19.5,
+              "attribute_is_item": true
+            }
+          },
+          "independent_exact_recomputation": {
+            "W_el": 7.8,
+            "W_ion": 11.7,
+            "W_tot": 19.5
+          },
+          "relative_deviation_vs_exact": {
+            "W_el": 0.0,
+            "W_ion": 0.0,
+            "W_tot": 0.0
+          },
+          "tolerance_used": "8.881784e-16 (4 eps, consumer-chosen)",
+          "contract_example_numbers": [
+            7.8,
+            11.7,
+            19.5
+          ],
+          "relative_deviation_vs_example_numbers": 0.0,
+          "additivity_probe_relative_deviation": 0.0,
+          "scaling_probe_relative_deviation": 0.0
+        },
+        "task_hint": "physics-coulomb-logarithms"
+      },
+      {
+        "id": "B2",
+        "kind": "shape_change",
+        "status": "pass",
+        "detail": {
+          "question": "can the round-2 record serve as the numeric baseline for this entry?",
+          "round2_record": {
+            "source": "examples/c4-usage-acceptance/round2/tasks/physics-coulomb-logarithms.json",
+            "returned_type": "tuple",
+            "returned_fields": null,
+            "numeric_payload_recorded": false
+          },
+          "why_not": "the round-2 harness stored the returned type and no value, so the tuple's numbers are not in the historical record; the numeric baseline used here is the contract's own definition, recomputed in exact rational arithmetic",
+          "consequence": "the 'shape changed, numbers unchanged' claim rests on the exact recomputation above, not on a round-2 number"
+        },
+        "task_hint": "physics-coulomb-logarithms"
+      },
+      {
+        "id": "C1",
+        "kind": "evidence_clause",
+        "status": "pass",
+        "detail": {
+          "question": "does any new evidence clause contradict what the package publicly does?",
+          "claims_checked": 17,
+          "by_status": {
+            "pass": 14,
+            "not-observed": 3
+          },
+          "contradicted": []
+        }
+      },
+      {
+        "id": "C2",
+        "kind": "evidence_clause",
+        "status": "fail",
+        "detail": {
+          "question": "is every claim in those clauses checkable with the package alone?",
+          "not_checkable": [
+            {
+              "claim": "v9 the declared 6.0 eps bound itself",
+              "why": "the sentence states a bound 'to 6.0 eps of the term scale' without printing the stencil or the term scale it uses; an independent stencil gives 7.6 eps of its own term scale, which neither confirms nor contradicts the declared number"
+            },
+            {
+              "claim": "v7 nonzero radial reference vs independent Biot-Savart integration",
+              "why": "the clause compares against an 80/120-digit Biot-Savart integral of the source; the package exposes no such callable and the clause does not print the integral, so a contract-only consumer cannot reproduce it"
+            },
+            {
+              "claim": "the hand-SVD construction covers permutation-times-diagonal spectra only",
+              "why": "this sentence describes how the maintainer's evidence was constructed inside tests/; the delivered package exposes no artefact that shows the construction, so the claim cannot be checked from the package"
+            }
+          ],
+          "note": "these are not library defects; they are sentences whose subject is how the maintainer's evidence was built, or a numeric bound whose stencil is not printed"
+        }
+      }
+    ],
+    "status_counts": {
+      "pass": 5,
+      "fail": 2
+    },
+    "exit_code_note": "audits.py exits 1 when a criterion is fail: that is a package finding, not a crash (a crash prints a traceback and writes no artifact)"
+  },
+  "reproduce": [
+    "git worktree add .worktrees/c4co -b agent/c4-closeout origin/main",
+    "python3 scripts/dev.py prepare",
+    "python3 scripts/dev.py run uv build --wheel --out-dir .runtime/c4close/wheel",
+    "python3 scripts/dev.py run python -B scripts/build_pure_delivery.py --wheel .runtime/c4close/wheel/scirel-0.0.0-py3-none-any.whl --output .runtime/c4close/scirel-delivery-close",
+    "uv venv --seed --python 3.14.7 .runtime/c4close/venv-consumer",
+    "uv pip install --python .runtime/c4close/venv-consumer/bin/python .runtime/c4close/scirel-delivery-close/wheel/scirel-0.0.0-py3-none-any.whl -r .runtime/c4close/scirel-delivery-close/runtime-requirements.txt",
+    ".runtime/c4close/venv-consumer/bin/python -I scripts/validate_installed_wheel.py --expected-python 3.14 --wheel .runtime/c4close/scirel-delivery-close/wheel/scirel-0.0.0-py3-none-any.whl --catalog-root . --source-revision d429359dcfbf37aedf09aa64cfa78b89da3b3623 --output .runtime/c4close/installed-wheel-validation.json",
+    "SCIREL_PACKAGE_ROOT=$PWD/.runtime/c4close/scirel-delivery-close .runtime/c4close/venv-consumer/bin/python -I examples/c4-usage-acceptance/closeout/selfcheck.py",
+    "SCIREL_PACKAGE_ROOT=$PWD/.runtime/c4close/scirel-delivery-close .runtime/c4close/venv-consumer/bin/python -I examples/c4-usage-acceptance/closeout/run.py",
+    "SCIREL_PACKAGE_ROOT=$PWD/.runtime/c4close/scirel-delivery-close .runtime/c4close/venv-consumer/bin/python -I examples/c4-usage-acceptance/closeout/audits.py",
+    "python3 examples/c4-usage-acceptance/closeout/coverage.py",
+    "python3 examples/c4-usage-acceptance/closeout/make_receipt.py"
+  ],
+  "artifacts": {
+    "results.json": "per-task index of this round",
+    "tasks/<task-id>.json": "per-task record: calls, answer, criteria, gaps",
+    "calls.jsonl": "every public call, in execution order",
+    "contract-audit.json": "return-channel audit over all 249 contracts",
+    "focus-audit.json": "thermal-energy numbers, the five evidence clauses, the audit criteria",
+    "coverage.py": "recomputes the domain/kind matrix",
+    "make_receipt.py": "rebuilds this receipt (the diff against round2 included)"
+  }
+}
