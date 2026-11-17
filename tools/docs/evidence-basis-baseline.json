@@ -248,54 +248,6 @@
       "reason": "not yet migrated: verification.basis absent"
     },
     {
-      "asset_id": "scirel.neutrals.adaptive-neutral-velocity-mesh",
-      "reason": "not yet migrated: verification.basis absent"
-    },
-    {
-      "asset_id": "scirel.neutrals.atomic-alpha-contraction",
-      "reason": "not yet migrated: verification.basis absent"
-    },
-    {
-      "asset_id": "scirel.neutrals.atomic-scattered-sources-reduction",
-      "reason": "not yet migrated: verification.basis absent"
-    },
-    {
-      "asset_id": "scirel.neutrals.axisymmetric-neutral-moments",
-      "reason": "not yet migrated: verification.basis absent"
-    },
-    {
-      "asset_id": "scirel.neutrals.compensated-shifted-maxwellian",
-      "reason": "not yet migrated: verification.basis absent"
-    },
-    {
-      "asset_id": "scirel.neutrals.cross-mesh-distribution-interpolation",
-      "reason": "not yet migrated: verification.basis absent"
-    },
-    {
-      "asset_id": "scirel.neutrals.cross-mesh-scalar-interpolation",
-      "reason": "not yet migrated: verification.basis absent"
-    },
-    {
-      "asset_id": "scirel.neutrals.cylindrical-velocity-quadrature",
-      "reason": "not yet migrated: verification.basis absent"
-    },
-    {
-      "asset_id": "scirel.neutrals.elastic-frequency-channels",
-      "reason": "not yet migrated: verification.basis absent"
-    },
-    {
-      "asset_id": "scirel.neutrals.elastic-regeneration-aggregation",
-      "reason": "not yet migrated: verification.basis absent"
-    },
-    {
-      "asset_id": "scirel.neutrals.generation-accumulation-update",
-      "reason": "not yet migrated: verification.basis absent"
-    },
-    {
-      "asset_id": "scirel.neutrals.generation-density-reduction",
-      "reason": "not yet migrated: verification.basis absent"
-    },
-    {
       "asset_id": "scirel.neutrals.incoming-boundary-flux-normalization",
       "reason": "not yet migrated: verification.basis absent"
     },
@@ -571,6 +523,18 @@
     "scirel.mirror.frank-egedal-hot-ion-moments",
     "scirel.mirror.frank-egedal-pressure-closure",
     "scirel.mirror.grid-mirror-kinetic-closure",
+    "scirel.neutrals.adaptive-neutral-velocity-mesh",
+    "scirel.neutrals.atomic-alpha-contraction",
+    "scirel.neutrals.atomic-scattered-sources-reduction",
+    "scirel.neutrals.axisymmetric-neutral-moments",
+    "scirel.neutrals.compensated-shifted-maxwellian",
+    "scirel.neutrals.cross-mesh-distribution-interpolation",
+    "scirel.neutrals.cross-mesh-scalar-interpolation",
+    "scirel.neutrals.cylindrical-velocity-quadrature",
+    "scirel.neutrals.elastic-frequency-channels",
+    "scirel.neutrals.elastic-regeneration-aggregation",
+    "scirel.neutrals.generation-accumulation-update",
+    "scirel.neutrals.generation-density-reduction",
     "scirel.neutrals.terminal-energy-transfer-reduction",
     "scirel.numerics.clamped-cubic-spline",
     "scirel.numerics.natural-cubic-spline",
