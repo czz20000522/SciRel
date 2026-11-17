@@ -33,7 +33,12 @@
       "Plotting/patch, simplify/clone, multiprocessing, electrodes and persistent sweeps are excluded or unresolved.",
       "No scientific, experimental or licensing approval is claimed.",
       "The evidence covers the declared parameters and the fixed configurations only; the field statements are made on named targets and are not an arbitrary-domain bound."
-    ]
+    ],
+    "basis": {
+      "kind": "closed-form",
+      "statement": "The 88-filament cloud is checked structurally (five radial columns of sixteen axial stations plus one column of eight exact midpoints, a single radial spacing) and its on-axis response against the elementary loop field 1e-7 w 2 pi a^2/(a^2+dz^2)^{3/2} summed over the cloud, at a precision budget fixed before the comparison (128 eps). The repository holds no independent source for the conductor radii, axial stations or reference plane, so that these constants describe the TREX experiment is not established here.",
+      "source": "tests/electromagnetism/test_device_composition_evidence.py"
+    }
   },
   "asset_id": "scirel.configurations.trex-coil",
   "title": {

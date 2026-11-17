@@ -4,34 +4,6 @@
   "why": "c1_evidence_coverage infers the basis from prose with a fixed phrase list; on this catalog 106 assets carry basis wording that list does not recognise, so the inference cannot answer 'does this capability stand on evidence'. The field replaces the inference.",
   "entries": [
     {
-      "asset_id": "scirel.collisions.proton-molecular-hydrogen-elastic-cross-section",
-      "reason": "not yet migrated: verification.basis absent"
-    },
-    {
-      "asset_id": "scirel.collisions.relativistic-maxwellian-bessel-closure",
-      "reason": "not yet migrated: verification.basis absent"
-    },
-    {
-      "asset_id": "scirel.collisions.thermal-electron-momentum",
-      "reason": "not yet migrated: verification.basis absent"
-    },
-    {
-      "asset_id": "scirel.configurations.brb",
-      "reason": "not yet migrated: verification.basis absent"
-    },
-    {
-      "asset_id": "scirel.configurations.trex-coil",
-      "reason": "not yet migrated: verification.basis absent"
-    },
-    {
-      "asset_id": "scirel.configurations.wham",
-      "reason": "not yet migrated: verification.basis absent"
-    },
-    {
-      "asset_id": "scirel.diagnostics.equilibrium-synthesis-diagnostics",
-      "reason": "not yet migrated: verification.basis absent"
-    },
-    {
       "asset_id": "scirel.diagnostics.firehose-mirror-margins",
       "reason": "not yet migrated: verification.basis absent"
     },
@@ -893,6 +865,13 @@
     "scirel.collisions.molecular-hydrogen-omega-frequencies",
     "scirel.collisions.normalized-momentum",
     "scirel.collisions.proton-atomic-hydrogen-elastic-cross-section",
+    "scirel.collisions.proton-molecular-hydrogen-elastic-cross-section",
+    "scirel.collisions.relativistic-maxwellian-bessel-closure",
+    "scirel.collisions.thermal-electron-momentum",
+    "scirel.configurations.brb",
+    "scirel.configurations.trex-coil",
+    "scirel.configurations.wham",
+    "scirel.diagnostics.equilibrium-synthesis-diagnostics",
     "scirel.field.poloidal-field-from-flux",
     "scirel.geometry.path-distance",
     "scirel.kinetic.kinetic-wavevector-roots",
