@@ -312,20 +312,24 @@
     "partial_results": "异常后不返回矩阵映射。"
    },
    "verification": {
-    "scope": [
-     "assemble_fluid_em 公开入口的成功直接断言使用 EM 算例 2、J8/N0；频率为 0.83*wn，实测表扰动诊断另使用 1.0e11 rad/s。",
-     "绑定断言覆盖有限有理电导多项式恢复、非法控制拒绝、显式控制优先级，以及不投影系数的实测逆矩。"
-    ],
-    "known_limitations": [
-     "六资产共享文件中的三个直接函数覆盖有理矩阵恢复、未定义表拒绝与显式控制优先级；奇异源共振会被拒绝而不是拟合。",
-     "不保证跨线程/平台不变性、任意精度、所有物理模态完备性或非线性求解无条件收敛。",
-     "J/L 极点和有限谐波近似的误差，与关系一致性和数值残差分开判断。",
-     "有限拟合响应不等同于精确 Bessel/Z 动理学介电张量；该等价性被明确排除。",
-     "纯 Python 实现已在本机测试；不声称与原生运行时逐位一致。",
-     "绑定的公开包装入口成功断言未验证 J12 或 N1..7；接受这些控制参数不等于每种配置已有直接测试覆盖。"
-    ],
-    "evidence_ceiling": "支持控制仍为 J8/J12 与 N0..7。公开包装入口的成功直接断言限于 EM 算例 2、J8/N0，频率为 0.83*wn 和 1.0e11 rad/s。test_fluid_spectrum_full.py 含 9 个测试函数，其中 3 个引用 assemble_fluid_em，由 6 个资产共享；test_fluid_em_diagnostics.py 另检查实测逆矩和实时系数表扰动。共享文件覆盖不是资产隔离证据。J12/N=1.5 的拒绝不构成 J12 成功见证，低层 J8/N6 组装也不验证本公开包装入口的 N6。依据是有界的独立有限有理本构对照及自洽/回归；不建立与精确 Bessel/Z 动理学介电张量的等同。"
-   }
+  "scope": [
+   "独立依据：由装配矩阵字节在 40 位 mpmath 精度上重算的 det(M) 等于该矩阵本征值之积——该恒等式不共享装配或求解器代码。",
+   "声明的结构恒等式在返回对象上检验：max_harmonic 0 时阶数为 40、精确的非零数，以及装配所用的极点表阶数。",
+   "测试矩阵：固定频率下的 EM case 2，J8、max_harmonic 0；同一恒等式也在默认 max_harmonic 6（490x490、77095 个非零）上实测，以确认大算例下仍成立。",
+   "失败矩阵：每条通道一条断言——错误的构造块（行列式恒等式）、丢失极点或场行错位（阶数与非零数）、被替换的极点表（声明阶数）。",
+   "精度预算在测量前写入：行列式恒等式 1e-12 相对；实测为 max_harmonic 0 时 2.6e-14，490x490 默认时 6.1e-12。"
+  ],
+  "tests": [
+   "tests/kinetic/test_fluid_deck_solver_evidence.py",
+   "tests/kinetic/test_fluid_spectrum_full.py",
+   "tests/kinetic/test_fluid_em_diagnostics.py"
+  ],
+  "evidence_ceiling": "限于固定频率下的 EM case 2、J8。依据为两个矩阵阶数上的 40 位独立行列式恒等式（实测 2.6e-14 与 6.1e-12 相对），以及声明的阶数、稀疏度与极点表恒等式。不建立：J12 见证、已提交测试中 max_harmonic 大于 0 的情形，以及与精确 Bessel/Z 动理学介电函数的任何同一性。",
+  "known_limitations": [
+   "J 极点与谐波表、以及 EM deck 常数在本仓库没有独立来源，记为无法确立（cannot establish）。",
+   "490x490 行列式检验耗时约一分钟，在本合同中记为实测值；已提交的测试使用 max_harmonic 0 以保持快速。"
+  ]
+ }
   },
   {
    "summary": "组合完整 BONK 算例与有序根搜索，显式给出已核验根和末端状态诊断。",
@@ -384,20 +388,25 @@
     "partial_results": "算子异常不返回结果；完成的频率轴可包含 root_valid 为假的候选，不把隐藏的部分结果作为完整成功输出。"
    },
    "verification": {
-    "scope": [
-     "直接成功断言限于 case2、omega=0.63*wn：检查候选形状、root_valid、1e-8 残差门与既有波数回归。",
-     "真实谐波极点位于首项、中间、末项或单项频率时均传播错误，不返回虚构的前序候选。",
-     "注入的算子异常原样传播；受控的有限求解终止保留五条实际候选和 root_valid=false，不放宽残差门。"
-    ],
-    "known_limitations": [
-     "BONK 保留全部实际尝试；未通过残差门的候选保留 root_valid=false，不能当作物理根。算子异常中止整个频率轴，不返回部分结果。",
-     "不承诺跨线程/平台不变性、任意精度、物理模完备性或无条件非线性收敛。",
-     "J/L 极点和有限谐波近似误差与关系一致性及数值残差分别考虑。",
-     "公开实现使用本地 Python；不声称与外部运行时逐位一致。",
-     "直接单频成功断言不认证默认频率轴、case1/3 或更广频率行为；没有独立 BONK 物理参照。"
-    ],
-    "evidence_ceiling": "成功断言是单频 case2 的自洽/回归；没有绑定独立 BONK 物理参照。失败断言检查频率顺序和异常传播；受控终止只验证候选协议，不证明收敛。共享文件中其他资产的断言不构成本搜索的独立认证。"
-   }
+  "scope": [
+   "独立依据：把搜索得到的根回代到 evaluate_fluid_dispersion——一个与该搜索无关的另一公共函数——其行列式必须低于声明的 1e-8 门限，而把根位移 0.1% 会使它抬升八个数量级以上。",
+   "这对断言才是把“根”与“形状良好的数字”区分开的东西；单靠容差无法让非根通过。",
+   "声明的双残差字段与奇异值间隙按同一门限检查，因此所报告的近零方向是被佐证的而非抄录的。",
+   "测试矩阵：omega = 0.63 wn 的 BONK case 2，单频率，并以 1.001 倍的位移根作为对照。",
+   "失败矩阵：每条通道一条断言——不使色散为零的根、伪造的 valid 标志、与重算行列式不一致的残差字段，以及缺失的奇异值间隙。",
+   "精度预算在测量前写入：搜索自身声明的 1e-8 残差门限，并要求相对位移求值有 1e4 的分离度。"
+  ],
+  "tests": [
+   "tests/kinetic/test_fluid_deck_solver_evidence.py",
+   "tests/kinetic/test_fluid_spectrum_full.py",
+   "tests/kinetic/test_bonk_failure_semantics.py"
+  ],
+  "evidence_ceiling": "限于 omega = 0.63 wn 下的 BONK case 2、J8、max_harmonic 0。依据为把返回的归一化根回代 evaluate_fluid_dispersion，得到 |det| = 2.5e-12（门限 1e-8），而 0.1% 位移处为 0.73。不建立：case 1 与 3、默认频率阶梯、与外部 BONK 求解器比对的物理模态身份，以及该搜索的收敛性主张。",
+  "known_limitations": [
+   "BONK deck 常数与极点表在本仓库没有独立来源，记为无法确立（cannot establish）。",
+   "该根作为具名模态的物理身份未确立；此处只确立它使声明的色散为零。"
+  ]
+ }
   },
   {
    "summary": "组装 EM 算例、修正的有限有理矩阵与启发式候选谱，并明确模型与证据边界。",
@@ -468,20 +477,24 @@
     "partial_results": "异常后不返回结果映射；返回的 EM 谱含有限数组和完备性/启发式选择诊断，不承诺 `status` 字段。"
    },
    "verification": {
-    "scope": [
-     "solve_fluid_em 公开入口的成功直接断言使用 EM 算例 2、J8/N0，显式单频率 0.83*wn 或有序频率 [0.37,0.83,1.43]*wn。",
-     "绑定断言覆盖每频率 40 个有限矩阵本征值、五个启发式候选、嵌套诊断数组及 eigenpair_residuals_computed=false。"
-    ],
-    "known_limitations": [
-     "直接绑定的函数是六资产共享文件 `test_fluid_spectrum_full.py` 中的 `test_status_and_complete_finite_spectrum_are_explicit` 与 `test_multifrequency_em_preserves_each_nested_diagnostic_array`；另有专门的 `test_fluid_em_diagnostics.py` 检查实测逆矩、退役字段和公开嵌套结构。",
-     "不保证跨线程/平台不变性、任意精度、所有物理模态完备性或非线性求解无条件收敛。",
-     "J/L 极点和有限谐波近似的误差，与关系一致性和数值残差分开判断。",
-     "EM 分支使用固定历史常数 `c2=2.99792458e8**2`、`epsilon0=8.854187817e-12` 与 `kB=1.38064852e-23`；不做单位换算或现代 CODATA 替换。",
-     "纯 Python 实现已在本机测试；不声称与原生运行时逐位一致。",
-     "绑定的公开包装入口成功断言未验证算例 1、J12、N1..7 或默认 79 频率扫描；保留这些支持控制，不补造成功见证。"
-    ],
-    "evidence_ceiling": "支持控制仍为 EM 算例 1/2、J8/J12、N0..7 和默认 79 频率轴。公开包装入口的成功直接断言限于 EM 算例 2、J8/N0，显式频率为 0.83*wn 或 [0.37,0.83,1.43]*wn。test_fluid_spectrum_full.py 含 9 个测试函数，其中 2 个引用 solve_fluid_em，由 6 个资产共享；test_fluid_em_diagnostics.py 另检查仅本征值诊断的嵌套及退役字段。共享文件覆盖不是资产隔离证据。这些断言未验证算例 1、J12 成功路径、N1..7 或默认轴的执行。依据仅为自洽/回归；不建立物理模态身份或无限模态完备性。"
-   },
+  "scope": [
+   "独立依据：返回的候选频率就是调用自身返回的矩阵的本征值——在 40 位 mpmath 精度上重算的 det(matM) 等于完整谱之积，且每个被选候选都与该谱中的某个元素重合。",
+   "声明的选择结构按等式检验：每个频率五个候选、roots 等于 kxx、每个候选取自谱而非合成。",
+   "测试矩阵：固定频率下的 EM case 2，J8、max_harmonic 0。",
+   "失败矩阵：每条通道一条断言——伪造或错位的候选集、并非所求解的矩阵、错误的候选计数，以及错误的频率归一。",
+   "精度预算在测量前写入：行列式恒等式 1e-12 相对（实测 2.6e-14），候选属于谱 1e-9 相对。"
+  ],
+  "tests": [
+   "tests/kinetic/test_fluid_deck_solver_evidence.py",
+   "tests/kinetic/test_fluid_spectrum_full.py",
+   "tests/kinetic/test_fluid_em_diagnostics.py"
+  ],
+  "evidence_ceiling": "限于 EM case 2、J8、max_harmonic 0 的显式单一频率调用。依据为返回矩阵与返回完整谱之间的 40 位独立行列式恒等式，以及声明的候选计数与归属关系。不建立：case 1、成功的 J12、max_harmonic 1..7、默认 79 频率轴的执行、物理模态身份，以及无穷模态完备性。",
+  "known_limitations": [
+   "在“从筛后取值中挑五个”的候选排序规则本身没有独立依据；此处只确立归属与计数。",
+   "谱的完备性未证明：矩阵有 40 个本征值，五个候选只是其中一次选择。"
+  ]
+ },
    "title": {
     "en": "EM finite rational-model spectra with candidate selection",
     "zh": "EM 有限有理模型谱与候选选取"
