@@ -85,12 +85,23 @@ def test_every_named_judge_exists(rule: dict) -> None:
             )
 
 
+def _squash(text: str) -> str:
+    """Collapse every whitespace run to one space.
+
+    Markdown wraps prose at a fixed width, so a rule that spans two source lines is
+    still the same rule. Comparing raw text would make the inventory go red on a
+    re-wrap -- a false alarm that trains people to ignore this test. The anchor is
+    matched on squashed text; the rule text itself is not otherwise normalised.
+    """
+    return " ".join(text.split())
+
+
 @pytest.mark.parametrize("rule", _rules(), ids=lambda rule: rule["id"])
 def test_every_rule_anchor_still_appears_in_its_source(rule: dict) -> None:
     source = ROOT / rule["source"]
     assert source.exists(), f"{rule['id']}: source document missing: {rule['source']}"
-    body = source.read_text(encoding="utf-8")
-    assert rule["anchor"] in body, (
+    body = _squash(source.read_text(encoding="utf-8"))
+    assert _squash(rule["anchor"]) in body, (
         f"{rule['id']}: the anchor text is no longer in {rule['source']}; the rule may have "
         "been renamed or removed, and this inventory is now describing something that is gone"
     )
