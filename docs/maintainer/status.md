@@ -21,16 +21,16 @@
 | `src/scirel` 行数 | 56032 | `find src/scirel -name '*.py' -exec cat {} + | wc -l` |
 | 模块级公开函数（`def` 顶格、非下划线开头） | 294 | `grep -rh '^def [a-zA-Z]' src/scirel --include='*.py' | wc -l` |
 | 顶层子包（含 `__init__.py`） | 22 | `ls -d src/scirel/*/ | wc -l` 后按 `__init__.py` 过滤 |
-| 测试文件（`test_*.py`） | 423 | `find tests -name 'test_*.py' | wc -l` |
+| 测试文件（`test_*.py`） | 424 | `find tests -name 'test_*.py' | wc -l` |
 
 口径：数字由本块上方的命令现场重算；本块不含提交号——引用时连同生成它的提交一起引用（`git log -1 -- docs/maintainer/status.md`）。
 
 | 证据覆盖 | 份数 |
 | --- | --- |
-| `basis` | 197 |
-| `gap` | 114 |
-| `either` | 240 |
-| `neither` | 9 |
+| `basis` | 202 |
+| `gap` | 116 |
+| `either` | 245 |
+| `neither` | 4 |
 
 口径：`python3 scripts/c1_evidence_coverage.py`；`neither` 是**合同文本缺口**，不是「没有证据」，也不是科学工作完成度。
 <!-- status-report:end -->

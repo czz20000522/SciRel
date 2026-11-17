@@ -22,7 +22,18 @@ Independent oracles, none of which is produced by the code under test:
    chord length of the supplied vertex order.  For the legs ``(3,0)``, ``(0,4)``
    and ``(3,4)`` the length is exact in binary64 (``3``, ``4``, ``5``), so the
    expected cumulative vector is a closed-form constant, and refinement at a
-   representable midpoint must leave the total unchanged.
+   representable midpoint must leave the total unchanged.  Three further
+   assertions make the reference a *computation* rather than a hard-coded
+   vector: (i) a scaled dyadic Pythagorean polyline whose legs are
+   ``2.5``, ``3``, ``3`` is compared with a :class:`fractions.Fraction` sum
+   whose square roots are taken as exact integer square roots of numerator and
+   denominator, and equality is required bitwise; (ii) the same geometric path
+   is resampled at dyadic fractions of each leg (halves and quarters, symmetric
+   and asymmetric partitions) and the total must not move, which is
+   parametrisation invariance, not additivity of one midpoint; (iii) legs with
+   irrational length (``(1,1)``, ``(3,1)``) are compared with a 60-digit
+   ``mpmath`` square root, where no exact float exists and the only honest
+   claim is the stated few-``eps`` agreement.
 2. **Double area.**  The orientation flag is the sign of the polygon double
    area.  The truth value is recomputed with exact rationals as
    ``D = sum(x_i y_{i+1} - x_{i+1} y_i)`` over the closed vertex cycle; a
@@ -56,8 +67,10 @@ column for the mirror, and a mirror input that is not centred on the axis.
 from __future__ import annotations
 
 from fractions import Fraction
+from math import isqrt
 from types import SimpleNamespace
 
+import mpmath
 import numpy as np
 import pytest
 
@@ -168,6 +181,125 @@ def test_path_distance_single_vertex_returns_exact_zero():
     register = get_fieldline_distance(np.array([[2.5, -1.5]]))
     assert register.shape == (1,)
     assert register[0] == 0.0
+
+
+def _exact_chord(start, end) -> Fraction:
+    """Exact chord length of one segment, from the stored binary64 coordinates.
+
+    The squared length is a rational; when it is the square of a rational the
+    root is taken exactly over numerator and denominator, so the reference value
+    never goes through floating point.  A leg that is not rational in this sense
+    raises, which keeps this helper from being used where ``mpmath`` is required.
+    """
+    dx = _exact(end[0]) - _exact(start[0])
+    dy = _exact(end[1]) - _exact(start[1])
+    squared = dx * dx + dy * dy
+    numerator = isqrt(squared.numerator)
+    denominator = isqrt(squared.denominator)
+    assert numerator * numerator == squared.numerator
+    assert denominator * denominator == squared.denominator
+    return Fraction(numerator, denominator)
+
+
+def _exact_cumulative(points):
+    """Exact rational cumulative chord lengths of an ordered vertex list."""
+    total = Fraction(0)
+    cumulative = [total]
+    for start, end in zip(points, points[1:]):
+        total += _exact_chord(start, end)
+        cumulative.append(total)
+    return cumulative
+
+
+def test_path_distance_matches_an_exact_rational_reference_on_dyadic_legs():
+    """A scaled Pythagorean polyline against exact rational lengths, bitwise.
+
+    The legs are ``(1.5, 2)``, ``(0, 3)`` and ``(3, 0)``, of exact length 2.5, 3
+    and 3.  Every coordinate and every length is dyadic, so the exact rational
+    sum is representable and the comparison can demand bitwise equality instead
+    of a tolerance; a wrong length, a wrong accumulation point or a dropped
+    vertex changes a value that is compared exactly.
+    """
+    points = np.array([[0.0, 0.0], [1.5, 2.0], [1.5, 5.0], [4.5, 5.0]])
+    expected = _exact_cumulative(points)
+    assert [float(value) for value in expected] == [0.0, 2.5, 5.5, 8.5]
+    got = get_fieldline_distance(points)
+    assert np.array_equal(got, np.array([float(value) for value in expected]))
+    # Anchor: the reference is not a restatement of the input's own numbers.
+    assert expected[1] == Fraction(5, 2)
+    assert expected[-1] == Fraction(17, 2)
+
+
+def test_path_distance_is_invariant_under_dyadic_resampling():
+    """Parametrisation invariance: subdividing legs does not change the distance.
+
+    The same geometric path is supplied three ways: the coarse polyline, a
+    symmetric halving of both legs, and an asymmetric quartering of the first leg
+    combined with a halving of the second.  Splitting a segment at a dyadic
+    fraction of it keeps every sub-length dyadic, so the total is still exact and
+    the required statement is bitwise equality of the total across all three.
+    The vertex counts differ, which is what makes this a reparametrisation and
+    not a repeated call on the same array.
+    """
+    coarse = np.array([[0.0, 0.0], [3.0, 4.0], [3.0, 8.0]])
+    halved = np.array([[0.0, 0.0], [1.5, 2.0], [3.0, 4.0], [3.0, 6.0], [3.0, 8.0]])
+    quartered = np.array(
+        [
+            [0.0, 0.0],
+            [0.75, 1.0],
+            [1.5, 2.0],
+            [2.25, 3.0],
+            [3.0, 4.0],
+            [3.0, 8.0],
+        ]
+    )
+    totals = [get_fieldline_distance(points)[-1] for points in (coarse, halved, quartered)]
+    assert [len(points) for points in (coarse, halved, quartered)] == [3, 5, 6]
+    assert totals[0] == 9.0
+    assert totals[1] == totals[0]
+    assert totals[2] == totals[0]
+    # Anchor: the intermediate registers really are resampled, so an equal total
+    # is not one array compared with itself.  The halved path reaches its second
+    # vertex at 2.5, the coarse path its first at 5.0.
+    halved_registers = get_fieldline_distance(halved)
+    coarse_registers = get_fieldline_distance(coarse)
+    assert halved_registers.shape != coarse_registers.shape
+    assert halved_registers[1] == 2.5 and coarse_registers[1] == 5.0
+
+
+def test_path_distance_matches_a_high_precision_irrational_reference():
+    """Legs of irrational length against a 60-digit reference.
+
+    ``(1, 1)`` and ``(3, 1)`` have lengths ``sqrt(2)`` and ``sqrt(10)``, which no
+    binary64 holds exactly, so bitwise equality is not available and none is
+    claimed.  The reference is an ``mpmath`` square root at 60 digits and the
+    tolerance is 4 eps of the exact value, the rounding of ``norm`` plus the one
+    in ``cumsum``.
+    """
+    mpmath.mp.dps = 60
+    points = np.array([[0.0, 0.0], [1.0, 1.0], [4.0, 2.0]])
+    got = get_fieldline_distance(points)
+    first = mpmath.sqrt(2)
+    total = first + mpmath.sqrt(10)
+    assert abs(float(got[1]) - float(first)) <= 4.0 * np.finfo(float).eps * float(first)
+    assert abs(float(got[2]) - float(total)) <= 4.0 * np.finfo(float).eps * float(total)
+    # Anchor: an integer-length polyline would pass a 4-eps test against the wrong
+    # reference only if the reference were wrong by more than 4 eps; these two
+    # sums are separated from their neighbours by far more than that.
+    assert abs(float(total) - 5.0) > 1.0e-3
+
+
+def test_path_distance_total_is_reversal_invariant():
+    """Reversing the vertex order preserves the total and reverses the registers."""
+    points = np.array([[0.0, 0.0], [1.5, 2.0], [1.5, 5.0], [4.5, 5.0]])
+    forward = get_fieldline_distance(points)
+    backward = get_fieldline_distance(points[::-1])
+    total = forward[-1]
+    assert backward[-1] == total
+    # The registers are not symmetric under reversal; only the total is, so a
+    # test that compared the arrays elementwise would be testing a false identity.
+    assert not np.array_equal(backward, forward)
+    np.testing.assert_array_equal(backward, total - forward[::-1])
 
 
 # ---------------------------------------------------------------------------
