@@ -24,8 +24,8 @@ def _document(asset_id):
 @pytest.mark.parametrize(
     "asset_id",
     [
-        "scirel.electromagnetism.wham",
-        "scirel.electromagnetism.brb",
+        "scirel.configurations.wham",
+        "scirel.configurations.brb",
         "scirel.kinetic.multifluid-deck",
         "scirel.kinetic.rational-jpole-grid-coordinates",
     ],

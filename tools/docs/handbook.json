@@ -81,9 +81,9 @@
      "title": "使用 TREX、BRB 与 WHAM 来源几何",
      "introduction": "这些构造器保留来源的电流丝排列及常数，不提供实验装置标定。WHAM 默认共同电流为 1 A；BRB 中意图电流必须显式区分每丝电流和总安匝，不能从无效旧属性赋值猜测。",
      "assets": [
-      "scirel.electromagnetism.trex-coil",
-      "scirel.electromagnetism.brb",
-      "scirel.electromagnetism.wham"
+      "scirel.configurations.trex-coil",
+      "scirel.configurations.brb",
+      "scirel.configurations.wham"
      ]
     }
    ]

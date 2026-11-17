@@ -39,7 +39,7 @@
       "results.json is written even when some tasks raise; a fully successful run that drops failing cases is not acceptable."
     ]
   },
-  "tasks_digest": "551c7b25856d300ad70f3801997e7f82ef9f9a2c06cb3a3c082945d132e518a4",
+  "tasks_digest": "0b42e4aeb937ba6e91972a57a8844cf67c4018d2ad1e27dc27fd33952619b681",
   "quota": {
     "tasks_per_domain_divisor": 8,
     "min_per_domain": 1,
@@ -1118,17 +1118,17 @@
       ]
     },
     {
-      "id": "electromagnetism-retained-geometries",
+      "id": "configurations-retained-geometries",
       "kind": "nominal",
-      "domain": "electromagnetism",
+      "domain": "configurations",
       "subdomain": "retained device configuration constructors",
       "assets": [
-        "scirel.electromagnetism.trex-coil",
-        "scirel.electromagnetism.brb",
-        "scirel.electromagnetism.wham"
+        "scirel.configurations.trex-coil",
+        "scirel.configurations.brb",
+        "scirel.configurations.wham"
       ],
       "question": "Construct the three declared retained device geometries and report the filament count, the declared default current and the units each constructor documents, without claiming any experimental calibration.",
-      "input_binding": {"mode": "contract_example", "assets": ["scirel.electromagnetism.wham"]},
+      "input_binding": {"mode": "contract_example", "assets": ["scirel.configurations.wham"]},
       "min_calls": 3,
       "criteria": [
         {"id": "fields", "kind": "contract_fields", "expect": "all_declared_outputs"},
@@ -1139,6 +1139,27 @@
           "independent_source": "Counts and defaults are discrete declared constants, so the comparison needs no reference field value."
         },
         {"id": "readback", "kind": "readback", "statement": "Re-open results.json and confirm all three constructors, their counts and their default currents are stored."}
+      ]
+    },
+    {
+      "id": "configurations-rejects-non-numeric-z0",
+      "kind": "failure",
+      "domain": "configurations",
+      "subdomain": "declared invalid input channel",
+      "assets": ["scirel.configurations.trex-coil"],
+      "question": "Ask the TREX coil constructor for a non-numeric z0 and report the raised exception rather than substituting the declared default axial reference.",
+      "stimulus": [{"asset": "scirel.configurations.trex-coil", "field": "z0", "value": "not-a-number", "failure_key": "invalid_input", "declared_rejection": "invalid z0", "expected_exception": "ValueError"}],
+      "input_binding": {"mode": "contract_example", "assets": ["scirel.configurations.trex-coil"]},
+      "min_calls": 1,
+      "criteria": [
+        {"id": "raise", "kind": "exception", "asset": "scirel.configurations.trex-coil", "expected": "ValueError", "failure_key": "invalid_input"},
+        {
+          "id": "noimplicit",
+          "kind": "invariant",
+          "statement": "The consumer must pass the non-numeric z0 unchanged; the trace must show the constructor called with that z0 and its raised status, with no substituted default axial reference.",
+          "independent_source": "The contract declares invalid z0 as a ValueError channel, so supplying a default z0 changes the call under test."
+        },
+        {"id": "readback", "kind": "readback", "statement": "Re-open calls.jsonl and confirm the z0 argument and the raised status are recorded."}
       ]
     },
     {
