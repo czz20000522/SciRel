@@ -1,162 +1,167 @@
 {
- "schema": "scirel.asset-document",
- "asset_id": "scirel.geometry.select-fieldline",
- "title": {
-  "en": "Contour field-line selection",
-  "zh": "等值场线选择"
- },
- "summary": "Select largest vertex-count segment at exact contour level and parse its orientation/endpoints",
- "taxonomy": [
-  "analysis",
-  "sampling"
- ],
- "aliases": [
-  "get_fieldlines"
- ],
- "discovery": {
-  "capability": [
-   "Contour field-line selection",
-   "Select the largest-vertex-count contour segment at an exact level and parse its orientation and endpoints."
+  "schema": "scirel.asset-document",
+  "asset_id": "scirel.geometry.select-fieldline",
+  "title": {
+    "en": "Contour field-line selection",
+    "zh": "等值场线选择"
+  },
+  "summary": "Select largest vertex-count segment at exact contour level and parse its orientation/endpoints",
+  "taxonomy": [
+    "analysis",
+    "sampling"
   ],
-  "operation": [
-   "exact-level contour segment selection",
-   "contour set, exact level and optional endpoint/orientation controls -> selected parsed vertices"
+  "aliases": [
+    "get_fieldlines"
   ],
-  "model": "Contour-segment selection with the nearest-endpoint convention from segment parsing; no field is reconstructed.",
-  "geometry": "Planar contour-set segments with ordered vertices in caller length units and exact level labels in caller flux-label units.",
-  "boundary": "The requested level must exactly appear in the contour levels and at least one finite segment must exist; unique physical flux surfaces and connections between separate segments are not established.",
-  "device_scope": "generic"
- },
- "identity": {
-  "relation": "Contour field-line selection",
-  "direction": "Declared inputs to Selected parsed vertices",
-  "definition": "Select largest vertex-count segment at exact contour level and parse its orientation/endpoints",
-  "model": "Source contour segment selection",
-  "geometry": "planar contour-set segments",
-  "coordinates": "Planar segment vertices and exact level labels",
-  "boundary": "Nearest endpoint convention from parse_segment",
-  "assumptions": [
-   "Requested level exactly appears in contourset.levels",
-   "At least one finite segment exists"
-  ]
- },
- "inputs": [
-  {
-   "name": "contourset",
-   "description": "Object exposing levels and allsegs",
-   "units": "levels in caller flux-label units; vertices length",
-   "shape": "contour object",
-   "dtype": "contour-like object",
-   "required": true,
-   "constraints": "Each allsegs entry contains finite planar segments"
+  "discovery": {
+    "capability": [
+      "Contour field-line selection",
+      "Select the largest-vertex-count contour segment at an exact level and parse its orientation and endpoints."
+    ],
+    "operation": [
+      "exact-level contour segment selection",
+      "contour set, exact level and optional endpoint/orientation controls -> selected parsed vertices"
+    ],
+    "model": "Contour-segment selection with the nearest-endpoint convention from segment parsing; no field is reconstructed.",
+    "geometry": "Planar contour-set segments with ordered vertices in caller length units and exact level labels in caller flux-label units.",
+    "boundary": "The requested level must exactly appear in the contour levels and at least one finite segment must exist; unique physical flux surfaces and connections between separate segments are not established.",
+    "device_scope": "generic"
   },
-  {
-   "name": "level",
-   "description": "Requested contour level",
-   "units": "caller flux-label units",
-   "shape": "scalar",
-   "dtype": "float64",
-   "required": true,
-   "constraints": "Exact membership"
+  "identity": {
+    "relation": "Contour field-line selection",
+    "direction": "Declared inputs to Selected parsed vertices",
+    "definition": "Select largest vertex-count segment at exact contour level and parse its orientation/endpoints",
+    "model": "Source contour segment selection",
+    "geometry": "planar contour-set segments",
+    "coordinates": "Planar segment vertices and exact level labels",
+    "boundary": "Nearest endpoint convention from parse_segment",
+    "assumptions": [
+      "Requested level exactly appears in contourset.levels",
+      "At least one finite segment exists"
+    ]
   },
-  {
-   "name": "start_coord",
-   "description": "Nearest selected starting coordinate",
-   "units": "length units",
-   "shape": "(2,) or None",
-   "dtype": "float64",
-   "required": false,
-   "constraints": "Exact nearest-vertex selection",
-   "default": null
+  "inputs": [
+    {
+      "name": "contourset",
+      "description": "Object exposing levels and allsegs",
+      "units": "levels in caller flux-label units; vertices length",
+      "shape": "contour object",
+      "dtype": "contour-like object",
+      "required": true,
+      "constraints": "Each allsegs entry contains finite planar segments"
+    },
+    {
+      "name": "level",
+      "description": "Requested contour level",
+      "units": "caller flux-label units",
+      "shape": "scalar",
+      "dtype": "float64",
+      "required": true,
+      "constraints": "Exact membership"
+    },
+    {
+      "name": "start_coord",
+      "description": "Nearest selected starting coordinate",
+      "units": "length units",
+      "shape": "(2,) or None",
+      "dtype": "float64",
+      "required": false,
+      "constraints": "Exact nearest-vertex selection",
+      "default": null
+    },
+    {
+      "name": "end_coord",
+      "description": "Nearest terminal coordinate included in output",
+      "units": "length units",
+      "shape": "(2,) or None",
+      "dtype": "float64",
+      "required": false,
+      "constraints": "Terminal vertex retained; no interpolated crossing",
+      "default": null
+    },
+    {
+      "name": "clockwise",
+      "description": "Desired signed polygon orientation",
+      "units": "dimensionless",
+      "shape": "scalar",
+      "dtype": "bool",
+      "required": false,
+      "constraints": "Signed shoelace-like source test",
+      "default": true
+    }
+  ],
+  "outputs": [
+    {
+      "name": "segment",
+      "description": "Selected parsed vertices",
+      "units": "length units",
+      "shape": "(M,2)",
+      "dtype": "float64",
+      "required": true,
+      "constraints": "Largest segment selected by original point count"
+    }
+  ],
+  "applicability": {
+    "preconditions": [
+      "Requested level exactly appears in contourset.levels",
+      "At least one finite segment exists"
+    ],
+    "supported": [
+      "Finite inputs satisfying the callable-specific shape, support, and boundary conditions"
+    ],
+    "excluded": [
+      "Does not establish unique physical flux surface or connect separate segments"
+    ]
   },
-  {
-   "name": "end_coord",
-   "description": "Nearest terminal coordinate included in output",
-   "units": "length units",
-   "shape": "(2,) or None",
-   "dtype": "float64",
-   "required": false,
-   "constraints": "Terminal vertex retained; no interpolated crossing",
-   "default": null
+  "failure_semantics": {
+    "invalid_input": "Raises ValueError or the underlying NumPy/SciPy exception for nonfinite, mismatched, unsorted, out-of-domain, or malformed inputs; no input repair is inferred.",
+    "runtime_failure": "Unknown contour levels raise ValueError; numerical, interpolation, or optional-dependency exceptions propagate from the direct calculation.",
+    "nonconvergence": "Not applicable; the relation uses direct finite-difference, interpolation, selection, or quadrature operations.",
+    "partial_results": "No partial result is promised when input validation or the underlying numerical operation fails."
   },
-  {
-   "name": "clockwise",
-   "description": "Desired signed polygon orientation",
-   "units": "dimensionless",
-   "shape": "scalar",
-   "dtype": "bool",
-   "required": false,
-   "constraints": "Signed shoelace-like source test",
-   "default": true
+  "public_api": {
+    "python": {
+      "module": "scirel.geometry.sampling",
+      "symbol": "get_fieldlines",
+      "signature": "get_fieldlines(contourset, level, start_coord=None, end_coord=None, clockwise=True)",
+      "canonical_module": "scirel.geometry",
+      "canonical_symbol": "get_fieldlines"
+    }
+  },
+  "version": {
+    "implementation_version": "0.0.0",
+    "dependencies": [
+      {
+        "asset_id": "scirel.geometry.parse-segment"
+      }
+    ]
+  },
+  "example": {
+    "description": "Select the available contour segment at an exact level and return its vertices.",
+    "code": "import numpy as np\nfrom types import SimpleNamespace\nfrom scirel.geometry.sampling import get_fieldlines\n\nsegment = np.array([[0.0, 0.0], [0.0, 1.0], [1.0, 1.0], [1.0, 0.0]])\ncontours = SimpleNamespace(levels=[0.2], allsegs=[[segment]])\nselected = get_fieldlines(contours, 0.2)\nassert selected.shape == (4, 2)\nnp.testing.assert_array_equal(selected, segment)",
+    "expected": "The selected contour has shape (4, 2) and retains the four vertices."
+  },
+  "verification": {
+    "scope": [
+      "Level membership is asserted to be exact: a representable neighbour of a stored level raises ValueError while the stored level resolves, so a tolerant lookup is red.",
+      "The chosen level group is identified by disjoint coordinate ranges, so a wrong level index is red even when the wrong group holds more vertices.",
+      "The selected segment is compared with an independently computed maximum-by-vertex-count segment, and the first-listed tie rule is asserted as a recorded convention.",
+      "Delegation to the segment parser is asserted by direct equality with that parser applied to the same segment, so the two relations cannot drift apart silently.",
+      "Failure matrix gives one executable assertion for an unknown level, which raises ValueError and returns nothing."
+    ],
+    "tests": [
+      "tests/equilibrium/test_analysis_families.py",
+      "tests/sampling/test_polyline_and_selection_evidence.py"
+    ],
+    "evidence_ceiling": "Establishes level membership, group indexing and the delegation contract. It does not establish that the returned polyline is a unique physical flux surface, and it does not connect separate segments of the same level.",
+    "known_limitations": [
+      "Does not establish unique physical flux surface or connect separate segments",
+      "cannot establish: a physical flux-surface identity for the selected polyline; only the selection and parsing relation is established"
+    ],
+    "basis": {
+      "kind": "specification",
+      "statement": "The documented exactness law is asserted directly: a representable neighbour of a stored level raises ValueError while the stored level itself resolves, so a tolerant lookup would fail the same assertion.",
+      "source": "tests/equilibrium/test_analysis_families.py"
+    }
   }
- ],
- "outputs": [
-  {
-   "name": "segment",
-   "description": "Selected parsed vertices",
-   "units": "length units",
-   "shape": "(M,2)",
-   "dtype": "float64",
-   "required": true,
-   "constraints": "Largest segment selected by original point count"
-  }
- ],
- "applicability": {
-  "preconditions": [
-   "Requested level exactly appears in contourset.levels",
-   "At least one finite segment exists"
-  ],
-  "supported": [
-   "Finite inputs satisfying the callable-specific shape, support, and boundary conditions"
-  ],
-  "excluded": [
-   "Does not establish unique physical flux surface or connect separate segments"
-  ]
- },
- "failure_semantics": {
-  "invalid_input": "Raises ValueError or the underlying NumPy/SciPy exception for nonfinite, mismatched, unsorted, out-of-domain, or malformed inputs; no input repair is inferred.",
-  "runtime_failure": "Unknown contour levels raise ValueError; numerical, interpolation, or optional-dependency exceptions propagate from the direct calculation.",
-  "nonconvergence": "Not applicable; the relation uses direct finite-difference, interpolation, selection, or quadrature operations.",
-  "partial_results": "No partial result is promised when input validation or the underlying numerical operation fails."
- },
- "public_api": {
-  "python": {
-   "module": "scirel.geometry.sampling",
-   "symbol": "get_fieldlines",
-   "signature": "get_fieldlines(contourset, level, start_coord=None, end_coord=None, clockwise=True)",
-   "canonical_module": "scirel.geometry",
-   "canonical_symbol": "get_fieldlines"
-  }
- },
- "version": {
-  "implementation_version": "0.0.0",
-  "dependencies": [
-   {
-    "asset_id": "scirel.geometry.parse-segment"
-   }
-  ]
- },
- "example": {
-  "description": "Select the available contour segment at an exact level and return its vertices.",
-  "code": "import numpy as np\nfrom types import SimpleNamespace\nfrom scirel.geometry.sampling import get_fieldlines\n\nsegment = np.array([[0.0, 0.0], [0.0, 1.0], [1.0, 1.0], [1.0, 0.0]])\ncontours = SimpleNamespace(levels=[0.2], allsegs=[[segment]])\nselected = get_fieldlines(contours, 0.2)\nassert selected.shape == (4, 2)\nnp.testing.assert_array_equal(selected, segment)",
-  "expected": "The selected contour has shape (4, 2) and retains the four vertices."
- },
- "verification": {
-  "scope": [
-   "Level membership is asserted to be exact: a representable neighbour of a stored level raises ValueError while the stored level resolves, so a tolerant lookup is red.",
-   "The chosen level group is identified by disjoint coordinate ranges, so a wrong level index is red even when the wrong group holds more vertices.",
-   "The selected segment is compared with an independently computed maximum-by-vertex-count segment, and the first-listed tie rule is asserted as a recorded convention.",
-   "Delegation to the segment parser is asserted by direct equality with that parser applied to the same segment, so the two relations cannot drift apart silently.",
-   "Failure matrix gives one executable assertion for an unknown level, which raises ValueError and returns nothing."
-  ],
-  "tests": [
-   "tests/equilibrium/test_analysis_families.py",
-   "tests/sampling/test_polyline_and_selection_evidence.py"
-  ],
-  "evidence_ceiling": "Establishes level membership, group indexing and the delegation contract. It does not establish that the returned polyline is a unique physical flux surface, and it does not connect separate segments of the same level.",
-  "known_limitations": [
-   "Does not establish unique physical flux surface or connect separate segments",
-   "cannot establish: a physical flux-surface identity for the selected polyline; only the selection and parsing relation is established"
-  ]
- }
 }

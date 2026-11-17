@@ -280,19 +280,11 @@
       "reason": "not yet migrated: verification.basis absent"
     },
     {
-      "asset_id": "scirel.geometry.select-fieldline",
-      "reason": "not yet migrated: verification.basis absent"
-    },
-    {
       "asset_id": "scirel.geometry.spherical-r-chord",
       "reason": "not yet migrated: verification.basis absent"
     },
     {
       "asset_id": "scirel.geometry.theta-chord",
-      "reason": "not yet migrated: verification.basis absent"
-    },
-    {
-      "asset_id": "scirel.geometry.weighted-line-integral",
       "reason": "not yet migrated: verification.basis absent"
     },
     {
@@ -340,10 +332,6 @@
       "reason": "not yet migrated: verification.basis absent"
     },
     {
-      "asset_id": "scirel.kinetic.fluid-bonk-search",
-      "reason": "not yet migrated: verification.basis absent"
-    },
-    {
       "asset_id": "scirel.kinetic.fluid-case-state",
       "reason": "not yet migrated: verification.basis absent"
     },
@@ -384,10 +372,6 @@
       "reason": "not yet migrated: verification.basis absent"
     },
     {
-      "asset_id": "scirel.kinetic.generalized-expression-differentiation",
-      "reason": "not yet migrated: verification.basis absent"
-    },
-    {
       "asset_id": "scirel.kinetic.generalized-hilbert",
       "reason": "not yet migrated: verification.basis absent"
     },
@@ -413,14 +397,6 @@
     },
     {
       "asset_id": "scirel.kinetic.kinetic-dispersion-relation",
-      "reason": "not yet migrated: verification.basis absent"
-    },
-    {
-      "asset_id": "scirel.kinetic.maxwellian-electrostatic-mode",
-      "reason": "not yet migrated: verification.basis absent"
-    },
-    {
-      "asset_id": "scirel.kinetic.maxwellian-electrostatic-solver",
       "reason": "not yet migrated: verification.basis absent"
     },
     {
@@ -473,10 +449,6 @@
     },
     {
       "asset_id": "scirel.kinetic.rational-jpole-grid-coordinates",
-      "reason": "not yet migrated: verification.basis absent"
-    },
-    {
-      "asset_id": "scirel.kinetic.rational-point-matrix",
       "reason": "not yet migrated: verification.basis absent"
     },
     {
@@ -859,10 +831,17 @@
     "scirel.geometry.meridional-polar-forward",
     "scirel.geometry.path-distance",
     "scirel.geometry.rectangular-nearest",
+    "scirel.geometry.select-fieldline",
+    "scirel.geometry.weighted-line-integral",
+    "scirel.kinetic.fluid-bonk-search",
+    "scirel.kinetic.generalized-expression-differentiation",
     "scirel.kinetic.kinetic-wavevector-roots",
     "scirel.kinetic.kinetic-wavevector-scan",
+    "scirel.kinetic.maxwellian-electrostatic-mode",
+    "scirel.kinetic.maxwellian-electrostatic-solver",
     "scirel.kinetic.parallel-em-continuation",
     "scirel.kinetic.parallel-em-residual",
+    "scirel.kinetic.rational-point-matrix",
     "scirel.numerics.clamped-cubic-spline",
     "scirel.numerics.natural-cubic-spline",
     "scirel.numerics.truncated-svd-inverse"
