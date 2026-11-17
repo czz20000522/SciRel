@@ -2,14 +2,16 @@
   "schema": "scirel.rules-inventory.v1",
   "note": "每条规则现在由什么机器判据保证。state 三态：machine（有判据且覆盖面足够）/ machine-partial（有判据但只覆盖一部分，写明判什么不判什么）/ unjudged（无判据，写明为什么判不了、靠谁保证）。本文件由 tests/tooling/test_rules_inventory.py 盯着：判据路径必须存在，规则锚点必须在源文档里出现。",
   "verified_on": "2026-11-18",
-  "slice": "AGENTS.md 的 8 条规则（第一批；其余文档的规则随后补）",
+  "slice": "AGENTS.md 8 条 + api-spec 5 条（其余文档随后补）",
   "rules": [
     {
       "id": "agents-1",
       "source": "AGENTS.md",
       "anchor": "真值链：证据 → 代码 → 合同 → 文档",
       "state": "machine-partial",
-      "judged_by": ["scripts/c1_evidence_coverage.py"],
+      "judged_by": [
+        "scripts/c1_evidence_coverage.py"
+      ],
       "judges": "每份公开合同必须在文本里交代证据来源或缺口（neither 必须为 0）。",
       "does_not_judge": "交代了不等于证明了：它不判断那条依据是否成立，也不区分 basis 与 gap 的质量。116 份记录的是缺口而非证据，这个脚本如实把它们算作 either，不会算成通过。"
     },
@@ -57,7 +59,9 @@
       "source": "AGENTS.md",
       "anchor": "如实写结果",
       "state": "machine-partial",
-      "judged_by": ["scripts/check_observation_integrity.py"],
+      "judged_by": [
+        "scripts/check_observation_integrity.py"
+      ],
       "judges": "带 capture_output 的子进程不得吞掉 stderr；机械扫得出的静默失败会被拦。",
       "does_not_judge": "报告里把「未运行」写成「通过」这类文字失真，判不出来。"
     },
@@ -79,6 +83,57 @@
       "state": "unjudged",
       "why": "「查没查上游」是过程，产物里看不出来。但产物侧有一个可判定的代理：合同声明的单位与默认值是否与上游一致——这条判据尚未建立。",
       "who": "本批由 docs/maintainer/reference-projects.md 第 4 节的流程约束；下批把「合同里的单位必须能追溯到上游」做成判据。"
+    },
+    {
+      "id": "api-1",
+      "source": "skills/development/scirel-code-style/references/api-spec.md",
+      "anchor": "Users import from `scirel.<domain>`. The root only lists domains",
+      "state": "machine",
+      "judged_by": [
+        "tests/architecture/test_lazy_namespace.py::test_root_namespace_discovers_every_public_domain_package",
+        "tests/architecture/test_public_surface.py::test_root_namespace_supports_normal_python_imports"
+      ],
+      "judges": "根命名空间列出的每个域都真实存在且可导入；根导入不需要科学依赖。"
+    },
+    {
+      "id": "api-2",
+      "source": "skills/development/scirel-code-style/references/api-spec.md",
+      "anchor": "Each domain has one `__all__`. Anything else is private",
+      "state": "machine",
+      "judged_by": [
+        "tests/architecture/test_module_exports.py::test_public_operator_modules_do_not_leak_support_names"
+      ],
+      "judges": "公开算子模块不泄漏支撑名；域的公开名必须出现在 `__all__` 里。"
+    },
+    {
+      "id": "api-3",
+      "source": "skills/development/scirel-code-style/references/api-spec.md",
+      "anchor": "Importing a domain does not load SciPy or implementation modules",
+      "state": "machine",
+      "judged_by": [
+        "tests/architecture/test_lazy_namespace.py::test_root_import_and_discovery_need_no_scientific_dependencies",
+        "tests/architecture/test_lazy_namespace.py::test_scientific_functions_are_exposed_only_within_their_domain"
+      ],
+      "judges": "根导入与发现不拉科学依赖；科学函数只在自己的域里暴露。"
+    },
+    {
+      "id": "api-4",
+      "source": "skills/development/scirel-code-style/references/api-spec.md",
+      "anchor": "Physics-agnostic tools live only under `scirel.numerics`",
+      "state": "machine-partial",
+      "judged_by": [
+        "tests/architecture/test_public_surface.py::test_algebra_grid_exports_keep_domain_callables"
+      ],
+      "judges": "具体几个代数网格可调用名保持在域里可导入。",
+      "does_not_judge": "没有一个通用判据回答「某个函数是不是物理无关、因而必须住在 numerics」。目前靠逐案断言，新加的物理无关工具放在别处不会被拦。"
+    },
+    {
+      "id": "api-5",
+      "source": "skills/development/scirel-code-style/references/api-spec.md",
+      "anchor": "When a domain mixes unrelated physics, split it by physics, not by file count",
+      "state": "unjudged",
+      "why": "「无关的物理」没有可判定的谓词；拆不拆是结构判断，判断本身需要领域知识。",
+      "who": "评审人按 domains 表的 L0–L3 分层与人审；拆分的后果由 import 闭包测试兜住（拆错了会红），但拆不拆本身不判。"
     }
   ]
 }
