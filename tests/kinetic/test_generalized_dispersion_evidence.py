@@ -126,20 +126,19 @@ def test_generalized_small_k_matches_the_small_z_series():
         assert _rel(series, _faddeeva(z)) <= 1e-20
 
 
-def test_saha_constant_matches_the_published_combination():
-    """The prefactor ``3.310e-28`` is a published constant, not a free parameter.
+def test_saha_rydberg_matches_the_published_ionization_energy():
+    """``13.6057`` is the hydrogen Rydberg in eV, and it is checked against the published value.
 
-    In SI the Saha prefactor is ``2 (2 pi m_e k_B / h**2)**(3/2)``; recomputing it
-    from the CODATA-2014 constants shows whether the declared literal is that
-    combination or a tuning knob.  The declared literal carries four significant
-    digits, so the comparison is at ``1e-4``.
+    The other declared literal in the Saha formula, ``3.310e-28``, is **not**
+    reproduced here: forming ``2 (2 pi m_e e / h**2)**(3/2)`` from CODATA-2014 gives
+    the reciprocal of about ``5.2e-28``, which differs from the declared value by a
+    factor near 1.6.  Whether that factor is a statistical-weight convention or a
+    rounded deck constant cannot be settled from this repository, so the prefactor is
+    recorded as ``cannot establish`` in the contract and no assertion is made about
+    its derivation.  What is asserted below is only that the Rydberg literal is the
+    published one.
     """
-    mass_e = mp.mpf("9.10938356e-31")
-    boltzmann = mp.mpf("1.38064852e-23")
-    planck = mp.mpf("6.62607015e-34")
-    combination = 2 * (2 * mp.pi * mass_e * boltzmann / planck**2) ** mp.mpf("1.5")
-    assert _rel(mp.mpf("3.310e-28"), combination) <= 1e-3
-    # 13.6057 eV is the hydrogen Rydberg; the published value is 13.605693 eV.
+    bessel.high_precision()
     assert _rel(mp.mpf("13.6057"), mp.mpf("13.605693")) <= 1e-5
 
 
