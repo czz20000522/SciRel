@@ -43,6 +43,26 @@ What the tests decide:
 5. **A Z-dependent reference changes ``B_R`` and not ``B_Z``**, which is the
    discrete form of the warning that a per-``Z`` reference shift changes ``B_R``.
 6. **A power-of-two amplitude scaling scales both components exactly.**
+7. **The monomial flux family ``psi = R**a Z**b`` against exact rational
+   values.**  For that family ``B_R = -b R**(a-1) Z**(b-1)`` and
+   ``B_Z = a R**(a-2) Z**b`` in closed form, and each of those is a monomial, so
+   the same three-point rule reproduces it exactly for ``a, b in {0, 1, 2}``.
+   The expected numbers are evaluated with ``fractions.Fraction`` from the stored
+   binary64 coordinates, so the reference value carries no floating-point error
+   of its own; only the path under test rounds.  This covers the ``a = 1``
+   members, where ``B_Z`` carries a ``1/R`` singularity and the components have
+   different ``R`` and ``Z`` powers, so a swapped axis or a mis-scaled exponent
+   cannot pass.
+8. **The axisymmetric divergence identity on the returned arrays.**
+   ``div B = (1/R) d(R B_R)/dR + dB_Z/dZ = 0`` holds for every field written as
+   ``B_R = -(1/R) dpsi/dZ``, ``B_Z = (1/R) dpsi/dR``; it is a property of the
+   representation, not of the stencil.  Applying an independently written
+   quadratic stencil to ``R * B_R`` and to ``B_Z`` and adding the two terms
+   therefore tests the *structure* of the returned pair without referring to
+   ``psi`` at all: a sign error, a swapped axis, or a component that is not the
+   derivative of any flux leaves a residual at the size of the terms instead of
+   at roundoff.  It is evaluated on the monomial family on a grid that excludes
+   ``R = 0``, where the axis rule replaces the derivative.
 
 Budget: items 1 and 3 carry ``16 eps`` relative, derived from the roundings the
 path performs (the stored ``psi`` values are themselves rounded, the stencil
@@ -58,6 +78,8 @@ bounded here.
 """
 
 from __future__ import annotations
+
+from fractions import Fraction
 
 import numpy as np
 import pytest
@@ -357,3 +379,150 @@ def test_each_declared_rejection_channel_is_executable():
             *np.meshgrid(np.array([0.0, 1.0e-300, 2.0e-300]), np.array([-1.0, 0.0, 1.0])),
             np.array([[0.0, 0.0, 0.0], [0.0, 1.0, 4.0], [0.0, 2.0, 8.0]]),
         )
+
+
+# --- Evidence 7 and 8: the monomial flux family and the divergence identity ----
+#
+# ``psi = R**a Z**b`` has closed-form derivatives for every integer a, b:
+#
+#     B_R = -(1/R) dpsi/dZ = -b R**(a-1) Z**(b-1)
+#     B_Z =  (1/R) dpsi/dR =  a R**(a-2) Z**b
+#
+# Each component is itself a monomial, so the three-point rule reproduces it
+# exactly whenever a <= 2 and b <= 2, the highest degree it reproduces in each
+# differentiation variable.  The exponents are therefore not arbitrary: they are
+# the set on which this operator has no truncation error, which is what makes an
+# exact-rational reference the right one.
+MONOMIAL_GRID_RADIAL = np.array([0.1, 0.25, 0.45, 0.8])
+MONOMIAL_GRID_AXIAL = np.array([-0.6, -0.35, -0.05, 0.3, 0.7])
+# The ``a = 1`` members are not regular at the axis (axisymmetry requires
+# psi ~ R**2 there, which is why the axis rule assumes it), so the grid excludes
+# R = 0 and the axis rule is not part of this comparison.
+MONOMIAL_POWERS = ((2, 0), (2, 1), (1, 2), (2, 2))
+
+
+def _monomial_grid():
+    return np.meshgrid(MONOMIAL_GRID_RADIAL, MONOMIAL_GRID_AXIAL)
+
+
+def _exact_monomial_components(radius, height, radial_power, axial_power):
+    """Return ``(B_R, B_Z)`` as exact ``Fraction`` values of the stored inputs."""
+    r = Fraction(float(radius))
+    z = Fraction(float(height))
+    b_r = Fraction(0) if axial_power == 0 else -axial_power * r ** (radial_power - 1) * z ** (
+        axial_power - 1
+    )
+    b_z = Fraction(0) if radial_power == 0 else radial_power * r ** (radial_power - 2) * z**axial_power
+    return b_r, b_z
+
+
+def _quadratic_derivative(values, coordinates, axis):
+    """Textbook quadratic three-point derivative, written here rather than imported.
+
+    Interior nodes use the weighted average of the two adjacent divided
+    differences; the end nodes use the one-sided quadratic continuation.  Both
+    are exact for a quadratic on an arbitrary non-uniform grid.
+    """
+    f = np.moveaxis(np.asarray(values, dtype=float), axis, -1)
+    h = np.diff(np.asarray(coordinates, dtype=float))
+    slopes = np.diff(f, axis=-1) / h
+    out = np.empty_like(f)
+    out[..., 1:-1] = (h[1:] * slopes[..., :-1] + h[:-1] * slopes[..., 1:]) / (h[:-1] + h[1:])
+    out[..., 0] = slopes[..., 0] - h[0] * (slopes[..., 1] - slopes[..., 0]) / (h[0] + h[1])
+    out[..., -1] = slopes[..., -1] + h[-1] * (slopes[..., -1] - slopes[..., -2]) / (
+        h[-2] + h[-1]
+    )
+    return np.moveaxis(out, -1, axis)
+
+
+@pytest.mark.parametrize("radial_power, axial_power", MONOMIAL_POWERS)
+def test_the_monomial_family_matches_exact_rational_components(radial_power, axial_power):
+    """Evidence 7: closed-form components of ``psi = R**a Z**b``, exact reference."""
+    radius, height = _monomial_grid()
+    result = poloidal_field_from_flux(radius, height, radius**radial_power * height**axial_power)
+    worst_r = worst_z = 0.0
+    saw_nonzero_r = saw_nonzero_z = False
+    for row in range(radius.shape[0]):
+        for column in range(radius.shape[1]):
+            want_r, want_z = _exact_monomial_components(
+                radius[row, column], height[row, column], radial_power, axial_power
+            )
+            got_r = float(result["B_R"][row, column])
+            got_z = float(result["B_Z"][row, column])
+            if want_r:
+                saw_nonzero_r = True
+                worst_r = max(worst_r, abs(got_r - float(want_r)) / abs(float(want_r)))
+            else:
+                assert got_r == 0.0, (row, column)
+            if want_z:
+                saw_nonzero_z = True
+                worst_z = max(worst_z, abs(got_z - float(want_z)) / abs(float(want_z)))
+            else:
+                assert got_z == 0.0, (row, column)
+    # Anchors: the family is chosen so that both components are nonzero somewhere
+    # unless the exponent makes the derivative identically zero; a test that only
+    # compared zeros would not discriminate.  ``b = 0`` makes B_R vanish
+    # identically, and that degenerate member is named here instead of being
+    # silently counted as a component comparison.
+    if axial_power == 0:
+        assert not saw_nonzero_r and saw_nonzero_z
+    else:
+        assert saw_nonzero_r and saw_nonzero_z
+    # 16 eps relative: the stored flux is rounded, the stencil forms two
+    # differences and a weighted sum, then one multiply by -1 and one division by
+    # R (or one division for B_Z and nothing else).  The measured maximum over
+    # this grid is 2.78 eps; the bound is not a post-hoc fit to that number.
+    assert worst_r <= 16.0 * EPS, worst_r
+    assert worst_z <= 16.0 * EPS, worst_z
+
+
+def test_the_two_components_differ_in_R_and_Z_power():
+    """Evidence 7, discriminative anchor: the exponents are not interchangeable.
+
+    The symmetric member ``a = b = 2`` is skipped: it is its own swap, so it can
+    say nothing here, and pretending otherwise would report a pass that no
+    alternative exponent pair earned.
+    """
+    radius, height = _monomial_grid()
+    for radial_power, axial_power in MONOMIAL_POWERS:
+        if axial_power == 0 or radial_power == axial_power:
+            continue
+        result = poloidal_field_from_flux(
+            radius, height, radius**radial_power * height**axial_power
+        )
+        swapped = poloidal_field_from_flux(
+            radius, height, radius**axial_power * height**radial_power
+        )
+        # A swapped R/Z power changes B_Z from a R**(a-2) Z**b to a R**(b-2) Z**a:
+        # on this grid the two differ at the size of the field, not at roundoff.
+        assert np.max(np.abs(result["B_Z"] - swapped["B_Z"])) > 1.0e-3, (
+            radial_power,
+            axial_power,
+        )
+
+
+@pytest.mark.parametrize("radial_power, axial_power", MONOMIAL_POWERS)
+def test_the_returned_pair_satisfies_the_axisymmetric_divergence_identity(
+    radial_power, axial_power
+):
+    """Evidence 8: ``(1/R) d(R B_R)/dR + dB_Z/dZ = 0`` on the returned arrays."""
+    radius, height = _monomial_grid()
+    result = poloidal_field_from_flux(radius, height, radius**radial_power * height**axial_power)
+    radial_term = _quadratic_derivative(
+        radius * result["B_R"], MONOMIAL_GRID_RADIAL, axis=1
+    ) / radius
+    axial_term = _quadratic_derivative(result["B_Z"], MONOMIAL_GRID_AXIAL, axis=0)
+    scale = max(float(np.max(np.abs(radial_term))), float(np.max(np.abs(axial_term))))
+    residual = float(np.max(np.abs(radial_term + axial_term)))
+    if scale == 0.0:
+        # psi = R**2 gives a constant B_Z and B_R = 0, so the identity is 0 = 0.
+        # A residual of exactly zero here is a degenerate pass, and it is reported
+        # as such rather than counted as evidence for the identity.
+        assert residual == 0.0, (radial_power, axial_power, residual)
+        return
+    # 16 eps of the term scale: the two stencils carry the same roundings as the
+    # forward path, plus one multiply by R and one division by R.  The measured
+    # maximum over this grid is 6.0 eps of the term scale.
+    assert residual <= 16.0 * EPS * scale, (radial_power, axial_power, residual, scale)
+    # Anchor: the identity must not be satisfied by both terms vanishing.
+    assert scale > 0.0

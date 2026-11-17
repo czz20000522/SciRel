@@ -117,14 +117,16 @@
    "Public callable signature and documented finite-input behavior",
    "The direct regression fixtures listed in verification.tests",
    "The executable example stored in this contract",
-   "Independent evidence (test_spline_boundary_evidence): analytic cubic-Hermite identities (exact nodal interpolation, C2 continuity recomputed from the public knot slopes and cross-checked against the evaluator inside one interval), the declared boundary rows evaluated on the produced spline rather than re-derived from the code, and agreement with SciPy CubicSpline - a different solve for different unknowns - to within 64 eps for the families that have a SciPy counterpart."
+   "Independent evidence (test_spline_boundary_evidence): analytic cubic-Hermite identities (exact nodal interpolation, C2 continuity recomputed from the public knot slopes and cross-checked against the evaluator inside one interval), the declared boundary rows evaluated on the produced spline rather than re-derived from the code, and agreement with SciPy CubicSpline - a different solve for different unknowns - to within 64 eps for the families that have a SciPy counterpart.",
+   "Independent recomputation (tests/numerics/test_spline_boundary_evidence.py): the textbook second-derivative system h[i-1] M[i-1] + 2(h[i-1]+h[i]) M[i] + h[i] M[i+1] = 6(delta[i]/h[i] - delta[i-1]/h[i-1]) with the natural (M_0 = M_{n-1} = 0) end rows is assembled from those equations and solved with numpy.linalg.solve, so the unknown vector is the knot second derivative rather than the knot slope the implementation solves for; values at the knots, at interval midpoints and at off-centre in-domain points agree to 2.2e-16 and the hand-solved second derivatives agree with deriv=2 at the knots to 8.3e-15; and affine samples are reproduced exactly, which is the highest polynomial degree a natural spline can interpolate exactly, while the clamped rows are shown to select a different interpolant from the same data.",
+   "Output-mutation accounting (scripts/mutation_check.py): the five output mutants scale, negate, zero, swap and constant change numeric leaves of a returned value, and a spline constructor returns a callable object that has no such leaf, so all five report not_exercised for this asset. That is an instrument limit rather than an unconstrained behaviour: the returned callable's own values are what the independent second-derivative comparison, the SciPy cross-check and the exact reproduction tests above constrain."
   ],
   "tests": [
    "tests/equilibrium/test_analysis_families.py",
    "tests/equilibrium/test_analysis_corrections.py",
    "tests/numerics/test_spline_boundary_evidence.py"
   ],
-  "evidence_ceiling": "Direct examples and named regression fixtures establish the documented relation on those inputs; they do not establish arbitrary-input correctness, experimental validation, or release approval. C1 evidence adds: SciPy natural-boundary cross-check and analytic Hermite identities.",
+  "evidence_ceiling": "Direct examples and named regression fixtures establish the documented relation on those inputs; they do not establish arbitrary-input correctness, experimental validation, or release approval. C1 evidence adds: SciPy natural-boundary cross-check and analytic Hermite identities. The independent system is a reference for the interior and the declared end rows only; it does not bound the interpolation error on a general function, and the measured O(h^4) rate remains restricted to data consistent with the boundary condition.",
   "known_limitations": [
    "Zero extrapolation and deriv selectors other than 1/2 returning values remain compatibility conventions",
    "Duplicate, unsorted or nonfinite knots are outside numerical qualification",

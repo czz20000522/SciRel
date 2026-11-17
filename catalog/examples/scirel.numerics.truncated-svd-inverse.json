@@ -123,14 +123,15 @@
    "Finite-input fail-closed boundary of the decomposition: a 2x2 matrix filled with 1e308 raises FloatingPointError when its SVD singular values are not representable.",
    "A singular value exactly at the cutoff is retained; only the neighboring value below it is discarded. Empty matrices retain the transposed output shape.",
    "The numerics domain and linalg topic expose one callable with keyword-only rcond, dependency-light discovery and no former geometry entry or module.",
-   "Independent evidence (test_linalg_and_derivative_evidence): the four Moore-Penrose axioms for matrices whose whole spectrum is retained, the analytic rank-one formula A+ = v u^T / (|u|^2 |v|^2) for a known deficiency, agreement with numpy.linalg.pinv where the two documented cutoff rules coincide, and the declared >= rule exercised by placing a singular value exactly on the threshold."
+   "Independent evidence (test_linalg_and_derivative_evidence): the four Moore-Penrose axioms for matrices whose whole spectrum is retained, the analytic rank-one formula A+ = v u^T / (|u|^2 |v|^2) for a known deficiency, agreement with numpy.linalg.pinv where the two documented cutoff rules coincide, and the declared >= rule exercised by placing a singular value exactly on the threshold.",
+   "Independent recomputation (tests/numerics/test_linalg_and_derivative_evidence.py): a matrix built as P diag(s) Q^T from permutation matrices has a known spectrum and known singular vectors, so its truncated pseudo-inverse Q diag(1/s_i, or 0 below the cutoff) P^T is written in closed form and matched for rcond in {1e-10, 1e-4, 1e-2} (deviation 0 on this platform), with the retained directions carrying their reciprocal and the discarded ones mapping to exactly zero; the cutoff is then shown to be load-bearing rather than decorative - with spectrum (1, 1e-3, 1e-6) the three thresholds retain three, two and one singular values, the returned inverses differ by at least 1e3, and |M M+ M - M| equals the largest discarded singular value to 8 eps."
   ],
   "tests": [
    "tests/numerics/test_truncated_pseudoinverse.py",
    "tests/numerics/test_truncated_pseudoinverse_api.py",
    "tests/numerics/test_linalg_and_derivative_evidence.py"
   ],
-  "evidence_ceiling": "Mathematical identity checks on bounded dense matrices plus a finite float64 representability boundary witness; no application-level diagnostic-fitting, statistical-error claim, or numeric magnitude bound for arbitrary finite inputs is established. C1 evidence adds: Moore-Penrose axioms, an analytic rank-one case and the documented cutoff rule.",
+  "evidence_ceiling": "Mathematical identity checks on bounded dense matrices plus a finite float64 representability boundary witness; no application-level diagnostic-fitting, statistical-error claim, or numeric magnitude bound for arbitrary finite inputs is established. C1 evidence adds: Moore-Penrose axioms, an analytic rank-one case and the documented cutoff rule. The hand-SVD construction covers permutation-times-diagonal spectra only; a general dense matrix has no closed-form pseudo-inverse, so its correctness rests on the Moore-Penrose axioms and the analytic rank-one case rather than on an exact reference.",
   "known_limitations": [
    "Complex and sparse matrices are not supported.",
    "rcond follows NumPy singular-value conventions; it is not a statistical noise model.",

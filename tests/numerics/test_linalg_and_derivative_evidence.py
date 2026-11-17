@@ -270,3 +270,113 @@ def test_derivative_rejection_channels_are_bound_to_their_contract():
     ]:
         with pytest.raises(expected):
             call()
+
+
+# --- Evidence 5: hand SVD of a constructed matrix and the cutoff's work ---------
+#
+# A matrix written as ``M = P diag(s) Q^T`` with permutation matrices ``P`` and
+# ``Q`` has a known SVD: the singular values are ``s`` and the singular vectors
+# are the columns of ``P`` and ``Q``.  Its truncated pseudo-inverse is therefore
+# ``Q diag(1/s_i for s_i >= rcond * max(s) else 0) P^T`` in closed form, with no
+# decomposition involved on the reference side and no reliance on any other
+# implementation of the same relation.  The permuted diagonal spectrum also makes
+# the cutoff *discriminating*: dropping one singular value changes the inverse by
+# a factor of the reciprocal, which is a difference of order ``1e3`` here, so an
+# implementation that ignored ``rcond`` could not pass.
+THREE_BY_THREE_SPECTRUM = (1.0, 1.0e-3, 1.0e-6)
+
+
+def _permutation(rows):
+    """Permutation matrix with ``1`` at ``(i, rows[i])``."""
+    matrix = np.zeros((len(rows), len(rows)))
+    for source, target in enumerate(rows):
+        matrix[source, target] = 1.0
+    return matrix
+
+
+def _constructed_svd_case(rows=(2, 0, 1), columns=(1, 2, 0), spectrum=THREE_BY_THREE_SPECTRUM):
+    left = _permutation(rows)
+    right = _permutation(columns)
+    matrix = left @ np.diag(list(spectrum)) @ right.T
+    return matrix, left, right
+
+
+def _hand_pseudoinverse(matrix, left, right, spectrum, rcond):
+    """Closed-form truncated pseudo-inverse of ``left diag(spectrum) right^T``."""
+    cutoff = rcond * max(spectrum)
+    reciprocals = [
+        float(Fraction(1) / Fraction(float(value))) if value >= cutoff else 0.0
+        for value in spectrum
+    ]
+    return right @ np.diag(reciprocals) @ left.T
+
+
+def test_hand_svd_of_a_permuted_diagonal_matrix_is_reproduced_exactly():
+    """Evidence 5: known spectrum and singular vectors, closed-form inverse."""
+    matrix, left, right = _constructed_svd_case()
+    # The construction is checked, not assumed: the singular values of the
+    # concrete matrix are the intended spectrum.
+    np.testing.assert_allclose(np.linalg.svd(matrix, compute_uv=False), sorted(THREE_BY_THREE_SPECTRUM)[::-1])
+    for rcond in (1.0e-10, 1.0e-4, 1.0e-2):
+        got = N.compute_truncated_pseudoinverse(matrix, rcond=rcond)
+        expected = _hand_pseudoinverse(matrix, left, right, THREE_BY_THREE_SPECTRUM, rcond)
+        # 8 eps of the largest entry: the only floating-point work on this
+        # construction is a full-rank-3 SVD of a permuted diagonal matrix, and the
+        # measured deviation is exactly zero on this platform.
+        scale = float(np.max(np.abs(expected)))
+        assert float(np.max(np.abs(got - expected))) <= 8.0 * EPS * max(scale, 1.0), rcond
+        # The retained directions must survive with their reciprocal, the
+        # truncated ones with exactly zero: this is what "truncated" means.  ``P``
+        # and ``Q`` are different permutations, so the probe direction is the left
+        # singular vector ``P[:, i]``, which the inverse maps to ``Q[:, i] / s_i``.
+        cutoff = rcond * max(THREE_BY_THREE_SPECTRUM)
+        for index, value in enumerate(THREE_BY_THREE_SPECTRUM):
+            image = got @ left[:, index]
+            if value >= cutoff:
+                expected_image = right[:, index] / value
+                assert float(np.max(np.abs(image - expected_image))) <= 8.0 * EPS / value, (
+                    rcond,
+                    index,
+                )
+            else:
+                assert float(np.max(np.abs(image))) == 0.0, (rcond, index)
+
+
+def test_a_single_negative_diagonal_entry_flips_the_matching_inverse_sign():
+    """Hand SVD of a diagonal matrix: ``|s|`` in the spectrum, the sign in U/V."""
+    matrix = np.diag([2.0, -3.0, 0.5])
+    got = N.compute_truncated_pseudoinverse(matrix, rcond=1.0e-12)
+    expected = np.diag([0.5, -1.0 / 3.0, 2.0])
+    # Every entry of this case is exact: 0.5 and 2 are powers of two, and 1/3 is
+    # the correctly rounded quotient.  The comparison is therefore elementwise
+    # equality in all three positions including the zero off-diagonals, so a
+    # dropped sign on the negative singular value cannot pass.
+    np.testing.assert_allclose(got, expected, rtol=4.0 * EPS, atol=0.0)
+    assert np.array_equal(got, expected)
+    assert got[1, 1] < 0.0
+
+
+def test_the_cutoff_selects_exactly_the_declared_singular_values():
+    """Evidence 5: ``rcond`` decides one, two or three retained values.
+
+    With the spectrum ``(1, 1e-3, 1e-6)`` and ``max(s) = 1``, the thresholds
+    ``1e-2``, ``1e-4`` and ``1e-10`` retain three different sets, so the three
+    returned inverses must differ by the dropped reciprocals: ``0``, ``1e3`` and
+    ``1e6`` respectively.  ``M M+ M`` is the projection onto the retained range,
+    so its defect from ``M`` must equal the largest dropped singular value; that
+    turns "which singular values were dropped" into a measurable number instead of
+    a shape claim.
+    """
+    matrix, left, right = _constructed_svd_case()
+    small = N.compute_truncated_pseudoinverse(matrix, rcond=1.0e-2)
+    middle = N.compute_truncated_pseudoinverse(matrix, rcond=1.0e-4)
+    full = N.compute_truncated_pseudoinverse(matrix, rcond=1.0e-10)
+    # O(1) discrimination: the parameter is not ignored.
+    assert float(np.max(np.abs(middle - small))) > 1.0e2
+    assert float(np.max(np.abs(full - middle))) > 1.0e2
+    assert float(np.max(np.abs(full - small))) > 1.0e2
+    # Quantitatively: the residual of the Moore-Penrose reconstruction is the
+    # largest singular value that the threshold discarded.
+    for inverse, dropped in ((small, 1.0e-3), (middle, 1.0e-6), (full, 0.0)):
+        defect = float(np.max(np.abs(matrix @ inverse @ matrix - matrix)))
+        assert abs(defect - dropped) <= 8.0 * EPS, (dropped, defect)

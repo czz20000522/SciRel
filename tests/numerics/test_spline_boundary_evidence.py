@@ -310,3 +310,190 @@ def test_second_clamped_rows_are_second_derivative_zero_at_origin_and_robin_at_l
 
     query = np.linspace(0.0, 1.0, 101)
     assert np.max(np.abs(np.asarray(spline(query), dtype=float) - query**3)) <= 256.0 * EPS
+
+
+# --- Evidence 5: the textbook second-derivative system, solved independently ----
+#
+# A cubic spline is determined by its knot second derivatives ``M_i`` through the
+# standard continuity equations
+#
+#     h_{i-1} M_{i-1} + 2 (h_{i-1} + h_i) M_i + h_i M_{i+1}
+#         = 6 (delta_i / h_i - delta_{i-1} / h_{i-1}),   delta_i = y_{i+1} - y_i
+#
+# with the boundary rows of the declared family, and the interpolant on
+# ``[x_i, x_{i+1}]`` is
+#
+#     S(x) = M_i (x_{i+1}-x)^3 / (6 h) + M_{i+1} (x-x_i)^3 / (6 h)
+#          + (y_i - M_i h^2/6) (x_{i+1}-x)/h + (y_{i+1} - M_{i+1} h^2/6) (x-x_i)/h.
+#
+# The implementation under test solves for the knot *slopes* ``k`` instead and
+# evaluates the Hermite form, and the SciPy comparison solves a third system.
+# Neither of those is used here: the system above is assembled from the
+# textbook equations for the second derivatives and solved with
+# ``numpy.linalg.solve``.  Matching a different unknown vector through a
+# different elimination is what makes this independent rather than a second call
+# into the same code path.
+
+
+def _independent_second_derivatives(x, y, *, left, right):
+    """Solve the textbook system for knot second derivatives.
+
+    ``left`` and ``right`` are ``("natural", None)`` or ``("first", slope)`` and
+    select the boundary rows.  ``natural`` sets M_0 = M_{n-1} = 0 and solves only
+    the interior unknowns; ``first`` prescribes ``S'(x_0)`` and ``S'(x_{n-1})``
+    and includes both end unknowns.
+    """
+    x = np.asarray(x, dtype=float)
+    y = np.asarray(y, dtype=float)
+    h = np.diff(x)
+    delta = np.diff(y)
+    n = x.size
+    interior_rows = n - 2
+    interior_matrix = np.zeros((interior_rows, interior_rows))
+    interior_rhs = np.zeros(interior_rows)
+    for index in range(interior_rows):
+        knot = index + 1
+        interior_rhs[index] = 6.0 * (delta[knot] / h[knot] - delta[knot - 1] / h[knot - 1])
+        interior_matrix[index, index] = 2.0 * (h[knot - 1] + h[knot])
+        if index > 0:
+            interior_matrix[index, index - 1] = h[knot - 1]
+        if index < interior_rows - 1:
+            interior_matrix[index, index + 1] = h[knot]
+
+    if left[0] == "natural":
+        assert right[0] == "natural"
+        second = np.zeros(n)
+        if interior_rows:
+            second[1:-1] = np.linalg.solve(interior_matrix, interior_rhs)
+        return second
+
+    assert left[0] == "first" and right[0] == "first"
+    # Both end values are unknowns here: M_0 and M_{n-1} move the interior rows
+    # through their off-diagonal coefficients, so the full system is solved.
+    matrix = np.zeros((n, n))
+    rhs = np.zeros(n)
+    matrix[0, 0] = 2.0 * h[0]
+    matrix[0, 1] = h[0]
+    rhs[0] = 6.0 * (delta[0] / h[0] - left[1])
+    for index in range(interior_rows):
+        knot = index + 1
+        matrix[knot, knot - 1] = h[knot - 1]
+        matrix[knot, knot] = 2.0 * (h[knot - 1] + h[knot])
+        matrix[knot, knot + 1] = h[knot]
+        rhs[knot] = 6.0 * (delta[knot] / h[knot] - delta[knot - 1] / h[knot - 1])
+    matrix[-1, -2] = h[-1]
+    matrix[-1, -1] = 2.0 * h[-1]
+    rhs[-1] = 6.0 * (right[1] - delta[-1] / h[-1])
+    return np.linalg.solve(matrix, rhs)
+
+
+def _independent_spline_value(x, y, second, query):
+    """Evaluate the cubic defined by the knot second derivatives."""
+    x = np.asarray(x, dtype=float)
+    y = np.asarray(y, dtype=float)
+    values = np.empty_like(query, dtype=float)
+    for position, point in enumerate(np.atleast_1d(query)):
+        interval = int(np.searchsorted(x, point, side="right") - 1)
+        interval = min(max(interval, 0), x.size - 2)
+        h = x[interval + 1] - x[interval]
+        left = x[interval + 1] - point
+        right = point - x[interval]
+        values[position] = (
+            second[interval] * left**3 / (6.0 * h)
+            + second[interval + 1] * right**3 / (6.0 * h)
+            + (y[interval] - second[interval] * h**2 / 6.0) * left / h
+            + (y[interval + 1] - second[interval + 1] * h**2 / 6.0) * right / h
+        )
+    return values
+
+
+CLAMPED_YP = (0.7, -1.1)
+
+
+def test_natural_family_matches_the_independent_second_derivative_solve():
+    """Evidence 5: natural spline against an independently solved M system."""
+    spline = NaturalCubicSpline(X, Y)
+    second = _independent_second_derivatives(X, Y, left=("natural", None), right=("natural", None))
+    # The boundary conditions of the declared family, on the hand-solved vector.
+    assert second[0] == 0.0 and second[-1] == 0.0
+    # And on the produced spline: the independent system is not the only witness.
+    assert abs(float(np.asarray(spline(np.array([X[0], X[-1]]), 2))[0])) <= 1e-12 * _second_scale(
+        X, Y
+    )
+    assert abs(float(np.asarray(spline(np.array([X[0], X[-1]]), 2))[1])) <= 1e-12 * _second_scale(
+        X, Y
+    )
+    # Interior queries: nodes, midpoints and off-centre points, all in-domain.
+    queries = np.concatenate(
+        [X, 0.5 * (X[:-1] + X[1:]), 0.25 * (3.0 * X[:-1] + X[1:])]
+    )
+    expected = _independent_spline_value(X, Y, second, queries)
+    got = np.asarray(spline(queries))
+    scale = max(1.0, float(np.max(np.abs(Y))))
+    deviation = float(np.max(np.abs(got - expected)))
+    # 1e-12 of the ordinate scale.  The measured maximum on this knot set is
+    # 4.4e-16, i.e. two ulps; the bound is the declared one, not a fit.
+    assert deviation <= 1e-12 * scale, deviation
+    # Anchor: the reference values are not all equal, so an implementation that
+    # returned one constant could not pass this comparison.
+    assert float(np.max(expected) - np.min(expected)) > 1.0
+    # The hand-solved M vector must also be the evaluator's own second derivative
+    # at the knots; this is a structural check that does not go through values.
+    # Measured maximum 8.3e-15.
+    at_knots = np.asarray(spline(X, 2))
+    assert float(np.max(np.abs(at_knots - second))) <= 1e-12 * _second_scale(X, Y)
+
+
+def test_clamped_family_matches_the_independent_second_derivative_solve():
+    """Evidence 5: clamped spline against an independently solved M system."""
+    spline = ClampedCubicSpline(X, Y, yp=CLAMPED_YP)
+    second = _independent_second_derivatives(
+        X, Y, left=("first", CLAMPED_YP[0]), right=("first", CLAMPED_YP[1])
+    )
+    # The declared end slopes, on the produced spline.
+    ends = np.asarray(spline(np.array([X[0], X[-1]]), 1))
+    assert abs(float(ends[0]) - CLAMPED_YP[0]) <= 1e-12 * _first_scale(X, Y)
+    assert abs(float(ends[1]) - CLAMPED_YP[1]) <= 1e-12 * _first_scale(X, Y)
+    queries = np.concatenate(
+        [X, 0.5 * (X[:-1] + X[1:]), 0.25 * (3.0 * X[:-1] + X[1:])]
+    )
+    expected = _independent_spline_value(X, Y, second, queries)
+    got = np.asarray(spline(queries))
+    scale = max(1.0, float(np.max(np.abs(Y))))
+    deviation = float(np.max(np.abs(got - expected)))
+    # Measured maximum 4.4e-16 on this knot set; see the natural-family test.
+    assert deviation <= 1e-12 * scale, deviation
+    assert float(np.max(expected) - np.min(expected)) > 1.0
+    # Measured maximum 7.1e-15.
+    at_knots = np.asarray(spline(X, 2))
+    assert float(np.max(np.abs(at_knots - second))) <= 1e-12 * _second_scale(X, Y)
+
+
+def test_the_two_boundary_families_select_different_splines_from_the_same_data():
+    """Discriminative anchor: natural and clamped are not the same interpolant.
+
+    The two contracts differ only in the boundary rows, so a shared solver that
+    ignored them would pass either single comparison.  Requiring a visible
+    difference from the *same* data keeps that failure mode visible, while the
+    independent solves above pin each family separately.
+    """
+    natural_value = float(np.atleast_1d(NaturalCubicSpline(X, Y)(0.55))[0])
+    clamped_value = float(np.atleast_1d(ClampedCubicSpline(X, Y, yp=CLAMPED_YP)(0.55))[0])
+    natural_second = _independent_second_derivatives(
+        X, Y, left=("natural", None), right=("natural", None)
+    )
+    clamped_second = _independent_second_derivatives(
+        X, Y, left=("first", CLAMPED_YP[0]), right=("first", CLAMPED_YP[1])
+    )
+    assert np.max(np.abs(natural_second - clamped_second)) > 1e-3
+    assert abs(natural_value - clamped_value) > 1e-6
+
+
+def _second_scale(x, y):
+    """Scale of a knot second derivative: ``y / h^2`` for this data."""
+    return max(1.0, float(np.max(np.abs(y))) / float(np.min(np.diff(x))) ** 2)
+
+
+def _first_scale(x, y):
+    """Scale of a knot first derivative: ``y / h`` for this data."""
+    return max(1.0, float(np.max(np.abs(y))) / float(np.min(np.diff(x))))
