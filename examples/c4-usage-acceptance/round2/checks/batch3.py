@@ -28,8 +28,11 @@ def cross_field_to_equilibrium(ctx: H.Ctx, task: dict) -> dict:
     r_grid = np.asarray(pn["r_grid"], dtype=float)
     z_grid = np.asarray(pn["z_grid"], dtype=float)
     pts = np.column_stack([r_grid.ravel(), z_grid.ravel()])
-    c1 = ctx.call(green, {"rzw": gn["rzw"], "rz_pts": pts},
-                  label="coil flux per radian evaluated on the poloidal grid")
+    c1 = ctx.call(
+        green,
+        {"rzw": gn["rzw"], "rz_pts": pts},
+        label="coil flux per radian evaluated on the poloidal grid",
+    )
     criteria = [C.fields(ctx, c1, green, "fields")]
     detail, ok = {}, False
     if "_value" in c1:
@@ -54,8 +57,11 @@ def cross_field_to_equilibrium(ctx: H.Ctx, task: dict) -> dict:
         psi = np.asarray(psi, dtype=float).ravel()
         detail["psi_size"] = int(psi.size)
         psi_grid = psi.reshape(r_grid.shape) if psi.size == r_grid.size else psi
-        c2 = ctx.call(pol, {"r_grid": r_grid, "z_grid": z_grid, "psi": psi_grid},
-                      label="flux differentiated into a poloidal field on the same grid")
+        c2 = ctx.call(
+            pol,
+            {"r_grid": r_grid, "z_grid": z_grid, "psi": psi_grid},
+            label="flux differentiated into a poloidal field on the same grid",
+        )
         criteria.append(C.fields(ctx, c2, pol, "fields_poloidal"))
         if "_value" in c2:
             p = H.mapping(_val(c2), pol)
@@ -68,12 +74,15 @@ def cross_field_to_equilibrium(ctx: H.Ctx, task: dict) -> dict:
             dev_r = H.rel_dev(BR[1:-1, 1:-1], BR_ref[1:-1, 1:-1])
             dev_z = H.rel_dev(BZ[1:-1, 1:-1], BZ_ref[1:-1, 1:-1])
             handoff_ok = max(dev_r, dev_z) <= 1e-2
-            detail = {"grid_shape": list(r_grid.shape),
-                      "B_R_vs_finite_difference_relative": dev_r,
-                      "B_Z_vs_finite_difference_relative": dev_z,
-                      "unit_in": "Wb/rad", "unit_out": "T",
-                      "convention": "B_R=-dpsi/dz/R, B_Z=dpsi/dr/R on the same grid",
-                      "handoff_within_discretisation": handoff_ok}
+            detail = {
+                "grid_shape": list(r_grid.shape),
+                "B_R_vs_finite_difference_relative": dev_r,
+                "B_Z_vs_finite_difference_relative": dev_z,
+                "unit_in": "Wb/rad",
+                "unit_out": "T",
+                "convention": "B_R=-dpsi/dz/R, B_Z=dpsi/dr/R on the same grid",
+                "handoff_within_discretisation": handoff_ok,
+            }
             # the same flux is handed to one Picard step unchanged
             sn = ctx.named(step)
             named = dict(sn)
@@ -88,24 +97,40 @@ def cross_field_to_equilibrium(ctx: H.Ctx, task: dict) -> dict:
             ok = handoff_ok and same_array and c3["status"] == "returned"
             detail["picard_status"] = c3["status"]
     criteria.append(C.crit("handoff", "invariant", "pass" if ok else "fail", detail))
-    criteria.append(C.crit("budget", "tolerance", "pass" if ok else "fail", {
-        **detail, "declared_tolerance": {"rel": 1e-12, "abs": 0.0},
-        "note": "the flux is passed as an array, so 1e-12 applies to the handoff itself; the "
-                "1e-2 number above is the finite-difference discretisation of the derivative"}))
+    criteria.append(
+        C.crit(
+            "budget",
+            "tolerance",
+            "pass" if ok else "fail",
+            {
+                **detail,
+                "declared_tolerance": {"rel": 1e-12, "abs": 0.0},
+                "note": "the flux is passed as an array, so 1e-12 applies to the handoff itself; the "
+                "1e-2 number above is the finite-difference discretisation of the derivative",
+            },
+        )
+    )
     return {
         "criteria": criteria,
         "answer": {"value": detail, "unit": "Wb/rad handed over as T"},
-        "independent_check": {"method": "the derivative's B_R/B_Z are compared with finite differences "
-                                        "of the same flux on the same grid, and the identical array is "
-                                        "handed to the Picard step",
-                              "observed": detail, "verdict": "pass" if ok else "fail"},
+        "independent_check": {
+            "method": "the derivative's B_R/B_Z are compared with finite differences "
+            "of the same flux on the same grid, and the identical array is "
+            "handed to the Picard step",
+            "observed": detail,
+            "verdict": "pass" if ok else "fail",
+        },
         "package_sufficient": ok,
         "sufficient_reason": "both sides take plain arrays plus declared grids, so the handoff is "
-                             "observable end to end",
-        "gaps": [H.gap("confidence",
-                       "the derivative entry differentiates a supplied flux, so the comparison against "
-                       "finite differences carries discretisation error; the exact handoff (array "
-                       "identity) is what the 1e-12 budget covers")],
+        "observable end to end",
+        "gaps": [
+            H.gap(
+                "confidence",
+                "the derivative entry differentiates a supplied flux, so the comparison against "
+                "finite differences carries discretisation error; the exact handoff (array "
+                "identity) is what the 1e-12 budget covers",
+            )
+        ],
     }
 
 
@@ -134,37 +159,56 @@ def cross_geometry_to_equilibrium(ctx: H.Ctx, task: dict) -> dict:
         Z = np.ones_like(R) * z[None, None, :]
         outside_r = int(np.sum((R < r_axis.min()) | (R > r_axis.max())))
         outside_z = int(np.sum((Z < z_axis.min()) | (Z > z_axis.max())))
-        reported = {"radially_clamped_point_count": H.plain(b.get("radially_clamped_point_count")),
-                    "axially_clamped_point_count": H.plain(b.get("axially_clamped_point_count"))}
-        counts_ok = (int(np.asarray(b.get("radially_clamped_point_count", -1)).ravel()[0]) == outside_r
-                     and int(np.asarray(b.get("axially_clamped_point_count", -1)).ravel()[0]) == outside_z)
+        reported = {
+            "radially_clamped_point_count": H.plain(b.get("radially_clamped_point_count")),
+            "axially_clamped_point_count": H.plain(b.get("axially_clamped_point_count")),
+        }
+        counts_ok = (
+            int(np.asarray(b.get("radially_clamped_point_count", -1)).ravel()[0]) == outside_r
+            and int(np.asarray(b.get("axially_clamped_point_count", -1)).ravel()[0]) == outside_z
+        )
         # hand the mapped flux to the equilibrium state without transposing
         psi = np.asarray(b["poloidal_flux_wb_per_rad"], dtype=float)
-        st = ctx.call(state, {"r_grid": np.asarray(R, dtype=float),
-                              "z_grid": np.asarray(Z, dtype=float),
-                              "psi": psi.reshape(np.asarray(R).shape),
-                              "pressure_of_radius": ctx.named(state)["pressure_of_radius"],
-                              "plasma_mask": ctx.named(state)["plasma_mask"]},
-                      label="equilibrium state built from the mapped flux, no transpose")
+        st = ctx.call(
+            state,
+            {
+                "r_grid": np.asarray(R, dtype=float),
+                "z_grid": np.asarray(Z, dtype=float),
+                "psi": psi.reshape(np.asarray(R).shape),
+                "pressure_of_radius": ctx.named(state)["pressure_of_radius"],
+                "plasma_mask": ctx.named(state)["plasma_mask"],
+            },
+            label="equilibrium state built from the mapped flux, no transpose",
+        )
         criteria.append(C.fields(ctx, st, state, "fields_state"))
-        st_ok = "_value" in st and np.asarray(H.mapping(_val(st), state)["pressure_derivative"]).shape == psi.shape
-        detail = {"shared_output_shapes": shapes, "shapes_match": same,
-                  "recomputed_outside_nodes": {"radial": outside_r, "axial": outside_z},
-                  "reported_clamped": reported, "clamped_counts_match": counts_ok,
-                  "state_accepted_same_shape": bool(st_ok)}
+        st_ok = (
+            "_value" in st
+            and np.asarray(H.mapping(_val(st), state)["pressure_derivative"]).shape == psi.shape
+        )
+        detail = {
+            "shared_output_shapes": shapes,
+            "shapes_match": same,
+            "recomputed_outside_nodes": {"radial": outside_r, "axial": outside_z},
+            "reported_clamped": reported,
+            "clamped_counts_match": counts_ok,
+            "state_accepted_same_shape": bool(st_ok),
+        }
         ok = same and counts_ok and st_ok
     criteria.append(C.crit("sameshape", "invariant", "pass" if ok else "fail", detail))
     criteria.append(C.crit("clamped_count", "invariant", "pass" if ok else "fail", detail))
     return {
         "criteria": criteria,
         "answer": {"value": detail, "unit": "Wb/rad flux into Pa/(Wb/rad) state"},
-        "independent_check": {"method": "the clamped point counts are recomputed from the declared "
-                                        "query coordinates and the map box, and the mapped flux is "
-                                        "handed to the equilibrium state without a transpose",
-                              "observed": detail, "verdict": "pass" if ok else "fail"},
+        "independent_check": {
+            "method": "the clamped point counts are recomputed from the declared "
+            "query coordinates and the map box, and the mapped flux is "
+            "handed to the equilibrium state without a transpose",
+            "observed": detail,
+            "verdict": "pass" if ok else "fail",
+        },
         "package_sufficient": ok,
         "sufficient_reason": "both entries take plain coordinate arrays, so the shape and count "
-                             "handoff is observable",
+        "handoff is observable",
         "gaps": [],
     }
 
@@ -199,29 +243,56 @@ def cross_mirror_to_diagnostics(ctx: H.Ctx, task: dict) -> dict:
         fh = np.asarray(v["firehose_margin"], dtype=float)
         mm = np.asarray(v["mirror_margin"], dtype=float)
         mu0 = 1.2566370614359173e-06
-        fh_ref = np.asarray(named["magnetic_field"], dtype=float) ** 2 / mu0 + np.asarray(named["p_perp"], dtype=float) - np.asarray(named["p_parallel"], dtype=float)
-        mm_ref = (np.asarray(named["magnetic_field"], dtype=float) ** 2 / mu0
-                  + np.asarray(named["magnetic_field"], dtype=float) * np.asarray(named["dp_perp_dB"], dtype=float))
+        fh_ref = (
+            np.asarray(named["magnetic_field"], dtype=float) ** 2 / mu0
+            + np.asarray(named["p_perp"], dtype=float)
+            - np.asarray(named["p_parallel"], dtype=float)
+        )
+        mm_ref = np.asarray(named["magnetic_field"], dtype=float) ** 2 / mu0 + np.asarray(
+            named["magnetic_field"], dtype=float
+        ) * np.asarray(named["dp_perp_dB"], dtype=float)
         dev_fh = H.rel_dev(fh, fh_ref)
         dev_mm = H.rel_dev(mm, mm_ref)
         ok = dev_fh <= 1e-12 and dev_mm <= 1e-12
-        detail.update({"firehose_formula_deviation": dev_fh, "mirror_formula_deviation": dev_mm,
-                       "positive_margin_reported_as": "threshold comparison, not a stability proof",
-                       "firehose_stable": H.plain(v.get("firehose_stable"))})
+        detail.update(
+            {
+                "firehose_formula_deviation": dev_fh,
+                "mirror_formula_deviation": dev_mm,
+                "positive_margin_reported_as": "threshold comparison, not a stability proof",
+                "firehose_stable": H.plain(v.get("firehose_stable")),
+            }
+        )
     criteria.append(C.crit("formula", "invariant", "pass" if ok else "fail", detail))
-    criteria.append(C.crit("no_verdict", "invariant", "pass" if ok else "fail", {
-        **detail, "note": "the diagnostics entry returns threshold flags only; the consumer does not "
-                          "read a positive margin as a stability certificate"}))
+    criteria.append(
+        C.crit(
+            "no_verdict",
+            "invariant",
+            "pass" if ok else "fail",
+            {
+                **detail,
+                "note": "the diagnostics entry returns threshold flags only; the consumer does not "
+                "read a positive margin as a stability certificate",
+            },
+        )
+    )
     return {
         "criteria": criteria,
         "answer": {"value": detail, "unit": "Pa"},
-        "independent_check": {"method": "both margins are recomputed from the printed expressions using "
-                                        "the closure's own B, p_perp and p_parallel",
-                              "observed": detail, "verdict": "pass" if ok else "fail"},
+        "independent_check": {
+            "method": "both margins are recomputed from the printed expressions using "
+            "the closure's own B, p_perp and p_parallel",
+            "observed": detail,
+            "verdict": "pass" if ok else "fail",
+        },
         "package_sufficient": ok,
         "sufficient_reason": "the closure state and the margin entry share plain arrays",
-        "gaps": [H.gap("confidence", "dp_perp_dB is not returned by the closure entry, so the consumer "
-                                     "formed it by finite differences on the declared grid")],
+        "gaps": [
+            H.gap(
+                "confidence",
+                "dp_perp_dB is not returned by the closure entry, so the consumer "
+                "formed it by finite differences on the declared grid",
+            )
+        ],
     }
 
 
@@ -235,43 +306,85 @@ def cross_source_to_neutrals(ctx: H.Ctx, task: dict) -> dict:
     pn = ctx.named(prop)
     if "_value" in c1:
         p = np.asarray(H.mapping(_val(c1), src)["profile"], dtype=float)
-        Ak, Bk, Ck, Dk, Gk = (np.asarray(pn[k], dtype=float) for k in ("Ak", "Bk", "Ck", "Dk", "Gk"))
+        Ak, Bk, Ck, Dk, Gk = (
+            np.asarray(pn[k], dtype=float) for k in ("Ak", "Bk", "Ck", "Dk", "Gk")
+        )
         vx = np.asarray(pn["vx"], dtype=float)
         shape = Ak.shape
         src_grid = np.broadcast_to(p.reshape(-1, 1, 1)[: shape[0]], shape).copy()
         Fk = src_grid
-        c2 = ctx.call(prop, {"vx": vx, "Ak": Ak, "Bk": Bk, "Fk": Fk, "Ck": Ck, "Dk": Dk, "Gk": Gk,
-                             "generation_kind": pn["generation_kind"],
-                             "incoming_boundary": pn.get("incoming_boundary")},
-                      label="generation driven by the source profile as the forcing term")
-        c3 = ctx.call(prop, {"vx": vx, "Ak": Ak, "Bk": Bk, "Fk": 2.0 * Fk, "Ck": Ck, "Dk": Dk, "Gk": Gk,
-                             "generation_kind": pn["generation_kind"],
-                             "incoming_boundary": pn.get("incoming_boundary")},
-                      label="generation with the source forcing doubled")
+        c2 = ctx.call(
+            prop,
+            {
+                "vx": vx,
+                "Ak": Ak,
+                "Bk": Bk,
+                "Fk": Fk,
+                "Ck": Ck,
+                "Dk": Dk,
+                "Gk": Gk,
+                "generation_kind": pn["generation_kind"],
+                "incoming_boundary": pn.get("incoming_boundary"),
+            },
+            label="generation driven by the source profile as the forcing term",
+        )
+        c3 = ctx.call(
+            prop,
+            {
+                "vx": vx,
+                "Ak": Ak,
+                "Bk": Bk,
+                "Fk": 2.0 * Fk,
+                "Ck": Ck,
+                "Dk": Dk,
+                "Gk": Gk,
+                "generation_kind": pn["generation_kind"],
+                "incoming_boundary": pn.get("incoming_boundary"),
+            },
+            label="generation with the source forcing doubled",
+        )
         criteria.append(C.fields(ctx, c2, prop, "fields_propagation"))
         if "_value" in c2 and "_value" in c3:
             a = np.asarray(H.mapping(_val(c2), prop)["generation"], dtype=float)
             b = np.asarray(H.mapping(_val(c3), prop)["generation"], dtype=float)
             dev = float(np.max(np.abs(b - 2.0 * a))) / max(float(np.max(np.abs(2.0 * a))), 1e-300)
             ok = dev <= 1e-12
-            detail = {"source_total": float(sn.get("total")), "profile_shape": list(p.shape),
-                      "forcing_shape": list(Fk.shape), "doubling_relative_deviation": dev,
-                      "handoff": "profile -> forcing term of the printed forward branch"}
+            detail = {
+                "source_total": float(sn.get("total")),
+                "profile_shape": list(p.shape),
+                "forcing_shape": list(Fk.shape),
+                "doubling_relative_deviation": dev,
+                "handoff": "profile -> forcing term of the printed forward branch",
+            }
     criteria.append(C.crit("linearity", "invariant", "pass" if ok else "fail", detail))
-    criteria.append(C.crit("budget", "tolerance", "pass" if ok else "fail", {
-        **detail, "declared_tolerance": {"rel": 1e-12, "abs": 0.0}}))
+    criteria.append(
+        C.crit(
+            "budget",
+            "tolerance",
+            "pass" if ok else "fail",
+            {**detail, "declared_tolerance": {"rel": 1e-12, "abs": 0.0}},
+        )
+    )
     return {
         "criteria": criteria,
         "answer": {"value": detail, "unit": "profile density into generation m^-3 s^-1"},
-        "independent_check": {"method": "the profile is used as the propagation forcing and doubling it "
-                                        "must double the returned generation",
-                              "observed": detail, "verdict": "pass" if ok else "fail"},
+        "independent_check": {
+            "method": "the profile is used as the propagation forcing and doubling it "
+            "must double the returned generation",
+            "observed": detail,
+            "verdict": "pass" if ok else "fail",
+        },
         "package_sufficient": ok,
         "sufficient_reason": "the propagation entry takes the forcing array directly, so the cross-domain "
-                             "handoff is observable",
-        "gaps": [H.gap("confidence", "the consumer had to reshape the one-dimensional profile onto the "
-                                     "declared vx/alpha grid itself; the package does not offer a "
-                                     "declared profile-to-forcing adapter")],
+        "handoff is observable",
+        "gaps": [
+            H.gap(
+                "confidence",
+                "the consumer had to reshape the one-dimensional profile onto the "
+                "declared vx/alpha grid itself; the package does not offer a "
+                "declared profile-to-forcing adapter",
+            )
+        ],
     }
 
 
@@ -286,9 +399,14 @@ def cross_kinetic_to_diagnostics(ctx: H.Ctx, task: dict) -> dict:
         v = H.mapping(_val(c1), roots)
         r = np.asarray(v["roots"], dtype=float).ravel()
         predicted = {"roots": {"values": r.tolist(), "unit": "1/m"}}
-        observations = {"roots": {"values": r.tolist(), "sigma": np.ones_like(r).tolist(), "unit": "1/m"}}
-        c2 = ctx.call(obs, {"predicted": predicted, "observations": observations},
-                      label="residual of the roots against themselves")
+        observations = {
+            "roots": {"values": r.tolist(), "sigma": np.ones_like(r).tolist(), "unit": "1/m"}
+        }
+        c2 = ctx.call(
+            obs,
+            {"predicted": predicted, "observations": observations},
+            label="residual of the roots against themselves",
+        )
         criteria.append(C.fields(ctx, c2, obs, "fields_residual"))
         if "_value" in c2:
             w = H.mapping(_val(c2), obs)
@@ -296,25 +414,41 @@ def cross_kinetic_to_diagnostics(ctx: H.Ctx, task: dict) -> dict:
             zero_ok = float(np.max(np.abs(residual))) == 0.0 if residual.size else True
             card_ok = residual.size == r.size
             shifted = {"roots": {"values": r.tolist(), "unit": "1/m"}}
-            obs2 = {"roots": {"values": (r + 0.5).tolist(), "sigma": np.ones_like(r).tolist(), "unit": "1/m"}}
-            c3 = ctx.call(obs, {"predicted": shifted, "observations": obs2},
-                          label="residual with the observed set shifted by 0.5")
+            obs2 = {
+                "roots": {
+                    "values": (r + 0.5).tolist(),
+                    "sigma": np.ones_like(r).tolist(),
+                    "unit": "1/m",
+                }
+            }
+            c3 = ctx.call(
+                obs,
+                {"predicted": shifted, "observations": obs2},
+                label="residual with the observed set shifted by 0.5",
+            )
             lin_ok = False
             if "_value" in c3:
                 res2 = np.asarray(H.mapping(_val(c3), obs)["residual_vector"], dtype=float).ravel()
                 lin_ok = res2.size == r.size and np.allclose(res2, 0.5, rtol=1e-12, atol=1e-12)
             ok = card_ok and zero_ok and lin_ok
-            detail = {"roots_returned": int(r.size), "predictions_reported": int(residual.size),
-                      "self_residual_is_zero": zero_ok, "shifted_residual_is_0_5": bool(lin_ok),
-                      "status": H.plain(v.get("status"))}
+            detail = {
+                "roots_returned": int(r.size),
+                "predictions_reported": int(residual.size),
+                "self_residual_is_zero": zero_ok,
+                "shifted_residual_is_0_5": bool(lin_ok),
+                "status": H.plain(v.get("status")),
+            }
     criteria.append(C.crit("cardinality", "invariant", "pass" if ok else "fail", detail))
     criteria.append(C.crit("zeroresidual", "invariant", "pass" if ok else "fail", detail))
     return {
         "criteria": criteria,
         "answer": {"value": detail, "unit": "1/m roots and residual"},
-        "independent_check": {"method": "the roots are fed back as both predicted and observed sets, and "
-                                        "a 0.5 shift must give a residual of exactly 0.5",
-                              "observed": detail, "verdict": "pass" if ok else "fail"},
+        "independent_check": {
+            "method": "the roots are fed back as both predicted and observed sets, and "
+            "a 0.5 shift must give a residual of exactly 0.5",
+            "observed": detail,
+            "verdict": "pass" if ok else "fail",
+        },
         "package_sufficient": ok,
         "sufficient_reason": "both entries accept plain arrays and the residual is analytic",
         "gaps": [],
@@ -332,8 +466,12 @@ def cross_collisions_to_neutrals(ctx: H.Ctx, task: dict) -> dict:
         value = np.asarray(H.mapping(_val(c1), rate)["rate_m3_s"], dtype=float)
         scalar = float(np.mean(value))
         fn = ctx.named(freq)
-        on = dict(fn); on["charge_exchange_frequency_m_inv"] = scalar; on["charge_exchange_enabled"] = True
-        off = dict(fn); off["charge_exchange_frequency_m_inv"] = 0.0; off["charge_exchange_enabled"] = False
+        on = dict(fn)
+        on["charge_exchange_frequency_m_inv"] = scalar
+        on["charge_exchange_enabled"] = True
+        off = dict(fn)
+        off["charge_exchange_frequency_m_inv"] = 0.0
+        off["charge_exchange_enabled"] = False
         c2 = ctx.call(freq, on, label="frequency with the returned rate handed over unchanged")
         c3 = ctx.call(freq, off, label="frequency with charge exchange disabled")
         criteria.append(C.fields(ctx, c2, freq, "fields_frequency"))
@@ -345,34 +483,47 @@ def cross_collisions_to_neutrals(ctx: H.Ctx, task: dict) -> dict:
             delta = a - b
             consistent = bool(np.all(delta >= 0))
             ok = handoff_ok and consistent and C.finite(a)
-            detail = {"rate_mean": scalar, "recorded_argument": recorded,
-                      "handed_over_unchanged": handoff_ok,
-                      "total_with_minus_without_max": float(np.max(delta)),
-                      "non_negative_contribution": consistent,
-                      "unit_in": "m^3/s", "unit_out": "m^-1",
-                      "note": "the frequency entry treats the rate as a frequency-per-density "
-                              "coefficient; the consumer applies no conversion"}
+            detail = {
+                "rate_mean": scalar,
+                "recorded_argument": recorded,
+                "handed_over_unchanged": handoff_ok,
+                "total_with_minus_without_max": float(np.max(delta)),
+                "non_negative_contribution": consistent,
+                "unit_in": "m^3/s",
+                "unit_out": "m^-1",
+                "note": "the frequency entry treats the rate as a frequency-per-density "
+                "coefficient; the consumer applies no conversion",
+            }
     criteria.append(C.crit("handoff", "invariant", "pass" if ok else "fail", detail))
     return {
         "criteria": criteria,
         "answer": {"value": detail, "unit": "m^3/s into m^-1"},
-        "independent_check": {"method": "the returned rate is handed to the frequency entry unchanged and "
-                                        "the enabled/disabled totals are compared",
-                              "observed": detail, "verdict": "pass" if ok else "fail"},
+        "independent_check": {
+            "method": "the returned rate is handed to the frequency entry unchanged and "
+            "the enabled/disabled totals are compared",
+            "observed": detail,
+            "verdict": "pass" if ok else "fail",
+        },
         "package_sufficient": ok,
         "sufficient_reason": "the frequency entry takes the charge-exchange coefficient directly",
-        "gaps": [H.gap("confidence",
-                       "the rate is a three-dimensional array and the frequency entry takes a "
-                       "per-species list, so the consumer reduced it to its mean; the package does "
-                       "not declare that reduction")],
+        "gaps": [
+            H.gap(
+                "confidence",
+                "the rate is a three-dimensional array and the frequency entry takes a "
+                "per-species list, so the consumer reduced it to its mean; the package does "
+                "not declare that reduction",
+            )
+        ],
     }
 
 
-CHECKS.update({
-    "cross-field-to-equilibrium": cross_field_to_equilibrium,
-    "cross-geometry-to-equilibrium": cross_geometry_to_equilibrium,
-    "cross-mirror-to-diagnostics": cross_mirror_to_diagnostics,
-    "cross-source-to-neutrals": cross_source_to_neutrals,
-    "cross-kinetic-to-diagnostics": cross_kinetic_to_diagnostics,
-    "cross-collisions-to-neutrals": cross_collisions_to_neutrals,
-})
+CHECKS.update(
+    {
+        "cross-field-to-equilibrium": cross_field_to_equilibrium,
+        "cross-geometry-to-equilibrium": cross_geometry_to_equilibrium,
+        "cross-mirror-to-diagnostics": cross_mirror_to_diagnostics,
+        "cross-source-to-neutrals": cross_source_to_neutrals,
+        "cross-kinetic-to-diagnostics": cross_kinetic_to_diagnostics,
+        "cross-collisions-to-neutrals": cross_collisions_to_neutrals,
+    }
+)

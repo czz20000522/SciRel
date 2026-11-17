@@ -36,29 +36,48 @@ def field_filament_superposition(ctx: H.Ctx, task: dict) -> dict:
     ok, detail = False, {}
     if all("_value" in c for c in (c2, c3)):
         a, b = _val(c2), _val(c3)
-        devs = {k: _max_rel(a[k], 2.0 * np.asarray(b[k])) for k in ("psi", "BR", "BZ")
-                if k in a and k in b}
+        devs = {
+            k: _max_rel(a[k], 2.0 * np.asarray(b[k]))
+            for k in ("psi", "BR", "BZ")
+            if k in a and k in b
+        }
         # manual superposition straight from the returned Green columns
-        psi_manual = np.tensordot(np.asarray(base["currents"]), np.asarray(base["gpsi"]), axes=([0], [0]))
+        psi_manual = np.tensordot(
+            np.asarray(base["currents"]), np.asarray(base["gpsi"]), axes=([0], [0])
+        )
         dev_manual = _max_rel(a["psi"], psi_manual)
         ok = max(list(devs.values()) + [dev_manual]) <= 2e-12
-        detail = {"linearity_relative_deviation": devs,
-                  "manual_superposition_deviation": dev_manual,
-                  "declared_budget": 2e-12}
+        detail = {
+            "linearity_relative_deviation": devs,
+            "manual_superposition_deviation": dev_manual,
+            "declared_budget": 2e-12,
+        }
     criteria.append(C.crit("linearity", "invariant", "pass" if ok else "fail", detail))
     criteria.append(C.crit("entryagreement", "invariant", "pass" if ok else "fail", detail))
-    criteria.append(C.crit("budget", "tolerance", "pass" if ok else "fail", {
-        **detail, "quantity": "@declared_outputs psi/BR/BZ",
-        "declared_tolerance": {"rel": 2e-12, "abs": 0.0}}))
+    criteria.append(
+        C.crit(
+            "budget",
+            "tolerance",
+            "pass" if ok else "fail",
+            {
+                **detail,
+                "quantity": "@declared_outputs psi/BR/BZ",
+                "declared_tolerance": {"rel": 2e-12, "abs": 0.0},
+            },
+        )
+    )
     return {
         "criteria": criteria,
         "answer": {"value": detail, "unit": "T and T*m for the field components"},
-        "independent_check": {"method": "the superposed psi is recomputed as sum_k currents_k*gpsi_k "
-                                        "from the returned Green columns and the doubled-weight call",
-                              "observed": detail, "verdict": "pass" if ok else "fail"},
+        "independent_check": {
+            "method": "the superposed psi is recomputed as sum_k currents_k*gpsi_k "
+            "from the returned Green columns and the doubled-weight call",
+            "observed": detail,
+            "verdict": "pass" if ok else "fail",
+        },
         "package_sufficient": ok and criteria[0]["status"] == "pass",
         "sufficient_reason": "weights, columns and composite record are all readable, so the "
-                             "linearity and summation conventions can be checked from the package",
+        "linearity and summation conventions can be checked from the package",
         "gaps": [],
     }
 
@@ -71,8 +90,11 @@ def field_flux_to_poloidal(ctx: H.Ctx, task: dict) -> dict:
     ok, detail = False, {}
     if "_value" in c1:
         v = _val(c1)
-        c2 = ctx.call(mag, {"br": np.asarray(v["B_R"]), "bz": np.asarray(v["B_Z"])},
-                      label="magnitude entry on the returned components")
+        c2 = ctx.call(
+            mag,
+            {"br": np.asarray(v["B_R"]), "bz": np.asarray(v["B_Z"])},
+            label="magnitude entry on the returned components",
+        )
         criteria.append(C.fields(ctx, c2, mag, "fields_magnitude"))
         if "_value" in c2:
             w = _val(c2)
@@ -81,18 +103,31 @@ def field_flux_to_poloidal(ctx: H.Ctx, task: dict) -> dict:
             got = np.asarray(w["B"])
             dev = float(np.max(np.abs(got - expected)))
             ok = dev <= 1e-14 * max(1.0, abs(expected))
-            detail = {"returned_B": H.plain(got), "recomputed_median": expected,
-                      "max_abs_deviation": dev, "B0_default": H.plain(w.get("B0_default")),
-                      "declared_budget_rel": 1e-14}
+            detail = {
+                "returned_B": H.plain(got),
+                "recomputed_median": expected,
+                "max_abs_deviation": dev,
+                "B0_default": H.plain(w.get("B0_default")),
+                "declared_budget_rel": 1e-14,
+            }
     criteria.append(C.crit("declared_median", "invariant", "pass" if ok else "fail", detail))
-    criteria.append(C.crit("budget", "tolerance", "pass" if ok else "fail", {
-        **detail, "declared_tolerance": {"rel": 1e-14, "abs": 0.0}}))
+    criteria.append(
+        C.crit(
+            "budget",
+            "tolerance",
+            "pass" if ok else "fail",
+            {**detail, "declared_tolerance": {"rel": 1e-14, "abs": 0.0}},
+        )
+    )
     return {
         "criteria": criteria,
         "answer": {"value": detail, "unit": "T"},
-        "independent_check": {"method": "B is recomputed as the median of hypot(B_R,B_Z) with each "
-                                        "component floored at 1e-30",
-                              "observed": detail, "verdict": "pass" if ok else "fail"},
+        "independent_check": {
+            "method": "B is recomputed as the median of hypot(B_R,B_Z) with each "
+            "component floored at 1e-30",
+            "observed": detail,
+            "verdict": "pass" if ok else "fail",
+        },
         "package_sufficient": ok,
         "sufficient_reason": "components and magnitude are separate published entries at the same grid",
         "gaps": [],
@@ -118,15 +153,23 @@ def geometry_equilibrium_grid(ctx: H.Ctx, task: dict) -> dict:
         got = float(np.asarray(v["flux_surface_average"]))
         dev = abs(got - expected) / max(abs(expected), 1e-300)
         ok = dev <= 1e-12
-        detail = {"returned_average": got, "recomputed_sum_dl_over_path": expected,
-                  "path_length": path, "len_dl": int(dl.size), "relative_deviation": dev}
+        detail = {
+            "returned_average": got,
+            "recomputed_sum_dl_over_path": expected,
+            "path_length": path,
+            "len_dl": int(dl.size),
+            "relative_deviation": dev,
+        }
     criteria.append(C.crit("declared_ratio", "invariant", "pass" if ok else "fail", detail))
     return {
         "criteria": criteria,
         "answer": {"value": detail, "unit": "T^-1"},
-        "independent_check": {"method": "flux_surface_average recomputed as sum(dl_B)/total path "
-                                        "length of the declared polyline",
-                              "observed": detail, "verdict": "pass" if ok else "fail"},
+        "independent_check": {
+            "method": "flux_surface_average recomputed as sum(dl_B)/total path "
+            "length of the declared polyline",
+            "observed": detail,
+            "verdict": "pass" if ok else "fail",
+        },
         "package_sufficient": ok,
         "sufficient_reason": "the differential array and the path are both returned/declared",
         "gaps": [],
@@ -153,29 +196,48 @@ def geometry_mesh_and_volume(ctx: H.Ctx, task: dict) -> dict:
         # additivity on a split mask
         idx = np.flatnonzero(mask.ravel())
         half = len(idx) // 2
-        m1 = np.zeros_like(mask); m1.ravel()[idx[:half]] = True
-        m2 = np.zeros_like(mask); m2.ravel()[idx[half:]] = True
+        m1 = np.zeros_like(mask)
+        m1.ravel()[idx[:half]] = True
+        m2 = np.zeros_like(mask)
+        m2.ravel()[idx[half:]] = True
         s1 = ctx.call(vol, {**named, "core_mask": m1}, label="first disjoint submask")
         s2 = ctx.call(vol, {**named, "core_mask": m2}, label="second disjoint submask")
         additive = None
         if "_value" in s1 and "_value" in s2:
-            additive = float(np.asarray(H.mapping(_val(s1), vol)["volume"])
-                             + np.asarray(H.mapping(_val(s2), vol)["volume"]))
+            additive = float(
+                np.asarray(H.mapping(_val(s1), vol)["volume"])
+                + np.asarray(H.mapping(_val(s2), vol)["volume"])
+            )
         dev = abs(got - expected) / max(abs(expected), 1e-300)
-        dev_add = abs(additive - got) / max(abs(got), 1e-300) if additive is not None else float("inf")
+        dev_add = (
+            abs(additive - got) / max(abs(got), 1e-300) if additive is not None else float("inf")
+        )
         ok = dev <= 1e-12 and dev_add <= 1e-12
-        detail = {"returned_volume": got, "recomputed_volume": expected,
-                  "relative_deviation": dev, "additivity_deviation": dev_add,
-                  "cells_masked": int(mask.sum())}
+        detail = {
+            "returned_volume": got,
+            "recomputed_volume": expected,
+            "relative_deviation": dev,
+            "additivity_deviation": dev_add,
+            "cells_masked": int(mask.sum()),
+        }
     criteria.append(C.crit("declared_measure", "invariant", "pass" if ok else "fail", detail))
-    criteria.append(C.crit("budget", "tolerance", "pass" if ok else "fail", {
-        **detail, "declared_tolerance": {"rel": 1e-12, "abs": 0.0}}))
+    criteria.append(
+        C.crit(
+            "budget",
+            "tolerance",
+            "pass" if ok else "fail",
+            {**detail, "declared_tolerance": {"rel": 1e-12, "abs": 0.0}},
+        )
+    )
     return {
         "criteria": criteria,
         "answer": {"value": detail, "unit": "m^3"},
-        "independent_check": {"method": "volume recomputed as 2*pi*sum(R*dR*dZ*mask) from the "
-                                        "declared grid and checked additive over a split mask",
-                              "observed": detail, "verdict": "pass" if ok else "fail"},
+        "independent_check": {
+            "method": "volume recomputed as 2*pi*sum(R*dR*dZ*mask) from the "
+            "declared grid and checked additive over a split mask",
+            "observed": detail,
+            "verdict": "pass" if ok else "fail",
+        },
         "package_sufficient": ok,
         "sufficient_reason": "the entry takes the mask as an argument, so the consumer can split it",
         "gaps": [],
@@ -193,6 +255,7 @@ def numerics_basis_projection(ctx: H.Ctx, task: dict) -> dict:
     try:
         obj = ctx.named(modal)["kind"]
         from scirel.numerics.modal_basis import modal_basis as _mb
+
         b = _mb(ctx.named(modal)["kind"], ctx.named(modal)["ndim"], ctx.named(modal)["order"])
         nodes, weights = b.quadrature()
         members = b.evaluate(nodes)
@@ -204,23 +267,38 @@ def numerics_basis_projection(ctx: H.Ctx, task: dict) -> dict:
         outer = b.expand(nodes, coeffs) + 0.75 * nodes[:, 0] ** 5
         outer_res = float(np.max(np.abs(b.project(outer) - coeffs)))
         ok = ident_dev <= 1e-12 and span_dev <= 1e-12 and outer_res > span_dev
-        detail = {"gram_identity_deviation": ident_dev, "in_span_reconstruction_deviation": span_dev,
-                  "outside_span_reported_shift": outer_res, "num_basis": int(b.num_basis)}
+        detail = {
+            "gram_identity_deviation": ident_dev,
+            "in_span_reconstruction_deviation": span_dev,
+            "outside_span_reported_shift": outer_res,
+            "num_basis": int(b.num_basis),
+        }
     except Exception as exc:  # noqa: BLE001
-        detail = {"why": f"the declared basis object could not be driven from its documented API: {exc}"}
+        detail = {
+            "why": f"the declared basis object could not be driven from its documented API: {exc}"
+        }
     criteria.append(C.crit("orthonormal", "invariant", "pass" if ok else "fail", detail))
     criteria.append(C.crit("exactspan", "invariant", "pass" if ok else "fail", detail))
-    criteria.append(C.crit("budget", "tolerance", "pass" if ok else "fail", {
-        **detail, "declared_tolerance": {"rel": 1e-12, "abs": 0.0}}))
+    criteria.append(
+        C.crit(
+            "budget",
+            "tolerance",
+            "pass" if ok else "fail",
+            {**detail, "declared_tolerance": {"rel": 1e-12, "abs": 0.0}},
+        )
+    )
     return {
         "criteria": criteria,
         "answer": {"value": detail, "unit": "dimensionless coefficients"},
-        "independent_check": {"method": "Gram matrix recomputed from the returned quadrature and "
-                                        "basis values, and an in-span expansion recovered",
-                              "observed": detail, "verdict": "pass" if ok else "fail"},
+        "independent_check": {
+            "method": "Gram matrix recomputed from the returned quadrature and "
+            "basis values, and an in-span expansion recovered",
+            "observed": detail,
+            "verdict": "pass" if ok else "fail",
+        },
         "package_sufficient": ok,
         "sufficient_reason": "the basis object exposes quadrature/evaluate/expand/project, so both "
-                             "criteria are checkable without private code",
+        "criteria are checkable without private code",
         "gaps": [],
     }
 
@@ -258,7 +336,9 @@ def numerics_splines_and_inverse(ctx: H.Ctx, task: dict) -> dict:
         inv = np.asarray(_val(c4)["inverse"])
         sv = np.linalg.svd(m, compute_uv=False)
         rc = 0.0 if rcond is None else float(rcond)
-        expected_rank = int(np.sum(sv > rc * (sv[0] if sv.size else 1.0))) if rc else int(np.sum(sv > 0))
+        expected_rank = (
+            int(np.sum(sv > rc * (sv[0] if sv.size else 1.0))) if rc else int(np.sum(sv > 0))
+        )
         if m.shape[0] == m.shape[1]:
             diag = np.diag(m)
             rec = np.zeros_like(m)
@@ -266,25 +346,39 @@ def numerics_splines_and_inverse(ctx: H.Ctx, task: dict) -> dict:
             diag_dev = float(np.max(np.abs(inv - rec))) if inv.shape == m.shape else float("inf")
         else:
             diag_dev = None
-        rank_detail = {"singular_values": sv.tolist(), "rcond": rc,
-                       "expected_rank_above_cutoff": expected_rank,
-                       "reciprocal_diagonal_deviation": diag_dev}
+        rank_detail = {
+            "singular_values": sv.tolist(),
+            "rcond": rc,
+            "expected_rank_above_cutoff": expected_rank,
+            "reciprocal_diagonal_deviation": diag_dev,
+        }
         ok = ok and (diag_dev is None or diag_dev <= 1e-12)
     else:
         ok = False
     detail = {"node_deviations": node_devs, "truncated_inverse": rank_detail}
-    criteria.append(C.crit("nodes", "invariant",
-                           "pass" if all(not isinstance(v, str) and v <= 1e-12
-                                         for v in node_devs.values()) and node_devs else "fail",
-                           {"node_deviations": node_devs}))
-    criteria.append(C.crit("rank", "invariant", "pass" if ok and rank_detail else "fail", rank_detail))
+    criteria.append(
+        C.crit(
+            "nodes",
+            "invariant",
+            "pass"
+            if all(not isinstance(v, str) and v <= 1e-12 for v in node_devs.values()) and node_devs
+            else "fail",
+            {"node_deviations": node_devs},
+        )
+    )
+    criteria.append(
+        C.crit("rank", "invariant", "pass" if ok and rank_detail else "fail", rank_detail)
+    )
     return {
         "criteria": criteria,
         "answer": {"value": detail, "unit": "dimensionless node deviations"},
-        "independent_check": {"method": "each spline is evaluated at its own declared nodes and "
-                                        "compared with the declared data; the truncated inverse is "
-                                        "compared with the reciprocal diagonal",
-                              "observed": detail, "verdict": "pass" if ok else "fail"},
+        "independent_check": {
+            "method": "each spline is evaluated at its own declared nodes and "
+            "compared with the declared data; the truncated inverse is "
+            "compared with the reciprocal diagonal",
+            "observed": detail,
+            "verdict": "pass" if ok else "fail",
+        },
         "package_sufficient": ok,
         "sufficient_reason": "the spline objects are callable and the inverse is returned as a matrix",
         "gaps": [],
@@ -311,23 +405,34 @@ def sampling_regular_grid(ctx: H.Ctx, task: dict) -> dict:
         expected = pts[:, 0] + 2.0 * pts[:, 1]
         dev = float(np.max(np.abs(np.asarray(v["values"]).ravel() - expected)))
         ok = dev <= 1e-12
-        detail = {"linear_reproduction_deviation": dev,
-                  "field_linear": bool(np.allclose(Q, linear)),
-                  "query_points": H.plain(pts), "expected": H.plain(expected),
-                  "returned": H.plain(v["values"]), "declared_tolerance_rel": 1e-12}
+        detail = {
+            "linear_reproduction_deviation": dev,
+            "field_linear": bool(np.allclose(Q, linear)),
+            "query_points": H.plain(pts),
+            "expected": H.plain(expected),
+            "returned": H.plain(v["values"]),
+            "declared_tolerance_rel": 1e-12,
+        }
     criteria.append(C.crit("axisorder", "invariant", "pass" if ok else "fail", detail))
     return {
         "criteria": criteria,
         "answer": {"value": detail, "unit": "field units of the declared linear function"},
-        "independent_check": {"method": "the scattered entry is fed a field linear in (x,y) and the "
-                                        "interpolated values are compared with the exact line",
-                              "observed": detail, "verdict": "pass" if ok else "fail"},
+        "independent_check": {
+            "method": "the scattered entry is fed a field linear in (x,y) and the "
+            "interpolated values are compared with the exact line",
+            "observed": detail,
+            "verdict": "pass" if ok else "fail",
+        },
         "package_sufficient": ok,
         "sufficient_reason": "the declared query points are inside the convex support and the exact "
-                             "linear value is known before the call",
-        "gaps": [H.gap("confidence",
-                       "the outside-support exclusion count is not a returned field of the "
-                       "declared scattered entry, so that half of the criterion was not evaluated")],
+        "linear value is known before the call",
+        "gaps": [
+            H.gap(
+                "confidence",
+                "the outside-support exclusion count is not a returned field of the "
+                "declared scattered entry, so that half of the criterion was not evaluated",
+            )
+        ],
     }
 
 
@@ -341,7 +446,9 @@ def sampling_transform_and_derivative(ctx: H.Ctx, task: dict) -> dict:
     detail, ok = {}, False
     if "_value" in c1:
         out = _val(c1)
-        fwd_vals = list(out) if isinstance(out, (tuple, list)) else list(H.mapping(out, fwd).values())
+        fwd_vals = (
+            list(out) if isinstance(out, (tuple, list)) else list(H.mapping(out, fwd).values())
+        )
         inv_names = H.argnames(inv)
         if len(fwd_vals) == len(inv_names):
             back_named = dict(zip(inv_names, fwd_vals))
@@ -349,32 +456,46 @@ def sampling_transform_and_derivative(ctx: H.Ctx, task: dict) -> dict:
             criteria.append(C.fields(ctx, back, inv, "fields_inverse"))
             if "_value" in back:
                 out2 = _val(back)
-                back_vals = list(out2) if isinstance(out2, (tuple, list)) else list(H.mapping(out2, inv).values())
+                back_vals = (
+                    list(out2)
+                    if isinstance(out2, (tuple, list))
+                    else list(H.mapping(out2, inv).values())
+                )
                 fwd_in = [named[k] for k in named]
                 devs = [abs(float(a) - float(b)) for a, b in zip(back_vals, fwd_in)]
-                detail = {"forward": H.plain(fwd_vals), "roundtrip": H.plain(back_vals),
-                          "declared_inputs": H.plain(fwd_in),
-                          "max_abs_deviation": max(devs) if devs else None}
+                detail = {
+                    "forward": H.plain(fwd_vals),
+                    "roundtrip": H.plain(back_vals),
+                    "declared_inputs": H.plain(fwd_in),
+                    "max_abs_deviation": max(devs) if devs else None,
+                }
                 ok = bool(devs) and max(devs) <= 1e-12
     criteria.append(C.crit("roundtrip", "invariant", "pass" if ok else "fail", detail))
     der_detail, der_ok = {}, False
     dn = ctx.named(der)
     x = np.asarray(dn["x"], dtype=float)
     slope = 1.7
-    r = ctx.call(der, {"x": x, "y": slope * x + 4.0}, label="linear function on the same nonuniform grid")
+    r = ctx.call(
+        der, {"x": x, "y": slope * x + 4.0}, label="linear function on the same nonuniform grid"
+    )
     if "_value" in r:
         got = np.asarray(H.mapping(_val(r), der)["derivative"], dtype=float)
         der_ok = bool(np.all(np.abs(got - slope) <= 1e-12))
-        der_detail = {"expected_slope": slope, "returned": H.plain(got),
-                      "max_abs_deviation": float(np.max(np.abs(got - slope)))}
+        der_detail = {
+            "expected_slope": slope,
+            "returned": H.plain(got),
+            "max_abs_deviation": float(np.max(np.abs(got - slope))),
+        }
     criteria.append(C.crit("derivative", "invariant", "pass" if der_ok else "fail", der_detail))
     return {
         "criteria": criteria,
         "answer": {"value": {**detail, "derivative": der_detail}, "unit": "declared coordinates"},
-        "independent_check": {"method": "forward then inverse on the declared point, and a linear "
-                                        "function differentiated on the declared nonuniform grid",
-                              "observed": {**detail, "derivative": der_detail},
-                              "verdict": "pass" if (ok and der_ok) else "fail"},
+        "independent_check": {
+            "method": "forward then inverse on the declared point, and a linear "
+            "function differentiated on the declared nonuniform grid",
+            "observed": {**detail, "derivative": der_detail},
+            "verdict": "pass" if (ok and der_ok) else "fail",
+        },
         "package_sufficient": ok and der_ok,
         "sufficient_reason": "both entries are published and the inverse accepts the forward record",
         "gaps": [],
@@ -400,32 +521,51 @@ def fieldline_set_and_arclength(ctx: H.Ctx, task: dict) -> dict:
         exp = np.empty_like(f)
         for i in range(1, len(s) - 1):
             h1, h2 = s[i] - s[i - 1], s[i + 1] - s[i]
-            exp[i] = (-h2 / (h1 * (h1 + h2)) * f[i - 1]
-                      + (h2 - h1) / (h1 * h2) * f[i]
-                      + h1 / (h2 * (h1 + h2)) * f[i + 1])
+            exp[i] = (
+                -h2 / (h1 * (h1 + h2)) * f[i - 1]
+                + (h2 - h1) / (h1 * h2) * f[i]
+                + h1 / (h2 * (h1 + h2)) * f[i + 1]
+            )
         exp[0] = (f[1] - f[0]) / (s[1] - s[0])
         exp[-1] = (f[-1] - f[-2]) / (s[-1] - s[-2])
         interior = slice(1, -1)
         dev = float(np.max(np.abs(got[interior] - exp[interior])))
         ok = dev <= 1e-10
-        detail = {"interior_max_abs_deviation": dev, "stencil": "three-point unequal spacing",
-                  "returned": H.plain(got), "recomputed": H.plain(exp),
-                  "declared_budget_rel": 1e-10}
+        detail = {
+            "interior_max_abs_deviation": dev,
+            "stencil": "three-point unequal spacing",
+            "returned": H.plain(got),
+            "recomputed": H.plain(exp),
+            "declared_budget_rel": 1e-10,
+        }
     criteria.append(C.crit("declared_stencil", "invariant", "pass" if ok else "fail", detail))
-    criteria.append(C.crit("budget", "tolerance", "pass" if ok else "fail", {
-        **detail, "declared_tolerance": {"rel": 1e-10, "abs": 0.0}}))
+    criteria.append(
+        C.crit(
+            "budget",
+            "tolerance",
+            "pass" if ok else "fail",
+            {**detail, "declared_tolerance": {"rel": 1e-10, "abs": 0.0}},
+        )
+    )
     return {
         "criteria": criteria,
         "answer": {"value": detail, "unit": "value per arc length"},
-        "independent_check": {"method": "the derivative is recomputed with the declared three-point "
-                                        "unequal-spacing stencil on the returned coordinates",
-                              "observed": detail, "verdict": "pass" if ok else "fail"},
+        "independent_check": {
+            "method": "the derivative is recomputed with the declared three-point "
+            "unequal-spacing stencil on the returned coordinates",
+            "observed": detail,
+            "verdict": "pass" if ok else "fail",
+        },
         "package_sufficient": ok,
         "sufficient_reason": "the grid points and values are both arguments, so the stencil is "
-                             "reproducible from the package record",
-        "gaps": [H.gap("confidence",
-                       "the one-sided quadratic endpoint stencils are not described numerically in "
-                       "the delivered contract, so they were not reproduced")],
+        "reproducible from the package record",
+        "gaps": [
+            H.gap(
+                "confidence",
+                "the one-sided quadratic endpoint stencils are not described numerically in "
+                "the delivered contract, so they were not reproduced",
+            )
+        ],
     }
 
 
@@ -453,27 +593,47 @@ def equilibrium_isotropic_picard(ctx: H.Ctx, task: dict) -> dict:
         got = np.asarray(v["plasma_currents"], dtype=float).ravel()
         dev = float(np.max(np.abs(got - expected))) / max(float(np.max(np.abs(expected))), 1e-300)
         ok = dev <= 1e-12
-        detail = {"relax": relax, "target_currents": H.plain(target), "returned": H.plain(got),
-                  "relative_deviation": dev, "residual": H.plain(v.get("residual")),
-                  "declared_budget_rel": 1e-12}
+        detail = {
+            "relax": relax,
+            "target_currents": H.plain(target),
+            "returned": H.plain(got),
+            "relative_deviation": dev,
+            "residual": H.plain(v.get("residual")),
+            "declared_budget_rel": 1e-12,
+        }
     criteria.append(C.crit("declared_update", "invariant", "pass" if ok else "fail", detail))
-    criteria.append(C.crit("residualmeaning", "invariant",
-                           "not-run", {"why": "the declared norm of the difference between pre- and "
-                                              "post-step flux is not returned beside the step "
-                                              "record, so the reported residual could not be "
-                                              "recomputed from stored arrays"}))
+    criteria.append(
+        C.crit(
+            "residualmeaning",
+            "invariant",
+            "not-run",
+            {
+                "why": "the declared norm of the difference between pre- and "
+                "post-step flux is not returned beside the step "
+                "record, so the reported residual could not be "
+                "recomputed from stored arrays"
+            },
+        )
+    )
     return {
         "criteria": criteria,
         "answer": {"value": detail, "unit": "A/m^2 (plasma current density)"},
-        "independent_check": {"method": "currents recomputed as (1-relax)*I_target + relax*I_old with "
-                                        "I_target from the declared grid and dp/dpsi",
-                              "observed": detail, "verdict": "pass" if ok else "fail"},
+        "independent_check": {
+            "method": "currents recomputed as (1-relax)*I_target + relax*I_old with "
+            "I_target from the declared grid and dp/dpsi",
+            "observed": detail,
+            "verdict": "pass" if ok else "fail",
+        },
         "package_sufficient": False,
         "sufficient_reason": "the update law is verified, but the residual criterion cannot be "
-                             "recomputed from the delivered record",
-        "gaps": [H.gap("confidence",
-                       "the step record carries a residual but not the pre/post flux arrays the "
-                       "contract defines the residual against")],
+        "recomputed from the delivered record",
+        "gaps": [
+            H.gap(
+                "confidence",
+                "the step record carries a residual but not the pre/post flux arrays the "
+                "contract defines the residual against",
+            )
+        ],
     }
 
 
@@ -493,14 +653,18 @@ def equilibrium_anisotropic_picard(ctx: H.Ctx, task: dict) -> dict:
         hist = v.get("iteration_history")
         last = v.get("fixed_point_residual")
         tol = float(named.get("tol", 0.0) or 0.0)
-        ratio_keys = [k for k in ("anisotropy_ratio", "pressure_anisotropy", "anisotropy")
-                      if k in v]
+        ratio_keys = [
+            k for k in ("anisotropy_ratio", "pressure_anisotropy", "anisotropy") if k in v
+        ]
         echoed = {}
         for k in ratio_keys:
             if k in named:
                 try:
-                    echoed[k] = bool(np.allclose(np.asarray(v[k], dtype=float),
-                                                 np.asarray(named[k], dtype=float)))
+                    echoed[k] = bool(
+                        np.allclose(
+                            np.asarray(v[k], dtype=float), np.asarray(named[k], dtype=float)
+                        )
+                    )
                 except (TypeError, ValueError):
                     echoed[k] = False
         consistent = True
@@ -518,24 +682,34 @@ def equilibrium_anisotropic_picard(ctx: H.Ctx, task: dict) -> dict:
                 numeric = [float(e) for e in entries]
             if numeric is not None:
                 consistent = len(numeric) >= int(iters) and abs(
-                    numeric[int(iters) - 1] - float(last)) <= 1e-12 * max(1.0, abs(float(last)))
+                    numeric[int(iters) - 1] - float(last)
+                ) <= 1e-12 * max(1.0, abs(float(last)))
                 hist_detail = {**(hist_detail or {}), "history_entries": len(numeric)}
         converged = bool(v.get("converged")) if "converged" in v else None
         status_ok = (converged is None) or (converged and float(last) <= tol) or (not converged)
         ok = consistent and status_ok and all(echoed.values())
-        detail = {"iterations": iters, "residual_history_len": int(np.asarray(hist).size) if hist is not None else None,
-                  "last_residual": last, "tolerance": tol, "converged": converged,
-                  "echoed_ratios": echoed, "history_matches_last": consistent,
-                  "history": hist_detail}
+        detail = {
+            "iterations": iters,
+            "residual_history_len": int(np.asarray(hist).size) if hist is not None else None,
+            "last_residual": last,
+            "tolerance": tol,
+            "converged": converged,
+            "echoed_ratios": echoed,
+            "history_matches_last": consistent,
+            "history": hist_detail,
+        }
     criteria.append(C.crit("declared_ratio", "invariant", "pass" if ok else "fail", detail))
     criteria.append(C.crit("status", "invariant", "pass" if ok else "fail", detail))
     return {
         "criteria": criteria,
         "answer": {"value": detail, "unit": "mixed (Wb/rad flux, T field)"},
-        "independent_check": {"method": "iteration count and last residual compared with the "
-                                        "returned residual history, and declared ratios compared "
-                                        "with the echoed record",
-                              "observed": detail, "verdict": "pass" if ok else "fail"},
+        "independent_check": {
+            "method": "iteration count and last residual compared with the "
+            "returned residual history, and declared ratios compared "
+            "with the echoed record",
+            "observed": detail,
+            "verdict": "pass" if ok else "fail",
+        },
         "package_sufficient": ok,
         "sufficient_reason": "the record carries the history and the convergence flag",
         "gaps": [],
@@ -568,18 +742,31 @@ def mirror_frank_egedal(ctx: H.Ctx, task: dict) -> dict:
         cs = v.get("closure_state") if hasattr(v, "get") else None
         finite = all(C.finite(v.get(k)) for k in ("p_parallel", "p_perp") if k in v)
         state_ok = finite and cs is not None
-        state_detail = {"closure_state_present": cs is not None,
-                        "p_parallel_finite": C.finite(v.get("p_parallel")),
-                        "p_perp_finite": C.finite(v.get("p_perp"))}
-    criteria.append(C.crit("closure_state", "invariant", "pass" if state_ok else "fail", state_detail))
-    criteria.append(C.crit("budget", "tolerance", "pass" if ok else "fail", {
-        **detail, "declared_tolerance": {"rel": 1e-13, "abs": 0.0}}))
+        state_detail = {
+            "closure_state_present": cs is not None,
+            "p_parallel_finite": C.finite(v.get("p_parallel")),
+            "p_perp_finite": C.finite(v.get("p_perp")),
+        }
+    criteria.append(
+        C.crit("closure_state", "invariant", "pass" if state_ok else "fail", state_detail)
+    )
+    criteria.append(
+        C.crit(
+            "budget",
+            "tolerance",
+            "pass" if ok else "fail",
+            {**detail, "declared_tolerance": {"rel": 1e-13, "abs": 0.0}},
+        )
+    )
     return {
         "criteria": criteria,
         "answer": {"value": {**detail, "closure": state_detail}, "unit": "Pa"},
-        "independent_check": {"method": "total pressure recomputed as ion component plus the "
-                                        "electron pressure added to both directions",
-                              "observed": detail, "verdict": "pass" if ok else "fail"},
+        "independent_check": {
+            "method": "total pressure recomputed as ion component plus the "
+            "electron pressure added to both directions",
+            "observed": detail,
+            "verdict": "pass" if ok else "fail",
+        },
         "package_sufficient": ok and state_ok,
         "sufficient_reason": "both ion and electron components are in the same returned record",
         "gaps": [],
@@ -600,32 +787,48 @@ def mirror_ambipolar_and_loss_cone(ctx: H.Ctx, task: dict) -> dict:
         xi = np.asarray(v["xi"], dtype=float)
         eig = np.asarray(v["eigenvalues"], dtype=float)
         funcs = np.asarray(v["eigenfunctions"], dtype=float)
-        expected = 1.0 - 3.0 * xi ** 2
+        expected = 1.0 - 3.0 * xi**2
         dev = float(np.max(np.abs(funcs[:, 0] - expected)))
         bnd = np.asarray(v.get("boundary_residuals", []), dtype=float)
         ok = dev <= 2e-10 and (bnd.size == 0 or float(np.max(np.abs(bnd))) <= 1e-8)
-        detail = {"first_eigenfunction_deviation": dev,
-                  "first_eigenvalue": float(eig[0]) if eig.size else None,
-                  "boundary_residual_max": float(np.max(np.abs(bnd))) if bnd.size else None,
-                  "grid_points": int(xi.size)}
+        detail = {
+            "first_eigenfunction_deviation": dev,
+            "first_eigenvalue": float(eig[0]) if eig.size else None,
+            "boundary_residual_max": float(np.max(np.abs(bnd))) if bnd.size else None,
+            "grid_points": int(xi.size),
+        }
         frac = v.get("fraction")
         if frac is not None:
             detail["loss_cone_fraction"] = H.plain(frac)
             ok = ok and 0.0 <= float(np.asarray(frac).ravel()[0]) <= 1.0
     criteria.append(C.crit("declared_record", "invariant", "pass" if ok else "fail", detail))
-    finite_ok = all(C.finite(_val(c).get(k)) for c in (c3,) if "_value" in c
-                    for k in ("f0_s3_m6", "occupation") if k in _val(c))
-    criteria.append(C.crit("finite_check", "invariant", "pass" if finite_ok else "fail",
-                           {"mirrored_distribution_finite": finite_ok}))
+    finite_ok = all(
+        C.finite(_val(c).get(k))
+        for c in (c3,)
+        if "_value" in c
+        for k in ("f0_s3_m6", "occupation")
+        if k in _val(c)
+    )
+    criteria.append(
+        C.crit(
+            "finite_check",
+            "invariant",
+            "pass" if finite_ok else "fail",
+            {"mirrored_distribution_finite": finite_ok},
+        )
+    )
     return {
         "criteria": criteria,
         "answer": {"value": detail, "unit": "dimensionless"},
-        "independent_check": {"method": "the first loss-cone eigenfunction is compared with "
-                                        "1-3*xi^2 and the fraction is checked inside [0,1]",
-                              "observed": detail, "verdict": "pass" if ok else "fail"},
+        "independent_check": {
+            "method": "the first loss-cone eigenfunction is compared with "
+            "1-3*xi^2 and the fraction is checked inside [0,1]",
+            "observed": detail,
+            "verdict": "pass" if ok else "fail",
+        },
         "package_sufficient": ok and finite_ok,
         "sufficient_reason": "the spectrum returns the grid it was evaluated on, so the eigenfunction "
-                             "can be compared with its declared closed form",
+        "can be compared with its declared closed form",
         "gaps": [],
     }
 
@@ -655,21 +858,35 @@ def em_device_composition(ctx: H.Ctx, task: dict) -> dict:
         dev_sum = float(np.max(np.abs(psi_two - (psi_one + np.asarray(d3.b.psi())))))
         dev_order = float(np.max(np.abs(psi_two - psi_reordered)))
         ok = dev_sum <= 1e-12 and dev_order <= 1e-12
-        detail = {"registration_sum_deviation": dev_sum, "order_change_deviation": dev_order,
-                  "declared_budget_rel": 1e-12}
+        detail = {
+            "registration_sum_deviation": dev_sum,
+            "order_change_deviation": dev_order,
+            "declared_budget_rel": 1e-12,
+        }
     except Exception as exc:  # noqa: BLE001
-        detail = {"why": f"the device object could not be composed from the documented example API: "
-                         f"{type(exc).__name__}: {exc}"}
+        detail = {
+            "why": f"the device object could not be composed from the documented example API: "
+            f"{type(exc).__name__}: {exc}"
+        }
     criteria.append(C.crit("registration", "invariant", "pass" if ok else "fail", detail))
-    criteria.append(C.crit("budget", "tolerance", "pass" if ok else "fail", {
-        **detail, "declared_tolerance": {"rel": 1e-12, "abs": 0.0}}))
+    criteria.append(
+        C.crit(
+            "budget",
+            "tolerance",
+            "pass" if ok else "fail",
+            {**detail, "declared_tolerance": {"rel": 1e-12, "abs": 0.0}},
+        )
+    )
     return {
         "criteria": criteria,
         "answer": {"value": detail, "unit": "Wb/rad (flux per radian)"},
-        "independent_check": {"method": "one device with two registered sources is compared with the "
-                                        "sum of the two single-source devices, and the registration "
-                                        "order is swapped",
-                              "observed": detail, "verdict": "pass" if ok else "fail"},
+        "independent_check": {
+            "method": "one device with two registered sources is compared with the "
+            "sum of the two single-source devices, and the registration "
+            "order is swapped",
+            "observed": detail,
+            "verdict": "pass" if ok else "fail",
+        },
         "package_sufficient": ok,
         "sufficient_reason": "registration is a documented attribute assignment and psi() is public",
         "gaps": [],
@@ -677,9 +894,11 @@ def em_device_composition(ctx: H.Ctx, task: dict) -> dict:
 
 
 def configurations_retained_geometries(ctx: H.Ctx, task: dict) -> dict:
-    assets = {"scirel.configurations.trex-coil": ("npts", 88),
-              "scirel.configurations.brb": ("hh_n.npts", 88),
-              "scirel.configurations.wham": ("current_sets", [32, 32, 10, 10])}
+    assets = {
+        "scirel.configurations.trex-coil": ("npts", 88),
+        "scirel.configurations.brb": ("hh_n.npts", 88),
+        "scirel.configurations.wham": ("current_sets", [32, 32, 10, 10]),
+    }
     criteria, detail = [], {}
     ok = True
     for asset, (attr, expected) in assets.items():
@@ -699,17 +918,24 @@ def configurations_retained_geometries(ctx: H.Ctx, task: dict) -> dict:
                 ok_attr = got == expected
         except Exception as exc:  # noqa: BLE001
             ok_attr = f"{type(exc).__name__}: {exc}"
-        detail[asset] = {"attribute": attr, "returned": H.plain(got) if not isinstance(ok_attr, bool)
-                         else (H.plain(got) if not isinstance(got, str) else got),
-                         "matches_declared": ok_attr}
+        detail[asset] = {
+            "attribute": attr,
+            "returned": H.plain(got)
+            if not isinstance(ok_attr, bool)
+            else (H.plain(got) if not isinstance(got, str) else got),
+            "matches_declared": ok_attr,
+        }
         ok = ok and ok_attr is True
     criteria.append(C.crit("counts", "invariant", "pass" if ok else "fail", detail))
     return {
         "criteria": criteria,
         "answer": {"value": detail, "unit": "filament counts and default currents"},
-        "independent_check": {"method": "each constructor's declared filament count is read back from "
-                                        "the returned object and compared with the declared value",
-                              "observed": detail, "verdict": "pass" if ok else "fail"},
+        "independent_check": {
+            "method": "each constructor's declared filament count is read back from "
+            "the returned object and compared with the declared value",
+            "observed": detail,
+            "verdict": "pass" if ok else "fail",
+        },
         "package_sufficient": ok,
         "sufficient_reason": "the constructors return objects whose counts are readable",
         "gaps": [],
@@ -738,36 +964,58 @@ def closures_quasineutral(ctx: H.Ctx, task: dict) -> dict:
         base = dict(named)
         uni = dict(base)
         uni["ion_density_m3"] = n_i
-        r1 = ctx.call(boltz, {**named, "potential_v": phi0, "ion_density_m3": n_ref / z},
-                      label="uniform density at the reference potential")
-        r2 = ctx.call(boltz, {**named, "potential_v": phi0 + 0.1,
-                              "ion_density_m3": n_ref * np.exp(-e * 0.1 / T) / z},
-                      label="perturbed state with the density moved by the Boltzmann factor")
+        r1 = ctx.call(
+            boltz,
+            {**named, "potential_v": phi0, "ion_density_m3": n_ref / z},
+            label="uniform density at the reference potential",
+        )
+        r2 = ctx.call(
+            boltz,
+            {
+                **named,
+                "potential_v": phi0 + 0.1,
+                "ion_density_m3": n_ref * np.exp(-e * 0.1 / T) / z,
+            },
+            label="perturbed state with the density moved by the Boltzmann factor",
+        )
         flat_ok = None
         if "_value" in r1:
             flat_ok = abs(float(np.asarray(_val(r1)["logarithmic_charge_residual"]))) <= 1e-12
         ok = bool(flat_ok)
-        detail = {"uniform_density_residual_at_reference": H.plain(
-                      _val(r1)["logarithmic_charge_residual"]) if "_value" in r1 else None,
-                  "uniform_residual_zero": flat_ok,
-                  "perturbed_residual": H.plain(_val(r2)["logarithmic_charge_residual"])
-                  if "_value" in r2 else None,
-                  "declared_temperature_k": T / 1.602176634e-19 * 1.602176634e-19}
+        detail = {
+            "uniform_density_residual_at_reference": H.plain(
+                _val(r1)["logarithmic_charge_residual"]
+            )
+            if "_value" in r1
+            else None,
+            "uniform_residual_zero": flat_ok,
+            "perturbed_residual": H.plain(_val(r2)["logarithmic_charge_residual"])
+            if "_value" in r2
+            else None,
+            "declared_temperature_k": T / 1.602176634e-19 * 1.602176634e-19,
+        }
     criteria.append(C.crit("flatpotential", "invariant", "pass" if ok else "fail", detail))
     return {
         "criteria": criteria,
         "answer": {"value": detail, "unit": "m^-3 residual"},
-        "independent_check": {"method": "a uniform density placed at the reference potential must give "
-                                        "a vanishing charge residual; the perturbed state is compared "
-                                        "against the same residual",
-                              "observed": detail, "verdict": "pass" if ok else "fail"},
+        "independent_check": {
+            "method": "a uniform density placed at the reference potential must give "
+            "a vanishing charge residual; the perturbed state is compared "
+            "against the same residual",
+            "observed": detail,
+            "verdict": "pass" if ok else "fail",
+        },
         "package_sufficient": ok,
         "sufficient_reason": "the Boltzmann state is a pointwise entry, so the uniform-density limit is "
-                             "reproducible from declared inputs",
-        "gaps": [H.gap("confidence",
-                       "the declared sign-inversion half of the criterion needs a root solve of the "
-                       "quasineutral entry with a consumer-supplied residual callback, which the "
-                       "example does not declare; only the uniform-density limit was evaluated")],
+        "reproducible from declared inputs",
+        "gaps": [
+            H.gap(
+                "confidence",
+                "the declared sign-inversion half of the criterion needs a root solve of the "
+                "quasineutral entry with a consumer-supplied residual callback, which the "
+                "example does not declare; only the uniform-density limit was evaluated",
+            )
+        ],
     }
 
 
@@ -790,22 +1038,28 @@ def diagnostics_picard_residual(ctx: H.Ctx, task: dict) -> dict:
         base = float(np.asarray(_val(r1)["residual"]).ravel()[0]) if "_value" in r1 else None
         doubled = float(np.asarray(_val(r2)["residual"]).ravel()[0]) if "_value" in r2 else None
         ok = base == 0.0
-        detail = {"self_residual": dev, "self_residual_is_exactly_zero": ok,
-                  "doubled_amplitude_residual": doubled,
-                  "ratio": (doubled / base) if base not in (None, 0.0) else None,
-                  "compared_fields": [prev_key, next_key]}
+        detail = {
+            "self_residual": dev,
+            "self_residual_is_exactly_zero": ok,
+            "doubled_amplitude_residual": doubled,
+            "ratio": (doubled / base) if base not in (None, 0.0) else None,
+            "compared_fields": [prev_key, next_key],
+        }
     criteria.append(C.crit("zero", "invariant", "pass" if ok else "fail", detail))
     c3 = ctx.call(obs, ctx.named(obs), label="declared observation residual")
     criteria.append(C.fields(ctx, c3, obs, "fields_observation"))
     return {
         "criteria": criteria,
         "answer": {"value": detail, "unit": "flux units and dimensionless chi2"},
-        "independent_check": {"method": "the residual of a flux against itself must vanish exactly, and "
-                                        "doubling the difference must double the residual",
-                              "observed": detail, "verdict": "pass" if ok else "fail"},
+        "independent_check": {
+            "method": "the residual of a flux against itself must vanish exactly, and "
+            "doubling the difference must double the residual",
+            "observed": detail,
+            "verdict": "pass" if ok else "fail",
+        },
         "package_sufficient": ok,
         "sufficient_reason": "the residual entry is pure and takes both arrays, so both halves are "
-                             "reproducible",
+        "reproducible",
         "gaps": [],
     }
 
@@ -834,8 +1088,10 @@ def physics_coulomb_logarithms(ctx: H.Ctx, task: dict) -> dict:
             got = float(np.asarray(H.mapping(_val(call), asset)["result"]))
             devs[asset] = abs(got - expected) / max(abs(expected), 1e-300)
     ok = bool(devs) and max(devs.values()) <= 1e-12
-    detail = {"formula_relative_deviation": devs,
-              "warnings": {c["asset"]: c.get("warnings") for c in (c1, c2)}}
+    detail = {
+        "formula_relative_deviation": devs,
+        "warnings": {c["asset"]: c.get("warnings") for c in (c1, c2)},
+    }
     criteria.append(C.crit("declared_formula", "invariant", "pass" if ok else "fail", detail))
     warn_ok = None
     try:
@@ -852,34 +1108,42 @@ def physics_coulomb_logarithms(ctx: H.Ctx, task: dict) -> dict:
     criteria.append(C.crit("warning", "invariant", "pass" if warn_ok else "fail", detail))
     return {
         "criteria": criteria,
-        "answer": {"value": {**detail}, "unit": "dimensionless Coulomb logarithm; J for thermal energy"},
-        "independent_check": {"method": "both logarithms recomputed from the printed formula and the "
-                                        "low-temperature call checked for its declared warning",
-                              "observed": {**detail}, "verdict": "pass" if (ok and warn_ok) else "fail"},
+        "answer": {
+            "value": {**detail},
+            "unit": "dimensionless Coulomb logarithm; J for thermal energy",
+        },
+        "independent_check": {
+            "method": "both logarithms recomputed from the printed formula and the "
+            "low-temperature call checked for its declared warning",
+            "observed": {**detail},
+            "verdict": "pass" if (ok and warn_ok) else "fail",
+        },
         "package_sufficient": bool(ok and warn_ok),
         "sufficient_reason": "the formula is printed in the contract and the warning is observable "
-                             "through the standard warnings mechanism",
+        "through the standard warnings mechanism",
         "gaps": [],
     }
 
 
-CHECKS.update({
-    "field-filament-superposition": field_filament_superposition,
-    "field-flux-to-poloidal": field_flux_to_poloidal,
-    "geometry-equilibrium-grid": geometry_equilibrium_grid,
-    "geometry-mesh-and-volume": geometry_mesh_and_volume,
-    "numerics-basis-projection": numerics_basis_projection,
-    "numerics-splines-and-inverse": numerics_splines_and_inverse,
-    "sampling-regular-grid": sampling_regular_grid,
-    "sampling-transform-and-derivative": sampling_transform_and_derivative,
-    "fieldline-set-and-arclength": fieldline_set_and_arclength,
-    "equilibrium-isotropic-picard": equilibrium_isotropic_picard,
-    "equilibrium-anisotropic-picard": equilibrium_anisotropic_picard,
-    "mirror-frank-egedal": mirror_frank_egedal,
-    "mirror-ambipolar-and-loss-cone": mirror_ambipolar_and_loss_cone,
-    "electromagnetism-device-composition": em_device_composition,
-    "configurations-retained-geometries": configurations_retained_geometries,
-    "closures-quasineutral": closures_quasineutral,
-    "diagnostics-picard-residual": diagnostics_picard_residual,
-    "physics-coulomb-logarithms": physics_coulomb_logarithms,
-})
+CHECKS.update(
+    {
+        "field-filament-superposition": field_filament_superposition,
+        "field-flux-to-poloidal": field_flux_to_poloidal,
+        "geometry-equilibrium-grid": geometry_equilibrium_grid,
+        "geometry-mesh-and-volume": geometry_mesh_and_volume,
+        "numerics-basis-projection": numerics_basis_projection,
+        "numerics-splines-and-inverse": numerics_splines_and_inverse,
+        "sampling-regular-grid": sampling_regular_grid,
+        "sampling-transform-and-derivative": sampling_transform_and_derivative,
+        "fieldline-set-and-arclength": fieldline_set_and_arclength,
+        "equilibrium-isotropic-picard": equilibrium_isotropic_picard,
+        "equilibrium-anisotropic-picard": equilibrium_anisotropic_picard,
+        "mirror-frank-egedal": mirror_frank_egedal,
+        "mirror-ambipolar-and-loss-cone": mirror_ambipolar_and_loss_cone,
+        "electromagnetism-device-composition": em_device_composition,
+        "configurations-retained-geometries": configurations_retained_geometries,
+        "closures-quasineutral": closures_quasineutral,
+        "diagnostics-picard-residual": diagnostics_picard_residual,
+        "physics-coulomb-logarithms": physics_coulomb_logarithms,
+    }
+)

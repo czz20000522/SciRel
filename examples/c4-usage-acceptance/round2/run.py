@@ -29,11 +29,15 @@ def scrub(text: str) -> str:
     """Keep machine-local paths out of the tracked record."""
     if not isinstance(text, str):
         return text
-    for prefix, token in ((str(REPO_ROOT) + "/", "<repo>/"),
-                          (str(REPO_ROOT), "<repo>"),
-                          (str(HOME), "<home>")):
+    for prefix, token in (
+        (str(REPO_ROOT) + "/", "<repo>/"),
+        (str(REPO_ROOT), "<repo>"),
+        (str(HOME), "<home>"),
+    ):
         text = text.replace(prefix, token)
     return text
+
+
 sys.path.insert(0, str(HERE))
 
 import harness as H  # noqa: E402
@@ -55,6 +59,7 @@ def task_by_id(tid: str) -> dict:
 
 def environment() -> dict:
     import numpy, scipy, mpmath  # noqa: E401
+
     rt = H.runtime_json()
     return {
         "python": sys.version.split()[0],
@@ -103,11 +108,13 @@ def run_task(tid: str) -> dict:
 
     fn = CHECKS.get(tid)
     if fn is None:
-        record["gaps"].append(H.gap(
-            "process",
-            "no consumer check implemented for this task id; low-level criteria (contract "
-            "fields, parameters) were still evaluated from the delivered contracts",
-        ))
+        record["gaps"].append(
+            H.gap(
+                "process",
+                "no consumer check implemented for this task id; low-level criteria (contract "
+                "fields, parameters) were still evaluated from the delivered contracts",
+            )
+        )
         body = _generic_body(ctx, task)
     else:
         body = fn(ctx, task)
@@ -121,16 +128,21 @@ def run_task(tid: str) -> dict:
     record["sufficient_reason"] = body.get("sufficient_reason", "")
     record["criteria"] = body.get("criteria", [])
     record["bindings"] = {
-        asset: {"symbol": b["symbol"], "args": H.plain(b["named"]),
-                "example_error": b["example_error"]}
+        asset: {
+            "symbol": b["symbol"],
+            "args": H.plain(b["named"]),
+            "example_error": b["example_error"],
+        }
         for asset, b in ctx.bindings.items()
     }
     if len(ctx.calls) < task["min_calls"]:
-        record["gaps"].append(H.gap(
-            "process",
-            f"task declares min_calls={task['min_calls']} but only {len(ctx.calls)} "
-            "public call(s) were made",
-        ))
+        record["gaps"].append(
+            H.gap(
+                "process",
+                f"task declares min_calls={task['min_calls']} but only {len(ctx.calls)} "
+                "public call(s) were made",
+            )
+        )
     return record
 
 
@@ -143,12 +155,23 @@ def _generic_body(ctx: H.Ctx, task: dict) -> dict:
     answers = {}
     for asset in task["assets"]:
         call = ctx.call(asset, ctx.named(asset), label=f"contract example of {asset}")
-        criteria.append({"id": f"fields@{asset}", "kind": "contract_fields",
-                         "status": H.check_fields(ctx, call, asset)["status"],
-                         "detail": H.check_fields(ctx, call, asset)["detail"]})
+        criteria.append(
+            {
+                "id": f"fields@{asset}",
+                "kind": "contract_fields",
+                "status": H.check_fields(ctx, call, asset)["status"],
+                "detail": H.check_fields(ctx, call, asset)["detail"],
+            }
+        )
         param = H.check_parameters(ctx.named(asset), asset, [])
-        criteria.append({"id": f"params@{asset}", "kind": "parameters",
-                         "status": param["status"], "detail": param["detail"]})
+        criteria.append(
+            {
+                "id": f"params@{asset}",
+                "kind": "parameters",
+                "status": param["status"],
+                "detail": param["detail"],
+            }
+        )
         if "_value" in call:
             answers[asset] = H.plain(call["_value"])
     return {
@@ -169,13 +192,17 @@ def readback(tid: str) -> dict:
     path = OUT_DIR / f"{tid}.json"
     data = json.loads(path.read_text())
     problems = []
-    no_call_by_design = any(c["id"] == "nocall" and c["status"] == "pass"
-                            for c in data.get("criteria", []))
+    no_call_by_design = any(
+        c["id"] == "nocall" and c["status"] == "pass" for c in data.get("criteria", [])
+    )
     if not data.get("calls") and not no_call_by_design:
         problems.append("no calls stored")
     for c in data["calls"]:
-        if c["status"] == "returned" and not c.get("returned_fields") \
-                and c.get("returned_type") in ("Result", "dict", "OrderedDict"):
+        if (
+            c["status"] == "returned"
+            and not c.get("returned_fields")
+            and c.get("returned_type") in ("Result", "dict", "OrderedDict")
+        ):
             problems.append(f"call {c['seq']} returned a mapping but stored no field names")
         if c["status"] == "returned" and not c.get("returned_type"):
             problems.append(f"call {c['seq']} stored no returned type")
@@ -185,9 +212,14 @@ def readback(tid: str) -> dict:
         problems.append("no answer stored")
     if not data.get("independent_check"):
         problems.append("no independent check stored")
-    return {"status": "pass" if not problems else "fail",
-            "detail": {"reopened": str(path.name), "problems": problems,
-                       "stored_call_count": len(data.get("calls", []))}}
+    return {
+        "status": "pass" if not problems else "fail",
+        "detail": {
+            "reopened": str(path.name),
+            "problems": problems,
+            "stored_call_count": len(data.get("calls", [])),
+        },
+    }
 
 
 def write_task(record: dict) -> None:
@@ -207,8 +239,7 @@ def run_one(tid: str) -> int:
             "crashed": True,
             "package_sufficient": False,
             "sufficient_reason": "consumer check raised",
-            "gaps": [H.gap("blocking",
-                          f"the consumer harness raised {type(exc).__name__}: {exc}")],
+            "gaps": [H.gap("blocking", f"the consumer harness raised {type(exc).__name__}: {exc}")],
             "traceback": scrub(traceback.format_exc()),
             "calls": [],
             "criteria": [],
@@ -218,10 +249,9 @@ def run_one(tid: str) -> int:
     write_task(record)
     rb = readback(tid)
     record = json.loads((OUT_DIR / f"{tid}.json").read_text())
-    record["criteria"] = [c for c in record.get("criteria", [])
-                          if c["id"] != "readback"] + [{
-        "id": "readback", "kind": "readback",
-        "status": rb["status"], "detail": rb["detail"]}]
+    record["criteria"] = [c for c in record.get("criteria", []) if c["id"] != "readback"] + [
+        {"id": "readback", "kind": "readback", "status": rb["status"], "detail": rb["detail"]}
+    ]
     write_task(record)
     return 0 if rb["status"] == "pass" else 1
 
@@ -234,14 +264,17 @@ def run_all() -> int:
     for i, tid in enumerate(ids, 1):
         proc = subprocess.run(
             [sys.executable, "-I", str(HERE / "run.py"), "--task", tid],
-            cwd=str(HERE.parent.parent.parent), env=env,
-            capture_output=True, text=True,
+            cwd=str(HERE.parent.parent.parent),
+            env=env,
+            capture_output=True,
+            text=True,
         )
         status = "ok" if proc.returncode == 0 else "CHECK"
         print(f"[{i:02d}/{len(ids)}] {status} {tid}", flush=True)
         if proc.returncode != 0:
-            failures.append({"task": tid, "returncode": proc.returncode,
-                             "stderr": scrub(proc.stderr[-3000:])})
+            failures.append(
+                {"task": tid, "returncode": proc.returncode, "stderr": scrub(proc.stderr[-3000:])}
+            )
     build_index(failures)
     return 0 if not failures else 1
 
@@ -252,24 +285,32 @@ def build_index(failures: list) -> None:
     for tid in tasks:
         path = OUT_DIR / f"{tid}.json"
         if not path.is_file():
-            rows.append({"task_id": tid, "kind": tasks[tid]["kind"],
-                         "domain": tasks[tid]["domain"], "status": "missing"})
+            rows.append(
+                {
+                    "task_id": tid,
+                    "kind": tasks[tid]["kind"],
+                    "domain": tasks[tid]["domain"],
+                    "status": "missing",
+                }
+            )
             continue
         d = json.loads(path.read_text())
         crit = d.get("criteria", [])
-        rows.append({
-            "task_id": tid,
-            "kind": d.get("kind"),
-            "domain": d.get("domain"),
-            "subdomain": d.get("subdomain"),
-            "package_sufficient": d.get("package_sufficient"),
-            "call_count": len(d.get("calls", [])),
-            "criteria_total": len(crit),
-            "criteria_pass": sum(1 for c in crit if c.get("status") == "pass"),
-            "criteria_fail": sum(1 for c in crit if c.get("status") == "fail"),
-            "criteria_not_run": sum(1 for c in crit if c.get("status") == "not-run"),
-            "gaps": [g["text"] for g in d.get("gaps", [])],
-        })
+        rows.append(
+            {
+                "task_id": tid,
+                "kind": d.get("kind"),
+                "domain": d.get("domain"),
+                "subdomain": d.get("subdomain"),
+                "package_sufficient": d.get("package_sufficient"),
+                "call_count": len(d.get("calls", [])),
+                "criteria_total": len(crit),
+                "criteria_pass": sum(1 for c in crit if c.get("status") == "pass"),
+                "criteria_fail": sum(1 for c in crit if c.get("status") == "fail"),
+                "criteria_not_run": sum(1 for c in crit if c.get("status") == "not-run"),
+                "gaps": [g["text"] for g in d.get("gaps", [])],
+            }
+        )
     index = {
         "schema": "scirel.c4-usage-round2.index",
         "tasklist_digest": tasklist()["tasks_digest"],

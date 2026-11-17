@@ -28,14 +28,19 @@ def params(ctx: H.Ctx, asset: str, expected: list[str], cid: str = "params") -> 
     not_a_contract_input = [n for n in expected if n not in declared]
     defaulted = [n for n in expected if n in declared and n not in used]
     status = "pass" if not undeclared and not not_a_contract_input else "fail"
-    return crit(cid, "parameters", status, {
-        "contract_inputs": declared,
-        "args_used": used,
-        "expected_names": expected,
-        "expected_names_absent_from_contract": not_a_contract_input,
-        "expected_names_left_at_default": defaulted,
-        "undeclared_args": undeclared,
-    })
+    return crit(
+        cid,
+        "parameters",
+        status,
+        {
+            "contract_inputs": declared,
+            "args_used": used,
+            "expected_names": expected,
+            "expected_names_absent_from_contract": not_a_contract_input,
+            "expected_names_left_at_default": defaulted,
+            "undeclared_args": undeclared,
+        },
+    )
 
 
 def not_run(cid: str, kind: str, why: str, detail=None) -> dict:
@@ -44,6 +49,7 @@ def not_run(cid: str, kind: str, why: str, detail=None) -> dict:
 
 def finite(value) -> bool:
     import numpy as np
+
     arr = np.asarray(value)
     try:
         return bool(np.all(np.isfinite(arr)))

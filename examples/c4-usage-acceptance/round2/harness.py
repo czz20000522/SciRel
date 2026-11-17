@@ -22,8 +22,6 @@ import inspect
 import json
 import math
 import os
-import re
-import traceback
 import warnings
 from pathlib import Path
 
@@ -102,14 +100,23 @@ def plain(value, depth: int = 0):
         return plain(value.item(), depth + 1)
     if isinstance(value, np.ndarray):
         if np.iscomplexobj(value):
-            return {"dtype": str(value.dtype), "shape": list(value.shape),
-                    "real": plain(value.real.tolist(), depth + 1),
-                    "imag": plain(value.imag.tolist(), depth + 1)}
+            return {
+                "dtype": str(value.dtype),
+                "shape": list(value.shape),
+                "real": plain(value.real.tolist(), depth + 1),
+                "imag": plain(value.imag.tolist(), depth + 1),
+            }
         if value.dtype.kind == "U" or value.dtype.kind == "O":
-            return {"dtype": str(value.dtype), "shape": list(value.shape),
-                    "values": [plain(v, depth + 1) for v in value.tolist()]}
-        return {"dtype": str(value.dtype), "shape": list(value.shape),
-                "values": plain(value.tolist(), depth + 1)}
+            return {
+                "dtype": str(value.dtype),
+                "shape": list(value.shape),
+                "values": [plain(v, depth + 1) for v in value.tolist()],
+            }
+        return {
+            "dtype": str(value.dtype),
+            "shape": list(value.shape),
+            "values": plain(value.tolist(), depth + 1),
+        }
     if isinstance(value, dict):
         return {str(k): plain(v, depth + 1) for k, v in value.items()}
     if hasattr(value, "keys") and hasattr(value, "__getitem__"):
@@ -144,6 +151,7 @@ def as_float(value) -> float:
 
 def rel_dev(a, b) -> float:
     """Componentwise max relative deviation between two numeric payloads."""
+
     def arr(x):
         if isinstance(x, dict) and {"real", "imag"} <= set(x):
             return np.asarray(x["real"], dtype=complex_like(x)) + 1j * np.asarray(x["imag"])
@@ -152,6 +160,7 @@ def rel_dev(a, b) -> float:
         if isinstance(x, np.ndarray):
             return x
         return np.asarray(x)
+
     aa, bb = arr(a), arr(b)
     if aa.shape != bb.shape:
         return float("inf")
@@ -213,8 +222,9 @@ class Ctx:
         )
 
     # -- public calls -------------------------------------------------------
-    def call(self, asset: str, named: dict | None = None, *, args=(), kwargs=None,
-             label: str = "") -> dict:
+    def call(
+        self, asset: str, named: dict | None = None, *, args=(), kwargs=None, label: str = ""
+    ) -> dict:
         kwargs = dict(kwargs or {})
         if named is not None:
             args, kwargs = _args_for(asset, named)
@@ -333,8 +343,14 @@ def discover(asset: str) -> dict:
     imports = [n for n in tree.body if isinstance(n, (ast.Import, ast.ImportFrom))]
     ns: dict = {"__name__": "__c4_contract_example__"}
     for node in imports:
-        exec(compile(ast.Module(body=[node], type_ignores=[]),
-                     f"<contract-example-import:{asset}>", "exec"), ns)
+        exec(
+            compile(
+                ast.Module(body=[node], type_ignores=[]),
+                f"<contract-example-import:{asset}>",
+                "exec",
+            ),
+            ns,
+        )
     names = {name for name, value in ns.items() if value is real}
     attrs = {api["symbol"]}
     canon = api.get("canonical_symbol")
@@ -363,9 +379,9 @@ def discover(asset: str) -> dict:
     for args, kwargs in captured:
         bound = signature(asset).bind(*args, **kwargs)
         bound.apply_defaults()
-        variants.append({"named": dict(bound.arguments),
-                         "positional_count": len(args),
-                         "kwargs": kwargs})
+        variants.append(
+            {"named": dict(bound.arguments), "positional_count": len(args), "kwargs": kwargs}
+        )
     result = {
         "asset": asset,
         "symbol": api["symbol"],
@@ -432,19 +448,29 @@ def argnames(asset: str) -> list[str]:
 
 # ---------------------------------------------------------------- criteria
 
+
 def check_fields(ctx: Ctx, call: dict, asset: str) -> dict:
     declared = sorted(output_names(asset))
     got = call.get("returned_fields")
     if got is None:
         if call.get("status") == "raised":
-            return {"status": "fail",
-                    "detail": {"declared": declared, "returned": "raised",
-                               "exception": call.get("exception")}}
-        return {"status": "fail",
-                "detail": {"declared": declared,
-                           "returned": f"a {call.get('returned_type')} value, not a mapping",
-                           "note": "the contract declares named outputs; this return carries no "
-                                   "field names, so the declared output set cannot be observed"}}
+            return {
+                "status": "fail",
+                "detail": {
+                    "declared": declared,
+                    "returned": "raised",
+                    "exception": call.get("exception"),
+                },
+            }
+        return {
+            "status": "fail",
+            "detail": {
+                "declared": declared,
+                "returned": f"a {call.get('returned_type')} value, not a mapping",
+                "note": "the contract declares named outputs; this return carries no "
+                "field names, so the declared output set cannot be observed",
+            },
+        }
     return {
         "status": "pass" if got == declared else "fail",
         "detail": {"declared": declared, "returned": got},
@@ -457,9 +483,15 @@ def check_parameters(named: dict, asset: str, expected: list[str]) -> dict:
     missing = [n for n in expected if n not in used]
     undeclared = [n for n in used if n not in declared]
     status = "pass" if not missing and not undeclared else "fail"
-    return {"status": status,
-            "detail": {"contract_inputs": declared, "args_used": used,
-                       "criteria_names_present": missing, "undeclared_args": undeclared}}
+    return {
+        "status": status,
+        "detail": {
+            "contract_inputs": declared,
+            "args_used": used,
+            "criteria_names_present": missing,
+            "undeclared_args": undeclared,
+        },
+    }
 
 
 def check_exception(ctx: Ctx, call: dict, asset: str, failure_key: str, expected: str) -> dict:
@@ -492,14 +524,20 @@ def check_exception(ctx: Ctx, call: dict, asset: str, failure_key: str, expected
     }
 
 
-def check_tolerance(observed: float, rel: float, abs_: float = 0.0,
-                    quantity: str = "", unit: str = "") -> dict:
+def check_tolerance(
+    observed: float, rel: float, abs_: float = 0.0, quantity: str = "", unit: str = ""
+) -> dict:
     limit = rel if observed == observed else math.inf
     ok = observed <= rel or observed <= abs_
-    return {"status": "pass" if ok else "fail",
-            "detail": {"quantity": quantity, "unit": unit,
-                       "observed_relative_deviation": observed,
-                       "declared_tolerance": {"rel": rel, "abs": abs_}}}
+    return {
+        "status": "pass" if ok else "fail",
+        "detail": {
+            "quantity": quantity,
+            "unit": unit,
+            "observed_relative_deviation": observed,
+            "declared_tolerance": {"rel": rel, "abs": abs_},
+        },
+    }
 
 
 def gap(level: str, text: str) -> dict:
