@@ -160,13 +160,22 @@
   {
    "id": "fields",
    "kind": "contract_fields",
-   "status": "fail",
+   "status": "pass",
    "detail": {
-    "declared": [
+    "channel": "single declared output returned positionally",
+    "declared": {
+     "name": "profile",
+     "dtype": "float64 array",
+     "shape": "same as rho_norm"
+    },
+    "returned_type": "ndarray",
+    "checks": {
+     "array_dtype": true
+    },
+    "verdict": "compatible",
+    "all_declared_outputs": [
      "profile"
-    ],
-    "returned": "a ndarray value, not a mapping",
-    "note": "the contract declares named outputs; this return carries no field names, so the declared output set cannot be observed"
+    ]
    }
   },
   {

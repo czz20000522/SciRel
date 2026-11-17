@@ -253,7 +253,6 @@ def geometry_mesh_and_volume(ctx: H.Ctx, task: dict) -> dict:
 def numerics_basis_projection(ctx: H.Ctx, task: dict) -> dict:
     modal = "scirel.numerics.orthonormal-modal-basis"
     proj = "scirel.numerics.modal-projection"
-    None
     c0 = ctx.call(modal, ctx.named(modal), label="declared modal basis")
     c1 = ctx.call(proj, ctx.named(proj), label="declared modal projection")
     criteria = [C.fields(ctx, c1, proj, "fields"), C.fields(ctx, c0, modal, "fields_basis")]

@@ -76,13 +76,25 @@
   {
    "id": "fields",
    "kind": "contract_fields",
-   "status": "fail",
+   "status": "pass",
    "detail": {
-    "declared": [
+    "channel": "single declared output returned positionally",
+    "declared": {
+     "name": "source",
+     "dtype": "Device",
+     "shape": "one object"
+    },
+    "returned_type": "Device",
+    "checks": {
+     "named_type": {
+      "declared_token": "device",
+      "matches": true
+     }
+    },
+    "verdict": "compatible",
+    "all_declared_outputs": [
      "source"
-    ],
-    "returned": "a Device value, not a mapping",
-    "note": "the contract declares named outputs; this return carries no field names, so the declared output set cannot be observed"
+    ]
    }
   },
   {

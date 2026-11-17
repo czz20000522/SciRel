@@ -11,7 +11,7 @@
    "text": "the consumer harness raised ValueError: operands could not be broadcast together with shapes (2,) (4,) "
   }
  ],
- "traceback": "Traceback (most recent call last):\n  File \"<repo>/examples/c4-usage-acceptance/round2/run.py\", line 201, in run_one\n    record = run_task(tid)\n  File \"<repo>/examples/c4-usage-acceptance/round2/run.py\", line 113, in run_task\n    body = fn(ctx, task)\n  File \"<repo>/examples/c4-usage-acceptance/round2/checks/batch2.py\", line 66, in neutrals_velocity_mesh\n    expect = float(np.sum(np.pi * (vr ** 2 - vl ** 2) * dvx))\n                          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^~~~~\nValueError: operands could not be broadcast together with shapes (2,) (4,) \n",
+ "traceback": "Traceback (most recent call last):\n  File \"<repo>/examples/c4-usage-acceptance/round2/run.py\", line 201, in run_one\n    record = run_task(tid)\n  File \"<repo>/examples/c4-usage-acceptance/round2/run.py\", line 113, in run_task\n    body = fn(ctx, task)\n  File \"<repo>/examples/c4-usage-acceptance/round2/checks/batch2.py\", line 65, in neutrals_velocity_mesh\n    expect = float(np.sum(np.pi * (vr ** 2 - vl ** 2) * dvx))\n                          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^~~~~\nValueError: operands could not be broadcast together with shapes (2,) (4,) \n",
  "calls": [],
  "criteria": [
   {

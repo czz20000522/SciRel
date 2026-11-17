@@ -11,7 +11,7 @@
    "text": "the consumer harness raised AttributeError: 'str' object has no attribute 'message'"
   }
  ],
- "traceback": "Traceback (most recent call last):\n  File \"<repo>/examples/c4-usage-acceptance/round2/run.py\", line 201, in run_one\n    record = run_task(tid)\n  File \"<repo>/examples/c4-usage-acceptance/round2/run.py\", line 113, in run_task\n    body = fn(ctx, task)\n  File \"<repo>/examples/c4-usage-acceptance/round2/checks/batch2.py\", line 284, in collisions_rate_coefficients\n    above, w_above = _rate(EDGE * 4.0)\n                     ~~~~~^^^^^^^^^^^^\n  File \"<repo>/examples/c4-usage-acceptance/round2/checks/batch2.py\", line 282, in _rate\n    if \"_value\" in v else None, [str(x.message)[:60] for x in v.get(\"warnings\", [])])\n                                     ^^^^^^^^^\nAttributeError: 'str' object has no attribute 'message'\n",
+ "traceback": "Traceback (most recent call last):\n  File \"<repo>/examples/c4-usage-acceptance/round2/run.py\", line 201, in run_one\n    record = run_task(tid)\n  File \"<repo>/examples/c4-usage-acceptance/round2/run.py\", line 113, in run_task\n    body = fn(ctx, task)\n  File \"<repo>/examples/c4-usage-acceptance/round2/checks/batch2.py\", line 283, in collisions_rate_coefficients\n    above, w_above = _rate(EDGE * 4.0)\n                     ~~~~~^^^^^^^^^^^^\n  File \"<repo>/examples/c4-usage-acceptance/round2/checks/batch2.py\", line 281, in _rate\n    if \"_value\" in v else None, [str(x.message)[:60] for x in v.get(\"warnings\", [])])\n                                     ^^^^^^^^^\nAttributeError: 'str' object has no attribute 'message'\n",
  "calls": [],
  "criteria": [
   {

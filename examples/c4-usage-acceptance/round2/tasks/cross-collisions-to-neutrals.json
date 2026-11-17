@@ -168,13 +168,22 @@
   {
    "id": "fields",
    "kind": "contract_fields",
-   "status": "fail",
+   "status": "pass",
    "detail": {
-    "declared": [
+    "channel": "single declared output returned positionally",
+    "declared": {
+     "name": "rate_m3_s",
+     "dtype": "float64 array or scalar",
+     "shape": "same as both inputs"
+    },
+    "returned_type": "ndarray",
+    "checks": {
+     "array_dtype": true
+    },
+    "verdict": "compatible",
+    "all_declared_outputs": [
      "rate_m3_s"
-    ],
-    "returned": "a ndarray value, not a mapping",
-    "note": "the contract declares named outputs; this return carries no field names, so the declared output set cannot be observed"
+    ]
    }
   },
   {

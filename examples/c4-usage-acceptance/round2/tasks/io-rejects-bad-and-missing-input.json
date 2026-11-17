@@ -84,7 +84,7 @@
    {
     "asset": "scirel.io.read-eqdsk",
     "field": "filename",
-    "baseline_value": "PosixPath('/var/folders/xs/087tqd_503sg17p24yb42k200000gn/T/tmp6jrq7df4/example.eqdsk')",
+    "baseline_value": "PosixPath('/var/folders/xs/087tqd_503sg17p24yb42k200000gn/T/tmprt214h5j/example.eqdsk')",
     "requested_value": "declared-malformed.eqdsk",
     "outcome": "raised",
     "exception_type": "FileNotFoundError",
@@ -94,7 +94,7 @@
    {
     "asset": "scirel.io.read-eqdsk",
     "field": "filename",
-    "baseline_value": "PosixPath('/var/folders/xs/087tqd_503sg17p24yb42k200000gn/T/tmp6jrq7df4/example.eqdsk')",
+    "baseline_value": "PosixPath('/var/folders/xs/087tqd_503sg17p24yb42k200000gn/T/tmprt214h5j/example.eqdsk')",
     "requested_value": "declared-missing-case.eqdsk",
     "outcome": "raised",
     "exception_type": "FileNotFoundError",
@@ -128,7 +128,7 @@
     "declared_rejection_appears_in_contract_quote": true,
     "stimulus_field": "filename",
     "stimulus_value": "declared-malformed.eqdsk",
-    "baseline_value": "PosixPath('/var/folders/xs/087tqd_503sg17p24yb42k200000gn/T/tmp6jrq7df4/example.eqdsk')"
+    "baseline_value": "PosixPath('/var/folders/xs/087tqd_503sg17p24yb42k200000gn/T/tmprt214h5j/example.eqdsk')"
    }
   },
   {
@@ -150,7 +150,7 @@
     "declared_rejection_appears_in_contract_quote": true,
     "stimulus_field": "filename",
     "stimulus_value": "declared-missing-case.eqdsk",
-    "baseline_value": "PosixPath('/var/folders/xs/087tqd_503sg17p24yb42k200000gn/T/tmp6jrq7df4/example.eqdsk')"
+    "baseline_value": "PosixPath('/var/folders/xs/087tqd_503sg17p24yb42k200000gn/T/tmprt214h5j/example.eqdsk')"
    }
   },
   {
@@ -198,7 +198,7 @@
   "scirel.io.read-eqdsk": {
    "symbol": "read_eqdsk",
    "args": {
-    "filename": "PosixPath('/var/folders/xs/087tqd_503sg17p24yb42k200000gn/T/tmp6jrq7df4/example.eqdsk')",
+    "filename": "PosixPath('/var/folders/xs/087tqd_503sg17p24yb42k200000gn/T/tmprt214h5j/example.eqdsk')",
     "strict": true
    },
    "example_error": null

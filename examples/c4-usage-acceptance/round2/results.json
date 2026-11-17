@@ -203,8 +203,8 @@
    "package_sufficient": true,
    "call_count": 3,
    "criteria_total": 4,
-   "criteria_pass": 3,
-   "criteria_fail": 1,
+   "criteria_pass": 4,
+   "criteria_fail": 0,
    "criteria_not_run": 0,
    "gaps": [
     "task declares min_calls=4 but only 3 public call(s) were made"
@@ -259,8 +259,8 @@
    "package_sufficient": true,
    "call_count": 3,
    "criteria_total": 3,
-   "criteria_pass": 2,
-   "criteria_fail": 1,
+   "criteria_pass": 3,
+   "criteria_fail": 0,
    "criteria_not_run": 0,
    "gaps": []
   },
@@ -367,8 +367,8 @@
    "package_sufficient": true,
    "call_count": 5,
    "criteria_total": 4,
-   "criteria_pass": 3,
-   "criteria_fail": 1,
+   "criteria_pass": 4,
+   "criteria_fail": 0,
    "criteria_not_run": 0,
    "gaps": []
   },
@@ -393,8 +393,8 @@
    "package_sufficient": true,
    "call_count": 2,
    "criteria_total": 6,
-   "criteria_pass": 4,
-   "criteria_fail": 2,
+   "criteria_pass": 6,
+   "criteria_fail": 0,
    "criteria_not_run": 0,
    "gaps": [
     "task declares min_calls=4 but only 2 public call(s) were made"
@@ -436,8 +436,8 @@
    "package_sufficient": true,
    "call_count": 3,
    "criteria_total": 3,
-   "criteria_pass": 2,
-   "criteria_fail": 1,
+   "criteria_pass": 3,
+   "criteria_fail": 0,
    "criteria_not_run": 0,
    "gaps": [
     "the outside-support exclusion count is not a returned field of the declared scattered entry, so that half of the criterion was not evaluated"
@@ -451,8 +451,8 @@
    "package_sufficient": true,
    "call_count": 3,
    "criteria_total": 5,
-   "criteria_pass": 3,
-   "criteria_fail": 2,
+   "criteria_pass": 5,
+   "criteria_fail": 0,
    "criteria_not_run": 0,
    "gaps": []
   },
@@ -557,8 +557,8 @@
    "package_sufficient": true,
    "call_count": 2,
    "criteria_total": 5,
-   "criteria_pass": 3,
-   "criteria_fail": 2,
+   "criteria_pass": 5,
+   "criteria_fail": 0,
    "criteria_not_run": 0,
    "gaps": [
     "task declares min_calls=3 but only 2 public call(s) were made"
@@ -572,8 +572,8 @@
    "package_sufficient": true,
    "call_count": 3,
    "criteria_total": 5,
-   "criteria_pass": 2,
-   "criteria_fail": 3,
+   "criteria_pass": 5,
+   "criteria_fail": 0,
    "criteria_not_run": 0,
    "gaps": []
   },
@@ -598,8 +598,8 @@
    "package_sufficient": true,
    "call_count": 1,
    "criteria_total": 4,
-   "criteria_pass": 2,
-   "criteria_fail": 2,
+   "criteria_pass": 3,
+   "criteria_fail": 1,
    "criteria_not_run": 0,
    "gaps": [
     "frozen stimulus targets construction; the declared rejection is at field evaluation. Task list should freeze mesh=None + a psi() call instead."
@@ -650,15 +650,15 @@
    "task_id": "diagnostics-rejects-shape-mismatch",
    "kind": "failure",
    "domain": "diagnostics",
-   "subdomain": null,
-   "package_sufficient": false,
-   "call_count": 0,
-   "criteria_total": 1,
-   "criteria_pass": 0,
+   "subdomain": "declared invalid input channel",
+   "package_sufficient": true,
+   "call_count": 1,
+   "criteria_total": 4,
+   "criteria_pass": 3,
    "criteria_fail": 1,
    "criteria_not_run": 0,
    "gaps": [
-    "the consumer harness raised NameError: name '_val' is not defined"
+    "the frozen stimulus for this task does not produce the mismatch it names; the task record should freeze a genuinely incompatible shape"
    ]
   },
   {
@@ -669,8 +669,8 @@
    "package_sufficient": true,
    "call_count": 3,
    "criteria_total": 4,
-   "criteria_pass": 3,
-   "criteria_fail": 1,
+   "criteria_pass": 4,
+   "criteria_fail": 0,
    "criteria_not_run": 0,
    "gaps": [
     "the one-sided quadratic endpoint stencils are not described numerically in the delivered contract, so they were not reproduced"
@@ -723,8 +723,8 @@
    "package_sufficient": true,
    "call_count": 4,
    "criteria_total": 5,
-   "criteria_pass": 4,
-   "criteria_fail": 1,
+   "criteria_pass": 5,
+   "criteria_fail": 0,
    "criteria_not_run": 0,
    "gaps": [
     "the convection/diffusion matrices were evaluated but the blended equation with them was not formed for a second theta"
@@ -831,8 +831,8 @@
    "package_sufficient": true,
    "call_count": 2,
    "criteria_total": 5,
-   "criteria_pass": 3,
-   "criteria_fail": 2,
+   "criteria_pass": 5,
+   "criteria_fail": 0,
    "criteria_not_run": 0,
    "gaps": []
   },
@@ -844,8 +844,8 @@
    "package_sufficient": true,
    "call_count": 2,
    "criteria_total": 4,
-   "criteria_pass": 3,
-   "criteria_fail": 1,
+   "criteria_pass": 4,
+   "criteria_fail": 0,
    "criteria_not_run": 0,
    "gaps": []
   },
@@ -870,8 +870,8 @@
    "package_sufficient": false,
    "call_count": 1,
    "criteria_total": 4,
-   "criteria_pass": 2,
-   "criteria_fail": 1,
+   "criteria_pass": 3,
+   "criteria_fail": 0,
    "criteria_not_run": 1,
    "gaps": [
     "the task's basis-invariance and exact-resonance criteria need inputs the contract's example block does not declare; a consumer may only use the declared example inputs, so they stay unevaluated",
@@ -899,8 +899,8 @@
    "package_sufficient": true,
    "call_count": 2,
    "criteria_total": 4,
-   "criteria_pass": 3,
-   "criteria_fail": 1,
+   "criteria_pass": 4,
+   "criteria_fail": 0,
    "criteria_not_run": 0,
    "gaps": []
   },
@@ -925,8 +925,8 @@
    "package_sufficient": false,
    "call_count": 2,
    "criteria_total": 3,
-   "criteria_pass": 1,
-   "criteria_fail": 2,
+   "criteria_pass": 2,
+   "criteria_fail": 1,
    "criteria_not_run": 0,
    "gaps": [
     "the recomputation uses CODATA masses the consumer supplied; the package does not return the mass constants it used"
@@ -997,8 +997,8 @@
    "package_sufficient": false,
    "call_count": 3,
    "criteria_total": 5,
-   "criteria_pass": 1,
-   "criteria_fail": 4,
+   "criteria_pass": 3,
+   "criteria_fail": 2,
    "criteria_not_run": 0,
    "gaps": [
     "the consumer had to reshape the one-dimensional profile onto the declared vx/alpha grid itself; the package does not offer a declared profile-to-forcing adapter"
@@ -1028,8 +1028,8 @@
    "package_sufficient": false,
    "call_count": 3,
    "criteria_total": 4,
-   "criteria_pass": 1,
-   "criteria_fail": 3,
+   "criteria_pass": 2,
+   "criteria_fail": 2,
    "criteria_not_run": 0,
    "gaps": [
     "the rate is a three-dimensional array and the frequency entry takes a per-species list, so the consumer reduced it to its mean; the package does not declare that reduction"
@@ -1038,11 +1038,11 @@
  ],
  "summary": {
   "tasks": 73,
-  "package_sufficient": 47,
-  "package_insufficient": 26,
-  "criteria_total": 269,
-  "criteria_pass": 196,
-  "criteria_fail": 66,
+  "package_sufficient": 48,
+  "package_insufficient": 25,
+  "criteria_total": 272,
+  "criteria_pass": 224,
+  "criteria_fail": 41,
   "criteria_not_run": 7
  },
  "child_failures": [
@@ -1059,15 +1059,10 @@
   {
    "task": "collisions-rate-averages",
    "returncode": 1,
-   "stderr": "<repo>/examples/c4-usage-acceptance/round2/harness.py:337: ApplicabilityWarning: evaluate_janev_electron_impact_ionization_rate: temperature above the fit's upper limit of 20100 eV (received up to 50000 eV) returns the value at that limit, which returns the endpoint rate rather than extrapolating (scirel.collisions.janev-electron-impact-ionization-rate)\n  return real(*a, **kw)\n"
+   "stderr": "<repo>/examples/c4-usage-acceptance/round2/harness.py:335: ApplicabilityWarning: evaluate_janev_electron_impact_ionization_rate: temperature above the fit's upper limit of 20100 eV (received up to 50000 eV) returns the value at that limit, which returns the endpoint rate rather than extrapolating (scirel.collisions.janev-electron-impact-ionization-rate)\n  return real(*a, **kw)\n"
   },
   {
    "task": "numerics-splines-and-inverse",
-   "returncode": 1,
-   "stderr": ""
-  },
-  {
-   "task": "diagnostics-rejects-shape-mismatch",
    "returncode": 1,
    "stderr": ""
   }

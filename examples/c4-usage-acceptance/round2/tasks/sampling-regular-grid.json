@@ -404,13 +404,22 @@
   {
    "id": "fields",
    "kind": "contract_fields",
-   "status": "fail",
+   "status": "pass",
    "detail": {
-    "declared": [
+    "channel": "single declared output returned positionally",
+    "declared": {
+     "name": "grid_and_fields",
+     "dtype": "float64",
+     "shape": "tuple of (nx,ny) arrays or supplied grid shape"
+    },
+    "returned_type": "tuple",
+    "checks": {
+     "array_dtype": true
+    },
+    "verdict": "compatible",
+    "all_declared_outputs": [
      "grid_and_fields"
-    ],
-    "returned": "a tuple value, not a mapping",
-    "note": "the contract declares named outputs; this return carries no field names, so the declared output set cannot be observed"
+    ]
    }
   },
   {
