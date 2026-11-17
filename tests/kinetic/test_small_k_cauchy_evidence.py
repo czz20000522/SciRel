@@ -81,7 +81,9 @@ def test_small_k_damping_is_the_published_closed_form():
     underflowed = 0
     for index, k in enumerate(ladder):
         expected = closed_form(k)
-        if expected < mp.mpf("1e-300"):
+        # abs() is required: the closed form is negative, so a bare
+        # ``expected < 1e-300`` is true for every representable value as well.
+        if abs(expected) < mp.mpf("1e-300"):
             underflowed += 1
             assert damping[index] == 0.0, (k, mp.nstr(expected, 3), damping[index])
         else:
