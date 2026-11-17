@@ -11,10 +11,14 @@ call is a task-list defect, not a package defect, and ``package_sufficient`` say
 from __future__ import annotations
 
 import harness as H
-from .batch1 import _val
 from . import _common as C
 
 CHECKS: dict = {}
+
+
+def _val(call):
+    """The live return value of a recorded call (same helper as the other check modules)."""
+    return call.get("_value")
 
 
 def _probe(fn):
@@ -98,9 +102,9 @@ def diagnostics_shape_mismatch(ctx: H.Ctx, task: dict) -> dict:
     exc_crit = next(c for c in task["criteria"] if c["kind"] == "exception")
     res = H.check_exception(ctx, frozen, asset, stim["failure_key"], stim["expected_exception"])
     criteria.append(C.crit(exc_crit["id"], "exception", res["status"], res["detail"]))
-    shp_prev = None
+    frozen_residual = None
     if "_value" in frozen:
-        shp_prev = list(H.mapping(_val(frozen), asset).get("residual", []) or [])
+        frozen_residual = H.plain(H.mapping(_val(frozen), asset).get("residual"))
     fn = H.resolve(asset)[2]
     probe = _probe(lambda: fn([[[3.0, 4.0]]], [[1.0, 2.0], [3.0, 4.0], [5.0, 6.0]]))
     criteria.append(
@@ -119,7 +123,7 @@ def diagnostics_shape_mismatch(ctx: H.Ctx, task: dict) -> dict:
         "answer": {
             "value": {
                 "frozen_stimulus": frozen["status"],
-                "frozen_residual": shp_prev,
+                "frozen_residual": frozen_residual,
                 "supplementary_probe": probe,
             },
             "unit": "dimensionless residual",

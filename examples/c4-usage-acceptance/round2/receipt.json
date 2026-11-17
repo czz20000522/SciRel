@@ -96,9 +96,9 @@
     "cross": 0,
     "ran": 4,
     "sufficient": 2,
-    "criteria": 10,
+    "criteria": 8,
     "pass": 6,
-    "fail": 4,
+    "fail": 2,
     "not_run": 0,
     "tasks": [
      {
@@ -107,7 +107,7 @@
       "ran": true,
       "package_sufficient": true,
       "criteria": [
-       2,
+       3,
        3
       ]
      },
@@ -117,8 +117,8 @@
       "ran": true,
       "package_sufficient": false,
       "criteria": [
-       1,
-       3
+       0,
+       1
       ]
      },
      {
@@ -151,8 +151,8 @@
     "ran": 2,
     "sufficient": 2,
     "criteria": 8,
-    "pass": 5,
-    "fail": 3,
+    "pass": 8,
+    "fail": 0,
     "not_run": 0,
     "tasks": [
      {
@@ -161,7 +161,7 @@
       "ran": true,
       "package_sufficient": true,
       "criteria": [
-       2,
+       5,
        5
       ]
      },
@@ -183,19 +183,19 @@
     "inapplicable": 0,
     "cross": 6,
     "ran": 6,
-    "sufficient": 0,
-    "criteria": 30,
-    "pass": 12,
-    "fail": 18,
-    "not_run": 0,
+    "sufficient": 1,
+    "criteria": 29,
+    "pass": 18,
+    "fail": 9,
+    "not_run": 2,
     "tasks": [
      {
       "task": "cross-field-to-equilibrium",
       "kind": "cross",
       "ran": true,
-      "package_sufficient": false,
+      "package_sufficient": true,
       "criteria": [
-       3,
+       6,
        6
       ]
      },
@@ -225,7 +225,7 @@
       "ran": true,
       "package_sufficient": false,
       "criteria": [
-       1,
+       3,
        5
       ]
      },
@@ -236,7 +236,7 @@
       "package_sufficient": false,
       "criteria": [
        2,
-       5
+       4
       ]
      },
      {
@@ -245,7 +245,7 @@
       "ran": true,
       "package_sufficient": false,
       "criteria": [
-       1,
+       2,
        4
       ]
      }
@@ -257,9 +257,9 @@
     "inapplicable": 0,
     "cross": 0,
     "ran": 2,
-    "sufficient": 1,
-    "criteria": 7,
-    "pass": 6,
+    "sufficient": 2,
+    "criteria": 8,
+    "pass": 7,
     "fail": 1,
     "not_run": 0,
     "tasks": [
@@ -277,10 +277,10 @@
       "task": "diagnostics-rejects-shape-mismatch",
       "kind": "failure",
       "ran": true,
-      "package_sufficient": false,
+      "package_sufficient": true,
       "criteria": [
-       2,
-       3
+       3,
+       4
       ]
      }
     ]
@@ -293,8 +293,8 @@
     "ran": 2,
     "sufficient": 1,
     "criteria": 7,
-    "pass": 5,
-    "fail": 1,
+    "pass": 6,
+    "fail": 0,
     "not_run": 1,
     "tasks": [
      {
@@ -303,7 +303,7 @@
       "ran": true,
       "package_sufficient": false,
       "criteria": [
-       2,
+       3,
        4
       ]
      },
@@ -325,10 +325,10 @@
     "inapplicable": 0,
     "cross": 0,
     "ran": 2,
-    "sufficient": 1,
-    "criteria": 8,
-    "pass": 5,
-    "fail": 3,
+    "sufficient": 2,
+    "criteria": 9,
+    "pass": 8,
+    "fail": 1,
     "not_run": 0,
     "tasks": [
      {
@@ -337,7 +337,7 @@
       "ran": true,
       "package_sufficient": true,
       "criteria": [
-       3,
+       5,
        5
       ]
      },
@@ -345,10 +345,10 @@
       "task": "electromagnetism-rejects-missing-mesh",
       "kind": "failure",
       "ran": true,
-      "package_sufficient": false,
+      "package_sufficient": true,
       "criteria": [
-       2,
-       3
+       3,
+       4
       ]
      }
     ]
@@ -403,19 +403,19 @@
     "inapplicable": 0,
     "cross": 0,
     "ran": 3,
-    "sufficient": 2,
+    "sufficient": 3,
     "criteria": 13,
-    "pass": 10,
-    "fail": 3,
+    "pass": 13,
+    "fail": 0,
     "not_run": 0,
     "tasks": [
      {
       "task": "field-filament-superposition",
       "kind": "nominal",
       "ran": true,
-      "package_sufficient": false,
+      "package_sufficient": true,
       "criteria": [
-       2,
+       5,
        5
       ]
      },
@@ -449,8 +449,8 @@
     "ran": 2,
     "sufficient": 1,
     "criteria": 6,
-    "pass": 4,
-    "fail": 2,
+    "pass": 5,
+    "fail": 1,
     "not_run": 0,
     "tasks": [
      {
@@ -459,7 +459,7 @@
       "ran": true,
       "package_sufficient": false,
       "criteria": [
-       1,
+       2,
        3
       ]
      },
@@ -483,8 +483,8 @@
     "ran": 2,
     "sufficient": 2,
     "criteria": 8,
-    "pass": 7,
-    "fail": 1,
+    "pass": 8,
+    "fail": 0,
     "not_run": 0,
     "tasks": [
      {
@@ -493,7 +493,7 @@
       "ran": true,
       "package_sufficient": true,
       "criteria": [
-       4,
+       5,
        5
       ]
      },
@@ -515,10 +515,10 @@
     "inapplicable": 0,
     "cross": 0,
     "ran": 8,
-    "sufficient": 5,
+    "sufficient": 6,
     "criteria": 29,
-    "pass": 21,
-    "fail": 8,
+    "pass": 27,
+    "fail": 2,
     "not_run": 0,
     "tasks": [
      {
@@ -537,7 +537,7 @@
       "ran": true,
       "package_sufficient": true,
       "criteria": [
-       3,
+       4,
        4
       ]
      },
@@ -557,7 +557,7 @@
       "ran": true,
       "package_sufficient": true,
       "criteria": [
-       2,
+       3,
        3
       ]
      },
@@ -567,7 +567,7 @@
       "ran": true,
       "package_sufficient": true,
       "criteria": [
-       3,
+       5,
        5
       ]
      },
@@ -575,9 +575,9 @@
       "task": "sampling-rejects-unknown-method",
       "kind": "failure",
       "ran": true,
-      "package_sufficient": false,
+      "package_sufficient": true,
       "criteria": [
-       2,
+       3,
        3
       ]
      },
@@ -587,7 +587,7 @@
       "ran": true,
       "package_sufficient": true,
       "criteria": [
-       3,
+       4,
        4
       ]
      },
@@ -679,8 +679,8 @@
     "ran": 10,
     "sufficient": 6,
     "criteria": 38,
-    "pass": 26,
-    "fail": 9,
+    "pass": 27,
+    "fail": 8,
     "not_run": 3,
     "tasks": [
      {
@@ -719,7 +719,7 @@
       "ran": true,
       "package_sufficient": false,
       "criteria": [
-       2,
+       3,
        5
       ]
      },
@@ -871,8 +871,8 @@
     "ran": 6,
     "sufficient": 3,
     "criteria": 20,
-    "pass": 15,
-    "fail": 5,
+    "pass": 16,
+    "fail": 4,
     "not_run": 0,
     "tasks": [
      {
@@ -901,7 +901,7 @@
       "ran": true,
       "package_sufficient": true,
       "criteria": [
-       3,
+       4,
        4
       ]
      },
@@ -945,8 +945,8 @@
     "ran": 3,
     "sufficient": 2,
     "criteria": 10,
-    "pass": 7,
-    "fail": 3,
+    "pass": 9,
+    "fail": 1,
     "not_run": 0,
     "tasks": [
      {
@@ -955,7 +955,7 @@
       "ran": true,
       "package_sufficient": true,
       "criteria": [
-       4,
+       6,
        6
       ]
      },
@@ -1023,8 +1023,8 @@
     "ran": 2,
     "sufficient": 2,
     "criteria": 7,
-    "pass": 6,
-    "fail": 1,
+    "pass": 7,
+    "fail": 0,
     "not_run": 0,
     "tasks": [
      {
@@ -1033,7 +1033,7 @@
       "ran": true,
       "package_sufficient": true,
       "criteria": [
-       3,
+       4,
        4
       ]
      },
@@ -1057,8 +1057,8 @@
     "ran": 3,
     "sufficient": 3,
     "criteria": 12,
-    "pass": 9,
-    "fail": 3,
+    "pass": 12,
+    "fail": 0,
     "not_run": 0,
     "tasks": [
      {
@@ -1067,7 +1067,7 @@
       "ran": true,
       "package_sufficient": true,
       "criteria": [
-       3,
+       5,
        5
       ]
      },
@@ -1077,7 +1077,7 @@
       "ran": true,
       "package_sufficient": true,
       "criteria": [
-       3,
+       4,
        4
       ]
      },
@@ -1097,11 +1097,11 @@
   "by_kind": {
    "nominal": {
     "ran": 43,
-    "sufficient": 24
+    "sufficient": 25
    },
    "failure": {
     "ran": 23,
-    "sufficient": 18
+    "sufficient": 21
    },
    "inapplicable": {
     "ran": 1,
@@ -1109,17 +1109,17 @@
    },
    "cross": {
     "ran": 6,
-    "sufficient": 0
+    "sufficient": 1
    }
   },
   "totals": {
    "tasks": 73,
-   "package_sufficient": 43,
-   "package_insufficient": 30,
-   "criteria_total": 273,
-   "criteria_pass": 191,
-   "criteria_fail": 77,
-   "criteria_not_run": 5
+   "package_sufficient": 48,
+   "package_insufficient": 25,
+   "criteria_total": 272,
+   "criteria_pass": 224,
+   "criteria_fail": 41,
+   "criteria_not_run": 7
   }
  },
  "task_index": [
@@ -1324,8 +1324,8 @@
    "calls": 3,
    "criteria": {
     "total": 4,
-    "pass": 3,
-    "fail": 1,
+    "pass": 4,
+    "fail": 0,
     "not_run": 0
    },
    "gap_count": 1,
@@ -1388,8 +1388,8 @@
    "calls": 3,
    "criteria": {
     "total": 3,
-    "pass": 2,
-    "fail": 1,
+    "pass": 3,
+    "fail": 0,
     "not_run": 0
    },
    "gap_count": 0,
@@ -1516,8 +1516,8 @@
    "calls": 5,
    "criteria": {
     "total": 4,
-    "pass": 3,
-    "fail": 1,
+    "pass": 4,
+    "fail": 0,
     "not_run": 0
    },
    "gap_count": 0,
@@ -1548,8 +1548,8 @@
    "calls": 2,
    "criteria": {
     "total": 6,
-    "pass": 4,
-    "fail": 2,
+    "pass": 6,
+    "fail": 0,
     "not_run": 0
    },
    "gap_count": 1,
@@ -1596,8 +1596,8 @@
    "calls": 3,
    "criteria": {
     "total": 3,
-    "pass": 2,
-    "fail": 1,
+    "pass": 3,
+    "fail": 0,
     "not_run": 0
    },
    "gap_count": 1,
@@ -1612,8 +1612,8 @@
    "calls": 3,
    "criteria": {
     "total": 5,
-    "pass": 3,
-    "fail": 2,
+    "pass": 5,
+    "fail": 0,
     "not_run": 0
    },
    "gap_count": 0,
@@ -1740,8 +1740,8 @@
    "calls": 2,
    "criteria": {
     "total": 5,
-    "pass": 3,
-    "fail": 2,
+    "pass": 5,
+    "fail": 0,
     "not_run": 0
    },
    "gap_count": 1,
@@ -1756,8 +1756,8 @@
    "calls": 3,
    "criteria": {
     "total": 5,
-    "pass": 2,
-    "fail": 3,
+    "pass": 5,
+    "fail": 0,
     "not_run": 0
    },
    "gap_count": 0,
@@ -1788,8 +1788,8 @@
    "calls": 1,
    "criteria": {
     "total": 4,
-    "pass": 2,
-    "fail": 2,
+    "pass": 3,
+    "fail": 1,
     "not_run": 0
    },
    "gap_count": 0,
@@ -1848,11 +1848,11 @@
    "kind": "failure",
    "domain": "diagnostics",
    "subdomain": "declared invalid input channel",
-   "package_sufficient": false,
-   "calls": 0,
+   "package_sufficient": true,
+   "calls": 1,
    "criteria": {
-    "total": 1,
-    "pass": 0,
+    "total": 4,
+    "pass": 3,
     "fail": 1,
     "not_run": 0
    },
@@ -1868,8 +1868,8 @@
    "calls": 3,
    "criteria": {
     "total": 4,
-    "pass": 3,
-    "fail": 1,
+    "pass": 4,
+    "fail": 0,
     "not_run": 0
    },
    "gap_count": 1,
@@ -1932,8 +1932,8 @@
    "calls": 4,
    "criteria": {
     "total": 5,
-    "pass": 4,
-    "fail": 1,
+    "pass": 5,
+    "fail": 0,
     "not_run": 0
    },
    "gap_count": 1,
@@ -2060,8 +2060,8 @@
    "calls": 2,
    "criteria": {
     "total": 5,
-    "pass": 3,
-    "fail": 2,
+    "pass": 5,
+    "fail": 0,
     "not_run": 0
    },
    "gap_count": 0,
@@ -2076,8 +2076,8 @@
    "calls": 2,
    "criteria": {
     "total": 4,
-    "pass": 3,
-    "fail": 1,
+    "pass": 4,
+    "fail": 0,
     "not_run": 0
    },
    "gap_count": 0,
@@ -2108,8 +2108,8 @@
    "calls": 1,
    "criteria": {
     "total": 4,
-    "pass": 2,
-    "fail": 1,
+    "pass": 3,
+    "fail": 0,
     "not_run": 1
    },
    "gap_count": 2,
@@ -2140,8 +2140,8 @@
    "calls": 2,
    "criteria": {
     "total": 4,
-    "pass": 3,
-    "fail": 1,
+    "pass": 4,
+    "fail": 0,
     "not_run": 0
    },
    "gap_count": 0,
@@ -2172,8 +2172,8 @@
    "calls": 2,
    "criteria": {
     "total": 3,
-    "pass": 1,
-    "fail": 2,
+    "pass": 2,
+    "fail": 1,
     "not_run": 0
    },
    "gap_count": 1,
@@ -2252,8 +2252,8 @@
    "calls": 3,
    "criteria": {
     "total": 5,
-    "pass": 1,
-    "fail": 4,
+    "pass": 3,
+    "fail": 2,
     "not_run": 0
    },
    "gap_count": 1,
@@ -2284,8 +2284,8 @@
    "calls": 3,
    "criteria": {
     "total": 4,
-    "pass": 1,
-    "fail": 3,
+    "pass": 2,
+    "fail": 2,
     "not_run": 0
    },
    "gap_count": 1,
@@ -2521,15 +2521,608 @@
    "B2 rational-solve-matrix returns 9 of 46 declared outputs",
    "B8 cross-geometry: 3-D cartesian output vs 2-D [N_Z,N_R] entry",
    "cross-mirror / cross-source / cross-collisions handoffs"
-  ]
+  ],
+  "single_output_channel": {
+   "reason": "the fields criterion had no legitimate channel for a single declared output returned as a bare value, so every single-output asset failed regardless of the contract. Added: with exactly one declared output, a bare return passes when the returned kind matches the declared dtype/shape, and the record states 'single declared output returned positionally'.",
+   "multi_output_still_fails": [
+    "physics-coulomb-logarithms (W_el/W_ion/W_tot returned as a tuple)"
+   ],
+   "criteria_flipped": [
+    {
+     "task": "collisions-cross-sections",
+     "criterion": "fields",
+     "status": "pass",
+     "returned_type": "ndarray",
+     "declared": "cross_section_m2",
+     "declared_dtype": "float64 array",
+     "checks": {
+      "array_dtype": true
+     }
+    },
+    {
+     "task": "configurations-retained-geometries",
+     "criterion": "fields@scirel.configurations.trex-coil",
+     "status": "pass",
+     "returned_type": "TREXCoil",
+     "declared": "source",
+     "declared_dtype": "TREXCoil",
+     "checks": {
+      "named_type": {
+       "declared_token": "trexcoil",
+       "matches": true
+      }
+     }
+    },
+    {
+     "task": "configurations-retained-geometries",
+     "criterion": "fields@scirel.configurations.brb",
+     "status": "pass",
+     "returned_type": "BRB",
+     "declared": "source",
+     "declared_dtype": "BRB",
+     "checks": {
+      "named_type": {
+       "declared_token": "brb",
+       "matches": true
+      }
+     }
+    },
+    {
+     "task": "configurations-retained-geometries",
+     "criterion": "fields@scirel.configurations.wham",
+     "status": "pass",
+     "returned_type": "WHAM",
+     "declared": "source",
+     "declared_dtype": "WHAM",
+     "checks": {
+      "named_type": {
+       "declared_token": "wham",
+       "matches": true
+      }
+     }
+    },
+    {
+     "task": "cross-collisions-to-neutrals",
+     "criterion": "fields",
+     "status": "pass",
+     "returned_type": "ndarray",
+     "declared": "rate_m3_s",
+     "declared_dtype": "float64 array or scalar",
+     "checks": {
+      "array_dtype": true
+     }
+    },
+    {
+     "task": "cross-source-to-neutrals",
+     "criterion": "fields",
+     "status": "pass",
+     "returned_type": "ndarray",
+     "declared": "profile",
+     "declared_dtype": "float64 array",
+     "checks": {
+      "array_dtype": true
+     }
+    },
+    {
+     "task": "cross-source-to-neutrals",
+     "criterion": "fields_propagation",
+     "status": "pass",
+     "returned_type": "ndarray",
+     "declared": "generation",
+     "declared_dtype": "float64 array",
+     "checks": {
+      "array_dtype": true
+     }
+    },
+    {
+     "task": "dielectric-cold-tensor",
+     "criterion": "fields",
+     "status": "pass",
+     "returned_type": "ndarray",
+     "declared": "epsilon_r",
+     "declared_dtype": "complex128",
+     "checks": {
+      "array_dtype": true
+     }
+    },
+    {
+     "task": "electromagnetism-device-composition",
+     "criterion": "fields_green",
+     "status": "pass",
+     "returned_type": "tuple",
+     "declared": "response",
+     "declared_dtype": "float64",
+     "checks": {
+      "array_dtype": true
+     }
+    },
+    {
+     "task": "electromagnetism-device-composition",
+     "criterion": "fields_loop",
+     "status": "pass",
+     "returned_type": "ndarray",
+     "declared": "G",
+     "declared_dtype": "float64",
+     "checks": {
+      "array_dtype": true
+     }
+    },
+    {
+     "task": "electromagnetism-rejects-missing-mesh",
+     "criterion": "fields",
+     "status": "pass",
+     "returned_type": "Device",
+     "declared": "source",
+     "declared_dtype": "Device",
+     "checks": {
+      "named_type": {
+       "declared_token": "device",
+       "matches": true
+      }
+     }
+    },
+    {
+     "task": "fieldline-set-and-arclength",
+     "criterion": "fields",
+     "status": "pass",
+     "returned_type": "ndarray",
+     "declared": "derivative",
+     "declared_dtype": "float64",
+     "checks": {
+      "array_dtype": true
+     }
+    },
+    {
+     "task": "fusion-dd-neutron-energy",
+     "criterion": "fields",
+     "status": "pass",
+     "returned_type": "float",
+     "declared": "neutron_energy_kev",
+     "declared_dtype": "float",
+     "checks": {
+      "numeric_dtype": true,
+      "scalar_shape": true
+     }
+    },
+    {
+     "task": "fvm-convection-diffusion",
+     "criterion": "fields",
+     "status": "pass",
+     "returned_type": "CellVariable",
+     "declared": "variable",
+     "declared_dtype": "CellVariable",
+     "checks": {
+      "named_type": {
+       "declared_token": "cellvariable",
+       "matches": true
+      }
+     }
+    },
+    {
+     "task": "geometry-mesh-and-volume",
+     "criterion": "fields",
+     "status": "pass",
+     "returned_type": "float",
+     "declared": "volume",
+     "declared_dtype": "Python float",
+     "checks": {
+      "numeric_dtype": true,
+      "scalar_shape": true
+     }
+    },
+    {
+     "task": "neutrals-cross-mesh",
+     "criterion": "fields",
+     "status": "pass",
+     "returned_type": "ndarray",
+     "declared": "fb",
+     "declared_dtype": "float64 array",
+     "checks": {
+      "array_dtype": true
+     }
+    },
+    {
+     "task": "numerics-basis-projection",
+     "criterion": "fields",
+     "status": "pass",
+     "returned_type": "ndarray",
+     "declared": "coefficients",
+     "declared_dtype": "float64",
+     "checks": {
+      "array_dtype": true
+     }
+    },
+    {
+     "task": "numerics-basis-projection",
+     "criterion": "fields_basis",
+     "status": "pass",
+     "returned_type": "ModalBasis",
+     "declared": "basis",
+     "declared_dtype": "ModalBasis",
+     "checks": {
+      "named_type": {
+       "declared_token": "modalbasis",
+       "matches": true
+      }
+     }
+    },
+    {
+     "task": "plasma-fast-ion-heating",
+     "criterion": "fields",
+     "status": "pass",
+     "returned_type": "float",
+     "declared": "ion_fraction",
+     "declared_dtype": "float64",
+     "checks": {
+      "array_dtype": true
+     }
+    },
+    {
+     "task": "sampling-regular-grid",
+     "criterion": "fields",
+     "status": "pass",
+     "returned_type": "tuple",
+     "declared": "grid_and_fields",
+     "declared_dtype": "float64",
+     "checks": {
+      "array_dtype": true
+     }
+    },
+    {
+     "task": "sampling-transform-and-derivative",
+     "criterion": "fields",
+     "status": "pass",
+     "returned_type": "tuple",
+     "declared": "position_and_vector",
+     "declared_dtype": "float64 tuple",
+     "checks": {
+      "tuple_dtype": true
+     }
+    },
+    {
+     "task": "sampling-transform-and-derivative",
+     "criterion": "fields_inverse",
+     "status": "pass",
+     "returned_type": "tuple",
+     "declared": "position_and_vector",
+     "declared_dtype": "float64 tuple",
+     "checks": {
+      "tuple_dtype": true
+     }
+    },
+    {
+     "task": "source-profile-integral",
+     "criterion": "fields@scirel.source.gaussian",
+     "status": "pass",
+     "returned_type": "ndarray",
+     "declared": "profile",
+     "declared_dtype": "float64 array",
+     "checks": {
+      "array_dtype": true
+     }
+    },
+    {
+     "task": "source-profile-integral",
+     "criterion": "fields@scirel.source.exponential",
+     "status": "pass",
+     "returned_type": "ndarray",
+     "declared": "profile",
+     "declared_dtype": "float64 array",
+     "checks": {
+      "array_dtype": true
+     }
+    },
+    {
+     "task": "source-zero-width-sentinel",
+     "criterion": "fields",
+     "status": "pass",
+     "returned_type": "ndarray",
+     "declared": "profile",
+     "declared_dtype": "float64 array",
+     "checks": {
+      "array_dtype": true
+     }
+    }
+   ],
+   "criteria_totals_before": {
+    "tasks": 73,
+    "package_sufficient": 47,
+    "package_insufficient": 26,
+    "criteria_total": 269,
+    "criteria_pass": 196,
+    "criteria_fail": 66,
+    "criteria_not_run": 7
+   },
+   "criteria_totals_after": {
+    "tasks": 73,
+    "package_sufficient": 47,
+    "package_insufficient": 26,
+    "criteria_total": 269,
+    "criteria_pass": 221,
+    "criteria_fail": 41,
+    "criteria_not_run": 7
+   },
+   "package_sufficient_changed": 0,
+   "note": "this is a criterion-side change, not a library change: 25 criteria moved fail->pass, no task verdict was back-dated, and every flipped criterion records the channel used",
+   "by_asset": [
+    {
+     "asset": "scirel.collisions.atomic-hydrogen-elastic-cross-section",
+     "declared": "cross_section_m2",
+     "returned_type": "ndarray",
+     "declared_dtype": "float64 array",
+     "criteria": 1,
+     "tasks": [
+      "collisions-cross-sections"
+     ]
+    },
+    {
+     "asset": "scirel.collisions.molecular-hydrogen-charge-exchange-rate-coefficient",
+     "declared": "rate_m3_s",
+     "returned_type": "ndarray",
+     "declared_dtype": "float64 array or scalar",
+     "criteria": 1,
+     "tasks": [
+      "cross-collisions-to-neutrals"
+     ]
+    },
+    {
+     "asset": "scirel.configurations.trex-coil",
+     "declared": "source",
+     "returned_type": "BRB",
+     "declared_dtype": "BRB",
+     "criteria": 1,
+     "tasks": [
+      "configurations-retained-geometries"
+     ]
+    },
+    {
+     "asset": "scirel.configurations.trex-coil",
+     "declared": "source",
+     "returned_type": "TREXCoil",
+     "declared_dtype": "TREXCoil",
+     "criteria": 1,
+     "tasks": [
+      "configurations-retained-geometries"
+     ]
+    },
+    {
+     "asset": "scirel.configurations.trex-coil",
+     "declared": "source",
+     "returned_type": "WHAM",
+     "declared_dtype": "WHAM",
+     "criteria": 1,
+     "tasks": [
+      "configurations-retained-geometries"
+     ]
+    },
+    {
+     "asset": "scirel.dielectric.cold-plasma-tensor",
+     "declared": "epsilon_r",
+     "returned_type": "ndarray",
+     "declared_dtype": "complex128",
+     "criteria": 1,
+     "tasks": [
+      "dielectric-cold-tensor"
+     ]
+    },
+    {
+     "asset": "scirel.electromagnetism.circular-filament-green",
+     "declared": "response",
+     "returned_type": "tuple",
+     "declared_dtype": "float64",
+     "criteria": 1,
+     "tasks": [
+      "electromagnetism-device-composition"
+     ]
+    },
+    {
+     "asset": "scirel.electromagnetism.device",
+     "declared": "source",
+     "returned_type": "Device",
+     "declared_dtype": "Device",
+     "criteria": 1,
+     "tasks": [
+      "electromagnetism-rejects-missing-mesh"
+     ]
+    },
+    {
+     "asset": "scirel.electromagnetism.loop-flux-matrix",
+     "declared": "G",
+     "returned_type": "ndarray",
+     "declared_dtype": "float64",
+     "criteria": 1,
+     "tasks": [
+      "electromagnetism-device-composition"
+     ]
+    },
+    {
+     "asset": "scirel.fusion.dd-neutron-lab-energy",
+     "declared": "neutron_energy_kev",
+     "returned_type": "float",
+     "declared_dtype": "float",
+     "criteria": 1,
+     "tasks": [
+      "fusion-dd-neutron-energy"
+     ]
+    },
+    {
+     "asset": "scirel.fvm.cell-variable",
+     "declared": "variable",
+     "returned_type": "CellVariable",
+     "declared_dtype": "CellVariable",
+     "criteria": 1,
+     "tasks": [
+      "fvm-convection-diffusion"
+     ]
+    },
+    {
+     "asset": "scirel.geometry.arclength-derivative",
+     "declared": "derivative",
+     "returned_type": "ndarray",
+     "declared_dtype": "float64",
+     "criteria": 1,
+     "tasks": [
+      "fieldline-set-and-arclength"
+     ]
+    },
+    {
+     "asset": "scirel.geometry.masked-toroidal-volume",
+     "declared": "volume",
+     "returned_type": "float",
+     "declared_dtype": "Python float",
+     "criteria": 1,
+     "tasks": [
+      "geometry-mesh-and-volume"
+     ]
+    },
+    {
+     "asset": "scirel.geometry.meridional-polar-forward",
+     "declared": "position_and_vector",
+     "returned_type": "tuple",
+     "declared_dtype": "float64 tuple",
+     "criteria": 2,
+     "tasks": [
+      "sampling-transform-and-derivative"
+     ]
+    },
+    {
+     "asset": "scirel.geometry.regular-grid",
+     "declared": "grid_and_fields",
+     "returned_type": "tuple",
+     "declared_dtype": "float64",
+     "criteria": 1,
+     "tasks": [
+      "sampling-regular-grid"
+     ]
+    },
+    {
+     "asset": "scirel.neutrals.cross-mesh-distribution-interpolation",
+     "declared": "fb",
+     "returned_type": "ndarray",
+     "declared_dtype": "float64 array",
+     "criteria": 1,
+     "tasks": [
+      "neutrals-cross-mesh"
+     ]
+    },
+    {
+     "asset": "scirel.neutrals.neutral-generation-propagation",
+     "declared": "generation",
+     "returned_type": "ndarray",
+     "declared_dtype": "float64 array",
+     "criteria": 1,
+     "tasks": [
+      "cross-source-to-neutrals"
+     ]
+    },
+    {
+     "asset": "scirel.numerics.modal-projection",
+     "declared": "coefficients",
+     "returned_type": "ndarray",
+     "declared_dtype": "float64",
+     "criteria": 1,
+     "tasks": [
+      "numerics-basis-projection"
+     ]
+    },
+    {
+     "asset": "scirel.numerics.orthonormal-modal-basis",
+     "declared": "basis",
+     "returned_type": "ModalBasis",
+     "declared_dtype": "ModalBasis",
+     "criteria": 1,
+     "tasks": [
+      "numerics-basis-projection"
+     ]
+    },
+    {
+     "asset": "scirel.plasma.fast-ion-heating",
+     "declared": "ion_fraction",
+     "returned_type": "float",
+     "declared_dtype": "float64",
+     "criteria": 1,
+     "tasks": [
+      "plasma-fast-ion-heating"
+     ]
+    },
+    {
+     "asset": "scirel.source.gaussian",
+     "declared": "profile",
+     "returned_type": "ndarray",
+     "declared_dtype": "float64 array",
+     "criteria": 4,
+     "tasks": [
+      "cross-source-to-neutrals",
+      "source-profile-integral",
+      "source-zero-width-sentinel"
+     ]
+    }
+   ],
+   "by_asset_note": "all 25 flipped criteria sit on 21 assets whose contract declares exactly ONE output; no asset with two or more declared outputs appears here, and physics.thermal-energy (3 outputs, returns a tuple) still fails its fields criterion"
+  },
+  "harness_selfcheck": {
+   "added": "selfcheck.py",
+   "findings_before": {
+    "total": 48,
+    "F841_unused_variable": 44,
+    "F401_unused_import": 3,
+    "F541": 1
+   },
+   "defects_found_by_selfcheck": [
+    {
+     "defect": "review.py called _val() which was never defined or imported",
+     "impact": "diagnostics-rejects-shape-mismatch had been recorded as crashed=True with a single readback criterion since the review batch; the claim about its stimulus was never actually produced by that check",
+     "caught_by": "ruff F821 class (undefined name) + a selfcheck case that runs both review checks"
+    },
+    {
+     "defect": "check_fields had no return for the mapping path (my single-output patch dropped it)",
+     "impact": "every task whose entry returns a mapping would crash with TypeError: 'NoneType' object is not subscriptable; latent because every run after the patch covered bare-return tasks only",
+     "caught_by": "first full 73-task run + a selfcheck case for each of the three field shapes"
+    },
+    {
+     "defect": "review.py passed a float to list() when reading residual",
+     "impact": "diagnostics-rejects-shape-mismatch crashed again after the _val fix",
+     "caught_by": "selfcheck running the review checks end to end"
+    }
+   ],
+   "ruff_unsafe_fix_lesson": "ruff --fix --unsafe-fixes on F841 removed 'ok = False' initialisers that are read on branches that do not always execute, introducing UnboundLocalError in io-eqdsk-roundtrip and source-profile-integral; the full-run diff caught it and both initialisers are restored. F841 is therefore not applied blindly here.",
+   "checks": 13,
+   "result": "13/13 pass (criteria helpers incl. all three field shapes, registry coverage, both review checks end to end, ruff clean)",
+   "reproduce": "SCIREL_PACKAGE_ROOT=<package> python -I round2/selfcheck.py  (exit 75 if ruff absent)"
+  },
+  "defects_fixed_in_harness": [
+   {
+    "task": "diagnostics-rejects-shape-mismatch",
+    "before": {
+     "crashed": true,
+     "criteria": 1,
+     "package_sufficient": false
+    },
+    "after": {
+     "crashed": false,
+     "criteria": 3,
+     "package_sufficient": true
+    },
+    "why_verdict_changed": "the earlier verdict was produced by a crashed check (NameError), not by an observation; it is replaced by the real result, and the change is a harness fix, not a re-judgment of the library"
+   }
+  ],
+  "totals_after_harness_fix": {
+   "tasks": 73,
+   "package_sufficient": 48,
+   "package_insufficient": 25,
+   "criteria_total": 272,
+   "criteria_pass": 224,
+   "criteria_fail": 41,
+   "criteria_not_run": 7
+  }
  },
  "coverage_totals_current": {
   "tasks": 73,
-  "package_sufficient": 47,
-  "package_insufficient": 26,
-  "criteria_total": 269,
-  "criteria_pass": 196,
-  "criteria_fail": 66,
+  "package_sufficient": 48,
+  "package_insufficient": 25,
+  "criteria_total": 272,
+  "criteria_pass": 224,
+  "criteria_fail": 41,
   "criteria_not_run": 7
  }
 }

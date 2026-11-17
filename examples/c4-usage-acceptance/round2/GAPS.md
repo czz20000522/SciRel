@@ -22,6 +22,20 @@
 
 > **复核后调整：严重度由「阻塞」下调为「影响可信度」。** 值都在，示例本身也按位置使用；问题是合同把概念名写成了字段名，`all_declared_outputs` 观察不到。仍属真缺口，但不阻塞计算。
 
+> **补充（2026-11-17，判据侧修订）：** B1 现在只对 **`outputs ≥ 2`** 的情形成立。合同恰好声明
+> **1 个**输出、入口按位置返回裸值时，判据侧补了一条合法通道（见 [6.10](#610-新增1-个声明输出--裸值-通道)）：
+> 18 个任务、25 条 `fields` 判据因此由 fail 转 pass，每条都记了
+> `"channel": "single declared output returned positionally"` 与所比较的 dtype/返回类型。
+> 库没有变化，`package_sufficient` 一条也没有回溯改判。
+>
+> **分类更正：** 上表把 `field.circular-filament-green` 归进 tuple 组是错的。实测它返回
+> `Result`（keys `['gBR','gBZ','gpsi']`，合同 example 也断言 `isinstance(result, Result)`），
+> 我自己的 `calls.jsonl` 里记的是 `returned_type=Result`。真正返回 `tuple` 的是**另一个资产**
+> `electromagnetism.circular-filament-green`（`compute_greens` 返回 `(psi, br, bz)`）。
+> 上表原文保留，此处更正——**清单的分组也会错，分组需要和判定一样复核**（见 6.11）。
+> 其余 tuple 组的两项 `geometry.meridional-polar-forward` / `-inverse` 与
+> `physics.thermal-energy` 实测确为 tuple（后者是 3 个输出，仍按 B1 记 fail）。
+
 合同 `outputs[]` 写的是字段名，但入口实际返回 `ndarray` / `float` / `tuple` / 对象：
 
 | 返回类型 | 资产 |
@@ -336,3 +350,98 @@ p_parallel, p_perp` 五个通道。`roots` 是我为了让"handoff"成立而**�
 2. 失败任务驱动器修好了 `*args` 签名，且所有失败路径同时记录"冻结 stimulus 的结果"与
    "自加探针的结果"，两者分开报告；
 3. 判据改错时，`review` 字段保留原判定（`original_12cfaa00`）与改判理由，不删痕迹。
+
+### 6.9.1 第三轮：两处"从未被执行的分支"（消费者侧）
+
+这一节记的不是库的缺陷，是**我的判据/工具本身的缺陷**，符合第七节第六类的判据：
+*没被执行过的代码看起来和正确代码一样*。
+
+| # | 位置 | 症状 | 后果 |
+|---|---|---|---|
+| 1 | `checks/review.py` `_val(...)` | 名字**从未定义或导入** | `diagnostics-rejects-shape-mismatch` 自复核批次起一直是 `crashed=True` + 单条 `readback` 判据。我当时把这份"记录"当成结果读了，还据此说复核探针成立——**关于该刺激的说法其实从未被这份检查产出过** |
+| 2 | `harness.check_fields` | 我加单输出通道时**丢了 mapping 分支的 `return`** | 任何返回 mapping 的入口都会 `TypeError: 'NoneType' object is not subscriptable`。潜伏原因：打补丁后我只重跑了裸返回的 18 个任务，全量 73 从未再跑 |
+| 3 | `review.py` residual | 把 float 传进 `list()` | 修好 `_val` 后同一任务**再崩一次** |
+
+三条都是"编译通过、导入通过、只在没走过的路径上崩"。处置：
+
+- 修 `_val`、修 `check_fields` 的 mapping 返回、residual 改为不经 `list()`；
+- 新增 `selfcheck.py`（13 项）：三种字段形态（mapping 相同/不同、裸单值相容/不相容、裸多值）、
+  `_args_for` 的 `*args` 位置参数、任务表与模块注册完整性、**两个 review 检查端到端真跑**、
+  ruff；ruff 缺失时退出 **75**（未观测不并入 pass）；
+- `diagnostics-rejects-shape-mismatch` 的真实结果因此变为 3 条判据、`package_sufficient=True`。
+  这条判据变化属于**修自己的工具**，不是重新判库，已在 `receipt.revision.defects_fixed_in_harness` 记明。
+
+### 6.9.2 `ruff --unsafe-fixes` 的一次误伤（工具链教训）
+
+48 条 lint 里 44 条是 F841（赋值未用）。`ruff --fix --unsafe-fixes` 一并"修"掉了
+`ok = False` 这类**初始化**，而该变量在某个不总执行的分支里被读取——于是
+`io-eqdsk-roundtrip` 与 `source-profile-integral` 变成 `UnboundLocalError`，
+判据从 6 条/5 条塌成 1 条。是全量跑与上一次结果的逐任务 diff 抓到的，两处初始化已恢复。
+
+结论写在这里而不只是修掉：**F841 在本目录不能盲目自动修**，因为它同时覆盖
+"真没用的局部变量"和"某条路径不执行时才用到的初始化"。可安全自动修的是 F401（未用导入）
+与 F541，F841 只做人工判断。`selfcheck.py` 里的 ruff 步骤保留完整规则集（现在全绿），
+但**如何修**由人决定，不由 `--fix` 决定。
+
+### 6.10 新增「1 个声明输出 ↔ 裸值」通道
+
+**问题：** `harness.check_fields` 在返回不是 mapping 时置 `returned_fields=None`，随后要求它
+等于合同声明输出名的集合。于是**单输出资产无论合同怎么写都必然 fail**——`c2-result` 正按真值链
+把 11 份单输出合同改成"按位置返回该 ndarray"，改完我的判据仍会判 fail。那不是库的问题，
+是判据缺一条合法通道。
+
+**通道规则（`harness._single_output_channel`）：**
+1. 合同 `outputs` 恰好 1 项，且入口返回的不是 mapping；
+2. 返回类型与声明 `dtype` 相容：`tuple` 声明要求 tuple/list；`array/float64/complex128` 要求
+   ndarray/list/数值；`Python float`/`scalar` 要求数值标量；类名声明（`TREXCoil`、`CellVariable`、
+   `ModalBasis`）要求返回类型名匹配或为对象实例；
+3. 声明 `shape: scalar` 时额外要求返回标量；
+4. 判 pass 时记录里必须写明 `"channel": "single declared output returned positionally"`，
+   并附 `declared{name,dtype,shape}`、`returned_type` 与逐项 `checks`。
+5. **`outputs ≥ 2` 而返回裸值仍然 fail**（`physics.thermal-energy` 的 `W_el/W_ion/W_tot` 就是这一档，
+   它正在被 `c2-result` 改成返回 `Result`）。
+
+**效果：** 18 个任务、25 条判据 fail → pass；判据汇总 269 条里 196/66/7 → **221/41/7**；
+`package_sufficient` **0 条变化**（仍是 47/26），因为这些都是"判据缺口"，不是库或结论的变化。
+逐条清单在 `receipt.json` 的 `revision.single_output_channel.criteria_flipped`；
+按**资产**（而不是按任务）分组的版本在 `revision.single_output_channel.by_asset`，
+要点是：**25 条判据全部落在 21 个"恰好 1 个声明输出"的资产上**，没有任何 `outputs ≥ 2`
+的资产出现在这张表里——翻转确实集中在单输出资产，没有波及其他。
+
+| 资产 | 声明输出 | dtype | 返回类型 | 判据数 |
+| --- | --- | --- | --- | ---: |
+| `scirel.collisions.atomic-hydrogen-elastic-cross-section` | `cross_section_m2` | float64 array | ndarray | 1 |
+| `scirel.collisions.molecular-hydrogen-charge-exchange-rate-coefficient` | `rate_m3_s` | float64 array or scalar | ndarray | 1 |
+| `scirel.configurations.trex-coil` | `source` | BRB | BRB | 1 |
+| `scirel.configurations.trex-coil` | `source` | TREXCoil | TREXCoil | 1 |
+| `scirel.configurations.trex-coil` | `source` | WHAM | WHAM | 1 |
+| `scirel.dielectric.cold-plasma-tensor` | `epsilon_r` | complex128 | ndarray | 1 |
+| `scirel.electromagnetism.circular-filament-green` | `response` | float64 | tuple | 1 |
+| `scirel.electromagnetism.device` | `source` | Device | Device | 1 |
+| `scirel.electromagnetism.loop-flux-matrix` | `G` | float64 | ndarray | 1 |
+| `scirel.fusion.dd-neutron-lab-energy` | `neutron_energy_kev` | float | float | 1 |
+| `scirel.fvm.cell-variable` | `variable` | CellVariable | CellVariable | 1 |
+| `scirel.geometry.arclength-derivative` | `derivative` | float64 | ndarray | 1 |
+| `scirel.geometry.masked-toroidal-volume` | `volume` | Python float | float | 1 |
+| `scirel.geometry.meridional-polar-forward` | `position_and_vector` | float64 tuple | tuple | 2 |
+| `scirel.geometry.regular-grid` | `grid_and_fields` | float64 | tuple | 1 |
+| `scirel.neutrals.cross-mesh-distribution-interpolation` | `fb` | float64 array | ndarray | 1 |
+| `scirel.neutrals.neutral-generation-propagation` | `generation` | float64 array | ndarray | 1 |
+| `scirel.numerics.modal-projection` | `coefficients` | float64 | ndarray | 1 |
+| `scirel.numerics.orthonormal-modal-basis` | `basis` | ModalBasis | ModalBasis | 1 |
+| `scirel.plasma.fast-ion-heating` | `ion_fraction` | float64 | float | 1 |
+| `scirel.source.gaussian` | `profile` | float64 array | ndarray | 4 |
+
+### 6.11 清单的分组也需要复核，不只是判定
+
+B1 的原始表格按"返回类型"给 21 份资产分组，其中 `field.circular-filament-green` 被归到 tuple，
+而它实测返回 `Result`——真正返回 tuple 的是 `electromagnetism.circular-filament-green`。
+这跟前面六条数值误判是同一类问题的另一面：
+
+- 数值判据错，会给出一个**看起来像失败**的数字；
+- **分组错**，会让读者按错误的类别去找证据（"tuple 组要按位置解包"对 `Result` 不成立），
+  而且它不会触发任何检查——表格没有自校验。
+
+因此分组也要复核，并且分组应尽量**从记录生成**（`calls.jsonl` 的 `returned_type` +
+`receipt.revision.single_output_channel.criteria_flipped`），而不是手写。本文件 B1 的表格
+现在就是"手写分组 + 事后更正"的例子，保留原样以便看出代价。

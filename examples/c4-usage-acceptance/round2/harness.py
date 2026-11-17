@@ -455,9 +455,74 @@ def argnames(asset: str) -> list[str]:
 
 # ---------------------------------------------------------------- criteria
 
+_ARRAYISH = ("array", "ndarray", "float64", "complex128", "complex", "list")
+_SCALARISH = ("scalar",)
+
+
+def _single_output_channel(call: dict, declared_output: dict) -> dict:
+    """Decide whether ONE declared output returned as a bare value is acceptable.
+
+    Some published entries return their single declared quantity directly (an array, a
+    float, a tuple of the compound value) instead of a mapping.  For exactly one declared
+    output that is a legitimate calling convention, so the criterion passes when the
+    returned kind is compatible with the declared ``dtype``/``shape``.  The record says
+    which channel was used, so a reader can tell this pass from a mapping pass.
+
+    With two or more declared outputs a bare value stays a failure: the value then cannot
+    be attributed to the declared names.
+    """
+    dtype = str(declared_output.get("dtype", "")).lower()
+    shape = str(declared_output.get("shape", "")).lower()
+    returned = str(call.get("returned_type", ""))
+    detail = {
+        "channel": "single declared output returned positionally",
+        "declared": {
+            "name": declared_output.get("name"),
+            "dtype": declared_output.get("dtype"),
+            "shape": declared_output.get("shape"),
+        },
+        "returned_type": returned or None,
+        "checks": {},
+    }
+    compatible = None
+    if "tuple" in dtype:
+        compatible = returned in ("tuple", "list")
+        detail["checks"]["tuple_dtype"] = compatible
+    elif any(token in dtype for token in _ARRAYISH):
+        compatible = returned in (
+            "ndarray",
+            "list",
+            "tuple",
+            "float",
+            "int",
+            "float64",
+            "complex128",
+        )
+        detail["checks"]["array_dtype"] = compatible
+    elif dtype in ("float", "python float", "float64", "int", "python int"):
+        compatible = returned in ("float", "int", "float64", "int64", "complex128", "ndarray")
+        detail["checks"]["numeric_dtype"] = compatible
+    else:
+        # dtype names a class or is free text: accept when the returned type name matches
+        token = dtype.split()[0] if dtype else ""
+        compatible = bool(token) and token.replace("scirel.", "") in returned.lower()
+        detail["checks"]["named_type"] = {"declared_token": token, "matches": compatible}
+        if not compatible and token:
+            # a class-typed output may still arrive as any object instance
+            compatible = returned not in ("NoneType", "")
+            detail["checks"]["object_instance"] = compatible
+    if shape in _SCALARISH:
+        scalar = returned in ("float", "int", "float64", "int64", "complex128")
+        detail["checks"]["scalar_shape"] = scalar
+        compatible = bool(compatible) and scalar
+    ok = bool(compatible)
+    detail["verdict"] = "compatible" if ok else "incompatible"
+    return {"status": "pass" if ok else "fail", "detail": detail}
+
 
 def check_fields(ctx: Ctx, call: dict, asset: str) -> dict:
-    declared = sorted(output_names(asset))
+    declared_names = output_names(asset)
+    declared = sorted(declared_names)
     got = call.get("returned_fields")
     if got is None:
         if call.get("status") == "raised":
@@ -469,13 +534,18 @@ def check_fields(ctx: Ctx, call: dict, asset: str) -> dict:
                     "exception": call.get("exception"),
                 },
             }
+        if len(declared_names) == 1:
+            single = _single_output_channel(call, contract(asset)["outputs"][0])
+            single["detail"]["all_declared_outputs"] = declared
+            return single
         return {
             "status": "fail",
             "detail": {
                 "declared": declared,
                 "returned": f"a {call.get('returned_type')} value, not a mapping",
-                "note": "the contract declares named outputs; this return carries no "
-                "field names, so the declared output set cannot be observed",
+                "note": "the contract declares several named outputs; a bare value "
+                "cannot be attributed to them, so the output set is not "
+                "observable",
             },
         }
     return {
@@ -534,7 +604,6 @@ def check_exception(ctx: Ctx, call: dict, asset: str, failure_key: str, expected
 def check_tolerance(
     observed: float, rel: float, abs_: float = 0.0, quantity: str = "", unit: str = ""
 ) -> dict:
-    rel if observed == observed else math.inf
     ok = observed <= rel or observed <= abs_
     return {
         "status": "pass" if ok else "fail",

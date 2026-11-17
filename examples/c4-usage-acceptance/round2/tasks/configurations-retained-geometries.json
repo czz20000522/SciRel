@@ -101,10 +101,10 @@
    "scirel.configurations.wham": {
     "attribute": "current_sets",
     "returned": [
-     "<scirel.electromagnetism.sources.RectangularCoil object at 0x107496650>",
-     "<scirel.electromagnetism.sources.RectangularCoil object at 0x107496750>",
-     "<scirel.electromagnetism.sources.RectangularCoil object at 0x1074de5d0>",
-     "<scirel.electromagnetism.sources.RectangularCoil object at 0x1074de6c0>"
+     "<scirel.electromagnetism.sources.RectangularCoil object at 0x107d06b50>",
+     "<scirel.electromagnetism.sources.RectangularCoil object at 0x107d06c50>",
+     "<scirel.electromagnetism.sources.RectangularCoil object at 0x107d7e300>",
+     "<scirel.electromagnetism.sources.RectangularCoil object at 0x107d7e3f0>"
     ],
     "matches_declared": true
    }
@@ -127,10 +127,10 @@
    "scirel.configurations.wham": {
     "attribute": "current_sets",
     "returned": [
-     "<scirel.electromagnetism.sources.RectangularCoil object at 0x107496650>",
-     "<scirel.electromagnetism.sources.RectangularCoil object at 0x107496750>",
-     "<scirel.electromagnetism.sources.RectangularCoil object at 0x1074de5d0>",
-     "<scirel.electromagnetism.sources.RectangularCoil object at 0x1074de6c0>"
+     "<scirel.electromagnetism.sources.RectangularCoil object at 0x107d06b50>",
+     "<scirel.electromagnetism.sources.RectangularCoil object at 0x107d06c50>",
+     "<scirel.electromagnetism.sources.RectangularCoil object at 0x107d7e300>",
+     "<scirel.electromagnetism.sources.RectangularCoil object at 0x107d7e3f0>"
     ],
     "matches_declared": true
    }
@@ -141,37 +141,73 @@
   {
    "id": "fields@scirel.configurations.trex-coil",
    "kind": "contract_fields",
-   "status": "fail",
+   "status": "pass",
    "detail": {
-    "declared": [
+    "channel": "single declared output returned positionally",
+    "declared": {
+     "name": "source",
+     "dtype": "TREXCoil",
+     "shape": "one object"
+    },
+    "returned_type": "TREXCoil",
+    "checks": {
+     "named_type": {
+      "declared_token": "trexcoil",
+      "matches": true
+     }
+    },
+    "verdict": "compatible",
+    "all_declared_outputs": [
      "source"
-    ],
-    "returned": "a TREXCoil value, not a mapping",
-    "note": "the contract declares named outputs; this return carries no field names, so the declared output set cannot be observed"
+    ]
    }
   },
   {
    "id": "fields@scirel.configurations.brb",
    "kind": "contract_fields",
-   "status": "fail",
+   "status": "pass",
    "detail": {
-    "declared": [
+    "channel": "single declared output returned positionally",
+    "declared": {
+     "name": "source",
+     "dtype": "BRB",
+     "shape": "one object"
+    },
+    "returned_type": "BRB",
+    "checks": {
+     "named_type": {
+      "declared_token": "brb",
+      "matches": true
+     }
+    },
+    "verdict": "compatible",
+    "all_declared_outputs": [
      "source"
-    ],
-    "returned": "a BRB value, not a mapping",
-    "note": "the contract declares named outputs; this return carries no field names, so the declared output set cannot be observed"
+    ]
    }
   },
   {
    "id": "fields@scirel.configurations.wham",
    "kind": "contract_fields",
-   "status": "fail",
+   "status": "pass",
    "detail": {
-    "declared": [
+    "channel": "single declared output returned positionally",
+    "declared": {
+     "name": "source",
+     "dtype": "WHAM",
+     "shape": "one object"
+    },
+    "returned_type": "WHAM",
+    "checks": {
+     "named_type": {
+      "declared_token": "wham",
+      "matches": true
+     }
+    },
+    "verdict": "compatible",
+    "all_declared_outputs": [
      "source"
-    ],
-    "returned": "a WHAM value, not a mapping",
-    "note": "the contract declares named outputs; this return carries no field names, so the declared output set cannot be observed"
+    ]
    }
   },
   {
@@ -192,10 +228,10 @@
     "scirel.configurations.wham": {
      "attribute": "current_sets",
      "returned": [
-      "<scirel.electromagnetism.sources.RectangularCoil object at 0x107496650>",
-      "<scirel.electromagnetism.sources.RectangularCoil object at 0x107496750>",
-      "<scirel.electromagnetism.sources.RectangularCoil object at 0x1074de5d0>",
-      "<scirel.electromagnetism.sources.RectangularCoil object at 0x1074de6c0>"
+      "<scirel.electromagnetism.sources.RectangularCoil object at 0x107d06b50>",
+      "<scirel.electromagnetism.sources.RectangularCoil object at 0x107d06c50>",
+      "<scirel.electromagnetism.sources.RectangularCoil object at 0x107d7e300>",
+      "<scirel.electromagnetism.sources.RectangularCoil object at 0x107d7e3f0>"
      ],
      "matches_declared": true
     }

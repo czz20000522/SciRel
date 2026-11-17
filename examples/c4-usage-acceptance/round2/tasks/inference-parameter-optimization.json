@@ -57,7 +57,7 @@
       ]
      },
      "method": "least_squares",
-     "trial_evaluator": "<function trial at 0x109fe35e0>",
+     "trial_evaluator": "<function trial at 0x109f7bab0>",
      "fit_keys": [
       "x"
      ],
@@ -119,9 +119,9 @@
        0.0
       ]
      },
-     "equilibrium_solver": "<function <lambda> at 0x10c743530>",
-     "diagnostic_evaluator": "<function <lambda> at 0x10c7435e0>",
-     "residual_reducer": "<function reduce_observation_residuals at 0x109fe3ed0>",
+     "equilibrium_solver": "<function <lambda> at 0x10c80f8a0>",
+     "diagnostic_evaluator": "<function <lambda> at 0x10c80f950>",
+     "residual_reducer": "<function reduce_observation_residuals at 0x109f90460>",
      "residual_size": null,
      "failure_penalty": 1000000000000.0
     }
@@ -337,7 +337,7 @@
      ]
     },
     "method": "least_squares",
-    "trial_evaluator": "<function trial at 0x109fe35e0>",
+    "trial_evaluator": "<function trial at 0x109f7bab0>",
     "fit_keys": [
      "x"
     ],
@@ -372,9 +372,9 @@
       0.0
      ]
     },
-    "equilibrium_solver": "<function <lambda> at 0x10c743530>",
-    "diagnostic_evaluator": "<function <lambda> at 0x10c7435e0>",
-    "residual_reducer": "<function reduce_observation_residuals at 0x109fe3ed0>",
+    "equilibrium_solver": "<function <lambda> at 0x10c80f8a0>",
+    "diagnostic_evaluator": "<function <lambda> at 0x10c80f950>",
+    "residual_reducer": "<function reduce_observation_residuals at 0x109f90460>",
     "residual_size": null,
     "failure_penalty": 1000000000000.0
    },

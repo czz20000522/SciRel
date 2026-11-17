@@ -96,13 +96,22 @@
   {
    "id": "fields",
    "kind": "contract_fields",
-   "status": "fail",
+   "status": "pass",
    "detail": {
-    "declared": [
+    "channel": "single declared output returned positionally",
+    "declared": {
+     "name": "ion_fraction",
+     "dtype": "float64",
+     "shape": "broadcast input shape"
+    },
+    "returned_type": "float",
+    "checks": {
+     "array_dtype": true
+    },
+    "verdict": "compatible",
+    "all_declared_outputs": [
      "ion_fraction"
-    ],
-    "returned": "a float value, not a mapping",
-    "note": "the contract declares named outputs; this return carries no field names, so the declared output set cannot be observed"
+    ]
    }
   },
   {

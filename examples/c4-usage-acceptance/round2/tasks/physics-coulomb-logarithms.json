@@ -190,7 +190,7 @@
      "W_tot"
     ],
     "returned": "a tuple value, not a mapping",
-    "note": "the contract declares named outputs; this return carries no field names, so the declared output set cannot be observed"
+    "note": "the contract declares several named outputs; a bare value cannot be attributed to them, so the output set is not observable"
    }
   },
   {

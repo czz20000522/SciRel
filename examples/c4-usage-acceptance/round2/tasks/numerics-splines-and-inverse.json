@@ -11,7 +11,7 @@
    "text": "the consumer harness raised IndexError: only integers, slices (`:`), ellipsis (`...`), numpy.newaxis (`None`) and integer or boolean arrays are valid indices"
   }
  ],
- "traceback": "Traceback (most recent call last):\n  File \"<repo>/examples/c4-usage-acceptance/round2/run.py\", line 201, in run_one\n    record = run_task(tid)\n  File \"<repo>/examples/c4-usage-acceptance/round2/run.py\", line 113, in run_task\n    body = fn(ctx, task)\n  File \"<repo>/examples/c4-usage-acceptance/round2/checks/batch1.py\", line 263, in numerics_splines_and_inverse\n    inv = np.asarray(_val(c4)[\"inverse\"])\n                     ~~~~~~~~^^^^^^^^^^^\nIndexError: only integers, slices (`:`), ellipsis (`...`), numpy.newaxis (`None`) and integer or boolean arrays are valid indices\n",
+ "traceback": "Traceback (most recent call last):\n  File \"<repo>/examples/c4-usage-acceptance/round2/run.py\", line 201, in run_one\n    record = run_task(tid)\n  File \"<repo>/examples/c4-usage-acceptance/round2/run.py\", line 113, in run_task\n    body = fn(ctx, task)\n  File \"<repo>/examples/c4-usage-acceptance/round2/checks/batch1.py\", line 262, in numerics_splines_and_inverse\n    inv = np.asarray(_val(c4)[\"inverse\"])\n                     ~~~~~~~~^^^^^^^^^^^\nIndexError: only integers, slices (`:`), ellipsis (`...`), numpy.newaxis (`None`) and integer or boolean arrays are valid indices\n",
  "calls": [],
  "criteria": [
   {

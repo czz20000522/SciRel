@@ -2,33 +2,183 @@
  "task_id": "diagnostics-rejects-shape-mismatch",
  "kind": "failure",
  "domain": "diagnostics",
- "crashed": true,
- "package_sufficient": false,
- "sufficient_reason": "consumer check raised",
- "gaps": [
+ "subdomain": "declared invalid input channel",
+ "question": "Pass two declared flux arrays with unequal shapes to the residual entry and report the raised exception.",
+ "assets_declared": [
+  "scirel.diagnostics.picard-flux-residual"
+ ],
+ "min_calls": 1,
+ "package": {
+  "python": "3.14.7",
+  "numpy": "2.5.4",
+  "scipy": "1.18.1",
+  "mpmath": "1.4.1",
+  "wheel_sha256": "4fc9757a7b843cc3bce2dc96fd2280b27299cff93fbcf5b64a2321b58234f5d7",
+  "snapshot_sha256": "cf0269b61ba19d8b2e5e008a6a4a4d80f2cd701f78c34f2fcb3b16eed9a2593c",
+  "source_revision": "4b5b4aaa38650d8a902e4265f226175d166a426b",
+  "asset_count": 249,
+  "runtime": {
+   "dependencies_bundled": false,
+   "package_version": "0.0.0",
+   "requires_dist": [
+    "numpy==2.5.4",
+    "scipy==1.18.1",
+    "mpmath==1.4.1"
+   ],
+   "requires_python": ">=3.12",
+   "wheel": "scirel-0.0.0-py3-none-any.whl",
+   "wheel_sha256": "4fc9757a7b843cc3bce2dc96fd2280b27299cff93fbcf5b64a2321b58234f5d7"
+  }
+ },
+ "assets_used": [
+  "scirel.diagnostics.picard-flux-residual"
+ ],
+ "calls": [
   {
-   "level": "blocking",
-   "text": "the consumer harness raised NameError: name '_val' is not defined"
+   "seq": 1,
+   "label": "frozen stimulus: psi_next replaced by the declared value",
+   "asset": "scirel.diagnostics.picard-flux-residual",
+   "entrypoint": "scirel.diagnostics.picard_flux_residual:compute_picard_flux_residual",
+   "arguments": {
+    "args": [],
+    "kwargs": {
+     "psi_previous": {
+      "dtype": "float64",
+      "shape": [
+       1,
+       2
+      ],
+      "values": [
+       [
+        3.0,
+        4.0
+       ]
+      ]
+     },
+     "psi_next": [
+      [
+       1.0,
+       2.0
+      ]
+     ]
+    }
+   },
+   "status": "returned",
+   "returned_fields": [
+    "residual"
+   ],
+   "exception": null,
+   "warnings": [],
+   "returned_type": "Result"
   }
  ],
- "traceback": "Traceback (most recent call last):\n  File \"<repo>/examples/c4-usage-acceptance/round2/run.py\", line 201, in run_one\n    record = run_task(tid)\n  File \"<repo>/examples/c4-usage-acceptance/round2/run.py\", line 113, in run_task\n    body = fn(ctx, task)\n  File \"<repo>/examples/c4-usage-acceptance/round2/checks/review.py\", line 88, in diagnostics_shape_mismatch\n    shp_prev = list(H.mapping(_val(frozen), asset).get(\"residual\", []) or [])\n                              ^^^^\nNameError: name '_val' is not defined. Did you mean: 'eval'?\n",
- "calls": [],
+ "answer": {
+  "value": {
+   "frozen_stimulus": "returned",
+   "frozen_residual": 0.565685424949238,
+   "supplementary_probe": {
+    "outcome": "raised",
+    "type": "ValueError",
+    "message": "psi_previous and psi_next must be same-shape two-dimensional [Z,R] arrays"
+   }
+  },
+  "unit": "dimensionless residual"
+ },
+ "independent_check": {
+  "method": "frozen stimulus applied once; a self-added probe passes genuinely incompatible shapes (1,2) vs (3,2)",
+  "observed": {
+   "outcome": "raised",
+   "type": "ValueError",
+   "message": "psi_previous and psi_next must be same-shape two-dimensional [Z,R] arrays"
+  },
+  "verdict": "pass"
+ },
  "criteria": [
+  {
+   "id": "fields",
+   "kind": "contract_fields",
+   "status": "pass",
+   "detail": {
+    "declared": [
+     "residual"
+    ],
+    "returned": [
+     "residual"
+    ]
+   }
+  },
+  {
+   "id": "raise",
+   "kind": "exception",
+   "status": "fail",
+   "detail": {
+    "expected_exception": "ValueError",
+    "expected_appears_in_contract_quote": true,
+    "type_matches_exactly_or_by_subclass": false,
+    "contract_quote": "Raises ValueError for unequal shapes, non-two-dimensional arrays or nonfinite entries.",
+    "actual": null
+   }
+  },
+  {
+   "id": "norepair",
+   "kind": "invariant",
+   "status": "pass",
+   "detail": {
+    "calls_made": 1,
+    "note": "the frozen stimulus was passed unchanged and nothing was caught"
+   }
+  },
   {
    "id": "readback",
    "kind": "readback",
-   "status": "fail",
+   "status": "pass",
    "detail": {
     "reopened": "diagnostics-rejects-shape-mismatch.json",
-    "problems": [
-     "no calls stored",
-     "no answer stored",
-     "no independent check stored"
-    ],
-    "stored_call_count": 0
+    "problems": [],
+    "stored_call_count": 1
    }
   }
  ],
- "answer": null,
- "independent_check": null
+ "package_sufficient": true,
+ "sufficient_reason": "the declared ValueError for incompatible shapes is reachable with a genuinely mismatched pair; the frozen stimulus keeps the same shape as the baseline, so it cannot trigger it. Task-list defect.",
+ "gaps": [
+  {
+   "level": "process",
+   "text": "the frozen stimulus for this task does not produce the mismatch it names; the task record should freeze a genuinely incompatible shape"
+  }
+ ],
+ "bindings": {
+  "scirel.diagnostics.picard-flux-residual": {
+   "symbol": "compute_picard_flux_residual",
+   "args": {
+    "psi_previous": {
+     "dtype": "float64",
+     "shape": [
+      1,
+      2
+     ],
+     "values": [
+      [
+       3.0,
+       4.0
+      ]
+     ]
+    },
+    "psi_next": {
+     "dtype": "float64",
+     "shape": [
+      1,
+      2
+     ],
+     "values": [
+      [
+       3.0,
+       4.0
+      ]
+     ]
+    }
+   },
+   "example_error": null
+  }
+ }
 }

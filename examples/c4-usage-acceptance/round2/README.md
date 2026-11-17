@@ -72,13 +72,24 @@ python3 examples/c4-usage-acceptance/round2/coverage.py
 | 指标 | 值 |
 | --- | --- |
 | 任务 | 73 / 73 执行 |
-| `package_sufficient` | **47 true / 26 false**（复核前 43 / 30） |
-| 判据 | **269 条：196 pass、66 fail、7 not-run**（复核前 273 / 191 / 77 / 5） |
-| 按 kind | nominal 25/43 sufficient；failure 20/23；inapplicable 1/1；cross **1/6** |
+| `package_sufficient` | **48 true / 25 false**（通道修订时 47/26；复核前 43/30） |
+| 判据 | **272 条：224 pass、41 fail、7 not-run**（通道修订后 269/221/41；复核前 196/66；初版 191/77/5） |
+| 按 kind | nominal 25/43 sufficient；failure 21/23；inapplicable 1/1；cross **1/6** |
 
 > 这一版是**复核后**的数字。初版（`13cfaa00`）把 8 类阻塞缺口报得偏重，其中 6 类经最小复现
 > 确认是消费者侧判据错误（因子写反、`np.size` 读标量、转置方向、调用构造、绑错调用点、
 > 发明合同没有的接口），逐条见 [GAPS.md](GAPS.md) 第六节。
+>
+> 另有一条**判据缺口**已补：合同恰好声明 1 个输出、入口按位置返回裸值时，`fields` 判据原先
+> 必然 fail。现在这类返回在类型/形状相容时判 pass，并在记录里注明
+> `single declared output returned positionally`；`outputs ≥ 2` 仍判 fail。25 条判据因此
+> 由 fail 转 pass（196/66 → 221/41），`package_sufficient` **一条未变**。
+>
+> 随后修了自己的三个工具缺陷（`review.py` 未定义的 `_val`、`check_fields` 丢失的 mapping 返回、
+> residual 的 `list(float)`）。其中第一个让 `diagnostics-rejects-shape-mismatch` 自复核批次起
+> 一直以"崩溃记录"冒充结果；修好后该任务变为 3 条判据、`package_sufficient: true`，
+> 总数因此是 **48/25、272 条 224/41/7**。详见 GAPS 6.9.1 与 `receipt.revision.defects_fixed_in_harness`。
+> 逐条见 `receipt.json` 的 `revision.single_output_channel`。
 
 按 domain 的覆盖矩阵用 `coverage.py` 复算（每格的"已覆盖"= 该域任务全部执行，
 "sufficient"= 该域里只用包就能完成的条数）：
