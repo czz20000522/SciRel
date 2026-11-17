@@ -83,7 +83,7 @@ def test_ronnmark_h_matches_the_derivative_relation(x, lam):
 
     result = evaluate_ronnmark_r(x, lam)
     reference = bessel.ronnmark_h(x, lam)
-    budget = _budget(result["branch"])
+    budget = _budget(result["branch"], 1)
     assert bessel.relative(result["H"], reference) <= budget
 
 
