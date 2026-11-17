@@ -25,15 +25,7 @@ from __future__ import annotations
 import numpy as np
 import pytest
 
-from ._cold_fluid_spectrum_reference import (
-    cold_state,
-    eigenproduct,
-    flip_ampere_curl,
-    light_branch,
-    pencil_spectrum,
-    relative,
-    state_plasma_frequency,
-)
+import _cold_fluid_spectrum_reference as reference
 
 BUDGET = 1e-12
 COLD_WAVENUMBERS = [
@@ -47,10 +39,10 @@ COLD_WAVENUMBERS = [
 
 
 def _branches(state, kx, kz):
-    omega_p = state_plasma_frequency(state)
+    omega_p = reference.state_plasma_frequency(state)
     c2 = state["c2"]
     wave = np.sqrt(complex(kx) ** 2 + complex(kz) ** 2)
-    return omega_p, light_branch(omega_p, abs(wave), c2)
+    return omega_p, reference.light_branch(omega_p, abs(wave), c2)
 
 
 def _nearest(values, target):
@@ -70,7 +62,7 @@ def test_spectral_temporal_matrix_matches_cold_closed_form(kx, kz):
     """
     from scirel.kinetic.spectral_evolution import assemble_spectral_matrix
 
-    state = cold_state()
+    state = reference.cold_state()
     result = assemble_spectral_matrix(state, kx, kz)
     assert np.array_equal(result["A"], np.eye(result["A"].shape[0])), (
         "the nonrelativistic inertia must be the identity for the closed form to apply"
@@ -83,24 +75,24 @@ def test_spectral_temporal_matrix_matches_cold_closed_form(kx, kz):
     assert np.all(result["state"]["vA"] == 0.0)
 
     omega_p, omega_light = _branches(result["state"], kx, kz)
-    spectrum = pencil_spectrum(result["M"], result["A"])
+    spectrum = reference.pencil_spectrum(result["M"], result["A"])
     magnitudes = [abs(value) for value in spectrum]
 
-    assert relative(max(magnitudes), omega_light) <= BUDGET
-    assert relative(_nearest(magnitudes, omega_p), omega_p) <= BUDGET
+    assert reference.relative(max(magnitudes), omega_light) <= BUDGET
+    assert reference.relative(_nearest(magnitudes, omega_p), omega_p) <= BUDGET
     # A cold unmagnetized plasma has no growing mode; any imaginary part is a
     # broken curl sign or a spurious collision term.
     assert max(abs(value.imag) for value in spectrum) <= 1e-6 * float(omega_p)
 
     # The transverse pair is twofold degenerate and the longitudinal branch is a
     # signed pair, so the analytic multiplicities are part of the relation.
-    near_light = [value for value in magnitudes if relative(value, omega_light) <= 1e-9]
-    near_plasma = [value for value in magnitudes if relative(value, omega_p) <= 1e-9]
+    near_light = [value for value in magnitudes if reference.relative(value, omega_light) <= 1e-9]
+    near_plasma = [value for value in magnitudes if reference.relative(value, omega_p) <= 1e-9]
     assert len(near_light) == 4  # two polarizations, two signs
     assert len(near_plasma) == 2  # one longitudinal mode, two signs
 
 
-def test_spectral_temporal_matrix_sign_flip_breaks_light_branch():
+def test_spectral_temporal_matrix_sign_flip_breaks_reference.light_branch():
     """Flipping one curl block turns the light branch into ``omega_p**2 - k**2 c**2``.
 
     This is the mutation that a pure self-consistency test cannot see: the returned
@@ -112,8 +104,8 @@ def test_spectral_temporal_matrix_sign_flip_breaks_light_branch():
     """
     from scirel.kinetic.spectral_evolution import assemble_spectral_matrix
 
-    state = cold_state()
-    omega_p = state_plasma_frequency(state)
+    state = reference.cold_state()
+    omega_p = reference.state_plasma_frequency(state)
     c2 = float(state["c2"])
     cutoff = float(omega_p) / np.sqrt(c2)
 
@@ -121,23 +113,23 @@ def test_spectral_temporal_matrix_sign_flip_breaks_light_branch():
     kx = 1.0e-3
     assert kx > cutoff
     baseline = assemble_spectral_matrix(state, kx, 0.0)
-    flipped = flip_ampere_curl(baseline["M"], baseline["state"]["s"].__int__())
-    baseline_spectrum = pencil_spectrum(baseline["M"], baseline["A"])
-    flipped_spectrum = pencil_spectrum(flipped, baseline["A"])
+    flipped = reference.flip_ampere_curl(baseline["M"], baseline["state"]["s"].__int__())
+    baseline_spectrum = reference.pencil_spectrum(baseline["M"], baseline["A"])
+    flipped_spectrum = reference.pencil_spectrum(flipped, baseline["A"])
     assert max(abs(value.imag) for value in baseline_spectrum) <= 1e-6 * float(omega_p)
     predicted_growth = float(np.sqrt(kx**2 * c2 - float(omega_p) ** 2))
     observed_growth = max(abs(value.imag) for value in flipped_spectrum)
-    assert relative(observed_growth, predicted_growth) <= 1e-10
+    assert reference.relative(observed_growth, predicted_growth) <= 1e-10
     assert observed_growth > 1e5  # not a rounding artefact
 
     # Below the cutoff: the flipped real pair is sqrt(omega_p^2 - k^2 c^2).
     kx_small = 1.0e-4
     assert kx_small < cutoff
     small = assemble_spectral_matrix(state, kx_small, 0.0)
-    flipped_small = flip_ampere_curl(small["M"], small["state"]["s"].__int__())
-    small_spectrum = [abs(value) for value in pencil_spectrum(flipped_small, small["A"])]
+    flipped_small = reference.flip_ampere_curl(small["M"], small["state"]["s"].__int__())
+    small_spectrum = [abs(value) for value in reference.pencil_spectrum(flipped_small, small["A"])]
     predicted_real = float(np.sqrt(float(omega_p) ** 2 - kx_small**2 * c2))
-    assert relative(_nearest(small_spectrum, predicted_real), predicted_real) <= 1e-10
+    assert reference.relative(_nearest(small_spectrum, predicted_real), predicted_real) <= 1e-10
 
 
 @pytest.mark.parametrize(("kx", "kz"), COLD_WAVENUMBERS)
@@ -151,21 +143,21 @@ def test_spectral_temporal_spectrum_hits_cold_closed_form(kx, kz):
     """
     from scirel.kinetic.spectral_evolution import assemble_spectral_matrix, solve_temporal_spectrum
 
-    state = cold_state()
+    state = reference.cold_state()
     result = assemble_spectral_matrix(state, kx, kz)
     solution = solve_temporal_spectrum(result["M"], result["A"])
     omega_p, omega_light = _branches(result["state"], kx, kz)
     magnitudes = [abs(complex(value)) for value in np.asarray(solution["w1"]).ravel()]
 
-    assert relative(max(magnitudes), omega_light) <= BUDGET
-    assert relative(_nearest(magnitudes, omega_p), omega_p) <= BUDGET
+    assert reference.relative(max(magnitudes), omega_light) <= BUDGET
+    assert reference.relative(_nearest(magnitudes, omega_p), omega_p) <= BUDGET
     # Both declared solver paths must agree with the closed form, so the check
     # does not depend on which initial solver the default happens to select.
     for method in (1, 2):
         alternate = solve_temporal_spectrum(result["M"], result["A"], oldmethod=method)
         alternate_magnitudes = [abs(complex(value)) for value in np.asarray(alternate["w1"]).ravel()]
-        assert relative(max(alternate_magnitudes), omega_light) <= BUDGET
-        assert relative(_nearest(alternate_magnitudes, omega_p), omega_p) <= BUDGET
+        assert reference.relative(max(alternate_magnitudes), omega_light) <= BUDGET
+        assert reference.relative(_nearest(alternate_magnitudes, omega_p), omega_p) <= BUDGET
 
 
 def test_spectral_temporal_spectrum_is_similarity_invariant():
@@ -177,14 +169,14 @@ def test_spectral_temporal_spectrum_is_similarity_invariant():
     """
     from scirel.kinetic.spectral_evolution import assemble_spectral_matrix, solve_temporal_spectrum
 
-    state = cold_state()
+    state = reference.cold_state()
     result = assemble_spectral_matrix(state, 2.0e-3, 0.0)
     baseline = sorted(abs(complex(value)) for value in np.asarray(solve_temporal_spectrum(result["M"], result["A"])["w1"]).ravel())
     perturbed_scales = np.asarray(result["scales"], dtype=float) * np.geomspace(1.0, 7.0, result["scales"].size)
     perturbed = solve_temporal_spectrum(result["M"], result["A"], scales=perturbed_scales)
     moved = sorted(abs(complex(value)) for value in np.asarray(perturbed["w1"]).ravel())
     for before, after in zip(baseline, moved):
-        assert relative(max(after, 1e-300), max(before, 1e-300)) <= 1e-8
+        assert reference.relative(max(after, 1e-300), max(before, 1e-300)) <= 1e-8
 
 
 def test_spectral_plasma_state_derived_scalars_match_closed_forms():
@@ -202,43 +194,40 @@ def test_spectral_plasma_state_derived_scalars_match_closed_forms():
     # in parallel/perpendicular sound speeds so Delta is not trivially zero.
     state = initialize_plasma_state(rows, unit="si", cfg={"B0": 8e-9, "gammaTs": 5 / 3})
 
-    from ._cold_fluid_spectrum_reference import high_precision
-
-    high_precision()
+    reference.high_precision()
     import mpmath as mp
 
     epsilon0 = mp.mpf(float(state["epsilon0"]))
     c2 = mp.mpf(float(state["c2"]))
     mu0 = 1 / (c2 * epsilon0)
-    assert relative(float(state["mu0"]), float(mu0)) <= 1e-15
+    assert reference.relative(float(state["mu0"]), float(mu0)) <= 1e-15
 
     B0 = mp.mpf(float(state["B0"]))
     for index in range(rows.shape[0]):
         q, m, n, vx, vy, vz, cs_par, cs_perp, eps_x, eps_y = (mp.mpf(value) for value in rows[index])
         rho = m * n
-        assert relative(float(state["rhos0"][index]), float(rho)) <= 1e-15
-        assert relative(float(state["ns0"][index]), float(n)) <= 1e-15
-        assert relative(float(state["wps"][index]), float(mp.sqrt(n * q * q / (epsilon0 * m)))) <= 1e-14
-        assert relative(float(state["wcs"][index]), float(q * B0 / m)) <= 1e-15
-        assert relative(float(state["Psz"][index]), float(rho * cs_par**2 / (5 / 3))) <= 1e-14
-        assert relative(float(state["Psp"][index]), float(rho * cs_perp**2 / (5 / 3))) <= 1e-14
-        assert relative(float(state["vA"][index]), float(B0 / mp.sqrt(mu0 * rho))) <= 1e-14
-        assert relative(float(state["Deltas"][index]), float((rho * cs_par**2 - rho * cs_perp**2) / (5 / 3) / B0)) <= 1e-13
-        assert relative(float(state["betasz"][index]), float(2 * mu0 * rho * cs_par**2 / (5 / 3) / B0**2)) <= 1e-13
+        assert reference.relative(float(state["rhos0"][index]), float(rho)) <= 1e-15
+        assert reference.relative(float(state["ns0"][index]), float(n)) <= 1e-15
+        assert reference.relative(float(state["wps"][index]), float(mp.sqrt(n * q * q / (epsilon0 * m)))) <= 1e-14
+        assert reference.relative(float(state["wcs"][index]), float(q * B0 / m)) <= 1e-15
+        assert reference.relative(float(state["Psz"][index]), float(rho * cs_par**2 / (5 / 3))) <= 1e-14
+        assert reference.relative(float(state["Psp"][index]), float(rho * cs_perp**2 / (5 / 3))) <= 1e-14
+        assert reference.relative(float(state["vA"][index]), float(B0 / mp.sqrt(mu0 * rho))) <= 1e-14
+        assert reference.relative(float(state["Deltas"][index]), float((rho * cs_par**2 - rho * cs_perp**2) / (5 / 3) / B0)) <= 1e-13
+        assert reference.relative(float(state["betasz"][index]), float(2 * mu0 * rho * cs_par**2 / (5 / 3) / B0**2)) <= 1e-13
 
     # Reported charge and current densities are sums over the declared rows.
-    total_charge = sum(mp.mpf(value) * 0.0 for value in ())
     total_charge = mp.mpf(0)
     for index in range(rows.shape[0]):
         q, _m, n = (mp.mpf(value) for value in rows[index][:3])
         total_charge += q * n
-    assert relative(float(state["Q0"]), float(total_charge)) <= 1e-14
+    assert reference.relative(float(state["Q0"]), float(total_charge)) <= 1e-14
     for axis, key in enumerate(("J0x", "J0y", "J0z")):
         expected = mp.mpf(0)
         for index in range(rows.shape[0]):
             q, _m, n = (mp.mpf(value) for value in rows[index][:3])
             expected += q * n * mp.mpf(rows[index, 3 + axis])
-        assert relative(float(state[key]), float(expected)) <= 1e-14
+        assert reference.relative(float(state[key]), float(expected)) <= 1e-14
 
     # Both beta arrays are undefined at zero field and must be reported as None,
     # not as an invented zero.
@@ -266,16 +255,16 @@ def test_spectral_dispersion_scan_reproduces_cold_branches():
         k_grid=magnitudes_axis,
         cfg={"B0": 0.0},
     )
-    state = cold_state()
-    omega_p = state_plasma_frequency(state)
+    state = reference.cold_state()
+    omega_p = reference.state_plasma_frequency(state)
     c2 = float(state["c2"])
     for column, k in enumerate(magnitudes_axis):
-        omega_light = light_branch(omega_p, k, c2)
+        omega_light = reference.light_branch(omega_p, k, c2)
         column_values = [abs(complex(np.asarray(result["ww1"])[row, column])) for row in range(len(np.asarray(result["ww1"])[:, 0]))]
         if not column_values:
             column_values = [abs(complex(np.asarray(result["w1"]).ravel()[row])) for row in range(len(np.asarray(result["w1"]).ravel()))]
-        assert relative(max(column_values), omega_light) <= 1e-12
-        assert relative(_nearest(column_values, omega_p), omega_p) <= 1e-12
+        assert reference.relative(max(column_values), omega_light) <= 1e-12
+        assert reference.relative(_nearest(column_values, omega_p), omega_p) <= 1e-12
 
 
 COLD_ROWS = np.array(
