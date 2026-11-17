@@ -4,35 +4,7 @@
   "why": "c1_evidence_coverage infers the basis from prose with a fixed phrase list; on this catalog 106 assets carry basis wording that list does not recognise, so the inference cannot answer 'does this capability stand on evidence'. The field replaces the inference.",
   "entries": [
     {
-      "asset_id": "scirel.equilibrium.anisotropic-picard-feedback",
-      "reason": "not yet migrated: verification.basis absent"
-    },
-    {
-      "asset_id": "scirel.equilibrium.anisotropic-toroidal-current",
-      "reason": "not yet migrated: verification.basis absent"
-    },
-    {
       "asset_id": "scirel.equilibrium.reduced-hall-anisotropic-picard",
-      "reason": "not yet migrated: verification.basis absent"
-    },
-    {
-      "asset_id": "scirel.field.circular-filament-green",
-      "reason": "not yet migrated: verification.basis absent"
-    },
-    {
-      "asset_id": "scirel.field.coil-green-geometry",
-      "reason": "not yet migrated: verification.basis absent"
-    },
-    {
-      "asset_id": "scirel.field.complete-elliptic-integrals-approx",
-      "reason": "not yet migrated: verification.basis absent"
-    },
-    {
-      "asset_id": "scirel.field.current-green-superposition",
-      "reason": "not yet migrated: verification.basis absent"
-    },
-    {
-      "asset_id": "scirel.field.dense-axisymmetric-green",
       "reason": "not yet migrated: verification.basis absent"
     },
     {
@@ -711,6 +683,8 @@
     "scirel.electromagnetism.magnet-ring",
     "scirel.electromagnetism.rectangular-coil",
     "scirel.equilibrium.anisotropic-force-balance",
+    "scirel.equilibrium.anisotropic-picard-feedback",
+    "scirel.equilibrium.anisotropic-toroidal-current",
     "scirel.equilibrium.axisymmetric-anisotropic-picard",
     "scirel.equilibrium.axisymmetric-picard-update",
     "scirel.equilibrium.compute-equilibrium",
@@ -719,6 +693,11 @@
     "scirel.equilibrium.isotropic-pressure-flux",
     "scirel.equilibrium.kinetic-mirror-hall-equilibrium",
     "scirel.equilibrium.pressure-flux-state",
+    "scirel.field.circular-filament-green",
+    "scirel.field.coil-green-geometry",
+    "scirel.field.complete-elliptic-integrals-approx",
+    "scirel.field.current-green-superposition",
+    "scirel.field.dense-axisymmetric-green",
     "scirel.field.mirror-plasma-green",
     "scirel.field.poloidal-field-from-flux",
     "scirel.geometry.axisymmetric-equilibrium-grid-support",

@@ -1,158 +1,163 @@
 {
- "schema": "scirel.asset-document",
- "asset_id": "scirel.field.dense-axisymmetric-green",
- "title": {
-  "en": "Dense axisymmetric circular-filament Green matrices",
-  "zh": "轴对称圆电流丝稠密 Green 矩阵"
- },
- "summary": "Build dense target-row/source-column circular-filament response matrices for psi, BR, and BZ. The named fields are returned in one scirel._result.Result mapping.",
- "taxonomy": [
-  "field",
-  "green-function",
-  "axisymmetric"
- ],
- "aliases": [
-  "dense three-component filament Green response"
- ],
- "discovery": {
-  "capability": [
-   "Dense axisymmetric circular-filament Green matrices",
-   "Build dense target-row/source-column circular-filament response matrices for psi, BR and BZ."
-  ],
-  "operation": [
-   "dense axisymmetric Green-matrix construction",
-   "target points and weighted source rows -> response matrices"
-  ],
-  "model": "Axisymmetric ideal circular-filament kernel with zero-radius, zero-weight and exact self conventions.",
-  "geometry": "Independent finite target and source point tables.",
-  "boundary": "Exact source-target entries are zeroed and zero-radius sources contribute zero; positive radii must be nonnegative.",
-  "device_scope": "device-parameterized"
- },
- "identity": {
-  "relation": "Dense axisymmetric Green matrices",
-  "direction": "target points and weighted source rows to response matrices",
-  "definition": "Evaluate the circular-filament response for each source column in caller order. The documented fields are returned together in a scirel._result.Result mapping; mapping and attribute access expose the same values. No nested mapping is returned.",
-  "model": "Axisymmetric ideal circular-filament kernel with zero-radius, zero-weight, and exact self conventions.",
-  "geometry": "Independent finite target and source point tables.",
-  "coordinates": "R,Z in metres; source weight dimensionless; outputs Wb/rad/A and T/A.",
-  "boundary": "Exact source-target entries are zeroed; zero-radius sources contribute zero; positive radii must be nonnegative.",
-  "assumptions": [
-   "Targets and sources are finite real two-column/three-column tables.",
-   "An empty source list is represented by zero-column matrices.",
-   "No 2pi factor or finite-conductor model is added."
-  ]
- },
- "inputs": [
-  {
-   "name": "rz_pts",
-   "description": "Target rows [R_m,Z_m].",
-   "units": "m,m",
-   "shape": "[N_target,2]",
-   "dtype": "real array-like",
-   "required": true,
-   "constraints": "Finite with nonnegative target radii; an empty target list must retain the two-column shape."
+  "schema": "scirel.asset-document",
+  "asset_id": "scirel.field.dense-axisymmetric-green",
+  "title": {
+    "en": "Dense axisymmetric circular-filament Green matrices",
+    "zh": "轴对称圆电流丝稠密 Green 矩阵"
   },
-  {
-   "name": "source_rzw",
-   "description": "Source rows [R0_m,Z0_m,dimensionless weight].",
-   "units": "m,m,dimensionless",
-   "shape": "[N_source,3]",
-   "dtype": "real array-like",
-   "required": true,
-   "constraints": "Finite with nonnegative source radii; [] is accepted as an empty-source shorthand."
-  }
- ],
- "outputs": [
-  {
-   "name": "gpsi",
-   "description": "Field of the returned scirel._result.Result mapping: Weighted psi=R A_phi response for each target and source pair.",
-   "units": "Wb/rad/A",
-   "shape": "[N_target,N_source]",
-   "dtype": "float64",
-   "required": true,
-   "constraints": "axis-source columns are zero; no 2*pi factor is applied."
+  "summary": "Build dense target-row/source-column circular-filament response matrices for psi, BR, and BZ. The named fields are returned in one scirel._result.Result mapping.",
+  "taxonomy": [
+    "field",
+    "green-function",
+    "axisymmetric"
+  ],
+  "aliases": [
+    "dense three-component filament Green response"
+  ],
+  "discovery": {
+    "capability": [
+      "Dense axisymmetric circular-filament Green matrices",
+      "Build dense target-row/source-column circular-filament response matrices for psi, BR and BZ."
+    ],
+    "operation": [
+      "dense axisymmetric Green-matrix construction",
+      "target points and weighted source rows -> response matrices"
+    ],
+    "model": "Axisymmetric ideal circular-filament kernel with zero-radius, zero-weight and exact self conventions.",
+    "geometry": "Independent finite target and source point tables.",
+    "boundary": "Exact source-target entries are zeroed and zero-radius sources contribute zero; positive radii must be nonnegative.",
+    "device_scope": "device-parameterized"
   },
-  {
-   "name": "gBR",
-   "description": "Field of the returned scirel._result.Result mapping: Weighted radial-field response for each target and source pair.",
-   "units": "T/A",
-   "shape": "[N_target,N_source]",
-   "dtype": "float64",
-   "required": true,
-   "constraints": "axis-source columns are zero."
+  "identity": {
+    "relation": "Dense axisymmetric Green matrices",
+    "direction": "target points and weighted source rows to response matrices",
+    "definition": "Evaluate the circular-filament response for each source column in caller order. The documented fields are returned together in a scirel._result.Result mapping; mapping and attribute access expose the same values. No nested mapping is returned.",
+    "model": "Axisymmetric ideal circular-filament kernel with zero-radius, zero-weight, and exact self conventions.",
+    "geometry": "Independent finite target and source point tables.",
+    "coordinates": "R,Z in metres; source weight dimensionless; outputs Wb/rad/A and T/A.",
+    "boundary": "Exact source-target entries are zeroed; zero-radius sources contribute zero; positive radii must be nonnegative.",
+    "assumptions": [
+      "Targets and sources are finite real two-column/three-column tables.",
+      "An empty source list is represented by zero-column matrices.",
+      "No 2pi factor or finite-conductor model is added."
+    ]
   },
-  {
-   "name": "gBZ",
-   "description": "Field of the returned scirel._result.Result mapping: Weighted axial-field response for each target and source pair.",
-   "units": "T/A",
-   "shape": "[N_target,N_source]",
-   "dtype": "float64",
-   "required": true,
-   "constraints": "axis targets may retain the analytic finite limit."
+  "inputs": [
+    {
+      "name": "rz_pts",
+      "description": "Target rows [R_m,Z_m].",
+      "units": "m,m",
+      "shape": "[N_target,2]",
+      "dtype": "real array-like",
+      "required": true,
+      "constraints": "Finite with nonnegative target radii; an empty target list must retain the two-column shape."
+    },
+    {
+      "name": "source_rzw",
+      "description": "Source rows [R0_m,Z0_m,dimensionless weight].",
+      "units": "m,m,dimensionless",
+      "shape": "[N_source,3]",
+      "dtype": "real array-like",
+      "required": true,
+      "constraints": "Finite with nonnegative source radii; [] is accepted as an empty-source shorthand."
+    }
+  ],
+  "outputs": [
+    {
+      "name": "gpsi",
+      "description": "Field of the returned scirel._result.Result mapping: Weighted psi=R A_phi response for each target and source pair.",
+      "units": "Wb/rad/A",
+      "shape": "[N_target,N_source]",
+      "dtype": "float64",
+      "required": true,
+      "constraints": "axis-source columns are zero; no 2*pi factor is applied."
+    },
+    {
+      "name": "gBR",
+      "description": "Field of the returned scirel._result.Result mapping: Weighted radial-field response for each target and source pair.",
+      "units": "T/A",
+      "shape": "[N_target,N_source]",
+      "dtype": "float64",
+      "required": true,
+      "constraints": "axis-source columns are zero."
+    },
+    {
+      "name": "gBZ",
+      "description": "Field of the returned scirel._result.Result mapping: Weighted axial-field response for each target and source pair.",
+      "units": "T/A",
+      "shape": "[N_target,N_source]",
+      "dtype": "float64",
+      "required": true,
+      "constraints": "axis targets may retain the analytic finite limit."
+    }
+  ],
+  "applicability": {
+    "preconditions": [
+      "Targets and sources are finite real two-column/three-column tables.",
+      "An empty source list is represented by zero-column matrices."
+    ],
+    "supported": [
+      "Weighted columns, empty sources, axis limits, source-column order, and direct kernel agreement."
+    ],
+    "excluded": [
+      "Finite-wire self-fields, arbitrary extreme-scale accuracy, and physical equilibrium claims."
+    ]
+  },
+  "failure_semantics": {
+    "invalid_input": "ValueError is raised for malformed, complex, nonfinite, or negative-radius target/source arrays.",
+    "runtime_failure": "FloatingPointError from an unrepresentable kernel response propagates.",
+    "nonconvergence": "Not applicable; matrix entries are evaluated directly.",
+    "partial_results": "No scirel._result.Result response mapping is returned after validation or kernel failure."
+  },
+  "public_api": {
+    "python": {
+      "module": "scirel.field.dense_axisymmetric_green",
+      "symbol": "dense_axisymmetric_green_response",
+      "signature": "dense_axisymmetric_green_response(rz_pts, source_rzw)",
+      "canonical_module": "scirel.field",
+      "canonical_symbol": "dense_axisymmetric_green_response"
+    }
+  },
+  "version": {
+    "implementation_version": "0.0.0",
+    "dependencies": [
+      {
+        "asset_id": "scirel.electromagnetism.green-response-matrices"
+      }
+    ]
+  },
+  "example": {
+    "description": "Compare one source with a changed weight and an empty source set.",
+    "code": "import numpy as np\nfrom scirel._result import Result\nfrom scirel.field import dense_axisymmetric_green_response\ntargets = [[0.0, -0.1], [0.2, 0.15]]\nresult = dense_axisymmetric_green_response(\n    targets, [[0.35, -0.1, 1.0]]\n)\nweighted = dense_axisymmetric_green_response(\n    targets, [[0.35, -0.1, -2.5]]\n)\nempty = dense_axisymmetric_green_response(targets, [])\nassert isinstance(result, Result)\nassert list(result) == ['gpsi', 'gBR', 'gBZ']\nassert result.gpsi is result['gpsi']\nfor name in ('gpsi', 'gBR', 'gBZ'):\n    assert result[name].shape == (2, 1)\n    np.testing.assert_allclose(weighted[name], -2.5 * result[name])\n    assert empty[name].shape == (2, 0)\n",
+    "expected": "Each nonempty response has shape (2,1), scaling by -2.5 is exact within the assertion, and the empty source result has shape (2,0). The returned object is a scirel._result.Result mapping; each field is also readable as an attribute."
+  },
+  "verification": {
+    "scope": [
+      "Source-weight scaling and empty-source shape.",
+      "Axis-source zero-column convention.",
+      "Circular-filament analytic axial-field limit.",
+      "Columnwise equality with the maintained circular-filament response through the shared kernel; this is wrapper consistency, not an independent numerical oracle.",
+      "Invalid radius and source-shape rejection.",
+      "In tests/cross_domain/test_field_green_correction.py, test_every_positive_loop_radius_retains_analytic_axis_field with api=dense compares gBZ for a 1e-13 source radius at axial targets with a 70-digit ideal-loop reference and checks zero gBR; test_exact_self_rule_is_distinct_from_arithmetic_failure with api=dense separates zero exact-self entries from FloatingPointError at weight 1e308. test_public_field_interfaces_reject_complex_coordinates includes api=dense.",
+      "The named result preserves the captured key order, values, shapes, dtypes, mapping access and attribute access; failures retain their exception types and messages.",
+      "Independent evidence (tests/field/test_dense_axisymmetric_green_evidence.py): every target/source entry of all three matrices agrees with the direct Biot-Savart quadrature of that single filament within 64 eps; the coincidence and zero-radius conventions, the exact power-of-two column scaling, and the preserved (N_target, 0) empty-source shape are separate assertions."
+    ],
+    "tests": [
+      "tests/field/test_dense_axisymmetric_green.py",
+      "tests/cross_domain/test_field_green_correction.py",
+      "tests/field/test_dense_axisymmetric_green_evidence.py"
+    ],
+    "evidence_ceiling": "tests/field/test_dense_axisymmetric_green.py directly invokes dense_axisymmetric_green_response as scientific_function and by its own name: test_source_weight_scales_each_column_and_zeroes_a_column, test_columns_match_individual_filament_flux_and_field_responses, test_axis_bz_matches_circular_filament_limit, and the shape/empty-source/rejection assertions bind separate source columns, scaling, the analytic axial limit and maintained-kernel agreement. The api=dense cases named in scope are direct public-entry assertions, not merely shared-file references. Formula-cutover and radially separated near-wire assertions in the shared file call aggregate only; they are dependency evidence, not direct dense-entry coverage. No finite-wire self-field, arbitrary extreme-scale accuracy or equilibrium claim follows. C1 evidence adds the Biot-Savart quadrature as the second source for every matrix entry, so agreement between two SciRel entry points is no longer the only cross-check; the observed maximum deviation on the sampled grid is 7.81e-15 relative against a 1.42e-14 budget. It does not establish a continuous error bound, the regime inside 1e-2 of the wire distance, or any statement about the discrete self convention as a finite-wire model.",
+    "known_limitations": [
+      "The result preserves separate source columns and does not sum them.",
+      "The direct arithmetic-failure fixture uses a tiny source and large weight; coverage of every other unrepresentable response and every shared-kernel branch through this wrapper is UNKNOWN.",
+      "The 64-eps figure is an observed maximum over the sampled target/source table, not a proven bound for other grids or for targets between the sampled points.",
+      "The quadrature reference refuses geometry inside 1e-2 of the wire distance, so the near-wire columns of the matrix are not covered."
+    ],
+    "basis": {
+      "kind": "independent-recomputation",
+      "statement": "Biot-Savart quadrature is added as a second source for every matrix entry, so agreement between two SciRel entry points is no longer the only cross-check; the observed maximum deviation is 7.81e-15 relative against a 1.42e-14 budget on the sampled grid. No continuous error bound is established.",
+      "source": "tests/field/test_dense_axisymmetric_green.py"
+    }
   }
- ],
- "applicability": {
-  "preconditions": [
-   "Targets and sources are finite real two-column/three-column tables.",
-   "An empty source list is represented by zero-column matrices."
-  ],
-  "supported": [
-   "Weighted columns, empty sources, axis limits, source-column order, and direct kernel agreement."
-  ],
-  "excluded": [
-   "Finite-wire self-fields, arbitrary extreme-scale accuracy, and physical equilibrium claims."
-  ]
- },
- "failure_semantics": {
-  "invalid_input": "ValueError is raised for malformed, complex, nonfinite, or negative-radius target/source arrays.",
-  "runtime_failure": "FloatingPointError from an unrepresentable kernel response propagates.",
-  "nonconvergence": "Not applicable; matrix entries are evaluated directly.",
-  "partial_results": "No scirel._result.Result response mapping is returned after validation or kernel failure."
- },
- "public_api": {
-  "python": {
-   "module": "scirel.field.dense_axisymmetric_green",
-   "symbol": "dense_axisymmetric_green_response",
-   "signature": "dense_axisymmetric_green_response(rz_pts, source_rzw)",
-   "canonical_module": "scirel.field",
-   "canonical_symbol": "dense_axisymmetric_green_response"
-  }
- },
- "version": {
-  "implementation_version": "0.0.0",
-  "dependencies": [
-   {
-    "asset_id": "scirel.electromagnetism.green-response-matrices"
-   }
-  ]
- },
- "example": {
-  "description": "Compare one source with a changed weight and an empty source set.",
-  "code": "import numpy as np\nfrom scirel._result import Result\nfrom scirel.field import dense_axisymmetric_green_response\ntargets = [[0.0, -0.1], [0.2, 0.15]]\nresult = dense_axisymmetric_green_response(\n    targets, [[0.35, -0.1, 1.0]]\n)\nweighted = dense_axisymmetric_green_response(\n    targets, [[0.35, -0.1, -2.5]]\n)\nempty = dense_axisymmetric_green_response(targets, [])\nassert isinstance(result, Result)\nassert list(result) == ['gpsi', 'gBR', 'gBZ']\nassert result.gpsi is result['gpsi']\nfor name in ('gpsi', 'gBR', 'gBZ'):\n    assert result[name].shape == (2, 1)\n    np.testing.assert_allclose(weighted[name], -2.5 * result[name])\n    assert empty[name].shape == (2, 0)\n",
-  "expected": "Each nonempty response has shape (2,1), scaling by -2.5 is exact within the assertion, and the empty source result has shape (2,0). The returned object is a scirel._result.Result mapping; each field is also readable as an attribute."
- },
- "verification": {
-  "scope": [
-   "Source-weight scaling and empty-source shape.",
-   "Axis-source zero-column convention.",
-   "Circular-filament analytic axial-field limit.",
-   "Columnwise equality with the maintained circular-filament response through the shared kernel; this is wrapper consistency, not an independent numerical oracle.",
-   "Invalid radius and source-shape rejection.",
-   "In tests/cross_domain/test_field_green_correction.py, test_every_positive_loop_radius_retains_analytic_axis_field with api=dense compares gBZ for a 1e-13 source radius at axial targets with a 70-digit ideal-loop reference and checks zero gBR; test_exact_self_rule_is_distinct_from_arithmetic_failure with api=dense separates zero exact-self entries from FloatingPointError at weight 1e308. test_public_field_interfaces_reject_complex_coordinates includes api=dense.",
-   "The named result preserves the captured key order, values, shapes, dtypes, mapping access and attribute access; failures retain their exception types and messages.",
-   "Independent evidence (tests/field/test_dense_axisymmetric_green_evidence.py): every target/source entry of all three matrices agrees with the direct Biot-Savart quadrature of that single filament within 64 eps; the coincidence and zero-radius conventions, the exact power-of-two column scaling, and the preserved (N_target, 0) empty-source shape are separate assertions."
-  ],
-  "tests": [
-   "tests/field/test_dense_axisymmetric_green.py",
-   "tests/cross_domain/test_field_green_correction.py",
-   "tests/field/test_dense_axisymmetric_green_evidence.py"
-  ],
-  "evidence_ceiling": "tests/field/test_dense_axisymmetric_green.py directly invokes dense_axisymmetric_green_response as scientific_function and by its own name: test_source_weight_scales_each_column_and_zeroes_a_column, test_columns_match_individual_filament_flux_and_field_responses, test_axis_bz_matches_circular_filament_limit, and the shape/empty-source/rejection assertions bind separate source columns, scaling, the analytic axial limit and maintained-kernel agreement. The api=dense cases named in scope are direct public-entry assertions, not merely shared-file references. Formula-cutover and radially separated near-wire assertions in the shared file call aggregate only; they are dependency evidence, not direct dense-entry coverage. No finite-wire self-field, arbitrary extreme-scale accuracy or equilibrium claim follows. C1 evidence adds the Biot-Savart quadrature as the second source for every matrix entry, so agreement between two SciRel entry points is no longer the only cross-check; the observed maximum deviation on the sampled grid is 7.81e-15 relative against a 1.42e-14 budget. It does not establish a continuous error bound, the regime inside 1e-2 of the wire distance, or any statement about the discrete self convention as a finite-wire model.",
-  "known_limitations": [
-   "The result preserves separate source columns and does not sum them.",
-   "The direct arithmetic-failure fixture uses a tiny source and large weight; coverage of every other unrepresentable response and every shared-kernel branch through this wrapper is UNKNOWN.",
-   "The 64-eps figure is an observed maximum over the sampled target/source table, not a proven bound for other grids or for targets between the sampled points.",
-   "The quadrature reference refuses geometry inside 1e-2 of the wire distance, so the near-wire columns of the matrix are not covered."
-  ]
- }
 }
