@@ -53,6 +53,7 @@ SCRIPT_LAYERS = {
     "check_output_channel_declaration.py": ("tooling",),
     "probe_output_channel_returns.py": ("tooling",),
     "evidence_status.py": ("tooling",),
+    "check_evidence_basis.py": ("tooling",),
     "check_c4_tasklist.py": ("tooling",),
     "check_observation_integrity.py": ("tooling",),
     "check_wheel_exposure.py": ("delivery",),
