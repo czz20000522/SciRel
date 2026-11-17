@@ -2,230 +2,33 @@
  "task_id": "diagnostics-rejects-shape-mismatch",
  "kind": "failure",
  "domain": "diagnostics",
- "subdomain": "declared invalid input channel",
- "question": "Pass two declared flux arrays with unequal shapes to the residual entry and report the raised exception.",
- "assets_declared": [
-  "scirel.diagnostics.picard-flux-residual"
- ],
- "min_calls": 1,
- "package": {
-  "python": "3.14.7",
-  "numpy": "2.5.4",
-  "scipy": "1.18.1",
-  "mpmath": "1.4.1",
-  "wheel_sha256": "4fc9757a7b843cc3bce2dc96fd2280b27299cff93fbcf5b64a2321b58234f5d7",
-  "snapshot_sha256": "cf0269b61ba19d8b2e5e008a6a4a4d80f2cd701f78c34f2fcb3b16eed9a2593c",
-  "source_revision": "4b5b4aaa38650d8a902e4265f226175d166a426b",
-  "asset_count": 249,
-  "runtime": {
-   "dependencies_bundled": false,
-   "package_version": "0.0.0",
-   "requires_dist": [
-    "numpy==2.5.4",
-    "scipy==1.18.1",
-    "mpmath==1.4.1"
-   ],
-   "requires_python": ">=3.12",
-   "wheel": "scirel-0.0.0-py3-none-any.whl",
-   "wheel_sha256": "4fc9757a7b843cc3bce2dc96fd2280b27299cff93fbcf5b64a2321b58234f5d7"
-  }
- },
- "assets_used": [
-  "scirel.diagnostics.picard-flux-residual"
- ],
- "calls": [
+ "crashed": true,
+ "package_sufficient": false,
+ "sufficient_reason": "consumer check raised",
+ "gaps": [
   {
-   "seq": 1,
-   "label": "declare psi_next=[[1.0, 2.0]] only (frozen stimulus)",
-   "asset": "scirel.diagnostics.picard-flux-residual",
-   "entrypoint": "scirel.diagnostics.picard_flux_residual:compute_picard_flux_residual",
-   "arguments": {
-    "args": [],
-    "kwargs": {
-     "psi_previous": {
-      "dtype": "float64",
-      "shape": [
-       1,
-       2
-      ],
-      "values": [
-       [
-        3.0,
-        4.0
-       ]
-      ]
-     },
-     "psi_next": [
-      [
-       1.0,
-       2.0
-      ]
-     ]
-    }
-   },
-   "status": "returned",
-   "returned_fields": [
-    "residual"
-   ],
-   "exception": null,
-   "warnings": [],
-   "returned_type": "Result"
+   "level": "blocking",
+   "text": "the consumer harness raised NameError: name '_val' is not defined"
   }
  ],
- "answer": {
-  "value": [
-   {
-    "asset": "scirel.diagnostics.picard-flux-residual",
-    "field": "psi_next",
-    "baseline_value": {
-     "dtype": "float64",
-     "shape": [
-      1,
-      2
-     ],
-     "values": [
-      [
-       3.0,
-       4.0
-      ]
-     ]
-    },
-    "requested_value": [
-     [
-      1.0,
-      2.0
-     ]
-    ],
-    "outcome": "returned",
-    "exception_type": null,
-    "exception_message": null,
-    "declared_exception": "ValueError"
-   }
-  ],
-  "unit": "exception type and message, as raised"
- },
- "independent_check": {
-  "method": "the contract's failure_semantics quote is compared with the exception the library actually raised, field by field",
-  "verdict": "fail"
- },
+ "traceback": "Traceback (most recent call last):\n  File \"<repo>/examples/c4-usage-acceptance/round2/run.py\", line 201, in run_one\n    record = run_task(tid)\n  File \"<repo>/examples/c4-usage-acceptance/round2/run.py\", line 113, in run_task\n    body = fn(ctx, task)\n  File \"<repo>/examples/c4-usage-acceptance/round2/checks/review.py\", line 88, in diagnostics_shape_mismatch\n    shp_prev = list(H.mapping(_val(frozen), asset).get(\"residual\", []) or [])\n                              ^^^^\nNameError: name '_val' is not defined. Did you mean: 'eval'?\n",
+ "calls": [],
  "criteria": [
-  {
-   "id": "raise",
-   "kind": "exception",
-   "status": "fail",
-   "detail": {
-    "expected_exception": "ValueError",
-    "expected_appears_in_contract_quote": true,
-    "type_matches_exactly_or_by_subclass": false,
-    "contract_quote": "Raises ValueError for unequal shapes, non-two-dimensional arrays or nonfinite entries.",
-    "actual": null,
-    "declared_rejection_phrase": "unequal shapes",
-    "declared_rejection_appears_in_contract_quote": true,
-    "stimulus_field": "psi_next",
-    "stimulus_value": [
-     [
-      1.0,
-      2.0
-     ]
-    ],
-    "baseline_value": {
-     "dtype": "float64",
-     "shape": [
-      1,
-      2
-     ],
-     "values": [
-      [
-       3.0,
-       4.0
-      ]
-     ]
-    }
-   }
-  },
-  {
-   "id": "notrim",
-   "kind": "invariant",
-   "status": "pass",
-   "detail": {
-    "calls_made": 1,
-    "calls_expected": 1,
-    "note": "exactly the frozen stimulus was passed; no fallback method, clamp or retry",
-    "arguments": [
-     {
-      "args": [],
-      "kwargs": {
-       "psi_previous": {
-        "dtype": "float64",
-        "shape": [
-         1,
-         2
-        ],
-        "values": [
-         [
-          3.0,
-          4.0
-         ]
-        ]
-       },
-       "psi_next": [
-        [
-         1.0,
-         2.0
-        ]
-       ]
-      }
-     }
-    ],
-    "statement": "The consumer must not trim or pad the arrays before the call; the rejected shapes must appear in the trace. Applies only to the declared stimulus psi_next = [[1.0, 2.0]]; no other field is varied."
-   }
-  },
   {
    "id": "readback",
    "kind": "readback",
-   "status": "pass",
+   "status": "fail",
    "detail": {
     "reopened": "diagnostics-rejects-shape-mismatch.json",
-    "problems": [],
-    "stored_call_count": 1
+    "problems": [
+     "no calls stored",
+     "no answer stored",
+     "no independent check stored"
+    ],
+    "stored_call_count": 0
    }
   }
  ],
- "package_sufficient": false,
- "sufficient_reason": "the library did not raise the exception the delivered contract declares for this stimulus, or the contract quote does not contain the frozen phrase",
- "gaps": [],
- "bindings": {
-  "scirel.diagnostics.picard-flux-residual": {
-   "symbol": "compute_picard_flux_residual",
-   "args": {
-    "psi_previous": {
-     "dtype": "float64",
-     "shape": [
-      1,
-      2
-     ],
-     "values": [
-      [
-       3.0,
-       4.0
-      ]
-     ]
-    },
-    "psi_next": {
-     "dtype": "float64",
-     "shape": [
-      1,
-      2
-     ],
-     "values": [
-      [
-       3.0,
-       4.0
-      ]
-     ]
-    }
-   },
-   "example_error": null
-  }
- }
+ "answer": null,
+ "independent_check": null
 }

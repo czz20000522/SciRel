@@ -742,7 +742,7 @@
  ],
  "answer": {
   "value": {
-   "matrix_size_returned": 1,
+   "matrix_size_returned": 40,
    "matrix_shape": [
     40,
     40
@@ -775,7 +775,7 @@
  "independent_check": {
   "method": "matrix dimension recomputed as 3*S*sum(order_lengths)+4 from the declared oscillation counts and compared with the returned square matrix",
   "observed": {
-   "matrix_size_returned": 1,
+   "matrix_size_returned": 40,
    "matrix_shape": [
     40,
     40
@@ -803,7 +803,7 @@
     "Bz"
    ]
   },
-  "verdict": "fail"
+  "verdict": "pass"
  },
  "criteria": [
   {
@@ -834,9 +834,9 @@
   {
    "id": "declared_layout",
    "kind": "invariant",
-   "status": "fail",
+   "status": "pass",
    "detail": {
-    "matrix_size_returned": 1,
+    "matrix_size_returned": 40,
     "matrix_shape": [
      40,
      40

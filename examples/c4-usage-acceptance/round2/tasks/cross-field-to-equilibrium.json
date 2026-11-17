@@ -213,34 +213,48 @@
      "r_grid": {
       "dtype": "float64",
       "shape": [
-       2,
-       2
+       3,
+       3
       ],
       "values": [
        [
-        1.0,
-        2.0
+        0.0,
+        0.2,
+        0.4
        ],
        [
-        1.0,
-        2.0
+        0.0,
+        0.2,
+        0.4
+       ],
+       [
+        0.0,
+        0.2,
+        0.4
        ]
       ]
      },
      "z_grid": {
       "dtype": "float64",
       "shape": [
-       2,
-       2
+       3,
+       3
       ],
       "values": [
        [
-        -1.0,
-        -1.0
+        -0.5,
+        -0.5,
+        -0.5
        ],
        [
-        1.0,
-        1.0
+        0.0,
+        0.0,
+        0.0
+       ],
+       [
+        0.5,
+        0.5,
+        0.5
        ]
       ]
      },
@@ -295,17 +309,82 @@
      "g_psi": {
       "dtype": "float64",
       "shape": [
-       4,
-       4
+       9,
+       9
       ],
       "values": [
        [
         1.0,
         0.0,
         0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
         0.0
        ],
        [
+        0.0,
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+       ],
+       [
+        0.0,
+        0.0,
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+       ],
+       [
+        0.0,
+        0.0,
+        0.0,
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+       ],
+       [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+       ],
+       [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0,
+        0.0,
+        0.0,
+        0.0
+       ],
+       [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
         0.0,
         1.0,
         0.0,
@@ -314,10 +393,20 @@
        [
         0.0,
         0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
         1.0,
         0.0
        ],
        [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
         0.0,
         0.0,
         0.0,
@@ -325,31 +414,53 @@
        ]
       ]
      },
-     "pressure_derivative": [
-      1.0,
-      2.0,
-      3.0,
-      4.0
-     ],
-     "psi_edge": 2.0,
-     "currents_old": [
-      10.0,
-      20.0,
-      30.0,
-      40.0
-     ],
+     "pressure_derivative": {
+      "dtype": "float64",
+      "shape": [
+       9
+      ],
+      "values": [
+       1.0,
+       1.125,
+       1.25,
+       1.375,
+       1.5,
+       1.625,
+       1.75,
+       1.875,
+       2.0
+      ]
+     },
+     "psi_edge": 1.5750045416660935e-07,
+     "currents_old": {
+      "dtype": "float64",
+      "shape": [
+       9
+      ],
+      "values": [
+       0.0,
+       0.0,
+       0.0,
+       0.0,
+       0.0,
+       0.0,
+       0.0,
+       0.0,
+       0.0
+      ]
+     },
      "relax": 0.25
     }
    },
-   "status": "raised",
-   "returned_fields": null,
-   "exception": {
-    "type": "ValueError",
-    "module": "builtins",
-    "message": "r_grid, z_grid, psi_state and psi_vac must be same-shape [Z,R] grids",
-    "qualname": "builtins.ValueError"
-   },
-   "warnings": []
+   "status": "returned",
+   "returned_fields": [
+    "plasma_currents",
+    "psi_next",
+    "residual"
+   ],
+   "exception": null,
+   "warnings": [],
+   "returned_type": "Result"
   }
  ],
  "answer": {
@@ -364,7 +475,8 @@
    "unit_out": "T",
    "convention": "B_R=-dpsi/dz/R, B_Z=dpsi/dr/R on the same grid",
    "handoff_within_discretisation": true,
-   "picard_status": "raised"
+   "picard_consumed_flux_equals_produced": true,
+   "picard_status": "returned"
   },
   "unit": "Wb/rad handed over as T"
  },
@@ -381,9 +493,10 @@
    "unit_out": "T",
    "convention": "B_R=-dpsi/dz/R, B_Z=dpsi/dr/R on the same grid",
    "handoff_within_discretisation": true,
-   "picard_status": "raised"
+   "picard_consumed_flux_equals_produced": true,
+   "picard_status": "returned"
   },
-  "verdict": "fail"
+  "verdict": "pass"
  },
  "criteria": [
   {
@@ -423,26 +536,24 @@
   {
    "id": "fields_step",
    "kind": "contract_fields",
-   "status": "fail",
+   "status": "pass",
    "detail": {
     "declared": [
      "plasma_currents",
      "psi_next",
      "residual"
     ],
-    "returned": "raised",
-    "exception": {
-     "type": "ValueError",
-     "module": "builtins",
-     "message": "r_grid, z_grid, psi_state and psi_vac must be same-shape [Z,R] grids",
-     "qualname": "builtins.ValueError"
-    }
+    "returned": [
+     "plasma_currents",
+     "psi_next",
+     "residual"
+    ]
    }
   },
   {
    "id": "handoff",
    "kind": "invariant",
-   "status": "fail",
+   "status": "pass",
    "detail": {
     "grid_shape": [
      3,
@@ -454,13 +565,14 @@
     "unit_out": "T",
     "convention": "B_R=-dpsi/dz/R, B_Z=dpsi/dr/R on the same grid",
     "handoff_within_discretisation": true,
-    "picard_status": "raised"
+    "picard_consumed_flux_equals_produced": true,
+    "picard_status": "returned"
    }
   },
   {
    "id": "budget",
    "kind": "tolerance",
-   "status": "fail",
+   "status": "pass",
    "detail": {
     "grid_shape": [
      3,
@@ -472,7 +584,8 @@
     "unit_out": "T",
     "convention": "B_R=-dpsi/dz/R, B_Z=dpsi/dr/R on the same grid",
     "handoff_within_discretisation": true,
-    "picard_status": "raised",
+    "picard_consumed_flux_equals_produced": true,
+    "picard_status": "returned",
     "declared_tolerance": {
      "rel": 1e-12,
      "abs": 0.0
@@ -491,7 +604,7 @@
    }
   }
  ],
- "package_sufficient": false,
+ "package_sufficient": true,
  "sufficient_reason": "both sides take plain arrays plus declared grids, so the handoff is observable end to end",
  "gaps": [
   {

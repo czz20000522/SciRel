@@ -269,19 +269,26 @@ class Ctx:
 
 
 def _args_for(asset: str, named: dict):
-    """Rebuild a positional/keyword call from a parameter-name mapping."""
+    """Rebuild a positional/keyword call from a parameter-name mapping.
+
+    A signature with ``*fields`` requires every parameter before the star to be passed
+    positionally: passing it by keyword as well raises "got multiple values for argument".
+    """
     sig = signature(asset)
     params = sig.parameters
+    has_varargs = any(p.kind is p.VAR_POSITIONAL for p in params.values())
     args, kwargs = [], {}
     for pname, p in params.items():
         if pname not in named:
             continue
-        if p.kind in (p.POSITIONAL_ONLY,):
+        if p.kind is p.POSITIONAL_ONLY:
             args.append(named[pname])
         elif p.kind is p.VAR_POSITIONAL:
             args.extend(named[pname])
         elif p.kind is p.VAR_KEYWORD:
             kwargs.update(named[pname])
+        elif has_varargs and p.kind is p.POSITIONAL_OR_KEYWORD:
+            args.append(named[pname])
         else:
             kwargs[pname] = named[pname]
     return tuple(args), kwargs

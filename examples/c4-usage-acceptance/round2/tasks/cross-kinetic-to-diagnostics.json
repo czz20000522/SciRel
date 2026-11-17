@@ -32,7 +32,6 @@
   }
  },
  "assets_used": [
-  "scirel.diagnostics.observation-residuals",
   "scirel.kinetic.kinetic-wavevector-roots"
  ],
  "calls": [
@@ -90,55 +89,36 @@
    "exception": null,
    "warnings": [],
    "returned_type": "Result"
-  },
-  {
-   "seq": 2,
-   "label": "residual of the roots against themselves",
-   "asset": "scirel.diagnostics.observation-residuals",
-   "entrypoint": "scirel.diagnostics.observation_residuals:reduce_observation_residuals",
-   "arguments": {
-    "args": [],
-    "kwargs": {
-     "predicted": {
-      "roots": {
-       "values": [
-        6.010737151183628e-13
-       ],
-       "unit": "1/m"
-      }
-     },
-     "observations": {
-      "roots": {
-       "values": [
-        6.010737151183628e-13
-       ],
-       "sigma": [
-        1.0
-       ],
-       "unit": "1/m"
-      }
-     }
-    }
-   },
-   "status": "raised",
-   "returned_fields": null,
-   "exception": {
-    "type": "ValueError",
-    "module": "builtins",
-    "message": "unknown observation kinds: ['roots']",
-    "qualname": "builtins.ValueError"
-   },
-   "warnings": []
   }
  ],
  "answer": {
-  "value": {},
-  "unit": "1/m roots and residual"
+  "value": {
+   "contract_channels": [
+    "flux_loops",
+    "thomson.density",
+    "electron_temperature",
+    "p_parallel",
+    "p_perp"
+   ],
+   "contract_sentence": "First validate the observation layout, then take flux_loops, thomson.density, electron_temperature, p_parallel and p_perp in that fixed order. Every requested channel requires a prediction with exactly the same shape as ",
+   "roots_returned": 1
+  },
+  "unit": "1/m roots; observation channels are dimensionless flux/temperature channels"
  },
  "independent_check": {
-  "method": "the roots are fed back as both predicted and observed sets, and a 0.5 shift must give a residual of exactly 0.5",
-  "observed": {},
-  "verdict": "fail"
+  "method": "the task's handoff is attempted through the delivered entries and the contract's declared channel list is compared with the values available",
+  "observed": {
+   "contract_channels": [
+    "flux_loops",
+    "thomson.density",
+    "electron_temperature",
+    "p_parallel",
+    "p_perp"
+   ],
+   "contract_sentence": "First validate the observation layout, then take flux_loops, thomson.density, electron_temperature, p_parallel and p_perp in that fixed order. Every requested channel requires a prediction with exactly the same shape as ",
+   "roots_returned": 1
+  },
+  "verdict": "not-run"
  },
  "criteria": [
   {
@@ -185,34 +165,38 @@
    }
   },
   {
-   "id": "fields_residual",
-   "kind": "contract_fields",
-   "status": "fail",
-   "detail": {
-    "declared": [
-     "chi2",
-     "residual_vector"
-    ],
-    "returned": "raised",
-    "exception": {
-     "type": "ValueError",
-     "module": "builtins",
-     "message": "unknown observation kinds: ['roots']",
-     "qualname": "builtins.ValueError"
-    }
-   }
-  },
-  {
    "id": "cardinality",
    "kind": "invariant",
-   "status": "fail",
-   "detail": {}
+   "status": "not-run",
+   "detail": {
+    "why": "the observation entry accepts only the declared channels ['flux_loops', 'thomson.density', 'electron_temperature', 'p_parallel', 'p_perp']; feeding 'roots' raises ValueError('unknown observation kinds'), so the handoff the task asks for has no declared expression",
+    "contract_channels": [
+     "flux_loops",
+     "thomson.density",
+     "electron_temperature",
+     "p_parallel",
+     "p_perp"
+    ],
+    "contract_sentence": "First validate the observation layout, then take flux_loops, thomson.density, electron_temperature, p_parallel and p_perp in that fixed order. Every requested channel requires a prediction with exactly the same shape as ",
+    "roots_returned": 1
+   }
   },
   {
    "id": "zeroresidual",
    "kind": "invariant",
-   "status": "fail",
-   "detail": {}
+   "status": "not-run",
+   "detail": {
+    "why": "no declared channel can carry the roots, so a self-residual cannot be formed without inventing an observation kind",
+    "contract_channels": [
+     "flux_loops",
+     "thomson.density",
+     "electron_temperature",
+     "p_parallel",
+     "p_perp"
+    ],
+    "contract_sentence": "First validate the observation layout, then take flux_loops, thomson.density, electron_temperature, p_parallel and p_perp in that fixed order. Every requested channel requires a prediction with exactly the same shape as ",
+    "roots_returned": 1
+   }
   },
   {
    "id": "readback",
@@ -221,13 +205,22 @@
    "detail": {
     "reopened": "cross-kinetic-to-diagnostics.json",
     "problems": [],
-    "stored_call_count": 2
+    "stored_call_count": 1
    }
   }
  ],
  "package_sufficient": false,
- "sufficient_reason": "both entries accept plain arrays and the residual is analytic",
- "gaps": [],
+ "sufficient_reason": "the kinetic root values have no declared path into the observation residual entry (its channels are flux_loops/thomson/...), so the cross-domain task cannot be expressed with the delivered contracts",
+ "gaps": [
+  {
+   "level": "blocking",
+   "text": "task premise is not expressible: observation-residuals accepts only flux_loops/thomson channels; there is no 'roots' channel and no declared adapter, so 'use the roots as predictions' cannot be written. This is a task-design/contract-coverage issue: the earlier round recorded it as a package fault after feeding an invented channel name"
+  },
+  {
+   "level": "process",
+   "text": "task declares min_calls=2 but only 1 public call(s) were made"
+  }
+ ],
  "bindings": {
   "scirel.kinetic.kinetic-wavevector-roots": {
    "symbol": "solve_kinetic_wavevector_roots",

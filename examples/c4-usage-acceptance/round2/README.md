@@ -72,9 +72,13 @@ python3 examples/c4-usage-acceptance/round2/coverage.py
 | 指标 | 值 |
 | --- | --- |
 | 任务 | 73 / 73 执行 |
-| `package_sufficient` | 43 true / 30 false |
-| 判据 | 273 条：191 pass、77 fail、5 not-run |
-| 按 kind | nominal 24/43 sufficient；failure 18/23；inapplicable 1/1；cross **0/6** |
+| `package_sufficient` | **47 true / 26 false**（复核前 43 / 30） |
+| 判据 | **269 条：196 pass、66 fail、7 not-run**（复核前 273 / 191 / 77 / 5） |
+| 按 kind | nominal 25/43 sufficient；failure 20/23；inapplicable 1/1；cross **1/6** |
+
+> 这一版是**复核后**的数字。初版（`13cfaa00`）把 8 类阻塞缺口报得偏重，其中 6 类经最小复现
+> 确认是消费者侧判据错误（因子写反、`np.size` 读标量、转置方向、调用构造、绑错调用点、
+> 发明合同没有的接口），逐条见 [GAPS.md](GAPS.md) 第六节。
 
 按 domain 的覆盖矩阵用 `coverage.py` 复算（每格的"已覆盖"= 该域任务全部执行，
 "sufficient"= 该域里只用包就能完成的条数）：
@@ -113,8 +117,8 @@ source               3    3           3          9/12              3       0
 `electromagnetism-rejects-missing-mesh`、`diagnostics-rejects-shape-mismatch`），逐条见
 [GAPS.md](GAPS.md) 的 B6/B7 与流程第 2 条。
 
-跨域：6 条全部未通过，断点逐条记在 [GAPS.md](GAPS.md) 的 B8（单位、网格轴序、"观测种类"
-词汇、forcing 形状、数组与标量维度）。
+跨域（复核后）：6 条中 1 条通过（`cross-field-to-equilibrium`，flux 按网格 reshape 后
+Picard 步接受它，有限差分对照偏差 0.0），其余 5 条断点逐条记在 [GAPS.md](GAPS.md) B8 与第六节。
 
 ## 消费者只用了什么
 

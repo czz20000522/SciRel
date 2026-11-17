@@ -1180,8 +1180,8 @@
    "calls": 3,
    "criteria": {
     "total": 5,
-    "pass": 2,
-    "fail": 2,
+    "pass": 3,
+    "fail": 1,
     "not_run": 1
    },
    "gap_count": 1,
@@ -1401,11 +1401,11 @@
    "domain": "collisions",
    "subdomain": "rate coefficients and collision matrices",
    "package_sufficient": false,
-   "calls": 4,
+   "calls": 0,
    "criteria": {
-    "total": 3,
-    "pass": 1,
-    "fail": 2,
+    "total": 1,
+    "pass": 0,
+    "fail": 1,
     "not_run": 0
    },
    "gap_count": 0,
@@ -1448,12 +1448,12 @@
    "kind": "nominal",
    "domain": "field",
    "subdomain": "Green response, superposition and multi-coil vacuum field",
-   "package_sufficient": false,
+   "package_sufficient": true,
    "calls": 4,
    "criteria": {
     "total": 5,
-    "pass": 2,
-    "fail": 3,
+    "pass": 5,
+    "fail": 0,
     "not_run": 0
    },
    "gap_count": 0,
@@ -1624,12 +1624,12 @@
    "kind": "failure",
    "domain": "geometry",
    "subdomain": "declared invalid interpolation method",
-   "package_sufficient": false,
+   "package_sufficient": true,
    "calls": 1,
    "criteria": {
     "total": 3,
-    "pass": 2,
-    "fail": 1,
+    "pass": 3,
+    "fail": 0,
     "not_run": 0
    },
    "gap_count": 0,
@@ -1784,12 +1784,12 @@
    "kind": "failure",
    "domain": "electromagnetism",
    "subdomain": "declared invalid input channel",
-   "package_sufficient": false,
+   "package_sufficient": true,
    "calls": 1,
    "criteria": {
-    "total": 3,
+    "total": 4,
     "pass": 2,
-    "fail": 1,
+    "fail": 2,
     "not_run": 0
    },
    "gap_count": 0,
@@ -1849,10 +1849,10 @@
    "domain": "diagnostics",
    "subdomain": "declared invalid input channel",
    "package_sufficient": false,
-   "calls": 1,
+   "calls": 0,
    "criteria": {
-    "total": 3,
-    "pass": 2,
+    "total": 1,
+    "pass": 0,
     "fail": 1,
     "not_run": 0
    },
@@ -2200,12 +2200,12 @@
    "kind": "cross",
    "domain": "cross",
    "subdomain": "filament flux to poloidal field to one Picard step",
-   "package_sufficient": false,
+   "package_sufficient": true,
    "calls": 3,
    "criteria": {
     "total": 6,
-    "pass": 3,
-    "fail": 3,
+    "pass": 6,
+    "fail": 0,
     "not_run": 0
    },
    "gap_count": 1,
@@ -2265,12 +2265,12 @@
    "domain": "cross",
    "subdomain": "root values into the observation residual diagnostic",
    "package_sufficient": false,
-   "calls": 2,
+   "calls": 1,
    "criteria": {
-    "total": 5,
+    "total": 4,
     "pass": 2,
-    "fail": 3,
-    "not_run": 0
+    "fail": 0,
+    "not_run": 2
    },
    "gap_count": 0,
    "result_file": "tasks/cross-kinetic-to-diagnostics.json"
@@ -2377,5 +2377,159 @@
   "source-profile-integral.json": "aa6c7a84e469fbc91d15521cc965b6c30032ef4570ac136fe681a5673d4f4f32",
   "source-rejects-nonpositive-weights.json": "341f1f95a8f318f217bec474986a2134663893189301dbd20e0301c5b052a35b",
   "source-zero-width-sentinel.json": "8f159ef998e646ce7f4a3d3c3405f978abf19119254f14827d839abf338ab294"
+ },
+ "revision": {
+  "reason": "maintainer review found B3/B5 unreproducible; all 8 blocking classes re-derived with minimal direct calls",
+  "supersedes_commit": "13cfaa00",
+  "previous_totals": {
+   "tasks": 73,
+   "package_sufficient": 43,
+   "package_insufficient": 30,
+   "criteria_total": 273,
+   "criteria_pass": 191,
+   "criteria_fail": 77,
+   "criteria_not_run": 5
+  },
+  "current_totals": {
+   "tasks": 73,
+   "package_sufficient": 47,
+   "package_insufficient": 26,
+   "criteria_total": 269,
+   "criteria_pass": 196,
+   "criteria_fail": 66,
+   "criteria_not_run": 7
+  },
+  "tasks_changed": [
+   {
+    "task": "kinetic-fluid-two-path",
+    "package_sufficient": {
+     "before": false,
+     "after": false
+    },
+    "fail": {
+     "before": 2,
+     "after": 1
+    },
+    "not_run": {
+     "before": 1,
+     "after": 1
+    }
+   },
+   {
+    "task": "collisions-rate-coefficients",
+    "package_sufficient": {
+     "before": false,
+     "after": false
+    },
+    "fail": {
+     "before": 2,
+     "after": 1
+    },
+    "not_run": {
+     "before": 0,
+     "after": 0
+    }
+   },
+   {
+    "task": "field-filament-superposition",
+    "package_sufficient": {
+     "before": false,
+     "after": true
+    },
+    "fail": {
+     "before": 3,
+     "after": 0
+    },
+    "not_run": {
+     "before": 0,
+     "after": 0
+    }
+   },
+   {
+    "task": "sampling-rejects-unknown-method",
+    "package_sufficient": {
+     "before": false,
+     "after": true
+    },
+    "fail": {
+     "before": 1,
+     "after": 0
+    },
+    "not_run": {
+     "before": 0,
+     "after": 0
+    }
+   },
+   {
+    "task": "electromagnetism-rejects-missing-mesh",
+    "package_sufficient": {
+     "before": false,
+     "after": true
+    },
+    "fail": {
+     "before": 1,
+     "after": 2
+    },
+    "not_run": {
+     "before": 0,
+     "after": 0
+    }
+   },
+   {
+    "task": "cross-field-to-equilibrium",
+    "package_sufficient": {
+     "before": false,
+     "after": true
+    },
+    "fail": {
+     "before": 3,
+     "after": 0
+    },
+    "not_run": {
+     "before": 0,
+     "after": 0
+    }
+   },
+   {
+    "task": "cross-kinetic-to-diagnostics",
+    "package_sufficient": {
+     "before": false,
+     "after": false
+    },
+    "fail": {
+     "before": 3,
+     "after": 0
+    },
+    "not_run": {
+     "before": 0,
+     "after": 2
+    }
+   }
+  ],
+  "consumer_side_errors": [
+   "B3 np.size on a scalar",
+   "B4 compared inside the un-clamped range",
+   "B5 inverted factor and transposed Green contraction",
+   "B6 bound 'missing mesh' to the constructor",
+   "B6 assumed the frozen stimulus creates a shape mismatch",
+   "B7 duplicate keyword for a *fields signature",
+   "B8 handed a 1-D flux to a 2-D entry",
+   "B8 invented an observation channel (roots)"
+  ],
+  "still_standing": [
+   "B1 declared named outputs vs bare returns (severity lowered to confidence)",
+   "B2 rational-solve-matrix returns 9 of 46 declared outputs",
+   "B8 cross-geometry: 3-D cartesian output vs 2-D [N_Z,N_R] entry",
+   "cross-mirror / cross-source / cross-collisions handoffs"
+  ]
+ },
+ "coverage_totals_current": {
+  "tasks": 73,
+  "package_sufficient": 47,
+  "package_insufficient": 26,
+  "criteria_total": 269,
+  "criteria_pass": 196,
+  "criteria_fail": 66,
+  "criteria_not_run": 7
  }
 }

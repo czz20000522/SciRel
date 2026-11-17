@@ -11,7 +11,7 @@
    "text": "the consumer harness raised TypeError: float() argument must be a string or a real number, not 'function'"
   }
  ],
- "traceback": "Traceback (most recent call last):\n  File \"<repo>//examples/c4-usage-acceptance/round2/run.py\", line 188, in run_one\n    record = run_task(tid)\n  File \"<repo>//examples/c4-usage-acceptance/round2/run.py\", line 100, in run_task\n    body = fn(ctx, task)\n  File \"<repo>//examples/c4-usage-acceptance/round2/checks/batch2.py\", line 309, in collisions_rate_averages\n    doubled[sigma_key] = 2.0 * np.asarray(named[sigma_key], dtype=float)\n                               ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nTypeError: float() argument must be a string or a real number, not 'function'\n",
+ "traceback": "Traceback (most recent call last):\n  File \"<repo>/examples/c4-usage-acceptance/round2/run.py\", line 201, in run_one\n    record = run_task(tid)\n  File \"<repo>/examples/c4-usage-acceptance/round2/run.py\", line 113, in run_task\n    body = fn(ctx, task)\n  File \"<repo>/examples/c4-usage-acceptance/round2/checks/batch2.py\", line 315, in collisions_rate_averages\n    doubled[sigma_key] = 2.0 * np.asarray(named[sigma_key], dtype=float)\n                               ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nTypeError: float() argument must be a string or a real number, not 'function'\n",
  "calls": [],
  "criteria": [
   {

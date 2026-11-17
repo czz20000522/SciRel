@@ -54,32 +54,6 @@
         1.0
        ],
        [
-        0.5,
-        1.0,
-        1.5
-       ],
-       [
-        1.0,
-        1.5,
-        2.0
-       ]
-      ]
-     }
-    ],
-    "kwargs": {
-     "xx": {
-      "dtype": "float64",
-      "shape": [
-       3,
-       3
-      ],
-      "values": [
-       [
-        0.0,
-        0.5,
-        1.0
-       ],
-       [
         0.0,
         0.5,
         1.0
@@ -91,7 +65,7 @@
        ]
       ]
      },
-     "yy": {
+     {
       "dtype": "float64",
       "shape": [
        3,
@@ -115,6 +89,32 @@
        ]
       ]
      },
+     {
+      "dtype": "float64",
+      "shape": [
+       3,
+       3
+      ],
+      "values": [
+       [
+        0.0,
+        0.5,
+        1.0
+       ],
+       [
+        0.5,
+        1.0,
+        1.5
+       ],
+       [
+        1.0,
+        1.5,
+        2.0
+       ]
+      ]
+     }
+    ],
+    "kwargs": {
      "nx": 4,
      "ny": 5,
      "xi": null,
@@ -125,10 +125,10 @@
    "status": "raised",
    "returned_fields": null,
    "exception": {
-    "type": "TypeError",
+    "type": "ValueError",
     "module": "builtins",
-    "message": "regular_grid() got multiple values for argument 'xx'",
-    "qualname": "builtins.TypeError"
+    "message": "Unknown interpolation method 'akima' for 2 dimensional data",
+    "qualname": "builtins.ValueError"
    },
    "warnings": []
   }
@@ -141,8 +141,8 @@
     "baseline_value": "linear",
     "requested_value": "akima",
     "outcome": "raised",
-    "exception_type": "TypeError",
-    "exception_message": "regular_grid() got multiple values for argument 'xx'",
+    "exception_type": "ValueError",
+    "exception_message": "Unknown interpolation method 'akima' for 2 dimensional data",
     "declared_exception": "ValueError"
    }
   ],
@@ -150,23 +150,23 @@
  },
  "independent_check": {
   "method": "the contract's failure_semantics quote is compared with the exception the library actually raised, field by field",
-  "verdict": "fail"
+  "verdict": "pass"
  },
  "criteria": [
   {
    "id": "raise",
    "kind": "exception",
-   "status": "fail",
+   "status": "pass",
    "detail": {
     "expected_exception": "ValueError",
     "expected_appears_in_contract_quote": true,
-    "type_matches_exactly_or_by_subclass": false,
+    "type_matches_exactly_or_by_subclass": true,
     "contract_quote": "Raises TypeError when required arguments are missing, the removed values mapping keyword is used, or an unknown keyword is supplied; raises ValueError when method is outside its documented set or the samples, fields, or query coordinates violate the SciPy interpolation contract; no input repair is inferred.",
     "actual": {
-     "type": "TypeError",
+     "type": "ValueError",
      "module": "builtins",
-     "message": "regular_grid() got multiple values for argument 'xx'",
-     "qualname": "builtins.TypeError"
+     "message": "Unknown interpolation method 'akima' for 2 dimensional data",
+     "qualname": "builtins.ValueError"
     },
     "declared_rejection_phrase": "method is outside its documented set",
     "declared_rejection_appears_in_contract_quote": true,
@@ -199,32 +199,6 @@
           1.0
          ],
          [
-          0.5,
-          1.0,
-          1.5
-         ],
-         [
-          1.0,
-          1.5,
-          2.0
-         ]
-        ]
-       }
-      ],
-      "kwargs": {
-       "xx": {
-        "dtype": "float64",
-        "shape": [
-         3,
-         3
-        ],
-        "values": [
-         [
-          0.0,
-          0.5,
-          1.0
-         ],
-         [
           0.0,
           0.5,
           1.0
@@ -236,7 +210,7 @@
          ]
         ]
        },
-       "yy": {
+       {
         "dtype": "float64",
         "shape": [
          3,
@@ -260,6 +234,32 @@
          ]
         ]
        },
+       {
+        "dtype": "float64",
+        "shape": [
+         3,
+         3
+        ],
+        "values": [
+         [
+          0.0,
+          0.5,
+          1.0
+         ],
+         [
+          0.5,
+          1.0,
+          1.5
+         ],
+         [
+          1.0,
+          1.5,
+          2.0
+         ]
+        ]
+       }
+      ],
+      "kwargs": {
        "nx": 4,
        "ny": 5,
        "xi": null,
@@ -282,8 +282,8 @@
    }
   }
  ],
- "package_sufficient": false,
- "sufficient_reason": "the library did not raise the exception the delivered contract declares for this stimulus, or the contract quote does not contain the frozen phrase",
+ "package_sufficient": true,
+ "sufficient_reason": "the declared rejection channel is reproducible from the delivered contract: the same field, the same value and the same exception type the contract names",
  "gaps": [],
  "bindings": {
   "scirel.geometry.regular-grid": {

@@ -75,8 +75,8 @@
    "package_sufficient": false,
    "call_count": 3,
    "criteria_total": 5,
-   "criteria_pass": 2,
-   "criteria_fail": 2,
+   "criteria_pass": 3,
+   "criteria_fail": 1,
    "criteria_not_run": 1,
    "gaps": [
     "fluid-dispersion-response returns one 'result' field with mixed units; the contract does not name the determinant, so the second path could not be compared and the declared 1e-12 budget stays unevaluated"
@@ -268,14 +268,16 @@
    "task_id": "collisions-rate-coefficients",
    "kind": "nominal",
    "domain": "collisions",
-   "subdomain": "rate coefficients and collision matrices",
+   "subdomain": null,
    "package_sufficient": false,
-   "call_count": 4,
-   "criteria_total": 3,
-   "criteria_pass": 1,
-   "criteria_fail": 2,
+   "call_count": 0,
+   "criteria_total": 1,
+   "criteria_pass": 0,
+   "criteria_fail": 1,
    "criteria_not_run": 0,
-   "gaps": []
+   "gaps": [
+    "the consumer harness raised AttributeError: 'str' object has no attribute 'message'"
+   ]
   },
   {
    "task_id": "collisions-rate-averages",
@@ -310,11 +312,11 @@
    "kind": "nominal",
    "domain": "field",
    "subdomain": "Green response, superposition and multi-coil vacuum field",
-   "package_sufficient": false,
+   "package_sufficient": true,
    "call_count": 4,
    "criteria_total": 5,
-   "criteria_pass": 2,
-   "criteria_fail": 3,
+   "criteria_pass": 5,
+   "criteria_fail": 0,
    "criteria_not_run": 0,
    "gaps": []
   },
@@ -459,11 +461,11 @@
    "kind": "failure",
    "domain": "geometry",
    "subdomain": "declared invalid interpolation method",
-   "package_sufficient": false,
+   "package_sufficient": true,
    "call_count": 1,
    "criteria_total": 3,
-   "criteria_pass": 2,
-   "criteria_fail": 1,
+   "criteria_pass": 3,
+   "criteria_fail": 0,
    "criteria_not_run": 0,
    "gaps": []
   },
@@ -593,13 +595,15 @@
    "kind": "failure",
    "domain": "electromagnetism",
    "subdomain": "declared invalid input channel",
-   "package_sufficient": false,
+   "package_sufficient": true,
    "call_count": 1,
-   "criteria_total": 3,
+   "criteria_total": 4,
    "criteria_pass": 2,
-   "criteria_fail": 1,
+   "criteria_fail": 2,
    "criteria_not_run": 0,
-   "gaps": []
+   "gaps": [
+    "frozen stimulus targets construction; the declared rejection is at field evaluation. Task list should freeze mesh=None + a psi() call instead."
+   ]
   },
   {
    "task_id": "closures-quasineutral",
@@ -646,14 +650,16 @@
    "task_id": "diagnostics-rejects-shape-mismatch",
    "kind": "failure",
    "domain": "diagnostics",
-   "subdomain": "declared invalid input channel",
+   "subdomain": null,
    "package_sufficient": false,
-   "call_count": 1,
-   "criteria_total": 3,
-   "criteria_pass": 2,
+   "call_count": 0,
+   "criteria_total": 1,
+   "criteria_pass": 0,
    "criteria_fail": 1,
    "criteria_not_run": 0,
-   "gaps": []
+   "gaps": [
+    "the consumer harness raised NameError: name '_val' is not defined"
+   ]
   },
   {
    "task_id": "fieldline-set-and-arclength",
@@ -944,11 +950,11 @@
    "kind": "cross",
    "domain": "cross",
    "subdomain": "filament flux to poloidal field to one Picard step",
-   "package_sufficient": false,
+   "package_sufficient": true,
    "call_count": 3,
    "criteria_total": 6,
-   "criteria_pass": 3,
-   "criteria_fail": 3,
+   "criteria_pass": 6,
+   "criteria_fail": 0,
    "criteria_not_run": 0,
    "gaps": [
     "the derivative entry differentiates a supplied flux, so the comparison against finite differences carries discretisation error; the exact handoff (array identity) is what the 1e-12 budget covers"
@@ -1004,12 +1010,15 @@
    "domain": "cross",
    "subdomain": "root values into the observation residual diagnostic",
    "package_sufficient": false,
-   "call_count": 2,
-   "criteria_total": 5,
+   "call_count": 1,
+   "criteria_total": 4,
    "criteria_pass": 2,
-   "criteria_fail": 3,
-   "criteria_not_run": 0,
-   "gaps": []
+   "criteria_fail": 0,
+   "criteria_not_run": 2,
+   "gaps": [
+    "task premise is not expressible: observation-residuals accepts only flux_loops/thomson channels; there is no 'roots' channel and no declared adapter, so 'use the roots as predictions' cannot be written. This is a task-design/contract-coverage issue: the earlier round recorded it as a package fault after feeding an invented channel name",
+    "task declares min_calls=2 but only 1 public call(s) were made"
+   ]
   },
   {
    "task_id": "cross-collisions-to-neutrals",
@@ -1029,12 +1038,12 @@
  ],
  "summary": {
   "tasks": 73,
-  "package_sufficient": 43,
-  "package_insufficient": 30,
-  "criteria_total": 273,
-  "criteria_pass": 191,
-  "criteria_fail": 77,
-  "criteria_not_run": 5
+  "package_sufficient": 47,
+  "package_insufficient": 26,
+  "criteria_total": 269,
+  "criteria_pass": 196,
+  "criteria_fail": 66,
+  "criteria_not_run": 7
  },
  "child_failures": [
   {
@@ -1043,12 +1052,22 @@
    "stderr": ""
   },
   {
+   "task": "collisions-rate-coefficients",
+   "returncode": 1,
+   "stderr": ""
+  },
+  {
    "task": "collisions-rate-averages",
    "returncode": 1,
-   "stderr": "<repo>//examples/c4-usage-acceptance/round2/harness.py:330: ApplicabilityWarning: evaluate_janev_electron_impact_ionization_rate: temperature above the fit's upper limit of 20100 eV (received up to 50000 eV) returns the value at that limit, which returns the endpoint rate rather than extrapolating (scirel.collisions.janev-electron-impact-ionization-rate)\n  return real(*a, **kw)\n"
+   "stderr": "<repo>/examples/c4-usage-acceptance/round2/harness.py:337: ApplicabilityWarning: evaluate_janev_electron_impact_ionization_rate: temperature above the fit's upper limit of 20100 eV (received up to 50000 eV) returns the value at that limit, which returns the endpoint rate rather than extrapolating (scirel.collisions.janev-electron-impact-ionization-rate)\n  return real(*a, **kw)\n"
   },
   {
    "task": "numerics-splines-and-inverse",
+   "returncode": 1,
+   "stderr": ""
+  },
+  {
+   "task": "diagnostics-rejects-shape-mismatch",
    "returncode": 1,
    "stderr": ""
   }

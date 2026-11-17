@@ -253,11 +253,11 @@
  "answer": {
   "value": {
    "linearity_relative_deviation": {
-    "psi": 0.75,
-    "BR": 0.75,
-    "BZ": 0.75
+    "psi": 0.0,
+    "BR": 0.0,
+    "BZ": 0.0
    },
-   "manual_superposition_deviation": 0.6666666666666666,
+   "manual_superposition_deviation": 0.0,
    "declared_budget": 2e-12
   },
   "unit": "T and T*m for the field components"
@@ -266,14 +266,14 @@
   "method": "the superposed psi is recomputed as sum_k currents_k*gpsi_k from the returned Green columns and the doubled-weight call",
   "observed": {
    "linearity_relative_deviation": {
-    "psi": 0.75,
-    "BR": 0.75,
-    "BZ": 0.75
+    "psi": 0.0,
+    "BR": 0.0,
+    "BZ": 0.0
    },
-   "manual_superposition_deviation": 0.6666666666666666,
+   "manual_superposition_deviation": 0.0,
    "declared_budget": 2e-12
   },
-  "verdict": "fail"
+  "verdict": "pass"
  },
  "criteria": [
   {
@@ -296,42 +296,42 @@
   {
    "id": "linearity",
    "kind": "invariant",
-   "status": "fail",
+   "status": "pass",
    "detail": {
     "linearity_relative_deviation": {
-     "psi": 0.75,
-     "BR": 0.75,
-     "BZ": 0.75
+     "psi": 0.0,
+     "BR": 0.0,
+     "BZ": 0.0
     },
-    "manual_superposition_deviation": 0.6666666666666666,
+    "manual_superposition_deviation": 0.0,
     "declared_budget": 2e-12
    }
   },
   {
    "id": "entryagreement",
    "kind": "invariant",
-   "status": "fail",
+   "status": "pass",
    "detail": {
     "linearity_relative_deviation": {
-     "psi": 0.75,
-     "BR": 0.75,
-     "BZ": 0.75
+     "psi": 0.0,
+     "BR": 0.0,
+     "BZ": 0.0
     },
-    "manual_superposition_deviation": 0.6666666666666666,
+    "manual_superposition_deviation": 0.0,
     "declared_budget": 2e-12
    }
   },
   {
    "id": "budget",
    "kind": "tolerance",
-   "status": "fail",
+   "status": "pass",
    "detail": {
     "linearity_relative_deviation": {
-     "psi": 0.75,
-     "BR": 0.75,
-     "BZ": 0.75
+     "psi": 0.0,
+     "BR": 0.0,
+     "BZ": 0.0
     },
-    "manual_superposition_deviation": 0.6666666666666666,
+    "manual_superposition_deviation": 0.0,
     "declared_budget": 2e-12,
     "quantity": "@declared_outputs psi/BR/BZ",
     "declared_tolerance": {
@@ -351,7 +351,7 @@
    }
   }
  ],
- "package_sufficient": false,
+ "package_sufficient": true,
  "sufficient_reason": "weights, columns and composite record are all readable, so the linearity and summation conventions can be checked from the package",
  "gaps": [],
  "bindings": {
