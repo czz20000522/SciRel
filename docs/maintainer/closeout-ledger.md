@@ -19,31 +19,33 @@
 | 能力边界单列 | `docs/maintainer/capability-boundaries.md` | 区分「选择不提供」/「包内根本没有」两类 |
 | 观测三态规则 | `AGENTS.md` 第 7 条 + `docs/maintainer/observation-integrity.md` | 含判据写错的六种形态 |
 
-## 2 **不在** `main` 上：kinetic 的证据工作
+## 2 剩余 `neither`：9 份，逐个说明缺什么
 
-这是当前最大的一处偏差，必须写清楚：
+`neither` 指的是**合同文本里既没有记录证据来源、也没有记录缺口**。它不是"这份能力不对"，而是
+"这份合同还没交代它的依据"。当前 9 份的构成与卡点：
 
-```
-$ python3 scripts/c1_evidence_coverage.py --format json
-kinetic: 62 assets, basis 32, gap 22, either 22, neither 24
-```
+| 资产 | 域 | 缺什么 |
+| --- | --- | --- |
+| `kinetic.kinetic-wavevector-roots` | kinetic | 需要一个不依赖被测实现的根锚（残差 + 位移对照 + 冷极限比值） |
+| `kinetic.kinetic-wavevector-scan` | kinetic | 同上；扫频分支的连续性不能由相邻点冒充 |
+| `kinetic.parallel-em-continuation` | kinetic | 需要真空解析支 `ω = kc` 与"成功⇔残差小"的**双向**等价（单向挡不住假成功） |
+| `kinetic.parallel-em-residual` | kinetic | 需要独立的 Gauss–Hermite 直接速度积分与 `k → −k` 下的复数对称恒等式 |
+| `numerics.clamped-cubic-spline` | numerics | 需要独立解三对角弯矩方程（不调被测函数）+ 三次多项式再现 + C² 连续 |
+| `numerics.natural-cubic-spline` | numerics | 同上，边界条件不同 |
+| `numerics.truncated-svd-inverse` | numerics | 需要手算 SVD 的构造 + `rank` 参数的判别性（`rank=1` 与 `rank=2` 必须 O(1) 有别） |
+| `field.poloidal-field-from-flux` | field | 需要解析通量函数给出精确偏导，并验 `div B = 0` 的轴对称形式 |
+| `geometry.path-distance` | geometry | 需要精确有理算术（3-4-5 型折线弧长可精确写出）+ 重参数化不变性 |
 
-`main` 上 kinetic 仍有一批合同既没有记录证据、也没有记录缺口（数量由上面的命令给出）。而 B6 分支报的是一个明显更小的数。
+**这 9 份是两个工作流的最后一段，不是"做不到"的清单。** 若在结项前仍未完成，它们应被如实记为
+未完成，而不是写成"已覆盖"或从统计里去掉。
 
-**两者不矛盾，因为那份工作没合进来。** 它在这里：
+### 一处曾经踩过的坑（保留在这里，因为它会复发）
+B6 的证据工作曾在 `rubicon/521e25b2-c3d7` 上完成（75 提交、35 文件）而**长期未合入**，导致
+`main` 的 `neither` 长时间停在旧值，而各分支报告的数字早已下降。合并时 75 个提交 rebase **零冲突**，
+说明两条线改的是不同文件——**这也正是它会被忽略的原因：不合也不会红。**
 
-```
-$ git rev-list --count origin/main..rubicon/521e25b2-c3d7     # 75
-$ git diff --name-only origin/main...rubicon/521e25b2-c3d7 | wc -l   # 35
-$ git diff --name-only origin/main...rubicon/521e25b2-c3d7 | grep -c '^tests/kinetic'  # 10
-```
-
-75 个提交、35 个文件、其中 10 个在 `tests/kinetic/`。**在它合进 `main` 之前，C1 在 kinetic 上未完成**，
-不能按分支报的那个数引用。
-
-同理，`agent/c1-*` 那批分支（38 / 28 / 24 / 23 / 21 / 19 个文件）多数是**已 squash 合并后的残留指针**，
-`git rev-list --count` 会把它们算成"领先"，但内容在 `main` 上。判断是否真的没合，看**内容**（例如
-对应域的 `neither` 是否为 0），不要看领先提交数。
+**判断一份工作是否真的在 `main` 上，只看在 `main` 上重跑命令的结果。** 分支领先提交数不构成证据：
+已 squash 合并的分支同样会显示"领先"，只是内容已在树上。
 
 ## 3 待人工裁决（无法由 agent 完成）
 
