@@ -1,149 +1,154 @@
 {
- "schema": "scirel.asset-document",
- "asset_id": "scirel.geometry.meridional-polar-forward",
- "title": {
-  "en": "Meridional polar position and vector projection",
-  "zh": "子午面极坐标与矢量正向投影"
- },
- "summary": "Map cylindrical meridional position and vector components to r,theta and their orthonormal components.",
- "taxonomy": [
-  "geometry",
-  "coordinates",
-  "sampling"
- ],
- "aliases": [
-  "transform_to_rtheta"
- ],
- "discovery": {
-  "capability": [
-   "Meridional polar position and vector projection",
-   "Map cylindrical meridional position and vector components to polar radius, angle and orthonormal components."
-  ],
-  "operation": [
-   "forward meridional polar transformation",
-   "rho, z and their vector components -> r, theta and orthonormal vector components"
-  ],
-  "model": "Euclidean meridional coordinate transformation with theta measured in radians from +Z toward +rho; no magnetic-field model is included.",
-  "geometry": "Planar signed rho,Z coordinates with positive distance from the origin; caller-coherent length and vector units.",
-  "boundary": "The origin has no polar vector basis and is rejected; nonzero axis points are valid, and no physical field-null convention is inferred.",
-  "device_scope": "generic"
- },
- "identity": {
-  "relation": "r=hypot(rho,z); theta=atan2(rho,z); u_r=u_rho sin(theta)+u_z cos(theta); u_theta=u_rho cos(theta)-u_z sin(theta).",
-  "direction": "rho,z,u_rho,u_z to r,theta,u_r,u_theta",
-  "definition": "theta is radians from +Z toward +rho. The source pi/2+atan2(Z,Rho) gives cos(theta)=-Z/r and conflicts with its inverse. The corrected angle and orthogonal vector basis preserve position, norm and inverse mapping.",
-  "model": "Euclidean meridional coordinate transformation, no magnetic model.",
-  "geometry": "Planar signed rho,Z coordinates with positive distance from origin.",
-  "coordinates": "Caller coherent length/vector units; theta radians.",
-  "boundary": "Origin has no polar vector basis and rejects; nonzero points on the axis are valid.",
-  "assumptions": [
-   "Finite real broadcastable inputs",
-   "r>0; no physical field null convention inferred"
-  ]
- },
- "inputs": [
-  {
-   "name": "Rho",
-   "description": "Signed meridional radial coordinate",
-   "units": "caller length",
-   "shape": "broadcastable",
-   "dtype": "finite real",
-   "required": true,
-   "constraints": "Not simultaneously zero with Z"
+  "schema": "scirel.asset-document",
+  "asset_id": "scirel.geometry.meridional-polar-forward",
+  "title": {
+    "en": "Meridional polar position and vector projection",
+    "zh": "子午面极坐标与矢量正向投影"
   },
-  {
-   "name": "Z",
-   "description": "Axial coordinate",
-   "units": "caller length",
-   "shape": "broadcastable",
-   "dtype": "finite real",
-   "required": true,
-   "constraints": "Not simultaneously zero with Rho"
+  "summary": "Map cylindrical meridional position and vector components to r,theta and their orthonormal components.",
+  "taxonomy": [
+    "geometry",
+    "coordinates",
+    "sampling"
+  ],
+  "aliases": [
+    "transform_to_rtheta"
+  ],
+  "discovery": {
+    "capability": [
+      "Meridional polar position and vector projection",
+      "Map cylindrical meridional position and vector components to polar radius, angle and orthonormal components."
+    ],
+    "operation": [
+      "forward meridional polar transformation",
+      "rho, z and their vector components -> r, theta and orthonormal vector components"
+    ],
+    "model": "Euclidean meridional coordinate transformation with theta measured in radians from +Z toward +rho; no magnetic-field model is included.",
+    "geometry": "Planar signed rho,Z coordinates with positive distance from the origin; caller-coherent length and vector units.",
+    "boundary": "The origin has no polar vector basis and is rejected; nonzero axis points are valid, and no physical field-null convention is inferred.",
+    "device_scope": "generic"
   },
-  {
-   "name": "rho_component",
-   "description": "Vector component along rho",
-   "units": "caller vector",
-   "shape": "broadcastable",
-   "dtype": "finite real",
-   "required": true,
-   "constraints": "Coherent with z_component"
+  "identity": {
+    "relation": "r=hypot(rho,z); theta=atan2(rho,z); u_r=u_rho sin(theta)+u_z cos(theta); u_theta=u_rho cos(theta)-u_z sin(theta).",
+    "direction": "rho,z,u_rho,u_z to r,theta,u_r,u_theta",
+    "definition": "theta is radians from +Z toward +rho. The source pi/2+atan2(Z,Rho) gives cos(theta)=-Z/r and conflicts with its inverse. The corrected angle and orthogonal vector basis preserve position, norm and inverse mapping.",
+    "model": "Euclidean meridional coordinate transformation, no magnetic model.",
+    "geometry": "Planar signed rho,Z coordinates with positive distance from origin.",
+    "coordinates": "Caller coherent length/vector units; theta radians.",
+    "boundary": "Origin has no polar vector basis and rejects; nonzero points on the axis are valid.",
+    "assumptions": [
+      "Finite real broadcastable inputs",
+      "r>0; no physical field null convention inferred"
+    ]
   },
-  {
-   "name": "z_component",
-   "description": "Vector component along Z",
-   "units": "caller vector",
-   "shape": "broadcastable",
-   "dtype": "finite real",
-   "required": true,
-   "constraints": "Coherent with rho_component"
+  "inputs": [
+    {
+      "name": "Rho",
+      "description": "Signed meridional radial coordinate",
+      "units": "caller length",
+      "shape": "broadcastable",
+      "dtype": "finite real",
+      "required": true,
+      "constraints": "Not simultaneously zero with Z"
+    },
+    {
+      "name": "Z",
+      "description": "Axial coordinate",
+      "units": "caller length",
+      "shape": "broadcastable",
+      "dtype": "finite real",
+      "required": true,
+      "constraints": "Not simultaneously zero with Rho"
+    },
+    {
+      "name": "rho_component",
+      "description": "Vector component along rho",
+      "units": "caller vector",
+      "shape": "broadcastable",
+      "dtype": "finite real",
+      "required": true,
+      "constraints": "Coherent with z_component"
+    },
+    {
+      "name": "z_component",
+      "description": "Vector component along Z",
+      "units": "caller vector",
+      "shape": "broadcastable",
+      "dtype": "finite real",
+      "required": true,
+      "constraints": "Coherent with rho_component"
+    }
+  ],
+  "outputs": [
+    {
+      "name": "position_and_vector",
+      "description": "Tuple r,theta,u_r,u_theta. Returned directly as the callable's single positional value: one 4-tuple in that order; it is not a field of a mapping.",
+      "units": "caller length,radian,caller vector,caller vector",
+      "shape": "four broadcasted arrays",
+      "dtype": "float64 tuple",
+      "required": true,
+      "constraints": "Orthogonal vector projection"
+    }
+  ],
+  "applicability": {
+    "preconditions": [
+      "Finite broadcastable real arrays; away from coordinate origin"
+    ],
+    "supported": [
+      "Axis and signed planar coordinate quadrants",
+      "Vector norm and roundtrip identity"
+    ],
+    "excluded": [
+      "Polar basis at the origin",
+      "Magnetic-axis curvature or topology"
+    ]
+  },
+  "failure_semantics": {
+    "invalid_input": "ValueError for nonfinite input or origin; NumPy broadcasting errors propagate.",
+    "runtime_failure": "NumPy arithmetic errors propagate.",
+    "nonconvergence": "Direct transformation.",
+    "partial_results": "No partial tuple on invalid input."
+  },
+  "public_api": {
+    "python": {
+      "module": "scirel.geometry.sampling",
+      "symbol": "transform_to_rtheta",
+      "signature": "transform_to_rtheta(Rho, Z, rho_component, z_component)",
+      "canonical_module": "scirel.geometry",
+      "canonical_symbol": "transform_to_rtheta"
+    }
+  },
+  "version": {
+    "implementation_version": "0.0.0",
+    "dependencies": []
+  },
+  "example": {
+    "description": "Transform a positive-Z cylindrical meridional position and vector into r,theta components.",
+    "code": "from scirel.geometry.sampling import transform_to_rtheta\n\nr, theta, radial, angular = transform_to_rtheta(0.0, 2.0, 3.0, 4.0)\nassert (r, theta, radial, angular) == (2.0, 0.0, 4.0, 3.0)",
+    "expected": "At (rho,Z)=(0,2), the transform returns r=2, theta=0, radial=4, and angular=3."
+  },
+  "verification": {
+    "scope": [
+      "The documented angle convention is asserted as sin(theta)=Rho/r and cos(theta)=Z/r; the competing convention pi/2+atan2(Z,Rho), which yields cos(theta)=-Z/r, fails the same assertion, so the check discriminates the two instead of pinning current output.",
+      "Axis-aligned inputs (Rho=0 or Z=0) are asserted with zero tolerance, because sin and cos are formed there as the exact ratios 0 and 1; off-axis inputs use a budget of four correctly rounded operations per component.",
+      "The vector projection is asserted to conserve u_rho**2+u_z**2 within the same budget, which fixes the basis as orthonormal and is broken by a sign or ordering error.",
+      "Test matrix covers scalar and broadcast inputs; the origin and non-finite inputs are covered as rejection cases.",
+      "Failure matrix gives one executable assertion per failure_semantics channel that rejects: ValueError at the origin and for non-finite input, and no partial tuple on rejection."
+    ],
+    "tests": [
+      "tests/geometry/test_polar_projection_repair.py",
+      "tests/sampling/test_analytic_sampling_evidence.py"
+    ],
+    "evidence_ceiling": "Establishes the angle convention, the orthonormal basis and vector-norm preservation on the tested inputs. It does not establish magnetic-axis curvature or topology, vector or length units, or the historical claim that a different angle convention conflicted with its inverse: that comparison would need the earlier implementation, which is not available.",
+    "known_limitations": [
+      "Coordinate origin undefined",
+      "Length and vector units remain caller supplied",
+      "cannot establish: the earlier angle convention's conflict with its inverse; only the shipped convention's self-consistency is established, not the history that motivated it"
+    ],
+    "basis": {
+      "kind": "analytic-identity",
+      "statement": "The documented angle convention is asserted as sin(theta)=Rho/r and cos(theta)=Z/r, with the competing pi/2+atan2(Z,Rho) convention (which yields cos(theta)=-Z/r) required to fail the same assertion; axis-aligned inputs are exact (0 and 1) with zero tolerance, off-axis inputs use a four-correctly-rounded-digit budget.",
+      "source": "tests/geometry/test_polar_projection_repair.py"
+    }
   }
- ],
- "outputs": [
-  {
-   "name": "position_and_vector",
-   "description": "Tuple r,theta,u_r,u_theta. Returned directly as the callable's single positional value: one 4-tuple in that order; it is not a field of a mapping.",
-   "units": "caller length,radian,caller vector,caller vector",
-   "shape": "four broadcasted arrays",
-   "dtype": "float64 tuple",
-   "required": true,
-   "constraints": "Orthogonal vector projection"
-  }
- ],
- "applicability": {
-  "preconditions": [
-   "Finite broadcastable real arrays; away from coordinate origin"
-  ],
-  "supported": [
-   "Axis and signed planar coordinate quadrants",
-   "Vector norm and roundtrip identity"
-  ],
-  "excluded": [
-   "Polar basis at the origin",
-   "Magnetic-axis curvature or topology"
-  ]
- },
- "failure_semantics": {
-  "invalid_input": "ValueError for nonfinite input or origin; NumPy broadcasting errors propagate.",
-  "runtime_failure": "NumPy arithmetic errors propagate.",
-  "nonconvergence": "Direct transformation.",
-  "partial_results": "No partial tuple on invalid input."
- },
- "public_api": {
-  "python": {
-   "module": "scirel.geometry.sampling",
-   "symbol": "transform_to_rtheta",
-   "signature": "transform_to_rtheta(Rho, Z, rho_component, z_component)",
-   "canonical_module": "scirel.geometry",
-   "canonical_symbol": "transform_to_rtheta"
-  }
- },
- "version": {
-  "implementation_version": "0.0.0",
-  "dependencies": []
- },
- "example": {
-  "description": "Transform a positive-Z cylindrical meridional position and vector into r,theta components.",
-  "code": "from scirel.geometry.sampling import transform_to_rtheta\n\nr, theta, radial, angular = transform_to_rtheta(0.0, 2.0, 3.0, 4.0)\nassert (r, theta, radial, angular) == (2.0, 0.0, 4.0, 3.0)",
-  "expected": "At (rho,Z)=(0,2), the transform returns r=2, theta=0, radial=4, and angular=3."
- },
- "verification": {
-  "scope": [
-   "The documented angle convention is asserted as sin(theta)=Rho/r and cos(theta)=Z/r; the competing convention pi/2+atan2(Z,Rho), which yields cos(theta)=-Z/r, fails the same assertion, so the check discriminates the two instead of pinning current output.",
-   "Axis-aligned inputs (Rho=0 or Z=0) are asserted with zero tolerance, because sin and cos are formed there as the exact ratios 0 and 1; off-axis inputs use a budget of four correctly rounded operations per component.",
-   "The vector projection is asserted to conserve u_rho**2+u_z**2 within the same budget, which fixes the basis as orthonormal and is broken by a sign or ordering error.",
-   "Test matrix covers scalar and broadcast inputs; the origin and non-finite inputs are covered as rejection cases.",
-   "Failure matrix gives one executable assertion per failure_semantics channel that rejects: ValueError at the origin and for non-finite input, and no partial tuple on rejection."
-  ],
-  "tests": [
-   "tests/geometry/test_polar_projection_repair.py",
-   "tests/sampling/test_analytic_sampling_evidence.py"
-  ],
-  "evidence_ceiling": "Establishes the angle convention, the orthonormal basis and vector-norm preservation on the tested inputs. It does not establish magnetic-axis curvature or topology, vector or length units, or the historical claim that a different angle convention conflicted with its inverse: that comparison would need the earlier implementation, which is not available.",
-  "known_limitations": [
-   "Coordinate origin undefined",
-   "Length and vector units remain caller supplied",
-   "cannot establish: the earlier angle convention's conflict with its inverse; only the shipped convention's self-consistency is established, not the history that motivated it"
-  ]
- }
 }
