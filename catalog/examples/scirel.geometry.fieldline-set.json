@@ -1,6 +1,6 @@
 {
   "schema": "scirel.asset-document",
-  "asset_id": "scirel.fieldline.fieldline-set",
+  "asset_id": "scirel.geometry.fieldline-set",
   "title": {
     "en": "Contour field-line collection FieldLineSet",
     "zh": "等值线场线集合"
@@ -94,7 +94,7 @@
     "implementation_version": "0.0.0",
     "dependencies": [
       {
-        "asset_id": "scirel.fieldline.fieldline"
+        "asset_id": "scirel.geometry.fieldline"
       }
     ]
   },

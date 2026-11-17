@@ -769,12 +769,12 @@
      "title": "Building field lines and boundaries from contour segments",
      "introduction": "FieldLine and HelperFieldLine retain different construction and return contracts; the collection factory preserves each segment by contour level. Boundary parameter splines are used for finite searches, and construction alone cannot infer whether intersections exist, are unique or are topologically complete.",
      "assets": [
-      "scirel.fieldline.fieldline",
-      "scirel.fieldline.helper-fieldline",
-      "scirel.fieldline.fieldline-set",
-      "scirel.fieldline.contour-points",
-      "scirel.fieldline.helper-contour-points",
-      "scirel.fieldline.boundary"
+      "scirel.geometry.fieldline",
+      "scirel.geometry.helper-fieldline",
+      "scirel.geometry.fieldline-set",
+      "scirel.geometry.contour-points",
+      "scirel.geometry.helper-contour-points",
+      "scirel.geometry.boundary"
      ]
     },
     {
@@ -816,7 +816,7 @@
      "assets": [
       "scirel.geometry.nonuniform-derivatives",
       "scirel.sampling.nonuniform-first-derivative",
-      "scirel.fieldline.arclength-derivative"
+      "scirel.geometry.arclength-derivative"
      ]
     },
     {

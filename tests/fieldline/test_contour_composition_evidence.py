@@ -1,8 +1,8 @@
 """Independent evidence for the contour-to-line composition assets.
 
-Assets: ``scirel.fieldline.contour-points``,
-``scirel.fieldline.helper-contour-points`` and
-``scirel.fieldline.fieldline-set``.
+Assets: ``scirel.geometry.contour-points``,
+``scirel.geometry.helper-contour-points`` and
+``scirel.geometry.fieldline-set``.
 
 These three callables only construct line objects from a contour set, so their
 scientific content is entirely inherited.  Evidence has to establish two things

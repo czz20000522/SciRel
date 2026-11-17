@@ -552,7 +552,7 @@
    }
   },
   {
-   "asset_id": "scirel.fieldline.arclength-derivative",
+   "asset_id": "scirel.geometry.arclength-derivative",
    "summary": "以相邻顶点累计距离为自变量，对采样值求导。",
    "definition": "内部点使用三点非等距差分模板，两个端点使用单边二次差分模板。",
    "model": "基于相邻顶点累计距离的直接有限差分导数。",
@@ -624,7 +624,7 @@
    }
   },
   {
-   "asset_id": "scirel.fieldline.boundary",
+   "asset_id": "scirel.geometry.boundary",
    "summary": "对有序平面边界顶点拟合非周期参数样条。",
    "definition": "使用 s=0 拟合 SciPy 参数样条，并在 200 个参数值上采样。",
    "model": "默认使用非周期二次 splprep 拟合。",
@@ -689,7 +689,7 @@
    }
   },
   {
-   "asset_id": "scirel.fieldline.contour-points",
+   "asset_id": "scirel.geometry.contour-points",
    "summary": "将每个等值级别映射为拟合后的 FieldLine 对象列表。",
    "definition": "对每个等值级别，在对应的 allsegs 条目中为每条线段构造一个 FieldLine。",
    "model": "直接构造集合，不重建场。",
@@ -757,7 +757,7 @@
    }
   },
   {
-   "asset_id": "scirel.fieldline.fieldline",
+   "asset_id": "scirel.geometry.fieldline",
    "summary": "拟合轮廓路径，并提供弧长、场插值、梯度、曲率和有界交点诊断。",
    "definition": "拟合有序参数线；场曲率沿拟合几何对归一化插值 BR、BZ 求导。",
    "model": "默认二次样条、可选网格插值、局部多项式曲率导数，以及独立的均匀网格磁通梯度曲率路径。",
@@ -839,7 +839,7 @@
    }
   },
   {
-   "asset_id": "scirel.fieldline.fieldline-set",
+   "asset_id": "scirel.geometry.fieldline-set",
    "summary": "构造按等值级别存储拟合后 FieldLine 列表的 FieldLineSet。",
    "definition": "为每条线段构造 FieldLine 实例，并存入 flset 映射。",
    "model": "直接构造集合，并转发 FieldLine 关键字参数。",
@@ -906,7 +906,7 @@
    }
   },
   {
-   "asset_id": "scirel.fieldline.helper-contour-points",
+   "asset_id": "scirel.geometry.helper-contour-points",
    "summary": "将每个等值级别映射为拟合后的 HelperFieldLine 对象列表。",
    "definition": "对每个等值级别，在 allsegs 中为每条线段构造一个 HelperFieldLine。",
    "model": "直接构造集合，不重建场。",
@@ -974,7 +974,7 @@
    }
   },
   {
-   "asset_id": "scirel.fieldline.helper-fieldline",
+   "asset_id": "scirel.geometry.helper-fieldline",
    "summary": "拟合轮廓路径，并提供辅助插值、弧长、梯度、场曲率和有界交点诊断。",
    "definition": "拟合有序参数线；辅助插值将全部源场值（包括非有限值）传给 SciPy，同时场曲率沿拟合几何对归一化后的插值 BR、BZ 求导。",
    "model": "固定为 1000 点的二次默认样条，支持选择 linear、nearest 或 cubic 插值及局部多项式曲率导数。",

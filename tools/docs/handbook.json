@@ -776,12 +776,12 @@
      "title": "从轮廓分段建立场线和边界",
      "introduction": "FieldLine 与 HelperFieldLine 保留不同构造和返回合同；集合工厂按等值线级别保留各分段。边界参数样条用于有限搜索，交点存在、唯一或拓扑完备均不能由构造自动推断。",
      "assets": [
-      "scirel.fieldline.fieldline",
-      "scirel.fieldline.helper-fieldline",
-      "scirel.fieldline.fieldline-set",
-      "scirel.fieldline.contour-points",
-      "scirel.fieldline.helper-contour-points",
-      "scirel.fieldline.boundary"
+      "scirel.geometry.fieldline",
+      "scirel.geometry.helper-fieldline",
+      "scirel.geometry.fieldline-set",
+      "scirel.geometry.contour-points",
+      "scirel.geometry.helper-contour-points",
+      "scirel.geometry.boundary"
      ]
     },
     {
@@ -823,7 +823,7 @@
      "assets": [
       "scirel.geometry.nonuniform-derivatives",
       "scirel.sampling.nonuniform-first-derivative",
-      "scirel.fieldline.arclength-derivative"
+      "scirel.geometry.arclength-derivative"
      ]
     },
     {

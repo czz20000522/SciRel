@@ -39,7 +39,7 @@
       "results.json is written even when some tasks raise; a fully successful run that drops failing cases is not acceptable."
     ]
   },
-  "tasks_digest": "0b42e4aeb937ba6e91972a57a8844cf67c4018d2ad1e27dc27fd33952619b681",
+  "tasks_digest": "dadfbfe3367f7e106a098166f4a3631e70efd43d8ccf7a5de11ad69f9aaab6fd",
   "quota": {
     "tasks_per_domain_divisor": 8,
     "min_per_domain": 1,
@@ -1275,15 +1275,15 @@
     {
       "id": "fieldline-set-and-arclength",
       "kind": "nominal",
-      "domain": "fieldline",
+      "domain": "geometry",
       "subdomain": "fieldline set construction and arclength derivative",
       "assets": [
-        "scirel.fieldline.fieldline-set",
-        "scirel.fieldline.arclength-derivative",
-        "scirel.fieldline.contour-points"
+        "scirel.geometry.fieldline-set",
+        "scirel.geometry.arclength-derivative",
+        "scirel.geometry.contour-points"
       ],
       "question": "Build a declared fieldline set, compute its arclength derivative and compare with the contour points entry on one declared contour, reporting the number of traces and their termination reason.",
-      "input_binding": {"mode": "contract_example", "assets": ["scirel.fieldline.fieldline-set"]},
+      "input_binding": {"mode": "contract_example", "assets": ["scirel.geometry.fieldline-set"]},
       "min_calls": 3,
       "criteria": [
         {"id": "fields", "kind": "contract_fields", "expect": "all_declared_outputs"},
@@ -1307,15 +1307,15 @@
     {
       "id": "fieldline-rejects-duplicate-vertices",
       "kind": "failure",
-      "domain": "fieldline",
+      "domain": "geometry",
       "subdomain": "declared invalid input channel",
-      "assets": ["scirel.fieldline.fieldline"],
+      "assets": ["scirel.geometry.fieldline"],
       "question": "Construct a declared fieldline from a vertex list that repeats a vertex, then request the declared curvature diagnostic at that vertex and report the ValueError the contract assigns to duplicate adjacent vertices.",
-      "stimulus": [{"asset": "scirel.fieldline.fieldline", "field": "verts", "value": [[0.0, 0.0], [0.0, 0.0], [1.0, 1.0]], "failure_key": "invalid_input", "declared_rejection": "duplicate adjacent vertices", "expected_exception": "ValueError"}],
-      "input_binding": {"mode": "contract_example", "assets": ["scirel.fieldline.fieldline"]},
+      "stimulus": [{"asset": "scirel.geometry.fieldline", "field": "verts", "value": [[0.0, 0.0], [0.0, 0.0], [1.0, 1.0]], "failure_key": "invalid_input", "declared_rejection": "duplicate adjacent vertices", "expected_exception": "ValueError"}],
+      "input_binding": {"mode": "contract_example", "assets": ["scirel.geometry.fieldline"]},
       "min_calls": 1,
       "criteria": [
-        {"id": "raise", "kind": "exception", "asset": "scirel.fieldline.fieldline", "expected": "ValueError", "failure_key": "invalid_input"},
+        {"id": "raise", "kind": "exception", "asset": "scirel.geometry.fieldline", "expected": "ValueError", "failure_key": "invalid_input"},
         {
           "id": "nomove",
           "kind": "invariant",
