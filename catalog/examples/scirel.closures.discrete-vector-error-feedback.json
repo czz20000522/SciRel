@@ -6,8 +6,15 @@
     "zh": "离散矢量误差滤波与电流反馈"
   },
   "summary": "Evaluate a device-neutral sampled ten-channel error filter with proportional, integral and filtered-derivative state, an 11x10 current map, feed-forward addition and enable hold/reset branches. The top-level result is a scirel._result.Result mapping; non-colliding fields also support attribute access.",
-  "taxonomy": ["closures", "control", "sampled-feedback"],
-  "aliases": ["vector feedback", "sample-and-hold current feedback"],
+  "taxonomy": [
+    "closures",
+    "control",
+    "sampled-feedback"
+  ],
+  "aliases": [
+    "vector feedback",
+    "sample-and-hold current feedback"
+  ],
   "discovery": {
     "capability": [
       "Discrete vector error filtering and current feedback",
@@ -115,13 +122,24 @@
       "Six parameterized invalid-input nodes reject nonbinary enable, negative filter rate, nonzero internal reset, observation-time mismatch, a nonfinite measurement and a wrong gain shape. The sampled-state equations, first two rational steps, units and exact-equality budget are in the direct test module docstring.",
       "A self-contained three-sample P-only public example specifies ten error channels, eleven output currents and all controller parameters. Independent linear arithmetic gives feedback [3,6,-3] A and total [4,7,-2] A in the first output, with all others zero. A direct test executes the actual docstring assertions in isolated Python from an empty temporary working directory, without repository fixture reads."
     ],
-    "tests": ["tests/closures/test_discrete_vector_feedback.py", "tests/closures/test_independent_closure_relations.py::test_feedback_independent_rational_trace_and_hold_reset", "tests/closures/test_independent_closure_relations.py::test_feedback_non_diagonal_map_and_scale", "tests/closures/test_independent_closure_relations.py::test_feedback_declared_true_failures", "tests/closures/test_independent_closure_relations.py::test_feedback_docstring_example_runs_without_repository_fixtures"],
+    "tests": [
+      "tests/closures/test_discrete_vector_feedback.py",
+      "tests/closures/test_independent_closure_relations.py::test_feedback_independent_rational_trace_and_hold_reset",
+      "tests/closures/test_independent_closure_relations.py::test_feedback_non_diagonal_map_and_scale",
+      "tests/closures/test_independent_closure_relations.py::test_feedback_declared_true_failures",
+      "tests/closures/test_independent_closure_relations.py::test_feedback_docstring_example_runs_without_repository_fixtures"
+    ],
     "evidence_ceiling": "Bounded source-fidelity partial for the declared sampled adapter path, supplemented by independent exact rational state-timing and nondiagonal-map assertions and six specified invalid-input cases. The saved source/replay comparison remains transcription evidence. Native Simulink, parameter-resolution discrimination, malformed inputs beyond the named cases, physical calibration, closed-loop convergence/stability, human scientific acceptance, rights acceptance and release remain unestablished.",
     "known_limitations": [
       "The implementation reproduces the declared typed fixture path and does not model a plant, actuator saturation or magnetic geometry.",
       "Disabled and rising-enable behavior is explicit state semantics, not evidence of a stable controller.",
       "The source/replay evidence is an adapter transcription comparison; native Simulink execution remains NOT_RUN.",
       "License texts are retained under licenses/discrete-vector-feedback; rights acceptance remains a separate decision."
-    ]
+    ],
+    "basis": {
+      "kind": "independent-recomputation",
+      "statement": "Independent exact-rational seven-sample trajectories plus a non-diagonal Fraction map check state timing, axis order and coefficient-scale application without reading source/replay fixtures; native Simulink behaviour and calibration remain unestablished.",
+      "source": "tests/closures/test_independent_closure_relations.py"
+    }
   }
 }
