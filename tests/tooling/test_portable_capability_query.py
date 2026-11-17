@@ -232,7 +232,10 @@ assert not any(name.startswith(('sphinx', 'numpy', 'scirel_docs')) for name in s
         input=json.dumps(payload),
         text=True,
         capture_output=True,
-        check=True,
+        check=False,
         timeout=10,
+    )
+    assert completed.returncode == 0, (
+        f"portable query probe failed with {completed.returncode}: {completed.stderr!r}"
     )
     assert json.loads(completed.stdout) == query_capabilities(payload["index"], payload["request"])

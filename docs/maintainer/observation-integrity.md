@@ -64,13 +64,16 @@
 
 ## ratchet，不是全量整改
 
-`scripts/check_observation_integrity.py` 现在对 14 处已存在的静默点采取 ratchet：它们记在 `tools/docs/observation-baseline.json` 里，每条带理由（为什么这一处暂时不需要 stderr），**新增的一律拦下，基线只许变小**。
+`scripts/check_observation_integrity.py` 对已存在的静默点采取 ratchet：它们记在 `tools/docs/observation-baseline.json` 里，每条带理由，**新增的一律拦下，基线只许变小**。
 
-这不是妥协的遮羞布。理由有二：
-- 一个自查永远红的检查器等于没有检查器，人们会学会忽略它；
-- 14 处里多数是测试里的一次性 fixture 调用，失败时紧随其后的断言会响亮地失败，把它们全部重写进一次提交反而放大风险。
+这条分支落地时基线记了 14 处，同轮清到 **2 处**。清掉的是四个共享 helper（`test_dev.py`、`test_check_all.py`、`test_build_extraction_kit.py`、`test_tickets.py` 里的 `_git`，被整批 fixture 复用）和各处一次性探针，改法一律是"失败时把 `stderr` 带进抛出的错误"，返回类型与既有断言不动。它们原来"紧随其后的断言会响亮失败"的说法站不住：`check=True` 时进程一失败就当场抛 `CalledProcessError`，根本轮不到下一句断言——那正是本页第 3 类缺陷本身。
 
-清理方式写进了基线文件本身：删掉一条 = 把该文件的调用点改成携带 stderr。基线数字会随时间变小，这本身就是进度。
+剩下 2 处都在 `scripts/`：`build_catalog.py` 与 `build_pleiades_truth.py` 的 HEAD 探测把 git 失败折进同一个 `None`，与"这不是 git 检出"共用一个返回值。拆开这两种结局会让构建改为中止，属于行为变更，等维护者裁决，所以留在基线里并如实写下理由。
+
+所以 ratchet 现在的用处是"以后新增的一律拦下"，而不是"把这批留着不管"：
+
+- 一个永远红的检查器等于没有检查器，人们会学会忽略它；
+- 清理方式写在基线文件本身：删掉一条 = 把该文件的调用点改成携带 stderr。基线数字会随时间变小，这本身就是进度。
 
 ## 怎么用
 

@@ -535,8 +535,9 @@ def test_admission_rechecks_the_same_live_credential(tmp_path, monkeypatch, stag
                 [sys.executable, "-B", "-c", "print('credential boundary probe only')"],
                 capture_output=True,
                 text=True,
-                check=True,
+                check=False,
             )
+            assert done.returncode == 0, f"credential probe failed: {done.stderr!r}"
             if change == "retired":
                 record.unlink()
             else:
