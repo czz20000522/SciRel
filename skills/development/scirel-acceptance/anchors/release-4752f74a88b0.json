@@ -1,0 +1,65 @@
+{
+  "candidate": {
+    "commit": "4752f74a88b0b68550eb3a0a1a7d09a31a0044d0",
+    "dirty": false,
+    "tree": "d255d8e4dbbc66e6f609b9069a4591ec6068f2d9",
+    "worktree_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "checked_at": "2026-11-17T03:25:03Z",
+  "environment": {
+    "architecture": "arm64",
+    "dependencies": {
+      "mpmath": "1.4.1",
+      "numpy": "2.5.4",
+      "scipy": "1.18.1"
+    },
+    "platform": "darwin",
+    "python": {
+      "implementation": "CPython",
+      "version": "3.14.7"
+    },
+    "python_version_sha256": "922fe0c3de073b01988e23348ea184456161678c5e329e6f34be89be24383f93",
+    "uv_lock_sha256": "21c3d35d6fdee37064bf7aec328b65a92f0dccb6b447ba36fb069745d4559d19"
+  },
+  "normalization": {
+    "nodeid": "pytest nodeid exactly as the counts plugin recorded it, with every backslash replaced by '/', a leading './' removed, and nothing else changed: the file path keeps its repository-relative form (no drive letter, no absolute prefix), the '::' separators stay, and a parametrised id keeps its '[param]' suffix verbatim",
+    "nodeid_set_sha256": "sha256 of the UTF-8 bytes of every normalised selected nodeid joined by a newline with one trailing newline; duplicates are not collapsed, because the counts validator already refuses a selected list with duplicates",
+    "order": "interpreter string sort (sorted()), which is code-point order and locale-free",
+    "per_test_sha256": "sha256 of one JSON array per test, [nodeid, outcome, reason], serialised with separators (',', ':') and ensure_ascii=False, ordered by normalised nodeid, joined by newlines with one trailing newline; reason is the phase's wasxfail when present, else the phase's skip reason, else an empty string"
+  },
+  "provenance": {
+    "check_all_sha256": "5932428ebb0d2acea31b9b39b03c04afa5235a93f5790a800531ece2ba51930b",
+    "counts_plugin_sha256": "f6727aea1f8b364a5378dd417a9123aa38013a4e5797aaada2246cb2d31cdae8"
+  },
+  "receipt": {
+    "evidence": "clean_candidate",
+    "result_sha256": "bad2529275cdc74cea69edbb08373971340faf4ee37e8b284684a2a823a60ce5",
+    "run_id": "f74e09b826a840c0b9bf55cade49166a"
+  },
+  "schema": "scirel.acceptance.anchor.v1",
+  "skip_reasons": {
+    "NOT_RUN: set SCIREL_MCP_PYTHON to an isolated official MCP SDK interpreter": 4,
+    "Windows root component traversal": 1,
+    "got empty parameter set for (report)": 1,
+    "longdouble has no wider finite range on this platform": 1,
+    "platform longdouble has no wider finite range than float64": 3,
+    "state-only source row has no explicit public mask": 2
+  },
+  "stage": "release",
+  "tests": {
+    "collected": 9420,
+    "deselected": 0,
+    "error": 0,
+    "failed": 0,
+    "nodeid_set_sha256": "16b914c15d4ab7701187153de64608dfe312e1a510897e0b707472e1c3c9225a",
+    "passed": 9407,
+    "per_test_sha256": "8e339f108f27774e33ed8cc9bce025a7c3f32941e2a494450a55fdeec991c5de",
+    "selected": 9420,
+    "skipped": 12,
+    "xfailed": 1,
+    "xpassed": 0
+  },
+  "xfail_reasons": {
+    "AUDIT-B3: the frozen high-energy branch of the H2 charge-exchange fit is non-monotonic between ~978 and ~8,291 eV; no external oracle is bound to justify changing the fit": 1
+  }
+}
