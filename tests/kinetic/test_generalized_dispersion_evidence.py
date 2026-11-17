@@ -148,13 +148,14 @@ def test_saha_population_is_the_closed_form():
 
     density = np.array([1.0e18, 1.0e19, 1.0e20])
     temperature = np.array([2.0, 10.0, 50.0])
-    levels = np.array([1.0, 4.0, 9.0])
-    result = np.asarray(evaluate_h_saha_equilibrium_population(density, temperature, levels))
+    # principal_level is the integer level n; the formula uses n**2 internally.
+    level = 3
+    result = np.asarray(evaluate_h_saha_equilibrium_population(density, temperature, level))
     bessel.high_precision()
     for index in range(density.size):
         n = mp.mpf(density[index])
         t = mp.mpf(temperature[index])
-        level2 = mp.mpf(levels[index])
+        level2 = mp.mpf(level) ** 2
         expected = n * (mp.mpf("3.310e-28") * n) * level2 * mp.e ** (
             mp.mpf("13.6057") / (level2 * t)
         ) / t ** mp.mpf("1.5")
@@ -173,11 +174,13 @@ def test_maxwellian_electrostatic_susceptibility_is_closed_form():
     bessel.high_precision()
     for omega, k in ((1.0, 0.5), (2.0, 0.3), (0.9, 0.7)):
         result = evaluate_maxwellian_electrostatic(omega, k)
-        chi = complex(np.asarray(result["chi"]).ravel()[0])
+        dispersion = complex(np.asarray(result["D"]).ravel()[0])
         # z = omega/(sqrt(2) k v_t) with v_t = 1 in these normalized units.
         z = mp.mpf(omega) / (mp.sqrt(2) * mp.mpf(k))
-        expected = (1 + z * _faddeeva(z)) / mp.mpf(k) ** 2
-        assert _rel(chi, expected) <= 1e-12
+        expected = 1 + (1 + z * _faddeeva(z)) / mp.mpf(k) ** 2
+        assert _rel(dispersion, expected) <= 1e-12
+        # The reported z is part of the same relation and is checked independently.
+        assert _rel(complex(np.asarray(result["z"]).ravel()[0]), z) <= 1e-13
 
 
 def test_maxwellian_electrostatic_mode_root_zeroes_the_dispersion():
@@ -192,9 +195,7 @@ def test_maxwellian_electrostatic_mode_root_zeroes_the_dispersion():
     bessel.high_precision()
     k = 0.5
     solution = solve_maxwellian_electrostatic_mode(k, 1.0)
-    frequency = complex(np.asarray(solution["omega"]).ravel()[0]) if "omega" in solution else complex(
-        np.asarray(solution["root"]).ravel()[0]
-    )
+    frequency = complex(np.asarray(solution["omega"]).ravel()[0])
 
     def residual(value):
         z = mp.mpf(complex(value).real) / (mp.sqrt(2) * mp.mpf(k))
@@ -205,4 +206,6 @@ def test_maxwellian_electrostatic_mode_root_zeroes_the_dispersion():
     assert residual(frequency * (1 + 1e-3)) > 1e3 * max(at_root, 1e-16)
     # The dispersion the implementation reports must agree, not just the closed form.
     reported = evaluate_maxwellian_electrostatic(complex(frequency).real, k)
-    assert abs(complex(np.asarray(reported["chi"]).ravel()[0]) + 1) <= 1e-8
+    assert abs(complex(np.asarray(reported["D"]).ravel()[0])) <= 1e-8
+    # The solver's own normalised residual must agree that this is a root.
+    assert abs(float(np.asarray(solution["normalized_residual"]).ravel()[0])) <= 1e-8
