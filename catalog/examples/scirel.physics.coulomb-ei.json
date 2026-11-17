@@ -1,138 +1,143 @@
 {
- "schema": "scirel.asset-document",
- "asset_id": "scirel.physics.coulomb-ei",
- "title": {
-  "en": "Electron-ion Coulomb logarithm",
-  "zh": "电子-离子库仑对数"
- },
- "summary": "Electron-ion Coulomb logarithm matching Eq. (18d) of the Sauter et al. EPFL author manuscript LRP 630/99.",
- "taxonomy": [
-  "physics",
-  "collisions",
-  "coulomb-log"
- ],
- "aliases": [
-  "calculate_log_lambda_ei"
- ],
- "discovery": {
-  "capability": [
-   "Electron-ion Coulomb logarithm",
-   "Electron Coulomb logarithm from EPFL LRP 630/99 Eq. (18d), with temperature input in keV and density in m^-3."
-  ],
-  "operation": [
-   "Evaluate the electron-ion Coulomb logarithm matching EPFL LRP 630/99 Eq. (18d)",
-   "temperature and density -> dimensionless logarithm"
-  ],
-  "model": "EPFL LRP 630/99 author-manuscript Eq. (18d), ln Lambda_e = 31.3 - ln(sqrt(n_e)/T_e) with n_e in m^-3 and T_e in eV; callable temperature is in keV, with explicit numeric boundary checks.",
-  "geometry": "Homogeneous plasma point with broadcast T_e and n_e arrays; no spatial geometry is inferred.",
-  "boundary": "T_e in keV and n_e in m^-3 must be finite and strictly positive.",
-  "device_scope": "generic"
- },
- "identity": {
-  "relation": "lnΛ=31.3-0.5 ln(n_e)+ln(1000*T_e)",
-  "direction": "temperature and density -> dimensionless logarithm",
-  "definition": "31.3-0.5*ln(n_e)+ln(1000*T_e); matches lnLambda_e (not a manuscript symbol lnLambda_ei) in EPFL LRP 630/99 Eq. (18d), whose density is in m^-3 and temperature in eV. The callable converts keV to eV by the factor 1000. Evaluation uses ln(1000)+ln(T), avoiding intermediate overflow/underflow.",
-  "model": "Electron Coulomb-log relation from EPFL LRP 630/99 author-manuscript Eq. (18d), with explicit SciRel numeric boundary checks",
-  "geometry": "homogeneous plasma point",
-  "coordinates": "broadcast T_e and n_e arrays",
-  "boundary": "strictly positive finite T_e in keV and n_e in m^-3",
-  "assumptions": [
-   "This is a mathematical weak-coupling estimate.",
-   "The caller decides whether a positive/adequate Coulomb logarithm is physically applicable."
-  ]
- },
- "inputs": [
-  {
-   "name": "T_e",
-   "description": "Electron temperature",
-   "units": "keV",
-   "shape": "broadcast",
-   "dtype": "real integer/float numeric scalar or array-like; converted to float64",
-   "required": true,
-   "constraints": "finite and strictly positive; nonempty, boolean/string/complex/masked values rejected"
+  "schema": "scirel.asset-document",
+  "asset_id": "scirel.physics.coulomb-ei",
+  "title": {
+    "en": "Electron-ion Coulomb logarithm",
+    "zh": "电子-离子库仑对数"
   },
-  {
-   "name": "n_e",
-   "description": "Electron density",
-   "units": "m^-3",
-   "shape": "broadcast",
-   "dtype": "real integer/float numeric scalar or array-like; converted to float64",
-   "required": true,
-   "constraints": "finite and strictly positive; nonempty, boolean/string/complex/masked values rejected"
+  "summary": "Electron-ion Coulomb logarithm matching Eq. (18d) of the Sauter et al. EPFL author manuscript LRP 630/99.",
+  "taxonomy": [
+    "physics",
+    "collisions",
+    "coulomb-log"
+  ],
+  "aliases": [
+    "calculate_log_lambda_ei"
+  ],
+  "discovery": {
+    "capability": [
+      "Electron-ion Coulomb logarithm",
+      "Electron Coulomb logarithm from EPFL LRP 630/99 Eq. (18d), with temperature input in keV and density in m^-3."
+    ],
+    "operation": [
+      "Evaluate the electron-ion Coulomb logarithm matching EPFL LRP 630/99 Eq. (18d)",
+      "temperature and density -> dimensionless logarithm"
+    ],
+    "model": "EPFL LRP 630/99 author-manuscript Eq. (18d), ln Lambda_e = 31.3 - ln(sqrt(n_e)/T_e) with n_e in m^-3 and T_e in eV; callable temperature is in keV, with explicit numeric boundary checks.",
+    "geometry": "Homogeneous plasma point with broadcast T_e and n_e arrays; no spatial geometry is inferred.",
+    "boundary": "T_e in keV and n_e in m^-3 must be finite and strictly positive.",
+    "device_scope": "generic"
+  },
+  "identity": {
+    "relation": "lnΛ=31.3-0.5 ln(n_e)+ln(1000*T_e)",
+    "direction": "temperature and density -> dimensionless logarithm",
+    "definition": "31.3-0.5*ln(n_e)+ln(1000*T_e); matches lnLambda_e (not a manuscript symbol lnLambda_ei) in EPFL LRP 630/99 Eq. (18d), whose density is in m^-3 and temperature in eV. The callable converts keV to eV by the factor 1000. Evaluation uses ln(1000)+ln(T), avoiding intermediate overflow/underflow.",
+    "model": "Electron Coulomb-log relation from EPFL LRP 630/99 author-manuscript Eq. (18d), with explicit SciRel numeric boundary checks",
+    "geometry": "homogeneous plasma point",
+    "coordinates": "broadcast T_e and n_e arrays",
+    "boundary": "strictly positive finite T_e in keV and n_e in m^-3",
+    "assumptions": [
+      "This is a mathematical weak-coupling estimate.",
+      "The caller decides whether a positive/adequate Coulomb logarithm is physically applicable."
+    ]
+  },
+  "inputs": [
+    {
+      "name": "T_e",
+      "description": "Electron temperature",
+      "units": "keV",
+      "shape": "broadcast",
+      "dtype": "real integer/float numeric scalar or array-like; converted to float64",
+      "required": true,
+      "constraints": "finite and strictly positive; nonempty, boolean/string/complex/masked values rejected"
+    },
+    {
+      "name": "n_e",
+      "description": "Electron density",
+      "units": "m^-3",
+      "shape": "broadcast",
+      "dtype": "real integer/float numeric scalar or array-like; converted to float64",
+      "required": true,
+      "constraints": "finite and strictly positive; nonempty, boolean/string/complex/masked values rejected"
+    }
+  ],
+  "outputs": [
+    {
+      "name": "result",
+      "description": "Coulomb logarithm",
+      "units": "dimensionless",
+      "shape": "broadcast shape",
+      "dtype": "float64 scalar or array",
+      "required": true,
+      "constraints": "Finite signed mathematical formula value; physical suitability for a collision model is caller-owned."
+    }
+  ],
+  "applicability": {
+    "preconditions": [
+      "strictly positive finite T_e in keV and n_e in m^-3",
+      "Above the formulary's 10 Z^2 eV condition (10 eV at Z = 1) the caller accepts the high-temperature (quantum cutoff) branch; below it the relation warns and still returns the value. The table conditions both e-i branches on more than T_e: T_i*m_e/m_i < T_e < 10 Z^2 eV selects the low-temperature form, T_i*m_e/m_i < 10 Z^2 eV < T_e the high-temperature one, and a T_e < T_i*m_e/m_i branch is listed as well. This interface accepts neither T_i nor an ion mass and fixes Z = 1 for electrons, so those conditions stay the caller's judgement."
+    ],
+    "supported": [
+      "Finite NumPy evaluation of the declared relation and broadcast shape on the quantum-cutoff branch, valid above the declared T_e ~ 10 Z^2 eV boundary (10 eV here; that boundary is transcribed from the NRL Plasma Formulary 2016 printed p. 34 table and was maintainer-checked in #212, while the Wesson edition and section remain UNKNOWN)."
+    ],
+    "excluded": [
+      "Whole-transport evolution, experimental calibration, and implicit coordinate reconstruction.",
+      "Interpreting zero or negative computed logarithms as valid weakly coupled collision physics; physical calibration or a regime-switching model.",
+      "The low-temperature electron-ion classical-cutoff branch (a classical-cutoff form 23 - ln(n_e^0.5 Z T_e^-1.5), T_e in eV, n_e in cm^-3; transcribed from the NRL Plasma Formulary 2016 printed p. 34 table, maintainer-checked in #212) is not provided: below 10 eV the returned quantum-branch value only warns, and it sits above that form by about +37% at n_e = 1e17 m^-3, +55.5% at 1e19 and +112% at 1e21 (0.1 eV; the gap grows with density). The two forms cross near 16.2 eV, above which the quantum form reads lower.",
+      "The low-temperature e-i estimate is not provided as a public relation: below 10 Z^2 eV the returned high-temperature estimate differs from it and only warns."
+    ]
+  },
+  "failure_semantics": {
+    "invalid_input": "Raises ValueError for boolean/string/complex/masked or empty input, non-finite values, malformed or incompatible shape, and the nonpositive or singular domains named by the callable contract.",
+    "runtime_failure": "Raises FloatingPointError if accepted finite inputs produce an unrepresentable output; no fallback is returned. Emits scirel.ApplicabilityWarning when any input temperature is below 10 Z^2 eV (10 eV at Z = 1), the part of the source's e-i branch conditions this interface can evaluate; the table also conditions both branches on T_i*m_e/m_i, which this signature cannot evaluate (no T_i or ion mass, Z = 1), so the remaining conditions stay the caller's judgement. The message names the lowest input, the low-temperature branch, and the gap to the NRL Plasma Formulary e-i branches, 2016 printed p.34 (PPPL official copy), as transcribed from the original table (see #197, #212): 24 - ln(sqrt(n_e)/T_e) for T_e > 10 Z^2 eV and 23 - ln(sqrt(n_e) Z T_e^(-3/2)) below it, T_e in eV and n_e in cm^-3; the returned relation keeps constant 31.3, about 0.392 above that branch's converted constant 24 + ln 1000 = 30.907755... The value is returned unchanged.",
+    "nonconvergence": "Not applicable; this is a direct algebraic mapping.",
+    "partial_results": "No output is returned after an exception."
+  },
+  "public_api": {
+    "python": {
+      "module": "scirel.physics.coulomb_logs",
+      "symbol": "calculate_log_lambda_ei",
+      "signature": "calculate_log_lambda_ei(T_e, n_e)",
+      "canonical_module": "scirel.physics",
+      "canonical_symbol": "calculate_log_lambda_ei"
+    }
+  },
+  "version": {
+    "implementation_version": "0.0.0",
+    "dependencies": []
+  },
+  "example": {
+    "description": "Run the relation on a finite declared-domain case.",
+    "code": "import warnings\nimport numpy as np\nfrom scirel.physics import calculate_log_lambda_ei\nr=calculate_log_lambda_ei(2., 1e19)\nassert np.isfinite(r)\nwith warnings.catch_warnings(record=True) as caught:\n    warnings.simplefilter('always')\n    low = calculate_log_lambda_ei(0.005, 1e19)\nassert np.isfinite(low) and len(caught) == 1\n",
+    "expected": "A finite Coulomb logarithm for the in-range sample, plus one ApplicabilityWarning for the below-10-eV sample whose value is returned unchanged."
+  },
+  "verification": {
+    "scope": [
+      "Independent 60-digit Decimal logarithms over temperature/density/charge scales including smallest subnormal and largest float64; transformation/scaling identities.",
+      "Declared failure cases for empty, boolean/string/complex/masked, nonfinite and incompatible inputs.",
+      "Agreement with the canonical SciRel callers and dependencies of this relation.",
+      "Fixed original constant 31.3 and the independent quotient in EPFL LRP 630/99 Eq. (18d), with density in m^-3 and temperature in eV, verify the callable's eV-to-keV input conversion on scalar grids and broadcast arrays."
+    ],
+    "tests": [
+      "tests/cross_domain/test_algebra_grid.py",
+      "tests/physics/test_coulomb_logs_low_temperature.py",
+      "tests/physics/test_coulomb_logs_sauter_provenance.py"
+    ],
+    "evidence_ceiling": "Maintained tests establish the named relation, shape, selected boundary behavior and algebraic agreement with EPFL LRP 630/99 author-manuscript Eq. (18d) after unit conversion; they do not establish derivation, global physical calibration, the publisher's final text or the 2002 erratum.",
+    "known_limitations": [
+      "No external calibration or collision-frequency composition is claimed.",
+      "Only the declared algebra, original-equation unit conversion and numerical boundaries are covered.",
+      "The original scan of Sauter, Angioni and Lin-Liu, EPFL LRP 630/99 (February 1999), printed p. 7 (PDF p. 8), Eq. (18d), was read directly: lnLambda_e = 31.3 - ln(sqrt(n_e)/T_e), densities in m^-3 and temperatures in eV; institutional author-manuscript record https://infoscience.epfl.ch/handle/20.500.14299/23214. The manuscript labels this Lambda_e, not Lambda_ei. The ee function with constant 31.0 is a different estimate whose provenance remains UNKNOWN.",
+      "The e-i branches and their T_e > 10 Z^2 eV condition come from the NRL Plasma Formulary, 2016 printed p.34, transcribed from the original table and checked by the maintainer (see #197, #212). The table additionally conditions both branches on T_i*m_e/m_i and lists a T_e < T_i*m_e/m_i branch, and this interface cannot evaluate those (no T_i or ion mass, Z = 1). The ~16.2 eV intersection with the low-temperature branch is algebra on a formula extrapolated outside its own range; it is not a physical switching point and not an accuracy criterion.",
+      "The gap to the low-temperature branch is an algebraic difference between two estimates, not an error against measured physics: at n_e = 1e19 m^-3 it is +55.54% at 0.1 eV and +17.33% at 1 eV, and it grows with density, so the warning computes it per sample.",
+      "The Wesson attribution of constant 31.3, edition and section were not verified and remain UNKNOWN; the NRL transcription recorded above is a separate, maintainer-checked fact (see #197, #212), so the two provenance states are kept apart rather than combined.",
+      "The existing implementation keeps constant 31.3. The NRL high-temperature e-i expression, with density converted to m^-3 and temperature left in eV, has constant 24 + ln 1000 = 30.907755...; for this interface's keV input its temperature term is ln(1000*T_e). The constants differ by about 0.392 in the logarithm. This is an algebraic comparison with the maintainer-checked NRL transcription; the physical origin of the difference remains UNKNOWN. Finding Eq. (18d) in the author manuscript does not explain that difference.",
+      "Verification establishes occurrence in the EPFL institutional author manuscript only, not derivation or priority. The publisher's final typesetting and the 2002 erratum remain unverified (UNKNOWN); no experimental calibration or arbitrary ion-mixture applicability follows from this source comparison."
+    ],
+    "basis": {
+      "kind": "independent-recomputation",
+      "statement": "Independent 60-digit Decimal logarithms verify the declared electron-ion relation over temperature, density and charge scales, including the smallest subnormal and the largest float64.",
+      "source": "tests/cross_domain/test_algebra_grid.py"
+    }
   }
- ],
- "outputs": [
-  {
-   "name": "result",
-   "description": "Coulomb logarithm",
-   "units": "dimensionless",
-   "shape": "broadcast shape",
-   "dtype": "float64 scalar or array",
-   "required": true,
-   "constraints": "Finite signed mathematical formula value; physical suitability for a collision model is caller-owned."
-  }
- ],
- "applicability": {
-  "preconditions": [
-   "strictly positive finite T_e in keV and n_e in m^-3",
-   "Above the formulary's 10 Z^2 eV condition (10 eV at Z = 1) the caller accepts the high-temperature (quantum cutoff) branch; below it the relation warns and still returns the value. The table conditions both e-i branches on more than T_e: T_i*m_e/m_i < T_e < 10 Z^2 eV selects the low-temperature form, T_i*m_e/m_i < 10 Z^2 eV < T_e the high-temperature one, and a T_e < T_i*m_e/m_i branch is listed as well. This interface accepts neither T_i nor an ion mass and fixes Z = 1 for electrons, so those conditions stay the caller's judgement."
-  ],
-  "supported": [
-   "Finite NumPy evaluation of the declared relation and broadcast shape on the quantum-cutoff branch, valid above the declared T_e ~ 10 Z^2 eV boundary (10 eV here; that boundary is transcribed from the NRL Plasma Formulary 2016 printed p. 34 table and was maintainer-checked in #212, while the Wesson edition and section remain UNKNOWN)."
-  ],
-  "excluded": [
-   "Whole-transport evolution, experimental calibration, and implicit coordinate reconstruction.",
-   "Interpreting zero or negative computed logarithms as valid weakly coupled collision physics; physical calibration or a regime-switching model.",
-   "The low-temperature electron-ion classical-cutoff branch (a classical-cutoff form 23 - ln(n_e^0.5 Z T_e^-1.5), T_e in eV, n_e in cm^-3; transcribed from the NRL Plasma Formulary 2016 printed p. 34 table, maintainer-checked in #212) is not provided: below 10 eV the returned quantum-branch value only warns, and it sits above that form by about +37% at n_e = 1e17 m^-3, +55.5% at 1e19 and +112% at 1e21 (0.1 eV; the gap grows with density). The two forms cross near 16.2 eV, above which the quantum form reads lower.",
-   "The low-temperature e-i estimate is not provided as a public relation: below 10 Z^2 eV the returned high-temperature estimate differs from it and only warns."
-  ]
- },
- "failure_semantics": {
-  "invalid_input": "Raises ValueError for boolean/string/complex/masked or empty input, non-finite values, malformed or incompatible shape, and the nonpositive or singular domains named by the callable contract.",
-  "runtime_failure": "Raises FloatingPointError if accepted finite inputs produce an unrepresentable output; no fallback is returned. Emits scirel.ApplicabilityWarning when any input temperature is below 10 Z^2 eV (10 eV at Z = 1), the part of the source's e-i branch conditions this interface can evaluate; the table also conditions both branches on T_i*m_e/m_i, which this signature cannot evaluate (no T_i or ion mass, Z = 1), so the remaining conditions stay the caller's judgement. The message names the lowest input, the low-temperature branch, and the gap to the NRL Plasma Formulary e-i branches, 2016 printed p.34 (PPPL official copy), as transcribed from the original table (see #197, #212): 24 - ln(sqrt(n_e)/T_e) for T_e > 10 Z^2 eV and 23 - ln(sqrt(n_e) Z T_e^(-3/2)) below it, T_e in eV and n_e in cm^-3; the returned relation keeps constant 31.3, about 0.392 above that branch's converted constant 24 + ln 1000 = 30.907755... The value is returned unchanged.",
-  "nonconvergence": "Not applicable; this is a direct algebraic mapping.",
-  "partial_results": "No output is returned after an exception."
- },
- "public_api": {
-  "python": {
-   "module": "scirel.physics.coulomb_logs",
-   "symbol": "calculate_log_lambda_ei",
-   "signature": "calculate_log_lambda_ei(T_e, n_e)",
-   "canonical_module": "scirel.physics",
-   "canonical_symbol": "calculate_log_lambda_ei"
-  }
- },
- "version": {
-  "implementation_version": "0.0.0",
-  "dependencies": []
- },
- "example": {
-  "description": "Run the relation on a finite declared-domain case.",
-  "code": "import warnings\nimport numpy as np\nfrom scirel.physics import calculate_log_lambda_ei\nr=calculate_log_lambda_ei(2., 1e19)\nassert np.isfinite(r)\nwith warnings.catch_warnings(record=True) as caught:\n    warnings.simplefilter('always')\n    low = calculate_log_lambda_ei(0.005, 1e19)\nassert np.isfinite(low) and len(caught) == 1\n",
-  "expected": "A finite Coulomb logarithm for the in-range sample, plus one ApplicabilityWarning for the below-10-eV sample whose value is returned unchanged."
- },
- "verification": {
-  "scope": [
-   "Independent 60-digit Decimal logarithms over temperature/density/charge scales including smallest subnormal and largest float64; transformation/scaling identities.",
-   "Declared failure cases for empty, boolean/string/complex/masked, nonfinite and incompatible inputs.",
-   "Agreement with the canonical SciRel callers and dependencies of this relation.",
-   "Fixed original constant 31.3 and the independent quotient in EPFL LRP 630/99 Eq. (18d), with density in m^-3 and temperature in eV, verify the callable's eV-to-keV input conversion on scalar grids and broadcast arrays."
-  ],
-  "tests": [
-   "tests/cross_domain/test_algebra_grid.py",
-   "tests/physics/test_coulomb_logs_low_temperature.py",
-   "tests/physics/test_coulomb_logs_sauter_provenance.py"
-  ],
-  "evidence_ceiling": "Maintained tests establish the named relation, shape, selected boundary behavior and algebraic agreement with EPFL LRP 630/99 author-manuscript Eq. (18d) after unit conversion; they do not establish derivation, global physical calibration, the publisher's final text or the 2002 erratum.",
-  "known_limitations": [
-   "No external calibration or collision-frequency composition is claimed.",
-   "Only the declared algebra, original-equation unit conversion and numerical boundaries are covered.",
-   "The original scan of Sauter, Angioni and Lin-Liu, EPFL LRP 630/99 (February 1999), printed p. 7 (PDF p. 8), Eq. (18d), was read directly: lnLambda_e = 31.3 - ln(sqrt(n_e)/T_e), densities in m^-3 and temperatures in eV; institutional author-manuscript record https://infoscience.epfl.ch/handle/20.500.14299/23214. The manuscript labels this Lambda_e, not Lambda_ei. The ee function with constant 31.0 is a different estimate whose provenance remains UNKNOWN.",
-   "The e-i branches and their T_e > 10 Z^2 eV condition come from the NRL Plasma Formulary, 2016 printed p.34, transcribed from the original table and checked by the maintainer (see #197, #212). The table additionally conditions both branches on T_i*m_e/m_i and lists a T_e < T_i*m_e/m_i branch, and this interface cannot evaluate those (no T_i or ion mass, Z = 1). The ~16.2 eV intersection with the low-temperature branch is algebra on a formula extrapolated outside its own range; it is not a physical switching point and not an accuracy criterion.",
-   "The gap to the low-temperature branch is an algebraic difference between two estimates, not an error against measured physics: at n_e = 1e19 m^-3 it is +55.54% at 0.1 eV and +17.33% at 1 eV, and it grows with density, so the warning computes it per sample.",
-   "The Wesson attribution of constant 31.3, edition and section were not verified and remain UNKNOWN; the NRL transcription recorded above is a separate, maintainer-checked fact (see #197, #212), so the two provenance states are kept apart rather than combined.",
-   "The existing implementation keeps constant 31.3. The NRL high-temperature e-i expression, with density converted to m^-3 and temperature left in eV, has constant 24 + ln 1000 = 30.907755...; for this interface's keV input its temperature term is ln(1000*T_e). The constants differ by about 0.392 in the logarithm. This is an algebraic comparison with the maintainer-checked NRL transcription; the physical origin of the difference remains UNKNOWN. Finding Eq. (18d) in the author manuscript does not explain that difference.",
-   "Verification establishes occurrence in the EPFL institutional author manuscript only, not derivation or priority. The publisher's final typesetting and the 2002 erratum remain unverified (UNKNOWN); no experimental calibration or arbitrary ion-mixture applicability follows from this source comparison."
-  ]
- }
 }
