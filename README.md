@@ -20,7 +20,7 @@ SciRel 是一个面向聚变与等离子体物理的 Python 科学零件库。
 SciRel 的回答是：把散落在各个程序里的聚变物理关系，整理成一套可复用、有边界、有证据、
 人和 agent 都能放心用的标准零件。
 
-## 五条核心思想
+## 六条核心思想
 
 1. **每个函数一份合同。** 合同是结构化记录，不是注释：模型、单位、形状、适用与排除范围、
    失败方式、证据与已知局限。
@@ -31,6 +31,8 @@ SciRel 的回答是：把散落在各个程序里的聚变物理关系，整理�
 4. **同一族模型合成一个函数，用 `method=` 选算法。** 判据只有一句：调用的人只改 `method`、
    别的参数一个都不动，拿到的是不是同一个物理量。
 5. **为 agent 设计接口。** 报错自带下一步（选错名字列出全部合法名字）、越界不静默、索引由权威内容生成。
+6. **物理正确优先于忠于原代码，但要拿证据。** 从来源拆出来的东西，发现物理有错就改，
+   前提是能拿出文献、推导或独立对照；而且判定「来源错了」之前要先排除它是有意的近似。
 
 ## 凭什么可信：证据，不是测试绿灯
 
@@ -122,6 +124,7 @@ python scripts/scirel_docs.py serve --snapshot .runtime/docs-snapshot
 | --- | --- |
 | [`codebase-map.md`](docs/maintainer/codebase-map.md) | 当前代码地图 |
 | [`why-and-how.md`](docs/maintainer/why-and-how.md) | 完整叙事：我们做什么、为什么、怎么做 |
+| [`audiences.md`](docs/maintainer/audiences.md) | 对物理专家 / 软件开发者怎么讲、常见问题、30–45 分钟讲解顺序 |
 | [`supply-pipeline.md`](docs/maintainer/supply-pipeline.md) | 供给线流程、分级评审与工单格式 |
 | [`reference-projects.md`](docs/maintainer/reference-projects.md) | scipy / OpenFOAM 各自参照什么、不参照什么 |
 | [`module-granularity.md`](docs/maintainer/module-granularity.md) | 模块粒度的显式决策与"一族一模块"规则 |
