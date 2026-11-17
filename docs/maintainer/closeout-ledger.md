@@ -9,9 +9,9 @@
 
 | 项 | 证据坐标（在仓库根执行） | 实测 |
 | --- | --- | --- |
-| 公开合同数 | `ls catalog/examples/scirel.*.json \| wc -l` | **249** |
-| 合同 ID 域与规范模块域一致 | `python3 scripts/check_catalog_id_domain.py` | `254 assets, 0 exceptions, 0 mismatches, 0 errors` |
-| 合同与本字段/中文读本同步 | `skills/development/scirel-acceptance/scripts/check_contract_sync.py` | `249 assets, 0 problems` |
+| 公开合同数 | `ls catalog/examples/scirel.*.json \| wc -l` | 见下方命令输出 |
+| 合同 ID 域与规范模块域一致 | `python3 scripts/check_catalog_id_domain.py` | `0 mismatches, 0 errors` |
+| 合同与中文字段/读本同步 | `skills/development/scirel-acceptance/scripts/check_contract_sync.py` | `0 problems`（assets 数由脚本打印） |
 | 缩水下限已激活 | `skills/development/scirel-acceptance/anchors/release-*.json` 存在，发布档打印 `FLOOR at least …` | 锚点 **1** 份 |
 | C4 独立消费者回执 | `examples/c4-usage-acceptance/round2/receipt.json` | 73/73 任务，**48 sufficient / 25 insufficient**，272 判据 `224 pass / 41 fail / 7 not-run` |
 | C5 交付包收据 | `examples/c5-delivery-acceptance/receipt.json` | 存在；wheel sha256 与 `validate_installed_wheel` 记录在案 |
@@ -28,7 +28,7 @@ $ python3 scripts/c1_evidence_coverage.py --format json
 kinetic: 62 assets, basis 32, gap 22, either 22, neither 24
 ```
 
-`main` 上 **kinetic 仍有 24 份合同既没有记录证据、也没有记录缺口**。而 B6 分支报的是 `neither 24 → 4`。
+`main` 上 kinetic 仍有一批合同既没有记录证据、也没有记录缺口（数量由上面的命令给出）。而 B6 分支报的是一个明显更小的数。
 
 **两者不矛盾，因为那份工作没合进来。** 它在这里：
 
@@ -39,7 +39,7 @@ $ git diff --name-only origin/main...rubicon/521e25b2-c3d7 | grep -c '^tests/kin
 ```
 
 75 个提交、35 个文件、其中 10 个在 `tests/kinetic/`。**在它合进 `main` 之前，C1 在 kinetic 上未完成**，
-不能按"neither 4"引用。
+不能按分支报的那个数引用。
 
 同理，`agent/c1-*` 那批分支（38 / 28 / 24 / 23 / 21 / 19 个文件）多数是**已 squash 合并后的残留指针**，
 `git rev-list --count` 会把它们算成"领先"，但内容在 `main` 上。判断是否真的没合，看**内容**（例如
