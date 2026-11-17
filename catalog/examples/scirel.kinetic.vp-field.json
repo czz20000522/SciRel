@@ -119,12 +119,15 @@
  },
  "verification": {
   "scope": [
-   "Discrete Poisson constraint and off-diagonal rank-one feedback.",
-   "Dense matrix-exponential RK4 order; analytic free-streaming and damped-cosine diagnostics.",
-   "Slowing-down weak derivative integration-by-parts and default 2049-node/2000-step execution."
+   "Independent reference: exact rational arithmetic. Every input is an exact binary rational, so (i/k) dv sum(df) is recomputed with fractions.Fraction and rounds only at the final conversion; the same comparison is then run with a flipped sign and with a doubled dv to show that both exceed the budget, so the budget cannot admit an arbitrary value.",
+   "Implementation relation: the field is the correction field (i/k) dv sum(df), i.e. the discrete statement i k E = -dv sum(df); k must be finite and nonzero and dv positive and finite; the field is a scalar, not an array, and is not an external or total field.",
+   "Test matrix: three configurations including negative k and the pair k = 12 with dv = 1e-3 that exercises the scale; a non-vector input; k = 0; a negative dv; and an overflowing sum that must raise FloatingPointError rather than return infinity.",
+   "Precision budget, declared before the comparison was run: 8 eps |E|, which is one rounding of an otherwise exact rational calculation, with the sign and dv discrimination asserted separately.",
+   "Evidence ceiling: the closure is a discrete Fourier projection at a single k. Nothing here establishes its continuum limit, and the neutral k = 0 mode is rejected rather than handled."
   ],
   "tests": [
-   "tests/kinetic/test_vlasov_poisson_dispersion.py"
+   "tests/kinetic/test_vlasov_poisson_dispersion.py",
+   "tests/kinetic/test_vlasov_poisson_evidence.py"
   ],
   "evidence_ceiling": "Independent semidiscrete mathematical and selected scenario regressions; actual run/installed-wheel receipts are recorded separately, not inferred from test existence.",
   "known_limitations": [

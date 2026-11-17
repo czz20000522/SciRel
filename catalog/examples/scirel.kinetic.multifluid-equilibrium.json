@@ -155,11 +155,16 @@
  },
  "verification": {
   "scope": [
-   "Direct analytic/manufactured gates for fluid_equilibrium_si: zero-field cold-frequency analytic modes, gyrotropic pressure rotation coefficient, zero-field anisotropy rejection, fixed-axis versus field-following pressure, complex-wavevector cold analytic holdout, and relativistic inertia against a finite-difference momentum derivative.",
-   "The bounded example is one two-species SI deck; it does not extend applicability beyond the declared preconditions."
+   "Independent reference: the named SI fields are recomputed at 40 digits from the state's own columns - rho_s = m_s n_s per species, rho_q = sum_s q_s n_s, J_k = sum_s q_s n_s v_{s,k} and omega_p = sqrt(n q**2/(epsilon0 m)) - with every operand taken from an entry whose name states its meaning, so no column index of the deck is assumed.",
+   "Implementation relation: the state carries per-species arrays for q, m, n, csz2, csp2, epsnx, epsny, a per-species mass density rho, a scalar charge density, a three-vector current density, and the scalar B0, c2, epsilon0, mu0, gamma; all are finite and share one species count.",
+   "Test matrix: the per-species mass density, the summed charge and current moments, the shape and finiteness of every per-species field, and the rejection channels for a malformed deck.",
+   "Precision budget, declared before the comparison was run: 32 eps relative on every moment (a product of exact float entries, or a sum of up to S such products, plus one square root).",
+   "Cannot establish: the source case's numbers behind the deck (see scirel.kinetic.multifluid-deck). The identities above establish that the returned fields follow from the columns, not that the columns are physically the right case."
   ],
   "tests": [
-   "tests/kinetic/test_dispersion_multifluid.py"
+   "tests/kinetic/test_dispersion_multifluid.py",
+   "tests/kinetic/test_multifluid_pencil_evidence.py",
+   "tests/kinetic/_fluid_pencil_reference.py"
   ],
   "evidence_ceiling": "Bounded to the declared SI multifluid equilibrium construction on the tested two-species decks and manufactured/analytic cases. The gate establishes the zero-field cold-mode state, gyrotropic pressure response, fixed-axis/field-following distinction, complex-wavevector construction and relativistic momentum derivative on those cases. It does not establish arbitrary deck/parameter parity, global force balance, or a physical closure.",
   "known_limitations": [

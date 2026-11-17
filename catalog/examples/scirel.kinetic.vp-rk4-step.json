@@ -155,12 +155,15 @@
  },
  "verification": {
   "scope": [
-   "Discrete Poisson constraint and off-diagonal rank-one feedback.",
-   "Dense matrix-exponential RK4 order; analytic free-streaming and damped-cosine diagnostics.",
-   "Slowing-down weak derivative integration-by-parts and default 2049-node/2000-step execution."
+   "Independent reference: two sources that do not read the implementation's stages. The classical four-stage tableau is re-derived at 40 digits together with the discrete mass identity d(rho)/dt = -i k j + E (dv sum f0'), and the semidiscrete initial-value problem is solved by scipy.linalg.expm, an independent Padé algorithm; the order is the measured refinement ratio, not a quoted constant.",
+   "Implementation relation: the four stages use the Poisson closure vp_field(state) internally, so the field is re-closed at every stage instead of being advanced as an independent variable; the incoming dE must satisfy the closure within rtol = 1e-12, atol = 1e-14 and is rejected otherwise; the returned field is the closure of the returned state.",
+   "Test matrix: the fourth-order ratio on the built-in 2049-node configuration, the discrete mass identity with a wrong final weight as the discriminating control, the closure of the returned field, the unclosed-incoming-field rejection, and a non-representable state that must raise FloatingPointError rather than return NaN.",
+   "Precision budget, declared before the comparison was run: the measured refinement ratio must lie in [14, 18] for a predicted 16 (roundoff window measured on this configuration, printed by the assertion), and the mass identity uses 64 eps of the largest stage term because the quadrature is a cancelled sum.",
+   "Evidence ceiling: fourth order is declared only for the configuration actually measured; the ratio is not a proof of order for grids or step sizes outside it, and no stability boundary is established."
   ],
   "tests": [
-   "tests/kinetic/test_vlasov_poisson_dispersion.py"
+   "tests/kinetic/test_vlasov_poisson_dispersion.py",
+   "tests/kinetic/test_vlasov_poisson_evidence.py"
   ],
   "evidence_ceiling": "Independent semidiscrete mathematical and selected scenario regressions; actual run/installed-wheel receipts are recorded separately, not inferred from test existence.",
   "known_limitations": [

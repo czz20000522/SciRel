@@ -191,12 +191,16 @@
  },
  "verification": {
   "scope": [
-   "Direct gate: test_relative_rate_wrapper_binds_roles_and_collision_state binds the wrapper, explicit roles, symmetric exchange, bath drag and collision-state contract.",
-   "Analytic pair-exchange identities and permutation covariance are covered by the same test module.",
-   "The bounded example is representative only."
+   "Independent reference: the state it builds is accepted by the pencil and its frequencies are roots of that pencil, so the construction is confronted with the eigenvalue definition rather than with an internally consistent restatement of itself; the rate table's layout is read from the returned array, not assumed.",
+   "Implementation relation: the construction maps a deck plus species classes to the same named field set as the SI equilibrium, including a (species, species) velocity-collision rate table, and the resulting state carries one species count throughout.",
+   "Test matrix: acceptance by the pencil assembly, the spectrum's residual against the definition, the rate table's shape and finiteness, and the rejection channels of the assembly.",
+   "Precision budget, declared before the comparison was run: 1024 eps on the normalised eigenvalue residual, the same budget as the frequency solve it is checked through.",
+   "Cannot establish: the relative-rate coefficients themselves come from the same external case declaration as the deck (see scirel.kinetic.multifluid-deck), and no repository source establishes their binary values."
   ],
   "tests": [
-   "tests/kinetic/test_dispersion_multifluid.py"
+   "tests/kinetic/test_dispersion_multifluid.py",
+   "tests/kinetic/test_multifluid_pencil_evidence.py",
+   "tests/kinetic/_fluid_pencil_reference.py"
   ],
   "evidence_ceiling": "Bounded to the five declared relative/bath controls on the packaged two-species fixture: direct tests cover roles, exchange symmetry, bath drag, collision-state contract and the pair-exchange identities. It does not establish arbitrary multi-species rate fits or equivalence to ambiguous legacy controls.",
   "known_limitations": [
