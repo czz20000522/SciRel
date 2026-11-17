@@ -587,9 +587,17 @@ def _git(root, *arguments):
         "GIT_AUTHOR_EMAIL": "fixture@invalid",
         "GIT_COMMITTER_EMAIL": "fixture@invalid",
     }
-    return subprocess.run(
-        ["git", *arguments], cwd=root, env=env, check=True, capture_output=True, text=True
-    ).stdout.strip()
+    try:
+        return subprocess.run(
+            ["git", *arguments], cwd=root, env=env, check=True, capture_output=True, text=True
+        ).stdout.strip()
+    except subprocess.CalledProcessError as failed:
+        # capture_output=True keeps git's refusal out of the traceback; without this the
+        # shared helper reports a bare exit status to every candidate fixture in the file.
+        raise AssertionError(
+            f"git {' '.join(arguments)} failed in {root} with {failed.returncode}: "
+            f"{failed.stderr!r}"
+        ) from failed
 
 
 def _candidate(root):

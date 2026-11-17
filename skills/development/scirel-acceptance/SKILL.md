@@ -367,6 +367,27 @@ Checks only tighten.
 3. Never widen a tolerance or delete an assertion only to pass. Physics changes need the maintainer's decision; see `AGENTS.md`.
 4. Rerun. Only the latest run counts.
 
+## What counts as fixed
+
+A passing run in a quiet environment proves only "it did not reproduce this time". "Fixed" is a
+claim with evidence, and it has the same three states as any other judgement:
+
+| State | Meaning |
+| --- | --- |
+| `fixed-verified` | A replayable reproduction with a measured failure rate, a mechanism that predicts it, and N consecutive passes there — plus the check that pins the root cause in the tree |
+| `fixed-unverified` | Changed, but never verified under the condition that failed. Never report this as fixed |
+| `not-fixed` | Cause unknown: record the hypotheses already excluded, the conditions the failure was seen under, and where to look next |
+
+- **Keep the reproduction in the repository.** Repeat counts expire; a check that fails without
+  the fix and passes with it does not. Prefer that check as the evidence, with counts as its
+  supplement. The model is `test_the_clone_source_still_holds_loose_objects_after_the_fixture`.
+- **A mitigation is not a fix.** Retries, longer timeouts, and different copy flags may all be
+  right, but they do not establish the cause. Record "mitigated, cause unknown".
+- **Make the failure carry its reason first.** A defensive change made while stderr is still
+  invisible also removes the diagnostic that would explain it.
+
+Full version: `docs/maintainer/observation-integrity.md`.
+
 ## After changing a delivered skill or the wheel
 
 Also confirm the package builds from a clean commit:

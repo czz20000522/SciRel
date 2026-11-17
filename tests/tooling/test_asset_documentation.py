@@ -18,7 +18,7 @@ ASSET_IDS = {
 }
 sys.path.insert(0, str(SCRIPTS))
 
-from build_catalog import build_catalog  # noqa: E402
+from build_catalog import _source_head, build_catalog  # noqa: E402
 from validate_asset_documents import (  # noqa: E402
     AssetDocumentError,
     load_document_set,
@@ -508,3 +508,19 @@ def test_catalog_source_root_rejects_a_revision_not_at_git_head(tmp_path, releas
             source_root=source_root,
             source_revision="a" * 40,
         )
+
+
+def test_a_source_root_without_git_metadata_reports_no_revision(tmp_path):
+    """An exported tree or a synthetic fixture has no revision to report: not an error."""
+    plain = tmp_path / "plain"
+    plain.mkdir()
+    assert _source_head(plain) is None
+
+
+def test_a_work_tree_that_cannot_name_head_aborts_instead_of_binding_nothing(tmp_path):
+    """Repository present but HEAD unreadable is an error, not "not a checkout"."""
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    subprocess.run(["git", "init", "-q"], cwd=repo, check=True)
+    with pytest.raises(RuntimeError, match="HEAD is unreadable"):
+        _source_head(repo)

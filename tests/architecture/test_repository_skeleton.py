@@ -33,10 +33,13 @@ PATTERN_FILES = {
 
 
 def tracked() -> list[Path]:
-    out = subprocess.run(
-        ["git", "ls-files", "-z"], cwd=ROOT, capture_output=True, text=True, check=True
-    ).stdout
-    return [ROOT / item for item in out.split("\0") if item and (ROOT / item).is_file()]
+    done = subprocess.run(
+        ["git", "ls-files", "-z"], cwd=ROOT, capture_output=True, text=True, check=False
+    )
+    # The whole file enumerates tracked paths from this one call; a bare exit status would
+    # leave every test below reading an empty tree without saying why.
+    assert done.returncode == 0, f"git ls-files failed in {ROOT}: {done.stderr!r}"
+    return [ROOT / item for item in done.stdout.split("\0") if item and (ROOT / item).is_file()]
 
 
 def texts():
