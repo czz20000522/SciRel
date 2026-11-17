@@ -1,385 +1,390 @@
 {
- "aliases": [
-  "solve_fluid_em"
- ],
- "discovery": {
-  "capability": [
-   "Corrected EM finite spectra and candidates",
-   "Compose EM cases, corrected finite matrices and original-order spectra with bounded numerical evidence."
+  "aliases": [
+    "solve_fluid_em"
   ],
-  "operation": [
-   "compute finite rational EM wavevector spectra",
-   "inverse: angular frequency to finite-model spectrum"
-  ],
-  "model": "static isotropic Maxwellian plasma or its declared numerical approximation",
-  "geometry": "uniform background B along z; wavevector (kx,0,kz)",
-  "boundary": "homogeneous linear response; explicit resonances and analytic removable limits",
-  "device_scope": "generic"
- },
- "applicability": {
-  "excluded": [
-   "No claim that every auxiliary eigenvalue is a kinetic physical mode; no infinite-mode completeness or cross-thread invariance."
-  ],
-  "preconditions": [
-   "Declared local Python runtime (Python 3.14, NumPy 2.5.4, SciPy 1.18.1); single-threaded BLAS environment.",
-   "Declared Python 3.14 runtime with NumPy 2.5.4 and SciPy 1.18.1; no external runtime is required."
-  ],
-  "supported": [
-   "Two cases, J8/J12, all eight N controls and source79-frequency default.",
-   "All finite spectra, original-order values, selection candidates and terminal matrices."
-  ]
- },
- "asset_id": "scirel.kinetic.fluid-em-spectrum",
- "example": {
-  "code": "from scirel.kinetic.fluid_spectrum import derive_fluid_case,solve_fluid_em\ns=derive_fluid_case('em',2)\nr=solve_fluid_em(2,8,0,[.83*s['wn'].item()])\n",
-  "description": "API-shape example with max_harmonic=0; N=0 does not demonstrate a converged physical spectrum.",
-  "expected": "PASS: the example runs locally and returns the declared output structure."
- },
- "failure_semantics": {
-  "invalid_input": "Raises ValueError for unknown controls, nonfinite/incoherent SI state, genuine nonzero-residue poles, or an unrepresentable spectrum/matrix.",
-  "nonconvergence": "The EM solve performs no nonlinear search; solve failures are explicit ValueError rather than a convergence flag.",
-  "partial_results": "No result mapping is returned after an error; a returned EM spectrum carries finite arrays and explicit completeness/selection diagnostics; no status field is promised.",
-  "runtime_failure": "NumPy/SciPy numerical errors propagate with operation context; no native runtime, source checkout or network fallback is selected."
- },
- "identity": {
-  "assumptions": [
-   "No flow or temperature anisotropy.",
-   "K=I−sigma/(i omega epsilon0); D=K+nnᵀ−(n·n)I.",
-   "Listed-species linear response; electron-only case2 does not establish global charge neutrality or a self-consistent background equilibrium."
-  ],
-  "boundary": "homogeneous linear response; explicit resonances and analytic removable limits",
-  "coordinates": "Cartesian SI; exp(i k·x−i ωt); signed gyrofrequency and radius",
-  "definition": "All finite matrix eigenvalues are returned. Selected5 are heuristic positive-real, least-|imaginary| candidates. The solver returns eigenvalues, finite-spectrum counts and heuristic selections. `eigenpair_residuals_computed` is false because eigenvectors and physical qualification gates are not computed.",
-  "direction": "inverse: angular frequency to finite-model spectrum",
-  "geometry": "uniform background B along z; wavevector (kx,0,kz)",
-  "model": "static isotropic Maxwellian plasma or its declared numerical approximation",
-  "relation": "finite rational EM wavevector spectra"
- },
- "inputs": [
-  {
-   "constraints": "Exactly EM case1 or2.",
-   "default": 2,
-   "description": "Source-defined case number.",
-   "dtype": "integer",
-   "name": "jcase",
-   "required": false,
-   "shape": "scalar",
-   "units": "dimensionless"
+  "discovery": {
+    "capability": [
+      "Corrected EM finite spectra and candidates",
+      "Compose EM cases, corrected finite matrices and original-order spectra with bounded numerical evidence."
+    ],
+    "operation": [
+      "compute finite rational EM wavevector spectra",
+      "inverse: angular frequency to finite-model spectrum"
+    ],
+    "model": "static isotropic Maxwellian plasma or its declared numerical approximation",
+    "geometry": "uniform background B along z; wavevector (kx,0,kz)",
+    "boundary": "homogeneous linear response; explicit resonances and analytic removable limits",
+    "device_scope": "generic"
   },
-  {
-   "constraints": "Exactly 8 or 12.",
-   "default": 8,
-   "description": "Source J-pole approximation order.",
-   "dtype": "integer",
-   "name": "j_order",
-   "required": false,
-   "shape": "scalar",
-   "units": "dimensionless"
+  "applicability": {
+    "excluded": [
+      "No claim that every auxiliary eigenvalue is a kinetic physical mode; no infinite-mode completeness or cross-thread invariance."
+    ],
+    "preconditions": [
+      "Declared local Python runtime (Python 3.14, NumPy 2.5.4, SciPy 1.18.1); single-threaded BLAS environment.",
+      "Declared Python 3.14 runtime with NumPy 2.5.4 and SciPy 1.18.1; no external runtime is required."
+    ],
+    "supported": [
+      "Two cases, J8/J12, all eight N controls and source79-frequency default.",
+      "All finite spectra, original-order values, selection candidates and terminal matrices."
+    ]
   },
-  {
-   "constraints": "Integer 0..7.",
-   "default": 6,
-   "description": "Finite L-table maximum harmonic.",
-   "dtype": "integer",
-   "name": "max_harmonic",
-   "required": false,
-   "shape": "scalar",
-   "units": "dimensionless"
+  "asset_id": "scirel.kinetic.fluid-em-spectrum",
+  "example": {
+    "code": "from scirel.kinetic.fluid_spectrum import derive_fluid_case,solve_fluid_em\ns=derive_fluid_case('em',2)\nr=solve_fluid_em(2,8,0,[.83*s['wn'].item()])\n",
+    "description": "API-shape example with max_harmonic=0; N=0 does not demonstrate a converged physical spectrum.",
+    "expected": "PASS: the example runs locally and returns the declared output structure."
   },
-  {
-   "constraints": "Finite real nonzero elements in the caller's order.",
-   "default": null,
-   "description": "Angular frequency axis; None selects the source frequency ladder.",
-   "dtype": "real array or None",
-   "name": "omegas",
-   "required": false,
-   "shape": "nonempty vector or None",
-   "units": "rad/s"
+  "failure_semantics": {
+    "invalid_input": "Raises ValueError for unknown controls, nonfinite/incoherent SI state, genuine nonzero-residue poles, or an unrepresentable spectrum/matrix.",
+    "nonconvergence": "The EM solve performs no nonlinear search; solve failures are explicit ValueError rather than a convergence flag.",
+    "partial_results": "No result mapping is returned after an error; a returned EM spectrum carries finite arrays and explicit completeness/selection diagnostics; no status field is promised.",
+    "runtime_failure": "NumPy/SciPy numerical errors propagate with operation context; no native runtime, source checkout or network fallback is selected."
+  },
+  "identity": {
+    "assumptions": [
+      "No flow or temperature anisotropy.",
+      "K=I−sigma/(i omega epsilon0); D=K+nnᵀ−(n·n)I.",
+      "Listed-species linear response; electron-only case2 does not establish global charge neutrality or a self-consistent background equilibrium."
+    ],
+    "boundary": "homogeneous linear response; explicit resonances and analytic removable limits",
+    "coordinates": "Cartesian SI; exp(i k·x−i ωt); signed gyrofrequency and radius",
+    "definition": "All finite matrix eigenvalues are returned. Selected5 are heuristic positive-real, least-|imaginary| candidates. The solver returns eigenvalues, finite-spectrum counts and heuristic selections. `eigenpair_residuals_computed` is false because eigenvectors and physical qualification gates are not computed.",
+    "direction": "inverse: angular frequency to finite-model spectrum",
+    "geometry": "uniform background B along z; wavevector (kx,0,kz)",
+    "model": "static isotropic Maxwellian plasma or its declared numerical approximation",
+    "relation": "finite rational EM wavevector spectra"
+  },
+  "inputs": [
+    {
+      "constraints": "Exactly EM case1 or2.",
+      "default": 2,
+      "description": "Source-defined case number.",
+      "dtype": "integer",
+      "name": "jcase",
+      "required": false,
+      "shape": "scalar",
+      "units": "dimensionless"
+    },
+    {
+      "constraints": "Exactly 8 or 12.",
+      "default": 8,
+      "description": "Source J-pole approximation order.",
+      "dtype": "integer",
+      "name": "j_order",
+      "required": false,
+      "shape": "scalar",
+      "units": "dimensionless"
+    },
+    {
+      "constraints": "Integer 0..7.",
+      "default": 6,
+      "description": "Finite L-table maximum harmonic.",
+      "dtype": "integer",
+      "name": "max_harmonic",
+      "required": false,
+      "shape": "scalar",
+      "units": "dimensionless"
+    },
+    {
+      "constraints": "Finite real nonzero elements in the caller's order.",
+      "default": null,
+      "description": "Angular frequency axis; None selects the source frequency ladder.",
+      "dtype": "real array or None",
+      "name": "omegas",
+      "required": false,
+      "shape": "nonempty vector or None",
+      "units": "rad/s"
+    }
+  ],
+  "outputs": [
+    {
+      "constraints": "State and terminal diagnostics retain scientific meaning; no caller state mutation.",
+      "description": "kxx[axis length,5] m^-1; all spectra and selection candidates per frequency, matrix, exact tables, source case state and eigenvalue/count diagnostics; eigenpair_residuals_computed=false.",
+      "dtype": "mapping",
+      "name": "result",
+      "required": true,
+      "shape": "mapping of MATLAB-shape arrays",
+      "units": "mixed SI and dimensionless as described"
+    }
+  ],
+  "public_api": {
+    "python": {
+      "module": "scirel.kinetic.fluid_spectrum",
+      "signature": "solve_fluid_em(jcase=2, j_order=8, max_harmonic=6, omegas=None)",
+      "canonical_module": "scirel.kinetic",
+      "canonical_symbol": "solve_fluid_em",
+      "symbol": "solve_fluid_em"
+    }
+  },
+  "schema": "scirel.asset-document",
+  "summary": "Compose EM cases, corrected finite rational matrices and heuristic candidate spectra with explicit model/evidence ceilings.",
+  "taxonomy": [
+    "kinetic",
+    "plasma-waves",
+    "fluid-dispersion"
+  ],
+  "title": {
+    "en": "EM finite rational-model spectra with candidate selection",
+    "zh": "EM 有限有理模型谱与候选选取"
+  },
+  "verification": {
+    "scope": [
+      "Independent basis: the returned candidate frequencies are the eigenvalues of the matrix the call itself returns -- det(matM) recomputed at 40 mpmath digits equals the product of the complete spectrum, and every selected candidate coincides with an element of that spectrum.",
+      "The declared selection structure is checked as an equality: five candidates per frequency, roots equal to kxx, and each candidate drawn from the spectrum rather than synthesised.",
+      "Test matrix: EM case 2 at a fixed frequency, J8, max_harmonic 0.",
+      "Failure matrix: one assertion per channel -- a fabricated or displaced candidate set, a matrix that is not the one solved, a wrong candidate count, and a wrong frequency normalisation.",
+      "Precision budget, written before measurement: 1e-12 relative on the determinant identity (measured 2.6e-14) and 1e-9 relative for candidate membership in the spectrum."
+    ],
+    "tests": [
+      "tests/kinetic/test_fluid_deck_solver_evidence.py",
+      "tests/kinetic/test_fluid_spectrum_full.py",
+      "tests/kinetic/test_fluid_em_diagnostics.py"
+    ],
+    "evidence_ceiling": "Bounded to EM case 2, J8, max_harmonic 0, at explicit single frequencies. Established by an independent 40-digit determinant identity between the returned matrix and the returned complete spectrum, plus the declared candidate-count and membership relations. Excluded scope: case 1, successful J12, max_harmonic 1..7, execution of the default 79-frequency axis, physical mode identity, and infinite-mode completeness.",
+    "known_limitations": [
+      "The candidate ranking rule beyond membership (the heuristic that picks five of the filtered values) has no independent basis; only membership and count are established.",
+      "The spectrum is not shown to be complete: the matrix has 40 eigenvalues and the five candidates are a selection from them."
+    ],
+    "basis": {
+      "kind": "specification",
+      "statement": "The returned complete spectrum is checked together with the declared candidate-count and membership relations. Excluded scope: case 1, successful J12, max_harmonic 1..7, execution of the default 79-frequency axis, physical mode identity and infinite-mode completeness.",
+      "source": "tests/kinetic/test_fluid_deck_solver_evidence.py"
+    }
+  },
+  "version": {
+    "dependencies": [
+      {
+        "asset_id": "scirel.kinetic.fluid-case-state"
+      },
+      {
+        "asset_id": "scirel.kinetic.fluid-em-matrix"
+      }
+    ],
+    "implementation_version": "0.0.0"
+  },
+  "references": [
+    "H. S. Xie, Phys. Plasmas 32, 082110 (2025)."
+  ],
+  "composition": {
+    "edges": [
+      {
+        "condition": "always within valid controls",
+        "description": "EM source case.",
+        "from": {
+          "node": "caller",
+          "port": "jcase"
+        },
+        "kind": "data",
+        "required": true,
+        "to": {
+          "node": "case",
+          "port": "jcase"
+        },
+        "transform": "explicit scientific port mapping; no unit conversion unless declared"
+      },
+      {
+        "condition": "always within valid controls",
+        "description": "Complete SI physical state.",
+        "from": {
+          "node": "case",
+          "port": "state"
+        },
+        "kind": "data",
+        "required": true,
+        "to": {
+          "node": "matrix",
+          "port": "state"
+        },
+        "transform": "explicit scientific port mapping; no unit conversion unless declared"
+      },
+      {
+        "condition": "always within valid controls",
+        "description": "J and N controls.",
+        "from": {
+          "node": "caller",
+          "port": "controls"
+        },
+        "kind": "data",
+        "required": true,
+        "to": {
+          "node": "matrix",
+          "port": "controls"
+        },
+        "transform": "explicit scientific port mapping; no unit conversion unless declared"
+      },
+      {
+        "condition": "always within valid controls",
+        "description": "Source default79-frequency axis or explicit ordered vector; map scalar omega operator over axis.",
+        "from": {
+          "node": "caller",
+          "port": "omegas"
+        },
+        "kind": "data",
+        "required": true,
+        "to": {
+          "node": "matrix",
+          "port": "omegas"
+        },
+        "transform": "explicit scientific port mapping; no unit conversion unless declared"
+      },
+      {
+        "condition": "always within valid controls",
+        "description": "Finite matrices to all eigenvalues and diagnostics.",
+        "from": {
+          "node": "matrix",
+          "port": "matrices"
+        },
+        "kind": "data",
+        "required": true,
+        "to": {
+          "node": "spectra",
+          "port": "matrices"
+        },
+        "transform": "explicit scientific port mapping; no unit conversion unless declared"
+      },
+      {
+        "condition": "always within valid controls",
+        "description": "Explicit graph input jcase.",
+        "from": {
+          "node": "$input",
+          "port": "jcase"
+        },
+        "kind": "data",
+        "required": true,
+        "to": {
+          "node": "caller",
+          "port": "jcase"
+        },
+        "transform": "explicit scientific port mapping; no unit conversion unless declared"
+      },
+      {
+        "condition": "always within valid controls",
+        "description": "Explicit graph input j_order.",
+        "from": {
+          "node": "$input",
+          "port": "j_order"
+        },
+        "kind": "data",
+        "required": true,
+        "to": {
+          "node": "caller",
+          "port": "j_order"
+        },
+        "transform": "explicit scientific port mapping; no unit conversion unless declared"
+      },
+      {
+        "condition": "always within valid controls",
+        "description": "Explicit graph input max_harmonic.",
+        "from": {
+          "node": "$input",
+          "port": "max_harmonic"
+        },
+        "kind": "data",
+        "required": true,
+        "to": {
+          "node": "caller",
+          "port": "max_harmonic"
+        },
+        "transform": "explicit scientific port mapping; no unit conversion unless declared"
+      },
+      {
+        "condition": "always within valid controls",
+        "description": "Explicit graph input omegas.",
+        "from": {
+          "node": "$input",
+          "port": "omegas"
+        },
+        "kind": "data",
+        "required": true,
+        "to": {
+          "node": "caller",
+          "port": "omegas"
+        },
+        "transform": "explicit scientific port mapping; no unit conversion unless declared"
+      },
+      {
+        "condition": "always within valid controls",
+        "description": "Complete ordered spectra and graph state.",
+        "from": {
+          "node": "spectra",
+          "port": "result"
+        },
+        "kind": "data",
+        "required": true,
+        "to": {
+          "node": "$output",
+          "port": "result"
+        },
+        "transform": "explicit scientific port mapping; no unit conversion unless declared"
+      }
+    ],
+    "execution": {
+      "branches": [
+        "EMcase1/2",
+        "J8/12; N0..7",
+        "positive-real threshold1e-5kn and five least-|imaginary| candidates"
+      ],
+      "failure_propagation": "invalid tables/nonfinite matrices/singular denominators/eigensolver failure/fewer than five positive-real candidates throw explicitly; no eigenvector residual gate is evaluated",
+      "feedback": [],
+      "mode": "ordinary DAG evaluated independently in ordered finite frequency sweep",
+      "ordering": "case state then coefficient tables and measured inverse moments, scalar matrices then eig-only values, positive-real filtering and stable ascending-|imaginary| sorting, five-candidate count check and collection of terminal states",
+      "state_ownership": "one in-process call; every frequency owns its matrix and complete spectrum; no hidden feedback or branch continuation"
+    },
+    "nodes": [
+      {
+        "description": "Case, table controls and omega axis.",
+        "id": "caller",
+        "inputs": [
+          "jcase",
+          "j_order",
+          "max_harmonic",
+          "omegas"
+        ],
+        "kind": "caller_port",
+        "outputs": [
+          "jcase",
+          "controls",
+          "omegas"
+        ]
+      },
+      {
+        "asset_id": "scirel.kinetic.fluid-case-state",
+        "description": "Full EM SI case state.",
+        "id": "case",
+        "inputs": [
+          "jcase"
+        ],
+        "kind": "function",
+        "outputs": [
+          "state"
+        ]
+      },
+      {
+        "asset_id": "scirel.kinetic.fluid-em-matrix",
+        "description": "Apply corrected finite rational assembly at each ordered omega.",
+        "id": "matrix",
+        "inputs": [
+          "state",
+          "controls",
+          "omegas"
+        ],
+        "kind": "function",
+        "outputs": [
+          "matrices"
+        ]
+      },
+      {
+        "description": "Eigenvalues only, positive-real filtering and stable ascending-|imaginary| sorting; require at least five heuristic candidates, without eigenvectors or a residual gate.",
+        "id": "spectra",
+        "inputs": [
+          "matrices"
+        ],
+        "kind": "controlled_glue",
+        "outputs": [
+          "result"
+        ]
+      }
+    ]
   }
- ],
- "outputs": [
-  {
-   "constraints": "State and terminal diagnostics retain scientific meaning; no caller state mutation.",
-   "description": "kxx[axis length,5] m^-1; all spectra and selection candidates per frequency, matrix, exact tables, source case state and eigenvalue/count diagnostics; eigenpair_residuals_computed=false.",
-   "dtype": "mapping",
-   "name": "result",
-   "required": true,
-   "shape": "mapping of MATLAB-shape arrays",
-   "units": "mixed SI and dimensionless as described"
-  }
- ],
- "public_api": {
-  "python": {
-   "module": "scirel.kinetic.fluid_spectrum",
-   "signature": "solve_fluid_em(jcase=2, j_order=8, max_harmonic=6, omegas=None)",
-   "canonical_module": "scirel.kinetic",
-   "canonical_symbol": "solve_fluid_em",
-   "symbol": "solve_fluid_em"
-  }
- },
- "schema": "scirel.asset-document",
- "summary": "Compose EM cases, corrected finite rational matrices and heuristic candidate spectra with explicit model/evidence ceilings.",
- "taxonomy": [
-  "kinetic",
-  "plasma-waves",
-  "fluid-dispersion"
- ],
- "title": {
-  "en": "EM finite rational-model spectra with candidate selection",
-  "zh": "EM 有限有理模型谱与候选选取"
- },
- "verification": {
-  "scope": [
-   "Independent basis: the returned candidate frequencies are the eigenvalues of the matrix the call itself returns -- det(matM) recomputed at 40 mpmath digits equals the product of the complete spectrum, and every selected candidate coincides with an element of that spectrum.",
-   "The declared selection structure is checked as an equality: five candidates per frequency, roots equal to kxx, and each candidate drawn from the spectrum rather than synthesised.",
-   "Test matrix: EM case 2 at a fixed frequency, J8, max_harmonic 0.",
-   "Failure matrix: one assertion per channel -- a fabricated or displaced candidate set, a matrix that is not the one solved, a wrong candidate count, and a wrong frequency normalisation.",
-   "Precision budget, written before measurement: 1e-12 relative on the determinant identity (measured 2.6e-14) and 1e-9 relative for candidate membership in the spectrum."
-  ],
-  "tests": [
-   "tests/kinetic/test_fluid_deck_solver_evidence.py",
-   "tests/kinetic/test_fluid_spectrum_full.py",
-   "tests/kinetic/test_fluid_em_diagnostics.py"
-  ],
-  "evidence_ceiling": "Bounded to EM case 2, J8, max_harmonic 0, at explicit single frequencies. Established by an independent 40-digit determinant identity between the returned matrix and the returned complete spectrum, plus the declared candidate-count and membership relations. Excluded scope: case 1, successful J12, max_harmonic 1..7, execution of the default 79-frequency axis, physical mode identity, and infinite-mode completeness.",
-  "known_limitations": [
-   "The candidate ranking rule beyond membership (the heuristic that picks five of the filtered values) has no independent basis; only membership and count are established.",
-   "The spectrum is not shown to be complete: the matrix has 40 eigenvalues and the five candidates are a selection from them."
-  ]
- },
- "version": {
-  "dependencies": [
-   {
-    "asset_id": "scirel.kinetic.fluid-case-state"
-   },
-   {
-    "asset_id": "scirel.kinetic.fluid-em-matrix"
-   }
-  ],
-  "implementation_version": "0.0.0"
- },
- "references": [
-  "H. S. Xie, Phys. Plasmas 32, 082110 (2025)."
- ],
- "composition": {
-  "edges": [
-   {
-    "condition": "always within valid controls",
-    "description": "EM source case.",
-    "from": {
-     "node": "caller",
-     "port": "jcase"
-    },
-    "kind": "data",
-    "required": true,
-    "to": {
-     "node": "case",
-     "port": "jcase"
-    },
-    "transform": "explicit scientific port mapping; no unit conversion unless declared"
-   },
-   {
-    "condition": "always within valid controls",
-    "description": "Complete SI physical state.",
-    "from": {
-     "node": "case",
-     "port": "state"
-    },
-    "kind": "data",
-    "required": true,
-    "to": {
-     "node": "matrix",
-     "port": "state"
-    },
-    "transform": "explicit scientific port mapping; no unit conversion unless declared"
-   },
-   {
-    "condition": "always within valid controls",
-    "description": "J and N controls.",
-    "from": {
-     "node": "caller",
-     "port": "controls"
-    },
-    "kind": "data",
-    "required": true,
-    "to": {
-     "node": "matrix",
-     "port": "controls"
-    },
-    "transform": "explicit scientific port mapping; no unit conversion unless declared"
-   },
-   {
-    "condition": "always within valid controls",
-    "description": "Source default79-frequency axis or explicit ordered vector; map scalar omega operator over axis.",
-    "from": {
-     "node": "caller",
-     "port": "omegas"
-    },
-    "kind": "data",
-    "required": true,
-    "to": {
-     "node": "matrix",
-     "port": "omegas"
-    },
-    "transform": "explicit scientific port mapping; no unit conversion unless declared"
-   },
-   {
-    "condition": "always within valid controls",
-    "description": "Finite matrices to all eigenvalues and diagnostics.",
-    "from": {
-     "node": "matrix",
-     "port": "matrices"
-    },
-    "kind": "data",
-    "required": true,
-    "to": {
-     "node": "spectra",
-     "port": "matrices"
-    },
-    "transform": "explicit scientific port mapping; no unit conversion unless declared"
-   },
-   {
-    "condition": "always within valid controls",
-    "description": "Explicit graph input jcase.",
-    "from": {
-     "node": "$input",
-     "port": "jcase"
-    },
-    "kind": "data",
-    "required": true,
-    "to": {
-     "node": "caller",
-     "port": "jcase"
-    },
-    "transform": "explicit scientific port mapping; no unit conversion unless declared"
-   },
-   {
-    "condition": "always within valid controls",
-    "description": "Explicit graph input j_order.",
-    "from": {
-     "node": "$input",
-     "port": "j_order"
-    },
-    "kind": "data",
-    "required": true,
-    "to": {
-     "node": "caller",
-     "port": "j_order"
-    },
-    "transform": "explicit scientific port mapping; no unit conversion unless declared"
-   },
-   {
-    "condition": "always within valid controls",
-    "description": "Explicit graph input max_harmonic.",
-    "from": {
-     "node": "$input",
-     "port": "max_harmonic"
-    },
-    "kind": "data",
-    "required": true,
-    "to": {
-     "node": "caller",
-     "port": "max_harmonic"
-    },
-    "transform": "explicit scientific port mapping; no unit conversion unless declared"
-   },
-   {
-    "condition": "always within valid controls",
-    "description": "Explicit graph input omegas.",
-    "from": {
-     "node": "$input",
-     "port": "omegas"
-    },
-    "kind": "data",
-    "required": true,
-    "to": {
-     "node": "caller",
-     "port": "omegas"
-    },
-    "transform": "explicit scientific port mapping; no unit conversion unless declared"
-   },
-   {
-    "condition": "always within valid controls",
-    "description": "Complete ordered spectra and graph state.",
-    "from": {
-     "node": "spectra",
-     "port": "result"
-    },
-    "kind": "data",
-    "required": true,
-    "to": {
-     "node": "$output",
-     "port": "result"
-    },
-    "transform": "explicit scientific port mapping; no unit conversion unless declared"
-   }
-  ],
-  "execution": {
-   "branches": [
-    "EMcase1/2",
-    "J8/12; N0..7",
-    "positive-real threshold1e-5kn and five least-|imaginary| candidates"
-   ],
-   "failure_propagation": "invalid tables/nonfinite matrices/singular denominators/eigensolver failure/fewer than five positive-real candidates throw explicitly; no eigenvector residual gate is evaluated",
-   "feedback": [],
-   "mode": "ordinary DAG evaluated independently in ordered finite frequency sweep",
-   "ordering": "case state then coefficient tables and measured inverse moments, scalar matrices then eig-only values, positive-real filtering and stable ascending-|imaginary| sorting, five-candidate count check and collection of terminal states",
-   "state_ownership": "one in-process call; every frequency owns its matrix and complete spectrum; no hidden feedback or branch continuation"
-  },
-  "nodes": [
-   {
-    "description": "Case, table controls and omega axis.",
-    "id": "caller",
-    "inputs": [
-     "jcase",
-     "j_order",
-     "max_harmonic",
-     "omegas"
-    ],
-    "kind": "caller_port",
-    "outputs": [
-     "jcase",
-     "controls",
-     "omegas"
-    ]
-   },
-   {
-    "asset_id": "scirel.kinetic.fluid-case-state",
-    "description": "Full EM SI case state.",
-    "id": "case",
-    "inputs": [
-     "jcase"
-    ],
-    "kind": "function",
-    "outputs": [
-     "state"
-    ]
-   },
-   {
-    "asset_id": "scirel.kinetic.fluid-em-matrix",
-    "description": "Apply corrected finite rational assembly at each ordered omega.",
-    "id": "matrix",
-    "inputs": [
-     "state",
-     "controls",
-     "omegas"
-    ],
-    "kind": "function",
-    "outputs": [
-     "matrices"
-    ]
-   },
-   {
-    "description": "Eigenvalues only, positive-real filtering and stable ascending-|imaginary| sorting; require at least five heuristic candidates, without eigenvectors or a residual gate.",
-    "id": "spectra",
-    "inputs": [
-     "matrices"
-    ],
-    "kind": "controlled_glue",
-    "outputs": [
-     "result"
-    ]
-   }
-  ]
- }
 }

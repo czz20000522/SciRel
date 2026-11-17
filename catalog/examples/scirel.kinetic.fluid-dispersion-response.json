@@ -1,148 +1,153 @@
 {
- "aliases": [
-  "evaluate_fluid_dispersion"
- ],
- "discovery": {
-  "capability": [
-   "Maxwell dispersion response",
-   "Evaluate determinant, dielectric K, Maxwell D and unchanged explicit state, with signed/zero-wavevector limits."
+  "aliases": [
+    "evaluate_fluid_dispersion"
   ],
-  "operation": [
-   "evaluate the Maxwell dispersion response",
-   "kx, state and method -> determinant, dielectric K, Maxwell D and explicit state"
-  ],
-  "model": "static isotropic Maxwellian plasma or its declared numerical approximation",
-  "geometry": "uniform background B along z; wavevector (kx,0,kz)",
-  "boundary": "homogeneous linear response; explicit resonances and analytic removable limits",
-  "device_scope": "generic"
- },
- "applicability": {
-  "excluded": [
-   "Genuine nonzero-residue cyclotron poles at zero kz; unmagnetized/zero-temperature/density/static-frequency limits."
-  ],
-  "preconditions": [
-   "Declared local Python runtime (Python 3.14, NumPy 2.5.4, SciPy 1.18.1); single-threaded BLAS environment.",
-   "Declared Python 3.14 runtime with NumPy 2.5.4 and SciPy 1.18.1; no external runtime is required."
-  ],
-  "supported": [
-   "Coherent SI state, complex kx, signed and zero kz; analytic nonresonant kx=0 limits.",
-   "Finite5/15 and full-harmonic J8 models, distinguished in output contract."
-  ]
- },
- "asset_id": "scirel.kinetic.fluid-dispersion-response",
- "example": {
-  "code": "from scirel.kinetic.fluid_spectrum import derive_fluid_case,evaluate_fluid_dispersion\ns=derive_fluid_case('bonk',2);s['w']=.63*s['wn']\nr=evaluate_fluid_dispersion(0,s,'fD')\n",
-  "description": "Pure Python/NumPy implementation; executes on this macOS host without the reference runtime.",
-  "expected": "PASS: the example runs locally and returns the declared output structure."
- },
- "failure_semantics": {
-  "invalid_input": "Raises ValueError for invalid units/state shapes, nonfinite data, physical signs or rates, `rel=1` at or above `c`, or a numerically unrepresentable response.",
-  "nonconvergence": "This response performs no iterative solve; numerical failures are errors, not returned flags.",
-  "partial_results": "No result mapping is returned after failure; zero-wavenumber cases return the declared finite signed reflection, not a partial branch.",
-  "runtime_failure": "NumPy/SciPy arithmetic errors propagate; no fallback branch is substituted."
- },
- "identity": {
-  "assumptions": [
-   "No flow or temperature anisotropy.",
-   "K=I−sigma/(i omega epsilon0); D=K+nnᵀ−(n·n)I.",
-   "Listed-species linear response; electron-only case2 does not establish global charge neutrality or a self-consistent background equilibrium."
-  ],
-  "boundary": "homogeneous linear response; explicit resonances and analytic removable limits",
-  "coordinates": "Cartesian SI; exp(i k·x−i ωt); signed gyrofrequency and radius",
-  "definition": "D=K+nnᵀ−n²I; fD/fDtensor finite symmetric harmonic cutoffs5/15 after analytic cancellation; fDR corrected full R with J8 approximation.",
-  "direction": "forward",
-  "geometry": "uniform background B along z; wavevector (kx,0,kz)",
-  "model": "static isotropic Maxwellian plasma or its declared numerical approximation",
-  "relation": "Maxwellian dispersion response"
- },
- "inputs": [
-  {
-   "constraints": "Finite scalar.",
-   "description": "Transverse wavevector.",
-   "dtype": "real/complex",
-   "name": "kx",
-   "required": true,
-   "shape": "scalar",
-   "units": "m^-1"
+  "discovery": {
+    "capability": [
+      "Maxwell dispersion response",
+      "Evaluate determinant, dielectric K, Maxwell D and unchanged explicit state, with signed/zero-wavevector limits."
+    ],
+    "operation": [
+      "evaluate the Maxwell dispersion response",
+      "kx, state and method -> determinant, dielectric K, Maxwell D and explicit state"
+    ],
+    "model": "static isotropic Maxwellian plasma or its declared numerical approximation",
+    "geometry": "uniform background B along z; wavevector (kx,0,kz)",
+    "boundary": "homogeneous linear response; explicit resonances and analytic removable limits",
+    "device_scope": "generic"
   },
-  {
-   "constraints": "Finite numeric fields and coherent thermal/gyro scales; metadata cannot override explicit controls.",
-   "description": "Explicit isotropic Maxwellian SI state. S species; c2; signed wcs and rhocs; positive wps2 and vts; w and signed kz. Matrix assembly additionally requires epsilon0. rho=vts/(sqrt(2)*wcs).",
-   "dtype": "mapping",
-   "name": "state",
-   "required": true,
-   "shape": "mapping; species vectors length S; numeric arrays retain MATLAB shapes",
-   "units": "c2 m²/s²; wcs,w rad/s; wps2 s^-2; rhocs m; vts m/s; kz m^-1; epsilon0 F/m"
+  "applicability": {
+    "excluded": [
+      "Genuine nonzero-residue cyclotron poles at zero kz; unmagnetized/zero-temperature/density/static-frequency limits."
+    ],
+    "preconditions": [
+      "Declared local Python runtime (Python 3.14, NumPy 2.5.4, SciPy 1.18.1); single-threaded BLAS environment.",
+      "Declared Python 3.14 runtime with NumPy 2.5.4 and SciPy 1.18.1; no external runtime is required."
+    ],
+    "supported": [
+      "Coherent SI state, complex kx, signed and zero kz; analytic nonresonant kx=0 limits.",
+      "Finite5/15 and full-harmonic J8 models, distinguished in output contract."
+    ]
   },
-  {
-   "constraints": "fD, fDR or fDtensor.",
-   "default": "fDR",
-   "description": "Numerical response approximation.",
-   "dtype": "string",
-   "name": "method",
-   "required": false,
-   "shape": "string",
-   "units": "dimensionless"
-  }
- ],
- "outputs": [
-  {
-   "constraints": "State and terminal diagnostics retain scientific meaning; no caller state mutation.",
-   "description": "determinant, K[3x3], D[3x3] dimensionless; unchanged explicit state_after.",
-   "dtype": "mapping",
-   "name": "result",
-   "required": true,
-   "shape": "mapping of MATLAB-shape arrays",
-   "units": "mixed SI and dimensionless as described"
-  }
- ],
- "public_api": {
-  "python": {
-   "module": "scirel.kinetic.fluid_spectrum",
-   "signature": "evaluate_fluid_dispersion(kx, state, method='fDR')",
-   "canonical_module": "scirel.kinetic",
-   "canonical_symbol": "evaluate_fluid_dispersion",
-   "symbol": "evaluate_fluid_dispersion"
-  }
- },
- "schema": "scirel.asset-document",
- "summary": "Evaluate determinant, dielectric K, Maxwell D and unchanged explicit state, with signed/zero-wavevector limits.",
- "taxonomy": [
-  "kinetic",
-  "plasma-waves",
-  "fluid-dispersion"
- ],
- "title": {
-  "en": "Maxwell dispersion response",
-  "zh": "Maxwell 色散响应"
- },
- "verification": {
-  "scope": [
-   "Independent basis: at zero transverse wavenumber the dielectric tensor's (0,2) and (1,2) entries vanish identically, so D is block upper triangular and det(D) = ((K00 - nz^2)(K11 - nz^2) + K01^2) K22 holds as an algebraic identity; the right-hand side is recomputed at 40 mpmath digits from the returned tensor and the declared nx, nz.",
-   "The declared hermitian pairing of the tensor (K10 = -K01, K20 = K02) is checked at kx = 0 alongside the determinant identity.",
-   "Test matrix: the BONK case-2 state at a fixed frequency, evaluated on both response branches -- kz = 0, which selects the rational p = -omega/(omega - n omega_c), and kz = 0.1 kn, which selects the plasma dispersion function.",
-   "Failure matrix: one assertion per channel -- wrong dielectric determinant, wrong tensor pairing, wrong kx = 0 block structure, and a kp = 0 branch that does not reduce the same way.",
-   "Precision budget, written before measurement: 1e-14 relative on the determinant identity, which is an algebraic statement rather than an accuracy claim."
+  "asset_id": "scirel.kinetic.fluid-dispersion-response",
+  "example": {
+    "code": "from scirel.kinetic.fluid_spectrum import derive_fluid_case,evaluate_fluid_dispersion\ns=derive_fluid_case('bonk',2);s['w']=.63*s['wn']\nr=evaluate_fluid_dispersion(0,s,'fD')\n",
+    "description": "Pure Python/NumPy implementation; executes on this macOS host without the reference runtime.",
+    "expected": "PASS: the example runs locally and returns the declared output structure."
+  },
+  "failure_semantics": {
+    "invalid_input": "Raises ValueError for invalid units/state shapes, nonfinite data, physical signs or rates, `rel=1` at or above `c`, or a numerically unrepresentable response.",
+    "nonconvergence": "This response performs no iterative solve; numerical failures are errors, not returned flags.",
+    "partial_results": "No result mapping is returned after failure; zero-wavenumber cases return the declared finite signed reflection, not a partial branch.",
+    "runtime_failure": "NumPy/SciPy arithmetic errors propagate; no fallback branch is substituted."
+  },
+  "identity": {
+    "assumptions": [
+      "No flow or temperature anisotropy.",
+      "K=I−sigma/(i omega epsilon0); D=K+nnᵀ−(n·n)I.",
+      "Listed-species linear response; electron-only case2 does not establish global charge neutrality or a self-consistent background equilibrium."
+    ],
+    "boundary": "homogeneous linear response; explicit resonances and analytic removable limits",
+    "coordinates": "Cartesian SI; exp(i k·x−i ωt); signed gyrofrequency and radius",
+    "definition": "D=K+nnᵀ−n²I; fD/fDtensor finite symmetric harmonic cutoffs5/15 after analytic cancellation; fDR corrected full R with J8 approximation.",
+    "direction": "forward",
+    "geometry": "uniform background B along z; wavevector (kx,0,kz)",
+    "model": "static isotropic Maxwellian plasma or its declared numerical approximation",
+    "relation": "Maxwellian dispersion response"
+  },
+  "inputs": [
+    {
+      "constraints": "Finite scalar.",
+      "description": "Transverse wavevector.",
+      "dtype": "real/complex",
+      "name": "kx",
+      "required": true,
+      "shape": "scalar",
+      "units": "m^-1"
+    },
+    {
+      "constraints": "Finite numeric fields and coherent thermal/gyro scales; metadata cannot override explicit controls.",
+      "description": "Explicit isotropic Maxwellian SI state. S species; c2; signed wcs and rhocs; positive wps2 and vts; w and signed kz. Matrix assembly additionally requires epsilon0. rho=vts/(sqrt(2)*wcs).",
+      "dtype": "mapping",
+      "name": "state",
+      "required": true,
+      "shape": "mapping; species vectors length S; numeric arrays retain MATLAB shapes",
+      "units": "c2 m²/s²; wcs,w rad/s; wps2 s^-2; rhocs m; vts m/s; kz m^-1; epsilon0 F/m"
+    },
+    {
+      "constraints": "fD, fDR or fDtensor.",
+      "default": "fDR",
+      "description": "Numerical response approximation.",
+      "dtype": "string",
+      "name": "method",
+      "required": false,
+      "shape": "string",
+      "units": "dimensionless"
+    }
   ],
-  "tests": [
-   "tests/kinetic/test_fluid_wavevector_evidence.py",
-   "tests/kinetic/test_fluid_spectrum_full.py"
+  "outputs": [
+    {
+      "constraints": "State and terminal diagnostics retain scientific meaning; no caller state mutation.",
+      "description": "determinant, K[3x3], D[3x3] dimensionless; unchanged explicit state_after.",
+      "dtype": "mapping",
+      "name": "result",
+      "required": true,
+      "shape": "mapping of MATLAB-shape arrays",
+      "units": "mixed SI and dimensionless as described"
+    }
   ],
-  "evidence_ceiling": "Bounded to coherent SI fluid dispersion at complex or zero kz, the kx = 0 limits, and the J8/J15 harmonic selections. Established by an algebraic Schur identity on the returned tensor at 40 digits and by the declared tensor pairing. Excluded scope: genuine nonzero-residue cyclotron poles at zero kz, the unmagnetized/zero-temperature/density/static-frequency limits, and any independent derivation of the pole and harmonic tables.",
-  "known_limitations": [
-   "The p = -omega/(omega - n omega_c) zero-kz response is rational in omega, but the harmonic weights that multiply it come from the deck tables, which are recorded as cannot establish.",
-   "The tensor is only checked at kx = 0, where the off-diagonal field couplings vanish; a 40-digit determinant identity for general kx has no independent reference here. The Schur identity uses the full complex tensor entries: truncating them to real parts was measured at 7.2e-5 relative at nonzero kz, where the diagonal carries a 0.066 imaginary part, against 1.8e-16 with the full entries."
+  "public_api": {
+    "python": {
+      "module": "scirel.kinetic.fluid_spectrum",
+      "signature": "evaluate_fluid_dispersion(kx, state, method='fDR')",
+      "canonical_module": "scirel.kinetic",
+      "canonical_symbol": "evaluate_fluid_dispersion",
+      "symbol": "evaluate_fluid_dispersion"
+    }
+  },
+  "schema": "scirel.asset-document",
+  "summary": "Evaluate determinant, dielectric K, Maxwell D and unchanged explicit state, with signed/zero-wavevector limits.",
+  "taxonomy": [
+    "kinetic",
+    "plasma-waves",
+    "fluid-dispersion"
+  ],
+  "title": {
+    "en": "Maxwell dispersion response",
+    "zh": "Maxwell 色散响应"
+  },
+  "verification": {
+    "scope": [
+      "Independent basis: at zero transverse wavenumber the dielectric tensor's (0,2) and (1,2) entries vanish identically, so D is block upper triangular and det(D) = ((K00 - nz^2)(K11 - nz^2) + K01^2) K22 holds as an algebraic identity; the right-hand side is recomputed at 40 mpmath digits from the returned tensor and the declared nx, nz.",
+      "The declared hermitian pairing of the tensor (K10 = -K01, K20 = K02) is checked at kx = 0 alongside the determinant identity.",
+      "Test matrix: the BONK case-2 state at a fixed frequency, evaluated on both response branches -- kz = 0, which selects the rational p = -omega/(omega - n omega_c), and kz = 0.1 kn, which selects the plasma dispersion function.",
+      "Failure matrix: one assertion per channel -- wrong dielectric determinant, wrong tensor pairing, wrong kx = 0 block structure, and a kp = 0 branch that does not reduce the same way.",
+      "Precision budget, written before measurement: 1e-14 relative on the determinant identity, which is an algebraic statement rather than an accuracy claim."
+    ],
+    "tests": [
+      "tests/kinetic/test_fluid_wavevector_evidence.py",
+      "tests/kinetic/test_fluid_spectrum_full.py"
+    ],
+    "evidence_ceiling": "Bounded to coherent SI fluid dispersion at complex or zero kz, the kx = 0 limits, and the J8/J15 harmonic selections. Established by an algebraic Schur identity on the returned tensor at 40 digits and by the declared tensor pairing. Excluded scope: genuine nonzero-residue cyclotron poles at zero kz, the unmagnetized/zero-temperature/density/static-frequency limits, and any independent derivation of the pole and harmonic tables.",
+    "known_limitations": [
+      "The p = -omega/(omega - n omega_c) zero-kz response is rational in omega, but the harmonic weights that multiply it come from the deck tables, which are recorded as cannot establish.",
+      "The tensor is only checked at kx = 0, where the off-diagonal field couplings vanish; a 40-digit determinant identity for general kx has no independent reference here. The Schur identity uses the full complex tensor entries: truncating them to real parts was measured at 7.2e-5 relative at nonzero kz, where the diagonal carries a 0.066 imaginary part, against 1.8e-16 with the full entries."
+    ],
+    "basis": {
+      "kind": "independent-recomputation",
+      "statement": "The response is checked against an independent 40-digit evaluation and by the declared tensor pairing. Excluded scope: genuine nonzero-residue cyclotron poles at zero kz, the unmagnetized/zero-temperature/density/static-frequency limits, and any independent derivation of the pole and harmonic tables.",
+      "source": "tests/kinetic/test_fluid_wavevector_evidence.py"
+    }
+  },
+  "version": {
+    "dependencies": [
+      {
+        "asset_id": "scirel.kinetic.fluid-special-functions"
+      }
+    ],
+    "implementation_version": "0.0.0"
+  },
+  "references": [
+    "H. S. Xie, Phys. Plasmas 32, 082110 (2025)."
   ]
- },
- "version": {
-  "dependencies": [
-   {
-    "asset_id": "scirel.kinetic.fluid-special-functions"
-   }
-  ],
-  "implementation_version": "0.0.0"
- },
- "references": [
-  "H. S. Xie, Phys. Plasmas 32, 082110 (2025)."
- ]
 }
