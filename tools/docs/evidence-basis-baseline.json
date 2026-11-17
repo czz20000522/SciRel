@@ -560,14 +560,6 @@
       "reason": "not yet migrated: verification.basis absent"
     },
     {
-      "asset_id": "scirel.kinetic.kinetic-wavevector-roots",
-      "reason": "not yet migrated: verification.basis absent"
-    },
-    {
-      "asset_id": "scirel.kinetic.kinetic-wavevector-scan",
-      "reason": "not yet migrated: verification.basis absent"
-    },
-    {
       "asset_id": "scirel.kinetic.maxwellian-electrostatic-mode",
       "reason": "not yet migrated: verification.basis absent"
     },
@@ -597,14 +589,6 @@
     },
     {
       "asset_id": "scirel.kinetic.multifluid-scan",
-      "reason": "not yet migrated: verification.basis absent"
-    },
-    {
-      "asset_id": "scirel.kinetic.parallel-em-continuation",
-      "reason": "not yet migrated: verification.basis absent"
-    },
-    {
-      "asset_id": "scirel.kinetic.parallel-em-residual",
       "reason": "not yet migrated: verification.basis absent"
     },
     {
@@ -983,6 +967,10 @@
   "migrated": [
     "scirel.field.poloidal-field-from-flux",
     "scirel.geometry.path-distance",
+    "scirel.kinetic.kinetic-wavevector-roots",
+    "scirel.kinetic.kinetic-wavevector-scan",
+    "scirel.kinetic.parallel-em-continuation",
+    "scirel.kinetic.parallel-em-residual",
     "scirel.numerics.clamped-cubic-spline",
     "scirel.numerics.natural-cubic-spline",
     "scirel.numerics.truncated-svd-inverse"
