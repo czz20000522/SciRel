@@ -4,30 +4,6 @@
   "why": "c1_evidence_coverage infers the basis from prose with a fixed phrase list; on this catalog 106 assets carry basis wording that list does not recognise, so the inference cannot answer 'does this capability stand on evidence'. The field replaces the inference.",
   "entries": [
     {
-      "asset_id": "scirel.collisions.atomic-hydrogen-omega-frequencies",
-      "reason": "not yet migrated: verification.basis absent"
-    },
-    {
-      "asset_id": "scirel.collisions.atomic-molecular-hydrogen-elastic-cross-section",
-      "reason": "not yet migrated: verification.basis absent"
-    },
-    {
-      "asset_id": "scirel.collisions.fast-ion-stopping-increment",
-      "reason": "not yet migrated: verification.basis absent"
-    },
-    {
-      "asset_id": "scirel.collisions.janev-electron-impact-ionization-rate",
-      "reason": "not yet migrated: verification.basis absent"
-    },
-    {
-      "asset_id": "scirel.collisions.maxwellian-relative-speed-rate-average",
-      "reason": "not yet migrated: verification.basis absent"
-    },
-    {
-      "asset_id": "scirel.collisions.molecular-hydrogen-charge-exchange-cross-section",
-      "reason": "not yet migrated: verification.basis absent"
-    },
-    {
       "asset_id": "scirel.collisions.molecular-hydrogen-charge-exchange-rate-coefficient",
       "reason": "not yet migrated: verification.basis absent"
     },
@@ -929,6 +905,12 @@
     "scirel.collisions.atomic-hydrogen-charge-exchange-rate-coefficient",
     "scirel.collisions.atomic-hydrogen-collision-matrices",
     "scirel.collisions.atomic-hydrogen-elastic-cross-section",
+    "scirel.collisions.atomic-hydrogen-omega-frequencies",
+    "scirel.collisions.atomic-molecular-hydrogen-elastic-cross-section",
+    "scirel.collisions.fast-ion-stopping-increment",
+    "scirel.collisions.janev-electron-impact-ionization-rate",
+    "scirel.collisions.maxwellian-relative-speed-rate-average",
+    "scirel.collisions.molecular-hydrogen-charge-exchange-cross-section",
     "scirel.field.poloidal-field-from-flux",
     "scirel.geometry.path-distance",
     "scirel.kinetic.kinetic-wavevector-roots",
