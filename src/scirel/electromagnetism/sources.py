@@ -60,6 +60,8 @@ def _rebuild_atomic(source, changes):
         if hasattr(source, "_weights") and len(source._weights) != len(source._rz_pts):
             raise ValueError("point count must match weights; construct a new source to resize")
     except Exception:
+        # Broad on purpose: the rollback must run for every failure mode, including bugs,
+        # and the exception is re-raised unchanged -- nothing is swallowed or reclassified.
         for name, value in old_values.items():
             setattr(source, name, value)
         source._rz_pts = old_points

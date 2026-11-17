@@ -656,6 +656,8 @@ class RectMesh(Mesh):
         try:
             self._validate()
         except Exception:
+            # Broad on purpose: restore the previous parameter for any validation failure,
+            # then re-raise unchanged. No exception becomes a status here.
             setattr(self, name, previous)
             raise
         self._set_mesh()
