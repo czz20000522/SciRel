@@ -70,7 +70,7 @@
   "outputs": [
     {
       "name": "cross_section_m2",
-      "description": "Elastic momentum-transfer cross section, one value per energy.",
+      "description": "Elastic momentum-transfer cross section, one value per energy. Returns the computed value positionally: the caller receives it directly, not as a field of a returned mapping.",
       "units": "m^2",
       "shape": "same as energy_ev",
       "dtype": "float64 array",

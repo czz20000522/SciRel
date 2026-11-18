@@ -67,7 +67,7 @@
   "outputs": [
     {
       "name": "total_source",
-      "description": "The aggregated scattered source.",
+      "description": "The aggregated scattered source. Returns the computed value positionally: the caller receives it directly, not as a field of a returned mapping.",
       "units": "m^-4 (F/m)",
       "shape": "[nvr,nvx,nx]",
       "dtype": "float64 array",

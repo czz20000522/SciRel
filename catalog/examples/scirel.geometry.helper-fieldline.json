@@ -64,7 +64,7 @@
   "outputs": [
     {
       "name": "line",
-      "description": "Object exposing verts,tck,u and arclength/field diagnostics",
+      "description": "Object exposing verts,tck,u and arclength/field diagnostics Returns a scirel object positionally: the caller receives the instance itself, not as a field of a returned mapping.",
       "units": "length; gradient caller flux per length; curvature inverse length",
       "shape": "line object",
       "dtype": "Python object",

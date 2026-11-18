@@ -124,7 +124,7 @@
   "outputs": [
     {
       "name": "source",
-      "description": "Constructed ArbitraryPoints object. Available properties/methods: psi: Flux response [Wb/rad], (Nt,); BR: Radial field response [T], (Nt,); BZ: Axial field response [T], (Nt,)",
+      "description": "Constructed ArbitraryPoints object. Available properties/methods: psi: Flux response [Wb/rad], (Nt,); BR: Radial field response [T], (Nt,); BZ: Axial field response [T], (Nt,) Returns a scirel object positionally: the caller receives the instance itself, not as a field of a returned mapping.",
       "units": "Object; property units as described",
       "shape": "one object",
       "dtype": "ArbitraryPoints",

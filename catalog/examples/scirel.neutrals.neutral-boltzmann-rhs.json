@@ -112,7 +112,7 @@
   "outputs": [
     {
       "name": "rhs",
-      "description": "Physical distribution-rate RHS; one Vth multiplication converts every normalized spatial balance term from F/m to F/s.",
+      "description": "Physical distribution-rate RHS; one Vth multiplication converts every normalized spatial balance term from F/m to F/s. Returns the computed value positionally: the caller receives it directly, not as a field of a returned mapping.",
       "units": "m^-3 s^-1 (F/s)",
       "shape": "[nvr,nvx,nx]",
       "dtype": "float64 array",

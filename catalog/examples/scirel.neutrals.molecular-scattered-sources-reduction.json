@@ -76,7 +76,7 @@
   "outputs": [
     {
       "name": "total_source",
-      "description": "The aggregated scattered source.",
+      "description": "The aggregated scattered source. Returns a generator positionally: the caller receives the iterator itself, not as a field of a returned mapping.",
       "units": "m^-4 (F/m)",
       "shape": "[nvr,nvx,nx]",
       "dtype": "float64 array",

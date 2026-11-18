@@ -87,7 +87,7 @@
   "outputs": [
     {
       "name": "volume",
-      "description": "Summed toroidally revolved finite-grid volume.",
+      "description": "Summed toroidally revolved finite-grid volume. Returns the computed value positionally: the caller receives it directly, not as a field of a returned mapping.",
       "units": "m^3",
       "shape": "scalar",
       "dtype": "Python float",

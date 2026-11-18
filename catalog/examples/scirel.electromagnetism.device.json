@@ -96,7 +96,7 @@
   "outputs": [
     {
       "name": "source",
-      "description": "Constructed Device object. Available properties/methods: psi: Summed flux [Wb/rad], (Nt,); BR: Summed radial field [T], (Nt,); BZ: Summed axial field [T], (Nt,) Ordered iteration/current/rzw properties and gpsi/gBR/gBZ per-child matrices; psi/BR/BZ methods accept current=None and mesh=None.",
+      "description": "Constructed Device object. Available properties/methods: psi: Summed flux [Wb/rad], (Nt,); BR: Summed radial field [T], (Nt,); BZ: Summed axial field [T], (Nt,) Ordered iteration/current/rzw properties and gpsi/gBR/gBZ per-child matrices; psi/BR/BZ methods accept current=None and mesh=None. Returns a scirel object positionally: the caller receives the instance itself, not as a field of a returned mapping.",
       "units": "Object; property units as described",
       "shape": "one object",
       "dtype": "Device",

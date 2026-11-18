@@ -90,7 +90,7 @@
   "outputs": [
     {
       "name": "mesh",
-      "description": "Constructed SphericalRChord object. Available properties/methods: R: Cylindrical radius [m], N; Z: Axial coordinate [m], N",
+      "description": "Constructed SphericalRChord object. Available properties/methods: R: Cylindrical radius [m], N; Z: Axial coordinate [m], N Returns a scirel object positionally: the caller receives the instance itself, not as a field of a returned mapping.",
       "units": "Object; property units as described",
       "shape": "one object",
       "dtype": "SphericalRChord",

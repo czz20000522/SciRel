@@ -141,7 +141,7 @@
   "outputs": [
     {
       "name": "EquilibriumResult",
-      "description": "Flux, plasma currents, final pressure fit, status, iteration count, original update residual, closure_residual and reason; immutable residual_history and closure_residual_history tuples for completed paired residual evaluations",
+      "description": "Flux, plasma currents, final pressure fit, status, iteration count, original update residual, closure_residual and reason; immutable residual_history and closure_residual_history tuples for completed paired residual evaluations Returns the computed value positionally: the caller receives it directly, not as a field of a returned mapping.",
       "units": "source-unspecified",
       "shape": "psi/plas_currents R.shape",
       "dtype": "dataclass",

@@ -93,7 +93,7 @@
   "outputs": [
     {
       "name": "segment",
-      "description": "Selected parsed vertices",
+      "description": "Selected parsed vertices Returns the computed value positionally: the caller receives it directly, not as a field of a returned mapping.",
       "units": "length units",
       "shape": "(M,2)",
       "dtype": "float64",

@@ -89,7 +89,7 @@
   "outputs": [
     {
       "name": "mesh",
-      "description": "The constructed mesh and derived indices.",
+      "description": "The constructed mesh and derived indices. Returns a tuple positionally: the caller unpacks it by position, and no element is a field of a returned mapping.",
       "units": "mixed",
       "shape": "tuple",
       "dtype": "tuple (vx, vr, tnorm, ix, ir)",

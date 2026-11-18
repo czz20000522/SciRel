@@ -100,7 +100,7 @@
   "outputs": [
     {
       "name": "variable",
-      "description": "Immutable copied float64 CellVariable with face_value(), face_grad() and grad()",
+      "description": "Immutable copied float64 CellVariable with face_value(), face_grad() and grad() Returns a scirel object positionally: the caller receives the instance itself, not as a field of a returned mapping.",
       "units": "Q; derivatives Q/X",
       "shape": "CellVariable object",
       "dtype": "CellVariable",

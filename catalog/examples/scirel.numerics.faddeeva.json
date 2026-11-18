@@ -112,7 +112,7 @@
   "outputs": [
     {
       "name": "w",
-      "description": "Faddeeva approximation returned directly as an array; no order or method metadata.",
+      "description": "Faddeeva approximation returned directly as an array; no order or method metadata. Returns the computed value positionally: the caller receives it directly, not as a field of a returned mapping.",
       "dtype": "complex128 ndarray",
       "shape": "same as z; scalar input yields a zero-dimensional array",
       "units": "dimensionless",

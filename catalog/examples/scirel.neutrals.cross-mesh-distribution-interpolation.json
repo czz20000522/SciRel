@@ -167,7 +167,7 @@
   "outputs": [
     {
       "name": "fb",
-      "description": "The interpolated distribution on mesh_b.",
+      "description": "The interpolated distribution on mesh_b. Returns the computed value positionally: the caller receives it directly, not as a field of a returned mapping.",
       "units": "source-normalized",
       "shape": "[nvrb,nvxb,nxb]",
       "dtype": "float64 array",

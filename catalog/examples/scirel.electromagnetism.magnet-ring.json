@@ -169,7 +169,7 @@
   "outputs": [
     {
       "name": "source",
-      "description": "Constructed MagnetRing object. Available properties/methods: rz_pts: Filament centers [m], (N,2); total_current: Weighted current [A], scalar",
+      "description": "Constructed MagnetRing object. Available properties/methods: rz_pts: Filament centers [m], (N,2); total_current: Weighted current [A], scalar Returns a scirel object positionally: the caller receives the instance itself, not as a field of a returned mapping.",
       "units": "Object; property units as described",
       "shape": "one object",
       "dtype": "MagnetRing",

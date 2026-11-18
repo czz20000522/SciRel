@@ -56,7 +56,7 @@
   "outputs": [
     {
       "name": "deck",
-      "description": "Fresh species array with explicit model-specific legacy unit convention.",
+      "description": "Fresh species array with explicit model-specific legacy unit convention. Returns the computed value positionally: the caller receives it directly, not as a field of a returned mapping.",
       "units": "ES dimensionless; EM q/e,m/me,n m^-3,T eV,vd/c",
       "shape": "Sx5 or Sx6",
       "dtype": "real array",

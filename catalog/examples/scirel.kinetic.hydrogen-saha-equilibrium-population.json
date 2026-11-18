@@ -79,7 +79,7 @@
   "outputs": [
     {
       "name": "population_m3",
-      "description": "Saha equilibrium population density per paired sample.",
+      "description": "Saha equilibrium population density per paired sample. Returns the computed value positionally: the caller receives it directly, not as a field of a returned mapping.",
       "units": "m^-3",
       "shape": "(N,), same as inputs",
       "dtype": "float64 array",

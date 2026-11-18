@@ -73,7 +73,7 @@
   "outputs": [
     {
       "name": "reflected",
-      "description": "Tuple reflected Rho,Z and scalar fields",
+      "description": "Tuple reflected Rho,Z and scalar fields Returns the computed value positionally: the caller receives it directly, not as a field of a returned mapping.",
       "units": "coordinate and field units",
       "shape": "(Nz,2*Nr-1) each",
       "dtype": "float64",

@@ -55,7 +55,7 @@
   "outputs": [
     {
       "name": "collection",
-      "description": "Per-level lists of target line objects",
+      "description": "Per-level lists of target line objects Returns a SimpleNamespace positionally: the caller receives the namespace object itself, not as a field of a returned mapping.",
       "units": "same as target line",
       "shape": "FieldLineSet object",
       "dtype": "Python object",

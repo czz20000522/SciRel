@@ -75,7 +75,7 @@
   "outputs": [
     {
       "name": "total_energy_conservation_error_profile_dimensionless",
-      "description": "Globally normalized absolute difference of the interval flux gradient and adjacent transfer mean, with zero at the final node by convention.",
+      "description": "Globally normalized absolute difference of the interval flux gradient and adjacent transfer mean, with zero at the final node by convention. Returns the computed value positionally: the caller receives it directly, not as a field of a returned mapping.",
       "units": "dimensionless on the supplied profile normalization",
       "shape": "[nx]",
       "dtype": "float64 array",

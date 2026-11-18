@@ -78,7 +78,7 @@
   "outputs": [
     {
       "name": "neutron_energy_kev",
-      "description": "Laboratory-frame neutron kinetic energy.",
+      "description": "Laboratory-frame neutron kinetic energy. Returns the computed value positionally: the caller receives it directly, not as a field of a returned mapping.",
       "units": "keV",
       "shape": "scalar",
       "dtype": "float",

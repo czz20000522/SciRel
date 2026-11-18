@@ -106,7 +106,7 @@
   "outputs": [
     {
       "name": "rotated",
-      "description": "Rotated points",
+      "description": "Rotated points Returns the computed value positionally: the caller receives it directly, not as a field of a returned mapping.",
       "units": "m",
       "shape": "(...,2)",
       "dtype": "Finite float64",

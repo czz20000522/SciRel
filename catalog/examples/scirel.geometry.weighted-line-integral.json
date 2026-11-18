@@ -92,7 +92,7 @@
   "outputs": [
     {
       "name": "reduction",
-      "description": "Scalar weighted integral or average",
+      "description": "Scalar weighted integral or average Returns the computed value positionally: the caller receives it directly, not as a field of a returned mapping.",
       "units": "length/field when Q absent; quantity units when present",
       "shape": "scalar",
       "dtype": "float64",

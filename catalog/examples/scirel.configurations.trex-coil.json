@@ -127,7 +127,7 @@
   "outputs": [
     {
       "name": "source",
-      "description": "Constructed TREXCoil object with source geometry, common currents, weights and optional target mesh. Fields are evaluated by its methods.",
+      "description": "Constructed TREXCoil object with source geometry, common currents, weights and optional target mesh. Fields are evaluated by its methods. Returns a scirel object positionally: the caller receives the instance itself, not as a field of a returned mapping.",
       "units": "geometry m; current A; weights dimensionless",
       "shape": "one object",
       "dtype": "TREXCoil",

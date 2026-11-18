@@ -140,7 +140,7 @@
   "outputs": [
     {
       "name": "basis_fns",
-      "description": "List of independent basis evaluators",
+      "description": "List of independent basis evaluators Returns a list positionally: the caller receives the sequence itself, not as a field of a returned mapping.",
       "units": "caller units",
       "shape": "list(K)",
       "dtype": "list",

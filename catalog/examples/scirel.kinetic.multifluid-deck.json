@@ -43,7 +43,7 @@
   "outputs": [
     {
       "name": "deck",
-      "description": "Independent electron/proton SI deck copy.",
+      "description": "Independent electron/proton SI deck copy. Returns a tuple positionally: the caller unpacks it by position, and no element is a field of a returned mapping.",
       "units": "C; kg; m^-3; m/s; m/s; m/s; m/s; m/s; m^-1; m^-1",
       "shape": "(2,10)",
       "dtype": "float64 ndarray",

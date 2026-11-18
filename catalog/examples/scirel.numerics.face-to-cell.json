@@ -55,7 +55,7 @@
   "outputs": [
     {
       "name": "cell",
-      "description": "Cell midpoint values",
+      "description": "Cell midpoint values Returns the computed value positionally: the caller receives it directly, not as a field of a returned mapping.",
       "units": "same as input",
       "shape": "[n-1]",
       "dtype": "float64 array",

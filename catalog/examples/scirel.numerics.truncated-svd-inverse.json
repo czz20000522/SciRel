@@ -64,7 +64,7 @@
   "outputs": [
     {
       "name": "inverse",
-      "description": "truncated pseudo-inverse with shape (n,m)",
+      "description": "truncated pseudo-inverse with shape (n,m) Returns the computed value positionally: the caller receives it directly, not as a field of a returned mapping.",
       "units": "dimensionless",
       "shape": "(n,m)",
       "dtype": "float64 array",

@@ -133,7 +133,7 @@
   "outputs": [
     {
       "name": "mesh",
-      "description": "Constructed RectMesh object. Available properties/methods: R: Radial mesh [m], (nz,nr); Z: Axial mesh [m], (nz,nr)",
+      "description": "Constructed RectMesh object. Available properties/methods: R: Radial mesh [m], (nz,nr); Z: Axial mesh [m], (nz,nr) Returns a scirel object positionally: the caller receives the instance itself, not as a field of a returned mapping.",
       "units": "Object; property units as described",
       "shape": "one object",
       "dtype": "RectMesh",
