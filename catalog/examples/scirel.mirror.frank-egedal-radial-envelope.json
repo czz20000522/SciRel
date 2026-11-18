@@ -1,157 +1,162 @@
 {
- "schema": "scirel.asset-document",
- "asset_id": "scirel.mirror.frank-egedal-radial-envelope",
- "title": {
-  "en": "Frank-Egedal radial envelope",
-  "zh": "Frank-Egedal 径向包络"
- },
- "summary": "Evaluate a clipped power-law envelope on a normalized two-dimensional flux grid, with optional explicit reference fluxes and exponent.",
- "taxonomy": [
-  "kinetic",
-  "mirror-plasma",
-  "radial-envelope"
- ],
- "aliases": [
-  "Frank-Egedal pressure-source envelope",
-  "normalized-flux radial profile"
- ],
- "discovery": {
-  "capability": [
-   "Frank-Egedal radial envelope",
-   "Evaluate a clipped power-law envelope on a normalized two-dimensional flux grid, with optional explicit reference fluxes and exponent."
-  ],
-  "operation": [
-   "evaluate the clipped Frank-Egedal radial envelope",
-   "(psi, psi_axis=None, psi_edge=None, alpha=1.0) -> radial envelope array with the shape of psi"
-  ],
-  "model": "Source-defined radial multiplier for a Frank-Egedal pressure construction; it does not compute a pressure or equilibrium",
-  "geometry": "Caller-supplied two-dimensional axisymmetric flux samples; no radial coordinate or magnetic geometry is reconstructed",
-  "boundary": "The normalized coordinate is clipped to [0,1], so the envelope is constant outside the interval. Reversing psi_axis and psi_edge reverses its orientation. No spatial boundary condition is solved.",
-  "device_scope": "device-parameterized"
- },
- "identity": {
-  "relation": "Flux grid and radial profile controls to a dimensionless pressure-source envelope",
-  "direction": "(psi, psi_axis=None, psi_edge=None, alpha=1.0) -> radial envelope array with the shape of psi",
-  "definition": "Let u=clip((psi-psi_axis)/(psi_edge-psi_axis),0,1). Return [clip(1-u,0,infinity)]^alpha elementwise. psi_axis defaults to min(psi), psi_edge to max(psi), and alpha to 1.0. Both signs of the finite nonzero flux interval are accepted; alpha=0 makes the entire clipped grid equal one, including the outer endpoint, by NumPy's zero-power convention.",
-  "model": "Source-defined radial multiplier for a Frank-Egedal pressure construction; it does not compute a pressure or equilibrium",
-  "geometry": "Caller-supplied two-dimensional axisymmetric flux samples; no radial coordinate or magnetic geometry is reconstructed",
-  "coordinates": "The array is indexed [Z,R] by the declared contract. psi, psi_axis and psi_edge must share one caller-selected flux convention; the historical descriptor labels psi in Wb, but the callable does not enforce or convert that convention.",
-  "boundary": "The normalized coordinate is clipped to [0,1], so the envelope is constant outside the interval. Reversing psi_axis and psi_edge reverses its orientation. No spatial boundary condition is solved.",
-  "assumptions": [
-   "The two reference fluxes denote distinct levels in the same units and normalization as psi.",
-   "The exponent is finite and nonnegative; this source-defined envelope alone makes no statement about the physical pressure profile or its normalization."
-  ]
- },
- "inputs": [
-  {
-   "name": "psi",
-   "description": "Axisymmetric flux grid whose elements are normalized between two reference levels.",
-   "units": "same flux unit as psi_axis and psi_edge; historical source label Wb",
-   "shape": "nonempty [N_Z,N_R]",
-   "dtype": "float64-convertible array-like",
-   "required": true,
-   "constraints": "np.asarray(..., dtype=float) must produce a finite two-dimensional nonempty array."
+  "schema": "scirel.asset-document",
+  "asset_id": "scirel.mirror.frank-egedal-radial-envelope",
+  "title": {
+    "en": "Frank-Egedal radial envelope",
+    "zh": "Frank-Egedal 径向包络"
   },
-  {
-   "name": "psi_axis",
-   "description": "Flux at the profile axis; None selects the grid minimum.",
-   "units": "same as psi",
-   "shape": "scalar or null",
-   "dtype": "float or None",
-   "required": false,
-   "constraints": "Finite after float conversion when supplied.",
-   "default": null
+  "summary": "Evaluate a clipped power-law envelope on a normalized two-dimensional flux grid, with optional explicit reference fluxes and exponent.",
+  "taxonomy": [
+    "kinetic",
+    "mirror-plasma",
+    "radial-envelope"
+  ],
+  "aliases": [
+    "Frank-Egedal pressure-source envelope",
+    "normalized-flux radial profile"
+  ],
+  "discovery": {
+    "capability": [
+      "Frank-Egedal radial envelope",
+      "Evaluate a clipped power-law envelope on a normalized two-dimensional flux grid, with optional explicit reference fluxes and exponent."
+    ],
+    "operation": [
+      "evaluate the clipped Frank-Egedal radial envelope",
+      "(psi, psi_axis=None, psi_edge=None, alpha=1.0) -> radial envelope array with the shape of psi"
+    ],
+    "model": "Source-defined radial multiplier for a Frank-Egedal pressure construction; it does not compute a pressure or equilibrium",
+    "geometry": "Caller-supplied two-dimensional axisymmetric flux samples; no radial coordinate or magnetic geometry is reconstructed",
+    "boundary": "The normalized coordinate is clipped to [0,1], so the envelope is constant outside the interval. Reversing psi_axis and psi_edge reverses its orientation. No spatial boundary condition is solved.",
+    "device_scope": "device-parameterized"
   },
-  {
-   "name": "psi_edge",
-   "description": "Flux at the profile edge; None selects the grid maximum.",
-   "units": "same as psi",
-   "shape": "scalar or null",
-   "dtype": "float or None",
-   "required": false,
-   "constraints": "Finite after float conversion when supplied; distinct from psi_axis by at least 1e-30 in absolute value.",
-   "default": null
+  "identity": {
+    "relation": "Flux grid and radial profile controls to a dimensionless pressure-source envelope",
+    "direction": "(psi, psi_axis=None, psi_edge=None, alpha=1.0) -> radial envelope array with the shape of psi",
+    "definition": "Let u=clip((psi-psi_axis)/(psi_edge-psi_axis),0,1). Return [clip(1-u,0,infinity)]^alpha elementwise. psi_axis defaults to min(psi), psi_edge to max(psi), and alpha to 1.0. Both signs of the finite nonzero flux interval are accepted; alpha=0 makes the entire clipped grid equal one, including the outer endpoint, by NumPy's zero-power convention.",
+    "model": "Source-defined radial multiplier for a Frank-Egedal pressure construction; it does not compute a pressure or equilibrium",
+    "geometry": "Caller-supplied two-dimensional axisymmetric flux samples; no radial coordinate or magnetic geometry is reconstructed",
+    "coordinates": "The array is indexed [Z,R] by the declared contract. psi, psi_axis and psi_edge must share one caller-selected flux convention; the historical descriptor labels psi in Wb, but the callable does not enforce or convert that convention.",
+    "boundary": "The normalized coordinate is clipped to [0,1], so the envelope is constant outside the interval. Reversing psi_axis and psi_edge reverses its orientation. No spatial boundary condition is solved.",
+    "assumptions": [
+      "The two reference fluxes denote distinct levels in the same units and normalization as psi.",
+      "The exponent is finite and nonnegative; this source-defined envelope alone makes no statement about the physical pressure profile or its normalization."
+    ]
   },
-  {
-   "name": "alpha",
-   "description": "Power-law exponent for the clipped envelope.",
-   "units": "dimensionless",
-   "shape": "scalar",
-   "dtype": "float",
-   "required": false,
-   "constraints": "Finite and nonnegative after float conversion.",
-   "default": 1.0
+  "inputs": [
+    {
+      "name": "psi",
+      "description": "Axisymmetric flux grid whose elements are normalized between two reference levels.",
+      "units": "same flux unit as psi_axis and psi_edge; historical source label Wb",
+      "shape": "nonempty [N_Z,N_R]",
+      "dtype": "float64-convertible array-like",
+      "required": true,
+      "constraints": "np.asarray(..., dtype=float) must produce a finite two-dimensional nonempty array."
+    },
+    {
+      "name": "psi_axis",
+      "description": "Flux at the profile axis; None selects the grid minimum.",
+      "units": "same as psi",
+      "shape": "scalar or null",
+      "dtype": "float or None",
+      "required": false,
+      "constraints": "Finite after float conversion when supplied.",
+      "default": null
+    },
+    {
+      "name": "psi_edge",
+      "description": "Flux at the profile edge; None selects the grid maximum.",
+      "units": "same as psi",
+      "shape": "scalar or null",
+      "dtype": "float or None",
+      "required": false,
+      "constraints": "Finite after float conversion when supplied; distinct from psi_axis by at least 1e-30 in absolute value.",
+      "default": null
+    },
+    {
+      "name": "alpha",
+      "description": "Power-law exponent for the clipped envelope.",
+      "units": "dimensionless",
+      "shape": "scalar",
+      "dtype": "float",
+      "required": false,
+      "constraints": "Finite and nonnegative after float conversion.",
+      "default": 1.0
+    }
+  ],
+  "outputs": [
+    {
+      "name": "radial_envelope",
+      "description": "Direct array return of the clipped source-order radial multiplier, not a key in a result mapping.",
+      "units": "dimensionless",
+      "shape": "same [N_Z,N_R] shape as psi",
+      "dtype": "float64 ndarray",
+      "required": true,
+      "constraints": "For successful finite arithmetic, values lie in [0,1]. An alpha of zero returns ones, even at u=1; there is no post-computation finite-output validation."
+    }
+  ],
+  "applicability": {
+    "preconditions": [
+      "psi is a finite nonempty 2-D grid, and explicit reference/exponent values are finite scalar-convertible values.",
+      "The selected axis and edge fluxes define a finite nonzero interval at least 1e-30 in absolute size."
+    ],
+    "supported": [
+      "Forward and reverse flux orientations and nonnegative power-law exponents on a clipped normalized interval.",
+      "Caller-supplied reference fluxes or grid extrema as defaults."
+    ],
+    "excluded": [
+      "Inferring a physically correct axis, edge, flux unit or pressure normalization from the grid.",
+      "A full Frank-Egedal closure, magnetic-field calculation, coordinate conversion or extrapolation beyond the clipped interval."
+    ]
+  },
+  "failure_semantics": {
+    "invalid_input": "Raises ValueError for a nonfinite, empty or non-2-D psi grid; nonfinite reference/exponent values; negative exponent; or a reference interval with abs(psi_edge-psi_axis)<1e-30. Float-conversion errors may propagate as ValueError or TypeError.",
+    "runtime_failure": "Array allocation or arithmetic errors can propagate. No general finite-output check follows the power evaluation, and extreme finite values may encounter floating-point warnings or nonfinite intermediate arithmetic.",
+    "nonconvergence": "Not applicable; evaluation is elementwise without iteration.",
+    "partial_results": "No partial array is returned on a raised exception. A successful call returns only the envelope array."
+  },
+  "public_api": {
+    "python": {
+      "module": "scirel.mirror.frank_egedal_radial_envelope",
+      "symbol": "evaluate_frank_egedal_radial_envelope",
+      "signature": "evaluate_frank_egedal_radial_envelope(psi, *, psi_axis=None, psi_edge=None, alpha=1.0)",
+      "canonical_module": "scirel.mirror",
+      "canonical_symbol": "evaluate_frank_egedal_radial_envelope"
+    }
+  },
+  "version": {
+    "implementation_version": "0.0.0",
+    "dependencies": []
+  },
+  "example": {
+    "description": "Apply a quadratic envelope on a grid with values both inside and outside the chosen flux interval.",
+    "code": "import numpy as np\nfrom scirel.mirror import evaluate_frank_egedal_radial_envelope\npsi = np.array([[-1.0, 0.0, 0.5], [1.0, 1.5, 2.0]])\nr = evaluate_frank_egedal_radial_envelope(\n    psi, psi_axis=0.0, psi_edge=1.0, alpha=2.0\n)\nnp.testing.assert_allclose(r, [[1.0, 1.0, 0.25], [0.0, 0.0, 0.0]])\nassert r.shape == psi.shape\n",
+    "expected": "Observed PASS: The clipped quadratic envelope is [[1, 1, 0.25], [0, 0, 0]] and retains the input grid shape."
+  },
+  "verification": {
+    "scope": [
+      "The envelope is a closed form, so the independent basis is exact rational recomputation of u = clip((psi - psi_axis)/(psi_edge - psi_axis), 0, 1) and envelope = clip(1 - u, 0, inf)**alpha, together with the algebraic identities u=0 giving one, u=1 giving zero, alpha=0 giving one, and the reversal law under swapping the reference levels (tests/mirror/test_frank_egedal_radial_envelope_evidence.py).",
+      "Direct two-row closed-form examples for quadratic and linear exponents, clipped endpoints and reverse flux orientation.",
+      "Affine flux relabeling, default reference extrema, zero exponent, input ownership and selected invalid-grid/reference cases.",
+      "Bitwise agreement with the Fraction reference for alpha = 1, 2 and 3 including the clipped endpoints, and exact agreement of alpha = 1 with 1 - u on a dyadic grid.",
+      "Swapping psi_axis and psi_edge makes the two envelopes sum to exactly one, and doubling the exponent squares the envelope within one pow rounding.",
+      "The envelope is non-increasing between the reference levels, takes exactly one at the axis and exactly zero at the edge, and default reference levels are the grid extrema."
+    ],
+    "tests": [
+      "tests/mirror/test_frank_egedal_radial_envelope.py",
+      "tests/mirror/test_frank_egedal_radial_envelope_admitted.py",
+      "tests/mirror/test_frank_egedal_radial_envelope_evidence.py"
+    ],
+    "evidence_ceiling": "Bounded to the declared relation: Let u=clip((psi-psi_axis)/(psi_edge-psi_axis),0,1). Return [clip(1-u,0,infinity)]^alpha elementwise. psi_axis defaults to min(psi), psi_edge to max(psi), and alpha to 1.0…. Evidence: test_frank_egedal_radial_envelope.py, test_frank_egedal_radial_envelope_admitted.py (6 recorded test functions; bound-file coverage; independent analytic/high-precision oracle); the contract example ran. Excluded scope: Inferring a physically correct axis, edge, flux unit or pressure normalization from the grid; A full Frank-Egedal closure, magnetic-field calculation, coordinate conversion or extrapolation beyond the clipped interval. C1 evidence (tests/mirror/test_frank_egedal_radial_envelope_evidence.py) re-derives the closed form in Fraction arithmetic, pins the four analytic anchors, the reversal law, the exponent composition and monotonicity, and covers the declared input rejections. Because the whole relation is a two-line closed form, this evidence establishes the implementation against its own definition rather than against an independent physical model.",
+    "known_limitations": [
+      "Reference flux levels and flux convention are supplied or inferred from grid extrema, not physically identified by this function.",
+      "The historical Wb label and other SciRel Wb/rad flux conventions have no automatic conversion; the tested coupling requires axis/edge references to share the current psi coordinate.",
+      "A zero exponent yields one even at the clipped edge; finite extrema can still trigger extreme arithmetic without a post-computation check.",
+      "The independent analytic comparison does not replace an external experimental reference."
+    ],
+    "basis": {
+      "kind": "closed-form",
+      "statement": "The closed form is re-derived in Fraction arithmetic, and the four analytic anchors, the reversal law, the exponent composition and monotonicity are pinned.",
+      "source": "tests/mirror/test_frank_egedal_radial_envelope.py"
+    }
   }
- ],
- "outputs": [
-  {
-   "name": "radial_envelope",
-   "description": "Direct array return of the clipped source-order radial multiplier, not a key in a result mapping.",
-   "units": "dimensionless",
-   "shape": "same [N_Z,N_R] shape as psi",
-   "dtype": "float64 ndarray",
-   "required": true,
-   "constraints": "For successful finite arithmetic, values lie in [0,1]. An alpha of zero returns ones, even at u=1; there is no post-computation finite-output validation."
-  }
- ],
- "applicability": {
-  "preconditions": [
-   "psi is a finite nonempty 2-D grid, and explicit reference/exponent values are finite scalar-convertible values.",
-   "The selected axis and edge fluxes define a finite nonzero interval at least 1e-30 in absolute size."
-  ],
-  "supported": [
-   "Forward and reverse flux orientations and nonnegative power-law exponents on a clipped normalized interval.",
-   "Caller-supplied reference fluxes or grid extrema as defaults."
-  ],
-  "excluded": [
-   "Inferring a physically correct axis, edge, flux unit or pressure normalization from the grid.",
-   "A full Frank-Egedal closure, magnetic-field calculation, coordinate conversion or extrapolation beyond the clipped interval."
-  ]
- },
- "failure_semantics": {
-  "invalid_input": "Raises ValueError for a nonfinite, empty or non-2-D psi grid; nonfinite reference/exponent values; negative exponent; or a reference interval with abs(psi_edge-psi_axis)<1e-30. Float-conversion errors may propagate as ValueError or TypeError.",
-  "runtime_failure": "Array allocation or arithmetic errors can propagate. No general finite-output check follows the power evaluation, and extreme finite values may encounter floating-point warnings or nonfinite intermediate arithmetic.",
-  "nonconvergence": "Not applicable; evaluation is elementwise without iteration.",
-  "partial_results": "No partial array is returned on a raised exception. A successful call returns only the envelope array."
- },
- "public_api": {
-  "python": {
-   "module": "scirel.mirror.frank_egedal_radial_envelope",
-   "symbol": "evaluate_frank_egedal_radial_envelope",
-   "signature": "evaluate_frank_egedal_radial_envelope(psi, *, psi_axis=None, psi_edge=None, alpha=1.0)",
-   "canonical_module": "scirel.mirror",
-   "canonical_symbol": "evaluate_frank_egedal_radial_envelope"
-  }
- },
- "version": {
-  "implementation_version": "0.0.0",
-  "dependencies": []
- },
- "example": {
-  "description": "Apply a quadratic envelope on a grid with values both inside and outside the chosen flux interval.",
-  "code": "import numpy as np\nfrom scirel.mirror import evaluate_frank_egedal_radial_envelope\npsi = np.array([[-1.0, 0.0, 0.5], [1.0, 1.5, 2.0]])\nr = evaluate_frank_egedal_radial_envelope(\n    psi, psi_axis=0.0, psi_edge=1.0, alpha=2.0\n)\nnp.testing.assert_allclose(r, [[1.0, 1.0, 0.25], [0.0, 0.0, 0.0]])\nassert r.shape == psi.shape\n",
-  "expected": "Observed PASS: The clipped quadratic envelope is [[1, 1, 0.25], [0, 0, 0]] and retains the input grid shape."
- },
- "verification": {
-  "scope": [
-   "The envelope is a closed form, so the independent basis is exact rational recomputation of u = clip((psi - psi_axis)/(psi_edge - psi_axis), 0, 1) and envelope = clip(1 - u, 0, inf)**alpha, together with the algebraic identities u=0 giving one, u=1 giving zero, alpha=0 giving one, and the reversal law under swapping the reference levels (tests/mirror/test_frank_egedal_radial_envelope_evidence.py).",
-   "Direct two-row closed-form examples for quadratic and linear exponents, clipped endpoints and reverse flux orientation.",
-   "Affine flux relabeling, default reference extrema, zero exponent, input ownership and selected invalid-grid/reference cases.",
-   "Bitwise agreement with the Fraction reference for alpha = 1, 2 and 3 including the clipped endpoints, and exact agreement of alpha = 1 with 1 - u on a dyadic grid.",
-   "Swapping psi_axis and psi_edge makes the two envelopes sum to exactly one, and doubling the exponent squares the envelope within one pow rounding.",
-   "The envelope is non-increasing between the reference levels, takes exactly one at the axis and exactly zero at the edge, and default reference levels are the grid extrema."
-  ],
-  "tests": [
-   "tests/mirror/test_frank_egedal_radial_envelope.py",
-   "tests/mirror/test_frank_egedal_radial_envelope_admitted.py",
-   "tests/mirror/test_frank_egedal_radial_envelope_evidence.py"
-  ],
-  "evidence_ceiling": "Bounded to the declared relation: Let u=clip((psi-psi_axis)/(psi_edge-psi_axis),0,1). Return [clip(1-u,0,infinity)]^alpha elementwise. psi_axis defaults to min(psi), psi_edge to max(psi), and alpha to 1.0…. Evidence: test_frank_egedal_radial_envelope.py, test_frank_egedal_radial_envelope_admitted.py (6 recorded test functions; bound-file coverage; independent analytic/high-precision oracle); the contract example ran. Excluded scope: Inferring a physically correct axis, edge, flux unit or pressure normalization from the grid; A full Frank-Egedal closure, magnetic-field calculation, coordinate conversion or extrapolation beyond the clipped interval. C1 evidence (tests/mirror/test_frank_egedal_radial_envelope_evidence.py) re-derives the closed form in Fraction arithmetic, pins the four analytic anchors, the reversal law, the exponent composition and monotonicity, and covers the declared input rejections. Because the whole relation is a two-line closed form, this evidence establishes the implementation against its own definition rather than against an independent physical model.",
-  "known_limitations": [
-   "Reference flux levels and flux convention are supplied or inferred from grid extrema, not physically identified by this function.",
-   "The historical Wb label and other SciRel Wb/rad flux conventions have no automatic conversion; the tested coupling requires axis/edge references to share the current psi coordinate.",
-   "A zero exponent yields one even at the clipped edge; finite extrema can still trigger extreme arithmetic without a post-computation check.",
-   "The independent analytic comparison does not replace an external experimental reference."
-  ]
- }
 }
