@@ -73,8 +73,7 @@ def evaluate_atomic_hydrogen_1s_radiative_recombination_rate(electron_temperatur
     --------
     evaluate_janev_electron_impact_ionization_rate : Electron-impact ionization
         rate fits for H and H2.
-    evaluate_atomic_hydrogen_charge_exchange_rate : Atomic-hydrogen
-        charge-exchange rate coefficient.
+       charge-exchange rate coefficient.
     average_cross_section_over_maxwellian : General mesh-based Maxwellian
         average of a caller-supplied cross section.
 

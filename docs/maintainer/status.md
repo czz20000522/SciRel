@@ -16,20 +16,20 @@
 <!-- status-report:begin -->
 | 量 | 值 | 复算口径（在仓库根执行） |
 | --- | --- | --- |
-| 合同（`catalog/examples/`） | 249 | `ls catalog/examples/scirel.*.json | wc -l` |
-| `src/scirel` 下 `.py` 文件 | 230 | `find src/scirel -name '*.py' | wc -l` |
-| `src/scirel` 行数 | 56041 | `find src/scirel -name '*.py' -exec cat {} + | wc -l` |
-| 模块级公开函数（`def` 顶格、非下划线开头） | 294 | `grep -rh '^def [a-zA-Z]' src/scirel --include='*.py' | wc -l` |
+| 合同（`catalog/examples/`） | 248 | `ls catalog/examples/scirel.*.json | wc -l` |
+| `src/scirel` 下 `.py` 文件 | 229 | `find src/scirel -name '*.py' | wc -l` |
+| `src/scirel` 行数 | 55715 | `find src/scirel -name '*.py' -exec cat {} + | wc -l` |
+| 模块级公开函数（`def` 顶格、非下划线开头） | 293 | `grep -rh '^def [a-zA-Z]' src/scirel --include='*.py' | wc -l` |
 | 顶层子包（含 `__init__.py`） | 22 | `ls -d src/scirel/*/ | wc -l` 后按 `__init__.py` 过滤 |
-| 测试文件（`test_*.py`） | 439 | `find tests -name 'test_*.py' | wc -l` |
+| 测试文件（`test_*.py`） | 436 | `find tests -name 'test_*.py' | wc -l` |
 
 口径：数字由本块上方的命令现场重算；本块不含提交号——引用时连同生成它的提交一起引用（`git log -1 -- docs/maintainer/status.md`）。
 
 | 证据覆盖 | 份数 |
 | --- | --- |
 | `basis` | 206 |
-| `gap` | 116 |
-| `either` | 249 |
+| `gap` | 115 |
+| `either` | 248 |
 | `neither` | 0 |
 
 口径：`python3 scripts/c1_evidence_coverage.py`；`neither` 是**合同文本缺口**，不是「没有证据」，也不是科学工作完成度。

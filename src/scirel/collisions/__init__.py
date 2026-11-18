@@ -14,7 +14,6 @@ __all__ = [
     "average_cross_section_over_maxwellian",
     "evaluate_fast_ion_stopping_increment",
     "evaluate_janev_electron_impact_ionization_rate",
-    "evaluate_atomic_hydrogen_charge_exchange_rate",
     "evaluate_atomic_hydrogen_1s_radiative_recombination_rate",
     "evaluate_molecular_hydrogen_charge_exchange_cross_section",
     "evaluate_hydrogen2_charge_exchange_rate",
@@ -54,10 +53,6 @@ _LAZY_EXPORTS = {
     "evaluate_atomic_hydrogen_charge_exchange_cross_section": (
         "atomic_hydrogen_charge_exchange_cross_section",
         "evaluate_atomic_hydrogen_charge_exchange_cross_section",
-    ),
-    "evaluate_atomic_hydrogen_charge_exchange_rate": (
-        "atomic_hydrogen_charge_exchange_rate",
-        "evaluate_atomic_hydrogen_charge_exchange_rate",
     ),
     "evaluate_hydrogen2_charge_exchange_rate": (
         "hydrogen2_charge_exchange_rate",

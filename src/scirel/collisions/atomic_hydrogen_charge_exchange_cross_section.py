@@ -95,8 +95,6 @@ def evaluate_atomic_hydrogen_charge_exchange_cross_section(energy_ev, freeman=Fa
 
     See Also
     --------
-    evaluate_atomic_hydrogen_charge_exchange_rate : Integrates the default
-        composite cross section above its low-energy fit domain.
     evaluate_molecular_hydrogen_charge_exchange_cross_section : The distinct
         H2 + H2+ charge-exchange relation.
     average_cross_section_over_maxwellian : Accepts a compatible cross-section

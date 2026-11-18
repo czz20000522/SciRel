@@ -234,3 +234,20 @@ def test_faddeeva_is_owned_by_numerics_without_old_variant_exports():
         assert name not in scirel.kinetic.__all__
         assert not hasattr(scirel.kinetic, name)
     assert isinstance(evaluate_faddeeva(0.3 + 0.2j), np.ndarray)
+
+
+def test_the_withdrawn_atomic_charge_exchange_rate_is_not_public_or_importable():
+    """T-2026-0800: the rate fit is withdrawn until its `energy_ev` is decided.
+
+    The high-temperature branch reads `energy_ev` as a beam speed while the low
+    branch reads it as a collision energy, so a caller cannot know what the
+    number means. The maintainer's standing rule for this class of ambiguity is
+    to withdraw the surface rather than ship a plausible-looking number, so the
+    symbol and its module must be gone -- not merely undocumented.
+    """
+    assert "evaluate_atomic_hydrogen_charge_exchange_rate" not in scirel.collisions.__all__
+    assert "evaluate_atomic_hydrogen_charge_exchange_rate" not in dir(scirel.collisions)
+    assert not hasattr(scirel.collisions, "evaluate_atomic_hydrogen_charge_exchange_rate")
+    with pytest.raises(ModuleNotFoundError) as error:
+        importlib.import_module("scirel.collisions.atomic_hydrogen_charge_exchange_rate")
+    assert error.value.name == "scirel.collisions.atomic_hydrogen_charge_exchange_rate"

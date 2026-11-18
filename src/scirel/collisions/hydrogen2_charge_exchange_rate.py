@@ -166,8 +166,6 @@ def evaluate_hydrogen2_charge_exchange_rate(temperature_ev, energy_ev):
 
     See Also
     --------
-    evaluate_atomic_hydrogen_charge_exchange_rate : The distinct atomic-H rate
-        fit.
     evaluate_molecular_hydrogen_charge_exchange_cross_section : The separate
         molecular cross-section fit.
     average_cross_section_over_maxwellian : Explicit mesh-based Maxwellian
@@ -185,13 +183,11 @@ def evaluate_hydrogen2_charge_exchange_rate(temperature_ev, energy_ev):
     Examples
     --------
     >>> import numpy as np
-    >>> from scirel.collisions import evaluate_hydrogen2_charge_exchange_rate, evaluate_atomic_hydrogen_charge_exchange_rate
+    >>> from scirel.collisions import evaluate_hydrogen2_charge_exchange_rate
     >>> t = np.array([0.1, 10.0, 20100.0])
     >>> e = np.array([0.2, 10.0, 20100.0])
     >>> r = evaluate_hydrogen2_charge_exchange_rate(t, e)
-    >>> a = evaluate_atomic_hydrogen_charge_exchange_rate(t, e)
     >>> assert r.shape == (3,) and np.all(np.isfinite(r)) and np.all(r > 0.0)
-    >>> assert not np.allclose(r, a, rtol=1e-12, atol=0.0)
     """
     temperature = positive_real_array(temperature_ev, "temperature_ev")
     energy = finite_nonnegative_energy(energy_ev)

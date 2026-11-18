@@ -5,7 +5,6 @@ import scirel
 import pytest
 
 from scirel.collisions import (
-    evaluate_atomic_hydrogen_charge_exchange_rate,
     evaluate_hydrogen2_charge_exchange_rate,
 )
 from scirel.collisions.hydrogen2_charge_exchange_rate import _COEFFICIENTS
@@ -38,8 +37,6 @@ def test_fit_matches_reference_points_and_differs_from_atomic_sibling():
 
     np.testing.assert_allclose(result, expected, rtol=1e-14, atol=0.0)
     np.testing.assert_allclose(result[:-1], oracle[:-1], rtol=1e-12, atol=0.0)
-    atomic = evaluate_atomic_hydrogen_charge_exchange_rate(temperature, energy)
-    assert not np.allclose(result, atomic, rtol=1e-12, atol=0.0)
     assert result.shape == temperature.shape
     assert np.all(np.isfinite(result)) and np.all(result > 0.0)
 
