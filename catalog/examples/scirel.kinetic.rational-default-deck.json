@@ -1,124 +1,129 @@
 {
- "schema": "scirel.asset-document",
- "asset_id": "scirel.kinetic.rational-default-deck",
- "title": {
-  "en": "Declared species deck data",
-  "zh": "声明物种参数表"
- },
- "summary": "Read the packaged model-specific original species deck into a fresh numeric array.",
- "taxonomy": [
-  "kinetic",
-  "plasma",
-  "frequency-dispersion"
- ],
- "aliases": [
-  "legacy.default_deck"
- ],
- "discovery": {
-  "capability": [
-   "Declared species deck data",
-   "Read the packaged model-specific original species deck into a fresh numeric array."
+  "schema": "scirel.asset-document",
+  "asset_id": "scirel.kinetic.rational-default-deck",
+  "title": {
+    "en": "Declared species deck data",
+    "zh": "声明物种参数表"
+  },
+  "summary": "Read the packaged model-specific original species deck into a fresh numeric array.",
+  "taxonomy": [
+    "kinetic",
+    "plasma",
+    "frequency-dispersion"
   ],
-  "operation": [
-   "read the packaged model-specific species deck",
-   "model selector -> packaged species deck array"
+  "aliases": [
+    "legacy.default_deck"
   ],
-  "model": "Nonrelativistic Gaussian species; explicit finite-harmonic/rational approximation when applicable.",
-  "geometry": "Homogeneous plasma with background field along z; k=(kx,0,kz) where applicable.",
-  "boundary": "Periodic/infinite homogeneous plane-wave response; finite numerical harmonic/pole representation explicitly declared.",
-  "device_scope": "unclassified"
- },
- "identity": {
-  "relation": "Declared species deck data",
-  "direction": "Declared inputs to named scientific outputs.",
-  "definition": "No hidden source-checkout read. The deck is a declared scientific fixture with model-specific columns and units; calling the data accessor does not validate a physical application.",
-  "model": "Nonrelativistic Gaussian species; explicit finite-harmonic/rational approximation when applicable.",
-  "geometry": "Homogeneous plasma with background field along z; k=(kx,0,kz) where applicable.",
-  "coordinates": "Explicit ES dimensionless normalization or EM SI; complex frequency follows exp(-i omega t).",
-  "boundary": "Periodic/infinite homogeneous plane-wave response; finite numerical harmonic/pole representation explicitly declared.",
-  "assumptions": [
-   "Model-specific deck conventions are explicit.",
-   "A numerical spectrum is not automatically a physically certified mode."
+  "discovery": {
+    "capability": [
+      "Declared species deck data",
+      "Read the packaged model-specific original species deck into a fresh numeric array."
+    ],
+    "operation": [
+      "read the packaged model-specific species deck",
+      "model selector -> packaged species deck array"
+    ],
+    "model": "Nonrelativistic Gaussian species; explicit finite-harmonic/rational approximation when applicable.",
+    "geometry": "Homogeneous plasma with background field along z; k=(kx,0,kz) where applicable.",
+    "boundary": "Periodic/infinite homogeneous plane-wave response; finite numerical harmonic/pole representation explicitly declared.",
+    "device_scope": "unclassified"
+  },
+  "identity": {
+    "relation": "Declared species deck data",
+    "direction": "Declared inputs to named scientific outputs.",
+    "definition": "No hidden source-checkout read. The deck is a declared scientific fixture with model-specific columns and units; calling the data accessor does not validate a physical application.",
+    "model": "Nonrelativistic Gaussian species; explicit finite-harmonic/rational approximation when applicable.",
+    "geometry": "Homogeneous plasma with background field along z; k=(kx,0,kz) where applicable.",
+    "coordinates": "Explicit ES dimensionless normalization or EM SI; complex frequency follows exp(-i omega t).",
+    "boundary": "Periodic/infinite homogeneous plane-wave response; finite numerical harmonic/pole representation explicitly declared.",
+    "assumptions": [
+      "Model-specific deck conventions are explicit.",
+      "A numerical spectrum is not automatically a physically certified mode."
+    ]
+  },
+  "inputs": [
+    {
+      "name": "model",
+      "description": "Select es1d,es3d or em deck.",
+      "units": "dimensionless",
+      "shape": "scalar",
+      "dtype": "str",
+      "required": false,
+      "constraints": "Select es1d, es3d or em.",
+      "default": "es1d"
+    }
+  ],
+  "outputs": [
+    {
+      "name": "deck",
+      "description": "Fresh species array with explicit model-specific legacy unit convention.",
+      "units": "ES dimensionless; EM q/e,m/me,n m^-3,T eV,vd/c",
+      "shape": "Sx5 or Sx6",
+      "dtype": "real array",
+      "required": true,
+      "constraints": "Finite and representable in the declared numeric type."
+    }
+  ],
+  "applicability": {
+    "preconditions": [
+      "Constituent inputs finite and representable in declared numeric ports."
+    ],
+    "supported": [
+      "Packaged original legacy species fixture."
+    ],
+    "excluded": [
+      "No automatic claim that the default fixture describes a user experiment."
+    ]
+  },
+  "failure_semantics": {
+    "invalid_input": "ValueError for unknown model; packaged table read/parse errors propagate.",
+    "runtime_failure": "Packaged file I/O errors propagate; no the reference runtime process or native receipt.",
+    "nonconvergence": "Not an iterative or eigensolve operation.",
+    "partial_results": "No successful result is returned if this operation raises; no partial scientific return is promised."
+  },
+  "public_api": {
+    "python": {
+      "module": "scirel.kinetic.dispersion.rational",
+      "symbol": "default_deck",
+      "signature": "default_deck(model='es1d')"
+    }
+  },
+  "version": {
+    "implementation_version": "0.0.0",
+    "dependencies": []
+  },
+  "example": {
+    "description": "Bounded executable use of the actual declared scientific ports.",
+    "code": "from scirel.kinetic.dispersion.rational import default_deck\ndeck = default_deck('es1d')\nassert deck.ndim == 2 and deck.shape[1] == 5",
+    "expected": "The helper returned a fresh float64 ES1D deck of shape (2,5): [[-1,1,0.9,1,0],[-1,1,0.1,1,7.071]]."
+  },
+  "verification": {
+    "scope": [
+      "Independent reference: the deck is a declaration, so what is established here is its structure and its internal invariants, recomputed rather than read back - a 2x5 finite table whose density column is a partition of unity (0.9 + 0.1 = 1) whose two literals are exact decimals, whose second-species drift is nonzero while the first is zero, and whose unknown model name is rejected.",
+      "Implementation relation: the returned table is the rows in the declared column order with the declared literals; it is a NumPy array of shape (species, 5), not a mapping, and the response is produced without any caller-supplied scientific input.",
+      "Test matrix: the shape and finiteness, the exact density literals and their sum, the drift column's zero/nonzero pattern, and the unknown-model rejection with its own message.",
+      "Precision budget, declared before the comparison was run: the density sum is compared at 4 eps absolute (one addition of two exact decimals) and the literals themselves at zero tolerance, because they are the declared values and not derived quantities.",
+      "Cannot establish: the numerical values of the es1d case (charge signs, density fractions, drift) are copied from the source implementation's example deck. Nothing in this repository derives them, so this contract records them as a declaration and does not claim an independent source for the numbers themselves; the relations among the columns are established in scirel.kinetic.rational-equilibrium."
+    ],
+    "tests": [
+      "tests/kinetic/test_dispersion_rational.py",
+      "tests/kinetic/test_rational_declarative_evidence.py"
+    ],
+    "evidence_ceiling": "Bounded to the packaged legacy species deck returned as a fresh numeric array. Evidence: `test_dispersion_rational.py` contains 6 test functions, none of which references `default_deck`, and is shared by 10 assets; only shared-file coverage is bound, so a pass is file-level rather than asset-isolated; the bounded example was executed by this audit. Oracle: self-consistency/regression only; the bound rational file contains no direct call. It does not establish a claim that the default fixture matches a user experiment.",
+    "known_limitations": [
+      "The bound `test_dispersion_rational.py` is shared by ten assets and contains no direct reference to `default_deck`; the asset is exercised only through composition fixtures.",
+      "Finite-J/finite-N physics must be qualified for a new requested regime.",
+      "Earlier fixed-distance approach-to-axis ancillary assertions remain failed records; exact-axis/direct-response gates are separately qualified.",
+      "The fixture is package-local data; no checkout, network access or original-runtime execution is part of the evidence.",
+      "The legacy species fixture is not a claim that the default deck describes a user experiment."
+    ],
+    "basis": {
+      "kind": "specification",
+      "statement": "Oracle: self-consistency/regression only -- the bound rational file contains no direct call, and the bounded example was executed by this audit. That the default fixture matches a user experiment is not established.",
+      "source": "tests/kinetic/test_dispersion_rational.py"
+    }
+  },
+  "references": [
+    "Xie and Xiao, PDRK: A General Kinetic Dispersion Relation Solver for Magnetized Plasma, Plasma Science and Technology 18 (2016)."
   ]
- },
- "inputs": [
-  {
-   "name": "model",
-   "description": "Select es1d,es3d or em deck.",
-   "units": "dimensionless",
-   "shape": "scalar",
-   "dtype": "str",
-   "required": false,
-   "constraints": "Select es1d, es3d or em.",
-   "default": "es1d"
-  }
- ],
- "outputs": [
-  {
-   "name": "deck",
-   "description": "Fresh species array with explicit model-specific legacy unit convention.",
-   "units": "ES dimensionless; EM q/e,m/me,n m^-3,T eV,vd/c",
-   "shape": "Sx5 or Sx6",
-   "dtype": "real array",
-   "required": true,
-   "constraints": "Finite and representable in the declared numeric type."
-  }
- ],
- "applicability": {
-  "preconditions": [
-   "Constituent inputs finite and representable in declared numeric ports."
-  ],
-  "supported": [
-   "Packaged original legacy species fixture."
-  ],
-  "excluded": [
-   "No automatic claim that the default fixture describes a user experiment."
-  ]
- },
- "failure_semantics": {
-  "invalid_input": "ValueError for unknown model; packaged table read/parse errors propagate.",
-  "runtime_failure": "Packaged file I/O errors propagate; no the reference runtime process or native receipt.",
-  "nonconvergence": "Not an iterative or eigensolve operation.",
-  "partial_results": "No successful result is returned if this operation raises; no partial scientific return is promised."
- },
- "public_api": {
-  "python": {
-   "module": "scirel.kinetic.dispersion.rational",
-   "symbol": "default_deck",
-   "signature": "default_deck(model='es1d')"
-  }
- },
- "version": {
-  "implementation_version": "0.0.0",
-  "dependencies": []
- },
- "example": {
-  "description": "Bounded executable use of the actual declared scientific ports.",
-  "code": "from scirel.kinetic.dispersion.rational import default_deck\ndeck = default_deck('es1d')\nassert deck.ndim == 2 and deck.shape[1] == 5",
-  "expected": "The helper returned a fresh float64 ES1D deck of shape (2,5): [[-1,1,0.9,1,0],[-1,1,0.1,1,7.071]]."
- },
- "verification": {
-  "scope": [
-   "Independent reference: the deck is a declaration, so what is established here is its structure and its internal invariants, recomputed rather than read back - a 2x5 finite table whose density column is a partition of unity (0.9 + 0.1 = 1) whose two literals are exact decimals, whose second-species drift is nonzero while the first is zero, and whose unknown model name is rejected.",
-   "Implementation relation: the returned table is the rows in the declared column order with the declared literals; it is a NumPy array of shape (species, 5), not a mapping, and the response is produced without any caller-supplied scientific input.",
-   "Test matrix: the shape and finiteness, the exact density literals and their sum, the drift column's zero/nonzero pattern, and the unknown-model rejection with its own message.",
-   "Precision budget, declared before the comparison was run: the density sum is compared at 4 eps absolute (one addition of two exact decimals) and the literals themselves at zero tolerance, because they are the declared values and not derived quantities.",
-   "Cannot establish: the numerical values of the es1d case (charge signs, density fractions, drift) are copied from the source implementation's example deck. Nothing in this repository derives them, so this contract records them as a declaration and does not claim an independent source for the numbers themselves; the relations among the columns are established in scirel.kinetic.rational-equilibrium."
-  ],
-  "tests": [
-   "tests/kinetic/test_dispersion_rational.py",
-   "tests/kinetic/test_rational_declarative_evidence.py"
-  ],
-  "evidence_ceiling": "Bounded to the packaged legacy species deck returned as a fresh numeric array. Evidence: `test_dispersion_rational.py` contains 6 test functions, none of which references `default_deck`, and is shared by 10 assets; only shared-file coverage is bound, so a pass is file-level rather than asset-isolated; the bounded example was executed by this audit. Oracle: self-consistency/regression only; the bound rational file contains no direct call. It does not establish a claim that the default fixture matches a user experiment.",
-  "known_limitations": [
-   "The bound `test_dispersion_rational.py` is shared by ten assets and contains no direct reference to `default_deck`; the asset is exercised only through composition fixtures.",
-   "Finite-J/finite-N physics must be qualified for a new requested regime.",
-   "Earlier fixed-distance approach-to-axis ancillary assertions remain failed records; exact-axis/direct-response gates are separately qualified.",
-   "The fixture is package-local data; no checkout, network access or original-runtime execution is part of the evidence.",
-   "The legacy species fixture is not a claim that the default deck describes a user experiment."
-  ]
- },
- "references": [
-  "Xie and Xiao, PDRK: A General Kinetic Dispersion Relation Solver for Magnetized Plasma, Plasma Science and Technology 18 (2016)."
- ]
 }

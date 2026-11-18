@@ -1,143 +1,148 @@
 {
- "schema": "scirel.asset-document",
- "asset_id": "scirel.kinetic.rational-jpole-evaluate",
- "title": {
-  "en": "Rational plasma dispersion evaluation",
-  "zh": "有理等离子体色散计算"
- },
- "summary": "Evaluate a declared simple-pole rational approximation while preserving the evaluation-point shape.",
- "taxonomy": [
-  "kinetic",
-  "plasma",
-  "plasma-dispersion-function"
- ],
- "aliases": [
-  "legacy.jpole_evaluate"
- ],
- "discovery": {
-  "capability": [
-   "Rational plasma dispersion evaluation",
-   "Evaluate a declared simple-pole rational approximation while preserving the evaluation-point shape."
-  ],
-  "operation": [
-   "evaluate the rational plasma dispersion",
-   "pole tables and evaluation points -> rational ZJ"
-  ],
-  "model": "Nonrelativistic Gaussian species; explicit finite-harmonic/rational approximation when applicable.",
-  "geometry": "Homogeneous plasma with background field along z; k=(kx,0,kz) where applicable.",
-  "boundary": "Periodic/infinite homogeneous plane-wave response; finite numerical harmonic/pole representation explicitly declared.",
-  "device_scope": "generic"
- },
- "identity": {
-  "relation": "Rational plasma dispersion evaluation",
-  "direction": "Declared inputs to named scientific outputs.",
-  "definition": "Z_J(z)=sum b_j/(z-c_j), complex128 evaluation; no hidden Z-table choice or scientific-domain extrapolation.",
-  "model": "Nonrelativistic Gaussian species; explicit finite-harmonic/rational approximation when applicable.",
-  "geometry": "Homogeneous plasma with background field along z; k=(kx,0,kz) where applicable.",
-  "coordinates": "Explicit ES dimensionless normalization or EM SI; complex frequency follows exp(-i omega t).",
-  "boundary": "Periodic/infinite homogeneous plane-wave response; finite numerical harmonic/pole representation explicitly declared.",
-  "assumptions": [
-   "Model-specific deck conventions are explicit.",
-   "A numerical spectrum is not automatically a physically certified mode."
-  ]
- },
- "inputs": [
-  {
-   "name": "bzj",
-   "description": "Aligned nonempty simple-pole residues.",
-   "units": "dimensionless",
-   "shape": "J",
-   "dtype": "complex array",
-   "required": true,
-   "constraints": "Finite and representable in the declared numeric type."
+  "schema": "scirel.asset-document",
+  "asset_id": "scirel.kinetic.rational-jpole-evaluate",
+  "title": {
+    "en": "Rational plasma dispersion evaluation",
+    "zh": "有理等离子体色散计算"
   },
-  {
-   "name": "czj",
-   "description": "Aligned simple poles.",
-   "units": "dimensionless",
-   "shape": "J",
-   "dtype": "complex array",
-   "required": true,
-   "constraints": "Finite and representable in the declared numeric type."
+  "summary": "Evaluate a declared simple-pole rational approximation while preserving the evaluation-point shape.",
+  "taxonomy": [
+    "kinetic",
+    "plasma",
+    "plasma-dispersion-function"
+  ],
+  "aliases": [
+    "legacy.jpole_evaluate"
+  ],
+  "discovery": {
+    "capability": [
+      "Rational plasma dispersion evaluation",
+      "Evaluate a declared simple-pole rational approximation while preserving the evaluation-point shape."
+    ],
+    "operation": [
+      "evaluate the rational plasma dispersion",
+      "pole tables and evaluation points -> rational ZJ"
+    ],
+    "model": "Nonrelativistic Gaussian species; explicit finite-harmonic/rational approximation when applicable.",
+    "geometry": "Homogeneous plasma with background field along z; k=(kx,0,kz) where applicable.",
+    "boundary": "Periodic/infinite homogeneous plane-wave response; finite numerical harmonic/pole representation explicitly declared.",
+    "device_scope": "generic"
   },
-  {
-   "name": "z",
-   "description": "Complex evaluation arguments.",
-   "units": "dimensionless",
-   "shape": "arbitrary shape",
-   "dtype": "complex array",
-   "required": true,
-   "constraints": "Finite and representable in the declared numeric type."
-  }
- ],
- "outputs": [
-  {
-   "name": "ZJ",
-   "description": "Rational dispersion approximation.",
-   "units": "dimensionless",
-   "shape": "same shape as z",
-   "dtype": "complex array",
-   "required": true,
-   "constraints": "Finite and representable in the declared numeric type."
-  }
- ],
- "applicability": {
-  "preconditions": [
-   "Constituent inputs finite and representable in declared numeric ports."
+  "identity": {
+    "relation": "Rational plasma dispersion evaluation",
+    "direction": "Declared inputs to named scientific outputs.",
+    "definition": "Z_J(z)=sum b_j/(z-c_j), complex128 evaluation; no hidden Z-table choice or scientific-domain extrapolation.",
+    "model": "Nonrelativistic Gaussian species; explicit finite-harmonic/rational approximation when applicable.",
+    "geometry": "Homogeneous plasma with background field along z; k=(kx,0,kz) where applicable.",
+    "coordinates": "Explicit ES dimensionless normalization or EM SI; complex frequency follows exp(-i omega t).",
+    "boundary": "Periodic/infinite homogeneous plane-wave response; finite numerical harmonic/pole representation explicitly declared.",
+    "assumptions": [
+      "Model-specific deck conventions are explicit.",
+      "A numerical spectrum is not automatically a physically certified mode."
+    ]
+  },
+  "inputs": [
+    {
+      "name": "bzj",
+      "description": "Aligned nonempty simple-pole residues.",
+      "units": "dimensionless",
+      "shape": "J",
+      "dtype": "complex array",
+      "required": true,
+      "constraints": "Finite and representable in the declared numeric type."
+    },
+    {
+      "name": "czj",
+      "description": "Aligned simple poles.",
+      "units": "dimensionless",
+      "shape": "J",
+      "dtype": "complex array",
+      "required": true,
+      "constraints": "Finite and representable in the declared numeric type."
+    },
+    {
+      "name": "z",
+      "description": "Complex evaluation arguments.",
+      "units": "dimensionless",
+      "shape": "arbitrary shape",
+      "dtype": "complex array",
+      "required": true,
+      "constraints": "Finite and representable in the declared numeric type."
+    }
   ],
-  "supported": [
-   "Finite aligned pole/residue arrays and finite z away from declared poles."
+  "outputs": [
+    {
+      "name": "ZJ",
+      "description": "Rational dispersion approximation.",
+      "units": "dimensionless",
+      "shape": "same shape as z",
+      "dtype": "complex array",
+      "required": true,
+      "constraints": "Finite and representable in the declared numeric type."
+    }
   ],
-  "excluded": [
-   "Evaluation at a rational pole is singular."
+  "applicability": {
+    "preconditions": [
+      "Constituent inputs finite and representable in declared numeric ports."
+    ],
+    "supported": [
+      "Finite aligned pole/residue arrays and finite z away from declared poles."
+    ],
+    "excluded": [
+      "Evaluation at a rational pole is singular."
+    ]
+  },
+  "failure_semantics": {
+    "invalid_input": "ValueError for empty or misaligned pole/residue arrays or nonfinite poles, residues or evaluation points; empty finite z arrays succeed with ZJ preserving their shape. Exact evaluation at a rational pole raises ZeroDivisionError.",
+    "runtime_failure": "Python/dependency errors propagate; this operator launches no native process and has no native execution receipt.",
+    "nonconvergence": "FloatingPointError for nonfinite rational output; no iterative solver or approximation-domain certification.",
+    "partial_results": "No successful result is returned if this operation raises; no partial scientific return is promised."
+  },
+  "public_api": {
+    "python": {
+      "module": "scirel.kinetic.dispersion.rational",
+      "symbol": "jpole_evaluate",
+      "signature": "jpole_evaluate(bzj, czj, z)"
+    }
+  },
+  "version": {
+    "implementation_version": "0.0.0",
+    "dependencies": []
+  },
+  "example": {
+    "description": "Evaluate one finite simple-pole rational term at a complex argument.",
+    "code": "import numpy as np\nfrom scirel.kinetic.dispersion.rational import jpole_evaluate\nr = jpole_evaluate([-1], [-1j], 1+1j)\nassert np.isclose(r['ZJ'], -1/(1+2j))",
+    "expected": "PASS: .venv/bin/python completed; ZJ equals -1/(1+2j) for the one-pole fixture. This fixture does not certify Maxwellian approximation accuracy."
+  },
+  "verification": {
+    "scope": [
+      "Shared direct tests retain signed ES1D Faddeeva response, uniform zero-wavevector cold-gyro response, descriptor elimination/infinite-root classification, asymptotic moments and explicit invalid/nonrepresentable-output guards where called; file membership alone is not per-asset evidence.",
+      "historical-unbound UNKNOWN: installed-package closure, all-12-API qualification, the full 50-point N10/J8 run and 80/120-digit independent comparison receipts are not bound here. Package metadata and construction capability do not prove those historical executions; supported calculation and the named direct assertions are retained.",
+      "The available direct file exercises bounded points and relations; it does not establish execution of the full 50-point default or the historical weak-coefficient/Decimal-offset qualification.",
+      "The declared closed form Z_J=sum b_j/(z-c_j) evaluated independently from the same residues and poles and compared at 1e-14 relative, which pins the formula, the pole alignment and the returned port without using the evaluator.",
+      "Shape preservation for empty, (1,) and (2,3) evaluation sets, plus the declared ZeroDivisionError at an exact pole and ValueError for misaligned or non-finite pole data."
+    ],
+    "tests": [
+      "tests/kinetic/test_dispersion_rational.py",
+      "tests/kinetic/test_pole_table_evidence.py"
+    ],
+    "evidence_ceiling": "test_pole_table_evidence.py rebuilds the rational sum directly from the caller-supplied residues and poles and compares it with the public output at 1e-14, so a sign, conjugate or alignment mutation in the evaluator is visible; the accuracy of any particular table is out of scope. Shape and rejection behaviour are asserted against the declared contract. Nothing here certifies that a supplied table approximates Z.",
+    "known_limitations": [
+      "Redistribution authority for the source material remains unresolved; native MATLAB/the reference runtime execution is NOT_RUN.",
+      "Finite-J/finite-N physics must be qualified for a new requested regime.",
+      "Earlier fixed-distance approach-to-axis ancillary assertions remain failed records; exact-axis/direct-response gates are separately qualified.",
+      "Human scientific and plot approval pending.",
+      "Historical qualification is unbound (UNKNOWN); current direct checks and bounded examples neither impose a new platform restriction nor certify arbitrary parameter regimes.",
+      "This asset evaluates a caller-supplied rational approximation; nothing here certifies that the supplied table approximates Z.",
+      "The comparison against the independent sum pins the formula and shape, not the accuracy of any particular pole set."
+    ],
+    "basis": {
+      "kind": "specification",
+      "statement": "Shape and rejection behaviour are asserted against the declared contract, and a misalignment mutation in the evaluator is visible. The accuracy of any particular table is out of scope; nothing here certifies that a supplied table approximates Z.",
+      "source": "tests/kinetic/test_dispersion_rational.py"
+    }
+  },
+  "references": [
+    "Xie and Xiao, PDRK: A General Kinetic Dispersion Relation Solver for Magnetized Plasma, Plasma Science and Technology 18 (2016)."
   ]
- },
- "failure_semantics": {
-  "invalid_input": "ValueError for empty or misaligned pole/residue arrays or nonfinite poles, residues or evaluation points; empty finite z arrays succeed with ZJ preserving their shape. Exact evaluation at a rational pole raises ZeroDivisionError.",
-  "runtime_failure": "Python/dependency errors propagate; this operator launches no native process and has no native execution receipt.",
-  "nonconvergence": "FloatingPointError for nonfinite rational output; no iterative solver or approximation-domain certification.",
-  "partial_results": "No successful result is returned if this operation raises; no partial scientific return is promised."
- },
- "public_api": {
-  "python": {
-   "module": "scirel.kinetic.dispersion.rational",
-   "symbol": "jpole_evaluate",
-   "signature": "jpole_evaluate(bzj, czj, z)"
-  }
- },
- "version": {
-  "implementation_version": "0.0.0",
-  "dependencies": []
- },
- "example": {
-  "description": "Evaluate one finite simple-pole rational term at a complex argument.",
-  "code": "import numpy as np\nfrom scirel.kinetic.dispersion.rational import jpole_evaluate\nr = jpole_evaluate([-1], [-1j], 1+1j)\nassert np.isclose(r['ZJ'], -1/(1+2j))",
-  "expected": "PASS: .venv/bin/python completed; ZJ equals -1/(1+2j) for the one-pole fixture. This fixture does not certify Maxwellian approximation accuracy."
- },
- "verification": {
-  "scope": [
-   "Shared direct tests retain signed ES1D Faddeeva response, uniform zero-wavevector cold-gyro response, descriptor elimination/infinite-root classification, asymptotic moments and explicit invalid/nonrepresentable-output guards where called; file membership alone is not per-asset evidence.",
-   "historical-unbound UNKNOWN: installed-package closure, all-12-API qualification, the full 50-point N10/J8 run and 80/120-digit independent comparison receipts are not bound here. Package metadata and construction capability do not prove those historical executions; supported calculation and the named direct assertions are retained.",
-   "The available direct file exercises bounded points and relations; it does not establish execution of the full 50-point default or the historical weak-coefficient/Decimal-offset qualification.",
-   "The declared closed form Z_J=sum b_j/(z-c_j) evaluated independently from the same residues and poles and compared at 1e-14 relative, which pins the formula, the pole alignment and the returned port without using the evaluator.",
-   "Shape preservation for empty, (1,) and (2,3) evaluation sets, plus the declared ZeroDivisionError at an exact pole and ValueError for misaligned or non-finite pole data."
-  ],
-  "tests": [
-   "tests/kinetic/test_dispersion_rational.py",
-   "tests/kinetic/test_pole_table_evidence.py"
-  ],
-  "evidence_ceiling": "test_pole_table_evidence.py rebuilds the rational sum directly from the caller-supplied residues and poles and compares it with the public output at 1e-14, so a sign, conjugate or alignment mutation in the evaluator is visible; the accuracy of any particular table is out of scope. Shape and rejection behaviour are asserted against the declared contract. Nothing here certifies that a supplied table approximates Z.",
-  "known_limitations": [
-   "Redistribution authority for the source material remains unresolved; native MATLAB/the reference runtime execution is NOT_RUN.",
-   "Finite-J/finite-N physics must be qualified for a new requested regime.",
-   "Earlier fixed-distance approach-to-axis ancillary assertions remain failed records; exact-axis/direct-response gates are separately qualified.",
-   "Human scientific and plot approval pending.",
-   "Historical qualification is unbound (UNKNOWN); current direct checks and bounded examples neither impose a new platform restriction nor certify arbitrary parameter regimes.",
-   "This asset evaluates a caller-supplied rational approximation; nothing here certifies that the supplied table approximates Z.",
-   "The comparison against the independent sum pins the formula and shape, not the accuracy of any particular pole set."
-  ]
- },
- "references": [
-  "Xie and Xiao, PDRK: A General Kinetic Dispersion Relation Solver for Magnetized Plasma, Plasma Science and Technology 18 (2016)."
- ]
 }

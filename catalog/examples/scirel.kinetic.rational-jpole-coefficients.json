@@ -1,291 +1,296 @@
 {
- "schema": "scirel.asset-document",
- "asset_id": "scirel.kinetic.rational-jpole-coefficients",
- "title": {
-  "en": "Two-sided Padé coefficient construction",
-  "zh": "双端帕德系数构造"
- },
- "summary": "Solve the source Maxwellian Taylor/asymptotic matching equations at declared decimal precision, refine simple roots and compute residues.",
- "taxonomy": [
-  "kinetic",
-  "plasma",
-  "plasma-dispersion-function"
- ],
- "aliases": [
-  "legacy.jpole_coefficients"
- ],
- "discovery": {
-  "capability": [
-   "Two-sided Padé coefficient construction",
-   "Solve the source Maxwellian Taylor/asymptotic matching equations at declared decimal precision, refine simple roots and compute residues."
+  "schema": "scirel.asset-document",
+  "asset_id": "scirel.kinetic.rational-jpole-coefficients",
+  "title": {
+    "en": "Two-sided Padé coefficient construction",
+    "zh": "双端帕德系数构造"
+  },
+  "summary": "Solve the source Maxwellian Taylor/asymptotic matching equations at declared decimal precision, refine simple roots and compute residues.",
+  "taxonomy": [
+    "kinetic",
+    "plasma",
+    "plasma-dispersion-function"
   ],
-  "operation": [
-   "construct two-sided Padé coefficients",
-   "pole counts and precision -> Padé residues, poles and residuals"
+  "aliases": [
+    "legacy.jpole_coefficients"
   ],
-  "model": "Nonrelativistic Gaussian species; explicit finite-harmonic/rational approximation when applicable.",
-  "geometry": "Homogeneous plasma with background field along z; k=(kx,0,kz) where applicable.",
-  "boundary": "Periodic/infinite homogeneous plane-wave response; finite numerical harmonic/pole representation explicitly declared.",
-  "device_scope": "generic"
- },
- "identity": {
-  "relation": "Two-sided Padé coefficient construction",
-  "direction": "Declared inputs to named scientific outputs.",
-  "definition": "I+K=2J; Mpq*pq=B matches source Taylor and inverse-power coefficients. Residue b=P(c)/Qprime(c).The construction exposes declared precision; historical 80/120-digit refinement and independent erfc comparison are historical-unbound UNKNOWN, separate from matrix conditioning. Numeric ports remain complex128; construction strings retain higher precision.",
-  "model": "Nonrelativistic Gaussian species; explicit finite-harmonic/rational approximation when applicable.",
-  "geometry": "Homogeneous plasma with background field along z; k=(kx,0,kz) where applicable.",
-  "coordinates": "Explicit ES dimensionless normalization or EM SI; complex frequency follows exp(-i omega t).",
-  "boundary": "Periodic/infinite homogeneous plane-wave response; finite numerical harmonic/pole representation explicitly declared.",
-  "assumptions": [
-   "Model-specific deck conventions are explicit.",
-   "A numerical spectrum is not automatically a physically certified mode."
+  "discovery": {
+    "capability": [
+      "Two-sided Padé coefficient construction",
+      "Solve the source Maxwellian Taylor/asymptotic matching equations at declared decimal precision, refine simple roots and compute residues."
+    ],
+    "operation": [
+      "construct two-sided Padé coefficients",
+      "pole counts and precision -> Padé residues, poles and residuals"
+    ],
+    "model": "Nonrelativistic Gaussian species; explicit finite-harmonic/rational approximation when applicable.",
+    "geometry": "Homogeneous plasma with background field along z; k=(kx,0,kz) where applicable.",
+    "boundary": "Periodic/infinite homogeneous plane-wave response; finite numerical harmonic/pole representation explicitly declared.",
+    "device_scope": "generic"
+  },
+  "identity": {
+    "relation": "Two-sided Padé coefficient construction",
+    "direction": "Declared inputs to named scientific outputs.",
+    "definition": "I+K=2J; Mpq*pq=B matches source Taylor and inverse-power coefficients. Residue b=P(c)/Qprime(c).The construction exposes declared precision; historical 80/120-digit refinement and independent erfc comparison are historical-unbound UNKNOWN, separate from matrix conditioning. Numeric ports remain complex128; construction strings retain higher precision.",
+    "model": "Nonrelativistic Gaussian species; explicit finite-harmonic/rational approximation when applicable.",
+    "geometry": "Homogeneous plasma with background field along z; k=(kx,0,kz) where applicable.",
+    "coordinates": "Explicit ES dimensionless normalization or EM SI; complex frequency follows exp(-i omega t).",
+    "boundary": "Periodic/infinite homogeneous plane-wave response; finite numerical harmonic/pole representation explicitly declared.",
+    "assumptions": [
+      "Model-specific deck conventions are explicit.",
+      "A numerical spectrum is not automatically a physically certified mode."
+    ]
+  },
+  "inputs": [
+    {
+      "name": "J",
+      "description": "Number of simple poles.",
+      "units": "dimensionless",
+      "shape": "scalar",
+      "dtype": "integer",
+      "required": false,
+      "constraints": "Finite and representable in the declared numeric type.",
+      "default": 12
+    },
+    {
+      "name": "I",
+      "description": "Number of Taylor matching equations.",
+      "units": "dimensionless",
+      "shape": "scalar",
+      "dtype": "integer",
+      "required": false,
+      "constraints": "Finite and representable in the declared numeric type.",
+      "default": 16
+    },
+    {
+      "name": "precision",
+      "description": "Decimal construction precision.",
+      "units": "dimensionless",
+      "shape": "scalar",
+      "dtype": "integer",
+      "required": false,
+      "constraints": "Finite and representable in the declared numeric type.",
+      "default": 80
+    }
+  ],
+  "outputs": [
+    {
+      "name": "J",
+      "description": "Number of simple poles.",
+      "units": "dimensionless",
+      "shape": "scalar",
+      "dtype": "int",
+      "required": true,
+      "constraints": "Returned on successful completion; this diagnostic does not independently certify physical applicability."
+    },
+    {
+      "name": "I",
+      "description": "Taylor matching equation count.",
+      "units": "dimensionless",
+      "shape": "scalar",
+      "dtype": "int",
+      "required": true,
+      "constraints": "Returned on successful completion; this diagnostic does not independently certify physical applicability."
+    },
+    {
+      "name": "K",
+      "description": "Inverse-power matching equation count, 2*J-I.",
+      "units": "dimensionless",
+      "shape": "scalar",
+      "dtype": "int",
+      "required": true,
+      "constraints": "Returned on successful completion; this diagnostic does not independently certify physical applicability."
+    },
+    {
+      "name": "precision_digits",
+      "description": "Decimal precision used for coefficient and root construction.",
+      "units": "decimal digits",
+      "shape": "scalar",
+      "dtype": "int",
+      "required": true,
+      "constraints": "Returned on successful completion; this diagnostic does not independently certify physical applicability."
+    },
+    {
+      "name": "bzj",
+      "description": "Simple-pole residues in the refined pole order.",
+      "units": "dimensionless",
+      "shape": "(J,)",
+      "dtype": "complex128",
+      "required": true,
+      "constraints": "Returned on successful completion; this diagnostic does not independently certify physical applicability."
+    },
+    {
+      "name": "czj",
+      "description": "Refined simple poles, binary64 view.",
+      "units": "dimensionless",
+      "shape": "(J,)",
+      "dtype": "complex128",
+      "required": true,
+      "constraints": "Returned on successful completion; this diagnostic does not independently certify physical applicability."
+    },
+    {
+      "name": "p",
+      "description": "Numerator coefficients in descending polynomial order.",
+      "units": "dimensionless",
+      "shape": "(J,)",
+      "dtype": "complex128",
+      "required": true,
+      "constraints": "Returned on successful completion; this diagnostic does not independently certify physical applicability."
+    },
+    {
+      "name": "q",
+      "description": "Denominator coefficients in descending polynomial order.",
+      "units": "dimensionless",
+      "shape": "(J+1,)",
+      "dtype": "complex128",
+      "required": true,
+      "constraints": "Returned on successful completion; this diagnostic does not independently certify physical applicability."
+    },
+    {
+      "name": "pq",
+      "description": "Solved two-sided coefficient vector before descending-order rearrangement.",
+      "units": "dimensionless",
+      "shape": "(2*J,)",
+      "dtype": "complex128",
+      "required": true,
+      "constraints": "Returned on successful completion; this diagnostic does not independently certify physical applicability."
+    },
+    {
+      "name": "Mpq",
+      "description": "Two-sided matching linear system matrix.",
+      "units": "dimensionless",
+      "shape": "(2*J,2*J)",
+      "dtype": "complex128",
+      "required": true,
+      "constraints": "Returned on successful completion; this diagnostic does not independently certify physical applicability."
+    },
+    {
+      "name": "B",
+      "description": "Matching system right-hand side.",
+      "units": "dimensionless",
+      "shape": "(2*J,)",
+      "dtype": "complex128",
+      "required": true,
+      "constraints": "Returned on successful completion; this diagnostic does not independently certify physical applicability."
+    },
+    {
+      "name": "moments",
+      "description": "Binary64 sums sum(b), sum(b*c), sum(b*c*c).",
+      "units": "dimensionless",
+      "shape": "(3,)",
+      "dtype": "complex128",
+      "required": true,
+      "constraints": "Returned on successful completion; this diagnostic does not independently certify physical applicability."
+    },
+    {
+      "name": "high_precision_linear_residual",
+      "description": "The normalized matching-system residual, returned as a decimal string.",
+      "units": "dimensionless",
+      "shape": "scalar",
+      "dtype": "str",
+      "required": true,
+      "constraints": "Returned on successful completion; this diagnostic does not independently certify physical applicability."
+    },
+    {
+      "name": "high_precision_root_residual",
+      "description": "Normalized polynomial residual for each refined pole. Strings retain construction precision independently of binary64 numeric ports.",
+      "units": "dimensionless",
+      "shape": "length J",
+      "dtype": "list[str]",
+      "required": true,
+      "constraints": "Returned on successful completion; this diagnostic does not independently certify physical applicability."
+    },
+    {
+      "name": "high_precision_poles",
+      "description": "Complex refined poles at declared decimal precision. Strings retain construction precision independently of binary64 numeric ports.",
+      "units": "dimensionless",
+      "shape": "length J",
+      "dtype": "list[str]",
+      "required": true,
+      "constraints": "Returned on successful completion; this diagnostic does not independently certify physical applicability."
+    },
+    {
+      "name": "high_precision_residues",
+      "description": "Complex simple-pole residues at declared decimal precision. Strings retain construction precision independently of binary64 numeric ports.",
+      "units": "dimensionless",
+      "shape": "length J",
+      "dtype": "list[str]",
+      "required": true,
+      "constraints": "Returned on successful completion; this diagnostic does not independently certify physical applicability."
+    },
+    {
+      "name": "precision_claim",
+      "description": "Construction precision and separate approximation-applicability limit.",
+      "units": "not applicable",
+      "shape": "scalar",
+      "dtype": "str",
+      "required": true,
+      "constraints": "Returned on successful completion; this diagnostic does not independently certify physical applicability."
+    }
+  ],
+  "applicability": {
+    "preconditions": [
+      "Constituent inputs finite and representable in declared numeric ports."
+    ],
+    "supported": [
+      "Integer J>=1,0<=I<=2J,precision>=32.",
+      "Resolved distinct simple roots."
+    ],
+    "excluded": [
+      "Repeated/unresolved roots require a higher-order-pole representation.",
+      "Finite-J Z accuracy must be checked in the requested domain."
+    ]
+  },
+  "failure_semantics": {
+    "invalid_input": "ValueError unless integer J>=1, integer 0<=I<=2J and integer precision>=32; no fixed-table family restriction.",
+    "runtime_failure": "Python/dependency errors propagate; this operator launches no native process and has no native execution receipt.",
+    "nonconvergence": "Linear-solve errors propagate. ArithmeticError for unresolved/repeated/collapsed roots, failed polynomial/linear residual or the bounded 100-step Newton refinement; FloatingPointError for unrepresentable binary64 poles/residues.",
+    "partial_results": "No successful result is returned if this operation raises; no partial scientific return is promised."
+  },
+  "public_api": {
+    "python": {
+      "module": "scirel.kinetic.dispersion.rational",
+      "symbol": "jpole_coefficients",
+      "signature": "jpole_coefficients(J=12, I=16, *, precision=80)"
+    }
+  },
+  "version": {
+    "implementation_version": "0.0.0",
+    "dependencies": []
+  },
+  "example": {
+    "description": "Bounded executable use of the actual declared scientific ports.",
+    "code": "from scirel.kinetic.dispersion.rational import jpole_coefficients\nr = jpole_coefficients(4, 4, precision=80)\nassert len(r['bzj']) == 4 and r['precision_digits'] == 80",
+    "expected": "For J=4, I=4, precision=80, the helper returned K=4 and an observed high-precision linear residual about 3.47e-86; numeric arrays remain complex128."
+  },
+  "verification": {
+    "scope": [
+      "The documented Taylor/asymptotic matching construction and its bounded contract example remain available; the shared rational test file does not directly call jpole_coefficients.",
+      "historical-unbound UNKNOWN: installed-package closure, all-12-API qualification, the full 50-point N10/J8 run and 80/120-digit independent comparison receipts are not bound here. Package metadata and construction capability do not prove those historical executions; supported calculation and the named direct assertions are retained.",
+      "The declared 80-digit construction residual, linear and per-pole, asserted below 1e-60 so a silent fallback to binary64 arithmetic is visible.",
+      "The three asymptotic moment identities of the produced table and a 40-digit definition comparison of its rational sum over six points with a pre-declared 1e-5 ceiling."
+    ],
+    "tests": [
+      "tests/kinetic/test_dispersion_rational.py",
+      "tests/kinetic/test_pole_table_evidence.py"
+    ],
+    "evidence_ceiling": "test_pole_table_evidence.py reads the returned high_precision_linear_residual and high_precision_root_residual as decimal strings and holds them below 1e-60, twenty orders of magnitude under the declared 80-digit construction precision; a construction that fell back to binary64 could not pass. The produced binary64 table is then checked against the same moment identities and the 40-digit definition. A small residual proves the matching equations were solved, not that the rational family approximates Z everywhere, and the 1e-5 comparison is a six-point observation.",
+    "known_limitations": [
+      "Redistribution permission for the reference material is unverified; MATLAB execution NOT_RUN.",
+      "Finite-J/finite-N physics must be qualified for a new requested regime.",
+      "Earlier fixed-distance approach-to-axis ancillary assertions remain failed records; exact-axis/direct-response gates are separately qualified.",
+      "Only shared-file coverage is bound (test_dispersion_rational.py); no asset-specific failure/limit probe is recorded.",
+      "No independent or external oracle is recorded; the evidence is self-consistency/regression only.",
+      "A small construction residual proves the matching equations were solved, not that the rational family approximates Z everywhere; the 1e-5 comparison is a six-point observation.",
+      "The declared precision is a decimal construction precision; the returned ports remain binary64 and carry their own rounding."
+    ],
+    "basis": {
+      "kind": "analytic-identity",
+      "statement": "The coefficients are checked against the same moment identities and the 40-digit definition. A small residual proves the matching equations were solved, NOT that the rational family approximates Z everywhere, and the 1e-5 comparison is a six-point observation.",
+      "source": "tests/kinetic/test_dispersion_rational.py"
+    }
+  },
+  "references": [
+    "Xie and Xiao, PDRK: A General Kinetic Dispersion Relation Solver for Magnetized Plasma, Plasma Science and Technology 18 (2016)."
   ]
- },
- "inputs": [
-  {
-   "name": "J",
-   "description": "Number of simple poles.",
-   "units": "dimensionless",
-   "shape": "scalar",
-   "dtype": "integer",
-   "required": false,
-   "constraints": "Finite and representable in the declared numeric type.",
-   "default": 12
-  },
-  {
-   "name": "I",
-   "description": "Number of Taylor matching equations.",
-   "units": "dimensionless",
-   "shape": "scalar",
-   "dtype": "integer",
-   "required": false,
-   "constraints": "Finite and representable in the declared numeric type.",
-   "default": 16
-  },
-  {
-   "name": "precision",
-   "description": "Decimal construction precision.",
-   "units": "dimensionless",
-   "shape": "scalar",
-   "dtype": "integer",
-   "required": false,
-   "constraints": "Finite and representable in the declared numeric type.",
-   "default": 80
-  }
- ],
- "outputs": [
-  {
-   "name": "J",
-   "description": "Number of simple poles.",
-   "units": "dimensionless",
-   "shape": "scalar",
-   "dtype": "int",
-   "required": true,
-   "constraints": "Returned on successful completion; this diagnostic does not independently certify physical applicability."
-  },
-  {
-   "name": "I",
-   "description": "Taylor matching equation count.",
-   "units": "dimensionless",
-   "shape": "scalar",
-   "dtype": "int",
-   "required": true,
-   "constraints": "Returned on successful completion; this diagnostic does not independently certify physical applicability."
-  },
-  {
-   "name": "K",
-   "description": "Inverse-power matching equation count, 2*J-I.",
-   "units": "dimensionless",
-   "shape": "scalar",
-   "dtype": "int",
-   "required": true,
-   "constraints": "Returned on successful completion; this diagnostic does not independently certify physical applicability."
-  },
-  {
-   "name": "precision_digits",
-   "description": "Decimal precision used for coefficient and root construction.",
-   "units": "decimal digits",
-   "shape": "scalar",
-   "dtype": "int",
-   "required": true,
-   "constraints": "Returned on successful completion; this diagnostic does not independently certify physical applicability."
-  },
-  {
-   "name": "bzj",
-   "description": "Simple-pole residues in the refined pole order.",
-   "units": "dimensionless",
-   "shape": "(J,)",
-   "dtype": "complex128",
-   "required": true,
-   "constraints": "Returned on successful completion; this diagnostic does not independently certify physical applicability."
-  },
-  {
-   "name": "czj",
-   "description": "Refined simple poles, binary64 view.",
-   "units": "dimensionless",
-   "shape": "(J,)",
-   "dtype": "complex128",
-   "required": true,
-   "constraints": "Returned on successful completion; this diagnostic does not independently certify physical applicability."
-  },
-  {
-   "name": "p",
-   "description": "Numerator coefficients in descending polynomial order.",
-   "units": "dimensionless",
-   "shape": "(J,)",
-   "dtype": "complex128",
-   "required": true,
-   "constraints": "Returned on successful completion; this diagnostic does not independently certify physical applicability."
-  },
-  {
-   "name": "q",
-   "description": "Denominator coefficients in descending polynomial order.",
-   "units": "dimensionless",
-   "shape": "(J+1,)",
-   "dtype": "complex128",
-   "required": true,
-   "constraints": "Returned on successful completion; this diagnostic does not independently certify physical applicability."
-  },
-  {
-   "name": "pq",
-   "description": "Solved two-sided coefficient vector before descending-order rearrangement.",
-   "units": "dimensionless",
-   "shape": "(2*J,)",
-   "dtype": "complex128",
-   "required": true,
-   "constraints": "Returned on successful completion; this diagnostic does not independently certify physical applicability."
-  },
-  {
-   "name": "Mpq",
-   "description": "Two-sided matching linear system matrix.",
-   "units": "dimensionless",
-   "shape": "(2*J,2*J)",
-   "dtype": "complex128",
-   "required": true,
-   "constraints": "Returned on successful completion; this diagnostic does not independently certify physical applicability."
-  },
-  {
-   "name": "B",
-   "description": "Matching system right-hand side.",
-   "units": "dimensionless",
-   "shape": "(2*J,)",
-   "dtype": "complex128",
-   "required": true,
-   "constraints": "Returned on successful completion; this diagnostic does not independently certify physical applicability."
-  },
-  {
-   "name": "moments",
-   "description": "Binary64 sums sum(b), sum(b*c), sum(b*c*c).",
-   "units": "dimensionless",
-   "shape": "(3,)",
-   "dtype": "complex128",
-   "required": true,
-   "constraints": "Returned on successful completion; this diagnostic does not independently certify physical applicability."
-  },
-  {
-   "name": "high_precision_linear_residual",
-   "description": "The normalized matching-system residual, returned as a decimal string.",
-   "units": "dimensionless",
-   "shape": "scalar",
-   "dtype": "str",
-   "required": true,
-   "constraints": "Returned on successful completion; this diagnostic does not independently certify physical applicability."
-  },
-  {
-   "name": "high_precision_root_residual",
-   "description": "Normalized polynomial residual for each refined pole. Strings retain construction precision independently of binary64 numeric ports.",
-   "units": "dimensionless",
-   "shape": "length J",
-   "dtype": "list[str]",
-   "required": true,
-   "constraints": "Returned on successful completion; this diagnostic does not independently certify physical applicability."
-  },
-  {
-   "name": "high_precision_poles",
-   "description": "Complex refined poles at declared decimal precision. Strings retain construction precision independently of binary64 numeric ports.",
-   "units": "dimensionless",
-   "shape": "length J",
-   "dtype": "list[str]",
-   "required": true,
-   "constraints": "Returned on successful completion; this diagnostic does not independently certify physical applicability."
-  },
-  {
-   "name": "high_precision_residues",
-   "description": "Complex simple-pole residues at declared decimal precision. Strings retain construction precision independently of binary64 numeric ports.",
-   "units": "dimensionless",
-   "shape": "length J",
-   "dtype": "list[str]",
-   "required": true,
-   "constraints": "Returned on successful completion; this diagnostic does not independently certify physical applicability."
-  },
-  {
-   "name": "precision_claim",
-   "description": "Construction precision and separate approximation-applicability limit.",
-   "units": "not applicable",
-   "shape": "scalar",
-   "dtype": "str",
-   "required": true,
-   "constraints": "Returned on successful completion; this diagnostic does not independently certify physical applicability."
-  }
- ],
- "applicability": {
-  "preconditions": [
-   "Constituent inputs finite and representable in declared numeric ports."
-  ],
-  "supported": [
-   "Integer J>=1,0<=I<=2J,precision>=32.",
-   "Resolved distinct simple roots."
-  ],
-  "excluded": [
-   "Repeated/unresolved roots require a higher-order-pole representation.",
-   "Finite-J Z accuracy must be checked in the requested domain."
-  ]
- },
- "failure_semantics": {
-  "invalid_input": "ValueError unless integer J>=1, integer 0<=I<=2J and integer precision>=32; no fixed-table family restriction.",
-  "runtime_failure": "Python/dependency errors propagate; this operator launches no native process and has no native execution receipt.",
-  "nonconvergence": "Linear-solve errors propagate. ArithmeticError for unresolved/repeated/collapsed roots, failed polynomial/linear residual or the bounded 100-step Newton refinement; FloatingPointError for unrepresentable binary64 poles/residues.",
-  "partial_results": "No successful result is returned if this operation raises; no partial scientific return is promised."
- },
- "public_api": {
-  "python": {
-   "module": "scirel.kinetic.dispersion.rational",
-   "symbol": "jpole_coefficients",
-   "signature": "jpole_coefficients(J=12, I=16, *, precision=80)"
-  }
- },
- "version": {
-  "implementation_version": "0.0.0",
-  "dependencies": []
- },
- "example": {
-  "description": "Bounded executable use of the actual declared scientific ports.",
-  "code": "from scirel.kinetic.dispersion.rational import jpole_coefficients\nr = jpole_coefficients(4, 4, precision=80)\nassert len(r['bzj']) == 4 and r['precision_digits'] == 80",
-  "expected": "For J=4, I=4, precision=80, the helper returned K=4 and an observed high-precision linear residual about 3.47e-86; numeric arrays remain complex128."
- },
- "verification": {
-  "scope": [
-   "The documented Taylor/asymptotic matching construction and its bounded contract example remain available; the shared rational test file does not directly call jpole_coefficients.",
-   "historical-unbound UNKNOWN: installed-package closure, all-12-API qualification, the full 50-point N10/J8 run and 80/120-digit independent comparison receipts are not bound here. Package metadata and construction capability do not prove those historical executions; supported calculation and the named direct assertions are retained.",
-   "The declared 80-digit construction residual, linear and per-pole, asserted below 1e-60 so a silent fallback to binary64 arithmetic is visible.",
-   "The three asymptotic moment identities of the produced table and a 40-digit definition comparison of its rational sum over six points with a pre-declared 1e-5 ceiling."
-  ],
-  "tests": [
-   "tests/kinetic/test_dispersion_rational.py",
-   "tests/kinetic/test_pole_table_evidence.py"
-  ],
-  "evidence_ceiling": "test_pole_table_evidence.py reads the returned high_precision_linear_residual and high_precision_root_residual as decimal strings and holds them below 1e-60, twenty orders of magnitude under the declared 80-digit construction precision; a construction that fell back to binary64 could not pass. The produced binary64 table is then checked against the same moment identities and the 40-digit definition. A small residual proves the matching equations were solved, not that the rational family approximates Z everywhere, and the 1e-5 comparison is a six-point observation.",
-  "known_limitations": [
-   "Redistribution permission for the reference material is unverified; MATLAB execution NOT_RUN.",
-   "Finite-J/finite-N physics must be qualified for a new requested regime.",
-   "Earlier fixed-distance approach-to-axis ancillary assertions remain failed records; exact-axis/direct-response gates are separately qualified.",
-   "Only shared-file coverage is bound (test_dispersion_rational.py); no asset-specific failure/limit probe is recorded.",
-   "No independent or external oracle is recorded; the evidence is self-consistency/regression only.",
-   "A small construction residual proves the matching equations were solved, not that the rational family approximates Z everywhere; the 1e-5 comparison is a six-point observation.",
-   "The declared precision is a decimal construction precision; the returned ports remain binary64 and carry their own rounding."
-  ]
- },
- "references": [
-  "Xie and Xiao, PDRK: A General Kinetic Dispersion Relation Solver for Magnetized Plasma, Plasma Science and Technology 18 (2016)."
- ]
 }

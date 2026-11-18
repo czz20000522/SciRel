@@ -1,356 +1,361 @@
 {
- "schema": "scirel.asset-document",
- "asset_id": "scirel.kinetic.plasma-dispersion-function",
- "title": {
-  "en": "Maxwellian plasma dispersion function",
-  "zh": "Maxwellian 等离子体色散函数"
- },
- "summary": "Evaluate dimensionless Maxwellian w and Z with an explicit existing numerical path, preserving the direct SciPy default.",
- "taxonomy": [
-  "kinetic",
-  "plasma-wave",
-  "special-function"
- ],
- "aliases": [
-  "Fried-Conte Z function",
-  "Faddeeva plasma dispersion function"
- ],
- "discovery": {
-  "capability": [
-   "Maxwellian plasma dispersion function",
-   "Evaluate dimensionless Maxwellian w and Z with an explicit existing numerical path, preserving the direct SciPy default."
-  ],
-  "operation": [
-   "evaluate Maxwellian dispersion with a selected numerical approximation",
-   "z, method, order -> w(z), Z(z)"
-  ],
-  "model": "One Maxwellian relation with direct SciPy, tunable rational, distinct fixed64 and tabulated J-pole numerical paths.",
-  "geometry": "No spatial geometry; pointwise complex function evaluation.",
-  "boundary": "Both complex128 outputs must be finite. Each approximation retains its own sampled evidence and continuation limits.",
-  "device_scope": "generic"
- },
- "identity": {
-  "relation": "Dimensionless complex phase argument to Maxwellian w and Z values or the selected approximation",
-  "direction": "z, method, order -> w(z), Z(z)",
-  "definition": "w(z)=exp(-z^2) erfc(-i z), Z(z)=i sqrt(pi) w(z). SciPy uses scipy.special.wofz; rational and fixed64 retain distinct existing evaluations. J-pole returns the tabulated Z_J and w_J=Z_J/(i sqrt(pi)), both at the selected finite order.",
-  "model": "One Maxwellian relation with direct SciPy, tunable rational, distinct fixed64 and tabulated J-pole numerical paths.",
-  "geometry": "No spatial geometry; pointwise complex function evaluation",
-  "coordinates": "Complex argument plane, with the imaginary sign preserved",
-  "boundary": "Both complex128 outputs must be finite. Each approximation retains its own sampled evidence and continuation limits.",
-  "assumptions": [
-   "The caller has already mapped frequency, wave number, drift and thermal speed to a dimensionless z using one explicit convention.",
-   "No dispersion root or physical mode is inferred from the function value."
-  ]
- },
- "inputs": [
-  {
-   "name": "z",
-   "description": "Already normalized complex phase argument, evaluated elementwise.",
-   "units": "dimensionless",
-   "shape": "scalar or any nonempty array shape",
-   "dtype": "real or complex numeric array-like",
-   "required": true,
-   "constraints": "All elements finite after complex128 conversion; masked, boolean, string, nonnumeric and empty inputs are rejected."
+  "schema": "scirel.asset-document",
+  "asset_id": "scirel.kinetic.plasma-dispersion-function",
+  "title": {
+    "en": "Maxwellian plasma dispersion function",
+    "zh": "Maxwellian 等离子体色散函数"
   },
-  {
-   "name": "method",
-   "description": "Existing numerical path; scipy preserves the direct calculation.",
-   "units": "dimensionless",
-   "dtype": "string",
-   "shape": "scalar",
-   "required": false,
-   "default": "scipy",
-   "constraints": "Exactly scipy, rational, weideman or jpole."
+  "summary": "Evaluate dimensionless Maxwellian w and Z with an explicit existing numerical path, preserving the direct SciPy default.",
+  "taxonomy": [
+    "kinetic",
+    "plasma-wave",
+    "special-function"
+  ],
+  "aliases": [
+    "Fried-Conte Z function",
+    "Faddeeva plasma dispersion function"
+  ],
+  "discovery": {
+    "capability": [
+      "Maxwellian plasma dispersion function",
+      "Evaluate dimensionless Maxwellian w and Z with an explicit existing numerical path, preserving the direct SciPy default."
+    ],
+    "operation": [
+      "evaluate Maxwellian dispersion with a selected numerical approximation",
+      "z, method, order -> w(z), Z(z)"
+    ],
+    "model": "One Maxwellian relation with direct SciPy, tunable rational, distinct fixed64 and tabulated J-pole numerical paths.",
+    "geometry": "No spatial geometry; pointwise complex function evaluation.",
+    "boundary": "Both complex128 outputs must be finite. Each approximation retains its own sampled evidence and continuation limits.",
+    "device_scope": "generic"
   },
-  {
-   "name": "order",
-   "description": "Numerical truncation or pole count; None means omitted control.",
-   "units": "count",
-   "dtype": "positive integer or None",
-   "shape": "scalar",
-   "required": false,
-   "default": null,
-   "constraints": "Rational: None selects 32, any positive integer allowed. J-pole: None selects 8, or 8/12/16/24. Scipy and weideman: None only. Boolean rejected."
-  }
- ],
- "outputs": [
-  {
-   "name": "w",
-   "description": "Faddeeva value or selected approximation. J-pole returns Z_J/(i sqrt(pi)), not exact w.",
-   "units": "dimensionless",
-   "shape": "same as z; scalar input yields a zero-dimensional array",
-   "dtype": "complex128",
-   "required": true,
-   "constraints": "Finite and representable; same finite-order approximation as Z."
+  "identity": {
+    "relation": "Dimensionless complex phase argument to Maxwellian w and Z values or the selected approximation",
+    "direction": "z, method, order -> w(z), Z(z)",
+    "definition": "w(z)=exp(-z^2) erfc(-i z), Z(z)=i sqrt(pi) w(z). SciPy uses scipy.special.wofz; rational and fixed64 retain distinct existing evaluations. J-pole returns the tabulated Z_J and w_J=Z_J/(i sqrt(pi)), both at the selected finite order.",
+    "model": "One Maxwellian relation with direct SciPy, tunable rational, distinct fixed64 and tabulated J-pole numerical paths.",
+    "geometry": "No spatial geometry; pointwise complex function evaluation",
+    "coordinates": "Complex argument plane, with the imaginary sign preserved",
+    "boundary": "Both complex128 outputs must be finite. Each approximation retains its own sampled evidence and continuation limits.",
+    "assumptions": [
+      "The caller has already mapped frequency, wave number, drift and thermal speed to a dimensionless z using one explicit convention.",
+      "No dispersion root or physical mode is inferred from the function value."
+    ]
   },
-  {
-   "name": "Z",
-   "description": "Maxwellian plasma dispersion value or selected approximation, normalized as i sqrt(pi) w.",
-   "units": "dimensionless",
-   "shape": "same as z; scalar input yields a zero-dimensional array",
-   "dtype": "complex128",
-   "required": true,
-   "constraints": "Both w and Z must be finite and representable for the entire call."
-  }
- ],
- "applicability": {
-  "preconditions": [
-   "The caller supplies a finite dimensionless argument using one explicit normalization convention.",
-   "Both w and final Z must fit finite complex128."
+  "inputs": [
+    {
+      "name": "z",
+      "description": "Already normalized complex phase argument, evaluated elementwise.",
+      "units": "dimensionless",
+      "shape": "scalar or any nonempty array shape",
+      "dtype": "real or complex numeric array-like",
+      "required": true,
+      "constraints": "All elements finite after complex128 conversion; masked, boolean, string, nonnumeric and empty inputs are rejected."
+    },
+    {
+      "name": "method",
+      "description": "Existing numerical path; scipy preserves the direct calculation.",
+      "units": "dimensionless",
+      "dtype": "string",
+      "shape": "scalar",
+      "required": false,
+      "default": "scipy",
+      "constraints": "Exactly scipy, rational, weideman or jpole."
+    },
+    {
+      "name": "order",
+      "description": "Numerical truncation or pole count; None means omitted control.",
+      "units": "count",
+      "dtype": "positive integer or None",
+      "shape": "scalar",
+      "required": false,
+      "default": null,
+      "constraints": "Rational: None selects 32, any positive integer allowed. J-pole: None selects 8, or 8/12/16/24. Scipy and weideman: None only. Boolean rejected."
+    }
   ],
-  "supported": [
-   "Pointwise real or complex arguments, including representable upper and lower half-plane values.",
-   "Scalar or nonempty array input with shape and input values preserved."
+  "outputs": [
+    {
+      "name": "w",
+      "description": "Faddeeva value or selected approximation. J-pole returns Z_J/(i sqrt(pi)), not exact w.",
+      "units": "dimensionless",
+      "shape": "same as z; scalar input yields a zero-dimensional array",
+      "dtype": "complex128",
+      "required": true,
+      "constraints": "Finite and representable; same finite-order approximation as Z."
+    },
+    {
+      "name": "Z",
+      "description": "Maxwellian plasma dispersion value or selected approximation, normalized as i sqrt(pi) w.",
+      "units": "dimensionless",
+      "shape": "same as z; scalar input yields a zero-dimensional array",
+      "dtype": "complex128",
+      "required": true,
+      "constraints": "Both w and Z must be finite and representable for the entire call."
+    }
   ],
-  "excluded": [
-   "Thermal-speed, drift and wave-number convention conversion; dispersion matrix assembly and root finding.",
-   "A global approximation error guarantee or experimental validation."
-  ]
- },
- "failure_semantics": {
-  "invalid_input": "TypeError for masked, boolean, string or nonnumeric z, unsupported method or unusable order; ValueError for empty, ragged or nonfinite z after complex128 conversion.",
-  "runtime_failure": "FloatingPointError if either w or final Z is nonfinite; unexpected backend execution errors propagate. No clamp or fallback is applied.",
-  "nonconvergence": "Not applicable; no iterative solve is exposed.",
-  "partial_results": "No partial result; one unrepresentable element fails the entire call."
- },
- "public_api": {
-  "python": {
-   "module": "scirel.kinetic.plasma_dispersion",
-   "symbol": "evaluate_plasma_dispersion",
-   "signature": "evaluate_plasma_dispersion(z, *, method='scipy', order=None)",
-   "canonical_module": "scirel.kinetic",
-   "canonical_symbol": "evaluate_plasma_dispersion"
-  }
- },
- "version": {
-  "implementation_version": "0.0.0",
-  "dependencies": []
- },
- "example": {
-  "description": "Evaluate all four existing numerical paths and their common scientific outputs.",
-  "code": "import numpy as np\nfrom scirel.kinetic import evaluate_plasma_dispersion\nresult = evaluate_plasma_dispersion(0j, method='scipy')\nassert result['w'] == 1\nassert np.isclose(result['Z'], 1j * np.sqrt(np.pi))\nrational = evaluate_plasma_dispersion(0.2+0.7j, method='rational', order=16)\nfixed64 = evaluate_plasma_dispersion(0.2+0.7j, method='weideman')\njpole = evaluate_plasma_dispersion(0.2+0.7j, method='jpole', order=12)\nassert all(set(r) == {'w', 'Z'} for r in (rational, fixed64, jpole))\nassert all(np.isfinite(r['Z']) for r in (rational, fixed64, jpole))\n",
-  "expected": "The SciPy origin has w=1 and Z=i sqrt(pi); every method returns exactly finite w and Z at the bounded sample."
- },
- "verification": {
-  "scope": [
-   "All original scientific references remain on their corresponding numerical paths; detailed scope is method-specific.",
-   "Common Result(w,Z), explicit control/default/rejection behavior, whole-array failures and lazy imports are exercised separately from numerical accuracy.",
-   "Independent 40-digit Faddeeva reference w(z)=exp(-z^2)erfc(-iz) from mpmath at mp.dps=40 over twelve upper-half-plane points, with the per-method budgets fixed before measurement: scipy and rational order 32 at 1e-11 relative, the fixed-order Weideman kernel at 1e-4, and the tabulated jpole family at 5e-5.",
-   "Z=i*sqrt(pi)*w asserted as algebra for all four methods, the exact reflection w(-conj z)=conj(w(z)) with Z(-conj z)=-conj(Z(z)), and the large-|z| asymptotic Z=-1/z+O(z**-3) probed at |z|=1e3."
-  ],
-  "tests": [
-   "tests/kinetic/test_plasma_dispersion_function.py",
-   "tests/kinetic/test_dispersion_multifluid.py::test_faddeeva_independent_80_digit_definition",
-   "tests/architecture/test_domain_import_boundaries.py::test_kinetic_plasma_dispersion_defers_scipy_until_valid_call",
-   "tests/kinetic/test_generalized_dispersion_faddeeva_variants.py",
-   "tests/kinetic/test_generalized_dispersion_faddeeva_independent.py",
-   "tests/kinetic/test_generalized_dispersion_fft_scaling.py",
-   "tests/kinetic/test_faddeeva_import_boundary.py",
-   "tests/kinetic/test_fluid_spectrum_r43_variants.py",
-   "tests/kinetic/test_weideman_imaginary_range.py",
-   "tests/kinetic/test_weideman_axis_independent.py",
-   "tests/kinetic/test_weideman_import_boundary.py",
-   "tests/kinetic/test_plasma_dispersion_evidence.py"
-  ],
-  "evidence_ceiling": "test_plasma_dispersion_evidence.py compares every method with the closed-form Faddeeva definition at 40 digits and reports the observed maximum relative deviation per method inside the declared budget. The scaling identity, the reflection identity and the leading asymptotic are exact statements about the returned pair. These are observations on a twelve-point grid; no continuous-domain error bound, no lower-half-plane accuracy claim and no accuracy statement near the real axis where |w| varies fastest are established. The weideman and jpole entries remain truncation- and model-limited.",
-  "known_limitations": [
-   "Caller thermal-speed, drift and wave-number normalization is not inferred or converted.",
-   "Approximation precision and continuation limits remain method-specific.",
-   "One unrepresentable output element rejects the whole array; independent mathematical w may still succeed.",
-   "The per-method accuracy statements are observed maxima on a twelve-point grid, not a proved continuous-domain bound; the fixed-order Weideman kernel and the tabulated jpole family remain truncation- and model-limited.",
-   "The reflection and asymptotic identities constrain symmetry and the leading large-|z| term; neither establishes accuracy inside the lower half plane or near the real axis."
-  ]
- },
- "family": {
-  "name": "maxwellian-plasma-dispersion",
-  "default": "scipy",
-  "default_reason": "Preserve the existing default numerical values and production consumer ports; approximation accuracy remains method-specific.",
-  "methods": [
-   {
-    "name": "scipy",
-    "model": "Direct scipy.special.wofz followed by the original Z scaling.",
-    "numerical_controls": {},
-    "applicability": {
-     "preconditions": [
+  "applicability": {
+    "preconditions": [
       "The caller supplies a finite dimensionless argument using one explicit normalization convention.",
       "Both w and final Z must fit finite complex128."
-     ],
-     "supported": [
-      "Direct analytic values from scipy.special.wofz with the original default calculation."
-     ],
-     "excluded": [
-      "Finite z can produce unrepresentable w or Z, especially in the lower half-plane.",
-      "No caller-specific normalization, root correctness or expert scientific approval is inferred."
-     ]
-    },
-    "failure_semantics": {
-     "invalid_input": "TypeError for masked, boolean, string or nonnumeric z, unsupported method or unusable order; ValueError for empty, ragged or nonfinite z after complex128 conversion.",
-     "runtime_failure": "FloatingPointError if either w or final Z is nonfinite; unexpected backend execution errors propagate. No clamp or fallback is applied.",
-     "nonconvergence": "Not applicable; no iterative solve is exposed.",
-     "partial_results": "No partial result; one unrepresentable element fails the entire call."
-    },
-    "verification": {
-     "scope": [
-      "Origin, exact scipy.special.wofz grid equality (rtol=atol=0), reflection, 30j, dtype, shape, no mutation and strict rejection.",
-      "The canonical production wrapper retains the independent 80-digit definition at rtol=2e-13, atol=2e-14, and the real -30j failure. Namespace and rejected-input paths remain lazy."
-     ],
-     "tests": [
+    ],
+    "supported": [
+      "Pointwise real or complex arguments, including representable upper and lower half-plane values.",
+      "Scalar or nonempty array input with shape and input values preserved."
+    ],
+    "excluded": [
+      "Thermal-speed, drift and wave-number convention conversion; dispersion matrix assembly and root finding.",
+      "A global approximation error guarantee or experimental validation."
+    ]
+  },
+  "failure_semantics": {
+    "invalid_input": "TypeError for masked, boolean, string or nonnumeric z, unsupported method or unusable order; ValueError for empty, ragged or nonfinite z after complex128 conversion.",
+    "runtime_failure": "FloatingPointError if either w or final Z is nonfinite; unexpected backend execution errors propagate. No clamp or fallback is applied.",
+    "nonconvergence": "Not applicable; no iterative solve is exposed.",
+    "partial_results": "No partial result; one unrepresentable element fails the entire call."
+  },
+  "public_api": {
+    "python": {
+      "module": "scirel.kinetic.plasma_dispersion",
+      "symbol": "evaluate_plasma_dispersion",
+      "signature": "evaluate_plasma_dispersion(z, *, method='scipy', order=None)",
+      "canonical_module": "scirel.kinetic",
+      "canonical_symbol": "evaluate_plasma_dispersion"
+    }
+  },
+  "version": {
+    "implementation_version": "0.0.0",
+    "dependencies": []
+  },
+  "example": {
+    "description": "Evaluate all four existing numerical paths and their common scientific outputs.",
+    "code": "import numpy as np\nfrom scirel.kinetic import evaluate_plasma_dispersion\nresult = evaluate_plasma_dispersion(0j, method='scipy')\nassert result['w'] == 1\nassert np.isclose(result['Z'], 1j * np.sqrt(np.pi))\nrational = evaluate_plasma_dispersion(0.2+0.7j, method='rational', order=16)\nfixed64 = evaluate_plasma_dispersion(0.2+0.7j, method='weideman')\njpole = evaluate_plasma_dispersion(0.2+0.7j, method='jpole', order=12)\nassert all(set(r) == {'w', 'Z'} for r in (rational, fixed64, jpole))\nassert all(np.isfinite(r['Z']) for r in (rational, fixed64, jpole))\n",
+    "expected": "The SciPy origin has w=1 and Z=i sqrt(pi); every method returns exactly finite w and Z at the bounded sample."
+  },
+  "verification": {
+    "scope": [
+      "All original scientific references remain on their corresponding numerical paths; detailed scope is method-specific.",
+      "Common Result(w,Z), explicit control/default/rejection behavior, whole-array failures and lazy imports are exercised separately from numerical accuracy.",
+      "Independent 40-digit Faddeeva reference w(z)=exp(-z^2)erfc(-iz) from mpmath at mp.dps=40 over twelve upper-half-plane points, with the per-method budgets fixed before measurement: scipy and rational order 32 at 1e-11 relative, the fixed-order Weideman kernel at 1e-4, and the tabulated jpole family at 5e-5.",
+      "Z=i*sqrt(pi)*w asserted as algebra for all four methods, the exact reflection w(-conj z)=conj(w(z)) with Z(-conj z)=-conj(Z(z)), and the large-|z| asymptotic Z=-1/z+O(z**-3) probed at |z|=1e3."
+    ],
+    "tests": [
       "tests/kinetic/test_plasma_dispersion_function.py",
       "tests/kinetic/test_dispersion_multifluid.py::test_faddeeva_independent_80_digit_definition",
-      "tests/architecture/test_domain_import_boundaries.py::test_kinetic_plasma_dispersion_defers_scipy_until_valid_call"
-     ],
-     "evidence_ceiling": "Only the named sampled assertions and their unchanged numerical budgets apply to this method; shared test files do not transfer other methods' evidence. No global error certificate or experimental validation.",
-     "known_limitations": [
-      "Finite z can produce unrepresentable w or Z, especially in the lower half-plane.",
-      "No caller-specific normalization, root correctness or expert scientific approval is inferred."
-     ]
-    }
-   },
-   {
-    "name": "rational",
-    "model": "FFT-generated tunable rational w through scirel.numerics.evaluate_faddeeva, then independent Z scaling.",
-    "numerical_controls": {
-     "order": {
-      "default": 32,
-      "constraints": "None selects 32; any positive integer, no boolean."
-     }
-    },
-    "applicability": {
-     "preconditions": [
-      "The caller supplies a finite dimensionless argument using one explicit normalization convention.",
-      "Both w and final Z must fit finite complex128."
-     ],
-     "supported": [
-      "Existing tunable rational approximation with any positive integer order."
-     ],
-     "excluded": [
-      "Any positive integer order remains accepted, without a continuous-domain error bound or a finite-resource promise for arbitrarily large orders.",
-      "Lower-plane continuation or final Z scaling may exceed float64; independent mathematical w has a larger success domain.",
-      "Sampled order16/32/64 evidence does not certify arbitrary orders or arbitrary-distribution response."
-     ]
-    },
-    "failure_semantics": {
-     "invalid_input": "TypeError for masked, boolean, string or nonnumeric z, unsupported method or unusable order; ValueError for empty, ragged or nonfinite z after complex128 conversion.",
-     "runtime_failure": "FloatingPointError if either w or final Z is nonfinite; unexpected backend execution errors propagate. No clamp or fallback is applied.",
-     "nonconvergence": "Not applicable; no iterative solve is exposed.",
-     "partial_results": "No partial result; one unrepresentable element fails the entire call."
-    },
-    "verification": {
-     "scope": [
-      "Orders 16/32/64 retain Z=i sqrt(pi) w normalization; the mathematical dependency retains its original reflection and 80-digit equation-grid assertions with order-specific budgets.",
-      "Direct Z evidence checks -26.625j with finite w and overflowing Z, mathematical threshold neighbors, mixed-array failure and representable y=-26.61/-26.60/-26/0/26.625 at orders16/32 with rtol=3e-14, atol=0. The high-precision w grid is dependency evidence, not a direct high-precision Z grid."
-     ],
-     "tests": [
+      "tests/architecture/test_domain_import_boundaries.py::test_kinetic_plasma_dispersion_defers_scipy_until_valid_call",
       "tests/kinetic/test_generalized_dispersion_faddeeva_variants.py",
       "tests/kinetic/test_generalized_dispersion_faddeeva_independent.py",
       "tests/kinetic/test_generalized_dispersion_fft_scaling.py",
-      "tests/kinetic/test_faddeeva_import_boundary.py"
-     ],
-     "evidence_ceiling": "Only the named sampled assertions and their unchanged numerical budgets apply to this method; shared test files do not transfer other methods' evidence. No global error certificate or experimental validation.",
-     "known_limitations": [
-      "Any positive integer order remains accepted, without a continuous-domain error bound or a finite-resource promise for arbitrarily large orders.",
-      "Lower-plane continuation or final Z scaling may exceed float64; independent mathematical w has a larger success domain.",
-      "Sampled order16/32/64 evidence does not certify arbitrary orders or arbitrary-distribution response."
-     ]
-    }
-   },
-   {
-    "name": "weideman",
-    "model": "Distinct fixed N=64 FFT rational kernel, erfcx on the positive imaginary axis, original exp/erfc and complex reflection elsewhere.",
-    "numerical_controls": {},
-    "applicability": {
-     "preconditions": [
-      "The caller supplies a finite dimensionless argument using one explicit normalization convention.",
-      "Both w and final Z must fit finite complex128."
-     ],
-     "supported": [
-      "Existing fixed64 scientific kernel, including representable positive imaginary-axis arguments."
-     ],
-     "excluded": [
-      "Only the positive imaginary axis is stabilized with erfcx; nonpositive-axis exp/erfc and ordinary complex arithmetic retain their distinct original evaluation.",
-      "Sampled independent evidence does not certify arbitrary-complex-input accuracy or a continuous-domain N64 error bound.",
-      "Full source/runtime qualification on Linux/amd64 is NOT_RUN in this macOS checkout."
-     ]
-    },
-    "failure_semantics": {
-     "invalid_input": "TypeError for masked, boolean, string or nonnumeric z, unsupported method or unusable order; ValueError for empty, ragged or nonfinite z after complex128 conversion.",
-     "runtime_failure": "FloatingPointError if either w or final Z is nonfinite; unexpected backend execution errors propagate. No clamp or fallback is applied.",
-     "nonconvergence": "Not applicable; no iterative solve is exposed.",
-     "partial_results": "No partial result; one unrepresentable element fails the entire call."
-    },
-    "verification": {
-     "scope": [
-      "Fixed64 source anchors and nonfinite-input rejection remain on the distinct fixed64 path.",
-      "Independent 90/140-digit axis references retain neighboring floats near27/40, 1000, 1e200, 1e308, float_max, negative axes and mixed grids. w and Z are independently checked at relative3e-15 without an absolute floor; mixed complex grids retain rtol1e-12, atol1e-13.",
-      "Independent w<float_max<Z at -26.625j, whole-array failure and lazy imports remain. The output exception changes to FloatingPointError and redundant final-scaling RuntimeWarning is retired; input-derived labels are retired."
-     ],
-     "tests": [
+      "tests/kinetic/test_faddeeva_import_boundary.py",
       "tests/kinetic/test_fluid_spectrum_r43_variants.py",
       "tests/kinetic/test_weideman_imaginary_range.py",
       "tests/kinetic/test_weideman_axis_independent.py",
-      "tests/kinetic/test_weideman_import_boundary.py"
-     ],
-     "evidence_ceiling": "Only the named sampled assertions and their unchanged numerical budgets apply to this method; shared test files do not transfer other methods' evidence. No global error certificate or experimental validation.",
-     "known_limitations": [
-      "Only the positive imaginary axis is stabilized with erfcx; nonpositive-axis exp/erfc and ordinary complex arithmetic retain their distinct original evaluation.",
-      "Sampled independent evidence does not certify arbitrary-complex-input accuracy or a continuous-domain N64 error bound.",
-      "Full source/runtime qualification on Linux/amd64 is NOT_RUN in this macOS checkout."
-     ]
+      "tests/kinetic/test_weideman_import_boundary.py",
+      "tests/kinetic/test_plasma_dispersion_evidence.py"
+    ],
+    "evidence_ceiling": "test_plasma_dispersion_evidence.py compares every method with the closed-form Faddeeva definition at 40 digits and reports the observed maximum relative deviation per method inside the declared budget. The scaling identity, the reflection identity and the leading asymptotic are exact statements about the returned pair. These are observations on a twelve-point grid; no continuous-domain error bound, no lower-half-plane accuracy claim and no accuracy statement near the real axis where |w| varies fastest are established. The weideman and jpole entries remain truncation- and model-limited.",
+    "known_limitations": [
+      "Caller thermal-speed, drift and wave-number normalization is not inferred or converted.",
+      "Approximation precision and continuation limits remain method-specific.",
+      "One unrepresentable output element rejects the whole array; independent mathematical w may still succeed.",
+      "The per-method accuracy statements are observed maxima on a twelve-point grid, not a proved continuous-domain bound; the fixed-order Weideman kernel and the tabulated jpole family remain truncation- and model-limited.",
+      "The reflection and asymptotic identities constrain symmetry and the leading large-|z| term; neither establishes accuracy inside the lower half plane or near the real axis."
+    ],
+    "basis": {
+      "kind": "independent-recomputation",
+      "statement": "The function is checked against a reference on a joint grid. No continuous-domain error bound, no lower-half-plane accuracy claim and no accuracy statement near the real axis are established, and the weideman and jpole entries remain truncation- and model-limited.",
+      "source": "tests/kinetic/test_plasma_dispersion_function.py"
     }
-   },
-   {
-    "name": "jpole",
-    "model": "Original tabulated partial fractions with 8/12/16/24 poles and Gaussian lower-plane reflection; w_J=Z_J/(i sqrt(pi)).",
-    "numerical_controls": {
-     "order": {
-      "default": 8,
-      "constraints": "None selects 8; exactly 8, 12, 16 or 24, no boolean."
-     }
-    },
-    "applicability": {
-     "preconditions": [
-      "The caller supplies a finite dimensionless argument using one explicit normalization convention.",
-      "Both w and final Z must fit finite complex128."
-     ],
-     "supported": [
-      "Existing tabulated approximation for all four pole counts; w and Z have the same finite-order accuracy."
-     ],
-     "excluded": [
-      "w_J and Z_J share finite-order truncation error; w_J is not exact Faddeeva w.",
-      "Lower-plane continuation may overflow and no arbitrary lower-plane or global error guarantee is given.",
-      "Only count8 has the original large-real asymptotic evidence; other methods do not inherit J-pole integral evidence."
-     ]
-    },
-    "failure_semantics": {
-     "invalid_input": "TypeError for masked, boolean, string or nonnumeric z, unsupported method or unusable order; ValueError for empty, ragged or nonfinite z after complex128 conversion.",
-     "runtime_failure": "FloatingPointError if either w or final Z is nonfinite; unexpected backend execution errors propagate. No clamp or fallback is applied.",
-     "nonconvergence": "Not applicable; no iterative solve is exposed.",
-     "partial_results": "No partial result; one unrepresentable element fails the entire call."
-    },
-    "verification": {
-     "scope": [
-      "Orders8/12/16/24 retain all original scalar/matrix comparisons and scipy.special.wofz accuracy ceilings (rtol5e-5, atol5e-6 for Z); the normalized w uses the same relative budget and corresponding absolute normalization.",
-      "All four counts retain the independent 70-digit Gaussian Cauchy integral at four upper-half-plane points. Order10 rejection and order8 large-real asymptote (rtol5e-12, atol0) remain; the other counts do not inherit that asymptotic evidence."
-     ],
-     "tests": [
-      "tests/kinetic/test_generalized_dispersion_faddeeva_variants.py",
-      "tests/kinetic/test_generalized_dispersion_faddeeva_independent.py"
-     ],
-     "evidence_ceiling": "Only the named sampled assertions and their unchanged numerical budgets apply to this method; shared test files do not transfer other methods' evidence. No global error certificate or experimental validation.",
-     "known_limitations": [
-      "w_J and Z_J share finite-order truncation error; w_J is not exact Faddeeva w.",
-      "Lower-plane continuation may overflow and no arbitrary lower-plane or global error guarantee is given.",
-      "Only count8 has the original large-real asymptotic evidence; other methods do not inherit J-pole integral evidence."
-     ]
-    }
-   }
+  },
+  "family": {
+    "name": "maxwellian-plasma-dispersion",
+    "default": "scipy",
+    "default_reason": "Preserve the existing default numerical values and production consumer ports; approximation accuracy remains method-specific.",
+    "methods": [
+      {
+        "name": "scipy",
+        "model": "Direct scipy.special.wofz followed by the original Z scaling.",
+        "numerical_controls": {},
+        "applicability": {
+          "preconditions": [
+            "The caller supplies a finite dimensionless argument using one explicit normalization convention.",
+            "Both w and final Z must fit finite complex128."
+          ],
+          "supported": [
+            "Direct analytic values from scipy.special.wofz with the original default calculation."
+          ],
+          "excluded": [
+            "Finite z can produce unrepresentable w or Z, especially in the lower half-plane.",
+            "No caller-specific normalization, root correctness or expert scientific approval is inferred."
+          ]
+        },
+        "failure_semantics": {
+          "invalid_input": "TypeError for masked, boolean, string or nonnumeric z, unsupported method or unusable order; ValueError for empty, ragged or nonfinite z after complex128 conversion.",
+          "runtime_failure": "FloatingPointError if either w or final Z is nonfinite; unexpected backend execution errors propagate. No clamp or fallback is applied.",
+          "nonconvergence": "Not applicable; no iterative solve is exposed.",
+          "partial_results": "No partial result; one unrepresentable element fails the entire call."
+        },
+        "verification": {
+          "scope": [
+            "Origin, exact scipy.special.wofz grid equality (rtol=atol=0), reflection, 30j, dtype, shape, no mutation and strict rejection.",
+            "The canonical production wrapper retains the independent 80-digit definition at rtol=2e-13, atol=2e-14, and the real -30j failure. Namespace and rejected-input paths remain lazy."
+          ],
+          "tests": [
+            "tests/kinetic/test_plasma_dispersion_function.py",
+            "tests/kinetic/test_dispersion_multifluid.py::test_faddeeva_independent_80_digit_definition",
+            "tests/architecture/test_domain_import_boundaries.py::test_kinetic_plasma_dispersion_defers_scipy_until_valid_call"
+          ],
+          "evidence_ceiling": "Only the named sampled assertions and their unchanged numerical budgets apply to this method; shared test files do not transfer other methods' evidence. No global error certificate or experimental validation.",
+          "known_limitations": [
+            "Finite z can produce unrepresentable w or Z, especially in the lower half-plane.",
+            "No caller-specific normalization, root correctness or expert scientific approval is inferred."
+          ]
+        }
+      },
+      {
+        "name": "rational",
+        "model": "FFT-generated tunable rational w through scirel.numerics.evaluate_faddeeva, then independent Z scaling.",
+        "numerical_controls": {
+          "order": {
+            "default": 32,
+            "constraints": "None selects 32; any positive integer, no boolean."
+          }
+        },
+        "applicability": {
+          "preconditions": [
+            "The caller supplies a finite dimensionless argument using one explicit normalization convention.",
+            "Both w and final Z must fit finite complex128."
+          ],
+          "supported": [
+            "Existing tunable rational approximation with any positive integer order."
+          ],
+          "excluded": [
+            "Any positive integer order remains accepted, without a continuous-domain error bound or a finite-resource promise for arbitrarily large orders.",
+            "Lower-plane continuation or final Z scaling may exceed float64; independent mathematical w has a larger success domain.",
+            "Sampled order16/32/64 evidence does not certify arbitrary orders or arbitrary-distribution response."
+          ]
+        },
+        "failure_semantics": {
+          "invalid_input": "TypeError for masked, boolean, string or nonnumeric z, unsupported method or unusable order; ValueError for empty, ragged or nonfinite z after complex128 conversion.",
+          "runtime_failure": "FloatingPointError if either w or final Z is nonfinite; unexpected backend execution errors propagate. No clamp or fallback is applied.",
+          "nonconvergence": "Not applicable; no iterative solve is exposed.",
+          "partial_results": "No partial result; one unrepresentable element fails the entire call."
+        },
+        "verification": {
+          "scope": [
+            "Orders 16/32/64 retain Z=i sqrt(pi) w normalization; the mathematical dependency retains its original reflection and 80-digit equation-grid assertions with order-specific budgets.",
+            "Direct Z evidence checks -26.625j with finite w and overflowing Z, mathematical threshold neighbors, mixed-array failure and representable y=-26.61/-26.60/-26/0/26.625 at orders16/32 with rtol=3e-14, atol=0. The high-precision w grid is dependency evidence, not a direct high-precision Z grid."
+          ],
+          "tests": [
+            "tests/kinetic/test_generalized_dispersion_faddeeva_variants.py",
+            "tests/kinetic/test_generalized_dispersion_faddeeva_independent.py",
+            "tests/kinetic/test_generalized_dispersion_fft_scaling.py",
+            "tests/kinetic/test_faddeeva_import_boundary.py"
+          ],
+          "evidence_ceiling": "Only the named sampled assertions and their unchanged numerical budgets apply to this method; shared test files do not transfer other methods' evidence. No global error certificate or experimental validation.",
+          "known_limitations": [
+            "Any positive integer order remains accepted, without a continuous-domain error bound or a finite-resource promise for arbitrarily large orders.",
+            "Lower-plane continuation or final Z scaling may exceed float64; independent mathematical w has a larger success domain.",
+            "Sampled order16/32/64 evidence does not certify arbitrary orders or arbitrary-distribution response."
+          ]
+        }
+      },
+      {
+        "name": "weideman",
+        "model": "Distinct fixed N=64 FFT rational kernel, erfcx on the positive imaginary axis, original exp/erfc and complex reflection elsewhere.",
+        "numerical_controls": {},
+        "applicability": {
+          "preconditions": [
+            "The caller supplies a finite dimensionless argument using one explicit normalization convention.",
+            "Both w and final Z must fit finite complex128."
+          ],
+          "supported": [
+            "Existing fixed64 scientific kernel, including representable positive imaginary-axis arguments."
+          ],
+          "excluded": [
+            "Only the positive imaginary axis is stabilized with erfcx; nonpositive-axis exp/erfc and ordinary complex arithmetic retain their distinct original evaluation.",
+            "Sampled independent evidence does not certify arbitrary-complex-input accuracy or a continuous-domain N64 error bound.",
+            "Full source/runtime qualification on Linux/amd64 is NOT_RUN in this macOS checkout."
+          ]
+        },
+        "failure_semantics": {
+          "invalid_input": "TypeError for masked, boolean, string or nonnumeric z, unsupported method or unusable order; ValueError for empty, ragged or nonfinite z after complex128 conversion.",
+          "runtime_failure": "FloatingPointError if either w or final Z is nonfinite; unexpected backend execution errors propagate. No clamp or fallback is applied.",
+          "nonconvergence": "Not applicable; no iterative solve is exposed.",
+          "partial_results": "No partial result; one unrepresentable element fails the entire call."
+        },
+        "verification": {
+          "scope": [
+            "Fixed64 source anchors and nonfinite-input rejection remain on the distinct fixed64 path.",
+            "Independent 90/140-digit axis references retain neighboring floats near27/40, 1000, 1e200, 1e308, float_max, negative axes and mixed grids. w and Z are independently checked at relative3e-15 without an absolute floor; mixed complex grids retain rtol1e-12, atol1e-13.",
+            "Independent w<float_max<Z at -26.625j, whole-array failure and lazy imports remain. The output exception changes to FloatingPointError and redundant final-scaling RuntimeWarning is retired; input-derived labels are retired."
+          ],
+          "tests": [
+            "tests/kinetic/test_fluid_spectrum_r43_variants.py",
+            "tests/kinetic/test_weideman_imaginary_range.py",
+            "tests/kinetic/test_weideman_axis_independent.py",
+            "tests/kinetic/test_weideman_import_boundary.py"
+          ],
+          "evidence_ceiling": "Only the named sampled assertions and their unchanged numerical budgets apply to this method; shared test files do not transfer other methods' evidence. No global error certificate or experimental validation.",
+          "known_limitations": [
+            "Only the positive imaginary axis is stabilized with erfcx; nonpositive-axis exp/erfc and ordinary complex arithmetic retain their distinct original evaluation.",
+            "Sampled independent evidence does not certify arbitrary-complex-input accuracy or a continuous-domain N64 error bound.",
+            "Full source/runtime qualification on Linux/amd64 is NOT_RUN in this macOS checkout."
+          ]
+        }
+      },
+      {
+        "name": "jpole",
+        "model": "Original tabulated partial fractions with 8/12/16/24 poles and Gaussian lower-plane reflection; w_J=Z_J/(i sqrt(pi)).",
+        "numerical_controls": {
+          "order": {
+            "default": 8,
+            "constraints": "None selects 8; exactly 8, 12, 16 or 24, no boolean."
+          }
+        },
+        "applicability": {
+          "preconditions": [
+            "The caller supplies a finite dimensionless argument using one explicit normalization convention.",
+            "Both w and final Z must fit finite complex128."
+          ],
+          "supported": [
+            "Existing tabulated approximation for all four pole counts; w and Z have the same finite-order accuracy."
+          ],
+          "excluded": [
+            "w_J and Z_J share finite-order truncation error; w_J is not exact Faddeeva w.",
+            "Lower-plane continuation may overflow and no arbitrary lower-plane or global error guarantee is given.",
+            "Only count8 has the original large-real asymptotic evidence; other methods do not inherit J-pole integral evidence."
+          ]
+        },
+        "failure_semantics": {
+          "invalid_input": "TypeError for masked, boolean, string or nonnumeric z, unsupported method or unusable order; ValueError for empty, ragged or nonfinite z after complex128 conversion.",
+          "runtime_failure": "FloatingPointError if either w or final Z is nonfinite; unexpected backend execution errors propagate. No clamp or fallback is applied.",
+          "nonconvergence": "Not applicable; no iterative solve is exposed.",
+          "partial_results": "No partial result; one unrepresentable element fails the entire call."
+        },
+        "verification": {
+          "scope": [
+            "Orders8/12/16/24 retain all original scalar/matrix comparisons and scipy.special.wofz accuracy ceilings (rtol5e-5, atol5e-6 for Z); the normalized w uses the same relative budget and corresponding absolute normalization.",
+            "All four counts retain the independent 70-digit Gaussian Cauchy integral at four upper-half-plane points. Order10 rejection and order8 large-real asymptote (rtol5e-12, atol0) remain; the other counts do not inherit that asymptotic evidence."
+          ],
+          "tests": [
+            "tests/kinetic/test_generalized_dispersion_faddeeva_variants.py",
+            "tests/kinetic/test_generalized_dispersion_faddeeva_independent.py"
+          ],
+          "evidence_ceiling": "Only the named sampled assertions and their unchanged numerical budgets apply to this method; shared test files do not transfer other methods' evidence. No global error certificate or experimental validation.",
+          "known_limitations": [
+            "w_J and Z_J share finite-order truncation error; w_J is not exact Faddeeva w.",
+            "Lower-plane continuation may overflow and no arbitrary lower-plane or global error guarantee is given.",
+            "Only count8 has the original large-real asymptotic evidence; other methods do not inherit J-pole integral evidence."
+          ]
+        }
+      }
+    ]
+  },
+  "references": [
+    "Weideman (1994), Computation of the Complex Error Function, doi:10.1137/0731077",
+    "Xie (2013), Generalized Plasma Dispersion Function, arXiv:1305.6476",
+    "H. S. Xie, Phys. Plasmas 32, 082110 (2025).",
+    "SciPy, scipy.special.erfcx: erfcx(x)=exp(x^2)*erfc(x).",
+    "SciPy, scipy.special.wofz."
   ]
- },
- "references": [
-  "Weideman (1994), Computation of the Complex Error Function, doi:10.1137/0731077",
-  "Xie (2013), Generalized Plasma Dispersion Function, arXiv:1305.6476",
-  "H. S. Xie, Phys. Plasmas 32, 082110 (2025).",
-  "SciPy, scipy.special.erfcx: erfcx(x)=exp(x^2)*erfc(x).",
-  "SciPy, scipy.special.wofz."
- ]
 }

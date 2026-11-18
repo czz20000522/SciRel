@@ -1,155 +1,160 @@
 {
- "schema": "scirel.asset-document",
- "asset_id": "scirel.kinetic.ronnmark-r-function",
- "title": {
-  "en": "Ronnmark R function and companion columns",
-  "zh": "Ronnmark R 函数及伴随列"
- },
- "summary": "Evaluate the source's Taylor, asymptotic or integral R-function branch and 2x2 companion matrix.",
- "taxonomy": [
-  "kinetic",
-  "plasma-wave"
- ],
- "aliases": [],
- "discovery": {
-  "capability": [
-   "Ronnmark R function and companion columns",
-   "Evaluate the source's Taylor, asymptotic or integral R-function branch and 2x2 companion matrix."
+  "schema": "scirel.asset-document",
+  "asset_id": "scirel.kinetic.ronnmark-r-function",
+  "title": {
+    "en": "Ronnmark R function and companion columns",
+    "zh": "Ronnmark R 函数及伴随列"
+  },
+  "summary": "Evaluate the source's Taylor, asymptotic or integral R-function branch and 2x2 companion matrix.",
+  "taxonomy": [
+    "kinetic",
+    "plasma-wave"
   ],
-  "operation": [
-   "evaluate the Ronnmark R function and companion matrix",
-   "dimensionless x and lambda to selected R branch and companion matrix"
+  "aliases": [],
+  "discovery": {
+    "capability": [
+      "Ronnmark R function and companion columns",
+      "Evaluate the source's Taylor, asymptotic or integral R-function branch and 2x2 companion matrix."
+    ],
+    "operation": [
+      "evaluate the Ronnmark R function and companion matrix",
+      "dimensionless x and lambda to selected R branch and companion matrix"
+    ],
+    "model": "Ronnmark rational response for magnetized Maxwellian dispersion",
+    "geometry": "no physical spatial grid",
+    "boundary": "branch comparisons and arithmetic follow source real/complex behavior; scalar finite inputs only",
+    "device_scope": "generic"
+  },
+  "identity": {
+    "relation": "dimensionless x and lambda to selected R branch and companion matrix",
+    "direction": "dimensionless x and lambda to selected R branch and companion matrix",
+    "definition": "Ordered RYLA selector uses three Taylor tests, an asymptotic test, then a 16-point Gauss-Legendre integral fallback; RC[0,1]=d(lambda R)/d lambda. At exact lambda=0, R=H=x/(x*x-1) and both scaled-x companion derivatives equal -x*(x*x+1)/(x*x-1)**2; rational components are rounded only on output. For nonzero lambda every exact nonzero integer x has a genuine R/H pole. At exact x=0 the paired harmonic responses and both x-scaled derivatives vanish analytically within the selected branch.",
+    "model": "Ronnmark rational response for magnetized Maxwellian dispersion",
+    "geometry": "no physical spatial grid",
+    "coordinates": "dimensionless complex x and lambda plane",
+    "boundary": "branch comparisons and arithmetic follow source real/complex behavior; scalar finite inputs only",
+    "assumptions": [
+      "Input units and normalization follow the declared ports; no physical parameters are inferred."
+    ]
+  },
+  "inputs": [
+    {
+      "name": "x",
+      "description": "Ronnmark argument Y, equal to (omega-kz*vt*czj)/wcs in the frozen source. Real or complex scalar. Units: dimensionless (normalized frequency). Validity constraint: must be finite (no `NaN`/`inf`); real inputs use real double-precision arithmetic and complex inputs use complex double-precision arithmetic (their rounding differs; see the Behavior and boundaries section); this operator accepts scalars only, so array inputs must be looped elementwise by the caller.",
+      "units": "dimensionless",
+      "shape": "scalar",
+      "dtype": "real or complex numeric",
+      "required": true,
+      "constraints": "Must be finite (no `NaN`/`inf`); real inputs use real double-precision arithmetic and complex inputs use complex double-precision arithmetic (their rounding differs; see the Behavior and boundaries section); this operator accepts scalars only, so array inputs must be looped elementwise by the caller."
+    },
+    {
+      "name": "lambda_",
+      "description": "AL=lambda=(k_perp*rho_c)^2, the Ronnmark expansion parameter (frozen source). Shape/axis order: scalar (real or complex; with a nonzero imaginary part on the complex kx plane). Units: dimensionless. Validity constraint: Must be finite; nonnegative real for real kx and complex for complex kx. Exact lambda=0 selects the Taylor constant term; x=+/-2 is removable, x=+/-1 is a genuine pole, and an unrepresentable full RC raises FloatingPointError.",
+      "units": "dimensionless",
+      "shape": "scalar",
+      "dtype": "real or complex numeric",
+      "required": true,
+      "constraints": "Must be finite; nonnegative real for real kx and complex for complex kx. Exact lambda=0 selects the Taylor constant term; x=+/-2 is removable, x=+/-1 is a genuine pole, and an unrepresentable full RC raises FloatingPointError."
+    }
   ],
-  "model": "Ronnmark rational response for magnetized Maxwellian dispersion",
-  "geometry": "no physical spatial grid",
-  "boundary": "branch comparisons and arithmetic follow source real/complex behavior; scalar finite inputs only",
-  "device_scope": "generic"
- },
- "identity": {
-  "relation": "dimensionless x and lambda to selected R branch and companion matrix",
-  "direction": "dimensionless x and lambda to selected R branch and companion matrix",
-  "definition": "Ordered RYLA selector uses three Taylor tests, an asymptotic test, then a 16-point Gauss-Legendre integral fallback; RC[0,1]=d(lambda R)/d lambda. At exact lambda=0, R=H=x/(x*x-1) and both scaled-x companion derivatives equal -x*(x*x+1)/(x*x-1)**2; rational components are rounded only on output. For nonzero lambda every exact nonzero integer x has a genuine R/H pole. At exact x=0 the paired harmonic responses and both x-scaled derivatives vanish analytically within the selected branch.",
-  "model": "Ronnmark rational response for magnetized Maxwellian dispersion",
-  "geometry": "no physical spatial grid",
-  "coordinates": "dimensionless complex x and lambda plane",
-  "boundary": "branch comparisons and arithmetic follow source real/complex behavior; scalar finite inputs only",
-  "assumptions": [
-   "Input units and normalization follow the declared ports; no physical parameters are inferred."
+  "outputs": [
+    {
+      "name": "R",
+      "description": "R(x,lambda)=RC[0,0], the selected Ronnmark response [dimensionless]. Finite complex; exact lambda=0 uses x/(x*x-1); genuine poles or any unrepresentable required companion raise FloatingPointError.",
+      "units": "dimensionless",
+      "shape": "scalar",
+      "dtype": "complex128",
+      "required": true,
+      "constraints": "Finite complex. No alternate branch, silent zero or partial response is substituted on numerical failure."
+    },
+    {
+      "name": "H",
+      "description": "RC(1,2) column, the `dRsj` read by the frozen source. Complex scalar. Units: dimensionless. Validity constraint: computed in the same branch as `R`; the source series expansion verifies analytically that this column equals d(lambda*R)/dlambda = R + lambda*dR/dlambda, not dR/dlambda itself (in the frozen source PN_I is proportional to lambda^(I-1) while the accumulation weight is I, so RC(1,2) = R + lambda*dR/dlambda).",
+      "units": "dimensionless",
+      "shape": "scalar",
+      "dtype": "complex128",
+      "required": true,
+      "constraints": "Computed in the same branch as `R`; the source series expansion verifies analytically that this column equals d(lambda*R)/dlambda = R + lambda*dR/dlambda, not dR/dlambda itself (in the frozen source PN_I is proportional to lambda^(I-1) while the accumulation weight is I, so RC(1,2) = R + lambda*dR/dlambda)."
+    },
+    {
+      "name": "branch",
+      "description": "String identifying the branch actually selected; shape/axis order: scalar string (enumeration label, no array axis), one of `'RTAY(AL<4)'`, `'RTAY(|Y|^2>75*AL)'`, `'RTAY(|Y|>40+AL/3)'`, `'RASY'`, `'RINT'`. Units: dimensionless (enumeration label). Validity constraint: one of the five strings, corresponding one-to-one to the frozen source criteria.",
+      "units": "dimensionless",
+      "shape": "scalar",
+      "dtype": "string",
+      "required": true,
+      "constraints": "One of the five strings, corresponding one-to-one to the frozen source criteria."
+    },
+    {
+      "name": "RC",
+      "description": "Full 2x2 complex matrix (complex128, understood in the reference runtime's column-major order). Units: dimensionless. Validity constraint: `RC[0,0]==R` and `RC[0,1]==H`; `RC[1,0]` and `RC[1,1]` are companion columns computed in the same branch and are unused by the frozen source. All four entries must be finite; at lambda=0 the second row is -x*(x*x+1)/(x*x-1)**2 in both columns.",
+      "units": "dimensionless",
+      "shape": "(2,2)",
+      "dtype": "complex128",
+      "required": true,
+      "constraints": "`RC[0,0]==R` and `RC[0,1]==H`; `RC[1,0]` and `RC[1,1]` are companion columns computed in the same branch and are unused by the frozen source. All four entries must be finite, even when the caller only needs R."
+    }
+  ],
+  "applicability": {
+    "preconditions": [
+      "branch comparisons and arithmetic follow source real/complex behavior; scalar finite inputs only"
+    ],
+    "supported": [
+      "Evaluate the source's Taylor, asymptotic or integral R-function branch and 2x2 companion matrix."
+    ],
+    "excluded": [
+      "No mode identity or arbitrary-parameter accuracy is inferred beyond the declared numerical method."
+    ]
+  },
+  "failure_semantics": {
+    "invalid_input": "Raises ValueError for declared invalid inputs; numeric conversion errors may propagate for unsupported Python objects.",
+    "runtime_failure": "Raises FloatingPointError for genuine poles or a nonfinite/unrepresentable required R/H/RC component; no alternate branch or partial response is substituted.",
+    "nonconvergence": "Not applicable; no iterative root solve is exposed.",
+    "partial_results": "No partial mapping is returned after an exception."
+  },
+  "public_api": {
+    "python": {
+      "module": "scirel.kinetic.ronnmark_r_function",
+      "symbol": "evaluate_ronnmark_r",
+      "signature": "evaluate_ronnmark_r(x, lambda_)",
+      "canonical_module": "scirel.kinetic",
+      "canonical_symbol": "evaluate_ronnmark_r"
+    }
+  },
+  "version": {
+    "implementation_version": "0.0.0",
+    "dependencies": []
+  },
+  "example": {
+    "description": "Evaluate one bounded source-method case.",
+    "code": "from scirel.kinetic import evaluate_ronnmark_r\nr=evaluate_ronnmark_r(0.5,0.25); assert r['branch']=='RTAY(AL<4)'\n",
+    "expected": "The asserted result follows the declared output contract."
+  },
+  "verification": {
+    "scope": [
+      "Independent basis: the contract's own definition R = sum_n n**2 Gamma_n/(lambda(x-n)) and H = d(lambda R)/d lambda = sum_n n**2 Gamma'_n/(x-n), with Gamma_n = exp(-lambda) I_n(lambda), evaluated at 40 mpmath digits using mpmath.besseli.",
+      "The reference does not implement a recurrence: a recurrence would reproduce the implementation's own truncation error as well as its value, so agreement would say nothing about the sum.",
+      "Test matrix: b = 0.2, 1, 4 and 8 at real and complex x, covering the RTAY and RINT selector branches, with H additionally checked against a 40-digit central difference of R so two independent routes to the derivative must agree.",
+      "The reference's own truncation is bounded: the harmonic tail beyond |n| = 80 is measured at 1e-75 to 1e-201 on these points, so the comparison floor belongs to the implementation.",
+      "Failure matrix: one assertion per channel -- wrong harmonic weight (R), wrong lambda derivative (H), wrong lambda = 0 limit, an unconverged truncation passed off as converged (tail test), and a pole that should raise returning a series value.",
+      "Precision budget, written before measurement: 1e-9 for R and 1e-7 for H on the RTAY branch, 1e-10 and 1e-8 on RINT; measured worst values are 3.7e-10 and 6.9e-9 (RTAY), 7.2e-11 and 2.7e-9 (RINT).",
+      "The budget is per branch because the branches truncate differently; a single number would either hide the RTAY floor or be unreachable for RINT."
+    ],
+    "tests": [
+      "tests/kinetic/test_bessel_response_evidence.py"
+    ],
+    "evidence_ceiling": "Bounded to the declared RYLA selector and its five branches at the twelve-sample scale plus the complex-x points the k_perp scan visits. Established by an independent 40-digit harmonic sum computed from mpmath Bessel functions, with the oracle's own truncation measured below 1e-40; measured agreement is 3.7e-10 for R and 6.9e-9 for H. Excluded scope: global tensor accuracy, the dielectric assembly that consumes R, and any claim that these two branches cover every point in the selector's domain.",
+    "known_limitations": [
+      "The quadrature and Taylor truncations set the 1e-9 / 1e-7 floor; the relation would tighten under a bit-golden comparison or an exact rational intermediate, which this evidence does not claim.",
+      "Only the RTAY and RINT branches were exercised here; the RASY branch is covered by its existing tests and by the branch-budget entry, not by a measured sample."
+    ],
+    "basis": {
+      "kind": "independent-recomputation",
+      "statement": "Measured agreement is 3.7e-10 for R and 6.9e-9 for H. Excluded scope: global tensor accuracy, the dielectric assembly that consumes R, and any claim that these two branches cover every point in the selector's domain.",
+      "source": "tests/kinetic/test_bessel_response_evidence.py"
+    }
+  },
+  "references": [
+    "H. S. Xie, Phys. Plasmas 32, 082110 (2025)."
   ]
- },
- "inputs": [
-  {
-   "name": "x",
-   "description": "Ronnmark argument Y, equal to (omega-kz*vt*czj)/wcs in the frozen source. Real or complex scalar. Units: dimensionless (normalized frequency). Validity constraint: must be finite (no `NaN`/`inf`); real inputs use real double-precision arithmetic and complex inputs use complex double-precision arithmetic (their rounding differs; see the Behavior and boundaries section); this operator accepts scalars only, so array inputs must be looped elementwise by the caller.",
-   "units": "dimensionless",
-   "shape": "scalar",
-   "dtype": "real or complex numeric",
-   "required": true,
-   "constraints": "Must be finite (no `NaN`/`inf`); real inputs use real double-precision arithmetic and complex inputs use complex double-precision arithmetic (their rounding differs; see the Behavior and boundaries section); this operator accepts scalars only, so array inputs must be looped elementwise by the caller."
-  },
-  {
-   "name": "lambda_",
-   "description": "AL=lambda=(k_perp*rho_c)^2, the Ronnmark expansion parameter (frozen source). Shape/axis order: scalar (real or complex; with a nonzero imaginary part on the complex kx plane). Units: dimensionless. Validity constraint: Must be finite; nonnegative real for real kx and complex for complex kx. Exact lambda=0 selects the Taylor constant term; x=+/-2 is removable, x=+/-1 is a genuine pole, and an unrepresentable full RC raises FloatingPointError.",
-   "units": "dimensionless",
-   "shape": "scalar",
-   "dtype": "real or complex numeric",
-   "required": true,
-   "constraints": "Must be finite; nonnegative real for real kx and complex for complex kx. Exact lambda=0 selects the Taylor constant term; x=+/-2 is removable, x=+/-1 is a genuine pole, and an unrepresentable full RC raises FloatingPointError."
-  }
- ],
- "outputs": [
-  {
-   "name": "R",
-   "description": "R(x,lambda)=RC[0,0], the selected Ronnmark response [dimensionless]. Finite complex; exact lambda=0 uses x/(x*x-1); genuine poles or any unrepresentable required companion raise FloatingPointError.",
-   "units": "dimensionless",
-   "shape": "scalar",
-   "dtype": "complex128",
-   "required": true,
-   "constraints": "Finite complex. No alternate branch, silent zero or partial response is substituted on numerical failure."
-  },
-  {
-   "name": "H",
-   "description": "RC(1,2) column, the `dRsj` read by the frozen source. Complex scalar. Units: dimensionless. Validity constraint: computed in the same branch as `R`; the source series expansion verifies analytically that this column equals d(lambda*R)/dlambda = R + lambda*dR/dlambda, not dR/dlambda itself (in the frozen source PN_I is proportional to lambda^(I-1) while the accumulation weight is I, so RC(1,2) = R + lambda*dR/dlambda).",
-   "units": "dimensionless",
-   "shape": "scalar",
-   "dtype": "complex128",
-   "required": true,
-   "constraints": "Computed in the same branch as `R`; the source series expansion verifies analytically that this column equals d(lambda*R)/dlambda = R + lambda*dR/dlambda, not dR/dlambda itself (in the frozen source PN_I is proportional to lambda^(I-1) while the accumulation weight is I, so RC(1,2) = R + lambda*dR/dlambda)."
-  },
-  {
-   "name": "branch",
-   "description": "String identifying the branch actually selected; shape/axis order: scalar string (enumeration label, no array axis), one of `'RTAY(AL<4)'`, `'RTAY(|Y|^2>75*AL)'`, `'RTAY(|Y|>40+AL/3)'`, `'RASY'`, `'RINT'`. Units: dimensionless (enumeration label). Validity constraint: one of the five strings, corresponding one-to-one to the frozen source criteria.",
-   "units": "dimensionless",
-   "shape": "scalar",
-   "dtype": "string",
-   "required": true,
-   "constraints": "One of the five strings, corresponding one-to-one to the frozen source criteria."
-  },
-  {
-   "name": "RC",
-   "description": "Full 2x2 complex matrix (complex128, understood in the reference runtime's column-major order). Units: dimensionless. Validity constraint: `RC[0,0]==R` and `RC[0,1]==H`; `RC[1,0]` and `RC[1,1]` are companion columns computed in the same branch and are unused by the frozen source. All four entries must be finite; at lambda=0 the second row is -x*(x*x+1)/(x*x-1)**2 in both columns.",
-   "units": "dimensionless",
-   "shape": "(2,2)",
-   "dtype": "complex128",
-   "required": true,
-   "constraints": "`RC[0,0]==R` and `RC[0,1]==H`; `RC[1,0]` and `RC[1,1]` are companion columns computed in the same branch and are unused by the frozen source. All four entries must be finite, even when the caller only needs R."
-  }
- ],
- "applicability": {
-  "preconditions": [
-   "branch comparisons and arithmetic follow source real/complex behavior; scalar finite inputs only"
-  ],
-  "supported": [
-   "Evaluate the source's Taylor, asymptotic or integral R-function branch and 2x2 companion matrix."
-  ],
-  "excluded": [
-   "No mode identity or arbitrary-parameter accuracy is inferred beyond the declared numerical method."
-  ]
- },
- "failure_semantics": {
-  "invalid_input": "Raises ValueError for declared invalid inputs; numeric conversion errors may propagate for unsupported Python objects.",
-  "runtime_failure": "Raises FloatingPointError for genuine poles or a nonfinite/unrepresentable required R/H/RC component; no alternate branch or partial response is substituted.",
-  "nonconvergence": "Not applicable; no iterative root solve is exposed.",
-  "partial_results": "No partial mapping is returned after an exception."
- },
- "public_api": {
-  "python": {
-   "module": "scirel.kinetic.ronnmark_r_function",
-   "symbol": "evaluate_ronnmark_r",
-   "signature": "evaluate_ronnmark_r(x, lambda_)",
-   "canonical_module": "scirel.kinetic",
-   "canonical_symbol": "evaluate_ronnmark_r"
-  }
- },
- "version": {
-  "implementation_version": "0.0.0",
-  "dependencies": []
- },
- "example": {
-  "description": "Evaluate one bounded source-method case.",
-  "code": "from scirel.kinetic import evaluate_ronnmark_r\nr=evaluate_ronnmark_r(0.5,0.25); assert r['branch']=='RTAY(AL<4)'\n",
-  "expected": "The asserted result follows the declared output contract."
- },
- "verification": {
-  "scope": [
-   "Independent basis: the contract's own definition R = sum_n n**2 Gamma_n/(lambda(x-n)) and H = d(lambda R)/d lambda = sum_n n**2 Gamma'_n/(x-n), with Gamma_n = exp(-lambda) I_n(lambda), evaluated at 40 mpmath digits using mpmath.besseli.",
-   "The reference does not implement a recurrence: a recurrence would reproduce the implementation's own truncation error as well as its value, so agreement would say nothing about the sum.",
-   "Test matrix: b = 0.2, 1, 4 and 8 at real and complex x, covering the RTAY and RINT selector branches, with H additionally checked against a 40-digit central difference of R so two independent routes to the derivative must agree.",
-   "The reference's own truncation is bounded: the harmonic tail beyond |n| = 80 is measured at 1e-75 to 1e-201 on these points, so the comparison floor belongs to the implementation.",
-   "Failure matrix: one assertion per channel -- wrong harmonic weight (R), wrong lambda derivative (H), wrong lambda = 0 limit, an unconverged truncation passed off as converged (tail test), and a pole that should raise returning a series value.",
-   "Precision budget, written before measurement: 1e-9 for R and 1e-7 for H on the RTAY branch, 1e-10 and 1e-8 on RINT; measured worst values are 3.7e-10 and 6.9e-9 (RTAY), 7.2e-11 and 2.7e-9 (RINT).",
-   "The budget is per branch because the branches truncate differently; a single number would either hide the RTAY floor or be unreachable for RINT."
-  ],
-  "tests": [
-   "tests/kinetic/test_bessel_response_evidence.py"
-  ],
-  "evidence_ceiling": "Bounded to the declared RYLA selector and its five branches at the twelve-sample scale plus the complex-x points the k_perp scan visits. Established by an independent 40-digit harmonic sum computed from mpmath Bessel functions, with the oracle's own truncation measured below 1e-40; measured agreement is 3.7e-10 for R and 6.9e-9 for H. Excluded scope: global tensor accuracy, the dielectric assembly that consumes R, and any claim that these two branches cover every point in the selector's domain.",
-  "known_limitations": [
-   "The quadrature and Taylor truncations set the 1e-9 / 1e-7 floor; the relation would tighten under a bit-golden comparison or an exact rational intermediate, which this evidence does not claim.",
-   "Only the RTAY and RINT branches were exercised here; the RASY branch is covered by its existing tests and by the branch-budget entry, not by a measured sample."
-  ]
- },
- "references": [
-  "H. S. Xie, Phys. Plasmas 32, 082110 (2025)."
- ]
 }
