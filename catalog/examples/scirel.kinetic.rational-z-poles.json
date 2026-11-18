@@ -56,7 +56,7 @@
   "outputs": [
     {
       "name": "state",
-      "description": "J-pole table object; access J, bzj and czj through result.state.",
+      "description": "J-pole table object; access J, bzj and czj through result.state. Returns a scirel object positionally: the caller receives the instance itself, not as a field of a returned mapping.",
       "units": "mixed (J dimensionless, bzj/czj complex coefficients)",
       "shape": "object with a mapping state",
       "dtype": "object",

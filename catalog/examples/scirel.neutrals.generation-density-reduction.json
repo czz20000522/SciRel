@@ -75,7 +75,7 @@
   "outputs": [
     {
       "name": "density",
-      "description": "Per-spatial-cell generation densities.",
+      "description": "Per-spatial-cell generation densities. Returns the computed value positionally: the caller receives it directly, not as a field of a returned mapping.",
       "units": "source-discrete density",
       "shape": "[nx]",
       "dtype": "float64 array",

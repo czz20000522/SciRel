@@ -59,7 +59,7 @@
   "outputs": [
     {
       "name": "rate_m3_s",
-      "description": "H(1s) radiative recombination rate coefficient.",
+      "description": "H(1s) radiative recombination rate coefficient. Returns the computed value positionally: the caller receives it directly, not as a field of a returned mapping.",
       "units": "m^3/s",
       "shape": "same as electron_temperature_ev",
       "dtype": "float64 array or scalar",

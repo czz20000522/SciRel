@@ -95,7 +95,7 @@
   "outputs": [
     {
       "name": "result",
-      "description": "Tuple (g,wr,wi): g [N], theoretical wr=1 and wi=-k sqrt(2) only for Fn=2,kappa=1; otherwise theory is None.",
+      "description": "Tuple (g,wr,wi): g [N], theoretical wr=1 and wi=-k sqrt(2) only for Fn=2,kappa=1; otherwise theory is None. Returns a tuple positionally: the caller unpacks it by position, and no element is a field of a returned mapping.",
       "units": "dimensionless",
       "shape": "As described in output mapping or tuple.",
       "dtype": "tuple",

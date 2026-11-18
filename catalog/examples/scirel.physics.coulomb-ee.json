@@ -64,7 +64,7 @@
   "outputs": [
     {
       "name": "result",
-      "description": "Coulomb logarithm",
+      "description": "Coulomb logarithm Returns the computed value positionally: the caller receives it directly, not as a field of a returned mapping.",
       "units": "dimensionless",
       "shape": "broadcast shape",
       "dtype": "float64 scalar or array",

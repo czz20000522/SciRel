@@ -78,7 +78,7 @@
   "outputs": [
     {
       "name": "p_n",
-      "description": "The normalized momentum profile x * vnorm / clight, dimensionless, with the grid's shape.",
+      "description": "The normalized momentum profile x * vnorm / clight, dimensionless, with the grid's shape. Returns the computed value positionally: the caller receives it directly, not as a field of a returned mapping.",
       "units": "dimensionless",
       "shape": "array",
       "dtype": "float",

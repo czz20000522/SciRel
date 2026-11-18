@@ -59,7 +59,7 @@
   "outputs": [
     {
       "name": "matrix",
-      "description": "Evaluator yielding matrix of basis values",
+      "description": "Evaluator yielding matrix of basis values Returns the computed value positionally: the caller receives it directly, not as a field of a returned mapping.",
       "units": "basis-value units",
       "shape": "(M,K)",
       "dtype": "Python callable object",

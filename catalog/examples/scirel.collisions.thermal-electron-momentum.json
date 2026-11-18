@@ -69,7 +69,7 @@
   "outputs": [
     {
       "name": "p_te",
-      "description": "The thermal-electron normalized momentum sqrt(2*T/mc^2), dimensionless, a speed in units of c.",
+      "description": "The thermal-electron normalized momentum sqrt(2*T/mc^2), dimensionless, a speed in units of c. Returns the computed value positionally: the caller receives it directly, not as a field of a returned mapping.",
       "units": "dimensionless",
       "shape": "scalar",
       "dtype": "float",

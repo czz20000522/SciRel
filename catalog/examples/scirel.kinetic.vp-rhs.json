@@ -91,7 +91,7 @@
   "outputs": [
     {
       "name": "result",
-      "description": "Complex vector [N] time derivative; no input mutation.",
+      "description": "Complex vector [N] time derivative; no input mutation. Returns the computed value positionally: the caller receives it directly, not as a field of a returned mapping.",
       "units": "dimensionless",
       "shape": "As described in output mapping or tuple.",
       "dtype": "complex array",

@@ -114,7 +114,7 @@
   "outputs": [
     {
       "name": "total_frequency_m_inv",
-      "description": "Total inverse-length loss coefficient alpha=nu/Vth for the spatial advance; multiply by the caller Vth only when a physical frequency is needed.",
+      "description": "Total inverse-length loss coefficient alpha=nu/Vth for the spatial advance; multiply by the caller Vth only when a physical frequency is needed. Returns the computed value positionally: the caller receives it directly, not as a field of a returned mapping.",
       "units": "m^-1",
       "shape": "[nvr,nvx,nx]",
       "dtype": "float64 array",

@@ -76,7 +76,7 @@
   "outputs": [
     {
       "name": "spline",
-      "description": "Callable spline retaining x_data,y_data,k and deriv=0/1/2 evaluation",
+      "description": "Callable spline retaining x_data,y_data,k and deriv=0/1/2 evaluation Returns a scirel object positionally: the caller receives the instance itself, not as a field of a returned mapping.",
       "units": "ordinate units; derivative units per coordinate power",
       "shape": "object",
       "dtype": "Python callable object",

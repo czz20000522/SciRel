@@ -53,7 +53,7 @@
   "outputs": [
     {
       "name": "distance",
-      "description": "Cumulative path distance",
+      "description": "Cumulative path distance Returns the computed value positionally: the caller receives it directly, not as a field of a returned mapping.",
       "units": "length units",
       "shape": "(N,)",
       "dtype": "float64",

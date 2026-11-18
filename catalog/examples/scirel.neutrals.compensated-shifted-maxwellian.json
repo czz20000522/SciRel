@@ -121,7 +121,7 @@
   "outputs": [
     {
       "name": "distribution",
-      "description": "Moment-compensated shifted Maxwellian slices.",
+      "description": "Moment-compensated shifted Maxwellian slices. Returns the computed value positionally: the caller receives it directly, not as a field of a returned mapping.",
       "units": "normalized density per cylindrical velocity volume",
       "shape": "[nvr,nvx,nshift]",
       "dtype": "float64 array",

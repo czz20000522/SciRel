@@ -55,7 +55,7 @@
   "outputs": [
     {
       "name": "return",
-      "description": "DensityExpression instance. Calling instance(v) returns f(v); instance.derivative(v) returns analytic df/dv for scalar or NumPy-array real/complex v.",
+      "description": "DensityExpression instance. Calling instance(v) returns f(v); instance.derivative(v) returns analytic df/dv for scalar or NumPy-array real/complex v. Returns a scirel object positionally: the caller receives the instance itself, not as a field of a returned mapping.",
       "units": "dimensionless",
       "shape": "callable object",
       "dtype": "DensityExpression",

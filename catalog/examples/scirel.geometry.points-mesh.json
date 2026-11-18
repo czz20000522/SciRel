@@ -89,7 +89,7 @@
   "outputs": [
     {
       "name": "mesh",
-      "description": "Constructed PointsMesh object. R and Z [m] retain the matching shape after squeeze, with scalar pairs stored as (1,); multidimensional arrays are not flattened.",
+      "description": "Constructed PointsMesh object. R and Z [m] retain the matching shape after squeeze, with scalar pairs stored as (1,); multidimensional arrays are not flattened. Returns a scirel object positionally: the caller receives the instance itself, not as a field of a returned mapping.",
       "units": "Object; property units as described",
       "shape": "one object",
       "dtype": "PointsMesh",

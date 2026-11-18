@@ -159,7 +159,7 @@
   "outputs": [
     {
       "name": "variable",
-      "description": "New float64 cell values and new boundary data",
+      "description": "New float64 cell values and new boundary data Returns a scirel object positionally: the caller receives the instance itself, not as a field of a returned mapping.",
       "units": "Q",
       "shape": "CellVariable",
       "dtype": "CellVariable",

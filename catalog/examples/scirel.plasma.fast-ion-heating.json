@@ -75,7 +75,7 @@
   "outputs": [
     {
       "name": "ion_fraction",
-      "description": "Fraction of fast-ion heating deposited into ions",
+      "description": "Fraction of fast-ion heating deposited into ions Returns the computed value positionally: the caller receives it directly, not as a field of a returned mapping.",
       "units": "dimensionless",
       "shape": "broadcast input shape",
       "dtype": "float64",

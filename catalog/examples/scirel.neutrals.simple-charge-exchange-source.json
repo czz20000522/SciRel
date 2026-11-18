@@ -94,7 +94,7 @@
   "outputs": [
     {
       "name": "scattered_source",
-      "description": "Normalized spatial source h*integral(alpha_CX*F_previous*d^3u); the physical distribution-rate source is Vth times this field.",
+      "description": "Normalized spatial source h*integral(alpha_CX*F_previous*d^3u); the physical distribution-rate source is Vth times this field. Returns the computed value positionally: the caller receives it directly, not as a field of a returned mapping.",
       "units": "m^-4 (F/m)",
       "shape": "[nvr,nvx,nx]",
       "dtype": "float64 array",

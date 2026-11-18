@@ -94,7 +94,7 @@
   "outputs": [
     {
       "name": "result",
-      "description": "A tuple (delta, done, reason): delta is the relative generation density ratio, done is whether the next generation is unnecessary, reason is 'truncate', 'seed_relative', or 'continue'.",
+      "description": "A tuple (delta, done, reason): delta is the relative generation density ratio, done is whether the next generation is unnecessary, reason is 'truncate', 'seed_relative', or 'continue'. Returns a tuple positionally: the caller unpacks it by position, and no element is a field of a returned mapping.",
       "units": "mixed (dimensionless ratio, boolean, string)",
       "shape": "tuple of 3 scalars",
       "dtype": "tuple(float, bool, str)",

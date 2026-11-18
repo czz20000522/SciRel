@@ -63,7 +63,7 @@
   "outputs": [
     {
       "name": "derivative",
-      "description": "First interior derivative",
+      "description": "First interior derivative Returns the computed value positionally: the caller receives it directly, not as a field of a returned mapping.",
       "units": "value per coordinate",
       "shape": "(N-2,)",
       "dtype": "float64",

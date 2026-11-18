@@ -62,7 +62,7 @@
   "outputs": [
     {
       "name": "cross_section_m2",
-      "description": "H+-H elastic momentum-transfer cross section with the input shape.",
+      "description": "H+-H elastic momentum-transfer cross section with the input shape. Returns the computed value positionally: the caller receives it directly, not as a field of a returned mapping.",
       "units": "m^2",
       "shape": "input shape",
       "dtype": "float64 array",

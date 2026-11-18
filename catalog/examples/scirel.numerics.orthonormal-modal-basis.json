@@ -65,7 +65,7 @@
   "outputs": [
     {
       "name": "basis",
-      "description": "Basis handle exposing kind, ndim, order, num_basis, exponents(), evaluate, expand, gradient, flip_sign, quadrature and project",
+      "description": "Basis handle exposing kind, ndim, order, num_basis, exponents(), evaluate, expand, gradient, flip_sign, quadrature and project Returns a scirel object positionally: the caller receives the instance itself, not as a field of a returned mapping.",
       "units": "1",
       "shape": "ModalBasis",
       "dtype": "ModalBasis",

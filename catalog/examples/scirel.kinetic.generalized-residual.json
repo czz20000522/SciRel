@@ -152,7 +152,7 @@
   "outputs": [
     {
       "name": "return",
-      "description": "Source-normalized D residual.",
+      "description": "Source-normalized D residual. Returns the computed value positionally: the caller receives it directly, not as a field of a returned mapping.",
       "dtype": "complex array",
       "shape": "same as x",
       "required": true,

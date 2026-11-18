@@ -91,7 +91,7 @@
   "outputs": [
     {
       "constraints": "Finite or explicit precision/pole failure.",
-      "description": "Gamma/Gamma derivative or Z array, or full R response matrix.",
+      "description": "Gamma/Gamma derivative or Z array, or full R response matrix. Returns the computed value positionally: the caller receives it directly, not as a field of a returned mapping.",
       "dtype": "complex numeric array",
       "name": "value",
       "required": true,

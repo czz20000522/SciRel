@@ -55,7 +55,7 @@
   "outputs": [
     {
       "name": "boundary",
-      "description": "Object with verts,tck,u and interpolation",
+      "description": "Object with verts,tck,u and interpolation Returns a scirel object positionally: the caller receives the instance itself, not as a field of a returned mapping.",
       "units": "length units",
       "shape": "Python object",
       "dtype": "Python object",

@@ -81,7 +81,7 @@
   "outputs": [
     {
       "name": "values",
-      "description": "Selected np.asarray(Q).ravel() samples in query order",
+      "description": "Selected np.asarray(Q).ravel() samples in query order Returns a list positionally: the caller receives the sequence itself, not as a field of a returned mapping.",
       "units": "field units",
       "shape": "query-count list",
       "dtype": "list",

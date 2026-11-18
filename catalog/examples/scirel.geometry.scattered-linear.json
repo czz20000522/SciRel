@@ -81,7 +81,7 @@
   "outputs": [
     {
       "name": "values",
-      "description": "Sampled values",
+      "description": "Sampled values Returns the computed value positionally: the caller receives it directly, not as a field of a returned mapping.",
       "units": "field units",
       "shape": "query-count list or array",
       "dtype": "float64",

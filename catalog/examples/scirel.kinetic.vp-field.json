@@ -73,7 +73,7 @@
   "outputs": [
     {
       "name": "result",
-      "description": "Complex scalar electric field satisfying ikE=-dv sum(df).",
+      "description": "Complex scalar electric field satisfying ikE=-dv sum(df). Returns the computed value positionally: the caller receives it directly, not as a field of a returned mapping.",
       "units": "dimensionless",
       "shape": "As described in output mapping or tuple.",
       "dtype": "complex scalar",

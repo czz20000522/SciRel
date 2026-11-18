@@ -114,7 +114,7 @@
   "outputs": [
     {
       "name": "stopping_increment_m2",
-      "description": "Only the empirical additive fast-ion contribution to the stopping cross section.",
+      "description": "Only the empirical additive fast-ion contribution to the stopping cross section. Returns the computed value positionally: the caller receives it directly, not as a field of a returned mapping.",
       "units": "m^2",
       "shape": "(...), ndim >= 2",
       "dtype": "float64 or complex128 ndarray",

@@ -81,7 +81,7 @@
   "outputs": [
     {
       "name": "values",
-      "description": "Interpolated field along path",
+      "description": "Interpolated field along path Returns the computed value positionally: the caller receives it directly, not as a field of a returned mapping.",
       "units": "field units",
       "shape": "(N,)",
       "dtype": "float64",
