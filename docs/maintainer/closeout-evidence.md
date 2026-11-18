@@ -210,9 +210,25 @@ python scripts/tickets.py ledger tickets
 被绑定的那两份，改一个字节就让磁静力学章节「真的跑过」的证据失效，刷新它必须重跑章节示例
 （需要构建 wheel）。
 
-### 这一版的发布档状态：**未重跑**
+### 这一版的发布档：**已补跑**（`main` @ `4515d8ed`）
 
-按维护者 2026-11-18 的指示（短期不发布，合并门槛用 dev 档省时间），`#413` 之后没有再跑发布档。
-**因此本页不宣称 `e041e66a` 上的发布档结论。** 首个没经发布档验证的改动是 `#413` 的合同文本改动
-（API 参考页由合同生成，轮子与文档站只由发布档验证）。下次发布或对外交付前必须补跑，
-命令仍是 `python3 scripts/dev.py check`，判据看 `EXCLUSIVE`、`steps`、`RESULT SHA256` 三行。
+过程中按维护者指示用 dev 档作合并门槛省时间，因此有一段时间改动没经发布档验证。
+结项前在干净提交上补跑了一次，回执：
+
+```
+EXCLUSIVE  no other test run or check holds the clone lock
+FLOOR  at least 9546 tests required by skills/development/scirel-acceptance/anchors/release-96a9c6ab3f69.json
+steps 10/10 passed; tests collected 9678, selected 9678, deselected 0, passed 9636, failed 0, error 0
+RESULT SHA256 4d3e06003fd3792bc7e1c431581006a856a623c07e1fd469d98f87a3971f2b94
+ALL GREEN
+```
+
+`deselected 0` 是关键：发布档把 `release_only_tests.txt` 里的测试全跑了，包括交付包与 wheel 那几条
+（构建 wheel、装进独立环境、消费导出目录与三个 skill）。这补齐了本页 5 节里"发布档不重建交付包"
+留下的空白——**制品侧这次是真的验过，不是按需推断**。
+
+四条 `NOT_RUN: set SCIREL_MCP_PYTHON to an isolated official MCP SDK interpreter` 仍然存在，
+是环境缺隔离解释器的已知跳过，不是通过。同理三条 `platform longdouble` 与一条 Windows 遍历是平台限制。
+
+**这一条提交之后的改动只有本页文档**（`docs/maintainer/` 不进文档站），因此该回执对代码与合同仍然有效；
+下次改动代码或合同后，回执需重跑，不能沿用。
