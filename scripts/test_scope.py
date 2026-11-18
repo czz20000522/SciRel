@@ -55,6 +55,7 @@ SCRIPT_LAYERS = {
     "evidence_status.py": ("tooling",),
     "check_evidence_basis.py": ("tooling",),
     "propose_evidence_basis.py": ("tooling",),
+    "rules_status.py": ("tooling",),
     "check_c4_tasklist.py": ("tooling",),
     "check_observation_integrity.py": ("tooling",),
     "check_wheel_exposure.py": ("delivery",),
