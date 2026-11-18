@@ -20,50 +20,6 @@
       "reason": "not yet migrated: verification.basis absent"
     },
     {
-      "asset_id": "scirel.kinetic.plasma-dispersion-function",
-      "reason": "not yet migrated: verification.basis absent"
-    },
-    {
-      "asset_id": "scirel.kinetic.rational-default-deck",
-      "reason": "not yet migrated: verification.basis absent"
-    },
-    {
-      "asset_id": "scirel.kinetic.rational-em-coordinates",
-      "reason": "not yet migrated: verification.basis absent"
-    },
-    {
-      "asset_id": "scirel.kinetic.rational-equilibrium",
-      "reason": "not yet migrated: verification.basis absent"
-    },
-    {
-      "asset_id": "scirel.kinetic.rational-jpole-coefficients",
-      "reason": "not yet migrated: verification.basis absent"
-    },
-    {
-      "asset_id": "scirel.kinetic.rational-jpole-evaluate",
-      "reason": "not yet migrated: verification.basis absent"
-    },
-    {
-      "asset_id": "scirel.kinetic.rational-jpole-grid-coordinates",
-      "reason": "not yet migrated: verification.basis absent"
-    },
-    {
-      "asset_id": "scirel.kinetic.rational-z-poles",
-      "reason": "not yet migrated: verification.basis absent"
-    },
-    {
-      "asset_id": "scirel.kinetic.relativistic-codrift-generalized-spectrum",
-      "reason": "not yet migrated: verification.basis absent"
-    },
-    {
-      "asset_id": "scirel.kinetic.ronnmark-r-function",
-      "reason": "not yet migrated: verification.basis absent"
-    },
-    {
-      "asset_id": "scirel.kinetic.spectral-dispersion-scan",
-      "reason": "not yet migrated: verification.basis absent"
-    },
-    {
       "asset_id": "scirel.kinetic.spectral-plasma-state",
       "reason": "not yet migrated: verification.basis absent"
     },
@@ -450,10 +406,21 @@
     "scirel.kinetic.multifluid-scan",
     "scirel.kinetic.parallel-em-continuation",
     "scirel.kinetic.parallel-em-residual",
+    "scirel.kinetic.plasma-dispersion-function",
+    "scirel.kinetic.rational-default-deck",
+    "scirel.kinetic.rational-em-coordinates",
+    "scirel.kinetic.rational-equilibrium",
+    "scirel.kinetic.rational-jpole-coefficients",
+    "scirel.kinetic.rational-jpole-evaluate",
+    "scirel.kinetic.rational-jpole-grid-coordinates",
     "scirel.kinetic.rational-point-matrix",
     "scirel.kinetic.rational-pole-table",
     "scirel.kinetic.rational-solve-matrix",
+    "scirel.kinetic.rational-z-poles",
+    "scirel.kinetic.relativistic-codrift-generalized-spectrum",
+    "scirel.kinetic.ronnmark-r-function",
     "scirel.kinetic.species-equilibrium-scales",
+    "scirel.kinetic.spectral-dispersion-scan",
     "scirel.mirror.frank-egedal-hot-ion-moments",
     "scirel.mirror.frank-egedal-pressure-closure",
     "scirel.mirror.grid-mirror-kinetic-closure",
