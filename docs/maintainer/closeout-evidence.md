@@ -166,3 +166,50 @@ python -B scripts/check_output_channel_declaration.py
 python -B scripts/check_observation_integrity.py
 python3 scripts/tickets.py list tickets --status open
 ```
+
+## 2026-11-18 复验（`main` @ `e041e66a`）
+
+补记，不改上面的历史测量：那一节记录的是 `96a9c6ab` 上的读数，改写它等于伪造一次没做过的运行。
+下面是本轮在同一份工作树上重新跑出来的，命令与输出成对。
+
+```sh
+python -B scripts/check_observation_integrity.py
+# observation integrity: no silent failure anywhere; the ratchet is empty
+
+git worktree list | wc -l          # 1  （只剩主 checkout）
+git branch --list | wc -l          # 1  （只剩 main）
+git for-each-ref refs/archive | wc -l   # 110
+# 110 个归档 ref 全部能解析到存在的 commit（`git rev-parse --verify <ref>^{commit}`，0 个失败）
+
+python -B scripts/check_output_channel_declaration.py
+# output channel: 137 single-output contracts, all state their channel (9 baselined)
+
+python -B scripts/check_evidence_basis.py
+# evidence basis: 248/248 contracts declare verification.basis (0 still baselined)
+
+python -B scripts/objective_status.py
+# pass / pass / pass / not-observed（第四条是 PR 回执，树里看不见，脚本拒绝自评）
+
+python scripts/tickets.py ledger tickets
+# 13 open tickets; every one names its decision owner
+```
+
+与前一次的差异，逐条：
+
+| 项 | `96a9c6ab` | `e041e66a` |
+|---|---|---|
+| 单输出合同返回通道 | 92 份在基线内，未修 | **9 份**：83 份已写明（78 份按探测实测、5 份按读示例判定） |
+| 工单归属 | 无字段，靠人记 | **13 张全部有 `decision_owner`**，`tickets.py ledger` 可查，缺即非零退出 |
+| 工作树 / 本地分支 | 6 / 7 | **1 / 1** |
+| 规则盘点 | 28 条 | **29 条**（新增 `catalog-evidence-1`） |
+
+剩下 9 份通道不是「没做」：7 份是 `mapping-like`，等 `T-2026-1203` 定「合同要不要枚举映射键集」；
+2 份的合同摘要被磁静力学章节的执行记录绑定，改字节即让那份「真的跑过」的证据失效，
+刷新它必须重跑章节示例 —— 需要构建 wheel。
+
+### 这一版的发布档状态：**未重跑**
+
+按维护者 2026-11-18 的指示（短期不发布，合并门槛用 dev 档省时间），`#413` 之后没有再跑发布档。
+**因此本页不宣称 `e041e66a` 上的发布档结论。** 首个没经发布档验证的改动是 `#413` 的 83 份合同文本
+（API 参考页由合同生成，轮子与文档站只由发布档验证）。下次发布或对外交付前必须补跑，
+命令仍是 `python3 scripts/dev.py check`，判据看 `EXCLUSIVE`、`steps`、`RESULT SHA256` 三行。
