@@ -46,7 +46,20 @@ python3 scripts/tickets.py list tickets --status decided
 
 1. 先执行安全默认：不改实现，把疑点写进合同的局限性；如果是新增能力，先不合并。
 2. 在对应的 `kind` 目录下新建 `<id>.md`，`status: open`。`decisions` 和 `resolution` 由审核平台写，agent 不写。
-3. 正文必须做到：审核人只读这一页就能作出决定。
+3. `decision_owner` 必填，取 `maintainer` / `physics-reviewer` / `api-reviewer` / `platform` 之一。
+   **没有归属人的工单是本仓库最贵的一种欠账**：它开着、门禁不红、安全默认悄悄变成永久行为。
+   `T-2026-0800` 就是这样挂了七轮才等到一句话。
+4. 正文必须做到：审核人只读这一页就能作出决定。
+
+## 台账
+
+```sh
+python3 scripts/tickets.py ledger tickets          # 每张 open 工单：谁裁决、默认是什么、后果写了没
+python3 scripts/tickets.py ledger tickets --json
+```
+
+退出码非零意味着某张 open 工单缺归属人或缺「不决定的后果」段落——这两种缺失都不该被
+「清单看起来挺整齐」掩盖。
 
 ## 检查
 

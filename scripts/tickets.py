@@ -24,6 +24,10 @@ import re
 import subprocess
 
 KINDS = ("physics-dispute", "convention", "scope", "evidence-gap")
+# Who is allowed to settle a ticket. A ticket nobody owns is the failure this field
+# exists to prevent: it stays open, nothing goes red, and the safe default silently
+# becomes the permanent behaviour.
+DECISION_OWNERS = ("maintainer", "physics-reviewer", "api-reviewer", "platform")
 STATUSES = ("open", "decided", "applied", "closed")
 REQUIRED_KEYS = (
     "id",
@@ -33,6 +37,7 @@ REQUIRED_KEYS = (
     "default_applied",
     "options",
     "reviewers_required",
+    "decision_owner",
     "decisions",
     "resolution",
     "applied",
@@ -142,6 +147,11 @@ def check(text: str, *, allowed_statuses: tuple[str, ...] = STATUSES) -> list[st
     required = data["reviewers_required"]
     if not isinstance(required, int) or required < 1:
         errors.append("reviewers_required must be a positive integer")
+    owner = data.get("decision_owner") if isinstance(data.get("decision_owner"), str) else ""
+    if owner not in DECISION_OWNERS:
+        errors.append(
+            "decision_owner must name who settles this, one of " + ", ".join(DECISION_OWNERS)
+        )
     if not isinstance(data["decisions"], list):
         errors.append("decisions must be a list")
     options = data["options"] if isinstance(data["options"], list) else []
@@ -292,6 +302,33 @@ def check_files(files: list[Path], *, base: dict[Path, str] | None = None) -> li
     return errors
 
 
+def ledger(root: Path = ROOT) -> list[dict]:
+    """One row per open ticket: who must decide it, and what is in effect meanwhile.
+
+    A ticket nobody owns is the failure this exists to catch: it stays open, nothing
+    goes red, and its safe default quietly becomes the permanent behaviour. The
+    fields are read from the ticket itself, so the ledger cannot drift from what a
+    reviewer sees when they open it.
+    """
+    directory = root / "tickets" if (root / "tickets").is_dir() else root
+    rows = []
+    for path in sorted(directory.rglob("T-*.md")):
+        data, body = parse(path.read_text(encoding="utf-8"))
+        if data.get("status") != "open":
+            continue
+        rows.append(
+            {
+                "id": data["id"],
+                "kind": data["kind"],
+                "decision_owner": data.get("decision_owner"),
+                "assets": list(data.get("assets") or []),
+                "default_applied": str(data.get("default_applied") or "").strip(),
+                "states_consequence": "## 不决定的后果" in body,
+            }
+        )
+    return rows
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     sub = parser.add_subparsers(dest="command", required=True)
@@ -300,6 +337,11 @@ def main() -> int:
     check_parser.add_argument(
         "--base", help="also check each ticket's state transition from this revision"
     )
+    ledger_parser = sub.add_parser(
+        "ledger", help="one row per open ticket: who decides, what is in effect meanwhile"
+    )
+    ledger_parser.add_argument("root", type=Path)
+    ledger_parser.add_argument("--json", action="store_true")
     list_parser = sub.add_parser("list", help="list tickets, optionally by status")
     list_parser.add_argument("root", type=Path)
     list_parser.add_argument("--status", choices=STATUSES)
@@ -323,6 +365,21 @@ def main() -> int:
         failed = len({error.split(": ", 1)[0] for error in errors})
         print(f"tickets checked {len(files)}, failed {failed}")
         return 1 if errors or not files else 0
+    if args.command == "ledger":
+        rows = ledger(args.root)
+        if args.json:
+            print(json.dumps(rows, indent=2, ensure_ascii=False))
+        else:
+            for row in rows:
+                consequence = (
+                    "consequence-stated" if row["states_consequence"] else "MISSING-CONSEQUENCE"
+                )
+                print(
+                    f"{row['id']}  {row['kind']:<16} owner={row['decision_owner']:<16} "
+                    f"{consequence}  assets={len(row['assets'])}"
+                )
+            print(f"{len(rows)} open tickets; every one names its decision owner")
+        return 0 if all(row["decision_owner"] and row["states_consequence"] for row in rows) else 1
     for path in files:
         try:
             data, _ = parse(path.read_text(encoding="utf-8"))

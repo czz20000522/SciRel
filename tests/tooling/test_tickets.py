@@ -33,6 +33,7 @@ def _ticket(**overrides):
         "default_applied": "写进局限性，不改实现",
         "options": "[A, B]",
         "reviewers_required": "2",
+        "decision_owner": "maintainer",
         "decisions": "[]",
         "resolution": "null",
         "applied": "null",
@@ -254,3 +255,52 @@ def test_repository_tickets_follow_the_format():
     files = sorted(p for p in (ROOT / "tickets").rglob("*.md") if p.name != "README.md")
     assert files, "tickets/ holds at least the first real ticket"
     assert tickets.check_files(files) == []
+
+
+def test_an_open_ticket_must_name_who_decides_it():
+    """A ticket nobody owns is the failure the field exists to prevent.
+
+    It stays open, nothing goes red, and its safe default quietly becomes the
+    permanent behaviour -- which is exactly how the withdrawal ticket survived
+    seven rounds without an answer.
+    """
+    assert tickets.check(_ticket()) == []
+    missing = [
+        error for error in tickets.check(_ticket(decision_owner=None)) if "missing key" in error
+    ]
+    assert missing == ["missing key: decision_owner"]
+    unknown = tickets.check(_ticket(decision_owner="somebody"))
+    assert any("decision_owner must name who settles this" in error for error in unknown)
+
+
+def test_the_ledger_names_an_owner_and_a_consequence_for_every_open_ticket(tmp_path):
+    for kind, name in (("scope", "T-2026-0001"), ("convention", "T-2026-0002")):
+        directory = tmp_path / "tickets" / kind
+        directory.mkdir(parents=True)
+        (directory / f"{name}.md").write_text(
+            _ticket(id=name, kind=kind, decision_owner="api-reviewer"), encoding="utf-8"
+        )
+    rows = tickets.ledger(tmp_path)
+    # rows follow the path order, so the convention ticket sorts before the scope one
+    assert [(row["id"], row["decision_owner"], row["states_consequence"]) for row in rows] == [
+        ("T-2026-0002", "api-reviewer", True),
+        ("T-2026-0001", "api-reviewer", True),
+    ]
+
+
+def test_the_ledger_drops_the_consequence_flag_when_the_section_is_gone(tmp_path):
+    directory = tmp_path / "tickets" / "scope"
+    directory.mkdir(parents=True)
+    (directory / "T-2026-0003.md").write_text(
+        _ticket(id="T-2026-0003", kind="scope").replace("## 不决定的后果\n写进局限性。\n", ""),
+        encoding="utf-8",
+    )
+    assert [row["states_consequence"] for row in tickets.ledger(tmp_path)] == [False]
+
+
+def test_the_repository_ledger_is_complete():
+    rows = tickets.ledger(ROOT)
+    assert rows, "the ledger must not be empty"
+    assert [
+        row["id"] for row in rows if not row["decision_owner"] or not row["states_consequence"]
+    ] == []
