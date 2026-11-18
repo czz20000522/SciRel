@@ -195,7 +195,7 @@
     "basis": {
       "kind": "independent-recomputation",
       "statement": "A second source that shares no elliptic or hypergeometric evaluation with the implementation is added, plus the stream-function identities as a derivative-level check that the maintained 50-digit closed-form oracle cannot provide; the observed maximum deviation on the sampled configurations stays within the declared relative budget.",
-      "source": "tests/field/test_filament_coil_green_field.py"
+      "source": "tests/field/test_filament_coil_green_field_evidence.py"
     }
   }
 }

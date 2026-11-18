@@ -148,7 +148,7 @@
     "basis": {
       "kind": "analytic-identity",
       "statement": "The inverse relation is established on the tested inputs only. Accuracy for large or wrapped angles beyond the sine/cosine parameterisation is not established, and no physical interpretation of the returned components is made.",
-      "source": "tests/geometry/test_meridional_polar_inverse.py"
+      "source": "tests/sampling/test_analytic_sampling_evidence.py"
     }
   }
 }

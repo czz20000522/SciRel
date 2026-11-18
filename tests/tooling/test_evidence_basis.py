@@ -38,6 +38,14 @@ def _baseline(root: Path, entries: list[str]) -> None:
     )
 
 
+def _evidence_file(root: Path, relative: str) -> str:
+    """Create the cited evidence file so a fixture isolates what it is testing."""
+    target = root / relative
+    target.parent.mkdir(parents=True, exist_ok=True)
+    target.write_text("", encoding="utf-8")
+    return relative
+
+
 def _contract(root: Path, asset: str, verification: dict) -> None:
     directory = root / gate.CATALOG
     directory.mkdir(parents=True, exist_ok=True)
@@ -83,6 +91,7 @@ def test_a_declared_basis_with_a_known_kind_passes(tmp_path):
             "basis": {
                 "kind": "analytic-identity",
                 "statement": "psi = R^2 Z^2 has closed-form gradients",
+                "source": _evidence_file(root, "tests/x/test_declared_evidence.py"),
             },
         },
     )
@@ -115,7 +124,11 @@ def test_kind_none_without_a_recorded_gap_is_a_violation(tmp_path):
             "scope": ["a"],
             "evidence_ceiling": "x",
             "known_limitations": [],
-            "basis": {"kind": "none", "statement": "no basis"},
+            "basis": {
+                "kind": "none",
+                "statement": "no basis",
+                "source": _evidence_file(root, "tests/x/test_none_evidence.py"),
+            },
         },
     )
     # evidence_ceiling is non-empty here, so this one passes; the failing variant follows.
@@ -186,3 +199,53 @@ def test_a_broken_baseline_is_unobserved(tmp_path):
         root, "scirel.x.v", {"scope": ["a"], "evidence_ceiling": "b", "known_limitations": []}
     )
     assert gate.main(["--root", str(root)]) == 2
+
+
+def test_a_basis_source_must_resolve_to_a_repository_file(tmp_path):
+    """A prose or stale source is a provenance hole, not a cosmetic defect.
+
+    Two failure shapes are covered because both were shipped at least once:
+    a source invented from the asset name (never existed) and a source that
+    pointed at the right family but the wrong file. Existence is the part a
+    machine can decide; the test asserts exactly that and nothing wider.
+    """
+    root = _root(tmp_path)
+    _baseline(root, [])
+    _contract(
+        root,
+        "scirel.demo.asset",
+        {
+            "tests": ["tests/demo/test_asset.py"],
+            "basis": {
+                "kind": "analytic-identity",
+                "statement": "an exact identity decides it.",
+                "source": "tests/demo/test_asset.py",
+            },
+        },
+    )
+    violations, _, _, _ = gate.inspect(root)
+    assert violations == [
+        "scirel.demo.asset: basis.source 'tests/demo/test_asset.py' does not resolve to a repository file"
+    ]
+
+    (root / "tests" / "demo").mkdir(parents=True)
+    (root / "tests" / "demo" / "test_asset.py").write_text("", encoding="utf-8")
+    assert gate.inspect(root)[0] == []
+
+
+def test_an_empty_basis_source_is_a_violation(tmp_path):
+    """Omitting the provenance is a distinct failure from pointing it wrong."""
+    root = _root(tmp_path)
+    _baseline(root, [])
+    _contract(
+        root,
+        "scirel.demo.asset",
+        {
+            "basis": {
+                "kind": "closed-form",
+                "statement": "a closed form decides it.",
+                "source": "  ",
+            }
+        },
+    )
+    assert gate.inspect(root)[0] == ["scirel.demo.asset: basis.source is empty"]

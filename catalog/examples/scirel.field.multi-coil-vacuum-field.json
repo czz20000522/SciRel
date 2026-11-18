@@ -195,7 +195,7 @@
     "basis": {
       "kind": "independent-recomputation",
       "statement": "The composition's self-consistency is replaced by a Biot-Savart quadrature total built from an independently recomputed filament table, and the documented current-key trap is turned into a measured factor. It covers vacuum filament fields only: no finite conductor cross-section or permeable material is covered.",
-      "source": "tests/field/test_multi_coil_vacuum_field.py"
+      "source": "tests/field/test_multi_coil_vacuum_field_evidence.py"
     }
   },
   "composition": {

@@ -171,7 +171,7 @@
     "basis": {
       "kind": "independent-recomputation",
       "statement": "An exact rational second source decides every returned scalar, so the relation is decided without a floating-point re-derivation; the observed maximum relative deviation of the modulus is 1.87e-16 (0.84 eps) on the sampled table.",
-      "source": "tests/field/test_coil_green_geometry.py"
+      "source": "tests/field/test_coil_green_geometry_evidence.py"
     }
   }
 }

@@ -131,7 +131,7 @@
     "basis": {
       "kind": "analytic-identity",
       "statement": "Exact polynomial reproduction, the measured second-order ratio on cubic data and the arclength (not index) differentiation variable are asserted on the named fixtures. No general error bound and no statement about noisy data.",
-      "source": "tests/geometry/test_arclength_derivative.py"
+      "source": "tests/fieldline/test_fieldline_geometry_evidence.py"
     }
   }
 }

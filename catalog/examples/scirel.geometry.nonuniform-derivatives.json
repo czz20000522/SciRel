@@ -135,7 +135,7 @@
     "basis": {
       "kind": "closed-form",
       "statement": "Exact rational differentiation on the declared stencils plus the declared O(h^2) order decide the derivatives.",
-      "source": "tests/geometry/test_nonuniform_derivatives.py"
+      "source": "tests/numerics/test_linalg_and_derivative_evidence.py"
     }
   }
 }

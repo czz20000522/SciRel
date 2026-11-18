@@ -152,7 +152,7 @@
     "basis": {
       "kind": "specification",
       "statement": "Orientation, roll, closure and endpoint selection are decided as exact combinatorics on the tested cycles. No topology policy for self-intersecting contours is established, and the orientation of a zero-area cycle is undefined: that case is asserted as recorded behaviour rather than as evidence.",
-      "source": "tests/geometry/test_parse_segment.py"
+      "source": "tests/sampling/test_polyline_and_selection_evidence.py"
     }
   }
 }

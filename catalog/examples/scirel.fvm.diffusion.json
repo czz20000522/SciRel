@@ -138,7 +138,7 @@
     "basis": {
       "kind": "analytic-identity",
       "statement": "Named discrete invariants and manufactured uniform-grid convergence decide the discretisation; no arbitrary-grid stability or accuracy and no full transport simulation is claimed.",
-      "source": "tests/fvm/test_diffusion.py"
+      "source": "tests/fvm/test_fvm.py"
     }
   }
 }

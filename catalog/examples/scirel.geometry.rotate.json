@@ -27,7 +27,7 @@
     "basis": {
       "kind": "closed-form",
       "statement": "The orientation sign, the degree unit, the pivot, the full-turn identity and the overflow path are asserted, with an exact rational recomputation of both components. This is a planar transform, not a 3-D rotation, and it carries no measure.",
-      "source": "tests/geometry/test_rotate.py"
+      "source": "tests/geometry/test_frame_convention_evidence.py"
     }
   },
   "asset_id": "scirel.geometry.rotate",
