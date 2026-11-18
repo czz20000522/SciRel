@@ -1,274 +1,279 @@
 {
- "schema": "scirel.asset-document",
- "asset_id": "scirel.neoclassical.bootstrap-current",
- "title": {
-  "en": "Analytic parallel bootstrap current",
-  "zh": "解析平行自举电流"
- },
- "summary": "Evaluate parallel current density from explicit pressure/logarithmic gradients and fit coefficients. The two named fields are returned in one scirel._result.Result mapping.",
- "taxonomy": [
-  "neoclassical",
-  "bootstrap"
- ],
- "aliases": [],
- "discovery": {
-  "capability": [
-   "Analytic parallel bootstrap current",
-   "Parallel current density from explicit pressure and logarithmic gradients with Sauter or Redl fit coefficients."
+  "schema": "scirel.asset-document",
+  "asset_id": "scirel.neoclassical.bootstrap-current",
+  "title": {
+    "en": "Analytic parallel bootstrap current",
+    "zh": "解析平行自举电流"
+  },
+  "summary": "Evaluate parallel current density from explicit pressure/logarithmic gradients and fit coefficients. The two named fields are returned in one scirel._result.Result mapping.",
+  "taxonomy": [
+    "neoclassical",
+    "bootstrap"
   ],
-  "operation": [
-   "Evaluate the analytic parallel bootstrap current",
-   "explicit face profiles, gradients and fit coefficients -> parallel current density"
+  "aliases": [],
+  "discovery": {
+    "capability": [
+      "Analytic parallel bootstrap current",
+      "Parallel current density from explicit pressure and logarithmic gradients with Sauter or Redl fit coefficients."
+    ],
+    "operation": [
+      "Evaluate the analytic parallel bootstrap current",
+      "explicit face profiles, gradients and fit coefficients -> parallel current density"
+    ],
+    "model": "Bounded analytic empirical tokamak fit (Sauter PoP 1999 Eq. 12 or Redl PoP 2021 Eq. 5); not a first-principles neoclassical solve.",
+    "geometry": "Caller-supplied axisymmetric tokamak face data on a radius rho_face, with the poloidal-flux derivative given either as total flux (Wb) or per radian (Wb/rad); no device geometry is built in.",
+    "boundary": "Only a face at rho_face == 0 is the magnetic axis and gets exactly zero current; all gradients are explicit; coefficients are evaluated for the supplied faces only.",
+    "device_scope": "device-parameterized"
+  },
+  "identity": {
+    "relation": "Sauter PoP1999 Eq12 / Redl PoP2021 Eq5",
+    "direction": "Explicit inputs to fit coefficients/current",
+    "definition": "j_face=-F*multiplier/(B0*dpsi_per_radian_drho) * [L31*pe*dlnne+L31*pi*dlnni+(L31+L32)*pe*dlnTe+(L31+alpha*L34)*pi*dlnTi], with dpsi_per_radian_drho = dpsi_drho/(2*pi) when the total-flux form is given. Exactly one flux-derivative convention is accepted; both or neither raise ValueError. A face with rho_face == 0 is the axis and is set exactly to zero; no other face is zeroed. Cells use adjacent arithmetic face midpoints with the overflow-safe finite midpoint implementation. The two named arrays are returned together in one scirel._result.Result mapping; mapping lookup and attribute access expose the same fields.",
+    "model": "Bounded analytic empirical tokamak fit",
+    "geometry": "Caller-supplied axisymmetric tokamak face data",
+    "coordinates": "rho_face normalized radius (nonnegative, strictly increasing); poloidal-flux derivative as total flux dpsi_drho_face [Wb] or per radian dpsi_per_radian_drho_face [Wb/rad]",
+    "boundary": "Only a face with rho_face == 0 is the magnetic axis and gets exactly zero current; all gradients are explicit",
+    "assumptions": [
+      "Finite converted-binary64 input quantities; caller supplies consistent units and normalization"
+    ]
+  },
+  "inputs": [
+    {
+      "name": "bootstrap_multiplier",
+      "description": "Dimensionless multiplicative scale; signed algebra preserved",
+      "units": "1",
+      "shape": "scalar",
+      "dtype": "real numeric converted to float64",
+      "required": false,
+      "constraints": "Finite real scalar; physical source configuration uses nonnegative multiplier",
+      "default": 1.0
+    },
+    {
+      "name": "rho_face",
+      "description": "Radial coordinate of the faces. A face at rho_face == 0 is the magnetic axis and gets zero current; no other face is treated as the axis.",
+      "units": "1",
+      "shape": "N+1",
+      "dtype": "real numeric converted to float64",
+      "required": true,
+      "constraints": "Finite, nonnegative and strictly increasing; sets the face shape of every other array"
+    },
+    {
+      "name": "F_face",
+      "description": "Toroidal flux function R*B_toroidal on faces",
+      "units": "T m",
+      "shape": "N+1",
+      "dtype": "real numeric converted to float64",
+      "required": true,
+      "constraints": "Finite explicit matching faces"
+    },
+    {
+      "name": "B0",
+      "description": "Reference toroidal magnetic field with a signed convention",
+      "units": "T",
+      "shape": "scalar",
+      "dtype": "real numeric converted to float64",
+      "required": true,
+      "constraints": "Finite nonzero scalar"
+    },
+    {
+      "name": "dpsi_drho_face",
+      "description": "Derivative of the TOTAL poloidal flux (2*pi times the per-radian psi = R*A_phi) with respect to rho_face. Give this or dpsi_per_radian_drho_face, not both.",
+      "units": "Wb",
+      "shape": "N+1",
+      "dtype": "real numeric converted to float64",
+      "required": false,
+      "default": null,
+      "constraints": "Exactly one of dpsi_drho_face or dpsi_per_radian_drho_face; finite matching faces, nonzero wherever rho_face > 0"
+    },
+    {
+      "name": "dpsi_per_radian_drho_face",
+      "description": "Derivative of the poloidal flux per radian psi = R*A_phi (the G-EQDSK and scirel.io.read_geqdsk convention) with respect to rho_face. Give this or dpsi_drho_face, not both.",
+      "units": "Wb/rad",
+      "shape": "N+1",
+      "dtype": "real numeric converted to float64",
+      "required": false,
+      "default": null,
+      "constraints": "Exactly one of dpsi_drho_face or dpsi_per_radian_drho_face; finite matching faces, nonzero wherever rho_face > 0"
+    },
+    {
+      "name": "p_e_face",
+      "description": "Electron scalar thermal pressure",
+      "units": "Pa",
+      "shape": "N+1",
+      "dtype": "real numeric converted to float64",
+      "required": true,
+      "constraints": "Finite explicit matching faces"
+    },
+    {
+      "name": "p_i_face",
+      "description": "Ion scalar thermal pressure",
+      "units": "Pa",
+      "shape": "N+1",
+      "dtype": "real numeric converted to float64",
+      "required": true,
+      "constraints": "Finite explicit matching faces"
+    },
+    {
+      "name": "dlnne_drho_face",
+      "description": "Electron density logarithmic gradient",
+      "units": "1",
+      "shape": "N+1",
+      "dtype": "real numeric converted to float64",
+      "required": true,
+      "constraints": "Finite explicit matching faces"
+    },
+    {
+      "name": "dlnni_drho_face",
+      "description": "Main-ion density logarithmic gradient",
+      "units": "1",
+      "shape": "N+1",
+      "dtype": "real numeric converted to float64",
+      "required": true,
+      "constraints": "Finite explicit matching faces"
+    },
+    {
+      "name": "dlnte_drho_face",
+      "description": "Electron temperature logarithmic gradient",
+      "units": "1",
+      "shape": "N+1",
+      "dtype": "real numeric converted to float64",
+      "required": true,
+      "constraints": "Finite explicit matching faces"
+    },
+    {
+      "name": "dlnti_drho_face",
+      "description": "Ion temperature logarithmic gradient",
+      "units": "1",
+      "shape": "N+1",
+      "dtype": "real numeric converted to float64",
+      "required": true,
+      "constraints": "Finite explicit matching faces"
+    },
+    {
+      "name": "L31",
+      "description": "Density-gradient fit coefficient",
+      "units": "1",
+      "shape": "N+1",
+      "dtype": "real numeric converted to float64",
+      "required": true,
+      "constraints": "Finite explicit matching faces"
+    },
+    {
+      "name": "L32",
+      "description": "Electron-temperature coefficient correction",
+      "units": "1",
+      "shape": "N+1",
+      "dtype": "real numeric converted to float64",
+      "required": true,
+      "constraints": "Finite explicit matching faces"
+    },
+    {
+      "name": "L34",
+      "description": "Ion-temperature coefficient; Redl must use L31",
+      "units": "1",
+      "shape": "N+1",
+      "dtype": "real numeric converted to float64",
+      "required": true,
+      "constraints": "Finite explicit matching faces"
+    },
+    {
+      "name": "alpha",
+      "description": "Ion temperature-gradient fit multiplier",
+      "units": "1",
+      "shape": "N+1",
+      "dtype": "real numeric converted to float64",
+      "required": true,
+      "constraints": "Finite explicit matching faces"
+    }
   ],
-  "model": "Bounded analytic empirical tokamak fit (Sauter PoP 1999 Eq. 12 or Redl PoP 2021 Eq. 5); not a first-principles neoclassical solve.",
-  "geometry": "Caller-supplied axisymmetric tokamak face data on a radius rho_face, with the poloidal-flux derivative given either as total flux (Wb) or per radian (Wb/rad); no device geometry is built in.",
-  "boundary": "Only a face at rho_face == 0 is the magnetic axis and gets exactly zero current; all gradients are explicit; coefficients are evaluated for the supplied faces only.",
-  "device_scope": "device-parameterized"
- },
- "identity": {
-  "relation": "Sauter PoP1999 Eq12 / Redl PoP2021 Eq5",
-  "direction": "Explicit inputs to fit coefficients/current",
-  "definition": "j_face=-F*multiplier/(B0*dpsi_per_radian_drho) * [L31*pe*dlnne+L31*pi*dlnni+(L31+L32)*pe*dlnTe+(L31+alpha*L34)*pi*dlnTi], with dpsi_per_radian_drho = dpsi_drho/(2*pi) when the total-flux form is given. Exactly one flux-derivative convention is accepted; both or neither raise ValueError. A face with rho_face == 0 is the axis and is set exactly to zero; no other face is zeroed. Cells use adjacent arithmetic face midpoints with the overflow-safe finite midpoint implementation. The two named arrays are returned together in one scirel._result.Result mapping; mapping lookup and attribute access expose the same fields.",
-  "model": "Bounded analytic empirical tokamak fit",
-  "geometry": "Caller-supplied axisymmetric tokamak face data",
-  "coordinates": "rho_face normalized radius (nonnegative, strictly increasing); poloidal-flux derivative as total flux dpsi_drho_face [Wb] or per radian dpsi_per_radian_drho_face [Wb/rad]",
-  "boundary": "Only a face with rho_face == 0 is the magnetic axis and gets exactly zero current; all gradients are explicit",
-  "assumptions": [
-   "Finite converted-binary64 input quantities; caller supplies consistent units and normalization"
+  "outputs": [
+    {
+      "name": "j_parallel_bootstrap_face",
+      "description": "Field of the returned scirel._result.Result mapping: parallel current density <j.B>/B0 on faces; zero at a face with rho_face == 0",
+      "units": "A/m^2",
+      "shape": "N+1",
+      "dtype": "real numeric converted to float64",
+      "required": true,
+      "constraints": "Finite; equal explicit one-dimensional face shape; no broadcasting"
+    },
+    {
+      "name": "j_parallel_bootstrap",
+      "description": "Field of the returned scirel._result.Result mapping: arithmetic adjacent-face cell current density",
+      "units": "A/m^2",
+      "shape": "N",
+      "dtype": "real numeric converted to float64",
+      "required": true,
+      "constraints": "Finite; equal explicit one-dimensional face shape; no broadcasting"
+    }
+  ],
+  "applicability": {
+    "preconditions": [
+      "Declared shapes, domains and matching scientific conventions; no implicit broadcasting"
+    ],
+    "supported": [
+      "Evaluate parallel current density from explicit pressure/logarithmic gradients and fit coefficients"
+    ],
+    "excluded": [
+      "Empirical coefficients are not experimentally calibrated here. Caller must supply model-consistent collisionalities and trapped fraction; no geometry reconstruction, edge pedestal or full-transport physics qualification.",
+      "Large finite charge/collisionality combinations may have nonrepresentable intermediate or final arithmetic and fail explicitly. Float64 conversion cannot recover prior lost precision.",
+      "Physical interpretation assumes axisymmetric tokamak geometry, nonnegative scalar thermal pressures, positive density/temperature before forming their logarithms, and compatible poloidal-flux/field sign conventions. Signed inputs retain algebra only."
+    ]
+  },
+  "failure_semantics": {
+    "invalid_input": "ValueError for malformed, nonfinite, masked, mismatched or out-of-domain face inputs; no partial result.",
+    "runtime_failure": "FloatingPointError for nonfinite coefficient/current arithmetic; no fallback is returned.",
+    "nonconvergence": "Not applicable; these are direct analytic fit and arithmetic mappings.",
+    "partial_results": "No scirel._result.Result mapping is returned on failure."
+  },
+  "public_api": {
+    "python": {
+      "module": "scirel.neoclassical.bootstrap",
+      "symbol": "calculate_bootstrap_current",
+      "signature": "calculate_bootstrap_current(*, bootstrap_multiplier=1.0, rho_face, F_face, B0, dpsi_drho_face=None, dpsi_per_radian_drho_face=None, p_e_face, p_i_face, dlnne_drho_face, dlnni_drho_face, dlnte_drho_face, dlnti_drho_face, L31, L32, L34, alpha)",
+      "canonical_module": "scirel.neoclassical",
+      "canonical_symbol": "calculate_bootstrap_current"
+    }
+  },
+  "version": {
+    "implementation_version": "0.0.0",
+    "dependencies": [
+      {
+        "asset_id": "scirel.numerics.face-to-cell"
+      }
+    ]
+  },
+  "example": {
+    "description": "Check the axis zero and that the total-flux and per-radian forms agree.",
+    "code": "import numpy as np\nfrom scirel._result import Result\nfrom scirel.neoclassical import calculate_bootstrap_current\none=np.ones(3); zero=np.zeros(3)\nkw=dict(rho_face=[0.,.5,1.],F_face=one,B0=2.,p_e_face=one,p_i_face=one,dlnne_drho_face=one,dlnni_drho_face=zero,dlnte_drho_face=zero,dlnti_drho_face=zero,L31=one,L32=zero,L34=one,alpha=one)\nx=calculate_bootstrap_current(dpsi_drho_face=one,**kw)\nassert isinstance(x, Result)\nassert list(x) == ['j_parallel_bootstrap_face', 'j_parallel_bootstrap']\nassert x.j_parallel_bootstrap_face is x['j_parallel_bootstrap_face']\nnp.testing.assert_allclose(x['j_parallel_bootstrap_face'],[0,-np.pi,-np.pi])\ny=calculate_bootstrap_current(dpsi_per_radian_drho_face=one/(2*np.pi),**kw)\nnp.testing.assert_allclose(y['j_parallel_bootstrap_face'],x['j_parallel_bootstrap_face'])",
+    "expected": "The returned object is a scirel._result.Result mapping with fields readable by key and attribute. Face current is [0,-pi,-pi] in both conventions."
+  },
+  "verification": {
+    "scope": [
+      "Current assembly witnesses cover the electron-density-gradient term, axis and midpoint behavior, extreme finite arithmetic, total/per-radian flux equivalence and rejection/off-axis rules; the selected test_named_result.py case checks existing current arrays and named-result behavior.",
+      "The named-result migration preserves existing key order, values, shape and dtype while exposing the same fields by attribute.",
+      "Total-flux and per-radian flux derivatives agree; giving both or neither, a non-increasing or negative rho_face, or a zero flux derivative off the axis raise ValueError; an off-axis first face is not zeroed.",
+      "Six independently generated 80/120-digit manufactured pressure-differential cases check all four drive terms, signed reference field/multiplier, total and per-radian flux derivatives, explicit axis zeroing and adjacent face means. They are algebraic assembly witnesses, not physically calibrated plasma cases."
+    ],
+    "tests": [
+      "tests/tooling/test_bootstrap.py",
+      "tests/tooling/test_named_result.py::test_neoclassical_results_preserve_baseline_values_and_return_types[calculate_bootstrap_current]",
+      "tests/tooling/test_bootstrap_primary.py::test_current_follows_pressure_differential_and_flux_convention"
+    ],
+    "evidence_ceiling": "Mathematical fit arithmetic and explicit assembly only; no empirical full-physics qualification.",
+    "known_limitations": [
+      "Empirical coefficients are not experimentally calibrated here. Caller must supply model-consistent collisionalities and trapped fraction; no geometry reconstruction, edge pedestal or full-transport physics qualification.",
+      "Large finite charge/collisionality combinations may have nonrepresentable intermediate or final arithmetic and fail explicitly. Float64 conversion cannot recover prior lost precision.",
+      "Physical interpretation assumes axisymmetric tokamak geometry, nonnegative scalar thermal pressures, positive density/temperature before forming their logarithms, and compatible poloidal-flux/field sign conventions. Signed inputs retain algebra only.",
+      "The historical Decimal claim remains unlocated. New pressure-differential references bind six manufactured assembly cases and their exact inputs/precision; they do not validate empirical coefficient fitting, physical magnetic-axis regularity or complete transport behavior."
+    ],
+    "basis": {
+      "kind": "specification",
+      "statement": "Mathematical fit arithmetic and explicit assembly only; no empirical full-physics qualification.",
+      "source": "tests/tooling/test_bootstrap.py"
+    }
+  },
+  "references": [
+    "O. Sauter, C. Angioni and Y. R. Lin-Liu, Physics of Plasmas 6, 2834 (1999), doi:10.1063/1.873240.",
+    "A. Redl et al., Physics of Plasmas 28, 022502 (2021), doi:10.1063/5.0012664."
   ]
- },
- "inputs": [
-  {
-   "name": "bootstrap_multiplier",
-   "description": "Dimensionless multiplicative scale; signed algebra preserved",
-   "units": "1",
-   "shape": "scalar",
-   "dtype": "real numeric converted to float64",
-   "required": false,
-   "constraints": "Finite real scalar; physical source configuration uses nonnegative multiplier",
-   "default": 1.0
-  },
-  {
-   "name": "rho_face",
-   "description": "Radial coordinate of the faces. A face at rho_face == 0 is the magnetic axis and gets zero current; no other face is treated as the axis.",
-   "units": "1",
-   "shape": "N+1",
-   "dtype": "real numeric converted to float64",
-   "required": true,
-   "constraints": "Finite, nonnegative and strictly increasing; sets the face shape of every other array"
-  },
-  {
-   "name": "F_face",
-   "description": "Toroidal flux function R*B_toroidal on faces",
-   "units": "T m",
-   "shape": "N+1",
-   "dtype": "real numeric converted to float64",
-   "required": true,
-   "constraints": "Finite explicit matching faces"
-  },
-  {
-   "name": "B0",
-   "description": "Reference toroidal magnetic field with a signed convention",
-   "units": "T",
-   "shape": "scalar",
-   "dtype": "real numeric converted to float64",
-   "required": true,
-   "constraints": "Finite nonzero scalar"
-  },
-  {
-   "name": "dpsi_drho_face",
-   "description": "Derivative of the TOTAL poloidal flux (2*pi times the per-radian psi = R*A_phi) with respect to rho_face. Give this or dpsi_per_radian_drho_face, not both.",
-   "units": "Wb",
-   "shape": "N+1",
-   "dtype": "real numeric converted to float64",
-   "required": false,
-   "default": null,
-   "constraints": "Exactly one of dpsi_drho_face or dpsi_per_radian_drho_face; finite matching faces, nonzero wherever rho_face > 0"
-  },
-  {
-   "name": "dpsi_per_radian_drho_face",
-   "description": "Derivative of the poloidal flux per radian psi = R*A_phi (the G-EQDSK and scirel.io.read_geqdsk convention) with respect to rho_face. Give this or dpsi_drho_face, not both.",
-   "units": "Wb/rad",
-   "shape": "N+1",
-   "dtype": "real numeric converted to float64",
-   "required": false,
-   "default": null,
-   "constraints": "Exactly one of dpsi_drho_face or dpsi_per_radian_drho_face; finite matching faces, nonzero wherever rho_face > 0"
-  },
-  {
-   "name": "p_e_face",
-   "description": "Electron scalar thermal pressure",
-   "units": "Pa",
-   "shape": "N+1",
-   "dtype": "real numeric converted to float64",
-   "required": true,
-   "constraints": "Finite explicit matching faces"
-  },
-  {
-   "name": "p_i_face",
-   "description": "Ion scalar thermal pressure",
-   "units": "Pa",
-   "shape": "N+1",
-   "dtype": "real numeric converted to float64",
-   "required": true,
-   "constraints": "Finite explicit matching faces"
-  },
-  {
-   "name": "dlnne_drho_face",
-   "description": "Electron density logarithmic gradient",
-   "units": "1",
-   "shape": "N+1",
-   "dtype": "real numeric converted to float64",
-   "required": true,
-   "constraints": "Finite explicit matching faces"
-  },
-  {
-   "name": "dlnni_drho_face",
-   "description": "Main-ion density logarithmic gradient",
-   "units": "1",
-   "shape": "N+1",
-   "dtype": "real numeric converted to float64",
-   "required": true,
-   "constraints": "Finite explicit matching faces"
-  },
-  {
-   "name": "dlnte_drho_face",
-   "description": "Electron temperature logarithmic gradient",
-   "units": "1",
-   "shape": "N+1",
-   "dtype": "real numeric converted to float64",
-   "required": true,
-   "constraints": "Finite explicit matching faces"
-  },
-  {
-   "name": "dlnti_drho_face",
-   "description": "Ion temperature logarithmic gradient",
-   "units": "1",
-   "shape": "N+1",
-   "dtype": "real numeric converted to float64",
-   "required": true,
-   "constraints": "Finite explicit matching faces"
-  },
-  {
-   "name": "L31",
-   "description": "Density-gradient fit coefficient",
-   "units": "1",
-   "shape": "N+1",
-   "dtype": "real numeric converted to float64",
-   "required": true,
-   "constraints": "Finite explicit matching faces"
-  },
-  {
-   "name": "L32",
-   "description": "Electron-temperature coefficient correction",
-   "units": "1",
-   "shape": "N+1",
-   "dtype": "real numeric converted to float64",
-   "required": true,
-   "constraints": "Finite explicit matching faces"
-  },
-  {
-   "name": "L34",
-   "description": "Ion-temperature coefficient; Redl must use L31",
-   "units": "1",
-   "shape": "N+1",
-   "dtype": "real numeric converted to float64",
-   "required": true,
-   "constraints": "Finite explicit matching faces"
-  },
-  {
-   "name": "alpha",
-   "description": "Ion temperature-gradient fit multiplier",
-   "units": "1",
-   "shape": "N+1",
-   "dtype": "real numeric converted to float64",
-   "required": true,
-   "constraints": "Finite explicit matching faces"
-  }
- ],
- "outputs": [
-  {
-   "name": "j_parallel_bootstrap_face",
-   "description": "Field of the returned scirel._result.Result mapping: parallel current density <j.B>/B0 on faces; zero at a face with rho_face == 0",
-   "units": "A/m^2",
-   "shape": "N+1",
-   "dtype": "real numeric converted to float64",
-   "required": true,
-   "constraints": "Finite; equal explicit one-dimensional face shape; no broadcasting"
-  },
-  {
-   "name": "j_parallel_bootstrap",
-   "description": "Field of the returned scirel._result.Result mapping: arithmetic adjacent-face cell current density",
-   "units": "A/m^2",
-   "shape": "N",
-   "dtype": "real numeric converted to float64",
-   "required": true,
-   "constraints": "Finite; equal explicit one-dimensional face shape; no broadcasting"
-  }
- ],
- "applicability": {
-  "preconditions": [
-   "Declared shapes, domains and matching scientific conventions; no implicit broadcasting"
-  ],
-  "supported": [
-   "Evaluate parallel current density from explicit pressure/logarithmic gradients and fit coefficients"
-  ],
-  "excluded": [
-   "Empirical coefficients are not experimentally calibrated here. Caller must supply model-consistent collisionalities and trapped fraction; no geometry reconstruction, edge pedestal or full-transport physics qualification.",
-   "Large finite charge/collisionality combinations may have nonrepresentable intermediate or final arithmetic and fail explicitly. Float64 conversion cannot recover prior lost precision.",
-   "Physical interpretation assumes axisymmetric tokamak geometry, nonnegative scalar thermal pressures, positive density/temperature before forming their logarithms, and compatible poloidal-flux/field sign conventions. Signed inputs retain algebra only."
-  ]
- },
- "failure_semantics": {
-  "invalid_input": "ValueError for malformed, nonfinite, masked, mismatched or out-of-domain face inputs; no partial result.",
-  "runtime_failure": "FloatingPointError for nonfinite coefficient/current arithmetic; no fallback is returned.",
-  "nonconvergence": "Not applicable; these are direct analytic fit and arithmetic mappings.",
-  "partial_results": "No scirel._result.Result mapping is returned on failure."
- },
- "public_api": {
-  "python": {
-   "module": "scirel.neoclassical.bootstrap",
-   "symbol": "calculate_bootstrap_current",
-   "signature": "calculate_bootstrap_current(*, bootstrap_multiplier=1.0, rho_face, F_face, B0, dpsi_drho_face=None, dpsi_per_radian_drho_face=None, p_e_face, p_i_face, dlnne_drho_face, dlnni_drho_face, dlnte_drho_face, dlnti_drho_face, L31, L32, L34, alpha)",
-   "canonical_module": "scirel.neoclassical",
-   "canonical_symbol": "calculate_bootstrap_current"
-  }
- },
- "version": {
-  "implementation_version": "0.0.0",
-  "dependencies": [
-   {
-    "asset_id": "scirel.numerics.face-to-cell"
-   }
-  ]
- },
- "example": {
-  "description": "Check the axis zero and that the total-flux and per-radian forms agree.",
-  "code": "import numpy as np\nfrom scirel._result import Result\nfrom scirel.neoclassical import calculate_bootstrap_current\none=np.ones(3); zero=np.zeros(3)\nkw=dict(rho_face=[0.,.5,1.],F_face=one,B0=2.,p_e_face=one,p_i_face=one,dlnne_drho_face=one,dlnni_drho_face=zero,dlnte_drho_face=zero,dlnti_drho_face=zero,L31=one,L32=zero,L34=one,alpha=one)\nx=calculate_bootstrap_current(dpsi_drho_face=one,**kw)\nassert isinstance(x, Result)\nassert list(x) == ['j_parallel_bootstrap_face', 'j_parallel_bootstrap']\nassert x.j_parallel_bootstrap_face is x['j_parallel_bootstrap_face']\nnp.testing.assert_allclose(x['j_parallel_bootstrap_face'],[0,-np.pi,-np.pi])\ny=calculate_bootstrap_current(dpsi_per_radian_drho_face=one/(2*np.pi),**kw)\nnp.testing.assert_allclose(y['j_parallel_bootstrap_face'],x['j_parallel_bootstrap_face'])",
-  "expected": "The returned object is a scirel._result.Result mapping with fields readable by key and attribute. Face current is [0,-pi,-pi] in both conventions."
- },
- "verification": {
-  "scope": [
-   "Current assembly witnesses cover the electron-density-gradient term, axis and midpoint behavior, extreme finite arithmetic, total/per-radian flux equivalence and rejection/off-axis rules; the selected test_named_result.py case checks existing current arrays and named-result behavior.",
-   "The named-result migration preserves existing key order, values, shape and dtype while exposing the same fields by attribute.",
-   "Total-flux and per-radian flux derivatives agree; giving both or neither, a non-increasing or negative rho_face, or a zero flux derivative off the axis raise ValueError; an off-axis first face is not zeroed.",
-   "Six independently generated 80/120-digit manufactured pressure-differential cases check all four drive terms, signed reference field/multiplier, total and per-radian flux derivatives, explicit axis zeroing and adjacent face means. They are algebraic assembly witnesses, not physically calibrated plasma cases."
-  ],
-  "tests": [
-   "tests/tooling/test_bootstrap.py",
-   "tests/tooling/test_named_result.py::test_neoclassical_results_preserve_baseline_values_and_return_types[calculate_bootstrap_current]",
-   "tests/tooling/test_bootstrap_primary.py::test_current_follows_pressure_differential_and_flux_convention"
-  ],
-  "evidence_ceiling": "Mathematical fit arithmetic and explicit assembly only; no empirical full-physics qualification.",
-  "known_limitations": [
-   "Empirical coefficients are not experimentally calibrated here. Caller must supply model-consistent collisionalities and trapped fraction; no geometry reconstruction, edge pedestal or full-transport physics qualification.",
-   "Large finite charge/collisionality combinations may have nonrepresentable intermediate or final arithmetic and fail explicitly. Float64 conversion cannot recover prior lost precision.",
-   "Physical interpretation assumes axisymmetric tokamak geometry, nonnegative scalar thermal pressures, positive density/temperature before forming their logarithms, and compatible poloidal-flux/field sign conventions. Signed inputs retain algebra only.",
-   "The historical Decimal claim remains unlocated. New pressure-differential references bind six manufactured assembly cases and their exact inputs/precision; they do not validate empirical coefficient fitting, physical magnetic-axis regularity or complete transport behavior."
-  ]
- },
- "references": [
-  "O. Sauter, C. Angioni and Y. R. Lin-Liu, Physics of Plasmas 6, 2834 (1999), doi:10.1063/1.873240.",
-  "A. Redl et al., Physics of Plasmas 28, 022502 (2021), doi:10.1063/5.0012664."
- ]
 }

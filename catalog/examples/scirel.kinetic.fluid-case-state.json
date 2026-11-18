@@ -1,135 +1,140 @@
 {
- "aliases": [
-  "derive_fluid_case"
- ],
- "discovery": {
-  "capability": [
-   "Complete SI fluid case state",
-   "Derive the complete BONK or EM species, normalization and material state."
+  "aliases": [
+    "derive_fluid_case"
   ],
-  "operation": [
-   "derive the complete SI fluid case state",
-   "case family and case selector -> complete SI species, normalization and material state"
-  ],
-  "model": "static isotropic Maxwellian plasma or its declared numerical approximation",
-  "geometry": "uniform background B along z; wavevector (kx,0,kz)",
-  "boundary": "homogeneous linear response; explicit resonances and analytic removable limits",
-  "device_scope": "generic"
- },
- "applicability": {
-  "excluded": [
-   "No arbitrary species model construction through case controls.",
-   "Global charge-neutral or self-consistent background equilibrium proof for electron-only case2."
-  ],
-  "preconditions": [
-   "Declared local Python runtime (Python 3.14, NumPy 2.5.4, SciPy 1.18.1); single-threaded BLAS environment.",
-   "Declared Python 3.14 runtime with NumPy 2.5.4 and SciPy 1.18.1; no external runtime is required."
-  ],
-  "supported": [
-   "BONK cases1/2/3 and EM cases1/2; complete fixed source constants/state."
-  ]
- },
- "asset_id": "scirel.kinetic.fluid-case-state",
- "example": {
-  "code": "from scirel.kinetic.fluid_spectrum import derive_fluid_case\ns=derive_fluid_case('bonk',3)\n",
-  "description": "Pure Python/NumPy implementation; executes on this macOS host without the reference runtime.",
-  "expected": "PASS: the example runs locally and returns the declared output structure."
- },
- "failure_semantics": {
-  "invalid_input": "ValueError for unknown case labels, non-finite/incoherent deck controls, resonant poles, or an unrepresentable matrix response.",
-  "runtime_failure": "Python/NumPy numerical errors propagate with case context; no native, source-checkout or network fallback is selected.",
-  "nonconvergence": "No nonlinear search is exposed; precision/tail and eigen-selection failures are explicit ValueError.",
-  "partial_results": "No partial case state is returned; a failed case raises before output assembly."
- },
- "identity": {
-  "assumptions": [
-   "No flow or temperature anisotropy.",
-   "K=I−sigma/(i omega epsilon0); D=K+nnᵀ−(n·n)I.",
-   "Listed-species linear response; electron-only case2 does not establish global charge neutrality or a self-consistent background equilibrium."
-  ],
-  "boundary": "homogeneous linear response; explicit resonances and analytic removable limits",
-  "coordinates": "Cartesian SI; exp(i k·x−i ωt); signed gyrofrequency and radius",
-  "definition": "vthermal=sqrt(2 kB T/m), signed rho=sqrt(kB T/m)/Omega, wn=min abs(Omega), kn=1/max abs(rho); temperatures are converted from eV to K with 1.6022e-19/kB.",
-  "direction": "forward",
-  "geometry": "uniform background B along z; wavevector (kx,0,kz)",
-  "model": "static isotropic Maxwellian plasma or its declared numerical approximation",
-  "relation": "listed-species scales and normalization for the selected BONK or EM case"
- },
- "inputs": [
-  {
-   "constraints": "bonk or em.",
-   "description": "Source case family.",
-   "dtype": "string",
-   "name": "family",
-   "required": true,
-   "shape": "string",
-   "units": "dimensionless"
+  "discovery": {
+    "capability": [
+      "Complete SI fluid case state",
+      "Derive the complete BONK or EM species, normalization and material state."
+    ],
+    "operation": [
+      "derive the complete SI fluid case state",
+      "case family and case selector -> complete SI species, normalization and material state"
+    ],
+    "model": "static isotropic Maxwellian plasma or its declared numerical approximation",
+    "geometry": "uniform background B along z; wavevector (kx,0,kz)",
+    "boundary": "homogeneous linear response; explicit resonances and analytic removable limits",
+    "device_scope": "generic"
   },
-  {
-   "constraints": "BONK1/2/3; EM1/2; None selects BONK1 or EM2.",
-   "default": null,
-   "description": "Source case selector.",
-   "dtype": "integer or None",
-   "name": "jcase",
-   "required": false,
-   "shape": "scalar or None",
-   "units": "dimensionless"
-  }
- ],
- "outputs": [
-  {
-   "constraints": "State and terminal diagnostics retain scientific meaning; no caller state mutation.",
-   "description": "Complete species scales and source material metadata; EM sets kz=0.1kn.",
-   "dtype": "mapping",
-   "name": "result",
-   "required": true,
-   "shape": "mapping of MATLAB-shape arrays",
-   "units": "mixed SI and dimensionless as described"
-  }
- ],
- "public_api": {
-  "python": {
-   "module": "scirel.kinetic.fluid_spectrum",
-   "signature": "derive_fluid_case(family, jcase=None)",
-   "canonical_module": "scirel.kinetic",
-   "canonical_symbol": "derive_fluid_case",
-   "symbol": "derive_fluid_case"
-  }
- },
- "schema": "scirel.asset-document",
- "summary": "Derive the complete BONK or EM species, normalization and material state.",
- "taxonomy": [
-  "kinetic",
-  "plasma-waves",
-  "fluid-dispersion"
- ],
- "title": {
-  "en": "Complete SI fluid case state",
-  "zh": "完整 SI 流体案例状态"
- },
- "verification": {
-  "scope": [
-   "Independent basis: the fixed source constants are compared against published values rather than copied -- c**2 is exact by the SI definition of the metre, and epsilon0, k_B, the elementary charge and the proton mass reproduce the CODATA-2014 literals.",
-   "Every derived scale is recomputed at 40 mpmath digits from the declared deck inputs through the published relations v_t = sqrt(2 k_B T/m), omega_c = qB0/m, omega_p**2 = n q**2/(eps0 m), rho = sqrt(k_B T/m)/omega_c, k_n = 1/max|rho|, omega_n = min|omega_c|, and vA and mu0 from c2 and epsilon0.",
-   "Test matrix: all five declared cases (BONK 1/2/3, EM 1/2), each checking every derived vector element, the normalisation scalars, and the EM parallel-wavenumber rule kz = 0.1 kn.",
-   "Failure matrix: one assertion per channel -- each derived scale, the sign pattern of the gyroradius, the eV-to-kelvin conversion, the normalisation selectors, and the published constants.",
-   "Precision budget, written before measurement: 1e-14 relative on the closed forms, 3e-5 on the two documented five-digit roundings (me, eV-to-joule)."
+  "applicability": {
+    "excluded": [
+      "No arbitrary species model construction through case controls.",
+      "Global charge-neutral or self-consistent background equilibrium proof for electron-only case2."
+    ],
+    "preconditions": [
+      "Declared local Python runtime (Python 3.14, NumPy 2.5.4, SciPy 1.18.1); single-threaded BLAS environment.",
+      "Declared Python 3.14 runtime with NumPy 2.5.4 and SciPy 1.18.1; no external runtime is required."
+    ],
+    "supported": [
+      "BONK cases1/2/3 and EM cases1/2; complete fixed source constants/state."
+    ]
+  },
+  "asset_id": "scirel.kinetic.fluid-case-state",
+  "example": {
+    "code": "from scirel.kinetic.fluid_spectrum import derive_fluid_case\ns=derive_fluid_case('bonk',3)\n",
+    "description": "Pure Python/NumPy implementation; executes on this macOS host without the reference runtime.",
+    "expected": "PASS: the example runs locally and returns the declared output structure."
+  },
+  "failure_semantics": {
+    "invalid_input": "ValueError for unknown case labels, non-finite/incoherent deck controls, resonant poles, or an unrepresentable matrix response.",
+    "runtime_failure": "Python/NumPy numerical errors propagate with case context; no native, source-checkout or network fallback is selected.",
+    "nonconvergence": "No nonlinear search is exposed; precision/tail and eigen-selection failures are explicit ValueError.",
+    "partial_results": "No partial case state is returned; a failed case raises before output assembly."
+  },
+  "identity": {
+    "assumptions": [
+      "No flow or temperature anisotropy.",
+      "K=I−sigma/(i omega epsilon0); D=K+nnᵀ−(n·n)I.",
+      "Listed-species linear response; electron-only case2 does not establish global charge neutrality or a self-consistent background equilibrium."
+    ],
+    "boundary": "homogeneous linear response; explicit resonances and analytic removable limits",
+    "coordinates": "Cartesian SI; exp(i k·x−i ωt); signed gyrofrequency and radius",
+    "definition": "vthermal=sqrt(2 kB T/m), signed rho=sqrt(kB T/m)/Omega, wn=min abs(Omega), kn=1/max abs(rho); temperatures are converted from eV to K with 1.6022e-19/kB.",
+    "direction": "forward",
+    "geometry": "uniform background B along z; wavevector (kx,0,kz)",
+    "model": "static isotropic Maxwellian plasma or its declared numerical approximation",
+    "relation": "listed-species scales and normalization for the selected BONK or EM case"
+  },
+  "inputs": [
+    {
+      "constraints": "bonk or em.",
+      "description": "Source case family.",
+      "dtype": "string",
+      "name": "family",
+      "required": true,
+      "shape": "string",
+      "units": "dimensionless"
+    },
+    {
+      "constraints": "BONK1/2/3; EM1/2; None selects BONK1 or EM2.",
+      "default": null,
+      "description": "Source case selector.",
+      "dtype": "integer or None",
+      "name": "jcase",
+      "required": false,
+      "shape": "scalar or None",
+      "units": "dimensionless"
+    }
   ],
-  "tests": [
-   "tests/kinetic/test_fluid_wavevector_evidence.py",
-   "tests/kinetic/test_fluid_spectrum_full.py"
+  "outputs": [
+    {
+      "constraints": "State and terminal diagnostics retain scientific meaning; no caller state mutation.",
+      "description": "Complete species scales and source material metadata; EM sets kz=0.1kn.",
+      "dtype": "mapping",
+      "name": "result",
+      "required": true,
+      "shape": "mapping of MATLAB-shape arrays",
+      "units": "mixed SI and dimensionless as described"
+    }
   ],
-  "evidence_ceiling": "Bounded to the declared relation between the fixed deck inputs and the derived scales. Established by an independent 40-digit recomputation of every derived scalar and by comparison of the fixed constants against published values; measured deviations are at most 1e-15 relative on the derived scales. Excluded scope: any independent source for the case tables themselves (species masses beyond the published constants, densities, temperatures, B0, kz), arbitrary species model construction through case controls, and a global charge-neutral or self-consistent background equilibrium proof for the electron-only case.",
-  "known_limitations": [
-   "The BONK kz values (10.0, 0.0, 1.0) are bare deck numbers with no independent source, so only their finiteness is asserted; the EM rule kz = 0.1 kn is the one relation that is checkable.",
-   "me = 9.1094e-31 and the eV-to-joule factor 1.6022e-19 are five-significant-digit roundings of CODATA-2014, not exact; they are compared at 3e-5 and stated as roundings."
+  "public_api": {
+    "python": {
+      "module": "scirel.kinetic.fluid_spectrum",
+      "signature": "derive_fluid_case(family, jcase=None)",
+      "canonical_module": "scirel.kinetic",
+      "canonical_symbol": "derive_fluid_case",
+      "symbol": "derive_fluid_case"
+    }
+  },
+  "schema": "scirel.asset-document",
+  "summary": "Derive the complete BONK or EM species, normalization and material state.",
+  "taxonomy": [
+    "kinetic",
+    "plasma-waves",
+    "fluid-dispersion"
+  ],
+  "title": {
+    "en": "Complete SI fluid case state",
+    "zh": "完整 SI 流体案例状态"
+  },
+  "verification": {
+    "scope": [
+      "Independent basis: the fixed source constants are compared against published values rather than copied -- c**2 is exact by the SI definition of the metre, and epsilon0, k_B, the elementary charge and the proton mass reproduce the CODATA-2014 literals.",
+      "Every derived scale is recomputed at 40 mpmath digits from the declared deck inputs through the published relations v_t = sqrt(2 k_B T/m), omega_c = qB0/m, omega_p**2 = n q**2/(eps0 m), rho = sqrt(k_B T/m)/omega_c, k_n = 1/max|rho|, omega_n = min|omega_c|, and vA and mu0 from c2 and epsilon0.",
+      "Test matrix: all five declared cases (BONK 1/2/3, EM 1/2), each checking every derived vector element, the normalisation scalars, and the EM parallel-wavenumber rule kz = 0.1 kn.",
+      "Failure matrix: one assertion per channel -- each derived scale, the sign pattern of the gyroradius, the eV-to-kelvin conversion, the normalisation selectors, and the published constants.",
+      "Precision budget, written before measurement: 1e-14 relative on the closed forms, 3e-5 on the two documented five-digit roundings (me, eV-to-joule)."
+    ],
+    "tests": [
+      "tests/kinetic/test_fluid_wavevector_evidence.py",
+      "tests/kinetic/test_fluid_spectrum_full.py"
+    ],
+    "evidence_ceiling": "Bounded to the declared relation between the fixed deck inputs and the derived scales. Established by an independent 40-digit recomputation of every derived scalar and by comparison of the fixed constants against published values; measured deviations are at most 1e-15 relative on the derived scales. Excluded scope: any independent source for the case tables themselves (species masses beyond the published constants, densities, temperatures, B0, kz), arbitrary species model construction through case controls, and a global charge-neutral or self-consistent background equilibrium proof for the electron-only case.",
+    "known_limitations": [
+      "The BONK kz values (10.0, 0.0, 1.0) are bare deck numbers with no independent source, so only their finiteness is asserted; the EM rule kz = 0.1 kn is the one relation that is checkable.",
+      "me = 9.1094e-31 and the eV-to-joule factor 1.6022e-19 are five-significant-digit roundings of CODATA-2014, not exact; they are compared at 3e-5 and stated as roundings."
+    ],
+    "basis": {
+      "kind": "independent-recomputation",
+      "statement": "The fixed source constants are compared against published values rather than copied -- c**2 is exact by the SI definition of the metre -- and every derived scale is recomputed at 40 mpmath digits from the declared deck inputs through the published relations v_t = sqrt(2 k_B T/m), omega_c = qB0/m and omega_p**2 = n q**2/(eps0 m).",
+      "source": "tests/kinetic/test_fluid_wavevector_evidence.py"
+    }
+  },
+  "version": {
+    "dependencies": [],
+    "implementation_version": "0.0.0"
+  },
+  "references": [
+    "H. S. Xie, Phys. Plasmas 32, 082110 (2025)."
   ]
- },
- "version": {
-  "dependencies": [],
-  "implementation_version": "0.0.0"
- },
- "references": [
-  "H. S. Xie, Phys. Plasmas 32, 082110 (2025)."
- ]
 }

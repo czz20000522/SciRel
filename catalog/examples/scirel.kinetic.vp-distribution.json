@@ -1,163 +1,168 @@
 {
- "schema": "scirel.asset-document",
- "asset_id": "scirel.kinetic.vp-distribution",
- "title": {
-  "en": "Distribution derivative and cutoff jumps",
-  "zh": "分布导数与截断跳跃"
- },
- "summary": "g=f0_prime for the selected equilibrium; Fn=3 is the piecewise triangle derivative and Fn=4 includes A/(|v|^3+vt^3) cutoff jump masses.",
- "taxonomy": [
-  "kinetic",
-  "plasma-wave",
-  "vlasov-poisson"
- ],
- "aliases": [
-  "vp_distribution"
- ],
- "discovery": {
-  "capability": [
-   "Distribution derivative and cutoff jumps",
-   "g=f0_prime for the selected equilibrium; Fn=3 is the piecewise triangle derivative and Fn=4 includes A/(|v|^3+vt^3) cutoff jump masses."
+  "schema": "scirel.asset-document",
+  "asset_id": "scirel.kinetic.vp-distribution",
+  "title": {
+    "en": "Distribution derivative and cutoff jumps",
+    "zh": "分布导数与截断跳跃"
+  },
+  "summary": "g=f0_prime for the selected equilibrium; Fn=3 is the piecewise triangle derivative and Fn=4 includes A/(|v|^3+vt^3) cutoff jump masses.",
+  "taxonomy": [
+    "kinetic",
+    "plasma-wave",
+    "vlasov-poisson"
   ],
-  "operation": [
-   "evaluate the equilibrium distribution derivative and cutoff jumps",
-   "equilibrium controls -> f0'(v) and cutoff jump masses"
+  "aliases": [
+    "vp_distribution"
   ],
-  "model": "Linear one-dimensional single-spatial-Fourier-mode electrons, fixed ions.",
-  "geometry": "One velocity coordinate and one spatial Fourier mode.",
-  "boundary": "One-dimensional finite velocity grid; Fn selects fixed equilibria; Fn=3 returns +1 on (-1,0), -1 on (0,1), and 0 outside that support, with 0 at v=-1,0,1; weak Fn4 cutoff requires a uniform grid; no time evolution.",
-  "device_scope": "generic"
- },
- "identity": {
-  "relation": "g=f0_prime for the selected equilibrium; Fn=3 is the piecewise triangle derivative and Fn=4 includes A/(|v|^3+vt^3) cutoff jump masses.",
-  "direction": "Inputs to vp_distribution -> result",
-  "definition": "g=f0_prime. For Fn=3, f0=max(0,1-|v|) and g=+1 on (-1,0), g=-1 on (0,1), and g=0 at v=-1,0,1 and outside [-1,1]. For Fn=4, g includes A/(|v|^3+vt^3) cutoff jump masses.",
-  "model": "Linear one-dimensional single-spatial-Fourier-mode electrons, fixed ions.",
-  "geometry": "One velocity coordinate and one spatial Fourier mode.",
-  "coordinates": "Dimensionless plasma-frequency and Debye-length normalization.",
-  "boundary": "One-dimensional finite velocity grid; Fn selects fixed equilibria; Fn=3 returns +1 on (-1,0), -1 on (0,1), and 0 outside that support, with 0 at v=-1,0,1; weak Fn4 cutoff requires a uniform grid; no time evolution.",
-  "assumptions": [
-   "Linear perturbations and homogeneous equilibrium.",
-   "Velocity-window truncation and recurrence are separate from temporal integration error."
-  ]
- },
- "inputs": [
-  {
-   "name": "vv",
-   "description": "Velocity nodes.",
-   "units": "dimensionless",
-   "shape": "[N]",
-   "dtype": "real array",
-   "required": true,
-   "constraints": "Finite one-dimensional; aligned with df and df0dv when applicable."
+  "discovery": {
+    "capability": [
+      "Distribution derivative and cutoff jumps",
+      "g=f0_prime for the selected equilibrium; Fn=3 is the piecewise triangle derivative and Fn=4 includes A/(|v|^3+vt^3) cutoff jump masses."
+    ],
+    "operation": [
+      "evaluate the equilibrium distribution derivative and cutoff jumps",
+      "equilibrium controls -> f0'(v) and cutoff jump masses"
+    ],
+    "model": "Linear one-dimensional single-spatial-Fourier-mode electrons, fixed ions.",
+    "geometry": "One velocity coordinate and one spatial Fourier mode.",
+    "boundary": "One-dimensional finite velocity grid; Fn selects fixed equilibria; Fn=3 returns +1 on (-1,0), -1 on (0,1), and 0 outside that support, with 0 at v=-1,0,1; weak Fn4 cutoff requires a uniform grid; no time evolution.",
+    "device_scope": "generic"
   },
-  {
-   "name": "Fn",
-   "description": "Built-in equilibrium, unit density: 1 Maxwellian exp(-v^2/2)/sqrt(2pi) (unit variance); 2 kappa Gamma(kappa)/(Gamma(kappa-1/2) sqrt(2 pi kappa)) (1+v^2/(2 kappa))^-kappa, i.e. theta^2=2 with variance 2kappa/(2kappa-3), NOT unit temperature; 3 triangle max(0,1-|v|), whose returned derivative is zero outside its support; 4 cutoff slowing-down.",
-   "units": "dimensionless",
-   "shape": "scalar",
-   "dtype": "integer",
-   "required": false,
-   "constraints": "One of 1,2,3,4.",
-   "default": 2
+  "identity": {
+    "relation": "g=f0_prime for the selected equilibrium; Fn=3 is the piecewise triangle derivative and Fn=4 includes A/(|v|^3+vt^3) cutoff jump masses.",
+    "direction": "Inputs to vp_distribution -> result",
+    "definition": "g=f0_prime. For Fn=3, f0=max(0,1-|v|) and g=+1 on (-1,0), g=-1 on (0,1), and g=0 at v=-1,0,1 and outside [-1,1]. For Fn=4, g includes A/(|v|^3+vt^3) cutoff jump masses.",
+    "model": "Linear one-dimensional single-spatial-Fourier-mode electrons, fixed ions.",
+    "geometry": "One velocity coordinate and one spatial Fourier mode.",
+    "coordinates": "Dimensionless plasma-frequency and Debye-length normalization.",
+    "boundary": "One-dimensional finite velocity grid; Fn selects fixed equilibria; Fn=3 returns +1 on (-1,0), -1 on (0,1), and 0 outside that support, with 0 at v=-1,0,1; weak Fn4 cutoff requires a uniform grid; no time evolution.",
+    "assumptions": [
+      "Linear perturbations and homogeneous equilibrium.",
+      "Velocity-window truncation and recurrence are separate from temporal integration error."
+    ]
   },
-  {
-   "name": "k",
-   "description": "Spatial Fourier wavenumber in inverse Debye length.",
-   "units": "dimensionless",
-   "shape": "scalar",
-   "dtype": "real scalar",
-   "required": false,
-   "constraints": "Positive finite.",
-   "default": 0.15
+  "inputs": [
+    {
+      "name": "vv",
+      "description": "Velocity nodes.",
+      "units": "dimensionless",
+      "shape": "[N]",
+      "dtype": "real array",
+      "required": true,
+      "constraints": "Finite one-dimensional; aligned with df and df0dv when applicable."
+    },
+    {
+      "name": "Fn",
+      "description": "Built-in equilibrium, unit density: 1 Maxwellian exp(-v^2/2)/sqrt(2pi) (unit variance); 2 kappa Gamma(kappa)/(Gamma(kappa-1/2) sqrt(2 pi kappa)) (1+v^2/(2 kappa))^-kappa, i.e. theta^2=2 with variance 2kappa/(2kappa-3), NOT unit temperature; 3 triangle max(0,1-|v|), whose returned derivative is zero outside its support; 4 cutoff slowing-down.",
+      "units": "dimensionless",
+      "shape": "scalar",
+      "dtype": "integer",
+      "required": false,
+      "constraints": "One of 1,2,3,4.",
+      "default": 2
+    },
+    {
+      "name": "k",
+      "description": "Spatial Fourier wavenumber in inverse Debye length.",
+      "units": "dimensionless",
+      "shape": "scalar",
+      "dtype": "real scalar",
+      "required": false,
+      "constraints": "Positive finite.",
+      "default": 0.15
+    },
+    {
+      "name": "kappa",
+      "description": "Kappa index of the Fn=2 family. The family is not rescaled to unit variance; for a kappa distribution at a prescribed temperature pass its derivative as df0dv to vp_init.",
+      "units": "dimensionless",
+      "shape": "scalar",
+      "dtype": "real scalar",
+      "required": false,
+      "constraints": "For Fn=2 finite >1/2.",
+      "default": 1.0
+    },
+    {
+      "name": "cutoff_mode",
+      "description": "Fn4 weak derivative or explicit source smooth-only forcing.",
+      "units": "dimensionless",
+      "shape": "scalar",
+      "dtype": "string",
+      "required": false,
+      "constraints": "weak or smooth; weak Fn4 requires increasing uniform grid.",
+      "default": "weak"
+    }
+  ],
+  "outputs": [
+    {
+      "name": "result",
+      "description": "Tuple (g,wr,wi): g [N], theoretical wr=1 and wi=-k sqrt(2) only for Fn=2,kappa=1; otherwise theory is None.",
+      "units": "dimensionless",
+      "shape": "As described in output mapping or tuple.",
+      "dtype": "tuple",
+      "required": true,
+      "constraints": "Tuple of finite derivative and optional theoretical frequencies; no hidden state."
+    }
+  ],
+  "applicability": {
+    "preconditions": [
+      "vv is a finite one-dimensional real array.",
+      "k is finite and positive; Fn, kappa and cutoff_mode select a supported branch."
+    ],
+    "supported": [
+      "Fn=1,2,3 and Fn=4 with weak or smooth cutoff derivative.",
+      "Fn=3 point values of the triangle derivative, including the documented zero convention at v=-1,0,1 and outside [-1,1]."
+    ],
+    "excluded": [
+      "This leaf returns a derivative and optional theory frequencies; it does not evolve a state."
+    ]
   },
-  {
-   "name": "kappa",
-   "description": "Kappa index of the Fn=2 family. The family is not rescaled to unit variance; for a kappa distribution at a prescribed temperature pass its derivative as df0dv to vp_init.",
-   "units": "dimensionless",
-   "shape": "scalar",
-   "dtype": "real scalar",
-   "required": false,
-   "constraints": "For Fn=2 finite >1/2.",
-   "default": 1.0
+  "failure_semantics": {
+    "invalid_input": "ValueError for unsupported Fn/cutoff_mode, nonfinite or non-vector vv, invalid kappa, invalid k or a non-increasing/nonuniform weak-cutoff grid.",
+    "runtime_failure": "FloatingPointError when the derivative is not finite.",
+    "nonconvergence": "Not applicable; no iterative solve is performed.",
+    "partial_results": "No mapping is returned after an exception."
   },
-  {
-   "name": "cutoff_mode",
-   "description": "Fn4 weak derivative or explicit source smooth-only forcing.",
-   "units": "dimensionless",
-   "shape": "scalar",
-   "dtype": "string",
-   "required": false,
-   "constraints": "weak or smooth; weak Fn4 requires increasing uniform grid.",
-   "default": "weak"
+  "public_api": {
+    "python": {
+      "module": "scirel.kinetic.vlasov_poisson",
+      "symbol": "vp_distribution",
+      "signature": "vp_distribution(vv, Fn=2, *, k=0.15, kappa=1.0, cutoff_mode='weak')",
+      "canonical_module": "scirel.kinetic",
+      "canonical_symbol": "vp_distribution"
+    }
+  },
+  "version": {
+    "implementation_version": "0.0.0",
+    "dependencies": []
+  },
+  "example": {
+    "code": "from scirel.kinetic.vlasov_poisson import vp_distribution\nimport numpy as np\ng,wr,wi=vp_distribution(np.linspace(-6,6,101),4)\nassert g.shape == (101,)",
+    "description": "Evaluate the Fn=4 weak cutoff derivative on a 101-point velocity grid.",
+    "expected": "PASS: .venv/bin/python completed; g has shape (101,) and the weak-cutoff branch is finite."
+  },
+  "verification": {
+    "scope": [
+      "Independent reference: the 40-digit mpmath definition of each built-in family decides the returned derivative. The Maxwellian has unit mass and unit variance, the kappa family's normalization follows the Beta integral B(1/2, kappa-1/2) and its variance the exact identity kappa Gamma(kappa-3/2)/Gamma(kappa-1/2) = 2 kappa/(2 kappa-3), the triangle's piecewise values are the classical open-interval ones, and the slowing-down derivative carries zero distributional mass. No SciPy special function and no implementation fixture is on the reference path.",
+      "Implementation relation: the four branches return -v exp(-v^2/2)/sqrt(2 pi), -c v (1+v^2/(2 kappa))^(-kappa-1) with c = Gamma(kappa)/(Gamma(kappa-1/2) sqrt(2 pi kappa)), the piecewise +1/-1/0 with 0 at the kinks v in {-1, 0, 1}, and -sign(v) 3 v^2 A/(|v|^3+vt^3)^2 with vt^2 = 2 halved at |v| = 4 plus the two weak-cutoff jump deposits of mass -+A/(64+vt^3); theory frequencies are returned only for Fn = 2, kappa = 1.",
+      "Test matrix: odd symmetry and finiteness for all four selectors, exact values at the kink nodes, unit mass and declared variance per family at 40 digits, the node v = 0 where the derivative vanishes exactly, and five rejection channels - unsupported Fn, kappa <= 1/2, an unknown cutoff_mode, a non-vector argument and a non-representable derivative - each asserted with its own message.",
+      "Precision budget, declared before the comparison was run: 1e-38 relative for the analytic normalizations and moments (theta-substitution quadrature at 40 digits, which removes the algebraic tail), 1e-14 relative for the derivative against the 40-digit closed form, and 1e-17 absolute at the node where it vanishes identically.",
+      "Cannot establish: the reported (wr, wi) = (1, -sqrt(2) k) for the kappa = 1 Lorentzian is not reproduced by either independent route. The 40-digit meromorphic closed form integral F'(v)/(v-z) dv = 1/(z - i sqrt(2))^2 places the roots of the code's own dispersion condition at omega = +-1 + i sqrt(2) k under its exp(-i omega t) convention, and every semidiscrete grid tested up to nv = 4096 and vmax = 40 has a purely real spectrum. Recorded as T-2026-0600 for a human decision; this contract does not restate the reported pair as established."
+    ],
+    "tests": [
+      "tests/kinetic/test_vlasov_poisson_dispersion.py",
+      "tests/kinetic/test_vlasov_poisson_evidence.py"
+    ],
+    "evidence_ceiling": "Independent semidiscrete mathematical and selected scenario regressions; actual run/installed-wheel receipts are recorded separately, not inferred from test existence.",
+    "known_limitations": [
+      "Finite-window rectangle rule and sampling recurrence TR=2pi/(k*dv).",
+      "Fn=3 returns point values of the classical piecewise derivative; the non-differentiable nodes v=-1,0,1 are assigned zero and no finite-difference derivative is inferred.",
+      "Fn4 truncated density retains original coefficient and is not renormalized after cutoff.",
+      "Peak diagnostic assumes standing oscillation; rotating complex exponential has no amplitude peaks."
+    ],
+    "basis": {
+      "kind": "independent-recomputation",
+      "statement": "Independent semidiscrete mathematical checks and selected scenario regressions in the bound file. Actual run/installed-wheel receipts are recorded separately and are NOT inferred from test existence.",
+      "source": "tests/kinetic/test_vlasov_poisson_dispersion.py"
+    }
   }
- ],
- "outputs": [
-  {
-   "name": "result",
-   "description": "Tuple (g,wr,wi): g [N], theoretical wr=1 and wi=-k sqrt(2) only for Fn=2,kappa=1; otherwise theory is None.",
-   "units": "dimensionless",
-   "shape": "As described in output mapping or tuple.",
-   "dtype": "tuple",
-   "required": true,
-   "constraints": "Tuple of finite derivative and optional theoretical frequencies; no hidden state."
-  }
- ],
- "applicability": {
-  "preconditions": [
-   "vv is a finite one-dimensional real array.",
-   "k is finite and positive; Fn, kappa and cutoff_mode select a supported branch."
-  ],
-  "supported": [
-   "Fn=1,2,3 and Fn=4 with weak or smooth cutoff derivative.",
-   "Fn=3 point values of the triangle derivative, including the documented zero convention at v=-1,0,1 and outside [-1,1]."
-  ],
-  "excluded": [
-   "This leaf returns a derivative and optional theory frequencies; it does not evolve a state."
-  ]
- },
- "failure_semantics": {
-  "invalid_input": "ValueError for unsupported Fn/cutoff_mode, nonfinite or non-vector vv, invalid kappa, invalid k or a non-increasing/nonuniform weak-cutoff grid.",
-  "runtime_failure": "FloatingPointError when the derivative is not finite.",
-  "nonconvergence": "Not applicable; no iterative solve is performed.",
-  "partial_results": "No mapping is returned after an exception."
- },
- "public_api": {
-  "python": {
-   "module": "scirel.kinetic.vlasov_poisson",
-   "symbol": "vp_distribution",
-   "signature": "vp_distribution(vv, Fn=2, *, k=0.15, kappa=1.0, cutoff_mode='weak')",
-   "canonical_module": "scirel.kinetic",
-   "canonical_symbol": "vp_distribution"
-  }
- },
- "version": {
-  "implementation_version": "0.0.0",
-  "dependencies": []
- },
- "example": {
-  "code": "from scirel.kinetic.vlasov_poisson import vp_distribution\nimport numpy as np\ng,wr,wi=vp_distribution(np.linspace(-6,6,101),4)\nassert g.shape == (101,)",
-  "description": "Evaluate the Fn=4 weak cutoff derivative on a 101-point velocity grid.",
-  "expected": "PASS: .venv/bin/python completed; g has shape (101,) and the weak-cutoff branch is finite."
- },
- "verification": {
-  "scope": [
-   "Independent reference: the 40-digit mpmath definition of each built-in family decides the returned derivative. The Maxwellian has unit mass and unit variance, the kappa family's normalization follows the Beta integral B(1/2, kappa-1/2) and its variance the exact identity kappa Gamma(kappa-3/2)/Gamma(kappa-1/2) = 2 kappa/(2 kappa-3), the triangle's piecewise values are the classical open-interval ones, and the slowing-down derivative carries zero distributional mass. No SciPy special function and no implementation fixture is on the reference path.",
-   "Implementation relation: the four branches return -v exp(-v^2/2)/sqrt(2 pi), -c v (1+v^2/(2 kappa))^(-kappa-1) with c = Gamma(kappa)/(Gamma(kappa-1/2) sqrt(2 pi kappa)), the piecewise +1/-1/0 with 0 at the kinks v in {-1, 0, 1}, and -sign(v) 3 v^2 A/(|v|^3+vt^3)^2 with vt^2 = 2 halved at |v| = 4 plus the two weak-cutoff jump deposits of mass -+A/(64+vt^3); theory frequencies are returned only for Fn = 2, kappa = 1.",
-   "Test matrix: odd symmetry and finiteness for all four selectors, exact values at the kink nodes, unit mass and declared variance per family at 40 digits, the node v = 0 where the derivative vanishes exactly, and five rejection channels - unsupported Fn, kappa <= 1/2, an unknown cutoff_mode, a non-vector argument and a non-representable derivative - each asserted with its own message.",
-   "Precision budget, declared before the comparison was run: 1e-38 relative for the analytic normalizations and moments (theta-substitution quadrature at 40 digits, which removes the algebraic tail), 1e-14 relative for the derivative against the 40-digit closed form, and 1e-17 absolute at the node where it vanishes identically.",
-   "Cannot establish: the reported (wr, wi) = (1, -sqrt(2) k) for the kappa = 1 Lorentzian is not reproduced by either independent route. The 40-digit meromorphic closed form integral F'(v)/(v-z) dv = 1/(z - i sqrt(2))^2 places the roots of the code's own dispersion condition at omega = +-1 + i sqrt(2) k under its exp(-i omega t) convention, and every semidiscrete grid tested up to nv = 4096 and vmax = 40 has a purely real spectrum. Recorded as T-2026-0600 for a human decision; this contract does not restate the reported pair as established."
-  ],
-  "tests": [
-   "tests/kinetic/test_vlasov_poisson_dispersion.py",
-   "tests/kinetic/test_vlasov_poisson_evidence.py"
-  ],
-  "evidence_ceiling": "Independent semidiscrete mathematical and selected scenario regressions; actual run/installed-wheel receipts are recorded separately, not inferred from test existence.",
-  "known_limitations": [
-   "Finite-window rectangle rule and sampling recurrence TR=2pi/(k*dv).",
-   "Fn=3 returns point values of the classical piecewise derivative; the non-differentiable nodes v=-1,0,1 are assigned zero and no finite-difference derivative is inferred.",
-   "Fn4 truncated density retains original coefficient and is not renormalized after cutoff.",
-   "Peak diagnostic assumes standing oscillation; rotating complex exponential has no amplitude peaks."
-  ]
- }
 }
