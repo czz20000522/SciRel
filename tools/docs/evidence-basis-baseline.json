@@ -116,54 +116,6 @@
       "reason": "not yet migrated: verification.basis absent"
     },
     {
-      "asset_id": "scirel.neutrals.incoming-boundary-flux-normalization",
-      "reason": "not yet migrated: verification.basis absent"
-    },
-    {
-      "asset_id": "scirel.neutrals.molecular-alpha-contraction",
-      "reason": "not yet migrated: verification.basis absent"
-    },
-    {
-      "asset_id": "scirel.neutrals.molecular-scattered-sources-reduction",
-      "reason": "not yet migrated: verification.basis absent"
-    },
-    {
-      "asset_id": "scirel.neutrals.neutral-boltzmann-rhs",
-      "reason": "not yet migrated: verification.basis absent"
-    },
-    {
-      "asset_id": "scirel.neutrals.neutral-generation-propagation",
-      "reason": "not yet migrated: verification.basis absent"
-    },
-    {
-      "asset_id": "scirel.neutrals.neutral-generation-stopping",
-      "reason": "not yet migrated: verification.basis absent"
-    },
-    {
-      "asset_id": "scirel.neutrals.neutral-total-collision-frequency",
-      "reason": "not yet migrated: verification.basis absent"
-    },
-    {
-      "asset_id": "scirel.neutrals.neutral-upwind-transport-coefficients",
-      "reason": "not yet migrated: verification.basis absent"
-    },
-    {
-      "asset_id": "scirel.neutrals.outer-convergence",
-      "reason": "not yet migrated: verification.basis absent"
-    },
-    {
-      "asset_id": "scirel.neutrals.outer-seed-convergence",
-      "reason": "not yet migrated: verification.basis absent"
-    },
-    {
-      "asset_id": "scirel.neutrals.shifted-maxwellian-seed",
-      "reason": "not yet migrated: verification.basis absent"
-    },
-    {
-      "asset_id": "scirel.neutrals.simple-charge-exchange-source",
-      "reason": "not yet migrated: verification.basis absent"
-    },
-    {
       "asset_id": "scirel.neutrals.spatial-source-shape-normalization",
       "reason": "not yet migrated: verification.basis absent"
     },
@@ -396,6 +348,18 @@
     "scirel.neutrals.elastic-regeneration-aggregation",
     "scirel.neutrals.generation-accumulation-update",
     "scirel.neutrals.generation-density-reduction",
+    "scirel.neutrals.incoming-boundary-flux-normalization",
+    "scirel.neutrals.molecular-alpha-contraction",
+    "scirel.neutrals.molecular-scattered-sources-reduction",
+    "scirel.neutrals.neutral-boltzmann-rhs",
+    "scirel.neutrals.neutral-generation-propagation",
+    "scirel.neutrals.neutral-generation-stopping",
+    "scirel.neutrals.neutral-total-collision-frequency",
+    "scirel.neutrals.neutral-upwind-transport-coefficients",
+    "scirel.neutrals.outer-convergence",
+    "scirel.neutrals.outer-seed-convergence",
+    "scirel.neutrals.shifted-maxwellian-seed",
+    "scirel.neutrals.simple-charge-exchange-source",
     "scirel.neutrals.terminal-energy-transfer-reduction",
     "scirel.numerics.basis-matrix",
     "scirel.numerics.bilinear-grid-sampling",
