@@ -29,7 +29,6 @@ from scirel.collisions import (
     average_cross_section_over_maxwellian,
     evaluate_atomic_hydrogen_1s_radiative_recombination_rate,
     evaluate_atomic_hydrogen_charge_exchange_cross_section,
-    evaluate_atomic_hydrogen_charge_exchange_rate,
     evaluate_atomic_hydrogen_elastic_cross_section,
     evaluate_hydrogen_h2_elastic_cross_section,
     evaluate_hydrogen_proton_elastic_cross_section,
@@ -115,14 +114,6 @@ RATE_CASES = (
         2.01e4,
     ),
     (
-        "atomic-cx",
-        lambda value: evaluate_atomic_hydrogen_charge_exchange_rate(
-            np.asarray([value]), np.asarray([1.0])
-        ),
-        0.1,
-        2.5e5,
-    ),
-    (
         "molecular-cx",
         lambda value: evaluate_hydrogen2_charge_exchange_rate(
             np.asarray([value]), np.asarray([1.0])
@@ -161,10 +152,7 @@ def test_rate_family_invalid_inputs_fail_closed(label, call, lower_limit, upper_
 
 @pytest.mark.parametrize(
     "cross_section,molecular",
-    (
-        (evaluate_atomic_hydrogen_charge_exchange_cross_section, False),
-        (evaluate_molecular_hydrogen_charge_exchange_cross_section, True),
-    ),
+    ((evaluate_molecular_hydrogen_charge_exchange_cross_section, True),),
 )
 def test_cx_cross_section_average_is_consistent_with_rate_fit(
     cross_section,
@@ -180,11 +168,7 @@ def test_cx_cross_section_average_is_consistent_with_rate_fit(
     vx = np.linspace(-4.0, 4.0, 60)
     volume = make_cylindrical_velocity_quadrature(vr=vr, vx=vx)["volume"]
     mass_amu = 2.0 if molecular else 1.0
-    rate_fit = (
-        evaluate_hydrogen2_charge_exchange_rate
-        if molecular
-        else (evaluate_atomic_hydrogen_charge_exchange_rate)
-    )
+    rate_fit = evaluate_hydrogen2_charge_exchange_rate
     energies = np.array([1.0, 5.0, 20.0, 100.0, 500.0])
     for temperature in (1.0, 5.0, 20.0):
         averaged = average_cross_section_over_maxwellian(

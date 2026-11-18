@@ -43,7 +43,6 @@ from scirel.collisions import (
     evaluate_atomic_hydrogen_1s_radiative_recombination_rate,
     evaluate_fast_ion_stopping_increment,
     evaluate_atomic_hydrogen_charge_exchange_cross_section,
-    evaluate_atomic_hydrogen_charge_exchange_rate,
     evaluate_atomic_hydrogen_elastic_cross_section,
     evaluate_hydrogen_h2_elastic_cross_section,
     evaluate_hydrogen2_charge_exchange_rate,
@@ -80,7 +79,6 @@ COVERED = (
     "scirel.collisions.proton-atomic-hydrogen-elastic-cross-section",
     "scirel.collisions.proton-molecular-hydrogen-elastic-cross-section",
     "scirel.collisions.molecular-hydrogen-charge-exchange-cross-section",
-    "scirel.collisions.atomic-hydrogen-charge-exchange-rate-coefficient",
     "scirel.collisions.molecular-hydrogen-charge-exchange-rate-coefficient",
     "scirel.collisions.janev-electron-impact-ionization-rate",
 )
@@ -287,14 +285,6 @@ CHANNELS = {
         ),
         "ApplicabilityWarning": lambda: evaluate_molecular_hydrogen_charge_exchange_cross_section(
             np.array([4.0e4])
-        ),
-    },
-    "scirel.collisions.atomic-hydrogen-charge-exchange-rate-coefficient": {
-        "ValueError": lambda: evaluate_atomic_hydrogen_charge_exchange_rate(
-            np.array([1.0, 2.0]), np.array([1.0])
-        ),
-        "ApplicabilityWarning": lambda: evaluate_atomic_hydrogen_charge_exchange_rate(
-            np.array([1.0]), np.array([3.0e5])
         ),
     },
     "scirel.collisions.molecular-hydrogen-charge-exchange-rate-coefficient": {

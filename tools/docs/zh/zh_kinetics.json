@@ -2488,23 +2488,23 @@
     "expected": "实际运行通过：两个有限正的 2 能级布居密度（m⁻³），与所声明的 Saha 表达式一致。"
    },
    "verification": {
-  "scope": [
-   "独立依据：布居数是声明的闭式解 density * (3.310e-28 * density) * n**4 * exp(13.6057/(n**2 T)) / T**1.5（n 为主量子数），在 40 位 mpmath 精度上重算并逐元素比对。",
-   "电离能字面值 13.6057 是氢的 Rydberg（eV），与已发表的 13.605693 按 1e-5 比对。",
-   "测试矩阵：1e18 至 1e20 m^-3 的三个密度配三个温度，主量子数取 3，使能级、密度与温度三种标度都被执行。",
-   "失败矩阵：每条通道一条断言——能级标度（经 level_squared 的 n**4）、密度二次项、指数因子、T**-1.5 因子，以及 Rydberg 字面值。",
-   "精度预算在测量前写入：布居数 1e-12 相对，即声明二进制字面值自身的舍入。"
-  ],
-  "tests": [
-   "tests/kinetic/test_hydrogen_saha_equilibrium_population.py",
-   "tests/kinetic/test_generalized_dispersion_evidence.py"
-  ],
-  "evidence_ceiling": "限于主量子数 1、2、3 与声明密度温度范围内的冻结常数闭式解。依据为闭式解的 40 位重算与 Rydberg 字面值同已发表值的比对。不建立：前因子的推导、非氢能级，以及跨速率族的热力学一致性主张。",
-  "known_limitations": [
-   "前因子 3.310e-28 记为无法确立（cannot establish）：用 CODATA-2014 构造 2 (2 pi m_e e / h**2)**(3/2) 得到约 5.2e-28 的倒数，与声明值相差约 1.6 倍。这究竟是统计权重约定还是取整过的 deck 常数，无法由本仓库判定，因此只断言标度关系。",
-   "超过 2**53 的整数能级由既有的精确性测试覆盖，不属本次闭式重算的范围。"
-  ]
- }
+    "scope": [
+     "独立依据：布居数是声明的闭式解 density * (3.310e-28 * density) * n**4 * exp(13.6057/(n**2 T)) / T**1.5（n 为主量子数），在 40 位 mpmath 精度上重算并逐元素比对。",
+     "电离能字面值 13.6057 是氢的 Rydberg（eV），与已发表的 13.605693 按 1e-5 比对。",
+     "测试矩阵：1e18 至 1e20 m^-3 的三个密度配三个温度，主量子数取 3，使能级、密度与温度三种标度都被执行。",
+     "失败矩阵：每条通道一条断言——能级标度（经 level_squared 的 n**4）、密度二次项、指数因子、T**-1.5 因子，以及 Rydberg 字面值。",
+     "精度预算在测量前写入：布居数 1e-12 相对，即声明二进制字面值自身的舍入。"
+    ],
+    "tests": [
+     "tests/kinetic/test_hydrogen_saha_equilibrium_population.py",
+     "tests/kinetic/test_generalized_dispersion_evidence.py"
+    ],
+    "evidence_ceiling": "限于主量子数 1、2、3 与声明密度温度范围内的冻结常数闭式解。依据为闭式解的 40 位重算与 Rydberg 字面值同已发表值的比对。不建立：前因子的推导、非氢能级，以及跨速率族的热力学一致性主张。",
+    "known_limitations": [
+     "前因子 3.310e-28 记为无法确立（cannot establish）：用 CODATA-2014 构造 2 (2 pi m_e e / h**2)**(3/2) 得到约 5.2e-28 的倒数，与声明值相差约 1.6 倍。这究竟是统计权重约定还是取整过的 deck 常数，无法由本仓库判定，因此只断言标度关系。",
+     "超过 2**53 的整数能级由既有的精确性测试覆盖，不属本次闭式重算的范围。"
+    ]
+   }
   },
   {
    "asset_id": "scirel.neutrals.molecular-scattered-sources-reduction",
@@ -8301,24 +8301,24 @@
     "partial_results": "校验、求解或有限性失败后不返回部分谱。"
    },
    "verification": {
-  "scope": [
-   "独立依据：返回的每个频率都是返回的 M、A pencil 的本征值，因此把 lambda = -i omega 代入 det(M - lambda A) 必须在 40 位 mpmath 精度上为零；这是广义本征值的定义，不需要第二个本征求解器。",
-   "返回的两个排序是同一完整谱的置换，按复数本身而非模比较，且各自在其声明的键上降序。",
-   "相对论标志选择切向惯性 gamma I + gamma**3 v v^T / c**2，非相对论分支声明 A = I，因此存在非零漂移时两条谱必须不同；忽略该标志的调用会返回相同谱。",
-   "测试矩阵：跟踪的两组分 fixture 的四个波矢、两个分支，另加冷无漂移极限——此时必须有一条支落在 |omega|/omega_p = 1 上（omega_p 由算例输入重算）；k 平行于 B 时实测偏差 2.2e-16，k = 0 时 1.1e-16，而垂直情形被移到 1.009。",
-   "失败矩阵：每条通道一条断言——不是该 pencil 的谱（规模与排序）、标注错误的分支（谱位移）、被截断的谱（模态计数），以及共轭或符号错误（用复数比较而非模）。",
-   "精度预算在测量前写入：排序置换取精确相等，降序排序 1e-12，分支差异阈值 1e-6。"
-  ],
-  "tests": [
-   "tests/kinetic/test_bessel_response_evidence.py"
-  ],
-  "evidence_ceiling": "限于声明的归一化相对论 co-drift 广义 pencil（ky = 0、gamma_pressure = 1、零碰撞矩阵）。依据为返回 pencil 上的广义本征值恒等式与分支差异关系；谱规模、两个排序与降序键均按等式断言。不建立：物理模态识别、稳定性判读，以及相对论分支在声明惯性模型之外仍然准确的主张。",
-  "known_limitations": [
-   "未确立任何物理模态身份：证据只表明返回值是该 pencil 的谱，不表明其中任何一个是具名模态。",
-   "相对论惯性是声明的切向形式；协变四力闭合超出本合同范围，此处不验证。",
-   "本证据的“本征恒等式”形式（40 位下 det(M - lambda A) = 0）未能完成：该调用返回谱而不返回装配后的 M 与 A。但整体缩放变异已被杀死：返回支与由算例输入重算的等离子体频率之比对整体缩放不不变，变异运行已确认。"
-  ]
- },
+    "scope": [
+     "独立依据：返回的每个频率都是返回的 M、A pencil 的本征值，因此把 lambda = -i omega 代入 det(M - lambda A) 必须在 40 位 mpmath 精度上为零；这是广义本征值的定义，不需要第二个本征求解器。",
+     "返回的两个排序是同一完整谱的置换，按复数本身而非模比较，且各自在其声明的键上降序。",
+     "相对论标志选择切向惯性 gamma I + gamma**3 v v^T / c**2，非相对论分支声明 A = I，因此存在非零漂移时两条谱必须不同；忽略该标志的调用会返回相同谱。",
+     "测试矩阵：跟踪的两组分 fixture 的四个波矢、两个分支，另加冷无漂移极限——此时必须有一条支落在 |omega|/omega_p = 1 上（omega_p 由算例输入重算）；k 平行于 B 时实测偏差 2.2e-16，k = 0 时 1.1e-16，而垂直情形被移到 1.009。",
+     "失败矩阵：每条通道一条断言——不是该 pencil 的谱（规模与排序）、标注错误的分支（谱位移）、被截断的谱（模态计数），以及共轭或符号错误（用复数比较而非模）。",
+     "精度预算在测量前写入：排序置换取精确相等，降序排序 1e-12，分支差异阈值 1e-6。"
+    ],
+    "tests": [
+     "tests/kinetic/test_bessel_response_evidence.py"
+    ],
+    "evidence_ceiling": "限于声明的归一化相对论 co-drift 广义 pencil（ky = 0、gamma_pressure = 1、零碰撞矩阵）。依据为返回 pencil 上的广义本征值恒等式与分支差异关系；谱规模、两个排序与降序键均按等式断言。不建立：物理模态识别、稳定性判读，以及相对论分支在声明惯性模型之外仍然准确的主张。",
+    "known_limitations": [
+     "未确立任何物理模态身份：证据只表明返回值是该 pencil 的谱，不表明其中任何一个是具名模态。",
+     "相对论惯性是声明的切向形式；协变四力闭合超出本合同范围，此处不验证。",
+     "本证据的“本征恒等式”形式（40 位下 det(M - lambda A) = 0）未能完成：该调用返回谱而不返回装配后的 M 与 A。但整体缩放变异已被杀死：返回支与由算例输入重算的等离子体频率之比对整体缩放不不变，变异运行已确认。"
+    ]
+   },
    "example": {
     "description": "空归一化波矢列表。",
     "expected": "校验常数与零碰撞后返回空 spectra 列表。"
@@ -8562,68 +8562,6 @@
    "summary": "按公开输入执行可复用的科学组合，并保留声明的输出和失败状态。",
    "definition": "Finite supplied-response saturation and transport composition.",
    "model": "Finite supplied-response saturation and transport composition.",
-   "boundary": "No hidden defaults or source checkout dependencies",
-   "assumptions": [
-    "调用者提供完整、有限且类型正确的输入。",
-    "调用者提供完整、有限且类型正确的输入。"
-   ],
-   "inputs": [
-    {
-     "name": "inputs",
-     "description": "合同定义的输入。",
-     "constraints": "遵守合同声明的形状、类型和有限性约束。",
-     "dtype": "映射",
-     "shape": "mapping",
-     "units": "caller-declared"
-    }
-   ],
-   "outputs": [
-    {
-     "name": "result",
-     "description": "合同定义的输出结果。",
-     "constraints": "遵守合同声明的结果约束。",
-     "dtype": "映射",
-     "shape": "mapping",
-     "units": "caller-declared"
-    }
-   ],
-   "applicability": {
-    "preconditions": [
-     "输入满足合同声明的有限模型和类型约束。"
-    ],
-    "supported": [
-     "支持合同声明的有限科学组合。"
-    ],
-    "excluded": [
-     "不扩展到合同未声明的模型、设备或隐藏状态。"
-    ]
-   },
-   "failure_semantics": {
-    "invalid_input": "输入形状、类型或有限性不满足合同时抛出 ValueError。",
-    "runtime_failure": "数值计算失败或结果不可表示时传播实际运行错误。",
-    "nonconvergence": "保留合同声明的有界非收敛状态，不伪造成功。",
-    "partial_results": "验证失败时不返回伪造的部分结果。"
-   },
-   "example": {
-    "description": "使用一组有限合同输入执行公开组合。",
-    "expected": "返回声明形状的有限结果或明确失败状态。"
-   },
-   "verification": {
-    "scope": [
-     "覆盖正常、下界、上界及适用的失败/组合路径。",
-     "覆盖正常、下界、上界及适用的失败/组合路径。"
-    ],
-    "known_limitations": [
-     "科学适用性、物理正确性和发布批准仍需独立审查。"
-    ],
-    "evidence_ceiling": "Bounded public composition evidence; scientific acceptance remains separate."
-   }
-  },
-  {
-   "asset_id": "scirel.kinetic.atomic-slab-transport",
-   "summary": "按公开输入执行可复用的科学组合，并保留声明的输出和失败状态。",
-   "definition": "Finite atomic slab transport composition.",
-   "model": "Finite atomic slab transport composition.",
    "boundary": "No hidden defaults or source checkout dependencies",
    "assumptions": [
     "调用者提供完整、有限且类型正确的输入。",

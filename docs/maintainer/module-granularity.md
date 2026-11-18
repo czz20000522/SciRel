@@ -80,7 +80,7 @@
 两条机械证据：
 
 - 249 个模块里有 124 个的文件名与合同 slug 逐字对应（`discrete-vector-error-feedback`
-  → `discrete_vector_feedback`，`atomic-hydrogen-charge-exchange-rate-coefficient`
+  → `discrete_vector_feedback`
   → `atomic_hydrogen_charge_exchange_rate`）。命名是照着资产抄的，不是照着族设计的。
 - 引入 `method=` 的成本落在这一步之上：作者必须先把同族的另一个函数读一遍，
   才能知道能不能合。按资产推进的流程不会自动产生这个动作，所以执行率低（实测 9/249，

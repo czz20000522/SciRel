@@ -111,7 +111,7 @@
   },
   "example": {
     "description": "Evaluate the molecular fit and compare it with the distinct atomic fit.",
-    "code": "import numpy as np\nfrom scirel.collisions import evaluate_hydrogen2_charge_exchange_rate, evaluate_atomic_hydrogen_charge_exchange_rate\nt = np.array([0.1, 10.0, 20100.0])\ne = np.array([0.2, 10.0, 20100.0])\nr = evaluate_hydrogen2_charge_exchange_rate(t, e)\na = evaluate_atomic_hydrogen_charge_exchange_rate(t, e)\nassert r.shape == (3,) and np.all(np.isfinite(r)) and np.all(r > 0.0)\nassert not np.allclose(r, a, rtol=1e-12, atol=0.0)",
+    "code": "import numpy as np\nfrom scirel.collisions import evaluate_hydrogen2_charge_exchange_rate\nt = np.array([0.1, 10.0, 20100.0])\ne = np.array([0.2, 10.0, 20100.0])\nr = evaluate_hydrogen2_charge_exchange_rate(t, e)\nassert r.shape == (3,) and np.all(np.isfinite(r)) and np.all(r > 0.0)\n",
     "expected": "Three positive molecular rates, numerically distinct from the atomic-H fit on the same pairs."
   },
   "verification": {

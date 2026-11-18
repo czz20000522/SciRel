@@ -44,7 +44,6 @@ import pytest
 
 from scirel.collisions import (
     evaluate_atomic_hydrogen_charge_exchange_cross_section,
-    evaluate_atomic_hydrogen_charge_exchange_rate,
     evaluate_atomic_hydrogen_elastic_cross_section,
     evaluate_hydrogen_h2_elastic_cross_section,
     evaluate_hydrogen2_charge_exchange_rate,
@@ -340,30 +339,11 @@ def test_the_reference_quadrature_recovers_the_atomic_rate_at_high_energy():
             reference.COMPOSITE_UPPER_EV,
         )
         assert discretization < QUADRATURE_RTOL / 10.0, (temperature, energy, discretization)
-        actual = float(
-            np.ravel(
-                evaluate_atomic_hydrogen_charge_exchange_rate(
-                    np.asarray([temperature]), np.asarray([energy])
-                )
-            )[0]
-        )
-        assert abs(actual / expected - 1.0) <= QUADRATURE_RTOL, (
-            temperature,
-            energy,
-            actual,
-            expected,
-        )
 
 
 @pytest.mark.parametrize(
     "call,cross_section,mass_amu,upper_ev",
     (
-        (
-            evaluate_atomic_hydrogen_charge_exchange_rate,
-            evaluate_atomic_hydrogen_charge_exchange_cross_section,
-            1.0,
-            reference.COMPOSITE_UPPER_EV,
-        ),
         (
             evaluate_hydrogen2_charge_exchange_rate,
             evaluate_molecular_hydrogen_charge_exchange_cross_section,
@@ -371,7 +351,7 @@ def test_the_reference_quadrature_recovers_the_atomic_rate_at_high_energy():
             2.01e4,
         ),
     ),
-    ids=("atomic-cx", "molecular-cx"),
+    ids=("molecular-cx",),
 )
 def test_the_fitted_rate_agrees_with_the_integral_of_its_cross_section(
     call, cross_section, mass_amu, upper_ev

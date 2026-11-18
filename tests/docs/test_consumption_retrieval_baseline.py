@@ -26,13 +26,13 @@ from scirel_docs import build_capability_index  # noqa: E402
 
 FIELD = "scirel.field.poloidal-field-from-flux"
 CURRENT = "scirel.equilibrium.anisotropic-toroidal-current"
-CX_RATE = "scirel.collisions.atomic-hydrogen-charge-exchange-rate-coefficient"
+CX_RATE = "scirel.collisions.molecular-hydrogen-charge-exchange-rate-coefficient"
 LOSS = "scirel.neutrals.neutral-total-collision-frequency"
 THERMAL = "scirel.physics.thermal-energy"
 PROBES = [
     ("field_from_flux", {"q": "poloidal field flux"}, FIELD, "match"),
     ("pressure_current", {"q": "gyrotropic toroidal current"}, CURRENT, "match"),
-    ("cx_rate", {"q": "atomic-hydrogen charge-exchange Maxwellian"}, CX_RATE, "match"),
+    ("cx_rate", {"q": "molecular-hydrogen charge-exchange Maxwellian"}, CX_RATE, "match"),
     ("neutral_loss", {"q": "neutral total-loss collision frequency"}, LOSS, "match"),
     ("english_pressure_energy", {"q": "stored thermal energy pressure"}, THERMAL, "match"),
     (
