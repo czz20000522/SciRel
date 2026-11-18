@@ -149,7 +149,7 @@
     "basis": {
       "kind": "closed-form",
       "statement": "The unique interpolation solution, the ascending basis and the minimum-norm property are established on small well-conditioned systems. Statistical optimality, a scale-invariant rank policy and behaviour for ill-conditioned designs are not established.",
-      "source": "tests/geometry/test_polynomial_fit.py"
+      "source": "tests/sampling/test_reduction_and_fit_evidence.py"
     }
   }
 }

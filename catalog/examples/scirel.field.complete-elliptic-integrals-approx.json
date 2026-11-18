@@ -133,7 +133,7 @@
     "basis": {
       "kind": "independent-recomputation",
       "statement": "SciPy is replaced by a 50-digit second source and the published 2e-8 absolute bound is applied as a declared threshold. The bound is verified on the sampled grid only, so no continuous error bound is proven, and nothing here establishes suitability inside a field evaluation.",
-      "source": "tests/field/test_elliptic_integrals.py"
+      "source": "tests/field/test_complete_elliptic_integrals_approx_evidence.py"
     }
   }
 }

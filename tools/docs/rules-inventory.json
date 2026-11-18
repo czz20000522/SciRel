@@ -10,10 +10,12 @@
       "anchor": "真值链：证据 → 代码 → 合同 → 文档",
       "state": "machine-partial",
       "judged_by": [
-        "scripts/c1_evidence_coverage.py"
+        "scripts/c1_evidence_coverage.py",
+        "scripts/check_evidence_basis.py",
+        "tests/tooling/test_evidence_basis.py"
       ],
       "judges": "每份公开合同必须在文本里交代证据来源或缺口（neither 必须为 0）。",
-      "does_not_judge": "交代了不等于证明了：它不判断那条依据是否成立，也不区分 basis 与 gap 的质量。116 份记录的是缺口而非证据，这个脚本如实把它们算作 either，不会算成通过。"
+      "does_not_judge": "不判依据陈述的真假：`verification.basis.statement` 由写合同的人负责，门禁只强制它存在、形状合法、`kind=none` 必须记录缺什么，以及 `source` 能解析到仓库文件。"
     },
     {
       "id": "agents-2",
@@ -170,6 +172,20 @@
       "who": "翻译评审人；本条不产出判据，它是判据的**边界声明**——正是它阻止把 catalog-bilingual-1/2 读成语言已过关。"
     },
     {
+      "id": "catalog-evidence-1",
+      "source": "catalog/README.md",
+      "anchor": "always read it together with\n`evidence_ceiling`",
+      "state": "machine-partial",
+      "judged_by": [
+        "scripts/check_evidence_basis.py",
+        "scripts/evidence_status.py",
+        "tests/tooling/test_evidence_basis.py",
+        "tests/tooling/test_evidence_status.py"
+      ],
+      "judges": "每份合同声明 `verification.basis={kind,statement,source}`，kind 限定在八种枚举内，`kind=none` 必须同时记录 `evidence_ceiling` 或 `known_limitations`，`source` 必须解析到仓库文件；`evidence_status` 按资产可查，`none` 与 `not-declared` 分开计数且不聚合进任何通过数。",
+      "does_not_judge": "不判被声明的依据是真的还是充分的，也不判 `source` 指的文件是否真的承载了这条具体主张（共享证据文件常常不在合同自己的 `tests` 列表里，强制成员关系会逼人引行为测试而降低出处质量）。"
+    },
+    {
       "id": "rules-1",
       "source": "RULES.md",
       "anchor": "A change is not \"done\" until its rule/decision is recorded where the next owner will look",
@@ -255,6 +271,17 @@
       "does_not_judge": "不判某次未定的物理问题是否被正确归到三级阶梯的哪一级——那要读证据。"
     },
     {
+      "id": "style-alias",
+      "source": "skills/development/scirel-code-style/SKILL.md",
+      "anchor": "Do not leave an alias behind, and do not change physics in the same commit",
+      "state": "machine-partial",
+      "judged_by": [
+        "tests/architecture/test_public_surface.py::test_retired_dielectric_names_are_not_public_or_importable"
+      ],
+      "judges": "已退役的公开名不得仍可导入（逐案断言）。",
+      "does_not_judge": "只覆盖被写进测试的退役名；新加一个兼容别名不会被拦。「同一提交不改物理」完全靠评审。"
+    },
+    {
       "id": "style-except",
       "source": "skills/development/scirel-code-style/SKILL.md",
       "anchor": "A broad `except Exception` needs a comment explaining why a narrower type cannot work",
@@ -275,17 +302,6 @@
       ],
       "judges": "ruff check 与 ruff format 是 check 的固定步骤，格式与基础 lint 不合规即红。",
       "does_not_judge": "判不了命名品味、注释质量或类型标注是否表达意图；只判工具能判的那部分。"
-    },
-    {
-      "id": "style-alias",
-      "source": "skills/development/scirel-code-style/SKILL.md",
-      "anchor": "Do not leave an alias behind, and do not change physics in the same commit",
-      "state": "machine-partial",
-      "judged_by": [
-        "tests/architecture/test_public_surface.py::test_retired_dielectric_names_are_not_public_or_importable"
-      ],
-      "judges": "已退役的公开名不得仍可导入（逐案断言）。",
-      "does_not_judge": "只覆盖被写进测试的退役名；新加一个兼容别名不会被拦。「同一提交不改物理」完全靠评审。"
     },
     {
       "id": "style-review",

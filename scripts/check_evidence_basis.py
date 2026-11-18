@@ -73,7 +73,28 @@ def load_baseline(root: Path) -> dict[str, dict]:
     return out
 
 
-def problems_for(document: dict) -> list[str]:
+def source_problems(basis: dict, root: Path) -> list[str]:
+    """Check that basis.source resolves to a file in this repository.
+
+    The field is evidence provenance: a reader follows it to see the claim
+    being made, so a prose value or a stale path turns it into decoration.
+    Existence is the only part a machine can decide. That the named file
+    actually carries *this* claim's evidence is NOT checked -- shared evidence
+    files (e.g. one independent-oracle module covering a whole family) are
+    routinely absent from a contract's own ``verification.tests`` list, and
+    demanding membership would push a writer toward citing a behavioural test
+    instead of the real oracle. The relation stays a reviewed statement, like
+    ``basis.statement`` itself.
+    """
+    source = str(basis.get("source") or "").strip()
+    if not source:
+        return ["basis.source is empty"]
+    if not (root / source.partition("::")[0]).exists():
+        return [f"basis.source {source!r} does not resolve to a repository file"]
+    return []
+
+
+def problems_for(document: dict, root: Path | None = None) -> list[str]:
     """Return the reasons this contract's basis declaration is unacceptable."""
     verification = document.get("verification") or {}
     basis = verification.get("basis")
@@ -85,6 +106,8 @@ def problems_for(document: dict) -> list[str]:
         problems.append(f"unknown basis kind {kind!r}")
     if not str(basis.get("statement") or "").strip():
         problems.append("basis.statement is empty")
+    if root is not None:
+        problems.extend(source_problems(basis, root))
     if kind == "none":
         ceiling = str(verification.get("evidence_ceiling") or "").strip()
         limitations = verification.get("known_limitations") or []
@@ -112,7 +135,7 @@ def inspect(root: Path) -> tuple[list[str], list[str], list[str], int]:
         asset = str(document.get("asset_id") or path.stem)
         total += 1
         has_basis = (document.get("verification") or {}).get("basis") is not None
-        for problem in problems_for(document):
+        for problem in problems_for(document, root):
             violations.append(f"{asset}: {problem}")
         if has_basis:
             declared.append(asset)

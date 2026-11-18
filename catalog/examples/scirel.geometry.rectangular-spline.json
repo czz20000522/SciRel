@@ -145,7 +145,7 @@
     "basis": {
       "kind": "closed-form",
       "statement": "Exact reproduction is established for polynomials of degree at most three in each variable. No accuracy order is established for general smooth fields, and out-of-support queries are rejected rather than extrapolated.",
-      "source": "tests/geometry/test_rectangular_spline.py"
+      "source": "tests/sampling/test_analytic_sampling_evidence.py"
     }
   }
 }

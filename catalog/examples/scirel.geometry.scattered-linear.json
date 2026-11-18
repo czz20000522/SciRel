@@ -147,7 +147,7 @@
     "basis": {
       "kind": "closed-form",
       "statement": "Affine reproduction, node exactness and the no-extrapolation boundary are established. Interpolation error for nonlinear fields is not established, and non-finite rejection is delegated to the underlying triangulation rather than validated here.",
-      "source": "tests/geometry/test_scattered_linear.py"
+      "source": "tests/sampling/test_reduction_and_fit_evidence.py"
     }
   }
 }

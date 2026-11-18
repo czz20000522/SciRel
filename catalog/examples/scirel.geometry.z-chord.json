@@ -24,7 +24,7 @@
     "basis": {
       "kind": "analytic-identity",
       "statement": "The exact broadcast, the inherited rejections, the round-trip recovery, the exact on-axis row and the bitwise broadcast are asserted. No sampling, interpolation, ordering or measure along the chord is established.",
-      "source": "tests/geometry/test_z_chord.py"
+      "source": "tests/geometry/test_frame_convention_evidence.py"
     }
   },
   "asset_id": "scirel.geometry.z-chord",

@@ -180,7 +180,7 @@
     "basis": {
       "kind": "specification",
       "statement": "Grid generation, affine reproduction inside the hull and the no-synthesis boundary are established. Interpolation accuracy for nonlinear fields is not established, and no behaviour outside the convex support is promised beyond the NaN convention.",
-      "source": "tests/geometry/test_regular_grid.py"
+      "source": "tests/sampling/test_analytic_sampling_evidence.py"
     }
   }
 }

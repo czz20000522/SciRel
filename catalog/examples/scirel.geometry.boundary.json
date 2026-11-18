@@ -120,7 +120,7 @@
     "basis": {
       "kind": "analytic-identity",
       "statement": "Analytic circle geometry is checked through an independently measured refinement sequence, together with the exact endpoint identity. Only the named circle families are covered; no interior-point interpolation error bound and no claim about self-intersecting input.",
-      "source": "tests/geometry/test_boundary.py"
+      "source": "tests/fieldline/test_fieldline_geometry_evidence.py"
     }
   }
 }

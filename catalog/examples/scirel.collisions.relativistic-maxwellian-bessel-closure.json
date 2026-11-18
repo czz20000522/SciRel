@@ -167,7 +167,7 @@
     "basis": {
       "kind": "analytic-identity",
       "statement": "The analytic identity bk2 = bk0 + 2*bk1/x is recomputed from the same scipy.special.kve call the closure uses, with bk0 and bk1 compared bit-exactly against that call.",
-      "source": "tests/collisions/test_relativistic_maxwellian_bessel_closure.py"
+      "source": "tests/collisions/test_relativistic_maxwellian_bessel.py"
     }
   }
 }
