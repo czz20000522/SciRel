@@ -166,3 +166,53 @@ python -B scripts/check_output_channel_declaration.py
 python -B scripts/check_observation_integrity.py
 python3 scripts/tickets.py list tickets --status open
 ```
+
+## 2026-11-18 复验（`main` @ `e041e66a`）
+
+补记，不改上面的历史测量：那一节记录的是 `96a9c6ab` 上的读数，改写它等于伪造一次没做过的运行。
+
+**本文不抄写规模数字。** 合同份数、基线剩余、工单张数都会随提交变化，抄进文档就必然过期——
+仓库为此有 `test_catalog_size_is_not_hand_written_into_documents`。要数字就跑下面的命令。
+
+```sh
+python -B scripts/check_observation_integrity.py
+# observation integrity: no silent failure anywhere; the ratchet is empty
+#   -> C6 观测完整性仍成立
+
+git worktree list | wc -l          # 1  （只剩主 checkout）
+git branch --list | wc -l          # 1  （只剩 main）
+git for-each-ref refs/archive | wc -l   # 110
+# 每个归档 ref 都能解析到存在的 commit（`git rev-parse --verify <ref>^{commit}`，0 个失败）
+
+python -B scripts/check_output_channel_declaration.py
+# 剩余基线条目数见输出；本轮的类别构成：映射型等 T-2026-1203，另有两份被章节证据绑定
+
+python -B scripts/check_evidence_basis.py
+# 每份公开合同都已声明 verification.basis，基线为空
+
+python -B scripts/objective_status.py
+# pass / pass / pass / not-observed（第四条是 PR 回执，树里看不见，脚本拒绝自评）
+
+python scripts/tickets.py ledger tickets
+# 每张 open 工单都有 decision_owner 与「不决定的后果」；缺即非零退出
+```
+
+与前一次的差异，按类别说而不是按数量说：
+
+| 项 | `96a9c6ab` | `e041e66a` |
+|---|---|---|
+| 单输出合同返回通道 | 全部留在基线内，未分类 | 绝大多数已写明来源（探测实测或读示例判定）；**只剩两类**：映射型等 `T-2026-1203`，以及被章节执行证据绑定的两份 |
+| 工单归属 | 无字段，靠人记 | 全部有 `decision_owner`，`tickets.py ledger` 可查且缺即非零退出 |
+| 工作树 / 本地分支 | 6 / 7 | 1 / 1（已合入的分支按 patch-id 确认后删除，tip 未被归档 ref 覆盖前不删） |
+| 规则盘点 | 无 `catalog-evidence-1` | 含该条，且每条判据都被计划接线 |
+
+剩下两类通道债务为什么不能顺手做完：映射型要先定「合同是否必须枚举映射键集」（`T-2026-1203`）；
+被绑定的那两份，改一个字节就让磁静力学章节「真的跑过」的证据失效，刷新它必须重跑章节示例
+（需要构建 wheel）。
+
+### 这一版的发布档状态：**未重跑**
+
+按维护者 2026-11-18 的指示（短期不发布，合并门槛用 dev 档省时间），`#413` 之后没有再跑发布档。
+**因此本页不宣称 `e041e66a` 上的发布档结论。** 首个没经发布档验证的改动是 `#413` 的合同文本改动
+（API 参考页由合同生成，轮子与文档站只由发布档验证）。下次发布或对外交付前必须补跑，
+命令仍是 `python3 scripts/dev.py check`，判据看 `EXCLUSIVE`、`steps`、`RESULT SHA256` 三行。
