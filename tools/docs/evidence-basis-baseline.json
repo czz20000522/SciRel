@@ -196,46 +196,6 @@
       "reason": "not yet migrated: verification.basis absent"
     },
     {
-      "asset_id": "scirel.numerics.basis-matrix",
-      "reason": "not yet migrated: verification.basis absent"
-    },
-    {
-      "asset_id": "scirel.numerics.bilinear-grid-sampling",
-      "reason": "not yet migrated: verification.basis absent"
-    },
-    {
-      "asset_id": "scirel.numerics.build-basis",
-      "reason": "not yet migrated: verification.basis absent"
-    },
-    {
-      "asset_id": "scirel.numerics.complex-rectilinear-interpolation",
-      "reason": "not yet migrated: verification.basis absent"
-    },
-    {
-      "asset_id": "scirel.numerics.face-to-cell",
-      "reason": "not yet migrated: verification.basis absent"
-    },
-    {
-      "asset_id": "scirel.numerics.faddeeva",
-      "reason": "not yet migrated: verification.basis absent"
-    },
-    {
-      "asset_id": "scirel.numerics.first-clamped-cubic-spline",
-      "reason": "not yet migrated: verification.basis absent"
-    },
-    {
-      "asset_id": "scirel.numerics.modal-projection",
-      "reason": "not yet migrated: verification.basis absent"
-    },
-    {
-      "asset_id": "scirel.numerics.orthonormal-modal-basis",
-      "reason": "not yet migrated: verification.basis absent"
-    },
-    {
-      "asset_id": "scirel.numerics.second-clamped-cubic-spline",
-      "reason": "not yet migrated: verification.basis absent"
-    },
-    {
       "asset_id": "scirel.physics.dilution",
       "reason": "not yet migrated: verification.basis absent"
     },
@@ -437,8 +397,18 @@
     "scirel.neutrals.generation-accumulation-update",
     "scirel.neutrals.generation-density-reduction",
     "scirel.neutrals.terminal-energy-transfer-reduction",
+    "scirel.numerics.basis-matrix",
+    "scirel.numerics.bilinear-grid-sampling",
+    "scirel.numerics.build-basis",
     "scirel.numerics.clamped-cubic-spline",
+    "scirel.numerics.complex-rectilinear-interpolation",
+    "scirel.numerics.face-to-cell",
+    "scirel.numerics.faddeeva",
+    "scirel.numerics.first-clamped-cubic-spline",
+    "scirel.numerics.modal-projection",
     "scirel.numerics.natural-cubic-spline",
+    "scirel.numerics.orthonormal-modal-basis",
+    "scirel.numerics.second-clamped-cubic-spline",
     "scirel.numerics.truncated-svd-inverse",
     "scirel.physics.coulomb-ee",
     "scirel.physics.coulomb-ei",
