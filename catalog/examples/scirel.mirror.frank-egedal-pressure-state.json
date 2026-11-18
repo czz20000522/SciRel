@@ -1,242 +1,247 @@
 {
- "schema": "scirel.asset-document",
- "asset_id": "scirel.mirror.frank-egedal-pressure-state",
- "title": {
-  "en": "Frank-Egedal pressure and density state assembly",
-  "zh": "Frank-Egedal 压强与密度状态组装"
- },
- "summary": "Combine a radial envelope, dimensionless hot-ion moment shapes and supplied gas, density and electron-energy scales into parallel/perpendicular pressures and optional density and electron-temperature fields.",
- "taxonomy": [
-  "kinetic",
-  "mirror-plasma",
-  "pressure-state"
- ],
- "aliases": [
-  "Frank-Egedal pressure assembly",
-  "anisotropic hot-ion pressure state"
- ],
- "discovery": {
-  "capability": [
-   "Frank-Egedal pressure and density state assembly",
-   "Combine a radial envelope, dimensionless hot-ion moment shapes and supplied gas, density and electron-energy scales into parallel/perpendicular pressures and optional density and electron-temperature fields."
+  "schema": "scirel.asset-document",
+  "asset_id": "scirel.mirror.frank-egedal-pressure-state",
+  "title": {
+    "en": "Frank-Egedal pressure and density state assembly",
+    "zh": "Frank-Egedal 压强与密度状态组装"
+  },
+  "summary": "Combine a radial envelope, dimensionless hot-ion moment shapes and supplied gas, density and electron-energy scales into parallel/perpendicular pressures and optional density and electron-temperature fields.",
+  "taxonomy": [
+    "kinetic",
+    "mirror-plasma",
+    "pressure-state"
   ],
-  "operation": [
-   "assemble the Frank-Egedal pressure and density state",
-   "(psi, radial_shape, hot_parallel_shape, hot_perpendicular_shape, hot_density_shape, *, hot_pressure_scale=1.0, gas_dynamic_pressure=0.0, gas_dynamic_density=None, hot_density_scale=None, electron_temperature=None) -> p_parallel, p_perp, density, electron_temperature"
+  "aliases": [
+    "Frank-Egedal pressure assembly",
+    "anisotropic hot-ion pressure state"
   ],
-  "model": "Pointwise Frank-Egedal pressure-state assembly from externally computed shape fields; it does not calculate the source-mode moments, radial envelope or electron temperature.",
-  "geometry": "Aligned two-dimensional [Z,R] sample fields; no field or spatial geometry is reconstructed.",
-  "boundary": "No boundary condition is evaluated. Every shape field must exactly match psi, without NumPy broadcasting or spatial interpolation.",
-  "device_scope": "device-parameterized"
- },
- "identity": {
-  "relation": "Aligned radial and hot-ion shape fields plus physical scales to anisotropic pressure, density and electron-energy state",
-  "direction": "(psi, radial_shape, hot_parallel_shape, hot_perpendicular_shape, hot_density_shape, *, hot_pressure_scale=1.0, gas_dynamic_pressure=0.0, gas_dynamic_density=None, hot_density_scale=None, electron_temperature=None) -> p_parallel, p_perp, density, electron_temperature",
-  "definition": "Let r=radial_shape, h_parallel=hot_parallel_shape, h_perp=hot_perpendicular_shape and h_n=hot_density_shape. Set p_hot=hot_pressure_scale (default 1 Pa) and p_gd=gas_dynamic_pressure (default 0 Pa). If gas_dynamic_density or hot_density_scale is present, n=r*gas_dynamic_density+r*h_n*hot_density_scale, omitting absent terms; otherwise return density=None, although an internal zero density array is used for electron pressure. If electron_temperature is present, return its constant grid and set p_e=n*electron_temperature; otherwise return electron_temperature=None and p_e=0. Then p_parallel=p_gd*r+p_e+p_hot*r*h_parallel and p_perp=p_gd*r+p_e+p_hot*r*h_perp.",
-  "model": "Pointwise Frank-Egedal pressure-state assembly from externally computed shape fields; it does not calculate the source-mode moments, radial envelope or electron temperature.",
-  "geometry": "Aligned two-dimensional [Z,R] sample fields; no field or spatial geometry is reconstructed.",
-  "coordinates": "psi is a finite [Z,R] shape carrier with historical source Wb convention; its values do not enter the formulas. The function does not verify flux units, axis locations or compatibility with other SciRel flux conventions.",
-  "boundary": "No boundary condition is evaluated. Every shape field must exactly match psi, without NumPy broadcasting or spatial interpolation.",
-  "assumptions": [
-   "The four dimensionless shapes describe the same spatial cells and the same Frank-Egedal closure convention.",
-   "hot_pressure_scale and gas_dynamic_pressure are Pa, density scales are m^-3, and electron_temperature is an energy per particle in J (equivalently Pa*m^3), not an unconverted Kelvin temperature.",
-   "Electron pressure is isotropic and is added identically to the two pressure components; no electron anisotropy or quasineutrality is solved."
-  ]
- },
- "inputs": [
-  {
-   "name": "psi",
-   "description": "Finite flux-coordinate field used only for two-dimensional shape and finite-value validation.",
-   "units": "Wb",
-   "shape": "nonempty [N_Z,N_R]",
-   "dtype": "real array-like converted to float64",
-   "required": true,
-   "constraints": "Must be finite and two-dimensional; numerical values are not used in the pressure formulas."
+  "discovery": {
+    "capability": [
+      "Frank-Egedal pressure and density state assembly",
+      "Combine a radial envelope, dimensionless hot-ion moment shapes and supplied gas, density and electron-energy scales into parallel/perpendicular pressures and optional density and electron-temperature fields."
+    ],
+    "operation": [
+      "assemble the Frank-Egedal pressure and density state",
+      "(psi, radial_shape, hot_parallel_shape, hot_perpendicular_shape, hot_density_shape, *, hot_pressure_scale=1.0, gas_dynamic_pressure=0.0, gas_dynamic_density=None, hot_density_scale=None, electron_temperature=None) -> p_parallel, p_perp, density, electron_temperature"
+    ],
+    "model": "Pointwise Frank-Egedal pressure-state assembly from externally computed shape fields; it does not calculate the source-mode moments, radial envelope or electron temperature.",
+    "geometry": "Aligned two-dimensional [Z,R] sample fields; no field or spatial geometry is reconstructed.",
+    "boundary": "No boundary condition is evaluated. Every shape field must exactly match psi, without NumPy broadcasting or spatial interpolation.",
+    "device_scope": "device-parameterized"
   },
-  {
-   "name": "radial_shape",
-   "description": "Dimensionless radial envelope multiplying all gas, hot-ion and configured density terms.",
-   "units": "dimensionless",
-   "shape": "exactly psi shape [N_Z,N_R]",
-   "dtype": "real array-like converted to float64",
-   "required": true,
-   "constraints": "Finite and nonnegative; no broadcasting."
+  "identity": {
+    "relation": "Aligned radial and hot-ion shape fields plus physical scales to anisotropic pressure, density and electron-energy state",
+    "direction": "(psi, radial_shape, hot_parallel_shape, hot_perpendicular_shape, hot_density_shape, *, hot_pressure_scale=1.0, gas_dynamic_pressure=0.0, gas_dynamic_density=None, hot_density_scale=None, electron_temperature=None) -> p_parallel, p_perp, density, electron_temperature",
+    "definition": "Let r=radial_shape, h_parallel=hot_parallel_shape, h_perp=hot_perpendicular_shape and h_n=hot_density_shape. Set p_hot=hot_pressure_scale (default 1 Pa) and p_gd=gas_dynamic_pressure (default 0 Pa). If gas_dynamic_density or hot_density_scale is present, n=r*gas_dynamic_density+r*h_n*hot_density_scale, omitting absent terms; otherwise return density=None, although an internal zero density array is used for electron pressure. If electron_temperature is present, return its constant grid and set p_e=n*electron_temperature; otherwise return electron_temperature=None and p_e=0. Then p_parallel=p_gd*r+p_e+p_hot*r*h_parallel and p_perp=p_gd*r+p_e+p_hot*r*h_perp.",
+    "model": "Pointwise Frank-Egedal pressure-state assembly from externally computed shape fields; it does not calculate the source-mode moments, radial envelope or electron temperature.",
+    "geometry": "Aligned two-dimensional [Z,R] sample fields; no field or spatial geometry is reconstructed.",
+    "coordinates": "psi is a finite [Z,R] shape carrier with historical source Wb convention; its values do not enter the formulas. The function does not verify flux units, axis locations or compatibility with other SciRel flux conventions.",
+    "boundary": "No boundary condition is evaluated. Every shape field must exactly match psi, without NumPy broadcasting or spatial interpolation.",
+    "assumptions": [
+      "The four dimensionless shapes describe the same spatial cells and the same Frank-Egedal closure convention.",
+      "hot_pressure_scale and gas_dynamic_pressure are Pa, density scales are m^-3, and electron_temperature is an energy per particle in J (equivalently Pa*m^3), not an unconverted Kelvin temperature.",
+      "Electron pressure is isotropic and is added identically to the two pressure components; no electron anisotropy or quasineutrality is solved."
+    ]
   },
-  {
-   "name": "hot_parallel_shape",
-   "description": "Dimensionless hot-ion parallel pressure shape.",
-   "units": "dimensionless",
-   "shape": "exactly psi shape [N_Z,N_R]",
-   "dtype": "real array-like converted to float64",
-   "required": true,
-   "constraints": "Finite and nonnegative; no broadcasting."
+  "inputs": [
+    {
+      "name": "psi",
+      "description": "Finite flux-coordinate field used only for two-dimensional shape and finite-value validation.",
+      "units": "Wb",
+      "shape": "nonempty [N_Z,N_R]",
+      "dtype": "real array-like converted to float64",
+      "required": true,
+      "constraints": "Must be finite and two-dimensional; numerical values are not used in the pressure formulas."
+    },
+    {
+      "name": "radial_shape",
+      "description": "Dimensionless radial envelope multiplying all gas, hot-ion and configured density terms.",
+      "units": "dimensionless",
+      "shape": "exactly psi shape [N_Z,N_R]",
+      "dtype": "real array-like converted to float64",
+      "required": true,
+      "constraints": "Finite and nonnegative; no broadcasting."
+    },
+    {
+      "name": "hot_parallel_shape",
+      "description": "Dimensionless hot-ion parallel pressure shape.",
+      "units": "dimensionless",
+      "shape": "exactly psi shape [N_Z,N_R]",
+      "dtype": "real array-like converted to float64",
+      "required": true,
+      "constraints": "Finite and nonnegative; no broadcasting."
+    },
+    {
+      "name": "hot_perpendicular_shape",
+      "description": "Dimensionless hot-ion perpendicular pressure shape.",
+      "units": "dimensionless",
+      "shape": "exactly psi shape [N_Z,N_R]",
+      "dtype": "real array-like converted to float64",
+      "required": true,
+      "constraints": "Finite and nonnegative; no broadcasting."
+    },
+    {
+      "name": "hot_density_shape",
+      "description": "Dimensionless hot-ion density shape, required even if hot_density_scale is absent.",
+      "units": "dimensionless",
+      "shape": "exactly psi shape [N_Z,N_R]",
+      "dtype": "real array-like converted to float64",
+      "required": true,
+      "constraints": "Finite and nonnegative; no broadcasting."
+    },
+    {
+      "name": "hot_pressure_scale",
+      "description": "Hot-ion pressure scale applied to both hot-ion pressure shapes.",
+      "units": "Pa",
+      "shape": "scalar",
+      "dtype": "float-convertible scalar",
+      "required": false,
+      "default": 1.0,
+      "constraints": "Finite and nonnegative."
+    },
+    {
+      "name": "gas_dynamic_pressure",
+      "description": "Gas dynamic pressure scale multiplying the radial envelope.",
+      "units": "Pa",
+      "shape": "scalar",
+      "dtype": "float-convertible scalar",
+      "required": false,
+      "default": 0.0,
+      "constraints": "Finite and nonnegative."
+    },
+    {
+      "name": "gas_dynamic_density",
+      "description": "Optional gas dynamic density scale multiplying the radial envelope.",
+      "units": "m^-3",
+      "shape": "scalar or None",
+      "dtype": "float-convertible scalar or None",
+      "required": false,
+      "default": null,
+      "constraints": "Finite and nonnegative when present; None omits the gas-density term."
+    },
+    {
+      "name": "hot_density_scale",
+      "description": "Optional hot-ion density scale multiplying the radial envelope and hot-density shape.",
+      "units": "m^-3",
+      "shape": "scalar or None",
+      "dtype": "float-convertible scalar or None",
+      "required": false,
+      "default": null,
+      "constraints": "Finite and nonnegative when present; None omits the hot-ion density term."
+    },
+    {
+      "name": "electron_temperature",
+      "description": "Optional constant electron energy per particle expanded to the psi grid.",
+      "units": "J",
+      "shape": "scalar or None",
+      "dtype": "float-convertible scalar or None",
+      "required": false,
+      "default": null,
+      "constraints": "Finite and nonnegative when present; it is an energy, not an unconverted Kelvin temperature."
+    }
+  ],
+  "outputs": [
+    {
+      "name": "p_parallel",
+      "description": "Gas dynamic, isotropic electron and scaled hot-ion parallel pressures.",
+      "units": "Pa",
+      "shape": "[N_Z,N_R]",
+      "dtype": "float64 ndarray",
+      "required": true,
+      "constraints": "Finite on successful return; a nonfinite assembled result raises ValueError."
+    },
+    {
+      "name": "p_perp",
+      "description": "Gas dynamic, isotropic electron and scaled hot-ion perpendicular pressures; key is p_perp, not p_perpendicular.",
+      "units": "Pa",
+      "shape": "[N_Z,N_R]",
+      "dtype": "float64 ndarray",
+      "required": true,
+      "constraints": "Finite on successful return; a nonfinite assembled result raises ValueError."
+    },
+    {
+      "name": "density",
+      "description": "Sum of configured gas dynamic and hot-ion number-density terms, or None if both scales are absent/None.",
+      "units": "m^-3",
+      "shape": "[N_Z,N_R] or None",
+      "dtype": "float64 ndarray or None",
+      "required": true,
+      "constraints": "Finite when returned as an array; explicit zero density scales still return a zero array."
+    },
+    {
+      "name": "electron_temperature",
+      "description": "Configured constant electron energy per particle expanded to the psi grid, or None.",
+      "units": "J",
+      "shape": "[N_Z,N_R] or None",
+      "dtype": "float64 ndarray or None",
+      "required": true,
+      "constraints": "Finite and nonnegative when present; does not convert from K."
+    }
+  ],
+  "applicability": {
+    "preconditions": [
+      "All five input fields describe the same [Z,R] samples; the four shape arrays are finite, nonnegative and exactly the psi shape.",
+      "The caller supplies dimensionally consistent pressure, density and electron-energy scales, not Kelvin values."
+    ],
+    "supported": [
+      "Pointwise anisotropic pressure assembly with a common isotropic gas and electron contribution.",
+      "Optional gas and hot-ion density scales, optional constant electron energy, and keyword-only scale arguments."
+    ],
+    "excluded": [
+      "Computing a radial envelope, hot-ion moments, electron temperature, potential or equilibrium.",
+      "Automatic flux-convention conversion, coordinate alignment, spatial interpolation, or proof that supplied scales describe a physically consistent plasma."
+    ]
   },
-  {
-   "name": "hot_perpendicular_shape",
-   "description": "Dimensionless hot-ion perpendicular pressure shape.",
-   "units": "dimensionless",
-   "shape": "exactly psi shape [N_Z,N_R]",
-   "dtype": "real array-like converted to float64",
-   "required": true,
-   "constraints": "Finite and nonnegative; no broadcasting."
+  "failure_semantics": {
+    "invalid_input": "Raises ValueError for non-2D/empty/nonfinite psi, mismatched/nonfinite/negative shape fields, or a selected scale that is negative or nonfinite. Numeric conversion can also raise ValueError or TypeError.",
+    "runtime_failure": "Raises ValueError if any assembled non-null result field is nonfinite after arithmetic. NumPy warnings or allocation/conversion errors can propagate before this final check.",
+    "nonconvergence": "Not applicable; the pointwise assembly performs no iterative solve.",
+    "partial_results": "No partial result mapping is returned when validation or assembly fails. A successful result always has four keys; density and electron_temperature can be None."
   },
-  {
-   "name": "hot_density_shape",
-   "description": "Dimensionless hot-ion density shape, required even if hot_density_scale is absent.",
-   "units": "dimensionless",
-   "shape": "exactly psi shape [N_Z,N_R]",
-   "dtype": "real array-like converted to float64",
-   "required": true,
-   "constraints": "Finite and nonnegative; no broadcasting."
+  "public_api": {
+    "python": {
+      "module": "scirel.mirror.frank_egedal_pressure_state",
+      "symbol": "assemble_frank_egedal_pressure",
+      "signature": "assemble_frank_egedal_pressure(psi, radial_shape, hot_parallel_shape, hot_perpendicular_shape, hot_density_shape, *, hot_pressure_scale=1.0, gas_dynamic_pressure=0.0, gas_dynamic_density=None, hot_density_scale=None, electron_temperature=None)",
+      "canonical_module": "scirel.mirror",
+      "canonical_symbol": "assemble_frank_egedal_pressure"
+    }
   },
-  {
-   "name": "hot_pressure_scale",
-   "description": "Hot-ion pressure scale applied to both hot-ion pressure shapes.",
-   "units": "Pa",
-   "shape": "scalar",
-   "dtype": "float-convertible scalar",
-   "required": false,
-   "default": 1.0,
-   "constraints": "Finite and nonnegative."
+  "version": {
+    "implementation_version": "0.0.0",
+    "dependencies": []
   },
-  {
-   "name": "gas_dynamic_pressure",
-   "description": "Gas dynamic pressure scale multiplying the radial envelope.",
-   "units": "Pa",
-   "shape": "scalar",
-   "dtype": "float-convertible scalar",
-   "required": false,
-   "default": 0.0,
-   "constraints": "Finite and nonnegative."
+  "example": {
+    "description": "Assemble two grid cells with gas, hot-ion and electron contributions and compare both pressure components.",
+    "code": "import numpy as np\nfrom scirel.mirror import assemble_frank_egedal_pressure\npsi = np.zeros((1, 2))\nradial = np.array([[1.0, 0.5]])\nr = assemble_frank_egedal_pressure(psi, radial, np.full((1, 2), 2.0), np.full((1, 2), 3.0), np.full((1, 2), 4.0), hot_pressure_scale=5.0, gas_dynamic_pressure=7.0, gas_dynamic_density=11.0, hot_density_scale=13.0, electron_temperature=17.0)\nnp.testing.assert_allclose(r['density'], 63.0 * radial)\nnp.testing.assert_allclose(r['p_parallel'], 1088.0 * radial)\nnp.testing.assert_allclose(r['p_perp'], 1093.0 * radial)\nnp.testing.assert_allclose(r['electron_temperature'], 17.0)\n",
+    "expected": "Observed PASS: Density is 63 times the radial envelope; parallel and perpendicular pressures are 1088 and 1093 times that envelope in Pa, and electron energy is 17 J at both cells."
   },
-  {
-   "name": "gas_dynamic_density",
-   "description": "Optional gas dynamic density scale multiplying the radial envelope.",
-   "units": "m^-3",
-   "shape": "scalar or None",
-   "dtype": "float-convertible scalar or None",
-   "required": false,
-   "default": null,
-   "constraints": "Finite and nonnegative when present; None omits the gas-density term."
-  },
-  {
-   "name": "hot_density_scale",
-   "description": "Optional hot-ion density scale multiplying the radial envelope and hot-density shape.",
-   "units": "m^-3",
-   "shape": "scalar or None",
-   "dtype": "float-convertible scalar or None",
-   "required": false,
-   "default": null,
-   "constraints": "Finite and nonnegative when present; None omits the hot-ion density term."
-  },
-  {
-   "name": "electron_temperature",
-   "description": "Optional constant electron energy per particle expanded to the psi grid.",
-   "units": "J",
-   "shape": "scalar or None",
-   "dtype": "float-convertible scalar or None",
-   "required": false,
-   "default": null,
-   "constraints": "Finite and nonnegative when present; it is an energy, not an unconverted Kelvin temperature."
+  "verification": {
+    "scope": [
+      "The independent basis is exact rational recomputation of the four declared products on dyadic inputs: density = gas_density r + hot_density_scale r h_n, electron_pressure = density T_e and p_parallel/p_perp = gas + electron + hot_pressure_scale r h_parallel/perp, which makes every component comparison bitwise (tests/mirror/test_frank_egedal_pressure_state_evidence.py).",
+      "A two-by-two case checks independently assembled gas, hot-ion and electron contributions to density and both pressure components.",
+      "The no-density-scale case checks density=None, the unchanged electron-energy grid and zero electron pressure.",
+      "Nonfinite psi and negative gas pressure are rejected in direct tests; the documented example checks a two-cell assembly.",
+      "The anisotropy p_parallel - p_perp equals hot_pressure_scale r (h_parallel - h_perp) bit for bit, independent of the shared gas and electron contributions.",
+      "Omitting both density scales returns density None, an explicit zero gas density still returns a zero-plus-hot-ion density array, and omitting the electron temperature returns None with no electron pressure; doubling the hot scale doubles the hot increment exactly.",
+      "A mapping-valued scale raises the native TypeError while a malformed string raises ValueError from the float() conversion; both channels are asserted, and a finite product that leaves the finite range is rejected."
+    ],
+    "tests": [
+      "tests/mirror/test_frank_egedal_pressure_state.py",
+      "tests/mirror/test_frank_egedal_pressure_admitted.py",
+      "tests/mirror/test_frank_egedal_pressure_state_evidence.py"
+    ],
+    "evidence_ceiling": "Bounded to the declared relation: Let r=radial_shape, h_parallel=hot_parallel_shape, h_perp=hot_perpendicular_shape and h_n=hot_density_shape. Set p_hot=hot_pressure_scale (default 1 Pa) and p_gd=gas_dynamic_pressure (default 0 Pa)…. Evidence: test_frank_egedal_pressure_state.py, test_frank_egedal_pressure_admitted.py (9 recorded test functions; bound-file coverage; independent analytic/high-precision oracle); the contract example ran. Excluded scope: Computing a radial envelope, hot-ion moments, electron temperature, potential or equilibrium; Automatic flux-convention conversion, coordinate alignment, spatial interpolation, or proof that supplied scales describe a physically consistent plasma. C1 evidence (tests/mirror/test_frank_egedal_pressure_state_evidence.py) replaces the hand-written two-by-two expectation with Fraction-exact assembly of all four outputs, isolates the anisotropy identity, and pins the declared omission conventions. It does not establish that the supplied shapes and scales describe a physical mirror state.",
+    "known_limitations": [
+      "psi values are validated but not used; the historical Wb label is not a checked connector to other SciRel Wb/rad flux assets.",
+      "A configured electron temperature without either density scale returns an electron-energy grid but zero electron pressure and density=None.",
+      "The function accepts nonnegative shape fields and scales but does not establish their scientific consistency or source-mode provenance.",
+      "The independent analytic comparison does not replace an external experimental reference."
+    ],
+    "basis": {
+      "kind": "closed-form",
+      "statement": "A Fraction-exact assembly of all four outputs replaces the hand-written two-by-two expectation, and the anisotropy identity is isolated as its own statement.",
+      "source": "tests/mirror/test_frank_egedal_pressure_state.py"
+    }
   }
- ],
- "outputs": [
-  {
-   "name": "p_parallel",
-   "description": "Gas dynamic, isotropic electron and scaled hot-ion parallel pressures.",
-   "units": "Pa",
-   "shape": "[N_Z,N_R]",
-   "dtype": "float64 ndarray",
-   "required": true,
-   "constraints": "Finite on successful return; a nonfinite assembled result raises ValueError."
-  },
-  {
-   "name": "p_perp",
-   "description": "Gas dynamic, isotropic electron and scaled hot-ion perpendicular pressures; key is p_perp, not p_perpendicular.",
-   "units": "Pa",
-   "shape": "[N_Z,N_R]",
-   "dtype": "float64 ndarray",
-   "required": true,
-   "constraints": "Finite on successful return; a nonfinite assembled result raises ValueError."
-  },
-  {
-   "name": "density",
-   "description": "Sum of configured gas dynamic and hot-ion number-density terms, or None if both scales are absent/None.",
-   "units": "m^-3",
-   "shape": "[N_Z,N_R] or None",
-   "dtype": "float64 ndarray or None",
-   "required": true,
-   "constraints": "Finite when returned as an array; explicit zero density scales still return a zero array."
-  },
-  {
-   "name": "electron_temperature",
-   "description": "Configured constant electron energy per particle expanded to the psi grid, or None.",
-   "units": "J",
-   "shape": "[N_Z,N_R] or None",
-   "dtype": "float64 ndarray or None",
-   "required": true,
-   "constraints": "Finite and nonnegative when present; does not convert from K."
-  }
- ],
- "applicability": {
-  "preconditions": [
-   "All five input fields describe the same [Z,R] samples; the four shape arrays are finite, nonnegative and exactly the psi shape.",
-   "The caller supplies dimensionally consistent pressure, density and electron-energy scales, not Kelvin values."
-  ],
-  "supported": [
-   "Pointwise anisotropic pressure assembly with a common isotropic gas and electron contribution.",
-   "Optional gas and hot-ion density scales, optional constant electron energy, and keyword-only scale arguments."
-  ],
-  "excluded": [
-   "Computing a radial envelope, hot-ion moments, electron temperature, potential or equilibrium.",
-   "Automatic flux-convention conversion, coordinate alignment, spatial interpolation, or proof that supplied scales describe a physically consistent plasma."
-  ]
- },
- "failure_semantics": {
-  "invalid_input": "Raises ValueError for non-2D/empty/nonfinite psi, mismatched/nonfinite/negative shape fields, or a selected scale that is negative or nonfinite. Numeric conversion can also raise ValueError or TypeError.",
-  "runtime_failure": "Raises ValueError if any assembled non-null result field is nonfinite after arithmetic. NumPy warnings or allocation/conversion errors can propagate before this final check.",
-  "nonconvergence": "Not applicable; the pointwise assembly performs no iterative solve.",
-  "partial_results": "No partial result mapping is returned when validation or assembly fails. A successful result always has four keys; density and electron_temperature can be None."
- },
- "public_api": {
-  "python": {
-   "module": "scirel.mirror.frank_egedal_pressure_state",
-   "symbol": "assemble_frank_egedal_pressure",
-   "signature": "assemble_frank_egedal_pressure(psi, radial_shape, hot_parallel_shape, hot_perpendicular_shape, hot_density_shape, *, hot_pressure_scale=1.0, gas_dynamic_pressure=0.0, gas_dynamic_density=None, hot_density_scale=None, electron_temperature=None)",
-   "canonical_module": "scirel.mirror",
-   "canonical_symbol": "assemble_frank_egedal_pressure"
-  }
- },
- "version": {
-  "implementation_version": "0.0.0",
-  "dependencies": []
- },
- "example": {
-  "description": "Assemble two grid cells with gas, hot-ion and electron contributions and compare both pressure components.",
-  "code": "import numpy as np\nfrom scirel.mirror import assemble_frank_egedal_pressure\npsi = np.zeros((1, 2))\nradial = np.array([[1.0, 0.5]])\nr = assemble_frank_egedal_pressure(psi, radial, np.full((1, 2), 2.0), np.full((1, 2), 3.0), np.full((1, 2), 4.0), hot_pressure_scale=5.0, gas_dynamic_pressure=7.0, gas_dynamic_density=11.0, hot_density_scale=13.0, electron_temperature=17.0)\nnp.testing.assert_allclose(r['density'], 63.0 * radial)\nnp.testing.assert_allclose(r['p_parallel'], 1088.0 * radial)\nnp.testing.assert_allclose(r['p_perp'], 1093.0 * radial)\nnp.testing.assert_allclose(r['electron_temperature'], 17.0)\n",
-  "expected": "Observed PASS: Density is 63 times the radial envelope; parallel and perpendicular pressures are 1088 and 1093 times that envelope in Pa, and electron energy is 17 J at both cells."
- },
- "verification": {
-  "scope": [
-   "The independent basis is exact rational recomputation of the four declared products on dyadic inputs: density = gas_density r + hot_density_scale r h_n, electron_pressure = density T_e and p_parallel/p_perp = gas + electron + hot_pressure_scale r h_parallel/perp, which makes every component comparison bitwise (tests/mirror/test_frank_egedal_pressure_state_evidence.py).",
-   "A two-by-two case checks independently assembled gas, hot-ion and electron contributions to density and both pressure components.",
-   "The no-density-scale case checks density=None, the unchanged electron-energy grid and zero electron pressure.",
-   "Nonfinite psi and negative gas pressure are rejected in direct tests; the documented example checks a two-cell assembly.",
-   "The anisotropy p_parallel - p_perp equals hot_pressure_scale r (h_parallel - h_perp) bit for bit, independent of the shared gas and electron contributions.",
-   "Omitting both density scales returns density None, an explicit zero gas density still returns a zero-plus-hot-ion density array, and omitting the electron temperature returns None with no electron pressure; doubling the hot scale doubles the hot increment exactly.",
-   "A mapping-valued scale raises the native TypeError while a malformed string raises ValueError from the float() conversion; both channels are asserted, and a finite product that leaves the finite range is rejected."
-  ],
-  "tests": [
-   "tests/mirror/test_frank_egedal_pressure_state.py",
-   "tests/mirror/test_frank_egedal_pressure_admitted.py",
-   "tests/mirror/test_frank_egedal_pressure_state_evidence.py"
-  ],
-  "evidence_ceiling": "Bounded to the declared relation: Let r=radial_shape, h_parallel=hot_parallel_shape, h_perp=hot_perpendicular_shape and h_n=hot_density_shape. Set p_hot=hot_pressure_scale (default 1 Pa) and p_gd=gas_dynamic_pressure (default 0 Pa)…. Evidence: test_frank_egedal_pressure_state.py, test_frank_egedal_pressure_admitted.py (9 recorded test functions; bound-file coverage; independent analytic/high-precision oracle); the contract example ran. Excluded scope: Computing a radial envelope, hot-ion moments, electron temperature, potential or equilibrium; Automatic flux-convention conversion, coordinate alignment, spatial interpolation, or proof that supplied scales describe a physically consistent plasma. C1 evidence (tests/mirror/test_frank_egedal_pressure_state_evidence.py) replaces the hand-written two-by-two expectation with Fraction-exact assembly of all four outputs, isolates the anisotropy identity, and pins the declared omission conventions. It does not establish that the supplied shapes and scales describe a physical mirror state.",
-  "known_limitations": [
-   "psi values are validated but not used; the historical Wb label is not a checked connector to other SciRel Wb/rad flux assets.",
-   "A configured electron temperature without either density scale returns an electron-energy grid but zero electron pressure and density=None.",
-   "The function accepts nonnegative shape fields and scales but does not establish their scientific consistency or source-mode provenance.",
-   "The independent analytic comparison does not replace an external experimental reference."
-  ]
- }
 }

@@ -72,59 +72,11 @@
       "reason": "not yet migrated: verification.basis absent"
     },
     {
-      "asset_id": "scirel.mirror.frank-egedal-pressure-state",
-      "reason": "not yet migrated: verification.basis absent"
-    },
-    {
-      "asset_id": "scirel.mirror.frank-egedal-radial-envelope",
-      "reason": "not yet migrated: verification.basis absent"
-    },
-    {
-      "asset_id": "scirel.mirror.frank-egedal-source-projection",
-      "reason": "not yet migrated: verification.basis absent"
-    },
-    {
-      "asset_id": "scirel.mirror.loss-cone-spectrum",
-      "reason": "not yet migrated: verification.basis absent"
-    },
-    {
-      "asset_id": "scirel.mirror.mirror-ambipolar-potential",
-      "reason": "not yet migrated: verification.basis absent"
-    },
-    {
-      "asset_id": "scirel.mirror.mirror-constrained-moments",
-      "reason": "not yet migrated: verification.basis absent"
-    },
-    {
-      "asset_id": "scirel.mirror.mirror-invariant-distribution",
-      "reason": "not yet migrated: verification.basis absent"
-    },
-    {
-      "asset_id": "scirel.mirror.mirror-quasineutral-closure",
-      "reason": "not yet migrated: verification.basis absent"
-    },
-    {
-      "asset_id": "scirel.mirror.mirror-total-pressure",
-      "reason": "not yet migrated: verification.basis absent"
-    },
-    {
       "asset_id": "scirel.neoclassical.bootstrap-coefficients",
       "reason": "not yet migrated: verification.basis absent"
     },
     {
       "asset_id": "scirel.neoclassical.bootstrap-current",
-      "reason": "not yet migrated: verification.basis absent"
-    },
-    {
-      "asset_id": "scirel.neutrals.spatial-source-shape-normalization",
-      "reason": "not yet migrated: verification.basis absent"
-    },
-    {
-      "asset_id": "scirel.neutrals.terminal-conservation-diagnostic",
-      "reason": "not yet migrated: verification.basis absent"
-    },
-    {
-      "asset_id": "scirel.neutrals.terminal-flux-velocity-reduction",
       "reason": "not yet migrated: verification.basis absent"
     },
     {
@@ -335,7 +287,16 @@
     "scirel.kinetic.spectral-dispersion-scan",
     "scirel.mirror.frank-egedal-hot-ion-moments",
     "scirel.mirror.frank-egedal-pressure-closure",
+    "scirel.mirror.frank-egedal-pressure-state",
+    "scirel.mirror.frank-egedal-radial-envelope",
+    "scirel.mirror.frank-egedal-source-projection",
     "scirel.mirror.grid-mirror-kinetic-closure",
+    "scirel.mirror.loss-cone-spectrum",
+    "scirel.mirror.mirror-ambipolar-potential",
+    "scirel.mirror.mirror-constrained-moments",
+    "scirel.mirror.mirror-invariant-distribution",
+    "scirel.mirror.mirror-quasineutral-closure",
+    "scirel.mirror.mirror-total-pressure",
     "scirel.neutrals.adaptive-neutral-velocity-mesh",
     "scirel.neutrals.atomic-alpha-contraction",
     "scirel.neutrals.atomic-scattered-sources-reduction",
@@ -360,7 +321,10 @@
     "scirel.neutrals.outer-seed-convergence",
     "scirel.neutrals.shifted-maxwellian-seed",
     "scirel.neutrals.simple-charge-exchange-source",
+    "scirel.neutrals.spatial-source-shape-normalization",
+    "scirel.neutrals.terminal-conservation-diagnostic",
     "scirel.neutrals.terminal-energy-transfer-reduction",
+    "scirel.neutrals.terminal-flux-velocity-reduction",
     "scirel.numerics.basis-matrix",
     "scirel.numerics.bilinear-grid-sampling",
     "scirel.numerics.build-basis",
