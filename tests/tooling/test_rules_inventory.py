@@ -105,3 +105,61 @@ def test_every_rule_anchor_still_appears_in_its_source(rule: dict) -> None:
         f"{rule['id']}: the anchor text is no longer in {rule['source']}; the rule may have "
         "been renamed or removed, and this inventory is now describing something that is gone"
     )
+
+
+def _unwired(rules: list[dict], plan: str, test_texts: dict[str, str]) -> list[str]:
+    """Return `rule: judge` pairs whose judge never runs in the release plan.
+
+    A guard that exists on disk but is not reached by the plan is the
+    "installed but not wired" failure: the inventory would list it as
+    enforcement while nothing executes it. Two wirings count:
+
+    * the script appears in the acceptance plan's command list; or
+    * a test under `tests/` references it, and the plan runs ``pytest tests``
+      wholesale, so that test runs.
+    """
+    unwired = []
+    for rule in rules:
+        for judge in rule.get("judged_by") or []:
+            path = judge.split("::")[0]
+            if path.startswith("tests/"):
+                continue  # covered by the plan's ``pytest tests`` step
+            if path in plan:
+                continue
+            stem = Path(path).stem
+            if any(re.search(rf"\b{re.escape(stem)}\b", text) for text in test_texts.values()):
+                continue
+            unwired.append(f"{rule['id']}: {judge}")
+    return unwired
+
+
+def test_every_cited_judge_is_executed_by_the_release_plan():
+    """A judge nobody runs is a sentence, not enforcement.
+
+    The plan runs ``pytest tests`` plus a fixed command list, so a cited script
+    is wired when it is either a plan command or imported by some test. This
+    catches the shape where a checker is added, cited in the inventory, and
+    then never called -- the inventory would claim enforcement that the gate
+    never performs.
+    """
+    plan = (ROOT / "skills/development/scirel-acceptance/scripts/check_all.py").read_text(
+        encoding="utf-8"
+    )
+    test_texts = {
+        path.as_posix(): path.read_text(encoding="utf-8") for path in (ROOT / "tests").rglob("*.py")
+    }
+    assert ("pytest" in plan and '"tests"' in plan) or "'tests'" in plan
+    assert _unwired(_rules(), plan, test_texts) == []
+
+
+def test_an_unwired_judge_is_reported():
+    """Red case: the wiring test must not pass on an invented citation."""
+    rules = [{"id": "demo-1", "judged_by": ["scripts/a_checker_nobody_runs.py"]}]
+    assert _unwired(rules, plan="", test_texts={}) == ["demo-1: scripts/a_checker_nobody_runs.py"]
+    assert _unwired(rules, plan="scripts/a_checker_nobody_runs.py", test_texts={}) == []
+    assert (
+        _unwired(
+            rules, plan="", test_texts={"tests/x/test_demo.py": "import a_checker_nobody_runs"}
+        )
+        == []
+    )
