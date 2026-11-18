@@ -1,280 +1,285 @@
 {
- "schema": "scirel.asset-document",
- "asset_id": "scirel.neoclassical.bootstrap-coefficients",
- "title": {
-  "en": "Neoclassical bootstrap-current coefficients",
-  "zh": "新古典自举电流系数"
- },
- "summary": "Evaluate the existing Redl or Sauter bootstrap-current fit with an explicit method selector and named L31, L32, L34 and alpha arrays.",
- "taxonomy": [
-  "neoclassical",
-  "bootstrap"
- ],
- "aliases": [
-  "compute_bootstrap_coefficients"
- ],
- "discovery": {
-  "capability": [
-   "Bootstrap-current fit coefficients",
-   "Named neoclassical coefficients from caller-supplied trapped fraction and collisionalities."
+  "schema": "scirel.asset-document",
+  "asset_id": "scirel.neoclassical.bootstrap-coefficients",
+  "title": {
+    "en": "Neoclassical bootstrap-current coefficients",
+    "zh": "新古典自举电流系数"
+  },
+  "summary": "Evaluate the existing Redl or Sauter bootstrap-current fit with an explicit method selector and named L31, L32, L34 and alpha arrays.",
+  "taxonomy": [
+    "neoclassical",
+    "bootstrap"
   ],
-  "operation": [
-   "evaluate a selected bootstrap coefficient fit",
-   "trapped fraction, collisionalities and effective charge -> L31, L32, L34, alpha"
+  "aliases": [
+    "compute_bootstrap_coefficients"
   ],
-  "model": "Closed choice of the existing Redl (2021) or Sauter (1999) analytic empirical fit; each method retains its original normalization and limitations.",
-  "geometry": "Caller-supplied axisymmetric tokamak face data on normalized radius rho and total flux psi (Wb); no device geometry is built in.",
-  "boundary": "Coefficient evaluation only; no current assembly and no magnetic-axis zeroing are performed.",
-  "device_scope": "device-parameterized"
- },
- "identity": {
-  "relation": "caller-supplied trapped fraction, collisionalities and effective charge -> L31, L32, L34 and alpha",
-  "direction": "Explicit face quantities to named dimensionless fit coefficients",
-  "definition": "For Sauter, L31/L34 use their effective trapped fractions and quartic polynomial; L32 sums the distinct ee/ei rational-polynomial fits. Redl uses its revised fits and L34=L31. Alpha=(B+a*y)/(1+c*y), y=nu_i_star^2*f_trap^6; Sauter(a,c)=(.315,.15), Redl(-.002,.004), with model-specific B. Binary exponent scaling evaluates y or 1/y without squaring overflow or logarithmic cancellation.",
-  "model": "Closed family of the existing Redl and Sauter bootstrap-current coefficient fits",
-  "geometry": "Caller-supplied axisymmetric tokamak face data",
-  "coordinates": "Caller-ordered one-dimensional face arrays; rho and magnetic flux are not inputs to coefficient evaluation",
-  "boundary": "Coefficient evaluation only; no current assembly and no magnetic-axis zeroing are performed.",
-  "assumptions": [
-   "Finite converted-binary64 input quantities; caller supplies consistent units and normalization",
-   "The Result mapping has fields in insertion order L31, L32, L34, alpha; use field names or attributes rather than positional tuple indexing or array unpacking.",
-   "The caller supplies trapped-particle fraction and collisionality in the selected fit convention; they are not reconstructed by this entry."
-  ]
- },
- "inputs": [
-  {
-   "name": "f_trap",
-   "description": "Caller-supplied trapped-particle fraction, not inverse aspect ratio",
-   "units": "1",
-   "shape": "N+1",
-   "dtype": "real numeric converted to float64",
-   "required": true,
-   "constraints": "0 <= f_trap <= 1; finite faces"
+  "discovery": {
+    "capability": [
+      "Bootstrap-current fit coefficients",
+      "Named neoclassical coefficients from caller-supplied trapped fraction and collisionalities."
+    ],
+    "operation": [
+      "evaluate a selected bootstrap coefficient fit",
+      "trapped fraction, collisionalities and effective charge -> L31, L32, L34, alpha"
+    ],
+    "model": "Closed choice of the existing Redl (2021) or Sauter (1999) analytic empirical fit; each method retains its original normalization and limitations.",
+    "geometry": "Caller-supplied axisymmetric tokamak face data on normalized radius rho and total flux psi (Wb); no device geometry is built in.",
+    "boundary": "Coefficient evaluation only; no current assembly and no magnetic-axis zeroing are performed.",
+    "device_scope": "device-parameterized"
   },
-  {
-   "name": "nu_e_star",
-   "description": "Caller-supplied electron collision/bounce frequency ratio under the model convention",
-   "units": "1",
-   "shape": "N+1",
-   "dtype": "real numeric converted to float64",
-   "required": true,
-   "constraints": "Nonnegative finite faces"
+  "identity": {
+    "relation": "caller-supplied trapped fraction, collisionalities and effective charge -> L31, L32, L34 and alpha",
+    "direction": "Explicit face quantities to named dimensionless fit coefficients",
+    "definition": "For Sauter, L31/L34 use their effective trapped fractions and quartic polynomial; L32 sums the distinct ee/ei rational-polynomial fits. Redl uses its revised fits and L34=L31. Alpha=(B+a*y)/(1+c*y), y=nu_i_star^2*f_trap^6; Sauter(a,c)=(.315,.15), Redl(-.002,.004), with model-specific B. Binary exponent scaling evaluates y or 1/y without squaring overflow or logarithmic cancellation.",
+    "model": "Closed family of the existing Redl and Sauter bootstrap-current coefficient fits",
+    "geometry": "Caller-supplied axisymmetric tokamak face data",
+    "coordinates": "Caller-ordered one-dimensional face arrays; rho and magnetic flux are not inputs to coefficient evaluation",
+    "boundary": "Coefficient evaluation only; no current assembly and no magnetic-axis zeroing are performed.",
+    "assumptions": [
+      "Finite converted-binary64 input quantities; caller supplies consistent units and normalization",
+      "The Result mapping has fields in insertion order L31, L32, L34, alpha; use field names or attributes rather than positional tuple indexing or array unpacking.",
+      "The caller supplies trapped-particle fraction and collisionality in the selected fit convention; they are not reconstructed by this entry."
+    ]
   },
-  {
-   "name": "Z_eff",
-   "description": "Effective ionic charge for the fit",
-   "units": "1",
-   "shape": "N+1",
-   "dtype": "real numeric converted to float64",
-   "required": true,
-   "constraints": "Sauter positive; Redl >=1; physical quasineutral fully ionized plasma Z_eff>=1"
-  },
-  {
-   "name": "nu_i_star",
-   "description": "Caller-supplied ion collision/bounce frequency ratio under the model convention",
-   "units": "1",
-   "shape": "N+1",
-   "dtype": "real numeric converted to float64",
-   "required": true,
-   "constraints": "Nonnegative finite faces"
-  },
-  {
-   "name": "method",
-   "description": "Closed fit selector",
-   "units": "1",
-   "shape": "scalar",
-   "dtype": "string",
-   "required": false,
-   "default": "redl",
-   "constraints": "Exactly 'redl' or 'sauter'; keyword-only. These fits use the same physical inputs."
-  }
- ],
- "outputs": [
-  {
-   "name": "L31",
-   "description": "Field of the returned Result mapping: dimensionless density-gradient fit coefficient on faces",
-   "units": "1",
-   "shape": "N+1",
-   "dtype": "real numeric converted to float64",
-   "required": true,
-   "constraints": "Finite; equal explicit one-dimensional face shape; no broadcasting"
-  },
-  {
-   "name": "L32",
-   "description": "Field of the returned Result mapping: dimensionless electron-temperature coefficient correction on faces",
-   "units": "1",
-   "shape": "N+1",
-   "dtype": "real numeric converted to float64",
-   "required": true,
-   "constraints": "Finite; equal explicit one-dimensional face shape; no broadcasting"
-  },
-  {
-   "name": "L34",
-   "description": "Ion-temperature fit coefficient in the returned Result; equal to L31 for Redl only",
-   "units": "1",
-   "shape": "N+1",
-   "dtype": "real numeric converted to float64",
-   "required": true,
-   "constraints": "Finite; equal explicit one-dimensional face shape; no broadcasting"
-  },
-  {
-   "name": "alpha",
-   "description": "Field of the returned Result mapping: dimensionless ion temperature-gradient fit multiplier on faces",
-   "units": "1",
-   "shape": "N+1",
-   "dtype": "real numeric converted to float64",
-   "required": true,
-   "constraints": "Finite; equal explicit one-dimensional face shape; no broadcasting"
-  }
- ],
- "applicability": {
-  "preconditions": [
-   "Finite real one-dimensional face arrays of equal length >=2; 0<=f_trap<=1 and nonnegative nu_e_star and nu_i_star.",
-   "Z_eff>0 for sauter and Z_eff>=1 for redl; a fully ionized quasineutral plasma has Z_eff>=1."
-  ],
-  "supported": [
-   "Evaluation of the selected existing coefficient fit with its method-specific applicability and evidence."
-  ],
-  "excluded": [
-   "Deriving trapped fraction, collisionality, magnetic geometry or profiles; assembling bootstrap current.",
-   "General physical calibration or claims that the default is superior for every plasma."
-  ]
- },
- "failure_semantics": {
-  "invalid_input": "Raises TypeError for a non-string method or unsupported parameter, ValueError for an unknown method or invalid physical arrays; the selected fit retains its original charge-domain and shape rejections.",
-  "runtime_failure": "FloatingPointError for nonfinite coefficient/current arithmetic; no fallback is returned.",
-  "nonconvergence": "Not applicable; these are direct analytic fit and arithmetic mappings.",
-  "partial_results": "No partial output returned on failure."
- },
- "public_api": {
-  "python": {
-   "module": "scirel.neoclassical.bootstrap",
-   "symbol": "compute_bootstrap_coefficients",
-   "signature": "compute_bootstrap_coefficients(f_trap, nu_e_star, Z_eff, nu_i_star, *, method='redl')",
-   "canonical_module": "scirel.neoclassical",
-   "canonical_symbol": "compute_bootstrap_coefficients"
-  }
- },
- "version": {
-  "implementation_version": "0.0.0",
-  "dependencies": []
- },
- "example": {
-  "description": "Evaluate both existing fits with the same explicit physical inputs.",
-  "code": "from scirel.neoclassical import compute_bootstrap_coefficients\nredl = compute_bootstrap_coefficients([0.2, 0.4], [0.1, 1.0], [1.0, 2.0], [0.1, 1.0], method='redl')\nsauter = compute_bootstrap_coefficients([0.2, 0.4], [0.1, 1.0], [1.0, 2.0], [0.1, 1.0], method='sauter')\nassert list(redl) == list(sauter) == ['L31', 'L32', 'L34', 'alpha']\nassert redl.L31.shape == sauter.L31.shape == (2,)\n",
-  "expected": "Both methods return L31, L32, L34 and alpha face arrays; selecting a method does not reconstruct physical inputs or calibrate a device."
- },
- "verification": {
-  "scope": [
-   "Existing per-fit numerical, extreme-scale, shape and failure regressions retained for each explicit method.",
-   "Both named methods, default selection, closed method rejection and removal of the two old public entries are directly exercised.",
-   "Primary-paper 80/120-digit fixture anchors all four coefficients at eighteen selected inputs per method, with a fixed 128*eps budget after division by max(1,abs(reference)); this is a finite arithmetic matrix, not a continuous-domain or empirical error bound."
-  ],
-  "tests": [
-   "tests/tooling/test_bootstrap.py",
-   "tests/tooling/test_bootstrap_family.py",
-   "tests/tooling/test_named_result.py::test_neoclassical_results_preserve_baseline_values_and_return_types[compute_bootstrap_coefficients-redl]",
-   "tests/tooling/test_named_result.py::test_neoclassical_results_preserve_baseline_values_and_return_types[compute_bootstrap_coefficients-sauter]",
-   "tests/tooling/test_bootstrap_primary.py"
-  ],
-  "evidence_ceiling": "The interface migration preserves each existing mathematical fit and its bounded regression evidence. Method-specific scope and limitations are recorded separately; selecting a fit or passing examples does not establish experimental calibration.",
-  "known_limitations": [
-   "The caller must supply consistent trapped fraction and collisionality conventions.",
-   "The original fit evidence and limitations remain method-specific; no general plasma or device calibration is added.",
-   "This function does not assemble the bootstrap current or reconstruct geometry and profiles."
-  ]
- },
- "references": [
-  "O. Sauter, C. Angioni and Y. R. Lin-Liu, Physics of Plasmas 6, 2834 (1999), doi:10.1063/1.873240.",
-  "A. Redl et al., Physics of Plasmas 28, 022502 (2021), doi:10.1063/5.0012664.",
-  "OMFIT utils_fusion, Sauter alpha implementation explicitly labeled as including the 2002 correction: https://omfit.io/_modules/omfit_classes/utils_fusion.html. The original publisher erratum was not read here."
- ],
- "family": {
-  "name": "bootstrap-coefficients",
-  "default": "redl",
-  "default_reason": "Redl is the selected newer refit under the adopted family decision; this is not a universal accuracy claim. Sauter remains an explicit existing choice.",
-  "methods": [
-   {
-    "name": "redl",
-    "model": "Bounded analytic empirical tokamak fit (Redl PoP 2021 Eqs. 10-16, 19-21).",
-    "numerical_controls": {},
-    "applicability": {
-     "preconditions": [
-      "Declared shapes, domains and matching scientific conventions; no implicit broadcasting"
-     ],
-     "supported": [
-      "Compute the Redl dimensionless bootstrap fit coefficients from explicit face collisionalities"
-     ],
-     "excluded": [
-      "Empirical coefficients are not experimentally calibrated here. Caller must supply model-consistent collisionalities and trapped fraction; no geometry reconstruction, edge pedestal or full-transport physics qualification.",
-      "Large finite charge/collisionality combinations may have nonrepresentable intermediate or final arithmetic and fail explicitly. Float64 conversion cannot recover prior lost precision."
-     ]
+  "inputs": [
+    {
+      "name": "f_trap",
+      "description": "Caller-supplied trapped-particle fraction, not inverse aspect ratio",
+      "units": "1",
+      "shape": "N+1",
+      "dtype": "real numeric converted to float64",
+      "required": true,
+      "constraints": "0 <= f_trap <= 1; finite faces"
     },
-    "failure_semantics": {
-     "invalid_input": "ValueError for malformed, nonfinite, masked, mismatched or out-of-domain face inputs; no partial result.",
-     "runtime_failure": "FloatingPointError for nonfinite coefficient/current arithmetic; no fallback is returned.",
-     "nonconvergence": "Not applicable; these are direct analytic fit and arithmetic mappings.",
-     "partial_results": "No partial output returned on failure."
+    {
+      "name": "nu_e_star",
+      "description": "Caller-supplied electron collision/bounce frequency ratio under the model convention",
+      "units": "1",
+      "shape": "N+1",
+      "dtype": "real numeric converted to float64",
+      "required": true,
+      "constraints": "Nonnegative finite faces"
     },
-    "verification": {
-     "scope": [
-      "Redl alpha large-collisionality limit and exact L34=L31 in test_bootstrap.py; the selected test_named_result.py case checks all four ordinary coefficient baseline arrays, Result type, field order and attribute access.",
-      "The redl primary-paper fixture separately checks L31, L32, L34 and alpha at eighteen selected combinations of f_trap=0..1, nu_e_star=0..1000, Z_eff in {1,1.8,5}, and nu_i_star=0..10000; expected values come from independent 80/120-digit scalar paper expressions, not production outputs."
-     ],
-     "tests": [
+    {
+      "name": "Z_eff",
+      "description": "Effective ionic charge for the fit",
+      "units": "1",
+      "shape": "N+1",
+      "dtype": "real numeric converted to float64",
+      "required": true,
+      "constraints": "Sauter positive; Redl >=1; physical quasineutral fully ionized plasma Z_eff>=1"
+    },
+    {
+      "name": "nu_i_star",
+      "description": "Caller-supplied ion collision/bounce frequency ratio under the model convention",
+      "units": "1",
+      "shape": "N+1",
+      "dtype": "real numeric converted to float64",
+      "required": true,
+      "constraints": "Nonnegative finite faces"
+    },
+    {
+      "name": "method",
+      "description": "Closed fit selector",
+      "units": "1",
+      "shape": "scalar",
+      "dtype": "string",
+      "required": false,
+      "default": "redl",
+      "constraints": "Exactly 'redl' or 'sauter'; keyword-only. These fits use the same physical inputs."
+    }
+  ],
+  "outputs": [
+    {
+      "name": "L31",
+      "description": "Field of the returned Result mapping: dimensionless density-gradient fit coefficient on faces",
+      "units": "1",
+      "shape": "N+1",
+      "dtype": "real numeric converted to float64",
+      "required": true,
+      "constraints": "Finite; equal explicit one-dimensional face shape; no broadcasting"
+    },
+    {
+      "name": "L32",
+      "description": "Field of the returned Result mapping: dimensionless electron-temperature coefficient correction on faces",
+      "units": "1",
+      "shape": "N+1",
+      "dtype": "real numeric converted to float64",
+      "required": true,
+      "constraints": "Finite; equal explicit one-dimensional face shape; no broadcasting"
+    },
+    {
+      "name": "L34",
+      "description": "Ion-temperature fit coefficient in the returned Result; equal to L31 for Redl only",
+      "units": "1",
+      "shape": "N+1",
+      "dtype": "real numeric converted to float64",
+      "required": true,
+      "constraints": "Finite; equal explicit one-dimensional face shape; no broadcasting"
+    },
+    {
+      "name": "alpha",
+      "description": "Field of the returned Result mapping: dimensionless ion temperature-gradient fit multiplier on faces",
+      "units": "1",
+      "shape": "N+1",
+      "dtype": "real numeric converted to float64",
+      "required": true,
+      "constraints": "Finite; equal explicit one-dimensional face shape; no broadcasting"
+    }
+  ],
+  "applicability": {
+    "preconditions": [
+      "Finite real one-dimensional face arrays of equal length >=2; 0<=f_trap<=1 and nonnegative nu_e_star and nu_i_star.",
+      "Z_eff>0 for sauter and Z_eff>=1 for redl; a fully ionized quasineutral plasma has Z_eff>=1."
+    ],
+    "supported": [
+      "Evaluation of the selected existing coefficient fit with its method-specific applicability and evidence."
+    ],
+    "excluded": [
+      "Deriving trapped fraction, collisionality, magnetic geometry or profiles; assembling bootstrap current.",
+      "General physical calibration or claims that the default is superior for every plasma."
+    ]
+  },
+  "failure_semantics": {
+    "invalid_input": "Raises TypeError for a non-string method or unsupported parameter, ValueError for an unknown method or invalid physical arrays; the selected fit retains its original charge-domain and shape rejections.",
+    "runtime_failure": "FloatingPointError for nonfinite coefficient/current arithmetic; no fallback is returned.",
+    "nonconvergence": "Not applicable; these are direct analytic fit and arithmetic mappings.",
+    "partial_results": "No partial output returned on failure."
+  },
+  "public_api": {
+    "python": {
+      "module": "scirel.neoclassical.bootstrap",
+      "symbol": "compute_bootstrap_coefficients",
+      "signature": "compute_bootstrap_coefficients(f_trap, nu_e_star, Z_eff, nu_i_star, *, method='redl')",
+      "canonical_module": "scirel.neoclassical",
+      "canonical_symbol": "compute_bootstrap_coefficients"
+    }
+  },
+  "version": {
+    "implementation_version": "0.0.0",
+    "dependencies": []
+  },
+  "example": {
+    "description": "Evaluate both existing fits with the same explicit physical inputs.",
+    "code": "from scirel.neoclassical import compute_bootstrap_coefficients\nredl = compute_bootstrap_coefficients([0.2, 0.4], [0.1, 1.0], [1.0, 2.0], [0.1, 1.0], method='redl')\nsauter = compute_bootstrap_coefficients([0.2, 0.4], [0.1, 1.0], [1.0, 2.0], [0.1, 1.0], method='sauter')\nassert list(redl) == list(sauter) == ['L31', 'L32', 'L34', 'alpha']\nassert redl.L31.shape == sauter.L31.shape == (2,)\n",
+    "expected": "Both methods return L31, L32, L34 and alpha face arrays; selecting a method does not reconstruct physical inputs or calibrate a device."
+  },
+  "verification": {
+    "scope": [
+      "Existing per-fit numerical, extreme-scale, shape and failure regressions retained for each explicit method.",
+      "Both named methods, default selection, closed method rejection and removal of the two old public entries are directly exercised.",
+      "Primary-paper 80/120-digit fixture anchors all four coefficients at eighteen selected inputs per method, with a fixed 128*eps budget after division by max(1,abs(reference)); this is a finite arithmetic matrix, not a continuous-domain or empirical error bound."
+    ],
+    "tests": [
       "tests/tooling/test_bootstrap.py",
+      "tests/tooling/test_bootstrap_family.py",
       "tests/tooling/test_named_result.py::test_neoclassical_results_preserve_baseline_values_and_return_types[compute_bootstrap_coefficients-redl]",
-      "tests/tooling/test_bootstrap_primary.py::test_coefficients_follow_primary_paper_anchors[redl]"
-     ],
-     "evidence_ceiling": "Mathematical fit arithmetic and explicit assembly only; no empirical full-physics qualification.",
-     "known_limitations": [
-      "Empirical coefficients are not experimentally calibrated here. Caller must supply model-consistent collisionalities and trapped fraction; no geometry reconstruction, edge pedestal or full-transport physics qualification.",
-      "Large finite charge/collisionality combinations may have nonrepresentable intermediate or final arithmetic and fail explicitly. Float64 conversion cannot recover prior lost precision.",
-      "The historical Decimal claim remains unlocated. The current bound primary-paper fixture supplies new independent coefficient anchors; it does not recover that old run, estimate empirical fit error or certify the continuous parameter domain."
-     ]
-    }
-   },
-   {
-    "name": "sauter",
-    "model": "Bounded analytic empirical tokamak fit (Sauter PoP 1999 Eqs. 14-17).",
-    "numerical_controls": {},
-    "applicability": {
-     "preconditions": [
-      "Declared shapes, domains and matching scientific conventions; no implicit broadcasting"
-     ],
-     "supported": [
-      "Compute the Sauter dimensionless bootstrap fit coefficients from explicit face collisionalities"
-     ],
-     "excluded": [
-      "Empirical coefficients are not experimentally calibrated here. Caller must supply model-consistent collisionalities and trapped fraction; no geometry reconstruction, edge pedestal or full-transport physics qualification.",
-      "Large finite charge/collisionality combinations may have nonrepresentable intermediate or final arithmetic and fail explicitly. Float64 conversion cannot recover prior lost precision."
-     ]
-    },
-    "failure_semantics": {
-     "invalid_input": "ValueError for malformed, nonfinite, masked, mismatched or out-of-domain face inputs; no partial result.",
-     "runtime_failure": "FloatingPointError for nonfinite coefficient/current arithmetic; no fallback is returned.",
-     "nonconvergence": "Not applicable; these are direct analytic fit and arithmetic mappings.",
-     "partial_results": "No partial output returned on failure."
-    },
-    "verification": {
-     "scope": [
-      "Sauter alpha large-collisionality limits, ordinary alpha binary64 expression and exponent-cancellation witnesses in test_bootstrap.py; the selected test_named_result.py case checks all four ordinary coefficient baseline arrays, Result type, field order and attribute access.",
-      "The sauter primary-paper fixture separately checks L31, L32, L34 and alpha at eighteen selected combinations of f_trap=0..1, nu_e_star=0..1000, Z_eff in {1,1.8,5}, and nu_i_star=0..10000; expected values come from independent 80/120-digit scalar paper expressions, not production outputs."
-     ],
-     "tests": [
-      "tests/tooling/test_bootstrap.py",
       "tests/tooling/test_named_result.py::test_neoclassical_results_preserve_baseline_values_and_return_types[compute_bootstrap_coefficients-sauter]",
-      "tests/tooling/test_bootstrap_primary.py::test_coefficients_follow_primary_paper_anchors[sauter]"
-     ],
-     "evidence_ceiling": "Mathematical fit arithmetic and explicit assembly only; no empirical full-physics qualification.",
-     "known_limitations": [
-      "Empirical coefficients are not experimentally calibrated here. Caller must supply model-consistent collisionalities and trapped fraction; no geometry reconstruction, edge pedestal or full-transport physics qualification.",
-      "Large finite charge/collisionality combinations may have nonrepresentable intermediate or final arithmetic and fail explicitly. Float64 conversion cannot recover prior lost precision.",
-      "The historical Decimal claim remains unlocated. The current bound primary-paper fixture supplies new independent coefficient anchors; it does not recover that old run, estimate empirical fit error or certify the continuous parameter domain.",
-      "The 1999 author manuscript Eq.(17b) prints a negative .315 term. This API retains the selected positive corrected term, corroborated by the fixed nonzero-trapped-fraction +2.1 limit in the 2021 author paper and OMFIT corrected implementation. The original 2002 publisher erratum has not been read here."
-     ]
+      "tests/tooling/test_bootstrap_primary.py"
+    ],
+    "evidence_ceiling": "The interface migration preserves each existing mathematical fit and its bounded regression evidence. Method-specific scope and limitations are recorded separately; selecting a fit or passing examples does not establish experimental calibration.",
+    "known_limitations": [
+      "The caller must supply consistent trapped fraction and collisionality conventions.",
+      "The original fit evidence and limitations remain method-specific; no general plasma or device calibration is added.",
+      "This function does not assemble the bootstrap current or reconstruct geometry and profiles."
+    ],
+    "basis": {
+      "kind": "specification",
+      "statement": "The basis is the mathematical fit and its bounded regression evidence. Method-specific scope and limitations are recorded separately; selecting a fit or passing examples does NOT establish experimental calibration.",
+      "source": "tests/tooling/test_bootstrap.py"
     }
-   }
-  ]
- }
+  },
+  "references": [
+    "O. Sauter, C. Angioni and Y. R. Lin-Liu, Physics of Plasmas 6, 2834 (1999), doi:10.1063/1.873240.",
+    "A. Redl et al., Physics of Plasmas 28, 022502 (2021), doi:10.1063/5.0012664.",
+    "OMFIT utils_fusion, Sauter alpha implementation explicitly labeled as including the 2002 correction: https://omfit.io/_modules/omfit_classes/utils_fusion.html. The original publisher erratum was not read here."
+  ],
+  "family": {
+    "name": "bootstrap-coefficients",
+    "default": "redl",
+    "default_reason": "Redl is the selected newer refit under the adopted family decision; this is not a universal accuracy claim. Sauter remains an explicit existing choice.",
+    "methods": [
+      {
+        "name": "redl",
+        "model": "Bounded analytic empirical tokamak fit (Redl PoP 2021 Eqs. 10-16, 19-21).",
+        "numerical_controls": {},
+        "applicability": {
+          "preconditions": [
+            "Declared shapes, domains and matching scientific conventions; no implicit broadcasting"
+          ],
+          "supported": [
+            "Compute the Redl dimensionless bootstrap fit coefficients from explicit face collisionalities"
+          ],
+          "excluded": [
+            "Empirical coefficients are not experimentally calibrated here. Caller must supply model-consistent collisionalities and trapped fraction; no geometry reconstruction, edge pedestal or full-transport physics qualification.",
+            "Large finite charge/collisionality combinations may have nonrepresentable intermediate or final arithmetic and fail explicitly. Float64 conversion cannot recover prior lost precision."
+          ]
+        },
+        "failure_semantics": {
+          "invalid_input": "ValueError for malformed, nonfinite, masked, mismatched or out-of-domain face inputs; no partial result.",
+          "runtime_failure": "FloatingPointError for nonfinite coefficient/current arithmetic; no fallback is returned.",
+          "nonconvergence": "Not applicable; these are direct analytic fit and arithmetic mappings.",
+          "partial_results": "No partial output returned on failure."
+        },
+        "verification": {
+          "scope": [
+            "Redl alpha large-collisionality limit and exact L34=L31 in test_bootstrap.py; the selected test_named_result.py case checks all four ordinary coefficient baseline arrays, Result type, field order and attribute access.",
+            "The redl primary-paper fixture separately checks L31, L32, L34 and alpha at eighteen selected combinations of f_trap=0..1, nu_e_star=0..1000, Z_eff in {1,1.8,5}, and nu_i_star=0..10000; expected values come from independent 80/120-digit scalar paper expressions, not production outputs."
+          ],
+          "tests": [
+            "tests/tooling/test_bootstrap.py",
+            "tests/tooling/test_named_result.py::test_neoclassical_results_preserve_baseline_values_and_return_types[compute_bootstrap_coefficients-redl]",
+            "tests/tooling/test_bootstrap_primary.py::test_coefficients_follow_primary_paper_anchors[redl]"
+          ],
+          "evidence_ceiling": "Mathematical fit arithmetic and explicit assembly only; no empirical full-physics qualification.",
+          "known_limitations": [
+            "Empirical coefficients are not experimentally calibrated here. Caller must supply model-consistent collisionalities and trapped fraction; no geometry reconstruction, edge pedestal or full-transport physics qualification.",
+            "Large finite charge/collisionality combinations may have nonrepresentable intermediate or final arithmetic and fail explicitly. Float64 conversion cannot recover prior lost precision.",
+            "The historical Decimal claim remains unlocated. The current bound primary-paper fixture supplies new independent coefficient anchors; it does not recover that old run, estimate empirical fit error or certify the continuous parameter domain."
+          ]
+        }
+      },
+      {
+        "name": "sauter",
+        "model": "Bounded analytic empirical tokamak fit (Sauter PoP 1999 Eqs. 14-17).",
+        "numerical_controls": {},
+        "applicability": {
+          "preconditions": [
+            "Declared shapes, domains and matching scientific conventions; no implicit broadcasting"
+          ],
+          "supported": [
+            "Compute the Sauter dimensionless bootstrap fit coefficients from explicit face collisionalities"
+          ],
+          "excluded": [
+            "Empirical coefficients are not experimentally calibrated here. Caller must supply model-consistent collisionalities and trapped fraction; no geometry reconstruction, edge pedestal or full-transport physics qualification.",
+            "Large finite charge/collisionality combinations may have nonrepresentable intermediate or final arithmetic and fail explicitly. Float64 conversion cannot recover prior lost precision."
+          ]
+        },
+        "failure_semantics": {
+          "invalid_input": "ValueError for malformed, nonfinite, masked, mismatched or out-of-domain face inputs; no partial result.",
+          "runtime_failure": "FloatingPointError for nonfinite coefficient/current arithmetic; no fallback is returned.",
+          "nonconvergence": "Not applicable; these are direct analytic fit and arithmetic mappings.",
+          "partial_results": "No partial output returned on failure."
+        },
+        "verification": {
+          "scope": [
+            "Sauter alpha large-collisionality limits, ordinary alpha binary64 expression and exponent-cancellation witnesses in test_bootstrap.py; the selected test_named_result.py case checks all four ordinary coefficient baseline arrays, Result type, field order and attribute access.",
+            "The sauter primary-paper fixture separately checks L31, L32, L34 and alpha at eighteen selected combinations of f_trap=0..1, nu_e_star=0..1000, Z_eff in {1,1.8,5}, and nu_i_star=0..10000; expected values come from independent 80/120-digit scalar paper expressions, not production outputs."
+          ],
+          "tests": [
+            "tests/tooling/test_bootstrap.py",
+            "tests/tooling/test_named_result.py::test_neoclassical_results_preserve_baseline_values_and_return_types[compute_bootstrap_coefficients-sauter]",
+            "tests/tooling/test_bootstrap_primary.py::test_coefficients_follow_primary_paper_anchors[sauter]"
+          ],
+          "evidence_ceiling": "Mathematical fit arithmetic and explicit assembly only; no empirical full-physics qualification.",
+          "known_limitations": [
+            "Empirical coefficients are not experimentally calibrated here. Caller must supply model-consistent collisionalities and trapped fraction; no geometry reconstruction, edge pedestal or full-transport physics qualification.",
+            "Large finite charge/collisionality combinations may have nonrepresentable intermediate or final arithmetic and fail explicitly. Float64 conversion cannot recover prior lost precision.",
+            "The historical Decimal claim remains unlocated. The current bound primary-paper fixture supplies new independent coefficient anchors; it does not recover that old run, estimate empirical fit error or certify the continuous parameter domain.",
+            "The 1999 author manuscript Eq.(17b) prints a negative .315 term. This API retains the selected positive corrected term, corroborated by the fixed nonzero-trapped-fraction +2.1 limit in the 2021 author paper and OMFIT corrected implementation. The original 2002 publisher erratum has not been read here."
+          ]
+        }
+      }
+    ]
+  }
 }

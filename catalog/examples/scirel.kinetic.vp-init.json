@@ -1,201 +1,206 @@
 {
- "schema": "scirel.asset-document",
- "asset_id": "scirel.kinetic.vp-init",
- "title": {
-  "en": "Poisson-consistent initialization",
-  "zh": "Poisson 一致初始化"
- },
- "summary": "v=linspace(-vmax,vmax,nv+1); df=.1 exp(-v^2); E=i dv sum(df)/k.",
- "taxonomy": [
-  "kinetic",
-  "plasma-wave",
-  "vlasov-poisson"
- ],
- "aliases": [
-  "vp_init"
- ],
- "discovery": {
-  "capability": [
-   "Poisson-consistent initialization",
-   "v=linspace(-vmax,vmax,nv+1); f0' from family Fn or caller df0dv (Fn=None); df=df_initial, default .1 exp(-v^2); E=i dv sum(df)/k."
+  "schema": "scirel.asset-document",
+  "asset_id": "scirel.kinetic.vp-init",
+  "title": {
+    "en": "Poisson-consistent initialization",
+    "zh": "Poisson 一致初始化"
+  },
+  "summary": "v=linspace(-vmax,vmax,nv+1); df=.1 exp(-v^2); E=i dv sum(df)/k.",
+  "taxonomy": [
+    "kinetic",
+    "plasma-wave",
+    "vlasov-poisson"
   ],
-  "operation": [
-   "initialize a Poisson-consistent perturbation",
-   "velocity window, mode count and k -> Poisson-closed df and E"
+  "aliases": [
+    "vp_init"
   ],
-  "model": "Linear one-dimensional single-spatial-Fourier-mode electrons, fixed ions.",
-  "geometry": "One velocity coordinate and one spatial Fourier mode.",
-  "boundary": "Finite uniform velocity window and discrete Poisson closure; fixed ion background; state construction only.",
-  "device_scope": "generic"
- },
- "identity": {
-  "relation": "v=linspace(-vmax,vmax,nv+1); df=.1 exp(-v^2); E=i dv sum(df)/k.",
-  "direction": "Inputs to vp_init -> result",
-  "definition": "v=linspace(-vmax,vmax,nv+1); f0' from the built-in family Fn or the caller's df0dv (Fn=None); df=df_initial, default .1 exp(-v^2); E=i dv sum(df)/k.",
-  "model": "Linear one-dimensional single-spatial-Fourier-mode electrons, fixed ions.",
-  "geometry": "One velocity coordinate and one spatial Fourier mode.",
-  "coordinates": "Dimensionless plasma-frequency and Debye-length normalization.",
-  "boundary": "Finite uniform velocity window and discrete Poisson closure; fixed ion background; state construction only.",
-  "assumptions": [
-   "Linear perturbations and homogeneous equilibrium.",
-   "Velocity-window truncation and recurrence are separate from temporal integration error."
-  ]
- },
- "inputs": [
-  {
-   "name": "Fn",
-   "description": "Built-in equilibrium, unit density: 1 Maxwellian exp(-v^2/2)/sqrt(2pi) (unit variance); 2 kappa Gamma(kappa)/(Gamma(kappa-1/2) sqrt(2 pi kappa)) (1+v^2/(2 kappa))^-kappa, i.e. theta^2=2 with variance 2kappa/(2kappa-3), NOT unit temperature; 3 triangle max(0,1-|v|); 4 cutoff slowing-down.",
-   "units": "dimensionless",
-   "shape": "scalar",
-   "dtype": "integer",
-   "required": false,
-   "constraints": "One of 1,2,3,4, or None together with df0dv.",
-   "default": 2
+  "discovery": {
+    "capability": [
+      "Poisson-consistent initialization",
+      "v=linspace(-vmax,vmax,nv+1); f0' from family Fn or caller df0dv (Fn=None); df=df_initial, default .1 exp(-v^2); E=i dv sum(df)/k."
+    ],
+    "operation": [
+      "initialize a Poisson-consistent perturbation",
+      "velocity window, mode count and k -> Poisson-closed df and E"
+    ],
+    "model": "Linear one-dimensional single-spatial-Fourier-mode electrons, fixed ions.",
+    "geometry": "One velocity coordinate and one spatial Fourier mode.",
+    "boundary": "Finite uniform velocity window and discrete Poisson closure; fixed ion background; state construction only.",
+    "device_scope": "generic"
   },
-  {
-   "name": "kappa",
-   "description": "Kappa index of the Fn=2 family. The family is not rescaled to unit variance; for a kappa distribution at a prescribed temperature pass its derivative as df0dv to vp_init.",
-   "units": "dimensionless",
-   "shape": "scalar",
-   "dtype": "real scalar",
-   "required": false,
-   "constraints": "For Fn=2 finite >1/2.",
-   "default": 1.0
+  "identity": {
+    "relation": "v=linspace(-vmax,vmax,nv+1); df=.1 exp(-v^2); E=i dv sum(df)/k.",
+    "direction": "Inputs to vp_init -> result",
+    "definition": "v=linspace(-vmax,vmax,nv+1); f0' from the built-in family Fn or the caller's df0dv (Fn=None); df=df_initial, default .1 exp(-v^2); E=i dv sum(df)/k.",
+    "model": "Linear one-dimensional single-spatial-Fourier-mode electrons, fixed ions.",
+    "geometry": "One velocity coordinate and one spatial Fourier mode.",
+    "coordinates": "Dimensionless plasma-frequency and Debye-length normalization.",
+    "boundary": "Finite uniform velocity window and discrete Poisson closure; fixed ion background; state construction only.",
+    "assumptions": [
+      "Linear perturbations and homogeneous equilibrium.",
+      "Velocity-window truncation and recurrence are separate from temporal integration error."
+    ]
   },
-  {
-   "name": "nv",
-   "description": "Number of equal velocity intervals.",
-   "units": "dimensionless",
-   "shape": "scalar",
-   "dtype": "integer",
-   "required": false,
-   "constraints": "Integer >=2, boolean rejected.",
-   "default": 2048
+  "inputs": [
+    {
+      "name": "Fn",
+      "description": "Built-in equilibrium, unit density: 1 Maxwellian exp(-v^2/2)/sqrt(2pi) (unit variance); 2 kappa Gamma(kappa)/(Gamma(kappa-1/2) sqrt(2 pi kappa)) (1+v^2/(2 kappa))^-kappa, i.e. theta^2=2 with variance 2kappa/(2kappa-3), NOT unit temperature; 3 triangle max(0,1-|v|); 4 cutoff slowing-down.",
+      "units": "dimensionless",
+      "shape": "scalar",
+      "dtype": "integer",
+      "required": false,
+      "constraints": "One of 1,2,3,4, or None together with df0dv.",
+      "default": 2
+    },
+    {
+      "name": "kappa",
+      "description": "Kappa index of the Fn=2 family. The family is not rescaled to unit variance; for a kappa distribution at a prescribed temperature pass its derivative as df0dv to vp_init.",
+      "units": "dimensionless",
+      "shape": "scalar",
+      "dtype": "real scalar",
+      "required": false,
+      "constraints": "For Fn=2 finite >1/2.",
+      "default": 1.0
+    },
+    {
+      "name": "nv",
+      "description": "Number of equal velocity intervals.",
+      "units": "dimensionless",
+      "shape": "scalar",
+      "dtype": "integer",
+      "required": false,
+      "constraints": "Integer >=2, boolean rejected.",
+      "default": 2048
+    },
+    {
+      "name": "dt",
+      "description": "Time step in inverse plasma frequency.",
+      "units": "dimensionless",
+      "shape": "scalar",
+      "dtype": "real scalar",
+      "required": false,
+      "constraints": "Positive finite.",
+      "default": 0.01
+    },
+    {
+      "name": "nt",
+      "description": "Exact number of ordered time steps.",
+      "units": "dimensionless",
+      "shape": "scalar",
+      "dtype": "integer",
+      "required": false,
+      "constraints": "Nonnegative integer, boolean rejected.",
+      "default": 2000
+    },
+    {
+      "name": "k",
+      "description": "Spatial Fourier wavenumber in inverse Debye length.",
+      "units": "dimensionless",
+      "shape": "scalar",
+      "dtype": "real scalar",
+      "required": false,
+      "constraints": "Positive finite.",
+      "default": 0.15
+    },
+    {
+      "name": "vmax",
+      "description": "Symmetric velocity window extent.",
+      "units": "dimensionless",
+      "shape": "scalar",
+      "dtype": "real scalar",
+      "required": false,
+      "constraints": "Positive finite.",
+      "default": 20.0
+    },
+    {
+      "name": "df_initial",
+      "description": "Initial perturbation df(v,0) on vv=linspace(-vmax,vmax,nv+1). Default 0.1*exp(-v^2), a fixed Gaussian in grid velocity units, not proportional to f0.",
+      "units": "dimensionless",
+      "shape": "[nv+1]",
+      "dtype": "real or complex array",
+      "required": false,
+      "constraints": "Finite, one value per velocity node; None selects the default.",
+      "default": null
+    },
+    {
+      "name": "df0dv",
+      "description": "Custom equilibrium derivative f0'(v) on vv, used instead of a built-in family; requires Fn=None.",
+      "units": "dimensionless",
+      "shape": "[nv+1]",
+      "dtype": "real array",
+      "required": false,
+      "constraints": "Finite, real, one value per velocity node; given exactly when Fn is None.",
+      "default": null
+    }
+  ],
+  "outputs": [
+    {
+      "name": "result",
+      "description": "State mapping: Fn,kappa,nv,dt,nt,k,vmax,vmin,dv,TR; vv,df,df0dv [nv+1]; scalar dE; dEt,tt [nt+1]; wr,wi are kappa=1 theory or None. Fields and arrays are independently owned.",
+      "units": "dimensionless",
+      "shape": "As described in output mapping or tuple.",
+      "dtype": "dict",
+      "required": true,
+      "constraints": "State mapping with finite arrays and an initial field satisfying discrete Poisson closure."
+    }
+  ],
+  "applicability": {
+    "preconditions": [
+      "Fn, kappa, nv, dt, nt, k and vmax satisfy the declared scalar domains; df_initial and df0dv, when given, are finite arrays of length nv+1, and df0dv is given exactly when Fn is None."
+    ],
+    "supported": [
+      "Finite velocity-grid initialization with discrete Poisson-consistent dE and empty or finite-length time history."
+    ],
+    "excluded": [
+      "Nonlinear or multidimensional initial states."
+    ]
   },
-  {
-   "name": "dt",
-   "description": "Time step in inverse plasma frequency.",
-   "units": "dimensionless",
-   "shape": "scalar",
-   "dtype": "real scalar",
-   "required": false,
-   "constraints": "Positive finite.",
-   "default": 0.01
+  "failure_semantics": {
+    "invalid_input": "ValueError for invalid scalar controls, a distribution branch that rejects the selected parameters, df_initial or df0dv of the wrong length or nonfinite, a complex df0dv, or df0dv given together with Fn (or Fn=None without df0dv).",
+    "runtime_failure": "FloatingPointError if the generated derivative or Poisson field is not finite.",
+    "nonconvergence": "Not applicable; initialization has no iteration.",
+    "partial_results": "No state is returned after an exception."
   },
-  {
-   "name": "nt",
-   "description": "Exact number of ordered time steps.",
-   "units": "dimensionless",
-   "shape": "scalar",
-   "dtype": "integer",
-   "required": false,
-   "constraints": "Nonnegative integer, boolean rejected.",
-   "default": 2000
+  "public_api": {
+    "python": {
+      "module": "scirel.kinetic.vlasov_poisson",
+      "symbol": "vp_init",
+      "signature": "vp_init(Fn=2, kappa=1.0, nv=2048, dt=0.01, nt=2000, *, k=0.15, vmax=20.0, df_initial=None, df0dv=None)",
+      "canonical_module": "scirel.kinetic",
+      "canonical_symbol": "vp_init"
+    }
   },
-  {
-   "name": "k",
-   "description": "Spatial Fourier wavenumber in inverse Debye length.",
-   "units": "dimensionless",
-   "shape": "scalar",
-   "dtype": "real scalar",
-   "required": false,
-   "constraints": "Positive finite.",
-   "default": 0.15
+  "version": {
+    "implementation_version": "0.0.0",
+    "dependencies": []
   },
-  {
-   "name": "vmax",
-   "description": "Symmetric velocity window extent.",
-   "units": "dimensionless",
-   "shape": "scalar",
-   "dtype": "real scalar",
-   "required": false,
-   "constraints": "Positive finite.",
-   "default": 20.0
+  "example": {
+    "code": "from scirel.kinetic.vlasov_poisson import vp_init\ns=vp_init(nv=32,nt=5)\nassert s[\"df\"].shape == (33,)",
+    "description": "Build a Poisson-consistent 32-interval initial state with five time steps.",
+    "expected": "PASS: .venv/bin/python completed; df has shape (33,)."
   },
-  {
-   "name": "df_initial",
-   "description": "Initial perturbation df(v,0) on vv=linspace(-vmax,vmax,nv+1). Default 0.1*exp(-v^2), a fixed Gaussian in grid velocity units, not proportional to f0.",
-   "units": "dimensionless",
-   "shape": "[nv+1]",
-   "dtype": "real or complex array",
-   "required": false,
-   "constraints": "Finite, one value per velocity node; None selects the default.",
-   "default": null
-  },
-  {
-   "name": "df0dv",
-   "description": "Custom equilibrium derivative f0'(v) on vv, used instead of a built-in family; requires Fn=None.",
-   "units": "dimensionless",
-   "shape": "[nv+1]",
-   "dtype": "real array",
-   "required": false,
-   "constraints": "Finite, real, one value per velocity node; given exactly when Fn is None.",
-   "default": null
+  "verification": {
+    "scope": [
+      "Independent reference: the state is decided by its closed-form grid laws, recomputed here from the stated expressions rather than read back - vv = linspace(-vmax, vmax, nv+1), dv = 2 vmax/nv, the default perturbation 0.1 exp(-v^2), the recurrence time TR = 2 pi/(k dv) and tt = n dt - and the initial field is confronted with an exact Fraction recomputation of (i/k) dv sum(df).",
+      "Implementation relation: the default perturbation is 0.1 exp(-v^2) in the grid's own units and is not proportional to f0; df0dv is accepted only together with Fn = None and must be real; Fn with df0dv set, or Fn = None without it, is rejected; the returned history holds nt+1 entries with the initial field in slot zero.",
+      "Test matrix: the grid, dv, perturbation and recurrence identities at zero tolerance; a custom df0dv/df_initial pair equal to the built-in Maxwellian reproducing its field; nv = 2 and nt = 0 as the degenerate sizes; non-finite scalars, wrong-length arrays and a complex df0dv each asserted on their own channel.",
+      "Precision budget, declared before the comparison was run: zero tolerance for vv and dv (both are exact binary values of the stated expressions), 8 eps relative for the field (a single rounding), and 1e-15 absolute for the default perturbation.",
+      "Cannot establish: the theory-frequency slots wr, wi that this state carries for Fn = 2, kappa = 1 inherit the unresolved Lorentzian sign recorded in scirel.kinetic.vp-distribution and ticket T-2026-0600. The state itself, including its Poisson-consistent field, is fully decided by the identities above."
+    ],
+    "tests": [
+      "tests/kinetic/test_vlasov_poisson_dispersion.py",
+      "tests/kinetic/test_vlasov_poisson_evidence.py"
+    ],
+    "evidence_ceiling": "Independent semidiscrete mathematical and selected scenario regressions; actual run/installed-wheel receipts are recorded separately, not inferred from test existence.",
+    "known_limitations": [
+      "Finite-window rectangle rule and sampling recurrence TR=2pi/(k*dv).",
+      "Fn4 truncated density retains original coefficient and is not renormalized after cutoff.",
+      "Peak diagnostic assumes standing oscillation; rotating complex exponential has no amplitude peaks."
+    ],
+    "basis": {
+      "kind": "independent-recomputation",
+      "statement": "Independent semidiscrete mathematical checks and selected scenario regressions in the bound file. Actual run/installed-wheel receipts are recorded separately and are NOT inferred from test existence.",
+      "source": "tests/kinetic/test_vlasov_poisson_dispersion.py"
+    }
   }
- ],
- "outputs": [
-  {
-   "name": "result",
-   "description": "State mapping: Fn,kappa,nv,dt,nt,k,vmax,vmin,dv,TR; vv,df,df0dv [nv+1]; scalar dE; dEt,tt [nt+1]; wr,wi are kappa=1 theory or None. Fields and arrays are independently owned.",
-   "units": "dimensionless",
-   "shape": "As described in output mapping or tuple.",
-   "dtype": "dict",
-   "required": true,
-   "constraints": "State mapping with finite arrays and an initial field satisfying discrete Poisson closure."
-  }
- ],
- "applicability": {
-  "preconditions": [
-   "Fn, kappa, nv, dt, nt, k and vmax satisfy the declared scalar domains; df_initial and df0dv, when given, are finite arrays of length nv+1, and df0dv is given exactly when Fn is None."
-  ],
-  "supported": [
-   "Finite velocity-grid initialization with discrete Poisson-consistent dE and empty or finite-length time history."
-  ],
-  "excluded": [
-   "Nonlinear or multidimensional initial states."
-  ]
- },
- "failure_semantics": {
-  "invalid_input": "ValueError for invalid scalar controls, a distribution branch that rejects the selected parameters, df_initial or df0dv of the wrong length or nonfinite, a complex df0dv, or df0dv given together with Fn (or Fn=None without df0dv).",
-  "runtime_failure": "FloatingPointError if the generated derivative or Poisson field is not finite.",
-  "nonconvergence": "Not applicable; initialization has no iteration.",
-  "partial_results": "No state is returned after an exception."
- },
- "public_api": {
-  "python": {
-   "module": "scirel.kinetic.vlasov_poisson",
-   "symbol": "vp_init",
-   "signature": "vp_init(Fn=2, kappa=1.0, nv=2048, dt=0.01, nt=2000, *, k=0.15, vmax=20.0, df_initial=None, df0dv=None)",
-   "canonical_module": "scirel.kinetic",
-   "canonical_symbol": "vp_init"
-  }
- },
- "version": {
-  "implementation_version": "0.0.0",
-  "dependencies": []
- },
- "example": {
-  "code": "from scirel.kinetic.vlasov_poisson import vp_init\ns=vp_init(nv=32,nt=5)\nassert s[\"df\"].shape == (33,)",
-  "description": "Build a Poisson-consistent 32-interval initial state with five time steps.",
-  "expected": "PASS: .venv/bin/python completed; df has shape (33,)."
- },
- "verification": {
-  "scope": [
-   "Independent reference: the state is decided by its closed-form grid laws, recomputed here from the stated expressions rather than read back - vv = linspace(-vmax, vmax, nv+1), dv = 2 vmax/nv, the default perturbation 0.1 exp(-v^2), the recurrence time TR = 2 pi/(k dv) and tt = n dt - and the initial field is confronted with an exact Fraction recomputation of (i/k) dv sum(df).",
-   "Implementation relation: the default perturbation is 0.1 exp(-v^2) in the grid's own units and is not proportional to f0; df0dv is accepted only together with Fn = None and must be real; Fn with df0dv set, or Fn = None without it, is rejected; the returned history holds nt+1 entries with the initial field in slot zero.",
-   "Test matrix: the grid, dv, perturbation and recurrence identities at zero tolerance; a custom df0dv/df_initial pair equal to the built-in Maxwellian reproducing its field; nv = 2 and nt = 0 as the degenerate sizes; non-finite scalars, wrong-length arrays and a complex df0dv each asserted on their own channel.",
-   "Precision budget, declared before the comparison was run: zero tolerance for vv and dv (both are exact binary values of the stated expressions), 8 eps relative for the field (a single rounding), and 1e-15 absolute for the default perturbation.",
-   "Cannot establish: the theory-frequency slots wr, wi that this state carries for Fn = 2, kappa = 1 inherit the unresolved Lorentzian sign recorded in scirel.kinetic.vp-distribution and ticket T-2026-0600. The state itself, including its Poisson-consistent field, is fully decided by the identities above."
-  ],
-  "tests": [
-   "tests/kinetic/test_vlasov_poisson_dispersion.py",
-   "tests/kinetic/test_vlasov_poisson_evidence.py"
-  ],
-  "evidence_ceiling": "Independent semidiscrete mathematical and selected scenario regressions; actual run/installed-wheel receipts are recorded separately, not inferred from test existence.",
-  "known_limitations": [
-   "Finite-window rectangle rule and sampling recurrence TR=2pi/(k*dv).",
-   "Fn4 truncated density retains original coefficient and is not renormalized after cutoff.",
-   "Peak diagnostic assumes standing oscillation; rotating complex exponential has no amplitude peaks."
-  ]
- }
 }

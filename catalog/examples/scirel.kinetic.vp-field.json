@@ -1,139 +1,144 @@
 {
- "schema": "scirel.asset-document",
- "asset_id": "scirel.kinetic.vp-field",
- "title": {
-  "en": "Poisson electric-field closure",
-  "zh": "Poisson 电场闭合"
- },
- "summary": "E=i dv sum(df)/k.",
- "taxonomy": [
-  "kinetic",
-  "plasma-wave",
-  "vlasov-poisson"
- ],
- "aliases": [
-  "vp_field"
- ],
- "discovery": {
-  "capability": [
-   "Poisson electric-field closure",
-   "E=i dv sum(df)/k."
-  ],
-  "operation": [
-   "apply the Poisson electric-field closure",
-   "velocity-space perturbation and k -> electric field"
-  ],
-  "model": "Linear one-dimensional single-spatial-Fourier-mode electrons, fixed ions.",
-  "geometry": "One velocity coordinate and one spatial Fourier mode.",
-  "boundary": "One Fourier mode; linear discrete Poisson closure; no time advance.",
-  "device_scope": "generic"
- },
- "identity": {
-  "relation": "E=i dv sum(df)/k.",
-  "direction": "Inputs to vp_field -> result",
-  "definition": "E=i dv sum(df)/k.",
-  "model": "Linear one-dimensional single-spatial-Fourier-mode electrons, fixed ions.",
-  "geometry": "One velocity coordinate and one spatial Fourier mode.",
-  "coordinates": "Dimensionless plasma-frequency and Debye-length normalization.",
-  "boundary": "One Fourier mode; linear discrete Poisson closure; no time advance.",
-  "assumptions": [
-   "Linear perturbations and homogeneous equilibrium.",
-   "Velocity-window truncation and recurrence are separate from temporal integration error."
-  ]
- },
- "inputs": [
-  {
-   "name": "df",
-   "description": "Complex perturbation on velocity nodes.",
-   "units": "dimensionless",
-   "shape": "[N]",
-   "dtype": "complex array",
-   "required": true,
-   "constraints": "Finite one-dimensional N>=2."
+  "schema": "scirel.asset-document",
+  "asset_id": "scirel.kinetic.vp-field",
+  "title": {
+    "en": "Poisson electric-field closure",
+    "zh": "Poisson 电场闭合"
   },
-  {
-   "name": "k",
-   "description": "Nonzero spatial Fourier wavenumber.",
-   "units": "dimensionless",
-   "shape": "scalar",
-   "dtype": "real scalar",
-   "required": true,
-   "constraints": "Finite and nonzero."
+  "summary": "E=i dv sum(df)/k.",
+  "taxonomy": [
+    "kinetic",
+    "plasma-wave",
+    "vlasov-poisson"
+  ],
+  "aliases": [
+    "vp_field"
+  ],
+  "discovery": {
+    "capability": [
+      "Poisson electric-field closure",
+      "E=i dv sum(df)/k."
+    ],
+    "operation": [
+      "apply the Poisson electric-field closure",
+      "velocity-space perturbation and k -> electric field"
+    ],
+    "model": "Linear one-dimensional single-spatial-Fourier-mode electrons, fixed ions.",
+    "geometry": "One velocity coordinate and one spatial Fourier mode.",
+    "boundary": "One Fourier mode; linear discrete Poisson closure; no time advance.",
+    "device_scope": "generic"
   },
-  {
-   "name": "dv",
-   "description": "Uniform velocity quadrature spacing.",
-   "units": "dimensionless",
-   "shape": "scalar",
-   "dtype": "real scalar",
-   "required": true,
-   "constraints": "Positive finite."
+  "identity": {
+    "relation": "E=i dv sum(df)/k.",
+    "direction": "Inputs to vp_field -> result",
+    "definition": "E=i dv sum(df)/k.",
+    "model": "Linear one-dimensional single-spatial-Fourier-mode electrons, fixed ions.",
+    "geometry": "One velocity coordinate and one spatial Fourier mode.",
+    "coordinates": "Dimensionless plasma-frequency and Debye-length normalization.",
+    "boundary": "One Fourier mode; linear discrete Poisson closure; no time advance.",
+    "assumptions": [
+      "Linear perturbations and homogeneous equilibrium.",
+      "Velocity-window truncation and recurrence are separate from temporal integration error."
+    ]
+  },
+  "inputs": [
+    {
+      "name": "df",
+      "description": "Complex perturbation on velocity nodes.",
+      "units": "dimensionless",
+      "shape": "[N]",
+      "dtype": "complex array",
+      "required": true,
+      "constraints": "Finite one-dimensional N>=2."
+    },
+    {
+      "name": "k",
+      "description": "Nonzero spatial Fourier wavenumber.",
+      "units": "dimensionless",
+      "shape": "scalar",
+      "dtype": "real scalar",
+      "required": true,
+      "constraints": "Finite and nonzero."
+    },
+    {
+      "name": "dv",
+      "description": "Uniform velocity quadrature spacing.",
+      "units": "dimensionless",
+      "shape": "scalar",
+      "dtype": "real scalar",
+      "required": true,
+      "constraints": "Positive finite."
+    }
+  ],
+  "outputs": [
+    {
+      "name": "result",
+      "description": "Complex scalar electric field satisfying ikE=-dv sum(df).",
+      "units": "dimensionless",
+      "shape": "As described in output mapping or tuple.",
+      "dtype": "complex scalar",
+      "required": true,
+      "constraints": "Finite complex scalar equal to the discrete Poisson field."
+    }
+  ],
+  "applicability": {
+    "preconditions": [
+      "df is a finite one-dimensional vector with at least two entries.",
+      "k is finite and nonzero; dv is finite and positive."
+    ],
+    "supported": [
+      "Discrete Poisson closure E=i*dv*sum(df)/k."
+    ],
+    "excluded": [
+      "Nonlinear fields, multidimensional modes and k=0."
+    ]
+  },
+  "failure_semantics": {
+    "invalid_input": "ValueError for non-vector/nonfinite df, nonfinite or zero k, or nonpositive/nonfinite dv.",
+    "runtime_failure": "FloatingPointError when the computed field is not finite.",
+    "nonconvergence": "Not applicable; this is a direct algebraic closure.",
+    "partial_results": "No field is returned after an exception."
+  },
+  "public_api": {
+    "python": {
+      "module": "scirel.kinetic.vlasov_poisson",
+      "symbol": "vp_field",
+      "signature": "vp_field(df, k, dv)",
+      "canonical_module": "scirel.kinetic",
+      "canonical_symbol": "vp_field"
+    }
+  },
+  "version": {
+    "implementation_version": "0.0.0",
+    "dependencies": []
+  },
+  "example": {
+    "code": "from scirel.kinetic.vlasov_poisson import vp_field\nassert vp_field([1,2],.5,.1) == .6000000000000001j",
+    "description": "Evaluate the discrete Poisson closure for df=[1,2], k=0.5 and dv=0.1.",
+    "expected": "PASS: .venv/bin/python completed; the field is 0.6j."
+  },
+  "verification": {
+    "scope": [
+      "Independent reference: exact rational arithmetic. Every input is an exact binary rational, so (i/k) dv sum(df) is recomputed with fractions.Fraction and rounds only at the final conversion; the same comparison is then run with a flipped sign and with a doubled dv to show that both exceed the budget, so the budget cannot admit an arbitrary value.",
+      "Implementation relation: the field is the correction field (i/k) dv sum(df), i.e. the discrete statement i k E = -dv sum(df); k must be finite and nonzero and dv positive and finite; the field is a scalar, not an array, and is not an external or total field.",
+      "Test matrix: three configurations including negative k and the pair k = 12 with dv = 1e-3 that exercises the scale; a non-vector input; k = 0; a negative dv; and an overflowing sum that must raise FloatingPointError rather than return infinity.",
+      "Precision budget, declared before the comparison was run: 8 eps |E|, which is one rounding of an otherwise exact rational calculation, with the sign and dv discrimination asserted separately.",
+      "Evidence ceiling: the closure is a discrete Fourier projection at a single k. Nothing here establishes its continuum limit, and the neutral k = 0 mode is rejected rather than handled."
+    ],
+    "tests": [
+      "tests/kinetic/test_vlasov_poisson_dispersion.py",
+      "tests/kinetic/test_vlasov_poisson_evidence.py"
+    ],
+    "evidence_ceiling": "Independent semidiscrete mathematical and selected scenario regressions; actual run/installed-wheel receipts are recorded separately, not inferred from test existence.",
+    "known_limitations": [
+      "Finite-window rectangle rule and sampling recurrence TR=2pi/(k*dv).",
+      "Fn4 truncated density retains original coefficient and is not renormalized after cutoff.",
+      "Peak diagnostic assumes standing oscillation; rotating complex exponential has no amplitude peaks."
+    ],
+    "basis": {
+      "kind": "independent-recomputation",
+      "statement": "Independent semidiscrete mathematical checks and selected scenario regressions in the bound file. Actual run/installed-wheel receipts are recorded separately and are NOT inferred from test existence.",
+      "source": "tests/kinetic/test_vlasov_poisson_dispersion.py"
+    }
   }
- ],
- "outputs": [
-  {
-   "name": "result",
-   "description": "Complex scalar electric field satisfying ikE=-dv sum(df).",
-   "units": "dimensionless",
-   "shape": "As described in output mapping or tuple.",
-   "dtype": "complex scalar",
-   "required": true,
-   "constraints": "Finite complex scalar equal to the discrete Poisson field."
-  }
- ],
- "applicability": {
-  "preconditions": [
-   "df is a finite one-dimensional vector with at least two entries.",
-   "k is finite and nonzero; dv is finite and positive."
-  ],
-  "supported": [
-   "Discrete Poisson closure E=i*dv*sum(df)/k."
-  ],
-  "excluded": [
-   "Nonlinear fields, multidimensional modes and k=0."
-  ]
- },
- "failure_semantics": {
-  "invalid_input": "ValueError for non-vector/nonfinite df, nonfinite or zero k, or nonpositive/nonfinite dv.",
-  "runtime_failure": "FloatingPointError when the computed field is not finite.",
-  "nonconvergence": "Not applicable; this is a direct algebraic closure.",
-  "partial_results": "No field is returned after an exception."
- },
- "public_api": {
-  "python": {
-   "module": "scirel.kinetic.vlasov_poisson",
-   "symbol": "vp_field",
-   "signature": "vp_field(df, k, dv)",
-   "canonical_module": "scirel.kinetic",
-   "canonical_symbol": "vp_field"
-  }
- },
- "version": {
-  "implementation_version": "0.0.0",
-  "dependencies": []
- },
- "example": {
-  "code": "from scirel.kinetic.vlasov_poisson import vp_field\nassert vp_field([1,2],.5,.1) == .6000000000000001j",
-  "description": "Evaluate the discrete Poisson closure for df=[1,2], k=0.5 and dv=0.1.",
-  "expected": "PASS: .venv/bin/python completed; the field is 0.6j."
- },
- "verification": {
-  "scope": [
-   "Independent reference: exact rational arithmetic. Every input is an exact binary rational, so (i/k) dv sum(df) is recomputed with fractions.Fraction and rounds only at the final conversion; the same comparison is then run with a flipped sign and with a doubled dv to show that both exceed the budget, so the budget cannot admit an arbitrary value.",
-   "Implementation relation: the field is the correction field (i/k) dv sum(df), i.e. the discrete statement i k E = -dv sum(df); k must be finite and nonzero and dv positive and finite; the field is a scalar, not an array, and is not an external or total field.",
-   "Test matrix: three configurations including negative k and the pair k = 12 with dv = 1e-3 that exercises the scale; a non-vector input; k = 0; a negative dv; and an overflowing sum that must raise FloatingPointError rather than return infinity.",
-   "Precision budget, declared before the comparison was run: 8 eps |E|, which is one rounding of an otherwise exact rational calculation, with the sign and dv discrimination asserted separately.",
-   "Evidence ceiling: the closure is a discrete Fourier projection at a single k. Nothing here establishes its continuum limit, and the neutral k = 0 mode is rejected rather than handled."
-  ],
-  "tests": [
-   "tests/kinetic/test_vlasov_poisson_dispersion.py",
-   "tests/kinetic/test_vlasov_poisson_evidence.py"
-  ],
-  "evidence_ceiling": "Independent semidiscrete mathematical and selected scenario regressions; actual run/installed-wheel receipts are recorded separately, not inferred from test existence.",
-  "known_limitations": [
-   "Finite-window rectangle rule and sampling recurrence TR=2pi/(k*dv).",
-   "Fn4 truncated density retains original coefficient and is not renormalized after cutoff.",
-   "Peak diagnostic assumes standing oscillation; rotating complex exponential has no amplitude peaks."
-  ]
- }
 }

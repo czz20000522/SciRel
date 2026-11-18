@@ -2,124 +2,7 @@
   "schema": "scirel.evidence-basis-baseline.v1",
   "policy": "Contracts that do not yet declare verification.basis. The list may only shrink: a contract that starts declaring basis must have its entry deleted in the same commit, so the migration shows up in the diff. Migrating an entry means READING that contract's verification text and writing what the basis actually is -- not copying a phrase match into the field, which would move the guess rather than remove it.",
   "why": "c1_evidence_coverage infers the basis from prose with a fixed phrase list; on this catalog 106 assets carry basis wording that list does not recognise, so the inference cannot answer 'does this capability stand on evidence'. The field replaces the inference.",
-  "entries": [
-    {
-      "asset_id": "scirel.equilibrium.reduced-hall-anisotropic-picard",
-      "reason": "not yet migrated: verification.basis absent"
-    },
-    {
-      "asset_id": "scirel.inference.anisotropic-parameter-optimization",
-      "reason": "not yet migrated: verification.basis absent"
-    },
-    {
-      "asset_id": "scirel.inference.anisotropic-trial-evaluation",
-      "reason": "not yet migrated: verification.basis absent"
-    },
-    {
-      "asset_id": "scirel.kinetic.fluid-case-state",
-      "reason": "not yet migrated: verification.basis absent"
-    },
-    {
-      "asset_id": "scirel.kinetic.spectral-plasma-state",
-      "reason": "not yet migrated: verification.basis absent"
-    },
-    {
-      "asset_id": "scirel.kinetic.spectral-temporal-matrix",
-      "reason": "not yet migrated: verification.basis absent"
-    },
-    {
-      "asset_id": "scirel.kinetic.spectral-temporal-spectrum",
-      "reason": "not yet migrated: verification.basis absent"
-    },
-    {
-      "asset_id": "scirel.kinetic.vp-diagnostic",
-      "reason": "not yet migrated: verification.basis absent"
-    },
-    {
-      "asset_id": "scirel.kinetic.vp-distribution",
-      "reason": "not yet migrated: verification.basis absent"
-    },
-    {
-      "asset_id": "scirel.kinetic.vp-envelope",
-      "reason": "not yet migrated: verification.basis absent"
-    },
-    {
-      "asset_id": "scirel.kinetic.vp-evolve",
-      "reason": "not yet migrated: verification.basis absent"
-    },
-    {
-      "asset_id": "scirel.kinetic.vp-field",
-      "reason": "not yet migrated: verification.basis absent"
-    },
-    {
-      "asset_id": "scirel.kinetic.vp-init",
-      "reason": "not yet migrated: verification.basis absent"
-    },
-    {
-      "asset_id": "scirel.kinetic.vp-landau",
-      "reason": "not yet migrated: verification.basis absent"
-    },
-    {
-      "asset_id": "scirel.kinetic.vp-rhs",
-      "reason": "not yet migrated: verification.basis absent"
-    },
-    {
-      "asset_id": "scirel.kinetic.vp-rk4-step",
-      "reason": "not yet migrated: verification.basis absent"
-    },
-    {
-      "asset_id": "scirel.kinetic.z-pole-coefficients",
-      "reason": "not yet migrated: verification.basis absent"
-    },
-    {
-      "asset_id": "scirel.neoclassical.bootstrap-coefficients",
-      "reason": "not yet migrated: verification.basis absent"
-    },
-    {
-      "asset_id": "scirel.neoclassical.bootstrap-current",
-      "reason": "not yet migrated: verification.basis absent"
-    },
-    {
-      "asset_id": "scirel.neutrals.terminal-heat-flux-reduction",
-      "reason": "not yet migrated: verification.basis absent"
-    },
-    {
-      "asset_id": "scirel.neutrals.terminal-ion-state-reduction",
-      "reason": "not yet migrated: verification.basis absent"
-    },
-    {
-      "asset_id": "scirel.neutrals.terminal-pressure-temperature-reduction",
-      "reason": "not yet migrated: verification.basis absent"
-    },
-    {
-      "asset_id": "scirel.neutrals.thermal-speed-scale",
-      "reason": "not yet migrated: verification.basis absent"
-    },
-    {
-      "asset_id": "scirel.neutrals.velocity-slice-moment-compensation",
-      "reason": "not yet migrated: verification.basis absent"
-    },
-    {
-      "asset_id": "scirel.physics.dilution",
-      "reason": "not yet migrated: verification.basis absent"
-    },
-    {
-      "asset_id": "scirel.physics.thermal-energy",
-      "reason": "not yet migrated: verification.basis absent"
-    },
-    {
-      "asset_id": "scirel.plasma.fast-ion-heating",
-      "reason": "not yet migrated: verification.basis absent"
-    },
-    {
-      "asset_id": "scirel.source.exponential",
-      "reason": "not yet migrated: verification.basis absent"
-    },
-    {
-      "asset_id": "scirel.source.gaussian",
-      "reason": "not yet migrated: verification.basis absent"
-    }
-  ],
+  "entries": [],
   "migrated": [
     "scirel.closures.boltzmann-quasineutrality",
     "scirel.closures.discrete-vector-error-feedback",
@@ -177,6 +60,7 @@
     "scirel.equilibrium.isotropic-pressure-flux",
     "scirel.equilibrium.kinetic-mirror-hall-equilibrium",
     "scirel.equilibrium.pressure-flux-state",
+    "scirel.equilibrium.reduced-hall-anisotropic-picard",
     "scirel.field.circular-filament-green",
     "scirel.field.coil-green-geometry",
     "scirel.field.complete-elliptic-integrals-approx",
@@ -232,6 +116,8 @@
     "scirel.geometry.theta-chord",
     "scirel.geometry.weighted-line-integral",
     "scirel.geometry.z-chord",
+    "scirel.inference.anisotropic-parameter-optimization",
+    "scirel.inference.anisotropic-trial-evaluation",
     "scirel.inference.latin-hypercube-sampling",
     "scirel.io.eqdsk-class",
     "scirel.io.read-eqdsk",
@@ -241,6 +127,7 @@
     "scirel.kinetic.dielectric-diagnostics",
     "scirel.kinetic.dielectric-response",
     "scirel.kinetic.fluid-bonk-search",
+    "scirel.kinetic.fluid-case-state",
     "scirel.kinetic.fluid-dispersion-matrix",
     "scirel.kinetic.fluid-dispersion-response",
     "scirel.kinetic.fluid-em-matrix",
@@ -285,6 +172,19 @@
     "scirel.kinetic.ronnmark-r-function",
     "scirel.kinetic.species-equilibrium-scales",
     "scirel.kinetic.spectral-dispersion-scan",
+    "scirel.kinetic.spectral-plasma-state",
+    "scirel.kinetic.spectral-temporal-matrix",
+    "scirel.kinetic.spectral-temporal-spectrum",
+    "scirel.kinetic.vp-diagnostic",
+    "scirel.kinetic.vp-distribution",
+    "scirel.kinetic.vp-envelope",
+    "scirel.kinetic.vp-evolve",
+    "scirel.kinetic.vp-field",
+    "scirel.kinetic.vp-init",
+    "scirel.kinetic.vp-landau",
+    "scirel.kinetic.vp-rhs",
+    "scirel.kinetic.vp-rk4-step",
+    "scirel.kinetic.z-pole-coefficients",
     "scirel.mirror.frank-egedal-hot-ion-moments",
     "scirel.mirror.frank-egedal-pressure-closure",
     "scirel.mirror.frank-egedal-pressure-state",
@@ -297,6 +197,8 @@
     "scirel.mirror.mirror-invariant-distribution",
     "scirel.mirror.mirror-quasineutral-closure",
     "scirel.mirror.mirror-total-pressure",
+    "scirel.neoclassical.bootstrap-coefficients",
+    "scirel.neoclassical.bootstrap-current",
     "scirel.neutrals.adaptive-neutral-velocity-mesh",
     "scirel.neutrals.atomic-alpha-contraction",
     "scirel.neutrals.atomic-scattered-sources-reduction",
@@ -325,6 +227,11 @@
     "scirel.neutrals.terminal-conservation-diagnostic",
     "scirel.neutrals.terminal-energy-transfer-reduction",
     "scirel.neutrals.terminal-flux-velocity-reduction",
+    "scirel.neutrals.terminal-heat-flux-reduction",
+    "scirel.neutrals.terminal-ion-state-reduction",
+    "scirel.neutrals.terminal-pressure-temperature-reduction",
+    "scirel.neutrals.thermal-speed-scale",
+    "scirel.neutrals.velocity-slice-moment-compensation",
     "scirel.numerics.basis-matrix",
     "scirel.numerics.bilinear-grid-sampling",
     "scirel.numerics.build-basis",
@@ -340,6 +247,11 @@
     "scirel.numerics.truncated-svd-inverse",
     "scirel.physics.coulomb-ee",
     "scirel.physics.coulomb-ei",
-    "scirel.physics.coulomb-ii"
+    "scirel.physics.coulomb-ii",
+    "scirel.physics.dilution",
+    "scirel.physics.thermal-energy",
+    "scirel.plasma.fast-ion-heating",
+    "scirel.source.exponential",
+    "scirel.source.gaussian"
   ]
 }
