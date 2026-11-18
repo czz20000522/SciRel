@@ -1,203 +1,208 @@
 {
- "aliases": [],
- "discovery": {
-  "capability": [
-   "Adaptive Cauchy transform",
-   "Evaluate a Cauchy transform with kernel-aware near-axis quadrature and caller-resolved density features."
+  "aliases": [],
+  "discovery": {
+    "capability": [
+      "Adaptive Cauchy transform",
+      "Evaluate a Cauchy transform with kernel-aware near-axis quadrature and caller-resolved density features."
+    ],
+    "operation": [
+      "evaluate the adaptive Cauchy transform",
+      "(z,density,bounds|integration_mesh)->G"
+    ],
+    "model": "One-dimensional generalized plasma response",
+    "geometry": "Velocity space",
+    "boundary": "Real-axis poles are rejected.",
+    "device_scope": "generic"
+  },
+  "applicability": {
+    "excluded": [
+      "Callback-only whole-line support discovery (fails closed because it is information-limited).",
+      "Source-project MATLAB behavior, graphics, global root scans and arbitrary analytic continuation."
+    ],
+    "preconditions": [
+      "Density returns finite real numeric scalar samples; the Cauchy integral exists on the selected contour.",
+      "Caller bounds or mesh resolve all material density features; whole-line tails are integrable and contain no unresolved density features. The integrator resolves the known kernel peak without requiring the caller to mesh the pole-height scale."
+    ],
+    "supported": [
+      "Finite ordered bounds already resolving the callback support.",
+      "Whole-line integration with an explicit finite increasing integration_mesh that resolves support/features and integrable tails."
+    ]
+  },
+  "asset_id": "scirel.kinetic.gpdf-cauchy-transform",
+  "example": {
+    "code": "import numpy as np\nfrom scirel.kinetic import evaluate_cauchy_transform\nmesh=np.linspace(-10,10,81)\nr=evaluate_cauchy_transform(0.4+0.7j,lambda v: np.exp(-v*v)/np.sqrt(np.pi),integration_mesh=mesh)\nassert np.isfinite(r[\"G\"])\n",
+    "description": "Integrate a normalized Gaussian with an explicit finite feature mesh.",
+    "expected": "Observed PASS: the explicit 81-point mesh gives a finite complex G and two component quadrature-error estimates."
+  },
+  "failure_semantics": {
+    "invalid_input": "Raises ValueError for invalid, nonfinite, singular or incompatible inputs, including epsabs/epsrel=None or non-scalar values and callback-only whole-line integration without integration_mesh.",
+    "nonconvergence": "Raises RuntimeError if any QUADPACK panel reports nonconvergence; no partial result is returned.",
+    "partial_results": "No partial scientific result is returned after a failed call.",
+    "runtime_failure": "Callback exceptions propagate; invalid callback output or unrepresentable result raises ValueError."
+  },
+  "identity": {
+    "assumptions": [
+      "The callback is finite on every integrated panel.",
+      "For bounds=null, integration_mesh explicitly partitions material support/features and the two tails are integrable.",
+      "A generic callback cannot certify unseen density support from adaptive samples; the known Cauchy kernel scale is handled internally. Error estimates remain conditional."
+    ],
+    "boundary": "Real-axis poles are rejected.",
+    "coordinates": "Complex phase point and real integration coordinate",
+    "definition": "For z=x+i*y, near-projection finite panels use v=x+abs(y)*sinh(t), giving density(v)*(tanh(t)+i*sign(y)*sech(t)) dt. Bounded transformed panels resolve the known kernel peak and long tails; smooth far panels and infinite tails use real-coordinate quadrature. Explicit analytic continuation is added only under the stated support policy.",
+    "direction": "(z,density,bounds|integration_mesh)->G",
+    "geometry": "Velocity space",
+    "model": "One-dimensional generalized plasma response",
+    "relation": "G(z)=integral density(v)/(v-z)dv"
+  },
+  "inputs": [
+    {
+      "constraints": "Finite and representable.",
+      "description": "Complex phase points off the real axis.",
+      "dtype": "complex numeric",
+      "name": "z",
+      "required": true,
+      "shape": "scalar or nonempty array",
+      "units": "dimensionless"
+    },
+    {
+      "constraints": "Callable returning finite real numeric scalars at all sampled velocities; caller declares feature resolution.",
+      "description": "Real density callback of one real velocity.",
+      "dtype": "callable",
+      "name": "density",
+      "required": true,
+      "shape": "callable",
+      "units": "dimensionless"
+    },
+    {
+      "constraints": "None selects whole-line mode with required mesh; otherwise finite ordered real pair; booleans and complex coordinates rejected.",
+      "default": null,
+      "description": "Ordered real integration bounds.",
+      "dtype": "real sequence",
+      "name": "bounds",
+      "required": false,
+      "shape": "2-sequence",
+      "units": "dimensionless"
+    },
+    {
+      "constraints": "None or callable returning finite numeric scalars, representing the analytic extension of the same density. Finite-bound continuation only for strict a < Re(z) < b.",
+      "default": null,
+      "description": "Optional analytic extension for lower-plane continuation.",
+      "dtype": "callable",
+      "name": "analytic_density",
+      "required": false,
+      "shape": "callable or None",
+      "units": "dimensionless"
+    },
+    {
+      "constraints": "Finite and representable.",
+      "default": 1e-10,
+      "description": "Absolute quadrature tolerance.",
+      "dtype": "positive real",
+      "name": "epsabs",
+      "required": false,
+      "shape": "scalar",
+      "units": "dimensionless"
+    },
+    {
+      "constraints": "Finite and representable.",
+      "default": 1e-10,
+      "description": "Relative quadrature tolerance.",
+      "dtype": "positive real",
+      "name": "epsrel",
+      "required": false,
+      "shape": "scalar",
+      "units": "dimensionless"
+    },
+    {
+      "constraints": "Finite and representable.",
+      "default": 200,
+      "description": "QUADPACK subdivision bound.",
+      "dtype": "positive integer",
+      "name": "limit",
+      "required": false,
+      "shape": "scalar",
+      "units": "count"
+    },
+    {
+      "constraints": "Strictly increasing finite points; with bounds, mesh must lie inside bounds. When bounds is null, mesh endpoints delimit a resolved feature region and infinite tails are also integrated.",
+      "default": null,
+      "description": "Finite strictly increasing real mesh partitioning material support/features; required when bounds is null.",
+      "dtype": "finite real array",
+      "name": "integration_mesh",
+      "required": false,
+      "shape": "one-dimensional array with at least two points",
+      "units": "dimensionless"
+    }
   ],
-  "operation": [
-   "evaluate the adaptive Cauchy transform",
-   "(z,density,bounds|integration_mesh)->G"
+  "outputs": [
+    {
+      "constraints": "Finite and representable.",
+      "description": "Cauchy transform.",
+      "dtype": "complex array",
+      "name": "G",
+      "required": true,
+      "shape": "same as z",
+      "units": "dimensionless"
+    },
+    {
+      "constraints": "Finite and representable.",
+      "description": "Summed real/imaginary quadrature indicators with floating accumulation allowances, including continuation; not bounds on callback or analytic-extension errors.",
+      "dtype": "real array",
+      "name": "quadrature_error",
+      "required": true,
+      "shape": "z shape + [2]",
+      "units": "dimensionless"
+    }
   ],
-  "model": "One-dimensional generalized plasma response",
-  "geometry": "Velocity space",
-  "boundary": "Real-axis poles are rejected.",
-  "device_scope": "generic"
- },
- "applicability": {
-  "excluded": [
-   "Callback-only whole-line support discovery (fails closed because it is information-limited).",
-   "Source-project MATLAB behavior, graphics, global root scans and arbitrary analytic continuation."
+  "public_api": {
+    "python": {
+      "module": "scirel.kinetic.cauchy_transform",
+      "signature": "evaluate_cauchy_transform(z, density, *, bounds=None, analytic_density=None, epsabs=1e-10, epsrel=1e-10, limit=200, integration_mesh=None)",
+      "symbol": "evaluate_cauchy_transform",
+      "canonical_module": "scirel.kinetic",
+      "canonical_symbol": "evaluate_cauchy_transform"
+    }
+  },
+  "schema": "scirel.asset-document",
+  "summary": "Evaluate a Cauchy transform with kernel-aware near-axis quadrature and caller-resolved density features.",
+  "taxonomy": [
+    "kinetic",
+    "plasma-wave",
+    "generalized-dispersion"
   ],
-  "preconditions": [
-   "Density returns finite real numeric scalar samples; the Cauchy integral exists on the selected contour.",
-   "Caller bounds or mesh resolve all material density features; whole-line tails are integrable and contain no unresolved density features. The integrator resolves the known kernel peak without requiring the caller to mesh the pole-height scale."
-  ],
-  "supported": [
-   "Finite ordered bounds already resolving the callback support.",
-   "Whole-line integration with an explicit finite increasing integration_mesh that resolves support/features and integrable tails."
+  "title": {
+    "en": "Adaptive Cauchy transform",
+    "zh": "自适应 Cauchy 变换"
+  },
+  "verification": {
+    "scope": [
+      "Independent basis: in the upper half plane the transform of a normalized Gaussian equals the plasma dispersion function Z(z) = i sqrt(pi) exp(-z**2) erfc(-i z), recomputed at 40 digits from erfc; measured agreement is at the 1e-11 level on a 561-point mesh, so the floor belongs to the transform's own quadrature.",
+      "A uniform density on [-1, 1] is checked against its closed form, 0.5 log((z-1)/(z+1)); the sign was measured rather than assumed, because the opposite ordering differs by exactly -1, which appears as a relative error of 2.0 rather than as a small residual.",
+      "The branch below the real axis is established as a relation: the port returns conj(G(conj(z))) rather than Z(z), and the two differ by about 2.9 in the real part, so this is a branch statement and not an identity that any correct implementation would satisfy.",
+      "Failure matrix: one assertion per channel -- the transform kernel, the lower-half-plane branch, the sign of the closed form, and a conjugate or imaginary-part error, which a modulus comparison would not see.",
+      "Precision budget, written before measurement: 1e-10 on the Gaussian closed form, 1e-12 on the conjugate-symmetry relation, 1e-10 on the uniform closed form, and a separation of more than 1.0 between the returned lower-half-plane value and the direct analytic continuation.",
+      "The mesh densities are stated so the quadrature floor is attributable: the Gaussian is integrated on a 561-point mesh over [-14, 14] and the uniform density on 401 points over its support."
+    ],
+    "tests": [
+      "tests/kinetic/test_small_k_cauchy_evidence.py"
+    ],
+    "evidence_ceiling": "Bounded to two densities with closed forms (normalized Gaussian, uniform on a finite support) and to complex phases on both sides of the real axis, with the branch choice pinned by a conjugate-symmetry relation. Established by the plasma dispersion function recomputed at 40 digits from erfc, by a closed-form integral, and by a branch relation whose two sides differ by more than 1.0. Excluded scope: densities with unresolved features, the 2 pi i residue term that a different continuation would carry, and any statement about the transform exactly on the real axis.",
+    "known_limitations": [
+      "The returned value below the real axis is the conjugate-reflected branch, not the direct analytic continuation Z(z); the contract states the branch the port implements and does not claim the other one.",
+      "Densities whose features the quadrature cannot resolve are outside this evidence; the port's own resolution contract governs them.",
+      "The `swap` mutation is covered, not killed, and its surface has no owner: the only multi-element array the port returns is `quadrature_error`, and no contract in this repository declares any property of it. That is a capability boundary of the whole catalog, not merely something this contract does not look at."
+    ],
+    "basis": {
+      "kind": "independent-recomputation",
+      "statement": "A branch relation is checked whose two sides differ by more than 1.0. Excluded scope: densities with unresolved features, the 2*pi*i residue term that a different continuation would carry, and any statement about the transform exactly on the real axis.",
+      "source": "tests/kinetic/test_small_k_cauchy_evidence.py"
+    }
+  },
+  "version": {
+    "dependencies": [],
+    "implementation_version": "0.0.0"
+  },
+  "references": [
+    "Hua-Sheng Xie, Generalized plasma dispersion function, Phys. Plasmas. 20 (2013), 092125 (scientific context)"
   ]
- },
- "asset_id": "scirel.kinetic.gpdf-cauchy-transform",
- "example": {
-  "code": "import numpy as np\nfrom scirel.kinetic import evaluate_cauchy_transform\nmesh=np.linspace(-10,10,81)\nr=evaluate_cauchy_transform(0.4+0.7j,lambda v: np.exp(-v*v)/np.sqrt(np.pi),integration_mesh=mesh)\nassert np.isfinite(r[\"G\"])\n",
-  "description": "Integrate a normalized Gaussian with an explicit finite feature mesh.",
-  "expected": "Observed PASS: the explicit 81-point mesh gives a finite complex G and two component quadrature-error estimates."
- },
- "failure_semantics": {
-  "invalid_input": "Raises ValueError for invalid, nonfinite, singular or incompatible inputs, including epsabs/epsrel=None or non-scalar values and callback-only whole-line integration without integration_mesh.",
-  "nonconvergence": "Raises RuntimeError if any QUADPACK panel reports nonconvergence; no partial result is returned.",
-  "partial_results": "No partial scientific result is returned after a failed call.",
-  "runtime_failure": "Callback exceptions propagate; invalid callback output or unrepresentable result raises ValueError."
- },
- "identity": {
-  "assumptions": [
-   "The callback is finite on every integrated panel.",
-   "For bounds=null, integration_mesh explicitly partitions material support/features and the two tails are integrable.",
-   "A generic callback cannot certify unseen density support from adaptive samples; the known Cauchy kernel scale is handled internally. Error estimates remain conditional."
-  ],
-  "boundary": "Real-axis poles are rejected.",
-  "coordinates": "Complex phase point and real integration coordinate",
-  "definition": "For z=x+i*y, near-projection finite panels use v=x+abs(y)*sinh(t), giving density(v)*(tanh(t)+i*sign(y)*sech(t)) dt. Bounded transformed panels resolve the known kernel peak and long tails; smooth far panels and infinite tails use real-coordinate quadrature. Explicit analytic continuation is added only under the stated support policy.",
-  "direction": "(z,density,bounds|integration_mesh)->G",
-  "geometry": "Velocity space",
-  "model": "One-dimensional generalized plasma response",
-  "relation": "G(z)=integral density(v)/(v-z)dv"
- },
- "inputs": [
-  {
-   "constraints": "Finite and representable.",
-   "description": "Complex phase points off the real axis.",
-   "dtype": "complex numeric",
-   "name": "z",
-   "required": true,
-   "shape": "scalar or nonempty array",
-   "units": "dimensionless"
-  },
-  {
-   "constraints": "Callable returning finite real numeric scalars at all sampled velocities; caller declares feature resolution.",
-   "description": "Real density callback of one real velocity.",
-   "dtype": "callable",
-   "name": "density",
-   "required": true,
-   "shape": "callable",
-   "units": "dimensionless"
-  },
-  {
-   "constraints": "None selects whole-line mode with required mesh; otherwise finite ordered real pair; booleans and complex coordinates rejected.",
-   "default": null,
-   "description": "Ordered real integration bounds.",
-   "dtype": "real sequence",
-   "name": "bounds",
-   "required": false,
-   "shape": "2-sequence",
-   "units": "dimensionless"
-  },
-  {
-   "constraints": "None or callable returning finite numeric scalars, representing the analytic extension of the same density. Finite-bound continuation only for strict a < Re(z) < b.",
-   "default": null,
-   "description": "Optional analytic extension for lower-plane continuation.",
-   "dtype": "callable",
-   "name": "analytic_density",
-   "required": false,
-   "shape": "callable or None",
-   "units": "dimensionless"
-  },
-  {
-   "constraints": "Finite and representable.",
-   "default": 1e-10,
-   "description": "Absolute quadrature tolerance.",
-   "dtype": "positive real",
-   "name": "epsabs",
-   "required": false,
-   "shape": "scalar",
-   "units": "dimensionless"
-  },
-  {
-   "constraints": "Finite and representable.",
-   "default": 1e-10,
-   "description": "Relative quadrature tolerance.",
-   "dtype": "positive real",
-   "name": "epsrel",
-   "required": false,
-   "shape": "scalar",
-   "units": "dimensionless"
-  },
-  {
-   "constraints": "Finite and representable.",
-   "default": 200,
-   "description": "QUADPACK subdivision bound.",
-   "dtype": "positive integer",
-   "name": "limit",
-   "required": false,
-   "shape": "scalar",
-   "units": "count"
-  },
-  {
-   "constraints": "Strictly increasing finite points; with bounds, mesh must lie inside bounds. When bounds is null, mesh endpoints delimit a resolved feature region and infinite tails are also integrated.",
-   "default": null,
-   "description": "Finite strictly increasing real mesh partitioning material support/features; required when bounds is null.",
-   "dtype": "finite real array",
-   "name": "integration_mesh",
-   "required": false,
-   "shape": "one-dimensional array with at least two points",
-   "units": "dimensionless"
-  }
- ],
- "outputs": [
-  {
-   "constraints": "Finite and representable.",
-   "description": "Cauchy transform.",
-   "dtype": "complex array",
-   "name": "G",
-   "required": true,
-   "shape": "same as z",
-   "units": "dimensionless"
-  },
-  {
-   "constraints": "Finite and representable.",
-   "description": "Summed real/imaginary quadrature indicators with floating accumulation allowances, including continuation; not bounds on callback or analytic-extension errors.",
-   "dtype": "real array",
-   "name": "quadrature_error",
-   "required": true,
-   "shape": "z shape + [2]",
-   "units": "dimensionless"
-  }
- ],
- "public_api": {
-  "python": {
-   "module": "scirel.kinetic.cauchy_transform",
-   "signature": "evaluate_cauchy_transform(z, density, *, bounds=None, analytic_density=None, epsabs=1e-10, epsrel=1e-10, limit=200, integration_mesh=None)",
-   "symbol": "evaluate_cauchy_transform",
-   "canonical_module": "scirel.kinetic",
-   "canonical_symbol": "evaluate_cauchy_transform"
-  }
- },
- "schema": "scirel.asset-document",
- "summary": "Evaluate a Cauchy transform with kernel-aware near-axis quadrature and caller-resolved density features.",
- "taxonomy": [
-  "kinetic",
-  "plasma-wave",
-  "generalized-dispersion"
- ],
- "title": {
-  "en": "Adaptive Cauchy transform",
-  "zh": "自适应 Cauchy 变换"
- },
- "verification": {
-  "scope": [
-   "Independent basis: in the upper half plane the transform of a normalized Gaussian equals the plasma dispersion function Z(z) = i sqrt(pi) exp(-z**2) erfc(-i z), recomputed at 40 digits from erfc; measured agreement is at the 1e-11 level on a 561-point mesh, so the floor belongs to the transform's own quadrature.",
-   "A uniform density on [-1, 1] is checked against its closed form, 0.5 log((z-1)/(z+1)); the sign was measured rather than assumed, because the opposite ordering differs by exactly -1, which appears as a relative error of 2.0 rather than as a small residual.",
-   "The branch below the real axis is established as a relation: the port returns conj(G(conj(z))) rather than Z(z), and the two differ by about 2.9 in the real part, so this is a branch statement and not an identity that any correct implementation would satisfy.",
-   "Failure matrix: one assertion per channel -- the transform kernel, the lower-half-plane branch, the sign of the closed form, and a conjugate or imaginary-part error, which a modulus comparison would not see.",
-   "Precision budget, written before measurement: 1e-10 on the Gaussian closed form, 1e-12 on the conjugate-symmetry relation, 1e-10 on the uniform closed form, and a separation of more than 1.0 between the returned lower-half-plane value and the direct analytic continuation.",
-   "The mesh densities are stated so the quadrature floor is attributable: the Gaussian is integrated on a 561-point mesh over [-14, 14] and the uniform density on 401 points over its support."
-  ],
-  "tests": [
-   "tests/kinetic/test_small_k_cauchy_evidence.py"
-  ],
-  "evidence_ceiling": "Bounded to two densities with closed forms (normalized Gaussian, uniform on a finite support) and to complex phases on both sides of the real axis, with the branch choice pinned by a conjugate-symmetry relation. Established by the plasma dispersion function recomputed at 40 digits from erfc, by a closed-form integral, and by a branch relation whose two sides differ by more than 1.0. Excluded scope: densities with unresolved features, the 2 pi i residue term that a different continuation would carry, and any statement about the transform exactly on the real axis.",
-  "known_limitations": [
-   "The returned value below the real axis is the conjugate-reflected branch, not the direct analytic continuation Z(z); the contract states the branch the port implements and does not claim the other one.",
-   "Densities whose features the quadrature cannot resolve are outside this evidence; the port's own resolution contract governs them.",
-   "The `swap` mutation is covered, not killed, and its surface has no owner: the only multi-element array the port returns is `quadrature_error`, and no contract in this repository declares any property of it. That is a capability boundary of the whole catalog, not merely something this contract does not look at."
-  ]
- },
- "version": {
-  "dependencies": [],
-  "implementation_version": "0.0.0"
- },
- "references": [
-  "Hua-Sheng Xie, Generalized plasma dispersion function, Phys. Plasmas. 20 (2013), 092125 (scientific context)"
- ]
 }

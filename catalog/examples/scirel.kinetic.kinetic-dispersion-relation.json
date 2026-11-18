@@ -1,1180 +1,1185 @@
 {
- "schema": "scirel.asset-document",
- "asset_id": "scirel.kinetic.kinetic-dispersion-relation",
- "title": {
-  "en": "Two-path kinetic dispersion relation",
-  "zh": "双路径动理学色散关系"
- },
- "summary": "Evaluate conventional finite-harmonic and Ronnmark determinants at the same derived equilibrium wavepoint.",
- "taxonomy": [
-  "kinetic",
-  "plasma-wave"
- ],
- "aliases": [],
- "discovery": {
-  "capability": [
-   "Two-path kinetic dispersion relation",
-   "Evaluate conventional finite-harmonic and Ronnmark determinants at the same derived equilibrium wavepoint."
+  "schema": "scirel.asset-document",
+  "asset_id": "scirel.kinetic.kinetic-dispersion-relation",
+  "title": {
+    "en": "Two-path kinetic dispersion relation",
+    "zh": "双路径动理学色散关系"
+  },
+  "summary": "Evaluate conventional finite-harmonic and Ronnmark determinants at the same derived equilibrium wavepoint.",
+  "taxonomy": [
+    "kinetic",
+    "plasma-wave"
   ],
-  "operation": [
-   "evaluate conventional and Ronnmark kinetic determinants",
-   "SI equilibrium controls and dimensionless probe ratios to two kinetic dispersion tensors"
+  "aliases": [],
+  "discovery": {
+    "capability": [
+      "Two-path kinetic dispersion relation",
+      "Evaluate conventional finite-harmonic and Ronnmark determinants at the same derived equilibrium wavepoint."
+    ],
+    "operation": [
+      "evaluate conventional and Ronnmark kinetic determinants",
+      "SI equilibrium controls and dimensionless probe ratios to two kinetic dispersion tensors"
+    ],
+    "model": "homogeneous magnetized Maxwellian multi-species plasma",
+    "geometry": "homogeneous magnetized plasma",
+    "boundary": "Both paths require finite nonzero signed kz; zero raises ValueError before graph dependencies or scale computation. Standalone Ronnmark roots/scan retain their separate zero-kz domain.",
+    "device_scope": "generic"
+  },
+  "identity": {
+    "relation": "SI equilibrium controls and dimensionless probe ratios to two kinetic dispersion tensors",
+    "direction": "SI equilibrium controls and dimensionless probe ratios to two kinetic dispersion tensors",
+    "definition": "The graph derives omega=omega_frac*wn, kx=kx_frac*kn and f=omega/(2*pi), then preserves the original kernel_omega=2*pi*float(f) conversion before calling evaluate_dielectric_response explicitly with method='harmonic_weideman', harmonics=lmx and method='ronnmark'. Both calls share SI species state; branches are read from the ronnmark diagnostics Result. The public return is a Result.",
+    "model": "homogeneous magnetized Maxwellian multi-species plasma",
+    "geometry": "homogeneous magnetized plasma",
+    "coordinates": "wavevector x-z plane, z parallel to B0; kz is an absolute input",
+    "boundary": "Both paths require finite nonzero signed kz; zero raises ValueError before graph dependencies or scale computation. Standalone Ronnmark roots/scan retain their separate zero-kz domain.",
+    "assumptions": [
+      "All species controls describe one shared equilibrium snapshot."
+    ]
+  },
+  "inputs": [
+    {
+      "name": "ms",
+      "description": "Mass of each species, entering the thermal speed and cyclotron frequency",
+      "units": "kg",
+      "shape": "(S,) one-dimensional species axis",
+      "dtype": "real numeric",
+      "required": true,
+      "constraints": "Finite positive masses, one value per species."
+    },
+    {
+      "name": "qs",
+      "description": "Charge of each species, setting the sign of the cyclotron frequency and coupling terms",
+      "units": "C",
+      "shape": "(S,) one-dimensional species axis",
+      "dtype": "real numeric",
+      "required": true,
+      "constraints": "Finite nonzero charges, one value per species."
+    },
+    {
+      "name": "ns_unit",
+      "description": "Density of each species relative to the reference density",
+      "units": "dimensionless",
+      "shape": "(S,) one-dimensional species axis",
+      "dtype": "real numeric",
+      "required": true,
+      "constraints": "Finite positive density ratios matching the species axis."
+    },
+    {
+      "name": "Ts_unit",
+      "description": "Temperature of each species relative to the reference temperature",
+      "units": "dimensionless",
+      "shape": "(S,) one-dimensional species axis",
+      "dtype": "real numeric",
+      "required": true,
+      "constraints": "Finite positive temperature ratios matching the species axis."
+    },
+    {
+      "name": "B0",
+      "description": "Background magnetic-field strength, setting the cyclotron frequency and entering the pole-resonance argument",
+      "units": "T",
+      "shape": "scalar",
+      "dtype": "real numeric",
+      "required": true,
+      "constraints": "Finite nonzero background field."
+    },
+    {
+      "name": "n00",
+      "description": "Reference number density, converting relative to absolute density",
+      "units": "m^-3",
+      "shape": "scalar",
+      "dtype": "real numeric",
+      "required": true,
+      "constraints": "Finite positive reference density."
+    },
+    {
+      "name": "T00",
+      "description": "Reference temperature, converting relative to absolute temperature",
+      "units": "eV",
+      "shape": "scalar",
+      "dtype": "real numeric",
+      "required": true,
+      "constraints": "Finite positive reference temperature in eV."
+    },
+    {
+      "name": "omega_frac",
+      "description": "Angular frequency as a multiple of the wn derived internally by this graph (the source implementation writes w=wf(p)*wcn); the caller supplies a dimensionless ratio and this graph derives the absolute angular frequency",
+      "units": "dimensionless",
+      "shape": "scalar",
+      "dtype": "real numeric",
+      "required": true,
+      "constraints": "Finite ratio producing nonzero angular frequency."
+    },
+    {
+      "name": "kz",
+      "description": "Wavevector component parallel to the magnetic field, entering the parallel-resonance argument",
+      "units": "1/m",
+      "shape": "scalar",
+      "dtype": "real numeric",
+      "required": true,
+      "constraints": "Finite nonzero absolute parallel wavenumber, with its actual sign preserved. Zero is rejected before loading graph dependencies or computing scales."
+    },
+    {
+      "name": "kx_frac",
+      "description": "Perpendicular wavenumber as a multiple of the kn derived internally by this graph (the source implementation writes kx=kxf(p)*kn); the caller supplies a dimensionless ratio and this graph derives the absolute perpendicular wavenumber",
+      "units": "dimensionless",
+      "shape": "scalar",
+      "dtype": "real numeric",
+      "required": true,
+      "constraints": "Finite perpendicular-wavenumber ratio."
+    },
+    {
+      "name": "lmx",
+      "description": "Bessel truncation order forwarded as harmonics to method=harmonic_weideman.",
+      "units": "dimensionless",
+      "shape": "integer scalar",
+      "dtype": "integer",
+      "required": false,
+      "constraints": "Non-bool non-negative Python or NumPy integer, default 5. None, bool, floats, other wrong kinds and negative integers raise ValueError before loading dependencies; forwarded as harmonics to harmonic_weideman only.",
+      "default": 5
+    }
   ],
-  "model": "homogeneous magnetized Maxwellian multi-species plasma",
-  "geometry": "homogeneous magnetized plasma",
-  "boundary": "Both paths require finite nonzero signed kz; zero raises ValueError before graph dependencies or scale computation. Standalone Ronnmark roots/scan retain their separate zero-kz domain.",
-  "device_scope": "generic"
- },
- "identity": {
-  "relation": "SI equilibrium controls and dimensionless probe ratios to two kinetic dispersion tensors",
-  "direction": "SI equilibrium controls and dimensionless probe ratios to two kinetic dispersion tensors",
-  "definition": "The graph derives omega=omega_frac*wn, kx=kx_frac*kn and f=omega/(2*pi), then preserves the original kernel_omega=2*pi*float(f) conversion before calling evaluate_dielectric_response explicitly with method='harmonic_weideman', harmonics=lmx and method='ronnmark'. Both calls share SI species state; branches are read from the ronnmark diagnostics Result. The public return is a Result.",
-  "model": "homogeneous magnetized Maxwellian multi-species plasma",
-  "geometry": "homogeneous magnetized plasma",
-  "coordinates": "wavevector x-z plane, z parallel to B0; kz is an absolute input",
-  "boundary": "Both paths require finite nonzero signed kz; zero raises ValueError before graph dependencies or scale computation. Standalone Ronnmark roots/scan retain their separate zero-kz domain.",
-  "assumptions": [
-   "All species controls describe one shared equilibrium snapshot."
-  ]
- },
- "inputs": [
-  {
-   "name": "ms",
-   "description": "Mass of each species, entering the thermal speed and cyclotron frequency",
-   "units": "kg",
-   "shape": "(S,) one-dimensional species axis",
-   "dtype": "real numeric",
-   "required": true,
-   "constraints": "Finite positive masses, one value per species."
+  "outputs": [
+    {
+      "name": "scales",
+      "description": "Per-species scales derived from the equilibrium inputs, shared by both dispersion paths from the same state snapshot",
+      "units": "mixed (each key carries its own unit)",
+      "shape": "mapping/dict",
+      "dtype": "mapping",
+      "required": true,
+      "constraints": "The returned value follows the stated shape and physical normalization."
+    },
+    {
+      "name": "determinant_sum_n",
+      "description": "Dispersion determinant of the conventional truncated-harmonic-sum path",
+      "units": "dimensionless",
+      "shape": "complex scalar",
+      "dtype": "complex128 array",
+      "required": true,
+      "constraints": "The returned value follows the stated shape and physical normalization."
+    },
+    {
+      "name": "determinant_ronnmark",
+      "description": "Dispersion determinant of the Ronnmark fast path",
+      "units": "dimensionless",
+      "shape": "complex scalar",
+      "dtype": "complex128 array",
+      "required": true,
+      "constraints": "The returned value follows the stated shape and physical normalization."
+    },
+    {
+      "name": "K_sum_n",
+      "description": "Dielectric tensor of the conventional sum path",
+      "units": "dimensionless",
+      "shape": "(3, 3) complex matrix",
+      "dtype": "complex128 array",
+      "required": true,
+      "constraints": "The returned value follows the stated shape and physical normalization."
+    },
+    {
+      "name": "D_sum_n",
+      "description": "Dispersion tensor of the conventional sum path",
+      "units": "dimensionless",
+      "shape": "(3, 3) complex matrix",
+      "dtype": "complex128 array",
+      "required": true,
+      "constraints": "The returned value follows the stated shape and physical normalization."
+    },
+    {
+      "name": "K_ronnmark",
+      "description": "Dielectric tensor of the Ronnmark path",
+      "units": "dimensionless",
+      "shape": "(3, 3) complex matrix",
+      "dtype": "complex128 array",
+      "required": true,
+      "constraints": "The returned value follows the stated shape and physical normalization."
+    },
+    {
+      "name": "D_ronnmark",
+      "description": "Dispersion tensor of the Ronnmark path",
+      "units": "dimensionless",
+      "shape": "(3, 3) complex matrix",
+      "dtype": "complex128 array",
+      "required": true,
+      "constraints": "The returned value follows the stated shape and physical normalization."
+    },
+    {
+      "name": "branches",
+      "description": "Method-branch label selected for each (species, pole) combination on the Ronnmark path",
+      "units": "not applicable",
+      "shape": "(S*J,) string sequence",
+      "dtype": "string sequence",
+      "required": true,
+      "constraints": "The returned value follows the stated shape and physical normalization."
+    },
+    {
+      "name": "omega",
+      "description": "Absolute angular frequency derived by this graph from omega_frac and the internal wn",
+      "units": "rad/s",
+      "shape": "scalar",
+      "dtype": "real numeric",
+      "required": true,
+      "constraints": "The returned value follows the stated shape and physical normalization."
+    },
+    {
+      "name": "kx",
+      "description": "Absolute perpendicular wavenumber derived by this graph from kx_frac and the internal kn",
+      "units": "1/m",
+      "shape": "scalar",
+      "dtype": "real numeric",
+      "required": true,
+      "constraints": "The returned value follows the stated shape and physical normalization."
+    },
+    {
+      "name": "f",
+      "description": "Frequency converted from the absolute angular frequency",
+      "units": "Hz",
+      "shape": "scalar",
+      "dtype": "real numeric",
+      "required": true,
+      "constraints": "The returned value follows the stated shape and physical normalization."
+    },
+    {
+      "name": "graph_order",
+      "description": "Fixed execution-order labels of this graph",
+      "units": "not applicable",
+      "shape": "(6,) string sequence",
+      "dtype": "string sequence",
+      "required": true,
+      "constraints": "Exactly species_equilibrium_scales, probe_frequency, probe_wavenumber, omega_to_frequency, dielectric_response:harmonic_weideman, dielectric_response:ronnmark."
+    }
+  ],
+  "applicability": {
+    "preconditions": [
+      "Species arrays are finite, non-empty and shape-compatible; masses, densities and temperatures are positive, with nonzero charge and magnetic field.",
+      "The wavepoint and derived frequency/scales are finite, kz is nonzero, and both numerical path domains are satisfied."
+    ],
+    "supported": [
+      "Evaluate conventional finite-harmonic and Ronnmark determinants at the same derived equilibrium wavepoint."
+    ],
+    "excluded": [
+      "Mode identification, root finding and accuracy outside the tested finite-harmonic or rational-pole approximation.",
+      "Zero kz, inputs that violate either numerical path domain, or inputs requiring a different tensor convention."
+    ]
   },
-  {
-   "name": "qs",
-   "description": "Charge of each species, setting the sign of the cyclotron frequency and coupling terms",
-   "units": "C",
-   "shape": "(S,) one-dimensional species axis",
-   "dtype": "real numeric",
-   "required": true,
-   "constraints": "Finite nonzero charges, one value per species."
+  "failure_semantics": {
+    "invalid_input": "Raises ValueError for nonfinite or zero kz and for lmx that is None, bool, a non-integer or negative, before loading graph dependencies or computing scales. Errors from derive_species_equilibrium_scales and probe_frequency/probe_wavenumber (nonfinite fractions, nonpositive wn/kn) propagate. A derived f=0, including frequency-conversion underflow to zero, retains ValueError; it does not become a tail or tensor failure. Unsupported numeric conversions may propagate their original errors.",
+    "runtime_failure": "Raises FloatingPointError for a nonfinite or unrepresentable kernel_omega after the original omega -> f -> float(f) -> 2*pi*f conversion, including true finite-Hz conversion overflow. Derived f=0 is instead ValueError. Numerical failures from evaluate_dielectric_response(method='harmonic_weideman') or evaluate_dielectric_response(method='ronnmark') propagate; no fallback determinant or partial Result.",
+    "nonconvergence": "Both determinant paths are direct evaluations with no iteration, so nonconvergence is not a returned state.",
+    "partial_results": "No partial mapping is returned if either determinant path fails."
   },
-  {
-   "name": "ns_unit",
-   "description": "Density of each species relative to the reference density",
-   "units": "dimensionless",
-   "shape": "(S,) one-dimensional species axis",
-   "dtype": "real numeric",
-   "required": true,
-   "constraints": "Finite positive density ratios matching the species axis."
+  "public_api": {
+    "python": {
+      "module": "scirel.kinetic.kinetic_dispersion_relation",
+      "symbol": "evaluate_kinetic_dispersion_relation",
+      "signature": "evaluate_kinetic_dispersion_relation(ms, qs, ns_unit, Ts_unit, B0, n00, T00, omega_frac, kz, kx_frac, lmx=5)",
+      "canonical_module": "scirel.kinetic",
+      "canonical_symbol": "evaluate_kinetic_dispersion_relation"
+    }
   },
-  {
-   "name": "Ts_unit",
-   "description": "Temperature of each species relative to the reference temperature",
-   "units": "dimensionless",
-   "shape": "(S,) one-dimensional species axis",
-   "dtype": "real numeric",
-   "required": true,
-   "constraints": "Finite positive temperature ratios matching the species axis."
+  "version": {
+    "implementation_version": "0.0.0",
+    "dependencies": [
+      {
+        "asset_id": "scirel.kinetic.species-equilibrium-scales"
+      },
+      {
+        "asset_id": "scirel.kinetic.dielectric-response"
+      }
+    ]
   },
-  {
-   "name": "B0",
-   "description": "Background magnetic-field strength, setting the cyclotron frequency and entering the pole-resonance argument",
-   "units": "T",
-   "shape": "scalar",
-   "dtype": "real numeric",
-   "required": true,
-   "constraints": "Finite nonzero background field."
+  "example": {
+    "description": "Evaluate both kinetic dispersion paths at one shared derived wavepoint.",
+    "code": "from scirel.kinetic import evaluate_kinetic_dispersion_relation\nr=evaluate_kinetic_dispersion_relation(ms=[9.1094e-31],qs=[-1.60217662e-19],ns_unit=[1],Ts_unit=[1],B0=1,n00=6.075e19,T00=1000,omega_frac=1,kz=1326.1942478795652,kx_frac=1); assert 'determinant_sum_n' in r and 'determinant_ronnmark' in r\n",
+    "expected": "Observed PASS: the composed graph returns both finite-harmonic and Ronnmark determinants together with their 3x3 K/D tensors and derived omega, kx and f."
   },
-  {
-   "name": "n00",
-   "description": "Reference number density, converting relative to absolute density",
-   "units": "m^-3",
-   "shape": "scalar",
-   "dtype": "real numeric",
-   "required": true,
-   "constraints": "Finite positive reference density."
+  "verification": {
+    "scope": [
+      "Independent cross-asset anchor: in the cold limit the zero of determinant_ronnmark in omega/omega_n equals the plasma frequency recomputed by the B5 fluid reference helper from omega_p**2 = sum n q**2/(eps0 m) with the declared constants, an independent mpmath reimplementation that shares no code with this port; measured deviation 1.1e-11 at Ts_unit = 1e-4.",
+      "The bracket orientation is asserted explicitly -- the determinant is negative 5 percent below the anchor and positive 5 percent above -- because asserting only that the sign changes would be blind to a negation of the whole determinant.",
+      "Secondary statement: the two internal evaluation methods agree to 5.5e-7 and that disagreement is saturated between lmx = 12 and lmx = 16 to within 1e-9, which is what a converged harmonic sum means operationally.",
+      "The two-method agreement is explicitly secondary because both determinant_sum_n and determinant_ronnmark are returned by the same call: their ratio is invariant under a common rescaling or negation, so it is equivalent-level evidence for those mutations and only constrains the harmonic truncation.",
+      "Test matrix: one species with q = m = n00 = T00 = B0 = 1, kz = 1, kx_frac = 1; Ts_unit = 1e-4 for the cold anchor and Ts_unit = 1.0 for the cross-method and lmx statements.",
+      "Failure matrix: one assertion per channel -- the root location against the cross-asset anchor, the determinant orientation across the bracket, harmonic saturation in lmx, the declared graph shapes, and the rejection of a zero kx_frac. Precision budget, written before measurement: 1e-9 on the root, 1e-6 on the cross-method difference, 1e-9 on lmx saturation."
+    ],
+    "known_limitations": [
+      "kx_frac = 0 raises FloatingPointError because the harmonic sum divides by the transverse wavenumber. That is a parameter error, not an unreachable cold limit, and it is asserted as such so the next caller does not read the failure as a physics boundary.",
+      "The absolute scale of the returned determinants is not anchored: this contract asserts where the zero sits, not the magnitude of the determinant there. The `scale` mutation is therefore covered rather than killed, and the magnitude has no owner -- no contract in this repository declares the scale of these determinants.",
+      "The semantics of the returned D_* and K_* arrays were not confirmed from the code, so no relation involving them is asserted; the guessed decomposition determinant = D * K was measured at relative residual 1.0 and is therefore not the right relation.",
+      "The `swap` mutation is covered rather than killed: it can only act on the multi-element `branches` and `graph_order` arrays, and this contract asserts their declared shapes, not their element order. That order has no owner -- no contract in this repository declares it."
+    ],
+    "evidence_ceiling": "Bounded to one normalized single-species cold case at kz = 1 and kx_frac = 1, with the mode location anchored against the plasma frequency recomputed by an independent cross-asset helper and the harmonic truncation constrained by the two internal methods. Established by the 1.1e-11 agreement of the cold-limit zero with omega_p and by the 5.5e-7 cross-method agreement that saturates in lmx. Excluded scope: the hot-plasma spectrum, mode identity beyond the Langmuir branch, the magnitude of the determinant, and any statement about the deck constants behind the equilibrium.",
+    "tests": [
+      "tests/kinetic/test_kinetic_relation_cold_anchor.py"
+    ],
+    "basis": {
+      "kind": "independent-recomputation",
+      "statement": "The 5.5e-7 cross-method agreement that saturates in lmx is the recorded basis. Excluded scope: the hot-plasma spectrum, mode identity beyond the Langmuir branch, the magnitude of the determinant, and any statement about the deck constants behind the equilibrium.",
+      "source": "tests/kinetic/test_kinetic_relation_cold_anchor.py"
+    }
   },
-  {
-   "name": "T00",
-   "description": "Reference temperature, converting relative to absolute temperature",
-   "units": "eV",
-   "shape": "scalar",
-   "dtype": "real numeric",
-   "required": true,
-   "constraints": "Finite positive reference temperature in eV."
-  },
-  {
-   "name": "omega_frac",
-   "description": "Angular frequency as a multiple of the wn derived internally by this graph (the source implementation writes w=wf(p)*wcn); the caller supplies a dimensionless ratio and this graph derives the absolute angular frequency",
-   "units": "dimensionless",
-   "shape": "scalar",
-   "dtype": "real numeric",
-   "required": true,
-   "constraints": "Finite ratio producing nonzero angular frequency."
-  },
-  {
-   "name": "kz",
-   "description": "Wavevector component parallel to the magnetic field, entering the parallel-resonance argument",
-   "units": "1/m",
-   "shape": "scalar",
-   "dtype": "real numeric",
-   "required": true,
-   "constraints": "Finite nonzero absolute parallel wavenumber, with its actual sign preserved. Zero is rejected before loading graph dependencies or computing scales."
-  },
-  {
-   "name": "kx_frac",
-   "description": "Perpendicular wavenumber as a multiple of the kn derived internally by this graph (the source implementation writes kx=kxf(p)*kn); the caller supplies a dimensionless ratio and this graph derives the absolute perpendicular wavenumber",
-   "units": "dimensionless",
-   "shape": "scalar",
-   "dtype": "real numeric",
-   "required": true,
-   "constraints": "Finite perpendicular-wavenumber ratio."
-  },
-  {
-   "name": "lmx",
-   "description": "Bessel truncation order forwarded as harmonics to method=harmonic_weideman.",
-   "units": "dimensionless",
-   "shape": "integer scalar",
-   "dtype": "integer",
-   "required": false,
-   "constraints": "Non-bool non-negative Python or NumPy integer, default 5. None, bool, floats, other wrong kinds and negative integers raise ValueError before loading dependencies; forwarded as harmonics to harmonic_weideman only.",
-   "default": 5
+  "composition": {
+    "nodes": [
+      {
+        "id": "species_equilibrium_scales",
+        "kind": "function",
+        "description": "Species equilibrium scales",
+        "inputs": [
+          "ms",
+          "qs",
+          "ns_unit",
+          "Ts_unit",
+          "B0",
+          "n00",
+          "T00"
+        ],
+        "outputs": [
+          "ns0",
+          "Ts0",
+          "vts",
+          "wcs",
+          "wps2",
+          "rhocs",
+          "kn",
+          "wn",
+          "scales"
+        ],
+        "asset_id": "scirel.kinetic.species-equilibrium-scales"
+      },
+      {
+        "id": "probe_frequency",
+        "kind": "controlled_glue",
+        "description": "Probe angular-frequency calibration",
+        "inputs": [
+          "omega_frac",
+          "wn"
+        ],
+        "outputs": [
+          "omega"
+        ]
+      },
+      {
+        "id": "probe_wavenumber",
+        "kind": "controlled_glue",
+        "description": "Probe perpendicular-wavenumber calibration",
+        "inputs": [
+          "kx_frac",
+          "kn"
+        ],
+        "outputs": [
+          "kx"
+        ]
+      },
+      {
+        "id": "omega_to_frequency",
+        "kind": "controlled_glue",
+        "description": "Angular-frequency to frequency conversion",
+        "inputs": [
+          "omega"
+        ],
+        "outputs": [
+          "f"
+        ]
+      },
+      {
+        "id": "frequency_to_kernel_omega",
+        "kind": "controlled_glue",
+        "description": "Preserve kernel_omega=2*pi*float(f), including numerical conversion failure.",
+        "inputs": [
+          "f"
+        ],
+        "outputs": [
+          "omega"
+        ]
+      },
+      {
+        "id": "dielectric_response_harmonic_weideman",
+        "kind": "function",
+        "description": "evaluate_dielectric_response explicitly selected method='harmonic_weideman'; original frequency rounding and complete scientific Result.",
+        "inputs": [
+          "B0",
+          "qs",
+          "ms",
+          "ns0",
+          "Ts0",
+          "omega",
+          "kz",
+          "kx",
+          "harmonics",
+          "method"
+        ],
+        "outputs": [
+          "K",
+          "D",
+          "determinant",
+          "omega",
+          "nx",
+          "nz",
+          "vts",
+          "wcs",
+          "wps2",
+          "a",
+          "b",
+          "diagnostics"
+        ],
+        "asset_id": "scirel.kinetic.dielectric-response"
+      },
+      {
+        "id": "dielectric_response_ronnmark",
+        "kind": "function",
+        "description": "evaluate_dielectric_response explicitly selected method='ronnmark'; original frequency rounding and complete scientific Result.",
+        "inputs": [
+          "B0",
+          "qs",
+          "ms",
+          "ns0",
+          "Ts0",
+          "omega",
+          "kz",
+          "kx",
+          "method"
+        ],
+        "outputs": [
+          "K",
+          "D",
+          "determinant",
+          "omega",
+          "nx",
+          "nz",
+          "vts",
+          "wcs",
+          "wps2",
+          "a",
+          "b",
+          "diagnostics"
+        ],
+        "asset_id": "scirel.kinetic.dielectric-response"
+      },
+      {
+        "id": "graph_order",
+        "kind": "controlled_glue",
+        "description": "Expose the fixed source-stage execution labels.",
+        "inputs": [],
+        "outputs": [
+          "graph_order"
+        ]
+      },
+      {
+        "id": "select_harmonic_weideman",
+        "kind": "controlled_glue",
+        "description": "Fixed public method selector: return method='harmonic_weideman'; never infer or switch on failure.",
+        "inputs": [],
+        "outputs": [
+          "method"
+        ]
+      },
+      {
+        "id": "select_ronnmark",
+        "kind": "controlled_glue",
+        "description": "Fixed public method selector: return method='ronnmark'; never infer or switch on failure.",
+        "inputs": [],
+        "outputs": [
+          "method"
+        ]
+      },
+      {
+        "id": "ronnmark_branches",
+        "kind": "controlled_glue",
+        "description": "Project diagnostics.branches from the ronnmark Result; no top-level branches port exists on the family callable.",
+        "inputs": [
+          "diagnostics"
+        ],
+        "outputs": [
+          "branches"
+        ]
+      }
+    ],
+    "edges": [
+      {
+        "from": {
+          "node": "species_equilibrium_scales",
+          "port": "wn"
+        },
+        "to": {
+          "node": "probe_frequency",
+          "port": "wn"
+        },
+        "description": "The probe angular frequency is scaled by the reference frequency wn derived by this graph; the probe and the equilibrium must be sourced from the same state",
+        "condition": "always",
+        "transform": "identity",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "species_equilibrium_scales",
+          "port": "kn"
+        },
+        "to": {
+          "node": "probe_wavenumber",
+          "port": "kn"
+        },
+        "description": "The probe perpendicular wavenumber is scaled by the reference wavenumber kn derived by this graph; the probe and the equilibrium must be sourced from the same state",
+        "condition": "always",
+        "transform": "identity",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "probe_frequency",
+          "port": "omega"
+        },
+        "to": {
+          "node": "omega_to_frequency",
+          "port": "omega"
+        },
+        "description": "The probe angular frequency enters the unit conversion; both paths share the same frequency",
+        "condition": "always",
+        "transform": "identity",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "species_equilibrium_scales",
+          "port": "ns0"
+        },
+        "to": {
+          "node": "dielectric_response_harmonic_weideman",
+          "port": "ns0"
+        },
+        "description": "The absolute number density enters the plasma frequency; both paths must share the same density conversion",
+        "condition": "always",
+        "transform": "identity",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "species_equilibrium_scales",
+          "port": "Ts0"
+        },
+        "to": {
+          "node": "dielectric_response_harmonic_weideman",
+          "port": "Ts0"
+        },
+        "description": "Kelvin temperature enters the thermal speed and Bessel argument and must be consistent with the density",
+        "condition": "always",
+        "transform": "identity",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "species_equilibrium_scales",
+          "port": "ns0"
+        },
+        "to": {
+          "node": "dielectric_response_ronnmark",
+          "port": "ns0"
+        },
+        "description": "The absolute number density enters the plasma frequency; the Ronnmark path must use the same density conversion as the conventional path",
+        "condition": "always",
+        "transform": "identity",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "species_equilibrium_scales",
+          "port": "Ts0"
+        },
+        "to": {
+          "node": "dielectric_response_ronnmark",
+          "port": "Ts0"
+        },
+        "description": "Kelvin temperature enters the thermal speed and the pole-resonance argument",
+        "condition": "always",
+        "transform": "identity",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "frequency_to_kernel_omega",
+          "port": "omega"
+        },
+        "to": {
+          "node": "dielectric_response_harmonic_weideman",
+          "port": "omega"
+        },
+        "description": "Both explicitly selected methods receive the same 2*pi*float(f), preserving the original frequency rounding and numerical-failure boundary.",
+        "condition": "always",
+        "transform": "unit_conversion",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "frequency_to_kernel_omega",
+          "port": "omega"
+        },
+        "to": {
+          "node": "dielectric_response_ronnmark",
+          "port": "omega"
+        },
+        "description": "Both explicitly selected methods receive the same 2*pi*float(f), preserving the original frequency rounding and numerical-failure boundary.",
+        "condition": "always",
+        "transform": "unit_conversion",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "$input",
+          "port": "ms"
+        },
+        "to": {
+          "node": "species_equilibrium_scales",
+          "port": "ms"
+        },
+        "description": "Caller supplies ms to this stage.",
+        "condition": "always",
+        "transform": "identity",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "$input",
+          "port": "qs"
+        },
+        "to": {
+          "node": "species_equilibrium_scales",
+          "port": "qs"
+        },
+        "description": "Caller supplies qs to this stage.",
+        "condition": "always",
+        "transform": "identity",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "$input",
+          "port": "ns_unit"
+        },
+        "to": {
+          "node": "species_equilibrium_scales",
+          "port": "ns_unit"
+        },
+        "description": "Caller supplies ns_unit to this stage.",
+        "condition": "always",
+        "transform": "identity",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "$input",
+          "port": "Ts_unit"
+        },
+        "to": {
+          "node": "species_equilibrium_scales",
+          "port": "Ts_unit"
+        },
+        "description": "Caller supplies Ts_unit to this stage.",
+        "condition": "always",
+        "transform": "identity",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "$input",
+          "port": "B0"
+        },
+        "to": {
+          "node": "species_equilibrium_scales",
+          "port": "B0"
+        },
+        "description": "Caller supplies B0 to this stage.",
+        "condition": "always",
+        "transform": "identity",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "$input",
+          "port": "n00"
+        },
+        "to": {
+          "node": "species_equilibrium_scales",
+          "port": "n00"
+        },
+        "description": "Caller supplies n00 to this stage.",
+        "condition": "always",
+        "transform": "identity",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "$input",
+          "port": "T00"
+        },
+        "to": {
+          "node": "species_equilibrium_scales",
+          "port": "T00"
+        },
+        "description": "Caller supplies T00 to this stage.",
+        "condition": "always",
+        "transform": "identity",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "$input",
+          "port": "omega_frac"
+        },
+        "to": {
+          "node": "probe_frequency",
+          "port": "omega_frac"
+        },
+        "description": "Caller supplies omega_frac to this stage.",
+        "condition": "always",
+        "transform": "identity",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "$input",
+          "port": "kx_frac"
+        },
+        "to": {
+          "node": "probe_wavenumber",
+          "port": "kx_frac"
+        },
+        "description": "Caller supplies kx_frac to this stage.",
+        "condition": "always",
+        "transform": "identity",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "$input",
+          "port": "B0"
+        },
+        "to": {
+          "node": "dielectric_response_harmonic_weideman",
+          "port": "B0"
+        },
+        "description": "Caller supplies B0 to this stage.",
+        "condition": "always",
+        "transform": "identity",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "$input",
+          "port": "qs"
+        },
+        "to": {
+          "node": "dielectric_response_harmonic_weideman",
+          "port": "qs"
+        },
+        "description": "Caller supplies qs to this stage.",
+        "condition": "always",
+        "transform": "identity",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "$input",
+          "port": "ms"
+        },
+        "to": {
+          "node": "dielectric_response_harmonic_weideman",
+          "port": "ms"
+        },
+        "description": "Caller supplies ms to this stage.",
+        "condition": "always",
+        "transform": "identity",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "$input",
+          "port": "kz"
+        },
+        "to": {
+          "node": "dielectric_response_harmonic_weideman",
+          "port": "kz"
+        },
+        "description": "Caller supplies kz to this stage.",
+        "condition": "always",
+        "transform": "identity",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "probe_wavenumber",
+          "port": "kx"
+        },
+        "to": {
+          "node": "dielectric_response_harmonic_weideman",
+          "port": "kx"
+        },
+        "description": "Use the graph-derived kx.",
+        "condition": "always",
+        "transform": "identity",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "$input",
+          "port": "lmx"
+        },
+        "to": {
+          "node": "dielectric_response_harmonic_weideman",
+          "port": "harmonics"
+        },
+        "description": "Caller supplies harmonics to this stage.",
+        "condition": "always",
+        "transform": "identity",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "$input",
+          "port": "B0"
+        },
+        "to": {
+          "node": "dielectric_response_ronnmark",
+          "port": "B0"
+        },
+        "description": "Caller supplies B0 to this stage.",
+        "condition": "always",
+        "transform": "identity",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "$input",
+          "port": "qs"
+        },
+        "to": {
+          "node": "dielectric_response_ronnmark",
+          "port": "qs"
+        },
+        "description": "Caller supplies qs to this stage.",
+        "condition": "always",
+        "transform": "identity",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "$input",
+          "port": "ms"
+        },
+        "to": {
+          "node": "dielectric_response_ronnmark",
+          "port": "ms"
+        },
+        "description": "Caller supplies ms to this stage.",
+        "condition": "always",
+        "transform": "identity",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "$input",
+          "port": "kz"
+        },
+        "to": {
+          "node": "dielectric_response_ronnmark",
+          "port": "kz"
+        },
+        "description": "Caller supplies kz to this stage.",
+        "condition": "always",
+        "transform": "identity",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "probe_wavenumber",
+          "port": "kx"
+        },
+        "to": {
+          "node": "dielectric_response_ronnmark",
+          "port": "kx"
+        },
+        "description": "Use the graph-derived kx.",
+        "condition": "always",
+        "transform": "identity",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "species_equilibrium_scales",
+          "port": "scales"
+        },
+        "to": {
+          "node": "$output",
+          "port": "scales"
+        },
+        "description": "Return the declared scales terminal.",
+        "condition": "always",
+        "transform": "identity",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "dielectric_response_harmonic_weideman",
+          "port": "determinant"
+        },
+        "to": {
+          "node": "$output",
+          "port": "determinant_sum_n"
+        },
+        "description": "Return the declared determinant_sum_n terminal.",
+        "condition": "always",
+        "transform": "identity",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "dielectric_response_ronnmark",
+          "port": "determinant"
+        },
+        "to": {
+          "node": "$output",
+          "port": "determinant_ronnmark"
+        },
+        "description": "Return the declared determinant_ronnmark terminal.",
+        "condition": "always",
+        "transform": "identity",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "dielectric_response_harmonic_weideman",
+          "port": "K"
+        },
+        "to": {
+          "node": "$output",
+          "port": "K_sum_n"
+        },
+        "description": "Return the declared K_sum_n terminal.",
+        "condition": "always",
+        "transform": "identity",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "dielectric_response_harmonic_weideman",
+          "port": "D"
+        },
+        "to": {
+          "node": "$output",
+          "port": "D_sum_n"
+        },
+        "description": "Return the declared D_sum_n terminal.",
+        "condition": "always",
+        "transform": "identity",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "dielectric_response_ronnmark",
+          "port": "K"
+        },
+        "to": {
+          "node": "$output",
+          "port": "K_ronnmark"
+        },
+        "description": "Return the declared K_ronnmark terminal.",
+        "condition": "always",
+        "transform": "identity",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "dielectric_response_ronnmark",
+          "port": "D"
+        },
+        "to": {
+          "node": "$output",
+          "port": "D_ronnmark"
+        },
+        "description": "Return the declared D_ronnmark terminal.",
+        "condition": "always",
+        "transform": "identity",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "ronnmark_branches",
+          "port": "branches"
+        },
+        "to": {
+          "node": "$output",
+          "port": "branches"
+        },
+        "description": "Return the branches leaf explicitly projected from ronnmark diagnostics.",
+        "condition": "always",
+        "transform": "identity",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "probe_frequency",
+          "port": "omega"
+        },
+        "to": {
+          "node": "$output",
+          "port": "omega"
+        },
+        "description": "Return the declared omega terminal.",
+        "condition": "always",
+        "transform": "identity",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "probe_wavenumber",
+          "port": "kx"
+        },
+        "to": {
+          "node": "$output",
+          "port": "kx"
+        },
+        "description": "Return the declared kx terminal.",
+        "condition": "always",
+        "transform": "identity",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "omega_to_frequency",
+          "port": "f"
+        },
+        "to": {
+          "node": "$output",
+          "port": "f"
+        },
+        "description": "Return the declared f terminal.",
+        "condition": "always",
+        "transform": "identity",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "graph_order",
+          "port": "graph_order"
+        },
+        "to": {
+          "node": "$output",
+          "port": "graph_order"
+        },
+        "description": "Return the declared graph_order terminal.",
+        "condition": "always",
+        "transform": "identity",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "omega_to_frequency",
+          "port": "f"
+        },
+        "to": {
+          "node": "frequency_to_kernel_omega",
+          "port": "f"
+        },
+        "description": "Retain the original derived Hz float before converting to the family angular input.",
+        "condition": "always",
+        "transform": "identity",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "select_harmonic_weideman",
+          "port": "method"
+        },
+        "to": {
+          "node": "dielectric_response_harmonic_weideman",
+          "port": "method"
+        },
+        "description": "Explicit fixed method='harmonic_weideman' for this family call.",
+        "condition": "always",
+        "transform": "identity",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "select_ronnmark",
+          "port": "method"
+        },
+        "to": {
+          "node": "dielectric_response_ronnmark",
+          "port": "method"
+        },
+        "description": "Explicit fixed method='ronnmark' for this family call.",
+        "condition": "always",
+        "transform": "identity",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "dielectric_response_ronnmark",
+          "port": "diagnostics"
+        },
+        "to": {
+          "node": "ronnmark_branches",
+          "port": "diagnostics"
+        },
+        "description": "Read the actual nested diagnostics Result before projecting its branches leaf.",
+        "condition": "always",
+        "transform": "identity",
+        "kind": "data",
+        "required": true
+      }
+    ],
+    "execution": {
+      "mode": "dag",
+      "ordering": "source stage order; each frequency independently evaluated",
+      "branches": [
+        "Each numerical method retains its own declared branches and failure behavior."
+      ],
+      "state_ownership": "One graph-local equilibrium and derived scan/probe state; no persistent state.",
+      "failure_propagation": "First dependency failure raises; no partial graph result is returned.",
+      "feedback": []
+    }
   }
- ],
- "outputs": [
-  {
-   "name": "scales",
-   "description": "Per-species scales derived from the equilibrium inputs, shared by both dispersion paths from the same state snapshot",
-   "units": "mixed (each key carries its own unit)",
-   "shape": "mapping/dict",
-   "dtype": "mapping",
-   "required": true,
-   "constraints": "The returned value follows the stated shape and physical normalization."
-  },
-  {
-   "name": "determinant_sum_n",
-   "description": "Dispersion determinant of the conventional truncated-harmonic-sum path",
-   "units": "dimensionless",
-   "shape": "complex scalar",
-   "dtype": "complex128 array",
-   "required": true,
-   "constraints": "The returned value follows the stated shape and physical normalization."
-  },
-  {
-   "name": "determinant_ronnmark",
-   "description": "Dispersion determinant of the Ronnmark fast path",
-   "units": "dimensionless",
-   "shape": "complex scalar",
-   "dtype": "complex128 array",
-   "required": true,
-   "constraints": "The returned value follows the stated shape and physical normalization."
-  },
-  {
-   "name": "K_sum_n",
-   "description": "Dielectric tensor of the conventional sum path",
-   "units": "dimensionless",
-   "shape": "(3, 3) complex matrix",
-   "dtype": "complex128 array",
-   "required": true,
-   "constraints": "The returned value follows the stated shape and physical normalization."
-  },
-  {
-   "name": "D_sum_n",
-   "description": "Dispersion tensor of the conventional sum path",
-   "units": "dimensionless",
-   "shape": "(3, 3) complex matrix",
-   "dtype": "complex128 array",
-   "required": true,
-   "constraints": "The returned value follows the stated shape and physical normalization."
-  },
-  {
-   "name": "K_ronnmark",
-   "description": "Dielectric tensor of the Ronnmark path",
-   "units": "dimensionless",
-   "shape": "(3, 3) complex matrix",
-   "dtype": "complex128 array",
-   "required": true,
-   "constraints": "The returned value follows the stated shape and physical normalization."
-  },
-  {
-   "name": "D_ronnmark",
-   "description": "Dispersion tensor of the Ronnmark path",
-   "units": "dimensionless",
-   "shape": "(3, 3) complex matrix",
-   "dtype": "complex128 array",
-   "required": true,
-   "constraints": "The returned value follows the stated shape and physical normalization."
-  },
-  {
-   "name": "branches",
-   "description": "Method-branch label selected for each (species, pole) combination on the Ronnmark path",
-   "units": "not applicable",
-   "shape": "(S*J,) string sequence",
-   "dtype": "string sequence",
-   "required": true,
-   "constraints": "The returned value follows the stated shape and physical normalization."
-  },
-  {
-   "name": "omega",
-   "description": "Absolute angular frequency derived by this graph from omega_frac and the internal wn",
-   "units": "rad/s",
-   "shape": "scalar",
-   "dtype": "real numeric",
-   "required": true,
-   "constraints": "The returned value follows the stated shape and physical normalization."
-  },
-  {
-   "name": "kx",
-   "description": "Absolute perpendicular wavenumber derived by this graph from kx_frac and the internal kn",
-   "units": "1/m",
-   "shape": "scalar",
-   "dtype": "real numeric",
-   "required": true,
-   "constraints": "The returned value follows the stated shape and physical normalization."
-  },
-  {
-   "name": "f",
-   "description": "Frequency converted from the absolute angular frequency",
-   "units": "Hz",
-   "shape": "scalar",
-   "dtype": "real numeric",
-   "required": true,
-   "constraints": "The returned value follows the stated shape and physical normalization."
-  },
-  {
-   "name": "graph_order",
-   "description": "Fixed execution-order labels of this graph",
-   "units": "not applicable",
-   "shape": "(6,) string sequence",
-   "dtype": "string sequence",
-   "required": true,
-   "constraints": "Exactly species_equilibrium_scales, probe_frequency, probe_wavenumber, omega_to_frequency, dielectric_response:harmonic_weideman, dielectric_response:ronnmark."
-  }
- ],
- "applicability": {
-  "preconditions": [
-   "Species arrays are finite, non-empty and shape-compatible; masses, densities and temperatures are positive, with nonzero charge and magnetic field.",
-   "The wavepoint and derived frequency/scales are finite, kz is nonzero, and both numerical path domains are satisfied."
-  ],
-  "supported": [
-   "Evaluate conventional finite-harmonic and Ronnmark determinants at the same derived equilibrium wavepoint."
-  ],
-  "excluded": [
-   "Mode identification, root finding and accuracy outside the tested finite-harmonic or rational-pole approximation.",
-   "Zero kz, inputs that violate either numerical path domain, or inputs requiring a different tensor convention."
-  ]
- },
- "failure_semantics": {
-  "invalid_input": "Raises ValueError for nonfinite or zero kz and for lmx that is None, bool, a non-integer or negative, before loading graph dependencies or computing scales. Errors from derive_species_equilibrium_scales and probe_frequency/probe_wavenumber (nonfinite fractions, nonpositive wn/kn) propagate. A derived f=0, including frequency-conversion underflow to zero, retains ValueError; it does not become a tail or tensor failure. Unsupported numeric conversions may propagate their original errors.",
-  "runtime_failure": "Raises FloatingPointError for a nonfinite or unrepresentable kernel_omega after the original omega -> f -> float(f) -> 2*pi*f conversion, including true finite-Hz conversion overflow. Derived f=0 is instead ValueError. Numerical failures from evaluate_dielectric_response(method='harmonic_weideman') or evaluate_dielectric_response(method='ronnmark') propagate; no fallback determinant or partial Result.",
-  "nonconvergence": "Both determinant paths are direct evaluations with no iteration, so nonconvergence is not a returned state.",
-  "partial_results": "No partial mapping is returned if either determinant path fails."
- },
- "public_api": {
-  "python": {
-   "module": "scirel.kinetic.kinetic_dispersion_relation",
-   "symbol": "evaluate_kinetic_dispersion_relation",
-   "signature": "evaluate_kinetic_dispersion_relation(ms, qs, ns_unit, Ts_unit, B0, n00, T00, omega_frac, kz, kx_frac, lmx=5)",
-   "canonical_module": "scirel.kinetic",
-   "canonical_symbol": "evaluate_kinetic_dispersion_relation"
-  }
- },
- "version": {
-  "implementation_version": "0.0.0",
-  "dependencies": [
-   {
-    "asset_id": "scirel.kinetic.species-equilibrium-scales"
-   },
-   {
-    "asset_id": "scirel.kinetic.dielectric-response"
-   }
-  ]
- },
- "example": {
-  "description": "Evaluate both kinetic dispersion paths at one shared derived wavepoint.",
-  "code": "from scirel.kinetic import evaluate_kinetic_dispersion_relation\nr=evaluate_kinetic_dispersion_relation(ms=[9.1094e-31],qs=[-1.60217662e-19],ns_unit=[1],Ts_unit=[1],B0=1,n00=6.075e19,T00=1000,omega_frac=1,kz=1326.1942478795652,kx_frac=1); assert 'determinant_sum_n' in r and 'determinant_ronnmark' in r\n",
-  "expected": "Observed PASS: the composed graph returns both finite-harmonic and Ronnmark determinants together with their 3x3 K/D tensors and derived omega, kx and f."
- },
- "verification": {
-  "scope": [
-   "Independent cross-asset anchor: in the cold limit the zero of determinant_ronnmark in omega/omega_n equals the plasma frequency recomputed by the B5 fluid reference helper from omega_p**2 = sum n q**2/(eps0 m) with the declared constants, an independent mpmath reimplementation that shares no code with this port; measured deviation 1.1e-11 at Ts_unit = 1e-4.",
-   "The bracket orientation is asserted explicitly -- the determinant is negative 5 percent below the anchor and positive 5 percent above -- because asserting only that the sign changes would be blind to a negation of the whole determinant.",
-   "Secondary statement: the two internal evaluation methods agree to 5.5e-7 and that disagreement is saturated between lmx = 12 and lmx = 16 to within 1e-9, which is what a converged harmonic sum means operationally.",
-   "The two-method agreement is explicitly secondary because both determinant_sum_n and determinant_ronnmark are returned by the same call: their ratio is invariant under a common rescaling or negation, so it is equivalent-level evidence for those mutations and only constrains the harmonic truncation.",
-   "Test matrix: one species with q = m = n00 = T00 = B0 = 1, kz = 1, kx_frac = 1; Ts_unit = 1e-4 for the cold anchor and Ts_unit = 1.0 for the cross-method and lmx statements.",
-   "Failure matrix: one assertion per channel -- the root location against the cross-asset anchor, the determinant orientation across the bracket, harmonic saturation in lmx, the declared graph shapes, and the rejection of a zero kx_frac. Precision budget, written before measurement: 1e-9 on the root, 1e-6 on the cross-method difference, 1e-9 on lmx saturation."
-  ],
-  "known_limitations": [
-   "kx_frac = 0 raises FloatingPointError because the harmonic sum divides by the transverse wavenumber. That is a parameter error, not an unreachable cold limit, and it is asserted as such so the next caller does not read the failure as a physics boundary.",
-   "The absolute scale of the returned determinants is not anchored: this contract asserts where the zero sits, not the magnitude of the determinant there. The `scale` mutation is therefore covered rather than killed, and the magnitude has no owner -- no contract in this repository declares the scale of these determinants.",
-   "The semantics of the returned D_* and K_* arrays were not confirmed from the code, so no relation involving them is asserted; the guessed decomposition determinant = D * K was measured at relative residual 1.0 and is therefore not the right relation.",
-   "The `swap` mutation is covered rather than killed: it can only act on the multi-element `branches` and `graph_order` arrays, and this contract asserts their declared shapes, not their element order. That order has no owner -- no contract in this repository declares it."
-  ],
-  "evidence_ceiling": "Bounded to one normalized single-species cold case at kz = 1 and kx_frac = 1, with the mode location anchored against the plasma frequency recomputed by an independent cross-asset helper and the harmonic truncation constrained by the two internal methods. Established by the 1.1e-11 agreement of the cold-limit zero with omega_p and by the 5.5e-7 cross-method agreement that saturates in lmx. Excluded scope: the hot-plasma spectrum, mode identity beyond the Langmuir branch, the magnitude of the determinant, and any statement about the deck constants behind the equilibrium.",
-  "tests": [
-   "tests/kinetic/test_kinetic_relation_cold_anchor.py"
-  ]
- },
- "composition": {
-  "nodes": [
-   {
-    "id": "species_equilibrium_scales",
-    "kind": "function",
-    "description": "Species equilibrium scales",
-    "inputs": [
-     "ms",
-     "qs",
-     "ns_unit",
-     "Ts_unit",
-     "B0",
-     "n00",
-     "T00"
-    ],
-    "outputs": [
-     "ns0",
-     "Ts0",
-     "vts",
-     "wcs",
-     "wps2",
-     "rhocs",
-     "kn",
-     "wn",
-     "scales"
-    ],
-    "asset_id": "scirel.kinetic.species-equilibrium-scales"
-   },
-   {
-    "id": "probe_frequency",
-    "kind": "controlled_glue",
-    "description": "Probe angular-frequency calibration",
-    "inputs": [
-     "omega_frac",
-     "wn"
-    ],
-    "outputs": [
-     "omega"
-    ]
-   },
-   {
-    "id": "probe_wavenumber",
-    "kind": "controlled_glue",
-    "description": "Probe perpendicular-wavenumber calibration",
-    "inputs": [
-     "kx_frac",
-     "kn"
-    ],
-    "outputs": [
-     "kx"
-    ]
-   },
-   {
-    "id": "omega_to_frequency",
-    "kind": "controlled_glue",
-    "description": "Angular-frequency to frequency conversion",
-    "inputs": [
-     "omega"
-    ],
-    "outputs": [
-     "f"
-    ]
-   },
-   {
-    "id": "frequency_to_kernel_omega",
-    "kind": "controlled_glue",
-    "description": "Preserve kernel_omega=2*pi*float(f), including numerical conversion failure.",
-    "inputs": [
-     "f"
-    ],
-    "outputs": [
-     "omega"
-    ]
-   },
-   {
-    "id": "dielectric_response_harmonic_weideman",
-    "kind": "function",
-    "description": "evaluate_dielectric_response explicitly selected method='harmonic_weideman'; original frequency rounding and complete scientific Result.",
-    "inputs": [
-     "B0",
-     "qs",
-     "ms",
-     "ns0",
-     "Ts0",
-     "omega",
-     "kz",
-     "kx",
-     "harmonics",
-     "method"
-    ],
-    "outputs": [
-     "K",
-     "D",
-     "determinant",
-     "omega",
-     "nx",
-     "nz",
-     "vts",
-     "wcs",
-     "wps2",
-     "a",
-     "b",
-     "diagnostics"
-    ],
-    "asset_id": "scirel.kinetic.dielectric-response"
-   },
-   {
-    "id": "dielectric_response_ronnmark",
-    "kind": "function",
-    "description": "evaluate_dielectric_response explicitly selected method='ronnmark'; original frequency rounding and complete scientific Result.",
-    "inputs": [
-     "B0",
-     "qs",
-     "ms",
-     "ns0",
-     "Ts0",
-     "omega",
-     "kz",
-     "kx",
-     "method"
-    ],
-    "outputs": [
-     "K",
-     "D",
-     "determinant",
-     "omega",
-     "nx",
-     "nz",
-     "vts",
-     "wcs",
-     "wps2",
-     "a",
-     "b",
-     "diagnostics"
-    ],
-    "asset_id": "scirel.kinetic.dielectric-response"
-   },
-   {
-    "id": "graph_order",
-    "kind": "controlled_glue",
-    "description": "Expose the fixed source-stage execution labels.",
-    "inputs": [],
-    "outputs": [
-     "graph_order"
-    ]
-   },
-   {
-    "id": "select_harmonic_weideman",
-    "kind": "controlled_glue",
-    "description": "Fixed public method selector: return method='harmonic_weideman'; never infer or switch on failure.",
-    "inputs": [],
-    "outputs": [
-     "method"
-    ]
-   },
-   {
-    "id": "select_ronnmark",
-    "kind": "controlled_glue",
-    "description": "Fixed public method selector: return method='ronnmark'; never infer or switch on failure.",
-    "inputs": [],
-    "outputs": [
-     "method"
-    ]
-   },
-   {
-    "id": "ronnmark_branches",
-    "kind": "controlled_glue",
-    "description": "Project diagnostics.branches from the ronnmark Result; no top-level branches port exists on the family callable.",
-    "inputs": [
-     "diagnostics"
-    ],
-    "outputs": [
-     "branches"
-    ]
-   }
-  ],
-  "edges": [
-   {
-    "from": {
-     "node": "species_equilibrium_scales",
-     "port": "wn"
-    },
-    "to": {
-     "node": "probe_frequency",
-     "port": "wn"
-    },
-    "description": "The probe angular frequency is scaled by the reference frequency wn derived by this graph; the probe and the equilibrium must be sourced from the same state",
-    "condition": "always",
-    "transform": "identity",
-    "kind": "data",
-    "required": true
-   },
-   {
-    "from": {
-     "node": "species_equilibrium_scales",
-     "port": "kn"
-    },
-    "to": {
-     "node": "probe_wavenumber",
-     "port": "kn"
-    },
-    "description": "The probe perpendicular wavenumber is scaled by the reference wavenumber kn derived by this graph; the probe and the equilibrium must be sourced from the same state",
-    "condition": "always",
-    "transform": "identity",
-    "kind": "data",
-    "required": true
-   },
-   {
-    "from": {
-     "node": "probe_frequency",
-     "port": "omega"
-    },
-    "to": {
-     "node": "omega_to_frequency",
-     "port": "omega"
-    },
-    "description": "The probe angular frequency enters the unit conversion; both paths share the same frequency",
-    "condition": "always",
-    "transform": "identity",
-    "kind": "data",
-    "required": true
-   },
-   {
-    "from": {
-     "node": "species_equilibrium_scales",
-     "port": "ns0"
-    },
-    "to": {
-     "node": "dielectric_response_harmonic_weideman",
-     "port": "ns0"
-    },
-    "description": "The absolute number density enters the plasma frequency; both paths must share the same density conversion",
-    "condition": "always",
-    "transform": "identity",
-    "kind": "data",
-    "required": true
-   },
-   {
-    "from": {
-     "node": "species_equilibrium_scales",
-     "port": "Ts0"
-    },
-    "to": {
-     "node": "dielectric_response_harmonic_weideman",
-     "port": "Ts0"
-    },
-    "description": "Kelvin temperature enters the thermal speed and Bessel argument and must be consistent with the density",
-    "condition": "always",
-    "transform": "identity",
-    "kind": "data",
-    "required": true
-   },
-   {
-    "from": {
-     "node": "species_equilibrium_scales",
-     "port": "ns0"
-    },
-    "to": {
-     "node": "dielectric_response_ronnmark",
-     "port": "ns0"
-    },
-    "description": "The absolute number density enters the plasma frequency; the Ronnmark path must use the same density conversion as the conventional path",
-    "condition": "always",
-    "transform": "identity",
-    "kind": "data",
-    "required": true
-   },
-   {
-    "from": {
-     "node": "species_equilibrium_scales",
-     "port": "Ts0"
-    },
-    "to": {
-     "node": "dielectric_response_ronnmark",
-     "port": "Ts0"
-    },
-    "description": "Kelvin temperature enters the thermal speed and the pole-resonance argument",
-    "condition": "always",
-    "transform": "identity",
-    "kind": "data",
-    "required": true
-   },
-   {
-    "from": {
-     "node": "frequency_to_kernel_omega",
-     "port": "omega"
-    },
-    "to": {
-     "node": "dielectric_response_harmonic_weideman",
-     "port": "omega"
-    },
-    "description": "Both explicitly selected methods receive the same 2*pi*float(f), preserving the original frequency rounding and numerical-failure boundary.",
-    "condition": "always",
-    "transform": "unit_conversion",
-    "kind": "data",
-    "required": true
-   },
-   {
-    "from": {
-     "node": "frequency_to_kernel_omega",
-     "port": "omega"
-    },
-    "to": {
-     "node": "dielectric_response_ronnmark",
-     "port": "omega"
-    },
-    "description": "Both explicitly selected methods receive the same 2*pi*float(f), preserving the original frequency rounding and numerical-failure boundary.",
-    "condition": "always",
-    "transform": "unit_conversion",
-    "kind": "data",
-    "required": true
-   },
-   {
-    "from": {
-     "node": "$input",
-     "port": "ms"
-    },
-    "to": {
-     "node": "species_equilibrium_scales",
-     "port": "ms"
-    },
-    "description": "Caller supplies ms to this stage.",
-    "condition": "always",
-    "transform": "identity",
-    "kind": "data",
-    "required": true
-   },
-   {
-    "from": {
-     "node": "$input",
-     "port": "qs"
-    },
-    "to": {
-     "node": "species_equilibrium_scales",
-     "port": "qs"
-    },
-    "description": "Caller supplies qs to this stage.",
-    "condition": "always",
-    "transform": "identity",
-    "kind": "data",
-    "required": true
-   },
-   {
-    "from": {
-     "node": "$input",
-     "port": "ns_unit"
-    },
-    "to": {
-     "node": "species_equilibrium_scales",
-     "port": "ns_unit"
-    },
-    "description": "Caller supplies ns_unit to this stage.",
-    "condition": "always",
-    "transform": "identity",
-    "kind": "data",
-    "required": true
-   },
-   {
-    "from": {
-     "node": "$input",
-     "port": "Ts_unit"
-    },
-    "to": {
-     "node": "species_equilibrium_scales",
-     "port": "Ts_unit"
-    },
-    "description": "Caller supplies Ts_unit to this stage.",
-    "condition": "always",
-    "transform": "identity",
-    "kind": "data",
-    "required": true
-   },
-   {
-    "from": {
-     "node": "$input",
-     "port": "B0"
-    },
-    "to": {
-     "node": "species_equilibrium_scales",
-     "port": "B0"
-    },
-    "description": "Caller supplies B0 to this stage.",
-    "condition": "always",
-    "transform": "identity",
-    "kind": "data",
-    "required": true
-   },
-   {
-    "from": {
-     "node": "$input",
-     "port": "n00"
-    },
-    "to": {
-     "node": "species_equilibrium_scales",
-     "port": "n00"
-    },
-    "description": "Caller supplies n00 to this stage.",
-    "condition": "always",
-    "transform": "identity",
-    "kind": "data",
-    "required": true
-   },
-   {
-    "from": {
-     "node": "$input",
-     "port": "T00"
-    },
-    "to": {
-     "node": "species_equilibrium_scales",
-     "port": "T00"
-    },
-    "description": "Caller supplies T00 to this stage.",
-    "condition": "always",
-    "transform": "identity",
-    "kind": "data",
-    "required": true
-   },
-   {
-    "from": {
-     "node": "$input",
-     "port": "omega_frac"
-    },
-    "to": {
-     "node": "probe_frequency",
-     "port": "omega_frac"
-    },
-    "description": "Caller supplies omega_frac to this stage.",
-    "condition": "always",
-    "transform": "identity",
-    "kind": "data",
-    "required": true
-   },
-   {
-    "from": {
-     "node": "$input",
-     "port": "kx_frac"
-    },
-    "to": {
-     "node": "probe_wavenumber",
-     "port": "kx_frac"
-    },
-    "description": "Caller supplies kx_frac to this stage.",
-    "condition": "always",
-    "transform": "identity",
-    "kind": "data",
-    "required": true
-   },
-   {
-    "from": {
-     "node": "$input",
-     "port": "B0"
-    },
-    "to": {
-     "node": "dielectric_response_harmonic_weideman",
-     "port": "B0"
-    },
-    "description": "Caller supplies B0 to this stage.",
-    "condition": "always",
-    "transform": "identity",
-    "kind": "data",
-    "required": true
-   },
-   {
-    "from": {
-     "node": "$input",
-     "port": "qs"
-    },
-    "to": {
-     "node": "dielectric_response_harmonic_weideman",
-     "port": "qs"
-    },
-    "description": "Caller supplies qs to this stage.",
-    "condition": "always",
-    "transform": "identity",
-    "kind": "data",
-    "required": true
-   },
-   {
-    "from": {
-     "node": "$input",
-     "port": "ms"
-    },
-    "to": {
-     "node": "dielectric_response_harmonic_weideman",
-     "port": "ms"
-    },
-    "description": "Caller supplies ms to this stage.",
-    "condition": "always",
-    "transform": "identity",
-    "kind": "data",
-    "required": true
-   },
-   {
-    "from": {
-     "node": "$input",
-     "port": "kz"
-    },
-    "to": {
-     "node": "dielectric_response_harmonic_weideman",
-     "port": "kz"
-    },
-    "description": "Caller supplies kz to this stage.",
-    "condition": "always",
-    "transform": "identity",
-    "kind": "data",
-    "required": true
-   },
-   {
-    "from": {
-     "node": "probe_wavenumber",
-     "port": "kx"
-    },
-    "to": {
-     "node": "dielectric_response_harmonic_weideman",
-     "port": "kx"
-    },
-    "description": "Use the graph-derived kx.",
-    "condition": "always",
-    "transform": "identity",
-    "kind": "data",
-    "required": true
-   },
-   {
-    "from": {
-     "node": "$input",
-     "port": "lmx"
-    },
-    "to": {
-     "node": "dielectric_response_harmonic_weideman",
-     "port": "harmonics"
-    },
-    "description": "Caller supplies harmonics to this stage.",
-    "condition": "always",
-    "transform": "identity",
-    "kind": "data",
-    "required": true
-   },
-   {
-    "from": {
-     "node": "$input",
-     "port": "B0"
-    },
-    "to": {
-     "node": "dielectric_response_ronnmark",
-     "port": "B0"
-    },
-    "description": "Caller supplies B0 to this stage.",
-    "condition": "always",
-    "transform": "identity",
-    "kind": "data",
-    "required": true
-   },
-   {
-    "from": {
-     "node": "$input",
-     "port": "qs"
-    },
-    "to": {
-     "node": "dielectric_response_ronnmark",
-     "port": "qs"
-    },
-    "description": "Caller supplies qs to this stage.",
-    "condition": "always",
-    "transform": "identity",
-    "kind": "data",
-    "required": true
-   },
-   {
-    "from": {
-     "node": "$input",
-     "port": "ms"
-    },
-    "to": {
-     "node": "dielectric_response_ronnmark",
-     "port": "ms"
-    },
-    "description": "Caller supplies ms to this stage.",
-    "condition": "always",
-    "transform": "identity",
-    "kind": "data",
-    "required": true
-   },
-   {
-    "from": {
-     "node": "$input",
-     "port": "kz"
-    },
-    "to": {
-     "node": "dielectric_response_ronnmark",
-     "port": "kz"
-    },
-    "description": "Caller supplies kz to this stage.",
-    "condition": "always",
-    "transform": "identity",
-    "kind": "data",
-    "required": true
-   },
-   {
-    "from": {
-     "node": "probe_wavenumber",
-     "port": "kx"
-    },
-    "to": {
-     "node": "dielectric_response_ronnmark",
-     "port": "kx"
-    },
-    "description": "Use the graph-derived kx.",
-    "condition": "always",
-    "transform": "identity",
-    "kind": "data",
-    "required": true
-   },
-   {
-    "from": {
-     "node": "species_equilibrium_scales",
-     "port": "scales"
-    },
-    "to": {
-     "node": "$output",
-     "port": "scales"
-    },
-    "description": "Return the declared scales terminal.",
-    "condition": "always",
-    "transform": "identity",
-    "kind": "data",
-    "required": true
-   },
-   {
-    "from": {
-     "node": "dielectric_response_harmonic_weideman",
-     "port": "determinant"
-    },
-    "to": {
-     "node": "$output",
-     "port": "determinant_sum_n"
-    },
-    "description": "Return the declared determinant_sum_n terminal.",
-    "condition": "always",
-    "transform": "identity",
-    "kind": "data",
-    "required": true
-   },
-   {
-    "from": {
-     "node": "dielectric_response_ronnmark",
-     "port": "determinant"
-    },
-    "to": {
-     "node": "$output",
-     "port": "determinant_ronnmark"
-    },
-    "description": "Return the declared determinant_ronnmark terminal.",
-    "condition": "always",
-    "transform": "identity",
-    "kind": "data",
-    "required": true
-   },
-   {
-    "from": {
-     "node": "dielectric_response_harmonic_weideman",
-     "port": "K"
-    },
-    "to": {
-     "node": "$output",
-     "port": "K_sum_n"
-    },
-    "description": "Return the declared K_sum_n terminal.",
-    "condition": "always",
-    "transform": "identity",
-    "kind": "data",
-    "required": true
-   },
-   {
-    "from": {
-     "node": "dielectric_response_harmonic_weideman",
-     "port": "D"
-    },
-    "to": {
-     "node": "$output",
-     "port": "D_sum_n"
-    },
-    "description": "Return the declared D_sum_n terminal.",
-    "condition": "always",
-    "transform": "identity",
-    "kind": "data",
-    "required": true
-   },
-   {
-    "from": {
-     "node": "dielectric_response_ronnmark",
-     "port": "K"
-    },
-    "to": {
-     "node": "$output",
-     "port": "K_ronnmark"
-    },
-    "description": "Return the declared K_ronnmark terminal.",
-    "condition": "always",
-    "transform": "identity",
-    "kind": "data",
-    "required": true
-   },
-   {
-    "from": {
-     "node": "dielectric_response_ronnmark",
-     "port": "D"
-    },
-    "to": {
-     "node": "$output",
-     "port": "D_ronnmark"
-    },
-    "description": "Return the declared D_ronnmark terminal.",
-    "condition": "always",
-    "transform": "identity",
-    "kind": "data",
-    "required": true
-   },
-   {
-    "from": {
-     "node": "ronnmark_branches",
-     "port": "branches"
-    },
-    "to": {
-     "node": "$output",
-     "port": "branches"
-    },
-    "description": "Return the branches leaf explicitly projected from ronnmark diagnostics.",
-    "condition": "always",
-    "transform": "identity",
-    "kind": "data",
-    "required": true
-   },
-   {
-    "from": {
-     "node": "probe_frequency",
-     "port": "omega"
-    },
-    "to": {
-     "node": "$output",
-     "port": "omega"
-    },
-    "description": "Return the declared omega terminal.",
-    "condition": "always",
-    "transform": "identity",
-    "kind": "data",
-    "required": true
-   },
-   {
-    "from": {
-     "node": "probe_wavenumber",
-     "port": "kx"
-    },
-    "to": {
-     "node": "$output",
-     "port": "kx"
-    },
-    "description": "Return the declared kx terminal.",
-    "condition": "always",
-    "transform": "identity",
-    "kind": "data",
-    "required": true
-   },
-   {
-    "from": {
-     "node": "omega_to_frequency",
-     "port": "f"
-    },
-    "to": {
-     "node": "$output",
-     "port": "f"
-    },
-    "description": "Return the declared f terminal.",
-    "condition": "always",
-    "transform": "identity",
-    "kind": "data",
-    "required": true
-   },
-   {
-    "from": {
-     "node": "graph_order",
-     "port": "graph_order"
-    },
-    "to": {
-     "node": "$output",
-     "port": "graph_order"
-    },
-    "description": "Return the declared graph_order terminal.",
-    "condition": "always",
-    "transform": "identity",
-    "kind": "data",
-    "required": true
-   },
-   {
-    "from": {
-     "node": "omega_to_frequency",
-     "port": "f"
-    },
-    "to": {
-     "node": "frequency_to_kernel_omega",
-     "port": "f"
-    },
-    "description": "Retain the original derived Hz float before converting to the family angular input.",
-    "condition": "always",
-    "transform": "identity",
-    "kind": "data",
-    "required": true
-   },
-   {
-    "from": {
-     "node": "select_harmonic_weideman",
-     "port": "method"
-    },
-    "to": {
-     "node": "dielectric_response_harmonic_weideman",
-     "port": "method"
-    },
-    "description": "Explicit fixed method='harmonic_weideman' for this family call.",
-    "condition": "always",
-    "transform": "identity",
-    "kind": "data",
-    "required": true
-   },
-   {
-    "from": {
-     "node": "select_ronnmark",
-     "port": "method"
-    },
-    "to": {
-     "node": "dielectric_response_ronnmark",
-     "port": "method"
-    },
-    "description": "Explicit fixed method='ronnmark' for this family call.",
-    "condition": "always",
-    "transform": "identity",
-    "kind": "data",
-    "required": true
-   },
-   {
-    "from": {
-     "node": "dielectric_response_ronnmark",
-     "port": "diagnostics"
-    },
-    "to": {
-     "node": "ronnmark_branches",
-     "port": "diagnostics"
-    },
-    "description": "Read the actual nested diagnostics Result before projecting its branches leaf.",
-    "condition": "always",
-    "transform": "identity",
-    "kind": "data",
-    "required": true
-   }
-  ],
-  "execution": {
-   "mode": "dag",
-   "ordering": "source stage order; each frequency independently evaluated",
-   "branches": [
-    "Each numerical method retains its own declared branches and failure behavior."
-   ],
-   "state_ownership": "One graph-local equilibrium and derived scan/probe state; no persistent state.",
-   "failure_propagation": "First dependency failure raises; no partial graph result is returned.",
-   "feedback": []
-  }
- }
 }
