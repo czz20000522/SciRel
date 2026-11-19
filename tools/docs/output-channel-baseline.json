@@ -15,16 +15,16 @@
       "measured": {
         "return_kind": "mapping-like",
         "runtime_type": "EQDSK",
-        "reading": "example returns a mapping: the caller reads keys from the returned mapping, so the missing channel statement is a REAL ambiguity, not a wording gap (T-2026-1203 scope)"
+        "reading": "EQDSK() returned a dict subclass; the example assigns a key after construction."
       }
     },
     {
       "asset_id": "scirel.io.write-eqdsk",
       "reason": "single declared output, channel not stated: the contract does not say whether the caller receives the value positionally or as a field of a Result mapping. Baselined from the C4 closeout measurement (examples/c4-usage-acceptance/closeout/GAPS.md B1/B3); stating the channel deletes this entry in the same commit.",
       "measured": {
-        "return_kind": "mapping-like",
-        "runtime_type": "dict",
-        "reading": "example returns a mapping: the caller reads keys from the returned mapping, so the missing channel statement is a REAL ambiguity, not a wording gap (T-2026-1203 scope)"
+        "return_kind": "none",
+        "runtime_type": "NoneType",
+        "reading": "write_eqdsk returned None. The mapping is input; the example reads the serialized text from a file."
       }
     },
     {
@@ -33,7 +33,7 @@
       "measured": {
         "return_kind": "mapping-like",
         "runtime_type": "dict",
-        "reading": "example returns a mapping: the caller reads keys from the returned mapping, so the missing channel statement is a REAL ambiguity, not a wording gap (T-2026-1203 scope)"
+        "reading": "jpole_evaluate returned a dict; the example reads its ZJ key."
       }
     },
     {
@@ -42,16 +42,16 @@
       "measured": {
         "return_kind": "mapping-like",
         "runtime_type": "dict",
-        "reading": "example returns a mapping: the caller reads keys from the returned mapping, so the missing channel statement is a REAL ambiguity, not a wording gap (T-2026-1203 scope)"
+        "reading": "The example reads spectra from the returned dict. The case dict passed to the solver is not the observed object."
       }
     },
     {
       "asset_id": "scirel.kinetic.vp-rk4-step",
       "reason": "single declared output, channel not stated: the contract does not say whether the caller receives the value positionally or as a field of a Result mapping. Baselined from the C4 closeout measurement (examples/c4-usage-acceptance/closeout/GAPS.md B1/B3); stating the channel deletes this entry in the same commit.",
       "measured": {
-        "return_kind": "mapping-like",
-        "runtime_type": "dict",
-        "reading": "example returns a mapping: the caller reads keys from the returned mapping, so the missing channel statement is a REAL ambiguity, not a wording gap (T-2026-1203 scope)"
+        "return_kind": "positional",
+        "runtime_type": "tuple",
+        "reading": "vp_rk4_step returned the tuple unpacked into f and E; the dict from vp_init supplies its arguments."
       }
     },
     {
@@ -60,30 +60,23 @@
       "measured": {
         "return_kind": "mapping-like",
         "runtime_type": "dict",
-        "reading": "example returns a mapping: the caller reads keys from the returned mapping, so the missing channel statement is a REAL ambiguity, not a wording gap (T-2026-1203 scope)"
+        "reading": "The successful call returned a dict with elastic_frequency_m_inv. The example also checks a rejected call, which produced no return."
       }
     },
     {
       "asset_id": "scirel.neutrals.elastic-regeneration-aggregation",
       "reason": "single declared output, channel not stated: the contract does not say whether the caller receives the value positionally or as a field of a Result mapping. Baselined from the C4 closeout measurement (examples/c4-usage-acceptance/closeout/GAPS.md B1/B3); stating the channel deletes this entry in the same commit.",
       "measured": {
-        "return_kind": "mapping-like",
-        "runtime_type": "dict",
-        "reading": "example returns a mapping: the caller reads keys from the returned mapping, so the missing channel statement is a REAL ambiguity, not a wording gap (T-2026-1203 scope)"
+        "return_kind": "positional",
+        "runtime_type": "ndarray",
+        "reading": "The successful call returned an ndarray. The channel dicts are inputs, not the result."
       }
     }
   ],
   "measured_return_kinds": {
-    "method": "ran each baselined contract's own example in the packaged interpreter and classified the object its assignments produce; the probe script is described below so it can be rerun",
-    "probe": "assign-and-inspect: exec the example, take the first assigned name, classify by module/type",
-    "counts": {
-      "positional": 47,
-      "scirel-object": 24,
-      "no-candidate": 7,
-      "other": 7,
-      "mapping-like": 7
-    },
-    "summary": "47 + 24 + 3 + 3 + 1 = 78 have a determinate non-mapping return, so a channel sentence can be written from this measurement. 7 return a mapping (real ambiguity, belongs with T-2026-1203), and 7 could not be classified and need a manual read. No contract text was changed in this measurement; the baseline only gained a per-entry classification.",
-    "why_no_mass_edit": "A uniform 'returned positionally' sentence would be false for the 7 mapping-returning assets and unverified for the 7 undetermined ones. Writing it anyway would trade a visible debt for an invisible false statement."
+    "scope": "All seven remaining entries, previously labelled mapping-like, measured using the catalog examples and implementations at 9b0de014.",
+    "method": "python3 scripts/dev.py run python -B scripts/probe_output_channel_returns.py --json .runtime/returns.json (run from the checkout being measured). Classify successful direct calls to the declared callable before the example consumes their returns.",
+    "summary": "Of the seven, four returned mappings (three dicts and one EQDSK); the other three returned None, a tuple and an ndarray. These observations do not establish a public key set or resolve the declaration debt.",
+    "supersedes": "The original 92-entry assign-and-inspect tally classified the first assigned name, which can be an input or setup value. Its counts are not measurements of target returns; the original 92 examples have not all been remeasured here."
   }
 }
