@@ -159,6 +159,41 @@ def audit_helpers() -> None:
     )
 
 
+def eqdsk_replay() -> None:
+    from unittest.mock import patch
+
+    from checks.batch2 import _compare_eqdsk, io_eqdsk_roundtrip
+
+    task = next(t for t in TASKLIST["tasks"] if t["id"] == "io-eqdsk-roundtrip")
+    ctx = H.Ctx(task)
+    nominal = io_eqdsk_roundtrip(ctx, task)
+    check("roundtrip exercises both reads", nominal["independent_check"]["verdict"] == "pass", {})
+    tolerance = {"rel": 1e-9, "abs": 0}
+    damaged = _compare_eqdsk({"a": [0.0], "b": 2, "c": [[1]]}, {"a": [1e-16], "c": [1]}, tolerance)
+    check(
+        "zero, lost key and shape change rejected",
+        damaged["missing"] == ["b"] and damaged["mismatches"] == ["a", "c"],
+        damaged,
+    )
+
+    def partial_writer(data, filename):
+        Path(filename).write_text("residual output")
+        raise OSError("injected failure after write")
+
+    module, symbol, _ = H.resolve("scirel.io.write-eqdsk")
+    ctx = H.Ctx(task)
+    with patch.object(module, symbol, partial_writer):
+        failed = io_eqdsk_roundtrip(ctx, task)
+    check(
+        "residual after exception is not read back",
+        not failed["package_sufficient"]
+        and failed["independent_check"]["verdict"] == "not-run"
+        and sum(c["asset"] == "scirel.io.read-eqdsk" for c in ctx.calls) == 1
+        and any(c["status"] == "raised" for c in ctx.calls),
+        {},
+    )
+
+
 def registry() -> None:
     from checks import CHECKS  # noqa: E402  (import here so harness checks run first)
 
@@ -195,7 +230,9 @@ def ruff() -> int:
 
 
 def main() -> int:
+    H.installed_wheel_origin()
     criteria_helpers()
+    eqdsk_replay()
     audit_helpers()
     registry()
     review_module_runs()

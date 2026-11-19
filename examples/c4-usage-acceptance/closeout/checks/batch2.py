@@ -2,6 +2,9 @@
 
 from __future__ import annotations
 
+from contextlib import chdir
+from copy import deepcopy
+from hashlib import sha256
 import tempfile
 from pathlib import Path
 
@@ -510,71 +513,117 @@ def fvm_convection_diffusion(ctx: H.Ctx, task: dict) -> dict:
     }
 
 
+def _compare_eqdsk(before, after, tolerance):
+    missing = sorted(before.keys() - after.keys())
+    mismatches, changed = [], []
+    worst = 0.0
+    for key in sorted(before.keys() & after.keys()):
+        a, b = np.asarray(before[key]), np.asarray(after[key])
+        if not np.array_equal(a, b):
+            changed.append(key)
+        if a.shape != b.shape or a.dtype.kind != b.dtype.kind:
+            mismatches.append(key)
+        elif a.dtype.kind in "fiu":
+            if not (np.isfinite(a).all() and np.isfinite(b).all()):
+                mismatches.append(key)
+                continue
+            if not np.allclose(b, a, rtol=tolerance["rel"], atol=tolerance["abs"]):
+                mismatches.append(key)
+            nonzero = a != 0
+            if np.any(nonzero):
+                worst = max(worst, float(np.max(np.abs((b[nonzero] - a[nonzero]) / a[nonzero]))))
+        elif not np.array_equal(a, b):
+            mismatches.append(key)
+    return {
+        "fixture_keys": sorted(before),
+        "missing": missing,
+        "added": sorted(after.keys() - before.keys()),
+        "changed": changed,
+        "mismatches": mismatches,
+        "max_relative_deviation_nonzero_reference": worst,
+    }
+
+
 def io_eqdsk_roundtrip(ctx: H.Ctx, task: dict) -> dict:
-    read_eq = "scirel.io.read-eqdsk"
-    write_eq = "scirel.io.write-eqdsk"
-    read_geq = "scirel.io.read-geqdsk"
-    cls = "scirel.io.eqdsk-class"
-    c0 = ctx.call(cls, ctx.named(cls), label="declared EQDSK state")
-    criteria = [C.fields(ctx, c0, cls, "fields")]
-    detail, ok = {}, False
-    with tempfile.TemporaryDirectory() as tmp:
-        tmpdir = Path(tmp)
-        named = dict(ctx.named(write_eq))
-        path = tmpdir / "roundtrip.eqdsk"
-        named["path"] = path
-        c1 = ctx.call(write_eq, named, label="declared writer to a temporary file")
-        criteria.append(C.fields(ctx, c1, write_eq, "fields_write"))
-        if c1["status"] == "returned" and path.is_file():
-            c2 = ctx.call(read_eq, {"path": path}, label="reader on the written file")
-            criteria.append(C.fields(ctx, c2, read_eq, "fields_read"))
-            if "_value" in c2:
-                got = H.mapping(_val(c2), read_eq)
-                mapping = got.get("mapping", got)
-                written = {k: v for k, v in ctx.named(write_eq).items() if k != "path"}
-                compared, worst = [], 0.0
-                for key, val in written.items():
-                    if key not in mapping:
-                        continue
-                    try:
-                        a = np.asarray(val, dtype=float)
-                        b = np.asarray(mapping[key], dtype=float)
-                        if a.shape != b.shape:
-                            continue
-                        dev = float(np.max(np.abs(a - b))) / max(float(np.max(np.abs(a))), 1e-300)
-                        compared.append(key)
-                        worst = max(worst, dev)
-                    except (TypeError, ValueError):
-                        continue
-                ok = bool(compared) and worst <= 1e-9
-                detail = {
-                    "compared_keys": compared,
-                    "missing_after_roundtrip": sorted(set(written) - set(mapping)),
-                    "worst_relative_deviation": worst,
-                    "bytes_written": path.stat().st_size,
-                }
-        c3 = ctx.call(read_geq, ctx.named(read_geq), label="declared geqdsk reader")
-        criteria.append(C.fields(ctx, c3, read_geq, "fields_geqdsk"))
-    criteria.append(C.crit("roundtrip", "invariant", "pass" if ok else "fail", detail))
-    criteria.append(
-        C.crit(
-            "budget",
-            "tolerance",
-            "pass" if ok else "fail",
-            {**detail, "declared_tolerance": {"rel": 1e-9, "abs": 0.0}},
-        )
-    )
+    read_eq, write_eq = "scirel.io.read-eqdsk", "scirel.io.write-eqdsk"
+    read_geq, cls = "scirel.io.read-geqdsk", "scirel.io.eqdsk-class"
+    tolerance = next(c["tolerance"] for c in task["criteria"] if c["id"] == "budget")
+    criteria, detail = [], {}
+
+    def read_example(asset, filename):
+        binding = ctx.discover(asset)
+        if binding["example_error"]:
+            raise ValueError(f"{asset} example failed: {binding['example_error']}")
+        (payload,) = binding["input_files"]
+        Path(filename).write_bytes(payload)
+        detail[filename] = {"sha256": sha256(payload).hexdigest(), "bytes": len(payload)}
+        return ctx.call(asset, {**ctx.named(asset), "filename": filename}, label="contract input")
+
+    status = "not-run"
+    class_read = {"status": "not-run", "reason": "no new file to load"}
+    with tempfile.TemporaryDirectory() as tmp, chdir(tmp):
+        first = read_example(read_eq, "input.eqdsk")
+        criteria.append(C.fields(ctx, first, read_eq, "fields_first_read"))
+        output = Path("roundtrip.eqdsk")
+        reason = "first read did not return a mapping"
+        if isinstance(_val(first), dict):
+            before = deepcopy(_val(first))
+            writer = ctx.call(
+                write_eq, {"data": _val(first), "filename": output.name}, label="write first read"
+            )
+            criteria.append(C.fields(ctx, writer, write_eq, "fields_write"))
+            reason = "writer raised or did not create a nonempty file"
+            if writer["status"] == "returned" and output.is_file() and output.stat().st_size:
+                payload = output.read_bytes()
+                detail[output.name] = {"sha256": sha256(payload).hexdigest(), "bytes": len(payload)}
+                second = ctx.call(read_eq, {"filename": output.name}, label="re-read written file")
+                criteria.append(C.fields(ctx, second, read_eq, "fields_read"))
+                reason = "re-read did not return a mapping"
+                if isinstance(_val(second), dict):
+                    comparison = _compare_eqdsk(before, _val(second), tolerance)
+                    detail.update(comparison)
+                    required = {"R", "Z", "psi", "title", "header_scalars"}
+                    detail["missing_fixture_quantities"] = sorted(required - before.keys())
+                    ok = not detail["missing_fixture_quantities"] and not any(
+                        comparison[k] for k in ("missing", "added", "mismatches")
+                    )
+                    status = "pass" if ok else "fail"
+                loaded = ctx.call(
+                    cls, {"fname": output.name}, label="read written title and flux grid"
+                )
+                try:
+                    title, psi = _val(loaded)["title"], _val(loaded)["psi"]
+                    class_read = {
+                        "status": "pass"
+                        if title == before["title"] and np.array_equal(psi, before["psi"])
+                        else "fail",
+                        "title": title,
+                        "psi": H.plain(psi),
+                    }
+                except (KeyError, TypeError) as exc:
+                    class_read = {"status": "fail", "reason": loaded.get("exception") or str(exc)}
+        detail["additional_class_observation"] = class_read
+        if status == "not-run":
+            detail["unobserved_reason"] = reason
+        geq = read_example(read_geq, "g.eqdsk")
+        criteria.append(C.fields(ctx, geq, read_geq, "fields_geqdsk"))
+        state = ctx.call(cls, ctx.named(cls), label="declared EQDSK state")
+        criteria.append(C.fields(ctx, state, cls, "fields"))
+
+    criteria.append(C.crit("roundtrip", "invariant", status, detail))
+    criteria.append(C.crit("budget", "tolerance", status, tolerance))
+    sufficient = all(c["status"] == "pass" for c in criteria)
     return {
         "criteria": criteria,
         "answer": {"value": detail, "unit": "file fields as declared"},
         "independent_check": {
-            "method": "the declared mapping is written, read back and compared key "
-            "by key within the declared fixed-width precision",
-            "observed": detail,
-            "verdict": "pass" if ok else "fail",
+            "method": "compare every first-read fixture value with the second read, shapes included",
+            "verdict": status,
         },
-        "package_sufficient": ok,
-        "sufficient_reason": "both writer and reader are published and a temporary directory is enough",
+        "package_sufficient": sufficient,
+        "sufficient_reason": "all criteria passed"
+        if sufficient
+        else "see individual criteria; file IO is not output-name agreement",
         "gaps": [],
     }
 
