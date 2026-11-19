@@ -10,24 +10,6 @@
   },
   "entries": [
     {
-      "asset_id": "scirel.electromagnetism.circular-filament-green",
-      "reason": "single declared output, channel not stated: this contract's digest is bound by the magnetostatics chapter execution record (tools/docs/magnetostatics/execution.json document_files), so adding the sentence would invalidate an evidence record that only a real chapter rerun may refresh. Rerunning examples needs a built wheel (release stage), which this batch deliberately skipped; the entry stays until that rerun.",
-      "measured": {
-        "return_kind": "no-candidate",
-        "runtime_type": null,
-        "reading": "probe could not identify the returned object from the example's assignments; needs a manual read before any sentence is written"
-      }
-    },
-    {
-      "asset_id": "scirel.field.rectangular-coil-filaments",
-      "reason": "single declared output, channel not stated: this contract's digest is bound by the magnetostatics chapter execution record (tools/docs/magnetostatics/execution.json document_files), so adding the sentence would invalidate an evidence record that only a real chapter rerun may refresh. Rerunning examples needs a built wheel (release stage), which this batch deliberately skipped; the entry stays until that rerun.",
-      "measured": {
-        "return_kind": "positional",
-        "runtime_type": "ndarray",
-        "reading": "example returns a plain value (array/scalar/tuple): the caller uses the return value itself"
-      }
-    },
-    {
       "asset_id": "scirel.io.eqdsk-class",
       "reason": "single declared output, channel not stated: the contract does not say whether the caller receives the value positionally or as a field of a Result mapping. Baselined from the C4 closeout measurement (examples/c4-usage-acceptance/closeout/GAPS.md B1/B3); stating the channel deletes this entry in the same commit.",
       "measured": {

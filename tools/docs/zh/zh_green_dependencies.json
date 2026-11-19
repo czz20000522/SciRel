@@ -191,7 +191,7 @@
    "outputs": [
     {
      "name": "response",
-     "description": "psi、BR、BZ 元组；列表输入时，每个源集合沿目标维度分别返回一个数组。",
+     "description": "函数直接返回 (psi, BR, BZ) 元组，不需要按键取值。每个分量都是 float64 数组：传入一张源表时按目标点索引，传入源表列表时先按源集合、再按目标点索引。",
      "constraints": "返回有限响应；否则抛出 FloatingPointError。",
      "dtype": "float64（双精度浮点数）"
     }
@@ -215,7 +215,7 @@
     "partial_results": "源求值失败时不返回响应元组。"
    },
    "example": {
-    "description": "计算一个加权电流丝在两个目标点的磁通与磁场响应。",
+    "description": "计算一个加权电流丝在两个目标点的磁通与磁场响应，解包 (psi, BR, BZ) 并检查每个数组的形状。",
     "expected": "psi、BR、BZ 数组形状均为 (2,)；第一目标的 psi 约为 1.11e-8（非零），所有响应有限。"
    },
    "verification": {

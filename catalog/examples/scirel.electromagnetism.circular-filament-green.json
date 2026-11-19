@@ -67,7 +67,7 @@
   "outputs": [
     {
       "name": "response",
-      "description": "Tuple psi, BR, BZ; list source input returns one target axis per set.",
+      "description": "The return value is the tuple (psi, BR, BZ), not a field of a mapping. Each component is a float64 array indexed by target for one source table, or by source set then target for a list of tables.",
       "units": "Wb/rad per ampere; T per ampere",
       "shape": "three arrays of (Nt,) or (Nset,Nt)",
       "dtype": "float64",
@@ -107,7 +107,7 @@
     "dependencies": []
   },
   "example": {
-    "description": "Evaluate one weighted filament at two targets and contract its axial response with an independent current vector.",
+    "description": "Evaluate one weighted filament at two targets, unpack (psi, BR, BZ), and check the shape of each array.",
     "code": "import numpy as np\nfrom scirel.electromagnetism import compute_greens\npsi, br, bz = compute_greens(np.array([[1.0, 0.0, 1.0]]), np.array([[0.2, 0.3], [0.4, -0.2]]))\nassert psi.shape == br.shape == bz.shape == (2,)",
     "expected": "The response arrays have shape (2,); the first target psi is about 1.113e-8 Wb/rad and the BZ values are finite; the example does not perform a BZ contraction."
   },

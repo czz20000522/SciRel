@@ -698,7 +698,7 @@
    "outputs": [
     {
      "name": "rz_pts",
-     "description": "有序的电流丝中心坐标 [R,Z]。",
+     "description": "函数直接返回电流丝中心坐标的 float64 数组，不需要按键取值。每行是一个中心，两列依次为 R 和 Z。",
      "constraints": "半径非负；未旋转时径向为外层、轴向为内层。",
      "dtype": "float64 双精度浮点数"
     }

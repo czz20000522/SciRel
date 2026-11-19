@@ -111,7 +111,7 @@
   "outputs": [
     {
       "name": "rz_pts",
-      "description": "Ordered filament center coordinates [R,Z].",
+      "description": "The return value is the float64 array of filament centers, not a field of a mapping. Each row gives one center in column order [R,Z].",
       "units": "m,m",
       "shape": "[nr*nz,2]",
       "dtype": "float64",
