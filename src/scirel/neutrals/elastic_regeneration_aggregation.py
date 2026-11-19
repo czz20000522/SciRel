@@ -66,6 +66,7 @@ def aggregate_elastic_regeneration_source(frequencies_m_inv, regenerated_distrib
     >>> freqs = {'a': np.array([1.0, 2.0]), 'b': np.array([0.5, 1.0])}
     >>> dists = {'a': np.ones((1, 1, 2)), 'b': np.ones((1, 1, 2))}
     >>> result = aggregate_elastic_regeneration_source(freqs, dists)
+    >>> assert isinstance(result, np.ndarray) and result.dtype == np.float64
     >>> np.testing.assert_array_equal(result, [[[1.5, 3.0]]])
     >>> try:
     ...     aggregate_elastic_regeneration_source(freqs, {'a': np.ones((1, 1, 2))})

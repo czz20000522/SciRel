@@ -556,7 +556,8 @@ def write_eqdsk(data: Mapping[str, Any], filename: str | Path) -> None:
     ...     mapping[key] = np.zeros(2)
     >>> with TemporaryDirectory() as directory:
     ...     path = Path(directory)/'example.eqdsk'
-    ...     write_eqdsk(mapping, path)
+    ...     result = write_eqdsk(mapping, path)
+    ...     assert result is None
     ...     assert path.read_text().splitlines()[0] == 'EXAMPLE'.ljust(48)+'   1   2   2   2'
     """
     d = _validated(data)  # validate before opening/truncating the destination

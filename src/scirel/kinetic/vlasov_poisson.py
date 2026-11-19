@@ -503,10 +503,9 @@ def vp_rk4_step(df, dE, vv, df0dv, k, dv, dt):
     Returns
     -------
     result : tuple
-        Tuple (new_df,new_dE), complex [N] vector and closed complex scalar; no input
-        mutation. Shape: As described in output mapping or tuple.. Constraints: Finite
-        updated distribution and field preserving discrete Poisson closure. Units:
-        [dimensionless].
+        The updated complex distribution vector [N] and its Poisson-closed complex
+        scalar field, returned in that order as (new_df, new_dE). Both are finite and
+        dimensionless. Inputs are not modified.
 
     Raises
     ------
@@ -545,10 +544,14 @@ def vp_rk4_step(df, dE, vv, df0dv, k, dv, dt):
 
     Examples
     --------
-    >>> from scirel.kinetic.vlasov_poisson import vp_init,vp_rk4_step
-    >>> s=vp_init(nv=32)
-    >>> f,E=vp_rk4_step(*(s[n] for n in ("df","dE","vv","df0dv","k","dv","dt")))
-    >>> assert f.shape == (33,)
+    >>> import numpy as np
+    >>> from scirel.kinetic import vp_init, vp_rk4_step
+    >>> s = vp_init(nv=32)
+    >>> step = vp_rk4_step(*(s[n] for n in ('df', 'dE', 'vv', 'df0dv', 'k', 'dv', 'dt')))
+    >>> assert isinstance(step, tuple)
+    >>> f, E = step
+    >>> assert f.shape == (33,) and np.iscomplexobj(f)
+    >>> assert np.isscalar(E) and np.iscomplexobj(E)
     """
     _positive_scalar(dt, "dt")
     distribution, velocity, derivative = _finite_vectors(df, vv, df0dv)

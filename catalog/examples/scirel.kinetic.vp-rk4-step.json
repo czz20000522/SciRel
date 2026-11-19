@@ -109,9 +109,9 @@
   "outputs": [
     {
       "name": "result",
-      "description": "Tuple (new_df,new_dE), complex [N] vector and closed complex scalar; no input mutation.",
+      "description": "The updated distribution and its Poisson-closed field are returned positionally as the tuple (new_df, new_dE). Unpack the tuple in that order; inputs are not modified.",
       "units": "dimensionless",
-      "shape": "As described in output mapping or tuple.",
+      "shape": "Pair: complex vector [N], complex scalar",
       "dtype": "tuple",
       "required": true,
       "constraints": "Finite updated distribution and field preserving discrete Poisson closure."
@@ -149,9 +149,9 @@
     "dependencies": []
   },
   "example": {
-    "code": "from scirel.kinetic.vlasov_poisson import vp_init,vp_rk4_step\ns=vp_init(nv=32)\nf,E=vp_rk4_step(*(s[n] for n in (\"df\",\"dE\",\"vv\",\"df0dv\",\"k\",\"dv\",\"dt\")))\nassert f.shape == (33,)",
+    "code": "import numpy as np\nfrom scirel.kinetic import vp_init, vp_rk4_step\ns = vp_init(nv=32)\nstep = vp_rk4_step(*(s[n] for n in ('df', 'dE', 'vv', 'df0dv', 'k', 'dv', 'dt')))\nassert isinstance(step, tuple)\nf, E = step\nassert f.shape == (33,) and np.iscomplexobj(f)\nassert np.isscalar(E) and np.iscomplexobj(E)",
     "description": "Advance one Poisson-closed RK4 step from a 32-interval initial state.",
-    "expected": "PASS: .venv/bin/python completed; the updated distribution has shape (33,)."
+    "expected": "The tuple unpacks into a complex distribution of shape (33,) followed by a complex scalar field."
   },
   "verification": {
     "scope": [

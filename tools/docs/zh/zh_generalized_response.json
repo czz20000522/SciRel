@@ -1966,10 +1966,10 @@
    "outputs": [
     {
      "name": "result",
-     "description": "返回元组 (new_df,new_dE)，分别为形状 [N] 的复向量和满足闭合的复标量；不修改输入。",
+     "description": "直接返回元组 (new_df, new_dE)，按位置依次解包得到更新后的分布和满足 Poisson 闭合的电场；不修改输入。",
      "constraints": "保持离散 Poisson 闭合的有限更新分布与场。",
      "dtype": "元组",
-     "shape": "形状见输出映射或元组的说明。",
+     "shape": "二元组：形状 [N] 的复向量、复标量",
      "units": "无量纲"
     }
    ],
@@ -1993,7 +1993,7 @@
    },
    "example": {
     "description": "从 32 个区间的初始状态推进一个 Poisson 闭合 RK4 步。",
-    "expected": "PASS：.venv/bin/python 执行完成，更新分布形状为 (33,)。"
+    "expected": "按顺序解包元组，得到形状为 (33,) 的复数分布数组和一个复数电场标量。"
    },
    "verification": {
     "scope": [

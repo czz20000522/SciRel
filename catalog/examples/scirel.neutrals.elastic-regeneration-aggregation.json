@@ -67,7 +67,7 @@
   "outputs": [
     {
       "name": "regeneration_source",
-      "description": "The aggregated regeneration source.",
+      "description": "The aggregated regeneration source is returned directly as one NumPy array, not a field of a mapping.",
       "units": "m^-4 (F/m)",
       "shape": "[nvr,nvx,nx]",
       "dtype": "float64 array",
@@ -107,9 +107,9 @@
     "dependencies": []
   },
   "example": {
-    "description": "Aggregate two named channels and confirm the key and field fail-closed contracts.",
-    "code": "import numpy as np\nfrom scirel.neutrals import aggregate_elastic_regeneration_source\nfreqs = {'a': np.array([1.0, 2.0]), 'b': np.array([0.5, 1.0])}\ndists = {'a': np.ones((1, 1, 2)), 'b': np.ones((1, 1, 2))}\nresult = aggregate_elastic_regeneration_source(freqs, dists)\nnp.testing.assert_array_equal(result, [[[1.5, 3.0]]])\ntry:\n    aggregate_elastic_regeneration_source(freqs, {'a': np.ones((1, 1, 2))})\nexcept ValueError as error:\n    assert 'channel keys must match' in str(error)\nelse:\n    raise AssertionError('mismatched keys must be rejected')\n",
-    "expected": "Observed PASS: The channel-weighted sum; mismatched keys are rejected."
+    "description": "Aggregate two named channels and check what happens when their keys do not match.",
+    "code": "import numpy as np\nfrom scirel.neutrals import aggregate_elastic_regeneration_source\nfreqs = {'a': np.array([1.0, 2.0]), 'b': np.array([0.5, 1.0])}\ndists = {'a': np.ones((1, 1, 2)), 'b': np.ones((1, 1, 2))}\nresult = aggregate_elastic_regeneration_source(freqs, dists)\nassert isinstance(result, np.ndarray) and result.dtype == np.float64\nnp.testing.assert_array_equal(result, [[[1.5, 3.0]]])\ntry:\n    aggregate_elastic_regeneration_source(freqs, {'a': np.ones((1, 1, 2))})\nexcept ValueError as error:\n    assert 'channel keys must match' in str(error)\nelse:\n    raise AssertionError('mismatched keys must be rejected')\n",
+    "expected": "The returned float64 array contains [[[1.5, 3.0]]]; mismatched keys raise ValueError."
   },
   "verification": {
     "scope": [

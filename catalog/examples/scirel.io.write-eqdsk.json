@@ -65,7 +65,7 @@
   "outputs": [
     {
       "name": "file",
-      "description": "Serialized EQDSK file",
+      "description": "Serialized EQDSK text is written to the output file at filename; the function returns None.",
       "units": "n/a",
       "shape": "text file",
       "dtype": "UTF-8 text",
@@ -112,8 +112,8 @@
   },
   "example": {
     "description": "Serialize a minimal caller-supplied extended EQDSK mapping and inspect its fixed-width header.",
-    "code": "from pathlib import Path\nfrom tempfile import TemporaryDirectory\nimport numpy as np\nfrom scirel.io.eqdsk import write_eqdsk\nmapping = dict(title='EXAMPLE', cursign=1, nnr=2, nnz=2, nnv=2, rbox=1., zbox=2., psi_lim=1., Ip=0., psi=np.zeros((2,2)), nlim_pairs=0, nves_pairs=0, lim_pairs=np.empty((0,2)), ves_pairs=np.empty((0,2)))\nfor key in ('tor_flux','p_flux','rbphi_flux','pprime_flux','q_flux'):\n    mapping[key] = np.zeros(2)\nwith TemporaryDirectory() as directory:\n    path = Path(directory)/'example.eqdsk'\n    write_eqdsk(mapping, path)\n    assert path.read_text().splitlines()[0] == 'EXAMPLE'.ljust(48)+'   1   2   2   2' ",
-    "expected": "The first line contains the title and the four declared header integers; the remaining fixed-width arrays are written."
+    "code": "from pathlib import Path\nfrom tempfile import TemporaryDirectory\nimport numpy as np\nfrom scirel.io.eqdsk import write_eqdsk\nmapping = dict(title='EXAMPLE', cursign=1, nnr=2, nnz=2, nnv=2, rbox=1., zbox=2., psi_lim=1., Ip=0., psi=np.zeros((2,2)), nlim_pairs=0, nves_pairs=0, lim_pairs=np.empty((0,2)), ves_pairs=np.empty((0,2)))\nfor key in ('tor_flux','p_flux','rbphi_flux','pprime_flux','q_flux'):\n    mapping[key] = np.zeros(2)\nwith TemporaryDirectory() as directory:\n    path = Path(directory)/'example.eqdsk'\n    result = write_eqdsk(mapping, path)\n    assert result is None\n    assert path.read_text().splitlines()[0] == 'EXAMPLE'.ljust(48)+'   1   2   2   2'",
+    "expected": "The function returns None. The first line of the output file contains the title and the four declared header integers."
   },
   "verification": {
     "scope": [

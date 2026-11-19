@@ -1289,7 +1289,7 @@
       "outputs": [
         {
           "name": "file",
-          "description": "序列化后的 EQDSK 文件。",
+          "description": "序列化后的 EQDSK 文本写入 filename 指定的输出文件；函数返回 None。",
           "constraints": "声明的定宽记录。",
           "dtype": "UTF-8 文本"
         }
@@ -1320,7 +1320,7 @@
       },
       "example": {
         "description": "序列化调用者提供的最小扩展 EQDSK 映射，并检查定宽头部。",
-        "expected": "首行包含标题和四个声明的头部整数，其余定宽数组也被写出。"
+        "expected": "函数返回 None。输出文件的首行包含标题和四个声明的头部整数。"
       },
       "verification": {
         "scope": [
