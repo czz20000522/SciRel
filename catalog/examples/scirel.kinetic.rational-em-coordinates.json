@@ -117,7 +117,7 @@
       "Finite scan values and positive finite reference length."
     ],
     "excluded": [
-      "No implicit alternate reference species or radians."
+      "No implicit alternate reference species or degree-to-radian conversion; theta is already in radians."
     ]
   },
   "failure_semantics": {
@@ -145,7 +145,7 @@
   "verification": {
     "scope": [
       "Independent reference: the polar decomposition is recomputed from 40-digit mpmath sines and cosines - k = kj/cwp, kx = k sin(theta), kz = k cos(theta), theta as given in radians - together with the algebraic consequence hypot(kx, kz) = |k| and the two axis limits where one component vanishes identically.",
-      "Implementation relation: k is the signed ratio of the two scalars, theta is the input converted without wrapping, kx and kz carry the sign of kj, and no post-division finite-output guard is applied; cwp must be strictly positive.",
+      "Implementation relation: k is the signed ratio of the two scalars, theta retains the input radian value without wrapping, kx and kz carry the sign of kj, and no post-division finite-output guard is applied; cwp must be strictly positive.",
       "Test matrix: four configurations including a negative kj and the two axis angles, the magnitude identity, the sign carried into both components, and five rejection channels (cwp = 0, negative cwp, a NaN wavevector, an infinite angle) each asserted with its own message.",
       "Precision budget, declared before the comparison was run: 32 eps relative for k, theta, kx, kz and for the hypot identity; the vanishing component at theta = 0 is asserted at zero tolerance.",
       "Evidence ceiling: a coordinate conversion, not a dispersion relation. Nothing here says the converted pair lies inside any approximation's validity domain, and the caller owns the choice of theta."

@@ -80,7 +80,7 @@
   "identity": {
     "relation": "Fixed BRB source composition",
     "direction": "No caller inputs to fixed ordered BRB child sources.",
-    "definition": "BRB registers two TREXCoil, two RectangularCoil, and thirty-six MagnetRing children in attribute order.",
+    "definition": "BRB registers two TREXCoil, two RectangularCoil, and thirty-six MagnetRing children in attribute order. BRB converts the tabulated magnet orientations from degrees to radians before constructing each MagnetRing.",
     "model": "Axisymmetric ideal circular-filament geometry with declared constants.",
     "geometry": "Ordered child source geometries in cylindrical R,Z coordinates.",
     "coordinates": "R,Z in metres; currents in amperes; ring weights dimensionless; child angles in radians (BRB converts the magnet table from degrees).",

@@ -1126,11 +1126,13 @@
      "这个平面变换不验证物理场模型，也不强制柱半径 R 非负。",
      "该旋转位于 (R, Z) 平面内，以弧度计，顺时针为正；不约束 R 非负；按数学逆时针约定调用会得到镜像角度且无告警。"
     ],
-    "evidence_ceiling": "仅限具名有限几何案例；不主张场求解器、实验或发行结论。 C1 证据补充朝向符号、单位、枢轴、整圈恒等与溢出通道；它是平面变换而非三维旋转，也不携带测度。 C1 证据补充朝向符号、单位、枢轴、整圈恒等与溢出通道；它是平面变换而非三维旋转，也不携带测度。",
+    "evidence_ceiling": "仅限具名有限几何案例；不主张场求解器、实验或发行结论。 C1 证据覆盖旋转方向、弧度单位、旋转中心、整圈恒等与溢出通道，并用有理数精确重算两个分量，检查正逆旋转恒等式与 π/2 处的舍入误差。这是平面变换，不是三维旋转，也不携带测度。",
     "tests": [
      "tests/geometry/test_geometry_qualification.py",
      "tests/geometry/test_runtime_lifecycle.py",
-     "tests/geometry/test_rotate_failures.py"
+     "tests/geometry/test_rotate_failures.py",
+     "tests/geometry/test_frame_convention_evidence.py",
+     "tests/geometry/test_transform_roundtrip_evidence.py"
     ]
    },
    "example": {
