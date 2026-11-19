@@ -1,45 +1,27 @@
 """Classify what each baselined single-output contract's example actually returns.
 
-Why this exists
----------------
-92 single-output contracts do not state whether the caller receives a value
-positionally or a field of a ``Result`` mapping (``tools/docs/output-channel-baseline.json``).
-Paying that debt needs to know, per asset, what the example returns -- guessing
-would write a sentence that is true for most and false for a few.
-
-What it does
-------------
-Runs each baselined contract's own example in this interpreter, takes the first
-name the example assigns, and classifies the resulting object:
-
-    positional      array / scalar / tuple       -> the return value is the value
-    scirel-object   a scirel instance            -> the returned instance is the value
-    SimpleNamespace -> attributes live on the object
-    list            -> the sequence is the value
-    Generator       -> the caller iterates the return value
-    mapping-like    a mapping                    -> **real ambiguity**: keys are the value,
-                                                     so this belongs with T-2026-1203
-    no-candidate    no name could be identified  -> needs a manual read
-
-It writes nothing and judges no contract: the classification is evidence for a
-later decision, not the decision.
+Observe direct calls in the example to the callable bound by public_api.python.
+Classify a completed return before the example indexes, unpacks or discards it.
+An observed None is a return, not a missing observation. A mapping observation
+says nothing about which keys a contract should promise.
 
 Usage:
-    PYTHONPATH=src python3 -B scripts/probe_output_channel_returns.py [--json PATH]
+    python3 scripts/dev.py run python -B scripts/probe_output_channel_returns.py [--json PATH]
 
-Exit status is the repository's three states: 0 every entry classified,
-2 at least one entry could not be classified (unobserved -- NOT a pass).
+Exit 0 when every example ran successfully with one consistent observed return
+kind and runtime type; exit 2 if a classification could not be established.
 """
 
 from __future__ import annotations
 
 import argparse
+import ast
 import collections
 import contextlib
+import importlib
 import io
 import json
 import pathlib
-import re
 import sys
 import warnings
 
@@ -51,7 +33,7 @@ CATALOG = pathlib.Path("catalog/examples")
 def classify(value: object) -> str:
     """Name the kind of object an example produced."""
     if value is None:
-        return "no-candidate"
+        return "none"
     module = type(value).__module__ or ""
     name = type(value).__name__
     if name == "Result" and "scirel" in module:
@@ -71,6 +53,32 @@ def classify(value: object) -> str:
     return f"other:{name}"
 
 
+def _observe(code: str, asset: str, api: dict) -> tuple[str, str]:
+    target = getattr(importlib.import_module(api["module"]), api["symbol"])
+    returns: set[tuple[str, str]] = set()
+
+    def record(*args, **kwargs):
+        value = target(*args, **kwargs)
+        returns.add((classify(value), type(value).__name__))
+        return value
+
+    # f(...) becomes select(f)(...): aliases work, unrelated calls keep their caller frame.
+    def select(callee):
+        return record if callee is target else callee
+
+    tree = ast.parse(code, filename=asset)
+    calls = [node for node in ast.walk(tree) if isinstance(node, ast.Call)]
+    for call in calls:
+        call.func = ast.Call(ast.Name("__probe_select__", ast.Load()), [call.func], [])
+    compiled = compile(ast.fix_missing_locations(tree), asset, "exec")
+    exec(compiled, {"__probe_select__": select})  # noqa: S102 - repo-owned example
+    if not returns:
+        raise ValueError("no completed direct call to the target")
+    if len(returns) != 1:
+        raise ValueError(f"inconsistent target returns: {sorted(returns)}")
+    return returns.pop()
+
+
 def probe(root: pathlib.Path) -> dict[str, dict]:
     baseline = json.loads((root / BASELINE).read_text(encoding="utf-8"))
     out: dict[str, dict] = {}
@@ -79,24 +87,14 @@ def probe(root: pathlib.Path) -> dict[str, dict]:
         document = json.loads((root / CATALOG / f"{asset}.json").read_text(encoding="utf-8"))
         code = (document.get("example") or {}).get("code") or ""
         dtype = (document.get("outputs") or [{}])[0].get("dtype")
-        namespace: dict = {}
         record: dict = {"asset": asset, "dtype": dtype}
         try:
             with contextlib.redirect_stdout(io.StringIO()), warnings.catch_warnings():
                 warnings.simplefilter("ignore")
-                exec(compile(code, asset, "exec"), namespace)  # noqa: S102 - repo-owned example
-            assigned = re.findall(r"^\s*([A-Za-z_]\w*)\s*=", code, re.M)
-            value = next(
-                (
-                    namespace[n]
-                    for n in assigned
-                    if n in namespace and not isinstance(namespace[n], type(sys))
-                ),
-                None,
-            )
-            record["kind"] = classify(value)
-            record["runtime_type"] = type(value).__name__
-        except Exception as error:  # noqa: BLE001 - a probe records, it does not raise
+                record["kind"], record["runtime_type"] = _observe(
+                    code, asset, document["public_api"]["python"]
+                )
+        except (Exception, SystemExit) as error:  # a failed example must not exit the probe
             record["kind"] = "no-candidate"
             record["error"] = f"{type(error).__name__}: {error}"[:140]
         out[asset] = record
