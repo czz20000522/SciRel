@@ -69,6 +69,21 @@ def test_public_function_has_explicit_physical_inputs_and_rejects_legacy_entry_p
         solve_multi_coil_vacuum_field(**values, unknown=True)
 
 
+@pytest.mark.parametrize("canonical", [{}, {"angle": np.pi / 2}])
+def test_rejects_legacy_angle_key(canonical):
+    values = _inputs()
+    values["rectangular_coils"][0].update(angle_deg=90, **canonical)
+    with pytest.raises(ValueError, match=r"angle_deg.*\bangle\b.*radians"):
+        _public(values)
+
+
+def test_unrelated_coil_metadata_preserves_filaments():
+    values = _inputs()
+    filaments = _public(values).filaments
+    values["rectangular_coils"][0]["label"] = "upstream coil"
+    np.testing.assert_array_equal(_public(values).filaments, filaments)
+
+
 def test_explicit_public_call_matches_the_pre_change_mapping_snapshot():
     # Captured from the parent revision's mapping entry point before this interface migration.
     expected = {

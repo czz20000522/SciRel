@@ -72,6 +72,10 @@ def _run_composition(r_grid, z_grid, rectangular_coils, *, asset_loader):
         )
         if not isinstance(coil, dict) or missing:
             raise ValueError(f"rectangular_coils[{index}] misses {', '.join(missing)}")
+        if "angle_deg" in coil:
+            raise ValueError(
+                f"rectangular_coils[{index}].angle_deg was removed; use angle in radians"
+            )
         given = [key for key in CURRENT_KEYS if key in coil]
         if len(given) != 1:
             raise ValueError(
@@ -211,7 +215,8 @@ def solve_multi_coil_vacuum_field(r_grid, z_grid, rectangular_coils):
     ValueError
         ValueError is raised for empty or malformed grids, empty/nonmapping
         coils, invalid geometry, weights, currents, or an active filament
-        exactly coincident with a target grid node. Dependency
+        exactly coincident with a target grid node. A coil containing ``angle_deg``
+        raises ValueError; use ``angle`` in radians. Dependency
         ValueError/FloatingPointError propagates before any field is returned,
         including a nonrepresentable current-weighted Green contraction; no
         fallback or retry is performed.

@@ -73,7 +73,7 @@
       "no caller inputs -> fixed ordered BRB child sources"
     ],
     "model": "Axisymmetric ideal circular-filament geometry with declared constants.",
-    "geometry": "Ordered child source geometries in cylindrical R,Z coordinates; R,Z in metres, currents in amperes, ring weights dimensionless and angles in degrees.",
+    "geometry": "Ordered child source geometries in cylindrical R,Z coordinates; R,Z in metres, currents in amperes, ring weights dimensionless and child angles in radians (BRB converts the magnet table from degrees).",
     "boundary": "A geometry composition only; it does not calibrate an experimental device or material response.",
     "device_scope": "device-bound"
   },
@@ -83,7 +83,7 @@
     "definition": "BRB registers two TREXCoil, two RectangularCoil, and thirty-six MagnetRing children in attribute order.",
     "model": "Axisymmetric ideal circular-filament geometry with declared constants.",
     "geometry": "Ordered child source geometries in cylindrical R,Z coordinates.",
-    "coordinates": "R,Z in metres; currents in amperes; ring weights dimensionless; angles in degrees.",
+    "coordinates": "R,Z in metres; currents in amperes; ring weights dimensionless; child angles in radians (BRB converts the magnet table from degrees).",
     "boundary": "The object is a geometry composition and does not calibrate an experimental device or material response.",
     "assumptions": [
       "The zero-argument constructor fixes the BRB geometry and ring-current defaults; it accepts no geometry, current or mesh parameters.",

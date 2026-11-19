@@ -73,7 +73,7 @@ def project_frank_egedal_source_modes(
         ``None``, which computes point-pitch coefficients by quadrature.
     nbi_pitch_angle : real scalar, optional
         Point-source NBI pitch angle [rad]. It is converted to float only
-        when coefficients are computed. The default is ``45.0``. Its cosine is
+        when coefficients are computed. The default is π/4 rad. Its cosine is
         clipped to the active interval.
     spectrum_operator : callable, optional
         Caller-provided degree generator used when ``legendre_degrees`` is

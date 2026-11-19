@@ -137,9 +137,10 @@ class BRB(Device):
     Notes
     -----
     The fixed geometry registers 40 children in attribute order: two TREX
-    coils, two rectangular coils, and 36 magnet rings. It is a geometry
-    composition and does not calibrate an experimental device or material
-    response.
+    coils, two rectangular coils, and 36 magnet rings. The magnet table uses
+    degrees; BRB converts its orientations to radians before passing them to
+    MagnetRing. This geometry does not calibrate an experimental device or
+    material response.
 
     Examples
     --------

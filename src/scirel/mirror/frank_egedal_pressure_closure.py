@@ -14,6 +14,8 @@ def _run_composition(inputs, *, asset_loader):
     if not isinstance(inputs["params"], dict):
         raise ValueError("params must be a mapping")
     params = dict(inputs["params"])
+    if "nbi_pitch_angle_deg" in params:
+        raise ValueError("params.nbi_pitch_angle_deg was removed; use nbi_pitch_angle in radians")
     if {"p0", "background_density"} & params.keys():
         raise ValueError(
             "params must use canonical pressure scale names; p0 and background_density are not accepted"
@@ -120,7 +122,7 @@ def solve_frank_egedal_pressure_closure(inputs=None, **kwargs):
         zeff=1), finite. Explicit nonempty finite legendre_degrees bypasses spectrum
         evaluation; otherwise legendre_mode_count=6 and legendre_spectrum_grid_points=256
         control it. source_coefficients must be finite and match degrees if supplied;
-        otherwise nbi_pitch_angle=radians(45) controls projection. legendre_terms=15 is a legacy
+        otherwise nbi_pitch_angle (default π/4 rad) controls projection. legendre_terms=15 is a legacy
         count >=2; both backend names 'truncated' (default) and 'hypergeometric' use the
         corrected regular initial-value evaluator. velocity_nodes=pitch_nodes=24 by default,
         each int-converted value >=2. Pressure keys: hot_pressure_scale defaults to 1 Pa;
@@ -133,7 +135,7 @@ def solve_frank_egedal_pressure_closure(inputs=None, **kwargs):
         max_quadrature_nodes=max(768,2*max(initial counts)); zero-vc/zero-cutoff divergent
         density, zero normalizers or unresolved refinement fail explicitly. Units: [mixed;
         psi_axis/psi_edge same as psi, field T, pressure Pa, density m^-3, electron energy
-        J, angle deg and dimensionless controls].
+        J, angle rad and dimensionless controls].
 
     Returns
     -------
@@ -173,6 +175,8 @@ def solve_frank_egedal_pressure_closure(inputs=None, **kwargs):
     ValueError
         If inputs is not a mapping, required params are missing, or the parameter mapping
         violates its declared normalization, shape, grid, source or control contract.
+        The removed params key ``nbi_pitch_angle_deg`` is rejected; use
+        ``nbi_pitch_angle`` in radians.
     RuntimeError
         If source normalization, spectrum evaluation, hot-moment quadrature or pressure
         assembly cannot produce a finite converged closure.

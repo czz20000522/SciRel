@@ -2,8 +2,8 @@
 
 Why this exists
 ---------------
-`scirel.kinetic.rational-solve-matrix` declares 46 outputs, but one call returns one of
-three key sets (T-2026-1202). The contract states the union, so a consumer cannot read
+`scirel.kinetic.rational-solve-matrix` declares 46 outputs, but one call returns only its
+branch-specific fields (T-2026-1202). The contract states the union, so a consumer cannot read
 from `outputs` alone which keys its call returns. Option C keeps all 46 fields and pins
 the branch dimension here instead of widening the `port` schema.
 

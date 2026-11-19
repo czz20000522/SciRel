@@ -1183,7 +1183,7 @@ def solve_matrix(matrix, *, model="es1d", sp=0, nw=None, wg=0):
     residual. Generic ES3D homogeneous descriptor exposes alpha,beta and infinite/canceled modes and
     rejects unqualified finite roots. Positive perpendicular ES uses nearest-pole signed offset
     interlacing at80 decimal digits; decimal base+offset carries sub-ulp displacement. Rounded
-    omega/plots are incomplete carriers. The returned mapping is one of three key sets, not one:
+    omega/plots are incomplete carriers. The keys in the returned mapping depend on the solver branch:
     ES1D/EM returns 9 keys, the generic ES3D descriptor 15 (10 when every combined residue
     cancels), and the perpendicular ES3D branch 26; the outputs table is their union.
     Nonrelativistic Gaussian species; explicit

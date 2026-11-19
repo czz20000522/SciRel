@@ -113,6 +113,22 @@ def test_density_and_temperature_are_only_reported_when_configured():
     assert np.all(with_optional_fields["p_parallel"] >= with_optional_fields["density"] * 4.0)
 
 
+@pytest.mark.parametrize("canonical", [{}, {"nbi_pitch_angle": np.pi / 2}])
+def test_rejects_legacy_angle_key(canonical):
+    inputs = _inputs(nbi_pitch_angle_deg=90, source_coefficients=None, **canonical)
+    with pytest.raises(ValueError, match=r"nbi_pitch_angle_deg.*\bnbi_pitch_angle\b.*radians"):
+        solve_frank_egedal_pressure_closure(inputs)
+
+
+def test_unrelated_closure_metadata_preserves_pressure():
+    inputs = _inputs()
+    pressure = solve_frank_egedal_pressure_closure(inputs)["p_parallel"]
+    inputs["params"]["label"] = "upstream closure"
+    np.testing.assert_array_equal(
+        solve_frank_egedal_pressure_closure(inputs)["p_parallel"], pressure
+    )
+
+
 @pytest.mark.parametrize("alias", ["p0", "background_density"])
 def test_rejects_legacy_pressure_scale_aliases(alias):
     with pytest.raises(ValueError, match="canonical pressure scale names"):

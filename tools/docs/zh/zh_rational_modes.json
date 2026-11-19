@@ -1502,7 +1502,7 @@
   {
    "asset_id": "scirel.kinetic.rational-solve-matrix",
    "summary": "求解频率矩阵或 Harris 描述子，显式提供残差、消去与无穷模态分类，并保留完整近极点载体。",
-   "definition": "ES1D／EM 使用稠密 sp0 eig 或移位稀疏 sp1 eigs，返回 complex128 本征对与归一化后向残差。一般 ES3D 齐次描述子给出 alpha,beta 和无穷／消去模态，拒绝未获资格的有限根。正值物种的垂直 ES 使用 80 位十进制的最近极点有符号偏移交错方法；十进制 base+offset 保留小于 ulp 的位移。舍入后的 omega／图不是完整载体。返回映射是三种键集之一，而非同一种：ES1D／EM 返回 9 个键，一般 ES3D 描述子返回 15 个（合并后残差全为零时 10 个），垂直 ES3D 分支返回 26 个；outputs 表是三者并集。",
+   "definition": "ES1D／EM 使用稠密 sp0 eig 或移位稀疏 sp1 eigs，返回 complex128 本征对与归一化后向残差。一般 ES3D 齐次描述子给出 alpha,beta 和无穷／消去模态，拒绝未获资格的有限根。正值物种的垂直 ES 使用 80 位十进制的最近极点有符号偏移交错方法；十进制 base+offset 保留小于 ulp 的位移。舍入后的 omega／图不是完整载体。返回映射的键取决于求解分支：ES1D／EM 返回 9 个键，一般 ES3D 描述子返回 15 个（同极点的留数相加后全部抵消时为 10 个），垂直 ES3D 分支返回 26 个。outputs 表列出各分支的并集。",
    "model": "非相对论高斯物种；适用时显式声明有限谐波／有理近似。",
    "boundary": "周期或无限均匀介质中的平面波响应；显式声明有限数值谐波／极点表示。",
    "assumptions": [
