@@ -1,0 +1,753 @@
+{
+ "task_id": "io-eqdsk-roundtrip",
+ "kind": "nominal",
+ "domain": "io",
+ "subdomain": "EQDSK reading, writing and the retained class",
+ "question": "Read one declared EQDSK file, write it back with the declared writer, re-read the written file and report the round-trip deviation together with the header quantities that changed.",
+ "assets_declared": [
+  "scirel.io.read-eqdsk",
+  "scirel.io.write-eqdsk",
+  "scirel.io.read-geqdsk",
+  "scirel.io.eqdsk-class"
+ ],
+ "min_calls": 4,
+ "package": {
+  "python": "3.14.7",
+  "numpy": "2.5.4",
+  "scipy": "1.18.1",
+  "mpmath": "1.4.1",
+  "wheel_sha256": "2ea25bbd8d8050b11772c6f87b16b115f2b7690439424685fe036145b7c5db1d",
+  "snapshot_sha256": "060dcf1543492f5ce23f84f3d0319c06f5385f01b9ef234281579f63084c937c",
+  "source_revision": "c8faa8e7afd1b8b733cc908799ecbe0918779920",
+  "asset_count": 248,
+  "runtime": {
+   "dependencies_bundled": false,
+   "package_version": "0.0.0",
+   "requires_dist": [
+    "numpy==2.5.4",
+    "scipy==1.18.1",
+    "mpmath==1.4.1"
+   ],
+   "requires_python": ">=3.12",
+   "wheel": "scirel-0.0.0-py3-none-any.whl",
+   "wheel_sha256": "2ea25bbd8d8050b11772c6f87b16b115f2b7690439424685fe036145b7c5db1d"
+  },
+  "import_relative_to_venv_site_packages": "scirel/__init__.py"
+ },
+ "assets_used": [
+  "scirel.io.eqdsk-class",
+  "scirel.io.read-eqdsk",
+  "scirel.io.read-geqdsk",
+  "scirel.io.write-eqdsk"
+ ],
+ "calls": [
+  {
+   "seq": 1,
+   "label": "contract input",
+   "asset": "scirel.io.read-eqdsk",
+   "entrypoint": "scirel.io.eqdsk:read_eqdsk",
+   "arguments": {
+    "args": [],
+    "kwargs": {
+     "filename": "input.eqdsk",
+     "strict": true
+    }
+   },
+   "status": "returned",
+   "returned_fields": [
+    "Ip",
+    "R",
+    "Z",
+    "cursign",
+    "header_scalars",
+    "lim_pairs",
+    "nlim_pairs",
+    "nnr",
+    "nnv",
+    "nnz",
+    "nves_pairs",
+    "p_flux",
+    "pprime_flux",
+    "psi",
+    "psi_lim",
+    "q_flux",
+    "rbox",
+    "rbphi_flux",
+    "title",
+    "tor_flux",
+    "ves_pairs",
+    "zbox"
+   ],
+   "exception": null,
+   "warnings": [],
+   "returned_type": "dict"
+  },
+  {
+   "seq": 2,
+   "label": "write first read",
+   "asset": "scirel.io.write-eqdsk",
+   "entrypoint": "scirel.io.eqdsk:write_eqdsk",
+   "arguments": {
+    "args": [],
+    "kwargs": {
+     "data": {
+      "title": "MANUAL EXAMPLE                                  ",
+      "cursign": 1,
+      "nnr": 2,
+      "nnz": 2,
+      "nnv": 2,
+      "rbox": 1.0,
+      "zbox": 2.0,
+      "psi_lim": 0.0,
+      "Ip": 0.0,
+      "header_scalars": {
+       "dtype": "float64",
+       "shape": [
+        4,
+        5
+       ],
+       "values": [
+        [
+         1.0,
+         2.0,
+         0.0,
+         0.0,
+         0.0
+        ],
+        [
+         0.0,
+         0.0,
+         0.0,
+         0.0,
+         0.0
+        ],
+        [
+         0.0,
+         0.0,
+         0.0,
+         0.0,
+         0.0
+        ],
+        [
+         0.0,
+         0.0,
+         0.0,
+         0.0,
+         0.0
+        ]
+       ]
+      },
+      "tor_flux": {
+       "dtype": "float64",
+       "shape": [
+        2
+       ],
+       "values": [
+        1.0,
+        2.0
+       ]
+      },
+      "p_flux": {
+       "dtype": "float64",
+       "shape": [
+        2
+       ],
+       "values": [
+        1.0,
+        2.0
+       ]
+      },
+      "rbphi_flux": {
+       "dtype": "float64",
+       "shape": [
+        2
+       ],
+       "values": [
+        1.0,
+        2.0
+       ]
+      },
+      "pprime_flux": {
+       "dtype": "float64",
+       "shape": [
+        2
+       ],
+       "values": [
+        1.0,
+        2.0
+       ]
+      },
+      "psi": {
+       "dtype": "float64",
+       "shape": [
+        2,
+        2
+       ],
+       "values": [
+        [
+         1.0,
+         2.0
+        ],
+        [
+         3.0,
+         4.0
+        ]
+       ]
+      },
+      "q_flux": {
+       "dtype": "float64",
+       "shape": [
+        2
+       ],
+       "values": [
+        0.0,
+        0.0
+       ]
+      },
+      "nlim_pairs": 0,
+      "nves_pairs": 0,
+      "lim_pairs": {
+       "dtype": "float64",
+       "shape": [
+        0,
+        2
+       ],
+       "values": []
+      },
+      "ves_pairs": {
+       "dtype": "float64",
+       "shape": [
+        0,
+        2
+       ],
+       "values": []
+      },
+      "R": {
+       "dtype": "float64",
+       "shape": [
+        2,
+        2
+       ],
+       "values": [
+        [
+         0.0,
+         1.0
+        ],
+        [
+         0.0,
+         1.0
+        ]
+       ]
+      },
+      "Z": {
+       "dtype": "float64",
+       "shape": [
+        2,
+        2
+       ],
+       "values": [
+        [
+         -1.0,
+         -1.0
+        ],
+        [
+         1.0,
+         1.0
+        ]
+       ]
+      }
+     },
+     "filename": "roundtrip.eqdsk"
+    }
+   },
+   "status": "returned",
+   "returned_fields": null,
+   "exception": null,
+   "warnings": [],
+   "returned_type": "NoneType"
+  },
+  {
+   "seq": 3,
+   "label": "re-read written file",
+   "asset": "scirel.io.read-eqdsk",
+   "entrypoint": "scirel.io.eqdsk:read_eqdsk",
+   "arguments": {
+    "args": [],
+    "kwargs": {
+     "filename": "roundtrip.eqdsk"
+    }
+   },
+   "status": "returned",
+   "returned_fields": [
+    "Ip",
+    "R",
+    "Z",
+    "cursign",
+    "header_scalars",
+    "lim_pairs",
+    "nlim_pairs",
+    "nnr",
+    "nnv",
+    "nnz",
+    "nves_pairs",
+    "p_flux",
+    "pprime_flux",
+    "psi",
+    "psi_lim",
+    "q_flux",
+    "rbox",
+    "rbphi_flux",
+    "title",
+    "tor_flux",
+    "ves_pairs",
+    "zbox"
+   ],
+   "exception": null,
+   "warnings": [],
+   "returned_type": "dict"
+  },
+  {
+   "seq": 4,
+   "label": "read written title and flux grid",
+   "asset": "scirel.io.eqdsk-class",
+   "entrypoint": "scirel.io.eqdsk:EQDSK",
+   "arguments": {
+    "args": [],
+    "kwargs": {
+     "fname": "roundtrip.eqdsk"
+    }
+   },
+   "status": "returned",
+   "returned_fields": [
+    "Ip",
+    "R",
+    "Z",
+    "cursign",
+    "header_scalars",
+    "lim_pairs",
+    "nlim_pairs",
+    "nnr",
+    "nnv",
+    "nnz",
+    "nves_pairs",
+    "p_flux",
+    "pprime_flux",
+    "psi",
+    "psi_lim",
+    "q_flux",
+    "rbox",
+    "rbphi_flux",
+    "title",
+    "tor_flux",
+    "ves_pairs",
+    "zbox"
+   ],
+   "exception": null,
+   "warnings": [],
+   "returned_type": "EQDSK"
+  },
+  {
+   "seq": 5,
+   "label": "contract input",
+   "asset": "scirel.io.read-geqdsk",
+   "entrypoint": "scirel.io.geqdsk:read_geqdsk",
+   "arguments": {
+    "args": [],
+    "kwargs": {
+     "filename": "g.eqdsk",
+     "strict": true
+    }
+   },
+   "status": "returned",
+   "returned_fields": [
+    "bcentr",
+    "current",
+    "description",
+    "ffprim",
+    "fpol",
+    "limitr",
+    "nbbbs",
+    "nh",
+    "nw",
+    "pprime",
+    "pres",
+    "psi",
+    "psirz",
+    "qpsi",
+    "r",
+    "rbbbs",
+    "rcentr",
+    "rdim",
+    "rleft",
+    "rlim",
+    "rmaxis",
+    "sibry",
+    "simag",
+    "z",
+    "zbbbs",
+    "zdim",
+    "zlim",
+    "zmaxis",
+    "zmid"
+   ],
+   "exception": null,
+   "warnings": [],
+   "returned_type": "dict"
+  },
+  {
+   "seq": 6,
+   "label": "declared EQDSK state",
+   "asset": "scirel.io.eqdsk-class",
+   "entrypoint": "scirel.io.eqdsk:EQDSK",
+   "arguments": {
+    "args": [],
+    "kwargs": {
+     "fname": null
+    }
+   },
+   "status": "returned",
+   "returned_fields": [],
+   "exception": null,
+   "warnings": [],
+   "returned_type": "EQDSK"
+  }
+ ],
+ "answer": {
+  "value": {
+   "input.eqdsk": {
+    "sha256": "a47d809e8246a076ae0b98539f31a29889f9eef5af1eb3e336257ea2cd077b5b",
+    "bytes": 630
+   },
+   "roundtrip.eqdsk": {
+    "sha256": "a47d809e8246a076ae0b98539f31a29889f9eef5af1eb3e336257ea2cd077b5b",
+    "bytes": 630
+   },
+   "fixture_keys": [
+    "Ip",
+    "R",
+    "Z",
+    "cursign",
+    "header_scalars",
+    "lim_pairs",
+    "nlim_pairs",
+    "nnr",
+    "nnv",
+    "nnz",
+    "nves_pairs",
+    "p_flux",
+    "pprime_flux",
+    "psi",
+    "psi_lim",
+    "q_flux",
+    "rbox",
+    "rbphi_flux",
+    "title",
+    "tor_flux",
+    "ves_pairs",
+    "zbox"
+   ],
+   "missing": [],
+   "added": [],
+   "changed": [],
+   "mismatches": [],
+   "max_relative_deviation_nonzero_reference": 0.0,
+   "missing_fixture_quantities": [],
+   "additional_class_observation": {
+    "status": "pass",
+    "title": "MANUAL EXAMPLE                                  ",
+    "psi": {
+     "dtype": "float64",
+     "shape": [
+      2,
+      2
+     ],
+     "values": [
+      [
+       1.0,
+       2.0
+      ],
+      [
+       3.0,
+       4.0
+      ]
+     ]
+    }
+   },
+   "g.eqdsk": {
+    "sha256": "c1ff2bad6e6ffee7d4ecd5c1269ba2c60239d53be68a3483679ff32c04dc17cf",
+    "bytes": 739
+   }
+  },
+  "unit": "file fields as declared"
+ },
+ "independent_check": {
+  "method": "compare every first-read fixture value with the second read, shapes included",
+  "verdict": "pass"
+ },
+ "criteria": [
+  {
+   "id": "fields_first_read",
+   "kind": "contract_fields",
+   "status": "fail",
+   "detail": {
+    "declared": [
+     "mapping"
+    ],
+    "returned": [
+     "Ip",
+     "R",
+     "Z",
+     "cursign",
+     "header_scalars",
+     "lim_pairs",
+     "nlim_pairs",
+     "nnr",
+     "nnv",
+     "nnz",
+     "nves_pairs",
+     "p_flux",
+     "pprime_flux",
+     "psi",
+     "psi_lim",
+     "q_flux",
+     "rbox",
+     "rbphi_flux",
+     "title",
+     "tor_flux",
+     "ves_pairs",
+     "zbox"
+    ]
+   }
+  },
+  {
+   "id": "fields_write",
+   "kind": "contract_fields",
+   "status": "fail",
+   "detail": {
+    "channel": "single declared output returned positionally",
+    "declared": {
+     "name": "file",
+     "dtype": "UTF-8 text",
+     "shape": "text file"
+    },
+    "returned_type": "NoneType",
+    "checks": {
+     "named_type": {
+      "declared_token": "utf-8",
+      "matches": false
+     },
+     "object_instance": false
+    },
+    "verdict": "incompatible",
+    "all_declared_outputs": [
+     "file"
+    ]
+   }
+  },
+  {
+   "id": "fields_read",
+   "kind": "contract_fields",
+   "status": "fail",
+   "detail": {
+    "declared": [
+     "mapping"
+    ],
+    "returned": [
+     "Ip",
+     "R",
+     "Z",
+     "cursign",
+     "header_scalars",
+     "lim_pairs",
+     "nlim_pairs",
+     "nnr",
+     "nnv",
+     "nnz",
+     "nves_pairs",
+     "p_flux",
+     "pprime_flux",
+     "psi",
+     "psi_lim",
+     "q_flux",
+     "rbox",
+     "rbphi_flux",
+     "title",
+     "tor_flux",
+     "ves_pairs",
+     "zbox"
+    ]
+   }
+  },
+  {
+   "id": "fields_geqdsk",
+   "kind": "contract_fields",
+   "status": "fail",
+   "detail": {
+    "declared": [
+     "mapping"
+    ],
+    "returned": [
+     "bcentr",
+     "current",
+     "description",
+     "ffprim",
+     "fpol",
+     "limitr",
+     "nbbbs",
+     "nh",
+     "nw",
+     "pprime",
+     "pres",
+     "psi",
+     "psirz",
+     "qpsi",
+     "r",
+     "rbbbs",
+     "rcentr",
+     "rdim",
+     "rleft",
+     "rlim",
+     "rmaxis",
+     "sibry",
+     "simag",
+     "z",
+     "zbbbs",
+     "zdim",
+     "zlim",
+     "zmaxis",
+     "zmid"
+    ]
+   }
+  },
+  {
+   "id": "fields",
+   "kind": "contract_fields",
+   "status": "fail",
+   "detail": {
+    "declared": [
+     "mapping"
+    ],
+    "returned": []
+   }
+  },
+  {
+   "id": "roundtrip",
+   "kind": "invariant",
+   "status": "pass",
+   "detail": {
+    "input.eqdsk": {
+     "sha256": "a47d809e8246a076ae0b98539f31a29889f9eef5af1eb3e336257ea2cd077b5b",
+     "bytes": 630
+    },
+    "roundtrip.eqdsk": {
+     "sha256": "a47d809e8246a076ae0b98539f31a29889f9eef5af1eb3e336257ea2cd077b5b",
+     "bytes": 630
+    },
+    "fixture_keys": [
+     "Ip",
+     "R",
+     "Z",
+     "cursign",
+     "header_scalars",
+     "lim_pairs",
+     "nlim_pairs",
+     "nnr",
+     "nnv",
+     "nnz",
+     "nves_pairs",
+     "p_flux",
+     "pprime_flux",
+     "psi",
+     "psi_lim",
+     "q_flux",
+     "rbox",
+     "rbphi_flux",
+     "title",
+     "tor_flux",
+     "ves_pairs",
+     "zbox"
+    ],
+    "missing": [],
+    "added": [],
+    "changed": [],
+    "mismatches": [],
+    "max_relative_deviation_nonzero_reference": 0.0,
+    "missing_fixture_quantities": [],
+    "additional_class_observation": {
+     "status": "pass",
+     "title": "MANUAL EXAMPLE                                  ",
+     "psi": {
+      "dtype": "float64",
+      "shape": [
+       2,
+       2
+      ],
+      "values": [
+       [
+        1.0,
+        2.0
+       ],
+       [
+        3.0,
+        4.0
+       ]
+      ]
+     }
+    },
+    "g.eqdsk": {
+     "sha256": "c1ff2bad6e6ffee7d4ecd5c1269ba2c60239d53be68a3483679ff32c04dc17cf",
+     "bytes": 739
+    }
+   }
+  },
+  {
+   "id": "budget",
+   "kind": "tolerance",
+   "status": "pass",
+   "detail": {
+    "rel": 1e-09,
+    "abs": 0,
+    "basis": "The declared writer emits a fixed number of significant digits, so the round-trip error is set by that formatting precision rather than by an observed difference."
+   }
+  },
+  {
+   "id": "readback",
+   "kind": "readback",
+   "status": "pass",
+   "detail": {
+    "reopened": "io-eqdsk-roundtrip.json",
+    "problems": [],
+    "stored_call_count": 6
+   }
+  }
+ ],
+ "package_sufficient": false,
+ "sufficient_reason": "see individual criteria; file IO is not output-name agreement",
+ "gaps": [],
+ "bindings": {
+  "scirel.io.read-eqdsk": {
+   "symbol": "read_eqdsk",
+   "args": {
+    "filename": "<ephemeral contract-example input>",
+    "strict": true
+   },
+   "example_error": null
+  },
+  "scirel.io.read-geqdsk": {
+   "symbol": "read_geqdsk",
+   "args": {
+    "filename": "<ephemeral contract-example input>",
+    "strict": true
+   },
+   "example_error": null
+  },
+  "scirel.io.eqdsk-class": {
+   "symbol": "EQDSK",
+   "args": {
+    "fname": null
+   },
+   "example_error": null
+  }
+ },
+ "tasklist_digest": "55f52321188b6232bc428176d8bcdd37bed13d8138970e6b6e6de9d92d93589d"
+}
