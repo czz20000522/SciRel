@@ -1322,7 +1322,7 @@ def em_coordinates(kj, cwp, *, theta=math.radians(71.0)):
     --------
     >>> import numpy as np
     >>> from scirel.kinetic.dispersion.rational import em_coordinates
-    >>> r = em_coordinates(0.1, 2.0, theta=np.deg2rad(71.0))
+    >>> r = em_coordinates(0.1, 2.0, theta=np.deg2rad(71))
     >>> assert np.isclose(np.hypot(r['kx'], r['kz']), 0.05)
     """
     k = _scalar(kj, "kj") / _scalar(cwp, "cwp", positive=True)
@@ -1336,7 +1336,7 @@ def ordered_spectrum(
     """Corrected numeric graph; explicit point axes and per-point spectra/state.
 
     Defaults retain source sampling grids: ES1D .4:-.02:.01; ES3D kx .05:.1:5
-    with kz=0; EM kc/omega_pi .01:.02:1 at71 degrees. EM shift starts wg0*wci
+    with kz=0; EM kc/omega_pi .01:.02:1 at the deck's 71 degrees, passed as theta=radians(71). EM shift starts wg0*wci
     and follows input order. Physical descriptor root counts may vary; no padding.
     """
     model = _model(model)

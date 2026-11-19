@@ -149,7 +149,7 @@ def project_frank_egedal_source_modes(
     --------
     >>> import numpy as np
     >>> from scirel.mirror.frank_egedal_source_projection import project_frank_egedal_source_modes
-    >>> r=project_frank_egedal_source_modes(mirror_ratio=1.5,legendre_degrees=[2.],nbi_pitch_angle_deg=60.)
+    >>> r=project_frank_egedal_source_modes(mirror_ratio=1.5,legendre_degrees=[2.],nbi_pitch_angle=np.deg2rad(60.))
     >>> a=1/np.sqrt(3); norm=a-2*a**3+9*a**5/5
     >>> np.testing.assert_allclose(r['source_coefficients'],[.25/(4*np.pi*norm)],rtol=2e-10)
     """

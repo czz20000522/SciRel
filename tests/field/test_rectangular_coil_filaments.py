@@ -67,5 +67,7 @@ def test_reviewed_relation_example():
     np.testing.assert_allclose(points, expected)
     assert np.isclose(np.ptp(points[:, 0]), (2 - 1) * 0.4)
     assert np.isclose(np.ptp(points[:, 1]), (3 - 1) * 0.2)
-    rotated = discretize_rectangular_coil(1.0, 2.0, nr=2, nz=1, dr=0.4, dz=0.2, angle=np.deg2rad(90.0))
+    rotated = discretize_rectangular_coil(
+        1.0, 2.0, nr=2, nz=1, dr=0.4, dz=0.2, angle=np.deg2rad(90.0)
+    )
     np.testing.assert_allclose(rotated, [[1.0, 2.2], [1.0, 1.8]], atol=1.0e-14)

@@ -94,9 +94,7 @@ def test_all_chord_conventions_and_structured_point_order():
 @pytest.mark.parametrize(
     "factory",
     [
-        lambda: RectangularCoil(
-            1.2, 0.3, nr=3, nz=4, dr=0.07, dz=0.09, angle=np.deg2rad(37.0)
-        ),
+        lambda: RectangularCoil(1.2, 0.3, nr=3, nz=4, dr=0.07, dz=0.09, angle=np.deg2rad(37.0)),
         lambda: MagnetRing(
             1.2,
             0.3,

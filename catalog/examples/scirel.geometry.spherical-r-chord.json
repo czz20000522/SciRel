@@ -127,7 +127,7 @@
   },
   "example": {
     "description": "Convert a unit spherical radial point at polar angle pi/2 to cylindrical R,Z.",
-    "code": "import numpy as np\nfrom scirel.geometry import SphericalRChord\n\nmesh = SphericalRChord([1.0], 90.0)\nnp.testing.assert_allclose(mesh.R, [1.0])\nnp.testing.assert_allclose(mesh.Z, [0.0], atol=1e-15)",
+    "code": "import numpy as np\nfrom scirel.geometry import SphericalRChord\n\nmesh = SphericalRChord([1.0], np.pi / 2)\nnp.testing.assert_allclose(mesh.R, [1.0])\nnp.testing.assert_allclose(mesh.Z, [0.0], atol=1e-15)",
     "expected": "The generated cylindrical coordinates are R=[1.0] m and Z=[0.0] m."
   }
 }

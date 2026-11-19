@@ -127,7 +127,7 @@
   },
   "example": {
     "description": "Convert polar angles 0 and pi/2 at unit radius to cylindrical R,Z.",
-    "code": "import numpy as np\nfrom scirel.geometry import ThetaChord\n\nmesh = ThetaChord([0.0, 90.0])\nnp.testing.assert_allclose(mesh.R, [0.0, 1.0], atol=1e-15)\nnp.testing.assert_allclose(mesh.Z, [1.0, 0.0], atol=1e-15)",
+    "code": "import numpy as np\nfrom scirel.geometry import ThetaChord\n\nmesh = ThetaChord([0.0, np.pi / 2])\nnp.testing.assert_allclose(mesh.R, [0.0, 1.0], atol=1e-15)\nnp.testing.assert_allclose(mesh.Z, [1.0, 0.0], atol=1e-15)",
     "expected": "The generated coordinates are (R,Z)=[(0,1), (1,0)] m."
   }
 }

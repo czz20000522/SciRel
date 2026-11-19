@@ -131,9 +131,7 @@ def test_points_mesh_round_trip_over_a_spread_of_angles_and_radii():
         # scales with |angle|.  A radius-scaled budget would fail for a large
         # angle on a small radius, which is a budget error, not an identity error.
         angle_scale = max(math.radians(abs(angle)), 1.0)
-        assert np.all(
-            np.abs(recovered.theta - math.radians(angle)) <= 8 * EPS * angle_scale
-        ), angle
+        assert np.all(np.abs(recovered.theta - math.radians(angle)) <= 8 * EPS * angle_scale), angle
 
 
 def test_points_mesh_rejects_each_declared_channel():
@@ -248,7 +246,9 @@ def test_rotate_round_trip_is_the_identity():
         assert np.all(np.abs(returned - points) <= scale), angle
 
     pivot = (1.0, -0.25)
-    around = rotate(rotate(points, math.radians(63.0), pivot=pivot), -math.radians(63.0), pivot=pivot)
+    around = rotate(
+        rotate(points, math.radians(63.0), pivot=pivot), -math.radians(63.0), pivot=pivot
+    )
     assert np.all(np.abs(around - points) <= 8 * EPS * (np.abs(points).max() + 1.0))
     # The pivot itself is the fixed point of the pair.
     assert np.all(
