@@ -76,9 +76,11 @@ def test_trex_reference_plane_tracks_transforms_before_z0_assignment():
     np.testing.assert_allclose(coil.rz_pts, initial + [0.2, -1.4], rtol=0.0, atol=1e-15)
     before = coil.rz_pts.copy()
     center = before.mean(axis=0)
-    coil.rotate(20.0, pivot=center)
+    coil.rotate(np.deg2rad(20.0), pivot=center)
     assert coil.z0 == pytest.approx(center[1], abs=1e-15)
-    np.testing.assert_allclose(coil.rz_pts, rotate(before, 20.0, center), rtol=0.0, atol=1e-15)
+    np.testing.assert_allclose(
+        coil.rz_pts, rotate(before, np.deg2rad(20.0), center), rtol=0.0, atol=1e-15
+    )
     rotated = coil.rz_pts.copy()
     coil.z0 = 0.6
     np.testing.assert_allclose(coil.rz_pts, rotated + [0.0, 0.9], rtol=0.0, atol=1e-15)

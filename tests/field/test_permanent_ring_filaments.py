@@ -19,9 +19,9 @@ def test_unrotated_source_layout_and_default_weight_signs():
     np.testing.assert_allclose(result["default_weights"][8:], 1.0)
 
 
-# 验证：90 degree 正角按 source row-vector 矩阵使左侧中点转到 centroid 上方（顺时针 R--Z 图约定）。
+# 验证：np.deg2rad(90.0) 正角按 source row-vector 矩阵使左侧中点转到 centroid 上方（顺时针 R--Z 图约定）。
 def test_rotation_is_about_centroid_with_source_row_vector_direction():
-    result = scientific_function(2.0, 3.0, 4.0, 2.0, mu_hat_deg=90.0)
+    result = scientific_function(2.0, 3.0, 4.0, 2.0, mu_hat=np.deg2rad(90.0))
     # Original first point (0,2); relative vector (-2,-1) -> (-1,2) by row-vector matrix.
     np.testing.assert_allclose(result["rz_pts"][0], [1.0, 5.0], atol=1.0e-14)
     # The centroid remains invariant under rotation.
@@ -40,7 +40,7 @@ def test_axis_crossing_is_rejected_and_nonzero_angle_rotates():
         scientific_function(0.1, 0.0, 1.0, 1.0)
 
     reference = scientific_function(3.0, 3.0, 4.0, 2.0)
-    near_zero = scientific_function(3.0, 3.0, 4.0, 2.0, mu_hat_deg=5e-13)
+    near_zero = scientific_function(3.0, 3.0, 4.0, 2.0, mu_hat=np.deg2rad(5e-13))
     assert not np.array_equal(near_zero["rz_pts"], reference["rz_pts"])
     np.testing.assert_array_equal(near_zero["default_weights"], reference["default_weights"])
 
@@ -57,6 +57,6 @@ def test_reviewed_relation_example():
     np.testing.assert_allclose(result["default_weights"][:8], -1.0)
     np.testing.assert_allclose(result["default_weights"][8:], 1.0)
     assert np.sum(result["default_weights"]) == 0.0
-    rotated = discretize_permanent_ring(2.0, 3.0, 4.0, 2.0, mu_hat_deg=90.0)
+    rotated = discretize_permanent_ring(2.0, 3.0, 4.0, 2.0, mu_hat=np.deg2rad(90.0))
     np.testing.assert_allclose(rotated["rz_pts"][0], [1.0, 5.0], atol=1.0e-14)
     np.testing.assert_allclose(np.mean(rotated["rz_pts"], axis=0), [2.0, 3.0], atol=1.0e-14)

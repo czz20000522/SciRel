@@ -55,7 +55,7 @@ def test_yaml_declares_the_non_interchangeable_closure_pipeline():
     assert (
         "inputs: [mirror_ratio, legendre_terms, legendre_backend, legendre_degrees, "
         "legendre_mode_count, legendre_spectrum_grid_points, source_coefficients, "
-        "nbi_pitch_angle_deg, spectrum_operator]"
+        "nbi_pitch_angle, spectrum_operator]"
     ) in contract
     assert "to_input: spectrum_operator" in contract
     assert "inputs: [params, spectrum_function]" not in contract
@@ -111,6 +111,22 @@ def test_density_and_temperature_are_only_reported_when_configured():
     assert with_optional_fields["density"].shape == (2, 2)
     np.testing.assert_allclose(with_optional_fields["electron_temperature"], 4.0)
     assert np.all(with_optional_fields["p_parallel"] >= with_optional_fields["density"] * 4.0)
+
+
+@pytest.mark.parametrize("canonical", [{}, {"nbi_pitch_angle": np.pi / 2}])
+def test_rejects_legacy_angle_key(canonical):
+    inputs = _inputs(nbi_pitch_angle_deg=90, source_coefficients=None, **canonical)
+    with pytest.raises(ValueError, match=r"nbi_pitch_angle_deg.*\bnbi_pitch_angle\b.*radians"):
+        solve_frank_egedal_pressure_closure(inputs)
+
+
+def test_unrelated_closure_metadata_preserves_pressure():
+    inputs = _inputs()
+    pressure = solve_frank_egedal_pressure_closure(inputs)["p_parallel"]
+    inputs["params"]["label"] = "upstream closure"
+    np.testing.assert_array_equal(
+        solve_frank_egedal_pressure_closure(inputs)["p_parallel"], pressure
+    )
 
 
 @pytest.mark.parametrize("alias", ["p0", "background_density"])

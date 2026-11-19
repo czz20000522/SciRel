@@ -31,7 +31,7 @@
   "identity": {
     "relation": "Electromagnetic scan coordinates",
     "direction": "Declared inputs to named scientific outputs.",
-    "definition": "k=kj/cwp, kx=k sin(theta), kz=k cos(theta); cwp=c/omega_pi uses explicit source reference species, theta in degrees.",
+    "definition": "k=kj/cwp, kx=k sin(theta), kz=k cos(theta); cwp=c/omega_pi uses explicit source reference species, theta in radians.",
     "model": "Nonrelativistic Gaussian species; explicit finite-harmonic/rational approximation when applicable.",
     "geometry": "Homogeneous plasma with background field along z; k=(kx,0,kz) where applicable.",
     "coordinates": "Explicit ES dimensionless normalization or EM SI; complex frequency follows exp(-i omega t).",
@@ -61,14 +61,14 @@
       "constraints": "Finite real scalar c/omega_pi >0."
     },
     {
-      "name": "theta_degrees",
+      "name": "theta",
       "description": "Propagation angle from the magnetic-field axis.",
-      "units": "degree",
+      "units": "rad",
       "shape": "scalar",
       "dtype": "numeric",
       "required": false,
       "constraints": "Finite and representable in the declared numeric type.",
-      "default": 71
+      "default": 1.239183768915974
     }
   ],
   "outputs": [
@@ -101,7 +101,7 @@
     },
     {
       "name": "theta",
-      "description": "Input theta_degrees converted to radians without wrapping.",
+      "description": "Input theta in radians, returned without wrapping.",
       "units": "rad",
       "shape": "scalar",
       "dtype": "float64",
@@ -117,7 +117,7 @@
       "Finite scan values and positive finite reference length."
     ],
     "excluded": [
-      "No implicit alternate reference species or radians."
+      "No implicit alternate reference species or degree-to-radian conversion; theta is already in radians."
     ]
   },
   "failure_semantics": {
@@ -130,7 +130,7 @@
     "python": {
       "module": "scirel.kinetic.dispersion.rational",
       "symbol": "em_coordinates",
-      "signature": "em_coordinates(kj, cwp, *, theta_degrees=71)"
+      "signature": "em_coordinates(kj, cwp, *, theta=1.239183768915974)"
     }
   },
   "version": {
@@ -139,13 +139,13 @@
   },
   "example": {
     "description": "Bounded executable use of the actual declared scientific ports.",
-    "code": "import numpy as np\nfrom scirel.kinetic.dispersion.rational import em_coordinates\nr = em_coordinates(0.1, 2.0, theta_degrees=71)\nassert np.isclose(np.hypot(r['kx'], r['kz']), 0.05)",
-    "expected": "For kj=0.1, cwp=2 m and theta=71 degrees, k=0.05 m^-1, kx=0.04727592877996584 m^-1, kz=0.016278407722857838 m^-1, and theta=1.239183768915974 rad."
+    "code": "import numpy as np\nfrom scirel.kinetic.dispersion.rational import em_coordinates\nr = em_coordinates(0.1, 2.0, theta=np.deg2rad(71))\nassert np.isclose(np.hypot(r['kx'], r['kz']), 0.05)",
+    "expected": "For kj=0.1, cwp=2 m and theta=deg2rad(71), k=0.05 m^-1, kx=0.04727592877996584 m^-1, kz=0.016278407722857838 m^-1, and theta=1.239183768915974 rad."
   },
   "verification": {
     "scope": [
-      "Independent reference: the polar decomposition is recomputed from 40-digit mpmath sines and cosines - k = kj/cwp, kx = k sin(theta), kz = k cos(theta), theta = degrees*pi/180 - together with the algebraic consequence hypot(kx, kz) = |k| and the two axis limits where one component vanishes identically.",
-      "Implementation relation: k is the signed ratio of the two scalars, theta is the input converted without wrapping, kx and kz carry the sign of kj, and no post-division finite-output guard is applied; cwp must be strictly positive.",
+      "Independent reference: the polar decomposition is recomputed from 40-digit mpmath sines and cosines - k = kj/cwp, kx = k sin(theta), kz = k cos(theta), theta as given in radians - together with the algebraic consequence hypot(kx, kz) = |k| and the two axis limits where one component vanishes identically.",
+      "Implementation relation: k is the signed ratio of the two scalars, theta retains the input radian value without wrapping, kx and kz carry the sign of kj, and no post-division finite-output guard is applied; cwp must be strictly positive.",
       "Test matrix: four configurations including a negative kj and the two axis angles, the magnitude identity, the sign carried into both components, and five rejection channels (cwp = 0, negative cwp, a NaN wavevector, an infinite angle) each asserted with its own message.",
       "Precision budget, declared before the comparison was run: 32 eps relative for k, theta, kx, kz and for the hypot identity; the vanishing component at theta = 0 is asserted at zero tolerance.",
       "Evidence ceiling: a coordinate conversion, not a dispersion relation. Nothing here says the converted pair lies inside any approximation's validity domain, and the caller owns the choice of theta."

@@ -86,7 +86,7 @@ def _exact(value):
 
 def test_the_pythagorean_triple_is_reproduced_bitwise():
     """(r, R, Z) = (5, 3, 4): hypot(3, 4) is exactly 5, so the map must be exact."""
-    angle = math.degrees(math.atan2(3.0, 4.0))
+    angle = math.atan2(3.0, 4.0)
     chord = SphericalRChord([5.0], angle)
     assert chord.R[0] == 3.0 and chord.Z[0] == 4.0
     assert chord.R[0] ** 2 + chord.Z[0] ** 2 == 25.0
@@ -96,7 +96,7 @@ def test_pythagoras_holds_across_angles_and_radii():
     """R**2 + Z**2 = r**2 at five angles, including the axis and its opposite."""
     radii = np.array([0.5, 1.0, 2.0])
     for angle in (0.0, 17.0, 45.0, 90.0, 180.0):
-        chord = SphericalRChord(radii, angle)
+        chord = SphericalRChord(radii, math.radians(angle))
         residual = chord.R**2 + chord.Z**2 - radii**2
         assert np.all(np.abs(residual) <= 8 * EPS * radii**2), angle
         assert np.all(chord.R >= 0.0), angle
@@ -104,9 +104,9 @@ def test_pythagoras_holds_across_angles_and_radii():
 
 def test_chord_products_match_an_exact_rational_recomputation():
     """R = r s and Z = r c for the rounded s and c, with no rounding left over."""
-    radius, angle = 2.5, 37.0
-    sine = math.sin(math.radians(angle))
-    cosine = math.cos(math.radians(angle))
+    radius, angle = 2.5, math.radians(37.0)
+    sine = math.sin(angle)
+    cosine = math.cos(angle)
     chord = SphericalRChord([radius], angle)
     assert abs(_exact(chord.R[0]) - _exact(radius) * _exact(sine)) <= EPS * radius
     assert abs(_exact(chord.Z[0]) - _exact(radius) * _exact(cosine)) <= EPS * radius
@@ -119,8 +119,8 @@ def test_chord_products_match_an_exact_rational_recomputation():
 def test_the_two_chord_families_agree_bitwise():
     """ThetaChord(r0, t) is SphericalRChord(r0, t) with the radius held fixed."""
     for angle in (0.0, 30.0, 60.0, 90.0, 135.0, 180.0):
-        by_angle = ThetaChord([angle], 1.5)
-        by_radius = SphericalRChord([1.5], angle)
+        by_angle = ThetaChord([math.radians(angle)], 1.5)
+        by_radius = SphericalRChord([1.5], math.radians(angle))
         assert np.array_equal(by_angle.R, by_radius.R), angle
         assert np.array_equal(by_angle.Z, by_radius.Z), angle
 
@@ -129,20 +129,20 @@ def test_angular_chord_boundaries_and_rejections():
     """The axis, its opposite, a degenerate single radius, and every failure channel."""
     on_axis = SphericalRChord([2.0], 0.0)
     assert on_axis.R[0] == 0.0 and on_axis.Z[0] == 2.0
-    opposite = SphericalRChord([2.0], 180.0)
+    opposite = SphericalRChord([2.0], math.pi)
     assert opposite.Z[0] == -2.0
     assert abs(opposite.R[0]) <= 8 * EPS * 2.0
-    quarter = SphericalRChord([2.0], 90.0)
+    quarter = SphericalRChord([2.0], math.pi / 2)
     assert quarter.R[0] == 2.0
     # The residual on Z at 90 degrees is exactly the documented cosine rounding.
-    assert _exact(quarter.Z[0]) == _exact(2.0) * _exact(math.cos(math.radians(90.0)))
+    assert _exact(quarter.Z[0]) == _exact(2.0) * _exact(math.cos(math.pi / 2))
 
     with pytest.raises(ValueError, match="non-negative"):
-        SphericalRChord([-1.0], 90.0)
+        SphericalRChord([-1.0], math.pi / 2)
     with pytest.raises(ValueError, match="finite"):
         SphericalRChord([np.nan], 0.0)
     with pytest.raises(ValueError, match="non-negative"):
-        ThetaChord([90.0], -1.0)
+        ThetaChord([math.pi / 2], -1.0)
     # The declared -0.0 note: a signed zero radius passes the generated-R check.
     allowed = SphericalRChord([-0.0], 0.0)
     assert allowed.R[0] == 0.0

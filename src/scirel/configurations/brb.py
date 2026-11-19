@@ -137,9 +137,10 @@ class BRB(Device):
     Notes
     -----
     The fixed geometry registers 40 children in attribute order: two TREX
-    coils, two rectangular coils, and 36 magnet rings. It is a geometry
-    composition and does not calibrate an experimental device or material
-    response.
+    coils, two rectangular coils, and 36 magnet rings. The magnet table uses
+    degrees; BRB converts its orientations to radians before passing them to
+    MagnetRing. This geometry does not calibrate an experimental device or
+    material response.
 
     Examples
     --------
@@ -169,7 +170,14 @@ class BRB(Device):
             setattr(
                 self,
                 f"mr{i + 1}",
-                MagnetRing(r0=r, z0=z, mu_hat=mu, current=2710.68, height=0.0254, width=0.0381),
+                MagnetRing(
+                    r0=r,
+                    z0=z,
+                    mu_hat=float(np.deg2rad(mu)),
+                    current=2710.68,
+                    height=0.0254,
+                    width=0.0381,
+                ),
             )
 
     def add_cathode(self, *args, **kwargs):

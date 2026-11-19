@@ -17,7 +17,7 @@
       "Ordered current projection and source lifecycle",
       "Full BRB/WHAM configuration composition at finite targets",
       "Independent reference (tests/electromagnetism/test_source_geometry_evidence.py): the geometry is decided as two columns at r0 -+ width/2 with an arithmetic axial sequence, and the response is decided on the axis by the elementary loop field 1e-7 w 2 pi a^2 / (a^2 + dz^2)^{3/2} summed over the ring's own filaments - a closed form with no elliptic integral and no shared intermediate with the implementation's kernel.",
-      "Implementation relation: N even weights produce N/2 axial stations per radial face, the first N/2 rows at r0 - width/2 and the second N/2 at r0 + width/2, with the axial sequence spanning z0 -+ height/2; the default weight pattern is N/2 values of +1 followed by N/2 values of -1, which makes the total current zero while the dipole-like field stays nonzero; mu_hat is a degree-valued rotation of the point cloud about the centroid. This is a signed-filament geometry approximation. A material magnetization model is outside this contract.",
+      "Implementation relation: N even weights produce N/2 axial stations per radial face, the first N/2 rows at r0 - width/2 and the second N/2 at r0 + width/2, with the axial sequence spanning z0 -+ height/2; the default weight pattern is N/2 values of +1 followed by N/2 values of -1, which makes the total current zero while the dipole-like field stays nonzero; mu_hat is a radian-valued rotation of the point cloud about the centroid. This is a signed-filament geometry approximation. A material magnetization model is outside this contract.",
       "Test matrix (2 cases plus a failure case): the two-column layout, the single axial spacing, the equal heights of both faces and the balanced default weights; the on-axis B_Z against the elementary closed form at two heights with 128 eps; the independence of the ring radius from the rotation (rigid motion); and the rejection channels.",
       "Precision budget, fixed before the comparison ran: 128 eps = 2.84e-14 relative for the on-axis field, derived from the per-filament operation count in the closed form plus the 16-term sum; the layout laws are exact or bounded by the rounding of a station.",
       "Failure matrix, one executable assertion per channel: ValueError for an odd, empty or nonfinite weight vector, a non-positive width or height, and a negative radius, each through the source's single weight-domain or geometry message; TypeError for an unrecognised keyword; FloatingPointError propagates from an unrepresentable field."
@@ -76,7 +76,7 @@
     "definition": "For N=len(weights), the two radial faces each receive N/2 axial filament points. N must be positive and even; the default N=16 uses eight points per face and opposite default weights.",
     "model": "Axisymmetric ideal circular filaments used as a geometry approximation.",
     "geometry": "Rectangular cross-section in cylindrical R,Z coordinates with optional centroid rotation.",
-    "coordinates": "R,Z in metres; orientation in degrees; weights dimensionless; current in amperes.",
+    "coordinates": "R,Z in metres; orientation in radians; weights dimensionless; current in amperes.",
     "boundary": "Resulting filament radii must remain nonnegative; active source/target coincidence remains singular.",
     "assumptions": [
       "Width and height are finite and positive.",
@@ -128,11 +128,11 @@
     {
       "name": "mu_hat",
       "description": "Orientation angle",
-      "units": "degree",
+      "units": "rad",
       "shape": "scalar",
       "dtype": "Finite float64",
       "required": false,
-      "constraints": "Finite degrees",
+      "constraints": "Finite radians",
       "default": 0.0
     },
     {

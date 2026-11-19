@@ -1,21 +1,21 @@
 {
  "schema": "scirel.chapter-execution",
- "source_commit": "4255f032939167b1ca6a89f94cecc62a91892581",
- "source_identity_note": "The unchanged magnetostatics example actually ran from combined source baseline4255f032 on2026-11-15 in the native project uv environment after the scaled Green repair. All original assertions passed. Coordinates and states match retained published results exactly; every field/check remains within the pre-existing rtol2e-13,atol1e-16T envelope. Maximum absolute difference 1.3010426069826053e-18T. Published results and existing figures are retained; raw replay and comparison are project-local evidence. This is source-bound technical replay, not a release-wheel or cross-platform claim.",
+ "source_commit": "e19ec0506f6816c14ee76c6da5b9e73d31fac77a",
+ "source_identity_note": "The input is the tracked tree from git archive of source_commit, not the later documentation commit containing this receipt. Source files bound below also matched the corresponding wheel members byte for byte.",
  "files": {
   "src/scirel/field/circular_filament_green.py": "fcba85a0e0625ff2c211dbca20743d19c132f15101a0c9b50eef7eccdf6c5656",
   "src/scirel/field/current_green_superposition.py": "4629e14f77539f13fa3665115d91aca8b4160d921a42cf54a1e4846c63b2788c",
-  "src/scirel/field/rectangular_coil_filaments.py": "2618bae6fc7c65c2748879dc8a5fd74298245c258ef208fbeab2abdc8552acf1",
-  "src/scirel/field/multi_coil_vacuum_field.py": "1589dc07153dd738efd7a87659056101d29be91e09677516002045bf466296a6",
+  "src/scirel/field/rectangular_coil_filaments.py": "b4ccf233eaedbf38558f22a1bae5d387055c7f3207e6095d1512df657ce1e29f",
+  "src/scirel/field/multi_coil_vacuum_field.py": "fbeeb67a64ff09d4e379ac791f8d70c7cc31d96299a0dadfb010494fbe109386",
   "src/scirel/electromagnetism/greens.py": "5a1f21d12faf8c5494336b4cc84c4c26ac416d95aaf363ccd61005ba4a286363"
  },
- "scope": "Current development magnetostatics example; bounded technical validation.",
+ "scope": "Magnetostatics chapter only. Its rectangular coil specification omits angle; it does not exercise nonzero rotations, old keywords or arbitrary geometries.",
  "example_sha256": "4327bf16926a337f25698747bd2608708f60d7c44b82b5491cd9952ab621cf78",
  "results_sha256": "61fa9d80af163c62fa4163186a1c24858cd858984598e182fc5f8966f6a77a65",
- "wheel_sha256": null,
+ "wheel_sha256": "912fd91002b54c6251ab4969826246d9e847970390c9296e8a5210961c1af4bd",
  "wheel_version": "0.0.0",
- "runtime": "CPython3.14.7/NumPy2.5.4/SciPy1.18.1/Matplotlib3.11.2",
- "network": "none",
+ "runtime": "CPython 3.14.7; NumPy 2.5.4; SciPy 1.18.1; mpmath 1.4.1",
+ "network": "Not isolated or monitored; uv build and wheel installation used --offline.",
  "source_checkout_mounted": true,
  "exit_code": 0,
  "figure_files": {
@@ -24,14 +24,55 @@
   "pair.svg": "fd0f4133af90931a49245d07dad5008cea0b9fafa71db3df528a6863c00a9f02",
   "rectangle.svg": "650ff248aa14f304e0278c609748a61ee195ab59a3726a90c4d80b1212985175"
  },
- "plot_runtime": "NOT_RUN: existing figures remain bound to retained published results; the actual new replay agrees within the original chapter budget.",
+ "plot_runtime": "NOT_RUN: retained published results and three SVGs; the new full-array comparison passed at the original tolerances.",
  "document_files": {
   "catalog/examples/scirel.field.circular-filament-green.json": "aee2c7e97cead77ff750879f32d37f9b57bf1784ff7351e8bf5329f325468de1",
   "catalog/examples/scirel.field.current-green-superposition.json": "a689941b2ae94a464eeec546434c119650483fcbb944d8024cbabaa4339dcf08",
-  "catalog/examples/scirel.field.rectangular-coil-filaments.json": "9e4f68e3e9bf68f8d28073a85840979937992b2722acf096b747307a8d28cc06",
-  "catalog/examples/scirel.field.multi-coil-vacuum-field.json": "05c6aafeefb0ef5900c6b6f6285554956dc6cca8a6f58fc1c34f039da273c485",
+  "catalog/examples/scirel.field.rectangular-coil-filaments.json": "8879c10672110e41f1763652a9281800c33e348d9f49d5f6dc882946122784be",
+  "catalog/examples/scirel.field.multi-coil-vacuum-field.json": "5880489614e0e75ddf02c8f313ba4c06f1c7c0fce154bf8440c90380d29d2006",
   "catalog/examples/scirel.electromagnetism.circular-filament-green.json": "8569f17da4a933ff1096dbec43c1c3e56322dd0cbabd9c5499dc6b81aec5a12c"
  },
- "previous_execution_sha256": "8a889cb28141a63308abcdb0b77c5afe35e7debe0f2d4298d7e1d78172d24e04",
- "execution_environment": "Native Darwin arm64 project-managed uv environment; actual source replay and original comparison budgets."
+ "previous_execution_sha256": "b84aafa0834c26d6887a92a483cfedf7605ea2025927c8e7af9008a0063ba6fd",
+ "execution_environment": "Native macOS-27.2.1-arm64-arm-64bit-Mach-O; fresh venv with the non-editable wheel. Python -I -B imported scirel/__init__.py from that venv’s site-packages. The run directory began with a byte-identical copy of example.py, not the source package. The host checkout remained accessible; no container or cross-platform run.",
+ "raw_results_sha256": "c81f4b985136c15f21580158400cfc07fd29f28d80626410a679a9427540cfee",
+ "stdout_sha256": "852971aaf6a5209e688670ce892bffd87461c7db23a8f074e507d7bac3767da5",
+ "build_tools": "uv 0.12.19 (Homebrew 2026-09-24 aarch64-apple-darwin); setuptools.build_meta (version pinned by source_commit's pyproject.toml); SOURCE_DATE_EPOCH is the source commit timestamp.",
+ "comparison": {
+  "exact": [
+   "schema",
+   "numpy",
+   "scipy",
+   "z_m",
+   "r_m",
+   "grid_z_m",
+   "refinement_n",
+   "all_checks_passed"
+  ],
+  "rtol": 2e-13,
+  "atol_T": 1e-16,
+  "compared_field_and_check_values": 6593,
+  "max_abs_difference_T": 1.3010426069826053e-18,
+  "max_abs_difference_T_by_key": {
+   "center_pair_T": 0.0,
+   "center_single_T": 0.0,
+   "opposed_BZ_T": 4.336808689942018e-19,
+   "pair_BZ_T": 4.336808689942018e-19,
+   "rectangle_BZ_T": 1.3010426069826053e-18,
+   "refinement_center_T": 0.0,
+   "single_BZ_T": 4.336808689942018e-19,
+   "checks.axis_max_abs_error_T": 0.0,
+   "checks.pair_midplane_max_abs_BR_T": 0.0,
+   "checks.double_current_max_abs_error_T": 0.0
+  }
+ },
+ "reproduce": [
+  "From the repository root, after python3 scripts/dev.py prepare (requires pre-cached wheel/build dependencies for --offline):",
+  "rev=e19ec0506f6816c14ee76c6da5b9e73d31fac77a; run=$(mktemp -d \"$PWD/.runtime/magnetostatics-repro.XXXXXX\"); mkdir \"$run/source\" \"$run/work\"",
+  "git archive \"$rev\" | tar -xf - -C \"$run/source\"",
+  "SOURCE_DATE_EPOCH=$(git show -s --format=%ct \"$rev\") python3 scripts/dev.py run uv build --offline --wheel --out-dir \"$run/wheels\" \"$run/source\"",
+  "python3 scripts/dev.py run uv venv --offline --python \"$PWD/.runtime/venv/bin/python\" \"$run/consumer\"",
+  "python3 scripts/dev.py run uv pip install --offline --python \"$run/consumer/bin/python\" \"$run\"/wheels/*.whl",
+  "cp \"$run/source/tools/docs/magnetostatics/example.py\" \"$run/work/\"; python3 scripts/dev.py run bash -ec 'cd \"$1/work\"; \"$1/consumer/bin/python\" -I -B example.py results.json >stdout.json' replay \"$run\"",
+  "shasum -a 256 \"$run\"/wheels/*.whl \"$run/work/results.json\" \"$run/work/stdout.json\" \"$run/source/tools/docs/magnetostatics/results.json\""
+ ]
 }

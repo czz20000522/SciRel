@@ -133,7 +133,7 @@ def test_translation_and_rotation_laws():
     coil = RectangularCoil(0.8, 0.2, nr=2, nz=3, dr=0.1, dz=0.06)
     pivot = coil.centroid.copy()
     before = np.linalg.norm(coil.rz_pts - pivot, axis=1)
-    coil.rotate(37.0, pivot=pivot)
+    coil.rotate(np.deg2rad(37.0), pivot=pivot)
     after = np.linalg.norm(coil.rz_pts - coil.centroid, axis=1)
     np.testing.assert_allclose(after, before, rtol=4 * 2**-52, atol=0.0)
     np.testing.assert_allclose(coil.centroid, pivot, rtol=0.0, atol=1e-15)
@@ -141,7 +141,7 @@ def test_translation_and_rotation_laws():
     # the same rotation.
     moved = RectangularCoil(0.8, 0.2, nr=2, nz=3, dr=0.1, dz=0.06)
     original_points = moved.rz_pts.copy()
-    moved.rotate(30.0)
+    moved.rotate(np.deg2rad(30.0))
     assert not np.allclose(moved.centroid, pivot)
     np.testing.assert_allclose(
         np.linalg.norm(moved.rz_pts, axis=1),
@@ -291,7 +291,7 @@ def test_magnet_ring_layout_and_on_axis_field():
     assert observed >= 0.0
     # Rotation of the magnetisation is a rigid motion of the point cloud.
     before = np.linalg.norm(ring.rz_pts - ring.centroid, axis=1)
-    ring.mu_hat = 25.0
+    ring.mu_hat = np.deg2rad(25.0)
     np.testing.assert_allclose(
         np.linalg.norm(ring.rz_pts - ring.centroid, axis=1), before, rtol=8 * 2**-52, atol=0.0
     )

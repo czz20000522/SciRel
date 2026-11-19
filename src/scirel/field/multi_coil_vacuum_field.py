@@ -72,6 +72,10 @@ def _run_composition(r_grid, z_grid, rectangular_coils, *, asset_loader):
         )
         if not isinstance(coil, dict) or missing:
             raise ValueError(f"rectangular_coils[{index}] misses {', '.join(missing)}")
+        if "angle_deg" in coil:
+            raise ValueError(
+                f"rectangular_coils[{index}].angle_deg was removed; use angle in radians"
+            )
         given = [key for key in CURRENT_KEYS if key in coil]
         if len(given) != 1:
             raise ValueError(
@@ -85,7 +89,7 @@ def _run_composition(r_grid, z_grid, rectangular_coils, *, asset_loader):
             coil["nz"],
             coil["dr_m"],
             coil["dz_m"],
-            coil.get("angle_deg", 0.0),
+            coil.get("angle", 0.0),
         )
         value = float(coil[given[0]])
         if not np.isfinite(value):
@@ -137,7 +141,7 @@ def solve_multi_coil_vacuum_field(r_grid, z_grid, rectangular_coils):
 
     Each coil mapping gives ``r0_m, z0_m, nr, nz, dr_m, dz_m`` (an ``nr`` x ``nz``
     array of thin circular filaments centred on ``(r0_m, z0_m)`` with centre
-    spacings ``dr_m, dz_m``), optional ``angle_deg`` and ``weights`` (one per
+    spacings ``dr_m, dz_m``), optional ``angle`` [rad] and ``weights`` (one per
     filament, default 1), and exactly one current:
 
     * ``current_a``: the current in each filament, in amperes. Filament ``j``
@@ -168,7 +172,7 @@ def solve_multi_coil_vacuum_field(r_grid, z_grid, rectangular_coils):
         permitted.
     rectangular_coils : Python sequence of mappings, shape list[mapping]
         Coil mappings with r0_m,z0_m,nr,nz,dr_m,dz_m, exactly one of current_a
-        or ampere_turns_a, and optional angle_deg/weights. current_a is the
+        or ampere_turns_a, and optional angle [rad]/weights. current_a is the
         current in EACH filament (filament j carries current_a*weights[j];
         weights default to 1, so a coil's total ampere-turns are
         nr*nz*current_a). ampere_turns_a is the total current of the whole coil
@@ -211,7 +215,8 @@ def solve_multi_coil_vacuum_field(r_grid, z_grid, rectangular_coils):
     ValueError
         ValueError is raised for empty or malformed grids, empty/nonmapping
         coils, invalid geometry, weights, currents, or an active filament
-        exactly coincident with a target grid node. Dependency
+        exactly coincident with a target grid node. A coil containing ``angle_deg``
+        raises ValueError; use ``angle`` in radians. Dependency
         ValueError/FloatingPointError propagates before any field is returned,
         including a nonrepresentable current-weighted Green contraction; no
         fallback or retry is performed.

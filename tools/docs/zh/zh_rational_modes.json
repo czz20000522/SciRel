@@ -814,7 +814,7 @@
   {
    "asset_id": "scirel.kinetic.rational-em-coordinates",
    "summary": "将无量纲 k c/omega_pi 和传播角换算成 SI 垂直、平行坐标。",
-   "definition": "k=kj/cwp，kx=k sin(theta)，kz=k cos(theta)；cwp=c/omega_pi 使用显式指定的参考物种，theta 以度表示。",
+   "definition": "k=kj/cwp，kx=k sin(theta)，kz=k cos(theta)；cwp=c/omega_pi 使用显式指定的参考物种，theta 以弧度表示。",
    "model": "非相对论高斯物种；适用时显式声明有限谐波／有理近似。",
    "boundary": "周期或无限均匀介质中的平面波响应；显式声明有限数值谐波／极点表示。",
    "assumptions": [
@@ -835,7 +835,7 @@
      "constraints": "有限实标量，c/omega_pi >0。"
     },
     {
-     "name": "theta_degrees",
+     "name": "theta",
      "description": "相对于磁场轴的传播角。",
      "dtype": "数值类型",
      "constraints": "有限且可用所声明的数值类型表示。"
@@ -862,7 +862,7 @@
     },
     {
      "name": "theta",
-     "description": "输入 theta_degrees 转为弧度，不进行角度回绕。",
+     "description": "输入的 theta（弧度）原样返回，不进行角度回绕。",
      "dtype": "float64 标量",
      "constraints": "由声明的有限输入通过 float64 算术导出；除法后不另行检查输出是否有限。"
     }
@@ -875,7 +875,7 @@
      "扫描值有限，参考长度有限且为正。"
     ],
     "excluded": [
-     "不隐式替换参考物种，也不将角度隐式当成弧度。"
+     "不隐式替换参考物种，也不将角度隐式当成度。"
     ]
    },
    "failure_semantics": {
@@ -886,8 +886,8 @@
    },
    "verification": {
     "scope": [
-     "独立依据：极坐标分解按 40 位 mpmath 的正弦余弦重算——k=kj/cwp、kx=k*sin(theta)、kz=k*cos(theta)、theta=degrees*pi/180——并附代数推论 hypot(kx,kz)=|k| 与两个轴极限（其中一个分量恒为零）。",
-     "实现关系：k 为两标量之比并保留符号，theta 为输入换算且不做绕回，kx 与 kz 继承 kj 的符号，除法之后不加有限性守卫；cwp 必须严格为正。",
+     "独立依据：极坐标分解按 40 位 mpmath 的正弦余弦重算——k=kj/cwp、kx=k*sin(theta)、kz=k*cos(theta)、theta 以弧度给出——并附代数推论 hypot(kx,kz)=|k| 与两个轴极限（其中一个分量恒为零）。",
+     "实现关系：k 为两标量之比并保留符号，theta 保留输入的弧度值，不做绕回，kx 与 kz 继承 kj 的符号，除法之后不加有限性守卫；cwp 必须严格为正。",
      "测试矩阵：四组配置（含负 kj 与两个轴角）、模恒等式、符号传入两个分量，以及五个拒绝通道（cwp=0、负 cwp、NaN 波矢、无穷角）各按自身消息断言。",
      "精度预算（在比较之前写定）：k、theta、kx、kz 与 hypot 恒等式取 32*eps 相对；theta=0 处的消失分量取零容差。",
      "证据上限：这是坐标换算，不是色散关系。此处不主张换算后的数对落在任何近似的有效域内，theta 由调用者决定。"
@@ -903,7 +903,7 @@
    },
    "example": {
     "description": "使用实际声明科学端口的有界可执行示例。",
-    "expected": "取 kj=0.1、cwp=2 m、theta=71 度时，得到 k=0.05、kx=0.04727592877996584、kz=0.016278407722857838（波数单位每米），以及 theta=1.239183768915974 弧度。"
+    "expected": "取 kj=0.1、cwp=2 m、theta=deg2rad(71) 时，得到 k=0.05、kx=0.04727592877996584、kz=0.016278407722857838（波数单位每米），以及 theta=1.239183768915974 弧度。"
    }
   },
   {
@@ -1502,7 +1502,7 @@
   {
    "asset_id": "scirel.kinetic.rational-solve-matrix",
    "summary": "求解频率矩阵或 Harris 描述子，显式提供残差、消去与无穷模态分类，并保留完整近极点载体。",
-   "definition": "ES1D／EM 使用稠密 sp0 eig 或移位稀疏 sp1 eigs，返回 complex128 本征对与归一化后向残差。一般 ES3D 齐次描述子给出 alpha,beta 和无穷／消去模态，拒绝未获资格的有限根。正值物种的垂直 ES 使用 80 位十进制的最近极点有符号偏移交错方法；十进制 base+offset 保留小于 ulp 的位移。舍入后的 omega／图不是完整载体。",
+   "definition": "ES1D／EM 使用稠密 sp0 eig 或移位稀疏 sp1 eigs，返回 complex128 本征对与归一化后向残差。一般 ES3D 齐次描述子给出 alpha,beta 和无穷／消去模态，拒绝未获资格的有限根。正值物种的垂直 ES 使用 80 位十进制的最近极点有符号偏移交错方法；十进制 base+offset 保留小于 ulp 的位移。舍入后的 omega／图不是完整载体。返回映射的键取决于求解分支：ES1D／EM 返回 9 个键，一般 ES3D 描述子返回 15 个（同极点的留数相加后全部抵消时为 10 个），垂直 ES3D 分支返回 26 个。outputs 表列出各分支的并集。",
    "model": "非相对论高斯物种；适用时显式声明有限谐波／有理近似。",
    "boundary": "周期或无限均匀介质中的平面波响应；显式声明有限数值谐波／极点表示。",
    "assumptions": [

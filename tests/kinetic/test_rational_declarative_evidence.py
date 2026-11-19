@@ -20,7 +20,7 @@ Evidence sources, none of them the implementation or its fixtures:
    kj/cwp``, ``kx = k sin(theta)``, ``kz = k cos(theta)`` is recomputed from
    ``mpmath`` sines and cosines at 40 digits, together with the algebraic
    consequences ``hypot(kx, kz) = |k|`` and the exact ``theta = 0`` and
-   ``theta = 90`` limits where one component vanishes identically.
+   ``theta = pi/2`` (radian) limits where one component vanishes identically.
 
 Precision budgets, fixed before the comparison was run:
 
@@ -40,7 +40,7 @@ Precision budgets, fixed before the comparison was run:
   composition.  ``-5 + 0.1*i`` is the exact float64 expression the declaration
   names, so any difference is a real difference, not rounding.
 * Polar algebra: ``32 eps`` relative for ``kx``/``kz``, and the ``theta = 0``
-  and ``theta = 90`` limits are asserted at zero tolerance on the vanishing
+  and ``theta = pi/2`` limits are asserted at zero tolerance on the vanishing
   component (``sin(0)`` and ``cos(pi/2)`` are exactly representable in the
   sense the implementation uses: ``np.sin(0.0) == 0.0`` and ``np.cos(pi/2)`` is
   compared against its own exact evaluation, not asserted to be zero).
@@ -205,7 +205,7 @@ def test_em_coordinates_is_the_polar_decomposition_of_the_wavevector():
     """``k = kj/cwp`` with ``kx = k sin(theta)`` and ``kz = k cos(theta)``, at 40 digits."""
     _high_precision()
     for kj, cwp, degrees in ((0.1, 2.0, 71), (-0.37, 0.5, 23), (1.4, 3.0, 90), (0.9, 2.5, 0)):
-        result = em_coordinates(kj, cwp, theta_degrees=degrees)
+        result = em_coordinates(kj, cwp, theta=np.deg2rad(degrees))
         k = mp.mpf(float(kj)) / mp.mpf(float(cwp))
         theta = mp.mpf(float(degrees)) * mp.pi / 180
         assert abs(mp.mpf(result["k"]) - k) <= 32 * EPS * abs(k)
@@ -215,14 +215,14 @@ def test_em_coordinates_is_the_polar_decomposition_of_the_wavevector():
         # Algebraic consequence: the decomposition preserves the magnitude.
         assert abs(mp.mpf(np.hypot(result["kx"], result["kz"])) - abs(k)) <= 32 * EPS * abs(k)
     # The two axis limits put the whole wavevector on one component.
-    aligned = em_coordinates(0.5, 2.0, theta_degrees=0)
+    aligned = em_coordinates(0.5, 2.0, theta=0.0)
     assert aligned["kx"] == 0.0
     assert_allclose(aligned["kz"], 0.25, rtol=0, atol=32 * EPS * 0.25)
-    perpendicular = em_coordinates(0.5, 2.0, theta_degrees=90)
+    perpendicular = em_coordinates(0.5, 2.0, theta=np.deg2rad(90))
     assert_allclose(perpendicular["kz"], 0.0, rtol=0, atol=1e-16)
     assert_allclose(perpendicular["kx"], 0.25, rtol=0, atol=32 * EPS * 0.25)
     # A negative kj keeps its sign in both components and in the magnitude.
-    assert em_coordinates(-0.5, 2.0, theta_degrees=71)["k"] < 0
+    assert em_coordinates(-0.5, 2.0, theta=np.deg2rad(71))["k"] < 0
 
 
 @pytest.mark.parametrize(
@@ -231,7 +231,7 @@ def test_em_coordinates_is_the_polar_decomposition_of_the_wavevector():
         (lambda: em_coordinates(0.1, 0.0), "physical domain"),
         (lambda: em_coordinates(0.1, -2.0), "physical domain"),
         (lambda: em_coordinates(float("nan"), 2.0), "physical domain"),
-        (lambda: em_coordinates(0.1, 2.0, theta_degrees=float("inf")), "physical domain"),
+        (lambda: em_coordinates(0.1, 2.0, theta=float("inf")), "physical domain"),
         (lambda: equilibrium("es1d", np.zeros((2, 4))), ""),
         (lambda: equilibrium("not-a-model", default_deck("es1d")), "unknown legacy physical model"),
         (lambda: jpole_grid_coordinates(1), ""),

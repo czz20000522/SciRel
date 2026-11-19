@@ -67,7 +67,7 @@
     },
     {
       "name": "rectangular_coils",
-      "description": "Coil mappings with r0_m,z0_m,nr,nz,dr_m,dz_m, exactly one of current_a or ampere_turns_a, and optional angle_deg/weights. current_a is the current in EACH filament (filament j carries current_a*weights[j]; weights default to 1, so a coil's total ampere-turns are nr*nz*current_a). ampere_turns_a is the total current of the whole coil block, split over its filaments in proportion to weights. Passing a coil's total ampere-turns as current_a makes its field nr*nz times too large. Active nonzero-current filaments must not be exactly coincident with a target grid node.",
+      "description": "Coil mappings with r0_m,z0_m,nr,nz,dr_m,dz_m, exactly one of current_a or ampere_turns_a, and optional angle [rad]/weights. current_a is the current in EACH filament (filament j carries current_a*weights[j]; weights default to 1, so a coil's total ampere-turns are nr*nz*current_a). ampere_turns_a is the total current of the whole coil block, split over its filaments in proportion to weights. Passing a coil's total ampere-turns as current_a makes its field nr*nz times too large. Active nonzero-current filaments must not be exactly coincident with a target grid node.",
       "units": "mixed SI",
       "shape": "list[mapping]",
       "dtype": "Python sequence of mappings",
@@ -129,7 +129,7 @@
     ]
   },
   "failure_semantics": {
-    "invalid_input": "TypeError when a required argument is missing, the removed mapping or **kwargs form is used, or an unknown keyword is supplied. ValueError is raised for empty or malformed grids, empty/nonmapping coils, invalid geometry, weights, currents, or an active filament exactly coincident with a target grid node.",
+    "invalid_input": "TypeError when a required argument is missing, the removed mapping or **kwargs form is used, or an unknown keyword is supplied. ValueError is raised for empty or malformed grids, empty/nonmapping coils, invalid geometry, weights, currents, or an active filament exactly coincident with a target grid node. A coil containing angle_deg raises ValueError; use angle in radians.",
     "runtime_failure": "Dependency ValueError/FloatingPointError propagates before any field is returned, including a nonrepresentable current-weighted Green contraction; no fallback or retry is performed.",
     "nonconvergence": "Not applicable; the graph has no feedback loop.",
     "partial_results": "No scirel._result.Result field or filament output is returned after a failed graph stage."
@@ -214,7 +214,7 @@
           "nz",
           "dr",
           "dz",
-          "angle_deg",
+          "angle",
           "current_a",
           "weights"
         ]
@@ -231,7 +231,7 @@
           "nz",
           "dr",
           "dz",
-          "angle_deg"
+          "angle"
         ],
         "outputs": [
           "rz_pts"
@@ -433,11 +433,11 @@
       {
         "from": {
           "node": "coil_iteration",
-          "port": "angle_deg"
+          "port": "angle"
         },
         "to": {
           "node": "rectangular_geometry",
-          "port": "angle_deg"
+          "port": "angle"
         },
         "description": "Optional section rotation.",
         "condition": "For each declared coil; defaults to 0.0 when omitted.",

@@ -176,12 +176,12 @@ inputs:
       units: dimensionless
       required: false
       constraints: same shape as degrees
-    nbi_pitch_angle_deg:
+    nbi_pitch_angle:
       meaning: 缺省 NBI 源角
       shape: scalar
-      units: deg
+      units: rad
       required: false
-      constraints: default 45
+      constraints: default deg2rad(45)
     legendre_terms:
       meaning: P/Q 多项式保留项数
       shape: scalar_integer

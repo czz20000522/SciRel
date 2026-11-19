@@ -689,7 +689,7 @@
      "dtype": "实数"
     },
     {
-     "name": "angle_deg",
+     "name": "angle",
      "description": "按既有行向量符号约定进行截面旋转。",
      "constraints": "有限。",
      "dtype": "实数"
@@ -8274,9 +8274,9 @@
      "dtype": "实数标量，转换为 float"
     },
     {
-     "name": "mu_hat_deg",
+     "name": "mu_hat",
      "description": "按既有行向量符号约定绕形心旋转的角度。",
-     "constraints": "有限度数，所有非零值都旋转；极大角度的相位精度受 float64 三角参数约化限制。",
+     "constraints": "有限弧度值，所有非零值都旋转；极大角度的相位精度受 float64 三角参数约化限制。",
      "dtype": "实数标量，转换为 float"
     }
    ],
@@ -8442,7 +8442,7 @@
      "大有限分量下，笛卡尔范数有意避开朴素平方相加的溢出。",
      "扫描驱动状态语义需另立关系。",
      "分发许可仍待完成。",
-     "同族的弦构造器吃度，而此处的 theta_rad 是弧度（工单 T-2026-0005）；笛卡尔模式刻意把 theta_rad 留为 None 而不反解，因此需要角度的调用者须自行算 arctan2 并自己选定单位。"
+     "与弦构造器一样，极坐标模式的 theta_rad 以弧度计。笛卡尔模式下 theta_rad 为 None；对于非零波矢，arctan2(kx, kz) 给出从 +z 朝 +x 量起的角度，单位为弧度。"
     ],
     "tests": [
      "tests/geometry/test_planar_wavevector.py"
@@ -8649,7 +8649,7 @@
     {
      "name": "params",
      "description": "径向、源、积分和压强参数字典。",
-     "constraints": "径向默认 psi_axis=min(psi)、psi_edge=max(psi)、alpha=1>=0，允许反向。B0=median(B)；mirror_ratio 缺键时取 turning_b，再默认 2，须 >1；vc_over_v0=0.25>=0。velocity_lower 默认 0 或旧别名 perp_velocity_lower，二者同时给出须相等且在 [0,1)。beta_m 默认 zeff/2（zeff=1），须有限。给定非空有限 legendre_degrees 时跳过谱求解，否则默认 6 模态、256 谱网格点；source_coefficients 须有限且与阶数对应，否则按默认 45 度入射投影。legendre_terms 默认 15 且 >=2；truncated 与 hypergeometric 名称都用修正后的正则初值求值器。速度/俯仰节点默认各 24，int 转换后 >=2。热压强 hot_pressure_scale 默认 1 Pa，气体压强 gas_dynamic_pressure 默认 0 Pa；gas_dynamic_density、hot_density_scale 与 electron_temperature 为可选规范键；压力状态适配器只传 keyword-only 参数，不接受 p0 或 background_density 旧别名。所选尺度须有限非负，电子能量为 J。原始矩按 quadrature_rtol=1e-7 加密，默认节点上限 max(768,2*max(初始节点数))；零 vc 且零截断的密度发散、零归一化积分或加密未解决均明确失败；依赖转换和 Legendre 异常可传播。",
+     "constraints": "径向默认 psi_axis=min(psi)、psi_edge=max(psi)、alpha=1>=0，允许反向。B0=median(B)；mirror_ratio 缺键时取 turning_b，再默认 2，须 >1；vc_over_v0=0.25>=0。velocity_lower 默认 0 或旧别名 perp_velocity_lower，二者同时给出须相等且在 [0,1)。beta_m 默认 zeff/2（zeff=1），须有限。给定非空有限 legendre_degrees 时跳过谱求解，否则默认 6 模态、256 谱网格点；source_coefficients 须有限且与阶数对应，未给系数时按 nbi_pitch_angle 投影，单位为弧度，默认 π/4。legendre_terms 默认 15 且 >=2；truncated 与 hypergeometric 名称都用修正后的正则初值求值器。速度/俯仰节点默认各 24，int 转换后 >=2。热压强 hot_pressure_scale 默认 1 Pa，气体压强 gas_dynamic_pressure 默认 0 Pa；gas_dynamic_density、hot_density_scale 与 electron_temperature 为可选规范键；压力状态适配器只传 keyword-only 参数，不接受 p0 或 background_density 旧别名。所选尺度须有限非负，电子能量为 J。原始矩按 quadrature_rtol=1e-7 加密，默认节点上限 max(768,2*max(初始节点数))；零 vc 且零截断的密度发散、零归一化积分或加密未解决均明确失败；依赖转换和 Legendre 异常可传播。",
      "dtype": "Python dict 映射"
     }
    ],
@@ -8698,7 +8698,7 @@
     ]
    },
    "failure_semantics": {
-    "invalid_input": "params 须为字典；旧压力尺度别名 p0/background_density 会被拒绝；各依赖验证失败传播。",
+    "invalid_input": "params 须为字典；旧压力尺度别名 p0/background_density 会被拒绝；各依赖验证失败传播。params 中出现 nbi_pitch_angle_deg 时抛出 ValueError；请将角度换算为弧度后传给 nbi_pitch_angle。",
     "runtime_failure": "不在图中替换结果或压制数值失败。",
     "nonconvergence": "源归一化、谱或热原始矩不收敛会传播，不返回部分归一化的压强闭合。",
     "partial_results": "不返回部分结果。"
@@ -9676,7 +9676,7 @@
     },
     {
      "name": "rectangular_coils",
-     "description": "线圈映射序列，包含 r0_m、z0_m、nr、nz、dr_m、dz_m，current_a 与 ampere_turns_a 二选一，以及可选 angle_deg、weights。current_a 是**每根**电流丝的电流（第 j 根为 current_a*weights[j]，权重默认 1，所以线圈总安匝是 nr*nz*current_a）；ampere_turns_a 是整个线圈块的总电流，按权重比例分给各电流丝。把总安匝当作 current_a 传入，场会大 nr*nz 倍。 活动非零电流丝不得与目标网格节点精确重合。",
+     "description": "线圈映射序列，包含 r0_m、z0_m、nr、nz、dr_m、dz_m，current_a 与 ampere_turns_a 二选一，以及可选 angle（弧度）、weights。current_a 是**每根**电流丝的电流（第 j 根为 current_a*weights[j]，权重默认 1，所以线圈总安匝是 nr*nz*current_a）；ampere_turns_a 是整个线圈块的总电流，按权重比例分给各电流丝。把总安匝当作 current_a 传入，场会大 nr*nz 倍。 活动非零电流丝不得与目标网格节点精确重合。",
      "constraints": "非空；每个线圈给出且只给出一个有限的 current_a 或 ampere_turns_a（两者都给或都不给时抛出 ValueError），可为每根生成的电流丝给一个有限权重；使用 ampere_turns_a 时权重之和不能为零。 非零电流、非零权重的电流丝与目标节点重合时抛出 ValueError。",
      "dtype": "由映射组成的 Python 序列"
     }
@@ -9723,7 +9723,7 @@
     ]
    },
    "failure_semantics": {
-    "invalid_input": "缺少必需参数、使用已删除的 mapping 或 **kwargs 入口、或传入未知关键字时抛出 TypeError；空或格式错误的网格、空/非映射线圈、非法几何、权重、电流，或活动电流丝与目标节点精确重合时抛出 ValueError。",
+    "invalid_input": "缺少必需参数、使用已删除的 mapping 或 **kwargs 入口、或传入未知关键字时抛出 TypeError；空或格式错误的网格、空/非映射线圈、非法几何、权重、电流，或活动电流丝与目标节点精确重合时抛出 ValueError。线圈映射中出现 angle_deg 时抛出 ValueError；请将角度换算为弧度后传给 angle。",
     "runtime_failure": "依赖产生的 ValueError/FloatingPointError 会在返回任何场之前传播，包括不可表示的电流加权 Green 收缩；不执行回退或重试。",
     "nonconvergence": "不适用；图没有反馈环。",
     "partial_results": "任一步骤失败后不返回 scirel._result.Result 场或电流丝输出。"

@@ -1062,7 +1062,7 @@
   {
    "asset_id": "scirel.geometry.rotate",
    "summary": "在柱坐标 R、Z 平面旋转行向量；返回有限坐标，有限输入的计算产生非有限值时抛出 FloatingPointError。",
-   "definition": "采用顺时针为正的行向量旋转，角度单位为度。",
+   "definition": "采用顺时针为正的行向量旋转，角度单位为弧度。",
    "model": "二维 R、Z 平面。",
    "boundary": "点和旋转中心都必须是有限的二分量值。",
    "assumptions": [
@@ -1077,8 +1077,8 @@
     },
     {
      "name": "angle",
-     "description": "旋转角，单位度。",
-     "constraints": "有限的角度值。",
+     "description": "旋转角，单位弧度。",
+     "constraints": "有限弧度值。",
      "dtype": "浮点数"
     },
     {
@@ -1120,21 +1120,23 @@
      "本合同所载可执行旋转示例。",
      "直接形状回归要求标量点抛 ValueError，并检查零角旋转对单点、空数组及批量 (...,2) 点保持形状和数值，且不修改调用者数组。",
      "有限输入在平移、旋转和最终加回中心时溢出，在 NumPy 的 warn、ignore、raise 模式下均抛 FloatingPointError；非有限输入仍抛 ValueError，可表示结果保持 float64、原形状及调用者输入不变。",
-     "独立依据（tests/geometry/test_transform_roundtrip_evidence.py、tests/geometry/test_frame_convention_evidence.py）：用实现所读的同一对取整 c 与 s，在 Fraction 中精确重算 R' = x c + y s 与 Z' = -x s + y c，把公式限制在 2 eps (|x| + |y|) 内，从而在不触碰超越函数输入的前提下判定符号配对；rotate(-angle) 接在 rotate(angle) 之后在 8 eps 内为恒等，覆盖六个角度、枢轴、整圈、前导批量轴与单点行；90 度时精确有理和逐位舍入到返回分量上，故与理想映射的全部偏差就是 cos(radians(90)) = 6.12e-17；朝向、单位、枢轴与 FloatingPointError 通道由同一文件中的判别算例裁定。"
+     "独立依据（tests/geometry/test_transform_roundtrip_evidence.py、tests/geometry/test_frame_convention_evidence.py）：用实现所读的同一对取整 c 与 s，在 Fraction 中精确重算 R' = x c + y s 与 Z' = -x s + y c，把公式限制在 2 eps (|x| + |y|) 内，从而在不触碰超越函数输入的前提下判定符号配对；rotate(-angle) 接在 rotate(angle) 之后在 8 eps 内为恒等，覆盖六个角度、枢轴、整圈、前导批量轴与单点行；角度为 pi/2 弧度时精确有理和逐位舍入到返回分量上，故与理想映射的全部偏差就是 cos(pi/2) = 6.12e-17；朝向、单位、枢轴与 FloatingPointError 通道由同一文件中的判别算例裁定。"
     ],
     "known_limitations": [
      "这个平面变换不验证物理场模型，也不强制柱半径 R 非负。",
-     "该旋转是 (R, Z) 平面内、以度为单位、顺时针为正；不约束 R 非负；按数学逆时针约定调用会得到镜像角度且无告警。"
+     "该旋转位于 (R, Z) 平面内，以弧度计，顺时针为正；不约束 R 非负；按数学逆时针约定调用会得到镜像角度且无告警。"
     ],
-    "evidence_ceiling": "仅限具名有限几何案例；不主张场求解器、实验或发行结论。 C1 证据补充朝向符号、单位、枢轴、整圈恒等与溢出通道；它是平面变换而非三维旋转，也不携带测度。 C1 证据补充朝向符号、单位、枢轴、整圈恒等与溢出通道；它是平面变换而非三维旋转，也不携带测度。",
+    "evidence_ceiling": "仅限具名有限几何案例；不主张场求解器、实验或发行结论。 C1 证据覆盖旋转方向、弧度单位、旋转中心、整圈恒等与溢出通道，并用有理数精确重算两个分量，检查正逆旋转恒等式与 π/2 处的舍入误差。这是平面变换，不是三维旋转，也不携带测度。",
     "tests": [
      "tests/geometry/test_geometry_qualification.py",
      "tests/geometry/test_runtime_lifecycle.py",
-     "tests/geometry/test_rotate_failures.py"
+     "tests/geometry/test_rotate_failures.py",
+     "tests/geometry/test_frame_convention_evidence.py",
+     "tests/geometry/test_transform_roundtrip_evidence.py"
     ]
    },
    "example": {
-    "description": "按文档规定的“顺时针为正”约定，将一条 R-Z 行向量旋转 90 度。",
+    "description": "按文档规定的“顺时针为正”约定，将一条 R-Z 行向量旋转 pi/2 弧度。",
     "expected": "形状保持不变，顺时针为正的结果为 [[0.0, -1.0]]。"
    }
   },

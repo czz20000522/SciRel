@@ -187,7 +187,7 @@
       "The Cartesian norm deliberately avoids the squared-sum overflow that a naive square-and-sum evaluation shows at large finite components.",
       "Scan-driver state semantics require a separate relation.",
       "Distribution licensing remains pending.",
-      "theta_rad is in **radians** while the chord constructors of the same family take **degrees** (ticket T-2026-0005); the cartesian mode deliberately leaves theta_rad as None rather than recovering it, so a caller that needs the angle must compute arctan2 itself and must choose a unit."
+      "Like the chord constructors, polar mode takes theta_rad in radians. Cartesian mode returns None for theta_rad; for a nonzero wavevector, arctan2(kx, kz) gives the angle in radians from +z toward +x."
     ],
     "basis": {
       "kind": "analytic-identity",

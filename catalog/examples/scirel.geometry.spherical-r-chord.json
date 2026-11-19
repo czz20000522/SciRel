@@ -19,7 +19,7 @@
     "evidence_ceiling": "Named finite geometry cases only; no field-solver, experimental, or release claim is made. C1 evidence adds the axis and unit conventions, the Pythagoras identity over five angles and the declared sign rule; it does not establish that the chord represents any spherical surface completely. C1 evidence adds the exact-rational product recomputation and the exact Pythagorean triple.",
     "known_limitations": [
       "Mesh objects do not by themselves validate a physical field model or device geometry.",
-      "As with the theta chord this asset takes **degrees from +Z** while `Mesh.theta` returns **radians**; the radius sign is not checked before the transform, so a negative radius combined with a negative sine would not be caught here. This constructor takes **degrees from +Z**, while the `Mesh.theta` property of the same family returns **radians**; the two cannot be interchanged (see ticket T-2026-0005)."
+      "The radius sign is not checked before the transform, so a negative radius combined with a negative sine would not be caught here. Angles are **radians from +Z**, the same unit `Mesh.theta` returns; a `Mesh.theta` value can be passed straight to this constructor."
     ],
     "basis": {
       "kind": "analytic-identity",
@@ -32,7 +32,7 @@
     "en": "Spherical radial chord",
     "zh": "球坐标径向弦"
   },
-  "summary": "Points varying spherical radius at a fixed degree angle.",
+  "summary": "Points varying spherical radius at a fixed polar angle.",
   "taxonomy": [
     "geometry",
     "coordinates"
@@ -51,7 +51,7 @@
     ],
     "model": "Spherical-to-cylindrical coordinate map.",
     "geometry": "Spherical radius varied at fixed angle; output stored in cylindrical R-Z.",
-    "boundary": "Angles are degrees.",
+    "boundary": "Angles are radians.",
     "device_scope": "generic"
   },
   "identity": {
@@ -61,7 +61,7 @@
     "model": "Spherical-to-cylindrical coordinate map",
     "geometry": "Spherical-to-cylindrical coordinate map",
     "coordinates": "Cylindrical storage derived from spherical inputs",
-    "boundary": "Angles are degrees",
+    "boundary": "Angles are radians",
     "assumptions": [
       "Finite radii"
     ]
@@ -79,11 +79,11 @@
     {
       "name": "theta0",
       "description": "Fixed polar angle",
-      "units": "degree",
+      "units": "rad",
       "shape": "scalar",
       "dtype": "Finite float64",
       "required": false,
-      "constraints": "Finite degrees",
+      "constraints": "Finite radians",
       "default": 0.0
     }
   ],
@@ -101,7 +101,7 @@
   "applicability": {
     "preconditions": [
       "Inputs satisfy the documented finite cylindrical coordinate and shape contract",
-      "Physical spherical radii are nonnegative, with degree angles in the usual 0..180 polar domain. Implementation validation applies to the generated cylindrical coordinates, requiring finite coordinates and R >= 0; it does not separately reject every negative input spherical radius."
+      "Physical spherical radii are nonnegative, with radian angles in the usual 0..pi polar domain. Implementation validation applies to the generated cylindrical coordinates, requiring finite coordinates and R >= 0; it does not separately reject every negative input spherical radius."
     ],
     "supported": [
       "Finite spherical radial chord"
@@ -126,8 +126,8 @@
     }
   },
   "example": {
-    "description": "Convert a unit spherical radial point at polar angle 90 degrees to cylindrical R,Z.",
-    "code": "import numpy as np\nfrom scirel.geometry import SphericalRChord\n\nmesh = SphericalRChord([1.0], 90.0)\nnp.testing.assert_allclose(mesh.R, [1.0])\nnp.testing.assert_allclose(mesh.Z, [0.0], atol=1e-15)",
+    "description": "Convert a unit spherical radial point at polar angle pi/2 to cylindrical R,Z.",
+    "code": "import numpy as np\nfrom scirel.geometry import SphericalRChord\n\nmesh = SphericalRChord([1.0], np.pi / 2)\nnp.testing.assert_allclose(mesh.R, [1.0])\nnp.testing.assert_allclose(mesh.Z, [0.0], atol=1e-15)",
     "expected": "The generated cylindrical coordinates are R=[1.0] m and Z=[0.0] m."
   }
 }

@@ -81,7 +81,7 @@ def test_rotation_to_negative_radius_is_atomic(factory):
     before = source.rzw.copy()
     center = source.centroid.copy()
     with pytest.raises(ValueError):
-        source.rotate(180.0)
+        source.rotate(np.pi)
     np.testing.assert_array_equal(source.centroid, center)
     np.testing.assert_array_equal(source.rzw, before)
 

@@ -295,7 +295,7 @@ def test_runtime_input_defaults_must_match_the_document():
     document = _rectangular_coil_document()
     document["inputs"][-1]["default"] = 90.0
 
-    with pytest.raises(AssetDocumentError, match="default differs for input: angle_deg"):
+    with pytest.raises(AssetDocumentError, match="default differs for input: angle"):
         validate_runtime(document)
 
 

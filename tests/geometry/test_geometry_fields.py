@@ -101,9 +101,9 @@ def test_small_nonzero_loop_not_dropped():
 def test_theta_polar_angle_and_rotate():
     m = PointsMesh([0.0, 1.0, 1.0], [1.0, 0.0, -1.0])
     np.testing.assert_allclose(m.theta, [0.0, np.pi / 2, 3 * np.pi / 4], atol=1e-15)
-    np.testing.assert_allclose(rotate([[1.0, 0.0]], 90), [[0.0, -1.0]], atol=1e-15)
-    np.testing.assert_allclose(ThetaChord([0.0, 90.0]).R, [0.0, 1.0], atol=1e-15)
-    np.testing.assert_allclose(SphericalRChord([1.0, 2.0], 90).Z, 0.0, atol=1e-15)
+    np.testing.assert_allclose(rotate([[1.0, 0.0]], np.pi / 2), [[0.0, -1.0]], atol=1e-15)
+    np.testing.assert_allclose(ThetaChord([0.0, np.pi / 2]).R, [0.0, 1.0], atol=1e-15)
+    np.testing.assert_allclose(SphericalRChord([1.0, 2.0], np.pi / 2).Z, 0.0, atol=1e-15)
 
 
 def test_mesh_mutation_invalidates_cache():
@@ -171,8 +171,8 @@ def test_source_geometry_order_weights_and_transform():
     np.testing.assert_allclose(c.rz_pts, expected, atol=1e-15)
     assert c.area == pytest.approx(0.12)
     np.testing.assert_array_equal(c.weights, np.ones(6))
-    c.rotate(90, pivot=(1.0, 0.2))
-    np.testing.assert_allclose(c.rz_pts, rotate(expected, 90, (1.0, 0.2)), atol=1e-15)
+    c.rotate(np.pi / 2, pivot=(1.0, 0.2))
+    np.testing.assert_allclose(c.rz_pts, rotate(expected, np.pi / 2, (1.0, 0.2)), atol=1e-15)
     c.translate([0.2, 0.1])
     np.testing.assert_allclose(c.centroid, [1.2, 0.3])
     mr = MagnetRing(1.0, 0.2)

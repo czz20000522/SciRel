@@ -34,7 +34,7 @@
     "definition": "Place eight axial points on each radial face and assign -1 to the first face and +1 to the second. The documented fields are returned together in a scirel._result.Result mapping; mapping and attribute access expose the same values. No nested mapping is returned.",
     "model": "Signed ideal-filament geometry approximation.",
     "geometry": "Rectangular cross-section optionally rotated about its centroid.",
-    "coordinates": "R,Z in metres; angle in degrees; weights dimensionless.",
+    "coordinates": "R,Z in metres; angle in radians; weights dimensionless.",
     "boundary": "The rotated points must remain at nonnegative cylindrical radius.",
     "assumptions": [
       "The centroid radius is nonnegative and dimensions are positive.",
@@ -80,14 +80,14 @@
       "constraints": "Finite and strictly positive."
     },
     {
-      "name": "mu_hat_deg",
+      "name": "mu_hat",
       "description": "Cross-section rotation about its centroid using the maintained row-vector sign convention.",
-      "units": "degree",
+      "units": "rad",
       "shape": "scalar",
       "dtype": "real scalar, converted to float",
       "required": false,
       "default": 0.0,
-      "constraints": "Finite scalar degrees; every nonzero angle is rotated. Large-angle trigonometric argument reduction inherits float64 accuracy."
+      "constraints": "Finite scalar radians; every nonzero angle is rotated. Large-angle trigonometric argument reduction inherits float64 accuracy."
     }
   ],
   "outputs": [
@@ -132,7 +132,7 @@
     "python": {
       "module": "scirel.field.permanent_ring_filaments",
       "symbol": "discretize_permanent_ring",
-      "signature": "discretize_permanent_ring(r0, z0, width, height, mu_hat_deg=0.0)",
+      "signature": "discretize_permanent_ring(r0, z0, width, height, mu_hat=0.0)",
       "canonical_module": "scirel.field",
       "canonical_symbol": "discretize_permanent_ring"
     }
@@ -149,7 +149,7 @@
   "verification": {
     "scope": [
       "Unrotated two-face ordering, Z spacing and relative weight signs.",
-      "Ninety-degree rotation about the centroid with the maintained sign convention.",
+      "Half-pi rotation about the centroid with the maintained sign convention.",
       "Nonpositive width/height rejection.",
       "Axis-crossing and nonfinite geometry rejection, exact tiny-angle rotation, and finite generation at a very large finite angle.",
       "The named result preserves the captured key order, values, shapes, dtypes, mapping access and attribute access; failures retain their exception types and messages.",

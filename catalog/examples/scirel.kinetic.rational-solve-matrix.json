@@ -31,7 +31,7 @@
   "identity": {
     "relation": "Qualified frequency spectrum",
     "direction": "Declared inputs to named scientific outputs.",
-    "definition": "Dense/sp0 eig or shifted sparse/sp1 eigs for ES1D/EM, complex128 eigenpairs and normalized backward residual. Generic ES3D homogeneous descriptor exposes alpha,beta and infinite/canceled modes and rejects unqualified finite roots. Positive perpendicular ES uses nearest-pole signed offset interlacing at80 decimal digits; decimal base+offset carries sub-ulp displacement. Rounded omega/plots are incomplete carriers.",
+    "definition": "Dense/sp0 eig or shifted sparse/sp1 eigs for ES1D/EM, complex128 eigenpairs and normalized backward residual. Generic ES3D homogeneous descriptor exposes alpha,beta and infinite/canceled modes and rejects unqualified finite roots. Positive perpendicular ES uses nearest-pole signed offset interlacing at80 decimal digits; decimal base+offset carries sub-ulp displacement. Rounded omega/plots are incomplete carriers. The keys in the returned mapping depend on the solver branch: ES1D/EM returns 9 keys (d, omega, V, w, wi, ind, indices, backward_residual, wg), the generic ES3D descriptor returns 15 (10 when every combined residue cancels), and the perpendicular ES3D branch returns 26; the outputs table is their union, and each output's constraints field names the branch that carries it.",
     "model": "Nonrelativistic Gaussian species; explicit finite-harmonic/rational approximation when applicable.",
     "geometry": "Homogeneous plasma with background field along z; k=(kx,0,kz) where applicable.",
     "coordinates": "Explicit ES dimensionless normalization or EM SI; complex frequency follows exp(-i omega t).",

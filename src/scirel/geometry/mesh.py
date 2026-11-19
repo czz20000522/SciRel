@@ -429,7 +429,7 @@ class SphericalRChord(PointsMesh):
         PointsMesh checks the generated cylindrical R and Z.
 
     theta0 : Finite float64, optional
-        Fixed polar angle [degree] Shape: scalar. Finite degrees Default: 0.0.
+        Fixed polar angle [rad] Shape: scalar. Finite radians Default: 0.0.
 
     Returns
     -------
@@ -458,12 +458,12 @@ class SphericalRChord(PointsMesh):
 
     **Coordinates.** Cylindrical storage derived from spherical inputs
 
-    **Boundary.** Angles are degrees
+    **Boundary.** Angles are radians
 
     **Preconditions.**
 
     * Inputs satisfy the documented finite cylindrical coordinate and shape contract
-    * Physical spherical radii are nonnegative, with degree angles in the usual 0..180 polar domain. Implementation validation applies to the generated cylindrical coordinates, requiring finite coordinates and R >= 0; it does not separately reject every negative input spherical radius.
+    * Physical spherical radii are nonnegative, with radian angles in the usual 0..pi polar domain. Implementation validation applies to the generated cylindrical coordinates, requiring finite coordinates and R >= 0; it does not separately reject every negative input spherical radius.
 
     **Limits.**
 
@@ -473,14 +473,14 @@ class SphericalRChord(PointsMesh):
     --------
     >>> import numpy as np
     >>> from scirel.geometry import SphericalRChord
-    >>> mesh = SphericalRChord([1.0], 90.0)
+    >>> mesh = SphericalRChord([1.0], np.pi / 2)
     >>> np.testing.assert_allclose(mesh.R, [1.0])
     >>> np.testing.assert_allclose(mesh.Z, [0.0], atol=1e-15)
     """
 
     def __init__(self, rpts: Iterable[float], theta0: float = 0.0):
         radius = np.asarray(rpts, dtype=float)
-        angle = np.deg2rad(theta0)
+        angle = np.asarray(theta0, dtype=float)
         super().__init__(radius * np.sin(angle), radius * np.cos(angle))
 
 
@@ -490,7 +490,7 @@ class ThetaChord(PointsMesh):
     Parameters
     ----------
     tpts : Finite float64
-        Polar angles [degree] Shape: N. Finite degrees
+        Polar angles [rad] Shape: N. Finite radians
 
     r0 : Finite float64, optional
         Fixed spherical radius [m] Shape: scalar. Finite and nonnegative for physical
@@ -524,12 +524,12 @@ class ThetaChord(PointsMesh):
 
     **Coordinates.** Cylindrical storage derived from angle inputs
 
-    **Boundary.** Angles are degrees
+    **Boundary.** Angles are radians
 
     **Preconditions.**
 
     * Inputs satisfy the documented finite cylindrical coordinate and shape contract
-    * Physical spherical radii are nonnegative, with degree angles in the usual 0..180 polar domain. Implementation validation applies to the generated cylindrical coordinates, requiring finite coordinates and R >= 0; it does not separately reject every negative input spherical radius.
+    * Physical spherical radii are nonnegative, with radian angles in the usual 0..pi polar domain. Implementation validation applies to the generated cylindrical coordinates, requiring finite coordinates and R >= 0; it does not separately reject every negative input spherical radius.
 
     **Limits.**
 
@@ -539,13 +539,13 @@ class ThetaChord(PointsMesh):
     --------
     >>> import numpy as np
     >>> from scirel.geometry import ThetaChord
-    >>> mesh = ThetaChord([0.0, 90.0])
+    >>> mesh = ThetaChord([0.0, np.pi / 2])
     >>> np.testing.assert_allclose(mesh.R, [0.0, 1.0], atol=1e-15)
     >>> np.testing.assert_allclose(mesh.Z, [1.0, 0.0], atol=1e-15)
     """
 
     def __init__(self, tpts: Iterable[float], r0: float = 1.0):
-        angle = np.deg2rad(np.asarray(tpts, dtype=float))
+        angle = np.asarray(tpts, dtype=float)
         super().__init__(float(r0) * np.sin(angle), float(r0) * np.cos(angle))
 
 

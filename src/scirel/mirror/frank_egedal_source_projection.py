@@ -34,7 +34,7 @@ def project_frank_egedal_source_modes(
     legendre_mode_count=6,
     legendre_spectrum_grid_points=256,
     source_coefficients=None,
-    nbi_pitch_angle_deg=45.0,
+    nbi_pitch_angle=math.radians(45.0),
     spectrum_operator=None,
 ):
     """Project a point-pitch source onto retained Frank--Egedal angular modes.
@@ -71,9 +71,9 @@ def project_frank_egedal_source_modes(
         dimensionless in the source-defined normalized angular convention;
         explicit branch: caller-supplied normalization]. The default is
         ``None``, which computes point-pitch coefficients by quadrature.
-    nbi_pitch_angle_deg : real scalar, optional
-        Point-source NBI pitch angle [degree]. It is converted to float only
-        when coefficients are computed. The default is ``45.0``. Its cosine is
+    nbi_pitch_angle : real scalar, optional
+        Point-source NBI pitch angle [rad]. It is converted to float only
+        when coefficients are computed. The default is π/4 rad. Its cosine is
         clipped to the active interval.
     spectrum_operator : callable, optional
         Caller-provided degree generator used when ``legendre_degrees`` is
@@ -149,7 +149,7 @@ def project_frank_egedal_source_modes(
     --------
     >>> import numpy as np
     >>> from scirel.mirror.frank_egedal_source_projection import project_frank_egedal_source_modes
-    >>> r=project_frank_egedal_source_modes(mirror_ratio=1.5,legendre_degrees=[2.],nbi_pitch_angle_deg=60.)
+    >>> r=project_frank_egedal_source_modes(mirror_ratio=1.5,legendre_degrees=[2.],nbi_pitch_angle=np.deg2rad(60.))
     >>> a=1/np.sqrt(3); norm=a-2*a**3+9*a**5/5
     >>> np.testing.assert_allclose(r['source_coefficients'],[.25/(4*np.pi*norm)],rtol=2e-10)
     """
@@ -199,8 +199,7 @@ def project_frank_egedal_source_modes(
     else:
         from scipy.special import roots_legendre
 
-        pitch_angle_degrees = float(nbi_pitch_angle_deg)
-        xi_nbi = float(np.clip(math.cos(math.radians(pitch_angle_degrees)), 0.0, xi_tp_mid))
+        xi_nbi = float(np.clip(math.cos(float(nbi_pitch_angle)), 0.0, xi_tp_mid))
         coefficients = []
         for degree in degrees:
             previous = None

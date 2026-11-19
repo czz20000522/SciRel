@@ -8,6 +8,7 @@ process or source-runtime fallback is consulted.
 from pathlib import Path
 from dataclasses import dataclass
 import json
+import math
 import numpy as np
 from ._rational_frequency import solve_rational_frequency
 
@@ -1182,7 +1183,10 @@ def solve_matrix(matrix, *, model="es1d", sp=0, nw=None, wg=0):
     residual. Generic ES3D homogeneous descriptor exposes alpha,beta and infinite/canceled modes and
     rejects unqualified finite roots. Positive perpendicular ES uses nearest-pole signed offset
     interlacing at80 decimal digits; decimal base+offset carries sub-ulp displacement. Rounded
-    omega/plots are incomplete carriers. Nonrelativistic Gaussian species; explicit
+    omega/plots are incomplete carriers. The keys in the returned mapping depend on the solver branch:
+    ES1D/EM returns 9 keys, the generic ES3D descriptor 15 (10 when every combined residue
+    cancels), and the perpendicular ES3D branch 26; the outputs table is their union.
+    Nonrelativistic Gaussian species; explicit
     finite-harmonic/rational approximation when applicable. Assumptions: Model-specific deck conventions
     are explicit. A numerical spectrum is not automatically a physically certified mode.
 
@@ -1266,7 +1270,7 @@ def solve_matrix(matrix, *, model="es1d", sp=0, nw=None, wg=0):
     )
 
 
-def em_coordinates(kj, cwp, *, theta_degrees=71):
+def em_coordinates(kj, cwp, *, theta=math.radians(71.0)):
     r"""Convert dimensionless k c/omega_pi and propagation angle into SI perpendicular and parallel coordinates.
 
     Parameters
@@ -1276,8 +1280,8 @@ def em_coordinates(kj, cwp, *, theta_degrees=71):
         [dimensionless] Shape: scalar. Finite and representable in the declared numeric type.
     cwp : numeric
         Positive reference c/omega_pi. [m] Shape: scalar. Finite real scalar c/omega_pi >0.
-    theta_degrees : numeric
-        Propagation angle from the magnetic-field axis. [degree] Shape: scalar. Default: 71. Finite and
+    theta : numeric
+        Propagation angle from the magnetic-field axis. [rad] Shape: scalar. Default: deg2rad(71). Finite and
         representable in the declared numeric type.
 
     Returns
@@ -1293,7 +1297,7 @@ def em_coordinates(kj, cwp, *, theta_degrees=71):
         scalar. Derived float64 arithmetic from the declared finite inputs; no additional post-division
         finite-output guard is applied.
     theta : float64
-        Input theta_degrees converted to radians without wrapping. [rad] Shape: scalar. Derived float64
+        Input theta in radians, returned without wrapping. [rad] Shape: scalar. Derived float64
         arithmetic from the declared finite inputs; no additional post-division finite-output guard is
         applied.
 
@@ -1309,7 +1313,7 @@ def em_coordinates(kj, cwp, *, theta_degrees=71):
     Notes
     -----
     k=kj/cwp, kx=k sin(theta), kz=k cos(theta); cwp=c/omega_pi uses explicit source reference species,
-    theta in degrees. Nonrelativistic Gaussian species; explicit finite-harmonic/rational approximation
+    theta in radians. Nonrelativistic Gaussian species; explicit finite-harmonic/rational approximation
     when applicable. Assumptions: Model-specific deck conventions are explicit. A numerical spectrum is
     not automatically a physically certified mode.
 
@@ -1321,11 +1325,11 @@ def em_coordinates(kj, cwp, *, theta_degrees=71):
     --------
     >>> import numpy as np
     >>> from scirel.kinetic.dispersion.rational import em_coordinates
-    >>> r = em_coordinates(0.1, 2.0, theta_degrees=71)
+    >>> r = em_coordinates(0.1, 2.0, theta=np.deg2rad(71))
     >>> assert np.isclose(np.hypot(r['kx'], r['kz']), 0.05)
     """
     k = _scalar(kj, "kj") / _scalar(cwp, "cwp", positive=True)
-    theta = np.deg2rad(_scalar(theta_degrees, "theta_degrees"))
+    theta = _scalar(theta, "theta")
     return dict(kx=k * np.sin(theta), kz=k * np.cos(theta), theta=theta, k=k)
 
 
@@ -1335,7 +1339,7 @@ def ordered_spectrum(
     """Corrected numeric graph; explicit point axes and per-point spectra/state.
 
     Defaults retain source sampling grids: ES1D .4:-.02:.01; ES3D kx .05:.1:5
-    with kz=0; EM kc/omega_pi .01:.02:1 at71 degrees. EM shift starts wg0*wci
+    with kz=0; EM kc/omega_pi .01:.02:1 at the deck's 71 degrees, passed as theta=radians(71). EM shift starts wg0*wci
     and follows input order. Physical descriptor root counts may vary; no padding.
     """
     model = _model(model)

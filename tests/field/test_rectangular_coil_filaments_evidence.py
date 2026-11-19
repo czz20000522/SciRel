@@ -98,7 +98,9 @@ def test_centre_table_matches_exact_rational_centres_in_the_declared_order():
 def test_a_single_filament_sits_exactly_on_the_centroid_under_any_rotation():
     """Evidence 3: one centre, exactly at (r0, z0), invariant under rotation."""
     for angle in (0.0, 90.0, -135.0, 271.5):
-        points = discretize_rectangular_coil(R0, Z0, nr=1, nz=1, dr=DR, dz=DZ, angle_deg=angle)
+        points = discretize_rectangular_coil(
+            R0, Z0, nr=1, nz=1, dr=DR, dz=DZ, angle=np.deg2rad(angle)
+        )
         assert points.shape == (1, 2)
         assert points[0, 0] == R0, angle
         assert points[0, 1] == Z0, angle
@@ -121,7 +123,9 @@ def test_rotation_is_a_proper_rotation_about_the_centroid():
     # that even the 180-degree image keeps every radius nonnegative.
     offsets = (-0.5, 0.0, 0.5)
     for angle in (37.0, 90.0, 180.0, 270.0):
-        points = discretize_rectangular_coil(R0, Z0, nr=3, nz=1, dr=0.5, dz=DZ, angle_deg=angle)
+        points = discretize_rectangular_coil(
+            R0, Z0, nr=3, nz=1, dr=0.5, dz=DZ, angle=np.deg2rad(angle)
+        )
         radians = math.radians(angle)
         cosine, sine = math.cos(radians), math.sin(radians)
         scale = max(1.0, abs(R0), abs(Z0))
@@ -145,7 +149,9 @@ def test_rotation_is_a_proper_rotation_about_the_centroid():
     # A field of centres keeps its centroid; the row-vector rotation is linear, so
     # the mean of the rotated offsets is the rotation of the zero mean.
     base = discretize_rectangular_coil(R0, Z0, nr=NR, nz=NZ, dr=DR, dz=DZ)
-    rotated = discretize_rectangular_coil(R0, Z0, nr=NR, nz=NZ, dr=DR, dz=DZ, angle_deg=37.0)
+    rotated = discretize_rectangular_coil(
+        R0, Z0, nr=NR, nz=NZ, dr=DR, dz=DZ, angle=np.deg2rad(37.0)
+    )
     centre = np.array([R0, Z0])
     np.testing.assert_allclose(rotated.mean(axis=0), centre, rtol=0.0, atol=16 * EPS * 4.0)
     np.testing.assert_allclose(
@@ -176,12 +182,12 @@ def test_each_declared_rejection_channel_is_executable():
         arguments[name] = value
         with pytest.raises(ValueError, match=f"{name} must be a positive finite scalar"):
             discretize_rectangular_coil(**arguments)
-    with pytest.raises(ValueError, match="angle_deg must be finite"):
-        discretize_rectangular_coil(R0, Z0, nr=2, nz=2, dr=DR, dz=DZ, angle_deg=np.nan)
+    with pytest.raises(ValueError, match="angle must be finite"):
+        discretize_rectangular_coil(R0, Z0, nr=2, nz=2, dr=DR, dz=DZ, angle=np.nan)
     # The axis guard: the row-vector convention sends (0, dz) to
     # (dz * sin, dz * cos), so a block tall enough in Z crosses R = 0 at 90 deg.
     with pytest.raises(ValueError, match="crosses the cylindrical axis"):
-        discretize_rectangular_coil(0.1, 0.0, nr=1, nz=2, dr=1.0, dz=4.0, angle_deg=90.0)
+        discretize_rectangular_coil(0.1, 0.0, nr=1, nz=2, dr=1.0, dz=4.0, angle=np.deg2rad(90.0))
     # Unrepresentable coordinates.
     with pytest.raises(ValueError, match="not representable"):
         discretize_rectangular_coil(

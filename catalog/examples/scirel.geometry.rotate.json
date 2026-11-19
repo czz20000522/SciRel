@@ -10,7 +10,7 @@
       "The executable rotation example stored in this contract.",
       "Direct shape regressions require ValueError for scalar points and preserve the input shape and values for zero-angle single, empty and batched (..., 2) points without mutating the caller's array.",
       "Finite-input translation, rotation and final-addition overflow raises FloatingPointError under NumPy warn, ignore and raise modes; non-finite inputs still raise ValueError, and representable results preserve float64, shape and caller-owned inputs.",
-      "Independent basis (tests/geometry/test_transform_roundtrip_evidence.py, tests/geometry/test_frame_convention_evidence.py): an exact rational recomputation of R' = x c + y s and Z' = -x s + y c in Fraction, from the same rounded c and s the implementation reads, bounds the formula to 2 eps (|x| + |y|) and so decides the sign pairing without touching the transcendental inputs; the round-trip pair rotate(-angle) after rotate(angle) is the identity to 8 eps for six angles, a pivot, a full turn, a leading batch axis and a single row; at 90 degrees the exact rational sum rounds bitwise onto each returned component, so the whole deviation from the ideal map is cos(radians(90)) = 6.12e-17; and the axis, unit, pivot and FloatingPointError channels are decided by discriminators in the same file."
+      "Independent basis (tests/geometry/test_transform_roundtrip_evidence.py, tests/geometry/test_frame_convention_evidence.py): an exact rational recomputation of R' = x c + y s and Z' = -x s + y c in Fraction, from the same rounded c and s the implementation reads, bounds the formula to 2 eps (|x| + |y|) and so decides the sign pairing without touching the transcendental inputs; the round-trip pair rotate(-angle) after rotate(angle) is the identity to 8 eps for six angles, a pivot, a full turn, a leading batch axis and a single row; at pi/2 the exact rational sum rounds bitwise onto each returned component, so the whole deviation from the ideal map is cos(pi/2) = 6.12e-17; and the axis, unit, pivot and FloatingPointError channels are decided by discriminators in the same file."
     ],
     "tests": [
       "tests/geometry/test_geometry_qualification.py",
@@ -19,14 +19,14 @@
       "tests/geometry/test_frame_convention_evidence.py",
       "tests/geometry/test_transform_roundtrip_evidence.py"
     ],
-    "evidence_ceiling": "Named finite geometry cases only; no field-solver, experimental, or release claim is made. C1 evidence adds the orientation sign, the degree unit, the pivot, the full-turn identity and the overflow path; it is a planar transform, not a 3-D rotation, and carries no measure. C1 evidence adds the exact rational recomputation of both components, the forward-inverse identity and the 90 degree rounding account.",
+    "evidence_ceiling": "Named finite geometry cases only; no field-solver, experimental, or release claim is made. C1 evidence adds the orientation sign, the radian unit, the pivot, the full-turn identity and the overflow path; it is a planar transform, not a 3-D rotation, and carries no measure. C1 evidence adds the exact rational recomputation of both components, the forward-inverse identity and the pi/2 rounding account.",
     "known_limitations": [
       "This planar transform does not validate a physical field model or enforce nonnegative cylindrical R.",
-      "The rotation is clockwise-positive in degrees and planar in (R, Z); it does not enforce non-negative R and a caller expecting the mathematical counter-clockwise convention gets the mirrored angle without any warning."
+      "The rotation is clockwise-positive in radians and planar in (R, Z); it does not enforce non-negative R and a caller expecting the mathematical counter-clockwise convention gets the mirrored angle without any warning."
     ],
     "basis": {
       "kind": "closed-form",
-      "statement": "The orientation sign, the degree unit, the pivot, the full-turn identity and the overflow path are asserted, with an exact rational recomputation of both components. This is a planar transform, not a 3-D rotation, and it carries no measure.",
+      "statement": "The orientation sign, the radian unit, the pivot, the full-turn identity and the overflow path are asserted, with an exact rational recomputation of both components. This is a planar transform, not a 3-D rotation, and it carries no measure.",
       "source": "tests/geometry/test_frame_convention_evidence.py"
     }
   },
@@ -61,7 +61,7 @@
   "identity": {
     "relation": "Rigid planar rotation relation",
     "direction": "points and angle to rotated points",
-    "definition": "Clockwise-positive row-vector rotation in degrees",
+    "definition": "Clockwise-positive row-vector rotation in radians",
     "model": "Two-dimensional R,Z plane",
     "geometry": "Two-dimensional R,Z plane",
     "coordinates": "Cylindrical R,Z",
@@ -83,11 +83,11 @@
     {
       "name": "angle",
       "description": "Rotation angle",
-      "units": "degree",
+      "units": "rad",
       "shape": "scalar",
       "dtype": "float",
       "required": true,
-      "constraints": "Finite degrees"
+      "constraints": "Finite radians"
     },
     {
       "name": "pivot",
@@ -142,8 +142,8 @@
     }
   },
   "example": {
-    "description": "Rotate one R-Z row vector by the documented clockwise-positive 90 degrees.",
-    "code": "import numpy as np\nfrom scirel.geometry import rotate\n\nrotated = rotate([[1.0, 0.0]], 90.0)\nnp.testing.assert_allclose(rotated, [[0.0, -1.0]], atol=1e-15)",
+    "description": "Rotate one R-Z row vector by the documented clockwise-positive pi/2 radians.",
+    "code": "import numpy as np\nfrom scirel.geometry import rotate\n\nrotated = rotate([[1.0, 0.0]], np.pi / 2)\nnp.testing.assert_allclose(rotated, [[0.0, -1.0]], atol=1e-15)",
     "expected": "The shape is preserved and the clockwise-positive result is [[0.0, -1.0]]."
   }
 }
