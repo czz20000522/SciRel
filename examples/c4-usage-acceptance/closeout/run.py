@@ -106,6 +106,9 @@ def run_task(tid: str) -> dict:
         "gaps": [],
     }
 
+    if tid == "io-eqdsk-roundtrip":
+        record["package"]["import_relative_to_venv_site_packages"] = H.installed_wheel_origin()
+
     fn = CHECKS.get(tid)
     if fn is None:
         record["gaps"].append(
@@ -143,6 +146,11 @@ def run_task(tid: str) -> dict:
                 "public call(s) were made",
             )
         )
+    if tid == "io-eqdsk-roundtrip":
+        for binding in record["bindings"].values():
+            if "filename" in binding["args"]:
+                binding["args"]["filename"] = "<ephemeral contract-example input>"
+        record["tasklist_digest"] = tasklist()["tasks_digest"]
     return record
 
 
@@ -208,6 +216,18 @@ def readback(tid: str) -> dict:
             problems.append(f"call {c['seq']} stored no returned type")
         if c["status"] == "raised" and not c.get("exception"):
             problems.append(f"call {c['seq']} raised but stored no exception")
+    if tid == "io-eqdsk-roundtrip":
+        chain = [
+            (c["asset"], c["arguments"]["kwargs"].get("filename"), c["status"])
+            for c in data["calls"]
+            if c["asset"] in ("scirel.io.read-eqdsk", "scirel.io.write-eqdsk")
+        ]
+        if chain != [
+            ("scirel.io.read-eqdsk", "input.eqdsk", "returned"),
+            ("scirel.io.write-eqdsk", "roundtrip.eqdsk", "returned"),
+            ("scirel.io.read-eqdsk", "roundtrip.eqdsk", "returned"),
+        ]:
+            problems.append("first read, write and re-read of the new file not all observed")
     if data.get("answer") is None:
         problems.append("no answer stored")
     if not data.get("independent_check"):
@@ -229,6 +249,10 @@ def write_task(record: dict) -> None:
 
 
 def run_one(tid: str) -> int:
+    if tid == "io-eqdsk-roundtrip" and (OUT_DIR / f"{tid}.json").exists():
+        raise FileExistsError(
+            "run the EQDSK replay in a fresh harness copy; receipt already exists"
+        )
     try:
         record = run_task(tid)
     except BaseException as exc:  # noqa: BLE001 - a crashed task is recorded, not hidden

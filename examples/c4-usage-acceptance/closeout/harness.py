@@ -42,6 +42,35 @@ def runtime_json() -> dict:
     return json.loads((PACKAGE_ROOT / "runtime.json").read_text())
 
 
+def installed_wheel_origin() -> str:
+    """Check the package location before running a replay, not after importing SciRel."""
+    from hashlib import sha256
+    from importlib.metadata import distribution
+    from importlib.util import find_spec
+    import sys
+    from sysconfig import get_path
+
+    spec = find_spec("scirel")
+    site = Path(get_path("purelib")).resolve()
+    if (
+        not sys.flags.isolated
+        or sys.prefix == sys.base_prefix
+        or spec is None
+        or not spec.origin
+        or not Path(spec.origin).resolve().is_relative_to(site)
+    ):
+        raise RuntimeError("EQDSK replay requires -I and the delivered wheel in a clean venv")
+    runtime = runtime_json()["runtime"]
+    wheel = PACKAGE_ROOT / "wheel" / runtime["wheel"]
+    source = json.loads(distribution("scirel").read_text("direct_url.json") or "{}")
+    if (
+        source.get("url") != wheel.as_uri()
+        or sha256(wheel.read_bytes()).hexdigest() != runtime["wheel_sha256"]
+    ):
+        raise ValueError("installed SciRel did not come from this delivery's wheel")
+    return Path(spec.origin).resolve().relative_to(site).as_posix()
+
+
 def capability_index() -> dict:
     return json.loads((PACKAGE_ROOT / "catalog" / "capability-index.json").read_text())
 
@@ -342,8 +371,14 @@ def discover(asset: str) -> dict:
     captured: list[tuple[tuple, dict]] = []
     real = resolve(asset)[2]
 
+    input_files = []
+
     def recorder(*a, **kw):
         captured.append((a, kw))
+        if asset in {"scirel.io.read-eqdsk", "scirel.io.read-geqdsk"}:
+            # These examples delete their input on exit; the path alone is not a fixture.
+            filename = signature(asset).bind(*a, **kw).arguments["filename"]
+            input_files.append(Path(filename).read_bytes())
         return real(*a, **kw)
 
     tree = ast.parse(code, filename=f"<contract-example:{asset}>")
@@ -398,6 +433,7 @@ def discover(asset: str) -> dict:
         "kwargs": variants[0]["kwargs"],
         "variants": variants,
         "example_error": error,
+        "input_files": input_files,
     }
     _DISCOVERY_CACHE[asset] = result
     return result
