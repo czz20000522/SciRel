@@ -539,10 +539,10 @@
       "modules": {
         "scirel._composition": "ce7f22d7d0978065cb3c56384d49fccf73bf41635cd51b3a8755cca5453e1ca7",
         "scirel.mirror.frank_egedal_hot_ion_moments": "45fa1cdd2137d72b629c6a74387cd0ff180b35a74d1dc22ff064082d395362b9",
-        "scirel.mirror.frank_egedal_pressure_closure": "1b4cc910233d479a3b2193d3c505894829b4e1fd8128616e614a58be7ebf3061",
+        "scirel.mirror.frank_egedal_pressure_closure": "9613d4a816bc793d4190a78b3a820eef22ca98eb0428219603e3316a5b43fdb6",
         "scirel.mirror.frank_egedal_pressure_state": "b72fdd1890f73d360d756ebf774f41c36f059847e418a5df42e735806bb17240",
         "scirel.mirror.frank_egedal_radial_envelope": "ea6d869cfd1d37eec9e96c1b52efb9a915e1bc157d9ad1d2e8ed1899a9d4221a",
-        "scirel.mirror.frank_egedal_source_projection": "ee9069cef6cc394cf728501b98ee8b24fb3f480a6c842804cbfda35f60ef5858",
+        "scirel.mirror.frank_egedal_source_projection": "eb80e25a137b0ae4b67d3d65ba171ba58a32043c8f82601cde0c1a7bbf3e19ce",
         "scirel.mirror.loss_cone_spectrum": "6d338422656b2fd6d5425b923033f38833a94523b31a6d55273748148ca38ed0"
       },
       "review_basis": "_run_composition consumes psi,B,params and calls radial envelope,source projection with spectral solver,hot-ion moments,then pressure assembly. The pressure adapter passes the five canonical pressure scales as keyword-only arguments and rejects the removed p0/background_density aliases. The document has exactly these three scientific ports; other closure defaults remain inside params and bound dependencies."

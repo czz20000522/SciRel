@@ -143,7 +143,7 @@
   },
   "example": {
     "description": "Rotate one R-Z row vector by the documented clockwise-positive pi/2 radians.",
-    "code": "import numpy as np\nfrom scirel.geometry import rotate\n\nrotated = rotate([[1.0, 0.0]], 90.0)\nnp.testing.assert_allclose(rotated, [[0.0, -1.0]], atol=1e-15)",
+    "code": "import numpy as np\nfrom scirel.geometry import rotate\n\nrotated = rotate([[1.0, 0.0]], np.pi / 2)\nnp.testing.assert_allclose(rotated, [[0.0, -1.0]], atol=1e-15)",
     "expected": "The shape is preserved and the clockwise-positive result is [[0.0, -1.0]]."
   }
 }

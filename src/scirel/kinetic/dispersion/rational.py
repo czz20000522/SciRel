@@ -8,6 +8,7 @@ process or source-runtime fallback is consulted.
 from pathlib import Path
 from dataclasses import dataclass
 import json
+import math
 import numpy as np
 from ._rational_frequency import solve_rational_frequency
 
@@ -1266,7 +1267,7 @@ def solve_matrix(matrix, *, model="es1d", sp=0, nw=None, wg=0):
     )
 
 
-def em_coordinates(kj, cwp, *, theta=np.deg2rad(71.0)):
+def em_coordinates(kj, cwp, *, theta=math.radians(71.0)):
     r"""Convert dimensionless k c/omega_pi and propagation angle into SI perpendicular and parallel coordinates.
 
     Parameters

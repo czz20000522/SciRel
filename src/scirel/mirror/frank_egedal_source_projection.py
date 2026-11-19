@@ -34,7 +34,7 @@ def project_frank_egedal_source_modes(
     legendre_mode_count=6,
     legendre_spectrum_grid_points=256,
     source_coefficients=None,
-    nbi_pitch_angle=np.deg2rad(45.0),
+    nbi_pitch_angle=math.radians(45.0),
     spectrum_operator=None,
 ):
     """Project a point-pitch source onto retained Frank--Egedal angular modes.

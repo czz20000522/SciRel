@@ -37,7 +37,7 @@ def test_zero_argument_callable_accepts_an_explicit_empty_input_list(asset_id):
     validate_runtime(document)
 
 
-@pytest.mark.parametrize("omitted", ["all", "r0", "angle_deg"])
+@pytest.mark.parametrize("omitted", ["all", "r0", "angle"])
 def test_parameterized_callable_rejects_undocumented_explicit_inputs(omitted):
     document = _document("scirel.field.rectangular-coil-filaments")
     document["inputs"] = [
@@ -46,6 +46,6 @@ def test_parameterized_callable_rejects_undocumented_explicit_inputs(omitted):
     # An empty list is structurally valid; the runtime binding establishes
     # whether explicit scientific parameters are missing.
     assert validate_document(document) is document
-    expected = "angle_deg" if omitted == "angle_deg" else "r0"
+    expected = "angle" if omitted == "angle" else "r0"
     with pytest.raises(AssetDocumentError, match=f"undocumented.*{expected}"):
         validate_runtime(document)
