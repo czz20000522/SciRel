@@ -266,8 +266,8 @@
         },
         {
           "name": "mu_hat",
-          "description": "方向角，单位度，默认 0。",
-          "constraints": "有限角度。",
+          "description": "方向角，单位弧度，默认 0。",
+          "constraints": "有限弧度角。",
           "dtype": "有限 float64"
         },
         {
@@ -391,7 +391,7 @@
         },
         {
           "name": "angle",
-          "description": "旋转角，单位度，默认 0。",
+          "description": "旋转角，单位弧度，默认 0。",
           "constraints": "有限。",
           "dtype": "有限 float64"
         },
@@ -850,10 +850,10 @@
     },
     {
       "asset_id": "scirel.geometry.spherical-r-chord",
-      "summary": "在固定角度处改变球半径得到点列。",
+      "summary": "在固定极角处改变球半径得到点列。",
       "definition": "按 R=r sinθ、Z=r cosθ 将球坐标输入映射为柱坐标。",
       "model": "球坐标到柱坐标的映射。",
-      "boundary": "输入角度使用度。",
+      "boundary": "输入角度使用弧度。",
       "assumptions": [
         "半径有限。"
       ],
@@ -866,8 +866,8 @@
         },
         {
           "name": "theta0",
-          "description": "固定极角，单位度，默认 0。",
-          "constraints": "有限角度。",
+          "description": "固定极角，单位弧度，默认 0。",
+          "constraints": "有限弧度角。",
           "dtype": "有限 float64"
         }
       ],
@@ -882,7 +882,7 @@
       "applicability": {
         "preconditions": [
           "输入满足文档中有限柱坐标和形状合同。",
-          "物理球半径应非负，通常极角域为 0..180 度。实现校验的是生成的柱坐标，要求坐标有限且 R≥0；它没有单独拒绝所有负的输入球半径。"
+          "物理球半径应非负，通常极角域为 0..pi 弧度。实现校验的是生成的柱坐标，要求坐标有限且 R≥0；它没有单独拒绝所有负的输入球半径。"
         ],
         "supported": [
           "有限球半径弦。"
@@ -910,7 +910,7 @@
         "evidence_ceiling": "仅建立具名有限几何案例；不涉及场求解器、实验验证或发行许可。 C1 证据补充轴向与单位约定、五个角度上的恒等式与符号规则；不建立该弦对球面的完备性。"
       },
       "example": {
-        "description": "把极角 90 度处的单位球面径向点转换为柱坐标 R、Z。",
+        "description": "把极角 pi/2 处的单位球面径向点转换为柱坐标 R、Z。",
         "expected": "生成的柱坐标为 R=[1.0] m、Z=[0.0] m。"
       }
     },
@@ -919,14 +919,14 @@
       "summary": "在固定球半径上随极角变化的一组点。",
       "definition": "R=r0 sin(theta)，Z=r0 cos(theta)。",
       "model": "极角坐标映射；由输入角度生成并以柱坐标保存。",
-      "boundary": "角度采用度。",
+      "boundary": "角度采用弧度。",
       "assumptions": [
         "半径和角度均有限。"
       ],
       "inputs": [
         {
           "name": "tpts",
-          "description": "极角，单位度。",
+          "description": "极角，单位弧度。",
           "constraints": "有限的角度值。",
           "dtype": "有限 float64"
         },
@@ -948,7 +948,7 @@
       "applicability": {
         "preconditions": [
           "输入满足文档所述有限柱坐标和形状合同。",
-          "物理球半径应非负，通常极角域为 0..180 度。实现校验的是生成的柱坐标，要求坐标有限且 R≥0；它没有单独拒绝所有负的输入球半径。"
+          "物理球半径应非负，通常极角域为 0..pi 弧度。实现校验的是生成的柱坐标，要求坐标有限且 R≥0；它没有单独拒绝所有负的输入球半径。"
         ],
         "supported": [
           "有限极角弦。"
@@ -964,14 +964,14 @@
         "partial_results": "构造失败不返回网格对象。"
       },
       "example": {
-        "description": "把单位半径下 0 度和 90 度的极角转换为柱坐标 R、Z。",
+        "description": "把单位半径下 0 与 pi/2 的极角转换为柱坐标 R、Z。",
         "expected": "生成坐标 (R,Z)=[(0,1),(1,0)] m。"
       },
       "verification": {
         "scope": [
           "直接几何测试覆盖构造器及坐标形状不变量。",
           "运行合同内附带的构造器示例。",
-          "独立依据（tests/geometry/test_closed_form_evidence.py、tests/geometry/test_frame_convention_evidence.py）：解析闭式 R^2 + Z^2 = r^2 在含 0 度与 180 度的五个角度上成立，并在 3-4-5 三元组上精确——hypot(3, 4) = 5 给出逐位的 (R, Z, r) = (3, 4, 5)；精确有理重算显示 R = r s、Z = r c，R 的残差为半径的 1 ulp、Z 为 0，即乘积本身精确、只显出正弦的一次舍入；theta 弦与球弦在六个角度上逐位相等；轴、单位、对立轴判别与拒绝通道在 frame-convention 文件中裁定。"
+          "独立依据（tests/geometry/test_closed_form_evidence.py、tests/geometry/test_frame_convention_evidence.py）：解析闭式 R^2 + Z^2 = r^2 在含 0 与 pi 的五个角度上成立，并在 3-4-5 三元组上精确——hypot(3, 4) = 5 给出逐位的 (R, Z, r) = (3, 4, 5)；精确有理重算显示 R = r s、Z = r c，R 的残差为半径的 1 ulp、Z 为 0，即乘积本身精确、只显出正弦的一次舍入；theta 弦与球弦在六个角度上逐位相等；轴、单位、对立轴判别与拒绝通道在 frame-convention 文件中裁定。"
         ],
         "evidence_ceiling": "仅建立具名有限几何案例；不涉及场求解器、实验验证或发行许可。 C1 证据补充轴向、单位、毕达哥拉斯恒等式、跨资产相等与符号规则；固定约定，不建立角度采样的充分性。",
         "known_limitations": [

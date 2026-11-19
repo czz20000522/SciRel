@@ -1266,7 +1266,7 @@ def solve_matrix(matrix, *, model="es1d", sp=0, nw=None, wg=0):
     )
 
 
-def em_coordinates(kj, cwp, *, theta_degrees=71):
+def em_coordinates(kj, cwp, *, theta=np.deg2rad(71.0)):
     r"""Convert dimensionless k c/omega_pi and propagation angle into SI perpendicular and parallel coordinates.
 
     Parameters
@@ -1276,8 +1276,8 @@ def em_coordinates(kj, cwp, *, theta_degrees=71):
         [dimensionless] Shape: scalar. Finite and representable in the declared numeric type.
     cwp : numeric
         Positive reference c/omega_pi. [m] Shape: scalar. Finite real scalar c/omega_pi >0.
-    theta_degrees : numeric
-        Propagation angle from the magnetic-field axis. [degree] Shape: scalar. Default: 71. Finite and
+    theta : numeric
+        Propagation angle from the magnetic-field axis. [rad] Shape: scalar. Default: deg2rad(71). Finite and
         representable in the declared numeric type.
 
     Returns
@@ -1293,7 +1293,7 @@ def em_coordinates(kj, cwp, *, theta_degrees=71):
         scalar. Derived float64 arithmetic from the declared finite inputs; no additional post-division
         finite-output guard is applied.
     theta : float64
-        Input theta_degrees converted to radians without wrapping. [rad] Shape: scalar. Derived float64
+        Input theta in radians, returned without wrapping. [rad] Shape: scalar. Derived float64
         arithmetic from the declared finite inputs; no additional post-division finite-output guard is
         applied.
 
@@ -1309,7 +1309,7 @@ def em_coordinates(kj, cwp, *, theta_degrees=71):
     Notes
     -----
     k=kj/cwp, kx=k sin(theta), kz=k cos(theta); cwp=c/omega_pi uses explicit source reference species,
-    theta in degrees. Nonrelativistic Gaussian species; explicit finite-harmonic/rational approximation
+    theta in radians. Nonrelativistic Gaussian species; explicit finite-harmonic/rational approximation
     when applicable. Assumptions: Model-specific deck conventions are explicit. A numerical spectrum is
     not automatically a physically certified mode.
 
@@ -1321,11 +1321,11 @@ def em_coordinates(kj, cwp, *, theta_degrees=71):
     --------
     >>> import numpy as np
     >>> from scirel.kinetic.dispersion.rational import em_coordinates
-    >>> r = em_coordinates(0.1, 2.0, theta_degrees=71)
+    >>> r = em_coordinates(0.1, 2.0, theta=np.deg2rad(71.0))
     >>> assert np.isclose(np.hypot(r['kx'], r['kz']), 0.05)
     """
     k = _scalar(kj, "kj") / _scalar(cwp, "cwp", positive=True)
-    theta = np.deg2rad(_scalar(theta_degrees, "theta_degrees"))
+    theta = _scalar(theta, "theta")
     return dict(kx=k * np.sin(theta), kz=k * np.cos(theta), theta=theta, k=k)
 
 

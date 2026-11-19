@@ -5,7 +5,7 @@ import numpy as np
 from scirel._result import Result
 
 
-def discretize_permanent_ring(r0, z0, width, height, mu_hat_deg=0.0):
+def discretize_permanent_ring(r0, z0, width, height, mu_hat=0.0):
     """Discretize a permanent ring as a named point/weight result.
 
     Parameters
@@ -21,8 +21,8 @@ def discretize_permanent_ring(r0, z0, width, height, mu_hat_deg=0.0):
     height : real scalar
         Axial extent spanned by eight points on each group before rotation [m].
         Finite and strictly positive.
-    mu_hat_deg : real scalar, optional
-        Cross-section rotation about its centroid [degree]. Finite; every
+    mu_hat : real scalar, optional
+        Cross-section rotation about its centroid [rad]. Finite; every
         nonzero angle is rotated. Default is ``0.0``.
 
     Returns
@@ -71,7 +71,7 @@ def discretize_permanent_ring(r0, z0, width, height, mu_hat_deg=0.0):
     ... )
     """
     center = np.asarray((r0, z0), dtype=float)
-    dimensions = np.asarray((width, height, mu_hat_deg), dtype=float)
+    dimensions = np.asarray((width, height, mu_hat), dtype=float)
     if not np.all(np.isfinite(center)) or not np.all(np.isfinite(dimensions)):
         raise ValueError("ring geometry must be finite")
     if center[0] < 0.0 or dimensions[0] <= 0.0 or dimensions[1] <= 0.0:
@@ -86,7 +86,7 @@ def discretize_permanent_ring(r0, z0, width, height, mu_hat_deg=0.0):
             )
         )
         if dimensions[2] != 0.0:
-            theta = np.deg2rad(dimensions[2])
+            theta = dimensions[2]
             rotation = np.array([[np.cos(theta), -np.sin(theta)], [np.sin(theta), np.cos(theta)]])
             points = (points - center) @ rotation + center
     if not np.all(np.isfinite(points)) or np.any(points[:, 0] < 0.0):

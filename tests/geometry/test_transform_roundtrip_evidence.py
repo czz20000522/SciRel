@@ -11,8 +11,8 @@ the implementation:
    ``Mesh.theta`` is ``arctan2(R, Z)``.  Those two are the documented inverse of
    the constructor, so ``inverse(forward(r, t)) == (r, t)`` and
    ``forward(inverse(R, Z)) == (R, Z)`` are identities that hold for *any*
-   correct pair of maps.  Reading ``Mesh.theta`` back, converting to degrees and
-   feeding the constructor again exercises both directions of the library itself
+   correct pair of maps.  Reading ``Mesh.theta`` back and feeding the constructor
+   again exercises both directions of the library itself
    rather than a private re-derivation: nothing in the test recomputes
    ``sin``/``cos`` to predict the point.
 2. **Exact rational recomputation.** ``rotate`` forms ``(x c + y s, -x s + y c)``
@@ -31,10 +31,9 @@ the implementation:
 
 Precision budgets, fixed before measurement (``eps = 2.22e-16``):
 
-* Round trip through ``hypot``/``arctan2``/``degrees``: three correctly rounded
-  steps (``hypot`` is documented within 1 ulp, ``arctan2`` within 1 ulp, the
-  degree conversion is one multiply and one divide), so each recovered
-  coordinate admits ``8 * eps * scale`` with ``scale`` the larger of the radius
+* Round trip through ``hypot``/``arctan2``: two correctly rounded steps
+  (``hypot`` is documented within 1 ulp, ``arctan2`` within 1 ulp), so each
+  recovered coordinate admits ``8 * eps * scale`` with ``scale`` the larger of the radius
   and the coordinate.  For the 3-4-5 case ``hypot(3, 4) = 5`` is **exact**, so
   the radius is required to come back bitwise.
 * Exact rational recomputation of one rotated component: two exact products,
@@ -107,15 +106,15 @@ def test_points_mesh_round_trip_through_its_derived_radius_and_angle():
     """inverse(forward(r, t)) == (r, t) and forward(inverse(R, Z)) == (R, Z).
 
     The 3-4-5 triple is the exact case: ``hypot(3, 4) = 5`` bitwise and
-    ``degrees(atan2(3, 4))`` feeds back through the constructor.  The radius
+    ``atan2(3, 4)`` feeds back through the constructor.  The radius
     round trip is required bitwise there; the angle is bounded by ``8 eps``.
     """
-    mesh = SphericalRChord([5.0], math.degrees(math.atan2(3.0, 4.0)))
+    mesh = SphericalRChord([5.0], math.atan2(3.0, 4.0))
     assert mesh.R[0] == 3.0 and mesh.Z[0] == 4.0
 
     recovered = PointsMesh(mesh.R, mesh.Z)
     assert recovered.r[0] == 5.0  # exact, not merely within a bound
-    back = SphericalRChord(recovered.r, np.degrees(recovered.theta))
+    back = SphericalRChord(recovered.r, recovered.theta)
     assert np.array_equal(back.R, mesh.R)
     assert np.array_equal(back.Z, mesh.Z)
 
@@ -124,15 +123,17 @@ def test_points_mesh_round_trip_over_a_spread_of_angles_and_radii():
     """Same identity away from the exact triple, on asymmetric and boundary rows."""
     radii = np.array([0.25, 1.0, 2.5, 7.125])
     for angle in (0.0, 17.0, 45.0, 90.0, 123.5, 180.0):
-        built = SphericalRChord(radii, angle)
+        built = SphericalRChord(radii, math.radians(angle))
         recovered = PointsMesh(built.R, built.Z)
         assert np.all(np.abs(recovered.r - radii) <= 8 * EPS * radii.max()), angle
         # The recovered angle is bounded against itself, not against the radius:
-        # degrees(arctan2(...)) is a correctly rounded angle in degrees, whose ulp
+        # arctan2 is a correctly rounded angle in radians, whose ulp
         # scales with |angle|.  A radius-scaled budget would fail for a large
         # angle on a small radius, which is a budget error, not an identity error.
-        angle_scale = max(abs(angle), 1.0)
-        assert np.all(np.abs(np.degrees(recovered.theta) - angle) <= 8 * EPS * angle_scale), angle
+        angle_scale = max(math.radians(abs(angle)), 1.0)
+        assert np.all(
+            np.abs(recovered.theta - math.radians(angle)) <= 8 * EPS * angle_scale
+        ), angle
 
 
 def test_points_mesh_rejects_each_declared_channel():
@@ -165,7 +166,7 @@ def test_r_chord_fixes_z_bitwise_and_recovers_it_through_the_angle():
     assert np.array_equal(chord.Z, np.full(3, z0))
 
     recovered = PointsMesh(chord.R, chord.Z)
-    again = SphericalRChord(recovered.r, np.degrees(recovered.theta))
+    again = SphericalRChord(recovered.r, recovered.theta)
     assert np.all(np.abs(again.R - chord.R) <= 8 * EPS * np.abs(chord.R))
     assert np.all(np.abs(again.Z - z0) <= 8 * EPS * np.abs(z0))
 
@@ -174,7 +175,7 @@ def test_r_chord_boundary_and_degenerate_rows():
     """z0 = 0 makes theta a quarter turn; a single point still round trips."""
     flat = RChord([1.5], 0.0)
     recovered = PointsMesh(flat.R, flat.Z)
-    assert abs(np.degrees(recovered.theta[0]) - 90.0) <= 8 * EPS * 1.5
+    assert abs(recovered.theta[0] - np.pi / 2) <= 8 * EPS * 1.5
     assert recovered.r[0] == 1.5
 
     # Constant input is the degenerate case: every point maps back to itself.
@@ -209,13 +210,13 @@ def test_z_chord_fixes_r_bitwise_and_recovers_it_through_the_angle():
     recovered = PointsMesh(chord.R, chord.Z)
     assert np.all(
         np.allclose(
-            [recovered.r, np.degrees(recovered.theta)],
-            [np.hypot(r0, heights), np.degrees(np.arctan2(r0, heights))],
+            [recovered.r, recovered.theta],
+            [np.hypot(r0, heights), np.arctan2(r0, heights)],
             rtol=0,
             atol=8 * EPS * 2.0,
         )
     )
-    again = SphericalRChord(recovered.r, np.degrees(recovered.theta))
+    again = SphericalRChord(recovered.r, recovered.theta)
     assert np.all(np.abs(again.R - r0) <= 8 * EPS * 2.0)
     assert np.all(np.abs(again.Z - heights) <= 8 * EPS * np.abs(heights).max())
 
@@ -242,21 +243,29 @@ def test_rotate_round_trip_is_the_identity():
     points = np.array([[0.3, -0.7], [1.25, 0.5], [-2.0, 3.0], [0.0, 0.0]])
     scale = 8 * EPS * np.abs(points).max()
     for angle in (17.0, 45.0, 90.0, 123.0, -30.0, 360.0):
-        returned = rotate(rotate(points, angle), -angle)
+        radians = math.radians(angle)
+        returned = rotate(rotate(points, radians), -radians)
         assert np.all(np.abs(returned - points) <= scale), angle
 
     pivot = (1.0, -0.25)
-    around = rotate(rotate(points, 63.0, pivot=pivot), -63.0, pivot=pivot)
+    around = rotate(rotate(points, math.radians(63.0), pivot=pivot), -math.radians(63.0), pivot=pivot)
     assert np.all(np.abs(around - points) <= 8 * EPS * (np.abs(points).max() + 1.0))
     # The pivot itself is the fixed point of the pair.
     assert np.all(
-        np.abs(rotate(rotate([pivot], 40.0, pivot=pivot), -40.0, pivot=pivot) - np.asarray([pivot]))
+        np.abs(
+            rotate(
+                rotate([pivot], math.radians(40.0), pivot=pivot),
+                -math.radians(40.0),
+                pivot=pivot,
+            )
+            - np.asarray([pivot])
+        )
         <= 8 * EPS
     )
 
     batched = np.arange(12, dtype=float).reshape(2, 3, 2) / 10.0
-    assert rotate(rotate(batched, 51.0), -51.0).shape == batched.shape
-    single = rotate(rotate([1.0, 0.0], 12.0), -12.0)
+    assert rotate(rotate(batched, math.radians(51.0)), -math.radians(51.0)).shape == batched.shape
+    single = rotate(rotate([1.0, 0.0], math.radians(12.0)), -math.radians(12.0))
     assert single.shape == (2,)
 
 
@@ -279,7 +288,7 @@ def test_rotate_arithmetic_matches_an_exact_rational_recomputation():
         sine = math.sin(math.radians(angle))
         exact_first = _exact(x) * _exact(cosine) + _exact(y) * _exact(sine)
         exact_second = -_exact(x) * _exact(sine) + _exact(y) * _exact(cosine)
-        got = rotate([[x, y]], angle)[0]
+        got = rotate([[x, y]], math.radians(angle))[0]
         budget = 2 * EPS * (abs(x) + abs(y))
         assert abs(_exact(got[0]) - exact_first) <= budget, angle
         assert abs(_exact(got[1]) - exact_second) <= budget, angle
@@ -289,8 +298,8 @@ def test_rotate_arithmetic_matches_an_exact_rational_recomputation():
     # exact rational sum rounds back onto the implementation's value bitwise,
     # which is the strongest statement available here: the only difference from
     # the ideal map is the transcendental input, and the map itself is exact.
-    cosine_at_quarter = math.cos(math.radians(90.0))
-    quarter = rotate([[1.3, -2.4]], 90.0)[0]
+    cosine_at_quarter = math.cos(np.pi / 2)
+    quarter = rotate([[1.3, -2.4]], np.pi / 2)[0]
     exact_quarter_first = _exact(1.3) * _exact(cosine_at_quarter) - _exact(2.4)
     exact_quarter_second = -_exact(1.3) + _exact(-2.4) * _exact(cosine_at_quarter)
     assert float(exact_quarter_first) == quarter[0]

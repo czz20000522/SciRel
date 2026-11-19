@@ -54,6 +54,7 @@ def test_rectangular_coil_public_docstring_declares_contract():
 
 @pytest.mark.parametrize("angle", [-130.0, -7.0, 0.0, 37.0, 91.0, 360.0])
 def test_rotation_inverse_distance_and_nonmutation(angle):
+    angle = np.deg2rad(angle)
     points = np.array([[1.4, -0.3], [2.1, 0.7], [0.2, 1.5]])
     pivot = np.array([0.8, -0.4])
     before = points.copy()
@@ -77,10 +78,10 @@ def test_all_chord_conventions_and_structured_point_order():
         Mesh.to_points(ZChord(values, 0.7)), np.column_stack((np.full(3, 0.7), values))
     )
     angles = np.array([12.0, 37.0, 109.0, 164.0])
-    chord = ThetaChord(angles, r0=1.3)
+    chord = ThetaChord(np.deg2rad(angles), r0=1.3)
     np.testing.assert_allclose(chord.r, 1.3, rtol=5e-15, atol=0.0)
     np.testing.assert_allclose(chord.theta, np.deg2rad(angles), rtol=5e-15, atol=1e-15)
-    radius = SphericalRChord(values, theta0=37.0)
+    radius = SphericalRChord(values, theta0=np.deg2rad(37.0))
     np.testing.assert_allclose(radius.r, values, rtol=5e-15, atol=0.0)
     np.testing.assert_allclose(radius.theta, np.deg2rad(37.0), rtol=5e-15, atol=0.0)
     mesh = RectMesh(rmin=0.2, rmax=0.8, nr=3, zmin=-0.7, zmax=0.4, nz=2)
@@ -93,9 +94,16 @@ def test_all_chord_conventions_and_structured_point_order():
 @pytest.mark.parametrize(
     "factory",
     [
-        lambda: RectangularCoil(1.2, 0.3, nr=3, nz=4, dr=0.07, dz=0.09, angle=37.0),
+        lambda: RectangularCoil(
+            1.2, 0.3, nr=3, nz=4, dr=0.07, dz=0.09, angle=np.deg2rad(37.0)
+        ),
         lambda: MagnetRing(
-            1.2, 0.3, width=0.07, height=0.09, mu_hat=37.0, weights=[-2.0, -0.5, 0.5, 2.0]
+            1.2,
+            0.3,
+            width=0.07,
+            height=0.09,
+            mu_hat=np.deg2rad(37.0),
+            weights=[-2.0, -0.5, 0.5, 2.0],
         ),
     ],
 )
@@ -103,10 +111,13 @@ def test_parameterized_source_chained_rigid_geometry_and_signed_current(factory)
     source = factory()
     points = source.rz_pts.copy()
     distance = np.linalg.norm(points - source.centroid, axis=1)
-    source.rotate(13.0, pivot=(0.9, 0.1))
+    source.rotate(np.deg2rad(13.0), pivot=(0.9, 0.1))
     source.translate([0.3, -0.2])
     np.testing.assert_allclose(
-        source.rz_pts, rotate(points, 13.0, (0.9, 0.1)) + [0.3, -0.2], rtol=0.0, atol=1e-15
+        source.rz_pts,
+        rotate(points, np.deg2rad(13.0), (0.9, 0.1)) + [0.3, -0.2],
+        rtol=0.0,
+        atol=1e-15,
     )
     np.testing.assert_allclose(
         np.linalg.norm(source.rz_pts - source.centroid, axis=1), distance, rtol=1e-14, atol=1e-15
@@ -146,7 +157,7 @@ def test_brb_geometry_parity_and_wham_reflection_at_every_source():
     for i in range(2, 36):
         ring = getattr(brb, f"mr{i}")
         theta = np.linspace(7.5, 172.5, 34)[i - 2]
-        assert ring.mu_hat == pytest.approx(theta + (i - 1) % 2 * 180.0, abs=1e-14)
+        assert ring.mu_hat == pytest.approx(np.deg2rad(theta + (i - 1) % 2 * 180.0), abs=1e-14)
         assert ring.current == pytest.approx(2710.68, abs=1e-12)
     wham = WHAM()
     for north, south in [(wham.hts1, wham.hts2), (wham.cc1, wham.cc2)]:

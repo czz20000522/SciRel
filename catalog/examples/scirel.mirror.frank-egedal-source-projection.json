@@ -36,7 +36,7 @@
     "definition": "Set xi_tp_mid=sqrt(max(0,1-1/max(mirror_ratio,1e-12))). Use caller-supplied degrees or a supplied spectrum operator. For computed coefficients, c_nu=u_nu(clip(cos(theta_NBI),0,xi_tp_mid))/(4*pi*integral_0^xi_tp_mid u_nu^2 dxi). u_nu solves the regular even initial-value equation without integer exclusion or polynomial truncation. Successively doubled Gauss-Legendre rules normalize each mode; the initial node count resolves its estimated angular oscillation scale and the integral must agree within relative 1e-10.",
     "model": "Angular point-source projection with caller-specified or numerically generated modes; it does not establish a physical NBI population.",
     "geometry": "One-dimensional pitch-cosine interval from xi=0 to the mirror-ratio-derived turning boundary xi_tp_mid",
-    "coordinates": "xi and degree are dimensionless. nbi_pitch_angle_deg is in degrees and converted through cosine; the angle cosine is clipped to the active interval. Returned degree and coefficient arrays preserve supplied order.",
+    "coordinates": "xi and degree are dimensionless. nbi_pitch_angle is in radians and converted through cosine; the angle cosine is clipped to the active interval. Returned degree and coefficient arrays preserve supplied order.",
     "boundary": "Regular modes satisfy u(0)=1 and u′(0)=0. Caller-supplied degrees are not automatically loss-cone eigenvalues. A nonpositive derived cone returns the existing inactive empty result.",
     "assumptions": [
       "The caller supplies physically suitable fractional degrees or a compatible spectrum callable when no degrees are explicit; this function does not certify their loss-cone boundary roots.",
@@ -115,13 +115,13 @@
       "constraints": "When supplied, values must be finite and have the same shape as the degrees; otherwise point-pitch coefficients are computed."
     },
     {
-      "name": "nbi_pitch_angle_deg",
+      "name": "nbi_pitch_angle",
       "description": "Point-source NBI pitch angle used when coefficients are computed.",
-      "units": "degree",
+      "units": "rad",
       "shape": "scalar",
       "dtype": "real scalar",
       "required": false,
-      "default": 45.0,
+      "default": 0.7853981633974483,
       "constraints": "Converted to float only when coefficients are computed; its cosine is clipped to the active cone."
     },
     {
@@ -222,7 +222,7 @@
     "python": {
       "module": "scirel.mirror.frank_egedal_source_projection",
       "symbol": "project_frank_egedal_source_modes",
-      "signature": "project_frank_egedal_source_modes(*, mirror_ratio=2.0, legendre_terms=15, legendre_backend='truncated', legendre_degrees=None, legendre_mode_count=6, legendre_spectrum_grid_points=256, source_coefficients=None, nbi_pitch_angle_deg=45.0, spectrum_operator=None)",
+      "signature": "project_frank_egedal_source_modes(*, mirror_ratio=2.0, legendre_terms=15, legendre_backend='truncated', legendre_degrees=None, legendre_mode_count=6, legendre_spectrum_grid_points=256, source_coefficients=None, nbi_pitch_angle=0.7853981633974483, spectrum_operator=None)",
       "canonical_module": "scirel.mirror",
       "canonical_symbol": "project_frank_egedal_source_modes"
     }
@@ -233,7 +233,7 @@
   },
   "example": {
     "description": "Project a regular integer mode and compare its analytic normalization.",
-    "code": "import numpy as np\nfrom scirel.mirror.frank_egedal_source_projection import project_frank_egedal_source_modes\nr=project_frank_egedal_source_modes(mirror_ratio=1.5,legendre_degrees=[2.],nbi_pitch_angle_deg=60.)\na=1/np.sqrt(3); norm=a-2*a**3+9*a**5/5\nnp.testing.assert_allclose(r['source_coefficients'],[.25/(4*np.pi*norm)],rtol=2e-10)\n",
+    "code": "import numpy as np\nfrom scirel.mirror.frank_egedal_source_projection import project_frank_egedal_source_modes\nr=project_frank_egedal_source_modes(mirror_ratio=1.5,legendre_degrees=[2.],nbi_pitch_angle=np.deg2rad(60.))\na=1/np.sqrt(3); norm=a-2*a**3+9*a**5/5\nnp.testing.assert_allclose(r['source_coefficients'],[.25/(4*np.pi*norm)],rtol=2e-10)\n",
     "expected": "Observed PASS: Integer degree 2 is evaluated regularly and its projected coefficient matches the polynomial integral."
   },
   "verification": {

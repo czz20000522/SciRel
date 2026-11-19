@@ -29,7 +29,7 @@ cannot cover, because this asset has two different kinds of claim:
    and they are equalities, not tolerances.  A sign error, a swapped group or an
    off-by-one node count breaks at least one of them.
 5. **Rotation about the section centroid** keeps the unweighted centroid, keeps
-   every radius nonnegative, and leaves the table untouched at ``0`` degrees.
+   every radius nonnegative, and leaves the table untouched at ``0`` radians.
 
 **Not established here, and reported as such:**
 
@@ -149,9 +149,9 @@ def test_the_signed_weight_law_and_its_exact_moments():
 def test_rotation_keeps_the_section_centroid_and_the_axis_clear():
     """Evidence 5: rotation about the centroid, zero angle is the identity."""
     base = _result()
-    unchanged = _result(mu_hat_deg=0.0)
+    unchanged = _result(mu_hat=0.0)
     np.testing.assert_array_equal(unchanged["rz_pts"], base["rz_pts"])
-    rotated = _result(mu_hat_deg=30.0)
+    rotated = _result(mu_hat=np.deg2rad(30.0))
     centre = np.array([R0, Z0])
     # The unweighted centroid of the 16 nodes is the section centroid, before and
     # after the rotation.
@@ -180,7 +180,7 @@ def test_each_declared_rejection_channel_is_executable():
     with pytest.raises(ValueError, match="ring geometry must be finite"):
         _result(width=np.inf)
     with pytest.raises(ValueError, match="ring geometry must be finite"):
-        _result(mu_hat_deg=np.nan)
+        _result(mu_hat=np.nan)
     with pytest.raises(ValueError, match="nonnegative radius and positive dimensions"):
         _result(r0=-R0)
     with pytest.raises(ValueError, match="nonnegative radius and positive dimensions"):
@@ -189,7 +189,7 @@ def test_each_declared_rejection_channel_is_executable():
         _result(height=-HEIGHT)
     # The axis guard: a tall section rotated 90 degrees crosses R = 0.
     with pytest.raises(ValueError, match="crosses the cylindrical axis"):
-        discretize_permanent_ring(0.25, 0.0, 0.5, 4.0, mu_hat_deg=90.0)
+        discretize_permanent_ring(0.25, 0.0, 0.5, 4.0, mu_hat=np.deg2rad(90.0))
     # Unrepresentable coordinates.
     with pytest.raises(ValueError, match="crosses the cylindrical axis or contains nonfinite"):
         discretize_permanent_ring(np.finfo(float).max, 0.0, np.finfo(float).max, 1.0)

@@ -34,7 +34,7 @@ def project_frank_egedal_source_modes(
     legendre_mode_count=6,
     legendre_spectrum_grid_points=256,
     source_coefficients=None,
-    nbi_pitch_angle_deg=45.0,
+    nbi_pitch_angle=np.deg2rad(45.0),
     spectrum_operator=None,
 ):
     """Project a point-pitch source onto retained Frank--Egedal angular modes.
@@ -71,8 +71,8 @@ def project_frank_egedal_source_modes(
         dimensionless in the source-defined normalized angular convention;
         explicit branch: caller-supplied normalization]. The default is
         ``None``, which computes point-pitch coefficients by quadrature.
-    nbi_pitch_angle_deg : real scalar, optional
-        Point-source NBI pitch angle [degree]. It is converted to float only
+    nbi_pitch_angle : real scalar, optional
+        Point-source NBI pitch angle [rad]. It is converted to float only
         when coefficients are computed. The default is ``45.0``. Its cosine is
         clipped to the active interval.
     spectrum_operator : callable, optional
@@ -199,8 +199,7 @@ def project_frank_egedal_source_modes(
     else:
         from scipy.special import roots_legendre
 
-        pitch_angle_degrees = float(nbi_pitch_angle_deg)
-        xi_nbi = float(np.clip(math.cos(math.radians(pitch_angle_degrees)), 0.0, xi_tp_mid))
+        xi_nbi = float(np.clip(math.cos(float(nbi_pitch_angle)), 0.0, xi_tp_mid))
         coefficients = []
         for degree in degrees:
             previous = None

@@ -24,7 +24,7 @@ inputs:
   shape: list[mapping]
   units: mixed SI
   required: true
-  constraints: each mapping declares r0_m,z0_m,nr,nz,dr_m,dz_m and exactly one of current_a (current in each filament) or ampere_turns_a (total coil current split over filaments by weight); optional weights are per-filament multipliers, angle_deg optional
+  constraints: each mapping declares r0_m,z0_m,nr,nz,dr_m,dz_m and exactly one of current_a (current in each filament) or ampere_turns_a (total coil current split over filaments by weight); optional weights are per-filament multipliers, angle [rad] optional
 outputs:
 - name: psi_vac
   meaning: 线圈真空磁通
@@ -53,7 +53,7 @@ nodes:
   kind: scientific_function
   asset_ref: scirel.field.rectangular_coil_filaments
   callable: scirel.field.rectangular_coil_filaments::discretize_rectangular_coil
-  inputs: [r0_m, z0_m, nr, nz, dr_m, dz_m, angle_deg]
+  inputs: [r0_m, z0_m, nr, nz, dr_m, dz_m, angle]
   outputs: [rz_pts]
 - id: attach_coil_current
   name: 独立驱动电流与丝权重绑定

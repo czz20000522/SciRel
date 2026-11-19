@@ -689,7 +689,7 @@
      "dtype": "实数"
     },
     {
-     "name": "angle_deg",
+     "name": "angle",
      "description": "按既有行向量符号约定进行截面旋转。",
      "constraints": "有限。",
      "dtype": "实数"
@@ -8274,9 +8274,9 @@
      "dtype": "实数标量，转换为 float"
     },
     {
-     "name": "mu_hat_deg",
+     "name": "mu_hat",
      "description": "按既有行向量符号约定绕形心旋转的角度。",
-     "constraints": "有限度数，所有非零值都旋转；极大角度的相位精度受 float64 三角参数约化限制。",
+     "constraints": "有限弧度值，所有非零值都旋转；极大角度的相位精度受 float64 三角参数约化限制。",
      "dtype": "实数标量，转换为 float"
     }
    ],
@@ -9676,7 +9676,7 @@
     },
     {
      "name": "rectangular_coils",
-     "description": "线圈映射序列，包含 r0_m、z0_m、nr、nz、dr_m、dz_m，current_a 与 ampere_turns_a 二选一，以及可选 angle_deg、weights。current_a 是**每根**电流丝的电流（第 j 根为 current_a*weights[j]，权重默认 1，所以线圈总安匝是 nr*nz*current_a）；ampere_turns_a 是整个线圈块的总电流，按权重比例分给各电流丝。把总安匝当作 current_a 传入，场会大 nr*nz 倍。 活动非零电流丝不得与目标网格节点精确重合。",
+     "description": "线圈映射序列，包含 r0_m、z0_m、nr、nz、dr_m、dz_m，current_a 与 ampere_turns_a 二选一，以及可选 angle（弧度）、weights。current_a 是**每根**电流丝的电流（第 j 根为 current_a*weights[j]，权重默认 1，所以线圈总安匝是 nr*nz*current_a）；ampere_turns_a 是整个线圈块的总电流，按权重比例分给各电流丝。把总安匝当作 current_a 传入，场会大 nr*nz 倍。 活动非零电流丝不得与目标网格节点精确重合。",
      "constraints": "非空；每个线圈给出且只给出一个有限的 current_a 或 ampere_turns_a（两者都给或都不给时抛出 ValueError），可为每根生成的电流丝给一个有限权重；使用 ampere_turns_a 时权重之和不能为零。 非零电流、非零权重的电流丝与目标节点重合时抛出 ValueError。",
      "dtype": "由映射组成的 Python 序列"
     }

@@ -1062,7 +1062,7 @@
   {
    "asset_id": "scirel.geometry.rotate",
    "summary": "在柱坐标 R、Z 平面旋转行向量；返回有限坐标，有限输入的计算产生非有限值时抛出 FloatingPointError。",
-   "definition": "采用顺时针为正的行向量旋转，角度单位为度。",
+   "definition": "采用顺时针为正的行向量旋转，角度单位为弧度。",
    "model": "二维 R、Z 平面。",
    "boundary": "点和旋转中心都必须是有限的二分量值。",
    "assumptions": [
@@ -1077,8 +1077,8 @@
     },
     {
      "name": "angle",
-     "description": "旋转角，单位度。",
-     "constraints": "有限的角度值。",
+     "description": "旋转角，单位弧度。",
+     "constraints": "有限弧度值。",
      "dtype": "浮点数"
     },
     {
@@ -1134,7 +1134,7 @@
     ]
    },
    "example": {
-    "description": "按文档规定的“顺时针为正”约定，将一条 R-Z 行向量旋转 90 度。",
+    "description": "按文档规定的“顺时针为正”约定，将一条 R-Z 行向量旋转 pi/2 弧度。",
     "expected": "形状保持不变，顺时针为正的结果为 [[0.0, -1.0]]。"
    }
   },

@@ -55,7 +55,7 @@ def test_yaml_declares_the_non_interchangeable_closure_pipeline():
     assert (
         "inputs: [mirror_ratio, legendre_terms, legendre_backend, legendre_degrees, "
         "legendre_mode_count, legendre_spectrum_grid_points, source_coefficients, "
-        "nbi_pitch_angle_deg, spectrum_operator]"
+        "nbi_pitch_angle, spectrum_operator]"
     ) in contract
     assert "to_input: spectrum_operator" in contract
     assert "inputs: [params, spectrum_function]" not in contract

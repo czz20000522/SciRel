@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import math
+
 
 def _run_composition(inputs, *, asset_loader):
     """Resolve the N4 pipeline without composition-local numerical implementation."""
@@ -35,7 +37,7 @@ def _run_composition(inputs, *, asset_loader):
         legendre_mode_count=option("legendre_mode_count", 6),
         legendre_spectrum_grid_points=option("legendre_spectrum_grid_points", 256),
         source_coefficients=option("source_coefficients", None),
-        nbi_pitch_angle_deg=option("nbi_pitch_angle_deg", 45.0),
+        nbi_pitch_angle=option("nbi_pitch_angle", math.radians(45.0)),
         spectrum_operator=asset_loader("scirel.mirror.loss_cone_spectrum"),
     )
     hot = asset_loader("scirel.mirror.frank_egedal_hot_ion_moments")(
@@ -118,7 +120,7 @@ def solve_frank_egedal_pressure_closure(inputs=None, **kwargs):
         zeff=1), finite. Explicit nonempty finite legendre_degrees bypasses spectrum
         evaluation; otherwise legendre_mode_count=6 and legendre_spectrum_grid_points=256
         control it. source_coefficients must be finite and match degrees if supplied;
-        otherwise nbi_pitch_angle_deg=45 controls projection. legendre_terms=15 is a legacy
+        otherwise nbi_pitch_angle=radians(45) controls projection. legendre_terms=15 is a legacy
         count >=2; both backend names 'truncated' (default) and 'hypergeometric' use the
         corrected regular initial-value evaluator. velocity_nodes=pitch_nodes=24 by default,
         each int-converted value >=2. Pressure keys: hot_pressure_scale defaults to 1 Pa;

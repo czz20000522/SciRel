@@ -6612,8 +6612,8 @@
      "dtype": "有限实数数组或 None"
     },
     {
-     "name": "nbi_pitch_angle_deg",
-     "description": "点源 NBI 俯仰角；单位为 degree，默认 45.0。",
+     "name": "nbi_pitch_angle",
+     "description": "点源 NBI 俯仰角；单位为 rad，默认 0.7853981633974483。",
      "constraints": "仅在计算系数时转换为 float；余弦裁剪到活动锥内。",
      "dtype": "实数标量"
     },

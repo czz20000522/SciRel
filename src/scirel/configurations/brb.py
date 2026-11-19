@@ -169,7 +169,14 @@ class BRB(Device):
             setattr(
                 self,
                 f"mr{i + 1}",
-                MagnetRing(r0=r, z0=z, mu_hat=mu, current=2710.68, height=0.0254, width=0.0381),
+                MagnetRing(
+                    r0=r,
+                    z0=z,
+                    mu_hat=float(np.deg2rad(mu)),
+                    current=2710.68,
+                    height=0.0254,
+                    width=0.0381,
+                ),
             )
 
     def add_cathode(self, *args, **kwargs):

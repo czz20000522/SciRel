@@ -27,22 +27,22 @@ def test_configuration_geometry_can_evaluate_on_mesh():
 
 def test_rectangular_coil_rotate_then_translate_preserves_parameter_state():
     coil = RectangularCoil(1.0, 0.2, nr=2, nz=3, dr=0.1, dz=0.2)
-    coil.rotate(90, pivot=(1.0, 0.2))
+    coil.rotate(np.deg2rad(90.0), pivot=(1.0, 0.2))
     rotated = coil.rz_pts.copy()
     coil.translate([0.2, 0.1])
     np.testing.assert_allclose(coil.rz_pts, rotated + [0.2, 0.1])
     np.testing.assert_allclose(coil.centroid, [1.2, 0.3])
-    assert coil.angle == pytest.approx(90.0)
+    assert coil.angle == pytest.approx(np.deg2rad(90.0))
 
 
 def test_magnet_ring_rotate_then_translate_preserves_parameter_state():
-    ring = MagnetRing(1.0, 0.2, width=0.1, height=0.2, mu_hat=30.0)
-    ring.rotate(20.0, pivot=(1.0, 0.2))
+    ring = MagnetRing(1.0, 0.2, width=0.1, height=0.2, mu_hat=np.deg2rad(30.0))
+    ring.rotate(np.deg2rad(20.0), pivot=(1.0, 0.2))
     rotated = ring.rz_pts.copy()
     ring.translate([0.2, 0.1])
     np.testing.assert_allclose(ring.rz_pts, rotated + [0.2, 0.1])
     np.testing.assert_allclose(ring.centroid, [1.2, 0.3])
-    assert ring.mu_hat == pytest.approx(50.0)
+    assert ring.mu_hat == pytest.approx(np.deg2rad(50.0))
 
 
 def test_filament_sources_reject_unknown_keywords_instead_of_ignoring_them():

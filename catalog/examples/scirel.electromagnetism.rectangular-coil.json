@@ -17,7 +17,7 @@
       "Ordered current projection and source lifecycle",
       "Full BRB/WHAM configuration composition at finite targets",
       "Independent reference (tests/electromagnetism/test_source_geometry_evidence.py): the ordered geometry is decided exactly as the product of two arithmetic sequences - a single spacing on each axis, a centroid that is the exact mean of the table, and mirror symmetry about the centroid that holds inside one ulp because the nodes are formed symmetrically. For the field, the 2 x 2 coil is compared against _ideal_ring_reference.superpose at 64/128 eps, and the angle-zero branch is asserted to return the unrotated product bitwise.",
-      "Implementation relation: radial index outermost and axial index innermost, with nr*nz points; centres span r0 -+ dr (nr-1)/2 and z0 -+ dz (nz-1)/2; area = nr nz dr dz in m2 and current_density = total_current / area in A/m2; angle is a degree-valued rotation about the centroid using the package row-vector convention. Parameterized setters rebuild atomically and restore the previous valid state when validation fails, and a count change must preserve the weight cardinality.",
+      "Implementation relation: radial index outermost and axial index innermost, with nr*nz points; centres span r0 -+ dr (nr-1)/2 and z0 -+ dz (nz-1)/2; area = nr nz dr dz in m2 and current_density = total_current / area in A/m2; angle is a radian-valued rotation about the centroid using the package row-vector convention. Parameterized setters rebuild atomically and restore the previous valid state when validation fails, and a count change must preserve the weight cardinality.",
       "Test matrix (4 cases): the exact product-sequence layout, spacing law, centroid and area of a 3 x 4 coil; every field component of a 2 x 2 coil against the reference plus the angle-zero identity; rigid rotation about the centroid and the fact that a rotation about the origin moves the centroid; and the atomic-setter rejections. Boundary cases are nr = nz = 1 and a count change that would desynchronise the weights.",
       "Precision budget, fixed before the comparison ran: 64 eps for psi and 128 eps for the fields against the reference; the layout laws are exact or bounded by the rounding of a station (and the test uses np.spacing of the station magnitude, derived rather than fitted); rotation rigidity carries 4 eps and the area 2 eps of the declared product.",
       "Failure matrix, one executable assertion per channel: ValueError for non-positive or boolean counts, a negative radius, non-positive spacings, a nonfinite parameter, a rejected setter rebuild and a cardinality-changing count; TypeError for an unrecognised keyword; FloatingPointError propagates from an unrepresentable field."
@@ -76,7 +76,7 @@
     "definition": "Generate nr*nz centers with radial index outermost and axial index innermost.",
     "model": "Axisymmetric ideal circular-filament source array.",
     "geometry": "Rectangular R,Z center lattice rotated about its centroid when requested.",
-    "coordinates": "R,Z in metres; counts dimensionless; angle in degrees; current in amperes.",
+    "coordinates": "R,Z in metres; counts dimensionless; angle in radians; current in amperes.",
     "boundary": "The generated points must retain nonnegative cylindrical radius.",
     "assumptions": [
       "Counts are positive integers and spacings are positive finite values.",
@@ -148,7 +148,7 @@
     {
       "name": "angle",
       "description": "Rotation angle",
-      "units": "degree",
+      "units": "rad",
       "shape": "scalar",
       "dtype": "Finite float64",
       "required": false,

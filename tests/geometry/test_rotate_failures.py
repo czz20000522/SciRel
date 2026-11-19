@@ -23,7 +23,7 @@ def test_finite_rotation_overflow_raises_without_mutating_inputs(mode, points, a
     with np.errstate(over=mode, invalid=mode):
         settings = np.geterr()
         with pytest.raises(FloatingPointError):
-            rotate(points, angle, pivot)
+            rotate(points, np.deg2rad(angle), pivot)
         assert np.geterr() == settings
     np.testing.assert_array_equal(points, before_points)
     np.testing.assert_array_equal(pivot, before_pivot)
@@ -60,7 +60,7 @@ def test_large_representable_rotation_is_not_rejected(mode):
     points = np.array([[1e308, -1e308]])
     pivot = np.array([1e308, -1e308])
     with np.errstate(over=mode, invalid=mode):
-        result = rotate(points, 90.0, pivot)
+        result = rotate(points, np.pi / 2, pivot)
     np.testing.assert_array_equal(result, points)
     assert result.dtype == np.dtype(np.float64)
 

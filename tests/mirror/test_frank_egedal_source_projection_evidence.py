@@ -123,7 +123,7 @@ def test_degree_two_coefficient_matches_the_analytic_normalization():
             returned = project_frank_egedal_source_modes(
                 mirror_ratio=mirror_ratio,
                 legendre_degrees=[2.0],
-                nbi_pitch_angle_deg=pitch_deg,
+                nbi_pitch_angle=math.radians(pitch_deg),
             )
             expected = _analytic_coefficient(2, mirror_ratio, pitch_deg)
             observed = mpmath.mpf(float(returned["source_coefficients"][0]))
@@ -143,7 +143,7 @@ def test_degree_four_coefficient_matches_the_analytic_normalization():
             returned = project_frank_egedal_source_modes(
                 mirror_ratio=mirror_ratio,
                 legendre_degrees=[4.0],
-                nbi_pitch_angle_deg=pitch_deg,
+                nbi_pitch_angle=math.radians(pitch_deg),
             )
             expected = _analytic_coefficient(4, mirror_ratio, pitch_deg)
             observed = mpmath.mpf(float(returned["source_coefficients"][0]))

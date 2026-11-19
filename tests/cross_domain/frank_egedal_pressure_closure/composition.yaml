@@ -149,12 +149,12 @@ inputs:
       units: dimensionless
       required: false
       constraints: same shape as degrees
-    nbi_pitch_angle_deg:
+    nbi_pitch_angle:
       meaning: 缺省 NBI 源角
       shape: scalar
-      units: deg
+      units: rad
       required: false
-      constraints: default 45
+      constraints: default deg2rad(45)
     legendre_terms:
       meaning: P/Q 多项式保留项数
       shape: scalar_integer
@@ -235,7 +235,7 @@ nodes:
   kind: scientific_function
   callable: scirel.mirror.frank_egedal_source_projection::project_frank_egedal_source_modes
   asset_ref: scirel.mirror.frank_egedal_source_projection
-  inputs: [mirror_ratio, legendre_terms, legendre_backend, legendre_degrees, legendre_mode_count, legendre_spectrum_grid_points, source_coefficients, nbi_pitch_angle_deg, spectrum_operator]
+  inputs: [mirror_ratio, legendre_terms, legendre_backend, legendre_degrees, legendre_mode_count, legendre_spectrum_grid_points, source_coefficients, nbi_pitch_angle, spectrum_operator]
   outputs: [degrees, source_coefficients, legendre_terms, fractional_mode, xi_tp_mid, degree_source, legendre_backend]
 - id: hot_ion_moments
   name: Frank-Egedal 热离子矩

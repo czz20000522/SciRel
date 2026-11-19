@@ -18,7 +18,7 @@ def rotate(pts, angle, pivot=(0.0, 0.0)):
         Point rows [m] Shape: ``(...,2)``. Final dimension length 2
 
     angle : float
-        Rotation angle [degree] Shape: ``scalar``. Finite degrees
+        Rotation angle [rad] Shape: ``scalar``. Finite radians
 
     pivot : Finite float64, optional
         Rotation pivot [m] Shape: ``(2,)``. Finite R,Z pivot Optional; default ``[0.0,
@@ -47,7 +47,7 @@ def rotate(pts, angle, pivot=(0.0, 0.0)):
 
     Notes
     -----
-    Clockwise-positive row-vector rotation in degrees. This planar operation
+    Clockwise-positive row-vector rotation in radians. This planar operation
     does not enforce nonnegative R on input points, pivot or output points.
 
     **Coordinates.** Cylindrical R,Z
@@ -67,7 +67,7 @@ def rotate(pts, angle, pivot=(0.0, 0.0)):
     --------
     >>> import numpy as np
     >>> from scirel.geometry import rotate
-    >>> rotated = rotate([[1.0, 0.0]], 90.0)
+    >>> rotated = rotate([[1.0, 0.0]], np.pi / 2)
     >>> np.testing.assert_allclose(rotated, [[0.0, -1.0]], atol=1e-15)
     """
     points = np.asarray(pts, dtype=float)
@@ -83,8 +83,7 @@ def rotate(pts, angle, pivot=(0.0, 0.0)):
     angle = float(angle)
     if not math.isfinite(angle):
         raise ValueError("angle must be finite")
-    radians = math.radians(angle)
-    cosine, sine = math.cos(radians), math.sin(radians)
+    cosine, sine = math.cos(angle), math.sin(angle)
     rotation = np.array([[cosine, -sine], [sine, cosine]])
     with np.errstate(over="ignore", invalid="ignore"):
         rotated = (points - center) @ rotation + center

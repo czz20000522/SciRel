@@ -16,7 +16,7 @@ def test_unrotated_rectangular_coil_preserves_source_filament_order():
 
 # 验证：正 90 度按源码 row-vector 旋转；R 正方向的点绕质心转到负 Z 方向。
 def test_positive_ninety_degree_rotation_uses_source_row_vector_sign():
-    result = scientific_function(1.0, 2.0, nr=2, nz=1, dr=0.4, dz=0.2, angle_deg=90.0)
+    result = scientific_function(1.0, 2.0, nr=2, nz=1, dr=0.4, dz=0.2, angle=np.deg2rad(90.0))
     np.testing.assert_allclose(result, np.array([[1.0, 2.2], [1.0, 1.8]]), atol=1.0e-14)
 
 
@@ -35,7 +35,7 @@ def test_rejects_invalid_filament_counts_or_spacings(keyword, value):
     [
         (1.0e308, 0.0, 3, 1, 1.0e308, 1.0, 0.0),
         (1.0, 0.0, 1, 3, 1.0, 1.7e308, 0.0),
-        (9.0e307, 9.0e307, 3, 3, 8.0e307, 8.0e307, 45.0),
+        (9.0e307, 9.0e307, 3, 3, 8.0e307, 8.0e307, np.deg2rad(45.0)),
     ],
     ids=["radial-endpoint", "axial-span", "rotation"],
 )
@@ -67,5 +67,5 @@ def test_reviewed_relation_example():
     np.testing.assert_allclose(points, expected)
     assert np.isclose(np.ptp(points[:, 0]), (2 - 1) * 0.4)
     assert np.isclose(np.ptp(points[:, 1]), (3 - 1) * 0.2)
-    rotated = discretize_rectangular_coil(1.0, 2.0, nr=2, nz=1, dr=0.4, dz=0.2, angle_deg=90.0)
+    rotated = discretize_rectangular_coil(1.0, 2.0, nr=2, nz=1, dr=0.4, dz=0.2, angle=np.deg2rad(90.0))
     np.testing.assert_allclose(rotated, [[1.0, 2.2], [1.0, 1.8]], atol=1.0e-14)

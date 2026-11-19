@@ -176,7 +176,7 @@ def test_pressure_state_descending_radial_storage_keeps_physical_edge():
 
 
 def test_ring_tiny_angle_is_rotated_without_legacy_snap():
-    got = discretize_permanent_ring(3.0, 0.0, 2.0, 1.0, mu_hat_deg=5e-13)["rz_pts"]
+    got = discretize_permanent_ring(3.0, 0.0, 2.0, 1.0, mu_hat=np.deg2rad(5e-13))["rz_pts"]
     zero = discretize_permanent_ring(3.0, 0.0, 2.0, 1.0)["rz_pts"]
     assert not np.array_equal(got, zero)
     angle = math.radians(5e-13)
@@ -191,7 +191,7 @@ def test_ring_tiny_angle_is_rotated_without_legacy_snap():
 
 
 def test_ring_finite_angle_avoids_unnecessary_pi_times_angle_overflow():
-    got = discretize_permanent_ring(3.0, 0.0, 2.0, 1.0, mu_hat_deg=1e308)["rz_pts"]
+    got = discretize_permanent_ring(3.0, 0.0, 2.0, 1.0, mu_hat=np.deg2rad(1e308))["rz_pts"]
     assert np.all(np.isfinite(got))
 
 

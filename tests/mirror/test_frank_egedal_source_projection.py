@@ -15,7 +15,7 @@ def test_public_function_has_explicit_keyword_only_controls_and_rejects_legacy_e
         "(*, mirror_ratio=2.0, legendre_terms=15, legendre_backend='truncated', "
         "legendre_degrees=None, legendre_mode_count=6, "
         "legendre_spectrum_grid_points=256, source_coefficients=None, "
-        "nbi_pitch_angle_deg=45.0, spectrum_operator=None)"
+        "nbi_pitch_angle=0.7853981633974483, spectrum_operator=None)"
     )
     assert all(
         parameter.kind is inspect.Parameter.KEYWORD_ONLY
@@ -81,7 +81,7 @@ def test_reviewed_relation_example():
     projected = project_frank_egedal_source_modes(
         mirror_ratio=2.0,
         legendre_degrees=[0.5],
-        nbi_pitch_angle_deg=angle_deg,
+        nbi_pitch_angle=math.radians(angle_deg),
         legendre_terms=24,
         legendre_backend="hypergeometric",
     )

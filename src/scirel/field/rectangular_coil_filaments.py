@@ -18,7 +18,7 @@ def _positive_scalar(name, value):
     return value
 
 
-def discretize_rectangular_coil(r0, z0, nr, nz, dr, dz, angle_deg=0.0):
+def discretize_rectangular_coil(r0, z0, nr, nz, dr, dz, angle=0.0):
     """Return ordered ``(R, Z)`` centers for a rectangular filament array.
 
     Parameters
@@ -37,8 +37,8 @@ def discretize_rectangular_coil(r0, z0, nr, nz, dr, dz, angle_deg=0.0):
         Positive finite radial center spacing [m].
     dz : real scalar
         Positive finite axial center spacing [m].
-    angle_deg : real scalar, optional
-        In-plane rotation angle [degree] using the maintained row-vector sign
+    angle : real scalar, optional
+        In-plane rotation angle [rad] using the maintained row-vector sign
         convention. Finite; the default is ``0.0``.
 
     Returns
@@ -81,16 +81,16 @@ def discretize_rectangular_coil(r0, z0, nr, nz, dr, dz, angle_deg=0.0):
         raise ValueError("r0 must be a nonnegative cylindrical radius")
     nr, nz = _positive_integer("nr", nr), _positive_integer("nz", nz)
     dr, dz = _positive_scalar("dr", dr), _positive_scalar("dz", dz)
-    angle_deg = float(angle_deg)
-    if not np.isfinite(angle_deg):
-        raise ValueError("angle_deg must be finite")
+    angle = float(angle)
+    if not np.isfinite(angle):
+        raise ValueError("angle must be finite")
 
     try:
         radial = np.linspace(r0 - 0.5 * dr * (nr - 1), r0 + 0.5 * dr * (nr - 1), nr)
         axial = np.linspace(z0 - 0.5 * dz * (nz - 1), z0 + 0.5 * dz * (nz - 1), nz)
         points = np.column_stack((np.repeat(radial, nz), np.tile(axial, nr)))
-        if angle_deg != 0.0:
-            theta = np.deg2rad(angle_deg)
+        if angle != 0.0:
+            theta = angle
             cosine, sine = np.cos(theta), np.sin(theta)
             rotation = np.array([[cosine, -sine], [sine, cosine]])
             points = (points - np.array([r0, z0])) @ rotation + np.array([r0, z0])

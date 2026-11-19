@@ -336,7 +336,7 @@ class RectangularCoil(CurrentFilamentSet):
     dz : float, optional
         Positive axial center spacing [m]. The default is ``0.1``.
     angle : float, default=0.0
-        Finite rotation angle [degree] about the centroid. The default is
+        Finite rotation angle [rad] about the centroid. The default is
         ``0.0``.
     **kwargs : object, optional
         Additional inherited constructor entries; see Other Parameters.
@@ -488,7 +488,7 @@ class MagnetRing(CurrentFilamentSet):
     height : float, optional
         Positive axial cross-section height [m]. The default is ``0.01``.
     mu_hat : float, optional
-        Finite centroid orientation angle [degree]. The default is ``0.0``.
+        Finite centroid orientation angle [rad]. The default is ``0.0``.
     **kwargs : object, optional
         Additional inherited constructor entries; see Other Parameters.
 
