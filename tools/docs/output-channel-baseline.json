@@ -19,15 +19,6 @@
       }
     },
     {
-      "asset_id": "scirel.io.write-eqdsk",
-      "reason": "single declared output, channel not stated: the contract does not say whether the caller receives the value positionally or as a field of a Result mapping. Baselined from the C4 closeout measurement (examples/c4-usage-acceptance/closeout/GAPS.md B1/B3); stating the channel deletes this entry in the same commit.",
-      "measured": {
-        "return_kind": "none",
-        "runtime_type": "NoneType",
-        "reading": "write_eqdsk returned None. The mapping is input; the example reads the serialized text from a file."
-      }
-    },
-    {
       "asset_id": "scirel.kinetic.rational-jpole-evaluate",
       "reason": "single declared output, channel not stated: the contract does not say whether the caller receives the value positionally or as a field of a Result mapping. Baselined from the C4 closeout measurement (examples/c4-usage-acceptance/closeout/GAPS.md B1/B3); stating the channel deletes this entry in the same commit.",
       "measured": {
@@ -46,15 +37,6 @@
       }
     },
     {
-      "asset_id": "scirel.kinetic.vp-rk4-step",
-      "reason": "single declared output, channel not stated: the contract does not say whether the caller receives the value positionally or as a field of a Result mapping. Baselined from the C4 closeout measurement (examples/c4-usage-acceptance/closeout/GAPS.md B1/B3); stating the channel deletes this entry in the same commit.",
-      "measured": {
-        "return_kind": "positional",
-        "runtime_type": "tuple",
-        "reading": "vp_rk4_step returned the tuple unpacked into f and E; the dict from vp_init supplies its arguments."
-      }
-    },
-    {
       "asset_id": "scirel.neutrals.elastic-frequency-channels",
       "reason": "single declared output, channel not stated: the contract does not say whether the caller receives the value positionally or as a field of a Result mapping. Baselined from the C4 closeout measurement (examples/c4-usage-acceptance/closeout/GAPS.md B1/B3); stating the channel deletes this entry in the same commit.",
       "measured": {
@@ -62,21 +44,12 @@
         "runtime_type": "dict",
         "reading": "The successful call returned a dict with elastic_frequency_m_inv. The example also checks a rejected call, which produced no return."
       }
-    },
-    {
-      "asset_id": "scirel.neutrals.elastic-regeneration-aggregation",
-      "reason": "single declared output, channel not stated: the contract does not say whether the caller receives the value positionally or as a field of a Result mapping. Baselined from the C4 closeout measurement (examples/c4-usage-acceptance/closeout/GAPS.md B1/B3); stating the channel deletes this entry in the same commit.",
-      "measured": {
-        "return_kind": "positional",
-        "runtime_type": "ndarray",
-        "reading": "The successful call returned an ndarray. The channel dicts are inputs, not the result."
-      }
     }
   ],
   "measured_return_kinds": {
-    "scope": "All seven remaining entries, previously labelled mapping-like, measured using the catalog examples and implementations at 9b0de014.",
-    "method": "python3 scripts/dev.py run python -B scripts/probe_output_channel_returns.py --json .runtime/returns.json (run from the checkout being measured). Classify successful direct calls to the declared callable before the example consumes their returns.",
-    "summary": "Of the seven, four returned mappings (three dicts and one EQDSK); the other three returned None, a tuple and an ndarray. These observations do not establish a public key set or resolve the declaration debt.",
+    "scope": "Historical seven-entry baseline: the examples and implementations measured at 9b0de014, before the three non-mapping declarations were fixed. The entries list above tracks only outstanding declarations.",
+    "method": "At aaadca04, run python3 scripts/dev.py run python -B scripts/probe_output_channel_returns.py --json .runtime/returns.json to reproduce the seven target-return observations. On later trees the probe measures only the entries still listed.",
+    "summary": "Of the seven, four returned mappings (three dicts and one EQDSK). The other calls were write_eqdsk (None; text written to the file), vp_rk4_step (tuple) and aggregate_elastic_regeneration_source (ndarray). The mapping observations do not establish a public key set.",
     "supersedes": "The original 92-entry assign-and-inspect tally classified the first assigned name, which can be an input or setup value. Its counts are not measurements of target returns; the original 92 examples have not all been remeasured here."
   }
 }

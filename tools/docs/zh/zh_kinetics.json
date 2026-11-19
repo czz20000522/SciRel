@@ -733,7 +733,7 @@
    "outputs": [
     {
      "name": "regeneration_source",
-     "description": "聚合空间再生源，单位 F/m。",
+     "description": "聚合后的空间再生源以单个 NumPy 数组直接返回，不是映射中的字段；单位为 F/m。",
      "constraints": "有限且非负，按字典迭代顺序对通道求和。",
      "dtype": "float64 数组"
     }
@@ -757,8 +757,8 @@
     "partial_results": "不返回部分结果。"
    },
    "example": {
-    "description": "聚合两个命名通道并检查键与场合同。",
-    "expected": "得到通道加权和；键不匹配被拒绝。"
+    "description": "聚合两个命名通道，并检查键不匹配时的行为。",
+    "expected": "直接得到值为 [[[1.5, 3.0]]] 的 float64 数组；键不匹配时抛出 ValueError。"
    },
    "verification": {
     "scope": [

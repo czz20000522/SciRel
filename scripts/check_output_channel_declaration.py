@@ -9,9 +9,9 @@ closeout/GAPS.md``). A reader following such a contract cannot tell whether to
 write ``result["cross_section_m2"]`` or ``result`` -- so the contract stops being
 an interface and becomes a hint.
 
-``outputs`` describes the *return value*. When a contract declares one output, the
-contract must say which of the two shapes the caller gets. That is all this check
-asks; it does not ask for the value to be enumerated (a mapping is one value).
+A single output must say how the caller obtains it. For a file-producing call,
+its output description must say both that the data is written to the output file
+and that the function returns None. This check does not ask for mapping keys.
 
 What counts as "stated"
 -----------------------
@@ -92,7 +92,10 @@ def _text(document: dict, path: str) -> str:
 
 
 def channel_of(document: dict) -> str | None:
-    """Return 'positional', 'mapping', or None when the contract does not say."""
+    """Return the declared channel, or None if the contract is silent."""
+    description = _text(document, "outputs[0].description").lower()
+    if "written to the output file" in description and "returns none" in description:
+        return "file"
     joined = " ".join(_text(document, field) for field in SCANNED_FIELDS)
     flat = " ".join(joined.replace("`", " ").split()).lower()
     for pattern in POSITIONAL:

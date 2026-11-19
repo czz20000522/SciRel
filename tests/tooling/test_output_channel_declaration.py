@@ -87,6 +87,15 @@ def test_a_contract_that_states_positional_returning_passes(tmp_path):
     assert check.main(["--root", str(root)]) == 0
 
 
+def test_file_channel_needs_both_the_artifact_and_the_python_return():
+    channel = check.channel_of
+    written = "Text is written to the output file at fname"
+    none = "the function returns None"
+    assert channel({"outputs": [{"description": f"{written}; {none}."}]}) == "file"
+    assert channel({"outputs": [{"description": written}], "notes": none}) is None
+    assert channel({"outputs": [{"description": none}]}) is None
+
+
 def test_a_result_mapping_field_passes(tmp_path):
     root = _root(tmp_path)
     _baseline(root, [])
