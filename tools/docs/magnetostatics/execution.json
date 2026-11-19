@@ -1,6 +1,6 @@
 {
  "schema": "scirel.chapter-execution",
- "source_commit": "e19ec0506f6816c14ee76c6da5b9e73d31fac77a",
+ "source_commit": "9e100e2567d822c0d799c43abc95aeb589020d67",
  "source_identity_note": "The input is the tracked tree from git archive of source_commit, not the later documentation commit containing this receipt. Source files bound below also matched the corresponding wheel members byte for byte.",
  "files": {
   "src/scirel/field/circular_filament_green.py": "fcba85a0e0625ff2c211dbca20743d19c132f15101a0c9b50eef7eccdf6c5656",
@@ -12,7 +12,7 @@
  "scope": "Magnetostatics chapter only. Its rectangular coil specification omits angle; it does not exercise nonzero rotations, old keywords or arbitrary geometries.",
  "example_sha256": "4327bf16926a337f25698747bd2608708f60d7c44b82b5491cd9952ab621cf78",
  "results_sha256": "61fa9d80af163c62fa4163186a1c24858cd858984598e182fc5f8966f6a77a65",
- "wheel_sha256": "912fd91002b54c6251ab4969826246d9e847970390c9296e8a5210961c1af4bd",
+ "wheel_sha256": "956b061da61eaf7c63682ca4a059f287c141cd7d4ebf8407157eb9ee34dc7693",
  "wheel_version": "0.0.0",
  "runtime": "CPython 3.14.7; NumPy 2.5.4; SciPy 1.18.1; mpmath 1.4.1",
  "network": "Not isolated or monitored; uv build and wheel installation used --offline.",
@@ -28,12 +28,12 @@
  "document_files": {
   "catalog/examples/scirel.field.circular-filament-green.json": "aee2c7e97cead77ff750879f32d37f9b57bf1784ff7351e8bf5329f325468de1",
   "catalog/examples/scirel.field.current-green-superposition.json": "a689941b2ae94a464eeec546434c119650483fcbb944d8024cbabaa4339dcf08",
-  "catalog/examples/scirel.field.rectangular-coil-filaments.json": "8879c10672110e41f1763652a9281800c33e348d9f49d5f6dc882946122784be",
+  "catalog/examples/scirel.field.rectangular-coil-filaments.json": "80179dcacbb8925a67ffd84bac8ec16132664a3e6a164dfe5bb4e947ca924492",
   "catalog/examples/scirel.field.multi-coil-vacuum-field.json": "5880489614e0e75ddf02c8f313ba4c06f1c7c0fce154bf8440c90380d29d2006",
-  "catalog/examples/scirel.electromagnetism.circular-filament-green.json": "8569f17da4a933ff1096dbec43c1c3e56322dd0cbabd9c5499dc6b81aec5a12c"
+  "catalog/examples/scirel.electromagnetism.circular-filament-green.json": "466b5e45102aea3d19023382e974506b6cef2a7670a31c1dd20a0ef4c94209a7"
  },
- "previous_execution_sha256": "b84aafa0834c26d6887a92a483cfedf7605ea2025927c8e7af9008a0063ba6fd",
- "execution_environment": "Native macOS-27.2.1-arm64-arm-64bit-Mach-O; fresh venv with the non-editable wheel. Python -I -B imported scirel/__init__.py from that venv’s site-packages. The run directory began with a byte-identical copy of example.py, not the source package. The host checkout remained accessible; no container or cross-platform run.",
+ "previous_execution_sha256": "8fe7f6da0e7c35cca75af0e5b1a8e74ea8f1d43b00d5ddcb42134423e03fec80",
+ "execution_environment": "Native macOS-27.2.1-arm64-arm-64bit-Mach-O; fresh venv with the non-editable wheel. Python -I -B imported SciRel from that venv’s site-packages. The host checkout remained accessible; no container or cross-platform run.",
  "raw_results_sha256": "c81f4b985136c15f21580158400cfc07fd29f28d80626410a679a9427540cfee",
  "stdout_sha256": "852971aaf6a5209e688670ce892bffd87461c7db23a8f074e507d7bac3767da5",
  "build_tools": "uv 0.12.19 (Homebrew 2026-09-24 aarch64-apple-darwin); setuptools.build_meta (version pinned by source_commit's pyproject.toml); SOURCE_DATE_EPOCH is the source commit timestamp.",
@@ -67,7 +67,7 @@
  },
  "reproduce": [
   "From the repository root, after python3 scripts/dev.py prepare (requires pre-cached wheel/build dependencies for --offline):",
-  "rev=e19ec0506f6816c14ee76c6da5b9e73d31fac77a; run=$(mktemp -d \"$PWD/.runtime/magnetostatics-repro.XXXXXX\"); mkdir \"$run/source\" \"$run/work\"",
+  "rev=9e100e2567d822c0d799c43abc95aeb589020d67; run=$(mktemp -d \"$PWD/.runtime/magnetostatics-repro.XXXXXX\"); mkdir \"$run/source\" \"$run/work\"",
   "git archive \"$rev\" | tar -xf - -C \"$run/source\"",
   "SOURCE_DATE_EPOCH=$(git show -s --format=%ct \"$rev\") python3 scripts/dev.py run uv build --offline --wheel --out-dir \"$run/wheels\" \"$run/source\"",
   "python3 scripts/dev.py run uv venv --offline --python \"$PWD/.runtime/venv/bin/python\" \"$run/consumer\"",
