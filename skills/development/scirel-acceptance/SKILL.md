@@ -334,6 +334,26 @@ development stage runs the same checks minus example execution and minus the thr
 
 正确做法是**逐资产取并集**：按 `asset_id` 合并两侧记录，只让本批真正改过的资产采用本侧版本，其余保留对方的。合并后必须跑 `check_contract_sync.py`（它比对每条记录的条款条数），并用脚本逐条比对与 `origin/main` 的差异，确认"差异集合"恰好是本批改过的那些资产。
 
+## 变异验证：先说清"走没走到"，再说"红不红"
+
+变异验证用来回答"这条证据测试是否承重"。它有一个前提，不写清楚就会得出反向结论：**被改的那一行在这次测试里到底执行了没有**。同一个"变异存活"有三种完全不同的解释，修法也相反：
+
+- `covered` — 已证明执行、测试仍全绿。结论是"测试未约束该行为"，修法是**加强断言**（例如断言单调性、双值比较、量级关系）。
+- `not-exercised` — 现有测试未覆盖该分支。结论是"这里没有测试"，修法是**补覆盖**（构造能把该分支逼出来的输入）。
+- `UNKNOWN` — 插桩失败、副本崩溃、标记文件不可读。不作任何结论。
+
+判定这两件事本身都要能被验证：变异副本先用 `print(scirel.__file__)` 确认命中的是副本（只设 `PYTHONPATH` 会被 `pyproject.toml` 的 `pythonpath` 覆盖，得到假绿）；插桩要打**阳性对照**——同一副本里对一个必然执行的行也打标记并断言它出现，标记写文件而不是 stderr（pytest 会捕获并丢弃 stderr）。没有阳性对照，"标记为空"永远有两种解释。
+
+**`not-exercised` 不得升级为"该分支不可达"。** 连续参数空间上的不可达性无法用采样证明，换一个人的输入就能推翻；本仓库因此误判过一次，差点按"死代码"删掉一段正确的可去奇点极限实现（把 `x` 附近的面板宽度降到 1e-9，那段分支命中 84 次）。要主张删除，必须给出**穷尽性论证**（例如该参数只能取有限集合），而不是"我这几组输入没走到"。
+
+报告固定两栏：`mutants killed / total`，以及**每个存活变异**的覆盖判定。
+
+## 单文件多记录的合并：逐条并集
+
+`tools/docs/zh/*.json` 一个文件里有几十条资产记录，代码与合同的并行改动都落在同一个文件上，冲突几乎必然发生。解决这类冲突**不许整份取一侧**（`git checkout --theirs <file>`）：那样会把对方在这批里新增的记录整段退回旧文本，而且差异不会出现在任何代码里——只有 `check_contract_sync.py` 的"条款条数不符"能看出来。本仓库已因此静默退回两次（一次 45 条 reader 记录，一次 3 条）。
+
+正确做法是**逐资产取并集**：按 `asset_id` 合并两侧记录，只让本批真正改过的资产采用本侧版本，其余保留对方的。合并后必须跑 `check_contract_sync.py`（它比对每条记录的条款条数），并用脚本逐条比对与 `origin/main` 的差异，确认"差异集合"恰好是本批改过的那些资产。
+
 ## Docstring and contract: one source of truth
 
 For each operator, the code signature and its numpydoc docstring are the source of truth for parameter names, order, defaults, units, return entries, raised exceptions and the example. The JSON contract keeps what is only for agents (model, scope, applicability, failure semantics, evidence, limitations), and its fields that overlap the docstring are derived from it. When you change one, change the other in the same commit.
